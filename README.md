@@ -5,10 +5,12 @@ This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
 It's semi-compatible with the Web.
 It's not stable.
+It's for experimenting.
+That's why it's called beaker.
 
 ## plans
 
-## basic ui
+### basic ui
 
 Just needs to get the job done, not a lot of features here
 
