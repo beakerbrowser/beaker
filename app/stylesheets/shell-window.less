@@ -1,12 +1,26 @@
+@import "./photon.min.less";
+
 body {
   margin: 0;
   padding: 0;
 }
 #toolbar {
-  height: 50px;
+  height: 60px;
+
+  #toolbar-nav {
+    display: flex;
+
+    .form-control {
+      flex: 1;
+      box-shadow: inset 0px 1px 1px rgba(0,0,0,.25);
+      border: 1px solid #B3B1B3;
+      border-radius: 3px;
+      padding: 0 10px;
+    }
+  }
 }
 #webviews {
-  height: ~"calc(100vh - 50px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
+  height: ~"calc(100vh - 60px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
   position: relative;
 }
 #webviews webview {

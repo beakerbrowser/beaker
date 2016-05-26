@@ -1,14 +1,46 @@
 <!doctype html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Beaker</title>
-    <link rel="stylesheet" href="../stylesheets/shell-window.css">
+  <meta charset="utf-8">
+  <title>Beaker</title>
+  <link rel="stylesheet" href="../stylesheets/shell-window.css">
 </head>
 <body>
-    <div id="toolbar">tabs bar</div>
-    <div id="webviews">
-      <webview src="https://github.com"></webview>
+  <header id="toolbar" class="toolbar toolbar-header">
+    <div id="toolbar-tabs" class="tab-group">
+      <div class="tab-item">
+        <span class="icon icon-cancel icon-close-tab"></span>
+        Tab
+      </div>
+      <div class="tab-item active">
+        <span class="icon icon-cancel icon-close-tab"></span>
+        Tab active
+      </div>
+      <div class="tab-item">
+        <span class="icon icon-cancel icon-close-tab"></span>
+        Tab
+      </div>
+      <div class="tab-item tab-item-fixed">
+        <span class="icon icon-plus"></span>
+      </div>
     </div>
+    <div id="toolbar-nav" class="toolbar-actions">
+      <div class="btn-group">
+        <button class="btn btn-default">
+          <span class="icon icon-left-bold"></span>
+        </button>
+        <button class="btn btn-default">
+          <span class="icon icon-right-bold"></span>
+        </button>
+        <button class="btn btn-default">
+          <span class="icon icon-arrows-ccw"></span>
+        </button>
+      </div>
+      <input type="text" class="form-control">
+    </div>
+  </header>
+  <div id="webviews">
+    <webview src="https://github.com"></webview>
+  </div>
 </body>
 </html>

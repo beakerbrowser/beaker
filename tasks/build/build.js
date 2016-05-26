@@ -21,7 +21,7 @@ var paths = {
   copyFromAppDir: [
     './node_modules/**',
     './**/*.html',
-    './**/*.+(jpg|png|svg)'
+    './**/*.+(jpg|png|svg|eot|ttf|woff)'
   ],
 };
 

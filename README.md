@@ -7,6 +7,8 @@ It's semi-compatible with the Web.
 It's not stable.
 It's for experimenting, that's why it's called beaker.
 
+![screenshot.png](screenshot.png)
+
 ## plans
 
 ### basic ui
@@ -14,7 +16,7 @@ It's for experimenting, that's why it's called beaker.
 Just needs to get the job done, not a lot of features here
 
   - browser controls
-    - [ ] nav btns: Home, Back, Forward, Refresh
+    - [ ] nav btns: Back, Forward, Refresh
     - [ ] tabs
     - [ ] tab titles
     - [ ] tab favicons
