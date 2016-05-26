@@ -68,7 +68,7 @@ gulp.task('bundle-watch', bundleTask);
 
 
 var lessTask = function () {
-  return gulp.src('app/stylesheets/main.less')
+  return gulp.src('app/stylesheets/shell-window.less')
     .pipe(plumber())
     .pipe(less())
     .pipe(gulp.dest(destDir.path('stylesheets')));

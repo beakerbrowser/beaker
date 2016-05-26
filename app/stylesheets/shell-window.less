@@ -1,0 +1,17 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+#toolbar {
+  height: 50px;
+}
+#webviews {
+  height: ~"calc(100vh - 50px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
+  position: relative;
+}
+#webviews webview {
+  height: 100%;
+  width: 100%;
+  outline: none;
+  position: absolute;
+}

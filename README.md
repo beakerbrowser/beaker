@@ -14,11 +14,13 @@ It's for experimenting, that's why it's called beaker.
 Just needs to get the job done, not a lot of features here
 
   - browser controls
-    - [ ] tabs / window-management
-    - [ ] favicon render
+    - [ ] nav btns: Home, Back, Forward, Refresh
+    - [ ] tabs
+    - [ ] tab titles
+    - [ ] tab favicons
     - [ ] address bar
     - [ ] tab pinning
-    - [ ] always-on-top pin
+    - [ ] status bar
   - builtin pages
     - [ ] start page
   - inpage controls
@@ -50,6 +52,7 @@ should work across devices
 
  - [ ] naming/addressing (bob@foo.com ?)
  - [ ] key management, store secrets safely
+ - [ ] look into supporting SSL client certificates
 
 ### cross-host data publishing
 

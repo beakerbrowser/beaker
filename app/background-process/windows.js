@@ -1,15 +1,27 @@
-import { BrowserWindow } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import path from 'path'
 import log from '../log'
 
-export function create (opts) {
-  var win = new BrowserWindow({
-    width: 1000,
-    height: 600
-  })
+// exported methods
+// =
 
-  var startPagePath = 'file://'+path.join(__dirname, 'builtin-pages/start.html')
-  win.loadURL(startPagePath)
-  log('Opening', startPagePath)
+export function setup () {
+  // create first shell window
+  createShellWindow()
+}
+
+export function createShellWindow () {
+  // create window
+  var win = new BrowserWindow({ })
+  loadURL(win, 'file://'+path.join(__dirname, 'ui/shell-window.html'))
+
   return win
+}
+
+// internal methods
+// =
+
+function loadURL (win, url) {
+  win.loadURL(url)
+  log('Opening', url)  
 }
