@@ -19,7 +19,7 @@ export function getAll() {
   return webviews
 }
 
-export function add (url) {
+export function create (url) {
   // create wv
   var el = createEl(url)
   hide(el) // hidden by default
@@ -31,6 +31,7 @@ export function add (url) {
   events.emit('update')
 
   // register events
+  el.addEventListener('dom-ready', onDomReady)
   el.addEventListener('load-commit', rebroadcastEvent)
   el.addEventListener('did-finish-load', rebroadcastEvent)
   el.addEventListener('did-fail-load', rebroadcastEvent)
@@ -51,6 +52,27 @@ export function add (url) {
     setActive(el)
 
   return el
+}
+
+export function remove (el) {
+  // find, remove
+  var i = webviews.indexOf(el)
+  if (i == -1)
+    return console.warn('webviews.remove() called for missing webview', el)
+
+  webviews.splice(i, 1)
+  webviewsDiv.removeChild(el)
+
+  // set new active if that was
+  if (el.dataset.isActive) {
+    if (webviews.length == 0)
+      create()
+    setActive(webviews[webviews.length - 1])
+  }
+
+  // emit
+  events.emit('remove', el)
+  events.emit('update')
 }
 
 export function setActive (el) {
@@ -74,6 +96,13 @@ export function getById (id) {
       return webviews[i]
   }
   return null
+}
+
+// event handlrs
+// =
+
+function onDomReady (e) {
+  e.target.dataset.isReady = 1
 }
 
 // internal functions
