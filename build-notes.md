@@ -17,9 +17,9 @@ Sits on path: `beaker-browser/app/package.json`. This is **real** manifest of th
 ### Project's folders
 
 - `app` - application code.
-- `app/main` - main electron process.
-- `app/pages` - builtin pages.
-- `app/preload` - scripts injected into web pages.
+- `app/background-process` - main electron process.
+- `app/builtin-pages` - builtin pages.
+- `app/window-preload` - scripts injected into web pages.
 - `app/stylesheets` - styles shared across the app.
 - `app/ui` - the ui controls code (tabs, addressbar, etc).
 - `config` - environment-specific config options.

@@ -5,7 +5,7 @@
   "version": "0.0.0",
   "author": "Paul Frazee",
   "copyright": "© 2016, Paul Frazee",
-  "main": "main.js",
+  "main": "background-process.js",
   "dependencies": {
     "fs-jetpack": "^0.9.0"
   },

@@ -3,23 +3,22 @@
 // It doesn't have any windows which you can see on screen, but we can open
 // window from here.
 
-import { app, Menu, BrowserWindow } from 'electron'
-import buildMenu from './main/window-menu'
+import { app, Menu } from 'electron'
+import { create } from './background-process/windows'
+import buildMenu from './background-process/window-menu'
 import env from './env';
 
 var mainWindow;
 
 app.on('ready', function () {
-    Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenu(env)));
+  Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenu(env)));
 
-    var mainWindow = new BrowserWindow({
-        width: 1000,
-        height: 600
-    });
-
-    mainWindow.loadURL('https://google.com');
+  var mainWindow = create({
+    width: 1000,
+    height: 600
+  })
 });
 
 app.on('window-all-closed', function () {
-    app.quit();
+  app.quit();
 });

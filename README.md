@@ -5,8 +5,7 @@ This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
 It's semi-compatible with the Web.
 It's not stable.
-It's for experimenting.
-That's why it's called beaker.
+It's for experimenting, that's why it's called beaker.
 
 ## plans
 
@@ -14,10 +13,20 @@ That's why it's called beaker.
 
 Just needs to get the job done, not a lot of features here
 
-  - [ ] tabs, address bar
-  - [ ] inpage find ui
-  - [ ] keybindings
-  - [ ] swipe gestures
+  - browser controls
+    - [ ] tabs / window-management
+    - [ ] favicon render
+    - [ ] address bar
+    - [ ] tab pinning
+    - [ ] always-on-top pin
+  - builtin pages
+    - [ ] start page
+  - inpage controls
+    - [ ] find ui
+    - [ ] context menu
+  - input
+    - [ ] keybindings
+    - [ ] swipe gestures
 
 ### privacy, security
 
