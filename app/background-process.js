@@ -13,7 +13,6 @@ var mainWindow;
 app.on('ready', function () {
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenu(env)));
   windows.setup()
-
 });
 
 app.on('window-all-closed', function () {

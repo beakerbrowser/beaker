@@ -22,10 +22,17 @@ body {
 #webviews {
   height: ~"calc(100vh - 60px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
   position: relative;
-}
-#webviews webview {
-  height: 100%;
-  width: 100%;
-  outline: none;
-  position: absolute;
+
+  webview {
+    height: 100%;
+    width: 100%;
+    outline: none;
+    position: absolute;
+
+    &.hidden {
+      flex: 0 1;
+      width: 0px;
+      height: 0px;
+    }
+  }
 }

@@ -13,7 +13,7 @@ export function setup () {
 export function createShellWindow () {
   // create window
   var win = new BrowserWindow({ })
-  loadURL(win, 'file://'+path.join(__dirname, 'ui/shell-window.html'))
+  loadURL(win, 'file://'+path.join(__dirname, 'shell-window.html'))
 
   return win
 }

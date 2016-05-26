@@ -47,7 +47,8 @@ gulp.task('copy-watch', copyTask);
 var bundleApplication = function () {
   return Q.all([
     bundle(srcDir.path('background-process.js'), destDir.path('background-process.js')),
-    bundle(srcDir.path('window-preload.js'), destDir.path('window-preload.js')),
+    bundle(srcDir.path('webview-preload.js'), destDir.path('webview-preload.js')),
+    bundle(srcDir.path('shell-window.js'), destDir.path('shell-window.js'))
   ]);
 };
 
