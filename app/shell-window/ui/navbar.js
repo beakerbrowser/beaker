@@ -1,5 +1,8 @@
 import * as webviews from '../webviews'
 
+// exported functions
+// =
+
 export function setup () {
   // render (only need to render once)
   document.getElementById('toolbar-nav').innerHTML = `
@@ -30,7 +33,11 @@ export function setup () {
   webviews.on('did-stop-loading', updateIfActive)
 }
 
-// update functions
+export function focusLocation () {
+  document.querySelector('#nav-location-input').focus()
+}
+
+// internal update functions
 // =
 
 function update () {

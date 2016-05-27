@@ -17,19 +17,28 @@ Just needs to get the job done, not a lot of features here
 
   - browser controls
     - [x] nav btns: Back, Forward, Refresh
-    - [x] tabs
-    - [x] tab titles
-    - [ ] tab favicons
+    - [ ] tabs
+      - [x] basic
+      - [x] tab titles
+      - [ ] switch the tabs to https://github.com/adamschwartz/chrome-tabs, because that feels so much nicer
+      - [ ] tab favicons
+      - [ ] tab pinning
+      - [ ] make sure tabs begin loading, even if not active
     - [x] address bar
-    - [ ] tab pinning
+      - [ ] ux needs work, value is slow to change, and will change while youre typing
     - [ ] status bar
   - builtin pages
     - [ ] start page
   - inpage controls
     - [ ] find ui
     - [ ] context menu
+    - [ ] open-in-new-tab (ctrl/cmd+click)
   - input
-    - [ ] keybindings
+    - [ ] keybindings (app menu)
+      - [x] basic
+      - [ ] reopen-closed-tab
+      - [ ] open-file
+      - [ ] show active tabs in the window menu, and give cmd/ctrl+<num> to switch btwn them
     - [ ] swipe gestures
 
 ### privacy, security

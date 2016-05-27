@@ -86,6 +86,22 @@ export function setActive (el) {
   events.emit('set-active', el)
 }
 
+export function changeActive (dir) {
+  if (webviews.length > 1) {
+    var i = webviews.indexOf(activeWebview)
+    if (i === -1)
+      return console.warn('Active webview is not in the webviews list! THIS SHOULD NOT HAPPEN!')
+
+    i += dir
+    if (i < 0)
+      i = webviews.length - 1
+    if (i >= webviews.length)
+      i = 0
+
+    setActive(webviews[i])
+  }
+}
+
 export function getActive () {
   return activeWebview
 }

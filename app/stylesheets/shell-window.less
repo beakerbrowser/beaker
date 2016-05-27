@@ -6,6 +6,7 @@ body {
 }
 #toolbar {
   height: 60px;
+  border-bottom: 1px solid #999;
 
   #toolbar-nav {
     display: flex;
@@ -34,7 +35,7 @@ body {
   }
 }
 #webviews {
-  height: ~"calc(100vh - 60px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
+  height: ~"calc(100vh - 61px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
   position: relative;
 
   webview {
