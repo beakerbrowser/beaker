@@ -33,7 +33,7 @@ Just needs to get the job done, not a lot of features here
   - inpage controls
     - [x] find ui
     - [ ] context menu
-    - [ ] open-in-new-tab (ctrl/cmd+click)
+    - [x] open-in-new-tab (ctrl/cmd+click)
   - input
     - [ ] keybindings / app menu
       - [x] basic
@@ -41,7 +41,8 @@ Just needs to get the job done, not a lot of features here
         - [ ] restore session history as well as the URL
       - [x] open-file
       - [x] cmd/ctrl+1-9 to switch tab
-      - [ ] page zoom (should persist on domains)
+      - [x] page zoom
+        - [ ] persist zoom as a domain setting
     - [ ] swipe gestures
 
 ### privacy, security

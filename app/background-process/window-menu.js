@@ -111,6 +111,29 @@ var viewMenu = {
       if (win) win.webContents.send('command', 'view:hard-reload') 
     }
   },
+  { type: "separator" },
+  {
+    label: 'Zoom In',
+    accelerator: 'CmdOrCtrl+=',
+    click: function (item, win) {
+      if (win) win.webContents.send('command', 'view:zoom-in') 
+    }
+  },
+  {
+    label: 'Zoom Out',
+    accelerator: 'CmdOrCtrl+-',
+    click: function (item, win) {
+      if (win) win.webContents.send('command', 'view:zoom-out') 
+    }
+  },
+  {
+    label: 'Actual Size',
+    accelerator: 'CmdOrCtrl+0',
+    click: function (item, win) {
+      if (win) win.webContents.send('command', 'view:zoom-reset') 
+    }
+  },
+  { type: "separator" },
   {
     label: 'Toggle DevTools',
     accelerator: 'Alt+CmdOrCtrl+I',
