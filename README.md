@@ -16,11 +16,11 @@ It's for experimenting, that's why it's called beaker.
 Just needs to get the job done, not a lot of features here
 
   - browser controls
-    - [ ] nav btns: Back, Forward, Refresh
+    - [x] nav btns: Back, Forward, Refresh
     - [x] tabs
     - [x] tab titles
     - [ ] tab favicons
-    - [ ] address bar
+    - [x] address bar
     - [ ] tab pinning
     - [ ] status bar
   - builtin pages

@@ -17,7 +17,11 @@ export function setup () {
         <span class="icon icon-cancel"></span>
       </button>
     </div>
-    <input id="nav-location-input" type="text" class="form-control">
+    <input id="nav-location-input"
+      type="text"
+      class="form-control"
+      onfocus="javascript:navbarEvents.onFocusLocation(event)"
+      onkeydown="javascript:navbarEvents.onKeydownLocation(event)">
   `
 
   // register events
@@ -65,6 +69,21 @@ function setBtnVisible (sel, b) {
     document.querySelector(sel).classList.add('hidden')
 }
 
+function toGoodUrl (str) {
+  // see if it works as-is
+  try { return (new URL(str)).toString() }
+  catch (e) {}
+
+  // if it looks like a url, try adding https://
+  if (str.indexOf('.') !== -1) {
+    try { return (new URL('https://'+str)).toString() }
+    catch (e) {}
+  }
+
+  // ok then, search for it
+  return 'https://duckduckgo.com/?q='+encodeURIComponent(str)
+}
+
 // ui event handlers
 // =
 
@@ -88,5 +107,20 @@ window.navbarEvents = {
     var wv = webviews.getActive()
     if (wv && wv.dataset.isReady)
       wv.stop()
+  },
+  onFocusLocation: function (e) {
+    var el = document.getElementById('nav-location-input')
+    el.select()
+  },
+  onKeydownLocation: function (e) {
+    // on enter
+    if (e.keyCode == 13) {
+      e.preventDefault()
+      var url = e.target.value
+
+      var wv = webviews.getActive()
+      if (wv && wv.dataset.isReady)
+        wv.loadURL(toGoodUrl(url))
+    }
   }
 }
