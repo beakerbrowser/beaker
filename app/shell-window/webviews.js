@@ -7,6 +7,7 @@ var webviewsDiv = document.getElementById('webviews')
 var webviews = []
 var activeWebview = null
 var events = new EventEmitter()
+var closedURLs = []
 
 // exported functions
 // =
@@ -55,11 +56,15 @@ export function create (url) {
 }
 
 export function remove (el) {
-  // find, remove
+  // find
   var i = webviews.indexOf(el)
   if (i == -1)
     return console.warn('webviews.remove() called for missing webview', el)
 
+  // save, in case the user wants to restore it
+  closedURLs.push(el.getURL())
+
+  // remove
   webviews.splice(i, 1)
   webviewsDiv.removeChild(el)
 
@@ -73,6 +78,15 @@ export function remove (el) {
   // emit
   events.emit('remove', el)
   events.emit('update')
+}
+
+export function reopenLastRemoved () {
+  var url = closedURLs.pop()
+  if (url) {
+    var el = create(url)
+    setActive(el)
+    return el
+  }
 }
 
 export function setActive (el) {

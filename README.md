@@ -5,7 +5,6 @@ This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
 It's semi-compatible with the Web.
 It's not stable.
-It's for experimenting, that's why it's called beaker.
 
 ![screenshot.png](screenshot.png)
 
@@ -23,7 +22,7 @@ Just needs to get the job done, not a lot of features here
       - [ ] switch the tabs to https://github.com/adamschwartz/chrome-tabs, because that feels so much nicer
       - [ ] tab favicons
       - [ ] tab pinning
-      - [ ] make sure tabs begin loading, even if not active
+      - [ ] make sure tabs always begin loading, even if not active
     - [x] address bar
       - [ ] ux needs work, value is slow to change, and will change while youre typing
     - [ ] status bar
@@ -36,7 +35,8 @@ Just needs to get the job done, not a lot of features here
   - input
     - [ ] keybindings / app menu
       - [x] basic
-      - [ ] reopen-closed-tab
+      - [x] reopen-closed-tab
+        - [ ] restore session history as well as the URL
       - [x] open-file
       - [x] cmd/ctrl+1-9 to switch tab
       - [ ] page zoom (should persist on domains)

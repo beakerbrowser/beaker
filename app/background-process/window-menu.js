@@ -35,9 +35,8 @@ var fileMenu = {
       label: 'Reopen Closed Tab',
       accelerator: 'CmdOrCtrl+Shift+T',
       click: function (item, win) {
-        if (win) win.webContents.send('command', 'file:reopen-closed-tab') // TODO
-      },
-      enabled: false
+        if (win) win.webContents.send('command', 'file:reopen-closed-tab')
+      }
     },
     {
       label: 'Open File',
