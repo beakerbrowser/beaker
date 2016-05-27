@@ -43,7 +43,7 @@ Just needs to get the job done, not a lot of features here
       - [x] cmd/ctrl+1-9 to switch tab
       - [x] page zoom
         - [ ] persist zoom as a domain setting
-    - [ ] swipe gestures
+    - [x] swipe gestures
 
 ### privacy, security
 

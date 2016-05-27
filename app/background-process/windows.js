@@ -20,6 +20,10 @@ export function createShellWindow () {
   for (var i=1; i <= 9; i++)
     registerShortcut(win, 'CmdOrCtrl+'+i, onTabSelect(win, i-1))
 
+  // register event handlers
+  win.on('scroll-touch-begin', onScrollTouchBegin)
+  win.on('scroll-touch-end', onScrollTouchEnd)
+
   return win
 }
 
@@ -33,8 +37,20 @@ function loadURL (win, url) {
 
 // shortcut event handlers
 // =
+
 function onTabSelect (win, tabIndex) {
   return () => {
     win.webContents.send('command', 'set-tab', tabIndex)
   }
+}
+
+// window event handlers
+// =
+
+function onScrollTouchBegin (e) {
+  e.sender.webContents.send('window-event', 'scroll-touch-begin')
+}
+
+function onScrollTouchEnd (e) {
+  e.sender.webContents.send('window-event', 'scroll-touch-end')
 }
