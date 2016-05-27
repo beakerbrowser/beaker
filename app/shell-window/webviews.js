@@ -33,6 +33,9 @@ export function create (url) {
 
   // register events
   el.addEventListener('dom-ready', onDomReady)
+  el.addEventListener('new-window', onNewWindow)
+
+  // rebroadcasts
   el.addEventListener('load-commit', rebroadcastEvent)
   el.addEventListener('did-finish-load', rebroadcastEvent)
   el.addEventListener('did-fail-load', rebroadcastEvent)
@@ -138,6 +141,10 @@ export function getById (id) {
 
 function onDomReady (e) {
   e.target.dataset.isReady = 1
+}
+
+function onNewWindow (e) {
+  create(e.url)
 }
 
 // internal functions

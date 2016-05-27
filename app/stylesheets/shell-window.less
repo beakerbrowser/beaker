@@ -44,13 +44,14 @@ body {
     outline: none;
     position: absolute;
 
-    // electron docs suggest this instead of display: none...
-    // but it doesnt really work that well? not sure, they say there's a bug
-    /*&.hidden {
+    // this ensures that, even if hidden, the webview will do work
+    // causes the pages to relayout on unhide, though, which sucks
+    &.hidden {
+      display: flex; // the default display type
       flex: 0 1;
       width: 0px;
       height: 0px;
-    }*/
+    }
   }
 }
 

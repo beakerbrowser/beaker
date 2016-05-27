@@ -22,12 +22,14 @@ Just needs to get the job done, not a lot of features here
       - [ ] switch the tabs to https://github.com/adamschwartz/chrome-tabs, because that feels so much nicer
       - [ ] tab favicons
       - [ ] tab pinning
-      - [ ] make sure tabs always begin loading, even if not active
+      - [x] make sure tabs always begin loading, even if not active
+      - [ ] change how webviews are hidden, so they dont have to relayout on select
     - [x] address bar
       - [ ] ux needs work, value is slow to change, and will change while youre typing
     - [ ] status bar
+    - [ ] bookmark btn
   - builtin pages
-    - [ ] start page
+    - [ ] start page (show bookmarks)
   - inpage controls
     - [ ] find ui
     - [ ] context menu
