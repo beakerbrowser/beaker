@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, dialog } from 'electron'
 import { createShellWindow } from './windows'
 
 var darwinMenu = {
@@ -43,9 +43,13 @@ var fileMenu = {
       label: 'Open File',
       accelerator: 'CmdOrCtrl+O',
       click: function (item, win) {
-        if (win) win.webContents.send('command', 'file:open-file') // TODO
-      },
-      enabled: false
+        if (win) {
+          dialog.showOpenDialog({ title: 'Open file...', properties: ['openFile', 'createDirectory'] }, files => {
+            if (files && files[0])
+              win.webContents.send('command', 'file:new-tab', 'file://'+files[0])
+          })
+        }
+      }
     },
     {
       label: 'Open Location',

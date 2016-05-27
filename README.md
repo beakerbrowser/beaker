@@ -37,8 +37,8 @@ Just needs to get the job done, not a lot of features here
     - [ ] keybindings / app menu
       - [x] basic
       - [ ] reopen-closed-tab
-      - [ ] open-file
-      - [x] cmd/ctrl+<num> to switch tab
+      - [x] open-file
+      - [x] cmd/ctrl+1-9 to switch tab
       - [ ] page zoom (should persist on domains)
     - [ ] swipe gestures
 

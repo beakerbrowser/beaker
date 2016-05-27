@@ -6,7 +6,7 @@ export function setup () {
   ipcRenderer.on('command', function (event, type, arg1) {
     var wv = webviews.getActive()
     switch (type) {
-      case 'file:new-tab':          return webviews.setActive(webviews.create())
+      case 'file:new-tab':          return webviews.setActive(webviews.create(arg1))
       case 'file:open-location':    return navbar.focusLocation()
       case 'file:close-tab':        return webviews.remove(wv)
       case 'view:reload':           return wv.reload()
