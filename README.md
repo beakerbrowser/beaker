@@ -17,8 +17,8 @@ Just needs to get the job done, not a lot of features here
 
   - browser controls
     - [ ] nav btns: Back, Forward, Refresh
-    - [ ] tabs
-    - [ ] tab titles
+    - [x] tabs
+    - [x] tab titles
     - [ ] tab favicons
     - [ ] address bar
     - [ ] tab pinning

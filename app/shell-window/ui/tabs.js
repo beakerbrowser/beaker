@@ -37,7 +37,7 @@ function drawTab (wv) {
 function drawTabInner (wv) {
   return `
     <span class="icon icon-cancel icon-close-tab" onclick="javascript:tabsEvents.onClickTabClose(event)"></span>
-    ${wv.dataset.isReady ? wv.getTitle() : 'New tab'}
+    <span class="tab-text">${wv.dataset.isReady ? wv.getTitle() : 'New tab'}</span>
   `
 }
 
@@ -58,5 +58,5 @@ window.tabsEvents = {
     var wv = webviews.getById(e.target.parentNode.dataset.id)
     if (wv)
       webviews.remove(wv)
-  },
+  }
 }

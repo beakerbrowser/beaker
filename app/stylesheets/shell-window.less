@@ -18,6 +18,20 @@ body {
       padding: 0 10px;
     }
   }
+  #toolbar-tabs {
+    .tab-item {
+      // we want to keep tabs equal width, and overflow the text
+      min-width: 0; // this seems to force the sizing behavior we want
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      padding: 3px 22px;
+
+      .tab-text {
+        white-space: pre;
+      }
+    }
+  }
 }
 #webviews {
   height: ~"calc(100vh - 60px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
@@ -29,10 +43,21 @@ body {
     outline: none;
     position: absolute;
 
-    &.hidden {
+    // electron docs suggest this instead of display: none...
+    // but it doesnt really work that well? not sure, they say there's a bug
+    /*&.hidden {
       flex: 0 1;
       width: 0px;
       height: 0px;
-    }
+    }*/
   }
+}
+
+// general styles
+.hidden {
+  display: none;
+}
+
+.btn-disabled .icon {
+  color: #aaa;
 }
