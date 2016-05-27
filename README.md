@@ -31,7 +31,7 @@ Just needs to get the job done, not a lot of features here
   - builtin pages
     - [ ] start page (show bookmarks)
   - inpage controls
-    - [ ] find ui
+    - [x] find ui
     - [ ] context menu
     - [ ] open-in-new-tab (ctrl/cmd+click)
   - input
@@ -102,6 +102,7 @@ npm start
 ```
 
 [Lots of dev instructions and notes here](./build-notes.md)
+
 
 ## license
 

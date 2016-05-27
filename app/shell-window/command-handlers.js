@@ -10,6 +10,7 @@ export function setup () {
       case 'file:open-location':     return navbar.focusLocation()
       case 'file:close-tab':         return webviews.remove(wv)
       case 'file:reopen-closed-tab': return webviews.reopenLastRemoved()
+      case 'edit:find':              return navbar.showInpageFind()
       case 'view:reload':            return wv.reload()
       case 'view:hard-reload':       return wv.reloadIgnoringCache()
       case 'view:toggle-dev-tools':  return (wv.isDevToolsOpened()) ? wv.closeDevTools() : wv.openDevTools()

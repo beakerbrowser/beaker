@@ -25,16 +25,46 @@ export function setup () {
       class="form-control"
       onfocus="javascript:navbarEvents.onFocusLocation(event)"
       onkeydown="javascript:navbarEvents.onKeydownLocation(event)">
+    <input id="nav-find-input"
+      type="text"
+      class="form-control hidden"
+      placeholder="Find in page..."
+      oninput="javascript:navbarEvents.onInputFind(event)"
+      onkeydown="javascript:navbarEvents.onKeydownFind(event)">
   `
 
   // register events
   webviews.on('set-active', update)
   webviews.on('did-start-loading', updateIfActive)
   webviews.on('did-stop-loading', updateIfActive)
+  webviews.on('did-start-loading', hideInpageFind)
 }
 
 export function focusLocation () {
   document.querySelector('#nav-location-input').focus()
+}
+
+export function showInpageFind () {
+  // show control and highlight text
+  var el = document.querySelector('#nav-find-input')
+  el.classList.remove('hidden')
+  el.focus()
+  el.select()
+
+  if (el.value) {
+    // init search if there's a value leftover
+    var wv = webviews.getActive()
+    if (wv && wv.dataset.isReady)
+      wv.findInPage(el.value)
+  }
+}
+
+export function hideInpageFind () {
+  setVisible('#nav-find-input', false)
+  
+  var wv = webviews.getActive()
+  if (wv && wv.dataset.isReady)
+    wv.stopFindInPage('clearSelection')
 }
 
 // internal update functions
@@ -49,8 +79,8 @@ function update () {
 
     setBtnEnabled('#nav-back-btn', wv.canGoBack())
     setBtnEnabled('#nav-forward-btn', wv.canGoForward())
-    setBtnVisible('#nav-reload-btn', !wv.isLoading())
-    setBtnVisible('#nav-cancel-btn', wv.isLoading())
+    setVisible('#nav-reload-btn', !wv.isLoading())
+    setVisible('#nav-cancel-btn', wv.isLoading())
   }
 }
 
@@ -69,7 +99,7 @@ function setBtnEnabled (sel, b) {
     document.querySelector(sel).classList.add('btn-disabled')
 }
 
-function setBtnVisible (sel, b) {
+function setVisible (sel, b) {
   if (b)
     document.querySelector(sel).classList.remove('hidden')
   else
@@ -128,6 +158,34 @@ window.navbarEvents = {
       var wv = webviews.getActive()
       if (wv && wv.dataset.isReady)
         wv.loadURL(toGoodUrl(url))
+    }
+  },
+  onInputFind: function (e) {
+    var str = e.target.value
+    var wv = webviews.getActive()
+    if (wv && wv.dataset.isReady) {
+      if (str)
+        wv.findInPage(str)
+      else
+        wv.stopFindInPage('clearSelection')
+    }
+  },
+  onKeydownFind: function (e) {
+    // on escape
+    if (e.keyCode == 27)
+      hideInpageFind()
+
+    // on enter
+    if (e.keyCode == 13) {
+      var str = e.target.value
+      var backwards = e.shiftKey // search backwords on shift+enter
+      var wv = webviews.getActive()
+      if (wv && wv.dataset.isReady) {
+        if (str)
+          wv.findInPage(str, { findNext: true, forward: !backwards })
+        else
+          wv.stopFindInPage('clearSelection')
+      }
     }
   }
 }
