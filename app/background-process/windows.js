@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
+import { register as registerShortcut } from 'electron-localshortcut'
 import log from '../log'
 
 // exported methods
@@ -15,6 +16,10 @@ export function createShellWindow () {
   var win = new BrowserWindow({})
   loadURL(win, 'file://'+path.join(__dirname, 'shell-window.html'))
 
+  // register shortcuts
+  for (var i=1; i <= 9; i++)
+    registerShortcut(win, 'CmdOrCtrl+'+i, onTabSelect(win, i-1))
+
   return win
 }
 
@@ -24,4 +29,12 @@ export function createShellWindow () {
 function loadURL (win, url) {
   win.loadURL(url)
   log('Opening', url)  
+}
+
+// shortcut event handlers
+// =
+function onTabSelect (win, tabIndex) {
+  return () => {
+    win.webContents.send('command', 'set-tab', tabIndex)
+  }
 }

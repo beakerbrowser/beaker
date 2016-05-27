@@ -34,11 +34,12 @@ Just needs to get the job done, not a lot of features here
     - [ ] context menu
     - [ ] open-in-new-tab (ctrl/cmd+click)
   - input
-    - [ ] keybindings (app menu)
+    - [ ] keybindings / app menu
       - [x] basic
       - [ ] reopen-closed-tab
       - [ ] open-file
-      - [ ] show active tabs in the window menu, and give cmd/ctrl+<num> to switch btwn them
+      - [x] cmd/ctrl+<num> to switch tab
+      - [ ] page zoom (should persist on domains)
     - [ ] swipe gestures
 
 ### privacy, security

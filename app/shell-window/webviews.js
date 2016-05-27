@@ -86,7 +86,7 @@ export function setActive (el) {
   events.emit('set-active', el)
 }
 
-export function changeActive (dir) {
+export function changeActiveBy (dir) {
   if (webviews.length > 1) {
     var i = webviews.indexOf(activeWebview)
     if (i === -1)
@@ -100,6 +100,11 @@ export function changeActive (dir) {
 
     setActive(webviews[i])
   }
+}
+
+export function changeActiveTo (index) {
+  if (index >= 0 && index < webviews.length)
+    setActive(webviews[index])
 }
 
 export function getActive () {

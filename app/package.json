@@ -7,6 +7,7 @@
   "copyright": "© 2016, Paul Frazee",
   "main": "background-process.js",
   "dependencies": {
+    "electron-localshortcut": "^0.6.0",
     "fs-jetpack": "^0.9.0"
   },
   "packageNameTemplate": "{{name}}-v{{version}}-{{platform}}-{{arch}}",
