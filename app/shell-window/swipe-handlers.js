@@ -16,7 +16,7 @@ export function setup () {
   }
   const shouldGoForward = () => {
     var hnorm = horizontal / SWIPE_TRIGGER_DIST
-    return hnorm > -1
+    return hnorm > 1
   }
 
   window.addEventListener('mousewheel', e => {
