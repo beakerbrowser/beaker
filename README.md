@@ -8,6 +8,10 @@ It's not stable.
 
 ![screenshot.png](screenshot.png)
 
+## discuss notes
+
+ - [Keybase, global userids and pubkey certs](./doc/discuss-notes/0001-keybase.md). An argument for integrating keybase.
+
 ## plans
 
 ### basic ui
@@ -25,6 +29,7 @@ Just needs to get the job done, not a lot of features here
       - [x] make sure tabs always begin loading, even if not active
       - [ ] change how webviews are hidden, so they dont have to relayout on select
     - [x] address bar
+      - [ ] indicate loading state
       - [ ] ux needs work, value is slow to change, and will change while youre typing
     - [ ] status bar
     - [ ] bookmark btn
@@ -35,7 +40,7 @@ Just needs to get the job done, not a lot of features here
     - [ ] context menu
     - [x] open-in-new-tab (ctrl/cmd+click)
   - input
-    - [ ] keybindings / app menu
+    - [x] keybindings / app menu
       - [x] basic
       - [x] reopen-closed-tab
         - [ ] restore session history as well as the URL
@@ -63,7 +68,9 @@ More advanced goals:
 ### user identity
 
 something close to (if not cloned from) mozilla's persona project.
+or, may consider using https://github.com/google/end-to-end.
 should work across devices
+
 
  - [ ] naming/addressing (bob@foo.com ?)
  - [ ] key management, store secrets safely
