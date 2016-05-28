@@ -8,9 +8,10 @@ It's not stable.
 
 ![screenshot.png](screenshot.png)
 
-## discuss notes
+## discussion
 
  - [Keybase, global userids and pubkey certs](./doc/discuss-notes/0001-keybase.md). An argument for integrating keybase.
+ - [Hyperboot, application delivery safety](./doc/discuss-notes/0002-hyperboot.md).
 
 ## plans
 
