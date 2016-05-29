@@ -98,6 +98,7 @@ export function create (url) {
   page.webviewEl.addEventListener('did-get-response-details', onDidGetResponseDetails)
   page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
+  page.webviewEl.addEventListener('ipc-message', onIpcMessage)
 
   // rebroadcasts
   page.webviewEl.addEventListener('load-commit', rebroadcastEvent)
@@ -262,6 +263,16 @@ function onDidFailLoad (e) {
     page.loadingURL = false
 
     // TODO, render failure page
+  }
+}
+
+function onIpcMessage (e, type, arg1, arg2) {
+  var page = getByWebview(e.target)
+  if (page) {
+    switch (e.channel) {
+      case 'new-tab':         return create(e.args[0])
+      case 'inspect-element': return page.webviewEl.inspectElement(e.args[0], e.args[1])
+    }
   }
 }
 

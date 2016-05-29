@@ -1,59 +1,53 @@
-// This gives you default context menu (cut, copy, paste)
-// in all input fields and textareas across your app.
+import { remote, ipcRenderer } from 'electron'
+const { Menu, MenuItem, clipboard } = remote
 
-(function () {
-  'use strict';
+export function setup () {
+  document.addEventListener('contextmenu', onContextMenu, false)
+}
 
-  var remote = require('electron').remote;
-  var Menu = remote.Menu;
-  var MenuItem = remote.MenuItem;
+function onContextMenu (e) {
+  var menuItems = []
 
-  var isAnyTextSelected = function () {
-    return window.getSelection().toString() !== '';
-  };
+  // find href or img data
+  var href, img
+  var el = document.elementFromPoint(e.clientX, e.clientY)
+  while (el && el.tagName) {
+    if (!img && el.tagName == 'IMG')
+      img = el.src
+    if (!href && el.href)
+      href = el.href
+    el = el.parentNode
+  }
 
-  var cut = new MenuItem({
-    label: "Cut",
-    click: function () {
-      document.execCommand("cut");
-    }
-  });
+  // links
+  if (href) {
+    menuItems.push({ label: 'Open Link in New Tab', click: () => ipcRenderer.sendToHost('new-tab', href) })
+    menuItems.push({ label: 'Copy Link Address', click: () => clipboard.writeText(href) })
+  }
 
-  var copy = new MenuItem({
-    label: "Copy",
-    click: function () {
-      document.execCommand("copy");
-    }
-  });
+  // images
+  if (img) {
+    menuItems.push({ label: 'Save Image As...', click: () => alert('todo') })
+    menuItems.push({ label: 'Copy Image URL', click: () => clipboard.writeText(img) })
+    menuItems.push({ label: 'Open Image in New Tab', click: () => ipcRenderer.sendToHost('new-tab', img) })
+  }
 
-  var paste = new MenuItem({
-    label: "Paste",
-    click: function () {
-      document.execCommand("paste");
-    }
-  });
+  // clipboard
+  if (e.target.nodeName == 'TEXTREA' || e.target.nodeName == 'INPUT') {
+    menuItems.push({ label: 'Cut', click: () => document.execCommand('cut') })
+    menuItems.push({ label: 'Copy', click: () => document.execCommand('copy') })
+    menuItems.push({ label: 'Paste', click: () => document.execCommand('paste') })
+    menuItems.push({ type: 'separator' })
+  }
+  else if (window.getSelection().toString() !== '') {
+    menuItems.push({ label: 'Copy', click: () => document.execCommand('copy') })
+    menuItems.push({ type: 'separator' })      
+  }
 
-  var normalMenu = new Menu();
-  normalMenu.append(copy);
+  // inspector
+  menuItems.push({ label: 'Inspect Element', click: () => ipcRenderer.sendToHost('inspect-element', e.clientX, e.clientY) })
 
-  var textEditingMenu = new Menu();
-  textEditingMenu.append(cut);
-  textEditingMenu.append(copy);
-  textEditingMenu.append(paste);
-
-  document.addEventListener('contextmenu', function (e) {
-    switch (e.target.nodeName) {
-      case 'TEXTAREA':
-      case 'INPUT':
-        e.preventDefault();
-        textEditingMenu.popup(remote.getCurrentWindow());
-        break;
-      default:
-        if (isAnyTextSelected()) {
-          e.preventDefault();
-          normalMenu.popup(remote.getCurrentWindow());
-        }
-    }
-  }, false);
-
-}());
+  // show menu
+  var menu = Menu.buildFromTemplate(menuItems)
+  menu.popup(remote.getCurrentWindow())
+}

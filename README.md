@@ -38,7 +38,9 @@ Just needs to get the job done, not a lot of features here
     - [ ] load failure pages (did-fail-load)
   - inpage controls
     - [x] find ui
-    - [ ] context menu
+    - [x] context menu
+      - [ ] save image as...
+      - [ ] video/audio element controls
     - [x] open-in-new-tab (ctrl/cmd+click)
   - input
     - [x] keybindings / app menu
