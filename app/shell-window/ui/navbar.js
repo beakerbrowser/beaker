@@ -113,6 +113,10 @@ function toGoodUrl (href, cb) {
   if (parsed.protocol)
     return cb(href)
 
+  // localhost always goes
+  if (parsed.hostname == 'localhost')
+    return cb(href)
+
   // default protocol to https
   href = 'https://' + href
   parsed = url.parse(href)
