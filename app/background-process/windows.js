@@ -23,6 +23,8 @@ export function createShellWindow () {
   // register event handlers
   win.on('scroll-touch-begin', onScrollTouchBegin)
   win.on('scroll-touch-end', onScrollTouchEnd)
+  win.on('focus', onFocus)
+  win.on('blur', onBlur)
 
   return win
 }
@@ -53,4 +55,12 @@ function onScrollTouchBegin (e) {
 
 function onScrollTouchEnd (e) {
   e.sender.webContents.send('window-event', 'scroll-touch-end')
+}
+
+function onFocus (e) {
+  e.sender.webContents.send('window-event', 'focus')
+}
+
+function onBlur (e) {
+  e.sender.webContents.send('window-event', 'blur')
 }

@@ -8,6 +8,14 @@ It's not stable.
 
 ![screenshot.png](screenshot.png)
 
+## new tech welcome
+
+If you have tech that needs a browser, make a fork, try out your integration, and PR back to here.
+I'll add and remove APIs, to make sure new ideas get a shot.
+(But, if something's not working, I'll remove it.)
+
+Application devs: I'll communicate about what APIs are coming and going, but major versions will be breaking.
+
 ## discussion
 
  - [Keybase, global userids and pubkey certs](./doc/discuss-notes/0001-keybase.md). An argument for integrating keybase.
@@ -26,7 +34,6 @@ Just needs to get the job done, not a lot of features here
       - [x] tab titles
       - [ ] tab favicons
       - [ ] tab pinning
-      - [x] make sure tabs always begin loading, even if not active
       - [ ] change how webviews are hidden, so they dont have to relayout on select
     - [x] address bar
       - [x] indicate loading state
