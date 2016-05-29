@@ -1,109 +1,99 @@
-import * as webviews from '../webviews'
+import * as pages from '../pages'
+
+// globals
+// =
+
+var toolbarNavDiv = document.getElementById('toolbar-nav')
 
 // exported functions
 // =
 
-export function setup () {
+export function createEl (id) {
   // render (only need to render once)
-  document.getElementById('toolbar-nav').innerHTML = `
+  var el = document.createElement('div')
+  el.dataset.id = id
+  el.classList.add('toolbar-actions')
+  el.classList.add('hidden')
+  el.innerHTML = `
     <div class="btn-group">
-      <button id="nav-back-btn" class="btn btn-default" onclick="javascript:navbarEvents.onClickBack(event)">
+      <button class="nav-back-btn btn btn-default" onclick="javascript:navbarEvents.onClickBack(event)">
         <span class="icon icon-left-bold"></span>
       </button>
-      <button id="nav-forward-btn" class="btn btn-default" onclick="javascript:navbarEvents.onClickForward(event)">
+      <button class="nav-forward-btn btn btn-default" onclick="javascript:navbarEvents.onClickForward(event)">
         <span class="icon icon-right-bold"></span>
       </button>
-      <button id="nav-reload-btn" class="btn btn-default" onclick="javascript:navbarEvents.onClickReload(event)">
+      <button class="nav-reload-btn btn btn-default" onclick="javascript:navbarEvents.onClickReload(event)">
         <span class="icon icon-arrows-ccw"></span>
       </button>
-      <button id="nav-cancel-btn" class="btn btn-default hidden" onclick="javascript:navbarEvents.onClickCancel(event)">
+      <button class="nav-cancel-btn btn btn-default hidden" onclick="javascript:navbarEvents.onClickCancel(event)">
         <span class="icon icon-cancel"></span>
       </button>
     </div>
-    <input id="nav-location-input"
+    <input
       type="text"
-      class="form-control"
+      class="form-control nav-location-input "
       onfocus="javascript:navbarEvents.onFocusLocation(event)"
       onkeydown="javascript:navbarEvents.onKeydownLocation(event)">
-    <input id="nav-find-input"
+    <input
       type="text"
-      class="form-control hidden"
+      class="form-control nav-find-input hidden"
       placeholder="Find in page..."
       oninput="javascript:navbarEvents.onInputFind(event)"
       onkeydown="javascript:navbarEvents.onKeydownFind(event)">
   `
-
-  // register events
-  webviews.on('set-active', update)
-  webviews.on('did-start-loading', updateIfActive)
-  webviews.on('did-stop-loading', updateIfActive)
-  webviews.on('did-start-loading', hideInpageFind)
+  toolbarNavDiv.appendChild(el)
+  return el
 }
 
-export function focusLocation () {
-  document.querySelector('#nav-location-input').focus()
+export function focusLocation (page) {
+  var el = page.navbarEl.querySelector('.nav-location-input')
+  el.focus()
 }
 
-export function showInpageFind () {
+export function showInpageFind (page) {
   // show control and highlight text
-  var el = document.querySelector('#nav-find-input')
+  var el = page.navbarEl.querySelector('.nav-find-input')
   el.classList.remove('hidden')
   el.focus()
   el.select()
 
-  if (el.value) {
-    // init search if there's a value leftover
-    var wv = webviews.getActive()
-    if (wv && wv.dataset.isReady)
-      wv.findInPage(el.value)
-  }
+  // init search if there's a value leftover
+  if (el.value)
+    page.findInPage(el.value)
 }
 
-export function hideInpageFind () {
-  setVisible('#nav-find-input', false)
-  
-  var wv = webviews.getActive()
-  if (wv && wv.dataset.isReady)
-    wv.stopFindInPage('clearSelection')
+export function hideInpageFind (page) {
+  setVisible(page, '.nav-find-input', false)
+  page.stopFindInPage('clearSelection')
 }
 
-// internal update functions
-// =
+export function update (page) {
+  // update location
+  var addrEl = page.navbarEl.querySelector('.nav-location-input')
+  if (!addrEl.matches(':focus') || !addrEl.value) // only update if not focused, so we dont mess up what the user is doing
+    addrEl.value = page.getIntendedURL()
 
-function update () {
-  var wv = webviews.getActive()
-  if (wv && wv.dataset.isReady) {
-    // update location
-    var addrEl = document.querySelector('#nav-location-input')
-    addrEl.value = wv.getURL()
-
-    setBtnEnabled('#nav-back-btn', wv.canGoBack())
-    setBtnEnabled('#nav-forward-btn', wv.canGoForward())
-    setVisible('#nav-reload-btn', !wv.isLoading())
-    setVisible('#nav-cancel-btn', wv.isLoading())
-  }
-}
-
-function updateIfActive (e) {
-  if (e.target.dataset.isActive)
-    update(e)
+  setBtnEnabled(page, '.nav-back-btn', page.canGoBack())
+  setBtnEnabled(page, '.nav-forward-btn', page.canGoForward())
+  setVisible(page, '.nav-reload-btn', !page.isLoading())
+  setVisible(page, '.nav-cancel-btn', page.isLoading())
 }
 
 // internal helpers
 // =
 
-function setBtnEnabled (sel, b) {
+function setBtnEnabled (page, sel, b) {
   if (b)
-    document.querySelector(sel).classList.remove('btn-disabled')
+    page.navbarEl.querySelector(sel).classList.remove('btn-disabled')
   else
-    document.querySelector(sel).classList.add('btn-disabled')
+    page.navbarEl.querySelector(sel).classList.add('btn-disabled')
 }
 
-function setVisible (sel, b) {
+function setVisible (page, sel, b) {
   if (b)
-    document.querySelector(sel).classList.remove('hidden')
+    page.navbarEl.querySelector(sel).classList.remove('hidden')
   else
-    document.querySelector(sel).classList.add('hidden')
+    page.navbarEl.querySelector(sel).classList.add('hidden')
 }
 
 function toGoodUrl (str) {
@@ -124,30 +114,36 @@ function toGoodUrl (str) {
 // ui event handlers
 // =
 
+function getEventPage (e) {
+  for (var i=0; i < e.path.length; i++)
+    if (e.path[i].dataset && e.path[i].dataset.id)
+      return pages.getById(e.path[i].dataset.id)
+}
 window.navbarEvents = {
-  onClickBack: function () {
-    var wv = webviews.getActive()
-    if (wv && wv.dataset.isReady && wv.canGoBack())
-      wv.goBack()
+  onClickBack: function (e) {
+    var page = getEventPage(e)
+    if (page && page.canGoBack())
+      page.goBack()
   },
-  onClickForward: function () {
-    var wv = webviews.getActive()
-    if (wv && wv.dataset.isReady && wv.canGoForward())
-      wv.goForward()
+  onClickForward: function (e) {
+    var page = getEventPage(e)
+    if (page && page.canGoForward())
+      page.goForward()
   },
-  onClickReload: function () {
-    var wv = webviews.getActive()
-    if (wv && wv.dataset.isReady)
-      wv.reload()
+  onClickReload: function (e) {
+    var page = getEventPage(e)
+    if (page)
+      page.reload()
   },
-  onClickCancel: function () {
-    var wv = webviews.getActive()
-    if (wv && wv.dataset.isReady)
-      wv.stop()
+  onClickCancel: function (e) {
+    var page = getEventPage(e)
+    if (page)
+      page.stop()
   },
   onFocusLocation: function (e) {
-    var el = document.getElementById('nav-location-input')
-    el.select()
+    var page = getEventPage(e)
+    if (page)
+      page.navbarEl.querySelector('.nav-location-input').select()
   },
   onKeydownLocation: function (e) {
     // on enter
@@ -155,36 +151,48 @@ window.navbarEvents = {
       e.preventDefault()
       var url = e.target.value
 
-      var wv = webviews.getActive()
-      if (wv && wv.dataset.isReady)
-        wv.loadURL(toGoodUrl(url))
+      var page = getEventPage(e)
+      if (page) {
+        e.target.blur()
+        page.loadURL(toGoodUrl(url))
+      }
+    }
+
+    // on escape
+    if (e.keyCode == 27) {
+      e.target.blur()
+
+      // reset the URL if there is one
+      var page = getEventPage(e)
+      var addrEl = page.navbarEl.querySelector('.nav-location-input')
+      if (page && page.getIntendedURL())
+        addrEl.value = page.getIntendedURL()
     }
   },
   onInputFind: function (e) {
     var str = e.target.value
-    var wv = webviews.getActive()
-    if (wv && wv.dataset.isReady) {
-      if (str)
-        wv.findInPage(str)
-      else
-        wv.stopFindInPage('clearSelection')
+    var page = getEventPage(e)
+    if (page) {
+      if (str) page.findInPage(str)
+      else     page.stopFindInPage('clearSelection')
     }
   },
   onKeydownFind: function (e) {
     // on escape
-    if (e.keyCode == 27)
-      hideInpageFind()
+    if (e.keyCode == 27) {
+      var page = getEventPage(e)
+      if (page)
+        hideInpageFind(page)
+    }
 
     // on enter
     if (e.keyCode == 13) {
       var str = e.target.value
       var backwards = e.shiftKey // search backwords on shift+enter
-      var wv = webviews.getActive()
-      if (wv && wv.dataset.isReady) {
-        if (str)
-          wv.findInPage(str, { findNext: true, forward: !backwards })
-        else
-          wv.stopFindInPage('clearSelection')
+      var page = getEventPage(e)
+      if (page) {
+        if (str) page.findInPage(str, { findNext: true, forward: !backwards })
+        else     page.stopFindInPage('clearSelection')
       }
     }
   }

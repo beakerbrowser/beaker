@@ -8,8 +8,12 @@ body {
   height: 60px;
   border-bottom: 1px solid #999;
 
-  #toolbar-nav {
+  .toolbar-actions {
     display: flex;
+
+    &.hidden {
+      display: none;
+    }
 
     .form-control {
       flex: 1;

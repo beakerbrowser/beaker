@@ -1,10 +1,11 @@
-import * as webviews from '../webviews'
+import * as pages from '../pages'
 
 export function setup () {
-  webviews.on('update', updateTabs)
-  webviews.on('set-active', updateTabs)
-  webviews.on('dom-ready', updateTab)
-  webviews.on('page-title-updated', updateTab)
+  pages.on('update', updateTabs)
+  pages.on('set-active', updateTabs)
+  pages.on('did-start-loading', updateTab)
+  pages.on('did-stop-loading', updateTab)
+  pages.on('page-title-updated', updateTab)
 }
 
 // update functions
@@ -12,7 +13,7 @@ export function setup () {
 
 function updateTabs () {
   document.getElementById('toolbar-tabs').innerHTML = `
-    ${webviews.getAll().map(drawTab).join('')}
+    ${pages.getAll().map(drawTab).join('')}
     <div class="tab-item tab-item-fixed" onclick="javascript:tabsEvents.onClickNew(event)">
       <span class="icon icon-plus"></span>
     </div>
@@ -20,25 +21,34 @@ function updateTabs () {
 }
 
 function updateTab (e) {
-  var wv = e.target
-  document.querySelector('#toolbar-tabs .tab-item[data-id="'+wv.dataset.id+'"]').innerHTML = drawTabInner(wv)
+  var page = pages.getByWebview(e.target)
+  document.querySelector('#toolbar-tabs .tab-item[data-id="'+page.id+'"]').innerHTML = drawTabInner(page)
 }
 
 // render functions
 // =
 
-function drawTab (wv) {
-  var isActive = wv.dataset.isActive
-  return `<div class="tab-item${isActive ? ' active':''}" data-id="${wv.dataset.id}" onclick="javascript:tabsEvents.onClickTab(event)">
-    ${drawTabInner(wv)}
+function drawTab (page) {
+  var isActive = page.isActive
+  return `<div class="tab-item${isActive ? ' active':''}" data-id="${page.id}" onclick="javascript:tabsEvents.onClickTab(event)">
+    ${drawTabInner(page)}
   </div>`
 }
 
-function drawTabInner (wv) {
+function drawTabInner (page) {
+  // TODO loading icon
+  const loadingHtml = page.isLoading() ? '<strong>loading... </strong>' : ''
   return `
     <span class="icon icon-cancel icon-close-tab" onclick="javascript:tabsEvents.onClickTabClose(event)"></span>
-    <span class="tab-text">${wv.dataset.isReady ? wv.getTitle() : 'New tab'}</span>
+    <span class="tab-text">${loadingHtml}${page.getTitle() || 'New tab'}</span>
   `
+}
+
+// webview eventhandlers
+// =
+
+function onDidStartLoading (e) {
+  // TODO
 }
 
 // ui event handlers
@@ -46,17 +56,17 @@ function drawTabInner (wv) {
 
 window.tabsEvents = {
   onClickNew: function () {
-    var wv = webviews.create()
-    webviews.setActive(wv)
+    var page = pages.create()
+    pages.setActive(page)
   },
   onClickTab: function (e) {
-    var wv = webviews.getById(e.target.dataset.id)
-    if (wv)
-      webviews.setActive(wv)
+    var page = pages.getById(e.target.dataset.id)
+    if (page)
+      pages.setActive(page)
   },
   onClickTabClose: function (e) {
-    var wv = webviews.getById(e.target.parentNode.dataset.id)
-    if (wv)
-      webviews.remove(wv)
+    var page = pages.getById(e.target.parentNode.dataset.id)
+    if (page)
+      pages.remove(page)
   }
 }

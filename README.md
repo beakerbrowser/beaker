@@ -24,18 +24,18 @@ Just needs to get the job done, not a lot of features here
     - [ ] tabs
       - [x] basic
       - [x] tab titles
-      - [ ] switch the tabs to https://github.com/adamschwartz/chrome-tabs, because that feels so much nicer
       - [ ] tab favicons
       - [ ] tab pinning
       - [x] make sure tabs always begin loading, even if not active
       - [ ] change how webviews are hidden, so they dont have to relayout on select
     - [x] address bar
-      - [ ] indicate loading state
-      - [ ] ux needs work, value is slow to change, and will change while youre typing
+      - [x] indicate loading state
+      - [ ] improve valid URL detection (vs search query)
     - [ ] status bar
     - [ ] bookmark btn
   - builtin pages
     - [ ] start page (show bookmarks)
+    - [ ] load failure pages (did-fail-load)
   - inpage controls
     - [x] find ui
     - [ ] context menu

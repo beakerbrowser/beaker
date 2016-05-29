@@ -1,27 +1,31 @@
 import { ipcRenderer } from 'electron'
-import * as webviews from './webviews'
+import * as pages from './pages'
 import * as navbar from './ui/navbar'
 
 export function setup () {
   ipcRenderer.on('command', function (event, type, arg1) {
-    var wv = webviews.getActive()
+    var page = pages.getActive()
     switch (type) {
-      case 'file:new-tab':           return webviews.setActive(webviews.create(arg1))
-      case 'file:open-location':     return navbar.focusLocation()
-      case 'file:close-tab':         return webviews.remove(wv)
-      case 'file:reopen-closed-tab': return webviews.reopenLastRemoved()
-      case 'edit:find':              return navbar.showInpageFind()
-      case 'view:reload':            return wv.reload()
-      case 'view:hard-reload':       return wv.reloadIgnoringCache()
-      case 'view:zoom-in':           return wv.send('command', 'view:zoom-in')
-      case 'view:zoom-out':          return wv.send('command', 'view:zoom-out')
-      case 'view:zoom-reset':        return wv.send('command', 'view:zoom-reset')
-      case 'view:toggle-dev-tools':  return (wv.isDevToolsOpened()) ? wv.closeDevTools() : wv.openDevTools()
-      case 'history:back':           return wv.goBack()
-      case 'history:forward':        return wv.goForward()
-      case 'window:next-tab':        return webviews.changeActiveBy(1)
-      case 'window:prev-tab':        return webviews.changeActiveBy(-1)
-      case 'set-tab':                return webviews.changeActiveTo(arg1)
+      case 'file:new-tab':           
+        var page = pages.create(arg1)
+        pages.setActive(page)
+        navbar.focusLocation(page)
+        return
+      case 'file:open-location':     return navbar.focusLocation(page)
+      case 'file:close-tab':         return pages.remove(page)
+      case 'file:reopen-closed-tab': return pages.reopenLastRemoved()
+      case 'edit:find':              return navbar.showInpageFind(page)
+      case 'view:reload':            return page.reload()
+      case 'view:hard-reload':       return page.reloadIgnoringCache()
+      case 'view:zoom-in':           return page.send('command', 'view:zoom-in')
+      case 'view:zoom-out':          return page.send('command', 'view:zoom-out')
+      case 'view:zoom-reset':        return page.send('command', 'view:zoom-reset')
+      case 'view:toggle-dev-tools':  return (page.isDevToolsOpened()) ? page.closeDevTools() : page.openDevTools()
+      case 'history:back':           return page.goBack()
+      case 'history:forward':        return page.goForward()
+      case 'window:next-tab':        return pages.changeActiveBy(1)
+      case 'window:prev-tab':        return pages.changeActiveBy(-1)
+      case 'set-tab':                return pages.changeActiveTo(arg1)
     }
   })
 }

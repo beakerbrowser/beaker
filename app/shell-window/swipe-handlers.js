@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron'
-import * as webviews from './webviews'
+import * as pages from './pages'
 
 var SWIPE_TRIGGER_DIST = 400 // how far do you need to travel to trigger the navigation
 var ARROW_OFF_DIST = 80 // how far off-screen are the arrows
@@ -59,12 +59,12 @@ export function setup () {
 
       // trigger navigation
       if (shouldGoBack()) {
-        var wv = webviews.getActive()
-        if (wv) wv.goBack()
+        var page = pages.getActive()
+        if (page) page.goBack()
       }
       if (shouldGoForward()) {
-        var wv = webviews.getActive()
-        if (wv) wv.goForward()
+        var page = pages.getActive()
+        if (page) page.goForward()
       }
 
       // reset arrows
