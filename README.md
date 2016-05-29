@@ -37,7 +37,7 @@ Just needs to get the job done, not a lot of features here
       - [ ] change how webviews are hidden, so they dont have to relayout on select
     - [x] address bar
       - [x] indicate loading state
-      - [ ] improve valid URL detection (vs search query)
+      - [x] improve valid URL detection (vs search query)
     - [ ] status bar
     - [ ] bookmark btn
   - builtin pages

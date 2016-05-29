@@ -1,4 +1,8 @@
 import * as pages from '../pages'
+import * as url from 'url'
+import * as path from 'path'
+import * as tld from 'tld'
+tld.defaultFile = path.join(__dirname, '../tlds.dat')
 
 // globals
 // =
@@ -96,19 +100,49 @@ function setVisible (page, sel, b) {
     page.navbarEl.querySelector(sel).classList.add('hidden')
 }
 
-function toGoodUrl (str) {
-  // see if it works as-is
-  try { return (new URL(str)).toString() }
-  catch (e) {}
+// thanks ogd (from tabby)
+function toGoodUrl (href, cb) {
+  var original = href
 
-  // if it looks like a url, try adding https://
-  if (str.indexOf('.') !== -1) {
-    try { return (new URL('https://'+str)).toString() }
-    catch (e) {}
+  // if there's a space in the URL, assume it's a search
+  if (href.indexOf(' ') > -1)
+    return search(href)
+
+  // if there's a protocol, assume it's a link
+  var parsed = url.parse(href)
+  if (parsed.protocol)
+    return cb(href)
+
+  // default protocol to https
+  href = 'https://' + href
+  parsed = url.parse(href)
+
+  // check against tdls.dat
+  var validTld = tld.registered(parsed.hostname)
+  if (validTld && href.indexOf('.') > -1)
+    return cb(href)
+
+  // ok, so there doesnt *appear* to be a good TLD in the hostname
+  // but, the device may have hostnames in /etc/hosts without TLDs
+  // simple solution: try a dns lookup, and abort in 250ms
+  // if there's an /etc/hosts entry, the DNS lookup should succeed before 250ms passes
+  var queryFinished = false
+  setTimeout(function () {
+    if (queryFinished) return
+    queryFinished = true
+    search(original)
+  }, 250)
+
+  dns.lookup(parsed.hostname, function (err, address) {
+    if (queryFinished) return
+    queryFinished = true
+    if (err) return search(original)
+    else cb(href)
+  })
+
+  function search (href) {
+    cb('https://duckduckgo.com/?q=' + href.split(' ').join('+'))
   }
-
-  // ok then, search for it
-  return 'https://duckduckgo.com/?q='+encodeURIComponent(str)
 }
 
 // ui event handlers
@@ -154,7 +188,7 @@ window.navbarEvents = {
       var page = getEventPage(e)
       if (page) {
         e.target.blur()
-        page.loadURL(toGoodUrl(url))
+        toGoodUrl(url, url => page.loadURL(url))
       }
     }
 
