@@ -29,12 +29,12 @@ If you have tech that needs a browser, make a fork, open an issue, try out your 
 
 ### planned integrations
 
-#### dat [link](http://dat-data.com/)
+#### dat ([link](http://dat-data.com/))
 
 Dat provides a data layer that is addressable across hosts, using public keys (for append-only logs) and hash-addresses (for file archives).
 It discovers peers with the Bittorrent DHT, centralized DNS servers and Multicast DNS simultaneously.
 
-[how dat works](https://dat-data.readthedocs.io/en/latest/how-dat-works/)
+([how dat works](https://dat-data.readthedocs.io/en/latest/how-dat-works/))
 
  - [hyperdrive](https://www.npmjs.com/package/hyperdrive) - The file sharing network dat uses to distribute files and data. A technical specification / discussion on how hyperdrive works is [available here](https://github.com/mafintosh/hyperdrive/blob/master/SPECIFICATION.md)
  - [hypercore](https://www.npmjs.com/package/hypercore) - exchange low-level binary blocks with many sources
@@ -43,20 +43,16 @@ It discovers peers with the Bittorrent DHT, centralized DNS servers and Multicas
  - [bittorrent-dht](https://www.npmjs.com/package/bittorrent-dht) - use the Kademlia Mainline DHT to discover sources
  - [dns-discovery](https://www.npmjs.com/package/dns-discovery) - use DNS name servers and Multicast DNS to discover sources
 
-#### libsodium [link](https://github.com/jedisct1/libsodium)
+#### libsodium ([link](https://github.com/jedisct1/libsodium))
 
 Sodium is a modern and easy-to-use crypto library.
 Beaker will use [node-sodium](https://github.com/paixaop/node-sodium) bindings to import the API into the JS environment.
 
 ### proposed integrations
 
-#### keybase
-
-[Discussion](./doc/discuss-notes/0001-keybase.md)
-
-#### SQLite
-
-#### node `fs` module
+ - keybase ([discussion](./doc/discuss-notes/0001-keybase.md))
+ - SQLite
+ - node `fs` module
 
 ## todo list
 
