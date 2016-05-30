@@ -3,7 +3,7 @@ beaker browser
 
 This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
-May contain unstable compounds.
+It may contain unstable compounds.
 
 ![screenshot.png](screenshot.png)
 
@@ -25,12 +25,11 @@ npm start
 
 ## tech integrations
 
-If you have tech that needs a browser, submit a PR.
-Make a fork, open an issue, try out your integration, and/or PR back to here.
+If you have tech that needs a browser, make a fork, open an issue, try out your integration, and PR back to here.
 
 ### planned integrations
 
-#### [dat](http://dat-data.com/) (hyperdrive/hypercore)
+#### dat [link](http://dat-data.com/)
 
 Dat provides a data layer that is addressable across hosts, using public keys (for append-only logs) and hash-addresses (for file archives).
 It discovers peers with the Bittorrent DHT, centralized DNS servers and Multicast DNS simultaneously.
@@ -44,7 +43,7 @@ It discovers peers with the Bittorrent DHT, centralized DNS servers and Multicas
  - [bittorrent-dht](https://www.npmjs.com/package/bittorrent-dht) - use the Kademlia Mainline DHT to discover sources
  - [dns-discovery](https://www.npmjs.com/package/dns-discovery) - use DNS name servers and Multicast DNS to discover sources
 
-#### [libsodium](https://github.com/jedisct1/libsodium)
+#### libsodium [link](https://github.com/jedisct1/libsodium)
 
 Sodium is a modern and easy-to-use crypto library.
 Beaker will use [node-sodium](https://github.com/paixaop/node-sodium) bindings to import the API into the JS environment.

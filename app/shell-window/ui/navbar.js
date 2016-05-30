@@ -2,7 +2,7 @@ import * as pages from '../pages'
 import * as url from 'url'
 import * as path from 'path'
 import * as tld from 'tld'
-tld.defaultFile = path.join(__dirname, '../tlds.dat')
+// tld.defaultFile = path.join(__dirname, '../tlds.dat')
 
 // globals
 // =
