@@ -3,25 +3,63 @@ beaker browser
 
 This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
-It's semi-compatible with the Web.
-It's not stable.
+May contain unstable compounds.
 
 ![screenshot.png](screenshot.png)
 
-## new tech welcome
+## building and project structure
 
-If you have tech that needs a browser, make a fork, try out your integration, and PR back to here.
-I'll add and remove APIs, to make sure new ideas get a shot.
-(But, if something's not working, I'll remove it.)
+```
+git clone https://github.com/pfraze/beaker-browser.git
+cd beaker-browser
+npm install
+npm start
+```
 
-Application devs: I'll communicate about what APIs are coming and going, but major versions will be breaking.
+[Lots of dev instructions and notes here](./build-notes.md)
 
 ## discussion
 
  - [Keybase, global userids and pubkey certs](./doc/discuss-notes/0001-keybase.md). An argument for integrating keybase.
  - [Hyperboot, application delivery safety](./doc/discuss-notes/0002-hyperboot.md).
 
-## plans
+## tech integrations
+
+If you have tech that needs a browser, submit a PR.
+Make a fork, open an issue, try out your integration, and/or PR back to here.
+
+### planned integrations
+
+#### [dat](http://dat-data.com/) (hyperdrive/hypercore)
+
+Dat provides a data layer that is addressable across hosts, using public keys (for append-only logs) and hash-addresses (for file archives).
+It discovers peers with the Bittorrent DHT, centralized DNS servers and Multicast DNS simultaneously.
+
+[how dat works](https://dat-data.readthedocs.io/en/latest/how-dat-works/)
+
+ - [hyperdrive](https://www.npmjs.com/package/hyperdrive) - The file sharing network dat uses to distribute files and data. A technical specification / discussion on how hyperdrive works is [available here](https://github.com/mafintosh/hyperdrive/blob/master/SPECIFICATION.md)
+ - [hypercore](https://www.npmjs.com/package/hypercore) - exchange low-level binary blocks with many sources
+ - [discovery-channel](https://www.npmjs.com/package/discovery-channel) - discover data sources
+ - [discovery-swarm](https://www.npmjs.com/package/discovery-swarm) - discover and connect to sources
+ - [bittorrent-dht](https://www.npmjs.com/package/bittorrent-dht) - use the Kademlia Mainline DHT to discover sources
+ - [dns-discovery](https://www.npmjs.com/package/dns-discovery) - use DNS name servers and Multicast DNS to discover sources
+
+#### [libsodium](https://github.com/jedisct1/libsodium)
+
+Sodium is a modern and easy-to-use crypto library.
+Beaker will use [node-sodium](https://github.com/paixaop/node-sodium) bindings to import the API into the JS environment.
+
+### proposed integrations
+
+#### keybase
+
+[Discussion](./doc/discuss-notes/0001-keybase.md)
+
+#### SQLite
+
+#### node `fs` module
+
+## todo list
 
 ### basic ui
 
@@ -88,8 +126,7 @@ should work across devices
 
 ### cross-host data publishing
 
-we need a data layer that is addressable and manipulable across different hosts.
-the way to do this is to use cryptographic references: sha256 URIs (for static content) and pubkey URIs (for dynamic content)
+we need a data layer that is addressable and manipulable across different hosts. the way to do this is to use cryptographic references: sha256 URIs (for static content) and pubkey URIs (for dynamic content)
 
 https://github.com/mafintosh/hypercore
 and
@@ -108,19 +145,6 @@ provide 2 data types (feeds, files) and include p2p syncing protocols
  - [ ] local filesystem API
  - [ ] remote filesystem API (ldap?)
  - [ ] sqlite API
-
-
-## building and project structure
-
-```
-git clone https://github.com/pfraze/beaker-browser.git
-cd beaker-browser
-npm install
-npm start
-```
-
-[Lots of dev instructions and notes here](./build-notes.md)
-
 
 ## license
 
