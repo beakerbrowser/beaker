@@ -6,18 +6,13 @@ body {
 }
 
 // draggable region for OSX
-#darwin-titlebar {
-  height: 22px;
-  display: none;
-  -webkit-user-select: none;
-  -webkit-app-region: drag;
-}
-body.darwin #darwin-titlebar {
+body.darwin #toolbar {
   display: block;
+  -webkit-app-region: drag;
 }
 
 #toolbar {
-  height: 62px;
+  height: 64px;
   border-bottom: 1px solid #999;
 
   .toolbar-actions {
@@ -35,6 +30,7 @@ body.darwin #darwin-titlebar {
       padding: 0px 10px;
       font-size: 14px;
       line-height: 1.1;
+      -webkit-app-region: no-drag;
     }
     .btn .icon {
       width: 20px;
@@ -60,21 +56,27 @@ body.darwin #darwin-titlebar {
         white-space: pre;
       }
 
+      // put close icon on right
+      .icon {
+        left: auto;
+        right: 5px;
+      }
+
       // visual adjustments
       padding: 3px 22px; 
       border-top: 1px solid #989698;
       border-bottom: 1px solid #989698;
       &.active {
-        background-image: linear-gradient(to bottom, #E2E0E2 0, #D8D6D8 100%);
+        background: none;
         border-top: 0;
         border-bottom: 0;
       }
     }
   }
 }
-
-body.darwin #toolbar {
-  height: 85px; // make room for the title bar
+// make space for headlights on osx
+body.darwin #toolbar #toolbar-tabs .tab-item:first-child {
+  padding-left: 70px;
 }
 
 .window-blurred {
@@ -117,10 +119,6 @@ body.darwin #toolbar {
       height: 0px;
     }
   }
-}
-body.darwin #webviews {
-  // make room for the title bar
-  height: ~"calc(100vh - 85px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing  
 }
 
 #left-swipe-arrow, #right-swipe-arrow {
