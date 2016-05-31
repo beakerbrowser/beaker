@@ -2,7 +2,6 @@
 
 With new protocols in the works, it's tempting to create platforms that completely ditch HTTP/S in favor of something new.
 Beaker is not going to do this.
-HTTP is a connection to legacy software.
 There's no reason to take a hardline stance against all hosted software.
 This would only hurt users, and make software development more difficult.
 

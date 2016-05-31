@@ -3,7 +3,6 @@ beaker browser
 
 This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
-It may contain unstable compounds.
 
 ![screenshot.png](screenshot.png)
 

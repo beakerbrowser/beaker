@@ -10,13 +10,11 @@ To trust an application, we need to:
 [Hyperboot](https://github.com/substack/hyperboot) is a versioned application distributor built on [Hypercore](https://github.com/mafintosh/hypercore) and [Hyperdrive](https://github.com/mafintosh/hyperdrive).
 Hypercore/drive are beaker's cross-host (p2p) publishing protocols, for append-only logs and file-archives, respectively.
 
-Hyperboot uses a log to announce the versions, and the file-archive to sync the actual files.
-It identifies applications by the log's public key.
-Applications delivered with hyperboot are therefore versioned and verified.
-Chromium, which beaker is built on, supports Content-Security-Policy, which will protect against injections at runtime.
+Hyperboot uses a hypercore log to announce the versions, and hyperdrive to sync the actual files.
+Applications delivered with hyperboot are therefore versioned, signed, and verified.
+Content-Security-Policies will protect against injections at runtime.
 
 Auditing is a social problem in addition to a technical problem.
 For auditing to be meaningful, new versions need to be reviewed by independent 3rd parties, and checked for bad behavior.
-Hyperboot's pubkeys and version-hashes provide cross-host identifiers, which auditors can sign against.
+Hyperboot's pubkeys and version-hashes are identifiers which auditors can sign against.
 However, deciding which auditors to *trust* is a hard (social) problem.
-It may be a good idea to push audits into the application space, for sites/apps to solve, and then provide some API for the auditing solutions to accept new versions.
