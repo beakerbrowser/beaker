@@ -1,5 +1,6 @@
 import EventEmitter from 'events'
 import * as navbar from './ui/navbar'
+import * as statusBar from './ui/status-bar'
 
 const DEFAULT_URL = 'https://github.com'
 
@@ -266,12 +267,13 @@ function onDidFailLoad (e) {
   }
 }
 
-function onIpcMessage (e, type, arg1, arg2) {
+function onIpcMessage (e, type) {
   var page = getByWebview(e.target)
   if (page) {
     switch (e.channel) {
       case 'new-tab':         return create(e.args[0])
       case 'inspect-element': return page.webviewEl.inspectElement(e.args[0], e.args[1])
+      case 'set-status-bar':  return statusBar.set(e.args[0])
     }
   }
 }

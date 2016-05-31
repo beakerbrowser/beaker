@@ -71,7 +71,7 @@ Just needs to get the job done, not a lot of features here
     - [x] address bar
       - [x] indicate loading state
       - [x] improve valid URL detection (vs search query)
-    - [ ] status bar
+    - [x] status bar
     - [ ] bookmark btn
   - builtin pages
     - [ ] start page (show bookmarks)
