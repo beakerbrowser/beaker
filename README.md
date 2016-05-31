@@ -20,8 +20,9 @@ npm start
 
 ## discussion
 
- - [Keybase, global userids and pubkey certs](./doc/discuss-notes/0001-keybase.md). An argument for integrating keybase.
- - [Hyperboot, application delivery safety](./doc/discuss-notes/0002-hyperboot.md).
+ - [0001 Keybase, global userids and pubkey certs](./doc/discuss-notes/0001-keybase.md). An argument for integrating keybase.
+ - [0002 Hyperboot, application delivery safety](./doc/discuss-notes/0002-hyperboot.md).
+ - [0003 HTTP legacy](./doc/discuss-notes/0003-http-legacy.md). The argument for continuing to support HTTP/S.
 
 ## tech integrations
 
