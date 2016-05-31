@@ -4,6 +4,8 @@ beaker browser
 This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
 
+Please feel free to open usability issues.
+
 ![screenshot.png](screenshot.png)
 
 ## building and project structure
@@ -53,45 +55,31 @@ Beaker will use [node-sodium](https://github.com/paixaop/node-sodium) bindings t
  - keybase ([discussion](./doc/discuss-notes/0001-keybase.md))
  - SQLite
  - node `fs` module
+ - matrix ([matrix-js-sdk](https://www.npmjs.com/package/matrix-js-sdk), [homepage](https://matrix.org/))
 
 ## todo list
 
 ### basic ui
 
-Just needs to get the job done, not a lot of features here
+Basic browsing UI.
+Please feel free to open usability issues.
 
-  - browser controls
-    - [x] nav btns: Back, Forward, Refresh
-    - [ ] tabs
-      - [x] basic
-      - [x] tab titles
-      - [ ] tab favicons
-      - [ ] tab pinning
-      - [ ] change how webviews are hidden, so they dont have to relayout on select
-    - [x] address bar
-      - [x] indicate loading state
-      - [x] improve valid URL detection (vs search query)
-    - [x] status bar
-    - [ ] bookmark btn
+  - tabs
+    - [ ] favicons
+    - [ ] reordering
+    - [ ] pinning
+  - webview behaviors
+    - [ ] change how webviews are hidden, so they dont have to relayout on select
+    - [ ] restore scroll-position on back btn
+    - [ ] restore session history on "re-open closed tab"
+    - [ ] persist zoom on domains
+  - [ ] bookmarking
   - builtin pages
     - [ ] start page (show bookmarks)
     - [ ] load failure pages (did-fail-load)
-  - inpage controls
-    - [x] find ui
-    - [x] context menu
-      - [ ] save image as...
-      - [ ] video/audio element controls
-    - [x] open-in-new-tab (ctrl/cmd+click)
-  - input
-    - [x] keybindings / app menu
-      - [x] basic
-      - [x] reopen-closed-tab
-        - [ ] restore session history as well as the URL
-      - [x] open-file
-      - [x] cmd/ctrl+1-9 to switch tab
-      - [x] page zoom
-        - [ ] persist zoom as a domain setting
-    - [x] swipe gestures
+  - context menu
+    - [ ] save image as...
+    - [ ] video/audio element controls
 
 ### privacy, security
 
@@ -132,7 +120,7 @@ provide 2 data types (feeds, files) and include p2p syncing protocols
 
 ### peer-to-peer messaging layer
 
- - [ ] webrtc signalling. needs to integrate with user identity layer, so channels can be opened using another user's ID.
+ - [ ] webrtc signalling. needs to integrate with user identity layer, so channels can be opened using another user's ID. (matrix protocol?)
  - [ ] mail protocol. SMTP? not sure.
 
 ### user storage
