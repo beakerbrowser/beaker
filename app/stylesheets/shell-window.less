@@ -4,8 +4,20 @@ body {
   margin: 0;
   padding: 0;
 }
+
+// draggable region for OSX
+#darwin-titlebar {
+  height: 22px;
+  display: none;
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+}
+body.darwin #darwin-titlebar {
+  display: block;
+}
+
 #toolbar {
-  height: 60px;
+  height: 62px;
   border-bottom: 1px solid #999;
 
   .toolbar-actions {
@@ -15,12 +27,20 @@ body {
       display: none;
     }
 
-    .form-control {
+    input.form-control {
       flex: 1;
       box-shadow: inset 0px 1px 1px rgba(0,0,0,.25);
       border: 1px solid #B3B1B3;
       border-radius: 3px;
-      padding: 0 10px;
+      padding: 0px 10px;
+      font-size: 14px;
+      line-height: 1.1;
+    }
+    .btn .icon {
+      width: 20px;
+      height: 18px;
+      font-size: 17px;
+      line-height: 1.1;
     }
 
     .nav-find-input {
@@ -28,20 +48,35 @@ body {
     }
   }
   #toolbar-tabs {
+    margin: 0;
+    border: 0;
+
     .tab-item {
       // we want to keep tabs equal width, and overflow the text
       min-width: 0; // this seems to force the sizing behavior we want
       overflow: hidden;
       text-overflow: ellipsis;
-
-      padding: 3px 22px;
-
       .tab-text {
         white-space: pre;
+      }
+
+      // visual adjustments
+      padding: 3px 22px; 
+      border-top: 1px solid #989698;
+      border-bottom: 1px solid #989698;
+      &.active {
+        background-image: linear-gradient(to bottom, #E2E0E2 0, #D8D6D8 100%);
+        border-top: 0;
+        border-bottom: 0;
       }
     }
   }
 }
+
+body.darwin #toolbar {
+  height: 85px; // make room for the title bar
+}
+
 .window-blurred {
   // when the window isnt focused, lighten the toolbar
   #toolbar {
@@ -57,14 +92,14 @@ body {
   }
   .tab-item {
     background: #e0e0e0;
-    border-color: #ccc;
+    border-color: #ccc !important;
     &.active {
-      background: #eee;
+      background: #eee !important;
     }
   }
 }
 #webviews {
-  height: ~"calc(100vh - 61px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
+  height: ~"calc(100vh - 62px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
   position: relative;
 
   webview {
@@ -82,6 +117,10 @@ body {
       height: 0px;
     }
   }
+}
+body.darwin #webviews {
+  // make room for the title bar
+  height: ~"calc(100vh - 85px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing  
 }
 
 #left-swipe-arrow, #right-swipe-arrow {

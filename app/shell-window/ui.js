@@ -2,6 +2,10 @@ import { ipcRenderer } from 'electron'
 import * as tabs from './ui/tabs'
 
 export function setup () {
+  if (process.platform == 'darwin') {
+    document.body.classList.add('darwin')
+  }
+
   tabs.setup()
   ipcRenderer.on('window-event', onWindowEvent)
 }

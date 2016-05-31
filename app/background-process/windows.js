@@ -13,7 +13,7 @@ export function setup () {
 
 export function createShellWindow () {
   // create window
-  var win = new BrowserWindow({})
+  var win = new BrowserWindow({ titleBarStyle: 'hidden' })
   loadURL(win, 'file://'+path.join(__dirname, 'shell-window.html'))
 
   // register shortcuts
