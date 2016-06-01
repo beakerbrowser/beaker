@@ -11,8 +11,8 @@ Please feel free to open usability issues.
 ## building and project structure
 
 ```
-git clone https://github.com/pfraze/beaker-browser.git
-cd beaker-browser
+git clone https://github.com/pfraze/beaker.git
+cd beaker
 npm install
 npm start
 ```
@@ -22,6 +22,7 @@ npm start
 ## discussion
 
  - [0001 Keybase, global userids and pubkey certs](./doc/discuss-notes/0001-keybase.md). An argument for integrating keybase.
+   - Related video: [BlackHat USA 2011: SSL And The Future Of Authenticity](https://www.youtube.com/watch?v=Z7Wl2FW2TcA). Discusses problems with the CA model of authentication, and suggests using network "notaries" to validate certificates.
  - [0002 Hyperboot, application delivery safety](./doc/discuss-notes/0002-hyperboot.md).
  - [0003 HTTP legacy](./doc/discuss-notes/0003-http-legacy.md). The argument for continuing to support HTTP/S.
 
