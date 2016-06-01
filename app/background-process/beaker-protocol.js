@@ -9,8 +9,8 @@ export function setup () {
     // FIXME find a way to properly serve the assets
     if (request.url == 'beaker:start.js')
       return cb(path.join(__dirname, 'builtin-pages/start.js'))
-    if (request.url == 'beaker:css')
-      return cb(path.join(__dirname, 'stylesheets/shell-window.css'))
+    if (request.url == 'beaker:start.css')
+      return cb(path.join(__dirname, 'stylesheets/builtin-pages/start.css'))
     if (request.url == 'beaker:font')
       return cb(path.join(__dirname, 'fonts/photon-entypo.woff'))
     return cb(-6)

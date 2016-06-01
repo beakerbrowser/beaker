@@ -3,19 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Beaker</title>
-  <link rel="stylesheet" href="beaker:css">
-  <style>
-  /* TODO move into style file */
-  @font-face {
-    font-family: "photon-entypo";
-    src: url("beaker:font") format("woff");
-    font-weight: normal;
-    font-style: normal;
-  }
-  .table-striped tr .secondary-column {
-    color: #999;
-  }
-  </style>
+  <link rel="stylesheet" href="beaker:start.css">
 </head>
 <body>
   <div class="window">
@@ -23,15 +11,15 @@
       <div class="pane-group">
         <div class="pane pane-sm sidebar">
           <nav class="nav-group">
-            <h5 class="nav-group-title">Start</h5>
+            <h5 class="nav-group-title">Bookmarks</h5>
             <a class="nav-group-item active">
               <span class="icon icon-star"></span>
-              Favorites
+              All My Bookmarks
             </a>
           </nav>
         </div>
         <div class="pane">
-          <table id="bookmarks" class="table-striped">
+          <table class="bookmarks table-striped">
             <thead>
               <tr>
                 <th>Name</th>

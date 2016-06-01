@@ -69,11 +69,17 @@ gulp.task('bundle', ['clean'], bundleTask);
 gulp.task('bundle-watch', bundleTask);
 
 
-var lessTask = function () {
-  return gulp.src('app/stylesheets/shell-window.less')
+var buildLess = function (src, dest) {
+  return gulp.src(src)
     .pipe(plumber())
     .pipe(less())
-    .pipe(gulp.dest(destDir.path('stylesheets')));
+    .pipe(gulp.dest(dest));
+}
+var lessTask = function () {
+  return  Q.all([
+    buildLess('app/stylesheets/shell-window.less', destDir.path('stylesheets')),
+    buildLess('app/stylesheets/builtin-pages/start.less', destDir.path('stylesheets/builtin-pages'))
+  ])
 };
 gulp.task('less', ['clean'], lessTask);
 gulp.task('less-watch', lessTask);
