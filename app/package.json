@@ -9,7 +9,8 @@
   "dependencies": {
     "electron-localshortcut": "^0.6.0",
     "fs-jetpack": "^0.9.0",
-    "tld": "0.0.2"
+    "tld": "0.0.2",
+    "yo-yo": "^1.2.1"
   },
   "packageNameTemplate": "{{name}}-v{{version}}-{{platform}}-{{arch}}",
   "osx": {

@@ -28,6 +28,7 @@ body.darwin #toolbar {
       border: 1px solid #B3B1B3;
       border-radius: 3px;
       padding: 0px 10px;
+      margin-right: 3px;
       font-size: 14px;
       line-height: 1.1;
       -webkit-app-region: no-drag;
@@ -37,10 +38,6 @@ body.darwin #toolbar {
       height: 18px;
       font-size: 17px;
       line-height: 1.1;
-    }
-
-    .nav-find-input {
-      margin-left: 3px;
     }
   }
   #toolbar-tabs {
@@ -164,6 +161,6 @@ body.darwin #toolbar #toolbar-tabs .tab-item:first-child {
   display: none;
 }
 
-.btn-disabled .icon {
+.btn-disabled .icon, .btn[disabled] .icon {
   color: #aaa;
 }

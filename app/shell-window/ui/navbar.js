@@ -44,6 +44,11 @@ export function createEl (id) {
       placeholder="Find in page..."
       oninput="javascript:navbarEvents.onInputFind(event)"
       onkeydown="javascript:navbarEvents.onKeydownFind(event)">
+    <div>
+      <button class="nav-favorite-btn btn btn-default" disabled onclick="javascript:navbarEvents.onClickBack(event)">
+        <span class="icon icon-star-empty"></span>
+      </button>
+    </div>
   `
   toolbarNavDiv.appendChild(el)
   return el

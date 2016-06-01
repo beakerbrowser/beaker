@@ -6,4 +6,4 @@ import { setup as setupSwipeHandlers } from './shell-window/swipe-handlers'
 setupUI()
 setupCommandHandlers()
 setupSwipeHandlers()
-pages.create('http://localhost:1234')
+pages.create('beaker:start')

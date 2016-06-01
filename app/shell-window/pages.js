@@ -2,7 +2,7 @@ import EventEmitter from 'events'
 import * as navbar from './ui/navbar'
 import * as statusBar from './ui/status-bar'
 
-const DEFAULT_URL = 'https://github.com'
+const DEFAULT_URL = 'beaker:start'
 
 // globals
 // =
@@ -43,10 +43,10 @@ export function create (url) {
 
     // wrap webview loadURL to set the `loadingURL`
     loadURL: function (url) {
-      if (page.isWebviewReady) {
+      // if (page.isWebviewReady) {
         page.loadingURL = url
         page.webviewEl.loadURL(url)
-      }
+      // }
     }
   }
   pages.push(page)

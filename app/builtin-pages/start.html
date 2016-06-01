@@ -1,8 +1,48 @@
 <!doctype html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Beaker</title>
+  <meta charset="utf-8">
+  <title>Beaker</title>
+  <link rel="stylesheet" href="beaker:css">
+  <style>
+  /* TODO move into style file */
+  @font-face {
+    font-family: "photon-entypo";
+    src: url("beaker:font") format("woff");
+    font-weight: normal;
+    font-style: normal;
+  }
+  .table-striped tr .secondary-column {
+    color: #999;
+  }
+  </style>
 </head>
-<body>start page!</body>
+<body>
+  <div class="window">
+    <div class="window-content">
+      <div class="pane-group">
+        <div class="pane pane-sm sidebar">
+          <nav class="nav-group">
+            <h5 class="nav-group-title">Start</h5>
+            <a class="nav-group-item active">
+              <span class="icon icon-star"></span>
+              Favorites
+            </a>
+          </nav>
+        </div>
+        <div class="pane">
+          <table id="bookmarks" class="table-striped">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Address</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="beaker:start.js"></script>
+</body>
 </html>

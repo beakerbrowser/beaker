@@ -4,6 +4,8 @@ var pathUtil = require('path');
 var jetpack = require('fs-jetpack');
 var rollup = require('rollup');
 var Q = require('q');
+var browserify = require('browserify');
+var intoStream = require('into-stream');
 
 var nodeBuiltInModules = ['assert', 'buffer', 'child_process', 'cluster',
   'console', 'constants', 'crypto', 'dgram', 'dns', 'domain', 'events',
@@ -22,7 +24,7 @@ var generateExternalModulesList = function () {
   return [].concat(nodeBuiltInModules, electronBuiltInModules, npmModulesUsedInApp());
 };
 
-module.exports = function (src, dest) {
+module.exports = function (src, dest, opts) {
   var deferred = Q.defer();
 
   rollup.rollup({
@@ -35,13 +37,29 @@ module.exports = function (src, dest) {
       sourceMap: true,
       sourceMapFile: jsFile,
     });
-    // Wrap code in self invoking function so the variables don't
-    // pollute the global namespace.
-    var isolatedCode = '(function () {' + result.code + '\n}());';
-    return Q.all([
-        jetpack.writeAsync(dest, isolatedCode + '\n//# sourceMappingURL=' + jsFile + '.map'),
-        jetpack.writeAsync(dest + '.map', result.map.toString()),
-      ]);
+
+    if (opts && opts.browserify) {
+      // Browserify the code
+      var b = browserify(intoStream(result.code), { basedir: opts.basedir });
+      var deferred2 = Q.defer();
+      b.bundle(function (err, bundledCode) {
+        if (err) deferred2.reject(err)
+        else {
+          jetpack.writeAsync(dest, bundledCode)
+            .then(function () { deferred2.resolve() })
+            .catch(function (err) { deferred2.reject(err) })
+        }
+      });
+      return deferred2.promise;
+    } else {
+      // Wrap code in self invoking function so the variables don't
+      // pollute the global namespace.
+      var isolatedCode = '(function () {' + result.code + '\n}());';
+      return Q.all([
+          jetpack.writeAsync(dest, isolatedCode + '\n//# sourceMappingURL=' + jsFile + '.map'),
+          jetpack.writeAsync(dest + '.map', result.map.toString()),
+        ]);
+    }
   }).then(function () {
     deferred.resolve();
   }).catch(function (err) {

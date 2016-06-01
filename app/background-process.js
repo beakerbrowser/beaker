@@ -6,6 +6,7 @@
 import { app, Menu } from 'electron'
 import * as windows from './background-process/windows'
 import buildMenu from './background-process/window-menu'
+import * as beakerProtocol from './background-process/beaker-protocol'
 import env from './env';
 
 var mainWindow;
@@ -13,10 +14,11 @@ var mainWindow;
 app.on('ready', function () {
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenu(env)));
   windows.setup()
-});
+  beakerProtocol.setup()
+})
 
 app.on('window-all-closed', function () {
   // it's normal for OSX apps to stay open, even if all windows are closed
   // but, since we have an uncloseable tabs bar, let's close when they're all gone
-  app.quit();
-});
+  app.quit()
+})
