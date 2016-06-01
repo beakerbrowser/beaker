@@ -45,6 +45,15 @@ tr:active {
       display: block;
     }
 
+    // make the actions compact, and hidden except on hover
+    &.actions {
+      width: 40px;
+      .icon {
+        display: none;
+        cursor: pointer;
+      }
+    }
+
     // make the input fit nicely and take the full width possible
     input {
       width: 100%;
@@ -53,6 +62,12 @@ tr:active {
       &:focus {
         outline: 0;
       }
+    }
+  }
+  tr:hover td.actions {
+    // show icons on row hover
+    .icon {
+      display: inline;
     }
   }
 }

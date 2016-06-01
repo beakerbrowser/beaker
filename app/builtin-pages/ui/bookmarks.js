@@ -41,8 +41,13 @@ function render () {
 
       // render row
       return yo`<tr>
-        <td onclick=${onClickColumn.bind(window, i, 'name')}><a href=${b.url} title=${b.name}>${b.name}</a></td>
+        <td onclick=${onClickColumn.bind(window, i, 'name')}>
+          <a href=${b.url} title=${b.name}><span class="icon icon-window"></span> ${b.name}</a>
+        </td>
         ${urlCol}
+        <td class="actions">
+          <span class="icon icon-cancel-squared" onclick=${onClickDelete.bind(window, i)} title="Delete bookmark"></span>
+        </td>
       </tr>`
     })}
   </tbody>`
@@ -68,6 +73,16 @@ function onClickColumn (i, key, e) {
     inputEl.focus()
     inputEl.select()
   }
+}
+
+function onClickDelete (i) {
+  // remove
+  var bookmarks = bookmarksData.getAll()
+  bookmarks.splice(i, 1)
+  bookmarksData.setAll(bookmarks)
+
+  // render
+  yo.update(bookmarksTBody, render())
 }
 
 function onKeyupInput (i, key, e) {
