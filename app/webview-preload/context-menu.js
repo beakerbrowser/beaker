@@ -1,11 +1,19 @@
 import { remote, ipcRenderer } from 'electron'
-const { Menu, MenuItem, clipboard } = remote
 
 export function setup () {
-  document.addEventListener('contextmenu', onContextMenu, false)
+  window.addEventListener('contextmenu', onContextMenu, false)
 }
 
 function onContextMenu (e) {
+  // weirdness warning:
+  // if you put the following line outside of the function definition,
+  // electron will fail to page transition.
+  // i think this is because the references are captured in the closure, 
+  // and the event handler is not removed, so there are hanging memory
+  // references that stop the transition from proceeding.
+  // -prf
+  const { Menu, MenuItem, clipboard } = remote
+
   var menuItems = []
 
   // find href or img data
