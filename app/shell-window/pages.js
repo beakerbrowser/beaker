@@ -37,6 +37,7 @@ export function create (url) {
     loadingURL: false, // what URL is being loaded, if any?
     isWebviewReady: false, // has the webview loaded its methods?
     isActive: false, // is the active page?
+    isInpageFinding: false, // showing the inpage find ctrl?
 
     // get the URL of the page we want to load (vs which is currently loaded)
     getIntendedURL: function () {
@@ -304,6 +305,5 @@ function createWebviewEl (id, url) {
 }
 
 function rebroadcastEvent (e) {
-  console.log(e.type, e)
   events.emit(e.type, e)
 }
