@@ -1,4 +1,6 @@
+import { remote } from 'electron'
 import EventEmitter from 'events'
+import path from 'path'
 import * as navbar from './ui/navbar'
 import * as statusBar from './ui/status-bar'
 
@@ -296,7 +298,7 @@ function hide (page) {
 function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
-  el.setAttribute('preload', 'webview-preload.js')
+  el.setAttribute('preload', 'file://'+path.join(remote.app.getAppPath(), 'webview-preload.js'))
   el.setAttribute('src', url || DEFAULT_URL)
   return el
 }

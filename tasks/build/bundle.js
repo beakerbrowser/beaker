@@ -41,6 +41,7 @@ module.exports = function (src, dest, opts) {
     if (opts && opts.browserify) {
       // Browserify the code
       var b = browserify(intoStream(result.code), { basedir: opts.basedir });
+      b.exclude('electron');
       var deferred2 = Q.defer();
       b.bundle(function (err, bundledCode) {
         if (err) deferred2.reject(err)

@@ -48,7 +48,7 @@ var bundleApplication = function () {
   return Q.all([
     bundle(srcDir.path('background-process.js'), destDir.path('background-process.js')),
     bundle(srcDir.path('webview-preload.js'), destDir.path('webview-preload.js')),
-    bundle(srcDir.path('shell-window.js'), destDir.path('shell-window.js')),
+    bundle(srcDir.path('shell-window.js'), destDir.path('shell-window.js'), { browserify: true, basedir: srcDir.cwd() }),
     bundle(srcDir.path('builtin-pages/start.js'), destDir.path('builtin-pages/start.js'), { browserify: true, basedir: srcDir.cwd() })
   ]);
 };

@@ -73,10 +73,15 @@ Please feel free to open usability issues.
     - [ ] change how webviews are hidden, so they dont have to relayout on select
     - [ ] restore scroll-position on back btn
     - [ ] restore session history on "re-open closed tab"
-    - [ ] persist zoom on domains
-  - [ ] bookmarking
+    - zoom
+      - [ ] persist zoom on domains
+      - [ ] show current zoom in toolbar
+  - bookmarking
+    - [ ] bookmark btn on toolbar
+    - [ ] store bookmarks
+    - [ ] store favicons
   - builtin pages
-    - [ ] start page (show bookmarks)
+    - [x] start page
     - [ ] load failure pages (did-fail-load)
   - context menu
     - [ ] save image as...

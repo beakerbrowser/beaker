@@ -14,7 +14,7 @@ export function setup () {
 export function createShellWindow () {
   // create window
   var win = new BrowserWindow({ titleBarStyle: 'hidden', 'standard-window': false })
-  loadURL(win, 'file://'+path.join(__dirname, 'shell-window.html'))
+  loadURL(win, 'beaker:shell-window')
 
   // register shortcuts
   for (var i=1; i <= 9; i++)
