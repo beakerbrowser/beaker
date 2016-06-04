@@ -36,7 +36,7 @@ gulp.task('host-dat-site', function () {
     console.log('Swarming...')
     var sw = swarm(archive)
     sw.on('peer', function (peer) {
-      console.log('New swarm peer:', peer)
+      console.log('New swarm peer:', '0x'+peer.toString('hex'))
     })
   })
 })
