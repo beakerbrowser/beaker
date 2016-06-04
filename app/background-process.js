@@ -3,18 +3,21 @@
 // It doesn't have any windows which you can see on screen, but we can open
 // window from here.
 
-import { app, Menu } from 'electron'
+import { app, Menu, protocol } from 'electron'
 import * as windows from './background-process/windows'
 import buildMenu from './background-process/window-menu'
 import * as beakerProtocol from './background-process/beaker-protocol'
+import * as datProtocol from './background-process/dat-protocol'
 import env from './env';
 
 var mainWindow;
 
+protocol.registerStandardSchemes(['dat']) // must be called before 'ready'
 app.on('ready', function () {
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenu(env)));
   windows.setup()
   beakerProtocol.setup()
+  datProtocol.setup()
 })
 
 app.on('window-all-closed', function () {
