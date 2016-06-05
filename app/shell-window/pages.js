@@ -100,7 +100,7 @@ export function create (url) {
   page.webviewEl.addEventListener('will-navigate', onWillNavigate)
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
   page.webviewEl.addEventListener('did-get-response-details', onDidGetResponseDetails)
-  page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
+  page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
   page.webviewEl.addEventListener('ipc-message', onIpcMessage)
 
@@ -253,7 +253,7 @@ function onDidGetResponseDetails (e) {
   }
 }
 
-function onDidStopLoading (e) {
+function onDidFinishLoad (e) {
   var page = getByWebview(e.target)
   if (page) {
     page.loadingURL = false
@@ -264,8 +264,6 @@ function onDidStopLoading (e) {
 function onDidFailLoad (e) {
   var page = getByWebview(e.target)
   if (page) {
-    page.loadingURL = false
-
     // TODO, render failure page
   }
 }
