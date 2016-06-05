@@ -70,7 +70,6 @@ Please feel free to open usability issues.
     - [ ] reordering
     - [ ] pinning
   - webview behaviors
-    - [ ] change how webviews are hidden, so they dont have to relayout on select
     - [ ] restore scroll-position on back btn
     - [ ] restore session history on "re-open closed tab"
     - zoom

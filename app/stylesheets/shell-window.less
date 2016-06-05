@@ -114,13 +114,19 @@ body.darwin #toolbar #toolbar-tabs .tab-item:first-child {
     outline: none;
     position: absolute;
 
-    // this ensures that, even if hidden, the webview will do work
-    // causes the pages to relayout on unhide, though, which sucks
     &.hidden {
+      // use visiblity instead of display: none
+      // (this ensures that, even if hidden, the webview will do work)
       display: flex; // the default display type
-      flex: 0 1;
+      visibility: hidden;
+
+      // this is what electron's docs recommend...
+      // causes the pages to relayout on unhide, though, which sucks
+      // but, keep an eye out for bugs that would make the following better
+      // -prf
+      /*flex: 0 1;
       width: 0px;
-      height: 0px;
+      height: 0px;*/
     }
   }
 }
