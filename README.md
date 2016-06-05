@@ -132,7 +132,7 @@ provide 2 data types (feeds, files) and include p2p syncing protocols
 ### user storage
 
  - [ ] local filesystem API
- - [ ] remote filesystem API (ldap?)
+ - [ ] remote filesystem API (nfs?)
  - [ ] sqlite API
 
 ## license
