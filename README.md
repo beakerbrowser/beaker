@@ -79,9 +79,6 @@ Please feel free to open usability issues.
     - [ ] bookmark btn on toolbar
     - [ ] store bookmarks
     - [ ] store favicons
-  - builtin pages
-    - [x] start page
-    - [ ] load failure pages (did-fail-load)
   - context menu
     - [ ] save image as...
     - [ ] video/audio element controls

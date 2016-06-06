@@ -261,10 +261,18 @@ function onDidFinishLoad (e) {
   }
 }
 
+const STRIPES_SVG_DATAURI = 'data:image/svg+xml;charset=utf-8;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGlkPSJzdmctbGluZXMiPjxkZWZzPjxwYXR0ZXJuIGlkPSJkanV0byIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIj48cGF0aCBkPSJNIDAsMTAgbCAxMCwtMTAgTSAtMi41LDIuNSBsIDUsLTUNCk0gNy41LDEyLjUgbCA1LC01IiBzdHJva2Utd2lkdGg9IjIiIHNoYXBlLXJlbmRlcmluZz0iYXV0byIgc3Ryb2tlPSJyZ2JhKDAsMCwwLDAuMDUpIiBzdHJva2UtbGluZWNhcD0ic3F1YXJlIj48L3BhdGg+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHN0eWxlPSJmaWxsOiB1cmwoI2RqdXRvKTsgc3Ryb2tlLXdpZHRoOiAycHg7Ij48L3JlY3Q+PC9zdmc+'
 function onDidFailLoad (e) {
   var page = getByWebview(e.target)
   if (page) {
-    // TODO, render failure page
+    // render failure page
+    var errorPageHTML = `<body style="background: #fff700 url(${STRIPES_SVG_DATAURI}); font-family: monospace; color: #3a3333">
+      <div style="max-width: 410px;margin: 70px auto;padding: 10px 25px;border: 10px solid;background: #fff700">
+        <h1>This site can’t be reached</h1>
+        <h2 style="color:#6b6a38">${e.errorDescription}</h2>
+      </div>
+    </body>`.replace(/\n/g,'')
+    page.webviewEl.getWebContents().executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
   }
 }
 
