@@ -2,10 +2,10 @@
 export default function render (archive, entries) {
   const key = archive.key.toString('hex')
   const baseLink = 'dat://'+key+'/'
-  return esc`<!doctype html>
+  return `<!doctype html>
   <html>
     <head>
-      <title>view-dat://${key}</title>
+      <title>view-dat://${esc(key)}</title>
       <link rel="stylesheet" href="beaker:start.css">
     </head>
     <body>
@@ -13,11 +13,11 @@ export default function render (archive, entries) {
         <tbody>
           ${entries.map(e => {
             if (e.type == 'file') {
-              return esc`<tr>
-                <td><a href="${baseLink+e.name}" title="${e.name}">${e.name}</a></td>
+              return `<tr>
+                <td><a href="${esc(baseLink+e.name)}" title="${esc(e.name)}">${esc(e.name)}</a></td>
               </tr>`
             }
-            return esc`<tr><td>${e.name}</td></tr>`
+            return `<tr><td>${esc(e.name)}</td></tr>`
           }).join('')}
         </tbody>
       </table>
@@ -25,11 +25,6 @@ export default function render (archive, entries) {
   </html>`
 }
 
-function esc (parts, ...args) {
-  var str = ''
-  parts.forEach((part, i) => {
-    str += part
-    str += (args[i]||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  })
-  return str
+function esc (str) {
+  return str.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }

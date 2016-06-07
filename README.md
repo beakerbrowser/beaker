@@ -125,21 +125,20 @@ something close to (if not cloned from) mozilla's persona project.
 or, may consider using https://github.com/google/end-to-end.
 should work across devices
 
-
  - [ ] naming/addressing (bob@foo.com ?)
  - [ ] key management, store secrets safely
  - [ ] look into supporting SSL client certificates
 
 ### cross-host data publishing
 
-we need a data layer that is addressable and manipulable across different hosts. the way to do this is to use cryptographic references: sha256 URIs (for static content) and pubkey URIs (for dynamic content)
+we need a data layer that is addressable and manipulable across different hosts. the way to do this is to use cryptographic referenced data structures (sha256 URIs for static content, and pubkey URIs for dynamic content)
 
-https://github.com/mafintosh/hypercore
+https://github.com/mafintosh/hyperlog
 and
 https://github.com/mafintosh/hyperdrive
-provide 2 data types (feeds, files) and include p2p syncing protocols
+provides 2 crypto-addressed data types (logs, file archives) with p2p syncing protocols
 
- - [ ] hypercore/hyperdrive APIs
+ - [ ] hyperlog/hyperdrive APIs
 
 ### peer-to-peer messaging layer
 
