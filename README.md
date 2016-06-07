@@ -89,6 +89,7 @@ Please feel free to open usability issues.
 
 ### dat integration
 
+  - [ ] "Save dat archive..."
   - pinning
     - is pinning the same as bookmarking?
     - [ ] pin btn in toolbar (view-dat: and dat:)
@@ -98,8 +99,6 @@ Please feel free to open usability issues.
   - view-dat://
     - [ ] folder behaviors (only show items in current folder, navigate btwn folders)
     - [ ] show item sizes
-    - [ ] "save to" btn (copy the dat to a folder)
-    - [ ] add html escaping
     - [ ] render README.md ?
   - dat://
     - [ ] solve issue causing slow sync
