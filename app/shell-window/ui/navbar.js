@@ -52,8 +52,12 @@ export function hideInpageFind (page) {
 export function update (page) {
   // update location
   var addrEl = page.navbarEl.querySelector('.nav-location-input')
-  if (!addrEl.matches(':focus') || !addrEl.value) // only update if not focused, so we dont mess up what the user is doing
+  var isAddrElFocused = addrEl.matches(':focus')
+  if (!isAddrElFocused || !addrEl.value) { // only update if not focused or empty, so we dont mess up what the user is doing
     addrEl.value = page.getIntendedURL()
+    if (isAddrElFocused) // if was focused, then select what we put in
+      addrEl.select()
+  }
 
   // render
   yo.update(page.navbarEl, render(page.id, page))

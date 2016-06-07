@@ -89,11 +89,18 @@ Please feel free to open usability issues.
 
 ### dat integration
 
+  - pinning
+    - is pinning the same as bookmarking?
+    - [ ] pin btn in toolbar (view-dat: and dat:)
+    - [ ] save pinned dats to disk 
+    - [ ] delete unpinned dats
+    - [ ] show pinned dats in start page
   - view-dat://
     - [ ] folder behaviors (only show items in current folder, navigate btwn folders)
     - [ ] show item sizes
     - [ ] "save to" btn (copy the dat to a folder)
     - [ ] add html escaping
+    - [ ] render README.md ?
   - dat://
     - [ ] solve issue causing slow sync
     - [ ] add webrtc as a transport
