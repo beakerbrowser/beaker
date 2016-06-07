@@ -60,6 +60,10 @@ Beaker will use [node-sodium](https://github.com/paixaop/node-sodium) bindings t
 
 ## todo list
 
+### project build
+
+ - [ ] speed up clean/copy process (it's slowing down the build a lot, due to the large node_modules/ dir)
+
 ### basic ui
 
 Basic browsing UI.
@@ -70,8 +74,8 @@ Please feel free to open usability issues.
     - [ ] reordering
     - [ ] pinning
   - webview behaviors
-    - [ ] restore scroll-position on back btn
-    - [ ] restore session history on "re-open closed tab"
+    - [ ] restore scroll-position on back btn [electron issue](https://github.com/electron/electron/issues/5884)
+    - [ ] restore session history on "re-open closed tab" [electron issue](https://github.com/electron/electron/issues/5885)
     - zoom
       - [ ] persist zoom on domains
       - [ ] show current zoom in toolbar
@@ -82,6 +86,17 @@ Please feel free to open usability issues.
   - context menu
     - [ ] save image as...
     - [ ] video/audio element controls
+
+### dat integration
+
+  - view-dat://
+    - [ ] folder behaviors (only show items in current folder, navigate btwn folders)
+    - [ ] show item sizes
+    - [ ] "save to" btn (copy the dat to a folder)
+    - [ ] add html escaping
+  - dat://
+    - [ ] solve issue causing slow sync
+    - [ ] add webrtc as a transport
 
 ### privacy, security
 

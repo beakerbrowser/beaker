@@ -9,7 +9,7 @@
   "dependencies": {
     "electron-localshortcut": "^0.6.0",
     "fs-jetpack": "^0.9.0",
-    "hyperdrive": "^6.0.1",
+    "hyperdrive": "^6.1.0",
     "hyperdrive-archive-swarm": "^1.0.2",
     "identify-filetype": "^1.0.0",
     "memdb": "^1.3.1",

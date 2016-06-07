@@ -31,6 +31,7 @@ function onContextMenu (e) {
   if (href) {
     menuItems.push({ label: 'Open Link in New Tab', click: () => ipcRenderer.sendToHost('new-tab', href) })
     menuItems.push({ label: 'Copy Link Address', click: () => clipboard.writeText(href) })
+    menuItems.push({ type: 'separator' })
   }
 
   // images
@@ -38,6 +39,7 @@ function onContextMenu (e) {
     menuItems.push({ label: 'Save Image As...', click: () => alert('todo') })
     menuItems.push({ label: 'Copy Image URL', click: () => clipboard.writeText(img) })
     menuItems.push({ label: 'Open Image in New Tab', click: () => ipcRenderer.sendToHost('new-tab', img) })
+    menuItems.push({ type: 'separator' })
   }
 
   // clipboard
@@ -54,6 +56,13 @@ function onContextMenu (e) {
 
   // inspector
   menuItems.push({ label: 'Inspect Element', click: () => ipcRenderer.sendToHost('inspect-element', e.clientX, e.clientY) })
+  if (window.location.protocol == 'dat:') {
+    menuItems.push({ label: 'View Dat Archive', click: () => {
+      var parts = /[a-f0-9]+/i.exec(window.location.pathname)
+      if (parts)
+        window.location = 'view-dat://'+parts[0]+'/'
+    }})
+  }
 
   // show menu
   var menu = Menu.buildFromTemplate(menuItems)

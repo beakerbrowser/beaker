@@ -6,18 +6,25 @@
 import { app, Menu, protocol } from 'electron'
 import * as windows from './background-process/windows'
 import buildMenu from './background-process/window-menu'
-import * as beakerProtocol from './background-process/beaker-protocol'
-import * as datProtocol from './background-process/dat-protocol'
-import env from './env';
+import * as beakerProtocol from './background-process/protocols/beaker'
+import * as datProtocol from './background-process/protocols/dat'
+import * as viewDatProtocol from './background-process/protocols/view-dat'
+import env from './env'
+
+import * as datDebug from './background-process/networks/dat/debug'
 
 var mainWindow;
 
-protocol.registerStandardSchemes(['dat']) // must be called before 'ready'
+protocol.registerStandardSchemes(['dat', 'view-dat']) // must be called before 'ready'
 app.on('ready', function () {
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenu(env)));
   windows.setup()
   beakerProtocol.setup()
   datProtocol.setup()
+  viewDatProtocol.setup()
+
+  // debugging
+  datDebug.hostDebugDat()
 })
 
 app.on('window-all-closed', function () {
