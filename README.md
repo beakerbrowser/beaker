@@ -97,7 +97,6 @@ Please feel free to open usability issues.
     - [ ] delete unpinned dats
     - [ ] show pinned dats in start page
   - view-dat://
-    - [ ] folder behaviors (only show items in current folder, navigate btwn folders)
     - [ ] show item sizes
     - [ ] render README.md ?
   - dat://

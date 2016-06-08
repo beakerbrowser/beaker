@@ -24,6 +24,10 @@ export function setup () {
     if (request.url == 'beaker:start.css')
       return cb(path.join(__dirname, 'stylesheets/builtin-pages/start.css'))
 
+    // view-dat page
+    if (request.url == 'beaker:view-dat.css')
+      return cb(path.join(__dirname, 'stylesheets/builtin-pages/view-dat.css'))
+
     // common assets
     if (request.url == 'beaker:font')
       return cb(path.join(__dirname, 'fonts/photon-entypo.woff'))

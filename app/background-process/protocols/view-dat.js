@@ -1,6 +1,7 @@
 import { protocol } from 'electron'
 import url from 'url'
 import once from 'once'
+import path from 'path'
 import log from '../../log'
 import * as dat from '../networks/dat'
 import renderArchive from './view-dat/archive-html'
@@ -25,10 +26,6 @@ const METHOD_NOT_SUPPORTED = -322
 export function setup () {
   protocol.registerBufferProtocol('view-dat', (request, cb) => {
     cb = once(cb) // just to be safe
-
-    // special resources
-    // if (request.url == 'view-dat:css')
-      // return cb({ mimeType: 'text/css', data: })
 
     // validate request
     var urlp = url.parse(request.url)
@@ -61,10 +58,21 @@ export function setup () {
         return cb(FAILED)
       }
 
+      // sort out which directory to show
+      // here's what this does:
+      // / -> .
+      // /foo -> .
+      // /foo/ -> foo
+      // /foo/bar -> foo
+      var dirname = urlp.path.slice(1)
+      if (dirname.charAt(dirname.length - 1) == '/')
+        dirname += '.'
+      dirname = path.dirname(dirname)
+
       // respond
       cb({
         mimeType: 'text/html',
-        data: new Buffer(renderArchive(archive, entries), 'utf-8')
+        data: new Buffer(renderArchive(archive, entries, dirname), 'utf-8')
       })
     })
   }, e => {
