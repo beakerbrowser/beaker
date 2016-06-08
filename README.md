@@ -60,10 +60,6 @@ Beaker will use [node-sodium](https://github.com/paixaop/node-sodium) bindings t
 
 ## todo list
 
-### project build
-
- - [ ] speed up clean/copy process (it's slowing down the build a lot, due to the large node_modules/ dir)
-
 ### basic ui
 
 Basic browsing UI.

@@ -305,7 +305,7 @@ function hide (page) {
 function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
-  el.setAttribute('preload', 'file://'+path.join(remote.app.getAppPath(), 'webview-preload.js'))
+  el.setAttribute('preload', 'file://'+path.join(remote.app.getAppPath(), 'webview-preload.build.js'))
   el.setAttribute('src', url || DEFAULT_URL)
   return el
 }

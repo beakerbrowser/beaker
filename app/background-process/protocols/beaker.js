@@ -12,7 +12,7 @@ export function setup () {
     if (request.url == 'beaker:shell-window')
       return cb(path.join(__dirname, 'shell-window.html'))
     if (request.url == 'beaker:shell-window.js')
-      return cb(path.join(__dirname, 'shell-window.js'))
+      return cb(path.join(__dirname, 'shell-window.build.js'))
     if (request.url == 'beaker:shell-window.css')
       return cb(path.join(__dirname, 'stylesheets/shell-window.css'))
 
@@ -20,7 +20,7 @@ export function setup () {
     if (request.url == 'beaker:start')
       return cb(path.join(__dirname, 'builtin-pages/start.html'))
     if (request.url == 'beaker:start.js')
-      return cb(path.join(__dirname, 'builtin-pages/start.js'))
+      return cb(path.join(__dirname, 'builtin-pages/start.build.js'))
     if (request.url == 'beaker:start.css')
       return cb(path.join(__dirname, 'stylesheets/builtin-pages/start.css'))
 
