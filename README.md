@@ -53,6 +53,9 @@ Beaker will use [node-sodium](https://github.com/paixaop/node-sodium) bindings t
 
 ### proposed integrations
 
+ - [magic wormhole](https://github.com/warner/magic-wormhole)
+ - [IPFS](https://ipfs.io/)
+ - [interledger](https://interledger.org/)
  - keybase ([discussion](./doc/discuss-notes/0001-keybase.md))
  - SQLite
  - node `fs` module
