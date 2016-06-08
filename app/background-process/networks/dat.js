@@ -1,13 +1,7 @@
 import log from '../../log'
 import hyperdrive from 'hyperdrive'
 import memdb from 'memdb'
-// TEMP:
-// going to use discovery-swarm directly, for now, to get more control
-// should switch back to hyperdrive-archive-swarm eventually!!
-// -prf
-// import swarm from 'hyperdrive-archive-swarm'
-import discoverySwarm from 'discovery-swarm'
-import swarmDefaults from 'datland-swarm-defaults'
+import hyperdriveArchiveSwarm from 'hyperdrive-archive-swarm'
 import identify from 'identify-filetype'
 import mime from 'mime'
 
@@ -52,15 +46,9 @@ export function swarm (key) {
   // create
   log('[DAT] Swarming archive', keyStr)
   var archive = getArchive(key)
-  var ds = discoverySwarm(swarmDefaults({
-    stream: peer => {
-      log('[DAT] Replicating with', peer.toString('hex'))
-      return archive.replicate()
-    }
-  }))
-  ds.once('listening', () => ds.join('hyperdrive-' + keyStr))
-  ds.listen()
-  return ds
+  var s = hyperdriveArchiveSwarm(archive)
+  s.on('peer', peer => log('[DAT] Peer', peer)) // TODO this is no longer giving us peer info
+  return s
 }
 
 export function lookupEntry (entries, path) {

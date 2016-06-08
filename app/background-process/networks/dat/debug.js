@@ -33,9 +33,6 @@ export function hostDebugDat () {
     console.log('dat://'+link+'/')
 
     console.log('Swarming...')
-    var sw = dat.swarm(link)
-    sw.on('peer', function (peer) {
-      console.log('New swarm peer:', '0x'+peer.toString('hex'))
-    })
+    dat.swarm(link)
   })
 }

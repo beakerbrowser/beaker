@@ -35,7 +35,7 @@ export function setup () {
 
     // start searching the network
     var archive = dat.getArchive(archiveKey)
-    var ds = dat.swarm(archiveKey)
+    dat.swarm(archiveKey)
 
     // setup a timeout
     var timeout = setTimeout(() => {
