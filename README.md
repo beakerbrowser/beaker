@@ -17,6 +17,13 @@ npm install
 npm start
 ```
 
+If you are using a node version ealier than 6, you may receive an error about a module version mismatch.
+If so, run the following command after `npm install`, to have the modules rebuild into the version you need:
+
+```
+npm run rebuild
+```
+
 [Lots of dev instructions and notes here](./build-notes.md)
 
 ## discussion
