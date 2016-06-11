@@ -65,7 +65,11 @@ gulp.task('build', ['bundle', 'less']);
 
 gulp.task('watch', ['build'], function () {
   watch('app/**/*.js', batch(function (events, done) {
-    gulp.start('bundle-watch', done);
+    var n = events._list.filter(function (f) { return f.path.indexOf('.build.js') === -1 }).length;
+    if (n > 0)
+      gulp.start('bundle-watch', done);
+    else
+      done();
   }));
   watch('app/**/*.less', batch(function (events, done) {
     gulp.start('less-watch', done);
