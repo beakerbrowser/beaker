@@ -53,6 +53,26 @@ It discovers peers with the Bittorrent DHT, centralized DNS servers and Multicas
  - [bittorrent-dht](https://www.npmjs.com/package/bittorrent-dht) - use the Kademlia Mainline DHT to discover sources
  - [dns-discovery](https://www.npmjs.com/package/dns-discovery) - use DNS name servers and Multicast DNS to discover sources
 
+#### ipfs
+
+[IPFS](https://ipfs.io/).
+See https://github.com/pfraze/beaker/issues/2
+
+#### websql
+
+Helpful links:
+
+ - [Original spec](https://www.w3.org/TR/webdatabase/)
+ - [WebSQL Database API, implemented for Node using sqlite3](https://www.npmjs.com/package/websql)
+ - [Cordova plugin impl of WebSQL](https://github.com/litehelpers/Cordova-sqlite-storage)
+ - [A promises-based API for WebSQL](https://github.com/MetaMemoryT/websql-promise)
+
+Question... do we want to maybe change the API?
+The basics are fine, but I hate having separate error and success callbacks.
+
+Would there ever be a good usecase to share sqlite files between apps?
+[SQLite is threadsafe](https://www.sqlite.org/threadsafe.html), though there's more to consider (apps violating each others' invariants).
+
 #### libsodium ([link](https://github.com/jedisct1/libsodium))
 
 Sodium is a modern and easy-to-use crypto library.
@@ -61,14 +81,16 @@ Beaker will use [node-sodium](https://github.com/paixaop/node-sodium) bindings t
 ### proposed integrations
 
  - [magic wormhole](https://github.com/warner/magic-wormhole)
- - [IPFS](https://ipfs.io/)
  - [interledger](https://interledger.org/)
  - keybase ([discussion](./doc/discuss-notes/0001-keybase.md))
- - SQLite
  - node `fs` module
  - matrix ([matrix-js-sdk](https://www.npmjs.com/package/matrix-js-sdk), [homepage](https://matrix.org/))
 
 ## todo list
+
+### project/build
+
+  - [ ] figure out why the browserify rebuild (in the watcher) takes 17x longer than the non-watch build
 
 ### basic ui
 
