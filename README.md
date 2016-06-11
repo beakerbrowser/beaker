@@ -73,6 +73,10 @@ The basics are fine, but I hate having separate error and success callbacks.
 Would there ever be a good usecase to share sqlite files between apps?
 [SQLite is threadsafe](https://www.sqlite.org/threadsafe.html), though there's more to consider (apps violating each others' invariants).
 
+[On runtime limits](https://www.sqlite.org/c3ref/limit.html).
+"For many years, the default page size was almost always 1024 bytes, but beginning with SQLite version 3.12.0 in 2016, the default page size increased to 4096."
+Thus the [max_page_count pragma](https://www.sqlite.org/pragma.html#pragma_max_page_count) can be used to limit the db sizes (as a multiple of 4kb).
+
 #### libsodium ([link](https://github.com/jedisct1/libsodium))
 
 Sodium is a modern and easy-to-use crypto library.
