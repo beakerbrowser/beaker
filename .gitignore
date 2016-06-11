@@ -9,3 +9,5 @@ Thumbs.db
 *.build.js.map
 app/stylesheets/*.css
 app/stylesheets/builtin-pages/*.css
+build
+
