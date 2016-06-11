@@ -13,7 +13,7 @@ export function setup () {
 
 export function createShellWindow () {
   // create window
-  var win = new BrowserWindow({ titleBarStyle: 'hidden', 'standard-window': false })
+  var win = new BrowserWindow({ titleBarStyle: 'hidden', 'standard-window': false, width: 1000, height: 700 })
   loadURL(win, 'beaker:shell-window')
 
   // register shortcuts

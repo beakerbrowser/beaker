@@ -99,19 +99,12 @@ Please feel free to open usability issues.
 ### dat integration
 
   - [ ] "Save dat archive..."
-  - pinning
-    - is pinning the same as bookmarking?
-    - [ ] pin btn in toolbar (view-dat: and dat:)
-    - [ ] save pinned dats to disk 
-    - [ ] delete unpinned dats
-    - [ ] show pinned dats in start page
   - view-dat://
     - [ ] show item sizes
     - [ ] render README.md ?
   - dat://
     - [ ] If index.html does not exist, but the archive was found, redirect to view-dat://
     - [ ] solve issue causing slow sync
-    - [ ] add webrtc as a transport
 
 ### privacy, security
 
