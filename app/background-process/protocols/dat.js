@@ -28,7 +28,7 @@ export function setup () {
     // validate request
     var urlp = url.parse(request.url)
     var archiveKey = urlp.host
-    if (dat.ARCHIVE_KEY_REGEX.test(archiveKey) == false)
+    if (dat.LINK_REGEX.test(archiveKey) == false)
       return cb(INVALID_URL)
     if (request.method != 'GET')
       return cb(METHOD_NOT_SUPPORTED)
@@ -44,7 +44,7 @@ export function setup () {
     }, REQUEST_TIMEOUT_MS)
 
     // list archive contents
-    log('[DAT] attempting to list archive')
+    log('[DAT] attempting to list archive', archiveKey)
     archive.list((err, entries) => {
       clearTimeout(timeout)
 

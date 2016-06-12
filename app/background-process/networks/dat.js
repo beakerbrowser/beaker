@@ -7,7 +7,7 @@ import mime from 'mime'
 
 // validation
 // 64 char hex
-export const ARCHIVE_KEY_REGEX = /[0-9a-f]{64}/i
+export const LINK_REGEX = /[0-9a-f]{64}/i
 
 // globals
 // =
