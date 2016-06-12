@@ -52,16 +52,46 @@ export function getApi () {
   return ipfsApi
 }
 
-export function lookupLink (links, path) {
+export function lookupLink (folderKey, path, cb) {
+  log('[IPFS] Looking up', path, 'in', folderKey)
+  var pathParts = fixPath(path).split('/')
+  descend(folderKey)
+
+  function descend (key) {
+    log('[IPFS] Listing...', key)
+    ipfsApi.object.links(key, { enc: (typeof key == 'string' ? 'base58' : false) }, (err, links) => {
+      if (err) return cb(err)
+      
+      // lookup the entry
+      log('[IPFS] folder listing for', key, links)
+      var link = findLink(links, pathParts.shift())
+      if (!link)
+        return cb({ notFound: true })
+
+      // done?
+      if (pathParts.length === 0)
+        return cb(null, link)
+
+      // descend!
+      descend(link.hash)
+    })
+  }
+
+  function fixPath (str) {
+    if (!str) str = ''
+    if (str.charAt(0) == '/') str = str.slice(1)
+    return str
+  }
+}
+
+function findLink (links, path) {
   if (!path || path == '/')          path = 'index.html'
   if (path && path.charAt(0) == '/') path = path.slice(1)
     
-  var entry
   for (var i=0; i < links.length; i++) {
     if (links[i].name == path)
       return links[i]
   }
-  // TODO if type != file, should look for subdir's index.html
 }
 
 // internal

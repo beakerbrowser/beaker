@@ -46,30 +46,24 @@ export function setup () {
     }, REQUEST_TIMEOUT_MS)
 
     // list folder contents
-    var ipfsApi = ipfs.getApi()
     log('[IPFS] Attempting to list folder', folderKey)
-    ipfsApi.object.links(folderKey, { enc: 'base58' }, (err, links) => {
+    ipfs.lookupLink(folderKey, urlp.path, (err, link) => {
       clearTimeout(timeout)
 
       if (err) {
+        if (err.notFound)
+          return cb(FILE_NOT_FOUND)
+
         // QUESTION: should there be a more specific error response?
         // not sure what kind of failures can occur here (other than broken pipe)
         // -prf
         log('[IPFS] Folder listing errored', err)
         return cb(FAILED)
       }
-      
-      // lookup the entry
-      log('[IPFS] folder listing for', folderKey, links)
-      var link = ipfs.lookupLink(links, urlp.path)
-      if (!link) {
-        log('[IPFS] Entry not found:', urlp.path)
-        return cb(FILE_NOT_FOUND)
-      }
 
       // fetch the data
       log('[IPFS] Link found:', urlp.path || link.name)
-      ipfsApi.object.data(link.hash, (err, data) => {
+      ipfs.getApi().object.data(link.hash, (err, data) => {
         if (err) {
           // TODO: what's the right error for this?
           log('[IPFS] Data fetch failed', err)
@@ -77,7 +71,7 @@ export function setup () {
         }
         
         // try to identify the type by the buffer contents
-        var mimeType = mime.lookup(identify(data))
+        var mimeType = mime.lookup(identify(data)||'')
         if (mimeType)
           log('[IPFS] Identified entry mimetype as', mimeType)
         else {
@@ -86,7 +80,6 @@ export function setup () {
           log('[IPFS] Assumed mimetype from link name', mimeType)
         }
 
-        console.log('Sending', data.toString('utf-8'))
         cb({ data: data, mimeType: mimeType })
       })
     })
