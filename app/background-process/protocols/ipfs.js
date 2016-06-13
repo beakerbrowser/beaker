@@ -2,6 +2,7 @@ import { protocol } from 'electron'
 import url from 'url'
 import once from 'once'
 import identify from 'identify-filetype'
+import * as Unixfs from 'ipfs-unixfs'
 import mime from 'mime'
 import log from '../../log'
 import * as ipfs from '../networks/ipfs'
@@ -63,12 +64,16 @@ export function setup () {
 
       // fetch the data
       log('[IPFS] Link found:', urlp.path || link.name)
-      ipfs.getApi().object.data(link.hash, (err, data) => {
+      ipfs.getApi().object.data(link.hash, (err, marshaled) => {
         if (err) {
           // TODO: what's the right error for this?
           log('[IPFS] Data fetch failed', err)
           return cb(FAILED)
         }
+
+        // parse the data
+        var unmarshaled = Unixfs.unmarshal(marshaled)
+        var data = unmarshaled.data
         
         // try to identify the type by the buffer contents
         var mimeType = mime.lookup(identify(data)||'')

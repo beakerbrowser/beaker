@@ -20,7 +20,7 @@ import * as datDebug from './background-process/networks/dat/debug'
 
 var mainWindow;
 
-protocol.registerStandardSchemes(['dat', 'view-dat', 'ipfs']) // must be called before 'ready'
+protocol.registerStandardSchemes(['dat', 'view-dat']) // must be called before 'ready'
 app.on('ready', function () {
   // ui
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenu(env)));
