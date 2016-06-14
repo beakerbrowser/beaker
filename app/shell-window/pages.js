@@ -262,6 +262,10 @@ function onDidFinishLoad (e) {
 }
 
 function onDidFailLoad (e) {
+  // ignore if this is a subresource
+  if (!e.isMainFrame)
+    return
+
   var page = getByWebview(e.target)
   if (page) {
     // render failure page
