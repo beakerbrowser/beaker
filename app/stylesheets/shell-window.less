@@ -21,9 +21,16 @@ body.darwin #toolbar {
 #toolbar {
   height: 64px;
   border-bottom: 1px solid #999;
+  background: linear-gradient(to bottom, #F9F9F9 0, #E0E0E0 100%);
+
+  .toolbar-group {
+    padding: 0 5px;
+  }
 
   .toolbar-actions {
     display: flex;
+    padding: 0;
+    margin: 4px 0 0;
 
     &.hidden {
       display: none;
@@ -35,16 +42,40 @@ body.darwin #toolbar {
       border: 1px solid #B3B1B3;
       border-radius: 3px;
       padding: 0px 10px;
-      margin-right: 3px;
       font-size: 14px;
       line-height: 1.1;
       -webkit-app-region: no-drag;
     }
-    .btn .icon {
-      width: 20px;
-      height: 18px;
+
+    button {
+      background: none;
+      border: 0;
+      margin: 0;
+      padding: 4px 5px;
       font-size: 17px;
       line-height: 1.1;
+      color: #403939;
+      width: 30px;
+      border-radius: 2px;
+      border: 1px solid transparent;
+
+      &:hover:not(:disabled) {
+        border: 1px solid #aaa;
+        box-shadow: 0px 2px 2px rgba(0,0,0,0.1);
+        text-shadow: none;
+        background: linear-gradient(to bottom, #F5f5f5, #e0e0e0);
+      }
+      &:disabled {
+        color: #aaa;
+      }
+      &:focus {
+        outline: 0;
+      }
+
+      // make the arrows thicker
+      &.nav-back-btn, &.nav-forward-btn {
+        -webkit-text-stroke: 1px;
+      }
     }
   }
   #toolbar-tabs {
@@ -67,13 +98,11 @@ body.darwin #toolbar {
       }
 
       // visual adjustments
-      padding: 3px 22px; 
-      border-top: 1px solid #989698;
+      padding: 5px 22px 3px; 
+      border-top: 0;
       border-bottom: 1px solid #989698;
       &.active {
-        background: none;
-        border-top: 0;
-        border-bottom: 0;
+        border-bottom-color: #ADADAD;
       }
     }
   }
@@ -91,6 +120,9 @@ body.darwin #toolbar #toolbar-tabs .tab-item:first-child {
 
     .toolbar-actions .form-control {
       box-shadow: none;
+    }
+    .toolbar-actions button {
+      color: #bbb;
     }
   }
   .tab-group {

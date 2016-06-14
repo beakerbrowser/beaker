@@ -75,10 +75,10 @@ function render (id, page) {
 
   // render reload/cancel btn
   var reloadBtn = (isLoading)
-    ? yo`<button class="nav-cancel-btn btn btn-default" onclick=${onClickCancel}>
+    ? yo`<button class="nav-cancel-btn" onclick=${onClickCancel}>
         <span class="icon icon-cancel"></span>
       </button>`
-    : yo`<button class="nav-reload-btn btn btn-default" onclick=${onClickReload}>
+    : yo`<button class="nav-reload-btn" onclick=${onClickReload}>
         <span class="icon icon-arrows-ccw"></span>
       </button>`
 
@@ -101,12 +101,12 @@ function render (id, page) {
   var favoriteDisabled = (page && page.getURL().indexOf('beaker:') !== 0) ? '' : 'disabled'
 
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
-    <div class="btn-group">
-      <button class="nav-back-btn btn btn-default" ${backDisabled} onclick=${onClickBack}>
-        <span class="icon icon-left-bold"></span>
+    <div class="toolbar-group">
+      <button class="nav-back-btn" ${backDisabled} onclick=${onClickBack}>
+        <span class="icon icon-left"></span>
       </button>
-      <button class="nav-forward-btn btn btn-default" ${forwardDisabled} onclick=${onClickForward}>
-        <span class="icon icon-right-bold"></span>
+      <button class="nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
+        <span class="icon icon-right"></span>
       </button>
       ${reloadBtn}      
     </div>
@@ -116,8 +116,8 @@ function render (id, page) {
       onfocus=${onFocusLocation}
       onkeydown=${onKeydownLocation} />
     ${inpageFinder}
-    <div>
-      <button class="nav-favorite-btn btn btn-default" ${favoriteDisabled} onclick=${onClickFavorite}>
+    <div class="toolbar-group">
+      <button class="nav-favorite-btn" ${favoriteDisabled} onclick=${onClickFavorite}>
         <span class="icon icon-star-empty"></span>
       </button>
     </div>
