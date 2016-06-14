@@ -105,7 +105,10 @@ export function getEntry (archive, entry, cb) {
     var data = Buffer.concat(chunks)
 
     // try to identify the type by the buffer contents
-    var mimeType = mime.lookup(identify(data))
+    var mimeType
+    var identifiedExt = identify(data)
+    if (identifiedExt)
+      mimeType = mime.lookup(identifiedExt)
     if (mimeType)
       log('[DAT] Identified entry mimetype as', mimeType)
     else {

@@ -76,7 +76,10 @@ export function setup () {
         var data = unmarshaled.data
         
         // try to identify the type by the buffer contents
-        var mimeType = mime.lookup(identify(data)||'')
+        var mimeType
+        var identifiedExt = identify(data)
+        if (identifiedExt)
+          mimeType = mime.lookup(identifiedExt)
         if (mimeType)
           log('[IPFS] Identified entry mimetype as', mimeType)
         else {

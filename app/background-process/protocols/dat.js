@@ -36,7 +36,6 @@ export function setup () {
     // resolve the name
     // (if it's a hostname, do a DNS lookup)
     dat.resolveName(urlp.host, (err, archiveKey) => {
-      console.log('dns results', err, archiveKey)
       if (err)
         return cb(NAME_NOT_RESOLVED)
 
