@@ -15,6 +15,7 @@ const REQUEST_TIMEOUT_MS = 30e3 // 30s
 const FAILED = -2
 const FILE_NOT_FOUND = -6
 const TIMED_OUT = -7
+const NAME_NOT_RESOLVED = -105
 const INVALID_URL = -300
 const METHOD_NOT_SUPPORTED = -322
 
@@ -27,53 +28,60 @@ export function setup () {
 
     // validate request
     var urlp = url.parse(request.url)
-    var archiveKey = urlp.host
-    if (dat.LINK_REGEX.test(archiveKey) == false)
+    if (!urlp.host)
       return cb(INVALID_URL)
     if (request.method != 'GET')
       return cb(METHOD_NOT_SUPPORTED)
 
-    // start searching the network
-    var archive = dat.getArchive(archiveKey)
-    dat.swarm(archiveKey)
+    // resolve the name
+    // (if it's a hostname, do a DNS lookup)
+    dat.resolveName(urlp.host, (err, archiveKey) => {
+      console.log('dns results', err, archiveKey)
+      if (err)
+        return cb(NAME_NOT_RESOLVED)
 
-    // setup a timeout
-    var timeout = setTimeout(() => {
-      log('[DAT] Timed out searching for', archiveKey)
-      cb(TIMED_OUT)
-    }, REQUEST_TIMEOUT_MS)
+      // start searching the network
+      var archive = dat.getArchive(archiveKey)
+      dat.swarm(archiveKey)
 
-    // list archive contents
-    log('[DAT] attempting to list archive', archiveKey)
-    archive.list((err, entries) => {
-      clearTimeout(timeout)
+      // setup a timeout
+      var timeout = setTimeout(() => {
+        log('[DAT] Timed out searching for', archiveKey)
+        cb(TIMED_OUT)
+      }, REQUEST_TIMEOUT_MS)
 
-      if (err) {
-        // QUESTION: should there be a more specific error response?
-        // not sure what kind of failures can occur here (other than broken pipe)
-        // -prf
-        log('[DAT] Archive listing errored', err)
-        return cb(FAILED)
-      }
-      
-      // lookup the entry
-      log('[DAT] Archive listing for', archiveKey, entries)
-      var entry = dat.lookupEntry(entries, urlp.path)
-      if (!entry) {
-        log('[DAT] Entry not found:', urlp.path)
-        return cb(FILE_NOT_FOUND)
-      }
+      // list archive contents
+      log('[DAT] attempting to list archive', archiveKey)
+      archive.list((err, entries) => {
+        clearTimeout(timeout)
 
-      // fetch the entry
-      // TODO handle stream errors
-      log('[DAT] Entry found:', urlp.path)
-      dat.getEntry(archive, entry, (err, entryInfo) => {
-        // respond
-        cb({
-          mimeType: entryInfo.mimeType,
-          data: entryInfo.data
-        })
-      })         
+        if (err) {
+          // QUESTION: should there be a more specific error response?
+          // not sure what kind of failures can occur here (other than broken pipe)
+          // -prf
+          log('[DAT] Archive listing errored', err)
+          return cb(FAILED)
+        }
+        
+        // lookup the entry
+        log('[DAT] Archive listing for', archiveKey, entries)
+        var entry = dat.lookupEntry(entries, urlp.path)
+        if (!entry) {
+          log('[DAT] Entry not found:', urlp.path)
+          return cb(FILE_NOT_FOUND)
+        }
+
+        // fetch the entry
+        // TODO handle stream errors
+        log('[DAT] Entry found:', urlp.path)
+        dat.getEntry(archive, entry, (err, entryInfo) => {
+          // respond
+          cb({
+            mimeType: entryInfo.mimeType,
+            data: entryInfo.data
+          })
+        })         
+      })
     })
   }, e => {
     if (e)

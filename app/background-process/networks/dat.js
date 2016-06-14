@@ -1,5 +1,7 @@
 import log from '../../log'
 import hyperdrive from 'hyperdrive'
+import dns from 'dns'
+import url from 'url'
 import memdb from 'memdb'
 import hyperdriveArchiveSwarm from 'hyperdrive-archive-swarm'
 import identify from 'identify-filetype'
@@ -7,7 +9,7 @@ import mime from 'mime'
 
 // validation
 // 64 char hex
-export const LINK_REGEX = /[0-9a-f]{64}/i
+export const HASH_REGEX = /[0-9a-f]{64}/i
 
 // globals
 // =
@@ -50,6 +52,34 @@ export function swarm (key) {
   swarms[keyStr] = s
   s.on('peer', peer => log('[DAT] Peer', peer)) // TODO this is no longer giving us peer info
   return s
+}
+
+export function resolveName (name, cb) {
+  // is it a hash?
+  if (HASH_REGEX.test(name))
+    return cb(null, name)
+
+  // do a dns lookup
+  log('[DAT] DNS TXT lookup for name:', name)
+  dns.resolveTxt(name, (err, records) => {
+    log('[DAT] DNS TXT results for', name, err || records)
+    if (err)
+      return cb(err)
+
+    // scan the txt records for a dat URI
+    for (var i=0; i < records.length; i++) {
+      if (records[i][0].indexOf('dat://') === 0) {
+        var urlp = url.parse(records[i][0])
+        if (HASH_REGEX.test(urlp.host)) {
+          log('[DAT] DNS resolved', name, 'to', urlp.host)
+          return cb(null, urlp.host)
+        }
+        log('[DAT] DNS TXT record failed:', records[i], 'Must be a dat://{hash} url')
+      }
+    }
+
+    cb({ code: 'ENOTFOUND' })
+  })
 }
 
 export function lookupEntry (entries, path) {

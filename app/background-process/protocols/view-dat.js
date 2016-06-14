@@ -29,50 +29,56 @@ export function setup () {
 
     // validate request
     var urlp = url.parse(request.url)
-    var archiveKey = urlp.host
-    if (dat.LINK_REGEX.test(archiveKey) == false)
+    if (!urlp.host)
       return cb(INVALID_URL)
     if (request.method != 'GET')
       return cb(METHOD_NOT_SUPPORTED)
 
-    // start searching the network
-    var archive = dat.getArchive(archiveKey)
-    var ds = dat.swarm(archiveKey)
+    // resolve the name
+    // (if it's a hostname, do a DNS lookup)
+    dat.resolveName(urlp.host, (err, archiveKey) => {
+      if (err)
+        return cb(NAME_NOT_RESOLVED)
 
-    // setup a timeout
-    var timeout = setTimeout(() => {
-      log('[DAT] Timed out searching for', archiveKey)
-      cb(TIMED_OUT)
-    }, REQUEST_TIMEOUT_MS)
+      // start searching the network
+      var archive = dat.getArchive(archiveKey)
+      var ds = dat.swarm(archiveKey)
 
-    // list archive contents
-    log('[DAT] attempting to list archive', archiveKey)
-    archive.list((err, entries) => {
-      clearTimeout(timeout)
+      // setup a timeout
+      var timeout = setTimeout(() => {
+        log('[DAT] Timed out searching for', archiveKey)
+        cb(TIMED_OUT)
+      }, REQUEST_TIMEOUT_MS)
 
-      if (err) {
-        // QUESTION: should there be a more specific error response?
-        // not sure what kind of failures can occur here (other than broken pipe)
-        // -prf
-        log('[DAT] Archive listing errored', err)
-        return cb(FAILED)
-      }
+      // list archive contents
+      log('[DAT] attempting to list archive', archiveKey)
+      archive.list((err, entries) => {
+        clearTimeout(timeout)
 
-      // sort out which directory to show
-      // here's what this does:
-      // / -> .
-      // /foo -> .
-      // /foo/ -> foo
-      // /foo/bar -> foo
-      var dirname = urlp.path.slice(1)
-      if (dirname.charAt(dirname.length - 1) == '/')
-        dirname += '.'
-      dirname = path.dirname(dirname)
+        if (err) {
+          // QUESTION: should there be a more specific error response?
+          // not sure what kind of failures can occur here (other than broken pipe)
+          // -prf
+          log('[DAT] Archive listing errored', err)
+          return cb(FAILED)
+        }
 
-      // respond
-      cb({
-        mimeType: 'text/html',
-        data: new Buffer(renderArchive(archive, entries, dirname), 'utf-8')
+        // sort out which directory to show
+        // here's what this does:
+        // / -> .
+        // /foo -> .
+        // /foo/ -> foo
+        // /foo/bar -> foo
+        var dirname = urlp.path.slice(1)
+        if (dirname.charAt(dirname.length - 1) == '/')
+          dirname += '.'
+        dirname = path.dirname(dirname)
+
+        // respond
+        cb({
+          mimeType: 'text/html',
+          data: new Buffer(renderArchive(archive, entries, dirname), 'utf-8')
+        })
       })
     })
   }, e => {
