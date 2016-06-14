@@ -63,21 +63,10 @@ export function setup () {
           return cb(FAILED)
         }
 
-        // sort out which directory to show
-        // here's what this does:
-        // / -> .
-        // /foo -> .
-        // /foo/ -> foo
-        // /foo/bar -> foo
-        var dirname = urlp.path.slice(1)
-        if (dirname.charAt(dirname.length - 1) == '/')
-          dirname += '.'
-        dirname = path.dirname(dirname)
-
         // respond
         cb({
           mimeType: 'text/html',
-          data: new Buffer(renderArchive(archive, entries, dirname), 'utf-8')
+          data: new Buffer(renderArchive(archive, entries, urlp.path), 'utf-8')
         })
       })
     })

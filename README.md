@@ -126,11 +126,9 @@ Please feel free to open usability issues.
 
   - [ ] "Save dat archive..."
   - view-dat://
+    - [ ] use the archive's dns name, if available
     - [ ] show item sizes
     - [ ] render README.md ?
-  - dat://
-    - [ ] If index.html does not exist, but the archive was found, redirect to view-dat://
-    - [ ] solve issue causing slow sync
 
 ### privacy, security
 

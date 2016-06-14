@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Changed
 - Restyled Browser UI
+- Dat protocol: if index.html does not exist, but the archive was found, will now render the view-dat interface
 
 ### Fixed
 - Fixed mimetype lookups when a file isnt identifiable by a magic number

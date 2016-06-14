@@ -3,6 +3,7 @@ import url from 'url'
 import once from 'once'
 import log from '../../log'
 import * as dat from '../networks/dat'
+import renderArchive from './view-dat/archive-html'
 
 // constants
 // =
@@ -67,6 +68,15 @@ export function setup () {
         var entry = dat.lookupEntry(entries, urlp.path)
         if (!entry) {
           log('[DAT] Entry not found:', urlp.path)
+
+          // if we're looking for a directory, show the archive listing
+          if (!urlp.path || urlp.path.charAt(urlp.path.length - 1) == '/') {
+            return cb({
+              mimeType: 'text/html',
+              data: new Buffer(renderArchive(archive, entries, urlp.path), 'utf-8')
+            })
+          }
+
           return cb(FILE_NOT_FOUND)
         }
 

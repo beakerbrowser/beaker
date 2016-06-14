@@ -1,8 +1,19 @@
 import path from 'path'
 
-export default function render (archive, entries, directory) {
+export default function render (archive, entries, urlpath) {
   const key = archive.key.toString('hex')
   const baseLink = 'dat://'+key+'/'
+
+  // sort out which directory to show
+  // here's what this does:
+  // / -> .
+  // /foo -> .
+  // /foo/ -> foo
+  // /foo/bar -> foo
+  var directory = urlpath.slice(1)
+  if (directory.charAt(directory.length - 1) == '/')
+    directory += '.'
+  directory = path.dirname(directory)
 
   // render a link to the parent directory, if not in root
   var upLink = ''
