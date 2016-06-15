@@ -112,7 +112,6 @@ Please feel free to open usability issues.
     - [ ] restore scroll-position on back btn [electron issue](https://github.com/electron/electron/issues/5884)
     - [ ] restore session history on "re-open closed tab" [electron issue](https://github.com/electron/electron/issues/5885)
     - zoom
-      - [ ] persist zoom on domains
       - [ ] show current zoom in toolbar
   - bookmarking
     - [ ] bookmark btn on toolbar
