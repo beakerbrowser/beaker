@@ -77,10 +77,10 @@ function render (id, page) {
 
   // render reload/cancel btn
   var reloadBtn = (isLoading)
-    ? yo`<button class="nav-cancel-btn" onclick=${onClickCancel}>
+    ? yo`<button class="toolbar-btn nav-cancel-btn" onclick=${onClickCancel}>
         <span class="icon icon-cancel"></span>
       </button>`
-    : yo`<button class="nav-reload-btn" onclick=${onClickReload}>
+    : yo`<button class="toolbar-btn nav-reload-btn" onclick=${onClickReload}>
         <span class="icon icon-arrows-ccw"></span>
       </button>`
 
@@ -105,10 +105,10 @@ function render (id, page) {
 
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
-      <button class="nav-back-btn" ${backDisabled} onclick=${onClickBack}>
+      <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
         <span class="icon icon-left"></span>
       </button>
-      <button class="nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
+      <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
         <span class="icon icon-right"></span>
       </button>
       ${reloadBtn}      
@@ -123,7 +123,7 @@ function render (id, page) {
     </div>
     ${inpageFinder}
     <div class="toolbar-group">
-      <button onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
+      <button class="toolbar-btn" onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
     </div>
   </div>`
 }

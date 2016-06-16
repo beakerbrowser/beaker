@@ -36,14 +36,14 @@ body.darwin #toolbar {
       display: none;
     }
 
-    button {
+    button.toolbar-btn {
       background: none;
       border: 0;
       margin: 0;
       padding: 4px 5px;
       font-size: 17px;
       line-height: 1.1;
-      color: #403939;
+      color: #666;
       width: 26px;
       border-radius: 2px;
       border: 1px solid transparent;
@@ -71,6 +71,11 @@ body.darwin #toolbar {
       flex: 1;
       display: flex;
 
+      background: #fff;
+      box-shadow: inset 0px 1px 1px rgba(0,0,0,.25);
+      border: 1px solid #B3B1B3;
+      border-radius: 3px;
+
       margin: 0 0 0 5px;
       height: 28px;
 
@@ -81,14 +86,9 @@ body.darwin #toolbar {
         flex: 1;
         padding: 1px 0 0 10px;
 
-        background: #fff;
-        box-shadow: inset 0px 1px 1px rgba(0,0,0,.25);
+        border: 0;
+        background: transparent;
         cursor: text;
-
-        border: 1px solid #B3B1B3;
-        border-right: 0;
-        border-top-left-radius: 3px;
-        border-bottom-left-radius: 3px;
 
         &:focus {
           outline: 0;
@@ -96,8 +96,12 @@ body.darwin #toolbar {
       }
 
       button {
-        border: 1px solid #B3B1B3;
-        border-right-width: 0;
+        background: none;
+        font-size: 17px;
+        line-height: 1.1;
+
+        border: 0;
+        border-left: 1px solid #ccc;
         border-radius: 0;
 
         padding: 4px 8px;
@@ -105,22 +109,38 @@ body.darwin #toolbar {
         color: #777;
 
         &:disabled {
-          color: #ccc;
+          color: #ddd !important;
+          background: rgba(0,0,0,0.05);
+        }
+
+        &:focus {
+          outline: 0;
+        }
+
+        &:hover:not(:disabled) {
+          text-shadow: 1px 2px 2px rgba(0,0,0,.2);
+          cursor: pointer;
+          span {
+            cursor: pointer;
+          }
         }
 
         &:last-child {
-          border-right-width: 1px;
-          border-top-right-radius: 3px;
-          border-bottom-right-radius: 3px;
-
           // give a little more room on the right
           width: 35px;
         }
 
-        &.gold {
+        // bookmark btn styles
+        &.nav-bookmark-btn {
           color: #fff;
-          background: linear-gradient(to bottom, #E2AA0D, #FFBC00 16%);
-          border-color: #C7A84E;
+          -webkit-text-stroke: 1px #aaa;
+          &.gold {
+            color: #FFBC00;
+            -webkit-text-stroke: 1px #EAAE05;
+          }
+          &:disabled {
+            -webkit-text-stroke: 1px #ccc;
+          }
         }
       }
     }
