@@ -6,10 +6,6 @@ import { ipcRenderer } from 'electron'
 // active requests' cbs, waiting for a response
 var requestCbs = []
 
-// DEBUG
-window.sitedataSet = set
-window.sitedataGet = get
-
 
 // exported api
 // =

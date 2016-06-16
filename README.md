@@ -115,7 +115,6 @@ Please feel free to open usability issues.
       - [ ] show current zoom in toolbar
   - bookmarking
     - [ ] bookmark btn on toolbar
-    - [ ] store bookmarks
     - [ ] store favicons
   - context menu
     - [ ] save image as...

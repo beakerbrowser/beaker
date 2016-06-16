@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Restyled Browser UI
 - Dat protocol: if index.html does not exist, but the archive was found, will now render the view-dat interface
+- Moved bookmarks storage into a SQLite database
 
 ### Fixed
 - Fixed mimetype lookups when a file isnt identifiable by a magic number

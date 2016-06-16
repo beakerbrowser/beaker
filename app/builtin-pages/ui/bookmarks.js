@@ -1,5 +1,8 @@
+/*
+This uses the beaker.bookmarks API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
+*/
+
 import * as yo from 'yo-yo'
-import * as bookmarksData from '../data/bookmarks'
 
 const KEYCODE_ENTER = 13
 const KEYCODE_ESC = 27
@@ -7,6 +10,10 @@ const KEYCODE_ESC = 27
 // globals
 // =
 
+// bookmarks, cached in memory
+var bookmarks = []
+
+// main rendered element
 var bookmarksTBody
 
 // anything currently being edited?
@@ -17,9 +24,17 @@ var isEditing = false
 // =
 
 export function setup () {
-  // do initial render
-  bookmarksTBody = render()
-  document.querySelector('.bookmarks').appendChild(bookmarksTBody)
+  // fetch bookmarks
+  beaker.bookmarks.list((err, bs) => {
+    bookmarks = bs || []
+
+    // sort by title
+    bookmarks.sort((a, b) => a.title.localeCompare(b.title))
+
+    // do initial render
+    bookmarksTBody = render()
+    document.querySelector('.bookmarks').appendChild(bookmarksTBody)
+  })
 
   // register global handlers
   document.addEventListener('click', onClickAnywhere)
@@ -30,7 +45,7 @@ export function setup () {
 
 function render () {
   return yo`<tbody>
-    ${bookmarksData.getAll().map((b, i) => {
+    ${bookmarks.map((b, i) => {
 
       // render address column
       var urlCol
@@ -41,8 +56,8 @@ function render () {
 
       // render row
       return yo`<tr>
-        <td onclick=${onClickColumn.bind(window, i, 'name')}>
-          <a href=${b.url} title=${b.name}><span class="icon icon-window"></span> ${b.name}</a>
+        <td onclick=${onClickColumn.bind(window, i, 'title')}>
+          <a href=${b.url} title=${b.title}><span class="icon icon-window"></span> ${b.title}</a>
         </td>
         ${urlCol}
         <td class="actions">
@@ -77,9 +92,9 @@ function onClickColumn (i, key, e) {
 
 function onClickDelete (i) {
   // remove
-  var bookmarks = bookmarksData.getAll()
+  var b = bookmarks[i]
   bookmarks.splice(i, 1)
-  bookmarksData.setAll(bookmarks)
+  beaker.bookmarks.remove(b.url)
 
   // render
   yo.update(bookmarksTBody, render())
@@ -88,11 +103,18 @@ function onClickDelete (i) {
 function onKeyupInput (i, key, e) {
   // on enter or escape
   if (e.keyCode == KEYCODE_ENTER || e.keyCode == KEYCODE_ESC) {
-    // on enter, save name change
+    // on enter, save kv change
     if (e.keyCode == KEYCODE_ENTER) {
-      var bookmarks = bookmarksData.getAll()
-      bookmarks[i][key] = e.target.value
-      bookmarksData.setAll(bookmarks)
+      var b = bookmarks[i]
+
+      // update db
+      if (key == 'url')
+        beaker.bookmarks.changeUrl(b.url, e.target.value)
+      if (key == 'title')
+        beaker.bookmarks.changeTitle(b.url, e.target.value)        
+
+      // update in memory
+      b[key] = e.target.value
     }
 
     // stop editing
