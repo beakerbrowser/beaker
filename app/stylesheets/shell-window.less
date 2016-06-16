@@ -36,18 +36,6 @@ body.darwin #toolbar {
       display: none;
     }
 
-    input.form-control {
-      flex: 1;
-      box-shadow: inset 0px 1px 1px rgba(0,0,0,.25);
-      border: 1px solid #B3B1B3;
-      border-radius: 3px;
-      padding: 0px 10px;
-      margin-left: 2px;
-      font-size: 14px;
-      line-height: 1.1;
-      -webkit-app-region: no-drag;
-    }
-
     button {
       background: none;
       border: 0;
@@ -76,6 +64,64 @@ body.darwin #toolbar {
       // make the arrows thicker
       &.nav-back-btn, &.nav-forward-btn, &.nav-forward-cancel {
         -webkit-text-stroke: 1px;
+      }
+    }
+
+    .toolbar-input-group {
+      flex: 1;
+      display: flex;
+
+      margin: 0 5px;
+      height: 28px;
+
+      font-size: 14px;
+      -webkit-app-region: no-drag;
+
+      input {
+        flex: 1;
+        padding: 1px 0 0 10px;
+
+        background: #fff;
+        box-shadow: inset 0px 1px 1px rgba(0,0,0,.25);
+        cursor: text;
+
+        border: 1px solid #B3B1B3;
+        border-right: 0;
+        border-top-left-radius: 3px;
+        border-bottom-left-radius: 3px;
+
+        &:focus {
+          outline: 0;
+        }
+      }
+
+      button {
+        border: 1px solid #B3B1B3;
+        border-right-width: 0;
+        border-radius: 0;
+
+        padding: 4px 8px;
+        width: 34px;
+        color: #777;
+
+        &:disabled {
+          color: #ccc;
+        }
+
+        &:last-child {
+          border-right-width: 1px;
+          border-top-right-radius: 3px;
+          border-bottom-right-radius: 3px;
+
+          // give a little more room on the right
+          width: 35px;
+        }
+
+        &.gold {
+          color: #fff;
+          background: linear-gradient(to bottom, #E2AA0D, #FFBC00 16%);
+          border-color: #C7A84E;
+        }
       }
     }
   }

@@ -98,8 +98,8 @@ function render (id, page) {
     : ''
 
   // bookmark btn should be disabled if on a beaker: protocol page
-  var favoriteDisabled = (page && page.getURL().indexOf('beaker:') !== 0) ? '' : 'disabled'
-  var favoriteIcon = (page && !!page.bookmark) ? 'icon icon-star' : 'icon icon-star-empty'
+  var bookmarkClass = 'nav-bookmark-btn'+((page && !!page.bookmark) ? ' gold' : '')
+  var bookmarkDisabled = (page && page.getURL().indexOf('beaker:') !== 0) ? '' : 'disabled'
 
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
@@ -111,17 +111,15 @@ function render (id, page) {
       </button>
       ${reloadBtn}      
     </div>
-    <input
-      type="text"
-      class="form-control nav-location-input "
-      onfocus=${onFocusLocation}
-      onkeydown=${onKeydownLocation} />
-    ${inpageFinder}
-    <div class="toolbar-group">
-      <button class="nav-bookmark-btn" ${favoriteDisabled} onclick=${onClickBookmark}>
-        <span class=${favoriteIcon}></span>
-      </button>
+    <div class="toolbar-input-group">
+      <input
+        type="text"
+        class="nav-location-input"
+        onfocus=${onFocusLocation}
+        onkeydown=${onKeydownLocation} />
+      <button class=${bookmarkClass} ${bookmarkDisabled} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
     </div>
+    ${inpageFinder}
   </div>`
 }
 
