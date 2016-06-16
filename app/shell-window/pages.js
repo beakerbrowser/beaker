@@ -3,6 +3,7 @@ import EventEmitter from 'events'
 import path from 'path'
 import * as navbar from './ui/navbar'
 import * as statusBar from './ui/status-bar'
+import * as bookmarks from '../nonbackground-process-lib/bookmarks'
 
 const DEFAULT_URL = 'beaker:start'
 
@@ -35,6 +36,7 @@ export function create (url) {
     navbarEl: navbar.createEl(id),
 
     loadingURL: false, // what URL is being loaded, if any?
+    bookmark: null, // this page's bookmark object, if it's bookmarked
     isWebviewReady: false, // has the webview loaded its methods?
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
@@ -50,6 +52,20 @@ export function create (url) {
         page.loadingURL = url
         page.webviewEl.loadURL(url)
       // }
+    },
+
+    // add/remove bookmark
+    toggleBookmark: function () {
+      // update state
+      if (page.bookmark) {
+        bookmarks.remove(page.bookmark.url)
+        page.bookmark = null
+      } else if (page.isActive) {
+        page.bookmark = { url: page.getURL(), title: page.getTitle() }
+        bookmarks.add(page.bookmark.url, page.bookmark.title)
+      }
+      // update nav
+      navbar.update(page)
     }
   }
   pages.push(page)
@@ -229,8 +245,15 @@ function onNewWindow (e) {
 function onWillNavigate (e) {
   var page = getByWebview(e.target)
   if (page) {
+    // update target url
     page.loadingURL = e.url
     navbar.update(page)
+
+    // check if this page bookmarked
+    bookmarks.get(e.url, (err, bookmark) => {
+      page.bookmark = bookmark
+      navbar.update(page)
+    })
   }  
 }
 

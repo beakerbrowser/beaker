@@ -2,7 +2,7 @@ import { setup as setupCommandHandlers } from './webview-preload/command-handler
 import { setup as setupContextMenu } from './webview-preload/context-menu'
 import { setup as setupStatusBarHover } from './webview-preload/status-bar-hover'
 import { setup as setupZoom } from './webview-preload/zoom'
-import * as bookmarks from './webview-preload/bookmarks'
+import * as bookmarks from './nonbackground-process-lib/bookmarks'
 
 // setup standard behaviors
 setupCommandHandlers()

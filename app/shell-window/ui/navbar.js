@@ -97,8 +97,9 @@ function render (id, page) {
             onkeydown=${onKeydownFind} />`
     : ''
 
-  // favorite btn should be disabled if on a beaker: protocol page
+  // bookmark btn should be disabled if on a beaker: protocol page
   var favoriteDisabled = (page && page.getURL().indexOf('beaker:') !== 0) ? '' : 'disabled'
+  var favoriteIcon = (page && !!page.bookmark) ? 'icon icon-star' : 'icon icon-star-empty'
 
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
@@ -117,8 +118,8 @@ function render (id, page) {
       onkeydown=${onKeydownLocation} />
     ${inpageFinder}
     <div class="toolbar-group">
-      <button class="nav-favorite-btn" ${favoriteDisabled} onclick=${onClickFavorite}>
-        <span class="icon icon-star-empty"></span>
+      <button class="nav-bookmark-btn" ${favoriteDisabled} onclick=${onClickBookmark}>
+        <span class=${favoriteIcon}></span>
       </button>
     </div>
   </div>`
@@ -211,8 +212,10 @@ function onClickCancel (e) {
     page.stop()
 }
 
-function onClickFavorite (e) {
-
+function onClickBookmark (e) {
+  var page = getEventPage(e)
+  if (page)
+    page.toggleBookmark()
 }
 
 function onFocusLocation (e) {
