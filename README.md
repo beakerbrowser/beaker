@@ -101,9 +101,6 @@ Beaker will use [node-sodium](https://github.com/paixaop/node-sodium) bindings t
 Basic browsing UI.
 Please feel free to open usability issues.
 
-  - un/happiness reporter
-    - [ ] ui to report that you're happy or unhappy, and why
-    - [ ] server to collect reports
   - tabs
     - [ ] favicons
     - [ ] reordering

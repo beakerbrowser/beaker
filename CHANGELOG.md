@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - SiteData sqlite database now tracks information per origin
 - Zoom now persists across navigations (using SiteData db)
 - Bookmarking
+- Feedback button
 
 ### Changed
 - Restyled Browser UI

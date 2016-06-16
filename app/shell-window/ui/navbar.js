@@ -6,6 +6,8 @@ import * as yo from 'yo-yo'
 import * as dns from 'dns'
 // tld.defaultFile = path.join(__dirname, '../tlds.dat')
 
+const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
+
 // globals
 // =
 
@@ -120,6 +122,9 @@ function render (id, page) {
       <button class=${bookmarkClass} ${bookmarkDisabled} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
     </div>
     ${inpageFinder}
+    <div class="toolbar-group">
+      <button onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
+    </div>
   </div>`
 }
 
@@ -214,6 +219,10 @@ function onClickBookmark (e) {
   var page = getEventPage(e)
   if (page)
     page.toggleBookmark()
+}
+
+function onClickFeedback (e) {
+  pages.setActive(pages.create(FEEDBACK_FORM_URL))
 }
 
 function onFocusLocation (e) {
