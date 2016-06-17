@@ -110,8 +110,6 @@ Please feel free to open usability issues.
     - [ ] reordering
     - [ ] pinning
     - [ ] dropdown when there are too many?
-  - find in page
-    - [ ] fix UI (is totally broken)
   - webview behaviors
     - [ ] restore scroll-position on back btn [electron issue](https://github.com/electron/electron/issues/5884)
     - [ ] restore session history on "re-open closed tab" [electron issue](https://github.com/electron/electron/issues/5885)

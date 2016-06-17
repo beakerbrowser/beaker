@@ -94,7 +94,7 @@ function render (id, page) {
   var inpageFinder = (page && page.isInpageFinding)
     ? yo`<input
             type="text"
-            class="form-control nav-find-input"
+            class="nav-find-input"
             placeholder="Find in page..."
             oninput=${onInputFind}
             onkeydown=${onKeydownFind} />`
@@ -131,10 +131,10 @@ function render (id, page) {
         class="nav-location-input"
         onfocus=${onFocusLocation}
         onkeydown=${onKeydownLocation} />
+      ${inpageFinder}
       ${zoomBtn}
       <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
     </div>
-    ${inpageFinder}
     <div class="toolbar-group">
       <button class="toolbar-btn" onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
     </div>

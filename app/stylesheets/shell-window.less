@@ -100,11 +100,15 @@ body.darwin #toolbar {
         padding: 1px 0 0 10px;
 
         border: 0;
+        border-left: 1px solid #ccc;
         background: transparent;
         cursor: text;
 
         &:focus {
           outline: 0;
+        }
+        &:first-child {
+          border-left: 0;
         }
       }
 
