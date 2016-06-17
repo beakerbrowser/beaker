@@ -26,35 +26,7 @@ tr:active {
   font-size: 14px;
 
   tr {
-    display: flex;
-
-    th {
-      // fix the sizing
-      &:first-child {
-        flex: 0 0 280px;
-      }
-      &:nth-child(2) {
-        flex: 1;
-      }
-    }
-
     td {
-      // make it apparent the bookmarks are editable
-      cursor: text;
-
-      // make all columns after the first a lighter gray
-      &:not(:first-child) {
-        color: #999;
-      }
-
-      // fix the sizing
-      &:first-child {
-        flex: 0 0 280px;
-      }
-      &:nth-child(2) {
-        flex: 1;
-      }
-
       // make links blend into the table more nicely
       a {
         color: inherit;
@@ -64,35 +36,29 @@ tr:active {
         }
       }
 
-      // make the first column's link take the full width
+      // make the link take the full width
       &:first-child a {
         display: block;
       }
 
       // make the actions compact, and hidden except on hover
       &.actions {
-        flex: 0 0 40px;
+        width: 40px;
         .icon {
           display: none;
           cursor: pointer;
         }
       }
-
-      // make the input fit nicely and take the full width possible
-      input {
-        width: 100%;
-        padding: 0;
-        line-height: 1;
-        &:focus {
-          outline: 0;
-        }
-      }
     }
 
-    &:hover td.actions {
-      // show icons on row hover
-      .icon {
-        display: inline;
+    &:hover {
+      background: #f5f5f4;
+      
+      td.actions {
+        // show icons on row hover
+        .icon {
+          display: inline;
+        }
       }
     }
   }
