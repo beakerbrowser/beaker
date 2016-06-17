@@ -1,4 +1,5 @@
 @import "./photon.min.less";
+@import "./chrome-tabs.less";
 
 @font-face {
   font-family: "photon-entypo";
@@ -19,7 +20,7 @@ body.darwin #toolbar {
 }
 
 #toolbar {
-  height: 64px;
+  height: 72px;
   border-bottom: 1px solid #999;
   background: linear-gradient(to bottom, #F9F9F9 0, #E0E0E0 100%);
 
@@ -70,6 +71,7 @@ body.darwin #toolbar {
     .toolbar-input-group {
       flex: 1;
       display: flex;
+      position: relative; // for the :after el to position off of
 
       background: #fff;
       box-shadow: inset 0px 1px 1px rgba(0,0,0,.25);
@@ -81,6 +83,17 @@ body.darwin #toolbar {
 
       font-size: 14px;
       -webkit-app-region: no-drag;
+
+      &:after {
+        // bottom edge highlight
+        content: ' ';
+        position: absolute;
+        left: 0;
+        width: 100%;
+        top: 27px;
+        height: 1px;
+        background: rgba(255,255,255,0.85);
+      }
 
       input {
         flex: 1;
@@ -145,46 +158,6 @@ body.darwin #toolbar {
       }
     }
   }
-  #toolbar-tabs {
-    margin: 0;
-    border: 0;
-
-    .tab-item {
-      // we want to keep tabs equal width, and overflow the text
-      min-width: 0; // this seems to force the sizing behavior we want
-      overflow: hidden;
-      text-overflow: ellipsis;
-      .tab-text {
-        white-space: pre;
-
-        // favicon
-        img {              
-          width: 12px;
-          height: 12px;
-          position: relative;
-          top: 1px;
-        }
-      }
-
-      // put close icon on right
-      .icon {
-        left: auto;
-        right: 5px;
-      }
-
-      // visual adjustments
-      padding: 5px 22px 3px; 
-      border-top: 0;
-      border-bottom: 1px solid #989698;
-      &.active {
-        border-bottom-color: #ADADAD;
-      }
-    }
-  }
-}
-// make space for headlights on osx
-body.darwin #toolbar #toolbar-tabs .tab-item:first-child {
-  padding-left: 70px;
 }
 
 .window-blurred {
@@ -198,16 +171,6 @@ body.darwin #toolbar #toolbar-tabs .tab-item:first-child {
     }
     .toolbar-actions button {
       color: #bbb;
-    }
-  }
-  .tab-group {
-    border-color: #ccc;
-  }
-  .tab-item {
-    background: #e0e0e0;
-    border-color: #ccc !important;
-    &.active {
-      background: #eee !important;
     }
   }
 }

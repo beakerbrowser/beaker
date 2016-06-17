@@ -15,6 +15,10 @@ export function setup () {
       return cb(path.join(__dirname, 'shell-window.build.js'))
     if (request.url == 'beaker:shell-window.css')
       return cb(path.join(__dirname, 'stylesheets/shell-window.css'))
+    if (request.url == 'beaker:shell-tab-left.svg')
+      return cb(path.join(__dirname, 'img/tab-left.svg'))
+    if (request.url == 'beaker:shell-tab-right.svg')
+      return cb(path.join(__dirname, 'img/tab-right.svg'))
 
     // start page
     if (request.url == 'beaker:start')

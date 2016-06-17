@@ -14,12 +14,17 @@ export function setup () {
 // =
 
 function updateTabs () {
-  yo.update(document.getElementById('toolbar-tabs'), yo`<div id="toolbar-tabs" class="tab-group">
-    ${pages.getAll().map(drawTab)}
-    <div class="tab-item tab-item-fixed" onclick=${onClickNew}>
+  yo.update(document.getElementById('toolbar-tabs'), yo`<div id="toolbar-tabs" class="chrome-tabs-shell">
+    <div class="chrome-tabs">
+      ${pages.getAll().map(drawTab)}
+    </div>
+    <div class="chrome-shell-bottom-bar"></div>
+  </div>`)
+
+/*    <div class="tab-item tab-item-fixed" onclick=${onClickNew}>
       <span class="icon icon-plus"></span>
     </div>
-  </div>`)
+  </div>`)*/
 }
 
 function updateTabFavicon (e) {
@@ -39,17 +44,19 @@ function drawTab (page) {
       : yo`<span class="icon icon-window"></span>`
 
   const isActive = page.isActive
-  return yo`<div class=${'tab-item'+(isActive ? ' active':'')} data-id=${page.id} onclick=${onClickTab}>
-    <span class="icon icon-cancel icon-close-tab" onclick=${onClickTabClose}></span>
-    <span class="tab-text">${favicon} ${page.getTitle() || 'New tab'}</span>
+  return yo`<div class=${'chrome-tab'+(isActive?' chrome-tab-current':'')} data-id=${page.id} onclick=${onClickTab}>
+    <div class="chrome-tab-favicon">${favicon}</div>
+    <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
+    <div class="chrome-tab-close" onclick=${onClickTabClose}></div>
+    <div class="chrome-tab-curves">
+      <div class="chrome-tab-curves-left-shadow"></div>
+      <div class="chrome-tab-curves-left-highlight"></div>
+      <div class="chrome-tab-curves-left"></div>
+      <div class="chrome-tab-curves-right-shadow"></div>
+      <div class="chrome-tab-curves-right-highlight"></div>
+      <div class="chrome-tab-curves-right"></div>
+    </div>
   </div>`
-}
-
-// webview eventhandlers
-// =
-
-function onDidStartLoading (e) {
-  // TODO
 }
 
 // ui event handlers
