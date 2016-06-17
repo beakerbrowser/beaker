@@ -6,7 +6,7 @@
   position: relative;
   background-color: #cccccc;
   background-image: -webkit-linear-gradient(top, #e1e1e1, #D6D6D6);
-  padding: 10px 10px 6px 10px;
+  padding: 10px 18px 6px 10px;
   border-radius: 4px 4px 0 0;
   height: 35px;
   overflow: hidden;
@@ -32,7 +32,7 @@
 .chrome-tabs {
   *zoom: 1;
   position: relative;
-  width: 99999px;
+  display: flex;
 
   &:after {
     content: "";
@@ -60,15 +60,19 @@
   }
 
   .chrome-tab {
-    float: left;
+    flex: 1;
     position: relative;
     height: 25px;
-    width: 160px;
+    max-width: 160px;
     border: 0px;
     margin: 0 3px 0 20px;
     z-index: 1;
     box-shadow: inset 0 1px rgba(255, 255, 255, 0.3), 0 -1px rgba(0, 0, 0, 0.24);
     -webkit-app-region: no-drag;
+
+    // this one weird trick causes chrome to use a better sizing algorithm
+    // the text inside the tabs will now hide (with ellipsis) if too long
+    min-width: 0;
 
     &, .chrome-tab-curves-left, .chrome-tab-curves-right {
       background-color: #e6e6e6;

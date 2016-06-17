@@ -109,7 +109,6 @@ Please feel free to open usability issues.
   - tabs
     - [ ] reordering
     - [ ] pinning
-    - [ ] correctly resize to fit window size
     - [ ] dropdown when there are too many?
     - [ ] create tab button
   - find in page
