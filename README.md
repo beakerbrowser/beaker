@@ -82,6 +82,11 @@ Thus the [max_page_count pragma](https://www.sqlite.org/pragma.html#pragma_max_p
 Sodium is a modern and easy-to-use crypto library.
 Beaker will use [node-sodium](https://github.com/paixaop/node-sodium) bindings to import the API into the JS environment.
 
+#### firefox sync ([link](https://github.com/mozilla-services/syncclient))
+
+Proposed by the community in https://github.com/pfraze/beaker/issues/7.
+This will enable users to switch seamlessly between firefox and beaker, because their passwords, bookmarks, and etc will be synced.
+
 ### proposed integrations
 
  - [magic wormhole](https://github.com/warner/magic-wormhole)
