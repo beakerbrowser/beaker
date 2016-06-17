@@ -27,6 +27,8 @@ tr:active {
 
   tr {
     td {
+      padding: 2px 8px;
+
       // make links blend into the table more nicely
       a {
         color: inherit;
@@ -36,6 +38,11 @@ tr:active {
         }
       }
 
+      // add some space to the icons
+      .icon {
+        margin-right: 3px;
+      }
+
       // make the link take the full width
       &:first-child a {
         display: block;
@@ -43,7 +50,7 @@ tr:active {
 
       // make the actions compact, and hidden except on hover
       &.actions {
-        width: 40px;
+        width: 25px;
         .icon {
           display: none;
           cursor: pointer;
@@ -53,7 +60,7 @@ tr:active {
 
     &:hover {
       background: #f5f5f4;
-      
+
       td.actions {
         // show icons on row hover
         .icon {

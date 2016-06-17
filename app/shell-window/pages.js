@@ -41,6 +41,7 @@ export function create (url) {
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
     zoom: 0, // what's the current zoom level? (updated by a message from the webview)
+    favicons: null, // what are the favicons of the page?
 
     // get the URL of the page we want to load (vs which is currently loaded)
     getIntendedURL: function () {
@@ -281,6 +282,7 @@ function onDidFinishLoad (e) {
   var page = getByWebview(e.target)
   if (page) {
     page.loadingURL = false
+    page.favicons = null
     navbar.update(page)
   }
 }

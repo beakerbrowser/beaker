@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Bookmarking
 - Feedback button
 - Zoom control in the toolbar
+- Tab favicons
 
 ### Changed
 - Restyled Browser UI

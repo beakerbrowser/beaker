@@ -102,7 +102,6 @@ Basic browsing UI.
 Please feel free to open usability issues.
 
   - tabs
-    - [ ] favicons
     - [ ] reordering
     - [ ] pinning
   - webview behaviors
