@@ -108,8 +108,6 @@ Please feel free to open usability issues.
   - webview behaviors
     - [ ] restore scroll-position on back btn [electron issue](https://github.com/electron/electron/issues/5884)
     - [ ] restore session history on "re-open closed tab" [electron issue](https://github.com/electron/electron/issues/5885)
-    - zoom
-      - [ ] show current zoom in toolbar
   - bookmarking
     - [ ] store favicons
     - [ ] bookmark folders

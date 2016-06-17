@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Zoom now persists across navigations (using SiteData db)
 - Bookmarking
 - Feedback button
+- Zoom control in the toolbar
 
 ### Changed
 - Restyled Browser UI

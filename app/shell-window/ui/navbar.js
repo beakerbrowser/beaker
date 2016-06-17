@@ -1,3 +1,4 @@
+import { remote } from 'electron'
 import * as pages from '../pages'
 import * as url from 'url'
 import * as path from 'path'
@@ -101,7 +102,18 @@ function render (id, page) {
 
   // bookmark btn should be disabled if on a beaker: protocol page
   var bookmarkClass = 'nav-bookmark-btn'+((page && !!page.bookmark) ? ' gold' : '')
-  var bookmarkDisabled = (page && page.getURL().indexOf('beaker:') !== 0) ? '' : 'disabled'
+
+  // zoom btn should only show if zoom is not the default setting
+  var zoomBtn = ''
+  if (page && page.zoom != 0) {
+    // I dont know what that formula is, so I solved this problem like any good programmer would, by stealing the values from chrome
+    var zoomPct = ({
+      '-0.5': 90, '-1': 75, '-1.5': 67, '-2': 50, '-2.5': 33, '-3': 25,
+      '0': 100,
+      '0.5': 110, '1': 125, '1.5': 150, '2': 175, '2.5': 200, '3': 250, '3.5': 300, '4': 400, '4.5': 500
+    })[page.zoom]
+    zoomBtn = yo`<button onclick=${onClickZoom}><span class="icon icon-search"></span> <small>${zoomPct}%</small></button>`
+  }
 
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
@@ -119,7 +131,8 @@ function render (id, page) {
         class="nav-location-input"
         onfocus=${onFocusLocation}
         onkeydown=${onKeydownLocation} />
-      <button class=${bookmarkClass} ${bookmarkDisabled} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
+      ${zoomBtn}
+      <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
     </div>
     ${inpageFinder}
     <div class="toolbar-group">
@@ -127,7 +140,6 @@ function render (id, page) {
     </div>
   </div>`
 }
-
 
 // thanks ogd (from tabby)
 function toGoodUrl (href, cb) {
@@ -219,6 +231,17 @@ function onClickBookmark (e) {
   var page = getEventPage(e)
   if (page)
     page.toggleBookmark()
+}
+
+function onClickZoom (e) {
+  const { Menu, MenuItem } = remote
+  const command = (c) => () => pages.getActive().send('command', c)
+  var menu = Menu.buildFromTemplate([
+    { label: 'Reset Zoom', click: command('view:zoom-reset') },
+    { label: 'Zoom In', click: command('view:zoom-in') },
+    { label: 'Zoom Out', click: command('view:zoom-out') },
+  ])
+  menu.popup(remote.getCurrentWindow())
 }
 
 function onClickFeedback (e) {

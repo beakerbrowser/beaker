@@ -40,6 +40,7 @@ export function create (url) {
     isWebviewReady: false, // has the webview loaded its methods?
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
+    zoom: 0, // what's the current zoom level? (updated by a message from the webview)
 
     // get the URL of the page we want to load (vs which is currently loaded)
     getIntendedURL: function () {
@@ -310,6 +311,10 @@ function onIpcMessage (e, type) {
       case 'new-tab':         return create(e.args[0])
       case 'inspect-element': return page.webviewEl.inspectElement(e.args[0], e.args[1])
       case 'set-status-bar':  return statusBar.set(e.args[0])
+      case 'set-zoom-level':
+        page.zoom = e.args[0];
+        navbar.update(page)
+        break
     }
   }
 }

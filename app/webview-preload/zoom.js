@@ -1,4 +1,4 @@
-import { webFrame } from 'electron'
+import { webFrame, ipcRenderer } from 'electron'
 import * as sitedata from './sitedata'
 
 const ZOOM_STEP = 0.5
@@ -17,13 +17,20 @@ export function setup () {
     if (typeof v != 'undefined') {
       zoom = +v
       webFrame.setZoomLevel(zoom)
+      ipcRenderer.sendToHost('set-zoom-level', zoom)
     }
   })
 }
 
 export function setZoom(z) {
+  // clamp
+  if (z > 4.5) z = 4.5
+  if (z < -3)  z = -3
+
+  // update
   zoom = z
   webFrame.setZoomLevel(zoom)
+  ipcRenderer.sendToHost('set-zoom-level', zoom)
 
   // persist to sitedata
   sitedata.set('zoom', zoom)
