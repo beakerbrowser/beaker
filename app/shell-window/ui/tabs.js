@@ -17,14 +17,20 @@ function updateTabs () {
   yo.update(document.getElementById('toolbar-tabs'), yo`<div id="toolbar-tabs" class="chrome-tabs-shell">
     <div class="chrome-tabs">
       ${pages.getAll().map(drawTab)}
+      <div class="chrome-tab chrome-tab-add-btn" onclick=${onClickNew}>
+        <div class="chrome-tab-favicon"><span class="icon icon-plus"></span></div>
+        <div class="chrome-tab-curves">
+          <div class="chrome-tab-curves-left-shadow"></div>
+          <div class="chrome-tab-curves-left-highlight"></div>
+          <div class="chrome-tab-curves-left"></div>
+          <div class="chrome-tab-curves-right-shadow"></div>
+          <div class="chrome-tab-curves-right-highlight"></div>
+          <div class="chrome-tab-curves-right"></div>
+        </div>
+      </div>
     </div>
     <div class="chrome-shell-bottom-bar"></div>
   </div>`)
-
-/*    <div class="tab-item tab-item-fixed" onclick=${onClickNew}>
-      <span class="icon icon-plus"></span>
-    </div>
-  </div>`)*/
 }
 
 function updateTabFavicon (e) {

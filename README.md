@@ -110,7 +110,6 @@ Please feel free to open usability issues.
     - [ ] reordering
     - [ ] pinning
     - [ ] dropdown when there are too many?
-    - [ ] create tab button
   - find in page
     - [ ] fix UI (is totally broken)
   - webview behaviors
