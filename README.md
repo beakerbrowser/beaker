@@ -97,10 +97,6 @@ This will enable users to switch seamlessly between firefox and beaker, because 
 
 ## todo list
 
-### project/build
-
-  - [ ] figure out why the browserify rebuild (in the watcher) takes 17x longer than the non-watch build
-
 ### basic ui
 
 Basic browsing UI.
@@ -110,6 +106,7 @@ Please feel free to open usability issues.
     - [ ] reordering
     - [ ] pinning
     - [ ] dropdown when there are too many?
+    - [ ] handle bad favicon links more nicely than with a broken image element
   - webview behaviors
     - [ ] restore scroll-position on back btn [electron issue](https://github.com/electron/electron/issues/5884)
     - [ ] restore session history on "re-open closed tab" [electron issue](https://github.com/electron/electron/issues/5885)

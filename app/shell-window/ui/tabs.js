@@ -50,7 +50,7 @@ function drawTab (page) {
       : yo`<span class="icon icon-window"></span>`
 
   const isActive = page.isActive
-  return yo`<div class=${'chrome-tab'+(isActive?' chrome-tab-current':'')} data-id=${page.id} onclick=${onClickTab}>
+  return yo`<div class=${'chrome-tab'+(isActive?' chrome-tab-current':'')} data-id=${page.id} onclick=${onClickTab(page)}>
     <div class="chrome-tab-favicon">${favicon}</div>
     <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
     <div class="chrome-tab-close" onclick=${onClickTabClose}></div>
@@ -73,10 +73,8 @@ function onClickNew () {
   pages.setActive(page)
 }
 
-function onClickTab (e) {
-  var page = pages.getById(e.target.dataset.id)
-  if (page)
-    pages.setActive(page)
+function onClickTab (page) {
+  return () => pages.setActive(page)
 }
 
 function onClickTabClose (e) {
