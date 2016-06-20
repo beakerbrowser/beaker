@@ -53,7 +53,7 @@ function drawTab (page) {
   return yo`<div class=${'chrome-tab'+(isActive?' chrome-tab-current':'')} data-id=${page.id} onclick=${onClickTab(page)}>
     <div class="chrome-tab-favicon">${favicon}</div>
     <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
-    <div class="chrome-tab-close" onclick=${onClickTabClose}></div>
+    <div class="chrome-tab-close" onclick=${onClickTabClose(page)}></div>
     <div class="chrome-tab-curves">
       <div class="chrome-tab-curves-left-shadow"></div>
       <div class="chrome-tab-curves-left-highlight"></div>
@@ -77,8 +77,10 @@ function onClickTab (page) {
   return () => pages.setActive(page)
 }
 
-function onClickTabClose (e) {
-  var page = pages.getById(e.target.parentNode.dataset.id)
-  if (page)
+function onClickTabClose (page) {
+  return e => {
+    e.preventDefault()
+    e.stopPropagation()
     pages.remove(page)
+  }
 }
