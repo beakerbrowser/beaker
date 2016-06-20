@@ -106,7 +106,6 @@ Please feel free to open usability issues.
     - [ ] reordering
     - [ ] pinning
     - [ ] dropdown when there are too many?
-    - [ ] handle bad favicon links more nicely than with a broken image element
   - webview behaviors
     - [ ] restore scroll-position on back btn [electron issue](https://github.com/electron/electron/issues/5884)
     - [ ] restore session history on "re-open closed tab" [electron issue](https://github.com/electron/electron/issues/5885)

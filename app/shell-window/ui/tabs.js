@@ -43,11 +43,17 @@ function updateTabFavicon (e) {
 // =
 
 function drawTab (page) {
-  const favicon = page.isLoading()
-    ? yo`<span class="icon icon-hourglass"></span>`
-    : (page.favicons && page.favicons[0])
-      ? yo`<img src=${page.favicons[0]}>`
-      : yo`<span class="icon icon-window"></span>`
+  var favicon 
+  if (page.isLoading())
+    favicon = yo`<span class="icon icon-hourglass"></span>`
+  else {
+    if (page.favicons && page.favicons[0]) {
+      favicon = yo`<img src=${page.favicons[0]}>`
+      favicon.onerror = onFaviconError(page)
+    }
+    else
+      favicon = yo`<span class="icon icon-window"></span>`
+  }
 
   const isActive = page.isActive
   return yo`<div class=${'chrome-tab'+(isActive?' chrome-tab-current':'')} data-id=${page.id} onclick=${onClickTab(page)}>
@@ -82,5 +88,13 @@ function onClickTabClose (page) {
     e.preventDefault()
     e.stopPropagation()
     pages.remove(page)
+  }
+}
+
+function onFaviconError (page) {
+  return () => {
+    // if the favicon 404s, just fallback to the icon
+    page.favicons = null
+    updateTabs()
   }
 }
