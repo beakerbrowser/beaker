@@ -110,7 +110,6 @@ Please feel free to open usability issues.
     - [ ] restore scroll-position on back btn [electron issue](https://github.com/electron/electron/issues/5884)
     - [ ] restore session history on "re-open closed tab" [electron issue](https://github.com/electron/electron/issues/5885)
   - bookmarking
-    - [ ] fix bug that causes bookmark button to incorrectly highlight/unhighlight during navs
     - [ ] store favicons
     - [ ] bookmark folders
     - [ ] editable titles

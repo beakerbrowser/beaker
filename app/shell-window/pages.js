@@ -117,6 +117,7 @@ export function create (url) {
   page.webviewEl.addEventListener('new-window', onNewWindow)
   page.webviewEl.addEventListener('will-navigate', onWillNavigate)
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
+  page.webviewEl.addEventListener('load-commit', onLoadCommit)
   page.webviewEl.addEventListener('did-get-response-details', onDidGetResponseDetails)
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
@@ -250,7 +251,16 @@ function onWillNavigate (e) {
     // update target url
     page.loadingURL = e.url
     navbar.update(page)
+  }
+}
 
+function onLoadCommit (e) {
+  // ignore if this is a subresource
+  if (!e.isMainFrame)
+    return
+  
+  var page = getByWebview(e.target)
+  if (page) {
     // check if this page bookmarked
     bookmarks.get(e.url, (err, bookmark) => {
       page.bookmark = bookmark
