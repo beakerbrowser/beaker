@@ -1,3 +1,10 @@
+/**
+ * This is the client API to bookmarks
+ * The server is implemented in background-process
+ *
+ * This should only be exposed to trusted code.
+ **/
+
 import { ipcRenderer } from 'electron'
 
 // globals

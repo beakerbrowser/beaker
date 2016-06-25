@@ -3,7 +3,7 @@ import EventEmitter from 'events'
 import path from 'path'
 import * as navbar from './ui/navbar'
 import * as statusBar from './ui/status-bar'
-import * as bookmarks from '../nonbackground-process-lib/bookmarks'
+import * as bookmarks from '../lib/bookmarks-api'
 
 const DEFAULT_URL = 'beaker:start'
 

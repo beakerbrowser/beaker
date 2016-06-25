@@ -33,6 +33,10 @@ npm run rebuild
  - [0002 Hyperboot, application delivery safety](./doc/discuss-notes/0002-hyperboot.md).
  - [0003 HTTP legacy](./doc/discuss-notes/0003-http-legacy.md). The argument for continuing to support HTTP/S.
 
+## API Docs
+
+ - [beaker.fs](./doc/api/beaker.fs.md)
+
 ## tech integrations
 
 If you have tech that needs a browser, make a fork, open an issue, try out your integration, and PR back to here.

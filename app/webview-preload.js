@@ -1,19 +1,38 @@
-import { setup as setupCommandHandlers } from './webview-preload/command-handlers'
-import { setup as setupContextMenu } from './webview-preload/context-menu'
-import { setup as setupStatusBarHover } from './webview-preload/status-bar-hover'
-import { setup as setupZoom } from './webview-preload/zoom'
-import * as bookmarks from './nonbackground-process-lib/bookmarks'
+import * as commandHandlers from './webview-preload/command-handlers'
+import * as contextMenu from './webview-preload/context-menu'
+import * as statusBarHover from './webview-preload/status-bar-hover'
+import * as zoom from './webview-preload/zoom'
+import * as fsAPI from './lib/fs-api'
+import * as bookmarksAPI from './lib/bookmarks-api'
+import * as sitedata from './lib/sitedata'
+
+window.sitedata =sitedata
+// it would be better to import this from package.json
+const BEAKER_VERSION = '0.0.1'
 
 // setup standard behaviors
-setupCommandHandlers()
-setupContextMenu()
-setupStatusBarHover()
-setupZoom()
+commandHandlers.setup()
+contextMenu.setup()
+statusBarHover.setup()
+zoom.setup()
+fsAPI.setup()
 
-// export privileged APIs to builtin pages
-// (these APIs should only be made available to sites served over the beaker protocol)
+// export privileged APIs
+// =
+
+// builtin pages
 if (window.location.protocol == 'beaker:') {
   window.beaker = {
-    bookmarks
+    version: BEAKER_VERSION,
+    bookmarks: bookmarksAPI,
+    fs: fsAPI.getSandboxAPI()
+  }
+}
+
+// p2p apps
+if (window.location.protocol == 'dat:') {
+  window.beaker = {
+    version: BEAKER_VERSION,
+    fs: fsAPI.getSandboxAPI()
   }
 }
