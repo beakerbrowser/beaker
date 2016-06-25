@@ -1,6 +1,4 @@
-# Todo
-
-Please feel free to open issues.
+# TODO
 
 ### basic ui
 
@@ -32,7 +30,7 @@ Basic browsing UI.
     - [ ] use the archive's dns name, if available
     - [ ] show item sizes
     - [ ] render README.md ?
-  - expose dat API to applications
+  - [ ] expose dat API to applications
 
 ### ipfs integration
 
