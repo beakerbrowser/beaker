@@ -26,25 +26,26 @@ npm run rebuild
 
 [Lots of dev instructions and notes here](./build-notes.md)
 
-## API Docs
+## API Docs & etc
 
  - [beaker.fs](./doc/api/beaker.fs.md)
+ - [TODO list](./doc/TODO.md)
 
 ## tech integrations
 
 If you have tech that needs a browser, make a fork, open an issue, try out your integration, and PR back to here.
 
-**integrations in progress**
+**in progress**
 
  - [Dat](http://dat-data.com/). Used to serve applications, and provided as a permissioned API.
  - [IPFS](https://ipfs.io/). Used to serve applications, and provided as a permissioned API.
- - [node fs api](./doc/api/beaker.fs.md). Provided as a permissioned API.
+ - [Node filesystem](./doc/api/beaker.fs.md). Provided as a permissioned API.
 
 **planned integrations**
 
- - Sqlite3. Provided as a permissioned API.
- - [libsodium](https://github.com/jedisct1/libsodium). Provided as an open API.
- - [Firefox sync](https://github.com/mozilla-services/syncclient). Proposed by the community in https://github.com/pfraze/beaker/issues/7, to enable users to switch quickly between firefox and beaker.
+ - [Sqlite3](https://www.sqlite.org/). Provided as an open API, within the FS api.
+ - [Libsodium](https://github.com/jedisct1/libsodium). Provided as an open API.
+ - [Firefox Sync](https://github.com/mozilla-services/syncclient). Proposed by the community in https://github.com/pfraze/beaker/issues/7, to enable users to switch quickly between firefox and beaker.
 
 **proposed integrations**
 
@@ -52,84 +53,6 @@ If you have tech that needs a browser, make a fork, open an issue, try out your 
  - [interledger](https://interledger.org/)
  - keybase ([discussion](./doc/discuss-notes/0001-keybase.md))
  - matrix ([matrix-js-sdk](https://www.npmjs.com/package/matrix-js-sdk), [homepage](https://matrix.org/))
-
-## todo list
-
-### basic ui
-
-Basic browsing UI.
-Please feel free to open usability issues.
-
-  - tabs
-    - [ ] reordering
-    - [ ] pinning
-    - [ ] dropdown when there are too many?
-  - webview behaviors
-    - [ ] restore scroll-position on back btn [electron issue](https://github.com/electron/electron/issues/5884)
-    - [ ] restore session history on "re-open closed tab" [electron issue](https://github.com/electron/electron/issues/5885)
-  - bookmarking
-    - [ ] store favicons
-    - [ ] bookmark folders
-    - [ ] editable titles
-  - context menu
-    - [ ] save image as...
-    - [ ] video/audio element controls
-
-### dat integration
-
-  - [ ] "Save dat archive..."
-  - view-dat://
-    - [ ] use the archive's dns name, if available
-    - [ ] show item sizes
-    - [ ] render README.md ?
-  - expose dat API to applications
-
-### privacy, security
-
-Some basic necessities
-
- - [ ] block ads
- - [ ] incognito mode only. add opt-in 
- - [ ] try HTTPS before trying 
- - [ ] try to remove things that make fingerprinting possible
- - [ ] put webrtc (and other leaky apis) behind perms prompts
-
-More advanced goals:
-
- - [ ] site version control (https://github.com/substack/hyperboot)
- - [ ] sandbox permission-trading: new features (such as FS access) are made available after other rights (such as XHR) are dropped
-
-### user identity
-
-something close to (if not cloned from) mozilla's persona project.
-or, may consider using https://github.com/google/end-to-end.
-should work across devices
-
- - [ ] naming/addressing (bob@foo.com ?)
- - [ ] key management, store secrets safely
- - [ ] look into supporting SSL client certificates
-
-### cross-host data publishing
-
-we need a data layer that is addressable and manipulable across different hosts. the way to do this is to use cryptographic referenced data structures (sha256 URIs for static content, and pubkey URIs for dynamic content)
-
-https://github.com/mafintosh/hyperlog
-and
-https://github.com/mafintosh/hyperdrive
-provides 2 crypto-addressed data types (logs, file archives) with p2p syncing protocols
-
- - [ ] hyperlog/hyperdrive APIs
-
-### peer-to-peer messaging layer
-
- - [ ] webrtc signalling. needs to integrate with user identity layer, so channels can be opened using another user's ID. (matrix protocol?)
- - [ ] mail protocol. SMTP? not sure.
-
-### user storage
-
- - [ ] local filesystem API
- - [ ] remote filesystem API (nfs?)
- - [ ] sqlite API
 
 ## license
 
