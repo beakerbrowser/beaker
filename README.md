@@ -41,13 +41,13 @@ If you have tech that needs a browser, make a fork, open an issue, try out your 
  - [IPFS](https://ipfs.io/). Used to serve applications, and provided as a permissioned API.
  - [Node filesystem](./doc/api/beaker.fs.md). Provided as a permissioned API.
 
-**planned integrations**
+**planned**
 
  - [Sqlite3](https://www.sqlite.org/). Provided as an open API, within the FS api.
  - [Libsodium](https://github.com/jedisct1/libsodium). Provided as an open API.
  - [Firefox Sync](https://github.com/mozilla-services/syncclient). Proposed by the community in https://github.com/pfraze/beaker/issues/7, to enable users to switch quickly between firefox and beaker.
 
-**proposed integrations**
+**proposed**
 
  - [magic wormhole](https://github.com/warner/magic-wormhole)
  - [interledger](https://interledger.org/)
