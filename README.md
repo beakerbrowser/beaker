@@ -41,7 +41,7 @@ npm run rebuild
 
 If you have tech that needs a browser, make a fork, open an issue, try out your integration, and PR back to here.
 
-### planned integrations
+### working integrations
 
 #### dat ([link](http://dat-data.com/))
 
@@ -61,6 +61,12 @@ It discovers peers with the Bittorrent DHT, centralized DNS servers and Multicas
 
 [IPFS](https://ipfs.io/).
 See https://github.com/pfraze/beaker/issues/2
+
+#### node `fs`
+
+See [beaker.fs](./doc/api/beaker.fs.md)
+
+### planned integrations
 
 #### websql
 
@@ -96,7 +102,6 @@ This will enable users to switch seamlessly between firefox and beaker, because 
  - [magic wormhole](https://github.com/warner/magic-wormhole)
  - [interledger](https://interledger.org/)
  - keybase ([discussion](./doc/discuss-notes/0001-keybase.md))
- - node `fs` module
  - matrix ([matrix-js-sdk](https://www.npmjs.com/package/matrix-js-sdk), [homepage](https://matrix.org/))
 
 ## todo list
@@ -128,6 +133,7 @@ Please feel free to open usability issues.
     - [ ] use the archive's dns name, if available
     - [ ] show item sizes
     - [ ] render README.md ?
+  - expose dat API to applications
 
 ### privacy, security
 
