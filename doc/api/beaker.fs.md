@@ -6,72 +6,90 @@ The `beaker.fs` API is a safe way to access the filesystem.
 
 Beaker applications that are loaded via dat: or ipfs: have a sandboxed folder available to them.
 But, they also need a way to get outside the sandbox, eg to work on a spreadsheet in ~/Documents
-
 This is an API for both use-cases.
-The application explicitly requests access outside of the sandbox.
-Those requests create file-explorer dialogs, to pick the folder or file.
-The selection then stays in the app's perms until explicitly released, by the app or user.
 
-**App Folder**
+#### App Folder
 
 Each application has a sandboxed folder, which they can use without asking permission.
 This is the 'App' folder.
 
-**User Files and Folders**
+#### User Files and Folders
 
 Applications can ask for files and folders outside of their sandbox.
 These are 'User' files and folders.
 The permission to use these objects will persist until released by the application.
 
-## API
+## Overview
 
-Overview:
+Using the sandboxed folder:
 
 ```js
 // Get the app's sandbox folder
 // no user-prompt required
 var folder = beaker.fs.getAppFolder()
 
+// Operate on the folder
+folder.readdirSync('.') // => ['.DS_Store', 'cat1.jpg', 'cat2.jpg', ...]
+folder.writeFileSync('hello.txt', 'Hello, world!', 'utf-8')
+folder.readFileSync('hello.txt', 'utf-8') // => 'Hello, world!'
+```
+
+Requesting access outside the sandbox:
+
+```js
 // To get a folder outside of the sandbox, you use this method
 // it will prompt the user to choose the directory:
 beaker.fs.requestFolder({ title: 'Documents directory' }, (err, folder) => {...})
-
-// To get a file within one of your folders, use folder.open()
-var file = folder.openSync('myfile.txt', 'r+')
 
 // To get a single file outside of the sandbox, you use this method:
 beaker.fs.requestFile('r+', {
   title: 'Your profile picture',
   filters: [{name: 'Images', extensions: ['jpg', 'png', 'gif']}]
 }, (err, file) => {...})
+```
 
+Get files and folders which were previously granted:
+
+```js
 // To see which files and folders are currently available to the app:
 beaker.fs.getUserFolders((err, folders) => {...})
 beaker.fs.getUserFiles((err, files) => {...})
+```
 
-// All folders and files have an internal id, stored at `folder.id` and `file.id`
-// you can fetch by id directly, in the request* methods
-// if the id isnt found, it'll fallback to the request prompt:
+All folders and files have an internal id, stored at `folder.id` and `file.id`.
+For convenience, you can fetch by id directly, in the request* methods.
+If the id isnt found, it'll fallback to the request prompt.
+
+```js
+// Reopen, or request, the profile pic
 beaker.fs.requestFile(localStorage.profilePicId, 'r+', {...}, (err, profilePic) => {
   if (profilePic)
     localStorage.profilePicId = profilePic.id
 })
 ```
 
+## Toplevel API
+
 #### beaker.fs.getAppFolder()
 
 Get the application's sandboxed folder.
 Returns a `folder` object.
+
+[See Folder API](#folder-api)
 
 #### beaker.fs.getUserFolders(cb)
 
 Get all folders the user has given to the application.
 Calls `cb` with `(err, folders)`.
 
+[See Folder API](#folder-api)
+
 #### beaker.fs.getUserFiles(cb)
 
 Get all files the user has given to the application.
 Calls `cb` with `(err, files)`.
+
+[See File API](#file-api)
 
 #### beaker.fs.requestFolder([id,] promptOptions, cb)
 
@@ -81,6 +99,8 @@ Open a prompt asking the user for a folder.
  - `promptOptions.title` (string) The title of the prompt.
  - `promptOptions.multi` (bool) Allow multiple selections?
  - `cb` (function) Called with `(err, folder)`
+
+[See Folder API](#folder-api)
 
 #### beaker.fs.requestFile([id,] flags, promptOptions, cb)
 
@@ -109,6 +129,8 @@ The `filters` specifies an array of file types that can be displayed or selected
 
 The extensions array should contain extensions without wildcards or dots (e.g. `'png'` is good but `'.png'` and `'*.png'` are bad). To show all files, use the `'*'` wildcard (no other wildcard is supported).
 
+[See File API](#file-api)
+
 #### beaker.fs.releaseFolder(folder[, cb])
 
 Give up access to the folder.
@@ -117,7 +139,7 @@ Give up access to the folder.
 
 Give up access to the file.
 
-#### folder API
+## Folder API
 
 The `folder` API comes from the [node fs](https://nodejs.org/api/fs.htm) library, and includes *Sync variants.
 Paths are relative (and scoped to) to the folder.
@@ -140,7 +162,7 @@ folder.writeFile(file, data[, options], callback)
 
 The `folder.open()` API differs from node's `fs.open()` by returning a `file` object instead of an `fd`.
 
-#### file API
+## File API
 
 The file API uses [node fs](https://nodejs.org/api/fs.htm) methods, scoped to the file, and includes *Sync variants.
 Internally, a FD is held until close() is called.
