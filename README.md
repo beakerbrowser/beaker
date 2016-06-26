@@ -26,10 +26,9 @@ npm run rebuild
 
 [Lots of dev instructions and notes here](./build-notes.md)
 
-## API Docs & etc
+## API Docs
 
  - [beaker.fs](./doc/api/beaker.fs.md)
- - [TODO list](./doc/TODO.md)
 
 ## tech integrations
 
