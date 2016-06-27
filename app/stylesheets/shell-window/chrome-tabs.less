@@ -175,6 +175,7 @@
     .chrome-tab-favicon {
       height: 16px;
       width: 16px;
+      text-align: center;
       background-size: 16px;
       position: absolute;
       left: 0;
@@ -233,8 +234,12 @@
       box-shadow: inset 0 0 0 1px #b9554c, inset 0 1px 3px #b9554c, inset 0 0 20px rgba(0, 0, 0, 0.1);
     }
 
+    &.chrome-tab-pinned {
+      flex: 0 0 16px;
+    }
+
     &.chrome-tab-add-btn {
-      flex: 0 0 8px;
+      flex: 0 0 16px;
       box-shadow: none;
 
       .icon {

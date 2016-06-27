@@ -40,6 +40,7 @@ export function create (url) {
     bookmark: null, // this page's bookmark object, if it's bookmarked
     isWebviewReady: false, // has the webview loaded its methods?
     isActive: false, // is the active page?
+    isPinned: false, // is this page pinned?
     isInpageFinding: false, // showing the inpage find ctrl?
     zoom: 0, // what's the current zoom level? (updated by a message from the webview)
     favicons: null, // what are the favicons of the page?
@@ -194,6 +195,23 @@ export function setActive (page) {
   show(page)
   page.isActive = 1
   events.emit('set-active', page)
+}
+
+export function togglePinned (page) {
+  // move tab in/out of the pinned tabs
+  var oldIndex = pages.indexOf(page), newIndex = 0
+  for (newIndex; newIndex < pages.length; newIndex++)
+    if (!pages[newIndex].isPinned)
+      break
+  if (oldIndex < newIndex) newIndex--
+  pages.splice(oldIndex, 1)
+  pages.splice(newIndex, 0, page)
+
+  // update page state
+  page.isPinned = !page.isPinned
+
+  // TODO move the tab to the left
+  events.emit('update')  
 }
 
 export function changeActiveBy (offset) {
