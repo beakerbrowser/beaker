@@ -2,6 +2,7 @@ import { app, ipcMain } from 'electron'
 import sqlite3 from 'sqlite3'
 import path from 'path'
 import url from 'url'
+import { setupDatabase } from '../lib/bg/sqlite-tools'
 import log from '../log'
 
 // globals
@@ -16,28 +17,7 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'SiteData')
   db = new sqlite3.Database(dbPath)
-
-  // run migrations
-  db.get('PRAGMA user_version;', (err, res) => {
-    if (err) throw err
-
-    var version = (res && res.user_version) ? +res.user_version : 0
-    var neededMigrations = migrations.slice(version)
-    if (neededMigrations.length == 0)
-      return
-
-    log('[SITEDATA] Database at version', version, '; Running', neededMigrations.length, 'migrations')
-    runNeededMigrations()
-    function runNeededMigrations (err) {
-      if (err) throw err
-
-      var migration = neededMigrations.shift()
-      if (!migration)
-        return log('[SITEDATA] Database migrations completed without error') // done
-
-      migration(runNeededMigrations)
-    }
-  })
+  setupDatabase(db, migrations, '[SITEDATA]')
 
   // wire up IPC handlers
   ipcMain.on('sitedata', onIPCMessage)

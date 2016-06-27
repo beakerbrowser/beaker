@@ -10,6 +10,7 @@ import * as windows from './background-process/windows'
 import buildMenu from './background-process/window-menu'
 import * as sitedata from './background-process/sitedata'
 import * as bookmarks from './background-process/bookmarks'
+import * as history from './background-process/history'
 
 import * as ipfsNetwork from './background-process/networks/ipfs'
 
@@ -31,6 +32,7 @@ app.on('ready', function () {
   // databases
   sitedata.setup()
   bookmarks.setup()
+  history.setup()
 
   // networks
   ipfsNetwork.setup()

@@ -3,7 +3,8 @@ import EventEmitter from 'events'
 import path from 'path'
 import * as navbar from './ui/navbar'
 import * as statusBar from './ui/status-bar'
-import * as bookmarks from '../lib/bookmarks-api'
+import * as bookmarks from '../lib/fg/bookmarks-api'
+import * as history from '../lib/fg/history-api'
 
 const DEFAULT_URL = 'beaker:start'
 
@@ -266,7 +267,9 @@ function onLoadCommit (e) {
       page.bookmark = bookmark
       navbar.update(page)
     })
-  }  
+    // stop autocompleting
+    navbar.clearAutocomplete()
+  }
 }
 
 function onDidStartLoading (e) {
@@ -291,9 +294,15 @@ function onDidGetResponseDetails (e) {
 function onDidFinishLoad (e) {
   var page = getByWebview(e.target)
   if (page) {
+    // update rendering
     page.loadingURL = false
     page.favicons = null
     navbar.update(page)
+
+    // update history
+    var url = page.getURL()
+    if (/^(http|dat|ipfs|file)/.test(url))
+      history.addVisit({ url: page.getURL(), title: page.getTitle() })
   }
 }
 

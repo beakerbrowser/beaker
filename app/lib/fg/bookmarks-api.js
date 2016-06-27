@@ -68,6 +68,6 @@ ipcRenderer.on('bookmarks', (event, command, requestId, ...args) => {
       break
 
     default:
-      console.warn('Unknown sitedata message', arguments)
+      console.warn('Unknown bookmarks message', arguments)
   }
 })

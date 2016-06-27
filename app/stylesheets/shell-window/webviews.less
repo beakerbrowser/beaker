@@ -1,0 +1,26 @@
+#webviews {
+  height: ~"calc(100vh - 62px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
+  position: relative;
+
+  webview {
+    height: 100%;
+    width: 100%;
+    outline: none;
+    position: absolute;
+
+    &.hidden {
+      // use visiblity instead of display: none
+      // (this ensures that, even if hidden, the webview will do work)
+      display: flex; // the default display type
+      visibility: hidden;
+
+      // this is what electron's docs recommend...
+      // causes the pages to relayout on unhide, though, which sucks
+      // but, keep an eye out for bugs that would make the following better
+      // -prf
+      /*flex: 0 1;
+      width: 0px;
+      height: 0px;*/
+    }
+  }
+}

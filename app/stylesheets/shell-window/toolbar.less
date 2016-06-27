@@ -1,0 +1,30 @@
+// draggable region for OSX
+body.darwin #toolbar {
+  display: block;
+  -webkit-app-region: drag;
+}
+
+#toolbar {
+  height: 72px;
+  border-bottom: 1px solid #999;
+  background: linear-gradient(to bottom, #F9F9F9 0, #E0E0E0 100%);
+
+  .toolbar-group {
+    padding: 0 5px;
+  }
+}
+
+.window-blurred {
+  // when the window isnt focused, lighten the toolbar
+  #toolbar {
+    background: #eee;
+    border-color: #bbb;
+
+    .toolbar-actions .form-control {
+      box-shadow: none;
+    }
+    .toolbar-actions button {
+      color: #bbb;
+    }
+  }
+}

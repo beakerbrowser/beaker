@@ -1,0 +1,137 @@
+.toolbar-input-group {
+  flex: 1;
+  display: flex;
+  position: relative; // for the :after el, and autocomplete dropdown, to position off of
+
+  background: #fff;
+  box-shadow: inset 0px 1px 1px rgba(0,0,0,.25);
+  border: 1px solid #B3B1B3;
+  border-radius: 3px;
+
+  margin: 0 0 0 5px;
+  height: 28px;
+
+  font-size: 14px;
+  -webkit-app-region: no-drag;
+
+  &:after {
+    // bottom edge highlight
+    content: ' ';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    top: 27px;
+    height: 1px;
+    background: rgba(255,255,255,0.85);
+  }
+
+  input {
+    flex: 1;
+    padding: 1px 0 0 10px;
+
+    border: 0;
+    border-left: 1px solid #ccc;
+    background: transparent;
+    cursor: text;
+
+    &:focus {
+      outline: 0;
+    }
+    &:first-child {
+      border-left: 0;
+    }
+  }
+
+  button {
+    background: none;
+    font-size: 17px;
+    line-height: 1.1;
+
+    border: 0;
+    border-left: 1px solid #ccc;
+    border-radius: 0;
+
+    padding: 4px 8px;
+    min-width: 34px;
+    color: #999;
+
+    &:disabled {
+      color: #ddd !important;
+      background: rgba(0,0,0,0.05);
+    }
+
+    &:focus {
+      outline: 0;
+    }
+
+    &:hover:not(:disabled) {
+      text-shadow: 1px 2px 2px rgba(0,0,0,.2);
+      cursor: pointer;
+      span {
+        cursor: pointer;
+      }
+    }
+
+    &:last-child {
+      // give a little more room on the right
+      min-width: 35px;
+    }
+
+    // bookmark btn styles
+    &.nav-bookmark-btn {
+      color: #fff;
+      -webkit-text-stroke: 1px #aaa;
+      &.gold {
+        color: #FFBC00;
+        -webkit-text-stroke: 1px #EAAE05;
+      }
+      &:disabled {
+        -webkit-text-stroke: 1px #ccc;
+      }
+    }
+  }
+
+  .autocomplete-dropdown {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    top: 29px;
+    background: #fff;
+    z-index: 1;
+    border: 1px solid #ccc;
+    border-top: 0;
+    padding-bottom: 3px;
+
+    .result {
+      padding: 2px 10px;
+      font-size: 15px;
+      .icon {
+        margin-right: 10px;
+        width: 15px;
+        display: inline-block;
+        text-align: center;
+        &.icon-search {
+          font-size: 17px;
+          line-height: 17px;
+        }
+      }
+      .result-url {
+        color: #397EEF;
+      }
+      .result-title {
+        margin-left: 5px;
+        color: gray;
+        &:before {
+          content: '-';
+          margin-right: 5px;
+        }
+      }
+      &.selected {
+        background: lightgoldenrodyellow;
+      }
+      &:hover {
+        background: #eee;
+      }
+    }
+  }
+}

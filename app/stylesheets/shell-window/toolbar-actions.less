@@ -1,0 +1,40 @@
+.toolbar-actions {
+  display: flex;
+  padding: 0;
+  margin: 4px 0 0;
+
+  &.hidden {
+    display: none;
+  }
+
+  button.toolbar-btn {
+    background: none;
+    border: 0;
+    margin: 0;
+    padding: 4px 5px;
+    font-size: 17px;
+    line-height: 1.1;
+    color: #666;
+    width: 26px;
+    border-radius: 2px;
+    border: 1px solid transparent;
+
+    &:hover:not(:disabled) {
+      border: 1px solid #aaa;
+      box-shadow: 0px 2px 2px rgba(0,0,0,0.1);
+      text-shadow: none;
+      background: linear-gradient(to bottom, #F5f5f5, #e0e0e0);
+    }
+    &:disabled {
+      color: #aaa;
+    }
+    &:focus {
+      outline: 0;
+    }
+
+    // make the arrows thicker
+    &.nav-back-btn, &.nav-forward-btn, &.nav-forward-cancel {
+      -webkit-text-stroke: 1px;
+    }
+  }
+}

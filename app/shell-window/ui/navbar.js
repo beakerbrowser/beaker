@@ -1,5 +1,6 @@
 import { remote } from 'electron'
 import * as pages from '../pages'
+import * as history from '../../lib/fg/history-api'
 import * as url from 'url'
 import * as path from 'path'
 import * as tld from 'tld'
@@ -8,11 +9,20 @@ import * as dns from 'dns'
 // tld.defaultFile = path.join(__dirname, '../tlds.dat')
 
 const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
+const KEYCODE_DOWN = 40
+const KEYCODE_UP = 38
+const KEYCODE_ESC = 27
+const KEYCODE_ENTER = 13
 
 // globals
 // =
 
 var toolbarNavDiv = document.getElementById('toolbar-nav')
+
+// autocomplete data
+var autocompleteCurrentValue = null
+var autocompleteCurrentSelection = 0
+var autocompleteResults = null // if set to an array, will render dropdown
 
 // exported functions
 // =
@@ -52,7 +62,19 @@ export function hideInpageFind (page) {
   update(page)
 }
 
+export function clearAutocomplete () {
+  if (autocompleteResults) {
+    autocompleteCurrentValue = null
+    autocompleteCurrentSelection = 0
+    autocompleteResults = null
+    update()
+  }
+}
+
 export function update (page) {
+  // fetch current page, if not given
+  page = page || pages.getActive()
+
   // update location
   var addrEl = page.navbarEl.querySelector('.nav-location-input')
   var isAddrElFocused = addrEl.matches(':focus')
@@ -115,6 +137,34 @@ function render (id, page) {
     zoomBtn = yo`<button onclick=${onClickZoom}><span class="icon icon-search"></span> <small>${zoomPct}%</small></button>`
   }
 
+  // autocomplete dropdown
+  var autocompleteDropdown = ''
+  if (autocompleteResults) {
+    autocompleteDropdown = yo`
+      <div class="autocomplete-dropdown" onclick=${onClickAutocompleteDropdown}>
+        ${autocompleteResults.map((r, i) => {
+          // content type
+          var iconCls = 'icon icon-' + ((r.search) ? 'search' : 'window')
+          var contentColumn = (r.search)
+            ? yo`<span class="result-search">${r.search}</span>`
+            : yo`<span class="result-url">${r.url}</span>`
+          
+          // selection
+          var rowCls = 'result'
+          if (i == autocompleteCurrentSelection)
+            rowCls += ' selected'
+
+          // result row
+          return yo`<div class=${rowCls} data-result-index=${i}>
+            <span class=${iconCls}></span>
+            ${contentColumn}
+            <span class="result-title">${r.title}</span>
+          </div>`
+        })}
+      </div>
+    `
+  }
+
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
       <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
@@ -130,10 +180,13 @@ function render (id, page) {
         type="text"
         class="nav-location-input"
         onfocus=${onFocusLocation}
+        onblur=${onBlurLocation}
+        onkeyup=${onKeyupLocation}
         onkeydown=${onKeydownLocation} />
       ${inpageFinder}
       ${zoomBtn}
       <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
+      ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
       <button class="toolbar-btn" onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
@@ -141,57 +194,39 @@ function render (id, page) {
   </div>`
 }
 
-// thanks ogd (from tabby)
-function toGoodUrl (href, cb) {
-  var original = href
+function handleAutocompleteSearch (err, results) {
+  var v = autocompleteCurrentValue
+  if (err)
+    console.warn('Autocomplete search failed', err)
 
-  // if there's a space in the URL, assume it's a search
-  if (href.indexOf(' ') > -1)
-    return search(href)
+  // does the value look like a url?
+  var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || v.includes('://')))
+  var vWithProtocol = v
+  if (isProbablyUrl && !v.includes('://'))
+    vWithProtocol = 'https://'+v
 
-  // if there's a protocol, assume it's a link
-  var parsed = url.parse(href)
-  if (parsed.protocol)
-    return cb(href)
-
-  // localhost always goes
-  if (parsed.hostname == 'localhost')
-    return cb(href)
-
-  // default protocol to https
-  href = 'https://' + href
-  parsed = url.parse(href)
-
-  // check against tdls.dat
-  // FIXME
-  // this got broken by changing to the beaker: protocol
-  // __dirname isnt set correctly, so TLD cant load its dat file
-  // -prf
-  // var validTld = tld.registered(parsed.hostname)
-  // if (validTld && href.indexOf('.') > -1)
-    // return cb(href)
-
-  // ok, so there doesnt *appear* to be a good TLD in the hostname
-  // but, the device may have hostnames in /etc/hosts without TLDs
-  // simple solution: try a dns lookup, and abort in 250ms
-  // if there's an /etc/hosts entry, the DNS lookup should succeed before 250ms passes
-  var queryFinished = false
-  setTimeout(function () {
-    if (queryFinished) return
-    queryFinished = true
-    search(original)
-  }, 250)
-
-  dns.lookup(parsed.hostname, function (err, address) {
-    if (queryFinished) return
-    queryFinished = true
-    if (err) return search(original)
-    else cb(href)
-  })
-
-  function search (href) {
-    cb('https://duckduckgo.com/?q=' + href.split(' ').join('+'))
+  // set the top results accordingly
+  var gotoResult = { url: vWithProtocol, title: 'Go to '+v }
+  var searchResult = { 
+    search: v,
+    title: 'DuckDuckGo Search',
+    url: 'https://duckduckgo.com/?q=' + v.split(' ').join('+')
   }
+  if (isProbablyUrl) autocompleteResults = [gotoResult, searchResult]
+  else               autocompleteResults = [searchResult]
+
+  // add search results
+  if (results)
+    autocompleteResults = autocompleteResults.concat(results)
+
+  // render
+  update()
+}
+
+function getAutocompleteSelectionUrl (i) {
+  if (typeof i !== 'number')
+    i = autocompleteCurrentSelection
+  return autocompleteResults[i].url
 }
 
 // ui event handlers
@@ -254,21 +289,31 @@ function onFocusLocation (e) {
     page.navbarEl.querySelector('.nav-location-input').select()
 }
 
-function onKeydownLocation (e) {
+function onBlurLocation () {
+  // HACK
+  // blur gets called right before the click event for onClickAutocompleteDropdown
+  // so, wait a bit before clearing the autocomplete, so the click has a chance to fire
+  // -prf
+  setTimeout(clearAutocomplete, 150)
+}
+
+function onKeyupLocation (e) {
+  var value = e.target.value
+
   // on enter
-  if (e.keyCode == 13) {
+  if (e.keyCode == KEYCODE_ENTER) {
     e.preventDefault()
-    var url = e.target.value
 
     var page = getEventPage(e)
     if (page) {
+      page.loadURL(getAutocompleteSelectionUrl())
       e.target.blur()
-      toGoodUrl(url, url => page.loadURL(url))
     }
+    return
   }
 
   // on escape
-  if (e.keyCode == 27) {
+  if (e.keyCode == KEYCODE_ESC) {
     e.target.blur()
 
     // reset the URL if there is one
@@ -276,6 +321,41 @@ function onKeydownLocation (e) {
     var addrEl = page.navbarEl.querySelector('.nav-location-input')
     if (page && page.getIntendedURL())
       addrEl.value = page.getIntendedURL()
+    return
+  }
+
+  // run autocomplete
+  // TODO debounce
+  var autocompleteValue = value.trim()
+  if (autocompleteValue && autocompleteCurrentValue != autocompleteValue) {
+    autocompleteCurrentValue = autocompleteValue
+    history.search(value, handleAutocompleteSearch)
+  } else if (!autocompleteValue)
+    clearAutocomplete()
+}
+
+function onKeydownLocation (e) {
+  // on keycode navigations
+  if (autocompleteResults && (e.keyCode == KEYCODE_UP || e.keyCode == KEYCODE_DOWN)) {
+    e.preventDefault()
+    if (e.keyCode == KEYCODE_UP && autocompleteCurrentSelection > 0)
+      autocompleteCurrentSelection--
+    if (e.keyCode == KEYCODE_DOWN && autocompleteCurrentSelection < autocompleteResults.length - 1)
+      autocompleteCurrentSelection++
+    update()
+    return
+  }
+}
+
+function onClickAutocompleteDropdown (e) {
+  // get the result index
+  for (var i=0; i < e.path.length; i++) {
+    if (e.path[i].dataset && e.path[i].classList.contains('result')) {
+      // follow result url
+      var resultIndex = +e.path[i].dataset.resultIndex
+      pages.getActive().loadURL(getAutocompleteSelectionUrl(resultIndex))
+      return
+    }
   }
 }
 
@@ -290,14 +370,14 @@ function onInputFind (e) {
 
 function onKeydownFind (e) {
   // on escape
-  if (e.keyCode == 27) {
+  if (e.keyCode == KEYCODE_ESC) {
     var page = getEventPage(e)
     if (page)
       hideInpageFind(page)
   }
 
   // on enter
-  if (e.keyCode == 13) {
+  if (e.keyCode == KEYCODE_ENTER) {
     var str = e.target.value
     var backwards = e.shiftKey // search backwords on shift+enter
     var page = getEventPage(e)
