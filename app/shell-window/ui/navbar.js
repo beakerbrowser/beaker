@@ -226,7 +226,12 @@ function handleAutocompleteSearch (err, results) {
 function getAutocompleteSelectionUrl (i) {
   if (typeof i !== 'number')
     i = autocompleteCurrentSelection
-  return autocompleteResults[i].url
+  if (autocompleteResults && autocompleteResults[i])
+    return autocompleteResults[i].url
+
+  // fallback to the current value in the navbar
+  var addrEl = pages.getActive().navbarEl.querySelector('.nav-location-input')
+  return addrEl.value
 }
 
 // ui event handlers
