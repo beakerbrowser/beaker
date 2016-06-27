@@ -17,14 +17,26 @@ body.darwin #toolbar {
 .window-blurred {
   // when the window isnt focused, lighten the toolbar
   #toolbar {
-    background: #eee;
+    background: #fafafa;
     border-color: #bbb;
 
-    .toolbar-actions .form-control {
+    .chrome-tabs-shell,
+    .chrome-tab,
+    .chrome-tab-curves-left,
+    .chrome-tab-curves-right {
+      background: #fafafa;
+    }
+    .chrome-shell-bottom-bar {
+      border-color: #ccc;
+    }
+    .toolbar-actions .form-control, .toolbar-input-group {
       box-shadow: none;
     }
     .toolbar-actions button {
       color: #bbb;
+    }
+    .toolbar-actions input {
+      color: gray;
     }
   }
 }

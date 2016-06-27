@@ -56,7 +56,7 @@ function drawTab (page) {
   }
 
   const isActive = page.isActive
-  return yo`<div class=${'chrome-tab'+(isActive?' chrome-tab-current':'')} data-id=${page.id} onclick=${onClickTab(page)}>
+  return yo`<div class=${'chrome-tab'+(isActive?' chrome-tab-current':'')} data-id=${page.id} onclick=${onClickTab(page)} title=${page.getTitle()}>
     <div class="chrome-tab-favicon">${favicon}</div>
     <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
     <div class="chrome-tab-close" onclick=${onClickTabClose(page)}></div>
