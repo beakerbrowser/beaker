@@ -3,10 +3,7 @@ import * as pages from '../pages'
 import * as history from '../../lib/fg/history-api'
 import * as url from 'url'
 import * as path from 'path'
-import * as tld from 'tld'
 import * as yo from 'yo-yo'
-import * as dns from 'dns'
-// tld.defaultFile = path.join(__dirname, '../tlds.dat')
 
 const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
 const KEYCODE_DOWN = 40
