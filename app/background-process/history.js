@@ -113,13 +113,13 @@ export function removeVisit (url, cb) {
   if (!url || typeof url != 'string')
     return cb(new BadParam('url', 'string'))
 
-  db.run(`
-    BEGIN TRANSACTION;
-    DELETE FROM visits WHERE url = ?;
-    DELETE FROM visit_stats WHERE url = ?;
-    DELETE FROM visit_fts WHERE url = ?;
-    COMMIT;
-  `, [url, url, url], cb)
+  db.serialize(() => {
+    db.run('BEGIN TRANSACTION;')
+    db.run('DELETE FROM visits WHERE url = ?;', url)
+    db.run('DELETE FROM visit_stats WHERE url = ?;', url)
+    db.run('DELETE FROM visit_fts WHERE url = ?;', url)
+    db.run('COMMIT;', cb)
+  })
 }
 
 export function removeAllVisits (cb) {

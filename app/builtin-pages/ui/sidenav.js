@@ -4,12 +4,11 @@ import EventEmitter from 'events'
 // globals
 // =
 
-var currentNavItem = 'bookmarks'
+var currentNavItem = 'favorites'
 var events = new EventEmitter()
 const navItems = {
-  bookmarks: { icon: 'star', label: 'All My Bookmarks' },
-  mostVisited: { icon: 'chart-area', label: 'Most Visited' },
-  history: { icon: 'back-in-time', label: 'Full History' },
+  favorites: { icon: 'star', label: 'Favorites' },
+  history: { icon: 'back-in-time', label: 'History' },
 }
 
 // exported API
@@ -30,10 +29,8 @@ export var on = events.on.bind(events)
 
 function render () {
   return yo`<nav class="nav-group">
-    <h5 class="nav-group-title">Bookmarks</h5>
-    ${renderNavItem('bookmarks')}
-    <h5 class="nav-group-title">History</h5>
-    ${renderNavItem('mostVisited')}
+    <h5 class="nav-group-title">Get Started</h5>
+    ${renderNavItem('favorites')}
     ${renderNavItem('history')}
   </nav>`
 }

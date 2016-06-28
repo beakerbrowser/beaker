@@ -1,13 +1,12 @@
 import * as sidenavUI from './ui/sidenav'
-import * as bookmarks from './ui/bookmarks-view'
-import * as mostVisited from './ui/most-visited-view'
+import * as favorites from './ui/favorites-view'
 import * as history from './ui/history-view'
 
 // globals
 // =
 
-var views = { bookmarks, mostVisited, history }
-var currentView = views.bookmarks
+var views = { favorites, history }
+var currentView = views.favorites
 
 // setup
 // =
@@ -15,7 +14,7 @@ var currentView = views.bookmarks
 sidenavUI.setup()
 for (var id in views)
   views[id].setup()
-views.bookmarks.show()
+views.favorites.show()
 
 // ui events
 // =
