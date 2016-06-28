@@ -20,6 +20,14 @@ export function addVisit (visit, cb) {
   sendIPCRequest('addVisit', visit, cb)
 }
 
+export function getVisitHistory (opts, cb) {
+  sendIPCRequest('getVisitHistory', opts, cb)
+}
+
+export function getMostVisited (opts, cb) {
+  sendIPCRequest('getMostVisited', opts, cb)
+}
+
 export function search (q, cb) {
   sendIPCRequest('search', q, cb)
 }

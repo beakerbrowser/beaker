@@ -5,6 +5,7 @@ import * as zoom from './webview-preload/zoom'
 import * as fsAPI from './lib/fg/fs-api'
 import * as bookmarksAPI from './lib/fg/bookmarks-api'
 import * as sitedata from './lib/fg/sitedata-api'
+import * as history from './lib/fg/history-api'
 
 // it would be better to import this from package.json
 const BEAKER_VERSION = '0.0.1'
@@ -24,7 +25,8 @@ if (window.location.protocol == 'beaker:') {
   window.beaker = {
     version: BEAKER_VERSION,
     bookmarks: bookmarksAPI,
-    fs: fsAPI.getSandboxAPI()
+    fs: fsAPI.getSandboxAPI(),
+    history: history
   }
 }
 

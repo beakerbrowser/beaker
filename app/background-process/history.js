@@ -65,6 +65,26 @@ export function addVisit ({url, title, favicon=null}, cb) {
   })
 }
 
+export function getVisitHistory ({ offset, limit }, cb) {
+  offset = offset || 0
+  limit = limit || 50
+  db.all('SELECT * FROM visits ORDER BY rowid DESC LIMIT ? OFFSET ?', [limit, offset], cb)
+}
+
+export function getMostVisited ({ offset, limit }, cb) {
+  offset = offset || 0
+  limit = limit || 50
+  db.all(`
+    SELECT visit_stats.*, visits.title AS title
+      FROM visit_stats
+        LEFT JOIN visits ON visits.url = visit_stats.url
+      WHERE visit_stats.num_visits > 5
+      GROUP BY visit_stats.url
+      ORDER BY num_visits DESC, last_visit_ts DESC
+      LIMIT ? OFFSET ?
+  `, [limit, offset], cb)
+}
+
 export function search (q, cb) {
   if (!cb) return
   if (!q || typeof q != 'string')
@@ -122,7 +142,7 @@ function onIPCMessage (event, command, requestId, ...args) {
   const replyCb = (err, value) => event.sender.send('history', 'reply', requestId, err, value)
 
   // look up the method called
-  var ipcMethods = { addVisit, search, removeVisit, removeAllVisits }
+  var ipcMethods = { addVisit, getVisitHistory, getMostVisited, search, removeVisit, removeAllVisits }
   var ipcMethod = ipcMethods[command]
   if (!ipcMethod) {
     log('[HISTORY] Unknown message command', command, args)

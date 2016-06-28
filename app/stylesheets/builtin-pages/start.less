@@ -21,7 +21,7 @@ tr:active {
   color: inherit;
 }
 
-.bookmarks {
+.pane table {
   // enlarge the bookmarks list
   font-size: 14px;
 
@@ -62,6 +62,68 @@ tr:active {
       background: #f5f5f4;
 
       td.actions {
+        // show icons on row hover
+        .icon {
+          display: inline;
+        }
+      }
+    }
+  }
+}
+
+.links-list {
+  font-size: 14px;
+
+  .ll-row {
+    display: flex;
+
+    .ll-link {
+      flex: 1;
+      padding: 4px 10px;
+      color: #555;
+      text-decoration: none;
+
+      .icon-window {
+        margin-right: 4px;
+      }
+
+      .ll-title, .ll-url {
+        // make title and url stop at half width
+        cursor: pointer;
+        display: inline-block;
+        max-width: 40%;
+        overflow: hidden;
+        white-space: pre;
+        text-overflow: ellipsis;
+        vertical-align: top;
+      }
+      .ll-title {
+        color: #397EEF;
+        max-width: 50%;
+      }
+      .ll-url {
+        margin-right: 2px;
+        color: gray;
+        &:before {
+          content: '-';
+          margin-right: 5px;
+        }
+      }
+    }
+
+    // make the actions compact, and hidden except on hover
+    .ll-actions {
+      flex: 0 0 25px;
+      padding: 4px 8px;
+      .icon {
+        display: none;
+        cursor: pointer;
+      }
+    }
+
+    &:hover {
+      background: #f5f5f4;
+      .ll-actions {
         // show icons on row hover
         .icon {
           display: inline;
