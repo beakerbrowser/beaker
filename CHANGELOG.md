@@ -6,7 +6,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - SiteData sqlite database now tracks information per origin
 - History sqlite database now tracks visits
-- Zoom now persists across navigations (using SiteData db)
 - Bookmarks
 - Tab pinning and favicons
 - URL navbar autocomplete
@@ -16,6 +15,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Restyled Browser UI
 - Dat protocol: if index.html does not exist, but the archive was found, will now render the view-dat interface
 - Moved bookmarks storage into a SQLite database
+- Zoom now persists across navigations (using SiteData db)
 
 ### Fixed
 - Fixed mimetype lookups when a file isnt identifiable by a magic number
