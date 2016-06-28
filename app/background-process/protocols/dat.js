@@ -64,7 +64,7 @@ export function setup () {
         }
         
         // lookup the entry
-        log('[DAT] Archive listing for', archiveKey, entries)
+        log('[DAT] Archive listing found for', archiveKey)
         var entry = dat.lookupEntry(entries, urlp.path)
         if (!entry) {
           log('[DAT] Entry not found:', urlp.path)

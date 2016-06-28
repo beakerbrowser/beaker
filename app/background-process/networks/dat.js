@@ -50,7 +50,7 @@ export function swarm (key) {
   var archive = getArchive(key)
   var s = hyperdriveArchiveSwarm(archive)
   swarms[keyStr] = s
-  s.on('peer', peer => log('[DAT] Peer', peer)) // TODO this is no longer giving us peer info
+  s.on('connection', (peer, type) => log('[DAT] Connection', peer.id.toString('hex'), 'from', type.type))
   return s
 }
 
