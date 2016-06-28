@@ -5,11 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - SiteData sqlite database now tracks information per origin
+- History sqlite database now tracks visits
 - Zoom now persists across navigations (using SiteData db)
-- Bookmarking
-- Feedback button
-- Zoom control in the toolbar
-- Tab favicons
+- Bookmarks
+- Tab pinning and favicons
+- URL navbar autocomplete
+- API: beaker.fs
 
 ### Changed
 - Restyled Browser UI
