@@ -5,6 +5,7 @@ import * as navbar from './ui/navbar'
 import * as statusBar from './ui/status-bar'
 import * as bookmarks from '../lib/fg/bookmarks-api'
 import * as history from '../lib/fg/history-api'
+import * as sitedata from '../lib/fg/sitedata-api'
 
 const DEFAULT_URL = 'beaker:start'
 
@@ -24,11 +25,24 @@ export function on (...args) {
   events.on.apply(events, args)
 }
 
-export function getAll() {
+export function getAll () {
   return pages
 }
 
-export function create (url) {
+export function getPinned () {
+  return pages.filter(p => p.isPinned)
+}
+
+export function create (opts) {
+  var url
+  if (opts && typeof opts == 'object') {
+    url = opts.url
+  } else if (typeof opts == 'string') {
+    url = opts
+    opts = {}
+  } else
+    opts = {}
+
   // create page object
   var id = (Math.random()*1000|0) + Date.now()
   var page = {
@@ -40,7 +54,7 @@ export function create (url) {
     bookmark: null, // this page's bookmark object, if it's bookmarked
     isWebviewReady: false, // has the webview loaded its methods?
     isActive: false, // is the active page?
-    isPinned: false, // is this page pinned?
+    isPinned: opts.isPinned, // is this page pinned?
     isInpageFinding: false, // showing the inpage find ctrl?
     zoom: 0, // what's the current zoom level? (updated by a message from the webview)
     favicons: null, // what are the favicons of the page?
@@ -168,6 +182,10 @@ export function remove (page) {
     setActive(pages[pages.length - 1])
   }
 
+  // persist pins if that was
+  if (page.isPinned)
+    savePinnedToDB()
+
   // emit
   events.emit('remove', page)
   events.emit('update')
@@ -209,9 +227,10 @@ export function togglePinned (page) {
 
   // update page state
   page.isPinned = !page.isPinned
+  events.emit('update')
 
-  // TODO move the tab to the left
-  events.emit('update')  
+  // persist
+  savePinnedToDB()
 }
 
 export function changeActiveBy (offset) {
@@ -247,6 +266,18 @@ export function getById (id) {
       return pages[i]
   }
   return null
+}
+
+export function loadPinnedFromDB (cb) {
+  sitedata.get('pinned-tabs', (err, json) => {
+    try { JSON.parse(json).forEach(url => create({ url, isPinned: true })) }
+    catch (e) {}
+    cb && cb()
+  })
+}
+
+export function savePinnedToDB (cb) {
+  sitedata.set('pinned-tabs', JSON.stringify(getPinned().map(p => p.getURL())), cb)
 }
 
 // event handlers
