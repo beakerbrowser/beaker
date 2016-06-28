@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - SiteData sqlite database now tracks information per origin
 - History sqlite database now tracks visits
-- Bookmarks
+- Bookmarks and history UI
 - Tab pinning and favicons
 - URL navbar autocomplete
 - API: beaker.fs
