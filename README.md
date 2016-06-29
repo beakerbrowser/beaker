@@ -14,17 +14,14 @@ Please feel free to open usability issues.
 git clone https://github.com/pfraze/beaker.git
 cd beaker
 npm install
+npm run rebuild #see below
 npm start
 ```
 
-If you are using a node version ealier than 6, you may receive an error about a module version mismatch.
-If so, run the following command after `npm install`, to have the modules rebuild into the version you need:
+Unfortunately, due to [electron#5851](https://github.com/electron/electron/issues/5851), you have to rebuild all native components from source.
+That's what `npm run rebuild` achieves.
 
-```
-npm run rebuild
-```
-
-[Lots of dev instructions and notes here](./build-notes.md)
+If you're working on the code, [there's lots of dev instructions and notes here](./build-notes.md)
 
 ## api docs
 

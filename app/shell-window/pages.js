@@ -138,6 +138,9 @@ export function create (opts) {
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
   page.webviewEl.addEventListener('ipc-message', onIpcMessage)
+  page.webviewEl.addEventListener('crashed', onCrashed)
+  page.webviewEl.addEventListener('gpu-crashed', onCrashed)
+  page.webviewEl.addEventListener('plugin-crashed', onCrashed)
 
   // rebroadcasts
   page.webviewEl.addEventListener('load-commit', rebroadcastEvent)
@@ -387,6 +390,10 @@ function onIpcMessage (e, type) {
         break
     }
   }
+}
+
+function onCrashed (e) {
+  console.error('Webview crash', e)
 }
 
 // internal functions

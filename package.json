@@ -4,7 +4,7 @@
     "browserify": "^13.0.1",
     "chai": "^3.5.0",
     "electron-mocha": "^2.0.0",
-    "electron-prebuilt": "1.1.3",
+    "electron-prebuilt": "1.2.5",
     "fs-jetpack": "^0.9.0",
     "gulp": "^3.9.0",
     "gulp-batch": "^1.0.5",
@@ -24,7 +24,7 @@
   "scripts": {
     "postinstall": "cd app && npm install",
     "build": "gulp build",
-    "rebuild": "npm rebuild --runtime=electron --target=1.1.3 --disturl=https://atom.io/download/atom-shell --abi=48; (cd app && npm rebuild --runtime=electron --target=1.1.3 --disturl=https://atom.io/download/atom-shell --abi=48)",
+    "rebuild": "npm rebuild --runtime=electron --target=1.2.5 --disturl=https://atom.io/download/atom-shell --build-from-source; (cd app && npm rebuild --runtime=electron --target=1.2.5 --disturl=https://atom.io/download/atom-shell --build-from-source)",
     "release": "gulp release --env=production",
     "start": "gulp start",
     "pretest": "gulp build --env=test",

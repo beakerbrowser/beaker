@@ -95,8 +95,6 @@ export function lookupEntry (entries, path) {
 }
 
 export function getEntry (archive, entry, cb) {
-  // TODO handle stream error
-
   var chunks = []
   var stream = archive.createFileReadStream(entry)
   stream.on('data', chunk => chunks.push(chunk))
@@ -118,6 +116,10 @@ export function getEntry (archive, entry, cb) {
     }
 
     cb(null, { data: data, mimeType: mimeType })
+  })
+  stream.on('error', err => {
+    log('[DAT] Stream error', entry, err)
+    cb(err)
   })
 }
 
