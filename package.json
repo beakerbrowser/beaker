@@ -25,6 +25,7 @@
     "postinstall": "cd app && npm install",
     "build": "gulp build",
     "rebuild": "npm rebuild --runtime=electron --target=1.2.5 --disturl=https://atom.io/download/atom-shell --build-from-source; (cd app && npm rebuild --runtime=electron --target=1.2.5 --disturl=https://atom.io/download/atom-shell --build-from-source)",
+    "burnthemall": "rm -Rf ./node_modules ./app/node_modules; npm i; npm run rebuild",
     "release": "gulp release --env=production",
     "start": "gulp start",
     "pretest": "gulp build --env=test",

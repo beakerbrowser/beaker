@@ -21,6 +21,16 @@ npm start
 Unfortunately, due to [electron#5851](https://github.com/electron/electron/issues/5851), you have to rebuild all native components from source.
 That's what `npm run rebuild` achieves.
 
+**In case of emergency** If you pull latest from the repo and get weird module errors, do:
+
+```
+npm run burnthemall
+```
+
+This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-mad-king-game-of-thrones.jpg), who will torch your npm_modules, and do the full install/rebuild process for you.
+`npm start` should work afterwards.
+(Presumably the mad king gets stabbed in the process, and the rebuilding is accomplished by his successor.)
+
 If you're working on the code, [there's lots of dev instructions and notes here](./build-notes.md)
 
 ## api docs
