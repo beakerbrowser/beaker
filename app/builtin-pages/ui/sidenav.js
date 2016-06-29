@@ -29,7 +29,6 @@ export var on = events.on.bind(events)
 
 function render () {
   return yo`<nav class="nav-group">
-    <h5 class="nav-group-title">Get Started</h5>
     ${renderNavItem('favorites')}
     ${renderNavItem('history')}
   </nav>`
