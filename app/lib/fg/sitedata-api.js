@@ -11,7 +11,6 @@ var requestCbs = []
 // =
 
 export function setup () {
-  console.log('sitedata setup')
   ipcRenderer.on('sitedata', onIPCMessage)
 }
 
