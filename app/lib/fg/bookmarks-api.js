@@ -16,6 +16,9 @@ var requestCbs = []
 // exported api
 // =
 
+export function setup () {
+  ipcRenderer.on('bookmarks', onIPCMessage)
+}
 
 export function add (url, title, cb) {
   sendIPCRequest('add', url, title, cb)
@@ -57,7 +60,7 @@ function sendIPCRequest (command, ...args) {
   ipcRenderer.send('bookmarks', command, requestId, ...args)
 }
 
-ipcRenderer.on('bookmarks', (event, command, requestId, ...args) => {
+function onIPCMessage (event, command, requestId, ...args) {
   switch (command) {
     case 'reply':
       var cb = requestCbs[requestId]
@@ -70,4 +73,4 @@ ipcRenderer.on('bookmarks', (event, command, requestId, ...args) => {
     default:
       console.warn('Unknown bookmarks message', arguments)
   }
-})
+}

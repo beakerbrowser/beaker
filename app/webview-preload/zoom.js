@@ -12,14 +12,21 @@ var zoom = 0
 // =
 
 export function setup () {
-  // load zoom from sitedata
-  sitedata.get('zoom', (err, v) => {
-    if (typeof v != 'undefined') {
-      zoom = +v
-      webFrame.setZoomLevel(zoom)
-      ipcRenderer.sendToHost('set-zoom-level', zoom)
-    }
-  })
+  // HACK
+  // for some reason, the sitedata IPC-message handler does not start catching events immediately
+  // even though this setup() is called after the sitedata.setup(), an immediate sitedata.get will not receive a response
+  // we need to let the event-loop turn first
+  // -prf
+  setTimeout(() => {
+    // load zoom from sitedata
+    sitedata.get('zoom', (err, v) => {
+      if (typeof v != 'undefined') {
+        zoom = +v
+        webFrame.setZoomLevel(zoom)
+        ipcRenderer.sendToHost('set-zoom-level', zoom)
+      }
+    })
+  }, 0)
 }
 
 export function setZoom(z) {

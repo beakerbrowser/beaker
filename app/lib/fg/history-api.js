@@ -16,6 +16,10 @@ var requestCbs = []
 // exported api
 // =
 
+export function setup () {
+  ipcRenderer.on('history', onIPCMessage)
+}
+
 export function addVisit (visit, cb) {
   sendIPCRequest('addVisit', visit, cb)
 }
@@ -56,7 +60,7 @@ function sendIPCRequest (command, ...args) {
   ipcRenderer.send('history', command, requestId, ...args)
 }
 
-ipcRenderer.on('history', (event, command, requestId, ...args) => {
+function onIPCMessage (event, command, requestId, ...args) {
   switch (command) {
     case 'reply':
       var cb = requestCbs[requestId]
@@ -69,4 +73,4 @@ ipcRenderer.on('history', (event, command, requestId, ...args) => {
     default:
       console.warn('Unknown history message', arguments)
   }
-})
+}

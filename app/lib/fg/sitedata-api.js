@@ -10,6 +10,11 @@ var requestCbs = []
 // exported api
 // =
 
+export function setup () {
+  console.log('sitedata setup')
+  ipcRenderer.on('sitedata', onIPCMessage)
+}
+
 export function get (key, cb) {
   sendIPCRequest('get', key, null, cb)
 }
@@ -31,7 +36,7 @@ function sendIPCRequest (command, key, value, cb) {
   ipcRenderer.send('sitedata', command, requestId, key, value)
 }
 
-ipcRenderer.on('sitedata', (event, command, requestId, ...args) => {
+function onIPCMessage (event, command, requestId, ...args)  {
   switch (command) {
     case 'reply':
       var cb = requestCbs[requestId]
@@ -44,4 +49,4 @@ ipcRenderer.on('sitedata', (event, command, requestId, ...args) => {
     default:
       console.warn('Unknown sitedata message', arguments)
   }
-})
+}
