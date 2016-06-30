@@ -11,8 +11,13 @@ export function setup () {
 }
 
 function onWindowEvent (event, type) {
+  console.log(event, type)
   if (type == 'blur')
     document.body.classList.add('window-blurred')
   if (type == 'focus')
     document.body.classList.remove('window-blurred')
+  if (type == 'enter-full-screen')
+    document.body.classList.add('fullscreen')
+  if (type == 'leave-full-screen')
+    document.body.classList.remove('fullscreen')
 }

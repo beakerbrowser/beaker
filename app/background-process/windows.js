@@ -21,10 +21,12 @@ export function createShellWindow () {
     registerShortcut(win, 'CmdOrCtrl+'+i, onTabSelect(win, i-1))
 
   // register event handlers
-  win.on('scroll-touch-begin', onScrollTouchBegin)
-  win.on('scroll-touch-end', onScrollTouchEnd)
-  win.on('focus', onFocus)
-  win.on('blur', onBlur)
+  win.on('scroll-touch-begin', sendToWebContents('scroll-touch-begin'))
+  win.on('scroll-touch-end', sendToWebContents('scroll-touch-end'))
+  win.on('focus', sendToWebContents('focus'))
+  win.on('blur', sendToWebContents('blur'))
+  win.on('enter-full-screen', sendToWebContents('enter-full-screen'))
+  win.on('leave-full-screen', sendToWebContents('leave-full-screen'))
 
   return win
 }
@@ -49,18 +51,6 @@ function onTabSelect (win, tabIndex) {
 // window event handlers
 // =
 
-function onScrollTouchBegin (e) {
-  e.sender.webContents.send('window-event', 'scroll-touch-begin')
-}
-
-function onScrollTouchEnd (e) {
-  e.sender.webContents.send('window-event', 'scroll-touch-end')
-}
-
-function onFocus (e) {
-  e.sender.webContents.send('window-event', 'focus')
-}
-
-function onBlur (e) {
-  e.sender.webContents.send('window-event', 'blur')
+function sendToWebContents (event) {
+  return e => e.sender.webContents.send('window-event', event)
 }
