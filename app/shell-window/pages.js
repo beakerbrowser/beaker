@@ -133,6 +133,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('new-window', onNewWindow)
   page.webviewEl.addEventListener('will-navigate', onWillNavigate)
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
+  page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
   page.webviewEl.addEventListener('load-commit', onLoadCommit)
   page.webviewEl.addEventListener('did-get-response-details', onDidGetResponseDetails)
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
@@ -215,6 +216,7 @@ export function setActive (page) {
   activePage = page
   show(page)
   page.isActive = 1
+  statusBar.setIsLoading(page.isLoading())
   events.emit('set-active', page)
 }
 
@@ -329,7 +331,15 @@ function onDidStartLoading (e) {
   if (page) {
     navbar.update(page)
     navbar.hideInpageFind(page)
+    if (page.isActive)
+      statusBar.setIsLoading(true)
   }
+}
+
+function onDidStopLoading (e) {
+  var page = getByWebview(e.target)
+  if (page && page.isActive)
+    statusBar.setIsLoading(false)
 }
 
 function onDidGetResponseDetails (e) {
