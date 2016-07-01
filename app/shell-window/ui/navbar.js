@@ -197,9 +197,9 @@ function handleAutocompleteSearch (err, results) {
     console.warn('Autocomplete search failed', err)
 
   // does the value look like a url?
-  var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || v.includes('://')))
+  var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || v.includes('://') || v.startsWith('ipfs:/')))
   var vWithProtocol = v
-  if (isProbablyUrl && !v.includes('://'))
+  if (isProbablyUrl && !v.includes('://') && !v.startsWith('ipfs:/'))
     vWithProtocol = 'https://'+v
 
   // set the top results accordingly

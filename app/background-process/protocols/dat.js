@@ -4,6 +4,7 @@ import once from 'once'
 import http from 'http'
 import listenRandomPort from 'listen-random-port'
 import log from '../../log'
+import errorPage from '../../lib/error-page'
 import * as dat from '../networks/dat'
 import renderArchive from './view-dat/archive-html'
 
@@ -13,7 +14,7 @@ import renderArchive from './view-dat/archive-html'
 // how long till we give up?
 const REQUEST_TIMEOUT_MS = 30e3 // 30s
 
-// standard CSP
+// content security policies
 const CSP = "default-src 'self'; img-src 'self' data:; plugin-types 'none';"
 
 // globals
@@ -43,7 +44,10 @@ function datHttpProtocol (request, cb) {
 }
 
 function datServer (req, res) {
-  var cb = once((code, status) => { res.writeHead(code, status); res.end() })
+  var cb = once((code, status) => { 
+    res.writeHead(code, status, { 'Content-Type': 'text/html', 'Content-Security-Policy': "default-src 'unsafe-inline';" })
+    res.end(errorPage(code + ' ' + status))
+  })
   var queryParams = url.parse(req.url, true).query
 
   // check the nonce
@@ -71,7 +75,7 @@ function datServer (req, res) {
     // setup a timeout
     var timeout = setTimeout(() => {
       log('[DAT] Timed out searching for', archiveKey)
-      cb(408, 'Name Not Resolved')
+      cb(408, 'Timed out')
     }, REQUEST_TIMEOUT_MS)
 
     // list archive contents

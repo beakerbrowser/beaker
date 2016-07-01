@@ -4,6 +4,9 @@ import once from 'once'
 import identify from 'identify-filetype'
 import * as Unixfs from 'ipfs-unixfs'
 import mime from 'mime'
+import http from 'http'
+import listenRandomPort from 'listen-random-port'
+import errorPage from '../../lib/error-page'
 import log from '../../log'
 import * as ipfs from '../networks/ipfs'
 
@@ -13,86 +16,114 @@ import * as ipfs from '../networks/ipfs'
 // how long till we give up?
 const REQUEST_TIMEOUT_MS = 30e3 // 30s
 
-// net errors
-// https://cs.chromium.org/chromium/src/net/base/net_error_list.h
-const FAILED = -2
-const FILE_NOT_FOUND = -6
-const TIMED_OUT = -7
-const INVALID_URL = -300
-const METHOD_NOT_SUPPORTED = -322
+// content security policies
+const CSP = "default-src 'self' beaker:; img-src 'self' data:; plugin-types 'none';"
+
+// globals
+// =
+
+var ipfsServerPort = null // assigned by listen-random-port
+var nonce = Math.random() // used to limit access to the current process
 
 // exported api
 // =
 
 export function setup () {
-  protocol.registerBufferProtocol('ipfs', (request, cb) => {
-    cb = once(cb) // just to be safe
+  var server = http.createServer(ipfsServer)
+  listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => ipfsServerPort = port)
+  protocol.registerHttpProtocol('ipfs', ipfsHttpProtocol, e => {
+    if (e)
+      console.error('Failed to register ipfs protocol', e)
+  })
+}
 
-    // validate request
-    console.log(request.url)
-    var urlp = url.parse(request.url)
-    // NOTE: url.parse does toLowerCase() for some ungodly reason, so we have to do this manually... !@#$
-    // var folderKey = urlp.host
-    var hostMatch = /ipfs:\/\/([0-9a-z]+)/i.exec(request.url)
-    if (!hostMatch)
-      return cb(INVALID_URL)
-    var folderKey = hostMatch[1]
-    if (request.method != 'GET')
-      return cb(METHOD_NOT_SUPPORTED)
+function ipfsHttpProtocol (request, cb) {
+  // send it on over to ipfsServer!
+  cb({
+    method: request.method,
+    url: 'http://localhost:'+ipfsServerPort+'/?url='+encodeURIComponent(request.url)+'&nonce='+nonce
+  })
+}
 
-    // setup a timeout
-    var timeout = setTimeout(() => {
-      log('[IPFS] Timed out searching for', folderKey)
-      cb(TIMED_OUT)
-    }, REQUEST_TIMEOUT_MS)
 
-    // list folder contents
-    log('[IPFS] Attempting to list folder', folderKey)
-    ipfs.lookupLink(folderKey, urlp.path, (err, link) => {
+function ipfsServer (req, res) {
+  var cb = once((code, status) => { 
+    res.writeHead(code, status, { 'Content-Type': 'text/html', 'Content-Security-Policy': "default-src 'unsafe-inline';" })
+    res.end(errorPage(code + ' ' + status))
+  })
+  var queryParams = url.parse(req.url, true).query
+
+  // check the nonce
+  // (only want this process to access the server)
+  if (queryParams.nonce != nonce)
+    return cb(403, 'Forbidden')
+
+  // validate request
+  var hostMatch = /ipfs:\/([0-9a-z]+)/i.exec(queryParams.url)
+  if (!hostMatch)
+    return cb(404, 'Invalid URL')
+  if (req.method != 'GET')
+    return cb(405, 'Method Not Supported')
+  var folderKey = hostMatch[1]
+  var reqPath = queryParams.url.slice(hostMatch[0].length)
+
+  // setup a timeout
+  var timeout = setTimeout(() => {
+    log('[IPFS] Timed out searching for', folderKey)
+    cb(408, 'Timed out')
+  }, REQUEST_TIMEOUT_MS)
+
+  // list folder contents
+  log('[IPFS] Attempting to list folder', folderKey)
+  ipfs.lookupLink(folderKey, reqPath, (err, link) => {
+    if (err) {
+      clearTimeout(timeout)
+
+      if (err.notFound)
+        return cb(404, 'File Not Found')
+
+      // QUESTION: should there be a more specific error response?
+      // not sure what kind of failures can occur here (other than broken pipe)
+      // -prf
+      log('[IPFS] Folder listing errored', err)
+      return cb(500, 'Failed')
+    }
+
+    // fetch the data
+    log('[IPFS] Link found:', reqPath || link.name)
+    ipfs.getApi().object.data(link.hash, (err, marshaled) => {
       clearTimeout(timeout)
 
       if (err) {
-        if (err.notFound)
-          return cb(FILE_NOT_FOUND)
-
-        // QUESTION: should there be a more specific error response?
-        // not sure what kind of failures can occur here (other than broken pipe)
-        // -prf
-        log('[IPFS] Folder listing errored', err)
-        return cb(FAILED)
+        // TODO: what's the right error for this?
+        log('[IPFS] Data fetch failed', err)
+        return cb(500, 'Failed')
       }
 
-      // fetch the data
-      log('[IPFS] Link found:', urlp.path || link.name)
-      ipfs.getApi().object.data(link.hash, (err, marshaled) => {
-        if (err) {
-          // TODO: what's the right error for this?
-          log('[IPFS] Data fetch failed', err)
-          return cb(FAILED)
-        }
+      // parse the data
+      var unmarshaled = Unixfs.unmarshal(marshaled)
+      var data = unmarshaled.data
+      
+      // try to identify the type by the buffer contents
+      var mimeType
+      var identifiedExt = identify(data)
+      if (identifiedExt)
+        mimeType = mime.lookup(identifiedExt)
+      if (mimeType)
+        log('[IPFS] Identified entry mimetype as', mimeType)
+      else {
+        // fallback to using the entry name
+        mimeType = mime.lookup(link.name)
+        if (mimeType == 'application/octet-stream')
+          mimeType = 'text/plain' // TODO look if content is textlike?
+        log('[IPFS] Assumed mimetype from link name', mimeType)
+      }
 
-        // parse the data
-        var unmarshaled = Unixfs.unmarshal(marshaled)
-        var data = unmarshaled.data
-        
-        // try to identify the type by the buffer contents
-        var mimeType
-        var identifiedExt = identify(data)
-        if (identifiedExt)
-          mimeType = mime.lookup(identifiedExt)
-        if (mimeType)
-          log('[IPFS] Identified entry mimetype as', mimeType)
-        else {
-          // fallback to using the entry name
-          mimeType = mime.lookup(link.name)
-          log('[IPFS] Assumed mimetype from link name', mimeType)
-        }
-
-        cb({ data: data, mimeType: mimeType })
+      res.writeHead(200, 'OK', {
+        'Content-Type': mimeType,
+        'Content-Security-Policy': CSP
       })
+      res.end(data)
     })
-  }, e => {
-    if (e)
-      console.error('Failed to register dat protocol', e)
-  });
+  })
 }
