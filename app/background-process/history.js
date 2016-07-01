@@ -28,7 +28,7 @@ export function setup () {
   ipcMain.on('history', onIPCMessage)
 }
 
-export function addVisit ({url, title, favicon=null}, cb) {
+export function addVisit ({url, title}, cb) {
   // validate parameters
   cb = cb || (()=>{})
   if (!url || typeof url != 'string')
@@ -47,7 +47,7 @@ export function addVisit ({url, title, favicon=null}, cb) {
       var ts = Date.now()
       db.serialize(() => {
         // log visit
-        db.run('INSERT INTO visits (url, title, favicon, ts) VALUES (?, ?, ?, ?);', [url, title, favicon, ts], done())
+        db.run('INSERT INTO visits (url, title, ts) VALUES (?, ?, ?, ?);', [url, title, ts], done())
         // first visit?
         if (!stats) {
           // yes, create new stat and search entries
@@ -161,7 +161,6 @@ migrations = [
       CREATE TABLE visits(
         url NOT NULL,
         title NOT NULL,
-        favicon,
         ts NOT NULL
       );
       CREATE TABLE visit_stats(

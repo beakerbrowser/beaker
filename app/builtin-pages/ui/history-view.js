@@ -78,9 +78,9 @@ function render () {
     // render row
     rowEls.push(yo`<div class="ll-row">
       <a class="ll-link" href=${row.url} title=${row.title}>
-        <span class="icon icon-window"></span>
+        <img class="favicon" src=${'beaker-favicon:'+row.url} />
         <span class="ll-title">${row.title}</span>
-      </div>
+      </a>
       <div class="ll-actions">
         <span class="icon icon-cancel-squared" onclick=${onClickDelete.bind(window, i)} title="Remove from history"></span>
       </div>

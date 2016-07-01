@@ -15,6 +15,7 @@ import * as history from './background-process/history'
 import * as ipfsNetwork from './background-process/networks/ipfs'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
+import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 import * as datProtocol from './background-process/protocols/dat'
 import * as viewDatProtocol from './background-process/protocols/view-dat'
 import * as ipfsProtocol from './background-process/protocols/ipfs'
@@ -39,6 +40,7 @@ app.on('ready', function () {
 
   // protocols
   beakerProtocol.setup()
+  beakerFaviconProtocol.setup()
   datProtocol.setup()
   viewDatProtocol.setup()
   ipfsProtocol.setup()

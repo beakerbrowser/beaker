@@ -11,7 +11,6 @@ export function setup () {
 }
 
 function onWindowEvent (event, type) {
-  console.log(event, type)
   if (type == 'blur')
     document.body.classList.add('window-blurred')
   if (type == 'focus')

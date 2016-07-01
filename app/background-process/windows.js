@@ -13,7 +13,14 @@ export function setup () {
 
 export function createShellWindow () {
   // create window
-  var win = new BrowserWindow({ titleBarStyle: 'hidden-inset', 'standard-window': false, width: 1000, height: 700 })
+  var win = new BrowserWindow({ 
+    titleBarStyle: 'hidden-inset',
+    'standard-window': false,
+    width: 1000, height: 700,
+    webPreferences: {
+      webSecurity: false, // disable same-origin policy in the shell-window; the <webview>s of site content will have it re-enabled
+    }
+  })
   loadURL(win, 'beaker:shell-window')
 
   // register shortcuts

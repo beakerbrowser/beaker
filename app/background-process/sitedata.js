@@ -25,6 +25,7 @@ export function setup () {
 
 export function set (origin, key, value, cb) {
   // TODO wait till migrations are done
+  origin = extractOrigin(origin)
   db.run(`
     INSERT OR REPLACE
       INTO sitedata (origin, key, value)
@@ -34,6 +35,7 @@ export function set (origin, key, value, cb) {
 
 export function get (origin, key, cb) {
   // TODO wait till migrations are done
+  origin = extractOrigin(origin)
   db.get(`SELECT value FROM sitedata WHERE origin = ? AND key = ?`, [origin, key], (err, res) => {
     if (err)
       return cb(err)
@@ -44,18 +46,23 @@ export function get (origin, key, cb) {
 // internal methods
 // =
 
-// `requestId` is sent with the response, so the requester can match the result data to the original call
-function onIPCMessage (event, command, requestId, key, value) {
-  // extract origin
-  var urlp = url.parse(event.sender.getURL())
+function extractOrigin (originURL) {
+  var urlp = url.parse(originURL)
   if (!urlp || !urlp.host || !urlp.protocol)
-    return log('[SITEDATA] Received message from a page with an unparseable URL:', event.sender.getURL())
-  var origin = urlp.protocol + urlp.host + (urlp.port || '')
+    return log('[SITEDATA] Received message from a page with an unparseable URL:', originURL)
+  return (urlp.protocol + urlp.host + (urlp.port || ''))
+}
+
+// `requestId` is sent with the response, so the requester can match the result data to the original call
+function onIPCMessage (event, command, requestId, ...args) {
+  const replyCb = (err, value) => event.sender.send('sitedata', 'reply', requestId, err, value)
 
   // run command
   switch (command) {
-    case 'get': return get(origin, key, (err, value) => event.sender.send('sitedata', 'reply', requestId, err, value))
-    case 'set': return set(origin, key, value, err => event.sender.send('sitedata', 'reply', requestId, err))
+    case 'get': return get(event.sender.getURL(), ...args, replyCb)
+    case 'set': return set(event.sender.getURL(), ...args, replyCb)
+    case 'getOtherOrigin': return get(args[0], args[1], replyCb)
+    case 'setOtherOrigin': return set(args[0], args[1], args[2], replyCb)
     default: log('[SITEDATA] Unknown message command', arguments)
   }
 }

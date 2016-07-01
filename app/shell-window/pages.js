@@ -6,6 +6,7 @@ import * as statusBar from './ui/status-bar'
 import * as bookmarks from '../lib/fg/bookmarks-api'
 import * as history from '../lib/fg/history-api'
 import * as sitedata from '../lib/fg/sitedata-api'
+import { urlToData } from '../lib/fg/img'
 
 const DEFAULT_URL = 'beaker:start'
 
@@ -138,6 +139,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('did-get-response-details', onDidGetResponseDetails)
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
+  page.webviewEl.addEventListener('page-favicon-updated', onPageFaviconUpdated)
   page.webviewEl.addEventListener('ipc-message', onIpcMessage)
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
@@ -390,6 +392,16 @@ function onDidFailLoad (e) {
       </div>
     </body>`.replace(/\n/g,'')
     page.webviewEl.getWebContents().executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
+  }
+}
+
+function onPageFaviconUpdated (e) {
+  if (e.favicons && e.favicons[0]) {
+    var page = getByWebview(e.target)
+    urlToData(e.favicons[0], 16, 16, (err, dataUrl) => {
+      if (dataUrl)
+        sitedata.setOtherOrigin(page.getURL(), 'favicon', dataUrl)
+    })
   }
 }
 

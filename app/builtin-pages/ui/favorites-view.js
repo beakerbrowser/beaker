@@ -43,9 +43,9 @@ function render () {
   const renderRow = opts => (row, i) => {
     return yo`<div class="ll-row">
       <a class="ll-link" href=${row.url} title=${row.title}>
-        <span class="icon icon-window"></span>
+        <img class="favicon" src=${'beaker-favicon:'+row.url} />
         <span class="ll-title">${row.title}</span>
-      </div>
+      </a>
       <div class="ll-actions">
         <span class="icon icon-cancel-squared" onclick=${opts.onClickDelete(i)} title="Remove"></span>
       </div>
@@ -56,7 +56,7 @@ function render () {
     <div class="favorites links-list">
       ${mostVisited.length > 0 ? yo`<div class="ll-heading">Most Visited <span class="icon icon-chart-line"></span></div>` : ''}
       ${mostVisited.map(renderRow({ onClickDelete: onClickDeleteHistory }))}
-      <div class="ll-heading">Bookmarked  <span class="icon icon-star"></span></div>
+      <div class="ll-heading">Bookmarked <span class="icon icon-star"></span></div>
       ${bookmarks.map(renderRow({ onClickDelete: onClickDeleteBookmark }))}
     </div>
   </div>`)
