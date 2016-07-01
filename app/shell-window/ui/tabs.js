@@ -46,8 +46,8 @@ function drawTab (page) {
       favicon = yo`<img src=${page.favicons[0]}>`
       favicon.onerror = onFaviconError(page)
     }
-    else
-      favicon = yo`<span class="icon icon-window"></span>`
+    else if (!page.getURL().startsWith('beaker:'))
+      favicon = yo`<img src="beaker-favicon:default">`
   }
 
   if (page.isPinned) {
@@ -57,7 +57,12 @@ function drawTab (page) {
     </div>`
   }
 
-  return yo`<div class=${'chrome-tab'+(isActive?' chrome-tab-current':'')} data-id=${page.id} onclick=${onClickTab(page)} oncontextmenu=${onContextMenuTab(page)} title=${page.getTitle()}>
+  return yo`
+  <div class=${'chrome-tab'+(isActive?' chrome-tab-current':'')+(!favicon?' chrome-tab-nofavicon':'')}
+      data-id=${page.id}
+      onclick=${onClickTab(page)}
+      oncontextmenu=${onContextMenuTab(page)}
+      title=${page.getTitle()}>
     <div class="chrome-tab-favicon">${favicon}</div>
     <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
     <div class="chrome-tab-close" onclick=${onClickTabClose(page)}></div>
