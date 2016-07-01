@@ -58,11 +58,7 @@ function onContextMenu (e) {
   menuItems.push({ label: 'Inspect Element', click: () => ipcRenderer.sendToHost('inspect-element', e.clientX, e.clientY) })
   if (window.location.protocol == 'dat:') {
     menuItems.push({ label: 'View Dat Archive', click: () => {
-      // extract the hostname
-      // pathname is in form: '//{host}/{path..}'
-      var parts = window.location.pathname.slice(2).split('/')
-      if (parts && parts[0])
-        window.location = 'view-dat://'+parts[0]+'/'
+      window.location = 'view-dat://'+window.location.host+'/'
     }})
   }
 
