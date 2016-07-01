@@ -9,6 +9,7 @@ import log from '../log'
 // =
 var db
 var migrations
+var waitForSetup
 
 // exported methods
 // =
@@ -17,29 +18,31 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'SiteData')
   db = new sqlite3.Database(dbPath)
-  setupDatabase(db, migrations, '[SITEDATA]')
+  waitForSetup = setupDatabase(db, migrations, '[SITEDATA]')
 
   // wire up IPC handlers
   ipcMain.on('sitedata', onIPCMessage)
 }
 
 export function set (origin, key, value, cb) {
-  // TODO wait till migrations are done
-  origin = extractOrigin(origin)
-  db.run(`
-    INSERT OR REPLACE
-      INTO sitedata (origin, key, value)
-      VALUES (?, ?, ?)
-  `, [origin, key, value], cb)
+  waitForSetup(() => {
+    origin = extractOrigin(origin)
+    db.run(`
+      INSERT OR REPLACE
+        INTO sitedata (origin, key, value)
+        VALUES (?, ?, ?)
+    `, [origin, key, value], cb)
+  })
 }
 
 export function get (origin, key, cb) {
-  // TODO wait till migrations are done
-  origin = extractOrigin(origin)
-  db.get(`SELECT value FROM sitedata WHERE origin = ? AND key = ?`, [origin, key], (err, res) => {
-    if (err)
-      return cb(err)
-    cb(null, res && res.value)
+  waitForSetup(() => {
+    origin = extractOrigin(origin)
+    db.get(`SELECT value FROM sitedata WHERE origin = ? AND key = ?`, [origin, key], (err, res) => {
+      if (err)
+        return cb(err)
+      cb(null, res && res.value)
+    })
   })
 }
 

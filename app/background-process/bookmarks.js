@@ -9,6 +9,7 @@ import log from '../log'
 // =
 var db
 var migrations
+var waitForSetup
 
 // exported methods
 // =
@@ -17,44 +18,50 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'Bookmarks')
   db = new sqlite3.Database(dbPath)
-  setupDatabase(db, migrations, '[BOOKMARKS]')
+  waitForSetup = setupDatabase(db, migrations, '[BOOKMARKS]')
 
   // wire up IPC handlers
   ipcMain.on('bookmarks', onIPCMessage)
 }
 
 export function add (url, title, cb) {
-  // TODO wait till migrations are done
-  db.run(`
-    INSERT OR REPLACE
-      INTO bookmarks (url, title)
-      VALUES (?, ?)
-  `, [url, title], cb)
+  waitForSetup(() => {
+    db.run(`
+      INSERT OR REPLACE
+        INTO bookmarks (url, title)
+        VALUES (?, ?)
+    `, [url, title], cb)
+  })
 }
 
 export function changeTitle (url, title, cb) {
-  // TODO wait till migrations are done
-  db.run(`UPDATE bookmarks SET title = ? WHERE url = ?`, [title, url], cb)
+  waitForSetup(() => {
+    db.run(`UPDATE bookmarks SET title = ? WHERE url = ?`, [title, url], cb)
+  })
 }
 
 export function changeUrl (oldUrl, newUrl, cb) {
-  // TODO wait till migrations are done
-  db.run(`UPDATE bookmarks SET url = ? WHERE url = ?`, [newUrl, oldUrl], cb)
+  waitForSetup(() => {
+    db.run(`UPDATE bookmarks SET url = ? WHERE url = ?`, [newUrl, oldUrl], cb)
+  })
 }
 
 export function remove (url, cb) {
-  // TODO wait till migrations are done
-  db.run(`DELETE FROM bookmarks WHERE url = ?`, [url], cb)
+  waitForSetup(() => {
+    db.run(`DELETE FROM bookmarks WHERE url = ?`, [url], cb)
+  })
 }
 
 export function get (url, cb) {
-  // TODO wait till migrations are done
-  db.get(`SELECT url, title FROM bookmarks WHERE url = ?`, [url], cb)
+  waitForSetup(() => {
+    db.get(`SELECT url, title FROM bookmarks WHERE url = ?`, [url], cb)
+  })
 }
 
 export function list (cb) {
-  // TODO wait till migrations are done
-  db.all(`SELECT url, title FROM bookmarks`, cb)
+  waitForSetup(() => {
+    db.all(`SELECT url, title FROM bookmarks`, cb)
+  })
 }
 
 // internal methods
