@@ -9,7 +9,7 @@ import * as moment from 'moment'
 // =
 
 // how many px from bottom till more is loaded?
-const BEGIN_LOAD_OFFSET = 100
+const BEGIN_LOAD_OFFSET = 500
 
 // visits, cached in memory
 var visits = []
@@ -40,8 +40,11 @@ function fetchMore (cb) {
     return cb()
 
   isFetching = true
-  beaker.history.getVisitHistory({ offset: visits.length, limit: 50 }, (err, rows) => {
-    visits = visits.concat(rows || [])
+  beaker.history.getVisitHistory({ offset: visits.length, limit: 100 }, (err, rows) => {
+    if (rows.length == 0)
+      isAtEnd = true
+    else
+      visits = visits.concat(rows || [])
     isFetching = false
     cb()
   })
@@ -65,8 +68,6 @@ function render () {
         label = 'today'      
       else if (lastDate.isSame(endOfToday.subtract(1, 'day'), 'day'))
         label = 'yesterday'
-      else if (lastDate.isSame(endOfToday, 'month'))
-        label = lastDate.from(endOfToday)
       else if (lastDate.isSame(endOfToday, 'year'))
         label = lastDate.format("dddd, MMMM Do")
       else
