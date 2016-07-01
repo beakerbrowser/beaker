@@ -14,13 +14,13 @@ import renderArchive from './view-dat/archive-html'
 const REQUEST_TIMEOUT_MS = 30e3 // 30s
 
 // standard CSP
-const CSP = "default-src 'self'; plugin-types 'none';"
+const CSP = "default-src 'self'; img-src 'self' data:; plugin-types 'none';"
 
 // globals
 // =
 
 var datServerPort = null // assigned by listen-random-port
-var nonce = Math.random()
+var nonce = Math.random() // used to limit access to the current process
 
 // exported api
 // =
