@@ -136,15 +136,10 @@ function render (id, page) {
 
   // autocomplete dropdown
   var autocompleteDropdown = ''
-  var searchTerms = (autocompleteCurrentValue||'').split(' ')
   if (autocompleteResults) {
     autocompleteDropdown = yo`
       <div class="autocomplete-dropdown" onclick=${onClickAutocompleteDropdown}>
         ${autocompleteResults.map((r, i) => {
-          // decorate result with bolded regions
-          if (!r.search)
-            decorateResultMatches(searchTerms, r)
-
           // content
           var iconCls = 'icon icon-' + ((r.search) ? 'search' : 'window')
           var contentColumn
@@ -152,10 +147,10 @@ function render (id, page) {
             contentColumn = yo`<span class="result-search">${r.search}</span>`
           else {
             contentColumn = yo`<span class="result-url"></span>`
-            contentColumn.innerHTML = r.url // use innerHTML so our decoration can show
+            contentColumn.innerHTML = r.urlDecorated // use innerHTML so our decoration can show
           }
           var titleColumn = yo`<span class="result-title"></span>`
-          titleColumn.innerHTML = r.title // use innerHTML so our decoration can show
+          titleColumn.innerHTML = r.titleDecorated // use innerHTML so our decoration can show
           
           // selection
           var rowCls = 'result'
@@ -206,6 +201,10 @@ function handleAutocompleteSearch (err, results) {
   var v = autocompleteCurrentValue
   if (err)
     console.warn('Autocomplete search failed', err)
+
+  // decorate result with bolded regions
+  var searchTerms = v.split(' ')
+  results.forEach(r => decorateResultMatches(searchTerms, r))  
 
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || v.includes('://') || v.startsWith('ipfs:/')))
@@ -283,8 +282,8 @@ function decorateResultMatches (searchTerms, result) {
   segments.title.push(result.title.slice(lastOffset.title))
 
   // join the segments with <strong> tags
-  result.url = joinSegments(segments.url)
-  result.title = joinSegments(segments.title)
+  result.urlDecorated = joinSegments(segments.url)
+  result.titleDecorated = joinSegments(segments.title)
 }
 
 // helper for decorateResultMatches()
