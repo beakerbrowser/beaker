@@ -4,12 +4,18 @@ import EventEmitter from 'events'
 // globals
 // =
 
-var currentNavItem = 'favorites'
 var events = new EventEmitter()
-const navItems = {
-  favorites: { icon: 'star', label: 'Favorites' },
-  history: { icon: 'back-in-time', label: 'History' },
-}
+const navItems = [
+  'Browse',
+  { url: 'beaker:start', icon: 'star', label: 'Favorites' },
+  { url: 'beaker:apps', icon: 'docs', label: 'Applications' },
+  { url: 'beaker:shared-folders', icon: 'archive', label: 'Shared Folders' },
+  { url: 'beaker:history', icon: 'back-in-time', label: 'History' },
+  'System',
+  { url: 'beaker:disk-usage', icon: 'chart-pie', label: 'Disk Usage' },
+  { url: 'beaker:network', icon: 'network', label: 'Network' },
+  { url: 'beaker:settings', icon: 'tools', label: 'Settings' }
+]
 
 // exported API
 // =
@@ -29,17 +35,19 @@ export var on = events.on.bind(events)
 
 function render () {
   return yo`<nav class="nav-group">
-    ${renderNavItem('favorites')}
-    ${renderNavItem('history')}
+    ${navItems.map(renderNavItem)}
   </nav>`
 }
 
-function renderNavItem (id) {
-  var item = navItems[id]
-  if (!item) return ''
-  var { icon, label } = item
-  var isActive = currentNavItem == id
-  return yo`<a class=${'nav-group-item' + (isActive?' active':'')} onclick=${onClickNavItem(id)}>
+function renderNavItem (item) {
+  // render headers (represented by just a string)
+  if (typeof item == 'string')
+    return yo`<h5 class="nav-group-title">${item}</h5>`
+
+  // render items
+  var { url, icon, label } = item
+  var isActive = window.location == url
+  return yo`<a class=${'nav-group-item' + (isActive?' active':'')} onclick=${onClickNavItem(item)}>
     <span class=${'icon icon-'+icon}></span>
     ${label}
   </a>`
@@ -48,10 +56,10 @@ function renderNavItem (id) {
 // event handlers
 // =
 
-function onClickNavItem (id) {
+function onClickNavItem (item) {
   return e => {
-    currentNavItem = id
-    events.emit('change-view', id)
+    window.history.pushState(null, '', item.url)
+    events.emit('change-view', item.url)
     update()
   }
 }

@@ -20,13 +20,15 @@ export function setup () {
     if (request.url == 'beaker:shell-tab-right.svg')
       return cb(path.join(__dirname, 'img/tab-right.svg'))
 
-    // start page
-    if (request.url == 'beaker:start')
-      return cb(path.join(__dirname, 'builtin-pages/start.html'))
-    if (request.url == 'beaker:start.js')
-      return cb(path.join(__dirname, 'builtin-pages/start.build.js'))
-    if (request.url == 'beaker:start.css')
-      return cb(path.join(__dirname, 'stylesheets/builtin-pages/start.css'))
+    // builtin pages
+    for (let slug of ['start', 'apps', 'shared-folders', 'history', 'disk-usage', 'network', 'settings']) {
+      if (request.url == `beaker:${slug}`)
+        return cb(path.join(__dirname, 'builtin-pages/builtin-pages.html'))
+    }
+    if (request.url == 'beaker:builtin-pages.js')
+      return cb(path.join(__dirname, 'builtin-pages/builtin-pages.build.js'))
+    if (request.url == 'beaker:builtin-pages.css')
+      return cb(path.join(__dirname, 'stylesheets/builtin-pages/builtin-pages.css'))
 
     // view-dat page
     if (request.url == 'beaker:view-dat.css')

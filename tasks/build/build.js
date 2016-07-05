@@ -25,7 +25,7 @@ var bundleApplication = function () {
     bundle(srcDir.path('background-process.js'), srcDir.path('background-process.build.js')),
     bundle(srcDir.path('webview-preload.js'), srcDir.path('webview-preload.build.js')),
     bundle(srcDir.path('shell-window.js'), srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
-    bundle(srcDir.path('builtin-pages/start.js'), srcDir.path('builtin-pages/start.build.js'), { browserify: true, basedir: srcDir.cwd() })
+    bundle(srcDir.path('builtin-pages/builtin-pages.js'), srcDir.path('builtin-pages/builtin-pages.build.js'), { browserify: true, basedir: srcDir.cwd() })
   ]);
 };
 
@@ -54,7 +54,7 @@ var buildLess = function (src, dest) {
 var lessTask = function () {
   return  Q.all([
     buildLess('app/stylesheets/shell-window.less', srcDir.path('stylesheets')),
-    buildLess('app/stylesheets/builtin-pages/start.less', srcDir.path('stylesheets/builtin-pages')),
+    buildLess('app/stylesheets/builtin-pages/builtin-pages.less', srcDir.path('stylesheets/builtin-pages')),
     buildLess('app/stylesheets/builtin-pages/view-dat.less', srcDir.path('stylesheets/builtin-pages'))
   ])
 };
