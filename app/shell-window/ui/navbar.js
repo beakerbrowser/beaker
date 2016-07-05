@@ -150,7 +150,7 @@ function render (id, page) {
             contentColumn.innerHTML = r.urlDecorated // use innerHTML so our decoration can show
           }
           var titleColumn = yo`<span class="result-title"></span>`
-          titleColumn.innerHTML = r.titleDecorated // use innerHTML so our decoration can show
+          titleColumn.innerHTML = r.titleDecorated || r.title // use innerHTML so our decoration can show
           
           // selection
           var rowCls = 'result'
