@@ -365,8 +365,10 @@ function onDidFinishLoad (e) {
 
     // update history
     var url = page.getURL()
-    if (/^(http|dat|ipfs|file)/.test(url))
+    if (/^(http|dat|ipfs|file)/.test(url)) {
       history.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() }, warnIfError('history.addVisit'))
+      bookmarks.addVisit(page.getURL(), warnIfError('bookmarks.addVisit'))
+    }
   }
 }
 

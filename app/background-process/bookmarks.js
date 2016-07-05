@@ -28,8 +28,8 @@ export function add (url, title, cb) {
   waitForSetup(() => {
     db.run(`
       INSERT OR REPLACE
-        INTO bookmarks (url, title)
-        VALUES (?, ?)
+        INTO bookmarks (url, title, num_visits)
+        VALUES (?, ?, 0)
     `, [url, title], cb)
   })
 }
@@ -46,6 +46,12 @@ export function changeUrl (oldUrl, newUrl, cb) {
   })
 }
 
+export function addVisit (url, cb) {
+  waitForSetup(() => {
+    db.run(`UPDATE bookmarks SET num_visits = num_visits + 1 WHERE url = ?`, url, cb)
+  })  
+}
+
 export function remove (url, cb) {
   waitForSetup(() => {
     db.run(`DELETE FROM bookmarks WHERE url = ?`, [url], cb)
@@ -60,7 +66,7 @@ export function get (url, cb) {
 
 export function list (cb) {
   waitForSetup(() => {
-    db.all(`SELECT url, title FROM bookmarks`, cb)
+    db.all(`SELECT url, title FROM bookmarks ORDER BY num_visits DESC`, cb)
   })
 }
 
@@ -73,7 +79,7 @@ function onIPCMessage (event, command, requestId, ...args) {
   const replyCb = (err, value) => event.sender.send('bookmarks', 'reply', requestId, err, value)
 
   // look up the method called
-  var ipcMethods = { add, changeTitle, changeUrl, remove, get, list }
+  var ipcMethods = { add, changeTitle, changeUrl, addVisit, remove, get, list }
   var ipcMethod = ipcMethods[command]
   if (!ipcMethod) {
     log('[BOOKMARKS] Unknown message command', arguments)
@@ -103,5 +109,13 @@ migrations = [
       INSERT INTO bookmarks (title, url) VALUES ('DuckDuckGo (the default search engine)', 'https://duckduckgo.com');
       PRAGMA user_version = 1;
     `, cb)
-  }
+  },
+  // version 2
+  function (cb) {
+    db.exec(`
+      ALTER TABLE bookmarks ADD COLUMN num_visits;
+      UPDATE bookmarks SET num_visits = 0;
+      PRAGMA user_version = 2;
+    `, cb)
+  },
 ]

@@ -21,18 +21,18 @@ tr:active {
   color: inherit;
 }
 
+.ll-heading {
+  font-size: 15px;
+  padding: 12px 10px 6px;
+  font-weight: bold;
+  color: #9A9A9A;
+  text-transform: uppercase;
+  border-bottom: 1px solid #ccc;
+}
+
 .links-list {
   font-size: 13px;
-  margin-bottom: 15px;
-
-  .ll-heading {
-    font-size: 15px;
-    padding: 12px 10px 6px;
-    font-weight: bold;
-    color: #9A9A9A;
-    text-transform: uppercase;
-    border-bottom: 1px solid #ccc;
-  }
+  margin-bottom: 25px;
 
   .ll-row {
     display: flex;
@@ -68,12 +68,83 @@ tr:active {
       .icon {
         display: none;
         cursor: pointer;
+        color: #aaa;
+        &:hover {
+          color: #666;
+        }
       }
     }
 
     &:hover {
       background: #f5f5f4;
       .ll-actions {
+        // show icons on row hover
+        .icon {
+          display: inline;
+        }
+      }
+    }
+  }
+}
+
+.big-links-list {
+  font-size: 13px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #ccc;
+
+  .bll-row {
+    display: block;
+    cursor: pointer;
+    text-decoration: none;
+    color: #555;
+    padding: 10px 16px;
+
+    .bll-title {
+      font-size: 18px;
+      font-family: sans-serif;
+      cursor: pointer;
+    }
+    .bll-url {
+      color: #999;
+      cursor: pointer;
+    }
+
+    .bll-title, .bll-url {
+      flex: 1;
+
+      // make make the title ellipsis when too long
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      .favicon {
+        margin-right: 2px;
+        position: relative;
+        top: 1px;
+      }
+
+      .ll-title {
+        cursor: pointer;
+      }
+    }
+
+    // make the actions compact, and hidden except on hover
+    .bll-actions {
+      .icon {
+        display: none;
+        cursor: pointer;
+        color: #aaa;
+        &:hover {
+          color: #666;
+        }
+      }
+    }
+
+    &:hover {
+      background: #f5f5f4;
+      .bll-actions {
         // show icons on row hover
         .icon {
           display: inline;

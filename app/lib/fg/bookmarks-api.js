@@ -32,6 +32,10 @@ export function changeUrl (oldUrl, newUrl, cb) {
   sendIPCRequest('changeUrl', oldUrl, newUrl, cb)
 }
 
+export function addVisit (url, cb) {
+  sendIPCRequest('addVisit', url, cb)
+}
+
 export function remove (url, cb) {
   sendIPCRequest('remove', url, cb)
 }
