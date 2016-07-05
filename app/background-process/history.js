@@ -49,7 +49,7 @@ export function addVisit ({url, title}, cb) {
         var ts = Date.now()
         db.serialize(() => {
           // log visit
-          db.run('INSERT INTO visits (url, title, ts) VALUES (?, ?, ?, ?);', [url, title, ts], done())
+          db.run('INSERT INTO visits (url, title, ts) VALUES (?, ?, ?);', [url, title, ts], done())
           // first visit?
           if (!stats) {
             // yes, create new stat and search entries

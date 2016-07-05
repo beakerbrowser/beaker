@@ -6,10 +6,12 @@ import * as bookmarks from './lib/fg/bookmarks-api'
 import * as history from './lib/fg/history-api'
 import * as sitedata from './lib/fg/sitedata-api'
 
-// run setup
+// setup APIs to the background process
 sitedata.setup()
 history.setup()
 bookmarks.setup()
+
+// setup UI
 setupUI()
 setupCommandHandlers()
 setupSwipeHandlers()

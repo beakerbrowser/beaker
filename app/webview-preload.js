@@ -10,11 +10,13 @@ import * as history from './lib/fg/history-api'
 // it would be better to import this from package.json
 const BEAKER_VERSION = '0.0.1'
 
-// setup standard behaviors
+// setup APIs to the background process
 sitedata.setup()
 history.setup()
 bookmarks.setup()
 fs.setup()
+
+// setup UI
 commandHandlers.setup()
 contextMenu.setup()
 statusBarHover.setup()

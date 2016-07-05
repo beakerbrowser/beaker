@@ -366,7 +366,7 @@ function onDidFinishLoad (e) {
     // update history
     var url = page.getURL()
     if (/^(http|dat|ipfs|file)/.test(url))
-      history.addVisit({ url: page.getURL(), title: page.getTitle() })
+      history.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() }, warnIfError('history.addVisit'))
   }
 }
 
@@ -424,7 +424,7 @@ function onCrashed (e) {
   console.error('Webview crash', e)
 }
 
-// internal functions
+// internal helper functions
 // =
 
 function show (page) {
@@ -449,4 +449,11 @@ function createWebviewEl (id, url) {
 
 function rebroadcastEvent (e) {
   events.emit(e.type, e)
+}
+
+function warnIfError (label) {
+  return err => {
+    if (err)
+      console.warn(label, err)
+  }
 }
