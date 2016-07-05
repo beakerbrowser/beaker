@@ -147,10 +147,16 @@ function render (id, page) {
             contentColumn = yo`<span class="result-search">${r.search}</span>`
           else {
             contentColumn = yo`<span class="result-url"></span>`
-            contentColumn.innerHTML = r.urlDecorated // use innerHTML so our decoration can show
+            if (r.urlDecorated)
+              contentColumn.innerHTML = r.urlDecorated // use innerHTML so our decoration can show
+            else
+              contentColumn.textContent = r.url
           }
           var titleColumn = yo`<span class="result-title"></span>`
-          titleColumn.innerHTML = r.titleDecorated || r.title // use innerHTML so our decoration can show
+          if (r.titleDecorated)
+            titleColumn.innerHTML = r.titleDecorated // use innerHTML so our decoration can show
+          else
+            titleColumn.textContent = r.title
           
           // selection
           var rowCls = 'result'
@@ -203,7 +209,7 @@ function handleAutocompleteSearch (err, results) {
     console.warn('Autocomplete search failed', err)
 
   // decorate result with bolded regions
-  var searchTerms = v.split(' ')
+  var searchTerms = v.replace(/[^A-Za-z0-9]/g, ' ').split(' ').filter(Boolean)
   results.forEach(r => decorateResultMatches(searchTerms, r))  
 
   // does the value look like a url?
