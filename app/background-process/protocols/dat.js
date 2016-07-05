@@ -15,7 +15,8 @@ import renderArchive from './view-dat/archive-html'
 const REQUEST_TIMEOUT_MS = 30e3 // 30s
 
 // content security policies
-const CSP = "default-src 'self'; img-src 'self' data:; plugin-types 'none';"
+const DAT_CSP = "default-src 'self'; img-src 'self' data:; plugin-types 'none';"
+const VIEWDAT_CSP = "default-src 'self' beaker:; img-src 'self' data:; plugin-types 'none';"
 
 // globals
 // =
@@ -99,8 +100,8 @@ function datServer (req, res) {
         // if we're looking for a directory, show the archive listing
         if (!urlp.path || urlp.path.charAt(urlp.path.length - 1) == '/') {
           res.writeHead(200, 'OK', {
-            'Content-Type': entryInfo.mimeType,
-            'Content-Security-Policy': CSP
+            'Content-Type': 'text/html',
+            'Content-Security-Policy': VIEWDAT_CSP
           })
           return res.end(new Buffer(renderArchive(archive, entries, urlp.path), 'utf-8'))
         }
@@ -118,7 +119,7 @@ function datServer (req, res) {
         // respond
         res.writeHead(200, 'OK', {
           'Content-Type': entryInfo.mimeType,
-          'Content-Security-Policy': CSP
+          'Content-Security-Policy': DAT_CSP
         })
         res.end(entryInfo.data)
       })         
