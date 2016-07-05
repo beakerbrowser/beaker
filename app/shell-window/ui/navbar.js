@@ -136,15 +136,26 @@ function render (id, page) {
 
   // autocomplete dropdown
   var autocompleteDropdown = ''
+  var searchTerms = (autocompleteCurrentValue||'').split(' ')
   if (autocompleteResults) {
     autocompleteDropdown = yo`
       <div class="autocomplete-dropdown" onclick=${onClickAutocompleteDropdown}>
         ${autocompleteResults.map((r, i) => {
-          // content type
+          // decorate result with bolded regions
+          if (!r.search)
+            decorateResultMatches(searchTerms, r)
+
+          // content
           var iconCls = 'icon icon-' + ((r.search) ? 'search' : 'window')
-          var contentColumn = (r.search)
-            ? yo`<span class="result-search">${r.search}</span>`
-            : yo`<span class="result-url">${r.url}</span>`
+          var contentColumn
+          if (r.search)
+            contentColumn = yo`<span class="result-search">${r.search}</span>`
+          else {
+            contentColumn = yo`<span class="result-url"></span>`
+            contentColumn.innerHTML = r.url // use innerHTML so our decoration can show
+          }
+          var titleColumn = yo`<span class="result-title"></span>`
+          titleColumn.innerHTML = r.title // use innerHTML so our decoration can show
           
           // selection
           var rowCls = 'result'
@@ -155,7 +166,7 @@ function render (id, page) {
           return yo`<div class=${rowCls} data-result-index=${i}>
             <span class=${iconCls}></span>
             ${contentColumn}
-            <span class="result-title">${r.title}</span>
+            ${titleColumn}
           </div>`
         })}
       </div>
@@ -229,6 +240,76 @@ function getAutocompleteSelectionUrl (i) {
   // fallback to the current value in the navbar
   var addrEl = pages.getActive().navbarEl.querySelector('.nav-location-input')
   return addrEl.value
+}
+
+// helper for autocomplete
+// - takes in the current search (tokenized) and a result object
+// - mutates `result` so that matching text is bold
+var offsetsRegex = /([\d]+ [\d]+ [\d]+ [\d]+)/g
+function decorateResultMatches (searchTerms, result) {
+  // extract offsets
+  var tuples = (result.offsets || '').match(offsetsRegex)
+  if (!tuples)
+    return
+
+  // iterate all match tuples, and break the values into segments
+  let lastTuple
+  let segments = { url: [], title: [] }
+  let lastOffset = { url: 0, title: 0 }
+  for (let tuple of tuples) {
+    tuple = tuple.split(' ').map(i => +i) // the map() coerces to the proper type
+    let [ columnIndex, termIndex, offset, matchLen ] = tuple
+    let columnName = ['url', 'title'][columnIndex]
+
+    // sometimes multiple terms can hit at the same point
+    // that breaks the algorithm, so skip that condition
+    if (lastTuple && lastTuple[0] === columnIndex && lastTuple[2] === offset)
+      continue
+    lastTuple = tuple
+
+    // use the length of the search term
+    // (sqlite FTS gives the length of the full matching token, which isnt as helpful)
+    let searchTerm = searchTerms[termIndex]
+    let len = searchTerm.length
+
+    // extract segments
+    segments[columnName].push(result[columnName].slice(lastOffset[columnName], offset))
+    segments[columnName].push(result[columnName].slice(offset, offset+len))
+    lastOffset[columnName] = offset + len
+  }
+
+  // add the remaining text
+  segments.url.push(result.url.slice(lastOffset.url))
+  segments.title.push(result.title.slice(lastOffset.title))
+
+  // join the segments with <strong> tags
+  result.url = joinSegments(segments.url)
+  result.title = joinSegments(segments.title)
+}
+
+// helper for decorateResultMatches()
+// - takes an array of string segments (extracted from the result columns)
+// - outputs a single escaped string with every other element wrapped in <strong>
+var ltRegex = /</g
+var gtRegex = />/g
+function joinSegments (segments) {
+  var str = ''
+  var isBold = false
+  for (var segment of segments) {
+    // escape for safety
+    segment = segment.replace(ltRegex, '&lt;').replace(gtRegex, '&gt;')
+
+    // decorate with the strong tag
+    if (isBold) str += '<strong>' + segment + '</strong>'
+    else        str += segment
+    isBold = !isBold
+  }
+  return str
+}
+
+function countMatches (str, regex) {
+  var matches = str.match(regex)
+  return (matches) ? matches.length : 0
 }
 
 // ui event handlers

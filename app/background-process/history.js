@@ -105,7 +105,7 @@ export function search (q, cb) {
 
     // run query
     db.all(`
-      SELECT visit_fts.url, visit_fts.title, visit_stats.num_visits
+      SELECT offsets(visit_fts) as offsets, visit_fts.url, visit_fts.title, visit_stats.num_visits
         FROM visit_fts
         LEFT JOIN visit_stats ON visit_stats.url = visit_fts.url
         WHERE visit_fts MATCH ?
