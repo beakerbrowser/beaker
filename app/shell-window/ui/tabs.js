@@ -98,7 +98,47 @@ function onClickPin (page) {
 }
 
 function onClickTab (page) {
-  return () => pages.setActive(page)
+  return e => {
+    // tabs have curved edges which arent modelable via the DOM
+    // this creates a region of ~10px on each edge, which we need to smartly detect
+    // (due to the asymmetrical margins, the numbers are more art than science)
+    var { clientX, clientY } = e
+    var tabEl = findTabParentEl(e.target)
+    var { left, top, right, bottom } = tabEl.getBoundingClientRect()
+
+    var leftEdge = clientX - left + 13
+    var rightEdge = clientX - right - 11
+    var bottomEdge = bottom - clientY
+
+    if (leftEdge < 10) {
+      // this edge forms a line from {leftEdge: -4, bottomEdge: 0} to {leftEdge: 0, bottomEdge: 12}
+      // (y = mx + b) y = 3x + 12
+      // if bottomEdge is > than (3*leftEdge + 12) then we're above the line
+      let isOutside = (bottomEdge > (3 * leftEdge + 12))
+      if (isOutside) {
+        let leftPage = pages.getAdjacentPage(page, -1)
+        page = leftPage || page
+      }
+    }
+
+    if (rightEdge > 0) {
+      // this edge forms a line from {rightEdge: 6, bottomEdge: 0} to {rightEdge: 0, bottomEdge: 12}
+      // (y = mx + b) y = -2x + 12
+      // if bottomEdge is > than (-2*rightEdge + 12) then we're above the line
+      let isOutside = (bottomEdge > (-2 * rightEdge + 12))
+      if (isOutside) {
+        let rightPage = pages.getAdjacentPage(page, 1)
+        if (rightPage)
+          page = rightPage
+        else {
+          // unlike the left side, if there's not a tab here, then we clicked on new
+          return onClickNew()
+        }
+      }
+    }
+
+    pages.setActive(page)
+  }
 }
 
 function onClickTabClose (page) {
@@ -151,5 +191,16 @@ function onFaviconError (page) {
     // if the favicon 404s, just fallback to the icon
     page.favicons = null
     updateTabs()
+  }
+}
+
+// internal helpers
+// =
+
+function findTabParentEl (el) {
+  while (el) {
+    if (el.classList && el.classList.contains('chrome-tab'))
+      return el
+    el = el.parentNode
   }
 }

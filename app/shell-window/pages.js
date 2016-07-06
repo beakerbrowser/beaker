@@ -263,6 +263,18 @@ export function getActive () {
   return activePage
 }
 
+export function getAdjacentPage (page, offset) {
+  if (pages.length > 1) {
+    // lookup the index
+    var i = pages.indexOf(page)
+    if (i === -1)
+      return null
+
+    // add offset and return
+    return pages[i + offset]
+  }
+}
+
 export function getByWebview (el) {
   return getById(el.dataset.id)
 }
