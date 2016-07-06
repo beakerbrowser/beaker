@@ -89,16 +89,29 @@ tr:active {
 
 .big-links-list {
   font-size: 13px;
-  margin: 5px 0 15px;
-  padding-bottom: 10px;
+  margin: 0 0 5px;
+  padding: 10px 0 15px;
   border-bottom: 1px dashed #ccc;
+  background: #fafafa;
 
-  .bll-row {
-    display: block;
-    cursor: pointer;
-    text-decoration: none;
-    color: #555;
+  .bll-inner {
+    margin: 0 auto;
+    width: 860px;
+  }
+
+  .bll-tile {
+    display: inline-block;
+    position: relative;
+    width: 250px;
+    margin: 10px;
     padding: 10px 16px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    box-shadow: 0px 2px 2px rgba(0,0,0,.1);
+    color: #555;
+    background: #fff;
+    text-decoration: none;
+    cursor: pointer;
 
     .bll-title {
       font-size: 18px;
@@ -124,18 +137,23 @@ tr:active {
         position: relative;
         top: 1px;
       }
-
-      .ll-title {
-        cursor: pointer;
-      }
     }
 
     // make the actions compact, and hidden except on hover
     .bll-actions {
+      display: none;
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      line-height: 14px;
+
       .icon {
-        display: none;
         cursor: pointer;
         color: #aaa;
+        padding: 5px;
         &:hover {
           color: #666;
         }
@@ -143,14 +161,23 @@ tr:active {
     }
 
     &:hover {
-      background: #f5f5f4;
+      box-shadow: 0px 3px 2px rgba(0,0,0,.1);
       .bll-actions {
         // show icons on row hover
-        .icon {
-          display: inline;
-        }
+        display: inline;
       }
     }
+  }
+}
+
+@media (max-width: 1200px) {
+  .big-links-list .bll-inner {
+    width: 810px;
+  }
+}
+@media (max-width: 1030px) {
+  .big-links-list .bll-inner {
+    width: 600px;
   }
 }
 

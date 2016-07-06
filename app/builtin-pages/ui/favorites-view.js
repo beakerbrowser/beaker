@@ -33,11 +33,11 @@ export function hide () {
 
 function render () {
   // helper function to render big rows
-  const renderBigRow = (row, i) => yo`<a class="bll-row" href=${row.url} title=${row.title}>
+  const renderBigRow = (row, i) => yo`<a class="bll-tile" href=${row.url} title=${row.title}>
+    <span class="bll-actions"><span class="icon icon-cancel" onclick=${onClickDelete(i)} title="Delete bookmark"></span></span>
     <div class="bll-title">
       <img class="favicon" src=${'beaker-favicon:'+row.url} />
       ${row.title}
-      <span class="bll-actions"><span class="icon icon-cancel" onclick=${onClickDelete(i)} title="Delete bookmark"></span></span>
     </div>
     <div class="bll-url">${row.url}</div>
   </div>`
@@ -49,14 +49,14 @@ function render () {
       <span class="ll-title">${row.title}</span>
     </a>
     <div class="ll-actions">
-      <span class="icon icon-cancel" onclick=${onClickDelete(i+8)} title="Delete bookmark"></span>
+      <span class="icon icon-cancel" onclick=${onClickDelete(i+9)} title="Delete bookmark"></span>
     </div>
   </div>`
 
-  // render the top 8 big, the rest small
+  // render the top 9 big, the rest small
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="favorites big-links-list">${bookmarks.slice(0, 8).map(renderBigRow)}</div>
-    <div class="favorites links-list">${bookmarks.slice(8).map(renderSmallRow)}</div>
+    <div class="favorites big-links-list"><div class="bll-inner">${bookmarks.slice(0, 9).map(renderBigRow)}</div></div>
+    <div class="favorites links-list">${bookmarks.slice(9).map(renderSmallRow)}</div>
   </div>`)
 }
 
