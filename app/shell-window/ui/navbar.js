@@ -101,7 +101,7 @@ function render (id, page) {
         <span class="icon icon-cancel"></span>
       </button>`
     : yo`<button class="toolbar-btn nav-reload-btn" onclick=${onClickReload}>
-        <span class="icon icon-arrows-ccw"></span>
+        <span class="icon icon-ccw"></span>
       </button>`
 
   // `page` is null on initial render
@@ -177,10 +177,10 @@ function render (id, page) {
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
       <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-        <span class="icon icon-left"></span>
+        <span class="icon icon-left-open"></span>
       </button>
       <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-        <span class="icon icon-right"></span>
+        <span class="icon icon-right-open"></span>
       </button>
       ${reloadBtn}      
     </div>

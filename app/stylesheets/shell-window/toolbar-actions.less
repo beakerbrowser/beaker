@@ -32,9 +32,15 @@
       outline: 0;
     }
 
-    // make the arrows thicker
-    &.nav-back-btn, &.nav-forward-btn, &.nav-forward-cancel {
-      -webkit-text-stroke: 1px;
+    // shrink and reposition some buttons
+    &.nav-cancel-btn .icon {
+      font-size: 16px;
+    }
+    &.nav-reload-btn .icon {
+      font-size: 15px;
+      position: relative;
+      top: -1px;
+      left: -1px;
     }
   }
 }

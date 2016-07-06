@@ -7,16 +7,16 @@ var ARROW_OFF_DIST = 80 // how far off-screen are the arrows
 export function setup () {
   var horizontal = 0 // how much x traveled?
   var vertical = 0 // how much y traveled?
-  var hnorm = 0 // "normalized" 0 (put into a ranger where `> 1` or `< -1` triggers the navigation)
+  var hnorm = 0 // normalized to a [-1,1] range
   var isTouching = false // is touch event active?
   var leftSwipeArrowEl = document.getElementById('left-swipe-arrow')
   var rightSwipeArrowEl = document.getElementById('right-swipe-arrow')
 
   const shouldGoBack = () => {
-    return hnorm < -1
+    return hnorm <= -1
   }
   const shouldGoForward = () => {
-    return hnorm > 1
+    return hnorm >= 1
   }
 
   window.addEventListener('mousewheel', e => {
@@ -31,7 +31,7 @@ export function setup () {
         hnorm = 0 // ignore if there's more vertical motion than horizontal
       else
         hnorm = horizontal / SWIPE_TRIGGER_DIST
-      hnorm = Math.min(1.2, Math.max(-1.2, hnorm)) // clamp to [-1.2, 1.2]
+      hnorm = Math.min(1.0, Math.max(-1.0, hnorm)) // clamp to [-1.0, 1.0]
 
       // calculate arrow positions
       if (horizontal < 0) {
