@@ -12,8 +12,16 @@ export function setup () {
   var leftSwipeArrowEl = document.getElementById('left-swipe-arrow')
   var rightSwipeArrowEl = document.getElementById('right-swipe-arrow')
 
+  const canGoBack = () => {
+    var page = pages.getActive()
+    if (page) return page.canGoBack()
+  }
   const shouldGoBack = () => {
     return hnorm <= -1
+  }
+  const canGoForward = () => {
+    var page = pages.getActive()
+    if (page) return page.canGoForward()
   }
   const shouldGoForward = () => {
     return hnorm >= 1
@@ -29,6 +37,8 @@ export function setup () {
       // calculate the normalized horizontal
       if (Math.abs(vertical) > Math.abs(horizontal))
         hnorm = 0 // ignore if there's more vertical motion than horizontal
+      else if ((horizontal < 0 && !canGoBack()) || (horizontal > 0 && !canGoForward()))
+        hnorm = horizontal = 0 // ignore if the navigation isnt possible in that direction
       else
         hnorm = horizontal / SWIPE_TRIGGER_DIST
       hnorm = Math.min(1.0, Math.max(-1.0, hnorm)) // clamp to [-1.0, 1.0]
