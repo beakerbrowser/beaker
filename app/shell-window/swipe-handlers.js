@@ -6,27 +6,34 @@ var ARROW_OFF_DIST = 80 // how far off-screen are the arrows
 
 export function setup () {
   var horizontal = 0 // how much x traveled?
+  var vertical = 0 // how much y traveled?
+  var hnorm = 0 // "normalized" 0 (put into a ranger where `> 1` or `< -1` triggers the navigation)
   var isTouching = false // is touch event active?
   var leftSwipeArrowEl = document.getElementById('left-swipe-arrow')
   var rightSwipeArrowEl = document.getElementById('right-swipe-arrow')
 
   const shouldGoBack = () => {
-    var hnorm = horizontal / SWIPE_TRIGGER_DIST
     return hnorm < -1
   }
   const shouldGoForward = () => {
-    var hnorm = horizontal / SWIPE_TRIGGER_DIST
     return hnorm > 1
   }
 
   window.addEventListener('mousewheel', e => {
     if (isTouching) {
 
-      // track amount of x traveled
+      // track amount of x & y traveled
       horizontal += e.deltaX
+      vertical += e.deltaY
+
+      // calculate the normalized horizontal
+      if (Math.abs(vertical) > Math.abs(horizontal))
+        hnorm = 0 // ignore if there's more vertical motion than horizontal
+      else
+        hnorm = horizontal / SWIPE_TRIGGER_DIST
+      hnorm = Math.min(1.2, Math.max(-1.2, hnorm)) // clamp to [-1.2, 1.2]
 
       // calculate arrow positions
-      var hnorm = horizontal / SWIPE_TRIGGER_DIST
       if (horizontal < 0) {
         leftSwipeArrowEl.style.left = ((-1 * ARROW_OFF_DIST) - (hnorm * ARROW_OFF_DIST)) + 'px'
         rightSwipeArrowEl.style.right = (-1 * ARROW_OFF_DIST) + 'px'
@@ -68,7 +75,7 @@ export function setup () {
       }
 
       // reset arrows
-      horizontal = 0
+      horizontal = vertical = hnorm = 0
       leftSwipeArrowEl.classList.add('returning')
       leftSwipeArrowEl.classList.remove('highlight')
       leftSwipeArrowEl.style.left = (-1 * ARROW_OFF_DIST) + 'px'
