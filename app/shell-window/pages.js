@@ -218,6 +218,7 @@ export function setActive (page) {
   activePage = page
   show(page)
   page.isActive = 1
+  page.webviewEl.focus()
   statusBar.setIsLoading(page.isLoading())
   events.emit('set-active', page)
 }
