@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, screen } from 'electron'
 import path from 'path'
 import { register as registerShortcut } from 'electron-localshortcut'
 import log from '../log'
@@ -12,11 +12,16 @@ export function setup () {
 }
 
 export function createShellWindow () {
+  // calculate screen size
+  var { width, height } = screen.getPrimaryDisplay().workAreaSize
+  width = Math.max(800, Math.min(1800, width - 50))
+  height = Math.max(600, Math.min(1200, height - 50))
+
   // create window
   var win = new BrowserWindow({ 
     titleBarStyle: 'hidden-inset',
     'standard-window': false,
-    width: 1000, height: 700,
+    width, height,
     webPreferences: {
       webSecurity: false, // disable same-origin policy in the shell-window; the <webview>s of site content will have it re-enabled
     }
