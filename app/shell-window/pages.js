@@ -185,7 +185,7 @@ export function remove (page) {
   if (page.isActive) {
     if (pages.length == 0)
       create()
-    setActive(pages[pages.length - 1])
+    setActive(pages[i] || pages[i-1])
   }
 
   // persist pins if that was
