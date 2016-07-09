@@ -1,9 +1,6 @@
 import { setup as setupUI } from './shell-window/ui'
 import history from './lib/fg/history-api'
-import * as sitedata from './lib/fg/sitedata-api'
-
-// setup APIs to the background process
-sitedata.setup()
+import sitedata from './lib/fg/sitedata-api'
 
 // setup UI
 setupUI()

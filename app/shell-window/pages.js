@@ -5,7 +5,7 @@ import * as navbar from './ui/navbar'
 import * as statusBar from './ui/status-bar'
 import bookmarks from '../lib/fg/bookmarks-api'
 import history from '../lib/fg/history-api'
-import * as sitedata from '../lib/fg/sitedata-api'
+import sitedata from '../lib/fg/sitedata-api'
 import { urlToData } from '../lib/fg/img'
 
 const DEFAULT_URL = 'beaker:start'

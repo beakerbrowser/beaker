@@ -10,7 +10,7 @@ import fss from 'fs-sandbox'
 import { remote } from 'electron'
 import path from 'path'
 import stamp from 'monotonic-timestamp'
-import * as sitedata from './sitedata-api'
+import sitedata from './sitedata-api'
 
 // globals
 // =

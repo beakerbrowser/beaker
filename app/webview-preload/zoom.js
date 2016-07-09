@@ -1,5 +1,5 @@
 import { webFrame, ipcRenderer } from 'electron'
-import * as sitedata from '../lib/fg/sitedata-api'
+import sitedata from '../lib/fg/sitedata-api'
 
 const ZOOM_STEP = 0.5
 

@@ -4,14 +4,13 @@ import * as statusBarHover from './webview-preload/status-bar-hover'
 import * as zoom from './webview-preload/zoom'
 import * as fs from './lib/fg/fs-api'
 import bookmarks from './lib/fg/bookmarks-api'
-import * as sitedata from './lib/fg/sitedata-api'
+import sitedata from './lib/fg/sitedata-api'
 import history from './lib/fg/history-api'
 
 // it would be better to import this from package.json
 const BEAKER_VERSION = '0.0.1'
 
-// setup APIs to the background process
-sitedata.setup()
+// setup APIs
 fs.setup()
 
 // setup UI

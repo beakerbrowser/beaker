@@ -2,6 +2,8 @@ import { app, ipcMain } from 'electron'
 import sqlite3 from 'sqlite3'
 import path from 'path'
 import url from 'url'
+import rpc from 'pauls-electron-rpc'
+import manifest from '../lib/rpc-manifests/sitedata'
 import { setupDatabase } from '../lib/bg/sqlite-tools'
 import log from '../log'
 
@@ -20,8 +22,13 @@ export function setup () {
   db = new sqlite3.Database(dbPath)
   waitForSetup = setupDatabase(db, migrations, '[SITEDATA]')
 
-  // wire up IPC handlers
-  ipcMain.on('sitedata', onIPCMessage)
+  // wire up RPC
+  rpc.exportAPI('sitedata', manifest, {
+    get: getSendOrigin,
+    set: setSendOrigin,
+    getOtherOrigin: get,
+    setOtherOrigin: set
+  })
 }
 
 export function set (origin, key, value, cb) {
@@ -46,6 +53,14 @@ export function get (origin, key, cb) {
   })
 }
 
+function setSendOrigin (key, value, cb) {
+  return set(this.sender.getURL(), key, value, cb)
+}
+
+function getSendOrigin (key, cb) {
+  return get(this.sender.getURL(), key, cb)
+}
+
 // internal methods
 // =
 
@@ -54,20 +69,6 @@ function extractOrigin (originURL) {
   if (!urlp || !urlp.host || !urlp.protocol)
     return log('[SITEDATA] Received message from a page with an unparseable URL:', originURL)
   return (urlp.protocol + urlp.host + (urlp.port || ''))
-}
-
-// `requestId` is sent with the response, so the requester can match the result data to the original call
-function onIPCMessage (event, command, requestId, ...args) {
-  const replyCb = (err, value) => event.sender.send('sitedata', 'reply', requestId, err, value)
-
-  // run command
-  switch (command) {
-    case 'get': return get(event.sender.getURL(), ...args, replyCb)
-    case 'set': return set(event.sender.getURL(), ...args, replyCb)
-    case 'getOtherOrigin': return get(args[0], args[1], replyCb)
-    case 'setOtherOrigin': return set(args[0], args[1], args[2], replyCb)
-    default: log('[SITEDATA] Unknown message command', arguments)
-  }
 }
 
 migrations = [
