@@ -1,6 +1,6 @@
 import { remote } from 'electron'
 import * as pages from '../pages'
-import * as history from '../../lib/fg/history-api'
+import history from '../../lib/fg/history-api'
 import * as url from 'url'
 import * as path from 'path'
 import * as yo from 'yo-yo'

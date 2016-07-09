@@ -2,6 +2,8 @@ import { app, ipcMain } from 'electron'
 import sqlite3 from 'sqlite3'
 import path from 'path'
 import url from 'url'
+import rpc from 'pauls-electron-rpc'
+import manifest from '../lib/rpc-manifests/bookmarks'
 import { setupDatabase } from '../lib/bg/sqlite-tools'
 import log from '../log'
 
@@ -20,8 +22,8 @@ export function setup () {
   db = new sqlite3.Database(dbPath)
   waitForSetup = setupDatabase(db, migrations, '[BOOKMARKS]')
 
-  // wire up IPC handlers
-  ipcMain.on('bookmarks', onIPCMessage)
+  // wire up RPC
+  rpc.exportAPI('bookmarks', manifest, { add, changeTitle, changeUrl, addVisit, remove, get, list })
 }
 
 export function add (url, title, cb) {
@@ -72,25 +74,6 @@ export function list (cb) {
 
 // internal methods
 // =
-
-// `requestId` is sent with the response, so the requester can match the result data to the original call
-function onIPCMessage (event, command, requestId, ...args) {
-  // create a reply cb
-  const replyCb = (err, value) => event.sender.send('bookmarks', 'reply', requestId, err, value)
-
-  // look up the method called
-  var ipcMethods = { add, changeTitle, changeUrl, addVisit, remove, get, list }
-  var ipcMethod = ipcMethods[command]
-  if (!ipcMethod) {
-    log('[BOOKMARKS] Unknown message command', arguments)
-    replyCb(new Error('Invalid command'))
-    return
-  }
-
-  // run method
-  args.push(replyCb)
-  ipcMethod.apply(null, args)
-}
 
 migrations = [
   // version 1

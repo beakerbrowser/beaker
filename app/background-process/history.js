@@ -4,6 +4,8 @@ import path from 'path'
 import url from 'url'
 import zerr from 'zerr'
 import multicb from 'multicb'
+import rpc from 'pauls-electron-rpc'
+import manifest from '../lib/rpc-manifests/history'
 import { setupDatabase } from '../lib/bg/sqlite-tools'
 import log from '../log'
 
@@ -25,8 +27,8 @@ export function setup () {
   db = new sqlite3.Database(dbPath)
   waitForSetup = setupDatabase(db, migrations, '[HISTORY]')
 
-  // wire up IPC handlers
-  ipcMain.on('history', onIPCMessage)
+  // wire up RPC
+  rpc.exportAPI('history', manifest, { addVisit, getVisitHistory, getMostVisited, search, removeVisit, removeAllVisits })
 }
 
 export function addVisit ({url, title}, cb) {
@@ -147,24 +149,6 @@ export function removeAllVisits (cb) {
 
 // internal methods
 // =
-
-// `requestId` is sent with the response, so the requester can match the result data to the original call
-function onIPCMessage (event, command, requestId, ...args) {
-  // create a reply cb
-  const replyCb = (err, value) => event.sender.send('history', 'reply', requestId, err, value)
-
-  // look up the method called
-  var ipcMethods = { addVisit, getVisitHistory, getMostVisited, search, removeVisit, removeAllVisits }
-  var ipcMethod = ipcMethods[command]
-  if (!ipcMethod) {
-    log('[HISTORY] Unknown message command', command, args)
-    return replyCb(new InvalidCmd(command))
-  }
-
-  // run method
-  args.push(replyCb)
-  ipcMethod.apply(null, args)
-}
 
 migrations = [
   // version 1
