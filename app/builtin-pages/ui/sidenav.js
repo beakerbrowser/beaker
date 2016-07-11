@@ -17,7 +17,7 @@ const navItems = [
   // { url: 'beaker:publish', icon: 'upload', label: 'Publish' },
   // { url: 'beaker:disk-usage', icon: 'chart-pie', label: 'Disk Usage' }, TODO
   // { url: 'beaker:network', icon: 'network', label: 'Network' }, TODO
-  { url: 'beaker:settings', icon: 'tools', label: 'Settings' }
+  // { url: 'beaker:settings', icon: 'tools', label: 'Settings' }
 ]
 
 // exported API
