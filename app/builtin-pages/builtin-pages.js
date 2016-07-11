@@ -1,12 +1,13 @@
 import * as sidenavUI from './ui/sidenav'
 import * as favorites from './ui/favorites-view'
 import * as history from './ui/history-view'
+import * as downloads from './ui/downloads-view'
 import * as TODO from './ui/todo-view'
 
 // globals
 // =
 
-var views = { start: favorites, apps: TODO, 'shared-folders': TODO, history, 'disk-usage': TODO, network: TODO, settings: TODO }
+var views = { start: favorites, history, downloads, settings: TODO }
 var currentView = getLocationView()
 
 // setup

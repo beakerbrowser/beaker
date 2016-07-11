@@ -1,0 +1,84 @@
+.downloads {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  & > .files-list {
+    flex: 1;
+  }
+  & > .download-details {
+    flex: 1;
+  }
+}
+
+.files-list {
+  .fl-head, .fl-row {
+    display: flex;
+  }
+  .fl-head {
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+    & > * {
+      padding: 2px 6px;
+      border-right: 1px solid #ddd;
+    }
+  }
+  .fl-row {
+    &:nth-child(even) {
+      background: #fafafa;
+    }
+
+    & > * {
+      padding: 2px 0 2px 12px;    
+    }
+
+    .fl-updated, .fl-size, .fl-kind {
+      color: gray;
+    }
+
+    &.selected > * {
+      color: #fff;
+      background: #116cd6;
+    }
+  }
+  .fl-name {
+    flex: 1;
+  }
+  .fl-size {
+    flex: 0 0 60px;  
+  }
+  .fl-kind {
+    flex: 0 0 120px;  
+  }
+  .fl-updated {
+    flex: 0 0 120px;  
+  }
+  .fl-status {
+    flex: 0 0 140px;  
+    progress {
+      width: 40px;
+      margin-right: 5px;
+    }
+  }
+  .fl-actions {
+    flex: 0 0 50px;  
+  }
+  .files-list .fl-name {
+    padding-left: 30px;
+  }
+}
+
+.download-details {
+  border-top: 1px solid #ccc;
+  .dd-bar {
+    display: flex;
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+    & > * {
+      padding: 5px 10px;
+    }
+  }
+  .dd-name {
+    font-weight: bold;
+  }
+}

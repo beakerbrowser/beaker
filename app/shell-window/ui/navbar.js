@@ -109,6 +109,16 @@ function render (id, page) {
   // and it should be hidden if the page isnt active
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
+  var versionBtn
+  if (false /* TODO */) {
+    versionBtn = yo`
+      <button class="green">
+        <span class="icon icon-folder"></span>
+        <small>v1.2.0</small>
+      </button>
+    `
+  }
+
   // inpage finder ctrl
   var inpageFinder = (page && page.isInpageFinding)
     ? yo`<input
@@ -185,6 +195,7 @@ function render (id, page) {
       ${reloadBtn}      
     </div>
     <div class="toolbar-input-group">
+      ${versionBtn}
       <input
         type="text"
         class="nav-location-input"
