@@ -46,7 +46,7 @@ app.on('ready', function () {
   ipfsProtocol.setup()
 
   // debugging
-  datDebug.hostDebugDat()
+  // datDebug.hostDebugDat()
 })
 
 app.on('window-all-closed', function () {

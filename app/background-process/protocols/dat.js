@@ -28,8 +28,14 @@ var nonce = Math.random() // used to limit access to the current process
 // =
 
 export function setup () {
+  // setup the network & db
+  dat.setup()
+
+  // create the internal dat HTTP server
   var server = http.createServer(datServer)
   listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => datServerPort = port)
+
+  // register the dat: protocol handler
   protocol.registerHttpProtocol('dat', datHttpProtocol, e => {
     if (e)
       console.error('Failed to register dat protocol', e)
@@ -79,50 +85,57 @@ function datServer (req, res) {
       cb(408, 'Timed out')
     }, REQUEST_TIMEOUT_MS)
 
-    // list archive contents
-    log('[DAT] attempting to list archive', archiveKey)
-    archive.list((err, entries) => {
+    archive.open(err => {
       if (err) {
-        // QUESTION: should there be a more specific error response?
-        // not sure what kind of failures can occur here (other than broken pipe)
-        // -prf
-        clearTimeout(timeout)
-        log('[DAT] Archive listing errored', err)
+        log('[DAT] Failed to open archive', archiveKey, err)
         return cb(500, 'Failed')
       }
-      
-      // lookup the entry
-      log('[DAT] Archive listing found for', archiveKey)
-      var entry = dat.lookupEntry(entries, urlp.path)
-      if (!entry) {
-        log('[DAT] Entry not found:', urlp.path)
 
-        // if we're looking for a directory, show the archive listing
-        if (!urlp.path || urlp.path.charAt(urlp.path.length - 1) == '/') {
-          res.writeHead(200, 'OK', {
-            'Content-Type': 'text/html',
-            'Content-Security-Policy': VIEWDAT_CSP
-          })
-          return res.end(new Buffer(renderArchive(archive, entries, urlp.path), 'utf-8'))
+      // list archive contents
+      log('[DAT] attempting to list archive', archiveKey)
+      archive.list((err, entries) => {
+        if (err) {
+          // QUESTION: should there be a more specific error response?
+          // not sure what kind of failures can occur here (other than broken pipe)
+          // -prf
+          clearTimeout(timeout)
+          log('[DAT] Archive listing errored', err)
+          return cb(500, 'Failed')
+        }
+        
+        // lookup the entry
+        log('[DAT] Archive listing found for', archiveKey)
+        var entry = dat.lookupEntry(entries, urlp.path)
+        if (!entry) {
+          log('[DAT] Entry not found:', urlp.path)
+
+          // if we're looking for a directory, show the archive listing
+          if (!urlp.path || urlp.path.charAt(urlp.path.length - 1) == '/') {
+            res.writeHead(200, 'OK', {
+              'Content-Type': 'text/html',
+              'Content-Security-Policy': VIEWDAT_CSP
+            })
+            return res.end(new Buffer(renderArchive(archive, entries, urlp.path), 'utf-8'))
+          }
+
+          clearTimeout(timeout)
+          return cb(404, 'File Not Found')
         }
 
-        clearTimeout(timeout)
-        return cb(404, 'File Not Found')
-      }
+        // fetch the entry
+        // TODO handle stream errors
+        log('[DAT] Entry found:', urlp.path)
+        dat.getEntry(archive, entry, (err, entryInfo) => {
+          clearTimeout(timeout)
 
-      // fetch the entry
-      // TODO handle stream errors
-      log('[DAT] Entry found:', urlp.path)
-      dat.getEntry(archive, entry, (err, entryInfo) => {
-        clearTimeout(timeout)
-
-        // respond
-        res.writeHead(200, 'OK', {
-          'Content-Type': entryInfo.mimeType,
-          'Content-Security-Policy': DAT_CSP
-        })
-        res.end(entryInfo.data)
-      })         
+          // respond
+          res.writeHead(200, 'OK', {
+            'Content-Type': entryInfo.mimeType,
+            'Content-Security-Policy': DAT_CSP
+          })
+          res.end(entryInfo.data)
+        })         
+      })
     })
   })
 }

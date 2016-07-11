@@ -1,11 +1,15 @@
-import log from '../../log'
+import { app, ipcMain } from 'electron'
 import hyperdrive from 'hyperdrive'
 import dns from 'dns'
 import url from 'url'
-import memdb from 'memdb'
+import path from 'path'
+import level from 'level'
+import raf from 'random-access-file'
+import mkdirp from 'mkdirp'
 import hyperdriveArchiveSwarm from 'hyperdrive-archive-swarm'
 import identify from 'identify-filetype'
 import mime from 'mime'
+import log from '../../log'
 
 // validation
 // 64 char hex
@@ -14,15 +18,29 @@ export const HASH_REGEX = /[0-9a-f]{64}/i
 // globals
 // =
 
-var drive = hyperdrive(memdb())
+var dbPath // path to the hyperdrive folder
+var db // level instance
+var drive // hyperdrive instance
 var archives = {} // key -> archive
 var swarms = {} // key -> swarn
 
 // exported API
 // =
 
-export function createArchive () {
-  return drive.createArchive()
+export function setup () {
+  // open database
+  dbPath = path.join(app.getPath('userData'), 'Hyperdrive')
+  mkdirp.sync(path.join(dbPath, 'Archives')) // make sure the folders exist
+  db = level(dbPath)
+  drive = hyperdrive(db)
+}
+
+export function createArchive (key) {
+  var archive = drive.createArchive(key, {
+    live: true,
+    file: name => raf(path.join(dbPath, 'Archives', archive.key.toString('hex'), name))
+  })
+  return archive
 }
 
 export function cacheArchive (archive) {
@@ -35,7 +53,7 @@ export function getArchive (key) {
   // fetch or create
   if (keyStr in archives)
     return archives[keyStr]
-  return (archives[keyStr] = drive.createArchive(keyBuf))
+  return (archives[keyStr] = createArchive(keyBuf))
 }
 
 export function swarm (key) {
@@ -82,13 +100,13 @@ export function resolveName (name, cb) {
   })
 }
 
-export function lookupEntry (entries, path) {
-  if (!path || path == '/')          path = 'index.html'
-  if (path && path.charAt(0) == '/') path = path.slice(1)
+export function lookupEntry (entries, filepath) {
+  if (!filepath || filepath == '/')          filepath = 'index.html'
+  if (filepath && filepath.charAt(0) == '/') filepath = filepath.slice(1)
     
   var entry
   for (var i=0; i < entries.length; i++) {
-    if (entries[i].name == path)
+    if (entries[i].name == filepath)
       return entries[i]
   }
   // TODO if type != file, should look for subdir's index.html
