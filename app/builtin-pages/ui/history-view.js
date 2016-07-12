@@ -4,6 +4,7 @@ This uses the beaker.history API, which is exposed by webview-preload to all sit
 
 import * as yo from 'yo-yo'
 import * as moment from 'moment'
+import { niceDate } from '../../lib/time'
 
 // globals
 // =
@@ -56,23 +57,13 @@ function fetchMore (cb) {
 function render () {
   var rowEls = []
   var lastDate = moment().startOf('day').add(1, 'day')
-  const endOfToday = moment().endOf('day')
 
   visits.forEach((row, i) => {
     // render a date heading if this post is from a different day than the last
     var oldLastDate = lastDate
     lastDate = moment(row.ts).endOf('day')
     if (!lastDate.isSame(oldLastDate, 'day')) {
-      var label
-      if (lastDate.isSame(endOfToday, 'day'))
-        label = 'today'      
-      else if (lastDate.isSame(endOfToday.subtract(1, 'day'), 'day'))
-        label = 'yesterday'
-      else if (lastDate.isSame(endOfToday, 'year'))
-        label = lastDate.format("dddd, MMMM Do")
-      else
-        label = lastDate.format("MMMM Do YYYY")
-      rowEls.push(yo`<div class="ll-heading">${label}</div>`)
+      rowEls.push(yo`<div class="ll-heading">${niceDate(lastDate)}</div>`)
     }
 
     // render row

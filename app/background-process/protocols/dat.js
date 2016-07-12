@@ -108,6 +108,7 @@ function datServer (req, res) {
         var entry = dat.lookupEntry(entries, urlp.path)
         if (!entry) {
           log('[DAT] Entry not found:', urlp.path)
+          clearTimeout(timeout)
 
           // if we're looking for a directory, show the archive listing
           if (!urlp.path || urlp.path.charAt(urlp.path.length - 1) == '/') {
@@ -118,7 +119,6 @@ function datServer (req, res) {
             return res.end(new Buffer(renderArchive(archive, entries, urlp.path), 'utf-8'))
           }
 
-          clearTimeout(timeout)
           return cb(404, 'File Not Found')
         }
 

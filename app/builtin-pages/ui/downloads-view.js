@@ -1,10 +1,17 @@
 import * as yo from 'yo-yo'
+import collect from 'stream-collector'
+import { niceDate } from '../../lib/time'
+import { ucfirst } from '../../lib/strings'
+import prettyBytes from 'pretty-bytes'
 
 // globals
 // =
 
-// downloads, cached in memory
-var downloads = []
+// list of archives
+var archives = []
+
+// event-stream for changes to the archive-list
+var archivesEventStream
 
 
 // exported API
@@ -14,8 +21,15 @@ export function setup () {
 }
 
 export function show () {
-  // :TODO: fetch downloads
-  render()
+  // fetch archives
+  collect(beaker.dat.archives(), (err, list) => {
+    archives = list
+    console.log(archives)
+    render()
+  })
+
+  // start archives event stream
+  // TODO
 }
 
 export function hide () {
@@ -64,73 +78,73 @@ function render () {
     </div>`,
   ]
 
-  var downloadsRows = [
-    yo`<div class="fl-row">
-      <div class="fl-name">Wikipedia.org</div>
-      <div class="fl-updated">Today</div>
-      <div class="fl-size">--</div>
-      <div class="fl-kind">Application</div>
-      <div class="fl-status"></div>
-      <div class="fl-actions">
-      </div>
-    </div>`,
-
-    yo`<div class="fl-row">
-      <div class="fl-name">Hypermail</div>
-      <div class="fl-updated">Today</div>
-      <div class="fl-size">--</div>
-      <div class="fl-kind">Application</div>
-      <div class="fl-status">Downloading</div>
-      <div class="fl-actions">
-        <span class="icon icon-pause" title="Pause Download"></span>
-      </div>
-    </div>`,
-
-
-    yo`<div class="fl-row selected">
-      <div class="fl-name">Beaker Browser</div>
-      <div class="fl-updated">Today</div>
-      <div class="fl-size">--</div>
-      <div class="fl-kind">Shared Folder</div>
-      <div class="fl-status">Downloading</div>
-      <div class="fl-actions">
-        <span class="icon icon-pause" title="Pause Download"></span>
-      </div>
-    </div>`,
-
-    yo`<div class="fl-row">
-      <div class="fl-name">Latest cat gifs</div>
-      <div class="fl-updated">Yesterday</div>
-      <div class="fl-size">--</div>
-      <div class="fl-kind">Application</div>
-      <div class="fl-status"></div>
-      <div class="fl-actions">
-      </div>
-    </div>`,
-
-    yo`<div class="fl-row">
-      <div class="fl-name">Flitter</div>
-      <div class="fl-updated">Last Friday</div>
-      <div class="fl-size">--</div>
-      <div class="fl-kind">Application</div>
-      <div class="fl-status">Paused</div>
-      <div class="fl-actions">
-        <span class="icon icon-play" title="Start Download"></span>
-      </div>
+  var downloadsRows = archives.map(archive => {
+    return yo`<div class="fl-row">
+      <div class="fl-name">${archive.name||'Untitled'}</div>
+      <div class="fl-author">${archive.author ? archive.author.name : ''}</div>
+      <div class="fl-updated">${archive.mtime ? ucfirst(niceDate(archive.mtime)) : '--'}</div>
+      <div class="fl-version">${archive.version || '--'}</div>
+      <div class="fl-size">${archive.size ? prettyBytes(archive.size) : '--'}</div>
+      <div class="fl-status">${archive.isDownloading ? 'Downloading' : ''}</div>
     </div>`
-  ]
+  })
+  //   ,
+
+  //   yo`<div class="fl-row">
+  //     <div class="fl-name">Hypermail</div>
+  //     <div class="fl-updated">Today</div>
+  //     <div class="fl-size">--</div>
+  //     <div class="fl-kind">Application</div>
+  //     <div class="fl-status">Downloading</div>
+  //     <div class="fl-actions">
+  //       <span class="icon icon-pause" title="Pause Download"></span>
+  //     </div>
+  //   </div>`,
+
+
+  //   yo`<div class="fl-row selected">
+  //     <div class="fl-name">Beaker Browser</div>
+  //     <div class="fl-updated">Today</div>
+  //     <div class="fl-size">--</div>
+  //     <div class="fl-kind">Shared Folder</div>
+  //     <div class="fl-status">Downloading</div>
+  //     <div class="fl-actions">
+  //       <span class="icon icon-pause" title="Pause Download"></span>
+  //     </div>
+  //   </div>`,
+
+  //   yo`<div class="fl-row">
+  //     <div class="fl-name">Latest cat gifs</div>
+  //     <div class="fl-updated">Yesterday</div>
+  //     <div class="fl-size">--</div>
+  //     <div class="fl-kind">Application</div>
+  //     <div class="fl-status"></div>
+  //     <div class="fl-actions">
+  //     </div>
+  //   </div>`,
+
+  //   yo`<div class="fl-row">
+  //     <div class="fl-name">Flitter</div>
+  //     <div class="fl-updated">Last Friday</div>
+  //     <div class="fl-size">--</div>
+  //     <div class="fl-kind">Application</div>
+  //     <div class="fl-status">Paused</div>
+  //     <div class="fl-actions">
+  //       <span class="icon icon-play" title="Start Download"></span>
+  //     </div>
+  //   </div>`
+  // ]
 
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div style="background: #ffe000; padding: 10px; border: 1px dashed; font-weight: bold"><span class="icon icon-attention"></span> This page is a mockup. It has not been implemented yet.</div>
     <div class="downloads">
       <div class="files-list">
         <div class="fl-head">
           <div class="fl-name">Name</div>
+          <div class="fl-author">Author</div>
           <div class="fl-updated">Last Updated</div>
+          <div class="fl-version">Version</div>
           <div class="fl-size">Size</div>
-          <div class="fl-kind">Kind</div>
           <div class="fl-status">Status</div>
-          <div class="fl-actions"></div>
         </div>
         <div class="fl-rows">
           ${downloadsRows}

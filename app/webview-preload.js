@@ -6,6 +6,7 @@ import * as fs from './lib/fg/fs-api'
 import bookmarks from './lib/fg/bookmarks-api'
 import sitedata from './lib/fg/sitedata-api'
 import history from './lib/fg/history-api'
+import dat from './lib/fg/dat-api'
 
 // it would be better to import this from package.json
 const BEAKER_VERSION = '0.0.1'
@@ -26,9 +27,10 @@ zoom.setup()
 if (window.location.protocol == 'beaker:') {
   window.beaker = {
     version: BEAKER_VERSION,
-    bookmarks: bookmarks,
+    bookmarks,
     fs: fs.getSandboxAPI(),
-    history: history
+    history,
+    dat
   }
 }
 
