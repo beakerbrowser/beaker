@@ -79,13 +79,18 @@ function render () {
   ]
 
   var downloadsRows = archives.map(archive => {
+    var status = ''
+    if (archive.isDownloading)
+      status = 'Downloading'
+    else if (archive.isSharing)
+      status = 'Sharing'
     return yo`<div class="fl-row">
       <div class="fl-name">${archive.name||'Untitled'}</div>
       <div class="fl-author">${archive.author ? archive.author.name : ''}</div>
       <div class="fl-updated">${archive.mtime ? ucfirst(niceDate(archive.mtime)) : '--'}</div>
       <div class="fl-version">${archive.version || '--'}</div>
       <div class="fl-size">${archive.size ? prettyBytes(archive.size) : '--'}</div>
-      <div class="fl-status">${archive.isDownloading ? 'Downloading' : ''}</div>
+      <div class="fl-status">${status}</div>
     </div>`
   })
   //   ,

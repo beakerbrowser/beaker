@@ -109,7 +109,8 @@ export function getArchiveMeta (key, cb) {
       version: '0.0.0',
       mtime: 0,
       size: 0,
-      isDownloading: false
+      isDownloading: false,
+      isSharing: (key in swarms)
     }, meta)
 
     // pull some live data
