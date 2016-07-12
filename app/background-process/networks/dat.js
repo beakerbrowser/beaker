@@ -53,6 +53,9 @@ var drive // hyperdrive instance
 var archives = {} // key -> archive
 var swarms = {} // key -> swarn
 
+// config default mimetype
+mime.default_type = 'text/plain'
+
 // exported API
 // =
 
@@ -250,26 +253,8 @@ export function resolveName (name, cb) {
   })
 }
 
-export function lookupEntry (entries, filepath) {
-  if (!filepath || filepath == '/')          filepath = 'index.html'
-  if (filepath && filepath.charAt(0) == '/') filepath = filepath.slice(1)
-    
-  var entry
-  for (var i=0; i < entries.length; i++) {
-    if (entries[i].name == filepath)
-      return entries[i]
-  }
-  // TODO if type != file, should look for subdir's index.html
-}
-
-export function getEntry (archive, entry, cb) {
-  var chunks = []
-  var stream = archive.createFileReadStream(entry)
-  stream.on('data', chunk => chunks.push(chunk))
-  stream.on('end', () => {
-    // create full buffer
-    var data = Buffer.concat(chunks)
-
+export function getAndIdentifyEntry (archive, entry, cb) {
+  archive.createFileReadStream(entry).pipe(concat(data => {
     // try to identify the type by the buffer contents
     var mimeType
     var identifiedExt = identify(data)
@@ -284,11 +269,7 @@ export function getEntry (archive, entry, cb) {
     }
 
     cb(null, { data: data, mimeType: mimeType })
-  })
-  stream.on('error', err => {
-    log('[DAT] Stream error', entry, err)
-    cb(err)
-  })
+  }))
 }
 
 // rpc exports

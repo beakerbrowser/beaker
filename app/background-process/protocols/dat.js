@@ -91,32 +91,26 @@ function datServer (req, res) {
         return cb(500, 'Failed')
       }
 
-      // list archive contents
-      log('[DAT] attempting to list archive', archiveKey)
-      archive.list((err, entries) => {
-        if (err) {
-          // QUESTION: should there be a more specific error response?
-          // not sure what kind of failures can occur here (other than broken pipe)
-          // -prf
-          clearTimeout(timeout)
-          log('[DAT] Archive listing errored', err)
-          return cb(500, 'Failed')
-        }
-        
-        // lookup the entry
-        log('[DAT] Archive listing found for', archiveKey)
-        var entry = dat.lookupEntry(entries, urlp.path)
+      // lookup entry
+      log('[DAT] attempting to lookup', archiveKey)
+      var filepath = urlp.path
+      if (!filepath || filepath == '/')          filepath = 'index.html'
+      if (filepath && filepath.charAt(0) == '/') filepath = filepath.slice(1)
+      archive.lookup(filepath, (err, entry) => {
+        // not found
         if (!entry) {
           log('[DAT] Entry not found:', urlp.path)
           clearTimeout(timeout)
 
           // if we're looking for a directory, show the archive listing
           if (!urlp.path || urlp.path.charAt(urlp.path.length - 1) == '/') {
-            res.writeHead(200, 'OK', {
-              'Content-Type': 'text/html',
-              'Content-Security-Policy': VIEWDAT_CSP
+            return archive.list((err, entries) => {
+              res.writeHead(200, 'OK', {
+                'Content-Type': 'text/html',
+                'Content-Security-Policy': VIEWDAT_CSP
+              })
+              res.end(new Buffer(renderArchive(archive, entries || [], urlp.path), 'utf-8'))
             })
-            return res.end(new Buffer(renderArchive(archive, entries, urlp.path), 'utf-8'))
           }
 
           return cb(404, 'File Not Found')
@@ -125,7 +119,7 @@ function datServer (req, res) {
         // fetch the entry
         // TODO handle stream errors
         log('[DAT] Entry found:', urlp.path)
-        dat.getEntry(archive, entry, (err, entryInfo) => {
+        dat.getAndIdentifyEntry(archive, entry, (err, entryInfo) => {
           clearTimeout(timeout)
 
           // respond
