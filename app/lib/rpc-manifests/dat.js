@@ -1,6 +1,6 @@
 export default {
-  archives: 'readable',
-  archiveEntries: 'readable',
+  archives: 'async',
+  archiveInfo: 'async',
   archivesEventStream: 'readable',
   archiveEntriesEventStream: 'readable'
 }

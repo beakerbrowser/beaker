@@ -68,7 +68,7 @@ export function setup () {
   drive = hyperdrive(db)
 
   // wire up the rpc
-  rpc.exportAPI('dat', manifest, { archives, archiveEntries, archivesEventStream, archiveEntriesEventStream })
+  rpc.exportAPI('dat', manifest, rpcMethods)
 }
 
 export function createArchive (key) {
@@ -128,64 +128,38 @@ export function getArchiveMeta (key, cb) {
 // read metadata for the archive, and store it in the meta db
 export function updateArchiveMeta (archive) {
   var key = archive.key.toString('hex')
-  var done = multicb({ pluck: 1 })
+  var done = multicb({ pluck: 1, spread: true })
 
   // open() just in case (we need .blocks)
   archive.open(() => {
 
-    var name = 'Untitled' 
-    var author = false
-    var version = '0.0.0'
-    var mtime = Date.now() // use our local update time
-    var size = 0
-
-    // read the archive package.json
-    var packageCb = done()
-    readArchiveFile(archive, PACKAGE_FILENAME, (err, packageData) => {
-      if (!packageData)
-        return packageCb()
-
-      // parse package
-      try {
-        var packageObj = JSON.parse(packageData.toString())
-        normalizePackageData(packageObj)
-      } catch (e) {
-        log('[DAT] Failed to parse package.json', key, e)
-        return packageCb()
-      }
-
-      // done
-      if (packageObj.name)
-        name = packageObj.name
-      if (packageObj.author)
-        author = packageObj.author
-      packageCb()
-    })
-
-    // read the version
-    var versionCb = done()
-    readArchiveFile(archive, VFILENAME, (err, vfileData) => {
-      if (!vfileData)
-        return versionCb()
-
-      // parse vfile
-      vfileData = vfileData.toString()
-      var vfile = bdatVersionsFile.parse(vfileData)
-
-      // done
-      if (vfile.current)
-        version = vfile.current
-      versionCb()
-    })
+    // read the archive metafiles
+    readPackageJson(archive, done())
+    readVFile(archive, done())
 
     // calculate the size on disk
     var sizeCb = done()
-    getFolderSize(ARCHIVE_FILEPATH(archive), (err, _size) => {
-      size = _size || 0
-      sizeCb()
+    getFolderSize(ARCHIVE_FILEPATH(archive), (err, size) => {
+      sizeCb(null, size)
     })
 
-    done(() => {
+    done((err, packageJson, vfile, size) => {
+      var name = 'Untitled'
+      var author = false
+      var version = '0.0.0'
+      var mtime = Date.now() // use our local update time
+      size = size || 0
+
+      if (packageJson) {
+        if (packageJson.name)
+          name = packageJson.name
+        if (packageJson.author)
+          author = packageJson.author
+      }
+
+      if (vfile && vfile.current)
+        version = vfile.current
+
       // write the record
       log('[DAT] Writing meta', key, name, author, version, mtime, size)
       archiveMetaDb.put(key, { name, author, version, mtime, size }, err => {
@@ -276,44 +250,88 @@ export function getAndIdentifyEntry (archive, entry, cb) {
 // rpc exports
 // =
 
-function archives () {
-  // list the archives
-  return drive.core.list().pipe(through2Concurrent.obj({ maxConcurrency: 100 }, (key, enc, cb) => {
-    key = key.toString('hex')
+var rpcMethods = {
+  archives (cb) {
+    // list the archives
+    drive.core.list()
+      .pipe(through2Concurrent.obj({ maxConcurrency: 100 }, (key, enc, cb) => {
+        key = key.toString('hex')
 
-    // get archive meta
-    getArchiveMeta(key, (err, meta) => {
-      if (!meta)
-        return cb() // filter out
+        // get archive meta
+        getArchiveMeta(key, (err, meta) => {
+          if (!meta)
+            return cb() // filter out
 
-      cb(null, meta)
+          meta.key = key
+          cb(null, meta)
+        })
+      }))
+      .pipe(concat(list => cb(null, list)))
+      .on('error', cb)
+  },
+
+  archiveInfo (key, cb) {
+    // get the archive
+    var archive = getArchive(key)
+    var done = multicb({ pluck: 1, spread: true })
+
+    // fetch archive data
+    archive.list(done())
+    readPackageJson(archive, done())
+    readVFile(archive, done())
+
+    done((err, entries, packageJson, versionHistory) => {
+      if (err)
+        return cb(err)
+
+      cb(null, { key, entries, packageJson, versionHistory })
     })
-  }))
-}
+  },
 
-function archiveEntries () {
-  // TODO
-}
+  archivesEventStream () {
+    // TODO
+  },
 
-function archivesEventStream () {
-  // TODO
-}
-
-function archiveEntriesEventStream () {
-  // TODO
+  archiveEntriesEventStream () {
+    // TODO
+  }
 }
 
 // internal methods
 // =
 
-// helper to pull a file's data from an archive
+// helpers to pull file data from an archive
 function readArchiveFile (archive, name, cb) {
   archive.lookup(name, (err, entry) => {
     if (!entry)
-      return cb(err)
+      return cb()
     archive.createFileReadStream(entry).pipe(concat(data => cb(null, data)))
   })
 }
+function readPackageJson (archive, cb) {
+  readArchiveFile(archive, PACKAGE_FILENAME, (err, data) => {
+    if (!data)
+      return cb()
+
+    // parse package
+    try {
+      var packageJson = JSON.parse(data.toString())
+      normalizePackageData(packageJson)
+      cb(null, packageJson)
+    } catch (e) { cb() }
+  })
+}
+function readVFile (archive, cb) {
+  readArchiveFile(archive, VFILENAME, (err, data) => {
+    if (!data)
+      return cb()
+
+    // parse vfile
+    data = data.toString()
+    cb(null, bdatVersionsFile.parse(data))
+  })
+}
+
 
 // get buffer and string version of value
 function bufAndStr (v) {
