@@ -1,0 +1,64 @@
+.files-list {
+  .fl-head, .fl-row {
+    display: flex;
+  }
+  .fl-head {
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+    & > * {
+      padding: 2px 6px;
+      border-right: 1px solid #ddd;
+    }
+  }
+  .fl-row {
+    &:nth-child(even) {
+      background: #fafafa;
+    }
+
+    & > * {
+      padding: 2px 0 2px 12px;    
+    }
+
+    .fl-updated, .fl-size, .fl-kind, .fl-version {
+      color: gray;
+    }
+
+    &.selected > * {
+      color: #fff;
+      background: #116cd6;
+    }
+  }
+  .fl-name {
+    flex: 1;
+  }
+  .fl-author {
+    flex: 0 0 180px;  
+  }
+  .fl-size {
+    flex: 0 0 80px;  
+  }
+  .fl-kind {
+    flex: 0 0 120px;  
+  }
+  .fl-version {
+    flex: 0 0 60px;  
+  }
+  .fl-updated {
+    flex: 0 0 120px;  
+  }
+  .fl-status {
+    flex: 0 0 140px;  
+  }
+  .fl-progress {
+    flex: 0 0 60px;
+    progress {
+      width: 40px;
+    }
+  }
+  .fl-actions {
+    flex: 0 0 50px;  
+  }
+  .files-list .fl-name {
+    padding-left: 30px;
+  }
+}

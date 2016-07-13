@@ -8,12 +8,11 @@ var events = new EventEmitter()
 const navItems = [
   'Browse',
   { url: 'beaker:start', icon: 'star', label: 'Favorites' },
+  { url: 'beaker:apps', icon: 'window', label: 'Applications' },
+  { url: 'beaker:shared-folders', icon: 'folder', label: 'Shared Folders' },
   { url: 'beaker:history', icon: 'back-in-time', label: 'History' },
-  'My Computer',
-  { url: 'beaker:downloads', icon: 'install', label: 'Downloads' },
-  // { url: 'beaker:apps', icon: 'window', label: 'Applications' },
-  // { url: 'beaker:sites', icon: 'docs', label: 'Websites' },
-  // { url: 'beaker:shared-folders', icon: 'archive', label: 'Shared Folders' },
+  // 'My Computer',
+  // { url: 'beaker:downloads', icon: 'install', label: 'Downloads' },
   // { url: 'beaker:publish', icon: 'upload', label: 'Publish' },
   // { url: 'beaker:disk-usage', icon: 'chart-pie', label: 'Disk Usage' }, TODO
   // { url: 'beaker:network', icon: 'network', label: 'Network' }, TODO

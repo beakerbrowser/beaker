@@ -1,13 +1,19 @@
-import * as sidenavUI from './ui/sidenav'
-import * as favorites from './ui/favorites-view'
-import * as history from './ui/history-view'
-import * as downloads from './ui/downloads-view'
-import * as TODO from './ui/todo-view'
+import EE from 'events'
+import * as sidenavUI from './com/sidenav'
+import * as favorites from './views/favorites'
+import * as history from './views/history'
+import * as apps from './views/apps'
+import * as TODO from './views/todo'
+
+// HACK FIX
+// weird bug, prependListener is expected but missing?
+// - prf
+EE.prototype.prependListener = EE.prototype.on
 
 // globals
 // =
 
-var views = { start: favorites, history, downloads, settings: TODO }
+var views = { start: favorites, history, apps, 'shared-folders': TODO }
 var currentView = getLocationView()
 
 // setup

@@ -1,0 +1,65 @@
+.ll-heading {
+  font-size: 15px;
+  padding: 12px 10px 6px;
+  font-weight: bold;
+  color: #9A9A9A;
+  text-transform: uppercase;
+  border-bottom: 1px solid #ccc;
+}
+
+.links-list {
+  font-size: 13px;
+  margin-bottom: 25px;
+
+  .ll-row {
+    display: flex;
+
+    .ll-link {
+      flex: 1;
+      padding: 6px 10px;
+      color: #555;
+      text-decoration: none;
+
+      // make make the title ellipsis when too long
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      .favicon {
+        margin-right: 6px;
+        vertical-align: top;
+        position: relative;
+        top: 2px;
+      }
+
+      .ll-title {
+        cursor: pointer;
+      }
+    }
+
+    // make the actions compact, and hidden except on hover
+    .ll-actions {
+      flex: 0 0 25px;
+      padding: 6px 8px;
+      .icon {
+        display: none;
+        cursor: pointer;
+        color: #aaa;
+        &:hover {
+          color: #666;
+        }
+      }
+    }
+
+    &:hover {
+      background: #f5f5f4;
+      .ll-actions {
+        // show icons on row hover
+        .icon {
+          display: inline;
+        }
+      }
+    }
+  }
+}

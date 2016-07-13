@@ -23,7 +23,6 @@ import identify from 'identify-filetype'
 import mime from 'mime'
 import bdatVersionsFile from 'bdat-versions-file'
 import getFolderSize from 'get-folder-size'
-import normalizePackageData from 'normalize-package-data'
 
 // io modules
 import rpc from 'pauls-electron-rpc'
@@ -33,8 +32,8 @@ import log from '../../log'
 // constants
 // =
 
-// what do we name the package file?
-export const PACKAGE_FILENAME = 'package.json'
+// what do we name the manifest file?
+export const MANIFEST_FILENAME = 'manifest.json'
 
 // what do we name the versions file?
 export const VFILENAME = '.bdat-versions'
@@ -137,7 +136,7 @@ export function updateArchiveMeta (archive) {
   archive.open(() => {
 
     // read the archive metafiles
-    readPackageJson(archive, done())
+    readManifest(archive, done())
     readVFile(archive, done())
 
     // calculate the size on disk
@@ -146,26 +145,16 @@ export function updateArchiveMeta (archive) {
       sizeCb(null, size)
     })
 
-    done((err, packageJson, vfile, size) => {
-      var name = 'Untitled'
-      var author = false
-      var version = '0.0.0'
+    done((err, manifest, vfile, size) => {
+      manifest = manifest || {}
+      var { name, author, homepage_url } = manifest
+      var version = (vfile) ? vfile.current : false
       var mtime = Date.now() // use our local update time
       size = size || 0
 
-      if (packageJson) {
-        if (packageJson.name)
-          name = packageJson.name
-        if (packageJson.author)
-          author = packageJson.author
-      }
-
-      if (vfile && vfile.current)
-        version = vfile.current
-
       // write the record
-      var update = { name, author, version, mtime, size }
-      log('[DAT] Writing meta', key, name, author, version, mtime, size)
+      var update = { name, author, homepage_url, version, mtime, size }
+      log('[DAT] Writing meta', update)
       archiveMetaDb.put(key, update, err => {
         if (err)
           log('[DAT] Error while writing archive meta', key, err)
@@ -285,18 +274,18 @@ var rpcMethods = {
 
     // fetch archive data
     archive.list(done())
-    readPackageJson(archive, done())
+    readManifest(archive, done())
     readVFile(archive, done())
 
-    done((err, entries, packageJson, versionHistory) => {
+    done((err, entries, manifest, versionHistory) => {
       if (err)
         return cb(err)
 
       // give sane defaults
-      packageJson = packageJson || {}
+      manifest = manifest || {}
       versionHistory = versionHistory || bdatVersionsFile.create()
 
-      cb(null, { key, entries, packageJson, versionHistory })
+      cb(null, { key, entries, manifest, versionHistory })
     })
   },
 
@@ -316,16 +305,15 @@ function readArchiveFile (archive, name, cb) {
     archive.createFileReadStream(entry).pipe(concat(data => cb(null, data)))
   })
 }
-function readPackageJson (archive, cb) {
-  readArchiveFile(archive, PACKAGE_FILENAME, (err, data) => {
+function readManifest (archive, cb) {
+  readArchiveFile(archive, MANIFEST_FILENAME, (err, data) => {
     if (!data)
       return cb()
 
-    // parse package
+    // parse manifest
     try {
-      var packageJson = JSON.parse(data.toString())
-      normalizePackageData(packageJson)
-      cb(null, packageJson)
+      var manifest = JSON.parse(data.toString())
+      cb(null, manifest)
     } catch (e) { cb() }
   })
 }

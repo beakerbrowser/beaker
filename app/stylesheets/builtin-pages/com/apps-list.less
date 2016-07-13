@@ -1,0 +1,62 @@
+.apps-list {
+  font-size: 13px;
+
+  .al-row {
+    padding: 14px 16px;
+    border-bottom: 1px solid #ccc;
+    color: #999;
+    background: #fff;
+    text-decoration: none;
+
+    cursor: pointer;
+    * { cursor: pointer; }
+
+    &:hover {
+      background: #fafafa;
+    }
+
+    a {
+      color: inherit;
+      &:hover {
+        color: blue;
+      }
+    }
+
+    .al-top {
+      display: flex;
+      line-height: 28px;
+
+      .al-title {
+        flex: 1;
+        font-size: 18px;
+        font-family: sans-serif;
+        color: #555;
+
+        // make make the title ellipsis when too long
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .favicon {
+          margin-right: 2px;
+          position: relative;
+          top: 1px;
+        }
+      }
+    }
+    .al-bottom {
+      display: flex;
+      & > span:nth-child(2) {
+        flex: 1;
+        padding: 0 8px;
+      }
+
+      progress {
+        vertical-align: middle;
+        width: 40px;
+        margin-left: 5px;
+      }
+    }
+  }
+}
