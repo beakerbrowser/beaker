@@ -1,7 +1,12 @@
 import * as yo from 'yo-yo'
+import EE from 'events'
 import { niceDate } from '../../lib/time'
 import { ucfirst } from '../../lib/strings'
 import prettyBytes from 'pretty-bytes'
+import emitStream from 'emit-stream'
+
+// FIX - weird bug, prependListener is expected but missing?
+EE.prototype.prependListener = EE.prototype.on
 
 // globals
 // =
@@ -15,14 +20,17 @@ var selectedArchiveIndex = -1
 // currently-selected archive's info
 var selectedArchiveInfo
 
-// event-stream for changes to the archive-list
-var archivesEventStream
+// event emitter
+var archivesEvents
 
 
 // exported API
 // =
 
-export function setup () {
+export function setup () {  
+  // start event stream and register events
+  archivesEvents = emitStream(beaker.dat.archivesEventStream())
+  archivesEvents.on('update-archive', onUpdateArchive)
 }
 
 export function show () {
@@ -33,11 +41,11 @@ export function show () {
     render()
   })
 
-  // start archives event stream
   // TODO
 }
 
 export function hide () {
+  archives = null
 }
 
 // internal methods
@@ -91,14 +99,15 @@ function render () {
   // render archive details, if selected
   var downloadDetails = ''
   if (selectedArchiveInfo) {
+    var version = selectedArchiveInfo.versionHistory.current
     downloadDetails = yo`
       <div class="download-details">
         <div class="dd-bar">
           <div class="dd-name">${selectedArchive.name||'Untitled'}</div>
-          <div class="dd-version">v${selectedArchiveInfo.versionHistory.current}</div>
+          ${version ? yo`<div class="dd-version">v${version}</div>` : ''}
           <div class="dd-link">
             <span class="icon icon-link"></span>
-            <a target="blank" href="dat://${selectedArchive.key}/">dat://${selectedArchive.key}/</a>
+            <a href="dat://${selectedArchive.key}/">dat://${selectedArchive.key}/</a>
           </div>
           <div><span class="icon icon-down-thin"></span> 0 kB/s</div>
           <div><span class="icon icon-up-thin"></span> 0 kB/s</div>
@@ -107,10 +116,10 @@ function render () {
           <div class="fl-rows">
             ${selectedArchiveInfo.entries.map(entry => {
               return yo`<div class="fl-row">
-                <div class="fl-name">${entry.name}</div>
+                <div class="fl-name"><a href="dat://${selectedArchive.key}/${entry.name}">${entry.name}</a></div>
                 <div class="fl-updated">${entry.mtime ? niceDate(entry.mtime) : ''}</div>
-                <div class="fl-progress"><progress value="100" max="100">100 %</progress></div>
                 <div class="fl-size">${entry.length ? prettyBytes(entry.length) : ''}</div>
+                <div class="fl-progress"><progress value="100" max="100">100 %</progress></div>
               </div>`
             })}
           </div>
@@ -144,4 +153,21 @@ function render () {
 
 function onClick (archiveIndex) {
   return e => selectArchive(archiveIndex)
+}
+
+function onUpdateArchive (update) {
+  console.log('update', update)
+  if (archives) {
+    // find the archive being updated
+    var archive = archives.find(a => a.key == update.key)
+    if (archive) {
+      // patch the archive
+      for (var k in update)
+        archive[k] = update[k]
+    } else {
+      // add to list
+      archives.push(update)
+    }
+    render()
+  }
 }

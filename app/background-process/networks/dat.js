@@ -1,6 +1,8 @@
 import { app, ipcMain } from 'electron'
 import through2Concurrent from 'through2-concurrent'
 import concat from 'concat-stream'
+import emitStream from 'emit-stream'
+import EventEmitter from 'events'
 import multicb from 'multicb'
 
 // db modules
@@ -51,7 +53,8 @@ var db // level instance
 var archiveMetaDb // archive metadata sublevel
 var drive // hyperdrive instance
 var archives = {} // key -> archive
-var swarms = {} // key -> swarn
+var swarms = {} // key -> swarm
+var archivesEvents = new EventEmitter()
 
 // config default mimetype
 mime.default_type = 'text/plain'
@@ -161,10 +164,15 @@ export function updateArchiveMeta (archive) {
         version = vfile.current
 
       // write the record
+      var update = { name, author, version, mtime, size }
       log('[DAT] Writing meta', key, name, author, version, mtime, size)
-      archiveMetaDb.put(key, { name, author, version, mtime, size }, err => {
+      archiveMetaDb.put(key, update, err => {
         if (err)
           log('[DAT] Error while writing archive meta', key, err)
+
+        // emit event
+        update.key = key
+        archivesEvents.emit('update-archive', update)
       })
     })
   })
@@ -284,16 +292,16 @@ var rpcMethods = {
       if (err)
         return cb(err)
 
+      // give sane defaults
+      packageJson = packageJson || {}
+      versionHistory = versionHistory || bdatVersionsFile.create()
+
       cb(null, { key, entries, packageJson, versionHistory })
     })
   },
 
   archivesEventStream () {
-    // TODO
-  },
-
-  archiveEntriesEventStream () {
-    // TODO
+    return emitStream(archivesEvents)
   }
 }
 
@@ -324,7 +332,7 @@ function readPackageJson (archive, cb) {
 function readVFile (archive, cb) {
   readArchiveFile(archive, VFILENAME, (err, data) => {
     if (!data)
-      return cb()
+      return cb(null, bdatVersionsFile.create())
 
     // parse vfile
     data = data.toString()
