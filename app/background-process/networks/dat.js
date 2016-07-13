@@ -77,6 +77,7 @@ export function createArchive (key) {
   // NOTE this only works on live archives
   var archive = drive.createArchive(key, {
     live: true,
+    sparse: true, // only download files when they're requested
     file: name => raf(path.join(ARCHIVE_FILEPATH(archive), name))
   })
   return archive
