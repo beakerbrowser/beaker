@@ -37,9 +37,6 @@
     &:focus {
       outline: 0;
     }
-    &:first-child {
-      border-left: 0;
-    }
   }
 
   button {
@@ -65,9 +62,8 @@
     }
 
     &:hover:not(:disabled) {
-      text-shadow: 1px 2px 2px rgba(0,0,0,.2);
       cursor: pointer;
-      span {
+      span, small {
         cursor: pointer;
       }
     }
@@ -91,8 +87,16 @@
     }
 
     &.green {
-      background: rgba(164, 247, 88, 0.25);
       color: #2f8000;
+      background: linear-gradient(to bottom, rgba(164, 247, 88, 0.25), rgba(164, 247, 88, 0.38));
+      border: 1px solid #57bf1a;
+      border-radius: 2px;
+      margin: 2px 2px 1px;
+      padding: 0 4px 1px;
+
+      & + input {
+        padding-left: 5px;
+      }
     }
   }
 

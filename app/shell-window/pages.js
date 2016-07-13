@@ -6,6 +6,7 @@ import * as statusBar from './ui/status-bar'
 import bookmarks from '../lib/fg/bookmarks-api'
 import history from '../lib/fg/history-api'
 import sitedata from '../lib/fg/sitedata-api'
+import dat from '../lib/fg/dat-api'
 import { urlToData } from '../lib/fg/img'
 
 const DEFAULT_URL = 'beaker:start'
@@ -59,6 +60,7 @@ export function create (opts) {
     isInpageFinding: false, // showing the inpage find ctrl?
     zoom: 0, // what's the current zoom level? (updated by a message from the webview)
     favicons: null, // what are the favicons of the page?
+    archiveInfo: null, // if a dat archive, includes the metadata
 
     // get the URL of the page we want to load (vs which is currently loaded)
     getIntendedURL: function () {
@@ -363,6 +365,7 @@ function onDidGetResponseDetails (e) {
 
   var page = getByWebview(e.target)
   if (page) {
+    // set URL in navbar
     page.loadingURL = e.newURL
     navbar.update(page)
   }
@@ -371,7 +374,7 @@ function onDidGetResponseDetails (e) {
 function onDidFinishLoad (e) {
   var page = getByWebview(e.target)
   if (page) {
-    // update rendering
+    // reset page object
     page.loadingURL = false
     page.favicons = null
     navbar.update(page)
@@ -381,6 +384,19 @@ function onDidFinishLoad (e) {
     if (/^(http|dat|ipfs|file)/.test(url)) {
       history.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() }, warnIfError('history.addVisit'))
       bookmarks.addVisit(page.getURL(), warnIfError('bookmarks.addVisit'))
+    }
+
+    // if a dat archive, fetch relevant info
+    if (url.startsWith('dat://') || url.startsWith('view-dat://')) {
+      let key = (new URL(url)).host
+      dat.archiveInfo(key, (err, archiveInfo) => {
+        console.log('Archive info', archiveInfo)
+        page.archiveInfo = archiveInfo
+        navbar.update(page)
+      })
+    } else {
+      page.archiveInfo = null
+      navbar.update(page)
     }
   }
 }

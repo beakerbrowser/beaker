@@ -109,12 +109,19 @@ function render (id, page) {
   // and it should be hidden if the page isnt active
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
-  var versionBtn
-  if (false /* TODO */) {
-    versionBtn = yo`
+  var archiveBtn
+  if (page && page.archiveInfo) {
+
+    // archive btn
+    let info = page.archiveInfo
+    let icon = 'icon icon-' + ((info.isApp) ? (!info.isInstalledApp ? 'install' : 'window') : 'folder')
+    let label = (info.versionHistory.current) ? yo`<small>v${info.versionHistory.current}</small>` : ''
+    if (info.isApp && !info.isInstalledApp)
+      label = yo`<small>Install This App</small>`
+    archiveBtn = yo`
       <button class="green">
-        <span class="icon icon-folder"></span>
-        <small>v1.2.0</small>
+        <span class=${icon}></span>
+        ${label}
       </button>
     `
   }
@@ -184,6 +191,11 @@ function render (id, page) {
     `
   }
 
+  // preserve the current address value
+  var addrEl = page && page.navbarEl.querySelector('.nav-location-input')
+  var addrValue = addrEl ? addrEl.value : ''
+
+  // render
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
       <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
@@ -195,14 +207,16 @@ function render (id, page) {
       ${reloadBtn}      
     </div>
     <div class="toolbar-input-group">
-      ${versionBtn}
+      ${archiveBtn}
       <input
         type="text"
         class="nav-location-input"
         onfocus=${onFocusLocation}
         onblur=${onBlurLocation}
         onkeyup=${onKeyupLocation}
-        onkeydown=${onKeydownLocation} />
+        onkeydown=${onKeydownLocation}
+        value=${addrValue}
+        style="border: 0" />
       ${inpageFinder}
       ${zoomBtn}
       <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>

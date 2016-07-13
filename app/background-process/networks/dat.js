@@ -50,10 +50,15 @@ const ARCHIVE_FILEPATH = archive => path.join(dbPath, 'Archives', archive.key.to
 var dbPath // path to the hyperdrive folder
 var db // level instance
 var archiveMetaDb // archive metadata sublevel
+var installedAppsDb // installed apps sublevel
+var installedFoldersDb // installed folders sublevel
 var drive // hyperdrive instance
+
 var archives = {} // key -> archive
 var swarms = {} // key -> swarm
 var archivesEvents = new EventEmitter()
+var installedApps = [] // in-memory array of installed apps
+var installedFolders = [] // in-memory array of installed folders
 
 // config default mimetype
 mime.default_type = 'text/plain'
@@ -67,17 +72,32 @@ export function setup () {
   mkdirp.sync(path.join(dbPath, 'Archives')) // make sure the folders exist
   db = level(dbPath)
   archiveMetaDb = subleveldown(db, 'archive-meta', { valueEncoding: 'json' })
+  installedAppsDb = subleveldown(db, 'installed-apps', { valueEncoding: 'json' })
+  installedFoldersDb = subleveldown(db, 'installed-folders', { valueEncoding: 'json' })
   drive = hyperdrive(db)
 
   // wire up the rpc
   rpc.exportAPI('dat', manifest, rpcMethods)
+
+  // load all app and synced-folder archives
+  installedAppsDb.createKeyStream().on('data', key => {
+    installedApps.push(key)
+    createArchive(key, { sparse: false })
+  })
+  installedFoldersDb.createKeyStream().on('data', key => {
+    installedFolders.push(key)
+    createArchive(key, { sparse: true })
+  })
 }
 
-export function createArchive (key) {
+export function createArchive (key, opts) {
+  opts = opts || {}
+  var sparse = (opts.sparse === false) ? false : true // by default, only download files when they're requested
+
   // NOTE this only works on live archives
   var archive = drive.createArchive(key, {
     live: true,
-    sparse: true, // only download files when they're requested
+    sparse: sparse,
     file: name => raf(path.join(ARCHIVE_FILEPATH(archive), name))
   })
   return archive
@@ -277,7 +297,6 @@ var rpcMethods = {
     archive.list(done())
     readManifest(archive, done())
     readVFile(archive, done())
-
     done((err, entries, manifest, versionHistory) => {
       if (err)
         return cb(err)
@@ -286,7 +305,12 @@ var rpcMethods = {
       manifest = manifest || {}
       versionHistory = versionHistory || bdatVersionsFile.create()
 
-      cb(null, { key, entries, manifest, versionHistory })
+      // some other meta
+      var isApp = !!entries.find(e => e.name == 'index.html')
+      var isInstalledApp = installedApps.includes(key)
+      var isInstalledFolder = installedFolders.includes(key)
+
+      cb(null, { key, entries, manifest, versionHistory, isApp, isInstalledApp, isInstalledFolder })
     })
   },
 
@@ -328,7 +352,6 @@ function readVFile (archive, cb) {
     cb(null, bdatVersionsFile.parse(data))
   })
 }
-
 
 // get buffer and string version of value
 function bufAndStr (v) {
