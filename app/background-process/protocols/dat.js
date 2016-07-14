@@ -103,8 +103,18 @@ function datServer (req, res) {
           // if we're looking for a directory, redirect to view-dat
           if (!urlp.path || urlp.path.charAt(urlp.path.length - 1) == '/') {
             console.log('redirecting to', 'view-dat://'+archiveKey+urlp.path)
-            res.writeHead(302, 'Found', { 'Location': 'view-dat://'+archiveKey+urlp.path })
-            return res.end()
+
+            // the following code crashes the shit out of electron (https://github.com/electron/electron/issues/6492)
+            // res.writeHead(302, 'Found', { 'Location': 'view-dat://'+archiveKey+urlp.path })
+            // return res.end()
+
+            // use the html redirect instead, for now
+            res.writeHead(200, 'OK', {
+              'Content-Type': 'text/html',
+              'Content-Security-Policy': DAT_CSP
+            })
+            res.end('<meta http-equiv="refresh" content="0;URL=view-dat://'+archiveKey+urlp.path+'">')
+            return
           }
 
           return cb(404, 'File Not Found')

@@ -4,7 +4,7 @@
     "browserify": "^13.0.1",
     "chai": "^3.5.0",
     "electron-mocha": "^2.0.0",
-    "electron-prebuilt": "1.2.5",
+    "electron-prebuilt": "1.2.7",
     "fs-jetpack": "^0.9.0",
     "gulp": "^3.9.0",
     "gulp-batch": "^1.0.5",

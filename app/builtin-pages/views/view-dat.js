@@ -50,10 +50,7 @@ export function hide () {
 function render () {
   var m = archiveInfo.manifest
   var v = archiveInfo.versionHistory
-  var name = m.name || m.short_name || ('Untitled '+(archiveInfo.isApp?'App':'Folder'))
-
-  // DEBUG
-  m.description = 'This is a test application. It was created to test the apps feature.'
+  var name = m.name || m.short_name || 'Untitled Dat'
 
   // set page title
   document.title = name

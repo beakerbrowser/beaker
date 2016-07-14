@@ -50,6 +50,7 @@ export function entriesListToTree (archiveInfo) {
 
   // root node is the archive itself
   var rootNode = {
+    isOpen: true,
     entry: {
       type: 'directory',
       name: 'View files',
