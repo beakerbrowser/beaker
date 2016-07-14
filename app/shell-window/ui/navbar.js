@@ -110,20 +110,16 @@ function render (id, page) {
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
   var archiveBtn
-  if (page && /^(dat)/.test(page.getURL()) && page.archiveInfo) {
+  if (page && /^(dat|view-dat)/.test(page.getURL()) && page.archiveInfo) {
     // archive btn
     let info = page.archiveInfo
     let isViewDat = page.getURL().startsWith('view-dat://')
-    // offer to install? (only if viewing app, and havent installed it yet)
-    let showInstall = (!isViewDat && info.isApp && !info.isInstalledApp)
-    // choose icon
-    let icon = 'icon icon-' + ((info.isApp) ? (showInstall ? 'install' : 'window') : 'folder')
     // choose label
-    let label = (showInstall) ? 'Install This App' : (info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
+    let label = (info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
     // choose onclick
     let onclick = (isViewDat) ? undefined : onClickViewDat
     // render
-    archiveBtn = yo`<button class="green" onclick=${onclick}><span class=${icon}></span> <small>${label}</small></button>`
+    archiveBtn = yo`<button class="green" onclick=${onclick}><span class="icon icon-folder"></span> <small>${label}</small></button>`
   }
 
   // inpage finder ctrl

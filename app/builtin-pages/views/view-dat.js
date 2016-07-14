@@ -54,7 +54,6 @@ function render () {
 
   // DEBUG
   m.description = 'This is a test application. It was created to test the apps feature.'
-  m.permissions = ['fs', 'net']
 
   // set page title
   document.title = name
@@ -69,21 +68,7 @@ function render () {
     else
       authorEl = yo`<div class="vdh-author">by ${m.author}</div>`
   }
-  var uninstallBtn = archiveInfo.isInstalledApp ? yo`<button class="btn btn-default" onclick=${alert.bind(window, 'todo')}>Uninstall</button>` : ''
   var descriptionEl = (m.description) ? yo`<div class="view-dat-desc"><p>${m.description}</p></div>` : ''
-
-  // install prompt
-  var installPromptEl
-  if (archiveInfo.isApp && !archiveInfo.isInstalledApp) {
-    installPromptEl = yo`<div class="view-dat-install">
-      <p><button class="btn btn-primary">Install</button> Installing this app will make it available offline, and enable all its features.</p>
-    </div>`
-
-    if (archiveInfo.isApp && Array.isArray(m.permissions) && m.permissions.length > 0) {
-      installPromptEl.appendChild(yo`<p><strong>Permissions:</strong></p>`)
-      installPromptEl.appendChild(yo`<ul>${m.permissions.map(getPermDesc).filter(Boolean).map(p => yo`<li>${p}</li>`)}</ul>`)
-    }
-  }
 
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
@@ -92,19 +77,16 @@ function render () {
         <div class="vdh-title">
           <img class="favicon" src=${'beaker-favicon:dat://'+archiveInfo.key} />
           ${nameEl}
-          <a class="bookmark" href="#" title="Add to favorites"><span class="icon icon-star"></span></a>
         </div>
         ${versionEl}
         ${authorEl}
         <div class="vdh-actions"></div>
         <div class="vdh-more-actions">
-          ${uninstallBtn}
           <button class="btn btn-default">Extract files...</button>
         </div>
       </div>
       ${descriptionEl}
       ${archiveEntries(archiveEntriesTree, { showHead: false, onToggleNodeExpanded })}
-      ${installPromptEl}
     </div>
   </div>`)
 }
