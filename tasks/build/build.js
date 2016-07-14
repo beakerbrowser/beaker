@@ -25,7 +25,8 @@ var bundleApplication = function () {
     bundle(srcDir.path('background-process.js'), srcDir.path('background-process.build.js')),
     bundle(srcDir.path('webview-preload.js'), srcDir.path('webview-preload.build.js')),
     bundle(srcDir.path('shell-window.js'), srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
-    bundle(srcDir.path('builtin-pages/builtin-pages.js'), srcDir.path('builtin-pages/builtin-pages.build.js'), { browserify: true, basedir: srcDir.cwd() })
+    bundle(srcDir.path('builtin-pages/builtin-pages.js'), srcDir.path('builtin-pages/builtin-pages.build.js'), { browserify: true, basedir: srcDir.cwd() }),
+    bundle(srcDir.path('builtin-pages/view-dat.js'), srcDir.path('builtin-pages/view-dat.build.js'), { browserify: true, basedir: srcDir.cwd() })
   ]);
 };
 

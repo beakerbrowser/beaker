@@ -9,7 +9,6 @@ const navItems = [
   'Browse',
   { url: 'beaker:start', icon: 'star', label: 'Favorites' },
   { url: 'beaker:apps', icon: 'window', label: 'Applications' },
-  { url: 'beaker:shared-folders', icon: 'folder', label: 'Shared Folders' },
   { url: 'beaker:history', icon: 'back-in-time', label: 'History' },
   // 'My Computer',
   // { url: 'beaker:downloads', icon: 'install', label: 'Downloads' },
@@ -60,8 +59,14 @@ function renderNavItem (item) {
 
 function onClickNavItem (item) {
   return e => {
-    window.history.pushState(null, '', item.url)
-    events.emit('change-view', item.url)
-    update()
+    if (window.location.protocol == 'beaker:') {
+      // just navigate virtually, if we're on a beaker: page
+      window.history.pushState(null, '', item.url)
+      events.emit('change-view', item.url)
+      update()
+    } else {
+      // probably on view-dat:, so actually go to the page
+      window.location = item.url
+    }
   }
 }

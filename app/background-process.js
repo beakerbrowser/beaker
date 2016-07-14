@@ -12,13 +12,13 @@ import * as sitedata from './background-process/sitedata'
 import * as bookmarks from './background-process/bookmarks'
 import * as history from './background-process/history'
 
-import * as ipfsNetwork from './background-process/networks/ipfs'
+// import * as ipfsNetwork from './background-process/networks/ipfs'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 import * as datProtocol from './background-process/protocols/dat'
 import * as viewDatProtocol from './background-process/protocols/view-dat'
-import * as ipfsProtocol from './background-process/protocols/ipfs'
+// import * as ipfsProtocol from './background-process/protocols/ipfs'
 
 import * as datDebug from './background-process/networks/dat/debug'
 
@@ -36,14 +36,14 @@ app.on('ready', function () {
   history.setup()
 
   // networks
-  ipfsNetwork.setup()
+  // ipfsNetwork.setup()
 
   // protocols
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
   datProtocol.setup()
   viewDatProtocol.setup()
-  ipfsProtocol.setup()
+  // ipfsProtocol.setup()
 
   // debugging
   // datDebug.hostDebugDat()
@@ -55,6 +55,6 @@ app.on('window-all-closed', function () {
   app.quit()
 })
 
-app.once('will-quit', () => {
-  ipfsNetwork.shutdown()
-})
+// app.once('will-quit', () => {
+//   ipfsNetwork.shutdown()
+// })

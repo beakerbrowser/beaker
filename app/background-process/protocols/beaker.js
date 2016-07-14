@@ -31,6 +31,8 @@ export function setup () {
       return cb(path.join(__dirname, 'stylesheets/builtin-pages/builtin-pages.css'))
 
     // view-dat page
+    if (request.url == 'beaker:view-dat.js')
+      return cb(path.join(__dirname, 'builtin-pages/view-dat.build.js'))
     if (request.url == 'beaker:view-dat.css')
       return cb(path.join(__dirname, 'stylesheets/builtin-pages/view-dat.css'))
 

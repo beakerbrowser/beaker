@@ -24,7 +24,7 @@ zoom.setup()
 // =
 
 // builtin pages
-if (window.location.protocol == 'beaker:') {
+if (window.location.protocol == 'beaker:' || window.location.protocol == 'view-dat:') {
   window.beaker = {
     version: BEAKER_VERSION,
     bookmarks,

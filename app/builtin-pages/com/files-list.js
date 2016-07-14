@@ -1,3 +1,8 @@
+import * as yo from 'yo-yo'
+import prettyBytes from 'pretty-bytes'
+import { niceDate } from '../../lib/time'
+import { ucfirst } from '../../lib/strings'
+
 export function archives (entries, opts={}) {
 
   var head = ''
@@ -40,28 +45,92 @@ export function archives (entries, opts={}) {
   </div>`
 }
 
-export function archiveEntries (archive, entries, opts={}) {
+export function entriesListToTree (archiveInfo) {
+  var m = archiveInfo.manifest
+
+  // root node is the archive itself
+  var rootNode = {
+    entry: {
+      type: 'directory',
+      name: 'View files',
+      key: archiveInfo.key
+    }
+  }
+
+  // iterate the list, recurse the path... build the tree!
+  archiveInfo.entries.forEach(e => addEntry(rootNode, e.name.split('/'), e))
+  function addEntry (parent, path, entry) {
+    // take a name off the path
+    var name = path.shift()
+
+    // add children if needed
+    parent.children = parent.children || {}
+
+    if (path.length === 0) {
+      // end of path, add entry
+      parent.children[name] = parent.children[name] || {} // only create if DNE yet
+      parent.children[name].entry = entry
+    } else {
+      // an ancestor directory, ensure the dir exists
+      parent.children[name] = parent.children[name] || { entry: { type: 'directory', name: name } }
+      // descend
+      addEntry(parent.children[name], path, entry)
+    }
+  }
+
+  return rootNode
+}
+
+export function archiveEntries (tree, opts={}) {
+  // render the header (optional)
   var head = ''
   if (opts.showHead) {
     head = yo`<div class="fl-head">
-      <div class="fl-name">Name</div>
+      <div class="fl-name">Name <span class="icon icon-down-open-mini"></span></div>
       <div class="fl-updated">Last Updated</div>
       <div class="fl-size">Size</div>
-      <div class="fl-progress">Progress</div>
     </div>`
   }
 
-  return yo`<div class="files-list">
-    ${head}
-    <div class="fl-rows">
-      ${entries.map(entry => {
-        return yo`<div class="fl-row">
-          <div class="fl-name"><a href="dat://${archive.key}/${entry.name}">${entry.name}</a></div>
-          <div class="fl-updated">${entry.mtime ? niceDate(entry.mtime) : ''}</div>
-          <div class="fl-size">${entry.length ? prettyBytes(entry.length) : ''}</div>
-          <div class="fl-progress"><progress value="100" max="100">100 %</progress></div>
-        </div>`
-      })}
-    </div>
-  </div>`
+  // helper to render the tree recursively
+  function renderNode (node, depth) {
+    var els = []
+    const isOpen = node.isOpen
+    const entry = node.entry
+
+    // add spacers, for depth
+    var spacers = []
+    for (var i=0; i <= depth; i++)
+      spacers.push(yo`<span class="spacer"></span>`)
+
+    // type-specific rendering
+    var link
+    if (entry.type == 'directory') {
+      // modify the last spacer to have an arrow in it
+      let icon = isOpen ? 'icon icon-down-dir' : 'icon icon-right-dir'
+      spacers[depth].appendChild(yo`<span class=${icon} onclick=${e => opts.onToggleNodeExpanded(node)}></span>`)
+      link = yo`<a onclick=${e => opts.onToggleNodeExpanded(node)}>${entry.name}</a>`
+    } else {
+      link = yo`<a href="dat://${tree.entry.key}/${entry.name}">${entry.name}</a>`
+    }
+
+    // render self
+    var isDotfile = entry.name.charAt(0) == '.'
+    els.push(yo`<div class=${'fl-row '+entry.type+(isDotfile?' dotfile':'')}>
+      <div class="fl-name">${spacers}${link}</div>
+      <div class="fl-updated">${entry.mtime ? niceDate(entry.mtime) : ''}</div>
+      <div class="fl-size">${entry.length ? prettyBytes(entry.length) : ''}</div>
+    </div>`)
+
+    // render children
+    if (node.children && isOpen) {
+      for (var k in node.children)
+        els = els.concat(renderNode(node.children[k], depth + 1))
+    }
+
+    return els
+  }
+
+  // render
+  return yo`<div class="files-list">${head}<div class="fl-rows">${renderNode(tree, 0)}</div></div>`
 }

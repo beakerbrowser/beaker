@@ -1,45 +1,104 @@
 @import "../photon.min.less";
 
+@font-face {
+  font-family: "photon-entypo";
+  src: url("beaker:font") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
 a {
   cursor: pointer;
-  color: #555;
-  text-decoration: none;
+  color: inherit;
   &:hover {
-    text-decoration: underline;
+    color: blue;
   }
 }
 
-// dont do photon's highlighting on click
-tr:active {
-  background: inherit;
-  color: inherit;
+// override some btn styles
+.btn {
+  font-family: sans-serif;
 }
-.table-striped tr:active:nth-child(even) {
-  background-color: #f5f5f4;
-  color: inherit;
-}
-
-table {
-  font-size: 15px;
+.btn-primary {
+  border-color: #1867cc #1c6cd2 #05489c;
+  background-image: linear-gradient(to bottom, #4a9cea 0, #1664bf 100%);
 }
 
-td a {
-  display: block;
+.view-dat {
+  .view-dat-header {
+    display: flex;
 
-  &:before {
-    content: '';
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    margin-right: 5px;
+    & > * {
+      padding: 10px;
+      line-height: 23px;
+    }
+    .vdh-title {
+      font-size: 21px;
+      line-height: 21px;
+      a {
+        text-decoration: none;
+      }
+    }
+    .vdh-actions {
+      flex: 1;
+    }
+    .vdh-more-actions {
+      line-height: 21px;
+      button {
+        margin: 0 2px;
+      }    
+    }
+  }
+  .view-dat-desc {
+    padding: 0 10px;
+
+    // this is sloppy but who cares.
+    // the element is optional and reducing the padding in view-dat-header looks wrong when this el isnt present.
+    position: relative;
+    top: -2px;
+
+    p {
+      margin: 0 0 .5em;
+    }
+
+    ul {
+      margin-bottom: .5em;
+      padding-left: 2.5em;
+    }
+  }
+  .files-list {
+    margin-bottom: 14px;
+  }
+  .view-dat-install {
+    padding: 0 10px;
+    background: #fafafa;
+    border: 1px dashed #ccc;
+    border-width: 1px 0;
+
+    .btn {
+      font-size: 15px;
+      margin-right: 5px;
+
+      // sometimes... you just gotta bump up a pixel
+      position: relative;
+      top: -1px;
+    }
   }
 }
-td.directory a:before {
-  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAXdEVYdEF1dGhvcgBMYXBvIENhbGFtYW5kcmVp35EaKgAAACl0RVh0RGVzY3JpcHRpb24AQmFzZWQgb2YgSmFrdWIgU3RlaW5lciBkZXNpZ26ghAVzAAABbElEQVQ4jaWQO0tDQRCFz2x2A8YHQoogaKFW2qSysbATsdAIWgrWlhIFBRvLoFhZW/gb0vgPRBAStEgExZA2VR7X3Nw7MxY3BhUjCU6zMOz5zrcL/HPo/HDzREFnZMj1tgoI1FPm/ePL/M2fgNxRxltaXh8xxkCEoSIQYQQdH6XHO6/T8ZePL/PFfgBLCifCqJQfesswDNBoNhAEnQQRFXLZjV+qAefiRQsAba/e27MIWl4Ta1t7SE3N9lVXEVxfnaYtyJjS0z04DCMlF8fK6jaSyRQatUpfwFhypvsEUrOze4CxiUmoAlBF4LfwXq/1DUcG3UJhRmJ0HI1a9c/AzxGOAAYApEsbCiBfAMrDA5T5nwb8zYCHN/j8RABQFYAINGgYgEhUamPGKLOQiyciCFH3NABRdFsFqhoVqUJV4bebiBmjNmZd8eW5kJ6bXxhUAADw9lpWY12BLrKZRWNjt0EYTA8DsM5Vw7a/9gEhN65EVGzVRQAAAABJRU5ErkJggg==');
+
+.bookmark {
+  color: #fff;
+  -webkit-text-stroke: 1px #aaa;
+  font-size: 18px;
+  margin-left: 2px;
+  position: relative;
+  top: -1px;
+
+  &.gold, &:hover {
+    color: #FFBC00;
+    -webkit-text-stroke: 1px #EAAE05;
+  }
 }
-td.file a:before {
-  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAASdEVYdFRpdGxlAFBhcGVyIFNoZWV0c7mvkfkAAAAXdEVYdEF1dGhvcgBMYXBvIENhbGFtYW5kcmVp35EaKgAAACd0RVh0RGVzY3JpcHRpb24Ad2l0aCBhIEhVR0UgaGVscCBmcm9tIEpha3VihlQHswAAAhNJREFUOI11kstqU1EUhr91ctI2A2uTNsRaOxDEkeILiIgTL6CCAx+iUnTSgQPBRxAFSxWhA8XiBQst7aQjUV+kMWlzOaeJVZvsy3JwctK0wQWLvQabb/3/v7eoKuubqzdFZMk5PwuKqqIKoAB/Qba8d8/v3b2/xfFSVVbXPpWbUUO990Pd7Xa0Uv2paxurf1Y+vnucwA87AOh0OjP5iQL7v/dptWOacZ1ao0plZ5vdepV2q8Wt67dzxanik7fvlxcGBQQAxlgAqpUK5e0KO5Ua9d2IuNlmL/pFuVwhCAKuXrmWGx0Ze/pm+dXlFBAmAANAYSqPcy5p73DO4pwjE8OHzyuMZXNcvHAp9/3H1wXgWx9gjQGURi3CWjuU01S+xMkTBbxYgiCQg4ODGy9ePsvMzz1yfQUKTBTGcc7iVVHv8T5V4hhhFJExzp09z8bmesarzwIpINkaN1s454YUpCWBkC706gcysEkG+clxnPNo7y/0PsMhQHoAa1CvwyFCQBAoipBcFY4eyWCtxTt/FCBAHO3h7P8tZMIMpeI0xlh8z+pABkLpVBG0J1UGVKQKVBARrDH9rAaeERq1iG63298YhiFnZmf63rWXiTEGd9wCwOmZaUTkaA8ooJfpEEBEqnEcTRcKk//1n1a73QIkMtZ0EluqzD98cCfMhoum2y2pgpI84fEZlGx2pG6MmVtafP0F4B+wR1eZMTEGTgAAAABJRU5ErkJggg==');
-}
-td.up a:before {
-  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAABd0RVh0QXV0aG9yAExhcG8gQ2FsYW1hbmRyZWnfkRoqAAAAKXRFWHREZXNjcmlwdGlvbgBCYXNlZCBvZiBKYWt1YiBTdGVpbmVyIGRlc2lnbqCEBXMAAADkUExURQAAAIlwS4xzT4hyTIhyTIh1TYt0To55VI95VI14Uo53Uol1T454U4l1T4pzTYl0Top0T4lzTol0T4p0T4p0UIx1T7ypi72qi1VXU1dZVFdZVVpZU3FpWHpyYYlzTYl0Tot1UIt2UIt2Uox2UI14Uo96V5iEYZ6IZJ+IZaONa6OObKWQcKyZerSjh7ali7q9trurkrytlb2tlb6vl76vmMCxmsSzmc/AqNnJstvJr9zKs9/NtODOtuLRuuLSu+LSvOPTvuTUv+XWweXWwuXXxOfZxufax+jayOjk3O7u7P7+/v///1vCgtoAAAAYdFJOUwApKi9edHnOz+Lj9fX29vn6+/v7/f7+/u3uXhMAAACTSURBVBgZBcGxTgJBFADA2bvNiQgRiTZGa1v//yusjVLR0RFhQe/tcwYAQJmWD+ThOgPK+q307H3XAqhTNKfoqxXKeGzVTLwXkB+v+5pJL3vw0vt9zQ7PgFRFIb6vYGpThXG33SRJftZx/nOzWf4AC3X9dCfjFxBq3F4AEAYBAGloMwBEG/t5C4CvYxkWjwA4XP4BfPA/zpz+0LoAAAAASUVORK5CYII=');
-}
+
+
+@import "./com/files-list.less";

@@ -6,7 +6,6 @@ import listenRandomPort from 'listen-random-port'
 import log from '../../log'
 import errorPage from '../../lib/error-page'
 import * as dat from '../networks/dat'
-import renderArchive from './view-dat/archive-html'
 
 // constants
 // =
@@ -16,7 +15,6 @@ const REQUEST_TIMEOUT_MS = 30e3 // 30s
 
 // content security policies
 const DAT_CSP = "default-src 'self'; img-src 'self' data:; plugin-types 'none';"
-const VIEWDAT_CSP = "default-src 'self' beaker:; img-src 'self' data:; plugin-types 'none';"
 
 // globals
 // =
@@ -102,15 +100,11 @@ function datServer (req, res) {
           log('[DAT] Entry not found:', urlp.path)
           clearTimeout(timeout)
 
-          // if we're looking for a directory, show the archive listing
+          // if we're looking for a directory, redirect to view-dat
           if (!urlp.path || urlp.path.charAt(urlp.path.length - 1) == '/') {
-            return archive.list((err, entries) => {
-              res.writeHead(200, 'OK', {
-                'Content-Type': 'text/html',
-                'Content-Security-Policy': VIEWDAT_CSP
-              })
-              res.end(new Buffer(renderArchive(archive, entries || [], urlp.path), 'utf-8'))
-            })
+            console.log('redirecting to', 'view-dat://'+archiveKey+urlp.path)
+            res.writeHead(302, 'Found', { 'Location': 'view-dat://'+archiveKey+urlp.path })
+            return res.end()
           }
 
           return cb(404, 'File Not Found')

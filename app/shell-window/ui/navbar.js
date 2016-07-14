@@ -110,20 +110,20 @@ function render (id, page) {
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
   var archiveBtn
-  if (page && page.archiveInfo) {
-
+  if (page && /^(dat)/.test(page.getURL()) && page.archiveInfo) {
     // archive btn
     let info = page.archiveInfo
-    let icon = 'icon icon-' + ((info.isApp) ? (!info.isInstalledApp ? 'install' : 'window') : 'folder')
-    let label = (info.versionHistory.current) ? yo`<small>v${info.versionHistory.current}</small>` : ''
-    if (info.isApp && !info.isInstalledApp)
-      label = yo`<small>Install This App</small>`
-    archiveBtn = yo`
-      <button class="green">
-        <span class=${icon}></span>
-        ${label}
-      </button>
-    `
+    let isViewDat = page.getURL().startsWith('view-dat://')
+    // offer to install? (only if viewing app, and havent installed it yet)
+    let showInstall = (!isViewDat && info.isApp && !info.isInstalledApp)
+    // choose icon
+    let icon = 'icon icon-' + ((info.isApp) ? (showInstall ? 'install' : 'window') : 'folder')
+    // choose label
+    let label = (showInstall) ? 'Install This App' : (info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
+    // choose onclick
+    let onclick = (isViewDat) ? undefined : onClickViewDat
+    // render
+    archiveBtn = yo`<button class="green" onclick=${onclick}><span class=${icon}></span> <small>${label}</small></button>`
   }
 
   // inpage finder ctrl
@@ -498,5 +498,13 @@ function onKeydownFind (e) {
       if (str) page.findInPage(str, { findNext: true, forward: !backwards })
       else     page.stopFindInPage('clearSelection')
     }
+  }
+}
+
+function onClickViewDat (e) {
+  var page = getEventPage(e)
+  if (page && page.getURL().startsWith('dat://')) {
+    let key = (new URL(page.getURL())).host
+    page.loadURL('view-dat://'+key) 
   }
 }

@@ -94,6 +94,10 @@ export function createArchive (key, opts) {
   opts = opts || {}
   var sparse = (opts.sparse === false) ? false : true // by default, only download files when they're requested
 
+  // validate key
+  if (!Buffer.isBuffer(key) || key.length != 32)
+    return
+
   // NOTE this only works on live archives
   var archive = drive.createArchive(key, {
     live: true,
@@ -292,6 +296,9 @@ var rpcMethods = {
     // get the archive
     var archive = getArchive(key)
     var done = multicb({ pluck: 1, spread: true })
+
+    if (!archive)
+      return cb(new Error('Invalid archive key'))
 
     // fetch archive data
     archive.list(done())

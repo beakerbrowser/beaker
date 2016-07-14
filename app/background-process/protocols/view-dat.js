@@ -2,12 +2,12 @@ import { protocol } from 'electron'
 import url from 'url'
 import once from 'once'
 import path from 'path'
+import fs from 'fs'
 import http from 'http'
 import listenRandomPort from 'listen-random-port'
 import log from '../../log'
 import errorPage from '../../lib/error-page'
 import * as dat from '../networks/dat'
-import renderArchive from './view-dat/archive-html'
 
 // constants
 // =
@@ -16,20 +16,27 @@ import renderArchive from './view-dat/archive-html'
 const REQUEST_TIMEOUT_MS = 30e3 // 30s
 
 // content security policies
-const CSP = "default-src 'self' beaker:; img-src 'self' data:; plugin-types 'none';"
+const CSP = "default-src 'self' beaker:; img-src 'self' data: beaker-favicon:; plugin-types 'none';"
 
 // globals
 // =
 
 var viewdatServerPort = null // assigned by listen-random-port
 var nonce = Math.random() // used to limit access to the current process
+var viewDatPageHTML // buffer containing the html of the view-dat page
 
 // exported api
 // =
 
 export function setup () {
+  // load the app HTML
+  viewDatPageHTML = fs.readFileSync(path.join(__dirname, 'builtin-pages/view-dat.html'))
+
+  // create the internal view-dat HTTP server
   var server = http.createServer(viewdatServer)
   listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => viewdatServerPort = port)
+
+  // register the view-dat: protocol handler
   protocol.registerHttpProtocol('view-dat', viewdatHttpProtocol, e => {
     if (e)
       console.error('Failed to register view-dat protocol', e)
@@ -73,31 +80,11 @@ function viewdatServer (req, res) {
     var archive = dat.getArchive(archiveKey)
     var ds = dat.swarm(archiveKey)
 
-    // setup a timeout
-    var timeout = setTimeout(() => {
-      log('[DAT] Timed out searching for', archiveKey)
-      cb(408, 'Timed out')
-    }, REQUEST_TIMEOUT_MS)
-
-    // list archive contents
-    log('[DAT] attempting to list archive', archiveKey)
-    archive.list((err, entries) => {
-      clearTimeout(timeout)
-
-      if (err) {
-        // QUESTION: should there be a more specific error response?
-        // not sure what kind of failures can occur here (other than broken pipe)
-        // -prf
-        log('[DAT] Archive listing errored', err)
-        return cb(500, 'Failed')
-      }
-
-      // respond
-      res.writeHead(200, 'OK', {
-        'Content-Type': 'text/html',
-        'Content-Security-Policy': CSP
-      })
-      res.end(new Buffer(renderArchive(archive, entries, urlp.path), 'utf-8'))
+    // serve the view-dat page
+    res.writeHead(200, 'OK', {
+      'Content-Type': 'text/html',
+      'Content-Security-Policy': CSP
     })
+    res.end(viewDatPageHTML)
   })
 }
