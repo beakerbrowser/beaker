@@ -21,7 +21,7 @@ export function setup () {
       return cb(path.join(__dirname, 'img/tab-right.svg'))
 
     // builtin pages
-    for (let slug of ['start', 'history', 'apps', 'shared-folders']) {
+    for (let slug of ['start', 'history', 'subscriptions', 'my-sites']) {
       if (request.url == `beaker:${slug}`)
         return cb(path.join(__dirname, 'builtin-pages/builtin-pages.html'))
     }

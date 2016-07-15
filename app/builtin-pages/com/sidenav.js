@@ -8,17 +8,11 @@ var events = new EventEmitter()
 const navItems = [
   'Browse',
   { url: 'beaker:start', icon: 'star', label: 'Favorites' },
-  { url: 'beaker:apps', icon: 'rss', label: 'Subscriptions' },
+  { url: 'beaker:subscriptions', icon: 'rss', label: 'Subscriptions' },
   { url: 'beaker:history', icon: 'back-in-time', label: 'History' },
 
   'Projects',
-  { url: 'beaker:apps', icon: 'docs', label: 'My Sites' },
-  // 'My Computer',
-  // { url: 'beaker:downloads', icon: 'install', label: 'Downloads' },
-  // { url: 'beaker:publish', icon: 'upload', label: 'Publish' },
-  // { url: 'beaker:disk-usage', icon: 'chart-pie', label: 'Disk Usage' }, TODO
-  // { url: 'beaker:network', icon: 'network', label: 'Network' }, TODO
-  // { url: 'beaker:settings', icon: 'tools', label: 'Settings' }
+  { url: 'beaker:my-sites', icon: 'docs', label: 'My Sites' }
 ]
 
 // exported API

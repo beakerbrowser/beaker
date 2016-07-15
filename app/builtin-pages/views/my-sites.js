@@ -69,6 +69,7 @@ function selectArchive (archiveIndex) {
 function render () {
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
+    <div style="padding: 10px; background: yellow; border: 1px solid; color: #775618"><span class="icon icon-attention"></span> This page is a placeholder. It has not been implemented yet.</div>
     <div class="apps">
       <div class="apps-list">
 

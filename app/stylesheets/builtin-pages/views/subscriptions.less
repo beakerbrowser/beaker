@@ -1,0 +1,30 @@
+.subscriptions {
+  display: flex;
+  background: #fafafa;
+  height: 100%;
+
+  .feed {
+    flex: 1;
+    min-width: 500px;
+  }
+  .list {
+    flex: 1;
+    padding-top: 5px;
+
+    & > a {
+      display: block;
+      padding: 5px 12px;
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        background: #f0f0f0;
+      }
+    }
+    .favicon {
+      position: relative;
+      top: 2px;
+      margin-right: 2px;
+    }
+  }
+}

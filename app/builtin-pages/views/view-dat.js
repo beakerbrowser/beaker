@@ -90,16 +90,14 @@ function render () {
           <button class="btn btn-default"><span class="icon icon-rss"></span> Subscribe</button>
           <button class="btn btn-default"><span class="icon icon-flow-branch"></span> Clone</button>
           <button class="btn btn-default"><span class="icon icon-install"></span> Download Zip</button>
-          <button class="btn btn-default"><span class="icon icon-cog"></span></button>
         </div>
         <div class="vd-updates">
           ${v.versions.map(semver => {
             var l = v.log[semver]
-            var messageEl = (l.message) ? yo`<div>${l.message}</div>` : yo`<div class="empty">No message</div>`
             var dateEl = (l.date) ? niceDate(l.date) : undefined
             return yo`<div class="vd-update">
               <div><strong>Version ${semver}</strong> ${dateEl}</div>
-              ${messageEl}
+              <div>${l.message || ('Version ' + semver + ' released.')}</div>
             </div>`
           })}
         </div>
