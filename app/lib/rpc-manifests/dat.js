@@ -1,5 +1,6 @@
 export default {
   archives: 'async',
   archiveInfo: 'async',
-  archivesEventStream: 'readable'
+  archivesEventStream: 'readable',
+  subscribe: 'async'
 }

@@ -68,6 +68,12 @@ function render () {
   }
   var descriptionEl = (m.description) ? yo`<div class="view-dat-desc"><p>${m.description}</p></div>` : ''
 
+  // stateful btns
+  var subscribeBtn = yo`<button class="btn btn-default subscribe-btn" onclick=${onToggleSubscribed}><span class="icon icon-rss"></span> Subscribe</button>`
+  if (archiveInfo.isSubscribed) {
+    subscribeBtn.classList.add('pressed')
+  }
+
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="view-dat">
@@ -82,8 +88,7 @@ function render () {
         </div>
         ${descriptionEl}        
         <div class="vd-actions">
-          <button class="btn btn-default"><span class="icon icon-rss"></span> Subscribe</button>
-          ${''/*<button class="btn btn-default"><span class="icon icon-flow-branch"></span> Clone</button>*/}
+          ${subscribeBtn}
           <button class="btn btn-default"><span class="icon icon-install"></span> Download Zip</button>
         </div>
         <div class="feed">
@@ -128,6 +133,16 @@ function onClick (archiveIndex) {
 function onToggleNodeExpanded (node) {
   node.isOpen = !node.isOpen
   render()
+}
+
+function onToggleSubscribed () {
+  var newState = !archiveInfo.isSubscribed
+  beaker.dat.subscribe(archiveKey, newState, err => {
+    if (err)
+      return console.warn(err)
+    archiveInfo.isSubscribed = newState
+    render()
+  })
 }
 
 function onUpdateArchive (update) {

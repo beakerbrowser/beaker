@@ -50,10 +50,12 @@ const ARCHIVE_FILEPATH = archive => path.join(dbPath, 'Archives', archive.key.to
 var dbPath // path to the hyperdrive folder
 var db // level instance
 var archiveMetaDb // archive metadata sublevel
+var subscribedArchivesDb // subcribed archives sublevel
 var drive // hyperdrive instance
 
 var archives = {} // key -> archive
 var swarms = {} // key -> swarm
+var subscribedArchives = new Set() // set of current subscriptions
 var archivesEvents = new EventEmitter()
 
 // config default mimetype
@@ -68,7 +70,14 @@ export function setup () {
   mkdirp.sync(path.join(dbPath, 'Archives')) // make sure the folders exist
   db = level(dbPath)
   archiveMetaDb = subleveldown(db, 'archive-meta', { valueEncoding: 'json' })
+  subscribedArchivesDb = subleveldown(db, 'subscribed', { valueEncoding: 'json' })
   drive = hyperdrive(db)
+
+  // load all subscribed archives
+  subscribedArchivesDb.createKeyStream().on('data', key => {
+    subscribedArchives.push(key)
+    createArchive(key, { sparse: true })
+  })
 
   // wire up the rpc
   rpc.exportAPI('dat', manifest, rpcMethods)
@@ -174,6 +183,18 @@ export function updateArchiveMeta (archive) {
       })
     })
   })
+}
+
+// un/subscribe to archives
+export function subscribe (key, subscribed, cb) {
+  console.log('subscribe', key, subscribed)
+  if (subscribed) {
+    subscribedArchives.add(key)
+    subscribedArchivesDb.put(key, true, () => cb())
+  } else {
+    subscribedArchives.delete(key)
+    subscribedArchivesDb.del(key, false, () => cb())
+  }
 }
 
 // put the archive into the network, for upload and download
@@ -298,14 +319,17 @@ var rpcMethods = {
 
       // some other meta
       var isApp = !!entries.find(e => e.name == 'index.html')
+      var isSubscribed = subscribedArchives.has(key)
 
-      cb(null, { key, entries, manifest, versionHistory, isApp })
+      cb(null, { key, entries, manifest, versionHistory, isApp, isSubscribed })
     })
   },
 
   archivesEventStream () {
     return emitStream(archivesEvents)
-  }
+  },
+
+  subscribe
 }
 
 // internal methods
