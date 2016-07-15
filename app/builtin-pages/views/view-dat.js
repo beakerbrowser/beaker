@@ -80,26 +80,31 @@ function render () {
           ${versionEl}
           ${authorEl}
         </div>
-        ${descriptionEl}
-        <div class="view-dat-content">
-          ${archiveEntries(archiveEntriesTree, { showHead: true, onToggleNodeExpanded })}
-        </div>
-      </div>
-      <div class="view-dat-side">
+        ${descriptionEl}        
         <div class="vd-actions">
           <button class="btn btn-default"><span class="icon icon-rss"></span> Subscribe</button>
-          <button class="btn btn-default"><span class="icon icon-flow-branch"></span> Clone</button>
+          ${''/*<button class="btn btn-default"><span class="icon icon-flow-branch"></span> Clone</button>*/}
           <button class="btn btn-default"><span class="icon icon-install"></span> Download Zip</button>
         </div>
-        <div class="vd-updates">
+        <div class="feed">
           ${v.versions.map(semver => {
             var l = v.log[semver]
             var dateEl = (l.date) ? niceDate(l.date) : undefined
-            return yo`<div class="vd-update">
-              <div><strong>Version ${semver}</strong> ${dateEl}</div>
-              <div>${l.message || ('Version ' + semver + ' released.')}</div>
+            return yo`<div class="feed-entry">                
+              <div>
+                <img class="favicon" src=${'beaker-favicon:dat://'+archiveInfo.key} />
+                <a class="fe-site" href="#">${name}</a>
+                ${v.current ? ('v'+v.current) : ''}
+                <a class="fe-date" href="#">${v.date}</a>
+              </div>
+              <div class="fe-message">${l.message || ('Version ' + semver + ' released.')}</div>
             </div>`
           })}
+        </div>
+      </div>
+      <div class="view-dat-side">
+        <div class="view-dat-content">
+          ${archiveEntries(archiveEntriesTree, { showHead: true, showRoot: false, onToggleNodeExpanded })}
         </div>
       </div>
     </div>

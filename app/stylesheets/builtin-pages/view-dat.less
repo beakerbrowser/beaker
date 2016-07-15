@@ -38,6 +38,7 @@ a {
 
   .view-dat-header {
     display: flex;
+    height: 45px;
 
     & > * {
       padding: 10px;
@@ -49,6 +50,9 @@ a {
       a {
         text-decoration: none;
       }
+    }
+    .flex-spacer {
+      flex: 1;
     }
   }
   .view-dat-desc {
@@ -68,10 +72,15 @@ a {
       padding-left: 2.5em;
     }
   }
-
+  .view-dat-content {
+    height: 100%;
+    background: #fafafa;
+  }
   .vd-actions {
     padding: 10px;
     line-height: 21px;
+    border: 1px dashed #ddd;
+    border-width: 1px 0;
     button {
       margin: 0 2px;
     }    
@@ -79,23 +88,7 @@ a {
       margin-right: 2px;
     }
   }
-
-  .vd-updates {
-    padding: 0 10px;
-
-    .vd-update {
-      padding: 18px 16px;
-      border-top: 1px dashed #ddd;
-
-      &> div:last-child {
-        font-family: sans-serif;
-        &.empty {
-          color: gray;
-        }
-      }
-    }
-  }
 }
 
-@import "./com/tabs.less";
+@import "./com/feed.less";
 @import "./com/files-list.less";
