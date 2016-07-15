@@ -2,6 +2,7 @@ import * as yo from 'yo-yo'
 import { niceDate } from '../../lib/time'
 import { ucfirst } from '../../lib/strings'
 import { archiveEntries, entriesListToTree } from '../com/files-list'
+import tabs from '../com/tabs'
 import prettyBytes from 'pretty-bytes'
 import emitStream from 'emit-stream'
 
@@ -50,7 +51,7 @@ export function hide () {
 function render () {
   var m = archiveInfo.manifest
   var v = archiveInfo.versionHistory
-  var name = m.name || m.short_name || 'Untitled Dat'
+  var name = m.name || m.short_name || 'Untitled'
 
   // set page title
   document.title = name
@@ -69,21 +70,40 @@ function render () {
 
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class=${'view-dat'+(archiveInfo.isApp?' app':'')}>
-      <div class="view-dat-header">
-        <div class="vdh-title">
-          <img class="favicon" src=${'beaker-favicon:dat://'+archiveInfo.key} />
-          ${nameEl}
+    <div class="view-dat">
+      <div class="view-dat-main">
+        <div class="view-dat-header">
+          <div class="vdh-title">
+            <img class="favicon" src=${'beaker-favicon:dat://'+archiveInfo.key} />
+            ${nameEl}
+          </div>
+          ${versionEl}
+          ${authorEl}
         </div>
-        ${versionEl}
-        ${authorEl}
-        <div class="vdh-actions"></div>
-        <div class="vdh-more-actions">
-          <button class="btn btn-default">Extract files...</button>
+        ${descriptionEl}
+        <div class="view-dat-content">
+          ${archiveEntries(archiveEntriesTree, { showHead: true, onToggleNodeExpanded })}
         </div>
       </div>
-      ${descriptionEl}
-      ${archiveEntries(archiveEntriesTree, { showHead: false, onToggleNodeExpanded })}
+      <div class="view-dat-side">
+        <div class="vd-actions">
+          <button class="btn btn-default"><span class="icon icon-rss"></span> Subscribe</button>
+          <button class="btn btn-default"><span class="icon icon-flow-branch"></span> Clone</button>
+          <button class="btn btn-default"><span class="icon icon-install"></span> Download Zip</button>
+          <button class="btn btn-default"><span class="icon icon-cog"></span></button>
+        </div>
+        <div class="vd-updates">
+          ${v.versions.map(semver => {
+            var l = v.log[semver]
+            var messageEl = (l.message) ? yo`<div>${l.message}</div>` : yo`<div class="empty">No message</div>`
+            var dateEl = (l.date) ? niceDate(l.date) : undefined
+            return yo`<div class="vd-update">
+              <div><strong>Version ${semver}</strong> ${dateEl}</div>
+              ${messageEl}
+            </div>`
+          })}
+        </div>
+      </div>
     </div>
   </div>`)
 }

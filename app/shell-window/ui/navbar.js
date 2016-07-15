@@ -110,16 +110,13 @@ function render (id, page) {
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
   var archiveBtn
-  if (page && /^(dat|view-dat)/.test(page.getURL()) && page.archiveInfo) {
+  if (page && /^dat/.test(page.getURL()) && page.archiveInfo) {
     // archive btn
     let info = page.archiveInfo
-    let isViewDat = page.getURL().startsWith('view-dat://')
     // choose label
     let label = (info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
-    // choose onclick
-    let onclick = (isViewDat) ? undefined : onClickViewDat
     // render
-    archiveBtn = yo`<button class="green" onclick=${onclick}><span class="icon icon-folder"></span> <small>${label}</small></button>`
+    archiveBtn = yo`<button class="green" onclick=${onClickViewDat}><span class="icon icon-folder"></span> <small>${label}</small></button>`
   }
 
   // inpage finder ctrl

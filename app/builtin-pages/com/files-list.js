@@ -53,7 +53,7 @@ export function entriesListToTree (archiveInfo) {
     isOpen: true,
     entry: {
       type: 'directory',
-      name: 'View files',
+      name: archiveInfo.name || '/',
       key: archiveInfo.key
     }
   }
@@ -99,29 +99,33 @@ export function archiveEntries (tree, opts={}) {
     const isOpen = node.isOpen
     const entry = node.entry
 
-    // add spacers, for depth
-    var spacers = []
-    for (var i=0; i <= depth; i++)
-      spacers.push(yo`<span class="spacer"></span>`)
+    // only render if "above ground." (this is how we optionally skip rendering ancestors)
+    if (depth >= 0) {
 
-    // type-specific rendering
-    var link
-    if (entry.type == 'directory') {
-      // modify the last spacer to have an arrow in it
-      let icon = isOpen ? 'icon icon-down-dir' : 'icon icon-right-dir'
-      spacers[depth].appendChild(yo`<span class=${icon} onclick=${e => opts.onToggleNodeExpanded(node)}></span>`)
-      link = yo`<a onclick=${e => opts.onToggleNodeExpanded(node)}>${entry.name}</a>`
-    } else {
-      link = yo`<a href="dat://${tree.entry.key}/${entry.name}">${entry.name}</a>`
+      // add spacers, for depth
+      var spacers = []
+      for (var i=0; i <= depth; i++)
+        spacers.push(yo`<span class="spacer"></span>`)
+
+      // type-specific rendering
+      var link
+      if (entry.type == 'directory') {
+        // modify the last spacer to have an arrow in it
+        let icon = isOpen ? 'icon icon-down-dir' : 'icon icon-right-dir'
+        spacers[depth].appendChild(yo`<span class=${icon} onclick=${e => opts.onToggleNodeExpanded(node)}></span>`)
+        link = yo`<a onclick=${e => opts.onToggleNodeExpanded(node)}>${entry.name}</a>`
+      } else {
+        link = yo`<a href="dat://${tree.entry.key}/${entry.name}">${entry.name}</a>`
+      }
+
+      // render self
+      var isDotfile = entry.name.charAt(0) == '.'
+      els.push(yo`<div class=${'fl-row '+entry.type+(isDotfile?' dotfile':'')}>
+        <div class="fl-name">${spacers}${link}</div>
+        <div class="fl-updated">${entry.mtime ? niceDate(entry.mtime) : ''}</div>
+        <div class="fl-size">${entry.length ? prettyBytes(entry.length) : ''}</div>
+      </div>`)
     }
-
-    // render self
-    var isDotfile = entry.name.charAt(0) == '.'
-    els.push(yo`<div class=${'fl-row '+entry.type+(isDotfile?' dotfile':'')}>
-      <div class="fl-name">${spacers}${link}</div>
-      <div class="fl-updated">${entry.mtime ? niceDate(entry.mtime) : ''}</div>
-      <div class="fl-size">${entry.length ? prettyBytes(entry.length) : ''}</div>
-    </div>`)
 
     // render children
     if (node.children && isOpen) {
@@ -133,5 +137,6 @@ export function archiveEntries (tree, opts={}) {
   }
 
   // render
-  return yo`<div class="files-list">${head}<div class="fl-rows">${renderNode(tree, 0)}</div></div>`
+  var startDepth = (opts.showRoot) ? 0 : -1 // start from -1 to skip root
+  return yo`<div class="files-list">${head}<div class="fl-rows">${renderNode(tree, startDepth)}</div></div>`
 }

@@ -25,6 +25,17 @@ a {
 }
 
 .view-dat {
+  display: flex;
+  height: 100%;
+
+  .view-dat-main {
+    flex: 1;
+  }
+  .view-dat-side {
+    flex: 1;
+    border-left: 1px solid #ddd;
+  }
+
   .view-dat-header {
     display: flex;
 
@@ -38,15 +49,6 @@ a {
       a {
         text-decoration: none;
       }
-    }
-    .vdh-actions {
-      flex: 1;
-    }
-    .vdh-more-actions {
-      line-height: 21px;
-      button {
-        margin: 0 2px;
-      }    
     }
   }
   .view-dat-desc {
@@ -66,9 +68,34 @@ a {
       padding-left: 2.5em;
     }
   }
-  .files-list {
-    margin-bottom: 14px;
+
+  .vd-actions {
+    padding: 10px;
+    line-height: 21px;
+    button {
+      margin: 0 2px;
+    }    
+    .icon {
+      margin-right: 2px;
+    }
+  }
+
+  .vd-updates {
+    padding: 0 10px;
+
+    .vd-update {
+      padding: 18px 16px;
+      border-top: 1px dashed #ddd;
+
+      &> div:last-child {
+        font-family: sans-serif;
+        &.empty {
+          color: gray;
+        }
+      }
+    }
   }
 }
 
+@import "./com/tabs.less";
 @import "./com/files-list.less";
