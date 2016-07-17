@@ -36,7 +36,7 @@ import log from '../../log'
 export const MANIFEST_FILENAME = 'manifest.json'
 
 // what do we name the versions file?
-export const VFILENAME = '.bdat-versions'
+export const VFILENAME = '.bdat/versions.json.log'
 
 // 64 char hex
 export const HASH_REGEX = /[0-9a-f]{64}/i
@@ -75,8 +75,8 @@ export function setup () {
 
   // load all subscribed archives
   subscribedArchivesDb.createKeyStream().on('data', key => {
-    subscribedArchives.push(key)
-    createArchive(key, { sparse: true })
+    subscribedArchives.add(key)
+    createArchive(new Buffer(key, 'hex'), { sparse: false }) // TODO do we want sparsemode?
   })
 
   // wire up the rpc
@@ -187,7 +187,6 @@ export function updateArchiveMeta (archive) {
 
 // un/subscribe to archives
 export function subscribe (key, subscribed, cb) {
-  console.log('subscribe', key, subscribed)
   if (subscribed) {
     subscribedArchives.add(key)
     subscribedArchivesDb.put(key, true, () => cb())
@@ -312,7 +311,6 @@ var rpcMethods = {
     done((err, entries, manifest, versionHistory) => {
       if (err)
         return cb(err)
-
       // give sane defaults
       manifest = manifest || {}
       versionHistory = versionHistory || bdatVersionsFile.create()
@@ -340,7 +338,10 @@ function readArchiveFile (archive, name, cb) {
   archive.lookup(name, (err, entry) => {
     if (!entry)
       return cb()
-    archive.createFileReadStream(entry).pipe(concat(data => cb(null, data)))
+
+    var rs = archive.createFileReadStream(entry)
+    rs.pipe(concat(data => cb(null, data)))
+    rs.on('error', e => cb(e))
   })
 }
 function readManifest (archive, cb) {
@@ -362,7 +363,9 @@ function readVFile (archive, cb) {
 
     // parse vfile
     data = data.toString()
-    cb(null, bdatVersionsFile.parse(data))
+    bdatVersionsFile.parse(data, (err, vfile) => {
+      cb(err, vfile)
+    })
   })
 }
 

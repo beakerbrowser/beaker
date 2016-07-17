@@ -5,7 +5,7 @@ export function niceDate (ts) {
   if (typeof ts == 'number')
     ts = moment(ts)
   if (ts.isSame(endOfToday, 'day'))
-    return 'today'      
+    return ts.fromNow()
   else if (ts.isSame(endOfToday.subtract(1, 'day'), 'day'))
     return 'yesterday'
   else if (ts.isSame(endOfToday, 'year'))

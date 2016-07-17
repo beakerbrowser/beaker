@@ -92,17 +92,16 @@ function render () {
           <button class="btn btn-default"><span class="icon icon-install"></span> Download Zip</button>
         </div>
         <div class="feed">
-          ${v.versions.map(semver => {
-            var l = v.log[semver]
+          ${v.index.concat().reverse().map(id => {
+            var l = v.log[id]
             var dateEl = (l.date) ? niceDate(l.date) : undefined
+            if (!l.version && !l.message) return ''
             return yo`<div class="feed-entry">                
               <div>
-                <img class="favicon" src=${'beaker-favicon:dat://'+archiveInfo.key} />
-                <a class="fe-site" href="#">${name}</a>
-                ${v.current ? ('v'+v.current) : ''}
-                <a class="fe-date" href="#">${v.date}</a>
+                ${l.version ? 'v'+l.version : ''}
+                <a class="fe-date" href="#">${l.date ? niceDate(l.date) : ''}</a>
               </div>
-              <div class="fe-message">${l.message || ('Version ' + semver + ' released.')}</div>
+              ${l.message ? yo`<div class="fe-message">${l.message}</div>` : ''}
             </div>`
           })}
         </div>
