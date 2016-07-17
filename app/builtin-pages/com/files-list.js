@@ -54,6 +54,7 @@ export function entriesListToTree (archiveInfo) {
     entry: {
       type: 'directory',
       name: archiveInfo.name || '/',
+      path: '/',
       key: archiveInfo.key
     }
   }
@@ -71,6 +72,8 @@ export function entriesListToTree (archiveInfo) {
       // end of path, add entry
       parent.children[name] = parent.children[name] || {} // only create if DNE yet
       parent.children[name].entry = entry
+      parent.children[name].entry.path = entry.name
+      parent.children[name].entry.name = name
     } else {
       // an ancestor directory, ensure the dir exists
       parent.children[name] = parent.children[name] || { entry: { type: 'directory', name: name } }
@@ -115,7 +118,7 @@ export function archiveEntries (tree, opts={}) {
         spacers[depth].appendChild(yo`<span class=${icon} onclick=${e => opts.onToggleNodeExpanded(node)}></span>`)
         link = yo`<a onclick=${e => opts.onToggleNodeExpanded(node)}>${entry.name}</a>`
       } else {
-        link = yo`<a href="dat://${tree.entry.key}/${entry.name}">${entry.name}</a>`
+        link = yo`<a href="dat://${tree.entry.key}/${entry.path}">${entry.name}</a>`
       }
 
       // render self
@@ -129,8 +132,8 @@ export function archiveEntries (tree, opts={}) {
 
     // render children
     if (node.children && isOpen) {
-      for (var k in node.children)
-        els = els.concat(renderNode(node.children[k], depth + 1))
+      const toObj = key => node.children[key]
+      els = els.concat(Object.keys(node.children).map(toObj).sort(treeSorter).map(child => renderNode(child, depth + 1)))
     }
 
     return els
@@ -139,4 +142,15 @@ export function archiveEntries (tree, opts={}) {
   // render
   var startDepth = (opts.showRoot) ? 0 : -1 // start from -1 to skip root
   return yo`<div class="files-list">${head}<div class="fl-rows">${renderNode(tree, startDepth)}</div></div>`
+}
+
+function treeSorter (a, b) {
+  // directories at top
+  if (a.entry.type == 'directory' && b.entry.type != 'directory')
+    return -1
+  if (a.entry.type != 'directory' && b.entry.type == 'directory')
+    return 1
+
+  // by name
+  return a.entry.name.localeCompare(b.entry.name)
 }
