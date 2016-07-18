@@ -60,7 +60,7 @@ export function entriesListToTree (archiveInfo) {
   }
 
   // iterate the list, recurse the path... build the tree!
-  archiveInfo.entries.forEach(e => addEntry(rootNode, e.name.split('/'), e))
+  archiveInfo.entries.forEach(e => addEntry(rootNode, splitPath(e.name), e))
   function addEntry (parent, path, entry) {
     // take a name off the path
     var name = path.shift()
@@ -142,6 +142,13 @@ export function archiveEntries (tree, opts={}) {
   // render
   var startDepth = (opts.showRoot) ? 0 : -1 // start from -1 to skip root
   return yo`<div class="files-list">${head}<div class="fl-rows">${renderNode(tree, startDepth)}</div></div>`
+}
+
+function splitPath (str) {
+  if (!str || typeof str != 'string') return []
+  return str
+    .replace(/(^\/*)|(\/*$)/g, '') // skip any preceding or following slashes
+    .split('/')
 }
 
 function treeSorter (a, b) {

@@ -124,6 +124,10 @@ function datServer (req, res) {
         log('[DAT] Entry found:', urlp.path)
         dat.getAndIdentifyEntry(archive, entry, (err, entryInfo) => {
           clearTimeout(timeout)
+          if (err) {
+            log('[DAT] Error', err)
+            return cb(500, err.toString())
+          }
 
           // respond
           res.writeHead(200, 'OK', {

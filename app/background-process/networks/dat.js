@@ -259,7 +259,9 @@ export function resolveName (name, cb) {
 }
 
 export function getAndIdentifyEntry (archive, entry, cb) {
-  archive.createFileReadStream(entry).pipe(concat(data => {
+  var rs = archive.createFileReadStream(entry)
+  rs.on('error', cb)
+  rs.pipe(concat(data => {
     // try to identify the type by the buffer contents
     var mimeType
     var identifiedExt = identify(data)
