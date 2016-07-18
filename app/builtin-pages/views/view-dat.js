@@ -96,12 +96,10 @@ function render () {
             var l = v.log[id]
             var dateEl = (l.date) ? niceDate(l.date) : undefined
             if (!l.version && !l.message) return ''
-            return yo`<div class="feed-entry">                
-              <div>
-                ${l.version ? 'v'+l.version : ''}
-                <a class="fe-date" href="#">${l.date ? niceDate(l.date) : ''}</a>
-              </div>
-              ${l.message ? yo`<div class="fe-message">${l.message}</div>` : ''}
+            return yo`<div class="feed-entry">
+              <div class="fe-version">${l.version ? 'v'+l.version : ''}</div> 
+              <div class="fe-message">${l.message||''}</div>
+              <div class="fe-date">${l.date ? niceDate(l.date) : ''}</div>
             </div>`
           })}
         </div>

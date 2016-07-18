@@ -3,12 +3,20 @@ import { niceDate } from '../../lib/time'
 import { ucfirst } from '../../lib/strings'
 import prettyBytes from 'pretty-bytes'
 import emitStream from 'emit-stream'
+import collect from 'stream-collector'
+
+const FETCH_AMT = 20
 
 // globals
 // =
 
+// update feed
+var feed = []
+var isFeedEnded = false
+
 // list of archives
 var archives = []
+var archiveNames = {} // map of key->name
 
 // currently-selected archive index
 var selectedArchiveIndex = -1
@@ -31,13 +39,14 @@ export function setup () {
 
 export function show () {
   // fetch archives
-  beaker.dat.archives((err, list) => {
+  beaker.dat.subscribedArchives((err, list) => {
     archives = list
-    console.log(archives)
+    archives.forEach(a => archiveNames[a.key] = a.name)
     render()
   })
 
-  // TODO
+  // fetch stream
+  fetchStreamNext()
 }
 
 export function hide () {
@@ -63,72 +72,49 @@ function selectArchive (archiveIndex) {
   })
 }
 
+function fetchStreamNext () {
+  var lastKey = feed.length ? feed[feed.length - 1].key : undefined
+  collect(beaker.dat.subscribedFeedStream({ limit: FETCH_AMT, lt: lastKey, reverse: true }), (err, values) =>{
+    console.log(values)
+    if (values.length)
+      feed = feed.concat(values)
+    if (values.length < FETCH_AMT)
+      isFeedEnded = true
+    render()
+  })
+}
+
 // rendering
 // =
 
 function render () {
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div style="padding: 10px; background: yellow; border: 1px solid; color: #775618"><span class="icon icon-attention"></span> This page is a placeholder. It has not been implemented yet.</div>
     <div class="subscriptions">
 
       <div class="feed">
 
-        <div class="feed-entry">
-          <div>
-            <img class="favicon" src=${'beaker-favicon:https://news.ycombinator.com'} />
-            <a class="fe-site" href="#">Hacker News</a>
-            v1.0.0
-            <a class="fe-date" href="#">July 5</a>
-          </div>
-          <div class="fe-message">Sprockets are now sleeker and faster.</div>
-        </div>
+        ${feed.map(entry => {
+          entry = entry.value
 
-        <div class="feed-entry">
-          <div>
-            <img class="favicon" src=${'beaker-favicon:https://www.reddit.com'} />
-            <a class="fe-site" href="#">Reddit</a>
-            v5.2.1
-            <a class="fe-date" href="#">July 2</a>
-          </div>
-          <div class="fe-message">Reactor coils no longer drop their voltage during a power surge.</div>
-        </div>
+          var dateEl = (entry.date) ? niceDate(entry.date) : undefined
+          return yo`<div class="feed-entry">                
+            <a class="fe-site" href="dat://${entry.archiveKey}">${archiveNames[entry.archiveKey]}</a>
+            <div class="fe-version">${entry.version ? 'v'+entry.version : ''}</div>
+            <div class="fe-message">${entry.message||''}</div>
+            <div class="fe-date">${entry.date ? niceDate(entry.date) : ''}</div>
+          </div>`
+        })}
 
-        <div class="feed-entry">
-          <div>
-            <img class="favicon" src=${'beaker-favicon:https://www.reddit.com'} />
-            <a class="fe-site" href="#">Reddit</a>
-            v5.2.0
-            <a class="fe-date" href="#">July 2</a>
-          </div>
-          <div class="fe-message">Added more varieties of reactor coil.</div>
-        </div>
-
-        <div class="feed-entry">
-          <div>
-            <img class="favicon" src=${'beaker-favicon:https://imgur.com'} />
-            <a class="fe-site" href="#">Imgur</a>
-            v3.0.1
-            <a class="fe-date" href="#">July 1</a>
-          </div>
-          <div class="fe-message">Killer monkeys no longer attack their owners, in most cases.</div>
-        </div>
+        ${!isFeedEnded ? yo`<button class="btn btn-default btn-large feed-loadmore" onclick=${fetchStreamNext}>Load More</button>` : ''}
 
       </div>
 
       <div class="list">
-        <a href="#">
-          <img class="favicon" src=${'beaker-favicon:https://news.ycombinator.com'} />
-          Hacker News
-        </a>
-        <a href="#">
-          <img class="favicon" src=${'beaker-favicon:https://imgur.com'} />
-          Imgur
-        </a>
-        <a href="#">
-          <img class="favicon" src=${'beaker-favicon:https://www.reddit.com'} />
-          Reddit
-        </a>
+        ${archives.map(archive => yo`<a href="dat://${archive.key}">
+          <img class="favicon" src="beaker-favicon:dat://${archive.key}" />
+          ${archive.name}
+        </a>`)}
       </div>
     </div>
   </div>`)

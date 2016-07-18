@@ -51,6 +51,7 @@ var dbPath // path to the hyperdrive folder
 var db // level instance
 var archiveMetaDb // archive metadata sublevel
 var subscribedArchivesDb // subcribed archives sublevel
+var subscribedFeedDb // combined feed sublevel
 var drive // hyperdrive instance
 
 var archives = {} // key -> archive
@@ -70,13 +71,15 @@ export function setup () {
   mkdirp.sync(path.join(dbPath, 'Archives')) // make sure the folders exist
   db = level(dbPath)
   archiveMetaDb = subleveldown(db, 'archive-meta', { valueEncoding: 'json' })
-  subscribedArchivesDb = subleveldown(db, 'subscribed', { valueEncoding: 'json' })
+  subscribedArchivesDb = subleveldown(db, 'subscribed-archives', { valueEncoding: 'json' })
+  subscribedFeedDb = subleveldown(db, 'subscribed-feed', { valueEncoding: 'json' })
   drive = hyperdrive(db)
 
   // load all subscribed archives
   subscribedArchivesDb.createKeyStream().on('data', key => {
     subscribedArchives.add(key)
-    createArchive(new Buffer(key, 'hex'), { sparse: false }) // TODO do we want sparsemode?
+    let archive = createArchive(new Buffer(key, 'hex'), { sparse: false }) // TODO do we want sparsemode?
+    updateSubscribedFeedDb(archive)
   })
 
   // wire up the rpc
@@ -280,16 +283,33 @@ var rpcMethods = {
   archives (cb) {
     // list the archives
     drive.core.list()
-      .pipe(through2Concurrent.obj({ maxConcurrency: 100 }, (key, enc, cb) => {
+      .pipe(through2Concurrent.obj({ maxConcurrency: 100 }, (key, enc, cb2) => {
         key = key.toString('hex')
 
         // get archive meta
         getArchiveMeta(key, (err, meta) => {
           if (!meta)
-            return cb() // filter out
+            return cb2() // filter out
 
           meta.key = key
-          cb(null, meta)
+          cb2(null, meta)
+        })
+      }))
+      .pipe(concat(list => cb(null, list)))
+      .on('error', cb)
+  },
+
+  subscribedArchives (cb) {
+    // list the subbed archives
+    subscribedArchivesDb.createKeyStream()
+      .pipe(through2Concurrent.obj({ maxConcurrency: 100 }, (key, enc, cb2) => {
+        // get archive meta
+        getArchiveMeta(key, (err, meta) => {
+          if (!meta)
+            return cb2() // filter out
+
+          meta.key = key
+          cb2(null, meta)
         })
       }))
       .pipe(concat(list => cb(null, list)))
@@ -327,7 +347,11 @@ var rpcMethods = {
     return emitStream(archivesEvents)
   },
 
-  subscribe
+  subscribe,
+
+  subscribedFeedStream (opts) {
+    return subscribedFeedDb.createReadStream(opts)
+  }
 }
 
 // internal methods
@@ -365,6 +389,21 @@ function readVFile (archive, cb) {
     data = data.toString()
     bdatVersionsFile.parse(data, (err, vfile) => {
       cb(err, vfile)
+    })
+  })
+}
+
+// write version log to the merged feed
+function updateSubscribedFeedDb (archive) {
+  // read current vfile
+  readVFile(archive, (err, vfile) => {
+    vfile.index.forEach(key => {
+      // write to db
+      var entry = vfile.log[key]
+      if (entry.version || entry.message) {
+        entry.archiveKey = archive.key.toString('hex')
+        subscribedFeedDb.put(entry.date+':'+entry.hash, entry)
+      }
     })
   })
 }
