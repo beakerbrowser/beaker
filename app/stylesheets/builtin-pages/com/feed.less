@@ -1,44 +1,16 @@
 .feed {
   background: #fff;
+  padding: 10px;
 
-  a {
-    text-decoration: none;
-    color: #0091ff;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
 
   .feed-entry {
     position: relative;
-    padding: 10px 16px 10px 32px;
+    padding: 14px 16px;
     display: flex;
+    border-top: 1px solid #eee;
 
-    &:first-child {
-      border-top: 1px solid #eee;
-    }
-
-    &:before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 15px;
-      height: 100%;
-      width: 4px;
-      background: #f1f1f1;
-    }
-
-    &:after {
-      content: '';
-      position: absolute;
-      left: 11px;
-      top: 15px;
-      height: 8px;
-      width: 8px;
-      border-radius: 12px;
-      background: #ccc;
-      border: 2px solid #ffffff;
+    &:last-child {
+      border-bottom: 1px solid #eee;
     }
 
     .favicon {
@@ -47,19 +19,16 @@
       margin-right: 1px;
     }
 
+    .fe-date,
+    .fe-site,
+    .fe-version,
     .fe-message {
-      flex: 1;
+      line-height: 19px;
+      padding-right: 5px;
     }
-    .fe-version, .fe-site {
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .fe-version {
-      color: #444;
-      flex: 0 0 60px;
-    }
-    .fe-site {
-      flex: 0 0 120px;
+    .fe-site,
+    .fe-message {
+      font-size: 14px;
     }
     .fe-date {
       color: #aaa;

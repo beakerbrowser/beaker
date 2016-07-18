@@ -58,7 +58,7 @@ function render () {
 
   // optional els
   var nameEl = archiveInfo.isApp ? yo`<a href=${'dat://'+archiveInfo.key} target="_blank">${name} <small class="icon icon-popup"></small></a>` : name
-  var versionEl = v.current ? yo`<div class="vdh-version">v${v.current}</div>` : ''
+  var versionEl = v.current ? yo`<div class="view-dat-version">v${v.current}</div>` : ''
   var authorEl = ''
   if (m.author) {
     if (m.homepage_url)
@@ -69,7 +69,7 @@ function render () {
   var descriptionEl = (m.description) ? yo`<div class="view-dat-desc"><p>${m.description}</p></div>` : ''
 
   // stateful btns
-  var subscribeBtn = yo`<button class="btn btn-default subscribe-btn" onclick=${onToggleSubscribed}><span class="icon icon-rss"></span> Subscribe</button>`
+  var subscribeBtn = yo`<button class="btn btn-default subscribe-btn" onclick=${onToggleSubscribed}><span class="icon icon-eye"></span> Watch</button>`
   if (archiveInfo.isSubscribed) {
     subscribeBtn.classList.add('pressed')
   }
@@ -83,32 +83,35 @@ function render () {
             <img class="favicon" src=${'beaker-favicon:dat://'+archiveInfo.key} />
             ${nameEl}
           </div>
-          ${versionEl}
           ${authorEl}
+          <div class="flex-spacer"></div>
+          <div class="vd-actions">
+            ${subscribeBtn}
+          </div>
         </div>
-        ${descriptionEl}        
-        <div class="vd-actions">
-          ${subscribeBtn}
-          <button class="btn btn-default"><span class="icon icon-install"></span> Download Zip</button>
+        ${descriptionEl}   
+        <div class="view-dat-content">
+          <div class="files-list-header">
+            ${versionEl}
+            <div class="flex-spacer"></div>
+            <button class="btn btn-default btn-mini"><span class="icon icon-install"></span> Download Zip</button>
+          </div>
+          ${archiveEntries(archiveEntriesTree, { showHead: false, showRoot: false, onToggleNodeExpanded })}
         </div>
+      </div>
+      ${''/*<div class="view-dat-side">
         <div class="feed">
           ${v.index.concat().reverse().map(id => {
             var l = v.log[id]
             var dateEl = (l.date) ? niceDate(l.date) : undefined
-            if (!l.version && !l.message) return ''
             return yo`<div class="feed-entry">
-              <div class="fe-version">${l.version ? 'v'+l.version : ''}</div> 
+              <div class="fe-version">${l.version || ''}</div> 
               <div class="fe-message">${l.message||''}</div>
               <div class="fe-date">${l.date ? niceDate(l.date) : ''}</div>
             </div>`
           })}
         </div>
-      </div>
-      <div class="view-dat-side">
-        <div class="view-dat-content">
-          ${archiveEntries(archiveEntriesTree, { showHead: true, showRoot: false, onToggleNodeExpanded })}
-        </div>
-      </div>
+      </div>*/}
     </div>
   </div>`)
 }

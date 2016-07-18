@@ -79,7 +79,9 @@ function render () {
   })
 
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content" onscroll=${onScrollContent}>
-    <div class="history links-list">${rowEls}</div>
+    <div class="history links-list">
+      ${rowEls}
+    </div>
   </div>`)
 }
 

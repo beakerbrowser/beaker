@@ -7,14 +7,14 @@
   font-style: normal;
 }
 
-a {
-  cursor: pointer;
-}
-
 // override some btn styles
 .btn {
   font-family: sans-serif;
   cursor: pointer;
+
+  .icon {
+    margin-right: 2px;
+  }
 }
 .btn-primary {
   border-color: #1867cc #1c6cd2 #05489c;
@@ -33,13 +33,7 @@ a {
 .view-dat {
   display: flex;
   height: 100%;
-
-  a {
-    color: inherit;
-    &:hover {
-      color: #0091ff;
-    }
-  }
+  max-width: 800px;
 
   .view-dat-main {
     flex: 1;
@@ -51,25 +45,24 @@ a {
 
   .view-dat-header {
     display: flex;
-    height: 45px;
+    height: 40px;
 
     & > * {
       padding: 10px;
       line-height: 23px;
     }
     .vdh-title {
-      font-size: 21px;
-      line-height: 21px;
+      font-size: 18px;
+      line-height: 18px;
+      font-weight: bold;
       a {
         text-decoration: none;
       }
     }
-    .flex-spacer {
-      flex: 1;
-    }
   }
   .view-dat-desc {
     padding: 0 10px;
+    font-size: 15px;
 
     // this is sloppy but who cares.
     // the element is optional and reducing the padding in view-dat-header looks wrong when this el isnt present.
@@ -85,22 +78,40 @@ a {
       padding-left: 2.5em;
     }
   }
-  .view-dat-content {
-    height: 100%;
-    background: #fafafa;
-  }
   .vd-actions {
-    padding: 0 10px;
+    padding: 10px;
     line-height: 21px;
     button {
       margin: 0 2px;
-    }    
-    .icon {
-      margin-right: 2px;
     }
 
     .subscribe-btn.pressed:after {
-      content: 'd'; // when you figure out what this is, you'll laugh
+      content: 'ing'; // guess what this does!
+    }
+  }
+  .view-dat-content {
+    padding: 10px;
+    .files-list-header {
+      background: #fafafa;
+      color: gray;
+
+      display: flex;
+      padding: 3px 10px;
+
+      border: 1px solid #ccc;
+      border-bottom: 0;
+      border-top-left-radius: 2px;
+      border-top-right-radius: 2px;
+    }
+    .files-list {  
+      border: 1px solid #ccc;
+      border-bottom-left-radius: 2px;
+      border-bottom-right-radius: 2px;
+      .fl-row {
+        border-bottom: 1px solid #eee;
+        padding-top: 5px;
+        padding-bottom: 5px;
+      }
     }
   }
   .feed {
@@ -109,6 +120,24 @@ a {
     .feed-entry {
       &:first-child { border-top: 0; }
       &:last-child { border-bottom: 0; }
+    }
+
+    .fe-date,
+    .fe-site,
+    .fe-message {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 20px;
+    }
+    &:first-child {
+      .fe-date,
+      .fe-site,
+      .fe-message {
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+      &:after {
+        top: 35px;
+      }
     }
   }
 }
