@@ -5,9 +5,30 @@ import { archiveEntries, entriesListToTree } from '../com/files-list'
 import tabs from '../com/tabs'
 import prettyBytes from 'pretty-bytes'
 import emitStream from 'emit-stream'
+import Remarkable from 'remarkable'
+
 
 // globals
 // =
+
+var md = new Remarkable({
+  html:         false,        // Enable HTML tags in source
+  xhtmlOut:     false,        // Use '/' to close single tags (<br />)
+  breaks:       false,        // Convert '\n' in paragraphs into <br>
+  langPrefix:   'language-',  // CSS language prefix for fenced blocks
+  linkify:      true,         // Autoconvert URL-like text to links
+
+  // Enable some language-neutral replacement + quotes beautification
+  typographer:  false,
+
+  // Double + single quotes replacement pairs, when typographer enabled,
+  // and smartquotes on. Set doubles to '«»' for Russian, '„“' for German.
+  quotes: '“”‘’',
+
+  // Highlighter function. Should return escaped HTML,
+  // or '' if the source string is not changed
+  highlight: (str, lang) => { return ''; }
+})
 
 var archiveKey = (new URL(window.location)).host
 var archiveInfo
@@ -67,6 +88,14 @@ function render () {
       authorEl = yo`<div class="vdh-author">by ${m.author}</div>`
   }
   var descriptionEl = (m.description) ? yo`<div class="view-dat-desc"><p>${m.description}</p></div>` : ''
+  var readmeEl
+  if (archiveInfo.readme) {
+    readmeEl = yo`<div class="vdc-readme"></div>`
+    readmeEl.innerHTML = `
+      <div class="vdc-header"><span class="icon icon-book-open"> README.md</div>
+      <div class="vdc-readme-inner markdown">${md.render(archiveInfo.readme)}</div>
+    `
+  }
 
   // stateful btns
   var subscribeBtn = yo`<button class="btn btn-default subscribe-btn" onclick=${onToggleSubscribed}><span class="icon icon-eye"></span> Watch</button>`
@@ -91,12 +120,13 @@ function render () {
         </div>
         ${descriptionEl}   
         <div class="view-dat-content">
-          <div class="files-list-header">
+          <div class="vdc-header">
             ${versionEl}
             <div class="flex-spacer"></div>
             <button class="btn btn-default btn-mini"><span class="icon icon-install"></span> Download Zip</button>
           </div>
           ${archiveEntries(archiveEntriesTree, { showHead: false, showRoot: false, onToggleNodeExpanded })}
+          ${readmeEl}
         </div>
       </div>
       ${''/*<div class="view-dat-side">

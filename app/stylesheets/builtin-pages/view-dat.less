@@ -1,4 +1,5 @@
 @import "../photon.min.less";
+@import "../markdown.less";
 
 @font-face {
   font-family: "photon-entypo";
@@ -91,7 +92,7 @@
   }
   .view-dat-content {
     padding: 10px;
-    .files-list-header {
+    .vdc-header {
       background: #fafafa;
       color: gray;
 
@@ -102,6 +103,14 @@
       border-bottom: 0;
       border-top-left-radius: 2px;
       border-top-right-radius: 2px;
+    }
+    .vdc-readme {
+      margin-top: 1em;
+      .vdc-readme-inner {
+        border: 1px solid #ccc;
+        border-radius: 2px;
+        padding: 0 20px;
+      }
     }
     .files-list {  
       border: 1px solid #ccc;

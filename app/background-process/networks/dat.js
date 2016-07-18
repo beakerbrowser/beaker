@@ -32,10 +32,8 @@ import log from '../../log'
 // constants
 // =
 
-// what do we name the manifest file?
+// special files
 export const MANIFEST_FILENAME = 'manifest.json'
-
-// what do we name the versions file?
 export const VFILENAME = '.bdat/versions.json.log'
 
 // 64 char hex
@@ -328,7 +326,8 @@ var rpcMethods = {
     archive.list(done())
     readManifest(archive, done())
     readVFile(archive, done())
-    done((err, entries, manifest, versionHistory) => {
+    readReadme(archive, done())
+    done((err, entries, manifest, versionHistory, readme) => {
       if (err)
         return cb(err)
       // give sane defaults
@@ -339,7 +338,7 @@ var rpcMethods = {
       var isApp = !!entries.find(e => e.name == 'index.html')
       var isSubscribed = subscribedArchives.has(key)
 
-      cb(null, { key, entries, manifest, versionHistory, isApp, isSubscribed })
+      cb(null, { key, entries, manifest, readme, versionHistory, isApp, isSubscribed })
     })
   },
 
@@ -391,6 +390,30 @@ function readVFile (archive, cb) {
       cb(err, vfile)
     })
   })
+}
+function readReadme (archive, cb) {
+  // we need case-insensitive lookup, so .lookup() wont work
+  var entries = archive.list({live: false})
+  var entry = null
+
+  entries.on('data', function (data) {
+    var name = (''+(data.name||'')).toLowerCase()
+    if (name == 'readme.md')
+      entry = data
+  })
+
+  entries.on('error', lookupDone)
+  entries.on('close', lookupDone)
+  entries.on('end', lookupDone)
+
+  function lookupDone () {
+    if (!entry) return cb()
+
+    // read file
+    var rs = archive.createFileReadStream(entry)
+    rs.pipe(concat(data => cb(null, data.toString())))
+    rs.on('error', e => cb(e))
+  }
 }
 
 // write version log to the merged feed
