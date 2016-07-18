@@ -9,15 +9,12 @@
 
 a {
   cursor: pointer;
-  color: inherit;
-  &:hover {
-    color: blue;
-  }
 }
 
 // override some btn styles
 .btn {
   font-family: sans-serif;
+  cursor: pointer;
 }
 .btn-primary {
   border-color: #1867cc #1c6cd2 #05489c;
@@ -36,6 +33,13 @@ a {
 .view-dat {
   display: flex;
   height: 100%;
+
+  a {
+    color: inherit;
+    &:hover {
+      color: #0091ff;
+    }
+  }
 
   .view-dat-main {
     flex: 1;
@@ -100,7 +104,17 @@ a {
     }
   }
   .feed {
-    margin-top: 15px;
+    margin: 15px;
+    margin-left: 12px;
+    border: 1px solid #ddd;
+    max-height: 160px;
+    overflow-y: scroll;
+
+    .feed-entry {
+      background: #fafafa;
+      &:first-child { border-top: 0; background: #fff; }
+      &:last-child { border-bottom: 0; }
+    }
   }
 }
 

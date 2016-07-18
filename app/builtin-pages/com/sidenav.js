@@ -8,7 +8,7 @@ var events = new EventEmitter()
 const navItems = [
   'Browse',
   { url: 'beaker:start', icon: 'star', label: 'Favorites' },
-  { url: 'beaker:subscriptions', icon: 'rss', label: 'Subscriptions' },
+  { url: 'beaker:subscriptions', icon: 'rss', label: 'Latest Updates' },
   { url: 'beaker:history', icon: 'back-in-time', label: 'History' },
 
   // 'Projects',
