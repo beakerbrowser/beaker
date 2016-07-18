@@ -110,7 +110,7 @@ function render (id, page) {
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
   var archiveBtn
-  if (page && /^dat/.test(page.getURL()) && page.archiveInfo) {
+  if (page && /^(dat|view-dat)/.test(page.getURL()) && page.archiveInfo) {
     // archive btn
     let info = page.archiveInfo
     // choose label
