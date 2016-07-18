@@ -57,7 +57,7 @@ function render () {
   document.title = name
 
   // optional els
-  var nameEl = archiveInfo.isApp ? yo`<a href=${'dat://'+archiveInfo.key}>${name}</a>` : name
+  var nameEl = archiveInfo.isApp ? yo`<a href=${'dat://'+archiveInfo.key} target="_blank">${name} <small class="icon icon-popup"></small></a>` : name
   var versionEl = v.current ? yo`<div class="vdh-version">v${v.current}</div>` : ''
   var authorEl = ''
   if (m.author) {

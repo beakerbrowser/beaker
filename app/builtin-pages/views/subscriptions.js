@@ -99,7 +99,7 @@ function render () {
 
           var dateEl = (entry.date) ? niceDate(entry.date) : undefined
           return yo`<div class="feed-entry">                
-            <a class="fe-site" href="dat://${entry.archiveKey}">${archiveNames[entry.archiveKey]}</a>
+            <a class="fe-site" href="view-dat://${entry.archiveKey}">${archiveNames[entry.archiveKey]}</a>
             <div class="fe-version">${entry.version ? 'v'+entry.version : ''}</div>
             <div class="fe-message">${entry.message||''}</div>
             <div class="fe-date">${entry.date ? niceDate(entry.date) : ''}</div>
