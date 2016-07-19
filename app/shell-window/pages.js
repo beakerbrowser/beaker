@@ -382,8 +382,10 @@ function onDidStopLoading (e) {
   var page = getByWebview(e.target)
   if (page) {
     page.manuallyTrackedIsLoading = false
-    if (page.isActive)
+    if (page.isActive) {
+      navbar.update(page)
       statusBar.setIsLoading(false)
+    }
   }
 }
 
