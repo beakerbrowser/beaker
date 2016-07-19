@@ -62,7 +62,6 @@ export function hideInpageFind (page) {
 }
 
 export function clearAutocomplete () {
-  return
   if (autocompleteResults) {
     autocompleteCurrentValue = null
     autocompleteCurrentSelection = 0
@@ -438,10 +437,11 @@ function onInputLocation (e) {
   // TODO debounce
   var autocompleteValue = value.trim()
   if (autocompleteValue && autocompleteCurrentValue != autocompleteValue) {
-    autocompleteCurrentValue = autocompleteValue
-    history.search(value, handleAutocompleteSearch)
+    autocompleteCurrentValue = autocompleteValue // update the current value
+    autocompleteCurrentSelection = 0 // reset the selection
+    history.search(value, handleAutocompleteSearch) // update the suggetsions
   } else if (!autocompleteValue)
-    clearAutocomplete()
+    clearAutocomplete() // no value, cancel out
 }
 
 function onKeydownLocation (e) {
@@ -460,7 +460,12 @@ function onKeydownLocation (e) {
       autocompleteCurrentSelection--
     if (down && autocompleteCurrentSelection < autocompleteResults.length - 1)
       autocompleteCurrentSelection++
-    update()
+
+    // re-render and update the url
+    var page = getEventPage(e)
+    var newValue = getAutocompleteSelectionUrl(autocompleteCurrentSelection)
+    page.navbarEl.querySelector('.nav-location-input').value = newValue
+    update(page)
     return
   }
 }
