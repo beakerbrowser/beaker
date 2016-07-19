@@ -232,9 +232,9 @@ function handleAutocompleteSearch (err, results) {
   results.forEach(r => decorateResultMatches(searchTerms, r))  
 
   // does the value look like a url?
-  var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || v.includes('://') || v.startsWith('ipfs:/')))
+  var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || v.includes('://') || v.startsWith('beaker:') || v.startsWith('ipfs:/')))
   var vWithProtocol = v
-  if (isProbablyUrl && !v.includes('://') && !v.startsWith('ipfs:/'))
+  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('ipfs:/')))
     vWithProtocol = 'https://'+v
 
   // set the top results accordingly
