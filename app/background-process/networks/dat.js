@@ -4,6 +4,7 @@ import concat from 'concat-stream'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import multicb from 'multicb'
+import from2 from 'from2'
 
 // db modules
 import hyperdrive from 'hyperdrive'
@@ -24,6 +25,7 @@ import identify from 'identify-filetype'
 import mime from 'mime'
 import bdatVersionsFile from 'bdat-versions-file'
 import getFolderSize from 'get-folder-size'
+import yazl from 'yazl'
 
 // io modules
 import rpc from 'pauls-electron-rpc'
@@ -278,6 +280,60 @@ export function getAndIdentifyEntry (archive, entry, cb) {
 
     cb(null, { data: data, mimeType: mimeType })
   }))
+}
+
+export function createZipFileStream (archive) {
+  var zipfile = new yazl.ZipFile()
+
+  // list files
+  archive.list((err, entries) => {
+    if (err)
+      return onerror(err)
+
+    // remove duplicates
+    var entriesMap = {}
+    entries.forEach(e => entriesMap[e.name] = e)
+    var entriesKeys = Object.keys(entriesMap)
+
+    // create listing stream
+    var listingStream = from2.obj((size, next) => {
+      if (entriesKeys.length === 0)
+        return console.log('out of entries'), next(null, null)
+      next(null, entriesMap[entriesKeys.shift()])
+    })
+
+    // create the writestream
+    var zipWriteStream = listingStream
+      .pipe(through2Concurrent.obj({ maxConcurrency: 3 }, (entry, enc, cb) => {
+        // files only
+        if (entry.type != 'file')
+          return cb()
+
+        // pipe each entry into the zip
+        log('[DAT] Zipfile writing', JSON.stringify(entry))
+        var fileReadStream = archive.createFileReadStream(entry)
+        zipfile.addReadStream(fileReadStream, entry.name)
+        fileReadStream.on('error', onerror)
+        fileReadStream.on('end', cb)
+      }))
+    zipWriteStream.on('data', ()=>{})
+    zipWriteStream.on('error', onerror)
+    zipWriteStream.on('end', () => {
+      log('[DAT] Zipfile creation done')
+      zipfile.end()
+    })
+  })
+
+  // on error, push to the output stream
+  function onerror (e) {
+    log('[DAT] Zipfile error', e)
+    zipfile.outputStream.emit('error', e)
+  }
+
+  // log output stream errors
+  zipfile.outputStream.on('error', e => log('[DAT] Zipfile write error', e))
+
+  return zipfile.outputStream
 }
 
 // rpc exports

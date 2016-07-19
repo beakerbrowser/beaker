@@ -64,7 +64,7 @@ function viewdatServer (req, res) {
     return cb(403, 'Forbidden')
 
   // validate request
-  var urlp = url.parse(queryParams.url)
+  var urlp = url.parse(queryParams.url, true)
   if (!urlp.host)
     return cb(404, 'Archive Not Found')
   if (req.method != 'GET')
@@ -80,11 +80,23 @@ function viewdatServer (req, res) {
     var archive = dat.getArchive(archiveKey)
     var ds = dat.swarm(archiveKey)
 
-    // serve the view-dat page
-    res.writeHead(200, 'OK', {
-      'Content-Type': 'text/html',
-      'Content-Security-Policy': CSP
-    })
-    res.end(viewDatPageHTML)
+    // wait for the listing to download
+    // TODO
+
+    if (urlp.query.as == 'zip') {
+      // serve zip archive
+      res.writeHead(200, 'OK', {
+        'Content-Type': 'application/zip',
+        'Content-Security-Policy': CSP
+      })
+      dat.createZipFileStream(archive).pipe(res)
+    } else {
+      // serve view-dat page
+      res.writeHead(200, 'OK', {
+        'Content-Type': 'text/html',
+        'Content-Security-Policy': CSP
+      })
+      res.end(viewDatPageHTML)
+    }
   })
 }

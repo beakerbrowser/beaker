@@ -123,7 +123,9 @@ function render () {
           <div class="vdc-header">
             ${versionEl}
             <div class="flex-spacer"></div>
-            <button class="btn btn-default btn-mini"><span class="icon icon-install"></span> Download Zip</button>
+            <button class="btn btn-default btn-mini" onclick=${onClickDownloadZip}>
+              <span class="icon icon-install"></span> Download Zip
+            </button>
           </div>
           ${archiveEntries(archiveEntriesTree, { showHead: false, showRoot: false, onToggleNodeExpanded })}
           ${readmeEl}
@@ -156,8 +158,8 @@ function getPermDesc (perm) {
 // event handlers
 // =
 
-function onClick (archiveIndex) {
-  return e => selectArchive(archiveIndex)
+function onClickDownloadZip () {
+  window.open('view-dat://'+archiveKey+'?as=zip')
 }
 
 function onToggleNodeExpanded (node) {

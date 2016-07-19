@@ -12,6 +12,7 @@
     "electron-localshortcut": "^0.6.0",
     "electron-webrtc": "^0.2.7",
     "emit-stream": "^0.1.2",
+    "from2": "^2.1.1",
     "fs-jetpack": "^0.9.0",
     "fs-sandbox": "^0.2.0",
     "get-folder-size": "^1.0.0",
@@ -39,6 +40,7 @@
     "stream-collector": "^1.0.1",
     "subleveldown": "^2.1.0",
     "through2-concurrent": "^1.1.1",
+    "yazl": "^2.4.1",
     "yo-yo": "^1.2.1",
     "zerr": "^1.0.4"
   },

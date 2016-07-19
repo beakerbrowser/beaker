@@ -6,7 +6,7 @@ import { remote, ipcRenderer } from 'electron'
 // =
 
 const OPEN_ANIM_DURATION = 100
-const CLOSE_ANIM_DURATION = 100
+const CLOSE_ANIM_DURATION = 80
 
 // exported methods
 // ==
