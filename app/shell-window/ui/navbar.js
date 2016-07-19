@@ -227,6 +227,7 @@ function render (id, page) {
   </div>`
 }
 
+var isHashRegex = /^[a-z0-9]{64}/i
 function handleAutocompleteSearch (err, results) {
   var v = autocompleteCurrentValue
   if (err)
@@ -237,10 +238,14 @@ function handleAutocompleteSearch (err, results) {
   results.forEach(r => decorateResultMatches(searchTerms, r))  
 
   // does the value look like a url?
-  var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || v.includes('://') || v.startsWith('beaker:') || v.startsWith('ipfs:/')))
+  var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || isHashRegex.test(v) || v.includes('://') || v.startsWith('beaker:') || v.startsWith('ipfs:/')))
   var vWithProtocol = v
-  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('ipfs:/')))
-    vWithProtocol = 'https://'+v
+  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('ipfs:/'))) {
+    if (isHashRegex.test(v))
+      vWithProtocol = 'dat://'+v
+    else
+      vWithProtocol = 'https://'+v
+  }
 
   // set the top results accordingly
   var gotoResult = { url: vWithProtocol, title: 'Go to '+v }
