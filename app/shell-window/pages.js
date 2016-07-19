@@ -133,8 +133,8 @@ export function create (opts) {
   webviewsDiv.appendChild(page.webviewEl)
 
   // emit
-  events.emit('add', page)
   events.emit('update')
+  events.emit('add', page)
 
   // register events
   page.webviewEl.addEventListener('dom-ready', onDomReady)
@@ -175,7 +175,7 @@ export function create (opts) {
   return page
 }
 
-export function remove (page) {
+export function remove (page, removeDelay) {
   // find
   var i = pages.indexOf(page)
   if (i == -1)
@@ -184,15 +184,11 @@ export function remove (page) {
   // save, in case the user wants to restore it
   closedURLs.push(page.getURL())
 
-  // remove
-  pages.splice(i, 1)
-  webviewsDiv.removeChild(page.webviewEl)
-
   // set new active if that was
   if (page.isActive) {
-    if (pages.length == 0)
-      create()
-    setActive(pages[i] || pages[i-1])
+    if (pages.length == 1)
+      return window.close()
+    setActive(pages[i+1] || pages[i-1])
   }
 
   // persist pins if that was
@@ -201,11 +197,27 @@ export function remove (page) {
 
   // emit
   events.emit('remove', page)
-  events.emit('update')
 
-  // remove all attributes, to clear circular references
-  for (var k in page)
-    page[k] = null
+  // remove the page object
+  if (!removeDelay) deleteEntry()
+  else setTimeout(deleteEntry, removeDelay)
+  function deleteEntry () {
+    // find
+    var i = pages.indexOf(page)
+    if (i == -1)
+      return console.warn('pages.remove() called for missing page', page)
+
+    // remove
+    pages.splice(i, 1)
+    webviewsDiv.removeChild(page.webviewEl)
+
+    // remove all attributes, to clear circular references
+    for (var k in page)
+      page[k] = null
+
+    // emit
+    events.emit('update')
+  }
 }
 
 export function reopenLastRemoved () {

@@ -12,7 +12,7 @@ export function setup () {
         navbar.focusLocation(page)
         return
       case 'file:open-location':     return navbar.focusLocation(page)
-      case 'file:close-tab':         return pages.remove(page)
+      case 'file:close-tab':         return pages.remove(page, 100)
       case 'file:reopen-closed-tab': return pages.reopenLastRemoved()
       case 'edit:find':              return navbar.showInpageFind(page)
       case 'view:reload':            return page.reload()

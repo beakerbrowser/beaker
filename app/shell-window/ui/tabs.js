@@ -2,8 +2,19 @@ import * as yo from 'yo-yo'
 import * as pages from '../pages'
 import { remote, ipcRenderer } from 'electron'
 
+// constants
+// =
+
+const OPEN_ANIM_DURATION = 100
+const CLOSE_ANIM_DURATION = 100
+
+// exported methods
+// ==
+
 export function setup () {
   pages.on('update', updateTabs)
+  pages.on('add', onAddTab)
+  pages.on('remove', onRemoveTab)
   pages.on('set-active', updateTabs)
   pages.on('did-start-loading', updateTabs)
   pages.on('did-stop-loading', updateTabs)
@@ -59,6 +70,7 @@ function drawTab (page) {
     </div>`
   }
 
+  // render
   return yo`
   <div class=${'chrome-tab'+(isActive?' chrome-tab-current':'')+(!favicon?' chrome-tab-nofavicon':'')}
       data-id=${page.id}
@@ -85,6 +97,38 @@ function drawTabCurves () {
 
 // ui event handlers
 // =
+
+function onAddTab (page) {
+  // animate the new tab
+  var tabEl = document.querySelector(`.chrome-tab[data-id="${page.id}"]`)
+  if (tabEl) {
+    tabEl.animate([
+      {flex: '0 0 30px'},
+      {flex: '0 0 160px'}
+    ], {
+      duration: OPEN_ANIM_DURATION,
+      iterations: 1,
+      easing: 'ease-out',
+      delay: 0
+    })
+  }
+}
+
+function onRemoveTab (page) {
+  // animate the dead tab
+  var tabEl = document.querySelector(`.chrome-tab[data-id="${page.id}"]`)
+  if (tabEl) {
+    tabEl.animate([
+      {flex: '0 0 160px'},
+      {flex: '0 0 30px', display: 'none'}
+    ], {
+      duration: CLOSE_ANIM_DURATION,
+      iterations: 1,
+      easing: 'ease-out',
+      delay: 0
+    })
+  }  
+}
 
 function onClickNew () {
   var page = pages.create()
@@ -149,7 +193,7 @@ function onClickTabClose (page) {
       e.preventDefault()
       e.stopPropagation()
     }
-    pages.remove(page)
+    pages.remove(page, CLOSE_ANIM_DURATION)
   }
 }
 
