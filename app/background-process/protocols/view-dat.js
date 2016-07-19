@@ -80,9 +80,6 @@ function viewdatServer (req, res) {
     var archive = dat.getArchive(archiveKey)
     var ds = dat.swarm(archiveKey)
 
-    // wait for the listing to download
-    // TODO
-
     if (urlp.query.as == 'zip') {
       // serve zip archive
       res.writeHead(200, 'OK', {
@@ -91,6 +88,8 @@ function viewdatServer (req, res) {
       })
       dat.createZipFileStream(archive).pipe(res)
     } else {
+
+      // TODO do we need to wait for the listing to download?
       // serve view-dat page
       res.writeHead(200, 'OK', {
         'Content-Type': 'text/html',

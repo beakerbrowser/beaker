@@ -25,7 +25,7 @@ export function setup () {
 // update functions
 // =
 
-function updateTabs () {
+function updateTabs (e) {
   yo.update(document.getElementById('toolbar-tabs'), yo`<div id="toolbar-tabs" class="chrome-tabs-shell">
     <div class="chrome-tabs">
       ${pages.getAll().map(drawTab)}

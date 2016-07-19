@@ -53,6 +53,7 @@ export function create (opts) {
     navbarEl: navbar.createEl(id),
 
     loadingURL: false, // what URL is being loaded, if any?
+    manuallyTrackedIsLoading: true, // used because the webview may never be ready, so webview.isLoading() isnt enough
     bookmark: null, // this page's bookmark object, if it's bookmarked
     isWebviewReady: false, // has the webview loaded its methods?
     isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
@@ -66,6 +67,11 @@ export function create (opts) {
     // get the URL of the page we want to load (vs which is currently loaded)
     getIntendedURL: function () {
       return page.loadingURL || page.getURL()
+    },
+
+    // custom isLoading
+    isLoading: function() {
+      return page.manuallyTrackedIsLoading
     },
 
     // wrap webview loadURL to set the `loadingURL`
@@ -100,7 +106,6 @@ export function create (opts) {
   //   webviews need to be dom-ready before their methods work
   //   this wraps the methods so the call isnt made if not ready
   ;([
-    ['isLoading', true],
     ['getURL', ''],
     ['getTitle', ''],
     
@@ -365,6 +370,7 @@ function onLoadCommit (e) {
 function onDidStartLoading (e) {
   var page = getByWebview(e.target)
   if (page) {
+    page.manuallyTrackedIsLoading = true
     navbar.update(page)
     navbar.hideInpageFind(page)
     if (page.isActive)
@@ -374,8 +380,11 @@ function onDidStartLoading (e) {
 
 function onDidStopLoading (e) {
   var page = getByWebview(e.target)
-  if (page && page.isActive)
-    statusBar.setIsLoading(false)
+  if (page) {
+    page.manuallyTrackedIsLoading = false
+    if (page.isActive)
+      statusBar.setIsLoading(false)
+  }
 }
 
 function onDidGetResponseDetails (e) {
