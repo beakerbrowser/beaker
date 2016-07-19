@@ -39,9 +39,11 @@ function updateTabFavicon (e) {
 function drawTab (page) {
   var favicon 
   const isActive = page.isActive
-  if (page.isLoading())
-    favicon = yo`<span class="icon icon-hourglass"></span>`
-  else {
+  if (page.isLoading()) {
+    favicon = yo`<div class="spinner"></div>`
+    if (!page.isReceivingAssets)
+      favicon.classList.add('reverse')
+  } else {
     if (page.favicons && page.favicons[0]) {
       favicon = yo`<img src=${page.favicons[0]}>`
       favicon.onerror = onFaviconError(page)

@@ -55,6 +55,7 @@ export function create (opts) {
     loadingURL: false, // what URL is being loaded, if any?
     bookmark: null, // this page's bookmark object, if it's bookmarked
     isWebviewReady: false, // has the webview loaded its methods?
+    isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
     isActive: false, // is the active page?
     isPinned: opts.isPinned, // is this page pinned?
     isInpageFinding: false, // showing the inpage find ctrl?
@@ -70,6 +71,10 @@ export function create (opts) {
     // wrap webview loadURL to set the `loadingURL`
     loadURL: function (url) {
       // if (page.isWebviewReady) {
+        // reset some state
+        page.isReceivingAssets = false
+
+        // set and go
         page.loadingURL = url
         page.webviewEl.loadURL(url)
       // }
@@ -320,6 +325,8 @@ function onNewWindow (e) {
 function onWillNavigate (e) {
   var page = getByWebview(e.target)
   if (page) {
+    // reset some state
+    page.isReceivingAssets = false
     // update target url
     page.loadingURL = e.url
     navbar.updateLocation(page)
@@ -365,6 +372,8 @@ function onDidGetResponseDetails (e) {
 
   var page = getByWebview(e.target)
   if (page) {
+    // we're goin
+    page.isReceivingAssets = true
     // set URL in navbar
     page.loadingURL = e.newURL
     navbar.updateLocation(page)
