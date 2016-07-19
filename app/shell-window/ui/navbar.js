@@ -208,6 +208,7 @@ function render (id, page) {
         onblur=${onBlurLocation}
         onkeyup=${onKeyupLocation}
         onkeydown=${onKeydownLocation}
+        oninput=${onInputLocation}
         value=${addrValue}
         style="border: 0" />
       ${inpageFinder}
@@ -404,8 +405,6 @@ function onBlurLocation () {
 }
 
 function onKeyupLocation (e) {
-  var value = e.target.value
-
   // on enter
   if (e.keyCode == KEYCODE_ENTER) {
     e.preventDefault()
@@ -429,6 +428,10 @@ function onKeyupLocation (e) {
       addrEl.value = page.getIntendedURL()
     return
   }
+}
+
+function onInputLocation (e) {
+  var value = e.target.value
 
   // run autocomplete
   // TODO debounce
