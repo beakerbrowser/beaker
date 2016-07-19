@@ -60,6 +60,7 @@ export function hideInpageFind (page) {
 }
 
 export function clearAutocomplete () {
+  return
   if (autocompleteResults) {
     autocompleteCurrentValue = null
     autocompleteCurrentSelection = 0

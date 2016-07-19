@@ -114,6 +114,7 @@
     .result {
       padding: 2px 10px;
       font-size: 15px;
+      display: flex;
       .icon {
         margin-right: 10px;
         width: 15px;
@@ -138,6 +139,9 @@
       .result-title {
         margin-left: 2px;
         color: gray;
+        white-space: pre;
+        overflow: hidden;
+        text-overflow: ellipsis;
         &:before {
           content: '-';
           margin-right: 5px;
