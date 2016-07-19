@@ -63,7 +63,7 @@ function render () {
     var oldLastDate = lastDate
     lastDate = moment(row.ts).endOf('day')
     if (!lastDate.isSame(oldLastDate, 'day')) {
-      rowEls.push(yo`<div class="ll-heading">${niceDate(lastDate)}</div>`)
+      rowEls.push(yo`<div class="ll-heading">${niceDate(lastDate, { noTime: true })}</div>`)
     }
 
     // render row

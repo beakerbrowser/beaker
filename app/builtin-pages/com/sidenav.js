@@ -11,8 +11,8 @@ const navItems = [
   { url: 'beaker:subscriptions', icon: 'rss', label: 'Recently Updated' },
   { url: 'beaker:history', icon: 'back-in-time', label: 'History' },
 
-  // 'Projects',
-  // { url: 'beaker:my-sites', icon: 'docs', label: 'My Sites' }
+  // 'My Sites',
+  // { url: 'beaker:new-site', icon: 'pencil', label: 'New Site' }
 ]
 
 // exported API
