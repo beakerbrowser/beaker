@@ -45,7 +45,7 @@ function renderNavItem (item) {
   // render items
   var { url, icon, label } = item
   var isActive = window.location == url
-  return yo`<a class=${'nav-group-item' + (isActive?' active':'')} onclick=${onClickNavItem(item)}>
+  return yo`<a class=${'nav-group-item' + (isActive?' active':'')} href=${url} onclick=${onClickNavItem(item)}>
     <span class=${'icon icon-'+icon}></span>
     ${label}
   </a>`
@@ -56,6 +56,10 @@ function renderNavItem (item) {
 
 function onClickNavItem (item) {
   return e => {
+    // ignore ctrl/cmd+click
+    if (e.metaKey)
+      return
+
     if (window.location.protocol == 'beaker:') {
       // just navigate virtually, if we're on a beaker: page
       window.history.pushState(null, '', item.url)
