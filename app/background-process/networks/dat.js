@@ -52,7 +52,7 @@ var archiveMetaDb // archive metadata sublevel
 var subscribedArchivesDb // subcribed archives sublevel
 var subscribedFeedDb // combined feed sublevel
 var drive // hyperdrive instance
-var webrtc // webrtc instance
+var wrtc // webrtc instance
 
 var archives = {} // key -> archive
 var swarms = {} // key -> swarm
@@ -74,7 +74,8 @@ export function setup () {
   subscribedArchivesDb = subleveldown(db, 'subscribed-archives', { valueEncoding: 'json' })
   subscribedFeedDb = subleveldown(db, 'subscribed-feed', { valueEncoding: 'json' })
   drive = hyperdrive(db)
-  webrtc = electronWebrtc()
+  wrtc = electronWebrtc()
+  wrtc.on('error', err => log('[WRTC]', err))
 
   // load all subscribed archives
   subscribedArchivesDb.createKeyStream().on('data', key => {
@@ -212,7 +213,7 @@ export function swarm (key) {
   // create
   log('[DAT] Swarming archive', keyStr)
   var archive = getArchive(key)
-  var s = hyperdriveArchiveSwarm(archive, { wrtc: webrtc })
+  var s = hyperdriveArchiveSwarm(archive, { wrtc })
   swarms[keyStr] = s
 
   // hook up events

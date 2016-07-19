@@ -72,6 +72,14 @@ export function update (page) {
   // fetch current page, if not given
   page = page || pages.getActive()
 
+  // render
+  yo.update(page.navbarEl, render(page.id, page))
+}
+
+export function updateLocation (page) {
+  // fetch current page, if not given
+  page = page || pages.getActive()
+
   // update location
   var addrEl = page.navbarEl.querySelector('.nav-location-input')
   var isAddrElFocused = addrEl.matches(':focus')
@@ -80,9 +88,6 @@ export function update (page) {
     if (isAddrElFocused) // if was focused, then select what we put in
       addrEl.select()
   }
-
-  // render
-  yo.update(page.navbarEl, render(page.id, page))
 }
 
 // internal helpers
@@ -416,18 +421,6 @@ function onKeyupLocation (e) {
     }
     return
   }
-
-  // on escape
-  if (e.keyCode == KEYCODE_ESC) {
-    e.target.blur()
-
-    // reset the URL if there is one
-    var page = getEventPage(e)
-    var addrEl = page.navbarEl.querySelector('.nav-location-input')
-    if (page && page.getIntendedURL())
-      addrEl.value = page.getIntendedURL()
-    return
-  }
 }
 
 function onInputLocation (e) {
@@ -444,6 +437,12 @@ function onInputLocation (e) {
 }
 
 function onKeydownLocation (e) {
+  // on escape
+  if (e.keyCode == KEYCODE_ESC) {
+    e.target.blur()
+    return
+  }
+
   // on keycode navigations
   if (autocompleteResults && (e.keyCode == KEYCODE_UP || e.keyCode == KEYCODE_DOWN)) {
     e.preventDefault()

@@ -322,7 +322,7 @@ function onWillNavigate (e) {
   if (page) {
     // update target url
     page.loadingURL = e.url
-    navbar.update(page)
+    navbar.updateLocation(page)
   }
 }
 
@@ -367,7 +367,7 @@ function onDidGetResponseDetails (e) {
   if (page) {
     // set URL in navbar
     page.loadingURL = e.newURL
-    navbar.update(page)
+    navbar.updateLocation(page)
   }
 }
 
@@ -378,6 +378,7 @@ function onDidFinishLoad (e) {
     page.loadingURL = false
     page.favicons = null
     navbar.update(page)
+    navbar.updateLocation(page)
 
     // update history
     var url = page.getURL()
