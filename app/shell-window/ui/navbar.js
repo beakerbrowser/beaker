@@ -10,6 +10,8 @@ const KEYCODE_DOWN = 40
 const KEYCODE_UP = 38
 const KEYCODE_ESC = 27
 const KEYCODE_ENTER = 13
+const KEYCODE_N = 78
+const KEYCODE_P = 80
 
 // globals
 // =
@@ -450,11 +452,13 @@ function onKeydownLocation (e) {
   }
 
   // on keycode navigations
-  if (autocompleteResults && (e.keyCode == KEYCODE_UP || e.keyCode == KEYCODE_DOWN)) {
+  var up   = (e.keyCode == KEYCODE_UP || (e.ctrlKey && e.keyCode == KEYCODE_P))
+  var down = (e.keyCode == KEYCODE_DOWN || (e.ctrlKey && e.keyCode == KEYCODE_N))
+  if (autocompleteResults && (up || down)) {
     e.preventDefault()
-    if (e.keyCode == KEYCODE_UP && autocompleteCurrentSelection > 0)
+    if (up && autocompleteCurrentSelection > 0)
       autocompleteCurrentSelection--
-    if (e.keyCode == KEYCODE_DOWN && autocompleteCurrentSelection < autocompleteResults.length - 1)
+    if (down && autocompleteCurrentSelection < autocompleteResults.length - 1)
       autocompleteCurrentSelection++
     update()
     return
