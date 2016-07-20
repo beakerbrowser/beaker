@@ -1,9 +1,10 @@
 import { remote } from 'electron'
 import * as pages from '../pages'
-import history from '../../lib/fg/history-api'
 import * as url from 'url'
 import * as path from 'path'
 import * as yo from 'yo-yo'
+import history from '../../lib/fg/history-api'
+import dat from '../../lib/fg/dat-api'
 
 const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
 const KEYCODE_DOWN = 40
@@ -224,6 +225,7 @@ function render (id, page) {
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
+      <button class="btn btn-default" onclick=${onClickShareFiles} title="Share files"><span class="icon icon-share"></span> Share Files</button>
       <button class="toolbar-btn" onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
     </div>
   </div>`
@@ -396,6 +398,13 @@ function onClickZoom (e) {
     { label: 'Zoom Out', click: command('view:zoom-out') },
   ])
   menu.popup(remote.getCurrentWindow())
+}
+
+function onClickShareFiles (e) {
+  dat.createNewArchive((err, key) => {
+    var page = pages.create('view-dat://'+key)
+    pages.setActive(page)
+  })
 }
 
 function onClickFeedback (e) {

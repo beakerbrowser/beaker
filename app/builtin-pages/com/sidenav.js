@@ -8,11 +8,11 @@ var events = new EventEmitter()
 const navItems = [
   'Browse',
   { url: 'beaker:start', icon: 'star', label: 'Favorites' },
-  { url: 'beaker:subscriptions', icon: 'rss', label: 'Recently Updated' },
   { url: 'beaker:history', icon: 'back-in-time', label: 'History' },
 
-  // 'My Sites',
-  // { url: 'beaker:new-site', icon: 'pencil', label: 'New Site' }
+  'Shared Files',
+  { url: 'beaker:subscriptions', icon: 'rss', label: 'Recently Updated' },
+  { url: 'beaker:new-site', icon: 'folder', label: '+ New Folder' }
 ]
 
 // exported API
@@ -39,7 +39,7 @@ function render () {
 
 function renderNavItem (item) {
   // render headers (represented by just a string)
-  if (typeof item == 'string')
+  if (typeof item == 'string' || item.innerHTML)
     return yo`<h5 class="nav-group-title">${item}</h5>`
 
   // render items
@@ -59,6 +59,7 @@ function onClickNavItem (item) {
     // ignore ctrl/cmd+click
     if (e.metaKey)
       return
+    e.preventDefault()
 
     if (window.location.protocol == 'beaker:') {
       // just navigate virtually, if we're on a beaker: page

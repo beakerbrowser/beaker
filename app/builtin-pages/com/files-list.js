@@ -136,6 +136,10 @@ export function archiveEntries (tree, opts={}) {
       els = els.concat(Object.keys(node.children).map(toObj).sort(treeSorter).map(child => renderNode(child, depth + 1)))
     }
 
+    // nothing rendered? put something in
+    if (depth <= 0 && els.length === 0)
+      els.push(yo`<div class="fl-row"><em>This folder is empty</em></div>`)
+
     return els
   }
 

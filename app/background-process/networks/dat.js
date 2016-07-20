@@ -68,7 +68,7 @@ mime.default_type = 'text/plain'
 // =
 
 export function setup () {
-  // open database
+  // open databases
   dbPath = path.join(app.getPath('userData'), 'Hyperdrive')
   mkdirp.sync(path.join(dbPath, 'Archives')) // make sure the folders exist
   db = level(dbPath)
@@ -76,6 +76,8 @@ export function setup () {
   subscribedArchivesDb = subleveldown(db, 'subscribed-archives', { valueEncoding: 'json' })
   subscribedFeedDb = subleveldown(db, 'subscribed-feed', { valueEncoding: 'json' })
   drive = hyperdrive(db)
+
+  // create webrtc
   wrtc = electronWebrtc()
   wrtc.on('error', err => log('[WRTC]', err))
 
@@ -95,7 +97,7 @@ export function createArchive (key, opts) {
   var sparse = (opts.sparse === false) ? false : true // by default, only download files when they're requested
 
   // validate key
-  if (!Buffer.isBuffer(key) || key.length != 32)
+  if (key !== null && (!Buffer.isBuffer(key) || key.length != 32))
     return
 
   // NOTE this only works on live archives
@@ -376,15 +378,31 @@ var rpcMethods = {
       .on('error', cb)
   },
 
+  createNewArchive(cb) {
+    var archive = createArchive(null)
+    cb(null, archive.key.toString('hex'))
+  },
+
+  createFileWriteStream (archiveKey, entry) {
+    // get the archive
+    var archive = getArchive(archiveKey)
+    if (!archive)
+      throw new Error('Invalid archive key')
+    if (!entry || (!entry.name || typeof entry.name != 'string'))
+      throw new Error('Entry obj with .name is required')
+
+    // create write stream
+    return archive.createFileWriteStream(entry)
+  },
+
   archiveInfo (key, cb) {
     // get the archive
     var archive = getArchive(key)
-    var done = multicb({ pluck: 1, spread: true })
-
     if (!archive)
       return cb(new Error('Invalid archive key'))
 
     // fetch archive data
+    var done = multicb({ pluck: 1, spread: true })
     archive.list(done())
     readManifest(archive, done())
     readVFile(archive, done())
@@ -399,8 +417,9 @@ var rpcMethods = {
       // some other meta
       var isApp = !!entries.find(e => e.name == 'index.html')
       var isSubscribed = subscribedArchives.has(key)
+      var isOwner = archive.owner
 
-      cb(null, { key, entries, manifest, readme, versionHistory, isApp, isSubscribed })
+      cb(null, { key, entries, manifest, readme, versionHistory, isApp, isSubscribed, isOwner })
     })
   },
 

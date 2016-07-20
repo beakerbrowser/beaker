@@ -1,8 +1,13 @@
 export default {
   archives: 'async',
   subscribedArchives: 'async',
+  
   archiveInfo: 'async',
-  archivesEventStream: 'readable',
+
+  createNewArchive: 'async',
   subscribe: 'async',
-  subscribedFeedStream: 'readable'
+  createFileWriteStream: 'writable',
+  
+  archivesEventStream: 'readable',
+  subscribedFeedStream: 'readable',
 }

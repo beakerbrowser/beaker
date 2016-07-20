@@ -6,7 +6,9 @@ import tabs from '../com/tabs'
 import prettyBytes from 'pretty-bytes'
 import emitStream from 'emit-stream'
 import Remarkable from 'remarkable'
-
+import dragDrop from 'drag-drop'
+import fileReader from 'filereader-stream'
+import pump from 'pump'
 
 // globals
 // =
@@ -48,18 +50,14 @@ export function setup () {
 }
 
 export function show () {
-  // fetch archive data
-  beaker.dat.archiveInfo(archiveKey, (err, ai) => {
-    console.log(ai)
-    archiveInfo = ai
-    archiveEntriesTree = entriesListToTree(archiveInfo)
-
-    // TODO: sort
-
+  fetchArchiveInfo(() => {
+    // setup drag/drop
+    if (archiveInfo.isOwner) {
+      dragDrop('body', onDragDrop)
+    }
+    // render
     render()
   })
-
-  // TODO
 }
 
 export function hide () {
@@ -96,6 +94,13 @@ function render () {
       <div class="vdc-readme-inner markdown">${md.render(archiveInfo.readme)}</div>
     `
   }
+  var uploadEl
+  if (archiveInfo.isOwner) {
+    uploadEl = yo`<div class="view-dat-upload">
+      <div class="vdu-instructions">Drag your files onto this page, or <a href="#" onclick=${onClickSelectFiles}>Select them manually.</a></div>
+      <input type="file" multiple id="vdu-filepicker" onchange=${onChooseFiles}>
+    </div>`
+  }
 
   // stateful btns
   var subscribeBtn = yo`<button class="btn btn-default subscribe-btn" onclick=${onToggleSubscribed}><span class="icon icon-eye"></span> Watch</button>`
@@ -118,7 +123,8 @@ function render () {
             ${subscribeBtn}
           </div>
         </div>
-        ${descriptionEl}   
+        ${descriptionEl}
+        ${uploadEl}
         <div class="view-dat-content">
           <div class="vdc-header">
             ${versionEl}
@@ -148,10 +154,42 @@ function render () {
   </div>`)
 }
 
-function getPermDesc (perm) {
-  switch (perm) {
-    case 'fs':
-      return 'Read and write files in a sandboxed folder.'
+// internal methods
+// =
+
+function fetchArchiveInfo(cb) {
+  beaker.dat.archiveInfo(archiveKey, (err, ai) => {
+    console.log(ai)
+    archiveInfo = ai
+    archiveEntriesTree = entriesListToTree(archiveInfo)
+    cb()
+  })
+}
+
+function addFiles (files) {
+  var i = 0
+  loop()
+  function loop () {
+    if (i === files.length) {
+      // re-render
+      console.log('added files', files)
+      fetchArchiveInfo(render)
+      return
+    }
+    var file = files[i++]
+    var stream = fileReader(file)
+    var entry = { name: (file.fullPath||file.name).replace(/^\//, ''), mtime: Date.now(), ctime: Date.now() }
+    pump(
+      stream,
+      beaker.dat.createFileWriteStream(archiveKey, entry),
+      err => {
+        if (err) {
+          console.error('Error writing file', entry, err)
+          // TODO inform user!
+        }
+        loop()
+      }
+    )
   }
 }
 
@@ -177,18 +215,19 @@ function onToggleSubscribed () {
   })
 }
 
-function onUpdateArchive (update) {
-  if (archives) {
-    // find the archive being updated
-    var archive = archives.find(a => a.key == update.key)
-    if (archive) {
-      // patch the archive
-      for (var k in update)
-        archive[k] = update[k]
-    } else {
-      // add to list
-      archives.push(update)
-    }
-    render()
-  }
+function onDragDrop (files) {
+  addFiles(files)
+}
+
+function onClickSelectFiles (e) {
+  e.preventDefault()
+  document.querySelector('#vdu-filepicker').click()
+}
+
+function onChooseFiles (e) {
+  var filesInput = document.querySelector('#vdu-filepicker')
+  var files = Array.from(filesInput.files)
+  console.log(files)
+  filesInput.value = '' // clear the input
+  addFiles(files)
 }

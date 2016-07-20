@@ -31,6 +31,25 @@
   }
 }
 
+// drag/drop behaviors
+body.drag {
+  #el-content {
+    box-shadow: inset 0 0 7px rgba(0, 67, 255,.5);
+    border: 1px solid #0089ff;
+  }
+  .view-dat-upload {
+    .vdu-instructions {
+      display: none;
+    }
+    &:after {
+      content: ' Drop to add files.';
+      display: block;
+      font-weight: bold;
+      text-align: center;
+    }
+  }
+}
+
 .view-dat {
   display: flex;
   height: 100%;
@@ -88,6 +107,18 @@
 
     .subscribe-btn.pressed:after {
       content: 'ing'; // guess what this does!
+    }
+  }
+  .view-dat-upload {
+    background: #fafafa;
+    border-radius: 2px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 15px;
+    color: #666;
+
+    #vdu-filepicker {
+      display: none;
     }
   }
   .view-dat-content {
