@@ -1,5 +1,6 @@
 import { app, ipcMain } from 'electron'
 import through2Concurrent from 'through2-concurrent'
+import { Readable } from 'stream'
 import concat from 'concat-stream'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
@@ -8,6 +9,7 @@ import from2 from 'from2'
 
 // db modules
 import hyperdrive from 'hyperdrive'
+var hypercoreMessages = require('hypercore/lib/messages') // TODO remove when https://github.com/mafintosh/hypercore/pull/36 merges
 import level from 'level'
 import subleveldown from 'subleveldown'
 
@@ -52,12 +54,14 @@ var dbPath // path to the hyperdrive folder
 var db // level instance
 var archiveMetaDb // archive metadata sublevel
 var subscribedArchivesDb // subcribed archives sublevel
+var ownedArchivesDb // owned archives sublevel
 var subscribedFeedDb // combined feed sublevel
 var drive // hyperdrive instance
 var wrtc // webrtc instance
 
 var archives = {} // key -> archive
 var swarms = {} // key -> swarm
+var ownedArchives = new Set() // set of owned archives
 var subscribedArchives = new Set() // set of current subscriptions
 var archivesEvents = new EventEmitter()
 
@@ -74,12 +78,20 @@ export function setup () {
   db = level(dbPath)
   archiveMetaDb = subleveldown(db, 'archive-meta', { valueEncoding: 'json' })
   subscribedArchivesDb = subleveldown(db, 'subscribed-archives', { valueEncoding: 'json' })
+  ownedArchivesDb = subleveldown(db, 'owned-archives', { valueEncoding: 'json' })
   subscribedFeedDb = subleveldown(db, 'subscribed-feed', { valueEncoding: 'json' })
   drive = hyperdrive(db)
 
   // create webrtc
   wrtc = electronWebrtc()
   wrtc.on('error', err => log('[WRTC]', err))
+
+  // load all owned archives and start swarming them
+  ownedArchivesDb.createKeyStream().on('data', key => {
+    ownedArchives.add(key)
+    createArchive(new Buffer(key, 'hex'), { sparse: false })
+    swarm(key)    
+  })
 
   // load all subscribed archives
   subscribedArchivesDb.createKeyStream().on('data', key => {
@@ -103,8 +115,14 @@ export function createArchive (key, opts) {
   // NOTE this only works on live archives
   var archive = drive.createArchive(key, {
     live: true,
-    sparse: sparse,
-    file: name => raf(path.join(ARCHIVE_FILEPATH(archive), name))
+    sparse: sparse
+
+    // TODO 
+    // do we want to use the FS, or leveldb, to store files?
+    // if the `file` opt isnt specified, we're using leveldb
+    // leveldb may perform worse overall, but it lets use deduplicate across archives
+    // -prf     
+    // file: name => raf(path.join(ARCHIVE_FILEPATH(archive), name))
   })
   return archive
 }
@@ -145,9 +163,10 @@ export function getArchiveMeta (key, cb) {
     // pull some live data
     var archive = archives[key]
     if (archive) {
-      meta.isDownloading = 
+      // TODO this definition is wrong. waiting on a solution in hyperdrive. -prf
+      /*meta.isDownloading = 
         (archive.metadata._downloaded < archive.metadata.blocks) ||
-        (archive.content && archive.content._downloaded < archive.content.blocks)
+        (archive.content && archive.content._downloaded < archive.content.blocks)*/
     }
 
     cb(null, meta)
@@ -174,13 +193,13 @@ export function updateArchiveMeta (archive) {
 
     done((err, manifest, vfile, size) => {
       manifest = manifest || {}
-      var { name, author, homepage_url } = manifest
+      var { name, description, author, homepage_url } = manifest
       var version = (vfile) ? vfile.current : false
       var mtime = Date.now() // use our local update time
       size = size || 0
 
       // write the record
-      var update = { name, author, homepage_url, version, mtime, size }
+      var update = { name, description, author, homepage_url, version, mtime, size }
       log('[DAT] Writing meta', update)
       archiveMetaDb.put(key, update, err => {
         if (err)
@@ -222,15 +241,22 @@ export function swarm (key) {
 
   // hook up events
   s.on('connection', (peer, type) => log('[DAT] Connection', peer.id.toString('hex'), 'from', type.type))
-  archive.open(() => {
-    archive.metadata.on('download-finished', () => {
-      log('[DAT] Metadata download finished', keyStr)
-      updateArchiveMeta(archive)
-    })
-    archive.content.on('download-finished', () => {
-      log('[DAT] Content download finished', keyStr)
-      updateArchiveMeta(archive)
-    })
+  archive.open(err => {
+    if (err)
+      return log('[DAT] Error opening archive for swarming', keyStr, err)
+
+    if (archive.metadata) {
+      archive.metadata.on('download-finished', () => {
+        log('[DAT] Metadata download finished', keyStr)
+        updateArchiveMeta(archive)
+      })
+    }
+    if (archive.content) {
+      archive.content.on('download-finished', () => {
+        log('[DAT] Content download finished', keyStr)
+        updateArchiveMeta(archive)
+      })
+    }
   })
   return s
 }
@@ -300,7 +326,7 @@ export function createZipFileStream (archive) {
     // create listing stream
     var listingStream = from2.obj((size, next) => {
       if (entriesKeys.length === 0)
-        return console.log('out of entries'), next(null, null)
+        return next(null, null)
       next(null, entriesMap[entriesKeys.shift()])
     })
 
@@ -341,46 +367,54 @@ export function createZipFileStream (archive) {
 // rpc exports
 // =
 
+function streamFetchMeta (key, enc, cb) {
+  if (Buffer.isBuffer(key))
+    key = key.toString('hex')
+
+  // get archive meta
+  getArchiveMeta(key, (err, meta) => {
+    meta = meta || {}
+    meta.key = key
+    cb(null, meta)
+  })
+}
+
 var rpcMethods = {
   archives (cb) {
-    // list the archives
+    // list the archives, fetch meta, and send back
     drive.core.list()
-      .pipe(through2Concurrent.obj({ maxConcurrency: 100 }, (key, enc, cb2) => {
-        key = key.toString('hex')
-
-        // get archive meta
-        getArchiveMeta(key, (err, meta) => {
-          if (!meta)
-            return cb2() // filter out
-
-          meta.key = key
-          cb2(null, meta)
-        })
-      }))
+      .pipe(through2Concurrent.obj({ maxConcurrency: 100 }, streamFetchMeta))
       .pipe(concat(list => cb(null, list)))
       .on('error', cb)
   },
 
-  subscribedArchives (cb) {
-    // list the subbed archives
-    subscribedArchivesDb.createKeyStream()
-      .pipe(through2Concurrent.obj({ maxConcurrency: 100 }, (key, enc, cb2) => {
-        // get archive meta
-        getArchiveMeta(key, (err, meta) => {
-          if (!meta)
-            return cb2() // filter out
+  ownedArchives (cb) {
+    // list the owned archives, fetch meta, and send back
+    var s = new Readable({ objectMode: true, read(){} })
+    s.pipe(through2Concurrent.obj({ maxConcurrency: 100 }, streamFetchMeta))
+      .pipe(concat(list => cb(null, list)))
+      .on('error', cb)
 
-          meta.key = key
-          cb2(null, meta)
-        })
-      }))
+    for (let key of ownedArchives) {
+      s.push(key)
+    }
+    s.push(null)
+  },
+
+  subscribedArchives (cb) {
+    // list the subbed, archives, fetch meta, and send back
+    subscribedArchivesDb.createKeyStream()
+      .pipe(through2Concurrent.obj({ maxConcurrency: 100 }, streamFetchMeta))
       .pipe(concat(list => cb(null, list)))
       .on('error', cb)
   },
 
   createNewArchive(cb) {
     var archive = createArchive(null)
-    cb(null, archive.key.toString('hex'))
+    var key = archive.key.toString('hex')
+    ownedArchives.add(key)
+    ownedArchivesDb.put(key, {})
+    cb(null, key)
   },
 
   createFileWriteStream (archiveKey, entry) {
@@ -415,7 +449,7 @@ var rpcMethods = {
       versionHistory = versionHistory || bdatVersionsFile.create()
 
       // some other meta
-      var isApp = !!entries.find(e => e.name == 'index.html')
+      var isApp = entries && !!entries.find(e => e.name == 'index.html')
       var isSubscribed = subscribedArchives.has(key)
       var isOwner = archive.owner
 

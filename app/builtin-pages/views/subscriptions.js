@@ -18,23 +18,11 @@ var isFeedEnded = false
 var archives = []
 var archiveNames = {} // map of key->name
 
-// currently-selected archive index
-var selectedArchiveIndex = -1
-
-// currently-selected archive's info
-var selectedArchiveInfo
-
-// event emitter
-var archivesEvents
-
 
 // exported API
 // =
 
 export function setup () {  
-  // start event stream and register events
-  archivesEvents = emitStream(beaker.dat.archivesEventStream())
-  archivesEvents.on('update-archive', onUpdateArchive)
 }
 
 export function show () {
@@ -115,7 +103,7 @@ function render () {
 
       <div class="list">
         <div class="list-inner">
-          <div>Sites you watch</div>
+          <div>Watching</div>
           ${archives.map(archive => yo`<a href="dat://${archive.key}">
             <img class="favicon" src="beaker-favicon:dat://${archive.key}" />
             ${archive.name}
@@ -128,24 +116,3 @@ function render () {
 
 // event handlers
 // =
-
-function onClick (archiveIndex) {
-  return e => selectArchive(archiveIndex)
-}
-
-function onUpdateArchive (update) {
-  console.log('update', update)
-  if (archives) {
-    // find the archive being updated
-    var archive = archives.find(a => a.key == update.key)
-    if (archive) {
-      // patch the archive
-      for (var k in update)
-        archive[k] = update[k]
-    } else {
-      // add to list
-      archives.push(update)
-    }
-    render()
-  }
-}

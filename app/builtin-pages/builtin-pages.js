@@ -3,7 +3,7 @@ import * as sidenavUI from './com/sidenav'
 import * as favorites from './views/favorites'
 import * as history from './views/history'
 import * as subscriptions from './views/subscriptions'
-import * as mySites from './views/my-sites'
+import * as owned from './views/owned'
 import * as TODO from './views/todo'
 
 // HACK FIX
@@ -14,7 +14,7 @@ EE.prototype.prependListener = EE.prototype.on
 // globals
 // =
 
-var views = { start: favorites, history, subscriptions, 'my-sites': mySites }
+var views = { start: favorites, history, subscriptions, 'owned': owned }
 var currentView = getLocationView()
 
 // setup

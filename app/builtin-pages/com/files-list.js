@@ -3,44 +3,54 @@ import prettyBytes from 'pretty-bytes'
 import { niceDate } from '../../lib/time'
 import { ucfirst } from '../../lib/strings'
 
-export function archives (entries, opts={}) {
+export function renderArchives (archives, opts={}) {
 
   var head = ''
   if (opts.showHead) {
     head = yo`<div class="fl-head">
       <div class="fl-name">Name</div>
-      <div class="fl-author">Author</div>
       <div class="fl-updated">Last Updated</div>
-      <div class="fl-version">Version</div>
       <div class="fl-size">Size</div>
       <div class="fl-status">Status</div>
     </div>`
   }
 
+  // render archives
+  var archiveEls = []
+  archives.forEach((archive, index) => {
+    // is the selected archive?
+    var isSelected = index === opts.selectedIndex
+
+    // folder expanded/collapsed? icon
+    let isOpen = !!archive.entries
+    let icon = isOpen ? 'icon icon-down-dir' : 'icon icon-right-dir'
+    icon = yo`<span class=${icon}></span>`
+
+    // status column
+    var status = ''
+    if (archive.isDownloading)
+      status = 'Downloading'
+    else if (archive.isSharing)
+      status = 'Sharing'
+
+    // render row
+    let title = archive.name||'Untitled'
+    archiveEls.push(yo`<div class=${"fl-row archive"+(isSelected?' selected':'')}>
+      <div class="fl-name">
+        <div><strong><a href=${'dat://'+archive.key} title=${title}>${title}</a></strong></div>
+        ${archive.description ? yo`<div>${archive.description}</div>` : ''}
+      </div>
+      <div class="fl-updated">${archive.mtime ? ucfirst(niceDate(archive.mtime)) : ''}</div>
+      <div class="fl-size">${archive.size ? prettyBytes(archive.size) : ''}</div>
+      <div class="fl-status">${status}</div>
+    </div>`)
+  })
+
+  // render all
   return yo`<div class="files-list">
     ${head}
     <div class="fl-rows">
-      ${archives.map((archive, index) => {
-        // is the selected archive?
-        var isSelected = index === opts.selectedIndex
-
-        // status column
-        var status = ''
-        if (archive.isDownloading)
-          status = 'Downloading'
-        else if (archive.isSharing)
-          status = 'Sharing'
-
-        // render row
-        return yo`<div class=${"fl-row"+(isSelected?' selected':'')} onclick=${onClick(index)}>
-          <div class="fl-name">${archive.name||'Untitled'}</div>
-          <div class="fl-author">${archive.author ? archive.author.name : ''}</div>
-          <div class="fl-updated">${archive.mtime ? ucfirst(niceDate(archive.mtime)) : '--'}</div>
-          <div class="fl-version">${archive.version || '--'}</div>
-          <div class="fl-size">${archive.size ? prettyBytes(archive.size) : '--'}</div>
-          <div class="fl-status">${status}</div>
-        </div>`
-      })}
+      ${archiveEls}
     </div>
   </div>`
 }
@@ -115,15 +125,16 @@ export function archiveEntries (tree, opts={}) {
       if (entry.type == 'directory') {
         // modify the last spacer to have an arrow in it
         let icon = isOpen ? 'icon icon-down-dir' : 'icon icon-right-dir'
-        spacers[depth].appendChild(yo`<span class=${icon} onclick=${e => opts.onToggleNodeExpanded(node)}></span>`)
-        link = yo`<a onclick=${e => opts.onToggleNodeExpanded(node)}>${entry.name}</a>`
+        spacers[depth].appendChild(yo`<span class=${icon}></span>`)
+        link = yo`<a href="">${entry.name}</a>`
       } else {
         link = yo`<a href="dat://${tree.entry.key}/${entry.path}">${entry.name}</a>`
       }
 
       // render self
       var isDotfile = entry.name.charAt(0) == '.'
-      els.push(yo`<div class=${'fl-row '+entry.type+(isDotfile?' dotfile':'')}>
+      var onclick = opts.onToggleNodeExpanded && entry.type == 'directory' ? (e => opts.onToggleNodeExpanded(node)) : undefined
+      els.push(yo`<div class=${'fl-row '+entry.type+(isDotfile?' dotfile':'')} onclick=${onclick}>
         <div class="fl-name">${spacers}${link}</div>
         <div class="fl-updated">${entry.mtime ? niceDate(entry.mtime) : ''}</div>
         <div class="fl-size">${entry.length ? prettyBytes(entry.length) : ''}</div>

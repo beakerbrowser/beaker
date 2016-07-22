@@ -12,7 +12,7 @@ const navItems = [
 
   'Shared Files',
   { url: 'beaker:subscriptions', icon: 'rss', label: 'Recently Updated' },
-  { url: 'beaker:new-site', icon: 'folder', label: '+ New Folder' }
+  { url: 'beaker:owned', icon: 'folder', label: 'My Shared Folders' }
 ]
 
 // exported API

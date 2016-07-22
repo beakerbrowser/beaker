@@ -1,5 +1,6 @@
 export default {
   archives: 'async',
+  ownedArchives: 'async',
   subscribedArchives: 'async',
   
   archiveInfo: 'async',
