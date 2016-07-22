@@ -11,7 +11,7 @@ const navItems = [
   { url: 'beaker:history', icon: 'back-in-time', label: 'History' },
 
   'Shared Files',
-  { url: 'beaker:subscriptions', icon: 'rss', label: 'Recently Updated' },
+  { url: 'beaker:subscriptions', icon: 'rss', label: 'Watched' },
   { url: 'beaker:owned', icon: 'folder', label: 'My Shared Folders' }
 ]
 

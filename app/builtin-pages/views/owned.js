@@ -46,6 +46,7 @@ function render () {
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="owned">
+      <h4>My Shared Folders</h4>
       <div class="o-actions">
         <button class="btn btn-default" onclick=${onClickNewFolder}><span class="icon icon-plus"></span> New Shared Folder</button>
       </div>

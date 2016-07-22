@@ -9,6 +9,5 @@ export default {
   subscribe: 'async',
   createFileWriteStream: 'writable',
   
-  archivesEventStream: 'readable',
-  subscribedFeedStream: 'readable',
+  archivesEventStream: 'readable'
 }

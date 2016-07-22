@@ -55,7 +55,6 @@ var db // level instance
 var archiveMetaDb // archive metadata sublevel
 var subscribedArchivesDb // subcribed archives sublevel
 var ownedArchivesDb // owned archives sublevel
-var subscribedFeedDb // combined feed sublevel
 var drive // hyperdrive instance
 var wrtc // webrtc instance
 
@@ -79,7 +78,6 @@ export function setup () {
   archiveMetaDb = subleveldown(db, 'archive-meta', { valueEncoding: 'json' })
   subscribedArchivesDb = subleveldown(db, 'subscribed-archives', { valueEncoding: 'json' })
   ownedArchivesDb = subleveldown(db, 'owned-archives', { valueEncoding: 'json' })
-  subscribedFeedDb = subleveldown(db, 'subscribed-feed', { valueEncoding: 'json' })
   drive = hyperdrive(db)
 
   // create webrtc
@@ -90,14 +88,14 @@ export function setup () {
   ownedArchivesDb.createKeyStream().on('data', key => {
     ownedArchives.add(key)
     createArchive(new Buffer(key, 'hex'), { sparse: false })
-    swarm(key)    
+    swarm(key)
   })
 
-  // load all subscribed archives
+  // load all subscribed archives and start swarming them
   subscribedArchivesDb.createKeyStream().on('data', key => {
     subscribedArchives.add(key)
-    let archive = createArchive(new Buffer(key, 'hex'), { sparse: false }) // TODO do we want sparsemode?
-    updateSubscribedFeedDb(archive)
+    createArchive(new Buffer(key, 'hex'), { sparse: false }) // TODO do we want sparsemode?
+    swarm(key)
   })
 
   // wire up the rpc
@@ -461,11 +459,7 @@ var rpcMethods = {
     return emitStream(archivesEvents)
   },
 
-  subscribe,
-
-  subscribedFeedStream (opts) {
-    return subscribedFeedDb.createReadStream(opts)
-  }
+  subscribe
 }
 
 // internal methods
@@ -529,21 +523,6 @@ function readReadme (archive, cb) {
     rs.pipe(concat(data => cb(null, data.toString())))
     rs.on('error', e => cb(e))
   }
-}
-
-// write version log to the merged feed
-function updateSubscribedFeedDb (archive) {
-  // read current vfile
-  readVFile(archive, (err, vfile) => {
-    vfile.index.forEach(key => {
-      // write to db
-      var entry = vfile.log[key]
-      if (entry.version || entry.message) {
-        entry.archiveKey = archive.key.toString('hex')
-        subscribedFeedDb.put(entry.date+':'+entry.hash, entry)
-      }
-    })
-  })
 }
 
 // get buffer and string version of value
