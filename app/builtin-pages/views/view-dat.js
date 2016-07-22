@@ -103,9 +103,12 @@ function render () {
   }
 
   // stateful btns
-  var subscribeBtn = yo`<button class="btn btn-default subscribe-btn" onclick=${onToggleSubscribed}><span class="icon icon-eye"></span> Watch</button>`
-  if (archiveInfo.isSubscribed) {
-    subscribeBtn.classList.add('pressed')
+  var subscribeBtn
+  if (!archiveInfo.isOwner) {
+    subscribeBtn = yo`<button class="btn btn-default subscribe-btn" onclick=${onToggleSubscribed}><span class="icon icon-eye"></span> Watch</button>`
+    if (archiveInfo.isSubscribed) {
+      subscribeBtn.classList.add('pressed')
+    }
   }
 
   // render view
