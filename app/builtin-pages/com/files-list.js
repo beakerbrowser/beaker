@@ -37,7 +37,11 @@ export function renderArchives (archives, opts={}) {
     let title = archive.name||'Untitled'
     archiveEls.push(yo`<div class=${"fl-row archive"+(isSelected?' selected':'')}>
       <div class="fl-name">
-        <div><strong><a href=${'dat://'+archive.key} title=${title}>${title}</a></strong></div>
+        <div>
+          <strong><a href=${'dat://'+archive.key} title=${title}>${title}</a></strong>
+          ${archive.isOwner ? yo`<a href=${'view-dat://'+archive.key}><small class="icon icon-pencil">owner</small></a>` : ''}
+          ${archive.isSubscribed ? yo`<a href=${'view-dat://'+archive.key}><small class="icon icon-eye"> watching</small></a>` : ''}
+        </div>
         ${archive.description ? yo`<div>${archive.description}</div>` : ''}
       </div>
       <div class="fl-updated">${archive.mtime ? ucfirst(niceDate(archive.mtime)) : ''}</div>

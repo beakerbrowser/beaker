@@ -4,6 +4,7 @@ import { ucfirst } from '../../lib/strings'
 import { renderArchives, entriesListToTree } from '../com/files-list'
 import prettyBytes from 'pretty-bytes'
 import emitStream from 'emit-stream'
+import multicb from 'multicb'
 
 // globals
 // =
@@ -26,8 +27,12 @@ export function setup () {
 
 export function show () {
   // fetch archives
-  beaker.dat.subscribedArchives((err, list) => {
-    archives = list
+  var done = multicb({ pluck: 1, spread: true })
+  beaker.dat.subscribedArchives(done())
+  beaker.dat.ownedArchives(done())
+  done((err, subscribed, owned) => {
+    archives = subscribed.concat(owned)
+    archives.sort(archiveSortFn)
     console.log(archives)
     render()
   })
@@ -39,14 +44,24 @@ export function hide () {
   archives = null
 }
 
+// internal methods
+// =
+
+function archiveSortFn (a, b) {
+  return b.mtime - a.mtime
+}
+
 // rendering
 // =
 
 function render () {
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="subscriptions">
-      <h4>Watched Folders</h4>
+    <div class="shared-folders">
+      <h4>My Shared Folders</h4>
+      <div class="sf-actions">
+        <button class="btn btn-default" onclick=${onClickNewFolder}><span class="icon icon-plus"></span> New Shared Folder</button>
+      </div>
       ${renderArchives(archives, { showHead: true })}
     </div>
   </div>`)
@@ -54,6 +69,12 @@ function render () {
 
 // event handlers
 // =
+
+function onClickNewFolder (e) {
+  beaker.dat.createNewArchive((err, key) => {
+    window.location = 'view-dat://'+key
+  })
+}
 
 function onUpdateArchive (update) {
   console.log('update', update)

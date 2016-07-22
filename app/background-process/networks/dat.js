@@ -155,7 +155,9 @@ export function getArchiveMeta (key, cb) {
       mtime: 0,
       size: 0,
       isDownloading: false,
-      isSharing: (key in swarms)
+      isSharing: (key in swarms),
+      isOwner: ownedArchives.has(key),
+      isSubscribed: subscribedArchives.has(key)
     }, meta)
 
     // pull some live data
