@@ -76,8 +76,11 @@ function render () {
   document.title = name
 
   // optional els
-  var nameEl = archiveInfo.isApp ? yo`<a href=${'dat://'+archiveInfo.key} target="_blank">${name} <small class="icon icon-popup"></small></a>` : name
+  var nameEl = archiveInfo.isApp ? yo`<a href=${'dat://'+archiveInfo.key} target="_blank">${name}</a>` : name
   var versionEl = v.current ? yo`<div class="view-dat-version">v${v.current}</div>` : ''
+  var ownerEl = ''
+  if (archiveInfo.isOwner)
+    ownerEl = yo`<small><span class="icon icon-pencil"></span> owner</small>`
   var authorEl = ''
   if (m.author) {
     if (m.homepage_url)
@@ -119,10 +122,12 @@ function render () {
           <div class="vdh-title">
             <img class="favicon" src=${'beaker-favicon:dat://'+archiveInfo.key} />
             ${nameEl}
+            ${ownerEl}            
           </div>
           ${authorEl}
           <div class="flex-spacer"></div>
           <div class="vd-actions">
+            <button class="btn btn-default" onclick=${onClickClone}><span class="icon icon-flow-branch"></span> Clone this folder</button>
             ${subscribeBtn}
           </div>
         </div>
@@ -212,9 +217,17 @@ function onToggleSubscribed () {
   var newState = !archiveInfo.isSubscribed
   beaker.dat.subscribe(archiveKey, newState, err => {
     if (err)
-      return console.warn(err)
+      return console.warn(err) // TODO inform user
     archiveInfo.isSubscribed = newState
     render()
+  })
+}
+
+function onClickClone (e) {
+  beaker.dat.clone(archiveKey, (err, newKey) => {
+    if (err)
+      return console.warn(err) // TODO inform user
+    window.location = 'view-dat://'+newKey
   })
 }
 

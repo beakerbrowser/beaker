@@ -4,6 +4,7 @@ import { Readable } from 'stream'
 import concat from 'concat-stream'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
+import pump from 'pump'
 import multicb from 'multicb'
 import from2 from 'from2'
 
@@ -143,8 +144,7 @@ export function getArchiveMeta (key, cb) {
 
   // pull data from meta db
   archiveMetaDb.get(key, (err, meta) => {
-    if (err)
-      return cb(err) // fail if there's no entry
+    meta = meta || {}
 
     // give sane defaults
     // (just in case the metadata record came from an older build, and has holes in it)
@@ -208,6 +208,59 @@ export function updateArchiveMeta (archive) {
         // emit event
         update.key = key
         archivesEvents.emit('update-archive', update)
+      })
+    })
+  })
+}
+
+// create a new archive
+export function createNewArchive () {
+  var archive = createArchive(null)
+  var key = archive.key.toString('hex')
+  ownedArchives.add(key)
+  ownedArchivesDb.put(key, {})
+  return archive
+}
+
+// duplicate an archive
+export function clone (key, cb) {
+  if (!HASH_REGEX.test(key))
+    return cb(new Error('Invalid archive key'))
+
+  // list the archive contents
+  var srcArchive = getArchive(key)
+  srcArchive.list((err, entries) => {
+    if (err)
+      return cb(err)
+
+    // remove duplicates
+    var entriesMap = {}
+    entries.forEach(e => entriesMap[e.name] = e)
+    entries = Object.keys(entriesMap).map(name => entriesMap[name])
+
+    // download all
+    var done = multicb()
+    entries.forEach(entry => {
+      srcArchive.download(entry, done())
+    })
+    done(err => {
+      if (err)
+        return cb(err)
+
+      // create the new archive, and copy all files
+      var dstArchive = createNewArchive()
+      var done = multicb()
+      entries.forEach(entry => {
+        pump(
+          srcArchive.createFileReadStream(entry),
+          dstArchive.createFileWriteStream(entry),
+          done()
+        )
+      })
+      done(err => {
+        if (err)
+          return cb(err)
+        cb(null, dstArchive.key.toString('hex'))
       })
     })
   })
@@ -409,14 +462,6 @@ var rpcMethods = {
       .on('error', cb)
   },
 
-  createNewArchive(cb) {
-    var archive = createArchive(null)
-    var key = archive.key.toString('hex')
-    ownedArchives.add(key)
-    ownedArchivesDb.put(key, {})
-    cb(null, key)
-  },
-
   createFileWriteStream (archiveKey, entry) {
     // get the archive
     var archive = getArchive(archiveKey)
@@ -461,6 +506,10 @@ var rpcMethods = {
     return emitStream(archivesEvents)
   },
 
+  createNewArchive(cb) {
+    cb(null, createNewArchive().key.toString('hex'))
+  },
+  clone,
   subscribe
 }
 

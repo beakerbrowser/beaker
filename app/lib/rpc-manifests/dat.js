@@ -6,6 +6,7 @@ export default {
   archiveInfo: 'async',
 
   createNewArchive: 'async',
+  clone: 'async',
   subscribe: 'async',
   createFileWriteStream: 'writable',
   
