@@ -127,7 +127,6 @@ function render () {
           ${authorEl}
           <div class="flex-spacer"></div>
           <div class="vd-actions">
-            <button class="btn btn-default" onclick=${onClickClone}><span class="icon icon-flow-branch"></span> Clone this folder</button>
             ${subscribeBtn}
           </div>
         </div>
@@ -223,13 +222,17 @@ function onToggleSubscribed () {
   })
 }
 
-function onClickClone (e) {
-  beaker.dat.clone(archiveKey, (err, newKey) => {
-    if (err)
-      return console.warn(err) // TODO inform user
-    window.location = 'view-dat://'+newKey
-  })
-}
+// TODO
+// this is disabled for now.
+// adds complexity, and I'm not sure it's needed yet.
+// -prf
+// function onClickClone (e) {
+//   beaker.dat.clone(archiveKey, (err, newKey) => {
+//     if (err)
+//       return console.warn(err) // TODO inform user
+//     window.location = 'view-dat://'+newKey
+//   })
+// }
 
 function onDragDrop (files) {
   addFiles(files)
