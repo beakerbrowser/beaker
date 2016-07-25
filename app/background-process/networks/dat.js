@@ -85,11 +85,11 @@ export function setup () {
   // watch archives for FS changes
   var watcher = chokidar.watch(path.join(dbPath, 'Archives'), { persistent: true, cwd: path.join(dbPath, 'Archives') })
   watcher.on('ready', () => { // wait till ready, otherwise we get an 'add' for each existing file
-    watcher.on('add', onArchiveFSChange.bind(null, 'file'))
-    watcher.on('addDir', onArchiveFSChange.bind(null, 'directory'))
-    watcher.on('change', onArchiveFSChange.bind(null, 'file'))
-    // watcher.on('unlink', onArchiveFSChange.bind(null, 'file')) TODO: dat doesnt support deletes yet
-    // watcher.on('unlinkDir', onArchiveFSChange.bind(null, 'directory')) TODO: dat doesnt support deletes yet
+    watcher.on('add', onArchiveFSChange.bind(null, 'add', 'file'))
+    watcher.on('addDir', onArchiveFSChange.bind(null, 'add', 'directory'))
+    watcher.on('change', onArchiveFSChange.bind(null, 'change', 'file'))
+    // watcher.on('unlink', onArchiveFSChange.bind(null, 'unlink', 'file')) TODO: dat doesnt support deletes yet
+    // watcher.on('unlinkDir', onArchiveFSChange.bind(null, 'unlink', 'directory')) TODO: dat doesnt support deletes yet
   })
   app.once('will-quit', () => watcher.close())
 
@@ -502,23 +502,18 @@ var rpcMethods = {
 
     // fetch archive data
     var done = multicb({ pluck: 1, spread: true })
+    getArchiveMeta(key, done())
     archive.list(done())
-    readManifest(archive, done())
-    readVFile(archive, done())
     readReadme(archive, done())
-    done((err, entries, manifest, versionHistory, readme) => {
+    done((err, meta, entries, readme) => {
       if (err)
         return cb(err)
-      // give sane defaults
-      manifest = manifest || {}
-      versionHistory = versionHistory || bdatVersionsFile.create()
 
-      // some other meta
-      var isApp = entries && !!entries.find(e => e.name == 'index.html')
-      var isSubscribed = subscribedArchives.has(key)
-      var isOwner = archive.owner
-
-      cb(null, { key, entries, manifest, readme, versionHistory, isApp, isSubscribed, isOwner })
+      // attach additional data
+      meta.key = key
+      meta.entries = entries
+      meta.readme = readme
+      cb(null, meta)
     })
   },
 
@@ -543,7 +538,7 @@ var rpcMethods = {
 // event handlers
 // =
 
-function onArchiveFSChange (type, relname, filestat) {
+function onArchiveFSChange (action, type, relname, filestat) {
   // watcher is on parent directory of all archives,
   // which are organized as: ./{key}/{files...}
 
@@ -565,7 +560,8 @@ function onArchiveFSChange (type, relname, filestat) {
   // lookup archive, and write new file
   log('[DAT] Watcher updating detected change in', relname)
   var archive = getArchive(archiveKey)
-  archive.append({ type: type, name: fileRelname, mtime: filestat.mtime, ctime: filestat.ctime })
+  archive.append({ type, name: fileRelname, mtime: filestat.mtime, ctime: filestat.ctime })
+  archivesEvents.emit('update-listing', { key: archiveKey, action, type, name: fileRelname, mtime: filestat.mtime, ctime: filestat.ctime })
 }
 
 // internal methods

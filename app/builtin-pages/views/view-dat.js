@@ -46,7 +46,8 @@ var archivesEvents
 export function setup () {  
   // start event stream and register events
   archivesEvents = emitStream(beaker.dat.archivesEventStream())
-  // archivesEvents.on('update-archive', onUpdateArchive)
+  archivesEvents.on('update-archive', onUpdateArchive)
+  archivesEvents.on('update-listing', onUpdateListing)
 }
 
 export function show () {
@@ -68,27 +69,25 @@ export function hide () {
 // =
 
 function render () {
-  var m = archiveInfo.manifest
-  var v = archiveInfo.versionHistory
-  var name = m.name || m.short_name || 'Untitled'
+  var name = archiveInfo.name || archiveInfo.short_name || 'Untitled'
 
   // set page title
   document.title = name
 
   // optional els
   var nameEl = archiveInfo.isApp ? yo`<a href=${'dat://'+archiveInfo.key}>${name} <small class="icon icon-popup"> open app</small></a>` : name
-  var versionEl = v.current ? yo`<div class="view-dat-version">v${v.current}</div>` : ''
+  var versionEl = archiveInfo.version ? yo`<div class="view-dat-version">v${archiveInfo.version}</div>` : ''
   var ownerEl = ''
   if (archiveInfo.isOwner)
     ownerEl = yo`<div class="vdh-owner"><strong><span class="icon icon-pencil"></span> owner</strong></div>`
   var authorEl = ''
-  if (m.author) {
-    if (m.homepage_url)
-      authorEl = yo`<div class="vdh-author">by <a href=${m.homepage_url} title=${m.author}>${m.author}</a></div>`
+  if (archiveInfo.author) {
+    if (archiveInfo.homepage_url)
+      authorEl = yo`<div class="vdh-author">by <a href=${archiveInfo.homepage_url} title=${archiveInfo.author}>${archiveInfo.author}</a></div>`
     else
-      authorEl = yo`<div class="vdh-author">by ${m.author}</div>`
+      authorEl = yo`<div class="vdh-author">by ${archiveInfo.author}</div>`
   }
-  var descriptionEl = (m.description) ? yo`<div class="view-dat-desc"><p>${m.description}</p></div>` : ''
+  var descriptionEl = (archiveInfo.description) ? yo`<div class="view-dat-desc"><p>${archiveInfo.description}</p></div>` : ''
   var readmeEl
   if (archiveInfo.readme) {
     readmeEl = yo`<div class="vdc-readme"></div>`
@@ -257,4 +256,20 @@ function onChooseFiles (e) {
   console.log(files)
   filesInput.value = '' // clear the input
   addFiles(files)
+}
+
+function onUpdateArchive (update) {
+  if (update.key == archiveKey && archiveInfo) {
+    // patch the archive
+    for (var k in update)
+      archiveInfo[k] = update[k]
+    render()
+  }
+}
+
+function onUpdateListing (update) {
+  if (update.key == archiveKey) {
+    // simplest solution is just to refetch the entries
+    fetchArchiveInfo(render)
+  }
 }
