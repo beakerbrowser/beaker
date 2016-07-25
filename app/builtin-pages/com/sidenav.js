@@ -10,8 +10,8 @@ const navItems = [
   { url: 'beaker:start', icon: 'star', label: 'Favorites' },
   { url: 'beaker:history', icon: 'back-in-time', label: 'History' },
 
-  'Shared Files',
-  { url: 'beaker:shared-folders', icon: 'folder', label: 'My Shared Folders' }
+  'Dat Network',
+  { url: 'beaker:dats', icon: 'folder', label: 'My Dat Sites' }
 ]
 
 // exported API

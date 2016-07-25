@@ -2,7 +2,7 @@ import EE from 'events'
 import * as sidenavUI from './com/sidenav'
 import * as favorites from './views/favorites'
 import * as history from './views/history'
-import * as sharedFolders from './views/shared-folders'
+import * as dats from './views/dats'
 import * as TODO from './views/todo'
 
 // HACK FIX
@@ -13,7 +13,7 @@ EE.prototype.prependListener = EE.prototype.on
 // globals
 // =
 
-var views = { start: favorites, history, 'shared-folders': sharedFolders }
+var views = { start: favorites, history, dats }
 var currentView = getLocationView()
 
 // setup

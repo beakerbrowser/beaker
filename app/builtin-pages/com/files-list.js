@@ -35,8 +35,6 @@ export function renderArchives (archives, opts={}) {
       <div class="fl-name">
         <div>
           <strong><a href=${'view-dat://'+archive.key} title=${title}>${title}</a></strong>
-          ${archive.isOwner ? yo`<small class="icon icon-pencil">owner</small>` : ''}
-          ${archive.isSubscribed ? yo`<small class="icon icon-eye"> watching</small>` : ''}
         </div>
         ${archive.description ? yo`<div>${archive.description}</div>` : ''}
       </div>
@@ -151,16 +149,13 @@ export function archiveEntries (tree, opts={}) {
       els = els.concat(Object.keys(node.children).map(toObj).sort(treeSorter).map(child => renderNode(child, depth + 1)))
     }
 
-    // nothing rendered? put something in
-    if (depth <= 0 && els.length === 0)
-      els.push(yo`<div class="fl-row"><em>This folder is empty</em></div>`)
-
     return els
   }
 
   // render
   var startDepth = (opts.showRoot) ? 0 : -1 // start from -1 to skip root
-  return yo`<div class="files-list">${head}<div class="fl-rows">${renderNode(tree, startDepth)}</div></div>`
+  var rows = renderNode(tree, startDepth)
+  return yo`<div class="files-list ${rows.length===0?'empty':''}">${head}<div class="fl-rows">${rows}</div></div>`
 }
 
 function splitPath (str) {

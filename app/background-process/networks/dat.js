@@ -513,6 +513,7 @@ var rpcMethods = {
       meta.key = key
       meta.entries = entries
       meta.readme = readme
+      meta.isApp = entries && !!entries.find(e => e.name == 'index.html')
       cb(null, meta)
     })
   },

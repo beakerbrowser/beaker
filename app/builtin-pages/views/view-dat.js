@@ -2,6 +2,7 @@ import * as yo from 'yo-yo'
 import { niceDate } from '../../lib/time'
 import { ucfirst } from '../../lib/strings'
 import { archiveEntries, entriesListToTree } from '../com/files-list'
+import dropdownBtn from '../com/dropdown-btn'
 import tabs from '../com/tabs'
 import prettyBytes from 'pretty-bytes'
 import emitStream from 'emit-stream'
@@ -75,8 +76,7 @@ function render () {
   document.title = name
 
   // optional els
-  var nameEl = archiveInfo.isApp ? yo`<a href=${'dat://'+archiveInfo.key}>${name} <small class="icon icon-popup"> open app</small></a>` : name
-  var versionEl = archiveInfo.version ? yo`<div class="view-dat-version">v${archiveInfo.version}</div>` : ''
+  var nameEl = archiveInfo.isApp ? yo`<a href=${'dat://'+archiveInfo.key}>${name}</a>` : name
   var ownerEl = ''
   if (archiveInfo.isOwner)
     ownerEl = yo`<div class="vdh-owner"><strong><span class="icon icon-pencil"></span> owner</strong></div>`
@@ -99,19 +99,20 @@ function render () {
   var uploadEl
   if (archiveInfo.isOwner) {
     uploadEl = yo`<div class="view-dat-upload">
-      <div class="vdu-instructions">Drag your files onto this page, or <a href="#" onclick=${onClickSelectFiles}>Select them manually.</a></div>
+      <div class="vdu-instructions">To add files, drag their icons onto this page, or <a href="#" onclick=${onClickSelectFiles}>Select them manually.</a></div>
       <input type="file" multiple id="vdu-filepicker" onchange=${onChooseFiles}>
     </div>`
   }
 
   // stateful btns
   var subscribeBtn
-  if (!archiveInfo.isOwner) {
-    subscribeBtn = yo`<button class="btn btn-default subscribe-btn" onclick=${onToggleSubscribed}><span class="icon icon-eye"></span> Watch</button>`
-    if (archiveInfo.isSubscribed) {
-      subscribeBtn.classList.add('pressed')
-    }
-  }
+  // TODO disabled for now, while we decide if it's needed -prf
+  // if (!archiveInfo.isOwner) {
+  //   subscribeBtn = yo`<button class="btn btn-default btn-mini subscribe-btn" onclick=${onToggleSubscribed}><span class="icon icon-eye"></span> Watch</button>`
+  //   if (archiveInfo.isSubscribed) {
+  //     subscribeBtn.classList.add('pressed')
+  //   }
+  // }
 
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
@@ -123,26 +124,33 @@ function render () {
             ${nameEl}
           </div>
           ${authorEl}
-          <div>Shared Folder</div>
-          ${ownerEl}
           <div class="flex-spacer"></div>
           <div class="vd-actions">
             ${subscribeBtn}
+            ${dropdownBtn(
+              (list, isOpen, ontoggle) => yo`<div class="dropdown-btn-container">
+                <div class="btn-group">
+                  <button class="btn btn-default btn-mini" onclick=${onClickOpenInExplorer}>
+                    <span class="icon icon-layout"></span> Open in Explorer
+                  </button>
+                  <button class="btn btn-default btn-mini ${isOpen ? 'active' : ''}" onclick=${ontoggle}><span class="icon icon-down-dir"></span></button>
+                </div>
+                ${list}
+              </div>`,
+              () => yo`<div class="dropdown-btn-list">
+                <div onclick=${onClickDownloadZip}><span class="icon icon-floppy"></span> Save As .Zip File</div>
+              </div>`
+            )}
           </div>
         </div>
         ${descriptionEl}
-        ${uploadEl}
         <div class="view-dat-content">
           <div class="vdc-header">
-            ${versionEl}
+            <div class="view-dat-version"><span class="icon icon-flow-branch"></span> Files</div>
             <div class="flex-spacer"></div>
-            <button class="btn btn-default btn-mini" onclick=${onClickOpenInExplorer}>
-              <span class="icon icon-layout"></span> Open in Explorer
-            </button>
-            <button class="btn btn-default btn-mini" onclick=${onClickDownloadZip}>
-              <span class="icon icon-install"></span> Download Zip
-            </button>
+            ${ownerEl}
           </div>
+          ${uploadEl}
           ${archiveEntries(archiveEntriesTree, { showHead: false, showRoot: false, onToggleNodeExpanded })}
           ${readmeEl}
         </div>

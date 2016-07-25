@@ -14,6 +14,7 @@
   cursor: pointer;
 
   .icon {
+    cursor: pointer;
     margin-right: 2px;
   }
 }
@@ -115,9 +116,13 @@ body.drag {
   }
   .vd-actions {
     padding: 10px;
-    line-height: 21px;
-    button {
+    .btn-group {
       margin: 0 2px;
+
+      // always keep left border (this is for the dropdown arrow btn)
+      .active {
+        border-left: 1px solid #c2c0c2;
+      }
     }
 
     .subscribe-btn.pressed:after {
@@ -126,11 +131,12 @@ body.drag {
   }
   .view-dat-upload {
     background: #fafafa;
-    border-radius: 2px;
     padding: 10px;
-    margin: 10px 0;
     font-size: 15px;
     color: #666;
+    border: 1px solid #ccc;
+    border-bottom: 0;
+    border-top: 1px dashed #ccc;
 
     #vdu-filepicker {
       display: none;
@@ -159,13 +165,17 @@ body.drag {
       .vdc-readme-inner {
         border: 1px solid #ccc;
         border-radius: 2px;
-        padding: 0 20px;
+        padding: 0 20px 10px;
       }
     }
     .files-list {  
       border: 1px solid #ccc;
       border-bottom-left-radius: 2px;
       border-bottom-right-radius: 2px;
+
+      &.empty {
+        border-top: 0;
+      }
     }
   }
   .feed {
@@ -196,5 +206,5 @@ body.drag {
   }
 }
 
-@import "./com/feed.less";
 @import "./com/files-list.less";
+@import "./com/dropdown-btn.less";

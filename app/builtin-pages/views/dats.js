@@ -26,13 +26,10 @@ export function setup () {
 }
 
 export function show () {
-  document.title = 'Shared Folders'
+  document.title = 'My Dat Sites'
   // fetch archives
-  var done = multicb({ pluck: 1, spread: true })
-  beaker.dat.subscribedArchives(done())
-  beaker.dat.ownedArchives(done())
-  done((err, subscribed, owned) => {
-    archives = subscribed.concat(owned)
+  beaker.dat.ownedArchives((err, subscribed) => {
+    archives = subscribed
     archives.sort(archiveSortFn)
     console.log(archives)
     render()
@@ -58,10 +55,9 @@ function archiveSortFn (a, b) {
 function render () {
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="shared-folders">
-      <h4>My Shared Folders</h4>
+    <div class="dats">
       <div class="sf-actions">
-        <button class="btn btn-default" onclick=${onClickNewFolder}>New Shared Folder</button>
+        <button class="btn btn-default" onclick=${onClickNewDat}>New Dat Site</button>
       </div>
       ${renderArchives(archives, { showHead: true })}
     </div>
@@ -71,7 +67,7 @@ function render () {
 // event handlers
 // =
 
-function onClickNewFolder (e) {
+function onClickNewDat (e) {
   beaker.dat.createNewArchive((err, key) => {
     window.location = 'view-dat://'+key
   })

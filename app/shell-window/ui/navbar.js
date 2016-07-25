@@ -123,7 +123,7 @@ function render (id, page) {
     // archive btn
     let info = page.archiveInfo
     // choose label
-    let label = 'View Files'//(info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
+    let label = 'View Source'//(info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
     // render
     archiveBtn = yo`<button class="green" onclick=${onClickViewDat}><span class="icon icon-folder"></span> <small>${label}</small></button>`
   }
@@ -226,7 +226,6 @@ function render (id, page) {
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
-      <button class="btn btn-default" onclick=${onClickShareFiles} title="New Shared Folder">New Shared Folder</button>
       <button class="toolbar-btn" onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
       <button class="toolbar-btn" onclick=${onClickBugReport} title="Report an issue in Beaker"><span class="icon icon-flag"></span></button>
     </div>
@@ -400,13 +399,6 @@ function onClickZoom (e) {
     { label: 'Zoom Out', click: command('view:zoom-out') },
   ])
   menu.popup(remote.getCurrentWindow())
-}
-
-function onClickShareFiles (e) {
-  dat.createNewArchive((err, key) => {
-    var page = pages.create('view-dat://'+key)
-    pages.setActive(page)
-  })
 }
 
 function onClickFeedback (e) {
