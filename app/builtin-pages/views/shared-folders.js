@@ -60,7 +60,7 @@ function render () {
     <div class="shared-folders">
       <h4>My Shared Folders</h4>
       <div class="sf-actions">
-        <button class="btn btn-default" onclick=${onClickNewFolder}><span class="icon icon-plus"></span> New Shared Folder</button>
+        <button class="btn btn-default" onclick=${onClickNewFolder}>New Shared Folder</button>
       </div>
       ${renderArchives(archives, { showHead: true })}
     </div>

@@ -76,11 +76,11 @@ function render () {
   document.title = name
 
   // optional els
-  var nameEl = archiveInfo.isApp ? yo`<a href=${'dat://'+archiveInfo.key} target="_blank">${name}</a>` : name
+  var nameEl = archiveInfo.isApp ? yo`<a href=${'dat://'+archiveInfo.key}>${name} <small class="icon icon-popup"> open app</small></a>` : name
   var versionEl = v.current ? yo`<div class="view-dat-version">v${v.current}</div>` : ''
   var ownerEl = ''
   if (archiveInfo.isOwner)
-    ownerEl = yo`<small><span class="icon icon-pencil"></span> owner</small>`
+    ownerEl = yo`<div class="vdh-owner"><strong><span class="icon icon-pencil"></span> owner</strong></div>`
   var authorEl = ''
   if (m.author) {
     if (m.homepage_url)
@@ -122,9 +122,9 @@ function render () {
           <div class="vdh-title">
             <img class="favicon" src=${'beaker-favicon:dat://'+archiveInfo.key} />
             ${nameEl}
-            ${ownerEl}            
           </div>
           ${authorEl}
+          ${ownerEl}       
           <div class="flex-spacer"></div>
           <div class="vd-actions">
             ${subscribeBtn}
@@ -136,6 +136,9 @@ function render () {
           <div class="vdc-header">
             ${versionEl}
             <div class="flex-spacer"></div>
+            <button class="btn btn-default btn-mini" onclick=${onClickOpenInExplorer}>
+              <span class="icon icon-layout"></span> Open in Explorer
+            </button>
             <button class="btn btn-default btn-mini" onclick=${onClickDownloadZip}>
               <span class="icon icon-install"></span> Download Zip
             </button>
@@ -205,6 +208,10 @@ function addFiles (files) {
 
 function onClickDownloadZip () {
   window.open('view-dat://'+archiveKey+'?as=zip')
+}
+
+function onClickOpenInExplorer () {
+  beaker.dat.openInExplorer(archiveKey)
 }
 
 function onToggleNodeExpanded (node) {

@@ -119,11 +119,11 @@ function render (id, page) {
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
   var archiveBtn
-  if (page && /^(dat|view-dat)/.test(page.getURL()) && page.archiveInfo) {
+  if (page && /^(dat)/.test(page.getURL()) && page.archiveInfo) {
     // archive btn
     let info = page.archiveInfo
     // choose label
-    let label = (info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
+    let label = 'Shared Folder'//(info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
     // render
     archiveBtn = yo`<button class="green" onclick=${onClickViewDat}><span class="icon icon-folder"></span> <small>${label}</small></button>`
   }
@@ -226,7 +226,7 @@ function render (id, page) {
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
-      <button class="btn btn-default" onclick=${onClickShareFiles} title="Share files"><span class="icon icon-share"></span> Share Files</button>
+      <button class="btn btn-default" onclick=${onClickShareFiles} title="New Shared Folder">New Shared Folder</button>
       <button class="toolbar-btn" onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
       <button class="toolbar-btn" onclick=${onClickBugReport} title="Report an issue in Beaker"><span class="icon icon-flag"></span></button>
     </div>

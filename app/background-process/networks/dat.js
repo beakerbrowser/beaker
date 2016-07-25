@@ -1,4 +1,4 @@
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, shell } from 'electron'
 import through2Concurrent from 'through2-concurrent'
 import { Readable } from 'stream'
 import concat from 'concat-stream'
@@ -46,7 +46,7 @@ export const VFILENAME = '.bdat/versions.json.log'
 export const HASH_REGEX = /[0-9a-f]{64}/i
 
 // where are the given archive's files kept
-const ARCHIVE_FILEPATH = archive => path.join(dbPath, 'Archives', archive.key.toString('hex'))
+const ARCHIVE_FILEPATH = archiveOrKey => path.join(dbPath, 'Archives', bufToStr(archiveOrKey.key || archiveOrKey))
 
 // globals
 // =
@@ -114,14 +114,15 @@ export function createArchive (key, opts) {
   // NOTE this only works on live archives
   var archive = drive.createArchive(key, {
     live: true,
-    sparse: sparse
+    sparse: sparse,
 
     // TODO 
     // do we want to use the FS, or leveldb, to store files?
     // if the `file` opt isnt specified, we're using leveldb
     // leveldb may perform worse overall, but it lets use deduplicate across archives
+    // however, FS lets us open the archive in explorer
     // -prf     
-    // file: name => raf(path.join(ARCHIVE_FILEPATH(archive), name))
+    file: name => raf(path.join(ARCHIVE_FILEPATH(archive), name)) // currently: using FS
   })
   return archive
 }
@@ -504,6 +505,11 @@ var rpcMethods = {
 
   archivesEventStream () {
     return emitStream(archivesEvents)
+  },
+
+  openInExplorer(key, cb) {
+    shell.showItemInFolder(ARCHIVE_FILEPATH(key))
+    cb()
   },
 
   createNewArchive(cb) {

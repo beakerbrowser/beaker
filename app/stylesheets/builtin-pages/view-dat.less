@@ -76,9 +76,14 @@ body.drag {
       line-height: 18px;
       font-weight: bold;
       a {
-        text-decoration: none;
+        small {
+          font-weight: normal;
+          cursor: pointer;
+        }
       }
-      small {
+    }
+    .vdh-owner {
+      strong {
         font-size: 13px;
         color: gray;
         background: #eee;
@@ -138,12 +143,16 @@ body.drag {
       color: gray;
 
       display: flex;
-      padding: 3px 10px;
+      padding: 3px 5px 3px 10px;
 
       border: 1px solid #ccc;
       border-bottom: 0;
       border-top-left-radius: 2px;
       border-top-right-radius: 2px;
+
+      .btn {
+        margin-left: 5px;
+      }
     }
     .vdc-readme {
       margin-top: 1em;

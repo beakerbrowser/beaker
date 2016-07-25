@@ -4,6 +4,7 @@ export default {
   subscribedArchives: 'async',
   
   archiveInfo: 'async',
+  openInExplorer: 'async',
 
   createNewArchive: 'async',
   clone: 'async',

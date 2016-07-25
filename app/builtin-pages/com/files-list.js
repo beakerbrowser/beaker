@@ -21,11 +21,6 @@ export function renderArchives (archives, opts={}) {
     // is the selected archive?
     var isSelected = index === opts.selectedIndex
 
-    // folder expanded/collapsed? icon
-    let isOpen = !!archive.entries
-    let icon = isOpen ? 'icon icon-down-dir' : 'icon icon-right-dir'
-    icon = yo`<span class=${icon}></span>`
-
     // status column
     var status = ''
     if (archive.isDownloading)
@@ -35,12 +30,13 @@ export function renderArchives (archives, opts={}) {
 
     // render row
     let title = archive.name||'Untitled'
-    archiveEls.push(yo`<div class=${"fl-row archive"+(isSelected?' selected':'')}>
+    var onclick = opts.onToggleNodeExpanded ? (e => opts.onToggleNodeExpanded(archive)) : undefined
+    archiveEls.push(yo`<div class=${"fl-row archive"+(isSelected?' selected':'')} onclick=${onclick}>
       <div class="fl-name">
         <div>
-          <strong><a href=${'dat://'+archive.key} title=${title}>${title}</a></strong>
-          ${archive.isOwner ? yo`<a href=${'view-dat://'+archive.key}><small class="icon icon-pencil">owner</small></a>` : ''}
-          ${archive.isSubscribed ? yo`<a href=${'view-dat://'+archive.key}><small class="icon icon-eye"> watching</small></a>` : ''}
+          <strong><a href=${'view-dat://'+archive.key} title=${title}>${title}</a></strong>
+          ${archive.isOwner ? yo`<small class="icon icon-pencil">owner</small>` : ''}
+          ${archive.isSubscribed ? yo`<small class="icon icon-eye"> watching</small>` : ''}
         </div>
         ${archive.description ? yo`<div>${archive.description}</div>` : ''}
       </div>
@@ -51,7 +47,7 @@ export function renderArchives (archives, opts={}) {
   })
 
   // render all
-  return yo`<div class="files-list">
+  return yo`<div class="files-list archives">
     ${head}
     <div class="fl-rows">
       ${archiveEls}
@@ -59,11 +55,8 @@ export function renderArchives (archives, opts={}) {
   </div>`
 }
 
-export function entriesListToTree (archiveInfo) {
-  var m = archiveInfo.manifest
-
-  // root node is the archive itself
-  var rootNode = {
+function createRootNode (archiveInfo) {
+  return {
     isOpen: true,
     entry: {
       type: 'directory',
@@ -72,6 +65,13 @@ export function entriesListToTree (archiveInfo) {
       key: archiveInfo.key
     }
   }
+}
+
+export function entriesListToTree (archiveInfo) {
+  var m = archiveInfo.manifest
+
+  // root node is the archive itself
+  var rootNode = createRootNode(archiveInfo)
 
   // iterate the list, recurse the path... build the tree!
   archiveInfo.entries.forEach(e => addEntry(rootNode, splitPath(e.name), e))
