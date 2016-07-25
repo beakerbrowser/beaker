@@ -2,7 +2,7 @@ import * as yo from 'yo-yo'
 import { niceDate } from '../../lib/time'
 import { ucfirst } from '../../lib/strings'
 import { archiveEntries, entriesListToTree } from '../com/files-list'
-import dropdownBtn from '../com/dropdown-btn'
+import toggleable from '../com/toggleable'
 import tabs from '../com/tabs'
 import prettyBytes from 'pretty-bytes'
 import emitStream from 'emit-stream'
@@ -127,20 +127,19 @@ function render () {
           <div class="flex-spacer"></div>
           <div class="vd-actions">
             ${subscribeBtn}
-            ${dropdownBtn(
-              (list, isOpen, ontoggle) => yo`<div class="dropdown-btn-container">
-                <div class="btn-group">
-                  <button class="btn btn-default btn-mini" onclick=${onClickOpenInExplorer}>
-                    <span class="icon icon-layout"></span> Open in Explorer
-                  </button>
-                  <button class="btn btn-default btn-mini ${isOpen ? 'active' : ''}" onclick=${ontoggle}><span class="icon icon-down-dir"></span></button>
-                </div>
-                ${list}
-              </div>`,
-              () => yo`<div class="dropdown-btn-list">
-                <div onclick=${onClickDownloadZip}><span class="icon icon-floppy"></span> Save As .Zip File</div>
-              </div>`
-            )}
+            ${toggleable((onToggle, isOpen) => yo`<div class="dropdown-btn-container">
+              <div class="btn-group">
+                <button class="btn btn-default btn-mini" onclick=${onClickOpenInExplorer}>
+                  <span class="icon icon-layout"></span> Open in Explorer
+                </button>
+                <button class="btn btn-default btn-mini ${isOpen ? 'active' : ''}" onclick=${onToggle}><span class="icon icon-down-dir"></span></button>
+              </div>
+              ${isOpen
+                ? yo`<div class="dropdown-btn-list" onmouseleave=${onToggle}>
+                  <div onclick=${onClickDownloadZip}><span class="icon icon-floppy"></span> Save As .Zip File</div>
+                </div>`
+                : ''}
+            </div>`)}
           </div>
         </div>
         ${descriptionEl}
