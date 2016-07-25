@@ -26,6 +26,7 @@ export function setup () {
 }
 
 export function show () {
+  document.title = 'Shared Folders'
   // fetch archives
   var done = multicb({ pluck: 1, spread: true })
   beaker.dat.subscribedArchives(done())

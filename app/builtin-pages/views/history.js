@@ -23,6 +23,7 @@ export function setup () {
 }
 
 export function show () {
+  document.title = 'History'
   fetchMore(render)
 }
 

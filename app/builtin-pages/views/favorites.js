@@ -18,6 +18,7 @@ export function setup () {
 }
 
 export function show () {
+  document.title = 'New tab'
   // get the bookmarks, ordered by # of views
   beaker.bookmarks.list((err, bs) => {
     bookmarks = bs || []
