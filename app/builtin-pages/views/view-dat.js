@@ -124,7 +124,8 @@ function render () {
             ${nameEl}
           </div>
           ${authorEl}
-          ${ownerEl}       
+          <div>Shared Folder</div>
+          ${ownerEl}
           <div class="flex-spacer"></div>
           <div class="vd-actions">
             ${subscribeBtn}

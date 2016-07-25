@@ -10,7 +10,6 @@ import from2 from 'from2'
 
 // db modules
 import hyperdrive from 'hyperdrive'
-var hypercoreMessages = require('hypercore/lib/messages') // TODO remove when https://github.com/mafintosh/hypercore/pull/36 merges
 import level from 'level'
 import subleveldown from 'subleveldown'
 
@@ -21,6 +20,7 @@ import hyperdriveArchiveSwarm from 'hyperdrive-archive-swarm'
 import electronWebrtc from 'electron-webrtc'
 
 // file modules
+import fs from 'fs'
 import path from 'path'
 import raf from 'random-access-file'
 import mkdirp from 'mkdirp'
@@ -29,6 +29,7 @@ import mime from 'mime'
 import bdatVersionsFile from 'bdat-versions-file'
 import getFolderSize from 'get-folder-size'
 import yazl from 'yazl'
+import chokidar from 'chokidar'
 
 // io modules
 import rpc from 'pauls-electron-rpc'
@@ -81,6 +82,17 @@ export function setup () {
   ownedArchivesDb = subleveldown(db, 'owned-archives', { valueEncoding: 'json' })
   drive = hyperdrive(db)
 
+  // watch archives for FS changes
+  var watcher = chokidar.watch(path.join(dbPath, 'Archives'), { persistent: true, cwd: path.join(dbPath, 'Archives') })
+  watcher.on('ready', () => { // wait till ready, otherwise we get an 'add' for each existing file
+    watcher.on('add', onArchiveFSChange.bind(null, 'file'))
+    watcher.on('addDir', onArchiveFSChange.bind(null, 'directory'))
+    watcher.on('change', onArchiveFSChange.bind(null, 'file'))
+    // watcher.on('unlink', onArchiveFSChange.bind(null, 'file')) TODO: dat doesnt support deletes yet
+    // watcher.on('unlinkDir', onArchiveFSChange.bind(null, 'directory')) TODO: dat doesnt support deletes yet
+  })
+  app.once('will-quit', () => watcher.close())
+
   // create webrtc
   wrtc = electronWebrtc()
   wrtc.on('error', err => log('[WRTC]', err))
@@ -124,6 +136,7 @@ export function createArchive (key, opts) {
     // -prf     
     file: name => raf(path.join(ARCHIVE_FILEPATH(archive), name)) // currently: using FS
   })
+  mkdirp.sync(ARCHIVE_FILEPATH(archive)) // ensure the folder exists
   return archive
 }
 
@@ -464,15 +477,21 @@ var rpcMethods = {
   },
 
   createFileWriteStream (archiveKey, entry) {
-    // get the archive
-    var archive = getArchive(archiveKey)
-    if (!archive)
-      throw new Error('Invalid archive key')
+    // can we write?
+    if (!ownedArchives.has(archiveKey))
+      throw new Error('Unable to write to this archive (not the owner)')
+
+    // set path
     if (!entry || (!entry.name || typeof entry.name != 'string'))
       throw new Error('Entry obj with .name is required')
+    var archivepath = ARCHIVE_FILEPATH(archiveKey)
+    var filepath = path.resolve(archivepath, entry.name)
+    if (!filepath.startsWith(archivepath))
+      throw new Error('File cant be written outside of the archive folder')
 
-    // create write stream
-    return archive.createFileWriteStream(entry)
+    // create write stream to the FS
+    // the file-watcher will pick up the change and write it to the archive
+    return fs.createWriteStream(filepath)
   },
 
   archiveInfo (key, cb) {
@@ -508,7 +527,9 @@ var rpcMethods = {
   },
 
   openInExplorer(key, cb) {
-    shell.showItemInFolder(ARCHIVE_FILEPATH(key))
+    var folderpath = ARCHIVE_FILEPATH(key)
+    log('[DAT] Opening in explorer:', folderpath)
+    shell.showItemInFolder(folderpath)
     cb()
   },
 
@@ -517,6 +538,34 @@ var rpcMethods = {
   },
   clone,
   subscribe
+}
+
+// event handlers
+// =
+
+function onArchiveFSChange (type, relname, filestat) {
+  // watcher is on parent directory of all archives,
+  // which are organized as: ./{key}/{files...}
+
+  // extract archive key
+  var archiveKey = relname.slice(0, 64)
+  if (!HASH_REGEX.test(archiveKey)) {
+    log('[DAT] Watcher ignoring change to non-archive-file:', relname)
+  }
+
+  // ignore if not owned
+  if (!ownedArchives.has(archiveKey))
+    return
+
+  // validate filepath
+  var fileRelname = relname.slice(65) // skip the '/'
+  if (!fileRelname)
+    return // ignore change event to parent directory
+
+  // lookup archive, and write new file
+  log('[DAT] Watcher updating detected change in', relname)
+  var archive = getArchive(archiveKey)
+  archive.append({ type: type, name: fileRelname, mtime: filestat.mtime, ctime: filestat.ctime })
 }
 
 // internal methods
