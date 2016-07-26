@@ -358,8 +358,12 @@ export function resolveName (name, cb) {
 
 export function getAndIdentifyEntry (archive, entry, cb) {
   var rs = archive.createFileReadStream(entry)
-  rs.on('error', cb)
+  rs.once('error', cb)
   rs.pipe(concat(data => {
+    // empty file?
+    if (!Buffer.isBuffer(data))
+      data = new Buffer([0])
+
     // try to identify the type by the buffer contents
     var mimeType
     var identifiedExt = identify(data)
