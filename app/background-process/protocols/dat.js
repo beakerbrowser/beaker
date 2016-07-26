@@ -153,10 +153,13 @@ function datServer (req, res) {
         fileReadStream
           .pipe(dat.identifyStreamMime(entry.name, mimeType => {
             headersSent = true
-            res.writeHead(200, 'OK', {
+            var headers = {
               'Content-Type': mimeType,
               'Content-Security-Policy': DAT_CSP
-            })
+            }
+            if (entry.length)
+              headers['Content-Length'] = entry.length
+            res.writeHead(200, 'OK', headers)
           }))
           .pipe(res)
 
