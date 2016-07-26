@@ -154,11 +154,10 @@ function render () {
             <div class="view-dat-version"><span class="icon icon-flow-branch"></span> Files</div>
             <div class="flex-spacer"></div>
             ${ownerEl}
+            ${hypercoreStats.render()}
           </div>
           ${uploadEl}
           ${archiveEntries(archiveEntriesTree, { showHead: false, showRoot: false, onToggleNodeExpanded })}
-          <div class="hypercore-stats-header"><div><span class="icon icon-network"></span> Network</div></div>
-          ${hypercoreStats.render()}
           ${readmeEl}
         </div>
       </div>

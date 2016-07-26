@@ -128,9 +128,9 @@ export function archiveEntries (tree, opts={}) {
         // modify the last spacer to have an arrow in it
         let icon = isOpen ? 'icon icon-down-dir' : 'icon icon-right-dir'
         spacers[depth].appendChild(yo`<span class=${icon}></span>`)
-        link = yo`<a href="">${entry.name}</a>`
+        link = yo`<a href="" title=${entry.name}>${entry.name}</a>`
       } else {
-        link = yo`<a href="dat://${tree.entry.key}/${entry.path}">${entry.name}</a>`
+        link = yo`<a href="dat://${tree.entry.key}/${entry.path}" title=${entry.name}>${entry.name}</a>`
       }
 
       // render self
@@ -138,7 +138,7 @@ export function archiveEntries (tree, opts={}) {
       var onclick = opts.onToggleNodeExpanded && entry.type == 'directory' ? (e => opts.onToggleNodeExpanded(node)) : undefined
       els.push(yo`<div class=${'fl-row '+entry.type+(isDotfile?' dotfile':'')} onclick=${onclick}>
         <div class="fl-name">${spacers}${link}</div>
-        <div class="fl-updated">${entry.mtime ? niceDate(entry.mtime) : ''}</div>
+        <div class="fl-updated">${entry.mtime ? niceDate(entry.mtime) : '--'}</div>
         <div class="fl-size">${entry.length ? prettyBytes(entry.length) : ''}</div>
       </div>`)
     }

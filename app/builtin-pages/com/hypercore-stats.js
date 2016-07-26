@@ -3,7 +3,7 @@ import speedometer from 'speedometer'
 import prettyBytes from 'pretty-bytes'
 import { throttle } from '../../lib/functions'
 
-const RERENDER_INTERVAL = 2e3 // 2s
+const RERENDER_INTERVAL = 500 // .5s
 const RERENDER_THROTTLE = 500 // .5s
 
 // NOTE
