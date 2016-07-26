@@ -1,4 +1,6 @@
 import { app, ipcMain, shell } from 'electron'
+import from2 from 'from2'
+import through2 from 'through2'
 import through2Concurrent from 'through2-concurrent'
 import { Readable } from 'stream'
 import concat from 'concat-stream'
@@ -6,7 +8,6 @@ import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import pump from 'pump'
 import multicb from 'multicb'
-import from2 from 'from2'
 import trackArchiveEvents from './dat/track-archive-events'
 
 // db modules
@@ -360,29 +361,31 @@ export function resolveName (name, cb) {
   })
 }
 
-export function getAndIdentifyEntry (archive, entry, cb) {
-  var rs = archive.createFileReadStream(entry)
-  rs.once('error', cb)
-  rs.pipe(concat(data => {
-    // empty file?
-    if (!Buffer.isBuffer(data))
-      data = new Buffer([0])
+// TODO factor this out into a module!
+export function identifyStreamMime (name, cb) {
+  var first = true
+  return through2(function (chunk, enc, cb2) {
+    if (first) {
+      first = false
 
-    // try to identify the type by the buffer contents
-    var mimeType
-    var identifiedExt = identify(data)
-    if (identifiedExt)
-      mimeType = mime.lookup(identifiedExt)
-    if (mimeType)
-      log('[DAT] Identified entry mimetype as', mimeType)
-    else {
-      // fallback to using the entry name
-      mimeType = mime.lookup(entry.name)
-      log('[DAT] Assumed mimetype from entry name', mimeType)
+      // try to identify the type by the chunk contents
+      var mimeType
+      var identifiedExt = identify(chunk)
+      if (identifiedExt)
+        mimeType = mime.lookup(identifiedExt)
+      if (mimeType)
+        log('[DAT] Identified entry mimetype as', mimeType)
+      else {
+        // fallback to using the entry name
+        mimeType = mime.lookup(name)
+        log('[DAT] Assumed mimetype from entry name', mimeType)
+      }
+      cb(mimeType)
     }
-
-    cb(null, { data: data, mimeType: mimeType })
-  }))
+ 
+    this.push(chunk) 
+    cb2()
+  })
 }
 
 export function createZipFileStream (archive) {

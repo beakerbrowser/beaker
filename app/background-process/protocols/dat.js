@@ -67,9 +67,25 @@ function datServer (req, res) {
   if (req.method != 'GET')
     return cb(405, 'Method Not Supported')
 
+  // track whether the request has been aborted, by client or server
+  // if, after some async, we find `aborted == true`, then we just stop
+  var aborted = false
+  req.once('abort', () => aborted = true)
+  req.once('aborted', () => aborted = true)
+
+  // stateful vars that may need cleanup
+  var timeout
+  function cleanup () {
+    if (aborted)
+      log('[DAT] Request aborted')
+    if (timeout)
+      clearTimeout(timeout)
+  }
+
   // resolve the name
   // (if it's a hostname, do a DNS lookup)
   dat.resolveName(urlp.host, (err, archiveKey) => {
+    if (aborted) return cleanup()
     if (err)
       return cb(404, 'Name Not Resolved')
 
@@ -78,14 +94,16 @@ function datServer (req, res) {
     dat.swarm(archiveKey)
 
     // setup a timeout
-    var timeout = setTimeout(() => {
+    timeout = setTimeout(() => {
       log('[DAT] Timed out searching for', archiveKey)
       cb(408, 'Timed out')
     }, REQUEST_TIMEOUT_MS)
 
     archive.open(err => {
+      if (aborted) return cleanup()
       if (err) {
         log('[DAT] Failed to open archive', archiveKey, err)
+        cleanup()
         return cb(500, 'Failed')
       }
 
@@ -95,10 +113,17 @@ function datServer (req, res) {
       if (!filepath || filepath == '/')          filepath = 'index.html'
       if (filepath && filepath.charAt(0) == '/') filepath = filepath.slice(1)
       archive.lookup(filepath, (err, entry) => {
+        // cleanup the timeout now
+        cleanup()
+
+        // still serving?
+        if (aborted)
+          return
+
         // not found
         if (!entry) {
           log('[DAT] Entry not found:', urlp.path)
-          clearTimeout(timeout)
+          cleanup()
 
           // if we're looking for a directory, redirect to view-dat
           if (!urlp.path || urlp.path.charAt(urlp.path.length - 1) == '/') {
@@ -119,23 +144,42 @@ function datServer (req, res) {
           return cb(404, 'File Not Found')
         }
 
-        // fetch the entry
-        // TODO handle stream errors
+        // fetch the entry and stream the response
         log('[DAT] Entry found:', urlp.path)
-        dat.getAndIdentifyEntry(archive, entry, (err, entryInfo) => {
-          clearTimeout(timeout)
-          if (err) {
-            log('[DAT] Error', err)
-            return cb(500, err.toString())
-          }
+        var headersSent = false
+        var fileReadStream = archive.createFileReadStream(entry)
+        fileReadStream
+          .pipe(dat.identifyStreamMime(entry.name, mimeType => {
+            headersSent = true
+            res.writeHead(200, 'OK', {
+              'Content-Type': mimeType,
+              'Content-Security-Policy': DAT_CSP
+            })
+          }))
+          .pipe(res)
 
-          // respond
-          res.writeHead(200, 'OK', {
-            'Content-Type': entryInfo.mimeType,
-            'Content-Security-Policy': DAT_CSP
-          })
-          res.end(entryInfo.data)
-        })         
+        // handle empty files
+        fileReadStream.once('end', () => {
+          if (!headersSent) {
+            log('[DAT] Served empty file')
+            res.writeHead(200, 'OK')
+            res.end('\n')
+            // TODO
+            // for some reason, sending an empty end is not closing the request
+            // this may be an issue in beaker's interpretation of the page-load cycle... look into that
+            // -prf
+          }
+        })
+
+        // handle read-stream errors
+        fileReadStream.once('error', err => {
+          log('[DAT] Error reading file', err)
+          if (!headersSent)
+            cb(500, 'Failed to read file')
+        })
+
+        // abort if the client aborts
+        req.once('abort', () => fileReadStream.destroy())      
       })
     })
   })
