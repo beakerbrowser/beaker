@@ -67,11 +67,13 @@ function datServer (req, res) {
   if (req.method != 'GET')
     return cb(405, 'Method Not Supported')
 
-  // track whether the request has been aborted, by client or server
+  // track whether the request has been aborted by client
   // if, after some async, we find `aborted == true`, then we just stop
   var aborted = false
-  req.once('abort', () => aborted = true)
-  req.once('aborted', () => aborted = true)
+  req.once('aborted', () => {
+    aborted = true
+    log('[DAT] Request aborted by client')
+  })
 
   // stateful vars that may need cleanup
   var timeout
@@ -166,7 +168,8 @@ function datServer (req, res) {
             res.end('\n')
             // TODO
             // for some reason, sending an empty end is not closing the request
-            // this may be an issue in beaker's interpretation of the page-load cycle... look into that
+            // this may be an issue in beaker's interpretation of the page-load ?
+            // but Im solving it here for now
             // -prf
           }
         })
@@ -179,7 +182,7 @@ function datServer (req, res) {
         })
 
         // abort if the client aborts
-        req.once('abort', () => fileReadStream.destroy())      
+        req.once('aborted', () => fileReadStream.destroy())   
       })
     })
   })
