@@ -30,6 +30,7 @@ export function renderArchives (archives, opts={}) {
 
     // render row
     let title = archive.name||'Untitled'
+    let mtime = archive.mtime ? ucfirst(niceDate(archive.mtime)) : ''
     var onclick = opts.onToggleNodeExpanded ? (e => opts.onToggleNodeExpanded(archive)) : undefined
     archiveEls.push(yo`<div class=${"fl-row archive"+(isSelected?' selected':'')} onclick=${onclick}>
       <div class="fl-name">
@@ -38,7 +39,7 @@ export function renderArchives (archives, opts={}) {
         </div>
         ${archive.description ? yo`<div>${archive.description}</div>` : ''}
       </div>
-      <div class="fl-updated">${archive.mtime ? ucfirst(niceDate(archive.mtime)) : ''}</div>
+      <div class="fl-updated" title=${mtime}>${mtime}</div>
       <div class="fl-size">${archive.size ? prettyBytes(archive.size) : ''}</div>
       <div class="fl-status">${status}</div>
     </div>`)
@@ -136,9 +137,10 @@ export function archiveEntries (tree, opts={}) {
       // render self
       var isDotfile = entry.name.charAt(0) == '.'
       var onclick = opts.onToggleNodeExpanded && entry.type == 'directory' ? (e => opts.onToggleNodeExpanded(node)) : undefined
+      let mtime = entry.mtime ? niceDate(entry.mtime) : ''
       els.push(yo`<div class=${'fl-row '+entry.type+(isDotfile?' dotfile':'')} onclick=${onclick}>
         <div class="fl-name">${spacers}${link}</div>
-        <div class="fl-updated">${entry.mtime ? niceDate(entry.mtime) : '--'}</div>
+        <div class="fl-updated" title=${mtime}>${mtime}</div>
         <div class="fl-size">${entry.length ? prettyBytes(entry.length) : ''}</div>
       </div>`)
     }

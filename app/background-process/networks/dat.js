@@ -126,6 +126,7 @@ export function createArchive (key, opts) {
     return
 
   // NOTE this only works on live archives
+  var isOwner = key === null // we'll be the owner if no key is provided
   var archive = drive.createArchive(key, {
     live: true,
     sparse: sparse,
@@ -135,8 +136,21 @@ export function createArchive (key, opts) {
     // if the `file` opt isnt specified, we're using leveldb
     // leveldb may perform worse overall, but it lets use deduplicate across archives
     // however, FS lets us open the archive in explorer
+    // file: name => raf(path.join(ARCHIVE_FILEPATH(archive), name))
+    //  --- ^ original thinking, still valid ---
+
+    // but we now have a part 2 to this situation!
+    // if the dat-owner, we want to consider the file-system as the source of authority
+    // the chokidar-watcher watches the dir to pickup updates made directly to the files...
+    // ... and updates made with our APIs are done by writing to FS, which the watcher picks up
+    // however! 
+    // with `file` set, raf starts to fight with our process
+    // why? because: we write to disk first, then try to add to the hyperdrive...
+    // ... and raf expects the file to not exist
+    // so, for now, we're only going to use `file` for NON-OWNED ARCHIVES
+    // if the archive is owned, we're going to duplicate into level
     // -prf     
-    file: name => raf(path.join(ARCHIVE_FILEPATH(archive), name)) // currently: using FS
+    file: (isOwner) ? false : (name => raf(path.join(ARCHIVE_FILEPATH(archive), name)))
   })
   mkdirp.sync(ARCHIVE_FILEPATH(archive)) // ensure the folder exists
   trackArchiveEvents(archivesEvents, archive) // start tracking the archive's events
@@ -571,9 +585,17 @@ function onArchiveFSChange (action, type, relname, filestat) {
 
   // lookup archive, and write new file
   log('[DAT] Watcher updating detected change in', relname)
+  var entry = { type, name: fileRelname, mtime: filestat.mtime, ctime: filestat.ctime }
   var archive = getArchive(archiveKey)
-  archive.append({ type, name: fileRelname, mtime: filestat.mtime, ctime: filestat.ctime })
-  archivesEvents.emit('update-listing', { key: archiveKey, action, type, name: fileRelname, mtime: filestat.mtime, ctime: filestat.ctime })
+  pump(
+    fs.createReadStream(path.join(ARCHIVE_FILEPATH(archive), fileRelname)),
+    archive.createFileWriteStream(entry, {indexing: true}),
+    err => {
+      if (err)
+        return log('[DAT] Failed to add file to archive:', err)
+      archivesEvents.emit('update-listing', { key: archiveKey, action, type, name: fileRelname, mtime: filestat.mtime, ctime: filestat.ctime })
+    }
+  )
 }
 
 // internal methods
