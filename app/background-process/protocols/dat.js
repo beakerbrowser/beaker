@@ -91,7 +91,7 @@ function datServer (req, res) {
 
       // lookup entry
       log('[DAT] attempting to lookup', archiveKey)
-      var filepath = urlp.path
+      var filepath = decodeURIComponent(urlp.path)
       if (!filepath || filepath == '/')          filepath = 'index.html'
       if (filepath && filepath.charAt(0) == '/') filepath = filepath.slice(1)
       archive.lookup(filepath, (err, entry) => {

@@ -32,6 +32,21 @@
   }
 }
 
+// this gets used a couple times
+.header-mixin() {
+  background: #fafafa;
+  color: gray;
+
+  display: flex;
+  padding: 3px 5px 3px 10px;
+
+  border: 1px solid #ccc;
+  border-bottom: 0;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+}
+
+
 // drag/drop behaviors
 body.drag {
   #el-content {
@@ -145,17 +160,7 @@ body.drag {
   .view-dat-content {
     padding: 10px;
     .vdc-header {
-      background: #fafafa;
-      color: gray;
-
-      display: flex;
-      padding: 3px 5px 3px 10px;
-
-      border: 1px solid #ccc;
-      border-bottom: 0;
-      border-top-left-radius: 2px;
-      border-top-right-radius: 2px;
-
+      .header-mixin;
       .btn {
         margin-left: 5px;
       }
@@ -176,6 +181,22 @@ body.drag {
       &.empty {
         border-top: 0;
       }
+    }
+  }
+  .hypercore-stats-header {
+    .header-mixin;
+    margin-top: 10px;
+  }
+  .hypercore-stats {
+    display: flex;
+    font-size: 15px;
+    color: #666;
+    border: 1px solid #ccc;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+
+    & > * {
+      padding: 10px;
     }
   }
   .feed {

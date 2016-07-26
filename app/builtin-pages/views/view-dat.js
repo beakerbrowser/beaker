@@ -3,6 +3,7 @@ import { niceDate } from '../../lib/time'
 import { ucfirst } from '../../lib/strings'
 import { archiveEntries, entriesListToTree } from '../com/files-list'
 import toggleable from '../com/toggleable'
+import HypercoreStats from '../com/hypercore-stats'
 import tabs from '../com/tabs'
 import prettyBytes from 'pretty-bytes'
 import emitStream from 'emit-stream'
@@ -40,6 +41,9 @@ var archiveEntriesTree
 // event emitter
 var archivesEvents
 
+// stats tracker
+var hypercoreStats
+
 
 // exported API
 // =
@@ -57,6 +61,8 @@ export function show () {
     if (archiveInfo.isOwner) {
       dragDrop('body', onDragDrop)
     }
+    // setup stats
+    hypercoreStats = new HypercoreStats(archivesEvents, { peers: archiveInfo.peers })
     // render
     render()
   })
@@ -151,6 +157,8 @@ function render () {
           </div>
           ${uploadEl}
           ${archiveEntries(archiveEntriesTree, { showHead: false, showRoot: false, onToggleNodeExpanded })}
+          <div class="hypercore-stats-header"><div><span class="icon icon-network"></span> Network</div></div>
+          ${hypercoreStats.render()}
           ${readmeEl}
         </div>
       </div>

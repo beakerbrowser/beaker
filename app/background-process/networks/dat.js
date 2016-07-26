@@ -7,6 +7,7 @@ import EventEmitter from 'events'
 import pump from 'pump'
 import multicb from 'multicb'
 import from2 from 'from2'
+import trackArchiveEvents from './dat/track-archive-events'
 
 // db modules
 import hyperdrive from 'hyperdrive'
@@ -137,6 +138,7 @@ export function createArchive (key, opts) {
     file: name => raf(path.join(ARCHIVE_FILEPATH(archive), name)) // currently: using FS
   })
   mkdirp.sync(ARCHIVE_FILEPATH(archive)) // ensure the folder exists
+  trackArchiveEvents(archivesEvents, archive) // start tracking the archive's events
   return archive
 }
 
@@ -170,6 +172,7 @@ export function getArchiveMeta (key, cb) {
       size: 0,
       isDownloading: false,
       isSharing: (key in swarms),
+      peers: 0,
       isOwner: ownedArchives.has(key),
       isSubscribed: subscribedArchives.has(key)
     }, meta)
@@ -177,6 +180,7 @@ export function getArchiveMeta (key, cb) {
     // pull some live data
     var archive = archives[key]
     if (archive) {
+      meta.peers = archive.metadata.peers.length
       // TODO this definition is wrong. waiting on a solution in hyperdrive. -prf
       /*meta.isDownloading = 
         (archive.metadata._downloaded < archive.metadata.blocks) ||
