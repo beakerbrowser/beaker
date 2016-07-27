@@ -93,7 +93,10 @@ function datServer (req, res) {
 
     // start searching the network
     var archive = dat.getArchive(archiveKey)
-    dat.swarm(archiveKey)
+    if (!archive) {
+      archive = dat.createArchive(new Buffer(archiveKey, 'hex'))
+      dat.swarm(archiveKey)
+    }
 
     // setup a timeout
     timeout = setTimeout(() => {

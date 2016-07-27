@@ -78,7 +78,10 @@ function viewdatServer (req, res) {
 
     // start searching the network
     var archive = dat.getArchive(archiveKey)
-    var ds = dat.swarm(archiveKey)
+    if (!archive) {
+      archive = dat.createArchive(new Buffer(archiveKey, 'hex'))
+      dat.swarm(archiveKey)
+    }
 
     if (urlp.query.as == 'zip') {
       // serve zip archive

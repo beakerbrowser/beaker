@@ -60,7 +60,7 @@ function render () {
       <div class="sf-actions">
         <button class="btn btn-default" onclick=${onClickNewDat}>New Dat Site</button>
       </div>
-      ${renderArchives(archives, { showHead: true })}
+      ${renderArchives(archives, { showHead: true, onToggleSharing })}
     </div>
   </div>`)
 }
@@ -72,6 +72,16 @@ function onClickNewDat (e) {
   beaker.dat.createNewArchive((err, key) => {
     window.location = 'view-dat://'+key
   })
+}
+
+function onToggleSharing (archive) {
+  if (archive.isSharing) {
+    beaker.dat.unswarm(archive.key)
+    render()
+  } else {
+    beaker.dat.swarm(archive.key)
+    render()
+  }
 }
 
 function onUpdateArchive (update) {

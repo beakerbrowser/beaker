@@ -149,18 +149,17 @@ function renderArchive () {
           <div class="flex-spacer"></div>
           <div class="vd-actions">
             ${subscribeBtn}
-            ${toggleable((onToggle, isOpen) => yo`<div class="dropdown-btn-container">
+            ${toggleable(yo`<div class="dropdown-btn-container">
               <div class="btn-group">
                 <button class="btn btn-default btn-mini" onclick=${onClickOpenInExplorer}>
                   <span class="icon icon-layout"></span> Open in Explorer
                 </button>
-                <button class="btn btn-default btn-mini ${isOpen ? 'active' : ''}" onclick=${onToggle}><span class="icon icon-down-dir"></span></button>
+                <button class="btn btn-default btn-mini toggleable"><span class="icon icon-down-dir"></span></button>
               </div>
-              ${isOpen
-                ? yo`<div class="dropdown-btn-list" onmouseleave=${onToggle}>
-                  <div onclick=${onClickDownloadZip}><span class="icon icon-floppy"></span> Save As .Zip File</div>
-                </div>`
-                : ''}
+              <div class="dropdown-btn-list toggleoff" data-toggle-on="mouseleave">
+                <div onclick=${onClickDownloadZip}><span class="icon icon-floppy"></span> Save As .Zip File</div>
+                <div onclick=${onToggleSharing}>${archiveInfo.isSharing ? 'Stop' : 'Start'} sharing</div>
+              </div>
             </div>`)}
           </div>
         </div>
@@ -170,7 +169,7 @@ function renderArchive () {
             <div class="view-dat-version"><span class="icon icon-flow-branch"></span> Files</div>
             <div class="flex-spacer"></div>
             ${ownerEl}
-            ${hypercoreStats.render()}
+            ${archiveInfo.isSharing ? hypercoreStats.render() : yo`<div class="not-sharing">Not sharing</div>`}
           </div>
           ${uploadEl}
           ${archiveEntries(archiveEntriesTree, { showHead: false, showRoot: false, onToggleNodeExpanded })}
@@ -283,6 +282,16 @@ function onToggleSubscribed () {
     archiveInfo.isSubscribed = newState
     render()
   })
+}
+
+function onToggleSharing () {
+  if (archiveInfo.isSharing) {
+    beaker.dat.unswarm(archiveInfo.key)
+    render()
+  } else {
+    beaker.dat.swarm(archiveInfo.key)
+    render()
+  }
 }
 
 // TODO

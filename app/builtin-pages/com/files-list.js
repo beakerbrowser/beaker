@@ -1,5 +1,6 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
+import toggleable from '../com/toggleable'
 import { niceDate } from '../../lib/time'
 import { ucfirst, pluralize } from '../../lib/strings'
 
@@ -12,6 +13,7 @@ export function renderArchives (archives, opts={}) {
       <div class="fl-updated">Last Updated</div>
       <div class="fl-size">Size</div>
       <div class="fl-status">Status</div>
+      <div class="fl-actions"></div>
     </div>`
   }
 
@@ -34,6 +36,7 @@ export function renderArchives (archives, opts={}) {
     let title = archive.name||'Untitled'
     let mtime = archive.mtime ? ucfirst(niceDate(archive.mtime)) : ''
     var onclick = opts.onToggleNodeExpanded ? (e => opts.onToggleNodeExpanded(archive)) : undefined
+    var onToggleSharing = opts.onToggleSharing ? (e => opts.onToggleSharing(archive)) : undefined
     archiveEls.push(yo`<div class=${"fl-row archive"+(isSelected?' selected':'')} onclick=${onclick}>
       <div class="fl-name">
         <div>
@@ -44,6 +47,14 @@ export function renderArchives (archives, opts={}) {
       <div class="fl-updated" title=${mtime}>${mtime}</div>
       <div class="fl-size">${archive.size ? prettyBytes(archive.size) : ''}</div>
       <div class="fl-status">${status}</div>
+      <div class="fl-actions">
+        ${toggleable(yo`<div class="dropdown-btn-container">
+          <button class="btn btn-default btn-mini toggleable" data-toggle-on="click"><span class="icon icon-down-dir"></span></button>
+          <div class="dropdown-btn-list toggleoff" data-toggle-on="mouseleave">
+            <div onclick=${onToggleSharing}>${archive.isSharing ? 'Stop' : 'Start'} sharing</div>
+          </div>
+        </div>`)}
+      </div>
     </div>`)
   })
 

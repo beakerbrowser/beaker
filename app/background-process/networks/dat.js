@@ -154,6 +154,7 @@ export function createArchive (key, opts) {
     file: (isOwner) ? false : (name => raf(path.join(ARCHIVE_FILEPATH(archive), name)))
   })
   mkdirp.sync(ARCHIVE_FILEPATH(archive)) // ensure the folder exists
+  cacheArchive(archive)
   trackArchiveEvents(archivesEvents, archive) // start tracking the archive's events
   return archive
 }
@@ -164,11 +165,7 @@ export function cacheArchive (archive) {
 
 export function getArchive (key) {
   var [keyBuf, keyStr] = bufAndStr(key)
-
-  // fetch or create
-  if (keyStr in archives)
-    return archives[keyStr]
-  return (archives[keyStr] = createArchive(keyBuf))
+  return archives[keyStr]
 }
 
 export function getArchiveMeta (key, cb) {
@@ -325,6 +322,7 @@ export function swarm (key) {
   var archive = getArchive(key)
   var s = hyperdriveArchiveSwarm(archive, { wrtc })
   swarms[keyStr] = s
+  archivesEvents.emit('update-archive', { key: keyStr, isSharing: true })
 
   // hook up events
   s.node.on('peer', peer => log('[DAT] Connection', peer.id, 'from discovery-swarm'))
@@ -348,6 +346,22 @@ export function swarm (key) {
     }
   })
   return s
+}
+
+// take the archive out of the network
+export function unswarm (key) {
+  var [keyBuf, keyStr] = bufAndStr(key)
+
+  // fetch
+  var s = swarms[keyStr]
+  if (!s || s.isClosing)
+    return
+  s.isClosing = true
+  s.close(() => {
+    log('[DAT] Stopped swarming archive', keyStr)
+    delete swarms[keyStr]
+    archivesEvents.emit('update-archive', { key: keyStr, isSharing: false })
+  })
 }
 
 export function resolveName (name, cb) {
@@ -462,6 +476,7 @@ export function createZipFileStream (archive) {
 // rpc exports
 // =
 
+
 function streamFetchMeta (key, enc, cb) {
   if (Buffer.isBuffer(key))
     key = key.toString('hex')
@@ -561,7 +576,10 @@ var rpcMethods = {
     cb(null, createNewArchive().key.toString('hex'))
   },
   clone,
-  subscribe
+  subscribe,
+
+  swarm: key => { swarm(key) }, // dont return anything
+  unswarm
 }
 
 // event handlers

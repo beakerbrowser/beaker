@@ -11,5 +11,8 @@ export default {
   subscribe: 'async',
   createFileWriteStream: 'writable',
   
-  archivesEventStream: 'readable'
+  archivesEventStream: 'readable',
+
+  swarm: 'sync',
+  unswarm: 'sync'
 }

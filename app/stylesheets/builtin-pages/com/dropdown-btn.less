@@ -1,8 +1,14 @@
 .dropdown-btn-container {
   display: inline-block;
   position: relative;
+
+  &.open .dropdown-btn-list {
+    display: block;
+  }
 }
 .dropdown-btn-list {
+  display: none;
+
   position: absolute;
   z-index: 1;
   top: 25px;
