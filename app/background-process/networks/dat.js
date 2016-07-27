@@ -327,7 +327,8 @@ export function swarm (key) {
   swarms[keyStr] = s
 
   // hook up events
-  s.on('connection', (peer, type) => log('[DAT] Connection', peer.id.toString('hex'), 'from', type.type))
+  s.node.on('peer', peer => log('[DAT] Connection', peer.id, 'from discovery-swarm'))
+  s.browser.on('peer', peer => log('[DAT] Connection', peer.remoteAddress+':'+peer.remotePort, 'from webrtc'))
   archive.open(err => {
     if (err)
       return log('[DAT] Error opening archive for swarming', keyStr, err)
