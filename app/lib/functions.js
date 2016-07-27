@@ -59,7 +59,7 @@ export function debounce (func, wait, immediate) {
     if (args) result = func.apply(context, args);
   };
 
-  var debounced = restArgs(function(args) {
+  var debounced = function(...args) {
     if (timeout) clearTimeout(timeout);
     if (immediate) {
       var callNow = !timeout;
@@ -70,7 +70,7 @@ export function debounce (func, wait, immediate) {
     }
 
     return result;
-  });
+  };
 
   debounced.cancel = function() {
     clearTimeout(timeout);

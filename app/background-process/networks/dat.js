@@ -9,6 +9,7 @@ import EventEmitter from 'events'
 import pump from 'pump'
 import multicb from 'multicb'
 import trackArchiveEvents from './dat/track-archive-events'
+import { debounce } from '../../lib/functions'
 
 // db modules
 import hyperdrive from 'hyperdrive'
@@ -331,16 +332,17 @@ export function swarm (key) {
     if (err)
       return log('[DAT] Error opening archive for swarming', keyStr, err)
 
+    var debouncedUpdateArchiveMeta = debounce(() => updateArchiveMeta(archive), 1e3)
     if (archive.metadata) {
       archive.metadata.on('download-finished', () => {
         log('[DAT] Metadata download finished', keyStr)
-        updateArchiveMeta(archive)
+        debouncedUpdateArchiveMeta()
       })
     }
     if (archive.content) {
       archive.content.on('download-finished', () => {
         log('[DAT] Content download finished', keyStr)
-        updateArchiveMeta(archive)
+        debouncedUpdateArchiveMeta()
       })
     }
   })
