@@ -1,7 +1,7 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import { niceDate } from '../../lib/time'
-import { ucfirst } from '../../lib/strings'
+import { ucfirst, pluralize } from '../../lib/strings'
 
 export function renderArchives (archives, opts={}) {
 
@@ -25,6 +25,8 @@ export function renderArchives (archives, opts={}) {
     var status = ''
     if (archive.isDownloading)
       status = 'Downloading'
+    else if (archive.peers)
+      status = 'Sharing with '+archive.peers+' '+pluralize(archive.peers, 'peer')
     else if (archive.isSharing)
       status = 'Sharing'
 
@@ -139,7 +141,7 @@ export function archiveEntries (tree, opts={}) {
       var onclick = opts.onToggleNodeExpanded && entry.type == 'directory' ? (e => opts.onToggleNodeExpanded(node)) : undefined
       let mtime = entry.mtime ? niceDate(entry.mtime) : ''
       els.push(yo`<div class=${'fl-row '+entry.type+(isDotfile?' dotfile':'')} onclick=${onclick}>
-        <div class="fl-name">${spacers}${link}</div>
+        <div class="fl-name overflower">${spacers}${link}</div>
         <div class="fl-updated" title=${mtime}>${mtime}</div>
         <div class="fl-size">${entry.length ? prettyBytes(entry.length) : ''}</div>
       </div>`)

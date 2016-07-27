@@ -38,9 +38,11 @@
   }
   .fl-name {
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: pre;
+    &.overflower {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: pre;
+    }
     .spacer {
       display: inline-block;
       width: 18px;
@@ -74,7 +76,7 @@
     white-space: pre;
   }
   .fl-status {
-    flex: 0 0 140px;  
+    flex: 0 0 150px;  
   }
   .fl-progress {
     flex: 0 0 60px;

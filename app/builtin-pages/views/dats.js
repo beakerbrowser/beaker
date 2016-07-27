@@ -23,6 +23,7 @@ export function setup () {
   // start event stream and register events
   archivesEvents = emitStream(beaker.dat.archivesEventStream())
   archivesEvents.on('update-archive', onUpdateArchive)
+  archivesEvents.on('update-peers', onUpdatePeers)
 }
 
 export function show () {
@@ -86,6 +87,16 @@ function onUpdateArchive (update) {
       // add to list
       archives.push(update)
     }
+    render()
+  }
+}
+
+function onUpdatePeers ({ key, peers }) {
+  if (archives) {
+    // find the archive being updated
+    var archive = archives.find(a => a.key == key)
+    if (archive)
+      archive.peers = peers // update
     render()
   }
 }
