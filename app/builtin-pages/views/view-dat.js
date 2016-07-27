@@ -37,6 +37,7 @@ var md = new Remarkable({
 var archiveKey = (new URL(window.location)).host
 var archiveInfo
 var archiveEntriesTree
+var archiveError = false
 
 // event emitter
 var archivesEvents
@@ -56,13 +57,19 @@ export function setup () {
 }
 
 export function show () {
+  // render loading state
+  render()
+
+  // get data
   fetchArchiveInfo(() => {
-    // setup drag/drop
-    if (archiveInfo.isOwner) {
-      dragDrop('body', onDragDrop)
+    if (archiveInfo) {
+      // setup drag/drop
+     if (archiveInfo.isOwner) {
+        dragDrop('body', onDragDrop)
+      }
+      // setup stats
+      hypercoreStats = new HypercoreStats(archivesEvents, { peers: archiveInfo.peers })
     }
-    // setup stats
-    hypercoreStats = new HypercoreStats(archivesEvents, { peers: archiveInfo.peers })
     // render
     render()
   })
@@ -76,6 +83,15 @@ export function hide () {
 // =
 
 function render () {
+  if (archiveInfo)
+    renderArchive()
+  else if (archiveError)
+    renderError()
+  else
+    renderLoading()
+}
+
+function renderArchive () {
   var name = archiveInfo.name || archiveInfo.short_name || 'Untitled'
 
   // set page title
@@ -178,14 +194,40 @@ function render () {
   </div>`)
 }
 
+function renderError () {
+  // render view
+  yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
+    <div class="error">
+      <div class="e-banner">
+        <div class="icon icon-attention"></div>
+        <div>The site failed to load. ${archiveError.toString()}. Sorry for the inconvenience.</div>
+      </div>
+    </div>
+  </div>`)
+}
+
+function renderLoading () {
+  // render view
+  yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
+    <div class="loading">
+      <div class="l-banner">
+        <div class="spinner"></div>
+        <div>Searching the Dat Network for this site. Please wait...</div>
+      </div>
+    </div>
+  </div>`)
+}
+
 // internal methods
 // =
 
 function fetchArchiveInfo(cb) {
   beaker.dat.archiveInfo(archiveKey, (err, ai) => {
     console.log(ai)
+    archiveError = err
     archiveInfo = ai
-    archiveEntriesTree = entriesListToTree(archiveInfo)
+    if (archiveInfo)
+      archiveEntriesTree = entriesListToTree(archiveInfo)
     cb()
   })
 }
