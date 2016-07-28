@@ -162,8 +162,10 @@ function drawTabCurves () {
 function onTabElLoad (page) {
   return e => {
     // once loaded, we can give the 'in-position' class
-    page.isTabRendered = true
-    updateTabs()
+    setTimeout(() => {
+      page.isTabRendered = true
+      updateTabs()
+    }, 215) // transition should take 200ms
   }
 }
 

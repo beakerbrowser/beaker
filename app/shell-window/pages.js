@@ -9,7 +9,7 @@ import sitedata from '../lib/fg/sitedata-api'
 import dat from '../lib/fg/dat-api'
 import { urlToData } from '../lib/fg/img'
 
-const DEFAULT_URL = 'beaker:start'
+export const DEFAULT_URL = 'beaker:start'
 
 // globals
 // =

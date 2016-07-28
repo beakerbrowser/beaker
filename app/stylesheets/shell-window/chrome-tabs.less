@@ -55,8 +55,8 @@
     // animated behaviors
     transition: .2s width;
     &.chrome-tab-in-position {
-      // once in the initial position, start transitioning the transform as well
-      transition: 0.2s width, .1s transform;
+      // once in the initial position, start transitioning the transform, stop transitioning the width
+      transition: .1s transform;
     }
 
     &, .chrome-tab-curves-left, .chrome-tab-curves-right {

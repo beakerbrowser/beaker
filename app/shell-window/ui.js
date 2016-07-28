@@ -13,7 +13,7 @@ export function setup () {
   tabs.setup()
   commandHandlers.setup()
   swipeHandlers.setup()
-  pages.loadPinnedFromDB(() => pages.setActive(pages.create('beaker:start')))
+  pages.loadPinnedFromDB(() => pages.setActive(pages.create(pages.DEFAULT_URL)))
 }
 
 function onWindowEvent (event, type) {
