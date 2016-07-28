@@ -52,17 +52,21 @@ export function create (opts) {
     webviewEl: createWebviewEl(id, url),
     navbarEl: navbar.createEl(id),
 
+    // page state
     loadingURL: false, // what URL is being loaded, if any?
     manuallyTrackedIsLoading: true, // used because the webview may never be ready, so webview.isLoading() isnt enough
     bookmark: null, // this page's bookmark object, if it's bookmarked
     isWebviewReady: false, // has the webview loaded its methods?
     isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
     isActive: false, // is the active page?
-    isPinned: opts.isPinned, // is this page pinned?
     isInpageFinding: false, // showing the inpage find ctrl?
     zoom: 0, // what's the current zoom level? (updated by a message from the webview)
     favicons: null, // what are the favicons of the page?
     archiveInfo: null, // if a dat archive, includes the metadata
+
+    // tab state
+    isPinned: opts.isPinned, // is this page pinned?
+    isTabRendered: false, // has the tab el been rendered?
 
     // get the URL of the page we want to load (vs which is currently loaded)
     getIntendedURL: function () {
@@ -203,26 +207,16 @@ export function remove (page, removeDelay) {
   // emit
   events.emit('remove', page)
 
-  // remove the page object
-  if (!removeDelay) deleteEntry()
-  else setTimeout(deleteEntry, removeDelay)
-  function deleteEntry () {
-    // find
-    var i = pages.indexOf(page)
-    if (i == -1)
-      return console.warn('pages.remove() called for missing page', page)
+  // remove
+  pages.splice(i, 1)
+  webviewsDiv.removeChild(page.webviewEl)
 
-    // remove
-    pages.splice(i, 1)
-    webviewsDiv.removeChild(page.webviewEl)
+  // remove all attributes, to clear circular references
+  for (var k in page)
+    page[k] = null
 
-    // remove all attributes, to clear circular references
-    for (var k in page)
-      page[k] = null
-
-    // emit
-    events.emit('update')
-  }
+  // emit
+  events.emit('update')
 }
 
 export function reopenLastRemoved () {

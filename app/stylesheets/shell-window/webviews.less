@@ -7,6 +7,7 @@
     width: 100%;
     outline: none;
     position: absolute;
+    transform: translateX(0); // put the webview in another compositing layer, to reduce layout render times
 
     &.hidden {
       // use visiblity instead of display: none

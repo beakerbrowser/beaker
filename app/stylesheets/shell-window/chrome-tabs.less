@@ -23,32 +23,15 @@
     background-image: -webkit-linear-gradient(top, #ebebeb, #ebebeb);
     z-index: 20;
   }
-
-  &.chrome-tabs-sorting .chrome-tabs:not(.chrome-tabs-clone) .chrome-tab:not(.ui-sortable-draggable-item) {
-    opacity: 0;
-  }
 }
 
 .chrome-tabs {
-  *zoom: 1;
   position: relative;
-  display: flex;
 
   &:after {
     content: "";
     display: table;
     clear: both;
-  }
-
-  &.chrome-tabs-clone {
-    position: absolute;
-    top: 10px;
-    pointer-events: none;
-  }
-
-  &.chrome-tabs-clone .chrome-tab {
-    transition: left 120ms ease-in-out;
-    position: absolute;
   }
 
   * {
@@ -60,19 +43,21 @@
   }
 
   .chrome-tab {
-    flex: 1;
-    position: relative;
+    position: absolute;
+    width: 30px;
     height: 25px;
-    max-width: 160px;
     border: 0px;
     margin: 0 3px 0 20px;
     z-index: 1;
     box-shadow: inset 0 1px rgba(255, 255, 255, 0.3), 0 -1px rgba(0, 0, 0, 0.24);
     -webkit-app-region: no-drag;
 
-    // this one weird trick causes chrome to use a better sizing algorithm
-    // the text inside the tabs will now hide (with ellipsis) if too long
-    min-width: 0;
+    // animated behaviors
+    transition: .2s width;
+    &.chrome-tab-in-position {
+      // once in the initial position, start transitioning the transform as well
+      transition: 0.2s width, .1s transform;
+    }
 
     &, .chrome-tab-curves-left, .chrome-tab-curves-right {
       background-color: #e6e6e6;
@@ -86,14 +71,19 @@
       -webkit-mask-size: 100%;
     }
 
-    .chrome-tab-curves-left, .chrome-tab-curves-left-highlight, .chrome-tab-curves-left-shadow {
+    .chrome-tab-curves-left,
+    .chrome-tab-curves-left-highlight,
+    .chrome-tab-curves-left-shadow {
       -webkit-mask-image: url("beaker:shell-tab-left.svg");
     }
-    .chrome-tab-curves-right, .chrome-tab-curves-right-highlight, .chrome-tab-curves-right-shadow {
+    .chrome-tab-curves-right,
+    .chrome-tab-curves-right-highlight,
+    .chrome-tab-curves-right-shadow {
       -webkit-mask-image: url("beaker:shell-tab-right.svg");
     }
 
-    .chrome-tab-curves-left, .chrome-tab-curves-right {
+    .chrome-tab-curves-left,
+    .chrome-tab-curves-right {
       top: 1px;
       z-index: 1;
     }
@@ -138,26 +128,28 @@
     &.chrome-tab-current {
       z-index: 999;
       box-shadow: inset 0 1px rgba(255, 255, 255, 0.6), 0 -1px rgba(0, 0, 0, 0.25);
-    }
-    &.chrome-tab-current,
-    &.chrome-tab-current .chrome-tab-curves-left,
-    &.chrome-tab-current .chrome-tab-curves-right {
       background-color: #eeeeee;
       background-image: -webkit-linear-gradient(top, #eeeeee, #ebebeb);
-    }
-    &.chrome-tab-current .chrome-tab-curves-left-shadow,
-    &.chrome-tab-current .chrome-tab-curves-right-shadow {
-      background: rgba(0, 0, 0, 0.34);
-    }
-    &.chrome-tab-current .chrome-tab-curves-left-highlight,
-    &.chrome-tab-current .chrome-tab-curves-right-highlight,
-    &.chrome-tab-current .chrome-tab-curves-left-shadow,
-    &.chrome-tab-current .chrome-tab-curves-right-shadow {
-      height: 25px;
-    }
-    &.chrome-tab-current .chrome-tab-curves-left-highlight,
-    &.chrome-tab-current .chrome-tab-curves-right-highlight {
-      background-color: #f9f9f9;
+
+      .chrome-tab-curves-left,
+      .chrome-tab-curves-right {
+        background-color: #eeeeee;
+        background-image: -webkit-linear-gradient(top, #eeeeee, #ebebeb);
+      }
+      .chrome-tab-curves-left-shadow,
+      .chrome-tab-curves-right-shadow {
+        background: rgba(0, 0, 0, 0.34);
+      }
+      .chrome-tab-curves-left-highlight,
+      .chrome-tab-curves-right-highlight,
+      .chrome-tab-curves-left-shadow,
+      .chrome-tab-curves-right-shadow {
+        height: 25px;
+      }
+      .chrome-tab-curves-left-highlight,
+      .chrome-tab-curves-right-highlight {
+        background-color: #f9f9f9;
+      }
     }
     &:not(.chrome-tab-current):after {
       pointer-events: none;
@@ -212,42 +204,38 @@
       height: 14px;
       border-radius: 50%;
       z-index: 2;
-    }
 
-    .chrome-tab-close:before {
-      content: "\00D7";
-      position: absolute;
-      top: 0px;
-      right: 0px;
-      height: 14px;
-      width: 14px;
-      border-radius: 50%;
-      text-align: center;
-      font-size: 11px;
-      line-height: 12px;
-      color: #777777;
-      text-shadow: 0 1px rgba(255, 255, 255, 0.3);
-    }
-    .chrome-tab-close:hover:before,
-    .chrome-tab-close:active:before {
-      color: white;
-      text-shadow: 0 1px #b9554c;
-    }
-    .chrome-tab-close:hover,
-    .chrome-tab-close:active {
-      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), inset 0 1px 2px #b9554c;
-      background: #dd837b;
-    }
-    .chrome-tab-close:active:before {
-      box-shadow: inset 0 0 0 1px #b9554c, inset 0 1px 3px #b9554c, inset 0 0 20px rgba(0, 0, 0, 0.1);
-    }
-
-    &.chrome-tab-pinned {
-      flex: 0 0 16px;
+      &:before {
+        content: "\00D7";
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        height: 14px;
+        width: 14px;
+        border-radius: 50%;
+        text-align: center;
+        font-size: 11px;
+        line-height: 12px;
+        color: #777777;
+        text-shadow: 0 1px rgba(255, 255, 255, 0.3);
+      }
+      &:hover:before,
+      &:active:before {
+        color: white;
+        text-shadow: 0 1px #b9554c;
+      }
+      &:hover,
+      &:active {
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), inset 0 1px 2px #b9554c;
+        background: #dd837b;
+      }
+      &:active:before {
+        box-shadow: inset 0 0 0 1px #b9554c, inset 0 1px 3px #b9554c, inset 0 0 20px rgba(0, 0, 0, 0.1);
+      }
     }
 
     &.chrome-tab-add-btn {
-      flex: 0 0 16px;
+      width: 16px;
       box-shadow: none;
       background: none;
 

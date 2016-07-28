@@ -1,12 +1,20 @@
 import * as yo from 'yo-yo'
 import * as pages from '../pages'
 import { remote, ipcRenderer } from 'electron'
+import { debounce } from '../../lib/functions'
 
 // constants
 // =
 
-const OPEN_ANIM_DURATION = 100
-const CLOSE_ANIM_DURATION = 80
+const MAX_TAB_WIDTH = 160 // px
+const MIN_TAB_WIDTH = 16 // px
+const TAB_SPACING = 25 // px
+
+// globals
+// =
+
+// tab-width is adjusted based on window width and # of tabs
+var currentTabWidth = MAX_TAB_WIDTH
 
 // exported methods
 // ==
@@ -20,16 +28,41 @@ export function setup () {
   pages.on('did-stop-loading', updateTabs)
   pages.on('page-title-updated', updateTabs)
   pages.on('page-favicon-updated', updateTabFavicon)
+  window.addEventListener('resize', debounce(onWindowResize, 500))
 }
 
 // update functions
 // =
 
 function updateTabs (e) {
+  const allPages = pages.getAll()
+
+  // compute tab width for the space we have
+  // - we need to distributed the space among unpinned tabs
+  var numUnpinnedTabs = 0
+  var availableWidth = window.innerWidth
+  // correct for traffic lights on darwin
+  if (window.process.platform == 'darwin' && !document.body.classList.contains('fullscreen'))
+    availableWidth -= 80 
+  // correct for new-tab btn
+  availableWidth -= (MIN_TAB_WIDTH + TAB_SPACING)
+  // count the unpinned-tabs, and correct for the spacing and pinned-tabs
+  allPages.forEach(p => {
+    availableWidth -= TAB_SPACING
+    if (p.isPinned) availableWidth -= MIN_TAB_WIDTH
+    else            numUnpinnedTabs++
+  })
+  // now calculate a (clamped) size
+  currentTabWidth = Math.min(MAX_TAB_WIDTH, Math.max(MIN_TAB_WIDTH, availableWidth / numUnpinnedTabs))|0
+
+  // compute add btn styles
+  var addBtnStyle = `transform: translateX(${getTabX(allPages, allPages.length)}px)`
+
+  // render
   yo.update(document.getElementById('toolbar-tabs'), yo`<div id="toolbar-tabs" class="chrome-tabs-shell">
     <div class="chrome-tabs">
-      ${pages.getAll().map(drawTab)}
-      <div class="chrome-tab chrome-tab-add-btn" onclick=${onClickNew}>
+      ${allPages.map(drawTab)}
+      <div class="chrome-tab chrome-tab-in-position chrome-tab-add-btn" onclick=${onClickNew} style=${addBtnStyle}>
         <div class="chrome-tab-favicon"><span class="icon icon-plus"></span></div>
         ${drawTabCurves()}
       </div>
@@ -47,36 +80,64 @@ function updateTabFavicon (e) {
 // render functions
 // =
 
-function drawTab (page) {
-  var favicon 
+function drawTab (page, i) {
   const isActive = page.isActive
+  const isTabRendered = page.isTabRendered
+
+  // position the tab
+  var style = `
+    transform: translateX(${getTabX(pages.getAll(), i)}px);
+    width: ${getTabWidth(page)}px
+  `
+
+  // pick a favicon
+  var favicon 
   if (page.isLoading()) {
+    // loading spinner
     favicon = yo`<div class="spinner"></div>`
     if (!page.isReceivingAssets)
       favicon.classList.add('reverse')
   } else {
+    // page's favicon
     if (page.favicons && page.favicons[0]) {
       favicon = yo`<img src=${page.favicons[0]}>`
       favicon.onerror = onFaviconError(page)
     }
+    // fallback
     else if (!page.getURL().startsWith('beaker:'))
       favicon = yo`<img src="beaker-favicon:default">`
   }
 
+  // class
+  var cls = ''
+  if (isActive) cls += ' chrome-tab-current'
+  if (isTabRendered) cls += ' chrome-tab-in-position'
+  if (!favicon) cls += ' chrome-tab-nofavicon'
+
+  // pinned rendering:
   if (page.isPinned) {
-    return yo`<div class=${'chrome-tab chrome-tab-pinned'+(isActive?' chrome-tab-current':'')} data-id=${page.id} onclick=${onClickTab(page)} oncontextmenu=${onContextMenuTab(page)} title=${page.getTitle()}>
+    return yo`<div class=${'chrome-tab chrome-tab-pinned'+cls}
+                data-id=${page.id}
+                onload=${onTabElLoad(page)}
+                onclick=${onClickTab(page)}
+                oncontextmenu=${onContextMenuTab(page)}
+                title=${page.getTitle()}
+                style=${style}>
       <div class="chrome-tab-favicon">${favicon}</div>
       ${drawTabCurves()}
     </div>`
   }
 
-  // render
+  // normal rendering:
+
   return yo`
-  <div class=${'chrome-tab'+(isActive?' chrome-tab-current':'')+(!favicon?' chrome-tab-nofavicon':'')}
+  <div class=${'chrome-tab'+cls}
       data-id=${page.id}
+      onload=${onTabElLoad(page)}
       onclick=${onClickTab(page)}
       oncontextmenu=${onContextMenuTab(page)}
-      title=${page.getTitle()}>
+      title=${page.getTitle()}
+      style=${style}>
     <div class="chrome-tab-favicon">${favicon}</div>
     <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
     <div class="chrome-tab-close" onclick=${onClickTabClose(page)}></div>
@@ -98,36 +159,25 @@ function drawTabCurves () {
 // ui event handlers
 // =
 
-function onAddTab (page) {
-  // animate the new tab
-  var tabEl = document.querySelector(`.chrome-tab[data-id="${page.id}"]`)
-  if (tabEl) {
-    tabEl.animate([
-      {flex: '0 0 30px'},
-      {flex: '0 0 160px'}
-    ], {
-      duration: OPEN_ANIM_DURATION,
-      iterations: 1,
-      easing: 'ease-out',
-      delay: 0
-    })
+function onTabElLoad (page) {
+  return e => {
+    // once loaded, we can give the 'in-position' class
+    page.isTabRendered = true
+    updateTabs()
   }
 }
 
+function onAddTab (page) {
+  // do things?
+}
+
 function onRemoveTab (page) {
-  // animate the dead tab
+  // manually remove the tab element
+  // - this forces the other tabs to animate into the correct place
+  // - if not done, yo-yo would reuse a neighbor's elements, and no animation would occur
   var tabEl = document.querySelector(`.chrome-tab[data-id="${page.id}"]`)
-  if (tabEl) {
-    tabEl.animate([
-      {flex: '0 0 160px'},
-      {flex: '0 0 30px', display: 'none'}
-    ], {
-      duration: CLOSE_ANIM_DURATION,
-      iterations: 1,
-      easing: 'ease-out',
-      delay: 0
-    })
-  }  
+  if (tabEl)
+    tabEl.parentNode.removeChild(tabEl)
 }
 
 function onClickNew () {
@@ -193,7 +243,7 @@ function onClickTabClose (page) {
       e.preventDefault()
       e.stopPropagation()
     }
-    pages.remove(page, CLOSE_ANIM_DURATION)
+    pages.remove(page)
   }
 }
 
@@ -240,8 +290,27 @@ function onFaviconError (page) {
   }
 }
 
+function onWindowResize (e) {
+  // todo - debounce?
+  updateTabs()
+}
+
 // internal helpers
 // =
+
+
+function getTabX (pages, pageIndex) {
+  var x = 0
+  for (var i = 0; i < pageIndex; i++)
+    x += getTabWidth(pages[i]) + TAB_SPACING
+  return x
+}
+
+function getTabWidth (page, pageIndex) {
+  if (page.isPinned)
+    return MIN_TAB_WIDTH
+  return currentTabWidth
+}
 
 function findTabParentEl (el) {
   while (el) {
