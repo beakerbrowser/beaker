@@ -58,6 +58,10 @@ export function renderArchives (archives, opts={}) {
     </div>`)
   })
 
+  // if empty
+  if (opts.renderEmpty && archiveEls.length == 0)
+    archiveEls.push(opts.renderEmpty())
+
   // render all
   return yo`<div class="files-list archives">
     ${head}

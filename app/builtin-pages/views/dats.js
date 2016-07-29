@@ -19,11 +19,7 @@ var archivesEvents
 // exported API
 // =
 
-export function setup () {  
-  // start event stream and register events
-  archivesEvents = emitStream(beaker.dat.archivesEventStream())
-  archivesEvents.on('update-archive', onUpdateArchive)
-  archivesEvents.on('update-peers', onUpdatePeers)
+export function setup () {
 }
 
 export function show () {
@@ -36,7 +32,12 @@ export function show () {
     render()
   })
 
-  // TODO
+  // start event stream and register events
+  if (!archivesEvents) {
+    archivesEvents = emitStream(beaker.dat.archivesEventStream())
+    archivesEvents.on('update-archive', onUpdateArchive)
+    archivesEvents.on('update-peers', onUpdatePeers)
+  }
 }
 
 export function hide () {
@@ -60,9 +61,13 @@ function render () {
       <div class="sf-actions">
         <button class="btn btn-default" onclick=${onClickNewDat}>New Dat Site</button>
       </div>
-      ${renderArchives(archives, { showHead: true, onToggleSharing })}
+      ${renderArchives(archives, { showHead: true, onToggleSharing, renderEmpty })}
     </div>
   </div>`)
+}
+
+function renderEmpty () {
+  return yo`<div class="fl-row archive"><div class="fl-name">You have not created any sites yet!</div></div>`
 }
 
 // event handlers

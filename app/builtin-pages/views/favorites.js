@@ -54,10 +54,25 @@ function render () {
     </div>
   </div>`
 
+  // optional help text
+  var helpEl = ''
+  if (bookmarks.length <= 9) {
+    helpEl = yo`<div class="ll-help">
+      <span class="icon icon-info-circled"></span> Add bookmarks to fill this page
+    </div>`
+  }
+
   // render the top 9 big, the rest small
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="favorites links-tiles"><div class="lt-inner">${bookmarks.slice(0, 9).map(renderBigRow)}</div></div>
-    <div class="favorites links-list">${bookmarks.slice(9).map(renderSmallRow)}</div>
+    <div class="favorites links-tiles">
+      <div class="lt-inner">
+        ${bookmarks.slice(0, 9).map(renderBigRow)}
+      </div>
+    </div>
+    <div class="favorites links-list">
+      ${bookmarks.slice(9).map(renderSmallRow)}
+      ${helpEl}
+    </div>
   </div>`)
 }
 

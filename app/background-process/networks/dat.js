@@ -586,6 +586,7 @@ var rpcMethods = {
 // =
 
 function onArchiveFSChange (action, type, relname, filestat) {
+  filestat = filestat || {}
   // watcher is on parent directory of all archives,
   // which are organized as: ./{key}/{files...}
 
@@ -605,7 +606,7 @@ function onArchiveFSChange (action, type, relname, filestat) {
     return // ignore change event to parent directory
 
   // lookup archive, and write new file
-  log('[DAT] Watcher updating detected change in', relname)
+  log('[DAT] Watcher updating detected change in', relname, filestat)
   var entry = { type, name: fileRelname, mtime: filestat.mtime, ctime: filestat.ctime }
   var archive = getArchive(archiveKey)
   pump(

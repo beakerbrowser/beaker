@@ -79,6 +79,13 @@ function render () {
     </div>`)
   })
 
+  // empty state
+  if (rowEls.length == 0) {
+    rowEls.push(yo`<div class="ll-help">
+      <span class="icon icon-info-circled"></span> Your history is empty
+    </div>`)
+  }
+
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content" onscroll=${onScrollContent}>
     <div class="history links-list">
       ${rowEls}
