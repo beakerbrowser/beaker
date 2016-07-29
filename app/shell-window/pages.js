@@ -185,7 +185,7 @@ export function create (opts) {
   return page
 }
 
-export function remove (page, removeDelay) {
+export function remove (page) {
   // find
   var i = pages.indexOf(page)
   if (i == -1)
@@ -205,9 +205,6 @@ export function remove (page, removeDelay) {
   if (page.isPinned)
     savePinnedToDB()
 
-  // emit
-  events.emit('remove', page)
-
   // remove
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)
@@ -217,6 +214,7 @@ export function remove (page, removeDelay) {
     page[k] = null
 
   // emit
+  events.emit('remove', page)
   events.emit('update')
 }
 

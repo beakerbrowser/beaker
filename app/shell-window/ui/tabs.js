@@ -252,7 +252,7 @@ function onClickTabClose (page) {
 function onClickCloseOtherTabs (page) {
   return () => {
     pages.setActive(page)
-    pages.getAll().forEach(p => {
+    pages.getAll().slice().forEach(p => {
       if (p != page)
         pages.remove(p)
     })
