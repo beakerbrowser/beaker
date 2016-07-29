@@ -1,5 +1,6 @@
 import * as yo from 'yo-yo'
 import * as pages from '../pages'
+import * as navbar from './navbar'
 import { remote, ipcRenderer } from 'electron'
 import { debounce } from '../../lib/functions'
 
@@ -185,6 +186,7 @@ function onRemoveTab (page) {
 function onClickNew () {
   var page = pages.create()
   pages.setActive(page)
+  navbar.focusLocation(page)
 }
 
 function onClickDuplicate (page) {
