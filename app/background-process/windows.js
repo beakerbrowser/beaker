@@ -2,6 +2,7 @@ import { app, BrowserWindow, screen } from 'electron'
 import { register as registerShortcut } from 'electron-localshortcut'
 import jetpack from 'fs-jetpack'
 import path from 'path'
+import * as downloads from './downloads'
 import log from '../log'
 
 // globals
@@ -31,6 +32,7 @@ export function createShellWindow () {
       webSecurity: false, // disable same-origin policy in the shell-window; the <webview>s of site content will have it re-enabled
     }
   })
+  downloads.registerListener(win)
   loadURL(win, 'beaker:shell-window')
 
   // register shortcuts

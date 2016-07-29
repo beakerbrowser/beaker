@@ -1,10 +1,8 @@
 import { remote } from 'electron'
 import * as pages from '../pages'
-import * as url from 'url'
-import * as path from 'path'
 import * as yo from 'yo-yo'
+import { DownloadsNavbarBtn } from './navbar/downloads'
 import history from '../../lib/fg/history-api'
-import dat from '../../lib/fg/dat-api'
 
 const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
 const BUG_REPORT_URL = 'https://github.com/pfraze/beaker/issues'
@@ -19,6 +17,7 @@ const KEYCODE_P = 80
 // =
 
 var toolbarNavDiv = document.getElementById('toolbar-nav')
+var downloadsNavbarBtn = null
 
 // autocomplete data
 var autocompleteCurrentValue = null
@@ -27,6 +26,11 @@ var autocompleteResults = null // if set to an array, will render dropdown
 
 // exported functions
 // =
+
+export function setup () {
+  // create the DownloadsNavbarBtn manager
+  downloadsNavbarBtn = new DownloadsNavbarBtn()
+}
 
 export function createEl (id) {
   // render (only need to render once)
@@ -226,6 +230,7 @@ function render (id, page) {
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
+      ${downloadsNavbarBtn.render()}
       <button class="toolbar-btn" onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
       <button class="toolbar-btn" onclick=${onClickBugReport} title="Report an issue in Beaker"><span class="icon icon-flag"></span></button>
     </div>
@@ -501,16 +506,16 @@ function onInputFind (e) {
 function onKeydownFind (e) {
   // on escape
   if (e.keyCode == KEYCODE_ESC) {
-    var page = getEventPage(e)
+    let page = getEventPage(e)
     if (page)
       hideInpageFind(page)
   }
 
   // on enter
   if (e.keyCode == KEYCODE_ENTER) {
-    var str = e.target.value
-    var backwards = e.shiftKey // search backwords on shift+enter
-    var page = getEventPage(e)
+    let str = e.target.value
+    let backwards = e.shiftKey // search backwords on shift+enter
+    let page = getEventPage(e)
     if (page) {
       if (str) page.findInPage(str, { findNext: true, forward: !backwards })
       else     page.stopFindInPage('clearSelection')

@@ -25,7 +25,7 @@ export default function Stats (emitter, { peers }) {
   // setup periodic render
   // (if this wasnt done, the transfer rates would never drop to 0)
   setInterval(() => {
-    this.updateRender()
+    this.updateActives()
   }, RERENDER_INTERVAL)
 }
 
@@ -39,22 +39,22 @@ Stats.prototype.render = function () {
   </div>`
 }
 
-Stats.prototype.updateRender = throttle(function () {
+Stats.prototype.updateActives = throttle(function () {
   // render all active widgets
   Array.from(document.querySelectorAll('.hypercore-stats')).forEach(el => yo.update(el, this.render()))
 }, RERENDER_THROTTLE)
 
 Stats.prototype.onUpdatePeers = function ({ key, peers }) {
   this.peers = peers
-  this.updateRender()
+  this.updateActives()
 }
 
 Stats.prototype.onDownload = function ({ key, index, bytes }) {
   this.downloadSpeed(bytes)
-  this.updateRender()
+  this.updateActives()
 }
 
 Stats.prototype.onUpload = function ({ key, index, bytes }) {
   this.uploadSpeed(bytes)
-  this.updateRender()
+  this.updateActives()
 }

@@ -11,6 +11,7 @@ import buildMenu from './background-process/window-menu'
 import * as sitedata from './background-process/sitedata'
 import * as bookmarks from './background-process/bookmarks'
 import * as history from './background-process/history'
+import * as downloads from './background-process/downloads'
 
 // import * as ipfsNetwork from './background-process/networks/ipfs'
 
@@ -34,6 +35,7 @@ app.on('ready', function () {
   sitedata.setup()
   bookmarks.setup()
   history.setup()
+  downloads.setup()
 
   // networks
   // ipfsNetwork.setup()
