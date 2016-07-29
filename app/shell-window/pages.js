@@ -201,13 +201,13 @@ export function remove (page) {
     setActive(pages[i+1] || pages[i-1])
   }
 
-  // persist pins if that was
-  if (page.isPinned)
-    savePinnedToDB()
-
   // remove
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)
+
+  // persist pins w/o this one, if that was
+  if (page.isPinned)
+    savePinnedToDB()
 
   // remove all attributes, to clear circular references
   for (var k in page)
