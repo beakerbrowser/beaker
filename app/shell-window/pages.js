@@ -67,6 +67,8 @@ export function create (opts) {
     // tab state
     isPinned: opts.isPinned, // is this page pinned?
     isTabRendered: false, // has the tab el been rendered?
+    isTabDragging: false, // being dragged?
+    tabDragOffset: 0, // if being dragged, this is the current offset
 
     // get the URL of the page we want to load (vs which is currently loaded)
     getIntendedURL: function () {
@@ -256,6 +258,28 @@ export function togglePinned (page) {
 
   // persist
   savePinnedToDB()
+}
+
+export function reorderTab (page, offset) {
+  // only allow increments of 1
+  if (offset > 1 || offset < -1)
+    return console.warn('reorderTabBy isnt allowed to offset more than -1 or 1; this is a coding error')
+
+  // first check if reordering can happen
+  var srcIndex = pages.indexOf(page)
+  var dstIndex = srcIndex + offset
+  var swapPage = pages[dstIndex]
+  // is there actually a destination?
+  if (!swapPage)
+    return false
+  // can only swap if both are the same pinned state (pinned/unpinned cant mingle)
+  if (page.isPinned != swapPage.isPinned)
+    return false
+
+  // ok, do the swap
+  pages[srcIndex] = swapPage
+  pages[dstIndex] = page
+  return true
 }
 
 export function changeActiveBy (offset) {

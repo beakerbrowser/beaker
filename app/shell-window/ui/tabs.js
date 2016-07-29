@@ -2,7 +2,7 @@ import * as yo from 'yo-yo'
 import * as pages from '../pages'
 import * as navbar from './navbar'
 import { remote, ipcRenderer } from 'electron'
-import { debounce } from '../../lib/functions'
+import { debounce, throttle } from '../../lib/functions'
 
 // constants
 // =
@@ -84,6 +84,7 @@ function updateTabFavicon (e) {
 function drawTab (page, i) {
   const isActive = page.isActive
   const isTabRendered = page.isTabRendered
+  const isTabDragging = page.isTabDragging
 
   // position the tab
   var style = `
@@ -113,6 +114,7 @@ function drawTab (page, i) {
   var cls = ''
   if (isActive) cls += ' chrome-tab-current'
   if (isTabRendered) cls += ' chrome-tab-in-position'
+  if (isTabDragging) cls += ' chrome-tab-dragging'
   if (!favicon) cls += ' chrome-tab-nofavicon'
 
   // pinned rendering:
@@ -122,6 +124,7 @@ function drawTab (page, i) {
                 onload=${onTabElLoad(page)}
                 onclick=${onClickTab(page)}
                 oncontextmenu=${onContextMenuTab(page)}
+                onmousedown=${onMouseDown(page)}
                 title=${page.getTitle()}
                 style=${style}>
       <div class="chrome-tab-favicon">${favicon}</div>
@@ -137,6 +140,7 @@ function drawTab (page, i) {
       onload=${onTabElLoad(page)}
       onclick=${onClickTab(page)}
       oncontextmenu=${onContextMenuTab(page)}
+      onmousedown=${onMouseDown(page)}
       title=${page.getTitle()}
       style=${style}>
     <div class="chrome-tab-favicon">${favicon}</div>
@@ -286,6 +290,66 @@ function onContextMenuTab (page) {
   }
 }
 
+function onMouseDown (page) {
+  return e => {
+
+    // left-click only
+    if (e.which !== 1) {
+      return
+    }
+
+    // FIXME when you move your cursor out of the tabs, dragging stops working -prf
+
+    // start drag behaviors
+    var startX = e.pageX
+    page.isTabDragging = true
+    e.preventDefault()
+    e.stopPropagation()
+
+    // register drag-relevant listeners
+    document.addEventListener('mousemove', drag, true)
+    document.addEventListener('mouseup', dragend, true)
+    // window.addEventListener('blur', dragend, true) TODO - needed?
+
+    // throttle so we only rerender as much as needed
+    // - actually throttling seems to cause jank
+    var rerender = /*throttle(*/() => {
+      updateTabs()
+    }/*, 30)*/
+
+    // drag handler
+    function drag (e) {
+      // calculate offset
+      page.tabDragOffset = e.pageX - startX
+
+      // do reorder?
+      var reorderOffset = shouldReorderTab(page)
+      if (reorderOffset) {
+        // reorder, and recalc the offset
+        if (pages.reorderTab(page, reorderOffset)) {
+          startX += (reorderOffset * (page.isPinned ? 40 : getTabWidth(page)))
+          page.tabDragOffset = e.pageX - startX
+        }
+      }
+
+      // draw, partner
+      rerender()
+    }
+
+    // done dragging handler
+    function dragend (e) {
+      // reset
+      e.preventDefault()
+      e.stopPropagation()
+      page.tabDragOffset = 0
+      page.isTabDragging = false
+      document.removeEventListener('mousemove', drag, true)
+      document.removeEventListener('mouseup', dragend, true)
+      rerender()
+    }
+  }
+}
+
 function onFaviconError (page) {
   return () => {
     // if the favicon 404s, just fallback to the icon
@@ -295,25 +359,51 @@ function onFaviconError (page) {
 }
 
 function onWindowResize (e) {
-  // todo - debounce?
   updateTabs()
 }
 
 // internal helpers
 // =
 
+function getTabX (allPages, pageIndex) {
+  // handle if given just a page object
+  if (!Array.isArray(allPages)) {
+    let page = allPages
+    allPages = pages.getAll()
+    pageIndex = allPages.indexOf(page)
+  }
 
-function getTabX (pages, pageIndex) {
+  // calculate base X off of the widths of the pages before it
   var x = 0
   for (var i = 0; i < pageIndex; i++)
-    x += getTabWidth(pages[i]) + TAB_SPACING
+    x += getTabWidth(allPages[i]) + TAB_SPACING
+
+  // add the page offset
+  if (allPages[pageIndex])
+    x += allPages[pageIndex].tabDragOffset
+
+  // done
   return x
 }
 
-function getTabWidth (page, pageIndex) {
+function getTabWidth (page) {
   if (page.isPinned)
     return MIN_TAB_WIDTH
   return currentTabWidth
+}
+
+// returns 0 for no, -1 or 1 for yes (the offset)
+function shouldReorderTab (page) {
+  // has the tab been dragged far enough to change order?
+  if (!page.isTabDragging)
+    return 0
+
+  var limit = (page.isPinned ? 40 : getTabWidth(page)) / 2
+  if (page.tabDragOffset < -1 * limit)
+    return -1
+  if (page.tabDragOffset > limit)
+    return 1
+  return 0
 }
 
 function findTabParentEl (el) {
