@@ -15,7 +15,7 @@
     font-size: 17px;
     line-height: 1.1;
     color: #666;
-    width: 26px;
+    width: 28px;
     border-radius: 2px;
     border: 1px solid transparent;
 
@@ -56,7 +56,6 @@
 
   .toolbar-downloads-btn {
     position: relative;
-    width: 27px;
     & > progress {
       width: 24px;
       position: absolute;
@@ -67,14 +66,14 @@
 
   .toolbar-downloads-dropdown {
     position: absolute;
-    left: -170px;
+    left: -180px;
     top: 29px;
     width: 240px;
     padding: 6px 0;
     background: #fff;
     box-shadow: 0px 3px 13px rgba(0, 0, 0, 0.25);
     border: 1px solid #aaa;
-    border-radius: 14px;
+    border-radius: 5px;
     z-index: 1;
     text-align: left;
     font-size: 12px;
@@ -86,7 +85,7 @@
       content: '';
       position: absolute;
       top: -6px;
-      left: 172px;
+      left: 182px;
       width: 0;
       height: 0;
       border-left: 10px solid transparent;
@@ -99,6 +98,13 @@
       border-bottom: 1px solid #ccc;
       &:last-child {
         border-bottom: 0;
+      }
+
+      &.empty {
+        color: gray;
+        font-size: 13px;
+        padding-bottom: 10px;
+        text-align: center;
       }
 
       progress {
