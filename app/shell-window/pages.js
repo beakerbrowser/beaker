@@ -149,6 +149,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('dom-ready', onDomReady)
   page.webviewEl.addEventListener('new-window', onNewWindow)
   page.webviewEl.addEventListener('will-navigate', onWillNavigate)
+  page.webviewEl.addEventListener('did-navigate-in-page', onDidNavigateInPage)
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
   page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
   page.webviewEl.addEventListener('load-commit', onLoadCommit)
@@ -344,6 +345,14 @@ function onWillNavigate (e) {
     page.loadingURL = e.url
     navbar.updateLocation(page)
   }
+}
+
+// did-navigate-in-page is triggered by hash/virtual-url changes
+// we need to update the url bar but no load event occurs
+function onDidNavigateInPage (e) {
+  var page = getByWebview(e.target)
+  if (page)
+    navbar.updateLocation(page)
 }
 
 function onLoadCommit (e) {
