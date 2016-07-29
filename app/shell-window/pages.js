@@ -327,7 +327,9 @@ function onDomReady (e) {
 }
 
 function onNewWindow (e) {
-  create(e.url)
+  var page = create(e.url)
+  if (e.disposition == 'foreground-tab')
+    setActive(page)
 }
 
 // will-navigate is the first event called when a link is clicked
