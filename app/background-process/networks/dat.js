@@ -156,6 +156,11 @@ export function createArchive (key, opts) {
   mkdirp.sync(ARCHIVE_FILEPATH(archive)) // ensure the folder exists
   cacheArchive(archive)
   trackArchiveEvents(archivesEvents, archive) // start tracking the archive's events
+
+  // if in sparse-mode, prioritize the entire metadata feed, but leave content to be on-demand
+  if (sparse)
+    archive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
+
   return archive
 }
 
