@@ -7,7 +7,8 @@ import { app, Menu, protocol } from 'electron'
 import env from './env'
 
 import * as windows from './background-process/windows'
-import buildMenu from './background-process/window-menu'
+import buildWindowMenu from './background-process/window-menu'
+import registerContextMenu from './background-process/context-menu'
 import * as sitedata from './background-process/sitedata'
 import * as bookmarks from './background-process/bookmarks'
 import * as history from './background-process/history'
@@ -28,7 +29,8 @@ var mainWindow;
 protocol.registerStandardSchemes(['dat', 'view-dat']) // must be called before 'ready'
 app.on('ready', function () {
   // ui
-  Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenu(env)));
+  Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu(env)));
+  registerContextMenu()
   windows.setup()
 
   // databases
