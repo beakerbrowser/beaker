@@ -68,7 +68,6 @@ function updateTabs (e) {
         ${drawTabCurves()}
       </div>
     </div>
-    <div class="chrome-shell-bottom-bar"></div>
   </div>`)
 }
 
@@ -152,11 +151,7 @@ function drawTab (page, i) {
 
 function drawTabCurves () {
   return yo`<div class="chrome-tab-curves">
-    <div class="chrome-tab-curves-left-shadow"></div>
-    <div class="chrome-tab-curves-left-highlight"></div>
     <div class="chrome-tab-curves-left"></div>
-    <div class="chrome-tab-curves-right-shadow"></div>
-    <div class="chrome-tab-curves-right-highlight"></div>
     <div class="chrome-tab-curves-right"></div>
   </div>`
 }
