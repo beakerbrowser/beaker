@@ -7,9 +7,9 @@ import { debounce, throttle } from '../../lib/functions'
 // constants
 // =
 
-const MAX_TAB_WIDTH = 160 // px
-const MIN_TAB_WIDTH = 16 // px
-const TAB_SPACING = 25 // px
+const MAX_TAB_WIDTH = 184 // px
+const MIN_TAB_WIDTH = 40 // px
+const TAB_SPACING = 0 // px
 
 // globals
 // =
@@ -65,7 +65,6 @@ function updateTabs (e) {
       ${allPages.map(drawTab)}
       <div class="chrome-tab chrome-tab-in-position chrome-tab-add-btn" onclick=${onClickNew} style=${addBtnStyle}>
         <div class="chrome-tab-favicon"><span class="icon icon-plus"></span></div>
-        ${drawTabCurves()}
       </div>
     </div>
   </div>`)
@@ -127,7 +126,6 @@ function drawTab (page, i) {
                 title=${page.getTitle()}
                 style=${style}>
       <div class="chrome-tab-favicon">${favicon}</div>
-      ${drawTabCurves()}
     </div>`
   }
 
@@ -145,14 +143,6 @@ function drawTab (page, i) {
     <div class="chrome-tab-favicon">${favicon}</div>
     <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
     <div class="chrome-tab-close" onclick=${onClickTabClose(page)}></div>
-    ${drawTabCurves()}
-  </div>`
-}
-
-function drawTabCurves () {
-  return yo`<div class="chrome-tab-curves">
-    <div class="chrome-tab-curves-left"></div>
-    <div class="chrome-tab-curves-right"></div>
   </div>`
 }
 
@@ -197,47 +187,7 @@ function onClickPin (page) {
 }
 
 function onClickTab (page) {
-  return e => {
-    // tabs have curved edges which arent modelable via the DOM
-    // this creates a region of ~10px on each edge, which we need to smartly detect
-    // (due to the asymmetrical margins, the numbers are more art than science)
-    var { clientX, clientY } = e
-    var tabEl = findTabParentEl(e.target)
-    var { left, top, right, bottom } = tabEl.getBoundingClientRect()
-
-    var leftEdge = clientX - left + 13
-    var rightEdge = clientX - right - 11
-    var bottomEdge = bottom - clientY
-
-    if (leftEdge < 10) {
-      // this edge forms a line from {leftEdge: -4, bottomEdge: 0} to {leftEdge: 0, bottomEdge: 12}
-      // (y = mx + b) y = 3x + 12
-      // if bottomEdge is > than (3*leftEdge + 12) then we're above the line
-      let isOutside = (bottomEdge > (3 * leftEdge + 12))
-      if (isOutside) {
-        let leftPage = pages.getAdjacentPage(page, -1)
-        page = leftPage || page
-      }
-    }
-
-    if (rightEdge > 0) {
-      // this edge forms a line from {rightEdge: 6, bottomEdge: 0} to {rightEdge: 0, bottomEdge: 12}
-      // (y = mx + b) y = -2x + 12
-      // if bottomEdge is > than (-2*rightEdge + 12) then we're above the line
-      let isOutside = (bottomEdge > (-2 * rightEdge + 12))
-      if (isOutside) {
-        let rightPage = pages.getAdjacentPage(page, 1)
-        if (rightPage)
-          page = rightPage
-        else {
-          // unlike the left side, if there's not a tab here, then we clicked on new
-          return onClickNew()
-        }
-      }
-    }
-
-    pages.setActive(page)
-  }
+  return e => pages.setActive(page)
 }
 
 function onClickTabClose (page) {

@@ -4,11 +4,10 @@
 
 .chrome-tabs-shell {
   position: relative;
-  background-color: #cccccc;
-  padding: 10px 18px 6px 10px;
-  border-radius: 4px 4px 0 0;
-  height: 35px;
-  overflow: hidden;
+  padding: 1px 18px 0 10px;
+  height: 36px;
+  background: #e6e6e6;
+  border-bottom: 1px solid #ccc;
 }
 
 .chrome-tabs {
@@ -30,12 +29,13 @@
 
   .chrome-tab {
     position: absolute;
+    height: 34px;
     width: 30px;
-    height: 24px;
     border: 0px;
-    margin: 1px 3px 0 20px;
     z-index: 1;
     -webkit-app-region: no-drag;
+    background-color: #e6e6e6;
+    border-left: 1px solid #ccc;
 
     // animated behaviors
     transition: .2s width;
@@ -44,38 +44,6 @@
       transition: .1s transform;
     }
 
-    &, .chrome-tab-curves-left, .chrome-tab-curves-right {
-      background-color: #e6e6e6;
-    }
-
-    .chrome-tab-curves * {
-      position: absolute;
-      width: 20px;
-      height: 24px;
-      -webkit-mask-size: 100%;
-    }
-
-    .chrome-tab-curves-left {
-      -webkit-mask-image: url("beaker:shell-tab-left.svg");
-    }
-    .chrome-tab-curves-right {
-      -webkit-mask-image: url("beaker:shell-tab-right.svg");
-    }
-
-    .chrome-tab-curves-left,
-    .chrome-tab-curves-right {
-      top: 0px;
-      z-index: 1;
-    }
-
-    .chrome-tab-curves-left {
-      left: -20px;
-    }
-    .chrome-tab-curves-right {
-      right: -20px;
-    }
-
-
     &.chrome-tab-dragging {
       z-index: 2; // just above the non-currents
       transition: none !important;
@@ -83,24 +51,8 @@
 
     &.chrome-tab-current {
       z-index: 999;
-
-      &,
-      .chrome-tab-curves-left,
-      .chrome-tab-curves-right {
-        background-color: #f5f5f5;
-      }
-    }
-    &:not(.chrome-tab-current):after {
-      pointer-events: none;
-      content: "";
-      display: block;
-      position: absolute;
-      bottom: 2px;
-      left: -16px;
-      right: -16px;
-      background: rgba(0, 0, 0, 0.04);
-      height: 1px;
-      z-index: 1;
+      background-color: #f5f5f5;
+      height: 35px; // bleed over the border
     }
 
     .chrome-tab-favicon {
@@ -109,8 +61,8 @@
       text-align: center;
       background-size: 16px;
       position: absolute;
-      left: 0;
-      top: 4px;
+      left: 10px;
+      top: 11px;
       z-index: 3;
 
       img {
@@ -120,25 +72,28 @@
     }
     .spinner {
       position: relative;
-      left: -1px;
+      left: 1px;
       top: 1px;
+    }
+    &.chrome-tab-pinned .chrome-tab-favicon {
+      left: 12px;
     }
 
     .chrome-tab-title {
       color: #222222;
-      padding: 5px 10px 5px 18px;
+      padding: 12px 20px 5px 30px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
     &.chrome-tab-nofavicon .chrome-tab-title {
-      padding-left: 2px;
+      padding-left: 14px;
     }
 
     .chrome-tab-close {
       position: absolute;
-      right: -5px;
-      top: 6px;
+      right: 8px;
+      top: 12px;
       width: 14px;
       height: 14px;
       border-radius: 50%;
@@ -170,7 +125,7 @@
     }
 
     &.chrome-tab-add-btn {
-      width: 16px;
+      width: 38px;
       background: none;
 
       .icon {
@@ -179,13 +134,8 @@
         color: #666;
       }
 
-      .chrome-tab-curves {
-        visibility: hidden;
-      }
       &:hover {
-        .chrome-tab-curves {
-          visibility: visible;
-        }
+        background: #ddd;
         .icon {
           color: #444;
         }
@@ -196,5 +146,5 @@
 
 // make room for the traffic lights
 .darwin:not(.fullscreen) .chrome-tabs {
-  padding-left: 60px;
+  padding-left: 68px;
 }

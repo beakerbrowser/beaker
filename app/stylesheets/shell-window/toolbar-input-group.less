@@ -2,28 +2,29 @@
   flex: 1;
   display: flex;
   position: relative; // for the :after el, and autocomplete dropdown, to position off of
-
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 3px;
-
-  margin: 0 0 0 5px;
   height: 28px;
-
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
   font-size: 14px;
   -webkit-app-region: no-drag;
+
+  &:hover {
+    background: #fff;
+  }
 
   input {
     flex: 1;
     padding: 1px 0 0 10px;
 
     border: 0;
-    border-left: 1px solid #ccc;
+    border-left: 1px solid #ddd;
     background: transparent;
     cursor: text;
 
     &:focus {
       outline: 0;
+      background: #fff;
+      color: #555;
     }
   }
 
@@ -49,13 +50,6 @@
       outline: 0;
     }
 
-    &:hover:not(:disabled) {
-      cursor: pointer;
-      span, small {
-        cursor: pointer;
-      }
-    }
-
     &:last-child {
       // give a little more room on the right
       min-width: 35px;
@@ -63,7 +57,7 @@
 
     // bookmark btn styles
     &.nav-bookmark-btn {
-      color: #fff;
+      color: transparent;
       -webkit-text-stroke: 1px #aaa;
       &.gold {
         color: #FFBC00;
@@ -95,7 +89,7 @@
     top: 29px;
     background: #fff;
     z-index: 1;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border-top: 0;
     padding-bottom: 3px;
 
