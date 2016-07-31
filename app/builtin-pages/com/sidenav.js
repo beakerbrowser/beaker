@@ -6,12 +6,9 @@ import EventEmitter from 'events'
 
 var events = new EventEmitter()
 const navItems = [
-  'Browse',
-  { url: 'beaker:start', icon: 'star', label: 'Favorites' },
-  { url: 'beaker:history', icon: 'back-in-time', label: 'History' },
-
-  'Dat Network',
-  { url: 'beaker:dats', icon: 'folder', label: 'My Dat Sites' }
+  { url: 'beaker:start', /*icon: 'star',*/ label: 'Favorites' },
+  { url: 'beaker:history', /*icon: 'back-in-time',*/ label: 'History' },
+  { url: 'beaker:dats', /*icon: 'folder',*/ label: 'Dat Sites' }
 ]
 
 // exported API
@@ -32,6 +29,7 @@ export var on = events.on.bind(events)
 
 function render () {
   return yo`<nav class="nav-group">
+    <h1>Beaker</h1>
     ${navItems.map(renderNavItem)}
   </nav>`
 }
@@ -45,7 +43,7 @@ function renderNavItem (item) {
   var { url, icon, label } = item
   var isActive = window.location == url
   return yo`<a class=${'nav-group-item' + (isActive?' active':'')} href=${url} onclick=${onClickNavItem(item)}>
-    <span class=${'icon icon-'+icon}></span>
+    ${ icon ? yo`<span class=${'icon icon-'+icon}></span>` : '' }
     ${label}
   </a>`
 }
