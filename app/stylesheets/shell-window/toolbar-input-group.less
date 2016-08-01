@@ -70,11 +70,18 @@
 
     &.green {
       color: #2f8000;
-      background: linear-gradient(to bottom, rgba(164, 247, 88, 0.25), rgba(164, 247, 88, 0.38));
-      border: 1px solid #57bf1a;
+      background: rgb(164, 247, 88);
       border-radius: 2px;
       margin: 2px 2px 1px;
       padding: 0 4px 1px;
+      cursor: pointer;
+      &:hover {
+        background: #8ee63e;
+      }
+
+      > * {
+        cursor: pointer;
+      }
 
       & + input {
         padding-left: 5px;
