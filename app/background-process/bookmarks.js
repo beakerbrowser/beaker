@@ -84,11 +84,10 @@ migrations = [
         title
       );
       CREATE INDEX bookmarks_url ON bookmarks (url);
-      INSERT INTO bookmarks (title, url) VALUES ('Beaker Browser', 'https://github.com/pfraze/beaker');
+      INSERT INTO bookmarks (title, url) VALUES ('Hostless.Website', 'dat://hostless.website');
+      INSERT INTO bookmarks (title, url) VALUES ('Beaker Browser', 'https://github.com/pfrazee/beaker');
       INSERT INTO bookmarks (title, url) VALUES ('@pfrazee (ask for support!)', 'https://twitter.com/pfrazee');
       INSERT INTO bookmarks (title, url) VALUES ('Dat Protocol', 'http://dat-data.com/');
-      INSERT INTO bookmarks (title, url) VALUES ('IPFS Protocol', 'https://ipfs.io/');
-      INSERT INTO bookmarks (title, url) VALUES ('SQLite3', 'https://www.sqlite.org/');
       INSERT INTO bookmarks (title, url) VALUES ('DuckDuckGo (the default search engine)', 'https://duckduckgo.com');
       PRAGMA user_version = 1;
     `, cb)
@@ -100,5 +99,5 @@ migrations = [
       UPDATE bookmarks SET num_visits = 0;
       PRAGMA user_version = 2;
     `, cb)
-  },
+  }
 ]
