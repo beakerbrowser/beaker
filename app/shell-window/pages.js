@@ -239,6 +239,7 @@ export function setActive (page) {
   page.isActive = 1
   page.webviewEl.focus()
   statusBar.setIsLoading(page.isLoading())
+  navbar.update()
   events.emit('set-active', page)
 }
 
