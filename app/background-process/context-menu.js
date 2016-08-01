@@ -12,6 +12,12 @@ export default function registerContextMenu () {
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
 
+      // get the focused window, ignore if not available (not in focus)
+      // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
+      var targetWindow = BrowserWindow.getFocusedWindow()
+      if (!targetWindow)
+        return
+
       // ignore clicks on the shell window
       if (props.pageURL == 'beaker:shell-window')
         return
@@ -105,7 +111,7 @@ export default function registerContextMenu () {
 
       // show menu
       var menu = Menu.buildFromTemplate(menuItems)
-      menu.popup(BrowserWindow.fromWebContents(webContents))
+      menu.popup(targetWindow)
     })
   })
 }
