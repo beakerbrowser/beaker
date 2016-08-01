@@ -98,11 +98,8 @@ function onUpdateArchive (update) {
       // patch the archive
       for (var k in update)
         archive[k] = update[k]
-    } else {
-      // add to list
-      archives.push(update)
+      render()
     }
-    render()
   }
 }
 
