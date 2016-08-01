@@ -542,27 +542,32 @@ var rpcMethods = {
     return fs.createWriteStream(filepath)
   },
 
-  archiveInfo (key, cb) {
-    // get the archive
-    var archive = getArchive(key)
-    if (!archive)
-      return cb(new Error('Invalid archive key'))
-
-    // fetch archive data
-    var done = multicb({ pluck: 1, spread: true })
-    getArchiveMeta(key, done())
-    archive.list(done())
-    readReadme(archive, done())
-    done((err, meta, entries, readme) => {
+  archiveInfo (name, cb) {
+    resolveName(name, (err, key) => {
       if (err)
-        return cb(err)
+        return cb(new Error(err.code || err))
 
-      // attach additional data
-      meta.key = key
-      meta.entries = entries
-      meta.readme = readme
-      meta.isApp = entries && !!entries.find(e => e.name == 'index.html')
-      cb(null, meta)
+      // get the archive
+      var archive = getArchive(key)
+      if (!archive)
+        return cb(new Error('Invalid archive key'))
+
+      // fetch archive data
+      var done = multicb({ pluck: 1, spread: true })
+      getArchiveMeta(key, done())
+      archive.list(done())
+      readReadme(archive, done())
+      done((err, meta, entries, readme) => {
+        if (err)
+          return cb(err)
+
+        // attach additional data
+        meta.key = key
+        meta.entries = entries
+        meta.readme = readme
+        meta.isApp = entries && !!entries.find(e => e.name == 'index.html')
+        cb(null, meta)
+      })
     })
   },
 

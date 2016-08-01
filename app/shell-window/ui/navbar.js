@@ -122,9 +122,9 @@ function render (id, page) {
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
   var archiveBtn
-  if (page && /^(dat)/.test(page.getURL()) && page.archiveInfo) {
+  if (page && /^(dat)/.test(page.getURL())/* && page.archiveInfo*/) {
     // archive btn
-    let info = page.archiveInfo
+    // let info = page.archiveInfo
     // choose label
     let label = 'Hostless Site'//(info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
     // render

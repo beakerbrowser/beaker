@@ -34,7 +34,7 @@ var md = new Remarkable({
   highlight: (str, lang) => { return ''; }
 })
 
-var archiveKey = (new URL(window.location)).host
+var archiveName = (new URL(window.location)).host
 var archiveInfo
 var archiveEntriesTree
 var archiveError = false
@@ -172,7 +172,7 @@ function renderArchive () {
             ${archiveInfo.isSharing ? hypercoreStats.render() : yo`<div class="not-sharing">Not sharing</div>`}
           </div>
           ${uploadEl}
-          ${archiveEntries(archiveEntriesTree, { showHead: false, showRoot: false, onToggleNodeExpanded })}
+          ${archiveEntries(archiveEntriesTree, { showHead: false, showRoot: false, onToggleNodeExpanded, archiveName })}
           ${readmeEl}
         </div>
       </div>
@@ -221,7 +221,7 @@ function renderLoading () {
 // =
 
 function fetchArchiveInfo(cb) {
-  beaker.dat.archiveInfo(archiveKey, (err, ai) => {
+  beaker.dat.archiveInfo(archiveName, (err, ai) => {
     console.log(ai)
     archiveError = err
     archiveInfo = ai
@@ -246,7 +246,7 @@ function addFiles (files) {
     var entry = { name: (file.fullPath||file.name).replace(/^\//, ''), mtime: Date.now(), ctime: Date.now() }
     pump(
       stream,
-      beaker.dat.createFileWriteStream(archiveKey, entry),
+      beaker.dat.createFileWriteStream(archiveInfo.key, entry),
       err => {
         if (err) {
           console.error('Error writing file', entry, err)
@@ -262,11 +262,11 @@ function addFiles (files) {
 // =
 
 function onClickDownloadZip () {
-  window.open('view-dat://'+archiveKey+'?as=zip')
+  window.open('view-dat://'+archiveInfo.key+'?as=zip')
 }
 
 function onClickOpenInExplorer () {
-  beaker.dat.openInExplorer(archiveKey)
+  beaker.dat.openInExplorer(archiveInfo.key)
 }
 
 function onToggleNodeExpanded (node) {
@@ -276,7 +276,7 @@ function onToggleNodeExpanded (node) {
 
 function onToggleSubscribed () {
   var newState = !archiveInfo.isSubscribed
-  beaker.dat.subscribe(archiveKey, newState, err => {
+  beaker.dat.subscribe(archiveInfo.key, newState, err => {
     if (err)
       return console.warn(err) // TODO inform user
     archiveInfo.isSubscribed = newState
@@ -299,7 +299,7 @@ function onToggleSharing () {
 // adds complexity, and I'm not sure it's needed yet.
 // -prf
 // function onClickClone (e) {
-//   beaker.dat.clone(archiveKey, (err, newKey) => {
+//   beaker.dat.clone(archiveInfo.key, (err, newKey) => {
 //     if (err)
 //       return console.warn(err) // TODO inform user
 //     window.location = 'view-dat://'+newKey
@@ -324,7 +324,7 @@ function onChooseFiles (e) {
 }
 
 function onUpdateArchive (update) {
-  if (update.key == archiveKey && archiveInfo) {
+  if (archiveInfo && update.key == archiveInfo.key) {
     // patch the archive
     for (var k in update)
       archiveInfo[k] = update[k]
@@ -333,7 +333,7 @@ function onUpdateArchive (update) {
 }
 
 function onUpdateListing (update) {
-  if (update.key == archiveKey) {
+  if (archiveInfo && update.key == archiveInfo.key) {
     // simplest solution is just to refetch the entries
     fetchArchiveInfo(render)
   }

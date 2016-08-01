@@ -116,6 +116,8 @@ export function entriesListToTree (archiveInfo) {
 }
 
 export function archiveEntries (tree, opts={}) {
+  const archiveName = opts.archiveName || tree.entry.key
+
   // render the header (optional)
   var head = ''
   if (opts.showHead) {
@@ -148,7 +150,7 @@ export function archiveEntries (tree, opts={}) {
         spacers[depth].appendChild(yo`<span class=${icon}></span>`)
         link = yo`<a href="" title=${entry.name}>${entry.name}</a>`
       } else {
-        link = yo`<a href="dat://${tree.entry.key}/${entry.path}" title=${entry.name}>${entry.name}</a>`
+        link = yo`<a href="dat://${archiveName}/${entry.path}" title=${entry.name}>${entry.name}</a>`
       }
 
       // render self
