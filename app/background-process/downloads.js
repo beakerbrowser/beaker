@@ -26,19 +26,21 @@ export function setup () {
 
 export function registerListener (win, opts = {}) {
   const listener = (e, item, webContents) => {
+    // dont touch if already being handled
+    // - if `opts.saveAs` is being used, there may be multiple active event handlers
+    if (item.isHandled)
+      return
+
     // build a path to an unused name in the downloads folder
-    const filePath = unusedFilename.sync(path.join(app.getPath('downloads'), item.getFilename()))
+    const filePath = opts.saveAs ? opts.saveAs : unusedFilename.sync(path.join(app.getPath('downloads'), item.getFilename()))
 
     // track as an active download
     item.id = (''+Date.now())+(''+Math.random()) // pretty sure this is collision proof but replace if not -prf
     item.name = path.basename(filePath)
+    item.setSavePath(filePath)
+    item.isHandled = true
     downloads.push(item)
     downloadsEvents.emit('new-download', toJSON(item))
-
-    // destination override
-    if (!opts.saveAs) {
-      item.setSavePath(filePath)
-    }
 
     // TODO: use mime type checking for file extension when no extension can be inferred
     // item.getMimeType()
@@ -84,7 +86,7 @@ export function registerListener (win, opts = {}) {
     })
   }
 
-  win.webContents.session.on('will-download', listener)
+  win.webContents.session.prependListener('will-download', listener)
 }
 
 export function download (win, url, opts) {
