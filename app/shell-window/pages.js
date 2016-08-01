@@ -469,7 +469,7 @@ function onDidFailLoad (e) {
   // ignore aborts. why:
   // - sometimes, aborts are caused by redirects. no biggy
   // - if the user cancels, then we dont want to give an error screen
-  if (e.errorDescription == 'ERR_ABORTED')
+  if (e.errorDescription == 'ERR_ABORTED' || e.errorCode == -3) // -3 = ABORTED
     return
 
   var page = getByWebview(e.target)
