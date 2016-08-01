@@ -1,5 +1,5 @@
 import { app, BrowserWindow, screen, session } from 'electron'
-import { register as registerShortcut } from 'electron-localshortcut'
+import { register as registerShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import jetpack from 'fs-jetpack'
 import path from 'path'
 import * as downloads from './downloads'
@@ -55,7 +55,7 @@ export function createShellWindow () {
   win.on('blur', sendToWebContents('blur'))
   win.on('enter-full-screen', sendToWebContents('enter-full-screen'))
   win.on('leave-full-screen', sendToWebContents('leave-full-screen'))
-  win.on('close', saveState(win))
+  win.on('close', onClose(win))
 
   return win
 }
@@ -119,8 +119,12 @@ function ensureVisibleOnSomeDisplay (windowState) {
     return windowState
 }
 
-function saveState (win) {
+function onClose (win) {
   return e => {
+    // unregister shortcuts
+    unregisterAllShortcuts(win)
+
+    // save state
     // NOTE this is called by .on('close')
     // if quitting multiple windows at once, the final saved state is unpredictable
     if (!win.isMinimized() && !win.isMaximized()) {
