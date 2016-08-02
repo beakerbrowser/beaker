@@ -338,17 +338,17 @@ export function swarm (key) {
     if (err)
       return log('[DAT] Error opening archive for swarming', keyStr, err)
 
-    var debouncedUpdateArchiveMeta = debounce(() => updateArchiveMeta(archive), 1e3)
+    archive.updateArchiveMeta = debounce(() => updateArchiveMeta(archive), 1e3)
     if (archive.metadata) {
       archive.metadata.on('download-finished', () => {
         log('[DAT] Metadata download finished', keyStr)
-        debouncedUpdateArchiveMeta()
+        archive.updateArchiveMeta()
       })
     }
     if (archive.content) {
       archive.content.on('download-finished', () => {
         log('[DAT] Content download finished', keyStr)
-        debouncedUpdateArchiveMeta()
+        archive.updateArchiveMeta()
       })
     }
   })
@@ -630,6 +630,7 @@ function onArchiveFSChange (action, type, relname, filestat) {
     err => {
       if (err)
         return log('[DAT] Failed to add file to archive:', err)
+      archive.updateArchiveMeta()
       archivesEvents.emit('update-listing', { key: archiveKey, action, type, name: fileRelname, mtime: filestat.mtime, ctime: filestat.ctime })
     }
   )
