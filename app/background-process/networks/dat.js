@@ -539,6 +539,9 @@ var rpcMethods = {
     if (!filepath.startsWith(archivepath))
       throw new Error('File cant be written outside of the archive folder')
 
+    // make sure the folder exists
+    mkdirp.sync(path.dirname(filepath))
+
     // create write stream to the FS
     // the file-watcher will pick up the change and write it to the archive
     return fs.createWriteStream(filepath)
