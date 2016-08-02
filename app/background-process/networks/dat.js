@@ -103,16 +103,17 @@ export function setup () {
   // load all owned archives and start swarming them
   ownedArchivesDb.createKeyStream().on('data', key => {
     ownedArchives.add(key)
-    createArchive(new Buffer(key, 'hex'), { sparse: false })
+    createArchive(new Buffer(key, 'hex'), { sparse: false, live: true })
     swarm(key)
   })
 
+  // DISABLED not sure it's gonna come back -prf
   // load all subscribed archives and start swarming them
-  subscribedArchivesDb.createKeyStream().on('data', key => {
-    subscribedArchives.add(key)
-    createArchive(new Buffer(key, 'hex'), { sparse: false }) // TODO do we want sparsemode?
-    swarm(key)
-  })
+  // subscribedArchivesDb.createKeyStream().on('data', key => {
+  //   subscribedArchives.add(key)
+  //   createArchive(new Buffer(key, 'hex'), { sparse: false }) // TODO do we want sparsemode?
+  //   swarm(key)
+  // })
 
   // wire up the rpc
   rpc.exportAPI('dat', manifest, rpcMethods)
@@ -126,10 +127,9 @@ export function createArchive (key, opts) {
   if (key !== null && (!Buffer.isBuffer(key) || key.length != 32))
     return
 
-  // NOTE this only works on live archives
   var isOwner = key === null // we'll be the owner if no key is provided
   var archive = drive.createArchive(key, {
-    live: true,
+    live: opts.live, // optional! only set this if you know what it should be
     sparse: sparse,
 
     // TODO 
@@ -251,7 +251,7 @@ export function updateArchiveMeta (archive) {
 
 // create a new archive
 export function createNewArchive () {
-  var archive = createArchive(null)
+  var archive = createArchive(null, { live: true })
   var key = archive.key.toString('hex')
   ownedArchives.add(key)
   ownedArchivesDb.put(key, {})
@@ -330,8 +330,10 @@ export function swarm (key) {
   archivesEvents.emit('update-archive', { key: keyStr, isSharing: true })
 
   // hook up events
-  s.node.on('peer', peer => log('[DAT] Connection', peer.id, 'from discovery-swarm'))
-  s.browser.on('peer', peer => log('[DAT] Connection', peer.remoteAddress+':'+peer.remotePort, 'from webrtc'))
+  if (s.node) s.node.on('peer', peer => log('[DAT] Connection', peer.id, 'from discovery-swarm'))
+  else log('[DAT] Swarm .node missing')
+  if (s.browser) s.browser.on('peer', peer => log('[DAT] Connection', peer.remoteAddress+':'+peer.remotePort, 'from webrtc'))
+  else log('[DAT] Swarm .browser missing')
   archive.open(err => {
     if (err)
       return log('[DAT] Error opening archive for swarming', keyStr, err)

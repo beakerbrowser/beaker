@@ -75,8 +75,21 @@
       margin: 2px 2px 1px;
       padding: 0 4px 1px;
       cursor: pointer;
+      width: 105px;
       &:hover {
-        background: #8ee63e;
+        background: rgb(184, 267, 108);
+        .icon {
+          display: none;
+        }
+      }
+
+      &:after {
+        content: 'Dat Network';
+        padding-left: 4px;
+        font-size: 14px;
+      }
+      &:hover:after {
+        content: 'View Files';
       }
 
       > * {

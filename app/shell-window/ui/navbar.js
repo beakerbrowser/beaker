@@ -126,9 +126,9 @@ function render (id, page) {
     // archive btn
     // let info = page.archiveInfo
     // choose label
-    let label = 'Hostless Site'//(info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
+    // let label = (info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
     // render
-    archiveBtn = yo`<button class="green" onclick=${onClickViewDat}><span class="icon icon-folder"></span> <small>${label}</small></button>`
+    archiveBtn = yo`<button class="green" onclick=${onClickViewDat}><span class="icon icon-network"></span></button>`
   }
 
   // inpage finder ctrl

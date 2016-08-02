@@ -8,6 +8,7 @@ import history from '../lib/fg/history-api'
 import sitedata from '../lib/fg/sitedata-api'
 import dat from '../lib/fg/dat-api'
 import { urlToData } from '../lib/fg/img'
+import errorPage from '../lib/error-page'
 
 export const DEFAULT_URL = 'beaker:start'
 
@@ -476,13 +477,7 @@ function onDidFailLoad (e) {
   var page = getByWebview(e.target)
   if (page) {
     // render failure page
-    var errorPageHTML = `<body style="font-family: sans-serif;color: #666;">
-      <div style="max-width: 410px;padding: 0px 35px 16px;border: 1px solid #ccc;background: #fdfdfd;">
-        <h1 style="color: #555">This site can’t be reached</h1>
-        <h2>${e.errorDescription}</h2>
-        <a href="javascript:window.location.reload()" style="display: inline-block;background: #4b92ea;color:#fff;border-radius:2px;text-decoration: none;padding: 6px 17px;border: 1px solid #428ae4;">Retry</a>
-      </div>
-    </body>`.replace(/\n/g,'')
+    var errorPageHTML = errorPage(e.errorDescription)
     page.webviewEl.getWebContents().executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
   }
 }
