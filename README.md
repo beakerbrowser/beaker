@@ -4,8 +4,13 @@ beaker browser
 This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
 
-Current status is developer preview.
-Not for wide use.
+For context, watch the talks from the [Decentralized Web Summit](http://www.decentralizedweb.net/).
+
+There are a lot of new protocols and federated services in development, and almost all of them need a browser.
+A bad solution would be for each team to create their own browser, not just because of the duplicated effort, but because decentralized apps need more than just one new solution: they need to handle publishing, file-storage and file-sync, user identities, push-messaging, and much more.
+With Beaker, the goal is to advance all of these technologies at once by providing a shared development space.
+Users can install these experimental techs as plugins; gain new URL schemes and WebAPIs as a result; and then author applications to see what works.
+
 Please feel free to open usability issues.
 
 ![screenshot.png](screenshot.png)
@@ -63,18 +68,9 @@ cd ~/beaker/app
 npm install beaker-plugin-ipfs
 ```
 
-## wherefore
-
-For context, watch the talks from the [Decentralized Web Summit](http://www.decentralizedweb.net/).
-
-There are a lot of new protocols and federated services in development, and almost all of them need a browser.
-A bad solution would be for each team to create their own browser, not just because of the duplicated effort, but because decentralized apps need more than just one new solution: they need to handle publishing, file-storage and file-sync, user identities, push-messaging, and much more.
-With Beaker, the goal is to advance all of these technologies at once by providing a shared development space.
-Users can install these experimental techs as plugins; gain new URL schemes and WebAPIs as a result; and then author applications to see what works.
-
 ## license
 
-The MIT License (MIT)
+Modified MIT License (MIT)
 
 Copyright (c) 2016 Paul Frazee
 
