@@ -3,7 +3,8 @@ import sqlite3 from 'sqlite3'
 import path from 'path'
 import url from 'url'
 import rpc from 'pauls-electron-rpc'
-import manifest from '../lib/rpc-manifests/bookmarks'
+import manifest from './api-manifests/bookmarks'
+import * as pluginModules from './plugin-modules'
 import { setupDatabase } from '../lib/bg/sqlite-tools'
 import log from '../log'
 
@@ -23,7 +24,7 @@ export function setup () {
   waitForSetup = setupDatabase(db, migrations, '[BOOKMARKS]')
 
   // wire up RPC
-  rpc.exportAPI('bookmarks', manifest, { add, changeTitle, changeUrl, addVisit, remove, get, list })
+  rpc.exportAPI('beakerBookmarks', manifest, { add, changeTitle, changeUrl, addVisit, remove, get, list })
 }
 
 export function add (url, title, cb) {

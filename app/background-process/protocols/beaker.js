@@ -15,26 +15,16 @@ export function setup () {
       return cb(path.join(__dirname, 'shell-window.build.js'))
     if (request.url == 'beaker:shell-window.css')
       return cb(path.join(__dirname, 'stylesheets/shell-window.css'))
-    if (request.url == 'beaker:shell-tab-left.svg')
-      return cb(path.join(__dirname, 'img/tab-left.svg'))
-    if (request.url == 'beaker:shell-tab-right.svg')
-      return cb(path.join(__dirname, 'img/tab-right.svg'))
 
     // builtin pages
-    for (let slug of ['start', 'history', 'dats']) {
+    for (let slug of ['start', 'history']) {
       if (request.url == `beaker:${slug}`)
-        return cb(path.join(__dirname, 'builtin-pages/builtin-pages.html'))
+        return cb(path.join(__dirname, 'builtin-pages.html'))
     }
     if (request.url == 'beaker:builtin-pages.js')
-      return cb(path.join(__dirname, 'builtin-pages/builtin-pages.build.js'))
+      return cb(path.join(__dirname, 'builtin-pages.build.js'))
     if (request.url == 'beaker:builtin-pages.css')
-      return cb(path.join(__dirname, 'stylesheets/builtin-pages/builtin-pages.css'))
-
-    // view-dat page
-    if (request.url == 'beaker:view-dat.js')
-      return cb(path.join(__dirname, 'builtin-pages/view-dat.build.js'))
-    if (request.url == 'beaker:view-dat.css')
-      return cb(path.join(__dirname, 'stylesheets/builtin-pages/view-dat.css'))
+      return cb(path.join(__dirname, 'stylesheets/builtin-pages.css'))
 
     // common assets
     if (request.url == 'beaker:font')

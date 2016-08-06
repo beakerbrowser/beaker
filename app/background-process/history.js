@@ -5,7 +5,7 @@ import url from 'url'
 import zerr from 'zerr'
 import multicb from 'multicb'
 import rpc from 'pauls-electron-rpc'
-import manifest from '../lib/rpc-manifests/history'
+import manifest from './api-manifests/history'
 import { setupDatabase } from '../lib/bg/sqlite-tools'
 import log from '../log'
 
@@ -28,7 +28,7 @@ export function setup () {
   waitForSetup = setupDatabase(db, migrations, '[HISTORY]')
 
   // wire up RPC
-  rpc.exportAPI('history', manifest, { addVisit, getVisitHistory, getMostVisited, search, removeVisit, removeAllVisits })
+  rpc.exportAPI('beakerHistory', manifest, { addVisit, getVisitHistory, getMostVisited, search, removeVisit, removeAllVisits })
 }
 
 export function addVisit ({url, title}, cb) {

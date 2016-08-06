@@ -3,7 +3,7 @@ import sqlite3 from 'sqlite3'
 import path from 'path'
 import url from 'url'
 import rpc from 'pauls-electron-rpc'
-import manifest from '../lib/rpc-manifests/sitedata'
+import manifest from './api-manifests/sitedata'
 import { setupDatabase } from '../lib/bg/sqlite-tools'
 import log from '../log'
 
@@ -23,7 +23,7 @@ export function setup () {
   waitForSetup = setupDatabase(db, migrations, '[SITEDATA]')
 
   // wire up RPC
-  rpc.exportAPI('sitedata', manifest, {
+  rpc.exportAPI('beakerSitedata', manifest, {
     get: getSendOrigin,
     set: setSendOrigin,
     getOtherOrigin: get,

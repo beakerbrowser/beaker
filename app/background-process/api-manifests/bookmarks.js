@@ -5,5 +5,6 @@ export default {
   addVisit: 'async',
   remove: 'async',
   get: 'async',
-  list: 'async'
+  list: 'async',
+  getHomePages: 'sync'
 }

@@ -2,7 +2,6 @@ import { remote } from 'electron'
 import * as pages from '../pages'
 import * as yo from 'yo-yo'
 import { DownloadsNavbarBtn } from './navbar/downloads'
-import history from '../../lib/fg/history-api'
 
 const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
 const KEYCODE_DOWN = 40
@@ -121,14 +120,12 @@ function render (id, page) {
   // and it should be hidden if the page isnt active
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
-  var archiveBtn
-  if (page && /^(dat)/.test(page.getURL())/* && page.archiveInfo*/) {
-    // archive btn
-    // let info = page.archiveInfo
-    // choose label
-    // let label = (info.versionHistory.current) ? `v${info.versionHistory.current}` : ''
-    // render
-    archiveBtn = yo`<button class="green" onclick=${onClickViewDat}><span class="icon icon-network"></span></button>`
+  // protocol button
+  var protocolBtn
+  if (page && page.protocolDescription && page.protocolDescription.label) {
+    protocolBtn = yo`<button class="green">
+      <span class="icon icon-network"></span> <small>${page.protocolDescription.label}</small>
+    </button>`
   }
 
   // inpage finder ctrl
@@ -212,7 +209,7 @@ function render (id, page) {
       ${reloadBtn}      
     </div>
     <div class="toolbar-input-group">
-      ${archiveBtn}
+      ${protocolBtn}
       <input
         type="text"
         class="nav-location-input"
@@ -445,7 +442,7 @@ function onInputLocation (e) {
   if (autocompleteValue && autocompleteCurrentValue != autocompleteValue) {
     autocompleteCurrentValue = autocompleteValue // update the current value
     autocompleteCurrentSelection = 0 // reset the selection
-    history.search(value, handleAutocompleteSearch) // update the suggetsions
+    beakerHistory.search(value, handleAutocompleteSearch) // update the suggetsions
   } else if (!autocompleteValue)
     clearAutocomplete() // no value, cancel out
 }
@@ -514,13 +511,5 @@ function onKeydownFind (e) {
       if (str) page.findInPage(str, { findNext: true, forward: !backwards })
       else     page.stopFindInPage('clearSelection')
     }
-  }
-}
-
-function onClickViewDat (e) {
-  var page = getEventPage(e)
-  if (page && page.getURL().startsWith('dat://')) {
-    let key = (new URL(page.getURL())).host
-    page.loadURL('view-dat://'+key) 
   }
 }

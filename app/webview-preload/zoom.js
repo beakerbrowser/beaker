@@ -1,5 +1,9 @@
 import { webFrame, ipcRenderer } from 'electron'
-import sitedata from '../lib/fg/sitedata-api'
+import rpc from 'pauls-electron-rpc'
+
+// because this is just in the preload, we need to manually import the sitedata api, instead of using beaker.sitedata
+import sitedataManifest from '../background-process/api-manifests/sitedata'
+const sitedata = rpc.importAPI('sitedata', sitedataManifest)
 
 const ZOOM_STEP = 0.5
 

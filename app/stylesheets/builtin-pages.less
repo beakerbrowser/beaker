@@ -1,4 +1,4 @@
-@import "../photon.min.less";
+@import "./photon.min.less";
 
 @font-face {
   font-family: "photon-entypo";
@@ -8,14 +8,17 @@
 }
 
 @import "./com/sidenav.less";
-@import "./com/files-list.less";
-@import "./com/apps-list.less";
 @import "./com/links-list.less";
 @import "./com/links-tiles.less";
-@import "./com/dropdown-btn.less";
-@import "./views/favorites.less";
-@import "./views/dats.less";
 
 .pane {
   border: 0;
+}
+
+.favorites.links-list {
+  .icon-star {
+    // make an outline
+    color: #fff;
+    -webkit-text-stroke: 1px #999;
+  }
 }

@@ -1,5 +1,5 @@
 /*
-This uses the beaker.history API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
+This uses the beakerHistory API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
 */
 
 import * as yo from 'yo-yo'
@@ -42,7 +42,7 @@ function fetchMore (cb) {
     return cb()
 
   isFetching = true
-  beaker.history.getVisitHistory({ offset: visits.length, limit: 100 }, (err, rows) => {
+  beakerHistory.getVisitHistory({ offset: visits.length, limit: 100 }, (err, rows) => {
     if (rows.length == 0)
       isAtEnd = true
     else
@@ -111,6 +111,6 @@ function onClickDelete (i) {
   // remove
   var v = visits[i]
   visits.splice(i, 1)
-  beaker.history.removeVisit(v.url)
+  beakerHistory.removeVisit(v.url)
   render()
 }

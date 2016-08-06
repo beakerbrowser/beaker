@@ -2,6 +2,7 @@ import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import url from 'url'
 import path from 'path'
 import { download } from './downloads'
+import { getProtocolDescription } from './plugin-modules'
 
 export default function registerContextMenu () {
   // register the context menu on every created webContents
@@ -100,13 +101,17 @@ export default function registerContextMenu () {
           webContents.devToolsWebContents.focus()
       }})
 
-      // dat://
-      if ((props.frameURL||props.pageURL).startsWith('dat:')) {
-        menuItems.push({ label: 'View Site Source', click: (item, win) => {
-          var urlp = url.parse(props.frameURL||props.pageURL)
-          if (urlp && urlp.hostname)
-            win.webContents.send('command', 'file:new-tab', 'view-dat://'+urlp.hostname+'/')
-        }})
+      // protocol
+      var urlp = url.parse(props.frameURL||props.pageURL)
+      var pdesc = getProtocolDescription(urlp.protocol)
+      if (pdesc && pdesc.contextMenu && Array.isArray(pdesc.contextMenu)) {
+        menuItems.push({ type: 'separator' })
+        pdesc.contextMenu.forEach(item => {
+          menuItems.push({
+            label: item.label,
+            click: (_, win) => item.click(win, props)
+          })
+        })
       }
 
       // show menu

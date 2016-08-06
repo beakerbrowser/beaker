@@ -4,7 +4,7 @@ import unusedFilename from 'unused-filename'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import rpc from 'pauls-electron-rpc'
-import manifest from '../lib/rpc-manifests/downloads'
+import manifest from './api-manifests/downloads'
 
 // globals
 // =
@@ -21,7 +21,7 @@ var downloadsEvents = new EventEmitter()
 
 export function setup () {
   // wire up RPC
-  rpc.exportAPI('downloads', manifest, { eventsStream, getDownloads, pause, resume, cancel })
+  rpc.exportAPI('beakerDownloads', manifest, { eventsStream, getDownloads, pause, resume, cancel })
 }
 
 export function registerListener (win, opts = {}) {

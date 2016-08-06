@@ -1,7 +1,6 @@
 import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
 import prettyBytes from 'pretty-bytes'
-import dlAPI from '../../../lib/fg/downloads-api'
 import { ucfirst } from '../../../lib/strings'
 
 // there can be many downloads btns rendered at once, but they are all showing the same information
@@ -9,12 +8,12 @@ import { ucfirst } from '../../../lib/strings'
 
 export class DownloadsNavbarBtn {
   constructor() {
-    this.downloads = dlAPI.getDownloads()
+    this.downloads = beakerDownloads.getDownloads()
     this.sumProgress = null // null means no active downloads
     this.isDropdownOpen = false
 
     // wire up events
-    var dlEvents = emitStream(dlAPI.eventsStream())
+    var dlEvents = emitStream(beakerDownloads.eventsStream())
     dlEvents.on('new-download', this.onNewDownload.bind(this))
     dlEvents.on('sum-progress', this.onSumProgress.bind(this))
     dlEvents.on('updated', this.onUpdate.bind(this))
@@ -115,18 +114,18 @@ export class DownloadsNavbarBtn {
   onPause (e, download) {
     e.preventDefault()
     e.stopPropagation()
-    dlAPI.pause(download.id)
+    beakerDownloads.pause(download.id)
   }
 
   onResume (e, download) {
     e.preventDefault()
     e.stopPropagation()
-    dlAPI.resume(download.id)
+    beakerDownloads.resume(download.id)
   }
 
   onCancel (e, download) {
     e.preventDefault()
     e.stopPropagation()
-    dlAPI.cancel(download.id)
+    beakerDownloads.cancel(download.id)
   }
 }

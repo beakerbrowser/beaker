@@ -1,5 +1,5 @@
 /*
-This uses the beaker.bookmarks APIs, which is exposed by webview-preload to all sites loaded over the beaker: protocol
+This uses the beakerBookmarks APIs, which is exposed by webview-preload to all sites loaded over the beaker: protocol
 */
 
 import * as yo from 'yo-yo'
@@ -20,7 +20,7 @@ export function setup () {
 export function show () {
   document.title = 'New tab'
   // get the bookmarks, ordered by # of views
-  beaker.bookmarks.list((err, bs) => {
+  beakerBookmarks.list((err, bs) => {
     bookmarks = bs || []
     render()
   })
@@ -87,7 +87,7 @@ function onClickDelete (i) {
     // delete bookmark
     var b = bookmarks[i]
     bookmarks.splice(i, 1)
-    beaker.bookmarks.remove(b.url)
+    beakerBookmarks.remove(b.url)
     render()
   }
 }

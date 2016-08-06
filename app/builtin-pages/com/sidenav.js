@@ -5,11 +5,13 @@ import EventEmitter from 'events'
 // =
 
 var events = new EventEmitter()
-const navItems = [
-  { url: 'beaker:start', /*icon: 'star',*/ label: 'Favorites' },
-  { url: 'beaker:history', /*icon: 'back-in-time',*/ label: 'History' },
-  { url: 'beaker:dats', /*icon: 'folder',*/ label: 'Dat Sites' }
-]
+var navItems = [
+  { href: 'beaker:start', label: 'Favorites' },
+  { href: 'beaker:history', label: 'History' }
+].concat(
+  beakerPluginModules.getHomePages()
+    .filter(item => (typeof item.href == 'string') && (typeof item.label == 'string'))
+)
 
 // exported API
 // =
@@ -40,10 +42,9 @@ function renderNavItem (item) {
     return yo`<h5 class="nav-group-title">${item}</h5>`
 
   // render items
-  var { url, icon, label } = item
-  var isActive = window.location == url
-  return yo`<a class=${'nav-group-item' + (isActive?' active':'')} href=${url} onclick=${onClickNavItem(item)}>
-    ${ icon ? yo`<span class=${'icon icon-'+icon}></span>` : '' }
+  var { href, label } = item
+  var isActive = window.location == href
+  return yo`<a class=${'nav-group-item' + (isActive?' active':'')} href=${href} onclick=${onClickNavItem(item)}>
     ${label}
   </a>`
 }
@@ -58,14 +59,14 @@ function onClickNavItem (item) {
       return
     e.preventDefault()
 
-    if (window.location.protocol == 'beaker:') {
-      // just navigate virtually, if we're on a beaker: page
-      window.history.pushState(null, '', item.url)
-      events.emit('change-view', item.url)
+    if (window.location.protocol == 'beaker:' && item.href.startsWith('beaker:')) {
+      // just navigate virtually, if we're on and going to a beaker: page
+      window.history.pushState(null, '', item.href)
+      events.emit('change-view', item.href)
       update()
     } else {
-      // probably on view-dat:, so actually go to the page
-      window.location = item.url
+      // actually go to the page
+      window.location = item.href
     }
   }
 }

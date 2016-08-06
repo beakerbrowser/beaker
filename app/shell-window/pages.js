@@ -3,10 +3,6 @@ import EventEmitter from 'events'
 import path from 'path'
 import * as navbar from './ui/navbar'
 import * as statusBar from './ui/status-bar'
-import bookmarks from '../lib/fg/bookmarks-api'
-import history from '../lib/fg/history-api'
-import sitedata from '../lib/fg/sitedata-api'
-import dat from '../lib/fg/dat-api'
 import { urlToData } from '../lib/fg/img'
 import errorPage from '../lib/error-page'
 
@@ -97,11 +93,11 @@ export function create (opts) {
     toggleBookmark: function () {
       // update state
       if (page.bookmark) {
-        bookmarks.remove(page.bookmark.url)
+        beakerBookmarks.remove(page.bookmark.url)
         page.bookmark = null
       } else if (page.isActive) {
         page.bookmark = { url: page.getURL(), title: page.getTitle() }
-        bookmarks.add(page.bookmark.url, page.bookmark.title)
+        beakerBookmarks.add(page.bookmark.url, page.bookmark.title)
       }
       // update nav
       navbar.update(page)
@@ -332,7 +328,7 @@ export function getById (id) {
 }
 
 export function loadPinnedFromDB (cb) {
-  sitedata.get('pinned-tabs', (err, json) => {
+  beakerSitedata.get('pinned-tabs', (err, json) => {
     try { JSON.parse(json).forEach(url => create({ url, isPinned: true })) }
     catch (e) {}
     cb && cb()
@@ -340,7 +336,7 @@ export function loadPinnedFromDB (cb) {
 }
 
 export function savePinnedToDB (cb) {
-  sitedata.set('pinned-tabs', JSON.stringify(getPinned().map(p => p.getURL())), cb)
+  beakerSitedata.set('pinned-tabs', JSON.stringify(getPinned().map(p => p.getURL())), cb)
 }
 
 // event handlers
@@ -387,7 +383,7 @@ function onLoadCommit (e) {
   var page = getByWebview(e.target)
   if (page) {
     // check if this page bookmarked
-    bookmarks.get(e.url, (err, bookmark) => {
+    beakerBookmarks.get(e.url, (err, bookmark) => {
       page.bookmark = bookmark
       navbar.update(page)
     })
@@ -443,23 +439,14 @@ function onDidFinishLoad (e) {
 
     // update history
     var url = page.getURL()
-    if (/^(http|dat|ipfs|file)/.test(url)) {
-      history.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() }, warnIfError('history.addVisit'))
-      bookmarks.addVisit(page.getURL(), warnIfError('bookmarks.addVisit'))
+    if (!url.startsWith('beaker:')) {
+      beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() }, warnIfError('history.addVisit'))
+      beakerBookmarks.addVisit(page.getURL(), warnIfError('bookmarks.addVisit'))
     }
 
-    // if a dat archive, fetch relevant info
-    if (url.startsWith('dat://') || url.startsWith('view-dat://')) {
-      let key = (new URL(url)).host
-      dat.archiveInfo(key, (err, archiveInfo) => {
-        console.log('Archive info', archiveInfo)
-        page.archiveInfo = archiveInfo
-        navbar.update(page)
-      })
-    } else {
-      page.archiveInfo = null
-      navbar.update(page)
-    }
+    // fetch protocol info
+    page.protocolDescription = beakerPluginModules.getProtocolDescription((new URL(url)).protocol)
+    console.log('Protocol description', page.protocolDescription)
   }
 }
 
@@ -487,7 +474,7 @@ function onPageFaviconUpdated (e) {
     var page = getByWebview(e.target)
     urlToData(e.favicons[0], 16, 16, (err, dataUrl) => {
       if (dataUrl)
-        sitedata.setOtherOrigin(page.getURL(), 'favicon', dataUrl)
+        beakerSitedata.setOtherOrigin(page.getURL(), 'favicon', dataUrl)
     })
   }
 }
