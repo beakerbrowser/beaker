@@ -4,7 +4,8 @@ beaker browser
 This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
 
-Current status is a developer preview: not for wide use.
+Current status is developer preview.
+Not for wide use.
 Please feel free to open usability issues.
 
 ![screenshot.png](screenshot.png)
@@ -44,7 +45,7 @@ Plugins can only add Web APIs and URL schemes.
 
 **Howto: [Authoring Plugins](./doc/authoring-plugins.md)**
 
-### available plugins
+## available plugins
 
  - [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat). Adds support for browsing the [Dat Network](http://dat-data.com/). Comes pre-installed with Beaker. 
  - [beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs). Adds support for browsing the [IPFS Network](https://ipfs.io/).
@@ -64,23 +65,12 @@ npm install beaker-plugin-ipfs
 
 ## wherefore
 
-Watch any video from the [Decentralized Web Summit](http://www.decentralizedweb.net/) to see what's up.
+For context, watch the talks from the [Decentralized Web Summit](http://www.decentralizedweb.net/).
 
-Beaker is a way to try new tech without involving a standards-track first.
 There are a lot of new protocols and federated services in development, and almost all of them need a browser.
 A bad solution would be for each team to create their own browser, not just because of the duplicated effort, but because decentralized apps need more than just one new solution: they need to handle publishing, file-storage and file-sync, user identities, push-messaging, and much more.
-With Beaker, the hope is to advance all of these technologies at once by providing a shared space.
+With Beaker, the goal is to advance all of these technologies at once by providing a shared development space.
 Users can install these experimental techs as plugins; gain new URL schemes and WebAPIs as a result; and then author applications to see what works.
-The feedback should benefit everyone.
-
-Beaker is also going to experiment with new browser behaviors, not in the plugins, but in its core codebase.
-It's sometimes said of browsers, that they're akin to a bad OS.
-If that's so, and if we can't make them less OS-like, then perhaps we should just make browsers better OSes.
-So: new interaction models, for the users and between the applications, are going to be tried, in the name of finding out how all browsers can get better at what they do.
-
-Some aspects of the Web platform, like ServiceWorkers, WebASM, and CSPs, are really heating up.
-Some other parts are totally stagnant.
-Let's give the WWW a full booted kick in the pants.
 
 ## license
 
