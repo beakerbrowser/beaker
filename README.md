@@ -4,14 +4,17 @@ beaker browser
 This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
 
+Current status is a developer preview: not for wide use.
 Please feel free to open usability issues.
 
 ![screenshot.png](screenshot.png)
 
 ## building and project structure
 
+Requires node 6.2.1.
+
 ```
-git clone https://github.com/pfraze/beaker.git
+git clone https://github.com/pfrazee/beaker.git
 cd beaker
 npm install
 npm run rebuild #see below
@@ -29,36 +32,55 @@ npm run burnthemall
 
 This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-mad-king-game-of-thrones.jpg), who will torch your npm_modules, and do the full install/rebuild process for you.
 `npm start` should work afterwards.
-(Presumably the mad king gets stabbed in the process, and the rebuilding is accomplished by his successor.)
 
-If you're working on the code, [there's lots of dev instructions and notes here](./build-notes.md)
+If you're working on the codebase, [there's lots of dev instructions and notes here](./build-notes.md)
 
-## api docs
+## plugins
 
-#### [beaker.fs](./doc/api/beaker.fs.md)
+You can install new Web APIs and URL schemes with plugins.
 
-## tech integrations
+These are not like Chrome or Firefox plugins, as they do not let you change the UI or alter page behaviors.
+Plugins can only add Web APIs and URL schemes.
 
-If you have tech that needs a browser, make a fork, open an issue, try out your integration, and PR back to here.
+**Howto: [Authoring Plugins](./doc/authoring-plugins.md)**
 
-**in progress**
+### available plugins
 
- - [Dat](http://dat-data.com/). Used to serve applications, and provided as a permissioned API.
- - [IPFS](https://ipfs.io/). Used to serve applications, and provided as a permissioned API.
- - [Node filesystem](./doc/api/beaker.fs.md). Provided as a permissioned API.
+ - [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat). Adds support for browsing the [Dat Network](http://dat-data.com/). Comes pre-installed with Beaker. 
+ - [beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs). Adds support for browsing the [IPFS Network](https://ipfs.io/).
 
-**planned**
+Submit a PR to have your plugin added to this list.
 
- - [Sqlite3](https://www.sqlite.org/). Provided as an open API, within the FS api.
- - [Libsodium](https://github.com/jedisct1/libsodium). Provided as an open API.
- - [Firefox Sync](https://github.com/mozilla-services/syncclient). Proposed by the community in https://github.com/pfraze/beaker/issues/7, to enable users to switch quickly between firefox and beaker.
+### installing plugins
 
-**proposed**
+To install a new plugin, go to the `app` directory and run `npm install <plugin-name>`.
+For example, to install the IPFS plugin:
 
- - [magic wormhole](https://github.com/warner/magic-wormhole)
- - [interledger](https://interledger.org/)
- - keybase ([discussion](./doc/discuss-notes/0001-keybase.md))
- - matrix ([matrix-js-sdk](https://www.npmjs.com/package/matrix-js-sdk), [homepage](https://matrix.org/))
+```bash
+# assuming you cloned beaker into ~/beaker:
+cd ~/beaker/app
+npm install beaker-plugin-ipfs
+```
+
+## wherefore
+
+Watch any video from the [Decentralized Web Summit](http://www.decentralizedweb.net/) to see what's up.
+
+Beaker is a way to try new tech without involving a standards-track first.
+There are a lot of new protocols and federated services in development, and almost all of them need a browser.
+A bad solution would be for each team to create their own browser, not just because of the duplicated effort, but because decentralized apps need more than just one new solution: they need to handle publishing, file-storage and file-sync, user identities, push-messaging, and much more.
+With Beaker, the hope is to advance all of these technologies at once by providing a shared space.
+Users can install these experimental techs as plugins; gain new URL schemes and WebAPIs as a result; and then author applications to see what works.
+The feedback should benefit everyone.
+
+Beaker is also going to experiment with new browser behaviors, not in the plugins, but in its core codebase.
+It's sometimes said of browsers, that they're akin to a bad OS.
+If that's so, and if we can't make them less OS-like, then perhaps we should just make browsers better OSes.
+So: new interaction models, for the users and between the applications, are going to be tried, in the name of finding out how all browsers can get better at what they do.
+
+Some aspects of the Web platform, like ServiceWorkers, WebASM, and CSPs, are really heating up.
+Some other parts are totally stagnant.
+Let's give the WWW a full booted kick in the pants.
 
 ## license
 
