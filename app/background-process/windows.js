@@ -20,6 +20,8 @@ export function setup () {
   // TEMPORARY
   // deny permission requests for special web apis
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    if (permission == 'openExternal')
+      return callback(true)
     log('[Web API] Denying permission request for', permission, 'for', webContents.getURL())
     callback(false)
   })
