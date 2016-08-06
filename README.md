@@ -4,8 +4,7 @@ beaker browser
 This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
 
-There are [a lot of new protocols and federated services in development](http://www.decentralizedweb.net/), and almost all of them need a browser.
-A bad solution would be for each tech to create their own browser, because decentralized apps need more than just one new API: to handle publishing, file-storage and file-sync, user identities, push-messaging, and much more.
+There are [a lot of new protocols and federated services in development](http://www.decentralizedweb.net/), and decentralized apps need more than just one of them.
 Beaker solves this with extensibility.
 Users can install these experimental techs as plugins; gain new URL schemes and WebAPIs as a result; and then author applications to see what works.
 
