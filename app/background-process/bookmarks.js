@@ -85,9 +85,8 @@ migrations = [
         title
       );
       CREATE INDEX bookmarks_url ON bookmarks (url);
-      INSERT INTO bookmarks (title, url) VALUES ('Hostless.Website', 'dat://hostless.website');
-      INSERT INTO bookmarks (title, url) VALUES ('Beaker Browser', 'https://github.com/pfrazee/beaker');
-      INSERT INTO bookmarks (title, url) VALUES ('@pfrazee (ask for support!)', 'https://twitter.com/pfrazee');
+      INSERT INTO bookmarks (title, url) VALUES ('Beaker Browser Homepage', 'https://github.com/pfrazee/beaker');
+      INSERT INTO bookmarks (title, url) VALUES ('@pfrazee - Twitter', 'https://twitter.com/pfrazee');
       INSERT INTO bookmarks (title, url) VALUES ('Dat Protocol', 'http://dat-data.com/');
       INSERT INTO bookmarks (title, url) VALUES ('DuckDuckGo (the default search engine)', 'https://duckduckgo.com');
       PRAGMA user_version = 1;
