@@ -5,8 +5,7 @@ This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
 
 There are [a lot of new protocols and federated services in development](http://www.decentralizedweb.net/), and decentralized apps need more than just one of them.
-Beaker solves this with extensibility.
-Users can install these experimental techs as plugins; gain new URL schemes and WebAPIs as a result; and then author applications to see what works.
+Beaker supports plugins (node modules) which introduce new URL schemes and WebAPIs.
 
 Please feel free to open usability issues.
 
