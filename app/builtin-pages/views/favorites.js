@@ -56,7 +56,7 @@ function render () {
 
   // optional help text
   var helpEl = ''
-  if (bookmarks.length <= 9) {
+  if (bookmarks.length === 0) {
     helpEl = yo`<div class="ll-help">
       <span class="icon icon-info-circled"></span> Add bookmarks to fill this page
     </div>`
