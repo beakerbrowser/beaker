@@ -31,9 +31,11 @@ export function setup () {
   })
 }
 
-export function set (origin, key, value, cb) {
+export function set (url, key, value, cb) {
   waitForSetup(() => {
-    origin = extractOrigin(origin)
+    var origin = extractOrigin(url)
+    if (!origin)
+      return cb()
     db.run(`
       INSERT OR REPLACE
         INTO sitedata (origin, key, value)
@@ -42,9 +44,11 @@ export function set (origin, key, value, cb) {
   })
 }
 
-export function get (origin, key, cb) {
+export function get (url, key, cb) {
   waitForSetup(() => {
-    origin = extractOrigin(origin)
+    var origin = extractOrigin(url)
+    if (!origin)
+      return cb()
     db.get(`SELECT value FROM sitedata WHERE origin = ? AND key = ?`, [origin, key], (err, res) => {
       if (err)
         return cb(err)
@@ -67,7 +71,7 @@ function getSendOrigin (key, cb) {
 function extractOrigin (originURL) {
   var urlp = url.parse(originURL)
   if (!urlp || !urlp.host || !urlp.protocol)
-    return log('[SITEDATA] Received message from a page with an unparseable URL:', originURL)
+    return
   return (urlp.protocol + urlp.host + (urlp.port || ''))
 }
 

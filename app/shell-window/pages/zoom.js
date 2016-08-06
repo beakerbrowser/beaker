@@ -4,8 +4,10 @@ const ZOOM_STEP = 0.5
 
 export function setZoomFromSitedata (page) {
   // load zoom from sitedata
-  beakerSitedata.getOtherOrigin(page.getURLOrigin(), 'zoom', (err, v) => {
-    console.log('got zoom', v)
+  var origin = page.getURLOrigin()
+  if (!origin)
+    return
+  beakerSitedata.getOtherOrigin(origin, 'zoom', (err, v) => {
     if (typeof v != 'undefined') {
       page.zoom = +v
       page.webviewEl.getWebContents().setZoomLevel(page.zoom)
@@ -25,7 +27,10 @@ export function setZoom(page, z) {
   navbar.update(page)
 
   // persist to sitedata
-  beakerSitedata.setOtherOrigin(page.getURLOrigin(), 'zoom', page.zoom)
+  var origin = page.getURLOrigin()
+  if (!origin)
+    return
+  beakerSitedata.setOtherOrigin(origin, 'zoom', page.zoom)
 }
 
 export function zoomIn (page) {
