@@ -4,11 +4,10 @@ beaker browser
 This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
 
-For context, watch the talks from the [Decentralized Web Summit](http://www.decentralizedweb.net/).
+There are [a lot of new protocols and federated services in development](http://www.decentralizedweb.net/), and almost all of them need a browser.
+A bad solution would be for each tech to create their own browser, not just because of the duplicated effort, but because decentralized apps need more than just one new solution: they need to handle publishing, file-storage and file-sync, user identities, push-messaging, and much more.
 
-There are a lot of new protocols and federated services in development, and almost all of them need a browser.
-A bad solution would be for each team to create their own browser, not just because of the duplicated effort, but because decentralized apps need more than just one new solution: they need to handle publishing, file-storage and file-sync, user identities, push-messaging, and much more.
-With Beaker, the goal is to advance all of these technologies at once by providing a shared development space.
+Beaker provides an extensible browser for decentralized web tech.
 Users can install these experimental techs as plugins; gain new URL schemes and WebAPIs as a result; and then author applications to see what works.
 
 Please feel free to open usability issues.
@@ -43,22 +42,6 @@ If you're working on the codebase, [there's lots of dev instructions and notes h
 
 ## plugins
 
-You can install new Web APIs and URL schemes with plugins.
-
-These are not like Chrome or Firefox plugins, as they do not let you change the UI or alter page behaviors.
-Plugins can only add Web APIs and URL schemes.
-
-**Howto: [Authoring Plugins](./doc/authoring-plugins.md)**
-
-## available plugins
-
- - [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat). Adds support for browsing the [Dat Network](http://dat-data.com/). Comes pre-installed with Beaker. 
- - [beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs). Adds support for browsing the [IPFS Network](https://ipfs.io/).
-
-Submit a PR to have your plugin added to this list.
-
-### installing plugins
-
 To install a new plugin, go to the `app` directory and run `npm install <plugin-name>`.
 For example, to install the IPFS plugin:
 
@@ -67,6 +50,15 @@ For example, to install the IPFS plugin:
 cd ~/beaker/app
 npm install beaker-plugin-ipfs
 ```
+
+Available plugins:
+
+ - [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat). Adds support for browsing the [Dat Network](http://dat-data.com/). Comes pre-installed with Beaker. 
+ - [beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs). Adds support for browsing the [IPFS Network](https://ipfs.io/).
+
+Submit a PR to have your plugin added to this list.
+
+**Howto: [Authoring Plugins](./doc/authoring-plugins.md)**
 
 ## license
 

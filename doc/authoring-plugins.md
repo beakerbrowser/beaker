@@ -1,5 +1,11 @@
 # Howto: Authoring Beaker Plugins
 
+You can add new Web APIs and URL schemes with plugins.
+These are not like Chrome or Firefox plugins, as they do not let you change the UI or alter page behaviors.
+Plugins can only add Web APIs and URL schemes.
+
+## Overview
+
 Beaker plugins are node modules with a name that follows the form of `beaker-plugin-*`.
 For example, `beaker-plugin-dat` and `beaker-plugin-ipfs` are valid plugin names.
 
