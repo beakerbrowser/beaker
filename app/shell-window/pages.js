@@ -1,6 +1,7 @@
 import { remote } from 'electron'
 import EventEmitter from 'events'
 import path from 'path'
+import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as statusBar from './ui/status-bar'
 import { urlToData } from '../lib/fg/img'
@@ -57,7 +58,7 @@ export function create (opts) {
     isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
-    zoom: 0, // what's the current zoom level? (updated by a message from the webview)
+    zoom: 0, // what's the current zoom level?
     favicons: null, // what are the favicons of the page?
     archiveInfo: null, // if a dat archive, includes the metadata
 
@@ -101,6 +102,10 @@ export function create (opts) {
       }
       // update nav
       navbar.update(page)
+    },
+
+    getURLOrigin: function () {
+      return (new URL(this.getURL())).origin
     }
   }
   pages.push(page)
@@ -344,7 +349,10 @@ export function savePinnedToDB (cb) {
 
 function onDomReady (e) {
   var page = getByWebview(e.target)
-  if (page) page.isWebviewReady = true
+  if (page) {
+    page.isWebviewReady = true
+    zoom.setZoomFromSitedata(page)
+  }
 }
 
 function onNewWindow (e) {
@@ -486,10 +494,6 @@ function onIpcMessage (e, type) {
       case 'new-tab':         return create(e.args[0])
       case 'inspect-element': return page.webviewEl.inspectElement(e.args[0], e.args[1])
       case 'set-status-bar':  return statusBar.set(e.args[0])
-      case 'set-zoom-level':
-        page.zoom = e.args[0];
-        navbar.update(page)
-        break
     }
   }
 }

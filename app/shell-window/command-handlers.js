@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron'
 import * as pages from './pages'
+import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 
 export function setup () {
@@ -17,9 +18,9 @@ export function setup () {
       case 'edit:find':              return navbar.showInpageFind(page)
       case 'view:reload':            return page.reload()
       case 'view:hard-reload':       return page.reloadIgnoringCache()
-      case 'view:zoom-in':           return page.send('command', 'view:zoom-in')
-      case 'view:zoom-out':          return page.send('command', 'view:zoom-out')
-      case 'view:zoom-reset':        return page.send('command', 'view:zoom-reset')
+      case 'view:zoom-in':           return zoom.zoomIn(page)
+      case 'view:zoom-out':          return zoom.zoomOut(page)
+      case 'view:zoom-reset':        return zoom.zoomReset(page)
       case 'view:toggle-dev-tools':  return (page.isDevToolsOpened()) ? page.closeDevTools() : page.openDevTools()
       case 'history:back':           return page.goBack()
       case 'history:forward':        return page.goForward()
