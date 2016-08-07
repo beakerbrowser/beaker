@@ -50,8 +50,8 @@ npm install beaker-plugin-ipfs
 
 Available plugins:
 
- - [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat). Adds support for browsing the [Dat Network](http://dat-data.com/). Comes pre-installed with Beaker. 
- - [beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs). Adds support for browsing the [IPFS Network](https://ipfs.io/).
+ - [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat). Adds support for browsing the [Dat Network](http://dat-data.com/). **Installed by default.**
+ - [beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs). Adds support for browsing the [IPFS Network](https://ipfs.io/). **Installed by default.**
 
 Submit a PR to have your plugin added to this list.
 
