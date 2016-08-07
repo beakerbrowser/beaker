@@ -16,16 +16,13 @@ Requires node 6.2.1.
 git clone https://github.com/pfrazee/beaker.git
 cd beaker
 npm install
-npm run rebuild #see below
+npm run rebuild #see https://github.com/electron/electron/issues/5851
 npm start
 ```
 
-Unfortunately, due to [electron#5851](https://github.com/electron/electron/issues/5851), you have to rebuild all native components from source.
-That's what `npm run rebuild` achieves.
-
 ### troubleshooting
 
-**In case of emergency** If you pull latest from the repo and get weird module errors, do:
+If you pull latest from the repo and get weird module errors, do:
 
 ```
 npm run burnthemall
@@ -33,8 +30,6 @@ npm run burnthemall
 
 This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-mad-king-game-of-thrones.jpg), who will torch your npm_modules, and do the full install/rebuild process for you.
 `npm start` should work afterwards.
-
-If you're working on the codebase, [there's lots of dev instructions and notes here](./build-notes.md)
 
 ## plugins
 
@@ -55,7 +50,10 @@ Available plugins:
 
 Submit a PR to have your plugin added to this list.
 
-**Howto: [Authoring Plugins](./doc/authoring-plugins.md)**
+## docs
+
+ - Howto: [Authoring Plugins](./doc/authoring-plugins.md)
+ - [Codebase & build notes](./build-notes.md)
 
 ## license
 
