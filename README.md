@@ -4,14 +4,11 @@ beaker browser
 This is a highly opinionated and standards-noncompliant browser.
 It has its own APIs for decentralized software.
 
-There are [a lot of new protocols and federated services in development](http://www.decentralizedweb.net/), and decentralized apps need more than just one of them.
-Beaker supports plugins (node modules) which introduce new URL schemes and WebAPIs.
-
 Please feel free to open usability issues.
 
 ![screenshot.png](screenshot.png)
 
-## building and project structure
+## setup
 
 Requires node 6.2.1.
 
@@ -25,6 +22,8 @@ npm start
 
 Unfortunately, due to [electron#5851](https://github.com/electron/electron/issues/5851), you have to rebuild all native components from source.
 That's what `npm run rebuild` achieves.
+
+### troubleshooting
 
 **In case of emergency** If you pull latest from the repo and get weird module errors, do:
 
@@ -40,18 +39,19 @@ If you're working on the codebase, [there's lots of dev instructions and notes h
 ## plugins
 
 To install a new plugin, go to the `app` directory and run `npm install <plugin-name>`.
-For example, to install the IPFS plugin:
+For example, to install the example plugin:
 
 ```bash
 # assuming you cloned beaker into ~/beaker:
 cd ~/beaker/app
-npm install beaker-plugin-ipfs
+npm install beaker-plugin-example
 ```
 
 Available plugins:
 
- - [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat). Adds support for browsing the [Dat Network](http://dat-data.com/). **Installed by default.**
- - [beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs). Adds support for browsing the [IPFS Network](https://ipfs.io/). **Installed by default.**
+ - **[beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat).** Adds support for browsing the [Dat Network](http://dat-data.com/). **Installed by default.**
+ - **[beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs).** Adds support for browsing the [IPFS Network](https://ipfs.io/). **Installed by default.**
+ - **[beaker-plugin-example](https://github.com/pfrazee/beaker-plugin-example).** A simple example-plugin, to use as a reference. Adds the 'beaker-example' protocol.
 
 Submit a PR to have your plugin added to this list.
 
