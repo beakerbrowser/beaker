@@ -52,6 +52,9 @@ Submit a PR to have your plugin added to this list.
 
 ## docs
 
+ - [Using IPFS](./doc/using-ipfs.md)
+ - [Using Dat](./doc/using-dat.md)
+ - [Dat vs. IPFS: What's the difference?](./doc/dat-vs-ipfs-comparison.md)
  - Howto: [Authoring Plugins](./doc/authoring-plugins.md)
  - [Codebase & build notes](./build-notes.md)
 
