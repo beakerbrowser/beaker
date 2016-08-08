@@ -86,9 +86,10 @@ migrations = [
       );
       CREATE INDEX bookmarks_url ON bookmarks (url);
       INSERT INTO bookmarks (title, url) VALUES ('Beaker Browser Homepage', 'https://github.com/pfrazee/beaker');
-      INSERT INTO bookmarks (title, url) VALUES ('@pfrazee - Twitter', 'https://twitter.com/pfrazee');
       INSERT INTO bookmarks (title, url) VALUES ('Dat Protocol', 'http://dat-data.com/');
+      INSERT INTO bookmarks (title, url) VALUES ('IPFS Protocol', 'https://ipfs.io');
       INSERT INTO bookmarks (title, url) VALUES ('DuckDuckGo (the default search engine)', 'https://duckduckgo.com');
+      INSERT INTO bookmarks (title, url) VALUES ('Some IPFS Links', 'ipfs:/ipfs/QmU5XsVwvJfTcCwqkK1SmTqDmXWSQWaTa7ZcVLY2PDxNxG/ipfs_links.html');
       PRAGMA user_version = 1;
     `, cb)
   },
