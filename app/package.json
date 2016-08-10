@@ -2,7 +2,7 @@
   "name": "beaker-browser",
   "productName": "Beaker Browser",
   "description": "A highly opinionated and standards-noncompliant browser.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "author": "Paul Frazee",
   "copyright": "© 2016, Paul Frazee",
   "main": "background-process.build.js",
