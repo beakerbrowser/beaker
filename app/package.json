@@ -12,6 +12,7 @@
     "electron-localshortcut": "^0.6.0",
     "emit-stream": "^0.1.2",
     "fs-jetpack": "^0.9.0",
+    "global-modules": "^0.2.3",
     "loglevel": "^1.4.1",
     "mkdirp": "^0.5.1",
     "moment": "^2.13.0",

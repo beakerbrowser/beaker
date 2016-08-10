@@ -3,7 +3,7 @@
 var Q = require('q');
 var gulpUtil = require('gulp-util');
 var jetpack = require('fs-jetpack');
-var asar = require('asar');
+// var asar = require('asar');
 var utils = require('../utils');
 var child_process = require('child_process');
 
@@ -34,15 +34,16 @@ var cleanupRuntime = function () {
 };
 
 var packageBuiltApp = function () {
-  var deferred = Q.defer();
+  return projectDir.copyAsync(projectDir.path('app'), finalAppDir.path('Contents/Resources/app'));
+  // var deferred = Q.defer();
 
-  asar.createPackageWithOptions(projectDir.path('app'), finalAppDir.path('Contents/Resources/app.asar'), {
-    dot: true
-  }, function () {
-    deferred.resolve();
-  });
+  // asar.createPackageWithOptions(projectDir.path('app'), finalAppDir.path('Contents/Resources/app.asar'), {
+  //   dot: true
+  // }, function () {
+  //   deferred.resolve();
+  // });
 
-  return deferred.promise;
+  // return deferred.promise;
 };
 
 var finalize = function () {

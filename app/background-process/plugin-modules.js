@@ -3,15 +3,25 @@ import path from 'path'
 import fs from 'fs'
 import log from 'loglevel'
 import rpc from 'pauls-electron-rpc'
+import globalModulesDir from 'global-modules'
 import manifest from './api-manifests/plugin-modules'
 
 // globals
 // =
 
-// load all modules named beaker-plugin-*
-var modulesPath = path.join(__dirname, '../app/node_modules')
-var protocolModuleNames = fs.readdirSync(modulesPath).filter(name => name.startsWith('beaker-plugin-'))
-var protocolModules = protocolModuleNames.map(name => require(path.join(modulesPath, name)))
+// load all global modules named beaker-plugin-*
+var protocolModuleNames = []
+try {
+  protocolModuleNames = fs.readdirSync(globalModulesDir).filter(name => name.startsWith('beaker-plugin-'))
+} catch (e) {}
+var protocolModules = protocolModuleNames.map(name => require(path.join(globalModulesDir, name)))
+
+// load builtin
+if (!protocolModuleNames.includes('beaker-plugin-dat'))
+  protocolModules.push(require('beaker-plugin-dat'))
+if (!protocolModuleNames.includes('beaker-plugin-ipfs'))
+  protocolModules.push(require('beaker-plugin-ipfs'))
+
 
 // exported api
 // =

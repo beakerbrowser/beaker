@@ -10,6 +10,12 @@ Please feel free to open usability issues.
 
 ## setup
 
+### binaries
+
+ - [OSX 64-bit](https://github.com/pfrazee/beaker/releases/download/0.1.0/beaker-browser-v0.1.0-darwin-x64.dmg)
+
+### building from source
+
 Requires node 6.2.1.
 
 ```
@@ -33,13 +39,11 @@ This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-ma
 
 ## plugins
 
-To install a new plugin, go to the `app` directory and run `npm install <plugin-name>`.
+To install a new plugin, install it globally using npm.
 For example, to install the example plugin:
 
 ```bash
-# assuming you cloned beaker into ~/beaker:
-cd ~/beaker/app
-npm install beaker-plugin-example
+npm install -g beaker-plugin-example
 ```
 
 Available plugins:
