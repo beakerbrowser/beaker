@@ -6,9 +6,9 @@ It has its own APIs for decentralized software.
 
 Please feel free to open usability issues.
 
-[![screenshot.png](screenshot.png)](https://www.youtube.com/watch?v=nKHJ4rLN9mo)
-
 ### [Demo video](https://www.youtube.com/watch?v=nKHJ4rLN9mo)
+
+[![screenshot.png](screenshot.png)](https://www.youtube.com/watch?v=nKHJ4rLN9mo)
 
 ## Binaries
 
@@ -25,8 +25,6 @@ npm install
 npm run rebuild #see https://github.com/electron/electron/issues/5851
 npm start
 ```
-
-### troubleshooting
 
 If you pull latest from the repo and get weird module errors, do:
 
