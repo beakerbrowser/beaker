@@ -8,15 +8,13 @@ Please feel free to open usability issues.
 
 [![screenshot.png](screenshot.png)](https://www.youtube.com/watch?v=nKHJ4rLN9mo)
 
-[Demo video](https://www.youtube.com/watch?v=nKHJ4rLN9mo)
+### [Demo video](https://www.youtube.com/watch?v=nKHJ4rLN9mo)
 
-## setup
+## Binaries
 
-### binaries
+### [OSX 64-bit](https://github.com/pfrazee/beaker/releases/download/0.1.0/beaker-browser-v0.1.0-darwin-x64.dmg)
 
- - [OSX 64-bit](https://github.com/pfrazee/beaker/releases/download/0.1.0/beaker-browser-v0.1.0-darwin-x64.dmg)
-
-### building from source
+## Building from source
 
 Requires node 6.2.1.
 
@@ -39,7 +37,7 @@ npm run burnthemall
 This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-mad-king-game-of-thrones.jpg), who will torch your npm_modules, and do the full install/rebuild process for you.
 `npm start` should work afterwards.
 
-## plugins
+## Plugins
 
 To install a new plugin, install it globally using npm.
 For example, to install the example plugin:
@@ -56,7 +54,7 @@ Available plugins:
 
 Submit a PR to have your plugin added to this list.
 
-## docs
+## Documentation
 
  - [Using IPFS](./doc/using-ipfs.md)
  - [Using Dat](./doc/using-dat.md)
@@ -64,7 +62,7 @@ Submit a PR to have your plugin added to this list.
  - Howto: [Authoring Plugins](./doc/authoring-plugins.md)
  - [Codebase & build notes](./build-notes.md)
 
-## license
+## License
 
 Modified MIT License (MIT)
 
