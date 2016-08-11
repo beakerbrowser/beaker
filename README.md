@@ -6,7 +6,9 @@ It has its own APIs for decentralized software.
 
 Please feel free to open usability issues.
 
-**[Demo video](https://www.youtube.com/watch?v=nKHJ4rLN9mo)**
+[![screenshot.png](screenshot.png)](https://www.youtube.com/watch?v=nKHJ4rLN9mo)
+
+[Demo video](https://www.youtube.com/watch?v=nKHJ4rLN9mo)
 
 ## setup
 
