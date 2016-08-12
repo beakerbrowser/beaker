@@ -5,7 +5,7 @@ Beaker is a browser for IPFS and Dat.
 It's licensed MIT, and supports plugins for adding new protocols and Web APIs.
 [Read the introduction](http://pfrazee.github.io/2016/08/10/beaker-browser-0.1.html).
 
-Please feel free to open usability issues.
+Please feel free to open usability issues. Join us at #beakerbrowser on Freenode.
 
 ### [Demo video](https://www.youtube.com/watch?v=nKHJ4rLN9mo)
 
