@@ -161,7 +161,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
   page.webviewEl.addEventListener('page-favicon-updated', onPageFaviconUpdated)
-  page.webviewEl.addEventListener('ipc-message', onIpcMessage)
+  page.webviewEl.addEventListener('update-target-url', onUpdateTargetUrl)
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
   page.webviewEl.addEventListener('plugin-crashed', onCrashed)
@@ -487,15 +487,8 @@ function onPageFaviconUpdated (e) {
   }
 }
 
-function onIpcMessage (e, type) {
-  var page = getByWebview(e.target)
-  if (page) {
-    switch (e.channel) {
-      case 'new-tab':         return create(e.args[0])
-      case 'inspect-element': return page.webviewEl.inspectElement(e.args[0], e.args[1])
-      case 'set-status-bar':  return statusBar.set(e.args[0])
-    }
-  }
+function onUpdateTargetUrl ({ url }) {
+  statusBar.set(url)
 }
 
 function onCrashed (e) {
