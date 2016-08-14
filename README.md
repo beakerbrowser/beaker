@@ -18,6 +18,13 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 ## Building from source
 
 Requires node 6.2.1.
+In linux (possibly also OSX) you need libtool, m4, and automake.
+
+```
+sudo apt-get install libtool m4 automake
+```
+
+To build:
 
 ```
 git clone https://github.com/pfrazee/beaker.git
