@@ -9,7 +9,7 @@ Plugins can only add Web APIs and URL schemes.
 Beaker plugins are node modules with a name that follows the form of `beaker-plugin-*`.
 For example, `beaker-plugin-dat` and `beaker-plugin-ipfs` are valid plugin names.
 
-On load, Beaker will find all modules that fit that name-scheme under `./app/node_modules`, and load them.
+On load, Beaker will find all modules that fit that name-scheme in the global `node_modules` directory, and load them.
 
 For reference, see [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat) and [beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs).
 
