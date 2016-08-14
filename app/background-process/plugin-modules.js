@@ -3,25 +3,18 @@ import path from 'path'
 import fs from 'fs'
 import log from 'loglevel'
 import rpc from 'pauls-electron-rpc'
-import globalModulesDir from 'global-modules'
 import manifest from './api-manifests/plugin-modules'
 
-// globals
-// =
+const appNodeModules = path.resolve( __dirname, 'node_modules' );
 
 // load all global modules named beaker-plugin-*
 var protocolModuleNames = []
 try {
-  protocolModuleNames = fs.readdirSync(globalModulesDir).filter(name => name.startsWith('beaker-plugin-'))
-} catch (e) {}
-var protocolModules = protocolModuleNames.map(name => require(path.join(globalModulesDir, name)))
-
-// load builtin
-if (!protocolModuleNames.includes('beaker-plugin-dat'))
-  protocolModules.push(require('beaker-plugin-dat'))
-if (!protocolModuleNames.includes('beaker-plugin-ipfs'))
-  protocolModules.push(require('beaker-plugin-ipfs'))
-
+  protocolModuleNames = fs.readdirSync( appNodeModules  ).filter(name => name.startsWith('beaker-plugin-') )
+} catch (e) {
+    console.log( "Error with reading app/node_modules", e )
+}
+var protocolModules = protocolModuleNames.map(name => require(path.join( appNodeModules, name)))
 
 // exported api
 // =
