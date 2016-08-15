@@ -379,8 +379,17 @@ function onWillNavigate (e) {
 // we need to update the url bar but no load event occurs
 function onDidNavigateInPage (e) {
   var page = getByWebview(e.target)
-  if (page)
+  if (page) {
+    // update ui
     navbar.updateLocation(page)
+
+    // update history
+    var url = page.getURL()
+    if (!url.startsWith('beaker:')) {
+      beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() }, warnIfError('history.addVisit'))
+      beakerBookmarks.addVisit(page.getURL(), warnIfError('bookmarks.addVisit'))
+    }
+  }
 }
 
 function onLoadCommit (e) {
