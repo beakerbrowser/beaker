@@ -245,15 +245,18 @@ function handleAutocompleteSearch (err, results) {
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || isHashRegex.test(v) || v.includes('://') || v.startsWith('beaker:') || v.startsWith('ipfs:/')))
   var vWithProtocol = v
+  var isGuessingTheScheme = false
   if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('ipfs:/'))) {
     if (isHashRegex.test(v))
       vWithProtocol = 'dat://'+v
-    else
+    else {
       vWithProtocol = 'https://'+v
+      isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
+    }
   }
 
   // set the top results accordingly
-  var gotoResult = { url: vWithProtocol, title: 'Go to '+v }
+  var gotoResult = { url: vWithProtocol, title: 'Go to '+v, isGuessingTheScheme }
   var searchResult = { 
     search: v,
     title: 'DuckDuckGo Search',
@@ -270,15 +273,19 @@ function handleAutocompleteSearch (err, results) {
   update()
 }
 
-function getAutocompleteSelectionUrl (i) {
+function getAutocompleteSelection (i) {
   if (typeof i !== 'number')
     i = autocompleteCurrentSelection
   if (autocompleteResults && autocompleteResults[i])
-    return autocompleteResults[i].url
+    return autocompleteResults[i]
 
   // fallback to the current value in the navbar
   var addrEl = pages.getActive().navbarEl.querySelector('.nav-location-input')
-  return addrEl.value
+  return { url: addrEl.value }
+}
+
+function getAutocompleteSelectionUrl (i) {
+  return getAutocompleteSelection(i).url
 }
 
 // helper for autocomplete
@@ -426,7 +433,8 @@ function onKeyupLocation (e) {
 
     var page = getEventPage(e)
     if (page) {
-      page.loadURL(getAutocompleteSelectionUrl())
+      var selection = getAutocompleteSelection()
+      page.loadURL(selection.url, { isGuessingTheScheme: selection.isGuessingTheScheme })
       e.target.blur()
     }
     return

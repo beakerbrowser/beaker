@@ -52,6 +52,7 @@ export function create (opts) {
 
     // page state
     loadingURL: false, // what URL is being loaded, if any?
+    isGuessingTheURLScheme: false, // did beaker guess at the url scheme? if so, a bad load may deserve a second try
     manuallyTrackedIsLoading: true, // used because the webview may never be ready, so webview.isLoading() isnt enough
     bookmark: null, // this page's bookmark object, if it's bookmarked
     isWebviewReady: false, // has the webview loaded its methods?
@@ -79,15 +80,14 @@ export function create (opts) {
     },
 
     // wrap webview loadURL to set the `loadingURL`
-    loadURL: function (url) {
-      // if (page.isWebviewReady) {
-        // reset some state
-        page.isReceivingAssets = false
+    loadURL: function (url, opts) {
+      // reset some state
+      page.isReceivingAssets = false
 
-        // set and go
-        page.loadingURL = url
-        page.webviewEl.loadURL(url)
-      // }
+      // set and go
+      page.loadingURL = url
+      page.isGuessingTheURLScheme = opts && opts.isGuessingTheScheme
+      page.webviewEl.loadURL(url)
     },
 
     // add/remove bookmark
@@ -450,6 +450,7 @@ function onDidFinishLoad (e) {
   if (page) {
     // reset page object
     page.loadingURL = false
+    page.isGuessingTheURLScheme = false
     page.favicons = null
     navbar.update(page)
     navbar.updateLocation(page)
@@ -480,6 +481,18 @@ function onDidFailLoad (e) {
 
   var page = getByWebview(e.target)
   if (page) {
+    // if https fails for security reasons, and beaker *assumed* https, then fallback to http
+    // -501 == ERR_INSECURE_RESPONSE
+    if (e.errorCode == -501 && page.isGuessingTheURLScheme) {
+      var url = page.getIntendedURL()
+      page.isGuessingTheURLScheme = false // no longer doing that!
+      if (url.startsWith('https')) {
+        url = url.replace(/^https/, 'http')
+        page.loadURL(url)
+        return
+      }
+    }
+
     // render failure page
     var errorPageHTML = errorPage(e.errorDescription)
     page.webviewEl.getWebContents().executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
