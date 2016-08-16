@@ -1,6 +1,7 @@
 import { remote } from 'electron'
 import * as pages from '../pages'
 import * as yo from 'yo-yo'
+import { UpdatesNavbarBtn } from './navbar/updates'
 import { DownloadsNavbarBtn } from './navbar/downloads'
 
 const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
@@ -17,6 +18,7 @@ const KEYCODE_P = 80
 var toolbarNavDiv = document.getElementById('toolbar-nav')
 var downloadsNavbarBtn = null
 
+var updatesNavbarBtn = null
 // autocomplete data
 var autocompleteCurrentValue = null
 var autocompleteCurrentSelection = 0
@@ -26,9 +28,10 @@ var autocompleteResults = null // if set to an array, will render dropdown
 // =
 
 export function setup () {
-  // create the DownloadsNavbarBtn manager
+  // create the button managers
   downloadsNavbarBtn = new DownloadsNavbarBtn()
 }
+  updatesNavbarBtn = new UpdatesNavbarBtn()
 
 export function createEl (id) {
   // render (only need to render once)
@@ -228,6 +231,7 @@ function render (id, page) {
     <div class="toolbar-group">
       ${downloadsNavbarBtn.render()}
       <button class="toolbar-btn" onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
+      ${updatesNavbarBtn.render()}
     </div>
   </div>`
 }

@@ -7,7 +7,8 @@ import EventEmitter from 'events'
 var events = new EventEmitter()
 var navItems = [
   { href: 'beaker:start', label: 'Favorites' },
-  { href: 'beaker:history', label: 'History' }
+  { href: 'beaker:history', label: 'History' },
+  { href: 'beaker:settings', label: 'Settings' }
 ].concat(
   beakerPluginModules.getHomePages()
     .filter(item => (typeof item.href == 'string') && (typeof item.label == 'string'))

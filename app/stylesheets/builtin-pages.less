@@ -7,9 +7,11 @@
   font-style: normal;
 }
 
+@import "./com/btn.less";
 @import "./com/sidenav.less";
 @import "./com/links-list.less";
 @import "./com/links-tiles.less";
+@import "./com/spinner.less";
 
 .pane {
   border: 0;
@@ -20,5 +22,48 @@
     // make an outline
     color: #fff;
     -webkit-text-stroke: 1px #999;
+  }
+}
+
+.settings {
+  padding: 14px;
+
+  input[type=checkbox] {
+    margin: 0 3px 0 1px;
+  }
+
+  p {
+    margin: 0 0 10px;
+  }
+
+  fieldset {
+    position: relative;
+    padding: 14px;
+    border-radius: 2px;
+
+    &:before {
+      content: attr(data-title);
+      position: absolute;
+      left: 7px;
+      top: -11px;
+      background: #fff;
+      padding: 0 5px;
+      color: gray;
+    }
+  }
+
+  .s-version-info {
+    padding-left: 5px;
+    font-size: 15px;
+    line-height: 14px;
+    position: relative;
+    top: 1px;
+
+    .spinner {
+      display: inline-block;
+      color: #333;
+      height: 12px;
+      width: 12px;
+    }
   }
 }
