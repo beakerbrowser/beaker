@@ -1,6 +1,7 @@
 export default {
   eventsStream: 'readable',
   getInfo: 'promise',
+  checkForUpdates: 'promise',
   restartBrowser: 'sync',
 
   listPlugins: 'promise',

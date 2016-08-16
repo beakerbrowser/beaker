@@ -7,6 +7,7 @@ import fs from 'fs'
 import log from 'loglevel'
 import globalModulesDir from 'global-modules'
 import manifest from './api-manifests/browser'
+import co from 'co'
 import * as plugins from './plugins'
 
 // globals
@@ -23,6 +24,7 @@ export function setup () {
   rpc.exportAPI('beakerBrowser', manifest, { 
     eventsStream,
     getInfo,
+    checkForUpdates,
     restartBrowser,
 
     listPlugins: plugins.list,
@@ -42,6 +44,32 @@ export function getInfo () {
       userData: app.getPath('userData')
     }
   })
+}
+
+export function checkForUpdates () {
+  // check the browser auto-updater
+  // TODO
+
+  co(function*() {
+    try {
+      // emit start event
+      browserEvents.emit('plugins-updating')
+
+      // run plugin updater
+      var results = yield plugins.checkForUpdates()
+
+      // emit updated event
+      if (results && results.length > 0)
+        browserEvents.emit('plugins-updated')
+    } catch (e) {
+      log.error('Error updating plugins via npm', e)
+    }
+
+    // emit finish event
+    browserEvents.emit('plugins-done-updating')
+  })
+
+  return Promise.resolve()
 }
 
 export function restartBrowser () {

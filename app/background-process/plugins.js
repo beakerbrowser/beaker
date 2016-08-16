@@ -5,6 +5,7 @@ import log from 'loglevel'
 import npm from 'npm'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
+import semver from 'semver' 
 
 // globals
 // =
@@ -79,6 +80,7 @@ export function install (name) {
     })
   })
 }
+
 // uninstall a plugin
 export function uninstall (name) {
   return new Promise((resolve, reject) => {
@@ -102,7 +104,32 @@ export function uninstall (name) {
 
 // check all installed plugins for new versions
 export function checkForUpdates () {
-  return Promise.reject(new Error('todo'))  
+  return new Promise((resolve, reject) => {
+    // run `npm install` on all the plugin modules
+    npm.commands.install(protocolModuleNames.map(name => name + '@latest'), (err, res) => {
+      if (err) reject(err)
+      else {
+        if (res && res.length) {
+          // iterate the updates NPM gave us
+          res.forEach(update => {
+            try {
+              // extract the name & version
+              var parts = update[0].split('@')
+              var name = parts[0]
+              var version = parts[1]
+
+              // was the package updated?
+              if (protocolPackageJsons[name] && semver.gt(version, protocolPackageJsons[name].version)) {
+                // update the package
+                protocolPackageJsons[name].status = 'updated'
+              }
+            } catch (e) {}
+          })
+        }
+        resolve(res)
+      }
+    })
+  })
 }
 
 // fetch a complete listing of the plugin info

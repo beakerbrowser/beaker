@@ -18,11 +18,19 @@ var pluginSearch = {
   isSearching: false,
   didFail: false
 }
+var isPluginsUpdating = false
+var isPluginsUpdated = false
+var browserEvents
 
 // exported API
 // =
 
 export function setup () {
+  // wire up events
+  browserEvents = emitStream(beakerBrowser.eventsStream())
+  browserEvents.on('plugins-updating', onPluginsUpdating)
+  browserEvents.on('plugins-done-updating', onPluginsDoneUpdating)
+  browserEvents.on('plugins-updated', onPluginsUpdated)
 }
 
 export function show () {
@@ -36,6 +44,8 @@ export function show () {
 }
 
 export function hide () {
+  browserInfo = null
+  plugins = null
 }
 
 // rendering
@@ -62,22 +72,22 @@ function render () {
 }
 
 function renderAutoUpdater () {
-  if (browserInfo.isUpdateAvailable) {
+  if (isPluginsUpdating || browserInfo.isCheckingForUpdates) {
+    return yo`<div class="s-section">
+      <button class="btn" disabled>Checking for updates</button>
+      <span class="version-info">
+        <div class="spinner"></div>
+        Checking for updates to Beaker or plugins...
+        <label><input type="checkbox" checked /> Check for updates automatically</label>
+      </span>
+    </div>`
+  } 
+  else if (isPluginsUpdated || browserInfo.isUpdateAvailable) {
     return yo`<div class="s-section">
       <button class="btn">Restart now</button>
       <span class="version-info">
         <span class="icon icon-up-circled"></span>
         <strong>New version available.</strong> Restart Beaker to install.
-        <label><input type="checkbox" checked /> Check for updates automatically</label>
-      </span>
-    </div>`
-  }
-  else if (browserInfo.isCheckingForUpdates) {
-    return yo`<div class="s-section">
-      <button class="btn" disabled>Checking for updates...</button>
-      <span class="version-info">
-        <div class="spinner"></div>
-        <strong>Beaker v${browserInfo.version}</strong> is up-to-date
         <label><input type="checkbox" checked /> Check for updates automatically</label>
       </span>
     </div>`
@@ -109,25 +119,32 @@ function renderPlugins () {
 
     // install button
     var installBtn
-    switch (p.status) {
-      case 'installed':
-        installBtn = yo`<button class="btn" onclick=${onClickUninstallPlugin(name)}>Uninstall</button>`
-        break
-      case 'installing':
-        installBtn = yo`<span><button class="btn" disabled>Installing</button> <div class="spinner"></div> Please wait. This may take a few minutes...</span>`
-        break
-      case 'done-installing':
-        installBtn = yo`<span><button class="btn" disabled>Installed</button> <a href="#" onclick=${onClickRestart}>Restart Beaker</a> to finish installing.</span>`
-        break
-      case 'uninstalled':
-        installBtn = yo`<button class="btn" onclick=${onClickInstallPlugin(name)}>Install</button>`
-        break
-      case 'uninstalling':
-        installBtn = yo`<span><button class="btn" disabled>Uninstalling</button> <div class="spinner"></div> Please wait. This should be quick!</span>`
-        break
-      case 'done-uninstalling':
-        installBtn = yo`<span><button class="btn" disabled>Uninstalled</button> <a href="#" onclick=${onClickRestart}>Restart Beaker</a> to finish uninstalling.</span>`
-        break
+    if (isPluginsUpdating) {
+      installBtn = yo`<span><button class="btn" disabled>Checking for updates</button></span>`
+    } else {
+      switch (p.status) {
+        case 'installed':
+          installBtn = yo`<button class="btn" onclick=${onClickUninstallPlugin(name)}>Uninstall</button>`
+          break
+        case 'installing':
+          installBtn = yo`<span><button class="btn" disabled>Installing</button> <div class="spinner"></div> Please wait. This may take a few minutes...</span>`
+          break
+        case 'done-installing':
+          installBtn = yo`<span><button class="btn" disabled>Installed</button> <a href="#" onclick=${onClickRestart}>Restart Beaker</a> to finish installing.</span>`
+          break
+        case 'uninstalled':
+          installBtn = yo`<button class="btn" onclick=${onClickInstallPlugin(name)}>Install</button>`
+          break
+        case 'uninstalling':
+          installBtn = yo`<span><button class="btn" disabled>Uninstalling</button> <div class="spinner"></div> Please wait. This should be quick!</span>`
+          break
+        case 'done-uninstalling':
+          installBtn = yo`<span><button class="btn" disabled>Uninstalled</button> <a href="#" onclick=${onClickRestart}>Restart Beaker</a> to finish uninstalling.</span>`
+          break
+        case 'updated':
+          installBtn = yo`<span><button class="btn" disabled>Update installed</button> <a href="#" onclick=${onClickRestart}>Restart Beaker</a> to finish installing.</span>`
+          break
+      }
     }
 
     // plugin info
@@ -150,16 +167,17 @@ function renderPlugins () {
 // =
 
 function onClickCheckUpdates () {
-  // TODO - trigger check
+  // trigger check
+  beakerBrowser.checkForUpdates()
 
-  browserInfo.isCheckingForUpdates = true
-  render()
-
-  setTimeout(() => {
-    browserInfo.isCheckingForUpdates = false
-    browserInfo.isUpdateAvailable = true
-    render()
-  }, 2e3)
+  // DEBUG:
+  // browserInfo.isCheckingForUpdates = true
+  // render()
+  // setTimeout(() => {
+  //   browserInfo.isCheckingForUpdates = false
+  //   browserInfo.isUpdateAvailable = true
+  //   render()
+  // }, 2e3)
 }
 
 function onKeyDownSearch (e) {
@@ -257,6 +275,28 @@ function onClickUninstallPlugin (name) {
 
 function onClickRestart () {
   beakerBrowser.restartBrowser()
+}
+
+function onPluginsUpdating () {
+  isPluginsUpdating = true
+  render()
+}
+
+function onPluginsDoneUpdating () {
+  isPluginsUpdating = false
+  render()
+}
+
+function onPluginsUpdated () {
+  // render new state
+  isPluginsUpdated = true
+  render()
+
+  // refetch plugins to render the update
+  co(function* () {
+    plugins = yield beakerBrowser.listPlugins()
+    render()
+  })
 }
 
 // internal methods
