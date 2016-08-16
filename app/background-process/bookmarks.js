@@ -1,10 +1,9 @@
-import { app, ipcMain } from 'electron'
+import { app } from 'electron'
 import sqlite3 from 'sqlite3'
 import path from 'path'
 import url from 'url'
 import rpc from 'pauls-electron-rpc'
 import manifest from './api-manifests/bookmarks'
-import * as pluginModules from './plugin-modules'
 import { setupDatabase } from '../lib/bg/sqlite-tools'
 import log from '../log'
 

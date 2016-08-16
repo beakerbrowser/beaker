@@ -463,7 +463,7 @@ function onDidFinishLoad (e) {
     }
 
     // fetch protocol info
-    page.protocolDescription = beakerPluginModules.getProtocolDescription((new URL(url)).protocol)
+    page.protocolDescription = beakerBrowser.getProtocolDescription((new URL(url)).protocol)
     console.log('Protocol description', page.protocolDescription)
   }
 }

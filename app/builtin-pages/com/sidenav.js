@@ -1,4 +1,5 @@
 import * as yo from 'yo-yo'
+import co from 'co'
 import EventEmitter from 'events'
 
 // globals
@@ -9,10 +10,15 @@ var navItems = [
   { href: 'beaker:start', label: 'Favorites' },
   { href: 'beaker:history', label: 'History' },
   { href: 'beaker:settings', label: 'Settings' }
-].concat(
-  beakerPluginModules.getHomePages()
-    .filter(item => (typeof item.href == 'string') && (typeof item.label == 'string'))
-)
+]
+
+co(function *() {
+  // fetch dynamic nav items
+  var moreNavItems = yield beakerBrowser.getHomePages()
+  moreNavItems = moreNavItems.filter(item => (typeof item.href == 'string') && (typeof item.label == 'string'))
+  navItems = navItems.concat(moreNavItems)
+  update()
+})
 
 // exported API
 // =

@@ -11,11 +11,11 @@ import * as windows from './background-process/windows'
 import buildWindowMenu from './background-process/window-menu'
 import registerContextMenu from './background-process/context-menu'
 import * as webAPIs from './background-process/web-apis'
+import * as beakerBrowser from './background-process/browser'
 import * as sitedata from './background-process/sitedata'
 import * as bookmarks from './background-process/bookmarks'
 import * as history from './background-process/history'
 import * as downloads from './background-process/downloads'
-import * as pluginModules from './background-process/plugin-modules'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
@@ -24,11 +24,11 @@ import * as beakerFaviconProtocol from './background-process/protocols/beaker-fa
 log.setLevel('trace')
 
 // load the installed protocols
-pluginModules.registerStandardSchemes()
+beakerBrowser.registerStandardSchemes()
 
 app.on('ready', function () {
   // base
-  pluginModules.setup()
+  beakerBrowser.setup()
 
   // ui
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu(env)))
@@ -44,11 +44,11 @@ app.on('ready', function () {
   // protocols
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
-  pluginModules.setupProtocolHandlers()
+  beakerBrowser.setupProtocolHandlers()
 
   // web APIs
   webAPIs.setup()
-  pluginModules.setupWebAPIs()
+  beakerBrowser.setupWebAPIs()
 })
 
 app.on('window-all-closed', function () {
