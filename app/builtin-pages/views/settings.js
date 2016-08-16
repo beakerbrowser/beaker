@@ -10,6 +10,11 @@ import co from 'co'
 
 var settings = {}
 var browserInfo
+var plugins
+var pluginSearch = {
+  isSearching: false,
+  didFail: false
+}
 
 // exported API
 // =
@@ -18,12 +23,10 @@ export function setup () {
 }
 
 export function show () {
+  document.title = 'Settings'
   co(function* () {
-    document.title = 'Settings'
-    console.log('getting info', beakerBrowser)
     browserInfo = yield beakerBrowser.getInfo()
-
-    console.log('got info', browserInfo)
+    plugins = yield beakerBrowser.listPlugins()
     render()
   })
 }
@@ -38,23 +41,11 @@ function render () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="settings">
       <div class="ll-heading">Auto-updater</div>
-      ${render_updates()}
+      ${renderAutoUpdater()}
       <div class="ll-heading">Plugins</div>
       <div class="s-section plugins">
-        <div class="p-search">
-          <span class="icon icon-search"></span>
-          <input type="text" placeholder="Search for a plugin">
-        </div>
-        <div class="p-plugin">
-          <div class="p-plugin-title"><strong>IPFS</strong> <label><input type="checkbox" checked /> Enabled</label></div>
-          <div class="p-plugin-desc">Browse sites on the IPFS network.</div>
-          <div class="p-plugin-link"><a href="https://github.com/pfrazee/beaker-plugin-ipfs">https://github.com/pfrazee/beaker-plugin-ipfs</a></div>
-        </div>
-        <div class="p-plugin">
-          <div class="p-plugin-title"><strong>Dat</strong> <label><input type="checkbox" checked /> Enabled</label></div>
-          <div class="p-plugin-desc">Browse sites on the Dat P2P network.</div>
-          <div class="p-plugin-link"><a href="https://github.com/pfrazee/beaker-plugin-dat">https://github.com/pfrazee/beaker-plugin-dat</a></div>
-        </div>
+        ${renderPluginSearch()}
+        ${renderPlugins()}
       </div>
       <br>
       <div class="ll-heading">Application Info</div>
@@ -66,7 +57,7 @@ function render () {
   </div>`)
 }
 
-function render_updates () {
+function renderAutoUpdater () {
   if (browserInfo.isUpdateAvailable) {
     return yo`<div class="s-section">
       <button class="btn">Restart now</button>
@@ -99,6 +90,33 @@ function render_updates () {
   }
 }
 
+function renderPluginSearch () {
+  return yo`<div class="p-search">
+    <span class="icon icon-search"></span>
+    <input type="text" placeholder="Search for a plugin" onkeydown=${onKeyDownSearch} />
+    ${pluginSearch.isSearching ? yo`<div class="spinner"></div>` : ''}
+    ${pluginSearch.didFail ? yo`<span class="p-search-error">Plugin not found</span>` : ''}
+  </div>`
+}
+
+function renderPlugins () {
+  return Object.keys(plugins).map(name => {
+    var p = plugins[name]
+    return yo`<div class="p-plugin" id=${name}>
+      <div class="p-plugin-title"><strong>${extractPluginName(p.name)}</strong></div>
+      ${p.description ? yo`<div class="p-plugin-desc">${p.description}</div>` : ''}
+      <div class="p-plugin-details">
+        [
+        ${p.author ? yo`<span>by ${p.author.name || p.author} |</span>` : ''}
+        Version ${p.version||'0.0.0'} |
+        <a href="${p.homepage||('https://npm.im/'+name)}" target="_blank">Homepage</a>
+        ]
+      </div>
+      <div><label><input type="checkbox" checked /> Enabled</label></div>
+    </div>`
+  })
+}
+
 // event handlers
 // =
 
@@ -113,4 +131,67 @@ function onClickCheckUpdates () {
     browserInfo.isUpdateAvailable = true
     render()
   }, 2e3)
+}
+
+function onKeyDownSearch (e) {
+  // only handle enter
+  if (e.keyCode != 13)
+    return
+
+  // get the search name
+  var name = e.target.value
+  if (!name.startsWith('beaker-plugin-'))
+    name = 'beaker-plugin-' + name // fix the name
+
+  // only search if not already present
+  if (plugins[name])
+    return highlight(name)
+
+  // render searching
+  pluginSearch.isSearching = true
+  pluginSearch.didFail = false
+  render()
+
+  // run the search
+  co(function*() {
+    try {
+      // add plugin info to the listing
+      var pluginInfo = yield beakerBrowser.lookupPlugin(name)
+      pluginInfo = pluginInfo[Object.keys(pluginInfo)[0]]
+      plugins[name] = {
+        name: pluginInfo.name,
+        author: (pluginInfo.author||'').replace(/ <.*>/, ''), // strip out email
+        description: pluginInfo.description,
+        homepage: pluginInfo.homepage,
+        version: pluginInfo.version
+      }
+    } catch (e) {
+      pluginSearch.didFail = true
+    }
+
+    // render result
+    pluginSearch.isSearching = false
+    render()
+    highlight(name)
+  })
+}
+
+// internal methods
+// =
+
+function extractPluginName (name) {
+  return name.slice('beaker-plugin-'.length)
+}
+
+function highlight (id) {
+  var el = document.getElementById(id)
+  if (el) {
+    el.scrollIntoViewIfNeeded()
+    el.animate([
+      { background: '#ffeeaa' },
+      { background: 'white' }
+    ], {
+      duration: 500
+    })
+  }  
 }

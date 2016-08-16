@@ -4,7 +4,7 @@ import beakerBookmarks from './api-manifests/bookmarks'
 import beakerDownloads from './api-manifests/downloads'
 import beakerHistory from './api-manifests/history'
 import beakerSitedata from './api-manifests/sitedata'
-import * as beakerBrowserAPI from './browser'
+import * as plugins from './plugins'
 
 // exported api
 // =
@@ -26,6 +26,6 @@ export function setup () {
     }
 
     // for everything else, we'll use the plugins
-    event.returnValue = beakerBrowserAPI.getWebAPIManifests(scheme)
+    event.returnValue = plugins.getWebAPIManifests(scheme)
   })
 }

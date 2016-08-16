@@ -8,6 +8,7 @@ import log from 'loglevel'
 import env from './env'
 
 import * as beakerBrowser from './background-process/browser'
+import * as plugins from './background-process/plugins'
 import * as webAPIs from './background-process/web-apis'
 import * as windows from './background-process/ui/windows'
 import buildWindowMenu from './background-process/ui/window-menu'
@@ -24,7 +25,7 @@ import * as beakerFaviconProtocol from './background-process/protocols/beaker-fa
 log.setLevel('trace')
 
 // load the installed protocols
-beakerBrowser.registerStandardSchemes()
+plugins.registerStandardSchemes()
 
 app.on('ready', function () {
   // base
@@ -44,11 +45,11 @@ app.on('ready', function () {
   // protocols
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
-  beakerBrowser.setupProtocolHandlers()
+  plugins.setupProtocolHandlers()
 
   // web APIs
   webAPIs.setup()
-  beakerBrowser.setupWebAPIs()
+  plugins.setupWebAPIs()
 })
 
 app.on('window-all-closed', function () {
