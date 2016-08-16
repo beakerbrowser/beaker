@@ -4,7 +4,7 @@ import unusedFilename from 'unused-filename'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import rpc from 'pauls-electron-rpc'
-import manifest from './api-manifests/downloads'
+import manifest from '../api-manifests/downloads'
 
 // globals
 // =

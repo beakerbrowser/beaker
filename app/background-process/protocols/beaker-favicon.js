@@ -7,7 +7,7 @@
 import { protocol } from 'electron'
 import fs from 'fs'
 import path from 'path'
-import * as sitedata from '../sitedata'
+import * as sitedata from '../dbs/sitedata'
 
 export function setup () {
   // load default favicon

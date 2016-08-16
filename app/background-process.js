@@ -7,15 +7,15 @@ import { app, Menu } from 'electron'
 import log from 'loglevel'
 import env from './env'
 
-import * as windows from './background-process/windows'
-import buildWindowMenu from './background-process/window-menu'
-import registerContextMenu from './background-process/context-menu'
-import * as webAPIs from './background-process/web-apis'
 import * as beakerBrowser from './background-process/browser'
-import * as sitedata from './background-process/sitedata'
-import * as bookmarks from './background-process/bookmarks'
-import * as history from './background-process/history'
-import * as downloads from './background-process/downloads'
+import * as webAPIs from './background-process/web-apis'
+import * as windows from './background-process/ui/windows'
+import buildWindowMenu from './background-process/ui/window-menu'
+import registerContextMenu from './background-process/ui/context-menu'
+import * as downloads from './background-process/ui/downloads'
+import * as sitedata from './background-process/dbs/sitedata'
+import * as bookmarks from './background-process/dbs/bookmarks'
+import * as history from './background-process/dbs/history'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
@@ -34,12 +34,12 @@ app.on('ready', function () {
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu(env)))
   registerContextMenu()
   windows.setup()
+  downloads.setup()
 
   // databases
   sitedata.setup()
   bookmarks.setup()
   history.setup()
-  downloads.setup()
 
   // protocols
   beakerProtocol.setup()

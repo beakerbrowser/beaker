@@ -3,9 +3,9 @@ import sqlite3 from 'sqlite3'
 import path from 'path'
 import url from 'url'
 import rpc from 'pauls-electron-rpc'
-import manifest from './api-manifests/sitedata'
-import { setupDatabase } from '../lib/bg/sqlite-tools'
-import log from '../log'
+import manifest from '../api-manifests/sitedata'
+import { setupDatabase } from '../../lib/bg/sqlite-tools'
+import log from '../../log'
 
 // globals
 // =

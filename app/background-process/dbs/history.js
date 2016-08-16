@@ -5,9 +5,9 @@ import url from 'url'
 import zerr from 'zerr'
 import multicb from 'multicb'
 import rpc from 'pauls-electron-rpc'
-import manifest from './api-manifests/history'
-import { setupDatabase } from '../lib/bg/sqlite-tools'
-import log from '../log'
+import manifest from '../api-manifests/history'
+import { setupDatabase } from '../../lib/bg/sqlite-tools'
+import log from '../../log'
 
 const BadParam = zerr('BadParam', '% must be a %')
 const InvalidCmd = zerr('InvalidCommand', '% is not a valid command')

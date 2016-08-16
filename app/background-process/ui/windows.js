@@ -3,7 +3,7 @@ import { register as registerShortcut, unregisterAll as unregisterAllShortcuts }
 import jetpack from 'fs-jetpack'
 import path from 'path'
 import * as downloads from './downloads'
-import log from '../log'
+import log from '../../log'
 
 // globals
 // =

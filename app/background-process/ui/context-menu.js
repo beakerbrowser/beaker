@@ -2,7 +2,7 @@ import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import url from 'url'
 import path from 'path'
 import { download } from './downloads'
-import { getProtocolDescription } from './browser'
+import { getProtocolDescription } from '../browser'
 
 export default function registerContextMenu () {
   // register the context menu on every created webContents
