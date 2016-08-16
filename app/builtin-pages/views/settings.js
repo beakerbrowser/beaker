@@ -4,6 +4,9 @@ This uses the beakerBrowser API, which is exposed by webview-preload to all site
 
 import * as yo from 'yo-yo'
 import co from 'co'
+import emitStream from 'emit-stream'
+
+const LOG_LIMIT = 1000
 
 // globals
 // =
@@ -27,6 +30,7 @@ export function show () {
   co(function* () {
     browserInfo = yield beakerBrowser.getInfo()
     plugins = yield beakerBrowser.listPlugins()
+
     render()
   })
 }
@@ -102,6 +106,31 @@ function renderPluginSearch () {
 function renderPlugins () {
   return Object.keys(plugins).map(name => {
     var p = plugins[name]
+
+    // install button
+    var installBtn
+    switch (p.status) {
+      case 'installed':
+        installBtn = yo`<button class="btn" onclick=${onClickUninstallPlugin(name)}>Uninstall</button>`
+        break
+      case 'installing':
+        installBtn = yo`<span><button class="btn" disabled>Installing</button> <div class="spinner"></div> Please wait. This may take a few minutes...</span>`
+        break
+      case 'done-installing':
+        installBtn = yo`<span><button class="btn" disabled>Installed</button> <a href="#" onclick=${onClickRestart}>Restart Beaker</a> to finish installing.</span>`
+        break
+      case 'uninstalled':
+        installBtn = yo`<button class="btn" onclick=${onClickInstallPlugin(name)}>Install</button>`
+        break
+      case 'uninstalling':
+        installBtn = yo`<span><button class="btn" disabled>Uninstalling</button> <div class="spinner"></div> Please wait. This should be quick!</span>`
+        break
+      case 'done-uninstalling':
+        installBtn = yo`<span><button class="btn" disabled>Uninstalled</button> <a href="#" onclick=${onClickRestart}>Restart Beaker</a> to finish uninstalling.</span>`
+        break
+    }
+
+    // plugin info
     return yo`<div class="p-plugin" id=${name}>
       <div class="p-plugin-title"><strong>${extractPluginName(p.name)}</strong></div>
       ${p.description ? yo`<div class="p-plugin-desc">${p.description}</div>` : ''}
@@ -112,7 +141,7 @@ function renderPlugins () {
         <a href="${p.homepage||('https://npm.im/'+name)}" target="_blank">Homepage</a>
         ]
       </div>
-      <div><label><input type="checkbox" checked /> Enabled</label></div>
+      <div class="p-plugin-installer">${installBtn}</div>
     </div>`
   })
 }
@@ -143,13 +172,16 @@ function onKeyDownSearch (e) {
   if (!name.startsWith('beaker-plugin-'))
     name = 'beaker-plugin-' + name // fix the name
 
+  // render w/o not-found
+  pluginSearch.didFail = false
+  render()
+
   // only search if not already present
   if (plugins[name])
     return highlight(name)
 
   // render searching
   pluginSearch.isSearching = true
-  pluginSearch.didFail = false
   render()
 
   // run the search
@@ -163,7 +195,8 @@ function onKeyDownSearch (e) {
         author: (pluginInfo.author||'').replace(/ <.*>/, ''), // strip out email
         description: pluginInfo.description,
         homepage: pluginInfo.homepage,
-        version: pluginInfo.version
+        version: pluginInfo.version,
+        status: 'uninstalled'
       }
     } catch (e) {
       pluginSearch.didFail = true
@@ -174,6 +207,56 @@ function onKeyDownSearch (e) {
     render()
     highlight(name)
   })
+}
+
+function onClickInstallPlugin (name) {
+  return co.wrap(function* (e) {
+    var p = plugins[name]
+
+    // render new status
+    p.status = 'installing'
+    render()
+
+    try {
+      // install
+      yield beakerBrowser.installPlugin(name)
+
+      // render new status
+      p.status = 'done-installing'
+      render()
+    } catch (e) {
+      // render error
+      // TODO
+      console.log(e)
+    }
+  })
+}
+
+function onClickUninstallPlugin (name) {
+  return co.wrap(function* (e) {
+    var p = plugins[name]
+
+    // render new status
+    p.status = 'uninstalling'
+    render()
+
+    try {
+      // install
+      yield beakerBrowser.uninstallPlugin(name)
+
+      // render new status
+      p.status = 'done-uninstalling'
+      render()
+    } catch (e) {
+      // render error
+      // TODO
+      console.log(e)
+    }
+  })
+}
+
+function onClickRestart () {
+  beakerBrowser.restartBrowser()
 }
 
 // internal methods

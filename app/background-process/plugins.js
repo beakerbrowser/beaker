@@ -4,6 +4,7 @@ import fs from 'fs'
 import log from 'loglevel'
 import npm from 'npm'
 import rpc from 'pauls-electron-rpc'
+import emitStream from 'emit-stream'
 
 // globals
 // =
@@ -24,25 +25,11 @@ protocolModuleNames.forEach(name => {
   protocolModules.push(require(path.join(PLUGIN_NODE_MODULES, name)))
 
   // load package.json
-  var packageJson
-  try { packageJson = extractPackageJsonAttrs(require(path.join(PLUGIN_NODE_MODULES, name, 'package.json'))) }
-  catch (e) { packageJson = { name: name } }
-  protocolPackageJsons[name] = packageJson
+  loadPackageJson(name)
 })
-
-function extractPackageJsonAttrs (packageJson) {
-  return {
-    name: packageJson.name,
-    author: packageJson.author,
-    description: packageJson.description,
-    homepage: packageJson.homepage,
-    version: packageJson.version
-  }
-}
 
 // configure embedded npm
 npm.load({
-  loglevel: 'silent', // TODO - this isnt working, for some reason... figure out how to silence this bitch
   prefix: PLUGIN_NODE_MODULES_PREFIX
 })
 
@@ -67,7 +54,50 @@ export function lookup (name) {
 
 // install a new plugin
 export function install (name) {
-  return Promise.reject(new Error('todo'))
+  return new Promise((resolve, reject) => {
+    // sanity check
+    if (!protocolPackageJsons[name])
+      reject(new Error('Module already installed'))
+
+    // add placeholder plugin status
+    protocolPackageJsons[name] = {
+      name,
+      status: 'installing'
+    }
+
+    // run `npm install`
+    npm.commands.install([name], (err, res) => {
+      if (err) reject(err)
+      else {
+        // load the package.json and set status
+        loadPackageJson(name)
+        protocolPackageJsons[name].status = 'done-installing'
+
+        // resolve
+        resolve(res)
+      }
+    })
+  })
+}
+// uninstall a plugin
+export function uninstall (name) {
+  return new Promise((resolve, reject) => {
+    // sanity check
+    if (!protocolPackageJsons[name])
+      reject(new Error('Module not installed'))
+
+    // update plugin status
+    protocolPackageJsons[name].status = 'uninstalling'
+
+    // run `npm uninstall`
+    npm.commands.uninstall([name], (err, res) => {
+      if (err) reject(err)
+      else {
+        protocolPackageJsons[name].status = 'done-uninstalling'
+        resolve(res)
+      }
+    })
+  })
 }
 
 // check all installed plugins for new versions
@@ -149,4 +179,25 @@ export function getWebAPIManifests (scheme) {
       manifests[api.name] = api.manifest
   })
   return manifests
+}
+
+// internal methods
+// =
+
+function loadPackageJson (name) {
+  var packageJson
+  try { packageJson = extractPackageJsonAttrs(require(path.join(PLUGIN_NODE_MODULES, name, 'package.json'))) }
+  catch (e) { packageJson = { name: name, status: 'installed' } }
+  protocolPackageJsons[name] = packageJson
+}
+
+function extractPackageJsonAttrs (packageJson) {
+  return {
+    name: packageJson.name,
+    author: packageJson.author,
+    description: packageJson.description,
+    homepage: packageJson.homepage,
+    version: packageJson.version,
+    status: 'installed'
+  }
 }

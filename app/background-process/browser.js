@@ -23,10 +23,12 @@ export function setup () {
   rpc.exportAPI('beakerBrowser', manifest, { 
     eventsStream,
     getInfo,
+    restartBrowser,
 
     listPlugins: plugins.list,
     lookupPlugin: plugins.lookup,
     installPlugin: plugins.install,
+    uninstallPlugin: plugins.uninstall,
 
     getProtocolDescription,
     getHomePages
@@ -40,6 +42,11 @@ export function getInfo () {
       userData: app.getPath('userData')
     }
   })
+}
+
+export function restartBrowser () {
+  app.relaunch()
+  setTimeout(() => app.exit(0), 1e3)
 }
 
 // get the home-page listing

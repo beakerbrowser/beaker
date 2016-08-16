@@ -9,6 +9,6 @@ export default function () {
   window.beaker = { version: BEAKER_VERSION }
   var webAPIs = ipcRenderer.sendSync('get-web-api-manifests', window.location.protocol)
   for (var k in webAPIs) {
-    window[k] = rpc.importAPI(k, webAPIs[k])
+    window[k] = rpc.importAPI(k, webAPIs[k], { timeout: false })
   }
 }
