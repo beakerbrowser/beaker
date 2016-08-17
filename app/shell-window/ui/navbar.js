@@ -3,6 +3,7 @@ import * as pages from '../pages'
 import * as yo from 'yo-yo'
 import { UpdatesNavbarBtn } from './navbar/updates'
 import { DownloadsNavbarBtn } from './navbar/downloads'
+import { SitePermsNavbarBtn } from './navbar/site-perms'
 
 const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
 const KEYCODE_DOWN = 40
@@ -17,8 +18,9 @@ const KEYCODE_P = 80
 
 var toolbarNavDiv = document.getElementById('toolbar-nav')
 var downloadsNavbarBtn = null
-
 var updatesNavbarBtn = null
+var sitePermsNavbarBtn = null
+
 // autocomplete data
 var autocompleteCurrentValue = null
 var autocompleteCurrentSelection = 0
@@ -30,8 +32,9 @@ var autocompleteResults = null // if set to an array, will render dropdown
 export function setup () {
   // create the button managers
   downloadsNavbarBtn = new DownloadsNavbarBtn()
-}
   updatesNavbarBtn = new UpdatesNavbarBtn()
+  sitePermsNavbarBtn = new SitePermsNavbarBtn()
+}
 
 export function createEl (id) {
   // render (only need to render once)
@@ -123,14 +126,6 @@ function render (id, page) {
   // and it should be hidden if the page isnt active
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
-  // protocol button
-  var protocolBtn
-  if (page && page.protocolDescription && page.protocolDescription.label) {
-    protocolBtn = yo`<button class="green">
-      <span class="icon icon-network"></span> <small>${page.protocolDescription.label}</small>
-    </button>`
-  }
-
   // inpage finder ctrl
   var inpageFinder = (page && page.isInpageFinding)
     ? yo`<input
@@ -200,6 +195,9 @@ function render (id, page) {
   var addrEl = page && page.navbarEl.querySelector('.nav-location-input')
   var addrValue = addrEl ? addrEl.value : ''
 
+  // setup site-perms dropdown
+  sitePermsNavbarBtn.protocolDescription = (page && page.protocolDescription)
+
   // render
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
@@ -212,7 +210,7 @@ function render (id, page) {
       ${reloadBtn}      
     </div>
     <div class="toolbar-input-group">
-      ${protocolBtn}
+      ${sitePermsNavbarBtn.render()}
       <input
         type="text"
         class="nav-location-input"
@@ -221,8 +219,7 @@ function render (id, page) {
         onkeyup=${onKeyupLocation}
         onkeydown=${onKeydownLocation}
         oninput=${onInputLocation}
-        value=${addrValue}
-        style="border: 0" />
+        value=${addrValue} />
       ${inpageFinder}
       ${zoomBtn}
       <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>

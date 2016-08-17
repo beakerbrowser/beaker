@@ -463,7 +463,11 @@ function onDidFinishLoad (e) {
     }
 
     // fetch protocol info
-    page.protocolDescription = beakerBrowser.getProtocolDescription((new URL(url)).protocol)
+    var scheme = (new URL(url)).protocol
+    if (scheme == 'http:' || scheme == 'https:')
+      page.protocolDescription = { label: scheme.slice(0,-1).toUpperCase() }
+    else
+      page.protocolDescription = beakerBrowser.getProtocolDescription(scheme)
     console.log('Protocol description', page.protocolDescription)
   }
 }

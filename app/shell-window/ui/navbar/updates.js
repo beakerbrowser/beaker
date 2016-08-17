@@ -1,10 +1,4 @@
 import * as yo from 'yo-yo'
-import emitStream from 'emit-stream'
-import prettyBytes from 'pretty-bytes'
-import { ucfirst } from '../../../lib/strings'
-
-// there can be many downloads btns rendered at once, but they are all showing the same information
-// the DownloadsNavbarBtn manages all instances, and you should only create one
 
 export class UpdatesNavbarBtn {
   constructor() {
@@ -20,7 +14,7 @@ export class UpdatesNavbarBtn {
     // render the dropdown if open
     var dropdownEl = ''
     if (this.isDropdownOpen) {
-      dropdownEl = yo`<div class="toolbar-updates-dropdown">
+      dropdownEl = yo`<div class="toolbar-dropdown toolbar-updates-dropdown">
         <div class="toolbar-updates-dropdown-inner">
           A new version of beaker is ready to install. <a href="#">Restart now.</a>
         </div>
@@ -30,7 +24,7 @@ export class UpdatesNavbarBtn {
     // render btn
     return yo`<div class="toolbar-updates">
       <button class="toolbar-btn toolbar-updates-btn ${this.isDropdownOpen?'pressed':''}" onclick=${e => this.onClickUpdates(e)} title="Update available">
-        <span class="icon icon-up-circled"></span>
+        <span class="icon icon-record"></span>
       </button>
       ${dropdownEl}
     </div>`

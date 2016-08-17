@@ -59,7 +59,7 @@ export class DownloadsNavbarBtn {
           </div>
         </div>`
       })
-      dropdownEl = yo`<div class="toolbar-downloads-dropdown">
+      dropdownEl = yo`<div class="toolbar-dropdown toolbar-downloads-dropdown">
         ${downloadEls.length ? downloadEls : yo`<div class="td-item empty">No active downloads</div>`}
       </div>`
     }

@@ -1,0 +1,127 @@
+.toolbar-dropdown {
+  position: absolute;
+  left: -180px;
+  top: 29px;
+  width: 240px;
+  padding: 6px 0;
+  background: #fff;
+  box-shadow: 0px 3px 13px rgba(0, 0, 0, 0.25);
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  z-index: 1;
+  text-align: left;
+  font-size: 12px;
+  line-height: 16px;
+  color: #555;
+
+  &:before {
+    // the arrow
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 184px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid #fff;
+  }
+}
+
+.toolbar-downloads {
+  display: inline-block;
+  position: relative;
+}
+
+.toolbar-downloads-btn {
+  position: relative;
+  & > progress {
+    width: 24px;
+    position: absolute;
+    top: 14px;
+    left: 0;
+  }
+}
+
+.toolbar-downloads-dropdown {
+  .td-item {
+    padding: 10px 18px 6px;
+    border-bottom: 1px solid #ccc;
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    &.empty {
+      color: gray;
+      font-size: 13px;
+      padding-bottom: 10px;
+      text-align: center;
+    }
+
+    .td-item-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: pre;
+    }
+
+    progress {
+      width: 100%;
+      position: relative;
+      left: -2px;
+    }
+  }
+}
+
+.toolbar-updates {
+  display: inline-block;
+  position: relative;
+
+  .icon-record {
+    color: #008fe8;
+    text-shadow: 0px 0px 8px rgba(0,143,232,0.35);
+  }
+}
+
+.toolbar-updates-dropdown {
+  width: 210px;
+
+  .toolbar-updates-dropdown-inner {
+    padding: 6px 14px 8px;
+    font-size: 13px;
+  }
+}
+
+.toolbar-site-perms {
+  position: relative;
+
+  & + input {
+    padding-left: 4px !important;
+  }
+}
+
+.toolbar-site-perms-dropdown {
+  width: 350px;
+  left: -30px;
+  padding: 0;
+  font-size: 14px;
+
+  &:before {
+    left: 50px;
+  }
+
+  .perms {
+    padding: 14px 20px;
+    div {
+      margin: 15px 0;
+    }
+    .icon {
+      width: 15px;
+      text-align: center;
+      display: inline-block;
+    }
+    a {
+      display: inline-block;
+      margin-left: 5px;
+    }
+  }
+}

@@ -3,8 +3,8 @@
   display: flex;
   position: relative; // for the :after el, and autocomplete dropdown, to position off of
   height: 28px;
-  border-left: 1px solid #ddd;
-  border-right: 1px solid #ddd;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
   font-size: 14px;
   -webkit-app-region: no-drag;
 
@@ -12,12 +12,11 @@
     background: #fff;
   }
 
-  input {
+  input[type=text] {
     flex: 1;
-    padding: 1px 0 0 10px;
+    padding: 0 0 0 10px;
 
     border: 0;
-    border-left: 1px solid #ddd;
     background: transparent;
     cursor: text;
 
@@ -34,7 +33,7 @@
     line-height: 1.1;
 
     border: 0;
-    border-left: 1px solid #ddd;
+    border-left: 1px solid #ccc;
     border-radius: 0;
 
     padding: 4px 8px;
@@ -72,11 +71,12 @@
       color: #2f8000;
       background: rgb(164, 247, 88);
       border-radius: 2px;
-      margin: 2px 2px 1px;
-      padding: 0 4px 1px;
+      margin: 2px 2px 0 5px;
+      padding: 2px 6px 4px 4px;
 
-      & + input {
-        padding-left: 5px;
+      .icon {
+        position: relative;
+        top: 1px;
       }
     }
   }
