@@ -43,6 +43,8 @@ npm run burnthemall
 This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-mad-king-game-of-thrones.jpg), who will torch your npm_modules, and do the full install/rebuild process for you.
 `npm start` should work afterwards.
 
+If you're doing development, `npm run watch` to have assets build automatically.
+
 ## Plugins
 
 To install a new plugin, install it globally using npm.

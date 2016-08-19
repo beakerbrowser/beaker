@@ -4,7 +4,7 @@ var childProcess = require('child_process');
 var electron = require('electron-prebuilt');
 var gulp = require('gulp');
 
-gulp.task('start', ['watch'], function () {
+gulp.task('start', function () {
   childProcess.spawn(electron, ['./app', '--disable-gpu'], {
     stdio: 'inherit'
   })
@@ -13,3 +13,5 @@ gulp.task('start', ['watch'], function () {
     process.exit();
   });
 });
+
+gulp.task('start-watch', ['watch', 'start'])
