@@ -27,7 +27,7 @@ export class SitePermsNavbarBtn {
 
     // render btn
     return yo`<div class="toolbar-site-perms">
-      <button class="green" onclick=${this.onClickUpdates.bind(this)}>
+      <button class="green">
         <span class="icon icon-network"></span> <small>${this.protocolDescription.label}</small>
       </button>
       ${dropdownEl}
