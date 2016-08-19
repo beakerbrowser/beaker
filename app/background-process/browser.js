@@ -1,4 +1,5 @@
-import { app, protocol } from 'electron'
+import { app, protocol, autoUpdater } from 'electron'
+import os from 'os'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
@@ -10,8 +11,22 @@ import manifest from './api-manifests/browser'
 import co from 'co'
 import * as plugins from './plugins'
 
+// constants
+// =
+
+const IS_BROWSER_UPDATES_SUPPORTED = (os.platform() == 'darwin' || os.platform() == 'win32')
+
 // globals
 // =
+
+// is the auto-updater checking for updates, right now?
+var isBrowserCheckingForUpdates = false
+
+// is the auto-updater downloading a new version?
+var isBrowserUpdating = false
+
+// does the auto-updater have an update downloaded, and ready to install?
+var isBrowserUpdated = false
 
 // used for rpc
 var browserEvents = new EventEmitter()
@@ -20,6 +35,20 @@ var browserEvents = new EventEmitter()
 // =
 
 export function setup () {
+  // setup auto-updater
+  try {
+    if (!IS_BROWSER_UPDATES_SUPPORTED)
+      throw new Error('Disabled. Only available on macOS and Windows.')
+    autoUpdater.setFeedURL(getAutoUpdaterFeedURL())
+    autoUpdater.on('checking-for-update', onCheckingForUpdate)
+    autoUpdater.on('update-available', onUpdateAvailable)
+    autoUpdater.on('update-not-available', onUpdateNotAvailable)
+    autoUpdater.on('update-downloaded', onUpdateDownloaded)
+    autoUpdater.on('error', onUpdateError)
+  } catch (e) {
+    log.error('[AUTO-UPDATE]', e.toString())    
+  }
+
   // wire up RPC
   rpc.exportAPI('beakerBrowser', manifest, { 
     eventsStream,
@@ -39,7 +68,12 @@ export function setup () {
 
 export function getInfo () {
   return Promise.resolve({
-    version: '0.1.0', // TODO
+    version: app.getVersion(),
+    platform: os.platform(),
+    isBrowserUpdatesSupported: IS_BROWSER_UPDATES_SUPPORTED,
+    isBrowserCheckingForUpdates,
+    isBrowserUpdating,
+    isBrowserUpdated,
     paths: {
       userData: app.getPath('userData')
     }
@@ -48,7 +82,7 @@ export function getInfo () {
 
 export function checkForUpdates () {
   // check the browser auto-updater
-  // TODO
+  autoUpdater.checkForUpdates()
 
   co(function*() {
     try {
@@ -69,12 +103,19 @@ export function checkForUpdates () {
     browserEvents.emit('plugins-done-updating')
   })
 
+  // just return a resolve; results will be emitted
   return Promise.resolve()
 }
 
 export function restartBrowser () {
-  app.relaunch()
-  setTimeout(() => app.exit(0), 1e3)
+  if (isBrowserUpdated) {
+    // run the update installer
+    autoUpdater.quitAndInstall()
+  } else {
+    // do a simple restart
+    app.relaunch()
+    setTimeout(() => app.exit(0), 1e3)
+  }
 }
 
 // get the home-page listing
@@ -96,4 +137,57 @@ export function getProtocolDescription (scheme) {
 
 function eventsStream () {
   return emitStream(browserEvents)
+}
+
+// internal methods
+// =
+
+function getAutoUpdaterFeedURL () {
+  if (os.platform() == 'darwin') {
+    return 'https://download.beakerbrowser.net/update/osx/'+app.getVersion()
+  }
+  else if (os.platform() == 'win32') {
+    let bits = (os.arch().indexOf('64') === -1) ? 32 : 64
+    return 'https://download.beakerbrowser.net/update/win'+bits+'/'+app.getVersion()
+  }
+}
+
+// event handlers
+// =
+
+function onCheckingForUpdate () {
+  log.debug('[AUTO-UPDATE] Checking for a new version.')
+  isBrowserCheckingForUpdates = true
+  browserEvents.emit('browser-updating', false)
+}
+
+function onUpdateAvailable () {
+  log.debug('[AUTO-UPDATE] New version available. Downloading...')
+  isBrowserCheckingForUpdates = false
+  isBrowserUpdating = true
+  browserEvents.emit('browser-updating', true)
+}
+
+function onUpdateNotAvailable () {
+  log.debug('[AUTO-UPDATE] No new version found.')
+  isBrowserCheckingForUpdates = false
+  isBrowserUpdating = false
+  browserEvents.emit('browser-done-updating')
+}
+
+function onUpdateDownloaded () {
+  log.debug('[AUTO-UPDATE] New version downloaded. Ready to install.')
+  isBrowserCheckingForUpdates = false
+  isBrowserUpdating = false
+  isBrowserUpdated = true
+  browserEvents.emit('browser-updated')
+}
+
+function onUpdateError (e) {
+  log.error('[AUTO-UPDATE]', e.toString())
+  isBrowserCheckingForUpdates = false
+  isBrowserUpdating = false
+  isBrowserUpdated = false
+  browserEvents.emit('browser-update-error', e.toString())
+  browserEvents.emit('browser-done-updating')
 }

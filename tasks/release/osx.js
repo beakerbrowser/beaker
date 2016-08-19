@@ -3,7 +3,7 @@
 var Q = require('q');
 var gulpUtil = require('gulp-util');
 var jetpack = require('fs-jetpack');
-// var asar = require('asar');
+var asar = require('asar');
 var utils = require('../utils');
 var child_process = require('child_process');
 
@@ -34,16 +34,16 @@ var cleanupRuntime = function () {
 };
 
 var packageBuiltApp = function () {
-  return projectDir.copyAsync(projectDir.path('app'), finalAppDir.path('Contents/Resources/app'));
-  // var deferred = Q.defer();
+  // return projectDir.copyAsync(projectDir.path('app'), finalAppDir.path('Contents/Resources/app'));
+  var deferred = Q.defer();
 
-  // asar.createPackageWithOptions(projectDir.path('app'), finalAppDir.path('Contents/Resources/app.asar'), {
-  //   dot: true
-  // }, function () {
-  //   deferred.resolve();
-  // });
+  asar.createPackageWithOptions(projectDir.path('app'), finalAppDir.path('Contents/Resources/app.asar'), {
+    dot: true
+  }, function () {
+    deferred.resolve();
+  });
 
-  // return deferred.promise;
+  return deferred.promise;
 };
 
 var finalize = function () {
@@ -87,6 +87,7 @@ var renameApp = function () {
 };
 
 var signApp = function () {
+
   var identity = utils.getSigningId(manifest);
   var MASIdentity = utils.getMASSigningId(manifest);
   var MASInstallerIdentity = utils.getMASInstallerSigningId(manifest);
@@ -131,7 +132,7 @@ var signApp = function () {
   } else if (identity) {
     var cmd = 'codesign --deep --force --sign "' + identity + '" "' + finalAppDir.path() + '"';
     gulpUtil.log('Signing with:', cmd);
-    return Q.nfcall(child_process.exec, cmd);
+    return Q.nfcall(child_process.exec, cmd, { stdio: 'inherit' });
   } else {
     return new Q();
   }
@@ -178,6 +179,31 @@ var packToDmgFile = function () {
   return deferred.promise;
 };
 
+var packToZipFile = function () {
+  if (utils.releaseForMAS()) {
+    return new Q();
+  }
+
+  var zipName = utils.getReleasePackageName(manifest) + '.zip';
+  var readyZipPath = releasesDir.path(zipName);
+
+  // Delete ZIP file with this name if already exists
+  releasesDir.remove(zipName);
+
+  var newCWD = finalAppDir.cwd('..').path()
+  gulpUtil.log('Packaging to ZIP file... (' + zipName + ')');
+  gulpUtil.log('From:', newCWD)
+  gulpUtil.log('zip', '-r', readyZipPath, manifest.productName + '.app');
+
+  var deferred = Q.defer();
+  var zip = child_process.spawn('zip', ['-r', readyZipPath, manifest.productName + '.app'], { cwd: newCWD, stdio: 'inherit' });
+  zip.on('close', (code) => {
+    deferred.resolve()
+  });
+
+  return deferred.promise;
+};
+
 var cleanClutter = function () {
   return tmpDir.removeAsync('.');
 };
@@ -190,6 +216,7 @@ module.exports = function () {
     .then(finalize)
     .then(renameApp)
     .then(signApp)
+    .then(packToZipFile)
     .then(packToDmgFile)
     .then(cleanClutter)
     .catch(console.error);

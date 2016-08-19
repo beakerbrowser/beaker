@@ -2,7 +2,7 @@
   "name": "beaker-browser",
   "productName": "Beaker Browser",
   "description": "A highly opinionated and standards-noncompliant browser.",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "author": "Paul Frazee",
   "copyright": "© 2016, Paul Frazee",
   "main": "background-process.build.js",
@@ -33,7 +33,7 @@
     "identifier": "com.pfrazee.beaker-browser",
     "LSApplicationCategoryType": "public.app-category.productivity",
     "//codeSignIdentitiy": {
-      "dmg": "Developer ID Application: Company Name (APPIDENTITY)",
+      "dmg": "Developer ID Application: Paul Frazee (A6GRZHF6BV)",
       "MAS": "3rd Party Mac Developer Application: Company Name (APPIDENTITY)",
       "MASInstaller": "3rd Party Mac Developer Installer: Company Name (APPIDENTITY)"
     }
