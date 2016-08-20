@@ -14,6 +14,7 @@ import * as windows from './background-process/ui/windows'
 import buildWindowMenu from './background-process/ui/window-menu'
 import registerContextMenu from './background-process/ui/context-menu'
 import * as downloads from './background-process/ui/downloads'
+import * as settings from './background-process/dbs/settings'
 import * as sitedata from './background-process/dbs/sitedata'
 import * as bookmarks from './background-process/dbs/bookmarks'
 import * as history from './background-process/dbs/history'
@@ -38,6 +39,7 @@ app.on('ready', function () {
   downloads.setup()
 
   // databases
+  settings.setup()
   sitedata.setup()
   bookmarks.setup()
   history.setup()

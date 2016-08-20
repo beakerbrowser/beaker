@@ -43,6 +43,7 @@ export function show () {
   co(function* () {
     browserInfo = yield beakerBrowser.getInfo()
     plugins = yield beakerBrowser.listPlugins()
+    settings = yield beakerBrowser.getSettings()
 
     render()
   })
@@ -90,7 +91,7 @@ function renderAutoUpdater () {
       <span class="version-info">
         <div class="spinner"></div>
         Downloading the latest version of Beaker...
-        <label><input type="checkbox" checked /> Check for updates automatically</label>
+        ${renderAutoUpdateCheckbox()}
       </span>
     </div>`
   } 
@@ -100,7 +101,7 @@ function renderAutoUpdater () {
       <span class="version-info">
         <div class="spinner"></div>
         Checking for updates to Beaker or plugins...
-        <label><input type="checkbox" checked /> Check for updates automatically</label>
+        ${renderAutoUpdateCheckbox()}
       </span>
     </div>`
   } 
@@ -110,7 +111,7 @@ function renderAutoUpdater () {
       <span class="version-info">
         <span class="icon icon-up-circled"></span>
         <strong>New version available.</strong> Restart Beaker to install.
-        <label><input type="checkbox" checked /> Check for updates automatically</label>
+        ${renderAutoUpdateCheckbox()}
       </span>
     </div>`
   }
@@ -124,10 +125,16 @@ function renderAutoUpdater () {
               <span class="icon icon-check"></span>
               <strong>Beaker v${browserInfo.version}</strong> is up-to-date
             </span>` }
-        <label><input type="checkbox" checked /> Check for updates automatically</label>
+        ${renderAutoUpdateCheckbox()}
       </span>
     </div>`
   }
+}
+
+function renderAutoUpdateCheckbox () {
+  return yo`<label>
+    <input type="checkbox" checked=${isAutoUpdateEnabled()} onclick=${onToggleAutoUpdate} /> Check for updates automatically
+  </label>`
 }
 
 function renderPluginSearch () {
@@ -195,6 +202,12 @@ function renderPlugins () {
 function onClickCheckUpdates () {
   // trigger check
   beakerBrowser.checkForUpdates()
+}
+
+function onToggleAutoUpdate () {
+  settings.auto_update_enabled = isAutoUpdateEnabled() ? 0 : 1
+  render()
+  beakerBrowser.setSetting('auto_update_enabled', settings.auto_update_enabled)
 }
 
 function onKeyDownSearch (e) {
@@ -346,6 +359,10 @@ function onPluginsUpdated () {
 
 // internal methods
 // =
+
+function isAutoUpdateEnabled () {
+  return +settings.auto_update_enabled === 1
+}
 
 function extractPluginName (name) {
   return name.slice('beaker-plugin-'.length)

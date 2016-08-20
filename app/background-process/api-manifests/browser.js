@@ -4,6 +4,10 @@ export default {
   checkForUpdates: 'promise',
   restartBrowser: 'sync',
 
+  getSettings: 'promise',
+  getSetting: 'promise',
+  setSetting: 'promise',
+
   listPlugins: 'promise',
   lookupPlugin: 'promise',
   installPlugin: 'promise',

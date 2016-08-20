@@ -7,8 +7,10 @@ import path from 'path'
 import fs from 'fs'
 import log from 'loglevel'
 import globalModulesDir from 'global-modules'
-import manifest from './api-manifests/browser'
 import co from 'co'
+import manifest from './api-manifests/browser'
+import { cbPromise } from '../lib/functions'
+import * as settingsDb from './dbs/settings'
 import * as plugins from './plugins'
 
 // constants
@@ -56,6 +58,10 @@ export function setup () {
     checkForUpdates,
     restartBrowser,
 
+    getSetting,
+    getSettings,
+    setSetting,
+
     listPlugins: plugins.list,
     lookupPlugin: plugins.lookup,
     installPlugin: plugins.install,
@@ -70,10 +76,12 @@ export function getInfo () {
   return Promise.resolve({
     version: app.getVersion(),
     platform: os.platform(),
+
     isBrowserUpdatesSupported: IS_BROWSER_UPDATES_SUPPORTED,
     isBrowserCheckingForUpdates,
     isBrowserUpdating,
     isBrowserUpdated,
+
     paths: {
       userData: app.getPath('userData')
     }
@@ -118,6 +126,18 @@ export function restartBrowser () {
     app.relaunch()
     setTimeout(() => app.exit(0), 1e3)
   }
+}
+
+export function getSetting (key) {
+  return cbPromise(cb => settingsDb.get(key, cb))
+}
+
+export function getSettings () {
+  return cbPromise(settingsDb.getAll)
+}
+
+export function setSetting (key, value) {
+  return cbPromise(cb => settingsDb.set(key, value, cb))
 }
 
 // get the home-page listing

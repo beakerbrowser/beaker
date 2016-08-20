@@ -1,4 +1,16 @@
 
+// helper to make node-style CBs into promises
+// usage: cbPromise(cb => myNodeStyleMethod(cb)).then(...)
+export function cbPromise (method) {
+  return new Promise((resolve, reject) => {
+    method((err, value) => {
+      if (err) reject(err)
+      else     resolve(value)
+    })
+  })
+}
+
+
 // Underscore.js
 // Returns a function, that, when invoked, will only be triggered at most once
 // during a given window of time. Normally, the throttled function will run
