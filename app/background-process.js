@@ -29,6 +29,12 @@ log.setLevel('trace')
 plugins.registerStandardSchemes()
 
 app.on('ready', function () {
+  // databases
+  settings.setup()
+  sitedata.setup()
+  bookmarks.setup()
+  history.setup()
+
   // base
   beakerBrowser.setup()
 
@@ -37,12 +43,6 @@ app.on('ready', function () {
   registerContextMenu()
   windows.setup()
   downloads.setup()
-
-  // databases
-  settings.setup()
-  sitedata.setup()
-  bookmarks.setup()
-  history.setup()
 
   // protocols
   beakerProtocol.setup()

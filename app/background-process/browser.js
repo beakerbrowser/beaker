@@ -18,6 +18,9 @@ import * as plugins from './plugins'
 
 const IS_BROWSER_UPDATES_SUPPORTED = (os.platform() == 'darwin' || os.platform() == 'win32')
 
+// how long between scheduled auto updates?
+const SCHEDULED_AUTO_UPDATE_DELAY = 24 * 60 * 60 * 1e3 // once a day
+
 // globals
 // =
 
@@ -50,6 +53,7 @@ export function setup () {
   } catch (e) {
     log.error('[AUTO-UPDATE]', e.toString())    
   }
+  setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
 
   // wire up RPC
   rpc.exportAPI('beakerBrowser', manifest, { 
@@ -172,6 +176,18 @@ function getAutoUpdaterFeedURL () {
     let bits = (os.arch().indexOf('64') === -1) ? 32 : 64
     return 'https://download.beakerbrowser.net/update/win'+bits+'/'+app.getVersion()
   }
+}
+
+// run a daily check for new updates
+function scheduledAutoUpdate () {
+  settingsDb.get('auto_update_enabled', (err, v) => {
+    // if auto updates are enabled, run the check
+    if (+v === 1)
+      checkForUpdates()
+
+    // schedule next check
+    setTimeout(scheduledAutoUpdate, SCHEDULED_AUTO_UPDATE_DELAY)
+  })
 }
 
 // event handlers

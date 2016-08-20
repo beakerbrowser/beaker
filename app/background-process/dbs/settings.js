@@ -32,7 +32,11 @@ export function set (key, value, cb) {
 
 export function get (key, cb) {
   waitForSetup(() => {
-    db.get(`SELECT value FROM settings WHERE key = ?`, [key], cb)
+    db.get(`SELECT value FROM settings WHERE key = ?`, [key], (err, row) => {
+      if (row)
+        row = row.value
+      cb(err, row)
+    })
   })
 }
 
@@ -57,11 +61,10 @@ migrations = [
   function (cb) {
     db.exec(`
       CREATE TABLE settings(
-        key NOT NULL,
+        key PRIMARY KEY,
         value,
         ts
       );
-      CREATE INDEX settings_key ON settings (key);
       INSERT INTO settings (key, value) VALUES ('auto_update_enabled', 1);
       PRAGMA user_version = 1;
     `, cb)
