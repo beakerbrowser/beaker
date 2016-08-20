@@ -93,6 +93,10 @@ export function getInfo () {
 }
 
 export function checkForUpdates () {
+  // dont overlap
+  if (isBrowserCheckingForUpdates || isBrowserUpdating || plugins.getIsUpdating())
+    return
+
   // check the browser auto-updater
   autoUpdater.checkForUpdates()
 

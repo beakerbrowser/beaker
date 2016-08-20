@@ -34,6 +34,9 @@ npm.load({
   prefix: PLUGIN_NODE_MODULES_PREFIX
 })
 
+// state flags
+var isUpdating = false
+
 // exported api
 // =
 
@@ -55,21 +58,31 @@ export function lookup (name) {
 
 // install a new plugin
 export function install (name) {
-  return new Promise((resolve, reject) => {
-    // sanity check
-    if (!protocolPackageJsons[name])
-      reject(new Error('Module already installed'))
+  // sanity checks
+  if (protocolPackageJsons[name])
+    return Promise.reject(new Error('Module already installed'))
+  if (isUpdating)
+    return Promise.resolve()
 
+  isUpdating = true
+  return new Promise((resolve, reject) => {
     // add placeholder plugin status
     protocolPackageJsons[name] = {
       name,
       status: 'installing'
     }
+    log.debug('[PLUGINS] Installing', name)
 
     // run `npm install`
     npm.commands.install([name], (err, res) => {
-      if (err) reject(err)
+      isUpdating = false
+      if (err) {
+        log.debug('[PLUGINS] Failed to install', name, err)
+        reject(err)
+      }
       else {
+        log.debug('[PLUGINS] Installed', name)
+
         // load the package.json and set status
         loadPackageJson(name)
         protocolPackageJsons[name].status = 'done-installing'
@@ -83,18 +96,27 @@ export function install (name) {
 
 // uninstall a plugin
 export function uninstall (name) {
-  return new Promise((resolve, reject) => {
-    // sanity check
-    if (!protocolPackageJsons[name])
-      reject(new Error('Module not installed'))
+  // sanity checks
+  if (!protocolPackageJsons[name])
+    return Promise.reject(new Error('Module not installed'))
+  if (isUpdating)
+    return Promise.resolve()
 
+  isUpdating = true
+  return new Promise((resolve, reject) => {
     // update plugin status
     protocolPackageJsons[name].status = 'uninstalling'
+    log.debug('[PLUGINS] Uninstalling', name)
 
     // run `npm uninstall`
     npm.commands.uninstall([name], (err, res) => {
-      if (err) reject(err)
+      isUpdating = false
+      if (err) {
+        log.debug('[PLUGINS] Failed to install', name, err)
+        reject(err)
+      }
       else {
+        log.debug('[PLUGINS] Uninstalled', name)
         protocolPackageJsons[name].status = 'done-uninstalling'
         resolve(res)
       }
@@ -104,9 +126,14 @@ export function uninstall (name) {
 
 // check all installed plugins for new versions
 export function checkForUpdates () {
+  if (isUpdating)
+    return Promise.resolve()
+
+  isUpdating = true
   return new Promise((resolve, reject) => {
     // run `npm install` on all the plugin modules
     npm.commands.install(protocolModuleNames.map(name => name + '@latest'), (err, res) => {
+      isUpdating = false
       if (err) reject(err)
       else {
         if (res && res.length) {
@@ -130,6 +157,10 @@ export function checkForUpdates () {
       }
     })
   })
+}
+
+export function getIsUpdating () {
+  return isUpdating
 }
 
 // fetch a complete listing of the plugin info

@@ -274,6 +274,7 @@ function onClickInstallPlugin (name) {
       render()
     } catch (e) {
       // render error
+      p.status = 'uninstalled'
       // TODO
       console.log(e)
     }
@@ -297,6 +298,7 @@ function onClickUninstallPlugin (name) {
       render()
     } catch (e) {
       // render error
+      p.status = 'installed'
       // TODO
       console.log(e)
     }
