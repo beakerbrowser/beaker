@@ -483,6 +483,11 @@ function onDidFailLoad (e) {
   if (e.errorDescription == 'ERR_ABORTED' || e.errorCode == -3) // -3 = ABORTED
     return
 
+  // also ignore non-errors
+  // - appears to happen if you go to an IPFS site that needs to do a redirect, then hit back btn
+  if (e.errorCode == 0)
+    return
+
   var page = getByWebview(e.target)
   if (page) {
     // if https fails for security reasons, and beaker *assumed* https, then fallback to http
