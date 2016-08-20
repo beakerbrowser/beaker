@@ -1,4 +1,4 @@
-import { app, protocol, autoUpdater } from 'electron'
+import { app, protocol, autoUpdater, session } from 'electron'
 import os from 'os'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
@@ -54,6 +54,16 @@ export function setup () {
     log.error('[AUTO-UPDATE]', e.toString())    
   }
   setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
+
+  // TEMPORARY
+  // deny permission requests for special web apis
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    log.debug('[Web API] Denying permission request for', permission, 'for', webContents.getURL())
+    if (permission == 'openExternal' && webContents.hostWebContents) {
+      webContents.hostWebContents.send('protocol-not-supported')
+    }
+    callback(false)
+  })
 
   // wire up RPC
   rpc.exportAPI('beakerBrowser', manifest, { 

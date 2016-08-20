@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, session } from 'electron'
+import { app, BrowserWindow, screen } from 'electron'
 import { register as registerShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import jetpack from 'fs-jetpack'
 import path from 'path'
@@ -16,13 +16,6 @@ var stateStoreFile = 'shell-window-state.json'
 export function setup () {
   // config
   userDataDir = jetpack.cwd(app.getPath('userData'))
-
-  // TEMPORARY
-  // deny permission requests for special web apis
-  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
-    log('[Web API] Denying permission request for', permission, 'for', webContents.getURL())
-    callback(false)
-  })
 
   // create first shell window
   createShellWindow()
