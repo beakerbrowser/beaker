@@ -58,6 +58,10 @@ export function hide () {
 // =
 
 function render () {
+  // only render if this page is active
+  if (!browserInfo)
+    return
+
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="settings">
       <div class="ll-heading">Auto-updater</div>
