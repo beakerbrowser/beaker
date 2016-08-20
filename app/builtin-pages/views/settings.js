@@ -106,7 +106,7 @@ function renderAutoUpdater () {
   } 
   else if (isPluginsUpdated || browserInfo.isBrowserUpdated) {
     return yo`<div class="s-section">
-      <button class="btn">Restart now</button>
+      <button class="btn" onclick=${onClickRestart}>Restart now</button>
       <span class="version-info">
         <span class="icon icon-up-circled"></span>
         <strong>New version available.</strong> Restart Beaker to install.
@@ -295,6 +295,7 @@ function onClickRestart () {
 }
 
 function onBrowserUpdating (isDownloading) {
+  // render new state
   browserUpdateError = false
   browserInfo.isBrowserCheckingForUpdates = !isDownloading
   browserInfo.isBrowserUpdating = isDownloading
@@ -302,6 +303,7 @@ function onBrowserUpdating (isDownloading) {
 }
 
 function onBrowserDoneUpdating () {
+  // render new state
   browserInfo.isBrowserCheckingForUpdates = false
   browserInfo.isBrowserUpdating = false
   render()
@@ -309,6 +311,8 @@ function onBrowserDoneUpdating () {
 
 function onBrowserUpdated () {
   // render new state
+  browserInfo.isBrowserCheckingForUpdates = false
+  browserInfo.isBrowserUpdating = false
   browserInfo.isBrowserUpdated = true
   render()
 }

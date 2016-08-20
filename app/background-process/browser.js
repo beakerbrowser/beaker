@@ -111,7 +111,9 @@ export function restartBrowser () {
   if (isBrowserUpdated) {
     // run the update installer
     autoUpdater.quitAndInstall()
+    log.debug('[AUTO-UPDATE] Quitting and installing.')
   } else {
+    log.debug('Restarting Beaker by restartBrowser()')
     // do a simple restart
     app.relaunch()
     setTimeout(() => app.exit(0), 1e3)
