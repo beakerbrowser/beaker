@@ -1,7 +1,7 @@
 'use strict';
 
 var childProcess = require('child_process');
-var electron = require('electron-prebuilt');
+var electron = require('electron');
 var gulp = require('gulp');
 
 gulp.task('start', start);
