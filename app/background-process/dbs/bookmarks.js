@@ -4,14 +4,15 @@ import path from 'path'
 import url from 'url'
 import rpc from 'pauls-electron-rpc'
 import manifest from '../api-manifests/bookmarks'
-import { setupDatabase } from '../../lib/bg/sqlite-tools'
+import { cbPromise } from '../../lib/functions'
+import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
 import log from '../../log'
 
 // globals
 // =
 var db
 var migrations
-var waitForSetup
+var setupPromise
 
 // exported methods
 // =
@@ -20,56 +21,56 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'Bookmarks')
   db = new sqlite3.Database(dbPath)
-  waitForSetup = setupDatabase(db, migrations, '[BOOKMARKS]')
+  setupPromise = setupDatabase2(db, migrations, '[BOOKMARKS]')
 
   // wire up RPC
   rpc.exportAPI('beakerBookmarks', manifest, { add, changeTitle, changeUrl, addVisit, remove, get, list })
 }
 
-export function add (url, title, cb) {
-  waitForSetup(() => {
+export function add (url, title) {
+  return setupPromise.then(v => cbPromise(cb => {
     db.run(`
       INSERT OR REPLACE
         INTO bookmarks (url, title, num_visits)
         VALUES (?, ?, 0)
     `, [url, title], cb)
-  })
+  }))
 }
 
-export function changeTitle (url, title, cb) {
-  waitForSetup(() => {
+export function changeTitle (url, title) {
+  return setupPromise.then(v => cbPromise(cb => {
     db.run(`UPDATE bookmarks SET title = ? WHERE url = ?`, [title, url], cb)
-  })
+  }))
 }
 
-export function changeUrl (oldUrl, newUrl, cb) {
-  waitForSetup(() => {
+export function changeUrl (oldUrl, newUrl) {
+  return setupPromise.then(v => cbPromise(cb => {
     db.run(`UPDATE bookmarks SET url = ? WHERE url = ?`, [newUrl, oldUrl], cb)
-  })
+  }))
 }
 
-export function addVisit (url, cb) {
-  waitForSetup(() => {
+export function addVisit (url) {
+  return setupPromise.then(v => cbPromise(cb => {
     db.run(`UPDATE bookmarks SET num_visits = num_visits + 1 WHERE url = ?`, url, cb)
-  })  
+  }))
 }
 
-export function remove (url, cb) {
-  waitForSetup(() => {
+export function remove (url) {
+  return setupPromise.then(v => cbPromise(cb => {
     db.run(`DELETE FROM bookmarks WHERE url = ?`, [url], cb)
-  })
+  }))
 }
 
-export function get (url, cb) {
-  waitForSetup(() => {
+export function get (url) {
+  return setupPromise.then(v => cbPromise(cb => {
     db.get(`SELECT url, title FROM bookmarks WHERE url = ?`, [url], cb)
-  })
+  }))
 }
 
-export function list (cb) {
-  waitForSetup(() => {
+export function list () {
+  return setupPromise.then(v => cbPromise(cb => {
     db.all(`SELECT url, title FROM bookmarks ORDER BY num_visits DESC`, cb)
-  })
+  }))
 }
 
 // internal methods

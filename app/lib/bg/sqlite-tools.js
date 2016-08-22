@@ -48,3 +48,32 @@ export function setupDatabase (db, migrations, logTag) {
 
   return migrationGuard
 }
+
+export function setupDatabase2 (db, migrations, logTag) {
+  return new Promise((resolve, reject) => {
+    // run migrations
+    db.get('PRAGMA user_version;', (err, res) => {
+      if (err) return reject(err)
+
+      var version = (res && res.user_version) ? +res.user_version : 0
+      var neededMigrations = migrations.slice(version)
+      if (neededMigrations.length == 0)
+        return resolve()
+
+      log(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
+      runNeededMigrations()
+      function runNeededMigrations (err) {
+        if (err) return reject(err)
+
+        var migration = neededMigrations.shift()
+        if (!migration) {
+          // done
+          resolve()
+          return log(logTag, 'Database migrations completed without error')
+        }
+
+        migration(runNeededMigrations)
+      }
+    })
+  })
+}

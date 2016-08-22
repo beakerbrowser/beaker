@@ -387,7 +387,7 @@ function onDidNavigateInPage (e) {
     var url = page.getURL()
     if (!url.startsWith('beaker:')) {
       beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() }, warnIfError('history.addVisit'))
-      beakerBookmarks.addVisit(page.getURL(), warnIfError('bookmarks.addVisit'))
+      beakerBookmarks.addVisit(page.getURL()).catch(console.warn.bind(console, 'bookmarks.addVisit'))
     }
   }
 }
@@ -400,7 +400,7 @@ function onLoadCommit (e) {
   var page = getByWebview(e.target)
   if (page) {
     // check if this page bookmarked
-    beakerBookmarks.get(e.url, (err, bookmark) => {
+    beakerBookmarks.get(e.url).then(bookmark => {
       page.bookmark = bookmark
       navbar.update(page)
     })
@@ -459,7 +459,7 @@ function onDidFinishLoad (e) {
     var url = page.getURL()
     if (!url.startsWith('beaker:')) {
       beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() }, warnIfError('history.addVisit'))
-      beakerBookmarks.addVisit(page.getURL(), warnIfError('bookmarks.addVisit'))
+      beakerBookmarks.addVisit(page.getURL()).catch(console.warn.bind(console, 'bookmarks.addVisit'))
     }
 
     // fetch protocol info

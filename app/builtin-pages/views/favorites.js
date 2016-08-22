@@ -3,6 +3,7 @@ This uses the beakerBookmarks APIs, which is exposed by webview-preload to all s
 */
 
 import * as yo from 'yo-yo'
+import co from 'co'
 
 // globals
 // =
@@ -19,9 +20,10 @@ export function setup () {
 
 export function show () {
   document.title = 'New tab'
-  // get the bookmarks, ordered by # of views
-  beakerBookmarks.list((err, bs) => {
-    bookmarks = bs || []
+  co(function*() {
+    // get the bookmarks, ordered by # of views
+    bookmarks = yield beakerBookmarks.list()
+    bookmarks = bookmarks || []
     render()
   })
 }
