@@ -386,8 +386,8 @@ function onDidNavigateInPage (e) {
     // update history
     var url = page.getURL()
     if (!url.startsWith('beaker:')) {
-      beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() }, warnIfError('history.addVisit'))
-      beakerBookmarks.addVisit(page.getURL()).catch(console.warn.bind(console, 'bookmarks.addVisit'))
+      beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
+      beakerBookmarks.addVisit(page.getURL())
     }
   }
 }
@@ -458,8 +458,8 @@ function onDidFinishLoad (e) {
     // update history
     var url = page.getURL()
     if (!url.startsWith('beaker:')) {
-      beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() }, warnIfError('history.addVisit'))
-      beakerBookmarks.addVisit(page.getURL()).catch(console.warn.bind(console, 'bookmarks.addVisit'))
+      beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
+      beakerBookmarks.addVisit(page.getURL())
     }
 
     // fetch protocol info

@@ -234,10 +234,8 @@ function render (id, page) {
 }
 
 var isHashRegex = /^[a-z0-9]{64}/i
-function handleAutocompleteSearch (err, results) {
+function handleAutocompleteSearch (results) {
   var v = autocompleteCurrentValue
-  if (err)
-    console.warn('Autocomplete search failed', err)
 
   // decorate result with bolded regions
   var searchTerms = v.replace(/[^A-Za-z0-9]/g, ' ').split(' ').filter(Boolean)
@@ -451,7 +449,7 @@ function onInputLocation (e) {
   if (autocompleteValue && autocompleteCurrentValue != autocompleteValue) {
     autocompleteCurrentValue = autocompleteValue // update the current value
     autocompleteCurrentSelection = 0 // reset the selection
-    beakerHistory.search(value, handleAutocompleteSearch) // update the suggetsions
+    beakerHistory.search(value).then(handleAutocompleteSearch) // update the suggetsions
   } else if (!autocompleteValue)
     clearAutocomplete() // no value, cancel out
 }

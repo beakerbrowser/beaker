@@ -6,7 +6,8 @@ import zerr from 'zerr'
 import multicb from 'multicb'
 import rpc from 'pauls-electron-rpc'
 import manifest from '../api-manifests/history'
-import { setupDatabase } from '../../lib/bg/sqlite-tools'
+import { cbPromise } from '../../lib/functions'
+import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
 import log from '../../log'
 
 const BadParam = zerr('BadParam', '% must be a %')
@@ -16,7 +17,7 @@ const InvalidCmd = zerr('InvalidCommand', '% is not a valid command')
 // =
 var db
 var migrations
-var waitForSetup
+var setupPromise
 
 // exported methods
 // =
@@ -25,14 +26,14 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'History')
   db = new sqlite3.Database(dbPath)
-  waitForSetup = setupDatabase(db, migrations, '[HISTORY]')
+  setupPromise = setupDatabase2(db, migrations, '[HISTORY]')
 
   // wire up RPC
   rpc.exportAPI('beakerHistory', manifest, { addVisit, getVisitHistory, getMostVisited, search, removeVisit, removeAllVisits })
 }
 
-export function addVisit ({url, title}, cb) {
-  waitForSetup(() => {
+export function addVisit ({url, title}) {
+  return setupPromise.then(v => cbPromise(cb => {
     // validate parameters
     cb = cb || (()=>{})
     if (!url || typeof url != 'string')
@@ -67,19 +68,19 @@ export function addVisit ({url, title}, cb) {
         done(err => cb(err))
       })
     })
-  })
+  }))
 }
 
-export function getVisitHistory ({ offset, limit }, cb) {
-  waitForSetup(() => {
+export function getVisitHistory ({ offset, limit }) {
+  return setupPromise.then(v => cbPromise(cb => {
     offset = offset || 0
     limit = limit || 50
     db.all('SELECT * FROM visits ORDER BY rowid DESC LIMIT ? OFFSET ?', [limit, offset], cb)
-  })
+  }))
 }
 
-export function getMostVisited ({ offset, limit }, cb) {
-  waitForSetup(() => {
+export function getMostVisited ({ offset, limit }) {
+  return setupPromise.then(v => cbPromise(cb => {
     offset = offset || 0
     limit = limit || 50
     db.all(`
@@ -91,11 +92,11 @@ export function getMostVisited ({ offset, limit }, cb) {
         ORDER BY num_visits DESC, last_visit_ts DESC
         LIMIT ? OFFSET ?
     `, [limit, offset], cb)
-  })
+  }))
 }
 
-export function search (q, cb) {
-  waitForSetup(() => {
+export function search (q) {
+  return setupPromise.then(v => cbPromise(cb => {
     if (!q || typeof q != 'string')
       return cb(new BadParam('q', 'string'))
 
@@ -114,11 +115,11 @@ export function search (q, cb) {
         ORDER BY visit_stats.num_visits DESC
         LIMIT 10;
     `, [q], cb)
-  })
+  }))
 }
 
-export function removeVisit (url, cb) {
-  waitForSetup(() => {
+export function removeVisit (url) {
+  return setupPromise.then(v => cbPromise(cb => {
     // validate parameters
     cb = cb || (()=>{})
     if (!url || typeof url != 'string')
@@ -131,11 +132,11 @@ export function removeVisit (url, cb) {
       db.run('DELETE FROM visit_fts WHERE url = ?;', url)
       db.run('COMMIT;', cb)
     })
-  })
+  }))
 }
 
-export function removeAllVisits (cb) {
-  waitForSetup(() => {
+export function removeAllVisits () {
+  return setupPromise.then(v => cbPromise(cb => {
     cb = cb || (()=>{})
     db.run(`
       BEGIN TRANSACTION;
@@ -144,7 +145,7 @@ export function removeAllVisits (cb) {
       DELETE FROM visit_fts;
       COMMIT;
     `, cb)
-  })
+  }))
 }
 
 // internal methods

@@ -42,7 +42,7 @@ function fetchMore (cb) {
     return cb()
 
   isFetching = true
-  beakerHistory.getVisitHistory({ offset: visits.length, limit: 100 }, (err, rows) => {
+  beakerHistory.getVisitHistory({ offset: visits.length, limit: 100 }).then(rows => {
     if (rows.length == 0)
       isAtEnd = true
     else

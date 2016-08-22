@@ -1,8 +1,8 @@
 export default {
-  addVisit: 'async',
-  getVisitHistory: 'async',
-  getMostVisited: 'async',
-  search: 'async',
-  removeVisit: 'async',
-  removeAllVisits: 'async'
+  addVisit: 'promise',
+  getVisitHistory: 'promise',
+  getMostVisited: 'promise',
+  search: 'promise',
+  removeVisit: 'promise',
+  removeAllVisits: 'promise'
 }
