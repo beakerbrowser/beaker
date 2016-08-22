@@ -147,15 +147,15 @@ export function restartBrowser () {
 }
 
 export function getSetting (key) {
-  return cbPromise(cb => settingsDb.get(key, cb))
+  return settingsDb.get(key)
 }
 
 export function getSettings () {
-  return cbPromise(settingsDb.getAll)
+  return settingsDb.getAll()
 }
 
 export function setSetting (key, value) {
-  return cbPromise(cb => settingsDb.set(key, value, cb))
+  return settingsDb.set(key, value)
 }
 
 // get the home-page listing

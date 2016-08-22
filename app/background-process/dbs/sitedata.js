@@ -4,14 +4,15 @@ import path from 'path'
 import url from 'url'
 import rpc from 'pauls-electron-rpc'
 import manifest from '../api-manifests/sitedata'
-import { setupDatabase } from '../../lib/bg/sqlite-tools'
+import { cbPromise } from '../../lib/functions'
+import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
 import log from '../../log'
 
 // globals
 // =
 var db
 var migrations
-var waitForSetup
+var setupPromise
 
 // exported methods
 // =
@@ -20,19 +21,14 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'SiteData')
   db = new sqlite3.Database(dbPath)
-  waitForSetup = setupDatabase(db, migrations, '[SITEDATA]')
+  setupPromise = setupDatabase2(db, migrations, '[SITEDATA]')
 
   // wire up RPC
-  rpc.exportAPI('beakerSitedata', manifest, {
-    get: getSendOrigin,
-    set: setSendOrigin,
-    getOtherOrigin: get,
-    setOtherOrigin: set
-  })
+  rpc.exportAPI('beakerSitedata', manifest, { get, set })
 }
 
-export function set (url, key, value, cb) {
-  waitForSetup(() => {
+export function set (url, key, value) {
+  return setupPromise.then(v => cbPromise(cb => {
     var origin = extractOrigin(url)
     if (!origin)
       return cb()
@@ -41,11 +37,11 @@ export function set (url, key, value, cb) {
         INTO sitedata (origin, key, value)
         VALUES (?, ?, ?)
     `, [origin, key, value], cb)
-  })
+  }))
 }
 
-export function get (url, key, cb) {
-  waitForSetup(() => {
+export function get (url, key) {
+  return setupPromise.then(v => cbPromise(cb => {
     var origin = extractOrigin(url)
     if (!origin)
       return cb()
@@ -54,15 +50,7 @@ export function get (url, key, cb) {
         return cb(err)
       cb(null, res && res.value)
     })
-  })
-}
-
-function setSendOrigin (key, value, cb) {
-  return set(this.sender.getURL(), key, value, cb)
-}
-
-function getSendOrigin (key, cb) {
-  return get(this.sender.getURL(), key, cb)
+  }))
 }
 
 // internal methods

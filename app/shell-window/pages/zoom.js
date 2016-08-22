@@ -7,7 +7,7 @@ export function setZoomFromSitedata (page) {
   var origin = page.getURLOrigin()
   if (!origin)
     return
-  beakerSitedata.getOtherOrigin(origin, 'zoom', (err, v) => {
+  beakerSitedata.get(origin, 'zoom').then(v => {
     if (typeof v != 'undefined') {
       page.zoom = +v
       page.webviewEl.getWebContents().setZoomLevel(page.zoom)
@@ -30,7 +30,7 @@ export function setZoom(page, z) {
   var origin = page.getURLOrigin()
   if (!origin)
     return
-  beakerSitedata.setOtherOrigin(origin, 'zoom', page.zoom)
+  beakerSitedata.set(origin, 'zoom', page.zoom)
 }
 
 export function zoomIn (page) {

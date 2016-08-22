@@ -332,16 +332,15 @@ export function getById (id) {
   return null
 }
 
-export function loadPinnedFromDB (cb) {
-  beakerSitedata.get('pinned-tabs', (err, json) => {
+export function loadPinnedFromDB () {
+  return beakerBrowser.getSetting('pinned-tabs').then(json => {
     try { JSON.parse(json).forEach(url => create({ url, isPinned: true })) }
     catch (e) {}
-    cb && cb()
   })
 }
 
-export function savePinnedToDB (cb) {
-  beakerSitedata.set('pinned-tabs', JSON.stringify(getPinned().map(p => p.getURL())), cb)
+export function savePinnedToDB () {
+  return beakerBrowser.setSetting('pinned-tabs', JSON.stringify(getPinned().map(p => p.getURL())))
 }
 
 // event handlers
@@ -513,7 +512,7 @@ function onPageFaviconUpdated (e) {
     var page = getByWebview(e.target)
     urlToData(e.favicons[0], 16, 16, (err, dataUrl) => {
       if (dataUrl)
-        beakerSitedata.setOtherOrigin(page.getURL(), 'favicon', dataUrl)
+        beakerSitedata.set(page.getURL(), 'favicon', dataUrl)
     })
   }
 }

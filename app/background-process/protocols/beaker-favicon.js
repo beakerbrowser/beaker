@@ -22,7 +22,7 @@ export function setup () {
   // register favicon protocol
   protocol.registerBufferProtocol('beaker-favicon', (request, cb) => {
     var url = request.url.slice('beaker-favicon:'.length)
-    sitedata.get(url, 'favicon', (err, data) => {
+    sitedata.get(url, 'favicon').then(data => {
       if (data) {
         // `data` is a data url ('data:image/png;base64,...')
         // so, skip the beginning and pull out the data
@@ -31,7 +31,7 @@ export function setup () {
           return cb(new Buffer(data, 'base64'))
       }
       cb(defaultFaviconBuffer)
-    })
+    }).catch(err => cb(defaultFaviconBuffer))
   }, e => {
     if (e)
       console.error('Failed to register beaker-favicon protocol', e)

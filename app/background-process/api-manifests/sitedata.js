@@ -1,6 +1,4 @@
 export default {
-  get: 'async',
-  getOtherOrigin: 'async',
-  set: 'async',
-  setOtherOrigin: 'async'
+  get: 'promise',
+  set: 'promise'
 }

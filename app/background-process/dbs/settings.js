@@ -1,14 +1,15 @@
 import { app } from 'electron'
 import sqlite3 from 'sqlite3'
 import path from 'path'
-import { setupDatabase } from '../../lib/bg/sqlite-tools'
+import { cbPromise } from '../../lib/functions'
+import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
 import log from '../../log'
 
 // globals
 // =
 var db
 var migrations
-var waitForSetup
+var setupPromise
 
 // exported methods
 // =
@@ -17,31 +18,31 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'Settings')
   db = new sqlite3.Database(dbPath)
-  waitForSetup = setupDatabase(db, migrations, '[SETTINGS]')
+  setupPromise = setupDatabase2(db, migrations, '[SETTINGS]')
 }
 
-export function set (key, value, cb) {
-  waitForSetup(() => {
+export function set (key, value) {
+  return setupPromise.then(v => cbPromise(cb => {
     db.run(`
       INSERT OR REPLACE
         INTO settings (key, value, ts)
         VALUES (?, ?, ?)
     `, [key, value, Date.now()], cb)
-  })
+  }))
 }
 
-export function get (key, cb) {
-  waitForSetup(() => {
+export function get (key) {
+  return setupPromise.then(v => cbPromise(cb => {
     db.get(`SELECT value FROM settings WHERE key = ?`, [key], (err, row) => {
       if (row)
         row = row.value
       cb(err, row)
     })
-  })
+  }))
 }
 
-export function getAll (cb) {
-  waitForSetup(() => {
+export function getAll () {
+  return setupPromise.then(v => cbPromise(cb => {
     db.all(`SELECT key, value FROM settings`, (err, rows) => {
       if (err)
         return cb(err)
@@ -50,7 +51,7 @@ export function getAll (cb) {
       rows.forEach(row => obj[row.key] = row.value)
       cb(null, obj)
     })
-  })
+  }))
 }
 
 // internal methods

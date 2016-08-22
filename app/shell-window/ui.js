@@ -18,7 +18,7 @@ export function setup () {
   navbar.setup()
   commandHandlers.setup()
   swipeHandlers.setup()
-  pages.loadPinnedFromDB(() => pages.setActive(pages.create(pages.DEFAULT_URL)))
+  pages.loadPinnedFromDB().then(() => pages.setActive(pages.create(pages.DEFAULT_URL)))
 }
 
 function onProtocolNotSupported () {
