@@ -16,24 +16,27 @@ import * as plugins from './plugins'
 // constants
 // =
 
-const IS_BROWSER_UPDATES_SUPPORTED = (os.platform() == 'darwin' || os.platform() == 'win32')
-
 // how long between scheduled auto updates?
 const SCHEDULED_AUTO_UPDATE_DELAY = 24 * 60 * 60 * 1e3 // once a day
+
+// possible updater states
+const UPDATER_STATUS_IDLE = 'idle'
+const UPDATER_STATUS_CHECKING = 'checking'
+const UPDATER_STATUS_DOWNLOADING = 'downloading'
+const UPDATER_STATUS_DOWNLOADED = 'downloaded'
 
 // globals
 // =
 
-// is the auto-updater checking for updates, right now?
-var isBrowserCheckingForUpdates = false
+// what's the updater doing?
+var updaterState = UPDATER_STATUS_IDLE
+var updaterError = false // has there been an error?
+var didAutoUpdaterDownloadAnUpdate = false // used to differentiate from just the plugins being updated
 
-// is the auto-updater downloading a new version?
-var isBrowserUpdating = false
+// is the updater available? must be on certain platform, and may be disabled if there's an error
+var isBrowserUpdatesSupported = (os.platform() == 'darwin' || os.platform() == 'win32')
 
-// does the auto-updater have an update downloaded, and ready to install?
-var isBrowserUpdated = false
-
-// used for rpc
+// events emitted to rpc clients
 var browserEvents = new EventEmitter()
 
 // exported methods
@@ -42,16 +45,14 @@ var browserEvents = new EventEmitter()
 export function setup () {
   // setup auto-updater
   try {
-    if (!IS_BROWSER_UPDATES_SUPPORTED)
+    if (!isBrowserUpdatesSupported)
       throw new Error('Disabled. Only available on macOS and Windows.')
     autoUpdater.setFeedURL(getAutoUpdaterFeedURL())
-    autoUpdater.on('checking-for-update', onCheckingForUpdate)
-    autoUpdater.on('update-available', onUpdateAvailable)
-    autoUpdater.on('update-not-available', onUpdateNotAvailable)
-    autoUpdater.on('update-downloaded', onUpdateDownloaded)
+    autoUpdater.once('update-available', onUpdateAvailable)
     autoUpdater.on('error', onUpdateError)
   } catch (e) {
-    log.error('[AUTO-UPDATE]', e.toString())    
+    log.error('[AUTO-UPDATE]', e.toString())
+    isBrowserUpdatesSupported = false
   }
   setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
 
@@ -87,54 +88,100 @@ export function setup () {
 }
 
 export function getInfo () {
-  return Promise.resolve({
-    version: app.getVersion(),
-    platform: os.platform(),
-
-    isBrowserUpdatesSupported: IS_BROWSER_UPDATES_SUPPORTED,
-    isBrowserCheckingForUpdates,
-    isBrowserUpdating,
-    isBrowserUpdated,
-
-    paths: {
-      userData: app.getPath('userData')
+  return plugins.list().then(plugins => {
+    return {
+      version: app.getVersion(),
+      platform: os.platform(),
+      plugins,
+      updater: {
+        isBrowserUpdatesSupported,
+        error: updaterError,
+        state: updaterState
+      },
+      paths: {
+        userData: app.getPath('userData')
+      }
     }
   })
 }
 
 export function checkForUpdates () {
   // dont overlap
-  if (isBrowserCheckingForUpdates || isBrowserUpdating || plugins.getIsUpdating())
+  if (updaterState != UPDATER_STATUS_IDLE)
     return
 
-  // check the browser auto-updater
-  autoUpdater.checkForUpdates()
+  // track result states for this run
+  var isBrowserChecking = false // still checking?
+  var isBrowserUpdated = false  // got an update?
+  var isPluginsChecking = false // still checking?
+  var isPluginsUpdated = false  // still checking?
 
-  co(function*() {
-    try {
-      // emit start event
-      browserEvents.emit('plugins-updating')
+  // update global state
+  log.debug('[AUTO-UPDATE] Checking for a new version.')
+  updaterError = false
+  setUpdaterState(UPDATER_STATUS_CHECKING)
 
-      // run plugin updater
-      var results = yield plugins.checkForUpdates()
+  if (isBrowserUpdatesSupported) {
+    // check the browser auto-updater
+    // - because we need to merge the electron auto-updater, and the npm plugin flow...
+    //   ... it's best to set the result events here
+    isBrowserChecking = true
+    autoUpdater.checkForUpdates()
+    autoUpdater.once('update-not-available', () => {
+      log.debug('[AUTO-UPDATE] No browser update available.')
+      isBrowserChecking = false
+      checkDone()
+    })
+    autoUpdater.once('update-downloaded', () => {
+      log.debug('[AUTO-UPDATE] New browser version downloaded. Ready to install.')
+      isBrowserChecking = false
+      isBrowserUpdated = true
+      didAutoUpdaterDownloadAnUpdate = true // note that the electron auto-updater made the change
+      checkDone()
+    })
 
-      // emit updated event
-      if (results && results.length > 0)
-        browserEvents.emit('plugins-updated')
-    } catch (e) {
-      log.error('Error updating plugins via npm', e)
+    // cleanup
+    autoUpdater.once('update-not-available', removeAutoUpdaterListeners)
+    autoUpdater.once('update-downloaded', removeAutoUpdaterListeners)
+    function removeAutoUpdaterListeners () {
+      autoUpdater.removeAllListeners('update-not-available')
+      autoUpdater.removeAllListeners('update-downloaded')
     }
+  }
 
-    // emit finish event
-    browserEvents.emit('plugins-done-updating')
-  })
+
+  // run plugin updater
+  isPluginsChecking = true
+  plugins.checkForUpdates()
+    .catch(err => null) // squash any errors, will be logged by plugins.*
+    .then(results => {
+      console.log(results)
+
+      // update state
+      isPluginsChecking = false
+      isPluginsUpdated = (results && results.length > 0) // did any update occur?
+      checkDone()
+    })
+
+  // check the result states and emit accordingly
+  function checkDone () {
+    if (isBrowserChecking || isPluginsChecking)
+      return // still checking
+
+    // done, emit based on result
+    if (isBrowserUpdated || isPluginsUpdated) {
+      setUpdaterState(UPDATER_STATUS_DOWNLOADED)
+    } else {
+      setUpdaterState(UPDATER_STATUS_IDLE)
+    }
+  }
 
   // just return a resolve; results will be emitted
   return Promise.resolve()
 }
 
 export function restartBrowser () {
-  if (isBrowserUpdated) {
+  if (didAutoUpdaterDownloadAnUpdate) {
     // run the update installer
     autoUpdater.quitAndInstall()
     log.debug('[AUTO-UPDATE] Quitting and installing.')
@@ -182,6 +229,11 @@ function eventsStream () {
 // internal methods
 // =
 
+function setUpdaterState (state) {
+  updaterState = state
+  browserEvents.emit('updater-state-changed', state)
+}
+
 function getAutoUpdaterFeedURL () {
   if (os.platform() == 'darwin') {
     return 'https://download.beakerbrowser.net/update/osx/'+app.getVersion()
@@ -207,39 +259,15 @@ function scheduledAutoUpdate () {
 // event handlers
 // =
 
-function onCheckingForUpdate () {
-  log.debug('[AUTO-UPDATE] Checking for a new version.')
-  isBrowserCheckingForUpdates = true
-  browserEvents.emit('browser-updating', false)
-}
-
 function onUpdateAvailable () {
+  // update status and emit, so the frontend can update
   log.debug('[AUTO-UPDATE] New version available. Downloading...')
-  isBrowserCheckingForUpdates = false
-  isBrowserUpdating = true
-  browserEvents.emit('browser-updating', true)
-}
-
-function onUpdateNotAvailable () {
-  log.debug('[AUTO-UPDATE] No new version found.')
-  isBrowserCheckingForUpdates = false
-  isBrowserUpdating = false
-  browserEvents.emit('browser-done-updating')
-}
-
-function onUpdateDownloaded () {
-  log.debug('[AUTO-UPDATE] New version downloaded. Ready to install.')
-  isBrowserCheckingForUpdates = false
-  isBrowserUpdating = false
-  isBrowserUpdated = true
-  browserEvents.emit('browser-updated')
+  setUpdaterState(UPDATER_STATUS_DOWNLOADING)
 }
 
 function onUpdateError (e) {
   log.error('[AUTO-UPDATE]', e.toString())
-  isBrowserCheckingForUpdates = false
-  isBrowserUpdating = false
-  isBrowserUpdated = false
-  browserEvents.emit('browser-update-error', e.toString())
-  browserEvents.emit('browser-done-updating')
+  setUpdaterState(UPDATER_STATUS_IDLE)
+  updaterError = e.toString()
+  browserEvents.emit('updater-error', e.toString())
 }

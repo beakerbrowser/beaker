@@ -134,6 +134,7 @@ export function checkForUpdates () {
     // run `npm install` on all the plugin modules
     npm.commands.install(protocolModuleNames.map(name => name + '@latest'), (err, res) => {
       isUpdating = false
+      var updates = []
       if (err) reject(err)
       else {
         if (res && res.length) {
@@ -149,11 +150,12 @@ export function checkForUpdates () {
               if (protocolPackageJsons[name] && semver.gt(version, protocolPackageJsons[name].version)) {
                 // update the package
                 protocolPackageJsons[name].status = 'updated'
+                updates.push(name)
               }
             } catch (e) {}
           })
         }
-        resolve(res)
+        resolve(updates)
       }
     })
   })

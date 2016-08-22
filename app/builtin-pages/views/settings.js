@@ -11,16 +11,12 @@ const LOG_LIMIT = 1000
 // globals
 // =
 
-var settings = {}
+var settings
 var browserInfo
-var browserUpdateError = false
-var plugins
 var pluginSearch = {
   isSearching: false,
   didFail: false
 }
-var isPluginsUpdating = false
-var isPluginsUpdated = false
 var browserEvents
 
 // exported API
@@ -29,20 +25,14 @@ var browserEvents
 export function setup () {
   // wire up events
   browserEvents = emitStream(beakerBrowser.eventsStream())
-  browserEvents.on('browser-updating', onBrowserUpdating)
-  browserEvents.on('browser-done-updating', onBrowserDoneUpdating)
-  browserEvents.on('browser-updated', onBrowserUpdated)
-  browserEvents.on('browser-update-error', onBrowserUpdateError)
-  browserEvents.on('plugins-updating', onPluginsUpdating)
-  browserEvents.on('plugins-done-updating', onPluginsDoneUpdating)
-  browserEvents.on('plugins-updated', onPluginsUpdated)
+  browserEvents.on('updater-state-changed', onUpdaterStateChanged)
+  browserEvents.on('updater-error', onUpdaterError)
 }
 
 export function show () {
   document.title = 'Settings'
   co(function* () {
     browserInfo = yield beakerBrowser.getInfo()
-    plugins = yield beakerBrowser.listPlugins()
     settings = yield beakerBrowser.getSettings()
 
     render()
@@ -51,7 +41,7 @@ export function show () {
 
 export function hide () {
   browserInfo = null
-  plugins = null
+  settings = null
 }
 
 // rendering
@@ -82,56 +72,58 @@ function render () {
 }
 
 function renderAutoUpdater () {
-  if (!browserInfo.isBrowserUpdatesSupported) {
+  if (!browserInfo.updater.isBrowserUpdatesSupported) {
     return yo`<div class="s-section">
-      <div>Sorry! Beaker auto-updates are only supported on MacOS and Windows.
+      <div>Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
       You will need to build new versions of Beaker from source.</div>
     </div>`
   }
 
-  if (browserInfo.isBrowserUpdating) {
-    return yo`<div class="s-section">
-      <button class="btn" disabled>Updating</button>
-      <span class="version-info">
-        <div class="spinner"></div>
-        Downloading the latest version of Beaker...
-        ${renderAutoUpdateCheckbox()}
-      </span>
-    </div>`
-  } 
-  else if (isPluginsUpdating || browserInfo.isBrowserCheckingForUpdates) {
-    return yo`<div class="s-section">
-      <button class="btn" disabled>Checking for updates</button>
-      <span class="version-info">
-        <div class="spinner"></div>
-        Checking for updates to Beaker or plugins...
-        ${renderAutoUpdateCheckbox()}
-      </span>
-    </div>`
-  } 
-  else if (isPluginsUpdated || browserInfo.isBrowserUpdated) {
-    return yo`<div class="s-section">
-      <button class="btn" onclick=${onClickRestart}>Restart now</button>
-      <span class="version-info">
-        <span class="icon icon-up-circled"></span>
-        <strong>New version available.</strong> Restart Beaker to install.
-        ${renderAutoUpdateCheckbox()}
-      </span>
-    </div>`
-  }
-  else {
-    return yo`<div class="s-section">
-      <button class="btn btn-default" onclick=${onClickCheckUpdates}>Check for updates</button>
-      <span class="version-info">
-        ${ browserUpdateError
-          ? yo`<span><span class="icon icon-cancel"></span> ${browserUpdateError}</span>`
-          : yo`<span>
-              <span class="icon icon-check"></span>
-              <strong>Beaker v${browserInfo.version}</strong> is up-to-date
-            </span>` }
-        ${renderAutoUpdateCheckbox()}
-      </span>
-    </div>`
+  switch (browserInfo.updater.state) {
+    default:
+    case 'idle':
+      return yo`<div class="s-section">
+        <button class="btn btn-default" onclick=${onClickCheckUpdates}>Check for updates</button>
+        <span class="version-info">
+          ${ browserInfo.updater.error
+            ? yo`<span><span class="icon icon-cancel"></span> ${browserInfo.updater.error}</span>`
+            : yo`<span>
+                <span class="icon icon-check"></span>
+                <strong>Beaker v${browserInfo.version}</strong> is up-to-date
+              </span>` }
+          ${renderAutoUpdateCheckbox()}
+        </span>
+      </div>`
+
+    case 'checking':
+      return yo`<div class="s-section">
+        <button class="btn" disabled>Checking for updates</button>
+        <span class="version-info">
+          <div class="spinner"></div>
+          Checking for updates to Beaker or plugins...
+          ${renderAutoUpdateCheckbox()}
+        </span>
+      </div>`
+
+    case 'downloading':
+      return yo`<div class="s-section">
+        <button class="btn" disabled>Updating</button>
+        <span class="version-info">
+          <div class="spinner"></div>
+          Downloading the latest version of Beaker...
+          ${renderAutoUpdateCheckbox()}
+        </span>
+      </div>`
+
+    case 'downloaded':
+      return yo`<div class="s-section">
+        <button class="btn" onclick=${onClickRestart}>Restart now</button>
+        <span class="version-info">
+          <span class="icon icon-up-circled"></span>
+          <strong>New version available.</strong> Restart Beaker to install.
+          ${renderAutoUpdateCheckbox()}
+        </span>
+      </div>`
   }
 }
 
@@ -151,13 +143,16 @@ function renderPluginSearch () {
 }
 
 function renderPlugins () {
-  return Object.keys(plugins).map(name => {
-    var p = plugins[name]
+  return Object.keys(browserInfo.plugins).map(name => {
+    var p = browserInfo.plugins[name]
 
     // install button
     var installBtn
-    if (isPluginsUpdating) {
-      installBtn = yo`<span><button class="btn" disabled>Checking for updates</button></span>`
+    if (browserInfo.updater.state != 'idle') {
+      if (browserInfo.updater.state == 'downloaded')
+        installBtn = yo`<span><button class="btn" disabled>Updates installed</button></span>`
+      else
+        installBtn = yo`<span><button class="btn" disabled>Checking for updates</button></span>`
     } else {
       switch (p.status) {
         case 'installed':
@@ -229,7 +224,7 @@ function onKeyDownSearch (e) {
   render()
 
   // only search if not already present
-  if (plugins[name])
+  if (browserInfo.plugins[name])
     return highlight(name)
 
   // render searching
@@ -242,7 +237,7 @@ function onKeyDownSearch (e) {
       // add plugin info to the listing
       var pluginInfo = yield beakerBrowser.lookupPlugin(name)
       pluginInfo = pluginInfo[Object.keys(pluginInfo)[0]]
-      plugins[name] = {
+      browserInfo.plugins[name] = {
         name: pluginInfo.name,
         author: (pluginInfo.author||'').replace(/ <.*>/, ''), // strip out email
         description: pluginInfo.description,
@@ -263,7 +258,7 @@ function onKeyDownSearch (e) {
 
 function onClickInstallPlugin (name) {
   return co.wrap(function* (e) {
-    var p = plugins[name]
+    var p = browserInfo.plugins[name]
 
     // render new status
     p.status = 'installing'
@@ -287,7 +282,7 @@ function onClickInstallPlugin (name) {
 
 function onClickUninstallPlugin (name) {
   return co.wrap(function* (e) {
-    var p = plugins[name]
+    var p = browserInfo.plugins[name]
 
     // render new status
     p.status = 'uninstalling'
@@ -313,54 +308,27 @@ function onClickRestart () {
   beakerBrowser.restartBrowser()
 }
 
-function onBrowserUpdating (isDownloading) {
+function onUpdaterStateChanged (state) {
+
+console.debug('onUpdaterStateChanged', state)
+
+  if (!browserInfo)
+    return
   // render new state
-  browserUpdateError = false
-  browserInfo.isBrowserCheckingForUpdates = !isDownloading
-  browserInfo.isBrowserUpdating = isDownloading
+  browserInfo.updater.state = state
+  browserInfo.updater.error = false
   render()
 }
 
-function onBrowserDoneUpdating () {
+function onUpdaterError (err) {
+
+console.debug('onUpdaterError', err)
+
+  if (!browserInfo)
+    return
   // render new state
-  browserInfo.isBrowserCheckingForUpdates = false
-  browserInfo.isBrowserUpdating = false
+  browserInfo.updater.error = err
   render()
-}
-
-function onBrowserUpdated () {
-  // render new state
-  browserInfo.isBrowserCheckingForUpdates = false
-  browserInfo.isBrowserUpdating = false
-  browserInfo.isBrowserUpdated = true
-  render()
-}
-
-function onBrowserUpdateError (err) {
-  browserUpdateError = err
-  render()
-}
-
-function onPluginsUpdating () {
-  isPluginsUpdating = true
-  render()
-}
-
-function onPluginsDoneUpdating () {
-  isPluginsUpdating = false
-  render()
-}
-
-function onPluginsUpdated () {
-  // render new state
-  isPluginsUpdated = true
-  render()
-
-  // refetch plugins to render the update
-  co(function* () {
-    plugins = yield beakerBrowser.listPlugins()
-    render()
-  })
 }
 
 // internal methods
