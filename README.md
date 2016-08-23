@@ -45,29 +45,12 @@ This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-ma
 
 If you're doing development, `npm run watch` to have assets build automatically.
 
-## Plugins
-
-To install a new plugin, install it globally using npm.
-For example, to install the example plugin:
-
-```bash
-npm install -g beaker-plugin-example
-```
-
-Available plugins:
-
- - **[beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat).** Adds support for browsing the [Dat Network](http://dat-data.com/). **Installed by default.**
- - **[beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs).** Adds support for browsing the [IPFS Network](https://ipfs.io/). **Installed by default.**
- - **[beaker-plugin-example](https://github.com/pfrazee/beaker-plugin-example).** A simple example-plugin, to use as a reference. Adds the 'beaker-example' protocol.
-
-Submit a PR to have your plugin added to this list.
-
 ## Documentation
 
  - [Using IPFS](./doc/using-ipfs.md)
  - [Using Dat](./doc/using-dat.md)
  - [Dat vs. IPFS: What's the difference?](./doc/dat-vs-ipfs-comparison.md)
- - Howto: [Authoring Plugins](./doc/authoring-plugins.md)
+ - Howto: [Authoring Protocol Plugins](./doc/authoring-plugins.md)
  - [Codebase & build notes](./build-notes.md)
 
 ## License

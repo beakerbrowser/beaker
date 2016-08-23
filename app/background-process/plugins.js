@@ -2,16 +2,14 @@ import { app, protocol } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import log from 'loglevel'
-import npm from 'npm'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
-import semver from 'semver' 
 
 // globals
 // =
 
-const PLUGIN_NODE_MODULES_PREFIX = app.getPath('userData')
-const PLUGIN_NODE_MODULES = path.join(PLUGIN_NODE_MODULES_PREFIX, 'node_modules')
+const PLUGIN_NODE_MODULES = path.join(__dirname, 'node_modules')
+console.log('[PLUGINS] Loading from', PLUGIN_NODE_MODULES)
 
 // find all modules named beaker-plugin-*
 var protocolModuleNames = []
@@ -23,147 +21,19 @@ var protocolModules = []
 var protocolPackageJsons = {}
 protocolModuleNames.forEach(name => {
   // load module
-  protocolModules.push(require(path.join(PLUGIN_NODE_MODULES, name)))
+  try {
+    protocolModules.push(require(path.join(PLUGIN_NODE_MODULES, name)))
+  } catch (e) {
+    log.error('[PLUGINS] Failed to load plugin', name, e)
+    return
+  }
 
   // load package.json
   loadPackageJson(name)
 })
 
-// configure embedded npm
-npm.load({
-  prefix: PLUGIN_NODE_MODULES_PREFIX
-})
-
-// state flags
-var isUpdating = false
-
 // exported api
 // =
-
-// list the installed plugins
-export function list () {
-  return Promise.resolve(protocolPackageJsons)
-}
-
-// lookup a plugin in npm
-export function lookup (name) {
-  return new Promise((resolve, reject) => {
-    // run `npm view`
-    npm.commands.view([name], (err, desc) => {
-      if (err) reject(err)
-      else resolve(desc)
-    })
-  })
-}
-
-// install a new plugin
-export function install (name) {
-  // sanity checks
-  if (protocolPackageJsons[name])
-    return Promise.reject(new Error('Module already installed'))
-  if (isUpdating)
-    return Promise.resolve()
-
-  isUpdating = true
-  return new Promise((resolve, reject) => {
-    // add placeholder plugin status
-    protocolPackageJsons[name] = {
-      name,
-      status: 'installing'
-    }
-    log.debug('[PLUGINS] Installing', name)
-
-    // run `npm install`
-    npm.commands.install([name], (err, res) => {
-      isUpdating = false
-      if (err) {
-        log.debug('[PLUGINS] Failed to install', name, err)
-        reject(err)
-      }
-      else {
-        log.debug('[PLUGINS] Installed', name)
-
-        // load the package.json and set status
-        loadPackageJson(name)
-        protocolPackageJsons[name].status = 'done-installing'
-
-        // resolve
-        resolve(res)
-      }
-    })
-  })
-}
-
-// uninstall a plugin
-export function uninstall (name) {
-  // sanity checks
-  if (!protocolPackageJsons[name])
-    return Promise.reject(new Error('Module not installed'))
-  if (isUpdating)
-    return Promise.resolve()
-
-  isUpdating = true
-  return new Promise((resolve, reject) => {
-    // update plugin status
-    protocolPackageJsons[name].status = 'uninstalling'
-    log.debug('[PLUGINS] Uninstalling', name)
-
-    // run `npm uninstall`
-    npm.commands.uninstall([name], (err, res) => {
-      isUpdating = false
-      if (err) {
-        log.debug('[PLUGINS] Failed to install', name, err)
-        reject(err)
-      }
-      else {
-        log.debug('[PLUGINS] Uninstalled', name)
-        protocolPackageJsons[name].status = 'done-uninstalling'
-        resolve(res)
-      }
-    })
-  })
-}
-
-// check all installed plugins for new versions
-export function checkForUpdates () {
-  if (isUpdating)
-    return Promise.resolve()
-
-  isUpdating = true
-  return new Promise((resolve, reject) => {
-    // run `npm install` on all the plugin modules
-    npm.commands.install(protocolModuleNames.map(name => name + '@latest'), (err, res) => {
-      isUpdating = false
-      var updates = []
-      if (err) reject(err)
-      else {
-        if (res && res.length) {
-          // iterate the updates NPM gave us
-          res.forEach(update => {
-            try {
-              // extract the name & version
-              var parts = update[0].split('@')
-              var name = parts[0]
-              var version = parts[1]
-
-              // was the package updated?
-              if (protocolPackageJsons[name] && semver.gt(version, protocolPackageJsons[name].version)) {
-                // update the package
-                protocolPackageJsons[name].status = 'updated'
-                updates.push(name)
-              }
-            } catch (e) {}
-          })
-        }
-        resolve(updates)
-      }
-    })
-  })
-}
-
-export function getIsUpdating () {
-  return isUpdating
-}
 
 // fetch a complete listing of the plugin info
 // - each plugin module can export arrays of values. this is a helper to create 1 list of all of them

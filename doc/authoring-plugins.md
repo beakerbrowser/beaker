@@ -2,7 +2,7 @@
 
 You can add new Web APIs and URL schemes with plugins.
 These are not like Chrome or Firefox plugins, as they do not let you change the UI or alter page behaviors.
-Plugins can only add Web APIs and URL schemes.
+Instead, they add Web APIs and URL schemes, so that technology teams can experiment with the Web platform.
 
 ## Overview
 
@@ -11,7 +11,7 @@ For example, `beaker-plugin-dat` and `beaker-plugin-ipfs` are valid plugin names
 
 On load, Beaker will find all modules that fit that name-scheme in the global `node_modules` directory, and load them.
 
-For reference, see [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat) and [beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs).
+For reference, see [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat), [beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs), and [beaker-plugin-example](https://github.com/pfrazee/beaker-plugin-example).
 
 ## Exported API
 

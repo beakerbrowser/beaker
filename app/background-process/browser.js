@@ -31,7 +31,6 @@ const UPDATER_STATUS_DOWNLOADED = 'downloaded'
 // what's the updater doing?
 var updaterState = UPDATER_STATUS_IDLE
 var updaterError = false // has there been an error?
-var didAutoUpdaterDownloadAnUpdate = false // used to differentiate from just the plugins being updated
 
 // is the updater available? must be on certain platform, and may be disabled if there's an error
 var isBrowserUpdatesSupported = (os.platform() == 'darwin' || os.platform() == 'win32')
@@ -77,34 +76,30 @@ export function setup () {
     getSettings,
     setSetting,
 
-    listPlugins: plugins.list,
-    lookupPlugin: plugins.lookup,
-    installPlugin: plugins.install,
-    uninstallPlugin: plugins.uninstall,
-
     getProtocolDescription,
     getHomePages
   })
 }
 
 export function getInfo () {
-  return plugins.list().then(plugins => {
-    return {
-      version: app.getVersion(),
-      platform: os.platform(),
-      plugins,
-      updater: {
-        isBrowserUpdatesSupported,
-        error: updaterError,
-        state: updaterState
-      },
-      paths: {
-        userData: app.getPath('userData')
-      }
+  return Promise.resolve({
+    version: app.getVersion(),
+    platform: os.platform(),
+    updater: {
+      isBrowserUpdatesSupported,
+      error: updaterError,
+      state: updaterState
+    },
+    paths: {
+      userData: app.getPath('userData')
     }
   })
 }
 
+// this method was written, as it is, when there was an in-app plugins installer
+// since it works well enough, and the in-app installer may return, Im leaving it this way
+// ... but, that would explain the somewhat odd design
+// -prf
 export function checkForUpdates () {
   // dont overlap
   if (updaterState != UPDATER_STATUS_IDLE)
@@ -113,8 +108,6 @@ export function checkForUpdates () {
   // track result states for this run
   var isBrowserChecking = false // still checking?
   var isBrowserUpdated = false  // got an update?
-  var isPluginsChecking = false // still checking?
-  var isPluginsUpdated = false  // still checking?
 
   // update global state
   log.debug('[AUTO-UPDATE] Checking for a new version.')
@@ -125,6 +118,7 @@ export function checkForUpdates () {
     // check the browser auto-updater
     // - because we need to merge the electron auto-updater, and the npm plugin flow...
     //   ... it's best to set the result events here
+    //   (see note above -- back when there WAS a plugin updater, this made since -prf)
     isBrowserChecking = true
     autoUpdater.checkForUpdates()
     autoUpdater.once('update-not-available', () => {
@@ -149,27 +143,13 @@ export function checkForUpdates () {
     }
   }
 
-
-  // run plugin updater
-  isPluginsChecking = true
-  plugins.checkForUpdates()
-    .catch(err => null) // squash any errors, will be logged by plugins.*
-    .then(results => {
-      console.log(results)
-
-      // update state
-      isPluginsChecking = false
-      isPluginsUpdated = (results && results.length > 0) // did any update occur?
-      checkDone()
-    })
-
   // check the result states and emit accordingly
   function checkDone () {
-    if (isBrowserChecking || isPluginsChecking)
+    if (isBrowserChecking)
       return // still checking
 
     // done, emit based on result
-    if (isBrowserUpdated || isPluginsUpdated) {
+    if (isBrowserUpdated) {
       setUpdaterState(UPDATER_STATUS_DOWNLOADED)
     } else {
       setUpdaterState(UPDATER_STATUS_IDLE)
@@ -181,7 +161,7 @@ export function checkForUpdates () {
 }
 
 export function restartBrowser () {
-  if (didAutoUpdaterDownloadAnUpdate) {
+  if (updaterState == UPDATER_STATUS_DOWNLOADED) {
     // run the update installer
     autoUpdater.quitAndInstall()
     log.debug('[AUTO-UPDATE] Quitting and installing.')
