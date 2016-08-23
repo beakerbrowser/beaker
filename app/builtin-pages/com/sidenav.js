@@ -16,7 +16,7 @@ co(function *() {
   // fetch dynamic nav items
   var moreNavItems = yield beakerBrowser.getHomePages()
   moreNavItems = moreNavItems.filter(item => (typeof item.href == 'string') && (typeof item.label == 'string'))
-  navItems = navItems.concat(moreNavItems)
+  navItems = navItems.slice(0, 2).concat(moreNavItems).concat(navItems.slice(2))
   update()
 })
 
