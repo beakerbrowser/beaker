@@ -3,14 +3,11 @@
   display: flex;
   position: relative; // for the :after el, and autocomplete dropdown, to position off of
   height: 28px;
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
+  border: 1px solid #bbb;
+  border-radius: 2px;
   font-size: 14px;
   -webkit-app-region: no-drag;
-
-  &:hover {
-    background: #fff;
-  }
+  background: #fff;
 
   input[type=text] {
     flex: 1;
@@ -68,9 +65,14 @@
     }
 
     &.green {
-      color: gray;
-      padding: 5px 3px 5px 10px;
+      color: green;
+      padding: 4px 6px 4px 9px;
       border: 0;
+      border-right: 1px solid #bbb;
+      margin-right: 4px;
+      .icon {
+        font-size: 14px;
+      }
     }
   }
 
