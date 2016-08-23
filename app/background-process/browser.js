@@ -130,7 +130,6 @@ export function checkForUpdates () {
       log.debug('[AUTO-UPDATE] New browser version downloaded. Ready to install.')
       isBrowserChecking = false
       isBrowserUpdated = true
-      didAutoUpdaterDownloadAnUpdate = true // note that the electron auto-updater made the change
       checkDone()
     })
 

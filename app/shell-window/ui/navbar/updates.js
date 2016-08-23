@@ -7,8 +7,7 @@ export class UpdatesNavbarBtn {
     this.isDropdownOpen = false
 
     var browserEvents = emitStream(beakerBrowser.eventsStream())
-    browserEvents.on('browser-updated', this.onUpdated.bind(this))
-    browserEvents.on('plugins-updated', this.onUpdated.bind(this))
+    browserEvents.on('updater-state-changed', this.onUpdaterStateChange.bind(this))
   }
 
   render() {
@@ -44,8 +43,8 @@ export class UpdatesNavbarBtn {
     this.updateActives()
   }
 
-  onUpdated() {
-    this.isUpdateAvailable = true
+  onUpdaterStateChange(state) {
+    this.isUpdateAvailable = state == 'downloaded'
     this.updateActives()
   }
 
