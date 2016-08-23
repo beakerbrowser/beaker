@@ -13,6 +13,16 @@ On load, Beaker will find all modules that fit that name-scheme in the global `n
 
 For reference, see [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat), [beaker-plugin-ipfs](https://github.com/pfrazee/beaker-plugin-ipfs), and [beaker-plugin-example](https://github.com/pfrazee/beaker-plugin-example).
 
+To install a new plugin, install it locally using npm, then rebuild Beaker from source.
+For example, to install the example plugin:
+
+```bash
+cd ~/beaker # a cloned copy of beaker
+npm install beaker-plugin-example
+npm run rebuild
+npm start
+```
+
 ## Exported API
 
 An example plugin, extracted from [beaker-plugin-dat](https://github.com/pfrazee/beaker-plugin-dat):
