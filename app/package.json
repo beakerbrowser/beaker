@@ -3,7 +3,7 @@
   "productName": "Beaker Browser",
   "description": "A browser for decentralized tech.",
   "homepage": "https://github.com/pfrazee/beaker",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "author": "Paul Frazee <pfrazee@gmail.com>",
   "copyright": "© 2016, Paul Frazee",
   "main": "background-process.build.js",
