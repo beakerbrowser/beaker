@@ -5,7 +5,7 @@
 .chrome-tabs-shell {
   position: relative;
   padding: 1px 18px 0 10px;
-  height: 31px;
+  height: 37px;
   border-bottom: 1px solid #999;
 }
 
@@ -28,14 +28,13 @@
 
   .chrome-tab {
     position: absolute;
-    height: 29px;
+    height: 35px;
     width: 30px;
     border: 0px;
     z-index: 1;
     -webkit-app-region: no-drag;
     background-color: #d5d5d5;
     border-left: 1px solid #999;
-    border-top: 1px solid #999;
 
     // animated behaviors
     transition: .2s width;
@@ -53,7 +52,7 @@
     &.chrome-tab-current {
       z-index: 999;
       background-color: #f5f5f5;
-      height: 30px; // bleed over the border
+      height: 36px; // bleed over the border
     }
 
     .chrome-tab-favicon {
@@ -62,8 +61,8 @@
       text-align: center;
       background-size: 16px;
       position: absolute;
-      left: 10px;
-      top: 7px;
+      left: 12px;
+      top: 10px;
       z-index: 3;
 
       img {
@@ -77,18 +76,18 @@
       top: 1px;
     }
     &.chrome-tab-pinned .chrome-tab-favicon {
-      left: 12px;
+      left: 14px;
     }
 
     .chrome-tab-title {
       color: #222222;
-      padding: 8px 24px 5px 30px;
+      padding: 11px 28px 5px 32px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
     &.chrome-tab-nofavicon .chrome-tab-title {
-      padding-left: 14px;
+      padding-left: 16px;
     }
 
     .chrome-tab-close {
@@ -102,7 +101,7 @@
       &:before {
         content: "\00D7";
         position: absolute;
-        top: 7px;
+        top: 11px;
         right: 12px;
         font-size: 11px;
         line-height: 12px;
@@ -123,7 +122,6 @@
     &.chrome-tab-add-btn {
       width: 38px;
       background: none;
-      border-top: 0;
 
       .icon {
         font-size: 14px;

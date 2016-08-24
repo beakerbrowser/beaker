@@ -8,7 +8,7 @@ import { debounce, throttle } from '../../lib/functions'
 // =
 
 const MAX_TAB_WIDTH = 200 // px
-const MIN_TAB_WIDTH = 40 // px
+const MIN_TAB_WIDTH = 46 // px
 const TAB_SPACING = 0 // px
 
 // globals
