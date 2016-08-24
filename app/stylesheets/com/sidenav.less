@@ -1,10 +1,12 @@
 #el-sidenav {
-  width: 120px;
+  width: 140px;
+  border-right: 1px solid #016fde;
 
-  h1 {
-    margin: 15px 0 13px 19px;
-    line-height: 1;
-    font-size: 21px;
+  img.logo {
+    display: block;
+    margin: 10px 0 20px 40px;
+    width: 48px;
+    height: 48px;
   }
 
   .nav-group {
@@ -14,12 +16,18 @@
     padding: 4px 14px;
     margin: 7px 0;
     border-left: 6px solid transparent;
-    color: gray;
+    color: #555;
+    .icon {
+      color: #555;
+    }
 
     &.active {
+      color: #016fde;
+      border-color: #016fde;
       background: none;
-      color: #555;
-      border-color: #555;
+      .icon {
+        color: #016fde;
+      }
     }
   }
 }

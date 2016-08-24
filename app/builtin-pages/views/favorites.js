@@ -35,18 +35,7 @@ export function hide () {
 // =
 
 function render () {
-  // helper function to render big rows
-  const renderBigRow = (row, i) => yo`<a class="lt-tile" href=${row.url} title=${row.title}>
-    <span class="lt-actions"><span class="icon icon-cancel" onclick=${onClickDelete(i)} title="Delete bookmark"></span></span>
-    <div class="lt-title">
-      <img class="favicon" src=${'beaker-favicon:'+row.url} />
-      ${row.title}
-    </div>
-    <div class="lt-url">${row.url}</div>
-  </a>`
-
-  // helper function to render small rows
-  const renderSmallRow = (row, i) => yo`<div class="ll-row">
+  const renderRow = (row, i) => yo`<div class="ll-row">
     <a class="ll-link" href=${row.url} title=${row.title}>
       <img class="favicon" src=${'beaker-favicon:'+row.url} />
       <span class="ll-title">${row.title}</span>
@@ -66,13 +55,9 @@ function render () {
 
   // render the top 9 big, the rest small
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="favorites links-tiles">
-      <div class="lt-inner">
-        ${bookmarks.slice(0, 9).map(renderBigRow)}
-      </div>
-    </div>
     <div class="favorites links-list">
-      ${bookmarks.slice(9).map(renderSmallRow)}
+      <div class="ll-heading">Favorites</div>
+      ${bookmarks.map(renderRow)}
       ${helpEl}
     </div>
   </div>`)

@@ -29,6 +29,9 @@ export function setup () {
     // common assets
     if (request.url == 'beaker:font')
       return cb(path.join(__dirname, 'fonts/photon-entypo.woff'))
+    if (request.url.startsWith('beaker:logo'))
+      return cb(path.join(__dirname, 'img/logo.png'))
+
     return cb(-6)
   }, e => {
     if (e)

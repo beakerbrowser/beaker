@@ -7,17 +7,19 @@ import EventEmitter from 'events'
 
 var events = new EventEmitter()
 var navItems = [
-  { href: 'beaker:start', label: 'Favorites' },
-  { href: 'beaker:history', label: 'History' },
-  { href: 'beaker:settings', label: 'Settings' }
+  { href: 'beaker:start', label: 'Favorites', icon: 'star' },
+  { href: 'beaker:sites', label: 'Your Sites', icon: 'docs' },
+  { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
+  { href: 'beaker:downloads', label: 'Downloads', icon: 'install' },
+  { href: 'beaker:settings', label: 'Settings', icon: 'list' }
 ]
 
 co(function *() {
   // fetch dynamic nav items
-  var moreNavItems = yield beakerBrowser.getHomePages()
-  moreNavItems = moreNavItems.filter(item => (typeof item.href == 'string') && (typeof item.label == 'string'))
-  navItems = navItems.slice(0, 2).concat(moreNavItems).concat(navItems.slice(2))
-  update()
+  // var moreNavItems = yield beakerBrowser.getHomePages()
+  // moreNavItems = moreNavItems.filter(item => (typeof item.href == 'string') && (typeof item.label == 'string'))
+  // navItems = navItems.concat(moreNavItems)
+  // update()
 })
 
 // exported API
@@ -38,7 +40,7 @@ export var on = events.on.bind(events)
 
 function render () {
   return yo`<nav class="nav-group">
-    <h1>Beaker</h1>
+    <img class="logo" src="beaker:logo">
     ${navItems.map(renderNavItem)}
   </nav>`
 }
@@ -49,10 +51,10 @@ function renderNavItem (item) {
     return yo`<h5 class="nav-group-title">${item}</h5>`
 
   // render items
-  var { href, label } = item
+  var { href, label, icon } = item
   var isActive = window.location == href
   return yo`<a class=${'nav-group-item' + (isActive?' active':'')} href=${href} onclick=${onClickNavItem(item)}>
-    ${label}
+    <span class="icon icon-${icon}"></span> ${label}
   </a>`
 }
 
