@@ -31,3 +31,39 @@
     }
   }
 }
+
+.dropdown-btn-container {
+  display: inline-block;
+  position: relative;
+
+  &.open .dropdown-btn-list {
+    display: block;
+  }
+}
+.dropdown-btn-list {
+  display: none;
+
+  position: absolute;
+  z-index: 1;
+  top: 25px;
+  right: 2px;
+  background: #fff;
+  border: 1px solid #ccc;
+  width: 149px;
+  text-align: right;
+  box-shadow: 2px 2px 2px rgba(0,0,0,0.1);
+  border-radius: 2px;
+  color: #555;
+  font-size: 14px;
+
+  & > div {
+    padding: 4px 7px;
+    cursor: pointer;
+    .icon {
+      cursor: pointer;
+    }
+    &:hover {
+      background: #fafafa;
+    }
+  }
+}

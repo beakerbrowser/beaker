@@ -97,7 +97,7 @@ export function registerListener (win, opts = {}) {
   }
 
   win.webContents.session.prependListener('will-download', listener)
-  win.on('close', () => webContents.session.removeListener('will-download', listener))
+  win.on('close', () => win.webContents.session.removeListener('will-download', listener))
 }
 
 export function download (win, url, opts) {

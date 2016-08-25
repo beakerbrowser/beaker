@@ -1,0 +1,64 @@
+.sites-list {
+  .sl-head, .sl-row {
+    display: flex;
+  }
+  .sl-head {
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+    & > * {
+      padding: 2px 6px;
+      border-right: 1px solid #ddd;
+      &:last-child {
+        border: 0;
+      }
+    }
+  }
+  .sl-row {
+    padding: 20px 0;
+    margin: 0 10px;
+    font-size: 14px;
+
+    border-bottom: 1px solid #eee;
+    &:last-child {
+      border: 0;
+    }
+
+    & > * {
+      padding: 2px 0 2px 12px;    
+    }
+
+    .sl-updated, .sl-size {
+      color: gray;
+    }
+  }
+  .sl-name {
+    flex: 1;
+    strong {
+      font-size: 15px;
+      line-height: 14px;
+    }
+  }
+  .sl-size {
+    flex: 0 0 80px;  
+  }
+  .sl-updated {
+    flex: 0 0 140px;  
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre;
+  }
+  .sl-status {
+    flex: 0 0 170px;  
+
+    .icon {
+      cursor: pointer;
+      margin-left: 2px;
+    }
+  }
+
+  // links
+  a {
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+}
