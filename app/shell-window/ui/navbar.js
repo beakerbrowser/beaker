@@ -1,8 +1,8 @@
 import { remote } from 'electron'
 import * as pages from '../pages'
 import * as yo from 'yo-yo'
+import emitStream from 'emit-stream'
 import { UpdatesNavbarBtn } from './navbar/updates'
-import { DownloadsNavbarBtn } from './navbar/downloads'
 import { SitePermsNavbarBtn } from './navbar/site-perms'
 
 const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
@@ -17,7 +17,6 @@ const KEYCODE_P = 80
 // =
 
 var toolbarNavDiv = document.getElementById('toolbar-nav')
-var downloadsNavbarBtn = null
 var updatesNavbarBtn = null
 var sitePermsNavbarBtn = null
 
@@ -31,9 +30,12 @@ var autocompleteResults = null // if set to an array, will render dropdown
 
 export function setup () {
   // create the button managers
-  downloadsNavbarBtn = new DownloadsNavbarBtn()
   updatesNavbarBtn = new UpdatesNavbarBtn()
   sitePermsNavbarBtn = new SitePermsNavbarBtn()
+
+  // wire up events
+  var dlEvents = emitStream(beakerDownloads.eventsStream())
+  dlEvents.on('new-download', onNewDownload)
 }
 
 export function createEl (id) {
@@ -226,7 +228,6 @@ function render (id, page) {
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
-      ${downloadsNavbarBtn.render()}
       <button class="toolbar-btn" onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
       ${updatesNavbarBtn.render()}
     </div>
@@ -519,4 +520,43 @@ function onKeydownFind (e) {
       else     page.stopFindInPage('clearSelection')
     }
   }
+}
+
+var downloadAnimEl
+var downloadAnimTimer
+function onNewDownload () {
+  // stop running anim
+  if (downloadAnimTimer)
+    killDownloadAnim()
+
+  // create element
+  downloadAnimEl = yo`<div class="download-started-animation">
+    <span class="icon icon-install"></span>
+    Download Started
+    <a onclick=${onOpenDownloads}>View</a>
+  </div>`
+  document.body.appendChild(downloadAnimEl)
+
+  // play animation
+  downloadAnimEl.animate([
+    {opacity:'1.0'},
+    {opacity:'1.0'},
+    {opacity:'1.0'},
+    {opacity:'1.0'},
+    {opacity:'0.0'}
+  ], 5e3)
+
+  // start death timer
+  downloadAnimTimer = setTimeout(killDownloadAnim, 5e3)
+
+  // end the current animation
+  function killDownloadAnim () {
+    clearTimeout(downloadAnimTimer)
+    downloadAnimTimer = 0
+    document.body.removeChild(downloadAnimEl)
+  }
+}
+
+function onOpenDownloads () {
+  pages.setActive(pages.create('beaker:downloads'))
 }

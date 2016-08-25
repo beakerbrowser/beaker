@@ -1,6 +1,8 @@
 import path from 'path'
-import { app, dialog } from 'electron'
+import fs from 'fs'
+import { app, dialog, shell } from 'electron'
 import unusedFilename from 'unused-filename'
+import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import rpc from 'pauls-electron-rpc'
@@ -21,7 +23,7 @@ var downloadsEvents = new EventEmitter()
 
 export function setup () {
   // wire up RPC
-  rpc.exportAPI('beakerDownloads', manifest, { eventsStream, getDownloads, pause, resume, cancel })
+  rpc.exportAPI('beakerDownloads', manifest, { eventsStream, getDownloads, pause, resume, cancel, remove, open, showInFolder })
 }
 
 export function registerListener (win, opts = {}) {
@@ -39,6 +41,7 @@ export function registerListener (win, opts = {}) {
     item.name = path.basename(filePath)
     item.setSavePath(filePath)
     item.isHandled = true
+    item.downloadSpeed = speedometer()
     downloads.push(item)
     downloadsEvents.emit('new-download', toJSON(item))
 
@@ -46,11 +49,18 @@ export function registerListener (win, opts = {}) {
     // item.getMimeType()
 
     // update dock-icon progress bar
+    var lastBytes = 0
     item.on('updated', () => {
       var sumProgress = {
         receivedBytes: getSumReceivedBytes(),
         totalBytes: getSumTotalBytes()
       }
+
+      // track rate of download
+      item.downloadSpeed(item.getReceivedBytes() - lastBytes)
+      lastBytes = item.getReceivedBytes()
+
+      // emit
       downloadsEvents.emit('updated', toJSON(item))
       downloadsEvents.emit('sum-progress', sumProgress)
       win.setProgressBar(sumProgress.receivedBytes / sumProgress.totalBytes)
@@ -87,6 +97,7 @@ export function registerListener (win, opts = {}) {
   }
 
   win.webContents.session.prependListener('will-download', listener)
+  win.on('close', () => webContents.session.removeListener('will-download', listener))
 }
 
 export function download (win, url, opts) {
@@ -104,25 +115,73 @@ function eventsStream () {
 }
 
 function getDownloads () {
-  return downloads.map(toJSON)
+  return Promise.resolve(downloads.map(toJSON))
 }
 
 function pause (id) {
   var download = downloads.find(d => d.id == id)
   if (download)
     download.pause()
+  return Promise.resolve()
 }
 
 function resume (id) {
   var download = downloads.find(d => d.id == id)
   if (download)
     download.resume()
+  return Promise.resolve()
 }
 
 function cancel (id) {
   var download = downloads.find(d => d.id == id)
   if (download)
-    download.cancel()  
+    download.cancel()
+  return Promise.resolve()
+}
+
+function remove (id) {
+  var download = downloads.find(d => d.id == id)
+  if (download && download.getState() != 'progressing')
+    downloads.splice(downloads.indexOf(download), 1)
+  return Promise.resolve()
+}
+
+function open (id) {
+  return new Promise((resolve, reject) => {
+    // find the download
+    var download = downloads.find(d => d.id == id)
+    if (!download || download.state != 'completed')
+      return reject()
+
+    // make sure the file is still there
+    fs.stat(download.getSavePath(), err => {
+      if (err)
+        return reject()
+
+      // open
+      shell.openItem(download.getSavePath())
+      resolve()
+    })
+  })
+}
+
+function showInFolder (id) {
+  return new Promise((resolve, reject) => {
+    // find the download
+    var download = downloads.find(d => d.id == id)
+    if (!download || download.state != 'completed')
+      return reject()
+
+    // make sure the file is still there
+    fs.stat(download.getSavePath(), err => {
+      if (err)
+        return reject()
+
+      // open
+      shell.showItemInFolder(download.getSavePath())
+      resolve()
+    })
+  })
 }
 
 // internal helpers
@@ -137,18 +196,23 @@ function toJSON (item) {
     state: item.getState(),
     isPaused: item.isPaused(),
     receivedBytes: item.getReceivedBytes(),
-    totalBytes: item.getTotalBytes()
+    totalBytes: item.getTotalBytes(),
+    downloadSpeed: item.downloadSpeed()
   }
 }
 
 // create a capture of the final state of an item
 function capture (item) {
+  var savePath = item.getSavePath()
+  var dlspeed = item.download
   item = toJSON(item)
   item.getURL = () => item.url
   item.getState = () => item.state
   item.isPaused = () => false
   item.getReceivedBytes = () => item.receivedBytes
   item.getTotalBytes = () => item.totalBytes
+  item.getSavePath = () => savePath
+  item.downloadSpeed = () => dlspeed
   return item
 }
 

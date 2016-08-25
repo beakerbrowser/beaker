@@ -6,8 +6,6 @@ import * as yo from 'yo-yo'
 import co from 'co'
 import emitStream from 'emit-stream'
 
-const LOG_LIMIT = 1000
-
 // globals
 // =
 

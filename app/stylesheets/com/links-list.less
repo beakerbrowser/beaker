@@ -1,15 +1,28 @@
 .ll-heading {
   font-size: 15px;
   padding: 12px 10px 6px;
-  margin: 0 0 10px;
   font-weight: bold;
-  color: #016fde;
+  color: #555;
   text-transform: uppercase;
-  border-bottom: 1px solid #016fde;
+  border-bottom: 1px solid #ccc;
+
+  small {
+    text-transform: none;
+    font-weight: normal;
+  }
+  .btn {
+    position: relative;
+    top: -1px;
+    padding: 1px 10px 0px;
+    margin-left: 8px;
+    font-weight: normal;
+    font-size: 12px;
+    line-height: 18px;
+  }
 }
 
 .links-list {
-  font-size: 13px;
+  font-size: 14px;
   margin-bottom: 25px;
 
   h2 {
@@ -18,7 +31,6 @@
 
   .ll-row {
     display: flex;
-    padding: 0 10px;
 
     .ll-link {
       flex: 1;
@@ -36,7 +48,7 @@
         margin-right: 6px;
         vertical-align: top;
         position: relative;
-        top: 2px;
+        top: 3px;
       }
 
       .ll-title {

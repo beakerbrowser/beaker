@@ -1,7 +1,10 @@
 export default {
   eventsStream: 'readable',
-  getDownloads: 'sync',
-  pause: 'sync',
-  resume: 'sync',
-  cancel: 'sync'
+  getDownloads: 'promise',
+  pause: 'promise',
+  resume: 'promise',
+  cancel: 'promise',
+  remove: 'promise',
+  open: 'promise',
+  showInFolder: 'promise'
 }

@@ -21,6 +21,7 @@
     "multicb": "^1.2.1",
     "pauls-electron-rpc": "~2.0.0",
     "pretty-bytes": "^3.0.1",
+    "speedometer": "^1.0.0",
     "sqlite3": "^3.1.4",
     "unused-filename": "^0.1.0",
     "yo-yo": "^1.2.1",

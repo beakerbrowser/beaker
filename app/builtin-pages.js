@@ -1,7 +1,9 @@
 import EE from 'events'
 import * as sidenavUI from './builtin-pages/com/sidenav'
 import * as favorites from './builtin-pages/views/favorites'
+import * as sites from './builtin-pages/views/sites'
 import * as history from './builtin-pages/views/history'
+import * as downloads from './builtin-pages/views/downloads'
 import * as settings from './builtin-pages/views/settings'
 
 // HACK FIX
@@ -12,7 +14,7 @@ EE.prototype.prependListener = EE.prototype.on
 // globals
 // =
 
-var views = { start: favorites, history, settings }
+var views = { start: favorites, sites, history, downloads, settings }
 var currentView = getLocationView()
 
 // setup
