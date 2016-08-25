@@ -1,0 +1,38 @@
+.modal-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,.75);
+}
+
+.modal {
+  position: fixed;
+  left: 20%;
+  width: 60%;
+  top: 5%;
+  background: #fff;
+  border-radius: 2px;
+
+  .modal-close-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    line-height: 17px;
+    padding: 1px 6px 0;
+    background: #808080;
+    border-radius: 2px;
+    font-size: 17px;
+    color: #fff;
+    cursor: pointer;
+
+    .icon {
+      cursor: pointer;
+    }
+
+    &:hover {
+      background: #555;
+    }
+  }
+}
