@@ -16,7 +16,7 @@
   .sl-row {
     padding: 20px 0;
     margin: 0 10px;
-    font-size: 14px;
+    font-size: 13px;
 
     border-bottom: 1px solid #eee;
     &:last-child {
@@ -33,26 +33,53 @@
   }
   .sl-name {
     flex: 1;
+    font-size: 14px;
+
     strong {
       font-size: 15px;
       line-height: 14px;
     }
   }
   .sl-size {
-    flex: 0 0 80px;  
+    flex: 0 0 100px;  
   }
   .sl-updated {
-    flex: 0 0 140px;  
+    flex: 0 0 160px;  
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: pre;
   }
   .sl-status {
-    flex: 0 0 170px;  
+    flex: 0 0 120px;
 
-    .icon {
-      cursor: pointer;
-      margin-left: 2px;
+    .label-btn {
+      & > * {
+        display: inline-block;
+        background: #016fde;
+        padding: 0px 5px 1px;
+        color: #fff;
+        border-left: 1px solid #fff;
+      }
+      & > :first-child {
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+        border: 0;
+      }
+      & > :last-child {
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+      }
+
+      a {
+        padding-right: 6px;
+      }
+      a:hover {
+        background: #fff;
+        color: #016fde;
+      }
+      .icon {
+        cursor: pointer;
+      }
     }
   }
 

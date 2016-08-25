@@ -24,13 +24,13 @@ export function render (sites, opts={}) {
     var isSelected = index === opts.selectedIndex
 
     // status column
-    var status = ''
+    var status = '', peers = ''
     if (site.isDownloading)
       status = 'Downloading'
-    else if (site.peers)
-      status = 'Sharing with '+site.peers+' '+pluralize(site.peers, 'peer')
-    else if (site.isSharing)
+    else if (site.isSharing) {
       status = 'Sharing'
+      peers = site.peers+' '+pluralize(site.peers, 'peer')
+    }
 
     // render row
     let title = site.name||'Untitled'
@@ -47,7 +47,12 @@ export function render (sites, opts={}) {
       <div class="sl-updated" title=${mtime}>${mtime}</div>
       <div class="sl-size">${site.size ? prettyBytes(site.size) : '0 B'}</div>
       <div class="sl-status">
-        ${status} <a onclick=${onToggleSharing}>${site.isSharing ? yo`<span class="icon icon-cancel" title="Stop sharing"></span>` : 'Start sharing'}</a>
+        <div>
+          ${ site.isSharing
+            ? yo`<span class="label-btn"><span>${status}</span><a onclick=${onToggleSharing} title="Stop sharing"><span class="icon icon-cancel"></a></span>`
+            : yo`<a onclick=${onToggleSharing}>Start sharing</a>` }
+        </div>
+        <div><small>${peers}</small></div>
       </div>
     </div>`)
   })
