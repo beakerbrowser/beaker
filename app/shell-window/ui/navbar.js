@@ -139,7 +139,7 @@ function render (id, page) {
     : ''
 
   // bookmark btn should be disabled if on a beaker: protocol page
-  var bookmarkClass = 'nav-bookmark-btn'+((page && !!page.bookmark) ? ' gold' : '')
+  var bookmarkClass = 'nav-bookmark-btn'+((page && !!page.bookmark) ? ' active' : '')
 
   // zoom btn should only show if zoom is not the default setting
   var zoomBtn = ''

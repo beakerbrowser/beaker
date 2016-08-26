@@ -34,6 +34,8 @@
 
   .ll-row {
     display: flex;
+    color: #555;
+    text-decoration: none;
 
     .ll-link {
       flex: 1;
@@ -71,6 +73,22 @@
           color: #666;
         }
       }
+    }
+
+    .ll-size {
+      flex: 0 0 100px;
+      padding: 6px 8px;
+    }
+    .ll-updated {
+      flex: 0 0 160px;
+      padding: 6px 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: pre;
+    }
+    .ll-status {
+      flex: 0 0 80px;
+      padding: 6px 8px;
     }
 
     &:hover {
