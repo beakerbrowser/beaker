@@ -1,13 +1,17 @@
 .btn {
+  display: inline-block;
   font-family: sans-serif;
   cursor: pointer;
   border: 0;
   border-radius: 2px;
+  color: #555;
   background: #f5f5f5;
   border: 1px solid #ccc;
   padding: 4px 10px;
 
   &:hover {
+    text-decoration: none;
+    color: #555;
     background: #eee;
   }
 
@@ -25,6 +29,24 @@
     span {
       color: #fff;
     }
+  }
+}
+
+.btn-group {
+  display: inline-block;
+  .btn {
+    margin: 0 !important;
+    border-radius: 0;
+    border-left-width: 0;
+  }
+  & > :first-child {
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-left-width: 1px;
+  }
+  & > :last-child {
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
   }
 }
 

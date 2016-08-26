@@ -1,11 +1,9 @@
 import * as yo from 'yo-yo'
 import co from 'co'
-import EventEmitter from 'events'
 
 // globals
 // =
 
-var events = new EventEmitter()
 var navItems = [
   { href: 'beaker:start', label: 'Favorites', icon: 'star' },
   { href: 'beaker:sites', label: 'Your Sites', icon: 'docs' },
@@ -22,6 +20,9 @@ co(function *() {
   // update()
 })
 
+// re-render when the URL changes
+window.addEventListener('pushstate', update)
+
 // exported API
 // =
 
@@ -32,8 +33,6 @@ export function setup () {
 export function update () {
   yo.update(document.querySelector('#el-sidenav nav'), render())
 }
-
-export var on = events.on.bind(events)
 
 // rendering
 // =
@@ -71,8 +70,6 @@ function onClickNavItem (item) {
     if (window.location.protocol == 'beaker:' && item.href.startsWith('beaker:')) {
       // just navigate virtually, if we're on and going to a beaker: page
       window.history.pushState(null, '', item.href)
-      events.emit('change-view', item.href)
-      update()
     } else {
       // actually go to the page
       window.location = item.href

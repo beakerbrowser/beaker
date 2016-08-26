@@ -1,5 +1,5 @@
 /*
-This uses the beakerDownloads API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
+This uses the datInternalAPI API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
 */
 
 import * as yo from 'yo-yo'
@@ -33,7 +33,6 @@ export function show () {
       // fetch archives
       archives = yield datInternalAPI.getOwnedArchives()
       archives.sort(archiveSortFn)
-      console.log(archives)
     }
     render()
   })
@@ -53,7 +52,7 @@ function render () {
 
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="downloads">
+    <div class="sites">
       <div class="ll-heading">
         Your Sites
         <button class="btn" onclick=${onClickNewDat}>New Site</button>

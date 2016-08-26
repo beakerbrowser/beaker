@@ -8,18 +8,42 @@
 }
 
 @import "./com/btn.less";
+@import "./com/toolbar.less";
 @import "./com/sidenav.less";
 @import "./com/links-list.less";
 @import "./com/sites-list.less";
+@import "./com/files-list.less";
 @import "./com/downloads.less";
 @import "./com/spinner.less";
+@import "./com/markdown.less";
 @import "./com/modal.less";
 @import "./com/modals/edit-site.less";
 
+@import "./views/site.less";
 @import "./views/settings.less";
 
 .pane {
   border: 0;
+}
+
+.section {
+  margin: 20px 20px 20px 0;
+  color: #555;
+
+  .section-header {
+    border: 1px solid #bbb;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    background: #eee;
+    font-weight: bold;
+    padding: 5px 10px;
+  }
+  .section-body {
+    border: 1px solid #bbb;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-top: 0;
+  }
 }
 
 .favorites.links-list {

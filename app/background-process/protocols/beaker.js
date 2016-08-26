@@ -21,6 +21,8 @@ export function setup () {
       if (request.url == `beaker:${slug}`)
         return cb(path.join(__dirname, 'builtin-pages.html'))
     }
+    if (request.url.startsWith('beaker:site/'))
+      return cb(path.join(__dirname, 'builtin-pages.html'))
     if (request.url == 'beaker:builtin-pages.js')
       return cb(path.join(__dirname, 'builtin-pages.build.js'))
     if (request.url == 'beaker:builtin-pages.css')

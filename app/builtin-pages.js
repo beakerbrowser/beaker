@@ -2,6 +2,7 @@ import EE from 'events'
 import * as sidenavUI from './builtin-pages/com/sidenav'
 import * as favorites from './builtin-pages/views/favorites'
 import * as sites from './builtin-pages/views/sites'
+import * as site from './builtin-pages/views/site'
 import * as history from './builtin-pages/views/history'
 import * as downloads from './builtin-pages/views/downloads'
 import * as settings from './builtin-pages/views/settings'
@@ -11,10 +12,26 @@ import * as settings from './builtin-pages/views/settings'
 // - prf
 EE.prototype.prependListener = EE.prototype.on
 
+// HACK FIX2
+// the good folk of whatwg didnt think to include an event for pushState(), so let's add one
+// -prf
+var _wr = function(type) {
+  var orig = window.history[type];
+  return function() {
+    var rv = orig.apply(this, arguments);
+    var e = new Event(type.toLowerCase());
+    e.arguments = arguments;
+    window.dispatchEvent(e);
+    return rv;
+  };
+};
+window.history.pushState = _wr('pushState')
+window.history.replaceState = _wr('replaceState');
+
 // globals
 // =
 
-var views = { start: favorites, sites, history, downloads, settings }
+var views = { start: favorites, sites, site, history, downloads, settings }
 var currentView = getLocationView()
 
 // setup
@@ -28,7 +45,7 @@ currentView.show()
 // ui events
 // =
 
-sidenavUI.on('change-view', url => {
+window.addEventListener('pushstate', url => {
   // teardown old view
   if (currentView)
     currentView.hide()
@@ -42,5 +59,6 @@ sidenavUI.on('change-view', url => {
 // =
 
 function getLocationView () {
-  return views[window.location.pathname]
+  var slug = window.location.pathname.split('/').shift()
+  return views[slug]
 }

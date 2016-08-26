@@ -40,7 +40,7 @@ export function render (sites, opts={}) {
     siteEls.push(yo`<div class=${"sl-row site"+(isSelected?' selected':'')} onclick=${onclick}>
       <div class="sl-name">
         <div>
-          <strong><a href=${'view-dat://'+site.key} title=${title}>${title}</a></strong>
+          <strong><a href=${'beaker:site/'+site.key} onclick=${onClickSite} title=${title}>${title}</a></strong>
         </div>
         ${site.description ? yo`<div>${site.description}</div>` : ''}
       </div>
@@ -68,4 +68,13 @@ export function render (sites, opts={}) {
       ${siteEls}
     </div>
   </div>`
+}
+
+
+function onClickSite (e) {
+  if (window.location.protocol == 'beaker:') {
+    // just navigate virtually
+    e.preventDefault()
+    window.history.pushState(null, '', e.target.href)
+  }
 }
