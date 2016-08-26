@@ -103,6 +103,11 @@ function render () {
             <div class="btn-group">${openSiteBtn}${copyLinkBtn}</div>
             ${exportFilesBtn}
           </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header"><span class="icon icon-flow-cascade"></span> Files</div>
+        <div class="section-body">
           ${fileEntries(siteEntriesTree, { showHead: false, showRoot: false, onToggleNodeExpanded, siteKey })}
           ${''/* TODO needed? <div class="site-summary">
             <span>Updated: ${mtime}</span>
@@ -110,7 +115,7 @@ function render () {
           </div>*/}
           <div class="site-help">
             ${ siteInfo.isOwner
-              ? yo`<div><span class="icon icon-info-circled"></span> To add files, drag their icons onto this page, or <a href="#" onclick=${onClickSelectFiles}>Select them manually.</a></div>`
+              ? yo`<div><span class="icon icon-info-circled"></span> To import files, drag their icons onto this page, or <a href="#" onclick=${onClickSelectFiles}>Select them manually.</a></div>`
               : yo`<div><span class="icon icon-info-circled"></span> This is somebody else's site. It's in read-only mode.</div>` }
           </div>
         </div>
