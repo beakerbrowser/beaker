@@ -94,12 +94,11 @@ function render () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="site">
       <div class="section">
-        <div class="site-heading">
+        <div class="section-header">About</div>
+        <div class="section-body site-heading">
           <div><strong>${siteName}</strong></div>
           <div>${siteInfo.description} ${dash} ${editDetailsBtn}</div>
-        </div>
-        <div class="section-body">
-          <div class="toolbar">
+          <div class="site-heading-btns">
             <div class="btn-group">${openSiteBtn}${copyLinkBtn}</div>
             ${exportFilesBtn}
           </div>
