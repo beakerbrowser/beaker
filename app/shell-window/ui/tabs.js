@@ -103,8 +103,10 @@ function drawTab (page, i) {
       favicon = yo`<img src=${page.favicons[0]}>`
       favicon.onerror = onFaviconError(page)
     }
-    // fallback
-    else if (!page.getURL().startsWith('beaker:'))
+    // fallbacks
+    else if (page.getURL().startsWith('beaker:'))
+      favicon = yo`<img src="beaker-favicon:beaker">`
+    else
       favicon = yo`<img src="beaker-favicon:default">`
   }
 
@@ -113,7 +115,6 @@ function drawTab (page, i) {
   if (isActive) cls += ' chrome-tab-current'
   if (isTabRendered) cls += ' chrome-tab-in-position'
   if (isTabDragging) cls += ' chrome-tab-dragging'
-  if (!favicon) cls += ' chrome-tab-nofavicon'
 
   // pinned rendering:
   if (page.isPinned) {
