@@ -34,6 +34,10 @@ export function setup () {
     if (request.url.startsWith('beaker:logo'))
       return cb(path.join(__dirname, 'img/logo.png'))
 
+    // favicons
+    if (request.url.startsWith('beaker:icons/'))
+      return cb(path.join(__dirname, 'img/favicons/')+request.url.slice('beaker:icons/'.length))
+
     return cb(-6)
   }, e => {
     if (e)

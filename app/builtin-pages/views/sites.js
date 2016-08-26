@@ -6,7 +6,7 @@ import * as yo from 'yo-yo'
 import co from 'co'
 import emitStream from 'emit-stream'
 import { render as renderSitesList } from '../com/sites-list'
-import { create as createModal } from '../com/modal'
+import { create as createEditSiteDetailsModal } from '../com/modals/edit-site-details'
 
 // globals
 // =
@@ -76,40 +76,7 @@ function renderNotSupported () {
 // =
 
 function onClickNewDat (e) {
-  var el = createModal(({ close }) => {
-    return yo`<div class="edit-site-modal">
-      <h2>New Site</h2>
-      <div class="esm-section">
-        <form onsubmit=${onsubmit}>
-          <div class="form-group">
-            <input name="name" class="form-control" placeholder="Title" tabindex="1" />
-          </div>
-          <div class="form-group">
-            <input name="desc" class="form-control" placeholder="Description" tabindex="2" />
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn" tabindex="3">OK</button>
-            <a onclick=${close}>Cancel</a>
-          </div>
-        </form>
-      </div>
-      <div class="esm-info">
-        Use Sites to share Files and WebPages.
-        <a href="beaker:help/creating-sites" target="_blank">Learn More.</a>
-      </div>
-    </div>`
-
-    function onsubmit (e) {
-      e.preventDefault()
-      var form = e.target
-      var key = datInternalAPI.createNewArchive({
-        name: form.name.value,
-        description: form.desc.value
-      })
-      window.location = 'view-dat://'+key
-    }
-  })
-  el.querySelector('input').focus()
+  createEditSiteDetailsModal()
 }
 
 function onToggleSharing (archive) {
