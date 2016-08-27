@@ -12,8 +12,8 @@ export function render (sites, opts={}) {
     // render row
     let title = site.name||'Untitled'
     let mtime = site.mtime ? ucfirst(niceDate(site.mtime)) : '--'
-    let url = 'beaker:site/'+site.key
-    siteEls.push(yo`<a class="ll-row site" href=${url} onclick=${onClickSite(url)} title=${title}>
+    let url = 'view-dat://'+site.key
+    siteEls.push(yo`<a class="ll-row site" href=${url} title=${title}>
       <div class="ll-link">
         <img class="favicon" src=${'beaker-favicon:dat://'+site.key} />
         <span class="ll-title">${title}</span>
@@ -32,19 +32,4 @@ export function render (sites, opts={}) {
   return yo`<div class="links-list">
     ${siteEls}
   </div>`
-}
-
-
-function onClickSite (url) {
-  return e => {
-    // ignore ctrl/cmd+click
-    if (e.metaKey)
-      return
-
-    if (window.location.protocol == 'beaker:') {
-      // just navigate virtually
-      e.preventDefault()
-      window.history.pushState(null, '', url)
-    }
-  }
 }

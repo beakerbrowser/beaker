@@ -27,7 +27,7 @@ export function setup () {
 }
 
 export function show () {
-  document.title = 'Your Sites'
+  document.title = 'Swarmed Sites'
   co(function*(){
     if (window.datInternalAPI) {
       // fetch archives
@@ -47,15 +47,14 @@ export function hide () {
 function render () {
   // content
   var content = (window.datInternalAPI)
-    ? renderSitesList(archives, { showHead: false, onToggleSharing, renderEmpty })
+    ? renderSitesList(archives, { renderEmpty })
     : renderNotSupported()
 
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="sites">
       <div class="ll-heading">
-        Your Sites
-        <button class="btn" onclick=${onClickNewDat}>New Site</button>
+        Swarmed Sites
       </div>
       ${content}
     </div>
@@ -75,50 +74,14 @@ function renderNotSupported () {
 // event handlers
 // =
 
-function onClickNewDat (e) {
-  var el = createModal(({ close }) => {
-    return yo`<div class="edit-site-modal">
-      <h2>New Site</h2>
-      <div class="esm-section">
-        <form onsubmit=${onsubmit}>
-          <div class="form-group">
-            <input name="name" class="form-control" placeholder="Title" tabindex="1" />
-          </div>
-          <div class="form-group">
-            <input name="desc" class="form-control" placeholder="Description" tabindex="2" />
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn" tabindex="3">OK</button>
-            <a onclick=${close}>Cancel</a>
-          </div>
-        </form>
-      </div>
-      <div class="esm-info">
-        Use Sites to share Files and WebPages.
-        <a href="beaker:help/creating-sites" target="_blank">Learn More.</a>
-      </div>
-    </div>`
-
-    function onsubmit (e) {
-      e.preventDefault()
-      var form = e.target
-      var key = datInternalAPI.createNewArchive({
-        name: form.name.value,
-        description: form.desc.value
-      })
-      window.location = 'view-dat://'+key
-    }
-  })
-  el.querySelector('input').focus()
-}
-
-function onToggleSharing (archive) {
-  if (archive.isSharing)
-    datInternalAPI.unswarm(archive.key)
-  else
-    datInternalAPI.swarm(archive.key)
-  render()
-}
+// DISABLED for now
+// function onToggleSharing (archive) {
+//   if (archive.isSharing)
+//     datInternalAPI.unswarm(archive.key)
+//   else
+//     datInternalAPI.swarm(archive.key)
+//   render()
+// }
 
 function onUpdateArchive (update) {
   console.log('update', update)
