@@ -19,9 +19,9 @@ export function setup () {
       defaultFaviconBuffer = buf
   })
 
-  // load logo
+  // load logo favicon
   var logoBuffer = -6 // not found, till we load it
-  fs.readFile(path.join(__dirname, './img/logo.png'), (err, buf) => {
+  fs.readFile(path.join(__dirname, './img/logo-favicon.png'), (err, buf) => {
     if (err)
       console.log('Failed to load logo favicon', path.join(__dirname, '../../img/logo.png'), err)
     if (buf)
