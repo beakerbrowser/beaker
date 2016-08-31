@@ -27,11 +27,11 @@ export function setup () {
 }
 
 export function show () {
-  document.title = 'Swarmed Sites'
+  document.title = 'Your Seeds'
   co(function*(){
     if (window.datInternalAPI) {
       // fetch archives
-      archives = yield datInternalAPI.getOwnedArchives()
+      archives = yield datInternalAPI.getSavedArchives()
       archives.sort(archiveSortFn)
     }
     render()
@@ -54,7 +54,7 @@ function render () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="sites">
       <div class="ll-heading">
-        Swarmed Sites
+        Your Seeds
       </div>
       ${content}
     </div>
@@ -62,12 +62,12 @@ function render () {
 }
 
 function renderEmpty () {
-  return yo`<div class="sl-row archive"><div class="sl-name">You have not created any sites yet!</div></div>`
+  return yo`<div class="ll-empty">You are not seeding any sites.</div>`
 }
 
 function renderNotSupported () {
   return yo`<div class="sites-listing">
-    <div class="sl-row archive"><div class="sl-name">The DAT Plugin must be enabled to use this feature.</div></div>
+    <div class="ll-empty">The DAT Plugin must be enabled to use this feature.</div>
   </div>`
 }
 

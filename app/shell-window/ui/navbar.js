@@ -138,8 +138,16 @@ function render (id, page) {
             onkeydown=${onKeydownFind} />`
     : ''
 
-  // bookmark btn should be disabled if on a beaker: protocol page
+  // bookmark toggle state
   var bookmarkClass = 'nav-bookmark-btn'+((page && !!page.bookmark) ? ' active' : '')
+
+  // view dat
+  var viewDatBtn
+  if (page && page.protocolDescription && page.protocolDescription.scheme == 'dat') {
+    viewDatBtn = yo`<button class="nav-view-files-btn" onclick=${onClickViewFiles}>
+      <span class="icon icon-docs"></span> <small>View Site Files</small>
+    </button>`
+  }
 
   // zoom btn should only show if zoom is not the default setting
   var zoomBtn = ''
@@ -223,6 +231,7 @@ function render (id, page) {
         oninput=${onInputLocation}
         value=${addrValue} />
       ${inpageFinder}
+      ${viewDatBtn}
       ${zoomBtn}
       <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
       ${autocompleteDropdown}
@@ -395,6 +404,12 @@ function onClickBookmark (e) {
   var page = getEventPage(e)
   if (page)
     page.toggleBookmark()
+}
+
+function onClickViewFiles (e) {
+  var page = getEventPage(e)
+  if (page)
+    page.loadURL('view-'+page.getURL())
 }
 
 function onClickZoom (e) {
