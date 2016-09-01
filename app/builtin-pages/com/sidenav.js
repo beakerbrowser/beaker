@@ -22,6 +22,7 @@ co(function *() {
 
 // re-render when the URL changes
 window.addEventListener('pushstate', update)
+window.addEventListener('popstate', update)
 
 // exported API
 // =

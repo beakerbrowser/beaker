@@ -44,7 +44,10 @@ currentView.show()
 // ui events
 // =
 
-window.addEventListener('pushstate', url => {
+window.addEventListener('pushstate', onURLChange)
+window.addEventListener('popstate', onURLChange)
+
+function onURLChange () {
   // teardown old view
   if (currentView)
     currentView.hide()
@@ -52,7 +55,7 @@ window.addEventListener('pushstate', url => {
   // render new view
   currentView = getLocationView()
   currentView.show()
-})
+}
 
 // internal methods
 // =
