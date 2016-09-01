@@ -25,7 +25,8 @@
     "appId": "com.pfrazee.beaker-browser",
     "category": "public.app-category.productivity",
     "copyright": "© 2016, Paul Frazee",
-    "npmRebuild": false
+    "npmRebuild": false,
+    "asar": false
   },
   "scripts": {
     "postinstall": "cd app && npm install",
