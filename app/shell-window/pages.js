@@ -7,6 +7,13 @@ import * as statusBar from './ui/status-bar'
 import { urlToData } from '../lib/fg/img'
 import errorPage from '../lib/error-page'
 
+// constants
+// =
+
+const ERR_ABORTED = -3
+const ERR_CONNECTION_REFUSED = -102
+const ERR_INSECURE_RESPONSE = -501
+
 export const DEFAULT_URL = 'beaker:start'
 
 // globals
@@ -479,7 +486,7 @@ function onDidFailLoad (e) {
   // ignore aborts. why:
   // - sometimes, aborts are caused by redirects. no biggy
   // - if the user cancels, then we dont want to give an error screen
-  if (e.errorDescription == 'ERR_ABORTED' || e.errorCode == -3) // -3 = ABORTED
+  if (e.errorDescription == 'ERR_ABORTED' || e.errorCode == ERR_ABORTED)
     return
 
   // also ignore non-errors
@@ -489,9 +496,9 @@ function onDidFailLoad (e) {
 
   var page = getByWebview(e.target)
   if (page) {
-    // if https fails for security reasons, and beaker *assumed* https, then fallback to http
-    // -501 == ERR_INSECURE_RESPONSE
-    if (e.errorCode == -501 && page.isGuessingTheURLScheme) {
+    // if https fails for some specific reasons, and beaker *assumed* https, then fallback to http
+    if (page.isGuessingTheURLScheme && [ERR_INSECURE_RESPONSE, ERR_CONNECTION_REFUSED].indexOf(e.errorCode) >= 0) {
+      console.log('Guessed the URL scheme was HTTPS, but got back', e.errorDescription, ' - trying HTTP')
       var url = page.getIntendedURL()
       page.isGuessingTheURLScheme = false // no longer doing that!
       if (url.startsWith('https')) {
