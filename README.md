@@ -13,7 +13,7 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 ## Binaries
 
-### [OSX 64-bit](https://download.beakerbrowser.net/download/0.2.0/osx_64/Beaker%20Browser-0.2.0.dmg)
+### [OSX 64-bit](https://download.beakerbrowser.net/download/0.3.0/osx_64/Beaker%20Browser-0.3.0.dmg)
 
 ## Building from source
 
