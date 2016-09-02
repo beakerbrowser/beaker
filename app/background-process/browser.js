@@ -215,7 +215,7 @@ function getAutoUpdaterFeedURL () {
 
 // run a daily check for new updates
 function scheduledAutoUpdate () {
-  settingsDb.get('auto_update_enabled', (err, v) => {
+  settingsDb.get('auto_update_enabled').then(v => {
     // if auto updates are enabled, run the check
     if (+v === 1)
       checkForUpdates()
