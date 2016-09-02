@@ -1,0 +1,41 @@
+#promptbars {
+  position: fixed;
+  z-index: 1;
+  top: 77px;
+  left: 0;
+  width: 100%;
+}
+
+.promptbar {
+  position: relative;
+  background: #fff;
+  padding: 15px 45px 15px 15px;
+  border-bottom: 1px solid #aaa;
+  font-size: 14px;
+
+  .btn {
+    padding: 0px 8px;
+    font-size: 13px;
+  }
+
+  .promptbar-btns {
+    a {
+      margin-left: 5px;
+    }
+  }
+
+  .promptbar-close {
+    position: absolute;
+    font-size: 16px;
+    right: 15px;
+    top: 14px;
+    width: 26px;
+    text-align: center;
+    color: #666;
+
+    &:hover { 
+      background: #eee;
+      border-radius: 3px;
+    }
+  }
+}

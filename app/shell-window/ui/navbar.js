@@ -39,7 +39,7 @@ export function setup () {
 }
 
 export function createEl (id) {
-  // render (only need to render once)
+  // render
   var el = render(id, null)
   toolbarNavDiv.appendChild(el)
   return el

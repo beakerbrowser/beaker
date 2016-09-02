@@ -1,10 +1,11 @@
-import { ipcRenderer } from 'electron'
+import { remote, ipcRenderer } from 'electron'
 import url from 'url'
 import * as tabs from './ui/tabs'
 import * as navbar from './ui/navbar'
 import * as pages from './pages'
 import * as commandHandlers from './command-handlers'
 import * as swipeHandlers from './swipe-handlers'
+import permsPrompt from './ui/prompts/permission'
 import errorPage from '../lib/error-page'
 
 export function setup () {
@@ -12,22 +13,45 @@ export function setup () {
     document.body.classList.add('darwin')
   }
 
-  ipcRenderer.on('protocol-not-supported', onProtocolNotSupported)
   ipcRenderer.on('window-event', onWindowEvent)
   tabs.setup()
   navbar.setup()
   commandHandlers.setup()
   swipeHandlers.setup()
+  remote.session.defaultSession.setPermissionRequestHandler(onPermissionRequestHandler)
   pages.loadPinnedFromDB().then(() => pages.setActive(pages.create(pages.DEFAULT_URL)))
 }
 
-function onProtocolNotSupported () {
-  var page = pages.getActive()
-  var protocol = url.parse(page.getIntendedURL()).protocol
-
+function onProtocolNotSupported (webContents) {
   // render failure page
+  var protocol = url.parse(webContents.getURL()).protocol
   var errorPageHTML = errorPage('The ' + (''+protocol).replace(/</g, '') + ' protocol is not installed in Beaker.')
-  page.webviewEl.getWebContents().executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
+  webContents.executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
+}
+
+function onPermissionRequestHandler (webContents, permission, cb) {
+  const grant = () => {
+    console.debug('Granting permission request for', permission, 'for', webContents.getURL())
+    cb(true)
+  }
+  const deny = () => {
+    console.debug('Denying permission request for', permission, 'for', webContents.getURL())
+    cb(false)
+  }
+
+  // look up the page, deny if failed
+  var page = pages.getByWebContents(webContents)
+  if (!page)
+    return deny()
+
+  // openExternal gets called for unknown URL schemes
+  if (permission == 'openExternal') {
+    onProtocolNotSupported(webContents)
+    return deny()
+  }
+
+  // run the prompt
+  permsPrompt(permission, page, grant, deny)
 }
 
 function onWindowEvent (event, type) {

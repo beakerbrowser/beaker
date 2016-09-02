@@ -16,7 +16,7 @@ export function setIsLoading (b) {
 }
 
 function render () {
-  var el = document.getElementById('status-bar')
+  var el = document.getElementById('statusbar')
   var str = currentStr
   if (!str && isLoading)
     str = 'Loading...'

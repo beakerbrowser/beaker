@@ -62,21 +62,21 @@ function loadURL (win, url) {
 }
 
 function getCurrentPosition (win) {
-    var position = win.getPosition()
-    var size = win.getSize()
-    return {
-        x: position[0],
-        y: position[1],
-        width: size[0],
-        height: size[1]
-    }
+  var position = win.getPosition()
+  var size = win.getSize()
+  return {
+    x: position[0],
+    y: position[1],
+    width: size[0],
+    height: size[1]
+  }
 }
 
 function windowWithinBounds (windowState, bounds) {
-    return windowState.x >= bounds.x &&
-        windowState.y >= bounds.y &&
-        windowState.x + windowState.width <= bounds.x + bounds.width &&
-        windowState.y + windowState.height <= bounds.y + bounds.height
+  return windowState.x >= bounds.x &&
+    windowState.y >= bounds.y &&
+    windowState.x + windowState.width <= bounds.x + bounds.width &&
+    windowState.y + windowState.height <= bounds.y + bounds.height
 }
 
 function restoreState () {
@@ -91,25 +91,25 @@ function restoreState () {
 }
 
 function defaultState () {
-    var bounds = screen.getPrimaryDisplay().bounds
-    var width = Math.max(800, Math.min(1800, bounds.width - 50))
-    var height = Math.max(600, Math.min(1200, bounds.height - 50))
-    return Object.assign({}, {
-        x: (bounds.width - width) / 2,
-        y: (bounds.height - height) / 2,
-        width,
-        height
-    })
+  var bounds = screen.getPrimaryDisplay().bounds
+  var width = Math.max(800, Math.min(1800, bounds.width - 50))
+  var height = Math.max(600, Math.min(1200, bounds.height - 50))
+  return Object.assign({}, {
+    x: (bounds.width - width) / 2,
+    y: (bounds.height - height) / 2,
+    width,
+    height
+  })
 }
 
 function ensureVisibleOnSomeDisplay (windowState) {
-    var visible = screen.getAllDisplays().some(display => windowWithinBounds(windowState, display.bounds))
-    if (!visible) {
-        // Window is partially or fully not visible now.
-        // Reset it to safe defaults.
-        return defaultState(windowState)
-    }
-    return windowState
+  var visible = screen.getAllDisplays().some(display => windowWithinBounds(windowState, display.bounds))
+  if (!visible) {
+    // Window is partially or fully not visible now.
+    // Reset it to safe defaults.
+    return defaultState(windowState)
+  }
+  return windowState
 }
 
 function onClose (win) {

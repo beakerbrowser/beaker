@@ -55,16 +55,6 @@ export function setup () {
   }
   setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
 
-  // TEMPORARY
-  // deny permission requests for special web apis
-  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
-    log.debug('[Web API] Denying permission request for', permission, 'for', webContents.getURL())
-    if (permission == 'openExternal' && webContents.hostWebContents) {
-      webContents.hostWebContents.send('protocol-not-supported')
-    }
-    callback(false)
-  })
-
   // wire up RPC
   rpc.exportAPI('beakerBrowser', manifest, { 
     eventsStream,

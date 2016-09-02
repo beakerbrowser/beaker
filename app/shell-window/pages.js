@@ -3,7 +3,8 @@ import EventEmitter from 'events'
 import path from 'path'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
-import * as statusBar from './ui/status-bar'
+import * as promptbar from './ui/promptbar'
+import * as statusBar from './ui/statusbar'
 import { urlToData } from '../lib/fg/img'
 import errorPage from '../lib/error-page'
 
@@ -56,6 +57,7 @@ export function create (opts) {
     id: id,
     webviewEl: createWebviewEl(id, url),
     navbarEl: navbar.createEl(id),
+    promptbarEl: promptbar.createEl(id),
 
     // page state
     loadingURL: false, // what URL is being loaded, if any?
@@ -69,6 +71,9 @@ export function create (opts) {
     zoom: 0, // what's the current zoom level?
     favicons: null, // what are the favicons of the page?
     archiveInfo: null, // if a dat archive, includes the metadata
+
+    // prompts
+    prompts: [], // list of active prompts
 
     // tab state
     isPinned: opts.isPinned, // is this page pinned?
@@ -249,6 +254,7 @@ export function setActive (page) {
   page.webviewEl.focus()
   statusBar.setIsLoading(page.isLoading())
   navbar.update()
+  promptbar.update()
   events.emit('set-active', page)
 }
 
@@ -329,6 +335,14 @@ export function getAdjacentPage (page, offset) {
 
 export function getByWebview (el) {
   return getById(el.dataset.id)
+}
+
+export function getByWebContents (webContents) {
+  for (var i=0; i < pages.length; i++) {
+    if (pages[i].webviewEl && pages[i].webviewEl.getWebContents() == webContents)
+      return pages[i]
+  }
+  return null
 }
 
 export function getById (id) {
@@ -421,6 +435,7 @@ function onDidStartLoading (e) {
     page.manuallyTrackedIsLoading = true
     navbar.update(page)
     navbar.hideInpageFind(page)
+    promptbar.forceRemoveAll(page)
     if (page.isActive)
       statusBar.setIsLoading(true)
   }
@@ -538,12 +553,14 @@ function onCrashed (e) {
 function show (page) {
   page.webviewEl.classList.remove('hidden')
   page.navbarEl.classList.remove('hidden')
+  page.promptbarEl.classList.remove('hidden')
   events.emit('show', page)
 }
 
 function hide (page) {
   page.webviewEl.classList.add('hidden')
   page.navbarEl.classList.add('hidden')
+  page.promptbarEl.classList.add('hidden')
   events.emit('hide', page)
 }
 
