@@ -27,7 +27,7 @@ export function setup () {
 }
 
 export function show () {
-  document.title = 'Your Seeds'
+  document.title = 'Your Sites'
   co(function*(){
     if (window.datInternalAPI) {
       // fetch archives
@@ -54,7 +54,7 @@ function render () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="sites">
       <div class="ll-heading">
-        Your Seeds
+        Your Sites
       </div>
       ${content}
     </div>
@@ -62,7 +62,7 @@ function render () {
 }
 
 function renderEmpty () {
-  return yo`<div class="ll-empty">You are not seeding any sites.</div>`
+  return yo`<div class="ll-empty">You have not added or created any sites.</div>`
 }
 
 function renderNotSupported () {
