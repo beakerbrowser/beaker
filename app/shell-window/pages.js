@@ -443,12 +443,44 @@ function onDidStartLoading (e) {
 
 function onDidStopLoading (e) {
   var page = getByWebview(e.target)
-  if (page) {
+  if (page) {    
+    // update history
+    var url = page.getURL()
+    if (!url.startsWith('beaker:')) {
+      beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
+      beakerBookmarks.addVisit(page.getURL())
+    }
+
+    // fetch protocol info
+    var scheme = (new URL(url)).protocol
+    if (scheme == 'http:' || scheme == 'https:')
+      page.protocolDescription = { label: scheme.slice(0,-1).toUpperCase() }
+    else
+      page.protocolDescription = beakerBrowser.getProtocolDescription(scheme)
+    console.log('Protocol description', page.protocolDescription)
+
+    // update page
     page.manuallyTrackedIsLoading = false
     if (page.isActive) {
       navbar.update(page)
       statusBar.setIsLoading(false)
     }
+
+    // HACK
+    // inject some corrections to the user-agent styles
+    // real solution is to update electron so we can change the user-agent styles
+    // -prf
+    page.webviewEl.insertCSS(`
+      body:-webkit-full-page-media {
+        background: #ddd;
+      }
+      audio:-webkit-full-page-media, video:-webkit-full-page-media {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+    `)
   }
 }
 
@@ -475,21 +507,6 @@ function onDidFinishLoad (e) {
     page.favicons = null
     navbar.update(page)
     navbar.updateLocation(page)
-
-    // update history
-    var url = page.getURL()
-    if (!url.startsWith('beaker:')) {
-      beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
-      beakerBookmarks.addVisit(page.getURL())
-    }
-
-    // fetch protocol info
-    var scheme = (new URL(url)).protocol
-    if (scheme == 'http:' || scheme == 'https:')
-      page.protocolDescription = { label: scheme.slice(0,-1).toUpperCase() }
-    else
-      page.protocolDescription = beakerBrowser.getProtocolDescription(scheme)
-    console.log('Protocol description', page.protocolDescription)
   }
 }
 
