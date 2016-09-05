@@ -31,10 +31,6 @@
       {
         "name": "URL",
         "schemes": ["http", "https"]
-      },
-      {
-        "name": "File",
-        "schemes": ["file"]
       }
     ]
   },

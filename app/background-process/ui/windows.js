@@ -18,7 +18,7 @@ export function setup () {
   userDataDir = jetpack.cwd(app.getPath('userData'))
 
   // create first shell window
-  createShellWindow()
+  return createShellWindow()
 }
 
 export function createShellWindow () {

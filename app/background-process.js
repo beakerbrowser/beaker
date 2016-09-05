@@ -28,6 +28,8 @@ log.setLevel('trace')
 // load the installed protocols
 plugins.registerStandardSchemes()
 
+var win
+
 app.on('ready', function () {
   // databases
   settings.setup()
@@ -41,7 +43,7 @@ app.on('ready', function () {
   // ui
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu(env)))
   registerContextMenu()
-  windows.setup()
+  win = windows.setup()
   downloads.setup()
 
   // protocols
@@ -61,12 +63,18 @@ app.on('window-all-closed', function () {
 })
 
 var queue = []
+var shellReady = false
 
 app.on('open-url', function (e, url) {
-  queue.push(url)
+  if (shellReady) {
+    win.webContents.send('command', 'file:new-tab', url)
+  } else {
+    queue.push(url)
+  }
 })
 
 ipcMain.on('shell-window-ready', function (e) {
+  shellReady = true
   queue.forEach((url) => {
     e.sender.send('command', 'file:new-tab', url)
   })
