@@ -5,6 +5,11 @@ This uses the beakerBookmarks APIs, which is exposed by webview-preload to all s
 import * as yo from 'yo-yo'
 import co from 'co'
 
+// constants
+// =
+
+const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
+
 // globals
 // =
 
@@ -56,7 +61,10 @@ function render () {
   // render the top 9 big, the rest small
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="favorites links-list">
-      <div class="ll-heading">Favorites</div>
+      <div class="ll-heading">
+        Favorites
+        <small class="ll-heading-right"><a href=${FEEDBACK_FORM_URL} title="Send feedback"><span class="icon icon-megaphone"></span> Send Feedback</a></small>
+      </div>
       ${bookmarks.map(renderRow)}
       ${helpEl}
     </div>

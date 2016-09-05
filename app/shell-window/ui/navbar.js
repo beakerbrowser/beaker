@@ -5,7 +5,6 @@ import emitStream from 'emit-stream'
 import { UpdatesNavbarBtn } from './navbar/updates'
 import { SitePermsNavbarBtn } from './navbar/site-perms'
 
-const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
 const KEYCODE_DOWN = 40
 const KEYCODE_UP = 38
 const KEYCODE_ESC = 27
@@ -237,7 +236,6 @@ function render (id, page) {
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
-      <button class="toolbar-btn" onclick=${onClickFeedback} title="Send feedback"><span class="icon icon-megaphone"></span></button>
       ${updatesNavbarBtn.render()}
     </div>
   </div>`
@@ -421,10 +419,6 @@ function onClickZoom (e) {
     { label: 'Zoom Out', click: command('view:zoom-out') },
   ])
   menu.popup(remote.getCurrentWindow())
-}
-
-function onClickFeedback (e) {
-  pages.setActive(pages.create(FEEDBACK_FORM_URL))
 }
 
 function onFocusLocation (e) {
