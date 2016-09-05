@@ -8,7 +8,7 @@ import * as swipeHandlers from './swipe-handlers'
 import permsPrompt from './ui/prompts/permission'
 import errorPage from '../lib/error-page'
 
-export function setup () {
+export function setup (cb) {
   if (window.process.platform == 'darwin') {
     document.body.classList.add('darwin')
   }
@@ -19,7 +19,10 @@ export function setup () {
   commandHandlers.setup()
   swipeHandlers.setup()
   remote.session.defaultSession.setPermissionRequestHandler(onPermissionRequestHandler)
-  pages.loadPinnedFromDB().then(() => pages.setActive(pages.create(pages.DEFAULT_URL)))
+  pages.loadPinnedFromDB().then(() => {
+    pages.setActive(pages.create(pages.DEFAULT_URL))
+    cb()
+  })
 }
 
 function onProtocolNotSupported (webContents) {

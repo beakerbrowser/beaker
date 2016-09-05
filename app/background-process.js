@@ -3,7 +3,7 @@
 // It doesn't have any windows which you can see on screen, but we can open
 // window from here.
 
-import { app, Menu } from 'electron'
+import { app, Menu, ipcMain } from 'electron'
 import log from 'loglevel'
 import env from './env'
 
@@ -58,4 +58,16 @@ app.on('window-all-closed', function () {
   // it's normal for OSX apps to stay open, even if all windows are closed
   // but, since we have an uncloseable tabs bar, let's close when they're all gone
   app.quit()
+})
+
+var queue = []
+
+app.on('open-url', function (e, url) {
+  queue.push(url)
+})
+
+ipcMain.on('shell-window-ready', function (e) {
+  queue.forEach((url) => {
+    e.sender.send('command', 'file:new-tab', url)
+  })
 })
