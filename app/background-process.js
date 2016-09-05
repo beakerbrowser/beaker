@@ -3,7 +3,7 @@
 // It doesn't have any windows which you can see on screen, but we can open
 // window from here.
 
-import { app, Menu, ipcMain } from 'electron'
+import { app, Menu } from 'electron'
 import log from 'loglevel'
 import env from './env'
 
@@ -22,13 +22,13 @@ import * as history from './background-process/dbs/history'
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 
+import * as openURL from './background-process/open-url'
+
 // configure logging
 log.setLevel('trace')
 
 // load the installed protocols
 plugins.registerStandardSchemes()
-
-var win
 
 app.on('ready', function () {
   // databases
@@ -43,7 +43,7 @@ app.on('ready', function () {
   // ui
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu(env)))
   registerContextMenu()
-  win = windows.setup()
+  var win = windows.setup()
   downloads.setup()
 
   // protocols
@@ -55,9 +55,8 @@ app.on('ready', function () {
   webAPIs.setup()
   plugins.setupWebAPIs()
 
-  win.on('closed', () => {
-    win = null
-  })
+  // listen OSX open-url event
+  openURL.setup(win)
 })
 
 app.on('window-all-closed', function () {
@@ -66,20 +65,7 @@ app.on('window-all-closed', function () {
   app.quit()
 })
 
-var queue = []
-var shellReady = false
-
 app.on('open-url', function (e, url) {
-  if (shellReady) {
-    win.webContents.send('command', 'file:new-tab', url)
-  } else {
-    queue.push(url)
-  }
+  openURL.open(url)
 })
 
-ipcMain.on('shell-window-ready', function (e) {
-  shellReady = true
-  queue.forEach((url) => {
-    e.sender.send('command', 'file:new-tab', url)
-  })
-})
