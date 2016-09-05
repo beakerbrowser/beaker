@@ -54,6 +54,10 @@ app.on('ready', function () {
   // web APIs
   webAPIs.setup()
   plugins.setupWebAPIs()
+
+  win.on('closed', () => {
+    win = null
+  })
 })
 
 app.on('window-all-closed', function () {
