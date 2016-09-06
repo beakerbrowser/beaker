@@ -78,7 +78,7 @@ function renderProtocolSettings () {
   return yo`<div class="s-section">
     <div>${
       Object.keys(defaultProtocolSettings).map(p => {
-        return yo`<div>${p.toUpperCase()} <a onclick=${register(p)}>Register</a> | <a onclick=${remove(p)}>Unregister</a></div>`
+        return yo`<div><b>${p.toUpperCase()}</b> <a onclick=${register(p)}>Register</a> | <a onclick=${remove(p)}>Unregister</a></div>`
       })
     }</div>
   </div>`
