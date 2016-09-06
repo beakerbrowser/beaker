@@ -12,6 +12,7 @@ import emitStream from 'emit-stream'
 var settings
 var browserInfo
 var browserEvents
+var defaultProtocolSettings
 
 // exported API
 // =
@@ -25,6 +26,7 @@ export function setup () {
 
 export function show () {
   document.title = 'Settings'
+  defaultProtocolSettings = beakerBrowser.getDefaultProtocolSettings()
   co(function* () {
     browserInfo = yield beakerBrowser.getInfo()
     settings = yield beakerBrowser.getSettings()
@@ -36,6 +38,7 @@ export function show () {
 export function hide () {
   browserInfo = null
   settings = null
+  defaultProtocolSettings = null
 }
 
 // rendering
@@ -55,8 +58,30 @@ function render () {
         <div><strong>Version:</strong> ${browserInfo.version}</div>
         <div><strong>User data:</strong> ${browserInfo.paths.userData}</div>
       </div>
+      <div class="ll-heading">Protocols</div>
+      ${renderProtocolSettings()}
     </div>
   </div>`)
+}
+
+function renderProtocolSettings () {
+  function register (protocol) {
+    return function () {
+      beakerBrowser.setAsDefaultProtocolClient(protocol)
+    }
+  }
+  function remove (protocol) {
+    return function () {
+      beakerBrowser.removeAsDefaultProtocolClient(protocol)
+    }
+  }
+  return yo`<div class="s-section">
+    <div>${
+      Object.keys(defaultProtocolSettings).map(p => {
+        return yo`<div>${p.toUpperCase()} <a onclick=${register(p)}>Register</a> | <a onclick=${remove(p)}>Unregister</a></div>`
+      })
+    }</div>
+  </div>`
 }
 
 function renderAutoUpdater () {
