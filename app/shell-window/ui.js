@@ -44,12 +44,6 @@ function onPermissionRequestHandler (webContents, permission, cb) {
   if (!page)
     return deny()
 
-  // openExternal gets called for unknown URL schemes
-  if (permission == 'openExternal') {
-    onProtocolNotSupported(webContents)
-    return deny()
-  }
-
   // run the prompt
   permsPrompt(permission, page, grant, deny)
 }

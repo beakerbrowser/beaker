@@ -10,7 +10,8 @@ const PERM_DESCS = {
   notifications: 'create desktop notifications',
   midiSysex: 'access your MIDI devices',
   pointerLock: 'lock your cursor',
-  fullscreen: 'go fullscreen'
+  fullscreen: 'go fullscreen',
+  openExternal: 'open this URL in another program: '
 }
 
 // exported api
@@ -21,6 +22,11 @@ export default function (permission, page, grant, deny) {
   var permDesc = PERM_DESCS[permission]
   if (!permDesc)
     return deny()
+
+  // special case for openExternal
+  if (permission == 'openExternal') {
+    permDesc += page.getIntendedURL()
+  }
 
   // create the prompt
   promptbar.add(page, {

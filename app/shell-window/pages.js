@@ -460,9 +460,11 @@ function onDidStopLoading (e) {
     console.log('Protocol description', page.protocolDescription)
 
     // update page
+    page.loadingURL = false
     page.manuallyTrackedIsLoading = false
     if (page.isActive) {
       navbar.update(page)
+      navbar.updateLocation(page)
       statusBar.setIsLoading(false)
     }
 
