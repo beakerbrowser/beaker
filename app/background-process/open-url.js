@@ -4,11 +4,10 @@ var queue = []
 var commandReceiver
 
 export function setup () {
-  ipcMain.on('shell-window-ready', function (e) {
+  ipcMain.once('shell-window-ready', function (e) {
     commandReceiver = e.sender
-    queue.forEach((url) => {
-      commandReceiver.send('command', 'file:new-tab', url)
-    })
+    queue.forEach(url => commandReceiver.send('command', 'file:new-tab', url))
+    queue.length = 0
   })
 }
 

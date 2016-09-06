@@ -67,27 +67,27 @@ export function setup () {
     setSetting,
 
     getProtocolDescription,
+    getHomePages,
+
     getDefaultProtocolSettings,
     setAsDefaultProtocolClient,
-    removeAsDefaultProtocolClient,
-    getHomePages
+    removeAsDefaultProtocolClient
   })
 }
 
 export function getDefaultProtocolSettings () {
-  return ['http', 'dat', 'ipfs', 'view-dat'].reduce((res, x) => {
+  return Promise.resolve(['http', 'dat', 'ipfs', 'view-dat'].reduce((res, x) => {
     res[x] = app.isDefaultProtocolClient(x)
-    console.log(x, res[x])
     return res
-  }, {})
+  }, {}))
 }
 
 export function setAsDefaultProtocolClient (protocol) {
-  return app.setAsDefaultProtocolClient(protocol)
+  return Promise.resolve(app.setAsDefaultProtocolClient(protocol))
 }
 
 export function removeAsDefaultProtocolClient (protocol) {
-  return app.removeAsDefaultProtocolClient(protocol)
+  return Promise.resolve(app.removeAsDefaultProtocolClient(protocol))
 }
 
 export function getInfo () {

@@ -16,7 +16,7 @@ export default {
   getHomePages: 'promise',
   getProtocolDescription: 'sync',
 
-  getDefaultProtocolSettings: 'sync',
-  setAsDefaultProtocolClient: 'sync',
-  removeAsDefaultProtocolClient: 'sync'
+  getDefaultProtocolSettings: 'promise',
+  setAsDefaultProtocolClient: 'promise',
+  removeAsDefaultProtocolClient: 'promise'
 }

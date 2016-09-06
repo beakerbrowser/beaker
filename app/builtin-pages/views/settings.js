@@ -26,10 +26,10 @@ export function setup () {
 
 export function show () {
   document.title = 'Settings'
-  defaultProtocolSettings = beakerBrowser.getDefaultProtocolSettings()
   co(function* () {
     browserInfo = yield beakerBrowser.getInfo()
     settings = yield beakerBrowser.getSettings()
+    defaultProtocolSettings = yield beakerBrowser.getDefaultProtocolSettings()
 
     render()
   })
@@ -53,34 +53,34 @@ function render () {
     <div class="settings">
       <div class="ll-heading">Auto-updater</div>
       ${renderAutoUpdater()}
+      <div class="ll-heading">Default Browser</div>
+      ${renderProtocolSettings()}
       <div class="ll-heading">Application Info</div>
       <div class="s-section">
         <div><strong>Version:</strong> ${browserInfo.version}</div>
         <div><strong>User data:</strong> ${browserInfo.paths.userData}</div>
       </div>
-      <div class="ll-heading">Protocols</div>
-      ${renderProtocolSettings()}
     </div>
   </div>`)
 }
 
 function renderProtocolSettings () {
   function register (protocol) {
-    return function () {
+    return () => {
+      // update and optimistically render
       beakerBrowser.setAsDefaultProtocolClient(protocol)
+      defaultProtocolSettings[protocol] = true
+      render()
     }
   }
-  function remove (protocol) {
-    return function () {
-      beakerBrowser.removeAsDefaultProtocolClient(protocol)
-    }
-  }
+  var registered   = Object.keys(defaultProtocolSettings).filter(k => defaultProtocolSettings[k])
+  var unregistered = Object.keys(defaultProtocolSettings).filter(k => !defaultProtocolSettings[k])
+
   return yo`<div class="s-section">
-    <div>${
-      Object.keys(defaultProtocolSettings).map(p => {
-        return yo`<div><b>${p.toUpperCase()}</b> <a onclick=${register(p)}>Register</a> | <a onclick=${remove(p)}>Unregister</a></div>`
-      })
-    }</div>
+    ${registered.length
+      ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
+      : '' }
+    ${unregistered.map(proto => yo`<div>Make Beaker the default browser for <strong>${proto}</strong>? <a class="icon icon-check" onclick=${register(proto)}> Yes</a>.</div>`)}
   </div>`
 }
 
