@@ -55,6 +55,7 @@ function render () {
     <div class="sites">
       <div class="ll-heading">
         Your Sites
+        <button class="btn" onclick=${onClickNewDat}>New Site</button>
       </div>
       ${content}
     </div>
@@ -82,6 +83,12 @@ function renderNotSupported () {
 //     datInternalAPI.swarm(archive.key)
 //   render()
 // }
+
+function onClickNewDat (e) {
+  datInternalAPI.createNewArchive().then(key => {
+    window.location = 'view-dat://' + key + '#new' // include the #new to trigger the edit modal
+  })
+}
 
 function onUpdateArchive (update) {
   console.log('update', update)
