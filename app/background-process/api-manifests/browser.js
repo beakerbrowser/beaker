@@ -14,5 +14,9 @@ export default {
   uninstallPlugin: 'promise',
 
   getHomePages: 'promise',
-  getProtocolDescription: 'sync'
+  getProtocolDescription: 'sync',
+
+  getDefaultProtocolSettings: 'promise',
+  setAsDefaultProtocolClient: 'promise',
+  removeAsDefaultProtocolClient: 'promise'
 }

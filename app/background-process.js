@@ -22,6 +22,8 @@ import * as history from './background-process/dbs/history'
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 
+import * as openURL from './background-process/open-url'
+
 // configure logging
 log.setLevel('trace')
 
@@ -52,6 +54,9 @@ app.on('ready', function () {
   // web APIs
   webAPIs.setup()
   plugins.setupWebAPIs()
+
+  // listen OSX open-url event
+  openURL.setup()
 })
 
 app.on('window-all-closed', function () {
@@ -59,3 +64,8 @@ app.on('window-all-closed', function () {
   // but, since we have an uncloseable tabs bar, let's close when they're all gone
   app.quit()
 })
+
+app.on('open-url', function (e, url) {
+  openURL.open(url)
+})
+

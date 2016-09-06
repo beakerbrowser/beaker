@@ -12,6 +12,7 @@ import emitStream from 'emit-stream'
 var settings
 var browserInfo
 var browserEvents
+var defaultProtocolSettings
 
 // exported API
 // =
@@ -28,6 +29,7 @@ export function show () {
   co(function* () {
     browserInfo = yield beakerBrowser.getInfo()
     settings = yield beakerBrowser.getSettings()
+    defaultProtocolSettings = yield beakerBrowser.getDefaultProtocolSettings()
 
     render()
   })
@@ -36,6 +38,7 @@ export function show () {
 export function hide () {
   browserInfo = null
   settings = null
+  defaultProtocolSettings = null
 }
 
 // rendering
@@ -50,6 +53,8 @@ function render () {
     <div class="settings">
       <div class="ll-heading">Auto-updater</div>
       ${renderAutoUpdater()}
+      <div class="ll-heading">Default Browser</div>
+      ${renderProtocolSettings()}
       <div class="ll-heading">Application Info</div>
       <div class="s-section">
         <div><strong>Version:</strong> ${browserInfo.version}</div>
@@ -57,6 +62,26 @@ function render () {
       </div>
     </div>
   </div>`)
+}
+
+function renderProtocolSettings () {
+  function register (protocol) {
+    return () => {
+      // update and optimistically render
+      beakerBrowser.setAsDefaultProtocolClient(protocol)
+      defaultProtocolSettings[protocol] = true
+      render()
+    }
+  }
+  var registered   = Object.keys(defaultProtocolSettings).filter(k => defaultProtocolSettings[k])
+  var unregistered = Object.keys(defaultProtocolSettings).filter(k => !defaultProtocolSettings[k])
+
+  return yo`<div class="s-section">
+    ${registered.length
+      ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
+      : '' }
+    ${unregistered.map(proto => yo`<div>Make Beaker the default browser for <strong>${proto}</strong>? <a class="icon icon-check" onclick=${register(proto)}> Yes</a>.</div>`)}
+  </div>`
 }
 
 function renderAutoUpdater () {

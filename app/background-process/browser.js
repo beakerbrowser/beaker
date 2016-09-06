@@ -56,7 +56,7 @@ export function setup () {
   setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
 
   // wire up RPC
-  rpc.exportAPI('beakerBrowser', manifest, { 
+  rpc.exportAPI('beakerBrowser', manifest, {
     eventsStream,
     getInfo,
     checkForUpdates,
@@ -67,8 +67,27 @@ export function setup () {
     setSetting,
 
     getProtocolDescription,
-    getHomePages
+    getHomePages,
+
+    getDefaultProtocolSettings,
+    setAsDefaultProtocolClient,
+    removeAsDefaultProtocolClient
   })
+}
+
+export function getDefaultProtocolSettings () {
+  return Promise.resolve(['http', 'dat', 'ipfs', 'view-dat'].reduce((res, x) => {
+    res[x] = app.isDefaultProtocolClient(x)
+    return res
+  }, {}))
+}
+
+export function setAsDefaultProtocolClient (protocol) {
+  return Promise.resolve(app.setAsDefaultProtocolClient(protocol))
+}
+
+export function removeAsDefaultProtocolClient (protocol) {
+  return Promise.resolve(app.removeAsDefaultProtocolClient(protocol))
 }
 
 export function getInfo () {
