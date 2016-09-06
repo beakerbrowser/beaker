@@ -43,7 +43,7 @@ app.on('ready', function () {
   // ui
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu(env)))
   registerContextMenu()
-  var win = windows.setup()
+  windows.setup()
   downloads.setup()
 
   // protocols
@@ -56,7 +56,7 @@ app.on('ready', function () {
   plugins.setupWebAPIs()
 
   // listen OSX open-url event
-  openURL.setup(win)
+  openURL.setup()
 })
 
 app.on('window-all-closed', function () {

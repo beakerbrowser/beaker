@@ -1,26 +1,20 @@
 // handle OSX open-url event
 import { ipcMain } from 'electron'
-var shellReady = false
-var shellWindow
 var queue = []
+var commandReceiver
 
-export function setup (win) {
-  shellWindow = win
+export function setup () {
   ipcMain.on('shell-window-ready', function (e) {
-    shellReady = true
+    commandReceiver = e.sender
     queue.forEach((url) => {
-      e.sender.send('command', 'file:new-tab', url)
+      commandReceiver.send('command', 'file:new-tab', url)
     })
-  })
-
-  shellWindow.on('closed', () => {
-    shellWindow = null
   })
 }
 
 export function open (url) {
-  if (shellReady) {
-    shellWindow.webContents.send('command', 'file:new-tab', url)
+  if (commandReceiver) {
+    commandReceiver.send('command', 'file:new-tab', url)
   } else {
     queue.push(url)
   }
