@@ -16,10 +16,14 @@ export function render (sites, opts={}) {
     siteEls.push(yo`<a class="ll-row site" href=${url} title=${title}>
       <div class="ll-link">
         <img class="favicon" src=${'beaker-favicon:dat://'+site.key} />
-        <span class="ll-title">${title}</span>
+        <span class="ll-title">
+          ${title}
+        </span>
       </div>
       <div class="ll-updated" title=${mtime}>${mtime}</div>
+      <div class="ll-symbol">${site.isOwner ? yo`<span class="icon icon-pencil" title="You are the site author"></span>` : '' }</div>
       <div class="ll-size">${site.size ? prettyBytes(site.size) : '0 B'}</div>
+      <div class="ll-symbol">${site.isSeeding ? yo`<span class="icon icon-share" title="Seeding"></span>` : '' }</div>
       <div class="ll-status">${site.peers+' '+pluralize(site.peers, 'peer')}</div>
     </div>`)
   })

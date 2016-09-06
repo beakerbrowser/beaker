@@ -11,7 +11,7 @@ export function niceDate (ts, opts) {
   }
   else if (ts.isSame(endOfToday.subtract(1, 'day'), 'day'))
     return 'yesterday'
-  else if (ts.isSame(endOfToday, 'year'))
-    return ts.format("dddd, MMMM Do")
-  return ts.format("MMMM Do YYYY")
+  else if (ts.isSame(endOfToday, 'month'))
+    return ts.fromNow()
+  return ts.format("ll")
 }
