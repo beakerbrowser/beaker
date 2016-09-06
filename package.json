@@ -26,7 +26,25 @@
     "category": "public.app-category.productivity",
     "copyright": "© 2016, Paul Frazee",
     "npmRebuild": false,
-    "asar": false
+    "asar": false,
+    "protocols": [
+      {
+        "name": "URL",
+        "schemes": ["http", "https"]
+      },
+      {
+        "name": "IPFS",
+        "schemes": ["ipfs"]
+      },
+      {
+        "name": "dat",
+        "schemes": ["dat"]
+      },
+      {
+        "name": "view-dat",
+        "schemes": ["view-dat"]
+      }
+    ]
   },
   "scripts": {
     "postinstall": "cd app && npm install",
