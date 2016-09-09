@@ -46,7 +46,7 @@ function render () {
       <span class="ll-title">${row.title}</span>
     </a>
     <div class="ll-actions">
-      <span class="icon icon-cancel" onclick=${onClickDelete(i+9)} title="Delete bookmark"></span>
+      <span class="icon icon-cancel" onclick=${onClickDelete(i)} title="Delete bookmark"></span>
     </div>
   </div>`
 
