@@ -8,12 +8,6 @@
 .chrome-tabs {
   position: relative;
 
-  &:after {
-    content: "";
-    display: table;
-    clear: both;
-  }
-
   * {
     -webkit-user-select: none;
     cursor: default;
@@ -31,13 +25,7 @@
     -webkit-app-region: no-drag;
     background-color: #d5d5d5;
     border-left: 1px solid #999;
-
-    // animated behaviors
-    transition: .2s width;
-    &.chrome-tab-in-position {
-      // once in the initial position, start transitioning the transform, stop transitioning the width
-      transition: .1s transform;
-    }
+    transition: .1s transform;
 
     &.chrome-tab-dragging {
       z-index: 2; // just above the non-currents

@@ -77,7 +77,6 @@ export function create (opts) {
 
     // tab state
     isPinned: opts.isPinned, // is this page pinned?
-    isTabRendered: false, // has the tab el been rendered?
     isTabDragging: false, // being dragged?
     tabDragOffset: 0, // if being dragged, this is the current offset
 
@@ -225,13 +224,13 @@ export function remove (page) {
   if (page.isPinned)
     savePinnedToDB()
 
-  // remove all attributes, to clear circular references
-  for (var k in page)
-    page[k] = null
-
   // emit
   events.emit('remove', page)
   events.emit('update')
+
+  // remove all attributes, to clear circular references
+  for (var k in page)
+    page[k] = null
 }
 
 export function reopenLastRemoved () {
@@ -270,7 +269,7 @@ export function togglePinned (page) {
 
   // update page state
   page.isPinned = !page.isPinned
-  events.emit('update')
+  events.emit('pin-updated', page)
 
   // persist
   savePinnedToDB()
@@ -551,6 +550,7 @@ function onDidFailLoad (e) {
 function onPageFaviconUpdated (e) {
   if (e.favicons && e.favicons[0]) {
     var page = getByWebview(e.target)
+    page.favicons = e.favicons
     urlToData(e.favicons[0], 16, 16, (err, dataUrl) => {
       if (dataUrl)
         beakerSitedata.set(page.getURL(), 'favicon', dataUrl)
@@ -592,7 +592,7 @@ function createWebviewEl (id, url) {
 }
 
 function rebroadcastEvent (e) {
-  events.emit(e.type, e)
+  events.emit(e.type, getByWebview(e.target), e)
 }
 
 function warnIfError (label) {

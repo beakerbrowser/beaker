@@ -1,7 +1,7 @@
 import * as yo from 'yo-yo'
 import * as pages from '../pages'
 import * as navbar from './navbar'
-import { remote, ipcRenderer } from 'electron'
+import { remote } from 'electron'
 import { debounce, throttle } from '../../lib/functions'
 
 // constants
@@ -14,6 +14,8 @@ const TAB_SPACING = 0 // px
 // globals
 // =
 
+var tabsContainerEl
+
 // tab-width is adjusted based on window width and # of tabs
 var currentTabWidth = MAX_TAB_WIDTH
 
@@ -21,74 +23,34 @@ var currentTabWidth = MAX_TAB_WIDTH
 // ==
 
 export function setup () {
-  pages.on('update', updateTabs)
+  // render
+  tabsContainerEl = yo`<div class="chrome-tabs">
+    <div class="chrome-tab chrome-tab-add-btn" onclick=${onClickNew}>
+      <div class="chrome-tab-favicon"><span class="icon icon-plus"></span></div>
+    </div>
+  </div>`
+  yo.update(document.getElementById('toolbar-tabs'), yo`<div id="toolbar-tabs" class="chrome-tabs-shell">
+    ${tabsContainerEl}
+  </div>`)
+
+  // wire up listeners
   pages.on('add', onAddTab)
   pages.on('remove', onRemoveTab)
-  pages.on('set-active', updateTabs)
-  pages.on('did-start-loading', updateTabs)
-  pages.on('did-stop-loading', updateTabs)
-  pages.on('page-title-updated', updateTabs)
-  pages.on('page-favicon-updated', updateTabFavicon)
+  pages.on('set-active', onSetActive)
+  pages.on('pin-updated', onPinUpdated)
+  pages.on('did-start-loading', onUpdateTab)
+  pages.on('did-stop-loading', onUpdateTab)
+  pages.on('page-title-updated', onUpdateTab)
+  pages.on('page-favicon-updated', onUpdateTab)
   window.addEventListener('resize', debounce(onWindowResize, 500))
-}
-
-// update functions
-// =
-
-function updateTabs (e) {
-  const allPages = pages.getAll()
-
-  // compute tab width for the space we have
-  // - we need to distributed the space among unpinned tabs
-  var numUnpinnedTabs = 0
-  var availableWidth = window.innerWidth
-  // correct for traffic lights on darwin
-  if (window.process.platform == 'darwin' && !document.body.classList.contains('fullscreen'))
-    availableWidth -= 80 
-  // correct for new-tab btn
-  availableWidth -= (MIN_TAB_WIDTH + TAB_SPACING)
-  // count the unpinned-tabs, and correct for the spacing and pinned-tabs
-  allPages.forEach(p => {
-    availableWidth -= TAB_SPACING
-    if (p.isPinned) availableWidth -= MIN_TAB_WIDTH
-    else            numUnpinnedTabs++
-  })
-  // now calculate a (clamped) size
-  currentTabWidth = Math.min(MAX_TAB_WIDTH, Math.max(MIN_TAB_WIDTH, availableWidth / numUnpinnedTabs))|0
-
-  // compute add btn styles
-  var addBtnStyle = `transform: translateX(${getTabX(allPages, allPages.length)}px)`
-
-  // render
-  yo.update(document.getElementById('toolbar-tabs'), yo`<div id="toolbar-tabs" class="chrome-tabs-shell">
-    <div class="chrome-tabs">
-      ${allPages.map(drawTab)}
-      <div class="chrome-tab chrome-tab-in-position chrome-tab-add-btn" onclick=${onClickNew} style=${addBtnStyle}>
-        <div class="chrome-tab-favicon"><span class="icon icon-plus"></span></div>
-      </div>
-    </div>
-  </div>`)
-}
-
-function updateTabFavicon (e) {
-  var page = pages.getByWebview(e.target)
-  page.favicons = e.favicons
-  updateTabs()  
 }
 
 // render functions
 // =
 
-function drawTab (page, i) {
+function drawTab (page) {
   const isActive = page.isActive
-  const isTabRendered = page.isTabRendered
   const isTabDragging = page.isTabDragging
-
-  // position the tab
-  var style = `
-    transform: translateX(${getTabX(pages.getAll(), i)}px);
-    width: ${getTabWidth(page)}px
-  `
 
   // pick a favicon
   var favicon 
@@ -113,19 +75,17 @@ function drawTab (page, i) {
   // class
   var cls = ''
   if (isActive) cls += ' chrome-tab-current'
-  if (isTabRendered) cls += ' chrome-tab-in-position'
   if (isTabDragging) cls += ' chrome-tab-dragging'
 
   // pinned rendering:
   if (page.isPinned) {
     return yo`<div class=${'chrome-tab chrome-tab-pinned'+cls}
                 data-id=${page.id}
-                onload=${onTabElLoad(page)}
+                style=${getPageStyle(page)}
                 onclick=${onClickTab(page)}
                 oncontextmenu=${onContextMenuTab(page)}
                 onmousedown=${onMouseDown(page)}
-                title=${page.getTitle()}
-                style=${style}>
+                title=${page.getTitle()}>
       <div class="chrome-tab-favicon">${favicon}</div>
     </div>`
   }
@@ -135,43 +95,81 @@ function drawTab (page, i) {
   return yo`
   <div class=${'chrome-tab'+cls}
       data-id=${page.id}
-      onload=${onTabElLoad(page)}
+      style=${getPageStyle(page)}
       onclick=${onClickTab(page)}
       oncontextmenu=${onContextMenuTab(page)}
       onmousedown=${onMouseDown(page)}
-      title=${page.getTitle()}
-      style=${style}>
+      title=${page.getTitle()}>
     <div class="chrome-tab-favicon">${favicon}</div>
     <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
     <div class="chrome-tab-close" onclick=${onClickTabClose(page)}></div>
   </div>`
 }
 
-// ui event handlers
-// =
+// calculate and position all tabs
+// - should be called any time the # of pages changes, or pin/unpin 
+function repositionTabs (e) {
+  const allPages = pages.getAll()
 
-function onTabElLoad (page) {
-  return e => {
-    // once loaded, we can give the 'in-position' class
-    setTimeout(() => {
-      page.isTabRendered = true
-      updateTabs()
-    }, 215) // transition should take 200ms
-  }
+  // compute tab width for the space we have
+  // - we need to distributed the space among unpinned tabs
+  var numUnpinnedTabs = 0
+  var availableWidth = window.innerWidth
+  // correct for traffic lights on darwin
+  if (window.process.platform == 'darwin' && !document.body.classList.contains('fullscreen'))
+    availableWidth -= 80 
+  // correct for new-tab btn
+  availableWidth -= (MIN_TAB_WIDTH + TAB_SPACING)
+  // count the unpinned-tabs, and correct for the spacing and pinned-tabs
+  allPages.forEach(p => {
+    availableWidth -= TAB_SPACING
+    if (p.isPinned) availableWidth -= MIN_TAB_WIDTH
+    else            numUnpinnedTabs++
+  })
+  // now calculate a (clamped) size
+  currentTabWidth = Math.min(MAX_TAB_WIDTH, Math.max(MIN_TAB_WIDTH, availableWidth / numUnpinnedTabs))|0
+
+  // update tab positions
+  allPages.forEach(page => getTabEl(page, tabEl => tabEl.style = getPageStyle(page)))
+  tabsContainerEl.querySelector('.chrome-tab-add-btn').style = getPageStyle(allPages.length)
 }
 
+// page event
+// =
+
 function onAddTab (page) {
-  // do things?
+  tabsContainerEl.insertBefore(drawTab(page), tabsContainerEl.querySelector('.chrome-tab-add-btn'))
+  repositionTabs()
 }
 
 function onRemoveTab (page) {
-  // manually remove the tab element
-  // - this forces the other tabs to animate into the correct place
-  // - if not done, yo-yo would reuse a neighbor's elements, and no animation would occur
-  var tabEl = document.querySelector(`.chrome-tab[data-id="${page.id}"]`)
-  if (tabEl)
-    tabEl.parentNode.removeChild(tabEl)
+  getTabEl(page, tabEl => tabEl.parentNode.removeChild(tabEl))
+  repositionTabs()
 }
+
+function onUpdateTab (page) {
+  getTabEl(page, tabEl => yo.update(tabEl, drawTab(page)))
+}
+
+function onPinUpdated (page) {
+  getTabEl(page, tabEl => yo.update(tabEl, drawTab(page)))
+  repositionTabs()
+}
+
+function onSetActive (page) {
+  getTabEl(page, newTabEl => {
+    // make old active tab inactive
+    var oldTabEl = tabsContainerEl.querySelector('.chrome-tab-current')
+    if (oldTabEl)
+      oldTabEl.classList.remove('chrome-tab-current')
+
+    // set new tab active
+    newTabEl.classList.add('chrome-tab-current')
+  })
+}
+
+// ui events
+// =
 
 function onClickNew () {
   var page = pages.create()
@@ -249,6 +247,7 @@ function onMouseDown (page) {
     // start drag behaviors
     var startX = e.pageX
     page.isTabDragging = true
+    getTabEl(page, tabEl => tabEl.classList.add('chrome-tab-dragging'))
     e.preventDefault()
     e.stopPropagation()
 
@@ -260,7 +259,7 @@ function onMouseDown (page) {
     // throttle so we only rerender as much as needed
     // - actually throttling seems to cause jank
     var rerender = /*throttle(*/() => {
-      updateTabs()
+      repositionTabs()
     }/*, 30)*/
 
     // drag handler
@@ -289,6 +288,7 @@ function onMouseDown (page) {
       e.stopPropagation()
       page.tabDragOffset = 0
       page.isTabDragging = false
+      getTabEl(page, tabEl => tabEl.classList.remove('chrome-tab-dragging'))
       document.removeEventListener('mousemove', drag, true)
       document.removeEventListener('mouseup', dragend, true)
       rerender()
@@ -300,23 +300,29 @@ function onFaviconError (page) {
   return () => {
     // if the favicon 404s, just fallback to the icon
     page.favicons = null
-    updateTabs()
+    onUpdateTab(page)
   }
 }
 
 function onWindowResize (e) {
-  updateTabs()
+  repositionTabs()
 }
 
 // internal helpers
 // =
 
-function getTabX (allPages, pageIndex) {
+function getTabEl (page, cb) {
+  var tabEl = tabsContainerEl.querySelector(`.chrome-tab[data-id="${page.id}"]`)
+  if (cb && tabEl) cb(tabEl)
+  return tabEl
+}
+
+function getTabX (pageIndex) {
+  const allPages = pages.getAll()
+
   // handle if given just a page object
-  if (!Array.isArray(allPages)) {
-    let page = allPages
-    allPages = pages.getAll()
-    pageIndex = allPages.indexOf(page)
+  if (typeof pageIndex != 'number') {
+    pageIndex = allPages.indexOf(pageIndex)
   }
 
   // calculate base X off of the widths of the pages before it
@@ -336,6 +342,16 @@ function getTabWidth (page) {
   if (page.isPinned)
     return MIN_TAB_WIDTH
   return currentTabWidth
+}
+
+// this function looks weird because `page` is sometimes an index and sometimes a page object
+// somebody ought to make it nicer. SOMEBODY. 
+function getPageStyle (page) {
+  const allPages = pages.getAll()
+  var style = `transform: translateX(${getTabX(page)}px);`
+  if (typeof page == 'object' || page < allPages.length)
+    style += ` width: ${getTabWidth(page || allPages[page])}px;`
+  return style
 }
 
 // returns 0 for no, -1 or 1 for yes (the offset)
