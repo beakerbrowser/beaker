@@ -13,7 +13,19 @@ export function setup (cb) {
     document.body.classList.add('darwin')
   }
 
+  // wire up event handlers
   ipcRenderer.on('window-event', onWindowEvent)
+  document.addEventListener('dragover', preventDragDrop, false)
+  document.addEventListener('drop', preventDragDrop, false)
+  function preventDragDrop (event) {
+    // important - dont allow drag/drop in the shell window, only into the webview
+    if (!event.target || event.target.tagName != 'WEBVIEW') {
+      event.preventDefault()
+      return false
+    }
+  }
+
+  // setup subsystems
   tabs.setup()
   navbar.setup()
   commandHandlers.setup()
