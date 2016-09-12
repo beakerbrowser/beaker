@@ -60,9 +60,8 @@ app.on('ready', function () {
 })
 
 app.on('window-all-closed', function () {
-  // it's normal for OSX apps to stay open, even if all windows are closed
-  // but, since we have an uncloseable tabs bar, let's close when they're all gone
-  app.quit()
+  if (process.platform !== 'darwin')
+    app.quit()
 })
 
 app.on('open-url', function (e, url) {

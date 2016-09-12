@@ -60,7 +60,7 @@ function drawTab (page) {
     if (!page.isReceivingAssets)
       favicon.classList.add('reverse')
   } else {
-    // page's favicon
+    // page's explicit favicon
     if (page.favicons && page.favicons[0]) {
       favicon = yo`<img src=${page.favicons[0]}>`
       favicon.onerror = onFaviconError(page)
@@ -68,8 +68,8 @@ function drawTab (page) {
     // fallbacks
     else if (page.getURL().startsWith('beaker:'))
       favicon = yo`<img src="beaker-favicon:beaker">`
-    else
-      favicon = yo`<img src="beaker-favicon:default">`
+    else // fallback to a potentially-cached icon
+      favicon = yo`<img src="beaker-favicon:${page.getURL()}">`
   }
 
   // class
