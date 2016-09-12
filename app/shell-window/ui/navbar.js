@@ -1,5 +1,6 @@
 import { remote } from 'electron'
 import * as pages from '../pages'
+import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
 import { UpdatesNavbarBtn } from './navbar/updates'
@@ -412,11 +413,10 @@ function onClickViewFiles (e) {
 
 function onClickZoom (e) {
   const { Menu, MenuItem } = remote
-  const command = (c) => () => pages.getActive().send('command', c)
   var menu = Menu.buildFromTemplate([
-    { label: 'Reset Zoom', click: command('view:zoom-reset') },
-    { label: 'Zoom In', click: command('view:zoom-in') },
-    { label: 'Zoom Out', click: command('view:zoom-out') },
+    { label: 'Reset Zoom', click: () => zoom.zoomReset(pages.getActive()) },
+    { label: 'Zoom In', click: () => zoom.zoomIn(pages.getActive()) },
+    { label: 'Zoom Out', click: () => zoom.zoomOut(pages.getActive()) }
   ])
   menu.popup(remote.getCurrentWindow())
 }
