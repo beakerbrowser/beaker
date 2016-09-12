@@ -467,6 +467,8 @@ function onInputLocation (e) {
 function onKeydownLocation (e) {
   // on escape
   if (e.keyCode == KEYCODE_ESC) {
+    var page = getEventPage(e)
+    page.navbarEl.querySelector('.nav-location-input').value = page.getURL()
     e.target.blur()
     return
   }
