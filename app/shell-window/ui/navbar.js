@@ -407,8 +407,12 @@ function onClickBookmark (e) {
 
 function onClickViewFiles (e) {
   var page = getEventPage(e)
-  if (page)
-    page.loadURL('view-'+page.getURL())
+  if (page) {
+    if (e.metaKey || e.ctrlKey) // popup
+      pages.setActive(pages.create('view-'+page.getURL()))
+    else
+      page.loadURL('view-'+page.getURL()) // goto
+  }
 }
 
 function onClickZoom (e) {
