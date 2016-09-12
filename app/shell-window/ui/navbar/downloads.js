@@ -30,13 +30,13 @@ export class DownloadsNavbarBtn {
   render() {
     // show active, then inactive, with a limit of 5 items
     var activeDownloads = (
-      this.downloads.filter(d => d.state == 'progressing')
-        .concat(this.downloads.filter(d => d.state != 'progressing'))
+      this.downloads.filter(d => d.state == 'progressing').reverse()
+        .concat(this.downloads.filter(d => d.state != 'progressing').reverse())
     ).slice(0,5)
 
     // render the progress bar if downloading anything
     var progressEl = ''
-    if (this.sumProgress && activeDownloads.length) {
+    if (this.sumProgress && this.sumProgress.receivedBytes < this.sumProgress.totalBytes) {
       progressEl = yo`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
     }
 
