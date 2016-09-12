@@ -251,7 +251,7 @@ function handleAutocompleteSearch (results) {
   results.forEach(r => decorateResultMatches(searchTerms, r))  
 
   // does the value look like a url?
-  var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || isHashRegex.test(v) || v.includes('://') || v.startsWith('beaker:') || v.startsWith('ipfs:/')))
+  var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || isHashRegex.test(v) || v.startsWith('localhost') || v.includes('://') || v.startsWith('beaker:') || v.startsWith('ipfs:/')))
   var vWithProtocol = v
   var isGuessingTheScheme = false
   if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('ipfs:/'))) {
