@@ -8,7 +8,7 @@
   "copyright": "© 2016, Paul Frazee",
   "main": "background-process.build.js",
   "dependencies": {
-    "beaker-plugin-dat": "~3.0.0",
+    "beaker-plugin-dat": "~4.0.0",
     "beaker-plugin-ipfs": "~1.2.0",
     "co": "^4.6.0",
     "electron-localshortcut": "^0.6.0",
