@@ -1,19 +1,17 @@
 beaker browser
 ======
 
-Beaker is a browser for IPFS and Dat.
-It's licensed MIT, and supports plugins for adding new protocols and Web APIs.
-[Read the introduction](http://pfrazee.github.io/2016/08/10/beaker-browser-0.1.html).
+![logo.png](build/icons/256x256.png)
+
+Beaker is an experimental Browser.
+It adds new technologies for Peer-to-Peer applications while staying compatible with the rest of the Web.
+[Visit the website.](https://beakerbrowser.com/)
 
 Please feel free to open usability issues. Join us at #beakerbrowser on Freenode.
 
-### [Demo video](https://www.youtube.com/watch?v=nKHJ4rLN9mo)
-
-[![screenshot.png](doc/ipfs-browser.gif)](https://www.youtube.com/watch?v=nKHJ4rLN9mo)
-
 ## Binaries
 
-### [OSX 64-bit](https://download.beakerbrowser.net/download/0.3.1/osx_64/Beaker%20Browser-0.3.1.dmg)
+### [OSX 64-bit](https://download.beakerbrowser.net/download/latest/osx)
 
 ## Building from source
 
@@ -44,14 +42,6 @@ This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-ma
 `npm start` should work afterwards.
 
 If you're doing development, `npm run watch` to have assets build automatically.
-
-## Documentation
-
- - [Using IPFS](./doc/using-ipfs.md)
- - [Using Dat](./doc/using-dat.md)
- - [Dat vs. IPFS: What's the difference?](./doc/dat-vs-ipfs-comparison.md)
- - Howto: [Authoring Protocol Plugins](./doc/authoring-plugins.md)
- - [Codebase & build notes](./build-notes.md)
 
 ## License
 
