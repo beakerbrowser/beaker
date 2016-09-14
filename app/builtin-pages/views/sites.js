@@ -6,7 +6,6 @@ import * as yo from 'yo-yo'
 import co from 'co'
 import emitStream from 'emit-stream'
 import { render as renderSitesList } from '../com/sites-list'
-import { create as createModal } from '../com/modal'
 
 // globals
 // =
