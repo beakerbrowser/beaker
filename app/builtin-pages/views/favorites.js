@@ -75,7 +75,11 @@ function render () {
     <div class="favorites links-list">
       <div class="ll-heading">
         Favorites
-        <small class="ll-heading-right"><a href=${FEEDBACK_FORM_URL} title="Send feedback"><span class="icon icon-megaphone"></span> Send Feedback</a></small>
+        <small class="ll-heading-right">
+          <a href=${FEEDBACK_FORM_URL} title="Send feedback"><span class="icon icon-megaphone"></span> Send Feedback</a>
+          <a href="https://github.com/pfrazee/beaker/issues" title="Report Bug"><span class="icon icon-attention"></span> Report Bug</a>
+          <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
+        </small>
       </div>
       ${bookmarks.map(renderRow)}
       ${helpEl}
