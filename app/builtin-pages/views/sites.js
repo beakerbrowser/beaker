@@ -55,6 +55,9 @@ function render () {
       <div class="ll-heading">
         Your Sites
         <button class="btn" onclick=${onClickNewDat}>New Site</button>
+        <small class="ll-heading-right">
+          <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
+        </small>
       </div>
       ${content}
     </div>

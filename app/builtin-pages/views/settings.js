@@ -51,7 +51,12 @@ function render () {
 
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="settings">
-      <div class="ll-heading">Auto-updater</div>
+      <div class="ll-heading">
+        Auto-updater
+        <small class="ll-heading-right">
+          <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
+        </small>
+      </div>
       ${renderAutoUpdater()}
       <div class="ll-heading">Default Browser</div>
       ${renderProtocolSettings()}

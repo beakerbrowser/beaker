@@ -22,7 +22,7 @@ export function create (values, { title, onSubmit }) {
         </form>
       </div>
       <div class="esm-info">
-        Use Sites to share Files and WebPages.
+        Use Sites to share Files and WebPages. <a href="https://beakerbrowser.com/docs/p2p/share-files.html" target="_blank">Learn More</a>
       </div>
     </div>`
 
