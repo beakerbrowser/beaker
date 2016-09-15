@@ -6,11 +6,6 @@ import * as yo from 'yo-yo'
 import co from 'co'
 import * as editSiteModal from '../com/modals/edit-site' 
 
-// constants
-// =
-
-const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/1bzALt_JzmM_N8B3aK29epE7_VIyZMe0QsCXh3LqPY2I/viewform'
-
 // globals
 // =
 
@@ -81,7 +76,7 @@ function render () {
       <div class="ll-heading">
         Favorites
         <small class="ll-heading-right">
-          <a href=${FEEDBACK_FORM_URL} title="Send feedback"><span class="icon icon-megaphone"></span> Send Feedback</a>
+          <a href="https://community.beakerbrowser.com/" title="Feedback and Discussion"><span class="icon icon-megaphone"></span> Feedback & Discussion</a>
           <a href="https://github.com/pfrazee/beaker/issues" title="Report Bug"><span class="icon icon-attention"></span> Report Bug</a>
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
