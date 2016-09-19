@@ -10,7 +10,7 @@ export function render (sites, opts={}) {
   sites.forEach((site, index) => {
 
     // render row
-    let title = site.name||'Untitled'
+    let title = site.title||'Untitled'
     let mtime = site.mtime ? ucfirst(niceDate(site.mtime)) : '--'
     let url = 'view-dat://'+site.key
     siteEls.push(yo`<a class="ll-row site" href=${url} title=${title}>

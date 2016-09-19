@@ -9,7 +9,7 @@ export function create (values, { title, onSubmit }) {
         <form onsubmit=${onsubmit}>
           <div class="form-group">
             <label>Name</label>
-            <input name="name" class="form-control" tabindex="1" value=${values.name || ''} />
+            <input name="title" class="form-control" tabindex="1" value=${values.title || ''} />
           </div>
           <div class="form-group">
             <label>Description</label>
@@ -30,7 +30,7 @@ export function create (values, { title, onSubmit }) {
       e.preventDefault()
       var form = e.target
       onSubmit({
-        name: form.name.value,
+        title: form.title.value,
         description: form.desc.value
       })
       close()
