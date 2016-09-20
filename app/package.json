@@ -10,6 +10,7 @@
   "dependencies": {
     "beaker-plugin-dat": "~4.0.0",
     "beaker-plugin-ipfs": "~1.2.0",
+    "browser-es-module-loader": "^0.1.6",
     "co": "^4.6.0",
     "electron-localshortcut": "^0.6.0",
     "emit-stream": "^0.1.2",
