@@ -50,7 +50,7 @@ export function setup () {
 
 function drawTab (page) {
   const isActive = page.isActive
-  const isTabDragging = page.isTabDragging
+  const isTabDragging = page.isTabDragging && (page.tabDragOffset !== 0)
 
   // pick a favicon
   var favicon 
@@ -247,7 +247,6 @@ function onMouseDown (page) {
     // start drag behaviors
     var startX = e.pageX
     page.isTabDragging = true
-    getTabEl(page, tabEl => tabEl.classList.add('chrome-tab-dragging'))
     e.preventDefault()
     e.stopPropagation()
 
@@ -263,9 +262,16 @@ function onMouseDown (page) {
     }/*, 30)*/
 
     // drag handler
+    var hasSetDragClass = false
     function drag (e) {
       // calculate offset
       page.tabDragOffset = e.pageX - startX
+
+      // set drag class (wait till actually moved, it looks better that way)
+      if (!hasSetDragClass && page.tabDragOffset !== 0) {
+        getTabEl(page, tabEl => tabEl.classList.add('chrome-tab-dragging'))
+        hasSetDragClass = true
+      }
 
       // do reorder?
       var reorderOffset = shouldReorderTab(page)
