@@ -65,7 +65,7 @@
 
     .chrome-tab-title {
       color: #222222;
-      padding: 11px 28px 5px 32px;
+      padding: 11px 20px 5px 32px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -75,19 +75,21 @@
     }
 
     .chrome-tab-close {
+      display: none;
       position: absolute;
-      right: 0;
-      top: 0;
-      width: 32px;
-      height: 100%;
+      right: 6px;
+      top: 11px;
+      width: 15px;
+      height: 15px;
       z-index: 2;
+      border-radius: 8px;
 
       &:before {
         content: "\00D7";
         position: absolute;
-        top: 11px;
-        right: 12px;
-        font-size: 11px;
+        top: 1px;
+        right: 3px;
+        font-size: 12px;
         line-height: 12px;
         color: #777777;
       }
@@ -97,9 +99,14 @@
       }
       &:hover,
       &:active {
-        background: #dd837b;
+        background: #f17469;
       }
       &:active:before {
+      }
+    }
+    &:hover {
+      .chrome-tab-close {
+        display: block;
       }
     }
 
