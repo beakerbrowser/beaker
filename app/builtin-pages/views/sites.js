@@ -46,7 +46,7 @@ export function hide () {
 function render () {
   // content
   var content = (window.datInternalAPI)
-    ? renderSitesList(archives, { renderEmpty })
+    ? renderSitesList(archives, { renderEmpty, onToggleSeedSite, onDeleteSite, onUndoDeletions })
     : renderNotSupported()
 
   // render view
@@ -114,6 +114,52 @@ function onUpdatePeers ({ key, peers }) {
       archive.peers = peers // update
     render()
   }
+}
+
+
+function onToggleSeedSite (archiveInfo) {
+  return e => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    archiveInfo.userSettings.isSeeding = !archiveInfo.userSettings.isSeeding
+
+    // isSaved must reflect isSeeding
+    if (archiveInfo.userSettings.isSeeding && !archiveInfo.userSettings.isSaved)
+      archiveInfo.userSettings.isSaved = true
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
+    
+    render()
+  }
+}
+
+function onDeleteSite (archiveInfo) {
+  return e => {
+    e.preventDefault()
+    e.stopPropagation()
+      
+    archiveInfo.userSettings.isSaved = !archiveInfo.userSettings.isSaved
+
+    // isSeeding must reflect isSaved
+    if (!archiveInfo.userSettings.isSaved && archiveInfo.userSettings.isSeeding)
+      archiveInfo.userSettings.isSeeding = false
+
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
+    render()
+  }
+}
+
+function onUndoDeletions (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  archives.forEach(archiveInfo => {
+    if (!archiveInfo.userSettings.isSaved) {
+      archiveInfo.userSettings.isSaved = true
+      datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
+    }
+  })
+  render()
 }
 
 // helpers

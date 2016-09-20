@@ -23,13 +23,9 @@
   }
 
   &.pressed {
-    color: #fff;
-    border: 1px solid transparent;
-    background-color: #6d6c6d;
+    background-color: #d0d0d0;
     background-image: none;
-    span {
-      color: #fff;
-    }
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.07);
   }
 }
 
@@ -58,6 +54,11 @@
   &.open .dropdown-btn-list {
     display: block;
   }
+  &.open .toggleable.btn {
+    background-color: #d0d0d0;
+    background-image: none;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.07);
+  }
 }
 .dropdown-btn-list {
   display: none;
@@ -69,7 +70,6 @@
   background: #fff;
   border: 1px solid #ccc;
   width: 149px;
-  text-align: right;
   box-shadow: 2px 2px 2px rgba(0,0,0,0.1);
   border-radius: 2px;
   color: #555;
@@ -80,6 +80,9 @@
     cursor: pointer;
     .icon {
       cursor: pointer;
+      width: 15px;
+      display: inline-block;
+      text-align: center;
     }
     &:hover {
       background: #fafafa;

@@ -14,12 +14,18 @@ export default function toggleable (el) {
     el2.addEventListener(el2.dataset.toggleOn||'click', onToggleOff)
   })
   function onToggle (e) {
+    e.preventDefault()
+    e.stopPropagation()
     el.classList.toggle('open')
   }
   function onToggleOn (e) {
+    e.preventDefault()
+    e.stopPropagation()
     el.classList.add('open')
   }
   function onToggleOff (e) {
+    e.preventDefault()
+    e.stopPropagation()
     el.classList.remove('open')
   }
   return el
