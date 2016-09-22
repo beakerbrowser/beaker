@@ -18,9 +18,9 @@ export function render (sites, opts={}) {
     let title = site.title||'Untitled'
     let mtime = site.mtime ? ucfirst(niceDate(site.mtime)) : '--'
     let url = 'view-dat://'+site.key
-    let seedToggleLabel = site.userSettings.isSeeding
-      ? yo`<div><span class="icon icon-cancel"></span> Stop Seeding</div>`
-      : yo`<div><span class="icon icon-share"></span> Seed</div>`
+    let serveToggleLabel = site.userSettings.isServing
+      ? yo`<div><span class="icon icon-cancel"></span> Stop Serving</div>`
+      : yo`<div><span class="icon icon-share"></span> Serve</div>`
     siteEls.push(yo`<div class="ll-row site">
       <div class="ll-link">
         <img class="favicon" src=${'beaker-favicon:dat://'+site.key} />
@@ -31,13 +31,13 @@ export function render (sites, opts={}) {
       <div class="ll-updated" title=${mtime}>${mtime}</div>
       <div class="ll-symbol">${site.isOwner ? yo`<span class="icon icon-pencil" title="You are the site author"></span>` : '' }</div>
       <div class="ll-size">${site.size ? prettyBytes(site.size) : '0 B'}</div>
-      <div class="ll-symbol">${site.userSettings.isSeeding ? yo`<span class="icon icon-share" title="Seeding"></span>` : '' }</div>
+      <div class="ll-symbol">${site.userSettings.isServing ? yo`<span class="icon icon-share" title="Serving"></span>` : '' }</div>
       <div class="ll-status">${site.peers+' '+pluralize(site.peers, 'peer')}</div>
       <div class="ll-dropdown">${toggleable(yo`
         <div class="dropdown-btn-container">
           <a class="toggleable btn"><span class="icon icon-down-open-mini"></span></a>
           <div class="dropdown-btn-list">
-            <div onclick=${opts.onToggleSeedSite(site)}>${seedToggleLabel}</div>
+            <div onclick=${opts.onToggleServeSite(site)}>${serveToggleLabel}</div>
             <div onclick=${opts.onDeleteSite(site)}><span class="icon icon-trash"></span> Delete</div>
           </div>
         </div>

@@ -47,7 +47,7 @@ export function hide () {
 function render () {
   // content
   var content = (window.datInternalAPI)
-    ? renderSitesList(archives, { renderEmpty, onToggleSeedSite, onDeleteSite, onUndoDeletions })
+    ? renderSitesList(archives, { renderEmpty, onToggleServeSite, onDeleteSite, onUndoDeletions })
     : renderNotSupported()
 
   // render view
@@ -121,15 +121,15 @@ function onUpdatePeers ({ key, peers }) {
 }
 
 
-function onToggleSeedSite (archiveInfo) {
+function onToggleServeSite (archiveInfo) {
   return e => {
     e.preventDefault()
     e.stopPropagation()
 
-    archiveInfo.userSettings.isSeeding = !archiveInfo.userSettings.isSeeding
+    archiveInfo.userSettings.isServing = !archiveInfo.userSettings.isServing
 
-    // isSaved must reflect isSeeding
-    if (archiveInfo.userSettings.isSeeding && !archiveInfo.userSettings.isSaved)
+    // isSaved must reflect isServing
+    if (archiveInfo.userSettings.isServing && !archiveInfo.userSettings.isSaved)
       archiveInfo.userSettings.isSaved = true
     datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
     
@@ -144,9 +144,9 @@ function onDeleteSite (archiveInfo) {
       
     archiveInfo.userSettings.isSaved = !archiveInfo.userSettings.isSaved
 
-    // isSeeding must reflect isSaved
-    if (!archiveInfo.userSettings.isSaved && archiveInfo.userSettings.isSeeding)
-      archiveInfo.userSettings.isSeeding = false
+    // isServing must reflect isSaved
+    if (!archiveInfo.userSettings.isSaved && archiveInfo.userSettings.isServing)
+      archiveInfo.userSettings.isServing = false
 
     datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
     render()
