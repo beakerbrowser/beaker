@@ -21,12 +21,12 @@ export function render (sites, opts={}) {
     let seedToggleLabel = site.userSettings.isSeeding
       ? yo`<div><span class="icon icon-cancel"></span> Stop Seeding</div>`
       : yo`<div><span class="icon icon-share"></span> Seed</div>`
-    siteEls.push(yo`<a class="ll-row site" href=${url} title=${title}>
+    siteEls.push(yo`<div class="ll-row site">
       <div class="ll-link">
         <img class="favicon" src=${'beaker-favicon:dat://'+site.key} />
-        <span class="ll-title">
+        <a class="ll-title" href=${url} title=${title}>
           ${title}
-        </span>
+        </a>
       </div>
       <div class="ll-updated" title=${mtime}>${mtime}</div>
       <div class="ll-symbol">${site.isOwner ? yo`<span class="icon icon-pencil" title="You are the site author"></span>` : '' }</div>

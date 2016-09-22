@@ -6,6 +6,7 @@ import * as yo from 'yo-yo'
 import co from 'co'
 import emitStream from 'emit-stream'
 import { render as renderSitesList } from '../com/sites-list'
+import * as editSiteModal from '../com/modals/edit-site' 
 
 // globals
 // =
@@ -54,7 +55,7 @@ function render () {
     <div class="sites">
       <div class="ll-heading">
         Your Sites
-        <button class="btn" onclick=${onClickNewDat}>New Site</button>
+        <button class="btn" onclick=${onClickCreateSite}>New Site</button>
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
@@ -86,10 +87,13 @@ function renderNotSupported () {
 //   render()
 // }
 
-function onClickNewDat (e) {
-  datInternalAPI.createNewArchive().then(key => {
-    window.location = 'view-dat://' + key + '#new' // include the #new to trigger the edit modal
-  })
+function onClickCreateSite (e) {
+  editSiteModal.create({}, { title: 'New Website', onSubmit: opts => {
+    opts.useNewSiteTemplate = true
+    datInternalAPI.createNewArchive(opts).then(key => {
+      window.location = 'dat://' + key
+    })
+  }})
 }
 
 function onUpdateArchive (update) {
