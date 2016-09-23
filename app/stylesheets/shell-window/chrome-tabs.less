@@ -1,8 +1,7 @@
 .chrome-tabs-shell {
   position: relative;
-  padding: 1px 18px 0 10px;
-  height: 37px;
-  border-bottom: 1px solid #999;
+  padding: 0 18px 0 10px;
+  height: 35px;
 }
 
 .chrome-tabs {
@@ -20,24 +19,10 @@
     position: absolute;
     height: 35px;
     width: 30px;
-    border: 0px;
     z-index: 1;
     -webkit-app-region: no-drag;
-    background-color: #d5d5d5;
-    border-left: 1px solid #999;
+    background: #d5d5d5;
     transition: .1s transform;
-
-    &.chrome-tab-dragging {
-      z-index: 2; // just above the non-currents
-      transition: none !important;
-      border-right: 1px solid #999;
-    }
-
-    &.chrome-tab-current {
-      z-index: 999;
-      background-color: #f5f5f5;
-      height: 36px; // bleed over the border
-    }
 
     .chrome-tab-favicon {
       height: 16px;
@@ -104,10 +89,23 @@
       &:active:before {
       }
     }
+
     &:hover {
+      background-color: rgba(255,255,255,0.3);
       .chrome-tab-close {
         display: block;
       }
+    }
+
+    &.chrome-tab-dragging {
+      z-index: 2; // just above the non-currents
+      transition: none !important;
+    }
+
+    &.chrome-tab-current {
+      z-index: 999;
+      background-color: #f5f5f5;
+      height: 36px; // bleed over the border
     }
 
     &.chrome-tab-add-btn {

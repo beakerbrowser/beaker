@@ -92,7 +92,7 @@ export class DownloadsNavbarBtn {
     // render btn
     return yo`<div class="toolbar-downloads">
       <button class="toolbar-btn toolbar-downloads-btn ${this.isDropdownOpen?'pressed':''}" onclick=${e => this.onClickDownloads(e)} title="Downloads">
-        <span class="icon icon-install"></span>
+        <span class="icon icon-down-open-big"></span>
         ${progressEl}
       </button>
       ${dropdownEl}

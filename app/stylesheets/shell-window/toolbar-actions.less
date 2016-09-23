@@ -1,6 +1,6 @@
 .toolbar-actions {
   display: flex;
-  padding: 6px 0 5px;
+  padding: 5px 4px 4px 2px;
   margin: 0;
   background: #f5f5f5;
 
@@ -37,14 +37,37 @@
     }
 
     // shrink and reposition some buttons
-    &.nav-cancel-btn .icon {
-      font-size: 16px;
+    &.nav-back-btn,
+    &.nav-forward-btn, 
+    &.nav-reload-btn {
+      padding: 2px 5px 5px;
+      margin: 0 2px;
+      font-size: 19px;
+      line-height: 17px;
+      .icon {
+        position: relative;
+        top: 2px;
+      }
+      .icon-ccw {
+        position: relative;
+        left: -2px;
+        top: 1px;
+      }
     }
-    &.nav-reload-btn .icon {
-      font-size: 15px;
-      position: relative;
-      top: -1px;
-      left: -1px;
+    &.nav-reload-btn {
+      font-size: 20px;
+    }
+    &.nav-cancel-btn {
+      padding: 2px 5px 5px;
+      margin: 0 2px;
+      font-size: 22px;
+      line-height: 17px;
+    }
+    &.toolbar-downloads-btn {
+      .icon {
+        position: relative;
+        top: 1px;
+      }
     }
   }
 }

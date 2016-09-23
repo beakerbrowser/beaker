@@ -211,10 +211,10 @@ function render (id, page) {
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
       <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-        <span class="icon icon-left-open"></span>
+        <span class="icon icon-left-open-big"></span>
       </button>
       <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-        <span class="icon icon-right-open"></span>
+        <span class="icon icon-right-open-big"></span>
       </button>
       ${reloadBtn}      
     </div>
