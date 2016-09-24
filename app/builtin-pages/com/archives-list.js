@@ -1,6 +1,6 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import toggleable from './toggleable'
+import toggleable, { closeToggleable } from './toggleable'
 import { niceDate } from '../../lib/time'
 import { ucfirst, pluralize } from '../../lib/strings'
 
@@ -17,27 +17,30 @@ export function render (archives, opts={}) {
     // render row
     let title = archive.title||'Untitled'
     let mtime = archive.mtime ? ucfirst(niceDate(archive.mtime)) : '--'
-    let url = 'view-dat://'+archive.key
     let serveToggleLabel = archive.userSettings.isServing
-      ? yo`<div><span class="icon icon-cancel"></span> Stop Serving</div>`
-      : yo`<div><span class="icon icon-share"></span> Serve</div>`
+      ? yo`<div><span class="icon icon-publish"></span> Stop Serving</div>`
+      : yo`<div><span class="icon icon-publish"></span> Serve</div>`
     archiveEls.push(yo`<div class="ll-row archive">
       <div class="ll-link">
         <img class="favicon" src=${'beaker-favicon:dat://'+archive.key} />
-        <a class="ll-title" href=${url} title=${title}>
+        <a class="ll-title" href=${'dat://'+archive.key} title=${title}>
           ${title}
         </a>
       </div>
       <div class="ll-updated" title=${mtime}>${mtime}</div>
       <div class="ll-symbol">${archive.isOwner ? yo`<span class="icon icon-pencil" title="You are the archive author"></span>` : '' }</div>
       <div class="ll-size">${archive.size ? prettyBytes(archive.size) : '0 B'}</div>
-      <div class="ll-symbol">${archive.userSettings.isServing ? yo`<span class="icon icon-share" title="Serving"></span>` : '' }</div>
+      <div class="ll-symbol">${archive.userSettings.isServing ? yo`<span class="icon icon-publish" title="Serving"></span>` : '' }</div>
       <div class="ll-status">${archive.peers+' '+pluralize(archive.peers, 'peer')}</div>
       <div class="ll-dropdown">${toggleable(yo`
         <div class="dropdown-btn-container">
           <a class="toggleable btn"><span class="icon icon-down-open-mini"></span></a>
           <div class="dropdown-btn-list">
+            <a href=${'view-dat://'+archive.key}>View Files</a>
+            <div onclick=${onCopyLink(archive.key)}>Copy Link</div>
+            <hr>
             <div onclick=${opts.onToggleServeArchive(archive)}>${serveToggleLabel}</div>
+            <hr>
             <div onclick=${opts.onDeleteArchive(archive)}><span class="icon icon-trash"></span> Delete</div>
           </div>
         </div>
@@ -58,4 +61,15 @@ export function render (archives, opts={}) {
   return yo`<div class="links-list">
     ${archiveEls}
   </div>`
+}
+
+function onCopyLink (key) {
+  return e => {
+    var textarea = yo`<textarea>${'dat://'+key}</textarea>`
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+    closeToggleable(e.target)
+  }
 }

@@ -22,7 +22,7 @@
   }
 
   &.pressed {
-    background-color: #d0d0d0;
+    background-color: #e0e0e0;
     color: #555;
     box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.07);
   }
@@ -54,7 +54,7 @@
     display: block;
   }
   &.open .toggleable.btn {
-    background-color: #d0d0d0;
+    background-color: #e0e0e0;
     color: #555;
     box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.07);
   }
@@ -74,17 +74,25 @@
   color: #555;
   font-size: 14px;
 
-  & > div {
-    padding: 4px 7px;
+  * {
     cursor: pointer;
+  }
+  hr {
+    margin: 0;
+  }
+  & > div, & > a {
+    display: block;
+    padding: 4px 7px;
+    color: #555;
     .icon {
-      cursor: pointer;
       width: 15px;
       display: inline-block;
       text-align: center;
     }
     &:hover {
       background: #fafafa;
+      text-decoration: none;
+      color: #0091ff;
     }
   }
 }
