@@ -168,6 +168,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
   page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
   page.webviewEl.addEventListener('load-commit', onLoadCommit)
+  page.webviewEl.addEventListener('did-get-redirect-request', onDidGetRedirectRequest)
   page.webviewEl.addEventListener('did-get-response-details', onDidGetResponseDetails)
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
@@ -482,6 +483,21 @@ function onDidStopLoading (e) {
         transform: translate(-50%, -50%);
       }
     `)
+  }
+}
+
+function onDidGetRedirectRequest (e) {
+  // HACK
+  // electron has a problem handling redirects correctly, so we need to handle it for them
+  // see https://github.com/electron/electron/issues/3471
+  // thanks github.com/sokcuri for this fix
+  // -prf
+  if (e.isMainFrame) {
+    var page = getByWebview(e.target)
+    if (page) {
+      e.preventDefault()
+      setTimeout(() => page.loadURL(e.newURL), 100)
+    }
   }
 }
 

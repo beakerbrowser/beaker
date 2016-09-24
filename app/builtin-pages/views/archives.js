@@ -57,7 +57,7 @@ function render () {
         Your Archives
         <button class="btn" onclick=${onClickCreateArchive}>New Archive</button>
         <small class="ll-heading-right">
-          <a href="https://beakerbrowser.com/docs/faq.html#what-are-archives" title="What are Archives?"><span class="icon icon-help-circled"></span> What are Archives?</a>
+          <a href="https://beakerbrowser.com/docs/faq.html#what-are-archives" title="What are Dat Archives?"><span class="icon icon-help-circled"></span> What are Dat Archives?</a>
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
       </div>
