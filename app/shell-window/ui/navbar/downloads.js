@@ -29,14 +29,12 @@ export class DownloadsNavbarBtn {
 
   render() {
     // show active, then inactive, with a limit of 5 items
-    var activeDownloads = (
-      this.downloads.filter(d => d.state == 'progressing').reverse()
-        .concat(this.downloads.filter(d => d.state != 'progressing').reverse())
-    ).slice(0,5)
+    var progressingDownloads = this.downloads.filter(d => d.state == 'progressing').reverse()
+    var activeDownloads = (progressingDownloads.concat(this.downloads.filter(d => d.state != 'progressing').reverse())).slice(0,5)
 
     // render the progress bar if downloading anything
     var progressEl = ''
-    if (this.sumProgress && this.sumProgress.receivedBytes < this.sumProgress.totalBytes) {
+    if (progressingDownloads.length > 0 && this.sumProgress && this.sumProgress.receivedBytes < this.sumProgress.totalBytes) {
       progressEl = yo`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
     }
 
@@ -65,7 +63,7 @@ export class DownloadsNavbarBtn {
           } else {
             ctrlsEl = yo`<div class="td-item-ctrls">File not found (moved or deleted)</div>`
           }
-        } else {
+        } else if (d.state == 'progressing') {
           ctrlsEl = yo`<div class="td-item-ctrls">
             ${d.isPaused
              ? yo`<a href="#" onclick=${e => this.onResume(e, d)}>resume</a>`
@@ -79,7 +77,9 @@ export class DownloadsNavbarBtn {
         return yo`<div class="td-item">
           <div class="td-item-name"><strong>${d.name}</strong></div>
           <div class="td-item-status">${status}</div>
-          <div class="td-item-progress"><progress value=${d.receivedBytes} max=${d.totalBytes}></progress></div>
+          ${ d.state == 'progressing'
+            ? yo`<div class="td-item-progress"><progress value=${d.receivedBytes} max=${d.totalBytes}></progress></div>`
+            : '' }
           ${ctrlsEl}
         </div>`
       })
