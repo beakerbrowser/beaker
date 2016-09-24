@@ -4,7 +4,6 @@ This uses the beakerBookmarks APIs, which is exposed by webview-preload to all s
 
 import * as yo from 'yo-yo'
 import co from 'co'
-import * as editSiteModal from '../com/modals/edit-site' 
 
 // globals
 // =
@@ -68,10 +67,6 @@ function render () {
 
   // render the top 9 big, the rest small
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="welcome">
-      <a class="btn" onclick=${onClickShareFiles}><span class="icon icon-share"></span> Share Files</a>
-      <a class="btn" onclick=${onClickCreateSite}><span class="icon icon-docs"></span> Create a Website</a>
-    </div>
     <div class="favorites links-list">
       <div class="ll-heading">
         Favorites
@@ -156,21 +151,4 @@ function onClickDelete (i) {
     beakerBookmarks.remove(b.url)
     render()
   }
-}
-
-function onClickShareFiles (e) {
-  editSiteModal.create({}, { title: 'New Files Archive', onSubmit: opts => {
-    datInternalAPI.createNewArchive(opts).then(key => {
-      window.location = 'view-dat://' + key
-    })
-  }})
-}
-
-function onClickCreateSite (e) {
-  editSiteModal.create({}, { title: 'New Website', onSubmit: opts => {
-    opts.useNewSiteTemplate = true
-    datInternalAPI.createNewArchive(opts).then(key => {
-      window.location = 'dat://' + key
-    })
-  }})
 }

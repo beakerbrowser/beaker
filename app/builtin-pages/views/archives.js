@@ -1,11 +1,11 @@
 /*
-This uses the datInternalAPI API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
+This uses the datInternalAPI API, which is exposed by webview-preload to all archives loaded over the beaker: protocol
 */
 
 import * as yo from 'yo-yo'
 import co from 'co'
 import emitStream from 'emit-stream'
-import { render as renderSitesList } from '../com/sites-list'
+import { render as renderArchivesList } from '../com/archives-list'
 import * as editSiteModal from '../com/modals/edit-site' 
 
 // globals
@@ -18,7 +18,7 @@ var archives
 
 export function setup () {
   if (!window.datInternalAPI)
-    return console.warn('Dat plugin is required for the Sites page.')
+    return console.warn('Dat plugin is required for the Archives page.')
 
   // wire up events
   var archivesEvents = emitStream(datInternalAPI.archivesEventStream())
@@ -27,7 +27,7 @@ export function setup () {
 }
 
 export function show () {
-  document.title = 'Your Sites'
+  document.title = 'Your Archives'
   co(function*(){
     if (window.datInternalAPI) {
       // fetch archives
@@ -47,15 +47,15 @@ export function hide () {
 function render () {
   // content
   var content = (window.datInternalAPI)
-    ? renderSitesList(archives, { renderEmpty, onToggleServeSite, onDeleteSite, onUndoDeletions })
+    ? renderArchivesList(archives, { renderEmpty, onToggleServeArchive, onDeleteArchive, onUndoDeletions })
     : renderNotSupported()
 
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="sites">
+    <div class="archives">
       <div class="ll-heading">
-        Your Sites
-        <button class="btn" onclick=${onClickCreateSite}>New Site</button>
+        Your Archives
+        <button class="btn" onclick=${onClickCreateArchive}>New Archive</button>
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
@@ -66,11 +66,11 @@ function render () {
 }
 
 function renderEmpty () {
-  return yo`<div class="ll-empty">You have not added or created any sites.</div>`
+  return yo`<div class="ll-empty">You have not added or created any archives.</div>`
 }
 
 function renderNotSupported () {
-  return yo`<div class="sites-listing">
+  return yo`<div class="archives-listing">
     <div class="ll-empty">The DAT Plugin must be enabled to use this feature.</div>
   </div>`
 }
@@ -87,9 +87,8 @@ function renderNotSupported () {
 //   render()
 // }
 
-function onClickCreateSite (e) {
-  editSiteModal.create({}, { title: 'New Website', onSubmit: opts => {
-    opts.useNewSiteTemplate = true
+function onClickCreateArchive (e) {
+  editSiteModal.create({}, { title: 'New Files Archive', onSubmit: opts => {
     datInternalAPI.createNewArchive(opts).then(key => {
       window.location = 'dat://' + key
     })
@@ -121,7 +120,7 @@ function onUpdatePeers ({ key, peers }) {
 }
 
 
-function onToggleServeSite (archiveInfo) {
+function onToggleServeArchive (archiveInfo) {
   return e => {
     e.preventDefault()
     e.stopPropagation()
@@ -137,7 +136,7 @@ function onToggleServeSite (archiveInfo) {
   }
 }
 
-function onDeleteSite (archiveInfo) {
+function onDeleteArchive (archiveInfo) {
   return e => {
     e.preventDefault()
     e.stopPropagation()
