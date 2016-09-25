@@ -43,6 +43,10 @@
     display: flex;
     color: #555;
     text-decoration: none;
+      
+    .btn {
+      padding: 0 8px;
+    }
 
     .ll-link {
       flex: 1;
@@ -122,14 +126,15 @@
       padding: 6px 8px;
       color: #999;
     }
+    .ll-serve {
+      padding: 6px 0;
+      flex: 0 0 90px;
+      text-align: right;
+    }
     .ll-dropdown {
       flex: 0 0 30px;
       padding: 6px 8px;
       color: #999;
-      .btn {
-        padding: 0 8px;
-        border-radius: 2px;
-      }
     }
 
     &:hover, &.ll-row-is-editing {
@@ -139,9 +144,6 @@
         .icon {
           display: inline-block;
         }
-      }
-      .btn {
-        background: #e5e5e5;
       }
     }
   }

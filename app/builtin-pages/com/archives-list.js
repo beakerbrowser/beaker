@@ -30,16 +30,16 @@ export function render (archives, opts={}) {
       <div class="ll-updated" title=${mtime}>${mtime}</div>
       <div class="ll-symbol">${archive.isOwner ? yo`<span class="icon icon-pencil" title="You are the archive author"></span>` : '' }</div>
       <div class="ll-size">${archive.size ? prettyBytes(archive.size) : '0 B'}</div>
-      <div class="ll-symbol">${archive.userSettings.isServing ? yo`<span class="icon icon-publish" title="Serving"></span>` : '' }</div>
       <div class="ll-status">${archive.peers+' '+pluralize(archive.peers, 'peer')}</div>
+      <div class="ll-serve">${archive.userSettings.isServing 
+        ? yo`<a class="btn btn-primary glowing" onclick=${opts.onToggleServeArchive(archive)} title="Sharing"><span class="icon icon-share"></span> Sharing</a>` 
+        : yo`<a class="btn" onclick=${opts.onToggleServeArchive(archive)} title="Share"><span class="icon icon-share"></span> Share</a>` }</div>
       <div class="ll-dropdown">${toggleable(yo`
         <div class="dropdown-btn-container">
           <a class="toggleable btn"><span class="icon icon-down-open-mini"></span></a>
           <div class="dropdown-btn-list">
-            <a href=${'view-dat://'+archive.key}>View Files</a>
-            <div onclick=${onCopyLink(archive.key)}>Copy Link</div>
-            <hr>
-            <div onclick=${opts.onToggleServeArchive(archive)}>${serveToggleLabel}</div>
+            <a href=${'view-dat://'+archive.key}><span class="icon icon-docs"></span> View Files</a>
+            <div onclick=${onCopyLink(archive.key)}><span class="icon icon-link"></span> Copy Link</div>
             <hr>
             <div onclick=${opts.onDeleteArchive(archive)}><span class="icon icon-trash"></span> Delete</div>
           </div>
