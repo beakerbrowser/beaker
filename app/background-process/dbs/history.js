@@ -5,6 +5,7 @@ import url from 'url'
 import zerr from 'zerr'
 import multicb from 'multicb'
 import rpc from 'pauls-electron-rpc'
+import FnQueue from 'function-queue'
 import manifest from '../api-manifests/history'
 import { cbPromise } from '../../lib/functions'
 import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
@@ -18,6 +19,7 @@ const InvalidCmd = zerr('InvalidCommand', '% is not a valid command')
 var db
 var migrations
 var setupPromise
+var addVisitQueue = FnQueue()
 
 // exported methods
 // =
@@ -42,30 +44,35 @@ export function addVisit ({url, title}) {
       return cb(new BadParam('title', 'string'))
 
     // get current stats
-    db.serialize(() => {
-      db.run('BEGIN TRANSACTION;')
-      db.get('SELECT * FROM visit_stats WHERE url = ?;', [url], (err, stats) => {
-        if (err)
-          return cb(err)
+    addVisitQueue.push(endTransaction => {
+      db.serialize(() => {
+        db.run('BEGIN TRANSACTION;')
+        db.get('SELECT * FROM visit_stats WHERE url = ?;', [url], (err, stats) => {
+          if (err)
+            return cb(err)
 
-        var done = multicb()
-        var ts = Date.now()
-        db.serialize(() => {
-          // log visit
-          db.run('INSERT INTO visits (url, title, ts) VALUES (?, ?, ?);', [url, title, ts], done())
-          // first visit?
-          if (!stats) {
-            // yes, create new stat and search entries
-            db.run('INSERT INTO visit_stats (url, num_visits, last_visit_ts) VALUES (?, ?, ?);', [url, 1, ts], done())
-            db.run('INSERT INTO visit_fts (url, title) VALUES (?, ?);', [url, title], done())
-          } else {
-            // no, update stats
-            var num_visits = (+stats.num_visits||1) + 1
-            db.run('UPDATE visit_stats SET num_visits = ?, last_visit_ts = ? WHERE url = ?;', [num_visits, ts, url], done())
-          }
-          db.run('COMMIT;', done())
+          var done = multicb()
+          var ts = Date.now()
+          db.serialize(() => {
+            // log visit
+            db.run('INSERT INTO visits (url, title, ts) VALUES (?, ?, ?);', [url, title, ts], done())
+            // first visit?
+            if (!stats) {
+              // yes, create new stat and search entries
+              db.run('INSERT INTO visit_stats (url, num_visits, last_visit_ts) VALUES (?, ?, ?);', [url, 1, ts], done())
+              db.run('INSERT INTO visit_fts (url, title) VALUES (?, ?);', [url, title], done())
+            } else {
+              // no, update stats
+              var num_visits = (+stats.num_visits||1) + 1
+              db.run('UPDATE visit_stats SET num_visits = ?, last_visit_ts = ? WHERE url = ?;', [num_visits, ts, url], done())
+            }
+            db.run('COMMIT;', done())
+          })
+          done(err => {
+            endTransaction()
+            cb(err)
+          })          
         })
-        done(err => cb(err))
       })
     })
   }))
