@@ -116,7 +116,7 @@ export function create (opts) {
     },
 
     getURLOrigin: function () {
-      return (new URL(this.getURL())).origin
+      return parseURL(this.getURL()).origin
     }
   }
 
@@ -469,7 +469,7 @@ function onDidStopLoading (e) {
     }
 
     // fetch protocol info
-    var scheme = (new URL(url)).protocol
+    var scheme = parseURL(url).protocol
     if (scheme == 'http:' || scheme == 'https:')
       page.protocolDescription = { label: scheme.slice(0,-1).toUpperCase() }
     else
@@ -633,4 +633,9 @@ function warnIfError (label) {
     if (err)
       console.warn(label, err)
   }
+}
+
+function parseURL (str) {
+  try { return new URL(str) }
+  catch (e) { return {} }
 }
