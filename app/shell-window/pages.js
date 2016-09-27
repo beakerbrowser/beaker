@@ -418,6 +418,9 @@ function onDidNavigateInPage (e) {
     if (!url.startsWith('beaker:')) {
       beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
       beakerBookmarks.addVisit(page.getURL())
+      if (page.isPinned) {
+        savePinnedToDB()
+      }
     }
   }
 }
@@ -459,6 +462,9 @@ function onDidStopLoading (e) {
     if (!url.startsWith('beaker:')) {
       beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
       beakerBookmarks.addVisit(page.getURL())
+      if (page.isPinned) {
+        savePinnedToDB()
+      }
     }
 
     // fetch protocol info

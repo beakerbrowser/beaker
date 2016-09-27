@@ -5,7 +5,6 @@ import * as navbar from './ui/navbar'
 
 export function setup () {
   ipcRenderer.on('command', function (event, type, arg1) {
-    console.log('command', type)
     var page = pages.getActive()
     switch (type) {
       case 'file:new-tab':           
