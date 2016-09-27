@@ -246,8 +246,9 @@ function handleAutocompleteSearch (results) {
   var v = autocompleteCurrentValue
 
   // decorate result with bolded regions
-  var searchTerms = v.replace(/[^A-Za-z0-9]/g, ' ').split(' ').filter(Boolean)
-  results.forEach(r => decorateResultMatches(searchTerms, r))  
+  // explicitly replace specifial characters for sqlite fts
+  var searchTerms = v.replace(/[:^*-]/g, ' ').split(' ').filter(Boolean)
+  results.forEach(r => decorateResultMatches(searchTerms, r))
 
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || isHashRegex.test(v) || v.startsWith('localhost') || v.includes('://') || v.startsWith('beaker:') || v.startsWith('ipfs:/')))
