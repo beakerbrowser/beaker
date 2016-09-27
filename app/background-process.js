@@ -14,6 +14,7 @@ import * as windows from './background-process/ui/windows'
 import buildWindowMenu from './background-process/ui/window-menu'
 import registerContextMenu from './background-process/ui/context-menu'
 import * as downloads from './background-process/ui/downloads'
+import * as permissions from './background-process/ui/permissions'
 import * as settings from './background-process/dbs/settings'
 import * as sitedata from './background-process/dbs/sitedata'
 import * as bookmarks from './background-process/dbs/bookmarks'
@@ -45,6 +46,7 @@ app.on('ready', function () {
   registerContextMenu()
   windows.setup()
   downloads.setup()
+  permissions.setup()
 
   // protocols
   beakerProtocol.setup()

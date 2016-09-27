@@ -3,6 +3,7 @@ import { register as registerShortcut, unregisterAll as unregisterAllShortcuts }
 import jetpack from 'fs-jetpack'
 import path from 'path'
 import * as downloads from './downloads'
+import * as permissions from './permissions'
 import log from '../../log'
 
 // globals
@@ -122,6 +123,9 @@ function ensureVisibleOnSomeDisplay (windowState) {
 function onClose (win) {
   return e => {
     numActiveWindows--
+
+    // deny any outstanding permission requests
+    permissions.denyAllRequests(win)
 
     // unregister shortcuts
     unregisterAllShortcuts(win)

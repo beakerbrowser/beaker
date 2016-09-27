@@ -84,9 +84,9 @@ export function update (page) {
 
 function render (id, page) {
   if (!page)
-    return yo`<div data-id=${id}></div>`
+    return yo`<div data-id=${id} class="hidden"></div>`
 
-  return yo`<div data-id=${id}>
+  return yo`<div data-id=${id} class=${page.isActive ? '' : 'hidden'}>
     ${page.prompts.map(prompt => {
       return yo`<div class="promptbar">
         ${prompt.render({

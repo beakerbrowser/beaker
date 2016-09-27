@@ -439,6 +439,8 @@ function onLoadCommit (e) {
     })
     // stop autocompleting
     navbar.clearAutocomplete()
+    // close any prompts
+    promptbar.forceRemoveAll(page)
   }
 }
 
@@ -448,7 +450,6 @@ function onDidStartLoading (e) {
     page.manuallyTrackedIsLoading = true
     navbar.update(page)
     navbar.hideInpageFind(page)
-    promptbar.forceRemoveAll(page)
     if (page.isActive)
       statusBar.setIsLoading(true)
   }

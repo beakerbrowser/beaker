@@ -2,9 +2,10 @@ import { ipcRenderer } from 'electron'
 import * as pages from './pages'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
+import permsPrompt from './ui/prompts/permission'
 
 export function setup () {
-  ipcRenderer.on('command', function (event, type, arg1) {
+  ipcRenderer.on('command', function (event, type, arg1, arg2, arg3) {
     var page = pages.getActive()
     switch (type) {
       case 'file:new-tab':           
@@ -28,6 +29,7 @@ export function setup () {
       case 'window:prev-tab':        return pages.changeActiveBy(-1)
       case 'set-tab':                return pages.changeActiveTo(arg1)
       case 'load-pinned-tabs':       return pages.loadPinnedFromDB()
+      case 'perms:prompt':           return permsPrompt(arg1, arg2, arg3)
     }
   })
 }

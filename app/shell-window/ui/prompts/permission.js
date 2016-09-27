@@ -1,5 +1,7 @@
+import { remote, ipcRenderer } from 'electron'
 import * as yo from 'yo-yo'
 import * as promptbar from '../promptbar'
+import * as pages from '../../pages'
 
 // constants
 // =
@@ -17,11 +19,21 @@ const PERM_DESCS = {
 // exported api
 // =
 
-export default function (permission, page, grant, deny) {
+export default function (reqId, webContentsId, permission) {
+  const respond = decision => {
+    console.log('responding', decision, (new Error()).stack)
+    ipcRenderer.send('permission-response', reqId, decision)
+  }
+
+  // look up the page, deny if failed
+  var page = pages.getByWebContents(remote.webContents.fromId(webContentsId))
+  if (!page)
+    return respond(false)
+
   // lookup the perm description. auto-deny if it's not a known perm.
   var permDesc = PERM_DESCS[permission]
   if (!permDesc)
-    return deny()
+    return respond(false)
 
   // special case for openExternal
   if (permission == 'openExternal') {
@@ -36,15 +48,14 @@ export default function (permission, page, grant, deny) {
         <span class="icon icon-help-circled"></span>
         This site would like to ${permDesc}.
         <span class="promptbar-btns">
-          <a class="btn" onclick=${() => { grant(); onClose(); }}>Allow</a>
-          <a onclick=${() => { deny(); onClose(); }}>Don't Allow</a>
+          <a class="btn" onclick=${() => { respond(true); onClose(); }}>Allow</a>
+          <a onclick=${() => { respond(false); onClose(); }}>Don't Allow</a>
         </span>
-        <a class="promptbar-close icon icon-cancel-squared" onclick=${() => { deny(); onClose(); }}></a>
+        <a class="promptbar-close icon icon-cancel-squared" onclick=${() => { respond(false); onClose(); }}></a>
       </div>`
     },
     onForceClose: () => {
-      deny()
+      respond(false)
     }
   })
 }
-
