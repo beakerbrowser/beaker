@@ -12,6 +12,7 @@ export class DownloadsNavbarBtn {
     this.downloads = []
     this.sumProgress = null // null means no active downloads
     this.isDropdownOpen = false
+    this.shouldPersistProgressBar = false
 
     // fetch current
     beakerDownloads.getDownloads().then(ds => {
@@ -24,7 +25,7 @@ export class DownloadsNavbarBtn {
     dlEvents.on('new-download', this.onNewDownload.bind(this))
     dlEvents.on('sum-progress', this.onSumProgress.bind(this))
     dlEvents.on('updated', this.onUpdate.bind(this))
-    dlEvents.on('done', this.onUpdate.bind(this))
+    dlEvents.on('done', this.onDone.bind(this))
   }
 
   render() {
@@ -34,7 +35,7 @@ export class DownloadsNavbarBtn {
 
     // render the progress bar if downloading anything
     var progressEl = ''
-    if (progressingDownloads.length > 0 && this.sumProgress && this.sumProgress.receivedBytes < this.sumProgress.totalBytes) {
+    if ((progressingDownloads.length > 0 || this.shouldPersistProgressBar) && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
       progressEl = yo`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
     }
 
@@ -103,13 +104,7 @@ export class DownloadsNavbarBtn {
     Array.from(document.querySelectorAll('.toolbar-downloads')).forEach(el => yo.update(el, this.render()))
   }
 
-  onClickDownloads(e) {
-    this.isDropdownOpen = !this.isDropdownOpen
-    this.updateActives()
-  }
-
-  onNewDownload() {
-    // do a little animation
+  doAnimation() {
     Array.from(document.querySelectorAll('.toolbar-downloads-btn')).forEach(el => 
       el.animate([
         {transform: 'scale(1.0)', color:'inherit'},
@@ -117,6 +112,16 @@ export class DownloadsNavbarBtn {
         {transform: 'scale(1.0)', color:'inherit'}
       ], { duration: 300 })
     )
+  }
+
+  onClickDownloads(e) {
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.shouldPersistProgressBar = false // stop persisting if we were, the user clicked
+    this.updateActives()
+  }
+
+  onNewDownload() {
+    this.doAnimation()
   }
 
   onSumProgress(sumProgress) {
@@ -134,6 +139,12 @@ export class DownloadsNavbarBtn {
     } else
       this.downloads.push(download)
     this.updateActives()
+  }
+
+  onDone(download) {
+    this.shouldPersistProgressBar = true // keep progress bar up so the user notices
+    this.doAnimation()
+    this.onUpdate(download)
   }
 
   onPause (e, download) {
