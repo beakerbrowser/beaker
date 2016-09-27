@@ -246,7 +246,7 @@ function handleAutocompleteSearch (results) {
   var v = autocompleteCurrentValue
 
   // decorate result with bolded regions
-  // explicitly replace specifial characters for sqlite fts
+  // explicitly replace special characters to match sqlite fts tokenization
   var searchTerms = v.replace(/[:^*-]/g, ' ').split(' ').filter(Boolean)
   results.forEach(r => decorateResultMatches(searchTerms, r))
 
