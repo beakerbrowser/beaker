@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from 'electron'
+import { app, BrowserWindow, screen, ipcMain } from 'electron'
 import { register as registerShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import jetpack from 'fs-jetpack'
 import path from 'path'
@@ -9,6 +9,7 @@ import log from '../../log'
 // =
 var userDataDir
 var stateStoreFile = 'shell-window-state.json'
+var numActiveWindows = 0
 
 // exported methods
 // =
@@ -16,6 +17,14 @@ var stateStoreFile = 'shell-window-state.json'
 export function setup () {
   // config
   userDataDir = jetpack.cwd(app.getPath('userData'))
+
+  // load pinned tabs
+  ipcMain.on('shell-window-ready', e => {
+    // if this is the first window opened (since app start or since all windows closing)
+    if (numActiveWindows === 1) {
+      e.sender.webContents.send('command', 'load-pinned-tabs')
+    }
+  })
 
   // create first shell window
   return createShellWindow()
@@ -31,6 +40,7 @@ export function createShellWindow () {
   })
   downloads.registerListener(win)
   loadURL(win, 'beaker:shell-window')
+  numActiveWindows++
 
   // register shortcuts
   for (var i=1; i <= 9; i++)
@@ -111,6 +121,8 @@ function ensureVisibleOnSomeDisplay (windowState) {
 
 function onClose (win) {
   return e => {
+    numActiveWindows--
+
     // unregister shortcuts
     unregisterAllShortcuts(win)
 

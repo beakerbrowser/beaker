@@ -119,7 +119,11 @@ export function create (opts) {
       return (new URL(this.getURL())).origin
     }
   }
-  pages.push(page)
+
+  if (opts.isPinned)
+    pages.splice(indexOfLastPinnedTab(), 0, page)
+  else
+    pages.push(page)
 
   // create proxies for webview methods
   //   webviews need to be dom-ready before their methods work
@@ -260,10 +264,8 @@ export function setActive (page) {
 
 export function togglePinned (page) {
   // move tab in/out of the pinned tabs
-  var oldIndex = pages.indexOf(page), newIndex = 0
-  for (newIndex; newIndex < pages.length; newIndex++)
-    if (!pages[newIndex].isPinned)
-      break
+  var oldIndex = pages.indexOf(page)
+  var newIndex = indexOfLastPinnedTab()
   if (oldIndex < newIndex) newIndex--
   pages.splice(oldIndex, 1)
   pages.splice(newIndex, 0, page)
@@ -274,6 +276,14 @@ export function togglePinned (page) {
 
   // persist
   savePinnedToDB()
+}
+
+function indexOfLastPinnedTab () {
+  var index = 0
+  for (index; index < pages.length; index++)
+    if (!pages[index].isPinned)
+      break
+  return index
 }
 
 export function reorderTab (page, offset) {

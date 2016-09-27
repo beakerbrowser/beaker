@@ -5,6 +5,7 @@ import * as navbar from './ui/navbar'
 
 export function setup () {
   ipcRenderer.on('command', function (event, type, arg1) {
+    console.log('command', type)
     var page = pages.getActive()
     switch (type) {
       case 'file:new-tab':           
@@ -27,6 +28,7 @@ export function setup () {
       case 'window:next-tab':        return pages.changeActiveBy(1)
       case 'window:prev-tab':        return pages.changeActiveBy(-1)
       case 'set-tab':                return pages.changeActiveTo(arg1)
+      case 'load-pinned-tabs':       return pages.loadPinnedFromDB()
     }
   })
 }

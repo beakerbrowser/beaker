@@ -31,17 +31,8 @@ export function setup (cb) {
   commandHandlers.setup()
   swipeHandlers.setup()
   remote.session.defaultSession.setPermissionRequestHandler(onPermissionRequestHandler)
-  pages.loadPinnedFromDB().then(() => {
-    pages.setActive(pages.create(pages.DEFAULT_URL))
-    cb()
-  })
-}
-
-function onProtocolNotSupported (webContents) {
-  // render failure page
-  var protocol = url.parse(webContents.getURL()).protocol
-  var errorPageHTML = errorPage('The ' + (''+protocol).replace(/</g, '') + ' protocol is not installed in Beaker.')
-  webContents.executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
+  pages.setActive(pages.create(pages.DEFAULT_URL))
+  cb()
 }
 
 function onPermissionRequestHandler (webContents, permission, cb) {
