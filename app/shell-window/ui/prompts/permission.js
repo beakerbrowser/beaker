@@ -20,10 +20,7 @@ const PERM_DESCS = {
 // =
 
 export default function (reqId, webContentsId, permission) {
-  const respond = decision => {
-    console.log('responding', decision, (new Error()).stack)
-    ipcRenderer.send('permission-response', reqId, decision)
-  }
+  const respond = decision => ipcRenderer.send('permission-response', reqId, decision)
 
   // look up the page, deny if failed
   var page = pages.getByWebContents(remote.webContents.fromId(webContentsId))

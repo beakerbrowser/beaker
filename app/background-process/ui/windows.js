@@ -37,7 +37,11 @@ export function createShellWindow () {
   var win = new BrowserWindow({ 
     titleBarStyle: 'hidden-inset',
     'standard-window': false,
-    x, y, width, height
+    x, y, width, height,
+    webPreferences: {
+      webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
+      allowRunningInsecureContent: false
+    }
   })
   downloads.registerListener(win)
   loadURL(win, 'beaker:shell-window')
