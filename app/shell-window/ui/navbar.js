@@ -127,6 +127,10 @@ function render (id, page) {
   // and it should be hidden if the page isnt active
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
+  // preserve the current finder value and focus
+  var findEl = page && page.navbarEl.querySelector('.nav-find-input')
+  var findValue = findEl ? findEl.value : ''
+
   // inpage finder ctrl
   var inpageFinder = (page && page.isInpageFinding)
     ? yo`<input
@@ -134,8 +138,10 @@ function render (id, page) {
             class="nav-find-input"
             placeholder="Find in page..."
             oninput=${onInputFind}
-            onkeydown=${onKeydownFind} />`
+            onkeydown=${onKeydownFind}
+            value=${findValue} />`
     : ''
+
 
   // bookmark toggle state
   var bookmarkClass = 'nav-bookmark-btn'+((page && !!page.bookmark) ? ' active' : '')
