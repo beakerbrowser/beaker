@@ -225,7 +225,6 @@ function render (id, page) {
         class="nav-location-input"
         onfocus=${onFocusLocation}
         onblur=${onBlurLocation}
-        onkeyup=${onKeyupLocation}
         onkeydown=${onKeydownLocation}
         oninput=${onInputLocation}
         value=${addrValue} />
@@ -439,21 +438,6 @@ function onBlurLocation () {
   setTimeout(clearAutocomplete, 150)
 }
 
-function onKeyupLocation (e) {
-  // on enter
-  if (e.keyCode == KEYCODE_ENTER) {
-    e.preventDefault()
-
-    var page = getEventPage(e)
-    if (page) {
-      var selection = getAutocompleteSelection()
-      page.loadURL(selection.url, { isGuessingTheScheme: selection.isGuessingTheScheme })
-      e.target.blur()
-    }
-    return
-  }
-}
-
 function onInputLocation (e) {
   var value = e.target.value
 
@@ -469,6 +453,19 @@ function onInputLocation (e) {
 }
 
 function onKeydownLocation (e) {
+  // on enter
+  if (e.keyCode == KEYCODE_ENTER) {
+    e.preventDefault()
+
+    var page = getEventPage(e)
+    if (page) {
+      var selection = getAutocompleteSelection()
+      page.loadURL(selection.url, { isGuessingTheScheme: selection.isGuessingTheScheme })
+      e.target.blur()
+    }
+    return
+  }
+
   // on escape
   if (e.keyCode == KEYCODE_ESC) {
     var page = getEventPage(e)
