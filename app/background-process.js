@@ -5,7 +5,6 @@
 
 import { app, Menu } from 'electron'
 import log from 'loglevel'
-import env from './env'
 
 import * as beakerBrowser from './background-process/browser'
 import * as plugins from './background-process/plugins'
@@ -26,7 +25,7 @@ import * as beakerFaviconProtocol from './background-process/protocols/beaker-fa
 import * as openURL from './background-process/open-url'
 
 // configure logging
-log.setLevel('trace')
+log.setLevel(process.env.beaker_log_level || 'warn')
 
 // load the installed protocols
 plugins.registerStandardSchemes()
@@ -42,7 +41,7 @@ app.on('ready', function () {
   beakerBrowser.setup()
 
   // ui
-  Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu(env)))
+  Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu()))
   registerContextMenu()
   windows.setup()
   downloads.setup()

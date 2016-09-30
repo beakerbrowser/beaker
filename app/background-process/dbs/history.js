@@ -9,7 +9,6 @@ import FnQueue from 'function-queue'
 import manifest from '../api-manifests/history'
 import { cbPromise } from '../../lib/functions'
 import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
-import log from '../../log'
 
 const BadParam = zerr('BadParam', '% must be a %')
 const InvalidCmd = zerr('InvalidCommand', '% is not a valid command')

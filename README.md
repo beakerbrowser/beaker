@@ -13,6 +13,10 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 ### [OSX 64-bit](https://download.beakerbrowser.net/download/latest/osx)
 
+## Env Vars
+
+- `beaker_log_level`: how much logging to put out. Must be: 'trace', 'debug', 'info', 'warn', or 'error. Default: 'warn'.
+
 ## Building from source
 
 Requires node 6.2.1.
