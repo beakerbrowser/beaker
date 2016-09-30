@@ -4,7 +4,7 @@ import jetpack from 'fs-jetpack'
 import path from 'path'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
-import log from '../../log'
+import log from 'loglevel'
 
 // globals
 // =
@@ -70,7 +70,7 @@ export function createShellWindow () {
 
 function loadURL (win, url) {
   win.loadURL(url)
-  log('Opening', url)  
+  log.debug('Opening', url)  
 }
 
 function getCurrentPosition (win) {

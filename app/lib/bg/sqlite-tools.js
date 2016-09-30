@@ -1,4 +1,4 @@
-import log from '../../log'
+import log from 'loglevel'
 
 // returns a function which should be used as follows:
 /*
@@ -30,7 +30,7 @@ export function setupDatabase (db, migrations, logTag) {
     if (neededMigrations.length == 0)
       return runCbs()
 
-    log(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
+    log.debug(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
     runNeededMigrations()
     function runNeededMigrations (err) {
       if (err) throw err
@@ -39,7 +39,7 @@ export function setupDatabase (db, migrations, logTag) {
       if (!migration) {
         // done
         runCbs()
-        return log(logTag, 'Database migrations completed without error')
+        return log.debug(logTag, 'Database migrations completed without error')
       }
 
       migration(runNeededMigrations)
@@ -60,7 +60,7 @@ export function setupDatabase2 (db, migrations, logTag) {
       if (neededMigrations.length == 0)
         return resolve()
 
-      log(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
+      log.debug(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
       runNeededMigrations()
       function runNeededMigrations (err) {
         if (err) return reject(err)
@@ -69,7 +69,7 @@ export function setupDatabase2 (db, migrations, logTag) {
         if (!migration) {
           // done
           resolve()
-          return log(logTag, 'Database migrations completed without error')
+          return log.debug(logTag, 'Database migrations completed without error')
         }
 
         migration(runNeededMigrations)

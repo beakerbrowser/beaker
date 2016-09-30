@@ -6,7 +6,6 @@ import rpc from 'pauls-electron-rpc'
 import manifest from '../api-manifests/bookmarks'
 import { cbPromise } from '../../lib/functions'
 import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
-import log from '../../log'
 
 // globals
 // =

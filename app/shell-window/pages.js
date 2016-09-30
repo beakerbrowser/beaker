@@ -474,7 +474,6 @@ function onDidStopLoading (e) {
       page.protocolDescription = { label: scheme.slice(0,-1).toUpperCase() }
     else
       page.protocolDescription = beakerBrowser.getProtocolDescription(scheme)
-    console.log('Protocol description', page.protocolDescription)
 
     // update page
     page.loadingURL = false
