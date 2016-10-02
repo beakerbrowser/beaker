@@ -1,7 +1,14 @@
+import ColorThief from './color-thief'
+
+const colorThief = new ColorThief()
+
 // convert and resize an image url to a data url
 export function urlToData (url, width, height, cb) {
   var img = new Image()
-  img.onload = e => cb(null, imgToData(img, width, height))
+  img.onload = e => cb(null, {
+    url: imgToData(img, width, height),
+    dominantColor: colorThief.getColor(img, 10)
+  })
   img.onerror = cb
   img.src = url
 }

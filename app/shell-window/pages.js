@@ -70,6 +70,7 @@ export function create (opts) {
     isInpageFinding: false, // showing the inpage find ctrl?
     zoom: 0, // what's the current zoom level?
     favicons: null, // what are the favicons of the page?
+    faviconDominantColor: null, // what's the computed dominant color of favicon?
     archiveInfo: null, // if a dat archive, includes the metadata
 
     // prompts
@@ -583,9 +584,13 @@ function onPageFaviconUpdated (e) {
   if (e.favicons && e.favicons[0]) {
     var page = getByWebview(e.target)
     page.favicons = e.favicons
-    urlToData(e.favicons[0], 16, 16, (err, dataUrl) => {
-      if (dataUrl)
-        beakerSitedata.set(page.getURL(), 'favicon', dataUrl)
+    page.faviconDominantColor = null
+    urlToData(e.favicons[0], 16, 16, (err, res) => {
+      if (res) {
+        beakerSitedata.set(page.getURL(), 'favicon', res.url)
+        page.faviconDominantColor = res.dominantColor
+        events.emit('page-favicon-updated', getByWebview(e.target))
+      }
     })
   }
 }
