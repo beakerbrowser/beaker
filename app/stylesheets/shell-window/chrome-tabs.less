@@ -1,8 +1,8 @@
 .chrome-tabs-shell {
   position: relative;
-  padding: 0 18px 0 10px;
-  height: 35px;
-  border-bottom: 1px solid #c5c5c5;
+  padding: 0 18px 0 0px;
+  height: 36px;
+  border-bottom: 1px solid #aaa;
 }
 
 .chrome-tabs {
@@ -22,18 +22,23 @@
     width: 30px;
     z-index: 1;
     -webkit-app-region: no-drag;
-    transition: .1s transform;
-    border-left: 1px solid #c5c5c5;
+    transition: .1s transform, 0.2s background;
+    border-left: 1px solid #bbb;
+
+    &:first-child {
+      border-left-width: 0;
+    }
 
     .chrome-tab-favicon {
-      height: 16px;
       width: 16px;
+      height: 23px;
       text-align: center;
       background-size: 16px;
       position: absolute;
       left: 12px;
       top: 10px;
       z-index: 3;
+      transition: top 0.2s, border 0.1s;
 
       img {
         width: 16px;
@@ -63,12 +68,12 @@
     .chrome-tab-close {
       display: none;
       position: absolute;
-      right: 6px;
+      right: 11px;
       top: 11px;
       width: 15px;
       height: 15px;
       z-index: 2;
-      border-radius: 8px;
+      border-radius: 3px;
 
       &:before {
         content: "\00D7";
@@ -92,7 +97,7 @@
     }
 
     &:hover {
-      background-color: rgba(255,255,255,0.3);
+      background-color: rgba(255,255,255,0.4);
       .chrome-tab-close {
         display: block;
       }
@@ -105,7 +110,11 @@
 
     &.chrome-tab-current {
       z-index: 999;
-      background-color: #f5f5f5;
+      background-color: rgba(255,255,255,0.4);
+      .chrome-tab-favicon {
+        top: 6px !important;
+        border-bottom: 4px solid #ccc;
+      }
     }
 
     &.chrome-tab-add-btn {
@@ -119,7 +128,7 @@
       }
 
       &:hover {
-        background: rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.4);
         .icon {
           color: #444;
         }
@@ -130,5 +139,8 @@
 
 // make room for the traffic lights
 .darwin:not(.fullscreen) .chrome-tabs {
-  padding-left: 68px;
+  padding-left: 75px;
+  .chrome-tab:first-child {
+    border-left-width: 1px;
+  }
 }
