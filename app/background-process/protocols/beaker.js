@@ -17,8 +17,8 @@ export function setup () {
       return cb(path.join(__dirname, 'stylesheets/shell-window.css'))
 
     // builtin pages
-    for (let slug of ['start', 'archives', 'history', 'downloads', 'settings']) {
-      if (request.url == `beaker:${slug}`)
+    for (let slug of ['start', 'archives', 'archive', 'history', 'downloads', 'settings']) {
+      if (request.url == `beaker:${slug}` || request.url.startsWith(`beaker:${slug}/`))
         return cb(path.join(__dirname, 'builtin-pages.html'))
     }
     if (request.url.startsWith('beaker:site/'))

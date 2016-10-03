@@ -54,10 +54,11 @@ function render () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archives">
       <div class="ll-heading">
-        Your Archives
-        <button class="btn" onclick=${onClickCreateArchive}>New Archive</button>
+        Files
+        <span class="ll-heading-group">
+          <button class="btn" onclick=${onClickCreateArchive}>New Archive</button>
+        </span>
         <small class="ll-heading-right">
-          <a href="https://beakerbrowser.com/docs/faq.html#what-are-archives" title="What are Dat Archives?"><span class="icon icon-help-circled"></span> What are Dat Archives?</a>
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
       </div>
@@ -79,15 +80,6 @@ function renderNotSupported () {
 // event handlers
 // =
 
-// DISABLED for now
-// function onToggleSharing (archive) {
-//   if (archive.isSharing)
-//     datInternalAPI.unswarm(archive.key)
-//   else
-//     datInternalAPI.swarm(archive.key)
-//   render()
-// }
-
 function onClickCreateArchive (e) {
   editSiteModal.create({}, { title: 'New Files Archive', onSubmit: opts => {
     datInternalAPI.createNewArchive(opts).then(key => {
@@ -97,7 +89,6 @@ function onClickCreateArchive (e) {
 }
 
 function onUpdateArchive (update) {
-  console.log('update', update)
   if (archives) {
     // find the archive being updated
     var archive = archives.find(a => a.key == update.key)

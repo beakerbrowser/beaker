@@ -1,0 +1,49 @@
+
+.archive {
+  #owner-label {
+    color: gray;
+  }
+
+  .archive-summary {
+    display: flex;
+    align-items: center;
+    background: #fafafa;
+    padding: 10px;
+    font-size: 15px;
+    color: #666;
+    border: 1px solid #ccc;
+    border-top: 0;
+
+    .hypercore-stats {
+      font-size: 13px;
+      color: gray;
+      .download-speed,
+      .upload-speed {
+        margin-left: 5px;
+      }
+    }
+  }
+
+  .hidden-file-adder {
+    display: none;
+  }
+
+  .markdown {
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+
+    & > :first-child {
+      margin-top: 0;
+    }
+
+    & > :last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// drag/drop behaviors
+.window.drag {
+  border: 3px solid #0089ff;
+}
