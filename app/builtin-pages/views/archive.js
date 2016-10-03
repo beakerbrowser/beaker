@@ -109,7 +109,8 @@ export function hide () {
   archiveEntriesTree = null
   archiveCurrentNode = null
   archiveError = false
-  hypercoreStats.destroy()
+  if (hypercoreStats)
+    hypercoreStats.destroy()
   hypercoreStats = null
 }
 
@@ -232,13 +233,13 @@ function renderError () {
     <div class="archive">
       <div class="ll-heading">
         <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
-        Error
+        ${archiveKey.slice(0,8)}...
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
       </div>
-      <div class="error">
-        <div class="e-banner">
+      <div class="archive-error">
+        <div class="archive-error-banner">
           <div class="icon icon-attention"></div>
           <div>The archive failed to load. ${archiveError.toString()}. Sorry for the inconvenience.</div>
         </div>
@@ -258,12 +259,12 @@ function renderLoading () {
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
       </div>
-      <div class="loading">
-        <div class="l-banner">
+      <div class="archive-loading">
+        <div class="archive-loading-banner">
           <div class="spinner"></div>
           <div>Searching the network for this archive. Please wait...</div>
         </div>
-        <div class="l-tips">
+        <div class="archive-loading-tips">
           <p><strong>Try:</strong></p>
           <ul>
             <li>Checking your connection</li>
@@ -285,7 +286,7 @@ function renderLoading () {
 function fetchArchiveInfo (cb) {
   return co(function* () {
     // run request
-    archiveInfo = yield datInternalAPI.getArchiveInfo(archiveKey)
+    archiveInfo = yield datInternalAPI.getArchiveInfo(archiveKey, { loadIfMissing: true })
     if (archiveInfo) {
       archiveEntriesTree = entriesListToTree(archiveInfo)
       calculateTreeSizeAndProgress(archiveInfo, archiveEntriesTree)

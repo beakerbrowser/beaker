@@ -14,6 +14,10 @@
     border: 1px solid #ccc;
     border-top: 0;
 
+    em {
+      color: gray;
+    }
+
     .hypercore-stats {
       font-size: 13px;
       color: gray;
@@ -24,12 +28,51 @@
     }
   }
 
+  .archive-loading {
+    .archive-loading-banner {
+      display: flex;
+      padding: 16px 20px;
+      background: #f5f5f5;
+      margin: 20px;
+      border-radius: 2px;
+      color: #555;
+
+      .spinner {
+        margin: 3px 14px 0 0px;
+      }
+    }
+    .archive-loading-tips {
+      margin: 20px 22px;
+      max-width: 400px;
+
+      ul {
+        -webkit-padding-start: 30px;
+      }
+    }
+  }
+
+  .archive-error {
+    .archive-error-banner {
+      display: flex;
+      padding: 16px 20px;
+      background: #ffd254;
+      margin: 20px;
+      border-radius: 2px;
+      color: #212121;
+
+      .icon {
+        margin: 0 14px 0 0;
+      }
+    }
+  }
+
   .hidden-file-adder {
     display: none;
   }
 
   .markdown {
     margin-top: 20px;
+    padding: 20px;
     border: 1px solid #ddd;
     border-radius: 2px;
 
