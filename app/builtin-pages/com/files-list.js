@@ -142,10 +142,10 @@ export function archiveEntries (tree, opts={}) {
     // render self
     let mtime = entry.mtime ? niceDate(entry.mtime) : ''
     return yo`<div class=${`fl-row ${entry.type} ${(isDotfile?'dotfile':'')} ${status}`}>
-      <div class="fl-size">${prettyBytes(entry.length)}</div>
-      <div class="fl-download">${downloadEl}</div>
       <div class="fl-name overflower">${link}</div>
       <div class="fl-updated" title=${mtime}>${mtime}</div>
+      <div class="fl-size">${prettyBytes(entry.length)}</div>
+      <div class="fl-download">${downloadEl}</div>
     </div>`
   }
 
@@ -153,9 +153,9 @@ export function archiveEntries (tree, opts={}) {
   function renderParent () {
     const entry = tree.parent.entry
     return yo`<div class="fl-row updog">
+      <div class="fl-name overflower"><a class="fl-name-link" href="beaker:archive/${archiveKey}/${entry.path}" title="Parent directory" onclick=${e => opts.onOpenFolder(e, entry)}>parent</a></div>
       <div class="fl-size"></div>
       <div class="fl-download"></div>
-      <div class="fl-name overflower"><a class="fl-name-link" href="beaker:archive/${archiveKey}/${entry.path}" title="Parent directory" onclick=${e => opts.onOpenFolder(e, entry)}>parent</a></div>
     </div>`
   }
 
@@ -176,10 +176,10 @@ export function archiveEntries (tree, opts={}) {
     var hideLabel = opts.hideDotfiles ? 'show' : 'hide'
     var hideToggle = (numHidden > 0) ? yo`<span>, ${numHidden} hidden (<a onclick=${opts.onToggleHidden}>${hideLabel}</a>)</span>` : ''
     return yo`<div class="fl-footer">
+      <div class="fl-name overflower">${numFiles} ${pluralize(numFiles, 'file')}${hideToggle}</div>
+      <div class="fl-updated"></div>
       <div class="fl-size">${prettyBytes(entry.length)}</div>    
       <div class="fl-download">${downloadEl}</div>
-      <div class="fl-name overflower">${numFiles} ${pluralize(numFiles, 'file')} ${hideToggle}</div>
-      <div class="fl-updated"></div>
     </div>`
   }
 

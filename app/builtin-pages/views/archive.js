@@ -201,13 +201,7 @@ function renderArchive () {
         <div>
           <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
           ${name}
-          <small class="ll-heading-right">
-            <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
-            <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
-          </small>
-        </div>
-        <div>
-          <span class="btn-group" style="margin: 0">
+          <span class="btn-group">
             ${serveBtn}${saveArchiveBtn}${copyLinkBtn}
           </span>
           <span class="btn-group">
@@ -219,13 +213,11 @@ function renderArchive () {
               ? yo`<span><span class="icon icon-pencil"></span> owner</span>`
               : 'read-only' }
           </small>
+          <small class="ll-heading-right">
+            <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
+            <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
+          </small>
         </div>
-      </div>
-
-      <div class="archive-summary">
-        <div>${descriptEl} ${editBtn}</div>
-        <div class="flex-spacer"></div>
-        ${ hypercoreStats.render() }
       </div>
       ${archiveEntries(archiveCurrentNode, {
         onOpenFolder,
@@ -234,6 +226,11 @@ function renderArchive () {
         archiveKey,
         hideDotfiles
       })}
+      <div class="archive-summary">
+        <div>${descriptEl} ${editBtn}</div>
+        <div class="flex-spacer"></div>
+        ${ hypercoreStats.render() }
+      </div>
       ${readmeEl}
       <input class="hidden-file-adder" type="file" multiple onchange=${onChooseFiles} />
     </div>
