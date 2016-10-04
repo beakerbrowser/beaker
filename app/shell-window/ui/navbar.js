@@ -150,7 +150,7 @@ function render (id, page) {
   var viewDatBtn
   if (page && page.protocolDescription && page.protocolDescription.scheme == 'dat') {
     viewDatBtn = yo`<button class="nav-view-files-btn" onclick=${onClickViewFiles}>
-      <span class="icon icon-docs"></span> <small>View Site Files</small>
+      <span class="icon icon-folder"></span> <small>Files</small>
     </button>`
   }
 
@@ -235,8 +235,8 @@ function render (id, page) {
         oninput=${onInputLocation}
         value=${addrValue} />
       ${inpageFinder}
-      ${viewDatBtn}
       ${zoomBtn}
+      ${viewDatBtn}
       <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
       ${autocompleteDropdown}
     </div>
