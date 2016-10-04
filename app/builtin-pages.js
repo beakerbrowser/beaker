@@ -49,13 +49,16 @@ window.addEventListener('pushstate', onURLChange)
 window.addEventListener('popstate', onURLChange)
 
 function onURLChange () {
+  var newView = getLocationView()
+  var isSameView = currentView === newView
+
   // teardown old view
   if (currentView)
-    currentView.hide()
+    currentView.hide(isSameView)
 
   // render new view
-  currentView = getLocationView()
-  currentView.show()
+  currentView = newView
+  currentView.show(isSameView)
 }
 
 // internal methods

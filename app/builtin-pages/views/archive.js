@@ -64,9 +64,16 @@ export function setup () {
   archivesEvents.on('download', onDownload)
 }
 
-export function show () {
+export function show (isSameView) {
+  if (isSameView && archiveKey === parseKeyFromURL()) {
+    // just adjust current folders
+    setCurrentNodeByPath()
+    render()
+    return
+  }
+
   isViewActive = true
-  archiveKey = /^archive\/([0-9a-f]+)/.exec(window.location.pathname)[1]
+  archiveKey = parseKeyFromURL()
   document.title = 'Loading...'
   render() // render loading state
   co(function* () {
@@ -102,7 +109,11 @@ export function show () {
   })
 }
 
-export function hide () {
+export function hide (isSameView) {
+  if (isSameView && archiveKey === parseKeyFromURL()) {
+    // do nothing, it's a navigation within the current archive's folder structure
+    return
+  }
   isViewActive = false
   archiveKey = null
   archiveInfo = null
@@ -285,6 +296,10 @@ function renderLoading () {
 // internal methods
 // =
 
+function parseKeyFromURL () {
+  return /^archive\/([0-9a-f]+)/.exec(window.location.pathname)[1]
+}
+
 function fetchArchiveInfo (cb) {
   return co(function* () {
     // run request
@@ -411,8 +426,6 @@ function onCopyLink () {
 function onOpenFolder (e, entry) {
   e.preventDefault()
   window.history.pushState(null, '', 'beaker:archive/'+archiveInfo.key+'/'+entry.path)
-  setCurrentNodeByPath()
-  render()
 }
 
 
