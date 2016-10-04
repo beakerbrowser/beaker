@@ -83,7 +83,7 @@ function onClickNavItem (item) {
 function onClickShareFiles (e) {
   editSiteModal.create({}, { title: 'New Files Archive', onSubmit: opts => {
     datInternalAPI.createNewArchive(opts).then(key => {
-      window.location = 'view-dat://' + key
+      window.location = 'beaker:archive/' + key
     })
   }})
 }

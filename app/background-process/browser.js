@@ -76,7 +76,7 @@ export function setup () {
 }
 
 export function getDefaultProtocolSettings () {
-  return Promise.resolve(['http', 'dat', 'ipfs', 'view-dat'].reduce((res, x) => {
+  return Promise.resolve(['http', 'dat', 'ipfs'].reduce((res, x) => {
     res[x] = app.isDefaultProtocolClient(x)
     return res
   }, {}))

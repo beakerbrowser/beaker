@@ -414,10 +414,11 @@ function onClickBookmark (e) {
 function onClickViewFiles (e) {
   var page = getEventPage(e)
   if (page) {
+    var url = 'beaker:archive/'+page.getURL().slice('dat://'.length)
     if (e.metaKey || e.ctrlKey) // popup
-      pages.setActive(pages.create('view-'+page.getURL()))
+      pages.setActive(pages.create(url))
     else
-      page.loadURL('view-'+page.getURL()) // goto
+      page.loadURL(url) // goto
   }
 }
 

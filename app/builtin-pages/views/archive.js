@@ -305,12 +305,11 @@ function fetchArchiveInfo (cb) {
 
 function setCurrentNodeByPath () {
   archiveCurrentNode = archiveEntriesTree
-  var nodepath = window.location.pathname.slice(1)
-  if (!nodepath)
+  var names = window.location.pathname.split('/').slice(2) // drop 'archive/{name}', take the rest
+  if (names.length === 0 || names[0] == '')
     return // at root
 
   // descend to the correct node (or as far as possible)
-  var names = nodepath.split('/')
   for (var i=0; i < names.length; i++) {
     var child = archiveCurrentNode.children[names[i]]
     if (!child || child.entry.type != 'directory')
@@ -411,7 +410,7 @@ function onCopyLink () {
 
 function onOpenFolder (e, entry) {
   e.preventDefault()
-  window.history.pushState(null, '', 'view-dat://'+archiveInfo.key+'/'+entry.path)
+  window.history.pushState(null, '', 'beaker:archive/'+archiveInfo.key+'/'+entry.path)
   setCurrentNodeByPath()
   render()
 }
@@ -435,7 +434,7 @@ function onToggleSharing () {
 //   beaker.dat.clone(archiveInfo.key, (err, newKey) => {
 //     if (err)
 //       return console.warn(err) // TODO inform user
-//     window.location = 'view-dat://'+newKey
+//     window.location = 'beaker:archive/'+newKey
 //   })
 // }
 

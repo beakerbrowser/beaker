@@ -121,7 +121,7 @@ export function archiveEntries (tree, opts={}) {
     // type-specific rendering
     var link
     if (entry.type == 'directory') {
-      link = yo`<a class="fl-name-link" href="view-dat://${archiveKey}/${entry.path}" title=${entry.name} onclick=${e => opts.onOpenFolder(e, entry)}>${entry.name}</a>`
+      link = yo`<a class="fl-name-link" href="beaker:archive/${archiveKey}/${entry.path}" title=${entry.name} onclick=${e => opts.onOpenFolder(e, entry)}>${entry.name}</a>`
     } else {
       link = yo`<a class="fl-name-link" href="dat://${archiveKey}/${entry.path}" title=${entry.name}>${entry.name}</a>`
     }
@@ -155,7 +155,7 @@ export function archiveEntries (tree, opts={}) {
     return yo`<div class="fl-row updog">
       <div class="fl-size"></div>
       <div class="fl-download"></div>
-      <div class="fl-name overflower"><a class="fl-name-link" href="view-dat://${archiveKey}/${entry.path}" title="Parent directory" onclick=${e => opts.onOpenFolder(e, entry)}>parent</a></div>
+      <div class="fl-name overflower"><a class="fl-name-link" href="beaker:archive/${archiveKey}/${entry.path}" title="Parent directory" onclick=${e => opts.onOpenFolder(e, entry)}>parent</a></div>
     </div>`
   }
 
