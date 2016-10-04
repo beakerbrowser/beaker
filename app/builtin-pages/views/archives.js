@@ -12,6 +12,7 @@ import * as editSiteModal from '../com/modals/edit-site'
 // =
 
 var archives
+var isViewActive = false
 
 // exported API
 // =
@@ -27,6 +28,7 @@ export function setup () {
 }
 
 export function show () {
+  isViewActive = true
   document.title = 'Your Archives'
   co(function*(){
     if (window.datInternalAPI) {
@@ -39,12 +41,17 @@ export function show () {
 }
 
 export function hide () {
+  isViewActive = false
 }
 
 // rendering
 // =
 
 function render () {
+  if (!isViewActive) {
+    return
+  }
+  
   // content
   var content = (window.datInternalAPI)
     ? renderArchivesList(archives, { renderEmpty, onToggleServeArchive, onDeleteArchive, onUndoDeletions })
