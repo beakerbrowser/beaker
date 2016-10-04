@@ -155,12 +155,12 @@ function renderArchive () {
     ? yo`<a id="share-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
     : yo`<a id="share-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
-  var exportZipFileBtn = yo`<a class="btn" title="Export as .Zip File" href="/?as=zip"><span class="icon icon-export"></span> Export .Zip</a>`
+  var exportZipFileBtn = yo`<a id="export-zip-btn" class="btn" title="Export as .Zip File" href="/?as=zip"><span class="icon icon-export"></span> Export .Zip</a>`
   var saveArchiveBtn = (archiveInfo.userSettings.isSaved)
-    ? yo`<a class="btn" title="Delete" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete</a>`
-    : yo`<a class="btn" title="Save" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Save</a>`
+    ? yo`<a class="btn save-btn saved" title="Unsave" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Pinned</a>`
+    : yo`<a class="btn save-btn unsaved" title="Save" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Pin</a>`
   var addFilesBtn = (archiveInfo.isOwner)
-    ? yo`<a id="add-files-btn" class="btn" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
+    ? yo`<a id="add-files-btn" class="btn btn-group" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
     : ''
 
   // manifest edit btn (a pain to construct so it's separate)
@@ -187,26 +187,28 @@ function renderArchive () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archive">
       <div class="ll-heading">
-        <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
-        ${name}
-        <span class="btn-group">
-          ${serveBtn}
-        </span>
-        <span class="btn-group">
-          ${copyLinkBtn}${exportZipFileBtn}${saveArchiveBtn}
-        </span>
-        <span class="btn-group">
+        <div>
+          <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
+          ${name}
+          <small class="ll-heading-right">
+            <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
+            <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
+          </small>
+        </div>
+        <div>
+          <span class="btn-group" style="margin: 0">
+            ${serveBtn}${saveArchiveBtn}${copyLinkBtn}
+          </span>
+          <span class="btn-group">
+            ${exportZipFileBtn}
+          </span>
           ${addFilesBtn}
-        </span>
-        <small id="owner-label" class="ll-heading-group">
-          ${ archiveInfo.isOwner 
-            ? yo`<span><span class="icon icon-pencil"></span> owner</span>`
-            : 'read-only' }
-        </small>
-        <small class="ll-heading-right">
-          <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
-          <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
-        </small>
+          <small id="owner-label" class="ll-heading-group">
+            ${ archiveInfo.isOwner 
+              ? yo`<span><span class="icon icon-pencil"></span> owner</span>`
+              : 'read-only' }
+          </small>
+        </div>
       </div>
 
       <div class="archive-summary">

@@ -47,9 +47,29 @@ export function startViewDatTour (isOwner) {
     attachTo: '#share-btn bottom'
   })
 
+  tour.addStep('pin', {
+    text: 'Pin an archive to keep it.',
+    attachTo: '.save-btn bottom'
+  })
+
+  tour.addStep('unpin', {
+    text: 'Unpin to let it be deleted.',
+    attachTo: '.save-btn bottom'
+  })
+
   tour.addStep('copy-link', {
-    text: 'Press this to get the URL. Archive URLs are secret!<br>Only people who have the URL can access the archive.',
+    text: 'Press "Copy Link" to get the URL.',
     attachTo: '#copy-link-btn bottom'
+  })
+
+  tour.addStep('copy-link2', {
+    text: 'Archive URLs are secret!<br>Only people who have the URL can access the archive.',
+    attachTo: '#copy-link-btn bottom'
+  })
+
+  tour.addStep('copy-link2', {
+    text: 'You can export the downloaded files in a Zip.',
+    attachTo: '#export-zip-btn bottom'
   })
 
   tour.addStep('end', {
@@ -73,7 +93,7 @@ export function startViewDatTour (isOwner) {
         shareBtn.innerHTML = '<span class="icon icon-share"></span> Sharing'
       }
     }
-    if (e.step.id == 'copy-link' && !wasSharing) {
+    if (e.step.id == 'pin' && !wasSharing) {
       // unfake the sharing state
       var shareBtn = document.querySelector('#share-btn')
       shareBtn.classList.remove('btn-primary')
