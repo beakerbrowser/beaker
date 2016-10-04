@@ -44,12 +44,13 @@ export default function Stats (emitter, { archiveInfo, onToggleServing }) {
 
   // setup periodic render
   // (if this wasnt done, the transfer rates would never drop to 0)
-  setInterval(() => {
+  this.updateInterval = setInterval(() => {
     this.updateActives()
   }, RERENDER_INTERVAL)
 }
 
 Stats.prototype.destroy = function () {
+  clearInterval(this.updateInterval)
   this.emitter.removeListener('update-peers', this.onUpdatePeers)
   this.emitter.removeListener('download', this.onDownload)
   this.emitter.removeListener('upload', this.onUpload)
