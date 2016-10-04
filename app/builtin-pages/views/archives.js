@@ -51,7 +51,7 @@ function render () {
   if (!isViewActive) {
     return
   }
-  
+
   // content
   var content = (window.datInternalAPI)
     ? renderArchivesList(archives, { renderEmpty, onToggleServeArchive, onDeleteArchive, onUndoDeletions })
@@ -75,7 +75,16 @@ function render () {
 }
 
 function renderEmpty () {
-  return yo`<div class="ll-empty">You have not added or created any archives.</div>`
+  return yo`<div class="archives-empty">
+      <div class="archives-empty-banner">
+        <div class="icon icon-info-circled"></div>
+        <div>
+          Share files on the network by creating archives.
+          <a class="icon icon-popup" href="https://beakerbrowser.com/docs/" target="_blank"> Learn More</a>
+        </div>
+      </div>
+    </div>
+  </div>`
 }
 
 function renderNotSupported () {
