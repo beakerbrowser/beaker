@@ -174,10 +174,11 @@ export function archiveEntries (tree, opts={}) {
 
     // render
     var hideLabel = opts.hideDotfiles ? 'show' : 'hide'
+    var hideToggle = (numHidden > 0) ? yo`<span>, ${numHidden} hidden (<a onclick=${opts.onToggleHidden}>${hideLabel}</a>)</span>` : ''
     return yo`<div class="fl-footer">
       <div class="fl-size">${prettyBytes(entry.length)}</div>    
       <div class="fl-download">${downloadEl}</div>
-      <div class="fl-name overflower">${numFiles} files, ${numHidden} hidden (<a onclick=${opts.onToggleHidden}>${hideLabel}</a>)</div>
+      <div class="fl-name overflower">${numFiles} ${pluralize(numFiles, 'file')} ${hideToggle}</div>
       <div class="fl-updated"></div>
     </div>`
   }
