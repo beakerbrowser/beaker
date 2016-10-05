@@ -14,7 +14,7 @@ import errorPage from '../../lib/error-page'
 // content security policies
 const BEAKER_CSP = `
   default-src 'self' beaker:;
-  img-src *;
+  img-src * data:;
   style-src 'self' 'unsafe-inline' beaker:;
 `.replace(/\n/g, '')
 
