@@ -30,7 +30,7 @@ export class SitePermsNavbarBtn {
     var label = ''
     if (this.protocolDescription.label == 'HTTPS')
       icon = 'lock'
-    if (['dat', 'view-dat', 'ipfs'].indexOf(this.protocolDescription.scheme) != -1) {
+    if (['dat', 'ipfs'].indexOf(this.protocolDescription.scheme) != -1) {
       icon = 'share'
     }
     return yo`<div class="toolbar-site-perms">

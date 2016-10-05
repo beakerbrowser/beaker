@@ -150,7 +150,7 @@ function render (id, page) {
   var viewDatBtn
   if (page && page.protocolDescription && page.protocolDescription.scheme == 'dat') {
     viewDatBtn = yo`<button class="nav-view-files-btn" onclick=${onClickViewFiles}>
-      <span class="icon icon-docs"></span> <small>View Site Files</small>
+      <span class="icon icon-folder"></span> <small>Files</small>
     </button>`
   }
 
@@ -235,8 +235,8 @@ function render (id, page) {
         oninput=${onInputLocation}
         value=${addrValue} />
       ${inpageFinder}
-      ${viewDatBtn}
       ${zoomBtn}
+      ${viewDatBtn}
       <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
       ${autocompleteDropdown}
     </div>
@@ -414,10 +414,22 @@ function onClickBookmark (e) {
 function onClickViewFiles (e) {
   var page = getEventPage(e)
   if (page) {
-    if (e.metaKey || e.ctrlKey) // popup
-      pages.setActive(pages.create('view-'+page.getURL()))
-    else
-      page.loadURL('view-'+page.getURL()) // goto
+    try {
+      var urlp = new URL(page.getURL())
+      var path = urlp.pathname
+      if (!path.endsWith('/')) {
+        // strip the filename at the end
+        path = path.slice(0, path.lastIndexOf('/'))
+      }
+      var url = `beaker:archive/${urlp.host}${path}`
+      if (e.metaKey || e.ctrlKey) { // popup
+        pages.setActive(pages.create(url))
+      } else {
+        page.loadURL(url) // goto
+      }
+    } catch (e) {
+      console.warn('Failed to view files:', e)
+    }
   }
 }
 

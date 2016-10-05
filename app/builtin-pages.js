@@ -2,6 +2,7 @@ import EE from 'events'
 import * as sidenavUI from './builtin-pages/com/sidenav'
 import * as favorites from './builtin-pages/views/favorites'
 import * as archives from './builtin-pages/views/archives'
+import * as archive from './builtin-pages/views/archive'
 import * as history from './builtin-pages/views/history'
 import * as downloads from './builtin-pages/views/downloads'
 import * as settings from './builtin-pages/views/settings'
@@ -25,12 +26,12 @@ var _wr = function(type) {
   };
 };
 window.history.pushState = _wr('pushState')
-window.history.replaceState = _wr('replaceState');
+window.history.replaceState = _wr('replaceState')
 
 // globals
 // =
 
-var views = { start: favorites, archives, history, downloads, settings }
+var views = { start: favorites, archives, archive, history, downloads, settings }
 var currentView = getLocationView()
 
 // setup
@@ -48,13 +49,16 @@ window.addEventListener('pushstate', onURLChange)
 window.addEventListener('popstate', onURLChange)
 
 function onURLChange () {
+  var newView = getLocationView()
+  var isSameView = currentView === newView
+
   // teardown old view
   if (currentView)
-    currentView.hide()
+    currentView.hide(isSameView)
 
   // render new view
-  currentView = getLocationView()
-  currentView.show()
+  currentView = newView
+  currentView.show(isSameView)
 }
 
 // internal methods

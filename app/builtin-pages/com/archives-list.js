@@ -3,6 +3,7 @@ import prettyBytes from 'pretty-bytes'
 import toggleable, { closeToggleable } from './toggleable'
 import { niceDate } from '../../lib/time'
 import { ucfirst, pluralize } from '../../lib/strings'
+import { pushUrl } from '../../lib/fg/event-handlers'
 
 export function render (archives, opts={}) {
   // render archives
@@ -23,7 +24,7 @@ export function render (archives, opts={}) {
     archiveEls.push(yo`<div class="ll-row archive">
       <div class="ll-link">
         <img class="favicon" src=${'beaker-favicon:dat://'+archive.key} />
-        <a class="ll-title" href=${'dat://'+archive.key} title=${title}>
+        <a class="ll-title" href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>
           ${title}
         </a>
       </div>
@@ -38,7 +39,7 @@ export function render (archives, opts={}) {
         <div class="dropdown-btn-container">
           <a class="toggleable btn"><span class="icon icon-down-open-mini"></span></a>
           <div class="dropdown-btn-list">
-            <a href=${'view-dat://'+archive.key}><span class="icon icon-docs"></span> View Files</a>
+            <a href=${'beaker:archive/'+archive.key} onclick=${pushUrl}><span class="icon icon-docs"></span> View Files</a>
             <div onclick=${onCopyLink(archive.key)}><span class="icon icon-link"></span> Copy Link</div>
             <hr>
             <div onclick=${opts.onDeleteArchive(archive)}><span class="icon icon-trash"></span> Delete</div>

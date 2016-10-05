@@ -1,0 +1,101 @@
+
+.archive {
+  min-width: 700px;
+  
+  #owner-label {
+    color: gray;
+  }
+  .save-btn {
+    span {
+      cursor: pointer;
+      color: transparent;
+      -webkit-text-stroke: 1px #555;
+    }
+    &.saved span {
+      color: #bbb;
+    }
+  }
+
+  .archive-summary {
+    display: flex;
+    align-items: center;
+    background: #fafafa;
+    padding: 4px 10px;
+    font-size: 14px;
+    color: #666;
+
+    em {
+      color: gray;
+    }
+
+    .hypercore-stats {
+      color: gray;
+      .download-speed,
+      .upload-speed {
+        margin-left: 5px;
+      }
+    }
+  }
+
+  .archive-loading {
+    .archive-loading-banner {
+      display: flex;
+      padding: 16px 20px;
+      background: #f5f5f5;
+      margin: 20px;
+      border-radius: 2px;
+      color: #555;
+
+      .spinner {
+        margin: 3px 14px 0 0px;
+      }
+    }
+    .archive-loading-tips {
+      margin: 20px 22px;
+      max-width: 400px;
+
+      ul {
+        -webkit-padding-start: 30px;
+      }
+    }
+  }
+
+  .archive-error {
+    .archive-error-banner {
+      display: flex;
+      padding: 16px 20px;
+      background: #ffd254;
+      margin: 20px;
+      border-radius: 2px;
+      color: #212121;
+
+      .icon {
+        margin: 0 14px 0 0;
+      }
+    }
+  }
+
+  .hidden-file-adder {
+    display: none;
+  }
+
+  .markdown {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+
+    & > :first-child {
+      margin-top: 0;
+    }
+
+    & > :last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// drag/drop behaviors
+.window.drag {
+  border: 3px solid #0089ff;
+}
