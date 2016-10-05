@@ -414,11 +414,22 @@ function onClickBookmark (e) {
 function onClickViewFiles (e) {
   var page = getEventPage(e)
   if (page) {
-    var url = 'beaker:archive/'+page.getURL().slice('dat://'.length)
-    if (e.metaKey || e.ctrlKey) // popup
-      pages.setActive(pages.create(url))
-    else
-      page.loadURL(url) // goto
+    try {
+      var urlp = new URL(page.getURL())
+      var path = urlp.pathname
+      if (!path.endsWith('/')) {
+        // strip the filename at the end
+        path = path.slice(0, path.lastIndexOf('/'))
+      }
+      var url = `beaker:archive/${urlp.host}${path}`
+      if (e.metaKey || e.ctrlKey) { // popup
+        pages.setActive(pages.create(url))
+      } else {
+        page.loadURL(url) // goto
+      }
+    } catch (e) {
+      console.warn('Failed to view files:', e)
+    }
   }
 }
 
