@@ -133,19 +133,18 @@ export function archiveEntries (tree, opts={}) {
     } else if (entry.isDownloading || entry.downloadedBlocs > 0) {
       status = 'downloading'
       var progress = Math.round(entry.downloadedBlocks / entry.blocks * 100)
-      downloadEl = yo`<progress value=${progress} max="100"></progress>`
+      downloadEl = yo`<div class="fl-download"><progress value=${progress} max="100"></progress></div>`
     } else {
       status = 'not-downloaded'
-      downloadEl = yo`<a class="icon icon-download" onclick=${e => opts.onDownloadNode(e, node)}></a>`
     } 
 
     // render self
     let mtime = entry.mtime ? niceDate(entry.mtime) : ''
     return yo`<div class=${`fl-row ${entry.type} ${(isDotfile?'dotfile':'')} ${status}`}>
+      ${downloadEl}
       <div class="fl-name overflower">${link}</div>
       <div class="fl-updated" title=${mtime}>${mtime}</div>
       <div class="fl-size">${prettyBytes(entry.length)}</div>
-      <div class="fl-download">${downloadEl}</div>
     </div>`
   }
 
@@ -155,7 +154,6 @@ export function archiveEntries (tree, opts={}) {
     return yo`<div class="fl-row updog">
       <div class="fl-name overflower"><a class="fl-name-link" href="beaker:archive/${archiveKey}/${entry.path}" title="Parent directory" onclick=${e => opts.onOpenFolder(e, entry)}>parent</a></div>
       <div class="fl-size"></div>
-      <div class="fl-download"></div>
     </div>`
   }
 
@@ -164,13 +162,12 @@ export function archiveEntries (tree, opts={}) {
     const entry = tree.entry
 
     // download state
-    var downloadEl
-    if (entry.isDownloading) {
-      var progress = Math.round(entry.downloadedBlocks / entry.blocks * 100)
-      downloadEl = yo`<progress value=${progress} max="100"></progress>`
-    } else if (entry.downloadedBlocks < entry.blocks) {
-      downloadEl = yo`<a class="icon icon-download" onclick=${e => opts.onDownloadNode(e, tree)}></a>`
-    }
+    // TODO move elsewhere
+    // var downloadEl
+    // if (entry.isDownloading) {
+    //   var progress = Math.round(entry.downloadedBlocks / entry.blocks * 100)
+    //   downloadEl = yo`<progress value=${progress} max="100"></progress>`
+    // }
 
     // render
     var hideLabel = opts.hideDotfiles ? 'show' : 'hide'
@@ -178,8 +175,7 @@ export function archiveEntries (tree, opts={}) {
     return yo`<div class="fl-footer">
       <div class="fl-name overflower">${numFiles} ${pluralize(numFiles, 'file')}${hideToggle}</div>
       <div class="fl-updated"></div>
-      <div class="fl-size">${prettyBytes(entry.length)}</div>    
-      <div class="fl-download">${downloadEl}</div>
+      <div class="fl-size">${prettyBytes(entry.length)}</div>
     </div>`
   }
 

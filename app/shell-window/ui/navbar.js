@@ -4,7 +4,7 @@ import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
 import { UpdatesNavbarBtn } from './navbar/updates'
-import { DownloadsNavbarBtn } from './navbar/downloads'
+import { DropMenuNavbarBtn } from './navbar/drop-menu'
 import { SitePermsNavbarBtn } from './navbar/site-perms'
 
 const KEYCODE_DOWN = 40
@@ -19,7 +19,7 @@ const KEYCODE_P = 80
 
 var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
-var downloadsNavbarBtn = null
+var dropMenuNavbarBtn = null
 var sitePermsNavbarBtn = null
 
 // autocomplete data
@@ -33,7 +33,7 @@ var autocompleteResults = null // if set to an array, will render dropdown
 export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
-  downloadsNavbarBtn = new DownloadsNavbarBtn()
+  dropMenuNavbarBtn = new DropMenuNavbarBtn()
   sitePermsNavbarBtn = new SitePermsNavbarBtn()
 }
 
@@ -149,7 +149,7 @@ function render (id, page) {
   // view dat
   var viewDatBtn
   if (page && page.protocolDescription && page.protocolDescription.scheme == 'dat') {
-    viewDatBtn = yo`<button class="nav-view-files-btn" title="View Dat Files" onclick=${onClickViewFiles}>
+    viewDatBtn = yo`<button class="nav-view-files-btn" title="View App Files" onclick=${onClickViewFiles}>
       <span class="icon icon-folder"></span>
     </button>`
   }
@@ -243,7 +243,7 @@ function render (id, page) {
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
-      ${downloadsNavbarBtn.render()}
+      ${dropMenuNavbarBtn.render()}
       ${updatesNavbarBtn.render()}
     </div>
   </div>`
