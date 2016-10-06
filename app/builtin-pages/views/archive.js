@@ -146,7 +146,7 @@ function renderArchive () {
   // description
   var descriptEl = (archiveInfo.description)
     ? yo`<span>${archiveInfo.description}</span>`
-    : yo`<em>No description</em>`
+    : yo`<em>no description</em>`
 
   // manifest edit btn (a pain to construct so it's separate)
   var editBtn
@@ -182,7 +182,6 @@ function renderArchive () {
       ${progressEl}
       ${archiveEntries(archiveCurrentNode, {
         onOpenFolder,
-        onDownloadNode,
         onToggleHidden,
         archiveKey,
         hideDotfiles
@@ -203,16 +202,22 @@ function renderHeading () {
     ? yo`<a id="share-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
     : yo`<a id="share-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
-
-  // disable share if not saved
-  if (!isSaved) {
-    serveBtn.classList.add('disabled')
-  }
+  var openFolderBtn = (isSaved)
+    ? yo`<a><span class="icon icon-popup"></span> Open in Finder</a>` // TODO
+    : yo`<a class="disabled"><span class="icon icon-popup"></span> Open in Finder</a>`
+  var deleteArchiveBtn = yo`<a title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
+  var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
+    <a class="toggleable btn"><span class="icon icon-down-open"></span></a>
+    <div class="dropdown-btn-list">
+      ${openFolderBtn}
+      <hr>
+      ${deleteArchiveBtn}
+    </div>
+  </div>`)
 
   if (archiveInfo.isOwner) {
     if (isSaved) {
       // owner's btns
-      let deleteArchiveBtn = yo`<a id="save-btn" class="btn btn-group" title="Delete" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete</a>`
       let addFilesBtn = yo`<a id="add-files-btn" class="btn btn-group" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
 
       // owner's heading
@@ -223,7 +228,7 @@ function renderHeading () {
         <span class="btn-group">
           ${serveBtn}${copyLinkBtn}
         </span>
-        ${deleteArchiveBtn}
+        ${dropdownBtn}
         ${addFilesBtn}
         <small class="ll-heading-right">
           <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
@@ -233,15 +238,16 @@ function renderHeading () {
     }
 
     // deleted owner's btns
-    let deletedArchiveBtn = yo`<a id="save-btn" class="btn btn-group disabled" title="Deleted"><span class="icon icon-trash"></span> Deleted</a>`
-    let undoDeleteBtn = yo`<small class="ll-heading-group"><a title="Undo Delete" onclick=${onToggleSave}>Undo Delete</a></small>`
+    let undoDeleteBtn = yo`<small class="ll-heading-group">
+      <span class="icon icon-trash"></span> Deleted
+      (<a title="Undo Delete" onclick=${onToggleSave}>Undo</a>)
+    </small>`
 
     // deleted owner's heading
     return yo`<div class="ll-heading">
       <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
       ${name}
       <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
-      ${deletedArchiveBtn}
       ${undoDeleteBtn}
       <small class="ll-heading-right">
         <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
@@ -251,25 +257,9 @@ function renderHeading () {
   }
 
   // downloader's btns
-  var downloadBtn = (isSaved)
-    ? yo`<a id="download-btn" class="btn disabled" title="Downloading"><span class="icon icon-down-circled"></span> Downloading</a>`
-    : yo`<a id="download-btn" class="btn" title="Download" onclick=${onToggleSave}><span class="icon icon-down-circled"></span> Download</a>`
-  var cancelDownloadBtn = (isSaved)
-    ? yo`<a class="btn" onclick=${onToggleSave} title="Stop Downloading"><span class="icon icon-cancel"></span></a>`
-    : ''
-
-  // TODO
-  /*var openFolderBtn = (isSaved)
-    ? yo`<a><span class="icon icon-folder"></span> Open Folder</a>` // TODO
-    : yo`<a class="disabled"><span class="icon icon-folder"></span> Open Folder</a>`
-  var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
-    <a class="toggleable btn"><span class="icon icon-down-open"></span></a>
-    <div class="dropdown-btn-list">
-      ${cancelDownloadBtn}
-      <hr>
-      ${openFolderBtn}
-    </div>
-  </div>`)*/
+  var syncBtn = (isSaved)
+    ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="Syncing" onclick=${onToggleSave}><span class="icon icon-down-circled"></span> Syncing</a>`
+    : yo`<a id="sync-btn" class="btn" title="Sync" onclick=${onToggleSave}><span class="icon icon-down-circled"></span> Sync</a>`
 
   // downloader's heading
   return yo`<div class="ll-heading">
@@ -279,11 +269,9 @@ function renderHeading () {
     ${name}
     <small id="owner-label">read-only</small>
     <span class="btn-group">
-      ${serveBtn}${copyLinkBtn}
+      ${syncBtn}${copyLinkBtn}
     </span>
-    <span class="btn-group">
-      ${downloadBtn}${cancelDownloadBtn}
-    </span>
+    ${dropdownBtn}
     <small class="ll-heading-right">
       <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
       <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
@@ -296,7 +284,6 @@ function renderError () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archive">
       <div class="ll-heading">
-        <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
         ${archiveKey.slice(0,8)}...
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
@@ -317,7 +304,6 @@ function renderLoading () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archive">
       <div class="ll-heading">
-        <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
         Loading...
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>

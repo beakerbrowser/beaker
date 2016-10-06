@@ -58,8 +58,9 @@ Stats.prototype.destroy = function () {
 
 Stats.prototype.render = function () {
   const isServing = this.archiveInfo.userSettings.isServing
-  if (this.archiveInfo.isOwner && !isServing) {
-    // Dont render anything if the archive is locally-maintained and not on the network
+  const isSaved = this.archiveInfo.userSettings.isSaved
+  if (this.archiveInfo.isOwner && !isServing || (!this.archiveInfo.isOwner && !isSaved && !isServing)) {
+    // Dont render anything if not serving or saved
     return  yo`<div class="hypercore-stats"></div>`
   }
   var us = prettyBytes(this.uploadSpeed()) + '/s'
