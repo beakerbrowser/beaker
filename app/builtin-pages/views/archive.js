@@ -4,17 +4,12 @@ This uses the beakerBrowser API, which is exposed by webview-preload to all site
 
 import * as yo from 'yo-yo'
 import co from 'co'
-import prettyBytes from 'pretty-bytes'
 import emitStream from 'emit-stream'
 import dragDrop from 'drag-drop'
 import Remarkable from 'remarkable'
-import pump from 'pump'
-import path from 'path'
 import { pushUrl } from '../../lib/fg/event-handlers'
-import { niceDate } from '../../lib/time'
-import { ucfirst } from '../../lib/strings'
 import { archiveEntries, entriesListToTree, calculateTreeSizeAndProgress } from '../com/files-list'
-import toggleable from '../com/toggleable'
+import toggleable, { closeToggleable } from '../com/toggleable'
 import HypercoreStats from '../com/hypercore-stats'
 import * as editArchiveModal from '../com/modals/edit-site'
 import * as helpTour from '../com/help-tour'
@@ -167,10 +162,24 @@ function renderArchive () {
     readmeEl.innerHTML = md.render(archiveInfo.readme)
   }
 
+  // progress bar for the entire dat
+  var progressEl
+  if (!archiveInfo.isOwner) {
+    let entry = archiveEntriesTree.entry
+    let progress = Math.round(entry.downloadedBlocks / entry.blocks * 100)
+    progressEl = yo`<div class="archive-progress"><progress value=${progress} max="100"></progress></div>`
+  }
+
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archive">
       ${renderHeading()}
+      <div class="archive-summary">
+        <div>${descriptEl} ${editBtn}</div>
+        <div class="flex-spacer"></div>
+        ${ hypercoreStats.render() }
+      </div>
+      ${progressEl}
       ${archiveEntries(archiveCurrentNode, {
         onOpenFolder,
         onDownloadNode,
@@ -178,11 +187,6 @@ function renderArchive () {
         archiveKey,
         hideDotfiles
       })}
-      <div class="archive-summary">
-        <div>${descriptEl} ${editBtn}</div>
-        <div class="flex-spacer"></div>
-        ${ hypercoreStats.render() }
-      </div>
       ${readmeEl}
       <input class="hidden-file-adder" type="file" multiple onchange=${onChooseFiles} />
     </div>
@@ -191,20 +195,22 @@ function renderArchive () {
 
 function renderHeading () {
   const name = archiveInfo.title || 'Untitled'
+  const isSaved = archiveInfo.userSettings.isSaved
+  const isServing = archiveInfo.userSettings.isServing
 
   // general buttons
-  var serveBtn = (archiveInfo.userSettings.isServing)
+  var serveBtn = (isServing)
     ? yo`<a id="share-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
     : yo`<a id="share-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
 
   // disable share if not saved
-  if (!archiveInfo.userSettings.isSaved) {
+  if (!isSaved) {
     serveBtn.classList.add('disabled')
   }
 
   if (archiveInfo.isOwner) {
-    if (archiveInfo.userSettings.isSaved) {
+    if (isSaved) {
       // owner's btns
       let deleteArchiveBtn = yo`<a id="save-btn" class="btn btn-group" title="Delete" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete</a>`
       let addFilesBtn = yo`<a id="add-files-btn" class="btn btn-group" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
@@ -245,21 +251,39 @@ function renderHeading () {
   }
 
   // downloader's btns
-  var downloadBtn = yo`<a id="download-btn" class="btn btn-group" title="Download" href="/?as=zip"><span class="icon icon-down-circled"></span> Download</a>`
-  var dropdownBtn = yo`<a class="btn"><span class="icon icon-down-open"></span></a>`
+  var downloadBtn = (isSaved)
+    ? yo`<a id="download-btn" class="btn disabled" title="Downloading"><span class="icon icon-down-circled"></span> Downloading</a>`
+    : yo`<a id="download-btn" class="btn" title="Download" onclick=${onToggleSave}><span class="icon icon-down-circled"></span> Download</a>`
+  var cancelDownloadBtn = (isSaved)
+    ? yo`<a class="btn" onclick=${onToggleSave} title="Stop Downloading"><span class="icon icon-cancel"></span></a>`
+    : ''
+
+  // TODO
+  /*var openFolderBtn = (isSaved)
+    ? yo`<a><span class="icon icon-folder"></span> Open Folder</a>` // TODO
+    : yo`<a class="disabled"><span class="icon icon-folder"></span> Open Folder</a>`
+  var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
+    <a class="toggleable btn"><span class="icon icon-down-open"></span></a>
+    <div class="dropdown-btn-list">
+      ${cancelDownloadBtn}
+      <hr>
+      ${openFolderBtn}
+    </div>
+  </div>`)*/
 
   // downloader's heading
   return yo`<div class="ll-heading">
-    ${ (archiveInfo.userSettings.isSaved)
+    ${ '' /* TODO do this? (isSaved)
       ? yo`<a href="beaker:downloads" onclick=${pushUrl}>Downloads <span class="icon icon-right-open"></span></a>`
-      : '' }
+      : ''*/ }
     ${name}
     <small id="owner-label">read-only</small>
     <span class="btn-group">
       ${serveBtn}${copyLinkBtn}
     </span>
-    ${downloadBtn}
-    ${dropdownBtn}
+    <span class="btn-group">
+      ${downloadBtn}${cancelDownloadBtn}
+    </span>
     <small class="ll-heading-right">
       <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
       <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
@@ -428,14 +452,6 @@ function addFiles (files) {
 // event handlers: toolbar
 // =
 
-function onClickCreateArchive (e) {
-  editSiteModal.create({}, { title: 'New Files Archive', onSubmit: opts => {
-    datInternalAPI.createNewArchive(opts).then(key => {
-      window.location = 'dat://' + key
-    })
-  }})
-}
-
 function onToggleSave () {
   archiveInfo.userSettings.isSaved = !archiveInfo.userSettings.isSaved
 
@@ -496,40 +512,6 @@ function onToggleSharing () {
 
 // event handlers: files listing 
 // =
-
-function onDownloadNode (e, node) {
-  e.preventDefault()
-
-  // recursively start downloads
-  co(function *() {
-    yield startDownload(node)
-    render()
-  })
-
-  function* startDownload (n) {
-    // do nothing if already downloaded
-    if (n.entry.downloadedBlocks == n.entry.blocks)
-      return Promise.resolve()
-
-    // render progress starting
-    n.entry.isDownloading = true
-    render()
-
-    if (n.entry.type == 'file') {
-      // download entry
-      yield datInternalAPI.downloadArchiveEntry(archiveInfo.key, n.entry.path)
-    } else if (n.entry.type == 'directory') {
-      // recurse to children
-      yield Object.keys(n.children).map(k => startDownload(n.children[k]))
-    }
-
-    // render done
-    n.entry.isDownloading = false
-    render()
-
-    return Promise.resolve()
-  }
-}
 
 function onToggleHidden () {
   hideDotfiles = !hideDotfiles

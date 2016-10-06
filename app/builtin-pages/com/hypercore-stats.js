@@ -62,14 +62,12 @@ Stats.prototype.render = function () {
     // Dont render anything if the archive is locally-maintained and not on the network
     return  yo`<div class="hypercore-stats"></div>`
   }
-  var us = isServing ? (prettyBytes(this.uploadSpeed()) + '/s') : ''
+  var us = prettyBytes(this.uploadSpeed()) + '/s'
   var ds = prettyBytes(this.downloadSpeed()) + '/s'
   return yo`<div class="hypercore-stats">
     <span class="hs-peers">${this.archiveInfo.peers} peers</span>
     <span class="download-speed"><span class="icon icon-down"></span> ${ds}</span>
-    ${ isServing
-      ? yo`<span class="upload-speed"><span class="icon icon-up"></span> ${us}</span>`
-      : '' }
+    <span class="upload-speed"><span class="icon icon-up"></span> ${us}</span>
   </div>`
 }
 

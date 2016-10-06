@@ -106,9 +106,14 @@
       display: inline-block;
       text-align: center;
     }
+    &.disabled {
+      color: #999;
+    }
     &:hover {
-      background: #fafafa;
       text-decoration: none;
+    }
+    &:hover:not(.disabled) {
+      background: #fafafa;
       color: #0091ff;
     }
   }
