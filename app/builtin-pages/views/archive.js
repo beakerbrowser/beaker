@@ -168,8 +168,8 @@ function renderArchive () {
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
   var exportZipFileBtn = yo`<a id="export-zip-btn" class="btn" title="Export as .Zip File" href="/?as=zip"><span class="icon icon-export"></span> Export .Zip</a>`
   var saveArchiveBtn = (archiveInfo.userSettings.isSaved)
-    ? yo`<a class="btn save-btn saved" title="Unsave" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Pinned</a>`
-    : yo`<a class="btn save-btn unsaved" title="Save" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Pin</a>`
+    ? yo`<a class="btn save-btn" title="Unsave" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete</a>`
+    : yo`<a class="btn save-btn" title="Save" onclick=${onToggleSave}><span class="icon icon-install"></span> Install</a>`
   var addFilesBtn = (archiveInfo.isOwner)
     ? yo`<a id="add-files-btn" class="btn btn-group" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
     : ''
