@@ -30,6 +30,11 @@ export function startViewDatTour (isOwner) {
       text: 'You can change the title and description here.',
       attachTo: '#edit-dat-btn bottom'
     })
+
+    tour.addStep('edit-details2', {
+      text: 'You can also change the title here.',
+      attachTo: '#owner-label bottom'
+    })
   } else {
     tour.addStep('owner', {
       text: 'You don\'t own this archive. That means it\'s read-only.',

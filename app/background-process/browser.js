@@ -1,15 +1,10 @@
-import { app, protocol, autoUpdater, session } from 'electron'
+import { app, dialog, autoUpdater } from 'electron'
 import os from 'os'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
-import path from 'path'
-import fs from 'fs'
 import log from 'loglevel'
-import globalModulesDir from 'global-modules'
-import co from 'co'
 import manifest from './api-manifests/browser'
-import { cbPromise } from '../lib/functions'
 import * as settingsDb from './dbs/settings'
 import * as plugins from './plugins'
 
@@ -71,7 +66,9 @@ export function setup () {
 
     getDefaultProtocolSettings,
     setAsDefaultProtocolClient,
-    removeAsDefaultProtocolClient
+    removeAsDefaultProtocolClient,
+
+    showOpenDialog
   })
 }
 
@@ -212,6 +209,17 @@ export function getProtocolDescription (scheme) {
 
 function eventsStream () {
   return emitStream(browserEvents)
+}
+
+function showOpenDialog (opts = {}) {
+  return new Promise((resolve) => {
+    dialog.showOpenDialog({
+      title: opts.title,
+      buttonLabel: opts.buttonLabel,
+      filters: opts.filters,
+      properties: opts.properties
+    }, filenames => resolve(filenames))
+  })
 }
 
 // internal methods

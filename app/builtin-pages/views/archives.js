@@ -6,7 +6,6 @@ import * as yo from 'yo-yo'
 import co from 'co'
 import emitStream from 'emit-stream'
 import { render as renderArchivesList } from '../com/archives-list'
-import * as editSiteModal from '../com/modals/edit-site' 
 
 // globals
 // =
@@ -62,8 +61,8 @@ function render () {
     <div class="archives">
       <div class="ll-heading">
         Files
-        <span class="ll-heading-group">
-          <button class="btn" onclick=${onClickCreateArchive}>New Archive</button>
+        <span class="btn-group">
+          <button class="btn" onclick=${onClickCreateArchive}>New Archive</button><button class="btn" onclick=${onClickImportFolder}>Import Folder</button>
         </span>
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
@@ -97,11 +96,23 @@ function renderNotSupported () {
 // =
 
 function onClickCreateArchive (e) {
-  editSiteModal.create({}, { title: 'New Files Archive', onSubmit: opts => {
-    datInternalAPI.createNewArchive(opts).then(key => {
-      window.location = 'dat://' + key
+  datInternalAPI.createNewArchive().then(key => {
+    window.location = 'beaker:archive/' + key
+  })
+}
+
+function onClickImportFolder (e) {
+  co(function* () {
+    var paths = yield beakerBrowser.showOpenDialog({
+      title: 'Choose a folder to import',
+      buttonLabel: 'Import',
+      properties: ['openDirectory', 'showHiddenFiles']
     })
-  }})
+    if (paths && paths[0]) {
+      var key = yield datInternalAPI.createNewArchive({ importFrom: paths[0] })
+      window.location = 'beaker:archive/' + key
+    }
+  })
 }
 
 function onUpdateArchive (update) {

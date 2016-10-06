@@ -160,8 +160,8 @@ function renderArchive () {
 
   // toolbar buttons
   var ownerEl = (archiveInfo.isOwner)
-    ? yo`<span><span class="icon icon-pencil"></span> Owner</span>`
-    : ''
+    ? yo`<span><span class="icon icon-pencil" onclick=${onEditArchive}></span></span>`
+    : 'read-only'
   var serveBtn = (archiveInfo.userSettings.isServing)
     ? yo`<a id="share-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
     : yo`<a id="share-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
@@ -201,6 +201,7 @@ function renderArchive () {
         <div>
           <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
           ${name}
+          <small id="owner-label">${ownerEl}</small>
           <span class="btn-group">
             ${serveBtn}${saveArchiveBtn}${copyLinkBtn}
           </span>
@@ -208,11 +209,6 @@ function renderArchive () {
             ${exportZipFileBtn}
           </span>
           ${addFilesBtn}
-          <small id="owner-label" class="ll-heading-group">
-            ${ archiveInfo.isOwner 
-              ? yo`<span><span class="icon icon-pencil"></span> owner</span>`
-              : 'read-only' }
-          </small>
           <small class="ll-heading-right">
             <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
             <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
