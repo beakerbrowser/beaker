@@ -348,7 +348,16 @@ function onSubmitEditArchive ({ title, description }) {
 
 function onClickSelectFiles (e) {
   e.preventDefault()
-  document.querySelector('input[type="file"]').click()
+  co(function* () {
+    var paths = yield beakerBrowser.showOpenDialog({
+      title: 'Choose a folder to import',
+      buttonLabel: 'Import',
+      properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
+    })
+    if (paths) {
+      addFiles(paths)
+    }
+  })
 }
 
 function onChooseFiles (e) {
@@ -364,13 +373,20 @@ function onDragDrop (files) {
 
 function addFiles (files) {
   files.forEach(file => {
-    // calculate destination
-    // - drag/drop gives `fullPath`, while file-picker just gives `name`
-    // - in drag/drop case, because you can drag in folders, it may give a subfoldered target
-    var dst = path.join(archiveCurrentNode.entry.path, file.fullPath||file.name)
+    var src, dst
+
+    // set paths
+    // drag/drop gives `fullPath`, while file-picker just gives a string
+    if (typeof file === 'string') {
+      src = file
+    } else {
+      // TODO double check this
+      src = file.path
+    }
+    dst = archiveCurrentNode.entry.path
 
     // send to backend
-    datInternalAPI.writeArchiveFileFromPath(archiveInfo.key, { src: file.path, dst })
+    datInternalAPI.writeArchiveFileFromPath(archiveInfo.key, { src, dst })
       .catch(console.warn.bind(console, 'Error writing file:'))
   })
 }
