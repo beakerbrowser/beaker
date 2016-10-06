@@ -204,23 +204,39 @@ function renderHeading () {
   }
 
   if (archiveInfo.isOwner) {
-    // owner's btns
-    var saveArchiveBtn = (archiveInfo.userSettings.isSaved)
-      ? yo`<a id="save-btn" class="btn btn-group saved" title="Delete" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete</a>`
-      : yo`<a id="save-btn" class="btn btn-group unsaved" title="Download" onclick=${onToggleSave}><span class="icon icon-reply"></span> Undo Delete</a>`
-    var addFilesBtn = yo`<a id="add-files-btn" class="btn btn-group" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
+    if (archiveInfo.userSettings.isSaved) {
+      // owner's btns
+      let deleteArchiveBtn = yo`<a id="save-btn" class="btn btn-group" title="Delete" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete</a>`
+      let addFilesBtn = yo`<a id="add-files-btn" class="btn btn-group" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
 
-    // owner's heading
+      // owner's heading
+      return yo`<div class="ll-heading">
+        <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
+        ${name}
+        <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
+        <span class="btn-group">
+          ${serveBtn}${copyLinkBtn}
+        </span>
+        ${deleteArchiveBtn}
+        ${addFilesBtn}
+        <small class="ll-heading-right">
+          <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
+          <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
+        </small>
+      </div>`
+    }
+
+    // deleted owner's btns
+    let deletedArchiveBtn = yo`<a id="save-btn" class="btn btn-group disabled" title="Deleted"><span class="icon icon-trash"></span> Deleted</a>`
+    let undoDeleteBtn = yo`<small class="ll-heading-group"><a title="Undo Delete" onclick=${onToggleSave}>Undo Delete</a></small>`
+
+    // deleted owner's heading
     return yo`<div class="ll-heading">
       <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
       ${name}
       <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
-      <span class="btn-group">
-        ${serveBtn}${copyLinkBtn}
-      </span>
-      ${saveArchiveBtn}
-      ${addFilesBtn}
-      ${downloadBtn}
+      ${deletedArchiveBtn}
+      ${undoDeleteBtn}
       <small class="ll-heading-right">
         <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
         <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
