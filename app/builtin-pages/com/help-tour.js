@@ -52,14 +52,14 @@ export function startViewDatTour (isOwner) {
     attachTo: '#share-btn bottom'
   })
 
-  tour.addStep('pin', {
-    text: 'Pin an archive to keep it.',
-    attachTo: '.save-btn bottom'
+  tour.addStep('install', {
+    text: 'Install other people\'s archives to keep it for offline use.',
+    attachTo: '#save-btn bottom'
   })
 
-  tour.addStep('unpin', {
-    text: 'Unpin to let it be deleted.',
-    attachTo: '.save-btn bottom'
+  tour.addStep('delete', {
+    text: 'Delete an archive when you\'re done with it.',
+    attachTo: '#save-btn bottom'
   })
 
   tour.addStep('copy-link', {
@@ -86,24 +86,38 @@ export function startViewDatTour (isOwner) {
     }]
   })
 
-  var wasSharing = false
+  var shareBtn = document.querySelector('#share-btn')
+  var saveBtn = document.querySelector('#save-btn')
+  var wasSharing = shareBtn.classList.contains('glowing')
+  var wasSaved = saveBtn.classList.contains('saved')
   tour.on('show', e => {
     if (e.step.id == 'unshare') {
       // fake the sharing state
-      var shareBtn = document.querySelector('#share-btn')
-      wasSharing = shareBtn.classList.contains('glowing')
       if (!wasSharing) {
         shareBtn.classList.add('btn-primary')
         shareBtn.classList.add('glowing')
         shareBtn.innerHTML = '<span class="icon icon-share"></span> Sharing'
       }
     }
-    if (e.step.id == 'pin' && !wasSharing) {
+    if (e.step.id == 'install') {
       // unfake the sharing state
-      var shareBtn = document.querySelector('#share-btn')
-      shareBtn.classList.remove('btn-primary')
-      shareBtn.classList.remove('glowing')
-      shareBtn.innerHTML = '<span class="icon icon-share"></span> Share'
+      if (!wasSharing) {
+        shareBtn.classList.remove('btn-primary')
+        shareBtn.classList.remove('glowing')
+        shareBtn.innerHTML = '<span class="icon icon-share"></span> Share'
+      }
+      // fake the uninstalled state
+      saveBtn.innerHTML = `<span class="icon icon-install"> Install`
+    }
+    if (e.step.id == 'delete') {
+      // fake the installed state
+      saveBtn.innerHTML = `<span class="icon icon-trash"> Delete`
+    }
+    if (e.step.id == 'copy-link') {
+      // unfake the installed state
+      if (!wasSaved) {
+        saveBtn.innerHTML = `<span class="icon icon-install"> Install`
+      }
     }
   })
 
