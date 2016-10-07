@@ -155,6 +155,18 @@ function renderArchive () {
     editBtn.childNodes[0].innerHTML = '&mdash;'
   }
 
+  // downloader's btns
+  var syncBtn
+  if (archiveInfo.isOwner) {
+    syncBtn = (archiveInfo.userSettings.isServing)
+      ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
+      : yo`<a id="sync-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
+  } else {
+    syncBtn = (archiveInfo.userSettings.isSaved)
+      ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="Syncing" onclick=${onToggleSave}><span class="icon icon-down-circled"></span> Syncing</a>`
+      : yo`<a id="sync-btn" class="btn" title="Sync" onclick=${onToggleSave}><span class="icon icon-down-circled"></span> Sync</a>`
+  }
+
   // readme
   var readmeEl
   if (archiveInfo.readme) {
@@ -177,7 +189,8 @@ function renderArchive () {
       <div class="archive-summary">
         <div>${descriptEl} ${editBtn}</div>
         <div class="flex-spacer"></div>
-        ${ hypercoreStats.render() }
+        ${hypercoreStats.render()}
+        ${syncBtn}
       </div>
       ${progressEl}
       ${archiveEntries(archiveCurrentNode, {
@@ -198,9 +211,6 @@ function renderHeading () {
   const isServing = archiveInfo.userSettings.isServing
 
   // general buttons
-  var serveBtn = (isServing)
-    ? yo`<a id="share-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
-    : yo`<a id="share-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
   var openFolderBtn = yo`<a onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
   var deleteArchiveBtn = yo`<a title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
@@ -223,9 +233,7 @@ function renderHeading () {
         <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
         ${name}
         <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
-        <span class="btn-group">
-          ${serveBtn}${copyLinkBtn}
-        </span>
+        <span class="btn-group">${copyLinkBtn}</span>
         ${dropdownBtn}
         ${addFilesBtn}
         <small class="ll-heading-right">
@@ -254,11 +262,6 @@ function renderHeading () {
     </div>`
   }
 
-  // downloader's btns
-  var syncBtn = (isSaved)
-    ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="Syncing" onclick=${onToggleSave}><span class="icon icon-down-circled"></span> Syncing</a>`
-    : yo`<a id="sync-btn" class="btn" title="Sync" onclick=${onToggleSave}><span class="icon icon-down-circled"></span> Sync</a>`
-
   // downloader's heading
   return yo`<div class="ll-heading">
     ${ '' /* TODO do this? (isSaved)
@@ -266,9 +269,7 @@ function renderHeading () {
       : ''*/ }
     ${name}
     <small id="owner-label">read-only</small>
-    <span class="btn-group">
-      ${syncBtn}${copyLinkBtn}
-    </span>
+    <span class="btn-group">${copyLinkBtn}</span>
     ${dropdownBtn}
     <small class="ll-heading-right">
       <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>

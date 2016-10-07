@@ -13,7 +13,7 @@
     display: flex;
     align-items: center;
     background: #fafafa;
-    padding: 4px 10px;
+    padding: 4px 10px 3px;
     margin-bottom: 1px;
     font-size: 14px;
     color: #666;
@@ -22,7 +22,17 @@
       color: gray;
     }
 
+    .btn {
+      padding: 0px 10px;
+      font-size: 13px;
+      background: #fff;
+      &:hover {
+        background: #eee;
+      }
+    }
+
     .hypercore-stats {
+      margin-right: 15px;
       color: gray;
       .download-speed,
       .upload-speed {
