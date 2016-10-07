@@ -202,9 +202,7 @@ function renderHeading () {
     ? yo`<a id="share-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
     : yo`<a id="share-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
-  var openFolderBtn = (isSaved)
-    ? yo`<a><span class="icon icon-popup"></span> Open in Finder</a>` // TODO
-    : yo`<a class="disabled"><span class="icon icon-popup"></span> Open in Finder</a>`
+  var openFolderBtn = yo`<a onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
   var deleteArchiveBtn = yo`<a title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
   var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
     <a class="toggleable btn"><span class="icon icon-down-open"></span></a>
@@ -473,15 +471,9 @@ function onOpenFolder (e, entry) {
   window.history.pushState(null, '', 'beaker:archive/'+archiveInfo.key+'/'+entry.path)
 }
 
-
-function onToggleSharing () {
-  return co(function*() {
-    if (archiveInfo.isSharing)
-      yield datInternalAPI.unswarm(archiveInfo.key)
-    else
-      yield datInternalAPI.swarm(archiveInfo.key)
-    render()
-  })
+function onOpenInFinder () {
+  datInternalAPI.openInExplorer(archiveInfo.key)
+  render()
 }
 
 // TODO
