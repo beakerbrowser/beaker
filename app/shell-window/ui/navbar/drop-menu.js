@@ -85,9 +85,9 @@ export class DropMenuNavbarBtn {
         </div>`
       })
       dropdownEl = yo`<div class="toolbar-dropdown toolbar-drop-menu-dropdown">
-        <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-folder"></span> View this Dat's Files</div>
-        <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-floppy"></span> Save this Dat for Offline</div>
-        ${''/* TODO when apps are ready: <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-install"></span> Install as Offline App</div> */ }
+        ${''/* TODO <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-folder"></span> View this Dat's Files</div> */ }
+        ${''/* TODO <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-floppy"></span> Save this Dat for Offline</div> */ }
+        ${''/* TODO <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-install"></span> Install as Offline App</div> */ }
         <hr />
         <div class="td-item" onclick=${e => this.onOpenDownloads(e)}>Downloads</div>
         <hr />
