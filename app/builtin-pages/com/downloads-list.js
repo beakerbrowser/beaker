@@ -1,9 +1,8 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import toggleable, { closeToggleable } from './toggleable'
-import { niceDate } from '../../lib/time'
-import { ucfirst, pluralize } from '../../lib/strings'
-import { pushUrl } from '../../lib/fg/event-handlers'
+import { pluralize } from '../../lib/strings'
+import { pushUrl, writeToClipboard } from '../../lib/fg/event-handlers'
 
 export function render (archives, opts={}) {
   // render archives
@@ -16,8 +15,7 @@ export function render (archives, opts={}) {
     }
 
     // render row
-    let title = archive.title||'Untitled'
-    let mtime = archive.mtime ? ucfirst(niceDate(archive.mtime)) : '--'
+    let title = archive.title || archive.key
     archiveEls.push(yo`<div class="ll-row archive">
       <div class="ll-link">
         <img class="favicon" src=${'beaker-favicon:dat://'+archive.key} />
@@ -25,14 +23,18 @@ export function render (archives, opts={}) {
           ${title}
         </a>
       </div>
-      <div class="ll-updated" title=${mtime}>${mtime}</div>
-      <div class="ll-size">${archive.size ? prettyBytes(archive.size) : '0 B'}</div>
-      <div class="ll-status">${archive.peers} ${pluralize(archive.peers, 'peer')}</div>
+      <div class="ll-progressbar">
+        <progress value=${0} max=${archive.size}></progress>
+      </div>
+      <div class="ll-progress">
+        ${archive.size ? prettyBytes(archive.size) : '0 B'} / ${archive.size ? prettyBytes(archive.size) : '0 B'}
+      </div>
+      <div class="ll-status">15 KB/s</div>
       <div class="ll-serve">${archive.userSettings.isServing 
-        ? yo`<a class="btn btn-primary glowing" onclick=${opts.onToggleServeArchive(archive)} title="Sharing"><span class="icon icon-share"></span> Sharing</a>` 
-        : yo`<a class="btn" onclick=${opts.onToggleServeArchive(archive)} title="Share"><span class="icon icon-share"></span> Share</a>` }</div>
+        ? yo`<a class="btn btn-primary glowing" onclick=${opts.onToggleServeArchive(archive)} title="Syncing"><span class="icon icon-down-circled"></span> Syncing</a>` 
+        : yo`<a class="btn" onclick=${opts.onToggleServeArchive(archive)} title="Sync"><span class="icon icon-down-circled"></span> Sync</a>` }</div>
       <div class="ll-dropdown">${toggleable(yo`
-        <div class="dropdown-btn-container">
+        <div class="dropdown-btn-container" data-toggle-id=${`archive-${archive.key}`}>
           <a class="toggleable btn"><span class="icon icon-down-open-mini"></span></a>
           <div class="dropdown-btn-list">
             <a href=${'beaker:archive/'+archive.key} onclick=${pushUrl}><span class="icon icon-docs"></span> View Files</a>
@@ -62,11 +64,7 @@ export function render (archives, opts={}) {
 
 function onCopyLink (key) {
   return e => {
-    var textarea = yo`<textarea>${'dat://'+key}</textarea>`
-    document.body.appendChild(textarea)
-    textarea.select()
-    document.execCommand('copy')
-    document.body.removeChild(textarea)
+    writeToClipboard('dat://'+key)
     closeToggleable(e.target)
   }
 }

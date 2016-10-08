@@ -33,6 +33,7 @@ export function show () {
     if (window.datInternalAPI) {
       // fetch archives
       archives = yield datInternalAPI.getSavedArchives()
+      archives = archives.filter(a => a.isOwner) // owned archives only
       archives.sort(archiveSortFn)
     }
     render()
@@ -41,6 +42,7 @@ export function show () {
 
 export function hide () {
   isViewActive = false
+  archives = null
 }
 
 // rendering

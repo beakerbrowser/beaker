@@ -6,6 +6,7 @@ import * as archive from './builtin-pages/views/archive'
 import * as history from './builtin-pages/views/history'
 import * as downloads from './builtin-pages/views/downloads'
 import * as settings from './builtin-pages/views/settings'
+import { closeAllToggleables } from './builtin-pages/com/toggleable'
 
 // HACK FIX
 // weird bug, prependListener is expected but missing?
@@ -53,6 +54,7 @@ function onURLChange () {
   var isSameView = currentView === newView
 
   // teardown old view
+  closeAllToggleables()
   if (currentView)
     currentView.hide(isSameView)
 
