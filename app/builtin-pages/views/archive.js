@@ -162,9 +162,12 @@ function renderArchive () {
       ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
       : yo`<a id="sync-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
   } else {
-    syncBtn = (archiveInfo.userSettings.isSaved)
-      ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="Syncing" onclick=${onToggleSave}><span class="icon icon-down-circled"></span> Syncing</a>`
-      : yo`<a id="sync-btn" class="btn" title="Sync" onclick=${onToggleSave}><span class="icon icon-down-circled"></span> Sync</a>`
+    let entry = archiveEntriesTree.entry
+    let isDownloaded = entry.downloadedBlocks >= entry.blocks
+    let label = (isDownloaded) ? 'Sync' : 'Download'
+    syncBtn = (archiveInfo.userSettings.isServing)
+      ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="${label}ing" onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}ing</a>`
+      : yo`<a id="sync-btn" class="btn" title=${label} onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}</a>`
   }
 
   // readme
@@ -208,7 +211,6 @@ function renderArchive () {
 function renderHeading () {
   const name = archiveInfo.title || 'Untitled'
   const isSaved = archiveInfo.userSettings.isSaved
-  const isServing = archiveInfo.userSettings.isServing
 
   // general buttons
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
@@ -264,9 +266,9 @@ function renderHeading () {
 
   // downloader's heading
   return yo`<div class="ll-heading">
-    ${ '' /* TODO do this? (isSaved)
+    ${ (isSaved)
       ? yo`<a href="beaker:downloads" onclick=${pushUrl}>Downloads <span class="icon icon-right-open"></span></a>`
-      : ''*/ }
+      : '' }
     ${name}
     <small id="owner-label">read-only</small>
     <span class="btn-group">${copyLinkBtn}</span>
