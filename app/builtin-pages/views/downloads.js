@@ -6,16 +6,18 @@ import * as yo from 'yo-yo'
 import co from 'co'
 import emitStream from 'emit-stream'
 import prettyBytes from 'pretty-bytes'
+import ArchivesList from '../model/archives-list'
 import { ucfirst } from '../../lib/strings'
-import { pushUrl, writeToClipboard } from '../../lib/fg/event-handlers'
+import { writeToClipboard } from '../../lib/fg/event-handlers'
 import toggleable, { closeAllToggleables } from '../com/toggleable'
+import { render as renderArchivesList } from '../com/archives-list'
 import { render as renderDownloadsList } from '../com/downloads-list'
 
 // globals
 // =
 
 var isViewActive = false
-var archives
+var archivesList
 var downloads
 
 // exported API
@@ -35,23 +37,21 @@ export function show () {
     // fetch downloads
     downloads = yield beakerDownloads.getDownloads()
     // fetch archives
-    archives = yield datInternalAPI.getSavedArchives()
-    archives = archives.filter(a => !a.isOwner) // non-owned archives only
-    archives.sort((a, b) => b.mtime - a.mtime)
-    // render now
-    render()
-    // now fetch archive stats
-    var stats = yield Promise.all(archives.map(a => datInternalAPI.getArchiveStats(a.key)))
-    archives.forEach((archive, i) => archive.stats = stats[i])
-    console.log(archives)
-    // and render again, now that we have the stats
+    archivesList = new ArchivesList()
+    yield archivesList.setup({
+      filter: a => !a.isOwner, // non-owned archives only
+      fetchStats: true
+    })
+    archivesList.on('changed', render)
+    // render
     render()
   })
 }
 
 export function hide () {
   isViewActive = false
-  archives = null
+  archivesList.destroy()
+  archivesList = null
   downloads = null
 }
 
@@ -138,7 +138,7 @@ function render () {
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
       </div>
-      ${renderDownloadsList(archives, { renderEmpty, onToggleServeArchive, onDeleteArchive, onUndoDeletions })}
+      ${renderArchivesList(archivesList, { renderEmpty, render })}
       <div class="ll-heading">
         File Downloads
       </div>
@@ -225,50 +225,5 @@ function onRemoveDownload (e, download) {
   closeAllToggleables()
   beakerDownloads.remove(download.id)
   downloads.splice(downloads.indexOf(download), 1)
-  render()
-}
-
-function onToggleServeArchive (archiveInfo) {
-  return e => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    archiveInfo.userSettings.isServing = !archiveInfo.userSettings.isServing
-
-    // isSaved must reflect isServing
-    if (archiveInfo.userSettings.isServing && !archiveInfo.userSettings.isSaved)
-      archiveInfo.userSettings.isSaved = true
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-
-    render()
-  }
-}
-
-function onDeleteArchive (archiveInfo) {
-  return e => {
-    e.preventDefault()
-    e.stopPropagation()
-      
-    archiveInfo.userSettings.isSaved = !archiveInfo.userSettings.isSaved
-
-    // isServing must reflect isSaved
-    if (!archiveInfo.userSettings.isSaved && archiveInfo.userSettings.isServing)
-      archiveInfo.userSettings.isServing = false
-
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-    render()
-  }
-}
-
-function onUndoDeletions (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  archives.forEach(archiveInfo => {
-    if (!archiveInfo.userSettings.isSaved) {
-      archiveInfo.userSettings.isSaved = true
-      datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-    }
-  })
   render()
 }

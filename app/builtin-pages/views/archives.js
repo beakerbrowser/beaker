@@ -4,45 +4,38 @@ This uses the datInternalAPI API, which is exposed by webview-preload to all arc
 
 import * as yo from 'yo-yo'
 import co from 'co'
-import emitStream from 'emit-stream'
+import ArchivesList from '../model/archives-list'
 import { render as renderArchivesList } from '../com/archives-list'
 
 // globals
 // =
 
-var archives
+var archivesList
 var isViewActive = false
 
 // exported API
 // =
 
 export function setup () {
-  if (!window.datInternalAPI)
-    return console.warn('Dat plugin is required for the Archives page.')
-
-  // wire up events
-  var archivesEvents = emitStream(datInternalAPI.archivesEventStream())
-  archivesEvents.on('update-archive', onUpdateArchive)
-  archivesEvents.on('update-peers', onUpdatePeers)
 }
 
 export function show () {
   isViewActive = true
   document.title = 'Your Archives'
-  co(function*(){
-    if (window.datInternalAPI) {
-      // fetch archives
-      archives = yield datInternalAPI.getSavedArchives()
-      archives = archives.filter(a => a.isOwner) // owned archives only
-      archives.sort(archiveSortFn)
-    }
+  co(function * () {
+    archivesList = new ArchivesList()
+    yield archivesList.setup({
+      filter: a => a.isOwner // owned archives only
+    })
+    archivesList.on('changed', render)
     render()
   })
 }
 
 export function hide () {
   isViewActive = false
-  archives = null
+  archivesList.destroy()
+  archivesList = null
 }
 
 // rendering
@@ -55,7 +48,7 @@ function render () {
 
   // content
   var content = (window.datInternalAPI)
-    ? renderArchivesList(archives, { renderEmpty, onToggleServeArchive, onDeleteArchive, onUndoDeletions })
+    ? renderArchivesList(archivesList, { renderEmpty, render })
     : renderNotSupported()
 
   // render view
@@ -115,80 +108,4 @@ function onClickImportFolder (e) {
       window.location = 'beaker:archive/' + key
     }
   })
-}
-
-function onUpdateArchive (update) {
-  if (archives) {
-    // find the archive being updated
-    var archive = archives.find(a => a.key == update.key)
-    if (archive) {
-      // patch the archive
-      for (var k in update)
-        archive[k] = update[k]
-      render()
-    }
-  }
-}
-
-function onUpdatePeers ({ key, peers }) {
-  if (archives) {
-    // find the archive being updated
-    var archive = archives.find(a => a.key == key)
-    if (archive)
-      archive.peers = peers // update
-    render()
-  }
-}
-
-
-function onToggleServeArchive (archiveInfo) {
-  return e => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    archiveInfo.userSettings.isServing = !archiveInfo.userSettings.isServing
-
-    // isSaved must reflect isServing
-    if (archiveInfo.userSettings.isServing && !archiveInfo.userSettings.isSaved)
-      archiveInfo.userSettings.isSaved = true
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-    
-    render()
-  }
-}
-
-function onDeleteArchive (archiveInfo) {
-  return e => {
-    e.preventDefault()
-    e.stopPropagation()
-      
-    archiveInfo.userSettings.isSaved = !archiveInfo.userSettings.isSaved
-
-    // isServing must reflect isSaved
-    if (!archiveInfo.userSettings.isSaved && archiveInfo.userSettings.isServing)
-      archiveInfo.userSettings.isServing = false
-
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-    render()
-  }
-}
-
-function onUndoDeletions (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  archives.forEach(archiveInfo => {
-    if (!archiveInfo.userSettings.isSaved) {
-      archiveInfo.userSettings.isSaved = true
-      datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-    }
-  })
-  render()
-}
-
-// helpers
-// =
-
-function archiveSortFn (a, b) {
-  return b.mtime - a.mtime
 }
