@@ -41,7 +41,7 @@ export default function toggleable (el) {
     }
     if (id) {
       // persist state
-      toggleState[id] = !toggleState[id]
+      toggleState[id] = newState
     }
   }
   function onToggleOn (e) {

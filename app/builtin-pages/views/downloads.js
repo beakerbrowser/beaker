@@ -32,13 +32,19 @@ export function show () {
   isViewActive = true
   document.title = 'Downloads'
   co(function* () {
+    // fetch downloads
     downloads = yield beakerDownloads.getDownloads()
-    if (window.datInternalAPI) {
-      // fetch archives
-      archives = yield datInternalAPI.getSavedArchives()
-      archives = archives.filter(a => !a.isOwner) // non-owned archives only
-      archives.sort((a, b) => b.mtime - a.mtime)
-    }
+    // fetch archives
+    archives = yield datInternalAPI.getSavedArchives()
+    archives = archives.filter(a => !a.isOwner) // non-owned archives only
+    archives.sort((a, b) => b.mtime - a.mtime)
+    // render now
+    render()
+    // now fetch archive stats
+    var stats = yield Promise.all(archives.map(a => datInternalAPI.getArchiveStats(a.key)))
+    archives.forEach((archive, i) => archive.stats = stats[i])
+    console.log(archives)
+    // and render again, now that we have the stats
     render()
   })
 }
@@ -97,9 +103,9 @@ function render () {
           ? yo`<a class="ll-title" onclick=${e => onOpenDownload(e, d)} title=${d.name}>${d.name}</a>`
           : yo`<span class="ll-title" title=${d.name}>${d.name}</a>` }
       </div>
-      <div class="ll-progressbar"><progress value=${d.receivedBytes} max=${d.totalBytes}></progress></div>
-      <div class="ll-progress">${progress}</div>
       <div class="ll-status">${status}</div>
+      <div class="ll-progress">${progress}</div>
+      <div class="ll-progressbar"><progress value=${d.receivedBytes} max=${d.totalBytes}></progress></div>
       <div class="ll-serve">${action}</div>
       <div class="ll-dropdown">${toggleable(yo`
         <div class="dropdown-btn-container" data-toggle-id=${`download-${d.id}`}>

@@ -14,22 +14,36 @@ export function render (archives, opts={}) {
       return numDeleted++
     }
 
+    // render stats
+    var progress, status, blocksProgress = 0, blocksTotal = 1
+    if (archive.stats) {
+      blocksProgress = archive.stats.blocksProgress
+      blocksTotal = archive.stats.blocksTotal
+      if (blocksProgress !== blocksTotal) {
+        // not yet downloaded
+        progress = `${prettyBytes(blocksProgress)} / ${prettyBytes(blocksTotal)}`
+        status = 'Downloading' // TODO show speed
+      } else {
+        // fully downloaded
+        progress = prettyBytes(blocksTotal)
+        if (archive.userSettings.isServing) {
+          status = 'Seeding'
+        } else {
+          status = 'Idle'
+        }
+      }
+    }
+
     // render row
     let title = archive.title || archive.key
     archiveEls.push(yo`<div class="ll-row archive">
       <div class="ll-link">
         <img class="favicon" src=${'beaker-favicon:dat://'+archive.key} />
-        <a class="ll-title" href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>
-          ${title}
-        </a>
+        <a class="ll-title" href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>${title}</a>
       </div>
-      <div class="ll-progressbar">
-        <progress value=${0} max=${archive.size}></progress>
-      </div>
-      <div class="ll-progress">
-        ${archive.size ? prettyBytes(archive.size) : '0 B'} / ${archive.size ? prettyBytes(archive.size) : '0 B'}
-      </div>
-      <div class="ll-status">15 KB/s</div>
+      <div class="ll-status">${status}</div>
+      <div class="ll-progress">${progress}</div>
+      <div class="ll-progressbar"><progress value=${blocksProgress} max=${blocksTotal}></progress></div>
       <div class="ll-serve">${archive.userSettings.isServing 
         ? yo`<a class="btn btn-primary glowing" onclick=${opts.onToggleServeArchive(archive)} title="Syncing"><span class="icon icon-down-circled"></span> Syncing</a>` 
         : yo`<a class="btn" onclick=${opts.onToggleServeArchive(archive)} title="Sync"><span class="icon icon-down-circled"></span> Sync</a>` }</div>
