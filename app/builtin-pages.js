@@ -48,6 +48,7 @@ currentView.show()
 
 window.addEventListener('pushstate', onURLChange)
 window.addEventListener('popstate', onURLChange)
+document.body.addEventListener('click', onAnyClick, true)
 
 function onURLChange () {
   var newView = getLocationView()
@@ -61,6 +62,11 @@ function onURLChange () {
   // render new view
   currentView = newView
   currentView.show(isSameView)
+}
+
+function onAnyClick () {
+  // close the toggleables on all click events
+  closeAllToggleables()
 }
 
 // internal methods

@@ -1,9 +1,12 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import toggleable, { closeToggleable } from './toggleable'
+import toggleable from './toggleable'
 import { niceDate } from '../../lib/time'
 import { ucfirst, pluralize } from '../../lib/strings'
 import { pushUrl, writeToClipboard } from '../../lib/fg/event-handlers'
+
+// exported api
+// =
 
 export function render (archivesList, opts = {}) {
   const rerender = opts.render || (() => {})
@@ -113,10 +116,7 @@ export function render (archivesList, opts = {}) {
 }
 
 function onCopyLink (key) {
-  return e => {
-    writeToClipboard('dat://'+key)
-    closeToggleable(e.target)
-  }
+  return e => writeToClipboard('dat://'+key)
 }
 
 function onToggleServeArchive (archiveInfo, render) {
