@@ -85,7 +85,7 @@ function renderProtocolSettings () {
     ${registered.length
       ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
       : '' }
-    ${unregistered.map(proto => yo`<div>Make Beaker the default browser for <strong>${proto}</strong>? <a class="icon icon-check" onclick=${register(proto)}> Yes</a>.</div>`)}
+    ${unregistered.map(proto => yo`<div><strong>${proto}</strong> <a onclick=${register(proto)}>Make default <span class="icon icon-forward"></span></a></div>`)}
   </div>`
 }
 
