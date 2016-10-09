@@ -37,6 +37,7 @@ export function show () {
       filter: a => !a.isOwner, // non-owned archives only
       fetchStats: true
     })
+    console.log(archivesList.archives)
     archivesList.on('changed', render)
 
     // render

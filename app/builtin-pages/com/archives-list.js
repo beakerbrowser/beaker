@@ -31,9 +31,9 @@ export function render (archivesList, opts = {}) {
             ${title}
           </a>
         </div>
+        <div class="ll-status">${archive.userSettings.isServing ? (archive.peers + ' ' + pluralize(archive.peers, 'peer')) : ''}</div>
         <div class="ll-updated" title=${mtime}>${mtime}</div>
         <div class="ll-size">${archive.size ? prettyBytes(archive.size) : '0 B'}</div>
-        <div class="ll-status">${archive.peers} ${pluralize(archive.peers, 'peer')}</div>
         <div class="ll-serve">${archive.userSettings.isServing 
           ? yo`<a class="btn btn-primary glowing" onclick=${onToggleServeArchive(archive, rerender)} title="Sharing"><span class="icon icon-share"></span> Sharing</a>` 
           : yo`<a class="btn" onclick=${onToggleServeArchive(archive, rerender)} title="Share"><span class="icon icon-share"></span> Share</a>` }</div>
@@ -58,18 +58,19 @@ export function render (archivesList, opts = {}) {
       if (archive.stats) {
         blocksProgress = archive.stats.blocksProgress
         blocksTotal = archive.stats.blocksTotal
-        if (blocksProgress !== blocksTotal) {
+        if (blocksProgress < blocksTotal) {
           // not yet downloaded
-          progress = `${prettyBytes(blocksProgress)} / ${prettyBytes(blocksTotal)}`
-          status = 'Downloading' // TODO show speed
+          // progress = `${prettyBytes(bytesProgress)} / ${prettyBytes(bytesTotal)}` TODO we dont have bytesProgress yet
+          progress = prettyBytes(archive.stats.bytesTotal)
         } else {
           // fully downloaded
-          progress = prettyBytes(blocksTotal)
-          if (archive.userSettings.isServing) {
-            status = 'Seeding'
-          } else {
-            status = 'Idle'
-          }
+          progress = prettyBytes(archive.stats.bytesTotal)
+        }
+        if (archive.userSettings.isServing) {
+          let speed = archive.stats.downloadSpeed()
+          status = (speed > 0) ? (prettyBytes(speed) + '/s') : 'Seeding'
+        } else {
+          status = 'Idle'
         }
       }
 
