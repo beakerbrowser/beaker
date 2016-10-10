@@ -1,6 +1,10 @@
 import Shepherd from '../../lib/fg/shepherd'
 
-export function startViewDatTour (isOwner) {
+// hey hey hey, what you got there sugar?
+const $ = sel => document.querySelector(sel)
+const $$ = sel => Array.from(document.querySelectorAll(sel))
+
+export function startViewDatTour (isOwner, rerender, isFirst) {
   let tour = new Shepherd.Tour({
     defaults: {
       classes: 'shepherd-theme-arrows',
@@ -9,11 +13,40 @@ export function startViewDatTour (isOwner) {
     }
   })
 
-  tour.addStep('welcome', {
-    title: 'Welcome!',
-    text: 'Here\'s a quick tour to help you get started.',
-    showCancelLink: true
-  })
+  if (isFirst) {
+    if (isOwner) {
+      tour.addStep('welcome', {
+        title: 'Owned Archives',
+        text: 'Welcome to your first archive. Here\'s a quick tour to help you get started.',
+        showCancelLink: true,
+        buttons: [
+          { text: 'Cancel', action: tour.cancel },
+          { text: 'Next', action: tour.next }
+        ]
+      })
+    } else {
+      tour.addStep('welcome', {
+        title: 'Read-only Archives',
+        text: 'This is your first read-only archive. Here\'s a quick tour to help you get started.',
+        showCancelLink: true,
+        buttons: [
+          { text: 'Cancel', action: tour.cancel },
+          { text: 'Next', action: tour.next }
+        ]
+      })
+    }
+
+  } else {
+    tour.addStep('welcome', {
+      title: 'Welcome!',
+      text: 'Here\'s a quick tour to help you get started.',
+      showCancelLink: true,
+      buttons: [
+        { text: 'Cancel', action: tour.cancel },
+        { text: 'Next', action: tour.next }
+      ]
+    })
+  }
 
   if (isOwner) {
     tour.addStep('owner', {
@@ -35,36 +68,70 @@ export function startViewDatTour (isOwner) {
       text: 'You can also change the title here.',
       attachTo: '#owner-label bottom'
     })
+
+    tour.addStep('share', {
+      text: 'Press "Share" to host the archive for other people.',
+      attachTo: '#sync-btn left',
+      when: {
+        'before-show': () => {
+          var btn = $('#sync-btn')
+          btn.className = 'btn'
+          btn.innerHTML = `<span class="icon icon-share"></span> Share`
+        }
+      }
+    })
+
+    tour.addStep('unshare', {
+      text: 'Press the button again to stop sharing.',
+      attachTo: '#sync-btn left',
+      when: {
+        'before-show': () => {
+          var btn = $('#sync-btn')
+          btn.className = 'btn btn-primary glowing'
+          btn.innerHTML = `<span class="icon icon-share"></span> Sharing`
+        }
+      }
+    })
   } else {
     tour.addStep('owner', {
       text: 'You don\'t own this archive. That means it\'s read-only.',
       attachTo: '#owner-label bottom'
     })
+
+    tour.addStep('download', {
+      text: 'Press this button to download the entire archive.',
+      attachTo: '#sync-btn left',
+      when: {
+        'before-show': () => {
+          var btn = $('#sync-btn')
+          btn.className = 'btn'
+          btn.innerHTML = `<span class="icon icon-down-circled"></span> Download`
+        }
+      }
+    })
+
+    tour.addStep('sync', {
+      text: 'Beaker will continue to sync new changes.',
+      attachTo: '#sync-btn left',
+      when: {
+        'before-show': () => {
+          var btn = $('#sync-btn')
+          btn.className = 'btn btn-primary glowing'
+          btn.innerHTML = `<span class="icon icon-down-circled"></span> Syncing`
+        }
+      }
+    })
+
+    tour.addStep('undownload', {
+      text: 'Press the button again to stop syncing.',
+      attachTo: '#sync-btn left'
+    })
   }
-
-  tour.addStep('share', {
-    text: 'Press "Share" to host the archive for other people.',
-    attachTo: '#share-btn bottom'
-  })
-
-  tour.addStep('unshare', {
-    text: 'Press the button again to stop sharing.',
-    attachTo: '#share-btn bottom'
-  })
-
-  tour.addStep('install', {
-    text: 'Install other people\'s archives to keep it for offline use.',
-    attachTo: '#save-btn bottom'
-  })
-
-  tour.addStep('delete', {
-    text: 'Delete an archive when you\'re done with it.',
-    attachTo: '#save-btn bottom'
-  })
 
   tour.addStep('copy-link', {
     text: 'Press "Copy Link" to get the URL.',
-    attachTo: '#copy-link-btn bottom'
+    attachTo: '#copy-link-btn bottom',
+    when: { 'before-show': () => rerender() }
   })
 
   tour.addStep('copy-link2', {
@@ -72,9 +139,24 @@ export function startViewDatTour (isOwner) {
     attachTo: '#copy-link-btn bottom'
   })
 
-  tour.addStep('copy-link2', {
-    text: 'You can export the downloaded files in a Zip.',
-    attachTo: '#export-zip-btn bottom'
+  tour.addStep('open-in-finder', {
+    text: 'Click here to view the files in your folder browser.',
+    attachTo: '#open-in-finder-btn right',
+    when: {
+      'before-show': () => {
+        $('.dropdown-btn-container').classList.add('open')
+      }
+    }
+  })
+
+  tour.addStep('delete', {
+    text: 'Delete an archive when you\'re done with it.',
+    attachTo: '#delete-btn right',
+    when: {
+      'before-show': () => {
+        $('.dropdown-btn-container').classList.add('open')
+      }
+    }
   })
 
   tour.addStep('end', {
@@ -83,43 +165,10 @@ export function startViewDatTour (isOwner) {
     buttons: [{
       text: 'End Tour',
       action: tour.next
-    }]
+    }],
+    when: { 'before-show': () => rerender() }
   })
 
-  var shareBtn = document.querySelector('#share-btn')
-  var saveBtn = document.querySelector('#save-btn')
-  var wasSharing = shareBtn.classList.contains('glowing')
-  var wasSaved = saveBtn.classList.contains('saved')
-  tour.on('show', e => {
-    if (e.step.id == 'unshare') {
-      // fake the sharing state
-      if (!wasSharing) {
-        shareBtn.classList.add('btn-primary')
-        shareBtn.classList.add('glowing')
-        shareBtn.innerHTML = '<span class="icon icon-share"></span> Sharing'
-      }
-    }
-    if (e.step.id == 'install') {
-      // unfake the sharing state
-      if (!wasSharing) {
-        shareBtn.classList.remove('btn-primary')
-        shareBtn.classList.remove('glowing')
-        shareBtn.innerHTML = '<span class="icon icon-share"></span> Share'
-      }
-      // fake the uninstalled state
-      saveBtn.innerHTML = `<span class="icon icon-install"> Install`
-    }
-    if (e.step.id == 'delete') {
-      // fake the installed state
-      saveBtn.innerHTML = `<span class="icon icon-trash"> Delete`
-    }
-    if (e.step.id == 'copy-link') {
-      // unfake the installed state
-      if (!wasSaved) {
-        saveBtn.innerHTML = `<span class="icon icon-install"> Install`
-      }
-    }
-  })
 
   var cover = document.createElement('div')
   cover.classList.add('modal-wrapper')

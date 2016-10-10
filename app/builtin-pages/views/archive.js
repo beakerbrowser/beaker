@@ -93,14 +93,13 @@ export function show (isSameView) {
     }
 
     // run the tour if this is the owner's first time
-    if (archiveInfo.isOwner) {
-      var hasSeenTour = false
-      try { hasSeenTour = yield datInternalAPI.getGlobalSetting('has-seen-viewdat-owner-tour') }
-      catch (e) {}
-      if (!hasSeenTour) {
-        helpTour.startViewDatTour(true)
-        yield datInternalAPI.setGlobalSetting('has-seen-viewdat-owner-tour', true)
-      }
+    const tourSeenSetting = (archiveInfo.isOwner) ? 'has-seen-viewdat-owner-tour' : 'has-seen-viewdat-reader-tour'
+    var hasSeenTour = false
+    try { hasSeenTour = yield datInternalAPI.getGlobalSetting(tourSeenSetting) }
+    catch (e) {}
+    if (!hasSeenTour) {
+      helpTour.startViewDatTour(archiveInfo.isOwner, render, true)
+      yield datInternalAPI.setGlobalSetting(tourSeenSetting, true)
     }
   })
 }
@@ -215,8 +214,8 @@ function renderHeading () {
 
   // general buttons
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
-  var openFolderBtn = yo`<a onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
-  var deleteArchiveBtn = yo`<a title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
+  var openFolderBtn = yo`<a id="open-in-finder-btn" onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
+  var deleteArchiveBtn = yo`<a id="delete-btn" title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
   var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
     <a class="toggleable btn"><span class="icon icon-down-open"></span></a>
     <div class="dropdown-btn-list">
@@ -240,7 +239,7 @@ function renderHeading () {
         ${dropdownBtn}
         ${addFilesBtn}
         <small class="ll-heading-right">
-          <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
+          <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
       </div>`
@@ -259,7 +258,7 @@ function renderHeading () {
       <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
       ${undoDeleteBtn}
       <small class="ll-heading-right">
-        <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
+        <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
         <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
       </small>
     </div>`
@@ -275,7 +274,7 @@ function renderHeading () {
     <span class="btn-group">${copyLinkBtn}</span>
     ${dropdownBtn}
     <small class="ll-heading-right">
-      <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
+      <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
       <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
     </small>
   </div>`
