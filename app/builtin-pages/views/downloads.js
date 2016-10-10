@@ -37,7 +37,6 @@ export function show () {
       filter: a => !a.isOwner, // non-owned archives only
       fetchStats: true
     })
-    console.log(archivesList.archives)
     archivesList.on('changed', render)
 
     // render
@@ -79,14 +78,7 @@ function render () {
 }
 
 function renderEmpty () {
-  return yo`<div class="archives-empty">
-      <div class="archives-empty-banner">
-        <div class="icon icon-info-circled"></div>
-        <div>
-          Share files on the network by creating archives.
-          <a class="icon icon-popup" href="https://beakerbrowser.com/docs/" target="_blank"> Learn More</a>
-        </div>
-      </div>
-    </div>
+  return yo`<div class="ll-empty">
+    Archives that you download will be saved here.
   </div>`
 }

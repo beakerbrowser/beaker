@@ -17,7 +17,7 @@ export default class DownloadsList extends EventEmitter {
     super()
 
     // declare attributes
-    this.dwonloads = []
+    this.downloads = []
 
     // bind the event handlers
     this.onNewDownload = e => this._onNewDownload(e)

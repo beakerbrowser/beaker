@@ -72,7 +72,7 @@ export function render (downloadsList) {
 
   // empty state
   if (downloadEls.length === 0) {
-    downloadEls = yo`<div class="downloads-empty">No active or recent downloads.</div>`
+    downloadEls = yo`<div class="ll-empty">Files that you download will appear here.</div>`
   }
 
   return yo`<div class="links-list">${downloadEls}</div>`
