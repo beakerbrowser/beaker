@@ -8,6 +8,7 @@ import emitStream from 'emit-stream'
 import dragDrop from 'drag-drop'
 import Remarkable from 'remarkable'
 import { pushUrl } from '../../lib/fg/event-handlers'
+import { throttle } from '../../lib/functions'
 import { archiveEntries, entriesListToTree, calculateTreeSizeAndProgress } from '../com/files-list'
 import toggleable from '../com/toggleable'
 import HypercoreStats from '../com/hypercore-stats'
@@ -338,8 +339,10 @@ function parseKeyFromURL () {
   return /^archive\/([0-9a-f]+)/.exec(window.location.pathname)[1]
 }
 
-function fetchArchiveInfo (cb) {
-  return co(function* () {
+// helper to get the archive info
+// throttled to 1 call per second so that update events can freely trigger it
+const fetchArchiveInfo = throttle(cb => {
+  return co(function * () {
     // run request
     archiveInfo = yield datInternalAPI.getArchiveInfo(archiveKey, { loadIfMissing: true })
     if (archiveInfo) {
@@ -354,7 +357,7 @@ function fetchArchiveInfo (cb) {
     console.warn('Failed to fetch archive info', err)
     archiveError = err
   })
-}
+}, 1e3)
 
 function setCurrentNodeByPath () {
   archiveCurrentNode = archiveEntriesTree
@@ -491,7 +494,7 @@ function onOpenInFinder () {
 //   })
 // }
 
-// event handlers: files listing 
+// event handlers: files listing
 // =
 
 function onToggleHidden () {
@@ -503,7 +506,7 @@ function onToggleHidden () {
 // =
 
 function onUpdateArchive (update) {
-  if (archiveInfo && update.key == archiveInfo.key) {
+  if (archiveInfo && update.key === archiveInfo.key) {
     // patch the archive
     for (var k in update)
       archiveInfo[k] = update[k]
@@ -512,14 +515,14 @@ function onUpdateArchive (update) {
 }
 
 function onUpdateListing (update) {
-  if (archiveInfo && update.key == archiveInfo.key) {
+  if (archiveInfo && update.key === archiveInfo.key) {
     // simplest solution is just to refetch the entries
     fetchArchiveInfo(render)
   }
 }
 
 function onDownload (update) {
-  if (archiveInfo && update.key == archiveInfo.key && update.feed == 'content') {
+  if (archiveInfo && update.key === archiveInfo.key && update.feed === 'content') {
     // increment root's downloaded blocks
     archiveEntriesTree.entry.downloadedBlocks++
 

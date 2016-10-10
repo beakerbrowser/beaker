@@ -161,14 +161,6 @@ export function archiveEntries (tree, opts={}) {
   function renderFooter () {
     const entry = tree.entry
 
-    // download state
-    // TODO move elsewhere
-    // var downloadEl
-    // if (entry.isDownloading) {
-    //   var progress = Math.round(entry.downloadedBlocks / entry.blocks * 100)
-    //   downloadEl = yo`<progress value=${progress} max="100"></progress>`
-    // }
-
     // render
     var hideLabel = opts.hideDotfiles ? 'show' : 'hide'
     var hideToggle = (numHidden > 0) ? yo`<span>, ${numHidden} hidden (<a onclick=${opts.onToggleHidden}>${hideLabel}</a>)</span>` : ''
