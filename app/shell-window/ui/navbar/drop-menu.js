@@ -4,10 +4,10 @@ import prettyBytes from 'pretty-bytes'
 import { ucfirst } from '../../../lib/strings'
 import * as pages from '../../pages'
 
-// there can be many downloads btns rendered at once, but they are all showing the same information
-// the DownloadsNavbarBtn manages all instances, and you should only create one
+// there can be many drop menu btns rendered at once, but they are all showing the same information
+// the DropMenuNavbarBtn manages all instances, and you should only create one
 
-export class DownloadsNavbarBtn {
+export class DropMenuNavbarBtn {
   constructor() {
     this.downloads = []
     this.sumProgress = null // null means no active downloads
@@ -75,7 +75,7 @@ export class DownloadsNavbarBtn {
         }
 
         // render download
-        return yo`<div class="td-item">
+        return yo`<div class="td-item border">
           <div class="td-item-name"><strong>${d.name}</strong></div>
           <div class="td-item-status">${status}</div>
           ${ d.state == 'progressing'
@@ -84,15 +84,19 @@ export class DownloadsNavbarBtn {
           ${ctrlsEl}
         </div>`
       })
-      dropdownEl = yo`<div class="toolbar-dropdown toolbar-downloads-dropdown">
-        ${downloadEls.length ? downloadEls : yo`<div class="td-item empty">No active downloads</div>`}
-        <div class="td-item"><a href="#" onclick=${e => this.onOpenDownloads(e)}>view downloads</a></div>
+      dropdownEl = yo`<div class="toolbar-dropdown toolbar-drop-menu-dropdown">
+        ${''/* TODO <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-folder"></span> View this Dat's Files</div> */ }
+        ${''/* TODO <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-floppy"></span> Save this Dat for Offline</div> */ }
+        ${''/* TODO <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-install"></span> Install as Offline App</div> */ }        
+        <div class="td-item" onclick=${e => this.onOpenDownloads(e)}>Downloads</div>
+        <hr />
+        ${downloadEls}
       </div>`
     }
 
     // render btn
-    return yo`<div class="toolbar-downloads">
-      <button class="toolbar-btn toolbar-downloads-btn ${this.isDropdownOpen?'pressed':''}" onclick=${e => this.onClickDownloads(e)} title="Downloads">
+    return yo`<div class="toolbar-drop-menu">
+      <button class="toolbar-btn toolbar-drop-menu-btn ${this.isDropdownOpen?'pressed':''}" onclick=${e => this.onClickBtn(e)} title="Menu">
         <span class="icon icon-down-open-big"></span>
         ${progressEl}
       </button>
@@ -101,11 +105,11 @@ export class DownloadsNavbarBtn {
   }
 
   updateActives() {
-    Array.from(document.querySelectorAll('.toolbar-downloads')).forEach(el => yo.update(el, this.render()))
+    Array.from(document.querySelectorAll('.toolbar-drop-menu')).forEach(el => yo.update(el, this.render()))
   }
 
   doAnimation() {
-    Array.from(document.querySelectorAll('.toolbar-downloads-btn')).forEach(el => 
+    Array.from(document.querySelectorAll('.toolbar-drop-menu-btn')).forEach(el => 
       el.animate([
         {transform: 'scale(1.0)', color:'inherit'},
         {transform: 'scale(1.5)', color:'#06c'},
@@ -114,7 +118,7 @@ export class DownloadsNavbarBtn {
     )
   }
 
-  onClickDownloads(e) {
+  onClickBtn(e) {
     this.isDropdownOpen = !this.isDropdownOpen
     this.shouldPersistProgressBar = false // stop persisting if we were, the user clicked
     this.updateActives()
@@ -185,7 +189,7 @@ export class DownloadsNavbarBtn {
       })
   }
 
-  onOpenDownloads(e) {
+  onOpenDownloads (e) {
     e.preventDefault()
     e.stopPropagation()
     pages.setActive(pages.create('beaker:downloads'))

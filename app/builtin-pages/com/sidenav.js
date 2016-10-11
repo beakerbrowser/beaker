@@ -1,6 +1,5 @@
 import * as yo from 'yo-yo'
 import co from 'co'
-import * as editSiteModal from '../com/modals/edit-site' 
 
 // globals
 // =
@@ -81,9 +80,15 @@ function onClickNavItem (item) {
 }
 
 function onClickShareFiles (e) {
-  editSiteModal.create({}, { title: 'New Files Archive', onSubmit: opts => {
-    datInternalAPI.createNewArchive(opts).then(key => {
-      window.location = 'beaker:archive/' + key
+  co(function* () {
+    var paths = yield beakerBrowser.showOpenDialog({
+      title: 'Choose a folder to import',
+      buttonLabel: 'Import',
+      properties: ['openDirectory', 'showHiddenFiles']
     })
-  }})
+    if (paths && paths[0]) {
+      var key = yield datInternalAPI.createNewArchive({ importFrom: paths[0] })
+      window.location = 'beaker:archive/' + key
+    }
+  })
 }

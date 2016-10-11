@@ -4,15 +4,11 @@ This uses the beakerBrowser API, which is exposed by webview-preload to all site
 
 import * as yo from 'yo-yo'
 import co from 'co'
-import prettyBytes from 'pretty-bytes'
 import emitStream from 'emit-stream'
 import dragDrop from 'drag-drop'
 import Remarkable from 'remarkable'
-import pump from 'pump'
-import path from 'path'
 import { pushUrl } from '../../lib/fg/event-handlers'
-import { niceDate } from '../../lib/time'
-import { ucfirst } from '../../lib/strings'
+import { throttle } from '../../lib/functions'
 import { archiveEntries, entriesListToTree, calculateTreeSizeAndProgress } from '../com/files-list'
 import toggleable from '../com/toggleable'
 import HypercoreStats from '../com/hypercore-stats'
@@ -97,14 +93,13 @@ export function show (isSameView) {
     }
 
     // run the tour if this is the owner's first time
-    if (archiveInfo.isOwner) {
-      var hasSeenTour = false
-      try { hasSeenTour = yield datInternalAPI.getGlobalSetting('has-seen-viewdat-owner-tour') }
-      catch (e) {}
-      if (!hasSeenTour) {
-        helpTour.startViewDatTour(true)
-        yield datInternalAPI.setGlobalSetting('has-seen-viewdat-owner-tour', true)
-      }
+    const tourSeenSetting = (archiveInfo.isOwner) ? 'has-seen-viewdat-owner-tour' : 'has-seen-viewdat-reader-tour'
+    var hasSeenTour = false
+    try { hasSeenTour = yield datInternalAPI.getGlobalSetting(tourSeenSetting) }
+    catch (e) {}
+    if (!hasSeenTour) {
+      helpTour.startViewDatTour(archiveInfo.isOwner, render, true)
+      yield datInternalAPI.setGlobalSetting(tourSeenSetting, true)
     }
   })
 }
@@ -143,36 +138,15 @@ function render () {
 }
 
 function renderArchive () {
-  const name = archiveInfo.title || 'Untitled' 
-  const url = 'dat://'+archiveInfo.key
+  const name = archiveInfo.title || 'Untitled'
 
   // set page title
   document.title = name
 
-  // optional els
-  // var authorEl = ''
-  // if (archiveInfo.author) {
-  //   if (archiveInfo.homepage_url)
-  //     authorEl = yo`<div class="dat-author">by <a href=${archiveInfo.homepage_url} title=${archiveInfo.author}>${archiveInfo.author}</a></div>`
-  //   else
-  //     authorEl = yo`<div class="dat-author">by ${archiveInfo.author}</div>`
-  // }
-
-  // toolbar buttons
-  var ownerEl = (archiveInfo.isOwner)
-    ? yo`<span><span class="icon icon-pencil"></span> Owner</span>`
-    : ''
-  var serveBtn = (archiveInfo.userSettings.isServing)
-    ? yo`<a id="share-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
-    : yo`<a id="share-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
-  var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
-  var exportZipFileBtn = yo`<a id="export-zip-btn" class="btn" title="Export as .Zip File" href="/?as=zip"><span class="icon icon-export"></span> Export .Zip</a>`
-  var saveArchiveBtn = (archiveInfo.userSettings.isSaved)
-    ? yo`<a class="btn save-btn saved" title="Unsave" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Pinned</a>`
-    : yo`<a class="btn save-btn unsaved" title="Save" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Pin</a>`
-  var addFilesBtn = (archiveInfo.isOwner)
-    ? yo`<a id="add-files-btn" class="btn btn-group" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
-    : ''
+  // description
+  var descriptEl = (archiveInfo.description)
+    ? yo`<span>${archiveInfo.description}</span>`
+    : yo`<em>no description</em>`
 
   // manifest edit btn (a pain to construct so it's separate)
   var editBtn
@@ -181,11 +155,20 @@ function renderArchive () {
     editBtn.childNodes[0].innerHTML = '&mdash;'
   }
 
-  // description
-  var descriptEl = (archiveInfo.description)
-    ? yo`<span>${archiveInfo.description}</span>`
-    : yo`<em>No description</em>`
-
+  // downloader's btns
+  var syncBtn
+  if (archiveInfo.isOwner) {
+    syncBtn = (archiveInfo.userSettings.isServing)
+      ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
+      : yo`<a id="sync-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
+  } else {
+    let entry = archiveEntriesTree.entry
+    let isDownloaded = entry.downloadedBlocks >= entry.blocks
+    let label = (isDownloaded) ? 'Sync' : 'Download'
+    syncBtn = (archiveInfo.userSettings.isServing)
+      ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="${label}ing" onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}ing</a>`
+      : yo`<a id="sync-btn" class="btn" title=${label} onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}</a>`
+  }
 
   // readme
   var readmeEl
@@ -194,47 +177,107 @@ function renderArchive () {
     readmeEl.innerHTML = md.render(archiveInfo.readme)
   }
 
+  // progress bar for the entire dat
+  var progressEl
+  if (!archiveInfo.isOwner) {
+    let entry = archiveEntriesTree.entry
+    let progress = Math.round(entry.downloadedBlocks / entry.blocks * 100)
+    progressEl = yo`<div class="archive-progress"><progress value=${progress} max="100"></progress></div>`
+  }
+
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archive">
-      <div class="ll-heading">
-        <div>
-          <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
-          ${name}
-          <span class="btn-group">
-            ${serveBtn}${saveArchiveBtn}${copyLinkBtn}
-          </span>
-          <span class="btn-group">
-            ${exportZipFileBtn}
-          </span>
-          ${addFilesBtn}
-          <small id="owner-label" class="ll-heading-group">
-            ${ archiveInfo.isOwner 
-              ? yo`<span><span class="icon icon-pencil"></span> owner</span>`
-              : 'read-only' }
-          </small>
-          <small class="ll-heading-right">
-            <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner)}><span class="icon icon-address"></span> Tour</a>
-            <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
-          </small>
-        </div>
+      ${renderHeading()}
+      <div class="archive-summary">
+        <div>${descriptEl} ${editBtn}</div>
+        <div class="flex-spacer"></div>
+        ${hypercoreStats.render()}
+        ${syncBtn}
       </div>
+      ${progressEl}
       ${archiveEntries(archiveCurrentNode, {
         onOpenFolder,
-        onDownloadNode,
         onToggleHidden,
         archiveKey,
         hideDotfiles
       })}
-      <div class="archive-summary">
-        <div>${descriptEl} ${editBtn}</div>
-        <div class="flex-spacer"></div>
-        ${ hypercoreStats.render() }
-      </div>
       ${readmeEl}
       <input class="hidden-file-adder" type="file" multiple onchange=${onChooseFiles} />
     </div>
   </div>`)
+}
+
+function renderHeading () {
+  const name = archiveInfo.title || 'Untitled'
+  const isSaved = archiveInfo.userSettings.isSaved
+
+  // general buttons
+  var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
+  var openFolderBtn = yo`<a id="open-in-finder-btn" onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
+  var deleteArchiveBtn = yo`<a id="delete-btn" title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
+  var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
+    <a class="toggleable btn"><span class="icon icon-down-open"></span></a>
+    <div class="dropdown-btn-list">
+      ${openFolderBtn}
+      <hr>
+      ${deleteArchiveBtn}
+    </div>
+  </div>`)
+
+  if (archiveInfo.isOwner) {
+    if (isSaved) {
+      // owner's btns
+      let addFilesBtn = yo`<a id="add-files-btn" class="btn btn-group" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
+
+      // owner's heading
+      return yo`<div class="ll-heading">
+        <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
+        ${name}
+        <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
+        <span class="btn-group">${copyLinkBtn}</span>
+        ${dropdownBtn}
+        ${addFilesBtn}
+        <small class="ll-heading-right">
+          <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
+          <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
+        </small>
+      </div>`
+    }
+
+    // deleted owner's btns
+    let undoDeleteBtn = yo`<small class="ll-heading-group">
+      <span class="icon icon-trash"></span> Deleted
+      (<a title="Undo Delete" onclick=${onToggleSave}>Undo</a>)
+    </small>`
+
+    // deleted owner's heading
+    return yo`<div class="ll-heading">
+      <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
+      ${name}
+      <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
+      ${undoDeleteBtn}
+      <small class="ll-heading-right">
+        <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
+        <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
+      </small>
+    </div>`
+  }
+
+  // downloader's heading
+  return yo`<div class="ll-heading">
+    ${ (isSaved)
+      ? yo`<a href="beaker:downloads" onclick=${pushUrl}>Downloads <span class="icon icon-right-open"></span></a>`
+      : '' }
+    ${name}
+    <small id="owner-label">read-only</small>
+    <span class="btn-group">${copyLinkBtn}</span>
+    ${dropdownBtn}
+    <small class="ll-heading-right">
+      <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
+      <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
+    </small>
+  </div>`
 }
 
 function renderError () {
@@ -242,7 +285,6 @@ function renderError () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archive">
       <div class="ll-heading">
-        <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
         ${archiveKey.slice(0,8)}...
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
@@ -263,7 +305,6 @@ function renderLoading () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archive">
       <div class="ll-heading">
-        <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
         Loading...
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
@@ -297,8 +338,10 @@ function parseKeyFromURL () {
   return /^archive\/([0-9a-f]+)/.exec(window.location.pathname)[1]
 }
 
-function fetchArchiveInfo (cb) {
-  return co(function* () {
+// helper to get the archive info
+// throttled to 1 call per second so that update events can freely trigger it
+const fetchArchiveInfo = throttle(cb => {
+  return co(function * () {
     // run request
     archiveInfo = yield datInternalAPI.getArchiveInfo(archiveKey, { loadIfMissing: true })
     if (archiveInfo) {
@@ -313,7 +356,7 @@ function fetchArchiveInfo (cb) {
     console.warn('Failed to fetch archive info', err)
     archiveError = err
   })
-}
+}, 1e3)
 
 function setCurrentNodeByPath () {
   archiveCurrentNode = archiveEntriesTree
@@ -352,7 +395,16 @@ function onSubmitEditArchive ({ title, description }) {
 
 function onClickSelectFiles (e) {
   e.preventDefault()
-  document.querySelector('input[type="file"]').click()
+  co(function* () {
+    var paths = yield beakerBrowser.showOpenDialog({
+      title: 'Choose a folder to import',
+      buttonLabel: 'Import',
+      properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
+    })
+    if (paths) {
+      addFiles(paths)
+    }
+  })
 }
 
 function onChooseFiles (e) {
@@ -368,27 +420,26 @@ function onDragDrop (files) {
 
 function addFiles (files) {
   files.forEach(file => {
-    // calculate destination
-    // - drag/drop gives `fullPath`, while file-picker just gives `name`
-    // - in drag/drop case, because you can drag in folders, it may give a subfoldered target
-    var dst = path.join(archiveCurrentNode.entry.path, file.fullPath||file.name)
+    var src, dst
+
+    // set paths
+    // drag/drop gives `fullPath`, while file-picker just gives a string
+    if (typeof file === 'string') {
+      src = file
+    } else {
+      // TODO double check this
+      src = file.path
+    }
+    dst = archiveCurrentNode.entry.path
 
     // send to backend
-    datInternalAPI.writeArchiveFileFromPath(archiveInfo.key, { src: file.path, dst })
+    datInternalAPI.writeArchiveFileFromPath(archiveInfo.key, { src, dst })
       .catch(console.warn.bind(console, 'Error writing file:'))
   })
 }
 
 // event handlers: toolbar
 // =
-
-function onClickCreateArchive (e) {
-  editSiteModal.create({}, { title: 'New Files Archive', onSubmit: opts => {
-    datInternalAPI.createNewArchive(opts).then(key => {
-      window.location = 'dat://' + key
-    })
-  }})
-}
 
 function onToggleSave () {
   archiveInfo.userSettings.isSaved = !archiveInfo.userSettings.isSaved
@@ -425,15 +476,9 @@ function onOpenFolder (e, entry) {
   window.history.pushState(null, '', 'beaker:archive/'+archiveInfo.key+'/'+entry.path)
 }
 
-
-function onToggleSharing () {
-  return co(function*() {
-    if (archiveInfo.isSharing)
-      yield datInternalAPI.unswarm(archiveInfo.key)
-    else
-      yield datInternalAPI.swarm(archiveInfo.key)
-    render()
-  })
+function onOpenInFinder () {
+  datInternalAPI.openInExplorer(archiveInfo.key)
+  render()
 }
 
 // TODO
@@ -448,42 +493,8 @@ function onToggleSharing () {
 //   })
 // }
 
-// event handlers: files listing 
+// event handlers: files listing
 // =
-
-function onDownloadNode (e, node) {
-  e.preventDefault()
-
-  // recursively start downloads
-  co(function *() {
-    yield startDownload(node)
-    render()
-  })
-
-  function* startDownload (n) {
-    // do nothing if already downloaded
-    if (n.entry.downloadedBlocks == n.entry.blocks)
-      return Promise.resolve()
-
-    // render progress starting
-    n.entry.isDownloading = true
-    render()
-
-    if (n.entry.type == 'file') {
-      // download entry
-      yield datInternalAPI.downloadArchiveEntry(archiveInfo.key, n.entry.path)
-    } else if (n.entry.type == 'directory') {
-      // recurse to children
-      yield Object.keys(n.children).map(k => startDownload(n.children[k]))
-    }
-
-    // render done
-    n.entry.isDownloading = false
-    render()
-
-    return Promise.resolve()
-  }
-}
 
 function onToggleHidden () {
   hideDotfiles = !hideDotfiles
@@ -494,7 +505,7 @@ function onToggleHidden () {
 // =
 
 function onUpdateArchive (update) {
-  if (archiveInfo && update.key == archiveInfo.key) {
+  if (archiveInfo && update.key === archiveInfo.key) {
     // patch the archive
     for (var k in update)
       archiveInfo[k] = update[k]
@@ -503,14 +514,14 @@ function onUpdateArchive (update) {
 }
 
 function onUpdateListing (update) {
-  if (archiveInfo && update.key == archiveInfo.key) {
+  if (archiveInfo && update.key === archiveInfo.key) {
     // simplest solution is just to refetch the entries
     fetchArchiveInfo(render)
   }
 }
 
 function onDownload (update) {
-  if (archiveInfo && update.key == archiveInfo.key && update.feed == 'content') {
+  if (archiveInfo && update.key === archiveInfo.key && update.feed === 'content') {
     // increment root's downloaded blocks
     archiveEntriesTree.entry.downloadedBlocks++
 

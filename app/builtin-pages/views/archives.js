@@ -4,44 +4,38 @@ This uses the datInternalAPI API, which is exposed by webview-preload to all arc
 
 import * as yo from 'yo-yo'
 import co from 'co'
-import emitStream from 'emit-stream'
+import ArchivesList from '../model/archives-list'
 import { render as renderArchivesList } from '../com/archives-list'
-import * as editSiteModal from '../com/modals/edit-site' 
 
 // globals
 // =
 
-var archives
+var archivesList
 var isViewActive = false
 
 // exported API
 // =
 
 export function setup () {
-  if (!window.datInternalAPI)
-    return console.warn('Dat plugin is required for the Archives page.')
-
-  // wire up events
-  var archivesEvents = emitStream(datInternalAPI.archivesEventStream())
-  archivesEvents.on('update-archive', onUpdateArchive)
-  archivesEvents.on('update-peers', onUpdatePeers)
 }
 
 export function show () {
   isViewActive = true
   document.title = 'Your Archives'
-  co(function*(){
-    if (window.datInternalAPI) {
-      // fetch archives
-      archives = yield datInternalAPI.getSavedArchives()
-      archives.sort(archiveSortFn)
-    }
+  co(function * () {
+    archivesList = new ArchivesList()
+    yield archivesList.setup({
+      filter: a => a.isOwner // owned archives only
+    })
+    archivesList.on('changed', render)
     render()
   })
 }
 
 export function hide () {
   isViewActive = false
+  archivesList.destroy()
+  archivesList = null
 }
 
 // rendering
@@ -54,7 +48,7 @@ function render () {
 
   // content
   var content = (window.datInternalAPI)
-    ? renderArchivesList(archives, { renderEmpty, onToggleServeArchive, onDeleteArchive, onUndoDeletions })
+    ? renderArchivesList(archivesList, { renderEmpty, render })
     : renderNotSupported()
 
   // render view
@@ -62,8 +56,8 @@ function render () {
     <div class="archives">
       <div class="ll-heading">
         Files
-        <span class="ll-heading-group">
-          <button class="btn" onclick=${onClickCreateArchive}>New Archive</button>
+        <span class="btn-group">
+          <button class="btn" onclick=${onClickCreateArchive}>New Archive</button><button class="btn" onclick=${onClickImportFolder}>Import Folder</button>
         </span>
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
@@ -97,85 +91,21 @@ function renderNotSupported () {
 // =
 
 function onClickCreateArchive (e) {
-  editSiteModal.create({}, { title: 'New Files Archive', onSubmit: opts => {
-    datInternalAPI.createNewArchive(opts).then(key => {
-      window.location = 'dat://' + key
+  datInternalAPI.createNewArchive().then(key => {
+    window.location = 'beaker:archive/' + key
+  })
+}
+
+function onClickImportFolder (e) {
+  co(function* () {
+    var paths = yield beakerBrowser.showOpenDialog({
+      title: 'Choose a folder to import',
+      buttonLabel: 'Import',
+      properties: ['openDirectory', 'showHiddenFiles']
     })
-  }})
-}
-
-function onUpdateArchive (update) {
-  if (archives) {
-    // find the archive being updated
-    var archive = archives.find(a => a.key == update.key)
-    if (archive) {
-      // patch the archive
-      for (var k in update)
-        archive[k] = update[k]
-      render()
-    }
-  }
-}
-
-function onUpdatePeers ({ key, peers }) {
-  if (archives) {
-    // find the archive being updated
-    var archive = archives.find(a => a.key == key)
-    if (archive)
-      archive.peers = peers // update
-    render()
-  }
-}
-
-
-function onToggleServeArchive (archiveInfo) {
-  return e => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    archiveInfo.userSettings.isServing = !archiveInfo.userSettings.isServing
-
-    // isSaved must reflect isServing
-    if (archiveInfo.userSettings.isServing && !archiveInfo.userSettings.isSaved)
-      archiveInfo.userSettings.isSaved = true
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-    
-    render()
-  }
-}
-
-function onDeleteArchive (archiveInfo) {
-  return e => {
-    e.preventDefault()
-    e.stopPropagation()
-      
-    archiveInfo.userSettings.isSaved = !archiveInfo.userSettings.isSaved
-
-    // isServing must reflect isSaved
-    if (!archiveInfo.userSettings.isSaved && archiveInfo.userSettings.isServing)
-      archiveInfo.userSettings.isServing = false
-
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-    render()
-  }
-}
-
-function onUndoDeletions (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  archives.forEach(archiveInfo => {
-    if (!archiveInfo.userSettings.isSaved) {
-      archiveInfo.userSettings.isSaved = true
-      datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
+    if (paths && paths[0]) {
+      var key = yield datInternalAPI.createNewArchive({ importFrom: paths[0] })
+      window.location = 'beaker:archive/' + key
     }
   })
-  render()
-}
-
-// helpers
-// =
-
-function archiveSortFn (a, b) {
-  return b.mtime - a.mtime
 }

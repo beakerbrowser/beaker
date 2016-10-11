@@ -17,10 +17,13 @@
     box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.07);
   }
 
+  &.disabled,
   &:disabled {
-    color: gray;
+    cursor: default;
+    color: #aaa;
     background: #fafafa;
     border: 1px solid #ddd;
+    box-shadow: none;
   }
 }
 
@@ -103,9 +106,14 @@
       display: inline-block;
       text-align: center;
     }
+    &.disabled {
+      color: #999;
+    }
     &:hover {
-      background: #fafafa;
       text-decoration: none;
+    }
+    &:hover:not(.disabled) {
+      background: #fafafa;
       color: #0091ff;
     }
   }

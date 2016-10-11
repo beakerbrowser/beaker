@@ -28,12 +28,12 @@
   }
 }
 
-.toolbar-downloads {
+.toolbar-drop-menu {
   display: inline-block;
   position: relative;
 }
 
-.toolbar-downloads-btn {
+.toolbar-drop-menu-btn {
   position: relative;
   & > progress {
     width: 26px;
@@ -43,27 +43,21 @@
   }
 }
 
-.toolbar-downloads-dropdown {
-  padding: 0;
+.toolbar-drop-menu-dropdown {
+  hr {
+    margin: 5px 0;
+  }
 
   .td-item {
-    padding: 10px 18px 6px;
-    border-bottom: 1px solid #ccc;
-    &:last-child {
-      border-bottom: 0;
-      font-size: 11px;
-      padding-top: 3px;
-      padding-bottom: 3px;
-      text-align: center;
-      background: #eee;
-      a { color: gray }
+    padding: 6px 18px;
+
+    &:hover {
+      background: #f5f5f5;
     }
 
-    &.empty {
-      color: gray;
-      font-size: 13px;
-      padding-bottom: 10px;
-      text-align: center;
+    .icon {
+      display: inline-block;
+      width: 16px;
     }
 
     .td-item-name {

@@ -6,6 +6,7 @@ import * as archive from './builtin-pages/views/archive'
 import * as history from './builtin-pages/views/history'
 import * as downloads from './builtin-pages/views/downloads'
 import * as settings from './builtin-pages/views/settings'
+import { closeAllToggleables } from './builtin-pages/com/toggleable'
 
 // HACK FIX
 // weird bug, prependListener is expected but missing?
@@ -47,18 +48,25 @@ currentView.show()
 
 window.addEventListener('pushstate', onURLChange)
 window.addEventListener('popstate', onURLChange)
+document.body.addEventListener('click', onAnyClick, true)
 
 function onURLChange () {
   var newView = getLocationView()
   var isSameView = currentView === newView
 
   // teardown old view
+  closeAllToggleables()
   if (currentView)
     currentView.hide(isSameView)
 
   // render new view
   currentView = newView
   currentView.show(isSameView)
+}
+
+function onAnyClick () {
+  // close the toggleables on all click events
+  closeAllToggleables()
 }
 
 // internal methods

@@ -1,9 +1,27 @@
 import * as yo from 'yo-yo'
 
+// globals
+// =
+
+// map of current state, for toggles that should persist state across renderings
+var toggleState = {}
+
+// exports
+// =
+
 // helper to add toggle behaviors
 // give class .toggleable, .toggleon, or .toggleoff to trigger
 // include data-toggle-on="event", where `event` sets what triggers toggle (default click)
+// include data-toggle-id if you want to keep the toggle state across renderings
 export default function toggleable (el) {
+  var id = el.dataset.toggleId
+
+  el.classList.add('toggleable-container')
+  // restore toggle state
+  if (id && toggleState[id]) {
+    el.classList.add('open')
+  }
+
   Array.from(el.querySelectorAll('.toggleable')).forEach(el2 => {
     el2.addEventListener(el2.dataset.toggleOn||'click', onToggle)
   })
@@ -16,26 +34,56 @@ export default function toggleable (el) {
   function onToggle (e) {
     e.preventDefault()
     e.stopPropagation()
-    el.classList.toggle('open')
+    var newState = !el.classList.contains('open')
+    closeAllToggleables()
+    if (newState) {
+      el.classList.add('open')
+    }
+    if (id) {
+      // persist state
+      toggleState[id] = newState
+    }
   }
   function onToggleOn (e) {
     e.preventDefault()
     e.stopPropagation()
     el.classList.add('open')
+    if (id) {
+      // persist state
+      toggleState[id] = true
+    }
   }
   function onToggleOff (e) {
     e.preventDefault()
     e.stopPropagation()
     el.classList.remove('open')
+    if (id) {
+      // persist state
+      toggleState[id] = false
+    }
   }
   return el
 }
 
+export function closeAllToggleables () {
+  Array.from(document.querySelectorAll('.toggleable-container')).forEach(el => el.classList.remove('open'))
+  toggleState = {}
+}
+
 export function closeToggleable (el) {
-  while (el && el.classList && el.classList.contains('open') == false)
+  while (el && el.classList && el.classList.contains('toggleable-container') === false) {
     el = el.parentNode
-  if (el && el.classList)
+  }
+  if (el && el.classList) {
+    // update dom
     el.classList.remove('open')
+
+    // persist
+    var id = el.dataset.toggleId
+    if (id) {
+      toggleState[id] = false
+    }
+  }
 }
 
 // NOTE

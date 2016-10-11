@@ -22,7 +22,7 @@ export function create (values, { title, onSubmit }) {
         </form>
       </div>
       <div class="esm-info">
-        Use Dat Archives to share Sites and Files. <a href="https://beakerbrowser.com/docs/p2p/share-files.html" target="_blank">Learn More</a>
+        Use File Archives to share Sites and Files. <a href="https://beakerbrowser.com/docs/p2p/share-files.html" target="_blank">Learn More</a>
       </div>
     </div>`
 

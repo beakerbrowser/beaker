@@ -5,7 +5,7 @@
   color: #555;
   border-bottom: 1px solid #ccc;
 
-  small {
+  small, .dropdown-btn-list {
     font-weight: normal;
   }
   .btn {
@@ -105,13 +105,28 @@
       padding-right: 0;
       color: #999;
     }
-    .ll-size {
+    .ll-progressbar {
       flex: 0 0 100px;
+      padding: 6px 8px;
+      progress {
+        width: 80px;
+        position: relative;
+        top: 3px;
+      }
+    }
+    .ll-progress {
+      padding: 6px 8px;
+      color: #999;
+      min-width: 45px;
+      text-align: right;
+    }
+    .ll-size {
+      flex: 0 0 90px;
       padding: 6px 8px;
       color: #999;
     }
     .ll-updated {
-      flex: 0 0 160px;
+      flex: 0 0 110px;
       padding: 6px 8px;
       color: #999;
       overflow: hidden;
@@ -119,9 +134,9 @@
       white-space: pre;
     }
     .ll-status {
-      flex: 0 0 80px;
       padding: 6px 8px;
       color: #999;
+      text-align: right;
     }
     .ll-serve {
       padding: 6px 0;
@@ -129,7 +144,7 @@
       text-align: right;
     }
     .ll-dropdown {
-      flex: 0 0 30px;
+      flex: 0 0 40px;
       padding: 6px 8px;
       color: #999;
     }

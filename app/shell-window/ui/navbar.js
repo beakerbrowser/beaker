@@ -4,7 +4,7 @@ import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
 import { UpdatesNavbarBtn } from './navbar/updates'
-import { DownloadsNavbarBtn } from './navbar/downloads'
+import { DropMenuNavbarBtn } from './navbar/drop-menu'
 import { SitePermsNavbarBtn } from './navbar/site-perms'
 
 const KEYCODE_DOWN = 40
@@ -19,7 +19,7 @@ const KEYCODE_P = 80
 
 var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
-var downloadsNavbarBtn = null
+var dropMenuNavbarBtn = null
 var sitePermsNavbarBtn = null
 
 // autocomplete data
@@ -33,7 +33,7 @@ var autocompleteResults = null // if set to an array, will render dropdown
 export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
-  downloadsNavbarBtn = new DownloadsNavbarBtn()
+  dropMenuNavbarBtn = new DropMenuNavbarBtn()
   sitePermsNavbarBtn = new SitePermsNavbarBtn()
 }
 
@@ -149,8 +149,8 @@ function render (id, page) {
   // view dat
   var viewDatBtn
   if (page && page.protocolDescription && page.protocolDescription.scheme == 'dat') {
-    viewDatBtn = yo`<button class="nav-view-files-btn" onclick=${onClickViewFiles}>
-      <span class="icon icon-folder"></span> <small>Files</small>
+    viewDatBtn = yo`<button class="nav-view-files-btn" title="View App Files" onclick=${onClickViewFiles}>
+      <span class="icon icon-folder"></span>
     </button>`
   }
 
@@ -189,7 +189,7 @@ function render (id, page) {
             titleColumn.innerHTML = r.titleDecorated // use innerHTML so our decoration can show
           else
             titleColumn.textContent = r.title
-          
+
           // selection
           var rowCls = 'result'
           if (i == autocompleteCurrentSelection)
@@ -234,14 +234,16 @@ function render (id, page) {
         onkeydown=${onKeydownLocation}
         oninput=${onInputLocation}
         value=${addrValue} />
+      <span class="charms">
+        ${viewDatBtn}
+      </span>
       ${inpageFinder}
       ${zoomBtn}
-      ${viewDatBtn}
       <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
-      ${downloadsNavbarBtn.render()}
+      ${dropMenuNavbarBtn.render()}
       ${updatesNavbarBtn.render()}
     </div>
   </div>`
@@ -407,14 +409,24 @@ function onClickCancel (e) {
 
 function onClickBookmark (e) {
   var page = getEventPage(e)
-  if (page)
+  if (page) {
     page.toggleBookmark()
+
+    // animate the element
+    document.querySelector('.toolbar-actions:not(.hidden) .nav-bookmark-btn .icon').animate([
+      {textShadow: '0 0 0px rgba(255, 188, 0, 1.0)'},
+      {textShadow: '0 0 8px rgba(255, 188, 0, 1.0)'},
+      {textShadow: '0 0 16px rgba(255, 188, 0, 0.0)'}
+    ], { duration: 300 })
+  }
 }
 
 function onClickViewFiles (e) {
   var page = getEventPage(e)
-  if (page) {
+  if (page && page.getURL().startsWith('dat://')) {
     try {
+
+      // get the target url
       var urlp = new URL(page.getURL())
       var path = urlp.pathname
       if (!path.endsWith('/')) {
@@ -422,11 +434,20 @@ function onClickViewFiles (e) {
         path = path.slice(0, path.lastIndexOf('/'))
       }
       var url = `beaker:archive/${urlp.host}${path}`
+
+      // start loading
       if (e.metaKey || e.ctrlKey) { // popup
         pages.setActive(pages.create(url))
       } else {
         page.loadURL(url) // goto
       }
+
+      // animate the element
+      document.querySelector('.toolbar-actions:not(.hidden) .nav-view-files-btn .icon').animate([
+        {textShadow: '0 0 0px rgba(128, 128, 128, 1.0)'},
+        {textShadow: '0 0 8px rgba(128, 128, 128, 1.0)'},
+        {textShadow: '0 0 16px rgba(128, 128, 128, 0.0)'}
+      ], { duration: 300 })
     } catch (e) {
       console.warn('Failed to view files:', e)
     }
