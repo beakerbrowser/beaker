@@ -4,5 +4,6 @@ export default {
   getMostVisited: 'promise',
   search: 'promise',
   removeVisit: 'promise',
-  removeAllVisits: 'promise'
+  removeAllVisits: 'promise',
+  removeVisitsAfter: 'promise'
 }
