@@ -88,6 +88,18 @@ function render () {
   }
 
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content" onscroll=${onScrollContent}>
+    <div class="delete-bulk">
+     <button class="btn" onclick=${onClickDeleteBulk.bind(window)}>
+       Clear Browsing History
+     </button>
+     <select id="delete-period">
+       <option value="day">from today</option>
+       <option value="week">from this week</option>
+       <option value="month">from this month</option>
+       <option value="all">from all time</option>
+     </select>
+    </div>
+
     <div class="history links-list">
       ${rowEls}
     </div>
@@ -114,4 +126,24 @@ function onClickDelete (i) {
   visits.splice(i, 1)
   beakerHistory.removeVisit(v.url)
   render()
+}
+
+function onClickDeleteBulk () {
+  var period = document.querySelector('#delete-period').value
+
+  // clear all history
+  if (period === 'all') {
+    visits = []
+    beakerHistory.removeAllVisits()
+    render()
+  } else {
+    var threshold = moment().startOf(period).valueOf()
+
+    // filter out visits that with a timestamp >= threshold
+    visits = visits.filter(v => v.ts < threshold)
+    beakerHistory.removeVisitsAfter(threshold)
+
+    // fetch and render more visits if possible
+    fetchMore(render)
+  }
 }

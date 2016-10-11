@@ -29,7 +29,7 @@ export function setup () {
   setupPromise = setupDatabase2(db, migrations, '[HISTORY]')
 
   // wire up RPC
-  rpc.exportAPI('beakerHistory', manifest, { addVisit, getVisitHistory, getMostVisited, search, removeVisit, removeAllVisits })
+  rpc.exportAPI('beakerHistory', manifest, { addVisit, getVisitHistory, getMostVisited, search, removeVisit, removeAllVisits, removeVisitsAfter })
 }
 
 export function addVisit ({url, title}) {
@@ -132,6 +132,17 @@ export function removeVisit (url) {
       db.run('DELETE FROM visit_fts WHERE url = ?;', url)
       db.run('COMMIT;', cb)
     })
+  }))
+}
+
+export function removeVisitsAfter (timestamp) {
+  return setupPromise.then(v => cbPromise(cb => {
+    cb = cb || (()=>{})
+
+    db.run('BEGIN TRANSACTION;')
+    db.run('DELETE FROM visits WHERE ts >= ?;', timestamp)
+    db.run('DELETE FROM visit_stats WHERE last_visit_ts >= ?;', timestamp)
+    db.run('COMMIT;', cb)
   }))
 }
 
