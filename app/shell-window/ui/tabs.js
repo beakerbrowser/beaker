@@ -8,8 +8,8 @@ import { debounce, throttle } from '../../lib/functions'
 // =
 
 const MAX_TAB_WIDTH = 250 // px
-const MIN_TAB_WIDTH = 46 // px
-const TAB_SPACING = 0 // px
+const MIN_TAB_WIDTH = 56 // px
+const TAB_SPACING = -12 // px
 
 // globals
 // =
@@ -86,7 +86,7 @@ function drawTab (page) {
                 oncontextmenu=${onContextMenuTab(page)}
                 onmousedown=${onMouseDown(page)}
                 title=${page.getTitle()}>
-      <div class="chrome-tab-favicon" style=${getFaviconStyle(page)}>${favicon}</div>
+      <div class="chrome-tab-favicon">${favicon}</div>
     </div>`
   }
 
@@ -100,7 +100,7 @@ function drawTab (page) {
       oncontextmenu=${onContextMenuTab(page)}
       onmousedown=${onMouseDown(page)}
       title=${page.getTitle()}>
-    <div class="chrome-tab-favicon" style=${getFaviconStyle(page)}>${favicon}</div>
+    <div class="chrome-tab-favicon">${favicon}</div>
     <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
     <div class="chrome-tab-close" onclick=${onClickTabClose(page)}></div>
   </div>`
@@ -160,11 +160,15 @@ function onSetActive (page) {
   getTabEl(page, newTabEl => {
     // make old active tab inactive
     var oldTabEl = tabsContainerEl.querySelector('.chrome-tab-current')
-    if (oldTabEl)
+    if (oldTabEl) {
       oldTabEl.classList.remove('chrome-tab-current')
+    }
 
     // set new tab active
     newTabEl.classList.add('chrome-tab-current')
+
+    // recalculate tab styles
+    repositionTabs()
   })
 }
 
@@ -218,7 +222,7 @@ function onClickCloseTabsToTheRight (page) {
 }
 
 function onContextMenuTab (page) {
-  const { Menu, MenuItem, clipboard } = remote
+  const { Menu } = remote
   return e => {
     var menu = Menu.buildFromTemplate([
       { label: 'New Tab', click: onClickNew },
@@ -350,28 +354,36 @@ function getTabWidth (page) {
   return currentTabWidth
 }
 
-// this function looks weird because `page` is sometimes an index and sometimes a page object
-// somebody ought to make it nicer. SOMEBODY. 
 function getPageStyle (page) {
   const allPages = pages.getAll()
-  var style = `transform: translateX(${getTabX(page)}px);`
-  if (typeof page == 'object' || page < allPages.length)
-    style += ` width: ${getTabWidth(page || allPages[page])}px;`
-  return style
-}
 
-function getFaviconStyle (page) {
-  var c
-  if (page.faviconDominantColor) {
-    c = page.faviconDominantColor
+  // `page` is sometimes an index and sometimes a page object (gross, I know)
+  // we need both
+  var pageIndex, pageObject
+  if (typeof page === 'object') {
+    pageObject = page
+    pageIndex = allPages.indexOf(page)
+  } else {
+    pageObject = allPages[page]
+    pageIndex = page
   }
-  else if (page.getURL().startsWith('beaker:')) {
-    c = [1, 111, 222]
+
+  // z-index
+  var zIndex = pageIndex // default to the order across
+  if (page.isActive) {
+    zIndex = 999 // top
+  } else if (page.isTabDragging) {
+    zIndex = 998 // almost top
   }
-  if (c) {
-    return `border-bottom-color: rgb(${c[0]}, ${c[1]}, ${c[2]})`
+
+  var style = `
+    transform: translateX(${getTabX(pageIndex)}px);
+    z-index: ${zIndex};
+  `
+  if (pageObject) {
+    style += ` width: ${getTabWidth(pageObject)}px;`
   }
-  return ''
+  return style
 }
 
 // returns 0 for no, -1 or 1 for yes (the offset)

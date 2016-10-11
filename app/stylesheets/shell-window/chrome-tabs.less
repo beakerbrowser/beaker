@@ -2,7 +2,7 @@
   position: relative;
   padding: 0 18px 0 0px;
   height: 36px;
-  border-bottom: 1px solid #aaa;
+  border-bottom: 1px solid #999;
 }
 
 .chrome-tabs {
@@ -12,21 +12,33 @@
     -webkit-user-select: none;
     cursor: default;
     font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 13px;
   }
 
   .chrome-tab {
     position: absolute;
-    height: 35px;
+    top: 7px;
+    height: 29px;
     width: 30px;
     z-index: 1;
     -webkit-app-region: no-drag;
-    transition: .1s transform, 0.2s background;
-    border-left: 1px solid #bbb;
-
-    &:first-child {
-      border-left-width: 0;
+    transition: .1s transform;
+    
+    &:before {
+      content: '';
+      position: absolute;
+      top: -3px;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: -1;
+      border: 1px solid #888;
+      border-bottom-color: #aaa;
+      background: #ddd;
+      transform: perspective(6px) rotateX(1deg);
+      transform-origin: bottom;
+      transition: 0.2s background;
     }
 
     .chrome-tab-favicon {
@@ -35,10 +47,9 @@
       text-align: center;
       background-size: 16px;
       position: absolute;
-      left: 12px;
-      top: 10px;
+      left: 15px;
+      top: 7px;
       z-index: 3;
-      transition: top 0.2s, border 0.1s;
 
       img {
         width: 16px;
@@ -50,13 +61,19 @@
       left: 1px;
       top: 1px;
     }
-    &.chrome-tab-pinned .chrome-tab-favicon {
-      left: 15px;
+    &.chrome-tab-pinned {
+      &:before {    
+        transform: perspective(1px) rotateX(1deg);
+        top: -28px;
+      }
+      .chrome-tab-favicon {
+        left: 20px;
+      }
     }
 
     .chrome-tab-title {
       color: #222222;
-      padding: 11px 10px 5px 35px;
+      padding: 9px 26px 5px 36px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -68,14 +85,12 @@
     .chrome-tab-close {
       display: none;
       position: absolute;
-      right: 11px;
-      top: 11px;
+      right: 14px;
+      top: 8px;
       width: 15px;
       height: 15px;
       z-index: 2;
       border-radius: 3px;
-      background: #f0f0f0;
-      box-shadow: -6px 0px 7px #f0f0f0;
 
       &:before {
         content: "\00D7";
@@ -99,41 +114,46 @@
     }
 
     &:hover {
-      background-color: #f0f0f0;
+      &:before {
+        background-color: #f0f0f0;
+      }
       .chrome-tab-close {
         display: block;
       }
     }
 
     &.chrome-tab-dragging {
-      z-index: 2; // just above the non-currents
       transition: none !important;
     }
 
     &.chrome-tab-current {
-      z-index: 999;
-      background-color: #f5f5f5;
-      height: 36px;
-      .chrome-tab-favicon {
-        top: 6px !important;
-        border-bottom: 4px solid #ccc;
+      border: 0;
+      &:before {
+        border-bottom: none;
+        background-color: #f5f5f5;
       }
     }
 
     &.chrome-tab-add-btn {
-      width: 42px;
-      background: none;
+      &:before {
+        display: none;
+      }
 
+      .chrome-tab-favicon {
+        top: 6px;
+      }
       .icon {
-        font-size: 14px;
+        font-size: 17px;
         line-height: 15px;
+        padding: 0 5px;
         color: #666;
       }
 
       &:hover {
-        background: #f0f0f0;
-        .icon {
+        .icon {cursor: pointer;
+          background: rgba(255, 255, 255, 0.25);
           color: #444;
+          border-radius: 14px;
         }
       }
     }
@@ -143,7 +163,4 @@
 // make room for the traffic lights
 .darwin:not(.fullscreen) .chrome-tabs {
   padding-left: 75px;
-  .chrome-tab:first-child {
-    border-left-width: 1px;
-  }
 }
