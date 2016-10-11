@@ -18,7 +18,9 @@ For example, to install the example plugin:
 
 ```bash
 cd ~/beaker # a cloned copy of beaker
+cd ~/app    # app directory, where browser package.json lives
 npm install beaker-plugin-example
+cd ..
 npm run rebuild
 npm start
 ```
