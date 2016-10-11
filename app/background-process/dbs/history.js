@@ -149,13 +149,10 @@ export function removeVisitsAfter (timestamp) {
 export function removeAllVisits () {
   return setupPromise.then(v => cbPromise(cb => {
     cb = cb || (()=>{})
-    db.run(`
-      BEGIN TRANSACTION;
-      DELETE FROM visits;
-      DELETE FROM visit_stats;
-      DELETE FROM visit_fts;
-      COMMIT;
-    `, cb)
+
+    db.run('DELETE FROM visits;')
+    db.run('DELETE FROM visit_stats;')
+    db.run('DELETE FROM visit_fts;')
   }))
 }
 
