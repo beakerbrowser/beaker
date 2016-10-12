@@ -120,12 +120,6 @@ export function create (opts) {
       navbar.update(page)
     },
 
-    // start/stop live reloading
-    toggleLiveReloading: function () {
-      page.isLiveReloading = !page.isLiveReloading
-      navbar.update(page)
-    },
-
     getURLOrigin: function () {
       return parseURL(this.getURL()).origin
     },
@@ -141,13 +135,22 @@ export function create (opts) {
       return `beaker:archive/${urlp.host}${path}`
     },
 
+    // start/stop live reloading
+    toggleLiveReloading: function () {
+      page.isLiveReloading = !page.isLiveReloading
+      navbar.update(page)
+    },
+
+    // reload the page due to changes in the dat
     triggerLiveReload: debounce(archiveKey => {
       // double check that we're still on the page
       if (page.isLiveReloading && page.getIntendedURL().startsWith('dat://' + archiveKey)) {
         // reload
         page.reload()
       }
-    }, TRIGGER_LIVE_RELOAD_DEBOUNCE)
+    }, TRIGGER_LIVE_RELOAD_DEBOUNCE, true)
+    // ^ note this is on the front edge of the debouncer.
+    // That means snappier reloads (no delay) but possible double reloads if multiple files change
   }
 
   if (opts.isPinned)
