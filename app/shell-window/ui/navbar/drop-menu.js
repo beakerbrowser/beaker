@@ -42,7 +42,18 @@ export class DropMenuNavbarBtn {
     // render the dropdown if open
     var dropdownEl = ''
     if (this.isDropdownOpen) {
-      var downloadEls = activeDownloads.map(d => {
+      let pageSpecificEls
+      let page = pages.getActive()
+      if (page.getIntendedURL().startsWith('dat://')) {
+        pageSpecificEls = [
+          yo`<div class="td-item" onclick=${e => this.onViewFiles(e)}><span class="icon icon-folder"></span> View this Dat's Files</div>`,
+          yo`<div class="td-item" onclick=${e => this.onToggleLiveReloading(e)}><span class="icon icon-flash"></span> Turn ${page.isLiveReloading ? 'off' : 'on'} Live Reloading</div>`,
+          // TODO <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-install"></span> Install as Offline App</div>
+          yo`<hr />`
+        ]
+      }
+
+      let downloadEls = activeDownloads.map(d => {
         // status
         var status = d.state
         if (status == 'progressing') {
@@ -85,11 +96,9 @@ export class DropMenuNavbarBtn {
         </div>`
       })
       dropdownEl = yo`<div class="toolbar-dropdown toolbar-drop-menu-dropdown">
-        ${''/* TODO <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-folder"></span> View this Dat's Files</div> */ }
-        ${''/* TODO <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-floppy"></span> Save this Dat for Offline</div> */ }
-        ${''/* TODO <div class="td-item" onclick=${e => this.onOpenDownloads(e)}><span class="icon icon-install"></span> Install as Offline App</div> */ }        
+        ${pageSpecificEls}        
         <div class="td-item" onclick=${e => this.onOpenDownloads(e)}>Downloads</div>
-        <hr />
+        ${downloadEls.length ? yo`<hr />` : ''}
         ${downloadEls}
       </div>`
     }
@@ -104,11 +113,11 @@ export class DropMenuNavbarBtn {
     </div>`
   }
 
-  updateActives() {
+  updateActives () {
     Array.from(document.querySelectorAll('.toolbar-drop-menu')).forEach(el => yo.update(el, this.render()))
   }
 
-  doAnimation() {
+  doAnimation () {
     Array.from(document.querySelectorAll('.toolbar-drop-menu-btn')).forEach(el => 
       el.animate([
         {transform: 'scale(1.0)', color:'inherit'},
@@ -118,22 +127,22 @@ export class DropMenuNavbarBtn {
     )
   }
 
-  onClickBtn(e) {
+  onClickBtn (e) {
     this.isDropdownOpen = !this.isDropdownOpen
     this.shouldPersistProgressBar = false // stop persisting if we were, the user clicked
     this.updateActives()
   }
 
-  onNewDownload() {
+  onNewDownload () {
     this.doAnimation()
   }
 
-  onSumProgress(sumProgress) {
+  onSumProgress (sumProgress) {
     this.sumProgress = sumProgress
     this.updateActives()
   }
 
-  onUpdate(download) {
+  onUpdate (download) {
     // patch data each time we get an update
     var target = this.downloads.find(d => d.id == download.id)
     if (target) {
@@ -145,7 +154,7 @@ export class DropMenuNavbarBtn {
     this.updateActives()
   }
 
-  onDone(download) {
+  onDone (download) {
     this.shouldPersistProgressBar = true // keep progress bar up so the user notices
     this.doAnimation()
     this.onUpdate(download)
@@ -189,9 +198,32 @@ export class DropMenuNavbarBtn {
       })
   }
 
+  onViewFiles (e) {
+    // close dropdown
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.updateActives()
+
+    var page = pages.getActive()
+    if (page.getURL().startsWith('dat://')) {
+      // get the target url
+      var url = page.getViewFilesURL()
+      if (!url) return
+
+      // load url
+      page.loadURL(url)
+    }
+  }
+
+  onToggleLiveReloading (e) {
+    // close dropdown
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.updateActives()
+
+    // toggle
+    pages.getActive().toggleLiveReloading()
+  }
+
   onOpenDownloads (e) {
-    e.preventDefault()
-    e.stopPropagation()
     pages.setActive(pages.create('beaker:downloads'))
     this.isDropdownOpen = false
     this.updateActives()

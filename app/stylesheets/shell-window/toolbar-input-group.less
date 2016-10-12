@@ -110,6 +110,19 @@
       .icon {
         cursor: pointer;
       }
+
+      &.nav-live-reload-btn {
+        color: gold;
+        padding-right: 0;
+        min-width: 15px;
+        -webkit-text-stroke: 1px #eabb33;
+        animation-name: navLiveReloadBtnGlow;
+        animation-duration: 2s;
+        animation-iteration-count: infinite;
+        .icon {
+          font-size: 14px;
+        }
+      }
     }
   }
 
@@ -168,4 +181,10 @@
       }
     }
   }
+}
+
+@keyframes navLiveReloadBtnGlow {
+  from { text-shadow: 0 0 0 #eabb33; }
+  50% { text-shadow: 0 0 5px #eabb33; }
+  to { text-shadow: 0 0 0 #eabb33; }
 }

@@ -369,10 +369,12 @@ function getPageStyle (page) {
   }
 
   // z-index
-  var zIndex = pageIndex // default to the order across
-  if (page.isActive) {
+  var zIndex = pageIndex + 1 // default to the order across
+  if (!pageObject) {
+    zIndex = 0 // the add btn
+  } else if (pageObject.isActive) {
     zIndex = 999 // top
-  } else if (page.isTabDragging) {
+  } else if (pageObject.isTabDragging) {
     zIndex = 998 // almost top
   }
 
