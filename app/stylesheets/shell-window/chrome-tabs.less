@@ -20,7 +20,7 @@
     position: absolute;
     top: 7px;
     height: 29px;
-    width: 30px;
+    width: 52px;
     z-index: 1;
     -webkit-app-region: no-drag;
     transition: .1s transform;
@@ -62,7 +62,7 @@
       top: 1px;
     }
     &.chrome-tab-pinned {
-      &:before {    
+      &:before {
         transform: perspective(1px) rotateX(1deg);
         top: -28px;
       }
@@ -90,7 +90,7 @@
       width: 15px;
       height: 15px;
       z-index: 2;
-      border-radius: 3px;
+      border-radius: 8px;
 
       &:before {
         content: "\00D7";
@@ -136,24 +136,28 @@
 
     &.chrome-tab-add-btn {
       &:before {
-        display: none;
+        background: transparent;
+        border: 0;
+        transform: perspective(1px) rotateX(1deg);
+        top: -28px;
       }
 
       .chrome-tab-favicon {
         top: 6px;
+        padding: 0 6px;
       }
       .icon {
         font-size: 17px;
         line-height: 15px;
-        padding: 0 5px;
         color: #666;
       }
 
       &:hover {
-        .icon {cursor: pointer;
-          background: rgba(255, 255, 255, 0.25);
+        &:before {
+          background: #d6d5d5;
+        }
+        .icon {
           color: #444;
-          border-radius: 14px;
         }
       }
     }
