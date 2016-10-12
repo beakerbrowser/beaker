@@ -6,6 +6,7 @@ import * as navbar from './ui/navbar'
 import * as promptbar from './ui/promptbar'
 import * as statusBar from './ui/statusbar'
 import { urlToData } from '../lib/fg/img'
+import { debounce } from '../lib/functions'
 import errorPage from '../lib/error-page'
 
 // constants
@@ -14,6 +15,8 @@ import errorPage from '../lib/error-page'
 const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
 const ERR_INSECURE_RESPONSE = -501
+
+const TRIGGER_LIVE_RELOAD_DEBOUNCE = 1e3 // debounce live-reload triggers by this amount
 
 export const DEFAULT_URL = 'beaker:start'
 
@@ -68,6 +71,7 @@ export function create (opts) {
     isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
+    isLiveReloading: false, // live-reload enabled?
     zoom: 0, // what's the current zoom level?
     favicons: null, // what are the favicons of the page?
     faviconDominantColor: null, // what's the computed dominant color of favicon?
@@ -116,9 +120,34 @@ export function create (opts) {
       navbar.update(page)
     },
 
+    // start/stop live reloading
+    toggleLiveReloading: function () {
+      page.isLiveReloading = !page.isLiveReloading
+      navbar.update(page)
+    },
+
     getURLOrigin: function () {
       return parseURL(this.getURL()).origin
-    }
+    },
+
+    getViewFilesURL: function () {
+      var urlp = parseURL(this.getURL())
+      if (!urlp) return false
+      var path = urlp.pathname
+      if (!path.endsWith('/')) {
+        // strip the filename at the end
+        path = path.slice(0, path.lastIndexOf('/'))
+      }
+      return `beaker:archive/${urlp.host}${path}`
+    },
+
+    triggerLiveReload: debounce(archiveKey => {
+      // double check that we're still on the page
+      if (page.isLiveReloading && page.getIntendedURL().startsWith('dat://' + archiveKey)) {
+        // reload
+        page.reload()
+      }
+    }, TRIGGER_LIVE_RELOAD_DEBOUNCE)
   }
 
   if (opts.isPinned)
@@ -132,7 +161,7 @@ export function create (opts) {
   ;([
     ['getURL', ''],
     ['getTitle', ''],
-    
+
     ['goBack'],
     ['canGoBack'],
     ['goForward'],

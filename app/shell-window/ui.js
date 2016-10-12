@@ -3,6 +3,7 @@ import url from 'url'
 import * as tabs from './ui/tabs'
 import * as navbar from './ui/navbar'
 import * as pages from './pages'
+import * as liveReload from './pages/live-reload'
 import * as commandHandlers from './command-handlers'
 import * as swipeHandlers from './swipe-handlers'
 
@@ -28,6 +29,7 @@ export function setup (cb) {
   navbar.setup()
   commandHandlers.setup()
   swipeHandlers.setup()
+  liveReload.setup()
   pages.setActive(pages.create(pages.DEFAULT_URL))
   cb()
 }

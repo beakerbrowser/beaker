@@ -107,7 +107,8 @@ export function updateLocation (page) {
 // =
 
 function render (id, page) {
-  var isLoading = page && page.isLoading()
+  const isLoading = page && page.isLoading()
+  const isViewingDat = page && page.protocolDescription && page.protocolDescription.scheme == 'dat'
 
   // back/forward should be disabled if its not possible go back/forward
   var backDisabled = (page && page.canGoBack()) ? '' : 'disabled'
@@ -144,13 +145,21 @@ function render (id, page) {
 
 
   // bookmark toggle state
-  var bookmarkClass = 'nav-bookmark-btn'+((page && !!page.bookmark) ? ' active' : '')
+  var bookmarkClass = 'nav-bookmark-btn' + ((page && !!page.bookmark) ? ' active' : '')
 
-  // view dat
+  // view dat btn
   var viewDatBtn
-  if (page && page.protocolDescription && page.protocolDescription.scheme == 'dat') {
+  if (isViewingDat) {
     viewDatBtn = yo`<button class="nav-view-files-btn" title="View App Files" onclick=${onClickViewFiles}>
       <span class="icon icon-folder"></span>
+    </button>`
+  }
+
+  // live reload btn
+  var liveReloadBtn
+  if (isViewingDat && page.isLiveReloading) {
+    liveReloadBtn = yo`<button class="nav-live-reload-btn" title="Live Reloading" onclick=${onClickLiveReload}>
+      <span class="icon icon-flash"></span>
     </button>`
   }
 
@@ -235,6 +244,7 @@ function render (id, page) {
         oninput=${onInputLocation}
         value=${addrValue} />
       <span class="charms">
+        ${liveReloadBtn}
         ${viewDatBtn}
       </span>
       ${inpageFinder}
@@ -424,38 +434,36 @@ function onClickBookmark (e) {
 function onClickViewFiles (e) {
   var page = getEventPage(e)
   if (page && page.getURL().startsWith('dat://')) {
-    try {
+    // get the target url
+    var url = page.getViewFilesURL()
+    if (!url) return
 
-      // get the target url
-      var urlp = new URL(page.getURL())
-      var path = urlp.pathname
-      if (!path.endsWith('/')) {
-        // strip the filename at the end
-        path = path.slice(0, path.lastIndexOf('/'))
-      }
-      var url = `beaker:archive/${urlp.host}${path}`
-
-      // start loading
-      if (e.metaKey || e.ctrlKey) { // popup
-        pages.setActive(pages.create(url))
-      } else {
-        page.loadURL(url) // goto
-      }
-
-      // animate the element
-      document.querySelector('.toolbar-actions:not(.hidden) .nav-view-files-btn .icon').animate([
-        {textShadow: '0 0 0px rgba(128, 128, 128, 1.0)'},
-        {textShadow: '0 0 8px rgba(128, 128, 128, 1.0)'},
-        {textShadow: '0 0 16px rgba(128, 128, 128, 0.0)'}
-      ], { duration: 300 })
-    } catch (e) {
-      console.warn('Failed to view files:', e)
+    // start loading
+    if (e.metaKey || e.ctrlKey) { // popup
+      pages.setActive(pages.create(url))
+    } else {
+      page.loadURL(url) // goto
     }
+
+    // animate the element
+    document.querySelector('.toolbar-actions:not(.hidden) .nav-view-files-btn .icon').animate([
+      {textShadow: '0 0 0px rgba(128, 128, 128, 1.0)'},
+      {textShadow: '0 0 8px rgba(128, 128, 128, 1.0)'},
+      {textShadow: '0 0 16px rgba(128, 128, 128, 0.0)'}
+    ], { duration: 300 })
   }
 }
 
+function onClickLiveReload (e) {
+  const { Menu } = remote
+  var menu = Menu.buildFromTemplate([
+    { label: 'Stop Live Reloading', click: () => console.log('todo') }
+  ])
+  menu.popup(remote.getCurrentWindow())
+}
+
 function onClickZoom (e) {
-  const { Menu, MenuItem } = remote
+  const { Menu } = remote
   var menu = Menu.buildFromTemplate([
     { label: 'Reset Zoom', click: () => zoom.zoomReset(pages.getActive()) },
     { label: 'Zoom In', click: () => zoom.zoomIn(pages.getActive()) },
