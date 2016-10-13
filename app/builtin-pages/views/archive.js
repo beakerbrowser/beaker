@@ -13,6 +13,7 @@ import { archiveEntries, entriesListToTree, calculateTreeSizeAndProgress } from 
 import toggleable from '../com/toggleable'
 import HypercoreStats from '../com/hypercore-stats'
 import * as editArchiveModal from '../com/modals/edit-site'
+import * as forkDatModal from '../com/modals/fork-dat'
 import * as helpTour from '../com/help-tour'
 
 // globals
@@ -45,6 +46,7 @@ var archiveCurrentNode = null
 var archiveError = false
 var hideDotfiles = true
 var hypercoreStats
+var currentForkModal = null // currently visible fork modal: we need a reference to trigger rendering on download
 
 // event emitter
 var archivesEvents
@@ -72,7 +74,7 @@ export function show (isSameView) {
   archiveKey = parseKeyFromURL()
   document.title = 'Loading...'
   render() // render loading state
-  co(function* () {
+  co(function * () {
     try {
       yield fetchArchiveInfo()
     } catch (e) {}
@@ -134,6 +136,10 @@ function render () {
     renderError()
   } else {
     renderLoading()
+  }
+
+  if (currentForkModal) {
+    currentForkModal.rerender()
   }
 }
 
@@ -215,12 +221,14 @@ function renderHeading () {
   // general buttons
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
   var openFolderBtn = yo`<a id="open-in-finder-btn" onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
+  var forkBtn = yo`<a id="fork-btn" title="Fork Archive" onclick=${onClickFork}><span class="icon icon-flow-branch"></span> Fork Archive</a>`
   var deleteArchiveBtn = yo`<a id="delete-btn" title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
   var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
     <a class="toggleable btn"><span class="icon icon-down-open"></span></a>
     <div class="dropdown-btn-list">
       ${openFolderBtn}
-      <hr>
+      ${forkBtn}
+      <hr />
       ${deleteArchiveBtn}
     </div>
   </div>`)
@@ -358,6 +366,7 @@ const fetchArchiveInfo = throttle(cb => {
   })
 }, 1e3)
 
+// use the current url's path to set the `archiveCurrentNode`
 function setCurrentNodeByPath () {
   archiveCurrentNode = archiveEntriesTree
   var names = window.location.pathname.split('/').slice(2) // drop 'archive/{name}', take the rest
@@ -373,7 +382,40 @@ function setCurrentNodeByPath () {
   }
 }
 
-// event handlers: archive editor 
+function downloadArchiveNode (node) {
+  // recursively start downloads
+  co(function *() {
+    yield startDownload(node)
+    render()
+  })
+
+  function * startDownload (n) {
+    // do nothing if already downloaded
+    if (n.entry.downloadedBlocks === n.entry.blocks) {
+      return Promise.resolve()
+    }
+
+    // render progress starting
+    n.entry.isDownloading = true
+    render()
+
+    if (n.entry.type === 'file') {
+      // download entry
+      yield datInternalAPI.downloadArchiveEntry(archiveInfo.key, n.entry.path)
+    } else if (n.entry.type === 'directory') {
+      // recurse to children
+      yield Object.keys(n.children).map(k => startDownload(n.children[k]))
+    }
+
+    // render done
+    n.entry.isDownloading = false
+    render()
+
+    return Promise.resolve()
+  }
+}
+
+// event handlers: archive editor
 // =
 
 function onEditArchive (isNew) {
@@ -390,12 +432,12 @@ function onSubmitEditArchive ({ title, description }) {
     .catch(console.warn.bind(console, 'Failed to update manifest'))
 }
 
-// event handlers: files uploader 
+// event handlers: files uploader
 // =
 
 function onClickSelectFiles (e) {
   e.preventDefault()
-  co(function* () {
+  co(function * () {
     var paths = yield beakerBrowser.showOpenDialog({
       title: 'Choose a folder to import',
       buttonLabel: 'Import',
@@ -473,7 +515,7 @@ function onCopyLink () {
 
 function onOpenFolder (e, entry) {
   e.preventDefault()
-  window.history.pushState(null, '', 'beaker:archive/'+archiveInfo.key+'/'+entry.path)
+  window.history.pushState(null, '', 'beaker:archive/' + archiveInfo.key + '/' + entry.path)
 }
 
 function onOpenInFinder () {
@@ -481,17 +523,33 @@ function onOpenInFinder () {
   render()
 }
 
-// TODO
-// this is disabled for now.
-// adds complexity, and I'm not sure it's needed yet.
-// -prf
-// function onClickClone (e) {
-//   beaker.dat.clone(archiveInfo.key, (err, newKey) => {
-//     if (err)
-//       return console.warn(err) // TODO inform user
-//     window.location = 'beaker:archive/'+newKey
-//   })
-// }
+function onClickFork (e) {
+  // create fork modal
+  currentForkModal = forkDatModal.create(archiveInfo, archiveEntriesTree, {
+    isDownloading: archiveInfo.userSettings.isServing,
+    onClickDownload: onDownloadForkArchive,
+    onSubmit: onSubmitForkArchive
+  })
+  currentForkModal.addEventListener('close', () => currentForkModal = null, { once: true })
+}
+
+function onDownloadForkArchive () {
+  if (currentForkModal) {
+    // download the entire tree
+    downloadArchiveNode(archiveEntriesTree)
+    currentForkModal.rerender()
+  }
+}
+
+function onSubmitForkArchive ({ title, description }) {
+  // what do you do when you see a fork in the code?
+  datInternalAPI.forkArchive(archiveInfo.key, { title, description }).then(newKey => {
+    // you take it
+    window.location = 'beaker:archive/' + newKey
+  }).catch(err => {
+    console.error(err) // TODO alert user
+  })
+}
 
 // event handlers: files listing
 // =
