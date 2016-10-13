@@ -1,12 +1,13 @@
 import * as yo from 'yo-yo'
 import co from 'co'
+import * as editSiteModal from '../com/modals/edit-site' 
 
 // globals
 // =
 
 var navItems = [
   { href: 'beaker:start', label: 'Favorites', icon: 'star' },
-  { href: 'beaker:sites', label: 'Your Sites', icon: 'share' },
+  { href: 'beaker:archives', label: 'Dat Archives', icon: 'archive' },
   { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
   { href: 'beaker:downloads', label: 'Downloads', icon: 'install' },
   { href: 'beaker:settings', label: 'Settings', icon: 'list' }
@@ -41,6 +42,7 @@ export function update () {
 function render () {
   return yo`<nav class="nav-group">
     <img class="logo" src="beaker:logo">
+    <a class="btn" onclick=${onClickShareFiles}>Share Files</a>
     ${navItems.map(renderNavItem)}
   </nav>`
 }
@@ -76,4 +78,12 @@ function onClickNavItem (item) {
       window.location = item.href
     }
   }
+}
+
+function onClickShareFiles (e) {
+  editSiteModal.create({}, { title: 'New Files Archive', onSubmit: opts => {
+    datInternalAPI.createNewArchive(opts).then(key => {
+      window.location = 'view-dat://' + key
+    })
+  }})
 }

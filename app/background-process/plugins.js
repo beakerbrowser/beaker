@@ -9,7 +9,7 @@ import emitStream from 'emit-stream'
 // =
 
 const PLUGIN_NODE_MODULES = path.join(__dirname, 'node_modules')
-console.log('[PLUGINS] Loading from', PLUGIN_NODE_MODULES)
+log.debug('[PLUGINS] Loading from', PLUGIN_NODE_MODULES)
 
 // find all modules named beaker-plugin-*
 var protocolModuleNames = []

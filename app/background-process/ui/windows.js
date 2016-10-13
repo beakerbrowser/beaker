@@ -1,14 +1,16 @@
-import { app, BrowserWindow, screen } from 'electron'
+import { app, BrowserWindow, screen, ipcMain } from 'electron'
 import { register as registerShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import jetpack from 'fs-jetpack'
 import path from 'path'
 import * as downloads from './downloads'
-import log from '../../log'
+import * as permissions from './permissions'
+import log from 'loglevel'
 
 // globals
 // =
 var userDataDir
 var stateStoreFile = 'shell-window-state.json'
+var numActiveWindows = 0
 
 // exported methods
 // =
@@ -16,6 +18,14 @@ var stateStoreFile = 'shell-window-state.json'
 export function setup () {
   // config
   userDataDir = jetpack.cwd(app.getPath('userData'))
+
+  // load pinned tabs
+  ipcMain.on('shell-window-ready', e => {
+    // if this is the first window opened (since app start or since all windows closing)
+    if (numActiveWindows === 1) {
+      e.sender.webContents.send('command', 'load-pinned-tabs')
+    }
+  })
 
   // create first shell window
   return createShellWindow()
@@ -27,10 +37,15 @@ export function createShellWindow () {
   var win = new BrowserWindow({ 
     titleBarStyle: 'hidden-inset',
     'standard-window': false,
-    x, y, width, height
+    x, y, width, height,
+    webPreferences: {
+      webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
+      allowRunningInsecureContent: false
+    }
   })
   downloads.registerListener(win)
   loadURL(win, 'beaker:shell-window')
+  numActiveWindows++
 
   // register shortcuts
   for (var i=1; i <= 9; i++)
@@ -55,7 +70,7 @@ export function createShellWindow () {
 
 function loadURL (win, url) {
   win.loadURL(url)
-  log('Opening', url)  
+  log.debug('Opening', url)  
 }
 
 function getCurrentPosition (win) {
@@ -111,6 +126,11 @@ function ensureVisibleOnSomeDisplay (windowState) {
 
 function onClose (win) {
   return e => {
+    numActiveWindows--
+
+    // deny any outstanding permission requests
+    permissions.denyAllRequests(win)
+
     // unregister shortcuts
     unregisterAllShortcuts(win)
 

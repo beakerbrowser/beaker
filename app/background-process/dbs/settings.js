@@ -3,7 +3,6 @@ import sqlite3 from 'sqlite3'
 import path from 'path'
 import { cbPromise } from '../../lib/functions'
 import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
-import log from '../../log'
 
 // globals
 // =

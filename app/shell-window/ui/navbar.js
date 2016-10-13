@@ -127,6 +127,10 @@ function render (id, page) {
   // and it should be hidden if the page isnt active
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
+  // preserve the current finder value and focus
+  var findEl = page && page.navbarEl.querySelector('.nav-find-input')
+  var findValue = findEl ? findEl.value : ''
+
   // inpage finder ctrl
   var inpageFinder = (page && page.isInpageFinding)
     ? yo`<input
@@ -134,8 +138,10 @@ function render (id, page) {
             class="nav-find-input"
             placeholder="Find in page..."
             oninput=${onInputFind}
-            onkeydown=${onKeydownFind} />`
+            onkeydown=${onKeydownFind}
+            value=${findValue} />`
     : ''
+
 
   // bookmark toggle state
   var bookmarkClass = 'nav-bookmark-btn'+((page && !!page.bookmark) ? ' active' : '')
@@ -211,10 +217,10 @@ function render (id, page) {
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
       <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-        <span class="icon icon-left-open"></span>
+        <span class="icon icon-left-open-big"></span>
       </button>
       <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-        <span class="icon icon-right-open"></span>
+        <span class="icon icon-right-open-big"></span>
       </button>
       ${reloadBtn}      
     </div>
@@ -225,7 +231,6 @@ function render (id, page) {
         class="nav-location-input"
         onfocus=${onFocusLocation}
         onblur=${onBlurLocation}
-        onkeyup=${onKeyupLocation}
         onkeydown=${onKeydownLocation}
         oninput=${onInputLocation}
         value=${addrValue} />
@@ -247,8 +252,9 @@ function handleAutocompleteSearch (results) {
   var v = autocompleteCurrentValue
 
   // decorate result with bolded regions
-  var searchTerms = v.replace(/[^A-Za-z0-9]/g, ' ').split(' ').filter(Boolean)
-  results.forEach(r => decorateResultMatches(searchTerms, r))  
+  // explicitly replace special characters to match sqlite fts tokenization
+  var searchTerms = v.replace(/[:^*-\.]/g, ' ').split(' ').filter(Boolean)
+  results.forEach(r => decorateResultMatches(searchTerms, r))
 
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || isHashRegex.test(v) || v.startsWith('localhost') || v.includes('://') || v.startsWith('beaker:') || v.startsWith('ipfs:/')))
@@ -439,21 +445,6 @@ function onBlurLocation () {
   setTimeout(clearAutocomplete, 150)
 }
 
-function onKeyupLocation (e) {
-  // on enter
-  if (e.keyCode == KEYCODE_ENTER) {
-    e.preventDefault()
-
-    var page = getEventPage(e)
-    if (page) {
-      var selection = getAutocompleteSelection()
-      page.loadURL(selection.url, { isGuessingTheScheme: selection.isGuessingTheScheme })
-      e.target.blur()
-    }
-    return
-  }
-}
-
 function onInputLocation (e) {
   var value = e.target.value
 
@@ -469,6 +460,19 @@ function onInputLocation (e) {
 }
 
 function onKeydownLocation (e) {
+  // on enter
+  if (e.keyCode == KEYCODE_ENTER) {
+    e.preventDefault()
+
+    var page = getEventPage(e)
+    if (page) {
+      var selection = getAutocompleteSelection()
+      page.loadURL(selection.url, { isGuessingTheScheme: selection.isGuessingTheScheme })
+      e.target.blur()
+    }
+    return
+  }
+
   // on escape
   if (e.keyCode == KEYCODE_ESC) {
     var page = getEventPage(e)

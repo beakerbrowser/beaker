@@ -4,16 +4,17 @@
   cursor: pointer;
   border: 0;
   border-radius: 2px;
-  color: #555;
-  background: #f5f5f5;
-  border: 1px solid #ccc;
+  color: #777;
+  background: #f0f0f0;
   padding: 4px 10px;
-  box-shadow: inset 0px -1px 0px rgba(0,0,0,0.07), inset 0px 1px 0 rgba(255,255,255,1);
-
+  border: 1px solid #ccc;
+  
+  &.pressed,
   &:hover {
     text-decoration: none;
     color: #555;
-    background: #eee;
+    background: #e0e0e0;
+    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.07);
   }
 
   &:disabled {
@@ -21,11 +22,23 @@
     background: #fafafa;
     border: 1px solid #ddd;
   }
+}
 
-  &.pressed {
-    background-color: #d0d0d0;
-    background-image: none;
-    box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.07);
+.btn-primary {
+  background: #016fde;
+  color: #fff;
+  border-color: #0153a7;
+
+  &.pressed,
+  &:hover {
+    background: #0058b1;
+    color: #fff;
+  }
+
+  &.glowing {
+    animation-name: primaryBtnGlow;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
   }
 }
 
@@ -34,16 +47,16 @@
   .btn {
     margin: 0 !important;
     border-radius: 0;
-    border-left-width: 0;
+    border-right-width: 0;
   }
   & > :first-child {
     border-top-left-radius: 2px;
     border-bottom-left-radius: 2px;
-    border-left-width: 1px;
   }
   & > :last-child {
     border-top-right-radius: 2px;
     border-bottom-right-radius: 2px;
+    border-right-width: 1px;
   }
 }
 
@@ -55,8 +68,8 @@
     display: block;
   }
   &.open .toggleable.btn {
-    background-color: #d0d0d0;
-    background-image: none;
+    background-color: #e0e0e0;
+    color: #555;
     box-shadow: inset 0px 1px 0px rgba(0, 0, 0, 0.07);
   }
 }
@@ -75,17 +88,31 @@
   color: #555;
   font-size: 14px;
 
-  & > div {
-    padding: 4px 7px;
+  * {
     cursor: pointer;
+  }
+  hr {
+    margin: 0;
+  }
+  & > div, & > a {
+    display: block;
+    padding: 4px 7px;
+    color: #555;
     .icon {
-      cursor: pointer;
       width: 15px;
       display: inline-block;
       text-align: center;
     }
     &:hover {
       background: #fafafa;
+      text-decoration: none;
+      color: #0091ff;
     }
   }
+}
+
+@keyframes primaryBtnGlow {
+  from { background: #016fde; box-shadow: 0 0 0 #333; }
+  50% { background: #1681ec; box-shadow: 0 0 5px #016fde; }
+  to { background: #016fde; box-shadow: 0 0 0 #333; }
 }

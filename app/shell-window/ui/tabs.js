@@ -86,7 +86,7 @@ function drawTab (page) {
                 oncontextmenu=${onContextMenuTab(page)}
                 onmousedown=${onMouseDown(page)}
                 title=${page.getTitle()}>
-      <div class="chrome-tab-favicon">${favicon}</div>
+      <div class="chrome-tab-favicon" style=${getFaviconStyle(page)}>${favicon}</div>
     </div>`
   }
 
@@ -100,7 +100,7 @@ function drawTab (page) {
       oncontextmenu=${onContextMenuTab(page)}
       onmousedown=${onMouseDown(page)}
       title=${page.getTitle()}>
-    <div class="chrome-tab-favicon">${favicon}</div>
+    <div class="chrome-tab-favicon" style=${getFaviconStyle(page)}>${favicon}</div>
     <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
     <div class="chrome-tab-close" onclick=${onClickTabClose(page)}></div>
   </div>`
@@ -358,6 +358,20 @@ function getPageStyle (page) {
   if (typeof page == 'object' || page < allPages.length)
     style += ` width: ${getTabWidth(page || allPages[page])}px;`
   return style
+}
+
+function getFaviconStyle (page) {
+  var c
+  if (page.faviconDominantColor) {
+    c = page.faviconDominantColor
+  }
+  else if (page.getURL().startsWith('beaker:')) {
+    c = [1, 111, 222]
+  }
+  if (c) {
+    return `border-bottom-color: rgb(${c[0]}, ${c[1]}, ${c[2]})`
+  }
+  return ''
 }
 
 // returns 0 for no, -1 or 1 for yes (the offset)

@@ -31,6 +31,13 @@ export default function toggleable (el) {
   return el
 }
 
+export function closeToggleable (el) {
+  while (el && el.classList && el.classList.contains('open') == false)
+    el = el.parentNode
+  if (el && el.classList)
+    el.classList.remove('open')
+}
+
 // NOTE
 // look through the commit history for a much nicer version of this
 // there was an edgecase in the old version that I couldnt make work

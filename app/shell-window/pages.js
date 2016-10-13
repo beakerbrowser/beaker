@@ -70,6 +70,7 @@ export function create (opts) {
     isInpageFinding: false, // showing the inpage find ctrl?
     zoom: 0, // what's the current zoom level?
     favicons: null, // what are the favicons of the page?
+    faviconDominantColor: null, // what's the computed dominant color of favicon?
     archiveInfo: null, // if a dat archive, includes the metadata
 
     // prompts
@@ -116,10 +117,14 @@ export function create (opts) {
     },
 
     getURLOrigin: function () {
-      return (new URL(this.getURL())).origin
+      return parseURL(this.getURL()).origin
     }
   }
-  pages.push(page)
+
+  if (opts.isPinned)
+    pages.splice(indexOfLastPinnedTab(), 0, page)
+  else
+    pages.push(page)
 
   // create proxies for webview methods
   //   webviews need to be dom-ready before their methods work
@@ -168,6 +173,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
   page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
   page.webviewEl.addEventListener('load-commit', onLoadCommit)
+  page.webviewEl.addEventListener('did-get-redirect-request', onDidGetRedirectRequest)
   page.webviewEl.addEventListener('did-get-response-details', onDidGetResponseDetails)
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
@@ -259,10 +265,8 @@ export function setActive (page) {
 
 export function togglePinned (page) {
   // move tab in/out of the pinned tabs
-  var oldIndex = pages.indexOf(page), newIndex = 0
-  for (newIndex; newIndex < pages.length; newIndex++)
-    if (!pages[newIndex].isPinned)
-      break
+  var oldIndex = pages.indexOf(page)
+  var newIndex = indexOfLastPinnedTab()
   if (oldIndex < newIndex) newIndex--
   pages.splice(oldIndex, 1)
   pages.splice(newIndex, 0, page)
@@ -273,6 +277,14 @@ export function togglePinned (page) {
 
   // persist
   savePinnedToDB()
+}
+
+function indexOfLastPinnedTab () {
+  var index = 0
+  for (index; index < pages.length; index++)
+    if (!pages[index].isPinned)
+      break
+  return index
 }
 
 export function reorderTab (page, offset) {
@@ -407,6 +419,9 @@ function onDidNavigateInPage (e) {
     if (!url.startsWith('beaker:')) {
       beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
       beakerBookmarks.addVisit(page.getURL())
+      if (page.isPinned) {
+        savePinnedToDB()
+      }
     }
   }
 }
@@ -425,6 +440,8 @@ function onLoadCommit (e) {
     })
     // stop autocompleting
     navbar.clearAutocomplete()
+    // close any prompts
+    promptbar.forceRemoveAll(page)
   }
 }
 
@@ -434,7 +451,6 @@ function onDidStartLoading (e) {
     page.manuallyTrackedIsLoading = true
     navbar.update(page)
     navbar.hideInpageFind(page)
-    promptbar.forceRemoveAll(page)
     if (page.isActive)
       statusBar.setIsLoading(true)
   }
@@ -448,15 +464,17 @@ function onDidStopLoading (e) {
     if (!url.startsWith('beaker:')) {
       beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
       beakerBookmarks.addVisit(page.getURL())
+      if (page.isPinned) {
+        savePinnedToDB()
+      }
     }
 
     // fetch protocol info
-    var scheme = (new URL(url)).protocol
+    var scheme = parseURL(url).protocol
     if (scheme == 'http:' || scheme == 'https:')
       page.protocolDescription = { label: scheme.slice(0,-1).toUpperCase() }
     else
       page.protocolDescription = beakerBrowser.getProtocolDescription(scheme)
-    console.log('Protocol description', page.protocolDescription)
 
     // update page
     page.loadingURL = false
@@ -482,6 +500,21 @@ function onDidStopLoading (e) {
         transform: translate(-50%, -50%);
       }
     `)
+  }
+}
+
+function onDidGetRedirectRequest (e) {
+  // HACK
+  // electron has a problem handling redirects correctly, so we need to handle it for them
+  // see https://github.com/electron/electron/issues/3471
+  // thanks github.com/sokcuri for this fix
+  // -prf
+  if (e.isMainFrame) {
+    var page = getByWebview(e.target)
+    if (page) {
+      e.preventDefault()
+      setTimeout(() => page.loadURL(e.newURL), 100)
+    }
   }
 }
 
@@ -551,9 +584,13 @@ function onPageFaviconUpdated (e) {
   if (e.favicons && e.favicons[0]) {
     var page = getByWebview(e.target)
     page.favicons = e.favicons
-    urlToData(e.favicons[0], 16, 16, (err, dataUrl) => {
-      if (dataUrl)
-        beakerSitedata.set(page.getURL(), 'favicon', dataUrl)
+    page.faviconDominantColor = null
+    urlToData(e.favicons[0], 16, 16, (err, res) => {
+      if (res) {
+        beakerSitedata.set(page.getURL(), 'favicon', res.url)
+        page.faviconDominantColor = res.dominantColor
+        events.emit('page-favicon-updated', getByWebview(e.target))
+      }
     })
   }
 }
@@ -600,4 +637,9 @@ function warnIfError (label) {
     if (err)
       console.warn(label, err)
   }
+}
+
+function parseURL (str) {
+  try { return new URL(str) }
+  catch (e) { return {} }
 }
