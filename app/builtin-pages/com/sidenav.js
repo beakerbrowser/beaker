@@ -84,10 +84,10 @@ function onClickShareFiles (e) {
     var paths = yield beakerBrowser.showOpenDialog({
       title: 'Choose a folder to import',
       buttonLabel: 'Import',
-      properties: ['openDirectory', 'showHiddenFiles']
+      properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
     })
-    if (paths && paths[0]) {
-      var key = yield datInternalAPI.createNewArchive({ importFrom: paths[0] })
+    if (paths && paths.length) {
+      var key = yield datInternalAPI.createNewArchive({ importFrom: paths })
       window.location = 'beaker:archive/' + key
     }
   })
