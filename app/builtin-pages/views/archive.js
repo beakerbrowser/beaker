@@ -74,14 +74,29 @@ export function show (isSameView) {
   archiveKey = parseKeyFromURL()
   document.title = 'Loading...'
   render() // render loading state
+
+  // if archiveKey is invalid, try a DNS lookup
+  if (!archiveKey) {
+    datInternalAPI.resolveName(/^archive\/([^/]+)/.exec(window.location.pathname)[1], (err, key) => {
+      if (err) {
+        archiveError = new Error('Invalid Dat URL')
+        render()
+      } else {
+        // redirect
+        window.location = 'beaker:archive/' + key
+      }
+    })
+    return
+  }
+
   co(function * () {
     try {
       yield fetchArchiveInfo()
     } catch (e) {}
 
     // now that it has loaded, redirect to dat:// if this was a timeout view
-    if (window.location.hash == '#timeout') {
-      var destURL = 'dat://'+window.location.host + window.location.pathname
+    if (window.location.hash === '#timeout') {
+      var destURL = 'dat://' + window.location.host + window.location.pathname
       console.log('Archive found! Redirecting to', destURL)
       window.location = destURL
       return
@@ -343,7 +358,11 @@ function renderLoading () {
 // =
 
 function parseKeyFromURL () {
-  return /^archive\/([0-9a-f]+)/.exec(window.location.pathname)[1]
+  try {
+    return /^archive\/([0-9a-f]+)/.exec(window.location.pathname)[1]
+  } catch (e) {
+    return ''
+  }
 }
 
 // helper to get the archive info
