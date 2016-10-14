@@ -521,8 +521,15 @@ function onDidStopLoading (e) {
     // inject some corrections to the user-agent styles
     // real solution is to update electron so we can change the user-agent styles
     // -prf
-    page.webviewEl.insertCSS(`
-      body:-webkit-full-page-media {
+    page.webviewEl.insertCSS(
+      // set the default background to white.
+      // on some devices, if no bg is set, the buffer doesnt get cleared
+      `body {
+        background: #fff;
+      }` +
+
+      // adjust the positioning of fullpage media players
+      `body:-webkit-full-page-media {
         background: #ddd;
       }
       audio:-webkit-full-page-media, video:-webkit-full-page-media {
@@ -530,8 +537,8 @@ function onDidStopLoading (e) {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-      }
-    `)
+      }`
+    )
   }
 }
 
