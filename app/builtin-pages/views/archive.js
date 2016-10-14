@@ -5,9 +5,9 @@ This uses the beakerBrowser API, which is exposed by webview-preload to all site
 import * as yo from 'yo-yo'
 import co from 'co'
 import emitStream from 'emit-stream'
-import dragDrop from 'drag-drop'
 import Remarkable from 'remarkable'
 import { pushUrl } from '../../lib/fg/event-handlers'
+import dragDrop from '../../lib/fg/drag-drop'
 import { throttle } from '../../lib/functions'
 import { archiveEntries, entriesListToTree, calculateTreeSizeAndProgress } from '../com/files-list'
 import toggleable from '../com/toggleable'
@@ -481,17 +481,9 @@ function onDragDrop (files) {
 
 function addFiles (files) {
   files.forEach(file => {
-    var src, dst
-
-    // set paths
-    // drag/drop gives `fullPath`, while file-picker just gives a string
-    if (typeof file === 'string') {
-      src = file
-    } else {
-      // TODO double check this
-      src = file.path
-    }
-    dst = archiveCurrentNode.entry.path
+    // file-picker gies a string, while drag/drop gives { path: string }
+    var src = (typeof file === 'string') ? file : file.path
+    var dst = archiveCurrentNode.entry.path
 
     // send to backend
     datInternalAPI.writeArchiveFileFromPath(archiveInfo.key, { src, dst })
