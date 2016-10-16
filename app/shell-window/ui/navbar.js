@@ -143,7 +143,6 @@ function render (id, page) {
             value=${findValue} />`
     : ''
 
-
   // bookmark toggle state
   var bookmarkClass = 'nav-bookmark-btn' + ((page && !!page.bookmark) ? ' active' : '')
 
@@ -219,8 +218,28 @@ function render (id, page) {
   var addrEl = page && page.navbarEl.querySelector('.nav-location-input')
   var addrValue = addrEl ? addrEl.value : ''
 
+  // the sublocation
+  var sublocationTitle = ''
+  if (page && page.sublocation) {
+    sublocationTitle = yo`<button class="sublocation-title">
+      ${page.sublocation.title}
+    </button>`
+  }
+
   // setup site-perms dropdown
   sitePermsNavbarBtn.protocolDescription = (page && page.protocolDescription)
+
+  // the main URL input
+  var locationInput = yo`
+    <input
+      type="text"
+      class="nav-location-input"
+      onfocus=${onFocusLocation}
+      onblur=${onBlurLocation}
+      onkeydown=${onKeydownLocation}
+      oninput=${onInputLocation}
+      value=${addrValue} />
+  `
 
   // render
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
@@ -235,14 +254,8 @@ function render (id, page) {
     </div>
     <div class="toolbar-input-group">
       ${sitePermsNavbarBtn.render()}
-      <input
-        type="text"
-        class="nav-location-input"
-        onfocus=${onFocusLocation}
-        onblur=${onBlurLocation}
-        onkeydown=${onKeydownLocation}
-        oninput=${onInputLocation}
-        value=${addrValue} />
+      ${sublocationTitle}
+      ${locationInput}
       <span class="charms">
         ${liveReloadBtn}
         ${viewDatBtn}
@@ -517,7 +530,7 @@ function onKeydownLocation (e) {
   // on escape
   if (e.keyCode == KEYCODE_ESC) {
     var page = getEventPage(e)
-    page.navbarEl.querySelector('.nav-location-input').value = page.getURL()
+    page.navbarEl.querySelector('.nav-location-input').value = page.getIntendedURL()
     e.target.blur()
     return
   }

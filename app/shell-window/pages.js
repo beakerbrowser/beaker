@@ -78,7 +78,10 @@ export function create (opts) {
     archiveInfo: null, // if a dat archive, includes the metadata
 
     // prompts
-    prompts: [], // list of active prompts
+    prompts: [], // list of active prompts (perms)
+
+    // sublocation
+    sublocation: null, // an object, { title: string, value: string }. null if none is set.
 
     // tab state
     isPinned: opts.isPinned, // is this page pinned?
@@ -87,6 +90,9 @@ export function create (opts) {
 
     // get the URL of the page we want to load (vs which is currently loaded)
     getIntendedURL: function () {
+      if (page.sublocation && page.sublocation.value) {
+        return page.sublocation.value // sublocation override
+      }
       return page.loadingURL || page.getURL()
     },
 
@@ -99,6 +105,7 @@ export function create (opts) {
     loadURL: function (url, opts) {
       // reset some state
       page.isReceivingAssets = false
+      page.sublocation = null
 
       // set and go
       page.loadingURL = url
@@ -214,6 +221,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
   page.webviewEl.addEventListener('plugin-crashed', onCrashed)
+  page.webviewEl.addEventListener('ipc-message', onIPCMessage)
 
   // rebroadcasts
   page.webviewEl.addEventListener('load-commit', rebroadcastEvent)
@@ -434,6 +442,7 @@ function onWillNavigate (e) {
     page.isReceivingAssets = false
     // update target url
     page.loadingURL = e.url
+    page.sublocation = null
     navbar.updateLocation(page)
   }
 }
@@ -567,6 +576,7 @@ function onDidGetResponseDetails (e) {
     page.isReceivingAssets = true
     // set URL in navbar
     page.loadingURL = e.newURL
+    page.sublocation = null
     navbar.updateLocation(page)
   }
 }
@@ -640,6 +650,15 @@ function onUpdateTargetUrl ({ url }) {
 
 function onCrashed (e) {
   console.error('Webview crash', e)
+}
+
+function onIPCMessage (e) {
+  var page = getByWebview(e.target)
+  if (!page) return
+  switch (e.channel) {
+    case 'sublocation:set': page.sublocation = e.args[0]; navbar.updateLocation(page); navbar.update(page); break
+    case 'sublocation:clear': page.sublocation = null; navbar.updateLocation(page); navbar.update(page); break
+  }
 }
 
 // internal helper functions
