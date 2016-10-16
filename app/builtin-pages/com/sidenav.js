@@ -87,7 +87,7 @@ function onClickShareFiles (e) {
       properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
     })
     if (paths && paths.length) {
-      var key = yield datInternalAPI.createNewArchive({ importFrom: paths })
+      var key = yield datInternalAPI.createNewArchive({ importFiles: paths })
       window.location = 'beaker:archive/' + key
     }
   })
