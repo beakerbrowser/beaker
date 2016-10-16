@@ -26,6 +26,7 @@ export function setup () {
   // render
   tabsContainerEl = yo`<div class="chrome-tabs">
     <div class="chrome-tab chrome-tab-add-btn" onclick=${onClickNew}>
+      <div class="chrome-tab-bg"></div>
       <div class="chrome-tab-favicon"><span class="icon icon-plus"></span></div>
     </div>
   </div>`
@@ -86,6 +87,7 @@ function drawTab (page) {
                 oncontextmenu=${onContextMenuTab(page)}
                 onmousedown=${onMouseDown(page)}
                 title=${page.getTitle()}>
+      <div class="chrome-tab-bg"></div>
       <div class="chrome-tab-favicon">${favicon}</div>
     </div>`
   }
@@ -100,6 +102,7 @@ function drawTab (page) {
       oncontextmenu=${onContextMenuTab(page)}
       onmousedown=${onMouseDown(page)}
       title=${page.getTitle()}>
+    <div class="chrome-tab-bg"></div>
     <div class="chrome-tab-favicon">${favicon}</div>
     <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
     <div class="chrome-tab-close" onclick=${onClickTabClose(page)}></div>
