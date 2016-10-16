@@ -7,6 +7,7 @@
 import { protocol } from 'electron'
 import fs from 'fs'
 import path from 'path'
+import log from 'loglevel'
 import * as sitedata from '../dbs/sitedata'
 
 export function setup () {
@@ -14,7 +15,7 @@ export function setup () {
   var defaultFaviconBuffer = -6 // not found, till we load it
   fs.readFile(path.join(__dirname, './img/default-favicon.ico'), (err, buf) => {
     if (err)
-      console.log('Failed to load default favicon', path.join(__dirname, '../../img/default-favicon.ico'), err)
+      log.warn('Failed to load default favicon', path.join(__dirname, '../../img/default-favicon.ico'), err)
     if (buf)
       defaultFaviconBuffer = buf
   })
@@ -23,7 +24,7 @@ export function setup () {
   var logoBuffer = -6 // not found, till we load it
   fs.readFile(path.join(__dirname, './img/logo-favicon.png'), (err, buf) => {
     if (err)
-      console.log('Failed to load logo favicon', path.join(__dirname, '../../img/logo.png'), err)
+      log.warn('Failed to load logo favicon', path.join(__dirname, '../../img/logo.png'), err)
     if (buf)
       logoBuffer = buf
   })

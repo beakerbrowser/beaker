@@ -6,9 +6,9 @@ import co from 'co'
 
 var navItems = [
   { href: 'beaker:start', label: 'Favorites', icon: 'star' },
-  { href: 'beaker:sites', label: 'Your Sites', icon: 'share' },
+  { href: 'beaker:archives', label: 'Files', icon: 'folder' },
   { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
-  { href: 'beaker:downloads', label: 'Downloads', icon: 'install' },
+  { href: 'beaker:downloads', label: 'Downloads', icon: 'down-circled' },
   { href: 'beaker:settings', label: 'Settings', icon: 'list' }
 ]
 
@@ -41,6 +41,7 @@ export function update () {
 function render () {
   return yo`<nav class="nav-group">
     <img class="logo" src="beaker:logo">
+    <a class="btn" onclick=${onClickShareFiles}>Share Files</a>
     ${navItems.map(renderNavItem)}
   </nav>`
 }
@@ -76,4 +77,18 @@ function onClickNavItem (item) {
       window.location = item.href
     }
   }
+}
+
+function onClickShareFiles (e) {
+  co(function* () {
+    var paths = yield beakerBrowser.showOpenDialog({
+      title: 'Choose a folder to import',
+      buttonLabel: 'Import',
+      properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
+    })
+    if (paths && paths.length) {
+      var key = yield datInternalAPI.createNewArchive({ importFiles: paths })
+      window.location = 'beaker:archive/' + key
+    }
+  })
 }

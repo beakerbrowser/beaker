@@ -4,7 +4,7 @@ import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
 import { UpdatesNavbarBtn } from './navbar/updates'
-import { DownloadsNavbarBtn } from './navbar/downloads'
+import { DropMenuNavbarBtn } from './navbar/drop-menu'
 import { SitePermsNavbarBtn } from './navbar/site-perms'
 
 const KEYCODE_DOWN = 40
@@ -19,7 +19,7 @@ const KEYCODE_P = 80
 
 var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
-var downloadsNavbarBtn = null
+var dropMenuNavbarBtn = null
 var sitePermsNavbarBtn = null
 
 // autocomplete data
@@ -33,7 +33,7 @@ var autocompleteResults = null // if set to an array, will render dropdown
 export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
-  downloadsNavbarBtn = new DownloadsNavbarBtn()
+  dropMenuNavbarBtn = new DropMenuNavbarBtn()
   sitePermsNavbarBtn = new SitePermsNavbarBtn()
 }
 
@@ -107,7 +107,8 @@ export function updateLocation (page) {
 // =
 
 function render (id, page) {
-  var isLoading = page && page.isLoading()
+  const isLoading = page && page.isLoading()
+  const isViewingDat = page && page.protocolDescription && page.protocolDescription.scheme == 'dat'
 
   // back/forward should be disabled if its not possible go back/forward
   var backDisabled = (page && page.canGoBack()) ? '' : 'disabled'
@@ -127,6 +128,10 @@ function render (id, page) {
   // and it should be hidden if the page isnt active
   var toolbarHidden = (!page || !page.isActive) ? ' hidden' : ''
 
+  // preserve the current finder value and focus
+  var findEl = page && page.navbarEl.querySelector('.nav-find-input')
+  var findValue = findEl ? findEl.value : ''
+
   // inpage finder ctrl
   var inpageFinder = (page && page.isInpageFinding)
     ? yo`<input
@@ -134,17 +139,26 @@ function render (id, page) {
             class="nav-find-input"
             placeholder="Find in page..."
             oninput=${onInputFind}
-            onkeydown=${onKeydownFind} />`
+            onkeydown=${onKeydownFind}
+            value=${findValue} />`
     : ''
 
   // bookmark toggle state
-  var bookmarkClass = 'nav-bookmark-btn'+((page && !!page.bookmark) ? ' active' : '')
+  var bookmarkClass = 'nav-bookmark-btn' + ((page && !!page.bookmark) ? ' active' : '')
 
-  // view dat
+  // view dat btn
   var viewDatBtn
-  if (page && page.protocolDescription && page.protocolDescription.scheme == 'dat') {
-    viewDatBtn = yo`<button class="nav-view-files-btn" onclick=${onClickViewFiles}>
-      <span class="icon icon-docs"></span> <small>View Site Files</small>
+  if (isViewingDat) {
+    viewDatBtn = yo`<button class="nav-view-files-btn" title="View App Files" onclick=${onClickViewFiles}>
+      <span class="icon icon-folder"></span>
+    </button>`
+  }
+
+  // live reload btn
+  var liveReloadBtn
+  if (isViewingDat && page.isLiveReloading) {
+    liveReloadBtn = yo`<button class="nav-live-reload-btn" title="Live Reloading" onclick=${onClickLiveReload}>
+      <span class="icon icon-flash"></span>
     </button>`
   }
 
@@ -183,7 +197,7 @@ function render (id, page) {
             titleColumn.innerHTML = r.titleDecorated // use innerHTML so our decoration can show
           else
             titleColumn.textContent = r.title
-          
+
           // selection
           var rowCls = 'result'
           if (i == autocompleteCurrentSelection)
@@ -204,39 +218,55 @@ function render (id, page) {
   var addrEl = page && page.navbarEl.querySelector('.nav-location-input')
   var addrValue = addrEl ? addrEl.value : ''
 
+  // the sublocation
+  var sublocationTitle = ''
+  if (page && page.sublocation) {
+    sublocationTitle = yo`<button class="sublocation-title">
+      ${page.sublocation.title}
+    </button>`
+  }
+
   // setup site-perms dropdown
   sitePermsNavbarBtn.protocolDescription = (page && page.protocolDescription)
+
+  // the main URL input
+  var locationInput = yo`
+    <input
+      type="text"
+      class="nav-location-input"
+      onfocus=${onFocusLocation}
+      onblur=${onBlurLocation}
+      onkeydown=${onKeydownLocation}
+      oninput=${onInputLocation}
+      value=${addrValue} />
+  `
 
   // render
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
       <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-        <span class="icon icon-left-open"></span>
+        <span class="icon icon-left-open-big"></span>
       </button>
       <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-        <span class="icon icon-right-open"></span>
+        <span class="icon icon-right-open-big"></span>
       </button>
       ${reloadBtn}      
     </div>
     <div class="toolbar-input-group">
       ${sitePermsNavbarBtn.render()}
-      <input
-        type="text"
-        class="nav-location-input"
-        onfocus=${onFocusLocation}
-        onblur=${onBlurLocation}
-        onkeyup=${onKeyupLocation}
-        onkeydown=${onKeydownLocation}
-        oninput=${onInputLocation}
-        value=${addrValue} />
+      ${sublocationTitle}
+      ${locationInput}
+      <span class="charms">
+        ${liveReloadBtn}
+        ${viewDatBtn}
+      </span>
       ${inpageFinder}
-      ${viewDatBtn}
       ${zoomBtn}
       <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
-      ${downloadsNavbarBtn.render()}
+      ${dropMenuNavbarBtn.render()}
       ${updatesNavbarBtn.render()}
     </div>
   </div>`
@@ -247,8 +277,9 @@ function handleAutocompleteSearch (results) {
   var v = autocompleteCurrentValue
 
   // decorate result with bolded regions
-  var searchTerms = v.replace(/[^A-Za-z0-9]/g, ' ').split(' ').filter(Boolean)
-  results.forEach(r => decorateResultMatches(searchTerms, r))  
+  // explicitly replace special characters to match sqlite fts tokenization
+  var searchTerms = v.replace(/[:^*-\.]/g, ' ').split(' ').filter(Boolean)
+  results.forEach(r => decorateResultMatches(searchTerms, r))
 
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || isHashRegex.test(v) || v.startsWith('localhost') || v.includes('://') || v.startsWith('beaker:') || v.startsWith('ipfs:/')))
@@ -401,22 +432,51 @@ function onClickCancel (e) {
 
 function onClickBookmark (e) {
   var page = getEventPage(e)
-  if (page)
+  if (page) {
     page.toggleBookmark()
+
+    // animate the element
+    document.querySelector('.toolbar-actions:not(.hidden) .nav-bookmark-btn .icon').animate([
+      {textShadow: '0 0 0px rgba(255, 188, 0, 1.0)'},
+      {textShadow: '0 0 8px rgba(255, 188, 0, 1.0)'},
+      {textShadow: '0 0 16px rgba(255, 188, 0, 0.0)'}
+    ], { duration: 300 })
+  }
 }
 
 function onClickViewFiles (e) {
   var page = getEventPage(e)
-  if (page) {
-    if (e.metaKey || e.ctrlKey) // popup
-      pages.setActive(pages.create('view-'+page.getURL()))
-    else
-      page.loadURL('view-'+page.getURL()) // goto
+  if (page && page.getURL().startsWith('dat://')) {
+    // get the target url
+    var url = page.getViewFilesURL()
+    if (!url) return
+
+    // start loading
+    if (e.metaKey || e.ctrlKey) { // popup
+      pages.setActive(pages.create(url))
+    } else {
+      page.loadURL(url) // goto
+    }
+
+    // animate the element
+    document.querySelector('.toolbar-actions:not(.hidden) .nav-view-files-btn .icon').animate([
+      {textShadow: '0 0 0px rgba(128, 128, 128, 1.0)'},
+      {textShadow: '0 0 8px rgba(128, 128, 128, 1.0)'},
+      {textShadow: '0 0 16px rgba(128, 128, 128, 0.0)'}
+    ], { duration: 300 })
   }
 }
 
+function onClickLiveReload (e) {
+  const { Menu } = remote
+  var menu = Menu.buildFromTemplate([
+    { label: 'Stop Live Reloading', click: () => console.log('todo') }
+  ])
+  menu.popup(remote.getCurrentWindow())
+}
+
 function onClickZoom (e) {
-  const { Menu, MenuItem } = remote
+  const { Menu } = remote
   var menu = Menu.buildFromTemplate([
     { label: 'Reset Zoom', click: () => zoom.zoomReset(pages.getActive()) },
     { label: 'Zoom In', click: () => zoom.zoomIn(pages.getActive()) },
@@ -439,21 +499,6 @@ function onBlurLocation () {
   setTimeout(clearAutocomplete, 150)
 }
 
-function onKeyupLocation (e) {
-  // on enter
-  if (e.keyCode == KEYCODE_ENTER) {
-    e.preventDefault()
-
-    var page = getEventPage(e)
-    if (page) {
-      var selection = getAutocompleteSelection()
-      page.loadURL(selection.url, { isGuessingTheScheme: selection.isGuessingTheScheme })
-      e.target.blur()
-    }
-    return
-  }
-}
-
 function onInputLocation (e) {
   var value = e.target.value
 
@@ -469,10 +514,23 @@ function onInputLocation (e) {
 }
 
 function onKeydownLocation (e) {
+  // on enter
+  if (e.keyCode == KEYCODE_ENTER) {
+    e.preventDefault()
+
+    var page = getEventPage(e)
+    if (page) {
+      var selection = getAutocompleteSelection()
+      page.loadURL(selection.url, { isGuessingTheScheme: selection.isGuessingTheScheme })
+      e.target.blur()
+    }
+    return
+  }
+
   // on escape
   if (e.keyCode == KEYCODE_ESC) {
     var page = getEventPage(e)
-    page.navbarEl.querySelector('.nav-location-input').value = page.getURL()
+    page.navbarEl.querySelector('.nav-location-input').value = page.getIntendedURL()
     e.target.blur()
     return
   }

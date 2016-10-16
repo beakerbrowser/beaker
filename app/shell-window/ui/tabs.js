@@ -7,9 +7,9 @@ import { debounce, throttle } from '../../lib/functions'
 // constants
 // =
 
-const MAX_TAB_WIDTH = 300 // px
-const MIN_TAB_WIDTH = 46 // px
-const TAB_SPACING = 0 // px
+const MAX_TAB_WIDTH = 250 // px
+const MIN_TAB_WIDTH = 56 // px
+const TAB_SPACING = -12 // px
 
 // globals
 // =
@@ -26,6 +26,7 @@ export function setup () {
   // render
   tabsContainerEl = yo`<div class="chrome-tabs">
     <div class="chrome-tab chrome-tab-add-btn" onclick=${onClickNew}>
+      <div class="chrome-tab-bg"></div>
       <div class="chrome-tab-favicon"><span class="icon icon-plus"></span></div>
     </div>
   </div>`
@@ -86,6 +87,7 @@ function drawTab (page) {
                 oncontextmenu=${onContextMenuTab(page)}
                 onmousedown=${onMouseDown(page)}
                 title=${page.getTitle()}>
+      <div class="chrome-tab-bg"></div>
       <div class="chrome-tab-favicon">${favicon}</div>
     </div>`
   }
@@ -100,6 +102,7 @@ function drawTab (page) {
       oncontextmenu=${onContextMenuTab(page)}
       onmousedown=${onMouseDown(page)}
       title=${page.getTitle()}>
+    <div class="chrome-tab-bg"></div>
     <div class="chrome-tab-favicon">${favicon}</div>
     <div class="chrome-tab-title">${page.getTitle() || 'New tab'}</div>
     <div class="chrome-tab-close" onclick=${onClickTabClose(page)}></div>
@@ -160,11 +163,15 @@ function onSetActive (page) {
   getTabEl(page, newTabEl => {
     // make old active tab inactive
     var oldTabEl = tabsContainerEl.querySelector('.chrome-tab-current')
-    if (oldTabEl)
+    if (oldTabEl) {
       oldTabEl.classList.remove('chrome-tab-current')
+    }
 
     // set new tab active
     newTabEl.classList.add('chrome-tab-current')
+
+    // recalculate tab styles
+    repositionTabs()
   })
 }
 
@@ -218,7 +225,7 @@ function onClickCloseTabsToTheRight (page) {
 }
 
 function onContextMenuTab (page) {
-  const { Menu, MenuItem, clipboard } = remote
+  const { Menu } = remote
   return e => {
     var menu = Menu.buildFromTemplate([
       { label: 'New Tab', click: onClickNew },
@@ -350,13 +357,37 @@ function getTabWidth (page) {
   return currentTabWidth
 }
 
-// this function looks weird because `page` is sometimes an index and sometimes a page object
-// somebody ought to make it nicer. SOMEBODY. 
 function getPageStyle (page) {
   const allPages = pages.getAll()
-  var style = `transform: translateX(${getTabX(page)}px);`
-  if (typeof page == 'object' || page < allPages.length)
-    style += ` width: ${getTabWidth(page || allPages[page])}px;`
+
+  // `page` is sometimes an index and sometimes a page object (gross, I know)
+  // we need both
+  var pageIndex, pageObject
+  if (typeof page === 'object') {
+    pageObject = page
+    pageIndex = allPages.indexOf(page)
+  } else {
+    pageObject = allPages[page]
+    pageIndex = page
+  }
+
+  // z-index
+  var zIndex = pageIndex + 1 // default to the order across
+  if (!pageObject) {
+    zIndex = 0 // the add btn
+  } else if (pageObject.isActive) {
+    zIndex = 999 // top
+  } else if (pageObject.isTabDragging) {
+    zIndex = 998 // almost top
+  }
+
+  var style = `
+    transform: translateX(${getTabX(pageIndex)}px);
+    z-index: ${zIndex};
+  `
+  if (pageObject) {
+    style += ` width: ${getTabWidth(pageObject)}px;`
+  }
   return style
 }
 

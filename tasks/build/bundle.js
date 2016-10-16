@@ -34,7 +34,7 @@ module.exports = function (src, dest, opts) {
     var jsFile = pathUtil.basename(dest);
     var result = bundle.generate({
       format: 'cjs',
-      sourceMap: true,
+      sourceMap: !!(opts && opts.sourcemap),
       sourceMapFile: jsFile,
     });
 
@@ -59,10 +59,13 @@ module.exports = function (src, dest, opts) {
       // Wrap code in self invoking function so the variables don't
       // pollute the global namespace.
       var isolatedCode = '(function () {' + result.code + '\n}());';
-      return Q.all([
-          jetpack.writeAsync(dest, isolatedCode + '\n//# sourceMappingURL=' + jsFile + '.map'),
-          jetpack.writeAsync(dest + '.map', result.map.toString()),
-        ]);
+      if (opts && opts.sourcemap) {
+        return Q.all([
+            jetpack.writeAsync(dest, isolatedCode + '\n//# sourceMappingURL=' + jsFile + '.map'),
+            jetpack.writeAsync(dest + '.map', result.map.toString()),
+          ]);
+      }
+      return jetpack.writeAsync(dest, isolatedCode)
     }
   }).then(function () {
     deferred.resolve();

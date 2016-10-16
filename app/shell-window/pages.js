@@ -6,6 +6,7 @@ import * as navbar from './ui/navbar'
 import * as promptbar from './ui/promptbar'
 import * as statusBar from './ui/statusbar'
 import { urlToData } from '../lib/fg/img'
+import { debounce } from '../lib/functions'
 import errorPage from '../lib/error-page'
 
 // constants
@@ -14,6 +15,8 @@ import errorPage from '../lib/error-page'
 const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
 const ERR_INSECURE_RESPONSE = -501
+
+const TRIGGER_LIVE_RELOAD_DEBOUNCE = 1e3 // debounce live-reload triggers by this amount
 
 export const DEFAULT_URL = 'beaker:start'
 
@@ -68,12 +71,17 @@ export function create (opts) {
     isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
+    isLiveReloading: false, // live-reload enabled?
     zoom: 0, // what's the current zoom level?
     favicons: null, // what are the favicons of the page?
+    faviconDominantColor: null, // what's the computed dominant color of favicon?
     archiveInfo: null, // if a dat archive, includes the metadata
 
     // prompts
-    prompts: [], // list of active prompts
+    prompts: [], // list of active prompts (perms)
+
+    // sublocation
+    sublocation: null, // an object, { title: string, value: string }. null if none is set.
 
     // tab state
     isPinned: opts.isPinned, // is this page pinned?
@@ -82,6 +90,9 @@ export function create (opts) {
 
     // get the URL of the page we want to load (vs which is currently loaded)
     getIntendedURL: function () {
+      if (page.sublocation && page.sublocation.value) {
+        return page.sublocation.value // sublocation override
+      }
       return page.loadingURL || page.getURL()
     },
 
@@ -94,6 +105,7 @@ export function create (opts) {
     loadURL: function (url, opts) {
       // reset some state
       page.isReceivingAssets = false
+      page.sublocation = null
 
       // set and go
       page.loadingURL = url
@@ -116,10 +128,42 @@ export function create (opts) {
     },
 
     getURLOrigin: function () {
-      return (new URL(this.getURL())).origin
-    }
+      return parseURL(this.getURL()).origin
+    },
+
+    getViewFilesURL: function () {
+      var urlp = parseURL(this.getURL())
+      if (!urlp) return false
+      var path = urlp.pathname
+      if (!path.endsWith('/')) {
+        // strip the filename at the end
+        path = path.slice(0, path.lastIndexOf('/'))
+      }
+      return `beaker:archive/${urlp.host}${path}`
+    },
+
+    // start/stop live reloading
+    toggleLiveReloading: function () {
+      page.isLiveReloading = !page.isLiveReloading
+      navbar.update(page)
+    },
+
+    // reload the page due to changes in the dat
+    triggerLiveReload: debounce(archiveKey => {
+      // double check that we're still on the page
+      if (page.isLiveReloading && page.getIntendedURL().startsWith('dat://' + archiveKey)) {
+        // reload
+        page.reload()
+      }
+    }, TRIGGER_LIVE_RELOAD_DEBOUNCE, true)
+    // ^ note this is on the front edge of the debouncer.
+    // That means snappier reloads (no delay) but possible double reloads if multiple files change
   }
-  pages.push(page)
+
+  if (opts.isPinned)
+    pages.splice(indexOfLastPinnedTab(), 0, page)
+  else
+    pages.push(page)
 
   // create proxies for webview methods
   //   webviews need to be dom-ready before their methods work
@@ -127,7 +171,7 @@ export function create (opts) {
   ;([
     ['getURL', ''],
     ['getTitle', ''],
-    
+
     ['goBack'],
     ['canGoBack'],
     ['goForward'],
@@ -168,6 +212,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
   page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
   page.webviewEl.addEventListener('load-commit', onLoadCommit)
+  page.webviewEl.addEventListener('did-get-redirect-request', onDidGetRedirectRequest)
   page.webviewEl.addEventListener('did-get-response-details', onDidGetResponseDetails)
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
@@ -176,6 +221,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
   page.webviewEl.addEventListener('plugin-crashed', onCrashed)
+  page.webviewEl.addEventListener('ipc-message', onIPCMessage)
 
   // rebroadcasts
   page.webviewEl.addEventListener('load-commit', rebroadcastEvent)
@@ -259,10 +305,8 @@ export function setActive (page) {
 
 export function togglePinned (page) {
   // move tab in/out of the pinned tabs
-  var oldIndex = pages.indexOf(page), newIndex = 0
-  for (newIndex; newIndex < pages.length; newIndex++)
-    if (!pages[newIndex].isPinned)
-      break
+  var oldIndex = pages.indexOf(page)
+  var newIndex = indexOfLastPinnedTab()
   if (oldIndex < newIndex) newIndex--
   pages.splice(oldIndex, 1)
   pages.splice(newIndex, 0, page)
@@ -273,6 +317,14 @@ export function togglePinned (page) {
 
   // persist
   savePinnedToDB()
+}
+
+function indexOfLastPinnedTab () {
+  var index = 0
+  for (index; index < pages.length; index++)
+    if (!pages[index].isPinned)
+      break
+  return index
 }
 
 export function reorderTab (page, offset) {
@@ -390,6 +442,7 @@ function onWillNavigate (e) {
     page.isReceivingAssets = false
     // update target url
     page.loadingURL = e.url
+    page.sublocation = null
     navbar.updateLocation(page)
   }
 }
@@ -407,6 +460,9 @@ function onDidNavigateInPage (e) {
     if (!url.startsWith('beaker:')) {
       beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
       beakerBookmarks.addVisit(page.getURL())
+      if (page.isPinned) {
+        savePinnedToDB()
+      }
     }
   }
 }
@@ -425,6 +481,8 @@ function onLoadCommit (e) {
     })
     // stop autocompleting
     navbar.clearAutocomplete()
+    // close any prompts
+    promptbar.forceRemoveAll(page)
   }
 }
 
@@ -434,7 +492,6 @@ function onDidStartLoading (e) {
     page.manuallyTrackedIsLoading = true
     navbar.update(page)
     navbar.hideInpageFind(page)
-    promptbar.forceRemoveAll(page)
     if (page.isActive)
       statusBar.setIsLoading(true)
   }
@@ -448,15 +505,17 @@ function onDidStopLoading (e) {
     if (!url.startsWith('beaker:')) {
       beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
       beakerBookmarks.addVisit(page.getURL())
+      if (page.isPinned) {
+        savePinnedToDB()
+      }
     }
 
     // fetch protocol info
-    var scheme = (new URL(url)).protocol
+    var scheme = parseURL(url).protocol
     if (scheme == 'http:' || scheme == 'https:')
       page.protocolDescription = { label: scheme.slice(0,-1).toUpperCase() }
     else
       page.protocolDescription = beakerBrowser.getProtocolDescription(scheme)
-    console.log('Protocol description', page.protocolDescription)
 
     // update page
     page.loadingURL = false
@@ -471,8 +530,15 @@ function onDidStopLoading (e) {
     // inject some corrections to the user-agent styles
     // real solution is to update electron so we can change the user-agent styles
     // -prf
-    page.webviewEl.insertCSS(`
-      body:-webkit-full-page-media {
+    page.webviewEl.insertCSS(
+      // set the default background to white.
+      // on some devices, if no bg is set, the buffer doesnt get cleared
+      `body {
+        background: #fff;
+      }` +
+
+      // adjust the positioning of fullpage media players
+      `body:-webkit-full-page-media {
         background: #ddd;
       }
       audio:-webkit-full-page-media, video:-webkit-full-page-media {
@@ -480,8 +546,23 @@ function onDidStopLoading (e) {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-      }
-    `)
+      }`
+    )
+  }
+}
+
+function onDidGetRedirectRequest (e) {
+  // HACK
+  // electron has a problem handling redirects correctly, so we need to handle it for them
+  // see https://github.com/electron/electron/issues/3471
+  // thanks github.com/sokcuri for this fix
+  // -prf
+  if (e.isMainFrame) {
+    var page = getByWebview(e.target)
+    if (page) {
+      e.preventDefault()
+      setTimeout(() => page.loadURL(e.newURL), 100)
+    }
   }
 }
 
@@ -495,6 +576,7 @@ function onDidGetResponseDetails (e) {
     page.isReceivingAssets = true
     // set URL in navbar
     page.loadingURL = e.newURL
+    page.sublocation = null
     navbar.updateLocation(page)
   }
 }
@@ -551,9 +633,13 @@ function onPageFaviconUpdated (e) {
   if (e.favicons && e.favicons[0]) {
     var page = getByWebview(e.target)
     page.favicons = e.favicons
-    urlToData(e.favicons[0], 16, 16, (err, dataUrl) => {
-      if (dataUrl)
-        beakerSitedata.set(page.getURL(), 'favicon', dataUrl)
+    page.faviconDominantColor = null
+    urlToData(e.favicons[0], 16, 16, (err, res) => {
+      if (res) {
+        beakerSitedata.set(page.getURL(), 'favicon', res.url)
+        page.faviconDominantColor = res.dominantColor
+        events.emit('page-favicon-updated', getByWebview(e.target))
+      }
     })
   }
 }
@@ -564,6 +650,15 @@ function onUpdateTargetUrl ({ url }) {
 
 function onCrashed (e) {
   console.error('Webview crash', e)
+}
+
+function onIPCMessage (e) {
+  var page = getByWebview(e.target)
+  if (!page) return
+  switch (e.channel) {
+    case 'sublocation:set': page.sublocation = e.args[0]; navbar.updateLocation(page); navbar.update(page); break
+    case 'sublocation:clear': page.sublocation = null; navbar.updateLocation(page); navbar.update(page); break
+  }
 }
 
 // internal helper functions
@@ -600,4 +695,9 @@ function warnIfError (label) {
     if (err)
       console.warn(label, err)
   }
+}
+
+function parseURL (str) {
+  try { return new URL(str) }
+  catch (e) { return {} }
 }

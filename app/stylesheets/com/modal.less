@@ -1,10 +1,15 @@
 .modal-wrapper {
   position: fixed;
+  z-index: 1;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,.75);
+
+  &.modal-wrapper-light {
+    background: rgba(0,0,0,.15);
+  }
 }
 
 .modal {
@@ -14,13 +19,39 @@
   top: 5%;
   background: #fff;
   border-radius: 2px;
+  font-size: 15px;
+
+  h2 {
+    margin: 0;
+    padding: 5px 20px;
+    border-bottom: 1px solid #bbb;
+    color: #555;
+  }
+
+  input, textarea {
+    border-color: #bbb;
+  }
+
+  .modal-section {
+    padding: 20px;
+  }
+
+  .modal-footer {
+    padding: 10px;
+    background: #eee;
+    text-align: center;
+    color: #555;
+    border-top: 1px solid #ccc;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+  }
 
   .modal-close-btn {
     position: absolute;
     top: 5px;
     right: 5px;
     line-height: 17px;
-    padding: 1px 6px 0 5px;
+    padding: 1px 5px 0 6px;
     background: #808080;
     border-radius: 2px;
     font-size: 17px;
@@ -33,6 +64,19 @@
 
     &:hover {
       background: #555;
+    }
+  }
+
+  .fork-dat-progress {
+    border: 1px solid #ddd;
+    border-left: 0;
+    border-right: 0;
+    padding: 15px 0;
+    margin: 15px 0;
+
+    progress {
+      display: block;
+      width: 100%;
     }
   }
 }

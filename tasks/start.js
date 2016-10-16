@@ -8,7 +8,7 @@ gulp.task('start', start);
 gulp.task('start-watch', ['watch'], start);
 
 function start () {
-  childProcess.spawn(electron, ['./app', '--disable-gpu'], {
+  childProcess.spawn(electron, ['./app'], {
     stdio: 'inherit'
   })
   .on('close', function () {
