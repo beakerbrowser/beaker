@@ -25,20 +25,40 @@
     -webkit-app-region: no-drag;
     transition: .1s transform;
     
-    &:before {
+    // before, after, and .chrome-tab-bg comprise the tab visuals
+    &:before, &:after {
       content: '';
       position: absolute;
-      top: -3px;
-      right: 0;
+      top: -56px;
       bottom: 0;
-      left: 0;
+      width: 15px;
       z-index: -1;
       border: 1px solid #a0a0a0;
       border-top-color: #888;
       border-bottom-color: #aaa;
       background: #ddd;
-      transform: perspective(6px) rotateX(1deg);
-      transform-origin: bottom;
+      transform: perspective(5px) rotateX(7deg);
+      transition: 0.2s background;
+    }
+    &:before {
+      left: 0;
+      transform-origin: bottom right;
+      border-right: 0;
+    }
+    &:after {
+      right: 0;
+      transform-origin: bottom left;
+      border-left: 0;
+    }
+    .chrome-tab-bg {
+      background: #ddd;
+      position: absolute;
+      left: 11px;
+      top: 0px;
+      right: 11px;
+      bottom: 1px;
+      z-index: -1;
+      border-top: 1px solid #aaa;
       transition: 0.2s background;
     }
 
@@ -63,10 +83,6 @@
       top: 1px;
     }
     &.chrome-tab-pinned {
-      &:before {
-        transform: perspective(1px) rotateX(1deg);
-        top: -28px;
-      }
       .chrome-tab-favicon {
         left: 20px;
       }
@@ -115,7 +131,7 @@
     }
 
     &:hover {
-      &:before {
+      &:before, &:after, .chrome-tab-bg {
         background-color: #f0f0f0;
       }
       .chrome-tab-close {
@@ -129,18 +145,20 @@
 
     &.chrome-tab-current {
       border: 0;
-      &:before {
+      &:before, &:after, .chrome-tab-bg {
         border-bottom: none;
         background-color: #f5f5f5;
+      }
+      .chrome-tab-bg {
+        bottom: 0;
       }
     }
 
     &.chrome-tab-add-btn {
-      &:before {
-        background: transparent;
-        border: 0;
-        transform: perspective(1px) rotateX(1deg);
-        top: -28px;
+      &:before, &:after, .chrome-tab-bg {
+        bottom: 1px;
+        background: #bbb;
+        border-color: transparent;
       }
 
       .chrome-tab-favicon {
@@ -154,7 +172,7 @@
       }
 
       &:hover {
-        &:before {
+        &:before, &:after, .chrome-tab-bg {
           background: #d6d5d5;
         }
         .icon {
