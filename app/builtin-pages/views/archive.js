@@ -63,21 +63,31 @@ export function setup () {
 }
 
 export function show (isSameView) {
+  // navigation within the active view?
   if (isSameView && archiveKey === parseKeyFromURL()) {
-    // just adjust current folders
+    // just adjust current view
     setCurrentNodeByPath()
+    setWindowSublocation()
     render()
     return
   }
 
+  // start loading
   isViewActive = true
   archiveKey = parseKeyFromURL()
-  document.title = 'Loading...'
-  render() // render loading state
 
-  // if archiveKey is invalid, try a DNS lookup
+  // if archiveKey is invalid, figure out why
   if (!archiveKey) {
-    datInternalAPI.resolveName(/^archive\/([^/]+)/.exec(window.location.pathname)[1], (err, key) => {
+    // was the dat:// included?
+    if (window.location.pathname.startsWith('archive/dat://')) {
+      // redirect to remove that
+      window.location = 'beaker:archive/' + window.location.pathname.slice('archive/dat://'.length)
+      return
+    }
+
+    // try a dns lookup
+    let name = /^archive\/([^/]+)/.exec(window.location.pathname)[1]
+    datInternalAPI.resolveName(name, (err, key) => {
       if (err) {
         archiveError = new Error('Invalid Dat URL')
         render()
@@ -91,6 +101,9 @@ export function show (isSameView) {
 
   co(function * () {
     try {
+      setWindowSublocation()
+      document.title = 'Loading...'
+      render() // render loading state
       yield fetchArchiveInfo()
     } catch (e) {}
 
@@ -127,13 +140,15 @@ export function hide (isSameView) {
     return
   }
   isViewActive = false
+  window.locationbar.clearSublocation()
   archiveKey = null
   archiveInfo = null
   archiveEntriesTree = null
   archiveCurrentNode = null
   archiveError = false
-  if (hypercoreStats)
+  if (hypercoreStats) {
     hypercoreStats.destroy()
+  }
   hypercoreStats = null
 }
 
@@ -359,7 +374,7 @@ function renderLoading () {
 
 function parseKeyFromURL () {
   try {
-    return /^archive\/([0-9a-f]+)/.exec(window.location.pathname)[1]
+    return /^archive\/([0-9a-f]{64})/.exec(window.location.pathname)[1]
   } catch (e) {
     return ''
   }
@@ -378,12 +393,22 @@ const fetchArchiveInfo = throttle(cb => {
     console.log(archiveInfo)
     console.log(archiveEntriesTree)
     setCurrentNodeByPath()
+
     cb && cb()
   }).catch(err => {
     console.warn('Failed to fetch archive info', err)
     archiveError = err
   })
 }, 1e3)
+
+// set the sublocation in the window
+function setWindowSublocation () {
+  var subpath = window.location.pathname.split('/').slice(2).join('/') // drop 'archive/{name}', take the rest
+  window.locationbar.setSublocation({
+    title: 'Dat Viewer',
+    value: 'dat://' + archiveKey + '/' + subpath
+  })
+}
 
 // use the current url's path to set the `archiveCurrentNode`
 function setCurrentNodeByPath () {
