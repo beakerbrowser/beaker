@@ -14,6 +14,8 @@ const KEYCODE_ENTER = 13
 const KEYCODE_N = 78
 const KEYCODE_P = 80
 
+const isHashRegex = /^[a-z0-9]{64}/i
+
 // globals
 // =
 
@@ -272,7 +274,6 @@ function render (id, page) {
   </div>`
 }
 
-var isHashRegex = /^[a-z0-9]{64}/i
 function handleAutocompleteSearch (results) {
   var v = autocompleteCurrentValue
 
@@ -296,7 +297,7 @@ function handleAutocompleteSearch (results) {
 
   // set the top results accordingly
   var gotoResult = { url: vWithProtocol, title: 'Go to '+v, isGuessingTheScheme }
-  var searchResult = { 
+  var searchResult = {
     search: v,
     title: 'DuckDuckGo Search',
     url: 'https://duckduckgo.com/?q=' + v.split(' ').join('+')
@@ -313,14 +314,20 @@ function handleAutocompleteSearch (results) {
 }
 
 function getAutocompleteSelection (i) {
-  if (typeof i !== 'number')
+  if (typeof i !== 'number') {
     i = autocompleteCurrentSelection
-  if (autocompleteResults && autocompleteResults[i])
+  }
+  if (autocompleteResults && autocompleteResults[i]) {
     return autocompleteResults[i]
+  }
 
   // fallback to the current value in the navbar
   var addrEl = pages.getActive().navbarEl.querySelector('.nav-location-input')
-  return { url: addrEl.value }
+  var url = addrEl.value
+  if (isHashRegex.test(url)) {
+    url = 'dat://' + url // we can consistently guess this, so do so
+  }
+  return { url }
 }
 
 function getAutocompleteSelectionUrl (i) {
