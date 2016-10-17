@@ -302,7 +302,7 @@ function handleAutocompleteSearch (results) {
     url: 'https://duckduckgo.com/?q=' + v.split(' ').join('+')
   }
   if (isProbablyUrl) autocompleteResults = [gotoResult, searchResult]
-  else               autocompleteResults = [searchResult]
+  else               autocompleteResults = [searchResult, gotoResult]
 
   // add search results
   if (results)
