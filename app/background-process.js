@@ -3,7 +3,7 @@
 // It doesn't have any windows which you can see on screen, but we can open
 // window from here.
 
-import { app, Menu } from 'electron'
+import { app, Menu, protocol } from 'electron'
 import log from 'loglevel'
 
 import * as beakerBrowser from './background-process/browser'
@@ -29,6 +29,7 @@ log.setLevel(process.env.beaker_log_level || 'warn')
 
 // load the installed protocols
 plugins.registerStandardSchemes()
+protocol.registerSecureSchemes(['dat'])
 
 app.on('ready', function () {
   // databases
@@ -51,6 +52,7 @@ app.on('ready', function () {
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
   plugins.setupProtocolHandlers()
+  protocol.registerServiceWorkerSchemes(['dat'])
 
   // web APIs
   webAPIs.setup()
