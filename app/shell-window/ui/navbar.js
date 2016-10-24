@@ -151,7 +151,7 @@ function render (id, page) {
   // view dat btn
   var viewDatBtn
   if (isViewingDat) {
-    viewDatBtn = yo`<button class="nav-view-files-btn" title="View App Files" onclick=${onClickViewFiles}>
+    viewDatBtn = yo`<button class="nav-view-files-btn clickable" title="View App Files" onclick=${onClickViewFiles}>
       <span class="icon icon-folder"></span>
     </button>`
   }
@@ -159,7 +159,7 @@ function render (id, page) {
   // live reload btn
   var liveReloadBtn
   if (isViewingDat && page.isLiveReloading) {
-    liveReloadBtn = yo`<button class="nav-live-reload-btn" title="Live Reloading" onclick=${onClickLiveReload}>
+    liveReloadBtn = yo`<button class="nav-live-reload-btn" title="Live Reloading">
       <span class="icon icon-flash"></span>
     </button>`
   }
@@ -472,14 +472,6 @@ function onClickViewFiles (e) {
       {textShadow: '0 0 16px rgba(128, 128, 128, 0.0)'}
     ], { duration: 300 })
   }
-}
-
-function onClickLiveReload (e) {
-  const { Menu } = remote
-  var menu = Menu.buildFromTemplate([
-    { label: 'Stop Live Reloading', click: () => console.log('todo') }
-  ])
-  menu.popup(remote.getCurrentWindow())
 }
 
 function onClickZoom (e) {
