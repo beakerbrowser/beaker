@@ -355,13 +355,13 @@ function decorateResultMatches (searchTerms, result) {
 
     // sometimes multiple terms can hit at the same point
     // that breaks the algorithm, so skip that condition
-    if (lastTuple && lastTuple[0] === columnIndex && lastTuple[2] === offset)
-      continue
+    if (lastTuple && lastTuple[0] === columnIndex && lastTuple[2] === offset) continue
     lastTuple = tuple
 
     // use the length of the search term
     // (sqlite FTS gives the length of the full matching token, which isnt as helpful)
     let searchTerm = searchTerms[termIndex]
+    if (!searchTerm) continue
     let len = searchTerm.length
 
     // extract segments
