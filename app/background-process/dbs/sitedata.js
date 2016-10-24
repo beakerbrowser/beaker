@@ -59,7 +59,7 @@ function extractOrigin (originURL) {
   var urlp = url.parse(originURL)
   if (!urlp || !urlp.host || !urlp.protocol)
     return
-  return (urlp.protocol + urlp.host + (urlp.port || ''))
+  return (urlp.protocol + urlp.host)
 }
 
 migrations = [
