@@ -109,7 +109,7 @@ export function show (isSameView) {
 
     // now that it has loaded, redirect to dat:// if this was a timeout view
     if (window.location.hash === '#timeout') {
-      var destURL = 'dat://' + window.location.host + window.location.pathname
+      var destURL = 'dat://' + /^archive\/(.*)/.exec(window.location.pathname)[1]
       console.log('Archive found! Redirecting to', destURL)
       window.location = destURL
       return
