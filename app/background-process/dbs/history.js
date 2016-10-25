@@ -92,7 +92,7 @@ export function getVisitHistory ({ offset, limit }) {
   return setupPromise.then(v => cbPromise(cb => {
     offset = offset || 0
     limit = limit || 50
-    db.all('SELECT * FROM visits ORDER BY rowid DESC LIMIT ? OFFSET ?', [limit, offset], cb)
+    db.all('SELECT * FROM visits ORDER BY ts DESC LIMIT ? OFFSET ?', [limit, offset], cb)
   }))
 }
 
