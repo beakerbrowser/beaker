@@ -110,7 +110,7 @@ export function updateLocation (page) {
 
 function render (id, page) {
   const isLoading = page && page.isLoading()
-  const isViewingDat = page && page.protocolDescription && page.protocolDescription.scheme == 'dat'
+  const isViewingDat = page && page.getURL().startsWith('dat:')
 
   // back/forward should be disabled if its not possible go back/forward
   var backDisabled = (page && page.canGoBack()) ? '' : 'disabled'

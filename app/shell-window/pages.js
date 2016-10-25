@@ -504,10 +504,7 @@ function onDidStopLoading (e) {
 
     // fetch protocol info
     var scheme = parseURL(url).protocol
-    if (scheme == 'http:' || scheme == 'https:')
-      page.protocolDescription = { label: scheme.slice(0,-1).toUpperCase() }
-    else
-      page.protocolDescription = beakerBrowser.getProtocolDescription(scheme)
+    page.protocolDescription = { scheme, label: scheme.slice(0,-1).toUpperCase() }
 
     // update page
     page.loadingURL = false

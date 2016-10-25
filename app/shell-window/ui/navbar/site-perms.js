@@ -7,8 +7,7 @@ export class SitePermsNavbarBtn {
   }
 
   render() {
-    if (!this.protocolDescription)
-      return
+    if (!this.protocolDescription || this.protocolDescription.scheme === 'beaker:') return
 
     // render the dropdown if open
     var dropdownEl = ''
@@ -26,11 +25,13 @@ export class SitePermsNavbarBtn {
     }
 
     // render btn
-    var icon = 'window'
+    var icon = ''
     var label = ''
-    if (this.protocolDescription.label == 'HTTPS')
+    if (this.protocolDescription.scheme === 'https:') {
       icon = 'lock'
-    if (['dat', 'ipfs'].indexOf(this.protocolDescription.scheme) != -1) {
+    } else if (this.protocolDescription.scheme === 'http:') {
+      icon = 'window'
+    } else if (['dat:', 'ipfs:'].indexOf(this.protocolDescription.scheme) != -1) {
       icon = 'share'
     }
     return yo`<div class="toolbar-site-perms">
