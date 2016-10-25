@@ -9,6 +9,6 @@
     "spectron": "^3.4.0"
   },
   "scripts": {
-    "test": "ava ./*-test.js"
+    "test": "ava ./*-test.js -s"
   }
 }

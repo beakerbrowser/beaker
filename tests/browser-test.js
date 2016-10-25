@@ -15,9 +15,18 @@ test.before(async t => {
 test.after.always('cleanup', async t => await app.stop())
 
 test('window loaded', async t => t.true(await app.browserWindow.isVisible()))
+test('can open http pages', async t => {
+  var tabIndex = await browserActions.newTab(app)
+  console.log('tabIndex', tabIndex)
+  await browserActions.navigateTo(app, 'http://example.com')
+  await app.client.windowByIndex(tabIndex)
+  await app.client.waitForExist('h1')
+  t.deepEqual(await app.client.getUrl(), 'http://example.com/')
+})
 test('can open https pages', async t => {
-  await browserActions.navigateTo(app, 'https://beakerbrowser.com')
-  await app.client.windowByIndex(1)
-  await app.client.waitForExist('.hero')
-  t.deepEqual(await app.client.getUrl(), 'https://beakerbrowser.com/')
+  var tabIndex = await browserActions.newTab(app)
+  await browserActions.navigateTo(app, 'https://example.com')
+  await app.client.windowByIndex(tabIndex)
+  await app.client.waitForExist('h1')
+  t.deepEqual(await app.client.getUrl(), 'https://example.com/')
 })
