@@ -21,6 +21,7 @@ import * as history from './background-process/dbs/history'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
+import * as datProtocol from './background-process/protocols/dat'
 
 import * as openURL from './background-process/open-url'
 
@@ -29,6 +30,7 @@ log.setLevel(process.env.beaker_log_level || 'warn')
 
 // load the installed protocols
 plugins.registerStandardSchemes()
+protocol.registerStandardSchemes(['dat'])
 protocol.registerSecureSchemes(['dat'])
 
 app.on('ready', function () {
@@ -51,8 +53,8 @@ app.on('ready', function () {
   // protocols
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
+  datProtocol.setup()
   plugins.setupProtocolHandlers()
-  protocol.registerServiceWorkerSchemes(['dat'])
 
   // web APIs
   webAPIs.setup()

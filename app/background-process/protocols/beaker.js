@@ -107,10 +107,10 @@ function beakerServer (req, res) {
 
   // common assets
   if (requestUrl === 'beaker:font') {
-    return cb(200, 'OK', 'application/font-woff', path.join(__dirname, 'fonts/photon-entypo.woff'))
+    return cb(200, 'OK', 'application/font-woff', path.join(__dirname, 'assets/fonts/photon-entypo.woff'))
   }
   if (requestUrl.startsWith('beaker:logo')) {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'img/logo.png'))
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
   }
 
   return cb(404, 'Not Found')

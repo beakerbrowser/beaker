@@ -3,7 +3,6 @@ import path from 'path'
 import fs from 'fs'
 import log from 'loglevel'
 import rpc from 'pauls-electron-rpc'
-import emitStream from 'emit-stream'
 
 // globals
 // =

@@ -23,6 +23,22 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 - `beaker_log_level`: how much logging to put out. Must be: 'trace', 'debug', 'info', 'warn', or 'error. Default: 'warn'.
 
+## Running the tests
+
+Tests use their own package.json:
+
+```
+cd tests
+npm install
+```
+
+To run:
+
+```
+cd tests
+npm test
+```
+
 ## Building from source
 
 Requires node 6.2.1.
