@@ -23,10 +23,8 @@ Sits on path: `beaker-browser/app/package.json`. This is **real** manifest of th
 - `app/shell-window` - the ui controls code (tabs, addressbar, etc).
 - `app/stylesheets` - styles shared across the app.
 - `app/webview-preload` - scripts injected into web pages.
-- `config` - environment-specific config options.
-- `build` - in this folder lands built, runnable application.
-- `releases` - ready for distribution installers will land here.
-- `resources` - resources needed for particular operating system.
+- `dist` - in this folder lands built, runnable application.
+- `build` - resources needed for building the app.
 - `tasks` - build and development environment scripts.
 
 

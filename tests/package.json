@@ -1,0 +1,14 @@
+{
+  "name": "beaker-browser-test",
+  "productName": "Beaker Tests",
+  "version": "0.0.0",
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "dependencies": {
+    "ava": "^0.16.0",
+    "spectron": "^3.4.0"
+  },
+  "scripts": {
+    "test": "ava ./*-test.js"
+  }
+}
