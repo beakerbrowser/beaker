@@ -31,12 +31,11 @@ test('can open https pages', async t => {
   t.deepEqual(await app.client.getUrl(), 'https://example.com/')
 })
 test('can open dat pages', async t => {
-  var dat = await shareDat(__dirname + '/scaffold/test-dat')
+  var dat = await shareDat(__dirname + '/scaffold/test-runner-dat')
   var datUrl = 'dat://' + dat.archive.key.toString('hex') + '/'
   var tabIndex = await browserdriver.newTab(app)
   await browserdriver.navigateTo(app, datUrl)
   await app.client.windowByIndex(tabIndex)
   await app.client.waitForExist('h1#loaded')
   t.deepEqual(await app.client.getUrl(), datUrl)
-
 })
