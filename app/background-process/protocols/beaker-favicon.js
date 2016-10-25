@@ -13,18 +13,18 @@ import * as sitedata from '../dbs/sitedata'
 export function setup () {
   // load default favicon
   var defaultFaviconBuffer = -6 // not found, till we load it
-  fs.readFile(path.join(__dirname, './img/default-favicon.ico'), (err, buf) => {
+  fs.readFile(path.join(__dirname, './assets/img/default-favicon.ico'), (err, buf) => {
     if (err)
-      log.warn('Failed to load default favicon', path.join(__dirname, '../../img/default-favicon.ico'), err)
+      log.warn('Failed to load default favicon', path.join(__dirname, './assets/img/default-favicon.ico'), err)
     if (buf)
       defaultFaviconBuffer = buf
   })
 
   // load logo favicon
   var logoBuffer = -6 // not found, till we load it
-  fs.readFile(path.join(__dirname, './img/logo-favicon.png'), (err, buf) => {
+  fs.readFile(path.join(__dirname, './assets/img/logo-favicon.png'), (err, buf) => {
     if (err)
-      log.warn('Failed to load logo favicon', path.join(__dirname, '../../img/logo.png'), err)
+      log.warn('Failed to load logo favicon', path.join(__dirname, './assets/img/logo.png'), err)
     if (buf)
       logoBuffer = buf
   })
