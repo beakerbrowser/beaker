@@ -77,6 +77,10 @@ export function create (opts) {
     faviconDominantColor: null, // what's the computed dominant color of favicon?
     archiveInfo: null, // if a dat archive, includes the metadata
 
+    // history
+    lastVisitedAt: 0, // when is last time url updated?
+    lastVisitedURL: null, // last URL added into history
+
     // prompts
     prompts: [], // list of active prompts (perms)
 
@@ -222,6 +226,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
   page.webviewEl.addEventListener('plugin-crashed', onCrashed)
   page.webviewEl.addEventListener('ipc-message', onIPCMessage)
+  page.webviewEl.addEventListener('page-title-updated', onPageTitleUpdated)
 
   // rebroadcasts
   page.webviewEl.addEventListener('load-commit', rebroadcastEvent)
@@ -456,14 +461,7 @@ function onDidNavigateInPage (e) {
     navbar.updateLocation(page)
 
     // update history
-    var url = page.getURL()
-    if (!url.startsWith('beaker:')) {
-      beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
-      beakerBookmarks.addVisit(page.getURL())
-      if (page.isPinned) {
-        savePinnedToDB()
-      }
-    }
+    updateHistory(page)
   }
 }
 
@@ -471,7 +469,7 @@ function onLoadCommit (e) {
   // ignore if this is a subresource
   if (!e.isMainFrame)
     return
-  
+
   var page = getByWebview(e.target)
   if (page) {
     // check if this page bookmarked
@@ -499,16 +497,10 @@ function onDidStartLoading (e) {
 
 function onDidStopLoading (e) {
   var page = getByWebview(e.target)
-  if (page) {    
-    // update history
+  if (page) {
     var url = page.getURL()
-    if (!url.startsWith('beaker:')) {
-      beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
-      beakerBookmarks.addVisit(page.getURL())
-      if (page.isPinned) {
-        savePinnedToDB()
-      }
-    }
+    // update history
+    updateHistory(page)
 
     // fetch protocol info
     var scheme = parseURL(url).protocol
@@ -648,6 +640,15 @@ function onUpdateTargetUrl ({ url }) {
   statusBar.set(url)
 }
 
+function onPageTitleUpdated (e) {
+  var page = getByWebview(e.target)
+
+  // if page title changed within 15 seconds, update it again
+  if (page.getURL() === page.lastVisitedURL && Date.now() - page.lastVisitedAt < 15 * 1000) {
+    updateHistory(page)
+  }
+}
+
 function onCrashed (e) {
   console.error('Webview crash', e)
 }
@@ -701,4 +702,17 @@ function warnIfError (label) {
 function parseURL (str) {
   try { return new URL(str) }
   catch (e) { return {} }
+}
+
+function updateHistory (page) {
+  var url = page.getURL()
+  if (!url.startsWith('beaker:')) {
+    beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
+    beakerBookmarks.addVisit(page.getURL())
+    if (page.isPinned) {
+      savePinnedToDB()
+    }
+  }
+  page.lastVisitedAt = Date.now()
+  page.lastVisitedURL = url
 }
