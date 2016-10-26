@@ -1,4 +1,4 @@
-import * as dat from './internal-api'
+import * as dat from './dat'
 
 const styles = `<style>
   .entry {

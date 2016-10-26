@@ -11,8 +11,9 @@ import { ProtocolSetupError } from '../../lib/const'
 import datInternalAPIManifest from '../api-manifests/dat-internal'
 import datAPIManifest from '../api-manifests/dat'
 
-import * as dat from '../networks/dat/internal-api'
+import * as dat from '../networks/dat/dat'
 import datWebAPI from '../networks/dat/web-api'
+import datInternalWebAPI from '../networks/dat/web-api-internal'
 import { resolveDatDNS } from '../networks/dns'
 import directoryListingPage from '../networks/dat/directory-listing-page'
 import errorPage from '../../lib/error-page'
@@ -50,7 +51,7 @@ export function setup () {
   dat.setup()
 
   // wire up RPC
-  rpc.exportAPI('datInternalAPI', datInternalAPIManifest, dat)
+  rpc.exportAPI('datInternalAPI', datInternalAPIManifest, datInternalWebAPI)
   rpc.exportAPI('dat', datAPIManifest, datWebAPI)
 
   // setup the protocol handler

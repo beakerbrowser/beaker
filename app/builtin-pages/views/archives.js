@@ -46,16 +46,11 @@ function render () {
     return
   }
 
-  // content
-  var content = (window.datInternalAPI)
-    ? renderArchivesList(archivesList, { renderEmpty, render })
-    : renderNotSupported()
-
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archives">
       <div class="ll-heading">
-        Dat Archives
+        Your Archives
         <span class="btn-group">
           <button class="btn" onclick=${onClickCreateArchive}>New Archive</button><button class="btn" onclick=${onClickImportFolder}>Import Folder</button>
         </span>
@@ -63,7 +58,7 @@ function render () {
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
       </div>
-      ${content}
+      ${renderArchivesList(archivesList, { renderEmpty, render })}
     </div>
   </div>`)
 }
@@ -78,12 +73,6 @@ function renderEmpty () {
         </div>
       </div>
     </div>
-  </div>`
-}
-
-function renderNotSupported () {
-  return yo`<div class="archives-listing">
-    <div class="ll-empty">The DAT Plugin must be enabled to use this feature.</div>
   </div>`
 }
 

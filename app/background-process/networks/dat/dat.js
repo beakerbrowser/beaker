@@ -1,7 +1,4 @@
-import { app, shell } from 'electron'
-import concat from 'concat-stream'
-import from2 from 'from2'
-import from2String from 'from2-string'
+
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import pump from 'pump'
@@ -11,9 +8,8 @@ import trackArchiveEvents from './track-archive-events'
 import { throttle } from '../../../lib/functions'
 
 // db modules
+import * as archivesDb from '../../dbs/archives'
 import hyperdrive from 'hyperdrive'
-import level from 'level'
-import subleveldown from 'subleveldown'
 
 // network modules
 import hyperdriveArchiveSwarm from 'hyperdrive-archive-swarm'
@@ -27,44 +23,34 @@ import raf from 'random-access-file'
 import mkdirp from 'mkdirp'
 import getFolderSize from 'get-folder-size'
 
+//
+// TODO rewrite to use new archivesDb
+// TODO update the exported API
+// TODO update the frontend to use the exported api
+// TODO update the docs
+//
+
 // constants
 // =
 
 import { DAT_MANIFEST_FILENAME } from '../../../lib/const'
 
-// where are the given archive's files kept
-const ARCHIVE_FILEPATH = archiveOrKey => path.join(dbPath, 'Archives', bufToStr(archiveOrKey.key || archiveOrKey))
-
 // globals
 // =
 
-var dbPath // path to the hyperdrive folder
-var db // level instance
-var archiveMetaDb // archive metadata sublevel
-var archiveUserSettingsDb // archive user-settings sublevel
-var globalSettingsDb // global settings sublevel
 var drive // hyperdrive instance
-
-var archives = {} // key -> archive
-var swarms = {} // key -> swarm
-var savedArchives = new Set() // set of saved archives
+var archives = {} // memory cache of archive objects. key -> archive
+var swarms = {} // memory cache of archive swarms. key -> swarm
 var archivesEvents = new EventEmitter()
 
 // exported API
 // =
 
 export function setup () {
-  // open databases
-  dbPath = path.join(app.getPath('userData'), 'Hyperdrive')
-  mkdirp.sync(path.join(dbPath, 'Archives')) // make sure the folders exist
-  db = level(dbPath)
-  archiveMetaDb = subleveldown(db, 'archive-meta', { valueEncoding: 'json' })
-  archiveUserSettingsDb = subleveldown(db, 'archive-user-settings', { valueEncoding: 'json' })
-  globalSettingsDb = subleveldown(db, 'global-settings', { valueEncoding: 'json' })
-  drive = hyperdrive(db)
-  log.debug('[DAT] Database location:', dbPath)
+  drive = hyperdrive(archivesDb.getLevelInstance())
 
-  // load all saved archives and start swarming them
+  // load and configure all saved archives
+  // TODO make archivesDb method
   archiveUserSettingsDb.createReadStream().on('data', entry => {
     if (entry.value.isSaved) {
       savedArchives.add(entry.key)
@@ -189,9 +175,9 @@ export function loadArchive (key, opts) {
   var archive = drive.createArchive(key, {
     live: opts.live, // optional! only set this if you know what it should be
     sparse: sparse,
-    file: name => raf(path.join(ARCHIVE_FILEPATH(archive), name))
+    file: name => raf(path.join(archivesDb.getArchiveFilesPath(archive), name))
   })
-  mkdirp.sync(ARCHIVE_FILEPATH(archive)) // ensure the folder exists
+  mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
   cacheArchive(archive)
   archive.pullLatestArchiveMeta = throttle(() => pullLatestArchiveMeta(archive), 1e3)
   trackArchiveEvents(archivesEvents, archive) // start tracking the archive's events
@@ -284,48 +270,6 @@ export function getArchiveStats (key) {
       })
       resolve(stats)
     })
-  })
-}
-
-export function getSavedArchives () {
-  return new Promise((resolve, reject) => {
-    var done = multicb({ pluck: 1 })
-    for (let key of savedArchives)
-      getArchiveMeta(key, done())
-    done((err, archives) => {
-      if (err) reject(err)
-      else resolve(archives)
-    })
-  })
-}
-
-export function setArchiveUserSettings (key, value) {
-  return new Promise((resolve, reject) => {
-    // db result handler
-    var cb = err => {
-      if (err) reject(err)
-      else resolve()
-    }
-
-    // massage data
-    var config = { 
-      isSaved: !!value.isSaved,
-      isServing: !!value.isServing
-    }
-
-    // add/update
-    if (config.isSaved) savedArchives.add(key)
-    else                savedArchives.delete(key)
-    archiveUserSettingsDb.put(key, config, cb)
-
-    // update the swarm/download behaviors
-    var archive = getArchive(key)
-    swarm(key).upload = config.isServing || (config.isSaved && !archive.owner) // upload if the user wants to serve, or has saved and isnt the owner
-    if (config.isServing) {
-      archive.content.prioritize({start: 0, end: Infinity}) // download content automatically
-    } else {
-      archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
-    }
   })
 }
 
@@ -475,133 +419,8 @@ export function downloadArchiveEntry (key, name) {
   })
 }
 
-// helper to run custom lookup rules
-// - checkFn is called with (entry). if it returns true, then `entry` is made the current match
-export function archiveCustomLookup (archive, checkFn, cb) {
-  var entries = archive.list({live: false})
-  var entry = null
-
-  entries.on('data', function (e) {
-    if (checkFn(e, normalizedEntryName(e)))
-      entry = e
-  })
-
-  entries.on('error', lookupDone)
-  entries.on('close', lookupDone)
-  entries.on('end', lookupDone)
-  function lookupDone () {
-    cb(entry)
-  }
-}
-
-export function normalizedEntryName (entry) {
-  var name = ('' + (entry.name || ''))
-  return (name.startsWith('/')) ? name : ('/' + name)
-}
-
-// helper to write file data to an archive
-export function writeArchiveFile (archive, name, data, cb) {
-  pump(
-    typeof data === 'string' ? from2String(data) : fromBuffer(data),
-    archive.createFileWriteStream({ name, mtime: Date.now() }),
-    cb
-  )
-}
-
-// helper to pull file data from an archive
-export function readArchiveFile (archive, name, opts, cb) {
-  if (typeof opts === 'function') {
-    cb = opts
-    opts = {}
-  }
-  if (typeof opts === 'string') {
-    opts = { encoding: opts }
-  }
-  opts.encoding = toValidEncoding(opts.encoding)
-  name = normalizedEntryName({ name })
-  archiveCustomLookup(
-    archive,
-    (entry, entryName) => entryName === name,
-    entry => {
-      if (!entry || entry.type !== 'file') {
-        return cb({ notFound: true })
-      }
-
-      var rs = archive.createFileReadStream(entry)
-      rs.pipe(concat(data => {
-        if (opts.encoding !== 'binary') {
-          data = data.toString(opts.encoding)
-        }
-        cb(null, data)
-      }))
-      rs.on('error', e => cb(e))
-    }
-  )
-}
-
-export function readArchiveDirectory (archive, dstPath, cb) {
-  var dstPathParts = dstPath.split('/')
-  if (dstPathParts.length > 1 && !dstPathParts[dstPathParts.length - 1]) dstPathParts.pop() // drop the last empty ''
-
-  // start a list stream
-  var s = archive.list({live: false})
-  var entries = {}
-
-  s.on('data', function (e) {
-    // check if the entry is a child of the given path
-    var entryPath = normalizedEntryName(e)
-    var entryPathParts = entryPath.split('/')
-    if (entryPathParts.length > 1 && !entryPathParts[entryPathParts.length - 1]) entryPathParts.pop() // drop the last empty ''
-    if (entryPathParts.length !== dstPathParts.length && isPathChild(dstPathParts, entryPathParts)) {
-      // use the subname
-      var name = entryPathParts[dstPathParts.length]
-      // child should have exactly 1 more item than the containing path
-      var isImmediateChild = (entryPathParts.length === dstPathParts.length + 1)
-      if (isImmediateChild) {
-        entries[name] = e
-      } else {
-        // not an immediate child - add the directory if DNE
-        if (!entries[name]) {
-          entries[name] = { type: 'directory', name: path.join(dstPath, name) }
-        }
-      }
-    }
-  })
-
-  s.on('error', lookupDone)
-  s.on('close', lookupDone)
-  s.on('end', lookupDone)
-  function lookupDone () {
-    cb(null, entries)
-  }
-}
-
 export function archivesEventStream () {
   return emitStream(archivesEvents)
-}
-
-export function openInExplorer (key) {
-  var folderpath = ARCHIVE_FILEPATH(key)
-  log.debug('[DAT] Opening in explorer:', folderpath)
-  shell.openExternal('file://'+folderpath)
-}
-
-export function getGlobalSetting (key) {
-  return new Promise((resolve, reject) => {
-    globalSettingsDb.get(key, (err, value) => {
-      if (err) reject(err)
-      else resolve(value)
-    })
-  })
-}
-
-export function setGlobalSetting (key, value) {
-  return new Promise((resolve, reject) => {
-    globalSettingsDb.put(key, value, (err, value) => {
-      if (err) reject(err)
-      else resolve(value)
-    })
-  })
 }
 
 // internal methods
@@ -666,7 +485,7 @@ function pullLatestArchiveMeta (archive) {
 
     // calculate the size on disk
     var sizeCb = done()
-    getFolderSize(ARCHIVE_FILEPATH(archive), (err, size) => {
+    getFolderSize(archivesDb.getArchiveFilesPath(archive), (err, size) => {
       sizeCb(null, size)
     })
 
@@ -718,46 +537,5 @@ function readManifest (archive, cb) {
 
 function readReadme (archive, cb) {
   readArchiveFile(archive, 'README.md', (err, data) => cb(null, data)) // squash the error
-}
-
-// get buffer and string version of value
-function bufAndStr (v) {
-  if (Buffer.isBuffer(v))
-    return [v, v.toString('hex')]
-  return [new Buffer(v, 'hex'), v]
-}
-
-// convert to string, if currently a buffer
-function bufToStr (v) {
-  if (Buffer.isBuffer(v))
-    return v.toString('hex')
-  return v
-}
-
-// convert a buffer into a readable string
-function fromBuffer (buf) {
-  var i = 0
-  return from2(function (size, next) {
-    if (i >= buf.length) return next(null, null)
-    var chunk = buf.slice(i, i+size)
-    i += size
-    next(null, chunk)
-  })
-}
-
-// helper to convert an encoding to something acceptable
-function toValidEncoding (str) {
-  if (!str) return 'utf8'
-  if (!['utf8', 'utf-8', 'hex', 'base64', 'binary'].includes(str)) return 'binary'
-  return str
-}
-
-// `pathParts` and `childParts` should be arrays (`str.split('/')`)
-function isPathChild (pathParts, childParts) {
-  // all path parts should be contained in the child parts
-  for (var i = 0; i < pathParts.length; i++) {
-    if (pathParts[i] !== childParts[i]) return false
-  }
-  return true
 }
 

@@ -1,6 +1,7 @@
 import co from 'co'
 import { parse as parseURL } from 'url'
-import * as dat from './internal-api'
+import * as dat from './dat'
+import { readArchiveFile, readArchiveDirectory } from './helpers'
 import log from 'loglevel'
 import { DAT_HASH_REGEX, PermissionsError, InvalidURLError, FileNotFoundError, FileReadError } from '../../../lib/const'
 
@@ -13,7 +14,7 @@ export default {
   }, { noLookupArchive: true }),
 
   stat: m(function * (url, opts = {}) {
-    var { archive, path } = lookupArchive(url)
+    // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
@@ -22,7 +23,7 @@ export default {
     var { archive, path } = lookupArchive(url)
     return new Promise((resolve, reject) => {
       // read the file into memory
-      dat.readArchiveFile(archive, path, opts, (err, data) => {
+      readArchiveFile(archive, path, opts, (err, data) => {
         if (err) {
           // error handling
           if (err.notFound) {
@@ -37,12 +38,12 @@ export default {
   }),
 
   writeFile: m('datWrite', function * (url, data, opts = {}) {
-    var { archive, path } = lookupArchive(url)
+    // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   deleteFile: m('datWrite', function * (url) {
-    var { archive, path } = lookupArchive(url)
+    // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
@@ -50,7 +51,7 @@ export default {
     // TODO history
     var { archive, path } = lookupArchive(url)
     return new Promise((resolve, reject) => {
-      dat.readArchiveDirectory(archive, path, (err, entries) => {
+      readArchiveDirectory(archive, path, (err, entries) => {
         if (err) reject(err)
         else resolve(entries)
       })
@@ -58,37 +59,37 @@ export default {
   }),
 
   createDirectory: m('datWrite', function * (url) {
-    var { archive, path } = lookupArchive(url)
+    // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   deleteDirectory: m('datWrite', function * (url) {
-    var { archive, path } = lookupArchive(url)
+    // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   getHistory: m(function * (url, opts = {}) {
-    var { archive, path } = lookupArchive(url)
+    // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   getCheckpoints: m(function * (url, opts = {}) {
-    var { archive, path } = lookupArchive(url)
+    // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   writeCheckpoint: m('datWrite', function * (url, name, description) {
-    var { archive, path } = lookupArchive(url)
+    // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   serve: m('datUpload', function * (url) {
-    var { archive, path } = lookupArchive(url)
+    // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   unserve: m('datUpload', function * (url) {
-    var { archive, path } = lookupArchive(url)
+    // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   })
 }
@@ -123,7 +124,7 @@ function m (perm, fn, opts) {
 // helper to look up perms
 function checkPermission (sender, permissionId) {
   var urlp = parseURL(sender.getURL())
-  var origin = (urlp.protocol + urlp.host)
+  // var origin = (urlp.protocol + urlp.host)
   if (!urlp) {
     return false // this should never happen
   }
