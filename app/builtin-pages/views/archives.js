@@ -55,7 +55,7 @@ function render () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archives">
       <div class="ll-heading">
-        Files
+        Dat Archives
         <span class="btn-group">
           <button class="btn" onclick=${onClickCreateArchive}>New Archive</button><button class="btn" onclick=${onClickImportFolder}>Import Folder</button>
         </span>

@@ -1,37 +1,49 @@
 #el-sidenav {
-  width: 140px;
+  width: 60px;
+  background: #fafafa;
+  border-right: 1px solid #ddd;
+  padding-top: 5px;
+  overflow: visible;
 
-  img.logo {
-    display: block;
-    margin: 10px 0 10px 40px;
-    width: 48px;
-    height: 48px;
-  }
-
-  .btn {
-    padding: 3px 12px;
-    margin: 5px 0 5px 18px;
-  }
-
-  .nav-group {
-    font-size: 13px;
-  }
   .nav-group-item {
-    padding: 4px 14px;
-    margin: 7px 0;
-    border-left: 6px solid transparent;
-    color: #555;
+    padding: 10px 14px 8px;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid transparent;
     .icon {
+      display: block;
+      position: relative;
+      cursor: pointer;
       color: #555;
+      width: 32px;
+      height: auto;
+      float: none;
+      color: #737475;
+      font-size: 24px;
+      text-align: center;
+
+      &.icon-star {
+        font-size: 22px;
+      }
+      &.icon-window {
+        font-size: 20px;
+      }
+      &.icon-folder {
+        font-size: 20px;
+      }
+      &.icon-back-in-time {
+        left: -1px;
+      }
+      &.icon-down-circled {
+        font-size: 23px;
+        left: 0.5px;
+      }
     }
 
     &.active {
-      color: #016fde;
-      border-color: #016fde;
-      background: none;
-      .icon {
-        color: #016fde;
-      }
+      background: #fff;
+      width: 60px;
+      border-top: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
     }
   }
 }
