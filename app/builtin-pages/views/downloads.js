@@ -34,7 +34,7 @@ export function show () {
     // fetch archives
     archivesList = new ArchivesList()
     yield archivesList.setup({
-      filter: a => !a.isOwner, // non-owned archives only
+      filter: { isOwner: false },
       fetchStats: true
     })
     archivesList.on('changed', render)

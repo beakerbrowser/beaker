@@ -194,14 +194,14 @@ function renderArchive () {
   // downloader's btns
   var syncBtn
   if (archiveInfo.isOwner) {
-    syncBtn = (archiveInfo.userSettings.isServing)
+    syncBtn = (isNetworked(archive))
       ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
       : yo`<a id="sync-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
   } else {
     let entry = archiveEntriesTree.entry
     let isDownloaded = entry.downloadedBlocks >= entry.blocks
     let label = (isDownloaded) ? 'Sync' : 'Download'
-    syncBtn = (archiveInfo.userSettings.isServing)
+    syncBtn = (isNetworked(archive))
       ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="${label}ing" onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}ing</a>`
       : yo`<a id="sync-btn" class="btn" title=${label} onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}</a>`
   }
@@ -246,7 +246,7 @@ function renderArchive () {
 
 function renderHeading () {
   const name = archiveInfo.title || 'Untitled'
-  const isSaved = archiveInfo.userSettings.isSaved
+  const isSaved = archiveInfo.saveClaims.length > 0
 
   // general buttons
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
@@ -385,7 +385,7 @@ function parseKeyFromURL () {
 const fetchArchiveInfo = throttle(cb => {
   return co(function * () {
     // run request
-    archiveInfo = yield datInternalAPI.getArchiveInfo(archiveKey, { loadIfMissing: true })
+    archiveInfo = yield datInternalAPI.getArchiveDetails(archiveKey)
     if (archiveInfo) {
       archiveEntriesTree = entriesListToTree(archiveInfo)
       calculateTreeSizeAndProgress(archiveInfo, archiveEntriesTree)
@@ -520,25 +520,18 @@ function addFiles (files) {
 // =
 
 function onToggleSave () {
-  archiveInfo.userSettings.isSaved = !archiveInfo.userSettings.isSaved
-
-  // isServing must reflect isSaved
-  if (!archiveInfo.userSettings.isSaved && archiveInfo.userSettings.isServing)
-    archiveInfo.userSettings.isServing = false
-
-  datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-  render()
+  datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', 'save').then(settings => {
+    archiveInfo.saveClaims = settings.saveClaims
+    render()
+  })
 }
 
 function onToggleServing () {
-  archiveInfo.userSettings.isServing = !archiveInfo.userSettings.isServing
-
-  // isSaved must reflect isServing
-  if (archiveInfo.userSettings.isServing && !archiveInfo.userSettings.isSaved)
-    archiveInfo.userSettings.isSaved = true
-
-  datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-  render()
+  datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', ['upload', 'download']).then(settings => {
+    archiveInfo.uploadClaims = settings.uploadClaims
+    archiveInfo.downloadClaims = settings.downloadClaims
+    render()
+  })
 }
 
 function onCopyLink () {
@@ -562,7 +555,7 @@ function onOpenInFinder () {
 function onClickFork (e) {
   // create fork modal
   currentForkModal = forkDatModal.create(archiveInfo, archiveEntriesTree, {
-    isDownloading: archiveInfo.userSettings.isServing,
+    isDownloading: isNetworked(archive,
     onClickDownload: onDownloadForkArchive,
     onSubmit: onSubmitForkArchive
   })
@@ -632,3 +625,6 @@ function onDownload (update) {
   }
 }
 
+function isNetworked (archive) {
+  return archive.uploadClaims.length > 0 || archive.downloadClaims.length > 0
+}

@@ -3,6 +3,7 @@ import from2 from 'from2'
 import from2String from 'from2-string'
 import pump from 'pump'
 import path from 'path'
+import { DAT_MANIFEST_FILENAME } from '../../../lib/const'
 
 // helper to run custom lookup rules
 // - checkFn is called with (entry). if it returns true, then `entry` is made the current match
@@ -68,6 +69,35 @@ export function readArchiveFile (archive, name, opts, cb) {
       rs.on('error', e => cb(e))
     }
   )
+}
+
+export function readManifest (archive, cb) {
+  readArchiveFile(archive, DAT_MANIFEST_FILENAME, (err, data) => {
+    if (data)
+      return done(data)
+
+    // TEMPORARY try legacy (remove in, like, a year. maybe less.)
+    readArchiveFile(archive, 'manifest.json', (err, data) => {
+      if (data)
+        return done(data)
+
+      // no manifest
+      cb()
+    })
+  })
+
+  function done (data) {
+    // parse manifest
+    try {
+      var manifest = JSON.parse(data.toString())
+      if (manifest.name || !manifest.title) manifest.title = manifest.name // TEMPORARY legacy fix
+      cb(null, manifest)
+    } catch (e) { cb() }
+  }
+}
+
+export function readReadme (archive, cb) {
+  readArchiveFile(archive, 'README.md', (err, data) => cb(null, data)) // squash the error
 }
 
 export function readArchiveDirectory (archive, dstPath, cb) {

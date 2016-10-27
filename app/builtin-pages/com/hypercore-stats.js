@@ -57,8 +57,7 @@ Stats.prototype.destroy = function () {
 }
 
 Stats.prototype.render = function () {
-  const isServing = this.archiveInfo.userSettings.isServing
-  if (!isServing) {
+  if (!isNetworked(this.archiveInfo)) {
     // Dont render anything if not serving
     return  yo`<div class="hypercore-stats"></div>`
   }

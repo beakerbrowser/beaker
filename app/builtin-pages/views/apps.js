@@ -21,7 +21,7 @@ export function show () {
   co(function * () {
     archivesList = new ArchivesList()
     yield archivesList.setup({
-      filter: a => a.isOwner // owned archives only
+      filter: { isOwner: true }
     })
     archivesList.on('changed', render)
     render()

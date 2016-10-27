@@ -1,11 +1,11 @@
-
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import pump from 'pump'
 import multicb from 'multicb'
 import log from 'loglevel'
 import trackArchiveEvents from './track-archive-events'
-import { throttle } from '../../../lib/functions'
+import { throttle, cbPromise } from '../../../lib/functions'
+import { bufToStr, readReadme, readManifest, writeArchiveFile } from './helpers'
 
 // db modules
 import * as archivesDb from '../../dbs/archives'
@@ -23,41 +23,6 @@ import raf from 'random-access-file'
 import mkdirp from 'mkdirp'
 import getFolderSize from 'get-folder-size'
 
-//
-// TODO rewrite to use new archivesDb
-// TODO update the exported API
-// TODO update the frontend to use the exported api
-// TODO update the docs
-//
-
-// TODO rewrite this method
-/*export function setArchiveUserSettings (key, value) {
-  return new Promise((resolve, reject) => {
-    // db result handler
-    var cb = err => {
-      if (err) reject(err)
-      else resolve()
-    }
-
-    // massage data
-    var config = {
-      isSaved: !!value.isSaved,
-      isServing: !!value.isServing
-    }
-
-    // add/update
-    archiveUserSettingsDb.put(key, config, cb)
-
-    // update the swarm/download behaviors
-    var archive = getArchive(key)
-    swarm(key).upload = config.isServing || (config.isSaved && !archive.owner) // upload if the user wants to serve, or has saved and isnt the owner
-    if (config.isServing) {
-      archive.content.prioritize({start: 0, end: Infinity}) // download content automatically
-    } else {
-      archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
-    }
-  })
-}*/
 
 // constants
 // =
@@ -78,143 +43,144 @@ var archivesEvents = new EventEmitter()
 export function setup () {
   drive = hyperdrive(archivesDb.getLevelInstance())
 
-  // load and configure all saved archives
-  // TODO make archivesDb method
-  archiveUserSettingsDb.createReadStream().on('data', entry => {
-    if (entry.value.isSaved) {
-      savedArchives.add(entry.key)
-      configureArchive(entry.key, entry.value)
-    }
-  })
+  // wire up event handlers
+  archivesDb.on('update:archive-user-settings', configureArchive)
+
+  // load and configure all networked archives
+  archivesDb.queryArchiveUserSettings({ isNetworked: true }).then(
+    archives => archives.forEach(a => configureArchive(a.key, a)),
+    err => log.error('[DAT] Failed to load networked archives', err)
+  )
 }
 
-// load archive and set the swarming behaviors
-export function configureArchive (key, config) {
-  // load and swarm
-  var archive = loadArchive(new Buffer(key, 'hex'), {
-    sparse: !config.isServing, // only download on-demand (sparse mode) if the archive isnt actively syncing (serving)
-    live: true
-  })
-  swarm(key, {
-    upload: config.isServing || !archive.owner, // only upload if the user wants to serve, or isnt the owner
-    download: true // always download updates
-  })
-}
+// re-exports
+//
+
+export const resolveName = resolveDatDNS
+export const queryArchiveUserSettings = archivesDb.queryArchiveUserSettings
+export const updateArchiveClaims = archivesDb.updateArchiveclaims
+export const getGlobalSetting = archivesDb.getGlobalSetting
+export const setGlobalSetting = archivesDb.setGlobalSetting
+
+// archive creation
+// =
 
 export function createNewArchive (opts) {
+  // massage inputs
   opts = opts || {}
-  var title = (opts.title && typeof opts.title == 'string') ? opts.title : ''
-  var description = (opts.description && typeof opts.description == 'string') ? opts.description : ''
-  return new Promise((resolve, reject) => {
-    // create the archive
-    var archive = loadArchive(null, { live: true })
-    var key = archive.key.toString('hex')
-    setArchiveUserSettings(key, {
-      isSaved: true,
-      isServing: false
-    })
+  var title = (opts.title && typeof opts.title === 'string') ? opts.title : ''
+  var description = (opts.description && typeof opts.description === 'string') ? opts.description : ''
 
-    // add any requested files
-    var done = multicb()
+  return new Promise(resolve => {
+    // create the archive
+    var archive = loadArchive(null)
+    var key = archive.key.toString('hex')
+    resolve(key)
+
+    // import files
     if (opts.importFiles) {
       let importFiles = Array.isArray(opts.importFiles) ? opts.importFiles : [opts.importFiles]
       importFiles.forEach(importFile => writeArchiveFileFromPath(key, { src: importFile, dst: '/' }))
     }
-    if (opts.title || opts.description) {
-      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify({ title, description }), done())
+
+    // write the manifest
+    if (title || description) {
+      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify({ title, description }))
     }
-    done(() => resolve(key))
   })
 }
 
 export function forkArchive (oldArchiveKey, opts) {
+  // massage inputs
   opts = opts || {}
-  var title = (opts.title && typeof opts.title == 'string') ? opts.title : ''
-  var description = (opts.description && typeof opts.description == 'string') ? opts.description : ''
-  return new Promise((resolve, reject) => {
-    // get the target archive
-    var oldArchive = getArchive(oldArchiveKey)
-    if (!oldArchive) {
-      return reject(new Error('Invalid archive key'))
-    }
+  var title = (opts.title && typeof opts.title === 'string') ? opts.title : ''
+  var description = (opts.description && typeof opts.description === 'string') ? opts.description : ''
 
-    // create the new archive
-    createNewArchive({ title, description }).then(newArchiveKey => {
+  // get the target archive
+  var oldArchive = getArchive(oldArchiveKey)
+  if (!oldArchive) {
+    return Promise.reject(new Error('Invalid archive key'))
+  }
 
-      // list the old archive's files
-      var newArchive = getArchive(newArchiveKey)
-      oldArchive.list((err, entries) => {
-        if (err) {
-          return reject(err)
+  // create the new archive
+  return createNewArchive({ title, description }).then(newArchiveKey => {
+    // list the old archive's files
+    var newArchive = getArchive(newArchiveKey)
+    oldArchive.list((err, entries) => {
+      if (err) return log.error('[DAT] Failed to list old archive files during fork', err)
+
+      // TEMPORARY
+      // remove duplicates
+      // this is only needed until hyperdrive fixes its .list()
+      // see https://github.com/mafintosh/hyperdrive/pull/99
+      // -prf
+      var entriesDeDuped = {}
+      entries.forEach(entry => { entriesDeDuped[entry.name] = entry })
+      entries = Object.keys(entriesDeDuped).map(name => entriesDeDuped[name])
+
+      // copy over files
+      next()
+      function next (err) {
+        if (err) log.error('[DAT] Error while copying file during fork', err)
+        var entry = entries.shift()
+        if (!entry) return // done!
+
+        // skip non-files, undownloaded files, and the old manifest
+        if (entry.type !== 'file' || !oldArchive.isEntryDownloaded(entry) || entry.name === DAT_MANIFEST_FILENAME) {
+          return next()
         }
 
-        // TEMPORARY
-        // remove duplicates
-        // this is only needed until hyperdrive fixes its .list()
-        // see https://github.com/mafintosh/hyperdrive/pull/99
-        // -prf
-        var entriesDeDuped = {}
-        entries.forEach(entry => entriesDeDuped[entry.name] = entry)
-        entries = Object.keys(entriesDeDuped).map(name => entriesDeDuped[name])
-
-        // copy over files
-        next()
-        function next (err) {
-          if (err) {
-            return reject(err)
-          }
-
-          // get next
-          var entry = entries.shift()
-          if (!entry) {
-            return finish()
-          }
-
-          // skip non-files, undownloaded files, and the old manifest
-          if (entry.type !== 'file' || !oldArchive.isEntryDownloaded(entry) || entry.name === DAT_MANIFEST_FILENAME) {
-            return next()
-          }
-
-          // copy the fine
-          pump(
-            oldArchive.createFileReadStream(entry),
-            newArchive.createFileWriteStream({ name: entry.name, mtime: entry.mtime, ctime: entry.ctime }),
-            next
-          )
-        }
-        function finish () {
-          // save the new archive
-          setArchiveUserSettings(newArchiveKey, { isSaved: true })
-            .catch(() => false) // squash failures
-            .then(() => resolve(newArchiveKey))
-        }
-      })
-    }).catch(reject)
+        // copy the file
+        pump(
+          oldArchive.createFileReadStream(entry),
+          newArchive.createFileWriteStream({ name: entry.name, mtime: entry.mtime, ctime: entry.ctime }),
+          next
+        )
+      }
+    })
+    return newArchiveKey
   })
 }
 
-export function loadArchive (key, opts) {
-  opts = opts || {}
-  var sparse = (opts.sparse === false) ? false : true // by default, only download files when they're requested
+// archive management
+// =
 
+// load archive and set the swarming behaviors
+export function configureArchive (key, settings) {
+  var upload = settings.uploadClaims.length > 0
+  var download = settings.downloadClaims.length > 0
+  var archive = getOrLoadArchive(key)
+
+  // set swarming
+  swarm(key, { upload })
+
+  // set download prioritization
+  if (download) archive.content.prioritize({start: 0, end: Infinity}) // autodownload all content
+  else archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
+}
+
+export function loadArchive (key) {
   // validate key
-  if (key !== null && (!Buffer.isBuffer(key) || key.length != 32))
+  if (key !== null && (!Buffer.isBuffer(key) || key.length !== 32)) {
     return
+  }
 
+  // create the archive instance
+  mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
   var archive = drive.createArchive(key, {
-    live: opts.live, // optional! only set this if you know what it should be
-    sparse: sparse,
+    live: true,
+    sparse: true,
     file: name => raf(path.join(archivesDb.getArchiveFilesPath(archive), name))
   })
-  mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
   cacheArchive(archive)
-  archive.pullLatestArchiveMeta = throttle(() => pullLatestArchiveMeta(archive), 1e3)
-  trackArchiveEvents(archivesEvents, archive) // start tracking the archive's events
+  swarm(archive, { upload: false })
 
-  // if in sparse-mode, prioritize the entire metadata feed, but leave content to be on-demand
-  if (sparse) {
-    archive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
-  }
+  // prioritize the entire metadata feed, but leave content to be downloaded on-demand
+  archive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
+
+  // wire up events
+  archive.pullLatestArchiveMeta = throttle(() => pullLatestArchiveMeta(archive), 1e3)
+  trackArchiveEvents(archivesEvents, archive)
 
   return archive
 }
@@ -227,38 +193,40 @@ export function getArchive (key) {
   return archives[bufToStr(key)]
 }
 
-export function getArchiveInfo (name, opts) {
+export function getOrLoadArchive (key) {
+  key = bufToStr(key)
+  return getArchive(key) || loadArchive(new Buffer(key, 'hex'))
+}
+
+export function openInExplorer (key) {
+  var folderpath = archivesDb.getArchiveFilesPath(key)
+  log.debug('[DAT] Opening in explorer:', folderpath)
+  shell.openExternal('file://' + folderpath)
+}
+
+// archive meta
+// =
+
+export function getArchiveDetails (name) {
   return new Promise((resolve, reject) => {
     resolveDatDNS(name, (err, key) => {
-      if (err)
-        return reject(new Error(err.code || err))
+      if (err) return reject(new Error(err.code || err))
 
       // get the archive
-      var archive = getArchive(key)
-      if (!archive) {
-        if (opts && opts.loadIfMissing) {
-          archive = loadArchive(new Buffer(key, 'hex'))
-          swarm(key)
-        } else {
-          return reject(new Error('Invalid archive key'))
-        }
-      }
+      var archive = getOrLoadArchive(key)
 
       // fetch archive data
       var done = multicb({ pluck: 1, spread: true })
-      getArchiveMeta(key, done())
+      archivesDb.getArchiveMeta(key).then(done())
       archive.list(done())
       readReadme(archive, done())
       done((err, meta, entries, readme) => {
-        if (err)
-          return reject(err)
+        if (err) return reject(err)
 
         // attach additional data
-        meta.key = key
         meta.entries = entries
         meta.contentBitfield = archive.content.bitfield.buffer
         meta.readme = readme
-        meta.isApp = entries && !!entries.find(e => e.name == 'index.html')
         resolve(meta)
       })
     })
@@ -280,21 +248,17 @@ export function getArchiveStats (key) {
 
     // fetch archive
     var archive = getArchive(key)
-    if (!archive) {
-      return reject(new Error('Invalid archive key'))
-    }
+    if (!archive) return reject(new Error('Invalid archive key'))
 
     // fetch the archive entries
     archive.list((err, entries) => {
-      if (err) {
-        return reject(err)
-      }
+      if (err) return reject(err)
 
       // tally the current state
       entries.forEach(entry => {
-        stats.bytesTotal     += entry.length
+        stats.bytesTotal += entry.length
         stats.blocksProgress += archive.countDownloadedBlocks(entry)
-        stats.blocksTotal    += entry.blocks
+        stats.blocksTotal += entry.blocks
         stats.filesTotal++
       })
       resolve(stats)
@@ -302,36 +266,32 @@ export function getArchiveStats (key) {
   })
 }
 
-export function updateArchiveManifest (key, updates) {
-  return new Promise((resolve, reject) => {
+// archive updaters
+// =
 
+export function updateArchiveManifest (key, updates) {
+  return cbPromise(cb => {
     // fetch the current manifest
     var archive = getOrLoadArchive(key)
-    readManifest(archive, (err, manifest) => {
-
+    readManifest(archive, (_, manifest) => {
       // update values
       manifest = manifest || {}
       Object.assign(manifest, updates)
-
-      // write to archive
-      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest), err => {
-        if (err) reject(err)
-        else resolve()
-      })
+      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest), cb)
     })
   })
 }
 
 export function writeArchiveFileFromPath (key, opts) {
-  return new Promise((resolve, reject) => {
-    if (!opts || typeof opts != 'object' || typeof opts.src != 'string' || typeof opts.dst != 'string')
-      return reject(new Error('Must provide .src and .dst filepaths'))
+  return cbPromise(cb => {
+    if (!opts || typeof opts !== 'object' || typeof opts.src !== 'string' || typeof opts.dst !== 'string') {
+      return cb(new Error('Must provide .src and .dst filepaths'))
+    }
 
     // open the archive and ensure we can write
     var archive = getOrLoadArchive(key)
     archive.open(() => {
-      if (!archive.owner)
-        return reject(new Error('Cannot write: not the archive owner'))
+      if (!archive.owner) return cb(new Error('Cannot write: not the archive owner'))
 
       let { src, dst } = opts
       if (!dst) dst = '/'
@@ -344,7 +304,7 @@ export function writeArchiveFileFromPath (key, opts) {
           dst = path.join(dst, path.basename(src))
         }
       } catch (e) {
-        return reject(new Error('File not found'))
+        return cb(new Error('File not found'))
       }
 
       // read the file or file-tree into the archive
@@ -354,64 +314,47 @@ export function writeArchiveFileFromPath (key, opts) {
         live: false,
         resume: true,
         ignore: ['.dat', '**/.dat', '.git', '**/.git']
-      }, err => {
-        if (err) reject(err)
-        else resolve(err)
-      })
+      }, cb)
     })
   })
 }
 
+// archive networking
+// =
+
 // put the archive into the network, for upload and download
-// (this is kind of like saying, "go live")
 export function swarm (key, opts) {
-  var [keyBuf, keyStr] = bufAndStr(key)
-  opts = Object.assign({ upload: false, download: true, /* wtrc */}, opts)
+  // massage inputs
+  key = bufToStr(key)
+  opts = { upload: opts.upload, download: true }
 
   // fetch
-  if (keyStr in swarms)
-    return swarms[keyStr]
+  if (key in swarms) return swarms[key]
 
   // create
-  log.debug('[DAT] Swarming archive', keyStr)
+  log.debug('[DAT] Swarming archive', key)
   var archive = getArchive(key)
   var s = hyperdriveArchiveSwarm(archive, opts)
-  swarms[keyStr] = s
-  archivesEvents.emit('update-archive', { key: keyStr, isSharing: true })
+  swarms[key] = s
+  archivesEvents.emit('update-archive', { key, isUploading: opts.upload, isDownloading: true })
 
-  // hook up events
+  // wire up events
   if (s.node) s.node.on('peer', peer => log.debug('[DAT] Connection', peer.id, 'from discovery-swarm'))
   else log.warn('Swarm .node missing')
-  // if (s.browser) s.browser.on('peer', peer => log.debug('[DAT] Connection', peer.remoteAddress+':'+peer.remotePort, 'from webrtc'))
-  // else log.warn('Swarm .browser missing')
-  archive.open(err => {
-    if (err)
-      return log.warn('Error opening archive for swarming', keyStr, err)
 
-    if (archive.metadata) {
-      archive.metadata.on('download-finished', () => {
-        log.debug('[DAT] Metadata download finished', keyStr)
-        archivesEvents.emit('update-listing', { key: keyStr })        
-        archive.pullLatestArchiveMeta()
-      })
-    }
-  })
   return s
 }
 
 // take the archive out of the network
 export function unswarm (key) {
-  var [keyBuf, keyStr] = bufAndStr(key)
-
-  // fetch
-  var s = swarms[keyStr]
-  if (!s || s.isClosing)
-    return
+  key = bufToStr(key)
+  var s = swarms[key]
+  if (!s || s.isClosing) return
   s.isClosing = true
   s.close(() => {
-    log.debug('[DAT] Stopped swarming archive', keyStr)
-    delete swarms[keyStr]
-    archivesEvents.emit('update-archive', { key: keyStr, isSharing: false })
+    log.debug('[DAT] Stopped swarming archive', key)
+    delete swarms[key]
+    archivesEvents.emit('update-archive', { key, isDownloading: false, isUploading: false })
   })
 
   // TODO unregister ALL events that were registered in swarm() !!
@@ -419,18 +362,15 @@ export function unswarm (key) {
 
 // prioritize an entry for download
 export function downloadArchiveEntry (key, name) {
-  return new Promise((resolve, reject) => {
+  return cbPromise(cb => {
     // get the archive
     var archive = getArchive(key)
-    if (!archive)
-      return reject(new Error('Invalid archive key'))
+    if (!archive) cb(new Error('Invalid archive key'))
 
     // lookup the entry
     archive.lookup(name, (err, entry) => {
-      if (err || !entry)
-        return reject(err)
-      if (entry.type != 'file')
-        return reject(new Error('Entry must be a file'))
+      if (err || !entry) return cb(err)
+      if (entry.type !== 'file') return cb(new Error('Entry must be a file'))
 
       // download the entry
       archive.content.prioritize({
@@ -439,11 +379,7 @@ export function downloadArchiveEntry (key, name) {
         priority: 3,
         linear: true
       })
-      archive.download(entry, err => {
-        if (err)
-          return reject(err)
-        resolve()
-      })
+      archive.download(entry, cb)
     })
   })
 }
@@ -455,52 +391,6 @@ export function archivesEventStream () {
 // internal methods
 // =
 
-function getOrLoadArchive (key) {
-  return getArchive(key) || loadArchive(new Buffer(key, 'hex'))
-}
-
-function getArchiveMeta (key, cb) {
-  key = bufToStr(key)
-
-  // open archive
-  var archive = getOrLoadArchive(key)
-  archive.open(() => {
-
-    // pull data from meta db
-    archiveMetaDb.get(key, (err, meta) => {
-      meta = meta || {}
-
-      // TEMPORARY fallback to legacy .name if no .title
-      if (meta.name || !meta.title)
-        meta.title = meta.name
-
-      // pull user settings from saved db
-      archiveUserSettingsDb.get(key, (err, userSettings) => {
-        userSettings = userSettings || {}
-
-        // give sane defaults, and add live data
-        userSettings = Object.assign({
-          isSaved: false,
-          isServing: false
-        }, userSettings)
-        meta = Object.assign({
-          key,
-          title: 'Untitled',
-          author: false,
-          mtime: 0,
-          size: 0,
-          isOwner: !!archive.owner,
-          isServing: ((key in swarms) && swarms[key].uploading),
-          peers: archive.metadata.peers.length,
-          userSettings
-        }, meta)
-
-        cb(null, meta)
-      })
-    })
-  })
-}
-
 // read metadata for the archive, and store it in the meta db
 function pullLatestArchiveMeta (archive) {
   var key = archive.key.toString('hex')
@@ -508,63 +398,32 @@ function pullLatestArchiveMeta (archive) {
 
   // open() just in case (we need .blocks)
   archive.open(() => {
-
     // read the archive metafiles
     readManifest(archive, done())
 
     // calculate the size on disk
     var sizeCb = done()
-    getFolderSize(archivesDb.getArchiveFilesPath(archive), (err, size) => {
+    getFolderSize(archivesDb.getArchiveFilesPath(archive), (_, size) => {
       sizeCb(null, size)
     })
 
-    done((err, manifest, size) => {
+    done((_, manifest, size) => {
       manifest = manifest || {}
-      var { title, description, author, homepage_url } = manifest
+      var { title, description, author } = manifest
       var mtime = Date.now() // use our local update time
+      var isOwner = archive.owner
       size = size || 0
 
       // write the record
-      var update = { title, description, author, homepage_url, mtime, size }
+      var update = { title, description, author, mtime, size, isOwner }
       log.debug('[DAT] Writing meta', update)
-      archiveMetaDb.put(key, update, err => {
-        if (err)
-          log.debug('[DAT] Error while writing archive meta', key, err)
-
-        // emit event
-        update.key = key
-        archivesEvents.emit('update-archive', update)
-      })
+      archivesDb.setArchiveMeta(key, update).then(
+        () => {
+          update.key = key
+          archivesEvents.emit('update-archive', update)
+        },
+        err => log.debug('[DAT] Error while writing archive meta', key, err)
+      )
     })
   })
 }
-
-function readManifest (archive, cb) {
-  readArchiveFile(archive, DAT_MANIFEST_FILENAME, (err, data) => {
-    if (data)
-      return done(data)
-
-    // TEMPORARY try legacy (remove in, like, a year. maybe less.)
-    readArchiveFile(archive, 'manifest.json', (err, data) => {
-      if (data)
-        return done(data)
-
-      // no manifest
-      cb()
-    })
-  })
-
-  function done (data) {
-    // parse manifest
-    try {
-      var manifest = JSON.parse(data.toString())
-      if (manifest.name || !manifest.title) manifest.title = manifest.name // TEMPORARY legacy fix
-      cb(null, manifest)
-    } catch (e) { cb() }
-  }
-}
-
-function readReadme (archive, cb) {
-  readArchiveFile(archive, 'README.md', (err, data) => cb(null, data)) // squash the error
-}
-

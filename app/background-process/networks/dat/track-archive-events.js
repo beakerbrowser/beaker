@@ -8,10 +8,18 @@ export default function trackArchiveEvents (emitter, archive) {
   track(archive.metadata, 'metadata')
   archive.metadata.on('peer-add', () => emitter.emit('update-peers', { key, peers: archive.metadata.peers.length }))
   archive.metadata.on('peer-remove', () => emitter.emit('update-peers', { key, peers: archive.metadata.peers.length }))
-  archive.open(err => track(archive.content, 'content', err))
+  archive.open(err => {
+    if (err) return log.warn('Error opening archive', key, err)
+    track(archive.content, 'content')
+    if (archive.metadata) {
+      archive.metadata.on('download-finished', () => {
+        log.debug('[DAT] Metadata download finished', key)
+        emitter.emit('update-listing', { key })
+        archive.pullLatestArchiveMeta()
+      })
+    }
+  })
   function track (feed, name, err) {
-    if (err) log.error('[DAT] Error opening archive', err)
-
     if (feed) {
       // feed.on('update', () => emitter.emit('update-blocks', { key, feed: name, bitfield: feed.bitfield.buffer }))
       feed.on('download', (index, data) => emitter.emit('download', { key, feed: name, index, bytes: data.length }))

@@ -61,8 +61,9 @@ export const removeListener = events.removeListener.bind(events)
 // get an array of saved archives
 // - includes archive
 // - optional `query` keys:
-//   - `isSaved`, `isUploading`, `isDownloading`: bool, is claimed by any site?
-//   - `isSavedBy`, `isUploadingBy`, `isDownloadingBy`: bool: string, is claimed by the given site? eg { isSavedBy: 'http://foo.com' }
+//   - `isSaved`, `isUploading`, `isDownloading`: bool, is X behavior claimed by any site?
+//   - `isNetworked`: bool, is upload or download claim by any site?
+//   - `isSavedBy`, `isUploadingBy`, `isDownloadingBy`: bool: string, is X behavior claimed by the given site? eg { isSavedBy: 'http://foo.com' }
 //   - `isOwner`: bool, does beaker have the secret key? requires opts.includeMeta
 // - optional `opt` keys:
 //   - `includeMeta`: bool, include the archive meta in the response?
@@ -96,6 +97,7 @@ class QueryArchiveUserSettingsTransform extends Transform {
     if (failsClaim(query.isSaved, value.saveClaims)) return cb()
     if (failsClaim(query.isUploading, value.uploadClaims)) return cb()
     if (failsClaim(query.isDownloading, value.downloadClaims)) return cb()
+    if (query.isNetworked === true && !isTruthyArray(value.uploadClaims) && !isTruthyArray(value.downloadClaims)) return cb()
     if (failsClaimBy(query.isSavedBy, value.saveClaims)) return cb()
     if (failsClaimBy(query.isUploadingBy, value.uploadClaims)) return cb()
     if (failsClaimBy(query.isDownloadingBy, value.downloadClaims)) return cb()
@@ -152,8 +154,7 @@ export function setArchiveUserSettings (key, value = {}) {
     // write
     archiveUserSettingsDb.put(key, value, err => {
       if (err) return cb(err)
-      events.emit('archive-user-settings', key, value)
-      events.emit('archive-user-settings:' + key, value)
+      events.emit('update:archive-user-settings', key, value)
       cb()
     })
   })
@@ -162,7 +163,8 @@ export function setArchiveUserSettings (key, value = {}) {
 // add/remove a claim to the archive
 // - `key` string, the archive key
 // - `origin` string, the origin making the claim
-// - `op` string, should be "add" or "remove"
+// - `op` string, should be "add", "remove", "remove-all", or "toggle-all"
+//    - the *-all ops overwrite the current claims. Should only be used by internal views.
 // - `claims` string or array of strings, should be "save", "upload", or "download"
 export function updateArchiveClaims (key, origin, op, claims) {
   // massage inputs
@@ -173,7 +175,7 @@ export function updateArchiveClaims (key, origin, op, claims) {
   // validate inputs
   if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
   if (!origin) return Promise.reject(new Error('Invalid origin'))
-  if (['add', 'remove'].includes(op) === false) return Promise.reject(new Error('Invalid op'))
+  if (['add', 'remove', 'toggle'].includes(op) === false) return Promise.reject(new Error('Invalid op'))
 
   // fetch settings
   return getArchiveUserSettings(key).then(archiveUserSettings => {
@@ -183,12 +185,15 @@ export function updateArchiveClaims (key, origin, op, claims) {
       if (!claim) return
 
       if (op === 'add') {
-        // add
         if (!claim.includes(origin)) claim.push(origin)
-      } else {
-        // remove
+      } else if (op === 'remove') {
         let index = claim.indexOf(origin)
         if (index !== -1) claim.splice(index, 1)
+      } else if (op === 'remove-all') {
+        archiveUserSettings[claimKey + 'Claim'] = []
+      } else if (op === 'toggle-all') {
+        if (claim.length > 0) archiveUserSettings[claimKey + 'Claim'] = []
+        else archiveUserSettings[claimKey + 'Claim'] = [origin]
       }
     })
 
@@ -231,8 +236,7 @@ export function setArchiveMeta (key, value = {}) {
     // write
     archiveMetaDb.put(key, value, err => {
       if (err) return cb(err)
-      events.emit('archive-meta', key, value)
-      events.emit('archive-meta:' + key, value)
+      events.emit('update:archive-meta', key, value)
       cb()
     })
   })
@@ -265,8 +269,8 @@ export function setGlobalSetting (key, value = {}) {
   return cbPromise(cb => {
     globalSettingsDb.put(key, value, err => {
       if (err) return cb(err)
-      events.emit('global-setting', key, value)
-      events.emit('global-setting:' + key, value)
+      events.emit('update:global-setting', key, value)
+      events.emit('update:global-setting:' + key, value)
       cb()
     })
   })
