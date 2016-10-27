@@ -14,7 +14,6 @@ import datAPIManifest from '../api-manifests/dat'
 import * as dat from '../networks/dat/dat'
 import { archiveCustomLookup } from '../networks/dat/helpers'
 import datWebAPI from '../networks/dat/web-api'
-import datInternalWebAPI from '../networks/dat/web-api-internal'
 import { resolveDatDNS } from '../networks/dns'
 import directoryListingPage from '../networks/dat/directory-listing-page'
 import errorPage from '../../lib/error-page'
@@ -52,7 +51,7 @@ export function setup () {
   dat.setup()
 
   // wire up RPC
-  rpc.exportAPI('datInternalAPI', datInternalAPIManifest, datInternalWebAPI)
+  rpc.exportAPI('datInternalAPI', datInternalAPIManifest, dat)
   rpc.exportAPI('dat', datAPIManifest, datWebAPI)
 
   // setup the protocol handler
@@ -73,7 +72,7 @@ export function setup () {
 
   // create the internal dat HTTP server
   var server = http.createServer(datServer)
-  listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => serverPort = port)
+  listenRandomPort(server, { host: '127.0.0.1' }, (_, port) => { serverPort = port })
 }
 
 function datServer (req, res) {

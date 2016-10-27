@@ -1,4 +1,4 @@
-import * as dat from './dat'
+import {readArchiveDirectory} from './helpers'
 
 const styles = `<style>
   .entry {
@@ -18,7 +18,7 @@ const styles = `<style>
 </style>`
 
 export default function renderDirectoryListingPage (archive, path, cb) {
-  dat.readArchiveDirectory(archive, path, (err, entries) => {
+  readArchiveDirectory(archive, path, (_, entries) => {
     // sort the listing
     var names = Object.keys(entries).sort((a, b) => {
       var ea = entries[a]
@@ -46,5 +46,5 @@ export default function renderDirectoryListingPage (archive, path, cb) {
 }
 
 function safen (str) {
-  return str.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/&/g,'&amp;').replace(/"/g,'')
+  return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '')
 }

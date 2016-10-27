@@ -1,3 +1,4 @@
+import { shell } from 'electron'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import pump from 'pump'
@@ -23,7 +24,6 @@ import raf from 'random-access-file'
 import mkdirp from 'mkdirp'
 import getFolderSize from 'get-folder-size'
 
-
 // constants
 // =
 
@@ -46,8 +46,8 @@ export function setup () {
   // wire up event handlers
   archivesDb.on('update:archive-user-settings', configureArchive)
 
-  // load and configure all networked archives
-  archivesDb.queryArchiveUserSettings({ isNetworked: true }).then(
+  // load and configure all saved archives
+  archivesDb.queryArchiveUserSettings({ isSaved: true }).then(
     archives => archives.forEach(a => configureArchive(a.key, a)),
     err => log.error('[DAT] Failed to load networked archives', err)
   )
@@ -58,7 +58,7 @@ export function setup () {
 
 export const resolveName = resolveDatDNS
 export const queryArchiveUserSettings = archivesDb.queryArchiveUserSettings
-export const updateArchiveClaims = archivesDb.updateArchiveclaims
+export const updateArchiveClaims = archivesDb.updateArchiveClaims
 export const getGlobalSetting = archivesDb.getGlobalSetting
 export const setGlobalSetting = archivesDb.setGlobalSetting
 
@@ -166,12 +166,12 @@ export function loadArchive (key) {
   }
 
   // create the archive instance
-  mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
   var archive = drive.createArchive(key, {
     live: true,
     sparse: true,
     file: name => raf(path.join(archivesDb.getArchiveFilesPath(archive), name))
   })
+  mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
   cacheArchive(archive)
   swarm(archive, { upload: false })
 
@@ -325,7 +325,7 @@ export function writeArchiveFileFromPath (key, opts) {
 // put the archive into the network, for upload and download
 export function swarm (key, opts) {
   // massage inputs
-  key = bufToStr(key)
+  key = bufToStr(key.key || key)
   opts = { upload: opts.upload, download: true }
 
   // fetch

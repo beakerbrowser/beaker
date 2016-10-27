@@ -555,7 +555,7 @@ function onOpenInFinder () {
 function onClickFork (e) {
   // create fork modal
   currentForkModal = forkDatModal.create(archiveInfo, archiveEntriesTree, {
-    isDownloading: isNetworked(archive,
+    isDownloading: isNetworked(archive),
     onClickDownload: onDownloadForkArchive,
     onSubmit: onSubmitForkArchive
   })

@@ -83,7 +83,7 @@ export function queryArchiveUserSettings (query, opts) {
 
 class QueryArchiveUserSettingsTransform extends Transform {
   constructor (query, opts) {
-    super()
+    super({ objectMode: true })
     this.query = query
     this.opts = opts
   }
