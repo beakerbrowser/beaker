@@ -30,6 +30,35 @@ import getFolderSize from 'get-folder-size'
 // TODO update the docs
 //
 
+// TODO rewrite this method
+/*export function setArchiveUserSettings (key, value) {
+  return new Promise((resolve, reject) => {
+    // db result handler
+    var cb = err => {
+      if (err) reject(err)
+      else resolve()
+    }
+
+    // massage data
+    var config = {
+      isSaved: !!value.isSaved,
+      isServing: !!value.isServing
+    }
+
+    // add/update
+    archiveUserSettingsDb.put(key, config, cb)
+
+    // update the swarm/download behaviors
+    var archive = getArchive(key)
+    swarm(key).upload = config.isServing || (config.isSaved && !archive.owner) // upload if the user wants to serve, or has saved and isnt the owner
+    if (config.isServing) {
+      archive.content.prioritize({start: 0, end: Infinity}) // download content automatically
+    } else {
+      archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
+    }
+  })
+}*/
+
 // constants
 // =
 
