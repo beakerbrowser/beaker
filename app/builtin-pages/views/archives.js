@@ -52,7 +52,7 @@ function render () {
       <div class="ll-heading">
         Your Archives
         <span class="btn-group">
-          <button class="btn" onclick=${onClickCreateArchive}>New Archive</button><button class="btn" onclick=${onClickImportFolder}>Import Folder</button>
+          <button class="btn" onclick=${onClickCreateArchive}>New Archive</button><button class="btn" onclick=${onClickImportFolder}>Import Files</button>
         </span>
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
@@ -88,12 +88,12 @@ function onClickCreateArchive (e) {
 function onClickImportFolder (e) {
   co(function* () {
     var paths = yield beakerBrowser.showOpenDialog({
-      title: 'Choose a folder to import',
+      title: 'Choose files and folders to import',
       buttonLabel: 'Import',
-      properties: ['openDirectory', 'showHiddenFiles']
+      properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
     })
-    if (paths && paths[0]) {
-      var key = yield datInternalAPI.createNewArchive({ importFrom: paths[0], saveClaim: 'beaker:archives' })
+    if (paths && paths.length) {
+      var key = yield datInternalAPI.createNewArchive({ importFiles: paths, saveClaim: 'beaker:archives' })
       window.location = 'beaker:archive/' + key
     }
   })
