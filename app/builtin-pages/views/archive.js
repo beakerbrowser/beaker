@@ -246,7 +246,6 @@ function renderArchive () {
 
 function renderHeading () {
   const name = archiveInfo.title || 'Untitled'
-  const isSaved = archiveInfo.userSettings.saveClaims.length > 0
 
   // general buttons
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
@@ -264,7 +263,7 @@ function renderHeading () {
   </div>`)
 
   if (archiveInfo.isOwner) {
-    if (isSaved) {
+    if (isSaved(archiveInfo)) {
       // owner's btns
       let addFilesBtn = yo`<a id="add-files-btn" class="btn btn-group" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
 
@@ -304,7 +303,7 @@ function renderHeading () {
 
   // downloader's heading
   return yo`<div class="ll-heading">
-    ${ (isSaved)
+    ${ (isSaved(archiveInfo))
       ? yo`<a href="beaker:downloads" onclick=${pushUrl}>Downloads <span class="icon icon-right-open"></span></a>`
       : '' }
     ${name}
@@ -520,17 +519,36 @@ function addFiles (files) {
 // =
 
 function onToggleSave () {
+  // toggle the save
   datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', 'save').then(settings => {
     archiveInfo.userSettings.saveClaims = settings.saveClaims
     render()
+
+    // autounnetwork if deleted, but still networking
+    if (!isSaved(archiveInfo) && isNetworked(archiveInfo)) {
+      datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'remove-all', ['upload', 'download']).then(settings => {
+        archiveInfo.userSettings.uploadClaims = settings.uploadClaims
+        archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+        render()
+      })
+    }
   })
 }
 
 function onToggleServing () {
+  // toggle the networking
   datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', ['upload', 'download']).then(settings => {
     archiveInfo.userSettings.uploadClaims = settings.uploadClaims
     archiveInfo.userSettings.downloadClaims = settings.downloadClaims
     render()
+
+    // autosave if networked, but not saved
+    if (isNetworked(archiveInfo) && !isSaved(archiveInfo)) {
+      datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'add', 'save').then(settings => {
+        archiveInfo.userSettings.saveClaims = settings.saveClaims
+        render()
+      })
+    }
   })
 }
 
@@ -623,6 +641,10 @@ function onDownload (update) {
     // render update
     render()
   }
+}
+
+function isSaved (archive) {
+  return archive.userSettings.saveClaims.length > 9
 }
 
 function isNetworked (archive) {
