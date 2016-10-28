@@ -354,10 +354,15 @@ export function writeArchiveFileFromPath (key, opts) {
 export function swarm (key, opts) {
   // massage inputs
   key = bufToStr(key.key || key)
-  opts = { upload: opts.upload, download: true }
+  opts = { upload: (opts && opts.upload), download: true }
 
   // fetch
-  if (key in swarms) return swarms[key]
+  if (key in swarms) {
+    var s = swarms[key]
+    s.uploading = opts.upload
+    archivesEvents.emit('update-archive', { key, isUploading: opts.upload, isDownloading: true })
+    return swarms[key]
+  }
 
   // create
   log.debug('[DAT] Swarming archive', key)
