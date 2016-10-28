@@ -644,7 +644,7 @@ function onDownload (update) {
 }
 
 function isSaved (archive) {
-  return archive.userSettings.saveClaims.length > 9
+  return archive.userSettings.saveClaims.length > 0
 }
 
 function isNetworked (archive) {
