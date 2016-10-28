@@ -16,10 +16,11 @@ export function render (archivesList, opts = {}) {
   var archiveEls = []
   archivesList.archives.forEach((archive, index) => {
     // if not saved but in this listing, then it was recently deleted
-    if (!archive.saveClaims.length) {
+    if (!archive.userSettings.saveClaims.length) {
       return numDeleted++
     }
     let title = archive.title || archive.key
+    let npeers = archive.peers || 0
 
     if (archive.isOwner) {
       // render owned archive
@@ -31,11 +32,10 @@ export function render (archivesList, opts = {}) {
             ${title}
           </a>
         </div>
-        <div class="ll-status">${isNetworked(archive) ? (archive.peers + ' ' + pluralize(archive.peers, 'peer')) : ''}</div>
         <div class="ll-updated" title=${mtime}>${mtime}</div>
         <div class="ll-size">${archive.size ? prettyBytes(archive.size) : '0 B'}</div>
         <div class="ll-serve">${isNetworked(archive) 
-          ? yo`<a class="btn btn-primary glowing" onclick=${onToggleServeArchive(archive, rerender)} title="Sharing"><span class="icon icon-share"></span> Sharing</a>` 
+          ? yo`<a class="btn btn-primary glowing" onclick=${onToggleServeArchive(archive, rerender)} title="Sharing"><span class="icon icon-share"></span> ${npeers} ${pluralize(npeers, 'peer')}</a>` 
           : yo`<a class="btn" onclick=${onToggleServeArchive(archive, rerender)} title="Share"><span class="icon icon-share"></span> Share</a>` }</div>
         <div class="ll-dropdown">${toggleable(yo`
           <div class="dropdown-btn-container">
@@ -125,8 +125,8 @@ function onToggleServeArchive (archiveInfo, render) {
     e.preventDefault()
     e.stopPropagation()
     datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', ['upload', 'download']).then(settings => {
-      archiveInfo.uploadClaims = settings.uploadClaims
-      archiveInfo.downloadClaims = settings.downloadClaims
+      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
+      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
       render()
     })
   }
@@ -138,9 +138,9 @@ function onDeleteArchive (archiveInfo, render) {
     e.stopPropagation()
 
     datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'remove-all', ['save', 'upload', 'download'])
-    archiveInfo.saveClaims = []
-    archiveInfo.uploadClaims = []
-    archiveInfo.downloadClaims = []
+    archiveInfo.userSettings.saveClaims = []
+    archiveInfo.userSettings.uploadClaims = []
+    archiveInfo.userSettings.downloadClaims = []
     render()
   }
 }
@@ -151,8 +151,8 @@ function onUndoDeletions (archivesList, render) {
     e.stopPropagation()
 
     archivesList.archives.forEach(archiveInfo => {
-      if (archiveInfo.saveClaims.length === 0) {
-        archiveInfo.saveClaims = ['beaker:archives']
+      if (archiveInfo.userSettings.saveClaims.length === 0) {
+        archiveInfo.userSettings.saveClaims = ['beaker:archives']
         datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'add', 'save')
       }
     })
@@ -161,5 +161,5 @@ function onUndoDeletions (archivesList, render) {
 }
 
 function isNetworked (archive) {
-  return archive.uploadClaims.length > 0 || archive.downloadClaims.length > 0
+  return archive.userSettings.uploadClaims.length > 0 || archive.userSettings.downloadClaims.length > 0
 }

@@ -64,8 +64,7 @@ function renderNavItem (item) {
 function onClickNavItem (item) {
   return e => {
     // ignore ctrl/cmd+click
-    if (e.metaKey)
-      return
+    if (e.metaKey) return
     e.preventDefault()
 
     if (window.location.protocol == 'beaker:' && item.href.startsWith('beaker:')) {
@@ -76,18 +75,4 @@ function onClickNavItem (item) {
       window.location = item.href
     }
   }
-}
-
-function onClickShareFiles (e) {
-  co(function* () {
-    var paths = yield beakerBrowser.showOpenDialog({
-      title: 'Choose a folder to import',
-      buttonLabel: 'Import',
-      properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
-    })
-    if (paths && paths.length) {
-      var key = yield datInternalAPI.createNewArchive({ importFiles: paths })
-      window.location = 'beaker:archive/' + key
-    }
-  })
 }

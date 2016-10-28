@@ -57,7 +57,6 @@ export function setup () {
 //
 
 export const resolveName = resolveDatDNS
-export const queryArchiveUserSettings = archivesDb.queryArchiveUserSettings
 export const updateArchiveClaims = archivesDb.updateArchiveClaims
 export const getGlobalSetting = archivesDb.getGlobalSetting
 export const setGlobalSetting = archivesDb.setGlobalSetting
@@ -87,6 +86,14 @@ export function createNewArchive (opts) {
     if (title || description) {
       writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify({ title, description }))
     }
+
+    // write the save claim
+    if (opts.saveClaim) {
+      archivesDb.updateArchiveClaims(key, opts.saveClaim, 'add', 'save')
+    }
+
+    // write the meta
+    archive.pullLatestArchiveMeta()
   })
 }
 
@@ -103,7 +110,7 @@ export function forkArchive (oldArchiveKey, opts) {
   }
 
   // create the new archive
-  return createNewArchive({ title, description }).then(newArchiveKey => {
+  return createNewArchive({ title, description, saveClaim: 'beaker:archives' }).then(newArchiveKey => {
     // list the old archive's files
     var newArchive = getArchive(newArchiveKey)
     oldArchive.list((err, entries) => {
@@ -151,12 +158,14 @@ export function configureArchive (key, settings) {
   var download = settings.downloadClaims.length > 0
   var archive = getOrLoadArchive(key)
 
-  // set swarming
-  swarm(key, { upload })
+  archive.open(() => {
+    // set swarming
+    swarm(key, { upload })
 
-  // set download prioritization
-  if (download) archive.content.prioritize({start: 0, end: Infinity}) // autodownload all content
-  else archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
+    // set download prioritization
+    if (download) archive.content.prioritize({start: 0, end: Infinity}) // autodownload all content
+    else archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
+  })
 }
 
 export function loadArchive (key) {
@@ -204,8 +213,22 @@ export function openInExplorer (key) {
   shell.openExternal('file://' + folderpath)
 }
 
-// archive meta
+// archive fetch/query
 // =
+
+export function queryArchives (query) {
+  // run the query
+  return archivesDb.queryArchiveUserSettings(query, { includeMeta: true }).then(archiveInfos => {
+    // attach some live data
+    archiveInfos.forEach(archiveInfo => {
+      var archive = getArchive(archiveInfo.key)
+      if (archive) {
+        archiveInfo.peers = archive.metadata.peers.length
+      }
+    })
+    return archiveInfos
+  })
+}
 
 export function getArchiveDetails (name) {
   return new Promise((resolve, reject) => {
@@ -217,16 +240,21 @@ export function getArchiveDetails (name) {
 
       // fetch archive data
       var done = multicb({ pluck: 1, spread: true })
-      archivesDb.getArchiveMeta(key).then(done())
+      var metaCB = done()
+      archivesDb.getArchiveMeta(key).then(meta => metaCB(null, meta))
+      var userSettingsCB = done()
+      archivesDb.getArchiveUserSettings(key).then(settings => userSettingsCB(null, settings))
       archive.list(done())
       readReadme(archive, done())
-      done((err, meta, entries, readme) => {
+      done((err, meta, userSettings, entries, readme) => {
         if (err) return reject(err)
 
         // attach additional data
+        meta.userSettings = userSettings
         meta.entries = entries
-        meta.contentBitfield = archive.content.bitfield.buffer
         meta.readme = readme
+        meta.contentBitfield = archive.content.bitfield.buffer
+        meta.peers = archive.metadata.peers.length
         resolve(meta)
       })
     })

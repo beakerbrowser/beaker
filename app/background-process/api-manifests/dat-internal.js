@@ -1,7 +1,7 @@
 export default {
+  queryArchives: 'promise',
   getArchiveDetails: 'promise',
   getArchiveStats: 'promise',
-  queryArchiveUserSettings: 'promise',
 
   resolveName: 'async',
 

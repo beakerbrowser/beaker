@@ -194,14 +194,14 @@ function renderArchive () {
   // downloader's btns
   var syncBtn
   if (archiveInfo.isOwner) {
-    syncBtn = (isNetworked(archive))
+    syncBtn = (isNetworked(archiveInfo))
       ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
       : yo`<a id="sync-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
   } else {
     let entry = archiveEntriesTree.entry
     let isDownloaded = entry.downloadedBlocks >= entry.blocks
     let label = (isDownloaded) ? 'Sync' : 'Download'
-    syncBtn = (isNetworked(archive))
+    syncBtn = (isNetworked(archiveInfo))
       ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="${label}ing" onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}ing</a>`
       : yo`<a id="sync-btn" class="btn" title=${label} onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}</a>`
   }
@@ -246,7 +246,7 @@ function renderArchive () {
 
 function renderHeading () {
   const name = archiveInfo.title || 'Untitled'
-  const isSaved = archiveInfo.saveClaims.length > 0
+  const isSaved = archiveInfo.userSettings.saveClaims.length > 0
 
   // general buttons
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
@@ -521,15 +521,15 @@ function addFiles (files) {
 
 function onToggleSave () {
   datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', 'save').then(settings => {
-    archiveInfo.saveClaims = settings.saveClaims
+    archiveInfo.userSettings.saveClaims = settings.saveClaims
     render()
   })
 }
 
 function onToggleServing () {
   datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', ['upload', 'download']).then(settings => {
-    archiveInfo.uploadClaims = settings.uploadClaims
-    archiveInfo.downloadClaims = settings.downloadClaims
+    archiveInfo.userSettings.uploadClaims = settings.uploadClaims
+    archiveInfo.userSettings.downloadClaims = settings.downloadClaims
     render()
   })
 }
@@ -555,7 +555,7 @@ function onOpenInFinder () {
 function onClickFork (e) {
   // create fork modal
   currentForkModal = forkDatModal.create(archiveInfo, archiveEntriesTree, {
-    isDownloading: isNetworked(archive),
+    isDownloading: isNetworked(archiveInfo),
     onClickDownload: onDownloadForkArchive,
     onSubmit: onSubmitForkArchive
   })
@@ -626,5 +626,5 @@ function onDownload (update) {
 }
 
 function isNetworked (archive) {
-  return archive.uploadClaims.length > 0 || archive.downloadClaims.length > 0
+  return archive.userSettings.uploadClaims.length > 0 || archive.userSettings.downloadClaims.length > 0
 }

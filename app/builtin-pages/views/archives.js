@@ -25,7 +25,7 @@ export function show () {
   co(function * () {
     archivesList = new ArchivesList()
     yield archivesList.setup({
-      filter: { isOwner: true }
+      filter: { isOwner: true, isSaved: true }
     })
     archivesList.on('changed', render)
     render()
@@ -80,7 +80,7 @@ function renderEmpty () {
 // =
 
 function onClickCreateArchive (e) {
-  datInternalAPI.createNewArchive().then(key => {
+  datInternalAPI.createNewArchive({ saveClaim: 'beaker:archives' }).then(key => {
     window.location = 'beaker:archive/' + key
   })
 }
@@ -93,7 +93,7 @@ function onClickImportFolder (e) {
       properties: ['openDirectory', 'showHiddenFiles']
     })
     if (paths && paths[0]) {
-      var key = yield datInternalAPI.createNewArchive({ importFrom: paths[0] })
+      var key = yield datInternalAPI.createNewArchive({ importFrom: paths[0], saveClaim: 'beaker:archives' })
       window.location = 'beaker:archive/' + key
     }
   })

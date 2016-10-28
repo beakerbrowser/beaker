@@ -74,3 +74,7 @@ Stats.prototype.updateActives = throttle(function () {
   // render all active widgets
   Array.from(document.querySelectorAll('.hypercore-stats')).forEach(el => yo.update(el, this.render()))
 }, RERENDER_THROTTLE)
+
+function isNetworked (archive) {
+  return archive.userSettings.uploadClaims.length > 0 || archive.userSettings.downloadClaims.length > 0
+}

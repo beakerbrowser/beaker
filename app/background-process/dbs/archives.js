@@ -115,8 +115,8 @@ class QueryArchiveUserSettingsTransform extends Transform {
         if (query.isOwner === true && meta.isOwner === false) return cb()
 
         // done
-        value.meta = meta
-        cb(null, value)
+        meta.userSettings = value
+        cb(null, meta)
       },
       err => cb(err)
     )
@@ -155,7 +155,7 @@ export function setArchiveUserSettings (key, value = {}) {
     archiveUserSettingsDb.put(key, value, err => {
       if (err) return cb(err)
       events.emit('update:archive-user-settings', key, value)
-      cb()
+      cb(null, value)
     })
   })
 }
@@ -175,13 +175,13 @@ export function updateArchiveClaims (key, origin, op, claims) {
   // validate inputs
   if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
   if (!origin) return Promise.reject(new Error('Invalid origin'))
-  if (['add', 'remove', 'toggle'].includes(op) === false) return Promise.reject(new Error('Invalid op'))
+  if (['add', 'remove', 'remove-all', 'toggle-all'].includes(op) === false) return Promise.reject(new Error('Invalid op'))
 
   // fetch settings
   return getArchiveUserSettings(key).then(archiveUserSettings => {
     // update the claims
     claims.forEach(claimKey => {
-      var claim = archiveUserSettings[claimKey + 'Claim']
+      var claim = archiveUserSettings[claimKey + 'Claims']
       if (!claim) return
 
       if (op === 'add') {
@@ -190,10 +190,10 @@ export function updateArchiveClaims (key, origin, op, claims) {
         let index = claim.indexOf(origin)
         if (index !== -1) claim.splice(index, 1)
       } else if (op === 'remove-all') {
-        archiveUserSettings[claimKey + 'Claim'] = []
+        archiveUserSettings[claimKey + 'Claims'] = []
       } else if (op === 'toggle-all') {
-        if (claim.length > 0) archiveUserSettings[claimKey + 'Claim'] = []
-        else archiveUserSettings[claimKey + 'Claim'] = [origin]
+        if (claim.length > 0) archiveUserSettings[claimKey + 'Claims'] = []
+        else archiveUserSettings[claimKey + 'Claims'] = [origin]
       }
     })
 
@@ -247,25 +247,11 @@ export function setArchiveMeta (key, value = {}) {
 
 // read a global setting
 export function getGlobalSetting (key) {
-  // massage inputs
-  key = bufToStr(key)
-
-  // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
-
-  // fetch
   return cbPromise(cb => globalSettingsDb.get(key, cb))
 }
 
 // write a global setting
 export function setGlobalSetting (key, value = {}) {
-  // massage inputs
-  key = bufToStr(key)
-
-  // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
-
-  // write
   return cbPromise(cb => {
     globalSettingsDb.put(key, value, err => {
       if (err) return cb(err)
