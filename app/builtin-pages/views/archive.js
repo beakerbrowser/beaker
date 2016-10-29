@@ -194,14 +194,14 @@ function renderArchive () {
   // downloader's btns
   var syncBtn
   if (archiveInfo.isOwner) {
-    syncBtn = (archiveInfo.userSettings.isServing)
+    syncBtn = (isNetworked(archiveInfo))
       ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
       : yo`<a id="sync-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
   } else {
     let entry = archiveEntriesTree.entry
     let isDownloaded = entry.downloadedBlocks >= entry.blocks
     let label = (isDownloaded) ? 'Sync' : 'Download'
-    syncBtn = (archiveInfo.userSettings.isServing)
+    syncBtn = (isNetworked(archiveInfo))
       ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="${label}ing" onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}ing</a>`
       : yo`<a id="sync-btn" class="btn" title=${label} onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}</a>`
   }
@@ -246,32 +246,33 @@ function renderArchive () {
 
 function renderHeading () {
   const name = archiveInfo.title || 'Untitled'
-  const isSaved = archiveInfo.userSettings.isSaved
 
   // general buttons
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
   var openFolderBtn = yo`<a id="open-in-finder-btn" onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
   var forkBtn = yo`<a id="fork-btn" title="Fork Archive" onclick=${onClickFork}><span class="icon icon-flow-branch"></span> Fork Archive</a>`
-  var deleteArchiveBtn = yo`<a id="delete-btn" title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
+  var toggleSavedBtn = isSaved(archiveInfo)
+    ? yo`<a id="delete-btn" title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
+    : yo`<a id="save-btn" title="Save Archive" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Save Archive</a>`
   var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
     <a class="toggleable btn"><span class="icon icon-down-open"></span></a>
     <div class="dropdown-btn-list">
       ${openFolderBtn}
       ${forkBtn}
       <hr />
-      ${deleteArchiveBtn}
+      ${toggleSavedBtn}
     </div>
   </div>`)
 
   if (archiveInfo.isOwner) {
-    if (isSaved) {
+    if (isSaved(archiveInfo)) {
       // owner's btns
       let addFilesBtn = yo`<a id="add-files-btn" class="btn btn-group" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
 
       // owner's heading
       return yo`<div class="ll-heading">
         <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
-        ${name}
+        <span class="archive-name">${name}</span>
         <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
         <span class="btn-group">${copyLinkBtn}</span>
         ${dropdownBtn}
@@ -292,7 +293,7 @@ function renderHeading () {
     // deleted owner's heading
     return yo`<div class="ll-heading">
       <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
-      ${name}
+      <span class="archive-name">${name}</span>
       <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
       ${undoDeleteBtn}
       <small class="ll-heading-right">
@@ -304,10 +305,10 @@ function renderHeading () {
 
   // downloader's heading
   return yo`<div class="ll-heading">
-    ${ (isSaved)
+    ${ (isSaved(archiveInfo))
       ? yo`<a href="beaker:downloads" onclick=${pushUrl}>Downloads <span class="icon icon-right-open"></span></a>`
       : '' }
-    ${name}
+    <span class="archive-name">${name}</span>
     <small id="owner-label">read-only</small>
     <span class="btn-group">${copyLinkBtn}</span>
     ${dropdownBtn}
@@ -385,7 +386,7 @@ function parseKeyFromURL () {
 const fetchArchiveInfo = throttle(cb => {
   return co(function * () {
     // run request
-    archiveInfo = yield datInternalAPI.getArchiveInfo(archiveKey, { loadIfMissing: true })
+    archiveInfo = yield datInternalAPI.getArchiveDetails(archiveKey)
     if (archiveInfo) {
       archiveEntriesTree = entriesListToTree(archiveInfo)
       calculateTreeSizeAndProgress(archiveInfo, archiveEntriesTree)
@@ -520,25 +521,37 @@ function addFiles (files) {
 // =
 
 function onToggleSave () {
-  archiveInfo.userSettings.isSaved = !archiveInfo.userSettings.isSaved
+  // toggle the save
+  datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', 'save').then(settings => {
+    archiveInfo.userSettings.saveClaims = settings.saveClaims
+    render()
 
-  // isServing must reflect isSaved
-  if (!archiveInfo.userSettings.isSaved && archiveInfo.userSettings.isServing)
-    archiveInfo.userSettings.isServing = false
-
-  datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-  render()
+    // autounnetwork if deleted, but still networking
+    if (!isSaved(archiveInfo) && isNetworked(archiveInfo)) {
+      datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'remove-all', ['upload', 'download']).then(settings => {
+        archiveInfo.userSettings.uploadClaims = settings.uploadClaims
+        archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+        render()
+      })
+    }
+  })
 }
 
 function onToggleServing () {
-  archiveInfo.userSettings.isServing = !archiveInfo.userSettings.isServing
+  // toggle the networking
+  datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', ['upload', 'download']).then(settings => {
+    archiveInfo.userSettings.uploadClaims = settings.uploadClaims
+    archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+    render()
 
-  // isSaved must reflect isServing
-  if (archiveInfo.userSettings.isServing && !archiveInfo.userSettings.isSaved)
-    archiveInfo.userSettings.isSaved = true
-
-  datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-  render()
+    // autosave if networked, but not saved
+    if (isNetworked(archiveInfo) && !isSaved(archiveInfo)) {
+      datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'add', 'save').then(settings => {
+        archiveInfo.userSettings.saveClaims = settings.saveClaims
+        render()
+      })
+    }
+  })
 }
 
 function onCopyLink () {
@@ -562,7 +575,7 @@ function onOpenInFinder () {
 function onClickFork (e) {
   // create fork modal
   currentForkModal = forkDatModal.create(archiveInfo, archiveEntriesTree, {
-    isDownloading: archiveInfo.userSettings.isServing,
+    isDownloading: isNetworked(archiveInfo),
     onClickDownload: onDownloadForkArchive,
     onSubmit: onSubmitForkArchive
   })
@@ -632,3 +645,10 @@ function onDownload (update) {
   }
 }
 
+function isSaved (archive) {
+  return archive.userSettings.saveClaims.length > 0
+}
+
+function isNetworked (archive) {
+  return archive.userSettings.uploadClaims.length > 0 || archive.userSettings.downloadClaims.length > 0
+}

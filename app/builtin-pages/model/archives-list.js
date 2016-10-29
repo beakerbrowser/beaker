@@ -55,10 +55,7 @@ export default class ArchivesList extends EventEmitter {
     var self = this
     return co(function * () {
       // fetch archives
-      self.archives = yield datInternalAPI.getSavedArchives()
-      if (filter) {
-        self.archives = self.archives.filter(filter)
-      }
+      self.archives = yield datInternalAPI.queryArchives(filter, { includeMeta: true })
       self.archives.sort(archiveSortFn)
       // fetch stats
       if (fetchStats) {

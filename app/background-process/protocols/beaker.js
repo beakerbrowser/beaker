@@ -93,7 +93,7 @@ function beakerServer (req, res) {
   }
 
   // builtin pages
-  for (let slug of ['start', 'archives', 'archive', 'history', 'downloads', 'settings']) {
+  for (let slug of ['start', 'apps', 'archives', 'archive', 'history', 'downloads', 'settings']) {
     if (requestUrl === `beaker:${slug}` || requestUrl.startsWith(`beaker:${slug}/`)) {
       return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages.html'))
     }

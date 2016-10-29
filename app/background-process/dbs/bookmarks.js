@@ -5,7 +5,7 @@ import url from 'url'
 import rpc from 'pauls-electron-rpc'
 import manifest from '../api-manifests/bookmarks'
 import { cbPromise } from '../../lib/functions'
-import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
+import { setupSqliteDB } from '../../lib/bg/db'
 
 // globals
 // =
@@ -20,7 +20,7 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'Bookmarks')
   db = new sqlite3.Database(dbPath)
-  setupPromise = setupDatabase2(db, migrations, '[BOOKMARKS]')
+  setupPromise = setupSqliteDB(db, migrations, '[BOOKMARKS]')
 
   // wire up RPC
   rpc.exportAPI('beakerBookmarks', manifest, { add, changeTitle, changeUrl, addVisit, remove, get, list })
@@ -84,11 +84,9 @@ migrations = [
         title
       );
       CREATE INDEX bookmarks_url ON bookmarks (url);
-      INSERT INTO bookmarks (title, url) VALUES ('Beaker Browser Homepage', 'https://github.com/pfrazee/beaker');
+      INSERT INTO bookmarks (title, url) VALUES ('Beaker Browser Homepage', 'https://beakerbrowser.com');
       INSERT INTO bookmarks (title, url) VALUES ('Dat Protocol', 'http://dat-data.com/');
-      INSERT INTO bookmarks (title, url) VALUES ('IPFS Protocol', 'https://ipfs.io');
       INSERT INTO bookmarks (title, url) VALUES ('DuckDuckGo (the default search engine)', 'https://duckduckgo.com');
-      INSERT INTO bookmarks (title, url) VALUES ('Some IPFS Links', 'ipfs:/ipfs/QmU5XsVwvJfTcCwqkK1SmTqDmXWSQWaTa7ZcVLY2PDxNxG/ipfs_links.html');
       PRAGMA user_version = 1;
     `, cb)
   },

@@ -16,10 +16,11 @@ export function render (archivesList, opts = {}) {
   var archiveEls = []
   archivesList.archives.forEach((archive, index) => {
     // if not saved but in this listing, then it was recently deleted
-    if (!archive.userSettings.isSaved) {
+    if (!archive.userSettings.saveClaims.length) {
       return numDeleted++
     }
     let title = archive.title || archive.key
+    let npeers = archive.peers || 0
 
     if (archive.isOwner) {
       // render owned archive
@@ -31,11 +32,10 @@ export function render (archivesList, opts = {}) {
             ${title}
           </a>
         </div>
-        <div class="ll-status">${archive.userSettings.isServing ? (archive.peers + ' ' + pluralize(archive.peers, 'peer')) : ''}</div>
         <div class="ll-updated" title=${mtime}>${mtime}</div>
         <div class="ll-size">${archive.size ? prettyBytes(archive.size) : '0 B'}</div>
-        <div class="ll-serve">${archive.userSettings.isServing 
-          ? yo`<a class="btn btn-primary glowing" onclick=${onToggleServeArchive(archive, rerender)} title="Sharing"><span class="icon icon-share"></span> Sharing</a>` 
+        <div class="ll-serve">${isNetworked(archive) 
+          ? yo`<a class="btn btn-primary glowing" onclick=${onToggleServeArchive(archive, rerender)} title="Sharing"><span class="icon icon-share"></span> ${npeers} ${pluralize(npeers, 'peer')}</a>` 
           : yo`<a class="btn" onclick=${onToggleServeArchive(archive, rerender)} title="Share"><span class="icon icon-share"></span> Share</a>` }</div>
         <div class="ll-dropdown">${toggleable(yo`
           <div class="dropdown-btn-container">
@@ -66,7 +66,7 @@ export function render (archivesList, opts = {}) {
           // fully downloaded
           progress = prettyBytes(archive.stats.bytesTotal)
         }
-        if (archive.userSettings.isServing) {
+        if (isNetworked(archive)) {
           let speed = archive.stats.downloadSpeed()
           status = (speed > 0) ? (prettyBytes(speed) + '/s') : 'Seeding'
         } else {
@@ -83,7 +83,7 @@ export function render (archivesList, opts = {}) {
         <div class="ll-status">${status}</div>
         <div class="ll-progress">${progress}</div>
         <div class="ll-progressbar"><progress value=${blocksProgress} max=${blocksTotal}></progress></div>
-        <div class="ll-serve">${archive.userSettings.isServing 
+        <div class="ll-serve">${isNetworked(archive) 
           ? yo`<a class="btn btn-primary glowing" onclick=${onToggleServeArchive(archive, rerender)} title="Syncing"><span class="icon icon-down-circled"></span> Syncing</a>` 
           : yo`<a class="btn" onclick=${onToggleServeArchive(archive, rerender)} title="Sync"><span class="icon icon-down-circled"></span> Sync</a>` }</div>
         <div class="ll-dropdown">${toggleable(yo`
@@ -124,16 +124,11 @@ function onToggleServeArchive (archiveInfo, render) {
   return e => {
     e.preventDefault()
     e.stopPropagation()
-
-    archiveInfo.userSettings.isServing = !archiveInfo.userSettings.isServing
-
-    // isSaved must reflect isServing
-    if (archiveInfo.userSettings.isServing && !archiveInfo.userSettings.isSaved) {
-      archiveInfo.userSettings.isSaved = true
-    }
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
-
-    render()
+    datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', ['upload', 'download']).then(settings => {
+      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
+      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+      render()
+    })
   }
 }
 
@@ -142,14 +137,10 @@ function onDeleteArchive (archiveInfo, render) {
     e.preventDefault()
     e.stopPropagation()
 
-    archiveInfo.userSettings.isSaved = !archiveInfo.userSettings.isSaved
-
-    // isServing must reflect isSaved
-    if (!archiveInfo.userSettings.isSaved && archiveInfo.userSettings.isServing) {
-      archiveInfo.userSettings.isServing = false
-    }
-
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
+    datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'remove-all', ['save', 'upload', 'download'])
+    archiveInfo.userSettings.saveClaims = []
+    archiveInfo.userSettings.uploadClaims = []
+    archiveInfo.userSettings.downloadClaims = []
     render()
   }
 }
@@ -160,11 +151,15 @@ function onUndoDeletions (archivesList, render) {
     e.stopPropagation()
 
     archivesList.archives.forEach(archiveInfo => {
-      if (!archiveInfo.userSettings.isSaved) {
-        archiveInfo.userSettings.isSaved = true
-        datInternalAPI.setArchiveUserSettings(archiveInfo.key, archiveInfo.userSettings)
+      if (archiveInfo.userSettings.saveClaims.length === 0) {
+        archiveInfo.userSettings.saveClaims = ['beaker:archives']
+        datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'add', 'save')
       }
     })
     render()
   }
+}
+
+function isNetworked (archive) {
+  return archive.userSettings.uploadClaims.length > 0 || archive.userSettings.downloadClaims.length > 0
 }

@@ -6,9 +6,10 @@ import co from 'co'
 
 var navItems = [
   { href: 'beaker:start', label: 'Favorites', icon: 'star' },
+  { href: 'beaker:apps', label: 'Apps', icon: 'window' },
   { href: 'beaker:archives', label: 'Files', icon: 'folder' },
-  { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
   { href: 'beaker:downloads', label: 'Downloads', icon: 'down-circled' },
+  { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
   { href: 'beaker:settings', label: 'Settings', icon: 'list' }
 ]
 
@@ -40,8 +41,6 @@ export function update () {
 
 function render () {
   return yo`<nav class="nav-group">
-    <img class="logo" src="beaker:logo">
-    <a class="btn" onclick=${onClickShareFiles}>Share Files</a>
     ${navItems.map(renderNavItem)}
   </nav>`
 }
@@ -54,8 +53,8 @@ function renderNavItem (item) {
   // render items
   var { href, label, icon } = item
   var isActive = window.location == href
-  return yo`<a class=${'nav-group-item' + (isActive?' active':'')} href=${href} onclick=${onClickNavItem(item)}>
-    <span class="icon icon-${icon}"></span> ${label}
+  return yo`<a class=${'nav-group-item' + (isActive?' active':'')} href=${href} title=${label} onclick=${onClickNavItem(item)}>
+    <span class="icon icon-${icon}"></span>
   </a>`
 }
 
@@ -65,8 +64,7 @@ function renderNavItem (item) {
 function onClickNavItem (item) {
   return e => {
     // ignore ctrl/cmd+click
-    if (e.metaKey)
-      return
+    if (e.metaKey) return
     e.preventDefault()
 
     if (window.location.protocol == 'beaker:' && item.href.startsWith('beaker:')) {
@@ -77,18 +75,4 @@ function onClickNavItem (item) {
       window.location = item.href
     }
   }
-}
-
-function onClickShareFiles (e) {
-  co(function* () {
-    var paths = yield beakerBrowser.showOpenDialog({
-      title: 'Choose a folder to import',
-      buttonLabel: 'Import',
-      properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
-    })
-    if (paths && paths.length) {
-      var key = yield datInternalAPI.createNewArchive({ importFiles: paths })
-      window.location = 'beaker:archive/' + key
-    }
-  })
 }

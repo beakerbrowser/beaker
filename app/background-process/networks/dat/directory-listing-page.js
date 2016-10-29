@@ -1,4 +1,6 @@
-import * as dat from './internal-api'
+import prettyBytes from 'pretty-bytes'
+import { pluralize } from '../../../lib/strings'
+import {readArchiveDirectory} from './helpers'
 
 const styles = `<style>
   .entry {
@@ -18,7 +20,7 @@ const styles = `<style>
 </style>`
 
 export default function renderDirectoryListingPage (archive, path, cb) {
-  dat.readArchiveDirectory(archive, path, (err, entries) => {
+  readArchiveDirectory(archive, path, (_, entries) => {
     // sort the listing
     var names = Object.keys(entries).sort((a, b) => {
       var ea = entries[a]
@@ -34,17 +36,23 @@ export default function renderDirectoryListingPage (archive, path, cb) {
     if (path !== '/' && path !== '') {
       updog = `<div class="entry updog"><a href="..">..</a></div>`
     }
-    // render
-    cb(styles + updog + names.map(name => {
+    // entries
+    var totalBytes = 0
+    var entries = names.map(name => {
       var entry = entries[name]
+      totalBytes += entry.length
       var url = safen(entry.name)
       if (!url.startsWith('/')) url = '/' + url // all urls should have a leading slash
       if (entry.type === 'directory' && !url.endsWith('/')) url += '/' // all dirs should have a trailing slash
       return `<div class="entry ${safen(entry.type)}"><a href="${url}">${safen(name)}</a></div>`
-    }).join(''))
+    }).join('')
+    // summary
+    var summary = `<div class="entry">${names.length} ${pluralize(names.length, 'file')}, ${prettyBytes(totalBytes)}</div>`
+    // render
+    cb(styles + updog + entries + summary)
   })
 }
 
 function safen (str) {
-  return str.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/&/g,'&amp;').replace(/"/g,'')
+  return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '')
 }

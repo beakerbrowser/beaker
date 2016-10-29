@@ -1,14 +1,14 @@
 export default {
-  getArchiveInfo: 'promise',
+  queryArchives: 'promise',
+  getArchiveDetails: 'promise',
   getArchiveStats: 'promise',
-  getSavedArchives: 'promise',
 
   resolveName: 'async',
 
   createNewArchive: 'promise',
   forkArchive: 'promise',
-  setArchiveUserSettings: 'promise',
   updateArchiveManifest: 'promise',
+  updateArchiveClaims: 'promise',
   writeArchiveFileFromPath: 'promise',
 
   swarm: 'sync',

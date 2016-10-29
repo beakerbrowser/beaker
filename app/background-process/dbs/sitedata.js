@@ -5,7 +5,7 @@ import url from 'url'
 import rpc from 'pauls-electron-rpc'
 import manifest from '../api-manifests/sitedata'
 import { cbPromise } from '../../lib/functions'
-import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
+import { setupSqliteDB } from '../../lib/bg/db'
 
 // globals
 // =
@@ -20,7 +20,7 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'SiteData')
   db = new sqlite3.Database(dbPath)
-  setupPromise = setupDatabase2(db, migrations, '[SITEDATA]')
+  setupPromise = setupSqliteDB(db, migrations, '[SITEDATA]')
 
   // wire up RPC
   rpc.exportAPI('beakerSitedata', manifest, { get, set })
@@ -29,8 +29,7 @@ export function setup () {
 export function set (url, key, value) {
   return setupPromise.then(v => cbPromise(cb => {
     var origin = extractOrigin(url)
-    if (!origin)
-      return cb()
+    if (!origin) return cb()
     db.run(`
       INSERT OR REPLACE
         INTO sitedata (origin, key, value)
@@ -42,11 +41,27 @@ export function set (url, key, value) {
 export function get (url, key) {
   return setupPromise.then(v => cbPromise(cb => {
     var origin = extractOrigin(url)
-    if (!origin)
-      return cb()
+    if (!origin) return cb()
     db.get(`SELECT value FROM sitedata WHERE origin = ? AND key = ?`, [origin, key], (err, res) => {
-      if (err)
-        return cb(err)
+      if (err) return cb(err)
+      cb(null, res && res.value)
+    })
+  }))
+}
+
+export function query (values) {
+  return setupPromise.then(v => cbPromise(cb => {
+    // massage query
+    if ('origin' in values) {
+      values.origin = extractOrigin(values.origin)
+    }
+
+    // run query 
+    const keys = Object.keys(values)
+    const where = keys.map(k => `${k} = ?`).join(' AND ')
+    const values = keys.map(k => values[k])
+    db.all(`SELECT * FROM sitedata WHERE ${where}`, values, (err, res) => {
+      if (err) return cb(err)
       cb(null, res && res.value)
     })
   }))
@@ -57,8 +72,7 @@ export function get (url, key) {
 
 function extractOrigin (originURL) {
   var urlp = url.parse(originURL)
-  if (!urlp || !urlp.host || !urlp.protocol)
-    return
+  if (!urlp || !urlp.host || !urlp.protocol) return
   return (urlp.protocol + urlp.host)
 }
 

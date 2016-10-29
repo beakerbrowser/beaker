@@ -11,7 +11,8 @@ import { ProtocolSetupError } from '../../lib/const'
 import datInternalAPIManifest from '../api-manifests/dat-internal'
 import datAPIManifest from '../api-manifests/dat'
 
-import * as dat from '../networks/dat/internal-api'
+import * as dat from '../networks/dat/dat'
+import { archiveCustomLookup } from '../networks/dat/helpers'
 import datWebAPI from '../networks/dat/web-api'
 import { resolveDatDNS } from '../networks/dns'
 import directoryListingPage from '../networks/dat/directory-listing-page'
@@ -71,7 +72,7 @@ export function setup () {
 
   // create the internal dat HTTP server
   var server = http.createServer(datServer)
-  listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => serverPort = port)
+  listenRandomPort(server, { host: '127.0.0.1' }, (_, port) => { serverPort = port })
 }
 
 function datServer (req, res) {
@@ -126,11 +127,7 @@ function datServer (req, res) {
     if (err) return cb(404, 'No DNS record found for ' + urlp.host)
 
     // start searching the network
-    var archive = dat.getArchive(archiveKey)
-    if (!archive) {
-      archive = dat.loadArchive(new Buffer(archiveKey, 'hex'))
-      dat.swarm(archiveKey)
-    }
+    var archive = dat.getOrLoadArchive(archiveKey)
 
     // declare a redirect helper
     var redirectToViewDat = once(hashOpt => {
@@ -199,7 +196,7 @@ function datServer (req, res) {
           if (name === filepath + '.htm') return true
         }
       }
-      dat.archiveCustomLookup(archive, checkMatch, entry => {
+      archiveCustomLookup(archive, checkMatch, entry => {
         // still serving?
         if (aborted) return cleanup()
 

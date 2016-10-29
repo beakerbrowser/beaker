@@ -9,11 +9,14 @@ import log from 'loglevel'
 import * as beakerBrowser from './background-process/browser'
 import * as plugins from './background-process/plugins'
 import * as webAPIs from './background-process/web-apis'
+
 import * as windows from './background-process/ui/windows'
 import buildWindowMenu from './background-process/ui/window-menu'
 import registerContextMenu from './background-process/ui/context-menu'
 import * as downloads from './background-process/ui/downloads'
 import * as permissions from './background-process/ui/permissions'
+
+import * as archives from './background-process/dbs/archives'
 import * as settings from './background-process/dbs/settings'
 import * as sitedata from './background-process/dbs/sitedata'
 import * as bookmarks from './background-process/dbs/bookmarks'
@@ -26,7 +29,7 @@ import * as datProtocol from './background-process/protocols/dat'
 import * as openURL from './background-process/open-url'
 
 // configure logging
-log.setLevel(process.env.beaker_log_level || 'warn')
+log.setLevel(process.env.beaker_log_level || 'info')
 
 // load the installed protocols
 plugins.registerStandardSchemes()
@@ -35,6 +38,7 @@ protocol.registerSecureSchemes(['dat'])
 
 app.on('ready', function () {
   // databases
+  archives.setup()
   settings.setup()
   sitedata.setup()
   bookmarks.setup()

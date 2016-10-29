@@ -1,20 +1,13 @@
-/*
-This uses the beakerDownloads API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
-*/
-
 import * as yo from 'yo-yo'
 import co from 'co'
 import ArchivesList from '../model/archives-list'
-import DownloadsList from '../model/downloads-list'
 import { render as renderArchivesList } from '../com/archives-list'
-import { render as renderDownloadsList } from '../com/downloads-list'
 
 // globals
 // =
 
-var isViewActive = false
 var archivesList
-var downloadsList
+var isViewActive = false
 
 // exported API
 // =
@@ -24,61 +17,58 @@ export function setup () {
 
 export function show () {
   isViewActive = true
-  document.title = 'Downloads'
-  co(function* () {
-    // fetch downloads
-    downloadsList = new DownloadsList()
-    yield downloadsList.setup()
-    downloadsList.on('changed', render)
-
-    // fetch archives
+  document.title = 'Applications'
+  co(function * () {
     archivesList = new ArchivesList()
     yield archivesList.setup({
-      filter: { isOwner: false, isSaved: true },
-      fetchStats: true
+      filter: { isOwner: true }
     })
     archivesList.on('changed', render)
-
-    // render
     render()
   })
 }
 
 export function hide () {
   isViewActive = false
-  downloadsList.destroy()
   archivesList.destroy()
-  downloadsList = null
   archivesList = null
 }
 
 // rendering
 // =
 
+
 function render () {
   if (!isViewActive) {
     return
   }
 
+  // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="downloads">
+    <div class="archives">
       <div class="ll-heading">
-        Archive Downloads
+        Installed Apps
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
       </div>
       ${renderArchivesList(archivesList, { renderEmpty, render })}
-      <div class="ll-heading">
-        File Downloads
-      </div>
-      ${renderDownloadsList(downloadsList)}
     </div>
   </div>`)
 }
 
 function renderEmpty () {
-  return yo`<div class="ll-empty">
-    Archives that you download will be saved here.
+  return yo`<div class="archives-empty">
+      <div class="archives-empty-banner">
+        <div class="icon icon-info-circled"></div>
+        <div>
+          Any Dat applications you install will appear here.
+          <a class="icon icon-popup" href="https://beakerbrowser.com/docs/" target="_blank"> Learn More</a>
+        </div>
+      </div>
+    </div>
   </div>`
 }
+
+// event handlers
+// =
