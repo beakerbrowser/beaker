@@ -5,7 +5,7 @@ import url from 'url'
 import rpc from 'pauls-electron-rpc'
 import manifest from '../api-manifests/sitedata'
 import { cbPromise } from '../../lib/functions'
-import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
+import { setupSqliteDB } from '../../lib/bg/db'
 
 // globals
 // =
@@ -20,7 +20,7 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'SiteData')
   db = new sqlite3.Database(dbPath)
-  setupPromise = setupDatabase2(db, migrations, '[SITEDATA]')
+  setupPromise = setupSqliteDB(db, migrations, '[SITEDATA]')
 
   // wire up RPC
   rpc.exportAPI('beakerSitedata', manifest, { get, set })

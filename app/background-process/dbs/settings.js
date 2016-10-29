@@ -2,7 +2,7 @@ import { app } from 'electron'
 import sqlite3 from 'sqlite3'
 import path from 'path'
 import { cbPromise } from '../../lib/functions'
-import { setupDatabase2 } from '../../lib/bg/sqlite-tools'
+import { setupSqliteDB } from '../../lib/bg/db'
 
 // globals
 // =
@@ -17,7 +17,7 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'Settings')
   db = new sqlite3.Database(dbPath)
-  setupPromise = setupDatabase2(db, migrations, '[SETTINGS]')
+  setupPromise = setupSqliteDB(db, migrations, '[SETTINGS]')
 }
 
 export function set (key, value) {
