@@ -251,14 +251,16 @@ function renderHeading () {
   var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
   var openFolderBtn = yo`<a id="open-in-finder-btn" onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
   var forkBtn = yo`<a id="fork-btn" title="Fork Archive" onclick=${onClickFork}><span class="icon icon-flow-branch"></span> Fork Archive</a>`
-  var deleteArchiveBtn = yo`<a id="delete-btn" title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
+  var toggleSavedBtn = isSaved(archiveInfo)
+    ? yo`<a id="delete-btn" title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
+    : yo`<a id="save-btn" title="Save Archive" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Save Archive</a>`
   var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
     <a class="toggleable btn"><span class="icon icon-down-open"></span></a>
     <div class="dropdown-btn-list">
       ${openFolderBtn}
       ${forkBtn}
       <hr />
-      ${deleteArchiveBtn}
+      ${toggleSavedBtn}
     </div>
   </div>`)
 
@@ -270,7 +272,7 @@ function renderHeading () {
       // owner's heading
       return yo`<div class="ll-heading">
         <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
-        ${name}
+        <span class="archive-name">${name}</span>
         <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
         <span class="btn-group">${copyLinkBtn}</span>
         ${dropdownBtn}
@@ -291,7 +293,7 @@ function renderHeading () {
     // deleted owner's heading
     return yo`<div class="ll-heading">
       <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
-      ${name}
+      <span class="archive-name">${name}</span>
       <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
       ${undoDeleteBtn}
       <small class="ll-heading-right">
@@ -306,7 +308,7 @@ function renderHeading () {
     ${ (isSaved(archiveInfo))
       ? yo`<a href="beaker:downloads" onclick=${pushUrl}>Downloads <span class="icon icon-right-open"></span></a>`
       : '' }
-    ${name}
+    <span class="archive-name">${name}</span>
     <small id="owner-label">read-only</small>
     <span class="btn-group">${copyLinkBtn}</span>
     ${dropdownBtn}
