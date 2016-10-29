@@ -9,14 +9,11 @@ import concat from 'concat-stream'
 import pump from 'pump'
 import Events from 'events'
 import { cbPromise } from '../../lib/functions'
+import { setupLevelDB, makeTxLock } from '../../lib/bg/db'
+import { transform, noopWritable } from '../../lib/streams'
 import { bufToStr } from '../networks/dat/helpers'
 import { DAT_HASH_REGEX } from '../../lib/const'
-
-//
-// TODO locks
-// TODO migrations
-//
-
+import { getOrLoadArchive } from '../networks/dat/dat'
 
 // globals
 // =
@@ -27,6 +24,9 @@ var events = new Events()
 var archiveMetaDb // archive metadata sublevel
 var archiveUserSettingsDb // archive user-settings sublevel
 var globalSettingsDb // global settings sublevel
+var migrations
+var setupPromise
+var archiveUserSettingsTxLock = makeTxLock()
 
 // exported methods
 // =
@@ -39,6 +39,7 @@ export function setup () {
   archiveMetaDb = subleveldown(db, 'archive-meta', { valueEncoding: 'json' })
   archiveUserSettingsDb = subleveldown(db, 'archive-user-settings', { valueEncoding: 'json' })
   globalSettingsDb = subleveldown(db, 'global-settings', { valueEncoding: 'json' })
+  setupPromise = setupLevelDB(db, migrations, '[DAT ARCHIVES]')
 }
 
 // get the leveldb instance
@@ -70,7 +71,7 @@ export const removeListener = events.removeListener.bind(events)
 export function queryArchiveUserSettings (query, opts) {
   query = query || {}
   opts = opts || {}
-  return new Promise((resolve, reject) => {
+  return setupPromise.then(() => new Promise((resolve, reject) => {
     // read the stream
     pump(
       archiveUserSettingsDb.createReadStream(),
@@ -78,7 +79,7 @@ export function queryArchiveUserSettings (query, opts) {
       concat({ encoding: 'objects' }, objs => resolve(objs)),
       err => { if (err) { reject(err) } }
     )
-  })
+  }))
 }
 
 class QueryArchiveUserSettingsTransform extends Transform {
@@ -133,9 +134,9 @@ export function getArchiveUserSettings (key) {
   if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
 
   // fetch
-  return new Promise((resolve, reject) => {
+  return setupPromise.then(() => new Promise((resolve, reject) => {
     archiveUserSettingsDb.get(key, (_, meta) => resolve(archiveUserSettingsObject(key, meta)))
-  })
+  }))
 }
 
 // write an archive's user setting
@@ -146,18 +147,21 @@ export function setArchiveUserSettings (key, value = {}) {
   // validate inputs
   if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
 
-  return cbPromise(cb => {
-    // extract the desired values
-    var { saveClaims, downloadClaims, uploadClaims } = value
-    value = { saveClaims, downloadClaims, uploadClaims }
+  return setupPromise.then(() => cbPromise(cb => {
+    archiveUserSettingsTxLock(endTx => {
+      // extract the desired values
+      var { saveClaims, downloadClaims, uploadClaims } = value
+      value = { saveClaims, downloadClaims, uploadClaims }
 
-    // write
-    archiveUserSettingsDb.put(key, value, err => {
-      if (err) return cb(err)
-      events.emit('update:archive-user-settings', key, value)
-      cb(null, value)
+      // write
+      archiveUserSettingsDb.put(key, value, err => {
+        endTx()
+        if (err) return cb(err)
+        events.emit('update:archive-user-settings', key, value)
+        cb(null, value)
+      })
     })
-  })
+  }))
 }
 
 // add/remove a claim to the archive
@@ -177,29 +181,45 @@ export function updateArchiveClaims (key, origin, op, claims) {
   if (!origin) return Promise.reject(new Error('Invalid origin'))
   if (['add', 'remove', 'remove-all', 'toggle-all'].includes(op) === false) return Promise.reject(new Error('Invalid op'))
 
-  // fetch settings
-  return getArchiveUserSettings(key).then(archiveUserSettings => {
-    // update the claims
-    claims.forEach(claimKey => {
-      var claim = archiveUserSettings[claimKey + 'Claims']
-      if (!claim) return
+  return setupPromise.then(() => cbPromise(cb => {
+    // start lock
+    archiveUserSettingsTxLock(endTx => {
+      // fetch settings
+      archiveUserSettingsDb.get(key, (_, value) => {
+        value = archiveUserSettingsObject(key, value)
 
-      if (op === 'add') {
-        if (!claim.includes(origin)) claim.push(origin)
-      } else if (op === 'remove') {
-        let index = claim.indexOf(origin)
-        if (index !== -1) claim.splice(index, 1)
-      } else if (op === 'remove-all') {
-        archiveUserSettings[claimKey + 'Claims'] = []
-      } else if (op === 'toggle-all') {
-        if (claim.length > 0) archiveUserSettings[claimKey + 'Claims'] = []
-        else archiveUserSettings[claimKey + 'Claims'] = [origin]
-      }
+        // update the claims
+        claims.forEach(claimKey => {
+          var claim = value[claimKey + 'Claims']
+          if (!claim) return
+
+          if (op === 'add') {
+            if (!claim.includes(origin)) claim.push(origin)
+          } else if (op === 'remove') {
+            let index = claim.indexOf(origin)
+            if (index !== -1) claim.splice(index, 1)
+          } else if (op === 'remove-all') {
+            value[claimKey + 'Claims'] = []
+          } else if (op === 'toggle-all') {
+            if (claim.length > 0) value[claimKey + 'Claims'] = []
+            else value[claimKey + 'Claims'] = [origin]
+          }
+        })
+
+        // extract the desired values
+        var { saveClaims, downloadClaims, uploadClaims } = value
+        value = { saveClaims, downloadClaims, uploadClaims }
+
+        // write
+        archiveUserSettingsDb.put(key, value, err => {
+          endTx()
+          if (err) return cb(err)
+          events.emit('update:archive-user-settings', key, value)
+          cb(null, value)
+        })
+      })
     })
-
-    // write
-    return setArchiveUserSettings(key, archiveUserSettings)
-  })
+  }))
 }
 
 // exported methods: archive meta
@@ -215,9 +235,9 @@ export function getArchiveMeta (key) {
   if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
 
   // fetch
-  return new Promise((resolve, reject) => {
+  return setupPromise.then(() => new Promise((resolve, reject) => {
     archiveMetaDb.get(key, (_, meta) => resolve(archiveMetaObject(key, meta)))
-  })
+  }))
 }
 
 // write an archive's metadata
@@ -228,7 +248,7 @@ export function setArchiveMeta (key, value = {}) {
   // validate inputs
   if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
 
-  return cbPromise(cb => {
+  return setupPromise.then(() => cbPromise(cb => {
     // extract the desired values
     var { title, description, author, mtime, size, isOwner } = value
     value = { title, description, author, mtime, size, isOwner }
@@ -239,7 +259,7 @@ export function setArchiveMeta (key, value = {}) {
       events.emit('update:archive-meta', key, value)
       cb()
     })
-  })
+  }))
 }
 
 // exported methods: global settings
@@ -247,19 +267,19 @@ export function setArchiveMeta (key, value = {}) {
 
 // read a global setting
 export function getGlobalSetting (key) {
-  return cbPromise(cb => globalSettingsDb.get(key, cb))
+  return setupPromise.then(() => cbPromise(cb => globalSettingsDb.get(key, cb)))
 }
 
 // write a global setting
 export function setGlobalSetting (key, value = {}) {
-  return cbPromise(cb => {
+  return setupPromise.then(() => cbPromise(cb => {
     globalSettingsDb.put(key, value, err => {
       if (err) return cb(err)
       events.emit('update:global-setting', key, value)
       events.emit('update:global-setting:' + key, value)
       cb()
     })
-  })
+  }))
 }
 
 // internal methods
@@ -312,3 +332,33 @@ function isTruthyArray (v) {
 function arrayIncludes (v, e) {
   return isTruthyArray(v) && v.includes(e)
 }
+
+migrations = [
+  // version 1
+  function (cb) {
+    // noop
+    db.put('version', 1, cb)
+  },
+  // version 2
+  function (cb) {
+    // migrate all saved archives to use saveClaims
+    pump(
+      archiveUserSettingsDb.createReadStream(),
+      transform((chunk, cb) => {
+        // look for archives saved with the old schema
+        if (!chunk.value.isSaved || chunk.value.saveClaims) return cb() // noop
+        // update the user settings to the new format
+        chunk.value.saveClaims = ['beaker:archives']
+        archiveUserSettingsDb.put(chunk.key, chunk.value, cb)
+        // trigger an update to the meta as well
+        getOrLoadArchive(chunk.key).pullLatestArchiveMeta()
+      }),
+      noopWritable(),
+      err => {
+        if (err) cb(err)
+        // done
+        db.put('version', 2, cb)
+      }
+    )
+  }
+]

@@ -1,13 +1,6 @@
 # archives dbs
 
 These dbs are leveldbs.
-Each has a `_dbmeta` key with the following values:
-
-```
-{
-  version: Number
-}
-```
 
 
 ## archive-meta schema

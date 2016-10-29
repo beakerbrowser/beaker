@@ -29,7 +29,7 @@ import * as datProtocol from './background-process/protocols/dat'
 import * as openURL from './background-process/open-url'
 
 // configure logging
-log.setLevel(process.env.beaker_log_level || 'warn')
+log.setLevel(process.env.beaker_log_level || 'info')
 
 // load the installed protocols
 plugins.registerStandardSchemes()
