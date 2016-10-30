@@ -18,13 +18,13 @@
     // the arrow
     content: '';
     position: absolute;
-    top: -6px;
-    left: 184px;
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-bottom: 10px solid #fff;
+    top: -4px;
+    left: 189px;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    box-shadow: -1px -1px 1px rgba(0,0,0,.15);
+    transform: rotateZ(45deg);
   }
 }
 
@@ -93,22 +93,18 @@
   }
 }
 
-.toolbar-site-perms {
+.toolbar-site-info {
   position: relative;
-
-  & + input {
-    padding-left: 4px !important;
-  }
 }
 
-.toolbar-site-perms-dropdown {
+.toolbar-site-info-dropdown {
   width: 350px;
   left: -30px;
   padding: 0;
   font-size: 14px;
 
   &:before {
-    left: 50px;
+    left: 40px;
   }
 
   .perms {

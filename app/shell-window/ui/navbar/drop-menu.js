@@ -97,7 +97,7 @@ export class DropMenuNavbarBtn {
       })
       dropdownEl = yo`<div class="toolbar-dropdown toolbar-drop-menu-dropdown">
         ${pageSpecificEls}        
-        <div class="td-item" onclick=${e => this.onOpenDownloads(e)}>Downloads</div>
+        <div class="td-item" onclick=${e => this.onOpenDownloads(e)}>View Downloads</div>
         ${downloadEls.length ? yo`<hr />` : ''}
         ${downloadEls}
       </div>`
