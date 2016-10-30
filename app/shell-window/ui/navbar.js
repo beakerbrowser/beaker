@@ -5,7 +5,7 @@ import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
 import { UpdatesNavbarBtn } from './navbar/updates'
 import { DropMenuNavbarBtn } from './navbar/drop-menu'
-import { SitePermsNavbarBtn } from './navbar/site-perms'
+import { SiteInfoNavbarBtn } from './navbar/site-info'
 
 const KEYCODE_DOWN = 40
 const KEYCODE_UP = 38
@@ -22,7 +22,7 @@ const isHashRegex = /^[a-z0-9]{64}/i
 var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
 var dropMenuNavbarBtn = null
-var sitePermsNavbarBtn = null
+var siteInfoNavbarBtn = null
 
 // autocomplete data
 var autocompleteCurrentValue = null
@@ -36,7 +36,7 @@ export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
   dropMenuNavbarBtn = new DropMenuNavbarBtn()
-  sitePermsNavbarBtn = new SitePermsNavbarBtn()
+  siteInfoNavbarBtn = new SiteInfoNavbarBtn()
 }
 
 export function createEl (id) {
@@ -220,16 +220,10 @@ function render (id, page) {
   var addrEl = page && page.navbarEl.querySelector('.nav-location-input')
   var addrValue = addrEl ? addrEl.value : ''
 
-  // the sublocation
-  var sublocationTitle = ''
-  if (page && page.sublocation) {
-    sublocationTitle = yo`<button class="sublocation-title">
-      ${page.sublocation.title}
-    </button>`
-  }
-
   // setup site-perms dropdown
-  sitePermsNavbarBtn.protocolDescription = (page && page.protocolDescription)
+  siteInfoNavbarBtn.protocolInfo = (page && page.protocolInfo)
+  siteInfoNavbarBtn.siteInfo = (page && page.siteInfo)
+  siteInfoNavbarBtn.siteInfoOverride = (page && page.siteInfoOverride)
 
   // the main URL input
   var locationInput = yo`
@@ -255,8 +249,7 @@ function render (id, page) {
       ${reloadBtn}      
     </div>
     <div class="toolbar-input-group">
-      ${sitePermsNavbarBtn.render()}
-      ${sublocationTitle}
+      ${siteInfoNavbarBtn.render()}
       ${locationInput}
       <span class="charms">
         ${liveReloadBtn}

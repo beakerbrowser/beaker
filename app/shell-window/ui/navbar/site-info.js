@@ -1,14 +1,12 @@
 import * as yo from 'yo-yo'
 
-export class SitePermsNavbarBtn {
+export class SiteInfoNavbarBtn {
   constructor() {
     this.isDropdownOpen = false
-    this.protocolDescription = false
+    this.protocolInfo = false
   }
 
   render() {
-    if (!this.protocolDescription || this.protocolDescription.scheme === 'beaker:') return
-
     // render the dropdown if open
     var dropdownEl = ''
     if (this.isDropdownOpen) {
@@ -24,20 +22,36 @@ export class SitePermsNavbarBtn {
       </div>`
     }
 
-    // render btn
-    var icon = ''
-    var label = ''
-    if (this.protocolDescription.scheme === 'https:') {
-      icon = 'lock'
-    } else if (this.protocolDescription.scheme === 'http:') {
-      icon = 'window'
-    } else if (['dat:', 'ipfs:'].indexOf(this.protocolDescription.scheme) != -1) {
-      icon = 'share'
+    // title
+    var title = ''
+    if (this.siteInfoOverride && this.siteInfoOverride.title) {
+      title = yo`<span class="title">
+        ${this.siteInfoOverride.title}
+      </span>`
+    } else if (this.siteInfo && this.siteInfo.title) {
+      title = yo`<span class="title">
+        ${this.siteInfo.title}
+      </span>`
     }
-    return yo`<div class="toolbar-site-perms">
-      <button class="green">
-        <span class="icon icon-${icon}"></span> <small>${label}</small>
-      </button>
+
+    // icon
+    var icon = ''
+    if (this.protocolInfo) {
+      if (['https:', 'beaker:'].includes(this.protocolInfo.scheme)) {
+        icon = 'lock'
+      } else if (this.protocolInfo.scheme === 'http:') {
+        icon = 'info-circled'
+      } else if (['dat:', 'ipfs:'].indexOf(this.protocolInfo.scheme) != -1) {
+        icon = 'share'
+      }
+      if (icon) {
+        icon = yo`<span class="icon icon-${icon}"></span>`
+      }
+    }
+
+    // render
+    return yo`<div class="toolbar-site-info">
+      <button>${icon} ${title}</button>
       ${dropdownEl}
     </div>`
   }

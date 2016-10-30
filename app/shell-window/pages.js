@@ -75,7 +75,11 @@ export function create (opts) {
     zoom: 0, // what's the current zoom level?
     favicons: null, // what are the favicons of the page?
     faviconDominantColor: null, // what's the computed dominant color of favicon?
-    archiveInfo: null, // if a dat archive, includes the metadata
+
+    // current site's info
+    protocolInfo: null, // info about the current page's delivery protocol
+    siteInfo: null, // metadata about the current page, derived from protocol knowledge
+    siteInfoOverride: null, // explicit overrides on the siteinfo, used by beaker: pages
 
     // history
     lastVisitedAt: 0, // when is last time url updated?
@@ -84,9 +88,6 @@ export function create (opts) {
     // prompts
     prompts: [], // list of active prompts (perms)
 
-    // sublocation
-    sublocation: null, // an object, { title: string, value: string }. null if none is set.
-
     // tab state
     isPinned: opts.isPinned, // is this page pinned?
     isTabDragging: false, // being dragged?
@@ -94,10 +95,12 @@ export function create (opts) {
 
     // get the URL of the page we want to load (vs which is currently loaded)
     getIntendedURL: function () {
-      if (page.sublocation && page.sublocation.value) {
-        return page.sublocation.value // sublocation override
+      var url = page.loadingURL || page.getURL()
+      if (url.startsWith('beaker:') && page.siteInfoOverride && page.siteInfoOverride.url) {
+        // override, only if on a builtin beaker site
+        url = page.siteInfoOverride.url
       }
-      return page.loadingURL || page.getURL()
+      return url
     },
 
     // custom isLoading
@@ -109,7 +112,7 @@ export function create (opts) {
     loadURL: function (url, opts) {
       // reset some state
       page.isReceivingAssets = false
-      page.sublocation = null
+      page.siteInfoOverride = null
 
       // set and go
       page.loadingURL = url
@@ -447,7 +450,7 @@ function onWillNavigate (e) {
     page.isReceivingAssets = false
     // update target url
     page.loadingURL = e.url
-    page.sublocation = null
+    page.siteInfoOverride = null
     navbar.updateLocation(page)
   }
 }
@@ -502,9 +505,17 @@ function onDidStopLoading (e) {
     // update history
     updateHistory(page)
 
-    // fetch protocol info
-    var scheme = parseURL(url).protocol
-    page.protocolDescription = { scheme, label: scheme.slice(0,-1).toUpperCase() }
+    // fetch protocol and page info
+    var { protocol, hostname } = parseURL(url)
+    page.siteInfo = null
+    page.protocolInfo = { scheme: protocol, label: protocol.slice(0,-1).toUpperCase() }
+    if (protocol === 'dat:') {
+      datInternalAPI.getArchiveDetails(hostname).then(info => {
+        page.siteInfo = info
+        console.log(info)
+        navbar.update(page)
+      })
+    }
 
     // update page
     page.loadingURL = false
@@ -565,7 +576,7 @@ function onDidGetResponseDetails (e) {
     page.isReceivingAssets = true
     // set URL in navbar
     page.loadingURL = e.newURL
-    page.sublocation = null
+    page.siteInfoOverride = null
     navbar.updateLocation(page)
   }
 }
@@ -654,8 +665,8 @@ function onIPCMessage (e) {
   var page = getByWebview(e.target)
   if (!page) return
   switch (e.channel) {
-    case 'sublocation:set': page.sublocation = e.args[0]; navbar.updateLocation(page); navbar.update(page); break
-    case 'sublocation:clear': page.sublocation = null; navbar.updateLocation(page); navbar.update(page); break
+    case 'site-info-override:set': page.siteInfoOverride = e.args[0]; navbar.updateLocation(page); navbar.update(page); break
+    case 'site-info-override:clear': page.siteInfoOverride = null; navbar.updateLocation(page); navbar.update(page); break
   }
 }
 

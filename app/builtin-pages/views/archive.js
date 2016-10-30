@@ -67,7 +67,7 @@ export function show (isSameView) {
   if (isSameView && archiveKey === parseKeyFromURL()) {
     // just adjust current view
     setCurrentNodeByPath()
-    setWindowSublocation()
+    setSiteInfoOverride()
     render()
     return
   }
@@ -101,7 +101,7 @@ export function show (isSameView) {
 
   co(function * () {
     try {
-      setWindowSublocation()
+      setSiteInfoOverride()
       document.title = 'Loading...'
       render() // render loading state
       yield fetchArchiveInfo()
@@ -140,7 +140,7 @@ export function hide (isSameView) {
     return
   }
   isViewActive = false
-  window.locationbar.clearSublocation()
+  window.locationbar.clearSiteInfoOverride()
   archiveKey = null
   archiveInfo = null
   archiveEntriesTree = null
@@ -386,7 +386,7 @@ function parseKeyFromURL () {
 const fetchArchiveInfo = throttle(cb => {
   return co(function * () {
     // run request
-    archiveInfo = yield datInternalAPI.getArchiveDetails(archiveKey)
+    archiveInfo = yield datInternalAPI.getArchiveDetails(archiveKey, { readme: true, entries: true })
     if (archiveInfo) {
       archiveEntriesTree = entriesListToTree(archiveInfo)
       calculateTreeSizeAndProgress(archiveInfo, archiveEntriesTree)
@@ -402,12 +402,12 @@ const fetchArchiveInfo = throttle(cb => {
   })
 }, 1e3)
 
-// set the sublocation in the window
-function setWindowSublocation () {
+// override the site info in the navbar
+function setSiteInfoOverride () {
   var subpath = window.location.pathname.split('/').slice(2).join('/') // drop 'archive/{name}', take the rest
-  window.locationbar.setSublocation({
+  window.locationbar.setSiteInfoOverride({
     title: 'Dat Viewer',
-    value: 'dat://' + archiveKey + '/' + subpath
+    url: 'dat://' + archiveKey + '/' + subpath
   })
 }
 
