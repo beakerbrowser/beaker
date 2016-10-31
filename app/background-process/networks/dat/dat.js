@@ -253,7 +253,7 @@ export function getArchiveDetails (name, opts = {}) {
         meta.userSettings = userSettings
         meta.entries = entries
         meta.readme = readme
-        meta.contentBitfield = archive.content.bitfield.buffer
+        if (opts.contentBitfield) meta.contentBitfield = archive.content.bitfield.buffer
         meta.peers = archive.metadata.peers.length
         resolve(meta)
       })

@@ -386,7 +386,7 @@ function parseKeyFromURL () {
 const fetchArchiveInfo = throttle(cb => {
   return co(function * () {
     // run request
-    archiveInfo = yield datInternalAPI.getArchiveDetails(archiveKey, { readme: true, entries: true })
+    archiveInfo = yield datInternalAPI.getArchiveDetails(archiveKey, { readme: true, entries: true, contentBitfield: true })
     if (archiveInfo) {
       archiveEntriesTree = entriesListToTree(archiveInfo)
       calculateTreeSizeAndProgress(archiveInfo, archiveEntriesTree)

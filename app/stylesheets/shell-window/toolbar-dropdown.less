@@ -104,22 +104,57 @@
   font-size: 14px;
 
   &:before {
-    left: 40px;
+    left: 39px;
+  }
+
+  .details {
+    padding: 12px 20px;
+
+    & > div {
+      margin: 6px 0;
+    }
+
+    .details-title {
+      display: flex;
+      & > :last-child {
+        flex: 1;
+        padding-left: 5px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+    }
+
+    a {
+      margin-right: 5px;
+    }
+
+    .btn {
+      padding: 0px 5px;
+    }
   }
 
   .perms {
-    padding: 14px 20px;
+    font-size: 13px;
+    background: #fafafa;
     div {
-      margin: 15px 0;
+      border-top: 1px solid #eee;
+    }
+    label {
+      display: block;
+      padding: 10px;
+      margin: 0;
+      &.checked {
+        background: #fff;
+      }
+    }
+    input {
+      margin-right: 4px;
     }
     .icon {
       width: 15px;
       text-align: center;
       display: inline-block;
-    }
-    a {
-      display: inline-block;
-      margin-left: 5px;
+      margin-right: 2px;
     }
   }
 }

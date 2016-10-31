@@ -508,11 +508,10 @@ function onDidStopLoading (e) {
     // fetch protocol and page info
     var { protocol, hostname } = parseURL(url)
     page.siteInfo = null
-    page.protocolInfo = { scheme: protocol, label: protocol.slice(0,-1).toUpperCase() }
+    page.protocolInfo = { url, hostname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase() }
     if (protocol === 'dat:') {
       datInternalAPI.getArchiveDetails(hostname).then(info => {
         page.siteInfo = info
-        console.log(info)
         navbar.update(page)
       })
     }
