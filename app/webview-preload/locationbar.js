@@ -4,18 +4,18 @@ import { ipcRenderer } from 'electron'
 // =
 
 export function setup () {
-  // attach sublocation methods
+  // attach site info override methods
   // TODO for now, only allow on beaker sites -prf
   if (window.location.protocol === 'beaker:') {
-    window.locationbar.setSublocation = setSublocation
-    window.locationbar.clearSublocation = clearSublocation
+    window.locationbar.setSiteInfoOverride = setSiteInfoOverride
+    window.locationbar.clearSiteInfoOverride = clearSiteInfoOverride
   }
 }
 
-function setSublocation ({ title, value }) {
-  ipcRenderer.sendToHost('sublocation:set', { title, value })
+function setSiteInfoOverride ({ title, url }) {
+  ipcRenderer.sendToHost('site-info-override:set', { title, url })
 }
 
-function clearSublocation () {
-  ipcRenderer.sendToHost('sublocation:clear')
+function clearSiteInfoOverride () {
+  ipcRenderer.sendToHost('site-info-override:clear')
 }

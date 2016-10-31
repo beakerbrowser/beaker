@@ -34,8 +34,8 @@ export function setup () {
     var url = request.url.slice('beaker-favicon:'.length)
 
     // special case
-    if (url == 'beaker')
-      return cb(logoBuffer)
+    if (url === 'beaker' || url.startsWith('beaker:'))
+      return cb({ mimeType: 'image/png', data: logoBuffer })
 
     // look up in db
     sitedata.get(url, 'favicon').then(data => {
@@ -44,10 +44,10 @@ export function setup () {
         // so, skip the beginning and pull out the data
         data = data.split(',')[1]
         if (data)
-          return cb(new Buffer(data, 'base64'))
+          return cb({ mimeType: 'image/png', data: new Buffer(data, 'base64') })
       }
-      cb(defaultFaviconBuffer)
-    }).catch(err => cb(defaultFaviconBuffer))
+      cb({ mimeType: 'image/png', data: defaultFaviconBuffer })
+    }).catch(err => cb({ mimeType: 'image/png', data: defaultFaviconBuffer }))
   }, e => {
     if (e)
       console.error('Failed to register beaker-favicon protocol', e)

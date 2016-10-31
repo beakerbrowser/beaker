@@ -1,7 +1,6 @@
 import EE from 'events'
 import * as sidenavUI from './builtin-pages/com/sidenav'
 import * as favorites from './builtin-pages/views/favorites'
-import * as apps from './builtin-pages/views/apps'
 import * as archives from './builtin-pages/views/archives'
 import * as archive from './builtin-pages/views/archive'
 import * as history from './builtin-pages/views/history'
@@ -33,7 +32,7 @@ window.history.replaceState = _wr('replaceState')
 // globals
 // =
 
-var views = { start: favorites, apps, archives, archive, history, downloads, settings }
+var views = { start: favorites, archives, archive, history, downloads, settings }
 var currentView = getLocationView()
 
 // setup

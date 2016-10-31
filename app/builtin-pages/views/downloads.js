@@ -63,7 +63,7 @@ function render () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="downloads">
       <div class="ll-heading">
-        Archive Downloads
+        Saved Archives
         <small class="ll-heading-right">
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>

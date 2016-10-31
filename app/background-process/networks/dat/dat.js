@@ -230,7 +230,7 @@ export function queryArchives (query) {
   })
 }
 
-export function getArchiveDetails (name) {
+export function getArchiveDetails (name, opts = {}) {
   return new Promise((resolve, reject) => {
     resolveDatDNS(name, (err, key) => {
       if (err) return reject(new Error(err.code || err))
@@ -244,8 +244,8 @@ export function getArchiveDetails (name) {
       archivesDb.getArchiveMeta(key).then(meta => metaCB(null, meta))
       var userSettingsCB = done()
       archivesDb.getArchiveUserSettings(key).then(settings => userSettingsCB(null, settings))
-      archive.list(done())
-      readReadme(archive, done())
+      if (opts.entries) archive.list(done())
+      if (opts.readme) readReadme(archive, done())
       done((err, meta, userSettings, entries, readme) => {
         if (err) return reject(err)
 
@@ -253,7 +253,7 @@ export function getArchiveDetails (name) {
         meta.userSettings = userSettings
         meta.entries = entries
         meta.readme = readme
-        meta.contentBitfield = archive.content.bitfield.buffer
+        if (opts.contentBitfield) meta.contentBitfield = archive.content.bitfield.buffer
         meta.peers = archive.metadata.peers.length
         resolve(meta)
       })
