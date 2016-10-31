@@ -40,6 +40,19 @@ export function writeArchiveFile (archive, name, data, cb) {
   )
 }
 
+// helper to lookup file metadata from an archive
+export function statArchiveFile (archive, name, cb) {
+  name = normalizedEntryName({ name })
+  archiveCustomLookup(
+    archive,
+    (entry, entryName) => entryName === name,
+    entry => {
+      if (!entry) cb({ notFound: true })
+      else cb(null, entry)
+    }
+  )
+}
+
 // helper to pull file data from an archive
 export function readArchiveFile (archive, name, opts, cb) {
   if (typeof opts === 'function') {
@@ -50,11 +63,8 @@ export function readArchiveFile (archive, name, opts, cb) {
     opts = { encoding: opts }
   }
   opts.encoding = toValidEncoding(opts.encoding)
-  name = normalizedEntryName({ name })
-  archiveCustomLookup(
-    archive,
-    (entry, entryName) => entryName === name,
-    entry => {
+  statArchiveFile(archive, name, (err, entry) => {
+      if (err) return cb(err)
       if (!entry || entry.type !== 'file') {
         return cb({ notFound: true })
       }

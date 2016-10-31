@@ -1,7 +1,7 @@
 import co from 'co'
 import { parse as parseURL } from 'url'
 import * as dat from './dat'
-import { readArchiveFile, readArchiveDirectory } from './helpers'
+import { statArchiveFile, readArchiveFile, readArchiveDirectory } from './helpers'
 import log from 'loglevel'
 import { DAT_HASH_REGEX, PermissionsError, InvalidURLError, FileNotFoundError, FileReadError } from '../../../lib/const'
 
@@ -9,17 +9,34 @@ import { DAT_HASH_REGEX, PermissionsError, InvalidURLError, FileNotFoundError, F
 // =
 
 export default {
-  createArchive: m('datWrite', function * () {
+  createArchive: m(function * () {
     throw new Error('not yet implemented') // TODO
   }, { noLookupArchive: true }),
 
   stat: m(function * (url, opts = {}) {
-    // var { archive, path } = lookupArchive(url)
-    throw new Error('not yet implemented') // TODO
+    // TODO versions
+    // TODO timeout
+    // TODO downloadedBlocks
+    var { archive, path } = lookupArchive(url)
+    return new Promise((resolve, reject) => {
+      // read the stat
+      statArchiveFile(archive, path, (err, data) => {
+        if (err) {
+          // error handling
+          if (err.notFound) {
+            return reject(new FileNotFoundError('File not found'))
+          }
+          log.error('Failed to read archive entry', err)
+          return reject(new FileReadError())
+        }
+        resolve(data)
+      })
+    })
   }),
 
   readFile: m(function * (url, opts = {}) {
     // TODO versions
+    // TODO timeout
     var { archive, path } = lookupArchive(url)
     return new Promise((resolve, reject) => {
       // read the file into memory
@@ -37,12 +54,12 @@ export default {
     })
   }),
 
-  writeFile: m('datWrite', function * (url, data, opts = {}) {
+  writeFile: m(function * (url, data, opts = {}) {
     // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
-  deleteFile: m('datWrite', function * (url) {
+  deleteFile: m(function * (url) {
     // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
@@ -58,12 +75,12 @@ export default {
     })
   }),
 
-  createDirectory: m('datWrite', function * (url) {
+  createDirectory: m(function * (url) {
     // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
-  deleteDirectory: m('datWrite', function * (url) {
+  deleteDirectory: m(function * (url) {
     // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
@@ -78,17 +95,17 @@ export default {
     throw new Error('not yet implemented') // TODO
   }),
 
-  writeCheckpoint: m('datWrite', function * (url, name, description) {
+  writeCheckpoint: m(function * (url, name, description) {
     // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
-  serve: m('datUpload', function * (url) {
+  serve: m(function * (url) {
     // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
-  unserve: m('datUpload', function * (url) {
+  unserve: m(function * (url) {
     // var { archive, path } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   })
@@ -98,9 +115,8 @@ export default {
 // =
 
 // helper to construct api methods
-// - `perm` is optional string
-// - `fn` should be a generator fn which will be wrapped with co
-function m (perm, fn, opts) {
+// - `fn` should be a generator fn (change to async when support lands)
+function m (fn, opts) {
   if (!fn) {
     fn = perm
     perm = false
@@ -110,29 +126,18 @@ function m (perm, fn, opts) {
   return function (...args) {
     var sender = this.sender
 
-    // check permission, if this method has one
-    if (perm) {
-      if (!checkPermission(sender, perm)) {
-        return Promise.reject(PermissionsError(sender.getURL(), perm))
-      }
+    // check the protocol
+    if (!checkProtocolPermission(sender)) {
+      return Promise.reject(PermissionsError(sender.getURL()))
     }
 
     return fn(...args)
   }
 }
 
-// helper to look up perms
-function checkPermission (sender, permissionId) {
-  var urlp = parseURL(sender.getURL())
-  // var origin = (urlp.protocol + urlp.host)
-  if (!urlp) {
-    return false // this should never happen
-  }
-  if (urlp.protocol === 'beaker:') {
-    return true // beaker: protocol is always allowed
-  }
-  // TODO lookup origin in the database protocol
-  return true // return true always for now
+// helper to check broad perms
+function checkProtocolPermission (sender) {
+  return (sender.getURL().startsWith('beaker:') || sender.getURL().startsWith('dat:'))
 }
 
 // helper to handle the URL argument that's given to most args

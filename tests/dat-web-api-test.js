@@ -75,3 +75,29 @@ test('dat.readFile', async t => {
   t.deepEqual(beakerPngBase64.value, beakerPng.toString('base64'))
 })
 
+test('dat.stat', async t => {
+  async function stat (url, opts) {
+    var res = await app.client.executeAsync((url, opts, done) => {
+      dat.stat(url, opts).then(v => done(stringify(v)), done)
+    }, url, opts)
+    if (typeof res.value === 'string')
+      res.value = JSON.parse(res.value)
+    return res
+  }
+
+  // stat root file
+  var entry = await stat(testStaticDatURL + 'hello.txt', {})
+  t.deepEqual(entry.value.name, 'hello.txt')
+  t.deepEqual(entry.value.type, 'file')
+
+  // stat subdir file
+  var entry = await stat(testStaticDatURL + 'subdir/hello.txt', {})
+  t.deepEqual(entry.value.name, 'subdir/hello.txt')
+  t.deepEqual(entry.value.type, 'file')
+
+  // stat subdir
+  var entry = await stat(testStaticDatURL + 'subdir', {})
+  t.deepEqual(entry.value.name, 'subdir')
+  t.deepEqual(entry.value.type, 'directory')
+})
+
