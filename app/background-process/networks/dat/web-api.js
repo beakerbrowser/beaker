@@ -10,7 +10,8 @@ import {
   InvalidURLError,
   FileNotFoundError,
   FileReadError,
-  FileWriteError
+  FileWriteError,
+  ProtectedFileNotWritableError
 } from '../../../lib/const'
 
 // exported api
@@ -60,8 +61,29 @@ export default {
   }),
 
   writeFile: m(function * (url, data, opts = {}) {
-    // var { archive, path } = lookupArchive(url)
-    throw new Error('not yet implemented') // TODO
+    // TODO binary
+    // TODO quota management
+    // TODO permission check
+    var { archive, path } = lookupArchive(url)
+    return new Promise((resolve, reject) => {
+      // protected files
+      if (isProtectedFilePath(path)) {
+        return reject(new ProtectedFileNotWritableError())
+      }
+
+      // write the file
+      writeArchiveFile(archive, path, data, opts, (err, data) => {
+        if (err) {
+          // error handling
+          if (err.invalidEncoding) {
+            return reject(new InvalidEncodingError(`Encoding ${err.encoding} does not match the given value type ${err.type}`))
+          }
+          log.error('Failed to write archive file', err)
+          return reject(new FileWriteError())
+        }
+        resolve()
+      })
+    })
   }),
 
   deleteFile: m(function * (url) {
@@ -143,6 +165,11 @@ function m (fn, opts) {
 // helper to check broad perms
 function checkProtocolPermission (sender) {
   return (sender.getURL().startsWith('beaker:') || sender.getURL().startsWith('dat:'))
+}
+
+// helper to check if path refers to a file that userland is not allowed to edit directly
+function isProtectedFilePath (path) {
+  return path === '/dat.json'
 }
 
 // helper to handle the URL argument that's given to most args

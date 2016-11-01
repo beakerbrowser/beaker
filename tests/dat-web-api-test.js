@@ -15,6 +15,7 @@ const app = new Application({
 })
 var testStaticDat, testStaticDatURL
 var testRunnerDat, testRunnerDatURL
+var createdDatURL // url of the dat which is created by testRunnerDat, which gives it write access
 
 test.before(async t => {
   // open the window
@@ -143,14 +144,48 @@ test('dat.createArchive', async t => {
 
   // fetch & test the res
   var res = await app.client.execute(() => { return window.res })
-  var datURL = res.value
-  t.truthy(datURL.startsWith('dat://'))
+  createdDatURL = res.value
+  t.truthy(createdDatURL.startsWith('dat://'))
 
   // check the dat.json
   var res = await app.client.executeAsync((url, done) => {
     dat.readFile(url).then(done, done)
-  }, datURL + 'dat.json')
+  }, createdDatURL + 'dat.json')
   var manifest = JSON.parse(res.value)
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
+})
+
+test('dat.writeFile', async t => {
+  // write to the top-level
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, createdDatURL + 'hello.txt')
+  t.falsy(res.value)
+
+  // read it back
+  var res = await app.client.executeAsync((url, opts, done) => {
+    dat.readFile(url, opts).then(done, done)
+  }, createdDatURL + 'hello.txt', 'utf8')
+  t.deepEqual(res.value, 'hello world')
+
+  // write to a subdir
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, createdDatURL + 'subdir/hello.txt')
+  t.falsy(res.value)
+
+  // read it back
+  var res = await app.client.executeAsync((url, opts, done) => {
+    dat.readFile(url, opts).then(done, done)
+  }, createdDatURL + 'subdir/hello.txt', 'utf8')
+  t.deepEqual(res.value, 'hello world')
+})
+
+test('dat.writeFile protects the manifest', async t => {
+  // write to the top-level
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, createdDatURL + 'dat.json')
+  t.deepEqual(res.value.name, 'ProtectedFileNotWritableError')
 })
