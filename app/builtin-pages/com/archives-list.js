@@ -124,7 +124,11 @@ function onToggleServeArchive (archiveInfo, render) {
   return e => {
     e.preventDefault()
     e.stopPropagation()
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', ['upload', 'download']).then(settings => {
+    datInternalAPI.updateArchiveClaims(archiveInfo.key, { 
+      origin: 'beaker:archives', 
+      op: 'toggle-all', 
+      claims: ['upload', 'download']
+    }).then(settings => {
       archiveInfo.userSettings.uploadClaims = settings.uploadClaims
       archiveInfo.userSettings.downloadClaims = settings.downloadClaims
       render()
@@ -137,7 +141,11 @@ function onDeleteArchive (archiveInfo, render) {
     e.preventDefault()
     e.stopPropagation()
 
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'remove-all', ['save', 'upload', 'download'])
+    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
+      origin: 'beaker:archives', 
+      op: 'remove-all', 
+      claims: ['save', 'upload', 'download']
+    })
     archiveInfo.userSettings.saveClaims = []
     archiveInfo.userSettings.uploadClaims = []
     archiveInfo.userSettings.downloadClaims = []
@@ -153,7 +161,11 @@ function onUndoDeletions (archivesList, render) {
     archivesList.archives.forEach(archiveInfo => {
       if (archiveInfo.userSettings.saveClaims.length === 0) {
         archiveInfo.userSettings.saveClaims = ['beaker:archives']
-        datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'add', 'save')
+        datInternalAPI.updateArchiveClaims(archiveInfo.key, { 
+          origin: 'beaker:archives', 
+          op: 'add', 
+          claims: 'save'
+        })
       }
     })
     render()

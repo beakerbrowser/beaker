@@ -170,7 +170,7 @@ export function setArchiveUserSettings (key, value = {}) {
 // - `op` string, should be "add", "remove", "remove-all", or "toggle-all"
 //    - the *-all ops overwrite the current claims. Should only be used by internal views.
 // - `claims` string or array of strings, should be "save", "upload", or "download"
-export function updateArchiveClaims (key, origin, op, claims) {
+export function updateArchiveClaims (key, { origin, op, claims }) {
   // massage inputs
   key = bufToStr(key)
   claims = Array.isArray(claims) ? claims : [claims]
