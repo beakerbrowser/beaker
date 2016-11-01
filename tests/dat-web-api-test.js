@@ -1,5 +1,7 @@
 import test from 'ava'
 import {Application} from 'spectron'
+import os from 'os'
+import path from 'path'
 import fs from 'fs'
 import electron from '../node_modules/electron'
 
@@ -8,7 +10,8 @@ import { shareDat } from './lib/dat-helpers'
 
 const app = new Application({
   path: electron,
-  args: ['../app']
+  args: ['../app'],
+  env: { beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-') }
 })
 var testStaticDat, testStaticDatURL
 var testRunnerDat, testRunnerDatURL

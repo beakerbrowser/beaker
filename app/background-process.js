@@ -28,8 +28,13 @@ import * as datProtocol from './background-process/protocols/dat'
 
 import * as openURL from './background-process/open-url'
 
-// configure logging
+// read config from env vars
 log.setLevel(process.env.beaker_log_level || 'info')
+if (process.env.beaker_user_data_path) {
+  console.log('User data path set by environment variables')
+  console.log('userData:', process.env.beaker_user_data_path)
+  app.setPath('userData', process.env.beaker_user_data_path)
+}
 
 // load the installed protocols
 plugins.registerStandardSchemes()
