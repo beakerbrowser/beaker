@@ -104,3 +104,53 @@ test('dat.stat', async t => {
   t.deepEqual(entry.value.type, 'directory')
 })
 
+test('dat.createArchive rejection', async t => {
+  // start the prompt
+  await app.client.execute(() => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.createArchive({ title: 'The Title', description: 'The Description' }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  })
+
+  // reject the prompt
+  await app.client.windowByIndex(0)
+  await app.client.click('.prompt-reject')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.deepEqual(res.value.name, 'UserDeniedError')
+})
+
+test('dat.createArchive', async t => {
+  // start the prompt
+  await app.client.execute(() => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.createArchive({ title: 'The Title', description: 'The Description' }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  })
+
+  // accept the prompt
+  await app.client.windowByIndex(0)
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  var datURL = res.value
+  t.truthy(datURL.startsWith('dat://'))
+
+  // check the dat.json
+  var res = await app.client.executeAsync((url, done) => {
+    dat.readFile(url).then(done, done)
+  }, datURL + 'dat.json')
+  var manifest = JSON.parse(res.value)
+  t.deepEqual(manifest.title, 'The Title')
+  t.deepEqual(manifest.description, 'The Description')
+})

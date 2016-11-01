@@ -1,18 +1,22 @@
 import co from 'co'
 import { parse as parseURL } from 'url'
 import * as dat from './dat'
-import { statArchiveFile, readArchiveFile, readArchiveDirectory } from './helpers'
+import { statArchiveFile, readArchiveFile, readArchiveDirectory, writeArchiveFile } from './helpers'
 import log from 'loglevel'
-import { DAT_HASH_REGEX, PermissionsError, InvalidURLError, FileNotFoundError, FileReadError } from '../../../lib/const'
+import { 
+  DAT_HASH_REGEX,
+  PermissionsError,
+  InvalidEncodingError,
+  InvalidURLError,
+  FileNotFoundError,
+  FileReadError,
+  FileWriteError
+} from '../../../lib/const'
 
 // exported api
 // =
 
 export default {
-  createArchive: m(function * () {
-    throw new Error('not yet implemented') // TODO
-  }, { noLookupArchive: true }),
-
   stat: m(function * (url, opts = {}) {
     // TODO versions
     // TODO timeout
@@ -37,6 +41,7 @@ export default {
   readFile: m(function * (url, opts = {}) {
     // TODO versions
     // TODO timeout
+    // TODO binary
     var { archive, path } = lookupArchive(url)
     return new Promise((resolve, reject) => {
       // read the file into memory

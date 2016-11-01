@@ -45,8 +45,8 @@ export default function (reqId, webContentsId, permission) {
         <span class="icon icon-help-circled"></span>
         This site would like to ${permDesc}.
         <span class="promptbar-btns">
-          <a class="btn" onclick=${() => { respond(true); onClose(); }}>Allow</a>
-          <a onclick=${() => { respond(false); onClose(); }}>Don't Allow</a>
+          <a class="btn btn-primary prompt-accept" onclick=${() => { respond(true); onClose(); }}>Allow</a>
+          <a class="prompt-reject" onclick=${() => { respond(false); onClose(); }}>Don't Allow</a>
         </span>
         <a class="promptbar-close icon icon-cancel-squared" onclick=${() => { respond(false); onClose(); }}></a>
       </div>`

@@ -8,6 +8,7 @@ import * as statusBar from './ui/statusbar'
 import { urlToData } from '../lib/fg/img'
 import { debounce } from '../lib/functions'
 import errorPage from '../lib/error-page'
+import createArchivePrompt from './ui/prompts/create-archive'
 
 // constants
 // =
@@ -666,6 +667,7 @@ function onIPCMessage (e) {
   switch (e.channel) {
     case 'site-info-override:set': page.siteInfoOverride = e.args[0]; navbar.updateLocation(page); navbar.update(page); break
     case 'site-info-override:clear': page.siteInfoOverride = null; navbar.updateLocation(page); navbar.update(page); break
+    case 'dat:create-archive': createArchivePrompt(page, ...e.args); break
   }
 }
 

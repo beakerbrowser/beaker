@@ -5,7 +5,7 @@ import { ipcRenderer } from 'electron'
 
 export function setup () {
   // attach site info override methods
-  // TODO for now, only allow on beaker sites -prf
+  // - only allowed on internal pages
   if (window.location.protocol === 'beaker:') {
     window.locationbar.setSiteInfoOverride = setSiteInfoOverride
     window.locationbar.clearSiteInfoOverride = clearSiteInfoOverride
