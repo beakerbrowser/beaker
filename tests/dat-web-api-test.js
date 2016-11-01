@@ -11,6 +11,7 @@ import { shareDat } from './lib/dat-helpers'
 const app = new Application({
   path: electron,
   args: ['../app'],
+  chromeDriverLogPath: 'dat-web-api-test.log',
   env: { beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-') }
 })
 var testStaticDat, testStaticDatURL
@@ -35,7 +36,25 @@ test.before(async t => {
   await app.client.windowByIndex(1)
   await app.client.waitForExist('h1#loaded')
 })
-test.after.always('cleanup', async t => await app.stop())
+test.after.always('cleanup', async t => {
+  // var logs = await app.client.getMainProcessLogs()
+  // console.log(logs)
+  await app.stop()
+})
+
+// some custom wrappers around async calls
+// (the remove execution can be a little janky, these wrappers solve that)
+async function stat (url, opts) {
+  var res = await app.client.executeAsync((url, opts, done) => {
+    dat.stat(url, opts).then(v => done(stringify(v)), done)
+  }, url, opts)
+  if (typeof res.value === 'string')
+    res.value = JSON.parse(res.value)
+  return res
+}
+
+// tests
+//
 
 test('dat.readDirectory', async t => {
   async function readDirectory (url, opts) {
@@ -80,15 +99,6 @@ test('dat.readFile', async t => {
 })
 
 test('dat.stat', async t => {
-  async function stat (url, opts) {
-    var res = await app.client.executeAsync((url, opts, done) => {
-      dat.stat(url, opts).then(v => done(stringify(v)), done)
-    }, url, opts)
-    if (typeof res.value === 'string')
-      res.value = JSON.parse(res.value)
-    return res
-  }
-
   // stat root file
   var entry = await stat(testStaticDatURL + 'hello.txt', {})
   t.deepEqual(entry.value.name, 'hello.txt')
@@ -103,6 +113,15 @@ test('dat.stat', async t => {
   var entry = await stat(testStaticDatURL + 'subdir', {})
   t.deepEqual(entry.value.name, 'subdir')
   t.deepEqual(entry.value.type, 'directory')
+
+  // stat non-existent file
+  var entry = await stat(testStaticDatURL + 'notfound', {})
+  t.deepEqual(entry.value.name, 'FileNotFoundError')
+
+  // stat acceptably-malformed path
+  var entry = await stat(testStaticDatURL + '/hello.txt', {})
+  t.deepEqual(entry.value.name, 'hello.txt')
+  t.deepEqual(entry.value.type, 'file')
 })
 
 test('dat.createArchive rejection', async t => {
@@ -151,7 +170,12 @@ test('dat.createArchive', async t => {
   var res = await app.client.executeAsync((url, done) => {
     dat.readFile(url).then(done, done)
   }, createdDatURL + 'dat.json')
-  var manifest = JSON.parse(res.value)
+  var manifest
+  try {
+    var manifest = JSON.parse(res.value)
+  } catch (e) {
+    console.log('unexpected error parsing manifest', res.value)
+  }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
 })
@@ -168,7 +192,43 @@ test('dat.writeFile', async t => {
     dat.readFile(url, opts).then(done, done)
   }, createdDatURL + 'hello.txt', 'utf8')
   t.deepEqual(res.value, 'hello world')
+})
 
+test('dat.writeFile does not write to nonexistent directories', async t => {
+  // write to a subdir
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, createdDatURL + 'subdir/hello.txt')
+  t.deepEqual(res.value.name, 'ParentFolderDoesntExistError')
+})
+
+test('dat.writeFile protects the root and manifest', async t => {
+  // write to the top-level folder
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, createdDatURL)
+  t.deepEqual(res.value.name, 'ProtectedFileNotWritableError')
+
+  // write to the manifest
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, createdDatURL + 'dat.json')
+  t.deepEqual(res.value.name, 'ProtectedFileNotWritableError')
+})
+
+test('dat.createDirectory', async t => {
+  // create the directory
+  var res = await app.client.executeAsync((url, done) => {
+    dat.createDirectory(url).then(done, done)
+  }, createdDatURL + 'subdir')
+  t.falsy(res.value)
+
+  // read it back
+  var res = await stat(createdDatURL + 'subdir')
+  t.deepEqual(res.value.type, 'directory')
+})
+
+test('dat.writeFile writes to subdirectories', async t => {
   // write to a subdir
   var res = await app.client.executeAsync((url, done) => {
     dat.writeFile(url, 'hello world', 'utf8').then(done, done)
@@ -182,10 +242,24 @@ test('dat.writeFile', async t => {
   t.deepEqual(res.value, 'hello world')
 })
 
-test('dat.writeFile protects the manifest', async t => {
-  // write to the top-level
+test('dat.writeFile doesnt overwrite folders', async t => {
+  // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
     dat.writeFile(url, 'hello world', 'utf8').then(done, done)
-  }, createdDatURL + 'dat.json')
-  t.deepEqual(res.value.name, 'ProtectedFileNotWritableError')
+  }, createdDatURL + '/subdir')
+  t.deepEqual(res.value.name, 'FolderAlreadyExistsError')
+})
+
+test('dat.createDirectory doesnt overwrite files or folders', async t => {
+  // write to the subdir
+  var res = await app.client.executeAsync((url, done) => {
+    dat.createDirectory(url).then(done, done)
+  }, createdDatURL + '/subdir')
+  t.deepEqual(res.value.name, 'FolderAlreadyExistsError')
+
+  // write to the file
+  var res = await app.client.executeAsync((url, done) => {
+    dat.createDirectory(url).then(done, done)
+  }, createdDatURL + '/hello.txt')
+  t.deepEqual(res.value.name, 'FileAlreadyExistsError')
 })

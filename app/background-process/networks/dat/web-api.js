@@ -1,7 +1,8 @@
 import co from 'co'
+import path from 'path'
 import { parse as parseURL } from 'url'
 import * as dat from './dat'
-import { statArchiveFile, readArchiveFile, readArchiveDirectory, writeArchiveFile } from './helpers'
+import { statArchiveFile, readArchiveFile, readArchiveDirectory, writeArchiveFile, writeArchiveDirectory } from './helpers'
 import log from 'loglevel'
 import { 
   DAT_HASH_REGEX,
@@ -11,7 +12,10 @@ import {
   FileNotFoundError,
   FileReadError,
   FileWriteError,
-  ProtectedFileNotWritableError
+  ProtectedFileNotWritableError,
+  FileAlreadyExistsError,
+  FolderAlreadyExistsError,
+  ParentFolderDoesntExistError
 } from '../../../lib/const'
 
 // exported api
@@ -22,10 +26,10 @@ export default {
     // TODO versions
     // TODO timeout
     // TODO downloadedBlocks
-    var { archive, path } = lookupArchive(url)
+    var { archive, filepath } = lookupArchive(url)
     return new Promise((resolve, reject) => {
       // read the stat
-      statArchiveFile(archive, path, (err, data) => {
+      statArchiveFile(archive, filepath, (err, data) => {
         if (err) {
           // error handling
           if (err.notFound) {
@@ -43,10 +47,10 @@ export default {
     // TODO versions
     // TODO timeout
     // TODO binary
-    var { archive, path } = lookupArchive(url)
+    var { archive, filepath } = lookupArchive(url)
     return new Promise((resolve, reject) => {
       // read the file into memory
-      readArchiveFile(archive, path, opts, (err, data) => {
+      readArchiveFile(archive, filepath, opts, (err, data) => {
         if (err) {
           // error handling
           if (err.notFound) {
@@ -64,38 +68,53 @@ export default {
     // TODO binary
     // TODO quota management
     // TODO permission check
-    var { archive, path } = lookupArchive(url)
+    var { archive, filepath } = lookupArchive(url)
     return new Promise((resolve, reject) => {
       // protected files
-      if (isProtectedFilePath(path)) {
+      if (isProtectedFilePath(filepath)) {
         return reject(new ProtectedFileNotWritableError())
       }
 
-      // write the file
-      writeArchiveFile(archive, path, data, opts, (err, data) => {
-        if (err) {
-          // error handling
-          if (err.invalidEncoding) {
-            return reject(new InvalidEncodingError(`Encoding ${err.encoding} does not match the given value type ${err.type}`))
-          }
-          log.error('Failed to write archive file', err)
-          return reject(new FileWriteError())
+      // check what's currently there
+      statArchiveFile(archive, filepath, (err, entry) => {
+        // dont overwrite directories
+        if (entry && entry.type === 'directory') {
+          return reject(new FolderAlreadyExistsError())
         }
-        resolve()
+
+        // check that the parent directory exists
+        statArchiveFile(archive, path.dirname(filepath), (err, entry) => {
+          if (!entry || entry.type !== 'directory') {
+            return reject(new ParentFolderDoesntExistError())
+          }
+
+          // write the file
+          writeArchiveFile(archive, filepath, data, opts, err => {
+            if (err) {
+              // error handling
+              if (err.invalidEncoding) {
+                return reject(new InvalidEncodingError(`Encoding ${err.encoding} does not match the given value type ${err.type}`))
+              }
+              log.error('Failed to write archive file', err)
+              return reject(new FileWriteError())
+            }
+            resolve()
+          })
+        })
       })
     })
   }),
 
   deleteFile: m(function * (url) {
-    // var { archive, path } = lookupArchive(url)
+    // var { archive, filepath } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   readDirectory: m(function * (url, opts = {}) {
     // TODO history
-    var { archive, path } = lookupArchive(url)
+    var { archive, filepath } = lookupArchive(url)
     return new Promise((resolve, reject) => {
-      readArchiveDirectory(archive, path, (err, entries) => {
+      readArchiveDirectory(archive, filepath, (err, entries) => {
         if (err) reject(err)
         else resolve(entries)
       })
@@ -103,37 +122,69 @@ export default {
   }),
 
   createDirectory: m(function * (url) {
-    // var { archive, path } = lookupArchive(url)
-    throw new Error('not yet implemented') // TODO
+    // TODO quota management
+    // TODO permission check
+    var { archive, filepath } = lookupArchive(url)
+    return new Promise((resolve, reject) => {
+      // protected files
+      if (isProtectedFilePath(filepath)) {
+        return reject(new ProtectedFileNotWritableError())
+      }
+
+      // check what's currently there
+      statArchiveFile(archive, filepath, (err, entry) => {
+        // dont overwrite directories
+        if (entry) {
+          if (entry.type === 'directory') return reject(new FolderAlreadyExistsError())
+          return reject(new FileAlreadyExistsError())
+        }
+
+        // check that the parent directory exists
+        statArchiveFile(archive, path.dirname(filepath), (err, entry) => {
+          if (!entry || entry.type !== 'directory') {
+            return reject(new ParentFolderDoesntExistError())
+          }
+
+          // write the directory
+          writeArchiveDirectory(archive, filepath, err => {
+            if (err) {
+              log.error('Failed to write archive folder', err)
+              return reject(new FileWriteError())
+            }
+            resolve()
+          })
+        })
+      })
+    })
   }),
 
   deleteDirectory: m(function * (url) {
-    // var { archive, path } = lookupArchive(url)
+    // var { archive, filepath } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   getHistory: m(function * (url, opts = {}) {
-    // var { archive, path } = lookupArchive(url)
+    // var { archive, filepath } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   getCheckpoints: m(function * (url, opts = {}) {
-    // var { archive, path } = lookupArchive(url)
+    // var { archive, filepath } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   writeCheckpoint: m(function * (url, name, description) {
-    // var { archive, path } = lookupArchive(url)
+    // var { archive, filepath } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   serve: m(function * (url) {
-    // var { archive, path } = lookupArchive(url)
+    // var { archive, filepath } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   }),
 
   unserve: m(function * (url) {
-    // var { archive, path } = lookupArchive(url)
+    // var { archive, filepath } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
   })
 }
@@ -167,21 +218,21 @@ function checkProtocolPermission (sender) {
   return (sender.getURL().startsWith('beaker:') || sender.getURL().startsWith('dat:'))
 }
 
-// helper to check if path refers to a file that userland is not allowed to edit directly
-function isProtectedFilePath (path) {
-  return path === '/dat.json'
+// helper to check if filepath refers to a file that userland is not allowed to edit directly
+function isProtectedFilePath (filepath) {
+  return filepath === '/' || filepath === '/dat.json'
 }
 
 // helper to handle the URL argument that's given to most args
 // - can get a dat hash, or dat url
-// - returns { archive, path }
-// - throws if the path is invalid
+// - returns { archive, filepath }
+// - throws if the filepath is invalid
 function lookupArchive (url) {
-  var archiveKey, path
+  var archiveKey, filepath
   if (DAT_HASH_REGEX.test(url)) {
     // simple case: given the key
     archiveKey = url
-    path = '/'
+    filepath = '/'
   } else {
     var urlp = parseURL(url)
 
@@ -195,8 +246,12 @@ function lookupArchive (url) {
     }
 
     archiveKey = urlp.host
-    path = urlp.pathname
+    filepath = urlp.pathname
   }
+
+  // multiple slashes at the start of the filepath is an easy mistake to make in URL construction
+  // correct against it automatically
+  filepath = filepath.replace(/^\/+/, '/')
 
   // lookup the archive
   var archive = dat.getArchive(archiveKey)
@@ -204,5 +259,5 @@ function lookupArchive (url) {
     archive = dat.loadArchive(new Buffer(archiveKey, 'hex'))
     dat.swarm(archiveKey)
   }
-  return { archive, path }
+  return { archive, filepath }
 }

@@ -64,9 +64,22 @@ export function writeArchiveFile (archive, name, data, opts, cb) {
   )
 }
 
+// helper to write a directory entry to an archive
+export function writeArchiveDirectory (archive, name, cb) {
+  // write
+  archive.append({
+    name,
+    type: 'directory',
+    mtime: Date.now()
+  }, cb)
+}
+
 // helper to lookup file metadata from an archive
 export function statArchiveFile (archive, name, cb) {
   name = normalizedEntryName({ name })
+  if (name === '/') {
+    return cb(null, { type: 'directory', name: '/' })
+  }
   archiveCustomLookup(
     archive,
     (entry, entryName) => entryName === name,
