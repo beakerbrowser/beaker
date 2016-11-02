@@ -1,0 +1,1 @@
+const stringify = JSON.stringify

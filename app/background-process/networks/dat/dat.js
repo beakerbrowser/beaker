@@ -89,7 +89,7 @@ export function createNewArchive (opts) {
 
     // write the save claim
     if (opts.saveClaim) {
-      archivesDb.updateArchiveClaims(key, opts.saveClaim, 'add', 'save')
+      archivesDb.updateArchiveClaims(key, { origin: opts.saveClaim, op: 'add', claims: 'save' })
     }
 
     // write the meta

@@ -522,13 +522,21 @@ function addFiles (files) {
 
 function onToggleSave () {
   // toggle the save
-  datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', 'save').then(settings => {
+  datInternalAPI.updateArchiveClaims(archiveInfo.key, {
+    origin: 'beaker:archives', 
+    op: 'toggle-all', 
+    claims: 'save'
+  }).then(settings => {
     archiveInfo.userSettings.saveClaims = settings.saveClaims
     render()
 
     // autounnetwork if deleted, but still networking
     if (!isSaved(archiveInfo) && isNetworked(archiveInfo)) {
-      datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'remove-all', ['upload', 'download']).then(settings => {
+      datInternalAPI.updateArchiveClaims(archiveInfo.key, {
+        origin: 'beaker:archives', 
+        op: 'remove-all', 
+        claims: ['upload', 'download']
+      }).then(settings => {
         archiveInfo.userSettings.uploadClaims = settings.uploadClaims
         archiveInfo.userSettings.downloadClaims = settings.downloadClaims
         render()
@@ -539,14 +547,22 @@ function onToggleSave () {
 
 function onToggleServing () {
   // toggle the networking
-  datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'toggle-all', ['upload', 'download']).then(settings => {
+  datInternalAPI.updateArchiveClaims(archiveInfo.key, {
+    origin: 'beaker:archives',
+    op: 'toggle-all',
+    claims: ['upload', 'download']
+  }).then(settings => {
     archiveInfo.userSettings.uploadClaims = settings.uploadClaims
     archiveInfo.userSettings.downloadClaims = settings.downloadClaims
     render()
 
     // autosave if networked, but not saved
     if (isNetworked(archiveInfo) && !isSaved(archiveInfo)) {
-      datInternalAPI.updateArchiveClaims(archiveInfo.key, 'beaker:archives', 'add', 'save').then(settings => {
+      datInternalAPI.updateArchiveClaims(archiveInfo.key, {
+        origin: 'beaker:archives',
+        op: 'add',
+        claims: 'save'
+      }).then(settings => {
         archiveInfo.userSettings.saveClaims = settings.saveClaims
         render()
       })

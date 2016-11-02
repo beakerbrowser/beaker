@@ -1,6 +1,5 @@
 import concat from 'concat-stream'
-import from2 from 'from2'
-import from2String from 'from2-string'
+import from2Encoding from 'from2-encoding'
 import pump from 'pump'
 import path from 'path'
 import { DAT_MANIFEST_FILENAME } from '../../../lib/const'
@@ -32,11 +31,62 @@ export function normalizedEntryName (entry) {
 }
 
 // helper to write file data to an archive
-export function writeArchiveFile (archive, name, data, cb) {
+export function writeArchiveFile (archive, name, data, opts, cb) {
+  if (typeof opts === 'function') {
+    cb = opts
+    opts = {}
+  }
+  if (typeof opts === 'string') {
+    opts = { encoding: opts }
+  }
+  opts = opts || {}
+  cb = cb || (()=>{})
+
+  // guess the encoding by the data type
+  if (!opts.encoding) {
+    opts.encoding = (typeof data === 'string' ? 'utf8' : 'binary')
+  }
+  opts.encoding = toValidEncoding(opts.encoding)
+
+  // validate the encoding
+  if (typeof data === 'string' && opts.encoding === 'binary') {
+    return cb({ invalidEncoding: true, encoding: opts.encoding, type: typeof data })
+  }
+  if (typeof data !== 'string' && opts.encoding !== 'binary') {
+    return cb({ invalidEncoding: true, encoding: opts.encoding, type: typeof data })
+  }
+
+  // write
   pump(
-    typeof data === 'string' ? from2String(data) : fromBuffer(data),
+    from2Encoding(data, opts.encoding),
     archive.createFileWriteStream({ name, mtime: Date.now() }),
     cb
+  )
+}
+
+// helper to write a directory entry to an archive
+export function writeArchiveDirectory (archive, name, cb) {
+  // write
+  archive.append({
+    name,
+    type: 'directory',
+    mtime: Date.now()
+  }, cb)
+}
+
+// helper to lookup file metadata from an archive
+export function statArchiveFile (archive, name, cb) {
+  name = normalizedEntryName({ name })
+  if (name === '/') {
+    return cb(null, { type: 'directory', name: '/' })
+  }
+  archiveCustomLookup(
+    archive,
+    (entry, entryName) => entryName === name,
+    entry => {
+      if (!entry) cb({ notFound: true })
+      else cb(null, entry)
+    }
   )
 }
 
@@ -50,11 +100,8 @@ export function readArchiveFile (archive, name, opts, cb) {
     opts = { encoding: opts }
   }
   opts.encoding = toValidEncoding(opts.encoding)
-  name = normalizedEntryName({ name })
-  archiveCustomLookup(
-    archive,
-    (entry, entryName) => entryName === name,
-    entry => {
+  statArchiveFile(archive, name, (err, entry) => {
+      if (err) return cb(err)
       if (!entry || entry.type !== 'file') {
         return cb({ notFound: true })
       }
@@ -147,17 +194,6 @@ export function bufAndStr (v) {
 export function bufToStr (v) {
   if (Buffer.isBuffer(v)) return v.toString('hex')
   return v
-}
-
-// convert a buffer into a readable string
-export function fromBuffer (buf) {
-  var i = 0
-  return from2(function (size, next) {
-    if (i >= buf.length) return next(null, null)
-    var chunk = buf.slice(i, i + size)
-    i += size
-    next(null, chunk)
-  })
 }
 
 // helper to convert an encoding to something acceptable

@@ -8,6 +8,7 @@ import * as statusBar from './ui/statusbar'
 import { urlToData } from '../lib/fg/img'
 import { debounce } from '../lib/functions'
 import errorPage from '../lib/error-page'
+import { onIPCMessage as datIPCHandler } from './dat-web-api'
 
 // constants
 // =
@@ -663,9 +664,13 @@ function onCrashed (e) {
 function onIPCMessage (e) {
   var page = getByWebview(e.target)
   if (!page) return
-  switch (e.channel) {
-    case 'site-info-override:set': page.siteInfoOverride = e.args[0]; navbar.updateLocation(page); navbar.update(page); break
-    case 'site-info-override:clear': page.siteInfoOverride = null; navbar.updateLocation(page); navbar.update(page); break
+  if (e.channel.startsWith('dat:')) {
+    datIPCHandler(page, e.channel.slice(4), e.args)
+  } else {
+    switch (e.channel) {
+      case 'site-info-override:set': page.siteInfoOverride = e.args[0]; navbar.updateLocation(page); navbar.update(page); break
+      case 'site-info-override:clear': page.siteInfoOverride = null; navbar.updateLocation(page); navbar.update(page); break
+    }
   }
 }
 
