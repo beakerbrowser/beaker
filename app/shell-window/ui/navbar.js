@@ -223,6 +223,7 @@ function render (id, page) {
   // setup site-perms dropdown
   siteInfoNavbarBtn.protocolInfo = (page && page.protocolInfo)
   siteInfoNavbarBtn.siteInfo = (page && page.siteInfo)
+  siteInfoNavbarBtn.sitePerms = (page && page.sitePerms)
   siteInfoNavbarBtn.siteInfoOverride = (page && page.siteInfoOverride)
 
   // the main URL input

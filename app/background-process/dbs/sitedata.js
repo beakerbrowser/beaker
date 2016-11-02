@@ -23,7 +23,7 @@ export function setup () {
   setupPromise = setupSqliteDB(db, migrations, '[SITEDATA]')
 
   // wire up RPC
-  rpc.exportAPI('beakerSitedata', manifest, { get, set })
+  rpc.exportAPI('beakerSitedata', manifest, { get, set, getPermissions, getPermission, setPermission })
 }
 
 export function set (url, key, value) {
@@ -47,6 +47,31 @@ export function get (url, key) {
       cb(null, res && res.value)
     })
   }))
+}
+
+export function getPermissions (url) {
+  return setupPromise.then(v => cbPromise(cb => {
+    var origin = extractOrigin(url)
+    if (!origin) return cb()
+    db.all(`SELECT key, value FROM sitedata WHERE origin = ? AND key LIKE 'perm:%'`, [origin], (err, rows) => {
+      if (err) return cb(err)
+
+      // convert to a dictionary
+      // TODO - pull defaults from browser settings
+      var perms = { /*js: true*/ }
+      if (rows) rows.forEach(row => { perms[row.key.slice('5')] = row.value })
+      cb(null, perms)
+    })
+  }))  
+}
+
+export function getPermission (url, key) {
+  return get(url, 'perm:' + key)
+}
+
+export function setPermission (url, key, value) {
+  value = !!value
+  return set(url, 'perm:' + key, value)
 }
 
 export function query (values) {

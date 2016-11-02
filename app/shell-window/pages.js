@@ -80,6 +80,7 @@ export function create (opts) {
     // current site's info
     protocolInfo: null, // info about the current page's delivery protocol
     siteInfo: null, // metadata about the current page, derived from protocol knowledge
+    sitePerms: null, // saved permissions for the current page
     siteInfoOverride: null, // explicit overrides on the siteinfo, used by beaker: pages
 
     // history
@@ -163,9 +164,17 @@ export function create (opts) {
         // reload
         page.reload()
       }
-    }, TRIGGER_LIVE_RELOAD_DEBOUNCE, true)
+    }, TRIGGER_LIVE_RELOAD_DEBOUNCE, true),
     // ^ note this is on the front edge of the debouncer.
     // That means snappier reloads (no delay) but possible double reloads if multiple files change
+
+    // helper to load the perms
+    fetchSitePerms () {
+      beakerSitedata.getPermissions(this.getURL()).then(perms => {
+        page.sitePerms = perms
+        navbar.update(page)
+      })
+    }
   }
 
   if (opts.isPinned)
@@ -509,12 +518,16 @@ function onDidStopLoading (e) {
     // fetch protocol and page info
     var { protocol, hostname } = parseURL(url)
     page.siteInfo = null
+    page.sitePerms = null
     page.protocolInfo = { url, hostname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase() }
     if (protocol === 'dat:') {
       datInternalAPI.getArchiveDetails(hostname).then(info => {
         page.siteInfo = info
         navbar.update(page)
       })
+    }
+    if (protocol !== 'beaker:') {
+      page.fetchSitePerms()
     }
 
     // update page

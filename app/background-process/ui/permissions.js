@@ -1,5 +1,7 @@
 import { ipcMain, session, BrowserWindow } from 'electron'
 import log from 'loglevel'
+import * as siteData from '../dbs/sitedata'
+import PERMS from '../../lib/perms'
 
 // globals
 // =
@@ -36,20 +38,32 @@ function onPermissionRequestHandler (webContents, permission, cb) {
   var win = BrowserWindow.fromWebContents(webContents.hostWebContents)
   if (!win)
     return log.warn('Warning: failed to find containing window of permission request, '+permission)
+  const url = webContents.getURL()
 
-  // if we're already tracking this kind of permission request, then bundle them
-  var req = activeRequests.find(req => req.win === win && req.permission === permission)
-  if (req) {
-    var oldCb = req.cb
-    req.cb = decision => { oldCb(decision); cb(decision) }
-  } else {
-    // track the new cb
-    var req = { id: ++idCounter, win, permission, cb }
-    activeRequests.push(req)
-  }
+  // check if the perm is disallowed
+  const PERM = PERMS[permission]
+  if (PERM && PERM.alwaysDisallow) return cb(false)
 
-  // send message to create the UI
-  win.webContents.send('command', 'perms:prompt', req.id, webContents.id, permission)
+  // check the sitedatadb
+  siteData.getPermission(url, permission).catch(err => false).then(res => {
+    if (res === 1) {
+      return cb(true)
+    }
+
+    // if we're already tracking this kind of permission request, then bundle them
+    var req = activeRequests.find(req => req.win === win && req.permission === permission)
+    if (req) {
+      var oldCb = req.cb
+      req.cb = decision => { oldCb(decision); cb(decision) }
+    } else {
+      // track the new cb
+      var req = { id: ++idCounter, win, url, permission, cb }
+      activeRequests.push(req)
+    }
+
+    // send message to create the UI
+    win.webContents.send('command', 'perms:prompt', req.id, webContents.id, permission)
+  })
 }
 
 function onPermissionResponseHandler (e, reqId, decision) {
@@ -66,4 +80,10 @@ function onPermissionResponseHandler (e, reqId, decision) {
   // hand down the decision
   var cb = req.cb
   cb(decision)
+
+  // persist approvals
+  const PERM = PERMS[req.permission]
+  if (decision && PERM && PERM.persist) {
+    siteData.setPermission(req.url, req.permission, 1)
+  }
 }
