@@ -17,6 +17,7 @@ const app = new Application({
 var testStaticDat, testStaticDatURL
 var testRunnerDat, testRunnerDatURL
 var createdDatURL // url of the dat which is created by testRunnerDat, which gives it write access
+var createdDatKey
 
 test.before(async t => {
   // open the window
@@ -37,8 +38,7 @@ test.before(async t => {
   await app.client.waitForExist('h1#loaded')
 })
 test.after.always('cleanup', async t => {
-  // var logs = await app.client.getMainProcessLogs()
-  // console.log(logs)
+  console.log(await app.client.getMainProcessLogs())
   await app.stop()
 })
 
@@ -165,6 +165,7 @@ test('dat.createArchive', async t => {
   var res = await app.client.execute(() => { return window.res })
   createdDatURL = res.value
   t.truthy(createdDatURL.startsWith('dat://'))
+  createdDatKey = createdDatURL.slice('dat://'.length, -1)
 
   // check the dat.json
   var res = await app.client.executeAsync((url, done) => {
@@ -262,4 +263,41 @@ test('dat.createDirectory doesnt overwrite files or folders', async t => {
     dat.createDirectory(url).then(done, done)
   }, createdDatURL + '/hello.txt')
   t.deepEqual(res.value.name, 'FileAlreadyExistsError')
+})
+
+test('dat.deleteArchive removes save claims', async t => {
+  // check that the save-claim exists
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
+  }, createdDatKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.saveClaims, [testRunnerDatURL.slice(0, -1)])
+
+  // delete the archive
+  var res = await app.client.executeAsync((url, done) => {
+    dat.deleteArchive(url).then(done, err => done({ err }))
+  }, createdDatURL)
+  t.falsy(res.value)
+
+  // check that the save-claim was removed
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
+  }, createdDatKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.saveClaims.length, 0)
+
+  // undo the deletion
+  await app.client.windowByIndex(0)
+  await app.client.click('.prompt-reject')
+  await app.client.windowByIndex(1)
+
+  // check that the new save-claim was added
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
+  }, createdDatKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.saveClaims, ['beaker:archives'])
 })

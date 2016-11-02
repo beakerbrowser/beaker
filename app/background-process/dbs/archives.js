@@ -12,7 +12,7 @@ import { cbPromise } from '../../lib/functions'
 import { setupLevelDB, makeTxLock } from '../../lib/bg/db'
 import { transform, noopWritable } from '../../lib/streams'
 import { bufToStr } from '../networks/dat/helpers'
-import { DAT_HASH_REGEX } from '../../lib/const'
+import { DAT_HASH_REGEX, InvalidOperationError, InvalidArchiveKeyError } from '../../lib/const'
 import { getOrLoadArchive } from '../networks/dat/dat'
 
 // globals
@@ -131,7 +131,7 @@ export function getArchiveUserSettings (key) {
   key = bufToStr(key)
 
   // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
+  if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
 
   // fetch
   return setupPromise.then(() => new Promise((resolve, reject) => {
@@ -145,7 +145,7 @@ export function setArchiveUserSettings (key, value = {}) {
   key = bufToStr(key)
 
   // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
+  if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
 
   return setupPromise.then(() => cbPromise(cb => {
     archiveUserSettingsTxLock(endTx => {
@@ -177,9 +177,9 @@ export function updateArchiveClaims (key, { origin, op, claims }) {
   origin = extractOrigin(origin)
 
   // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
-  if (!origin) return Promise.reject(new Error('Invalid origin'))
-  if (['add', 'remove', 'remove-all', 'toggle-all'].includes(op) === false) return Promise.reject(new Error('Invalid op'))
+  if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
+  if (!origin) return Promise.reject(new InvalidURLError())
+  if (['add', 'remove', 'remove-all', 'toggle-all'].includes(op) === false) return Promise.reject(new InvalidOperationError())
 
   return setupPromise.then(() => cbPromise(cb => {
     // start lock
@@ -232,7 +232,7 @@ export function getArchiveMeta (key) {
   key = bufToStr(key)
 
   // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
+  if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
 
   // fetch
   return setupPromise.then(() => new Promise((resolve, reject) => {
@@ -246,7 +246,7 @@ export function setArchiveMeta (key, value = {}) {
   key = bufToStr(key)
 
   // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject('Invalid archive key')
+  if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
 
   return setupPromise.then(() => cbPromise(cb => {
     // extract the desired values
@@ -313,7 +313,7 @@ function archiveUserSettingsObject (key, obj) {
 function extractOrigin (originURL) {
   var urlp = url.parse(originURL)
   if (!urlp || !urlp.host || !urlp.protocol) return
-  return (urlp.protocol + urlp.host)
+  return (urlp.protocol + (urlp.slashes ? '//' : '') + urlp.host)
 }
 
 // filter helpers

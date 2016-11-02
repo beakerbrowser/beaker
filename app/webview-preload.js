@@ -1,7 +1,7 @@
 import { webFrame } from 'electron'
 import importWebAPIs from './lib/fg/import-web-apis'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
-import { setup as setupDat } from './webview-preload/dat'
+import { setup as setupDat } from './webview-preload/dat-web-api'
 import babelBrowserBuild from 'browser-es-module-loader/dist/babel-browser-build'
 import BrowserESModuleLoader from 'browser-es-module-loader/dist/browser-es-module-loader'
 

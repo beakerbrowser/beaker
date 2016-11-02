@@ -1,3 +1,7 @@
+// some parts of the dat web API need to involve the shell-window
+// eg, to prompt the user for confirmation
+// this file contains the client side of those behaviors
+
 import { ipcRenderer } from 'electron'
 import { UserDeniedError } from '../lib/const'
 
@@ -13,16 +17,24 @@ export function setup () {
   if (window.location.protocol === 'dat:') {
     // attach additional methods to the dat api
     dat.createArchive = createArchive
+    dat.deleteArchive = deleteArchive
 
     // wire up listeners
-    ipcRenderer.on('dat-response', onResponseMessage)
+    ipcRenderer.on('dat:response', onResponseMessage)
   }
 }
 
 function createArchive ({ title, description, serve } = {}) {
   // send the request to the shell window
   var { reqId, promise } = allocateRequest()
-  ipcRenderer.sendToHost('dat:create-archive', reqId, { title, description, serve })
+  ipcRenderer.sendToHost('dat:createArchive', reqId, { title, description, serve })
+  return promise
+}
+
+function deleteArchive (url) {
+  // send the request to the shell window
+  var { reqId, promise } = allocateRequest()
+  ipcRenderer.sendToHost('dat:deleteArchive', reqId, url)
   return promise
 }
 
