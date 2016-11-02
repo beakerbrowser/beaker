@@ -23,6 +23,7 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 - `beaker_log_level`: how much logging to put out. Must be: 'trace', 'debug', 'info', 'warn', or 'error. Default: 'warn'.
 - `beaker_user_data_path`: override the user-data path, therefore changing where data is read/written. Useful for testing.
+- `beaker_dat_quota_default_bytes_allowed`: override the default max-quota for bytes allowed to be written by a dat site. Useful for testing.
 
 ## Running the tests
 

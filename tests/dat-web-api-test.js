@@ -12,7 +12,10 @@ const app = new Application({
   path: electron,
   args: ['../app'],
   chromeDriverLogPath: 'dat-web-api-test.log',
-  env: { beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-') }
+  env: { 
+    beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
+    beaker_dat_quota_default_bytes_allowed: 1024 // 1kb
+  }
 })
 var testStaticDat, testStaticDatURL
 var testRunnerDat, testRunnerDatURL
@@ -271,6 +274,14 @@ test('dat.writeFile doesnt allow writes to archives without a save claim', async
     dat.writeFile(url, 'hello world', 'utf8').then(done, done)
   }, testStaticDatURL + '/denythis.txt')
   t.deepEqual(res.value.name, 'PermissionsError')
+})
+
+test('dat.writeFile doesnt allow writes that exceed the quota', async t => {
+  // write to the subdir
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'x'.repeat(2048), 'utf8').then(done, done)
+  }, createdDatURL + '/denythis.txt')
+  t.deepEqual(res.value.name, 'QuotaExceededError')
 })
 
 test('dat.createDirectory doesnt allow writes to archives without a save claim', async t => {
