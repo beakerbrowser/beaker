@@ -3,11 +3,15 @@ import path from 'path'
 import { parse as parseURL } from 'url'
 import * as dat from './dat'
 import * as archivesDb from '../../dbs/archives'
-import { statArchiveFile, readArchiveFile, readArchiveDirectory, writeArchiveFile, writeArchiveDirectory } from './helpers'
+import * as sitedataDb from '../../dbs/sitedata'
+import { statArchiveFile, readArchiveFile, readArchiveDirectory, writeArchiveFile, writeArchiveDirectory, toValidEncoding } from './helpers'
 import log from 'loglevel'
 import { 
   DAT_HASH_REGEX,
+  DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
+
   PermissionsError,
+  QuotaExceededError,
   InvalidEncodingError,
   InvalidURLError,
   FileNotFoundError,
@@ -66,11 +70,23 @@ export default {
   }),
 
   writeFile: m(function * (url, data, opts = {}) {
+    if (typeof opts === 'string') {
+      opts = { encoding: opts }
+    }
+    // guess the encoding by the data type
+    if (!opts.encoding) {
+      opts.encoding = (typeof data === 'string' ? 'utf8' : 'binary')
+    }
+    opts.encoding = toValidEncoding(opts.encoding)
+
     // TODO binary
+    if (typeof data !== 'string') throw new Error('Binary not yet implemented')
     // TODO quota management
     // TODO permission check
     var { archive, filepath } = lookupArchive(url)
-    yield assertWritePermission(archive, this.sender)
+    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+    yield assertWritePermission(archive, senderOrigin)
+    yield assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
     return new Promise((resolve, reject) => {
       // protected files
       if (isProtectedFilePath(filepath)) {
@@ -127,7 +143,8 @@ export default {
     // TODO quota management
     // TODO permission check
     var { archive, filepath } = lookupArchive(url)
-    yield assertWritePermission(archive, this.sender)
+    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+    yield assertWritePermission(archive, senderOrigin)
     return new Promise((resolve, reject) => {
       // protected files
       if (isProtectedFilePath(filepath)) {
@@ -234,12 +251,28 @@ function isProtectedFilePath (filepath) {
   return filepath === '/' || filepath === '/dat.json'
 }
 
-function assertWritePermission (archive, sender) {
-  var senderOrigin = archivesDb.extractOrigin(sender.getURL())
+function assertWritePermission (archive, senderOrigin) {
   // ensure the sender has a save claim on the archive
   return archivesDb.getArchiveUserSettings(archive.key).then(settings => {
     if (!settings.saveClaims.includes(senderOrigin)) {
       throw new PermissionsError()
+    }
+  })
+}
+
+function assertQuotaPermission (archive, senderOrigin, byteLength) {
+  // fetch the archive meta, and the current quota for the site
+  return Promise.all([
+    archivesDb.getArchiveMeta(archive.key),
+    sitedataDb.get(senderOrigin, 'dat-bytes-allowed')
+  ]).then(([meta, bytesAllowed]) => {
+    // fallback to default quota
+    bytesAllowed = bytesAllowed || DAT_QUOTA_DEFAULT_BYTES_ALLOWED
+
+    // check the new size
+    var newSize = meta.size + byteLength
+    if (newSize > bytesAllowed) {
+      throw new QuotaExceededError()
     }
   })
 }
