@@ -179,13 +179,21 @@ export default {
   }),
 
   serve: m(function * (url) {
-    // var { archive, filepath } = lookupArchive(url)
-    throw new Error('not yet implemented') // TODO
+    var { archive, filepath } = lookupArchive(url)
+    return dat.updateArchiveClaims(archive.key, {
+      origin: this.sender.getURL(),
+      op: 'add',
+      claims: 'upload'
+    }).then(res => undefined)
   }),
 
   unserve: m(function * (url) {
-    // var { archive, filepath } = lookupArchive(url)
-    throw new Error('not yet implemented') // TODO
+    var { archive, filepath } = lookupArchive(url)
+    return dat.updateArchiveClaims(archive.key, {
+      origin: this.sender.getURL(),
+      op: 'remove',
+      claims: 'upload'
+    }).then(res => undefined)
   })
 }
 
@@ -209,7 +217,7 @@ function m (fn, opts) {
       return Promise.reject(PermissionsError(sender.getURL()))
     }
 
-    return fn(...args)
+    return fn.apply(this, args)
   }
 }
 
