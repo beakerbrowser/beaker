@@ -310,7 +310,7 @@ function archiveUserSettingsObject (key, obj) {
   }, obj)
 }
 
-function extractOrigin (originURL) {
+export function extractOrigin (originURL) {
   var urlp = url.parse(originURL)
   if (!urlp || !urlp.host || !urlp.protocol) return
   return (urlp.protocol + (urlp.slashes ? '//' : '') + urlp.host)

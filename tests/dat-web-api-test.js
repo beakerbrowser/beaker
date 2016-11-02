@@ -265,6 +265,22 @@ test('dat.createDirectory doesnt overwrite files or folders', async t => {
   t.deepEqual(res.value.name, 'FileAlreadyExistsError')
 })
 
+test('dat.writeFile doesnt allow writes to archives without a save claim', async t => {
+  // write to the subdir
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, testStaticDatURL + '/denythis.txt')
+  t.deepEqual(res.value.name, 'PermissionsError')
+})
+
+test('dat.createDirectory doesnt allow writes to archives without a save claim', async t => {
+  // write to the subdir
+  var res = await app.client.executeAsync((url, done) => {
+    dat.createDirectory(url).then(done, done)
+  }, testStaticDatURL + '/denythis')
+  t.deepEqual(res.value.name, 'PermissionsError')
+})
+
 test('dat.deleteArchive removes save claims', async t => {
   // check that the save-claim exists
   await app.client.windowByIndex(0)
