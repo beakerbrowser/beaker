@@ -1,10 +1,14 @@
 import * as yo from 'yo-yo'
 import * as pages from '../../pages'
 import { findParent } from '../../../lib/fg/event-handlers'
+import PERMS from '../../../lib/perms'
 
 export class SiteInfoNavbarBtn {
   constructor() {
     this.isDropdownOpen = false
+    this.siteInfo = false
+    this.sitePerms = false
+    this.siteInfoOverride = false
     this.protocolInfo = false
     window.addEventListener('click', e => this.onClickAnywhere(e)) // close dropdown on click outside
     pages.on('set-active', e => this.closeDropdown()) // close dropdown on tab change
@@ -15,7 +19,7 @@ export class SiteInfoNavbarBtn {
     var title = '', url = '', hostname = '', icon = ''
     if (this.siteInfoOverride && this.siteInfoOverride.title) {
       title = this.siteInfoOverride.title
-    } else if (this.siteInfo && this.siteInfo.title) {
+    } else if (this.siteInfoOverride && this.siteInfo.title) {
       title = this.siteInfo.title
     } else if (this.protocolInfo && this.protocolInfo.scheme === 'dat:') {
       title = 'Untitled'
@@ -45,6 +49,14 @@ export class SiteInfoNavbarBtn {
         }
       }
 
+      // site permissions
+      var permsEls = []
+      if (this.sitePerms) {
+        for (var k in this.sitePerms) {
+          permsEls.push(this.renderPerm(k, this.sitePerms[k]))
+        }
+      }
+
       // dropdown
       dropdownEl = yo`<div class="toolbar-dropdown toolbar-site-info-dropdown">
         <div class="details">
@@ -54,11 +66,7 @@ export class SiteInfoNavbarBtn {
           </div>
           ${siteCtrlsEl}
         </div>
-        ${''/* TODO <div class="perms">
-          <div><label class="checked"><input type="checkbox" value="js" checked /> <span class="icon icon-code"></span> Run Javascript</label></div>
-          <div><label><input type="checkbox" value="media" /> <span class="icon icon-mic"></span> Access your camera & microphone</label></div>
-          <div><label><input type="checkbox" value="notifications" /> <span class="icon icon-comment"></span> Create desktop notifications</label></div>
-        </div>*/}
+        <div class="perms">${permsEls}</div>
       </div>`
     }
 
@@ -97,12 +105,33 @@ export class SiteInfoNavbarBtn {
     this.updateActives()
   }
 
+  renderPerm (id, value) {
+    const checked = !!value
+    const icon = PERMS[id] ? PERMS[id].icon : ''
+    const desc = PERMS[id] ? PERMS[id].desc : ''
+    return yo`<div>
+      <label class=${value ? 'checked' : ''} onclick=${e=>this.togglePerm(id)}><input type="checkbox" value="${id}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${desc}</label>
+    </div>`
+  }
+
+  togglePerm (id) {
+    // update perm
+    var newValue = (this.sitePerms[id] === 1) ? 0 : 1
+    beakerSitedata.setPermission(this.protocolInfo.url, id, newValue).then(() => {
+      this.sitePerms[id] = newValue
+
+      // rerender
+      this.updateActives()
+    })
+  }
+
   viewSiteFiles() {
     const { hostname } = this.protocolInfo
     pages.setActive(pages.create('beaker:archive/' + hostname))
     this.closeDropdown()
   }
 }
+
 
 function shorten (str) {
   if (str.length > 40) return (str.slice(0, 37) + '...')
