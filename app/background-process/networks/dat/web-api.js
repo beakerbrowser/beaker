@@ -2,6 +2,7 @@ import co from 'co'
 import path from 'path'
 import { parse as parseURL } from 'url'
 import * as dat from './dat'
+import * as archivesDb from '../../dbs/archives'
 import { statArchiveFile, readArchiveFile, readArchiveDirectory, writeArchiveFile, writeArchiveDirectory } from './helpers'
 import log from 'loglevel'
 import { 
@@ -69,6 +70,7 @@ export default {
     // TODO quota management
     // TODO permission check
     var { archive, filepath } = lookupArchive(url)
+    yield assertWritePermission(archive, this.sender)
     return new Promise((resolve, reject) => {
       // protected files
       if (isProtectedFilePath(filepath)) {
@@ -125,6 +127,7 @@ export default {
     // TODO quota management
     // TODO permission check
     var { archive, filepath } = lookupArchive(url)
+    yield assertWritePermission(archive, this.sender)
     return new Promise((resolve, reject) => {
       // protected files
       if (isProtectedFilePath(filepath)) {
@@ -214,7 +217,7 @@ function m (fn, opts) {
 
     // check the protocol
     if (!checkProtocolPermission(sender)) {
-      return Promise.reject(PermissionsError(sender.getURL()))
+      return Promise.reject(new PermissionsError())
     }
 
     return fn.apply(this, args)
@@ -229,6 +232,16 @@ function checkProtocolPermission (sender) {
 // helper to check if filepath refers to a file that userland is not allowed to edit directly
 function isProtectedFilePath (filepath) {
   return filepath === '/' || filepath === '/dat.json'
+}
+
+function assertWritePermission (archive, sender) {
+  var senderOrigin = archivesDb.extractOrigin(sender.getURL())
+  // ensure the sender has a save claim on the archive
+  return archivesDb.getArchiveUserSettings(archive.key).then(settings => {
+    if (!settings.saveClaims.includes(senderOrigin)) {
+      throw new PermissionsError()
+    }
+  })
 }
 
 // helper to handle the URL argument that's given to most args
