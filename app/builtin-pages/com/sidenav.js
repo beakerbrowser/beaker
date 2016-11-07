@@ -40,6 +40,7 @@ export function update () {
 
 function render () {
   return yo`<nav class="nav-group">
+    <img class="logo" src="beaker:logo" />
     ${navItems.map(renderNavItem)}
   </nav>`
 }
