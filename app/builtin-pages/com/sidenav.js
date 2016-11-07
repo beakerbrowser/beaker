@@ -51,7 +51,7 @@ function renderNavItem (item) {
 
   // render items
   var { href, label, icon } = item
-  var isActive = window.location == href
+  var isActive = (''+window.location).startsWith(href)
   return yo`<a class=${'nav-group-item' + (isActive?' active':'')} href=${href} title=${label} onclick=${onClickNavItem(item)}>
     <span class="icon icon-${icon}"></span>
   </a>`

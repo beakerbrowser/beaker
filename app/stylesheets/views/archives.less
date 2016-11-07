@@ -1,6 +1,25 @@
 .archives {
-  .page-toolbar .btn {
-    font-size: 14px;
+  .page-toolbar {
+    .btn {
+      font-size: 14px;
+    }
+    .tabs {
+      display: inline-flex;
+      a {
+        padding: 2px 16px;
+        margin: 0 5px;
+        font-size: 15px;
+        color: gray;
+        &.current {
+          color: #555;
+          border-bottom: 3px solid orange;
+        }
+        &:hover {
+          text-decoration: none;
+          color: #555;
+        }
+      }
+    }
   }
   .archives-empty {
     .archives-empty-banner {

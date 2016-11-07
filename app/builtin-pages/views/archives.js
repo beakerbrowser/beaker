@@ -6,12 +6,14 @@ import * as yo from 'yo-yo'
 import co from 'co'
 import ArchivesList from '../model/archives-list'
 import { render as renderArchivesList } from '../com/archives-list'
+import { pushUrl } from '../../lib/fg/event-handlers'
 
 // globals
 // =
 
 var archivesList
 var isViewActive = false
+var filter
 
 // exported API
 // =
@@ -22,10 +24,11 @@ export function setup () {
 export function show () {
   isViewActive = true
   document.title = 'Your Archives'
+  filter = (window.location.pathname.endsWith('/downloaded')) ? 'downloaded' : 'owned'
   co(function * () {
     archivesList = new ArchivesList()
     yield archivesList.setup({
-      filter: { isSaved: true }
+      filter: { isSaved: true, isOwner: (filter === 'owned') }
     })
     archivesList.on('changed', render)
     render()
@@ -51,6 +54,10 @@ function render () {
     <div class="archives">
       <div class="page-toolbar">
         <button class="btn btn-green" onclick=${onClickCreateArchive}><span class="icon icon-book"></span> New</button>
+        <div class="tabs">
+          <a class=${(filter === 'owned') ? 'current' : ''} href="beaker:archives" onclick=${pushUrl}>Your Archives</a>
+          <a class=${(filter === 'downloaded') ? 'current' : ''} href="beaker:archives/downloaded" onclick=${pushUrl}>Downloaded</a>
+        </div>
       </div>
       ${renderArchivesList(archivesList, { renderEmpty, render })}
     </div>
@@ -59,12 +66,11 @@ function render () {
 
 function renderEmpty () {
   return yo`<div class="archives-empty">
-      <div class="archives-empty-banner">
-        <div class="icon icon-info-circled"></div>
-        <div>
-          Share files on the network by creating archives.
-          <a class="icon icon-popup" href="https://beakerbrowser.com/docs/" target="_blank"> Learn More</a>
-        </div>
+    <div class="archives-empty-banner">
+      <div class="icon icon-info-circled"></div>
+      <div>
+        Share files on the network by creating archives.
+        <a class="icon icon-popup" href="https://beakerbrowser.com/docs/" target="_blank"> Learn More</a>
       </div>
     </div>
   </div>`
