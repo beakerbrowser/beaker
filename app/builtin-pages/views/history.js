@@ -89,7 +89,7 @@ function render () {
   }
 
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content" onscroll=${onScrollContent}>
-    <div class="delete-bulk">
+    <div class="page-toolbar">
      <button class="btn" onclick=${onClickDeleteBulk.bind(window)}>
        Clear Browsing History
      </button>

@@ -1,0 +1,45 @@
+.archives-list {
+  font-size: 15px;
+  margin-top: 10px;
+  .al-row {
+    padding: 20px 10px;
+    border-top: 1px solid #ddd;
+
+    .al-title {
+      height: 32px;
+      a {
+        font-size: 18px;
+        font-weight: bold;
+      }
+      img {
+        position: relative;
+        top: 1px;
+      }
+      small {
+        color: gray;
+      }
+    }
+    .al-desc {
+      height: 34px;
+    }
+    .al-ctrls {
+      display: flex;
+      font-size: 13px;
+      .btn {
+        padding: 0px 10px;
+      }
+      .toggleable.btn {
+        // because of the dropdown elements...
+        // the dom is not structured correctly for btn-group's edges, so we need to add them manually
+        border-top-right-radius: 2px;
+        border-bottom-right-radius: 2px;
+        border-right-width: 1px;
+      }
+      .dropdown-btn-list {
+        right: auto;
+        left: 0;
+        width: 100px;
+      }
+    }
+  }
+}
