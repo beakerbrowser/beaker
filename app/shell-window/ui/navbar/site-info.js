@@ -19,7 +19,7 @@ export class SiteInfoNavbarBtn {
     var title = '', url = '', hostname = '', icon = ''
     if (this.siteInfoOverride && this.siteInfoOverride.title) {
       title = this.siteInfoOverride.title
-    } else if (this.siteInfoOverride && this.siteInfo.title) {
+    } else if (this.siteInfo && this.siteInfo.title) {
       title = this.siteInfo.title
     } else if (this.protocolInfo && this.protocolInfo.scheme === 'dat:') {
       title = 'Untitled'
