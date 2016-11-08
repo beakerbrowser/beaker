@@ -7,3 +7,17 @@ export function pluralize (num, base, suffix='s') {
     return base
   return base + suffix
 }
+
+export function shorten (str, n=6) {
+  if (str.length > (n+3)) {
+    return str.slice(0, n) + '...'
+  }
+  return str
+}
+
+export function shortenHash (str, n=6) {
+  if (str.length > (n+5)) {
+    return str.slice(0, n) + '..' + str.slice(-2)
+  }
+  return str
+}

@@ -2,7 +2,7 @@ import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import toggleable from './toggleable'
 import { niceDate } from '../../lib/time'
-import { ucfirst, pluralize } from '../../lib/strings'
+import { ucfirst, pluralize, shortenHash } from '../../lib/strings'
 import { pushUrl, writeToClipboard } from '../../lib/fg/event-handlers'
 
 // exported api
@@ -19,7 +19,7 @@ export function render (archivesList, opts = {}) {
     if (!archive.userSettings.saveClaims.length) {
       return numDeleted++
     }
-    let title = archive.title || archive.key
+    let title = archive.title || shortenHash(archive.key)
     let npeers = archive.peers || 0
     let hostBtnTitle = 'Host'
     if (isNetworked(archive))
@@ -31,9 +31,7 @@ export function render (archivesList, opts = {}) {
       <div class="al-main">
         <div class="al-title">
           <img class="favicon" src=${'beaker-favicon:dat://'+archive.key} />
-          <a href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>
-            ${title}
-          </a>
+          <a href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>${title}</a>
           <small>Updated ${mtime}</small>
         </div>
         <div class="al-ctrls">
