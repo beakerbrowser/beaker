@@ -123,7 +123,7 @@ export function show (isSameView) {
     }
 
     // run the tour if this is the owner's first time
-    const tourSeenSetting = (archiveInfo.isOwner) ? 'has-seen-viewdat-owner-tour' : 'has-seen-viewdat-reader-tour'
+    const tourSeenSetting = 'has-seen-viewdat-tour'
     var hasSeenTour = false
     try { hasSeenTour = yield datInternalAPI.getGlobalSetting(tourSeenSetting) }
     catch (e) {}
@@ -175,13 +175,14 @@ function render () {
 
 function renderArchive () {
   const name = archiveInfo.title || 'Untitled'
+  const wasDeleted = archiveInfo.isOwner && !isSaved(archiveInfo) // TODO add definition for non-owner
 
   // set page title
   document.title = name
 
   // ctrls
   var forkBtn = yo`<a id="fork-btn" class="btn" title="Fork" onclick=${onClickFork}><span class="icon icon-flow-branch"></span> Fork</a>`
-  var hostBtn = (isUploading(archiveInfo))
+  var hostBtn = (isNetworked(archiveInfo))
     ? yo`<a id="host-btn" class="btn pressed" title="Hosting" onclick=${onToggleServing}><span class="icon icon-check"></span> Hosting</span>`
     : yo`<a id="host-btn" class="btn" title="Host" onclick=${onToggleServing}><span class="icon icon-upload-cloud"></span> Host</a>`
   var openFolderBtn = yo`<a id="open-in-finder-btn" onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
@@ -200,23 +201,14 @@ function renderArchive () {
     </div>
   </div>`)
 
-  // TODO
-  // var syncBtn
-  // if (!archiveInfo.isOwner) {
-  //   let entry = archiveEntriesTree.entry
-  //   let isDownloaded = entry.downloadedBlocks >= entry.blocks
-  //   let label = (isDownloaded) ? 'Sync' : 'Download'
-  //   syncBtn = (isNetworked(archiveInfo))
-  //     ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="${label}ing" onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}ing</a>`
-  //     : yo`<a id="sync-btn" class="btn" title=${label} onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}</a>`
-  // }
-
-  // TODO
-
-    // let undoDeleteBtn = yo`<small class="ll-heading-group">
-    //   <span class="icon icon-trash"></span> Deleted
-    //   (<a title="Undo Delete" onclick=${onToggleSave}>Undo</a>)
-    // </small>`
+  // undo delete btn
+  var undoDeleteBtn
+  if (wasDeleted) {
+    undoDeleteBtn = yo`<span class="archive-deleted">
+      <span class="icon icon-trash"></span> Deleted
+      (<a title="Undo Delete" onclick=${onToggleSave}>Undo</a>)
+    </span>`
+  }
 
   // description
   var descriptEl = (archiveInfo.description)
@@ -258,7 +250,10 @@ function renderArchive () {
     <div class="archive">
       <div class="archive-heading">
         <div class="archive-name"><a href=${'dat://'+archiveInfo.key} title=${name}>${name}</a></div>
-        <div class="archive-ctrls">${forkBtn} ${hostBtn} ${dropdownBtn} ${hypercoreStats.render()}</div>
+        ${ wasDeleted
+          ? yo`<div class="archive-ctrls at-center">${undoDeleteBtn}</div>`
+          : yo`<div class="archive-ctrls at-center">${forkBtn} ${hostBtn} ${dropdownBtn} ${hypercoreStats.render()}</div>` }
+        <div class="archive-ctrls"><span id="owner-label">${ archiveInfo.isOwner ? 'Owner' : 'Read-only' }</span></div>
       </div>
       <div class="archive-desc">${descriptEl} ${editBtn}</div>
       ${addFilesEl}
@@ -486,7 +481,7 @@ function onToggleSave () {
     archiveInfo.userSettings.saveClaims = settings.saveClaims
     render()
 
-    // autounnetwork if deleted, but still networking
+    // auto-unnetwork if deleted
     if (!isSaved(archiveInfo) && isNetworked(archiveInfo)) {
       datInternalAPI.updateArchiveClaims(archiveInfo.key, {
         origin: 'beaker:archives', 
@@ -622,5 +617,5 @@ function isUploading (archive) {
 }
 
 function isNetworked (archive) {
-  return isDownloading(archive) || isUploading(archive)
+  return isDownloading(archive) && isUploading(archive)
 }
