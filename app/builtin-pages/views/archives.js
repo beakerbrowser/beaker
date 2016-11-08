@@ -8,6 +8,7 @@ import ArchivesList from '../model/archives-list'
 import { render as renderArchivesList } from '../com/archives-list'
 import { pushUrl } from '../../lib/fg/event-handlers'
 import { ucfirst } from '../../lib/strings'
+import * as editSiteModal from '../com/modals/edit-site'
 
 // globals
 // =
@@ -79,21 +80,9 @@ function renderEmpty () {
 // =
 
 function onClickCreateArchive (e) {
-  datInternalAPI.createNewArchive({ saveClaim: 'beaker:archives' }).then(key => {
-    window.location = 'beaker:archive/' + key
-  })
-}
-
-function onClickImportFolder (e) {
-  co(function* () {
-    var paths = yield beakerBrowser.showOpenDialog({
-      title: 'Choose files and folders to import',
-      buttonLabel: 'Import',
-      properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
-    })
-    if (paths && paths.length) {
-      var key = yield datInternalAPI.createNewArchive({ importFiles: paths, saveClaim: 'beaker:archives' })
+  editSiteModal.create({}, { title: 'New Dat', onSubmit: ({ title, description }) => {
+    datInternalAPI.createNewArchive({ title, description, saveClaim: 'beaker:archives' }).then(key => {
       window.location = 'beaker:archive/' + key
-    }
-  })
+    })
+  }})
 }
