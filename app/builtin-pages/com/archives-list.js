@@ -28,30 +28,32 @@ export function render (archivesList, opts = {}) {
     // render owned archive
     let mtime = archive.mtime ? ucfirst(niceDate(archive.mtime)) : '--'
     archiveEls.push(yo`<div class="al-row">
-      <div class="al-title">
-        <img class="favicon" src=${'beaker-favicon:dat://'+archive.key} />
-        <a href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>
-          ${title}
-        </a>
-        <small>Updated ${mtime}</small>
+      <div class="al-main">
+        <div class="al-title">
+          <img class="favicon" src=${'beaker-favicon:dat://'+archive.key} />
+          <a href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>
+            ${title}
+          </a>
+          <small>Updated ${mtime}</small>
+        </div>
+        <div class="al-ctrls">
+          ${isNetworked(archive) 
+            ? yo`<a class="btn pressed" onclick=${onToggleServeArchive(archive, rerender)} title=${hostBtnTitle}><span class="icon icon-check"></span> ${hostBtnTitle}</a>` 
+            : yo`<a class="btn" onclick=${onToggleServeArchive(archive, rerender)} title=${hostBtnTitle}><span class="icon icon-upload-cloud"></span> ${hostBtnTitle}</a>` }
+          <div class="al-dropdown">${toggleable(yo`
+            <div class="dropdown-btn-container">
+              <a class="toggleable btn"><span class="icon icon-down-open-mini"></span></a>
+              <div class="dropdown-btn-list">
+                <div onclick=${onCopyLink(archive.key)}><span class="icon icon-link"></span> Copy Link</div>
+                <div onclick=${onDeleteArchive(archive, rerender)}><span class="icon icon-trash"></span> Delete</div>
+              </div>
+            </div>
+          `)}</div>
+        </div>
       </div>
       ${ archive.description
         ? yo`<div class="al-desc">${archive.description}</div>`
         : '' }
-      <div class="al-ctrls btn-group">
-        ${isNetworked(archive) 
-          ? yo`<a class="btn pressed" onclick=${onToggleServeArchive(archive, rerender)} title=${hostBtnTitle}><span class="icon icon-check"></span> ${hostBtnTitle}</a>` 
-          : yo`<a class="btn" onclick=${onToggleServeArchive(archive, rerender)} title=${hostBtnTitle}><span class="icon icon-upload-cloud"></span> ${hostBtnTitle}</a>` }
-        <div class="ll-dropdown">${toggleable(yo`
-          <div class="dropdown-btn-container">
-            <a class="toggleable btn"><span class="icon icon-down-open-mini"></span></a>
-            <div class="dropdown-btn-list">
-              <div onclick=${onCopyLink(archive.key)}><span class="icon icon-link"></span> Copy Link</div>
-              <div onclick=${onDeleteArchive(archive, rerender)}><span class="icon icon-trash"></span> Delete</div>
-            </div>
-          </div>
-        `)}</div>
-      </div>
     </div>`)
   })
 
