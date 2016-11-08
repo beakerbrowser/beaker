@@ -500,7 +500,7 @@ function onToggleServing () {
   // toggle the networking
   datInternalAPI.updateArchiveClaims(archiveInfo.key, {
     origin: 'beaker:archives',
-    op: 'toggle-all',
+    op: (isNetworked(archiveInfo)) ? 'remove-all' : 'add',
     claims: ['upload', 'download']
   }).then(settings => {
     archiveInfo.userSettings.uploadClaims = settings.uploadClaims
@@ -617,5 +617,5 @@ function isUploading (archive) {
 }
 
 function isNetworked (archive) {
-  return isDownloading(archive) && isUploading(archive)
+  return isUploading(archive)
 }

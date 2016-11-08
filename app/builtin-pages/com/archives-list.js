@@ -80,7 +80,7 @@ function onToggleServeArchive (archiveInfo, render) {
     e.stopPropagation()
     datInternalAPI.updateArchiveClaims(archiveInfo.key, { 
       origin: 'beaker:archives', 
-      op: 'toggle-all', 
+      op: (isNetworked(archiveInfo)) ? 'remove-all' : 'add',
       claims: ['upload', 'download']
     }).then(settings => {
       archiveInfo.userSettings.uploadClaims = settings.uploadClaims
@@ -127,5 +127,5 @@ function onUndoDeletions (archivesList, render) {
 }
 
 function isNetworked (archive) {
-  return archive.userSettings.uploadClaims.length > 0 || archive.userSettings.downloadClaims.length > 0
+  return archive.userSettings.uploadClaims.length > 0// || archive.userSettings.downloadClaims.length > 0
 }
