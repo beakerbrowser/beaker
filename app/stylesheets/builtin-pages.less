@@ -7,9 +7,9 @@
   font-style: normal;
 }
 
+@import "./com/archives.less";
 @import "./com/btn.less";
 @import "./com/toolbar.less";
-@import "./com/tabs.less";
 @import "./com/sidenav.less";
 @import "./com/links-list.less";
 @import "./com/files-list.less";
@@ -20,7 +20,6 @@
 
 @import "./views/archives.less";
 @import "./views/archive.less";
-@import "./views/history.less";
 @import "./views/settings.less";
 
 @import "./vendor/shepherd-theme-arrows.less";
@@ -31,6 +30,19 @@
 
 #el-content {
   padding: 5px 30px 10px 20px;
+}
+
+.page-toolbar {
+  margin-top: 10px;
+  .btn {
+    padding: 0 10px;
+    font-size: 11px;
+  }
+}
+
+.notice {
+  padding: 11px;
+  color: gray;
 }
 
 .favorites.links-list {

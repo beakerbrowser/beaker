@@ -123,7 +123,7 @@ export function show (isSameView) {
     }
 
     // run the tour if this is the owner's first time
-    const tourSeenSetting = (archiveInfo.isOwner) ? 'has-seen-viewdat-owner-tour' : 'has-seen-viewdat-reader-tour'
+    const tourSeenSetting = 'has-seen-viewdat-tour'
     var hasSeenTour = false
     try { hasSeenTour = yield datInternalAPI.getGlobalSetting(tourSeenSetting) }
     catch (e) {}
@@ -175,9 +175,40 @@ function render () {
 
 function renderArchive () {
   const name = archiveInfo.title || 'Untitled'
+  const wasDeleted = archiveInfo.isOwner && !isSaved(archiveInfo) // TODO add definition for non-owner
 
   // set page title
   document.title = name
+
+  // ctrls
+  var forkBtn = yo`<a id="fork-btn" class="btn" title="Fork" onclick=${onClickFork}><span class="icon icon-flow-branch"></span> Fork</a>`
+  var hostBtn = (isNetworked(archiveInfo))
+    ? yo`<a id="host-btn" class="btn pressed" title="Hosting" onclick=${onToggleServing}><span class="icon icon-check"></span> Hosting</span>`
+    : yo`<a id="host-btn" class="btn" title="Host" onclick=${onToggleServing}><span class="icon icon-upload-cloud"></span> Host</a>`
+  var openFolderBtn = yo`<a id="open-in-finder-btn" onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
+  var toggleSavedBtn = isSaved(archiveInfo)
+    ? yo`<a id="delete-btn" title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
+    : yo`<a id="save-btn" title="Save Archive" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Save Archive</a>`
+  var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
+    <a class="toggleable btn"><span class="icon icon-down-open"></span></a>
+    <div class="dropdown-btn-list">
+      ${openFolderBtn}
+      <hr>
+      ${toggleSavedBtn}
+      <hr>
+      <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
+      <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
+    </div>
+  </div>`)
+
+  // undo delete btn
+  var undoDeleteBtn
+  if (wasDeleted) {
+    undoDeleteBtn = yo`<span class="archive-deleted">
+      <span class="icon icon-trash"></span> Deleted
+      (<a title="Undo Delete" onclick=${onToggleSave}>Undo</a>)
+    </span>`
+  }
 
   // description
   var descriptEl = (archiveInfo.description)
@@ -191,26 +222,19 @@ function renderArchive () {
     editBtn.childNodes[0].innerHTML = '&mdash;'
   }
 
-  // downloader's btns
-  var syncBtn
-  if (archiveInfo.isOwner) {
-    syncBtn = (isNetworked(archiveInfo))
-      ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="Sharing" onclick=${onToggleServing}><span class="icon icon-share"></span> Sharing</span>`
-      : yo`<a id="sync-btn" class="btn" title="Share" onclick=${onToggleServing}><span class="icon icon-share"></span> Share</a>`
-  } else {
-    let entry = archiveEntriesTree.entry
-    let isDownloaded = entry.downloadedBlocks >= entry.blocks
-    let label = (isDownloaded) ? 'Sync' : 'Download'
-    syncBtn = (isNetworked(archiveInfo))
-      ? yo`<a id="sync-btn" class="btn btn-primary glowing" title="${label}ing" onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}ing</a>`
-      : yo`<a id="sync-btn" class="btn" title=${label} onclick=${onToggleServing}><span class="icon icon-down-circled"></span> ${label}</a>`
-  }
-
   // readme
   var readmeEl
   if (archiveInfo.readme) {
     readmeEl = yo`<div class="markdown"></div>`
     readmeEl.innerHTML = md.render(archiveInfo.readme)
+  }
+
+  // file adder el
+  var addFilesEl
+  if (archiveInfo.isOwner) {
+    addFilesEl = yo`<div class="archive-add-files">
+      <div class="instructions">To add files, drag their icons onto this page, or <a onclick=${onClickSelectFiles}>Select them manually.</a></div>
+    </div>`
   }
 
   // progress bar for the entire dat
@@ -224,13 +248,15 @@ function renderArchive () {
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archive">
-      ${renderHeading()}
-      <div class="archive-summary">
-        <div>${descriptEl} ${editBtn}</div>
-        <div class="flex-spacer"></div>
-        ${hypercoreStats.render()}
-        ${syncBtn}
+      <div class="archive-heading">
+        <div class="archive-name"><a href=${'dat://'+archiveInfo.key} title=${name}>${name}</a></div>
+        ${ wasDeleted
+          ? yo`<div class="archive-ctrls at-center">${undoDeleteBtn}</div>`
+          : yo`<div class="archive-ctrls at-center">${forkBtn} ${hostBtn} ${dropdownBtn} ${hypercoreStats.render()}</div>` }
+        <div class="archive-ctrls"><span id="owner-label">${ archiveInfo.isOwner ? 'Owner' : 'Read-only' }</span></div>
       </div>
+      <div class="archive-desc">${descriptEl} ${editBtn}</div>
+      ${addFilesEl}
       ${progressEl}
       ${archiveEntries(archiveCurrentNode, {
         onOpenFolder,
@@ -242,81 +268,6 @@ function renderArchive () {
       <input class="hidden-file-adder" type="file" multiple onchange=${onChooseFiles} />
     </div>
   </div>`)
-}
-
-function renderHeading () {
-  const name = archiveInfo.title || 'Untitled'
-
-  // general buttons
-  var copyLinkBtn = yo`<button id="copy-link-btn" class="btn" title="Copy Link" onclick=${onCopyLink}><span class="icon icon-link"></span> Copy Link</button>`
-  var openFolderBtn = yo`<a id="open-in-finder-btn" onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
-  var forkBtn = yo`<a id="fork-btn" title="Fork Archive" onclick=${onClickFork}><span class="icon icon-flow-branch"></span> Fork Archive</a>`
-  var toggleSavedBtn = isSaved(archiveInfo)
-    ? yo`<a id="delete-btn" title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
-    : yo`<a id="save-btn" title="Save Archive" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Save Archive</a>`
-  var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
-    <a class="toggleable btn"><span class="icon icon-down-open"></span></a>
-    <div class="dropdown-btn-list">
-      ${openFolderBtn}
-      ${forkBtn}
-      <hr />
-      ${toggleSavedBtn}
-    </div>
-  </div>`)
-
-  if (archiveInfo.isOwner) {
-    if (isSaved(archiveInfo)) {
-      // owner's btns
-      let addFilesBtn = yo`<a id="add-files-btn" class="btn btn-group" title="Add Files" onclick=${onClickSelectFiles}><span class="icon icon-plus"></span> Add Files</a>`
-
-      // owner's heading
-      return yo`<div class="ll-heading">
-        <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
-        <span class="archive-name">${name}</span>
-        <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
-        <span class="btn-group">${copyLinkBtn}</span>
-        ${dropdownBtn}
-        ${addFilesBtn}
-        <small class="ll-heading-right">
-          <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
-          <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
-        </small>
-      </div>`
-    }
-
-    // deleted owner's btns
-    let undoDeleteBtn = yo`<small class="ll-heading-group">
-      <span class="icon icon-trash"></span> Deleted
-      (<a title="Undo Delete" onclick=${onToggleSave}>Undo</a>)
-    </small>`
-
-    // deleted owner's heading
-    return yo`<div class="ll-heading">
-      <a href="beaker:archives" onclick=${pushUrl}>Files <span class="icon icon-right-open"></span></a>
-      <span class="archive-name">${name}</span>
-      <small id="owner-label"><span class="icon icon-pencil" onclick=${onEditArchive}></span></small>
-      ${undoDeleteBtn}
-      <small class="ll-heading-right">
-        <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
-        <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
-      </small>
-    </div>`
-  }
-
-  // downloader's heading
-  return yo`<div class="ll-heading">
-    ${ (isSaved(archiveInfo))
-      ? yo`<a href="beaker:downloads" onclick=${pushUrl}>Downloads <span class="icon icon-right-open"></span></a>`
-      : '' }
-    <span class="archive-name">${name}</span>
-    <small id="owner-label">read-only</small>
-    <span class="btn-group">${copyLinkBtn}</span>
-    ${dropdownBtn}
-    <small class="ll-heading-right">
-      <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
-      <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
-    </small>
-  </div>`
 }
 
 function renderError () {
@@ -530,7 +481,7 @@ function onToggleSave () {
     archiveInfo.userSettings.saveClaims = settings.saveClaims
     render()
 
-    // autounnetwork if deleted, but still networking
+    // auto-unnetwork if deleted
     if (!isSaved(archiveInfo) && isNetworked(archiveInfo)) {
       datInternalAPI.updateArchiveClaims(archiveInfo.key, {
         origin: 'beaker:archives', 
@@ -549,7 +500,7 @@ function onToggleServing () {
   // toggle the networking
   datInternalAPI.updateArchiveClaims(archiveInfo.key, {
     origin: 'beaker:archives',
-    op: 'toggle-all',
+    op: (isNetworked(archiveInfo)) ? 'remove-all' : 'add',
     claims: ['upload', 'download']
   }).then(settings => {
     archiveInfo.userSettings.uploadClaims = settings.uploadClaims
@@ -568,14 +519,6 @@ function onToggleServing () {
       })
     }
   })
-}
-
-function onCopyLink () {
-  var textarea = yo`<textarea>${'dat://'+archiveInfo.key}</textarea>`
-  document.body.appendChild(textarea)
-  textarea.select()
-  document.execCommand('copy')
-  document.body.removeChild(textarea)
 }
 
 function onOpenFolder (e, entry) {
@@ -665,6 +608,14 @@ function isSaved (archive) {
   return archive.userSettings.saveClaims.length > 0
 }
 
+function isDownloading (archive) {
+  return archive.userSettings.downloadClaims.length > 0
+}
+
+function isUploading (archive) {
+  return archive.userSettings.uploadClaims.length > 0
+}
+
 function isNetworked (archive) {
-  return archive.userSettings.uploadClaims.length > 0 || archive.userSettings.downloadClaims.length > 0
+  return isUploading(archive)
 }

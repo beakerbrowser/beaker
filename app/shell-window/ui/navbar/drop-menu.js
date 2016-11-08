@@ -46,7 +46,7 @@ export class DropMenuNavbarBtn {
       let page = pages.getActive()
       if (page.getIntendedURL().startsWith('dat://')) {
         pageSpecificEls = [
-          yo`<div class="td-item" onclick=${e => this.onToggleLiveReloading(e)}><span class="icon icon-flash"></span> Turn ${page.isLiveReloading ? 'off' : 'on'} Live Reloading</div>`,
+          yo`<div class="td-item" onclick=${e => this.onToggleLiveReloading(e)}>Turn ${page.isLiveReloading ? 'off' : 'on'} Live Reloading</div>`,
           yo`<hr />`
         ]
       }

@@ -1,24 +1,42 @@
-
 .archives {
+  padding-bottom: 20px;
+  .page-toolbar {
+    .btn {
+      font-size: 14px;
+    }
+    .tabs {
+      display: inline-flex;
+      a {
+        padding: 2px 16px;
+        margin: 0 5px;
+        font-size: 15px;
+        color: gray;
+        &.current {
+          color: #555;
+          border-bottom: 3px solid orange;
+        }
+        &:hover {
+          text-decoration: none;
+          color: #555;
+        }
+      }
+    }
+  }
   .archives-empty {
+    border-top: 1px solid #ddd;
+    padding: 12px 8px;
+    color: gray;
+    font-size: 14px;
+
     .archives-empty-banner {
-      display: flex;
-      align-items: center;
+      font-size: 16px;
+      cursor: pointer;
       padding: 12px 20px;
       background: #f0f0f0;
-      margin: 16px 8px;
+      margin: 4px 0;
       border-radius: 6px;
       color: #848484;
       border: 1px solid #ddd;
-
-      div.icon {
-        margin: 0 14px 0 0;
-        font-size: 23px;
-        color: #999;
-      }
-      a.icon {
-        margin-left: 5px;
-      }
     }
   }
 }

@@ -2,7 +2,7 @@ import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import toggleable from './toggleable'
 import { niceDate } from '../../lib/time'
-import { ucfirst, pluralize } from '../../lib/strings'
+import { ucfirst, pluralize, shortenHash } from '../../lib/strings'
 import { pushUrl, writeToClipboard } from '../../lib/fg/event-handlers'
 
 // exported api
@@ -19,86 +19,40 @@ export function render (archivesList, opts = {}) {
     if (!archive.userSettings.saveClaims.length) {
       return numDeleted++
     }
-    let title = archive.title || archive.key
+    let title = archive.title || shortenHash(archive.key)
     let npeers = archive.peers || 0
+    let hostBtnTitle = 'Host'
+    if (isNetworked(archive))
+      hostBtnTitle += 'ing'
 
-    if (archive.isOwner) {
-      // render owned archive
-      let mtime = archive.mtime ? ucfirst(niceDate(archive.mtime)) : '--'
-      archiveEls.push(yo`<div class="ll-row archive">
-        <div class="ll-link">
+    // render owned archive
+    let mtime = archive.mtime ? ucfirst(niceDate(archive.mtime)) : '--'
+    archiveEls.push(yo`<div class="al-row">
+      <div class="al-main">
+        <div class="al-title">
           <img class="favicon" src=${'beaker-favicon:dat://'+archive.key} />
-          <a class="ll-title" href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>
-            ${title}
-          </a>
+          <a href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>${title}</a>
+          <small>Updated ${mtime}</small>
         </div>
-        <div class="ll-updated" title=${mtime}>${mtime}</div>
-        <div class="ll-size">${archive.size ? prettyBytes(archive.size) : '0 B'}</div>
-        <div class="ll-serve">${isNetworked(archive) 
-          ? yo`<a class="btn btn-primary glowing" onclick=${onToggleServeArchive(archive, rerender)} title="Sharing"><span class="icon icon-share"></span> ${npeers} ${pluralize(npeers, 'peer')}</a>` 
-          : yo`<a class="btn" onclick=${onToggleServeArchive(archive, rerender)} title="Share"><span class="icon icon-share"></span> Share</a>` }</div>
-        <div class="ll-dropdown">${toggleable(yo`
-          <div class="dropdown-btn-container">
-            <a class="toggleable btn"><span class="icon icon-down-open-mini"></span></a>
-            <div class="dropdown-btn-list">
-              <a href=${'beaker:archive/'+archive.key} onclick=${pushUrl}><span class="icon icon-docs"></span> View Files</a>
-              <div onclick=${onCopyLink(archive.key)}><span class="icon icon-link"></span> Copy Link</div>
-              <hr>
-              <div onclick=${onDeleteArchive(archive, rerender)}><span class="icon icon-trash"></span> Delete</div>
+        <div class="al-ctrls">
+          ${isNetworked(archive) 
+            ? yo`<a class="btn pressed" onclick=${onToggleServeArchive(archive, rerender)} title=${hostBtnTitle}><span class="icon icon-check"></span> ${hostBtnTitle}</a>` 
+            : yo`<a class="btn" onclick=${onToggleServeArchive(archive, rerender)} title=${hostBtnTitle}><span class="icon icon-upload-cloud"></span> ${hostBtnTitle}</a>` }
+          <div class="al-dropdown">${toggleable(yo`
+            <div class="dropdown-btn-container">
+              <a class="toggleable btn"><span class="icon icon-down-open-mini"></span></a>
+              <div class="dropdown-btn-list">
+                <div onclick=${onCopyLink(archive.key)}><span class="icon icon-link"></span> Copy Link</div>
+                <div onclick=${onDeleteArchive(archive, rerender)}><span class="icon icon-trash"></span> Delete</div>
+              </div>
             </div>
-          </div>
-        `)}</div>
-      </div>`)
-    } else {
-      // download stats
-      let progress
-      let status
-      let blocksProgress = 0
-      let blocksTotal = 1
-      if (archive.stats) {
-        blocksProgress = archive.stats.blocksProgress
-        blocksTotal = archive.stats.blocksTotal
-        if (blocksProgress < blocksTotal) {
-          // not yet downloaded
-          // progress = `${prettyBytes(bytesProgress)} / ${prettyBytes(bytesTotal)}` TODO we dont have bytesProgress yet
-          progress = prettyBytes(archive.stats.bytesTotal)
-        } else {
-          // fully downloaded
-          progress = prettyBytes(archive.stats.bytesTotal)
-        }
-        if (isNetworked(archive)) {
-          let speed = archive.stats.downloadSpeed()
-          status = (speed > 0) ? (prettyBytes(speed) + '/s') : 'Seeding'
-        } else {
-          status = 'Idle'
-        }
-      }
-
-      // render downloaded archive
-      archiveEls.push(yo`<div class="ll-row archive">
-        <div class="ll-link">
-          <img class="favicon" src=${'beaker-favicon:dat://'+archive.key} />
-          <a class="ll-title" href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>${title}</a>
+          `)}</div>
         </div>
-        <div class="ll-status">${status}</div>
-        <div class="ll-progress">${progress}</div>
-        <div class="ll-progressbar"><progress value=${blocksProgress} max=${blocksTotal}></progress></div>
-        <div class="ll-serve">${isNetworked(archive) 
-          ? yo`<a class="btn btn-primary glowing" onclick=${onToggleServeArchive(archive, rerender)} title="Syncing"><span class="icon icon-down-circled"></span> Syncing</a>` 
-          : yo`<a class="btn" onclick=${onToggleServeArchive(archive, rerender)} title="Sync"><span class="icon icon-down-circled"></span> Sync</a>` }</div>
-        <div class="ll-dropdown">${toggleable(yo`
-          <div class="dropdown-btn-container" data-toggle-id=${`archive-${archive.key}`}>
-            <a class="toggleable btn"><span class="icon icon-down-open-mini"></span></a>
-            <div class="dropdown-btn-list">
-              <a href=${'beaker:archive/'+archive.key} onclick=${pushUrl}><span class="icon icon-docs"></span> View Files</a>
-              <div onclick=${onCopyLink(archive.key)}><span class="icon icon-link"></span> Copy Link</div>
-              <hr>
-              <div onclick=${onDeleteArchive(archive, rerender)}><span class="icon icon-trash"></span> Delete</div>
-            </div>
-          </div>
-        `)}</div>
-      </div>`)
-    }
+      </div>
+      ${ archive.description
+        ? yo`<div class="al-desc">${archive.description}</div>`
+        : '' }
+    </div>`)
   })
 
   // if empty
@@ -107,11 +61,11 @@ export function render (archivesList, opts = {}) {
 
   // give option to undo deletes
   if (numDeleted) {
-    archiveEls.unshift(yo`<div class="ll-notice">${numDeleted} ${pluralize(numDeleted, 'archive')} deleted. <a onclick=${onUndoDeletions(archivesList, rerender)}>undo</a></div>`)
+    archiveEls.unshift(yo`<div class="notice">${numDeleted} ${pluralize(numDeleted, 'archive')} deleted. <a onclick=${onUndoDeletions(archivesList, rerender)}>undo</a></div>`)
   }
 
   // render all
-  return yo`<div class="links-list">
+  return yo`<div class="archives-list">
     ${archiveEls}
   </div>`
 }
@@ -126,7 +80,7 @@ function onToggleServeArchive (archiveInfo, render) {
     e.stopPropagation()
     datInternalAPI.updateArchiveClaims(archiveInfo.key, { 
       origin: 'beaker:archives', 
-      op: 'toggle-all', 
+      op: (isNetworked(archiveInfo)) ? 'remove-all' : 'add',
       claims: ['upload', 'download']
     }).then(settings => {
       archiveInfo.userSettings.uploadClaims = settings.uploadClaims
@@ -173,5 +127,5 @@ function onUndoDeletions (archivesList, render) {
 }
 
 function isNetworked (archive) {
-  return archive.userSettings.uploadClaims.length > 0 || archive.userSettings.downloadClaims.length > 0
+  return archive.userSettings.uploadClaims.length > 0// || archive.userSettings.downloadClaims.length > 0
 }

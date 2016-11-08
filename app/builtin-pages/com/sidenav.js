@@ -6,7 +6,7 @@ import co from 'co'
 
 var navItems = [
   { href: 'beaker:start', label: 'Favorites', icon: 'star' },
-  { href: 'beaker:archives', label: 'Files', icon: 'folder' },
+  { href: 'beaker:archives', label: 'Files', icon: 'upload-cloud' },
   { href: 'beaker:downloads', label: 'Downloads', icon: 'down-circled' },
   { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
   { href: 'beaker:settings', label: 'Settings', icon: 'list' }
@@ -40,6 +40,7 @@ export function update () {
 
 function render () {
   return yo`<nav class="nav-group">
+    <img class="logo" src="beaker:logo" />
     ${navItems.map(renderNavItem)}
   </nav>`
 }
@@ -51,7 +52,7 @@ function renderNavItem (item) {
 
   // render items
   var { href, label, icon } = item
-  var isActive = window.location == href
+  var isActive = (''+window.location).startsWith(href)
   return yo`<a class=${'nav-group-item' + (isActive?' active':'')} href=${href} title=${label} onclick=${onClickNavItem(item)}>
     <span class="icon icon-${icon}"></span>
   </a>`

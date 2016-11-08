@@ -6,12 +6,16 @@ import * as yo from 'yo-yo'
 import co from 'co'
 import ArchivesList from '../model/archives-list'
 import { render as renderArchivesList } from '../com/archives-list'
+import { pushUrl } from '../../lib/fg/event-handlers'
+import { ucfirst } from '../../lib/strings'
+import * as editSiteModal from '../com/modals/edit-site'
 
 // globals
 // =
 
 var archivesList
 var isViewActive = false
+var filter
 
 // exported API
 // =
@@ -21,11 +25,12 @@ export function setup () {
 
 export function show () {
   isViewActive = true
-  document.title = 'Your Archives'
+  filter = (window.location.pathname.endsWith('/downloaded')) ? 'downloaded' : 'owned'
+  document.title = ucfirst(filter) + ' Sites'
   co(function * () {
     archivesList = new ArchivesList()
     yield archivesList.setup({
-      filter: { isOwner: true, isSaved: true }
+      filter: { isSaved: true, isOwner: (filter === 'owned') }
     })
     archivesList.on('changed', render)
     render()
@@ -49,14 +54,12 @@ function render () {
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archives">
-      <div class="ll-heading">
-        Your Archives
-        <span class="btn-group">
-          <button class="btn" onclick=${onClickCreateArchive}>New Archive</button><button class="btn" onclick=${onClickImportFolder}>Import Files</button>
-        </span>
-        <small class="ll-heading-right">
-          <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
-        </small>
+      <div class="page-toolbar">
+        <button class="btn btn-green" onclick=${onClickCreateArchive}><span class="icon icon-book"></span> New</button>
+        <div class="tabs">
+          <a class=${(filter === 'owned') ? 'current' : ''} href="beaker:archives" onclick=${pushUrl}>Your Sites</a>
+          <a class=${(filter === 'downloaded') ? 'current' : ''} href="beaker:archives/downloaded" onclick=${pushUrl}>Downloaded</a>
+        </div>
       </div>
       ${renderArchivesList(archivesList, { renderEmpty, render })}
     </div>
@@ -65,14 +68,11 @@ function render () {
 
 function renderEmpty () {
   return yo`<div class="archives-empty">
-      <div class="archives-empty-banner">
-        <div class="icon icon-info-circled"></div>
-        <div>
-          Share files on the network by creating archives.
-          <a class="icon icon-popup" href="https://beakerbrowser.com/docs/" target="_blank"> Learn More</a>
-        </div>
-      </div>
-    </div>
+    ${(filter === 'owned')
+      ? yo`<div class="archives-empty-banner" onclick=${onClickCreateArchive}>
+          Share files, docs, and applications. <strong>Click here</strong> to get started.
+        </div>`
+      : 'Sites that you download will appear here.' }
   </div>`
 }
 
@@ -80,21 +80,9 @@ function renderEmpty () {
 // =
 
 function onClickCreateArchive (e) {
-  datInternalAPI.createNewArchive({ saveClaim: 'beaker:archives' }).then(key => {
-    window.location = 'beaker:archive/' + key
-  })
-}
-
-function onClickImportFolder (e) {
-  co(function* () {
-    var paths = yield beakerBrowser.showOpenDialog({
-      title: 'Choose files and folders to import',
-      buttonLabel: 'Import',
-      properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
-    })
-    if (paths && paths.length) {
-      var key = yield datInternalAPI.createNewArchive({ importFiles: paths, saveClaim: 'beaker:archives' })
+  editSiteModal.create({}, { title: 'New Dat', onSubmit: ({ title, description }) => {
+    datInternalAPI.createNewArchive({ title, description, saveClaim: 'beaker:archives' }).then(key => {
       window.location = 'beaker:archive/' + key
-    }
-  })
+    })
+  }})
 }
