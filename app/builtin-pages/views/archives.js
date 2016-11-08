@@ -7,6 +7,7 @@ import co from 'co'
 import ArchivesList from '../model/archives-list'
 import { render as renderArchivesList } from '../com/archives-list'
 import { pushUrl } from '../../lib/fg/event-handlers'
+import { ucfirst } from '../../lib/strings'
 
 // globals
 // =
@@ -23,8 +24,8 @@ export function setup () {
 
 export function show () {
   isViewActive = true
-  document.title = 'Your Archives'
   filter = (window.location.pathname.endsWith('/downloaded')) ? 'downloaded' : 'owned'
+  document.title = ucfirst(filter) + ' Sites'
   co(function * () {
     archivesList = new ArchivesList()
     yield archivesList.setup({
@@ -55,7 +56,7 @@ function render () {
       <div class="page-toolbar">
         <button class="btn btn-green" onclick=${onClickCreateArchive}><span class="icon icon-book"></span> New</button>
         <div class="tabs">
-          <a class=${(filter === 'owned') ? 'current' : ''} href="beaker:archives" onclick=${pushUrl}>Your Archives</a>
+          <a class=${(filter === 'owned') ? 'current' : ''} href="beaker:archives" onclick=${pushUrl}>Your Sites</a>
           <a class=${(filter === 'downloaded') ? 'current' : ''} href="beaker:archives/downloaded" onclick=${pushUrl}>Downloaded</a>
         </div>
       </div>
@@ -66,13 +67,11 @@ function render () {
 
 function renderEmpty () {
   return yo`<div class="archives-empty">
-    <div class="archives-empty-banner">
-      <div class="icon icon-info-circled"></div>
-      <div>
-        Share files on the network by creating archives.
-        <a class="icon icon-popup" href="https://beakerbrowser.com/docs/" target="_blank"> Learn More</a>
-      </div>
-    </div>
+    ${(filter === 'owned')
+      ? yo`<div class="archives-empty-banner" onclick=${onClickCreateArchive}>
+          Share files, docs, and applications. <strong>Click here</strong> to get started.
+        </div>`
+      : 'Sites that you download will appear here.' }
   </div>`
 }
 

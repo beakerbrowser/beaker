@@ -61,7 +61,7 @@ export function render (archivesList, opts = {}) {
 
   // give option to undo deletes
   if (numDeleted) {
-    archiveEls.unshift(yo`<div class="ll-notice">${numDeleted} ${pluralize(numDeleted, 'archive')} deleted. <a onclick=${onUndoDeletions(archivesList, rerender)}>undo</a></div>`)
+    archiveEls.unshift(yo`<div class="notice">${numDeleted} ${pluralize(numDeleted, 'archive')} deleted. <a onclick=${onUndoDeletions(archivesList, rerender)}>undo</a></div>`)
   }
 
   // render all
