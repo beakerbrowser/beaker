@@ -33,9 +33,15 @@ body.darwin #toolbar {
 .window-blurred {
   // when the window isnt focused, lighten the toolbar
   #toolbar {
-    .toolbar-actions .form-control, .toolbar-input-group {
-      box-shadow: none;
+    background: #ddd;
+
+    .chrome-tabs .chrome-tab.chrome-tab-add-btn:before,
+    .chrome-tabs .chrome-tab.chrome-tab-add-btn:after,
+    .chrome-tabs .chrome-tab.chrome-tab-add-btn .chrome-tab-bg {
+      display: none;
     }
+
+    .toolbar-input-group .toolbar-site-info button .icon,
     .toolbar-actions input {
       color: gray;
     }
