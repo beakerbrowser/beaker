@@ -26,6 +26,7 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'History')
   db = new sqlite3.Database(dbPath)
+  db.serialize()
   setupPromise = setupSqliteDB(db, migrations, '[HISTORY]')
   tx = makeSqliteTransactor(setupPromise)
 
@@ -43,39 +44,35 @@ export function addVisit ({url, title}) {
       return cb(new BadParam('title', 'string'))
 
     // get current stats
-    db.serialize(() => {
-      db.run('BEGIN TRANSACTION;')
-      db.get('SELECT * FROM visit_stats WHERE url = ?;', [url], (err, stats) => {
+    db.run('BEGIN TRANSACTION;')
+    db.get('SELECT * FROM visit_stats WHERE url = ?;', [url], (err, stats) => {
+      if (err) return cb(err)
+
+      var done = multicb()
+      var ts = Date.now()
+
+      // visited within 1 hour?
+      db.get('SELECT rowid, * from visits WHERE url = ? AND ts > ? ORDER BY ts DESC LIMIT 1', [url, ts - 1000 * 60 * 60], (err, visit) => {
         if (err) return cb(err)
 
-        var done = multicb()
-        var ts = Date.now()
+        if (!stats) {
+          // yes, create new stat and search entries
+          db.run('INSERT INTO visit_stats (url, num_visits, last_visit_ts) VALUES (?, ?, ?);', [url, 1, ts], done())
+          db.run('INSERT INTO visit_fts (url, title) VALUES (?, ?);', [url, title], done())
+        } else {
+          // no, update stats
+          var num_visits = (+stats.num_visits||1) + 1
+          db.run('UPDATE visit_stats SET num_visits = ?, last_visit_ts = ? WHERE url = ?;', [num_visits, ts, url], done())
+        }
 
-        // visited within 1 hour?
-        db.get('SELECT rowid, * from visits WHERE url = ? AND ts > ? ORDER BY ts DESC LIMIT 1', [url, ts - 1000 * 60 * 60], (err, visit) => {
-          if (err) return cb(err)
-
-          db.serialize(() => {
-            if (!stats) {
-              // yes, create new stat and search entries
-              db.run('INSERT INTO visit_stats (url, num_visits, last_visit_ts) VALUES (?, ?, ?);', [url, 1, ts], done())
-              db.run('INSERT INTO visit_fts (url, title) VALUES (?, ?);', [url, title], done())
-            } else {
-              // no, update stats
-              var num_visits = (+stats.num_visits||1) + 1
-              db.run('UPDATE visit_stats SET num_visits = ?, last_visit_ts = ? WHERE url = ?;', [num_visits, ts, url], done())
-            }
-
-            if (visit) {
-              // update visit ts and title
-              db.run('UPDATE visits SET ts = ?, title = ? WHERE rowid = ?', [ts, title, visit.rowid], done())
-            } else {
-              // log visit
-              db.run('INSERT INTO visits (url, title, ts) VALUES (?, ?, ?);', [url, title, ts], done())
-            }
-            db.run('COMMIT;', done())
-          })
-        })
+        if (visit) {
+          // update visit ts and title
+          db.run('UPDATE visits SET ts = ?, title = ? WHERE rowid = ?', [ts, title, visit.rowid], done())
+        } else {
+          // log visit
+          db.run('INSERT INTO visits (url, title, ts) VALUES (?, ?, ?);', [url, title, ts], done())
+        }
+        db.run('COMMIT;', done())
         done(cb)
       })
     })
