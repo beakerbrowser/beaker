@@ -62,6 +62,25 @@ export function getPermissions (url) {
       if (rows) rows.forEach(row => { perms[row.key.slice('5')] = row.value })
       cb(null, perms)
     })
+  }))
+}
+
+export function getNetworkPermissions (url) {
+  return setupPromise.then(v => cbPromise(cb => {
+    var origin = extractOrigin(url)
+    if (!origin) return cb()
+    db.all(`SELECT key, value FROM sitedata WHERE origin = ? AND key LIKE 'perm:network:%'`, [origin], (err, rows) => {
+      if (err) return cb(err)
+
+      // convert to array
+      var origins = []
+      if (rows) {
+        rows.forEach(row => {
+          if (row.value) origins.push(row.key.split(':').pop())
+        })
+      }
+      cb(null, origins)
+    })
   }))  
 }
 
