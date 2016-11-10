@@ -57,6 +57,11 @@ export class SiteInfoNavbarBtn {
           permsEls.push(this.renderPerm(k, this.sitePerms[k]))
         }
       }
+      if (this.siteInfo.requiresRefresh) {
+        permsEls.push(yo`<div>
+          <a><label class="checked" onclick=${this.onClickRefresh.bind(this)}><span class="icon icon-ccw"></span> Refresh to apply changes.</label></a>
+        </div>`)
+      }
 
       // dropdown
       dropdownEl = yo`<div class="toolbar-dropdown toolbar-site-info-dropdown">
@@ -88,6 +93,11 @@ export class SiteInfoNavbarBtn {
     if (!this.isDropdownOpen) return
     // close the dropdown if not a click within the dropdown
     if (findParent(e.target, 'toolbar-site-info-dropdown')) return
+    this.closeDropdown()
+  }
+
+  onClickRefresh() {
+    pages.getActive().reload()
     this.closeDropdown()
   }
 
@@ -123,6 +133,10 @@ export class SiteInfoNavbarBtn {
     beakerSitedata.setPermission(this.protocolInfo.url, id, newValue).then(() => {
       this.sitePerms[id] = newValue
 
+      // requires refresh?
+      const [ perm, param ] = id.split(':')
+      this.siteInfo.requiresRefresh = (PERMS[perm] && PERMS[perm].requiresRefresh)
+
       // rerender
       this.updateActives()
     })
@@ -134,7 +148,6 @@ export class SiteInfoNavbarBtn {
     this.closeDropdown()
   }
 }
-
 
 function shorten (str) {
   if (str.length > 40) return (str.slice(0, 37) + '...')
