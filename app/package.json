@@ -33,7 +33,7 @@
     "moment": "^2.15.2",
     "multicb": "^1.2.1",
     "once": "^1.4.0",
-    "pauls-electron-rpc": "~2.0.0",
+    "pauls-electron-rpc": "~2.1.0",
     "pretty-bytes": "^3.0.1",
     "pump": "^1.0.1",
     "random-access-file": "^1.3.1",

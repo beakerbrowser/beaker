@@ -39,6 +39,14 @@ export function setup () {
 
     // for everything else, we'll use the plugins
     protos = plugins.getWebAPIManifests(scheme)
+      protos = {
+        beakerBrowser,
+        beakerBookmarks,
+        beakerDownloads,
+        beakerHistory,
+        beakerSitedata,
+        datInternalAPI
+      }
 
     // include dat api in dat:// sites
     if (scheme === 'dat:') {

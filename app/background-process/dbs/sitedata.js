@@ -6,6 +6,7 @@ import rpc from 'pauls-electron-rpc'
 import manifest from '../api-manifests/sitedata'
 import { cbPromise } from '../../lib/functions'
 import { setupSqliteDB } from '../../lib/bg/db'
+import { internalOnly } from '../../lib/bg/rpc'
 
 // globals
 // =
@@ -23,7 +24,7 @@ export function setup () {
   setupPromise = setupSqliteDB(db, migrations, '[SITEDATA]')
 
   // wire up RPC
-  rpc.exportAPI('beakerSitedata', manifest, { get, set, getPermissions, getPermission, setPermission })
+  rpc.exportAPI('beakerSitedata', manifest, { get, set, getPermissions, getPermission, setPermission }, internalOnly)
 }
 
 export function set (url, key, value) {

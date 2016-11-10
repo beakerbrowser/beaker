@@ -5,6 +5,7 @@ import url from 'url'
 import rpc from 'pauls-electron-rpc'
 import manifest from '../api-manifests/bookmarks'
 import { cbPromise } from '../../lib/functions'
+import { internalOnly } from '../../lib/bg/rpc'
 import { setupSqliteDB } from '../../lib/bg/db'
 
 // globals
@@ -23,7 +24,7 @@ export function setup () {
   setupPromise = setupSqliteDB(db, migrations, '[BOOKMARKS]')
 
   // wire up RPC
-  rpc.exportAPI('beakerBookmarks', manifest, { add, changeTitle, changeUrl, addVisit, remove, get, list })
+  rpc.exportAPI('beakerBookmarks', manifest, { add, changeTitle, changeUrl, addVisit, remove, get, list }, internalOnly)
 }
 
 export function add (url, title) {
