@@ -1,7 +1,9 @@
 import { ipcMain, session, BrowserWindow } from 'electron'
 import log from 'loglevel'
+import rpc from 'pauls-electron-rpc'
 import * as siteData from '../dbs/sitedata'
 import PERMS from '../../lib/perms'
+import manifest from '../api-manifests/permissions'
 
 // globals
 // =
@@ -16,13 +18,16 @@ export function setup () {
   // wire up handlers
   session.defaultSession.setPermissionRequestHandler(onPermissionRequestHandler)
   ipcMain.on('permission-response', onPermissionResponseHandler)
+
+  // wire up RPC
+  rpc.exportAPI('beakerPermissions', manifest, { requestPermission, revokePermission, queryPermission })
 }
 
 export function denyAllRequests (win) {
   // remove all requests in the window, denying as we go 
   activeRequests = activeRequests.filter(req => {
     if (req.win === win) {
-      log.debug('Denying outstanding permission for closing window, req #'+req.id+' for '+req.permission)
+      log.debug('Denying outstanding permission-request for closing window, req #'+req.id+' for '+req.permission)
       req.cb(false)
       return false
     }
@@ -30,18 +35,45 @@ export function denyAllRequests (win) {
   })
 }
 
+// rpc api
+// =
+
+function requestPermission (permission) {
+  var webContents = this.sender
+  return new Promise((resolve, reject) => onPermissionRequestHandler(webContents, permission, resolve))
+}
+
+function revokePermission (permission) {
+  var webContents = this.sender
+
+  // update the DB
+  const PERM = PERMS[getPermId(permission)]
+  if (PERM && PERM.persist) {
+    siteData.setPermission(webContents.getURL(), permission, 0)
+  }
+
+  return Promise.resolve()
+}
+
+function queryPermission (permission) {
+  var webContents = this.sender
+  return siteData.getPermission(webContents.getURL(), permission)
+}
+
 // event handlers
 // =
 
 function onPermissionRequestHandler (webContents, permission, cb) {
   // look up the containing window
-  var win = BrowserWindow.fromWebContents(webContents.hostWebContents)
-  if (!win)
-    return log.warn('Warning: failed to find containing window of permission request, '+permission)
+  var win = getContainingWindow(webContents)
+  if (!win) {
+    log.warn('Warning: failed to find containing window of permission request, '+permission)
+    return cb(false)
+  }
   const url = webContents.getURL()
 
   // check if the perm is disallowed
-  const PERM = PERMS[permission]
+  const PERM = PERMS[getPermId(permission)]
   if (PERM && PERM.alwaysDisallow) return cb(false)
 
   // check the sitedatadb
@@ -82,8 +114,16 @@ function onPermissionResponseHandler (e, reqId, decision) {
   cb(decision)
 
   // persist approvals
-  const PERM = PERMS[req.permission]
+  const PERM = PERMS[getPermId(req.permission)]
   if (decision && PERM && PERM.persist) {
     siteData.setPermission(req.url, req.permission, 1)
   }
+}
+
+function getPermId (permission) {
+  return permission.split(':')[0]
+}
+
+function getContainingWindow (webContents) {
+  return BrowserWindow.fromWebContents(webContents.hostWebContents)
 }

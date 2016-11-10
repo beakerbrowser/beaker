@@ -2,6 +2,7 @@ import * as yo from 'yo-yo'
 import * as pages from '../../pages'
 import { findParent } from '../../../lib/fg/event-handlers'
 import PERMS from '../../../lib/perms'
+import { ucfirst } from '../../../lib/strings'
 
 export class SiteInfoNavbarBtn {
   constructor() {
@@ -106,11 +107,13 @@ export class SiteInfoNavbarBtn {
   }
 
   renderPerm (id, value) {
+    const [ perm, param ] = id.split(':')
     const checked = !!value
-    const icon = PERMS[id] ? PERMS[id].icon : ''
-    const desc = PERMS[id] ? PERMS[id].desc : ''
+    var icon = PERMS[perm] ? PERMS[perm].icon : ''
+    var desc = PERMS[perm] ? PERMS[perm].desc : ''
+    if (typeof desc === 'function') desc = desc(param)
     return yo`<div>
-      <label class=${value ? 'checked' : ''} onclick=${e=>this.togglePerm(id)}><input type="checkbox" value="${id}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${desc}</label>
+      <label class=${value ? 'checked' : ''} onclick=${e=>this.togglePerm(id)}><input type="checkbox" value="${id}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${ucfirst(desc)}</label>
     </div>`
   }
 

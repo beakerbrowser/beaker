@@ -23,7 +23,8 @@ export default function (reqId, webContentsId, permission) {
     return respond(false)
 
   // lookup the perm description. auto-deny if it's not a known perm.
-  const PERM = PERMS[permission]
+  const [ permId, permParam ] = permission.split(':')
+  const PERM = PERMS[permId]
   if (!PERM) return respond(false)
   const permIcon = PERM.icon
   var permDesc = PERM.desc
@@ -31,6 +32,11 @@ export default function (reqId, webContentsId, permission) {
   // special case for openExternal
   if (permission == 'openExternal') {
     permDesc += page.getIntendedURL()
+  }
+
+  // run description functions
+  if (typeof permDesc === 'function') {
+    permDesc = permDesc(permParam)
   }
 
   // create the prompt

@@ -6,49 +6,52 @@ export default {
     alwaysDisallow: false
   },
   network: {
-    desc: 'Access the network to contact ',
+    desc: (param) => {
+      if (param === '*') return 'access the network freely'
+      return 'contact ' + param
+    },
     icon: 'cloud',
     persist: true,
     alwaysDisallow: false
   },
   media: {
-    desc: 'Use your camera and microphone',
+    desc: 'use your camera and microphone',
     icon: 'mic',
     persist: true,
     alwaysDisallow: false
   },
   geolocation: {
-    desc: 'Know your location',
+    desc: 'know your location',
     icon: '',
     persist: false,
     alwaysDisallow: true // NOTE geolocation is disabled, right now
   },
   notifications: {
-    desc: 'Create desktop notifications',
+    desc: 'create desktop notifications',
     icon: 'comment',
     persist: true,
     alwaysDisallow: false
   },
   midiSysex: {
-    desc: 'Access your MIDI devices',
+    desc: 'access your MIDI devices',
     icon: 'sound',
     persist: false,
     alwaysDisallow: false
   },
   pointerLock: {
-    desc: 'Lock your cursor',
+    desc: 'lock your cursor',
     icon: 'mouse',
     persist: false,
     alwaysDisallow: false
   },
   fullscreen: {
-    desc: 'Go fullscreen',
+    desc: 'go fullscreen',
     icon: 'resize-full',
     persist: false,
     alwaysDisallow: false
   },
   openExternal: {
-    desc: 'Open this URL in another program: ',
+    desc: 'open this URL in another program: ',
     icon: '',
     persist: false,
     alwaysDisallow: false
