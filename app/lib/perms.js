@@ -3,54 +3,66 @@ export default {
     desc: 'Run Javascript',
     icon: 'code',
     persist: true,
-    alwaysDisallow: false
+    alwaysDisallow: false,
+    requiresRefresh: true
   },
   network: {
-    desc: 'Access the network to contact ',
+    desc: (param) => {
+      if (param === '*') return 'access the network freely'
+      return 'contact ' + param
+    },
     icon: 'cloud',
     persist: true,
-    alwaysDisallow: false
+    alwaysDisallow: false,
+    requiresRefresh: true
   },
   media: {
-    desc: 'Use your camera and microphone',
+    desc: 'use your camera and microphone',
     icon: 'mic',
     persist: true,
-    alwaysDisallow: false
+    alwaysDisallow: false,
+    requiresRefresh: false
   },
   geolocation: {
-    desc: 'Know your location',
+    desc: 'know your location',
     icon: '',
     persist: false,
-    alwaysDisallow: true // NOTE geolocation is disabled, right now
+    alwaysDisallow: true, // NOTE geolocation is disabled, right now
+    requiresRefresh: false
   },
   notifications: {
-    desc: 'Create desktop notifications',
+    desc: 'create desktop notifications',
     icon: 'comment',
     persist: true,
-    alwaysDisallow: false
+    alwaysDisallow: false,
+    requiresRefresh: false
   },
   midiSysex: {
-    desc: 'Access your MIDI devices',
+    desc: 'access your MIDI devices',
     icon: 'sound',
     persist: false,
-    alwaysDisallow: false
+    alwaysDisallow: false,
+    requiresRefresh: false
   },
   pointerLock: {
-    desc: 'Lock your cursor',
+    desc: 'lock your cursor',
     icon: 'mouse',
     persist: false,
-    alwaysDisallow: false
+    alwaysDisallow: false,
+    requiresRefresh: false
   },
   fullscreen: {
-    desc: 'Go fullscreen',
+    desc: 'go fullscreen',
     icon: 'resize-full',
     persist: false,
-    alwaysDisallow: false
+    alwaysDisallow: false,
+    requiresRefresh: false
   },
   openExternal: {
-    desc: 'Open this URL in another program: ',
+    desc: 'open this URL in another program: ',
     icon: '',
     persist: false,
-    alwaysDisallow: false
+    alwaysDisallow: false,
+    requiresRefresh: false
   }
 }

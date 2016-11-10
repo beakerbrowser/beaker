@@ -2,6 +2,7 @@ import * as yo from 'yo-yo'
 import * as pages from '../../pages'
 import { findParent } from '../../../lib/fg/event-handlers'
 import PERMS from '../../../lib/perms'
+import { ucfirst } from '../../../lib/strings'
 
 export class SiteInfoNavbarBtn {
   constructor() {
@@ -56,6 +57,11 @@ export class SiteInfoNavbarBtn {
           permsEls.push(this.renderPerm(k, this.sitePerms[k]))
         }
       }
+      if (this.siteInfo.requiresRefresh) {
+        permsEls.push(yo`<div>
+          <a><label class="checked" onclick=${this.onClickRefresh.bind(this)}><span class="icon icon-ccw"></span> Refresh to apply changes.</label></a>
+        </div>`)
+      }
 
       // dropdown
       dropdownEl = yo`<div class="toolbar-dropdown toolbar-site-info-dropdown">
@@ -90,6 +96,11 @@ export class SiteInfoNavbarBtn {
     this.closeDropdown()
   }
 
+  onClickRefresh() {
+    pages.getActive().reload()
+    this.closeDropdown()
+  }
+
   closeDropdown() {
     this.isDropdownOpen = false
     this.updateActives()    
@@ -106,11 +117,13 @@ export class SiteInfoNavbarBtn {
   }
 
   renderPerm (id, value) {
+    const [ perm, param ] = id.split(':')
     const checked = !!value
-    const icon = PERMS[id] ? PERMS[id].icon : ''
-    const desc = PERMS[id] ? PERMS[id].desc : ''
+    var icon = PERMS[perm] ? PERMS[perm].icon : ''
+    var desc = PERMS[perm] ? PERMS[perm].desc : ''
+    if (typeof desc === 'function') desc = desc(param)
     return yo`<div>
-      <label class=${value ? 'checked' : ''} onclick=${e=>this.togglePerm(id)}><input type="checkbox" value="${id}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${desc}</label>
+      <label class=${value ? 'checked' : ''} onclick=${e=>this.togglePerm(id)}><input type="checkbox" value="${id}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${ucfirst(desc)}</label>
     </div>`
   }
 
@@ -119,6 +132,10 @@ export class SiteInfoNavbarBtn {
     var newValue = (this.sitePerms[id] === 1) ? 0 : 1
     beakerSitedata.setPermission(this.protocolInfo.url, id, newValue).then(() => {
       this.sitePerms[id] = newValue
+
+      // requires refresh?
+      const [ perm, param ] = id.split(':')
+      this.siteInfo.requiresRefresh = (PERMS[perm] && PERMS[perm].requiresRefresh)
 
       // rerender
       this.updateActives()
@@ -131,7 +148,6 @@ export class SiteInfoNavbarBtn {
     this.closeDropdown()
   }
 }
-
 
 function shorten (str) {
   if (str.length > 40) return (str.slice(0, 37) + '...')

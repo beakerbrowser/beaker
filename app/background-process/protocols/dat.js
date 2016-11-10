@@ -14,6 +14,7 @@ import datAPIManifest from '../api-manifests/dat'
 import * as dat from '../networks/dat/dat'
 import { archiveCustomLookup } from '../networks/dat/helpers'
 import datWebAPI from '../networks/dat/web-api'
+import * as sitedataDb from '../dbs/sitedata'
 import { resolveDatDNS } from '../networks/dns'
 import directoryListingPage from '../networks/dat/directory-listing-page'
 import errorPage from '../../lib/error-page'
@@ -27,12 +28,27 @@ const REQUEST_TIMEOUT_MS = 5e3 // 5 seconds
 
 // content security policies
 const DAT_CSP = `
-  default-src 'self' dat:;
-  img-src 'self' data: dat:;
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' dat:;
-  style-src 'self' 'unsafe-inline' dat:;
-  object-src 'none';
-`.replace(/\n/g, '')
+default-src 'self' dat:;
+script-src 'self' 'unsafe-eval' 'unsafe-inline' dat:;
+style-src 'self' 'unsafe-inline' dat:;
+img-src 'self' data: dat:;
+object-src 'none';
+`.replace(/\n/g, ' ')
+
+const CUSTOM_DAT_CSP = origins => {
+  if (Array.isArray(origins)) origins = origins.map(o => `http://${o} https://${o}`).join(' ')
+  else origins = ''
+  return `
+default-src 'self' dat:;
+script-src 'self' 'unsafe-eval' 'unsafe-inline' dat:;
+style-src 'self' 'unsafe-inline' dat:;
+img-src 'self' data: dat: ${origins};
+font-src 'self' dat: ${origins};
+media-src 'self' dat: ${origins}; 
+connect-src 'self' dat: ${origins};
+object-src 'none';
+`.replace(/\n/g, ' ')
+}
 
 // globals
 // =
@@ -218,54 +234,58 @@ function datServer (req, res) {
           return cb(404, 'File Not Found')
         }
 
-        // fetch the entry and stream the response
-        log.debug('[DAT] Entry found:', urlp.path)
-        fileReadStream = archive.createFileReadStream(entry)
-        fileReadStream
-          .pipe(mime.identifyStream(entry.name, mimeType => {
-            // cleanup the timeout now, as bytes have begun to stream
-            cleanup()
+        // fetch the permissions
+        sitedataDb.getNetworkPermissions('dat://' + archiveKey).catch(err => []).then(origins => {
 
-            // send headers, now that we can identify the data
-            headersSent = true
-            var headers = {
-              'Content-Type': mimeType,
-              'Content-Security-Policy': DAT_CSP,
-              'Access-Control-Allow-Origin': '*'
+          // fetch the entry and stream the response
+          log.debug('[DAT] Entry found:', urlp.path)
+          fileReadStream = archive.createFileReadStream(entry)
+          fileReadStream
+            .pipe(mime.identifyStream(entry.name, mimeType => {
+              // cleanup the timeout now, as bytes have begun to stream
+              cleanup()
+
+              // send headers, now that we can identify the data
+              headersSent = true
+              var headers = {
+                'Content-Type': mimeType,
+                'Content-Security-Policy': CUSTOM_DAT_CSP(origins),
+                'Access-Control-Allow-Origin': '*'
+              }
+              if (entry.length) headers['Content-Length'] = entry.length
+              res.writeHead(200, 'OK', headers)
+            }))
+            .pipe(res)
+
+          // handle empty files
+          fileReadStream.once('end', () => {
+            if (!headersSent) {
+              log.debug('[DAT] Served empty file')
+              res.writeHead(200, 'OK', {
+                'Content-Security-Policy': DAT_CSP,
+                'Access-Control-Allow-Origin': '*'
+              })
+              res.end('\n')
+              // TODO
+              // for some reason, sending an empty end is not closing the request
+              // this may be an issue in beaker's interpretation of the page-load ?
+              // but Im solving it here for now, with a '\n'
+              // -prf
             }
-            if (entry.length) headers['Content-Length'] = entry.length
-            res.writeHead(200, 'OK', headers)
-          }))
-          .pipe(res)
+          })
 
-        // handle empty files
-        fileReadStream.once('end', () => {
-          if (!headersSent) {
-            log.debug('[DAT] Served empty file')
-            res.writeHead(200, 'OK', {
-              'Content-Security-Policy': DAT_CSP,
-              'Access-Control-Allow-Origin': '*'
-            })
-            res.end('\n')
-            // TODO
-            // for some reason, sending an empty end is not closing the request
-            // this may be an issue in beaker's interpretation of the page-load ?
-            // but Im solving it here for now, with a '\n'
-            // -prf
-          }
-        })
+          // handle read-stream errors
+          fileReadStream.once('error', err => {
+            log.debug('[DAT] Error reading file', err)
+            if (!headersSent) cb(500, 'Failed to read file')
+          })
 
-        // handle read-stream errors
-        fileReadStream.once('error', err => {
-          log.debug('[DAT] Error reading file', err)
-          if (!headersSent) cb(500, 'Failed to read file')
-        })
-
-        // abort if the client aborts
-        req.once('aborted', () => {
-          if (fileReadStream) {
-            fileReadStream.destroy()
-          }
+          // abort if the client aborts
+          req.once('aborted', () => {
+            if (fileReadStream) {
+              fileReadStream.destroy()
+            }
+          })
         })
       })
     })
