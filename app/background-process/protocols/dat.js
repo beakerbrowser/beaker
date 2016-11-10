@@ -19,6 +19,7 @@ import { resolveDatDNS } from '../networks/dns'
 import directoryListingPage from '../networks/dat/directory-listing-page'
 import errorPage from '../../lib/error-page'
 import * as mime from '../../lib/mime'
+import { internalOnly } from '../../lib/bg/rpc'
 
 // constants
 // =
@@ -67,7 +68,7 @@ export function setup () {
   dat.setup()
 
   // wire up RPC
-  rpc.exportAPI('datInternalAPI', datInternalAPIManifest, dat)
+  rpc.exportAPI('datInternalAPI', datInternalAPIManifest, dat, internalOnly)
   rpc.exportAPI('dat', datAPIManifest, datWebAPI)
 
   // setup the protocol handler

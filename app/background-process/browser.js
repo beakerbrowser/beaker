@@ -7,6 +7,7 @@ import log from 'loglevel'
 import manifest from './api-manifests/browser'
 import * as settingsDb from './dbs/settings'
 import * as plugins from './plugins'
+import { internalOnly } from '../lib/bg/rpc'
 
 // constants
 // =
@@ -69,7 +70,7 @@ export function setup () {
     removeAsDefaultProtocolClient,
 
     showOpenDialog
-  })
+  }, internalOnly)
 }
 
 export function getDefaultProtocolSettings () {

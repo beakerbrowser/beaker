@@ -8,6 +8,7 @@ import rpc from 'pauls-electron-rpc'
 import manifest from '../api-manifests/history'
 import { cbPromise } from '../../lib/functions'
 import { setupSqliteDB, makeSqliteTransactor } from '../../lib/bg/db'
+import { internalOnly } from '../../lib/bg/rpc'
 
 const BadParam = zerr('BadParam', '% must be a %')
 const InvalidCmd = zerr('InvalidCommand', '% is not a valid command')
@@ -31,7 +32,7 @@ export function setup () {
   tx = makeSqliteTransactor(setupPromise)
 
   // wire up RPC
-  rpc.exportAPI('beakerHistory', manifest, { addVisit, getVisitHistory, getMostVisited, search, removeVisit, removeAllVisits, removeVisitsAfter })
+  rpc.exportAPI('beakerHistory', manifest, { addVisit, getVisitHistory, getMostVisited, search, removeVisit, removeAllVisits, removeVisitsAfter }, internalOnly)
 }
 
 export function addVisit ({url, title}) {
