@@ -59,7 +59,7 @@
   "scripts": {
     "postinstall": "cd app && npm install",
     "build": "gulp build",
-    "rebuild": "(cd app && npm rebuild --runtime=electron --target=1.4.3 --disturl=https://atom.io/download/atom-shell --build-from-source); gulp build",
+    "rebuild": "(cd app && npm rebuild --runtime=electron --target=1.4.6 --disturl=https://atom.io/download/atom-shell --build-from-source); gulp build",
     "burnthemall": "rm -Rf ./node_modules ./app/node_modules; npm i; npm run rebuild",
     "release": "build -m -p never",
     "start": "gulp start",
