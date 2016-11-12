@@ -116,6 +116,12 @@ test('dat.stat', async t => {
   t.deepEqual(entry.value.name, 'hello.txt', 'root file')
   t.deepEqual(entry.value.type, 'file', 'root file')
 
+  // include downloadedBlocks
+  var entry = await stat(testStaticDatURL + 'hello.txt', { downloadedBlocks: true })
+  t.deepEqual(entry.value.name, 'hello.txt', 'downloadedBlocks')
+  t.deepEqual(entry.value.type, 'file', 'downloadedBlocks')
+  t.deepEqual(entry.value.downloadedBlocks, entry.value.blocks)
+
   // stat subdir file
   var entry = await stat(testStaticDatURL + 'subdir/hello.txt', {})
   t.deepEqual(entry.value.name, 'subdir/hello.txt', 'subdir file')

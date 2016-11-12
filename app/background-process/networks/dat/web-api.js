@@ -32,7 +32,7 @@ const DEFAULT_TIMEOUT = 5e3
 export default {
   stat: m(function * (url, opts = {}) {
     // TODO versions
-    // TODO downloadedBlocks
+    var downloadedBlocks = !!opts.downloadedBlocks
     var timeout = (typeof opts.timeout === 'number') ? opts.timeout : DEFAULT_TIMEOUT
     var { archive, filepath } = lookupArchive(url)
     return new Promise((resolve, reject) => {
@@ -56,6 +56,12 @@ export default {
           log.error('Failed to read archive entry', err)
           return reject(new FileReadError())
         }
+
+        // count downloaded blocks?
+        if (downloadedBlocks) {
+          data.downloadedBlocks = archive.countDownloadedBlocks(data)
+        }
+
         resolve(data)
       })
     })
