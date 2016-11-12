@@ -87,9 +87,11 @@ export function createNewArchive (opts) {
       writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify({ title, description }))
     }
 
-    // write the save claim
-    if (opts.saveClaim) {
-      archivesDb.updateArchiveClaims(key, { origin: opts.saveClaim, op: 'add', claims: 'save' })
+    // write the save & upload claims
+    if (opts.origin) {
+      var claims = ['save']
+      if (opts.serve) claims.push('upload')
+      archivesDb.updateArchiveClaims(key, { origin: opts.origin, op: 'add', claims })
     }
 
     // write the meta
@@ -110,7 +112,7 @@ export function forkArchive (oldArchiveKey, opts) {
   }
 
   // create the new archive
-  return createNewArchive({ title, description, saveClaim: 'beaker:archives' }).then(newArchiveKey => {
+  return createNewArchive({ title, description, origin: 'beaker:archives' }).then(newArchiveKey => {
     // list the old archive's files
     var newArchive = getArchive(newArchiveKey)
     oldArchive.list((err, entries) => {

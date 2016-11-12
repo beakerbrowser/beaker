@@ -157,7 +157,7 @@ test('dat.createArchive', async t => {
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    dat.createArchive({ title: 'The Title', description: 'The Description' }).then(
+    dat.createArchive({ title: 'The Title', description: 'The Description', serve: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -186,6 +186,16 @@ test('dat.createArchive', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
+
+  // check the claims
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
+  }, createdDatKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.saveClaims, [testRunnerDatURL.slice(0, -1)])
+  t.deepEqual(details.value.userSettings.uploadClaims, [testRunnerDatURL.slice(0, -1)])
+  t.deepEqual(details.value.userSettings.downloadClaims, [])
 })
 
 test('dat.writeFile', async t => {

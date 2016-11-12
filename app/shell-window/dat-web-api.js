@@ -33,7 +33,8 @@ var methods = {
         datInternalAPI.createNewArchive({
           title: opts.title,
           description: opts.description,
-          saveClaim: page.getURL()
+          origin: page.getURL(),
+          serve: opts.serve
         }).then(
           key => resolve('dat://' + key + '/'),
           reject
