@@ -81,7 +81,7 @@ function renderEmpty () {
 
 function onClickCreateArchive (e) {
   editSiteModal.create({}, { title: 'New Dat', onSubmit: ({ title, description }) => {
-    datInternalAPI.createNewArchive({ title, description, saveClaim: 'beaker:archives' }).then(key => {
+    datInternalAPI.createNewArchive({ title, description, origin: 'beaker:archives' }).then(key => {
       window.location = 'beaker:archive/' + key
     })
   }})

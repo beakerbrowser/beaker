@@ -23,6 +23,7 @@ export const InvalidOperationError = zerr('InvalidOperationError')
 export const InvalidEncodingError = zerr('InvalidEncodingError')
 
 // dat errors
+export const TimeoutError = zerr('TimeoutError')
 export const FileNotFoundError = zerr('FileNotFoundError')
 export const FileReadError = zerr('FileReadError')
 export const FileWriteError = zerr('FileWriteError')

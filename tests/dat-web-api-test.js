@@ -14,7 +14,7 @@ const app = new Application({
   chromeDriverLogPath: 'dat-web-api-test.log',
   env: { 
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
-    beaker_dat_quota_default_bytes_allowed: 1024 // 1kb
+    beaker_dat_quota_default_bytes_allowed: 1024 * 10 // 10kb
   }
 })
 var testStaticDat, testStaticDatURL
@@ -96,26 +96,41 @@ test('dat.readFile', async t => {
   var beakerPngHex = await readFile(testStaticDatURL + 'beaker.png', 'hex')
   t.deepEqual(beakerPngHex.value, beakerPng.toString('hex'))
 
-  // read hex
+  // read base64
   var beakerPngBase64 = await readFile(testStaticDatURL + 'beaker.png', 'base64')
   t.deepEqual(beakerPngBase64.value, beakerPng.toString('base64'))
+
+  // read binary
+  var beakerPngBinary = await readFile(testStaticDatURL + 'beaker.png', 'binary')
+  t.truthy(beakerPng.equals(Buffer.from(beakerPngBinary.value)))
+
+  // timeout: read an archive that does not exist
+  var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
+  var entry = await readFile(fakeUrl + 'hello.txt', { timeout: 500 })
+  t.deepEqual(entry.value.name, 'TimeoutError')
 })
 
 test('dat.stat', async t => {
   // stat root file
   var entry = await stat(testStaticDatURL + 'hello.txt', {})
-  t.deepEqual(entry.value.name, 'hello.txt')
-  t.deepEqual(entry.value.type, 'file')
+  t.deepEqual(entry.value.name, 'hello.txt', 'root file')
+  t.deepEqual(entry.value.type, 'file', 'root file')
+
+  // include downloadedBlocks
+  var entry = await stat(testStaticDatURL + 'hello.txt', { downloadedBlocks: true })
+  t.deepEqual(entry.value.name, 'hello.txt', 'downloadedBlocks')
+  t.deepEqual(entry.value.type, 'file', 'downloadedBlocks')
+  t.deepEqual(entry.value.downloadedBlocks, entry.value.blocks)
 
   // stat subdir file
   var entry = await stat(testStaticDatURL + 'subdir/hello.txt', {})
-  t.deepEqual(entry.value.name, 'subdir/hello.txt')
-  t.deepEqual(entry.value.type, 'file')
+  t.deepEqual(entry.value.name, 'subdir/hello.txt', 'subdir file')
+  t.deepEqual(entry.value.type, 'file', 'subdir file')
 
   // stat subdir
   var entry = await stat(testStaticDatURL + 'subdir', {})
-  t.deepEqual(entry.value.name, 'subdir')
-  t.deepEqual(entry.value.type, 'directory')
+  t.deepEqual(entry.value.name, 'subdir', 'subdir')
+  t.deepEqual(entry.value.type, 'directory', 'subdir')
 
   // stat non-existent file
   var entry = await stat(testStaticDatURL + 'notfound', {})
@@ -123,8 +138,13 @@ test('dat.stat', async t => {
 
   // stat acceptably-malformed path
   var entry = await stat(testStaticDatURL + '/hello.txt', {})
-  t.deepEqual(entry.value.name, 'hello.txt')
-  t.deepEqual(entry.value.type, 'file')
+  t.deepEqual(entry.value.name, 'hello.txt', 'acceptably-malformed path')
+  t.deepEqual(entry.value.type, 'file', 'acceptably-malformed path')
+
+  // timeout: stat an archive that does not exist
+  var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
+  var entry = await stat(fakeUrl + 'hello.txt', { timeout: 500 })
+  t.deepEqual(entry.value.name, 'TimeoutError')
 })
 
 test('dat.createArchive rejection', async t => {
@@ -153,7 +173,7 @@ test('dat.createArchive', async t => {
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    dat.createArchive({ title: 'The Title', description: 'The Description' }).then(
+    dat.createArchive({ title: 'The Title', description: 'The Description', serve: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -182,20 +202,42 @@ test('dat.createArchive', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
+
+  // check the claims
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
+  }, createdDatKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.saveClaims, [testRunnerDatURL.slice(0, -1)])
+  t.deepEqual(details.value.userSettings.uploadClaims, [testRunnerDatURL.slice(0, -1)])
+  t.deepEqual(details.value.userSettings.downloadClaims, [])
 })
 
 test('dat.writeFile', async t => {
-  // write to the top-level
-  var res = await app.client.executeAsync((url, done) => {
-    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
-  }, createdDatURL + 'hello.txt')
-  t.falsy(res.value)
+  async function dotest (filename, content, encoding) {
+    // write to the top-level
+    var res = await app.client.executeAsync((url, content, encoding, done) => {
+      dat.writeFile(url, content, encoding).then(done, done)
+    }, createdDatURL + filename, content, encoding)
+    t.falsy(res.value)
 
-  // read it back
-  var res = await app.client.executeAsync((url, opts, done) => {
-    dat.readFile(url, opts).then(done, done)
-  }, createdDatURL + 'hello.txt', 'utf8')
-  t.deepEqual(res.value, 'hello world')
+    // read it back
+    var res = await app.client.executeAsync((url, opts, done) => {
+      dat.readFile(url, opts).then(done, done)
+    }, createdDatURL + filename, encoding)
+    if (encoding === 'binary') {
+      t.truthy(content.equals(Buffer.from(res.value)))
+    } else {
+      t.deepEqual(res.value, content)
+    }
+  }
+
+  var beakerPng = fs.readFileSync(__dirname + '/scaffold/test-static-dat/beaker.png')
+  await dotest('hello.txt', 'hello world', 'utf8')
+  await dotest('beaker1.png', beakerPng, 'binary')
+  await dotest('beaker2.png', beakerPng.toString('base64'), 'base64')
+  await dotest('beaker3.png', beakerPng.toString('hex'), 'hex')
 })
 
 test('dat.writeFile does not write to nonexistent directories', async t => {
@@ -228,7 +270,8 @@ test('dat.createDirectory', async t => {
   t.falsy(res.value)
 
   // read it back
-  var res = await stat(createdDatURL + 'subdir')
+  var res = await stat(createdDatURL + 'subdir', {})
+  t.deepEqual(res.value.name, '/subdir')
   t.deepEqual(res.value.type, 'directory')
 })
 
@@ -279,7 +322,7 @@ test('dat.writeFile doesnt allow writes to archives without a save claim', async
 test('dat.writeFile doesnt allow writes that exceed the quota', async t => {
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
-    dat.writeFile(url, 'x'.repeat(2048), 'utf8').then(done, done)
+    dat.writeFile(url, 'x'.repeat(1024 * 10), 'utf8').then(done, done)
   }, createdDatURL + '/denythis.txt')
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })

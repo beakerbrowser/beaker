@@ -7,21 +7,22 @@ import { DAT_MANIFEST_FILENAME } from '../../../lib/const'
 // helper to run custom lookup rules
 // - checkFn is called with (entry). if it returns true, then `entry` is made the current match
 export function archiveCustomLookup (archive, checkFn, cb) {
-  var entries = archive.list({live: false})
+  var entriesStream = archive.list({live: false})
   var entry = null
 
-  entries.on('data', function (e) {
+  entriesStream.on('data', function (e) {
     if (checkFn(e, normalizedEntryName(e))) {
       entry = e
     }
   })
 
-  entries.on('error', lookupDone)
-  entries.on('close', lookupDone)
-  entries.on('end', lookupDone)
+  entriesStream.on('error', lookupDone)
+  entriesStream.on('close', lookupDone)
+  entriesStream.on('end', lookupDone)
   function lookupDone () {
     cb(entry)
   }
+  return entriesStream
 }
 
 // helper to get the name from a listing entry, in a standard form
@@ -56,6 +57,11 @@ export function writeArchiveFile (archive, name, data, opts, cb) {
     return cb({ invalidEncoding: true, encoding: opts.encoding, type: typeof data })
   }
 
+  // convert to buffer object
+  if (opts.encoding === 'binary' && !Buffer.isBuffer(data) && Array.isArray(data.data)) {
+    data = Buffer.from(data.data)
+  }
+
   // write
   pump(
     from2Encoding(data, opts.encoding),
@@ -80,7 +86,7 @@ export function statArchiveFile (archive, name, cb) {
   if (name === '/') {
     return cb(null, { type: 'directory', name: '/' })
   }
-  archiveCustomLookup(
+  return archiveCustomLookup(
     archive,
     (entry, entryName) => entryName === name,
     entry => {
@@ -100,22 +106,21 @@ export function readArchiveFile (archive, name, opts, cb) {
     opts = { encoding: opts }
   }
   opts.encoding = toValidEncoding(opts.encoding)
-  statArchiveFile(archive, name, (err, entry) => {
-      if (err) return cb(err)
-      if (!entry || entry.type !== 'file') {
-        return cb({ notFound: true })
-      }
-
-      var rs = archive.createFileReadStream(entry)
-      rs.pipe(concat(data => {
-        if (opts.encoding !== 'binary') {
-          data = data.toString(opts.encoding)
-        }
-        cb(null, data)
-      }))
-      rs.on('error', e => cb(e))
+  return statArchiveFile(archive, name, (err, entry) => {
+    if (err) return cb(err)
+    if (!entry || entry.type !== 'file') {
+      return cb({ notFound: true })
     }
-  )
+
+    var rs = archive.createFileReadStream(entry)
+    rs.pipe(concat(data => {
+      if (opts.encoding !== 'binary') {
+        data = data.toString(opts.encoding)
+      }
+      cb(null, data)
+    }))
+    rs.on('error', e => cb(e))
+  })
 }
 
 export function readManifest (archive, cb) {
