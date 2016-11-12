@@ -57,7 +57,7 @@ export class SiteInfoNavbarBtn {
           permsEls.push(this.renderPerm(k, this.sitePerms[k]))
         }
       }
-      if (this.siteInfo.requiresRefresh) {
+      if (this.siteInfo && this.siteInfo.requiresRefresh) {
         permsEls.push(yo`<div>
           <a><label class="checked" onclick=${this.onClickRefresh.bind(this)}><span class="icon icon-ccw"></span> Refresh to apply changes.</label></a>
         </div>`)
