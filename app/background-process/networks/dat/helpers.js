@@ -106,22 +106,21 @@ export function readArchiveFile (archive, name, opts, cb) {
     opts = { encoding: opts }
   }
   opts.encoding = toValidEncoding(opts.encoding)
-  statArchiveFile(archive, name, (err, entry) => {
-      if (err) return cb(err)
-      if (!entry || entry.type !== 'file') {
-        return cb({ notFound: true })
-      }
-
-      var rs = archive.createFileReadStream(entry)
-      rs.pipe(concat(data => {
-        if (opts.encoding !== 'binary') {
-          data = data.toString(opts.encoding)
-        }
-        cb(null, data)
-      }))
-      rs.on('error', e => cb(e))
+  return statArchiveFile(archive, name, (err, entry) => {
+    if (err) return cb(err)
+    if (!entry || entry.type !== 'file') {
+      return cb({ notFound: true })
     }
-  )
+
+    var rs = archive.createFileReadStream(entry)
+    rs.pipe(concat(data => {
+      if (opts.encoding !== 'binary') {
+        data = data.toString(opts.encoding)
+      }
+      cb(null, data)
+    }))
+    rs.on('error', e => cb(e))
+  })
 }
 
 export function readManifest (archive, cb) {

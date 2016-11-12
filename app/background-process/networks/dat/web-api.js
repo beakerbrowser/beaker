@@ -63,12 +63,21 @@ export default {
 
   readFile: m(function * (url, opts = {}) {
     // TODO versions
-    // TODO timeout
     var timeout = (typeof opts.timeout === 'number') ? opts.timeout : DEFAULT_TIMEOUT
     var { archive, filepath } = lookupArchive(url)
     return new Promise((resolve, reject) => {
+      // start timeout timer
+      var timedOut = false, entriesStream
+      var timer = setTimeout(() => {
+        timedOut = true
+        entriesStream.destroy()
+        reject(new TimeoutError())
+      }, timeout)
+
       // read the file into memory
-      readArchiveFile(archive, filepath, opts, (err, data) => {
+      entriesStream = readArchiveFile(archive, filepath, opts, (err, data) => {
+        clearTimeout(timer)
+        if (timedOut) return // do nothing if timed out
         if (err) {
           // error handling
           if (err.notFound) {

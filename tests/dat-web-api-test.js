@@ -103,6 +103,11 @@ test('dat.readFile', async t => {
   // read binary
   var beakerPngBinary = await readFile(testStaticDatURL + 'beaker.png', 'binary')
   t.truthy(beakerPng.equals(Buffer.from(beakerPngBinary.value)))
+
+  // timeout: read an archive that does not exist
+  var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
+  var entry = await readFile(fakeUrl + 'hello.txt', { timeout: 500 })
+  t.deepEqual(entry.value.name, 'TimeoutError')
 })
 
 test('dat.stat', async t => {
