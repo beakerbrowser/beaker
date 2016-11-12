@@ -51,7 +51,6 @@ export default {
   readFile: m(function * (url, opts = {}) {
     // TODO versions
     // TODO timeout
-    // TODO binary
     var { archive, filepath } = lookupArchive(url)
     return new Promise((resolve, reject) => {
       // read the file into memory

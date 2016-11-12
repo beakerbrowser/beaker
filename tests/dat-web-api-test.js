@@ -96,9 +96,13 @@ test('dat.readFile', async t => {
   var beakerPngHex = await readFile(testStaticDatURL + 'beaker.png', 'hex')
   t.deepEqual(beakerPngHex.value, beakerPng.toString('hex'))
 
-  // read hex
+  // read base64
   var beakerPngBase64 = await readFile(testStaticDatURL + 'beaker.png', 'base64')
   t.deepEqual(beakerPngBase64.value, beakerPng.toString('base64'))
+
+  // read binary
+  var beakerPngBinary = await readFile(testStaticDatURL + 'beaker.png', 'binary')
+  t.ok(beakerPng.equals(Buffer.from(beakerPngBinary.value)))
 })
 
 test('dat.stat', async t => {
