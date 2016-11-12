@@ -14,6 +14,7 @@ import {
   QuotaExceededError,
   InvalidEncodingError,
   InvalidURLError,
+  TimeoutError,
   FileNotFoundError,
   FileReadError,
   FileWriteError,
@@ -23,18 +24,30 @@ import {
   ParentFolderDoesntExistError
 } from '../../../lib/const'
 
+const DEFAULT_TIMEOUT = 5e3
+
 // exported api
 // =
 
 export default {
   stat: m(function * (url, opts = {}) {
     // TODO versions
-    // TODO timeout
     // TODO downloadedBlocks
+    var timeout = (typeof opts.timeout === 'number') ? opts.timeout : DEFAULT_TIMEOUT
     var { archive, filepath } = lookupArchive(url)
     return new Promise((resolve, reject) => {
+      // start timeout timer
+      var timedOut = false, entriesStream
+      var timer = setTimeout(() => {
+        timedOut = true
+        entriesStream.destroy()
+        reject(new TimeoutError())
+      }, timeout)
+
       // read the stat
-      statArchiveFile(archive, filepath, (err, data) => {
+      entriesStream = statArchiveFile(archive, filepath, (err, data) => {
+        clearTimeout(timer)
+        if (timedOut) return // do nothing if timed out
         if (err) {
           // error handling
           if (err.notFound) {
@@ -51,6 +64,7 @@ export default {
   readFile: m(function * (url, opts = {}) {
     // TODO versions
     // TODO timeout
+    var timeout = (typeof opts.timeout === 'number') ? opts.timeout : DEFAULT_TIMEOUT
     var { archive, filepath } = lookupArchive(url)
     return new Promise((resolve, reject) => {
       // read the file into memory

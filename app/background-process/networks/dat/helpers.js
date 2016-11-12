@@ -7,21 +7,22 @@ import { DAT_MANIFEST_FILENAME } from '../../../lib/const'
 // helper to run custom lookup rules
 // - checkFn is called with (entry). if it returns true, then `entry` is made the current match
 export function archiveCustomLookup (archive, checkFn, cb) {
-  var entries = archive.list({live: false})
+  var entriesStream = archive.list({live: false})
   var entry = null
 
-  entries.on('data', function (e) {
+  entriesStream.on('data', function (e) {
     if (checkFn(e, normalizedEntryName(e))) {
       entry = e
     }
   })
 
-  entries.on('error', lookupDone)
-  entries.on('close', lookupDone)
-  entries.on('end', lookupDone)
+  entriesStream.on('error', lookupDone)
+  entriesStream.on('close', lookupDone)
+  entriesStream.on('end', lookupDone)
   function lookupDone () {
     cb(entry)
   }
+  return entriesStream
 }
 
 // helper to get the name from a listing entry, in a standard form
@@ -85,7 +86,7 @@ export function statArchiveFile (archive, name, cb) {
   if (name === '/') {
     return cb(null, { type: 'directory', name: '/' })
   }
-  archiveCustomLookup(
+  return archiveCustomLookup(
     archive,
     (entry, entryName) => entryName === name,
     entry => {

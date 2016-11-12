@@ -108,18 +108,18 @@ test('dat.readFile', async t => {
 test('dat.stat', async t => {
   // stat root file
   var entry = await stat(testStaticDatURL + 'hello.txt', {})
-  t.deepEqual(entry.value.name, 'hello.txt')
-  t.deepEqual(entry.value.type, 'file')
+  t.deepEqual(entry.value.name, 'hello.txt', 'root file')
+  t.deepEqual(entry.value.type, 'file', 'root file')
 
   // stat subdir file
   var entry = await stat(testStaticDatURL + 'subdir/hello.txt', {})
-  t.deepEqual(entry.value.name, 'subdir/hello.txt')
-  t.deepEqual(entry.value.type, 'file')
+  t.deepEqual(entry.value.name, 'subdir/hello.txt', 'subdir file')
+  t.deepEqual(entry.value.type, 'file', 'subdir file')
 
   // stat subdir
   var entry = await stat(testStaticDatURL + 'subdir', {})
-  t.deepEqual(entry.value.name, 'subdir')
-  t.deepEqual(entry.value.type, 'directory')
+  t.deepEqual(entry.value.name, 'subdir', 'subdir')
+  t.deepEqual(entry.value.type, 'directory', 'subdir')
 
   // stat non-existent file
   var entry = await stat(testStaticDatURL + 'notfound', {})
@@ -127,8 +127,13 @@ test('dat.stat', async t => {
 
   // stat acceptably-malformed path
   var entry = await stat(testStaticDatURL + '/hello.txt', {})
-  t.deepEqual(entry.value.name, 'hello.txt')
-  t.deepEqual(entry.value.type, 'file')
+  t.deepEqual(entry.value.name, 'hello.txt', 'acceptably-malformed path')
+  t.deepEqual(entry.value.type, 'file', 'acceptably-malformed path')
+
+  // timeout: stat an archive that does not exist
+  var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
+  var entry = await stat(fakeUrl + 'hello.txt', { timeout: 500 })
+  t.deepEqual(entry.value.name, 'TimeoutError')
 })
 
 test('dat.createArchive rejection', async t => {
@@ -254,7 +259,8 @@ test('dat.createDirectory', async t => {
   t.falsy(res.value)
 
   // read it back
-  var res = await stat(createdDatURL + 'subdir')
+  var res = await stat(createdDatURL + 'subdir', {})
+  t.deepEqual(res.value.name, '/subdir')
   t.deepEqual(res.value.type, 'directory')
 })
 
