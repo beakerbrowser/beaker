@@ -56,6 +56,11 @@ export function writeArchiveFile (archive, name, data, opts, cb) {
     return cb({ invalidEncoding: true, encoding: opts.encoding, type: typeof data })
   }
 
+  // convert to buffer object
+  if (opts.encoding === 'binary' && !Buffer.isBuffer(data) && Array.isArray(data.data)) {
+    data = Buffer.from(data.data)
+  }
+
   // write
   pump(
     from2Encoding(data, opts.encoding),

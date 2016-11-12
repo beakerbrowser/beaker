@@ -14,7 +14,7 @@ const app = new Application({
   chromeDriverLogPath: 'dat-web-api-test.log',
   env: { 
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
-    beaker_dat_quota_default_bytes_allowed: 1024 // 1kb
+    beaker_dat_quota_default_bytes_allowed: 1024 * 10 // 10kb
   }
 })
 var testStaticDat, testStaticDatURL
@@ -102,7 +102,7 @@ test('dat.readFile', async t => {
 
   // read binary
   var beakerPngBinary = await readFile(testStaticDatURL + 'beaker.png', 'binary')
-  t.ok(beakerPng.equals(Buffer.from(beakerPngBinary.value)))
+  t.truthy(beakerPng.equals(Buffer.from(beakerPngBinary.value)))
 })
 
 test('dat.stat', async t => {
@@ -189,17 +189,29 @@ test('dat.createArchive', async t => {
 })
 
 test('dat.writeFile', async t => {
-  // write to the top-level
-  var res = await app.client.executeAsync((url, done) => {
-    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
-  }, createdDatURL + 'hello.txt')
-  t.falsy(res.value)
+  async function dotest (filename, content, encoding) {
+    // write to the top-level
+    var res = await app.client.executeAsync((url, content, encoding, done) => {
+      dat.writeFile(url, content, encoding).then(done, done)
+    }, createdDatURL + filename, content, encoding)
+    t.falsy(res.value)
 
-  // read it back
-  var res = await app.client.executeAsync((url, opts, done) => {
-    dat.readFile(url, opts).then(done, done)
-  }, createdDatURL + 'hello.txt', 'utf8')
-  t.deepEqual(res.value, 'hello world')
+    // read it back
+    var res = await app.client.executeAsync((url, opts, done) => {
+      dat.readFile(url, opts).then(done, done)
+    }, createdDatURL + filename, encoding)
+    if (encoding === 'binary') {
+      t.truthy(content.equals(Buffer.from(res.value)))
+    } else {
+      t.deepEqual(res.value, content)
+    }
+  }
+
+  var beakerPng = fs.readFileSync(__dirname + '/scaffold/test-static-dat/beaker.png')
+  await dotest('hello.txt', 'hello world', 'utf8')
+  await dotest('beaker1.png', beakerPng, 'binary')
+  await dotest('beaker2.png', beakerPng.toString('base64'), 'base64')
+  await dotest('beaker3.png', beakerPng.toString('hex'), 'hex')
 })
 
 test('dat.writeFile does not write to nonexistent directories', async t => {
@@ -283,7 +295,7 @@ test('dat.writeFile doesnt allow writes to archives without a save claim', async
 test('dat.writeFile doesnt allow writes that exceed the quota', async t => {
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
-    dat.writeFile(url, 'x'.repeat(2048), 'utf8').then(done, done)
+    dat.writeFile(url, 'x'.repeat(1024 * 10), 'utf8').then(done, done)
   }, createdDatURL + '/denythis.txt')
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })

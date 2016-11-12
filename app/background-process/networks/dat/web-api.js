@@ -78,8 +78,6 @@ export default {
     }
     opts.encoding = toValidEncoding(opts.encoding)
 
-    // TODO binary
-    if (typeof data !== 'string') throw new Error('Binary not yet implemented')
     // TODO quota management
     // TODO permission check
     var { archive, filepath } = lookupArchive(url)
