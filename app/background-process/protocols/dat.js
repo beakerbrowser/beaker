@@ -170,13 +170,14 @@ function datServer (req, res) {
       // cleanup
       aborted = true
       log.debug('[DAT] Timed out searching for', archiveKey)
+      var hadFileReadStream = !!fileReadStream
       if (fileReadStream) {
         fileReadStream.destroy()
         fileReadStream = null
       }
 
       // respond
-      if (!urlp.path || urlp.path.endsWith('/') || urlp.path.endsWith('.html')) {
+      if (!hadFileReadStream && (!urlp.path || urlp.path.endsWith('/') || urlp.path.endsWith('.html'))) {
         // redirect to view-dat, to give a nice interface, if this looks like a page-request
         redirectToViewDat('#timeout')
       } else {
