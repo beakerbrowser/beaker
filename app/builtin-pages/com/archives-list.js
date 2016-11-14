@@ -49,6 +49,11 @@ export function render (archivesList, opts = {}) {
           `)}</div>
         </div>
       </div>
+      ${ archive.createdBy
+        ? yo`<div class="al-created-by">
+            <span class="icon icon-code"></span> Created by <a href=${archive.createdBy.url}>${archive.createdBy.title || shortenHash(archive.createdBy.url)}</a>
+          </div>`
+        : '' }
       ${ archive.description
         ? yo`<div class="al-desc">${archive.description}</div>`
         : '' }
