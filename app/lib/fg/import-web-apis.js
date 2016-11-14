@@ -8,6 +8,6 @@ const BEAKER_VERSION = '0.0.1'
 export default function () {
   var webAPIs = ipcRenderer.sendSync('get-web-api-manifests', window.location.protocol)
   for (var k in webAPIs) {
-    window[k] = rpc.importAPI(k, webAPIs[k], { timeout: false })
+    window[k] = rpc.importAPI(k, webAPIs[k], { timeout: false, noEval: (window.location.protocol === 'beaker:') })
   }
 }

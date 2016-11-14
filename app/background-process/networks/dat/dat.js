@@ -359,14 +359,20 @@ export function writeArchiveFileFromPath (key, opts) {
 export function swarm (key, opts) {
   // massage inputs
   key = bufToStr(key.key || key)
-  opts = { upload: (opts && opts.upload), download: true }
+  opts = { upload: (opts && opts.upload), download: true, utp: true, tcp: true }
+  console.log('swarming', key, opts.upload)
 
   // fetch
   if (key in swarms) {
     var s = swarms[key]
-    s.uploading = opts.upload
-    archivesEvents.emit('update-archive', { key, isUploading: opts.upload, isDownloading: true })
-    return swarms[key]
+
+    // if config is ===, then just return existing instance
+    if (s.uploading === opts.upload) return s
+
+    // reswarm
+    console.log('unswarming first')
+    unswarm(key, () => swarm(key, opts))
+    return
   }
 
   // create
@@ -377,22 +383,23 @@ export function swarm (key, opts) {
   archivesEvents.emit('update-archive', { key, isUploading: opts.upload, isDownloading: true })
 
   // wire up events
-  if (s.node) s.node.on('peer', peer => log.debug('[DAT] Connection', peer.id, 'from discovery-swarm'))
-  else log.warn('Swarm .node missing')
+  s.on('peer', peer => log.debug('[DAT] Connection', peer.id, 'from discovery-swarm'))
 
   return s
 }
 
 // take the archive out of the network
-export function unswarm (key) {
+export function unswarm (key, cb) {
   key = bufToStr(key)
   var s = swarms[key]
-  if (!s || s.isClosing) return
+  if (!s || s.isClosing) return cb()
   s.isClosing = true
+  s.leave(getArchive(key).discoveryKey)
   s.close(() => {
     log.debug('[DAT] Stopped swarming archive', key)
-    delete swarms[key]
     archivesEvents.emit('update-archive', { key, isDownloading: false, isUploading: false })
+    delete swarms[key]
+    cb && cb()
   })
 
   // TODO unregister ALL events that were registered in swarm() !!
