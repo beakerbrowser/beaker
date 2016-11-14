@@ -161,19 +161,23 @@ export function forkArchive (oldArchiveKey, opts) {
 export function configureArchive (key, settings) {
   var upload = settings.uploadClaims.length > 0
   var download = settings.downloadClaims.length > 0
-  var archive = getOrLoadArchive(key)
+  var archive = getArchive(key)
+  if (archive) {
+    // re-set swarming
+    swarm(key, { upload })
+  } else {
+    // load and set swarming there
+    archive = loadArchive(new Buffer(key, 'hex'), { upload })
+  }
 
   archive.open(() => {
-    // set swarming
-    swarm(key, { upload })
-
     // set download prioritization
     if (download) archive.content.prioritize({start: 0, end: Infinity}) // autodownload all content
     else archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
   })
 }
 
-export function loadArchive (key) {
+export function loadArchive (key, swarmOpts) {
   // validate key
   if (key !== null && (!Buffer.isBuffer(key) || key.length !== 32)) {
     return
@@ -187,7 +191,7 @@ export function loadArchive (key) {
   })
   mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
   cacheArchive(archive)
-  swarm(archive, { upload: false })
+  swarm(archive, swarmOpts)
 
   // prioritize the entire metadata feed, but leave content to be downloaded on-demand
   archive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
@@ -360,7 +364,6 @@ export function swarm (key, opts) {
   // massage inputs
   key = bufToStr(key.key || key)
   opts = { upload: (opts && opts.upload), download: true, utp: true, tcp: true }
-  console.log('swarming', key, opts.upload)
 
   // fetch
   if (key in swarms) {
@@ -370,7 +373,6 @@ export function swarm (key, opts) {
     if (s.uploading === opts.upload) return s
 
     // reswarm
-    console.log('unswarming first')
     unswarm(key, () => swarm(key, opts))
     return
   }
