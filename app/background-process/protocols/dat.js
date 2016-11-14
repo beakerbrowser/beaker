@@ -8,8 +8,8 @@ import log from 'loglevel'
 import rpc from 'pauls-electron-rpc'
 
 import { ProtocolSetupError } from '../../lib/const'
-import datInternalAPIManifest from '../api-manifests/dat-internal'
-import datAPIManifest from '../api-manifests/dat'
+import datInternalAPIManifest from '../api-manifests/internal/dat-internal'
+import datExternalAPIManifest from '../api-manifests/external/dat'
 
 import * as dat from '../networks/dat/dat'
 import { archiveCustomLookup } from '../networks/dat/helpers'
@@ -69,7 +69,7 @@ export function setup () {
 
   // wire up RPC
   rpc.exportAPI('datInternalAPI', datInternalAPIManifest, dat, internalOnly)
-  rpc.exportAPI('dat', datAPIManifest, datWebAPI)
+  rpc.exportAPI('dat', datExternalAPIManifest, datWebAPI)
 
   // setup the protocol handler
   protocol.registerHttpProtocol('dat',
