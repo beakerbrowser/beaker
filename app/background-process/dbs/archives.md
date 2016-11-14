@@ -14,6 +14,10 @@ Computed information about archives
     title: String,
     description: String,
     author: String,
+    createdBy: {
+      url: String,
+      title: String
+    },
     mtime: Number,
     size: Number,
     isOwner: Boolean

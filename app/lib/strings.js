@@ -16,6 +16,9 @@ export function shorten (str, n=6) {
 }
 
 export function shortenHash (str, n=6) {
+  if (str.startsWith('dat://')) {
+    return 'dat://' + shortenHash(str.slice('dat://'.length).replace(/\/$/, '')) + '/'
+  }
   if (str.length > (n+5)) {
     return str.slice(0, n) + '..' + str.slice(-2)
   }

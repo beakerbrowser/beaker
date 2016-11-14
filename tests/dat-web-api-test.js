@@ -202,6 +202,8 @@ test('dat.createArchive', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
+  t.deepEqual(manifest.createdBy.url, testRunnerDatURL)
+  t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
 
   // check the claims
   await app.client.windowByIndex(0)

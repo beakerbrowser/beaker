@@ -9,6 +9,7 @@ import Remarkable from 'remarkable'
 import { pushUrl } from '../../lib/fg/event-handlers'
 import dragDrop from '../../lib/fg/drag-drop'
 import { throttle } from '../../lib/functions'
+import { shortenHash } from '../../lib/strings'
 import { archiveEntries, entriesListToTree, calculateTreeSizeAndProgress } from '../com/files-list'
 import toggleable from '../com/toggleable'
 import HypercoreStats from '../com/hypercore-stats'
@@ -210,6 +211,13 @@ function renderArchive () {
     </span>`
   }
 
+  // created-by
+  var createdByEl = (archiveInfo.createdBy)
+    ? yo`<span class="archive-created-by">
+        <span class="icon icon-code"></span> Created by <a href=${archiveInfo.createdBy.url}>${archiveInfo.createdBy.title || shortenHash(archiveInfo.createdBy.url)}</a>
+      </span>`
+    : ''
+
   // description
   var descriptEl = (archiveInfo.description)
     ? yo`<span>${archiveInfo.description}</span>`
@@ -253,7 +261,10 @@ function renderArchive () {
         ${ wasDeleted
           ? yo`<div class="archive-ctrls at-center">${undoDeleteBtn}</div>`
           : yo`<div class="archive-ctrls at-center">${forkBtn} ${hostBtn} ${dropdownBtn} ${hypercoreStats.render()}</div>` }
-        <div class="archive-ctrls"><span id="owner-label">${ archiveInfo.isOwner ? 'Owner' : 'Read-only' }</span></div>
+        <div class="archive-ctrls">
+          ${createdByEl}
+          <span id="owner-label">${ archiveInfo.isOwner ? 'Owner' : 'Read-only' }</span>
+        </div>
       </div>
       <div class="archive-desc">${descriptEl} ${editBtn}</div>
       ${addFilesEl}

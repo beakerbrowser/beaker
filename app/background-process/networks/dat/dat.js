@@ -69,6 +69,9 @@ export function createNewArchive (opts) {
   opts = opts || {}
   var title = (opts.title && typeof opts.title === 'string') ? opts.title : ''
   var description = (opts.description && typeof opts.description === 'string') ? opts.description : ''
+  var createdBy = null
+  if (opts.origin && opts.origin.startsWith('dat://')) createdBy = { url: opts.origin }
+  if (createdBy && opts.originTitle && typeof opts.originTitle === 'string') createdBy.title = opts.originTitle
 
   return new Promise(resolve => {
     // create the archive
@@ -83,8 +86,8 @@ export function createNewArchive (opts) {
     }
 
     // write the manifest
-    if (title || description) {
-      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify({ title, description }))
+    if (title || description || createdBy) {
+      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify({ title, description, createdBy }))
     }
 
     // write the save & upload claims
@@ -444,13 +447,13 @@ function pullLatestArchiveMeta (archive) {
 
     done((_, manifest, size) => {
       manifest = manifest || {}
-      var { title, description, author } = manifest
+      var { title, description, author, createdBy } = manifest
       var mtime = Date.now() // use our local update time
       var isOwner = archive.owner
       size = size || 0
 
       // write the record
-      var update = { title, description, author, mtime, size, isOwner }
+      var update = { title, description, author, createdBy, mtime, size, isOwner }
       log.debug('[DAT] Writing meta', update)
       archivesDb.setArchiveMeta(key, update).then(
         () => {

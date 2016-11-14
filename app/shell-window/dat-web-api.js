@@ -34,6 +34,7 @@ var methods = {
           title: opts.title,
           description: opts.description,
           origin: page.getURL(),
+          originTitle: page.siteInfo ? page.siteInfo.title : null,
           serve: opts.serve
         }).then(
           key => resolve('dat://' + key + '/'),
