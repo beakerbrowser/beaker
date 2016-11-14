@@ -1,11 +1,11 @@
 import { ipcMain } from 'electron'
-import beakerBrowser from './api-manifests/browser'
-import beakerBookmarks from './api-manifests/bookmarks'
-import beakerDownloads from './api-manifests/downloads'
-import beakerHistory from './api-manifests/history'
-import beakerSitedata from './api-manifests/sitedata'
-import datInternalAPI from './api-manifests/dat-internal'
-import dat from './api-manifests/dat'
+import beakerBrowser from './api-manifests/internal/browser'
+import beakerBookmarks from './api-manifests/internal/bookmarks'
+import beakerDownloads from './api-manifests/internal/downloads'
+import beakerHistory from './api-manifests/internal/history'
+import beakerSitedata from './api-manifests/internal/sitedata'
+import datInternalAPI from './api-manifests/internal/dat-internal'
+import dat from './api-manifests/external/dat'
 import * as plugins from './plugins'
 
 // dat-plugin is an optional internal dependency

@@ -3,7 +3,7 @@ import log from 'loglevel'
 import rpc from 'pauls-electron-rpc'
 import * as siteData from '../dbs/sitedata'
 import PERMS from '../../lib/perms'
-import manifest from '../api-manifests/permissions'
+import manifest from '../api-manifests/external/permissions'
 
 // globals
 // =
