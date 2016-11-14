@@ -364,6 +364,7 @@ export function swarm (key, opts) {
   // massage inputs
   key = bufToStr(key.key || key)
   opts = { upload: (opts && opts.upload), download: true, utp: true, tcp: true }
+  console.log('swarming', key, opts.upload)
 
   // fetch
   if (key in swarms) {
@@ -373,6 +374,7 @@ export function swarm (key, opts) {
     if (s.uploading === opts.upload) return s
 
     // reswarm
+    console.log('unswarming first')
     unswarm(key, () => swarm(key, opts))
     return
   }
@@ -394,7 +396,11 @@ export function swarm (key, opts) {
 export function unswarm (key, cb) {
   key = bufToStr(key)
   var s = swarms[key]
-  if (!s || s.isClosing) return cb()
+  if (!s) return cb()
+  if (s.isClosing) {
+    if (cb) s.on('close', cb)
+    return
+  }
   s.isClosing = true
   s.leave(getArchive(key).discoveryKey)
   s.close(() => {
