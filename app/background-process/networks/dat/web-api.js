@@ -335,9 +335,6 @@ function lookupArchive (url) {
 
   // lookup the archive
   var archive = dat.getArchive(archiveKey)
-  if (!archive) {
-    archive = dat.loadArchive(new Buffer(archiveKey, 'hex'))
-    dat.swarm(archiveKey)
-  }
+  if (!archive) archive = dat.loadArchive(new Buffer(archiveKey, 'hex'))
   return { archive, filepath }
 }

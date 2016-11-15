@@ -484,52 +484,55 @@ function addFiles (files) {
 
 function onToggleSave () {
   // toggle the save
-  datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-    origin: 'beaker:archives', 
-    op: 'toggle-all', 
-    claims: 'save'
-  }).then(settings => {
-    archiveInfo.userSettings.saveClaims = settings.saveClaims
-    render()
-
-    // auto-unnetwork if deleted
-    if (!isSaved(archiveInfo) && isNetworked(archiveInfo)) {
-      datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-        origin: 'beaker:archives', 
-        op: 'remove-all', 
-        claims: ['upload', 'download']
-      }).then(settings => {
-        archiveInfo.userSettings.uploadClaims = settings.uploadClaims
-        archiveInfo.userSettings.downloadClaims = settings.downloadClaims
-        render()
-      })
-    }
-  })
+  if (isSaved(archiveInfo)) {
+    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
+      origin: 'beaker:archives', 
+      op: 'remove-all', 
+      claims: ['save', 'upload', 'download']
+    }).then(settings => {
+      archiveInfo.userSettings.saveClaims = settings.saveClaims
+      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
+      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+      render()
+    })
+  } else {
+    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
+      origin: 'beaker:archives', 
+      op: 'add', 
+      claims: 'save'
+    }).then(settings => {
+      archiveInfo.userSettings.saveClaims = settings.saveClaims
+      render()
+    })
+  }
 }
 
 function onToggleServing () {
   // toggle the networking
-  datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-    origin: 'beaker:archives',
-    op: (isNetworked(archiveInfo)) ? 'remove-all' : 'add',
-    claims: ['upload', 'download']
-  }).then(settings => {
-    archiveInfo.userSettings.uploadClaims = settings.uploadClaims
-    archiveInfo.userSettings.downloadClaims = settings.downloadClaims
-    render()
-
-    // autosave if networked, but not saved
-    if (isNetworked(archiveInfo) && !isSaved(archiveInfo)) {
-      datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-        origin: 'beaker:archives',
-        op: 'add',
-        claims: 'save'
-      }).then(settings => {
-        archiveInfo.userSettings.saveClaims = settings.saveClaims
-        render()
-      })
-    }
-  })
+  if (isNetworked(archiveInfo)) {
+    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
+      origin: 'beaker:archives',
+      op: 'remove-all',
+      claims: ['upload', 'download']
+    }).then(settings => {
+      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
+      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+      render()
+    })
+  } else {
+    var claims = ['upload', 'download']
+    if (!isSaved(archiveInfo)) claims.push('save')
+    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
+      origin: 'beaker:archives', 
+      op: 'add', 
+      claims
+    }).then(settings => {
+      archiveInfo.userSettings.saveClaims = settings.saveClaims
+      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
+      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+      render()
+    })
+  }
 }
 
 function onOpenFolder (e, entry) {
