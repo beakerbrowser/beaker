@@ -52,6 +52,8 @@ export function createShellWindow () {
     registerShortcut(win, 'CmdOrCtrl+'+i, onTabSelect(win, i-1))
   registerShortcut(win, 'Ctrl+Tab', onNextTab(win))
   registerShortcut(win, 'Ctrl+Shift+Tab', onPrevTab(win))
+  registerShortcut(win, 'CmdOrCtrl+[', onGoBack(win))
+  registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
 
   // register event handlers
   win.on('scroll-touch-begin', sendToWebContents('scroll-touch-begin'))
@@ -157,6 +159,13 @@ function onNextTab (win) {
 function onPrevTab (win) {
   return () => win.webContents.send('command', 'window:prev-tab')
 }
+function onGoBack (win) {
+  return () => win.webContents.send('command', 'history:back')
+}
+function onGoForward (win) {
+  return () => win.webContents.send('command', 'history:forward')
+}
+
 
 // window event handlers
 // =
