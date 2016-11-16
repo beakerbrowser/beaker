@@ -13,7 +13,7 @@ import * as archivesDb from '../../dbs/archives'
 import hyperdrive from 'hyperdrive'
 
 // network modules
-import hyperdriveArchiveSwarm from 'hyperdrive-archive-swarm'
+import discoverySwarm from 'discovery-swarm'
 import hyperImport from 'hyperdrive-import-files'
 import { resolveDatDNS } from '../dns'
 
@@ -27,14 +27,21 @@ import getFolderSize from 'get-folder-size'
 // constants
 // =
 
-import { DAT_MANIFEST_FILENAME } from '../../../lib/const'
+import { 
+  DAT_MANIFEST_FILENAME,
+  DAT_DOMAIN,
+  DAT_DEFAULT_DISCOVERY,
+  DAT_DEFAULT_BOOTSTRAP
+} from '../../../lib/const'
+
 
 // globals
 // =
 
 var drive // hyperdrive instance
+var swarm // discovery swarm instance
 var archives = {} // memory cache of archive objects. key -> archive
-var swarms = {} // memory cache of archive swarms. key -> swarm
+var archivesByDiscoveryKey = {} // mirror of the above cache, but discoveryKey -> archive
 var archivesEvents = new EventEmitter()
 
 // exported API
@@ -42,6 +49,29 @@ var archivesEvents = new EventEmitter()
 
 export function setup () {
   drive = hyperdrive(archivesDb.getLevelInstance())
+  swarm = discoverySwarm({
+    hash: false,
+    utp: true,
+    tcp: true,
+    dns: {server: DAT_DEFAULT_DISCOVERY, domain: DAT_DOMAIN},
+    dht: {bootstrap: DAT_DEFAULT_BOOTSTRAP},
+    stream: function (info) {
+      log.debug(`[DAT] ${info.type} connection from ${info.host}`)
+
+      // TODO config upload
+      var replicateOpts = { upload: true, download: true }
+
+      // look up the archive by
+      var archive = info.channel ? archivesByDiscoveryKey[bufToStr(info.channel)] : null
+      if (!archive) {
+        // we dont yet know which feed they want, but hypercore has a protocol for asking
+        // TODO how do we configure upload & download?
+        return drive.replicate(replicateOpts)
+      }
+      return archive.replicate(replicateOpts)
+    }
+  })
+  swarm.listen(3282)
 
   // wire up event handlers
   archivesDb.on('update:archive-user-settings', configureArchive)
@@ -164,7 +194,7 @@ export function configureArchive (key, settings) {
   var archive = getArchive(key)
   if (archive) {
     // re-set swarming
-    swarm(key, { upload })
+    joinSwarm(key, { upload })
   } else {
     // load and set swarming there
     archive = loadArchive(new Buffer(key, 'hex'), { upload })
@@ -191,7 +221,7 @@ export function loadArchive (key, swarmOpts) {
   })
   mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
   cacheArchive(archive)
-  swarm(archive, swarmOpts)
+  joinSwarm(archive, swarmOpts)
 
   // prioritize the entire metadata feed, but leave content to be downloaded on-demand
   archive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
@@ -205,6 +235,7 @@ export function loadArchive (key, swarmOpts) {
 
 export function cacheArchive (archive) {
   archives[archive.key.toString('hex')] = archive
+  archivesByDiscoveryKey[archive.discoveryKey.toString('hex')] = archive
 }
 
 export function getArchive (key) {
@@ -360,53 +391,29 @@ export function writeArchiveFileFromPath (key, opts) {
 // =
 
 // put the archive into the network, for upload and download
-export function swarm (key, opts) {
-  // massage inputs
-  key = bufToStr(key.key || key)
-  opts = { upload: (opts && opts.upload), download: true, utp: true, tcp: true }
+export function joinSwarm (key, opts) {
+  var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
+  if (!archive || archive.isSwarming) return
 
-  // fetch
-  if (key in swarms) {
-    var s = swarms[key]
-
-    // if config is ===, then just return existing instance
-    if (s.uploading === opts.upload) return s
-
-    // reswarm
-    unswarm(key, () => swarm(key, opts))
-    return
-  }
-
-  // create
   log.debug('[DAT] Swarming archive', key)
-  var archive = getArchive(key)
-  var s = hyperdriveArchiveSwarm(archive, opts)
-  swarms[key] = s
-  archivesEvents.emit('update-archive', { key, isUploading: opts.upload, isDownloading: true })
+  swarm.join(archive.discoveryKey)
+  archive.isSwarming = true
 
-  // wire up events
-  s.on('peer', peer => log.debug('[DAT] Connection', peer.id, 'from discovery-swarm'))
-
-  return s
+  // TODO
+  // archivesEvents.emit('update-archive', { key, isUploading: opts.upload, isDownloading: true })
 }
 
 // take the archive out of the network
-export function unswarm (key, cb) {
-  key = bufToStr(key)
-  var s = swarms[key]
-  if (!s) return cb()
-  if (s.isClosing) {
-    if (cb) s.on('close', cb)
-    return
-  }
-  s.isClosing = true
-  s.leave(getArchive(key).discoveryKey)
-  s.close(() => {
-    log.debug('[DAT] Stopped swarming archive', key)
-    archivesEvents.emit('update-archive', { key, isDownloading: false, isUploading: false })
-    delete swarms[key]
-    cb && cb()
-  })
+export function leaveSwarm (key, cb) {
+  var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
+  if (!archive || !archive.isSwarming) return
+
+  log.debug('[DAT] Unswarming archive', key)
+  swarm.leave(archive.discoveryKey)
+  archive.isSwarming = false
+
+  // TODO
+  // archivesEvents.emit('update-archive', { key, isDownloading: false, isUploading: false })
 
   // TODO unregister ALL events that were registered in swarm() !!
 }
