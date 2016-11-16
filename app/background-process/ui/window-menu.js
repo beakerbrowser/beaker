@@ -180,14 +180,14 @@ var windowMenu = {
     },
     {
       label: 'Next Tab',
-      accelerator: 'CmdOrCtrl+]',
+      accelerator: 'CmdOrCtrl+}',
       click: function (item, win) {
         if (win) win.webContents.send('command', 'window:next-tab')
       }
     },
     {
       label: 'Previous Tab',
-      accelerator: 'CmdOrCtrl+[',
+      accelerator: 'CmdOrCtrl+{',
       click: function (item, win) {
         if (win) win.webContents.send('command', 'window:prev-tab')
       }
