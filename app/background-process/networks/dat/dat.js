@@ -221,7 +221,7 @@ export function forkArchive (oldArchiveKey, opts) {
 export function configureArchive (key, settings) {
   var upload = settings.uploadClaims.length > 0
   var download = settings.downloadClaims.length > 0
-  var archive = getOrLoadArchive(key)
+  var archive = getOrLoadArchive(key, { noSwarm: true })
   var wasUploading = (archive.userSettings && archive.userSettings.uploadClaims && archive.userSettings.uploadClaims.length > 0)
   archive.userSettings = settings
   archivesEvents.emit('update-archive', { key, isUploading: upload, isDownloading: download })
@@ -230,7 +230,10 @@ export function configureArchive (key, settings) {
     if (download) archive.content.prioritize({start: 0, end: Infinity}) // autodownload all content
     else archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
     // TODO close any uploads if upload was just toggled off
-    if (upload !== wasUploading) {
+    if (!archive.isSwarming) {
+      // announce
+      joinSwarm(archive)
+    } else if (upload !== wasUploading) {
       // reannounce to the discovery network
       leaveSwarm(archive)
       joinSwarm(archive)
@@ -238,7 +241,7 @@ export function configureArchive (key, settings) {
   })
 }
 
-export function loadArchive (key, swarmOpts) {
+export function loadArchive (key, { noSwarm } = {}) {
   // validate key
   if (key !== null && (!Buffer.isBuffer(key) || key.length !== 32)) {
     return
@@ -253,7 +256,7 @@ export function loadArchive (key, swarmOpts) {
   archive.userSettings = null // will be set by `configureArchive` if at all
   mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
   cacheArchive(archive)
-  joinSwarm(archive, swarmOpts)
+  if (!noSwarm) joinSwarm(archive)
 
   // prioritize the entire metadata feed, but leave content to be downloaded on-demand
   archive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
@@ -274,9 +277,9 @@ export function getArchive (key) {
   return archives[bufToStr(key)]
 }
 
-export function getOrLoadArchive (key) {
+export function getOrLoadArchive (key, opts) {
   key = bufToStr(key)
-  return getArchive(key) || loadArchive(new Buffer(key, 'hex'))
+  return getArchive(key) || loadArchive(new Buffer(key, 'hex'), opts)
 }
 
 export function openInExplorer (key) {
