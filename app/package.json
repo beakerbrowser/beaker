@@ -22,7 +22,7 @@
     "function-queue": "0.0.12",
     "get-folder-size": "^1.0.0",
     "global-modules": "^0.2.3",
-    "hyperdrive": "^7.7.1",
+    "hyperdrive": "^7.8.0",
     "hyperdrive-import-files": "^2.3.0",
     "identify-filetype": "^1.0.0",
     "level": "^1.5.0",

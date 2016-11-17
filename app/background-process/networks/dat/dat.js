@@ -224,12 +224,17 @@ export function configureArchive (key, settings) {
   var archive = getOrLoadArchive(key)
   var wasUploading = (archive.userSettings && archive.userSettings.uploadClaims && archive.userSettings.uploadClaims.length > 0)
   archive.userSettings = settings
+  archivesEvents.emit('update-archive', { key, isUploading: upload, isDownloading: download })
   archive.open(() => {
     // set download prioritization
     if (download) archive.content.prioritize({start: 0, end: Infinity}) // autodownload all content
     else archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
     // TODO close any uploads if upload was just toggled off
-    // TODO reannounce to the discovery network
+    if (upload !== wasUploading) {
+      // reannounce to the discovery network
+      leaveSwarm(archive)
+      joinSwarm(archive)
+    }
   })
 }
 
@@ -425,9 +430,6 @@ export function joinSwarm (key, opts) {
   debug('Swarming archive', bufToStr(archive.key))
   swarm.join(archive.discoveryKey)
   archive.isSwarming = true
-
-  // TODO
-  // archivesEvents.emit('update-archive', { key, isUploading: opts.upload, isDownloading: true })
 }
 
 // take the archive out of the network
@@ -438,11 +440,6 @@ export function leaveSwarm (key, cb) {
   debug('Unswarming archive', bufToStr(archive.key))
   swarm.leave(archive.discoveryKey)
   archive.isSwarming = false
-
-  // TODO
-  // archivesEvents.emit('update-archive', { key, isDownloading: false, isUploading: false })
-
-  // TODO unregister ALL events that were registered in swarm() !!
 }
 
 // prioritize an entry for download
