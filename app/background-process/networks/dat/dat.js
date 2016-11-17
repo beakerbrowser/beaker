@@ -56,19 +56,20 @@ export function setup () {
     dns: {server: DAT_DEFAULT_DISCOVERY, domain: DAT_DOMAIN},
     dht: {bootstrap: DAT_DEFAULT_BOOTSTRAP},
     stream: function (info) {
-      log.debug(`[DAT] ${info.type} connection from ${info.host}`)
-
-      // TODO config upload
-      var replicateOpts = { upload: true, download: true }
-
       // look up the archive by
       var archive = info.channel ? archivesByDiscoveryKey[bufToStr(info.channel)] : null
       if (!archive) {
         // we dont yet know which feed they want, but hypercore has a protocol for asking
-        // TODO how do we configure upload & download?
-        return drive.replicate(replicateOpts)
+        // TODO how do we configure upload?
+        log.debug(`[DAT] ${info.type} connection from ${info.host}, desired archives not yet known`)
+        return drive.replicate()
       }
-      return archive.replicate(replicateOpts)
+      log.debug(`[DAT] ${info.type} connection from ${info.host} to fetch ${bufToStr(archive.key)}`)
+      return archive.replicate({
+        download: true,
+        upload: (archive.userSettings && archive.userSettings.uploadClaims && archive.userSettings.uploadClaims.length > 0)
+        // TODO fuck this^ (see dat 2.5 plans... in my notebook on the coffee table)
+      })
     }
   })
   swarm.listen(3282)
@@ -191,19 +192,15 @@ export function forkArchive (oldArchiveKey, opts) {
 export function configureArchive (key, settings) {
   var upload = settings.uploadClaims.length > 0
   var download = settings.downloadClaims.length > 0
-  var archive = getArchive(key)
-  if (archive) {
-    // re-set swarming
-    joinSwarm(key, { upload })
-  } else {
-    // load and set swarming there
-    archive = loadArchive(new Buffer(key, 'hex'), { upload })
-  }
-
+  var archive = getOrLoadArchive(key)
+  var wasUploading = (archive.userSettings && archive.userSettings.uploadClaims && archive.userSettings.uploadClaims.length > 0)
+  archive.userSettings = settings
   archive.open(() => {
     // set download prioritization
     if (download) archive.content.prioritize({start: 0, end: Infinity}) // autodownload all content
     else archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
+    // TODO close any uploads if upload was just toggled off
+    // TODO reannounce to the discovery network
   })
 }
 
@@ -219,6 +216,7 @@ export function loadArchive (key, swarmOpts) {
     sparse: true,
     file: name => raf(path.join(archivesDb.getArchiveFilesPath(archive), name))
   })
+  archive.userSettings = null // will be set by `configureArchive` if at all
   mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
   cacheArchive(archive)
   joinSwarm(archive, swarmOpts)
@@ -395,7 +393,7 @@ export function joinSwarm (key, opts) {
   var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || archive.isSwarming) return
 
-  log.debug('[DAT] Swarming archive', key)
+  log.debug('[DAT] Swarming archive', bufToStr(archive.key))
   swarm.join(archive.discoveryKey)
   archive.isSwarming = true
 
@@ -408,7 +406,7 @@ export function leaveSwarm (key, cb) {
   var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || !archive.isSwarming) return
 
-  log.debug('[DAT] Unswarming archive', key)
+  log.debug('[DAT] Unswarming archive', bufToStr(archive.key))
   swarm.leave(archive.discoveryKey)
   archive.isSwarming = false
 
