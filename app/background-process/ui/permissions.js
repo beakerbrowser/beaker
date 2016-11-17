@@ -1,5 +1,5 @@
 import { ipcMain, session, BrowserWindow } from 'electron'
-import log from 'loglevel'
+var debug = require('debug')('beaker')
 import rpc from 'pauls-electron-rpc'
 import * as siteData from '../dbs/sitedata'
 import PERMS from '../../lib/perms'
@@ -27,7 +27,7 @@ export function denyAllRequests (win) {
   // remove all requests in the window, denying as we go 
   activeRequests = activeRequests.filter(req => {
     if (req.win === win) {
-      log.debug('Denying outstanding permission-request for closing window, req #'+req.id+' for '+req.permission)
+      debug('Denying outstanding permission-request for closing window, req #'+req.id+' for '+req.permission)
       req.cb(false)
       return false
     }
@@ -67,7 +67,7 @@ function onPermissionRequestHandler (webContents, permission, cb) {
   // look up the containing window
   var win = getContainingWindow(webContents)
   if (!win) {
-    log.warn('Warning: failed to find containing window of permission request, '+permission)
+    console.error('Warning: failed to find containing window of permission request, '+permission)
     return cb(false)
   }
   const url = webContents.getURL()
@@ -104,7 +104,7 @@ function onPermissionResponseHandler (e, reqId, decision) {
   // lookup the cb
   var req = activeRequests.find(req => req.id == reqId)
   if (!req)
-    return log.warn('Warning: failed to find permission request for response #'+reqId)
+    return console.error('Warning: failed to find permission request for response #'+reqId)
 
   // untrack
   activeRequests.splice(activeRequests.indexOf(req), 1)

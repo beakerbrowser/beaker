@@ -1,4 +1,4 @@
-import log from 'loglevel'
+var debug = require('debug')('dat')
 
 // helper function to wire up all archive events to the given emitter
 export default function trackArchiveEvents (emitter, archive) {
@@ -9,11 +9,11 @@ export default function trackArchiveEvents (emitter, archive) {
   archive.metadata.on('peer-add', () => emitter.emit('update-peers', { key, peers: archive.metadata.peers.length }))
   archive.metadata.on('peer-remove', () => emitter.emit('update-peers', { key, peers: archive.metadata.peers.length }))
   archive.open(err => {
-    if (err) return log.warn('Error opening archive', key, err)
+    if (err) return console.error('Error opening archive', key, err)
     track(archive.content, 'content')
     if (archive.metadata) {
       archive.metadata.on('download-finished', () => {
-        log.debug('[DAT] Metadata download finished', key)
+        debug('Metadata download finished', key)
         emitter.emit('update-listing', { key })
         archive.pullLatestArchiveMeta()
       })

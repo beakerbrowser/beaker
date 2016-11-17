@@ -1,14 +1,14 @@
 import { app, protocol } from 'electron'
 import path from 'path'
 import fs from 'fs'
-import log from 'loglevel'
+var debug = require('debug')('beaker')
 import rpc from 'pauls-electron-rpc'
 
 // globals
 // =
 
 const PLUGIN_NODE_MODULES = path.join(__dirname, 'node_modules')
-log.debug('[PLUGINS] Loading from', PLUGIN_NODE_MODULES)
+debug('[PLUGINS] Loading from', PLUGIN_NODE_MODULES)
 
 // find all modules named beaker-plugin-*
 var protocolModuleNames = []
@@ -23,7 +23,7 @@ protocolModuleNames.forEach(name => {
   try {
     protocolModules.push(require(path.join(PLUGIN_NODE_MODULES, name)))
   } catch (e) {
-    log.error('[PLUGINS] Failed to load plugin', name, e)
+    console.error('Failed to load plugin', name, e)
     return
   }
 
@@ -75,7 +75,7 @@ export function registerStandardSchemes () {
 export function setupProtocolHandlers () {
   getAllInfo('protocols').forEach(proto => {
     // run the module's protocol setup
-    log.debug('Registering protocol handler:', proto.scheme)
+    debug('Registering protocol handler:', proto.scheme)
     proto.register()
   })
 }
@@ -84,7 +84,7 @@ export function setupProtocolHandlers () {
 export function setupWebAPIs () {
   getAllInfo('webAPIs').forEach(api => {
     // run the module's protocol setup
-    log.debug('Wiring up Web API:', api.name)
+    debug('Wiring up Web API:', api.name)
     rpc.exportAPI(api.name, api.manifest, api.methods)
   })
 }

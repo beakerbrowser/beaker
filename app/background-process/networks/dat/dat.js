@@ -3,7 +3,7 @@ import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import pump from 'pump'
 import multicb from 'multicb'
-import log from 'loglevel'
+var debug = require('debug')('dat')
 import trackArchiveEvents from './track-archive-events'
 import { throttle, cbPromise } from '../../../lib/functions'
 import { bufToStr, readReadme, readManifest, writeArchiveFile } from './helpers'
@@ -61,10 +61,10 @@ export function setup () {
       if (!archive) {
         // we dont yet know which feed they want, but hypercore has a protocol for asking
         // TODO how do we configure upload?
-        log.debug(`[DAT] ${info.type} connection from ${info.host}, desired archives not yet known`)
+        debug(`${info.type} connection from ${info.host}, desired archives not yet known`)
         return drive.replicate()
       }
-      log.debug(`[DAT] ${info.type} connection from ${info.host} to fetch ${bufToStr(archive.key)}`)
+      debug(`${info.type} connection from ${info.host} to fetch ${bufToStr(archive.key)}`)
       return archive.replicate({
         download: true,
         upload: (archive.userSettings && archive.userSettings.uploadClaims && archive.userSettings.uploadClaims.length > 0)
@@ -80,7 +80,7 @@ export function setup () {
   // load and configure all saved archives
   archivesDb.queryArchiveUserSettings({ isSaved: true }).then(
     archives => archives.forEach(a => configureArchive(a.key, a)),
-    err => log.error('[DAT] Failed to load networked archives', err)
+    err => console.error('Failed to load networked archives', err)
   )
 }
 
@@ -150,7 +150,7 @@ export function forkArchive (oldArchiveKey, opts) {
     // list the old archive's files
     var newArchive = getArchive(newArchiveKey)
     oldArchive.list((err, entries) => {
-      if (err) return log.error('[DAT] Failed to list old archive files during fork', err)
+      if (err) return console.error('Failed to list old archive files during fork', err)
 
       // TEMPORARY
       // remove duplicates
@@ -164,7 +164,7 @@ export function forkArchive (oldArchiveKey, opts) {
       // copy over files
       next()
       function next (err) {
-        if (err) log.error('[DAT] Error while copying file during fork', err)
+        if (err) console.error('Error while copying file during fork', err)
         var entry = entries.shift()
         if (!entry) return // done!
 
@@ -247,7 +247,7 @@ export function getOrLoadArchive (key) {
 
 export function openInExplorer (key) {
   var folderpath = archivesDb.getArchiveFilesPath(key)
-  log.debug('[DAT] Opening in explorer:', folderpath)
+  debug('Opening in explorer:', folderpath)
   shell.openExternal('file://' + folderpath)
 }
 
@@ -374,7 +374,7 @@ export function writeArchiveFileFromPath (key, opts) {
       }
 
       // read the file or file-tree into the archive
-      log.debug('[DAT] Writing file(s) from path:', src, 'to', dst)
+      debug('Writing file(s) from path:', src, 'to', dst)
       hyperImport(archive, src, {
         basePath: dst,
         live: false,
@@ -393,7 +393,7 @@ export function joinSwarm (key, opts) {
   var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || archive.isSwarming) return
 
-  log.debug('[DAT] Swarming archive', bufToStr(archive.key))
+  debug('Swarming archive', bufToStr(archive.key))
   swarm.join(archive.discoveryKey)
   archive.isSwarming = true
 
@@ -406,7 +406,7 @@ export function leaveSwarm (key, cb) {
   var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || !archive.isSwarming) return
 
-  log.debug('[DAT] Unswarming archive', bufToStr(archive.key))
+  debug('Unswarming archive', bufToStr(archive.key))
   swarm.leave(archive.discoveryKey)
   archive.isSwarming = false
 
@@ -472,13 +472,13 @@ function pullLatestArchiveMeta (archive) {
 
       // write the record
       var update = { title, description, author, createdBy, mtime, size, isOwner }
-      log.debug('[DAT] Writing meta', update)
+      debug('Writing meta', update)
       archivesDb.setArchiveMeta(key, update).then(
         () => {
           update.key = key
           archivesEvents.emit('update-archive', update)
         },
-        err => log.debug('[DAT] Error while writing archive meta', key, err)
+        err => debug('Error while writing archive meta', key, err)
       )
     })
   })

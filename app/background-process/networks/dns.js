@@ -1,4 +1,4 @@
-import log from 'loglevel'
+var debug = require('debug')('dat')
 import dns from 'dns'
 import url from 'url'
 
@@ -11,9 +11,9 @@ export function resolveDatDNS (name, cb) {
   }
 
   // do a dns lookup
-  log.debug('[DAT] DNS TXT lookup for name:', name)
+  debug('DNS TXT lookup for name:', name)
   dns.resolveTxt(name, (err, records) => {
-    log.debug('[DAT] DNS TXT results for', name, err || records)
+    debug('DNS TXT results for', name, err || records)
     if (err) return cb(err)
 
     // scan the txt records for a dat URI
@@ -21,10 +21,10 @@ export function resolveDatDNS (name, cb) {
       if (records[i][0].indexOf('dat://') === 0) {
         var urlp = url.parse(records[i][0])
         if (DAT_HASH_REGEX.test(urlp.host)) {
-          log.debug('[DAT] DNS resolved', name, 'to', urlp.host)
+          debug('DNS resolved', name, 'to', urlp.host)
           return cb(null, urlp.host)
         }
-        log.debug('[DAT] DNS TXT record failed:', records[i], 'Must be a dat://{hash} url')
+        debug('DNS TXT record failed:', records[i], 'Must be a dat://{hash} url')
       }
     }
 

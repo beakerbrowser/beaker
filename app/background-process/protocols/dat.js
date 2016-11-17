@@ -4,7 +4,7 @@ import once from 'once'
 import http from 'http'
 import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
-import log from 'loglevel'
+var debug = require('debug')('dat')
 import rpc from 'pauls-electron-rpc'
 
 import { ProtocolSetupError } from '../../lib/const'
@@ -134,7 +134,7 @@ function datServer (req, res) {
   req.once('aborted', () => {
     aborted = true
     cleanup()
-    log.debug('[DAT] Request aborted by client')
+    debug('Request aborted by client')
   })
 
   // resolve the name
@@ -169,7 +169,7 @@ function datServer (req, res) {
 
       // cleanup
       aborted = true
-      log.debug('[DAT] Timed out searching for', archiveKey)
+      debug('Timed out searching for', archiveKey)
       var hadFileReadStream = !!fileReadStream
       if (fileReadStream) {
         fileReadStream.destroy()
@@ -189,13 +189,13 @@ function datServer (req, res) {
     archive.open(err => {
       if (aborted) return cleanup()
       if (err) {
-        log.debug('[DAT] Failed to open archive', archiveKey, err)
+        debug('Failed to open archive', archiveKey, err)
         cleanup()
         return cb(500, 'Failed')
       }
 
       // lookup entry
-      log.debug('[DAT] attempting to lookup', archiveKey)
+      debug('attempting to lookup', archiveKey)
       var hasExactMatch = false // if there's ever an exact match, then dont look for near-matches
       var filepath = decodeURIComponent(urlp.path)
       if (!filepath || filepath === '/') filepath = '/index.html'
@@ -220,7 +220,7 @@ function datServer (req, res) {
 
         // not found
         if (!entry) {
-          log.debug('[DAT] Entry not found:', urlp.path)
+          debug('Entry not found:', urlp.path)
           cleanup()
 
           // if we're looking for a directory, render the file listing
@@ -240,7 +240,7 @@ function datServer (req, res) {
         sitedataDb.getNetworkPermissions('dat://' + archiveKey).catch(err => []).then(origins => {
 
           // fetch the entry and stream the response
-          log.debug('[DAT] Entry found:', urlp.path)
+          debug('Entry found:', urlp.path)
           fileReadStream = archive.createFileReadStream(entry)
           fileReadStream
             .pipe(mime.identifyStream(entry.name, mimeType => {
@@ -262,7 +262,7 @@ function datServer (req, res) {
           // handle empty files
           fileReadStream.once('end', () => {
             if (!headersSent) {
-              log.debug('[DAT] Served empty file')
+              debug('Served empty file')
               res.writeHead(200, 'OK', {
                 'Content-Security-Policy': DAT_CSP,
                 'Access-Control-Allow-Origin': '*'
@@ -278,7 +278,7 @@ function datServer (req, res) {
 
           // handle read-stream errors
           fileReadStream.once('error', err => {
-            log.debug('[DAT] Error reading file', err)
+            debug('Error reading file', err)
             if (!headersSent) cb(500, 'Failed to read file')
           })
 
