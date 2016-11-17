@@ -99,6 +99,9 @@ export function setup () {
     })
   })
   swarm.listen(3282)
+  swarm.on('error', (e) => {
+    if (e.code == 'EADDRINUSE') swarm.listen(0)
+  })
 
   // wire up event handlers
   archivesDb.on('update:archive-user-settings', configureArchive)
