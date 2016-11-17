@@ -55,22 +55,48 @@ export function setup () {
     tcp: true,
     dns: {server: DAT_DEFAULT_DISCOVERY, domain: DAT_DOMAIN},
     dht: {bootstrap: DAT_DEFAULT_BOOTSTRAP},
-    stream: function (info) {
-      // look up the archive by
-      var archive = info.channel ? archivesByDiscoveryKey[bufToStr(info.channel)] : null
-      if (!archive) {
-        // we dont yet know which feed they want, but hypercore has a protocol for asking
-        // TODO how do we configure upload?
-        debug(`${info.type} connection from ${info.host}, desired archives not yet known`)
-        return drive.replicate()
+    stream: (info) => {
+      if (info.channel) {
+        // this connection was made by one of the discovery channels
+        // we know which archive is being requested by looking at which channel was used
+        var archive = archivesByDiscoveryKey[bufToStr(info.channel)]
+        if (!archive) return debug(`ERROR ${info.type} connection from ${info.host} requested by unknown channel ${bufToStr(info.channel)}`)
+
+        debug(`${info.type} connection from ${info.host} to fetch ${bufToStr(archive.key)}`)
+        return archive.replicate({
+          download: true,
+          upload: (archive.userSettings && archive.userSettings.uploadClaims && archive.userSettings.uploadClaims.length > 0)
+          // TODO fuck this^ (see dat 2.5 plans... in my notebook on the coffee table)
+        })
       }
-      debug(`${info.type} connection from ${info.host} to fetch ${bufToStr(archive.key)}`)
-      return archive.replicate({
+
+      // run the generic handshake, and let the connection event handle specific archives
+      return drive.replicate()
+    }
+  })
+  swarm.on('connection', function (stream, info) {
+    if (info.channel) return // we handled this already
+
+    if (!info.initiator) {
+      // We initiated the connection, but not through a discovery channel? This shouldn't happen... right?
+      // TODO should this happen?
+      return debug(`ERROR ${info.type} connection to ${info.host} initiated locally without a known target archive. Should this happen?`)
+    }
+
+    debug(`${info.type} connection from ${info.host}, waiting for requests`)
+    stream.on('open', function (discoveryKey) {
+      var archive = archivesByDiscoveryKey[bufToStr(info.channel)]
+      if (!archive) return debug(`ERROR ${info.host} requested unknown archive ${bufToStr(info.channel)}`)
+      // TODO is there a 404-like response to give to this? ^
+
+      debug(`${info.host} requested ${bufToStr(archive.key)}`)
+      archive.replicate({
+        stream,
         download: true,
         upload: (archive.userSettings && archive.userSettings.uploadClaims && archive.userSettings.uploadClaims.length > 0)
         // TODO fuck this^ (see dat 2.5 plans... in my notebook on the coffee table)
       })
-    }
+    })
   })
   swarm.listen(3282)
 
