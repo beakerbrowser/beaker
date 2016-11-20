@@ -35,9 +35,8 @@ A `Claims` is an array of strings, containing the origins of sites that have req
 {
   key: String, archive key
   value: {
-    saveClaims: Claims, don't delete the archive
-    uploadClaims: Claims, upload the archive
-    downloadClaims: Claims, download the archive
+    isSaved: Boolean,
+    isHosting: Boolean
   }
 }
 ```
