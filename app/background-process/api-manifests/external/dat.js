@@ -12,8 +12,5 @@ export default {
 
   getHistory: 'promise',
   getCheckpoints: 'promise',
-  writeCheckpoint: 'promise',
-
-  serve: 'promise',
-  unserve: 'promise'
+  writeCheckpoint: 'promise'
 }
