@@ -29,14 +29,13 @@ Computed information about archives
 
 Extra user settings 
 
-A `Claims` is an array of strings, containing the origins of sites that have requested a specific behavior 
-
 ```
 {
   key: String, archive key
   value: {
     isSaved: Boolean,
-    isHosting: Boolean
+    isHosting: Boolean,
+    allowedWriters: Array of URLs
   }
 }
 ```

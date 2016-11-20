@@ -57,7 +57,7 @@ export function setup () {
 //
 
 export const resolveName = resolveDatDNS
-export const updateArchiveClaims = archivesDb.updateArchiveClaims
+export const setArchiveUserSettings = archivesDb.setArchiveUserSettings
 export const getGlobalSetting = archivesDb.getGlobalSetting
 export const setGlobalSetting = archivesDb.setGlobalSetting
 
@@ -90,13 +90,8 @@ export function createNewArchive (opts) {
       writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify({ title, description, createdBy }))
     }
 
-    // write the save & upload claims
-    if (opts.origin) {
-      var claims = ['save']
-      if (opts.serve) claims.push('upload')
-      archivesDb.updateArchiveClaims(key, { origin: opts.origin, op: 'add', claims })
-    }
-
+    // write the user settings
+    setArchiveUserSettings(key, { isSaved: true, isHosting: true, allowedWriters: (createdBy) ? [createdBy.url] : [] })
     // write the meta
     archive.pullLatestArchiveMeta()
   })
@@ -159,8 +154,8 @@ export function forkArchive (oldArchiveKey, opts) {
 
 // load archive and set the swarming behaviors
 export function configureArchive (key, settings) {
-  var upload = settings.uploadClaims.length > 0
-  var download = settings.downloadClaims.length > 0
+  var upload = settings.isHosting
+  var download = settings.isSaved
   var archive = getArchive(key)
   if (archive) {
     // re-set swarming

@@ -50,33 +50,25 @@ var methods = {
     var origin = page.getURLOrigin()
 
     // get the archive meta
-    var details
+    var details, oldSettings
     datInternalAPI.getArchiveDetails(datKey).then(d => {
-      // fail if this site doesn't have a save claim
+      // fail if this site isnt saved
       details = d
-      if (!details.userSettings.saveClaims.includes(origin)) {
+      oldSettings = details.userSettings
+      if (!details.userSettings.isSaved) {
         throw new ArchiveNotSavedError()
       }
 
       // remove the save claim
-      return datInternalAPI.updateArchiveClaims(datKey, {
-        origin,
-        op: 'remove',
-        claims: ['save', 'upload', 'download']
-      })
-    }).then(newUserSettings => {
-      // give the user a chance to undo if there are no more claims remaining
-      if (newUserSettings.saveClaims.length === 0) {
-        undeleteArchivePrompt(page, details, function restore () {
-          // save the dat under beaker:archives
-          datInternalAPI.updateArchiveClaims(datKey, {
-            origin: 'beaker:archives',
-            op: 'add',
-            claims: ['save']
-          })
-        })
-      }
+      return datInternalAPI.setArchiveUserSettings(datKey, { isHosting: false, isSaved: false })
+    }).then(() => {
       resolve()
+
+      // give the user a chance to undo
+      undeleteArchivePrompt(page, details, function restore () {
+        // save the dat under beaker:archives
+        datInternalAPI.setArchiveUserSettings(datKey, oldSettings)
+      })
     }).catch(reject)
   }
 }

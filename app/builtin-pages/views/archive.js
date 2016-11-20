@@ -183,7 +183,7 @@ function renderArchive () {
 
   // ctrls
   var forkBtn = yo`<a id="fork-btn" class="btn" title="Fork" onclick=${onClickFork}><span class="icon icon-flow-branch"></span> Fork</a>`
-  var hostBtn = (isNetworked(archiveInfo))
+  var hostBtn = (isHosting(archiveInfo))
     ? yo`<a id="host-btn" class="btn pressed" title="Hosting" onclick=${onToggleServing}><span class="icon icon-check"></span> Hosting</span>`
     : yo`<a id="host-btn" class="btn" title="Host" onclick=${onToggleServing}><span class="icon icon-upload-cloud"></span> Host</a>`
   var openFolderBtn = yo`<a id="open-in-finder-btn" onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
@@ -485,23 +485,14 @@ function addFiles (files) {
 function onToggleSave () {
   // toggle the save
   if (isSaved(archiveInfo)) {
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-      origin: 'beaker:archives', 
-      op: 'remove-all', 
-      claims: ['save', 'upload', 'download']
-    }).then(settings => {
-      archiveInfo.userSettings.saveClaims = settings.saveClaims
-      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
-      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isSaved: false, isHosting: false }).then(settings => {
+      archiveInfo.userSettings.isSaved = false
+      archiveInfo.userSettings.isHosting = false
       render()
     })
   } else {
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-      origin: 'beaker:archives', 
-      op: 'add', 
-      claims: 'save'
-    }).then(settings => {
-      archiveInfo.userSettings.saveClaims = settings.saveClaims
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isSaved: true }).then(settings => {
+      archiveInfo.userSettings.isSaved = true
       render()
     })
   }
@@ -509,27 +500,15 @@ function onToggleSave () {
 
 function onToggleServing () {
   // toggle the networking
-  if (isNetworked(archiveInfo)) {
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-      origin: 'beaker:archives',
-      op: 'remove-all',
-      claims: ['upload', 'download']
-    }).then(settings => {
-      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
-      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+  if (isHosting(archiveInfo)) {
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isHosting: false }).then(settings => {
+      archiveInfo.userSettings.isHosting = false
       render()
     })
   } else {
-    var claims = ['upload', 'download']
-    if (!isSaved(archiveInfo)) claims.push('save')
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-      origin: 'beaker:archives', 
-      op: 'add', 
-      claims
-    }).then(settings => {
-      archiveInfo.userSettings.saveClaims = settings.saveClaims
-      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
-      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isSaved: true, isHosting: true }).then(settings => {
+      archiveInfo.userSettings.isSaved = true
+      archiveInfo.userSettings.isHosting = true
       render()
     })
   }
@@ -548,7 +527,7 @@ function onOpenInFinder () {
 function onClickFork (e) {
   // create fork modal
   currentForkModal = forkDatModal.create(archiveInfo, archiveEntriesTree, {
-    isDownloading: isNetworked(archiveInfo),
+    isDownloading: isHosting(archiveInfo),
     onClickDownload: onDownloadForkArchive,
     onSubmit: onSubmitForkArchive
   })
@@ -619,17 +598,9 @@ function onDownload (update) {
 }
 
 function isSaved (archive) {
-  return archive.userSettings.saveClaims.length > 0
+  return archive.userSettings.isSaved
 }
 
-function isDownloading (archive) {
-  return archive.userSettings.downloadClaims.length > 0
-}
-
-function isUploading (archive) {
-  return archive.userSettings.uploadClaims.length > 0
-}
-
-function isNetworked (archive) {
-  return isUploading(archive)
+function isHosting (archive) {
+  return archive.userSettings.isHosting
 }

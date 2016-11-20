@@ -173,7 +173,7 @@ test('dat.createArchive', async t => {
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    dat.createArchive({ title: 'The Title', description: 'The Description', serve: true }).then(
+    dat.createArchive({ title: 'The Title', description: 'The Description' }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -205,15 +205,15 @@ test('dat.createArchive', async t => {
   t.deepEqual(manifest.createdBy.url, testRunnerDatURL)
   t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
 
-  // check the claims
+  // check the settings
   await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
     datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
   }, createdDatKey)
   await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.saveClaims, [testRunnerDatURL.slice(0, -1)])
-  t.deepEqual(details.value.userSettings.uploadClaims, [testRunnerDatURL.slice(0, -1)])
-  t.deepEqual(details.value.userSettings.downloadClaims, [])
+  t.deepEqual(details.value.userSettings.isSaved, true)
+  t.deepEqual(details.value.userSettings.isHosting, true)
+  t.deepEqual(details.value.userSettings.allowedWriters, [testRunnerDatURL.slice(0, -1)])
 })
 
 test('dat.writeFile', async t => {
@@ -313,7 +313,7 @@ test('dat.createDirectory doesnt overwrite files or folders', async t => {
   t.deepEqual(res.value.name, 'FileAlreadyExistsError')
 })
 
-test('dat.writeFile doesnt allow writes to archives without a save claim', async t => {
+test('dat.writeFile doesnt allow writes to archives without write permission', async t => {
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
     dat.writeFile(url, 'hello world', 'utf8').then(done, done)
@@ -329,7 +329,7 @@ test('dat.writeFile doesnt allow writes that exceed the quota', async t => {
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
 
-test('dat.createDirectory doesnt allow writes to archives without a save claim', async t => {
+test('dat.createDirectory doesnt allow writes to archives without write permission', async t => {
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
     dat.createDirectory(url).then(done, done)
@@ -337,14 +337,15 @@ test('dat.createDirectory doesnt allow writes to archives without a save claim',
   t.deepEqual(res.value.name, 'PermissionsError')
 })
 
-test('dat.deleteArchive removes save claims', async t => {
-  // check that the save-claim exists
+test('dat.deleteArchive sets saved -> false', async t => {
+  // check that it is saved
   await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
     datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
   }, createdDatKey)
   await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.saveClaims, [testRunnerDatURL.slice(0, -1)])
+  t.deepEqual(details.value.userSettings.isSaved, true)
+  t.deepEqual(details.value.userSettings.isHosting, true)
 
   // delete the archive
   var res = await app.client.executeAsync((url, done) => {
@@ -358,7 +359,8 @@ test('dat.deleteArchive removes save claims', async t => {
     datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
   }, createdDatKey)
   await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.saveClaims.length, 0)
+  t.deepEqual(details.value.userSettings.isSaved, false)
+  t.deepEqual(details.value.userSettings.isHosting, false)
 
   // undo the deletion
   await app.client.windowByIndex(0)
@@ -371,5 +373,6 @@ test('dat.deleteArchive removes save claims', async t => {
     datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
   }, createdDatKey)
   await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.saveClaims, ['beaker:archives'])
+  t.deepEqual(details.value.userSettings.isSaved, true)
+  t.deepEqual(details.value.userSettings.isHosting, true)
 })

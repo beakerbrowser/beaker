@@ -260,9 +260,9 @@ function isProtectedFilePath (filepath) {
 }
 
 function assertWritePermission (archive, senderOrigin) {
-  // ensure the sender has a save claim on the archive
+  // ensure the sender is allowed to write
   return archivesDb.getArchiveUserSettings(archive.key).then(settings => {
-    if (!settings.saveClaims.includes(senderOrigin)) {
+    if (!settings.allowedWriters.includes(senderOrigin)) {
       throw new PermissionsError()
     }
   })
