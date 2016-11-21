@@ -272,10 +272,10 @@ function assertQuotaPermission (archive, senderOrigin, byteLength) {
   // fetch the archive meta, and the current quota for the site
   return Promise.all([
     archivesDb.getArchiveMeta(archive.key),
-    sitedataDb.get(senderOrigin, 'dat-bytes-allowed')
-  ]).then(([meta, bytesAllowed]) => {
+    archivesDb.getArchiveUserSettings(archive.key)
+  ]).then(([meta, userSettings]) => {
     // fallback to default quota
-    bytesAllowed = bytesAllowed || DAT_QUOTA_DEFAULT_BYTES_ALLOWED
+    var bytesAllowed = userSettings.bytesAllowed || DAT_QUOTA_DEFAULT_BYTES_ALLOWED
 
     // check the new size
     var newSize = meta.size + byteLength
