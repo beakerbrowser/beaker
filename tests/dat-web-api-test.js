@@ -202,7 +202,7 @@ test('dat.createArchive', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
-  t.deepEqual(manifest.createdBy.url, testRunnerDatURL)
+  t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
   t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
 
   // check the settings

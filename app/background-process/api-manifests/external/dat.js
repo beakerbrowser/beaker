@@ -1,5 +1,6 @@
 export default {
   createArchive: 'promise',
+  deleteArchive: 'promise',
 
   stat: 'promise',
   readFile: 'promise',

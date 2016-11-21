@@ -5,14 +5,17 @@ import * as dat from './dat'
 import * as archivesDb from '../../dbs/archives'
 import * as sitedataDb from '../../dbs/sitedata'
 import { statArchiveFile, readArchiveFile, readArchiveDirectory, writeArchiveFile, writeArchiveDirectory, toValidEncoding } from './helpers'
+import { requestPermission } from '../../ui/permissions'
 import log from 'loglevel'
 import { 
   DAT_HASH_REGEX,
   DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
 
+  UserDeniedError,
   PermissionsError,
   QuotaExceededError,
   InvalidEncodingError,
+  ArchiveNotSavedError,
   InvalidURLError,
   TimeoutError,
   FileNotFoundError,
@@ -30,6 +33,45 @@ const DEFAULT_TIMEOUT = 5e3
 // =
 
 export default {
+  createArchive: m(function * ({ title, description } = {}) {
+    // ask the user
+    var decision = yield requestPermission('createDat', this.sender)
+    if (decision === false) throw new UserDeniedError()
+
+    // fetch some origin info
+    var originTitle = null
+    var origin = archivesDb.extractOrigin(this.sender.getURL())
+    try {
+      var originMeta = yield archivesDb.getArchiveMeta(origin)
+      originTitle = originMeta.title || null
+    } catch (e) {}
+
+    // create the archive
+    var key = yield dat.createNewArchive({ title, description, origin, originTitle })
+    return `dat://${key}/`
+  }),
+
+  deleteArchive: m(function * (url) {
+    var { archive } = lookupArchive(url)
+    var archiveKey = archive.key.toString('hex')
+
+    // get the archive meta
+    var details = yield dat.getArchiveDetails(archiveKey)
+    var oldSettings = details.userSettings
+
+    // fail if this site isnt saved
+    if (!details.userSettings.isSaved) {
+      throw new ArchiveNotSavedError()
+    }
+
+    // ask the user
+    var decision = yield requestPermission('deleteDat:' + JSON.stringify({ key: archiveKey, title: details.title }), this.sender)
+    if (decision === false) throw new UserDeniedError()
+
+    // delete
+    yield archivesDb.setArchiveUserSettings(archive.key, { isHosting: false, isSaved: false })
+  }),
+
   stat: m(function * (url, opts = {}) {
     // TODO versions
     var downloadedBlocks = !!opts.downloadedBlocks

@@ -3,6 +3,7 @@ import * as yo from 'yo-yo'
 import * as promptbar from '../promptbar'
 import * as pages from '../../pages'
 import PERMS from '../../../lib/perms'
+import { getPermId, getPermParam } from '../../../lib/strings'
 
 // exported api
 // =
@@ -23,7 +24,8 @@ export default function (reqId, webContentsId, permission) {
     return respond(false)
 
   // lookup the perm description. auto-deny if it's not a known perm.
-  const [ permId, permParam ] = permission.split(':')
+  const permId = getPermId(permission)
+  const permParam = getPermParam(permission)
   const PERM = PERMS[permId]
   if (!PERM) return respond(false)
   const permIcon = PERM.icon
@@ -36,7 +38,7 @@ export default function (reqId, webContentsId, permission) {
 
   // run description functions
   if (typeof permDesc === 'function') {
-    permDesc = permDesc(permParam)
+    permDesc = permDesc(permParam, pages)
   }
 
   // create the prompt

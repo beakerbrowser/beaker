@@ -1,3 +1,11 @@
+export function getPermId (permissionToken) {
+  return permissionToken.split(':')[0]
+}
+
+export function getPermParam (permissionToken) {
+  return permissionToken.split(':').slice(1).join(':')
+}
+
 export function ucfirst (str) {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }

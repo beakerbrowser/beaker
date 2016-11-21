@@ -1,3 +1,5 @@
+import * as yo from 'yo-yo'
+
 export default {
   js: {
     desc: 'Run Javascript',
@@ -7,7 +9,7 @@ export default {
     requiresRefresh: true
   },
   network: {
-    desc: (param) => {
+    desc: param => {
       if (param === '*') return 'access the network freely'
       return 'contact ' + param
     },
@@ -15,6 +17,25 @@ export default {
     persist: true,
     alwaysDisallow: false,
     requiresRefresh: true
+  },
+  createDat: {
+    desc: 'create a new Dat archive',
+    icon: 'folder',
+    persist: false,
+    alwaysDisallow: false,
+    requiresRefresh: false
+  },
+  deleteDat: {
+    desc: (param, pages) => {
+      const details = JSON.parse(param)
+      const title = details.title || 'Untitled'
+      const viewArchive = () => pages.setActive(pages.create('beaker:archive/' + details.key))
+      return yo`<span>delete the archive <a onclick=${viewArchive}>${title}</a></span>`
+    },
+    icon: 'folder',
+    persist: false,
+    alwaysDisallow: false,
+    requiresRefresh: false
   },
   media: {
     desc: 'use your camera and microphone',
