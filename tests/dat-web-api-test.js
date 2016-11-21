@@ -344,35 +344,62 @@ test('dat.deleteArchive sets saved -> false', async t => {
     datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
   }, createdDatKey)
   await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.isSaved, true)
+  t.deepEqual(details.value.userSettings.isSaved, true, 'not deleted at start')
   t.deepEqual(details.value.userSettings.isHosting, true)
 
-  // delete the archive
-  var res = await app.client.executeAsync((url, done) => {
-    dat.deleteArchive(url).then(done, err => done({ err }))
+  // start the prompt
+  await app.client.execute((url) => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.deleteArchive(url).then(
+      res => window.res = res,
+      err => window.res = err
+    )
   }, createdDatURL)
-  t.falsy(res.value)
 
-  // check that the save-claim was removed
-  await app.client.windowByIndex(0)
-  var details = await app.client.executeAsync((key, done) => {
-    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
-  }, createdDatKey)
-  await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.isSaved, false)
-  t.deepEqual(details.value.userSettings.isHosting, false)
-
-  // undo the deletion
+  // reject the prompt
   await app.client.windowByIndex(0)
   await app.client.click('.prompt-reject')
   await app.client.windowByIndex(1)
 
-  // check that the new save-claim was added
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.deepEqual(res.value.name, 'UserDeniedError')
+
+  // check that it is still saved
   await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
     datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
   }, createdDatKey)
   await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.isSaved, true)
+  t.deepEqual(details.value.userSettings.isSaved, true, 'not yet deleted')
   t.deepEqual(details.value.userSettings.isHosting, true)
+
+  // start the prompt again
+  await app.client.execute((url) => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.deleteArchive(url).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, createdDatURL)
+
+  // accept the prompt
+  await app.client.windowByIndex(0)
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.falsy(res.value)
+
+  // check that it was deleted
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
+  }, createdDatKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.isSaved, false, 'is deleted')
+  t.deepEqual(details.value.userSettings.isHosting, false)
 })

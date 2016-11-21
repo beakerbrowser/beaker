@@ -3,8 +3,8 @@
 // this file contains the host side of those behaviors
 
 import createArchivePrompt from './ui/prompts/create-archive'
-import undeleteArchivePrompt from './ui/prompts/undelete-archive'
-import { DAT_HASH_REGEX, InvalidURLError, ArchiveNotSavedError } from '../lib/const'
+import deleteArchivePrompt from './ui/prompts/delete-archive'
+import { DAT_HASH_REGEX, InvalidURLError, ArchiveNotSavedError, UserDeniedError } from '../lib/const'
 
 // exported api
 // =
@@ -56,18 +56,17 @@ var methods = {
       details = d
       oldSettings = details.userSettings
       if (!details.userSettings.isSaved) {
-        throw new ArchiveNotSavedError()
+        return reject(new ArchiveNotSavedError())
       }
 
-      // remove the save claim
-      return datInternalAPI.setArchiveUserSettings(datKey, { isHosting: false, isSaved: false })
-    }).then(() => {
-      resolve()
-
-      // give the user a chance to undo
-      undeleteArchivePrompt(page, details, function restore () {
-        // save the dat under beaker:archives
-        datInternalAPI.setArchiveUserSettings(datKey, oldSettings)
+      // ask whether to delete
+      deleteArchivePrompt(page, details, decision => {
+        if (!decision) return reject('user-denied')
+        
+        // delete
+        datInternalAPI.setArchiveUserSettings(datKey, { isHosting: false, isSaved: false })
+          .then(() => resolve())
+          .catch(reject)
       })
     }).catch(reject)
   }
