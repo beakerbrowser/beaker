@@ -38,7 +38,7 @@ const DEFAULT_TIMEOUT = 5e3
 export default {
   createArchive: m(function * ({ title, description } = {}) {
     // ask the user
-    var decision = yield requestPermission('createDat', this.sender)
+    var decision = yield requestPermission('createDat', this.sender, { title })
     if (decision === false) throw new UserDeniedError()
 
     // fetch some origin info

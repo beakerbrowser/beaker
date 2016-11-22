@@ -42,6 +42,10 @@ export default {
   },
   createDat: {
     desc: 'create a new Dat archive',
+    desc: (param, pages, opts = {}) => {
+      if (opts.title) return `create a new Dat archive, "${opts.title}"`
+      return 'create a new Dat archive'
+    },
     icon: 'folder',
     persist: false,
     alwaysDisallow: false,
