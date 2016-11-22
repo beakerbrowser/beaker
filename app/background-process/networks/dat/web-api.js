@@ -5,7 +5,7 @@ import * as dat from './dat'
 import * as archivesDb from '../../dbs/archives'
 import * as sitedataDb from '../../dbs/sitedata'
 import { statArchiveFile, readArchiveFile, readArchiveDirectory, writeArchiveFile, writeArchiveDirectory, toValidEncoding } from './helpers'
-import { requestPermission } from '../../ui/permissions'
+import { queryPermission, requestPermission } from '../../ui/permissions'
 import log from 'loglevel'
 import { 
   DAT_HASH_REGEX,
@@ -14,9 +14,12 @@ import {
   UserDeniedError,
   PermissionsError,
   QuotaExceededError,
+  ArchiveNotWritableError,
+
   InvalidEncodingError,
   ArchiveNotSavedError,
   InvalidURLError,
+
   TimeoutError,
   FileNotFoundError,
   FileReadError,
@@ -42,7 +45,8 @@ export default {
     var originTitle = null
     var origin = archivesDb.extractOrigin(this.sender.getURL())
     try {
-      var originMeta = yield archivesDb.getArchiveMeta(origin)
+      var originKey = /dat:\/\/([^\/]*)/.exec(origin)[1]
+      var originMeta = yield archivesDb.getArchiveMeta(originKey)
       originTitle = originMeta.title || null
     } catch (e) {}
 
@@ -65,7 +69,7 @@ export default {
     }
 
     // ask the user
-    var decision = yield requestPermission('deleteDat:' + JSON.stringify({ key: archiveKey, title: details.title }), this.sender)
+    var decision = yield requestPermission('deleteDat:' + archiveKey, this.sender, { title: details.title })
     if (decision === false) throw new UserDeniedError()
 
     // delete
@@ -149,11 +153,9 @@ export default {
     }
     opts.encoding = toValidEncoding(opts.encoding)
 
-    // TODO quota management
-    // TODO permission check
     var { archive, filepath } = lookupArchive(url)
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-    yield assertWritePermission(archive, senderOrigin)
+    yield assertWritePermission(archive, this.sender)
     yield assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
     return new Promise((resolve, reject) => {
       // protected files
@@ -208,11 +210,8 @@ export default {
   }),
 
   createDirectory: m(function * (url) {
-    // TODO quota management
-    // TODO permission check
     var { archive, filepath } = lookupArchive(url)
-    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-    yield assertWritePermission(archive, senderOrigin)
+    yield assertWritePermission(archive, this.sender)
     return new Promise((resolve, reject) => {
       // protected files
       if (isProtectedFilePath(filepath)) {
@@ -301,12 +300,23 @@ function isProtectedFilePath (filepath) {
   return filepath === '/' || filepath === '/dat.json'
 }
 
-function assertWritePermission (archive, senderOrigin) {
-  // ensure the sender is allowed to write
-  return archivesDb.getArchiveUserSettings(archive.key).then(settings => {
-    if (!settings.allowedWriters.includes(senderOrigin)) {
-      throw new PermissionsError()
-    }
+function assertWritePermission (archive, sender) {
+  return co(function * () {
+    var archiveKey = archive.key.toString('hex')
+    const perm = ('modifyDat:' + archiveKey)
+
+    // ensure we have the archive's private key
+    if (!archive.owner) throw new ArchiveNotWritableError()
+
+    // ensure the sender is allowed to write
+    var allowed = yield queryPermission(perm, sender)
+    if (allowed) return true
+
+    // ask the user
+    var details = yield dat.getArchiveDetails(archiveKey)
+    allowed = yield requestPermission(perm, sender, { title: details.title })
+    if (!allowed) throw new UserDeniedError()
+    return true
   })
 }
 

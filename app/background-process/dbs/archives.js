@@ -147,10 +147,9 @@ export function setArchiveUserSettings (key, newValues = {}) {
         value = archiveUserSettingsObject(key, value)
 
         // extract the desired values
-        var { isSaved, isHosting, allowedWriters } = newValues
+        var { isSaved, isHosting } = newValues
         if (typeof isSaved === 'boolean') value.isSaved = isSaved
         if (typeof isHosting === 'boolean') value.isHosting = isHosting
-        if (Array.isArray(allowedWriters)) value.allowedWriters = allowedWriters.map(extractOrigin)
 
         // write
         archiveUserSettingsDb.put(key, value, err => {
@@ -248,8 +247,7 @@ function archiveUserSettingsObject (key, obj) {
   return Object.assign({
     key,
     isSaved: false,
-    isHosting: false,
-    allowedWriters: []
+    isHosting: false
   }, obj)
 }
 
@@ -298,8 +296,7 @@ migrations = [
         // update the user settings to the new format
         chunk.value = {
           isSaved: Array.isArray(chunk.value.saveClaims) && (chunk.value.saveClaims.length > 0),
-          isHosting: Array.isArray(chunk.value.uploadClaims) && (chunk.value.uploadClaims.length > 0),
-          allowedWriters: []
+          isHosting: Array.isArray(chunk.value.uploadClaims) && (chunk.value.uploadClaims.length > 0)
         }
         archiveUserSettingsDb.put(chunk.key, chunk.value, cb)
         // trigger an update to the meta as well

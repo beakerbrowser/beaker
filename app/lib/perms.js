@@ -1,4 +1,26 @@
 import * as yo from 'yo-yo'
+import prettyHash from 'pretty-hash'
+
+// HACK
+// this is the best way I could figure out for pulling in the dat title, given the current perms flow
+// not ideal but it works
+// (note the in memory caching)
+// -prf
+var datTitleMap = {}
+function lazyDatTitleElement (archiveKey, title) {
+  // if we have the title, render now
+  if (title) return title
+  if (archiveKey in datTitleMap) return datTitleMap[archiveKey] // pull from cache
+
+  // no title, we need to look it up. render now, then update
+  var el = yo`<span>${prettyHash(archiveKey)}</span>`
+  el.id = 'lazy-' + archiveKey
+  datInternalAPI.getArchiveDetails(archiveKey).then(details => {
+    datTitleMap[archiveKey] = details.title // cache
+    el.textContent = details.title // render
+  })
+  return el
+}
 
 export default {
   js: {
@@ -25,12 +47,24 @@ export default {
     alwaysDisallow: false,
     requiresRefresh: false
   },
+  modifyDat: {
+    desc: (param, pages, opts = {}) => {
+      const firstWord = opts.capitalize ? 'Write' : 'write'
+      const title = lazyDatTitleElement(param, opts.title)
+      const viewArchive = () => pages.setActive(pages.create('beaker:archive/' + param))
+      return yo`<span>${firstWord} files to <a onclick=${viewArchive}>${title}</a></span>`
+    },
+    icon: 'folder',
+    persist: true,
+    alwaysDisallow: false,
+    requiresRefresh: false
+  },
   deleteDat: {
-    desc: (param, pages) => {
-      const details = JSON.parse(param)
-      const title = details.title || 'Untitled'
-      const viewArchive = () => pages.setActive(pages.create('beaker:archive/' + details.key))
-      return yo`<span>delete the archive <a onclick=${viewArchive}>${title}</a></span>`
+    desc: (param, pages, opts = {}) => {
+      const firstWord = opts.capitalize ? 'Delete' : 'delete'
+      const title = lazyDatTitleElement(param, opts.title)
+      const viewArchive = () => pages.setActive(pages.create('beaker:archive/' + param))
+      return yo`<span>${firstWord} the archive <a onclick=${viewArchive}>${title}</a></span>`
     },
     icon: 'folder',
     persist: false,

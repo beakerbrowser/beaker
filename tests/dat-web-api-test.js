@@ -213,7 +213,6 @@ test('dat.createArchive', async t => {
   await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.isSaved, true)
   t.deepEqual(details.value.userSettings.isHosting, true)
-  t.deepEqual(details.value.userSettings.allowedWriters, [testRunnerDatURL.slice(0, -1)])
 })
 
 test('dat.writeFile', async t => {
@@ -313,14 +312,6 @@ test('dat.createDirectory doesnt overwrite files or folders', async t => {
   t.deepEqual(res.value.name, 'FileAlreadyExistsError')
 })
 
-test('dat.writeFile doesnt allow writes to archives without write permission', async t => {
-  // write to the subdir
-  var res = await app.client.executeAsync((url, done) => {
-    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
-  }, testStaticDatURL + '/denythis.txt')
-  t.deepEqual(res.value.name, 'PermissionsError')
-})
-
 test('dat.writeFile doesnt allow writes that exceed the quota', async t => {
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
@@ -329,13 +320,116 @@ test('dat.writeFile doesnt allow writes that exceed the quota', async t => {
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
 
-test('dat.createDirectory doesnt allow writes to archives without write permission', async t => {
-  // write to the subdir
+test('dat.writeFile and dat.createDirectory fail to write to unowned archives', async t => {
+  // writeFile
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, testStaticDatURL + '/denythis.txt')
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
+
+  // createDirectory
   var res = await app.client.executeAsync((url, done) => {
     dat.createDirectory(url).then(done, done)
   }, testStaticDatURL + '/denythis')
-  t.deepEqual(res.value.name, 'PermissionsError')
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 })
+
+test('dat.writeFile & dat.createDirectory doesnt allow writes to archives until write permission is given', async t => {
+
+  // create the target dat internally, so that it's writable but not owned by the test runner dat
+  // =
+
+  await app.client.windowByIndex(0)
+  var res = await app.client.executeAsync((done) => {
+    datInternalAPI.createNewArchive({ title: 'Another Test Dat' }).then(done, done)
+  })
+  t.falsy(res.value.name, 'create didnt fail')
+  var newTestDatURL = 'dat://' + res.value + '/'
+  await app.client.windowByIndex(1)
+
+  // writefile deny
+  //
+
+  // start the prompt
+  await app.client.execute(url => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.writeFile(url, 'hello world', 'utf8').then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, newTestDatURL + '/denythis.txt')
+
+  // accept the prompt
+  await app.client.windowByIndex(0)
+  await app.client.click('.prompt-reject')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.deepEqual(res.value.name, 'UserDeniedError', 'write file denied')
+
+  // createDirectory deny
+  //
+
+  // start the prompt
+  await app.client.execute(url => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.createDirectory(url).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, newTestDatURL + '/denythis')
+
+  // accept the prompt
+  await app.client.windowByIndex(0)
+  await app.client.click('.prompt-reject')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.deepEqual(res.value.name, 'UserDeniedError', 'create directory denied')
+
+  // writeFile accept
+  // =
+
+  // start the prompt
+  await app.client.execute(url => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.writeFile(url, 'hello world', 'utf8').then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, newTestDatURL + '/allowthis.txt')
+
+  // accept the prompt
+  await app.client.windowByIndex(0)
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.falsy(res.value, 'write file accepted')
+
+  // writeFile accept persisted perm
+  // =
+
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, newTestDatURL + 'allowthis2.txt')
+  t.falsy(res.value, 'write file 2 accepted')
+
+  // createDirectory accept persisted perm
+  // =
+
+  var res = await app.client.executeAsync((url, done) => {
+    dat.createDirectory(url).then(done, done)
+  }, newTestDatURL + 'allowthis')
+  t.falsy(res.value, 'createdirectory accepted')
+})
+
 
 test('dat.deleteArchive sets saved -> false', async t => {
   // check that it is saved

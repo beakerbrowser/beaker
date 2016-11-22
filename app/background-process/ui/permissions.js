@@ -24,15 +24,28 @@ export function setup () {
   rpc.exportAPI('beakerPermissions', manifest, RPCAPI)
 }
 
-export function requestPermission (permission, webContents) {
-  return new Promise((resolve, reject) => onPermissionRequestHandler(webContents, permission, resolve))
+export function requestPermission (permission, webContents, opts) {
+  return new Promise((resolve, reject) => onPermissionRequestHandler(webContents, permission, resolve, opts))
 }
 
-export function revokePermission (permission, webContents) {
+export function grantPermission (permission, webContents) {
+  var siteURL = (typeof webContents === 'string') ? webContents : webContents.getURL()
+
   // update the DB
   const PERM = PERMS[getPermId(permission)]
   if (PERM && PERM.persist) {
-    siteData.setPermission(webContents.getURL(), permission, 0)
+    siteData.setPermission(siteURL, permission, 1)
+  }
+  return Promise.resolve()
+}
+
+export function revokePermission (permission, webContents) {
+  var siteURL = (typeof webContents === 'string') ? webContents : webContents.getURL()
+
+  // update the DB
+  const PERM = PERMS[getPermId(permission)]
+  if (PERM && PERM.persist) {
+    siteData.setPermission(siteURL, permission, 0)
   }
   return Promise.resolve()
 }
@@ -71,7 +84,7 @@ const RPCAPI = {
 // event handlers
 // =
 
-function onPermissionRequestHandler (webContents, permission, cb) {
+function onPermissionRequestHandler (webContents, permission, cb, opts) {
   // look up the containing window
   var win = getContainingWindow(webContents)
   if (!win) {
@@ -102,7 +115,7 @@ function onPermissionRequestHandler (webContents, permission, cb) {
     }
 
     // send message to create the UI
-    win.webContents.send('command', 'perms:prompt', req.id, webContents.id, permission)
+    win.webContents.send('command', 'perms:prompt', req.id, webContents.id, permission, opts)
   })
 }
 

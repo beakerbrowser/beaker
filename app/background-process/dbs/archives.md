@@ -34,8 +34,7 @@ Extra user settings
   key: String, archive key
   value: {
     isSaved: Boolean,
-    isHosting: Boolean,
-    allowedWriters: Array of URLs
+    isHosting: Boolean
   }
 }
 ```

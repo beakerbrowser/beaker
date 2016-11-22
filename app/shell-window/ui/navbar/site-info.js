@@ -122,9 +122,10 @@ export class SiteInfoNavbarBtn {
     const checked = !!value
     var icon = PERMS[permId] ? PERMS[permId].icon : ''
     var desc = PERMS[permId] ? PERMS[permId].desc : ''
-    if (typeof desc === 'function') desc = desc(permParam, pages)
+    if (typeof desc === 'function') desc = desc(permParam, pages, { capitalize: true })
+    if (typeof desc === 'string') desc = ucfirst(desc)
     return yo`<div>
-      <label class=${value ? 'checked' : ''} onclick=${e=>this.togglePerm(perm)}><input type="checkbox" value="${perm}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${ucfirst(desc)}</label>
+      <label class=${value ? 'checked' : ''} onclick=${e=>this.togglePerm(perm)}><input type="checkbox" value="${perm}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${desc}</label>
     </div>`
   }
 

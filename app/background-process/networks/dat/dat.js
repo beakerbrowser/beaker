@@ -7,6 +7,7 @@ import log from 'loglevel'
 import trackArchiveEvents from './track-archive-events'
 import { throttle, cbPromise } from '../../../lib/functions'
 import { bufToStr, readReadme, readManifest, writeArchiveFile } from './helpers'
+import { grantPermission } from '../../ui/permissions'
 
 // db modules
 import * as archivesDb from '../../dbs/archives'
@@ -91,7 +92,9 @@ export function createNewArchive (opts) {
     }
 
     // write the user settings
-    setArchiveUserSettings(key, { isSaved: true, isHosting: true, allowedWriters: (createdBy) ? [createdBy.url] : [] })
+    setArchiveUserSettings(key, { isSaved: true, isHosting: true })
+    // write the perms
+    if (createdBy && createdBy.url) grantPermission('modifyDat:' + key, createdBy.url)
     // write the meta
     archive.pullLatestArchiveMeta()
   })
