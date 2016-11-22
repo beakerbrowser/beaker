@@ -14,6 +14,7 @@ export const ProtocolSetupError = zerr('ProtocolSetupError')
 export const UserDeniedError = zerr('UserDeniedError')
 export const PermissionsError = zerr('PermissionsError')
 export const QuotaExceededError = zerr('QuotaExceededError')
+export const ArchiveNotWritableError = zerr('ArchiveNotWritableError')
 
 // validation/bad-behavior errors
 export const ArchiveNotSavedError = zerr('ArchiveNotSavedError')

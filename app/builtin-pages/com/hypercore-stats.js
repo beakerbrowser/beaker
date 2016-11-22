@@ -57,7 +57,7 @@ Stats.prototype.destroy = function () {
 }
 
 Stats.prototype.render = function () {
-  if (!isNetworked(this.archiveInfo)) {
+  if (!isHosting(this.archiveInfo)) {
     // Dont render anything if not serving
     return  yo`<div class="hypercore-stats"></div>`
   }
@@ -75,6 +75,6 @@ Stats.prototype.updateActives = throttle(function () {
   Array.from(document.querySelectorAll('.hypercore-stats')).forEach(el => yo.update(el, this.render()))
 }, RERENDER_THROTTLE)
 
-function isNetworked (archive) {
-  return archive.userSettings.uploadClaims.length > 0 || archive.userSettings.downloadClaims.length > 0
+function isHosting (archive) {
+  return archive.userSettings.isHosting
 }

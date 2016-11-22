@@ -2,7 +2,7 @@ import * as yo from 'yo-yo'
 import * as pages from '../../pages'
 import { findParent } from '../../../lib/fg/event-handlers'
 import PERMS from '../../../lib/perms'
-import { ucfirst } from '../../../lib/strings'
+import { ucfirst, getPermId, getPermParam } from '../../../lib/strings'
 
 export class SiteInfoNavbarBtn {
   constructor() {
@@ -116,26 +116,28 @@ export class SiteInfoNavbarBtn {
     this.updateActives()
   }
 
-  renderPerm (id, value) {
-    const [ perm, param ] = id.split(':')
+  renderPerm (perm, value) {
+    const permId = getPermId(perm)
+    const permParam = getPermParam(perm)
     const checked = !!value
-    var icon = PERMS[perm] ? PERMS[perm].icon : ''
-    var desc = PERMS[perm] ? PERMS[perm].desc : ''
-    if (typeof desc === 'function') desc = desc(param)
+    var icon = PERMS[permId] ? PERMS[permId].icon : ''
+    var desc = PERMS[permId] ? PERMS[permId].desc : ''
+    if (typeof desc === 'function') desc = desc(permParam, pages, { capitalize: true })
+    if (typeof desc === 'string') desc = ucfirst(desc)
     return yo`<div>
-      <label class=${value ? 'checked' : ''} onclick=${e=>this.togglePerm(id)}><input type="checkbox" value="${id}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${ucfirst(desc)}</label>
+      <label class=${value ? 'checked' : ''} onclick=${e=>this.togglePerm(perm)}><input type="checkbox" value="${perm}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${desc}</label>
     </div>`
   }
 
-  togglePerm (id) {
+  togglePerm (perm) {
     // update perm
-    var newValue = (this.sitePerms[id] === 1) ? 0 : 1
-    beakerSitedata.setPermission(this.protocolInfo.url, id, newValue).then(() => {
-      this.sitePerms[id] = newValue
+    var newValue = (this.sitePerms[perm] === 1) ? 0 : 1
+    beakerSitedata.setPermission(this.protocolInfo.url, perm, newValue).then(() => {
+      this.sitePerms[perm] = newValue
 
       // requires refresh?
-      const [ perm, param ] = id.split(':')
-      this.siteInfo.requiresRefresh = (PERMS[perm] && PERMS[perm].requiresRefresh)
+      const permId = getPermId(perm)
+      this.siteInfo.requiresRefresh = (PERMS[permId] && PERMS[permId].requiresRefresh)
 
       // rerender
       this.updateActives()

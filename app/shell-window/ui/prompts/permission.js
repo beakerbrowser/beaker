@@ -3,11 +3,12 @@ import * as yo from 'yo-yo'
 import * as promptbar from '../promptbar'
 import * as pages from '../../pages'
 import PERMS from '../../../lib/perms'
+import { getPermId, getPermParam } from '../../../lib/strings'
 
 // exported api
 // =
 
-export default function (reqId, webContentsId, permission) {
+export default function (reqId, webContentsId, permission, opts = {}) {
   var page
   const respond = decision => {
     ipcRenderer.send('permission-response', reqId, decision)
@@ -23,7 +24,8 @@ export default function (reqId, webContentsId, permission) {
     return respond(false)
 
   // lookup the perm description. auto-deny if it's not a known perm.
-  const [ permId, permParam ] = permission.split(':')
+  const permId = getPermId(permission)
+  const permParam = getPermParam(permission)
   const PERM = PERMS[permId]
   if (!PERM) return respond(false)
   const permIcon = PERM.icon
@@ -36,7 +38,7 @@ export default function (reqId, webContentsId, permission) {
 
   // run description functions
   if (typeof permDesc === 'function') {
-    permDesc = permDesc(permParam)
+    permDesc = permDesc(permParam, pages, opts)
   }
 
   // create the prompt
@@ -47,7 +49,7 @@ export default function (reqId, webContentsId, permission) {
         <span class="icon icon-${permIcon || 'help-circled'}"></span>
         This site would like to ${permDesc}.
         <span class="promptbar-btns">
-          <a class="btn btn-primary prompt-accept" onclick=${() => { respond(true); onClose(); }}>Allow</a>
+          <a class="btn prompt-accept" onclick=${() => { respond(true); onClose(); }}>Allow</a>
           <a class="prompt-reject" onclick=${() => { respond(false); onClose(); }}>Don't Allow</a>
         </span>
         <a class="promptbar-close icon icon-cancel-squared" onclick=${() => { respond(false); onClose(); }}></a>
