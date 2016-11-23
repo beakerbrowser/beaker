@@ -10,6 +10,7 @@ var debug = require('debug')('dat')
 import { ProtocolSetupError } from '../../lib/const'
 import { makeSafe } from '../../lib/strings'
 
+import renderDirectoryListingPage from '../networks/ipfs/directory-listing-page'
 import * as ipfs from '../networks/ipfs/ipfs'
 import * as sitedataDb from '../dbs/sitedata'
 import errorPage from '../../lib/error-page'
@@ -128,7 +129,8 @@ function ipfsServer (req, res) {
     cleanup()
     debug('Request aborted by client')
   })
-      // list folder contents
+  
+  // list folder contents
   debug('Attempting to list folder', folderKey)
   ipfs.lookupLink(folderKey, reqPath, (err, link) => {
     if (aborted) return
@@ -136,22 +138,9 @@ function ipfsServer (req, res) {
       cleanup()
 
       if (err.notFound) {
-        // if we're looking for a directory, just give a file listing
-        if (Array.isArray(err.links) && reqPath.charAt(reqPath.length - 1) == '/') {
-          res.writeHead(200, 'OK', {
-            'Content-Type': 'text/html',
-            'Content-Security-Policy': "default-src 'none';"
-          })
-          var upLink = (reqPath == '/') ? '' : `<div><a href="..">..</a></div>`
-          res.end(`<h1>File listing for ${makeSafe(reqPath)}</h1>`+upLink+err.links.map(link => {
-            if (!link.name) return ''
-            return `<div><a href="./${makeSafe(link.name)}">${makeSafe(link.name)}</a></div>`
-          }).join(''))
-          return
-        }
-
         return cb(404, 'File Not Found')
       }
+
       if (err.notReady) {
         ipfs.setup() // try to setup the daemon
         return cb(500, 'IPFS Daemon not found. Start the daemon and try again.')
@@ -168,11 +157,10 @@ function ipfsServer (req, res) {
     debug('Link found:', reqPath || link.name, link)
     ipfs.getApi().object.data(link.hash, (err, marshaled) => {
       if (aborted) return
-      cleanup()
 
       if (err) {
-        // TODO: what's the right error for this?
         debug('Data fetch failed', err)
+        cleanup()
         return cb(500, 'Failed')
       }
 
@@ -180,18 +168,53 @@ function ipfsServer (req, res) {
       var unmarshaled = Unixfs.unmarshal(marshaled)
       var data = unmarshaled.data
 
-      // directory? redirect with a '/' appended
-      if (unmarshaled.type == 'directory') {
+      // render file
+      if (unmarshaled.type !== 'directory') {
+        // try to identify the type by the buffer contents
+        var mimeType = mime.identify(link.name, data)
+        res.writeHead(200, 'OK', {
+          'Content-Type': mimeType,
+          'Content-Security-Policy': IPFS_CSP
+        })
+        cleanup()
+        return res.end(data)
+      }
+
+      // if a directory, make sure we have a '/' at the end
+      if (reqPath.slice(-1) !== '/') {
         return redirectToFolder()
       }
-      
-      // try to identify the type by the buffer contents
-      var mimeType = mime.identify(link.name, data)
-      res.writeHead(200, 'OK', {
-        'Content-Type': mimeType,
-        'Content-Security-Policy': IPFS_CSP
+
+      // look for an index.html
+      ipfs.getApi().object.links(link.hash, (err, links) => {
+        if (aborted) return
+
+        links = links || []
+        var indexLink = links.find(link => link.name === 'index.html')
+        if (!indexLink) {
+          // not found, render a directory listing
+          res.writeHead(200, 'OK', {
+            'Content-Type': 'text/html',
+            'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; img-src data:"
+          })
+          cleanup()
+          return res.end(renderDirectoryListingPage(folderKey, reqPath, links))
+        }
+
+        // fetch index.html
+        ipfs.getApi().object.data(indexLink.hash, (err, marshaled) => {
+          if (aborted) return
+          cleanup()
+
+          // parse and send the data
+          var unmarshaled = Unixfs.unmarshal(marshaled)
+          res.writeHead(200, 'OK', {
+            'Content-Type': 'text/html',
+            'Content-Security-Policy': IPFS_CSP
+          })
+          return res.end(unmarshaled.data)
+        })
       })
-      res.end(data)
     })
   })
 }

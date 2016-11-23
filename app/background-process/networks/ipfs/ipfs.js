@@ -70,6 +70,10 @@ export function  lookupLink (folderKey, path, cb) {
   function start() {
     debug('Looking up', path, 'in', folderKey)
     var pathParts = fixPath(path).split('/')
+    if (pathParts.length === 1 && !pathParts[0]) {
+      // just '/'
+      return cb(null, { hash: folderKey, name: '' })
+    }
     descend(folderKey)
 
     function descend (key) {
@@ -80,6 +84,7 @@ export function  lookupLink (folderKey, path, cb) {
             // daemon turned off
             shutdown()
           }
+          debug('no links found for', key)
           return cb(err)
         }
         
@@ -102,6 +107,7 @@ export function  lookupLink (folderKey, path, cb) {
   function fixPath (str) {
     if (!str) str = ''
     if (str.charAt(0) == '/') str = str.slice(1)
+    if (str.slice(-1) == '/') str = str.slice(0, -1)
     return str
   }
 }
