@@ -71,8 +71,8 @@ function render () {
       <div class="ll-heading">
         Favorites
         <small class="ll-heading-right">
-          <a href="https://community.beakerbrowser.com/" title="Feedback and Discussion"><span class="icon icon-megaphone"></span> Feedback & Discussion</a>
-          <a href="https://github.com/pfrazee/beaker/issues" title="Report Bug"><span class="icon icon-attention"></span> Report Bug</a>
+          <a href="https://groups.google.com/forum/#!forum/beaker-browser" title="Feedback and Discussion"><span class="icon icon-megaphone"></span> Feedback & Discussion</a>
+          <a href="https://github.com/beakerbrowser/beaker/issues" title="Report Bug"><span class="icon icon-attention"></span> Report Bug</a>
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
       </div>
