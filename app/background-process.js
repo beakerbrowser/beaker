@@ -25,6 +25,7 @@ import * as history from './background-process/dbs/history'
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 import * as datProtocol from './background-process/protocols/dat'
+import * as fsProtocol from './background-process/protocols/fs'
 
 import * as openURL from './background-process/open-url'
 
@@ -63,6 +64,7 @@ app.on('ready', function () {
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
   datProtocol.setup()
+  fsProtocol.setup()
   plugins.setupProtocolHandlers()
 
   // web APIs

@@ -1,5 +1,5 @@
 import prettyBytes from 'pretty-bytes'
-import { pluralize } from '../../../lib/strings'
+import { pluralize, makeSafe } from '../../../lib/strings'
 import {readArchiveDirectory} from './helpers'
 
 const styles = `<style>
@@ -41,18 +41,14 @@ export default function renderDirectoryListingPage (archive, path, cb) {
     var entries = names.map(name => {
       var entry = entries[name]
       totalBytes += entry.length
-      var url = safen(entry.name)
+      var url = makeSafe(entry.name)
       if (!url.startsWith('/')) url = '/' + url // all urls should have a leading slash
       if (entry.type === 'directory' && !url.endsWith('/')) url += '/' // all dirs should have a trailing slash
-      return `<div class="entry ${safen(entry.type)}"><a href="${url}">${safen(name)}</a></div>`
+      return `<div class="entry ${makeSafe(entry.type)}"><a href="${url}">${makeSafe(name)}</a></div>`
     }).join('')
     // summary
     var summary = `<div class="entry">${names.length} ${pluralize(names.length, 'file')}, ${prettyBytes(totalBytes)}</div>`
     // render
     cb(styles + updog + entries + summary)
   })
-}
-
-function safen (str) {
-  return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '')
 }
