@@ -45,6 +45,13 @@ export function shutdown () {
   ipfs = null
 }
 
+export function checkIfConnectionFailed (err) {
+  if (err.code == 'ECONNREFUSED') {
+    // daemon turned off
+    shutdown()
+  }
+}
+
 export function getApi () {
   return ipfs
 }
@@ -62,8 +69,7 @@ export function  lookupLink (folderKey, path, cb) {
   // do DNS resolution if needed
   if (folderKey.startsWith('/ipns') && !isIPFS.multihash(folderKey.slice(6))) {
     resolveDNS(folderKey, (err, resolved) => {
-      if (err)
-        return cb(err)
+      if (err) return cb(err)
       folderKey = resolved
       start()
     })
@@ -84,10 +90,7 @@ export function  lookupLink (folderKey, path, cb) {
       debug('Listing...', key)
       ipfs.object.links(key, { enc: (typeof key == 'string' ? 'base58' : false) }, (err, links) => {
         if (err) {
-          if (err.code == 'ECONNREFUSED') {
-            // daemon turned off
-            shutdown()
-          }
+          checkIfConnectionFailed(err)
           debug('no links found for', key)
           return cb(err)
         }
@@ -95,12 +98,12 @@ export function  lookupLink (folderKey, path, cb) {
         // lookup the entry
         debug('folder listing for', key, links)
         var link = findLink(links, pathParts.shift())
-        if (!link)
-          return cb({ notFound: true, links })
+        if (!link) return cb({ notFound: true, links })
 
         // done?
-        if (pathParts.length === 0)
+        if (pathParts.length === 0) {
           return cb(null, link)
+        }
 
         // descend!
         descend(link.hash)

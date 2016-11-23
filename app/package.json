@@ -8,7 +8,6 @@
   "copyright": "© 2016, Paul Frazee",
   "main": "background-process.build.js",
   "dependencies": {
-    "beaker-plugin-ipfs": "~2.0.1",
     "browser-es-module-loader": "^0.1.6",
     "co": "^4.6.0",
     "concat-stream": "^1.5.2",

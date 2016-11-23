@@ -5,7 +5,7 @@ import http from 'http'
 import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 import Unixfs from 'ipfs-unixfs'
-var debug = require('debug')('dat')
+var debug = require('debug')('ipfs')
 
 import { ProtocolSetupError } from '../../lib/const'
 import { makeSafe } from '../../lib/strings'
@@ -159,6 +159,7 @@ function ipfsServer (req, res) {
       if (aborted) return
 
       if (err) {
+        ipfs.checkIfConnectionFailed(err)
         debug('Data fetch failed', err)
         cleanup()
         return cb(500, 'Failed')
@@ -188,6 +189,9 @@ function ipfsServer (req, res) {
       // look for an index.html
       ipfs.getApi().object.links(link.hash, (err, links) => {
         if (aborted) return
+        if (err) {
+          ipfs.checkIfConnectionFailed(err)
+        }
 
         links = links || []
         var indexLink = links.find(link => link.name === 'index.html')
@@ -205,6 +209,10 @@ function ipfsServer (req, res) {
         ipfs.getApi().object.data(indexLink.hash, (err, marshaled) => {
           if (aborted) return
           cleanup()
+          if (err) {
+            ipfs.checkIfConnectionFailed(err)
+            return cb(500, 'Failed')
+          }
 
           // parse and send the data
           var unmarshaled = Unixfs.unmarshal(marshaled)
