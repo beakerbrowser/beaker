@@ -49,6 +49,10 @@ export function getApi () {
   return ipfs
 }
 
+export function isDaemonActive () {
+  return !!ipfs
+}
+
 export function  lookupLink (folderKey, path, cb) {
   if (!ipfs) {
     debug('IPFS Daemon has not setup yet, aborting lookupLink')
