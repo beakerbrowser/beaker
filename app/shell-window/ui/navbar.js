@@ -283,6 +283,8 @@ function handleAutocompleteSearch (results) {
   if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('ipfs:/'))) {
     if (isHashRegex.test(v))
       vWithProtocol = 'dat://'+v
+    else if (v.startsWith('localhost'))
+      vWithProtocol = 'http://'+v
     else {
       vWithProtocol = 'https://'+v
       isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
