@@ -3,6 +3,7 @@ import from2Encoding from 'from2-encoding'
 import pump from 'pump'
 import path from 'path'
 import { DAT_MANIFEST_FILENAME } from '../../../lib/const'
+import encoding from 'hyperdrive-encoding'
 
 // helper to run custom lookup rules
 // - checkFn is called with (entry). if it returns true, then `entry` is made the current match
@@ -150,6 +151,27 @@ export function readManifest (archive, cb) {
 
 export function readReadme (archive, cb) {
   readArchiveFile(archive, 'README.md', (err, data) => cb(null, data)) // squash the error
+}
+
+export function readHistory (historyFeed, cb) {
+  var rs = historyFeed.createReadStream()
+  var blocks = 0
+  var size = 0
+  var changes = []
+  rs.once('data', function () {
+    blocks = historyFeed.blocks
+  })
+  rs.on('data', function (x) {
+    var data = encoding.decode(x)
+    if (data.type === 'file') {
+      size += data.length
+    }
+
+    changes.push(data)
+  })
+  rs.on('end', function () {
+    cb(null, {changes: changes, blocks: blocks, size: size, metaSize: historyFeed.bytes})
+  })
 }
 
 export function readArchiveDirectory (archive, dstPath, cb) {

@@ -1,5 +1,27 @@
 
 .archive {
+  .page-toolbar {
+    .btn {
+      font-size: 14px;
+    }
+    .tabs {
+      display: inline-flex;
+      a {
+        padding: 2px 16px;
+        margin: 0 5px;
+        font-size: 15px;
+        color: gray;
+        &.current {
+          color: #555;
+          border-bottom: 3px solid orange;
+        }
+        &:hover {
+          text-decoration: none;
+          color: #555;
+        }
+      }
+    }
+  }
   min-width: 700px;
 
   .archive-heading {
@@ -45,6 +67,17 @@
   }
 
   .archive-desc {
+    .meta {
+      .icon {
+        margin-left: 10px;
+        margin-right: 5px;
+        display: inline-block;
+        text-align: center;
+        min-width: 15px;
+      }
+    }
+    border-top: 1px solid #DDD;
+    padding-top: 10px;
     font-size: 16px;
     margin-bottom: 10px;
     em {
