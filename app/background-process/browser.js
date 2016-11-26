@@ -8,6 +8,7 @@ import manifest from './api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
 import * as plugins from './plugins'
 import { internalOnly } from '../lib/bg/rpc'
+import { isDaemonActive as isIPFSDaemonActive } from './networks/ipfs/ipfs'
 
 // constants
 // =
@@ -57,6 +58,8 @@ export function setup () {
     getInfo,
     checkForUpdates,
     restartBrowser,
+
+    isIPFSDaemonActive,
 
     getSetting,
     getSettings,

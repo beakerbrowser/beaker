@@ -7,8 +7,8 @@ import co from 'co'
 var navItems = [
   { href: 'beaker:start', label: 'Favorites', icon: 'star' },
   { href: 'beaker:archives', label: 'Files', icon: 'upload-cloud' },
-  { href: 'beaker:downloads', label: 'Downloads', icon: 'down-circled' },
   { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
+  { href: 'beaker:downloads', label: 'Downloads', icon: 'down-circled' },
   { href: 'beaker:settings', label: 'Settings', icon: 'list' }
 ]
 

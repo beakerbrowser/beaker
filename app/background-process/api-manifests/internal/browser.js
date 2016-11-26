@@ -4,6 +4,8 @@ export default {
   checkForUpdates: 'promise',
   restartBrowser: 'sync',
 
+  isIPFSDaemonActive: 'sync',
+
   getSettings: 'promise',
   getSetting: 'promise',
   setSetting: 'promise',
