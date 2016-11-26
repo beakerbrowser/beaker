@@ -6,10 +6,11 @@ import multicb from 'multicb'
 import log from 'loglevel'
 import trackArchiveEvents from './track-archive-events'
 import { throttle, cbPromise } from '../../../lib/functions'
-import { bufToStr, readReadme, readManifest, writeArchiveFile } from './helpers'
+import { bufToStr, readReadme, readManifest, writeArchiveFile, readHistory } from './helpers'
 import { grantPermission } from '../../ui/permissions'
 
 // db modules
+import hypercore from 'hypercore'
 import * as archivesDb from '../../dbs/archives'
 import hyperdrive from 'hyperdrive'
 
@@ -246,6 +247,7 @@ export function getArchiveDetails (name, opts = {}) {
       var archive = getOrLoadArchive(key)
 
       // fetch archive data
+      var historySwarm
       var done = multicb({ pluck: 1, spread: true })
       var metaCB = done()
       archivesDb.getArchiveMeta(key).then(meta => metaCB(null, meta))
@@ -253,13 +255,21 @@ export function getArchiveDetails (name, opts = {}) {
       archivesDb.getArchiveUserSettings(key).then(settings => userSettingsCB(null, settings))
       if (opts.entries) archive.list(done())
       if (opts.readme) readReadme(archive, done())
-      done((err, meta, userSettings, entries, readme) => {
+      if (opts.history) {
+        var core = hypercore(archivesDb.getLevelInstance())
+        var feed = core.createFeed(archive.key)
+        historySwarm = hyperdriveArchiveSwarm(feed)
+        readHistory(feed, done())
+      }
+      done((err, meta, userSettings, entries, readme, history) => {
+        historySwarm.close()
         if (err) return reject(err)
 
         // attach additional data
         meta.userSettings = userSettings
         meta.entries = entries
         meta.readme = readme
+        meta.history = history
         if (opts.contentBitfield) meta.contentBitfield = archive.content.bitfield.buffer
         meta.peers = archive.metadata.peers.length
         resolve(meta)

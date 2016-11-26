@@ -16,6 +16,7 @@ import HypercoreStats from '../com/hypercore-stats'
 import * as editArchiveModal from '../com/modals/edit-site'
 import * as forkDatModal from '../com/modals/fork-dat'
 import * as helpTour from '../com/help-tour'
+import { archiveHistoryList, archiveHistoryMeta } from '../com/archive-history-list'
 
 // globals
 // =
@@ -162,7 +163,11 @@ function render () {
   }
 
   if (archiveInfo) {
-    renderArchive()
+    if (window.location.hash === '#history') {
+      renderArchiveHistory()
+    } else {
+      renderArchive()
+    }
   } else if (archiveError) {
     renderError()
   } else {
@@ -172,6 +177,47 @@ function render () {
   if (currentForkModal) {
     currentForkModal.rerender()
   }
+}
+
+function renderArchiveHistory () {
+  const name = archiveInfo.title || 'Untitled'
+
+  // set page title
+  document.title = name
+
+  // created-by
+  var createdByEl = (archiveInfo.createdBy)
+    ? yo`<span class="archive-created-by">
+        <span class="icon icon-code"></span> Created by <a href=${archiveInfo.createdBy.url}>${archiveInfo.createdBy.title || shortenHash(archiveInfo.createdBy.url)}</a>
+      </span>`
+    : ''
+
+  // description
+  var descriptEl = archiveHistoryMeta(archiveInfo.history)
+
+  // render view
+  yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
+    <div class="archive">
+      <div class="archive-heading">
+        <div class="archive-name"><a href=${'dat://' + archiveInfo.key} title=${name}>${name}</a></div>
+        <div class="archive-ctrls">
+          ${createdByEl}
+          <span id="owner-label">${archiveInfo.isOwner ? 'Owner' : 'Read-only'}</span>
+        </div>
+        <div class="archive-ctrls at-center"></div>
+        <div class="page-toolbar">
+          <div class="tabs">
+            <a href=${'beaker:archive/' + archiveInfo.key} onclick=${pushUrl}>Current</a>
+            <a class="current" href=${'beaker:archive/' + archiveInfo.key + '#history'}" onclick=${pushUrl}>History</a>
+          </div>
+        </div>
+      </div>
+      <div class="archive-desc">${descriptEl}</div>
+      <div class="archive-histories links-list">
+        ${archiveHistoryList(archiveInfo.history.changes)}
+      </div>
+    </div>
+  </div>`)
 }
 
 function renderArchive () {
@@ -258,12 +304,18 @@ function renderArchive () {
     <div class="archive">
       <div class="archive-heading">
         <div class="archive-name"><a href=${'dat://'+archiveInfo.key} title=${name}>${name}</a></div>
-        ${ wasDeleted
-          ? yo`<div class="archive-ctrls at-center">${undoDeleteBtn}</div>`
-          : yo`<div class="archive-ctrls at-center">${forkBtn} ${hostBtn} ${dropdownBtn} ${hypercoreStats.render()}</div>` }
         <div class="archive-ctrls">
           ${createdByEl}
           <span id="owner-label">${ archiveInfo.isOwner ? 'Owner' : 'Read-only' }</span>
+        </div>
+        ${ wasDeleted
+          ? yo`<div class="archive-ctrls at-center">${undoDeleteBtn}</div>`
+          : yo`<div class="archive-ctrls at-center">${forkBtn} ${hostBtn} ${dropdownBtn} ${hypercoreStats.render()}</div>` }
+        <div class="page-toolbar">
+          <div class="tabs">
+            <a class="current" href=${'beaker:archive/' + archiveInfo.key} onclick=${pushUrl}>Current</a>
+            <a class="" href=${'beaker:archive/' + archiveInfo.key + '#history'}" onclick=${pushUrl}>History</a>
+          </div>
         </div>
       </div>
       <div class="archive-desc">${descriptEl} ${editBtn}</div>
@@ -348,7 +400,7 @@ function parseKeyFromURL () {
 const fetchArchiveInfo = throttle(cb => {
   return co(function * () {
     // run request
-    archiveInfo = yield datInternalAPI.getArchiveDetails(archiveKey, { readme: true, entries: true, contentBitfield: true })
+    archiveInfo = yield datInternalAPI.getArchiveDetails(archiveKey, { readme: true, entries: true, contentBitfield: true, history: true })
     if (archiveInfo) {
       archiveEntriesTree = entriesListToTree(archiveInfo)
       calculateTreeSizeAndProgress(archiveInfo, archiveEntriesTree)
@@ -369,7 +421,7 @@ function setSiteInfoOverride () {
   var subpath = window.location.pathname.split('/').slice(2).join('/') // drop 'archive/{name}', take the rest
   window.locationbar.setSiteInfoOverride({
     title: 'Dat Viewer',
-    url: 'dat://' + archiveKey + '/' + subpath
+    url: 'dat://' + archiveKey + '/' + subpath + window.location.hash
   })
 }
 
