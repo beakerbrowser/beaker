@@ -25,7 +25,7 @@
     "hyperdrive-archive-swarm": "^5.0.2",
     "hyperdrive-import-files": "^2.3.0",
     "identify-filetype": "^1.0.0",
-    "ipfs-api": "^11.1.0",
+    "ipfs-api": "^12.0.0",
     "ipfs-unixfs": "^0.1.5",
     "is-ipfs": "^0.2.1",
     "level": "^1.5.0",
