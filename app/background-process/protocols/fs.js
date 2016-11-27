@@ -132,7 +132,7 @@ function ipfsServer (req, res) {
   
   // list folder contents
   debug('Attempting to list folder', folderKey)
-  ipfs.lookupLink(folderKey, reqPath, (err, link) => {
+  ipfs.lookupLink(subProtocol, folderKey, reqPath, (err, link) => {
     if (aborted) return
     if (err) {
       cleanup()
@@ -187,6 +187,7 @@ function ipfsServer (req, res) {
       }
 
       // look for an index.html
+      debug('Looking for index.html')
       ipfs.getApi().object.links(link._multihash || link.hash, (err, links) => {
         if (aborted) return
         if (err) {
@@ -197,6 +198,7 @@ function ipfsServer (req, res) {
         var indexLink = links.find(link => link.name === 'index.html')
         if (!indexLink) {
           // not found, render a directory listing
+          debug('No index.html found, rendering a directory listing')
           res.writeHead(200, 'OK', {
             'Content-Type': 'text/html',
             'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; img-src data:"
@@ -206,7 +208,8 @@ function ipfsServer (req, res) {
         }
 
         // fetch index.html
-        ipfs.getApi().object.data(indexLink.hash, (err, marshaled) => {
+        debug('Found index.html:', indexLink._multihash || indexLink.hash)
+        ipfs.getApi().object.data(indexLink._multihash || indexLink.hash, (err, marshaled) => {
           if (aborted) return
           cleanup()
           if (err) {

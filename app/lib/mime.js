@@ -9,7 +9,7 @@ mime.default_type = 'text/plain'
 export function identify (name, chunk) {
   // try to identify the type by the chunk contents
   var mimeType
-  var identifiedExt = identifyFiletype(chunk)
+  var identifiedExt = (chunk) ? identifyFiletype(chunk) : false
   if (identifiedExt)
     mimeType = mime.lookup(identifiedExt)
   if (mimeType) {

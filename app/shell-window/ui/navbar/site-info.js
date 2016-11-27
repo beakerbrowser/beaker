@@ -17,7 +17,7 @@ export class SiteInfoNavbarBtn {
 
   render() {
     // pull details
-    var title = '', url = '', hostname = '', icon = ''
+    var title = '', url = '', hostname = '', icon = '', protocoldesc = ''
     if (this.siteInfoOverride && this.siteInfoOverride.title) {
       title = this.siteInfoOverride.title
     } else if (this.siteInfo && this.siteInfo.title) {
@@ -30,10 +30,13 @@ export class SiteInfoNavbarBtn {
       hostname = this.protocolInfo.hostname
       if (['https:', 'beaker:'].includes(this.protocolInfo.scheme)) {
         icon = 'lock'
+        protocoldesc = 'Your connection to this site is private.'
       } else if (this.protocolInfo.scheme === 'http:') {
         icon = 'info-circled'
-      } else if (['dat:', 'ipfs:'].indexOf(this.protocolInfo.scheme) != -1) {
+        protocoldesc = 'Your connection to this site is not private.'
+      } else if (['dat:', 'fs:'].indexOf(this.protocolInfo.scheme) != -1) {
         icon = 'share'
+        protocoldesc = 'This site was downloaded from a peer-to-peer network.'
       }
     }
 
@@ -70,6 +73,7 @@ export class SiteInfoNavbarBtn {
             <img src="beaker-favicon:${url}" />
             <strong>${title || hostname || url}</strong>
           </div>
+          <div><small>${protocoldesc}</small></div>
           ${siteCtrlsEl}
         </div>
         <div class="perms">${permsEls}</div>
