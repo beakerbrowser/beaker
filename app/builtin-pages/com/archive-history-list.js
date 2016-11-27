@@ -1,20 +1,17 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 
-export function archiveHistoryList (changes) {
-  var rowEls = []
+export function archiveHistoryList (info) {
+  var rowEls = [yo`<div class="ll-row archive-history">
+          <a class="ll-link" title=${info.contentKey.toString('hex')}>
+            <span class="favicon icon icon-code"></span>
+            <span class="ll-title">content -- ${info.contentKey.toString('hex')}</span>
+          </a>
+        </div>`]
 
-  changes.forEach(c => {
+  info.entries.forEach(c => {
     var row
     switch (c.type) {
-      case 'index':
-        row = yo`<div class="ll-row archive-history">
-          <a class="ll-link" title=${c.name}>
-            <span class="favicon icon icon-code"></span>
-            <span class="ll-title">content -- ${c.content.toString('hex')}</span>
-          </a>
-        </div>`
-        break
       case 'file':
         row = yo`<div class="ll-row archive-history">
           <a class="ll-link" title=${c.name}>
@@ -40,9 +37,9 @@ export function archiveHistoryList (changes) {
   return rowEls
 }
 
-export function archiveHistoryMeta (history) {
+export function archiveHistoryMeta (info) {
   return yo`<div class="meta">
-    <div><span class="icon icon-plus-squared"></span>${history.blocks} changes</div>
-    <div><span class="icon icon-database"></span>Total Content Size: ${prettyBytes(history.size)} (${prettyBytes(history.metaSize)} metadata)</span></div>
+    <div><span class="icon icon-plus-squared"></span>${info.blocks} changes</div>
+    <div><span class="icon icon-database"></span>Total Content Size: ${prettyBytes(info.size)} (${prettyBytes(info.metaSize)} metadata)</span></div>
   </div>`
 }
