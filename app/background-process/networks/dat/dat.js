@@ -262,7 +262,7 @@ export function getArchiveDetails (name, opts = {}) {
         readHistory(feed, done())
       }
       done((err, meta, userSettings, entries, readme, history) => {
-        historySwarm.close()
+        if (historySwarm) historySwarm.close()
         if (err) return reject(err)
 
         // attach additional data
