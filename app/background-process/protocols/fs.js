@@ -132,7 +132,7 @@ function ipfsServer (req, res) {
   
   // list folder contents
   debug('Attempting to list folder', folderKey)
-  ipfs.lookupLink(folderKey, reqPath, (err, link) => {
+  ipfs.lookupLink(subProtocol, folderKey, reqPath, (err, link) => {
     if (aborted) return
     if (err) {
       cleanup()

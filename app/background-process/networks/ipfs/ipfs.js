@@ -60,19 +60,19 @@ export function isDaemonActive () {
   return !!ipfs
 }
 
-export function  lookupLink (folderKey, path, cb) {
+export function  lookupLink (subProtocol, folderKey, path, cb) {
   if (!ipfs) {
     debug('IPFS Daemon has not setup yet, aborting lookupLink')
     return cb({ notReady: true })
   }
 
   // do DNS resolution if needed
-  if (folderKey.startsWith('/ipns') && !isIPFS.multihash(folderKey.slice(6))) {
-    resolveDNS(folderKey, (err, resolved) => {
-      if (err) return cb(err)
-      folderKey = resolved
+  if (subProtocol === 'ipns') {
+    debug('Resolving IPNS', folderKey)
+    ipfs.name.resolve(folderKey).then(resolved => {
+      folderKey = resolved.Path.slice(6) // slice off the subprotocol
       start()
-    })
+    }).catch(cb)
   } else {
     start()
   }
@@ -117,33 +117,6 @@ export function  lookupLink (folderKey, path, cb) {
     if (str.slice(-1) == '/') str = str.slice(0, -1)
     return str
   }
-}
-
-var dnsEntryRegex = /^dnslink=(\/ip[nf]s\/.*)/
-function resolveDNS (folderKey, cb) {
-  // pull out the name
-  var name = folderKey.slice(6) // strip off the /ipns/
-  if (name.endsWith('/'))
-    name = name.slice(0, -1)
-
-  // do a dns lookup
-  debug('DNS TXT lookup for name:', name)
-  dns.resolveTxt(name, (err, records) => {
-    debug('DNS TXT results for', name, err || records)
-    if (err)
-      return cb(err)
-
-    // scan the txt records for a valid entry
-    for (var i=0; i < records.length; i++) {
-      var match = dnsEntryRegex.exec(records[i][0])
-      if (match) {
-        debug('DNS resolved', name, 'to', match[1])
-        return cb(null, match[1])
-      }
-    }
-
-    cb({ code: 'ENOTFOUND' })
-  })
 }
 
 function findLink (links, path) {
