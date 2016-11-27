@@ -106,7 +106,7 @@ export function  lookupLink (folderKey, path, cb) {
         }
 
         // descend!
-        descend(link.hash)
+        descend(link._multihash || link.hash)
       })
     }
   }
@@ -151,7 +151,8 @@ function findLink (links, path) {
   if (path && path.charAt(0) == '/') path = path.slice(1)
     
   for (var i=0; i < links.length; i++) {
-    if (links[i].name == path)
+    let name = links[i].name || links[i]._name
+    if (name === path)
       return links[i]
   }
 }

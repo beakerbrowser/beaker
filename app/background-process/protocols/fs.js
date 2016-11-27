@@ -155,7 +155,7 @@ function ipfsServer (req, res) {
 
     // fetch the data
     debug('Link found:', reqPath || link.name, link)
-    ipfs.getApi().object.data(link.hash, (err, marshaled) => {
+    ipfs.getApi().object.data(link._multihash || link.hash, (err, marshaled) => {
       if (aborted) return
 
       if (err) {
@@ -187,7 +187,7 @@ function ipfsServer (req, res) {
       }
 
       // look for an index.html
-      ipfs.getApi().object.links(link.hash, (err, links) => {
+      ipfs.getApi().object.links(link._multihash || link.hash, (err, links) => {
         if (aborted) return
         if (err) {
           ipfs.checkIfConnectionFailed(err)
