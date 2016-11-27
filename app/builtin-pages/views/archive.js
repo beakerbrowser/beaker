@@ -193,7 +193,7 @@ function renderArchiveHistory () {
     : ''
 
   // description
-  var descriptEl = archiveHistoryMeta(archiveInfo.history)
+  var descriptEl = archiveHistoryMeta(archiveInfo)
 
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
@@ -214,7 +214,7 @@ function renderArchiveHistory () {
       </div>
       <div class="archive-desc">${descriptEl}</div>
       <div class="archive-histories links-list">
-        ${archiveHistoryList(archiveInfo.history.changes)}
+        ${archiveHistoryList(archiveInfo)}
       </div>
     </div>
   </div>`)
@@ -400,7 +400,7 @@ function parseKeyFromURL () {
 const fetchArchiveInfo = throttle(cb => {
   return co(function * () {
     // run request
-    archiveInfo = yield datInternalAPI.getArchiveDetails(archiveKey, { readme: true, entries: true, contentBitfield: true, history: true })
+    archiveInfo = yield datInternalAPI.getArchiveDetails(archiveKey, { readme: true, entries: true, contentBitfield: true })
     if (archiveInfo) {
       archiveEntriesTree = entriesListToTree(archiveInfo)
       calculateTreeSizeAndProgress(archiveInfo, archiveEntriesTree)
