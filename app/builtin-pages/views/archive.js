@@ -596,7 +596,7 @@ function onDownloadForkArchive () {
 
 function onSubmitForkArchive ({ title, description }) {
   // what do you do when you see a fork in the code?
-  datInternalAPI.forkArchive(archiveInfo.key, { title, description }).then(newKey => {
+  datInternalAPI.forkArchive(archiveInfo.key, { title, description, origin: 'beaker:archives' }).then(newKey => {
     // you take it
     window.location = 'beaker:archive/' + newKey
   }).catch(err => {

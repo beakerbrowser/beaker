@@ -103,54 +103,75 @@ export function createNewArchive (opts) {
 }
 
 export function forkArchive (oldArchiveKey, opts) {
-  // massage inputs
   opts = opts || {}
-  var title = (opts.title && typeof opts.title === 'string') ? opts.title : ''
-  var description = (opts.description && typeof opts.description === 'string') ? opts.description : ''
 
-  // get the target archive
+  // get the old archive
   var oldArchive = getArchive(oldArchiveKey)
   if (!oldArchive) {
     return Promise.reject(new Error('Invalid archive key'))
   }
 
-  // create the new archive
-  return createNewArchive({ title, description, origin: 'beaker:archives' }).then(newArchiveKey => {
-    // list the old archive's files
-    var newArchive = getArchive(newArchiveKey)
-    oldArchive.list((err, entries) => {
-      if (err) return log.error('[DAT] Failed to list old archive files during fork', err)
+  // fetch old archive meta
+  return archivesDb.getArchiveMeta(oldArchiveKey).then(meta => {
+    // override any manifest data
+    var newArchiveOpts = {
+      title: (opts.title) ? opts.title : meta.title,
+      description: (opts.description) ? opts.description : meta.description,
+      author: (opts.author) ? opts.author : meta.author,
+      origin: opts.origin
+    }
 
-      // TEMPORARY
-      // remove duplicates
-      // this is only needed until hyperdrive fixes its .list()
-      // see https://github.com/mafintosh/hyperdrive/pull/99
-      // -prf
-      var entriesDeDuped = {}
-      entries.forEach(entry => { entriesDeDuped[entry.name] = entry })
-      entries = Object.keys(entriesDeDuped).map(name => entriesDeDuped[name])
+    // create the new archive
+    return createNewArchive(newArchiveOpts)
+  }).then(newArchiveKey => {
+    return new Promise(resolve => {
+      // list the old archive's files
+      var newArchive = getArchive(newArchiveKey)
+      oldArchive.list((err, entries) => {
+        if (err) return log.error('[DAT] Failed to list old archive files during fork', err)
 
-      // copy over files
-      next()
-      function next (err) {
-        if (err) log.error('[DAT] Error while copying file during fork', err)
-        var entry = entries.shift()
-        if (!entry) return // done!
+        // TEMPORARY
+        // remove duplicates
+        // this is only needed until hyperdrive fixes its .list()
+        // see https://github.com/mafintosh/hyperdrive/pull/99
+        // -prf
+        var entriesDeDuped = {}
+        entries.forEach(entry => { entriesDeDuped[entry.name] = entry })
+        entries = Object.keys(entriesDeDuped).map(name => entriesDeDuped[name])
 
-        // skip non-files, undownloaded files, and the old manifest
-        if (entry.type !== 'file' || !oldArchive.isEntryDownloaded(entry) || entry.name === DAT_MANIFEST_FILENAME) {
-          return next()
+        // copy over files
+        next()
+        function next (err) {
+          if (err) log.error('[DAT] Error while copying file during fork', err)
+          var entry = entries.shift()
+          if (!entry) {
+            // done!
+            return resolve(newArchiveKey)
+          }
+
+          // directories
+          if (entry.type === 'directory') {
+            return newArchive.append({
+              name: entry.name,
+              type: 'directory',
+              mtime: entry.mtime
+            }, next)
+          }
+
+          // skip other non-files, undownloaded files, and the old manifest
+          if (entry.type !== 'file' || !oldArchive.isEntryDownloaded(entry) || entry.name === DAT_MANIFEST_FILENAME) {
+            return next()
+          }
+
+          // copy the file
+          pump(
+            oldArchive.createFileReadStream(entry),
+            newArchive.createFileWriteStream({ name: entry.name, mtime: entry.mtime, ctime: entry.ctime }),
+            next
+          )
         }
-
-        // copy the file
-        pump(
-          oldArchive.createFileReadStream(entry),
-          newArchive.createFileWriteStream({ name: entry.name, mtime: entry.mtime, ctime: entry.ctime }),
-          next
-        )
-      }
+      })
     })
-    return newArchiveKey
   })
 }
 
