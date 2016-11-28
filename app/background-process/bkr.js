@@ -17,6 +17,7 @@ const METHODS = [
   'forkArchive',
   'setArchiveUserSettings',
   'writeArchiveFileFromPath',
+  'exportFileFromArchive'
 ]
 
 // globals

@@ -6,7 +6,7 @@ import multicb from 'multicb'
 import log from 'loglevel'
 import trackArchiveEvents from './track-archive-events'
 import { throttle, cbPromise } from '../../../lib/functions'
-import { bufToStr, readReadme, readManifest, writeArchiveFile } from './helpers'
+import { bufToStr, readReadme, readManifest, statArchiveFile, writeArchiveFile } from './helpers'
 import { grantPermission } from '../../ui/permissions'
 
 // db modules
@@ -358,6 +358,25 @@ export function writeArchiveFileFromPath (key, opts) {
         resume: true,
         ignore: ['.dat', '**/.dat', '.git', '**/.git']
       }, cb)
+    })
+  })
+}
+
+export function exportFileFromArchive (key, archivePath, dstPath) {
+  return cbPromise(cb => {
+    var archive = getOrLoadArchive(key)
+    statArchiveFile(archive, archivePath, (err, entry) => {
+      if (err) return cb(new Error(`Archive file ${archivePath} not found`))
+      if (!entry || entry.type !== 'file') {
+        return cb(new Error(`Archive file ${archivePath} not found`))
+      }
+
+      console.log(`[DAT] Exporting dat://${key} to ${dstPath}`)
+      pump(
+        archive.createFileReadStream(entry),
+        fs.createWriteStream(dstPath),
+        cb
+      )
     })
   })
 }
