@@ -6,6 +6,7 @@ import multicb from 'multicb'
 import log from 'loglevel'
 import trackArchiveEvents from './track-archive-events'
 import { throttle, cbPromise } from '../../../lib/functions'
+import { generate as generateManifest } from './dat-manifest'
 import { bufToStr, readReadme, readManifest, statArchiveFile, writeArchiveFile, readArchiveDirectory } from './helpers'
 import { grantPermission } from '../../ui/permissions'
 
@@ -65,14 +66,11 @@ export const setGlobalSetting = archivesDb.setGlobalSetting
 // archive creation
 // =
 
-export function createNewArchive (opts) {
+export function createNewArchive ({ title, description, author, forkOf, origin, originTitle, importFiles } = {}) {
   // massage inputs
-  opts = opts || {}
-  var title = (opts.title && typeof opts.title === 'string') ? opts.title : ''
-  var description = (opts.description && typeof opts.description === 'string') ? opts.description : ''
-  var createdBy = null
-  if (opts.origin && opts.origin.startsWith('dat://')) createdBy = { url: opts.origin }
-  if (createdBy && opts.originTitle && typeof opts.originTitle === 'string') createdBy.title = opts.originTitle
+  var createdBy
+  if (typeof origin === 'string' && origin.startsWith('dat://')) createdBy = { url: origin }
+  if (createdBy && typeof originTitle === 'string') createdBy.title = originTitle
 
   return new Promise(resolve => {
     // create the archive
@@ -81,18 +79,14 @@ export function createNewArchive (opts) {
     const done = () => resolve(key)
 
     // import files
-    if (opts.importFiles) {
-      let importFiles = Array.isArray(opts.importFiles) ? opts.importFiles : [opts.importFiles]
+    if (importFiles) {
+      let importFiles = Array.isArray(importFiles) ? importFiles : [importFiles]
       importFiles.forEach(importFile => writeArchiveFileFromPath(key, { src: importFile, dst: '/' }))
     }
 
-    // write the manifest (optionally) then resolve
-    if (title || description || createdBy) {
-      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify({ title, description, createdBy }, null, 2), done)
-    } else {
-      done()
-    }
-
+    // write the manifest then resolve
+    var manifest = generateManifest({ url: `dat://${key}/`, title, description, author, forkOf, createdBy })
+    writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest, null, 2), done)
     // write the user settings
     setArchiveUserSettings(key, { isSaved: true, isHosting: true })
     // write the perms
@@ -118,6 +112,7 @@ export function forkArchive (oldArchiveKey, opts) {
       title: (opts.title) ? opts.title : meta.title,
       description: (opts.description) ? opts.description : meta.description,
       author: (opts.author) ? opts.author : meta.author,
+      forkOf: (meta.forkOf || []).concat(`dat://${oldArchiveKey}/`),
       origin: opts.origin
     }
 
@@ -341,7 +336,7 @@ export function updateArchiveManifest (key, updates) {
       // update values
       manifest = manifest || {}
       Object.assign(manifest, updates)
-      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest), cb)
+      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest, null, 2), cb)
     })
   })
 }
@@ -406,7 +401,6 @@ export function exportFileFromArchive (key, srcPath, dstPath) {
         }
 
         // export by type
-        console.log(entrySrcPath, entry.type, entry.name)
         if (entry.type === 'file') exportFile(entry, entryDstPath, cb)
         else if (entry.type === 'directory') exportDirectory(entry, entryDstPath, cb)
         else cb()
@@ -545,13 +539,13 @@ function pullLatestArchiveMeta (archive) {
 
     done((_, manifest, size) => {
       manifest = manifest || {}
-      var { title, description, author, createdBy } = manifest
+      var { title, description, author, forkOf, createdBy } = manifest
       var mtime = Date.now() // use our local update time
       var isOwner = archive.owner
       size = size || 0
 
       // write the record
-      var update = { title, description, author, createdBy, mtime, size, isOwner }
+      var update = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
       log.debug('[DAT] Writing meta', update)
       archivesDb.setArchiveMeta(key, update).then(
         () => {

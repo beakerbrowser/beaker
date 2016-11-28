@@ -191,8 +191,8 @@ export function setArchiveMeta (key, value = {}) {
 
   return setupPromise.then(() => cbPromise(cb => {
     // extract the desired values
-    var { title, description, author, createdBy, mtime, size, isOwner } = value
-    value = { title, description, author, createdBy, mtime, size, isOwner }
+    var { title, description, author, forkOf, createdBy, mtime, size, isOwner } = value
+    value = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
 
     // write
     archiveMetaDb.put(key, value, err => {
