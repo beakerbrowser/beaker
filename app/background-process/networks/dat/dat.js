@@ -6,7 +6,7 @@ import multicb from 'multicb'
 import log from 'loglevel'
 import trackArchiveEvents from './track-archive-events'
 import { throttle, cbPromise } from '../../../lib/functions'
-import { bufToStr, readReadme, readManifest, statArchiveFile, writeArchiveFile } from './helpers'
+import { bufToStr, readReadme, readManifest, statArchiveFile, writeArchiveFile, readArchiveDirectory } from './helpers'
 import { grantPermission } from '../../ui/permissions'
 
 // db modules
@@ -362,22 +362,61 @@ export function writeArchiveFileFromPath (key, opts) {
   })
 }
 
-export function exportFileFromArchive (key, archivePath, dstPath) {
+export function exportFileFromArchive (key, srcPath, dstPath) {
   return cbPromise(cb => {
+    var isFirst = true
+    var numFiles = 0, numDirectories = 0
     var archive = getOrLoadArchive(key)
-    statArchiveFile(archive, archivePath, (err, entry) => {
-      if (err) return cb(new Error(`Archive file ${archivePath} not found`))
-      if (!entry || entry.type !== 'file') {
-        return cb(new Error(`Archive file ${archivePath} not found`))
-      }
+    if (!archive) return cb(new Error(`Invalid archive key '${key}'`))
+    statThenExport(srcPath, dstPath, err => {
+      if (err) return cb(err)
+      cb(null, { numFiles, numDirectories })
+    })
 
-      console.log(`[DAT] Exporting dat://${key} to ${dstPath}`)
+    function statThenExport (entrySrcPath, entryDstPath, cb) {
+      // check that the entry exists
+      statArchiveFile(archive, entrySrcPath, (err, entry) => {
+        if (err || !entry) return cb(new Error(`Archive file ${entrySrcPath} not found`))
+
+        if (isFirst) {
+          // log action
+          console.log(`[DAT] Exporting dat://${key} to ${entryDstPath}`)
+          isFirst = false
+        }
+
+        // export by type
+        console.log(entrySrcPath, entry.type, entry.name)
+        if (entry.type === 'file') exportFile(entry, entryDstPath, cb)
+        else if (entry.type === 'directory') exportDirectory(entry, entryDstPath, cb)
+        else cb()
+      })
+    }
+
+    function exportFile (entry, entryDstPath, cb) {
+      // write the file
+      numFiles++
       pump(
         archive.createFileReadStream(entry),
-        fs.createWriteStream(dstPath),
+        fs.createWriteStream(entryDstPath),
         cb
       )
-    })
+    }
+
+    function exportDirectory (entry, entryDstPath, cb) {
+      // make sure the destination folder exists
+      numDirectories++
+      mkdirp(entryDstPath, err => {
+        if (err) return cb(err)
+
+        // list the directory
+        readArchiveDirectory(archive, path.join('/', entry.name), (err, entries) => {
+          if (err) cb(err)
+          var done = multicb()
+          Object.keys(entries).forEach(k => statThenExport(entries[k].name, path.join(dstPath, entries[k].name), done()))
+          done(cb)
+        })
+      })
+    }
   })
 }
 
