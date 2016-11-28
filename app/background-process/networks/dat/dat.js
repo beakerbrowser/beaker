@@ -78,7 +78,7 @@ export function createNewArchive (opts) {
     // create the archive
     var archive = loadArchive(null)
     var key = archive.key.toString('hex')
-    resolve(key)
+    const done = () => resolve(key)
 
     // import files
     if (opts.importFiles) {
@@ -86,9 +86,11 @@ export function createNewArchive (opts) {
       importFiles.forEach(importFile => writeArchiveFileFromPath(key, { src: importFile, dst: '/' }))
     }
 
-    // write the manifest
+    // write the manifest (optionally) then resolve
     if (title || description || createdBy) {
-      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify({ title, description, createdBy }))
+      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify({ title, description, createdBy }, null, 2), done)
+    } else {
+      done()
     }
 
     // write the user settings
