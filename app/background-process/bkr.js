@@ -32,7 +32,7 @@ export function setup () {
   // setup the methods
   var methods = {}
   METHODS.forEach(method => {
-    methods[method] = (args) => dat[method](...args)
+    methods[method] = (args) => dat[method](...args).catch(massageError)
   })
 
   // start the server
@@ -41,4 +41,11 @@ export function setup () {
     if (err) console.error('Failed to create brk server', err)
     debug('bkr server running on port %d', BKR_SERVER_PORT)
   })
+}
+
+// internal methods
+// =
+
+function massageError (err) {
+  throw ({ code: 400, message: err.message || err.toString() })
 }
