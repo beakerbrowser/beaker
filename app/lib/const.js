@@ -1,5 +1,8 @@
 import zerr from 'zerr'
 
+// bkr
+export const BKR_SERVER_PORT = 17760
+
 // 64 char hex
 export const DAT_HASH_REGEX = /^[0-9a-f]{64}$/i
 
