@@ -266,9 +266,9 @@ export function getArchiveDetails (name, opts = {}) {
       // fetch archive data
       var done = multicb({ pluck: 1, spread: true })
       var metaCB = done()
-      archivesDb.getArchiveMeta(key).then(meta => metaCB(null, meta))
+      archivesDb.getArchiveMeta(key).then(meta => metaCB(null, meta)).catch(metaCB)
       var userSettingsCB = done()
-      archivesDb.getArchiveUserSettings(key).then(settings => userSettingsCB(null, settings))
+      archivesDb.getArchiveUserSettings(key).then(settings => userSettingsCB(null, settings)).catch(userSettingsCB)
       if (opts.entries) archive.list(done())
       if (opts.readme) readReadme(archive, done())
       done((err, meta, userSettings, entries, readme) => {
@@ -280,7 +280,6 @@ export function getArchiveDetails (name, opts = {}) {
         meta.readme = readme
         // metadata for history view
         meta.blocks = archive.metadata.blocks
-        meta.size = entries.filter(x => x.type === 'file').reduce((sum, x) => sum + x.length, 0)
         meta.metaSize = archive.metadata.bytes
         meta.contentKey = archive.content.key
 
