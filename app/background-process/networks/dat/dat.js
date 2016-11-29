@@ -66,7 +66,7 @@ export const setGlobalSetting = archivesDb.setGlobalSetting
 // archive creation
 // =
 
-export function createNewArchive ({ title, description, author, version, forkOf, origin, originTitle, importFiles } = {}) {
+export function createNewArchive ({ title, description, author, version, forkOf, origin, originTitle, importFiles, inplaceImport } = {}) {
   // massage inputs
   var createdBy
   if (typeof origin === 'string' && origin.startsWith('dat://')) createdBy = { url: origin }
@@ -81,7 +81,7 @@ export function createNewArchive ({ title, description, author, version, forkOf,
     // import files
     if (importFiles) {
       importFiles = Array.isArray(importFiles) ? importFiles : [importFiles]
-      importFiles.forEach(importFile => writeArchiveFileFromPath(key, { src: importFile, dst: '/' }))
+      importFiles.forEach(importFile => writeArchiveFileFromPath(key, { src: importFile, dst: '/', inplaceImport }))
     }
 
     // write the manifest then resolve
