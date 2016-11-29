@@ -45,7 +45,8 @@ test('dat.createNewArchive', async t => {
       forkOf: 'dat://1f68b801559be9a02666988fb256f97d79e0bf74455292491763641687b22ae8',
       origin: 'dat://1f68b801559be9a02666988fb256f97d79e0bf74455292491763641687b22ae8',
       originTitle: 'foo bar app',
-      importFiles: importPath
+      importFiles: importPath,
+      inplaceImport: true
     }).then(done, done)
   }, path.join(__dirname, 'scaffold', 'test-static-dat'))
   createdDatKey = res.value
@@ -53,14 +54,13 @@ test('dat.createNewArchive', async t => {
   createdDatURL = 'dat://' + createdDatKey
 
   // wait a sec for the meta to get updated
-  await app.client.pause(1000)
+  await app.client.pause(2000)
 
   // verify archive
   // =
   var res = await app.client.executeAsync((key, done) => {
     datInternalAPI.getArchiveDetails(key).then(done, done)
   }, createdDatKey)
-  console.log(res.value)
   t.deepEqual(res.value.title, 'title')
   t.deepEqual(res.value.description, 'description')
   t.deepEqual(res.value.author, 'author')
@@ -70,12 +70,97 @@ test('dat.createNewArchive', async t => {
   t.deepEqual(res.value.version, '1.0.0')
 })
 
-  // queryArchives: 'promise',
+test('dat.forkArchive', async t => {
 
-  // createNewArchive: 'promise',
-  // forkArchive: 'promise',
-  // setArchiveUserSettings: 'promise',
+  // create the dat
+  // =
+  var res = await app.client.executeAsync((key, done) => {
+    datInternalAPI.forkArchive(key, {
+      title: 'new title',
+      description: 'new description',
+      author: 'new author'
+    }).then(done, done)
+  }, createdDatKey)
+  var forkedDatKey = res.value
+  t.truthy(/^[0-9a-f]{64}$/.test(forkedDatKey))
 
-  // writeArchiveFileFromPath: 'promise',
-  // exportFileFromArchive: 'promise'
+  // wait a sec for the meta to get updated
+  await app.client.pause(2000)
+
+  // verify archive
+  // =
+  var res = await app.client.executeAsync((key, done) => {
+    datInternalAPI.getArchiveDetails(key).then(done, done)
+  }, forkedDatKey)
+  t.deepEqual(res.value.title, 'new title')
+  t.deepEqual(res.value.description, 'new description')
+  t.deepEqual(res.value.author, 'new author')
+  t.deepEqual(res.value.forkOf, ['dat://1f68b801559be9a02666988fb256f97d79e0bf74455292491763641687b22ae8', createdDatURL+'/'])
+  t.deepEqual(res.value.createdBy, null)
+  t.deepEqual(res.value.version, '')
+})
+
+test('dat.writeArchiveFileFromPath', async t => {
+
+  // write a single file
+  // =
+
+  var res = await app.client.executeAsync((key, src, done) => {
+    datInternalAPI.writeArchiveFileFromPath(key, {
+      src: src,
+      dst: '/new-subdir'
+    }).then(done, done)
+  }, createdDatKey, path.join(__dirname, 'scaffold', 'test-static-dat', 'hello.txt'))
+  t.falsy(res.value.name)
+
+  var res = await app.client.executeAsync((key, done) => {
+    datInternalAPI.getArchiveDetails(key, { entries: true }).then(res => done(window.JSON.stringify(res.entries)), done)
+  }, createdDatKey)
+  var entries = JSON.parse(res.value)
+  t.deepEqual(entries[entries.length - 1].name, '/new-subdir/hello.txt')
+
+  // write a folder
+  // =
+  
+  var res = await app.client.executeAsync((key, src, done) => {
+    datInternalAPI.writeArchiveFileFromPath(key, {
+      src: src,
+      dst: '/new-subdir2'
+    }).then(done, done)
+  }, createdDatKey, path.join(__dirname, 'scaffold', 'test-static-dat'))
+  t.falsy(res.value.name)
+
+  var res = await app.client.executeAsync((key, done) => {
+    datInternalAPI.getArchiveDetails(key, { entries: true }).then(res => done(window.JSON.stringify(res.entries)), done)
+  }, createdDatKey)
+  var newEntries = JSON.parse(res.value)
+  t.deepEqual(newEntries.length - entries.length, 5)
+
+})
+
+
+test('dat.exportFileFromArchive', async t => {
+
+  // export a single file
+  // =
+
+  var tmpOutputPath1 = path.join(fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'))
+  var res = await app.client.executeAsync((key, path, done) => {
+    datInternalAPI.exportFileFromArchive(key, '/hello.txt', path).then(done, done)
+  }, createdDatKey, path.join(tmpOutputPath1, 'hello.txt'))
+  t.falsy(res.value.name)
+  console.log(res.value, fs.readdirSync(tmpOutputPath1))
+  t.deepEqual(fs.readFileSync(path.join(tmpOutputPath1, 'hello.txt'), 'utf8'), 'hello')
+
+  // export the whole dat
+  // =
+  
+  var tmpOutputPath2 = path.join(fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'))
+  var res = await app.client.executeAsync((key, path, done) => {
+    datInternalAPI.exportFileFromArchive(key, '/', path).then(done, done)
+  }, createdDatKey, tmpOutputPath2)
+  t.falsy(res.value.name)
+  t.deepEqual(fs.readdirSync(tmpOutputPath2).length, 4)
+
+})
 
