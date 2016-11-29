@@ -35,6 +35,13 @@ export function setup () {
     methods[method] = (args) => dat[method](...args).catch(massageError)
   })
 
+  // add hello handshake
+  methods.hello = version => {
+    if (!version) return Promise.reject({ code: 400, message: `CLI must provide version in hello.` })
+    if (version != 1) return Promise.reject({ code: 400, message: `Version mismatch: bkr is probably out of date. Please update your client.` })
+    return Promise.resolve()
+  }
+
   // start the server
   server = jayson.server(methods).tcp()
   server.listen(BKR_SERVER_PORT, 'localhost', err => {
