@@ -5,7 +5,7 @@ import pump from 'pump'
 import multicb from 'multicb'
 import log from 'loglevel'
 import trackArchiveEvents from './track-archive-events'
-import { throttle, cbPromise } from '../../../lib/functions'
+import { debounce, cbPromise } from '../../../lib/functions'
 import { generate as generateManifest } from './dat-manifest'
 import { bufToStr, readReadme, readManifest, statArchiveFile, writeArchiveFile, readArchiveDirectory } from './helpers'
 import { grantPermission } from '../../ui/permissions'
@@ -80,7 +80,7 @@ export function createNewArchive ({ title, description, author, version, forkOf,
 
     // import files
     if (importFiles) {
-      let importFiles = Array.isArray(importFiles) ? importFiles : [importFiles]
+      importFiles = Array.isArray(importFiles) ? importFiles : [importFiles]
       importFiles.forEach(importFile => writeArchiveFileFromPath(key, { src: importFile, dst: '/' }))
     }
 
@@ -91,8 +91,6 @@ export function createNewArchive ({ title, description, author, version, forkOf,
     setArchiveUserSettings(key, { isSaved: true, isHosting: true })
     // write the perms
     if (createdBy && createdBy.url) grantPermission('modifyDat:' + key, createdBy.url)
-    // write the meta
-    archive.pullLatestArchiveMeta()
   })
 }
 
@@ -218,7 +216,7 @@ export function loadArchive (key, swarmOpts) {
   archive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
 
   // wire up events
-  archive.pullLatestArchiveMeta = throttle(() => pullLatestArchiveMeta(archive), 1e3)
+  archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
   trackArchiveEvents(archivesEvents, archive)
 
   return archive
