@@ -112,7 +112,7 @@ export function forkArchive (oldArchiveKey, opts) {
       forkOf: (meta.forkOf || []).concat(`dat://${oldArchiveKey}/`),
       origin: opts.origin
     }
-    if (opts.author) newArchiveOpts.author = author
+    if (opts.author) newArchiveOpts.author = opts.author
 
     // create the new archive
     return createNewArchive(newArchiveOpts)
