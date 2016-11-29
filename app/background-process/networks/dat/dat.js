@@ -66,7 +66,7 @@ export const setGlobalSetting = archivesDb.setGlobalSetting
 // archive creation
 // =
 
-export function createNewArchive ({ title, description, author, forkOf, origin, originTitle, importFiles } = {}) {
+export function createNewArchive ({ title, description, author, version, forkOf, origin, originTitle, importFiles } = {}) {
   // massage inputs
   var createdBy
   if (typeof origin === 'string' && origin.startsWith('dat://')) createdBy = { url: origin }
@@ -85,7 +85,7 @@ export function createNewArchive ({ title, description, author, forkOf, origin, 
     }
 
     // write the manifest then resolve
-    var manifest = generateManifest({ url: `dat://${key}/`, title, description, author, forkOf, createdBy })
+    var manifest = generateManifest({ url: `dat://${key}/`, title, description, author, version, forkOf, createdBy })
     writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest, null, 2), done)
     // write the user settings
     setArchiveUserSettings(key, { isSaved: true, isHosting: true })
@@ -111,10 +111,10 @@ export function forkArchive (oldArchiveKey, opts) {
     var newArchiveOpts = {
       title: (opts.title) ? opts.title : meta.title,
       description: (opts.description) ? opts.description : meta.description,
-      author: (opts.author) ? opts.author : meta.author,
       forkOf: (meta.forkOf || []).concat(`dat://${oldArchiveKey}/`),
       origin: opts.origin
     }
+    if (opts.author) newArchiveOpts.author = author
 
     // create the new archive
     return createNewArchive(newArchiveOpts)
@@ -358,8 +358,8 @@ export function writeArchiveFileFromPath (key, opts) {
       // update the dst if it's a directory
       try {
         var stat = fs.statSync(src)
-        if (stat.isDirectory()) {
-          // put at a subpath, so that the folder's contents dont get imported into the target
+        if (stat.isDirectory() && !opts.inplaceImport) {
+          // put at a subpath, so that the folder's contents dont get imported in-place into the target
           dst = path.join(dst, path.basename(src))
         }
       } catch (e) {
@@ -368,12 +368,15 @@ export function writeArchiveFileFromPath (key, opts) {
 
       // read the file or file-tree into the archive
       log.debug('[DAT] Writing file(s) from path:', src, 'to', dst)
-      hyperImport(archive, src, {
+      var status = hyperImport(archive, src, {
         basePath: dst,
         live: false,
         resume: true,
         ignore: ['.dat', '**/.dat', '.git', '**/.git']
-      }, cb)
+      }, (err) => {
+        if (err) return cb(err)
+        cb(null, { fileCount: status.fileCount, totalSize: status.totalSize })
+      })
     })
   })
 }
@@ -539,13 +542,13 @@ function pullLatestArchiveMeta (archive) {
 
     done((_, manifest, size) => {
       manifest = manifest || {}
-      var { title, description, author, forkOf, createdBy } = manifest
+      var { title, description, author, version, forkOf, createdBy } = manifest
       var mtime = Date.now() // use our local update time
       var isOwner = archive.owner
       size = size || 0
 
       // write the record
-      var update = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
+      var update = { title, description, author, version, forkOf, createdBy, mtime, size, isOwner }
       log.debug('[DAT] Writing meta', update)
       archivesDb.setArchiveMeta(key, update).then(
         () => {
