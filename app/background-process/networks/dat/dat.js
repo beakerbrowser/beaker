@@ -154,7 +154,12 @@ export function forkArchive (oldArchiveKey, opts) {
           }
 
           // skip other non-files, undownloaded files, and the old manifest
-          if (entry.type !== 'file' || !oldArchive.isEntryDownloaded(entry) || entry.name === DAT_MANIFEST_FILENAME) {
+          if (
+            entry.type !== 'file' || 
+            !oldArchive.isEntryDownloaded(entry) || 
+            entry.name === DAT_MANIFEST_FILENAME ||
+            entry.name === ('/' + DAT_MANIFEST_FILENAME)
+          ) {
             return next()
           }
 

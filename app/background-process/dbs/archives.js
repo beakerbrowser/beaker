@@ -236,6 +236,7 @@ function archiveMetaObject (key, obj) {
     author: '',
     version: '',
     createdBy: null,
+    forkOf: [],
     mtime: 0,
     size: 0,
     isOwner: false

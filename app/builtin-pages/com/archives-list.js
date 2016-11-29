@@ -49,6 +49,11 @@ export function render (archivesList, opts = {}) {
           `)}</div>
         </div>
       </div>
+      ${ getForkOf(archive)
+        ? yo`<div class="al-fork-of">
+            <span class="icon icon-flow-branch"></span> Fork of <a href=${getForkOf(archive)}>${shortenHash(getForkOf(archive))}</a>
+          </div>`
+        : '' }
       ${ archive.createdBy
         ? yo`<div class="al-created-by">
             <span class="icon icon-code"></span> Created by <a href=${archive.createdBy.url}>${archive.createdBy.title || shortenHash(archive.createdBy.url)}</a>
@@ -126,4 +131,8 @@ function onUndoDeletions (archivesList, render) {
 
 function isHosting (archive) {
   return archive.userSettings.isHosting
+}
+
+function getForkOf (archive) {
+  return archive.forkOf && archive.forkOf[0]
 }
