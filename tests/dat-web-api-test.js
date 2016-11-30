@@ -164,6 +164,7 @@ test('dat.createArchive rejection', async t => {
   await app.client.windowByIndex(1)
 
   // fetch & test the res
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res !== null }))
   var res = await app.client.execute(() => { return window.res })
   t.deepEqual(res.value.name, 'UserDeniedError')
 })
@@ -185,6 +186,7 @@ test('dat.createArchive', async t => {
   await app.client.windowByIndex(1)
 
   // fetch & test the res
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res !== null }))
   var res = await app.client.execute(() => { return window.res })
   createdDatURL = res.value
   t.truthy(createdDatURL.startsWith('dat://'))
