@@ -229,7 +229,6 @@ export function configureArchive (key, settings) {
     // set download prioritization
     if (download) archive.content.prioritize({start: 0, end: Infinity}) // autodownload all content
     else archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
-    // TODO close any uploads if upload was just toggled off
     if (!archive.isSwarming) {
       // announce
       joinSwarm(archive)
@@ -441,6 +440,7 @@ export function leaveSwarm (key, cb) {
   if (!archive || !archive.isSwarming) return
 
   debug('Unswarming archive', bufToStr(archive.key))
+  archive.unreplicate() // stop all active replications
   swarm.leave(archive.discoveryKey)
   archive.isSwarming = false
 }
