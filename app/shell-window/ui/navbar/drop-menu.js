@@ -95,9 +95,12 @@ export class DropMenuNavbarBtn {
       })
       dropdownEl = yo`<div class="toolbar-dropdown toolbar-drop-menu-dropdown">
         ${pageSpecificEls}        
-        <div class="td-item" onclick=${e => this.onOpenDownloads(e)}>View Downloads</div>
+        <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:downloads')}>View Downloads</div>
         ${downloadEls.length ? yo`<hr />` : ''}
         ${downloadEls}
+        <hr />
+        <div class="td-item" onclick=${e => this.onOpenPage(e, 'https://groups.google.com/forum/#!forum/beaker-browser')}><span class="icon icon-mail"></span> Mailing List</div>
+        <div class="td-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}><span class="icon icon-attention"></span> Report an Issue</div>
       </div>`
     }
 
@@ -221,8 +224,8 @@ export class DropMenuNavbarBtn {
     pages.getActive().toggleLiveReloading()
   }
 
-  onOpenDownloads (e) {
-    pages.setActive(pages.create('beaker:downloads'))
+  onOpenPage (e, url) {
+    pages.setActive(pages.create(url))
     this.isDropdownOpen = false
     this.updateActives()
   }

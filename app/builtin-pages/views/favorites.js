@@ -73,7 +73,7 @@ function render () {
         Favorites
         <small class="ll-heading-right">
           ${ isIPFSDaemonActive ? yo`<a href="http://localhost:5001/webui" title="IPFS Dashboard"><span class="icon icon-globe"></span> IPFS Dashboard</a>` : '' }
-          <a href="https://groups.google.com/forum/#!forum/beaker-browser" title="Feedback and Discussion"><span class="icon icon-megaphone"></span> Feedback & Discussion</a>
+          <a href="https://groups.google.com/forum/#!forum/beaker-browser" title="Feedback and Discussion"><span class="icon icon-mail"></span> Mailing List</a>
           <a href="https://github.com/beakerbrowser/beaker/issues" title="Report Bug"><span class="icon icon-attention"></span> Report Bug</a>
           <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
         </small>
