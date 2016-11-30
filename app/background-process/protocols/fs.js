@@ -171,14 +171,58 @@ function ipfsServer (req, res) {
 
       // render file
       if (unmarshaled.type !== 'directory') {
-        // try to identify the type by the buffer contents
-        var mimeType = mime.identify(link.name, data)
-        res.writeHead(200, 'OK', {
-          'Content-Type': mimeType,
-          'Content-Security-Policy': IPFS_CSP
-        })
-        cleanup()
-        return res.end(data)
+        if (data) {
+          // try to identify the type by the buffer contents
+          var mimeType = mime.identify(link.name, data)
+          res.writeHead(200, 'OK', {
+            'Content-Type': mimeType,
+            'Content-Security-Policy': IPFS_CSP
+          })
+          cleanup()
+          res.end(data)
+        } else {
+          // large file split across chunks; will need to use the FS api
+          ipfs.getApi().files.cat(link._multihash || link.hash, (err, stream) => {
+            if (err) {
+              debug('Data fetch failed', err)
+              cleanup()
+              return cb(500, 'Failed') 
+            }
+
+            // start the stream
+            var headersSent = false
+            stream.pipe(mime.identifyStream(link.name, mimeType => {
+              // cleanup the timeout now, as bytes have begun to stream
+              cleanup()
+
+              // send headers, now that we can identify the data
+              headersSent = true
+              var headers = {
+                'Content-Type': mimeType,
+                'Content-Security-Policy': IPFS_CSP
+              }
+              if (stream.headers['x-content-length']) {
+                headers['Content-Length'] = stream.headers['x-content-length']
+              }
+              res.writeHead(200, 'OK', headers)
+            })).pipe(res)
+
+            // handle stream errors
+            stream.once('error', err => {
+              debug('Error reading file-stream', err)
+              if (!headersSent) cb(500, 'Failed to read file')
+            })
+
+            // abort if the client aborts
+            req.once('aborted', () => {
+              if (stream) {
+                debug('Aborting by client request', reqPath)
+                stream.destroy()
+              }
+            })
+          })
+        }
+        return
       }
 
       // if a directory, make sure we have a '/' at the end
