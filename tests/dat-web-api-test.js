@@ -164,7 +164,7 @@ test('dat.createArchive rejection', async t => {
   await app.client.windowByIndex(1)
 
   // fetch & test the res
-  await app.client.waitUntil(() => app.client.execute(() => { return window.res !== null }))
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }))
   var res = await app.client.execute(() => { return window.res })
   t.deepEqual(res.value.name, 'UserDeniedError')
 })
@@ -186,7 +186,7 @@ test('dat.createArchive', async t => {
   await app.client.windowByIndex(1)
 
   // fetch & test the res
-  await app.client.waitUntil(() => app.client.execute(() => { return window.res !== null }))
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }))
   var res = await app.client.execute(() => { return window.res })
   createdDatURL = res.value
   t.truthy(createdDatURL.startsWith('dat://'))
@@ -317,7 +317,7 @@ test('dat.createDirectory doesnt overwrite files or folders', async t => {
 test('dat.writeFile doesnt allow writes that exceed the quota', async t => {
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
-    dat.writeFile(url, 'x'.repeat(1024 * 10), 'utf8').then(done, done)
+    dat.writeFile(url, 'x'.repeat(1024 * 12), 'utf8').then(done, done)
   }, createdDatURL + '/denythis.txt')
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
