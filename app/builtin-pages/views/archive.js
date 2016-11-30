@@ -257,6 +257,13 @@ function renderArchive () {
     </span>`
   }
 
+  // fork-of
+  var forkOfEl = getForkOf(archiveInfo)
+    ? yo`<div class="archive-fork-of">
+        <span class="icon icon-flow-branch"></span> Fork of <a href=${getForkOf(archiveInfo)}>${shortenHash(getForkOf(archiveInfo))}</a>
+      </div>`
+    : ''
+
   // created-by
   var createdByEl = (archiveInfo.createdBy)
     ? yo`<span class="archive-created-by">
@@ -306,6 +313,7 @@ function renderArchive () {
         <div class="archive-name"><a href=${'dat://'+archiveInfo.key} title=${name}>${name}</a></div>
         <div class="archive-ctrls">
           ${createdByEl}
+          ${forkOfEl}
           <span id="owner-label">${ archiveInfo.isOwner ? 'Owner' : 'Read-only' }</span>
         </div>
         ${ wasDeleted
@@ -596,7 +604,7 @@ function onDownloadForkArchive () {
 
 function onSubmitForkArchive ({ title, description }) {
   // what do you do when you see a fork in the code?
-  datInternalAPI.forkArchive(archiveInfo.key, { title, description }).then(newKey => {
+  datInternalAPI.forkArchive(archiveInfo.key, { title, description, origin: 'beaker:archives' }).then(newKey => {
     // you take it
     window.location = 'beaker:archive/' + newKey
   }).catch(err => {
@@ -655,4 +663,8 @@ function isSaved (archive) {
 
 function isHosting (archive) {
   return archive.userSettings.isHosting
+}
+
+function getForkOf (archive) {
+  return archive.forkOf && archive.forkOf[0]
 }
