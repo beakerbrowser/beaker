@@ -8,6 +8,7 @@ import manifest from './api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
 import * as plugins from './plugins'
 import { internalOnly } from '../lib/bg/rpc'
+import { isDaemonActive as isIPFSDaemonActive } from './networks/ipfs/ipfs'
 
 // constants
 // =
@@ -58,6 +59,8 @@ export function setup () {
     checkForUpdates,
     restartBrowser,
 
+    isIPFSDaemonActive,
+
     getSetting,
     getSettings,
     setSetting,
@@ -74,7 +77,7 @@ export function setup () {
 }
 
 export function getDefaultProtocolSettings () {
-  return Promise.resolve(['http', 'dat', 'ipfs'].reduce((res, x) => {
+  return Promise.resolve(['http', 'dat', 'fs'].reduce((res, x) => {
     res[x] = app.isDefaultProtocolClient(x)
     return res
   }, {}))

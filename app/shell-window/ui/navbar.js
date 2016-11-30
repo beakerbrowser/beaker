@@ -1,4 +1,5 @@
 import { remote } from 'electron'
+import isIPFS from 'is-ipfs'
 import * as pages from '../pages'
 import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
@@ -14,7 +15,7 @@ const KEYCODE_ENTER = 13
 const KEYCODE_N = 78
 const KEYCODE_P = 80
 
-const isHashRegex = /^[a-z0-9]{64}/i
+const isDatHashRegex = /^[a-z0-9]{64}/i
 
 // globals
 // =
@@ -277,13 +278,29 @@ function handleAutocompleteSearch (results) {
   results.forEach(r => decorateResultMatches(searchTerms, r))
 
   // does the value look like a url?
-  var isProbablyUrl = (!v.includes(' ') && (/\.[A-z]/.test(v) || isHashRegex.test(v) || v.startsWith('localhost') || v.includes('://') || v.startsWith('beaker:') || v.startsWith('ipfs:/')))
+  var isProbablyUrl = (!v.includes(' ') && (
+    /\.[A-z]/.test(v) ||
+    isDatHashRegex.test(v) ||
+    isIPFS.multihash(v) ||
+    isIPFS.ipfsPath(v) ||
+    isIPFS.ipnsPath(v) ||
+    v.startsWith('localhost') ||
+    v.includes('://') ||
+    v.startsWith('beaker:') ||
+    v.startsWith('fs:/')
+  ))
   var vWithProtocol = v
   var isGuessingTheScheme = false
-  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('ipfs:/'))) {
-    if (isHashRegex.test(v))
+  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('fs:/'))) {
+    if (isDatHashRegex.test(v)) {
       vWithProtocol = 'dat://'+v
-    else {
+    } else if (v.startsWith('localhost')) {
+      vWithProtocol = 'http://'+v
+    } else if (isIPFS.multihash(v)) {
+      vWithProtocol = 'fs:/ipfs/' + v
+    } else if (isIPFS.ipfsPath(v) || isIPFS.ipnsPath(v)) {
+      vWithProtocol = 'fs:' + v
+    } else {
       vWithProtocol = 'https://'+v
       isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
     }
@@ -318,8 +335,14 @@ function getAutocompleteSelection (i) {
   // fallback to the current value in the navbar
   var addrEl = pages.getActive().navbarEl.querySelector('.nav-location-input')
   var url = addrEl.value
-  if (isHashRegex.test(url)) {
-    url = 'dat://' + url // we can consistently guess this, so do so
+
+  // autocorrect urls of known forms
+  if (isDatHashRegex.test(url)) {
+    url = 'dat://' + url
+  } else if (isIPFS.multihash(url)) {
+    vWithProtocol = 'fs:/ipfs/' + url
+  } else if (isIPFS.ipfsPath(url) || isIPFS.ipnsPath(url)) {
+    vWithProtocol = 'fs:' + url
   }
   return { url }
 }

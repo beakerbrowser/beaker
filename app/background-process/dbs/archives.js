@@ -62,9 +62,8 @@ export const removeListener = events.removeListener.bind(events)
 // get an array of saved archives
 // - includes archive
 // - optional `query` keys:
-//   - `isSaved`, `isUploading`, `isDownloading`: bool, is X behavior claimed by any site?
-//   - `isNetworked`: bool, is upload or download claim by any site?
-//   - `isSavedBy`, `isUploadingBy`, `isDownloadingBy`: bool: string, is X behavior claimed by the given site? eg { isSavedBy: 'http://foo.com' }
+//   - `isSaved`: bool
+//   - `isHosting`: bool
 //   - `isOwner`: bool, does beaker have the secret key? requires opts.includeMeta
 // - optional `opt` keys:
 //   - `includeMeta`: bool, include the archive meta in the response?
@@ -95,16 +94,11 @@ class QueryArchiveUserSettingsTransform extends Transform {
     value = archiveUserSettingsObject(key, value)
 
     // run query
-    if (failsClaim(query.isSaved, value.saveClaims)) return cb()
-    if (failsClaim(query.isUploading, value.uploadClaims)) return cb()
-    if (failsClaim(query.isDownloading, value.downloadClaims)) return cb()
-    if (query.isNetworked === true && !isTruthyArray(value.uploadClaims) && !isTruthyArray(value.downloadClaims)) return cb()
-    if (failsClaimBy(query.isSavedBy, value.saveClaims)) return cb()
-    if (failsClaimBy(query.isUploadingBy, value.uploadClaims)) return cb()
-    if (failsClaimBy(query.isDownloadingBy, value.downloadClaims)) return cb()
+    if (('isSaved' in query) && value.isSaved != query.isSaved) return cb()
+    if (('isHosting' in query) && value.isHosting != query.isHosting) return cb()
 
     // done?
-    if (!opts.includeMeta) {
+    if (!opts.includeMeta && !('isOwner' in query)) {
       return cb(null, value)
     }
 
@@ -140,7 +134,7 @@ export function getArchiveUserSettings (key) {
 }
 
 // write an archive's user setting
-export function setArchiveUserSettings (key, value = {}) {
+export function setArchiveUserSettings (key, newValues = {}) {
   // massage inputs
   key = bufToStr(key)
 
@@ -149,66 +143,13 @@ export function setArchiveUserSettings (key, value = {}) {
 
   return setupPromise.then(() => cbPromise(cb => {
     archiveUserSettingsTxLock(endTx => {
-      // extract the desired values
-      var { saveClaims, downloadClaims, uploadClaims } = value
-      value = { saveClaims, downloadClaims, uploadClaims }
-
-      // write
-      archiveUserSettingsDb.put(key, value, err => {
-        endTx()
-        if (err) return cb(err)
-        events.emit('update:archive-user-settings', key, value)
-        cb(null, value)
-      })
-    })
-  }))
-}
-
-// add/remove a claim to the archive
-// - `key` string, the archive key
-// - `origin` string, the origin making the claim
-// - `op` string, should be "add", "remove", "remove-all", or "toggle-all"
-//    - the *-all ops overwrite the current claims. Should only be used by internal views.
-// - `claims` string or array of strings, should be "save", "upload", or "download"
-export function updateArchiveClaims (key, { origin, op, claims }) {
-  // massage inputs
-  key = bufToStr(key)
-  claims = Array.isArray(claims) ? claims : [claims]
-  origin = extractOrigin(origin)
-
-  // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
-  if (!origin) return Promise.reject(new InvalidURLError())
-  if (['add', 'remove', 'remove-all', 'toggle-all'].includes(op) === false) return Promise.reject(new InvalidOperationError())
-
-  return setupPromise.then(() => cbPromise(cb => {
-    // start lock
-    archiveUserSettingsTxLock(endTx => {
-      // fetch settings
       archiveUserSettingsDb.get(key, (_, value) => {
         value = archiveUserSettingsObject(key, value)
 
-        // update the claims
-        claims.forEach(claimKey => {
-          var claim = value[claimKey + 'Claims']
-          if (!claim) return
-
-          if (op === 'add') {
-            if (!claim.includes(origin)) claim.push(origin)
-          } else if (op === 'remove') {
-            let index = claim.indexOf(origin)
-            if (index !== -1) claim.splice(index, 1)
-          } else if (op === 'remove-all') {
-            value[claimKey + 'Claims'] = []
-          } else if (op === 'toggle-all') {
-            if (claim.length > 0) value[claimKey + 'Claims'] = []
-            else value[claimKey + 'Claims'] = [origin]
-          }
-        })
-
         // extract the desired values
-        var { saveClaims, downloadClaims, uploadClaims } = value
-        value = { saveClaims, downloadClaims, uploadClaims }
+        var { isSaved, isHosting } = newValues
+        if (typeof isSaved === 'boolean') value.isSaved = isSaved
+        if (typeof isHosting === 'boolean') value.isHosting = isHosting
 
         // write
         archiveUserSettingsDb.put(key, value, err => {
@@ -250,8 +191,8 @@ export function setArchiveMeta (key, value = {}) {
 
   return setupPromise.then(() => cbPromise(cb => {
     // extract the desired values
-    var { title, description, author, createdBy, mtime, size, isOwner } = value
-    value = { title, description, author, createdBy, mtime, size, isOwner }
+    var { title, description, author, version, forkOf, createdBy, mtime, size, isOwner } = value
+    value = { title, description, author, version, forkOf, createdBy, mtime, size, isOwner }
 
     // write
     archiveMetaDb.put(key, value, err => {
@@ -293,7 +234,9 @@ function archiveMetaObject (key, obj) {
     title: '',
     description: '',
     author: '',
+    version: '',
     createdBy: null,
+    forkOf: [],
     mtime: 0,
     size: 0,
     isOwner: false
@@ -305,9 +248,8 @@ function archiveUserSettingsObject (key, obj) {
   obj = obj || { notFound: true }
   return Object.assign({
     key,
-    saveClaims: [],
-    downloadClaims: [],
-    uploadClaims: []
+    isSaved: false,
+    isHosting: false
   }, obj)
 }
 
@@ -315,23 +257,6 @@ export function extractOrigin (originURL) {
   var urlp = url.parse(originURL)
   if (!urlp || !urlp.host || !urlp.protocol) return
   return (urlp.protocol + (urlp.slashes ? '//' : '') + urlp.host)
-}
-
-// filter helpers
-function failsClaim (query, value) {
-  if (query === false && isTruthyArray(value) === true) return true
-  if (query === true && isTruthyArray(value) === false) return true
-  return false
-}
-function failsClaimBy (query, value) {
-  if (query && !arrayIncludes(value, query)) return true
-  return false
-}
-function isTruthyArray (v) {
-  return Array.isArray(v) && v.length > 0
-}
-function arrayIncludes (v, e) {
-  return isTruthyArray(v) && v.includes(e)
 }
 
 migrations = [
@@ -359,6 +284,31 @@ migrations = [
         if (err) cb(err)
         // done
         db.put('version', 2, cb)
+      }
+    )
+  },
+  // version 3
+  function (cb) {
+    // migrate all saved archives back off of save claims
+    pump(
+      archiveUserSettingsDb.createReadStream(),
+      transform((chunk, cb) => {
+        // look for archives saved with the old schema
+        if (!chunk.value.saveClaims) return cb() // noop
+        // update the user settings to the new format
+        chunk.value = {
+          isSaved: Array.isArray(chunk.value.saveClaims) && (chunk.value.saveClaims.length > 0),
+          isHosting: Array.isArray(chunk.value.uploadClaims) && (chunk.value.uploadClaims.length > 0)
+        }
+        archiveUserSettingsDb.put(chunk.key, chunk.value, cb)
+        // trigger an update to the meta as well
+        getOrLoadArchive(chunk.key).pullLatestArchiveMeta()
+      }),
+      noopWritable(),
+      err => {
+        if (err) cb(err)
+        // done
+        db.put('version', 3, cb)
       }
     )
   }

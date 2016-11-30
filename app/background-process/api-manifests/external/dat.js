@@ -1,5 +1,6 @@
 export default {
   createArchive: 'promise',
+  deleteArchive: 'promise',
 
   stat: 'promise',
   readFile: 'promise',
@@ -12,8 +13,5 @@ export default {
 
   getHistory: 'promise',
   getCheckpoints: 'promise',
-  writeCheckpoint: 'promise',
-
-  serve: 'promise',
-  unserve: 'promise'
+  writeCheckpoint: 'promise'
 }

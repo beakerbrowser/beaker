@@ -5,15 +5,20 @@ import * as dat from './dat'
 import * as archivesDb from '../../dbs/archives'
 import * as sitedataDb from '../../dbs/sitedata'
 import { statArchiveFile, readArchiveFile, readArchiveDirectory, writeArchiveFile, writeArchiveDirectory, toValidEncoding } from './helpers'
-var debug = require('debug')('dat')
+import { queryPermission, requestPermission } from '../../ui/permissions'
 import { 
   DAT_HASH_REGEX,
   DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
 
+  UserDeniedError,
   PermissionsError,
   QuotaExceededError,
+  ArchiveNotWritableError,
+
   InvalidEncodingError,
+  ArchiveNotSavedError,
   InvalidURLError,
+
   TimeoutError,
   FileNotFoundError,
   FileReadError,
@@ -30,6 +35,46 @@ const DEFAULT_TIMEOUT = 5e3
 // =
 
 export default {
+  createArchive: m(function * ({ title, description } = {}) {
+    // ask the user
+    var decision = yield requestPermission('createDat', this.sender, { title })
+    if (decision === false) throw new UserDeniedError()
+
+    // fetch some origin info
+    var originTitle = null
+    var origin = archivesDb.extractOrigin(this.sender.getURL())
+    try {
+      var originKey = /dat:\/\/([^\/]*)/.exec(origin)[1]
+      var originMeta = yield archivesDb.getArchiveMeta(originKey)
+      originTitle = originMeta.title || null
+    } catch (e) {}
+
+    // create the archive
+    var key = yield dat.createNewArchive({ title, description, origin, originTitle })
+    return `dat://${key}/`
+  }),
+
+  deleteArchive: m(function * (url) {
+    var { archive } = lookupArchive(url)
+    var archiveKey = archive.key.toString('hex')
+
+    // get the archive meta
+    var details = yield dat.getArchiveDetails(archiveKey)
+    var oldSettings = details.userSettings
+
+    // fail if this site isnt saved
+    if (!details.userSettings.isSaved) {
+      throw new ArchiveNotSavedError()
+    }
+
+    // ask the user
+    var decision = yield requestPermission('deleteDat:' + archiveKey, this.sender, { title: details.title })
+    if (decision === false) throw new UserDeniedError()
+
+    // delete
+    yield archivesDb.setArchiveUserSettings(archive.key, { isHosting: false, isSaved: false })
+  }),
+
   stat: m(function * (url, opts = {}) {
     // TODO versions
     var downloadedBlocks = !!opts.downloadedBlocks
@@ -107,11 +152,9 @@ export default {
     }
     opts.encoding = toValidEncoding(opts.encoding)
 
-    // TODO quota management
-    // TODO permission check
     var { archive, filepath } = lookupArchive(url)
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-    yield assertWritePermission(archive, senderOrigin)
+    yield assertWritePermission(archive, this.sender)
     yield assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
     return new Promise((resolve, reject) => {
       // protected files
@@ -166,11 +209,8 @@ export default {
   }),
 
   createDirectory: m(function * (url) {
-    // TODO quota management
-    // TODO permission check
     var { archive, filepath } = lookupArchive(url)
-    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-    yield assertWritePermission(archive, senderOrigin)
+    yield assertWritePermission(archive, this.sender)
     return new Promise((resolve, reject) => {
       // protected files
       if (isProtectedFilePath(filepath)) {
@@ -222,24 +262,6 @@ export default {
   writeCheckpoint: m(function * (url, name, description) {
     // var { archive, filepath } = lookupArchive(url)
     throw new Error('not yet implemented') // TODO
-  }),
-
-  serve: m(function * (url) {
-    var { archive, filepath } = lookupArchive(url)
-    return dat.updateArchiveClaims(archive.key, {
-      origin: this.sender.getURL(),
-      op: 'add',
-      claims: 'upload'
-    }).then(res => undefined)
-  }),
-
-  unserve: m(function * (url) {
-    var { archive, filepath } = lookupArchive(url)
-    return dat.updateArchiveClaims(archive.key, {
-      origin: this.sender.getURL(),
-      op: 'remove',
-      claims: 'upload'
-    }).then(res => undefined)
   })
 }
 
@@ -277,12 +299,23 @@ function isProtectedFilePath (filepath) {
   return filepath === '/' || filepath === '/dat.json'
 }
 
-function assertWritePermission (archive, senderOrigin) {
-  // ensure the sender has a save claim on the archive
-  return archivesDb.getArchiveUserSettings(archive.key).then(settings => {
-    if (!settings.saveClaims.includes(senderOrigin)) {
-      throw new PermissionsError()
-    }
+function assertWritePermission (archive, sender) {
+  return co(function * () {
+    var archiveKey = archive.key.toString('hex')
+    const perm = ('modifyDat:' + archiveKey)
+
+    // ensure we have the archive's private key
+    if (!archive.owner) throw new ArchiveNotWritableError()
+
+    // ensure the sender is allowed to write
+    var allowed = yield queryPermission(perm, sender)
+    if (allowed) return true
+
+    // ask the user
+    var details = yield dat.getArchiveDetails(archiveKey)
+    allowed = yield requestPermission(perm, sender, { title: details.title })
+    if (!allowed) throw new UserDeniedError()
+    return true
   })
 }
 
@@ -290,10 +323,10 @@ function assertQuotaPermission (archive, senderOrigin, byteLength) {
   // fetch the archive meta, and the current quota for the site
   return Promise.all([
     archivesDb.getArchiveMeta(archive.key),
-    sitedataDb.get(senderOrigin, 'dat-bytes-allowed')
-  ]).then(([meta, bytesAllowed]) => {
+    archivesDb.getArchiveUserSettings(archive.key)
+  ]).then(([meta, userSettings]) => {
     // fallback to default quota
-    bytesAllowed = bytesAllowed || DAT_QUOTA_DEFAULT_BYTES_ALLOWED
+    var bytesAllowed = userSettings.bytesAllowed || DAT_QUOTA_DEFAULT_BYTES_ALLOWED
 
     // check the new size
     var newSize = meta.size + byteLength

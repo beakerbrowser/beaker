@@ -14,6 +14,8 @@ Computed information about archives
     title: String,
     description: String,
     author: String,
+    version: String,
+    forkOf: Array of Strings,
     createdBy: {
       url: String,
       title: String
@@ -29,15 +31,12 @@ Computed information about archives
 
 Extra user settings 
 
-A `Claims` is an array of strings, containing the origins of sites that have requested a specific behavior 
-
 ```
 {
   key: String, archive key
   value: {
-    saveClaims: Claims, don't delete the archive
-    uploadClaims: Claims, upload the archive
-    downloadClaims: Claims, download the archive
+    isSaved: Boolean,
+    isHosting: Boolean
   }
 }
 ```

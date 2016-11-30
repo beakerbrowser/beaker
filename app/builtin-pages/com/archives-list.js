@@ -16,13 +16,13 @@ export function render (archivesList, opts = {}) {
   var archiveEls = []
   archivesList.archives.forEach((archive, index) => {
     // if not saved but in this listing, then it was recently deleted
-    if (!archive.userSettings.saveClaims.length) {
+    if (!archive.userSettings.isSaved) {
       return numDeleted++
     }
     let title = archive.title || shortenHash(archive.key)
     let npeers = archive.peers || 0
     let hostBtnTitle = 'Host'
-    if (isNetworked(archive))
+    if (isHosting(archive))
       hostBtnTitle += 'ing'
 
     // render owned archive
@@ -35,7 +35,7 @@ export function render (archivesList, opts = {}) {
           <small>Updated ${mtime}</small>
         </div>
         <div class="al-ctrls">
-          ${isNetworked(archive) 
+          ${isHosting(archive) 
             ? yo`<a class="btn pressed" onclick=${onToggleServeArchive(archive, rerender)} title=${hostBtnTitle}><span class="icon icon-check"></span> ${hostBtnTitle}</a>` 
             : yo`<a class="btn" onclick=${onToggleServeArchive(archive, rerender)} title=${hostBtnTitle}><span class="icon icon-upload-cloud"></span> ${hostBtnTitle}</a>` }
           <div class="al-dropdown">${toggleable(yo`
@@ -49,6 +49,11 @@ export function render (archivesList, opts = {}) {
           `)}</div>
         </div>
       </div>
+      ${ getForkOf(archive)
+        ? yo`<div class="al-fork-of">
+            <span class="icon icon-flow-branch"></span> Fork of <a href=${getForkOf(archive)}>${shortenHash(getForkOf(archive))}</a>
+          </div>`
+        : '' }
       ${ archive.createdBy
         ? yo`<div class="al-created-by">
             <span class="icon icon-code"></span> Created by <a href=${archive.createdBy.url}>${archive.createdBy.title || shortenHash(archive.createdBy.url)}</a>
@@ -83,13 +88,12 @@ function onToggleServeArchive (archiveInfo, render) {
   return e => {
     e.preventDefault()
     e.stopPropagation()
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, { 
-      origin: 'beaker:archives', 
-      op: (isNetworked(archiveInfo)) ? 'remove-all' : 'add',
-      claims: ['upload', 'download']
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, {
+      isSaved: true,
+      isHosting: !isHosting(archiveInfo)
     }).then(settings => {
-      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
-      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+      archiveInfo.userSettings.isSaved = settings.isSaved
+      archiveInfo.userSettings.isHosting = settings.isHosting
       render()
     })
   }
@@ -100,14 +104,12 @@ function onDeleteArchive (archiveInfo, render) {
     e.preventDefault()
     e.stopPropagation()
 
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-      origin: 'beaker:archives', 
-      op: 'remove-all', 
-      claims: ['save', 'upload', 'download']
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, {
+      isSaved: false,
+      isHosting: false
     })
-    archiveInfo.userSettings.saveClaims = []
-    archiveInfo.userSettings.uploadClaims = []
-    archiveInfo.userSettings.downloadClaims = []
+    archiveInfo.userSettings.isSaved = false
+    archiveInfo.userSettings.isHosting = false
     render()
   }
 }
@@ -118,19 +120,19 @@ function onUndoDeletions (archivesList, render) {
     e.stopPropagation()
 
     archivesList.archives.forEach(archiveInfo => {
-      if (archiveInfo.userSettings.saveClaims.length === 0) {
-        archiveInfo.userSettings.saveClaims = ['beaker:archives']
-        datInternalAPI.updateArchiveClaims(archiveInfo.key, { 
-          origin: 'beaker:archives', 
-          op: 'add', 
-          claims: 'save'
-        })
+      if (!archiveInfo.userSettings.isSaved) {
+        archiveInfo.userSettings.isSaved = true
+        datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isSaved: true })
       }
     })
     render()
   }
 }
 
-function isNetworked (archive) {
-  return archive.userSettings.uploadClaims.length > 0// || archive.userSettings.downloadClaims.length > 0
+function isHosting (archive) {
+  return archive.userSettings.isHosting
+}
+
+function getForkOf (archive) {
+  return archive.forkOf && archive.forkOf[0]
 }

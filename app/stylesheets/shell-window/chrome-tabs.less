@@ -33,7 +33,7 @@
       bottom: 0;
       width: 15px;
       z-index: -1;
-      border: 1px solid #a0a0a0;
+      border: 1px solid #888;
       border-top-color: #888;
       border-bottom-color: #aaa;
       background: #ddd;
@@ -48,13 +48,14 @@
     &:after {
       right: 0;
       transform-origin: bottom left;
+      box-shadow: 1px -1px 1px rgba(0,0,0,.05); // this helps to darken the edge, which is oddly light from the 3d transform
       border-left: 0;
     }
     .chrome-tab-bg {
       background: #ddd;
       position: absolute;
       left: 11px;
-      top: 0px;
+      top: 1px;
       right: 11px;
       bottom: 1px;
       z-index: -1;
@@ -157,7 +158,7 @@
     &.chrome-tab-add-btn {
       &:before, &:after, .chrome-tab-bg {
         bottom: 1px;
-        background: #bbb;
+        background: #ddd;
         border-color: transparent;
       }
 

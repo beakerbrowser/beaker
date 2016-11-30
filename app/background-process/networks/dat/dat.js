@@ -5,8 +5,10 @@ import pump from 'pump'
 import multicb from 'multicb'
 var debug = require('debug')('dat')
 import trackArchiveEvents from './track-archive-events'
-import { throttle, cbPromise } from '../../../lib/functions'
-import { bufToStr, readReadme, readManifest, writeArchiveFile } from './helpers'
+import { debounce, cbPromise } from '../../../lib/functions'
+import { generate as generateManifest } from './dat-manifest'
+import { bufToStr, readReadme, readManifest, statArchiveFile, writeArchiveFile, readArchiveDirectory } from './helpers'
+import { grantPermission } from '../../ui/permissions'
 
 // db modules
 import * as archivesDb from '../../dbs/archives'
@@ -65,8 +67,7 @@ export function setup () {
         debug(`${info.type} connection from ${info.host} to fetch ${bufToStr(archive.key)}`)
         return archive.replicate({
           download: true,
-          upload: (archive.userSettings && archive.userSettings.uploadClaims && archive.userSettings.uploadClaims.length > 0)
-          // TODO fuck this^ (see dat 2.5 plans... in my notebook on the coffee table)
+          upload: (archive.userSettings && archive.userSettings.isHosting)
         })
       }
 
@@ -93,8 +94,7 @@ export function setup () {
       archive.replicate({
         stream,
         download: true,
-        upload: (archive.userSettings && archive.userSettings.uploadClaims && archive.userSettings.uploadClaims.length > 0)
-        // TODO fuck this^ (see dat 2.5 plans... in my notebook on the coffee table)
+        upload: (archive.userSettings && archive.userSettings.isHosting)
       })
     })
   })
@@ -117,100 +117,117 @@ export function setup () {
 //
 
 export const resolveName = resolveDatDNS
-export const updateArchiveClaims = archivesDb.updateArchiveClaims
+export const setArchiveUserSettings = archivesDb.setArchiveUserSettings
 export const getGlobalSetting = archivesDb.getGlobalSetting
 export const setGlobalSetting = archivesDb.setGlobalSetting
 
 // archive creation
 // =
 
-export function createNewArchive (opts) {
+export function createNewArchive ({ title, description, author, version, forkOf, origin, originTitle, importFiles, inplaceImport } = {}) {
   // massage inputs
-  opts = opts || {}
-  var title = (opts.title && typeof opts.title === 'string') ? opts.title : ''
-  var description = (opts.description && typeof opts.description === 'string') ? opts.description : ''
-  var createdBy = null
-  if (opts.origin && opts.origin.startsWith('dat://')) createdBy = { url: opts.origin }
-  if (createdBy && opts.originTitle && typeof opts.originTitle === 'string') createdBy.title = opts.originTitle
+  var createdBy
+  if (typeof origin === 'string' && origin.startsWith('dat://')) createdBy = { url: origin }
+  if (createdBy && typeof originTitle === 'string') createdBy.title = originTitle
 
   return new Promise(resolve => {
     // create the archive
     var archive = loadArchive(null)
     var key = archive.key.toString('hex')
-    resolve(key)
+    const done = () => resolve(key)
 
     // import files
-    if (opts.importFiles) {
-      let importFiles = Array.isArray(opts.importFiles) ? opts.importFiles : [opts.importFiles]
-      importFiles.forEach(importFile => writeArchiveFileFromPath(key, { src: importFile, dst: '/' }))
+    if (importFiles) {
+      importFiles = Array.isArray(importFiles) ? importFiles : [importFiles]
+      importFiles.forEach(importFile => writeArchiveFileFromPath(key, { src: importFile, dst: '/', inplaceImport }))
     }
 
-    // write the manifest
-    if (title || description || createdBy) {
-      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify({ title, description, createdBy }))
-    }
-
-    // write the save & upload claims
-    if (opts.origin) {
-      var claims = ['save']
-      if (opts.serve) claims.push('upload')
-      archivesDb.updateArchiveClaims(key, { origin: opts.origin, op: 'add', claims })
-    }
-
-    // write the meta
-    archive.pullLatestArchiveMeta()
+    // write the manifest then resolve
+    var manifest = generateManifest({ url: `dat://${key}/`, title, description, author, version, forkOf, createdBy })
+    writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest, null, 2), done)
+    // write the user settings
+    setArchiveUserSettings(key, { isSaved: true, isHosting: true })
+    // write the perms
+    if (createdBy && createdBy.url) grantPermission('modifyDat:' + key, createdBy.url)
   })
 }
 
 export function forkArchive (oldArchiveKey, opts) {
-  // massage inputs
   opts = opts || {}
-  var title = (opts.title && typeof opts.title === 'string') ? opts.title : ''
-  var description = (opts.description && typeof opts.description === 'string') ? opts.description : ''
 
-  // get the target archive
+  // get the old archive
   var oldArchive = getArchive(oldArchiveKey)
   if (!oldArchive) {
     return Promise.reject(new Error('Invalid archive key'))
   }
 
-  // create the new archive
-  return createNewArchive({ title, description, origin: 'beaker:archives' }).then(newArchiveKey => {
-    // list the old archive's files
-    var newArchive = getArchive(newArchiveKey)
-    oldArchive.list((err, entries) => {
-      if (err) return console.error('Failed to list old archive files during fork', err)
+  // fetch old archive meta
+  return archivesDb.getArchiveMeta(oldArchiveKey).then(meta => {
+    // override any manifest data
+    var newArchiveOpts = {
+      title: (opts.title) ? opts.title : meta.title,
+      description: (opts.description) ? opts.description : meta.description,
+      forkOf: (meta.forkOf || []).concat(`dat://${oldArchiveKey}/`),
+      origin: opts.origin
+    }
+    if (opts.author) newArchiveOpts.author = opts.author
 
-      // TEMPORARY
-      // remove duplicates
-      // this is only needed until hyperdrive fixes its .list()
-      // see https://github.com/mafintosh/hyperdrive/pull/99
-      // -prf
-      var entriesDeDuped = {}
-      entries.forEach(entry => { entriesDeDuped[entry.name] = entry })
-      entries = Object.keys(entriesDeDuped).map(name => entriesDeDuped[name])
+    // create the new archive
+    return createNewArchive(newArchiveOpts)
+  }).then(newArchiveKey => {
+    return new Promise(resolve => {
+      // list the old archive's files
+      var newArchive = getArchive(newArchiveKey)
+      oldArchive.list((err, entries) => {
+        if (err) return console.error('[DAT] Failed to list old archive files during fork', err)
 
-      // copy over files
-      next()
-      function next (err) {
-        if (err) console.error('Error while copying file during fork', err)
-        var entry = entries.shift()
-        if (!entry) return // done!
+        // TEMPORARY
+        // remove duplicates
+        // this is only needed until hyperdrive fixes its .list()
+        // see https://github.com/mafintosh/hyperdrive/pull/99
+        // -prf
+        var entriesDeDuped = {}
+        entries.forEach(entry => { entriesDeDuped[entry.name] = entry })
+        entries = Object.keys(entriesDeDuped).map(name => entriesDeDuped[name])
 
-        // skip non-files, undownloaded files, and the old manifest
-        if (entry.type !== 'file' || !oldArchive.isEntryDownloaded(entry) || entry.name === DAT_MANIFEST_FILENAME) {
-          return next()
+        // copy over files
+        next()
+        function next (err) {
+          if (err) console.error('[DAT] Error while copying file during fork', err)
+          var entry = entries.shift()
+          if (!entry) {
+            // done!
+            return resolve(newArchiveKey)
+          }
+
+          // directories
+          if (entry.type === 'directory') {
+            return newArchive.append({
+              name: entry.name,
+              type: 'directory',
+              mtime: entry.mtime
+            }, next)
+          }
+
+          // skip other non-files, undownloaded files, and the old manifest
+          if (
+            entry.type !== 'file' || 
+            !oldArchive.isEntryDownloaded(entry) || 
+            entry.name === DAT_MANIFEST_FILENAME ||
+            entry.name === ('/' + DAT_MANIFEST_FILENAME)
+          ) {
+            return next()
+          }
+
+          // copy the file
+          pump(
+            oldArchive.createFileReadStream(entry),
+            newArchive.createFileWriteStream({ name: entry.name, mtime: entry.mtime, ctime: entry.ctime }),
+            next
+          )
         }
-
-        // copy the file
-        pump(
-          oldArchive.createFileReadStream(entry),
-          newArchive.createFileWriteStream({ name: entry.name, mtime: entry.mtime, ctime: entry.ctime }),
-          next
-        )
-      }
+      })
     })
-    return newArchiveKey
   })
 }
 
@@ -219,12 +236,13 @@ export function forkArchive (oldArchiveKey, opts) {
 
 // load archive and set the swarming behaviors
 export function configureArchive (key, settings) {
-  var upload = settings.uploadClaims.length > 0
-  var download = settings.downloadClaims.length > 0
+  var upload = settings.isHosting
+  var download = settings.isSaved
   var archive = getOrLoadArchive(key, { noSwarm: true })
-  var wasUploading = (archive.userSettings && archive.userSettings.uploadClaims && archive.userSettings.uploadClaims.length > 0)
+  var wasUploading = (archive.userSettings && archive.userSettings.isHosting)
   archive.userSettings = settings
   archivesEvents.emit('update-archive', { key, isUploading: upload, isDownloading: download })
+
   archive.open(() => {
     // set download prioritization
     if (download) archive.content.prioritize({start: 0, end: Infinity}) // autodownload all content
@@ -261,7 +279,7 @@ export function loadArchive (key, { noSwarm } = {}) {
   archive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
 
   // wire up events
-  archive.pullLatestArchiveMeta = throttle(() => pullLatestArchiveMeta(archive), 1e3)
+  archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
   trackArchiveEvents(archivesEvents, archive)
 
   return archive
@@ -315,9 +333,9 @@ export function getArchiveDetails (name, opts = {}) {
       // fetch archive data
       var done = multicb({ pluck: 1, spread: true })
       var metaCB = done()
-      archivesDb.getArchiveMeta(key).then(meta => metaCB(null, meta))
+      archivesDb.getArchiveMeta(key).then(meta => metaCB(null, meta)).catch(metaCB)
       var userSettingsCB = done()
-      archivesDb.getArchiveUserSettings(key).then(settings => userSettingsCB(null, settings))
+      archivesDb.getArchiveUserSettings(key).then(settings => userSettingsCB(null, settings)).catch(userSettingsCB)
       if (opts.entries) archive.list(done())
       if (opts.readme) readReadme(archive, done())
       done((err, meta, userSettings, entries, readme) => {
@@ -327,6 +345,11 @@ export function getArchiveDetails (name, opts = {}) {
         meta.userSettings = userSettings
         meta.entries = entries
         meta.readme = readme
+        // metadata for history view
+        meta.blocks = archive.metadata.blocks
+        meta.metaSize = archive.metadata.bytes
+        meta.contentKey = archive.content.key
+
         if (opts.contentBitfield) meta.contentBitfield = archive.content.bitfield.buffer
         meta.peers = archive.metadata.peers.length
         resolve(meta)
@@ -379,7 +402,7 @@ export function updateArchiveManifest (key, updates) {
       // update values
       manifest = manifest || {}
       Object.assign(manifest, updates)
-      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest), cb)
+      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest, null, 2), cb)
     })
   })
 }
@@ -401,8 +424,8 @@ export function writeArchiveFileFromPath (key, opts) {
       // update the dst if it's a directory
       try {
         var stat = fs.statSync(src)
-        if (stat.isDirectory()) {
-          // put at a subpath, so that the folder's contents dont get imported into the target
+        if (stat.isDirectory() && !opts.inplaceImport) {
+          // put at a subpath, so that the folder's contents dont get imported in-place into the target
           dst = path.join(dst, path.basename(src))
         }
       } catch (e) {
@@ -411,13 +434,83 @@ export function writeArchiveFileFromPath (key, opts) {
 
       // read the file or file-tree into the archive
       debug('Writing file(s) from path:', src, 'to', dst)
-      hyperImport(archive, src, {
+      var stats = { addCount: 0, updateCount: 0, skipCount: 0, fileCount: 0, totalSize: 0 }
+      var status = hyperImport(archive, src, {
         basePath: dst,
         live: false,
         resume: true,
         ignore: ['.dat', '**/.dat', '.git', '**/.git']
-      }, cb)
+      }, (err) => {
+        if (err) return cb(err)
+        stats.fileCount = status.fileCount
+        stats.totalSize = status.totalSize
+        cb(null, stats)
+      })
+      status.on('file imported', e => {
+        if (e.mode === 'created') stats.addCount++
+        if (e.mode === 'updated') stats.updateCount++
+      })
+      status.on('file skipped', e => {
+        stats.skipCount++
+      })
     })
+  })
+}
+
+export function exportFileFromArchive (key, srcPath, dstPath) {
+  return cbPromise(cb => {
+    var isFirst = true
+    var numFiles = 0, numDirectories = 0
+    var archive = getOrLoadArchive(key)
+    if (!archive) return cb(new Error(`Invalid archive key '${key}'`))
+    statThenExport(srcPath, dstPath, err => {
+      if (err) return cb(err)
+      cb(null, { numFiles, numDirectories })
+    })
+
+    function statThenExport (entrySrcPath, entryDstPath, cb) {
+      // check that the entry exists
+      statArchiveFile(archive, entrySrcPath, (err, entry) => {
+        if (err || !entry) return cb(new Error(`Archive file ${entrySrcPath} not found`))
+
+        if (isFirst) {
+          // log action
+          console.log(`[DAT] Exporting dat://${key} to ${entryDstPath}`)
+          isFirst = false
+        }
+
+        // export by type
+        if (entry.type === 'file') exportFile(entry, entryDstPath, cb)
+        else if (entry.type === 'directory') exportDirectory(entry, entryDstPath, cb)
+        else cb()
+      })
+    }
+
+    function exportFile (entry, entryDstPath, cb) {
+      // write the file
+      numFiles++
+      pump(
+        archive.createFileReadStream(entry),
+        fs.createWriteStream(entryDstPath),
+        cb
+      )
+    }
+
+    function exportDirectory (entry, entryDstPath, cb) {
+      // make sure the destination folder exists
+      numDirectories++
+      mkdirp(entryDstPath, err => {
+        if (err) return cb(err)
+
+        // list the directory
+        readArchiveDirectory(archive, path.join('/', entry.name), (err, entries) => {
+          if (err) cb(err)
+          var done = multicb()
+          Object.keys(entries).forEach(k => statThenExport(entries[k].name, path.join(dstPath, entries[k].name), done()))
+          done(cb)
+        })
+      })
+    }
   })
 }
 
@@ -439,7 +532,7 @@ export function leaveSwarm (key, cb) {
   var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || !archive.isSwarming) return
 
-  debug('Unswarming archive', bufToStr(archive.key))
+  debug('Unswarming archive %s disconnected %d peers', bufToStr(archive.key), archive.metadata.peers.length)
   archive.unreplicate() // stop all active replications
   swarm.leave(archive.discoveryKey)
   archive.isSwarming = false
@@ -494,13 +587,13 @@ function pullLatestArchiveMeta (archive) {
 
     done((_, manifest, size) => {
       manifest = manifest || {}
-      var { title, description, author, createdBy } = manifest
+      var { title, description, author, version, forkOf, createdBy } = manifest
       var mtime = Date.now() // use our local update time
       var isOwner = archive.owner
       size = size || 0
 
       // write the record
-      var update = { title, description, author, createdBy, mtime, size, isOwner }
+      var update = { title, description, author, version, forkOf, createdBy, mtime, size, isOwner }
       debug('Writing meta', update)
       archivesDb.setArchiveMeta(key, update).then(
         () => {

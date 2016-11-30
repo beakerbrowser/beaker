@@ -8,6 +8,7 @@ import { app, Menu, protocol } from 'electron'
 import * as beakerBrowser from './background-process/browser'
 import * as plugins from './background-process/plugins'
 import * as webAPIs from './background-process/web-apis'
+import * as bkr from './background-process/bkr'
 
 import * as windows from './background-process/ui/windows'
 import buildWindowMenu from './background-process/ui/window-menu'
@@ -24,6 +25,7 @@ import * as history from './background-process/dbs/history'
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 import * as datProtocol from './background-process/protocols/dat'
+import * as fsProtocol from './background-process/protocols/fs'
 
 import * as openURL from './background-process/open-url'
 
@@ -49,6 +51,7 @@ app.on('ready', function () {
 
   // base
   beakerBrowser.setup()
+  bkr.setup()
 
   // ui
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu()))
@@ -61,6 +64,7 @@ app.on('ready', function () {
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
   datProtocol.setup()
+  fsProtocol.setup()
   plugins.setupProtocolHandlers()
 
   // web APIs

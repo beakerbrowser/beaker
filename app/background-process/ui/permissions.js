@@ -3,6 +3,7 @@ var debug = require('debug')('beaker')
 import rpc from 'pauls-electron-rpc'
 import * as siteData from '../dbs/sitedata'
 import PERMS from '../../lib/perms'
+import { getPermId } from '../../lib/strings'
 import manifest from '../api-manifests/external/permissions'
 
 // globals
@@ -20,7 +21,37 @@ export function setup () {
   ipcMain.on('permission-response', onPermissionResponseHandler)
 
   // wire up RPC
-  rpc.exportAPI('beakerPermissions', manifest, { requestPermission, revokePermission, queryPermission })
+  rpc.exportAPI('beakerPermissions', manifest, RPCAPI)
+}
+
+export function requestPermission (permission, webContents, opts) {
+  return new Promise((resolve, reject) => onPermissionRequestHandler(webContents, permission, resolve, opts))
+}
+
+export function grantPermission (permission, webContents) {
+  var siteURL = (typeof webContents === 'string') ? webContents : webContents.getURL()
+
+  // update the DB
+  const PERM = PERMS[getPermId(permission)]
+  if (PERM && PERM.persist) {
+    siteData.setPermission(siteURL, permission, 1)
+  }
+  return Promise.resolve()
+}
+
+export function revokePermission (permission, webContents) {
+  var siteURL = (typeof webContents === 'string') ? webContents : webContents.getURL()
+
+  // update the DB
+  const PERM = PERMS[getPermId(permission)]
+  if (PERM && PERM.persist) {
+    siteData.setPermission(siteURL, permission, 0)
+  }
+  return Promise.resolve()
+}
+
+export function queryPermission (permission, webContents) {
+  return siteData.getPermission(webContents.getURL(), permission)
 }
 
 export function denyAllRequests (win) {
@@ -38,32 +69,22 @@ export function denyAllRequests (win) {
 // rpc api
 // =
 
-function requestPermission (permission) {
-  var webContents = this.sender
-  return new Promise((resolve, reject) => onPermissionRequestHandler(webContents, permission, resolve))
-}
-
-function revokePermission (permission) {
-  var webContents = this.sender
-
-  // update the DB
-  const PERM = PERMS[getPermId(permission)]
-  if (PERM && PERM.persist) {
-    siteData.setPermission(webContents.getURL(), permission, 0)
+const RPCAPI = {
+  requestPermission (permission) {
+    return requestPermission(permission, this.sender)
+  },
+  revokePermission (permission) {
+    return revokePermission(permission, this.sender)
+  },
+  queryPermission (permission) {
+    return queryPermission(permission, this.sender)
   }
-
-  return Promise.resolve()
-}
-
-function queryPermission (permission) {
-  var webContents = this.sender
-  return siteData.getPermission(webContents.getURL(), permission)
 }
 
 // event handlers
 // =
 
-function onPermissionRequestHandler (webContents, permission, cb) {
+function onPermissionRequestHandler (webContents, permission, cb, opts) {
   // look up the containing window
   var win = getContainingWindow(webContents)
   if (!win) {
@@ -94,7 +115,7 @@ function onPermissionRequestHandler (webContents, permission, cb) {
     }
 
     // send message to create the UI
-    win.webContents.send('command', 'perms:prompt', req.id, webContents.id, permission)
+    win.webContents.send('command', 'perms:prompt', req.id, webContents.id, permission, opts)
   })
 }
 
@@ -118,10 +139,6 @@ function onPermissionResponseHandler (e, reqId, decision) {
   if (decision && PERM && PERM.persist) {
     siteData.setPermission(req.url, req.permission, 1)
   }
-}
-
-function getPermId (permission) {
-  return permission.split(':')[0]
 }
 
 function getContainingWindow (webContents) {

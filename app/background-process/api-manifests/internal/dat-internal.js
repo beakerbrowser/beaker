@@ -7,9 +7,11 @@ export default {
 
   createNewArchive: 'promise',
   forkArchive: 'promise',
+  setArchiveUserSettings: 'promise',
   updateArchiveManifest: 'promise',
-  updateArchiveClaims: 'promise',
+
   writeArchiveFileFromPath: 'promise',
+  exportFileFromArchive: 'promise',
 
   swarm: 'sync',
   unswarm: 'sync',

@@ -164,6 +164,7 @@ test('dat.createArchive rejection', async t => {
   await app.client.windowByIndex(1)
 
   // fetch & test the res
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }))
   var res = await app.client.execute(() => { return window.res })
   t.deepEqual(res.value.name, 'UserDeniedError')
 })
@@ -173,7 +174,7 @@ test('dat.createArchive', async t => {
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    dat.createArchive({ title: 'The Title', description: 'The Description', serve: true }).then(
+    dat.createArchive({ title: 'The Title', description: 'The Description' }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -185,6 +186,7 @@ test('dat.createArchive', async t => {
   await app.client.windowByIndex(1)
 
   // fetch & test the res
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }))
   var res = await app.client.execute(() => { return window.res })
   createdDatURL = res.value
   t.truthy(createdDatURL.startsWith('dat://'))
@@ -202,18 +204,17 @@ test('dat.createArchive', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
-  t.deepEqual(manifest.createdBy.url, testRunnerDatURL)
+  t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
   t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
 
-  // check the claims
+  // check the settings
   await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
     datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
   }, createdDatKey)
   await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.saveClaims, [testRunnerDatURL.slice(0, -1)])
-  t.deepEqual(details.value.userSettings.uploadClaims, [testRunnerDatURL.slice(0, -1)])
-  t.deepEqual(details.value.userSettings.downloadClaims, [])
+  t.deepEqual(details.value.userSettings.isSaved, true)
+  t.deepEqual(details.value.userSettings.isHosting, true)
 })
 
 test('dat.writeFile', async t => {
@@ -313,101 +314,188 @@ test('dat.createDirectory doesnt overwrite files or folders', async t => {
   t.deepEqual(res.value.name, 'FileAlreadyExistsError')
 })
 
-test('dat.writeFile doesnt allow writes to archives without a save claim', async t => {
-  // write to the subdir
-  var res = await app.client.executeAsync((url, done) => {
-    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
-  }, testStaticDatURL + '/denythis.txt')
-  t.deepEqual(res.value.name, 'PermissionsError')
-})
-
 test('dat.writeFile doesnt allow writes that exceed the quota', async t => {
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
-    dat.writeFile(url, 'x'.repeat(1024 * 10), 'utf8').then(done, done)
+    dat.writeFile(url, 'x'.repeat(1024 * 12), 'utf8').then(done, done)
   }, createdDatURL + '/denythis.txt')
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
 
-test('dat.createDirectory doesnt allow writes to archives without a save claim', async t => {
-  // write to the subdir
+test('dat.writeFile and dat.createDirectory fail to write to unowned archives', async t => {
+  // writeFile
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, testStaticDatURL + '/denythis.txt')
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
+
+  // createDirectory
   var res = await app.client.executeAsync((url, done) => {
     dat.createDirectory(url).then(done, done)
   }, testStaticDatURL + '/denythis')
-  t.deepEqual(res.value.name, 'PermissionsError')
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 })
 
-test('dat.deleteArchive removes save claims', async t => {
-  // check that the save-claim exists
+test('dat.writeFile & dat.createDirectory doesnt allow writes to archives until write permission is given', async t => {
+
+  // create the target dat internally, so that it's writable but not owned by the test runner dat
+  // =
+
   await app.client.windowByIndex(0)
-  var details = await app.client.executeAsync((key, done) => {
-    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
-  }, createdDatKey)
+  var res = await app.client.executeAsync((done) => {
+    datInternalAPI.createNewArchive({ title: 'Another Test Dat' }).then(done, done)
+  })
+  t.falsy(res.value.name, 'create didnt fail')
+  var newTestDatURL = 'dat://' + res.value + '/'
   await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.saveClaims, [testRunnerDatURL.slice(0, -1)])
 
-  // delete the archive
-  var res = await app.client.executeAsync((url, done) => {
-    dat.deleteArchive(url).then(done, err => done({ err }))
-  }, createdDatURL)
-  t.falsy(res.value)
+  // writefile deny
+  //
 
-  // check that the save-claim was removed
-  await app.client.windowByIndex(0)
-  var details = await app.client.executeAsync((key, done) => {
-    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
-  }, createdDatKey)
-  await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.saveClaims.length, 0)
+  // start the prompt
+  await app.client.execute(url => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.writeFile(url, 'hello world', 'utf8').then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, newTestDatURL + '/denythis.txt')
 
-  // undo the deletion
+  // accept the prompt
   await app.client.windowByIndex(0)
   await app.client.click('.prompt-reject')
   await app.client.windowByIndex(1)
 
-  // check that the new save-claim was added
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.deepEqual(res.value.name, 'UserDeniedError', 'write file denied')
+
+  // createDirectory deny
+  //
+
+  // start the prompt
+  await app.client.execute(url => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.createDirectory(url).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, newTestDatURL + '/denythis')
+
+  // accept the prompt
   await app.client.windowByIndex(0)
-  var details = await app.client.executeAsync((key, done) => {
-    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
-  }, createdDatKey)
+  await app.client.click('.prompt-reject')
   await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.saveClaims, ['beaker:archives'])
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.deepEqual(res.value.name, 'UserDeniedError', 'create directory denied')
+
+  // writeFile accept
+  // =
+
+  // start the prompt
+  await app.client.execute(url => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.writeFile(url, 'hello world', 'utf8').then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, newTestDatURL + '/allowthis.txt')
+
+  // accept the prompt
+  await app.client.windowByIndex(0)
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.falsy(res.value, 'write file accepted')
+
+  // writeFile accept persisted perm
+  // =
+
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, newTestDatURL + 'allowthis2.txt')
+  t.falsy(res.value, 'write file 2 accepted')
+
+  // createDirectory accept persisted perm
+  // =
+
+  var res = await app.client.executeAsync((url, done) => {
+    dat.createDirectory(url).then(done, done)
+  }, newTestDatURL + 'allowthis')
+  t.falsy(res.value, 'createdirectory accepted')
 })
 
-test('dat.serve and dat.unserve update the upload claims', async t => {
-  // check that the upload-claim doesnt exist
+
+test('dat.deleteArchive sets saved -> false', async t => {
+  // check that it is saved
   await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
     datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
   }, createdDatKey)
   await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.uploadClaims, [])
+  t.deepEqual(details.value.userSettings.isSaved, true, 'not deleted at start')
+  t.deepEqual(details.value.userSettings.isHosting, true)
 
-  // serve the archive
-  var res = await app.client.executeAsync((url, done) => {
-    dat.serve(url).then(done, err => done({ err }))
+  // start the prompt
+  await app.client.execute((url) => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.deleteArchive(url).then(
+      res => window.res = res,
+      err => window.res = err
+    )
   }, createdDatURL)
+
+  // reject the prompt
+  await app.client.windowByIndex(0)
+  await app.client.click('.prompt-reject')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.deepEqual(res.value.name, 'UserDeniedError')
+
+  // check that it is still saved
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
+  }, createdDatKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.isSaved, true, 'not yet deleted')
+  t.deepEqual(details.value.userSettings.isHosting, true)
+
+  // start the prompt again
+  await app.client.execute((url) => {
+    // put the result on the window, for checking later
+    window.res = null
+    dat.deleteArchive(url).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, createdDatURL)
+
+  // accept the prompt
+  await app.client.windowByIndex(0)
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
   t.falsy(res.value)
 
-  // check that the upload-claim was added
+  // check that it was deleted
   await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
     datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
   }, createdDatKey)
   await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.uploadClaims, [testRunnerDatURL.slice(0, -1)])
-
-  // unserve the archive
-  var res = await app.client.executeAsync((url, done) => {
-    dat.unserve(url).then(done, err => done({ err }))
-  }, createdDatURL)
-  t.falsy(res.value)
-
-  // check that the upload-claim was removed
-  await app.client.windowByIndex(0)
-  var details = await app.client.executeAsync((key, done) => {
-    datInternalAPI.getArchiveDetails(key).then(done, err => done({ err }))
-  }, createdDatKey)
-  await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.uploadClaims, [])
+  t.deepEqual(details.value.userSettings.isSaved, false, 'is deleted')
+  t.deepEqual(details.value.userSettings.isHosting, false)
 })

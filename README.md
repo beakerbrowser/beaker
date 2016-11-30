@@ -13,11 +13,17 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 ### [OSX 64-bit](https://download.beakerbrowser.net/download/latest/osx)
 
+## CLI Tool
+
+Beaker has [a handy CLI tool called bkr](https://github.com/beakerbrowser/bkr).
+
+```
+npm install -g bkr
+```
+
 ## Documentation
 
 - [Beaker Docs](https://beakerbrowser.com/docs/)
-- [Dat Protocol Docs](http://docs.dat-data.com/)
-- [Hyperdrive Spec](https://github.com/datproject/docs/blob/master/docs/hyperdrive_spec.md) (hyperdrive is the internal name for dat's protocol)
 
 ## Env Vars
 

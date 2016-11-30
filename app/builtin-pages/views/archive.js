@@ -16,6 +16,7 @@ import HypercoreStats from '../com/hypercore-stats'
 import * as editArchiveModal from '../com/modals/edit-site'
 import * as forkDatModal from '../com/modals/fork-dat'
 import * as helpTour from '../com/help-tour'
+import { archiveHistoryList, archiveHistoryMeta } from '../com/archive-history-list'
 
 // globals
 // =
@@ -162,7 +163,11 @@ function render () {
   }
 
   if (archiveInfo) {
-    renderArchive()
+    if (window.location.hash === '#history') {
+      renderArchiveHistory()
+    } else {
+      renderArchive()
+    }
   } else if (archiveError) {
     renderError()
   } else {
@@ -174,6 +179,47 @@ function render () {
   }
 }
 
+function renderArchiveHistory () {
+  const name = archiveInfo.title || 'Untitled'
+
+  // set page title
+  document.title = name
+
+  // created-by
+  var createdByEl = (archiveInfo.createdBy)
+    ? yo`<span class="archive-created-by">
+        <span class="icon icon-code"></span> Created by <a href=${archiveInfo.createdBy.url}>${archiveInfo.createdBy.title || shortenHash(archiveInfo.createdBy.url)}</a>
+      </span>`
+    : ''
+
+  // description
+  var descriptEl = archiveHistoryMeta(archiveInfo)
+
+  // render view
+  yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
+    <div class="archive">
+      <div class="archive-heading">
+        <div class="archive-name"><a href=${'dat://' + archiveInfo.key} title=${name}>${name}</a></div>
+        <div class="archive-ctrls">
+          ${createdByEl}
+          <span id="owner-label">${archiveInfo.isOwner ? 'Owner' : 'Read-only'}</span>
+        </div>
+        <div class="archive-ctrls at-center"></div>
+        <div class="page-toolbar">
+          <div class="tabs">
+            <a href=${'beaker:archive/' + archiveInfo.key} onclick=${pushUrl}>Current</a>
+            <a class="current" href=${'beaker:archive/' + archiveInfo.key + '#history'}" onclick=${pushUrl}>History</a>
+          </div>
+        </div>
+      </div>
+      <div class="archive-desc">${descriptEl}</div>
+      <div class="archive-histories links-list">
+        ${archiveHistoryList(archiveInfo)}
+      </div>
+    </div>
+  </div>`)
+}
+
 function renderArchive () {
   const name = archiveInfo.title || 'Untitled'
   const wasDeleted = archiveInfo.isOwner && !isSaved(archiveInfo) // TODO add definition for non-owner
@@ -183,7 +229,7 @@ function renderArchive () {
 
   // ctrls
   var forkBtn = yo`<a id="fork-btn" class="btn" title="Fork" onclick=${onClickFork}><span class="icon icon-flow-branch"></span> Fork</a>`
-  var hostBtn = (isNetworked(archiveInfo))
+  var hostBtn = (isHosting(archiveInfo))
     ? yo`<a id="host-btn" class="btn pressed" title="Hosting" onclick=${onToggleServing}><span class="icon icon-check"></span> Hosting</span>`
     : yo`<a id="host-btn" class="btn" title="Host" onclick=${onToggleServing}><span class="icon icon-upload-cloud"></span> Host</a>`
   var openFolderBtn = yo`<a id="open-in-finder-btn" onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
@@ -210,6 +256,13 @@ function renderArchive () {
       (<a title="Undo Delete" onclick=${onToggleSave}>Undo</a>)
     </span>`
   }
+
+  // fork-of
+  var forkOfEl = getForkOf(archiveInfo)
+    ? yo`<div class="archive-fork-of">
+        <span class="icon icon-flow-branch"></span> Fork of <a href=${getForkOf(archiveInfo)}>${shortenHash(getForkOf(archiveInfo))}</a>
+      </div>`
+    : ''
 
   // created-by
   var createdByEl = (archiveInfo.createdBy)
@@ -258,12 +311,19 @@ function renderArchive () {
     <div class="archive">
       <div class="archive-heading">
         <div class="archive-name"><a href=${'dat://'+archiveInfo.key} title=${name}>${name}</a></div>
+        <div class="archive-ctrls">
+          ${createdByEl}
+          ${forkOfEl}
+          <span id="owner-label">${ archiveInfo.isOwner ? 'Owner' : 'Read-only' }</span>
+        </div>
         ${ wasDeleted
           ? yo`<div class="archive-ctrls at-center">${undoDeleteBtn}</div>`
           : yo`<div class="archive-ctrls at-center">${forkBtn} ${hostBtn} ${dropdownBtn} ${hypercoreStats.render()}</div>` }
-        <div class="archive-ctrls">
-          ${createdByEl}
-          <span id="owner-label">${ archiveInfo.isOwner ? 'Owner' : 'Read-only' }</span>
+        <div class="page-toolbar">
+          <div class="tabs">
+            <a class="current" href=${'beaker:archive/' + archiveInfo.key} onclick=${pushUrl}>Current</a>
+            <a class="" href=${'beaker:archive/' + archiveInfo.key + '#history'}" onclick=${pushUrl}>History</a>
+          </div>
         </div>
       </div>
       <div class="archive-desc">${descriptEl} ${editBtn}</div>
@@ -369,7 +429,7 @@ function setSiteInfoOverride () {
   var subpath = window.location.pathname.split('/').slice(2).join('/') // drop 'archive/{name}', take the rest
   window.locationbar.setSiteInfoOverride({
     title: 'Dat Viewer',
-    url: 'dat://' + archiveKey + '/' + subpath
+    url: 'dat://' + archiveKey + '/' + subpath + window.location.hash
   })
 }
 
@@ -485,23 +545,14 @@ function addFiles (files) {
 function onToggleSave () {
   // toggle the save
   if (isSaved(archiveInfo)) {
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-      origin: 'beaker:archives', 
-      op: 'remove-all', 
-      claims: ['save', 'upload', 'download']
-    }).then(settings => {
-      archiveInfo.userSettings.saveClaims = settings.saveClaims
-      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
-      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isSaved: false, isHosting: false }).then(settings => {
+      archiveInfo.userSettings.isSaved = false
+      archiveInfo.userSettings.isHosting = false
       render()
     })
   } else {
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-      origin: 'beaker:archives', 
-      op: 'add', 
-      claims: 'save'
-    }).then(settings => {
-      archiveInfo.userSettings.saveClaims = settings.saveClaims
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isSaved: true }).then(settings => {
+      archiveInfo.userSettings.isSaved = true
       render()
     })
   }
@@ -509,27 +560,15 @@ function onToggleSave () {
 
 function onToggleServing () {
   // toggle the networking
-  if (isNetworked(archiveInfo)) {
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-      origin: 'beaker:archives',
-      op: 'remove-all',
-      claims: ['upload', 'download']
-    }).then(settings => {
-      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
-      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+  if (isHosting(archiveInfo)) {
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isHosting: false }).then(settings => {
+      archiveInfo.userSettings.isHosting = false
       render()
     })
   } else {
-    var claims = ['upload', 'download']
-    if (!isSaved(archiveInfo)) claims.push('save')
-    datInternalAPI.updateArchiveClaims(archiveInfo.key, {
-      origin: 'beaker:archives', 
-      op: 'add', 
-      claims
-    }).then(settings => {
-      archiveInfo.userSettings.saveClaims = settings.saveClaims
-      archiveInfo.userSettings.uploadClaims = settings.uploadClaims
-      archiveInfo.userSettings.downloadClaims = settings.downloadClaims
+    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isSaved: true, isHosting: true }).then(settings => {
+      archiveInfo.userSettings.isSaved = true
+      archiveInfo.userSettings.isHosting = true
       render()
     })
   }
@@ -548,7 +587,7 @@ function onOpenInFinder () {
 function onClickFork (e) {
   // create fork modal
   currentForkModal = forkDatModal.create(archiveInfo, archiveEntriesTree, {
-    isDownloading: isNetworked(archiveInfo),
+    isDownloading: isHosting(archiveInfo),
     onClickDownload: onDownloadForkArchive,
     onSubmit: onSubmitForkArchive
   })
@@ -565,7 +604,7 @@ function onDownloadForkArchive () {
 
 function onSubmitForkArchive ({ title, description }) {
   // what do you do when you see a fork in the code?
-  datInternalAPI.forkArchive(archiveInfo.key, { title, description }).then(newKey => {
+  datInternalAPI.forkArchive(archiveInfo.key, { title, description, origin: 'beaker:archives' }).then(newKey => {
     // you take it
     window.location = 'beaker:archive/' + newKey
   }).catch(err => {
@@ -619,17 +658,13 @@ function onDownload (update) {
 }
 
 function isSaved (archive) {
-  return archive.userSettings.saveClaims.length > 0
+  return archive.userSettings.isSaved
 }
 
-function isDownloading (archive) {
-  return archive.userSettings.downloadClaims.length > 0
+function isHosting (archive) {
+  return archive.userSettings.isHosting
 }
 
-function isUploading (archive) {
-  return archive.userSettings.uploadClaims.length > 0
-}
-
-function isNetworked (archive) {
-  return isUploading(archive)
+function getForkOf (archive) {
+  return archive.forkOf && archive.forkOf[0]
 }
