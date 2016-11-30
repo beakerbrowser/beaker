@@ -149,7 +149,6 @@ test('dat.exportFileFromArchive', async t => {
     datInternalAPI.exportFileFromArchive(key, '/hello.txt', path).then(done, done)
   }, createdDatKey, path.join(tmpOutputPath1, 'hello.txt'))
   t.falsy(res.value.name)
-  console.log(res.value, fs.readdirSync(tmpOutputPath1))
   t.deepEqual(fs.readFileSync(path.join(tmpOutputPath1, 'hello.txt'), 'utf8'), 'hello')
 
   // export the whole dat
