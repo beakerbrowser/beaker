@@ -3,8 +3,8 @@
     "asar": "^0.11.0",
     "browserify": "^13.0.1",
     "chai": "^3.5.0",
-    "electron-builder": "~5.30.0",
-    "electron": "beakerbrowser/electron-prebuilt",
+    "electron-builder": "~10.4.1",
+    "electron": "1.4.6",
     "fs-jetpack": "^0.9.0",
     "gulp": "^3.9.0",
     "gulp-batch": "^1.0.5",
@@ -34,15 +34,11 @@
       },
       {
         "name": "IPFS",
-        "schemes": ["ipfs"]
+        "schemes": ["fs"]
       },
       {
         "name": "dat",
         "schemes": ["dat"]
-      },
-      {
-        "name": "view-dat",
-        "schemes": ["view-dat"]
       }
     ],
     "dmg": {
