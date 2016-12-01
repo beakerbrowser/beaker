@@ -13,7 +13,8 @@ function start () {
   }
   console.log('Spawning electron', electron)
   childProcess.spawn(electron, ['./app'], {
-    stdio: 'inherit'
+    stdio: 'inherit',
+    env: process.env // inherit
   })
   .on('close', function () {
     // User closed the app. Kill the host process.

@@ -3,7 +3,7 @@ import os from 'os'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
-import log from 'loglevel'
+var debug = require('debug')('beaker')
 import manifest from './api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
 import * as plugins from './plugins'
@@ -47,7 +47,7 @@ export function setup () {
     autoUpdater.once('update-available', onUpdateAvailable)
     autoUpdater.on('error', onUpdateError)
   } catch (e) {
-    log.error('[AUTO-UPDATE]', e.toString())
+    debug('[AUTO-UPDATE] error', e.toString())
     isBrowserUpdatesSupported = false
   }
   setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
@@ -120,7 +120,7 @@ export function checkForUpdates () {
   var isBrowserUpdated = false  // got an update?
 
   // update global state
-  log.debug('[AUTO-UPDATE] Checking for a new version.')
+  debug('[AUTO-UPDATE] Checking for a new version.')
   updaterError = false
   setUpdaterState(UPDATER_STATUS_CHECKING)
 
@@ -132,12 +132,12 @@ export function checkForUpdates () {
     isBrowserChecking = true
     autoUpdater.checkForUpdates()
     autoUpdater.once('update-not-available', () => {
-      log.debug('[AUTO-UPDATE] No browser update available.')
+      debug('[AUTO-UPDATE] No browser update available.')
       isBrowserChecking = false
       checkDone()
     })
     autoUpdater.once('update-downloaded', () => {
-      log.debug('[AUTO-UPDATE] New browser version downloaded. Ready to install.')
+      debug('[AUTO-UPDATE] New browser version downloaded. Ready to install.')
       isBrowserChecking = false
       isBrowserUpdated = true
       checkDone()
@@ -173,9 +173,9 @@ export function restartBrowser () {
   if (updaterState == UPDATER_STATUS_DOWNLOADED) {
     // run the update installer
     autoUpdater.quitAndInstall()
-    log.debug('[AUTO-UPDATE] Quitting and installing.')
+    debug('[AUTO-UPDATE] Quitting and installing.')
   } else {
-    log.debug('Restarting Beaker by restartBrowser()')
+    debug('Restarting Beaker by restartBrowser()')
     // do a simple restart
     app.relaunch()
     setTimeout(() => app.exit(0), 1e3)
@@ -261,12 +261,12 @@ function scheduledAutoUpdate () {
 
 function onUpdateAvailable () {
   // update status and emit, so the frontend can update
-  log.debug('[AUTO-UPDATE] New version available. Downloading...')
+  debug('[AUTO-UPDATE] New version available. Downloading...')
   setUpdaterState(UPDATER_STATUS_DOWNLOADING)
 }
 
 function onUpdateError (e) {
-  log.error('[AUTO-UPDATE]', e.toString())
+  debug('[AUTO-UPDATE] error', e.toString())
   setUpdaterState(UPDATER_STATUS_IDLE)
   updaterError = e.toString()
   browserEvents.emit('updater-error', e.toString())

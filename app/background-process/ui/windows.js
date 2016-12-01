@@ -4,7 +4,7 @@ import jetpack from 'fs-jetpack'
 import path from 'path'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
-import log from 'loglevel'
+var debug = require('debug')('beaker')
 
 // globals
 // =
@@ -72,7 +72,7 @@ export function createShellWindow () {
 
 function loadURL (win, url) {
   win.loadURL(url)
-  log.debug('Opening', url)  
+  debug('Opening', url)  
 }
 
 function getCurrentPosition (win) {

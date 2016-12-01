@@ -1,4 +1,4 @@
-import log from 'loglevel'
+var debug = require('debug')('beaker')
 import FnQueue from 'function-queue'
 import { cbPromise } from '../functions'
 
@@ -58,7 +58,7 @@ export function setupSqliteDB (db, migrations, logTag) {
       if (neededMigrations.length == 0)
         return resolve()
 
-      log.info(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
+      debug(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
       runNeededMigrations()
       function runNeededMigrations (err) {
         if (err) return reject(err)
@@ -67,7 +67,7 @@ export function setupSqliteDB (db, migrations, logTag) {
         if (!migration) {
           // done
           resolve()
-          return log.info(logTag, 'Database migrations completed without error')
+          return debug(logTag, 'Database migrations completed without error')
         }
 
         migration(runNeededMigrations)
@@ -88,7 +88,7 @@ export function setupLevelDB (db, migrations, logTag) {
       if (neededMigrations.length == 0)
         return resolve()
 
-      log.info(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
+      debug(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
       runNeededMigrations()
       function runNeededMigrations (err) {
         if (err) return reject(err)
@@ -97,7 +97,7 @@ export function setupLevelDB (db, migrations, logTag) {
         if (!migration) {
           // done
           resolve()
-          return log.info(logTag, 'Database migrations completed without error')
+          return debug(logTag, 'Database migrations completed without error')
         }
 
         migration(runNeededMigrations)

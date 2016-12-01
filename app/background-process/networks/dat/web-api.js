@@ -6,7 +6,6 @@ import * as archivesDb from '../../dbs/archives'
 import * as sitedataDb from '../../dbs/sitedata'
 import { statArchiveFile, readArchiveFile, readArchiveDirectory, writeArchiveFile, writeArchiveDirectory, toValidEncoding } from './helpers'
 import { queryPermission, requestPermission } from '../../ui/permissions'
-import log from 'loglevel'
 import { 
   DAT_HASH_REGEX,
   DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
@@ -99,7 +98,7 @@ export default {
           if (err.notFound) {
             return reject(new FileNotFoundError('File not found'))
           }
-          log.error('Failed to read archive entry', err)
+          console.error('Failed to read archive entry', err)
           return reject(new FileReadError())
         }
 
@@ -135,7 +134,7 @@ export default {
           if (err.notFound) {
             return reject(new FileNotFoundError('File not found'))
           }
-          log.error('Failed to read archive file', err)
+          console.error('Failed to read archive file', err)
           return reject(new FileReadError())
         }
         resolve(data)
@@ -183,7 +182,7 @@ export default {
               if (err.invalidEncoding) {
                 return reject(new InvalidEncodingError(`Encoding ${err.encoding} does not match the given value type ${err.type}`))
               }
-              log.error('Failed to write archive file', err)
+              console.error('Failed to write archive file', err)
               return reject(new FileWriteError())
             }
             resolve()
@@ -235,7 +234,7 @@ export default {
           // write the directory
           writeArchiveDirectory(archive, filepath, err => {
             if (err) {
-              log.error('Failed to write archive folder', err)
+              console.error('Failed to write archive folder', err)
               return reject(new FileWriteError())
             }
             resolve()

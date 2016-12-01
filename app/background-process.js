@@ -4,7 +4,6 @@
 // window from here.
 
 import { app, Menu, protocol } from 'electron'
-import log from 'loglevel'
 
 import * as beakerBrowser from './background-process/browser'
 import * as plugins from './background-process/plugins'
@@ -31,7 +30,6 @@ import * as fsProtocol from './background-process/protocols/fs'
 import * as openURL from './background-process/open-url'
 
 // read config from env vars
-log.setLevel(process.env.beaker_log_level || 'info')
 if (process.env.beaker_user_data_path) {
   console.log('User data path set by environment variables')
   console.log('userData:', process.env.beaker_user_data_path)
