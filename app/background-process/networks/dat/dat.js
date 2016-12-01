@@ -251,9 +251,17 @@ export function configureArchive (key, settings) {
       // announce
       joinSwarm(archive)
     } else if (upload !== wasUploading) {
-      // reannounce to the discovery network
-      leaveSwarm(archive)
-      joinSwarm(archive)
+      // reset the replication feeds
+      debug('Resetting the replication stream with %d peers', archive.metadata.peers.length)
+      archive.metadata.peers.forEach(({ stream }) => {
+        archive.unreplicate(stream)
+        // HACK
+        // some state needs to get reset, but we havent figured out what event to watch for
+        // so... wait 3 seconds
+        // https://github.com/beakerbrowser/beaker/issues/205
+        // -prf
+        setTimeout(() => archive.replicate({ stream, download: true, upload }), 3e3)
+      })
     }
   })
 }
