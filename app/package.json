@@ -3,7 +3,7 @@
   "productName": "Beaker Browser",
   "description": "An Experimental Peer-to-Peer Web Browser.",
   "homepage": "https://beakerbrowser.com/",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "author": "Paul Frazee <pfrazee@gmail.com>",
   "copyright": "© 2016, Paul Frazee",
   "main": "background-process.build.js",
