@@ -404,12 +404,13 @@ export function writeArchiveFileFromPath (key, opts) {
 
       // read the file or file-tree into the archive
       debug('Writing file(s) from path:', src, 'to', dst)
-      var stats = { addCount: 0, updateCount: 0, skipCount: 0, fileCount: 0, totalSize: 0 }
+      var stats = { addedFiles: [], updatedFiles: [], skipCount: 0, fileCount: 0, totalSize: 0 }
       var status = hyperImport(archive, src, {
         basePath: dst,
         live: false,
         resume: true,
-        ignore: ['.dat', '**/.dat', '.git', '**/.git']
+        ignore: ['.dat', '**/.dat', '.git', '**/.git'],
+        dryRun: opts.dryRun
       }, (err) => {
         if (err) return cb(err)
         stats.fileCount = status.fileCount
@@ -417,8 +418,8 @@ export function writeArchiveFileFromPath (key, opts) {
         cb(null, stats)
       })
       status.on('file imported', e => {
-        if (e.mode === 'created') stats.addCount++
-        if (e.mode === 'updated') stats.updateCount++
+        if (e.mode === 'created') stats.addedFiles.push(e.path)
+        if (e.mode === 'updated') stats.updatedFiles.push(e.path)
       })
       status.on('file skipped', e => {
         stats.skipCount++
