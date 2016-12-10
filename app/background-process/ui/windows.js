@@ -44,7 +44,7 @@ export function createShellWindow () {
     }
   })
   downloads.registerListener(win)
-  loadURL(win, 'beaker:shell-window')
+  loadShell(win)
   numActiveWindows++
 
   // register shortcuts
@@ -67,12 +67,21 @@ export function createShellWindow () {
   return win
 }
 
+export function getActiveWindow () {
+  // try to pull the focused window; if there isnt one, fallback to the last created
+  var win = BrowserWindow.getFocusedWindow()
+  if (!win) {
+    win = BrowserWindow.getAllWindows().pop()
+  }
+  return win
+}
+
 // internal methods
 // =
 
-function loadURL (win, url) {
-  win.loadURL(url)
-  debug('Opening', url)  
+function loadShell (win) {
+  win.loadURL('beaker:shell-window')
+  debug('Opening beaker:shell-window')  
 }
 
 function getCurrentPosition (win) {
