@@ -85,7 +85,9 @@ migrations = [
         title
       );
       CREATE INDEX bookmarks_url ON bookmarks (url);
-      INSERT INTO bookmarks (title, url) VALUES ('Beaker Browser Homepage', 'https://beakerbrowser.com');
+      INSERT INTO bookmarks (title, url) VALUES ('Beaker Homepage', 'https://beakerbrowser.com');
+      INSERT INTO bookmarks (title, url) VALUES ('Beaker Mailing List', 'https://groups.google.com/forum/#!forum/beaker-browser');
+      INSERT INTO bookmarks (title, url) VALUES ('r/hashsites Community', 'https://www.reddit.com/r/hashsites/');
       INSERT INTO bookmarks (title, url) VALUES ('Dat Protocol', 'https://datproject.org/');
       INSERT INTO bookmarks (title, url) VALUES ('IPFS Protocol', 'https://ipfs.io/');
       INSERT INTO bookmarks (title, url) VALUES ('DuckDuckGo (the default search engine)', 'https://duckduckgo.com');
