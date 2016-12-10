@@ -278,10 +278,11 @@ function handleAutocompleteSearch (results) {
   results.forEach(r => decorateResultMatches(searchTerms, r))
 
   // does the value look like a url?
+  var multihashV = v.replace(/(^\/|\/$)/g,'') // strip leading and trailing slash
   var isProbablyUrl = (!v.includes(' ') && (
     /\.[A-z]/.test(v) ||
     isDatHashRegex.test(v) ||
-    isIPFS.multihash(v) ||
+    isIPFS.multihash(multihashV) ||
     isIPFS.ipfsPath(v) ||
     isIPFS.ipnsPath(v) ||
     v.startsWith('localhost') ||
@@ -296,8 +297,8 @@ function handleAutocompleteSearch (results) {
       vWithProtocol = 'dat://'+v
     } else if (v.startsWith('localhost')) {
       vWithProtocol = 'http://'+v
-    } else if (isIPFS.multihash(v)) {
-      vWithProtocol = 'fs:/ipfs/' + v
+    } else if (isIPFS.multihash(multihashV)) {
+      vWithProtocol = 'fs:/ipfs/' + multihashV
     } else if (isIPFS.ipfsPath(v) || isIPFS.ipnsPath(v)) {
       vWithProtocol = 'fs:' + v
     } else {
