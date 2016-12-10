@@ -75,6 +75,22 @@ test('dat.readDirectory', async t => {
   t.deepEqual(Object.keys(listing2.value).sort(), ['hello.txt'])
 })
 
+test('dat.listFiles (alias to readDirectory)', async t => {
+  async function listFiles (url, opts) {
+    return app.client.executeAsync((url, opts, done) => {
+      dat.listFiles(url, opts).then(done, done)
+    }, url, opts || null)
+  }
+
+  // root dir
+  let listing1 = await listFiles(testStaticDatURL)
+  t.deepEqual(Object.keys(listing1.value).sort(), ['beaker.png', 'hello.txt', 'subdir'])
+
+  // subdir
+  let listing2 = await listFiles(testStaticDatURL + 'subdir')
+  t.deepEqual(Object.keys(listing2.value).sort(), ['hello.txt'])
+})
+
 test('dat.readFile', async t => {
   async function readFile (url, opts) {
     return app.client.executeAsync((url, opts, done) => {
@@ -147,12 +163,26 @@ test('dat.stat', async t => {
   t.deepEqual(entry.value.name, 'TimeoutError')
 })
 
-test('dat.createArchive rejection', async t => {
+test('dat.exists', async t => {
+  // stat root file
+  var res = await app.client.executeAsync((url, done) => {
+    dat.exists(url).then(done, done)
+  }, testStaticDatURL + 'hello.txt')
+  t.truthy(res.value)
+
+  // stat non-existent file
+  var res = await app.client.executeAsync((url, done) => {
+    dat.exists(url).then(done, done)
+  }, testStaticDatURL + 'notfound')
+  t.falsy(res.value)
+})
+
+test('dat.createSite rejection', async t => {
   // start the prompt
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    dat.createArchive({ title: 'The Title', description: 'The Description' }).then(
+    dat.createSite({ title: 'The Title', description: 'The Description' }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -169,12 +199,12 @@ test('dat.createArchive rejection', async t => {
   t.deepEqual(res.value.name, 'UserDeniedError')
 })
 
-test('dat.createArchive', async t => {
+test('dat.createSite', async t => {
   // start the prompt
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    dat.createArchive({ title: 'The Title', description: 'The Description' }).then(
+    dat.createSite({ title: 'The Title', description: 'The Description' }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -433,7 +463,7 @@ test('dat.writeFile & dat.createDirectory doesnt allow writes to archives until 
 })
 
 
-test('dat.deleteArchive sets saved -> false', async t => {
+test('dat.deleteSite sets saved -> false', async t => {
   // check that it is saved
   await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
@@ -447,7 +477,7 @@ test('dat.deleteArchive sets saved -> false', async t => {
   await app.client.execute((url) => {
     // put the result on the window, for checking later
     window.res = null
-    dat.deleteArchive(url).then(
+    dat.deleteSite(url).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -475,7 +505,7 @@ test('dat.deleteArchive sets saved -> false', async t => {
   await app.client.execute((url) => {
     // put the result on the window, for checking later
     window.res = null
-    dat.deleteArchive(url).then(
+    dat.deleteSite(url).then(
       res => window.res = res,
       err => window.res = err
     )

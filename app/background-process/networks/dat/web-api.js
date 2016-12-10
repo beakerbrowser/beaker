@@ -34,82 +34,110 @@ const DEFAULT_TIMEOUT = 5e3
 // exported api
 // =
 
-export default {
-  createArchive: m(function * ({ title, description } = {}) {
-    // ask the user
-    var decision = yield requestPermission('createDat', this.sender, { title })
-    if (decision === false) throw new UserDeniedError()
+const createArchive = m(function * ({ title, description } = {}) {
+  // ask the user
+  var decision = yield requestPermission('createDat', this.sender, { title })
+  if (decision === false) throw new UserDeniedError()
 
-    // fetch some origin info
-    var originTitle = null
-    var origin = archivesDb.extractOrigin(this.sender.getURL())
-    try {
-      var originKey = /dat:\/\/([^\/]*)/.exec(origin)[1]
-      var originMeta = yield archivesDb.getArchiveMeta(originKey)
-      originTitle = originMeta.title || null
-    } catch (e) {}
+  // fetch some origin info
+  var originTitle = null
+  var origin = archivesDb.extractOrigin(this.sender.getURL())
+  try {
+    var originKey = /dat:\/\/([^\/]*)/.exec(origin)[1]
+    var originMeta = yield archivesDb.getArchiveMeta(originKey)
+    originTitle = originMeta.title || null
+  } catch (e) {}
 
-    // create the archive
-    var key = yield dat.createNewArchive({ title, description, origin, originTitle })
-    return `dat://${key}/`
-  }),
+  // create the archive
+  var key = yield dat.createNewArchive({ title, description, origin, originTitle })
+  return `dat://${key}/`
+})
 
-  deleteArchive: m(function * (url) {
-    var { archive } = lookupArchive(url)
-    var archiveKey = archive.key.toString('hex')
+const deleteArchive = m(function * (url) {
+  var { archive } = lookupArchive(url)
+  var archiveKey = archive.key.toString('hex')
 
-    // get the archive meta
-    var details = yield dat.getArchiveDetails(archiveKey)
-    var oldSettings = details.userSettings
+  // get the archive meta
+  var details = yield dat.getArchiveDetails(archiveKey)
+  var oldSettings = details.userSettings
 
-    // fail if this site isnt saved
-    if (!details.userSettings.isSaved) {
-      throw new ArchiveNotSavedError()
-    }
+  // fail if this site isnt saved
+  if (!details.userSettings.isSaved) {
+    throw new ArchiveNotSavedError()
+  }
 
-    // ask the user
-    var decision = yield requestPermission('deleteDat:' + archiveKey, this.sender, { title: details.title })
-    if (decision === false) throw new UserDeniedError()
+  // ask the user
+  var decision = yield requestPermission('deleteDat:' + archiveKey, this.sender, { title: details.title })
+  if (decision === false) throw new UserDeniedError()
 
-    // delete
-    yield archivesDb.setArchiveUserSettings(archive.key, { isHosting: false, isSaved: false })
-  }),
+  // delete
+  yield archivesDb.setArchiveUserSettings(archive.key, { isHosting: false, isSaved: false })
+})
 
-  stat: m(function * (url, opts = {}) {
-    // TODO versions
-    var downloadedBlocks = !!opts.downloadedBlocks
-    var timeout = (typeof opts.timeout === 'number') ? opts.timeout : DEFAULT_TIMEOUT
-    var { archive, filepath } = lookupArchive(url)
-    return new Promise((resolve, reject) => {
-      // start timeout timer
-      var timedOut = false, entriesStream
-      var timer = setTimeout(() => {
-        timedOut = true
-        entriesStream.destroy()
-        reject(new TimeoutError())
-      }, timeout)
-
-      // read the stat
-      entriesStream = statArchiveFile(archive, filepath, (err, data) => {
-        clearTimeout(timer)
-        if (timedOut) return // do nothing if timed out
-        if (err) {
-          // error handling
-          if (err.notFound) {
-            return reject(new FileNotFoundError('File not found'))
-          }
-          console.error('Failed to read archive entry', err)
-          return reject(new FileReadError())
-        }
-
-        // count downloaded blocks?
-        if (downloadedBlocks) {
-          data.downloadedBlocks = archive.countDownloadedBlocks(data)
-        }
-
-        resolve(data)
-      })
+const readDirectory = m(function * (url, opts = {}) {
+  // TODO history
+  var { archive, filepath } = lookupArchive(url)
+  return new Promise((resolve, reject) => {
+    readArchiveDirectory(archive, filepath, (err, entries) => {
+      if (err) reject(err)
+      else resolve(entries)
     })
+  })
+})
+
+const stat = m(function * (url, opts = {}) {
+  // TODO versions
+  var downloadedBlocks = !!opts.downloadedBlocks
+  var timeout = (typeof opts.timeout === 'number') ? opts.timeout : DEFAULT_TIMEOUT
+  var { archive, filepath } = lookupArchive(url)
+  return new Promise((resolve, reject) => {
+    // start timeout timer
+    var timedOut = false, entriesStream
+    var timer = setTimeout(() => {
+      timedOut = true
+      entriesStream.destroy()
+      reject(new TimeoutError())
+    }, timeout)
+
+    // read the stat
+    entriesStream = statArchiveFile(archive, filepath, (err, data) => {
+      clearTimeout(timer)
+      if (timedOut) return // do nothing if timed out
+      if (err) {
+        // error handling
+        if (err.notFound) {
+          return reject(new FileNotFoundError('File not found'))
+        }
+        console.error('Failed to read archive entry', err)
+        return reject(new FileReadError())
+      }
+
+      // count downloaded blocks?
+      if (downloadedBlocks) {
+        data.downloadedBlocks = archive.countDownloadedBlocks(data)
+      }
+
+      resolve(data)
+    })
+  })
+})
+
+export default {
+  createArchive,
+  createSite: createArchive, // alias
+
+  deleteArchive,
+  deleteSite: deleteArchive, // alias
+
+  stat,
+  exists: m(function * (url) {
+    // try to stat
+    try {
+      yield stat.call(this, url)
+      return true
+    } catch (e) {
+      return false
+    }
   }),
 
   readFile: m(function * (url, opts = {}) {
@@ -197,16 +225,8 @@ export default {
     throw new Error('not yet implemented') // TODO
   }),
 
-  readDirectory: m(function * (url, opts = {}) {
-    // TODO history
-    var { archive, filepath } = lookupArchive(url)
-    return new Promise((resolve, reject) => {
-      readArchiveDirectory(archive, filepath, (err, entries) => {
-        if (err) reject(err)
-        else resolve(entries)
-      })
-    })
-  }),
+  readDirectory,
+  listFiles: readDirectory, // alias
 
   createDirectory: m(function * (url) {
     var { archive, filepath } = lookupArchive(url)
