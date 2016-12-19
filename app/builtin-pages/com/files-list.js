@@ -144,7 +144,7 @@ export function archiveEntries (tree, opts={}) {
       ${downloadEl}
       <div class="fl-name overflower">${link}</div>
       <div class="fl-updated" title=${mtime}>${mtime}</div>
-      <div class="fl-size">${prettyBytes(entry.length)}</div>
+      <div class="fl-size">${prettyBytes(entry.length||0)}</div>
     </div>`
   }
 
@@ -167,7 +167,7 @@ export function archiveEntries (tree, opts={}) {
     return yo`<div class="fl-footer">
       <div class="fl-name overflower">${numFiles} ${pluralize(numFiles, 'file')}${hideToggle}</div>
       <div class="fl-updated"></div>
-      <div class="fl-size">${prettyBytes(entry.length)}</div>
+      <div class="fl-size">${prettyBytes(entry.length||0)}</div>
     </div>`
   }
 

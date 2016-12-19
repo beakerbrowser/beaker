@@ -47,7 +47,7 @@ export default function renderDirectoryListingPage (archive, path, cb) {
       return `<div class="entry ${makeSafe(entry.type)}"><a href="${url}">${makeSafe(name)}</a></div>`
     }).join('')
     // summary
-    var summary = `<div class="entry">${names.length} ${pluralize(names.length, 'file')}, ${prettyBytes(totalBytes)}</div>`
+    var summary = `<div class="entry">${names.length} ${pluralize(names.length, 'file')}, ${prettyBytes(totalBytes||0)}</div>`
     // render
     cb(styles + updog + entries + summary)
   })

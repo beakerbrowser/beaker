@@ -19,7 +19,7 @@ export function archiveHistoryList (info) {
             <span class="ll-title">${c.name}</span>
           </a>
           <div class="ll-status">${c.blocks} block(s)</div>
-          <div class="ll-progress">${prettyBytes(c.length)}</div>
+          <div class="ll-progress">${prettyBytes(c.length||0)}</div>
         </div>`
         break
       case 'directory':

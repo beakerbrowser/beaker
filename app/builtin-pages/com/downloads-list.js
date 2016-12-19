@@ -13,8 +13,8 @@ export function render (downloadsList) {
     var canCancel = false
     if (d.state === 'progressing') {
       // progress
-      status = (d.isPaused) ? 'Paused' : (prettyBytes(d.downloadSpeed) + '/s')
-      progress = `${prettyBytes(d.receivedBytes)} / ${prettyBytes(d.totalBytes)}`
+      status = (d.isPaused) ? 'Paused' : (prettyBytes(d.downloadSpeed||0) + '/s')
+      progress = `${prettyBytes(d.receivedBytes||0)} / ${prettyBytes(d.totalBytes||0)}`
 
       // actions
       canCancel = true
@@ -25,7 +25,7 @@ export function render (downloadsList) {
       }
     } else if (d.state === 'completed') {
       // progress
-      progress = prettyBytes(d.totalBytes)
+      progress = prettyBytes(d.totalBytes||0)
       status = 'Done'
 
       // actions
