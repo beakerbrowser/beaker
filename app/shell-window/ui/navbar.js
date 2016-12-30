@@ -50,6 +50,7 @@ export function createEl (id) {
 export function focusLocation (page) {
   var el = page.navbarEl.querySelector('.nav-location-input')
   el.focus()
+  el.select()
 }
 
 export function showInpageFind (page) {
