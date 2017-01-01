@@ -1,8 +1,20 @@
 .archives-list {
+  display: flex;
+  flex-wrap: wrap;
   font-size: 15px;
+
+  .notice {
+    flex: 1 0 100%;
+  }
+
   .al-row {
-    padding: 20px 10px;
-    border-top: 1px solid #ddd;
+    flex: 1 0 100%;
+    max-width: 440px;
+    background: #fdfdfd;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 6px 10px 20px;
+    margin: 10px 10px 0px 0;
 
     .al-main {
       display: flex;
