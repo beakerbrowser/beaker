@@ -4,6 +4,7 @@ import * as pages from '../pages'
 import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
+import * as prettyHash from 'pretty-hash'
 import { UpdatesNavbarBtn } from './navbar/updates'
 import { DropMenuNavbarBtn } from './navbar/drop-menu'
 import { SiteInfoNavbarBtn } from './navbar/site-info'
@@ -49,6 +50,7 @@ export function createEl (id) {
 
 export function focusLocation (page) {
   var el = page.navbarEl.querySelector('.nav-location-input')
+  el.classList.remove('hidden')
   el.focus()
   el.select()
 }
@@ -221,6 +223,7 @@ function render (id, page) {
   // preserve the current address value
   var addrEl = page && page.navbarEl.querySelector('.nav-location-input')
   var addrValue = addrEl ? addrEl.value : ''
+  var isAddrElFocused = addrEl && addrEl.matches(':focus')
 
   // setup site-perms dropdown
   siteInfoNavbarBtn.protocolInfo = (page && page.protocolInfo)
@@ -232,13 +235,16 @@ function render (id, page) {
   var locationInput = yo`
     <input
       type="text"
-      class="nav-location-input"
+      class="nav-location-input${(!isAddrElFocused) ? ' hidden' : ''}"
       onfocus=${onFocusLocation}
       onblur=${onBlurLocation}
       onkeydown=${onKeydownLocation}
       oninput=${onInputLocation}
       value=${addrValue} />
   `
+
+  // a prettified rendering of the main URL input
+  var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused)
 
   // render
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
@@ -253,6 +259,7 @@ function render (id, page) {
     </div>
     <div class="toolbar-input-group">
       ${siteInfoNavbarBtn.render()}
+      ${locationPrettyView}
       ${locationInput}
       <span class="charms">
         ${liveReloadBtn}
@@ -267,6 +274,26 @@ function render (id, page) {
       ${dropMenuNavbarBtn.render()}
       ${updatesNavbarBtn.render()}
     </div>
+  </div>`
+}
+
+function renderPrettyLocation (value, isHidden) {
+  var valueRendered
+  if (/^(dat|http|https):/.test(value)) {
+    var { protocol, host, pathname, search, hash } = new URL(value)
+    if (protocol === 'dat:' && isDatHashRegex.test(host)) host = prettyHash(host)
+    valueRendered = [
+      yo`<span class="protocol">${protocol.slice(0, -1)}</span>`,
+      yo`<span class="syntax">://</span>`,
+      yo`<span class="host">${host}</span>`,
+      yo`<span class="path">${pathname}${search}${hash}</span>`,
+    ]
+  } else {
+    valueRendered = value
+  }
+
+  return yo`<div class="nav-location-pretty${(isHidden) ? ' hidden' : ''}" onclick=${onFocusLocation}>
+    ${valueRendered}
   </div>`
 }
 
@@ -505,16 +532,24 @@ function onClickZoom (e) {
 
 function onFocusLocation (e) {
   var page = getEventPage(e)
-  if (page)
+  if (page) {
+    page.navbarEl.querySelector('.nav-location-pretty').classList.add('hidden')
+    page.navbarEl.querySelector('.nav-location-input').classList.remove('hidden')
     page.navbarEl.querySelector('.nav-location-input').select()
+  }
 }
 
-function onBlurLocation () {
+function onBlurLocation (e) {
   // HACK
   // blur gets called right before the click event for onClickAutocompleteDropdown
   // so, wait a bit before clearing the autocomplete, so the click has a chance to fire
   // -prf
   setTimeout(clearAutocomplete, 150)
+  var page = getEventPage(e)
+  if (page) {
+    page.navbarEl.querySelector('.nav-location-pretty').classList.remove('hidden')
+    page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
+  }
 }
 
 function onInputLocation (e) {
