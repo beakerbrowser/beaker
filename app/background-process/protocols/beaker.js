@@ -106,8 +106,14 @@ function beakerServer (req, res) {
   }
 
   // common assets
-  if (requestUrl === 'beaker:font') {
+  if (requestUrl === 'beaker:font-photon-entypo') {
     return cb(200, 'OK', 'application/font-woff', path.join(__dirname, 'assets/fonts/photon-entypo.woff'))
+  }
+  if (requestUrl === 'beaker:font-source-sans-pro') {
+    return cb(200, 'OK', 'application/font-woff2', path.join(__dirname, 'assets/fonts/source-sans-pro.woff2'))
+  }
+  if (requestUrl === 'beaker:font-source-sans-pro-le') {
+    return cb(200, 'OK', 'application/font-woff2', path.join(__dirname, 'assets/fonts/source-sans-pro-le.woff2'))
   }
   if (requestUrl.startsWith('beaker:logo')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
