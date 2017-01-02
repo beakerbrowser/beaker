@@ -316,7 +316,7 @@ function checkProtocolPermission (sender) {
 
 // helper to check if filepath refers to a file that userland is not allowed to edit directly
 function isProtectedFilePath (filepath) {
-  return filepath === '/' || filepath === '/dat.json'
+  return filepath === '/dat.json'
 }
 
 function assertWritePermission (archive, sender) {

@@ -281,13 +281,7 @@ test('dat.writeFile does not write to nonexistent directories', async t => {
   t.deepEqual(res.value.name, 'ParentFolderDoesntExistError')
 })
 
-test('dat.writeFile protects the root and manifest', async t => {
-  // write to the top-level folder
-  var res = await app.client.executeAsync((url, done) => {
-    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
-  }, createdDatURL)
-  t.deepEqual(res.value.name, 'ProtectedFileNotWritableError')
-
+test('dat.writeFile protects the manifest', async t => {
   // write to the manifest
   var res = await app.client.executeAsync((url, done) => {
     dat.writeFile(url, 'hello world', 'utf8').then(done, done)
@@ -326,11 +320,23 @@ test('dat.writeFile doesnt overwrite folders', async t => {
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
     dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, createdDatURL + '/')
+  t.deepEqual(res.value.name, 'FolderAlreadyExistsError')
+
+  // write to the subdir
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
   }, createdDatURL + '/subdir')
   t.deepEqual(res.value.name, 'FolderAlreadyExistsError')
 })
 
 test('dat.createDirectory doesnt overwrite files or folders', async t => {
+  // write to the subdir
+  var res = await app.client.executeAsync((url, done) => {
+    dat.createDirectory(url).then(done, done)
+  }, createdDatURL + '/')
+  t.deepEqual(res.value.name, 'FolderAlreadyExistsError')
+
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
     dat.createDirectory(url).then(done, done)
