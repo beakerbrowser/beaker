@@ -158,8 +158,10 @@
     &.chrome-tab-add-btn {
       &:before, &:after, .chrome-tab-bg {
         bottom: 1px;
-        background: #ddd;
+        background: transparent;
         border-color: transparent;
+        box-shadow: none;
+        transition: none;
       }
 
       .chrome-tab-favicon {
@@ -174,7 +176,7 @@
 
       &:hover {
         &:before, &:after, .chrome-tab-bg {
-          background: #d6d5d5;
+          background: #ccc;
         }
         .icon {
           color: #444;
