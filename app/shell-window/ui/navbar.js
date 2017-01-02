@@ -4,7 +4,7 @@ import * as pages from '../pages'
 import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
-import * as prettyHash from 'pretty-hash'
+import prettyHash from 'pretty-hash'
 import { UpdatesNavbarBtn } from './navbar/updates'
 import { DropMenuNavbarBtn } from './navbar/drop-menu'
 import { SiteInfoNavbarBtn } from './navbar/site-info'
@@ -278,18 +278,20 @@ function render (id, page) {
 }
 
 function renderPrettyLocation (value, isHidden) {
-  var valueRendered
+  var valueRendered = value
   if (/^(dat|http|https):/.test(value)) {
-    var { protocol, host, pathname, search, hash } = new URL(value)
-    if (protocol === 'dat:' && isDatHashRegex.test(host)) host = prettyHash(host)
-    valueRendered = [
-      yo`<span class="protocol">${protocol.slice(0, -1)}</span>`,
-      yo`<span class="syntax">://</span>`,
-      yo`<span class="host">${host}</span>`,
-      yo`<span class="path">${pathname}${search}${hash}</span>`,
-    ]
-  } else {
-    valueRendered = value
+    try {
+      var { protocol, host, pathname, search, hash } = new URL(value)
+      if (protocol === 'dat:' && isDatHashRegex.test(host)) host = prettyHash(host)
+      valueRendered = [
+        yo`<span class="protocol">${protocol.slice(0, -1)}</span>`,
+        yo`<span class="syntax">://</span>`,
+        yo`<span class="host">${host}</span>`,
+        yo`<span class="path">${pathname}${search}${hash}</span>`,
+      ]
+    } catch (e) {
+      // invalid URL, just use value
+    }
   }
 
   return yo`<div class="nav-location-pretty${(isHidden) ? ' hidden' : ''}" onclick=${onFocusLocation}>
@@ -299,6 +301,7 @@ function renderPrettyLocation (value, isHidden) {
 
 function handleAutocompleteSearch (results) {
   var v = autocompleteCurrentValue
+  if (!v) return
 
   // decorate result with bolded regions
   // explicitly replace special characters to match sqlite fts tokenization

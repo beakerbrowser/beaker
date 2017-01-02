@@ -281,13 +281,30 @@ test('dat.writeFile does not write to nonexistent directories', async t => {
   t.deepEqual(res.value.name, 'ParentFolderDoesntExistError')
 })
 
-test('dat.writeFile protects the root and manifest', async t => {
-  // write to the top-level folder
+test('dat.writeFile gives an error for malformed names', async t => {
+  // write to the root dir
   var res = await app.client.executeAsync((url, done) => {
     dat.writeFile(url, 'hello world', 'utf8').then(done, done)
-  }, createdDatURL)
-  t.deepEqual(res.value.name, 'ProtectedFileNotWritableError')
+  }, createdDatURL + '/')
+  t.deepEqual(res.value.name, 'InvalidPathError')
+  t.deepEqual(res.value.message, 'Files can not have a trailing slash')
 
+  // write to a subdir
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, createdDatURL + 'subdir/hello.txt/')
+  t.deepEqual(res.value.name, 'InvalidPathError')
+  t.deepEqual(res.value.message, 'Files can not have a trailing slash')
+
+  // write with a bad char
+  var res = await app.client.executeAsync((url, done) => {
+    dat.writeFile(url, 'hello world', 'utf8').then(done, done)
+  }, createdDatURL + 'hello`.txt')
+  t.deepEqual(res.value.name, 'InvalidPathError')
+  t.deepEqual(res.value.message, 'Path contains invalid characters')
+})
+
+test('dat.writeFile protects the manifest', async t => {
   // write to the manifest
   var res = await app.client.executeAsync((url, done) => {
     dat.writeFile(url, 'hello world', 'utf8').then(done, done)
@@ -334,6 +351,12 @@ test('dat.createDirectory doesnt overwrite files or folders', async t => {
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
     dat.createDirectory(url).then(done, done)
+  }, createdDatURL + '/')
+  t.deepEqual(res.value.name, 'FolderAlreadyExistsError')
+
+  // write to the subdir
+  var res = await app.client.executeAsync((url, done) => {
+    dat.createDirectory(url).then(done, done)
   }, createdDatURL + '/subdir')
   t.deepEqual(res.value.name, 'FolderAlreadyExistsError')
 
@@ -342,6 +365,15 @@ test('dat.createDirectory doesnt overwrite files or folders', async t => {
     dat.createDirectory(url).then(done, done)
   }, createdDatURL + '/hello.txt')
   t.deepEqual(res.value.name, 'FileAlreadyExistsError')
+})
+
+test('dat.createDirectory gives an error for malformed names', async t => {
+  // write with a bad char
+  var res = await app.client.executeAsync((url, done) => {
+    dat.createDirectory(url).then(done, done)
+  }, createdDatURL + 'hello`world')
+  t.deepEqual(res.value.name, 'InvalidPathError')
+  t.deepEqual(res.value.message, 'Path contains invalid characters')
 })
 
 test('dat.writeFile doesnt allow writes that exceed the quota', async t => {

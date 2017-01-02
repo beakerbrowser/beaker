@@ -9,6 +9,7 @@ import { queryPermission, requestPermission } from '../../ui/permissions'
 import { 
   DAT_HASH_REGEX,
   DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
+  DAT_VALID_PATH_REGEX,
 
   UserDeniedError,
   PermissionsError,
@@ -26,7 +27,8 @@ import {
   ProtectedFileNotWritableError,
   FileAlreadyExistsError,
   FolderAlreadyExistsError,
-  ParentFolderDoesntExistError
+  ParentFolderDoesntExistError,
+  InvalidPathError
 } from '../../../lib/const'
 
 const DEFAULT_TIMEOUT = 5e3
@@ -184,6 +186,7 @@ export default {
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
     yield assertWritePermission(archive, this.sender)
     yield assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
+    yield assertValidFilePath(filepath)
     return new Promise((resolve, reject) => {
       // protected files
       if (isProtectedFilePath(filepath)) {
@@ -231,6 +234,7 @@ export default {
   createDirectory: m(function * (url) {
     var { archive, filepath } = lookupArchive(url)
     yield assertWritePermission(archive, this.sender)
+    yield assertValidPath(filepath)
     return new Promise((resolve, reject) => {
       // protected files
       if (isProtectedFilePath(filepath)) {
@@ -316,7 +320,7 @@ function checkProtocolPermission (sender) {
 
 // helper to check if filepath refers to a file that userland is not allowed to edit directly
 function isProtectedFilePath (filepath) {
-  return filepath === '/' || filepath === '/dat.json'
+  return filepath === '/dat.json'
 }
 
 function assertWritePermission (archive, sender) {
@@ -353,6 +357,19 @@ function assertQuotaPermission (archive, senderOrigin, byteLength) {
     if (newSize > bytesAllowed) {
       throw new QuotaExceededError()
     }
+  })
+}
+
+function assertValidFilePath (filepath) {
+  return co(function * () {
+    if (filepath.slice(-1) === '/') throw new InvalidPathError('Files can not have a trailing slash')
+    yield assertValidPath (filepath)
+  })
+}
+
+function assertValidPath (fileOrFolderPath) {
+  return co(function * () {
+    if (!DAT_VALID_PATH_REGEX.test(fileOrFolderPath)) throw new InvalidPathError('Path contains invalid characters')
   })
 }
 
