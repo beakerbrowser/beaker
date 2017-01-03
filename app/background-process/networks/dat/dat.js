@@ -86,8 +86,8 @@ export function setup () {
 
     debug(`${info.type} connection from ${info.host}, waiting for requests`)
     stream.on('open', function (discoveryKey) {
-      var archive = archivesByDiscoveryKey[bufToStr(info.channel)]
-      if (!archive) return debug(`ERROR ${info.host} requested unknown archive ${bufToStr(info.channel)}`)
+      var archive = archivesByDiscoveryKey[bufToStr(discoveryKey)]
+      if (!archive) return debug(`ERROR ${info.host} requested unknown archive ${bufToStr(discoveryKey)}`)
       // TODO is there a 404-like response to give to this? ^
 
       debug(`${info.host} requested ${bufToStr(archive.key)}`)
