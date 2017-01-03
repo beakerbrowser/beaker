@@ -1,5 +1,10 @@
-import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
+
+// front-end only:
+var yo
+if (typeof document !== 'undefined') {
+  yo = require('yo-yo')
+}
 
 // HACK
 // this is the best way I could figure out for pulling in the dat title, given the current perms flow
