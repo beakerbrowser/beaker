@@ -38,8 +38,7 @@ if (process.env.beaker_user_data_path) {
 
 // load the installed protocols
 plugins.registerStandardSchemes()
-protocol.registerStandardSchemes(['dat'])
-// protocol.registerSecureSchemes(['dat'])
+protocol.registerStandardSchemes(['dat'], { secure: true })
 
 app.on('ready', function () {
   // databases
