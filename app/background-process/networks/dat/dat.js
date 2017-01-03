@@ -124,7 +124,7 @@ export const setGlobalSetting = archivesDb.setGlobalSetting
 // archive creation
 // =
 
-export function createNewArchive ({ title, description, author, version, forkOf, origin, originTitle, importFiles, inplaceImport } = {}) {
+export function createNewArchive ({ title, description, author, version, forkOf, origin, originTitle, importFiles, noWait, inplaceImport } = {}) {
   // massage inputs
   var createdBy
   if (typeof origin === 'string' && origin.startsWith('dat://')) createdBy = { url: origin }
@@ -134,12 +134,12 @@ export function createNewArchive ({ title, description, author, version, forkOf,
     // create the archive
     var archive = loadArchive(null)
     var key = archive.key.toString('hex')
-    const done = () => resolve(key)
-
-    // import files
-    if (importFiles) {
-      importFiles = Array.isArray(importFiles) ? importFiles : [importFiles]
-      importFiles.forEach(importFile => writeArchiveFileFromPath(key, { src: importFile, dst: '/', inplaceImport }))
+    var done
+    if (noWait) {
+      done = () => {}
+      resolve(key)
+    } else {
+       done = () => resolve(key)
     }
 
     // write the manifest then resolve
@@ -149,6 +149,12 @@ export function createNewArchive ({ title, description, author, version, forkOf,
     setArchiveUserSettings(key, { isSaved: true, isHosting: true })
     // write the perms
     if (createdBy && createdBy.url) grantPermission('modifyDat:' + key, createdBy.url)
+
+    // import files
+    if (importFiles) {
+      importFiles = Array.isArray(importFiles) ? importFiles : [importFiles]
+      importFiles.forEach(importFile => writeArchiveFileFromPath(key, { src: importFile, dst: '/', inplaceImport }))
+    }
   })
 }
 
@@ -168,7 +174,8 @@ export function forkArchive (oldArchiveKey, opts) {
       title: (opts.title) ? opts.title : meta.title,
       description: (opts.description) ? opts.description : meta.description,
       forkOf: (meta.forkOf || []).concat(`dat://${oldArchiveKey}/`),
-      origin: opts.origin
+      origin: opts.origin,
+      noWait: true
     }
     if (opts.author) newArchiveOpts.author = opts.author
 

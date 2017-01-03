@@ -87,6 +87,7 @@ test('bkr fork', async t => {
   // =
 
   bkr(`fork ${datUrl1} ${datPath2}`)
+  await app.client.pause(1000) // need to pause because 'fork' returns before writing files
   var manifest = JSON.parse(fs.readFileSync(path.join(datPath2, 'dat.json')))
   datUrl2 = manifest.url
   t.truthy(datUrl1 !== datUrl2)
