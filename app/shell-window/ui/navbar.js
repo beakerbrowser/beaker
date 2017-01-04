@@ -159,6 +159,13 @@ function render (id, page) {
       <span class="icon icon-folder"></span>
     </button>`
   }
+  
+  var hostDatBtn
+  if (isViewingDat) {
+    hostDatBtn = yo`<button class="nav-host-btn clickable" title="Host Files" onclick=${onClickHostFiles}>
+      <span class="icon icon-folder"></span>
+    </button>`
+  }
 
   // live reload btn
   var liveReloadBtn
@@ -264,6 +271,7 @@ function render (id, page) {
       <span class="charms">
         ${liveReloadBtn}
         ${viewDatBtn}
+        ${hostDatBtn}
       </span>
       ${inpageFinder}
       ${zoomBtn}
