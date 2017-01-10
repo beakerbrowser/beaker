@@ -35,3 +35,11 @@ export function create (values, { title, onSubmit }) {
   })
   el.querySelector('input').focus()
 }
+
+export function createArchiveFlow () {
+  create({}, { title: 'New Dat', onSubmit: ({ title, description }) => {
+    datInternalAPI.createNewArchive({ title, description, origin: 'beaker:archives' }).then(key => {
+      window.location = 'beaker:archive/' + key
+    })
+  }})
+}

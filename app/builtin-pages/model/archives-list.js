@@ -28,27 +28,15 @@ export default class ArchivesList extends EventEmitter {
 
     // bind the event handlers
     this.onUpdateArchive = e => this._onUpdateArchive(e)
-    this.onUpdatePeers = e => this._onUpdatePeers(e)
-    this.onDownload = e => this._onDownload(e)
 
     // wire up events
     if (!archivesEvents) {
       archivesEvents = emitStream(datInternalAPI.archivesEventStream())
     }
     archivesEvents.on('update-archive', this.onUpdateArchive)
-    archivesEvents.on('update-peers', this.onUpdatePeers)
-    archivesEvents.on('download', this.onDownload)
 
     // create a throttled 'change' emiter
     this.emitChanged = throttle(() => this.emit('changed'), EMIT_CHANGED_WAIT)
-
-    // This gets called by the download event to make sure that, when the transfer...
-    //   completes, a 'changed' event is emitted.
-    //   This ensures that the download speedometer gets re-rendered at zero. 
-    this.zeroSpeedometerAfterDownload = debounce(archive => {
-      archive.stats.downloadSpeed = speedometer()
-      this.emit('changed')
-    }, 1e3)
   }
 
   setup ({ filter, fetchStats } = {}) {
@@ -72,7 +60,6 @@ export default class ArchivesList extends EventEmitter {
     // unwire events
     this.removeAllListeners()
     archivesEvents.removeListener('update-archive', this.onUpdateArchive)
-    archivesEvents.removeListener('update-peers', this.onUpdatePeers)
   }
 
   // event handlers
@@ -86,32 +73,6 @@ export default class ArchivesList extends EventEmitter {
       for (var k in update)
         archive[k] = update[k]
       this.emitChanged()
-    }
-  }
-
-  _onUpdatePeers ({ key, peers }) {
-    // find the archive being updated
-    var archive = this.archives.find(a => a.key === key)
-    if (archive) {
-      archive.peers = peers // update
-      this.emitChanged()
-    }
-  }
-
-  _onDownload ({ key, feed, index, bytes }) {
-    // only handle updates to the content feed
-    if (feed === 'content') {
-
-      // find the archive being updated
-      var archive = this.archives.find(a => a.key === key)
-      if (archive && archive.stats) {
-        // update stats
-        archive.stats.blocksProgress++
-        archive.stats.bytesTotal += bytes
-        archive.stats.downloadSpeed(bytes)
-        this.emitChanged()
-        this.zeroSpeedometerAfterDownload(archive)
-      }
     }
   }
 }

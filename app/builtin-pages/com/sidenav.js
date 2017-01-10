@@ -6,7 +6,8 @@ import co from 'co'
 
 var navItems = [
   { href: 'beaker:start', label: 'Favorites', icon: 'star' },
-  { href: 'beaker:archives', label: 'Files', icon: 'upload-cloud' },
+  { href: 'beaker:archives', label: 'Sites', icon: 'book', isActive: l => l.startsWith('beaker:archive') },
+  { href: 'beaker:services', label: 'Cloud', icon: 'cloud' },
   { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
   { href: 'beaker:downloads', label: 'Downloads', icon: 'down-circled' },
   { href: 'beaker:settings', label: 'Settings', icon: 'list' }
@@ -51,7 +52,8 @@ function renderNavItem (item) {
 
   // render items
   var { href, label, icon } = item
-  var isActive = (''+window.location).startsWith(href)
+  var isActiveTest = item.isActive || defaultIsActiveTest
+  var isActive = isActiveTest(''+window.location, item)
   return yo`<a class=${'nav-group-item' + (isActive?' active':'')} href=${href} title=${label} onclick=${onClickNavItem(item)}>
     <span class="icon icon-${icon}"></span>
   </a>`
@@ -75,3 +77,11 @@ function onClickNavItem (item) {
     }
   }
 }
+
+// helpers
+// =
+
+function defaultIsActiveTest (location, item) {
+  return location.startsWith(item.href)
+}
+

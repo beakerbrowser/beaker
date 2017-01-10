@@ -4,15 +4,14 @@ This uses the beakerBrowser API, which is exposed by webview-preload to all site
 
 import * as yo from 'yo-yo'
 import co from 'co'
-import emitStream from 'emit-stream'
-import Remarkable from 'remarkable'
+import Archive from '../model/archive'
+import md from '../../lib/fg/markdown'
 import { pushUrl } from '../../lib/fg/event-handlers'
 import dragDrop from '../../lib/fg/drag-drop'
 import { throttle } from '../../lib/functions'
 import { shortenHash } from '../../lib/strings'
-import { archiveEntries, entriesListToTree, calculateTreeSizeAndProgress } from '../com/files-list'
+import { archiveFiles, onDragDrop, onClickSelectFiles } from '../com/files-list'
 import toggleable from '../com/toggleable'
-import HypercoreStats from '../com/hypercore-stats'
 import * as editArchiveModal from '../com/modals/edit-site'
 import * as forkDatModal from '../com/modals/fork-dat'
 import * as helpTour from '../com/help-tour'
@@ -21,47 +20,16 @@ import { archiveHistoryList, archiveHistoryMeta } from '../com/archive-history-l
 // globals
 // =
 
-var md = new Remarkable({
-  html:         false,        // Enable HTML tags in source
-  xhtmlOut:     false,        // Use '/' to close single tags (<br />)
-  breaks:       false,        // Convert '\n' in paragraphs into <br>
-  langPrefix:   'language-',  // CSS language prefix for fenced blocks
-  linkify:      true,         // Autoconvert URL-like text to links
-
-  // Enable some language-neutral replacement + quotes beautification
-  typographer:  false,
-
-  // Double + single quotes replacement pairs, when typographer enabled,
-  // and smartquotes on. Set doubles to '«»' for Russian, '„“' for German.
-  quotes: '“”‘’',
-
-  // Highlighter function. Should return escaped HTML,
-  // or '' if the source string is not changed
-  highlight: (str, lang) => { return ''; }
-})
-
 var isViewActive = false
 var archiveKey
-var archiveInfo
-var archiveEntriesTree
-var archiveCurrentNode = null
+var archive
 var archiveError = false
-var hideDotfiles = true
-var hypercoreStats
 var currentForkModal = null // currently visible fork modal: we need a reference to trigger rendering on download
-
-// event emitter
-var archivesEvents
 
 // exported API
 // =
 
 export function setup () {
-  // wire up events
-  archivesEvents = emitStream(datInternalAPI.archivesEventStream())
-  archivesEvents.on('update-archive', onUpdateArchive)
-  archivesEvents.on('update-listing', onUpdateListing)
-  archivesEvents.on('download', onDownload)
 }
 
 export function show (isSameView) {
@@ -74,40 +42,28 @@ export function show (isSameView) {
     return
   }
 
-  // start loading
-  isViewActive = true
-  archiveKey = parseKeyFromURL()
-
-  // if archiveKey is invalid, figure out why
-  if (!archiveKey) {
-    // was the dat:// included?
-    if (window.location.pathname.startsWith('archive/dat://')) {
-      // redirect to remove that
-      window.location = 'beaker:archive/' + window.location.pathname.slice('archive/dat://'.length)
-      return
-    }
-
-    // try a dns lookup
-    let name = /^archive\/([^/]+)/.exec(window.location.pathname)[1]
-    datInternalAPI.resolveName(name, (err, key) => {
-      if (err) {
-        archiveError = new Error('Invalid Dat URL')
-        render()
-      } else {
-        // redirect
-        window.location = 'beaker:archive/' + key
-      }
-    })
-    return
-  }
-
   co(function * () {
-    try {
-      setSiteInfoOverride()
-      document.title = 'Loading...'
-      render() // render loading state
-      yield fetchArchiveInfo()
-    } catch (e) {}
+    // start loading
+    isViewActive = true
+    archiveKey = parseKeyFromURL()
+    if (!archiveKey) return
+    setSiteInfoOverride()
+
+    // render loading state
+    document.title = 'Loading...'
+    render()
+
+    // load
+    archive = new Archive()
+    yield archive.fetchInfo(archiveKey)
+    setCurrentNodeByPath()
+    archive.on('changed', render)
+
+    // render loaded state
+    render()
+    if (archive.info.isOwner) {
+      dragDrop('.window', onDragDrop)
+    }
 
     // now that it has loaded, redirect to dat:// if this was a timeout view
     if (window.location.hash === '#timeout') {
@@ -117,22 +73,21 @@ export function show (isSameView) {
       return
     }
 
-    // render
-    hypercoreStats = new HypercoreStats(archivesEvents, { archiveInfo })
-    render()
-    if (archiveInfo.isOwner) {
-      dragDrop('.window', onDragDrop)
-    }
-
     // run the tour if this is the owner's first time
-    const tourSeenSetting = 'has-seen-viewdat-tour'
-    var hasSeenTour = false
-    try { hasSeenTour = yield datInternalAPI.getGlobalSetting(tourSeenSetting) }
-    catch (e) {}
-    if (!hasSeenTour) {
-      helpTour.startViewDatTour(archiveInfo.isOwner, render, true)
-      yield datInternalAPI.setGlobalSetting(tourSeenSetting, true)
-    }
+    // TODO
+    // const tourSeenSetting = 'has-seen-viewdat-tour'
+    // var hasSeenTour = false
+    // try { hasSeenTour = yield datInternalAPI.getGlobalSetting(tourSeenSetting) }
+    // catch (e) {}
+    // if (!hasSeenTour) {
+    //   helpTour.startViewDatTour(archive.info.isOwner, render, true)
+    //   yield datInternalAPI.setGlobalSetting(tourSeenSetting, true)
+    // }
+  }).catch(err => {
+    // render the error state
+    console.warn('Failed to fetch archive info', err)
+    archiveError = err
+    render()
   })
 }
 
@@ -142,16 +97,11 @@ export function hide (isSameView) {
     return
   }
   isViewActive = false
-  window.locationbar.clearSiteInfoOverride()
   archiveKey = null
-  archiveInfo = null
-  archiveEntriesTree = null
-  archiveCurrentNode = null
+  if (archive) archive.destroy()
+  archive = null
   archiveError = false
-  if (hypercoreStats) {
-    hypercoreStats.destroy()
-  }
-  hypercoreStats = null
+  window.locationbar.clearSiteInfoOverride()
 }
 
 // rendering
@@ -162,14 +112,14 @@ function render () {
     return
   }
 
-  if (archiveInfo) {
+  if (archiveError) {
+    renderError()
+  } else if (archive) {
     if (window.location.hash === '#history') {
       renderArchiveHistory()
     } else {
       renderArchive()
     }
-  } else if (archiveError) {
-    renderError()
   } else {
     renderLoading()
   }
@@ -180,60 +130,60 @@ function render () {
 }
 
 function renderArchiveHistory () {
-  const name = archiveInfo.title || 'Untitled'
+  const name = archive.info.title || 'Untitled'
 
   // set page title
   document.title = name
 
   // created-by
-  var createdByEl = (archiveInfo.createdBy)
+  var createdByEl = (archive.info.createdBy)
     ? yo`<span class="archive-created-by">
-        <span class="icon icon-code"></span> Created by <a href=${archiveInfo.createdBy.url}>${archiveInfo.createdBy.title || shortenHash(archiveInfo.createdBy.url)}</a>
+        <span class="icon icon-code"></span> Created by <a href=${archive.info.createdBy.url}>${archive.info.createdBy.title || shortenHash(archive.info.createdBy.url)}</a>
       </span>`
     : ''
 
   // description
-  var descriptEl = archiveHistoryMeta(archiveInfo)
+  var descriptEl = archiveHistoryMeta(archive.info)
 
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archive">
       <div class="archive-heading">
-        <div class="archive-name"><a href=${'dat://' + archiveInfo.key} title=${name}>${name}</a></div>
+        <div class="archive-name"><a href=${'dat://' + archive.info.key} title=${name}>${name}</a></div>
         <div class="archive-ctrls">
           ${createdByEl}
-          <span id="owner-label">${archiveInfo.isOwner ? 'Owner' : 'Read-only'}</span>
+          <span id="owner-label">${archive.info.isOwner ? 'Owner' : 'Read-only'}</span>
         </div>
         <div class="archive-ctrls at-center"></div>
         <div class="page-toolbar">
           <div class="tabs">
-            <a href=${'beaker:archive/' + archiveInfo.key} onclick=${pushUrl}>Current</a>
-            <a class="current" href=${'beaker:archive/' + archiveInfo.key + '#history'}" onclick=${pushUrl}>History</a>
+            <a href=${'beaker:archive/' + archive.info.key} onclick=${pushUrl}>Current</a>
+            <a class="current" href=${'beaker:archive/' + archive.info.key + '#history'} onclick=${pushUrl}>History</a>
           </div>
         </div>
       </div>
       <div class="archive-desc">${descriptEl}</div>
       <div class="archive-histories links-list">
-        ${archiveHistoryList(archiveInfo)}
+        ${archiveHistoryList(archive.info)}
       </div>
     </div>
   </div>`)
 }
 
 function renderArchive () {
-  const name = archiveInfo.title || 'Untitled'
-  const wasDeleted = archiveInfo.isOwner && !isSaved(archiveInfo) // TODO add definition for non-owner
+  const name = archive.info.title || 'Untitled'
+  const wasDeleted = archive.info.isOwner && !archive.isSaved // TODO add definition for non-owner
 
   // set page title
   document.title = name
 
   // ctrls
   var forkBtn = yo`<a id="fork-btn" class="btn" title="Fork" onclick=${onClickFork}><span class="icon icon-flow-branch"></span> Fork</a>`
-  var hostBtn = (isHosting(archiveInfo))
-    ? yo`<a id="host-btn" class="btn pressed" title="Hosting" onclick=${onToggleServing}><span class="icon icon-check"></span> Hosting</span>`
-    : yo`<a id="host-btn" class="btn" title="Host" onclick=${onToggleServing}><span class="icon icon-upload-cloud"></span> Host</a>`
+  var hostBtn = (archive.isHosting)
+    ? yo`<a id="host-btn" class="btn pressed" title="Hosting" onclick=${onToggleHosting}><span class="icon icon-check"></span> Hosting</span>`
+    : yo`<a id="host-btn" class="btn" title="Host" onclick=${onToggleHosting}><span class="icon icon-upload-cloud"></span> Host</a>`
   var openFolderBtn = yo`<a id="open-in-finder-btn" onclick=${onOpenInFinder}><span class="icon icon-popup"></span> Open in Finder</a>`
-  var toggleSavedBtn = isSaved(archiveInfo)
+  var toggleSavedBtn = archive.isSaved
     ? yo`<a id="delete-btn" title="Delete Archive" onclick=${onToggleSave}><span class="icon icon-trash"></span> Delete Archive</a>`
     : yo`<a id="save-btn" title="Save Archive" onclick=${onToggleSave}><span class="icon icon-floppy"></span> Save Archive</a>`
   var dropdownBtn = toggleable(yo`<div class="dropdown-btn-container">
@@ -243,7 +193,7 @@ function renderArchive () {
       <hr>
       ${toggleSavedBtn}
       <hr>
-      <a onclick=${e => helpTour.startViewDatTour(archiveInfo.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
+      <a onclick=${e => helpTour.startViewDatTour(archive.info.isOwner, render)}><span class="icon icon-address"></span> Tour</a>
       <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
     </div>
   </div>`)
@@ -258,41 +208,41 @@ function renderArchive () {
   }
 
   // fork-of
-  var forkOfEl = getForkOf(archiveInfo)
+  var forkOfEl = archive.forkOf
     ? yo`<div class="archive-fork-of">
-        <span class="icon icon-flow-branch"></span> Fork of <a href=${getForkOf(archiveInfo)}>${shortenHash(getForkOf(archiveInfo))}</a>
+        <span class="icon icon-flow-branch"></span> Fork of <a href=${archive.forkOf}>${shortenHash(archive.forkOf)}</a>
       </div>`
     : ''
 
   // created-by
-  var createdByEl = (archiveInfo.createdBy)
+  var createdByEl = (archive.info.createdBy)
     ? yo`<span class="archive-created-by">
-        <span class="icon icon-code"></span> Created by <a href=${archiveInfo.createdBy.url}>${archiveInfo.createdBy.title || shortenHash(archiveInfo.createdBy.url)}</a>
+        <span class="icon icon-code"></span> Created by <a href=${archive.info.createdBy.url}>${archive.info.createdBy.title || shortenHash(archive.info.createdBy.url)}</a>
       </span>`
     : ''
 
   // description
-  var descriptEl = (archiveInfo.description)
-    ? yo`<span>${archiveInfo.description}</span>`
+  var descriptEl = (archive.info.description)
+    ? yo`<span>${archive.info.description}</span>`
     : yo`<em>no description</em>`
 
   // manifest edit btn (a pain to construct so it's separate)
   var editBtn
-  if (archiveInfo.isOwner) {
+  if (archive.info.isOwner) {
     editBtn = yo`<span><span></span> <a id="edit-dat-btn" onclick=${onEditArchive}>Edit</a></span>`
     editBtn.childNodes[0].innerHTML = '&mdash;'
   }
 
   // readme
   var readmeEl
-  if (archiveInfo.readme) {
+  if (archive.info.readme) {
     readmeEl = yo`<div class="markdown"></div>`
-    readmeEl.innerHTML = md.render(archiveInfo.readme)
+    readmeEl.innerHTML = md.render(archive.info.readme)
   }
 
   // file adder el
   var addFilesEl
-  if (archiveInfo.isOwner) {
+  if (archive.info.isOwner) {
     addFilesEl = yo`<div class="archive-add-files">
       <div class="instructions">To add files, drag their icons onto this page, or <a onclick=${onClickSelectFiles}>Select them manually.</a></div>
     </div>`
@@ -300,43 +250,35 @@ function renderArchive () {
 
   // progress bar for the entire dat
   var progressEl
-  if (!archiveInfo.isOwner) {
-    let entry = archiveEntriesTree.entry
-    let progress = Math.round(entry.downloadedBlocks / entry.blocks * 100)
-    progressEl = yo`<div class="archive-progress"><progress value=${progress} max="100"></progress></div>`
+  if (!archive.info.isOwner) {
+    progressEl = yo`<div class="archive-progress"><progress value=${archive.files.progress} max="100"></progress></div>`
   }
 
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archive">
       <div class="archive-heading">
-        <div class="archive-name"><a href=${'dat://'+archiveInfo.key} title=${name}>${name}</a></div>
+        <div class="archive-name"><a href=${'dat://'+archive.info.key} title=${name}>${name}</a></div>
         <div class="archive-ctrls">
           ${createdByEl}
           ${forkOfEl}
-          <span id="owner-label">${ archiveInfo.isOwner ? 'Owner' : 'Read-only' }</span>
+          <span id="owner-label">${ archive.info.isOwner ? 'Owner' : 'Read-only' }</span>
         </div>
         ${ wasDeleted
           ? yo`<div class="archive-ctrls at-center">${undoDeleteBtn}</div>`
-          : yo`<div class="archive-ctrls at-center">${forkBtn} ${hostBtn} ${dropdownBtn} ${hypercoreStats.render()}</div>` }
+          : yo`<div class="archive-ctrls at-center">${forkBtn} ${hostBtn} ${dropdownBtn}</div>` }
         <div class="page-toolbar">
           <div class="tabs">
-            <a class="current" href=${'beaker:archive/' + archiveInfo.key} onclick=${pushUrl}>Current</a>
-            <a class="" href=${'beaker:archive/' + archiveInfo.key + '#history'}" onclick=${pushUrl}>History</a>
+            <a class="current" href=${'beaker:archive/' + archive.info.key} onclick=${pushUrl}>Current</a>
+            <a class="" href=${'beaker:archive/' + archive.info.key + '#history'} onclick=${pushUrl}>History</a>
           </div>
         </div>
       </div>
       <div class="archive-desc">${descriptEl} ${editBtn}</div>
       ${addFilesEl}
       ${progressEl}
-      ${archiveEntries(archiveCurrentNode, {
-        onOpenFolder,
-        onToggleHidden,
-        archiveKey,
-        hideDotfiles
-      })}
+      ${archiveFiles(archive.files.currentNode, {onOpenFolder, archiveKey})}
       ${readmeEl}
-      <input class="hidden-file-adder" type="file" multiple onchange=${onChooseFiles} />
     </div>
   </div>`)
 }
@@ -383,7 +325,7 @@ function renderLoading () {
             <li>Checking your firewall settings</li>
           </ul>
           <p>
-            If you are the author of this archive, make sure it's being hosted on the network.
+            If you are the author of this archive, make sure ${"it's"} being hosted on the network.
             <a href="https://beakerbrowser.com/docs/guides/cloud-hosting.html" target="_blank">More Help</a>
           </p>
         </div>
@@ -397,32 +339,30 @@ function renderLoading () {
 
 function parseKeyFromURL () {
   try {
+    // extract
     return /^archive\/([0-9a-f]{64})/.exec(window.location.pathname)[1]
   } catch (e) {
-    return ''
+    // the archiveKey is invalid, figure out why
+    // was the dat:// included?
+    if (window.location.pathname.startsWith('archive/dat://')) {
+      // redirect to remove that
+      window.location = 'beaker:archive/' + window.location.pathname.slice('archive/dat://'.length)
+      return
+    }
+
+    // try a dns lookup
+    let name = /^archive\/([^/]+)/.exec(window.location.pathname)[1]
+    datInternalAPI.resolveName(name, (err, key) => {
+      if (err) {
+        archiveError = new Error('Invalid Dat URL')
+        render()
+      } else {
+        // redirect
+        window.location = 'beaker:archive/' + key
+      }
+    })
   }
 }
-
-// helper to get the archive info
-// throttled to 1 call per second so that update events can freely trigger it
-const fetchArchiveInfo = throttle(cb => {
-  return co(function * () {
-    // run request
-    archiveInfo = yield datInternalAPI.getArchiveDetails(archiveKey, { readme: true, entries: true, contentBitfield: true })
-    if (archiveInfo) {
-      archiveEntriesTree = entriesListToTree(archiveInfo)
-      calculateTreeSizeAndProgress(archiveInfo, archiveEntriesTree)
-    }
-    console.log(archiveInfo)
-    console.log(archiveEntriesTree)
-    setCurrentNodeByPath()
-
-    cb && cb()
-  }).catch(err => {
-    console.warn('Failed to fetch archive info', err)
-    archiveError = err
-  })
-}, 1e3)
 
 // override the site info in the navbar
 function setSiteInfoOverride () {
@@ -433,53 +373,10 @@ function setSiteInfoOverride () {
   })
 }
 
-// use the current url's path to set the `archiveCurrentNode`
+// use the current url's path to set the current rendered node
 function setCurrentNodeByPath () {
-  archiveCurrentNode = archiveEntriesTree
   var names = window.location.pathname.split('/').slice(2) // drop 'archive/{name}', take the rest
-  if (names.length === 0 || names[0] == '')
-    return // at root
-
-  // descend to the correct node (or as far as possible)
-  for (var i=0; i < names.length; i++) {
-    var child = archiveCurrentNode.children[names[i]]
-    if (!child || child.entry.type != 'directory')
-      return // child dir not found, stop here
-    archiveCurrentNode = child
-  }
-}
-
-function downloadArchiveNode (node) {
-  // recursively start downloads
-  co(function *() {
-    yield startDownload(node)
-    render()
-  })
-
-  function * startDownload (n) {
-    // do nothing if already downloaded
-    if (n.entry.downloadedBlocks === n.entry.blocks) {
-      return Promise.resolve()
-    }
-
-    // render progress starting
-    n.entry.isDownloading = true
-    render()
-
-    if (n.entry.type === 'file') {
-      // download entry
-      yield datInternalAPI.downloadArchiveEntry(archiveInfo.key, n.entry.path)
-    } else if (n.entry.type === 'directory') {
-      // recurse to children
-      yield Object.keys(n.children).map(k => startDownload(n.children[k]))
-    }
-
-    // render done
-    n.entry.isDownloading = false
-    render()
-
-    return Promise.resolve()
-  }
+  archive.files.setCurrentNodeByPath(names)
 }
 
 // event handlers: archive editor
@@ -488,106 +385,39 @@ function downloadArchiveNode (node) {
 function onEditArchive (isNew) {
   isNew = isNew === true
   editArchiveModal.create(
-    isNew ? {} : archiveInfo,
+    isNew ? {} : archive.info,
     { isNew, title: 'Edit Details', onSubmit: onSubmitEditArchive }
   )
 }
 
 function onSubmitEditArchive ({ title, description }) {
-  // send write to the backend
-  datInternalAPI.updateArchiveManifest(archiveInfo.key, { title, description })
-    .catch(console.warn.bind(console, 'Failed to update manifest'))
-}
-
-// event handlers: files uploader
-// =
-
-function onClickSelectFiles (e) {
-  e.preventDefault()
-  co(function * () {
-    var paths = yield beakerBrowser.showOpenDialog({
-      title: 'Choose a folder to import',
-      buttonLabel: 'Import',
-      properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
-    })
-    if (paths) {
-      addFiles(paths)
-    }
-  })
-}
-
-function onChooseFiles (e) {
-  var filesInput = document.querySelector('input[type="file"]')
-  var files = Array.from(filesInput.files)
-  filesInput.value = '' // clear the input
-  addFiles(files)
-}
-
-function onDragDrop (files) {
-  addFiles(files)
-}
-
-function addFiles (files) {
-  files.forEach(file => {
-    // file-picker gies a string, while drag/drop gives { path: string }
-    var src = (typeof file === 'string') ? file : file.path
-    var dst = archiveCurrentNode.entry.path
-
-    // send to backend
-    datInternalAPI.writeArchiveFileFromPath(archiveInfo.key, { src, dst })
-      .catch(console.warn.bind(console, 'Error writing file:'))
-  })
+  archive.updateManifest({ title, description })
 }
 
 // event handlers: toolbar
 // =
 
 function onToggleSave () {
-  // toggle the save
-  if (isSaved(archiveInfo)) {
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isSaved: false, isHosting: false }).then(settings => {
-      archiveInfo.userSettings.isSaved = false
-      archiveInfo.userSettings.isHosting = false
-      render()
-    })
-  } else {
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isSaved: true }).then(settings => {
-      archiveInfo.userSettings.isSaved = true
-      render()
-    })
-  }
+  archive.toggleSaved()
 }
 
-function onToggleServing () {
-  // toggle the networking
-  if (isHosting(archiveInfo)) {
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isHosting: false }).then(settings => {
-      archiveInfo.userSettings.isHosting = false
-      render()
-    })
-  } else {
-    datInternalAPI.setArchiveUserSettings(archiveInfo.key, { isSaved: true, isHosting: true }).then(settings => {
-      archiveInfo.userSettings.isSaved = true
-      archiveInfo.userSettings.isHosting = true
-      render()
-    })
-  }
+function onToggleHosting () {
+  archive.toggleHosting()
 }
 
 function onOpenFolder (e, entry) {
   e.preventDefault()
-  window.history.pushState(null, '', 'beaker:archive/' + archiveInfo.key + '/' + entry.path)
+  window.history.pushState(null, '', 'beaker:archive/' + archive.info.key + '/' + entry.path)
 }
 
 function onOpenInFinder () {
-  datInternalAPI.openInExplorer(archiveInfo.key)
-  render()
+  archive.openInExplorer()
 }
 
 function onClickFork (e) {
   // create fork modal
-  currentForkModal = forkDatModal.create(archiveInfo, archiveEntriesTree, {
-    isDownloading: isHosting(archiveInfo),
+  currentForkModal = forkDatModal.create(archive.info, {
+    isDownloading: archive.isHosting,
     onClickDownload: onDownloadForkArchive,
     onSubmit: onSubmitForkArchive
   })
@@ -597,74 +427,17 @@ function onClickFork (e) {
 function onDownloadForkArchive () {
   if (currentForkModal) {
     // download the entire tree
-    downloadArchiveNode(archiveEntriesTree)
+    archive.files.download()
     currentForkModal.rerender()
   }
 }
 
 function onSubmitForkArchive ({ title, description }) {
   // what do you do when you see a fork in the code?
-  datInternalAPI.forkArchive(archiveInfo.key, { title, description, origin: 'beaker:archives' }).then(newKey => {
+  datInternalAPI.forkArchive(archiveKey, { title, description, origin: 'beaker:archives' }).then(newKey => {
     // you take it
     window.location = 'beaker:archive/' + newKey
   }).catch(err => {
     console.error(err) // TODO alert user
   })
-}
-
-// event handlers: files listing
-// =
-
-function onToggleHidden () {
-  hideDotfiles = !hideDotfiles
-  render()
-}
-
-// event handlers: archive events
-// =
-
-function onUpdateArchive (update) {
-  if (archiveInfo && update.key === archiveInfo.key) {
-    // patch the archive
-    for (var k in update)
-      archiveInfo[k] = update[k]
-    render()
-  }
-}
-
-function onUpdateListing (update) {
-  if (archiveInfo && update.key === archiveInfo.key) {
-    // simplest solution is just to refetch the entries
-    fetchArchiveInfo(render)
-  }
-}
-
-function onDownload (update) {
-  if (archiveInfo && update.key === archiveInfo.key && update.feed === 'content') {
-    // increment root's downloaded blocks
-    archiveEntriesTree.entry.downloadedBlocks++
-
-    // find the file and folders this update belongs to and increment their downloaded blocks
-    for (var i=0; i < archiveInfo.entries.length; i++) {
-      var entry = archiveInfo.entries[i]
-      var index = update.index - entry.content.blockOffset
-      if (index >= 0 && index < entry.blocks)
-        entry.downloadedBlocks++ // update the entry
-    }
-
-    // render update
-    render()
-  }
-}
-
-function isSaved (archive) {
-  return archive.userSettings.isSaved
-}
-
-function isHosting (archive) {
-  return archive.userSettings.isHosting
-}
-
-function getForkOf (archive) {
-  return archive.forkOf && archive.forkOf[0]
 }
