@@ -66,6 +66,10 @@ export default class Archive extends EventEmitter {
   // getters
   //
 
+  get niceName () {
+    return this.info.title || (this.info.key.slice(0, 8) + '..')
+  }
+
   get isSaved () {
     return this.info.userSettings.isSaved
   }

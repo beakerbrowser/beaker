@@ -34,9 +34,14 @@ export function archiveFiles (tree, opts={}) {
     // type-specific rendering
     var link
     if (entry.type == 'directory') {
-      link = yo`<a class="fl-name-link" href="beaker:archive/${archiveKey}/${entry.path}" title=${entry.name} onclick=${e => opts.onOpenFolder(e, entry)}>${entry.name}</a>`
+      link = yo`<a class="fl-name-link" 
+          href="beaker:archive/${archiveKey}/${entry.path}"
+          title=${entry.name}
+          onclick=${e => opts.onOpenFolder(e, entry)}><span class="icon icon-folder"></span> ${entry.name}</a>`
     } else {
-      link = yo`<a class="fl-name-link" href="dat://${archiveKey}/${entry.path}" title=${entry.name}>${entry.name}</a>`
+      link = yo`<a class="fl-name-link" 
+          href="dat://${archiveKey}/${entry.path}"
+          title=${entry.name}><span class="icon icon-newspaper"></span> ${entry.name}</a>`
     }
 
     // download state

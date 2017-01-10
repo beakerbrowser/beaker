@@ -1,5 +1,65 @@
+.archive-view {
+  flex: 1;
 
-.archive {
+  .archive-empty-banner {
+    font-weight: 200;
+    font-size: 18px;
+    padding: 20px 30px;
+    height: 100%;
+
+    h2 {
+      margin-top: 0;
+      color: #555;
+    }
+  }
+
+  .archive-header {
+    font-weight: 200;
+    font-size: 18px;
+    padding: 20px 30px;
+
+    h2 {
+      margin-top: 0;
+      color: #555;
+    }
+
+    .archive-provinence {
+      color: gray;
+      font-size: 15px;
+    }
+  }
+
+  .archive-subnav {
+    font-size: 18px;
+    padding: 20px 0 10px;
+    margin: 0 30px;
+    border-top: 1px solid #ddd;
+    a {
+      color: #aaa;
+      margin-right: 10px;
+      &.active {
+        color: #555;
+      }
+    }
+  }
+
+  .files-list {
+    margin: 0 20px;
+    font-size: 16px;
+    font-weight: 200;
+
+    .fl-name {
+      font-weight: 400;
+    }
+
+    .hidden-file-adder {
+      display: none;
+    }
+  }
+}
+
+
+/*.archive {
   .page-toolbar {
     .btn {
       font-size: 14px;
@@ -176,4 +236,4 @@
 // drag/drop behaviors
 .window.drag {
   border: 3px solid #0089ff;
-}
+}*/
