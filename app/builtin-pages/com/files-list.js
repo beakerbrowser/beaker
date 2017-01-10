@@ -41,7 +41,7 @@ export function archiveFiles (tree, opts={}) {
     } else {
       link = yo`<a class="fl-name-link" 
           href="dat://${archiveKey}/${entry.path}"
-          title=${entry.name}><span class="icon icon-newspaper"></span> ${entry.name}</a>`
+          title=${entry.name}><span class="icon icon-doc-text"></span> ${entry.name}</a>`
     }
 
     // download state

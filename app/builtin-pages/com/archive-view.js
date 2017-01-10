@@ -2,12 +2,19 @@ import * as yo from 'yo-yo'
 import { createArchiveFlow } from '../com/modals/edit-site'
 import { shortenHash } from '../../lib/strings'
 import { archiveFiles, onDragDrop, onClickSelectFiles } from '../com/files-list'
+import { archiveHistory } from '../com/archive-history'
+
+// globals
+// =
+
+var currentView = 'about'
+var rerender
 
 // exported api
 // =
 
 export function render (archive, opts = {}) {
-  // const rerender = opts.render || (() => {})
+  rerender = opts.render || (() => {})
   if (opts.viewError) return renderError(opts.viewError)
   if (!archive) return renderEmpty()
   return renderArchive(archive, opts)
@@ -39,7 +46,6 @@ function renderError (error) {
 }
 
 function renderArchive (archive, opts) {
-  // composite
   return yo`
     <div class="archive-view">
       <div class="archive-header">
@@ -48,7 +54,7 @@ function renderArchive (archive, opts) {
         ${rProvinence(archive)}
       </div>
       ${rSubnav(archive)}
-      ${archiveFiles(archive.files.currentNode, {onOpenFolder, archiveKey: archive.key})}
+      ${rView(archive)}
     </div>
   `
 }
@@ -86,10 +92,29 @@ function rProvinence (archive) {
 }
 
 function rSubnav (archive) {
+  function item (name, label) {
+    var cls = name === currentView ? 'active' : ''
+    return yo`<a class=${cls} onclick=${() => setCurrentView(name)}>${label}</a>`
+  }
   return yo`<div class="archive-subnav">
-    <a class="active">Files</a>
-    <a>History</a>
-    <a>Forks</a>
-    <a>Hosts</a>
+    ${item('about', 'About')}
+    ${item('files', 'Files')}
+    ${item('history', 'History')}
   </div>`
+}
+
+// TODO
+// <div class="info">${info.blocks} changes</div>
+// <div class="info"><span class="icon icon-database"></span>Total Content Size: ${prettyBytes(info.size)} (${prettyBytes(info.metaSize)} metadata)</div>
+function rView (archive) {
+  switch (currentView) {
+  case 'about': return 'todo'
+  case 'files': return archiveFiles(archive.files.currentNode, {onOpenFolder, archiveKey: archive.key})
+  case 'history': return archiveHistory(archive)
+  }
+}
+
+function setCurrentView (view) {
+  currentView = view
+  rerender()
 }
