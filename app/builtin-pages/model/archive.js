@@ -119,7 +119,7 @@ export default class Archive extends EventEmitter {
     }
   }
 
-  updateManifest() {
+  updateManifest({ title, description }) {
     // send write to the backend
     datInternalAPI.updateArchiveManifest(this.info.key, { title, description })
       .catch(console.warn.bind(console, 'Failed to update manifest'))

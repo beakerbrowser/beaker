@@ -43,3 +43,9 @@ export function createArchiveFlow () {
     })
   }})
 }
+
+export function editArchiveFlow (archive) {
+  create(archive.info, { isNew: false, title: 'Edit Details', onSubmit: values => {
+    archive.updateManifest(values)
+  }})
+}

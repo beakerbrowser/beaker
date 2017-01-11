@@ -1,5 +1,5 @@
 import * as yo from 'yo-yo'
-import { createArchiveFlow } from '../com/modals/edit-site'
+import { createArchiveFlow, editArchiveFlow } from '../com/modals/edit-site'
 import { archiveAbout } from '../com/archive-about'
 import { archiveFiles, onDragDrop, onClickSelectFiles } from '../com/archive-files'
 import { archiveHistory } from '../com/archive-history'
@@ -64,7 +64,7 @@ function rDescription (archive) {
 
 function rEditBtn (archive) {
   if (archive.info.isOwner) {
-    return yo`<a href="#"><span class="icon icon-pencil"></span> Edit</a>`
+    return yo`<a onclick=${() => editArchiveFlow(archive)}><span class="icon icon-pencil"></span> Edit</a>`
   }
   return yo`<span class="disabled-a"><span class="icon icon-pencil"></span> Edit</span>`
 }
