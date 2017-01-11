@@ -1,6 +1,6 @@
 import * as yo from 'yo-yo'
 import { createArchiveFlow } from '../com/modals/edit-site'
-import { shortenHash } from '../../lib/strings'
+import { archiveAbout } from '../com/archive-about'
 import { archiveFiles, onDragDrop, onClickSelectFiles } from '../com/files-list'
 import { archiveHistory } from '../com/archive-history'
 
@@ -50,8 +50,7 @@ function renderArchive (archive, opts) {
     <div class="archive-view">
       <div class="archive-header">
         <h2><a href=${'dat://'+archive.info.key} title=${archive.niceName}>${archive.niceName}</a></h2>
-        <p class="archive-desc">${rDescription(archive)}<br />${rEditBtn(archive)} ${rForkBtn(archive)} ${rSaveBtn(archive)} ${rHostBn(archive)}</p>
-        ${rProvinence(archive)}
+        <p class="archive-desc">${rDescription(archive)}<br />${rEditBtn(archive)} ${rForkBtn(archive)} ${rSaveBtn(archive)}</p>
       </div>
       ${rSubnav(archive)}
       ${rView(archive)}
@@ -79,18 +78,6 @@ function rSaveBtn (archive) {
   return yo`<a href="#" style="margin-right: 10px"><span class="icon icon-floppy"></span> Save</a>`
 }
 
-function rHostBn (archive) {
-  return yo`<a href="#" style="margin-right: 10px"><span class="icon icon-upload-cloud"></span> Host</a>`
-}
-
-function rProvinence (archive) {
-  var infoEls = []
-  if (archive.forkOf) infoEls.push(yo`<div><span class="icon icon-flow-branch"></span> Fork of <a href=${archive.forkOf}>${shortenHash(archive.forkOf)}</a></div>`)
-  if (archive.info.createdBy) infoEls.push(yo`<div><span class="icon icon-code"></span> Created by <a href=${archive.info.createdBy.url}>${archive.info.createdBy.title || shortenHash(archive.info.createdBy.url)}</a></div>`)
-  if (infoEls.length === 0) return ''
-  return yo`<p class="archive-provinence">${infoEls}</p>`
-}
-
 function rSubnav (archive) {
   function item (name, label) {
     var cls = name === currentView ? 'active' : ''
@@ -103,12 +90,9 @@ function rSubnav (archive) {
   </div>`
 }
 
-// TODO
-// <div class="info">${info.blocks} changes</div>
-// <div class="info"><span class="icon icon-database"></span>Total Content Size: ${prettyBytes(info.size)} (${prettyBytes(info.metaSize)} metadata)</div>
 function rView (archive) {
   switch (currentView) {
-  case 'about': return 'todo'
+  case 'about': return archiveAbout(archive)
   case 'files': return archiveFiles(archive.files.currentNode, {onOpenFolder, archiveKey: archive.key})
   case 'history': return archiveHistory(archive)
   }

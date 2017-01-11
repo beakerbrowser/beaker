@@ -1,18 +1,6 @@
 .archive-view {
   flex: 1;
 
-  .archive-empty-banner {
-    font-weight: 200;
-    font-size: 18px;
-    padding: 20px 30px;
-    height: 100%;
-
-    h2 {
-      margin-top: 0;
-      color: #555;
-    }
-  }
-
   .archive-header {
     font-weight: 200;
     font-size: 18px;
@@ -21,11 +9,6 @@
     h2 {
       margin-top: 0;
       color: #555;
-    }
-
-    .archive-provinence {
-      color: gray;
-      font-size: 15px;
     }
   }
 
@@ -40,6 +23,25 @@
       &.active {
         color: #555;
       }
+    }
+  }
+
+  .archive-about {
+    font-weight: 200;
+    font-size: 16px;
+    padding: 20px 30px;
+    color: #666;
+
+    td {
+      padding: 0;
+    }
+    td:first-child {
+      color: gray;
+    }
+    td:last-child {
+      width: 100%;
+      padding-left: 10px;
+      font-weight: 400;
     }
   }
 
@@ -81,6 +83,40 @@
         min-width: 90px;
       }
     }
+  }
+}
+
+.archive-empty-banner {
+  font-weight: 200;
+  font-size: 18px;
+  padding: 20px 30px;
+  height: 100%;
+
+  h2 {
+    margin-top: 0;
+    color: #555;
+  }
+}
+
+.archive-error {
+  font-size: 21px;
+  font-weight: 300;
+
+  .archive-error-banner {
+    display: flex;
+    padding: 16px 20px;
+    background: #ffd254;
+    margin: 0 20px;
+    border-radius: 2px;
+    color: #212121;
+
+    .icon {
+      margin: 0 14px 0 0;
+    }
+  }
+  
+  .archive-error-narclink {
+    padding: 16px 20px;
   }
 }
 
@@ -214,28 +250,6 @@
       ul {
         -webkit-padding-start: 30px;
       }
-    }
-  }
-
-  .archive-error {
-    font-size: 21px;
-    font-weight: 300;
-
-    .archive-error-banner {
-      display: flex;
-      padding: 16px 20px;
-      background: #ffd254;
-      margin: 0 20px;
-      border-radius: 2px;
-      color: #212121;
-
-      .icon {
-        margin: 0 14px 0 0;
-      }
-    }
-    
-    .archive-error-narclink {
-      padding: 16px 20px;
     }
   }
 
