@@ -19,7 +19,6 @@ function rProvinence (archive) {
   var infoEls = []
   if (archive.forkOf) infoEls.push(yo`<tr><td></td><td><span class="icon icon-flow-branch"></span> Fork of <a href=${viewUrl(archive.forkOf)}>${shortenHash(archive.forkOf)}</a></td></tr>`)
   if (archive.info.createdBy) infoEls.push(yo`<tr><td></td><td><span class="icon icon-code"></span> Created by <a href=${viewUrl(archive.info.createdBy.url)}>${archive.info.createdBy.title || shortenHash(archive.info.createdBy.url)}</a></td></tr>`)
-  if (archive.info.isOwner) infoEls.push(yo`<tr><td></td><td><span class="icon icon-pencil"></span> Editable</td></tr>`)
   return infoEls
 }
 

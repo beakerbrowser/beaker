@@ -6,7 +6,7 @@ import co from 'co'
 
 var navItems = [
   { href: 'beaker:start', label: 'Favorites', icon: 'star' },
-  { href: 'beaker:archives', label: 'Sites', icon: 'book', isActive: l => l.startsWith('beaker:archive') },
+  { href: 'beaker:archives', label: 'Library', icon: 'book', isActive: l => l.startsWith('beaker:archive') },
   { href: 'beaker:services', label: 'Cloud', icon: 'cloud' },
   { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
   { href: 'beaker:downloads', label: 'Downloads', icon: 'down-circled' },

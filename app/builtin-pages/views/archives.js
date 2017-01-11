@@ -29,7 +29,7 @@ export function setup () {
 export function show (isSameView) {
   viewError = false
   isViewActive = true
-  document.title = 'Sites'
+  document.title = 'Library'
 
   co(function * () {
     var newArchiveKey = parseURL()

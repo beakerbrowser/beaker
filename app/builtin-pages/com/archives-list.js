@@ -29,7 +29,7 @@ export function render (archivesList, { selectedArchiveKey } = {}) {
       <input type="text" placeholder="Filter">
       <button class="btn btn-green" onclick=${createArchiveFlow}>New</button>
     </div>
-    <div><strong>Users</strong></div>
+    <div><strong>Profiles</strong></div>
     <div class="ll-row"><span class="ll-link muted">--</span></div>
     <div><strong>Applications</strong></div>
     <div class="ll-row"><span class="ll-link muted">--</span></div>
