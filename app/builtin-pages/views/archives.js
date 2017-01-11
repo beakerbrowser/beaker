@@ -8,8 +8,10 @@ import Archive from '../model/archive'
 import ArchivesList from '../model/archives-list'
 import { render as renderArchivesList } from '../com/archives-list'
 import { render as renderArchiveView } from '../com/archive-view'
+import { addFiles } from '../com/archive-files'
 import { pushUrl } from '../../lib/fg/event-handlers'
 import { ucfirst } from '../../lib/strings'
+import dragDrop from '../../lib/fg/drag-drop'
 
 // globals
 // =
@@ -25,6 +27,7 @@ var isViewActive = false
 // =
 
 export function setup () {
+  dragDrop('.window', onDragDrop)
 }
 
 export function show (isSameView) {
@@ -63,11 +66,6 @@ export function show (isSameView) {
     }
 
     render()
-
-    // TODO
-    // if (archive.info.isOwner) {
-    //   dragDrop('.window', onDragDrop)
-    // }
 
     // TODO
     // now that it has loaded, redirect to dat:// if this was a timeout view
@@ -184,4 +182,10 @@ export function render () {
 function onChangeFilter (e) {
   currentFilter = (e.target.value.toLowerCase())
   render()
+}
+
+function onDragDrop (files) {
+  if (selectedArchive) {
+    addFiles(selectedArchive, files)
+  }
 }

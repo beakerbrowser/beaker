@@ -1,4 +1,5 @@
 import * as yo from 'yo-yo'
+import co from 'co'
 import prettyBytes from 'pretty-bytes'
 import toggleable from './toggleable'
 import { niceDate } from '../../lib/time'
@@ -91,6 +92,15 @@ export function archiveFiles (archive) {
     </div>`
   }
 
+  function renderFileAdder () {
+    if (archive.info.isOwner) {
+      return yo`<div class="archive-add-files">
+        <div class="instructions">To add files, drag their icons onto this page, or <a onclick=${() => onClickSelectFiles(archive)}>Select them manually.</a></div>
+      </div>`
+    }
+    return ''
+  }
+
   // render
   const toObj = key => tree.children[key]
   var rows = (tree.children)
@@ -99,6 +109,7 @@ export function archiveFiles (archive) {
   if (tree.parent)
     rows.unshift(renderParent())
   return yo`<div class="files-list ${rows.length===0?'empty':''}">
+    ${renderFileAdder()}
     <div class="fl-rows">${rows}</div>
     ${renderFooter()}
     <input class="hidden-file-adder" type="file" multiple onchange=${onChooseFiles} />
@@ -132,12 +143,7 @@ function treeSorter (a, b) {
 // event handlers
 // =
 
-export function onDragDrop (files) {
-  addFiles(files)
-}
-
-export function onClickSelectFiles (e) {
-  e.preventDefault()
+export function onClickSelectFiles (archive) {
   co(function * () {
     var paths = yield beakerBrowser.showOpenDialog({
       title: 'Choose a folder to import',
@@ -145,11 +151,12 @@ export function onClickSelectFiles (e) {
       properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
     })
     if (paths) {
-      addFiles(paths)
+      addFiles(archive, paths)
     }
   })
 }
 
+// TODO is this needed anymore?
 function onChooseFiles (e) {
   var filesInput = document.querySelector('input[type="file"]')
   var files = Array.from(filesInput.files)
@@ -157,14 +164,14 @@ function onChooseFiles (e) {
   addFiles(files)
 }
 
-function addFiles (files) {
+export function addFiles (archive, files) {
   files.forEach(file => {
     // file-picker gies a string, while drag/drop gives { path: string }
     var src = (typeof file === 'string') ? file : file.path
     var dst = archive.files.currentNode.entry.path
 
     // send to backend
-    datInternalAPI.writeArchiveFileFromPath(archiveInfo.key, { src, dst })
+    datInternalAPI.writeArchiveFileFromPath(archive.info.key, { src, dst })
       .catch(console.warn.bind(console, 'Error writing file:'))
   })
 }

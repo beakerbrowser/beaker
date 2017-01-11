@@ -2,7 +2,7 @@ import * as yo from 'yo-yo'
 import { createArchiveFlow, editArchiveFlow } from '../com/modals/edit-site'
 import { forkArchiveFlow } from '../com/modals/fork-dat'
 import { archiveAbout } from '../com/archive-about'
-import { archiveFiles, onDragDrop, onClickSelectFiles } from '../com/archive-files'
+import { archiveFiles, onClickSelectFiles } from '../com/archive-files'
 import { archiveHistory } from '../com/archive-history'
 
 // globals
