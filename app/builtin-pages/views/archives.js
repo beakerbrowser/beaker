@@ -32,7 +32,8 @@ export function show (isSameView) {
   document.title = 'Library'
 
   co(function * () {
-    var newArchiveKey = parseURL()
+    var newArchiveKey = getURLKey()
+    setSiteInfoOverride(newArchiveKey)
     if (isSameView && selectedArchiveKey === newArchiveKey) {
       // a navigation within the same view
       return handleInnerNavigation()
@@ -94,8 +95,14 @@ export function show (isSameView) {
   })
 }
 
-export function hide () {
+export function hide (isSameView) {
+  if (isSameView && selectedArchiveKey === getURLKey()) {
+    // do nothing, it's a navigation within the current archive's folder structure
+    return
+  }
+
   isViewActive = false
+  setSiteInfoOverride(false)
   if (archivesList) archivesList.destroy()
   if (selectedArchive) selectedArchive.destroy()
   archivesList = null
@@ -108,13 +115,11 @@ export function hide () {
 
 // called when there's a navigation that doesnt change the current archive
 function handleInnerNavigation () {
-  // TODO
-  // setCurrentNodeByPath()
-  // setSiteInfoOverride()
-  // render()
+  setCurrentNodeByPath()
+  render()
 }
 
-function parseURL () {
+function getURLKey () {
   var path = window.location.pathname
   if (path.startsWith('archives')) return false
   try {
@@ -126,8 +131,30 @@ function parseURL () {
   }
 }
 
+function getURLPath () {
+  try {
+    return window.location.pathname.split('/').slice(2).join('/') // drop 'archive/{key}', take the rest
+  } catch (e) {
+    return ''
+  }
+}
+
+// override the site info in the navbar
+function setSiteInfoOverride (archiveKey) {
+  if (archiveKey) {
+    window.locationbar.setSiteInfoOverride({
+      title: 'Site Library',
+      url: `dat://${archiveKey}/${getURLPath()}${window.location.hash}`
+    })
+  } else {
+    window.locationbar.setSiteInfoOverride(false)    
+  }
+}
+
+// use the current url's path to set the current rendered node
 function setCurrentNodeByPath () {
-  // TODO
+  var names = window.location.pathname.split('/').slice(2) // drop 'archive/{name}', take the rest
+  selectedArchive.files.setCurrentNodeByPath(names)
 }
 
 // rendering

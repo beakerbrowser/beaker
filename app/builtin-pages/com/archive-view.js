@@ -56,8 +56,6 @@ function renderArchive (archive, opts) {
   `
 }
 
-function onOpenFolder() {/*todo*/}
-
 function rDescription (archive) {
   return (archive.info.description)
     ? yo`<span>${archive.info.description}</span>`
@@ -91,10 +89,13 @@ function rSubnav (archive) {
 function rView (archive) {
   switch (currentView) {
   case 'about': return archiveAbout(archive)
-  case 'files': return archiveFiles(archive.files.currentNode, {onOpenFolder, archiveKey: archive.key})
+  case 'files': return archiveFiles(archive)
   case 'history': return archiveHistory(archive)
   }
 }
+
+// event handlers
+// =
 
 function setCurrentView (view) {
   currentView = view

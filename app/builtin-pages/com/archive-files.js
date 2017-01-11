@@ -3,6 +3,7 @@ import prettyBytes from 'pretty-bytes'
 import toggleable from './toggleable'
 import { niceDate } from '../../lib/time'
 import { pluralize } from '../../lib/strings'
+import { pushUrl } from '../../lib/fg/event-handlers'
 
 // globals
 // =
@@ -12,8 +13,9 @@ var hideDotfiles = true
 // exported api
 //
 
-export function archiveFiles (tree, opts={}) {
-  const archiveKey = opts.archiveKey || tree.entry.key
+export function archiveFiles (archive) {
+  const archiveKey = archive.info.key
+  const tree = archive.files.currentNode
   var numFiles = 0, numHidden = 0
 
   // helper to render the entries
@@ -37,7 +39,7 @@ export function archiveFiles (tree, opts={}) {
       link = yo`<a class="fl-name-link" 
           href="beaker:archive/${archiveKey}/${entry.path}"
           title=${entry.name}
-          onclick=${e => opts.onOpenFolder(e, entry)}><span class="icon icon-folder"></span> ${entry.name}</a>`
+          onclick=${pushUrl}><span class="icon icon-folder"></span> ${entry.name}</a>`
     } else {
       link = yo`<a class="fl-name-link" 
           href="dat://${archiveKey}/${entry.path}"
@@ -70,7 +72,7 @@ export function archiveFiles (tree, opts={}) {
   function renderParent () {
     const entry = tree.parent.entry
     return yo`<div class="fl-row updog">
-      <div class="fl-name overflower"><a class="fl-name-link" href="beaker:archive/${archiveKey}/${entry.path}" title="Parent directory" onclick=${e => opts.onOpenFolder(e, entry)}>parent</a></div>
+      <div class="fl-name overflower"><a class="fl-name-link" href="beaker:archive/${archiveKey}/${entry.path}" title="Parent directory" onclick=${pushUrl}>parent</a></div>
       <div class="fl-size"></div>
     </div>`
   }
