@@ -26,7 +26,6 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
       }
     }
 
-    console.log(title, description)
     return yo`<div class="fork-dat-modal">
       <h2>Fork Archive</h2>
       <div class="modal-section">
@@ -72,6 +71,24 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
         description: form.desc.value
       })
       close()
+    }
+  })
+}
+
+export function forkArchiveFlow (archive) {
+  // create fork modal
+  var modal = create(archive.info, archive.files.rootNode, {
+    isDownloading: archive.isHosting,
+    onClickDownload() {
+      archive.files.download()
+      modal.rerender()
+    },
+    onSubmit({ title, description }) {
+      datInternalAPI.forkArchive(archive.info.key, { title, description, origin: 'beaker:archives' }).then(newKey => {
+        window.location = 'beaker:archive/' + newKey
+      }).catch(err => {
+        console.error(err) // TODO alert user
+      })
     }
   })
 }

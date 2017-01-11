@@ -37,7 +37,7 @@ export function create (values, { title, onSubmit }) {
 }
 
 export function createArchiveFlow () {
-  create({}, { title: 'New Dat', onSubmit: ({ title, description }) => {
+  create({}, { title: 'New Site', onSubmit: ({ title, description }) => {
     datInternalAPI.createNewArchive({ title, description, origin: 'beaker:archives' }).then(key => {
       window.location = 'beaker:archive/' + key
     })

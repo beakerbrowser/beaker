@@ -1,5 +1,6 @@
 import * as yo from 'yo-yo'
 import { createArchiveFlow, editArchiveFlow } from '../com/modals/edit-site'
+import { forkArchiveFlow } from '../com/modals/fork-dat'
 import { archiveAbout } from '../com/archive-about'
 import { archiveFiles, onDragDrop, onClickSelectFiles } from '../com/archive-files'
 import { archiveHistory } from '../com/archive-history'
@@ -70,7 +71,7 @@ function rEditBtn (archive) {
 }
 
 function rForkBtn (archive) {
-  return yo`<a href="#"><span class="icon icon-flow-branch"></span> Fork</a>`
+  return yo`<a onclick=${() => forkArchiveFlow(archive)}><span class="icon icon-flow-branch"></span> Fork</a>`
 }
 
 function rSaveBtn (archive) {
