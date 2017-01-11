@@ -21,6 +21,7 @@ export function setup () {
 
 export function show () {
   document.title = 'New tab'
+  window.locationbar.setSiteInfoOverride({ title: 'Favorites' })
   co(function*() {
     // get the bookmarks, ordered by # of views
     bookmarks = yield beakerBookmarks.list()
@@ -30,6 +31,7 @@ export function show () {
 }
 
 export function hide () {
+  window.locationbar.setSiteInfoOverride(false)
 }
 
 // rendering

@@ -24,11 +24,13 @@ export function setup () {
 }
 
 export function show () {
-  document.title = 'History'
+  document.title = 'Browsing History'
+  window.locationbar.setSiteInfoOverride({ title: 'History' })
   fetchMore(render)
 }
 
 export function hide () {
+  window.locationbar.setSiteInfoOverride(false)
   visits = []
 }
 

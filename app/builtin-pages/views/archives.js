@@ -102,7 +102,7 @@ export function hide (isSameView) {
   }
 
   isViewActive = false
-  setSiteInfoOverride(false)
+  window.locationbar.setSiteInfoOverride(false)
   if (archivesList) archivesList.destroy()
   if (selectedArchive) selectedArchive.destroy()
   archivesList = null
@@ -141,14 +141,10 @@ function getURLPath () {
 
 // override the site info in the navbar
 function setSiteInfoOverride (archiveKey) {
-  if (archiveKey) {
-    window.locationbar.setSiteInfoOverride({
-      title: 'Site Library',
-      url: `dat://${archiveKey}/${getURLPath()}${window.location.hash}`
-    })
-  } else {
-    window.locationbar.setSiteInfoOverride(false)    
-  }
+  window.locationbar.setSiteInfoOverride({
+    title: 'Site Library',
+    url: (archiveKey) ? `dat://${archiveKey}/${getURLPath()}${window.location.hash}` : undefined
+  })
 }
 
 // use the current url's path to set the current rendered node

@@ -25,7 +25,8 @@ export function setup () {
 }
 
 export function show () {
-  document.title = 'Settings'
+  document.title = 'Browser Settings'
+  window.locationbar.setSiteInfoOverride({ title: 'Settings' })
   co(function* () {
     browserInfo = yield beakerBrowser.getInfo()
     settings = yield beakerBrowser.getSettings()
@@ -36,6 +37,7 @@ export function show () {
 }
 
 export function hide () {
+  window.locationbar.setSiteInfoOverride(false)
   browserInfo = null
   settings = null
   defaultProtocolSettings = null
