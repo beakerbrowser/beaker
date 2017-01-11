@@ -28,12 +28,14 @@ export default class ArchivesList extends EventEmitter {
 
     // bind the event handlers
     this.onUpdateArchive = e => this._onUpdateArchive(e)
+    this.onUpdateUserSettings = e => this._onUpdateUserSettings(e)
 
     // wire up events
     if (!archivesEvents) {
       archivesEvents = emitStream(datInternalAPI.archivesEventStream())
     }
     archivesEvents.on('update-archive', this.onUpdateArchive)
+    archivesEvents.on('update-user-settings', this.onUpdateUserSettings)
 
     // create a throttled 'change' emiter
     this.emitChanged = throttle(() => this.emit('changed'), EMIT_CHANGED_WAIT)
@@ -72,6 +74,17 @@ export default class ArchivesList extends EventEmitter {
       // patch the archive
       for (var k in update)
         archive[k] = update[k]
+      this.emitChanged()
+    }
+  }
+
+  _onUpdateUserSettings (update) {
+    // find the archive being updated
+    var archive = this.archives.find(a => a.key === update.key)
+    if (archive) {
+      // patch the archive
+      for (var k in update)
+        archive.userSettings[k] = update[k]
       this.emitChanged()
     }
   }

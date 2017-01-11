@@ -104,7 +104,10 @@ export function setup () {
   })
 
   // wire up event handlers
-  archivesDb.on('update:archive-user-settings', configureArchive)
+  archivesDb.on('update:archive-user-settings', (key, settings) => {
+  archivesEvents.emit('update-user-settings', { key, isSaved: settings.isSaved, isHosting: settings.isHosting })
+    configureArchive(key, settings)
+  })
 
   // load and configure all saved archives
   archivesDb.queryArchiveUserSettings({ isSaved: true }).then(

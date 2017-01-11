@@ -7,19 +7,11 @@ import co from 'co'
 var navItems = [
   { href: 'beaker:start', label: 'Favorites', icon: 'star' },
   { href: 'beaker:archives', label: 'Library', icon: 'book', isActive: l => l.startsWith('beaker:archive') },
-  { href: 'beaker:services', label: 'Cloud', icon: 'cloud' },
+  // { href: 'beaker:services', label: 'Cloud', icon: 'cloud' },
   { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
   { href: 'beaker:downloads', label: 'Downloads', icon: 'down-circled' },
   { href: 'beaker:settings', label: 'Settings', icon: 'list' }
 ]
-
-co(function *() {
-  // fetch dynamic nav items
-  // var moreNavItems = yield beakerBrowser.getHomePages()
-  // moreNavItems = moreNavItems.filter(item => (typeof item.href == 'string') && (typeof item.label == 'string'))
-  // navItems = navItems.concat(moreNavItems)
-  // update()
-})
 
 // re-render when the URL changes
 window.addEventListener('pushstate', update)

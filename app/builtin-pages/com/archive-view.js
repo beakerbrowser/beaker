@@ -74,7 +74,14 @@ function rForkBtn (archive) {
 }
 
 function rSaveBtn (archive) {
-  return yo`<a href="#"><span class="icon icon-floppy"></span> Save</a>`
+  if (archive.isSaved) {
+    return yo`<a onclick=${() => archive.toggleSaved()}>
+      <span class="icon icon-trash"></span> Delete
+    </a>`
+  }
+  return yo`<a onclick=${() => archive.toggleSaved()}>
+    <span class="icon icon-floppy"></span> Save
+  </a>`
 }
 
 function rReadOnly (archive) {

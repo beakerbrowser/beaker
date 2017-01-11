@@ -10,6 +10,7 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
   // render archives
   var archiveEls = archivesList.archives.map((archive, index) => {
     // apply filtering
+    if (!archive.userSettings.isSaved) return
     if (currentFilter && archive.title.toLowerCase().indexOf(currentFilter) === -1) return ''
 
     // render
