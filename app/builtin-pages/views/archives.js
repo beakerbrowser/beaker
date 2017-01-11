@@ -18,6 +18,7 @@ var viewError = null
 var archivesList = null
 var selectedArchiveKey = null
 var selectedArchive = null
+var currentFilter = ''
 var isViewActive = false
 
 // exported API
@@ -96,7 +97,8 @@ export function show (isSameView) {
 }
 
 export function hide (isSameView) {
-  if (isSameView && selectedArchiveKey === getURLKey()) {
+  var newArchiveKey = getURLKey()
+  if (isSameView && selectedArchiveKey === newArchiveKey) {
     // do nothing, it's a navigation within the current archive's folder structure
     return
   }
@@ -108,6 +110,11 @@ export function hide (isSameView) {
   archivesList = null
   selectedArchiveKey = null
   selectedArchive = null
+
+  if (!isSameView || !newArchiveKey) {
+    // turn off the filter if its a nav to a new view, or to the toplevel
+    currentFilter = ''
+  }
 }
 
 // view state management
@@ -165,8 +172,16 @@ export function render () {
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archives">
-      ${renderArchivesList(archivesList, {selectedArchiveKey})}
+      ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter})}
       ${renderArchiveView(selectedArchive, {viewError})}
     </div>
   </div>`)
+}
+
+// event handlers
+// =
+
+function onChangeFilter (e) {
+  currentFilter = (e.target.value.toLowerCase())
+  render()
 }
