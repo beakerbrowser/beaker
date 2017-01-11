@@ -70,7 +70,7 @@ export function render () {
 
   // render the top 9 big, the rest small
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="favorites links-list">
+    <div class="favorites big links-list">
       <div class="ll-heading">
         Favorites
         <small class="ll-heading-right">
