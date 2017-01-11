@@ -169,5 +169,5 @@ function addFiles (files) {
 
 function onToggleHidden () {
   hideDotfiles = !hideDotfiles
-  render()
+  window.dispatchEvent(new Event('render'))
 }

@@ -42,7 +42,7 @@ export function hide () {
 // rendering
 // =
 
-function render () {
+export function render () {
   if (!isViewActive) {
     return
   }

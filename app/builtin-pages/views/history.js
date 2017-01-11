@@ -57,7 +57,7 @@ function fetchMore (cb) {
 // rendering
 // =
 
-function render () {
+export function render () {
   var rowEls = []
   var lastDate = moment().startOf('day').add(1, 'day')
 

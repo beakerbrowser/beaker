@@ -133,7 +133,7 @@ function setCurrentNodeByPath () {
 // rendering
 // =
 
-function render () {
+export function render () {
   if (!isViewActive) {
     return
   }
@@ -142,7 +142,7 @@ function render () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archives">
       ${renderArchivesList(archivesList, {selectedArchiveKey})}
-      ${renderArchiveView(selectedArchive, {render, viewError})}
+      ${renderArchiveView(selectedArchive, {viewError})}
     </div>
   </div>`)
 }

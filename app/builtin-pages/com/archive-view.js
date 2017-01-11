@@ -1,20 +1,18 @@
 import * as yo from 'yo-yo'
 import { createArchiveFlow } from '../com/modals/edit-site'
 import { archiveAbout } from '../com/archive-about'
-import { archiveFiles, onDragDrop, onClickSelectFiles } from '../com/files-list'
+import { archiveFiles, onDragDrop, onClickSelectFiles } from '../com/archive-files'
 import { archiveHistory } from '../com/archive-history'
 
 // globals
 // =
 
 var currentView = 'about'
-var rerender
 
 // exported api
 // =
 
 export function render (archive, opts = {}) {
-  rerender = opts.render || (() => {})
   if (opts.viewError) return renderError(opts.viewError)
   if (!archive) return renderEmpty()
   return renderArchive(archive, opts)
@@ -100,5 +98,5 @@ function rView (archive) {
 
 function setCurrentView (view) {
   currentView = view
-  rerender()
+  window.dispatchEvent(new Event('render'))
 }

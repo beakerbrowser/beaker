@@ -47,6 +47,7 @@ currentView.show()
 
 window.addEventListener('pushstate', onURLChange)
 window.addEventListener('popstate', onURLChange)
+window.addEventListener('render', () => currentView.render())
 document.body.addEventListener('click', onAnyClick, true)
 
 function onURLChange () {

@@ -35,7 +35,7 @@ export function hide () {
 // rendering
 // =
 
-function render () {
+export function render () {
   const renderRow = (row, i) => row.isEditing ? renderRowEditing(row, i) : renderRowDefault(row, i)
 
   const renderRowEditing = (row, i) => yo`<div class="ll-row ll-row-is-editing" data-row=${i}>

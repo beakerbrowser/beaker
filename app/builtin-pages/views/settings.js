@@ -44,7 +44,7 @@ export function hide () {
 // rendering
 // =
 
-function render () {
+export function render () {
   // only render if this page is active
   if (!browserInfo)
     return
