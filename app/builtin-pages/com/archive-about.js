@@ -17,10 +17,10 @@ export function archiveAbout (archive) {
 }
 
 function rProvinence (archive) {
-  var infoEls = []
-  if (archive.forkOf) infoEls.push(yo`<tr><td></td><td><span class="icon icon-flow-branch"></span> Fork of <a href=${viewUrl(archive.forkOf)} onclick=${pushUrl}>${shortenHash(archive.forkOf)}</a></td></tr>`)
-  if (archive.info.createdBy) infoEls.push(yo`<tr><td></td><td><span class="icon icon-code"></span> Created by <a href=${viewUrl(archive.info.createdBy.url)} onclick=${pushUrl}>${archive.info.createdBy.title || shortenHash(archive.info.createdBy.url)}</a></td></tr>`)
-  return infoEls
+  var els = []
+  if (archive.forkOf) els.push(yo`<tr><td></td><td><span class="icon icon-flow-branch"></span> Fork of <a href=${viewUrl(archive.forkOf)} onclick=${pushUrl}>${shortenHash(archive.forkOf)}</a></td></tr>`)
+  if (archive.info.createdBy) els.push(yo`<tr><td></td><td><span class="icon icon-code"></span> Created by <a href=${viewUrl(archive.info.createdBy.url)} onclick=${pushUrl}>${archive.info.createdBy.title || shortenHash(archive.info.createdBy.url)}</a></td></tr>`)
+  return els
 }
 
 function viewUrl (url) {

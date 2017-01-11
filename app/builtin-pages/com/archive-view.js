@@ -48,7 +48,7 @@ function renderArchive (archive, opts) {
     <div class="archive-view">
       <div class="archive-header">
         <h2><a href=${'dat://'+archive.info.key} title=${archive.niceName}>${archive.niceName}</a></h2>
-        <p class="archive-desc">${rDescription(archive)}<br />${rEditBtn(archive)} ${rForkBtn(archive)} ${rSaveBtn(archive)}</p>
+        <p class="archive-desc">${rDescription(archive)}<br />${rEditBtn(archive)} ${rForkBtn(archive)} ${rSaveBtn(archive)} ${rReadOnly(archive)}</p>
       </div>
       ${rSubnav(archive)}
       ${rView(archive)}
@@ -63,15 +63,23 @@ function rDescription (archive) {
 }
 
 function rEditBtn (archive) {
-  return yo`<a href="#" style="margin-right: 10px"><span class="icon icon-pencil"></span> Edit</a>`
+  if (archive.info.isOwner) {
+    return yo`<a href="#"><span class="icon icon-pencil"></span> Edit</a>`
+  }
+  return yo`<span class="disabled-a"><span class="icon icon-pencil"></span> Edit</span>`
 }
 
 function rForkBtn (archive) {
-  return yo`<a href="#" style="margin-right: 10px"><span class="icon icon-flow-branch"></span> Fork</a>`
+  return yo`<a href="#"><span class="icon icon-flow-branch"></span> Fork</a>`
 }
 
 function rSaveBtn (archive) {
-  return yo`<a href="#" style="margin-right: 10px"><span class="icon icon-floppy"></span> Save</a>`
+  return yo`<a href="#"><span class="icon icon-floppy"></span> Save</a>`
+}
+
+function rReadOnly (archive) {
+  if (archive.info.isOwner) return ''
+  return yo`<span class="thin muted">Read-only</span>`
 }
 
 function rSubnav (archive) {
