@@ -51,17 +51,17 @@ export default class ArchiveFiles {
         // calculate progress
         node.entry.downloadedBlocks = countDownloadedBlocks(archiveInfo, node.entry)
       }
+      
+      // iterate children
+      for (var k in node.children) {
+        descend(node.children[k])
+      }
 
       // propagate size and progress to parent
       if (node.parent) {
         node.parent.entry.length += node.entry.length
         node.parent.entry.blocks += node.entry.blocks
         node.parent.entry.downloadedBlocks += node.entry.downloadedBlocks
-      }
-
-      // iterate children
-      for (var k in node.children) {
-        descend(node.children[k])
       }
     }
   }
