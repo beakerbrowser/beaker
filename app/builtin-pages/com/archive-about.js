@@ -1,7 +1,8 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import { shortenHash } from '../../lib/strings'
-import { niceDate } from '../../lib/time'
+import {shortenHash} from '../../lib/strings'
+import {niceDate} from '../../lib/time'
+import {pushUrl} from '../../lib/fg/event-handlers'
 
 // exported api
 // =
@@ -17,8 +18,8 @@ export function archiveAbout (archive) {
 
 function rProvinence (archive) {
   var infoEls = []
-  if (archive.forkOf) infoEls.push(yo`<tr><td></td><td><span class="icon icon-flow-branch"></span> Fork of <a href=${viewUrl(archive.forkOf)}>${shortenHash(archive.forkOf)}</a></td></tr>`)
-  if (archive.info.createdBy) infoEls.push(yo`<tr><td></td><td><span class="icon icon-code"></span> Created by <a href=${viewUrl(archive.info.createdBy.url)}>${archive.info.createdBy.title || shortenHash(archive.info.createdBy.url)}</a></td></tr>`)
+  if (archive.forkOf) infoEls.push(yo`<tr><td></td><td><span class="icon icon-flow-branch"></span> Fork of <a href=${viewUrl(archive.forkOf)} onclick=${pushUrl}>${shortenHash(archive.forkOf)}</a></td></tr>`)
+  if (archive.info.createdBy) infoEls.push(yo`<tr><td></td><td><span class="icon icon-code"></span> Created by <a href=${viewUrl(archive.info.createdBy.url)} onclick=${pushUrl}>${archive.info.createdBy.title || shortenHash(archive.info.createdBy.url)}</a></td></tr>`)
   return infoEls
 }
 
