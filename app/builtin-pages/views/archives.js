@@ -149,6 +149,7 @@ function setSiteInfoOverride (archiveKey) {
 
 // use the current url's path to set the current rendered node
 function setCurrentNodeByPath () {
+  if (!selectedArchive) return
   var names = window.location.pathname.split('/').slice(2) // drop 'archive/{name}', take the rest
   selectedArchive.files.setCurrentNodeByPath(names)
 }

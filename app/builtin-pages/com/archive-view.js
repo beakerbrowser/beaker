@@ -28,7 +28,7 @@ function renderEmpty () {
 }
 
 function renderError (error) {
-  return yo`<div class="archive">
+  return yo`<div class="archive-view">
     <div class="archive-error">
       <div class="archive-error-banner">
         <div class="icon icon-attention"></div>
