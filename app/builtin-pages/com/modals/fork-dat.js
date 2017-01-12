@@ -79,9 +79,8 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
 export function forkArchiveFlow (archive) {
   // create fork modal
   var modal = create(archive.info, archive.files.rootNode, {
-    isDownloading: archive.isHosting,
+    isDownloading: archive.isSaved,
     onClickDownload() {
-      console.log('trigger')
       archive.files.download()
       modal.rerender()
     },
@@ -95,7 +94,7 @@ export function forkArchiveFlow (archive) {
   })
 
   // listen for archive download events
-  function onchanged () { console.log('hit'), modal.rerender() }
+  function onchanged () { modal.rerender() }
   archive.on('changed', onchanged)
   modal.addEventListener('close', () => {
     archive.removeEventListener('changed', onchanged)

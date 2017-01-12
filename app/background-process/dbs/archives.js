@@ -63,7 +63,6 @@ export const removeListener = events.removeListener.bind(events)
 // - includes archive
 // - optional `query` keys:
 //   - `isSaved`: bool
-//   - `isHosting`: bool
 //   - `isOwner`: bool, does beaker have the secret key? requires opts.includeMeta
 // - optional `opt` keys:
 //   - `includeMeta`: bool, include the archive meta in the response?
@@ -95,7 +94,6 @@ class QueryArchiveUserSettingsTransform extends Transform {
 
     // run query
     if (('isSaved' in query) && value.isSaved != query.isSaved) return cb()
-    if (('isHosting' in query) && value.isHosting != query.isHosting) return cb()
 
     // done?
     if (!opts.includeMeta && !('isOwner' in query)) {
@@ -147,9 +145,8 @@ export function setArchiveUserSettings (key, newValues = {}) {
         value = archiveUserSettingsObject(key, value)
 
         // extract the desired values
-        var { isSaved, isHosting } = newValues
+        var { isSaved } = newValues
         if (typeof isSaved === 'boolean') value.isSaved = isSaved
-        if (typeof isHosting === 'boolean') value.isHosting = isHosting
 
         // write
         archiveUserSettingsDb.put(key, value, err => {
@@ -248,8 +245,7 @@ function archiveUserSettingsObject (key, obj) {
   obj = obj || { notFound: true }
   return Object.assign({
     key,
-    isSaved: false,
-    isHosting: false
+    isSaved: false
   }, obj)
 }
 
@@ -297,8 +293,7 @@ migrations = [
         if (!chunk.value.saveClaims) return cb() // noop
         // update the user settings to the new format
         chunk.value = {
-          isSaved: Array.isArray(chunk.value.saveClaims) && (chunk.value.saveClaims.length > 0),
-          isHosting: Array.isArray(chunk.value.uploadClaims) && (chunk.value.uploadClaims.length > 0)
+          isSaved: Array.isArray(chunk.value.saveClaims) && (chunk.value.saveClaims.length > 0)
         }
         archiveUserSettingsDb.put(chunk.key, chunk.value, cb)
         // trigger an update to the meta as well

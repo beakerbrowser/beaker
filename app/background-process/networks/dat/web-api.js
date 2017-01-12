@@ -73,7 +73,7 @@ const deleteArchive = m(function * (url) {
   if (decision === false) throw new UserDeniedError()
 
   // delete
-  yield archivesDb.setArchiveUserSettings(archive.key, { isHosting: false, isSaved: false })
+  yield archivesDb.setArchiveUserSettings(archive.key, {isSaved: false})
 })
 
 const readDirectory = m(function * (url, opts = {}) {

@@ -74,10 +74,6 @@ export default class Archive extends EventEmitter {
     return this.info.userSettings.isSaved
   }
 
-  get isHosting () {
-    return this.info.userSettings.isHosting
-  }
-
   get forkOf () {
     return this.info.forkOf && this.info.forkOf[0]
   }
@@ -91,29 +87,13 @@ export default class Archive extends EventEmitter {
 
   toggleSaved() {
     if (this.isSaved) {
-      datInternalAPI.setArchiveUserSettings(this.info.key, { isSaved: false, isHosting: false }).then(settings => {
+      datInternalAPI.setArchiveUserSettings(this.info.key, { isSaved: false }).then(settings => {
         this.info.userSettings.isSaved = false
-        this.info.userSettings.isHosting = false
         this.emitChanged()
       })
     } else {
       datInternalAPI.setArchiveUserSettings(this.info.key, { isSaved: true }).then(settings => {
         this.info.userSettings.isSaved = true
-        this.emitChanged()
-      })
-    }
-  }
-
-  toggleHosting() {
-    if (this.isHosting) {
-      datInternalAPI.setArchiveUserSettings(this.info.key, { isHosting: false }).then(settings => {
-        this.info.userSettings.isHosting = false
-        this.emitChanged()
-      })
-    } else {
-      datInternalAPI.setArchiveUserSettings(this.info.key, { isSaved: true, isHosting: true }).then(settings => {
-        this.info.userSettings.isSaved = true
-        this.info.userSettings.isHosting = true
         this.emitChanged()
       })
     }
