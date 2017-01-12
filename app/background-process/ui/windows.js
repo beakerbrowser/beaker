@@ -41,7 +41,8 @@ export function createShellWindow () {
     webPreferences: {
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
       allowRunningInsecureContent: false
-    }
+    },
+    icon: path.join(__dirname, './assets/img/logo.png')
   })
   downloads.registerListener(win)
   loadShell(win)
