@@ -1,3 +1,5 @@
+import co from 'co'
+
 // exported api
 // =
 
@@ -5,9 +7,9 @@ export default class ArchiveFiles {
   constructor (archiveInfo) {
     var m = archiveInfo.manifest
 
+    this.archiveKey = archiveInfo.key
     // root node is the archive itself
     this.rootNode = createRootNode(archiveInfo)
-
     // current node: used by the UI for rendering
     this.currentNode = this.rootNode
 
@@ -86,12 +88,12 @@ export default class ArchiveFiles {
   }
 
   download(node) {
+    var self = this
     node = node || this.rootNode
 
     // recursively start downloads
     co(function *() {
       yield startDownload(node)
-      render()
     })
 
     function * startDownload (n) {
@@ -100,22 +102,19 @@ export default class ArchiveFiles {
         return Promise.resolve()
       }
 
-      // render progress starting
+      // progress starting
       n.entry.isDownloading = true
-      render()
 
       if (n.entry.type === 'file') {
         // download entry
-        yield datInternalAPI.downloadArchiveEntry(archiveInfo.key, n.entry.path)
+        yield datInternalAPI.downloadArchiveEntry(self.archiveKey, n.entry.path)
       } else if (n.entry.type === 'directory') {
         // recurse to children
         yield Object.keys(n.children).map(k => startDownload(n.children[k]))
       }
 
-      // render done
+      // done
       n.entry.isDownloading = false
-      render()
-
       return Promise.resolve()
     }
   }

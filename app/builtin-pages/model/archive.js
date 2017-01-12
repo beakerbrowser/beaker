@@ -147,7 +147,7 @@ export default class Archive extends EventEmitter {
       onDownload: update => {
         if (this.info && update.key === this.info.key && update.feed === 'content') {
           // increment root's downloaded blocks
-          this.rootNode.entry.downloadedBlocks++
+          this.files.rootNode.entry.downloadedBlocks++
 
           // find the file and folders this update belongs to and increment their downloaded blocks
           for (var i=0; i < this.info.entries.length; i++) {

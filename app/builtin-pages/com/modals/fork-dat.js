@@ -44,7 +44,7 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
         </form>
       </div>
       <div class="modal-footer">
-        Forking will create a new archive with the content of the old archive.
+        Forking will create a new site with the content of the old site.
       </div>
     </div>`
 
@@ -59,6 +59,7 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
     }
 
     function _onClickDownload () {
+      console.log('click')
       isDownloading = true
       onClickDownload()
     }
@@ -80,6 +81,7 @@ export function forkArchiveFlow (archive) {
   var modal = create(archive.info, archive.files.rootNode, {
     isDownloading: archive.isHosting,
     onClickDownload() {
+      console.log('trigger')
       archive.files.download()
       modal.rerender()
     },
@@ -91,4 +93,12 @@ export function forkArchiveFlow (archive) {
       })
     }
   })
+
+  // listen for archive download events
+  function onchanged () { console.log('hit'), modal.rerender() }
+  archive.on('changed', onchanged)
+  modal.addEventListener('close', () => {
+    archive.removeEventListener('changed', onchanged)
+    modal = null
+  }, { once: true })
 }
