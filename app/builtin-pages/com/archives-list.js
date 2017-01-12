@@ -1,5 +1,4 @@
 import * as yo from 'yo-yo'
-import { shortenHash } from '../../lib/strings'
 import { pushUrl } from '../../lib/fg/event-handlers'
 import { createArchiveFlow } from '../com/modals/edit-site'
 
@@ -14,7 +13,7 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
     if (currentFilter && archive.title.toLowerCase().indexOf(currentFilter) === -1) return ''
 
     // render
-    let title = archive.title || shortenHash(archive.key)
+    let title = archive.title || 'Untitled'
     let activeCls = (archive.key === selectedArchiveKey) ? 'active' : ''
     return yo`<div class="ll-row ${activeCls}">
       <a class="ll-link" href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>

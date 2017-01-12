@@ -17,6 +17,7 @@ import dragDrop from '../../lib/fg/drag-drop'
 // =
 
 var viewError = null
+var viewIsLoading = false
 var archivesList = null
 var selectedArchiveKey = null
 var selectedArchive = null
@@ -56,25 +57,35 @@ export function show (isSameView) {
         selectedArchive.destroy()
         selectedArchive = null
       }
+
       if (newArchiveKey) {
+        let to = setTimeout(() => {
+          // render loading screen (it's taking a sec)
+          viewIsLoading = true
+          render()
+        }, 500)
+
+        // load the archive
         selectedArchive = new Archive()
         yield selectedArchive.fetchInfo(newArchiveKey)
         selectedArchive.on('changed', render)
         setCurrentNodeByPath()
+        clearTimeout(to)
       }
       selectedArchiveKey = newArchiveKey
     }
 
+    // render output
+    viewIsLoading = false
     render()
 
-    // TODO
     // now that it has loaded, redirect to dat:// if this was a timeout view
-    // if (window.location.hash === '#timeout') {
-    //   var destURL = 'dat://' + /^archive\/(.*)/.exec(window.location.pathname)[1]
-    //   console.log('Archive found! Redirecting to', destURL)
-    //   window.location = destURL
-    //   return
-    // }
+    if (window.location.hash === '#timeout') {
+      var destURL = 'dat://' + /^archive\/(.*)/.exec(window.location.pathname)[1]
+      console.log('Archive found! Redirecting to', destURL)
+      window.location = destURL
+      return
+    }
 
     // run the tour if this is the owner's first time
     // TODO
@@ -171,7 +182,7 @@ export function render () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archives">
       ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter})}
-      ${renderArchiveView(selectedArchive, {viewError})}
+      ${renderArchiveView(selectedArchive, {viewIsLoading, viewError})}
     </div>
   </div>`)
 }
