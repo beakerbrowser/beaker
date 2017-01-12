@@ -1,0 +1,153 @@
+.archive-view {
+  .archive-header {
+    font-weight: 200;
+    font-size: 18px;
+    padding: 20px 30px;
+
+    h2 {
+      margin-top: 0;
+      color: #555;
+    }
+  }
+
+  .archive-desc {
+    a, .disabled-a {
+      margin-right: 10px;
+    }
+    .disabled-a, .muted {
+      color: #aaa !important;
+    }
+  }
+
+  .archive-subnav {
+    font-size: 18px;
+    padding: 20px 0 10px;
+    margin: 0 30px;
+    border-top: 1px solid #ddd;
+    a {
+      color: #aaa;
+      margin-right: 10px;
+      &.active {
+        color: #555;
+      }
+    }
+  }
+
+  .archive-about {
+    font-weight: 200;
+    font-size: 16px;
+    padding: 20px 30px;
+    color: #666;
+
+    td {
+      padding: 0;
+    }
+    td:first-child {
+      color: gray;
+    }
+    td:last-child {
+      width: 100%;
+      padding-left: 10px;
+      font-weight: 400;
+    }
+  }
+
+  .archive-add-files {
+    padding: 6px 10px;
+    background: #fafafa;
+  }
+  .files-list {
+    margin: 0 20px;
+    font-size: 16px;
+    font-weight: 200;
+
+    .fl-name {
+      font-weight: 400;
+    }
+
+    .hidden-file-adder {
+      display: none;
+    }
+  }
+
+  .archive-history {
+    padding: 0 23px;
+    font-weight: 200;
+
+    .links-list {
+      font-size: 16px;
+    }
+
+    .ll-row {
+      .ll-link {
+        font-weight: 400;
+        .ll-title {
+          cursor: default;    
+        }
+        span.favicon {
+          top: 1px;
+          display: inline-block;
+          width: 25px;
+        }
+      }
+      .ll-progress {
+        min-width: 90px;
+      }
+    }
+  }
+}
+
+.archive-empty-banner {
+  font-weight: 200;
+  font-size: 18px;
+  padding: 20px 30px;
+  height: 100%;
+
+  h2 {
+    margin-top: 0;
+    color: #555;
+  }
+}
+
+.archive-error {
+  font-size: 21px;
+  font-weight: 300;
+
+  .archive-error-banner {
+    display: flex;
+    padding: 16px 20px;
+    background: #ffd254;
+    margin: 0 20px;
+    border-radius: 2px;
+    color: #212121;
+
+    .icon {
+      margin: 0 14px 0 0;
+    }
+  }
+  
+  .archive-error-narclink {
+    padding: 16px 20px;
+  }
+}
+
+.archive-loading {
+  font-size: 21px;
+  font-weight: 300;
+
+  .archive-loading-banner {
+    display: flex;
+    padding: 30px 20px 0;
+    font-weight: 400;
+
+    .spinner {
+      margin-right: 20px;
+      width: 30px;
+      height: 30px;
+    }
+  }
+  
+  .archive-loading-tips {
+    padding: 16px 20px;
+  }
+}

@@ -35,3 +35,17 @@ export function create (values, { title, onSubmit }) {
   })
   el.querySelector('input').focus()
 }
+
+export function createArchiveFlow () {
+  create({}, { title: 'New Site', onSubmit: ({ title, description }) => {
+    datInternalAPI.createNewArchive({ title, description, origin: 'beaker:archives' }).then(key => {
+      window.location = 'beaker:archive/' + key
+    })
+  }})
+}
+
+export function editArchiveFlow (archive) {
+  create(archive.info, { isNew: false, title: 'Edit Details', onSubmit: values => {
+    archive.updateManifest(values)
+  }})
+}

@@ -26,7 +26,6 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
       }
     }
 
-    console.log(title, description)
     return yo`<div class="fork-dat-modal">
       <h2>Fork Archive</h2>
       <div class="modal-section">
@@ -45,7 +44,7 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
         </form>
       </div>
       <div class="modal-footer">
-        Forking will create a new archive with the content of the old archive.
+        Forking will create a new site with the content of the old site.
       </div>
     </div>`
 
@@ -60,6 +59,7 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
     }
 
     function _onClickDownload () {
+      console.log('click')
       isDownloading = true
       onClickDownload()
     }
@@ -74,4 +74,30 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
       close()
     }
   })
+}
+
+export function forkArchiveFlow (archive) {
+  // create fork modal
+  var modal = create(archive.info, archive.files.rootNode, {
+    isDownloading: archive.isSaved,
+    onClickDownload() {
+      archive.files.download()
+      modal.rerender()
+    },
+    onSubmit({ title, description }) {
+      datInternalAPI.forkArchive(archive.info.key, { title, description, origin: 'beaker:archives' }).then(newKey => {
+        window.location = 'beaker:archive/' + newKey
+      }).catch(err => {
+        console.error(err) // TODO alert user
+      })
+    }
+  })
+
+  // listen for archive download events
+  function onchanged () { modal.rerender() }
+  archive.on('changed', onchanged)
+  modal.addEventListener('close', () => {
+    archive.removeEventListener('changed', onchanged)
+    modal = null
+  }, { once: true })
 }

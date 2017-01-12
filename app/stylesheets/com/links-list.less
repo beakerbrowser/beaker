@@ -27,6 +27,17 @@
     }
   }
 }
+.big .ll-heading {
+  font-size: 30px;
+  padding-top: 2px;
+  margin-bottom: 12px;
+
+  .ll-heading-right {
+    font-weight: 200;
+    font-size: 18px;
+    padding-top: 10px;
+  }
+}
 
 .links-list {
   font-size: 14px;
@@ -86,7 +97,7 @@
 
     // make the actions compact, and hidden except on hover
     .ll-actions {
-      flex: 0 0 60px;
+      flex: 0 0 70px;
       padding: 6px 8px;
       .icon {
         display: none;
@@ -158,6 +169,11 @@
         }
       }
     }
+
+    &.active {
+      background: #eee;
+      font-weight: bold;
+    }
   }
 
   .ll-empty {
@@ -180,5 +196,15 @@
 
     font-size: 18px;
     font-family: sans-serif;
+  }
+
+  &.big {
+    font-size: 18px;
+    font-weight: 200;
+    letter-spacing: 0.5px;
+
+    .favicon {
+      top: 5px !important;
+    }
   }
 }

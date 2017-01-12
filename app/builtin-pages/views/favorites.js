@@ -21,6 +21,7 @@ export function setup () {
 
 export function show () {
   document.title = 'New tab'
+  window.locationbar.setSiteInfoOverride({ title: 'Favorites' })
   co(function*() {
     // get the bookmarks, ordered by # of views
     bookmarks = yield beakerBookmarks.list()
@@ -30,12 +31,13 @@ export function show () {
 }
 
 export function hide () {
+  window.locationbar.setSiteInfoOverride(false)
 }
 
 // rendering
 // =
 
-function render () {
+export function render () {
   const renderRow = (row, i) => row.isEditing ? renderRowEditing(row, i) : renderRowDefault(row, i)
 
   const renderRowEditing = (row, i) => yo`<div class="ll-row ll-row-is-editing" data-row=${i}>
@@ -68,7 +70,7 @@ function render () {
 
   // render the top 9 big, the rest small
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="favorites links-list">
+    <div class="favorites big links-list">
       <div class="ll-heading">
         Favorites
         <small class="ll-heading-right">

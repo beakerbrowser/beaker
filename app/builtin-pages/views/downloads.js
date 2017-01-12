@@ -21,7 +21,8 @@ export function setup () {
 
 export function show () {
   isViewActive = true
-  document.title = 'Downloads'
+  document.title = 'File Downloads'
+  window.locationbar.setSiteInfoOverride({ title: 'Downloads' })
   co(function* () {
     // fetch downloads
     downloadsList = new DownloadsList()
@@ -35,6 +36,7 @@ export function show () {
 
 export function hide () {
   isViewActive = false
+  window.locationbar.setSiteInfoOverride(false)
   downloadsList.destroy()
   downloadsList = null
 }
@@ -42,7 +44,7 @@ export function hide () {
 // rendering
 // =
 
-function render () {
+export function render () {
   if (!isViewActive) {
     return
   }

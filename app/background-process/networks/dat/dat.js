@@ -67,7 +67,7 @@ export function setup () {
         debug(`${info.type} connection from ${info.host} to fetch ${bufToStr(archive.key)}`)
         return archive.replicate({
           download: true,
-          upload: (archive.userSettings && archive.userSettings.isHosting)
+          upload: (archive.userSettings && archive.userSettings.isSaved)
         })
       }
 
@@ -94,7 +94,7 @@ export function setup () {
       archive.replicate({
         stream,
         download: true,
-        upload: (archive.userSettings && archive.userSettings.isHosting)
+        upload: (archive.userSettings && archive.userSettings.isSaved)
       })
     })
   })
@@ -104,7 +104,10 @@ export function setup () {
   })
 
   // wire up event handlers
-  archivesDb.on('update:archive-user-settings', configureArchive)
+  archivesDb.on('update:archive-user-settings', (key, settings) => {
+  archivesEvents.emit('update-user-settings', { key, isSaved: settings.isSaved })
+    configureArchive(key, settings)
+  })
 
   // load and configure all saved archives
   archivesDb.queryArchiveUserSettings({ isSaved: true }).then(
@@ -146,7 +149,7 @@ export function createNewArchive ({ title, description, author, version, forkOf,
     var manifest = generateManifest({ url: `dat://${key}/`, title, description, author, version, forkOf, createdBy })
     writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest, null, 2), done)
     // write the user settings
-    setArchiveUserSettings(key, { isSaved: true, isHosting: true })
+    setArchiveUserSettings(key, { isSaved: true })
     // write the perms
     if (createdBy && createdBy.url) grantPermission('modifyDat:' + key, createdBy.url)
 
@@ -243,10 +246,10 @@ export function forkArchive (oldArchiveKey, opts) {
 
 // load archive and set the swarming behaviors
 export function configureArchive (key, settings) {
-  var upload = settings.isHosting
   var download = settings.isSaved
+  var upload = settings.isSaved
   var archive = getOrLoadArchive(key, { noSwarm: true })
-  var wasUploading = (archive.userSettings && archive.userSettings.isHosting)
+  var wasUploading = (archive.userSettings && archive.userSettings.isSaved)
   archive.userSettings = settings
   archivesEvents.emit('update-archive', { key, isUploading: upload, isDownloading: download })
 
