@@ -58,6 +58,7 @@ export function setup () {
     dns: {server: DAT_DEFAULT_DISCOVERY, domain: DAT_DOMAIN},
     dht: {bootstrap: DAT_DEFAULT_BOOTSTRAP},
     stream: (info) => {
+
       if (info.channel) {
         // this connection was made by one of the discovery channels
         // we know which archive is being requested by looking at which channel was used
@@ -72,12 +73,11 @@ export function setup () {
       }
 
       // run the generic handshake, and let the connection event handle specific archives
+      debug(`${info.type} connection from ${info.host}, no channel specified`)
       return drive.replicate()
     }
   })
   swarm.on('connection', function (stream, info) {
-    if (info.channel) return // we handled this already
-
     if (!info.initiator) {
       // We initiated the connection, but not through a discovery channel? This shouldn't happen... right?
       // TODO should this happen?
@@ -86,7 +86,9 @@ export function setup () {
 
     debug(`${info.type} connection from ${info.host}, waiting for requests`)
     stream.on('open', function (discoveryKey) {
-      var archive = archivesByDiscoveryKey[bufToStr(discoveryKey)]
+      discoveryKey = bufToStr(discoveryKey)
+      debug(`onopen() ${discoveryKey} by ${info.host} over ${info.type}`)
+      var archive = archivesByDiscoveryKey[discoveryKey]
       if (!archive) return debug(`ERROR ${info.host} requested unknown archive ${bufToStr(discoveryKey)}`)
       // TODO is there a 404-like response to give to this? ^
 
@@ -540,7 +542,7 @@ export function joinSwarm (key, opts) {
   var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || archive.isSwarming) return
 
-  debug('Swarming archive', bufToStr(archive.key))
+  debug('Swarming archive', bufToStr(archive.key), 'discovery key', bufToStr(archive.discoveryKey))
   swarm.join(archive.discoveryKey)
   archive.isSwarming = true
 }
