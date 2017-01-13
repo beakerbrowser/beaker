@@ -12,6 +12,7 @@
     "cids": "^0.2.0",
     "co": "^4.6.0",
     "concat-stream": "^1.5.2",
+    "datland-swarm-defaults": "^1.0.2",
     "debug": "^2.3.3",
     "discovery-swarm": "^4.1.0",
     "electron-localshortcut": "^0.6.0",

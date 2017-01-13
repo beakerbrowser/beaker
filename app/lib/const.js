@@ -39,16 +39,3 @@ export const FileAlreadyExistsError = zerr('FileAlreadyExistsError')
 export const FolderAlreadyExistsError = zerr('FolderAlreadyExistsError')
 export const ParentFolderDoesntExistError = zerr('ParentFolderDoesntExistError')
 export const InvalidPathError = zerr('InvalidPathError')
-
-// dat network config
-export const DAT_DOMAIN = 'dat.local'
-export const DAT_DEFAULT_DISCOVERY = [
-  'discovery1.publicbits.org',
-  'discovery2.publicbits.org'
-]
-export const DAT_DEFAULT_BOOTSTRAP = [
-  'bootstrap1.publicbits.org:6881',
-  'bootstrap2.publicbits.org:6881',
-  'bootstrap3.publicbits.org:6881',
-  'bootstrap4.publicbits.org:6881'
-]
