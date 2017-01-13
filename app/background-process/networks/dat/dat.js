@@ -15,6 +15,7 @@ import * as archivesDb from '../../dbs/archives'
 import hyperdrive from 'hyperdrive'
 
 // network modules
+import swarmDefaults from 'datland-swarm-defaults'
 import discoverySwarm from 'discovery-swarm'
 import hyperImport from 'hyperdrive-import-files'
 import { resolveDatDNS } from '../dns'
@@ -29,19 +30,12 @@ import getFolderSize from 'get-folder-size'
 // constants
 // =
 
-import { 
-  DAT_MANIFEST_FILENAME,
-  DAT_DOMAIN,
-  DAT_DEFAULT_DISCOVERY,
-  DAT_DEFAULT_BOOTSTRAP
-} from '../../../lib/const'
-
+import {DAT_MANIFEST_FILENAME} from '../../../lib/const'
 
 // globals
 // =
 
 var drive // hyperdrive instance
-var swarm // discovery swarm instance
 var archives = {} // memory cache of archive objects. key -> archive
 var archivesByDiscoveryKey = {} // mirror of the above cache, but discoveryKey -> archive
 var archivesEvents = new EventEmitter()
@@ -51,57 +45,6 @@ var archivesEvents = new EventEmitter()
 
 export function setup () {
   drive = hyperdrive(archivesDb.getLevelInstance())
-  swarm = discoverySwarm({
-    hash: false,
-    utp: true,
-    tcp: true,
-    dns: {server: DAT_DEFAULT_DISCOVERY, domain: DAT_DOMAIN},
-    dht: {bootstrap: DAT_DEFAULT_BOOTSTRAP},
-    stream: (info) => {
-      if (info.channel) {
-        // this connection was made by one of the discovery channels
-        // we know which archive is being requested by looking at which channel was used
-        var archive = archivesByDiscoveryKey[bufToStr(info.channel)]
-        if (!archive) return debug(`ERROR ${info.type} connection from ${info.host} requested by unknown channel ${bufToStr(info.channel)}`)
-
-        debug(`${info.type} connection from ${info.host} to fetch ${bufToStr(archive.key)}`)
-        return archive.replicate({
-          download: true,
-          upload: (archive.userSettings && archive.userSettings.isSaved)
-        })
-      }
-
-      // run the generic handshake, and let the connection event handle specific archives
-      return drive.replicate()
-    }
-  })
-  swarm.on('connection', function (stream, info) {
-    if (info.channel) return // we handled this already
-
-    if (!info.initiator) {
-      // We initiated the connection, but not through a discovery channel? This shouldn't happen... right?
-      // TODO should this happen?
-      return debug(`ERROR ${info.type} connection to ${info.host} initiated locally without a known target archive. Should this happen?`)
-    }
-
-    debug(`${info.type} connection from ${info.host}, waiting for requests`)
-    stream.on('open', function (discoveryKey) {
-      var archive = archivesByDiscoveryKey[bufToStr(discoveryKey)]
-      if (!archive) return debug(`ERROR ${info.host} requested unknown archive ${bufToStr(discoveryKey)}`)
-      // TODO is there a 404-like response to give to this? ^
-
-      debug(`${info.host} requested ${bufToStr(archive.key)}`)
-      archive.replicate({
-        stream,
-        download: true,
-        upload: (archive.userSettings && archive.userSettings.isSaved)
-      })
-    })
-  })
-  swarm.listen(3282)
-  swarm.on('error', (e) => {
-    if (e.code == 'EADDRINUSE') swarm.listen(0)
-  })
 
   // wire up event handlers
   archivesDb.on('update:archive-user-settings', (key, settings) => {
@@ -540,9 +483,36 @@ export function joinSwarm (key, opts) {
   var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || archive.isSwarming) return
 
-  debug('Swarming archive', bufToStr(archive.key))
+  var keyStr = bufToStr(archive.key)
+  var swarm = discoverySwarm(swarmDefaults({
+    hash: false,
+    utp: true,
+    tcp: true,
+    stream: (info) => {
+      debug(`${info.type} connection from ${info.host} to fetch ${keyStr}`)
+
+      // create the replication stream
+      var stream = archive.replicate({
+        download: true,
+        upload: (archive.userSettings && archive.userSettings.isSaved)
+      })
+
+      // timeout the connection after 5s if handshake does not occur
+      var TO = setTimeout(() => {
+        debug(`Timeout: closing the ${info.type} connection from ${info.host} to fetch ${keyStr}`)
+        stream.destroy(new Error('Timed out waiting for handshake'))
+      }, 5000)
+      stream.once('open', () => clearTimeout(TO))
+      return stream
+    }
+  }))
+  swarm.listen()
+  swarm.on('error', err => debug('Swarm error for', keyStr, err))
   swarm.join(archive.discoveryKey)
+
+  debug('Swarming archive', bufToStr(archive.key), 'discovery key', bufToStr(archive.discoveryKey))
   archive.isSwarming = true
+  archive.swarm = swarm
 }
 
 // take the archive out of the network
@@ -550,9 +520,14 @@ export function leaveSwarm (key, cb) {
   var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || !archive.isSwarming) return
 
-  debug('Unswarming archive %s disconnected %d peers', bufToStr(archive.key), archive.metadata.peers.length)
+  var keyStr = bufToStr(archive.key)
+  var swarm = archive.swarm
+
+  debug('Unswarming archive %s disconnected %d peers', keyStr, archive.metadata.peers.length)
   archive.unreplicate() // stop all active replications
   swarm.leave(archive.discoveryKey)
+  swarm.destroy()
+  delete archive.swarm
   archive.isSwarming = false
 }
 
