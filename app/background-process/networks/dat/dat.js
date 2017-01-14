@@ -255,6 +255,10 @@ export function getArchive (key) {
   return archives[bufToStr(key)]
 }
 
+export function getActiveArchives () {
+  return archives
+}
+
 export function getOrLoadArchive (key, opts) {
   key = bufToStr(key)
   return getArchive(key) || loadArchive(new Buffer(key, 'hex'), opts)

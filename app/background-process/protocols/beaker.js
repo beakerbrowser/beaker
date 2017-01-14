@@ -7,6 +7,7 @@ import http from 'http'
 import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 import errorPage from '../../lib/error-page'
+import {archivesDebugPage} from '../networks/dat/debugging'
 
 // constants
 // =
@@ -61,8 +62,10 @@ function beakerServer (req, res) {
       'Content-Security-Policy': BEAKER_CSP,
       'Access-Control-Allow-Origin': '*'
     })
-    if (path) {
+    if (typeof path === 'string') {
       fs.createReadStream(path).pipe(res)
+    } else if (typeof path === 'function') {
+      res.end(path())
     } else {
       res.end(errorPage(code + ' ' + status))
     }
@@ -117,6 +120,11 @@ function beakerServer (req, res) {
   }
   if (requestUrl.startsWith('beaker:logo')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
+  }
+
+  // debugging
+  if (requestUrl === 'beaker:internal-archives') {
+    return cb(200, 'OK', 'text/html', archivesDebugPage)
   }
 
   return cb(404, 'Not Found')
