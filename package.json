@@ -59,7 +59,7 @@
     "burnthemall": "rm -Rf ./node_modules ./app/node_modules; npm i; npm run rebuild",
     "release": "build -m -p never",
     "start": "gulp start",
-    "start-p2p-log": "DEBUG_FD=3 DEBUG=bittorrent-dht $(node -e \"console.log(require('electron'))\") ./app 3> p2p.log",
+    "start-logging": "DEBUG=*,-bittorrent-dht $(node -e \"console.log(require('electron'))\") -r trace ./app",
     "watch": "gulp start-watch"
   }
 }

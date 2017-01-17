@@ -229,6 +229,7 @@ export function loadArchive (key, { noSwarm } = {}) {
   var archive = drive.createArchive(key, {
     live: true,
     sparse: true,
+    verifyReplicationReads: true,
     file: name => raf(path.join(archivesDb.getArchiveFilesPath(archive), name))
   })
   archive.userSettings = null // will be set by `configureArchive` if at all
@@ -253,6 +254,10 @@ export function cacheArchive (archive) {
 
 export function getArchive (key) {
   return archives[bufToStr(key)]
+}
+
+export function getActiveArchives () {
+  return archives
 }
 
 export function getOrLoadArchive (key, opts) {
@@ -489,7 +494,10 @@ export function joinSwarm (key, opts) {
     utp: true,
     tcp: true,
     stream: (info) => {
-      debug(`${info.type} connection from ${info.host} to fetch ${keyStr}`)
+      var dkeyStr = bufToStr(archive.discoveryKey)
+      var chan = dkeyStr.slice(0,6) + '..' + dkeyStr.slice(-2)
+      var keyStrShort = keyStr.slice(0,6) + '..' + keyStr.slice(-2)
+      debug('new connection chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort)
 
       // create the replication stream
       var stream = archive.replicate({
@@ -499,10 +507,14 @@ export function joinSwarm (key, opts) {
 
       // timeout the connection after 5s if handshake does not occur
       var TO = setTimeout(() => {
-        debug(`Timeout: closing the ${info.type} connection from ${info.host} to fetch ${keyStr}`)
+        debug('handshake timeout chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort)
         stream.destroy(new Error('Timed out waiting for handshake'))
       }, 5000)
-      stream.once('open', () => clearTimeout(TO))
+      stream.once('handshake', () => clearTimeout(TO))
+
+      // debugging
+      stream.on('error', err => debug('error chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort, err))
+      stream.on('close', err => debug('closing connection chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort))
       return stream
     }
   }))
