@@ -510,7 +510,7 @@ export function joinSwarm (key, opts) {
         debug('handshake timeout chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort)
         stream.destroy(new Error('Timed out waiting for handshake'))
       }, 5000)
-      stream.once('open', () => clearTimeout(TO))
+      stream.once('handshake', () => clearTimeout(TO))
 
       // debugging
       stream.on('error', err => debug('error chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort, err))
