@@ -229,6 +229,7 @@ export function loadArchive (key, { noSwarm } = {}) {
   var archive = drive.createArchive(key, {
     live: true,
     sparse: true,
+    verifyReplicationReads: true,
     file: name => raf(path.join(archivesDb.getArchiveFilesPath(archive), name))
   })
   archive.userSettings = null // will be set by `configureArchive` if at all
