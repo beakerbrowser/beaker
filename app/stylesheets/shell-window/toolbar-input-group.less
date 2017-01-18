@@ -31,7 +31,7 @@
 
   button {
     background: none;
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.1;
 
     border: 0;
@@ -40,7 +40,11 @@
 
     padding: 4px 8px;
     min-width: 34px;
-    color: #999;
+    color: #777;
+
+    &:hover {
+      background: #eee;
+    }
 
     &:disabled {
       color: #ddd !important;
@@ -57,17 +61,24 @@
     }
 
     // navbar btn styles
+    &.nav-save-btn {
+      &.active {
+        background: #007eff;
+        color: #fff;
+        border-left-color: transparent;
+      } 
+    }
     &.nav-bookmark-btn {
-      color: transparent;
-      -webkit-text-stroke: 1px #aaa;
-      font-size: 14px;
+      font-size: 16px;
       padding-bottom: 5px;
       &.active {
-        color: #FFBC00;
-        -webkit-text-stroke: 1px #EAAE05;
+        background: #FFBC00;
+        color: #fff;
+        font-size: 17px;
+        border-left-color: transparent;
       }
       &:disabled {
-        -webkit-text-stroke: 1px #ccc;
+        color: gray;
       }
     }
 

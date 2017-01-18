@@ -44,9 +44,10 @@ export class DropMenuNavbarBtn {
     if (this.isDropdownOpen) {
       let pageSpecificEls
       let page = pages.getActive()
-      if (page.getIntendedURL().startsWith('dat://')) {
+      if (page.getURL().startsWith('dat://')) {
         pageSpecificEls = [
-          yo`<div class="td-item" onclick=${e => this.onToggleLiveReloading(e)}>Turn ${page.isLiveReloading ? 'off' : 'on'} Live Reloading</div>`,
+          yo`<div class="td-item" onclick=${e => this.onOpenView(e, 'files')}><span class="icon icon-folder"></span> View Site Files</div>`,
+          yo`<div class="td-item" onclick=${e => this.onToggleLiveReloading(e)}><span class="icon icon-flash"></span> Turn ${page.isLiveReloading ? 'off' : 'on'} Live Reloading</div>`,
           yo`<hr />`
         ]
       }
@@ -199,7 +200,7 @@ export class DropMenuNavbarBtn {
       })
   }
 
-  onViewFiles (e) {
+  onOpenView (e, view) {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
@@ -207,7 +208,7 @@ export class DropMenuNavbarBtn {
     var page = pages.getActive()
     if (page.getURL().startsWith('dat://')) {
       // get the target url
-      var url = page.getViewFilesURL()
+      var url = page.getViewFilesURL(view)
       if (!url) return
 
       // load url

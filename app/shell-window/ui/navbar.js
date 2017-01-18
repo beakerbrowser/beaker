@@ -152,14 +152,6 @@ function render (id, page) {
   // bookmark toggle state
   var bookmarkClass = 'nav-bookmark-btn' + ((page && !!page.bookmark) ? ' active' : '')
 
-  // view dat btn
-  var viewDatBtn
-  if (isViewingDat) {
-    viewDatBtn = yo`<button class="nav-view-files-btn clickable" title="View App Files" onclick=${onClickViewFiles}>
-      <span class="icon icon-folder"></span>
-    </button>`
-  }
-
   // live reload btn
   var liveReloadBtn
   if (isViewingDat && page.isLiveReloading) {
@@ -178,6 +170,17 @@ function render (id, page) {
       '0.5': 110, '1': 125, '1.5': 150, '2': 175, '2.5': 200, '3': 250, '3.5': 300, '4': 400, '4.5': 500
     })[page.zoom]
     zoomBtn = yo`<button onclick=${onClickZoom}><span class="icon icon-search"></span> <small>${zoomPct}%</small></button>`
+  }
+
+  // dat buttons
+  var datBtns = ''
+  if (isViewingDat) {
+    // TODO reflect saved state
+    // TODO onclicks
+    datBtns = [
+      yo`<button title="Fork Site" onclick=${onClickForkDat}><span class="icon icon-flow-branch"></span></button>`,
+      yo`<button class="nav-save-btn" title="Save Site" onclick=${onClickSaveDat}><span class="icon icon-floppy"></span></button>`
+    ]
   }
 
   // autocomplete dropdown
@@ -263,11 +266,11 @@ function render (id, page) {
       ${locationInput}
       <span class="charms">
         ${liveReloadBtn}
-        ${viewDatBtn}
       </span>
       ${inpageFinder}
       ${zoomBtn}
-      <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
+      ${datBtns}
+      <button class=${bookmarkClass} onclick=${onClickBookmark} title="Bookmark"><span class="icon icon-star"></span></button>
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
@@ -501,11 +504,12 @@ function onClickBookmark (e) {
   }
 }
 
-function onClickViewFiles (e) {
+// helper for some click events
+function openDatView (e, view) {
   var page = getEventPage(e)
   if (page && page.getURL().startsWith('dat://')) {
     // get the target url
-    var url = page.getViewFilesURL()
+    var url = page.getViewFilesURL(view)
     if (!url) return
 
     // start loading
@@ -514,14 +518,15 @@ function onClickViewFiles (e) {
     } else {
       page.loadURL(url) // goto
     }
-
-    // animate the element
-    document.querySelector('.toolbar-actions:not(.hidden) .nav-view-files-btn .icon').animate([
-      {textShadow: '0 0 0px rgba(128, 128, 128, 1.0)'},
-      {textShadow: '0 0 8px rgba(128, 128, 128, 1.0)'},
-      {textShadow: '0 0 16px rgba(128, 128, 128, 0.0)'}
-    ], { duration: 300 })
   }
+}
+
+function onClickForkDat (e) {
+  openDatView(e, 'fork')
+}
+
+function onClickSaveDat (e) {
+  // TODO
 }
 
 function onClickZoom (e) {

@@ -139,7 +139,7 @@ export function create (opts) {
       return parseURL(this.getURL()).origin
     },
 
-    getViewFilesURL: function () {
+    getViewFilesURL: function (subview) {
       var urlp = parseURL(this.getURL())
       if (!urlp) return false
       var path = urlp.pathname
@@ -147,7 +147,7 @@ export function create (opts) {
         // strip the filename at the end
         path = path.slice(0, path.lastIndexOf('/'))
       }
-      return `beaker:archive/${urlp.host}${path}`
+      return `beaker:archive/${urlp.host}${path}${subview?'#'+subview:''}`
     },
 
     // start/stop live reloading
