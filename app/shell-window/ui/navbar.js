@@ -283,8 +283,9 @@ function renderPrettyLocation (value, isHidden) {
     try {
       var { protocol, host, pathname, search, hash } = new URL(value)
       if (protocol === 'dat:' && isDatHashRegex.test(host)) host = prettyHash(host)
+      var isSecure = (['beaker:','dat:','https:'].includes(protocol))
       valueRendered = [
-        yo`<span class="protocol">${protocol.slice(0, -1)}</span>`,
+        yo`<span class="protocol${isSecure ? ' protocol-secure': ''}">${protocol.slice(0, -1)}</span>`,
         yo`<span class="syntax">://</span>`,
         yo`<span class="host">${host}</span>`,
         yo`<span class="path">${pathname}${search}${hash}</span>`,
