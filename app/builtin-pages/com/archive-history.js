@@ -1,12 +1,13 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import {pluralize} from '../../lib/strings'
+import { niceDate } from '../../lib/time'
 
 export function archiveHistory ({ info }) {
   var rowEls = []
 
   info.entries.forEach(c => {
     var row
+    var mtime = c.mtime ? niceDate(c.mtime) : ''
     switch (c.type) {
       case 'file':
         row = yo`<div class="ll-row">
@@ -14,8 +15,8 @@ export function archiveHistory ({ info }) {
             <span class="favicon icon icon-plus-squared"></span>
             <span class="ll-title">/${c.path}</span>
           </span>
-          <div class="ll-status">${c.blocks} ${pluralize(c.blocks, 'block')}</div>
-          <div class="ll-progress">${prettyBytes(c.length||0)}</div>
+          <span class="ll-updated" title=${mtime}>${mtime}</span>
+          <span class="ll-progress">${prettyBytes(c.length||0)}</span>
         </div>`
         break
       case 'directory':
@@ -24,6 +25,8 @@ export function archiveHistory ({ info }) {
             <span class="favicon icon icon-plus-squared"></span>
             <span class="ll-title">/${c.path || ''}</span>
           </span>
+          <span class="ll-updated" title=${mtime}>${mtime}</span>
+          <span class="ll-progress"></span>
         </div>`
         break
     }
