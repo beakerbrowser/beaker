@@ -150,7 +150,7 @@ function render (id, page) {
     : ''
 
   // bookmark toggle state
-  var bookmarkClass = 'nav-bookmark-btn' + ((page && !!page.bookmark) ? ' active' : '')
+  var bookmarkBtnClass = 'nav-bookmark-btn' + ((page && !!page.bookmark) ? ' active' : '')
 
   // live reload btn
   var liveReloadBtn
@@ -175,11 +175,11 @@ function render (id, page) {
   // dat buttons
   var datBtns = ''
   if (isViewingDat) {
-    // TODO reflect saved state
-    // TODO onclicks
+    let saveBtnClass = 'nav-save-btn'
+    if (page.siteInfo.userSettings.isSaved) saveBtnClass += ' active'
     datBtns = [
       yo`<button title="Fork Site" onclick=${onClickForkDat}><span class="icon icon-flow-branch"></span></button>`,
-      yo`<button class="nav-save-btn" title="Save Site" onclick=${onClickSaveDat}><span class="icon icon-floppy"></span></button>`
+      yo`<button class=${saveBtnClass} title="Save Site" onclick=${onClickSaveDat}><span class="icon icon-floppy"></span></button>`
     ]
   }
 
@@ -270,7 +270,7 @@ function render (id, page) {
       ${inpageFinder}
       ${zoomBtn}
       ${datBtns}
-      <button class=${bookmarkClass} onclick=${onClickBookmark} title="Bookmark"><span class="icon icon-star"></span></button>
+      <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark"><span class="icon icon-star"></span></button>
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
@@ -507,17 +507,17 @@ function onClickBookmark (e) {
 // helper for some click events
 function openDatView (e, view) {
   var page = getEventPage(e)
-  if (page && page.getURL().startsWith('dat://')) {
-    // get the target url
-    var url = page.getViewFilesURL(view)
-    if (!url) return
+  if (!page || !page.getURL().startsWith('dat://')) return
 
-    // start loading
-    if (e.metaKey || e.ctrlKey) { // popup
-      pages.setActive(pages.create(url))
-    } else {
-      page.loadURL(url) // goto
-    }
+  // get the target url
+  var url = page.getViewFilesURL(view)
+  if (!url) return
+
+  // start loading
+  if (e.metaKey || e.ctrlKey) { // popup
+    pages.setActive(pages.create(url))
+  } else {
+    page.loadURL(url) // goto
   }
 }
 
@@ -526,7 +526,14 @@ function onClickForkDat (e) {
 }
 
 function onClickSaveDat (e) {
-  // TODO
+  var page = getEventPage(e)
+  if (!page || !page.siteInfo) return
+
+  var info = page.siteInfo
+  datInternalAPI.setArchiveUserSettings(info.key, { isSaved: !info.userSettings.isSaved }).then(settings => {
+    info.userSettings = settings
+    update(page)
+  })
 }
 
 function onClickZoom (e) {

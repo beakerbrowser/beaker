@@ -66,15 +66,17 @@ export function create (opts) {
     loadingURL: false, // what URL is being loaded, if any?
     isGuessingTheURLScheme: false, // did beaker guess at the url scheme? if so, a bad load may deserve a second try
     manuallyTrackedIsLoading: true, // used because the webview may never be ready, so webview.isLoading() isnt enough
-    bookmark: null, // this page's bookmark object, if it's bookmarked
     isWebviewReady: false, // has the webview loaded its methods?
     isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
     isLiveReloading: false, // live-reload enabled?
     zoom: 0, // what's the current zoom level?
+
+    // current page's info
     favicons: null, // what are the favicons of the page?
     faviconDominantColor: null, // what's the computed dominant color of favicon?
+    bookmark: null, // this page's bookmark object, if it's bookmarked
 
     // current site's info
     protocolInfo: null, // info about the current page's delivery protocol
@@ -87,7 +89,7 @@ export function create (opts) {
     lastVisitedURL: null, // last URL added into history
 
     // prompts
-    prompts: [], // list of active prompts (perms)
+    prompts: [], // list of active prompts (used with perms)
 
     // tab state
     isPinned: opts.isPinned, // is this page pinned?
