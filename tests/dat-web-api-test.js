@@ -244,7 +244,6 @@ test('dat.createSite', async t => {
   }, createdDatKey)
   await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.isSaved, true)
-  t.deepEqual(details.value.userSettings.isHosting, true)
 })
 
 test('dat.writeFile', async t => {
@@ -503,7 +502,6 @@ test('dat.deleteSite sets saved -> false', async t => {
   }, createdDatKey)
   await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.isSaved, true, 'not deleted at start')
-  t.deepEqual(details.value.userSettings.isHosting, true)
 
   // start the prompt
   await app.client.execute((url) => {
@@ -531,7 +529,6 @@ test('dat.deleteSite sets saved -> false', async t => {
   }, createdDatKey)
   await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.isSaved, true, 'not yet deleted')
-  t.deepEqual(details.value.userSettings.isHosting, true)
 
   // start the prompt again
   await app.client.execute((url) => {
@@ -559,5 +556,4 @@ test('dat.deleteSite sets saved -> false', async t => {
   }, createdDatKey)
   await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.isSaved, false, 'is deleted')
-  t.deepEqual(details.value.userSettings.isHosting, false)
 })
