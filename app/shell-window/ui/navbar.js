@@ -174,6 +174,7 @@ function render (id, page) {
     datBtns = [
       yo`<button class=${liveReloadBtnCls} title="Live Reloading" onclick=${onClickLiveReload}><span class="icon icon-flash"></span></button>`,
       yo`<button title="Fork Site" onclick=${onClickForkDat}><span class="icon icon-flow-branch"></span></button>`,
+      yo`<button title="View Site Files" onclick=${onClickViewFiles}><span class="icon icon-folder"></span></button>`,
       yo`<button class=${saveBtnClass} title="Save Site" onclick=${onClickSaveDat}><span class="icon icon-floppy"></span></button>`
     ]
   }
@@ -515,6 +516,10 @@ function openDatView (e, view) {
 
 function onClickForkDat (e) {
   openDatView(e, 'fork')
+}
+
+function onClickViewFiles (e) {
+  openDatView(e, 'files')  
 }
 
 function onClickSaveDat (e) {
