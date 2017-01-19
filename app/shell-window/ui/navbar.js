@@ -152,14 +152,6 @@ function render (id, page) {
   // bookmark toggle state
   var bookmarkBtnClass = 'nav-bookmark-btn' + ((page && !!page.bookmark) ? ' active' : '')
 
-  // live reload btn
-  var liveReloadBtn
-  if (isViewingDat && page.isLiveReloading) {
-    liveReloadBtn = yo`<button class="nav-live-reload-btn" title="Live Reloading">
-      <span class="icon icon-flash"></span>
-    </button>`
-  }
-
   // zoom btn should only show if zoom is not the default setting
   var zoomBtn = ''
   if (page && page.zoom != 0) {
@@ -176,8 +168,11 @@ function render (id, page) {
   var datBtns = ''
   if (isViewingDat) {
     let saveBtnClass = 'nav-save-btn'
-    if (page.siteInfo.userSettings.isSaved) saveBtnClass += ' active'
+    if (page.siteInfo && page.siteInfo.userSettings.isSaved) saveBtnClass += ' active'
+    let liveReloadBtnCls = 'nav-live-reload-btn'
+    if (page.isLiveReloading) liveReloadBtnCls += ' active'
     datBtns = [
+      yo`<button class=${liveReloadBtnCls} title="Live Reloading" onclick=${onClickLiveReload}><span class="icon icon-flash"></span></button>`,
       yo`<button title="Fork Site" onclick=${onClickForkDat}><span class="icon icon-flow-branch"></span></button>`,
       yo`<button class=${saveBtnClass} title="Save Site" onclick=${onClickSaveDat}><span class="icon icon-floppy"></span></button>`
     ]
@@ -264,9 +259,6 @@ function render (id, page) {
       ${siteInfoNavbarBtn.render()}
       ${locationPrettyView}
       ${locationInput}
-      <span class="charms">
-        ${liveReloadBtn}
-      </span>
       ${inpageFinder}
       ${zoomBtn}
       ${datBtns}
@@ -534,6 +526,12 @@ function onClickSaveDat (e) {
     info.userSettings = settings
     update(page)
   })
+}
+
+function onClickLiveReload (e) {
+  var page = getEventPage(e)
+  if (!page || !page.siteInfo) return
+  page.toggleLiveReloading()
 }
 
 function onClickZoom (e) {

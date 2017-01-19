@@ -33,6 +33,7 @@
     background: none;
     font-size: 16px;
     line-height: 1.1;
+    min-width: 24px;
 
     border: 0;
     border-radius: 0;
@@ -74,6 +75,18 @@
       }
       &:disabled {
         color: gray;
+      }
+    }
+    &.nav-live-reload-btn {
+      .icon {
+        font-size: 17px;
+      }
+      &.active {
+        color: gold;
+        -webkit-text-stroke: 1px #eabb33;
+        animation-name: navLiveReloadBtnGlow;
+        animation-duration: 2s;
+        animation-iteration-count: infinite;
       }
     }
 
@@ -129,38 +142,6 @@
     .syntax,
     .path {
       color: #aaa;
-    }
-  }
-
-  .charms {
-    padding: 0px 5px;
-    button {
-      -webkit-text-stroke: 1px #999;
-      color: #f5f5f5;
-      border: 0;
-      min-width: 22px;
-      padding: 4px;
-      transition: color 0.1s;
-      &:hover {
-        color: #e5e5e5;
-      }
-
-      &.clickable, &.clickable .icon {
-        cursor: pointer;
-      }
-
-      &.nav-live-reload-btn {
-        color: gold;
-        padding-right: 0;
-        min-width: 15px;
-        -webkit-text-stroke: 1px #eabb33;
-        animation-name: navLiveReloadBtnGlow;
-        animation-duration: 2s;
-        animation-iteration-count: infinite;
-        .icon {
-          font-size: 14px;
-        }
-      }
     }
   }
 
