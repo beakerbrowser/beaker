@@ -9,6 +9,9 @@ import { archiveHistory } from '../com/archive-history'
 // =
 
 var currentView = 'about'
+if (window.location.hash === '#files') {
+  currentView = 'files'
+}
 
 // exported api
 // =

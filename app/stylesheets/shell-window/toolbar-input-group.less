@@ -31,16 +31,19 @@
 
   button {
     background: none;
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.1;
+    min-width: 24px;
 
     border: 0;
-    border-left: 1px solid #ccc;
     border-radius: 0;
 
-    padding: 4px 8px;
-    min-width: 34px;
-    color: #999;
+    padding: 4px 6px;
+    color: #777;
+
+    &:hover {
+      background: #eee;
+    }
 
     &:disabled {
       color: #ddd !important;
@@ -53,28 +56,44 @@
 
     &:last-child {
       // give a little more room on the right
-      min-width: 32px;
+      padding-right: 8px;
     }
 
     // navbar btn styles
-    &.nav-bookmark-btn {
-      color: transparent;
-      -webkit-text-stroke: 1px #aaa;
-      font-size: 14px;
-      padding-bottom: 5px;
+    &.nav-save-btn {
       &.active {
-        color: #FFBC00;
-        -webkit-text-stroke: 1px #EAAE05;
+        color: #007eff;
+      } 
+    }
+    &.nav-bookmark-btn {
+      font-size: 16px;
+      color: transparent;
+      -webkit-text-stroke: 1px #777;
+      &.active {
+        color: #007eff;
+        -webkit-text-stroke: 1px #007eff;
       }
       &:disabled {
-        -webkit-text-stroke: 1px #ccc;
+        color: gray;
+      }
+    }
+    &.nav-live-reload-btn {
+      .icon {
+        font-size: 17px;
+      }
+      &.active {
+        color: gold;
+        -webkit-text-stroke: 1px #eabb33;
+        animation-name: navLiveReloadBtnGlow;
+        animation-duration: 2s;
+        animation-iteration-count: infinite;
       }
     }
 
     small {
       position: relative;
-      top: -2px;
-      font-size: 11px;
+      top: -1px;
+      font-size: 12px;
     }
   }
 
@@ -82,19 +101,22 @@
     button {
       display: flex;
       color: #555;
-      padding: 0;
+      padding: 0 0 0 3px;
       border: 0;
       min-width: 0;
 
       .icon {
-        padding: 7px 0 4px 9px;
+        padding: 7px 0 4px 6px;
         font-size: 14px;
-        color: #3c943c;
         &.icon-lock {
           font-size: 15px;
           position: relative;
           top: -1px;
           vertical-align: top;
+        }
+        &.icon-share,
+        &.icon-lock {
+          color: #3c943c;
         }
       }
 
@@ -114,44 +136,12 @@
     padding: 3px 0 1px 7px;
     cursor: text;
 
-    .protocol {
+    .protocol-secure {
       color: #3c943c;
     }
     .syntax,
     .path {
       color: #aaa;
-    }
-  }
-
-  .charms {
-    padding: 0px 5px;
-    button {
-      -webkit-text-stroke: 1px #999;
-      color: #f5f5f5;
-      border: 0;
-      min-width: 22px;
-      padding: 4px;
-      transition: color 0.1s;
-      &:hover {
-        color: #e5e5e5;
-      }
-
-      &.clickable, &.clickable .icon {
-        cursor: pointer;
-      }
-
-      &.nav-live-reload-btn {
-        color: gold;
-        padding-right: 0;
-        min-width: 15px;
-        -webkit-text-stroke: 1px #eabb33;
-        animation-name: navLiveReloadBtnGlow;
-        animation-duration: 2s;
-        animation-iteration-count: infinite;
-        .icon {
-          font-size: 14px;
-        }
-      }
     }
   }
 

@@ -150,23 +150,7 @@ function render (id, page) {
     : ''
 
   // bookmark toggle state
-  var bookmarkClass = 'nav-bookmark-btn' + ((page && !!page.bookmark) ? ' active' : '')
-
-  // view dat btn
-  var viewDatBtn
-  if (isViewingDat) {
-    viewDatBtn = yo`<button class="nav-view-files-btn clickable" title="View App Files" onclick=${onClickViewFiles}>
-      <span class="icon icon-folder"></span>
-    </button>`
-  }
-
-  // live reload btn
-  var liveReloadBtn
-  if (isViewingDat && page.isLiveReloading) {
-    liveReloadBtn = yo`<button class="nav-live-reload-btn" title="Live Reloading">
-      <span class="icon icon-flash"></span>
-    </button>`
-  }
+  var bookmarkBtnClass = 'nav-bookmark-btn' + ((page && !!page.bookmark) ? ' active' : '')
 
   // zoom btn should only show if zoom is not the default setting
   var zoomBtn = ''
@@ -178,6 +162,20 @@ function render (id, page) {
       '0.5': 110, '1': 125, '1.5': 150, '2': 175, '2.5': 200, '3': 250, '3.5': 300, '4': 400, '4.5': 500
     })[page.zoom]
     zoomBtn = yo`<button onclick=${onClickZoom}><span class="icon icon-search"></span> <small>${zoomPct}%</small></button>`
+  }
+
+  // dat buttons
+  var datBtns = ''
+  if (isViewingDat) {
+    let saveBtnClass = 'nav-save-btn'
+    if (page.siteInfo && page.siteInfo.userSettings.isSaved) saveBtnClass += ' active'
+    let liveReloadBtnCls = 'nav-live-reload-btn'
+    if (page.isLiveReloading) liveReloadBtnCls += ' active'
+    datBtns = [
+      yo`<button class=${liveReloadBtnCls} title="Live Reloading" onclick=${onClickLiveReload}><span class="icon icon-flash"></span></button>`,
+      yo`<button title="Fork Site" onclick=${onClickForkDat}><span class="icon icon-flow-branch"></span></button>`,
+      yo`<button class=${saveBtnClass} title="Save Site" onclick=${onClickSaveDat}><span class="icon icon-floppy"></span></button>`
+    ]
   }
 
   // autocomplete dropdown
@@ -261,13 +259,10 @@ function render (id, page) {
       ${siteInfoNavbarBtn.render()}
       ${locationPrettyView}
       ${locationInput}
-      <span class="charms">
-        ${liveReloadBtn}
-        ${viewDatBtn}
-      </span>
       ${inpageFinder}
       ${zoomBtn}
-      <button class=${bookmarkClass} onclick=${onClickBookmark}><span class="icon icon-star"></span></button>
+      ${datBtns}
+      <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark"><span class="icon icon-star"></span></button>
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
@@ -283,8 +278,9 @@ function renderPrettyLocation (value, isHidden) {
     try {
       var { protocol, host, pathname, search, hash } = new URL(value)
       if (protocol === 'dat:' && isDatHashRegex.test(host)) host = prettyHash(host)
+      var isSecure = (['beaker:','dat:','https:'].includes(protocol))
       valueRendered = [
-        yo`<span class="protocol">${protocol.slice(0, -1)}</span>`,
+        yo`<span class="protocol${isSecure ? ' protocol-secure': ''}">${protocol.slice(0, -1)}</span>`,
         yo`<span class="syntax">://</span>`,
         yo`<span class="host">${host}</span>`,
         yo`<span class="path">${pathname}${search}${hash}</span>`,
@@ -500,27 +496,42 @@ function onClickBookmark (e) {
   }
 }
 
-function onClickViewFiles (e) {
+// helper for some click events
+function openDatView (e, view) {
   var page = getEventPage(e)
-  if (page && page.getURL().startsWith('dat://')) {
-    // get the target url
-    var url = page.getViewFilesURL()
-    if (!url) return
+  if (!page || !page.getURL().startsWith('dat://')) return
 
-    // start loading
-    if (e.metaKey || e.ctrlKey) { // popup
-      pages.setActive(pages.create(url))
-    } else {
-      page.loadURL(url) // goto
-    }
+  // get the target url
+  var url = page.getViewFilesURL(view)
+  if (!url) return
 
-    // animate the element
-    document.querySelector('.toolbar-actions:not(.hidden) .nav-view-files-btn .icon').animate([
-      {textShadow: '0 0 0px rgba(128, 128, 128, 1.0)'},
-      {textShadow: '0 0 8px rgba(128, 128, 128, 1.0)'},
-      {textShadow: '0 0 16px rgba(128, 128, 128, 0.0)'}
-    ], { duration: 300 })
+  // start loading
+  if (e.metaKey || e.ctrlKey) { // popup
+    pages.setActive(pages.create(url))
+  } else {
+    page.loadURL(url) // goto
   }
+}
+
+function onClickForkDat (e) {
+  openDatView(e, 'fork')
+}
+
+function onClickSaveDat (e) {
+  var page = getEventPage(e)
+  if (!page || !page.siteInfo) return
+
+  var info = page.siteInfo
+  datInternalAPI.setArchiveUserSettings(info.key, { isSaved: !info.userSettings.isSaved }).then(settings => {
+    info.userSettings = settings
+    update(page)
+  })
+}
+
+function onClickLiveReload (e) {
+  var page = getEventPage(e)
+  if (!page || !page.siteInfo) return
+  page.toggleLiveReloading()
 }
 
 function onClickZoom (e) {
