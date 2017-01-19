@@ -150,7 +150,7 @@ function datServer (req, res) {
     var redirectToViewDat = once(hashOpt => {
       hashOpt = hashOpt || ''
       // the following code crashes the shit out of electron (https://github.com/electron/electron/issues/6492)
-      // res.writeHead(302, 'Found', { 'Location': 'beaker:archive/'+archiveKey+urlp.path })
+      // res.writeHead(302, 'Found', { 'Location': 'beaker:library/'+archiveKey+urlp.path })
       // return res.end()
 
       // use the html redirect instead, for now
@@ -159,7 +159,7 @@ function datServer (req, res) {
         'Content-Security-Policy': DAT_CSP,
         'Access-Control-Allow-Origin': '*'
       })
-      res.end('<meta http-equiv="refresh" content="0;URL=beaker:archive/' + archiveKey + urlp.path + hashOpt + '">')
+      res.end('<meta http-equiv="refresh" content="0;URL=beaker:library/' + archiveKey + urlp.path + hashOpt + '">')
       return
     })
 

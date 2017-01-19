@@ -25,7 +25,7 @@ function rProvinence (archive) {
 
 function viewUrl (url) {
   if (url.startsWith('dat://')) {
-    return 'beaker:archive/' + url.slice('dat://'.length)
+    return 'beaker:library/' + url.slice('dat://'.length)
   }
   return url
 }

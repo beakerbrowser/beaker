@@ -38,7 +38,7 @@ export function archiveFiles (archive) {
     var link
     if (entry.type == 'directory') {
       link = yo`<a class="fl-name-link" 
-          href="beaker:archive/${archiveKey}/${entry.path}"
+          href="beaker:library/${archiveKey}/${entry.path}"
           title=${entry.name}
           onclick=${pushUrl}><span class="icon icon-folder"></span> ${entry.name}</a>`
     } else {
@@ -73,7 +73,7 @@ export function archiveFiles (archive) {
   function renderParent () {
     const entry = tree.parent.entry
     return yo`<div class="fl-row updog">
-      <div class="fl-name overflower"><a class="fl-name-link" href="beaker:archive/${archiveKey}/${entry.path}" title="Parent directory" onclick=${pushUrl}>parent</a></div>
+      <div class="fl-name overflower"><a class="fl-name-link" href="beaker:library/${archiveKey}/${entry.path}" title="Parent directory" onclick=${pushUrl}>parent</a></div>
       <div class="fl-size"></div>
     </div>`
   }

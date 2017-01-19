@@ -38,8 +38,8 @@ export function create (values, { title, onSubmit }) {
 
 export function createArchiveFlow () {
   create({}, { title: 'New Site', onSubmit: ({ title, description }) => {
-    datInternalAPI.createNewArchive({ title, description, origin: 'beaker:archives' }).then(key => {
-      window.location = 'beaker:archive/' + key
+    datInternalAPI.createNewArchive({ title, description, origin: 'beaker:library' }).then(key => {
+      window.location = 'beaker:library/' + key
     })
   }})
 }

@@ -31,7 +31,7 @@ window.history.replaceState = _wr('replaceState')
 // globals
 // =
 
-var views = { start: favorites, archives, archive: archives, history, downloads, settings }
+var views = { start: favorites, library: archives, history, downloads, settings }
 var currentView = getLocationView()
 
 // setup

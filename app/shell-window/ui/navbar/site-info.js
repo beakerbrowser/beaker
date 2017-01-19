@@ -150,7 +150,7 @@ export class SiteInfoNavbarBtn {
 
   viewSiteFiles() {
     const { hostname } = this.protocolInfo
-    pages.setActive(pages.create('beaker:archive/' + hostname + '#files'))
+    pages.setActive(pages.create('beaker:library/' + hostname + '#files'))
     this.closeDropdown()
   }
 }
