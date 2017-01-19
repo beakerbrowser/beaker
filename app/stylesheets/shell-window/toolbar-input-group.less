@@ -35,11 +35,9 @@
     line-height: 1.1;
 
     border: 0;
-    border-left: 1px solid #ccc;
     border-radius: 0;
 
-    padding: 4px 8px;
-    min-width: 34px;
+    padding: 4px 6px;
     color: #777;
 
     &:hover {
@@ -57,25 +55,19 @@
 
     &:last-child {
       // give a little more room on the right
-      min-width: 32px;
+      padding-right: 8px;
     }
 
     // navbar btn styles
     &.nav-save-btn {
       &.active {
-        background: #007eff;
-        color: #fff;
-        border-left-color: transparent;
+        color: #007eff;
       } 
     }
     &.nav-bookmark-btn {
       font-size: 16px;
-      padding-bottom: 5px;
       &.active {
-        background: #FFBC00;
-        color: #fff;
-        font-size: 17px;
-        border-left-color: transparent;
+        color: #007eff;
       }
       &:disabled {
         color: gray;
@@ -84,8 +76,8 @@
 
     small {
       position: relative;
-      top: -2px;
-      font-size: 11px;
+      top: -1px;
+      font-size: 12px;
     }
   }
 
