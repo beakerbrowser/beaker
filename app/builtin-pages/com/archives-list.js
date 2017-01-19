@@ -40,6 +40,6 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
 
 function renderEmpty () {
   return yo`<div class="archives-list-empty">
-    You dont have any archives yet.
+    You dont have any sites saved yet.
   </div>`
 }

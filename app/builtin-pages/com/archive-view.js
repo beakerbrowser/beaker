@@ -26,8 +26,17 @@ export function render (archive, opts = {}) {
 function renderEmpty () {
   return yo`<div class="archive-view">
     <div class="archive-empty-banner">
-      <h2>No site selected.</h2>
-      <p>Share files, pages, and applications. <a onclick=${createArchiveFlow}>New site</a>.</p>
+      <h2>Site Library</h2>
+      <p><strong>Share files, pages, and applications. <a onclick=${createArchiveFlow}>New site</a>.</strong></p>
+      <p>
+        Save sites to your library by clicking the <span class="icon icon-floppy"></span> in the URL bar.
+        The site will be available offline, and you${"'"}ll host it for other users.
+        <span class="icon icon-rocket"></span> It${"'"}s peer-to-peer!
+      </p>
+      <p style="color: gray; font-size: 14px">
+        Only sites served with <kbd>dat://</kbd>, the Decentralized Archive Transport, can be saved to your library.
+        Sites served with <kbd>http://</kbd> won't have the <span class="icon icon-floppy"></span> button.
+      </p>
     </div>
   </div>`
 }
@@ -78,6 +87,10 @@ function renderArchive (archive, opts) {
       </div>
       ${rSubnav(archive)}
       ${rView(archive)}
+      <div class="archive-tip">
+        <div>Tip: click the <span class="icon icon-flash"></span> in the site${"'"}s URL bar to turn on live-reloading. Great for development!</div>
+        <div>Power users: Use the <a href="https://github.com/beakerbrowser/bkr" title="bkr" target="_blank">bkr cli</a> to checkout, develop, and publish sites.</div>
+      </div>
     </div>
   `
 }
