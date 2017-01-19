@@ -125,27 +125,13 @@ export function readArchiveFile (archive, name, opts, cb) {
 
 export function readManifest (archive, cb) {
   readArchiveFile(archive, DAT_MANIFEST_FILENAME, (err, data) => {
-    if (data)
-      return done(data)
-
-    // TEMPORARY try legacy (remove in, like, a year. maybe less.)
-    readArchiveFile(archive, 'manifest.json', (err, data) => {
-      if (data)
-        return done(data)
-
-      // no manifest
-      cb()
-    })
+    var manifest = null
+    if (data) {
+      try { manifest = JSON.parse(data.toString()) }
+      catch (e) {}
+    }
+    cb(null, manifest)
   })
-
-  function done (data) {
-    // parse manifest
-    try {
-      var manifest = JSON.parse(data.toString())
-      if (manifest.name || !manifest.title) manifest.title = manifest.name // TEMPORARY legacy fix
-      cb(null, manifest)
-    } catch (e) { cb() }
-  }
 }
 
 export function readReadme (archive, cb) {

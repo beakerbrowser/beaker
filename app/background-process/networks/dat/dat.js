@@ -197,9 +197,6 @@ export function configureArchive (key, settings) {
   archivesEvents.emit('update-archive', { key, isUploading: upload, isDownloading: download })
 
   archive.open(() => {
-    // set download prioritization
-    if (download) archive.content.prioritize({start: 0, end: Infinity}) // autodownload all content
-    else archive.content.unprioritize({start: 0, end: Infinity}) // download content on demand
     if (!archive.isSwarming) {
       // announce
       joinSwarm(archive)
