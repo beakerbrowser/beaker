@@ -174,6 +174,7 @@ function render (id, page) {
     datBtns = [
       yo`<button class=${liveReloadBtnCls} title="Live Reloading" onclick=${onClickLiveReload}><span class="icon icon-flash"></span></button>`,
       yo`<button title="Fork Site" onclick=${onClickForkDat}><span class="icon icon-flow-branch"></span></button>`,
+      yo`<button title="View Site Files" onclick=${onClickViewFiles}><span class="icon icon-folder"></span></button>`,
       yo`<button class=${saveBtnClass} title="Save Site" onclick=${onClickSaveDat}><span class="icon icon-floppy"></span></button>`
     ]
   }
@@ -278,9 +279,11 @@ function renderPrettyLocation (value, isHidden) {
     try {
       var { protocol, host, pathname, search, hash } = new URL(value)
       if (protocol === 'dat:' && isDatHashRegex.test(host)) host = prettyHash(host)
-      var isSecure = (['beaker:','dat:','https:'].includes(protocol))
+      var cls = 'protocol'
+      if (['beaker:','https:'].includes(protocol)) cls += ' protocol-secure'
+      if (['dat:'].includes(protocol)) cls += ' protocol-p2p'
       valueRendered = [
-        yo`<span class="protocol${isSecure ? ' protocol-secure': ''}">${protocol.slice(0, -1)}</span>`,
+        yo`<span class=${cls}>${protocol.slice(0, -1)}</span>`,
         yo`<span class="syntax">://</span>`,
         yo`<span class="host">${host}</span>`,
         yo`<span class="path">${pathname}${search}${hash}</span>`,
@@ -515,6 +518,10 @@ function openDatView (e, view) {
 
 function onClickForkDat (e) {
   openDatView(e, 'fork')
+}
+
+function onClickViewFiles (e) {
+  openDatView(e, 'files')  
 }
 
 function onClickSaveDat (e) {

@@ -82,7 +82,7 @@ export function show (isSameView) {
 
     // now that it has loaded, redirect to dat:// if this was a timeout view
     if (window.location.hash === '#timeout') {
-      var destURL = 'dat://' + /^archive\/(.*)/.exec(window.location.pathname)[1]
+      var destURL = 'dat://' + /^library\/(.*)/.exec(window.location.pathname)[1]
       console.log('Archive found! Redirecting to', destURL)
       window.location = destURL
       return
@@ -144,10 +144,9 @@ function handleInnerNavigation () {
 
 function getURLKey () {
   var path = window.location.pathname
-  if (path.startsWith('archives')) return false
   try {
     // extract key from url
-    return /^archive\/([0-9a-f]{64})/.exec(path)[1]
+    return /^library\/([0-9a-f]{64})/.exec(path)[1]
   } catch (e) {
     console.error('Failed to parse URL', e)
     return false

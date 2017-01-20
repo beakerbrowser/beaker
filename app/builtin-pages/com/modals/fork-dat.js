@@ -85,8 +85,8 @@ export function forkArchiveFlow (archive) {
       modal.rerender()
     },
     onSubmit({ title, description }) {
-      datInternalAPI.forkArchive(archive.info.key, { title, description, origin: 'beaker:archives' }).then(newKey => {
-        window.location = 'beaker:archive/' + newKey
+      datInternalAPI.forkArchive(archive.info.key, { title, description, origin: 'beaker:library' }).then(newKey => {
+        window.location = 'beaker:library/' + newKey
       }).catch(err => {
         console.error(err) // TODO alert user
       })

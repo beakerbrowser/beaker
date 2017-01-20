@@ -17,7 +17,8 @@ export class SiteInfoNavbarBtn {
 
   render() {
     // pull details
-    var title = '', url = '', hostname = '', icon = '', protocoldesc = ''
+    var title = '', url = '', hostname = '', icon = ''
+    var protocolCls = 'insecure', protocolLabel = '', protocolDesc = ''
     if (this.siteInfoOverride && this.siteInfoOverride.title) {
       title = this.siteInfoOverride.title
     } else if (this.siteInfo && this.siteInfo.title) {
@@ -28,15 +29,19 @@ export class SiteInfoNavbarBtn {
     if (this.protocolInfo) {
       url = this.protocolInfo.url
       hostname = this.protocolInfo.hostname
-      if (['https:', 'beaker:'].includes(this.protocolInfo.scheme)) {
+      if (['https:'].includes(this.protocolInfo.scheme)) {
         icon = 'lock'
-        protocoldesc = 'Your connection to this site is private.'
+        protocolLabel = 'Secure'
+        protocolDesc = 'Your connection to this site is private.'
+        protocolCls = 'secure'
       } else if (this.protocolInfo.scheme === 'http:') {
         icon = 'info-circled'
-        protocoldesc = 'Your connection to this site is not private.'
+        protocolDesc = 'Your connection to this site is not private.'
       } else if (['dat:', 'fs:'].indexOf(this.protocolInfo.scheme) != -1) {
         icon = 'share'
-        protocoldesc = 'This site was downloaded from a peer-to-peer network.'
+        protocolLabel = 'P2P'
+        protocolDesc = 'This site was downloaded from a peer-to-peer network.'
+        protocolCls = 'p2p'
       }
     }
 
@@ -73,7 +78,7 @@ export class SiteInfoNavbarBtn {
             <img src="beaker-favicon:${url}" />
             <strong>${title || hostname || url}</strong>
           </div>
-          <div><small>${protocoldesc}</small></div>
+          <div><small>${protocolDesc}</small></div>
           ${siteCtrlsEl}
         </div>
         <div class="perms">${permsEls}</div>
@@ -82,8 +87,8 @@ export class SiteInfoNavbarBtn {
 
     // render
     var iconEl = (icon) ? yo`<span class="icon icon-${icon}"></span>` : ''
-    var titleEl = (title) ? yo`<span class="title">${shorten(title)}</span>`: ''
-    return yo`<div class="toolbar-site-info">
+    var titleEl = (protocolLabel) ? yo`<span class="title">${protocolLabel}</span>`: ''
+    return yo`<div class="toolbar-site-info ${protocolCls}">
       <button onclick=${e => this.toggleDropdown(e)}>${iconEl} ${titleEl}</button>
       ${dropdownEl}
     </div>`
@@ -150,7 +155,7 @@ export class SiteInfoNavbarBtn {
 
   viewSiteFiles() {
     const { hostname } = this.protocolInfo
-    pages.setActive(pages.create('beaker:archive/' + hostname + '#files'))
+    pages.setActive(pages.create('beaker:library/' + hostname + '#files'))
     this.closeDropdown()
   }
 }

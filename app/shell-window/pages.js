@@ -149,7 +149,7 @@ export function create (opts) {
         // strip the filename at the end
         path = path.slice(0, path.lastIndexOf('/'))
       }
-      return `beaker:archive/${urlp.host}${path}${subview?'#'+subview:''}`
+      return `beaker:library/${urlp.host}${path}${subview?'#'+subview:''}`
     },
 
     // start/stop live reloading

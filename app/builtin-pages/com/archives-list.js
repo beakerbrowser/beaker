@@ -16,7 +16,7 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
     let title = archive.title || 'Untitled'
     let activeCls = (archive.key === selectedArchiveKey) ? 'active' : ''
     return yo`<div class="ll-row ${activeCls}">
-      <a class="ll-link" href=${'beaker:archive/'+archive.key} onclick=${pushUrl} title=${title}>
+      <a class="ll-link" href=${'beaker:library/'+archive.key} onclick=${pushUrl} title=${title}>
         <span class="ll-title">${title}</span>
       </a>
     </div>`
@@ -40,6 +40,6 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
 
 function renderEmpty () {
   return yo`<div class="archives-list-empty">
-    You dont have any archives yet.
+    You dont have any sites saved yet.
   </div>`
 }

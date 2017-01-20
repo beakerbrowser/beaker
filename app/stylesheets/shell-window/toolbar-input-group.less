@@ -114,20 +114,21 @@
           top: -1px;
           vertical-align: top;
         }
-        &.icon-share,
-        &.icon-lock {
-          color: #3c943c;
-        }
       }
 
       .title {
         font-size: 14px;
-        color: #3c943c;
         margin-top: 5px; // use margin so the border on the right will have spacing from the top border
         padding: 2px 7px 1px 5px;
         border: 0;
         border-right: 1px solid #ddd;
       }
+    }
+    &.secure button {
+      color: #3c943c !important;
+    }
+    &.p2p button {
+      color: #016fde !important;
     }
   }
 
@@ -138,6 +139,9 @@
 
     .protocol-secure {
       color: #3c943c;
+    }
+    .protocol-p2p {
+      color: #016fde;
     }
     .syntax,
     .path {
