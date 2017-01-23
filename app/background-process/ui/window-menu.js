@@ -233,7 +233,6 @@ var helpMenu = {
         if (win) win.webContents.send('command', 'file:new-tab', 'https://beakerbrowser.com/docs/')
       }
     },
-    { type: 'separator' },
     {
       label: 'Report Bug',
       click: function (item, win) {
@@ -245,23 +244,23 @@ var helpMenu = {
       click: function (item, win) {
         if (win) win.webContents.send('command', 'file:new-tab', 'https://groups.google.com/forum/#!forum/beaker-browser')
       }
-    },
-    { type: 'separator' },
-    {
-      label: 'About',
-      role: 'about',
-      click: function (item, win) {
-        if (win) win.webContents.send('command', 'file:new-tab', 'beaker:settings')
-      }
     }
   ]
 }
-
+if (process.platform !== 'darwin') {
+  helpMenu.submenu.push({ type: 'separator' })
+  helpMenu.submenu.push({
+    label: 'About',
+    role: 'about',
+    click: function (item, win) {
+      if (win) win.webContents.send('command', 'file:new-tab', 'beaker:settings')
+    }
+  })
+}
 
 export default function buildWindowMenu () {
-  var menus = [fileMenu, editMenu, viewMenu, historyMenu, windowMenu]
+  var menus = [fileMenu, editMenu, viewMenu, historyMenu, windowMenu, helpMenu]
   if (process.platform === 'darwin') menus.unshift(darwinMenu)
-  if (process.platform != 'darwin') menus.push(helpMenu)
   menus.push(beakerDevMenu) // TODO: remove in release build?
   return menus
 }
