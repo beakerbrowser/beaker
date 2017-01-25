@@ -24,43 +24,37 @@
     z-index: 1;
     -webkit-app-region: no-drag;
     transition: .1s transform;
-    
-    // before, after, and .chrome-tab-bg comprise the tab visuals
-    &:before, &:after {
-      content: '';
+    border-bottom: 1px solid #999;
+
+    // tab decoration
+    svg {
       position: absolute;
-      top: -56px;
-      bottom: 0;
-      width: 15px;
-      z-index: -1;
-      border: 1px solid #555;
-      border-top-color: #555;
-      border-bottom-color: #aaa;
-      background: #ddd;
-      transform: perspective(5px) rotateX(7deg);
-      transition: 0.2s background;
-    }
-    &:before {
-      left: 0;
-      transform-origin: bottom right;
-      border-right: 0;
-    }
-    &:after {
-      right: 0;
-      transform-origin: bottom left;
-      box-shadow: 1px -1px 1px rgba(0,0,0,.05); // this helps to darken the edge, which is oddly light from the 3d transform
-      border-left: 0;
+      top: 0;
+      height: 28px;
+
+      .edge-bg {
+        fill: #ddd;
+        transition: .2s fill;
+      }
+      .edge-border {
+        stroke: #808080;
+        stroke-width: 1px;
+      }
+
+      &.right-edge {
+        transform: scaleX(-1);
+        right: 0;
+      }
     }
     .chrome-tab-bg {
-      background: #ddd;
       position: absolute;
-      left: 11px;
-      top: 1px;
-      right: 11px;
-      bottom: 1px;
-      z-index: -1;
-      border-top: 1px solid #999;
-      transition: 0.2s background;
+      top: 0;
+      left: 14px;
+      right: 14px;
+      height: 28px;
+      background: #ddd;
+      border-top: 1px solid #808080;
+      transition: .2s background;
     }
 
     .chrome-tab-favicon {
@@ -90,6 +84,7 @@
     }
 
     .chrome-tab-title {
+      position: relative;
       color: #222222;
       padding: 9px 26px 5px 36px;
       overflow: hidden;
@@ -132,8 +127,11 @@
     }
 
     &:hover {
-      &:before, &:after, .chrome-tab-bg {
-        background-color: #f0f0f0;
+      .chrome-tab-bg {
+        background: #f0f0f0;
+      }
+      svg .edge-bg {
+        fill: #f0f0f0;
       }
       .chrome-tab-close {
         display: block;
@@ -146,22 +144,23 @@
 
     &.chrome-tab-current {
       border: 0;
-      &:before, &:after, .chrome-tab-bg {
-        border-bottom: none;
-        background-color: #f5f5f5;
+
+      svg {
+        height: 29px;
+        .edge-bg {
+          fill: #f5f5f5;
+        }
       }
       .chrome-tab-bg {
-        bottom: 0;
+        height: 29px;
+        background: #f5f5f5;
       }
     }
 
     &.chrome-tab-add-btn {
-      &:before, &:after, .chrome-tab-bg {
-        bottom: 1px;
-        background: transparent;
-        border-color: transparent;
-        box-shadow: none;
-        transition: none;
+      svg, .chrome-tab-bg {
+        visibility: hidden;
+        border: 0;
       }
 
       .chrome-tab-favicon {
@@ -175,7 +174,13 @@
       }
 
       &:hover {
-        &:before, &:after, .chrome-tab-bg {
+        svg, .chrome-tab-bg {
+          visibility: visible;
+        }
+        svg .edge-bg {
+          fill: #ccc;
+        }
+        .chrome-tab-bg {
           background: #ccc;
         }
         .icon {
