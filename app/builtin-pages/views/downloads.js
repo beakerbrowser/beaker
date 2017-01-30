@@ -4,7 +4,7 @@ This uses the beakerDownloads API, which is exposed by webview-preload to all si
 
 import * as yo from 'yo-yo'
 import co from 'co'
-import DownloadsList from '../model/downloads-list'
+import {DownloadsList} from 'builtin-pages-lib'
 import { render as renderDownloadsList } from '../com/downloads-list'
 
 // globals

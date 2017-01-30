@@ -4,8 +4,7 @@ This uses the datInternalAPI API, which is exposed by webview-preload to all arc
 
 import * as yo from 'yo-yo'
 import co from 'co'
-import Archive from '../model/archive'
-import ArchivesList from '../model/archives-list'
+import {Archive, ArchivesList} from 'builtin-pages-lib'
 import { render as renderArchivesList } from '../com/archives-list'
 import { render as renderArchiveView } from '../com/archive-view'
 import { addFiles } from '../com/archive-files'
