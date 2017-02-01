@@ -79,11 +79,6 @@ function beakerServer (req, res) {
     return cb(403, 'Forbidden')
   }
 
-  // FIXME
-  // if-casing every possible asset is pretty dumb
-  // generalize this
-  // -prf
-
   // browser ui
   if (requestUrl === 'beaker:shell-window') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'shell-window.html'))
@@ -99,16 +94,32 @@ function beakerServer (req, res) {
   }
 
   // builtin pages
-  for (let slug of ['start', 'apps', 'library', 'history', 'downloads', 'settings']) {
-    if (requestUrl === `beaker:${slug}` || requestUrl.startsWith(`beaker:${slug}/`)) {
-      return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages.html'))
-    }
-  }
-  if (requestUrl === 'beaker:builtin-pages.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages.build.js'))
-  }
   if (requestUrl === 'beaker:builtin-pages.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages.css'))
+  }
+  if (requestUrl === 'beaker:start') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/favorites.html'))
+  }
+  if (requestUrl === 'beaker:history') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/history.html'))
+  }
+  if (requestUrl === 'beaker:downloads') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/downloads.html'))
+  }
+  if (requestUrl === 'beaker:settings') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/settings.html'))
+  }
+  if (requestUrl === 'beaker:builtin-pages/favorites.js') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/favorites.build.js'))
+  }
+  if (requestUrl === 'beaker:builtin-pages/history.js') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/history.build.js'))
+  }
+  if (requestUrl === 'beaker:builtin-pages/downloads.js') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/downloads.build.js'))
+  }
+  if (requestUrl === 'beaker:builtin-pages/settings.js') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/settings.build.js'))
   }
 
   // common assets
