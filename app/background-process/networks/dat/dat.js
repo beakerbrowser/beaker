@@ -370,6 +370,13 @@ export function updateArchiveManifest (key, updates) {
   })
 }
 
+export function writeArchiveFileFromData (key, path, data, opts) {
+  return cbPromise(cb => {
+    var archive = getOrLoadArchive(key)
+    writeArchiveFile(archive, path, data, opts, cb)
+  })
+}
+
 export function writeArchiveFileFromPath (key, opts) {
   return cbPromise(cb => {
     if (!opts || typeof opts !== 'object' || typeof opts.src !== 'string' || typeof opts.dst !== 'string') {

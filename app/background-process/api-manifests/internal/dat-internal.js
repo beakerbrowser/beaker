@@ -10,6 +10,7 @@ export default {
   setArchiveUserSettings: 'promise',
   updateArchiveManifest: 'promise',
 
+  writeArchiveFileFromData: 'promise',
   writeArchiveFileFromPath: 'promise',
   exportFileFromArchive: 'promise',
 
