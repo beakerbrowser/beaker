@@ -19,22 +19,9 @@ export function setup () {
       defaultFaviconBuffer = buf
   })
 
-  // load logo favicon
-  var logoBuffer = -6 // not found, till we load it
-  fs.readFile(path.join(__dirname, './assets/img/logo-favicon.png'), (err, buf) => {
-    if (err)
-      console.error('Failed to load logo favicon', path.join(__dirname, './assets/img/logo.png'), err)
-    if (buf)
-      logoBuffer = buf
-  })
-
   // register favicon protocol
   protocol.registerBufferProtocol('beaker-favicon', (request, cb) => {
     var url = request.url.slice('beaker-favicon:'.length)
-
-    // special case
-    if (url === 'beaker' || url.startsWith('beaker:'))
-      return cb({ mimeType: 'image/png', data: logoBuffer })
 
     // look up in db
     sitedata.get(url, 'favicon').then(data => {
