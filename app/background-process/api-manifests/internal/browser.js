@@ -22,5 +22,6 @@ export default {
   setAsDefaultProtocolClient: 'promise',
   removeAsDefaultProtocolClient: 'promise',
 
-  showOpenDialog: 'promise'
+  showOpenDialog: 'promise',
+  openUrl: 'sync'
 }
