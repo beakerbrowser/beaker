@@ -94,6 +94,9 @@ function beakerServer (req, res) {
   if (requestUrl === 'beaker:shell-window.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/shell-window.css'))
   }
+  if (requestUrl === 'beaker:icons.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/icons.css'))
+  }
 
   // builtin pages
   for (let slug of ['start', 'apps', 'library', 'history', 'downloads', 'settings']) {
