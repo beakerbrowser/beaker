@@ -1,5 +1,4 @@
 import EE from 'events'
-import * as sidenavUI from './builtin-pages/com/sidenav'
 import * as favorites from './builtin-pages/views/favorites'
 import * as archives from './builtin-pages/views/archives'
 import * as history from './builtin-pages/views/history'
@@ -37,7 +36,6 @@ var currentView = getLocationView()
 // setup
 // =
 
-sidenavUI.setup()
 for (var slug in views)
   views[slug].setup()
 currentView.show()
