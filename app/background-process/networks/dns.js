@@ -2,8 +2,9 @@ var debug = require('debug')('dat')
 import dns from 'dns'
 import url from 'url'
 import https from 'https'
+import cache from 'memory-cache-ttl'
 
-import { DAT_HASH_REGEX } from '../../lib/const'
+import { DAT_HASH_REGEX, DEFAULT_DAT_DNS_TTL, MAX_DAT_DNS_TTL } from '../../lib/const'
 
 export function resolveDatDNS (name, cb) {
   // is it a hash?
@@ -11,8 +12,19 @@ export function resolveDatDNS (name, cb) {
     return cb(null, name)
   }
 
+  // check the cache
+  const cachedKey = cache.get(name)
+  if (cachedKey) {
+    debug('DNS-over-HTTPS cache hit for name', name, cachedKey)
+    return cb(null, cachedKey)
+  }
+
   // do a dns-over-https lookup
   requestRecord(name, cb)
+}
+
+export function flushCache () {
+  cache.flush()
 }
 
 function requestRecord (name, cb) {
@@ -25,7 +37,7 @@ function requestRecord (name, cb) {
     var body = ''
     res.setEncoding('utf-8')
     res.on('data', chunk => body += chunk)
-    res.on('end', () => handleResult(name, body, cb))
+    res.on('end', () => parseResult(name, body, cb))
   }).on('error', err => {
     debug('DNS-over-HTTPS lookup failed for name:', name, err)
     return cb(err)
@@ -33,14 +45,38 @@ function requestRecord (name, cb) {
 
 }
 
-function handleResult (name, body, cb) {
+function parseResult (name, body, cb) {
   const lines = body.split('\n')
-  const match = /^dat:\/\/([0-9a-f]{64})/.exec(lines[0])
-  if (match && match[1]) {
-    debug('DNS-over-HTTPS resolved', name, 'to', match[1])
-    cb(null, match[1])
-  } else {
+  let key, ttl
+
+  // parse url
+  try {
+    key = /^dat:\/\/([0-9a-f]{64})/i.exec(lines[0])[1]
+  } catch (e) {
     debug('DNS-over-HTTPS failed', name, 'Must be a dat://{hash} url')
-    cb(new Error('Invalid record'))
+    return cb(new Error('Invalid record'))
   }
+
+  // parse ttl
+  try {
+    if (lines[1]) {
+      ttl = +(/^ttl=(\d+)$/i.exec(lines[1])[1])
+    }
+  } catch (e) {
+    debug('DNS-over-HTTPS failed to parse TTL for %s, line: %s, error:', name, lines[1], e)
+  }
+  if (!Number.isSafeInteger(ttl) || ttl < 0) {
+    ttl = DEFAULT_DAT_DNS_TTL
+  }
+  if (ttl > MAX_DAT_DNS_TTL) {
+    ttl = MAX_DAT_DNS_TTL
+  }
+
+  // cache
+  if (ttl !== 0) {
+    cache.set(name, key, ttl)
+  }
+  debug('DNS-over-HTTPS resolved', name, 'to', key)
+  cb(null, key)
 }
+
