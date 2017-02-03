@@ -1,6 +1,7 @@
 var debug = require('debug')('dat')
 import dns from 'dns'
 import url from 'url'
+import https from 'https'
 
 import { DAT_HASH_REGEX } from '../../lib/const'
 
@@ -10,24 +11,36 @@ export function resolveDatDNS (name, cb) {
     return cb(null, name)
   }
 
-  // do a dns lookup
-  debug('DNS TXT lookup for name:', name)
-  dns.resolveTxt(name, (err, records) => {
-    debug('DNS TXT results for', name, err || records)
-    if (err) return cb(err)
+  // do a dns-over-https lookup
+  requestRecord(name, cb)
+}
 
-    // scan the txt records for a dat URI
-    for (var i=0; i < records.length; i++) {
-      if (records[i][0].indexOf('dat://') === 0) {
-        var urlp = url.parse(records[i][0])
-        if (DAT_HASH_REGEX.test(urlp.host)) {
-          debug('DNS resolved', name, 'to', urlp.host)
-          return cb(null, urlp.host)
-        }
-        debug('DNS TXT record failed:', records[i], 'Must be a dat://{hash} url')
-      }
-    }
-
-    cb({ code: 'ENOTFOUND' })
+function requestRecord (name, cb) {
+  debug('DNS-over-HTTPS lookup for name:', name)
+  https.get({
+    host: name,
+    path: '/.well-known/dat',
+    timeout: 2000
+  }, res => {
+    var body = ''
+    res.setEncoding('utf-8')
+    res.on('data', chunk => body += chunk)
+    res.on('end', () => handleResult(name, body, cb))
+  }).on('error', err => {
+    debug('DNS-over-HTTPS lookup failed for name:', name, err)
+    return cb(err)
   })
+
+}
+
+function handleResult (name, body, cb) {
+  const lines = body.split('\n')
+  const match = /^dat:\/\/([0-9a-f]{64})/.exec(lines[0])
+  if (match && match[1]) {
+    debug('DNS-over-HTTPS resolved', name, 'to', match[1])
+    cb(null, match[1])
+  } else {
+    debug('DNS-over-HTTPS failed', name, 'Must be a dat://{hash} url')
+    cb(new Error('Invalid record'))
+  }
 }
