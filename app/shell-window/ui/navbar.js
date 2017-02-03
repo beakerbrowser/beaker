@@ -115,6 +115,7 @@ export function updateLocation (page) {
 function render (id, page) {
   const isLoading = page && page.isLoading()
   const isViewingDat = page && page.getURL().startsWith('dat:')
+  const siteHasDatAlternative = page && page.siteHasDatAlternative
 
   // back/forward should be disabled if its not possible go back/forward
   var backDisabled = (page && page.canGoBack()) ? '' : 'disabled'
@@ -176,6 +177,10 @@ function render (id, page) {
       yo`<button title="Fork Site" onclick=${onClickForkDat}><span class="icon icon-flow-branch"></span></button>`,
       yo`<button title="View Site Files" onclick=${onClickViewFiles}><span class="icon icon-folder"></span></button>`,
       yo`<button class=${saveBtnClass} title="Save Site" onclick=${onClickSaveDat}><span class="icon icon-floppy"></span></button>`
+    ]
+  } else if (siteHasDatAlternative) {
+    datBtns = [
+      yo`<button title="Go to Dat Version of this Site" onclick=${onClickGotoDatVersion}><span class="icon icon-share"></span></button>`,
     ]
   }
 
@@ -539,6 +544,18 @@ function onClickLiveReload (e) {
   var page = getEventPage(e)
   if (!page || !page.siteInfo) return
   page.toggleLiveReloading()
+}
+
+function onClickGotoDatVersion (e) {
+  const page = getEventPage(e)
+  if (!page || !page.protocolInfo) return
+
+  const url = `dat://${page.protocolInfo.hostname}`
+  if (e.metaKey || e.ctrlKey) { // popup
+    pages.setActive(pages.create(url))
+  } else {
+    page.loadURL(url) // goto
+  }
 }
 
 function onClickZoom (e) {

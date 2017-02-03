@@ -83,6 +83,7 @@ export function create (opts) {
     siteInfo: null, // metadata about the current page, derived from protocol knowledge
     sitePerms: null, // saved permissions for the current page
     siteInfoOverride: null, // explicit overrides on the siteinfo, used by beaker: pages
+    siteHasDatAlternative: false, // is there a dat:// version we can redirect to?
 
     // history
     lastVisitedAt: 0, // when is last time url updated?
@@ -173,6 +174,15 @@ export function create (opts) {
     fetchSitePerms () {
       beakerSitedata.getPermissions(this.getURL()).then(perms => {
         page.sitePerms = perms
+        navbar.update(page)
+      })
+    },
+
+    // helper to check if there's a dat version of the site available
+    checkForDatAlternative (name) {
+      datInternalAPI.resolveName(name, (err, res) => {
+        this.siteHasDatAlternative = !!res
+        console.log(err, res, this.siteHasDatAlternative)
         navbar.update(page)
       })
     }
@@ -521,6 +531,9 @@ function onDidStopLoading (e) {
     page.siteInfo = null
     page.sitePerms = null
     page.protocolInfo = { url, hostname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase() }
+    if (protocol === 'https:') {
+      page.checkForDatAlternative(hostname)
+    }
     if (protocol === 'dat:') {
       datInternalAPI.getArchiveDetails(hostname).then(info => {
         page.siteInfo = info

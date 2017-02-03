@@ -14,9 +14,10 @@ export function resolveDatDNS (name, cb) {
 
   // check the cache
   const cachedKey = cache.get(name)
-  if (cachedKey) {
+  if (typeof cachedKey !== 'undefined') {
     debug('DNS-over-HTTPS cache hit for name', name, cachedKey)
-    return cb(null, cachedKey)
+    if (cachedKey) return cb(null, cachedKey)
+    else return cb(new Error('DNS record not found'))
   }
 
   // do a dns-over-https lookup
@@ -40,7 +41,8 @@ function requestRecord (name, cb) {
     res.on('end', () => parseResult(name, body, cb))
   }).on('error', err => {
     debug('DNS-over-HTTPS lookup failed for name:', name, err)
-    return cb(err)
+    cache.set(name, false, 60) // cache the miss for a minute
+    return cb(new Error('DNS record not found'))
   })
 
 }
