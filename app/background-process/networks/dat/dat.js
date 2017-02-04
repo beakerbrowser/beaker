@@ -372,7 +372,10 @@ export function updateArchiveManifest (key, updates) {
 
 export function writeArchiveFileFromData (key, path, data, opts) {
   return cbPromise(cb => {
-    var archive = getOrLoadArchive(key)
+    var archive = getArchive(key)
+    if (!archive) {
+      return cb(new Error('Archive not available. Do you own this archive, and have it saved?'))
+    }
     writeArchiveFile(archive, path, data, opts, cb)
   })
 }
@@ -384,7 +387,10 @@ export function writeArchiveFileFromPath (key, opts) {
     }
 
     // open the archive and ensure we can write
-    var archive = getOrLoadArchive(key)
+    var archive = getArchive(key)
+    if (!archive) {
+      return cb(new Error('Archive not available. Do you own this archive, and have it saved?'))
+    }
     archive.open(() => {
       if (!archive.owner) return cb(new Error('Cannot write: not the archive owner'))
 
@@ -432,8 +438,10 @@ export function exportFileFromArchive (key, srcPath, dstPath) {
   return cbPromise(cb => {
     var isFirst = true
     var numFiles = 0, numDirectories = 0
-    var archive = getOrLoadArchive(key)
-    if (!archive) return cb(new Error(`Invalid archive key '${key}'`))
+    var archive = getArchive(key)
+    if (!archive) {
+      return cb(new Error('Archive not available. Do you own this archive, and have it saved?'))
+    }
     statThenExport(srcPath, dstPath, err => {
       if (err) return cb(err)
       cb(null, { numFiles, numDirectories })
