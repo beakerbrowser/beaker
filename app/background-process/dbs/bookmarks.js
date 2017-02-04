@@ -102,8 +102,8 @@ migrations = [
   // version 3
   function (cb) {
     db.exec(`
-      INSERT INTO bookmarks (title, url, num_visits) VALUES ('The Hostless Website Portal - Find and share your Dat sites, web 1.0 style', 'dat://1f968afe867f06b0d344c11efc23591c7f8c5fb3b4ac938d6000f330f6ee2a03/', 0);
-      INSERT INTO bookmarks (title, url, num_visits) VALUES ('The Dat Protocol - Decentralized Archive Transport', 'https://www.datprotocol.com', 0);
+      INSERT INTO bookmarks (title, url, num_visits) VALUES ('The Hostless Website Portal - Find and share your Dat sites, web 1.0 style', 'dat://hostless.website/', 0);
+      INSERT INTO bookmarks (title, url, num_visits) VALUES ('The Dat Protocol - Decentralized Archive Transport', 'dat://www.datprotocol.com', 0);
       PRAGMA user_version = 3;
     `, cb)  
   }
