@@ -54,7 +54,8 @@ var buildLess = function (src, dest) {
 var lessTask = function () {
   return  Q.all([
     buildLess('app/stylesheets/shell-window.less', srcDir.path('stylesheets')),
-    buildLess('app/stylesheets/builtin-pages.less', srcDir.path('stylesheets'))
+    buildLess('app/stylesheets/builtin-pages.less', srcDir.path('stylesheets')),
+    buildLess('app/stylesheets/icons.less', srcDir.path('stylesheets'))
   ])
 };
 gulp.task('less', lessTask);
