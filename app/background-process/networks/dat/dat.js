@@ -372,7 +372,10 @@ export function updateArchiveManifest (key, updates) {
 
 export function writeArchiveFileFromData (key, path, data, opts) {
   return cbPromise(cb => {
-    var archive = getOrLoadArchive(key)
+    var archive = getArchive(key)
+    if (!archive) {
+      return cb(new Error('Archive not available. Do you own this archive, and have it saved?'))
+    }
     writeArchiveFile(archive, path, data, opts, cb)
   })
 }
@@ -384,7 +387,10 @@ export function writeArchiveFileFromPath (key, opts) {
     }
 
     // open the archive and ensure we can write
-    var archive = getOrLoadArchive(key)
+    var archive = getArchive(key)
+    if (!archive) {
+      return cb(new Error('Archive not available. Do you own this archive, and have it saved?'))
+    }
     archive.open(() => {
       if (!archive.owner) return cb(new Error('Cannot write: not the archive owner'))
 
@@ -404,12 +410,13 @@ export function writeArchiveFileFromPath (key, opts) {
 
       // read the file or file-tree into the archive
       debug('Writing file(s) from path:', src, 'to', dst)
-      var stats = { addCount: 0, updateCount: 0, skipCount: 0, fileCount: 0, totalSize: 0 }
+      var stats = { addedFiles: [], updatedFiles: [], skipCount: 0, fileCount: 0, totalSize: 0 }
       var status = hyperImport(archive, src, {
         basePath: dst,
         live: false,
         resume: true,
-        ignore: ['.dat', '**/.dat', '.git', '**/.git']
+        ignore: opts.ignore || ['.dat', '**/.dat', '.git', '**/.git'],
+        dryRun: opts.dryRun
       }, (err) => {
         if (err) return cb(err)
         stats.fileCount = status.fileCount
@@ -417,8 +424,8 @@ export function writeArchiveFileFromPath (key, opts) {
         cb(null, stats)
       })
       status.on('file imported', e => {
-        if (e.mode === 'created') stats.addCount++
-        if (e.mode === 'updated') stats.updateCount++
+        if (e.mode === 'created') stats.addedFiles.push(e.path)
+        if (e.mode === 'updated') stats.updatedFiles.push(e.path)
       })
       status.on('file skipped', e => {
         stats.skipCount++
@@ -431,8 +438,10 @@ export function exportFileFromArchive (key, srcPath, dstPath) {
   return cbPromise(cb => {
     var isFirst = true
     var numFiles = 0, numDirectories = 0
-    var archive = getOrLoadArchive(key)
-    if (!archive) return cb(new Error(`Invalid archive key '${key}'`))
+    var archive = getArchive(key)
+    if (!archive) {
+      return cb(new Error('Archive not available. Do you own this archive, and have it saved?'))
+    }
     statThenExport(srcPath, dstPath, err => {
       if (err) return cb(err)
       cb(null, { numFiles, numDirectories })
