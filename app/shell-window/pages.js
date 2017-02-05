@@ -180,11 +180,10 @@ export function create (opts) {
 
     // helper to check if there's a dat version of the site available
     checkForDatAlternative (name) {
-      datInternalAPI.resolveName(name, (err, res) => {
+      datInternalAPI.resolveName(name).then(res => {
         this.siteHasDatAlternative = !!res
-        console.log(err, res, this.siteHasDatAlternative)
         navbar.update(page)
-      })
+      }).catch(err => console.log('Name does not have a Dat alternative', name))
     }
   }
 
