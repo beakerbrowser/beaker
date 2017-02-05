@@ -62,7 +62,7 @@ export function setup () {
 // re-exports
 //
 
-export const resolveName = resolveDatDNS
+export const resolveName = (name) => cbPromise(cb => resolveDatDNS(name, cb))
 export const setArchiveUserSettings = archivesDb.setArchiveUserSettings
 export const getGlobalSetting = archivesDb.getGlobalSetting
 export const setGlobalSetting = archivesDb.setGlobalSetting

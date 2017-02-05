@@ -19,6 +19,15 @@ export function identify (name, chunk) {
     mimeType = mime.lookup(name)
     debug('[DAT] Assumed mimetype from entry name', mimeType)
   }
+
+  // hackish fix
+  // the svg test can be a bit aggressive: html pages with
+  // inline svgs can be falsely interpretted as svgs
+  // double check that
+  if (identifiedExt === 'svg' && mime.lookup(name) === 'text/html') {
+    return 'text/html'
+  }
+
   return mimeType
 }
 

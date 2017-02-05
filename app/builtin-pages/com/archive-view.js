@@ -27,16 +27,7 @@ function renderEmpty () {
   return yo`<div class="archive-view">
     <div class="archive-empty-banner">
       <h2>Site Library</h2>
-      <p><strong>Share files, pages, and applications. <a onclick=${createArchiveFlow}>New site</a>.</strong></p>
-      <p>
-        Save sites to your library by clicking the <span class="icon icon-floppy"></span> in the URL bar.
-        The site will be available offline, and you${"'"}ll host it for other users.
-        <span class="icon icon-rocket"></span> It${"'"}s peer-to-peer!
-      </p>
-      <p style="color: gray; font-size: 14px">
-        Only sites served with <kbd>dat://</kbd>, the Decentralized Archive Transport, can be saved to your library.
-        Sites served with <kbd>http://</kbd> won't have the <span class="icon icon-floppy"></span> button.
-      </p>
+      <p>Share files, pages, and applications. <a onclick=${createArchiveFlow}>New site</a>.</p>
     </div>
   </div>`
 }

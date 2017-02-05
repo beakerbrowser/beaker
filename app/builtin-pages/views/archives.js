@@ -37,7 +37,7 @@ export function show (isSameView) {
   document.title = 'Library'
 
   co(function * () {
-    var newArchiveKey = getURLKey()
+    var newArchiveKey = yield getURLKey()
     setSiteInfoOverride(newArchiveKey)
     if (isSameView && selectedArchiveKey === newArchiveKey) {
       // a navigation within the same view
@@ -112,24 +112,30 @@ export function show (isSameView) {
 }
 
 export function hide (isSameView) {
-  var newArchiveKey = getURLKey()
-  if (isSameView && selectedArchiveKey === newArchiveKey) {
-    // do nothing, it's a navigation within the current archive's folder structure
-    return
-  }
+  co(function * () {
+    var newArchiveKey = yield getURLKey()
+    if (isSameView && selectedArchiveKey === newArchiveKey) {
+      // do nothing, it's a navigation within the current archive's folder structure
+      return
+    }
 
-  isViewActive = false
-  window.locationbar.setSiteInfoOverride(false)
-  if (archivesList) archivesList.destroy()
-  if (selectedArchive) selectedArchive.destroy()
-  archivesList = null
-  selectedArchiveKey = null
-  selectedArchive = null
+    window.locationbar.setSiteInfoOverride(false)
+    if (archivesList) archivesList.destroy()
+    if (selectedArchive) selectedArchive.destroy()
+    archivesList = null
+    selectedArchiveKey = null
+    selectedArchive = null
 
-  if (!isSameView || !newArchiveKey) {
-    // turn off the filter if its a nav to a new view, or to the toplevel
-    currentFilter = ''
-  }
+    if (!isSameView || !newArchiveKey) {
+      // turn off the filter if its a nav to a new view, or to the toplevel
+      currentFilter = ''
+    }
+    if (!window.location.pathname.startsWith('library')) {
+      isViewActive = false
+    }
+  }).catch(err => {
+    console.error(err)
+  })
 }
 
 // view state management
@@ -141,11 +147,14 @@ function handleInnerNavigation () {
   render()
 }
 
-function getURLKey () {
+function * getURLKey () {
   var path = window.location.pathname
+  if (/^library\/?$/.test(path)) return false
   try {
     // extract key from url
-    return /^library\/([0-9a-f]{64})/.exec(path)[1]
+    var name = /^library\/([^\/]+)/.exec(path)[1]
+    if (/[0-9a-f]{64}/i.test(name)) return name
+    return yield datInternalAPI.resolveName(name)
   } catch (e) {
     console.error('Failed to parse URL', e)
     return false

@@ -3,7 +3,7 @@ export default {
   getArchiveDetails: 'promise',
   getArchiveStats: 'promise',
 
-  resolveName: 'async',
+  resolveName: 'promise',
 
   createNewArchive: 'promise',
   forkArchive: 'promise',

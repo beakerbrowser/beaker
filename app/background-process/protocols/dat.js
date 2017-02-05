@@ -198,8 +198,9 @@ function datServer (req, res) {
       debug('attempting to lookup', archiveKey)
       var hasExactMatch = false // if there's ever an exact match, then dont look for near-matches
       var filepath = decodeURIComponent(urlp.path)
-      if (!filepath || filepath === '/') filepath = '/index.html'
+      if (!filepath) filepath = '/index.html'
       if (filepath.indexOf('?') !== -1) filepath = filepath.slice(0, filepath.indexOf('?')) // strip off any query params
+      if (filepath.endsWith('/')) filepath += 'index.html'
       const checkMatch = (entry, name) => {
         // check exact match
         if (name === filepath) {
