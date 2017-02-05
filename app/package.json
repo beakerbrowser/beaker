@@ -26,7 +26,7 @@
     "get-folder-size": "^1.0.0",
     "global-modules": "^0.2.3",
     "hyperdrive": "^7.12.0",
-    "hyperdrive-import-files": "^2.3.0",
+    "hyperdrive-import-files": "^2.9.0",
     "identify-filetype": "^1.0.0",
     "ipfs-api": "git://github.com/beakerbrowser/js-ipfs-api#d7b40ea4f95f6ae32d5edbd5f8df08beea99b8d5",
     "ipfs-unixfs": "^0.1.5",

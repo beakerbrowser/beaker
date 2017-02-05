@@ -416,6 +416,7 @@ export function writeArchiveFileFromPath (key, opts) {
         live: false,
         resume: true,
         ignore: opts.ignore || ['.dat', '**/.dat', '.git', '**/.git'],
+        compareFileContent: true,
         dryRun: opts.dryRun
       }, (err) => {
         if (err) return cb(err)
