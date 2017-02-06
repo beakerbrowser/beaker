@@ -30,7 +30,7 @@ export function setup (cb) {
   commandHandlers.setup()
   swipeHandlers.setup()
   liveReload.setup()
-  pages.setActive(pages.create(pages.DEFAULT_URL))
+  pages.setActive(pages.create(pages.FIRST_TAB_URL))
   cb()
 }
 
