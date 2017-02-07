@@ -6,6 +6,7 @@ var gulp = require('gulp');
 var less = require('gulp-less');
 var watch = require('gulp-watch');
 var batch = require('gulp-batch');
+var childProcess = require('child_process')
 var plumber = require('gulp-plumber');
 var jetpack = require('fs-jetpack');
 
@@ -19,6 +20,27 @@ var srcDir = projectDir.cwd('./app');
 // -------------------------------------
 // Tasks
 // -------------------------------------
+
+function burnthemallMaybeTask () {
+  const beakerPackageJson = projectDir.read('package.json', 'json')
+  const electronPackageJson = projectDir.read('node_modules/electron/package.json', 'json')
+  if (!beakerPackageJson || !electronPackageJson) return
+
+  // is the installed version of electron different than the required one?
+  if (beakerPackageJson.devDependencies.electron != electronPackageJson.version) {
+    console.log('~~Electron version change detected.~~')
+    console.log('We need to rebuild to fit the new version.')
+    console.log('###### BURN THEM ALL! ######')
+
+    childProcess.spawn('npm', ['run', 'burnthemall'], {
+      stdio: 'inherit',
+      env: process.env // inherit
+    })
+    return Promise.reject(new Error('Aborting build to do a full reinstall and rebuild'))
+  }
+}
+
+gulp.task('burnthemall-maybe', burnthemallMaybeTask)
 
 var bundleApplication = function () {
   return Q.all([
@@ -46,7 +68,7 @@ var bundleTask = function () {
   }
   return bundleApplication();
 };
-gulp.task('bundle', bundleTask);
+gulp.task('bundle', ['burnthemall-maybe'], bundleTask);
 gulp.task('bundle-watch', bundleTask);
 
 
@@ -63,7 +85,7 @@ var lessTask = function () {
     buildLess('app/stylesheets/icons.less', srcDir.path('stylesheets'))
   ])
 };
-gulp.task('less', lessTask);
+gulp.task('less', ['burnthemall-maybe'], lessTask);
 gulp.task('less-watch', lessTask);
 
 gulp.task('build', ['bundle', 'less']);
