@@ -3,8 +3,8 @@
     "asar": "^0.11.0",
     "browserify": "^13.0.1",
     "chai": "^3.5.0",
+    "electron": "1.6.0",
     "electron-builder": "~10.4.1",
-    "electron": "1.5.0",
     "fs-jetpack": "^0.9.0",
     "gulp": "^3.9.0",
     "gulp-batch": "^1.0.5",
@@ -30,32 +30,69 @@
     "protocols": [
       {
         "name": "URL",
-        "schemes": ["http", "https"]
+        "schemes": [
+          "http",
+          "https"
+        ]
       },
       {
         "name": "IPFS",
-        "schemes": ["fs"]
+        "schemes": [
+          "fs"
+        ]
       },
       {
         "name": "dat",
-        "schemes": ["dat"]
+        "schemes": [
+          "dat"
+        ]
       }
     ],
     "dmg": {
       "contents": [
-        { "x": 410, "y": 220, "type": "link", "path": "/Applications" },
-        { "x": 130, "y": 220, "type": "file", "path": "dist/mac/Beaker Browser.app" },
-        { "x": 50, "y": 400, "type": "position", "path": ".background" },
-        { "x": 150, "y": 400, "type": "position", "path": ".DS_Store" },
-        { "x": 250, "y": 400, "type": "position", "path": ".Trashes" },
-        { "x": 350, "y": 400, "type": "position", "path": ".VolumeIcon.icns" }
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 220,
+          "type": "file",
+          "path": "dist/mac/Beaker Browser.app"
+        },
+        {
+          "x": 50,
+          "y": 400,
+          "type": "position",
+          "path": ".background"
+        },
+        {
+          "x": 150,
+          "y": 400,
+          "type": "position",
+          "path": ".DS_Store"
+        },
+        {
+          "x": 250,
+          "y": 400,
+          "type": "position",
+          "path": ".Trashes"
+        },
+        {
+          "x": 350,
+          "y": 400,
+          "type": "position",
+          "path": ".VolumeIcon.icns"
+        }
       ]
     }
   },
   "scripts": {
     "postinstall": "cd app && npm install",
     "build": "gulp build",
-    "rebuild": "(cd app && npm rebuild --runtime=electron --target=1.5.0 --disturl=https://atom.io/download/atom-shell --build-from-source); gulp build",
+    "rebuild": "(cd app && npm rebuild --runtime=electron --target=1.6.0 --disturl=https://atom.io/download/atom-shell --build-from-source); gulp build",
     "burnthemall": "rm -Rf ./node_modules ./app/node_modules; npm i; npm run rebuild",
     "release": "build -m -p never",
     "start": "gulp start",
