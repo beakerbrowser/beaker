@@ -13,9 +13,7 @@
       // use transform instead of display: none
       // (this ensures that, even if hidden, the webview will do work)
       display: flex; // the default display type
-      transform: translateX(-100%); // put offscreen
-
-      // visibility: hidden; sadly this stopped working with electron 1.5.0
+      visibility: hidden;
 
       // this is what electron's docs recommend...
       // causes the pages to relayout on unhide, though, which sucks

@@ -460,7 +460,11 @@ function onDomReady (e) {
 
 function onNewWindow (e) {
   var page = create(e.url)
-  if (e.disposition == 'foreground-tab')
+  // HACK 
+  // https://github.com/electron/electron/issues/8505
+  // all tabs must be opened in the FG till this is fixed
+  // -prf
+  // if (e.disposition == 'foreground-tab')
     setActive(page)
 }
 
