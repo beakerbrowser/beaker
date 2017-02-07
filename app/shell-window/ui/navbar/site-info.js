@@ -39,8 +39,11 @@ export class SiteInfoNavbarBtn {
         protocolDesc = 'Your connection to this site is not private.'
       } else if (['dat:', 'fs:'].indexOf(this.protocolInfo.scheme) != -1) {
         icon = 'share'
-        protocolLabel = 'P2P'
-        protocolDesc = 'This site was downloaded from a peer-to-peer network.'
+        protocolLabel = 'Secure P2P'
+        protocolDesc = yo`<span>
+          This site was downloaded from a secure peer-to-peer network.
+          <a onclick=${e => this.learnMore()}>Learn More</a>
+        </span>`
         protocolCls = 'p2p'
       }
     }
@@ -52,9 +55,10 @@ export class SiteInfoNavbarBtn {
       let siteCtrlsEl = ''
       if (this.protocolInfo) {
         if (this.protocolInfo.scheme === 'dat:') {
-          siteCtrlsEl = yo`<div><small>
-            <a onclick=${e => this.viewSiteFiles()}>View Site Files</a>
-          </small></div>`
+          siteCtrlsEl = yo`<div><hr /><span>
+            <a onclick=${e => this.viewSiteFiles('files')}>View site files</a>|
+            <a onclick=${e => this.viewSiteFiles('fork')}>Fork site</a>
+          </span></div>`
         }
       }
 
@@ -153,10 +157,14 @@ export class SiteInfoNavbarBtn {
     })
   }
 
-  viewSiteFiles() {
+  viewSiteFiles(subpage) {
     const { hostname } = this.protocolInfo
-    pages.setActive(pages.create('beaker:library/' + hostname + '#files'))
+    pages.setActive(pages.create('beaker:library/' + hostname + '#' + subpage))
     this.closeDropdown()
+  }
+
+  learnMore() {
+    pages.setActive(pages.create('https://github.com/beakerbrowser/beaker/wiki/Is-Dat-%22Secure-P2P%3F%22'))
   }
 }
 
