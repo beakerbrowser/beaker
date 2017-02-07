@@ -9,6 +9,7 @@
   -webkit-app-region: no-drag;
   background: #fff;
   margin: 0 2px 0 5px;
+  overflow: hidden;
 
   input[type=text] {
     flex: 1;
@@ -136,6 +137,8 @@
     flex: 1;
     padding: 3px 0 1px 7px;
     cursor: text;
+    text-overflow: ellipsis;
+    overflow: hidden;
 
     .protocol-secure {
       color: #3c943c;
@@ -146,6 +149,7 @@
     .syntax,
     .path {
       color: #aaa;
+      white-space: nowrap;
     }
   }
 
