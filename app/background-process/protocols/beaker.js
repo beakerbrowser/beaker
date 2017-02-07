@@ -15,7 +15,7 @@ import {archivesDebugPage} from '../networks/dat/debugging'
 // content security policies
 const BEAKER_CSP = `
   default-src 'self' beaker:;
-  img-src * beaker-favicon: data:;
+  img-src beaker-favicon: data: dat: http: https;
   style-src 'self' 'unsafe-inline' beaker:;
 `.replace(/\n/g, '')
 
