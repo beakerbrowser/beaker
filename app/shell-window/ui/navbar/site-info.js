@@ -56,7 +56,7 @@ export class SiteInfoNavbarBtn {
       if (this.protocolInfo) {
         if (this.protocolInfo.scheme === 'dat:') {
           siteCtrlsEl = yo`<div><hr /><span>
-            <a onclick=${e => this.viewSiteFiles('files')}>View site files</a> |
+            <a onclick=${e => this.viewSiteFiles('files')}>View site files</a>|
             <a onclick=${e => this.viewSiteFiles('fork')}>Fork site</a>
           </span></div>`
         }
