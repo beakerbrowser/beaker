@@ -98,8 +98,14 @@
 }
 
 .toolbar-site-info-dropdown {
+  // this dropdown is unique
+  // because the button is inside a site-info toolbar, which hides overflow,
+  // this dropdown has to be positioned out on its own
+  position: fixed;
+  left: 82px;
+  top: 70px;
+
   width: 350px;
-  left: -30px;
   padding: 0;
   font-size: 15px;
 
