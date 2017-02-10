@@ -2,6 +2,7 @@
 
 import jayson from 'jayson/promise'
 import semver from 'semver'
+import { BrowserWindow } from 'electron'
 import { BKR_SERVER_PORT } from '../lib/const'
 import * as dat from './networks/dat/dat'
 import { getActiveWindow, createShellWindow } from './ui/windows'
@@ -58,7 +59,10 @@ export function setup () {
     if (!url || typeof url !== 'string') return Promise.reject({ code: 400, message: `Invalid url` })
     // make sure a window is open
     if (!getActiveWindow()) createShellWindow()
-    openUrl(url)
+    const wc = openUrl(url)
+    if (wc) {
+      BrowserWindow.fromWebContents(wc).focus()
+    }
     return Promise.resolve()
   }
 
