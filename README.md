@@ -77,6 +77,12 @@ This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-ma
 
 If you're doing development, `npm run watch` to have assets build automatically.
 
+## Known issues
+
+### tmux
+
+Launching from tmux is known to cause issues with GUI apps in MacOS. On Beaker, it may cause the application to hang during startup.
+
 ## License
 
 Modified MIT License (MIT)
