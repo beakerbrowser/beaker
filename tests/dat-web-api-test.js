@@ -216,6 +216,7 @@ test('dat.createSite', async t => {
   await app.client.windowByIndex(1)
 
   // fetch & test the res
+  await app.client.pause(500)
   await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }))
   var res = await app.client.execute(() => { return window.res })
   createdDatURL = res.value
@@ -250,6 +251,7 @@ test('dat.writeFile', async t => {
   async function dotest (filename, content, encoding) {
     // write to the top-level
     var res = await app.client.executeAsync((url, content, encoding, done) => {
+      if (content.data) content = new Uint8Array(content.data) // spectron fucks up our data, unfuck it
       dat.writeFile(url, content, encoding).then(done, done)
     }, createdDatURL + filename, content, encoding)
     t.falsy(res.value)
