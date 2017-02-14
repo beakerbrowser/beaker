@@ -1,7 +1,10 @@
 .toolbar-input-group {
   flex: 1;
   display: flex;
+
+  width: calc(100vw - 154px); // so that long URLs dont overflow
   position: relative; // for the :after el, and autocomplete dropdown, to position off of
+
   height: 29px;
   border: 1px solid #bbb;
   border-radius: 2px;
@@ -9,7 +12,6 @@
   -webkit-app-region: no-drag;
   background: #fff;
   margin: 0 2px 0 5px;
-  overflow: hidden;
 
   input[type=text] {
     flex: 1;
