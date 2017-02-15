@@ -661,7 +661,7 @@ function onPageFaviconUpdated (e) {
     var page = getByWebview(e.target)
     page.favicons = e.favicons
     page.faviconDominantColor = null
-    urlToData(e.favicons[0], 16, 16, (err, res) => {
+    urlToData(e.favicons[0], 64, 64, (err, res) => {
       if (res) {
         beakerSitedata.set(page.getURL(), 'favicon', res.url)
         page.faviconDominantColor = res.dominantColor
