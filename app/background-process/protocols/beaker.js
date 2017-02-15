@@ -100,7 +100,7 @@ function beakerServer (req, res) {
   if (requestUrl === 'beaker:start') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/start.html'))
   }
-  if (requestUrl === 'beaker:favorites') {
+  if (requestUrl === 'beaker:bookmarks') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/beaker.html'))
   }
   if (requestUrl.startsWith('beaker:library')) {
@@ -115,8 +115,8 @@ function beakerServer (req, res) {
   if (requestUrl === 'beaker:settings') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/settings.html'))
   }
-  if (requestUrl === 'beaker:builtin-pages/favorites.js') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/favorites.build.js'))
+  if (requestUrl === 'beaker:builtin-pages/bookmarks.js') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/bookmarks.build.js'))
   }
   if (requestUrl === 'beaker:builtin-pages/library.js') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/library.build.js'))
