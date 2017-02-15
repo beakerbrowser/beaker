@@ -49,6 +49,6 @@ export default function renderDirectoryListingPage (archive, path, cb) {
     // summary
     var summary = `<div class="entry">${names.length} ${pluralize(names.length, 'file')}, ${prettyBytes(totalBytes||0)}</div>`
     // render
-    cb(styles + updog + entries + summary)
+    cb('<meta charset="UTF-8">' + styles + updog + entries + summary)
   })
 }
