@@ -6,7 +6,6 @@ import EventEmitter from 'events'
 var debug = require('debug')('beaker')
 import manifest from './api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
-import * as plugins from './plugins'
 import { internalOnly } from '../lib/bg/rpc'
 import { isDaemonActive as isIPFSDaemonActive } from './networks/ipfs/ipfs'
 import { open as openUrl } from './open-url'
@@ -65,9 +64,6 @@ export function setup () {
     getSetting,
     getSettings,
     setSetting,
-
-    getProtocolDescription,
-    getHomePages,
 
     getDefaultProtocolSettings,
     setAsDefaultProtocolClient,
@@ -194,20 +190,6 @@ export function getSettings () {
 
 export function setSetting (key, value) {
   return settingsDb.set(key, value)
-}
-
-// get the home-page listing
-export function getHomePages () {
-  return Promise.resolve(plugins.getAllInfo('homePages'))
-}
-
-// get the description for a given scheme
-export function getProtocolDescription (scheme) {
-  // massage input
-  scheme = scheme.replace(/:/g, '')
-
-  // find desc
-  return plugins.getAllInfo('protocols').find(proto => proto.scheme == scheme)
 }
 
 // rpc methods

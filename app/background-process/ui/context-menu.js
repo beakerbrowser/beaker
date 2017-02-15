@@ -2,7 +2,6 @@ import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import url from 'url'
 import path from 'path'
 import { download } from './downloads'
-import { getProtocolDescription } from '../browser'
 
 export default function registerContextMenu () {
   // register the context menu on every created webContents
@@ -100,19 +99,6 @@ export default function registerContextMenu () {
         if (webContents.isDevToolsOpened())
           webContents.devToolsWebContents.focus()
       }})
-
-      // protocol
-      var urlp = url.parse(props.frameURL||props.pageURL)
-      var pdesc = getProtocolDescription(urlp.protocol)
-      if (pdesc && pdesc.contextMenu && Array.isArray(pdesc.contextMenu)) {
-        menuItems.push({ type: 'separator' })
-        pdesc.contextMenu.forEach(item => {
-          menuItems.push({
-            label: item.label,
-            click: (_, win) => item.click(win, props)
-          })
-        })
-      }
 
       // show menu
       var menu = Menu.buildFromTemplate(menuItems)

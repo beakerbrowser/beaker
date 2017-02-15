@@ -6,13 +6,6 @@ import beakerHistory from './api-manifests/internal/history'
 import beakerSitedata from './api-manifests/internal/sitedata'
 import datInternalAPI from './api-manifests/internal/dat-internal'
 import dat from './api-manifests/external/dat'
-import * as plugins from './plugins'
-
-// dat-plugin is an optional internal dependency
-var datPlugin
-try {
-  datPlugin = require('beaker-plugin-dat')
-} catch (e){}
 
 // exported api
 // =
@@ -37,12 +30,11 @@ export function setup () {
       return
     }
 
-    // for everything else, we'll use the plugins
-    protos = plugins.getWebAPIManifests(scheme)
+    protos = {}
 
     // include dat api in dat:// sites
     if (scheme === 'dat:') {
-      protos['dat'] = dat
+      protos = {dat}
     }
 
     event.returnValue = protos

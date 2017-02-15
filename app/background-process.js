@@ -8,7 +8,6 @@ Error.stackTraceLimit = Infinity;
 import { app, Menu, protocol } from 'electron'
 
 import * as beakerBrowser from './background-process/browser'
-import * as plugins from './background-process/plugins'
 import * as webAPIs from './background-process/web-apis'
 import * as bkr from './background-process/bkr'
 
@@ -39,7 +38,6 @@ if (process.env.beaker_user_data_path) {
 }
 
 // load the installed protocols
-plugins.registerStandardSchemes()
 protocol.registerStandardSchemes(['dat'], { secure: true })
 
 app.on('ready', function () {
@@ -66,11 +64,9 @@ app.on('ready', function () {
   beakerFaviconProtocol.setup()
   datProtocol.setup()
   fsProtocol.setup()
-  plugins.setupProtocolHandlers()
 
   // web APIs
   webAPIs.setup()
-  plugins.setupWebAPIs()
 
   // listen OSX open-url event
   openURL.setup()
