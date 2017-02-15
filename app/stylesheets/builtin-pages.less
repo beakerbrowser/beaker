@@ -2,7 +2,6 @@
 
 @import "./com/btn.less";
 @import "./com/toolbar.less";
-@import "./com/sidenav.less";
 @import "./com/links-list.less";
 @import "./com/files-list.less";
 @import "./com/downloads.less";
@@ -15,6 +14,10 @@
 @import "./views/settings.less";
 
 @import "./vendor/shepherd-theme-arrows.less";
+
+* {
+  box-sizing: border-box;
+}
 
 .pane {
   border: 0;
@@ -46,5 +49,94 @@
     // make an outline
     color: #fff;
     -webkit-text-stroke: 1px #999;
+  }
+}
+
+.window-content.start {
+  display: block;
+
+  h2 {
+    display: block;
+    font-size: 18px;
+  }
+}
+
+.pinned-wrapper {
+  width: 475px;
+  margin: auto;
+  margin-top: ~"calc(50vh - 155px)";
+}
+
+.bookmarks {
+  margin: 0;
+  padding: 0; // TODO: list-styles should be opt-in -tbv
+  list-style: none;
+}
+
+.pinned {
+  // TODO: make a flexbox-container extend -tbv
+  display: flex;
+  flex-wrap: wrap;
+  margin: auto;
+
+  &__item {
+    width: 75px;
+    margin-bottom: 35px;
+    color: fadeout(#333, 25%);
+    text-align: center;
+    cursor: pointer; // TODO: extends for different cursor styles -tbv
+
+    * {
+      cursor: pointer;
+    }
+
+    &:not(:last-child) {
+      margin-right: 20px;
+    }
+
+    &:hover {
+      color: fadeout(#333, 15%);
+      text-decoration: none;
+    }
+  }
+
+  &__item-square {
+    width: 55px;
+    height: 55px;
+    margin: 0 auto 5px auto;
+    background: fadeout(#333, 93%);
+    border: 1px solid fadeout(#333, 75%); // TODO: use color variables -tbv
+    border-radius: 4px; // TODO: make a rounded extend -tbv
+
+    &.transparent{
+      background: none;
+      border: 1px dashed fadeout(#333, 75%);
+
+      &:hover {
+        border: 1px dashed fadeout(#333, 60%);
+      }
+    }
+
+    &:hover {
+      border: 1px solid fadeout(#333, 60%);
+    }
+
+    .icon {
+      font-size: 22px;
+      margin-top: 15px;
+      height: 22px;
+
+      &:before {
+        margin-top: 15px;
+      }
+    }
+  }
+
+  &__item-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
   }
 }

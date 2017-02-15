@@ -29,7 +29,8 @@ var bundleApplication = function () {
     bundle(srcDir.path('builtin-pages/library.js'), srcDir.path('builtin-pages/library.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
     bundle(srcDir.path('builtin-pages/favorites.js'), srcDir.path('builtin-pages/favorites.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
     bundle(srcDir.path('builtin-pages/history.js'), srcDir.path('builtin-pages/history.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/settings.js'), srcDir.path('builtin-pages/settings.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') })
+    bundle(srcDir.path('builtin-pages/settings.js'), srcDir.path('builtin-pages/settings.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
+    bundle(srcDir.path('builtin-pages/start.js'), srcDir.path('builtin-pages/start.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') })
   ]);
 };
 
