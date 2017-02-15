@@ -31,8 +31,8 @@ export function add (url, title) {
   return setupPromise.then(v => cbPromise(cb => {
     db.run(`
       INSERT OR REPLACE
-        INTO bookmarks (url, title, num_visits)
-        VALUES (?, ?, 0)
+        INTO bookmarks (url, title, num_visits, pinned)
+        VALUES (?, ?, 0, 0)
     `, [url, title], cb)
   }))
 }
@@ -105,6 +105,14 @@ migrations = [
       INSERT INTO bookmarks (title, url, num_visits) VALUES ('Welcome to Beaker - dat://hostless.website/', 'dat://hostless.website/', 0);
       INSERT INTO bookmarks (title, url, num_visits) VALUES ('The Dat Protocol - Decentralized Archive Transport', 'dat://www.datprotocol.com', 0);
       PRAGMA user_version = 3;
-    `, cb)  
+    `, cb)
+  },
+  // version 4
+  function (cb) {
+    db.exec(`
+      ALTER TABLE bookmarks ADD COLUMN pinned;
+      UPDATE bookmarks SET pinned = 0;
+      PRAGMA user_version = 4;
+    `, cb)
   }
 ]
