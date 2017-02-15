@@ -5,5 +5,7 @@ export default {
   addVisit: 'promise',
   remove: 'promise',
   get: 'promise',
-  list: 'promise'
+  list: 'promise',
+  listPinned: 'promise',
+  togglePinned: 'promise'
 }

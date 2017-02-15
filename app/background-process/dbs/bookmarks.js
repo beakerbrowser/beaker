@@ -24,16 +24,16 @@ export function setup () {
   setupPromise = setupSqliteDB(db, migrations, '[BOOKMARKS]')
 
   // wire up RPC
-  rpc.exportAPI('beakerBookmarks', manifest, { add, changeTitle, changeUrl, addVisit, remove, get, list }, internalOnly)
+  rpc.exportAPI('beakerBookmarks', manifest, { add, changeTitle, changeUrl, addVisit, remove, get, list, listPinned, togglePinned }, internalOnly)
 }
 
-export function add (url, title) {
+export function add (url, title, pinned) {
   return setupPromise.then(v => cbPromise(cb => {
     db.run(`
       INSERT OR REPLACE
         INTO bookmarks (url, title, num_visits, pinned)
-        VALUES (?, ?, 0, 0)
-    `, [url, title], cb)
+        VALUES (?, ?, 0, ?)
+    `, [url, title, pinned], cb)
   }))
 }
 
@@ -64,6 +64,12 @@ export function remove (url) {
 export function get (url) {
   return setupPromise.then(v => cbPromise(cb => {
     db.get(`SELECT url, title FROM bookmarks WHERE url = ?`, [url], cb)
+  }))
+}
+
+export function listPinned () {
+  return setupPromise.then(v => cbPromise(cb => {
+    db.all(`SELECT url, title FROM bookmarks WHERE pinned = ?`, [1], cb)
   }))
 }
 
