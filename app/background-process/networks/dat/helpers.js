@@ -28,7 +28,8 @@ export function archiveCustomLookup (archive, checkFn, cb) {
 // helper to get the name from a listing entry, in a standard form
 export function normalizedEntryName (entry) {
   var name = ('' + (entry.name || ''))
-  return (name.startsWith('/')) ? name : ('/' + name)
+  name = (name.startsWith('/')) ? name : ('/' + name)
+  return decodeURIComponent(name)
 }
 
 // helper to write file data to an archive
@@ -139,6 +140,7 @@ export function readReadme (archive, cb) {
 }
 
 export function readArchiveDirectory (archive, dstPath, cb) {
+  dstPath = normalizedEntryName({ name: dstPath })
   var dstPathParts = dstPath.split('/')
   if (dstPathParts.length > 1 && !dstPathParts[dstPathParts.length - 1]) dstPathParts.pop() // drop the last empty ''
 
