@@ -49,6 +49,12 @@ export function changeUrl (oldUrl, newUrl) {
   }))
 }
 
+export function togglePinned (url, pinned) {
+  return setupPromise.then(v => cbPromise(cb => {
+    db.run(`UPDATE bookmarks SET pinned = ? WHERE url = ?`, [!pinned ? 1 : 0, url], cb)
+  }))
+}
+
 export function addVisit (url) {
   return setupPromise.then(v => cbPromise(cb => {
     db.run(`UPDATE bookmarks SET num_visits = num_visits + 1 WHERE url = ?`, url, cb)
