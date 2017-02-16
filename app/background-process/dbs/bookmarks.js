@@ -81,7 +81,7 @@ export function listPinned () {
 
 export function list () {
   return setupPromise.then(v => cbPromise(cb => {
-    db.all(`SELECT url, title FROM bookmarks ORDER BY num_visits DESC`, cb)
+    db.all(`SELECT url, title, pinned FROM bookmarks ORDER BY num_visits DESC`, cb)
   }))
 }
 
