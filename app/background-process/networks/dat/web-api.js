@@ -1,10 +1,10 @@
 import co from 'co'
 import path from 'path'
 import { parse as parseURL } from 'url'
+import pda from 'pauls-dat-api'
 import * as dat from './dat'
 import * as archivesDb from '../../dbs/archives'
 import * as sitedataDb from '../../dbs/sitedata'
-import { statArchiveFile, readArchiveFile, readArchiveDirectory, writeArchiveFile, writeArchiveDirectory, toValidEncoding } from './helpers'
 import { queryPermission, requestPermission } from '../../ui/permissions'
 import { 
   DAT_HASH_REGEX,
@@ -15,19 +15,10 @@ import {
   PermissionsError,
   QuotaExceededError,
   ArchiveNotWritableError,
-
-  InvalidEncodingError,
   ArchiveNotSavedError,
   InvalidURLError,
-
-  TimeoutError,
   FileNotFoundError,
-  FileReadError,
-  FileWriteError,
   ProtectedFileNotWritableError,
-  FileAlreadyExistsError,
-  FolderAlreadyExistsError,
-  ParentFolderDoesntExistError,
   InvalidPathError
 } from '../../../lib/const'
 
@@ -79,49 +70,7 @@ const deleteArchive = m(function * (url) {
 const readDirectory = m(function * (url, opts = {}) {
   // TODO history
   var { archive, filepath } = lookupArchive(url)
-  return new Promise((resolve, reject) => {
-    readArchiveDirectory(archive, filepath, (err, entries) => {
-      if (err) reject(err)
-      else resolve(entries)
-    })
-  })
-})
-
-const stat = m(function * (url, opts = {}) {
-  // TODO versions
-  var downloadedBlocks = !!opts.downloadedBlocks
-  var timeout = (typeof opts.timeout === 'number') ? opts.timeout : DEFAULT_TIMEOUT
-  var { archive, filepath } = lookupArchive(url)
-  return new Promise((resolve, reject) => {
-    // start timeout timer
-    var timedOut = false, entriesStream
-    var timer = setTimeout(() => {
-      timedOut = true
-      entriesStream.destroy()
-      reject(new TimeoutError())
-    }, timeout)
-
-    // read the stat
-    entriesStream = statArchiveFile(archive, filepath, (err, data) => {
-      clearTimeout(timer)
-      if (timedOut) return // do nothing if timed out
-      if (err) {
-        // error handling
-        if (err.notFound) {
-          return reject(new FileNotFoundError('File not found'))
-        }
-        console.error('Failed to read archive entry', err)
-        return reject(new FileReadError())
-      }
-
-      // count downloaded blocks?
-      if (downloadedBlocks) {
-        data.downloadedBlocks = archive.countDownloadedBlocks(data)
-      }
-
-      resolve(data)
-    })
-  })
+  return pda.listFiles(archive, filepath, opts)
 })
 
 export default {
@@ -131,96 +80,43 @@ export default {
   deleteArchive,
   deleteSite: deleteArchive, // alias
 
-  stat,
-  exists: m(function * (url) {
-    // try to stat
-    try {
-      yield stat.call(this, url)
-      return true
-    } catch (e) {
-      return false
+  stat: m(function * (url, opts = {}) {
+    // TODO versions
+    var { archive, filepath } = lookupArchive(url)
+    var downloadedBlocks = opts.downloadedBlocks === true
+    var entry = yield pda.lookupEntry(archive, filepath, opts)
+    if (!entry) {
+      throw new FileNotFoundError()
     }
+    if (downloadedBlocks) {
+      entry.downloadedBlocks = archive.countDownloadedBlocks(entry)
+    }
+    return entry
+  }),
+
+  exists: m(function * (url, opts = {}) {
+    // TODO versions
+    var { archive, filepath } = lookupArchive(url)
+    var entry = yield pda.lookupEntry(archive, filepath, opts)
+    return !!entry
   }),
 
   readFile: m(function * (url, opts = {}) {
     // TODO versions
-    var timeout = (typeof opts.timeout === 'number') ? opts.timeout : DEFAULT_TIMEOUT
     var { archive, filepath } = lookupArchive(url)
-    return new Promise((resolve, reject) => {
-      // start timeout timer
-      var timedOut = false, entriesStream
-      var timer = setTimeout(() => {
-        timedOut = true
-        entriesStream.destroy()
-        reject(new TimeoutError())
-      }, timeout)
-
-      // read the file into memory
-      entriesStream = readArchiveFile(archive, filepath, opts, (err, data) => {
-        clearTimeout(timer)
-        if (timedOut) return // do nothing if timed out
-        if (err) {
-          // error handling
-          if (err.notFound) {
-            return reject(new FileNotFoundError('File not found'))
-          }
-          console.error('Failed to read archive file', err)
-          return reject(new FileReadError())
-        }
-        resolve(data)
-      })
-    })
+    return pda.readFile(archive, filepath, opts)
   }),
 
   writeFile: m(function * (url, data, opts = {}) {
-    if (typeof opts === 'string') {
-      opts = { encoding: opts }
-    }
-    // guess the encoding by the data type
-    if (!opts.encoding) {
-      opts.encoding = (typeof data === 'string' ? 'utf8' : 'binary')
-    }
-    opts.encoding = toValidEncoding(opts.encoding)
-
     var { archive, filepath } = lookupArchive(url)
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
     yield assertWritePermission(archive, this.sender)
     yield assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
     yield assertValidFilePath(filepath)
-    return new Promise((resolve, reject) => {
-      // protected files
-      if (isProtectedFilePath(filepath)) {
-        return reject(new ProtectedFileNotWritableError())
-      }
-
-      // check what's currently there
-      statArchiveFile(archive, filepath, (err, entry) => {
-        // dont overwrite directories
-        if (entry && entry.type === 'directory') {
-          return reject(new FolderAlreadyExistsError())
-        }
-
-        // check that the parent directory exists
-        statArchiveFile(archive, path.dirname(filepath), (err, entry) => {
-          if (!entry || entry.type !== 'directory') {
-            return reject(new ParentFolderDoesntExistError())
-          }
-
-          // write the file
-          writeArchiveFile(archive, filepath, data, opts, err => {
-            if (err) {
-              // error handling
-              if (err.invalidEncoding) {
-                return reject(new InvalidEncodingError(`Encoding ${err.encoding} does not match the given value type ${err.type}`))
-              }
-              console.error('Failed to write archive file', err)
-              return reject(new FileWriteError())
-            }
-            resolve()
-          })
-        })
-      })
-    })
+    if (isProtectedFilePath(filepath)) {
+      throw new ProtectedFileNotWritableError()
+    }
+    return pda.writeFile(archive, filepath, data, opts)
   }),
 
   deleteFile: m(function * (url) {
@@ -235,37 +131,10 @@ export default {
     var { archive, filepath } = lookupArchive(url)
     yield assertWritePermission(archive, this.sender)
     yield assertValidPath(filepath)
-    return new Promise((resolve, reject) => {
-      // protected files
-      if (isProtectedFilePath(filepath)) {
-        return reject(new ProtectedFileNotWritableError())
-      }
-
-      // check what's currently there
-      statArchiveFile(archive, filepath, (err, entry) => {
-        // dont overwrite directories
-        if (entry) {
-          if (entry.type === 'directory') return reject(new FolderAlreadyExistsError())
-          return reject(new FileAlreadyExistsError())
-        }
-
-        // check that the parent directory exists
-        statArchiveFile(archive, path.dirname(filepath), (err, entry) => {
-          if (!entry || entry.type !== 'directory') {
-            return reject(new ParentFolderDoesntExistError())
-          }
-
-          // write the directory
-          writeArchiveDirectory(archive, filepath, err => {
-            if (err) {
-              console.error('Failed to write archive folder', err)
-              return reject(new FileWriteError())
-            }
-            resolve()
-          })
-        })
-      })
-    })
+    if (isProtectedFilePath(filepath)) {
+      throw new ProtectedFileNotWritableError()
+    }
+    return pda.createDirectory(archive, filepath)
   }),
 
   deleteDirectory: m(function * (url) {

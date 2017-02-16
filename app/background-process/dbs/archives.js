@@ -8,10 +8,10 @@ import { Transform } from 'stream'
 import concat from 'concat-stream'
 import pump from 'pump'
 import Events from 'events'
+import datEncoding from 'dat-encoding'
 import { cbPromise } from '../../lib/functions'
 import { setupLevelDB, makeTxLock } from '../../lib/bg/db'
 import { transform, noopWritable } from '../../lib/streams'
-import { bufToStr } from '../networks/dat/helpers'
 import { DAT_HASH_REGEX, InvalidOperationError, InvalidArchiveKeyError } from '../../lib/const'
 import { getOrLoadArchive } from '../networks/dat/dat'
 
@@ -49,7 +49,7 @@ export function getLevelInstance () {
 
 // get the path to an archive's files
 export function getArchiveFilesPath (archiveOrKey) {
-  return path.join(dbPath, 'Archives', bufToStr(archiveOrKey.key || archiveOrKey))
+  return path.join(dbPath, 'Archives', datEncoding.toStr(archiveOrKey.key || archiveOrKey))
 }
 
 export const on = events.on.bind(events)
@@ -120,7 +120,7 @@ class QueryArchiveUserSettingsTransform extends Transform {
 // - supresses a not-found with a default response, with notFound == true
 export function getArchiveUserSettings (key) {
   // massage inputs
-  key = bufToStr(key)
+  key = datEncoding.toStr(key)
 
   // validate inputs
   if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
@@ -134,7 +134,7 @@ export function getArchiveUserSettings (key) {
 // write an archive's user setting
 export function setArchiveUserSettings (key, newValues = {}) {
   // massage inputs
-  key = bufToStr(key)
+  key = datEncoding.toStr(key)
 
   // validate inputs
   if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
@@ -167,7 +167,7 @@ export function setArchiveUserSettings (key, newValues = {}) {
 // - supresses a not-found with a default response, with notFound == true
 export function getArchiveMeta (key) {
   // massage inputs
-  key = bufToStr(key)
+  key = datEncoding.toStr(key)
 
   // validate inputs
   if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
@@ -181,7 +181,7 @@ export function getArchiveMeta (key) {
 // write an archive's metadata
 export function setArchiveMeta (key, value = {}) {
   // massage inputs
-  key = bufToStr(key)
+  key = datEncoding.toStr(key)
 
   // validate inputs
   if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())

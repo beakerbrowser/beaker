@@ -3,11 +3,11 @@ import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import pump from 'pump'
 import multicb from 'multicb'
+import datEncoding from 'dat-encoding'
+import pda from 'pauls-dat-api'
 var debug = require('debug')('dat')
 import trackArchiveEvents from './track-archive-events'
 import { debounce, cbPromise } from '../../../lib/functions'
-import { generate as generateManifest } from './dat-manifest'
-import { bufToStr, readReadme, readManifest, statArchiveFile, writeArchiveFile, readArchiveDirectory } from './helpers'
 import { grantPermission } from '../../ui/permissions'
 
 // db modules
@@ -18,7 +18,7 @@ import hyperdrive from 'hyperdrive'
 import swarmDefaults from 'datland-swarm-defaults'
 import discoverySwarm from 'discovery-swarm'
 import hyperImport from 'hyperdrive-import-files'
-import { resolveDatDNS } from '../dns'
+const datDns = require('dat-dns')()
 
 // file modules
 import path from 'path'
@@ -62,15 +62,15 @@ export function setup () {
 // re-exports
 //
 
-export const resolveName = (name) => cbPromise(cb => resolveDatDNS(name, cb))
+export const resolveName = datDns.resolveName
 export const setArchiveUserSettings = archivesDb.setArchiveUserSettings
 export const getGlobalSetting = archivesDb.getGlobalSetting
 export const setGlobalSetting = archivesDb.setGlobalSetting
 
-// archive creation
+// archive creation and mutation
 // =
 
-export function createNewArchive ({ title, description, author, version, forkOf, origin, originTitle, importFiles, noWait, inplaceImport } = {}) {
+export function createNewArchive ({ title, description, author, forkOf, origin, originTitle, importFiles, noWait, inplaceImport } = {}) {
   // massage inputs
   var createdBy
   if (typeof origin === 'string' && origin.startsWith('dat://')) createdBy = { url: origin }
@@ -89,8 +89,14 @@ export function createNewArchive ({ title, description, author, version, forkOf,
     }
 
     // write the manifest then resolve
-    var manifest = generateManifest({ url: `dat://${key}/`, title, description, author, version, forkOf, createdBy })
-    writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest, null, 2), done)
+    pda.writeManifest(archive, {
+      url: `dat://${key}/`,
+      title,
+      description,
+      author,
+      forkOf,
+      createdBy
+    }, done)
     // write the user settings
     setArchiveUserSettings(key, { isSaved: true })
     // write the perms
@@ -99,88 +105,92 @@ export function createNewArchive ({ title, description, author, version, forkOf,
     // import files
     if (importFiles) {
       importFiles = Array.isArray(importFiles) ? importFiles : [importFiles]
-      importFiles.forEach(importFile => writeArchiveFileFromPath(key, { src: importFile, dst: '/', inplaceImport }))
+      importFiles.forEach(srcPath => {
+        pda.exportFilesystemToArchive({
+          srcPath,
+          dstArchive: archive,
+          inplaceImport
+        })
+      })
     }
   })
 }
 
-export function forkArchive (oldArchiveKey, opts) {
+export function forkArchive (srcArchiveKey, opts) {
   opts = opts || {}
 
   // get the old archive
-  var oldArchive = getArchive(oldArchiveKey)
-  if (!oldArchive) {
+  var dstArchive
+  var srcArchive = getArchive(srcArchiveKey)
+  if (!srcArchive) {
     return Promise.reject(new Error('Invalid archive key'))
   }
 
   // fetch old archive meta
-  return archivesDb.getArchiveMeta(oldArchiveKey).then(meta => {
+  return archivesDb.getArchiveMeta(srcArchiveKey).then(meta => {
     // override any manifest data
-    var newArchiveOpts = {
+    var dstArchiveOpts = {
       title: (opts.title) ? opts.title : meta.title,
       description: (opts.description) ? opts.description : meta.description,
-      forkOf: (meta.forkOf || []).concat(`dat://${oldArchiveKey}/`),
+      forkOf: (meta.forkOf || []).concat(`dat://${srcArchiveKey}/`),
       origin: opts.origin,
       noWait: true
     }
-    if (opts.author) newArchiveOpts.author = opts.author
+    if (opts.author) dstArchiveOpts.author = opts.author
 
     // create the new archive
-    return createNewArchive(newArchiveOpts)
-  }).then(newArchiveKey => {
-    return new Promise(resolve => {
-      // list the old archive's files
-      var newArchive = getArchive(newArchiveKey)
-      oldArchive.list((err, entries) => {
-        if (err) return console.error('[DAT] Failed to list old archive files during fork', err)
-
-        // TEMPORARY
-        // remove duplicates
-        // this is only needed until hyperdrive fixes its .list()
-        // see https://github.com/mafintosh/hyperdrive/pull/99
-        // -prf
-        var entriesDeDuped = {}
-        entries.forEach(entry => { entriesDeDuped[entry.name] = entry })
-        entries = Object.keys(entriesDeDuped).map(name => entriesDeDuped[name])
-
-        // copy over files
-        next()
-        function next (err) {
-          if (err) console.error('[DAT] Error while copying file during fork', err)
-          var entry = entries.shift()
-          if (!entry) {
-            // done!
-            return resolve(newArchiveKey)
-          }
-
-          // directories
-          if (entry.type === 'directory') {
-            return newArchive.append({
-              name: entry.name,
-              type: 'directory',
-              mtime: entry.mtime
-            }, next)
-          }
-
-          // skip other non-files, undownloaded files, and the old manifest
-          if (
-            entry.type !== 'file' || 
-            !oldArchive.isEntryDownloaded(entry) || 
-            entry.name === DAT_MANIFEST_FILENAME ||
-            entry.name === ('/' + DAT_MANIFEST_FILENAME)
-          ) {
-            return next()
-          }
-
-          // copy the file
-          pump(
-            oldArchive.createFileReadStream(entry),
-            newArchive.createFileWriteStream({ name: entry.name, mtime: entry.mtime, ctime: entry.ctime }),
-            next
-          )
-        }
-      })
+    return createNewArchive(dstArchiveOpts)
+  }).then(dstArchiveKey => {
+    dstArchive = getArchive(dstArchiveKey)
+    return pda.exportArchiveToArchive({
+      srcArchive,
+      dstArchive,
+      skipUndownloadedFiles: true,
+      ignore: ['/dat.json']
     })
+  }).then(() => datEncoding.toStr(dstArchive.key))
+}
+
+export function updateArchiveManifest (key, updates) {
+  var archive = getArchive(key)
+  if (!archive) {
+    return Promise.reject(new Error('Invalid archive key'))
+  }
+  return pda.updateManifest(archive, updates)
+}
+
+export function writeArchiveFileFromData (key, path, data, opts) {
+  var archive = getArchive(key)
+  if (!archive) {
+    return Promise.reject(new Error('Invalid archive key'))
+  }
+  return pda.writeFile(archive, path, data, opts)
+}
+
+export function writeArchiveFileFromPath (dstKey, opts) {
+  var dstArchive = getArchive(dstKey)
+  if (!dstArchive) {
+    return Promise.reject(new Error('Invalid archive key'))
+  }
+  return pda.exportFilesystemToArchive({
+    srcPath: opts.src,
+    dstArchive,
+    dstPath: opts.dst,
+    ignore: opts.ignore,
+    dryRun: opts.dryRun,
+    inplaceImport: true
+  })
+}
+
+export function exportFileFromArchive (srcKey, srcPath, dstPath) {
+  var srcArchive = getArchive(srcKey)
+  if (!srcArchive) {
+    return Promise.reject(new Error('Invalid archive key'))
+  }
+  return pda.exportArchiveToFilesystem({
+    srcArchive,
+    srcPath,
+    dstPath
   })
 }
 
@@ -250,7 +260,10 @@ export function cacheArchive (archive) {
 }
 
 export function getArchive (key) {
-  return archives[bufToStr(key)]
+  if (typeof key !== 'string') {
+    key = datEncoding.toStr(key)
+  }
+  return archives[key]
 }
 
 export function getActiveArchives () {
@@ -258,7 +271,7 @@ export function getActiveArchives () {
 }
 
 export function getOrLoadArchive (key, opts) {
-  key = bufToStr(key)
+  key = datEncoding.toStr(key)
   return getArchive(key) || loadArchive(new Buffer(key, 'hex'), opts)
 }
 
@@ -286,38 +299,30 @@ export function queryArchives (query) {
 }
 
 export function getArchiveDetails (name, opts = {}) {
-  return new Promise((resolve, reject) => {
-    resolveDatDNS(name, (err, key) => {
-      if (err) return reject(new Error(err.code || err))
+  var archive
+  return datDns.resolveName(name).then(key => {
+    // get the archive
+    archive = getOrLoadArchive(key)
 
-      // get the archive
-      var archive = getOrLoadArchive(key)
+    // fetch archive data
+    return Promise.all([
+      archivesDb.getArchiveMeta(key),
+      archivesDb.getArchiveUserSettings(key)
+    ])
+  }).then(([meta, userSettings]) => {
+    // attach additional data
+    meta.userSettings = userSettings
 
-      // fetch archive data
-      var done = multicb({ pluck: 1, spread: true })
-      var metaCB = done()
-      archivesDb.getArchiveMeta(key).then(meta => metaCB(null, meta)).catch(metaCB)
-      var userSettingsCB = done()
-      archivesDb.getArchiveUserSettings(key).then(settings => userSettingsCB(null, settings)).catch(userSettingsCB)
-      if (opts.entries) archive.list(done())
-      if (opts.readme) readReadme(archive, done())
-      done((err, meta, userSettings, entries, readme) => {
-        if (err) return reject(err)
+    // metadata for history view
+    meta.blocks = archive.metadata.blocks
+    meta.metaSize = archive.metadata.bytes
+    meta.contentKey = archive.content.key
 
-        // attach additional data
-        meta.userSettings = userSettings
-        meta.entries = entries
-        meta.readme = readme
-        // metadata for history view
-        meta.blocks = archive.metadata.blocks
-        meta.metaSize = archive.metadata.bytes
-        meta.contentKey = archive.content.key
-
-        if (opts.contentBitfield) meta.contentBitfield = archive.content.bitfield.buffer
-        meta.peers = archive.metadata.peers.length
-        resolve(meta)
-      })
-    })
+    if (opts.contentBitfield) {
+      meta.contentBitfield = archive.content.bitfield.buffer
+    }
+    meta.peers = archive.metadata.peers.length
+    return meta
   })
 }
 
@@ -346,149 +351,6 @@ export function getArchiveStats (key) {
   })
 }
 
-// archive updaters
-// =
-
-export function updateArchiveManifest (key, updates) {
-  return cbPromise(cb => {
-    // fetch the current manifest
-    var archive = getOrLoadArchive(key)
-    readManifest(archive, (_, manifest) => {
-      // update values
-      manifest = manifest || {}
-      Object.assign(manifest, updates)
-      writeArchiveFile(archive, DAT_MANIFEST_FILENAME, JSON.stringify(manifest, null, 2), cb)
-    })
-  })
-}
-
-export function writeArchiveFileFromData (key, path, data, opts) {
-  return cbPromise(cb => {
-    var archive = getArchive(key)
-    if (!archive) {
-      return cb(new Error('Archive not available. Do you own this archive, and have it saved?'))
-    }
-    writeArchiveFile(archive, path, data, opts, cb)
-  })
-}
-
-export function writeArchiveFileFromPath (key, opts) {
-  return cbPromise(cb => {
-    if (!opts || typeof opts !== 'object' || typeof opts.src !== 'string' || typeof opts.dst !== 'string') {
-      return cb(new Error('Must provide .src and .dst filepaths'))
-    }
-
-    // open the archive and ensure we can write
-    var archive = getArchive(key)
-    if (!archive) {
-      return cb(new Error('Archive not available. Do you own this archive, and have it saved?'))
-    }
-    archive.open(() => {
-      // only allow this method on non-owned archives if it's a dry run (used by bkr status)
-      if (!archive.owner && !opts.dryRun) {
-        return cb(new Error('Cannot write: not the archive owner'))
-      }
-
-      let { src, dst } = opts
-      if (!dst) dst = '/'
-
-      // update the dst if it's a directory
-      try {
-        var stat = fs.statSync(src)
-        if (stat.isDirectory() && !opts.inplaceImport) {
-          // put at a subpath, so that the folder's contents dont get imported in-place into the target
-          dst = path.join(dst, path.basename(src))
-        }
-      } catch (e) {
-        return cb(new Error('File not found'))
-      }
-
-      // read the file or file-tree into the archive
-      debug('Writing file(s) from path:', src, 'to', dst)
-      var stats = { addedFiles: [], updatedFiles: [], skipCount: 0, fileCount: 0, totalSize: 0 }
-      var status = hyperImport(archive, src, {
-        basePath: dst,
-        live: false,
-        resume: true,
-        ignore: opts.ignore || ['.dat', '**/.dat', '.git', '**/.git'],
-        compareFileContent: true,
-        dryRun: opts.dryRun
-      }, (err) => {
-        if (err) return cb(err)
-        stats.fileCount = status.fileCount
-        stats.totalSize = status.totalSize
-        cb(null, stats)
-      })
-      status.on('file imported', e => {
-        if (e.mode === 'created') stats.addedFiles.push(e.path)
-        if (e.mode === 'updated') stats.updatedFiles.push(e.path)
-      })
-      status.on('file skipped', e => {
-        stats.skipCount++
-      })
-    })
-  })
-}
-
-export function exportFileFromArchive (key, srcPath, dstPath) {
-  return cbPromise(cb => {
-    var isFirst = true
-    var numFiles = 0, numDirectories = 0
-    var archive = getArchive(key)
-    if (!archive) {
-      return cb(new Error('Archive not available. Do you own this archive, and have it saved?'))
-    }
-    statThenExport(srcPath, dstPath, err => {
-      if (err) return cb(err)
-      cb(null, { numFiles, numDirectories })
-    })
-
-    function statThenExport (entrySrcPath, entryDstPath, cb) {
-      // check that the entry exists
-      statArchiveFile(archive, entrySrcPath, (err, entry) => {
-        if (err || !entry) return cb(new Error(`Archive file ${entrySrcPath} not found`))
-
-        if (isFirst) {
-          // log action
-          console.log(`[DAT] Exporting dat://${key} to ${entryDstPath}`)
-          isFirst = false
-        }
-
-        // export by type
-        if (entry.type === 'file') exportFile(entry, entryDstPath, cb)
-        else if (entry.type === 'directory') exportDirectory(entry, entryDstPath, cb)
-        else cb()
-      })
-    }
-
-    function exportFile (entry, entryDstPath, cb) {
-      // write the file
-      numFiles++
-      pump(
-        archive.createFileReadStream(entry),
-        fs.createWriteStream(entryDstPath),
-        cb
-      )
-    }
-
-    function exportDirectory (entry, entryDstPath, cb) {
-      // make sure the destination folder exists
-      numDirectories++
-      mkdirp(entryDstPath, err => {
-        if (err) return cb(err)
-
-        // list the directory
-        readArchiveDirectory(archive, path.join('/', entry.name), (err, entries) => {
-          if (err) cb(err)
-          var done = multicb()
-          Object.keys(entries).forEach(k => statThenExport(entries[k].name, path.join(dstPath, entries[k].name), done()))
-          done(cb)
-        })
-      })
-    }
-  })
-}
-
 // archive networking
 // =
 
@@ -497,13 +359,13 @@ export function joinSwarm (key, opts) {
   var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || archive.isSwarming) return
 
-  var keyStr = bufToStr(archive.key)
+  var keyStr = datEncoding.toStr(archive.key)
   var swarm = discoverySwarm(swarmDefaults({
     hash: false,
     utp: true,
     tcp: true,
     stream: (info) => {
-      var dkeyStr = bufToStr(archive.discoveryKey)
+      var dkeyStr = datEncoding.toStr(archive.discoveryKey)
       var chan = dkeyStr.slice(0,6) + '..' + dkeyStr.slice(-2)
       var keyStrShort = keyStr.slice(0,6) + '..' + keyStr.slice(-2)
       debug('new connection chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort)
@@ -531,7 +393,7 @@ export function joinSwarm (key, opts) {
   swarm.on('error', err => debug('Swarm error for', keyStr, err))
   swarm.join(archive.discoveryKey)
 
-  debug('Swarming archive', bufToStr(archive.key), 'discovery key', bufToStr(archive.discoveryKey))
+  debug('Swarming archive', datEncoding.toStr(archive.key), 'discovery key', datEncoding.toStr(archive.discoveryKey))
   archive.isSwarming = true
   archive.swarm = swarm
 }
@@ -541,7 +403,7 @@ export function leaveSwarm (key, cb) {
   var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || !archive.isSwarming) return
 
-  var keyStr = bufToStr(archive.key)
+  var keyStr = datEncoding.toStr(archive.key)
   var swarm = archive.swarm
 
   debug('Unswarming archive %s disconnected %d peers', keyStr, archive.metadata.peers.length)
@@ -590,27 +452,12 @@ export function downloadArchive (key) {
 }
 
 // prioritize an entry for download
-export function downloadArchiveEntry (key, name) {
-  return cbPromise(cb => {
-    // get the archive
-    var archive = getArchive(key)
-    if (!archive) cb(new Error('Invalid archive key'))
-
-    // lookup the entry
-    archive.lookup(name, (err, entry) => {
-      if (err || !entry) return cb(err)
-      if (entry.type !== 'file') return cb(new Error('Entry must be a file'))
-
-      // download the entry
-      archive.content.prioritize({
-        start: entry.content.blockOffset,
-        end: entry.content.blockOffset + entry.blocks,
-        priority: 3,
-        linear: true
-      })
-      archive.download(entry, cb)
-    })
-  })
+export function downloadArchiveEntry (key, name, opts) {
+  var archive = getArchive(key)
+  if (!archive) {
+    Promise.reject(new Error('Invalid archive key'))
+  }
+  return pda.download(archive, name, opts)
 }
 
 export function archivesEventStream () {
@@ -628,7 +475,7 @@ function pullLatestArchiveMeta (archive) {
   // open() just in case (we need .blocks)
   archive.open(() => {
     // read the archive metafiles
-    readManifest(archive, done())
+    pda.readManifest(archive, done())
 
     // calculate the size on disk
     var sizeCb = done()

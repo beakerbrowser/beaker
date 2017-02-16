@@ -41,7 +41,6 @@ test('dat.createNewArchive', async t => {
       title: 'title',
       description: 'description',
       author: 'author',
-      version: '1.0.0',
       forkOf: 'dat://1f68b801559be9a02666988fb256f97d79e0bf74455292491763641687b22ae8',
       origin: 'dat://1f68b801559be9a02666988fb256f97d79e0bf74455292491763641687b22ae8',
       originTitle: 'foo bar app',
@@ -67,7 +66,6 @@ test('dat.createNewArchive', async t => {
   t.deepEqual(res.value.forkOf, ['dat://1f68b801559be9a02666988fb256f97d79e0bf74455292491763641687b22ae8'])
   t.deepEqual(res.value.createdBy.url, 'dat://1f68b801559be9a02666988fb256f97d79e0bf74455292491763641687b22ae8')
   t.deepEqual(res.value.createdBy.title, 'foo bar app')
-  t.deepEqual(res.value.version, '1.0.0')
 })
 
 test('dat.forkArchive', async t => {
@@ -114,10 +112,9 @@ test('dat.writeArchiveFileFromPath', async t => {
   t.falsy(res.value.name)
 
   var res = await app.client.executeAsync((key, done) => {
-    datInternalAPI.getArchiveDetails(key, { entries: true }).then(res => done(window.JSON.stringify(res.entries)), done)
+    dat.readDirectory('dat://' + key + '/new-subdir', null).then(done, done)
   }, createdDatKey)
-  var entries = JSON.parse(res.value)
-  t.deepEqual(entries[entries.length - 1].name, '/new-subdir/hello.txt')
+  t.truthy(res.value && ('hello.txt' in res.value))
 
   // write a folder
   // =
@@ -131,10 +128,9 @@ test('dat.writeArchiveFileFromPath', async t => {
   t.falsy(res.value.name)
 
   var res = await app.client.executeAsync((key, done) => {
-    datInternalAPI.getArchiveDetails(key, { entries: true }).then(res => done(window.JSON.stringify(res.entries)), done)
+    dat.listFiles('dat://' + key + '/new-subdir2', null).then(done, done)
   }, createdDatKey)
-  var newEntries = JSON.parse(res.value)
-  t.deepEqual(newEntries.length - entries.length, 5)
+  t.deepEqual(Object.keys(res.value).length, 3)
 
 })
 
@@ -159,7 +155,7 @@ test('dat.exportFileFromArchive', async t => {
     datInternalAPI.exportFileFromArchive(key, '/', path).then(done, done)
   }, createdDatKey, tmpOutputPath2)
   t.falsy(res.value.name)
-  t.deepEqual(fs.readdirSync(tmpOutputPath2).length, 4)
+  t.deepEqual(fs.readdirSync(tmpOutputPath2).length, 6)
 
 })
 

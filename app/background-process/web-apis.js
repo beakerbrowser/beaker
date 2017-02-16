@@ -24,7 +24,8 @@ export function setup () {
         beakerDownloads,
         beakerHistory,
         beakerSitedata,
-        datInternalAPI
+        datInternalAPI,
+        dat
       }
       event.returnValue = protos
       return
