@@ -101,7 +101,7 @@ function beakerServer (req, res) {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/start.html'))
   }
   if (requestUrl === 'beaker:bookmarks') {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/beaker.html'))
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/bookmarks.html'))
   }
   if (requestUrl.startsWith('beaker:library')) {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/library.html'))
