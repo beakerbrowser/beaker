@@ -16,17 +16,18 @@ var builtinPages = [
   { href: 'beaker:settings', label: 'Settings', icon: 'cog' }
 ]
 
-var pinnedBookmarks
+var bookmarks, pinnedBookmarks
 
 co(function* () {
+  bookmarks = (yield beakerBookmarks.list()) || []
   pinnedBookmarks = (yield beakerBookmarks.listPinned()) || []
-  render()
+  renderPinned()
 })
 
 // rendering
 // =
 
-function render () {
+function renderPinned () {
   yo.update(document.querySelector('.pinned-wrapper'), yo`
     <div class="pinned-wrapper">
       <div class="pinned">
@@ -38,7 +39,37 @@ function render () {
           </div>
         </div>
       </div>
+      <div class="links">
+        <a onclick=${renderBookmarks}>
+          <span>Bookmarks</span>
+          <i class="icon icon-down-open"></i>
+        </a>
+        <a>
+          <span>Pin a site</span>
+          <i class="icon icon-plus"></i>
+        </a>
+      </div>
     </div>`)
+}
+
+function renderBookmarks () {
+  const renderRow = (row, i) =>
+    yo`
+      <li class="ll-row bookmarks__row" data-row=${i}>
+        <a class="ll-link bookmark__link" href=${row.url} title=${row.title} />
+          <img class="bookmark__favicon" src=${'beaker-favicon:' + row.url} />
+          <span class="bookmark__title">${row.title}</span>
+        </a>
+      </li>`
+
+  yo.update(
+    document.querySelector('.bookmarks-wrapper'),
+      yo`
+        <div class="bookmarks-wrapper">
+          <ul class="links-list bookmarks">
+            ${bookmarks.map(renderRow)}
+          </ul>
+        </div>`)
 }
 
 function renderPinnedItem (item) {
@@ -92,7 +123,7 @@ function pinSite (e) {
 
   beakerBookmarks.listPinned().then(pinned => {
     pinnedBookmarks = pinned
-    render()
+    renderPinned()
   })
 
   document.querySelector('.pinned-wrapper').removeChild(form)
@@ -104,6 +135,6 @@ function unpinSite (e) {
 
   beakerBookmarks.listPinned().then(pinned => {
     pinnedBookmarks = pinned
-    render()
+    renderPinned()
   })
 }

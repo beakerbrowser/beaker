@@ -19,13 +19,13 @@ co(function*() {
   // get the bookmarks, ordered by # of views
   bookmarks = yield beakerBookmarks.list()
   bookmarks = bookmarks || []
-  renderBookmarks()
+  render()
 })
 
 // rendering
 // =
 
-export function renderBookmarks () {
+function render () {
   const renderRow = (row, i) =>
     row.isEditing ? renderRowEditing(row, i) : renderRowDefault(row, i)
 
@@ -101,7 +101,7 @@ return e => {
 
   // enter edit-mode
   bookmarks[i].isEditing = true
-  renderBookmarks()
+  render()
   document.querySelector(`[data-row="${i}"] input`).focus()
 }
 }
@@ -119,7 +119,7 @@ return e => {
 
     // exit edit-mode
     bookmarks[i].isEditing = false
-    renderBookmarks()
+    render()
 
     // save in backend
     beakerBookmarks.changeTitle(oldUrl, bookmarks[i].title)
@@ -130,7 +130,7 @@ return e => {
   else if (e.keyCode == 27) {
     // exit edit-mode
     bookmarks[i].isEditing = false
-    renderBookmarks()
+    render()
   }
 
   // all else
@@ -153,6 +153,6 @@ return e => {
   var b = bookmarks[i]
   bookmarks.splice(i, 1)
     beakerBookmarks.remove(b.url)
-    renderBookmarks()
+    render()
   }
 }
