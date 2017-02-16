@@ -19,13 +19,13 @@ co(function*() {
   // get the bookmarks, ordered by # of views
   bookmarks = yield beakerBookmarks.list()
   bookmarks = bookmarks || []
-  render()
+  renderBookmarks()
 })
 
 // rendering
 // =
 
-function render () {
+export function renderBookmarks () {
   const renderRow = (row, i) =>
     row.isEditing ? renderRowEditing(row, i) : renderRowDefault(row, i)
 
@@ -141,7 +141,6 @@ return e => {
     if (e.target.name == 'url')
       bookmarks[i].editUrl = e.target.value
   }
-
 }
 }
 
