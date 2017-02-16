@@ -17,4 +17,5 @@ export function open (url) {
   } else {
     queue.push(url)
   }
+  return commandReceiver
 }

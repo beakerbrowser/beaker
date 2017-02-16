@@ -392,7 +392,10 @@ export function writeArchiveFileFromPath (key, opts) {
       return cb(new Error('Archive not available. Do you own this archive, and have it saved?'))
     }
     archive.open(() => {
-      if (!archive.owner) return cb(new Error('Cannot write: not the archive owner'))
+      // only allow this method on non-owned archives if it's a dry run (used by bkr status)
+      if (!archive.owner && !opts.dryRun) {
+        return cb(new Error('Cannot write: not the archive owner'))
+      }
 
       let { src, dst } = opts
       if (!dst) dst = '/'
