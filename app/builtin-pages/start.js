@@ -93,20 +93,19 @@ function renderPinnedBookmark (bookmark) {
       <div class="pinned__item-square">
         <img class="icon" src=${'beaker-favicon:' + url} />
       </div>
-      <div class="pinned__item-label ellipsis">${title}</div>
-      <input type="button" value=unpin data-url=${url} onclick=${unpinSite} />
+    <button label="Unpin ${url}" data-url=${url} onclick=${unpinSite} class="icon icon-cancel"></button>
+    <div class="pinned__item-label ellipsis">${title}</div>
     </a>`
 }
 
 function renderPinSiteForm (url, title) {
-  document.querySelector('.pinned-wrapper').append(yo`
-    <form id="add-pinned-site">
-      <label for="url">URL</label>
-      <input name="url" type="text" placeholder="URL" required />
+  renderBookmarks()
 
-      <label for="title">Title</label>
-      <input name="title" type="text" placeholder="Title" required />
-      <input type="button" value="Pin site" onclick=${pinSite} />
+  document.querySelector('.pinned').append(yo`
+    <form id="add-pinned-site" onsubmit=${pinSite}>
+      <legend>Add a new site or select a bookmark</legend>
+      <input name="url" type="text" placeholder="https://example.com" required />
+      <input type="submit">
     </form>`)
 
   document.querySelector('input[name="url"]').focus()

@@ -91,12 +91,16 @@
     }
 
     &:not(:last-child) {
-      margin-right: 20px;
+      margin-right: 35px;
     }
 
     &:hover {
       color: fadeout(#333, 15%);
       text-decoration: none;
+
+      button {
+        display: block;
+      }
     }
   }
 
@@ -138,5 +142,45 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 12px;
+  }
+
+  button {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    border: none;
+    outline: none;
+    background: none;
+    background: #333;
+    color: white;
+    width: 13px;
+    height: 13px;
+    margin: 0;
+    padding: 0px;
+    text-align: center;
+    display: none;
+
+    &::before {
+      vertical-align: top;
+    }
+  }
+
+  .links a {
+    color: fadeout(#333, 25%) !important; // TODO link styles should be opt in
+  }
+}
+
+form#add-pinned-site {
+  width: 100%;
+  color: fadeout(#333, 15%);
+  margin-bottom: 20px;
+
+  legend {
+    margin-bottom: 10px;
+  }
+
+  input[type="text"] {
+    padding: 0 5px;
+    width: 300px;
   }
 }
