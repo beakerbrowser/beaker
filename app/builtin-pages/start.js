@@ -122,9 +122,19 @@ function pinSite (e) {
   e.preventDefault()
 
   var form = document.getElementById('add-pinned-site')
-  var {url, title} = form.elements
+  var { url } = form.elements
 
-  beakerBookmarks.add(url.value, title.value, 1)
+  if (!url) return
+
+  // attempt to make a nice title
+  // TODO: temporary solution, this will clutter the bookmarks database
+  // with duplicates -tbv
+  var title = url.value
+  try {
+    title = title.split('://')[1] || url.value
+  } catch (e) {}
+
+  beakerBookmarks.add(url.value, title, 1)
 
   beakerBookmarks.listPinned().then(pinned => {
     pinnedBookmarks = pinned
