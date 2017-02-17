@@ -97,7 +97,7 @@ function renderPinSiteForm (url, title) {
     </form>`)
 
   document.querySelector('input[name="url"]').focus()
-  document.querySelector('.pin-site').style.display = 'none'
+  document.querySelector('.pin-site').disabled = true
 }
 
 function pinBookmark (i) {
@@ -111,6 +111,9 @@ function pinBookmark (i) {
     beakerBookmarks.listPinned().then(pinned => {
       pinnedBookmarks = pinned
       renderPinned()
+
+      document.querySelector('.bookmarks').removeChild(document.querySelector('.bookmarks-list'))
+      document.querySelector('.pin-site').disabled = false
     })
   }
 }
@@ -130,6 +133,7 @@ function pinSite (e) {
 
   document.querySelector('.pinned').removeChild(form)
   document.querySelector('.bookmarks').removeChild(document.querySelector('.bookmarks-list'))
+  document.querySelector('.pin-site').disabled = false
 }
 
 function unpinSite (e) {
