@@ -100,6 +100,21 @@ function renderPinSiteForm (url, title) {
   document.querySelector('.pin-site').style.display = 'none'
 }
 
+function pinBookmark (i) {
+  return e => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    var b = bookmarks[i]
+    beakerBookmarks.add(b.url, b.title, 1)
+
+    beakerBookmarks.listPinned().then(pinned => {
+      pinnedBookmarks = pinned
+      renderPinned()
+    })
+  }
+}
+
 function pinSite (e) {
   e.preventDefault()
 
