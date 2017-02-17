@@ -156,3 +156,16 @@ return e => {
     render()
   }
 }
+
+function togglePinned (i) {
+  return e => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    var { url, title, pinned } = bookmarks[i]
+
+    beakerBookmarks.togglePinned(url, title, pinned)
+    bookmarks[i].pinned = pinned ? 0 : 1
+    render()
+  }
+}
