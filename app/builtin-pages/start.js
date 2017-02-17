@@ -128,7 +128,8 @@ function pinSite (e) {
     renderPinned()
   })
 
-  document.querySelector('.pinned-wrapper').removeChild(form)
+  document.querySelector('.pinned').removeChild(form)
+  document.querySelector('.bookmarks').removeChild(document.querySelector('.bookmarks-list'))
 }
 
 function unpinSite (e) {
