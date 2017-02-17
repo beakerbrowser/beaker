@@ -61,26 +61,27 @@
   }
 }
 
-.pinned-wrapper {
-  width: 475px;
+.start-wrapper {
+  width: 450px;
   margin: auto;
-  margin-top: ~"calc(50vh - 155px)";
 }
 
 .bookmarks {
   margin: 0;
-  padding: 0; // TODO: list-styles should be opt-in -tbv
+  padding: 0 0 15px 0; // TODO: list-styles should be opt-in -tbv
   list-style: none;
 }
+
 
 .pinned {
   // TODO: make a flexbox-container extend -tbv
   display: flex;
   flex-wrap: wrap;
-  margin: auto;
+  margin: ~"calc(50vh - 155px)" auto 0 auto;
 
   &__item {
-    width: 75px;
+    position: relative;
+    width: 55px;
     margin-bottom: 35px;
     color: fadeout(#333, 25%);
     text-align: center;
@@ -108,16 +109,19 @@
     width: 55px;
     height: 55px;
     margin: 0 auto 5px auto;
-    background: fadeout(#333, 93%);
     border: 1px solid fadeout(#333, 75%); // TODO: use color variables -tbv
     border-radius: 4px; // TODO: make a rounded extend -tbv
 
-    &.transparent{
-      background: none;
+    &.builtin {
+      background: fadeout(#333, 93%);
+    }
+
+    &.add {
       border: 1px dashed fadeout(#333, 75%);
 
       &:hover {
         border: 1px dashed fadeout(#333, 60%);
+        background: fadeout(#333, 93%);
       }
     }
 
@@ -184,3 +188,45 @@ form#add-pinned-site {
     width: 300px;
   }
 }
+
+.bookmarks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bookmark {
+  padding: 2px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  cursor: pointer;
+
+  &:hover {
+    background: fadeout(#333, 98%);
+    border-top: 1px solid fadeout(#333, 95%);
+    border-bottom: 1px solid fadeout(#333, 95%);
+  }
+
+  &__favicon {
+    height: 15px;
+    width: 15px;
+    margin-right: 5px;
+  }
+
+  &__link {
+    color: fadeout(#333, 15%);
+
+    &:hover {
+      text-decoration: none;
+      color: fadeout(#333, 15%);
+    }
+  }
+
+  * {
+    vertical-align: middle;
+    cursor: pointer;
+  }
+}
+

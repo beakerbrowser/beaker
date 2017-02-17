@@ -28,26 +28,14 @@ co(function* () {
 // =
 
 function renderPinned () {
-  yo.update(document.querySelector('.pinned-wrapper'), yo`
-    <div class="pinned-wrapper">
-      <div class="pinned">
-        ${builtinPages.map(renderPinnedItem)}
-        ${pinnedBookmarks.map(renderPinnedBookmark)}
-        <div class="pinned__item" onclick="addPinnedSite">
-          <div class="pinned__item-square transparent pin-site" onclick=${renderPinSiteForm}>
-            <i class="icon icon-plus" aria-hidden="true"></i>
-          </div>
+  yo.update(document.querySelector('.pinned'), yo`
+    <div class="pinned">
+      ${builtinPages.map(renderBuiltinPage)}
+      ${pinnedBookmarks.map(renderPinnedBookmark)}
+      <div class="pinned__item" onclick="addPinnedSite">
+        <div class="pinned__item-square add" onclick=${renderPinSiteForm}>
+          <i class="icon icon-plus" aria-hidden="true"></i>
         </div>
-      </div>
-      <div class="links">
-        <a onclick=${renderBookmarks}>
-          <span>Bookmarks</span>
-          <i class="icon icon-down-open"></i>
-        </a>
-        <a>
-          <span>Pin a site</span>
-          <i class="icon icon-plus"></i>
-        </a>
       </div>
     </div>`)
 }
@@ -55,30 +43,30 @@ function renderPinned () {
 function renderBookmarks () {
   const renderRow = (row, i) =>
     yo`
-      <li class="ll-row bookmarks__row" data-row=${i}>
-        <a class="ll-link bookmark__link" href=${row.url} title=${row.title} />
+      <li class="bookmark" data-row=${i} onclick=${pinBookmark(i)}>
+        <a class="bookmark__link" href=${row.url} title=${row.title} />
           <img class="bookmark__favicon" src=${'beaker-favicon:' + row.url} />
           <span class="bookmark__title">${row.title}</span>
         </a>
       </li>`
 
   yo.update(
-    document.querySelector('.bookmarks-wrapper'),
+    document.querySelector('.bookmarks'),
       yo`
-        <div class="bookmarks-wrapper">
-          <ul class="links-list bookmarks">
+        <div class="bookmarks">
+          <ul class="bookmarks-list">
             ${bookmarks.map(renderRow)}
           </ul>
         </div>`)
 }
 
-function renderPinnedItem (item) {
+function renderBuiltinPage (item) {
   // render items
   var { href, label, icon } = item
 
   return yo`
     <a class="pinned__item" href=${href}>
-      <div class="pinned__item-square">
+      <div class="pinned__item-square builtin">
         <i class="icon icon-${icon}" aria-hidden="true"></i>
       </div>
       <div class="pinned__item-label">${label}</div>
