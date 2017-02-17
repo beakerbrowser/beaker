@@ -62,7 +62,7 @@
 }
 
 .start-wrapper {
-  width: 450px;
+  width: 475px;
   margin: auto;
 }
 
@@ -81,25 +81,25 @@
 
   &__item {
     position: relative;
-    width: 55px;
+    width: 75px;
     margin-bottom: 35px;
     color: fadeout(#333, 25%);
     text-align: center;
     cursor: pointer; // TODO: extends for different cursor styles -tbv
 
-    * {
+    a {
       cursor: pointer;
     }
 
     &:not(:last-child) {
-      margin-right: 35px;
+      margin-right: 20px;
     }
 
     &:hover {
       color: fadeout(#333, 15%);
       text-decoration: none;
 
-      button {
+      .remove-pin {
         display: block;
       }
     }
@@ -111,6 +111,11 @@
     margin: 0 auto 5px auto;
     border: 1px solid fadeout(#333, 75%); // TODO: use color variables -tbv
     border-radius: 4px; // TODO: make a rounded extend -tbv
+    cursor: pointer;
+
+    * {
+      cursor: pointer;
+    }
 
     &.builtin {
       background: fadeout(#333, 93%);
@@ -148,10 +153,24 @@
     font-size: 12px;
   }
 
-  button {
+  .pin-site {
+    display: block;
+    background: none;
+
+    .icon::before {
+      margin-top: 0;
+    }
+
+    &[disabled]:hover {
+      background: none;
+      cursor: default;
+    }
+  }
+
+  .remove-pin {
     position: absolute;
     top: -4px;
-    right: -4px;
+    right: 4px;
     border: none;
     outline: none;
     background: none;
@@ -163,6 +182,7 @@
     padding: 0px;
     text-align: center;
     display: none;
+    cursor: pointer;
 
     &::before {
       vertical-align: top;

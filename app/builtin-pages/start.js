@@ -33,9 +33,9 @@ function renderPinned () {
       ${builtinPages.map(renderBuiltinPage)}
       ${pinnedBookmarks.map(renderPinnedBookmark)}
       <div class="pinned__item" onclick="addPinnedSite">
-        <div class="pinned__item-square add" onclick=${renderPinSiteForm}>
+        <button label="Pin a site" class="pinned__item-square add pin-site" onclick=${renderPinSiteForm}>
           <i class="icon icon-plus" aria-hidden="true"></i>
-        </div>
+        </button>
       </div>
     </div>`)
 }
@@ -81,7 +81,7 @@ function renderPinnedBookmark (bookmark) {
       <div class="pinned__item-square">
         <img class="icon" src=${'beaker-favicon:' + url} />
       </div>
-    <button label="Unpin ${url}" data-url=${url} onclick=${unpinSite} class="icon icon-cancel"></button>
+    <button label="Unpin ${url}" data-url=${url} onclick=${unpinSite} class="remove-pin icon icon-cancel"></button>
     <div class="pinned__item-label ellipsis">${title}</div>
     </a>`
 }
