@@ -143,6 +143,12 @@ var viewMenu = {
   }]
 }
 
+var showHistoryAccelerator = 'Ctrl+h'
+
+if (process.platform === 'darwin') {
+  showHistoryAccelerator = 'Cmd+y'
+}
+
 var historyMenu = {
   label: 'History',
   role: 'history',
@@ -159,6 +165,13 @@ var historyMenu = {
       accelerator: 'CmdOrCtrl+Right',
       click: function (item, win) {
         if (win) win.webContents.send('command', 'history:forward')
+      }
+    },
+    {
+      label: 'Show Full History',
+      accelerator: showHistoryAccelerator,
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'file:new-tab', 'beaker:history')
       }
     }
   ]
