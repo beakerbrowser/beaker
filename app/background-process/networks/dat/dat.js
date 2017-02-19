@@ -323,33 +323,25 @@ export function getArchiveDetails (name, opts = {}) {
 
 export function getArchiveStats (key) {
   return new Promise((resolve, reject) => {
-    // TODO replace this with hyperdrive-stats
-    // TODO at time of writing, this will count overwritten files multiple times, because list() hasnt been fixed yet
-
-    // initialize the stats structure
-    var stats = {
-      bytesTotal: 0,
-      blocksProgress: 0,
-      blocksTotal: 0,
-      filesTotal: 0
-    }
-
     // fetch archive
     var archive = getArchive(key)
     if (!archive) return reject(new Error('Invalid archive key'))
 
     // fetch the archive entries
-    archive.list((err, entries) => {
+    archive.open(err => {
       if (err) return reject(err)
 
-      // tally the current state
-      entries.forEach(entry => {
-        stats.bytesTotal += entry.length
-        stats.blocksProgress += archive.countDownloadedBlocks(entry)
-        stats.blocksTotal += entry.blocks
-        stats.filesTotal++
+      resolve({
+        peers: archive.metadata.peers.length,
+        meta: {
+          blocksRemaining: archive.metadata.blocksRemaining(),
+          blocksTotal: archive.metadata.blocks
+        },
+        content: {
+          blocksRemaining: archive.content.blocksRemaining(),
+          blocksTotal: archive.content.blocks
+        }
       })
-      resolve(stats)
     })
   })
 }
