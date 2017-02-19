@@ -101,14 +101,14 @@ var viewMenu = {
     label: 'Reload',
     accelerator: 'CmdOrCtrl+R',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:reload') 
+      if (win) win.webContents.send('command', 'view:reload')
     }
   },
   {
     label: 'Hard Reload (Clear Cache)',
     accelerator: 'CmdOrCtrl+Shift+R',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:hard-reload') 
+      if (win) win.webContents.send('command', 'view:hard-reload')
     }
   },
   { type: "separator" },
@@ -116,21 +116,21 @@ var viewMenu = {
     label: 'Zoom In',
     accelerator: 'CmdOrCtrl+=',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:zoom-in') 
+      if (win) win.webContents.send('command', 'view:zoom-in')
     }
   },
   {
     label: 'Zoom Out',
     accelerator: 'CmdOrCtrl+-',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:zoom-out') 
+      if (win) win.webContents.send('command', 'view:zoom-out')
     }
   },
   {
     label: 'Actual Size',
     accelerator: 'CmdOrCtrl+0',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:zoom-reset') 
+      if (win) win.webContents.send('command', 'view:zoom-reset')
     }
   },
   { type: "separator" },
@@ -138,7 +138,7 @@ var viewMenu = {
     label: 'Toggle DevTools',
     accelerator: 'Alt+CmdOrCtrl+I',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:toggle-dev-tools') 
+      if (win) win.webContents.send('command', 'view:toggle-dev-tools')
     }
   }]
 }
