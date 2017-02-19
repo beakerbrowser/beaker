@@ -23,6 +23,7 @@ const DAT_METHODS = [
   'resolveName',
   'createNewArchive',
   'forkArchive',
+  'downloadArchive',
   'setArchiveUserSettings',
   'writeArchiveFileFromPath',
   'exportFileFromArchive'
@@ -63,6 +64,12 @@ export function setup () {
     if (wc) {
       BrowserWindow.fromWebContents(wc).focus()
     }
+    return Promise.resolve()
+  }
+
+  // add method to make sure a dat is active
+  methods.loadDat = ([key]) => {
+    dat.getOrLoadArchive(key)
     return Promise.resolve()
   }
 

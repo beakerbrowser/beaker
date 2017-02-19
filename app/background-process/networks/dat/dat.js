@@ -323,33 +323,25 @@ export function getArchiveDetails (name, opts = {}) {
 
 export function getArchiveStats (key) {
   return new Promise((resolve, reject) => {
-    // TODO replace this with hyperdrive-stats
-    // TODO at time of writing, this will count overwritten files multiple times, because list() hasnt been fixed yet
-
-    // initialize the stats structure
-    var stats = {
-      bytesTotal: 0,
-      blocksProgress: 0,
-      blocksTotal: 0,
-      filesTotal: 0
-    }
-
     // fetch archive
     var archive = getArchive(key)
     if (!archive) return reject(new Error('Invalid archive key'))
 
     // fetch the archive entries
-    archive.list((err, entries) => {
+    archive.open(err => {
       if (err) return reject(err)
 
-      // tally the current state
-      entries.forEach(entry => {
-        stats.bytesTotal += entry.length
-        stats.blocksProgress += archive.countDownloadedBlocks(entry)
-        stats.blocksTotal += entry.blocks
-        stats.filesTotal++
+      resolve({
+        peers: archive.metadata.peers.length,
+        meta: {
+          blocksRemaining: archive.metadata.blocksRemaining(),
+          blocksTotal: archive.metadata.blocks
+        },
+        content: {
+          blocksRemaining: archive.content.blocksRemaining(),
+          blocksTotal: archive.content.blocks
+        }
       })
-      resolve(stats)
     })
   })
 }
@@ -558,6 +550,43 @@ export function leaveSwarm (key, cb) {
   swarm.destroy()
   delete archive.swarm
   archive.isSwarming = false
+}
+
+// prioritize all current entries for download
+export function downloadArchive (key) {
+  return cbPromise(cb => {
+    // get the archive
+    var archive = getArchive(key)
+    if (!archive) cb(new Error('Invalid archive key'))
+
+    // get the current file listing
+    archive.list((err, entries) => {
+      if (err) return cb(err)
+
+      // TEMPORARY
+      // remove duplicates
+      // this is only needed until hyperdrive fixes its .list()
+      // see https://github.com/mafintosh/hyperdrive/pull/99
+      // -prf
+      var entriesDeDuped = {}
+      entries.forEach(entry => { entriesDeDuped[entry.name] = entry })
+      entries = Object.keys(entriesDeDuped).map(name => entriesDeDuped[name])
+
+      // download the enties
+      var done = multicb()
+      entries.forEach(entry => {
+        console.log('Downloading', entry) // TODO remove me
+        archive.content.prioritize({
+          start: entry.content.blockOffset,
+          end: entry.content.blockOffset + entry.blocks,
+          priority: 3,
+          linear: true
+        })
+        archive.download(entry, done())
+      })
+      done(() => cb())
+    })
+  })
 }
 
 // prioritize an entry for download
