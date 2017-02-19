@@ -60,7 +60,7 @@ function drawTab (page) {
   const isTabDragging = page.isTabDragging && (page.tabDragOffset !== 0)
 
   // pick a favicon
-  var favicon 
+  var favicon
   if (page.isLoading()) {
     // loading spinner
     favicon = yo`<div class="spinner"></div>`
@@ -95,13 +95,13 @@ function drawTab (page) {
                 title=${getNiceTitle(page)}>
       <svg width="15" height="30" class="left-edge">
         <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
-        <path class="edge-border" d="m1,29l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
+        <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
       </svg>
       <div class="chrome-tab-bg"></div>
       <div class="chrome-tab-favicon">${favicon}</div>
       <svg width="15" height="30" class="right-edge">
         <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
-        <path class="edge-border" d="m1,29l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
+        <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
       </svg>
     </div>`
   }
@@ -118,7 +118,7 @@ function drawTab (page) {
       title=${getNiceTitle(page)}>
     <svg width="15" height="30" class="left-edge">
       <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
-      <path class="edge-border" d="m1,29l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
+      <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
     </svg>
     <div class="chrome-tab-bg"></div>
     <div class="chrome-tab-favicon">${favicon}</div>
@@ -126,13 +126,13 @@ function drawTab (page) {
     <div class="chrome-tab-close" title="Close tab" onclick=${onClickTabClose(page)}></div>
     <svg width="15" height="30" class="right-edge">
       <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
-      <path class="edge-border" d="m1,29l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
+      <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
     </svg>
   </div>`
 }
 
 // calculate and position all tabs
-// - should be called any time the # of pages changes, or pin/unpin 
+// - should be called any time the # of pages changes, or pin/unpin
 function repositionTabs (e) {
   const allPages = pages.getAll()
 
@@ -142,7 +142,7 @@ function repositionTabs (e) {
   var availableWidth = window.innerWidth
   // correct for traffic lights on darwin
   if (window.process.platform == 'darwin' && !document.body.classList.contains('fullscreen'))
-    availableWidth -= 80 
+    availableWidth -= 80
   // correct for new-tab btn
   availableWidth -= (MIN_TAB_WIDTH + TAB_SPACING)
   // count the unpinned-tabs, and correct for the spacing and pinned-tabs
@@ -282,7 +282,7 @@ function onMouseDown (page) {
     // register drag-relevant listeners
     document.addEventListener('mousemove', drag, true)
     document.addEventListener('mouseup', dragend, true)
-    // window.addEventListener('blur', dragend, true) TODO - needed?
+    window.addEventListener('blur', dragend, true)
 
     // throttle so we only rerender as much as needed
     // - actually throttling seems to cause jank
