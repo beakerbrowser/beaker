@@ -114,7 +114,7 @@ var viewMenu = {
   { type: "separator" },
   {
     label: 'Zoom In',
-    accelerator: 'CmdOrCtrl+=',
+    accelerator: 'CmdOrCtrl+Plus',
     click: function (item, win) {
       if (win) win.webContents.send('command', 'view:zoom-in')
     }
