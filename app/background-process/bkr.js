@@ -23,6 +23,7 @@ const DAT_METHODS = [
   'resolveName',
   'createNewArchive',
   'forkArchive',
+  'downloadArchive',
   'setArchiveUserSettings',
   'writeArchiveFileFromPath',
   'exportFileFromArchive'

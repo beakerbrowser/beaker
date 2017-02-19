@@ -560,6 +560,43 @@ export function leaveSwarm (key, cb) {
   archive.isSwarming = false
 }
 
+// prioritize all current entries for download
+export function downloadArchive (key) {
+  return cbPromise(cb => {
+    // get the archive
+    var archive = getArchive(key)
+    if (!archive) cb(new Error('Invalid archive key'))
+
+    // get the current file listing
+    archive.list((err, entries) => {
+      if (err) return cb(err)
+
+      // TEMPORARY
+      // remove duplicates
+      // this is only needed until hyperdrive fixes its .list()
+      // see https://github.com/mafintosh/hyperdrive/pull/99
+      // -prf
+      var entriesDeDuped = {}
+      entries.forEach(entry => { entriesDeDuped[entry.name] = entry })
+      entries = Object.keys(entriesDeDuped).map(name => entriesDeDuped[name])
+
+      // download the enties
+      var done = multicb()
+      entries.forEach(entry => {
+        console.log('Downloading', entry) // TODO remove me
+        archive.content.prioritize({
+          start: entry.content.blockOffset,
+          end: entry.content.blockOffset + entry.blocks,
+          priority: 3,
+          linear: true
+        })
+        archive.download(entry, done())
+      })
+      done(() => cb())
+    })
+  })
+}
+
 // prioritize an entry for download
 export function downloadArchiveEntry (key, name) {
   return cbPromise(cb => {
