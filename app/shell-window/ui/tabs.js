@@ -282,7 +282,7 @@ function onMouseDown (page) {
     // register drag-relevant listeners
     document.addEventListener('mousemove', drag, true)
     document.addEventListener('mouseup', dragend, true)
-    // window.addEventListener('blur', dragend, true) TODO - needed?
+    window.addEventListener('blur', dragend, true)
 
     // throttle so we only rerender as much as needed
     // - actually throttling seems to cause jank
