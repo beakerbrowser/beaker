@@ -67,6 +67,12 @@ export function setup () {
     return Promise.resolve()
   }
 
+  // add method to make sure a dat is active
+  methods.loadDat = ([key]) => {
+    dat.getOrLoadArchive(key)
+    return Promise.resolve()
+  }
+
   // start the server
   server = jayson.server(methods).tcp()
   server.listen(BKR_SERVER_PORT, 'localhost', err => {
