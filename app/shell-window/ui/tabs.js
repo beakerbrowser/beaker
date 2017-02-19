@@ -60,7 +60,7 @@ function drawTab (page) {
   const isTabDragging = page.isTabDragging && (page.tabDragOffset !== 0)
 
   // pick a favicon
-  var favicon 
+  var favicon
   if (page.isLoading()) {
     // loading spinner
     favicon = yo`<div class="spinner"></div>`
@@ -132,7 +132,7 @@ function drawTab (page) {
 }
 
 // calculate and position all tabs
-// - should be called any time the # of pages changes, or pin/unpin 
+// - should be called any time the # of pages changes, or pin/unpin
 function repositionTabs (e) {
   const allPages = pages.getAll()
 
@@ -142,7 +142,7 @@ function repositionTabs (e) {
   var availableWidth = window.innerWidth
   // correct for traffic lights on darwin
   if (window.process.platform == 'darwin' && !document.body.classList.contains('fullscreen'))
-    availableWidth -= 80 
+    availableWidth -= 80
   // correct for new-tab btn
   availableWidth -= (MIN_TAB_WIDTH + TAB_SPACING)
   // count the unpinned-tabs, and correct for the spacing and pinned-tabs
