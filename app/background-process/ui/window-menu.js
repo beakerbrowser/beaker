@@ -101,36 +101,36 @@ var viewMenu = {
     label: 'Reload',
     accelerator: 'CmdOrCtrl+R',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:reload') 
+      if (win) win.webContents.send('command', 'view:reload')
     }
   },
   {
     label: 'Hard Reload (Clear Cache)',
     accelerator: 'CmdOrCtrl+Shift+R',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:hard-reload') 
+      if (win) win.webContents.send('command', 'view:hard-reload')
     }
   },
   { type: "separator" },
   {
     label: 'Zoom In',
-    accelerator: 'CmdOrCtrl+=',
+    accelerator: 'CmdOrCtrl+Plus',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:zoom-in') 
+      if (win) win.webContents.send('command', 'view:zoom-in')
     }
   },
   {
     label: 'Zoom Out',
     accelerator: 'CmdOrCtrl+-',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:zoom-out') 
+      if (win) win.webContents.send('command', 'view:zoom-out')
     }
   },
   {
     label: 'Actual Size',
     accelerator: 'CmdOrCtrl+0',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:zoom-reset') 
+      if (win) win.webContents.send('command', 'view:zoom-reset')
     }
   },
   { type: "separator" },
@@ -138,9 +138,15 @@ var viewMenu = {
     label: 'Toggle DevTools',
     accelerator: 'Alt+CmdOrCtrl+I',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:toggle-dev-tools') 
+      if (win) win.webContents.send('command', 'view:toggle-dev-tools')
     }
   }]
+}
+
+var showHistoryAccelerator = 'Ctrl+h'
+
+if (process.platform === 'darwin') {
+  showHistoryAccelerator = 'Cmd+y'
 }
 
 var historyMenu = {
@@ -159,6 +165,13 @@ var historyMenu = {
       accelerator: 'CmdOrCtrl+Right',
       click: function (item, win) {
         if (win) win.webContents.send('command', 'history:forward')
+      }
+    },
+    {
+      label: 'Show Full History',
+      accelerator: showHistoryAccelerator,
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'file:new-tab', 'beaker:history')
       }
     }
   ]
