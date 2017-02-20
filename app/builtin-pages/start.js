@@ -106,9 +106,9 @@ function pinBookmark (i) {
     e.stopPropagation()
 
     var b = bookmarks[i]
-    beakerBookmarks.add(b.url, b.title, 1)
-
-    beakerBookmarks.listPinned().then(pinned => {
+    beakerBookmarks.add(b.url, b.title, 1).then(() => {
+      return beakerBookmarks.listPinned()
+    }).then(pinned => {
       pinnedBookmarks = pinned
       renderPinned()
 
@@ -134,9 +134,9 @@ function pinSite (e) {
     title = title.split('://')[1] || url.value
   } catch (e) {}
 
-  beakerBookmarks.add(url.value, title, 1)
-
-  beakerBookmarks.listPinned().then(pinned => {
+  beakerBookmarks.add(url.value, title, 1).then(() => {
+    return beakerBookmarks.listPinned()
+  }).then(pinned => {
     pinnedBookmarks = pinned
     renderPinned()
   })
