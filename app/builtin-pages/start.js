@@ -12,9 +12,8 @@ import co from 'co'
 var builtinPages = [
   { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
   { href: 'beaker:bookmarks', label: 'Bookmarks', icon: 'bookmarks' },
-  { href: 'beaker:library', label: 'Dat Library', icon: 'book' },
-  { href: 'beaker:downloads', label: 'Downloads', icon: 'down' },
-  { href: 'beaker:settings', label: 'Settings', icon: 'cog' }
+  { href: 'beaker:library', label: 'Library', icon: 'book' },
+  { href: 'beaker:downloads', label: 'Downloads', icon: 'down' }
 ]
 
 var bookmarks, pinnedBookmarks
