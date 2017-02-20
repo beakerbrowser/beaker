@@ -62,7 +62,7 @@ function render () {
     document.querySelector('.bookmarks-wrapper'),
       yo`
         <div class="bookmarks-wrapper">
-          <h2>Bookmarks</h2>
+          <div class="ll-heading">Bookmarks</div>
           <ul class="links-list bookmarks">
             ${bookmarks.map(renderRow)}
             ${helpEl}
