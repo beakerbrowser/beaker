@@ -82,7 +82,7 @@ function render () {
        Clear Browsing History
      </button>
      <select id="delete-period">
-       <option value="day">from today</option>
+       <option value="day" selected>from today</option>
        <option value="week">from this week</option>
        <option value="month">from this month</option>
        <option value="all">from all time</option>
