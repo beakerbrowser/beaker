@@ -2,9 +2,9 @@
 This uses the beakerBrowser API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
 */
 
-import * as yo from 'yo-yo'
-import co from 'co'
-import emitStream from 'emit-stream'
+const yo = require('yo-yo')
+const co = require('co')
+const emitStream = require('emit-stream')
 
 // globals
 // =
@@ -14,39 +14,28 @@ var browserInfo
 var browserEvents
 var defaultProtocolSettings
 
-// exported API
+// main
 // =
 
-export function setup () {
+co(function* () {
   // wire up events
   browserEvents = emitStream(beakerBrowser.eventsStream())
   browserEvents.on('updater-state-changed', onUpdaterStateChanged)
   browserEvents.on('updater-error', onUpdaterError)
-}
 
-export function show () {
-  document.title = 'Browser Settings'
-  window.locationbar.setSiteInfoOverride({ title: 'Settings' })
-  co(function* () {
-    browserInfo = yield beakerBrowser.getInfo()
-    settings = yield beakerBrowser.getSettings()
-    defaultProtocolSettings = yield beakerBrowser.getDefaultProtocolSettings()
+  // fetch data
+  browserInfo = yield beakerBrowser.getInfo()
+  settings = yield beakerBrowser.getSettings()
+  defaultProtocolSettings = yield beakerBrowser.getDefaultProtocolSettings()
 
-    render()
-  })
-}
-
-export function hide () {
-  window.locationbar.setSiteInfoOverride(false)
-  browserInfo = null
-  settings = null
-  defaultProtocolSettings = null
-}
+  // render
+  render()
+})
 
 // rendering
 // =
 
-export function render () {
+function render () {
   // only render if this page is active
   if (!browserInfo)
     return

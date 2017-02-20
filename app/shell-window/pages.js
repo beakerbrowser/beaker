@@ -451,7 +451,9 @@ function onDomReady (e) {
   var page = getByWebview(e.target)
   if (page) {
     page.isWebviewReady = true
-    page.webviewEl.focus()
+    if (!navbar.isLocationFocused(page)) {
+      page.webviewEl.focus()
+    }
     zoom.setZoomFromSitedata(page)
   }
 }

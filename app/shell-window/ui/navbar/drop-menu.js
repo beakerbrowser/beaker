@@ -96,8 +96,10 @@ export class DropMenuNavbarBtn {
         </div>`
       })
       dropdownEl = yo`<div class="toolbar-dropdown toolbar-drop-menu-dropdown">
-        ${pageSpecificEls}        
-        <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:downloads')}>View Downloads</div>
+        ${pageSpecificEls}
+        <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:downloads')}><span class="icon icon-down-circled"></span> Downloads</div>
+        <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:history')}><span class="icon icon-back-in-time"></span> History</div>
+        <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:settings')}><span class="icon icon-list"></span> Settings</div>
         ${downloadEls.length ? yo`<hr />` : ''}
         ${downloadEls}
         <hr />

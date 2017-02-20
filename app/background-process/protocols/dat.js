@@ -6,16 +6,16 @@ import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 var debug = require('debug')('dat')
 import rpc from 'pauls-electron-rpc'
+import pda from 'pauls-dat-api'
+const datDns = require('dat-dns')()
 
 import { ProtocolSetupError } from '../../lib/const'
 import datInternalAPIManifest from '../api-manifests/internal/dat-internal'
 import datExternalAPIManifest from '../api-manifests/external/dat'
 
 import * as dat from '../networks/dat/dat'
-import { archiveCustomLookup } from '../networks/dat/helpers'
 import datWebAPI from '../networks/dat/web-api'
 import * as sitedataDb from '../dbs/sitedata'
-import { resolveDatDNS } from '../networks/dns'
 import directoryListingPage from '../networks/dat/directory-listing-page'
 import errorPage from '../../lib/error-page'
 import * as mime from '../../lib/mime'
@@ -139,7 +139,7 @@ function datServer (req, res) {
 
   // resolve the name
   // (if it's a hostname, do a DNS lookup)
-  resolveDatDNS(urlp.host, (err, archiveKey) => {
+  datDns.resolveName(urlp.host, (err, archiveKey) => {
     if (aborted) return cleanup()
     if (err) return cb(404, 'No DNS record found for ' + urlp.host)
 
@@ -215,7 +215,7 @@ function datServer (req, res) {
           if (name === filepath + '.htm') return true
         }
       }
-      archiveCustomLookup(archive, checkMatch, entry => {
+      pda.lookupEntry(archive, checkMatch, (err, entry) => {
         // still serving?
         if (aborted) return cleanup()
 

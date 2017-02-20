@@ -2,10 +2,8 @@
 This uses the beakerHistory API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
 */
 
-import * as yo from 'yo-yo'
-import * as moment from 'moment'
-import { niceDate } from '../../lib/time'
-import { ucfirst } from '../../lib/strings'
+const yo = require('yo-yo')
+const moment = require('moment')
 
 // globals
 // =
@@ -17,22 +15,10 @@ const BEGIN_LOAD_OFFSET = 500
 var visits = []
 var isAtEnd = false
 
-// exported API
+// main
 // =
 
-export function setup () {
-}
-
-export function show () {
-  document.title = 'Browsing History'
-  window.locationbar.setSiteInfoOverride({ title: 'History' })
-  fetchMore(render)
-}
-
-export function hide () {
-  window.locationbar.setSiteInfoOverride(false)
-  visits = []
-}
+fetchMore(render)
 
 // data
 // =
@@ -59,7 +45,7 @@ function fetchMore (cb) {
 // rendering
 // =
 
-export function render () {
+function render () {
   var rowEls = []
   var lastDate = moment().startOf('day').add(1, 'day')
 
@@ -149,4 +135,27 @@ function onClickDeleteBulk () {
     // fetch and render more visits if possible
     fetchMore(render)
   }
+}
+
+// internal methods
+// =
+
+function ucfirst (str) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+function niceDate (ts, opts) {
+  const endOfToday = moment().endOf('day')
+  if (typeof ts == 'number')
+    ts = moment(ts)
+  if (ts.isSame(endOfToday, 'day')) {
+    if (opts && opts.noTime)
+      return 'today'
+    return ts.fromNow()
+  }
+  else if (ts.isSame(endOfToday.subtract(1, 'day'), 'day'))
+    return 'yesterday'
+  else if (ts.isSame(endOfToday, 'month'))
+    return ts.fromNow()
+  return ts.format("ll")
 }

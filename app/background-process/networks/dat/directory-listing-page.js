@@ -1,6 +1,6 @@
 import prettyBytes from 'pretty-bytes'
 import { pluralize, makeSafe } from '../../../lib/strings'
-import {readArchiveDirectory} from './helpers'
+import {listFiles} from 'pauls-dat-api'
 
 const styles = `<style>
   .entry {
@@ -20,7 +20,7 @@ const styles = `<style>
 </style>`
 
 export default function renderDirectoryListingPage (archive, path, cb) {
-  readArchiveDirectory(archive, path, (_, entries) => {
+  listFiles(archive, path, (_, entries) => {
     // sort the listing
     var names = Object.keys(entries).sort((a, b) => {
       var ea = entries[a]

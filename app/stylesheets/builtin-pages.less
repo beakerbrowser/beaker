@@ -2,7 +2,6 @@
 
 @import "./com/btn.less";
 @import "./com/toolbar.less";
-@import "./com/sidenav.less";
 @import "./com/links-list.less";
 @import "./com/files-list.less";
 @import "./com/downloads.less";
@@ -15,6 +14,10 @@
 @import "./views/settings.less";
 
 @import "./vendor/shepherd-theme-arrows.less";
+
+* {
+  box-sizing: border-box;
+}
 
 .pane {
   border: 0;
@@ -41,10 +44,206 @@
   color: gray;
 }
 
-.favorites.links-list {
-  .icon-star {
-    // make an outline
-    color: #fff;
-    -webkit-text-stroke: 1px #999;
+.bookmarks-wrapper {
+  padding: 5px 20px;
+  width: 100%;
+}
+
+.window-content.start {
+  display: block;
+
+  h2 {
+    display: block;
+    font-size: 18px;
   }
 }
+
+.start-wrapper {
+  width: 475px;
+  margin: auto;
+}
+
+.bookmarks {
+  margin: 0;
+  padding: 0 0 15px 0; // TODO: list-styles should be opt-in -tbv
+  list-style: none;
+}
+
+
+.pinned {
+  // TODO: make a flexbox-container extend -tbv
+  display: flex;
+  flex-wrap: wrap;
+  margin: ~"calc(50vh - 155px)" auto 0 auto;
+
+  &__item {
+    position: relative;
+    width: 75px;
+    margin-bottom: 35px;
+    color: fadeout(#333, 25%);
+    text-align: center;
+    cursor: pointer; // TODO: extends for different cursor styles -tbv
+
+    a {
+      cursor: pointer;
+    }
+
+    &:not(:last-child) {
+      margin-right: 20px;
+    }
+
+    &:hover {
+      color: fadeout(#333, 15%);
+      text-decoration: none;
+
+      .remove-pin {
+        display: block;
+      }
+    }
+  }
+
+  &__item-square {
+    width: 55px;
+    height: 55px;
+    margin: 0 auto 5px auto;
+    border: 1px solid fadeout(#333, 75%); // TODO: use color variables -tbv
+    border-radius: 4px; // TODO: make a rounded extend -tbv
+    cursor: pointer;
+
+    * {
+      cursor: pointer;
+    }
+
+    &.builtin {
+      background: fadeout(#333, 93%);
+    }
+
+    &.add {
+      border: 1px dashed fadeout(#333, 75%);
+
+      &:hover {
+        border: 1px dashed fadeout(#333, 60%);
+        background: fadeout(#333, 93%);
+      }
+    }
+
+    &:hover {
+      border: 1px solid fadeout(#333, 60%);
+    }
+
+    .icon {
+      font-size: 22px;
+      margin-top: 15px;
+      height: 22px;
+
+      &:before {
+        margin-top: 15px;
+      }
+    }
+  }
+
+  &__item-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .pin-site {
+    display: block;
+    background: none;
+
+    .icon::before {
+      margin-top: 0;
+    }
+
+    &[disabled]:hover {
+      background: none;
+      cursor: default;
+    }
+  }
+
+  .remove-pin {
+    position: absolute;
+    top: -4px;
+    right: 4px;
+    border: none;
+    outline: none;
+    background: none;
+    background: #333;
+    color: white;
+    width: 13px;
+    height: 13px;
+    margin: 0;
+    padding: 0px;
+    text-align: center;
+    display: none;
+    cursor: pointer;
+
+    &::before {
+      vertical-align: top;
+    }
+  }
+
+  .links a {
+    color: fadeout(#333, 25%) !important; // TODO link styles should be opt in
+  }
+}
+
+form#add-pinned-site {
+  width: 100%;
+  color: fadeout(#333, 15%);
+  margin-bottom: 20px;
+
+  legend {
+    margin-bottom: 10px;
+  }
+
+  input[type="text"] {
+    padding: 0 5px;
+    width: 300px;
+  }
+}
+
+.bookmarks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bookmark {
+  padding: 2px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  cursor: pointer;
+
+  &:hover {
+    background: fadeout(#333, 98%);
+    border-top: 1px solid fadeout(#333, 95%);
+    border-bottom: 1px solid fadeout(#333, 95%);
+  }
+
+  &__favicon {
+    height: 15px;
+    width: 15px;
+    margin-right: 5px;
+  }
+
+  &__link {
+    color: fadeout(#333, 15%);
+
+    &:hover {
+      text-decoration: none;
+      color: fadeout(#333, 15%);
+    }
+  }
+
+  * {
+    vertical-align: middle;
+    cursor: pointer;
+  }
+}
+

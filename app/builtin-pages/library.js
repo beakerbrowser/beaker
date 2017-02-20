@@ -2,16 +2,16 @@
 This uses the datInternalAPI API, which is exposed by webview-preload to all archives loaded over the beaker: protocol
 */
 
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 import co from 'co'
 import {Archive, ArchivesList} from 'builtin-pages-lib'
-import { render as renderArchivesList } from '../com/archives-list'
-import { render as renderArchiveView } from '../com/archive-view'
-import { addFiles } from '../com/archive-files'
-import { forkArchiveFlow } from '../com/modals/fork-dat'
-import { pushUrl } from '../../lib/fg/event-handlers'
-import { ucfirst } from '../../lib/strings'
-import dragDrop from '../../lib/fg/drag-drop'
+import {render as renderArchivesList} from './com/archives-list'
+import {render as renderArchiveView} from './com/archive-view'
+import {addFiles} from './com/archive-files'
+import {forkArchiveFlow} from './com/modals/fork-dat'
+import {pushUrl} from '../lib/fg/event-handlers'
+import {ucfirst} from '../lib/strings'
+import dragDrop from '../lib/fg/drag-drop'
 
 // globals
 // =
@@ -22,24 +22,39 @@ var archivesList = null
 var selectedArchiveKey = null
 var selectedArchive = null
 var currentFilter = ''
-var isViewActive = false
 
-// exported API
+// HACK FIX
+// the good folk of whatwg didnt think to include an event for pushState(), so let's add one
+// -prf
+var _wr = function(type) {
+  var orig = window.history[type];
+  return function() {
+    var rv = orig.apply(this, arguments);
+    var e = new Event(type.toLowerCase());
+    e.arguments = arguments;
+    window.dispatchEvent(e);
+    return rv;
+  };
+};
+window.history.pushState = _wr('pushState')
+window.history.replaceState = _wr('replaceState')
+
+
+// main
 // =
 
-export function setup () {
-  dragDrop('.window', onDragDrop)
-}
+setup()
+dragDrop('.window', onDragDrop)
+window.addEventListener('pushstate', setup)
+window.addEventListener('popstate', setup)
+window.addEventListener('render', render)
 
-export function show (isSameView) {
-  viewError = false
-  isViewActive = true
-  document.title = 'Library'
-
+function setup () {
   co(function * () {
     var newArchiveKey = yield getURLKey()
     setSiteInfoOverride(newArchiveKey)
-    if (isSameView && selectedArchiveKey === newArchiveKey) {
+
+    if (selectedArchiveKey === newArchiveKey) {
       // a navigation within the same view
       return handleInnerNavigation()
     }
@@ -111,33 +126,6 @@ export function show (isSameView) {
   })
 }
 
-export function hide (isSameView) {
-  co(function * () {
-    var newArchiveKey = yield getURLKey()
-    if (isSameView && selectedArchiveKey === newArchiveKey) {
-      // do nothing, it's a navigation within the current archive's folder structure
-      return
-    }
-
-    window.locationbar.setSiteInfoOverride(false)
-    if (archivesList) archivesList.destroy()
-    if (selectedArchive) selectedArchive.destroy()
-    archivesList = null
-    selectedArchiveKey = null
-    selectedArchive = null
-
-    if (!isSameView || !newArchiveKey) {
-      // turn off the filter if its a nav to a new view, or to the toplevel
-      currentFilter = ''
-    }
-    if (!window.location.pathname.startsWith('library')) {
-      isViewActive = false
-    }
-  }).catch(err => {
-    console.error(err)
-  })
-}
-
 // view state management
 // =
 
@@ -187,11 +175,7 @@ function setCurrentNodeByPath () {
 // rendering
 // =
 
-export function render () {
-  if (!isViewActive) {
-    return
-  }
-
+function render () {
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="archives">

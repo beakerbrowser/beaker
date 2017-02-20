@@ -345,7 +345,7 @@ test('dat.writeFile doesnt overwrite folders', async t => {
   var res = await app.client.executeAsync((url, done) => {
     dat.writeFile(url, 'hello world', 'utf8').then(done, done)
   }, createdDatURL + '/subdir')
-  t.deepEqual(res.value.name, 'FolderAlreadyExistsError')
+  t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
 })
 
 test('dat.createDirectory doesnt overwrite files or folders', async t => {
@@ -353,19 +353,19 @@ test('dat.createDirectory doesnt overwrite files or folders', async t => {
   var res = await app.client.executeAsync((url, done) => {
     dat.createDirectory(url).then(done, done)
   }, createdDatURL + '/')
-  t.deepEqual(res.value.name, 'FolderAlreadyExistsError')
+  t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
 
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
     dat.createDirectory(url).then(done, done)
   }, createdDatURL + '/subdir')
-  t.deepEqual(res.value.name, 'FolderAlreadyExistsError')
+  t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
 
   // write to the file
   var res = await app.client.executeAsync((url, done) => {
     dat.createDirectory(url).then(done, done)
   }, createdDatURL + '/hello.txt')
-  t.deepEqual(res.value.name, 'FileAlreadyExistsError')
+  t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
 })
 
 test('dat.createDirectory gives an error for malformed names', async t => {

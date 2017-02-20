@@ -24,16 +24,34 @@ export function setup () {
   setupPromise = setupSqliteDB(db, migrations, '[BOOKMARKS]')
 
   // wire up RPC
-  rpc.exportAPI('beakerBookmarks', manifest, { add, changeTitle, changeUrl, addVisit, remove, get, list }, internalOnly)
+  rpc.exportAPI('beakerBookmarks', manifest, { add, changeTitle, changeUrl, addVisit, remove, get, list, listPinned, togglePinned }, internalOnly)
 }
 
-export function add (url, title) {
+export function add (url, title, pinned) {
   return setupPromise.then(v => cbPromise(cb => {
-    db.run(`
-      INSERT OR REPLACE
-        INTO bookmarks (url, title, num_visits)
-        VALUES (?, ?, 0)
-    `, [url, title], cb)
+    // unfortunately we forgot to give url a primary key constraint
+    // so this doesnt work:
+    // db.run(`
+    //   INSERT OR REPLACE
+    //     INTO bookmarks (url, title, num_visits, pinned)
+    //     VALUES (?, ?, 0, ?)
+    // `, [url, title, pinned], cb)
+    // -prf
+
+    // note, this really needs a lock to be 100% safe
+    db.get(`SELECT url FROM bookmarks WHERE url = ?`, [url], (err, row) => {
+      if (row) {
+        db.run(`
+          UPDATE bookmarks SET title = ?, pinned = ? WHERE url = ?
+        `, [title, pinned, url], cb)
+      } else {
+        db.run(`
+          INSERT 
+            INTO bookmarks (url, title, num_visits, pinned)
+            VALUES (?, ?, 0, ?)
+        `, [url, title, pinned], cb)
+      }
+    })
   }))
 }
 
@@ -46,6 +64,12 @@ export function changeTitle (url, title) {
 export function changeUrl (oldUrl, newUrl) {
   return setupPromise.then(v => cbPromise(cb => {
     db.run(`UPDATE bookmarks SET url = ? WHERE url = ?`, [newUrl, oldUrl], cb)
+  }))
+}
+
+export function togglePinned (url, pinned) {
+  return setupPromise.then(v => cbPromise(cb => {
+    db.run(`UPDATE bookmarks SET pinned = ? WHERE url = ?`, [!pinned ? 1 : 0, url], cb)
   }))
 }
 
@@ -67,9 +91,15 @@ export function get (url) {
   }))
 }
 
+export function listPinned () {
+  return setupPromise.then(v => cbPromise(cb => {
+    db.all(`SELECT url, title FROM bookmarks WHERE pinned = ?`, [1], cb)
+  }))
+}
+
 export function list () {
   return setupPromise.then(v => cbPromise(cb => {
-    db.all(`SELECT url, title FROM bookmarks ORDER BY num_visits DESC`, cb)
+    db.all(`SELECT url, title, pinned FROM bookmarks ORDER BY num_visits DESC`, cb)
   }))
 }
 
@@ -105,6 +135,14 @@ migrations = [
       INSERT INTO bookmarks (title, url, num_visits) VALUES ('Welcome to Beaker - dat://hostless.website/', 'dat://hostless.website/', 0);
       INSERT INTO bookmarks (title, url, num_visits) VALUES ('The Dat Protocol - Decentralized Archive Transport', 'dat://www.datprotocol.com', 0);
       PRAGMA user_version = 3;
-    `, cb)  
+    `, cb)
+  },
+  // version 4
+  function (cb) {
+    db.exec(`
+      ALTER TABLE bookmarks ADD COLUMN pinned;
+      UPDATE bookmarks SET pinned = 0;
+      PRAGMA user_version = 4;
+    `, cb)
   }
 ]

@@ -1,7 +1,6 @@
 import * as yo from 'yo-yo'
 import co from 'co'
 import prettyBytes from 'pretty-bytes'
-import toggleable from './toggleable'
 import { niceDate } from '../../lib/time'
 import { pluralize } from '../../lib/strings'
 import { pushUrl } from '../../lib/fg/event-handlers'
