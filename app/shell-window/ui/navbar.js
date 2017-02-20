@@ -127,7 +127,7 @@ function render (id, page) {
         <span class="icon icon-cancel"></span>
       </button>`
     : yo`<button class="toolbar-btn nav-reload-btn" onclick=${onClickReload}>
-        <span class="icon icon-ccw"></span>
+        <span class="icon icon-cw"></span>
       </button>`
 
   // `page` is null on initial render
