@@ -307,11 +307,13 @@ export function getArchiveDetails (name, opts = {}) {
     // fetch archive data
     return Promise.all([
       archivesDb.getArchiveMeta(key),
-      archivesDb.getArchiveUserSettings(key)
+      archivesDb.getArchiveUserSettings(key),
+      (opts.entries) ? new Promise(resolve => archive.list((err, entries) => resolve(entries))) : null
     ])
-  }).then(([meta, userSettings]) => {
+  }).then(([meta, userSettings, entries]) => {
     // attach additional data
     meta.userSettings = userSettings
+    meta.entries = entries
 
     // metadata for history view
     meta.blocks = archive.metadata.blocks

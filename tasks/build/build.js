@@ -26,6 +26,7 @@ var bundleApplication = function () {
     bundle(srcDir.path('webview-preload.js'), srcDir.path('webview-preload.build.js')),
     bundle(srcDir.path('shell-window.js'), srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(srcDir.path('builtin-pages/downloads.js'), srcDir.path('builtin-pages/downloads.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
+    bundle(srcDir.path('builtin-pages/library.js'), srcDir.path('builtin-pages/library.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
     bundle(srcDir.path('builtin-pages/favorites.js'), srcDir.path('builtin-pages/favorites.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
     bundle(srcDir.path('builtin-pages/history.js'), srcDir.path('builtin-pages/history.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
     bundle(srcDir.path('builtin-pages/settings.js'), srcDir.path('builtin-pages/settings.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') })
