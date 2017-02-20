@@ -178,7 +178,8 @@ export function writeArchiveFileFromPath (dstKey, opts) {
     dstPath: opts.dst,
     ignore: opts.ignore,
     dryRun: opts.dryRun,
-    inplaceImport: true
+    inplaceImport: true,
+    skipUndownloadedFiles: true
   })
 }
 
