@@ -29,11 +29,29 @@ export function setup () {
 
 export function add (url, title, pinned) {
   return setupPromise.then(v => cbPromise(cb => {
-    db.run(`
-      INSERT OR REPLACE
-        INTO bookmarks (url, title, num_visits, pinned)
-        VALUES (?, ?, 0, ?)
-    `, [url, title, pinned], cb)
+    // unfortunately we forgot to give url a primary key constraint
+    // so this doesnt work:
+    // db.run(`
+    //   INSERT OR REPLACE
+    //     INTO bookmarks (url, title, num_visits, pinned)
+    //     VALUES (?, ?, 0, ?)
+    // `, [url, title, pinned], cb)
+    // -prf
+
+    // note, this really needs a lock to be 100% safe
+    db.get(`SELECT url FROM bookmarks WHERE url = ?`, [url], (err, row) => {
+      if (row) {
+        db.run(`
+          UPDATE bookmarks SET title = ?, pinned = ? WHERE url = ?
+        `, [title, pinned, url], cb)
+      } else {
+        db.run(`
+          INSERT 
+            INTO bookmarks (url, title, num_visits, pinned)
+            VALUES (?, ?, 0, ?)
+        `, [url, title, pinned], cb)
+      }
+    })
   }))
 }
 
