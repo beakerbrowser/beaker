@@ -1,8 +1,6 @@
 @import "../photon.min.less";
 
-* {
-  box-sizing: border-box;
-}
+@import "../base/reset.less";
 
 .bookmarks-wrapper {
   padding: 5px 20px;
@@ -25,8 +23,7 @@
 
 .bookmarks {
   margin: 0;
-  padding: 0 0 15px 0; // TODO: list-styles should be opt-in -tbv
-  list-style: none;
+  padding: 0 0 15px 0;
 }
 
 
@@ -167,7 +164,6 @@ form#add-pinned-site {
 }
 
 .bookmarks-list {
-  list-style: none;
   margin: 0;
   padding: 0;
 }
