@@ -26,7 +26,7 @@ export function render (archive, opts = {}) {
 function renderEmpty () {
   return yo`<div class="archive-view">
     <div class="archive-empty-banner">
-      <h2>Site Library</h2>
+      <h2>Dat Library</h2>
       <p>Share files, pages, and applications. <a onclick=${createArchiveFlow}>New site</a>.</p>
     </div>
   </div>`
