@@ -190,7 +190,8 @@ export function exportFileFromArchive (srcKey, srcPath, dstPath) {
   return pda.exportArchiveToFilesystem({
     srcArchive,
     srcPath,
-    dstPath
+    dstPath,
+    overwriteExisting: true
   })
 }
 
