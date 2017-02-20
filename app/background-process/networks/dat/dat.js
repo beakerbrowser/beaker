@@ -337,20 +337,39 @@ export function getArchiveStats (key) {
     if (!archive) return reject(new Error('Invalid archive key'))
 
     // fetch the archive entries
-    archive.open(err => {
+    archive.list((err, entries) => {
       if (err) return reject(err)
 
-      resolve({
+      // TEMPORARY
+      // remove duplicates
+      // this is only needed until hyperdrive fixes its .list()
+      // see https://github.com/mafintosh/hyperdrive/pull/99
+      // -prf
+      var entriesDeDuped = {}
+      entries.forEach(entry => { entriesDeDuped[entry.name] = entry })
+      entries = Object.keys(entriesDeDuped).map(name => entriesDeDuped[name])
+
+      // tally the current state
+      var stats = {
         peers: archive.metadata.peers.length,
+        filesTotal: 0,
         meta: {
-          blocksRemaining: archive.metadata.blocksRemaining(),
+          blocksProgress: archive.metadata.blocks - archive.metadata.blocksRemaining(),
           blocksTotal: archive.metadata.blocks
         },
         content: {
-          blocksRemaining: archive.content.blocksRemaining(),
-          blocksTotal: archive.content.blocks
+          bytesTotal: 0,
+          blocksProgress: 0,
+          blocksTotal: 0
         }
+      }
+      entries.forEach(entry => {
+        stats.content.bytesTotal += entry.length
+        stats.content.blocksProgress += archive.countDownloadedBlocks(entry)
+        stats.content.blocksTotal += entry.blocks
+        stats.filesTotal++
       })
+      resolve(stats)
     })
   })
 }
