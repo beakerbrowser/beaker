@@ -451,6 +451,7 @@ function onDomReady (e) {
   var page = getByWebview(e.target)
   if (page) {
     page.isWebviewReady = true
+    page.webviewEl.focus()
     zoom.setZoomFromSitedata(page)
   }
 }
