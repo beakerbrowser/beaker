@@ -460,14 +460,9 @@ export function downloadArchive (key) {
       // download the enties
       var done = multicb()
       entries.forEach(entry => {
-        console.log('Downloading', entry) // TODO remove me
-        archive.content.prioritize({
-          start: entry.content.blockOffset,
-          end: entry.content.blockOffset + entry.blocks,
-          priority: 3,
-          linear: true
-        })
-        archive.download(entry, done())
+        if (entry.blocks > 0) {
+          archive.download(entry, done())
+        }
       })
       done(() => cb())
     })
