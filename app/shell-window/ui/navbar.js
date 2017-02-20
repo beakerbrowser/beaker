@@ -55,6 +55,15 @@ export function focusLocation (page) {
   el.select()
 }
 
+export function isLocationFocused (page) {
+  // fetch current page, if not given
+  page = page || pages.getActive()
+
+  // get element and pull state
+  var addrEl = page.navbarEl.querySelector('.nav-location-input')
+  return addrEl.matches(':focus')
+}
+
 export function showInpageFind (page) {
   // show control and highlight text
   page.isInpageFinding = true
