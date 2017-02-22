@@ -11,7 +11,7 @@ var packageJson = require('./package.json')
 var debug = require('debug')('beaker')
 
 const BEAKER_VERSION = packageJson.version
-const MIN_BKR_VERSION = '1.1.0'
+const MIN_BKR_VERSION = '2.0.0'
 
 // constants
 // =
@@ -49,7 +49,7 @@ export function setup () {
     if (!semver.valid(bkrVersion) || semver.lt(bkrVersion, MIN_BKR_VERSION)) {
       return Promise.reject({
         code: 400,
-        message: `Bkr version is ${bkrVersion} and minimum required is ${MIN_BKR_VERSION}. Can you update bkr?`
+        message: `Bkr version is ${bkrVersion} and minimum required is ${MIN_BKR_VERSION}. Please update bkr!`
       })
     }
     return Promise.resolve(BEAKER_VERSION)
