@@ -114,10 +114,6 @@
       cursor: pointer;
     }
 
-    &.builtin {
-      background: fadeout(#333, 93%);
-    }
-
     &.add {
       border: 1px dashed fadeout(#333, 75%);
 
@@ -153,14 +149,17 @@
   .pin-site {
     display: block;
     background: none;
+    outline: 0;
 
     .icon::before {
-      margin-top: 0;
+      margin-top: 10px;
+      transition: transform 0.1s;
     }
 
-    &[disabled]:hover {
-      background: none;
-      cursor: default;
+    &.adding {
+      .icon::before {
+        transform: rotate(45deg);
+      }
     }
   }
 
@@ -244,6 +243,20 @@ form#add-pinned-site {
   * {
     vertical-align: middle;
     cursor: pointer;
+  }
+}
+
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+
+
+  &__info {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
   }
 }
 
