@@ -6,6 +6,8 @@ sites loaded over the beaker: protocol
 import * as yo from 'yo-yo'
 import co from 'co'
 
+const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
+
 // globals
 // =
 
@@ -16,31 +18,69 @@ var builtinPages = [
   { href: 'beaker:downloads', label: 'Downloads', icon: 'down' }
 ]
 
+var showReleaseNotes = false
+var isAddingPin = false
 var bookmarks, pinnedBookmarks
 
 co(function* () {
   bookmarks = (yield beakerBookmarks.list()) || []
   pinnedBookmarks = (yield beakerBookmarks.listPinned()) || []
-  renderPinned()
+  update()
+
+  let latestVersion = yield beakerSitedata.get('beaker:start', 'latest-version')
+  if (+latestVersion < LATEST_VERSION) {
+    showReleaseNotes = true
+    update()
+    beakerSitedata.set('beaker:start', 'latest-version', LATEST_VERSION)
+  }
 })
 
 // rendering
 // =
 
+function update () {
+  yo.update(document.querySelector('.start-wrapper'), yo`
+    <div class="start-wrapper">
+      ${renderPinned()}
+      ${renderBookmarks()}
+      ${renderReleaseNotes()}
+    </div>
+  `)
+}
+
+function renderReleaseNotes () {
+  if (!showReleaseNotes) {
+    return ''
+  }
+  return yo`
+    <div class="alert alert__info alert__release-notes">
+      <strong>Welcome to Beaker 0.6.1!</strong>
+      New start page, Dat-DNS, and an improved bkr command-line.
+      <a href="https://github.com/beakerbrowser/beaker/releases/tag/0.6.1">Learn more</a>
+    </div>
+  `
+}
+
 function renderPinned () {
-  yo.update(document.querySelector('.pinned'), yo`
+  const pinCls = isAddingPin ? ' adding' : ''
+  return yo`
     <div class="pinned">
       ${builtinPages.map(renderBuiltinPage)}
       ${pinnedBookmarks.map(renderPinnedBookmark)}
       <div class="pinned__item" onclick="addPinnedSite">
-        <button label="Pin a site" class="pinned__item-square add pin-site" onclick=${renderPinSiteForm}>
-          <i class="icon icon-plus" aria-hidden="true"></i>
+        <button label="Pin a site" class="pinned__item-square add pin-site ${pinCls}" onclick=${toggleAddPin}>
+          <i class='icon icon-plus' aria-hidden="true"></i>
         </button>
       </div>
-    </div>`)
+    </div>
+  `
 }
 
 function renderBookmarks () {
+  if (!isAddingPin) {
+    return ''
+  }
+
   const renderRow = (row, i) =>
     yo`
       <li class="bookmark" data-row=${i} onclick=${pinBookmark(i)}>
@@ -50,14 +90,18 @@ function renderBookmarks () {
         </a>
       </li>`
 
-  yo.update(
-    document.querySelector('.bookmarks'),
-      yo`
-        <div class="bookmarks">
-          <ul class="bookmarks-list">
-            ${bookmarks.map(renderRow)}
-          </ul>
-        </div>`)
+  return yo`
+    <div class="bookmarks">
+      <form id="add-pinned-site" onsubmit=${pinSite}>
+        <legend>Add a new site or select a bookmark</legend>
+        <input name="url" type="text" placeholder="https://example.com" required autofocus="autofocus" />
+        <input type="submit">
+      </form>
+      <ul class="bookmarks-list">
+        ${bookmarks.map(renderRow)}
+      </ul>
+    </div>
+  `
 }
 
 function renderBuiltinPage (item) {
@@ -86,18 +130,9 @@ function renderPinnedBookmark (bookmark) {
     </a>`
 }
 
-function renderPinSiteForm (url, title) {
-  renderBookmarks()
-
-  document.querySelector('.pinned').append(yo`
-    <form id="add-pinned-site" onsubmit=${pinSite}>
-      <legend>Add a new site or select a bookmark</legend>
-      <input name="url" type="text" placeholder="https://example.com" required />
-      <input type="submit">
-    </form>`)
-
-  document.querySelector('input[name="url"]').focus()
-  document.querySelector('.pin-site').disabled = true
+function toggleAddPin (url, title) {
+  isAddingPin = !isAddingPin
+  update()
 }
 
 function pinBookmark (i) {
@@ -110,10 +145,8 @@ function pinBookmark (i) {
       return beakerBookmarks.listPinned()
     }).then(pinned => {
       pinnedBookmarks = pinned
-      renderPinned()
-
-      document.querySelector('.bookmarks').removeChild(document.querySelector('.bookmarks-list'))
-      document.querySelector('.pin-site').disabled = false
+      isAddingPin = false
+      update()
     })
   }
 }
@@ -138,12 +171,9 @@ function pinSite (e) {
     return beakerBookmarks.listPinned()
   }).then(pinned => {
     pinnedBookmarks = pinned
-    renderPinned()
+    isAddingPin = false
+    update()
   })
-
-  document.querySelector('.pinned').removeChild(form)
-  document.querySelector('.bookmarks').removeChild(document.querySelector('.bookmarks-list'))
-  document.querySelector('.pin-site').disabled = false
 }
 
 function unpinSite (e) {
@@ -152,6 +182,6 @@ function unpinSite (e) {
 
   beakerBookmarks.listPinned().then(pinned => {
     pinnedBookmarks = pinned
-    renderPinned()
+    update()
   })
 }
