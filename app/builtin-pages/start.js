@@ -6,6 +6,8 @@ sites loaded over the beaker: protocol
 import * as yo from 'yo-yo'
 import co from 'co'
 
+const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
+
 // globals
 // =
 
@@ -16,6 +18,7 @@ var builtinPages = [
   { href: 'beaker:downloads', label: 'Downloads', icon: 'down' }
 ]
 
+var showReleaseNotes = false
 var isAddingPin = false
 var bookmarks, pinnedBookmarks
 
@@ -23,6 +26,13 @@ co(function* () {
   bookmarks = (yield beakerBookmarks.list()) || []
   pinnedBookmarks = (yield beakerBookmarks.listPinned()) || []
   update()
+
+  let latestVersion = yield beakerSitedata.get('beaker:start', 'latest-version')
+  if (+latestVersion < LATEST_VERSION) {
+    showReleaseNotes = true
+    update()
+    beakerSitedata.set('beaker:start', 'latest-version', LATEST_VERSION)
+  }
 })
 
 // rendering
@@ -33,9 +43,22 @@ function update () {
     <div class="start-wrapper">
       ${renderPinned()}
       ${renderBookmarks()}
+      ${renderReleaseNotes()}
     </div>
   `)
+}
 
+function renderReleaseNotes () {
+  if (!showReleaseNotes) {
+    return ''
+  }
+  return yo`
+    <div class="alert alert__info alert__release-notes">
+      <strong>Welcome to Beaker 0.6.1!</strong>
+      New start page, Dat-DNS, and an improved bkr command-line.
+      <a href="https://github.com/beakerbrowser/beaker/releases/tag/0.6.1">Learn more</a>
+    </div>
+  `
 }
 
 function renderPinned () {

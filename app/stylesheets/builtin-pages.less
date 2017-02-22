@@ -252,11 +252,23 @@ form#add-pinned-site {
   border: 1px solid transparent;
   border-radius: 4px;
 
-
   &__info {
     color: #31708f;
     background-color: #d9edf7;
     border-color: #bce8f1;
+
+    a {    
+      color: #31708f;
+      text-decoration: underline;
+    }
+  }
+
+  &__release-notes {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
   }
 }
 
