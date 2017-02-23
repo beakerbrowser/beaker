@@ -319,8 +319,6 @@ function onMouseDown (page) {
     // done dragging handler
     function dragend (e) {
       // reset
-      e.preventDefault()
-      e.stopPropagation()
       page.tabDragOffset = 0
       page.isTabDragging = false
       getTabEl(page, tabEl => tabEl.classList.remove('chrome-tab-dragging'))
