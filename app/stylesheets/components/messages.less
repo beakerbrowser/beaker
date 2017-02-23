@@ -1,0 +1,33 @@
+.message {
+  background: @background-message;
+  color: @color-message;
+  font-size: 12px;
+  border: 1px solid;
+  border-color: @border-message;
+  border-radius: 2px;
+  padding: 10px 15px; // TODO: make a module extend that has consistent padding, margin -tbv
+
+  &.success {
+   background: @background-message--success;
+   color: @color-message--success;
+   border-color: @border-message--success;
+  }
+
+  &.info {
+   background: @background-message--info;
+   color: @color-message--info;
+   border-color: @border-message--info;
+  }
+
+  &.warning {
+   background: @background-message--warning;
+   color: @color-message--warning;
+   border-color: @border-message--warning;
+  }
+
+  &.error {
+   background: @background-message--error;
+   color: @color-message--error;
+   border-color: @border-message--error;
+  }
+}
