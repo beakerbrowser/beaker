@@ -1,6 +1,6 @@
 import {ipcRenderer} from 'electron'
 import rpc from 'pauls-electron-rpc'
-import datManifest from 'todo' // TODO
+import datManifest from '../../lib/api-manifests/external/dat'
 
 // create the dat rpc api
 const dat = rpc.importAPI('dat', datManifest, { timeout: false, noEval: true })
@@ -24,11 +24,10 @@ export default class DatArchive {
     })
   }
 
-  static async fork (url, opts=null) {
+  static fork (url, opts=null) {
     url = (typeof url.url === 'string') ? url.url : url
     return new DatArchive(dat.forkArchive(url, opts))
   }
-
 
   async getInfo(opts=null) {
     // TODO opts needed?
@@ -79,13 +78,13 @@ export default class DatArchive {
     return dat.deleteDirectory(url)
   }
 
-  createFileActivityStream(opts) {
-    // TODO
-  }
+  // createFileActivityStream(opts) {
+  //   // TODO
+  // }
 
-  createNetworkActivityStream(opts) {
-    // TODO
-  }
+  // createNetworkActivityStream(opts) {
+  //   // TODO
+  // }
 
   // static async importFromFilesystem(opts) {
   //   // TODO

@@ -1,11 +1,11 @@
 import { ipcMain } from 'electron'
-import beakerBrowser from './api-manifests/internal/browser'
-import beakerBookmarks from './api-manifests/internal/bookmarks'
-import beakerDownloads from './api-manifests/internal/downloads'
-import beakerHistory from './api-manifests/internal/history'
-import beakerSitedata from './api-manifests/internal/sitedata'
-import datInternalAPI from './api-manifests/internal/dat-internal'
-import dat from './api-manifests/external/dat'
+import beakerBrowser from '../lib/api-manifests/internal/browser'
+import beakerBookmarks from '../lib/api-manifests/internal/bookmarks'
+import beakerDownloads from '../lib/api-manifests/internal/downloads'
+import beakerHistory from '../lib/api-manifests/internal/history'
+import beakerSitedata from '../lib/api-manifests/internal/sitedata'
+import datInternalAPI from '../lib/api-manifests/internal/dat-internal'
+import dat from '../lib/api-manifests/external/dat'
 
 // exported api
 // =

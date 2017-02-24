@@ -10,8 +10,8 @@ import pda from 'pauls-dat-api'
 const datDns = require('dat-dns')()
 
 import { ProtocolSetupError } from '../../lib/const'
-import datInternalAPIManifest from '../api-manifests/internal/dat-internal'
-import datExternalAPIManifest from '../api-manifests/external/dat'
+import datInternalAPIManifest from '../../lib/api-manifests/internal/dat-internal'
+import datExternalAPIManifest from '../../lib/api-manifests/external/dat'
 
 import * as dat from '../networks/dat/dat'
 import datWebAPI from '../networks/dat/web-api'

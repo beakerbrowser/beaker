@@ -6,7 +6,7 @@ import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import rpc from 'pauls-electron-rpc'
-import manifest from '../api-manifests/internal/downloads'
+import manifest from '../../lib/api-manifests/internal/downloads'
 import { internalOnly } from '../../lib/bg/rpc'
 
 // globals

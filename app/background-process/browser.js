@@ -4,7 +4,7 @@ import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 var debug = require('debug')('beaker')
-import manifest from './api-manifests/internal/browser'
+import manifest from '../lib/api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
 import { internalOnly } from '../lib/bg/rpc'
 import { isDaemonActive as isIPFSDaemonActive } from './networks/ipfs/ipfs'
