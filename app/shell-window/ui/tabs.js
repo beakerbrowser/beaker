@@ -215,7 +215,13 @@ function onClickPin (page) {
 }
 
 function onClickTab (page) {
-  return e => pages.setActive(page)
+  return e => {
+    if (e.which === 2) {
+      pages.remove(page)
+    } else {
+      pages.setActive(page)
+    }
+  }
 }
 
 function onClickTabClose (page) {
@@ -246,6 +252,11 @@ function onClickCloseTabsToTheRight (page) {
   }
 }
 
+
+function onClickReopenClosedTab () {
+  pages.reopenLastRemoved()
+}
+
 function onContextMenuTab (page) {
   const { Menu } = remote
   return e => {
@@ -257,7 +268,9 @@ function onContextMenuTab (page) {
       { type: 'separator' },
       { label: 'Close Tab', click: onClickTabClose(page) },
       { label: 'Close Other Tabs', click: onClickCloseOtherTabs(page) },
-      { label: 'Close Tabs to the Right', click: onClickCloseTabsToTheRight(page) }
+      { label: 'Close Tabs to the Right', click: onClickCloseTabsToTheRight(page) },
+      { type: 'separator' },
+      { label: 'Reopen Closed Tab', click: onClickReopenClosedTab }
     ])
     menu.popup(remote.getCurrentWindow())
   }
