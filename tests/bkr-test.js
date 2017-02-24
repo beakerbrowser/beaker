@@ -35,7 +35,7 @@ test.after.always('cleanup', async t => {
 // helpers
 //
 
-const bkrPath = path.join(__dirname, 'node_modules/bkr/build/bin/bkr')
+const bkrPath = '/Users/paulfrazee/my/bkr/build/bin/bkr'//path.join(__dirname, 'node_modules/bkr/build/bin/bkr')
 
 function bkr (cmd, opts) {
   if (cmd) cmd = ' ' + cmd

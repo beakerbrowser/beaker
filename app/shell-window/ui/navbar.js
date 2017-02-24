@@ -543,10 +543,15 @@ function onClickSaveDat (e) {
   if (!page || !page.siteInfo) return
 
   var info = page.siteInfo
-  datInternalAPI.setArchiveUserSettings(info.key, { isSaved: !info.userSettings.isSaved }).then(settings => {
+  if (info.userSettings.isSaved) {
+    beaker.library.remove(info.key).then(done)
+  } else {
+    beaker.library.add(info.key).then(done)
+  }
+  function done (settings) {
     info.userSettings = settings
     update(page)
-  })
+  }
 }
 
 function onClickLiveReload (e) {
