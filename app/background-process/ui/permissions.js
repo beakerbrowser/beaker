@@ -4,7 +4,7 @@ import rpc from 'pauls-electron-rpc'
 import * as siteData from '../dbs/sitedata'
 import PERMS from '../../lib/perms'
 import { getPermId } from '../../lib/strings'
-import manifest from '../api-manifests/external/permissions'
+import manifest from '../../lib/api-manifests/external/permissions'
 
 // globals
 // =
