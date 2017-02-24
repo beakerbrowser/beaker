@@ -7,7 +7,6 @@
   border-radius: 2px;
   background: @background-button;
   border: 1px solid @border-button;
-  transition: background .1s ease;
   font-size: 12px;
   font-weight: 600;
   height: 25px;
@@ -44,13 +43,13 @@
 }
 
 .btn.success {
-  background: @background-button--success;
+  background: linear-gradient(@background-button--success, shade(@background-button--success, 8%));
   color: @color-button--success;
   border: none;
 
   &.pressed,
   &:hover {
-    background: shade(@background-button--success, 5%);
+    background: shade(@background-button--success, 8%);
   }
 }
 
