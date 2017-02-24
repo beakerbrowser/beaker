@@ -18,5 +18,4 @@ importWebAPIs()
 setupLocationbar()
 setupNavigatorPermissions()
 window.DatArchive = DatArchive
-window.BrowserESModuleLoader = BrowserESModuleLoader
 

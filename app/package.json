@@ -8,7 +8,6 @@
   "copyright": "© 2016, Paul Frazee",
   "main": "background-process.build.js",
   "dependencies": {
-    "browser-es-module-loader": "^0.1.6",
     "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib#29a77b984fa3bf423e72e01344c2e1212a5bb620",
     "cids": "^0.2.0",
     "co": "^4.6.0",
@@ -26,7 +25,6 @@
     "fs-jetpack": "^0.9.0",
     "function-queue": "0.0.12",
     "get-folder-size": "^1.0.0",
-    "global-modules": "^0.2.3",
     "hyperdrive": "^7.12.0",
     "hyperdrive-import-files": "^2.9.0",
     "identify-filetype": "^1.0.0",
