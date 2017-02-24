@@ -94,12 +94,12 @@ test('bkr fork', async t => {
 
 })
 
-test('bkr co', async t => {
+test('bkr clone', async t => {
 
   // will create a duplicate
   // =
 
-  bkr(`co ${datUrl1} ${datPath3}`)
+  bkr(`clone ${datUrl1} ${datPath3}`)
   var manifest = JSON.parse(fs.readFileSync(path.join(datPath3, 'dat.json')))
   t.truthy(datUrl1.replace(/(\/$)/, '') === manifest.url.replace(/(\/$)/, ''))
 
@@ -107,7 +107,7 @@ test('bkr co', async t => {
   // =
 
   try {
-    bkr(`co ${datUrl1} ${datPath3}`)
+    bkr(`clone ${datUrl1} ${datPath3}`)
     t.fail('should not have succeeded')
   } catch (e) {
     t.pass('failed as expected')
@@ -117,21 +117,19 @@ test('bkr co', async t => {
 
 test('bkr publish', async t => {
 
-  // will publish the given version
+  // will publish
   // =
 
   fs.writeFileSync(path.join(datPath1, 'hello.txt'), 'world', 'utf8')
-  await bkrAutomatePrompt(`publish 1.0.0 ${datPath1}`)
-  var manifest = JSON.parse(fs.readFileSync(path.join(datPath1, 'dat.json')))
-  t.deepEqual(manifest.version, '1.0.0')
+  await bkrAutomatePrompt(`publish ${datPath1}`)
+  t.deepEqual(fs.readFileSync(path.join(datPath1, 'hello.txt'), 'utf8'), 'world')
 
-  // will publish a major bump
+  // will publish
   // =
 
   fs.writeFileSync(path.join(datPath1, 'hello.txt'), 'universe', 'utf8')
-  await bkrAutomatePrompt(`publish major ${datPath1}`)
-  var manifest = JSON.parse(fs.readFileSync(path.join(datPath1, 'dat.json')))
-  t.deepEqual(manifest.version, '2.0.0')
+  await bkrAutomatePrompt(`publish ${datPath1}`)
+  t.deepEqual(fs.readFileSync(path.join(datPath1, 'hello.txt'), 'utf8'), 'universe')
 
 })
 
@@ -141,7 +139,5 @@ test('bkr pull', async t => {
   // =
 
   bkr(`pull ${datPath3}`)
-  var manifest = JSON.parse(fs.readFileSync(path.join(datPath3, 'dat.json')))
-  t.deepEqual(manifest.version, '2.0.0')
   t.deepEqual(fs.readFileSync(path.join(datPath3, 'hello.txt'), 'utf8'), 'universe')
 })
