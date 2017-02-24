@@ -14,7 +14,6 @@ Computed information about archives
     title: String,
     description: String,
     author: String,
-    version: String,
     forkOf: Array of Strings,
     createdBy: {
       url: String,

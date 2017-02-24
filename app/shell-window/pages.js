@@ -71,7 +71,7 @@ export function create (opts) {
     isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
-    isLiveReloading: false, // live-reload enabled?
+    liveReloadEvents: false, // live-reload event stream
     zoom: 0, // what's the current zoom level?
 
     // current page's info
@@ -154,16 +154,29 @@ export function create (opts) {
       return `beaker:library/${urlp.host}${path}${subview?'#'+subview:''}`
     },
 
+    get isLiveReloading() {
+      return !!page.liveReloadEvents
+    },
+
     // start/stop live reloading
     toggleLiveReloading: function () {
-      page.isLiveReloading = !page.isLiveReloading
+      if (page.liveReloadEvents) {
+        page.liveReloadEvents.close()
+        page.liveReloadEvents = false
+      } else if (page.siteInfo) {
+        var archive = new DatArchive(page.siteInfo.key)
+        page.liveReloadEvents = archive.createFileActivityStream()
+        page.liveReloadEvents.addEventListener('changed', () => {
+          page.triggerLiveReload(page.siteInfo.key)
+        })
+      }
       navbar.update(page)
     },
 
     // reload the page due to changes in the dat
     triggerLiveReload: debounce(archiveKey => {
       // double check that we're still on the page
-      if (page.isLiveReloading && page.getIntendedURL().startsWith('dat://' + archiveKey)) {
+      if (page.getIntendedURL().startsWith('dat://' + archiveKey)) {
         // reload
         page.reload()
       }
@@ -181,7 +194,7 @@ export function create (opts) {
 
     // helper to check if there's a dat version of the site available
     checkForDatAlternative (name) {
-      datInternalAPI.resolveName(name).then(res => {
+      DatArchive.resolveName(name).then(res => {
         this.siteHasDatAlternative = !!res
         navbar.update(page)
       }).catch(err => console.log('Name does not have a Dat alternative', name))
@@ -542,7 +555,7 @@ function onDidStopLoading (e) {
       page.checkForDatAlternative(hostname)
     }
     if (protocol === 'dat:') {
-      datInternalAPI.getArchiveDetails(hostname).then(info => {
+      beaker.library.get(hostname).then(info => {
         page.siteInfo = info
         navbar.update(page)
       })

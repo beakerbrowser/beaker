@@ -2,32 +2,18 @@
 
 import jayson from 'jayson/promise'
 import semver from 'semver'
+import pda from 'pauls-dat-api'
 import { BrowserWindow } from 'electron'
 import { BKR_SERVER_PORT } from '../lib/const'
-import * as dat from './networks/dat/dat'
+import * as datLibrary from './networks/dat/library'
 import { getActiveWindow, createShellWindow } from './ui/windows'
 import { open as openUrl } from './open-url'
+import * as archivesDb from './dbs/archives'
 var packageJson = require('./package.json')
 var debug = require('debug')('beaker')
 
 const BEAKER_VERSION = packageJson.version
 const MIN_BKR_VERSION = '2.0.0'
-
-// constants
-// =
-
-const DAT_METHODS = [
-  'queryArchives',
-  'getArchiveDetails',
-  'getArchiveStats',
-  'resolveName',
-  'createNewArchive',
-  'forkArchive',
-  'downloadArchive',
-  'setArchiveUserSettings',
-  'writeArchiveFileFromPath',
-  'exportFileFromArchive'
-]
 
 // globals
 // =
@@ -38,13 +24,17 @@ var server
 // =
 
 export function setup () {
-  // setup the methods
+  // copy methods from datLibrary
   var methods = {}
-  DAT_METHODS.forEach(method => {
-    methods[method] = (args) => dat[method](...args).catch(massageError)
+  ;['queryArchives',
+    'createNewArchive',
+    'forkArchive',
+    'getArchiveInfo'
+  ].forEach(method => {
+    methods[method] = (args) => datLibrary[method](...args).catch(massageError)
   })
 
-  // add hello handshake
+  // handshake method
   methods.hello = ([bkrVersion]) => {
     if (!semver.valid(bkrVersion) || semver.lt(bkrVersion, MIN_BKR_VERSION)) {
       return Promise.reject({
@@ -55,7 +45,6 @@ export function setup () {
     return Promise.resolve(BEAKER_VERSION)
   }
 
-  // add 'openUrl' method
   methods.openUrl = ([url]) => {
     if (!url || typeof url !== 'string') return Promise.reject({ code: 400, message: `Invalid url` })
     // make sure a window is open
@@ -67,10 +56,41 @@ export function setup () {
     return Promise.resolve()
   }
 
-  // add method to make sure a dat is active
   methods.loadDat = ([key]) => {
-    dat.getOrLoadArchive(key)
+    datLibrary.getOrLoadArchive(key)
     return Promise.resolve()
+  }
+
+  methods.downloadArchive = ([key]) => {
+    var archive = datLibrary.getArchive(key)
+    return pda.download(archive)
+  }
+
+  methods.setArchiveUserSettings = ([key, settings]) => {
+    return archivesDb.setArchiveUserSettings(key, settings)
+  }
+
+  methods.writeArchiveFileFromPath = ([dstKey, opts]) => {
+    var dstArchive = datLibrary.getArchive(dstKey)
+    return pda.exportFilesystemToArchive({
+      srcPath: opts.src,
+      dstArchive,
+      dstPath: opts.dst,
+      ignore: opts.ignore,
+      dryRun: opts.dryRun,
+      inplaceImport: opts.inplaceImport
+    })
+  }
+
+  methods.exportFileFromArchive = ([srcKey, srcPath, dstPath]) => {
+    var srcArchive = datLibrary.getArchive(srcKey)
+    return pda.exportArchiveToFilesystem({
+      srcArchive,
+      srcPath,
+      dstPath,
+      overwriteExisting: true,
+      skipUndownloadedFiles: true
+    })
   }
 
   // start the server

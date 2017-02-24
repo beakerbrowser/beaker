@@ -9,11 +9,12 @@ import concat from 'concat-stream'
 import pump from 'pump'
 import Events from 'events'
 import datEncoding from 'dat-encoding'
+import {InvalidArchiveKeyError} from 'beaker-error-constants'
 import { cbPromise } from '../../lib/functions'
 import { setupLevelDB, makeTxLock } from '../../lib/bg/db'
 import { transform, noopWritable } from '../../lib/streams'
-import { DAT_HASH_REGEX, InvalidOperationError, InvalidArchiveKeyError } from '../../lib/const'
-import { getOrLoadArchive } from '../networks/dat/dat'
+import { DAT_HASH_REGEX } from '../../lib/const'
+import { getOrLoadArchive } from '../networks/dat/library'
 
 // globals
 // =
@@ -108,7 +109,9 @@ class QueryArchiveUserSettingsTransform extends Transform {
         if (query.isOwner === true && meta.isOwner === false) return cb()
 
         // done
-        meta.userSettings = value
+        meta.userSettings = {
+          isSaved: value.isSaved
+        }
         cb(null, meta)
       },
       err => cb(err)
@@ -188,8 +191,8 @@ export function setArchiveMeta (key, value = {}) {
 
   return setupPromise.then(() => cbPromise(cb => {
     // extract the desired values
-    var { title, description, author, version, forkOf, createdBy, mtime, size, isOwner } = value
-    value = { title, description, author, version, forkOf, createdBy, mtime, size, isOwner }
+    var { title, description, author, forkOf, createdBy, mtime, size, isOwner } = value
+    value = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
 
     // write
     archiveMetaDb.put(key, value, err => {
@@ -231,7 +234,6 @@ function archiveMetaObject (key, obj) {
     title: '',
     description: '',
     author: '',
-    version: '',
     createdBy: null,
     forkOf: [],
     mtime: 0,

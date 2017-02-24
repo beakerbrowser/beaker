@@ -1,5 +1,5 @@
 import prettyBytes from 'pretty-bytes'
-import { pluralize, makeSafe } from '../../../lib/strings'
+import {pluralize, makeSafe} from '../../../lib/strings'
 import {listFiles} from 'pauls-dat-api'
 
 const styles = `<style>

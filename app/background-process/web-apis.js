@@ -1,18 +1,29 @@
 import { ipcMain } from 'electron'
+import rpc from 'pauls-electron-rpc'
 import beakerBrowser from '../lib/api-manifests/internal/browser'
 import beakerBookmarks from '../lib/api-manifests/internal/bookmarks'
 import beakerDownloads from '../lib/api-manifests/internal/downloads'
 import beakerHistory from '../lib/api-manifests/internal/history'
 import beakerSitedata from '../lib/api-manifests/internal/sitedata'
-import datInternalAPI from '../lib/api-manifests/internal/dat-internal'
-import dat from '../lib/api-manifests/external/dat'
+
+import libraryManifest from '../lib/api-manifests/external/library'
+import datArchiveManifest from '../lib/api-manifests/external/dat-archive'
+
+import libraryAPI from './web-apis/library'
+import datArchiveAPI from './web-apis/dat-archive'
 
 // exported api
 // =
 
 export function setup () {
+
+  // wire up RPC
+  rpc.exportAPI('library', libraryManifest, libraryAPI)
+  rpc.exportAPI('dat-archive', datArchiveManifest, datArchiveAPI)
+
   // register a message-handler for setting up the client
   // - see lib/fg/import-web-apis.js
+  // TODO remove this
   ipcMain.on('get-web-api-manifests', (event, scheme) => {
     var protos
 
@@ -23,21 +34,12 @@ export function setup () {
         beakerBookmarks,
         beakerDownloads,
         beakerHistory,
-        beakerSitedata,
-        datInternalAPI,
-        dat
+        beakerSitedata
       }
       event.returnValue = protos
       return
     }
 
-    protos = {}
-
-    // include dat api in dat:// sites
-    if (scheme === 'dat:') {
-      protos = {dat}
-    }
-
-    event.returnValue = protos
+    event.returnValue = {}
   })
 }

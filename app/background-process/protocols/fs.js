@@ -7,8 +7,8 @@ import listenRandomPort from 'listen-random-port'
 import Unixfs from 'ipfs-unixfs'
 var debug = require('debug')('ipfs')
 
-import { ProtocolSetupError } from '../../lib/const'
-import { makeSafe } from '../../lib/strings'
+import {ProtocolSetupError} from 'beaker-error-constants'
+import {makeSafe} from '../../lib/strings'
 
 import renderDirectoryListingPage from '../networks/ipfs/directory-listing-page'
 import * as ipfs from '../networks/ipfs/ipfs'

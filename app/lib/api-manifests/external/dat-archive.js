@@ -1,9 +1,10 @@
 export default {
-  createArchive: 'sync',
-  forkArchive: 'sync',
+  createArchive: 'promise',
+  forkArchive: 'promise',
+  loadArchive: 'promise',
 
   getInfo: 'promise',
-  setInfo: 'promise',
+  updateManifest: 'promise',
 
   stat: 'promise',
   readFile: 'promise',
@@ -20,5 +21,7 @@ export default {
 
   importFromFilesystem: 'promise',
   exportToFilesystem: 'promise',
-  exportToArchive: 'promise'
+  exportToArchive: 'promise',
+
+  resolveName: 'promise'
 }
