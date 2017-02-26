@@ -1,4 +1,5 @@
 @import "../base/spacing.less";
+@import "../base/colors.less";
 @import "./inputs.less";
 
 .modal-wrapper {
@@ -16,58 +17,42 @@
 }
 
 .modal {
-  position: fixed;
-  left: 20%;
-  width: 60%;
-  top: 5%;
+  padding: @padding-component;
+  margin: 100px auto 0 auto;
+  width: 500px;
   background: #fff;
   border-radius: 2px;
-  font-size: 15px;
 
-  h2 {
+  .title {
+    font-size: 22px;
+    border-bottom: 1px solid @border-menu;
+    padding-bottom: @padding-component--tight;
+  }
+
+  .help-text {
     margin: 0;
-    padding: 5px 20px;
-    border-bottom: 1px solid #bbb;
-    color: #555;
+    padding: @padding-component--tight 0;
+    color: @color-text--muted;
+    font-style: italic;
   }
 
-  input, textarea {
-    border-color: #bbb;
+  form {
+    padding-top: @padding-component--tight;
   }
 
-  .modal-section {
-    padding: 20px;
+  form input {
+    display: block;
+    width: 100%;
+    margin: 5px 0 15px 0;
   }
 
-  .modal-footer {
-    padding: 10px;
-    background: #eee;
-    text-align: center;
-    color: #555;
-    border-top: 1px solid #ccc;
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
+  form label {
+    margin: 5px 0;
+    font-weight: bold;
   }
 
-  .modal-close-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    line-height: 17px;
-    padding: 1px 5px 0 6px;
-    background: #808080;
-    border-radius: 2px;
-    font-size: 17px;
-    color: #fff;
-    cursor: pointer;
-
-    .icon {
-      cursor: pointer;
-    }
-
-    &:hover {
-      background: #555;
-    }
+  .form-actions {
+    text-align: right;
   }
 
   .fork-dat-progress {
