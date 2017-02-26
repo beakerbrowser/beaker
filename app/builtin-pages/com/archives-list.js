@@ -15,11 +15,15 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
     // render
     let title = archive.title || 'Untitled'
     let activeCls = (archive.key === selectedArchiveKey) ? 'active' : ''
-    return yo`<div class="ll-row ${activeCls}">
-      <a class="ll-link" href=${'beaker:library/'+archive.key} onclick=${pushUrl} title=${title}>
-        <span class="ll-title">${title}</span>
-      </a>
-    </div>`
+    let iconCls = (archive.key === selectedArchiveKey) ? 'fa-folder-open-o' : 'fa-folder-o'
+
+    return yo`
+      <li class="archives-item ${activeCls}">
+        <a href=${'beaker:library/'+archive.key} onclick=${pushUrl} title=${title}>
+          <i class="fa ${iconCls}"></i>
+          ${title}
+        </a>
+      </li>`
   })
 
   // if empty
