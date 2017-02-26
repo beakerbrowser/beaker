@@ -5,7 +5,9 @@ export function pushUrl (e) {
   if (e.metaKey)
     return
 
-  var url = findParent(e.target, el => el.tagName === 'A').getAttribute('href')
+  var el = findParent(e.target, el => el.tagName === 'A')
+  var url = el.getAttribute('href') || el.dataset.href
+
   if (url) {
     e.preventDefault()
     e.stopPropagation()
