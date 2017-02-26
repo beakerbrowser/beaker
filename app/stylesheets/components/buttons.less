@@ -12,6 +12,10 @@
   height: 25px;
   padding: 0 8px;
 
+  * {
+    cursor: pointer;
+  }
+
   &.pressed,
   &:hover {
     text-decoration: none;
@@ -51,6 +55,12 @@
   &:hover {
     background: shade(@background-button--success, 8%);
   }
+}
+
+.btn.transparent {
+  border: 1px solid shade(#fff, 20%);
+  background: none;
+  font-weight: 400;
 }
 
 .btn-primary {
