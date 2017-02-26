@@ -1,4 +1,6 @@
 @import "../base/colors.less";
+@import "../utils/flex";
+@import "../utils/decorators.less";
 
 .btn {
   display: inline-block;
@@ -157,3 +159,14 @@
   }
 }
 
+.btn-bar {
+  &:extend(.flex);
+
+  .btn {
+    border-radius: 0;
+
+    &:not(:first-child) {
+      border-left: 0;
+    }
+  }
+}
