@@ -18,9 +18,6 @@ export function create (values, { title, onSubmit }) {
           </div>
         </form>
       </div>
-      <div class="modal-footer">
-        Use Dat Archives to share Sites and Files. <a href="https://beakerbrowser.com/docs/index.html" target="_blank">Learn More</a>
-      </div>
     </div>`
 
     function onsubmit (e) {
