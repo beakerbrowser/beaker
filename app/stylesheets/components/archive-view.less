@@ -1,0 +1,23 @@
+@import "./files-list.less";
+@import "./archive-metadata.less";
+@import "./archive-toolbar.less";
+
+.archive-view {
+  width: 650px;
+  margin-left: 200px;
+  padding: @padding-builtin-page @padding-component;
+
+  .title {
+   margin-top: 0;
+   font-size: 20px;
+  }
+
+  .dat-url {
+    &:extend(.link);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+

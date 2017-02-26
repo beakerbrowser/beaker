@@ -1,0 +1,24 @@
+@import "../utils/flex";
+@import "../base/spacing";
+@import "../components/messages";
+
+.archive-metadata {
+  &:extend(.flex);
+  justify-content: space-between;
+  padding: @padding-component--tight;
+  margin: @margin-component 0;
+  border: 1px solid @border-menu;
+  border-radius: 2px;
+
+  i {
+    margin-right: @margin-icon;
+  }
+
+
+  .history
+
+    a:hover {
+      cursor: pointer;
+      text-decoration: underline;
+  }
+}
