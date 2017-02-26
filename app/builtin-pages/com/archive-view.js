@@ -1,17 +1,18 @@
 import * as yo from 'yo-yo'
 import { createArchiveFlow, editArchiveFlow } from '../com/modals/edit-site'
 import { forkArchiveFlow } from '../com/modals/fork-dat'
-import { archiveAbout } from '../com/archive-about'
 import { archiveFiles, onClickSelectFiles } from '../com/archive-files'
 import { archiveHistory } from '../com/archive-history'
 import { writeToClipboard } from '../../lib/fg/event-handlers'
+import prettyBytes from 'pretty-bytes'
+import { niceDate } from '../../lib/time'
 
 // globals
 // =
 
-var currentView = 'about'
-if (window.location.hash === '#files') {
-  currentView = 'files'
+var currentView = 'files'
+if (window.location.hash === '#history') {
+  currentView = 'history'
 }
 
 // exported api
@@ -77,18 +78,17 @@ function renderArchive (archive, opts) {
         <a href=${'dat://'+archive.info.key} title=${archive.niceName}>${archive.niceName}</a>
       </h2>
 
-      <a href=${'dat://' + archive.info.key} title=${archive.niceName} class="dat-url">
-        dat://${archive.info.key}
-      </a>
-      <button class="btn" aria-label="Copy to clipboard" onclick=${writeToClipboard('dat://' + archive.info.key)}>
-        <i class="fa fa-clipboard"></i>
-      </button>
-      <a href=${archive.info.key} target="_blank" class="btn">
-        <i class="fa fa-external-link"></i>
-      </a>
+      <p class="archive-desc">
+        ${rDescription(archive)}
+        ${rEditBtn(archive)}
+        ${rForkBtn(archive)}
+        ${rSaveBtn(archive)}
+        ${rReadOnly(archive)}
+      </p>
 
-        <p class="archive-desc">${rDescription(archive)}<br />${rEditBtn(archive)} ${rForkBtn(archive)} ${rSaveBtn(archive)} ${rReadOnly(archive)}</p>
-      ${rSubnav(archive)}
+      ${rMetadata(archive)}
+      ${rToolbar(archive)}
+
       ${rView(archive)}
       <div class="archive-tip">
         <div>Tip: click the <span class="icon icon-flash"></span> in the site${"'"}s URL bar to turn on live-reloading. Great for development!</div>
@@ -104,11 +104,53 @@ function rDescription (archive) {
     : yo`<em>no description</em>`
 }
 
+function rMetadata (archive) {
+  return yo`
+    <div class="archive-metadata">
+     <div class="history">
+        <i class="fa fa-history"></i>
+        <a onclick=${() => setCurrentView('history')}>Updated ${niceDate(archive.info.mtime)}</a>
+      </div>
+      <div class="size">
+        <i class="fa fa-info-circle"></i>
+        <span>
+          ${prettyBytes(archive.info.size)}
+        </span>
+        <span>
+          (${prettyBytes(archive.info.metaSize)} metadata)
+        </span>
+      </div>
+    </div>`
+}
+
 function rEditBtn (archive) {
   if (archive.info.isOwner) {
     return yo`<a onclick=${() => editArchiveFlow(archive)}><span class="icon icon-pencil"></span> Edit</a>`
   }
   return yo`<span class="disabled-a"><span class="icon icon-pencil"></span> Edit</span>`
+}
+
+function rToolbar (archive) {
+  if (archive.info.isOwner) {
+    return yo`
+      <div class="archive-toolbar">
+        <a class="history-link" onclick=${() => setCurrentView('history')}>View history</a>
+        <div class="btn-bar">
+          <button class="btn" onclick=${writeToClipboard('dat://' + archive.info.key)}>
+            <i class="fa fa-clipboard"></i>
+            Copy URL
+          </button>
+          <button class="btn" href=${'dat://' + archive.info.key} title=${archive.niceName}>
+            <i class="fa fa-external-link"></i>
+            Open URL
+          </button>
+          <button class="btn">
+            <i class="fa fa-upload"></i>
+            Upload files
+          </button>
+        </div>
+      </div>`
+  }
 }
 
 function rForkBtn (archive) {
@@ -137,7 +179,6 @@ function rSubnav (archive) {
     return yo`<a class=${cls} onclick=${() => setCurrentView(name)}>${label}</a>`
   }
   return yo`<div class="archive-subnav">
-    ${item('about', 'About')}
     ${item('files', 'Files')}
     ${item('history', 'History')}
   </div>`
@@ -145,7 +186,6 @@ function rSubnav (archive) {
 
 function rView (archive) {
   switch (currentView) {
-  case 'about': return archiveAbout(archive)
   case 'files': return archiveFiles(archive)
   case 'history': return archiveHistory(archive)
   }
