@@ -32,18 +32,27 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
   }
 
   // render all
-  return yo`<div class="links-list archives-list">
-    <div class="flex">
-      <input type="text" placeholder="Filter" onkeyup=${onChangeFilter} value=${currentFilter||''} />
-      <button class="btn btn-green" onclick=${createArchiveFlow}>New</button>
-    </div>
-    <div><strong>Websites</strong></div>
-    ${archiveEls}
-  </div>`
+  return yo`
+    <div class="archives-sidebar">
+      <div class="archives-sidebar-tools">
+        <input type="text" placeholder="Search" onkeyup=${onChangeFilter} value=${currentFilter||''} class="search"/>
+        <button onclick=${createArchiveFlow} class="new" aria-label="Create new archive">
+          <i class="fa fa-plus"></i>
+        </button>
+      </div>
+
+      <ul class="archives-list">
+       ${archiveEls}
+     </ul>
+    </div>`
 }
 
+// TODO: put the magic wand icon next to this link. -tbv
 function renderEmpty () {
-  return yo`<div class="archives-list-empty">
-    You dont have any sites saved yet.
-  </div>`
+  return yo`
+    <div class="archives-list empty">
+      <p>
+        You don't have any sites in your library. Get started by <a onclick=${createArchiveFlow}>creating your own site.</a>
+      </p>
+    </div>`
 }
