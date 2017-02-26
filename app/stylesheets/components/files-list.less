@@ -1,0 +1,45 @@
+@import "../base/spacing";
+@import "../utils/flex";
+@import "../components/link";
+
+.files-list {
+  border: 1px solid @border-menu;
+  border-radius: 2px;
+  margin: @margin-component 0;
+}
+
+.files-list-item {
+  &:extend(.flex);
+  padding: calc(@padding-component--tight/2) @padding-component--tight;
+
+  &:not(:first-child) {
+    border-top: 1px solid @border-menu;
+  }
+
+  .name {
+
+    i {
+      margin-right: @margin-icon;
+    }
+
+    span {
+      &:extend(.link);
+
+      &:hover {
+        &:extend(.link:hover);
+      }
+    }
+  }
+
+  .size, .updated {
+    color: @color-text--muted;
+  }
+
+  .size {
+    margin: 0 @margin-icon;
+  }
+
+  .updated {
+    margin-left: auto; // right align the .updated element
+  }
+}
