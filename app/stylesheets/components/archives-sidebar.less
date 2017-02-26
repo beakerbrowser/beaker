@@ -26,4 +26,18 @@
   button.new, .search {
     display: inline-block;
   }
+
+  button.new {
+    float: right;
+    height: 100%;
+
+    &:hover {
+      color: @color-text--muted;
+    }
+
+    i {
+      cursor: pointer;
+      text-align: right;
+    }
+  }
 }
