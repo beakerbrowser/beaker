@@ -9,7 +9,9 @@
 @pink: rgb(255, 45, 85);
 
 @color-text: #333;
-@color-link: #0062ff;
+@color-text--muted: tint(@color-text, 30%);
+@color-text--light: tint(@color-text, 40%);
+@color-link: desaturate(@blue, 30%);
 
 // Buttons
 @color-button: tint(@color-text, 20%);
