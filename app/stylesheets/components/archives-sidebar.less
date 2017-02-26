@@ -1,0 +1,29 @@
+@import "../base/spacing";
+@import "../base/colors";
+
+.archives-sidebar {
+  position: fixed;
+  top: 0;
+  width: 200px;
+  height: 100%;
+  border-right: 1px solid @border-menu;
+  overflow-y: scroll;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.archives-sidebar-tools {
+  position: fixed;
+  top: 0;
+  width: 200px;
+  height: 60px;
+  border-bottom: 1px solid @border-menu;
+  border-right: 1px solid @border-menu;
+  padding: @padding-builtin-page;
+
+  button.new, .search {
+    display: inline-block;
+  }
+}
