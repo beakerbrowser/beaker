@@ -26,27 +26,30 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
       }
     }
 
-    return yo`<div class="fork-dat-modal">
-      <h2>Fork Archive</h2>
-      <div class="modal-section">
+    return yo`
+      <div class="fork-dat-modal">
+        <h2 class="title">Fork archive</h2>
+        <p class="help-text">
+          Create a copy of this archive and save it to your library
+        </p>
+
         <form onsubmit=${_onSubmit}>
-          <div class="form-group">
-            <input name="title" class="form-control" tabindex="1" value=${title} placeholder="New Name" onchange=${onChangeTitle} />
-          </div>
-          <div class="form-group">
-            <input name="desc" class="form-control" tabindex="2" value=${description} placeholder="New Description" onchange=${onChangeDescription} />
-          </div>
+          <label for="title">Title</label>
+          <input name="title" tabindex="1" value=${title} placeholder="New Name" onchange=${onChangeTitle} />
+
+          <label for="desc">Description</label>
+          <input name="desc" tabindex="2" value=${description} placeholder="New Description" onchange=${onChangeDescription} />
+
           ${progressEl}
           <div class="form-actions">
+            <button class="btn">Cancel</button>
             ${downloadBtn}
-            <button type="submit" class="btn" tabindex="3"><span class="icon icon-flow-branch"></span> Fork${isIncomplete ? ' Anyway' : ''}</button>
+            <button type="submit" class="btn success" tabindex="3">
+              Create fork ${isIncomplete ? ' anyway' : ''}
+            </button>
           </div>
         </form>
-      </div>
-      <div class="modal-footer">
-        Forking will create a new site with the content of the old site.
-      </div>
-    </div>`
+      </div>`
 
     function onChangeTitle (e) {
       title = e.target.value
