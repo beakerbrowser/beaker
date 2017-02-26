@@ -1,0 +1,25 @@
+@import "../base/spacing";
+@import "../components/link";
+@import "../utils/flex";
+
+.archive-toolbar {
+  &:extend(.flex);
+  height: 25px;
+
+  .btn-bar {
+    margin-left: auto; // pull buttons to the right
+  }
+
+  .history-link {
+    align-self: flex-end; // pull to the bottom of .archive-toolbar element
+    &:extend(.link);
+
+    &:hover {
+      &:extend(.link:hover);
+    }
+  }
+
+  i {
+    margin-right: @margin-icon;
+  }
+}
