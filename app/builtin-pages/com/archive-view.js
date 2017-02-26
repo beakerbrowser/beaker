@@ -4,6 +4,7 @@ import { forkArchiveFlow } from '../com/modals/fork-dat'
 import { archiveAbout } from '../com/archive-about'
 import { archiveFiles, onClickSelectFiles } from '../com/archive-files'
 import { archiveHistory } from '../com/archive-history'
+import { writeToClipboard } from '../../lib/fg/event-handlers'
 
 // globals
 // =
@@ -72,10 +73,21 @@ function renderLoading () {
 function renderArchive (archive, opts) {
   return yo`
     <div class="archive-view">
-      <div class="archive-header">
-        <h2><a href=${'dat://'+archive.info.key} title=${archive.niceName}>${archive.niceName}</a></h2>
+      <h2 class="title">
+        <a href=${'dat://'+archive.info.key} title=${archive.niceName}>${archive.niceName}</a>
+      </h2>
+
+      <a href=${'dat://' + archive.info.key} title=${archive.niceName} class="dat-url">
+        dat://${archive.info.key}
+      </a>
+      <button class="btn" aria-label="Copy to clipboard" onclick=${writeToClipboard('dat://' + archive.info.key)}>
+        <i class="fa fa-clipboard"></i>
+      </button>
+      <a href=${archive.info.key} target="_blank" class="btn">
+        <i class="fa fa-external-link"></i>
+      </a>
+
         <p class="archive-desc">${rDescription(archive)}<br />${rEditBtn(archive)} ${rForkBtn(archive)} ${rSaveBtn(archive)} ${rReadOnly(archive)}</p>
-      </div>
       ${rSubnav(archive)}
       ${rView(archive)}
       <div class="archive-tip">
