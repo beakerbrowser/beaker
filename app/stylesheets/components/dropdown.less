@@ -1,0 +1,41 @@
+@import "../base/spacing";
+@import "../utils/decorators";
+
+.dropdown {
+  position: relative;
+
+  i {
+    cursor: pointer;
+  }
+}
+
+.dropdown-items {
+  width: 170px;
+  opacity: 0;
+  position: absolute;
+  right: -1000px;
+  &:extend(.shadow);
+  background: #fff;
+  border-radius: 2px;
+  overflow: hidden;
+
+  &.visible {
+    opacity: 1;
+    right: 0;
+    z-index: 3;
+  }
+
+  li {
+    padding: 0 @padding-component--tight;
+    cursor: pointer;
+
+    a {
+      cursor: pointer;
+    }
+
+    &:hover {
+      background: @color-link;
+      color: #fff;
+    }
+  }
+}
