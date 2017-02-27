@@ -138,15 +138,15 @@ function rToolbar (archive) {
         <div class="btn-bar">
           <button class="btn" onclick=${writeToClipboard('dat://' + archive.info.key)}>
             <i class="fa fa-clipboard"></i>
-            Copy URL
+            <span>Copy URL</span>
           </button>
-          <button class="btn" href=${'dat://' + archive.info.key} title=${archive.niceName}>
+          <a class="btn" href=${'dat://' + archive.info.key} target="_blank">
             <i class="fa fa-external-link"></i>
-            Open URL
-          </button>
+            <span>Open</span>
+          </a>
           <button class="btn">
-            <i class="fa fa-upload"></i>
-            Upload files
+            <i class="fa fa-plus"></i>
+            <span>Add files</span>
           </button>
         </div>
       </div>`
