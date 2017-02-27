@@ -10,30 +10,29 @@ export function archiveHistory ({ info }) {
     var mtime = c.mtime ? niceDate(c.mtime) : ''
     switch (c.type) {
       case 'file':
-        row = yo`<div class="ll-row">
-          <span class="ll-link" title=${c.name}>
-            <span class="favicon icon icon-plus-squared"></span>
-            <span class="ll-title">/${c.path}</span>
-          </span>
-          <span class="ll-updated" title=${mtime}>${mtime}</span>
-          <span class="ll-progress">${prettyBytes(c.length||0)}</span>
-        </div>`
+        row = yo`
+          <li class="history-item">
+            <i class="favicon fa fa-plus-square"></i>
+            <span class="title">/${c.path}</span>
+            <span class="updated" title=${mtime}>${mtime}</span>
+            <span class="progress">${prettyBytes(c.length||0)}</span>
+          </li>`
         break
       case 'directory':
-        row = yo`<div class="ll-row">
-          <span class="ll-link" title=${c.name}>
-            <span class="favicon icon icon-plus-squared"></span>
-            <span class="ll-title">/${c.path || ''}</span>
-          </span>
-          <span class="ll-updated" title=${mtime}>${mtime}</span>
-          <span class="ll-progress"></span>
-        </div>`
+        row = yo`
+          <li class="history-item">
+            <i class="fa fa-plus-square"></i>
+            <span class="title">/${c.path || ''}</span>
+            <span class="updated" title=${mtime}>${mtime}</span>
+            <span class="progress"></span>
+          </li>`
         break
     }
     rowEls.push(row)
   })
 
-  return yo`<div class="archive-history">
-    <div class="links-list">${rowEls}</div>
-  </div>`
+  return yo`
+    <ul class="archive-history">
+      ${rowEls}
+    </ul>`
 }
