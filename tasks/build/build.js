@@ -45,7 +45,7 @@ gulp.task('burnthemall-maybe', burnthemallMaybeTask)
 var bundleApplication = function () {
   return Q.all([
     bundle(srcDir.path('background-process.js'), srcDir.path('background-process.build.js')),
-    bundle(srcDir.path('webview-preload.js'), srcDir.path('webview-preload.build.js')),
+    bundle(srcDir.path('webview-preload.js'), srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(srcDir.path('shell-window.js'), srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(srcDir.path('builtin-pages/downloads.js'), srcDir.path('builtin-pages/downloads.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
     bundle(srcDir.path('builtin-pages/library.js'), srcDir.path('builtin-pages/library.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
