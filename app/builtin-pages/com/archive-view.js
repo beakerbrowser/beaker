@@ -74,15 +74,16 @@ function renderLoading () {
 function renderArchive (archive, opts) {
   return yo`
     <div class="archive-view">
-      <h2 class="title">
-        <a href=${'dat://'+archive.info.key} title=${archive.niceName}>${archive.niceName}</a>
-      </h2>
+      <div class="archive-view-header">
+        <h2 class="title">
+          <a href=${'dat://'+archive.info.key} title=${archive.niceName}>${archive.niceName}</a>
+        </h2>
+
+        ${rMenu(archive)}
+      </div>
 
       <p class="archive-desc">
         ${rDescription(archive)}
-        ${rEditBtn(archive)}
-        ${rForkBtn(archive)}
-        ${rSaveBtn(archive)}
         ${rReadOnly(archive)}
       </p>
 
@@ -125,9 +126,13 @@ function rMetadata (archive) {
 
 function rEditBtn (archive) {
   if (archive.info.isOwner) {
-    return yo`<a onclick=${() => editArchiveFlow(archive)}><span class="icon icon-pencil"></span> Edit</a>`
+    return yo`
+      <a class="edit" onclick=${() => editArchiveFlow(archive)}>
+        <i class="fa fa-pencil"></i>
+        Edit
+      </a>`
   }
-  return yo`<span class="disabled-a"><span class="icon icon-pencil"></span> Edit</span>`
+  return ''
 }
 
 function rToolbar (archive) {
@@ -154,18 +159,26 @@ function rToolbar (archive) {
 }
 
 function rForkBtn (archive) {
-  return yo`<a onclick=${() => forkArchiveFlow(archive)}><span class="icon icon-flow-branch"></span> Fork</a>`
+  return yo`
+    <a onclick=${() => forkArchiveFlow(archive)}>
+      <i class="fa fa-code-fork"></i>
+      Fork
+    </a>`
 }
 
 function rSaveBtn (archive) {
   if (archive.isSaved) {
-    return yo`<a onclick=${() => archive.toggleSaved()}>
-      <span class="icon icon-trash"></span> Delete
-    </a>`
+    return yo`
+      <a onclick=${() => archive.toggleSaved()}>
+        <i class="fa fa-trash"></i>
+        Remove from library
+      </a>`
   }
-  return yo`<a onclick=${() => archive.toggleSaved()}>
-    <span class="icon icon-floppy"></span> Save
-  </a>`
+  return yo`
+    <button onclick=${() => archive.toggleSaved()}>
+      <i class="fa fa-save"></i>
+      Save to library
+    </button>`
 }
 
 function rReadOnly (archive) {
@@ -191,10 +204,34 @@ function rView (archive) {
   }
 }
 
+function rMenu (archive) {
+  return yo`
+    <div class="archive-view-menu dropdown">
+      <button onclick=${toggleMenu}>
+        <i class="fa fa-chevron-down"></i>
+      </button>
+      ${rMenuItems(archive)}
+   </div>`
+}
+
+function rMenuItems (archive) {
+  return yo`
+    <ul class="dropdown-items">
+      <li>${rEditBtn(archive)}</li>
+      <li>${rForkBtn(archive)}</li>
+      <li>${rSaveBtn(archive)}</li>
+    </ul>`
+}
+
 // event handlers
 // =
 
 function setCurrentView (view) {
   currentView = view
   window.dispatchEvent(new Event('render'))
+}
+
+function toggleMenu () {
+  var el = document.querySelector('.dropdown-items')
+  el.classList.toggle('visible')
 }
