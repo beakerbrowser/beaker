@@ -219,6 +219,12 @@ function datServer (req, res) {
         // still serving?
         if (aborted) return cleanup()
 
+        // caching if-match
+        const ETag = 'block-' + entry.content.blockOffset
+        if (req.headers['if-none-match'] === ETag) {
+          return cb(304, 'Not Modified')
+        }
+
         // not found
         if (!entry) {
           debug('Entry not found:', urlp.path)
@@ -253,7 +259,9 @@ function datServer (req, res) {
               var headers = {
                 'Content-Type': mimeType,
                 'Content-Security-Policy': CUSTOM_DAT_CSP(origins),
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': '*',
+                'Cache-Control': 'public, max-age: 60',
+                ETag
               }
               if (entry.length) headers['Content-Length'] = entry.length
               res.writeHead(200, 'OK', headers)
