@@ -3,23 +3,10 @@
 @import "./archive-toolbar.less";
 @import "./archive-header.less";
 @import "./archive-menu.less";
+@improt "./archive-history.less";
 
 .archive-view {
   width: 650px;
   margin-left: 200px;
   padding: @padding-builtin-page @padding-component--wide;
-
-  .title {
-   margin-top: 0;
-   font-size: 20px;
-  }
-
-  .dat-url {
-    &:extend(.link);
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
 }
-
