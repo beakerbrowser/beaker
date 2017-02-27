@@ -15,7 +15,7 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
     // render
     let title = archive.title || 'Untitled'
     let activeCls = (archive.key === selectedArchiveKey) ? 'active' : ''
-    let iconCls = (archive.key === selectedArchiveKey) ? 'fa-folder-open-o' : 'fa-folder-o'
+    let iconCls = (archive.key === selectedArchiveKey) ? 'fa-folder-open' : 'fa-folder-o'
 
     return yo`
       <li class="archives-item ${activeCls}">
