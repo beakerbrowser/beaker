@@ -1,3 +1,4 @@
+import {getAll as getAllPages} from '../pages'
 import * as navbar from '../ui/navbar'
 
 const ZOOM_STEP = 0.5
@@ -10,8 +11,9 @@ export function setZoomFromSitedata (page) {
   beakerSitedata.get(origin, 'zoom').then(v => {
     if (typeof v != 'undefined') {
       page.zoom = +v
-      page.webviewEl.getWebContents().setZoomLevel(page.zoom)
       navbar.update(page)
+      var wc = page.webviewEl.getWebContents()
+      wc.setZoomLevel(page.zoom)
     }
   })
 }
@@ -31,6 +33,13 @@ export function setZoom(page, z) {
   if (!origin)
     return
   beakerSitedata.set(origin, 'zoom', page.zoom)
+
+  // update all pages at the origin
+  getAllPages().forEach(p => {
+    if (p !== page && p.getURLOrigin() === origin) {
+      p.zoom = z
+    }
+  })
 }
 
 export function zoomIn (page) {
