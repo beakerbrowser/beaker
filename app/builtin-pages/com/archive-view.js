@@ -136,10 +136,12 @@ function rEditBtn (archive) {
 }
 
 function rToolbar (archive) {
+  var inactiveView = currentView === 'files' ? 'history' : 'files'
+
   if (archive.info.isOwner) {
     return yo`
       <div class="archive-toolbar">
-        <a class="history-link" onclick=${() => setCurrentView('history')}>View history</a>
+        <a class="view-link" onclick=${() => setCurrentView(inactiveView)}>View ${inactiveView}</a>
         <div class="btn-bar">
           <button class="btn" onclick=${writeToClipboard('dat://' + archive.info.key)}>
             <i class="fa fa-clipboard"></i>
