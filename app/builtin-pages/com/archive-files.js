@@ -129,7 +129,7 @@ export function archiveFiles (archive) {
 
   if (files.length) {
     return yo`
-      <ul class="files-list ${files.length === 0 ? 'empty' : ''}">
+      <ul class="files-list">
         ${files}
       </ul>`
   }
