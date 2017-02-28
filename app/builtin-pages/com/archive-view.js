@@ -174,10 +174,10 @@ function rSaveBtn (archive) {
       </a>`
   }
   return yo`
-    <button onclick=${() => archive.toggleSaved()}>
+    <a onclick=${() => archive.toggleSaved()}>
       <i class="fa fa-save"></i>
       Save to library
-    </button>`
+    </a>`
 }
 
 function rReadOnly (archive) {
