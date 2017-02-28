@@ -207,7 +207,7 @@ function rView (archive) {
 function rMenu (archive) {
   return yo`
     <div class="archive-view-menu dropdown">
-      <button onclick=${toggleMenu}>
+      <button onclick=${showMenu}>
         <i class="fa fa-chevron-down"></i>
       </button>
       ${rMenuItems(archive)}
@@ -231,7 +231,19 @@ function setCurrentView (view) {
   window.dispatchEvent(new Event('render'))
 }
 
-function toggleMenu () {
+function showMenu () {
   var el = document.querySelector('.dropdown-items')
-  el.classList.toggle('visible')
+  document.querySelector('.dropdown-items').classList.add('visible')
+  document.querySelector('.dropdown').addEventListener('click', e => e.stopPropagation())
+  document.body.addEventListener('click', hideMenu)
+}
+
+function hideMenu () {
+  document.querySelector('.dropdown-items').classList.remove('visible')
+  document.querySelector('.dropdown').removeEventListener('click', e => e.stopPropagation())
+  document.body.removeEventListener('click', hideMenu)
+}
+
+function closeMenu () {
+  // document.body.removeEventListener('keydown')
 }
