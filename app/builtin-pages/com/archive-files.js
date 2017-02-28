@@ -118,11 +118,8 @@ export function archiveFiles (archive) {
   // render
   const toObj = key => tree.children[key]
   var files = (tree.children)
-    ? Object.keys(tree.children).map(toObj).sort(treeSorter).map(child => renderNode(child))
+    ? Object.keys(tree.children).map(toObj).sort(treeSorter).map(child => renderNode(child)).filter(Boolean)
     : []
-
-  // TODO: temporary fix -tbv
-  if (files[0] === "") files = []
 
   if (tree.parent)
     files.unshift(renderParent())
