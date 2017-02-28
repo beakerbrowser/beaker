@@ -1,7 +1,8 @@
 import * as yo from 'yo-yo'
+import co from 'co'
 import { createArchiveFlow, editArchiveFlow } from '../com/modals/edit-site'
 import { forkArchiveFlow } from '../com/modals/fork-dat'
-import { archiveFiles, onClickSelectFiles } from '../com/archive-files'
+import { archiveFiles, onClickSelectFiles, addFiles } from '../com/archive-files'
 import { archiveHistory } from '../com/archive-history'
 import { writeToClipboard } from '../../lib/fg/event-handlers'
 import prettyBytes from 'pretty-bytes'
@@ -151,7 +152,7 @@ function rToolbar (archive) {
             <i class="fa fa-external-link"></i>
             <span>Open</span>
           </a>
-          <button class="btn">
+          <button class="btn" onclick=${() => onClickSelectFiles(archive)}>
             <i class="fa fa-plus"></i>
             <span>Add files</span>
           </button>
