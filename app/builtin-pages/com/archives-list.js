@@ -15,11 +15,15 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
     // render
     let title = archive.title || 'Untitled'
     let activeCls = (archive.key === selectedArchiveKey) ? 'active' : ''
-    return yo`<div class="ll-row ${activeCls}">
-      <a class="ll-link" href=${'beaker:library/'+archive.key} onclick=${pushUrl} title=${title}>
-        <span class="ll-title">${title}</span>
-      </a>
-    </div>`
+    let iconCls = (archive.key === selectedArchiveKey) ? 'fa-folder-open' : 'fa-folder-o'
+
+    return yo`
+      <li class="archives-item ${activeCls}">
+        <a data-href=${'beaker:library/'+archive.key} onclick=${pushUrl} title=${title}>
+          <i class="fa ${iconCls}"></i>
+          ${title}
+        </a>
+      </li>`
   })
 
   // if empty
@@ -28,18 +32,27 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
   }
 
   // render all
-  return yo`<div class="links-list archives-list">
-    <div class="flex">
-      <input type="text" placeholder="Filter" onkeyup=${onChangeFilter} value=${currentFilter||''} />
-      <button class="btn btn-green" onclick=${createArchiveFlow}>New</button>
-    </div>
-    <div><strong>Websites</strong></div>
-    ${archiveEls}
-  </div>`
+  return yo`
+    <div class="archives-sidebar">
+      <div class="archives-sidebar-tools">
+        <input type="text" placeholder="Search" onkeyup=${onChangeFilter} value=${currentFilter||''} class="search"/>
+        <button onclick=${createArchiveFlow} class="new" aria-label="Create new archive">
+          <i class="fa fa-plus"></i>
+        </button>
+      </div>
+
+      <ul class="archives-list">
+       ${archiveEls}
+     </ul>
+    </div>`
 }
 
+// TODO: put the magic wand icon next to this link. -tbv
 function renderEmpty () {
-  return yo`<div class="archives-list-empty">
-    You dont have any sites saved yet.
-  </div>`
+  return yo`
+    <div class="archives-list empty">
+      <p>
+        You don't have any sites in your library. Get started by <a onclick=${createArchiveFlow}>creating your own site.</a>
+      </p>
+    </div>`
 }

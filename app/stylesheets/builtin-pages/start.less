@@ -1,46 +1,6 @@
-@import "./photon.min.less";
+@import "../photon.min.less";
 
-@import "./components/buttons.less";
-@import "./com/toolbar.less";
-@import "./com/links-list.less";
-@import "./com/files-list.less";
-@import "./com/downloads.less";
-@import "./com/spinner.less";
-@import "./com/markdown.less";
-@import "./components/modal.less";
-
-@import "./views/settings.less";
-
-@import "./vendor/shepherd-theme-arrows.less";
-
-* {
-  box-sizing: border-box;
-}
-
-.pane {
-  border: 0;
-}
-
-.muted { color: gray !important; }
-.thick { font-weight: 400 !important; }
-.thin { font-weight: 200 !important; }
-
-#el-content {
-  padding: 5px 30px 10px 20px;
-}
-
-.page-toolbar {
-  margin-top: 10px;
-  .btn {
-    padding: 0 10px;
-    font-size: 11px;
-  }
-}
-
-.notice {
-  padding: 11px;
-  color: gray;
-}
+@import "../base/reset.less";
 
 .bookmarks-wrapper {
   padding: 5px 20px;
@@ -63,8 +23,7 @@
 
 .bookmarks {
   margin: 0;
-  padding: 0 0 15px 0; // TODO: list-styles should be opt-in -tbv
-  list-style: none;
+  padding: 0 0 15px 0;
 }
 
 
@@ -112,6 +71,10 @@
       cursor: pointer;
     }
 
+    &.builtin {
+      background: fadeout(#333, 93%);
+    }
+
     &.add {
       border: 1px dashed fadeout(#333, 75%);
 
@@ -147,17 +110,14 @@
   .pin-site {
     display: block;
     background: none;
-    outline: 0;
 
     .icon::before {
-      margin-top: 10px;
-      transition: transform 0.1s;
+      margin-top: 0;
     }
 
-    &.adding {
-      .icon::before {
-        transform: rotate(45deg);
-      }
+    &[disabled]:hover {
+      background: none;
+      cursor: default;
     }
   }
 
@@ -204,7 +164,6 @@ form#add-pinned-site {
 }
 
 .bookmarks-list {
-  list-style: none;
   margin: 0;
   padding: 0;
 }
@@ -241,32 +200,6 @@ form#add-pinned-site {
   * {
     vertical-align: middle;
     cursor: pointer;
-  }
-}
-
-.alert {
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-
-  &__info {
-    color: #31708f;
-    background-color: #d9edf7;
-    border-color: #bce8f1;
-
-    a {    
-      color: #31708f;
-      text-decoration: underline;
-    }
-  }
-
-  &__release-notes {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
   }
 }
 

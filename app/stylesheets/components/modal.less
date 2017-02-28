@@ -1,0 +1,70 @@
+@import "../base/spacing.less";
+@import "../base/colors.less";
+@import "./inputs.less";
+
+.modal-wrapper {
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,.65);
+
+  &.modal-wrapper-light {
+    background: rgba(0,0,0,.15);
+  }
+}
+
+.modal {
+  padding: @padding-component;
+  margin: 100px auto 0 auto;
+  width: 500px;
+  background: #fff;
+  border-radius: 2px;
+
+  .title {
+    font-size: 22px;
+    border-bottom: 1px solid @border-menu;
+    padding-bottom: @padding-component--tight;
+  }
+
+  .help-text {
+    margin: 0;
+    padding: @padding-component--tight 0;
+    color: @color-text--muted;
+    font-style: italic;
+  }
+
+  form {
+    padding-top: @padding-component--tight;
+  }
+
+  form input {
+    display: block;
+    width: 100%;
+    margin: 5px 0 15px 0;
+  }
+
+  form label {
+    margin: 5px 0;
+    font-weight: bold;
+  }
+
+  .form-actions {
+    text-align: right;
+  }
+
+  .fork-dat-progress {
+    border: 1px solid #ddd;
+    border-left: 0;
+    border-right: 0;
+    padding: 15px 0;
+    margin: 15px 0;
+
+    progress {
+      display: block;
+      width: 100%;
+    }
+  }
+}

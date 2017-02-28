@@ -36,14 +36,22 @@ export function archiveFiles (archive) {
     // type-specific rendering
     var link
     if (entry.type == 'directory') {
-      link = yo`<a class="fl-name-link" 
+      link = yo`
+        <a class="name"
           href="beaker:library/${archiveKey}/${entry.path}"
           title=${entry.name}
-          onclick=${pushUrl}><span class="icon icon-folder"></span> ${entry.name}</a>`
+          onclick=${pushUrl}>
+          <i class="fa fa-folder-o"></i>
+          <span>${entry.name}</span>
+        </a>`
     } else {
-      link = yo`<a class="fl-name-link" 
+      link = yo`
+        <a class="name"
           href="dat://${archiveKey}/${entry.path}"
-          title=${entry.name}><span class="icon icon-doc-text"></span> ${entry.name}</a>`
+          title=${entry.name}>
+          <i class="fa fa-file-o"></i>
+          <span>${entry.name}</span>
+        </a>`
     }
 
     // download state
@@ -56,25 +64,31 @@ export function archiveFiles (archive) {
       downloadEl = yo`<div class="fl-download"><progress value=${progress} max="100"></progress></div>`
     } else {
       status = 'not-downloaded'
-    } 
+    }
 
     // render self
     let mtime = entry.mtime ? niceDate(entry.mtime) : ''
-    return yo`<div class=${`fl-row ${entry.type} ${(isDotfile?'dotfile':'')} ${status}`}>
-      ${downloadEl}
-      <div class="fl-name overflower">${link}</div>
-      <div class="fl-updated" title=${mtime}>${mtime}</div>
-      <div class="fl-size">${prettyBytes(entry.length||0)}</div>
-    </div>`
+    return yo`
+      <li class=${`files-list-item ${entry.type} ${(isDotfile?'dotfile':'')} ${status}`}>
+        ${downloadEl}
+        ${link}
+        <span class="size">(${prettyBytes(entry.length || 0)})</span>
+        <span class="updated" title=${mtime}>${mtime}</span>
+      </li>`
   }
 
   // helper to render the 'up' link
   function renderParent () {
     const entry = tree.parent.entry
-    return yo`<div class="fl-row updog">
-      <div class="fl-name overflower"><a class="fl-name-link" href="beaker:library/${archiveKey}/${entry.path}" title="Parent directory" onclick=${pushUrl}>parent</a></div>
-      <div class="fl-size"></div>
-    </div>`
+    return yo`
+      <li class="files-list-item">
+        <a class="name"
+           href="beaker:library/${archiveKey}/${entry.path}"
+           title="Parent directory"
+           onclick=${pushUrl}>
+           parent
+        </a>
+      </li>`
   }
 
   // helper to render the footer
@@ -93,26 +107,30 @@ export function archiveFiles (archive) {
 
   function renderFileAdder () {
     if (archive.info.isOwner) {
-      return yo`<div class="archive-add-files">
-        <div class="instructions">To add files, drag their icons onto this page, or <a onclick=${() => onClickSelectFiles(archive)}>Select them manually.</a></div>
-      </div>`
+      return yo`
+        <button class="button btn archive-add-files" onclick=${() => onClickSelectFiles(archive)}>
+          Upload files
+        </button>`
     }
     return ''
   }
 
   // render
   const toObj = key => tree.children[key]
-  var rows = (tree.children)
-    ? Object.keys(tree.children).map(toObj).sort(treeSorter).map(child => renderNode(child))
+  var files = (tree.children)
+    ? Object.keys(tree.children).map(toObj).sort(treeSorter).map(child => renderNode(child)).filter(Boolean)
     : []
+
   if (tree.parent)
-    rows.unshift(renderParent())
-  return yo`<div class="files-list ${rows.length===0?'empty':''}">
-    ${renderFileAdder()}
-    <div class="fl-rows">${rows}</div>
-    ${renderFooter()}
-    <input class="hidden-file-adder" type="file" multiple onchange=${onChooseFiles} />
-  </div>`
+    files.unshift(renderParent())
+
+  if (files.length) {
+    return yo`
+      <ul class="files-list">
+        ${files}
+      </ul>`
+  }
+  return yo`<p>No files.</p>`
 }
 
 function treeSorter (a, b) {

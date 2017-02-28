@@ -2,13 +2,13 @@ import * as yo from 'yo-yo'
 
 export function create (render) {
   // render the modal
-  var wrapperEl = yo`<div class="modal-wrapper">
-    <div class="modal">
-      <div class="modal-close-btn" onclick=${close}><span class="icon icon-cancel"></span></div>
-      <div class="modal-inner">${render({ close })}</div>
-    </div>
-  </div>`
-  document.body.appendChild(wrapperEl)
+  var wrapperEl = yo`
+    <div class="modal-wrapper">
+      <div class="modal">
+        <div class="modal-inner">${render({ close })}</div>
+      </div>
+    </div>`
+    document.body.appendChild(wrapperEl)
 
   // attach re-render method
   wrapperEl.rerender = createRerender(render, close).bind(wrapperEl)

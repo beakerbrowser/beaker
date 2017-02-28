@@ -92,6 +92,18 @@ function beakerServer (req, res) {
   if (requestUrl === 'beaker:icons.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/icons.css'))
   }
+  if (requestUrl === 'beaker:font-awesome.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/fonts/font-awesome/css/font-awesome.min.css'))
+  }
+  if (requestUrl === 'beaker:font-awesome-webfont.woff2?v=4.7.0') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'assets/fonts/fontawesome-webfont.woff2'))
+  }
+  if (requestUrl === 'beaker:fontawesome-webfont.woff?v=4.7.0') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'assets/fonts/fontawesome-webfont.woff'))
+  }
+  if (requestUrl === 'beaker:fontawesome-webfont.svg?v=4.7.0#fontawesomeregular') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'assets/fonts/fontawesome-webfont.svg'))
+  }
 
   // builtin pages
   if (requestUrl === 'beaker:builtin-pages.css') {
@@ -100,8 +112,14 @@ function beakerServer (req, res) {
   if (requestUrl === 'beaker:start') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/start.html'))
   }
+  if (requestUrl === 'beaker:start.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/start.css'))
+  }
   if (requestUrl === 'beaker:bookmarks') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/bookmarks.html'))
+  }
+  if (requestUrl === 'beaker:library.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/library.css'))
   }
   if (requestUrl.startsWith('beaker:library')) {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/library.html'))
