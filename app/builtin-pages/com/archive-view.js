@@ -92,10 +92,6 @@ function renderArchive (archive, opts) {
       ${rToolbar(archive)}
 
       ${rView(archive)}
-      <div class="archive-tip">
-        <div>Tip: click the <span class="icon icon-flash"></span> in the site${"'"}s URL bar to turn on live-reloading. Great for development!</div>
-        <div>Power users: Use the <a href="https://github.com/beakerbrowser/bkr" title="bkr" target="_blank">bkr cli</a> to checkout, develop, and publish sites.</div>
-      </div>
     </div>
   `
 }
