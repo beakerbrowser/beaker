@@ -233,13 +233,13 @@ function setCurrentView (view) {
 function showMenu () {
   var el = document.querySelector('.dropdown-items')
   document.querySelector('.dropdown-items').classList.add('visible')
-  document.querySelector('.dropdown').addEventListener('click', e => e.stopPropagation())
+  document.querySelector('.dropdown button').addEventListener('click', e => e.stopPropagation())
   document.body.addEventListener('click', hideMenu)
 }
 
 function hideMenu () {
   document.querySelector('.dropdown-items').classList.remove('visible')
-  document.querySelector('.dropdown').removeEventListener('click', e => e.stopPropagation())
+  document.querySelector('.dropdown button').removeEventListener('click', e => e.stopPropagation())
   document.body.removeEventListener('click', hideMenu)
 }
 
