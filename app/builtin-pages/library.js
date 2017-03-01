@@ -1,7 +1,7 @@
 import yo from 'yo-yo'
 import co from 'co'
 import {Archive, ArchivesList} from 'builtin-pages-lib'
-import {render as renderArchivesList} from './com/archives-list'
+import {render as renderArchivesList, renderArchivesListItems} from './com/archives-list'
 import {render as renderArchiveView} from './com/archive-view'
 import {addFiles} from './com/archive-files'
 import {forkArchiveFlow} from './com/modals/fork-dat'
@@ -159,7 +159,9 @@ function render () {
 
 function onChangeFilter (e) {
   currentFilter = (e.target.value.toLowerCase())
-  render()
+  yo.update(document.querySelector('.archives-list'), yo`<ul class="archives-list">
+    ${renderArchivesListItems(archivesList, {selectedArchiveKey, currentFilter})}
+  </ul>`)
 }
 
 function onDragDrop (files) {
