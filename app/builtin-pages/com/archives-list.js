@@ -6,6 +6,23 @@ import { createArchiveFlow } from '../com/modals/edit-site'
 // =
 
 export function render (archivesList, { selectedArchiveKey, currentFilter, onChangeFilter } = {}) {
+  // render all
+  return yo`
+    <div class="archives-sidebar">
+      <div class="archives-sidebar-tools">
+        <input type="text" placeholder="Search" onkeyup=${onChangeFilter} value=${currentFilter||''} class="search"/>
+        <button onclick=${createArchiveFlow} class="new" aria-label="Create new archive">
+          <i class="fa fa-plus"></i>
+        </button>
+      </div>
+
+      <ul class="archives-list">
+        ${renderArchivesListItems(archivesList, {selectedArchiveKey, currentFilter})}
+      </ul>
+    </div>`
+}
+
+export function renderArchivesListItems (archivesList, {selectedArchiveKey, currentFilter}) {
   // render archives
   var archiveEls = archivesList.archives.map((archive, index) => {
     // apply filtering
@@ -31,20 +48,7 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
     archiveEls.push(renderEmpty())
   }
 
-  // render all
-  return yo`
-    <div class="archives-sidebar">
-      <div class="archives-sidebar-tools">
-        <input type="text" placeholder="Search" onkeyup=${onChangeFilter} value=${currentFilter||''} class="search"/>
-        <button onclick=${createArchiveFlow} class="new" aria-label="Create new archive">
-          <i class="fa fa-plus"></i>
-        </button>
-      </div>
-
-      <ul class="archives-list">
-       ${archiveEls}
-     </ul>
-    </div>`
+  return archiveEls
 }
 
 // TODO: put the magic wand icon next to this link. -tbv
