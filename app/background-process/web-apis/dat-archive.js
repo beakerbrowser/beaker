@@ -76,6 +76,16 @@ export default {
     return pda.updateManifest(archive, manifest)
   },
 
+  async listHistory(url) {
+    var { archive } = lookupArchive(url)
+    return new Promise((resolve, reject) => {
+      archive.list({ live: false }, (err, entries) => {
+        if (err) reject(err)
+        else resolve(entries)
+      })
+    })
+  },
+
   async stat(url, opts = {}) {
     var { archive, filepath } = lookupArchive(url)
     var downloadedBlocks = opts.downloadedBlocks === true
