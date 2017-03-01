@@ -77,9 +77,8 @@ function setup () {
 
         // load the archive
         selectedArchive = new Archive(newArchiveKey)
-        yield selectedArchive.setup()
+        yield selectedArchive.setup(getURLPath())
         selectedArchive.addEventListener('changed', render)
-        // setCurrentNodeByPath()
         clearTimeout(to)
       }
       selectedArchiveKey = newArchiveKey
@@ -115,8 +114,9 @@ function setup () {
 
 // called when there's a navigation that doesnt change the current archive
 function handleInnerNavigation () {
-  setCurrentNodeByPath()
-  render()
+  if (selectedArchive) {
+    selectedArchive.setPath(getURLPath())
+  }
 }
 
 function * getURLKey () {
