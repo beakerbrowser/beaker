@@ -161,7 +161,7 @@ export function loadArchive (key, { noSwarm } = {}) {
   archive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
 
   // wire up events
-  archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
+  archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3, true)
   archive.metadata.on('download-finished', () => archive.pullLatestArchiveMeta())
 
   return archive
