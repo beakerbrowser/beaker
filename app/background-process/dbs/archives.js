@@ -231,6 +231,7 @@ function archiveMetaObject (key, obj) {
   obj = obj || { notFound: true }
   return Object.assign({
     key,
+    url: 'dat://' + key,
     title: '',
     description: '',
     author: '',
@@ -247,6 +248,7 @@ function archiveUserSettingsObject (key, obj) {
   obj = obj || { notFound: true }
   return Object.assign({
     key,
+    url: 'dat://' + key,
     isSaved: false
   }, obj)
 }
