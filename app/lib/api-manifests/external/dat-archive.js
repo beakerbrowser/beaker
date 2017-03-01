@@ -5,6 +5,7 @@ export default {
 
   getInfo: 'promise',
   updateManifest: 'promise',
+  listHistory: 'promise',
 
   stat: 'promise',
   readFile: 'promise',

@@ -53,6 +53,10 @@ export default class DatArchive extends EventTarget {
     return dat.updateManifest(this.url, manifest)
   }
 
+  listHistory() {
+    return dat.listHistory(this.url)
+  }
+
   stat(path, opts={}) {
     const url = joinPath(this.url, path)
     return dat.stat(url, opts)
