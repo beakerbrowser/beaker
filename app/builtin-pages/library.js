@@ -1,7 +1,3 @@
-/*
-This uses the datInternalAPI API, which is exposed by webview-preload to all archives loaded over the beaker: protocol
-*/
-
 import yo from 'yo-yo'
 import co from 'co'
 import {Archive, ArchivesList} from 'builtin-pages-lib'
@@ -52,7 +48,6 @@ window.addEventListener('render', render)
 function setup () {
   co(function * () {
     var newArchiveKey = yield getURLKey()
-    setSiteInfoOverride(newArchiveKey)
 
     if (selectedArchiveKey === newArchiveKey) {
       // a navigation within the same view
@@ -62,8 +57,8 @@ function setup () {
     // load the archive list, if needed
     if (!archivesList) {
       archivesList = new ArchivesList()
-      yield archivesList.setup({filter: {isSaved: true}})
-      archivesList.on('changed', render)
+      yield archivesList.setup({isSaved: true})
+      archivesList.addEventListener('changed', render)
     }
 
     // update the archive, as needed
@@ -81,10 +76,10 @@ function setup () {
         }, 500)
 
         // load the archive
-        selectedArchive = new Archive()
-        yield selectedArchive.fetchInfo(newArchiveKey)
-        selectedArchive.on('changed', render)
-        setCurrentNodeByPath()
+        selectedArchive = new Archive(newArchiveKey)
+        yield selectedArchive.setup()
+        selectedArchive.addEventListener('changed', render)
+        // setCurrentNodeByPath()
         clearTimeout(to)
       }
       selectedArchiveKey = newArchiveKey
@@ -107,17 +102,6 @@ function setup () {
       forkArchiveFlow(selectedArchive)
       window.location.hash = ''
     }
-
-    // run the tour if this is the owner's first time
-    // TODO
-    // const tourSeenSetting = 'has-seen-viewdat-tour'
-    // var hasSeenTour = false
-    // try { hasSeenTour = yield datInternalAPI.getGlobalSetting(tourSeenSetting) }
-    // catch (e) {}
-    // if (!hasSeenTour) {
-    //   helpTour.startViewDatTour(archive.info.isOwner, render, true)
-    //   yield datInternalAPI.setGlobalSetting(tourSeenSetting, true)
-    // }
   }).catch(err => {
     // render the error state
     console.warn('Failed to fetch archive info', err)
@@ -142,7 +126,7 @@ function * getURLKey () {
     // extract key from url
     var name = /^library\/([^\/]+)/.exec(path)[1]
     if (/[0-9a-f]{64}/i.test(name)) return name
-    return yield datInternalAPI.resolveName(name)
+    return yield DatArchive.resolveName(name)
   } catch (e) {
     console.error('Failed to parse URL', e)
     return false
@@ -155,14 +139,6 @@ function getURLPath () {
   } catch (e) {
     return ''
   }
-}
-
-// override the site info in the navbar
-function setSiteInfoOverride (archiveKey) {
-  window.locationbar.setSiteInfoOverride({
-    title: 'Site Library',
-    url: (archiveKey) ? `dat://${archiveKey}/${getURLPath()}${window.location.hash}` : undefined
-  })
 }
 
 // use the current url's path to set the current rendered node

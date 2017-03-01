@@ -2,14 +2,16 @@ import {ipcRenderer} from 'electron'
 import rpc from 'pauls-electron-rpc'
 import datArchiveManifest from '../api-manifests/external/dat-archive'
 import {DAT_URL_REGEX} from '../const'
-import {fromEventStream} from './event-target'
+import {EventTarget, fromEventStream} from './event-target'
 import errors from 'beaker-error-constants'
 
 // create the dat rpc api
 const dat = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, errors })
 
-export default class DatArchive {
+export default class DatArchive extends EventTarget {
   constructor(url) {
+    super()
+
     // basic URL validation
     if (!url || typeof url !== 'string') {
       throw new Error('Invalid dat:// URL')
