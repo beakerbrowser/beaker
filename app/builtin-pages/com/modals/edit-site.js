@@ -20,7 +20,7 @@ export function create (values, { title, isNew, helpText, onSubmit }) {
           <input name="desc" tabindex="2" value=${values.description || ''} placeholder="Description" />
 
           <div class="form-actions">
-            <button onclick=${close} class="btn" tabindex="3">Cancel</button>
+            <button type="button" onclick=${close} class="btn" tabindex="3">Cancel</button>
             <button type="submit" class=${submitButtonCls} tabindex="4">
               ${isNew ? 'Create archive' : 'Save'}
             </button>
