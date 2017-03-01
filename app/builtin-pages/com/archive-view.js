@@ -1,5 +1,4 @@
 import * as yo from 'yo-yo'
-import co from 'co'
 import { createArchiveFlow, editArchiveFlow } from '../com/modals/edit-site'
 import { forkArchiveFlow } from '../com/modals/fork-dat'
 import { archiveFiles, onClickSelectFiles, addFiles } from '../com/archive-files'
@@ -30,7 +29,7 @@ function renderEmpty () {
   return yo`<div class="archive-view">
     <div class="archive-empty-banner">
       <h2>Library</h2>
-      <p>Share files, pages, and applications. <a onclick=${createArchiveFlow}>New site</a>.</p>
+      <p>Share files, pages, and websites. <a class="link" onclick=${createArchiveFlow}>Create new archive</a>.</p>
     </div>
   </div>`
 }
@@ -114,9 +113,9 @@ function rMetadata (archive) {
         <span>
           ${prettyBytes(archive.info.size)}
         </span>
-        <span>
+        ${''/*TODO do we need meta size? not currently given by the APIs<span>
           (${prettyBytes(archive.info.metaSize)} metadata)
-        </span>
+        </span>*/}
       </div>
     </div>`
 }

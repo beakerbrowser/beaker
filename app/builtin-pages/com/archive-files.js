@@ -14,6 +14,7 @@ var hideDotfiles = true
 //
 
 export function archiveFiles (archive) {
+  return ''
   const archiveKey = archive.info.key
   const tree = archive.files.currentNode
   var numFiles = 0, numHidden = 0
@@ -188,8 +189,10 @@ export function addFiles (archive, files) {
     var dst = archive.files.currentNode.entry.path
 
     // send to backend
-    datInternalAPI.writeArchiveFileFromPath(archive.info.key, { src, dst })
-      .catch(console.warn.bind(console, 'Error writing file:'))
+    DatArchive.importFromFilesystem({
+      srcPath: src,
+      dst: archive.url + dst
+    }).catch(console.warn.bind(console, 'Error writing file:'))
   })
 }
 

@@ -49,11 +49,11 @@ export function setup () {
   // wire up event handlers
   archivesDb.on('update:archive-user-settings', (key, settings) => {
     // emit event
-    var event = {
+    var details = {
       url: 'dat://' + key,
       isSaved: settings.isSaved
     }
-    archivesEvents.emit(settings.isSaved ? 'added' : 'removed', event)
+    archivesEvents.emit(settings.isSaved ? 'added' : 'removed', {details})
 
     // respond to change internally
     configureArchive(key, settings)
@@ -374,13 +374,13 @@ async function pullLatestArchiveMeta (archive) {
   size = size || 0
 
   // write the record
-  var update = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
-  debug('Writing meta', update)
-  await archivesDb.setArchiveMeta(key, update)
+  var details = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
+  debug('Writing meta', details)
+  await archivesDb.setArchiveMeta(key, details)
 
-  // emit the update event
-  update.url = 'dat://' + key
-  archivesEvents.emit('updated', update)
+  // emit the updated event
+  details.url = 'dat://' + key
+  archivesEvents.emit('updated', {details})
 }
 
 function fromURLToKey (url) {

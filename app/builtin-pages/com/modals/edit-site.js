@@ -46,11 +46,12 @@ export function createArchiveFlow () {
     isNew: true,
     title: 'New',
     helpText: 'Create a new archive and add it to your library',
-    onSubmit: ({ title, description }) => {
-    datInternalAPI.createNewArchive({ title, description, origin: 'beaker:library' }).then(key => {
-      window.location = 'beaker:library/' + key
-    })
-  }})
+    onSubmit ({ title, description }) {
+      DatArchive.create({ title, description }).then(archive => {
+        window.location = 'beaker:library/' + archive.url.slice('dat://'.length)
+      })
+    }
+  })
 }
 
 export function editArchiveFlow (archive) {
@@ -58,7 +59,6 @@ export function editArchiveFlow (archive) {
     isNew: false,
     title: 'Edit',
     helpText: 'Update your archive\'s title and description',
-    onSubmit: values => {
-      archive.updateManifest(values)
-    }})
+    onSubmit: values => archive.updateManifest(values)
+  })
 }

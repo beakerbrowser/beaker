@@ -88,8 +88,8 @@ export function forkArchiveFlow (archive) {
       modal.rerender()
     },
     onSubmit({ title, description }) {
-      datInternalAPI.forkArchive(archive.info.key, { title, description, origin: 'beaker:library' }).then(newKey => {
-        window.location = 'beaker:library/' + newKey
+      DatArchive.fork(archive.info.key, { title, description }).then(archive => {
+        window.location = 'beaker:library/' + archive.url.slice('dat://'.length)
       }).catch(err => {
         console.error(err) // TODO alert user
       })
