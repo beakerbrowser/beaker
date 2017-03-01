@@ -233,13 +233,12 @@ function showMenu () {
   var el = document.querySelector('.dropdown-items')
   document.querySelector('.dropdown-items').classList.add('visible')
   document.querySelector('.dropdown button').addEventListener('click', e => e.stopPropagation())
-  document.body.addEventListener('click', hideMenu)
+  document.body.addEventListener('click', hideMenu, {once: true, capture: true})
 }
 
 function hideMenu () {
   document.querySelector('.dropdown-items').classList.remove('visible')
   document.querySelector('.dropdown button').removeEventListener('click', e => e.stopPropagation())
-  document.body.removeEventListener('click', hideMenu)
 }
 
 function closeMenu () {
