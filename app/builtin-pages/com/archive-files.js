@@ -14,17 +14,16 @@ var hideDotfiles = true
 //
 
 export function archiveFiles (archive) {
-  return ''
-  const archiveKey = archive.info.key
-  const tree = archive.files.currentNode
+  const archiveKey = archive.key
   var numFiles = 0, numHidden = 0
 
   // helper to render the entries
-  function renderNode (node) {
+  function renderEntry (entry) {
     var els = []
-    const entry = node.entry
-    var isDotfile = entry.name && (entry.name.charAt(0) == '.' || entry.path == 'dat.json')
+    var isDotfile = entry.key && (entry.key.charAt(0) == '.' || entry.path == 'dat.json')
     numFiles++
+    var name = entry.key
+    var path = trimLeadingSlash(entry.name)
 
     // hide dotfiles
     if (isDotfile) {
@@ -39,19 +38,19 @@ export function archiveFiles (archive) {
     if (entry.type == 'directory') {
       link = yo`
         <a class="name"
-          href="beaker:library/${archiveKey}/${entry.path}"
-          title=${entry.name}
+          href="beaker:library/${archiveKey}/${path}"
+          title=${name}
           onclick=${pushUrl}>
           <i class="fa fa-folder-o"></i>
-          <span>${entry.name}</span>
+          <span>${name}</span>
         </a>`
     } else {
       link = yo`
         <a class="name"
-          href="dat://${archiveKey}/${entry.path}"
-          title=${entry.name}>
+          href="dat://${archiveKey}/${path}"
+          title=${name}>
           <i class="fa fa-file-o"></i>
-          <span>${entry.name}</span>
+          <span>${name}</span>
         </a>`
     }
 
@@ -73,37 +72,22 @@ export function archiveFiles (archive) {
       <li class=${`files-list-item ${entry.type} ${(isDotfile?'dotfile':'')} ${status}`}>
         ${downloadEl}
         ${link}
-        <span class="size">(${prettyBytes(entry.length || 0)})</span>
+        ${entry.type != 'directory' ? yo`<span class="size">(${prettyBytes(entry.length || 0)})</span>` : ''}
         <span class="updated" title=${mtime}>${mtime}</span>
       </li>`
   }
 
   // helper to render the 'up' link
   function renderParent () {
-    const entry = tree.parent.entry
     return yo`
       <li class="files-list-item">
         <a class="name"
-           href="beaker:library/${archiveKey}/${entry.path}"
+           href="beaker:library/${archiveKey}/${parentPath(archive.path)}"
            title="Parent directory"
            onclick=${pushUrl}>
            parent
         </a>
       </li>`
-  }
-
-  // helper to render the footer
-  function renderFooter () {
-    const entry = tree.entry
-
-    // render
-    var hideLabel = hideDotfiles ? 'show' : 'hide'
-    var hideToggle = (numHidden > 0) ? yo`<span>, ${numHidden} hidden (<a onclick=${onToggleHidden}>${hideLabel}</a>)</span>` : ''
-    return yo`<div class="fl-footer">
-      <div class="fl-name overflower">${numFiles} ${pluralize(numFiles, 'file')}${hideToggle}</div>
-      <div class="fl-updated"></div>
-      <div class="fl-size">${prettyBytes(entry.length||0)}</div>
-    </div>`
   }
 
   function renderFileAdder () {
@@ -117,13 +101,11 @@ export function archiveFiles (archive) {
   }
 
   // render
-  const toObj = key => tree.children[key]
-  var files = (tree.children)
-    ? Object.keys(tree.children).map(toObj).sort(treeSorter).map(child => renderNode(child)).filter(Boolean)
-    : []
-
-  if (tree.parent)
+  const toObj = key => { var file = archive.files[key]; file.key = key; return file }
+  var files = Object.keys(archive.files).map(toObj).sort(filesSorter).map(child => renderEntry(child)).filter(Boolean)
+  if (archive.path !== '/') {
     files.unshift(renderParent())
+  }
 
   if (files.length) {
     return yo`
@@ -134,27 +116,28 @@ export function archiveFiles (archive) {
   return yo`<p>No files.</p>`
 }
 
-function treeSorter (a, b) {
+function filesSorter (a, b) {
   // directories at top
-  if (a.entry.type == 'directory' && b.entry.type != 'directory')
+  if (a.type == 'directory' && b.type != 'directory')
     return -1
-  if (a.entry.type != 'directory' && b.entry.type == 'directory')
+  if (a.type != 'directory' && b.type == 'directory')
     return 1
 
-  if (a.entry.type != 'directory') {
-    // files: downloaded above downloading above not-downloaded
-    if ((a.entry.downloadedBlocks == a.entry.blocks) && (b.entry.downloadedBlocks < b.entry.blocks))
-      return -1
-    if ((a.entry.downloadedBlocks < a.entry.blocks) && (b.entry.downloadedBlocks == b.entry.blocks))
-      return 1
-    if ((a.entry.downloadedBlocks > 0) && (b.entry.downloadedBlocks == 0))
-      return -1
-    if ((a.entry.downloadedBlocks == 0) && (b.entry.downloadedBlocks > 0))
-      return 1
-  }
+  // TODO
+  // if (a.type != 'directory') {
+  //   // files: downloaded above downloading above not-downloaded
+  //   if ((a.downloadedBlocks == a.blocks) && (b.downloadedBlocks < b.blocks))
+  //     return -1
+  //   if ((a.downloadedBlocks < a.blocks) && (b.downloadedBlocks == b.blocks))
+  //     return 1
+  //   if ((a.downloadedBlocks > 0) && (b.downloadedBlocks == 0))
+  //     return -1
+  //   if ((a.downloadedBlocks == 0) && (b.downloadedBlocks > 0))
+  //     return 1
+  // }
 
   // by name
-  return a.entry.name.localeCompare(b.entry.name)
+  return a.name.localeCompare(b.name)
 }
 
 
@@ -194,6 +177,14 @@ export function addFiles (archive, files) {
       dst: archive.url + dst
     }).catch(console.warn.bind(console, 'Error writing file:'))
   })
+}
+
+function trimLeadingSlash (str) {
+  return str.replace(/^(\/)*/, '')
+}
+
+function parentPath (str) {
+  return str.split('/').slice(0, -1).join('/')
 }
 
 function onToggleHidden () {
