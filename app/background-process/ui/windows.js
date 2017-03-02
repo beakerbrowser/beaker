@@ -38,6 +38,8 @@ export function createShellWindow () {
     titleBarStyle: 'hidden-inset',
     fullscreenable: false,
     x, y, width, height,
+    vibrancy: 'light',
+    transparent: true,
     webPreferences: {
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
       allowRunningInsecureContent: false
