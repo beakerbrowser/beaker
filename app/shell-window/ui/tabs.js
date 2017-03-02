@@ -27,12 +27,12 @@ export function setup () {
   tabsContainerEl = yo`<div class="chrome-tabs">
     <div class="chrome-tab chrome-tab-add-btn" onclick=${onClickNew} title="Open new tab">
       <svg width="15" height="30" class="left-edge">
-        <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
+        <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />      
       </svg>
       <div class="chrome-tab-bg"></div>
-      <div class="chrome-tab-favicon"><span class="icon icon-plus"></span></div>
+      <div class="chrome-tab-favicon"><span class="fa fa-plus"></span></div>
       <svg width="15" height="30" class="right-edge">
-        <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
+        <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
       </svg>
     </div>
   </div>`

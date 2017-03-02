@@ -133,10 +133,10 @@ function render (id, page) {
   // render reload/cancel btn
   var reloadBtn = (isLoading)
     ? yo`<button class="toolbar-btn nav-cancel-btn" onclick=${onClickCancel}>
-        <span class="icon icon-cancel"></span>
+        <span class="fa fa-times"></span>
       </button>`
     : yo`<button class="toolbar-btn nav-reload-btn" onclick=${onClickReload}>
-        <span class="icon icon-cw"></span>
+        <span class="fa fa-refresh"></span>
       </button>`
 
   // `page` is null on initial render
@@ -182,14 +182,14 @@ function render (id, page) {
     let liveReloadBtnCls = 'nav-live-reload-btn'
     if (page.isLiveReloading) liveReloadBtnCls += ' active'
     datBtns = [
-      yo`<button class=${liveReloadBtnCls} title="Live Reloading" onclick=${onClickLiveReload}><span class="icon icon-flash"></span></button>`,
-      yo`<button title="Fork Site" onclick=${onClickForkDat}><span class="icon icon-flow-branch"></span></button>`,
-      yo`<button title="View Site Files" onclick=${onClickViewFiles}><span class="icon icon-folder"></span></button>`,
-      yo`<button class=${saveBtnClass} title="Save Site" onclick=${onClickSaveDat}><span class="icon icon-floppy"></span></button>`
+      yo`<button class=${liveReloadBtnCls} title="Live Reloading" onclick=${onClickLiveReload}><span class="fa fa-bolt"></span></button>`,
+      yo`<button title="Fork Site" onclick=${onClickForkDat}><span class="fa fa-code-fork"></span></button>`,
+      yo`<button title="View Site Files" onclick=${onClickViewFiles}><span class="fa fa-folder-open-o"></span></button>`,
+      yo`<button class=${saveBtnClass} title="Save Site" onclick=${onClickSaveDat}><span class="fa fa-floppy-o"></span></button>`
     ]
   } else if (siteHasDatAlternative) {
     datBtns = [
-      yo`<button title="Go to Dat Version of this Site" onclick=${onClickGotoDatVersion}><span class="icon icon-share"></span></button>`,
+      yo`<button title="Go to Dat Version of this Site" onclick=${onClickGotoDatVersion}><span class="fa fa-share-alt"></span></button>`,
     ]
   }
 
@@ -263,10 +263,10 @@ function render (id, page) {
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
       <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-        <span class="icon icon-left-open-big"></span>
+        <span class="fa fa-arrow-left"></span>
       </button>
       <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-        <span class="icon icon-right-open-big"></span>
+        <span class="fa fa-arrow-right"></span>
       </button>
       ${reloadBtn}      
     </div>
@@ -277,7 +277,9 @@ function render (id, page) {
       ${inpageFinder}
       ${zoomBtn}
       ${datBtns}
-      <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark"><span class="icon icon-star"></span></button>
+      <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark">
+        <span class=${(page && !!page.bookmark) ? "fa fa-star" : "fa fa-star-o"}></span>
+      </button>
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
@@ -504,12 +506,12 @@ function onClickBookmark (e) {
   if (page) {
     page.toggleBookmark()
 
-    // animate the element
-    document.querySelector('.toolbar-actions:not(.hidden) .nav-bookmark-btn .icon').animate([
-      {textShadow: '0 0 0px rgba(255, 188, 0, 1.0)'},
-      {textShadow: '0 0 8px rgba(255, 188, 0, 1.0)'},
-      {textShadow: '0 0 16px rgba(255, 188, 0, 0.0)'}
-    ], { duration: 300 })
+    // animate the element TODO
+    // document.querySelector('.toolbar-actions:not(.hidden) .nav-bookmark-btn .fa').animate([
+    //   {textShadow: '0 0 0px rgba(0, 18, 150, 1.0)'},
+    //   {textShadow: '0 0 8px rgba(0, 18, 150, 1.0)'},
+    //   {textShadow: '0 0 16px rgba(0, 18, 150, 0.0)'}
+    // ], { duration: 300 })
   }
 }
 
