@@ -61,7 +61,6 @@ export function create (archive, { onClickDownload, onSubmit }) {
     }
 
     function _onClickCancel (e) {
-      console.log('cancel')
       e.preventDefault()
       close()
     }

@@ -158,7 +158,7 @@ export function addFiles (archive, files) {
   files.forEach(file => {
     // file-picker gies a string, while drag/drop gives { path: string }
     var src = (typeof file === 'string') ? file : file.path
-    var dst = archive.files.currentNode.entry.path
+    var dst = archive.path
 
     // send to backend
     DatArchive.importFromFilesystem({
