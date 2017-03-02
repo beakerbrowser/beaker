@@ -133,27 +133,34 @@ function rEditBtn (archive) {
 
 function rToolbar (archive) {
   var inactiveView = currentView === 'files' ? 'history' : 'files'
+  var addFilesBtn = ''
 
   if (archive.info.isOwner) {
-    return yo`
-      <div class="archive-toolbar">
-        <a class="view-link" onclick=${() => setCurrentView(inactiveView)}>View ${inactiveView}</a>
-        <div class="btn-bar">
-          <button class="btn" onclick=${writeToClipboard('dat://' + archive.info.key)}>
-            <i class="fa fa-clipboard"></i>
-            <span>Copy URL</span>
-          </button>
-          <a class="btn" href=${'dat://' + archive.info.key} target="_blank">
-            <i class="fa fa-external-link"></i>
-            <span>Open</span>
-          </a>
-          <button class="btn" onclick=${() => onClickSelectFiles(archive)}>
-            <i class="fa fa-plus"></i>
-            <span>Add files</span>
-          </button>
-        </div>
-      </div>`
+    addFilesBtn = yo`
+      <button class="btn" onclick=${() => onClickSelectFlies(archive)}>
+        <i class="fa fa-plus"></i>
+        <span>Add files</span>
+      </button>`
   }
+
+  return yo`
+    <div class="archive-toolbar">
+      <a class="view-link" onclick=${() => setCurrentView(inactiveView)}>View ${inactiveView}</a>
+
+      <div class="btn-bar">
+        <button class="btn" onclick=${writeToClipboard('dat://' + archive.info.key)}>
+          <i class="fa fa-clipboard"></i>
+          <span>Copy URL</span>
+        </button>
+
+        <a class="btn" href=${'dat://' + archive.info.key} target="_blank">
+          <i class="fa fa-external-link"></i>
+          <span>Open</span>
+        </a>
+
+        ${addFilesBtn}
+      </div>
+    </div>`
 }
 
 function rForkBtn (archive) {
