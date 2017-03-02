@@ -82,7 +82,7 @@ export default class DatArchive extends EventTarget {
     return dat.download(url, opts)
   }
 
-  listFiles(path='/', opts) {
+  listFiles(path='/', opts={}) {
     const url = joinPath(this.url, path)
     return dat.listFiles(url, opts)
   }

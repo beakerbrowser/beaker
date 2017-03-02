@@ -186,12 +186,6 @@ function datServer (req, res) {
         // still serving?
         if (aborted) return cleanup()
 
-        // caching if-match
-        const ETag = 'block-' + entry.content.blockOffset
-        if (req.headers['if-none-match'] === ETag) {
-          return cb(304, 'Not Modified')
-        }
-
         // not found
         if (!entry) {
           debug('Entry not found:', urlp.path)
@@ -208,6 +202,12 @@ function datServer (req, res) {
           }
 
           return cb(404, 'File Not Found')
+        }
+        
+        // caching if-match
+        const ETag = 'block-' + entry.content.blockOffset
+        if (req.headers['if-none-match'] === ETag) {
+          return cb(304, 'Not Modified')
         }
 
         // fetch the permissions
