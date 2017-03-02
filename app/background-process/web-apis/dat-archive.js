@@ -127,7 +127,13 @@ export default {
 
   async listFiles(url, opts = {}) {
     var { archive, filepath } = lookupArchive(url)
-    return pda.listFiles(archive, filepath, opts)
+    var files = await pda.listFiles(archive, filepath)
+    if (opts.downloadedBlocks) {
+      for (var k in files) {
+        files[k].downloadedBlocks = archive.countDownloadedBlocks(files[k])
+      }
+    }
+    return files
   },
 
   async createDirectory(url) {

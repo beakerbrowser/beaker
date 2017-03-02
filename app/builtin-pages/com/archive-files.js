@@ -55,22 +55,12 @@ export function archiveFiles (archive) {
     }
 
     // download state
-    var status, downloadEl
-    if (entry.downloadedBlocks == entry.blocks) {
-      status = 'downloaded'
-    } else if (entry.isDownloading || entry.downloadedBlocs > 0) {
-      status = 'downloading'
-      var progress = Math.round(entry.downloadedBlocks / entry.blocks * 100)
-      downloadEl = yo`<div class="fl-download"><progress value=${progress} max="100"></progress></div>`
-    } else {
-      status = 'not-downloaded'
-    }
+    var status = (entry.downloadedBlocks == entry.blocks) ? 'downloaded' : 'not-downloaded'
 
     // render self
     let mtime = entry.mtime ? niceDate(entry.mtime) : ''
     return yo`
       <li class=${`files-list-item ${entry.type} ${(isDotfile?'dotfile':'')} ${status}`}>
-        ${downloadEl}
         ${link}
         ${entry.type != 'directory' ? yo`<span class="size">(${prettyBytes(entry.length || 0)})</span>` : ''}
         <span class="updated" title=${mtime}>${mtime}</span>
@@ -123,18 +113,17 @@ function filesSorter (a, b) {
   if (a.type != 'directory' && b.type == 'directory')
     return 1
 
-  // TODO
-  // if (a.type != 'directory') {
-  //   // files: downloaded above downloading above not-downloaded
-  //   if ((a.downloadedBlocks == a.blocks) && (b.downloadedBlocks < b.blocks))
-  //     return -1
-  //   if ((a.downloadedBlocks < a.blocks) && (b.downloadedBlocks == b.blocks))
-  //     return 1
-  //   if ((a.downloadedBlocks > 0) && (b.downloadedBlocks == 0))
-  //     return -1
-  //   if ((a.downloadedBlocks == 0) && (b.downloadedBlocks > 0))
-  //     return 1
-  // }
+  if (a.type != 'directory') {
+    // files: downloaded above downloading above not-downloaded
+    if ((a.downloadedBlocks == a.blocks) && (b.downloadedBlocks < b.blocks))
+      return -1
+    if ((a.downloadedBlocks < a.blocks) && (b.downloadedBlocks == b.blocks))
+      return 1
+    if ((a.downloadedBlocks > 0) && (b.downloadedBlocks == 0))
+      return -1
+    if ((a.downloadedBlocks == 0) && (b.downloadedBlocks > 0))
+      return 1
+  }
 
   // by name
   return a.name.localeCompare(b.name)

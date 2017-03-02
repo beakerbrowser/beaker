@@ -1,28 +1,29 @@
 import * as yo from 'yo-yo'
 import * as modal from '../modal'
 
-export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClickDownload, onSubmit }) {
-  var title = archiveInfo.title || ''
-  var description = archiveInfo.description || ''
+export function create (archive, { onClickDownload, onSubmit }) {
+  var title = archive.info.title || ''
+  var description = archive.info.description || ''
   return modal.create(({ close }) => {
     var isIncomplete = false
+    var isDownloading = archive.progress && archive.progress.isDownloading
 
     var progressEl, downloadBtn
-    if (!archiveInfo.isOwner) {
+    if (!archive.info.isOwner && archive.progress) {
       // status/progress of download
-      let entry = archiveEntriesTree.entry
-      let progress = Math.round(entry.downloadedBlocks / entry.blocks * 100)
-      isIncomplete = (entry.downloadedBlocks < entry.blocks)
+      isIncomplete = !archive.progress.isComplete
       progressEl = yo`<div class="fork-dat-progress">
-        <progress value=${progress} max="100"></progress>
+        ${archive.progress.current > 0
+          ? yo`<progress value=${archive.progress.current} max="100"></progress>`
+          : ''}
         ${isIncomplete
           ? 'Some files have not been downloaded, and will be missing from your fork.'
           : 'Ready to fork.'}
       </div>`
       if (isIncomplete) {
-        downloadBtn = yo`<a class="btn ${isDownloading ? 'disabled' : ''}" onclick=${_onClickDownload}>
-          ${ isDownloading ? yo`<span class="spinner"></span>` : 'Finish'} Downloading Files
-        </a>`
+        downloadBtn = yo`<button type="button" class="btn ${isDownloading ? 'disabled' : 'success'}" onclick=${_onClickDownload}>
+          ${ isDownloading ? '' : 'Finish'} Downloading Files
+        </button>`
       }
     }
 
@@ -42,28 +43,34 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
 
           ${progressEl}
           <div class="form-actions">
-            <button class="btn">Cancel</button>
-            ${downloadBtn}
-            <button type="submit" class="btn success" tabindex="3">
+            <button type="button" class="btn" onclick=${_onClickCancel}>Cancel</button>
+            <button type="submit" class="btn ${!isIncomplete ? 'success' : ''}" tabindex="3">
               Create fork ${isIncomplete ? ' anyway' : ''}
             </button>
+            ${downloadBtn}
           </div>
         </form>
       </div>`
 
     function onChangeTitle (e) {
       title = e.target.value
-      console.log(title)
     }
 
     function onChangeDescription (e) {
       description = e.target.value
-      console.log(description)
     }
 
-    function _onClickDownload () {
-      console.log('click')
-      isDownloading = true
+    function _onClickCancel (e) {
+      console.log('cancel')
+      e.preventDefault()
+      close()
+    }
+
+    function _onClickDownload (e) {
+      e.preventDefault()
+      if (archive.progress) {
+        archive.progress.isDownloading = true
+      }
       onClickDownload()
     }
 
@@ -81,10 +88,9 @@ export function create (archiveInfo, archiveEntriesTree, { isDownloading, onClic
 
 export function forkArchiveFlow (archive) {
   // create fork modal
-  var modal = create(archive.info, archive.files.rootNode, {
-    isDownloading: archive.isSaved,
+  var modal = create(archive, {
     onClickDownload() {
-      archive.files.download()
+      archive.download()
       modal.rerender()
     },
     onSubmit({ title, description }) {
@@ -96,11 +102,15 @@ export function forkArchiveFlow (archive) {
     }
   })
 
-  // listen for archive download events
-  function onchanged () { modal.rerender() }
-  archive.on('changed', onchanged)
-  modal.addEventListener('close', () => {
-    archive.removeEventListener('changed', onchanged)
-    modal = null
-  }, { once: true })
+  // listen to archive download progress
+  archive.startMonitoringDownloadProgress().then(() => {
+    modal.rerender()
+    function onrender () { modal.rerender() }
+    archive.progress.addEventListener('changed', onrender)
+    modal.addEventListener('close', () => {
+      console.log(archive.progress)
+      archive.progress.removeEventListener('changed', onrender)
+      modal = null
+    }, { once: true })
+  })
 }
