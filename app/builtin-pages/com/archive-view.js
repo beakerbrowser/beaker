@@ -37,15 +37,20 @@ function renderEmpty () {
 }
 
 function renderError (error) {
-  return yo`<div class="archive-view">
-    <div class="archive-error">
-      <div class="archive-error-banner">
-        <div class="icon icon-attention"></div>
-        <div>The archive failed to load. ${error.toString()}. Sorry for the inconvenience.</div>
-      </div>
-      <div class="archive-error-narclink">
+  return yo`
+    <div class="archive-view">
+      <div class="message error archive-error">
+        <div>
+          <i class="fa fa-exclamation-triangle"></i>
+          <span>Error: ${error.toString()}</span>
+
+          <p>
+            The archive failed to load. Sorry for the inconvenience.
+          </p>
+        </div>
+        <div class="archive-error-narclink">
         <a href="https://github.com/beakerbrowser/beaker/issues" target="_blank">Report Issue</a>
-        | 
+        |
         <a href="https://groups.google.com/forum/#!forum/beaker-browser" target="_blank">Request Help</a>
       </div>
     </div>
