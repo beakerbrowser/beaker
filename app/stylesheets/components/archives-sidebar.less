@@ -20,7 +20,7 @@
   position: fixed;
   top: 0;
   width: 200px;
-  height: 60px;
+  height: 65px;
   border-bottom: 1px solid @border-menu;
   border-right: 1px solid @border-menu;
   padding: @padding-builtin-page;
@@ -29,12 +29,25 @@
     display: inline-block;
   }
 
+  .search {
+    width: 168px;
+  }
+
   button.new {
-    float: right;
-    height: 100%;
+    position: absolute;
+    right: 16px;
+    bottom: -16px;
+
+    background: #fff;
+    border: 1px solid @border-menu;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    box-sizing: border-box;
+    padding-top: 5px;
 
     &:hover {
-      color: @color-text--muted;
+      background: @background-button;
     }
 
     i {
