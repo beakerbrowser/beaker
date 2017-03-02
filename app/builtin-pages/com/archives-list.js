@@ -55,8 +55,9 @@ export function renderArchivesListItems (archivesList, {selectedArchiveKey, curr
 function renderEmpty () {
   return yo`
     <div class="archives-list empty">
+      <em>No sites</em>
       <p>
-        You don't have any sites in your library. Get started by <a onclick=${createArchiveFlow}>creating your own site.</a>
+        <a onclick=${createArchiveFlow}>Create a new site.<i class="fa fa-magic"></i></a>
       </p>
     </div>`
 }
