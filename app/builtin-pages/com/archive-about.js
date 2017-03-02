@@ -10,7 +10,7 @@ import {pushUrl} from '../../lib/fg/event-handlers'
 export function archiveAbout (archive) {
   return yo`<table class="archive-about">
     <tr><td>Type</td><td>Website</td></tr>
-    <tr><td>Size</td><td>${prettyBytes(archive.info.size)} <span class="thin muted">(${prettyBytes(archive.info.metaSize)} metadata)</span></td></tr>
+    <tr><td>Size</td><td>${prettyBytes(archive.info.size)}</td></tr>
     <tr><td>Updated</td><td>${niceDate(archive.info.mtime)}</td></tr>
     ${rProvinence(archive)}
   </table>`
