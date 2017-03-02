@@ -36,7 +36,7 @@ export function createShellWindow () {
   var { x, y, width, height } = ensureVisibleOnSomeDisplay(restoreState())
   var win = new BrowserWindow({ 
     titleBarStyle: 'hidden-inset',
-    'standard-window': false,
+    fullscreenable: false,
     x, y, width, height,
     webPreferences: {
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
