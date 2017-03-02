@@ -56,6 +56,10 @@
       .remove-pin {
         display: block;
       }
+
+      .pinned__item-square {
+        background: fadeout(#333, 90%);
+      }
     }
   }
 
@@ -63,7 +67,6 @@
     width: 54px;
     height: 54px;
     margin: 0 auto 5px auto;
-    border: 1px solid fadeout(#333, 75%); // TODO: use color variables -tbv
     border-radius: 4px; // TODO: make a rounded extend -tbv
     cursor: pointer;
 
@@ -80,12 +83,9 @@
       }
     }
 
-    &:hover {
-      border: 1px solid fadeout(#333, 60%);
-    }
-
     .icon {
-      font-size: 22px;
+      color: #555;
+      font-size: 26px;
       margin-top: 10px;
       height: 32px;
       border-radius: 2px;
