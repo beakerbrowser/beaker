@@ -6,6 +6,8 @@ import { archiveHistory } from '../com/archive-history'
 import { writeToClipboard } from '../../lib/fg/event-handlers'
 import prettyBytes from 'pretty-bytes'
 import { niceDate } from '../../lib/time'
+import { shortenHash } from '../../lib/strings'
+import { pushUrl } from '../../lib/fg/event-handlers'
 
 // globals
 // =
@@ -85,6 +87,7 @@ function renderArchive (archive, opts) {
       <p class="archive-desc">
         ${rDescription(archive)}
         ${rReadOnly(archive)}
+        ${rProvinence(archive)}
       </p>
 
       ${rMetadata(archive)}
@@ -99,6 +102,33 @@ function rDescription (archive) {
   return (archive.info.description)
     ? yo`<span>${archive.info.description}</span>`
     : yo`<em>no description</em>`
+}
+
+function rProvinence (archive) {
+  var els = []
+
+  if (archive.forkOf) {
+    els.push(yo`
+      <p>
+        <i class="fa fa-code-fork"></i>
+        <span>Fork of</span>
+        <a href=${viewUrl(archive.forkOf)} onclick=${pushUrl}>${shortenHash(archive.forkOf)}</a>
+      </p>`
+    )
+  }
+
+  if (archive.createdBy) {
+    els.push(yo`
+      <p>
+        <i class="fa fa-code"></i>
+        <a href=${viewUrl(archive.info.createdBy.url)} onclick=${pushUrl}>
+          Created by ${archive.info.createdBy.title || shortenHash(archive.info.createdBy.url)}
+        </a>
+      </p>`
+    )
+  }
+
+  return els
 }
 
 function rMetadata (archive) {
@@ -188,7 +218,11 @@ function rSaveBtn (archive) {
 
 function rReadOnly (archive) {
   if (archive.info.isOwner) return ''
-  return yo`<span class="thin muted">Read-only</span>`
+  return yo`
+    <span class="readonly">
+      <i class="fa fa-eye-slash"></i>
+      read-only
+    </span>`
 }
 
 function rSubnav (archive) {
@@ -250,4 +284,10 @@ function hideMenu () {
 
 function closeMenu () {
   // document.body.removeEventListener('keydown')
+}
+
+function viewUrl (url) {
+  if (url.startsWith('dat://')) {
+    return 'beaker:library/' + url.slice('dat://'.length)
+  }
 }
