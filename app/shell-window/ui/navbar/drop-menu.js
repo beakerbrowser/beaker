@@ -111,7 +111,7 @@ export class DropMenuNavbarBtn {
     // render btn
     return yo`<div class="toolbar-drop-menu">
       <button class="toolbar-btn toolbar-drop-menu-btn ${this.isDropdownOpen?'pressed':''}" onclick=${e => this.onClickBtn(e)} title="Menu">
-        <span class="icon icon-down-open-big"></span>
+        <span class="fa fa-bars"></span>
         ${progressEl}
       </button>
       ${dropdownEl}

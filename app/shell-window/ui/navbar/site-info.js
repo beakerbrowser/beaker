@@ -24,16 +24,16 @@ export class SiteInfoNavbarBtn {
         protocolLabel = 'Secure'
         protocolCls = 'secure'
       } else if (this.protocolInfo.scheme === 'http:') {
-        icon = 'info-circled'
+        icon = 'unlock'
       } else if (['dat:', 'fs:'].indexOf(this.protocolInfo.scheme) != -1) {
-        icon = 'share'
+        icon = 'share-alt'
         protocolLabel = 'Secure P2P'
         protocolCls = 'p2p'
       }
     }
 
     // render btn
-    var iconEl = (icon) ? yo`<span class="icon icon-${icon}"></span>` : ''
+    var iconEl = (icon) ? yo`<span class="fa fa-${icon}"></span>` : ''
     var titleEl = (protocolLabel) ? yo`<span class="title">${protocolLabel}</span>`: ''
     return yo`<div class="toolbar-site-info ${protocolCls}">
       <button onclick=${e => this.toggleDropdown(e)}>${iconEl} ${titleEl}</button>

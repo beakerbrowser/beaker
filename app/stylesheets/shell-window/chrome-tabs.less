@@ -11,7 +11,6 @@
   * {
     -webkit-user-select: none;
     cursor: default;
-    font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
     font-size: 12px;
     line-height: 13px;
   }
@@ -37,7 +36,7 @@
         transition: .2s fill;
       }
       .edge-border {
-        stroke: #808080;
+        stroke: #aaa;
         stroke-width: 1px;
       }
 
@@ -53,7 +52,7 @@
       right: 14px;
       height: 28px;
       background: #ddd;
-      border-top: 1px solid #808080;
+      border-top: 1px solid #aaa;
       transition: .2s background;
     }
 
@@ -84,6 +83,7 @@
     }
 
     .chrome-tab-title {
+      font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
       position: relative;
       color: #222222;
       padding: 9px 26px 5px 36px;
@@ -96,6 +96,7 @@
     }
 
     .chrome-tab-close {
+      font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
       display: none;
       position: absolute;
       right: 14px;
@@ -158,33 +159,31 @@
     }
 
     &.chrome-tab-add-btn {
-      svg, .chrome-tab-bg {
+      svg,
+      .chrome-tab-bg {
         visibility: hidden;
-        border: 0;
+        transition: none;
+        background: transparent;
+        fill: transparent;
       }
 
       .chrome-tab-favicon {
         top: 6px;
-        padding: 0 6px;
+        padding: 0 7px;
       }
-      .icon {
-        font-size: 17px;
-        line-height: 15px;
-        color: #666;
+      .fa {
+        font-size: 10px;
+        line-height: 17px;
+        color: #777;
       }
 
       &:hover {
-        svg, .chrome-tab-bg {
+        svg,
+        .chrome-tab-bg {
           visibility: visible;
         }
-        svg .edge-bg {
-          fill: #ccc;
-        }
-        .chrome-tab-bg {
-          background: #ccc;
-        }
-        .icon {
-          color: #444;
+        .fa {
+          color: #555;
         }
       }
     }
