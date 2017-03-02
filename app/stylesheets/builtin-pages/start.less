@@ -60,8 +60,8 @@
   }
 
   &__item-square {
-    width: 55px;
-    height: 55px;
+    width: 54px;
+    height: 54px;
     margin: 0 auto 5px auto;
     border: 1px solid fadeout(#333, 75%); // TODO: use color variables -tbv
     border-radius: 4px; // TODO: make a rounded extend -tbv
@@ -69,10 +69,6 @@
 
     * {
       cursor: pointer;
-    }
-
-    &.builtin {
-      background: fadeout(#333, 93%);
     }
 
     &.add {
@@ -90,8 +86,9 @@
 
     .icon {
       font-size: 22px;
-      margin-top: 15px;
-      height: 22px;
+      margin-top: 10px;
+      height: 32px;
+      border-radius: 2px;
 
       &:before {
         margin-top: 15px;
@@ -113,6 +110,13 @@
 
     .icon::before {
       margin-top: 0;
+      transition: transform 0.1s;
+    }
+
+    &.adding {
+      .icon::before {
+        transform: rotate(45deg);
+      }
     }
 
     &[disabled]:hover {
