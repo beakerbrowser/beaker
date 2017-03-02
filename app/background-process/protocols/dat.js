@@ -136,23 +136,6 @@ function datServer (req, res) {
     // start searching the network
     var archive = datLibrary.getOrLoadArchive(archiveKey)
 
-    // declare a redirect helper
-    var redirectToViewDat = once(hashOpt => {
-      hashOpt = hashOpt || ''
-      // the following code crashes the shit out of electron (https://github.com/electron/electron/issues/6492)
-      // res.writeHead(302, 'Found', { 'Location': 'beaker:library/'+archiveKey+urlp.path })
-      // return res.end()
-
-      // use the html redirect instead, for now
-      res.writeHead(200, 'OK', {
-        'Content-Type': 'text/html',
-        'Content-Security-Policy': DAT_CSP,
-        'Access-Control-Allow-Origin': '*'
-      })
-      res.end('<meta http-equiv="refresh" content="0;URL=beaker:library/' + archiveKey + urlp.path + hashOpt + '">')
-      return
-    })
-
     // setup a timeout
     timeout = setTimeout(() => {
       if (aborted) return
@@ -166,14 +149,8 @@ function datServer (req, res) {
         fileReadStream = null
       }
 
-      // respond
-      if (!hadFileReadStream && (!urlp.path || urlp.path.endsWith('/') || urlp.path.endsWith('.html'))) {
-        // redirect to view-dat, to give a nice interface, if this looks like a page-request
-        redirectToViewDat('#timeout')
-      } else {
-        // error page
-        cb(408, 'Timed out')
-      }
+      // error page
+      cb(404, 'Not found')
     }, REQUEST_TIMEOUT_MS)
 
     archive.open(err => {

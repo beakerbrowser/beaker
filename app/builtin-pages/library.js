@@ -88,14 +88,6 @@ function setup () {
     viewIsLoading = false
     render()
 
-    // now that it has loaded, redirect to dat:// if this was a timeout view
-    if (window.location.hash === '#timeout') {
-      var destURL = 'dat://' + /^library\/(.*)/.exec(window.location.pathname)[1]
-      console.log('Archive found! Redirecting to', destURL)
-      window.location = destURL
-      return
-    }
-
     // run the fork modal, if that's why we're here
     if (window.location.hash === '#fork') {
       forkArchiveFlow(selectedArchive)
