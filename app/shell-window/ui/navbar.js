@@ -132,12 +132,14 @@ function render (id, page) {
 
   // render reload/cancel btn
   var reloadBtn = (isLoading)
-    ? yo`<button class="toolbar-btn nav-cancel-btn" onclick=${onClickCancel}>
-        <span class="fa fa-times"></span>
-      </button>`
-    : yo`<button class="toolbar-btn nav-reload-btn" onclick=${onClickReload}>
-        <span class="fa fa-refresh"></span>
-      </button>`
+    ? yo`
+        <button class="toolbar-btn nav-cancel-btn" onclick=${onClickCancel}>
+          <span class="fa fa-times"></span>
+        </button>`
+    : yo`
+        <button class="toolbar-btn nav-reload-btn" onclick=${onClickReload} title="Reload this page">
+          <span class="fa fa-refresh"></span>
+        </button>`
 
   // `page` is null on initial render
   // and the toolbar should be hidden on initial render
@@ -171,21 +173,49 @@ function render (id, page) {
       '0': 100,
       '0.5': 110, '1': 125, '1.5': 150, '2': 175, '2.5': 200, '3': 250, '3.5': 300, '4': 400, '4.5': 500
     })[page.zoom]
-    zoomBtn = yo`<button onclick=${onClickZoom}><span class="icon icon-search"></span> <small>${zoomPct}%</small></button>`
+    zoomBtn = yo`
+      <button onclick=${onClickZoom} title="Zoom: ${zoomPct}%">
+        <span class="icon icon-search"></span>
+        ${zoomPct}%
+      </button>`
   }
 
   // dat buttons
   var datBtns = ''
   if (isViewingDat) {
     let saveBtnClass = 'nav-save-btn'
-    if (page.siteInfo && page.siteInfo.userSettings.isSaved) saveBtnClass += ' active'
+    let saveBtnTitle = 'Save to your library'
+
+    if (page.siteInfo && page.siteInfo.userSettings.isSaved) {
+      saveBtnClass += ' active'
+      saveBtnTitle = 'Remove from your library'
+    }
+
     let liveReloadBtnCls = 'nav-live-reload-btn'
-    if (page.isLiveReloading) liveReloadBtnCls += ' active'
+    let liveReloadBtnTitle = 'Turn on live reloading'
+
+    if (page.isLiveReloading) {
+      liveReloadBtnCls += ' active'
+      liveReloadBtnTitle = 'Turn off live reloading'
+    }
+
     datBtns = [
-      yo`<button class=${liveReloadBtnCls} title="Live Reloading" onclick=${onClickLiveReload}><span class="fa fa-bolt"></span></button>`,
-      yo`<button title="Fork Site" onclick=${onClickForkDat}><span class="fa fa-code-fork"></span></button>`,
-      yo`<button title="View Site Files" onclick=${onClickViewFiles}><span class="fa fa-folder-open-o"></span></button>`,
-      yo`<button class=${saveBtnClass} title="Save Site" onclick=${onClickSaveDat}><span class="fa fa-floppy-o"></span></button>`
+      yo`
+        <button class=${liveReloadBtnCls} title=${liveReloadBtnTitle} onclick=${onClickLiveReload}>
+          <span class="fa fa-bolt"></span>
+        </button>`,
+      yo`
+        <button title="Fork this site" onclick=${onClickForkDat}>
+          <span class="fa fa-code-fork"></span>
+        </button>`,
+      yo`
+        <button title="View this site's files" onclick=${onClickViewFiles}>
+          <span class="fa fa-folder-o"></span>
+        </button>`,
+      yo`
+        <button class=${saveBtnClass} title="Save this site to your library" onclick=${onClickSaveDat}>
+          <span class="fa fa-floppy-o"></span>
+        </button>`
     ]
   } else if (siteHasDatAlternative) {
     datBtns = [
@@ -268,7 +298,7 @@ function render (id, page) {
       <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
         <span class="fa fa-arrow-right"></span>
       </button>
-      ${reloadBtn}      
+      ${reloadBtn}
     </div>
     <div class="toolbar-input-group">
       ${siteInfoNavbarBtn.render()}
@@ -277,7 +307,7 @@ function render (id, page) {
       ${inpageFinder}
       ${zoomBtn}
       ${datBtns}
-      <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark">
+      <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark this page">
         <span class=${(page && !!page.bookmark) ? "fa fa-star" : "fa fa-star-o"}></span>
       </button>
       ${autocompleteDropdown}
