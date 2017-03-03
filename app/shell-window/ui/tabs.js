@@ -61,7 +61,7 @@ function drawTab (page) {
 
   // pick a favicon
   var favicon
-  if (page.isLoading()) {
+  if (page.isLoading() && page.getURL()) {
     // loading spinner
     favicon = yo`<div class="spinner"></div>`
     if (!page.isReceivingAssets)
