@@ -1,8 +1,10 @@
+@import "../base/colors";
+
 .toolbar-input-group {
   flex: 1;
   display: flex;
 
-  width: calc(100vw - 154px); // so that long URLs dont overflow 
+  width: calc(100vw - 154px); // so that long URLs dont overflow
   // ^ will need to be recalculated each time the navbar adds/removes components
   position: relative; // for the :after el, and autocomplete dropdown, to position off of
 
@@ -65,29 +67,24 @@
 
     // navbar btn styles
     &.nav-save-btn {
+
       &.active {
-        color: #007eff;
-      } 
-    }
-    &.nav-bookmark-btn {
-      font-size: 18px;
-      &.active {
-        color: #007eff;
+        color: @blue;
       }
+    }
+
+    &.nav-bookmark-btn,
+    &.nav-live-reload-btn {
+      font-size: 16px;
+
+      &.active {
+        color: @yellow;
+        &:extend(.text-outline);
+        -webkit-text-stroke: 1px shade(@yellow, 10%);
+      }
+
       &:disabled {
         color: gray;
-      }
-    }
-    &.nav-live-reload-btn {
-      .icon {
-        font-size: 17px;
-      }
-      &.active {
-        color: gold;
-        -webkit-text-stroke: 1px #eabb33;
-        animation-name: navLiveReloadBtnGlow;
-        animation-duration: 2s;
-        animation-iteration-count: infinite;
       }
     }
 
@@ -99,6 +96,7 @@
   }
 
   .toolbar-site-info {
+
     button {
       display: flex;
       color: #555;
@@ -125,15 +123,18 @@
         border-right: 1px solid #ddd;
       }
     }
+
     &.secure button {
       color: #3c943c !important;
     }
+
     &.p2p button {
       color: #016fde !important;
     }
   }
 
   .nav-location-pretty {
+
     flex: 1;
     padding: 3px 0 1px 7px;
     cursor: text;
@@ -143,9 +144,11 @@
     .protocol-secure {
       color: #3c943c;
     }
+
     .protocol-p2p {
       color: #016fde;
     }
+
     .syntax,
     .path {
       color: #aaa;
@@ -178,6 +181,7 @@
           font-size: 17px;
         }
       }
+
       .result-url {
         color: #397EEF;
 
@@ -189,6 +193,7 @@
         vertical-align: top;
         white-space: pre;
       }
+
       .result-title {
         margin-left: 2px;
         color: gray;
@@ -200,18 +205,14 @@
           margin-right: 5px;
         }
       }
+
       &.selected {
         background: lightgoldenrodyellow;
       }
+
       &:hover {
         background: #eee;
       }
     }
   }
-}
-
-@keyframes navLiveReloadBtnGlow {
-  from { text-shadow: 0 0 0 #eabb33; }
-  50% { text-shadow: 0 0 5px #eabb33; }
-  to { text-shadow: 0 0 0 #eabb33; }
 }

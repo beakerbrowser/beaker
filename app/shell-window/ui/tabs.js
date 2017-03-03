@@ -27,7 +27,7 @@ export function setup () {
   tabsContainerEl = yo`<div class="chrome-tabs">
     <div class="chrome-tab chrome-tab-add-btn" onclick=${onClickNew} title="Open new tab">
       <svg width="15" height="30" class="left-edge">
-        <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />      
+        <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
       </svg>
       <div class="chrome-tab-bg"></div>
       <div class="chrome-tab-favicon"><span class="fa fa-plus"></span></div>
@@ -61,7 +61,7 @@ function drawTab (page) {
 
   // pick a favicon
   var favicon
-  if (page.isLoading()) {
+  if (page.isLoading() && page.getURL()) {
     // loading spinner
     favicon = yo`<div class="spinner"></div>`
     if (!page.isReceivingAssets)
