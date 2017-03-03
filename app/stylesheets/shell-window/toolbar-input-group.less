@@ -1,3 +1,5 @@
+@import "../base/colors";
+
 .toolbar-input-group {
   flex: 1;
   display: flex;
@@ -67,34 +69,22 @@
     &.nav-save-btn {
 
       &.active {
-        color: #007eff;
+        color: @blue;
       }
     }
 
-    &.nav-bookmark-btn {
-      font-size: 18px;
+    &.nav-bookmark-btn,
+    &.nav-live-reload-btn {
+      font-size: 16px;
 
       &.active {
-        color: #007eff;
+        color: @yellow;
+        &:extend(.text-outline);
+        -webkit-text-stroke: 1px shade(@yellow, 10%);
       }
 
       &:disabled {
         color: gray;
-      }
-    }
-
-    &.nav-live-reload-btn {
-
-      .icon {
-        font-size: 17px;
-      }
-
-      &.active {
-        color: gold;
-        -webkit-text-stroke: 1px #eabb33;
-        animation-name: navLiveReloadBtnGlow;
-        animation-duration: 2s;
-        animation-iteration-count: infinite;
       }
     }
 
