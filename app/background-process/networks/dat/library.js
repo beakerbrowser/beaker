@@ -108,6 +108,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}) {
 
   // fetch old archive meta
   var srcManifest = await pda.readManifest(srcArchive).catch(err => {})
+  srcManifest = srcManifest || {}
 
   // override any manifest data
   var dstManifest = {

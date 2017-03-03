@@ -9,6 +9,7 @@ import * as settingsDb from './dbs/settings'
 import { internalOnly } from '../lib/bg/rpc'
 import { isDaemonActive as isIPFSDaemonActive } from './networks/ipfs/ipfs'
 import { open as openUrl } from './open-url'
+import {closeModal} from './ui/modals'
 
 // constants
 // =
@@ -70,7 +71,9 @@ export function setup () {
     removeAsDefaultProtocolClient,
 
     showOpenDialog,
-    openUrl
+    openUrl,
+
+    closeModal
   }, internalOnly)
 }
 

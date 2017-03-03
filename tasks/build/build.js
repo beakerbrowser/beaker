@@ -52,7 +52,8 @@ var bundleApplication = function () {
     bundle(srcDir.path('builtin-pages/bookmarks.js'), srcDir.path('builtin-pages/bookmarks.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
     bundle(srcDir.path('builtin-pages/history.js'), srcDir.path('builtin-pages/history.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
     bundle(srcDir.path('builtin-pages/settings.js'), srcDir.path('builtin-pages/settings.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/start.js'), srcDir.path('builtin-pages/start.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') })
+    bundle(srcDir.path('builtin-pages/start.js'), srcDir.path('builtin-pages/start.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
+    bundle(srcDir.path('builtin-pages/fork-modal.js'), srcDir.path('builtin-pages/fork-modal.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') })
   ]);
 };
 
