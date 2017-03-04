@@ -67,8 +67,8 @@ async function onSubmit (e) {
       await beaker.library.updateArchiveManifest(archive.url, {title, description})
       beakerBrowser.closeModal(null, true)
     } else {
-      var url = await beaker.library.createArchive({title, description, createdBy})
-      beakerBrowser.closeModal(null, {url})
+      var newArchive = await beaker.library.createArchive({title, description, createdBy})
+      beakerBrowser.closeModal(null, {url: newArchive.url})
     }
   } catch (e) {
     beakerBrowser.closeModal({
@@ -111,7 +111,7 @@ function render () {
             <input name="desc" tabindex="2" value=${description || ''} placeholder="Description" onchange=${onChangeDescription} />
 
             <div class="form-actions">
-              <button type="button" onclick=${onClickCancel} class="btn" tabindex="3">Cancel</button>
+              <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="3">Cancel</button>
               <button type="submit" class="btn success" tabindex="4">
                 ${isEditing ? 'Save' : 'Create site'}
               </button>

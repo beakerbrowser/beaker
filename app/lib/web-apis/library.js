@@ -10,8 +10,13 @@ export default function setup() {
   const libraryRPC = rpc.importAPI('library', libraryManifest, { timeout: false, errors })
   libraryAPI.list = libraryRPC.list
   libraryAPI.get = libraryRPC.get
-  libraryAPI.createArchive = libraryRPC.createArchive
-  libraryAPI.forkArchive = libraryRPC.forkArchive
+  libraryAPI.createArchive = function (opts={}) {
+    return libraryRPC.createArchive(opts).then(newUrl => new DatArchive(newUrl))
+  }
+  libraryAPI.forkArchive = function (url, opts={}) {
+    url = (typeof url.url === 'string') ? url.url : url
+    return libraryRPC.forkArchive(url, opts).then(newUrl => new DatArchive(newUrl))
+  }
   libraryAPI.updateArchiveManifest = libraryRPC.updateArchiveManifest
   libraryAPI.add = libraryRPC.add
   libraryAPI.remove = libraryRPC.remove

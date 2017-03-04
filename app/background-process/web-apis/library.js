@@ -52,7 +52,8 @@ export default {
     assertTmpBeakerOnly(this.sender)
     var key = toKey(url)
     var archive = datLibrary.getOrLoadArchive(key)
-    return pda.updateManifest(archive, {title, description})
+    await pda.updateManifest(archive, {title, description})
+    datLibrary.pullLatestArchiveMeta(archive)
   },
 
   async add(url) {

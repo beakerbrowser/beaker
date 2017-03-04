@@ -87,6 +87,38 @@ export async function generateCreatedBy (url) {
   return {url: origin}
 }
 
+// read metadata for the archive, and store it in the meta db
+export async function pullLatestArchiveMeta (archive) {
+  try {
+    var key = archive.key.toString('hex')
+
+    // open() just in case (we need .blocks)
+    await pify(archive.open.bind(archive))()
+
+    // read the archive meta and size on disk
+    var [manifest, size] = await Promise.all([
+      pda.readManifest(archive).catch(err => {}),
+      pify(getFolderSize)(archivesDb.getArchiveFilesPath(archive))
+    ])
+    manifest = manifest || {}
+    var { title, description, author, forkOf, createdBy } = manifest
+    var mtime = Date.now() // use our local update time
+    var isOwner = archive.owner
+    size = size || 0
+
+    // write the record
+    var details = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
+    debug('Writing meta', details)
+    await archivesDb.setArchiveMeta(key, details)
+
+    // emit the updated event
+    details.url = 'dat://' + key
+    archivesEvents.emit('updated', {details})
+  } catch (e) {
+    console.error('Error pulling meta', e)
+  }
+}
+
 // archive creation
 // =
 
@@ -179,7 +211,7 @@ export function loadArchive (key, { noSwarm } = {}) {
   archive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
 
   // wire up events
-  archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3, true)
+  archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
   archive.metadata.on('download-finished', () => archive.pullLatestArchiveMeta())
 
   return archive
@@ -371,34 +403,6 @@ function configureArchive (key, settings) {
       })
     }
   })
-}
-
-// read metadata for the archive, and store it in the meta db
-async function pullLatestArchiveMeta (archive) {
-  var key = archive.key.toString('hex')
-
-  // open() just in case (we need .blocks)
-  await pify(archive.open.bind(archive))()
-
-  // read the archive meta and size on disk
-  var [manifest, size] = await Promise.all([
-    pda.readManifest(archive).catch(err => {}),
-    pify(getFolderSize)(archivesDb.getArchiveFilesPath(archive))
-  ])
-  manifest = manifest || {}
-  var { title, description, author, forkOf, createdBy } = manifest
-  var mtime = Date.now() // use our local update time
-  var isOwner = archive.owner
-  size = size || 0
-
-  // write the record
-  var details = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
-  debug('Writing meta', details)
-  await archivesDb.setArchiveMeta(key, details)
-
-  // emit the updated event
-  details.url = 'dat://' + key
-  archivesEvents.emit('updated', {details})
 }
 
 function fromURLToKey (url) {

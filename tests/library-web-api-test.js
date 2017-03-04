@@ -31,7 +31,7 @@ test.before(async t => {
 
   // create a owned archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create().then(done,done)
+    beaker.library.createArchive().then(done,done)
   })
   createdDatURL = res.value.url
   createdDatKey = createdDatURL.slice('dat://'.length)
@@ -161,14 +161,13 @@ test('library "updated" event', async t => {
   await app.client.execute(() => {
     window.newTitle = false
     window.beaker.library.addEventListener('updated', event => {
-      window.newTitle = event.title
+      window.newTitle = event.details.title
     })
   })
 
   // update manifest
   var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.updateManifest({ title: 'The New Title' }).then(done, done)
+    beaker.library.updateArchiveManifest(url, { title: 'The New Title' }).then(done, done)
   }, createdDatURL)
 
   // need to sleep because there's a builtin delay to processing meta updates

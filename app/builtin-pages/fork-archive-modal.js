@@ -79,8 +79,8 @@ function onClickDownload (e) {
 async function onSubmit (e) {
   e.preventDefault()
   try {
-    var url = await beaker.library.forkArchive(archive.info.key, { title, description, createdBy })
-    beakerBrowser.closeModal(null, {url})
+    var newArchive = await beaker.library.forkArchive(archive.info.key, { title, description, createdBy })
+    beakerBrowser.closeModal(null, {url: newArchive.url})
   } catch (e) {
     beakerBrowser.closeModal({
       name: e.name,
@@ -134,7 +134,7 @@ function render () {
 
             ${progressEl}
             <div class="form-actions">
-              <button type="button" class="btn" onclick=${onClickCancel}>Cancel</button>
+              <button type="button" class="btn cancel" onclick=${onClickCancel}>Cancel</button>
               <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="3">
                 Create fork ${!isComplete ? ' anyway' : ''}
               </button>
