@@ -33,6 +33,7 @@ export default {
   async createArchive({title, description} = {}) {
     // initiate the modal
     var win = BrowserWindow.fromWebContents(this.sender)
+    await assertSenderIsFocused(this.sender)
     var createdBy = this.sender.getURL()
     var res = await showModal(win, 'create-archive', {title, description, createdBy})
     if (!res || !res.url) throw new UserDeniedError()
@@ -42,6 +43,7 @@ export default {
   async forkArchive(url, {title, description} = {}) {
     // initiate the modal
     var win = BrowserWindow.fromWebContents(this.sender)
+    await assertSenderIsFocused(this.sender)
     var createdBy = this.sender.getURL()
     var res = await showModal(win, 'fork-archive', {url, title, description, createdBy})
     if (!res || !res.url) throw new UserDeniedError()
@@ -51,6 +53,7 @@ export default {
   async updateManifest(url, {title, description} = {}) {
     // initiate the modal
     var win = BrowserWindow.fromWebContents(this.sender)
+    await assertSenderIsFocused(this.sender)
     return await showModal(win, 'create-archive', {url, title, description})
   },
 
@@ -260,6 +263,12 @@ async function assertValidFilePath (filepath) {
 async function assertValidPath (fileOrFolderPath) {
   if (!DAT_VALID_PATH_REGEX.test(fileOrFolderPath)) {
     throw new InvalidPathError('Path contains invalid characters')
+  }
+}
+
+async function assertSenderIsFocused (sender) {
+  if (!sender.isFocused()) {
+    throw new UserDeniedError()
   }
 }
 
