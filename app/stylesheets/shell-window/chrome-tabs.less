@@ -1,8 +1,10 @@
+@import "../base/colors";
+
 .chrome-tabs-shell {
   position: relative;
   padding: 0 18px 0 0px;
   height: 36px;
-  border-bottom: 1px solid #999;
+  border-bottom: 1px solid @border-shell-window;
 }
 
 .chrome-tabs {
@@ -23,7 +25,7 @@
     z-index: 1;
     -webkit-app-region: no-drag;
     transition: .1s transform;
-    border-bottom: 1px solid #999;
+    border-bottom: 1px solid @border-shell-window;
 
     // tab decoration
     svg {
@@ -32,11 +34,11 @@
       height: 28px;
 
       .edge-bg {
-        fill: #ddd;
+        fill: @background-tab;
         transition: .2s fill;
       }
       .edge-border {
-        stroke: #aaa;
+        stroke: @border-shell-window;
         stroke-width: 1px;
       }
 
@@ -52,7 +54,7 @@
       right: 14px;
       height: 28px;
       background: #ddd;
-      border-top: 1px solid #aaa;
+      border-top: 1px solid @border-shell-window;
       transition: .2s background;
     }
 
@@ -71,11 +73,13 @@
         height: 16px;
       }
     }
+
     .spinner {
       position: relative;
       left: 1px;
       top: 1px;
     }
+
     &.chrome-tab-pinned {
       .chrome-tab-favicon {
         left: 20px;
@@ -85,12 +89,13 @@
     .chrome-tab-title {
       font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
       position: relative;
-      color: #222222;
+      color: @color-tab;
       padding: 9px 26px 5px 36px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
     &.chrome-tab-nofavicon .chrome-tab-title {
       padding-left: 16px;
     }
@@ -113,27 +118,28 @@
         right: 3px;
         font-size: 12px;
         line-height: 12px;
-        color: #777777;
       }
+
       &:hover:before,
       &:active:before {
-        color: white;
+        color: #fff;
       }
+
       &:hover,
       &:active {
-        background: #f17469;
-      }
-      &:active:before {
+        background: @background-close-tab--active;
       }
     }
 
     &:hover {
       .chrome-tab-bg {
-        background: #f0f0f0;
+        background: @background-tab--hover;
       }
+
       svg .edge-bg {
-        fill: #f0f0f0;
+        fill: @background-tab--hover;
       }
+
       .chrome-tab-close {
         display: block;
       }
@@ -148,18 +154,21 @@
 
       svg {
         height: 29px;
+
         .edge-bg {
-          fill: #f5f5f5;
+          fill: @background-tab--current;
         }
       }
+
       .chrome-tab-bg {
         height: 29px;
-        background: #f5f5f5;
+        background: @background-tab--current;
       }
     }
 
     &.chrome-tab-add-btn {
       svg,
+
       .chrome-tab-bg {
         visibility: hidden;
         transition: none;
@@ -171,10 +180,11 @@
         top: 6px;
         padding: 0 7px;
       }
+
       .fa {
         font-size: 10px;
         line-height: 17px;
-        color: #777;
+        color: #777; // TODO: -tbv
       }
 
       &:hover {
@@ -182,8 +192,9 @@
         .chrome-tab-bg {
           visibility: visible;
         }
+
         .fa {
-          color: #555;
+          color: #555; // TODO: -tbv
         }
       }
     }
