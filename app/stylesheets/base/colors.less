@@ -49,10 +49,12 @@
 @background-menu: shade(#fff, 5%);
 
 // Shell window
-@background-shell-window: #fafafa;
+@background-shell-window: shade(#fff, 3%);// #fafafa;
+@background-shell-window--unfocused: shade(#fff, 3%);
 @background-url-input: #fff;
-@background-tab: #fafafa;
-@background-tab--current: #f5f5f5;
+@background-tab: shade(#fff, 13%);
+@background-tab--unfocused: shade(#fff, 8%);
+@background-tab--current: @background-shell-window;
 @background-tab--hover: #f0f0f0;
 @background-toolbar-btn--hover: #e0e0e0;
 @background-close-tab--active: #f17649;

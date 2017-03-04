@@ -47,13 +47,14 @@
         right: 0;
       }
     }
+
     .chrome-tab-bg {
       position: absolute;
       top: 0;
       left: 14px;
       right: 14px;
       height: 28px;
-      background: #ddd;
+      background: @background-tab;
       border-top: 1px solid @border-shell-window;
       transition: .2s background;
     }
@@ -202,4 +203,29 @@
 // make room for the traffic lights
 .darwin:not(.fullscreen) .chrome-tabs {
   padding-left: 75px;
+}
+
+// tab styles for when beaker isn't focused
+.window-blurred {
+  .chrome-tab {
+
+    .chrome-tab-bg {
+      background: @background-tab--unfocused;
+    }
+
+    svg .edge-bg {
+      fill: @background-tab--unfocused;
+    }
+  }
+
+  .chrome-tab-current {
+
+    .chrome-tab-bg {
+      background: @background-tab--current;
+    }
+
+    svg .edge-bg {
+      fill: @background-tab--current;
+    }
+  }
 }
