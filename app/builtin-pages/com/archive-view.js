@@ -1,6 +1,5 @@
 import * as yo from 'yo-yo'
 import { createArchiveFlow, editArchiveFlow } from '../com/modals/edit-site'
-import { forkArchiveFlow } from '../com/modals/fork-dat'
 import { archiveFiles, onClickSelectFiles, addFiles } from '../com/archive-files'
 import { archiveHistory } from '../com/archive-history'
 import { writeToClipboard } from '../../lib/fg/event-handlers'
@@ -200,7 +199,7 @@ function rToolbar (archive) {
 
 function rForkBtn (archive) {
   return yo`
-    <a onclick=${() => forkArchiveFlow(archive)}>
+    <a onclick=${() => forkArchive(archive)}>
       <i class="fa fa-code-fork"></i>
       Fork
     </a>`
@@ -273,6 +272,11 @@ function rMenuItems (archive) {
 function setCurrentView (view) {
   currentView = view
   window.dispatchEvent(new Event('render'))
+}
+
+async function forkArchive (archive) {
+  var fork = await DatArchive.fork(archive)
+  window.history.pushState(null, '', viewUrl(fork.url))
 }
 
 function showMenu () {
