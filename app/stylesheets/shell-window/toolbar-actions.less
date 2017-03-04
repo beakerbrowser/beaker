@@ -39,6 +39,30 @@
       background: linear-gradient(to top, #d0d0d0, #ccc);
     }
 
+    &.nav-cancel-btn {
+      -webkit-text-stroke: 1px @background-shell-window;
+
+      &:hover:not(:disabled) {
+        -webkit-text-stroke: 1px @background-toolbar-btn--hover;
+      }
+    }
+
+    &.nav-back-btn, &.nav-forward-btn {
+      -webkit-text-stroke: 1.6px @background-shell-window;
+
+      &:hover:not(:disabled) {
+        -webkit-text-stroke: 1.6px @background-toolbar-btn--hover;
+      }
+    }
+
+    &.nav-reload-btn {
+      -webkit-text-stroke: .7px @background-shell-window;
+
+      &:hover:not(:disabled) {
+        -webkit-text-stroke: .7px @background-toolbar-btn--hover;
+      }
+    }
+
     // reposition some buttons
     &.nav-back-btn,
     &.nav-forward-btn,
