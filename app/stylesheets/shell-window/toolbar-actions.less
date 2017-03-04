@@ -1,9 +1,9 @@
 .toolbar-actions {
   display: flex;
+  background: @background-shell-window;
+  border-bottom: 1px solid @border-shell-window;
   padding: 5px 4px 4px 2px;
   margin: 0;
-  background: #f5f5f5;
-  border-bottom: 1px solid #999;
 
   &.hidden {
     display: none;
@@ -16,40 +16,44 @@
     padding: 4px 5px;
     font-size: 17px;
     line-height: 1.1;
-    color: #666;
+    color: @color-toolbar-btn;
     width: 28px;
     border-radius: 2px;
     border: 1px solid transparent;
 
     &:hover:not(:disabled) {
       text-shadow: none;
-      background: #e0e0e0;
+      background: @background-toolbar-btn--hover;
     }
+
     &:disabled {
-      color: #aaa;
+      color: @color-toolbar-btn--disabled;
     }
+
     &:focus {
       outline: 0;
     }
+
     &.pressed:not(:disabled) {
-      border: 1px solid #aaa;
       box-shadow: inset 0px 2px 2px rgba(0,0,0,0.1);
       background: linear-gradient(to top, #d0d0d0, #ccc);
     }
 
     // reposition some buttons
     &.nav-back-btn,
-    &.nav-forward-btn, 
+    &.nav-forward-btn,
     &.nav-reload-btn,
     &.nav-cancel-btn {
       padding: 2px 5px 5px;
       margin: 0 2px;
       font-size: 18px;
       line-height: 17px;
+
       .fa {
         position: relative;
         top: 1px;
       }
+
       .fa-refresh {
         top: 2px;
       }
