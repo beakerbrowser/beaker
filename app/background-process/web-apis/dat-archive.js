@@ -31,24 +31,19 @@ const DEFAULT_TIMEOUT = 5e3
 
 export default {
   async createArchive({title, description} = {}) {
-    // ask the user
-    if (!this.sender.getURL().startsWith('beaker:')) {
-      var decision = await requestPermission('createDat', this.sender, {title})
-      if (decision === false) throw new UserDeniedError()
-    }
-
-    // get origin info
-    var createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
-
-    // create the archive
-    return datLibrary.createNewArchive({title, description, createdBy})
+    // initiate the modal
+    var win = BrowserWindow.fromWebContents(this.sender)
+    var createdBy = this.sender.getURL()
+    var res = await showModal(win, 'create-archive', {title, description, createdBy})
+    if (!res || !res.url) throw new UserDeniedError()
+    return res.url
   },
 
   async forkArchive(url, {title, description} = {}) {
     // initiate the modal
     var win = BrowserWindow.fromWebContents(this.sender)
     var createdBy = this.sender.getURL()
-    var res = await showModal(win, 'fork', {url, title, description, createdBy})
+    var res = await showModal(win, 'fork-archive', {url, title, description, createdBy})
     if (!res || !res.url) throw new UserDeniedError()
     return res.url
   },

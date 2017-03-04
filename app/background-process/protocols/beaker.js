@@ -153,14 +153,23 @@ function beakerServer (req, res) {
   }
 
   // modals
-  if (requestUrl === 'beaker:fork-modal') {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/fork-modal.html'))
+  if (requestUrl === 'beaker:create-archive-modal') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/create-archive-modal.html'))
   }
-  if (requestUrl === 'beaker:fork-modal.css') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/fork-modal.css'))
+  if (requestUrl === 'beaker:create-archive-modal.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/create-archive-modal.css'))
   }
-  if (requestUrl === 'beaker:fork-modal.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/fork-modal.build.js'))
+  if (requestUrl === 'beaker:create-archive-modal.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/create-archive-modal.build.js'))
+  }
+  if (requestUrl === 'beaker:fork-archive-modal') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/fork-archive-modal.html'))
+  }
+  if (requestUrl === 'beaker:fork-archive-modal.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/fork-archive-modal.css'))
+  }
+  if (requestUrl === 'beaker:fork-archive-modal.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/fork-archive-modal.build.js'))
   }
 
   // common assets

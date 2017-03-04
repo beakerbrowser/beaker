@@ -1,9 +1,6 @@
 import { app, BrowserWindow, dialog } from 'electron'
 import { createShellWindow } from './windows'
 
-// DEBUG
-import {showModal} from './modals'
-
 var darwinMenu = {
   label: 'Beaker',
   submenu: [
@@ -22,15 +19,6 @@ var darwinMenu = {
 var fileMenu = {
   label: 'File',
   submenu: [
-    {
-      label: 'Test Modal',
-      click: function (item, win) {
-        if (win) {
-          showModal(win, 'fork', {url: 'dat://eabf6df4adffc131515f07a7b34e6e54dd11ef8fab6445f90fdeb02382d173ba'})
-            .then(console.log, console.error)
-        }
-      }
-    },
     {
       label: 'New Tab',
       accelerator: 'CmdOrCtrl+T',

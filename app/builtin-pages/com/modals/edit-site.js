@@ -42,15 +42,8 @@ export function create (values, { title, isNew, helpText, onSubmit }) {
 }
 
 export function createArchiveFlow () {
-  create({}, {
-    isNew: true,
-    title: 'New',
-    helpText: 'Create a new archive and add it to your library',
-    onSubmit ({ title, description }) {
-      DatArchive.create({ title, description }).then(archive => {
-        window.location = 'beaker:library/' + archive.url.slice('dat://'.length)
-      })
-    }
+  DatArchive.create().then(archive => {
+    window.location = 'beaker:library/' + archive.url.slice('dat://'.length)
   })
 }
 

@@ -19,7 +19,7 @@ export default {
     return datLibrary.getArchiveInfo(key)
   },
 
-  async create(opts={title, description, createdBy}) {
+  async create({title, description, createdBy} = {}) {
     assertTmpBeakerOnly(this.sender)
 
     // get origin info

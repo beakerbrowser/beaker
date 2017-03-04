@@ -32,7 +32,7 @@ window.setup = async function (opts) {
     await archive.startMonitoringDownloadProgress()
     archive.progress.addEventListener('changed', render)
   } catch (e) {
-    // ditch out
+    // ditch out (for harambe)
     return beakerBrowser.closeModal({
       name: e.name,
       message: e.message || e.toString(),
