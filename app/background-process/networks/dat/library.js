@@ -70,6 +70,23 @@ export function createEventStream () {
   return emitStream(archivesEvents)
 }
 
+export async function generateCreatedBy (url) {
+  // fetch some origin info
+  var originTitle = null
+  var origin = archivesDb.extractOrigin(url)
+  try {
+    var originKey = /dat:\/\/([^\/]*)/.exec(origin)[1]
+    var originMeta = await archivesDb.getArchiveMeta(originKey)
+    originTitle = originMeta.title || null
+  } catch (e) {}
+
+  // construct info
+  if (originTitle) {
+    return {url: origin, title: originTitle}
+  }
+  return {url: origin}
+}
+
 // archive creation
 // =
 

@@ -10,6 +10,8 @@ export default function setup() {
   const libraryRPC = rpc.importAPI('library', libraryManifest, { timeout: false, errors })
   libraryAPI.list = libraryRPC.list
   libraryAPI.get = libraryRPC.get
+  libraryAPI.create = libraryRPC.create
+  libraryAPI.fork = libraryRPC.fork
   libraryAPI.add = libraryRPC.add
   libraryAPI.remove = libraryRPC.remove
   bindEventStream(libraryRPC.createEventStream(), libraryAPI)

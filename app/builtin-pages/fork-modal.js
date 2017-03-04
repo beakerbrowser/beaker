@@ -8,6 +8,7 @@ var isDownloading = false
 // form variables
 var title = ''
 var description = ''
+var createdBy
 
 // exported api
 // =
@@ -17,7 +18,8 @@ window.setup = async function (opts) {
     // ditch out
     return beakerBrowser.closeModal({
       name: 'Error',
-      message: '{url} is required'
+      message: '{url} is required',
+      internalError: true
     })
   }
 
@@ -33,13 +35,15 @@ window.setup = async function (opts) {
     // ditch out
     return beakerBrowser.closeModal({
       name: e.name,
-      message: e.message || e.toString()
+      message: e.message || e.toString(),
+      internalError: true
     })
   }
 
   // render
   title = opts.title || ''
   description = opts.description || ''
+  createdBy = opts.createdBy || undefined
   render()
 }
 
@@ -75,12 +79,13 @@ function onClickDownload (e) {
 async function onSubmit (e) {
   e.preventDefault()
   try {
-    var newArchive = await DatArchive.fork(archive.info.key, { title, description })
-    beakerBrowser.closeModal(null, {url: newArchive.url})
+    var url = await beaker.library.fork(archive.info.key, { title, description, createdBy })
+    beakerBrowser.closeModal(null, {url})
   } catch (e) {
     beakerBrowser.closeModal({
       name: e.name,
-      message: e.message || e.toString()
+      message: e.message || e.toString(),
+      internalError: true
     })
   }
 }
@@ -118,10 +123,10 @@ function render () {
 
           <form onsubmit=${onSubmit}>
             <label for="title">Title</label>
-            <input name="title" tabindex="1" value=${title} placeholder="New Name" onchange=${onChangeTitle} />
+            <input name="title" tabindex="1" value=${title} placeholder="New name" onchange=${onChangeTitle} />
 
             <label for="desc">Description</label>
-            <input name="desc" tabindex="2" value=${description} placeholder="New Description" onchange=${onChangeDescription} />
+            <input name="desc" tabindex="2" value=${description} placeholder="New description" onchange=${onChangeDescription} />
 
             ${progressEl}
             <div class="form-actions">

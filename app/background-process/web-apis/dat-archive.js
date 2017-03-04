@@ -1,3 +1,4 @@
+import {BrowserWindow} from 'electron'
 import path from 'path'
 import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
@@ -5,6 +6,7 @@ const datDns = require('dat-dns')()
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import * as sitedataDb from '../dbs/sitedata'
+import {showModal} from '../ui/modals'
 import {queryPermission, requestPermission} from '../ui/permissions'
 import { 
   DAT_HASH_REGEX,
@@ -36,25 +38,19 @@ export default {
     }
 
     // get origin info
-    var createdBy = await getCreatedBy(this.sender)
+    var createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
 
     // create the archive
     return datLibrary.createNewArchive({title, description, createdBy})
   },
 
   async forkArchive(url, {title, description} = {}) {
-    // ask the user
-    // TODO should be fork-specific
-    if (!this.sender.getURL().startsWith('beaker:')) {
-      var decision = await requestPermission('createDat', this.sender, {title})
-      if (decision === false) throw new UserDeniedError()
-    }
-
-    // get origin info
-    var createdBy = await getCreatedBy(this.sender)
-
-    // create the archive
-    return datLibrary.forkArchive(url, {title, description, createdBy})
+    // initiate the modal
+    var win = BrowserWindow.fromWebContents(this.sender)
+    var createdBy = this.sender.getURL()
+    var res = await showModal(win, 'fork', {url, title, description, createdBy})
+    if (!res || !res.url) throw new UserDeniedError()
+    return res.url
   },
 
   async loadArchive(url) {

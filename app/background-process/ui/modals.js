@@ -15,18 +15,18 @@ var modalWindow
 
 export function showModal (parentWindow, modalName, opts={}) {
   if (modalWindow) {
-    console.log('already exists', modalWindow)
-    return modalWindow.promise
+    // TODO create a new Error type
+    return Promise.reject(new Error('Modal already active'))
   }
 
   // create the modal window
+  parentWindow = parentWindow || BrowserWindow.getFocusedWindow()
   modalWindow = new BrowserWindow({
     width: SIZES[modalName].width,
     height: SIZES[modalName].height,
     parent: parentWindow,
     modal: true,
     show: false,
-    // preload: path.join(app.getAppPath(), 'webview-preload.build.js')
     webPreferences: {
       preload: path.join(app.getAppPath(), 'webview-preload.build.js')
     }
@@ -52,7 +52,6 @@ export function showModal (parentWindow, modalName, opts={}) {
 }
 
 export function closeModal (err, res) {
-console.log('close event', err, res)
   if (!modalWindow) return true
 
   // resolve/reject the promise
@@ -63,6 +62,5 @@ console.log('close event', err, res)
   // destroy
   modalWindow.close()
   modalWindow = null
-  console.log('nulled')
   return true
 }

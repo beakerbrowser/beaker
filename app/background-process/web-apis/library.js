@@ -19,6 +19,34 @@ export default {
     return datLibrary.getArchiveInfo(key)
   },
 
+  async create(opts={title, description, createdBy}) {
+    assertTmpBeakerOnly(this.sender)
+
+    // get origin info
+    if (!createdBy) {
+      createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
+    } else if (typeof createdBy === 'string') {
+      createdBy = await datLibrary.generateCreatedBy(createdBy)
+    }
+
+    // create the archive
+    return datLibrary.createNewArchive({title, description, createdBy})
+  },
+
+  async fork(url, {title, description, createdBy} = {}) {
+    assertTmpBeakerOnly(this.sender)
+
+    // get origin info
+    if (!createdBy) {
+      createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
+    } else if (typeof createdBy === 'string') {
+      createdBy = await datLibrary.generateCreatedBy(createdBy)
+    }
+
+    // create the archive
+    return datLibrary.forkArchive(url, {title, description, createdBy})
+  },
+
   async add(url) {
     assertTmpBeakerOnly(this.sender)
     var key = toKey(url)
