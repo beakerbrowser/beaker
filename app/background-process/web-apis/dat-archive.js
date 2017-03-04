@@ -48,6 +48,12 @@ export default {
     return res.url
   },
 
+  async updateManifest(url, {title, description} = {}) {
+    // initiate the modal
+    var win = BrowserWindow.fromWebContents(this.sender)
+    return await showModal(win, 'create-archive', {url, title, description})
+  },
+
   async loadArchive(url) {
     if (!url || typeof url !== 'string') {
       return Promise.reject(new InvalidURLError())
@@ -58,13 +64,6 @@ export default {
 
   async getInfo(url, opts = {}) {
     return datLibrary.getArchiveInfo(url, opts)
-  },
-
-  async updateManifest(url, manifest) {
-    var { archive, filepath } = lookupArchive(url)
-    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-    await assertWritePermission(archive, this.sender)
-    return pda.updateManifest(archive, manifest)
   },
 
   async listHistory(url) {

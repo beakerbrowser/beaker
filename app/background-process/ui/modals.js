@@ -2,8 +2,8 @@ import {app, BrowserWindow} from 'electron'
 import path from 'path'
 
 const SIZES = {
-  'create-archive': {width: 500, height: 380},
-  'fork-archive': {width: 500, height: 145}
+  'create-archive': {width: 500, height: 310},
+  'fork-archive': {width: 500, height: 380}
 }
 
 // state

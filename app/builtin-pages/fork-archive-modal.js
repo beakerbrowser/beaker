@@ -79,7 +79,7 @@ function onClickDownload (e) {
 async function onSubmit (e) {
   e.preventDefault()
   try {
-    var url = await beaker.library.fork(archive.info.key, { title, description, createdBy })
+    var url = await beaker.library.forkArchive(archive.info.key, { title, description, createdBy })
     beakerBrowser.closeModal(null, {url})
   } catch (e) {
     beakerBrowser.closeModal({
@@ -112,14 +112,18 @@ function render () {
   } else {
     progressEl = yo`<div class="fork-dat-progress">Ready to fork.</div>`
   }
+
+  var helpText = 'Create a copy of this site and save it to your library'
+  if (createdBy && !createdBy.startsWith('beaker:')) {
+    helpText = 'This page wants to ' + helpText.toLowerCase()
+  }
+
   yo.update(document.querySelector('main'), yo`<main>
     <div class="modal">
       <div class="modal-inner">
         <div class="fork-dat-modal">
           <h2 class="title">Fork ${renderArchiveTitle()}</h2>
-          <p class="help-text">
-            Create a copy of this site and save it to your library
-          </p>
+          <p class="help-text">${helpText}</p>
 
           <form onsubmit=${onSubmit}>
             <label for="title">Title</label>

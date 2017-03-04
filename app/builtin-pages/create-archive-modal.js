@@ -31,7 +31,7 @@ window.setup = async function (opts) {
   }
 
   // render
-  var archiveInfo = archive ? archiveInfo : {}
+  var archiveInfo = archive ? archive.info : {}
   title = opts.title || archiveInfo.title || ''
   description = opts.description || archiveInfo.description || ''
   createdBy = opts.createdBy || undefined
@@ -64,9 +64,10 @@ async function onSubmit (e) {
   e.preventDefault()
   try {
     if (isEditing) {
-      // TODO
+      await beaker.library.updateArchiveManifest(archive.url, {title, description})
+      beakerBrowser.closeModal(null, true)
     } else {
-      var url = await beaker.library.create({title, description, createdBy})
+      var url = await beaker.library.createArchive({title, description, createdBy})
       beakerBrowser.closeModal(null, {url})
     }
   } catch (e) {
@@ -83,13 +84,13 @@ async function onSubmit (e) {
 
 function render () {
   var uititle = isEditing
-    ? `Editing "${renderArchiveTitle()}"`
+    ? `Editing ${renderArchiveTitle()}`
     : 'New site'
   var helpText = isEditing
     ? 'Update your site\'s title and description.'
     : 'Create a new site and add it to your library.'
   if (createdBy && !createdBy.startsWith('beaker:')) {
-    helpText = 'This page would like to ' + helpText.toLowerCase()
+    helpText = 'This page wants to ' + helpText.toLowerCase()
   }
 
   yo.update(document.querySelector('main'), yo`<main>

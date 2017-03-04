@@ -1,4 +1,5 @@
 import {parse as parseURL} from 'url'
+import pda from 'pauls-dat-api'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX} from '../../lib/const'
@@ -19,7 +20,7 @@ export default {
     return datLibrary.getArchiveInfo(key)
   },
 
-  async create({title, description, createdBy} = {}) {
+  async createArchive({title, description, createdBy} = {}) {
     assertTmpBeakerOnly(this.sender)
 
     // get origin info
@@ -33,7 +34,7 @@ export default {
     return datLibrary.createNewArchive({title, description, createdBy})
   },
 
-  async fork(url, {title, description, createdBy} = {}) {
+  async forkArchive(url, {title, description, createdBy} = {}) {
     assertTmpBeakerOnly(this.sender)
 
     // get origin info
@@ -45,6 +46,13 @@ export default {
 
     // create the archive
     return datLibrary.forkArchive(url, {title, description, createdBy})
+  },
+
+  async updateArchiveManifest(url, {title, description} = {}) {
+    assertTmpBeakerOnly(this.sender)
+    var key = toKey(url)
+    var archive = datLibrary.getOrLoadArchive(key)
+    return pda.updateManifest(archive, {title, description})
   },
 
   async add(url) {
