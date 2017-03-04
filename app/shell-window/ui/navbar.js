@@ -562,8 +562,12 @@ function openDatView (e, view) {
   }
 }
 
-function onClickForkDat (e) {
-  openDatView(e, 'fork')
+async function onClickForkDat (e) {
+  var page = getEventPage(e)
+  if (!page || !page.getURL().startsWith('dat://')) return
+    
+  var archive = await DatArchive.fork(page.getURL())
+  page.loadURL(archive.url)
 }
 
 function onClickViewFiles (e) {

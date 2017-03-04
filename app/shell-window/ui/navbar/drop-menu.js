@@ -47,7 +47,7 @@ export class DropMenuNavbarBtn {
       if (page.getURL().startsWith('dat://')) {
         pageSpecificEls = [
           yo`<div class="td-item" onclick=${e => this.onOpenView(e, 'files')}><span class="icon icon-folder"></span> View Site Files</div>`,
-          yo`<div class="td-item" onclick=${e => this.onOpenView(e, 'fork')}><span class="icon icon-flow-branch" style="position: relative; left: 2px"></span> Fork this Site</div>`,
+          yo`<div class="td-item" onclick=${e => this.onFork(e)}><span class="icon icon-flow-branch" style="position: relative; left: 2px"></span> Fork this Site</div>`,
           yo`<div class="td-item" onclick=${e => this.onToggleLiveReloading(e)}><span class="icon icon-flash" style="position: relative; left: -1px"></span> Turn ${page.isLiveReloading ? 'off' : 'on'} Live Reloading</div>`,
           yo`<hr />`
         ]
@@ -217,6 +217,19 @@ export class DropMenuNavbarBtn {
       // load url
       page.loadURL(url)
     }
+  }
+
+  async onFork (e) {
+    // close dropdown
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.updateActives()
+    
+    var page = pages.getActive()
+    if (!page || !page.getURL().startsWith('dat://')) {
+      return
+    }
+    var archive = await DatArchive.fork(page.getURL())
+    page.loadURL(archive.url)
   }
 
   onToggleLiveReloading (e) {
