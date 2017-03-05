@@ -205,14 +205,6 @@ function render (id, page) {
           <span class="fa fa-bolt"></span>
         </button>`,
       yo`
-        <button title="Fork this site" onclick=${onClickForkDat}>
-          <span class="fa fa-code-fork"></span>
-        </button>`,
-      yo`
-        <button title="View this site's files" onclick=${onClickViewFiles}>
-          <span class="fa fa-folder-o"></span>
-        </button>`,
-      yo`
         <button class=${saveBtnClass} title="Save this site to your library" onclick=${onClickSaveDat}>
           <span class="fa fa-floppy-o"></span>
         </button>`
