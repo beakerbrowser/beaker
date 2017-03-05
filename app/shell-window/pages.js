@@ -154,7 +154,7 @@ export function create (opts) {
       return `beaker:library/${urlp.host}${path}${subview?'#'+subview:''}`
     },
 
-    get isLiveReloading() {
+    isLiveReloading() {
       return !!page.liveReloadEvents
     },
 
@@ -317,8 +317,9 @@ export function remove (page) {
   events.emit('update')
 
   // remove all attributes, to clear circular references
-  for (var k in page)
+  for (var k in page) {
     page[k] = null
+  }
 }
 
 export function reopenLastRemoved () {

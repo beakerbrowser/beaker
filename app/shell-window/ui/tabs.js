@@ -248,8 +248,9 @@ function onClickCloseTabsToTheRight (page) {
   return () => {
     var ps = pages.getAll()
     var index = ps.indexOf(page)
-    for (var i = ps.length - 1; i > index; i--)
+    for (var i = ps.length - 1; i > index; i--) {
       pages.remove(ps[i])
+    }
   }
 }
 

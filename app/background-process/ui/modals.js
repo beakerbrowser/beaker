@@ -3,7 +3,7 @@ import path from 'path'
 
 const SIZES = {
   'create-archive': {width: 500, height: 320},
-  'fork-archive': {width: 500, height: 380}
+  'fork-archive': {width: 500, height: 390}
 }
 
 // state

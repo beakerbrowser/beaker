@@ -194,7 +194,7 @@ function render (id, page) {
     let liveReloadBtnCls = 'nav-live-reload-btn'
     let liveReloadBtnTitle = 'Turn on live reloading'
 
-    if (page.isLiveReloading) {
+    if (page.isLiveReloading()) {
       liveReloadBtnCls += ' active'
       liveReloadBtnTitle = 'Turn off live reloading'
     }
