@@ -35,8 +35,8 @@
 
       .edge-bg {
         fill: @background-tab;
-        transition: .5s fill;
       }
+
       .edge-border {
         stroke: @border-shell-window;
         stroke-width: 1px;
@@ -56,7 +56,6 @@
       height: 28px;
       background: @background-tab;
       border-top: 1px solid @border-shell-window;
-      transition: .5s background;
     }
 
     .chrome-tab-favicon {
@@ -133,10 +132,12 @@
     &:hover {
       .chrome-tab-bg {
         background: @background-tab--hover;
+        transition: .5s background ease;
       }
 
       svg .edge-bg {
         fill: @background-tab--hover;
+        transition: .5s fill ease;
       }
 
       .chrome-tab-close {
@@ -150,6 +151,7 @@
 
     &.chrome-tab-current {
       border: 0;
+      transition: none !important;
 
       svg {
         height: 29px;
