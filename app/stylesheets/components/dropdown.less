@@ -7,6 +7,8 @@
   i {
     cursor: pointer;
   }
+
+  z-index: 1;
 }
 
 .dropdown-items {
@@ -17,12 +19,10 @@
   &:extend(.shadow);
   background: #fff;
   border-radius: 2px;
-  overflow: hidden;
 
   &.visible {
     opacity: 1;
     right: 0;
-    z-index: 3;
   }
 
   li {
@@ -37,5 +37,19 @@
       background: @color-link;
       color: #fff;
     }
+  }
+
+  &.with-triangle:before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    right: @padding-component--tight;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    //&:extend(.shadow);
+    box-shadow: -1px -1px 10px rgba(0, 0, 0, .15);
+    transform: rotateZ(45deg);
+    z-index: -1;
   }
 }
