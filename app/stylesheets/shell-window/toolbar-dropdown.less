@@ -5,9 +5,20 @@
 
 .toolbar-dropdown {
 
+  h2 {
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  hr {
+    // TODO: remove this once we pull out photonkit -tbv
+    margin: 0;
+    border-bottom: 1px solid @border-menu;
+  }
+
   .dropdown-items {
     width: 275px;
-    padding: @padding-component--tight 0 0 0;
   }
 
   .footer {
@@ -30,9 +41,15 @@
   }
 
   .grid {
-    padding: 0 @padding-component;
+    padding: @padding-component @padding-component @padding-component--tight @padding-component;
     &:extend(.flex);
     justify-content: space-between;
+
+    // Make the last item in the flex container float to the left
+    &.default:after {
+      content: '';
+      flex: auto;
+    }
   }
 
   .grid-item {
