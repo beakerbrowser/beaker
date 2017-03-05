@@ -40,6 +40,7 @@
     "mime": "^1.3.4",
     "mkdirp": "^0.5.1",
     "moment": "^2.15.2",
+    "monaco-editor": "^0.8.3",
     "multicb": "^1.2.1",
     "multihashes": "^0.3.0",
     "once": "^1.4.0",

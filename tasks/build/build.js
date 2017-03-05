@@ -55,6 +55,7 @@ var bundleApplication = function () {
     bundle(bpDir.path('history.js'),              bpDir.path('history.build.js'), { browserify: true, basedir: bpDir.cwd() }),
     bundle(bpDir.path('settings.js'),             bpDir.path('settings.build.js'), { browserify: true, basedir: bpDir.cwd() }),
     bundle(bpDir.path('start.js'),                bpDir.path('start.build.js'), { browserify: true, basedir: bpDir.cwd() }),
+    bundle(bpDir.path('editor.js'),               bpDir.path('editor.build.js'), { browserify: true, basedir: bpDir.cwd() }),
     bundle(bpDir.path('create-archive-modal.js'), bpDir.path('create-archive-modal.build.js'), { browserify: true, basedir: bpDir.cwd() }),
     bundle(bpDir.path('fork-archive-modal.js'),   bpDir.path('fork-archive-modal.build.js'), { browserify: true, basedir: bpDir.cwd() })
   ]);
