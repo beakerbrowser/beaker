@@ -1,6 +1,5 @@
 import * as yo from 'yo-yo'
 import { pushUrl } from '../../lib/fg/event-handlers'
-import { createArchiveFlow } from '../com/modals/edit-site'
 
 // exported api
 // =
@@ -11,7 +10,7 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
     <div class="archives-sidebar">
       <div class="archives-sidebar-tools">
         <input type="text" placeholder="Search" onkeyup=${onChangeFilter} value=${currentFilter||''} class="search"/>
-        <button onclick=${createArchiveFlow} class="new" aria-label="Create new archive">
+        <button onclick=${createArchive} class="new" aria-label="Create new archive">
           <i class="fa fa-plus"></i>
         </button>
       </div>
@@ -57,7 +56,16 @@ function renderEmpty () {
     <div class="archives-list empty">
       <em>No sites</em>
       <p>
-        <a onclick=${createArchiveFlow}>Create a new site.<i class="fa fa-magic"></i></a>
+        <a onclick=${createArchive}>Create a new site.<i class="fa fa-magic"></i></a>
       </p>
     </div>`
+}
+
+async function createArchive () {
+  var archive = await DatArchive.create()
+  window.history.pushState(null, '', viewUrl(archive.url))
+}
+
+function viewUrl (url) {
+  return 'beaker:library/' + url.slice('dat://'.length)
 }

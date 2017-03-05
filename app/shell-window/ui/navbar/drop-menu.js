@@ -52,10 +52,10 @@ export class DropMenuNavbarBtn {
               Site Files
             </div>`,
           yo`
-            <div class="grid-item" onclick=${e => this.onOpenView(e, 'fork')}>
+            <div class="grid-item" onclick=${e => this.onFork(e)}>
               <i class="fa fa-code-fork"></i>
               Fork Site
-            </div>`,
+            </div>`
         ]
       }
 
@@ -247,6 +247,19 @@ export class DropMenuNavbarBtn {
       // load url
       page.loadURL(url)
     }
+  }
+
+  async onFork (e) {
+    // close dropdown
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.updateActives()
+    
+    var page = pages.getActive()
+    if (!page || !page.getURL().startsWith('dat://')) {
+      return
+    }
+    var archive = await DatArchive.fork(page.getURL())
+    page.loadURL(archive.url)
   }
 
   onToggleLiveReloading (e) {

@@ -134,22 +134,42 @@ function beakerServer (req, res) {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/settings.html'))
   }
   if (requestUrl === 'beaker:builtin-pages/bookmarks.js') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/bookmarks.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/bookmarks.build.js'))
   }
   if (requestUrl === 'beaker:builtin-pages/library.js') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/library.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/library.build.js'))
   }
   if (requestUrl === 'beaker:builtin-pages/history.js') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/history.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/history.build.js'))
   }
   if (requestUrl === 'beaker:builtin-pages/downloads.js') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/downloads.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/downloads.build.js'))
   }
   if (requestUrl === 'beaker:builtin-pages/settings.js') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/settings.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/settings.build.js'))
   }
   if (requestUrl === 'beaker:builtin-pages/start.js') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'builtin-pages/start.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/start.build.js'))
+  }
+
+  // modals
+  if (requestUrl === 'beaker:create-archive-modal') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/create-archive-modal.html'))
+  }
+  if (requestUrl === 'beaker:create-archive-modal.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/create-archive-modal.css'))
+  }
+  if (requestUrl === 'beaker:create-archive-modal.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/create-archive-modal.build.js'))
+  }
+  if (requestUrl === 'beaker:fork-archive-modal') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/fork-archive-modal.html'))
+  }
+  if (requestUrl === 'beaker:fork-archive-modal.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/fork-archive-modal.css'))
+  }
+  if (requestUrl === 'beaker:fork-archive-modal.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/fork-archive-modal.build.js'))
   }
 
   // common assets

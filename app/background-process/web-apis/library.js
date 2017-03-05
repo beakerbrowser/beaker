@@ -1,4 +1,5 @@
 import {parse as parseURL} from 'url'
+import pda from 'pauls-dat-api'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX} from '../../lib/const'
@@ -17,6 +18,42 @@ export default {
     assertTmpBeakerOnly(this.sender)
     var key = toKey(url)
     return datLibrary.getArchiveInfo(key)
+  },
+
+  async createArchive({title, description, createdBy} = {}) {
+    assertTmpBeakerOnly(this.sender)
+
+    // get origin info
+    if (!createdBy) {
+      createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
+    } else if (typeof createdBy === 'string') {
+      createdBy = await datLibrary.generateCreatedBy(createdBy)
+    }
+
+    // create the archive
+    return datLibrary.createNewArchive({title, description, createdBy})
+  },
+
+  async forkArchive(url, {title, description, createdBy} = {}) {
+    assertTmpBeakerOnly(this.sender)
+
+    // get origin info
+    if (!createdBy) {
+      createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
+    } else if (typeof createdBy === 'string') {
+      createdBy = await datLibrary.generateCreatedBy(createdBy)
+    }
+
+    // create the archive
+    return datLibrary.forkArchive(url, {title, description, createdBy})
+  },
+
+  async updateArchiveManifest(url, {title, description} = {}) {
+    assertTmpBeakerOnly(this.sender)
+    var key = toKey(url)
+    var archive = datLibrary.getOrLoadArchive(key)
+    await pda.updateManifest(archive, {title, description})
+    datLibrary.pullLatestArchiveMeta(archive)
   },
 
   async add(url) {

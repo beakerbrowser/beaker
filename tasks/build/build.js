@@ -43,16 +43,19 @@ function burnthemallMaybeTask () {
 gulp.task('burnthemall-maybe', burnthemallMaybeTask)
 
 var bundleApplication = function () {
+  var bpDir = srcDir.cwd('builtin-pages')
   return Q.all([
-    bundle(srcDir.path('background-process.js'), srcDir.path('background-process.build.js')),
-    bundle(srcDir.path('webview-preload.js'), srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd() }),
-    bundle(srcDir.path('shell-window.js'), srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
-    bundle(srcDir.path('builtin-pages/downloads.js'), srcDir.path('builtin-pages/downloads.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/library.js'), srcDir.path('builtin-pages/library.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/bookmarks.js'), srcDir.path('builtin-pages/bookmarks.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/history.js'), srcDir.path('builtin-pages/history.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/settings.js'), srcDir.path('builtin-pages/settings.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/start.js'), srcDir.path('builtin-pages/start.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') })
+    bundle(srcDir.path('background-process.js'),  srcDir.path('background-process.build.js')),
+    bundle(srcDir.path('webview-preload.js'),     srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd() }),
+    bundle(srcDir.path('shell-window.js'),        srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
+    bundle(bpDir.path('downloads.js'),            bpDir.path('downloads.build.js'), { browserify: true, basedir: bpDir.cwd() }),
+    bundle(bpDir.path('library.js'),              bpDir.path('library.build.js'), { browserify: true, basedir: bpDir.cwd() }),
+    bundle(bpDir.path('bookmarks.js'),            bpDir.path('bookmarks.build.js'), { browserify: true, basedir: bpDir.cwd() }),
+    bundle(bpDir.path('history.js'),              bpDir.path('history.build.js'), { browserify: true, basedir: bpDir.cwd() }),
+    bundle(bpDir.path('settings.js'),             bpDir.path('settings.build.js'), { browserify: true, basedir: bpDir.cwd() }),
+    bundle(bpDir.path('start.js'),                bpDir.path('start.build.js'), { browserify: true, basedir: bpDir.cwd() }),
+    bundle(bpDir.path('create-archive-modal.js'), bpDir.path('create-archive-modal.build.js'), { browserify: true, basedir: bpDir.cwd() }),
+    bundle(bpDir.path('fork-archive-modal.js'),   bpDir.path('fork-archive-modal.build.js'), { browserify: true, basedir: bpDir.cwd() })
   ]);
 };
 

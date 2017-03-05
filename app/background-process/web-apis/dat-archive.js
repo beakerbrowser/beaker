@@ -1,3 +1,4 @@
+import {BrowserWindow} from 'electron'
 import path from 'path'
 import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
@@ -5,6 +6,7 @@ const datDns = require('dat-dns')()
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import * as sitedataDb from '../dbs/sitedata'
+import {showModal} from '../ui/modals'
 import {queryPermission, requestPermission} from '../ui/permissions'
 import { 
   DAT_HASH_REGEX,
@@ -29,32 +31,30 @@ const DEFAULT_TIMEOUT = 5e3
 
 export default {
   async createArchive({title, description} = {}) {
-    // ask the user
-    if (!this.sender.getURL().startsWith('beaker:')) {
-      var decision = await requestPermission('createDat', this.sender, {title})
-      if (decision === false) throw new UserDeniedError()
-    }
-
-    // get origin info
-    var createdBy = await getCreatedBy(this.sender)
-
-    // create the archive
-    return datLibrary.createNewArchive({title, description, createdBy})
+    // initiate the modal
+    var win = BrowserWindow.fromWebContents(this.sender)
+    await assertSenderIsFocused(this.sender)
+    var createdBy = this.sender.getURL()
+    var res = await showModal(win, 'create-archive', {title, description, createdBy})
+    if (!res || !res.url) throw new UserDeniedError()
+    return res.url
   },
 
   async forkArchive(url, {title, description} = {}) {
-    // ask the user
-    // TODO should be fork-specific
-    if (!this.sender.getURL().startsWith('beaker:')) {
-      var decision = await requestPermission('createDat', this.sender, {title})
-      if (decision === false) throw new UserDeniedError()
-    }
+    // initiate the modal
+    var win = BrowserWindow.fromWebContents(this.sender)
+    await assertSenderIsFocused(this.sender)
+    var createdBy = this.sender.getURL()
+    var res = await showModal(win, 'fork-archive', {url, title, description, createdBy})
+    if (!res || !res.url) throw new UserDeniedError()
+    return res.url
+  },
 
-    // get origin info
-    var createdBy = await getCreatedBy(this.sender)
-
-    // create the archive
-    return datLibrary.forkArchive(url, {title, description, createdBy})
+  async updateManifest(url, {title, description} = {}) {
+    // initiate the modal
+    var win = BrowserWindow.fromWebContents(this.sender)
+    await assertSenderIsFocused(this.sender)
+    return await showModal(win, 'create-archive', {url, title, description})
   },
 
   async loadArchive(url) {
@@ -67,13 +67,6 @@ export default {
 
   async getInfo(url, opts = {}) {
     return datLibrary.getArchiveInfo(url, opts)
-  },
-
-  async updateManifest(url, manifest) {
-    var { archive, filepath } = lookupArchive(url)
-    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-    await assertWritePermission(archive, this.sender)
-    return pda.updateManifest(archive, manifest)
   },
 
   async listHistory(url) {
@@ -270,6 +263,12 @@ async function assertValidFilePath (filepath) {
 async function assertValidPath (fileOrFolderPath) {
   if (!DAT_VALID_PATH_REGEX.test(fileOrFolderPath)) {
     throw new InvalidPathError('Path contains invalid characters')
+  }
+}
+
+async function assertSenderIsFocused (sender) {
+  if (!sender.isFocused()) {
+    throw new UserDeniedError()
   }
 }
 
