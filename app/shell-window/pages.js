@@ -556,9 +556,11 @@ function onDidStopLoading (e) {
       page.checkForDatAlternative(hostname)
     }
     if (protocol === 'dat:') {
-      beaker.library.get(hostname).then(info => {
-        page.siteInfo = info
-        navbar.update(page)
+      DatArchive.resolveName(hostname).then(key => {
+        beaker.library.get(key).then(info => {
+          page.siteInfo = info
+          navbar.update(page)
+        })
       })
     }
     if (protocol !== 'beaker:') {
