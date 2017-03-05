@@ -173,9 +173,10 @@ function render (id, page) {
       '0': 100,
       '0.5': 110, '1': 125, '1.5': 150, '2': 175, '2.5': 200, '3': 250, '3.5': 300, '4': 400, '4.5': 500
     })[page.zoom]
+    var zoomIcon = zoomPct < 100 ? '-minus' : '-plus'
     zoomBtn = yo`
-      <button onclick=${onClickZoom} title="Zoom: ${zoomPct}%">
-        <span class="icon icon-search"></span>
+      <button onclick=${onClickZoom} title="Zoom: ${zoomPct}%" class="zoom">
+        <i class=${'fa fa-search' + zoomIcon}></i>
         ${zoomPct}%
       </button>`
   }
