@@ -1,53 +1,7 @@
-.toolbar-dropdown {
-  position: absolute;
-  left: -180px;
-  top: 29px;
-  width: 210px;
-  padding: 6px 0;
-  background: #fff;
-  box-shadow: 0px 3px 13px rgba(0, 0, 0, 0.25);
-  border: 1px solid #ccc;
-  border-radius: 2px;
-  z-index: 1;
-  text-align: left;
-  font-size: 12px;
-  line-height: 16px;
-  color: #555;
-
-  &:before {
-    // the arrow
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: 189px;
-    width: 8px;
-    height: 8px;
-    background: #fff;
-    box-shadow: -1px -1px 1px rgba(0,0,0,.15);
-    transform: rotateZ(45deg);
-  }
-}
-
-.toolbar-drop-menu {
-  display: inline-block;
-  position: relative;
-
-  .icon-attention {
-    position: relative;
-    left: -.5px;
-  }
-  .icon-down-circled {
-    position: relative;
-    left: -1px;
-  }
-  .icon-back-in-time {
-    position: relative;
-    left: -2px;
-  }
-}
+@import "../components/dropdown";
 
 .toolbar-drop-menu-btn {
-  position: relative;
+
   & > progress {
     width: 26px;
     position: absolute;
