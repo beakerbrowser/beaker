@@ -126,9 +126,15 @@ export class DropMenuNavbarBtn {
                 <i class="fa fa-gear"></i>
                 Settings
               </div>
-           </div>
-            ${downloadEls.length ? yo`<hr />` : ''}
-            ${downloadEls}
+            </div>
+
+            ${downloadEls.length ? yo`
+              <div class="downloads">
+                <h2>Recent Downloads</h2>
+                <a onclick=${e => this.onClearDownloads(e)}>Clear Downloads</a>
+                ${downloadEls}
+              </div>` : ''}
+
             <div class="footer">
               <a onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
                 <i class="fa fa-info-circle"></i> Report an Issue
@@ -231,6 +237,13 @@ export class DropMenuNavbarBtn {
         download.fileNotFound = true
         this.updateActives()
       })
+  }
+
+  onClearDownloads (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    this.downloads = []
+    this.updateActives()
   }
 
   onOpenView (e, view) {
