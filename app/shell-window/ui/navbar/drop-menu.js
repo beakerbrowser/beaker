@@ -74,15 +74,15 @@ export class DropMenuNavbarBtn {
         if (d.state == 'completed') {
           // actions
           if (!d.fileNotFound) {
-            ctrlsEl = yo`<div class="td-item-ctrls">
+            ctrlsEl = yo`<div class="grid-item-ctrls">
               <a href="#" onclick=${e => this.onOpen(e, d)}>open file</a> |
               <a href="#" onclick=${e => this.onShow(e, d)}>show in folder</buttoan>
             </div>`
           } else {
-            ctrlsEl = yo`<div class="td-item-ctrls">File not found (moved or deleted)</div>`
+            ctrlsEl = yo`<div class="grid-item-ctrls">File not found (moved or deleted)</div>`
           }
         } else if (d.state == 'progressing') {
-          ctrlsEl = yo`<div class="td-item-ctrls">
+          ctrlsEl = yo`<div class="grid-item-ctrls">
             ${d.isPaused
              ? yo`<a href="#" onclick=${e => this.onResume(e, d)}>resume</a>`
              : yo`<a href="#" onclick=${e => this.onPause(e, d)}>pause</a>`}
@@ -92,11 +92,11 @@ export class DropMenuNavbarBtn {
         }
 
         // render download
-        return yo`<div class="td-item border">
-          <div class="td-item-name"><strong>${d.name}</strong></div>
-          <div class="td-item-status">${status}</div>
+        return yo`<div class="grid-item border">
+          <div class="grid-item-name"><strong>${d.name}</strong></div>
+          <div class="grid-item-status">${status}</div>
           ${ d.state == 'progressing'
-            ? yo`<div class="td-item-progress"><progress value=${d.receivedBytes} max=${d.totalBytes}></progress></div>`
+            ? yo`<div class="grid-item-progress"><progress value=${d.receivedBytes} max=${d.totalBytes}></progress></div>`
             : '' }
           ${ctrlsEl}
         </div>`
@@ -104,29 +104,36 @@ export class DropMenuNavbarBtn {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-drop-menu-dropdown">
           <div class="dropdown-items with-triangle visible">
-            ${pageSpecificEls}
-            <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:downloads')}>
-              <i class="fa fa-download"></i>
-              Downloads
-            </div>
-            <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:history')}>
-              <i class="fa fa-history"></i>
-              History
-            </div>
-            <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:settings')}>
-              <i class="fa fa-gear"></i>
-              Settings
-            </div>
-            <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:library')}>
-              <i class="fa fa-book"></i>
-              Your Library
-            </div>
+            <div class="grid">
+              ${pageSpecificEls}
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:downloads')}>
+                <i class="fa fa-download"></i>
+                Downloads
+              </div>
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:history')}>
+                <i class="fa fa-history"></i>
+                History
+              </div>
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:library')}>
+                <i class="fa fa-book"></i>
+                Library
+              </div>
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:settings')}>
+                <i class="fa fa-gear"></i>
+                Settings
+              </div>
+           </div>
             ${downloadEls.length ? yo`<hr />` : ''}
             ${downloadEls}
-            <hr />
-            <a class="td-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
-              <i class="fa fa-info"></i> Report an Issue
-            </a>
+            <div class="footer">
+              <a onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
+                <i class="fa fa-info-circle"></i> Report an Issue
+              </a>
+            </div>
           </div>
         </div>`
     }
