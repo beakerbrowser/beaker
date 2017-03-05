@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Editor</title>
+  <link rel="stylesheet" href="beaker:font-awesome.css">
+  <link rel="stylesheet" href="beaker:editor.css">
+</head>
+<body>
+  <div class="window">
+    <div class="window-content">
+      <div class="editor-wrapper">
+        <div class="editor-nav"></div>
+        <div class="editor-editor">
+          <div class="header"></div>
+          <div id="editable-container" class="hidden"></div>
+          <div id="uneditable-container" class="hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    
+  <script src="beaker:editor/vs/loader.js"></script>
+  <script>
+  require.config({ paths: { 'vs': 'beaker:editor/vs' }});
+  require(['vs/editor/editor.main'], function() {
+    window.editor = monaco.editor.create(document.getElementById('editable-container'), {
+      lineNumbersMinChars: 4,
+      automaticLayout: true,
+      fixedOverflowWidgets: true,
+      roundedSelection: false
+    })
+    window.dispatchEvent(new Event('editor-created'))
+  })
+  </script>
+  <script src="beaker:editor.js"></script>
+</body>
+</html>

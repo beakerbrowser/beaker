@@ -1,0 +1,102 @@
+@import "../photon.min.less";
+
+@import "../base/reset.less";
+
+// Beaker components
+@import "../components/buttons.less";
+@import "../components/inputs.less";
+@import "../components/modal.less";
+@import "../com/toolbar.less";
+
+html, body {
+  height: 100%;
+}
+
+.muted {
+  color: gray;
+}
+.hidden {
+  display: none;
+}
+.thin {
+  font-weight: 300;
+}
+.flex-fill {
+  flex: 1;
+}
+.sep {
+  border-left: 1px solid #ddd;
+}
+.icon-info {
+  color: transparent;
+  -webkit-text-stroke: 1px #333;
+}
+
+.header {
+  display: flex;
+  font-size: 13px;
+  height: 30px;
+}
+
+.editor-wrapper {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+.editor-nav {
+  flex: 0 0 200px;
+  background: #f6f6f9;
+  height: 100%;
+  overflow: auto;
+}
+.editor-editor {
+  flex: 1;
+  height: 100%;
+}
+
+.sitetitle {
+  font-size: 11px;
+  padding: 0.5rem;
+  background: #e0e0e6;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.filetree {
+  font-size: 13px;
+  color: #444;
+}
+.subtree {
+  padding-left: 1em;
+}
+.filetree .item {
+  padding: 5px 5px 5px 25px;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-user-select: none;
+}
+.filetree .item:hover {
+  background: #ededf0;
+}
+.filetree .folder {
+  position: relative;
+}
+.filetree .folder > .fa {
+  position: absolute;
+  left: 8px;
+  top: 7px;
+}
+.filetree .item.selected {
+  background: #4766ff;
+  color: #fff;
+}
+
+#editable-container,
+#uneditable-container {
+  height: ~"calc(100vh - 30px)";
+  width: 100%;
+}
+
+#uneditable-container {
+  padding: 0.5rem;
+}
