@@ -35,7 +35,6 @@
 
   .dropdown-items {
     width: 275px;
-    padding: @padding-component--tight 0 0 0;
   }
 
   .footer {
@@ -58,14 +57,21 @@
   }
 
   .grid {
-    padding: 0 @padding-component;
+    padding: @padding-component @padding-component @padding-component--tight @padding-component;
     &:extend(.flex);
     justify-content: space-between;
+
+    // Make the last item in the flex container float to the left
+    &.default:after {
+      content: '';
+      flex: auto;
+      flex-basis: 33%
+    }
   }
 
   .grid-item {
-    width: 70px;
-    height: 65px;
+    flex-basis: 33%;
+    height: 60px;
     text-align: center;
     line-height: 12px;
     font-size: 11px;

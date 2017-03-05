@@ -44,7 +44,9 @@ export class DropMenuNavbarBtn {
     var dropdownEl = ''
     if (this.isDropdownOpen) {
       let pageSpecificEls
+      let pageSpecificGrid = ''
       let page = pages.getActive()
+
       if (page.getURL().startsWith('dat://')) {
         pageSpecificEls = [
           yo`
@@ -56,8 +58,20 @@ export class DropMenuNavbarBtn {
             <div class="grid-item" onclick=${e => this.onFork(e)}>
               <i class="fa fa-code-fork"></i>
               Fork Site
+            </div>`,
+          yo`
+            <div class="grid-item">
+              <i class="fa fa-pencil-square-o"></i>
+              Edit Site
             </div>`
         ]
+      }
+
+      if (pageSpecificEls) {
+        pageSpecificGrid = yo`
+          <div class="grid page">
+            ${pageSpecificEls}
+          </div>`
       }
 
       let downloadEls = activeDownloads.map(d => {
@@ -114,9 +128,10 @@ export class DropMenuNavbarBtn {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle visible">
-            <div class="grid">
-              ${pageSpecificEls}
+            ${pageSpecificGrid}
+            ${pageSpecificEls ? yo`<hr>` : ''}
 
+            <div class="grid default">
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:downloads')}>
                 <i class="fa fa-download"></i>
                 Downloads
@@ -125,6 +140,11 @@ export class DropMenuNavbarBtn {
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:history')}>
                 <i class="fa fa-history"></i>
                 History
+              </div>
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:bookmarks')}>
+                <i class="fa fa-star"></i>
+                Bookmarks
               </div>
 
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:library')}>
