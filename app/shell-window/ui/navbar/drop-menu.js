@@ -47,14 +47,14 @@ export class DropMenuNavbarBtn {
       if (page.getURL().startsWith('dat://')) {
         pageSpecificEls = [
           yo`
-            <div class="td-item" onclick=${e => this.onOpenView(e, 'files')}>
-              <i class="fa fa-file-code"></i>
-              View Site Files
+            <div class="grid-item" onclick=${e => this.onOpenView(e, 'files')}>
+              <i class="fa fa-file-code-o"></i>
+              Site Files
             </div>`,
           yo`
-            <div class="td-item" onclick=${e => this.onOpenView(e, 'fork')}>
+            <div class="grid-item" onclick=${e => this.onOpenView(e, 'fork')}>
               <i class="fa fa-code-fork"></i>
-              Fork this Site
+              Fork Site
             </div>`,
         ]
       }
