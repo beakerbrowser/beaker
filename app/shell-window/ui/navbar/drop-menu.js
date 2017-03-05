@@ -46,10 +46,16 @@ export class DropMenuNavbarBtn {
       let page = pages.getActive()
       if (page.getURL().startsWith('dat://')) {
         pageSpecificEls = [
-          yo`<div class="td-item" onclick=${e => this.onOpenView(e, 'files')}><span class="icon icon-folder"></span> View Site Files</div>`,
-          yo`<div class="td-item" onclick=${e => this.onFork(e)}><span class="icon icon-flow-branch" style="position: relative; left: 2px"></span> Fork this Site</div>`,
-          yo`<div class="td-item" onclick=${e => this.onToggleLiveReloading(e)}><span class="icon icon-flash" style="position: relative; left: -1px"></span> Turn ${page.isLiveReloading() ? 'off' : 'on'} Live Reloading</div>`,
-          yo`<hr />`
+          yo`
+            <div class="td-item" onclick=${e => this.onOpenView(e, 'files')}>
+              <i class="fa fa-file-code"></i>
+              View Site Files
+            </div>`,
+          yo`
+            <div class="td-item" onclick=${e => this.onFork(e)}>
+              <i class="fa fa-code-fork"></i>
+              Fork this Site
+            </div>`
         ]
       }
 
@@ -95,17 +101,34 @@ export class DropMenuNavbarBtn {
           ${ctrlsEl}
         </div>`
       })
-      dropdownEl = yo`<div class="toolbar-dropdown toolbar-drop-menu-dropdown">
-        ${pageSpecificEls}
-        <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:downloads')}><span class="icon icon-down-circled"></span> Downloads</div>
-        <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:history')}><span class="icon icon-back-in-time"></span> History</div>
-        <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:settings')}><span class="icon icon-list"></span> Settings</div>
-        ${downloadEls.length ? yo`<hr />` : ''}
-        ${downloadEls}
-        <hr />
-        <div class="td-item" onclick=${e => this.onOpenPage(e, 'https://groups.google.com/forum/#!forum/beaker-browser')}><span class="icon icon-mail"></span> Mailing List</div>
-        <div class="td-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}><span class="icon icon-attention"></span> Report an Issue</div>
-      </div>`
+      dropdownEl = yo`
+        <div class="toolbar-dropdown dropdown toolbar-drop-menu-dropdown">
+          <div class="dropdown-items with-triangle visible">
+            ${pageSpecificEls}
+            <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:downloads')}>
+              <i class="fa fa-download"></i>
+              Downloads
+            </div>
+            <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:history')}>
+              <i class="fa fa-history"></i>
+              History
+            </div>
+            <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:settings')}>
+              <i class="fa fa-gear"></i>
+              Settings
+            </div>
+            <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:library')}>
+              <i class="fa fa-book"></i>
+              Your Library
+            </div>
+            ${downloadEls.length ? yo`<hr />` : ''}
+            ${downloadEls}
+            <hr />
+            <a class="td-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
+              <i class="fa fa-info"></i> Report an Issue
+            </a>
+          </div>
+        </div>`
     }
 
     // render btn
