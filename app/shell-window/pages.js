@@ -166,7 +166,7 @@ export function create (opts) {
       } else if (page.siteInfo) {
         var archive = new DatArchive(page.siteInfo.key)
         page.liveReloadEvents = archive.createFileActivityStream()
-        page.liveReloadEvents.addEventListener('changed', () => {
+        page.liveReloadEvents.addEventListener('invalidated', () => {
           page.triggerLiveReload(page.siteInfo.key)
         })
       }
