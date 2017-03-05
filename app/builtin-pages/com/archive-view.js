@@ -1,6 +1,4 @@
 import * as yo from 'yo-yo'
-import { createArchiveFlow, editArchiveFlow } from '../com/modals/edit-site'
-import { forkArchiveFlow } from '../com/modals/fork-dat'
 import { archiveFiles, onClickSelectFiles, addFiles } from '../com/archive-files'
 import { archiveHistory } from '../com/archive-history'
 import { writeToClipboard } from '../../lib/fg/event-handlers'
@@ -31,7 +29,7 @@ function renderEmpty () {
   return yo`<div class="archive-view">
     <div class="archive-empty-banner">
       <h2>Library</h2>
-      <p>Share files, pages, and websites. <a class="link" onclick=${createArchiveFlow}>Create new archive</a>.</p>
+      <p>Share files, pages, and websites. <a class="link" onclick=${createArchive}>Create new archive</a>.</p>
     </div>
   </div>`
 }
@@ -158,7 +156,7 @@ function rMetadata (archive) {
 function rEditBtn (archive) {
   if (archive.info.isOwner) {
     return yo`
-      <a class="edit" onclick=${() => editArchiveFlow(archive)}>
+      <a class="edit" onclick=${() => editArchive(archive)}>
         <i class="fa fa-pencil"></i>
         Edit
       </a>`
@@ -200,7 +198,7 @@ function rToolbar (archive) {
 
 function rForkBtn (archive) {
   return yo`
-    <a onclick=${() => forkArchiveFlow(archive)}>
+    <a onclick=${() => forkArchive(archive)}>
       <i class="fa fa-code-fork"></i>
       Fork
     </a>`
@@ -273,6 +271,20 @@ function rMenuItems (archive) {
 function setCurrentView (view) {
   currentView = view
   window.dispatchEvent(new Event('render'))
+}
+
+async function createArchive () {
+  var archive = await DatArchive.create()
+  window.history.pushState(null, '', viewUrl(archive.url))
+}
+
+function editArchive (archive) {
+  archive.updateManifest()
+}
+
+async function forkArchive (archive) {
+  var fork = await DatArchive.fork(archive)
+  window.history.pushState(null, '', viewUrl(fork.url))
 }
 
 function showMenu () {

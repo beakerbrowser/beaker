@@ -74,7 +74,7 @@ async function writeFile (url, path, content, opts) {
 //
 
 test('archive.listFiles', async t => {
-  async function listFiles (url, path, opts) {
+  async function listFiles (url, path, opts={}) {
     return app.client.executeAsync((url, path, opts, done) => {
       var archive = new DatArchive(url)
       archive.listFiles(path, opts).then(done, done)
@@ -166,8 +166,10 @@ test('DatArchive.create rejection', async t => {
   })
 
   // reject the prompt
-  await app.client.windowByIndex(0)
-  await app.client.click('.prompt-reject')
+  await app.client.windowByIndex(2)
+  await app.client.waitUntilWindowLoaded()
+  await app.client.waitForExist('.cancel')
+  await app.client.click('.cancel')
   await app.client.windowByIndex(1)
 
   // fetch & test the res
@@ -188,8 +190,10 @@ test('DatArchive.create', async t => {
   })
 
   // accept the prompt
-  await app.client.windowByIndex(0)
-  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(2)
+  await app.client.waitUntilWindowLoaded()
+  await app.client.waitForExist('button[type="submit"]')
+  await app.client.click('button[type="submit"]')
   await app.client.windowByIndex(1)
 
   // fetch & test the res
@@ -226,6 +230,47 @@ test('DatArchive.create', async t => {
   t.deepEqual(details.value.userSettings.isSaved, true)
 })
 
+test('archive.updateManifest', async t => {
+
+  // updateManifest updates the manifest file
+  // =
+
+  // start the prompt
+  await app.client.execute(url => {
+    // put the result on the window, for checking later
+    window.res = null
+    var archive = new DatArchive(url)
+    archive.updateManifest({title: 'New Title', description: 'New Description'}).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, createdDatURL)
+
+  // accept the prompt
+  await app.client.windowByIndex(2)
+  await app.client.waitUntilWindowLoaded()
+  await app.client.waitForExist('button[type="submit"]')
+  await app.client.click('button[type="submit"]')
+  await app.client.windowByIndex(1)  
+
+  // check the dat.json
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.readFile('dat.json').then(done, done)
+  }, createdDatURL)
+  var manifest
+  try {
+    var manifest = JSON.parse(res.value)
+  } catch (e) {
+    console.log('unexpected error parsing manifest', res.value)
+  }
+  t.deepEqual(manifest.title, 'New Title')
+  t.deepEqual(manifest.description, 'New Description')
+  t.falsy(manifest.trash)
+  t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
+  t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
+})
+
 test('DatArchive.fork', async t => {
   // start the prompt
   await app.client.execute((url) => {
@@ -238,8 +283,10 @@ test('DatArchive.fork', async t => {
   }, createdDatURL)
 
   // accept the prompt
-  await app.client.windowByIndex(0)
-  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(2)
+  await app.client.waitUntilWindowLoaded()
+  await app.client.waitForExist('button[type="submit"]')
+  await app.client.click('button[type="submit"]')
   await app.client.windowByIndex(1)
 
   // fetch & test the res
@@ -260,11 +307,11 @@ test('DatArchive.fork', async t => {
   } catch (e) {
     console.log('unexpected error parsing manifest', res.value)
   }
-  t.deepEqual(manifest.title, 'The Title')
+  t.deepEqual(manifest.title, 'New Title')
   t.deepEqual(manifest.description, 'The Description 2')
   t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
   t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
-  t.deepEqual(manifest.forkOf[0], createdDatURL)
+  t.deepEqual(manifest.forkOf[0].replace(/(\/)$/,''), createdDatURL)
 })
 
 test('archive.writeFile', async t => {
@@ -440,7 +487,7 @@ test('archive.writeFile & archive.createDirectory doesnt allow writes to archive
 
   await app.client.windowByIndex(0)
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({ title: 'Another Test Dat' }).then(done, done)
+    beaker.library.createArchive({ title: 'Another Test Dat' }).then(done, done)
   })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
@@ -544,8 +591,8 @@ test('archive.getInfo', async t => {
     archive.getInfo({stats: true}).then(done, done)
   }, createdDatURL)
   var info = res.value
-  t.deepEqual(info.title, 'The Title')
-  t.deepEqual(info.description, 'The Description')
+  t.deepEqual(info.title, 'New Title')
+  t.deepEqual(info.description, 'New Description')
   t.deepEqual(info.createdBy.url, testRunnerDatURL.slice(0, -1))
   t.deepEqual(info.createdBy.title, 'Test Runner Dat')
   t.truthy(info.stats)
@@ -553,35 +600,6 @@ test('archive.getInfo', async t => {
   t.truthy(info.stats.content.blocksTotal)
   t.deepEqual(info.stats.meta.blocksProgress, info.stats.meta.blocksTotal)
   t.deepEqual(info.stats.content.blocksProgress, info.stats.content.blocksTotal)
-})
-
-test('archive.updateManifest', async t => {
-
-  // updateManifest updates the manifest file
-  // =
-
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.updateManifest({title: 'New Title', description: 'New Description', trash: 'discarded'}).then(done, done)
-  }, createdDatURL)
-  t.falsy(res.value)
-
-  // check the dat.json
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.readFile('dat.json').then(done, done)
-  }, createdDatURL)
-  var manifest
-  try {
-    var manifest = JSON.parse(res.value)
-  } catch (e) {
-    console.log('unexpected error parsing manifest', res.value)
-  }
-  t.deepEqual(manifest.title, 'New Title')
-  t.deepEqual(manifest.description, 'New Description')
-  t.falsy(manifest.trash)
-  t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
-  t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
 })
 
 test('archive.download', async t => {
@@ -649,7 +667,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create().then(done,done)
+    beaker.library.createArchive().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -673,7 +691,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create().then(done,done)
+    beaker.library.createArchive().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -697,7 +715,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create().then(done,done)
+    beaker.library.createArchive().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -721,7 +739,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create().then(done,done)
+    beaker.library.createArchive().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -787,7 +805,7 @@ test('DatArchive.exportToArchive', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create().then(done,done)
+    beaker.library.createArchive().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -810,7 +828,7 @@ test('DatArchive.exportToArchive', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create().then(done,done)
+    beaker.library.createArchive().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -835,7 +853,7 @@ test('archive.createFileActivityStream', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create().then(done,done)
+    beaker.library.createArchive().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)

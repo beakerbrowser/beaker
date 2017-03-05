@@ -49,7 +49,7 @@ export default class DatArchive extends EventTarget {
     return dat.getInfo(this.url, opts)
   }
 
-  updateManifest(manifest) {
+  updateManifest(manifest={}) {
     return dat.updateManifest(this.url, manifest)
   }
 
