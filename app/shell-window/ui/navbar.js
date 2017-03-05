@@ -187,15 +187,7 @@ function render (id, page) {
   var toolbarActionDat = ''
 
   if (isViewingDat) {
-    let saveBtnClass = 'nav-save-btn'
-    let saveBtnTitle = 'Save to your library'
     let forkBtnTitle = 'Copy This Site to Your Library'
-
-    if (page.siteInfo && page.siteInfo.userSettings.isSaved) {
-      saveBtnClass += ' active'
-      saveBtnTitle = 'Remove from your library'
-    }
-
     let liveReloadBtnCls = 'nav-live-reload-btn'
     let liveReloadBtnTitle = 'Turn on live reloading'
 
@@ -209,10 +201,6 @@ function render (id, page) {
       yo`
         <button class=${liveReloadBtnCls} title=${liveReloadBtnTitle} onclick=${onClickLiveReload}>
           <span class="fa fa-bolt"></span>
-        </button>`,
-      yo`
-        <button class=${saveBtnClass} title="Save this site to your library" onclick=${onClickSaveDat}>
-          <span class="fa fa-floppy-o"></span>
         </button>`
     ]
 
@@ -573,29 +561,13 @@ function openDatView (e, view) {
 async function onClickForkDat (e) {
   var page = getEventPage(e)
   if (!page || !page.getURL().startsWith('dat://')) return
-    
+
   var archive = await DatArchive.fork(page.getURL())
   page.loadURL(archive.url)
 }
 
 function onClickViewFiles (e) {
-  openDatView(e, 'files')  
-}
-
-function onClickSaveDat (e) {
-  var page = getEventPage(e)
-  if (!page || !page.siteInfo) return
-
-  var info = page.siteInfo
-  if (info.userSettings.isSaved) {
-    beaker.library.remove(info.key).then(done)
-  } else {
-    beaker.library.add(info.key).then(done)
-  }
-  function done (settings) {
-    info.userSettings = settings
-    update(page)
-  }
+  openDatView(e, 'files')
 }
 
 function onClickLiveReload (e) {
