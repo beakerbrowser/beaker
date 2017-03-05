@@ -1,6 +1,7 @@
 import { remote } from 'electron'
 import EventEmitter from 'events'
 import path from 'path'
+import fs from 'fs'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as promptbar from './ui/promptbar'
@@ -29,6 +30,7 @@ var activePage = null
 var events = new EventEmitter()
 var webviewsDiv = document.getElementById('webviews')
 var closedURLs = []
+var cachedMarkdownRendererScript
 
 // exported functions
 // =
@@ -75,6 +77,7 @@ export function create (opts) {
     zoom: 0, // what's the current zoom level?
 
     // current page's info
+    contentType: null, // what is the content-type of the page?
     favicons: null, // what are the favicons of the page?
     faviconDominantColor: null, // what's the computed dominant color of favicon?
     bookmark: null, // this page's bookmark object, if it's bookmarked
@@ -576,6 +579,15 @@ function onDidStopLoading (e) {
       statusBar.setIsLoading(false)
     }
 
+    // markdown rendering
+    // inject the renderer script if the page is markdown
+    if (page.contentType === 'text/x-markdown') {
+      if (!cachedMarkdownRendererScript) {
+        cachedMarkdownRendererScript = fs.readFileSync(path.join(remote.app.getAppPath(), 'markdown-renderer.build.js'), 'utf8')
+      }
+      page.webviewEl.executeJavaScript(cachedMarkdownRendererScript)
+    }
+
     // HACK
     // inject some corrections to the user-agent styles
     // real solution is to update electron so we can change the user-agent styles
@@ -624,6 +636,11 @@ function onDidGetResponseDetails (e) {
   if (page) {
     // we're goin
     page.isReceivingAssets = true
+    try {
+      page.contentType = e.headers['content-type'][0] || null
+    } catch (e) {
+      page.contentType = null
+    }
     // set URL in navbar
     page.loadingURL = e.newURL
     page.siteInfoOverride = null
