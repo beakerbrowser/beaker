@@ -15,6 +15,14 @@ body.darwin #toolbar {
     padding: 0 4px;
     display: flex;
     height: 28px;
+
+    &.dat:before {
+      content: '|';
+      display: block;
+      color: @color-text--transparent;
+      padding-right: 8px;
+      font-size: 16px;
+    }
   }
 }
 

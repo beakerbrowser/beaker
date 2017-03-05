@@ -183,9 +183,13 @@ function render (id, page) {
 
   // dat buttons
   var datBtns = ''
+  var toolbarActionDatBtns = ''
+  var toolbarActionDat = ''
+
   if (isViewingDat) {
     let saveBtnClass = 'nav-save-btn'
     let saveBtnTitle = 'Save to your library'
+    let forkBtnTitle = 'Copy This Site to Your Library'
 
     if (page.siteInfo && page.siteInfo.userSettings.isSaved) {
       saveBtnClass += ' active'
@@ -200,6 +204,7 @@ function render (id, page) {
       liveReloadBtnTitle = 'Turn off live reloading'
     }
 
+
     datBtns = [
       yo`
         <button class=${liveReloadBtnCls} title=${liveReloadBtnTitle} onclick=${onClickLiveReload}>
@@ -210,6 +215,14 @@ function render (id, page) {
           <span class="fa fa-floppy-o"></span>
         </button>`
     ]
+
+    toolbarActionDatBtns = [
+      yo`
+        <button class="toolbar-btn" title=${forkBtnTitle} onclick=${onClickForkDat}>
+          <i class="fa fa-clone"></i>
+        </button>`
+    ]
+    toolbarActionDat = yo`<div class="toolbar-group dat">${toolbarActionDatBtns}</div>`
   } else if (siteHasDatAlternative) {
     datBtns = [
       yo`<button title="Go to Dat Version of this Site" onclick=${onClickGotoDatVersion}><span class="fa fa-share-alt"></span></button>`,
@@ -293,6 +306,8 @@ function render (id, page) {
       </button>
       ${reloadBtn}
     </div>
+    ${toolbarActionDat}
+
     <div class="toolbar-input-group">
       ${siteInfoNavbarBtn.render()}
       ${locationPrettyView}
