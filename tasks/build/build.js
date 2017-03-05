@@ -48,6 +48,7 @@ var bundleApplication = function () {
     bundle(srcDir.path('background-process.js'),  srcDir.path('background-process.build.js')),
     bundle(srcDir.path('webview-preload.js'),     srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd() }),
     bundle(srcDir.path('shell-window.js'),        srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
+    bundle(srcDir.path('markdown-renderer.js'),   srcDir.path('markdown-renderer.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(bpDir.path('downloads.js'),            bpDir.path('downloads.build.js'), { browserify: true, basedir: bpDir.cwd() }),
     bundle(bpDir.path('library.js'),              bpDir.path('library.build.js'), { browserify: true, basedir: bpDir.cwd() }),
     bundle(bpDir.path('bookmarks.js'),            bpDir.path('bookmarks.build.js'), { browserify: true, basedir: bpDir.cwd() }),
