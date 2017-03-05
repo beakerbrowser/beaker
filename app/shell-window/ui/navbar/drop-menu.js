@@ -62,7 +62,7 @@ export class DropMenuNavbarBtn {
 
       let downloadEls = activeDownloads.map(d => {
         // status
-        var status = d.state
+        var status = d.state === 'completed' ? '' : d.state
         if (status == 'progressing') {
           status = prettyBytes(d.receivedBytes) + ' / ' + prettyBytes(d.totalBytes)
           if (d.isPaused)
