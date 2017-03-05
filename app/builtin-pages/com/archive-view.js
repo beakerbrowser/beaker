@@ -260,9 +260,9 @@ function rMenu (archive) {
 function rMenuItems (archive) {
   return yo`
     <ul class="dropdown-items">
-      <li>${rEditBtn(archive)}</li>
-      <li>${rForkBtn(archive)}</li>
-      <li>${rSaveBtn(archive)}</li>
+      <li class="menu-link">${rEditBtn(archive)}</li>
+      <li class="menu-link">${rForkBtn(archive)}</li>
+      <li class="menu-link">${rSaveBtn(archive)}</li>
     </ul>`
 }
 

@@ -1,9 +1,37 @@
 @import "../components/dropdown";
+@import "../components/link";
 @import "../utils/flex";
 @import "../base/spacing";
 @import "../base/colors";
 
+.toolbar-dropdown-menu-btn {
+  position: relative;
+
+  progress {
+    position: absolute;
+    // TODO: This is jank. Instead of automatically opening the menu and showing this progress
+    // bar, let's add a similar pop up like Chrome does on the bottom of the
+    // screen. -tbv
+    bottom: -43%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
 .toolbar-dropdown {
+
+  h2 {
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  hr {
+    // TODO: remove this once we pull out photonkit -tbv
+    margin: 0;
+    border-bottom: 1px solid @border-menu;
+  }
 
   .dropdown-items {
     width: 275px;
@@ -57,6 +85,32 @@
       background: @background-menu;
       border: 1px solid @border-menu;
     }
+  }
+
+  .downloads {
+    padding: @padding-component--tight @padding-component;
+    font-size: 11px;
+
+    a {
+      &:extend(.link);
+    }
+
+    a:hover {
+      &:extend(.link:hover);
+    }
+  }
+
+  .downloads-list {
+    margin: @padding-component--tight 0;
+  }
+
+  .download-item {
+    width: 100%;
+    margin-bottom: @padding-component--tight;
+  }
+
+  .download-item-ctrls a {
+    margin-right: 3px;
   }
 }
 

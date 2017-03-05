@@ -35,6 +35,7 @@ export class DropMenuNavbarBtn {
 
     // render the progress bar if downloading anything
     var progressEl = ''
+
     if ((progressingDownloads.length > 0 || this.shouldPersistProgressBar) && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
       progressEl = yo`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
     }
@@ -61,7 +62,7 @@ export class DropMenuNavbarBtn {
 
       let downloadEls = activeDownloads.map(d => {
         // status
-        var status = d.state
+        var status = d.state === 'completed' ? '' : d.state
         if (status == 'progressing') {
           status = prettyBytes(d.receivedBytes) + ' / ' + prettyBytes(d.totalBytes)
           if (d.isPaused)
@@ -74,35 +75,44 @@ export class DropMenuNavbarBtn {
         if (d.state == 'completed') {
           // actions
           if (!d.fileNotFound) {
-            ctrlsEl = yo`<div class="grid-item-ctrls">
-              <a href="#" onclick=${e => this.onOpen(e, d)}>open file</a> |
-              <a href="#" onclick=${e => this.onShow(e, d)}>show in folder</buttoan>
-            </div>`
+            ctrlsEl = yo`
+              <li class="download-item-ctrls complete">
+                <a onclick=${e => this.onOpen(e, d)}>Open file</a>
+                <a onclick=${e => this.onShow(e, d)}>Show in folder</a>
+              </li>`
           } else {
-            ctrlsEl = yo`<div class="grid-item-ctrls">File not found (moved or deleted)</div>`
+            ctrlsEl = yo`
+              <li class="download-item-ctrls not-found">
+                File not found (moved or deleted)
+              </li>`
           }
         } else if (d.state == 'progressing') {
-          ctrlsEl = yo`<div class="grid-item-ctrls">
-            ${d.isPaused
-             ? yo`<a href="#" onclick=${e => this.onResume(e, d)}>resume</a>`
-             : yo`<a href="#" onclick=${e => this.onPause(e, d)}>pause</a>`}
-            |
-            <a href="#" onclick=${e => this.onCancel(e, d)}>cancel</a>
-          </div>`
+          ctrlsEl = yo`
+            <li class="download-item-ctrls paused">
+              ${d.isPaused
+              ? yo`<a onclick=${e => this.onResume(e, d)}>Resume</a>`
+              : yo`<a onclick=${e => this.onPause(e, d)}>Pause</a>`}
+              <a onclick=${e => this.onCancel(e, d)}>Cancel</a>
+            </li>`
         }
 
         // render download
-        return yo`<div class="grid-item border">
-          <div class="grid-item-name"><strong>${d.name}</strong></div>
-          <div class="grid-item-status">${status}</div>
-          ${ d.state == 'progressing'
-            ? yo`<div class="grid-item-progress"><progress value=${d.receivedBytes} max=${d.totalBytes}></progress></div>`
-            : '' }
-          ${ctrlsEl}
-        </div>`
+        return yo`
+          <li class="download-item">
+            <div class="name">${d.name}</div>
+            <div class="status">${status}</div>
+
+            ${ d.state == 'progressing'
+              ? yo`
+                <div class="progress">
+                  <progress value=${d.receivedBytes} max=${d.totalBytes}></progress>
+                </div>`
+              : '' }
+            ${ctrlsEl}
+          </li>`
       })
       dropdownEl = yo`
-        <div class="toolbar-dropdown dropdown toolbar-drop-menu-dropdown">
+        <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle visible">
             <div class="grid">
               ${pageSpecificEls}
@@ -126,9 +136,18 @@ export class DropMenuNavbarBtn {
                 <i class="fa fa-gear"></i>
                 Settings
               </div>
-           </div>
-            ${downloadEls.length ? yo`<hr />` : ''}
-            ${downloadEls}
+            </div>
+
+            ${downloadEls.length ? yo`
+              <div>
+                <hr>
+                <div class="downloads">
+                  <h2>Downloads</h2>
+                  <ul class="downloads-list">${downloadEls}</ul>
+                  <a onclick=${e => this.onClearDownloads(e)}>Clear Downloads</a>
+                </div>
+              </div>` : ''}
+
             <div class="footer">
               <a onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
                 <i class="fa fa-info-circle"></i> Report an Issue
@@ -139,21 +158,22 @@ export class DropMenuNavbarBtn {
     }
 
     // render btn
-    return yo`<div class="toolbar-drop-menu">
-      <button class="toolbar-btn toolbar-drop-menu-btn ${this.isDropdownOpen?'pressed':''}" onclick=${e => this.onClickBtn(e)} title="Menu">
-        <span class="fa fa-bars"></span>
-        ${progressEl}
-      </button>
-      ${dropdownEl}
-    </div>`
+    return yo`
+      <div class="toolbar-dropdown-menu">
+        <button class="toolbar-btn toolbar-dropdown-menu-btn ${this.isDropdownOpen?'pressed':''}" onclick=${e => this.onClickBtn(e)} title="Menu">
+          <span class="fa fa-bars"></span>
+          ${progressEl}
+        </button>
+        ${dropdownEl}
+      </div>`
   }
 
   updateActives () {
-    Array.from(document.querySelectorAll('.toolbar-drop-menu')).forEach(el => yo.update(el, this.render()))
+    Array.from(document.querySelectorAll('.toolbar-dropdown-menu')).forEach(el => yo.update(el, this.render()))
   }
 
   doAnimation () {
-    Array.from(document.querySelectorAll('.toolbar-drop-menu-btn')).forEach(el => 
+    Array.from(document.querySelectorAll('.toolbar-dropdown-menu-btn')).forEach(el =>
       el.animate([
         {transform: 'scale(1.0)', color:'inherit'},
         {transform: 'scale(1.5)', color:'#06c'},
@@ -231,6 +251,13 @@ export class DropMenuNavbarBtn {
         download.fileNotFound = true
         this.updateActives()
       })
+  }
+
+  onClearDownloads (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    this.downloads = []
+    this.updateActives()
   }
 
   onOpenView (e, view) {
