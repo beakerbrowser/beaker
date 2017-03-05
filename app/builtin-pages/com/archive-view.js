@@ -89,10 +89,11 @@ function renderArchive (archive, opts) {
 
       <p class="archive-desc">
         ${rDescription(archive)}
-        ${rReadOnly(archive)}
         ${rProvinence(archive)}
       </p>
 
+
+      ${rReadOnly(archive)}
       ${rMetadata(archive)}
       ${rToolbar(archive)}
 
@@ -222,10 +223,10 @@ function rSaveBtn (archive) {
 function rReadOnly (archive) {
   if (archive.info.isOwner) return ''
   return yo`
-    <span class="readonly">
-      <i class="fa fa-eye-slash"></i>
-      read-only
-    </span>`
+    <p class="message archive-readonly">
+      <i class="fa fa-eye"></i>
+      You're viewing a read-only version of this site. <a onclick=${() => forkArchiveFlow(archive)}>Save an editable version to your library</a>.
+    </p>`
 }
 
 function rSubnav (archive) {

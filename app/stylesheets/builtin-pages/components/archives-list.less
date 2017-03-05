@@ -1,6 +1,6 @@
-@import "./link";
-@import "../base/colors";
-@import "../base/spacing";
+@import "../../components/link";
+@import "../../base/colors";
+@import "../../base/spacing";
 
 @archives-item-height: 30px;
 
@@ -13,6 +13,7 @@
     height: @archives-item-height;
     padding: 0 @padding-builtin-page;
     transition: background .1s ease;
+    letter-spacing: .1px;
 
     i {
       margin-right: @margin-icon;
@@ -33,7 +34,7 @@
       background: @color-link;
       color: #fff;
       -webkit-font-smoothing: antialiased;
-      font-weight: 800;
+      font-weight: 600;
 
       i {
         // the folder-open icon is wider than the folder icon and makes the text
