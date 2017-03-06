@@ -75,7 +75,7 @@ export function archiveFiles (archive) {
            href="beaker:library/${archiveKey}/${parentPath(archive.path)}"
            title="Parent directory"
            onclick=${pushUrl}>
-           parent
+           <i class="fa fa-level-up"></i> /${archive.path}
         </a>
       </li>`
   }
