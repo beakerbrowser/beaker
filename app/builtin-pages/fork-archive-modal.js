@@ -120,7 +120,7 @@ function render () {
 
   var helpText = `Create a copy of ${renderArchiveTitle()} and save it to your library.`
   if (isSelfFork) {
-    helpText = 'This site wants to create a copy of itself in your library.'
+    helpText = 'This site wants to create a copy of itself.'
   }
 
   yo.update(document.querySelector('main'), yo`<main>
