@@ -41,7 +41,7 @@ export function archiveFiles (archive) {
           href="beaker:library/${archiveKey}/${path}"
           title=${name}
           onclick=${pushUrl}>
-          <i class="fa fa-folder-o"></i>
+          <i class="fa fa-folder"></i>
           <span>${name}</span>
         </a>`
     } else {
