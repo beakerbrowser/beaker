@@ -35,6 +35,14 @@
     }
   }
 
+  &.parent .name a {
+    &:extend(.link);
+
+    &:hover {
+      &:extend(.link:hover);
+    }  
+  }
+
   &.directory .name i {
     color: @color-link;
   }
