@@ -45,7 +45,10 @@ export default {
     var win = BrowserWindow.fromWebContents(this.sender)
     await assertSenderIsFocused(this.sender)
     var createdBy = this.sender.getURL()
-    var res = await showModal(win, 'fork-archive', {url, title, description, createdBy})
+    var key1 = await lookupUrlDatKey(url)
+    var key2 = await lookupUrlDatKey(createdBy)
+    var isSelfFork = key1 === key2
+    var res = await showModal(win, 'fork-archive', {url, title, description, createdBy, isSelfFork})
     if (!res || !res.url) throw new UserDeniedError()
     return res.url
   },

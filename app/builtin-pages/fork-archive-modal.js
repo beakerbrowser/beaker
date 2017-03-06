@@ -4,6 +4,7 @@ import {Archive} from 'builtin-pages-lib'
 // state
 var archive
 var isDownloading = false
+var isSelfFork = false
 
 // form variables
 var title = ''
@@ -41,10 +42,14 @@ window.setup = async function (opts) {
   }
 
   // render
+  isSelfFork = opts.isSelfFork
   title = opts.title || ''
   description = opts.description || ''
   createdBy = opts.createdBy || undefined
   render()
+
+  // select and focus title input
+  document.querySelector('input[name="title"]').select()
 }
 
 // event handlers
@@ -113,21 +118,21 @@ function render () {
     progressEl = yo`<div class="fork-dat-progress">Ready to fork.</div>`
   }
 
-  var helpText = 'Create a copy of this site and save it to your library'
-  if (createdBy && !createdBy.startsWith('beaker:')) {
-    helpText = 'This page wants to ' + helpText.toLowerCase()
+  var helpText = `Create a copy of ${renderArchiveTitle()} and save it to your library.`
+  if (isSelfFork) {
+    helpText = 'This site wants to create a copy of itself in your library.'
   }
 
   yo.update(document.querySelector('main'), yo`<main>
     <div class="modal">
       <div class="modal-inner">
         <div class="fork-dat-modal">
-          <h2 class="title">Fork ${renderArchiveTitle()}</h2>
+          <h2 class="title">Fork ${renderArchiveTitle('site')}</h2>
           <p class="help-text">${helpText}</p>
 
           <form onsubmit=${onSubmit}>
             <label for="title">Title</label>
-            <input name="title" tabindex="1" value=${title} placeholder="New name" onchange=${onChangeTitle} />
+            <input name="title" tabindex="1" value=${title} placeholder="New title" onchange=${onChangeTitle} autofocus />
 
             <label for="desc">Description</label>
             <input name="desc" tabindex="2" value=${description} placeholder="New description" onchange=${onChangeDescription} />
@@ -147,8 +152,10 @@ function render () {
   </main>`)
 }
 
-function renderArchiveTitle() {
-  var t = archive.info.title ? `"${archive.info.title}"` : 'site'
+function renderArchiveTitle(fallback) {
+  var t = archive.info.title && `"${archive.info.title}"`
+  if (!t && fallback) t = fallback
+  if (!t) t = `${archive.info.key.slice(0, 8)}...`
   if (t.length > 100) {
     t = t.slice(0, 96) + '..."'
   }
