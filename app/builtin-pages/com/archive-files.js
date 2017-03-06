@@ -67,16 +67,28 @@ export function archiveFiles (archive) {
       </li>`
   }
 
-  // helper to render the 'up' link
+  // helper to render the parent links
   function renderParent () {
+    // create an array of the parent path segments
+    var parentParts = archive.path.split('/').filter(Boolean)
+
+    // toplevel link
+    var links = [
+      yo`<a href="beaker:library/${archiveKey}/" onclick=${pushUrl}><i class="fa fa-level-up"></i></a>`,
+      ' / '
+    ]
+    // intermediate links
+    for (let i=0; i < parentParts.length - 1; i++) {
+      let path = parentParts.slice(0, i+1).join('/')
+      links.push(yo`<a href="beaker:library/${archiveKey}/${path}" onclick=${pushUrl}>${parentParts[i]}</a>`)
+      links.push(' / ')
+    }
+    // current dir
+    links.push(parentParts.pop())
+    // render
     return yo`
-      <li class="files-list-item">
-        <a class="name"
-           href="beaker:library/${archiveKey}/${parentPath(archive.path)}"
-           title="Parent directory"
-           onclick=${pushUrl}>
-           <i class="fa fa-level-up"></i> /${archive.path}
-        </a>
+      <li class="files-list-item parent">
+        <span class="name">${links}</span>
       </li>`
   }
 
@@ -170,10 +182,6 @@ export function addFiles (archive, files) {
 
 function trimLeadingSlash (str) {
   return str.replace(/^(\/)*/, '')
-}
-
-function parentPath (str) {
-  return str.split('/').slice(0, -1).join('/')
 }
 
 function onToggleHidden () {
