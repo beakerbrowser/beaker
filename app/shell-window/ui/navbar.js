@@ -207,7 +207,7 @@ function render (id, page) {
     toolbarActionDatBtns = [
       yo`
         <button class="toolbar-btn" title=${forkBtnTitle} onclick=${onClickForkDat}>
-          <i class="fa fa-clone"></i>
+          <i class="fa fa-code-fork"></i>
         </button>`
     ]
     toolbarActionDat = yo`<div class="toolbar-group dat">${toolbarActionDatBtns}</div>`
