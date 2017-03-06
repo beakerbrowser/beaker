@@ -225,6 +225,10 @@ async function assertWritePermission (archive, sender) {
     return true
   }
 
+  // self-modification always allowed
+  var senderDatKey = await lookupUrlDatKey(sender.getURL())
+  if (senderDatKey === archiveKey) return true
+
   // ensure the sender is allowed to write
   var allowed = await queryPermission(perm, sender)
   if (allowed) return true
@@ -319,4 +323,17 @@ async function getCreatedBy (sender) {
     return {url: origin, title: originTitle}
   }
   return {url: origin}
+}
+
+async function lookupUrlDatKey (url) {
+  if (url.startsWith('dat://') === false) {
+    return false // not a dat site
+  }
+
+  var urlp = parseURL(url)
+  try {
+    return await datDns.resolveName(urlp.hostname)
+  } catch (e) {
+    return false
+  }
 }

@@ -9,7 +9,7 @@
   "main": "background-process.build.js",
   "dependencies": {
     "beaker-error-constants": "^1.0.0",
-    "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib#c5303975cf3f43c1966b7346fc0bd82cd07f2d13",
+    "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib#b73274c07412fb44797e952d69ff66330060357a",
     "cids": "^0.2.0",
     "co": "^4.6.0",
     "concat-stream": "^1.5.2",
