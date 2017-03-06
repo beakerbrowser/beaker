@@ -59,7 +59,7 @@ export function createShellWindow () {
   registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
 
   // register event handlers
-  win.on('scroll-touch-begin', sendToWebContents('scroll-touch-begin'))
+  win.on('scroll-touch-begin', sendScrollTouchBegin)
   win.on('scroll-touch-end', sendToWebContents('scroll-touch-end'))
   win.on('focus', sendToWebContents('focus'))
   win.on('blur', sendToWebContents('blur'))
@@ -184,4 +184,15 @@ function onGoForward (win) {
 
 function sendToWebContents (event) {
   return e => e.sender.webContents.send('window-event', event)
+}
+
+function sendScrollTouchBegin(e) {
+  // get the cursor x/y within the window
+  var cursorPos = screen.getCursorScreenPoint()
+  var winPos = e.sender.getBounds()
+  cursorPos.x -= winPos.x; cursorPos.y -= winPos.y
+  e.sender.webContents.send('window-event', 'scroll-touch-begin', {
+    cursorX: cursorPos.x,
+    cursorY: cursorPos.y
+  })
 }
