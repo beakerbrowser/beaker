@@ -17,12 +17,16 @@ body.darwin #toolbar {
     display: flex;
     height: 28px;
 
-    &.dat:before {
+    &.dat {
+      padding-left: 8px;
+    }
+
+    &.dat:after {
       content: '|';
       display: block;
       color: @color-text--transparent;
-      padding-right: 8px;
       font-size: 16px;
+      padding-left: 8px;
     }
   }
 }

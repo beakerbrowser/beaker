@@ -187,7 +187,8 @@ function render (id, page) {
   var toolbarActionDat = ''
 
   if (isViewingDat) {
-    let forkBtnTitle = 'Copy This Site to Your Library'
+    let forkBtnTitle = 'Fork This Site to Your Library'
+    let editBtnTitle = 'Edit This Site'
     let liveReloadBtnCls = 'nav-live-reload-btn'
     let liveReloadBtnTitle = 'Turn on live reloading'
 
@@ -205,6 +206,10 @@ function render (id, page) {
     ]
 
     toolbarActionDatBtns = [
+      yo`
+        <button class="toolbar-btn" title=${editBtnTitle} onclick=${onClickEditDat}>
+          <i class="fa fa-edit"></i>
+        </button>`,
       yo`
         <button class="toolbar-btn" title=${forkBtnTitle} onclick=${onClickForkDat}>
           <i class="fa fa-code-fork"></i>
@@ -294,8 +299,6 @@ function render (id, page) {
       </button>
       ${reloadBtn}
     </div>
-    ${toolbarActionDat}
-
     <div class="toolbar-input-group">
       ${siteInfoNavbarBtn.render()}
       ${locationPrettyView}
@@ -308,6 +311,7 @@ function render (id, page) {
       </button>
       ${autocompleteDropdown}
     </div>
+    ${toolbarActionDat}
     <div class="toolbar-group">
       ${dropMenuNavbarBtn.render()}
       ${updatesNavbarBtn.render()}
@@ -564,6 +568,19 @@ async function onClickForkDat (e) {
 
   var archive = await DatArchive.fork(page.getURL())
   page.loadURL(archive.url)
+}
+
+async function onClickEditDat (e) {
+  var page = getEventPage(e)
+  if (!page || !page.getURL().startsWith('dat://')) return
+
+  // open tab loading
+  const url = `beaker:editor/${page.getURL().slice('dat://'.length)}`
+  if (e.metaKey || e.ctrlKey) { // popup
+    pages.setActive(pages.create(url))
+  } else {
+    page.loadURL(url) // goto
+  }
 }
 
 function onClickViewFiles (e) {
