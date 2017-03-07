@@ -60,7 +60,7 @@ export class DropMenuNavbarBtn {
               Fork Site
             </div>`,
           yo`
-            <div class="grid-item">
+            <div class="grid-item" onclick=${e => this.onEdit(e)}>
               <i class="fa fa-pencil-square-o"></i>
               Edit Site
             </div>`
@@ -308,6 +308,19 @@ export class DropMenuNavbarBtn {
     }
     var archive = await DatArchive.fork(page.getURL())
     page.loadURL(archive.url)
+  }
+
+
+  async onEdit (e) {
+    // close dropdown
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.updateActives()
+    
+    var page = pages.getActive()
+    if (!page || !page.getURL().startsWith('dat://')) {
+      return
+    }
+    page.loadURL(`beaker:editor/${page.getURL().slice('dat://'.length)}`)
   }
 
   onToggleLiveReloading (e) {
