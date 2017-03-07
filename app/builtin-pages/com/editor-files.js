@@ -1,5 +1,10 @@
 import yo from 'yo-yo'
 
+// globals
+// =
+
+var lastClicked = false
+
 // exported api
 // =
 
@@ -46,18 +51,19 @@ function rNode (archive, node) {
 }
 
 function rDirectory (archive, node) {
-  let cls = ''
+  let icon = ''
   let children = ''
+  const cls = isSelected(archive, node) ? 'selected' : ''
 
   if (node.isExpanded) {
     children = yo`<div class="subtree">${rChildren(archive, node.children)}</div>`
-    cls = 'open-'
+    icon = 'open-'
   }
 
   return yo`
     <div>
-      <div class="item folder" onclick=${e => onClickDirectory(e, archive, node)}>
-        <span class="fa fa-folder-${cls}o"></span>${node.niceName}
+      <div class="item folder ${cls}" onclick=${e => onClickDirectory(e, archive, node)}>
+        <span class="fa fa-folder-${icon}o"></span>${node.niceName}
       </div>
       ${children}
     </div>
@@ -65,11 +71,19 @@ function rDirectory (archive, node) {
 }
 
 function rFile (archive, node) {
-  const cls = (archive.activeModel && archive.activeModel.path === normalizePath(node.entry.name)) ? 'selected' : ''
+  const cls = isSelected(archive, node) ? 'selected' : ''
   const isChanged = archive.dirtyFiles[node.entry.name] ? '*' : ''
   return yo`
     <div class="item file ${cls}" onclick=${e => onClickFile(e, archive, node)}>${node.niceName}${isChanged}</div>
   `
+}
+
+function isSelected (archive, node) {
+  if (lastClicked) {
+    return (lastClicked === node.entry.name)
+  }
+  if (!archive.activeModel) return false
+  return (archive.activeModel.path === normalizePath(node.entry.name))
 }
 
 // event handlers
@@ -78,10 +92,12 @@ function rFile (archive, node) {
 function onClickDirectory (e, archive, node) {
   // toggle expanded
   node.isExpanded = !node.isExpanded
+  lastClicked = node.entry.name
   redraw(archive)
 }
 
 function onClickFile (e, archive, node) {
+  lastClicked = node.entry.name
   var evt = new Event('open-file')
   evt.detail = { path: node.entry.name, node }
   window.dispatchEvent(evt)
