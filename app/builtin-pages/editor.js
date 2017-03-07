@@ -66,6 +66,12 @@ function renderNav () {
 // =
 
 window.addEventListener('editor-created', () => {
+  // set editor to read-only if not the owner
+  if (!archive.info.isOwner) {
+    editor.updateOptions({readOnly: true})
+  }
+
+  // try to set active
   setActive('index.html')
 })
 
