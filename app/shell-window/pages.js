@@ -471,7 +471,6 @@ function onDomReady (e) {
     if (!navbar.isLocationFocused(page)) {
       page.webviewEl.focus()
     }
-    zoom.setZoomFromSitedata(page)
   }
 }
 
@@ -521,6 +520,7 @@ function onLoadCommit (e) {
       page.bookmark = bookmark
       navbar.update(page)
     })
+    zoom.setZoomFromSitedata(page, parseURL(page.getIntendedURL()).origin)
     // stop autocompleting
     navbar.clearAutocomplete()
     // close any prompts

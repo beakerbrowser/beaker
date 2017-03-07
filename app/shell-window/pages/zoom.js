@@ -3,9 +3,9 @@ import * as navbar from '../ui/navbar'
 
 const ZOOM_STEP = 0.5
 
-export function setZoomFromSitedata (page) {
+export function setZoomFromSitedata (page, origin) {
   // load zoom from sitedata
-  var origin = page.getURLOrigin()
+  origin = origin || page.getURLOrigin()
   if (!origin)
     return
   beakerSitedata.get(origin, 'zoom').then(v => {
