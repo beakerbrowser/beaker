@@ -3,17 +3,19 @@ import co from 'co'
 import {Archive, FileTree} from 'builtin-pages-lib'
 import rFiles from './com/editor-files'
 
-const DAT_KEY = 'a8ce2efa903b30f6ba1fe57bd4504a4ca8b0bdfa2370af7a2e2e031d8d289543'
-const archive = new Archive(DAT_KEY)
 const models = {} // all in-memory models
-archive.dirtyFiles = {} // which files have been modified?
-archive.activeModel = null // what file are we viewing?
+var archive = null
 
 setup()
 async function setup () {
   try {
     // load the archive
-    console.log('Loading', DAT_KEY)
+    var datHostname = window.location.pathname.split('/')[1]
+    var datKey = await DatArchive.resolveName(datHostname)
+    console.log('Loading', datKey)
+    archive = new Archive(datKey)
+    archive.dirtyFiles = {} // which files have been modified?
+    archive.activeModel = null // what file are we viewing?
     archive.fileTree = new FileTree(archive)
     await archive.setup('/')
     await archive.fileTree.setup()
@@ -85,7 +87,7 @@ function onFork () {
 
 function onOpenInNewWindow () {
   var path = archive.activeModel ? archive.activeModel.path : ''
-  beakerBrowser.openUrl(`dat://${DAT_KEY}/${path}`)
+  beakerBrowser.openUrl(`${archive.url}/${path}`)
 }
 
 function onArchiveChanged () {
