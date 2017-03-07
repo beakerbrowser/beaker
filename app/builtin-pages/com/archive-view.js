@@ -159,7 +159,7 @@ function rEditBtn (archive) {
     return yo`
       <a class="edit" onclick=${() => editArchive(archive)}>
         <i class="fa fa-pencil"></i>
-        Edit
+        Edit Details
       </a>`
   }
   return ''
@@ -220,6 +220,14 @@ function rSaveBtn (archive) {
     </a>`
 }
 
+function rEditorBtn (archive) {
+  return yo`
+    <a href=${'beaker:editor/' + archive.info.key} target="_blank">
+      <i class="fa fa-edit"></i>
+      Open in Editor
+    </a>`
+}
+
 function rReadOnly (archive) {
   if (archive.info.isOwner) return ''
   return yo`
@@ -262,6 +270,7 @@ function rMenuItems (archive) {
     <ul class="dropdown-items">
       <li class="menu-link">${rEditBtn(archive)}</li>
       <li class="menu-link">${rForkBtn(archive)}</li>
+      <li class="menu-link">${rEditorBtn(archive)}</li>
       <li class="menu-link">${rSaveBtn(archive)}</li>
     </ul>`
 }
