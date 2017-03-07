@@ -119,63 +119,47 @@ function onDidChangeContent (path) {
 // =
 
 async function load (path) {
-  try {
-    // load the file content
-    path = normalizePath(path)
-    const url = archive.url + '/' + path
-    const str = await archive.readFile(path, 'utf8')
+  // load the file content
+  path = normalizePath(path)
+  const url = archive.url + '/' + path
+  const str = await archive.readFile(path, 'utf8')
 
-    // setup the model
-    models[path] = monaco.editor.createModel(str, null, monaco.Uri.parse(url))
-    models[path].path = path
-    models[path].isEditable = true
-    models[path].lang = models[path].getModeId()
-    models[path].onDidChangeContent(onDidChangeContent(path))
-  } catch (e) {
-    console.error(e)
-    throw e
-  }
+  // setup the model
+  models[path] = monaco.editor.createModel(str, null, monaco.Uri.parse(url))
+  models[path].path = path
+  models[path].isEditable = true
+  models[path].lang = models[path].getModeId()
+  models[path].onDidChangeContent(onDidChangeContent(path))
 }
 
 async function save () {
   const activeModel = archive.activeModel
-  try {
-    if (!activeModel || !archive.dirtyFiles[activeModel.path]) {
-      return
-    }
-
-    // write the file content
-    await archive.writeFile(activeModel.path, activeModel.getValue(), 'utf-8')
-
-    // update state and render
-    archive.dirtyFiles[activeModel.path] = false
-    renderNav()
-  } catch (e) {
-    console.log(activeModel.path, models, models[activeModel.path])
-    console.error(e)
-    throw e
+  if (!activeModel || !archive.dirtyFiles[activeModel.path]) {
+    return
   }
+
+  // write the file content
+  await archive.writeFile(activeModel.path, activeModel.getValue(), 'utf-8')
+
+  // update state and render
+  archive.dirtyFiles[activeModel.path] = false
+  renderNav()
 }
 
 async function setActive (path) {
-  try {
-    path = normalizePath(path)
+  path = normalizePath(path)
 
-    // load according to editability
-    const isEditable = checkIfIsEditable(path)
-    if (isEditable) {
-      await setEditableActive(path)
-    } else {
-      await setUneditableActive(path)
-    }
-
-    // set active
-    archive.activeModel = models[path]
-    renderNav()
-  } catch (e) {
-    console.error(e)
-    throw e
+  // load according to editability
+  const isEditable = checkIfIsEditable(path)
+  if (isEditable) {
+    await setEditableActive(path)
+  } else {
+    await setUneditableActive(path)
   }
+
+  // set active
+  archive.activeModel = models[path]
+  renderNav()
 }
 
 function normalizePath (path) {

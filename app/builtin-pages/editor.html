@@ -21,9 +21,14 @@
   </div>
 
     
-  <script src="beaker:editor/vs/loader.js"></script>
+  <script src="beaker:editor/min/vs/loader.js"></script>
   <script>
-  require.config({ paths: { 'vs': 'beaker:editor/vs' }});
+  require.config({ paths: { 'vs': 'beaker:editor/min/vs' }});
+  window.MonacoEnvironment = {
+    getWorkerUrl: function(workerId, label) {
+      return 'beaker:editor-worker-proxy.js';
+    }
+  };
   require(['vs/editor/editor.main'], function() {
     window.editor = monaco.editor.create(document.getElementById('editable-container'), {
       lineNumbersMinChars: 4,
