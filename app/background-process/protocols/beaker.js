@@ -17,7 +17,7 @@ import {archivesDebugPage} from '../networks/dat/debugging'
 const BEAKER_CSP = `
   default-src 'self' beaker:;
   img-src beaker-favicon: data: dat: http: https;
-  script-src 'self' beaker: 'sha256-lmHW+d05DiHV5z2Oa6Y2aFHJlL189TJ/GSM7icbBEk4=';
+  script-src 'self' beaker: 'sha256-ylFFF5MRrQVwRZixoCf61YOBaiBZswktfzd1u6arCaQ=';
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
 `.replace(/\n/g, '')
@@ -154,19 +154,22 @@ function beakerServer (req, res) {
   if (requestUrl === 'beaker:builtin-pages/start.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/start.build.js'))
   }
-  if (requestUrl.startsWith('beaker:editor/vs/')) {
-    let subpath = requestUrl.slice('beaker:editor/vs/'.length).replace(/\.\./g, '')
+  if (requestUrl.startsWith('beaker:editor/min/')) {
+    let subpath = requestUrl.slice('beaker:editor/min/'.length).replace(/\.\./g, '')
     subpath = subpath.split('#')[0]
     var type = 'application/javascript'
     if (subpath.endsWith('css')) type = 'text/css'
     if (subpath.endsWith('svg')) type = 'image/svg+xml'
-    return cb(200, 'OK', type, path.join(__dirname, 'node_modules/monaco-editor/min/vs', subpath))
+    return cb(200, 'OK', type, path.join(__dirname, 'node_modules/monaco-editor/min/', subpath))
   }
   if (requestUrl === 'beaker:editor' || requestUrl.startsWith('beaker:editor/')) {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/editor.html'))
   }
   if (requestUrl === 'beaker:editor.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/editor.build.js'))
+  }
+  if (requestUrl === 'beaker:editor-worker-proxy.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/editor-worker-proxy.js'))
   }
   if (requestUrl === 'beaker:editor.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/editor.css'))
