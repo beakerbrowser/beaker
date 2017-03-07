@@ -577,7 +577,7 @@ function onDidStopLoading (e) {
 
     // markdown rendering
     // inject the renderer script if the page is markdown
-    if (page.contentType === 'text/x-markdown') {
+    if (page.contentType === 'text/markdown' || page.contentType === 'text/x-markdown') {
       if (!cachedMarkdownRendererScript) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(remote.app.getAppPath(), 'markdown-renderer.build.js'), 'utf8')
       }
