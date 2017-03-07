@@ -477,11 +477,7 @@ function onDomReady (e) {
 
 function onNewWindow (e) {
   var page = create(e.url)
-  // HACK 
-  // https://github.com/electron/electron/issues/8505
-  // all tabs must be opened in the FG till this is fixed
-  // -prf
-  // if (e.disposition == 'foreground-tab')
+  if (e.disposition == 'foreground-tab')
     setActive(page)
 }
 
@@ -651,6 +647,10 @@ function onDidGetResponseDetails (e) {
 function onDidFinishLoad (e) {
   var page = getByWebview(e.target)
   if (page) {
+    // HACK to fix electron#8505
+    // can now allow visibility: hidden
+    page.webviewEl.classList.add('can-hide')
+
     // reset page object
     page.loadingURL = false
     page.isGuessingTheURLScheme = false

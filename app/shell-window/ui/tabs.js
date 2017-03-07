@@ -207,8 +207,7 @@ function onClickNew () {
 }
 
 function onClickDuplicate (page) {
-  // HACK https://github.com/electron/electron/issues/8505 forces setActive(), would prefer not to -prf
-  return () => pages.setActive(pages.create(page.getURL()))
+  return () => pages.create(page.getURL())
 }
 
 function onClickPin (page) {
