@@ -1,5 +1,5 @@
 import yo from 'yo-yo'
-import co from 'co'
+import mime from 'mime'
 import {Archive, FileTree} from 'builtin-pages-lib'
 import rFiles from './com/editor-files'
 
@@ -191,6 +191,16 @@ function checkIfIsEditable (path) {
       }
     }
   }
+  // lookup the mimetype
+  var mimetype = mime.lookup(path)
+  // text or application?
+  if (mimetype.startsWith('text/') || mimetype.startsWith('application/')) {
+    return true
+  }
+  // svg?
+  if (mimetype === 'image/svg+xml') {
+    return true
+  }
   return false
 }
 
@@ -205,12 +215,35 @@ async function setEditableActive (path) {
 }
 
 async function setUneditableActive (path) {
+  // lookup the mimetype
+  var mimetype = mime.lookup(path)
+
   // set the entry info
   models[path] = {path, isEditable: false, lang: ''}
-  document.getElementById('editable-container').classList.add('hidden')  
-  yo.update(document.getElementById('uneditable-container'), yo`
-    <div id="uneditable-container">
-      <img src=${archive.url + '/' + path} />
-    </div>
-  `)
+  document.getElementById('editable-container').classList.add('hidden')
+  if (mimetype.startsWith('image/')) {
+    yo.update(document.getElementById('uneditable-container'), yo`
+      <div id="uneditable-container">
+        <img src=${archive.url + '/' + path} />
+      </div>
+    `)
+  } else if (mimetype.startsWith('video/')) {
+    yo.update(document.getElementById('uneditable-container'), yo`
+      <div id="uneditable-container">
+        <video controls width="400" src=${archive.url + '/' + path}></video>
+      </div>
+    `)
+  } else if (mimetype.startsWith('audio/')) {
+    yo.update(document.getElementById('uneditable-container'), yo`
+      <div id="uneditable-container">
+        <audio controls width="400" src=${archive.url + '/' + path}></audio>
+      </div>
+    `)
+  } else {
+    yo.update(document.getElementById('uneditable-container'), yo`
+      <div id="uneditable-container">
+        Unsupported filetype, ${mimetype}
+      </div>
+    `)
+  }
 }

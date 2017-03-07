@@ -18,6 +18,7 @@ const BEAKER_CSP = `
   default-src 'self' beaker:;
   img-src beaker-favicon: data: dat: http: https;
   script-src 'self' beaker: 'sha256-lmHW+d05DiHV5z2Oa6Y2aFHJlL189TJ/GSM7icbBEk4=';
+  media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
 `.replace(/\n/g, '')
 
