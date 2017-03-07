@@ -114,14 +114,12 @@ export class DropMenuNavbarBtn {
         return yo`
           <li class="download-item">
             <div class="name">${d.name}</div>
-            <div class="status">${status}</div>
-
-            ${ d.state == 'progressing'
-              ? yo`
-                <div class="progress">
-                  <progress value=${d.receivedBytes} max=${d.totalBytes}></progress>
-                </div>`
-              : '' }
+            <div class="status">
+              ${ d.state == 'progressing'
+                ? yo`<progress value=${d.receivedBytes} max=${d.totalBytes}></progress>`
+                : '' }
+              ${status}
+            </div>
             ${ctrlsEl}
           </li>`
       })
@@ -164,7 +162,6 @@ export class DropMenuNavbarBtn {
                 <div class="downloads">
                   <h2>Downloads</h2>
                   <ul class="downloads-list">${downloadEls}</ul>
-                  <a onclick=${e => this.onClearDownloads(e)}>Clear Downloads</a>
                 </div>
               </div>` : ''}
 
@@ -211,6 +208,10 @@ export class DropMenuNavbarBtn {
 
   onNewDownload () {
     this.doAnimation()
+
+    // open the dropdown
+    this.isDropdownOpen = true
+    this.updateActives()
   }
 
   onSumProgress (sumProgress) {
