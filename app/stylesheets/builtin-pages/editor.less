@@ -42,9 +42,14 @@
 
   .header {
     &:extend(.flex);
+    flex-wrap: nowrap;
     height: 30px;
     justify-content: space-between;
     background: @border-menu;
+
+    .btn-bar {
+      flex-wrap: nowrap;
+    }
 
     .btn {
       height: 30px;
@@ -56,6 +61,9 @@
   .project-title {
     line-height: 30px;
     padding-left: 10px;
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
    .dirty-count {
      background: @border-menu;

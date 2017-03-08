@@ -40,9 +40,7 @@ function renderNav () {
     yo`
       <div class="editor-nav">
         <div class="header">
-          <div class="project-title">
-            ${archive.info.title}
-          </div>
+          <div class="project-title">${archive.info.title}</div>
 
           <div class="btn-bar">
             <button class="btn" title="Save" onclick=${save}>
