@@ -570,6 +570,7 @@ function onDidStopLoading (e) {
     var { protocol, hostname } = parseURL(url)
     page.siteInfo = null
     page.sitePerms = null
+    page.siteHasDatAlternative = false
     page.protocolInfo = { url, hostname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase() }
     if (protocol === 'https:') {
       page.checkForDatAlternative(hostname)
