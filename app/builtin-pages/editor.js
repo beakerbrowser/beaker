@@ -74,6 +74,10 @@ function renderNav () {
         <div class="file-info">
           ${activeModel ? rFileIcon(activeModel.path) : ''}
           ${activeModel ? activeModel.path : ''}${isChanged}
+        ${!archive.info.isOwner 
+          ? yo`<span>
+            - Read only. <a onclick=${onFork}><i class="fa fa-code-fork"></i>Fork this site</a> to make changes.
+          </span>` : ''}
         </div>
       </div>`
   )

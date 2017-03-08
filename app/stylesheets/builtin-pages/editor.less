@@ -5,6 +5,7 @@
 @import "../utils/flex";
 
 // Beaker components
+@import "../components/link";
 @import "../components/buttons.less";
 @import "../components/inputs.less";
 @import "../components/modal.less";
@@ -88,6 +89,10 @@
 
     i {
       margin-right: @margin-icon;
+    }
+
+    a {
+      &:extend(.link);
     }
   }
 }
