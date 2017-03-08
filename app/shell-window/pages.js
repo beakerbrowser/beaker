@@ -122,10 +122,22 @@ export function create (opts) {
       page.isReceivingAssets = false
       page.siteInfoOverride = null
 
+      // HACK to fix electron#8505
+      // dont allow visibility: hidden until set active
+      page.webviewEl.classList.remove('can-hide')
+
       // set and go
       page.loadingURL = url
       page.isGuessingTheURLScheme = opts && opts.isGuessingTheScheme
       page.webviewEl.loadURL(url)
+    },
+
+    // HACK wrap reload so we can remove can-hide class
+    reload() {
+      // HACK to fix electron#8505
+      // dont allow visibility: hidden until set active
+      page.webviewEl.classList.remove('can-hide')
+      page.webviewEl.reload()
     },
 
     // add/remove bookmark
@@ -221,7 +233,7 @@ export function create (opts) {
     ['goForward'],
     ['canGoForward'],
 
-    ['reload'],
+    // ['reload'], TEMPORARY see definition
     ['reloadIgnoringCache'],
     ['stop'],
 
@@ -347,6 +359,10 @@ export function setActive (page) {
   navbar.update()
   promptbar.update()
   events.emit('set-active', page)
+
+  // HACK to fix electron#8505
+  // can now allow visibility: hidden
+  page.webviewEl.classList.add('can-hide')
 }
 
 export function togglePinned (page) {
@@ -531,6 +547,7 @@ function onLoadCommit (e) {
 function onDidStartLoading (e) {
   var page = getByWebview(e.target)
   if (page) {
+    // update state
     page.manuallyTrackedIsLoading = true
     navbar.update(page)
     navbar.hideInpageFind(page)
@@ -647,10 +664,6 @@ function onDidGetResponseDetails (e) {
 function onDidFinishLoad (e) {
   var page = getByWebview(e.target)
   if (page) {
-    // HACK to fix electron#8505
-    // can now allow visibility: hidden
-    page.webviewEl.classList.add('can-hide')
-
     // reset page object
     page.loadingURL = false
     page.isGuessingTheURLScheme = false
