@@ -51,7 +51,7 @@ function rNode (archive, node) {
 }
 
 function rDirectory (archive, node) {
-  let icon = ''
+  let icon = 'right'
   let children = ''
   const cls = isSelected(archive, node) ? 'selected' : ''
 
@@ -63,7 +63,7 @@ function rDirectory (archive, node) {
   return yo`
     <div>
       <div class="item folder ${cls}" onclick=${e => onClickDirectory(e, archive, node)}>
-        <i class="fa fa-${icon}"></i>
+        <i class="fa fa-caret-${icon}"></i>
         ${node.niceName}
       </div>
       ${children}
