@@ -183,7 +183,8 @@ export function create (opts) {
       } else if (page.siteInfo) {
         var archive = new DatArchive(page.siteInfo.key)
         page.liveReloadEvents = archive.createFileActivityStream()
-        page.liveReloadEvents.addEventListener('invalidated', () => {
+        let event = (page.siteInfo.isOwner) ? 'changed' : 'invalidated'
+        page.liveReloadEvents.addEventListener(event, () => {
           page.triggerLiveReload(page.siteInfo.key)
         })
       }
