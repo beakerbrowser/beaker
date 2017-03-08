@@ -37,28 +37,36 @@ function renderNav () {
   // nav
   yo.update(
     document.querySelector('.editor-nav'),
-    yo`<div class="editor-nav">
-      <div class="sitetitle">${archive.info.title}</div>
-      ${rFiles(archive)}
-    </div>`
+    yo`
+      <div class="editor-nav">
+        <div class="project-title">${archive.info.title}</div>
+        ${rFiles(archive)}
+      </div>`
   )
   // header
   const activeModel = archive.activeModel
   const isChanged = (activeModel && archive.dirtyFiles[activeModel.path]) ? '*' : ''
   yo.update(
     document.querySelector('.header'),
-    yo`<div class="header">
-      <div class="btn" onclick=${save}><span class="fa fa-floppy"></span> Save</div>
-      <div class="file-info">
-        ${activeModel ? activeModel.path : ''}${isChanged}
-        ${activeModel
-          ? yo`<span class="muted thin">${activeModel.lang}</span>`
-          : ''}
-      </div>
-      <div class="flex-fill"></div>
-      <div class="btn" onclick=${onFork}><span class="fa fa-code-branch"></span> Fork</div>
-      <div class="btn" onclick=${onOpenInNewWindow}><span class="fa fa-popup"></span> Open</div>
-    </div>`
+    yo`
+      <div class="header">
+        <div class="btn" onclick=${save}><span class="fa fa-floppy"></span> Save</div>
+        <div class="file-info">
+          ${activeModel ? activeModel.path : ''}${isChanged}
+          ${activeModel
+            ? yo`<span class="muted thin">${activeModel.lang}</span>`
+            : ''}
+        </div>
+
+        <div class="btn" onclick=${onFork}>
+          <span class="fa fa-code-branch"></span> Fork
+        </div>
+
+        <div class="btn" onclick=${onOpenInNewWindow}>
+          <span class="fa fa-popup"></span>
+          Open
+        </div>
+      </div>`
   )
 }
 

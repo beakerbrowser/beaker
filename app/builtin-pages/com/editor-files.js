@@ -57,13 +57,14 @@ function rDirectory (archive, node) {
 
   if (node.isExpanded) {
     children = yo`<div class="subtree">${rChildren(archive, node.children)}</div>`
-    icon = 'open-'
+    icon = 'down'
   }
 
   return yo`
     <div>
       <div class="item folder ${cls}" onclick=${e => onClickDirectory(e, archive, node)}>
-        <span class="fa fa-folder-${icon}o"></span>${node.niceName}
+        <i class="fa fa-${icon}"></i>
+        ${node.niceName}
       </div>
       ${children}
     </div>
@@ -74,7 +75,9 @@ function rFile (archive, node) {
   const cls = isSelected(archive, node) ? 'selected' : ''
   const isChanged = archive.dirtyFiles[node.entry.name] ? '*' : ''
   return yo`
-    <div class="item file ${cls}" onclick=${e => onClickFile(e, archive, node)}>${node.niceName}${isChanged}</div>
+    <div class="item file ${cls}" onclick=${e => onClickFile(e, archive, node)}>
+      ${node.niceName}${isChanged}
+    </div>
   `
 }
 
