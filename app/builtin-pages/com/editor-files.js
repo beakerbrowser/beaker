@@ -3,7 +3,7 @@ import yo from 'yo-yo'
 // globals
 // =
 
-var lastClicked = false
+var expandedFolders = {}
 
 // exported api
 // =
@@ -57,7 +57,7 @@ function rDirectory (archive, node, depth) {
 
   const cls = isSelected(archive, node) ? 'selected' : ''
 
-  if (node.isExpanded) {
+  if (expandedFolders[node.entry.name]) {
     children = yo`
       <div class="subtree">
         ${rChildren(archive, node.children, depth + 1)}
@@ -101,8 +101,8 @@ function rFile (archive, node, depth) {
 }
 
 function isSelected (archive, node) {
-  if (lastClicked) {
-    return (lastClicked === node.entry.name)
+  if (archive.lastClickedNode) {
+    return (archive.lastClickedNode === node.entry.name)
   }
   if (!archive.activeModel) return false
   return (archive.activeModel.path === normalizePath(node.entry.name))
@@ -113,13 +113,15 @@ function isSelected (archive, node) {
 
 function onClickDirectory (e, archive, node) {
   // toggle expanded
-  node.isExpanded = !node.isExpanded
-  lastClicked = node.entry.name
+  expandedFolders[node.entry.name] = !expandedFolders[node.entry.name]
   redraw(archive)
+
+  var evt = new Event('open-folder')
+  evt.detail = { path: node.entry.name, node }
+  window.dispatchEvent(evt)
 }
 
 function onClickFile (e, archive, node) {
-  lastClicked = node.entry.name
   var evt = new Event('open-file')
   evt.detail = { path: node.entry.name, node }
   window.dispatchEvent(evt)

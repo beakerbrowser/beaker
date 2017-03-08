@@ -5,6 +5,7 @@ import rFiles from './com/editor-files'
 
 const models = {} // all in-memory models
 var archive = null
+var lastClickedFolder = false // used in 'new' interface
 
 setup()
 async function setup () {
@@ -16,6 +17,7 @@ async function setup () {
     archive = new Archive(datKey)
     archive.dirtyFiles = {} // which files have been modified?
     archive.activeModel = null // what file are we viewing?
+    archive.lastClickedNode = false // what path was last clicked?
     archive.fileTree = new FileTree(archive)
     await archive.setup('/')
     await archive.fileTree.setup()
@@ -43,6 +45,10 @@ function renderNav () {
           <div class="project-title">${archive.info.title}</div>
 
           <div class="btn-bar">
+            <button class="btn" title="New File" onclick=${newFileInterface}>
+              <i class="fa fa-plus"></i>
+            </button>
+
             <button class="btn" title="Save" onclick=${save}>
               <i class="fa fa-floppy-o"></i>
             </button>
@@ -64,6 +70,7 @@ function renderNav () {
     document.querySelector('.editor-editor .header'),
     yo`
       <div class="header">
+        <div id="new-file-popup"></div>
         <div class="file-info">
           ${activeModel ? rFileIcon(activeModel.path) : ''}
           ${activeModel ? activeModel.path : ''}${isChanged}
@@ -107,6 +114,14 @@ window.addEventListener('editor-created', () => {
 
 window.addEventListener('open-file', e => {
   setActive(e.detail.path)
+  archive.lastClickedNode = e.detail.path
+  lastClickedFolder = e.detail.path.split('/').slice(0, -1).join('/')
+})
+
+window.addEventListener('open-folder', e => {
+  archive.lastClickedNode = e.detail.path
+  lastClickedFolder = e.detail.path
+  renderNav()
 })
 
 window.addEventListener('keydown', e => {
@@ -117,14 +132,7 @@ window.addEventListener('keydown', e => {
 })
 
 function onFork () {
-  console.log(archive.url)
   DatArchive.fork(archive.url)
-}
-
-function onArchiveChanged () {
-  if (!archive.activeModel) return
-  // archive.files.setCurrentNodeByPath(activeModel.path, {allowFiles: true})
-  renderNav()
 }
 
 function onDidChangeContent (path) {
@@ -139,8 +147,33 @@ function onDidChangeContent (path) {
   }
 }
 
+async function onArchiveChanged () {
+  await archive.fileTree.setup()
+  renderNav()
+}
+
+function onSubmitNewFile (e) {
+  e.preventDefault()
+  var path = normalizePath(e.target.name.value)
+  archive.lastClickedNode = null // clear so that our new file gets highlighted
+  generate(path)
+  setActive(path)
+}
+
 // internal methods
 // =
+
+function generate (path) {
+  // setup the model  
+  path = normalizePath(path)
+  const url = archive.url + '/' + path
+  models[path] = monaco.editor.createModel('', null, monaco.Uri.parse(url))
+  models[path].path = path
+  models[path].isEditable = true
+  models[path].lang = models[path].getModeId()
+  models[path].onDidChangeContent(onDidChangeContent(path))
+  archive.dirtyFiles[path] = true
+}
 
 async function load (path) {
   // load the file content
@@ -171,6 +204,12 @@ async function save () {
 }
 
 async function setActive (path) {
+  if (path === false) {
+    archive.activeModel = null
+    renderNav()
+    return
+  }
+
   path = normalizePath(path)
 
   // load according to editability
@@ -216,6 +255,30 @@ function checkIfIsEditable (path) {
     return true
   }
   return false
+}
+
+function newFileInterface () {
+  // initial value
+  var value = ''
+  if (lastClickedFolder) {
+    value = lastClickedFolder + '/'
+  }
+
+  // render interface
+  yo.update(document.getElementById('new-file-popup'), 
+    yo`<div id="new-file-popup">
+      <form class="new-file-form" onsubmit=${onSubmitNewFile}>
+        <label>
+          Name<br>
+          <input type="text" name="name" />
+        </label>
+        <button class="btn" type="submit">Create</button>
+      </form>
+    </div>`
+  )
+  var input = document.querySelector('#new-file-popup input')
+  input.value = value
+  input.focus()
 }
 
 async function setEditableActive (path) {
