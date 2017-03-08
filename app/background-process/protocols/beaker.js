@@ -98,13 +98,13 @@ function beakerServer (req, res) {
   if (requestUrl === 'beaker:font-awesome.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/fonts/font-awesome/css/font-awesome.min.css'))
   }
-  if (requestUrl === 'beaker:font-awesome-webfont.woff2?v=4.7.0') {
+  if (requestUrl === 'beaker:fontawesome-webfont.woff2') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'assets/fonts/fontawesome-webfont.woff2'))
   }
-  if (requestUrl === 'beaker:fontawesome-webfont.woff?v=4.7.0') {
+  if (requestUrl === 'beaker:fontawesome-webfont.woff') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'assets/fonts/fontawesome-webfont.woff'))
   }
-  if (requestUrl === 'beaker:fontawesome-webfont.svg?v=4.7.0#fontawesomeregular') {
+  if (requestUrl === 'beaker:fontawesome-webfont.svg') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'assets/fonts/fontawesome-webfont.svg'))
   }
 
