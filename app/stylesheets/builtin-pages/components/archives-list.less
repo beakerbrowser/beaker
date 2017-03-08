@@ -1,6 +1,7 @@
 @import "../../components/link";
 @import "../../base/colors";
 @import "../../base/spacing";
+@import "../../utils/decorators";
 
 @archives-item-height: 30px;
 
@@ -20,14 +21,12 @@
     }
 
     a {
+      &:extend(.overflow-ellipsis);
       width: 100%;
       height: @archives-item-height;
       line-height: @archives-item-height;
       display: inline-block;
       vertical-align: middle;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     &.active {
