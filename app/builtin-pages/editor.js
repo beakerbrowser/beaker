@@ -34,11 +34,23 @@ async function setup () {
 // =
 
 function renderNav () {
-  // nav
+ // nav
   yo.update(
     document.querySelector('.editor-nav'),
     yo`
       <div class="editor-nav">
+        <div class="header">
+          <div class="btn" onclick=${save}><span class="fa fa-floppy"></span> Save</div>
+
+          <div class="btn" onclick=${onFork}>
+            <span class="fa fa-code-branch"></span> Fork
+          </div>
+
+          <div class="btn" onclick=${onOpenInNewWindow}>
+            <span class="fa fa-popup"></span>
+            Open
+          </div>
+        </div>
         <div class="project-title">
           ${archive.info.title}
           ${rDirtyFilesCount()}
@@ -46,28 +58,18 @@ function renderNav () {
         ${rFiles(archive)}
       </div>`
   )
-  // header
+
+  // editor header
   const activeModel = archive.activeModel
   const isChanged = (activeModel && archive.dirtyFiles[activeModel.path]) ? '*' : ''
+
   yo.update(
-    document.querySelector('.header'),
+    document.querySelector('.editor-editor .header'),
     yo`
       <div class="header">
-        <div class="btn" onclick=${save}><span class="fa fa-floppy"></span> Save</div>
         <div class="file-info">
+          ${activeModel ? rFileIcon(activeModel.path) : ''}
           ${activeModel ? activeModel.path : ''}${isChanged}
-          ${activeModel
-            ? yo`<span class="muted thin">${activeModel.lang}</span>`
-            : ''}
-        </div>
-
-        <div class="btn" onclick=${onFork}>
-          <span class="fa fa-code-branch"></span> Fork
-        </div>
-
-        <div class="btn" onclick=${onOpenInNewWindow}>
-          <span class="fa fa-popup"></span>
-          Open
         </div>
       </div>`
   )
@@ -81,6 +83,27 @@ function rDirtyFilesCount () {
    el = yo`<span class="dirty-count">${count}</span>`
   }
   return el
+}
+
+function rFileIcon (path) {
+  // lookup the mimetype
+  var mimetype = mime.lookup(path)
+  console.log(mimetype)
+  var cls = 'file-o'
+
+  if (mimetype.startsWith('image/')) {
+    cls = 'file-image-o'
+  } else if (mimetype.startsWith('video/')) {
+    cls = 'file-video-o'
+  } else if (mimetype.startsWith('audio/')) {
+    cls = 'file-audio-o'
+  } else if (mimetype.startsWith('text/html') || mimetype.startsWith('application/')) {
+    cls = 'file-code-o'
+  } else if (mimetype.startsWith('text/')) {
+    cls = 'file-text-o'
+  }
+
+  return yo`<i class="fa fa-${cls}"></i>`
 }
 
 // event handlers
