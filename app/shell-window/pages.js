@@ -57,6 +57,8 @@ export function create (opts) {
   } else
     opts = {}
 
+  url = url || DEFAULT_URL
+
   // create page object
   var id = (Math.random()*1000|0) + Date.now()
   var page = {
@@ -66,7 +68,7 @@ export function create (opts) {
     promptbarEl: promptbar.createEl(id),
 
     // page state
-    loadingURL: false, // what URL is being loaded, if any?
+    loadingURL: url, // what URL is being loaded, if any?
     isGuessingTheURLScheme: false, // did beaker guess at the url scheme? if so, a bad load may deserve a second try
     manuallyTrackedIsLoading: true, // used because the webview may never be ready, so webview.isLoading() isnt enough
     isWebviewReady: false, // has the webview loaded its methods?

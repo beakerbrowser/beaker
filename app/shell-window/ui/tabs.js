@@ -61,7 +61,8 @@ function drawTab (page) {
 
   // pick a favicon
   var favicon
-  if (page.isLoading() && page.getURL()) {
+  console.log(page.isLoading(), page.getIntendedURL())
+  if (page.isLoading() && page.getIntendedURL() !== pages.DEFAULT_URL) {
     // loading spinner
     favicon = yo`<div class="spinner"></div>`
     if (!page.isReceivingAssets)
@@ -122,7 +123,7 @@ function drawTab (page) {
     </svg>
     <div class="chrome-tab-bg"></div>
     <div class="chrome-tab-favicon">${favicon}</div>
-    <div class="chrome-tab-title">${getNiceTitle(page) || 'New tab'}</div>
+    <div class="chrome-tab-title">${getNiceTitle(page) || 'New Tab'}</div>
     <div class="chrome-tab-close" title="Close tab" onclick=${onClickTabClose(page)}></div>
     <svg width="15" height="30" class="right-edge">
       <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
