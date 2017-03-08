@@ -39,7 +39,10 @@ function renderNav () {
     document.querySelector('.editor-nav'),
     yo`
       <div class="editor-nav">
-        <div class="project-title">${archive.info.title}</div>
+        <div class="project-title">
+          ${archive.info.title}
+          ${rDirtyFilesCount()}
+        </div>
         ${rFiles(archive)}
       </div>`
   )
@@ -68,6 +71,16 @@ function renderNav () {
         </div>
       </div>`
   )
+}
+
+function rDirtyFilesCount () {
+  const count = Object.keys(archive.dirtyFiles).length
+  var el = ''
+
+  if (count > 0) {
+   el = yo`<span class="dirty-count">${count}</span>`
+  }
+  return el
 }
 
 // event handlers
