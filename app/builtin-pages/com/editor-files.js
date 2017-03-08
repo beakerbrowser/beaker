@@ -62,7 +62,7 @@ function rDirectory (archive, node) {
 
   return yo`
     <div>
-      <div class="item folder ${cls}" onclick=${e => onClickDirectory(e, archive, node)}>
+      <div class="item folder ${cls}" title=${node.niceName} onclick=${e => onClickDirectory(e, archive, node)}>
         <i class="fa fa-caret-${icon}"></i>
         ${node.niceName}
       </div>
@@ -75,7 +75,7 @@ function rFile (archive, node) {
   const cls = isSelected(archive, node) ? 'selected' : ''
   const isChanged = archive.dirtyFiles[node.entry.name] ? '*' : ''
   return yo`
-    <div class="item file ${cls}" onclick=${e => onClickFile(e, archive, node)}>
+    <div class="item file ${cls}" title=${node.niceName} onclick=${e => onClickFile(e, archive, node)}>
       ${node.niceName}${isChanged}
     </div>
   `
