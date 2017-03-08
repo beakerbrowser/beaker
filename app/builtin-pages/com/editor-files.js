@@ -82,7 +82,7 @@ function rDirectory (archive, node, depth) {
 
 function rFile (archive, node, depth) {
   const cls = isSelected(archive, node) ? 'selected' : ''
-  const isChanged = archive.dirtyFiles[node.entry.name] ? '*' : ''
+  const isChanged = archive.dirtyFiles[normalizePath(node.entry.name)] ? '*' : ''
   const padding = depth === 0 ? 20 : 25 + (depth * 5);
 
   return yo`

@@ -42,7 +42,6 @@ function renderNav () {
         <div class="header">
           <div class="project-title">
             ${archive.info.title}
-            ${rDirtyFilesCount()}
           </div>
 
           <div class="btn-bar">
@@ -79,20 +78,9 @@ function renderNav () {
   )
 }
 
-function rDirtyFilesCount () {
-  const count = Object.keys(archive.dirtyFiles).length
-  var el = ''
-
-  if (count > 0) {
-   el = yo`<span class="dirty-count">${count}</span>`
-  }
-  return el
-}
-
 function rFileIcon (path) {
   // lookup the mimetype
   var mimetype = mime.lookup(path)
-  console.log(mimetype)
   var cls = 'file-o'
 
   if (mimetype.startsWith('image/')) {
@@ -146,7 +134,6 @@ function onOpenInNewWindow () {
 
 function onArchiveChanged () {
   if (!archive.activeModel) return
-  // TODO
   // archive.files.setCurrentNodeByPath(activeModel.path, {allowFiles: true})
   renderNav()
 }
