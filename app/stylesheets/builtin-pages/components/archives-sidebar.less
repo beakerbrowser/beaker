@@ -1,19 +1,17 @@
 @import "../../base/spacing";
 @import "../../base/colors";
+@improt "../../utils/decorators";
 
 .archives-sidebar {
+  &:extend(.vertical-scroll);
+  &:extend(.hide-scrollbar all);
   position: fixed;
   top: 0;
   width: 200px;
   height: 100%;
   border-right: 1px solid @border-menu;
-  overflow-y: scroll;
   background: #fff;
   z-index: 3;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 .archives-sidebar-tools {

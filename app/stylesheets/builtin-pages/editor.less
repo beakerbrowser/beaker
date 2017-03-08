@@ -1,6 +1,7 @@
 @import "../photon.min.less";
 
 @import "../base/reset.less";
+@import "../utils/decorators";
 
 // Beaker components
 @import "../components/buttons.less";
@@ -42,7 +43,10 @@ html, body {
   height: 100%;
   width: 100%;
 }
+
 .editor-nav {
+  &:extend(.hide-scrollbar all);
+  &:extend(.vertical-scroll);
   position: absolute;
   left: 0;
   top: 0;
