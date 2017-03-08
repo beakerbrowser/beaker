@@ -92,6 +92,10 @@ function rFile (archive, node, depth) {
       onclick=${e => onClickFile(e, archive, node)}
       style=${'padding-left: ' + padding + 'px'}>
       ${node.niceName}${isChanged}
+
+      <button class="btn" title="Open Active File" onclick=${e => onOpenInNewWindow(e, archive, node)}>
+        <i class="fa fa-external-link"></i>
+      </button>
     </div>
   `
 }
@@ -124,4 +128,10 @@ function onClickFile (e, archive, node) {
 function normalizePath (path) {
   if (path.startsWith('/')) return path.slice(1)
   return path
+}
+
+function onOpenInNewWindow (e, archive, node) {
+  e.preventDefault()
+  e.stopPropagation()
+  beakerBrowser.openUrl(`${archive.url}/${normalizePath(node.entry.name)}`)
 }

@@ -50,10 +50,6 @@ function renderNav () {
             <button class="btn" title="Fork This Project" onclick=${onFork}>
               <i class="fa fa-code-fork"></i>
             </button>
-
-            <button class="btn" title="Open Active File" onclick=${onOpenInNewWindow}>
-              <i class="fa fa-external-link"></i>
-            </button>
           </div>
         </div>
         ${rFiles(archive)}
@@ -123,11 +119,6 @@ window.addEventListener('keydown', e => {
 function onFork () {
   console.log(archive.url)
   DatArchive.fork(archive.url)
-}
-
-function onOpenInNewWindow () {
-  var path = archive.activeModel ? archive.activeModel.path : ''
-  beakerBrowser.openUrl(`${archive.url}/${path}`)
 }
 
 function onArchiveChanged () {

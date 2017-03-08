@@ -116,6 +116,21 @@
     i {
       margin-right: 3px;
     }
+
+    .btn {
+      border: none;
+      background: none;
+      visibility: hidden;
+    }
+
+    &:hover .btn {
+      visibility: visible;
+    }
+
+    &.selected .btn {
+      visibility: visible;
+      color: #fff;
+    }
   }
 }
 
