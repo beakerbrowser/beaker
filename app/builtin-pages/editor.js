@@ -40,20 +40,24 @@ function renderNav () {
     yo`
       <div class="editor-nav">
         <div class="header">
-          <div class="btn" onclick=${save}><span class="fa fa-floppy"></span> Save</div>
-
-          <div class="btn" onclick=${onFork}>
-            <span class="fa fa-code-branch"></span> Fork
+          <div class="project-title">
+            ${archive.info.title}
+            ${rDirtyFilesCount()}
           </div>
 
-          <div class="btn" onclick=${onOpenInNewWindow}>
-            <span class="fa fa-popup"></span>
-            Open
+          <div class="btn-bar">
+            <button class="btn" title="Save" onclick=${save}>
+              <i class="fa fa-floppy-o"></i>
+            </button>
+
+            <button class="btn" title="Fork This Project" onclick=${onFork}>
+              <i class="fa fa-code-fork"></i>
+            </button>
+
+            <button class="btn" title="Open Active File" onclick=${onOpenInNewWindow}>
+              <i class="fa fa-external-link"></i>
+            </button>
           </div>
-        </div>
-        <div class="project-title">
-          ${archive.info.title}
-          ${rDirtyFilesCount()}
         </div>
         ${rFiles(archive)}
       </div>`

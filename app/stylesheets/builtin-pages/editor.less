@@ -2,6 +2,7 @@
 
 @import "../base/reset.less";
 @import "../utils/decorators";
+@import "../utils/flex";
 
 // Beaker components
 @import "../components/buttons.less";
@@ -9,18 +10,8 @@
 @import "../components/modal.less";
 @import "../com/toolbar.less";
 
-html, body {
-  height: 100%;
-}
-
-.muted {
-  color: gray;
-}
 .hidden {
   display: none;
-}
-.thin {
-  font-weight: 300;
 }
 .flex-fill {
   flex: 1;
@@ -28,15 +19,10 @@ html, body {
 .sep {
   border-left: 1px solid #ddd;
 }
+
 .icon-info {
   color: transparent;
   -webkit-text-stroke: 1px #333;
-}
-
-.header {
-  display: flex;
-  font-size: 13px;
-  height: 30px;
 }
 
 .editor-wrapper {
@@ -52,9 +38,24 @@ html, body {
   top: 0;
   width: 200px;
   height: 100%;
-  background: @background-menu;
+  // background: @background-menu;
+
+  .header {
+    &:extend(.flex);
+    height: 30px;
+    justify-content: space-between;
+    background: @border-menu;
+
+    .btn {
+      height: 30px;
+      border: none;
+      background: none;
+    }
+  }
 
   .project-title {
+    line-height: 30px;
+    padding-left: 10px;
 
    .dirty-count {
      background: @border-menu;
@@ -72,6 +73,15 @@ html, body {
 .editor-editor {
   margin-left: 200px;
   height: 100%;
+
+  .header {
+    padding: 5px 20px;
+    font-style: italic;
+
+    i {
+      margin-right: @margin-icon;
+    }
+  }
 }
 
 .filetree {
