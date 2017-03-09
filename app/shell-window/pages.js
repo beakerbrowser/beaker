@@ -599,6 +599,21 @@ function onDidStopLoading (e) {
     // markdown rendering
     // inject the renderer script if the page is markdown
     if (page.contentType === 'text/markdown' || page.contentType === 'text/x-markdown') {
+      // hide the unformatted text and provide some basic styles
+      page.webviewEl.insertCSS(`
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }
+        body > pre { display: none; }
+        main { display: flex; }
+        nav { max-width: 300px; padding-right: 2em; }
+        main > div { max-width: 800px; }
+        hr { border: 0; border-top: 1px solid #ccc; margin: 1em 0; }
+        blockquote { margin: 0; padding: 0 1em; border-left: 1em solid #eee; }
+        table { border-collapse: collapse; }
+        td, th { padding: 0.5em 1em; }
+        tbody tr:nth-child(odd) { background: #fafafa; }
+        tbody td { border-top: 1px solid #bbb; }
+        .switcher { position: absolute; top: 5px; right: 5px }
+      `)
       if (!cachedMarkdownRendererScript) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(remote.app.getAppPath(), 'markdown-renderer.build.js'), 'utf8')
       }
