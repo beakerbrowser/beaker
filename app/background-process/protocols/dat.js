@@ -165,10 +165,22 @@ function datServer (req, res) {
       debug('attempting to lookup', archiveKey)
       var hasExactMatch = false // if there's ever an exact match, then dont look for near-matches
       var filepath = decodeURIComponent(urlp.path)
-      if (!filepath) filepath = '/index.html'
+      if (!filepath) filepath = '/'
       if (filepath.indexOf('?') !== -1) filepath = filepath.slice(0, filepath.indexOf('?')) // strip off any query params
-      if (filepath.endsWith('/')) filepath += 'index.html'
+      var isFolder = filepath.endsWith('/')
       const checkMatch = (entry, name) => {
+        if (isFolder) {
+          // look for index.html
+          if (name === filepath + 'index.html') {
+            hasExactMatch = true
+            return true
+          }
+          // fallback to index.md
+          if (!hasExactMatch && name === filepath + 'index.md') {
+            return true
+          }
+          return false
+        }
         // check exact match
         if (name === filepath) {
           hasExactMatch = true
