@@ -135,8 +135,9 @@ window.addEventListener('keydown', e => {
   }
 })
 
-function onFork () {
-  DatArchive.fork(archive.url)
+async function onFork () {
+  var newArchive = await DatArchive.fork(archive.url)
+  window.location = 'beaker:editor/' + newArchive.url.slice('dat://'.length)
 }
 
 function onDidChangeContent (path) {
