@@ -161,7 +161,7 @@ function beakerServer (req, res) {
   // editor
   // =
   if (requestUrl === 'beaker://editor/main.css') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/library.css'))
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/editor.css'))
   }
   if (requestUrl === 'beaker://editor/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/editor.build.js'))

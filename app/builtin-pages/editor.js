@@ -3,6 +3,7 @@ import mime from 'mime'
 import {Archive, ArchivesList, FileTree} from 'builtin-pages-lib'
 import {render as renderArchivesList, renderArchivesListItems} from './com/archives-list'
 import {render as renderArchiveView} from './com/editor-archive-view'
+import {render as renderEditorOptions, defaultEditorOptions} from './com/editor-options'
 import {addFiles} from './com/archive-files'
 import {pushUrl} from '../lib/fg/event-handlers'
 import {ucfirst} from '../lib/strings'
@@ -22,6 +23,8 @@ var selectedPath = null // selected filepath within the Archive
 var models = {} // url => mocaco model
 var selectedModel = null // monaco model of the selected file
 var dirtyFiles = {} // url => bool, which files have been modified?
+var isViewingOptions = false // options screen on?
+var editorOptions = {}
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -43,6 +46,7 @@ window.history.replaceState = _wr('replaceState')
 // main
 // =
 
+readEditorOptions()
 setSidebarCollapsed(localStorage.isArchivesListCollapsed)
 setup()
 dragDrop(document.body, onDragDrop)
@@ -171,7 +175,17 @@ function configureEditor () {
   if (!window.editor) return
 
   // set editor to read-only if not the owner
-  editor.updateOptions({readOnly: (!selectedArchive || !selectedArchive.info.isOwner)})
+  editor.updateOptions({
+    readOnly: (!selectedArchive || !selectedArchive.info.isOwner),
+    wordWrap: editorOptions.wordWrap !== 'off',
+    wrappingColumn: editorOptions.wordWrap === 'auto' ? 0 : +editorOptions.wordWrapLength,
+    wrappingIndent: 'indent',
+    rulers: editorOptions.wordWrap === 'fixed' ? [+editorOptions.wordWrapLength] : [],
+    quickSuggestions: editorOptions.autoSuggest,
+    suggestOnTriggerCharacters: editorOptions.autoSuggest,
+    wordBasedSuggestions: editorOptions.autoSuggest,
+    hover: editorOptions.hover
+  })
 }
 
 // rendering
@@ -180,7 +194,7 @@ function configureEditor () {
 function render () {
   // show/hide the editor
   var editorEl = document.getElementById('el-editor-container')
-  if (selectedModel && selectedModel.isEditable) {
+  if (selectedModel && selectedModel.isEditable && !isViewingOptions) {
     editorEl.classList.add('active')
   } else {
     editorEl.classList.remove('active')
@@ -189,8 +203,10 @@ function render () {
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div id="el-content">
     <div class="archives">
-      ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed, onCollapseToggle})}
-      ${renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles})}
+      ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed, onCollapseToggle, onToggleOptions})}
+      ${isViewingOptions
+        ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
+        : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles})}
     </div>
   </div>`)
 }
@@ -263,6 +279,31 @@ async function onArchiveChanged (e) {
   render()
 }
 
+function onSaveOptions (values) {
+  // update opts
+  for (var k in values) {
+    editorOptions[k] = values[k]
+  }
+  writeEditorOptions()
+
+  // update editor
+  configureEditor()
+  for (var url in models) {
+    if (models[url].updateOptions) {
+      models[url].updateOptions(getModelOptions())
+    }
+  }
+
+  // render
+  isViewingOptions = false
+  render()
+}
+
+function onToggleOptions () {
+  isViewingOptions = !isViewingOptions
+  render()
+}
+
 
 // helpers
 // =
@@ -275,6 +316,25 @@ function setSidebarCollapsed (collapsed) {
   } else {
     delete localStorage.isArchivesListCollapsed
     document.body.classList.remove('sidebar-collapsed')    
+  }
+}
+
+function readEditorOptions () {
+  try {
+    editorOptions = JSON.parse(localStorage.options)
+  } catch (e) {
+    editorOptions = defaultEditorOptions()
+  }
+}
+
+function writeEditorOptions () {
+  localStorage.options = JSON.stringify(editorOptions)
+}
+
+function getModelOptions () {
+  return {
+    insertSpaces: editorOptions.tabs === 'spaces',
+    tabSize: +editorOptions.tabWidth
   }
 }
 
@@ -313,6 +373,7 @@ function generate (archive, path) {
   models[url].isEditable = true
   models[url].lang = models[url].getModeId()
   models[url].onDidChangeContent(onDidChangeContent(archive, path))
+  models[url].updateOptions(getModelOptions())
   dirtyFiles[url] = true
 }
 
@@ -327,6 +388,7 @@ async function load (archive, path) {
   models[url].isEditable = true
   models[url].lang = models[url].getModeId()
   models[url].onDidChangeContent(onDidChangeContent(archive, path))
+  models[url].updateOptions(getModelOptions())
 }
 
 async function save () {

@@ -4,7 +4,7 @@ import { pushUrl } from '../../lib/fg/event-handlers'
 // exported api
 // =
 
-export function render (archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed, onCollapseToggle} = {}) {
+export function render (archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed, onCollapseToggle, onToggleOptions} = {}) {
   const hasFileSelection = !!selectedPath
 
   if (isArchivesListCollapsed) {
@@ -25,7 +25,12 @@ export function render (archivesList, {selectedArchiveKey, currentFilter, onChan
             </button>
           </div>
           <div>
-            <button onclick=${onCollapseToggle} class="collapse" aria-label="Collapse sidebar" title="Collapse sidebar">
+            <button onclick=${onToggleOptions} class="icon-btn" aria-label="Open settings" title="Open settings">
+              <i class="fa fa-cog"></i>
+            </button>
+          </div>
+          <div>
+            <button onclick=${onCollapseToggle} class="icon-btn" aria-label="Collapse sidebar" title="Collapse sidebar">
               <i class="fa fa-caret-square-o-left"></i>
             </button>
           </div>

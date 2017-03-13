@@ -1,60 +1,16 @@
 @import "../photon.min.less";
 
 @import "../base/reset.less";
-@import "../utils/decorators";
-@import "../utils/flex";
+
+// Built-in pages components
+@import "./components/archives-sidebar.less";
+@import "./components/archives-list.less";
+@import "./components/archive-view.less";
+@import "./components/editor.less";
+@import "./components/editor-options.less";
 
 // Beaker components
-@import "../components/link";
 @import "../components/buttons.less";
 @import "../components/inputs.less";
 @import "../components/modal.less";
 @import "../com/toolbar.less";
-
-.hidden {
-  display: none;
-}
-.flex-fill {
-  flex: 1;
-}
-.sep {
-  border-left: 1px solid #ddd;
-}
-
-.icon-info {
-  color: transparent;
-  -webkit-text-stroke: 1px #333;
-}
-
-.editor-wrapper {
-  height: 100%;
-  width: 100%;
-}
-
-.editor-editor {
-  margin-left: 200px;
-  height: 100%;
-
-  .header {
-    padding: 5px 20px;
-    font-style: italic;
-
-    i {
-      margin-right: @margin-icon;
-    }
-
-    a {
-      &:extend(.link);
-    }
-  }
-}
-
-#editable-container,
-#uneditable-container {
-  height: ~"calc(100vh - 30px)";
-  width: 100%;
-}
-
-#uneditable-container {
-  padding: 0.5rem;
-}
