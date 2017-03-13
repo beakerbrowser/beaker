@@ -1,4 +1,5 @@
 @import "../../base/reset.less";
+@import "../../base/colors.less";
 @import "../../utils/decorators";
 
 #new-file-popup {
@@ -10,14 +11,21 @@
 }
 
 .new-file-form {
-  background: @border-menu;
-  border: 1px solid #bbb;
+  background: #fff;
+  box-shadow: 0px 2px 2px rgba(0,0,0,.15);
   padding: 0.5em 1em 1em;
+  border: 1px solid @border-menu;
+  border-left: 0; // no left border because this lines up against an existing border
 
   input {
     width: 300px;
   }
-  btn {
+
+  .new .btn {
     height: 28px;
+  }
+
+  .upload .btn {
+    margin-right: 10px;
   }
 }

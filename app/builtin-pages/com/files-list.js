@@ -30,7 +30,7 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles}) {
         <div class="project-title"><a href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>${archive.info.title}</a></div>
 
         <div class="btn-bar">
-          <button class="btn" title="New File" onclick=${onNewFile}>
+          <button class="btn" title="New File" onclick=${e => onNewFile(e, archive)}>
             <i class="fa fa-plus"></i>
           </button>
 
@@ -175,7 +175,7 @@ function onOpenInNewWindow (e, archive) {
   beakerBrowser.openUrl(lastClickedUrl)
 }
 
-function onNewFile () {
+function onNewFile (e, archive) {
   // initial value
   var value = ''
   if (lastClickedFolder) {
@@ -186,11 +186,17 @@ function onNewFile () {
   yo.update(document.getElementById('new-file-popup'), 
     yo`<div id="new-file-popup">
       <form class="new-file-form" onsubmit=${onSubmitNewFile}>
-        <label>
-          Name<br>
-          <input type="text" name="name" />
-        </label>
-        <button class="btn" type="submit">Create</button>
+        <div class="new">
+          <label>
+            New File<br>
+            <input type="text" name="name" />
+          </label>
+          <button class="btn" type="submit">Create</button>
+        </div>
+        <hr />
+        <div class="upload">
+          <button class="btn" onclick=${e => onImportFiles(e, archive)}><i class="fa fa-upload"></i> Import files</button>Destination folder: /${lastClickedFolder||''}
+        </div>
       </form>
     </div>`
   )
@@ -216,6 +222,41 @@ function onSaveFile (e) {
   var evt = new Event('save-file')
   evt.detail = { path: lastClickedNode, url: lastClickedUrl }
   window.dispatchEvent(evt)
+}
+
+async function onImportFiles (e, archive) {
+  e.preventDefault()
+  lastClickedNode = null // clear so that our new file gets highlighted
+  lastClickedUrl = null
+  destroyNewFilePopup()
+
+  // pick files
+  var files = await beakerBrowser.showOpenDialog({
+    title: 'Choose a folder or files to import',
+    buttonLabel: 'Import',
+    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
+  })
+  if (!files) {
+    return
+  }
+
+  files.forEach(file => {
+    // file-picker gives a string, while drag/drop gives { path: string }
+    var src = (typeof file === 'string') ? file : file.path
+    var dst = `/${lastClickedFolder || ''}`
+
+    // send to backend
+    DatArchive.importFromFilesystem({
+      srcPath: src,
+      dst: archive.url + dst,
+      inplaceImport: false
+    }).catch(console.warn.bind(console, 'Error writing file:'))
+  })
+}
+
+
+export function addFiles (archive, files) {
+  
 }
 
 // internal helpers
