@@ -93,6 +93,11 @@ export default function registerContextMenu () {
         menuItems.push({ type: 'separator' })      
       }
 
+      // edit source
+      if (props.pageURL.startsWith('dat://')) {
+        menuItems.push({ label: 'Edit Source', click: (item, win) => win.webContents.send('command', 'file:new-tab', 'beaker://editor/' + props.pageURL.slice('dat://'.length)) })        
+      }
+
       // inspector
       menuItems.push({ label: 'Inspect Element', click: item => {
         webContents.inspectElement(props.x, props.y)
