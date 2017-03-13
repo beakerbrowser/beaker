@@ -43,7 +43,7 @@ window.history.replaceState = _wr('replaceState')
 // main
 // =
 
-// setSidebarCollapsed(localStorage.isArchivesListCollapsed) TODO
+setSidebarCollapsed(localStorage.isArchivesListCollapsed)
 setup()
 dragDrop(document.body, onDragDrop)
 window.addEventListener('pushstate', setup)
@@ -270,10 +270,10 @@ async function onArchiveChanged (e) {
 function setSidebarCollapsed (collapsed) {
   isArchivesListCollapsed = collapsed
   if (isArchivesListCollapsed) {
-    // localStorage.isArchivesListCollapsed = 1 TODO
+    localStorage.isArchivesListCollapsed = 1
     document.body.classList.add('sidebar-collapsed')
   } else {
-    // delete localStorage.isArchivesListCollapsed TODO
+    delete localStorage.isArchivesListCollapsed
     document.body.classList.remove('sidebar-collapsed')    
   }
 }
