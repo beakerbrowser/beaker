@@ -224,7 +224,7 @@ async function onCreate () {
 
 async function onFork (archive) {
   var newArchive = await DatArchive.fork(archive.url)
-  window.location = 'beaker:library/' + newArchive.url.slice('dat://'.length)
+  window.location = 'beaker://editor/' + newArchive.url.slice('dat://'.length)
 }
 
 function onEditDetails (archive) {
@@ -236,6 +236,6 @@ function onEditDetails (archive) {
 
 function viewUrl (url) {
   if (url.startsWith('dat://')) {
-    return 'beaker:library/' + url.slice('dat://'.length)
+    return 'beaker://editor/' + url.slice('dat://'.length)
   }
 }

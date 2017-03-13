@@ -17,7 +17,7 @@ import {archivesDebugPage} from '../networks/dat/debugging'
 const BEAKER_CSP = `
   default-src 'self' beaker:;
   img-src beaker-favicon: data: dat: http: https;
-  script-src 'self' beaker: 'sha256-qoROrciBgtmgkQTWbYq1fa+Zd46EajOqyuSUawmDSOc=';
+  script-src 'self' beaker: 'sha256-L8S3LkBr2JbWZ54OxOLa8IB+qSXHPup745z88bIPzF8=';
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
 `.replace(/\n/g, '')
@@ -83,134 +83,126 @@ function beakerServer (req, res) {
   }
 
   // browser ui
-  if (requestUrl === 'beaker:shell-window') {
+  if (requestUrl === 'beaker://shell-window/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'shell-window.html'))
   }
-  if (requestUrl === 'beaker:shell-window.js') {
+  if (requestUrl === 'beaker://shell-window/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'shell-window.build.js'))
   }
-  if (requestUrl === 'beaker:shell-window.css') {
+  if (requestUrl === 'beaker://shell-window/main.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/shell-window.css'))
   }
-  if (requestUrl === 'beaker:icons.css') {
+  if (requestUrl === 'beaker://assets/icons.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/icons.css'))
   }
-  if (requestUrl === 'beaker:font-awesome.css') {
+  if (requestUrl === 'beaker://assets/font-awesome.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/fonts/font-awesome/css/font-awesome.min.css'))
   }
-  if (requestUrl === 'beaker:fontawesome-webfont.woff2') {
+  if (requestUrl === 'beaker://assets/fontawesome-webfont.woff2') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'assets/fonts/fontawesome-webfont.woff2'))
   }
-  if (requestUrl === 'beaker:fontawesome-webfont.woff') {
+  if (requestUrl === 'beaker://assets/fontawesome-webfont.woff') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'assets/fonts/fontawesome-webfont.woff'))
   }
-  if (requestUrl === 'beaker:fontawesome-webfont.svg') {
+  if (requestUrl === 'beaker://assets/fontawesome-webfont.svg') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'assets/fonts/fontawesome-webfont.svg'))
+  }
+  if (requestUrl === 'beaker://assets/font-photon-entypo') {
+    return cb(200, 'OK', 'application/font-woff', path.join(__dirname, 'assets/fonts/photon-entypo.woff'))
+  }
+  if (requestUrl === 'beaker://assets/font-source-sans-pro') {
+    return cb(200, 'OK', 'application/font-woff2', path.join(__dirname, 'assets/fonts/source-sans-pro.woff2'))
+  }
+  if (requestUrl === 'beaker://assets/font-source-sans-pro-le') {
+    return cb(200, 'OK', 'application/font-woff2', path.join(__dirname, 'assets/fonts/source-sans-pro-le.woff2'))
+  }
+  if (requestUrl.startsWith('beaker://assets/logo')) {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
   }
 
   // builtin pages
-  if (requestUrl === 'beaker:builtin-pages.css') {
+  if (requestUrl === 'beaker://assets/builtin-pages.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages.css'))
   }
-  if (requestUrl === 'beaker:start') {
+  if (requestUrl === 'beaker://start/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/start.html'))
   }
-  if (requestUrl === 'beaker:start.css') {
+  if (requestUrl === 'beaker://start/main.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/start.css'))
   }
-  if (requestUrl === 'beaker:bookmarks') {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/bookmarks.html'))
-  }
-  if (requestUrl === 'beaker:library.css') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/library.css'))
-  }
-  if (requestUrl.startsWith('beaker:library')) {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/library.html'))
-  }
-  if (requestUrl === 'beaker:history') {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/history.html'))
-  }
-  if (requestUrl === 'beaker:downloads') {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/downloads.html'))
-  }
-  if (requestUrl === 'beaker:settings') {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/settings.html'))
-  }
-  if (requestUrl === 'beaker:builtin-pages/bookmarks.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/bookmarks.build.js'))
-  }
-  if (requestUrl === 'beaker:builtin-pages/library.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/library.build.js'))
-  }
-  if (requestUrl === 'beaker:builtin-pages/history.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/history.build.js'))
-  }
-  if (requestUrl === 'beaker:builtin-pages/downloads.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/downloads.build.js'))
-  }
-  if (requestUrl === 'beaker:builtin-pages/settings.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/settings.build.js'))
-  }
-  if (requestUrl === 'beaker:builtin-pages/start.js') {
+  if (requestUrl === 'beaker://start/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/start.build.js'))
   }
-  if (requestUrl.startsWith('beaker:editor/min/')) {
-    let subpath = requestUrl.slice('beaker:editor/min/'.length).replace(/\.\./g, '')
+  if (requestUrl === 'beaker://bookmarks/') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/bookmarks.html'))
+  }
+  if (requestUrl === 'beaker://bookmarks/main.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/bookmarks.build.js'))
+  }
+  if (requestUrl === 'beaker://history/') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/history.html'))
+  }
+  if (requestUrl === 'beaker://history/main.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/history.build.js'))
+  }
+  if (requestUrl === 'beaker://downloads/') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/downloads.html'))
+  }
+  if (requestUrl === 'beaker://downloads/main.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/downloads.build.js'))
+  }
+  if (requestUrl === 'beaker://settings/') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/settings.html'))
+  }
+  if (requestUrl === 'beaker://settings/main.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/settings.build.js'))
+  }
+
+  // editor
+  // =
+  if (requestUrl === 'beaker://editor/main.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/library.css'))
+  }
+  if (requestUrl === 'beaker://editor/main.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/editor.build.js'))
+  }
+  if (requestUrl === 'beaker://editor/worker-proxy.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/editor-worker-proxy.js'))
+  }
+  if (requestUrl.startsWith('beaker://editor/min/')) {
+    let subpath = requestUrl.slice('beaker://editor/min/'.length).replace(/\.\./g, '')
     subpath = subpath.split('#')[0]
     var type = 'application/javascript'
     if (subpath.endsWith('css')) type = 'text/css'
     if (subpath.endsWith('svg')) type = 'image/svg+xml'
     return cb(200, 'OK', type, path.join(__dirname, 'node_modules/monaco-editor/min/', subpath))
   }
-  if (requestUrl === 'beaker:editor' || requestUrl.startsWith('beaker:editor/')) {
+  if (requestUrl === 'beaker://editor/' || requestUrl.startsWith('beaker://editor/')) {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/editor.html'))
-  }
-  if (requestUrl === 'beaker:editor.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/editor.build.js'))
-  }
-  if (requestUrl === 'beaker:editor-worker-proxy.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/editor-worker-proxy.js'))
-  }
-  if (requestUrl === 'beaker:editor.css') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/editor.css'))
   }
 
   // modals
-  if (requestUrl === 'beaker:create-archive-modal') {
+  if (requestUrl === 'beaker://create-archive-modal/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/create-archive-modal.html'))
   }
-  if (requestUrl === 'beaker:create-archive-modal.css') {
+  if (requestUrl === 'beaker://create-archive-modal/main.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/create-archive-modal.css'))
   }
-  if (requestUrl === 'beaker:create-archive-modal.js') {
+  if (requestUrl === 'beaker://create-archive-modal/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/create-archive-modal.build.js'))
   }
-  if (requestUrl === 'beaker:fork-archive-modal') {
+  if (requestUrl === 'beaker://fork-archive-modal/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/fork-archive-modal.html'))
   }
-  if (requestUrl === 'beaker:fork-archive-modal.css') {
+  if (requestUrl === 'beaker://fork-archive-modal/main.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/fork-archive-modal.css'))
   }
-  if (requestUrl === 'beaker:fork-archive-modal.js') {
+  if (requestUrl === 'beaker://fork-archive-modal/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/fork-archive-modal.build.js'))
   }
 
-  // common assets
-  if (requestUrl === 'beaker:font-photon-entypo') {
-    return cb(200, 'OK', 'application/font-woff', path.join(__dirname, 'assets/fonts/photon-entypo.woff'))
-  }
-  if (requestUrl === 'beaker:font-source-sans-pro') {
-    return cb(200, 'OK', 'application/font-woff2', path.join(__dirname, 'assets/fonts/source-sans-pro.woff2'))
-  }
-  if (requestUrl === 'beaker:font-source-sans-pro-le') {
-    return cb(200, 'OK', 'application/font-woff2', path.join(__dirname, 'assets/fonts/source-sans-pro-le.woff2'))
-  }
-  if (requestUrl.startsWith('beaker:logo')) {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
-  }
-
   // debugging
-  if (requestUrl === 'beaker:internal-archives') {
+  if (requestUrl === 'beaker://internal-archives/') {
     return cb(200, 'OK', 'text/html', archivesDebugPage)
   }
 

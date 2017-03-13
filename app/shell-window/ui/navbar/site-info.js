@@ -195,7 +195,7 @@ export class SiteInfoNavbarBtn {
 
   viewSiteFiles(subpage) {
     const { hostname } = this.protocolInfo
-    pages.setActive(pages.create('beaker:library/' + hostname + '#' + subpage))
+    pages.setActive(pages.create('beaker://editor/' + hostname + '#' + subpage))
     this.closeDropdown()
   }
 

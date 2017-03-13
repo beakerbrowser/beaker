@@ -575,7 +575,7 @@ async function onClickEditDat (e) {
   if (!page || !page.getURL().startsWith('dat://')) return
 
   // open tab loading
-  const url = `beaker:editor/${page.getURL().slice('dat://'.length)}`
+  const url = `beaker://editor/${page.getURL().slice('dat://'.length)}`
   if (e.metaKey || e.ctrlKey) { // popup
     pages.setActive(pages.create(url))
   } else {

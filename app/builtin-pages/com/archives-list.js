@@ -52,7 +52,7 @@ export function renderArchivesListItems (archivesList, {selectedArchiveKey, curr
 
     return yo`
       <li class="archives-item ${activeCls}">
-        <a data-href=${'beaker:library/'+archive.key} onclick=${pushUrl} title=${title}>
+        <a data-href=${'beaker://editor/'+archive.key} onclick=${pushUrl} title=${title}>
           <i class="fa ${iconCls}"></i>
           ${title}
         </a>
@@ -88,5 +88,5 @@ async function createArchive () {
 }
 
 function viewUrl (url) {
-  return 'beaker:library/' + url.slice('dat://'.length)
+  return 'beaker://editor/' + url.slice('dat://'.length)
 }

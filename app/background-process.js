@@ -37,8 +37,8 @@ if (process.env.beaker_user_data_path) {
   app.setPath('userData', process.env.beaker_user_data_path)
 }
 
-// load the installed protocols
-protocol.registerStandardSchemes(['dat'], { secure: true })
+// configure the protocols
+protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
 
 app.on('ready', function () {
   // databases

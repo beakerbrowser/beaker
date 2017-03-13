@@ -27,7 +27,7 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles}) {
   return yo`
     <div class="files-sidebar">
       <div class="header">
-        <div class="project-title"><a href=${'beaker:library/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>${archive.info.title}</a></div>
+        <div class="project-title"><a href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>${archive.info.title}</a></div>
 
         <div class="btn-bar">
           <button class="btn" title="New File" onclick=${onNewFile}>

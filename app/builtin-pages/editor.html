@@ -2,34 +2,25 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Editor</title>
-  <link rel="stylesheet" href="beaker:font-awesome.css">
-  <link rel="stylesheet" href="beaker:editor.css">
+  <title>Library</title>
+  <link rel="stylesheet" href="beaker://assets/icons.css">
+  <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+  <link rel="stylesheet" href="beaker://editor/main.css">
 </head>
 <body>
-  <div class="window">
-    <div class="window-content">
-      <div class="editor-wrapper">
-        <div class="editor-nav"></div>
-        <div class="editor-editor">
-          <div class="header"></div>
-          <div id="editable-container" class="hidden"></div>
-          <div id="uneditable-container" class="hidden"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="beaker:editor/min/vs/loader.js"></script>
+  <div id="el-content"></div>
+  <div id="el-editor-container"></div>
+  <div id="new-file-popup"></div>
+  <script src="beaker://editor/min/vs/loader.js"></script>
   <script>
-  require.config({ paths: { 'vs': 'beaker:editor/min/vs' }});
+  require.config({ paths: { 'vs': 'beaker://editor/min/vs' }});
   window.MonacoEnvironment = {
     getWorkerUrl: function(workerId, label) {
-      return 'beaker:editor-worker-proxy.js';
+      return 'beaker://editor/worker-proxy.js';
     }
   };
   require(['vs/editor/editor.main'], function() {
-    window.editor = monaco.editor.create(document.getElementById('editable-container'), {
+    window.editor = monaco.editor.create(document.getElementById('el-editor-container'), {
       lineNumbersMinChars: 4,
       automaticLayout: true,
       fixedOverflowWidgets: true,
@@ -39,6 +30,6 @@
     window.dispatchEvent(new Event('editor-created'))
   })
   </script>
-  <script src="beaker:editor.js"></script>
+  <script src="beaker://editor/main.js"></script>
 </body>
 </html>

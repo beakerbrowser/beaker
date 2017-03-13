@@ -60,7 +60,7 @@ export default {
     desc: (param, pages, opts = {}) => {
       const firstWord = opts.capitalize ? 'Write' : 'write'
       const title = lazyDatTitleElement(param, opts.title)
-      const viewArchive = () => pages.setActive(pages.create('beaker:library/' + param))
+      const viewArchive = () => pages.setActive(pages.create('beaker://editor/' + param))
       return yo`<span>${firstWord} files to <a onclick=${viewArchive}>${title}</a></span>`
     },
     icon: 'folder',
@@ -72,7 +72,7 @@ export default {
     desc: (param, pages, opts = {}) => {
       const firstWord = opts.capitalize ? 'Delete' : 'delete'
       const title = lazyDatTitleElement(param, opts.title)
-      const viewArchive = () => pages.setActive(pages.create('beaker:library/' + param))
+      const viewArchive = () => pages.setActive(pages.create('beaker://editor/' + param))
       return yo`<span>${firstWord} the archive <a onclick=${viewArchive}>${title}</a></span>`
     },
     icon: 'folder',

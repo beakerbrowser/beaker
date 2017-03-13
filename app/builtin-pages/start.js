@@ -12,10 +12,10 @@ const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 =
 // =
 
 var builtinPages = [
-  { href: 'beaker:history', label: 'History', icon: 'back-in-time' },
-  { href: 'beaker:bookmarks', label: 'Bookmarks', icon: 'bookmarks' },
-  { href: 'beaker:library', label: 'Library', icon: 'book' },
-  { href: 'beaker:downloads', label: 'Downloads', icon: 'down' }
+  { href: 'beaker://history', label: 'History', icon: 'back-in-time' },
+  { href: 'beaker://bookmarks', label: 'Bookmarks', icon: 'bookmarks' },
+  { href: 'beaker://editor', label: 'Library', icon: 'book' },
+  { href: 'beaker://downloads', label: 'Downloads', icon: 'down' }
 ]
 
 var showReleaseNotes = false
@@ -27,11 +27,11 @@ co(function* () {
   pinnedBookmarks = (yield beakerBookmarks.listPinned()) || []
   update()
 
-  let latestVersion = yield beakerSitedata.get('beaker:start', 'latest-version')
+  let latestVersion = yield beakerSitedata.get('beaker://start', 'latest-version')
   if (+latestVersion < LATEST_VERSION) {
     showReleaseNotes = true
     update()
-    beakerSitedata.set('beaker:start', 'latest-version', LATEST_VERSION)
+    beakerSitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
   }
 })
 

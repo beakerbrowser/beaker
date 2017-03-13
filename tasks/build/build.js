@@ -50,7 +50,6 @@ var bundleApplication = function () {
     bundle(srcDir.path('shell-window.js'),        srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(srcDir.path('markdown-renderer.js'),   srcDir.path('markdown-renderer.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(bpDir.path('downloads.js'),            bpDir.path('downloads.build.js'), { browserify: true, basedir: bpDir.cwd() }),
-    bundle(bpDir.path('library.js'),              bpDir.path('library.build.js'), { browserify: true, basedir: bpDir.cwd() }),
     bundle(bpDir.path('bookmarks.js'),            bpDir.path('bookmarks.build.js'), { browserify: true, basedir: bpDir.cwd() }),
     bundle(bpDir.path('history.js'),              bpDir.path('history.build.js'), { browserify: true, basedir: bpDir.cwd() }),
     bundle(bpDir.path('settings.js'),             bpDir.path('settings.build.js'), { browserify: true, basedir: bpDir.cwd() }),

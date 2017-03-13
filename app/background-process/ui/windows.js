@@ -83,8 +83,8 @@ export function getActiveWindow () {
 // =
 
 function loadShell (win) {
-  win.loadURL('beaker:shell-window')
-  debug('Opening beaker:shell-window')  
+  win.loadURL('beaker://shell-window')
+  debug('Opening beaker://shell-window')  
 }
 
 function getCurrentPosition (win) {

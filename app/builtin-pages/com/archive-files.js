@@ -38,7 +38,7 @@ export function archiveFiles (archive) {
     if (entry.type == 'directory') {
       link = yo`
         <a class="name"
-          href="beaker:library/${archiveKey}/${path}"
+          href="beaker://editor/${archiveKey}/${path}"
           title=${name}
           onclick=${pushUrl}>
           <i class="fa fa-folder"></i>
@@ -74,13 +74,13 @@ export function archiveFiles (archive) {
 
     // toplevel link
     var links = [
-      yo`<a href="beaker:library/${archiveKey}/" onclick=${pushUrl}><i class="fa fa-level-up"></i></a>`,
+      yo`<a href="beaker://editor/${archiveKey}/" onclick=${pushUrl}><i class="fa fa-level-up"></i></a>`,
       ' / '
     ]
     // intermediate links
     for (let i=0; i < parentParts.length - 1; i++) {
       let path = parentParts.slice(0, i+1).join('/')
-      links.push(yo`<a href="beaker:library/${archiveKey}/${path}" onclick=${pushUrl}>${parentParts[i]}</a>`)
+      links.push(yo`<a href="beaker://editor/${archiveKey}/${path}" onclick=${pushUrl}>${parentParts[i]}</a>`)
       links.push(' / ')
     }
     // current dir

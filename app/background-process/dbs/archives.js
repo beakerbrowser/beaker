@@ -274,7 +274,7 @@ migrations = [
         // look for archives saved with the old schema
         if (!chunk.value.isSaved || chunk.value.saveClaims) return cb() // noop
         // update the user settings to the new format
-        chunk.value.saveClaims = ['beaker:archives']
+        chunk.value.saveClaims = ['beaker://archives']
         archiveUserSettingsDb.put(chunk.key, chunk.value, cb)
         // trigger an update to the meta as well
         getOrLoadArchive(chunk.key).pullLatestArchiveMeta()

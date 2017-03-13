@@ -19,8 +19,8 @@ const ERR_INSECURE_RESPONSE = -501
 
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 1e3 // debounce live-reload triggers by this amount
 
-export const FIRST_TAB_URL = 'beaker:start'
-export const DEFAULT_URL = 'beaker:start'
+export const FIRST_TAB_URL = 'beaker://start'
+export const DEFAULT_URL = 'beaker://start'
 
 // globals
 // =
@@ -168,7 +168,7 @@ export function create (opts) {
         // strip the filename at the end
         path = path.slice(0, path.lastIndexOf('/'))
       }
-      return `beaker:library/${urlp.host}${path}${subview?'#'+subview:''}`
+      return `beaker://editor/${urlp.host}${path}${subview?'#'+subview:''}`
     },
 
     isLiveReloading() {

@@ -19,7 +19,7 @@ export default function registerContextMenu () {
         return
 
       // ignore clicks on the shell window
-      if (props.pageURL == 'beaker:shell-window')
+      if (props.pageURL == 'beaker://shell-window')
         return
 
       // helper to call code on the element under the cursor

@@ -222,7 +222,7 @@ function rSaveBtn (archive) {
 
 function rEditorBtn (archive) {
   return yo`
-    <a href=${'beaker:editor/' + archive.info.key} target="_blank">
+    <a href=${'beaker://editor/' + archive.info.key} target="_blank">
       <i class="fa fa-edit"></i>
       Open in Editor
     </a>`
@@ -315,6 +315,6 @@ function closeMenu () {
 
 function viewUrl (url) {
   if (url.startsWith('dat://')) {
-    return 'beaker:library/' + url.slice('dat://'.length)
+    return 'beaker://editor/' + url.slice('dat://'.length)
   }
 }

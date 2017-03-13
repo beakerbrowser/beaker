@@ -130,27 +130,27 @@ export class DropMenuNavbarBtn {
             ${pageSpecificEls ? yo`<hr>` : ''}
 
             <div class="grid default">
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:downloads')}>
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
                 <i class="fa fa-download"></i>
                 Downloads
               </div>
 
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:history')}>
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
                 <i class="fa fa-history"></i>
                 History
               </div>
 
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:bookmarks')}>
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
                 <i class="fa fa-star"></i>
                 Bookmarks
               </div>
 
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:library')}>
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://editor')}>
                 <i class="fa fa-book"></i>
                 Library
               </div>
 
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker:settings')}>
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
                 <i class="fa fa-gear"></i>
                 Settings
               </div>
@@ -321,7 +321,7 @@ export class DropMenuNavbarBtn {
     if (!page || !page.getURL().startsWith('dat://')) {
       return
     }
-    page.loadURL(`beaker:editor/${page.getURL().slice('dat://'.length)}`)
+    page.loadURL(`beaker://editor/${page.getURL().slice('dat://'.length)}`)
   }
 
   onToggleLiveReloading (e) {

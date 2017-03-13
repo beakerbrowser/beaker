@@ -1,228 +1,281 @@
 import yo from 'yo-yo'
 import mime from 'mime'
-import {Archive, FileTree} from 'builtin-pages-lib'
-//import rFiles from './com/editor-files'
+import {Archive, ArchivesList, FileTree} from 'builtin-pages-lib'
+import {render as renderArchivesList, renderArchivesListItems} from './com/archives-list'
+import {render as renderArchiveView} from './com/editor-archive-view'
+import {addFiles} from './com/archive-files'
+import {pushUrl} from '../lib/fg/event-handlers'
+import {ucfirst} from '../lib/strings'
+import dragDrop from '../lib/fg/drag-drop'
 
-const models = {} // all in-memory models
-var archive = null
+// globals
+// =
 
+var viewError = null // toplevel error object
+var viewIsLoading = false // toplevel, is loading?
+var archivesList = null // ArchiveList, loaded once
+var currentFilter = '' // archivesList filter
+var isArchivesListCollapsed = false // render archives list collapsed?
+var selectedArchiveKey = null // selected archive's key
+var selectedArchive = null // selected Archive
+var selectedPath = null // selected filepath within the Archive
+var models = {} // url => mocaco model
+var selectedModel = null // monaco model of the selected file
+var dirtyFiles = {} // url => bool, which files have been modified?
+
+// HACK FIX
+// the good folk of whatwg didnt think to include an event for pushState(), so let's add one
+// -prf
+var _wr = function(type) {
+  var orig = window.history[type];
+  return function() {
+    var rv = orig.apply(this, arguments);
+    var e = new Event(type.toLowerCase());
+    e.arguments = arguments;
+    window.dispatchEvent(e);
+    return rv;
+  };
+};
+window.history.pushState = _wr('pushState')
+window.history.replaceState = _wr('replaceState')
+
+
+// main
+// =
+
+// setSidebarCollapsed(localStorage.isArchivesListCollapsed) TODO
 setup()
+dragDrop(document.body, onDragDrop)
+window.addEventListener('pushstate', setup)
+window.addEventListener('popstate', setup)
+window.addEventListener('render', render)
+window.addEventListener('new-file', onNewFile)
+window.addEventListener('open-file', onOpenFile)
+window.addEventListener('save-file', onSaveFile)
+window.addEventListener('editor-created', onEditorCreated)
+window.addEventListener('keydown', onKeyDown)
+
 async function setup () {
   try {
-    // load the archive
-    var datHostname = window.location.pathname.split('/')[1]
-    var datKey = await DatArchive.resolveName(datHostname)
-    console.log('Loading', datKey)
-    archive = new Archive(datKey)
-    archive.dirtyFiles = {} // which files have been modified?
-    archive.activeModel = null // what file are we viewing?
-    archive.fileTree = new FileTree(archive)
-    await archive.setup('/')
-    await archive.fileTree.setup()
-    archive.addEventListener('changed', onArchiveChanged)
-    renderNav()
+    var newArchiveKey = await getURLKey()
 
-    // debug
-    window.models = models
-    window.archive = archive
-  } catch (e) {
-    console.error('Failed to load', e)
+    if (selectedArchiveKey === newArchiveKey) {
+      // a navigation within the same view
+      return await setupFile()
+    }
+
+    // load the archive list, if needed
+    if (!archivesList) {
+      archivesList = new ArchivesList()
+      await archivesList.setup({isSaved: true})
+      archivesList.addEventListener('changed', render)
+    }
+
+    // update the archive, as needed
+    if (newArchiveKey !== selectedArchiveKey) {
+      if (selectedArchive) {
+        freeCleanModels()
+        selectedArchive.destroy()
+        selectedArchive = null
+        selectedPath = null
+      }
+
+      if (newArchiveKey) {
+        let to = setTimeout(() => {
+          // render loading screen (it's taking a sec)
+          viewIsLoading = true
+          render()
+        }, 500)
+
+        // load the archive
+        selectedArchive = new Archive(newArchiveKey)
+        selectedArchive.fileTree = new FileTree(selectedArchive)
+        await selectedArchive.setup()
+        await selectedArchive.fileTree.setup()
+        selectedArchive.addEventListener('changed', onArchiveChanged)
+        configureEditor()
+        clearTimeout(to)
+      }
+      selectedArchiveKey = newArchiveKey
+    }
+
+    // render output
+    viewIsLoading = false
+    await setupFile()
+  } catch (err) {
+    // render the error state
+    console.warn('Failed to fetch archive info', err)
+    viewError = err
+    render()
   }
+}
+
+// view state management
+// =
+
+async function setupFile () {
+  // abort if the editor isn't loaded yet, and this will re-run when it's ready
+  if (!window.editor || !selectedArchive) {
+    return render()
+  }
+
+  const path = getURLPath()
+  const url = selectedArchive.url + '/' + path
+
+  // update the selection
+  selectedPath = path ? path : false
+
+  // deselection
+  if (!path) {
+    selectedModel = null
+    render()
+    return
+  }
+
+  // load according to editability
+  if (checkIfIsEditable(path)) {
+    if (!models[url]) {
+      await load(selectedArchive, path)
+    }
+    editor.setModel(models[url])
+  } else {
+    models[url] = {path, isEditable: false, lang: ''}
+  }
+  selectedModel = models[url]
+  render()
+}
+
+async function getURLKey () {
+  var path = window.location.pathname
+  if (path === '/' || !path) return false
+  try {
+    // extract key from url
+    var name = /^\/([^\/]+)/.exec(path)[1]
+    if (/[0-9a-f]{64}/i.test(name)) return name
+    return DatArchive.resolveName(name)
+  } catch (e) {
+    console.error('Failed to parse URL', e)
+    return false
+  }
+}
+
+function getURLPath () {
+  try {
+    return window.location.pathname.split('/').filter(Boolean).slice(1).join('/') // drop '/{key}', take the rest
+  } catch (e) {
+    return ''
+  }
+}
+
+function configureEditor () {
+  if (!window.editor) return
+
+  // set editor to read-only if not the owner
+  editor.updateOptions({readOnly: (!selectedArchive || !selectedArchive.info.isOwner)})
 }
 
 // rendering
 // =
 
-function renderNav () {
- // nav
-  yo.update(
-    document.querySelector('.editor-nav'),
-    yo`
-      <div class="editor-nav">
-        <div class="header">
-          <div class="project-title">${archive.info.title}</div>
-
-          <div class="btn-bar">
-            <button class="btn" title="New File" onclick=${newFileInterface}>
-              <i class="fa fa-plus"></i>
-            </button>
-
-            <button class="btn" title="Save" onclick=${save}>
-              <i class="fa fa-floppy-o"></i>
-            </button>
-
-            <button class="btn" title="Fork This Project" onclick=${onFork}>
-              <i class="fa fa-code-fork"></i>
-            </button>
-          </div>
-        </div>
-        ${rFiles(archive)}
-      </div>`
-  )
-
-  // editor header
-  const activeModel = archive.activeModel
-  const isChanged = (activeModel && archive.dirtyFiles[activeModel.path]) ? '*' : ''
-
-  yo.update(
-    document.querySelector('.editor-editor .header'),
-    yo`
-      <div class="header">
-        <div id="new-file-popup"></div>
-        <div class="file-info">
-          ${activeModel ? rFileIcon(activeModel.path) : ''}
-          ${activeModel ? activeModel.path : ''}${isChanged}
-        ${!archive.info.isOwner 
-          ? yo`<span>
-            - Read only. <a onclick=${onFork}><i class="fa fa-code-fork"></i>Fork this site</a> to make changes.
-          </span>` : ''}
-        </div>
-      </div>`
-  )
-}
-
-function rFileIcon (path) {
-  // lookup the mimetype
-  var mimetype = mime.lookup(path)
-  var cls = 'file-o'
-
-  if (mimetype.startsWith('image/')) {
-    cls = 'file-image-o'
-  } else if (mimetype.startsWith('video/')) {
-    cls = 'file-video-o'
-  } else if (mimetype.startsWith('audio/')) {
-    cls = 'file-audio-o'
-  } else if (mimetype.startsWith('text/html') || mimetype.startsWith('application/')) {
-    cls = 'file-code-o'
-  } else if (mimetype.startsWith('text/')) {
-    cls = 'file-text-o'
+function render () {
+  // show/hide the editor
+  var editorEl = document.getElementById('el-editor-container')
+  if (selectedModel && selectedModel.isEditable) {
+    editorEl.classList.add('active')
+  } else {
+    editorEl.classList.remove('active')
   }
 
-  return yo`<i class="fa fa-${cls}"></i>`
+  // render view
+  yo.update(document.querySelector('#el-content'), yo`<div id="el-content">
+    <div class="archives">
+      ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed, onCollapseToggle})}
+      ${renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles})}
+    </div>
+  </div>`)
 }
 
 // event handlers
 // =
 
-window.addEventListener('editor-created', () => {
-  // set editor to read-only if not the owner
-  if (!archive.info.isOwner) {
-    editor.updateOptions({readOnly: true})
+function onEditorCreated () {
+  configureEditor()
+  setupFile()
+}
+
+function onChangeFilter (e) {
+  currentFilter = (e.target.value.toLowerCase())
+  yo.update(document.querySelector('.archives-list'), yo`<ul class="archives-list">
+    ${renderArchivesListItems(archivesList, {selectedArchiveKey, currentFilter})}
+  </ul>`)
+}
+
+function onCollapseToggle (e) {
+  e.stopPropagation()
+  setSidebarCollapsed(!isArchivesListCollapsed)
+  render()
+}
+
+async function onNewFile (e) {
+  var {path} = e.detail
+  generate(selectedArchive, path)
+  window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${path}`)
+}
+
+async function onOpenFile (e) {
+  // update the location
+  var archive = e.detail.archive
+  var path = e.detail.path || ''
+  window.history.pushState(null, '', `beaker://editor/${archive.info.key}/${path}`)
+}
+
+function onSaveFile (e) {
+  save()
+}
+
+function onDragDrop (files) {
+  if (selectedArchive) {
+    addFiles(selectedArchive, files)
   }
+}
 
-  // try to set active
-  setActive('index.html')
-})
+function onDidChangeContent (archive, path) {
+  return e => {
+    const url = archive.url + '/' + path
+    if (!dirtyFiles[url]) {
+      // update state and render
+      dirtyFiles[url] = true
+      render()
+    }
+  }
+}
 
-window.addEventListener('open-file', e => {
-  setActive(e.detail.path)
-})
-
-window.addEventListener('keydown', e => {
+function onKeyDown (e) {
   if ((e.metaKey || e.ctrlKey) && e.keyCode === 83/*'S'*/) {
     e.preventDefault()
     save()
   }
-})
-
-async function onFork () {
-  var newArchive = await DatArchive.fork(archive.url)
-  window.location = 'beaker:editor/' + newArchive.url.slice('dat://'.length)
 }
 
-function onDidChangeContent (path) {
-  return e => {
-    if (archive.dirtyFiles[path]) {
-      return
-    }
-
-    // update state and render
-    archive.dirtyFiles[path] = true
-    renderNav()
-  }
+async function onArchiveChanged (e) {
+  // reload the file listing
+  await selectedArchive.fileTree.setup()
+  render()
 }
 
-async function onArchiveChanged () {
-  await archive.fileTree.setup()
-  renderNav()
-}
 
-function onSubmitNewFile (e) {
-  e.preventDefault()
-  var path = normalizePath(e.target.name.value)
-  archive.lastClickedNode = null // clear so that our new file gets highlighted
-  generate(path)
-  setActive(path)
-}
-
-// internal methods
+// helpers
 // =
 
-function generate (path) {
-  // setup the model  
-  path = normalizePath(path)
-  const url = archive.url + '/' + path
-  models[path] = monaco.editor.createModel('', null, monaco.Uri.parse(url))
-  models[path].path = path
-  models[path].isEditable = true
-  models[path].lang = models[path].getModeId()
-  models[path].onDidChangeContent(onDidChangeContent(path))
-  archive.dirtyFiles[path] = true
-}
-
-async function load (path) {
-  // load the file content
-  path = normalizePath(path)
-  const url = archive.url + '/' + path
-  const str = await archive.readFile(path, 'utf8')
-
-  // setup the model
-  models[path] = monaco.editor.createModel(str, null, monaco.Uri.parse(url))
-  models[path].path = path
-  models[path].isEditable = true
-  models[path].lang = models[path].getModeId()
-  models[path].onDidChangeContent(onDidChangeContent(path))
-}
-
-async function save () {
-  const activeModel = archive.activeModel
-  if (!activeModel || !archive.dirtyFiles[activeModel.path]) {
-    return
-  }
-
-  // write the file content
-  await archive.writeFile(activeModel.path, activeModel.getValue(), 'utf-8')
-
-  // update state and render
-  archive.dirtyFiles[activeModel.path] = false
-  renderNav()
-}
-
-async function setActive (path) {
-  if (path === false) {
-    archive.activeModel = null
-    renderNav()
-    return
-  }
-
-  path = normalizePath(path)
-
-  // load according to editability
-  const isEditable = checkIfIsEditable(path)
-  if (isEditable) {
-    await setEditableActive(path)
+function setSidebarCollapsed (collapsed) {
+  isArchivesListCollapsed = collapsed
+  if (isArchivesListCollapsed) {
+    // localStorage.isArchivesListCollapsed = 1 TODO
+    document.body.classList.add('sidebar-collapsed')
   } else {
-    await setUneditableActive(path)
+    // delete localStorage.isArchivesListCollapsed TODO
+    document.body.classList.remove('sidebar-collapsed')    
   }
-
-  // set active
-  archive.activeModel = models[path]
-  renderNav()
-}
-
-function normalizePath (path) {
-  if (path.startsWith('/')) return path.slice(1)
-  return path
 }
 
 function checkIfIsEditable (path) {
@@ -252,46 +305,52 @@ function checkIfIsEditable (path) {
   return false
 }
 
-async function setEditableActive (path) {
-  // load if not yet loaded
-  if (!(path in models)) {
-    await load(path)
-  }
-  editor.setModel(models[path])
-  document.getElementById('uneditable-container').classList.add('hidden')
-  document.getElementById('editable-container').classList.remove('hidden')
+function generate (archive, path) {
+  // setup the model
+  const url = archive.url + '/' + path
+  models[url] = monaco.editor.createModel('', null, monaco.Uri.parse(url))
+  models[url].path = path
+  models[url].isEditable = true
+  models[url].lang = models[url].getModeId()
+  models[url].onDidChangeContent(onDidChangeContent(archive, path))
+  dirtyFiles[url] = true
 }
 
-async function setUneditableActive (path) {
-  // lookup the mimetype
-  var mimetype = mime.lookup(path)
+async function load (archive, path) {
+  // load the file content
+  const url = archive.url + '/' + path
+  const str = await archive.readFile(path, 'utf8')
 
-  // set the entry info
-  models[path] = {path, isEditable: false, lang: ''}
-  document.getElementById('editable-container').classList.add('hidden')
-  if (mimetype.startsWith('image/')) {
-    yo.update(document.getElementById('uneditable-container'), yo`
-      <div id="uneditable-container">
-        <img src=${archive.url + '/' + path} />
-      </div>
-    `)
-  } else if (mimetype.startsWith('video/')) {
-    yo.update(document.getElementById('uneditable-container'), yo`
-      <div id="uneditable-container">
-        <video controls width="400" src=${archive.url + '/' + path}></video>
-      </div>
-    `)
-  } else if (mimetype.startsWith('audio/')) {
-    yo.update(document.getElementById('uneditable-container'), yo`
-      <div id="uneditable-container">
-        <audio controls width="400" src=${archive.url + '/' + path}></audio>
-      </div>
-    `)
-  } else {
-    yo.update(document.getElementById('uneditable-container'), yo`
-      <div id="uneditable-container">
-        Unsupported filetype, ${mimetype}
-      </div>
-    `)
+  // setup the model
+  models[url] = monaco.editor.createModel(str, null, monaco.Uri.parse(url))
+  models[url].path = path
+  models[url].isEditable = true
+  models[url].lang = models[url].getModeId()
+  models[url].onDidChangeContent(onDidChangeContent(archive, path))
+}
+
+async function save () {
+  if (!selectedModel || !dirtyFiles[selectedModel.uri.toString()]) {
+    return
+  }
+
+  // write the file content
+  await selectedArchive.writeFile(selectedModel.path, selectedModel.getValue(), 'utf-8')
+
+  // update state and render
+  dirtyFiles[selectedModel.uri.toString()] = false
+  render()
+}
+
+// find any models that don't need to stay in memory and delete them
+function freeCleanModels () {
+  for (var k in models) {
+    if (!dirtyFiles[k]) {
+      if (models[k] && models[k].dispose) {
+        models[k].dispose()
+      }
+      delete models[k]
+      delete dirtyFiles[k]
+    }
   }
 }
