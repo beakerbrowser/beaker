@@ -4,7 +4,9 @@ import { pushUrl } from '../../lib/fg/event-handlers'
 // exported api
 // =
 
-export function render (archivesList, { selectedArchiveKey, currentFilter, onChangeFilter } = {}) {
+export function render (archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath} = {}) {
+  const hasFileSelection = !!selectedPath
+
   // render all
   return yo`
     <div class="archives-sidebar">
@@ -15,7 +17,7 @@ export function render (archivesList, { selectedArchiveKey, currentFilter, onCha
         </button>
       </div>
 
-      <ul class="archives-list">
+      <ul class="archives-list${hasFileSelection ? ' selection-grayed' : ''}">
         ${renderArchivesListItems(archivesList, {selectedArchiveKey, currentFilter})}
       </ul>
     </div>`

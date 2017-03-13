@@ -1,11 +1,10 @@
 import yo from 'yo-yo'
 import mime from 'mime'
 import {Archive, FileTree} from 'builtin-pages-lib'
-import rFiles from './com/editor-files'
+//import rFiles from './com/editor-files'
 
 const models = {} // all in-memory models
 var archive = null
-var lastClickedFolder = false // used in 'new' interface
 
 setup()
 async function setup () {
@@ -17,7 +16,6 @@ async function setup () {
     archive = new Archive(datKey)
     archive.dirtyFiles = {} // which files have been modified?
     archive.activeModel = null // what file are we viewing?
-    archive.lastClickedNode = false // what path was last clicked?
     archive.fileTree = new FileTree(archive)
     await archive.setup('/')
     await archive.fileTree.setup()
@@ -118,14 +116,6 @@ window.addEventListener('editor-created', () => {
 
 window.addEventListener('open-file', e => {
   setActive(e.detail.path)
-  archive.lastClickedNode = e.detail.path
-  lastClickedFolder = e.detail.path.split('/').slice(0, -1).join('/')
-})
-
-window.addEventListener('open-folder', e => {
-  archive.lastClickedNode = e.detail.path
-  lastClickedFolder = e.detail.path
-  renderNav()
 })
 
 window.addEventListener('keydown', e => {
@@ -260,30 +250,6 @@ function checkIfIsEditable (path) {
     return true
   }
   return false
-}
-
-function newFileInterface () {
-  // initial value
-  var value = ''
-  if (lastClickedFolder) {
-    value = lastClickedFolder + '/'
-  }
-
-  // render interface
-  yo.update(document.getElementById('new-file-popup'), 
-    yo`<div id="new-file-popup">
-      <form class="new-file-form" onsubmit=${onSubmitNewFile}>
-        <label>
-          Name<br>
-          <input type="text" name="name" />
-        </label>
-        <button class="btn" type="submit">Create</button>
-      </form>
-    </div>`
-  )
-  var input = document.querySelector('#new-file-popup input')
-  input.value = value
-  input.focus()
 }
 
 async function setEditableActive (path) {

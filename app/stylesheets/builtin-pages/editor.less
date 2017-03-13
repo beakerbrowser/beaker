@@ -31,54 +31,6 @@
   width: 100%;
 }
 
-.editor-nav {
-  &:extend(.hide-scrollbar all);
-  &:extend(.vertical-scroll);
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 200px;
-  height: 100%;
-  // background: @background-menu;
-
-  .header {
-    &:extend(.flex);
-    flex-wrap: nowrap;
-    height: 30px;
-    justify-content: space-between;
-    background: @border-menu;
-
-    .btn-bar {
-      flex-wrap: nowrap;
-    }
-
-    .btn {
-      height: 30px;
-      border: none;
-      background: none;
-    }
-  }
-
-  .project-title {
-    line-height: 30px;
-    padding-left: 10px;
-    white-space: pre;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-   .dirty-count {
-     background: @border-menu;
-     color: @color-text--muted;
-     border-radius: 40%;
-     display: inline-block;
-     font-weight: bold;
-     font-size: 10px;
-     padding: 0 5px;
-     margin-left: 5px;
-   }
-  }
-}
-
 .editor-editor {
   margin-left: 200px;
   height: 100%;
@@ -97,48 +49,6 @@
   }
 }
 
-.filetree {
-
-  .item {
-    &:extend(.overflow-ellipsis);
-    padding: 2px 10px;
-    -webkit-user-select: none;
-    cursor: pointer;
-
-    &:hover {
-      background: @border-menu;
-    }
-
-    &.selected {
-      background: @blue;
-      color: #fff;
-    }
-
-    &.file {
-      padding-left: 20px;
-    }
-
-    i {
-      margin-right: 3px;
-    }
-
-    .btn {
-      border: none;
-      background: none;
-      visibility: hidden;
-    }
-
-    &:hover .btn {
-      visibility: visible;
-    }
-
-    &.selected .btn {
-      visibility: visible;
-      color: #fff;
-    }
-  }
-}
-
 #editable-container,
 #uneditable-container {
   height: ~"calc(100vh - 30px)";
@@ -147,25 +57,4 @@
 
 #uneditable-container {
   padding: 0.5rem;
-}
-
-#new-file-popup {
-  position: fixed;
-  top: 30px;
-  left: 120px;
-  z-index: 10;
-  font-style: normal;
-}
-
-.new-file-form {
-  background: @border-menu;;
-  border: 1px solid #bbb;
-  padding: 0.5em 1em 1em;
-
-  input {
-    width: 300px;
-  }
-  btn {
-    height: 28px;
-  }
 }

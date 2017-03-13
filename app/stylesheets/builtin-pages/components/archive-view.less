@@ -1,15 +1,21 @@
-@import "../../components/files-list.less";
-
+// builtin page components
+@import "./files-sidebar.less";
+@import "./files-list.less";
+@import "./new-file-popup.less";
 @import "./archive-metadata.less";
 @import "./archive-toolbar.less";
 @import "./archive-header.less";
 @import "./archive-desc.less";
+@import "./archive-readonly.less";
+@import "./editor.less";
+
+/*
 @import "./archive-menu.less";
 @import "./archive-history.less";
-@import "./archive-readonly.less";
+*/
 
 .archive-view {
   width: 650px;
-  margin-left: 200px;
+  margin-left: 400px;
   padding: @padding-builtin-page @padding-component--wide;
 }
