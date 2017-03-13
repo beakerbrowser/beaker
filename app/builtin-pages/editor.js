@@ -4,7 +4,6 @@ import {Archive, ArchivesList, FileTree} from 'builtin-pages-lib'
 import {render as renderArchivesList, renderArchivesListItems} from './com/archives-list'
 import {render as renderArchiveView} from './com/editor-archive-view'
 import {render as renderEditorOptions, defaultEditorOptions} from './com/editor-options'
-import {addFiles} from './com/archive-files'
 import {pushUrl} from '../lib/fg/event-handlers'
 import {ucfirst} from '../lib/strings'
 import dragDrop from '../lib/fg/drag-drop'
@@ -49,7 +48,7 @@ window.history.replaceState = _wr('replaceState')
 readEditorOptions()
 setSidebarCollapsed(localStorage.isArchivesListCollapsed)
 setup()
-dragDrop(document.body, onDragDrop)
+// dragDrop(document.body, onDragDrop) TODO
 window.addEventListener('pushstate', setup)
 window.addEventListener('popstate', setup)
 window.addEventListener('render', render)
@@ -250,9 +249,10 @@ function onSaveFile (e) {
 }
 
 function onDragDrop (files) {
-  if (selectedArchive) {
-    addFiles(selectedArchive, files)
-  }
+  // TODO
+  // if (selectedArchive) {
+  //   addFiles(selectedArchive, files)
+  // }
 }
 
 function onDidChangeContent (archive, path) {
