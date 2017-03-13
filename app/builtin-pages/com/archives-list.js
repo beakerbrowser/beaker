@@ -4,17 +4,32 @@ import { pushUrl } from '../../lib/fg/event-handlers'
 // exported api
 // =
 
-export function render (archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath} = {}) {
+export function render (archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed, onCollapseToggle} = {}) {
   const hasFileSelection = !!selectedPath
+
+  if (isArchivesListCollapsed) {
+    return renderCollapsed({onCollapseToggle})
+  }
 
   // render all
   return yo`
     <div class="archives-sidebar">
       <div class="archives-sidebar-tools">
-        <input type="text" placeholder="Search" onkeyup=${onChangeFilter} value=${currentFilter||''} class="search"/>
-        <button onclick=${createArchive} class="new" aria-label="Create new archive">
-          <i class="fa fa-plus"></i>
-        </button>
+        <div>
+          <input type="text" placeholder="Search" onkeyup=${onChangeFilter} value=${currentFilter||''} class="search"/>
+        </div>
+        <div class="btns">
+          <div class="fill">
+            <button onclick=${createArchive} class="btn" aria-label="Create new site">
+              <i class="fa fa-plus"></i> New Site
+            </button>
+          </div>
+          <div>
+            <button onclick=${onCollapseToggle} class="collapse" aria-label="Collapse sidebar" title="Collapse sidebar">
+              <i class="fa fa-caret-square-o-left"></i>
+            </button>
+          </div>
+        </div>
       </div>
 
       <ul class="archives-list${hasFileSelection ? ' selection-grayed' : ''}">
@@ -50,6 +65,10 @@ export function renderArchivesListItems (archivesList, {selectedArchiveKey, curr
   }
 
   return archiveEls
+}
+
+function renderCollapsed({onCollapseToggle}) {
+  return yo`<div class="archives-sidebar collapsed" onclick=${onCollapseToggle}></div>`
 }
 
 // TODO: put the magic wand icon next to this link. -tbv

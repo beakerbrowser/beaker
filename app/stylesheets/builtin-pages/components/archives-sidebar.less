@@ -12,18 +12,28 @@
   border-right: 1px solid @border-menu;
   background: #fff;
   z-index: 3;
+
+  &.collapsed {
+    width: 10px;
+    background: @background-menu;
+    cursor: pointer;
+
+    &:hover {
+      background: @border-menu;
+    }
+  }
 }
 
 .archives-sidebar-tools {
   position: fixed;
   top: 0;
   width: 200px;
-  height: 65px;
+  height: 90px;
   border-bottom: 1px solid @border-menu;
   border-right: 1px solid @border-menu;
   padding: @padding-builtin-page;
 
-  button.new, .search {
+  .search {
     display: inline-block;
   }
 
@@ -31,26 +41,25 @@
     width: 168px;
   }
 
-  button.new {
-    position: absolute;
-    right: 16px;
-    bottom: -16px;
-
-    background: #fff;
-    border: 1px solid @border-menu;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    box-sizing: border-box;
+  .btns {
+    &:extend(.flex);
     padding-top: 5px;
 
+    .fill {
+      flex: 1;
+    }
+  }
+  button.collapse {
+    font-size: 1.2em;
+    padding-top: 0;
+    color: @color-text--light;
+
     &:hover {
-      background: @background-button;
+      color: @color-text;
     }
 
     i {
       cursor: pointer;
-      text-align: right;
     }
   }
 }

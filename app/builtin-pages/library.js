@@ -15,6 +15,7 @@ var viewError = null // toplevel error object
 var viewIsLoading = false // toplevel, is loading?
 var archivesList = null // ArchiveList, loaded once
 var currentFilter = '' // archivesList filter
+var isArchivesListCollapsed = false // render archives list collapsed?
 var selectedArchiveKey = null // selected archive's key
 var selectedArchive = null // selected Archive
 var selectedPath = null // selected filepath within the Archive
@@ -42,6 +43,7 @@ window.history.replaceState = _wr('replaceState')
 // main
 // =
 
+// setSidebarCollapsed(localStorage.isArchivesListCollapsed) TODO
 setup()
 dragDrop(document.body, onDragDrop)
 window.addEventListener('pushstate', setup)
@@ -176,8 +178,6 @@ function configureEditor () {
 // =
 
 function render () {
-  console.log(selectedPath)
-
   // show/hide the editor
   var editorEl = document.getElementById('el-editor-container')
   if (selectedModel && selectedModel.isEditable) {
@@ -189,7 +189,7 @@ function render () {
   // render view
   yo.update(document.querySelector('#el-content'), yo`<div id="el-content">
     <div class="archives">
-      ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath})}
+      ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed, onCollapseToggle})}
       ${renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles})}
     </div>
   </div>`)
@@ -208,6 +208,12 @@ function onChangeFilter (e) {
   yo.update(document.querySelector('.archives-list'), yo`<ul class="archives-list">
     ${renderArchivesListItems(archivesList, {selectedArchiveKey, currentFilter})}
   </ul>`)
+}
+
+function onCollapseToggle (e) {
+  e.stopPropagation()
+  setSidebarCollapsed(!isArchivesListCollapsed)
+  render()
 }
 
 async function onNewFile (e) {
@@ -260,6 +266,17 @@ async function onArchiveChanged (e) {
 
 // helpers
 // =
+
+function setSidebarCollapsed (collapsed) {
+  isArchivesListCollapsed = collapsed
+  if (isArchivesListCollapsed) {
+    // localStorage.isArchivesListCollapsed = 1 TODO
+    document.body.classList.add('sidebar-collapsed')
+  } else {
+    // delete localStorage.isArchivesListCollapsed TODO
+    document.body.classList.remove('sidebar-collapsed')    
+  }
+}
 
 function checkIfIsEditable (path) {
   // no extension?
@@ -329,7 +346,9 @@ async function save () {
 function freeCleanModels () {
   for (var k in models) {
     if (!dirtyFiles[k]) {
-      models[k].dispose()
+      if (models[k] && models[k].dispose) {
+        models[k].dispose()
+      }
       delete models[k]
       delete dirtyFiles[k]
     }
