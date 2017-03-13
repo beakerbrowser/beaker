@@ -98,6 +98,7 @@ async function setup () {
         await selectedArchive.setup()
         await selectedArchive.fileTree.setup()
         selectedArchive.addEventListener('changed', onArchiveChanged)
+        document.title = `${selectedArchive.niceName} - Editor`
         configureEditor()
         clearTimeout(to)
       }

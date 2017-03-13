@@ -41,7 +41,7 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles}) {
             <i class="fa fa-floppy-o"></i>
           </button>
 
-          <button class="btn" title="Open Active File" onclick=${e => onOpenInNewWindow(e, archive)} ${!hasActiveFile ? 'disabled' : ''}>
+          <button class="btn" title="Open Active File" onclick=${e => onOpenInNewWindow(e, archive)}>
             <i class="fa fa-external-link"></i>
           </button>
         </div>
@@ -175,7 +175,7 @@ function onClickFile (e, archive, node) {
 function onOpenInNewWindow (e, archive) {
   e.preventDefault()
   e.stopPropagation()
-  beakerBrowser.openUrl(lastClickedUrl)
+  beakerBrowser.openUrl(lastClickedUrl || archive.url)
 }
 
 function onNewFile (e, archive) {
