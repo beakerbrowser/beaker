@@ -5,7 +5,7 @@ import mime from 'mime'
 // =
 
 export default function renderFileView (archive, opts) {
-  if (opts.selectedModel.isEditable) {
+  if (!opts.selectedModel || opts.selectedModel.isEditable) {
     return yo`<div />`
   }
   return rUneditable(archive, opts.selectedPath)

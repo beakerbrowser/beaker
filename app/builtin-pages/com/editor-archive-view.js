@@ -11,8 +11,8 @@ import { pushUrl } from '../../lib/fg/event-handlers'
 // =
 
 export function render (archive, opts = {}) {
-  if (opts.viewError) return renderError(opts.viewError)
-  if (opts.viewIsLoading) return renderLoading()
+  if (opts.viewError) return renderError(archive, opts)
+  if (opts.viewIsLoading) return renderLoading(archive, opts)
   if (!archive) return renderEmpty()
   return renderArchive(archive, opts)
 }
@@ -26,13 +26,14 @@ function renderEmpty () {
   </div>`
 }
 
-function renderError (error) {
+function renderError (archive, opts) {
   return yo`
     <div class="archive-view">
+      ${renderFilesList(archive, opts)}
       <div class="message error archive-error">
         <div>
           <i class="fa fa-exclamation-triangle"></i>
-          <span>Error: ${error.toString()}</span>
+          <span>Error: ${opts.viewError.toString()}</span>
 
           <p>
             The archive failed to load. Sorry for the inconvenience.
@@ -47,23 +48,21 @@ function renderError (error) {
   </div>`
 }
 
-function renderLoading () {
-  return yo`<div class="archive-view">
-    <div class="archive-loading">
-      <div class="archive-loading-banner">
-        <div class="spinner"></div>
-        <div>Searching the network for this site. Please wait...</div>
-      </div>
-      <div class="archive-loading-tips">
-        <p><strong>Try:</strong></p>
-        <ul>
-          <li>Checking your connection</li>
-          <li>Checking your firewall settings</li>
-        </ul>
-        <p>
-          Having trouble? <a href="https://groups.google.com/forum/#!forum/beaker-browser" target="_blank">Ask for help</a> or <a href="https://github.com/beakerbrowser/beaker/issues" target="_blank">Report a bug</a>.
-        </p>
-      </div>
+function renderLoading (archive, opts) {
+  let label = opts.viewIsLoading === 'archive' ? 'site' : 'file'
+  return yo`<div class="archive-view loading loading-${opts.viewIsLoading}">
+    ${renderFilesList(archive, opts)}
+    <div class="message primary">
+      <div class="spinner"></div>
+      <div>Searching the network for this ${label}. Please wait...</div>
+      <p><strong>Try:</strong></p>
+      <ul>
+        <li>Checking your connection</li>
+        <li>Checking your firewall settings</li>
+      </ul>
+      <p>
+        Having trouble? <a href="https://groups.google.com/forum/#!forum/beaker-browser" target="_blank">Ask for help</a> or <a href="https://github.com/beakerbrowser/beaker/issues" target="_blank">Report a bug</a>.
+      </p>
     </div>
   </div>`
 }

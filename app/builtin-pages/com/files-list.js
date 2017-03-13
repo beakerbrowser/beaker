@@ -24,10 +24,13 @@ document.body.addEventListener('click', e => {
 export default function rFilesList (archive, {selectedPath, dirtyFiles}) {
   const hasActiveFile = !!lastClickedNode
   const activeFileIsDirty = hasActiveFile && dirtyFiles[lastClickedUrl]
+  if (!archive || !archive.fileTree.rootNode) {
+    return ''
+  }
   return yo`
     <div class="files-sidebar">
       <div class="header">
-        <div class="project-title"><a href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>${archive.info.title}</a></div>
+        <div class="project-title"><a href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>${archive.niceName}</a></div>
 
         <div class="btn-bar">
           <button class="btn" title="New File" onclick=${e => onNewFile(e, archive)}>

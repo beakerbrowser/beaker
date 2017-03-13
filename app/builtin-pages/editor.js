@@ -12,7 +12,7 @@ import dragDrop from '../lib/fg/drag-drop'
 // =
 
 var viewError = null // toplevel error object
-var viewIsLoading = false // toplevel, is loading?
+var viewIsLoading = false // toplevel, is loading? false, 'archive', or 'file'
 var archivesList = null // ArchiveList, loaded once
 var currentFilter = '' // archivesList filter
 var isArchivesListCollapsed = false // render archives list collapsed?
@@ -60,6 +60,8 @@ window.addEventListener('keydown', onKeyDown)
 
 async function setup () {
   try {
+    // reset some state
+    viewError = null
     var newArchiveKey = await getURLKey()
 
     if (selectedArchiveKey === newArchiveKey) {
@@ -86,7 +88,7 @@ async function setup () {
       if (newArchiveKey) {
         let to = setTimeout(() => {
           // render loading screen (it's taking a sec)
-          viewIsLoading = true
+          viewIsLoading = 'archive'
           render()
         }, 500)
 
@@ -108,6 +110,7 @@ async function setup () {
   } catch (err) {
     // render the error state
     console.warn('Failed to fetch archive info', err)
+    viewIsLoading = null
     viewError = err
     render()
   }
@@ -135,16 +138,41 @@ async function setupFile () {
     return
   }
 
+  let to = setTimeout(() => {
+    // render loading screen (it's taking a sec)
+    viewIsLoading = 'file'
+    render()
+  }, 500)
+
   // load according to editability
   if (checkIfIsEditable(path)) {
     if (!models[url]) {
-      await load(selectedArchive, path)
+      let loadErr
+      try {
+        // load the file
+        await load(selectedArchive, path)
+      } catch (err) {
+        loadErr = err
+      }
+
+      // make sure the file is still wanted
+      // (there's no way to cancel the load request but the user may have navigated away since the first req)
+      let currentSelectedUrl = selectedArchive.url + '/' + getURLPath()
+      if (currentSelectedUrl !== url) {
+        return console.warn('Stopped load process because user navigated away')
+      }
+      if (loadErr) {
+        // if errored, rethrow (they didnt nav away)
+        throw loadErr
+      }
     }
     editor.setModel(models[url])
   } else {
     models[url] = {path, isEditable: false, lang: ''}
   }
   selectedModel = models[url]
+  viewIsLoading = false
+  clearTimeout(to)
   render()
 }
 
@@ -193,7 +221,7 @@ function configureEditor () {
 function render () {
   // show/hide the editor
   var editorEl = document.getElementById('el-editor-container')
-  if (selectedModel && selectedModel.isEditable && !isViewingOptions) {
+  if (selectedModel && selectedModel.isEditable && !isViewingOptions && !viewError) {
     editorEl.classList.add('active')
   } else {
     editorEl.classList.remove('active')
@@ -213,9 +241,17 @@ function render () {
 // event handlers
 // =
 
-function onEditorCreated () {
+async function onEditorCreated () {
   configureEditor()
-  setupFile()
+  try {
+    await setupFile()
+  } catch (err) {
+    // render the error state
+    console.warn('Failed to fetch archive info', err)
+    viewIsLoading = null
+    viewError = err
+    render()
+  }
 }
 
 function onChangeFilter (e) {

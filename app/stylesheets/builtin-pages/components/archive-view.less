@@ -17,6 +17,23 @@
   width: 650px;
   margin-left: 400px;
   padding: @padding-builtin-page @padding-component--wide;
+
+  &.loading {
+    &.loading-site {
+      margin-left: 200px;
+    }
+
+    .spinner {
+      float: left;
+      color: inherit;
+      margin-right: 10px;
+      margin-top: 1px;
+    }
+
+    a {
+      text-decoration: underline;
+    }
+  }
 }
 
 .sidebar-collapsed .archive-view {
