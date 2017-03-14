@@ -1,0 +1,41 @@
+@import "../base/colors";
+@import "../utils/flex";
+@import "../components/link";
+
+.downloads {
+
+  h1 {
+    margin: 10px 0;
+    padding: 0;
+    border-bottom: 1px solid @border-menu;
+  }
+}
+
+.ll-row.download {
+
+  .actions {
+    opacity: 1;
+    margin-left: auto;
+    &:extend(.link);
+
+    a {
+      &:extend(.link);
+
+      &:hover {
+        &:extend(.link:hover);
+      }
+
+      &:not(last-child) {
+        margin-right: 10px;
+      }
+    }
+  }
+
+  .status {
+    margin-right: 5px;
+  }
+
+  .progress * {
+    display: inline-block;
+  }
+}

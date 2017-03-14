@@ -33,12 +33,7 @@ co(function* () {
 function render () {
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="downloads">
-      <div class="ll-heading">
-        File Downloads
-        <small class="ll-heading-right">
-          <a href="https://beakerbrowser.com/docs/" title="Get Help"><span class="icon icon-lifebuoy"></span> Help</a>
-        </small>
-      </div>
+      <h1 class="ll-heading">Downloads</h1>
       ${renderDownloadsList(downloadsList)}
     </div>
   </div>`)
