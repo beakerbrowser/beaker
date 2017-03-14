@@ -54,19 +54,22 @@ function render () {
     var oldLastDate = lastDate
     lastDate = moment(row.ts).endOf('day')
     if (!lastDate.isSame(oldLastDate, 'day')) {
-      rowEls.push(yo`<div class="ll-heading">${ucfirst(niceDate(lastDate, { noTime: true }))}</div>`)
+      rowEls.push(yo`<h2 class="ll-heading">${ucfirst(niceDate(lastDate, { noTime: true }))}</h2>`)
     }
 
     // render row
-    rowEls.push(yo`<div class="ll-row">
-      <a class="ll-link" href=${row.url} title=${row.title}>
-        <img class="favicon" src=${'beaker-favicon:'+row.url} />
-        <span class="ll-title">${row.title}</span>
-      </a>
-      <div class="ll-actions">
-        <span class="icon icon-cancel-squared" onclick=${onClickDelete.bind(window, i)} title="Remove from history"></span>
-      </div>
-    </div>`)
+    rowEls.push(
+      yo`
+        <div class="ll-row">
+          <a class="link" href=${row.url} title=${row.title}>
+            <img class="favicon" src=${'beaker-favicon:'+row.url} />
+            <span class="title">${row.title}</span>
+            <span class="url">${row.url}</span>
+          </a>
+          <div class="actions">
+            <i class="fa fa-window-close" onclick=${onClickDelete.bind(window, i)} title="Remove from history"></i>
+          </div>
+        </div>`)
   })
 
   // empty state
@@ -78,7 +81,7 @@ function render () {
 
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content" onscroll=${onScrollContent}>
     <div class="page-toolbar">
-     <button class="btn" onclick=${onClickDeleteBulk.bind(window)}>
+     <button class="clear" onclick=${onClickDeleteBulk.bind(window)}>
        Clear Browsing History
      </button>
      <select id="delete-period">
