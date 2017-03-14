@@ -31,9 +31,9 @@ function render () {
 
   const renderRowEditing = (row, i) =>
     yo`
-    <li class="ll-row ll-row-isEditing ll-link bookmarks__row bookmarks__row--editing" data-row=${i}>
-      <div class="ll-link">
-        <div class="ll-inputs bookmarks__inputs">
+    <li class="ll-row editing ll-link bookmarks__row bookmarks__row--editing" data-row=${i}>
+      <div class="link">
+        <div class="inputs bookmarks__inputs">
           <input name="title" value=${row.editTitle} onkeyup=${onKeyUp(i)} />
           <input name="url" value=${row.editUrl} onkeyup=${onKeyUp(i)} />
         </div>
@@ -43,13 +43,14 @@ function render () {
   const renderRowDefault = (row, i) =>
     yo`
       <li class="ll-row bookmarks__row" data-row=${i}>
-        <a class="ll-link bookmark__link" href=${row.url} title=${row.title} />
-          <img class="bookmark__favicon" src=${'beaker-favicon:' + row.url} />
-          <span class="bookmark__title">${row.title}</span>
+        <a class="link bookmark__link" href=${row.url} title=${row.title} />
+          <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.url} />
+          <span class="title bookmark__title">${row.title}</span>
+          <span class="url bookmark__url">${row.url}</span>
         </a>
-        <div class="ll-actions bookmark__actions">
-          <i class="icon icon-pencil" onclick=${onClickEdit(i)} title="Edit bookmark"></i>
-          <i class="icon icon-cancel" onclick=${onClickDelete(i)} title="Delete bookmark"></span>
+        <div class="actions bookmark__actions">
+          <i class="fa fa-pencil" onclick=${onClickEdit(i)} title="Edit Bookmark"></i>
+          <i class="fa fa-window-close" onclick=${onClickDelete(i)} title="Remove Bookmark"></span>
         </div>
       </li>`
 
@@ -62,7 +63,7 @@ function render () {
     document.querySelector('.bookmarks-wrapper'),
       yo`
         <div class="bookmarks-wrapper">
-          <div class="ll-heading">Bookmarks</div>
+          <h1 class="ll-heading">Bookmarks</h1>
           <ul class="links-list bookmarks">
             ${bookmarks.map(renderRow)}
             ${helpEl}
