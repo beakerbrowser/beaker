@@ -71,7 +71,7 @@ export function setup () {
     removeAsDefaultProtocolClient,
 
     showOpenDialog,
-    openUrl,
+    openUrl: url => { openUrl(url) }, // dont return anything
 
     closeModal
   }, internalOnly)
