@@ -74,12 +74,13 @@ export function setup () {
     }
   )
 
-  // configure chromium's permissions for the protocol
-  protocol.registerServiceWorkerSchemes(['dat'])
-
   // create the internal dat HTTP server
   var server = http.createServer(datServer)
   listenRandomPort(server, { host: '127.0.0.1' }, (_, port) => { serverPort = port })
+}
+
+export function getServerInfo () {
+  return {serverPort, requestNonce}
 }
 
 function datServer (req, res) {

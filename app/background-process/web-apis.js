@@ -8,9 +8,11 @@ import beakerSitedata from '../lib/api-manifests/internal/sitedata'
 
 import libraryManifest from '../lib/api-manifests/external/library'
 import datArchiveManifest from '../lib/api-manifests/external/dat-archive'
+import appsManifest from '../lib/api-manifests/external/apps'
 
 import libraryAPI from './web-apis/library'
 import datArchiveAPI from './web-apis/dat-archive'
+import appsAPI from './web-apis/apps'
 
 // exported api
 // =
@@ -20,6 +22,7 @@ export function setup () {
   // wire up RPC
   rpc.exportAPI('library', libraryManifest, libraryAPI)
   rpc.exportAPI('dat-archive', datArchiveManifest, datArchiveAPI)
+  rpc.exportAPI('apps', appsManifest, appsAPI)
 
   // register a message-handler for setting up the client
   // - see lib/fg/import-web-apis.js
