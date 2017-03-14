@@ -1,11 +1,13 @@
-@import "../../utils/decorators";
 @import "../../utils/flex";
 
 .links-list {
 
   .link {
-    &:extend(.overflow-ellipsis);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
     color: @color-text;
+    margin-right: 5px;
 
     &:hover {
       // TODO: This is necessary because @import "components/link" from other
