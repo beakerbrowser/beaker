@@ -225,7 +225,7 @@ function configureEditor () {
 function render () {
   // show/hide the editor
   var editorEl = document.getElementById('el-editor-container')
-  if (selectedModel && selectedModel.isEditable && !isViewingOptions && !viewError) {
+  if (selectedModel && selectedModel.isEditable && !isViewingOptions && !viewError && !viewIsLoading) {
     editorEl.classList.add('active')
   } else {
     editorEl.classList.remove('active')
