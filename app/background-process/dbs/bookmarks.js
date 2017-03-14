@@ -1,7 +1,6 @@
 import { app } from 'electron'
 import sqlite3 from 'sqlite3'
 import path from 'path'
-import url from 'url'
 import rpc from 'pauls-electron-rpc'
 import manifest from '../../lib/api-manifests/internal/bookmarks'
 import { cbPromise } from '../../lib/functions'
