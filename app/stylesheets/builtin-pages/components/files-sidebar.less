@@ -6,7 +6,6 @@
 
 .files-sidebar {
   &:extend(.hide-scrollbar all);
-  &:extend(.vertical-scroll);
   position: fixed;
   left: 200px;
   top: 0;
@@ -38,6 +37,13 @@
     white-space: pre;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .files-list {
+    &:extend(.hide-scrollbar all);
+    &:extend(.vertical-scroll);
+    height: 100%;
+    padding: 0 0 10px;
   }
 }
 
