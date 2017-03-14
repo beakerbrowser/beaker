@@ -46,6 +46,7 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles}) {
           </button>
         </div>
       </div>
+      ${rReadOnly(archive)}
       <div class="files-list">
         ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
       </div>
@@ -62,6 +63,14 @@ function redraw (archive, dirtyFiles, selectedPath) {
       ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
     </div>
   `)
+}
+
+function rReadOnly (archive) {
+  if (!archive || archive.info.isOwner) {
+    return ''
+  }
+
+  return yo`<div class="message primary">Read-only. <a href="#" onclick=${e => onFork(e, archive)}>Fork to edit</a>.</div>`
 }
 
 function rChildren (archive, children, depth, dirtyFiles, selectedPath) {
@@ -257,9 +266,10 @@ async function onImportFiles (e, archive) {
   })
 }
 
-
-export function addFiles (archive, files) {
-  
+async function onFork (e, archive) {
+  e.preventDefault()
+  var newArchive = await DatArchive.fork(archive)
+  window.location = 'beaker://editor/' + newArchive.url.slice('dat://'.length)  
 }
 
 // internal helpers
