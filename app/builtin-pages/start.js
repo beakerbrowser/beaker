@@ -14,7 +14,7 @@ const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 =
 var builtinPages = [
   { href: 'beaker://history', label: 'History', icon: 'back-in-time' },
   { href: 'beaker://bookmarks', label: 'Bookmarks', icon: 'bookmarks' },
-  { href: 'beaker://editor', label: 'Library', icon: 'book' },
+  { href: 'beaker://editor', label: 'Editor', icon: 'pencil' },
   { href: 'beaker://downloads', label: 'Downloads', icon: 'down' }
 ]
 

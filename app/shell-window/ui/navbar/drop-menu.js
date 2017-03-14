@@ -146,8 +146,8 @@ export class DropMenuNavbarBtn {
               </div>
 
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://editor')}>
-                <i class="fa fa-book"></i>
-                Library
+                <i class="fa fa-edit"></i>
+                Editor
               </div>
 
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
