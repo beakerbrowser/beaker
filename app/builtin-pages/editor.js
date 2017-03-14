@@ -206,8 +206,11 @@ function configureEditor () {
   editor.updateOptions({
     readOnly: (!selectedArchive || !selectedArchive.info.isOwner),
     wordWrap: editorOptions.wordWrap !== 'off',
-    wrappingColumn: editorOptions.wordWrap === 'auto' ? 0 : +editorOptions.wordWrapLength,
-    wrappingIndent: 'indent',
+    wrappingColumn: (
+      editorOptions.wordWrap === 'off' ? -1 :
+      editorOptions.wordWrap === 'auto' ? 0 :
+      +editorOptions.wordWrapLength
+    ),
     rulers: editorOptions.wordWrap === 'fixed' ? [+editorOptions.wordWrapLength] : [],
     quickSuggestions: editorOptions.autoSuggest,
     suggestOnTriggerCharacters: editorOptions.autoSuggest,
