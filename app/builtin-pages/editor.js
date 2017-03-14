@@ -164,6 +164,9 @@ async function setupFile () {
       }
       if (loadErr) {
         // if errored, rethrow (they didnt nav away)
+        if (loadErr.name === 'TimeoutError') {
+          throw new Error('File not found on the network. No hosts found.')
+        }
         throw loadErr
       }
     }

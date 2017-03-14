@@ -33,10 +33,9 @@ function renderError (archive, opts) {
       <div class="message error archive-error">
         <div>
           <i class="fa fa-exclamation-triangle"></i>
-          <span>Error: ${opts.viewError.toString()}</span>
-
+          <span>${opts.viewError.toString()}</span>
           <p>
-            The archive failed to load. Sorry for the inconvenience.
+            Check your internet connection, and make sure you can connect to a user hosting the site.
           </p>
         </div>
         <div class="archive-error-narclink">
