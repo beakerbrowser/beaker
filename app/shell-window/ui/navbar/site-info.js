@@ -85,17 +85,19 @@ export class SiteInfoNavbarBtn {
     }
 
     // dropdown
-    return yo`<div class="toolbar-dropdown toolbar-site-info-dropdown">
-      <div class="details">
-        <div class="details-title">
-          <img src="beaker-favicon:${this.getUrl()}" />
-          <strong>${this.getTitle() || this.getHostname() || this.getUrl()}</strong>
+    return yo`
+      <div class="dropdown toolbar-dropdown toolbar-site-info-dropdown">
+        <div class="details dropdown-items visible with-triangle left">
+          <div class="details-title">
+            ${this.getTitle() || this.getHostname() || this.getUrl()}
+          </div>
+          <p class="details-desc">
+            ${protocolDesc}
+          </p>
+          ${siteCtrlsEl}
         </div>
-        <div><small>${protocolDesc}</small></div>
-        ${siteCtrlsEl}
-      </div>
-      <div class="perms">${permsEls}</div>
-    </div>`
+        <div class="perms">${permsEls}</div>
+      </div>`
   }
 
   getTitle() {
