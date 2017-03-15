@@ -615,6 +615,8 @@ function onDidStopLoading (e) {
         tbody tr:nth-child(odd) { background: #fafafa; }
         tbody td { border-top: 1px solid #bbb; }
         .switcher { position: absolute; top: 5px; right: 5px }
+        code { font-size: 1.3em; background: #fafafa; }
+        pre { background: #fafafa; padding: 1em }
       `)
       if (!cachedMarkdownRendererScript) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(remote.app.getAppPath(), 'markdown-renderer.build.js'), 'utf8')
