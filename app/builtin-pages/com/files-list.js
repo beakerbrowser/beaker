@@ -96,7 +96,7 @@ function treeSorter (a, b) {
   if (a.entry.type != 'directory' && b.entry.type == 'directory')
     return 1
   // by name
-  return a.entry.name.localeCompare(b.entry.name)
+  return normalizePath(a.entry.name).localeCompare(normalizePath(b.entry.name))
 }
 
 function rNode (archive, node, depth, dirtyFiles, selectedPath) {

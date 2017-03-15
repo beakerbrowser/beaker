@@ -171,6 +171,7 @@ async function setupFile () {
       }
     }
     editor.setModel(models[url])
+    setTimeout(() => editor.focus(), 200) // some weird behavior requires we wait for a few ms
   } else {
     models[url] = {path, isEditable: false, lang: ''}
   }
@@ -277,7 +278,7 @@ function onCollapseToggle (e) {
 
 async function onNewFile (e) {
   var {path} = e.detail
-  generate(selectedArchive, path)
+  await generate(selectedArchive, path)
   window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${path}`)
 }
 
@@ -409,9 +410,20 @@ function checkIfIsEditable (path) {
   return false
 }
 
-function generate (archive, path) {
-  // setup the model
+async function generate (archive, path) {
+  // check if the file exists already
   const url = archive.url + '/' + path
+  try {
+    const stat = await archive.stat(path)
+    if (!models[url]) {
+      return load(archive, path)
+    }
+    return
+  } catch (e) {
+    // does not exist
+  }
+
+  // setup the model
   models[url] = monaco.editor.createModel('', null, monaco.Uri.parse(url))
   models[url].path = path
   models[url].isEditable = true
@@ -419,6 +431,7 @@ function generate (archive, path) {
   models[url].onDidChangeContent(onDidChangeContent(archive, path))
   models[url].updateOptions(getModelOptions())
   dirtyFiles[url] = true
+  archive.fileTree.addNode({ type: 'file', name: path })
 }
 
 async function load (archive, path) {
