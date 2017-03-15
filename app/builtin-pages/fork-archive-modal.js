@@ -120,14 +120,14 @@ function render () {
 
   var helpText = `Create a copy of ${renderArchiveTitle()} and save it to your library.`
   if (isSelfFork) {
-    helpText = 'This site wants to create a copy of itself.'
+    helpText = 'This archive wants to create a copy of itself.'
   }
 
   yo.update(document.querySelector('main'), yo`<main>
     <div class="modal">
       <div class="modal-inner">
         <div class="fork-dat-modal">
-          <h2 class="title">Fork ${renderArchiveTitle('site')}</h2>
+          <h2 class="title">Fork ${renderArchiveTitle('archive')}</h2>
           <p class="help-text">${helpText}</p>
 
           <form onsubmit=${onSubmit}>

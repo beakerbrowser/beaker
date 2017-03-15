@@ -16,8 +16,8 @@ export function render (archivesList, {selectedArchiveKey, currentFilter, onChan
         </div>
         <div class="btns">
           <div class="fill">
-            <button onclick=${createArchive} class="btn" aria-label="Create new site">
-              <i class="fa fa-plus"></i> New Site
+            <button onclick=${createArchive} class="btn" aria-label="Create new archive">
+              <i class="fa fa-plus"></i> New Archive
             </button>
           </div>
           <div>
@@ -68,14 +68,10 @@ export function renderArchivesListItems (archivesList, {selectedArchiveKey, curr
   return archiveEls
 }
 
-// TODO: put the magic wand icon next to this link. -tbv
 function renderEmpty () {
   return yo`
     <div class="archives-list empty">
-      <em>No sites</em>
-      <p>
-        <a onclick=${createArchive}>Create a new site.<i class="fa fa-magic"></i></a>
-      </p>
+      <em>No archives saved.</em>
     </div>`
 }
 

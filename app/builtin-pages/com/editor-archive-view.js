@@ -22,7 +22,7 @@ function renderEmpty () {
   // return yo`<div class="archive-view">
   //   <div class="archive-empty-banner">
   //     <h2>Editor</h2>
-  //     <p>Build websites and applications. <a class="link" onclick=${onCreate}>Create new site</a>.</p>
+  //     <p>Build websites and applications. <a class="link" onclick=${onCreate}>Create new archive</a>.</p>
   //   </div>
   // </div>`
 }
@@ -36,7 +36,7 @@ function renderError (archive, opts) {
           <i class="fa fa-exclamation-triangle"></i>
           <span>${opts.viewError.toString()}</span>
           <p>
-            Check your internet connection, and make sure you can connect to a user hosting the site.
+            Check your internet connection, and make sure you can connect to a user hosting the archive.
           </p>
         </div>
         <div class="archive-error-narclink">
@@ -49,7 +49,7 @@ function renderError (archive, opts) {
 }
 
 function renderLoading (archive, opts) {
-  let label = opts.viewIsLoading === 'archive' ? 'site' : 'file'
+  let label = opts.viewIsLoading
   return yo`<div class="archive-view loading loading-${opts.viewIsLoading}">
     ${renderFilesList(archive, opts)}
     <div class="message primary">
