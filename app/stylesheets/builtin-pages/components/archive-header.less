@@ -1,4 +1,5 @@
 @import "../../utils/flex";
+@import "../../components/link";
 
 .archive-view-header {
   &:extend(.flex);
@@ -7,5 +8,18 @@
   .title {
     margin-top: 0;
     font-size: 20px;
+  }
+
+  .edit {
+    &:extend(.link);
+    font-size: 14px;
+
+    i {
+      cursor: pointer;
+    }
+
+    &:hover {
+      &:extend(.link:hover);
+    }
   }
 }

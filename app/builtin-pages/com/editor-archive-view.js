@@ -81,6 +81,7 @@ function renderArchiveDetails (archive, opts) {
     <div class="archive-view-header">
       <h2 class="title">
         <a href=${'dat://'+archive.info.key} title=${archive.niceName}>${archive.niceName}</a>
+        <a class="edit" title="Edit Details" onclick=${() => onEditDetails(archive)}><i class="fa fa-pencil"></i></a>
       </h2>
     </div>
 
@@ -145,28 +146,10 @@ function rMetadata (archive) {
 }
 
 function rToolbar (archive) {
-  var inactiveView = 'History'
-  var addFilesBtn = ''
-
-  if (archive.info.isOwner) {
-    addFilesBtn = yo`
-      <button class="btn" onclick=${() => onClickSelectFiles(archive)}>
-        <i class="fa fa-plus"></i>
-        <span>Add files</span>
-      </button>`
-  }
-
   return yo`
     <div class="archive-toolbar">
-      <a class="view-link" onclick=${() => setCurrentView(inactiveView)}>View ${inactiveView}</a>
-
       <div class="btn-bar">
         ${rSaveBtn(archive)}
-
-        <button class="btn" onclick=${() => onEditDetails(archive)}>
-          <i class="fa fa-edit"></i>
-          <span>Edit Details</span>
-        </button>
 
         <button class="btn" onclick=${() => onFork(archive)}>
           <i class="fa fa-code-fork"></i>
@@ -182,8 +165,6 @@ function rToolbar (archive) {
           <i class="fa fa-external-link"></i>
           <span>Open</span>
         </a>
-
-        ${addFilesBtn}
       </div>
     </div>`
 }
@@ -191,9 +172,9 @@ function rToolbar (archive) {
 function rReadOnly (archive) {
   if (archive.info.isOwner) return ''
   return yo`
-    <p class="message archive-readonly">
+    <p class="archive-readonly">
       <i class="fa fa-eye"></i>
-      You${"'"}re viewing a read-only version of this site. <a onclick=${onFork}>Save an editable version to your library</a>.
+      Read-only. <a onclick=${onFork}>Fork to edit</a>.
     </p>`
 }
 
