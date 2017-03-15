@@ -26,7 +26,7 @@ export function render (archivesList, {selectedArchiveKey, currentFilter, onChan
             </button>
           </div>
           <div>
-            <button onclick=${onCollapseToggle} class="icon-btn" aria-label="Collapse sidebar" title="Collapse sidebar">
+            <button onclick=${!!selectedArchiveKey && onCollapseToggle} class="icon-btn" aria-label="Collapse sidebar" title="Collapse sidebar" ${!selectedArchiveKey ? 'disabled' : ''}>
               <i class="fa fa-caret-square-o-left"></i>
             </button>
           </div>

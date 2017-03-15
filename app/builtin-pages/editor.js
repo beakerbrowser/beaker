@@ -235,12 +235,13 @@ function render () {
   }
 
   // render view
+  var collapsed = isArchivesListCollapsed && !!selectedArchiveKey
   yo.update(document.querySelector('#el-content'), yo`<div id="el-content">
     <div class="archives">
-      ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed, onCollapseToggle, onToggleOptions})}
+      ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed: collapsed, onCollapseToggle, onToggleOptions})}
       ${isViewingOptions
         ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
-        : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles, isArchivesListCollapsed, onCollapseToggle})}
+        : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles, isArchivesListCollapsed: collapsed, onCollapseToggle})}
     </div>
   </div>`)
 }

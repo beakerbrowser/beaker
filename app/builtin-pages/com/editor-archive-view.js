@@ -18,12 +18,13 @@ export function render (archive, opts = {}) {
 }
 
 function renderEmpty () {
-  return yo`<div class="archive-view">
-    <div class="archive-empty-banner">
-      <h2>Editor</h2>
-      <p>Build websites and applications. <a class="link" onclick=${onCreate}>Create new site</a>.</p>
-    </div>
-  </div>`
+  return ''
+  // return yo`<div class="archive-view">
+  //   <div class="archive-empty-banner">
+  //     <h2>Editor</h2>
+  //     <p>Build websites and applications. <a class="link" onclick=${onCreate}>Create new site</a>.</p>
+  //   </div>
+  // </div>`
 }
 
 function renderError (archive, opts) {
