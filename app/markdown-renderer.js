@@ -67,7 +67,7 @@ if (!document.querySelector('main')) {
       navHTML = Object.keys(listing)
         .filter(name => name.endsWith('md'))
         .sort()
-        .map(name => `<a href="/${makeSafe(name)}">${makeSafe(name)}</a>`)
+        .map(name => `<div class="link"><a href="/${makeSafe(name)}">${makeSafe(name)}</a></div>`)
         .join('')
     }
     document.querySelector('nav').innerHTML = navHTML
