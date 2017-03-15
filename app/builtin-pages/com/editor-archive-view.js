@@ -93,6 +93,7 @@ function renderArchiveDetails (archive, opts) {
     ${rReadOnly(archive)}
     ${rMetadata(archive)}
     ${rToolbar(archive)}
+    ${rBkrInstructions(archive)}
   </div>`
 }
 
@@ -191,6 +192,13 @@ function rSaveBtn (archive) {
       <i class="fa fa-save"></i>
       Save to library
     </button>`
+}
+
+function rBkrInstructions (archive) {
+  return yo`<div class="archive-instructions">
+    <p>Using <a href="https://github.com/beakerbrowser/bkr" target="_blank">bkr</a> to checkout files:</p>
+    <p>bkr clone ${archive.url} .</p>
+  </div>`
 }
 
 // event handlers
