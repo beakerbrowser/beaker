@@ -171,12 +171,16 @@ function datServer (req, res) {
       const checkMatch = (entry, name) => {
         if (isFolder) {
           // look for index.html
-          if (name === filepath + 'index.html') {
-            hasExactMatch = true
+          if (name.toLowerCase() === filepath + 'index.html') {
+            hasExactMatch = 2
             return true
           }
           // fallback to index.md
-          if (!hasExactMatch && name === filepath + 'index.md') {
+          if (hasExactMatch < 2 && name.toLowerCase() === filepath + 'index.md') {
+            return true
+          }
+          // fallback to readme.md
+          if (hasExactMatch < 1 && name.toLowerCase() === filepath + 'readme.md') {
             return true
           }
           return false

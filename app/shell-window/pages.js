@@ -604,15 +604,19 @@ function onDidStopLoading (e) {
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }
         body > pre { display: none; }
         main { display: flex; }
-        nav { max-width: 300px; padding-right: 2em; }
+        nav { max-width: 200px; padding-right: 2em; }
+        nav .link { white-space: pre; overflow: hidden; text-overflow: ellipsis; margin: 0.5em 0 }
         main > div { max-width: 800px; }
         hr { border: 0; border-top: 1px solid #ccc; margin: 1em 0; }
         blockquote { margin: 0; padding: 0 1em; border-left: 1em solid #eee; }
+        .anchor-link { color: #aaa; margin-left: 5px; text-decoration: none; }
         table { border-collapse: collapse; }
         td, th { padding: 0.5em 1em; }
         tbody tr:nth-child(odd) { background: #fafafa; }
         tbody td { border-top: 1px solid #bbb; }
         .switcher { position: absolute; top: 5px; right: 5px }
+        code { font-size: 1.3em; background: #fafafa; }
+        pre { background: #fafafa; padding: 1em }
       `)
       if (!cachedMarkdownRendererScript) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(remote.app.getAppPath(), 'markdown-renderer.build.js'), 'utf8')
