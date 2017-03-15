@@ -149,62 +149,40 @@
   }
 }
 
-.toolbar-site-info {
-  position: relative;
-}
-
 .toolbar-site-info-dropdown {
   // this dropdown is unique
   // because the button is inside a site-info toolbar, which hides overflow,
   // this dropdown has to be positioned out on its own
   position: fixed;
-  left: 82px;
+  left: 20px;
   top: 70px;
-  z-index: 20;
-
   width: 350px;
-  padding: 0;
-  font-size: 15px;
 
-  &:before {
-    left: 39px;
+
+  .dropdown-items {
+    padding: @padding-component;
+
+    &::before {
+      left: 25px;
+    }
   }
 
-  .details {
-    padding: 12px 20px;
+  .details-title {
+    font-weight: bold;
+  }
 
-    & > div {
-      margin-bottom: 2px;
-    }
-
-    .details-title {
-      display: flex;
-      font-size: 17px;
-      margin: 6px 0;
-      & > :last-child {
-        flex: 1;
-        padding-left: 5px;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: pre;
-      }
-    }
-
-    a {
-      margin-right: 5px;
-    }
-
-    .btn {
-      padding: 0px 5px;
-    }
+  .details-desc {
+    margin-bottom: 0;
   }
 
   .perms {
     font-size: 13px;
     background: #fafafa;
+
     div {
       border-top: 1px solid #eee;
     }
+
     label {
       display: block;
       padding: 10px;
@@ -213,9 +191,11 @@
         background: #fff;
       }
     }
+
     input {
       margin-right: 4px;
     }
+
     .icon {
       width: 15px;
       text-align: center;
