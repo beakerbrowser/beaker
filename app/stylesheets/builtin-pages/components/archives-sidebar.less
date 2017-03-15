@@ -12,15 +12,10 @@
   border-right: 1px solid @border-menu;
   background: #fff;
   z-index: 3;
+  transition: 0.1s ease-in-out transform;
 
   &.collapsed {
-    width: 10px;
-    background: @background-menu;
-    cursor: pointer;
-
-    &:hover {
-      background: @border-menu;
-    }
+    transform: translateX(-200px);
   }
 }
 

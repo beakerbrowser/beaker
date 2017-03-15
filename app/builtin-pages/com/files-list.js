@@ -21,15 +21,24 @@ document.body.addEventListener('click', e => {
 // exported api
 // =
 
-export default function rFilesList (archive, {selectedPath, dirtyFiles}) {
+export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchivesListCollapsed, onCollapseToggle}) {
   const hasActiveFile = !!lastClickedNode
   const activeFileIsDirty = hasActiveFile && dirtyFiles[lastClickedUrl]
   if (!archive || !archive.fileTree.rootNode) {
     return ''
   }
+
   return yo`
     <div class="files-sidebar">
       <div class="header">
+        ${isArchivesListCollapsed
+          ? yo`<div class="btn-bar">
+                <button class="btn collapse" title="Expand Archives List" onclick=${onCollapseToggle}>
+                  <i class="fa fa-caret-square-o-right"></i>
+                </button>
+              </div>`
+          : ''}
+
         <div class="project-title"><a href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>${archive.niceName}</a></div>
 
         <div class="btn-bar">

@@ -15,7 +15,7 @@
 
   .header {
     &:extend(.flex);
-    flex-wrap: nowrap;
+    flex-wrap: nowrap !important;
     height: 30px;
     justify-content: space-between;
     background: @border-menu;
@@ -28,6 +28,17 @@
       height: 30px;
       border: none;
       background: none;
+
+      &.collapse {
+        background: #eee;
+        font-size: 1.2em;
+        color: @color-text--light;
+
+        &:hover {
+          color: @color-text;
+          background: #e5e5e5;
+        }
+      }
     }
   }
 
@@ -43,6 +54,10 @@
     margin: 5px;
   }
 
+  .fill {
+    flex: 1;
+  }
+
   .files-list {
     &:extend(.hide-scrollbar all);
     &:extend(.vertical-scroll);
@@ -52,5 +67,5 @@
 }
 
 .sidebar-collapsed .files-sidebar {
-  left: 10px;
+  left: 0px;
 }

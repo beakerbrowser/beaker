@@ -7,13 +7,9 @@ import { pushUrl } from '../../lib/fg/event-handlers'
 export function render (archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed, onCollapseToggle, onToggleOptions} = {}) {
   const hasFileSelection = !!selectedPath
 
-  if (isArchivesListCollapsed) {
-    return renderCollapsed({onCollapseToggle})
-  }
-
   // render all
   return yo`
-    <div class="archives-sidebar">
+    <div class="archives-sidebar ${isArchivesListCollapsed ? 'collapsed' : ''}">
       <div class="archives-sidebar-tools">
         <div>
           <input type="text" placeholder="Search" onkeyup=${onChangeFilter} value=${currentFilter||''} class="search"/>
@@ -70,10 +66,6 @@ export function renderArchivesListItems (archivesList, {selectedArchiveKey, curr
   }
 
   return archiveEls
-}
-
-function renderCollapsed({onCollapseToggle}) {
-  return yo`<div class="archives-sidebar collapsed" onclick=${onCollapseToggle}></div>`
 }
 
 // TODO: put the magic wand icon next to this link. -tbv

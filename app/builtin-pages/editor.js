@@ -240,7 +240,7 @@ function render () {
       ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed, onCollapseToggle, onToggleOptions})}
       ${isViewingOptions
         ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
-        : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles})}
+        : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles, isArchivesListCollapsed, onCollapseToggle})}
     </div>
   </div>`)
 }
