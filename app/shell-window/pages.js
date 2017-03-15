@@ -608,6 +608,7 @@ function onDidStopLoading (e) {
         main > div { max-width: 800px; }
         hr { border: 0; border-top: 1px solid #ccc; margin: 1em 0; }
         blockquote { margin: 0; padding: 0 1em; border-left: 1em solid #eee; }
+        .anchor-link { color: #aaa; margin-left: 5px; text-decoration: none; }
         table { border-collapse: collapse; }
         td, th { padding: 0.5em 1em; }
         tbody tr:nth-child(odd) { background: #fafafa; }

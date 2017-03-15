@@ -19,6 +19,14 @@ var md = new Remarkable('full', {
   highlight: function (/*str, lang*/) { return ''; }
 });
 
+// heading anchor rendering
+md.renderer.rules.heading_open = function(tokens, idx /*, options, env */) {
+  return '<h' + tokens[idx].hLevel + ' id="' + slugify(tokens[idx+1].content) + '">';
+};
+md.renderer.rules.heading_close = function(tokens, idx /*, options, env */) {
+  return '<a class="anchor-link" href="#'+slugify(tokens[idx-1].content)+'">#</a></h' + tokens[idx].hLevel + '>\n';
+};
+
 // make sure not already handled
 // (for some reason, clicking on a # link inside the page triggers this script again)
 if (!document.querySelector('main')) {
@@ -68,3 +76,20 @@ if (!document.querySelector('main')) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
   }
 }
+
+function slugify (text) {
+  // Regex for finding the nonsafe URL characters (many need escaping): & +$,:;=?@"#{}|^~[`%!'<>]./()*\
+  var nonsafeChars = /[& +$,:;=?@"#{}|^~[`%!'<>\]\.\/\(\)\*\\]/g,
+      slug;
+
+  // Note: we trim hyphens after truncating because truncating can cause dangling hyphens.
+  // Example string:                               // " ⚡⚡ Don't forget: URL fragments should be i18n-friendly, hyphenated, short, and clean."
+  slug = text.trim()                               // "⚡⚡ Don't forget: URL fragments should be i18n-friendly, hyphenated, short, and clean."
+             .replace(/\'/gi, '')                  // "⚡⚡ Dont forget: URL fragments should be i18n-friendly, hyphenated, short, and clean."
+             .replace(nonsafeChars, '-')           // "⚡⚡-Dont-forget--URL-fragments-should-be-i18n-friendly--hyphenated--short--and-clean-"
+             .replace(/-{2,}/g, '-')               // "⚡⚡-Dont-forget-URL-fragments-should-be-i18n-friendly-hyphenated-short-and-clean-"
+             .replace(/^-+|-+$/gm, '')             // "⚡⚡-Dont-forget-URL-fragments-should-be-i18n-friendly-hyphenated"
+             .toLowerCase();                       // "⚡⚡-dont-forget-url-fragments-should-be-i18n-friendly-hyphenated"
+
+  return slug;
+};
