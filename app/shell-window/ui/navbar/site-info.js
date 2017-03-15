@@ -37,12 +37,13 @@ export class SiteInfoNavbarBtn {
     var titleEl = (protocolLabel) ? yo`<span class="title">${protocolLabel}</span>`: ''
     return yo`<div class="toolbar-site-info ${protocolCls}">
       <button onclick=${e => this.toggleDropdown(e)}>${iconEl} ${titleEl}</button>
+      ${this.renderDropdown()}
     </div>`
   }
 
   renderDropdown() {
     if (!this.isDropdownOpen) {
-      return yo`<div></div>`
+      return ''
     }
 
     // pull details
@@ -57,17 +58,6 @@ export class SiteInfoNavbarBtn {
           This site was downloaded from a secure peer-to-peer network.
           <a onclick=${e => this.learnMore()}>Learn More</a>
         </span>`
-      }
-    }
-
-    // site controls
-    let siteCtrlsEl = ''
-    if (this.protocolInfo) {
-      if (this.protocolInfo.scheme === 'dat:') {
-        siteCtrlsEl = yo`<div><hr /><span>
-          <a onclick=${e => this.viewSiteFiles('files')}>View site files</a>|
-          <a onclick=${e => this.viewSiteFiles('fork')}>Fork site</a>
-        </span></div>`
       }
     }
 
@@ -87,16 +77,17 @@ export class SiteInfoNavbarBtn {
     // dropdown
     return yo`
       <div class="dropdown toolbar-dropdown toolbar-site-info-dropdown">
-        <div class="details dropdown-items visible with-triangle left">
-          <div class="details-title">
-            ${this.getTitle() || this.getHostname() || this.getUrl()}
+        <div class="dropdown-items visible with-triangle left">
+          <div class="details">
+            <div class="details-title">
+              ${this.getTitle() || this.getHostname() || this.getUrl()}
+            </div>
+            <p class="details-desc">
+              ${protocolDesc}
+            </p>
           </div>
-          <p class="details-desc">
-            ${protocolDesc}
-          </p>
-          ${siteCtrlsEl}
+          <div class="perms">${permsEls}</div>
         </div>
-        <div class="perms">${permsEls}</div>
       </div>`
   }
 
@@ -127,13 +118,6 @@ export class SiteInfoNavbarBtn {
     // ...this entire thing is kind of bad
     // -prf
     Array.from(document.querySelectorAll('.toolbar-site-info')).forEach(el => yo.update(el, this.render()))
-    Array.from(document.querySelectorAll('.toolbar-site-info-dropdown')).forEach(el => {
-      if (this.isDropdownOpen) {
-        yo.update(el, this.renderDropdown())
-      } else {
-        el.parentNode.removeChild(el)
-      }
-    })
   }
 
   onClickAnywhere(e) {
@@ -160,10 +144,6 @@ export class SiteInfoNavbarBtn {
     }
 
     this.isDropdownOpen = !this.isDropdownOpen
-    if (this.isDropdownOpen) {
-      // create a new dropdown el on the page
-      document.body.appendChild(this.renderDropdown())
-    }
     this.updateActives()
   }
 
