@@ -307,7 +307,7 @@ export class DropMenuNavbarBtn {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
-    
+
     var page = pages.getActive()
     if (!page || !page.getURL().startsWith('dat://')) {
       return
@@ -321,7 +321,7 @@ export class DropMenuNavbarBtn {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
-    
+
     var page = pages.getActive()
     if (!page || !page.getURL().startsWith('dat://')) {
       return

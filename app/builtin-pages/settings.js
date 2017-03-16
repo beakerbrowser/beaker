@@ -42,17 +42,18 @@ function render () {
 
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="settings">
-      <div class="ll-heading">
-        Auto-updater
-      </div>
+      <h1>Settings</h1>
+      <h2 class="ll-heading">Auto-updater</h2>
       ${renderAutoUpdater()}
-      <div class="ll-heading">Default Browser</div>
+
+      <h2 class="ll-heading">Protocol Settings</h2>
       ${renderProtocolSettings()}
-      <div class="ll-heading">Application Info</div>
-      <div class="s-section">
-        <div><strong>Version:</strong> ${browserInfo.version}</div>
-        <div><strong>User data:</strong> ${browserInfo.paths.userData}</div>
-      </div>
+
+      <h2 class="ll-heading">Beaker Information</h2>
+      <ul class="settings-section">
+        <li>Version: ${browserInfo.version}</li>
+        <li>User data: ${browserInfo.paths.userData}</li>
+      </ul>
     </div>
   </div>`)
 }
@@ -69,17 +70,25 @@ function renderProtocolSettings () {
   var registered   = Object.keys(defaultProtocolSettings).filter(k => defaultProtocolSettings[k])
   var unregistered = Object.keys(defaultProtocolSettings).filter(k => !defaultProtocolSettings[k])
 
-  return yo`<div class="s-section">
-    ${registered.length
-      ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
-      : '' }
-    ${unregistered.map(proto => yo`<div><strong>${proto}</strong> <a onclick=${register(proto)}>Make default <span class="icon icon-forward"></span></a></div>`)}
-  </div>`
+  return yo
+    `<div class="settings-section protocols">
+      ${registered.length
+        ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
+        : '' }
+      ${unregistered.map(proto => yo`
+        <div>
+          <strong>${proto}</strong>
+          <a onclick=${register(proto)}>
+            Make default
+            <i class="fa fa-share"></i>
+          </a>
+        </div>`)}
+      </div>`
 }
 
 function renderAutoUpdater () {
   if (!browserInfo.updater.isBrowserUpdatesSupported) {
-    return yo`<div class="s-section">
+    return yo`<div class="settings-section">
       <div>Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
       You will need to build new versions of Beaker from source.</div>
     </div>`
@@ -88,7 +97,7 @@ function renderAutoUpdater () {
   switch (browserInfo.updater.state) {
     default:
     case 'idle':
-      return yo`<div class="s-section">
+      return yo`<div class="settings-section">
         <button class="btn btn-default" onclick=${onClickCheckUpdates}>Check for updates</button>
         <span class="version-info">
           ${ browserInfo.updater.error
@@ -102,7 +111,7 @@ function renderAutoUpdater () {
       </div>`
 
     case 'checking':
-      return yo`<div class="s-section">
+      return yo`<div class="settings-section">
         <button class="btn" disabled>Checking for updates</button>
         <span class="version-info">
           <div class="spinner"></div>
@@ -112,7 +121,7 @@ function renderAutoUpdater () {
       </div>`
 
     case 'downloading':
-      return yo`<div class="s-section">
+      return yo`<div class="settings-section">
         <button class="btn" disabled>Updating</button>
         <span class="version-info">
           <div class="spinner"></div>
@@ -122,7 +131,7 @@ function renderAutoUpdater () {
       </div>`
 
     case 'downloaded':
-      return yo`<div class="s-section">
+      return yo`<div class="settings-section">
         <button class="btn" onclick=${onClickRestart}>Restart now</button>
         <span class="version-info">
           <span class="icon icon-up-circled"></span>

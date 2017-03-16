@@ -1,0 +1,38 @@
+@import "../base/colors";
+@import "../base/spacing";
+
+.settings {
+
+  h1 {
+    font-size: 18px;
+    margin: 10px 0;
+    padding: 0;
+    border-bottom: 1px solid @border-menu;
+  }
+
+  h2 {
+    font-size: 13px;
+    border-bottom: 1px solid @border-menu;
+  }
+}
+
+.settings-section {
+  padding: 0 @padding-component--tight;
+
+  a {
+
+    &:extend(.link);
+
+    &:hover {
+      &:extend(.link:hover);
+    }
+  }
+
+  &.protocols a {
+    margin-left: 5px;
+  }
+}
+
+ul.settings-section {
+  margin-left: @padding-component;
+}
