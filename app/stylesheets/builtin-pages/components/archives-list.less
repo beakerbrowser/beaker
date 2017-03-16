@@ -30,10 +30,7 @@
     }
 
     &.active {
-      background: @color-link;
-      color: #fff;
-      -webkit-font-smoothing: antialiased;
-      font-weight: 600;
+      background: @background-menu;
 
       i {
         // the folder-open icon is wider than the folder icon and makes the text
@@ -57,12 +54,6 @@
         background: @border-menu;
       }
     }
-  }
-
-  &.selection-grayed .archives-item.active {
-    background: @background-highlight-grayed;
-    color: inherit;
-    font-weight: normal;
   }
 
   &.empty {

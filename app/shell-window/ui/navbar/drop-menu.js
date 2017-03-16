@@ -154,6 +154,11 @@ export class DropMenuNavbarBtn {
                 <i class="fa fa-gear"></i>
                 Settings
               </div>
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'https://beakerbrowser.com/docs/')}>
+                <i class="fa fa-life-ring"></i>
+                Help
+              </div>
             </div>
 
             ${downloadEls.length ? yo`
@@ -302,7 +307,7 @@ export class DropMenuNavbarBtn {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
-    
+
     var page = pages.getActive()
     if (!page || !page.getURL().startsWith('dat://')) {
       return
@@ -316,7 +321,7 @@ export class DropMenuNavbarBtn {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
-    
+
     var page = pages.getActive()
     if (!page || !page.getURL().startsWith('dat://')) {
       return

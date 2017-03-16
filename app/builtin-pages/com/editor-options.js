@@ -66,8 +66,7 @@ function rCodeIntelligence (values) {
   return yo`<fieldset>
     <legend>Code Intelligence</legend>
     <label>${rCheckbox('autoSuggest', 'on', values)} Auto-suggest</label>
-    <label>${rCheckbox('hoverTips', 'on', values)} Hover tips</label>
-  </fieldset>`  
+  </fieldset>`
 }
 
 function rTabs (values) {

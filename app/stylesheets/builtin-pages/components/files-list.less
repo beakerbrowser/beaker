@@ -6,16 +6,23 @@
 
   .item {
     &:extend(.overflow-ellipsis);
-    padding: 2px 10px;
+    padding: 0 10px;
     -webkit-user-select: none;
     cursor: pointer;
+    height: 25px;
+    line-height: 25px;
+
+    * {
+      line-height: 25px;
+      vertical-align: middle;
+    }
 
     &:hover {
-      background: @border-menu;
+      background: @background-menu;
     }
 
     &.selected {
-      background: @color-link;
+      background: @blue;
       color: #fff;
     }
 
@@ -25,6 +32,12 @@
 
     i {
       margin-right: 3px;
+    }
+
+    i.dirty {
+      margin-left: @margin-icon;
+      font-size: 9px;
+      color: @blue;
     }
 
     .btn {

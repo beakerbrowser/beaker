@@ -141,7 +141,7 @@ function rDirectory (archive, node, depth, dirtyFiles, selectedPath) {
 
 function rFile (archive, node, depth, dirtyFiles, selectedPath) {
   const cls = isSelected(archive, node, selectedPath) ? 'selected' : ''
-  const isChanged = dirtyFiles[getUrl(archive, node)] ? '*' : ''
+  const isChanged = dirtyFiles[getUrl(archive, node)] ? yo`<i class="dirty fa fa-circle"></i>` : ''
   const padding = depth === 0 ? 20 : 25 + (depth * 5);
 
   return yo`
