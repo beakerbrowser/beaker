@@ -44,7 +44,7 @@
     "multicb": "^1.2.1",
     "multihashes": "^0.3.0",
     "once": "^1.4.0",
-    "pauls-dat-api": "^1.2.0",
+    "pauls-dat-api": "^1.2.3",
     "pauls-electron-rpc": "~3.0.0",
     "peer-id": "git://github.com/beakerbrowser/js-peer-id#682e39f83b8148a7ed81a465f06d5556066cdb35",
     "pify": "^2.3.0",
