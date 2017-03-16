@@ -33,7 +33,7 @@ export function render (archivesList, {selectedArchiveKey, currentFilter, onChan
         </div>
       </div>
 
-      <ul class="archives-list${hasFileSelection ? ' selection-grayed' : ''}">
+      <ul>
         ${renderArchivesListItems(archivesList, {selectedArchiveKey, currentFilter})}
       </ul>
     </div>`
