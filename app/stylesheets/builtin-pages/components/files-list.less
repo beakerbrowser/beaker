@@ -36,6 +36,7 @@
 
     i.dirty {
       margin-left: @margin-icon;
+      margin-top: -2px; // center on the line a bit
       font-size: 9px;
       color: @blue;
     }
@@ -50,6 +51,7 @@
       visibility: visible;
     }
 
+    &.selected i.dirty,
     &.selected .btn {
       visibility: visible;
       color: #fff;
