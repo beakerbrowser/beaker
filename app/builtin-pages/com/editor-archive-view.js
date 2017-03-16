@@ -205,7 +205,7 @@ function rBkrInstructions (archive) {
 
       <p class="content">
         Get started by cloning this archive:
-        <pre><code>$ bkr clone ${archive.url}</code></pre>
+        <pre><code>bkr clone ${archive.url}</code></pre>
       </p>
     </div>`
 }
