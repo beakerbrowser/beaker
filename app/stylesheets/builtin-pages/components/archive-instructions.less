@@ -2,22 +2,6 @@
 @import "../../components/link";
 
 .archive-instructions {
-  color: @color-text--muted;
-  background: @background-shell-window;
-  margin-top: 2em;
-  padding: 0.5em 1em;
-  border-radius: 2px;
-
-  a {
-    &:extend(.link);
-
-    &:hover {
-      &:extend(.link:hover);
-    }
-  }
-
-  p {
-    cursor: text;
-    margin: 0.5em 0;
-  }
+  position: absolute;
+  bottom: @padding-component;
 }

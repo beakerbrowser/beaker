@@ -196,10 +196,18 @@ function rSaveBtn (archive) {
 }
 
 function rBkrInstructions (archive) {
-  return yo`<div class="archive-instructions">
-    <p>Using <a href="https://github.com/beakerbrowser/bkr" target="_blank">bkr</a> to checkout files:</p>
-    <p>bkr clone ${archive.url} .</p>
-  </div>`
+  return yo`
+    <div class="archive-instructions protip">
+      <p class="summary">
+        <i class="fa fa-lightbulb-o"></i>
+        Use <code><a href="https://github.com/beakerbrowser/bkr" target="_blank">bkr</a></code> to manage files from the command line.
+      </p>
+
+      <p class="content">
+        Get started by cloning this archive:
+        <pre><code>$ bkr clone ${archive.url}</code></pre>
+      </p>
+    </div>`
 }
 
 // event handlers
