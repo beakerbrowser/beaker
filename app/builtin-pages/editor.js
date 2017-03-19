@@ -229,7 +229,9 @@ function configureEditor () {
 
 function render () {
   // render header
-  rHeader(selectedArchive, selectedPath)
+  var activeUrl = selectedPath ? `${selectedArchive.url}/${selectedPath}`: ''
+  var isActiveFileDirty = selectedPath && dirtyFiles && dirtyFiles[activeUrl]
+  rHeader(selectedArchive, selectedPath, activeUrl, isActiveFileDirty)
 
   // show/hide the editor
   var editorContainer = document.querySelector('#el-editor-container')

@@ -46,10 +46,6 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchiv
             <i class="fa fa-plus"></i>
           </button>
 
-          <button class="btn" title="Save Active File" onclick=${onSaveFile} ${!activeFileIsDirty ? 'disabled' : ''}>
-            <i class="fa fa-floppy-o"></i>
-          </button>
-
           <button class="btn" title="Open Active File" onclick=${e => onOpenInNewWindow(e, archive)}>
             <i class="fa fa-external-link"></i>
           </button>
@@ -235,13 +231,6 @@ function onSubmitNewFile (e) {
   // dispatch an app event
   var evt = new Event('new-file')
   evt.detail = { path: normalizePath(e.target.name.value) }
-  window.dispatchEvent(evt)
-}
-
-function onSaveFile (e) {
-  // dispatch an app event
-  var evt = new Event('save-file')
-  evt.detail = { path: lastClickedNode, url: lastClickedUrl }
   window.dispatchEvent(evt)
 }
 

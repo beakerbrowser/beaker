@@ -4,7 +4,7 @@ import mime from 'mime'
 // exported api
 // =
 
-export function render (archive, path) {
+export function render (archive, path, activeUrl, isActiveFileDirty) {
   if (! (archive && path)) return ''
   return yo.update(document.querySelector('.editor-header'), yo`
     <div class="editor-header">
@@ -12,17 +12,35 @@ export function render (archive, path) {
         ${rFileIcon(path)}
         <span>${path}</span>
       </div>
+      ${rActions(path, activeUrl, isActiveFileDirty)}
     </div>`)
 }
 
 // renderers
 // =
 
+
+function rActions (path, url, isDirty) {
+  console.log(url)
+  console.log(isDirty)
+  return yo`
+    <div class="editor-header-actions">
+      <span class="save-prompt">${isDirty ? 'Save changes' : ''}</span>
+      <button
+        ${!isDirty ? 'disabled' : ''}
+        onclick=${e => onSaveFile(path, url)}
+        class="btn transparent save"
+        title="Save This File's Changes">
+        <i class="fa fa-save"></i>
+      </button>
+    </div>
+  `
+}
+
 function rFileIcon (path) {
   // lookup the mimetype
   var mimetype = mime.lookup(path)
   var cls = 'file-o'
-  console.log(mimetype)
 
   if (mimetype.startsWith('image/')) {
     cls = 'file-image-o'
@@ -39,4 +57,11 @@ function rFileIcon (path) {
   }
 
   return yo`<i class="fa fa-${cls}"></i>`
+}
+
+function onSaveFile (path, url) {
+  // dispatch an app event
+  var evt = new Event('save-file')
+  evt.detail = { path: path, url: url}
+  window.dispatchEvent(evt)
 }
