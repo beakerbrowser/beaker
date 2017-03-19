@@ -59,18 +59,18 @@ function rUneditable (archive, path) {
   } else if (mimetype.startsWith('video/')) {
     return yo`
       <div class="uneditable-file">
-        <video controls width="400" src=${archive.url + '/' + path}></video>
+        <video controls src=${archive.url + '/' + path}></video>
       </div>
     `
   } else if (mimetype.startsWith('audio/')) {
     return yo`
-      <div class="uneditable-file">
-        <audio controls width="400" src=${archive.url + '/' + path}></audio>
+      <div class="fileview uneditable">
+        <audio controls src=${archive.url + '/' + path}></audio>
       </div>
     `
   } else {
     return yo`
-      <div class="uneditable-file">
+      <div class="fileview uneditable">
         Unsupported filetype, ${mimetype}
       </div>
     `
