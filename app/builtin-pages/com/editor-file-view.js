@@ -50,31 +50,34 @@ function rFileIcon (path) {
 }
 
 function rUneditable (archive, path) {
+  var el
   // lookup the mimetype
   var mimetype = mime.lookup(path)
   if (mimetype.startsWith('image/')) {
-    return yo`
-      <div class="fileview uneditable">
+    el = yo`
+      <div class="fileview uneditable active">
         <img src=${archive.url + '/' + path} />
       </div>
     `
   } else if (mimetype.startsWith('video/')) {
-    return yo`
-      <div class="fileview uneditable">
+    el =yo`
+      <div class="fileview uneditable active">
         <video controls src=${archive.url + '/' + path}></video>
       </div>
     `
   } else if (mimetype.startsWith('audio/')) {
-    return yo`
-      <div class="fileview uneditable">
+    el = yo`
+      <div class="fileview uneditable active">
         <audio controls src=${archive.url + '/' + path}></audio>
       </div>
     `
   } else {
-    return yo`
-      <div class="fileview uneditable">
+    el = yo`
+      <div class="fileview uneditable active">
         Unsupported filetype, ${mimetype}
       </div>
     `
   }
+
+  yo.update(document.querySelector('.fileview'), el)
 }

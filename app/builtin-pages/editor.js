@@ -233,8 +233,14 @@ function render () {
 
   // show/hide the editor
   var editorEl = document.querySelector('#el-editor-container .editor')
+  var editorHeader = document.querySelector('.editor-header')
+  var fileview = document.querySelector('.fileview')
+
+  editorHeader.classList.add('active')
+
   if (selectedModel && selectedModel.isEditable && !isViewingOptions && !viewError && !viewIsLoading) {
     editorEl.classList.add('active')
+    fileview.classList.remove('active')
   } else {
     editorEl.classList.remove('active')
   }
