@@ -4,6 +4,7 @@ import {Archive, ArchivesList, FileTree} from 'builtin-pages-lib'
 import {render as renderArchivesList, renderArchivesListItems} from './com/archives-list'
 import {render as renderArchiveView} from './com/editor-archive-view'
 import {render as renderEditorOptions, defaultEditorOptions} from './com/editor-options'
+import {rHeader} from './com/editor-file-view'
 import {pushUrl} from '../lib/fg/event-handlers'
 import {ucfirst} from '../lib/strings'
 import dragDrop from '../lib/fg/drag-drop'
@@ -227,8 +228,11 @@ function configureEditor () {
 // =
 
 function render () {
+  // render header
+  rHeader(selectedArchive, selectedPath)
+
   // show/hide the editor
-  var editorEl = document.getElementById('el-editor-container')
+  var editorEl = document.querySelector('#el-editor-container .editor')
   if (selectedModel && selectedModel.isEditable && !isViewingOptions && !viewError && !viewIsLoading) {
     editorEl.classList.add('active')
   } else {

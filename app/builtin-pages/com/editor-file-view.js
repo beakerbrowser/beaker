@@ -6,22 +6,27 @@ import mime from 'mime'
 
 export default function renderFileView (archive, opts) {
   if (!opts.selectedModel || opts.selectedModel.isEditable) {
-    return yo`<div />`
+    return yo`</div>`
   }
-  return rUneditable(archive, opts.selectedPath)
+
+  return yo`
+    <div>
+      ${rUneditable(archive, opts.selectedPath)}
+    </div>`
 }
 
 // renderers
 // =
 
-function rHeader (archive, path) {
-  return yo`
+export function rHeader (archive, path) {
+  if (! (archive && path)) return ''
+  return yo.update(document.querySelector('.editor-header'), yo`
     <div class="editor-header">
       <div class="path">
         ${rFileIcon(path)}
         <span>${path}</span>
       </div>
-    </div>`
+    </div>`)
 }
 
 function rFileIcon (path) {
@@ -52,13 +57,13 @@ function rUneditable (archive, path) {
   var mimetype = mime.lookup(path)
   if (mimetype.startsWith('image/')) {
     return yo`
-      <div class="uneditable-file">
+      <div class="fileview uneditable">
         <img src=${archive.url + '/' + path} />
       </div>
     `
   } else if (mimetype.startsWith('video/')) {
     return yo`
-      <div class="uneditable-file">
+      <div class="fileview uneditable">
         <video controls src=${archive.url + '/' + path}></video>
       </div>
     `

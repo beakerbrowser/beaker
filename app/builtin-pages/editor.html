@@ -9,7 +9,10 @@
 </head>
 <body>
   <div id="el-content"></div>
-  <div id="el-editor-container"></div>
+  <div id="el-editor-container">
+    <div class="editor-header"></div>
+    <div class="editor"></div>
+  </div>
   <div id="new-file-popup"></div>
   <script src="beaker://editor/min/vs/loader.js"></script>
   <script>
@@ -20,7 +23,8 @@
     }
   };
   require(['vs/editor/editor.main'], function() {
-    window.editor = monaco.editor.create(document.getElementById('el-editor-container'), {
+    window.editor =
+      monaco.editor.create(document.querySelector('#el-editor-container .editor'), {
       lineNumbersMinChars: 4,
       automaticLayout: true,
       fixedOverflowWidgets: true,

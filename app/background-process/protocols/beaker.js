@@ -17,7 +17,7 @@ import {archivesDebugPage} from '../networks/dat/debugging'
 const BEAKER_CSP = `
   default-src 'self' beaker:;
   img-src beaker-favicon: data: dat: http: https;
-  script-src 'self' beaker: 'sha256-L8S3LkBr2JbWZ54OxOLa8IB+qSXHPup745z88bIPzF8=';
+  script-src 'self' beaker: 'sha256-aXLf/pvGPNctHq2g1HINOltlg+Ke/CFsPvJrFD7IXgc=';
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
 `.replace(/\n/g, '')
