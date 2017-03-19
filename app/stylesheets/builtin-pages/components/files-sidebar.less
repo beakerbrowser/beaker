@@ -18,27 +18,22 @@
     flex-wrap: nowrap !important;
     height: 30px;
     justify-content: space-between;
-    background: @border-menu;
+    background: #fff;
+    border-bottom: 1px solid @border-menu;
 
     .btn-bar {
       flex-wrap: nowrap;
     }
 
     .btn {
-      height: 30px;
+      height: 100%;
       border: none;
       background: none;
+    }
 
-      &.collapse {
-        background: #eee;
-        font-size: 1.2em;
-        color: @color-text--light;
-
-        &:hover {
-          color: @color-text;
-          background: #e5e5e5;
-        }
-      }
+    .btn.collapse {
+      font-size: 13px;
+      border-right: 1px solid @border-menu;
     }
   }
 
