@@ -21,8 +21,6 @@ export function render (archive, path, activeUrl, isActiveFileDirty) {
 
 
 function rActions (path, url, isDirty) {
-  console.log(url)
-  console.log(isDirty)
   return yo`
     <div class="editor-header-actions">
       <span class="save-prompt">${isDirty ? 'Save changes' : ''}</span>
