@@ -82,6 +82,9 @@ function beakerServer (req, res) {
     return cb(403, 'Forbidden')
   }
 
+  if (requestUrl === 'beaker://assets/error-page.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/error-page.css'))
+  }
   // browser ui
   if (requestUrl === 'beaker://shell-window/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'shell-window.html'))
