@@ -78,6 +78,10 @@ function renderArchive (archive, opts) {
 }
 
 function renderArchiveDetails (archive, opts) {
+  // hide fileview and editor header
+  yo.update(document.querySelector('.editor-header'), yo`<div class="editor-header"></div>`)
+  yo.update(document.querySelector('.fileview'), yo`<div class="fileview"></div>`)
+
   return yo`<div>
     <div class="archive-view-header">
       <h2 class="title">
