@@ -1,0 +1,24 @@
+@import "../../base/spacing";
+@import "../../base/colors";
+
+.editor-header {
+  padding: 0 @padding-component--tight;
+  height: 30px;
+  line-height: 30px;
+  border-bottom: 1px solid @border-menu;
+
+  .path {
+    font-style: italic;
+    color: @color-text--muted;
+
+    i {
+      margin-right: @margin-icon;
+    }
+
+    * {
+      line-height: 30px;
+      display: inline-block;
+      vertical-align: baseline;
+    }
+  }
+}
