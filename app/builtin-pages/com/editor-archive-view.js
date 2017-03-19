@@ -85,7 +85,7 @@ function renderArchiveDetails (archive, opts) {
     <div class="archive-view-header">
       <h2 class="title">
         <a href=${'dat://'+archive.info.key} title=${archive.niceName}>${archive.niceName}</a>
-        <a class="edit" title="Edit Details" onclick=${() => onEditDetails(archive)}><i class="fa fa-pencil"></i></a>
+        ${rTitleIcon(archive)}
       </h2>
     </div>
 
@@ -94,7 +94,6 @@ function renderArchiveDetails (archive, opts) {
       ${rProvinence(archive)}
     </p>
 
-    ${rReadOnly(archive)}
     ${rMetadata(archive)}
     ${rToolbar(archive)}
     ${rBkrInstructions(archive)}
@@ -174,13 +173,16 @@ function rToolbar (archive) {
     </div>`
 }
 
-function rReadOnly (archive) {
-  if (archive.info.isOwner) return ''
+function rTitleIcon (archive) {
+  if (archive.info.isOwner) {
+    return yo`
+      <i onclick=${() => onEditDetails(archive)} class="fa fa-pencil"></i>
+    `
+  }
+
   return yo`
-    <p class="archive-readonly">
-      <i class="fa fa-eye"></i>
-      Read-only. <a onclick=${onFork}>Fork to edit</a>.
-    </p>`
+    <i class="fa fa-eye"></i>
+  `
 }
 
 function rSaveBtn (archive) {
