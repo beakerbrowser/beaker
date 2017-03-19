@@ -9,10 +9,7 @@ export default function renderFileView (archive, opts) {
     return yo`</div>`
   }
 
-  return yo`
-    <div>
-      ${rUneditable(archive, opts.selectedPath)}
-    </div>`
+  return rUneditable(archive, opts.selectedPath)
 }
 
 // renderers
