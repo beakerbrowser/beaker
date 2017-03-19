@@ -53,9 +53,10 @@
 }
 
 .btn.success {
-  background: linear-gradient(@background-button--success, shade(@background-button--success, 8%));
+  // background: linear-gradient(@background-button--success, shade(@background-button--success, 3%));
+  background: @background-button--success;
   color: @color-button--success;
-  border: none;
+  border-color: @background-button--success;
 
   &.pressed,
   &:hover {
