@@ -69,21 +69,14 @@
   font-weight: 400;
 }
 
-.btn-primary {
-  background: #016fde;
+.btn.primary {
+  background: @blue;
   color: #fff;
-  border-color: #0153a7;
+  border: none;
+  transition: background .1s ease;
 
-  &.pressed,
   &:hover {
-    background: #0058b1;
-    color: #fff;
-  }
-
-  &.glowing {
-    animation-name: primaryBtnGlow;
-    animation-duration: 2s;
-    animation-iteration-count: infinite;
+    background: shade(@blue, 5%);
   }
 }
 
