@@ -1,9 +1,14 @@
 #el-editor-container {
+  display: none;
   position: absolute;
   top: 0;
   left: 400px;
   right: 0;
   bottom: 0;
+
+  &.active {
+    display: block;
+  }
 }
 
 #el-editor-container .editor, .editor-header, .fileview {
