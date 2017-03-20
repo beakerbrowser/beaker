@@ -250,14 +250,15 @@ function render () {
 
   // render view
   var collapsed = isArchivesListCollapsed && !!selectedArchiveKey
-  yo.update(document.querySelector('#el-content'), yo`<div id="el-content">
-    <div class="archives">
-      ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed: collapsed, onCollapseToggle, onToggleOptions})}
-      ${isViewingOptions
-        ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
-        : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles, isArchivesListCollapsed: collapsed, onCollapseToggle})}
-    </div>
-  </div>`)
+  yo.update(document.querySelector('#el-content'), yo`
+    <div id="el-content">
+      <div class="archives">
+        ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed: collapsed, onCollapseToggle, onToggleOptions})}
+        ${isViewingOptions
+          ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
+          : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles, isArchivesListCollapsed: collapsed, onCollapseToggle})}
+      </div>
+    </div>`)
 }
 
 // event handlers
@@ -278,9 +279,10 @@ async function onEditorCreated () {
 
 function onChangeFilter (e) {
   currentFilter = (e.target.value.toLowerCase())
-  yo.update(document.querySelector('.archives-list'), yo`<ul class="archives-list">
-    ${renderArchivesListItems(archivesList, {selectedArchiveKey, currentFilter})}
-  </ul>`)
+  yo.update(document.querySelector('.archives-list'), yo`
+    <ul class="archives-list">
+      ${renderArchivesListItems(archivesList, {selectedArchiveKey, currentFilter})}
+    </ul>`)
 }
 
 function onCollapseToggle (e) {
