@@ -45,10 +45,6 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchiv
           <button class="btn" title="New File" onclick=${e => onNewFile(e, archive)}>
             <i class="fa fa-plus"></i>
           </button>
-
-          <button class="btn" title="Open Active File" onclick=${e => onOpenInNewWindow(e, archive)}>
-            <i class="fa fa-external-link"></i>
-          </button>
         </div>
       </div>
       ${rReadOnly(archive)}
@@ -183,13 +179,7 @@ function onClickFile (e, archive, node) {
   // dispatch an app event
   var evt = new Event('open-file')
   evt.detail = { archive, path, node }
-  window.dispatchEvent(evt)  
-}
-
-function onOpenInNewWindow (e, archive) {
-  e.preventDefault()
-  e.stopPropagation()
-  beakerBrowser.openUrl(lastClickedUrl || archive.url)
+  window.dispatchEvent(evt)
 }
 
 function onNewFile (e, archive) {
@@ -200,7 +190,7 @@ function onNewFile (e, archive) {
   }
 
   // render interface
-  yo.update(document.getElementById('new-file-popup'), 
+  yo.update(document.getElementById('new-file-popup'),
     yo`<div id="new-file-popup">
       <form class="new-file-form" onsubmit=${onSubmitNewFile}>
         <div class="new">
@@ -267,7 +257,7 @@ async function onImportFiles (e, archive) {
 async function onFork (e, archive) {
   e.preventDefault()
   var newArchive = await DatArchive.fork(archive)
-  window.location = 'beaker://editor/' + newArchive.url.slice('dat://'.length)  
+  window.location = 'beaker://editor/' + newArchive.url.slice('dat://'.length)
 }
 
 // internal helpers

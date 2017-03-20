@@ -31,6 +31,9 @@ function rActions (path, url, isDirty) {
         title="Save This File's Changes">
         <i class="fa fa-save"></i>
       </button>
+      <button title="Open File In New Window" onclick=${e => onOpenInNewWindow(e, url)}>
+        <i class="fa fa-external-link"></i>
+      </button>
     </div>
   `
 }
@@ -62,4 +65,10 @@ function onSaveFile (path, url) {
   var evt = new Event('save-file')
   evt.detail = { path: path, url: url}
   window.dispatchEvent(evt)
+}
+
+function onOpenInNewWindow (e, url) {
+  e.preventDefault()
+  e.stopPropagation()
+  beakerBrowser.openUrl(url)
 }
