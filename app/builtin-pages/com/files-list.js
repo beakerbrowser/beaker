@@ -43,13 +43,15 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchiv
           <a class="title" href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>
             ${archive.niceName}
           </a>
-          ${rReadOnly(archive)}
         </div>
 
         <div class="btn-bar">
-          <button class="btn" title="New File" onclick=${e => onNewFile(e, archive)}>
-            <i class="fa fa-plus"></i>
-          </button>
+          ${archive.info.isOwner
+            ? yo`
+              <button class="btn" title="New File" onclick=${e => onNewFile(e, archive)}>
+                <i class="fa fa-plus"></i>
+              </button>`
+            : rReadOnly(archive)}
         </div>
       </div>
       <div class="files-list">
@@ -71,10 +73,6 @@ function redraw (archive, dirtyFiles, selectedPath) {
 }
 
 function rReadOnly (archive) {
-  if (!archive || archive.info.isOwner) {
-    return ''
-  }
-
   return yo`
     <span class="tooltip">
       <i class="tooltip-link fa fa-eye"></i>
