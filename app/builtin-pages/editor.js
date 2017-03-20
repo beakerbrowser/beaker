@@ -47,7 +47,6 @@ window.history.replaceState = _wr('replaceState')
 // =
 
 readEditorOptions()
-setSidebarCollapsed(localStorage.isArchivesListCollapsed)
 setup()
 // dragDrop(document.body, onDragDrop) TODO
 window.addEventListener('pushstate', setup)
@@ -102,6 +101,9 @@ async function setup () {
         document.title = `${selectedArchive.niceName} - Editor`
         configureEditor()
         clearTimeout(to)
+
+        // close archives list
+        setSidebarCollapsed(true)
       }
       selectedArchiveKey = newArchiveKey
     }
@@ -234,18 +236,17 @@ function render () {
   rHeader(selectedArchive, selectedPath, activeUrl, isActiveFileDirty)
 
   // show/hide the editor
-  var editorContainer = document.querySelector('#el-editor-container')
   var editorEl = document.querySelector('#el-editor-container .editor')
   var editorHeader = document.querySelector('.editor-header')
   var fileview = document.querySelector('.fileview')
 
-  editorContainer.classList.add('active')
-
   if (selectedModel && selectedModel.isEditable && !isViewingOptions && !viewError && !viewIsLoading) {
     editorEl.classList.add('active')
+    editorHeader.classList.add('active')
     fileview.classList.remove('active')
   } else {
     editorEl.classList.remove('active')
+    editorHeader.classList.remove('active')
   }
 
   // render view
@@ -371,10 +372,9 @@ function onToggleOptions () {
 function setSidebarCollapsed (collapsed) {
   isArchivesListCollapsed = collapsed
   if (isArchivesListCollapsed) {
-    localStorage.isArchivesListCollapsed = 1
+    isViewingOptions = false // close options
     document.body.classList.add('sidebar-collapsed')
   } else {
-    delete localStorage.isArchivesListCollapsed
     document.body.classList.remove('sidebar-collapsed')    
   }
 }

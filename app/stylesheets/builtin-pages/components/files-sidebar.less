@@ -7,10 +7,12 @@
 .files-sidebar {
   &:extend(.hide-scrollbar all);
   position: fixed;
+  z-index: 1;
   left: 200px;
   top: 0;
   width: 200px;
   height: 100%;
+  background: @background-menu;
   border-right: 1px solid @border-menu;
 
   .header {
@@ -18,7 +20,6 @@
     flex-wrap: nowrap !important;
     height: 30px;
     justify-content: space-between;
-    background: #fff;
     border-bottom: 1px solid @border-menu;
 
     .btn-bar {
@@ -39,12 +40,23 @@
 
   .project-title {
     line-height: 30px;
+    flex: 1;
     padding-left: @padding-component--tight;
 
     a.title {
       max-width: 140px;
       display: inline-block;
       &:extend(.overflow-ellipsis);
+    }
+  }
+
+  .tooltip {
+    line-height: 30px;
+    padding: 0 8px;
+
+    .tooltip-content {
+      // speed up the tooltip a bit
+      transition-delay: 0.25s;
     }
   }
 

@@ -1,17 +1,13 @@
 #el-editor-container {
-  display: none;
   position: absolute;
   top: 0;
   left: 400px;
   right: 0;
   bottom: 0;
-
-  &.active {
-    display: block;
-  }
 }
 
-#el-editor-container .editor, .fileview {
+#el-editor-container .editor,
+#el-editor-container .fileview {
   display: none;
 
   &.active {
@@ -20,8 +16,7 @@
 }
 
 .editor {
-  height: 100%;
-  padding-top: @padding-component--tight;
+  height: ~"calc(100vh - 30px)";
 }
 
 .sidebar-collapsed #el-editor-container {

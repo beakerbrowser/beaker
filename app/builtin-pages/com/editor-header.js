@@ -7,7 +7,7 @@ import mime from 'mime'
 export function render (archive, path, activeUrl, isActiveFileDirty) {
   if (! (archive && path)) return ''
   return yo.update(document.querySelector('.editor-header'), yo`
-    <div class="editor-header active">
+    <div class="editor-header">
       <div class="path">
         ${rFileIcon(path)}
         <span>${path}</span>
