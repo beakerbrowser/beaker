@@ -54,8 +54,8 @@ function renderLoading (archive, opts) {
     ${renderFilesList(archive, opts)}
     <div class="message primary">
       <div class="spinner"></div>
-      <div>Searching the network for this ${label}. Please wait...</div>
-      <p><strong>Try:</strong></p>
+      <div><strong>Searching the network for this ${label}. Please wait...</strong></div>
+      <p>Try:</p>
       <ul>
         <li>Checking your connection</li>
         <li>Checking your firewall settings</li>
