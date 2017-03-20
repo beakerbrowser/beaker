@@ -156,7 +156,7 @@ export class DropMenuNavbarBtn {
               </div>
 
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'https://beakerbrowser.com/docs/')}>
-                <i class="fa fa-life-ring"></i>
+                <i class="fa fa-question"></i>
                 Help
               </div>
             </div>

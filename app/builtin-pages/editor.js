@@ -4,6 +4,7 @@ import {Archive, ArchivesList, FileTree} from 'builtin-pages-lib'
 import {render as renderArchivesList, renderArchivesListItems} from './com/archives-list'
 import {render as renderArchiveView} from './com/editor-archive-view'
 import {render as renderEditorOptions, defaultEditorOptions} from './com/editor-options'
+import {render as rHeader} from './com/editor-header'
 import {pushUrl} from '../lib/fg/event-handlers'
 import {ucfirst} from '../lib/strings'
 import dragDrop from '../lib/fg/drag-drop'
@@ -227,24 +228,37 @@ function configureEditor () {
 // =
 
 function render () {
+  // render header
+  var activeUrl = selectedPath ? `${selectedArchive.url}/${selectedPath}`: ''
+  var isActiveFileDirty = selectedPath && dirtyFiles && dirtyFiles[activeUrl]
+  rHeader(selectedArchive, selectedPath, activeUrl, isActiveFileDirty)
+
   // show/hide the editor
-  var editorEl = document.getElementById('el-editor-container')
+  var editorContainer = document.querySelector('#el-editor-container')
+  var editorEl = document.querySelector('#el-editor-container .editor')
+  var editorHeader = document.querySelector('.editor-header')
+  var fileview = document.querySelector('.fileview')
+
+  editorContainer.classList.add('active')
+
   if (selectedModel && selectedModel.isEditable && !isViewingOptions && !viewError && !viewIsLoading) {
     editorEl.classList.add('active')
+    fileview.classList.remove('active')
   } else {
     editorEl.classList.remove('active')
   }
 
   // render view
   var collapsed = isArchivesListCollapsed && !!selectedArchiveKey
-  yo.update(document.querySelector('#el-content'), yo`<div id="el-content">
-    <div class="archives">
-      ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed: collapsed, onCollapseToggle, onToggleOptions})}
-      ${isViewingOptions
-        ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
-        : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles, isArchivesListCollapsed: collapsed, onCollapseToggle})}
-    </div>
-  </div>`)
+  yo.update(document.querySelector('#el-content'), yo`
+    <div id="el-content">
+      <div class="archives">
+        ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed: collapsed, onCollapseToggle, onToggleOptions})}
+        ${isViewingOptions
+          ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
+          : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles, isArchivesListCollapsed: collapsed, onCollapseToggle})}
+      </div>
+    </div>`)
 }
 
 // event handlers
@@ -265,9 +279,10 @@ async function onEditorCreated () {
 
 function onChangeFilter (e) {
   currentFilter = (e.target.value.toLowerCase())
-  yo.update(document.querySelector('.archives-list'), yo`<ul class="archives-list">
-    ${renderArchivesListItems(archivesList, {selectedArchiveKey, currentFilter})}
-  </ul>`)
+  yo.update(document.querySelector('.archives-list'), yo`
+    <ul class="archives-list">
+      ${renderArchivesListItems(archivesList, {selectedArchiveKey, currentFilter})}
+    </ul>`)
 }
 
 function onCollapseToggle (e) {

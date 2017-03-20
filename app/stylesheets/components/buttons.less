@@ -12,13 +12,14 @@
   font-size: 12px;
   font-weight: 600;
   height: 25px;
+  line-height: 25px;
   padding: 0 8px;
 
   * {
     cursor: pointer;
     line-height: 25px;
-    vertical-align: middle;
-    display: inline;
+    vertical-align: baseline;
+    display: inline-block;
   }
 
   &.pressed,
@@ -52,9 +53,10 @@
 }
 
 .btn.success {
-  background: linear-gradient(@background-button--success, shade(@background-button--success, 8%));
+  // background: linear-gradient(@background-button--success, shade(@background-button--success, 3%));
+  background: @background-button--success;
   color: @color-button--success;
-  border: none;
+  border-color: @background-button--success;
 
   &.pressed,
   &:hover {
@@ -68,21 +70,14 @@
   font-weight: 400;
 }
 
-.btn-primary {
-  background: #016fde;
+.btn.primary {
+  background: @blue;
   color: #fff;
-  border-color: #0153a7;
+  border: none;
+  transition: background .1s ease;
 
-  &.pressed,
   &:hover {
-    background: #0058b1;
-    color: #fff;
-  }
-
-  &.glowing {
-    animation-name: primaryBtnGlow;
-    animation-duration: 2s;
-    animation-iteration-count: infinite;
+    background: shade(@blue, 5%);
   }
 }
 

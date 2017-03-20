@@ -17,7 +17,7 @@ import {archivesDebugPage} from '../networks/dat/debugging'
 const BEAKER_CSP = `
   default-src 'self' beaker:;
   img-src beaker-favicon: data: dat: http: https;
-  script-src 'self' beaker: 'sha256-L8S3LkBr2JbWZ54OxOLa8IB+qSXHPup745z88bIPzF8=';
+  script-src 'self' beaker: 'sha256-aXLf/pvGPNctHq2g1HINOltlg+Ke/CFsPvJrFD7IXgc=';
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
 `.replace(/\n/g, '')
@@ -82,6 +82,9 @@ function beakerServer (req, res) {
     return cb(403, 'Forbidden')
   }
 
+  if (requestUrl === 'beaker://assets/error-page.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/error-page.css'))
+  }
   // browser ui
   if (requestUrl === 'beaker://shell-window/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'shell-window.html'))
