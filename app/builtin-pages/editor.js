@@ -47,7 +47,6 @@ window.history.replaceState = _wr('replaceState')
 // =
 
 readEditorOptions()
-setSidebarCollapsed(localStorage.isArchivesListCollapsed)
 setup()
 // dragDrop(document.body, onDragDrop) TODO
 window.addEventListener('pushstate', setup)
@@ -102,6 +101,9 @@ async function setup () {
         document.title = `${selectedArchive.niceName} - Editor`
         configureEditor()
         clearTimeout(to)
+
+        // close archives list
+        setSidebarCollapsed(true)
       }
       selectedArchiveKey = newArchiveKey
     }
@@ -371,10 +373,8 @@ function onToggleOptions () {
 function setSidebarCollapsed (collapsed) {
   isArchivesListCollapsed = collapsed
   if (isArchivesListCollapsed) {
-    localStorage.isArchivesListCollapsed = 1
     document.body.classList.add('sidebar-collapsed')
   } else {
-    delete localStorage.isArchivesListCollapsed
     document.body.classList.remove('sidebar-collapsed')    
   }
 }
