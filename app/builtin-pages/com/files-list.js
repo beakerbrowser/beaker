@@ -39,7 +39,12 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchiv
               </div>`
           : ''}
 
-        <div class="project-title"><a href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>${archive.niceName}</a></div>
+        <div class="project-title">
+          <a class="title" href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>
+            ${archive.niceName}
+          </a>
+          ${rReadOnly(archive)}
+        </div>
 
         <div class="btn-bar">
           <button class="btn" title="New File" onclick=${e => onNewFile(e, archive)}>
@@ -47,7 +52,6 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchiv
           </button>
         </div>
       </div>
-      ${rReadOnly(archive)}
       <div class="files-list">
         ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
       </div>
@@ -71,7 +75,14 @@ function rReadOnly (archive) {
     return ''
   }
 
-  return yo`<div class="message primary">Read-only. <a href="#" onclick=${e => onFork(e, archive)}>Fork to edit</a>.</div>`
+  return yo`
+    <span class="tooltip">
+      <i class="tooltip-link fa fa-eye"></i>
+      <div class="tooltip-content">
+        You're viewing a read-only version.
+        <a href="#" onclick=${e => onFork(e, archive)}>Fork to create an editable copy</a>.
+      </div>
+    </span>`
 }
 
 function rChildren (archive, children, depth, dirtyFiles, selectedPath) {

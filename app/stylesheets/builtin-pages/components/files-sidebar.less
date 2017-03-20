@@ -39,9 +39,13 @@
 
   .project-title {
     line-height: 30px;
-    padding-left: 10px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding-left: @padding-component--tight;
+
+    a.title {
+      max-width: 140px;
+      display: inline-block;
+      &:extend(.overflow-ellipsis);
+    }
   }
 
   .fill {

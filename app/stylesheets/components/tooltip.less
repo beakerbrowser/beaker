@@ -1,0 +1,40 @@
+@import "../base/spacing";
+@import "../utils/decorators";
+@import "./link";
+
+.tooltip {
+  position: relative;
+
+  i {
+    margin-left: @margin-icon;
+  }
+
+  &:hover .tooltip-content {
+    visibility: visible;
+  }
+
+  .tooltip-content {
+    &:extend(.shadow);
+    visibility: hidden;
+    position: absolute;
+    z-index: 1;
+    width: 300px;
+    background: #fff;
+    transition-property: visibility;
+    transition-delay: 1s;
+    font-size: 12px;
+    padding: @padding-component--tight;
+    line-height: 16px;
+
+    a {
+      &:extend(.link);
+    }
+
+    a:hover {
+      &:extend(.link:hover);
+    }
+  }
+
+  .tooltip-link {
+ }
+}
