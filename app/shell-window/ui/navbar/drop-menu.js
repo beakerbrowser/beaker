@@ -43,36 +43,8 @@ export class DropMenuNavbarBtn {
     // render the dropdown if open
     var dropdownEl = ''
     if (this.isDropdownOpen) {
-      let pageSpecificEls
-      let pageSpecificGrid = ''
       let page = pages.getActive()
-
-      if (page.getURL().startsWith('dat://')) {
-        pageSpecificEls = [
-          yo`
-            <div class="grid-item" onclick=${e => this.onOpenView(e, 'files')}>
-              <i class="fa fa-file-code-o"></i>
-              Site Files
-            </div>`,
-          yo`
-            <div class="grid-item" onclick=${e => this.onFork(e)}>
-              <i class="fa fa-code-fork"></i>
-              Fork Site
-            </div>`,
-          yo`
-            <div class="grid-item" onclick=${e => this.onEdit(e)}>
-              <i class="fa fa-pencil-square-o"></i>
-              Edit Site
-            </div>`
-        ]
-      }
-
-      if (pageSpecificEls) {
-        pageSpecificGrid = yo`
-          <div class="grid page">
-            ${pageSpecificEls}
-          </div>`
-      }
+      let isDatSite = page.getURL().startsWith('dat://')
 
       let downloadEls = activeDownloads.map(d => {
         // status
@@ -126,8 +98,22 @@ export class DropMenuNavbarBtn {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle visible">
-            ${pageSpecificGrid}
-            ${pageSpecificEls ? yo`<hr>` : ''}
+            <div class="grid page">
+              <div class="grid-item ${!isDatSite ? 'disabled' : ''}" onclick=${isDatSite ? (e => this.onEdit(e)) : undefined}>
+                <i class="fa fa-pencil-square-o"></i>
+                Edit Site
+              </div>
+              <div class="grid-item ${!isDatSite ? 'disabled' : ''}" onclick=${isDatSite ? (e => this.onFork(e)) : undefined}>
+                <i class="fa fa-code-fork"></i>
+                Fork Site
+              </div>
+              <div class="grid-item" onclick=${e => this.onCreateSite(e)}>
+                <i class="fa fa-file-o"></i>
+                New Site
+              </div>
+            </div>
+
+            <hr />
 
             <div class="grid default">
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
@@ -146,7 +132,7 @@ export class DropMenuNavbarBtn {
               </div>
 
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://editor')}>
-                <i class="fa fa-edit"></i>
+                <i class="fa fa-pencil"></i>
                 Editor
               </div>
 
@@ -327,6 +313,18 @@ export class DropMenuNavbarBtn {
       return
     }
     page.loadURL(`beaker://editor/${page.getURL().slice('dat://'.length)}`)
+  }
+
+  async onCreateSite (e) {
+    // close dropdown
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.updateActives()
+
+    // create a new archive
+    var archive = await beaker.library.createArchive()
+
+    // open the archive in the editor in a new page
+    pages.setActive(pages.create(`beaker://editor/${archive.url.slice('dat://'.length)}`))
   }
 
   onToggleLiveReloading (e) {
