@@ -373,6 +373,7 @@ function onToggleOptions () {
 function setSidebarCollapsed (collapsed) {
   isArchivesListCollapsed = collapsed
   if (isArchivesListCollapsed) {
+    isViewingOptions = false // close options
     document.body.classList.add('sidebar-collapsed')
   } else {
     document.body.classList.remove('sidebar-collapsed')    
