@@ -239,7 +239,6 @@ function render () {
   var editorHeader = document.querySelector('.editor-header')
   var fileview = document.querySelector('.fileview')
 
-  editorHeader.classList.add('active')
   editorContainer.classList.add('active')
 
   if (selectedModel && selectedModel.isEditable && !isViewingOptions && !viewError && !viewIsLoading) {
