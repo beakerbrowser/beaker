@@ -27,7 +27,7 @@ function rActions (path, url, isDirty) {
       <button
         ${!isDirty ? 'disabled' : ''}
         onclick=${e => onSaveFile(path, url)}
-        class="btn transparent save"
+        class="save"
         title="Save This File's Changes">
         <i class="fa fa-save"></i>
       </button>
