@@ -11,11 +11,30 @@
   }
 }
 
+#el-editor-container .editor, .fileview {
+  display: none;
+
+  &.active {
+    display: block;
+  }
+}
+
+.editor {
+  height: 100%;
+  padding-top: @padding-component--tight;
+}
+
 .sidebar-collapsed #el-editor-container {
   left: 200px;
 }
 
-.uneditable-file {
+.fileview.uneditable {
+  padding: @padding-component--tight;
+
+  audio, video {
+    width: 400px;
+  }
+
   img {
     max-width: 100%;
     max-height: 100%;

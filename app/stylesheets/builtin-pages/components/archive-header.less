@@ -1,3 +1,4 @@
+@import "../../base/spacing";
 @import "../../utils/flex";
 @import "../../components/link";
 
@@ -8,6 +9,15 @@
   .title {
     margin-top: 0;
     font-size: 20px;
+
+    i {
+      margin-left: @margin-icon;
+      color: @color-text--light;
+
+      &:hover {
+        color: @color-text;
+      }
+    }
   }
 
   .edit {

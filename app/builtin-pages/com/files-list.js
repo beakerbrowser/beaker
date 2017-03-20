@@ -39,23 +39,19 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchiv
               </div>`
           : ''}
 
-        <div class="project-title"><a href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>${archive.niceName}</a></div>
+        <div class="project-title">
+          <a class="title" href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>
+            ${archive.niceName}
+          </a>
+          ${rReadOnly(archive)}
+        </div>
 
         <div class="btn-bar">
           <button class="btn" title="New File" onclick=${e => onNewFile(e, archive)}>
             <i class="fa fa-plus"></i>
           </button>
-
-          <button class="btn" title="Save Active File" onclick=${onSaveFile} ${!activeFileIsDirty ? 'disabled' : ''}>
-            <i class="fa fa-floppy-o"></i>
-          </button>
-
-          <button class="btn" title="Open Active File" onclick=${e => onOpenInNewWindow(e, archive)}>
-            <i class="fa fa-external-link"></i>
-          </button>
         </div>
       </div>
-      ${rReadOnly(archive)}
       <div class="files-list">
         ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
       </div>
@@ -79,7 +75,14 @@ function rReadOnly (archive) {
     return ''
   }
 
-  return yo`<div class="message primary">Read-only. <a href="#" onclick=${e => onFork(e, archive)}>Fork to edit</a>.</div>`
+  return yo`
+    <span class="tooltip">
+      <i class="tooltip-link fa fa-eye"></i>
+      <div class="tooltip-content">
+        You're viewing a read-only version.
+        <a href="#" onclick=${e => onFork(e, archive)}>Fork to create an editable copy</a>.
+      </div>
+    </span>`
 }
 
 function rChildren (archive, children, depth, dirtyFiles, selectedPath) {
@@ -187,13 +190,7 @@ function onClickFile (e, archive, node) {
   // dispatch an app event
   var evt = new Event('open-file')
   evt.detail = { archive, path, node }
-  window.dispatchEvent(evt)  
-}
-
-function onOpenInNewWindow (e, archive) {
-  e.preventDefault()
-  e.stopPropagation()
-  beakerBrowser.openUrl(lastClickedUrl || archive.url)
+  window.dispatchEvent(evt)
 }
 
 function onNewFile (e, archive) {
@@ -204,7 +201,7 @@ function onNewFile (e, archive) {
   }
 
   // render interface
-  yo.update(document.getElementById('new-file-popup'), 
+  yo.update(document.getElementById('new-file-popup'),
     yo`<div id="new-file-popup">
       <form class="new-file-form" onsubmit=${onSubmitNewFile}>
         <div class="new">
@@ -235,13 +232,6 @@ function onSubmitNewFile (e) {
   // dispatch an app event
   var evt = new Event('new-file')
   evt.detail = { path: normalizePath(e.target.name.value) }
-  window.dispatchEvent(evt)
-}
-
-function onSaveFile (e) {
-  // dispatch an app event
-  var evt = new Event('save-file')
-  evt.detail = { path: lastClickedNode, url: lastClickedUrl }
   window.dispatchEvent(evt)
 }
 
@@ -278,7 +268,7 @@ async function onImportFiles (e, archive) {
 async function onFork (e, archive) {
   e.preventDefault()
   var newArchive = await DatArchive.fork(archive)
-  window.location = 'beaker://editor/' + newArchive.url.slice('dat://'.length)  
+  window.location = 'beaker://editor/' + newArchive.url.slice('dat://'.length)
 }
 
 // internal helpers

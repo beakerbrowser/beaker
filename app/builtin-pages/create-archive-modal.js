@@ -112,7 +112,7 @@ function render () {
 
             <div class="form-actions">
               <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="3">Cancel</button>
-              <button type="submit" class="btn success" tabindex="4">
+              <button type="submit" class="btn ${isEditing ? ' primary' : ' success'}" tabindex="4">
                 ${isEditing ? 'Save' : 'Create site'}
               </button>
             </div>

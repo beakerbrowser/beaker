@@ -1,0 +1,66 @@
+@import "../../base/spacing";
+@import "../../base/colors";
+@import "../../utils/flex";
+
+.editor-header {
+  display: none;
+  padding: 0 @padding-component--tight;
+  height: 30px;
+  line-height: 30px;
+  border-bottom: 1px solid @border-menu;
+  color: @color-text--muted;
+
+  &.active {
+    &:extend(.flex);
+  }
+
+  .path {
+    font-style: italic;
+
+    i {
+      margin-right: @margin-icon;
+    }
+
+    * {
+      line-height: 30px;
+      display: inline-block;
+      vertical-align: baseline;
+    }
+  }
+}
+
+.editor-header-actions {
+
+  .save-prompt {
+    font-style: italic;
+    color: @color-text--light;
+  }
+
+  button {
+    border: none;
+    height: 24px;
+    line-height: 24px;
+    vertical-align: baseline;
+    margin: 3px 0;
+    border-radius: 2px;
+
+    * {
+      cursor: pointer;
+    }
+
+    &:disabled {
+      color: @color-text--light;
+      cursor: default;
+
+      * {
+        cursor: default;
+      }
+    }
+
+    &:hover:not(:disabled) {
+      background: @background-menu;
+    }
+  }
+
+  margin-left: auto;
+}
