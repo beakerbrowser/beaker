@@ -22,7 +22,7 @@ export function render (archivesList, {selectedArchiveKey, currentFilter, onChan
           </div>
           <div>
             <button onclick=${onToggleOptions} class="icon-btn" aria-label="Open settings" title="Open settings">
-              <i class="fa fa-sliders"></i>
+              <i class="fa fa-cog"></i>
             </button>
           </div>
           <div>
