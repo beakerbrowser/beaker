@@ -222,10 +222,14 @@ function datServer (req, res) {
         }
         
         // caching if-match
-        const ETag = 'block-' + entry.content.blockOffset
-        if (req.headers['if-none-match'] === ETag) {
-          return cb(304, 'Not Modified')
-        }
+        // TODO
+        // this unfortunately caches the CSP header too
+        // we'll need the etag to change when CSP perms change
+        // -prf
+        // const ETag = 'block-' + entry.content.blockOffset
+        // if (req.headers['if-none-match'] === ETag) {
+        //   return cb(304, 'Not Modified')
+        // }
 
         // fetch the permissions
         sitedataDb.getNetworkPermissions('dat://' + archiveKey).catch(err => []).then(origins => {
@@ -244,8 +248,8 @@ function datServer (req, res) {
                 'Content-Type': mimeType,
                 'Content-Security-Policy': CUSTOM_DAT_CSP(origins),
                 'Access-Control-Allow-Origin': '*',
-                'Cache-Control': 'public, max-age: 60',
-                ETag
+                'Cache-Control': 'public, max-age: 60'
+                // ETag
               }
               if (entry.length) headers['Content-Length'] = entry.length
               res.writeHead(200, 'OK', headers)
