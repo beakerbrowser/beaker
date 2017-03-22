@@ -1,5 +1,5 @@
 /*
-This uses the beakerBookmarks APIs, which is exposed by webview-preload to all sites loaded over the beaker: protocol
+This uses the beaker.bookmarks APIs, which is exposed by webview-preload to all sites loaded over the beaker: protocol
 */
 
 const yo = require('yo-yo')
@@ -17,7 +17,7 @@ var isIPFSDaemonActive = beakerBrowser.isIPFSDaemonActive()
 
 co(function*() {
   // get the bookmarks, ordered by # of views
-  bookmarks = yield beakerBookmarks.list()
+  bookmarks = yield beaker.bookmarks.list()
   bookmarks = bookmarks || []
   render()
 })
@@ -123,8 +123,8 @@ return e => {
     render()
 
     // save in backend
-    beakerBookmarks.changeTitle(oldUrl, bookmarks[i].title)
-    beakerBookmarks.changeUrl(oldUrl, bookmarks[i].url)
+    beaker.bookmarks.changeTitle(oldUrl, bookmarks[i].title)
+    beaker.bookmarks.changeUrl(oldUrl, bookmarks[i].url)
   }
 
   // escape-key
@@ -153,7 +153,7 @@ return e => {
   // delete bookmark
   var b = bookmarks[i]
   bookmarks.splice(i, 1)
-    beakerBookmarks.remove(b.url)
+    beaker.bookmarks.remove(b.url)
     render()
   }
 }
@@ -165,7 +165,7 @@ function togglePinned (i) {
 
     var { url, title, pinned } = bookmarks[i]
 
-    beakerBookmarks.togglePinned(url, title, pinned)
+    beaker.bookmarks.togglePinned(url, pinned)
     bookmarks[i].pinned = pinned ? 0 : 1
     render()
   }

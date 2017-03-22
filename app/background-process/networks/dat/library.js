@@ -60,7 +60,7 @@ export function setup () {
   })
 
   // load and configure all saved archives
-  archivesDb.queryArchiveUserSettings({isSaved: true}).then(
+  archivesDb.queryArchiveUserSettings(0, {isSaved: true}).then(
     archives => archives.forEach(a => configureArchive(a.key, a)),
     err => console.error('Failed to load networked archives', err)
   )
@@ -132,7 +132,7 @@ export async function createNewArchive (manifest) {
   await pda.writeManifest(archive, manifest)
 
   // write the user settings
-  await archivesDb.setArchiveUserSettings(key, { isSaved: true })
+  await archivesDb.setArchiveUserSettings(0, key, { isSaved: true })
 
   // write the metadata
   await pullLatestArchiveMeta(archive)
@@ -244,7 +244,7 @@ export function getOrLoadArchive (key, opts) {
 
 export async function queryArchives (query) {
   // run the query
-  var archiveInfos = await archivesDb.queryArchiveUserSettings(query, { includeMeta: true })
+  var archiveInfos = await archivesDb.queryArchiveUserSettings(0, query, { includeMeta: true })
 
   // attach some live data
   archiveInfos.forEach(archiveInfo => {
@@ -264,7 +264,7 @@ export async function getArchiveInfo (key, opts = {}) {
   // fetch archive data
   var [meta, userSettings] = await Promise.all([
     archivesDb.getArchiveMeta(key),
-    archivesDb.getArchiveUserSettings(key)
+    archivesDb.getArchiveUserSettings(0, key)
   ])
   meta.userSettings = { isSaved: userSettings.isSaved }
   meta.peers = archive.metadata.peers.length

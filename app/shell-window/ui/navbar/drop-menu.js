@@ -321,7 +321,7 @@ export class DropMenuNavbarBtn {
     this.updateActives()
 
     // create a new archive
-    var archive = await beaker.library.createArchive()
+    var archive = await beaker.archives.create()
 
     // open the archive in the editor in a new page
     pages.setActive(pages.create(`beaker://editor/${archive.url.slice('dat://'.length)}`))

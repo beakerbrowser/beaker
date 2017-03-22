@@ -1,28 +1,44 @@
-import { ipcMain } from 'electron'
+import {ipcMain} from 'electron'
 import rpc from 'pauls-electron-rpc'
-import beakerBrowser from '../lib/api-manifests/internal/browser'
-import beakerBookmarks from '../lib/api-manifests/internal/bookmarks'
-import beakerDownloads from '../lib/api-manifests/internal/downloads'
-import beakerHistory from '../lib/api-manifests/internal/history'
-import beakerSitedata from '../lib/api-manifests/internal/sitedata'
+import {internalOnly} from '../lib/bg/rpc'
 
-import libraryManifest from '../lib/api-manifests/external/library'
+// internal manifests
+import beakerBrowser from '../lib/api-manifests/internal/browser'
+import beakerDownloads from '../lib/api-manifests/internal/downloads'
+import beakerSitedata from '../lib/api-manifests/internal/sitedata'
+import profilesManifest from '../lib/api-manifests/internal/profiles'
+
+// internal apis
+import profilesAPI from './web-apis/profiles'
+
+// external manifests
+import archivesManifest from '../lib/api-manifests/external/archives'
 import datArchiveManifest from '../lib/api-manifests/external/dat-archive'
 import appsManifest from '../lib/api-manifests/external/apps'
+import bookmarksManifest from '../lib/api-manifests/external/bookmarks'
+import historyManifest from '../lib/api-manifests/external/history'
 
-import libraryAPI from './web-apis/library'
+// external apis
+import archivesAPI from './web-apis/archives'
 import datArchiveAPI from './web-apis/dat-archive'
 import appsAPI from './web-apis/apps'
+import bookmarksAPI from './web-apis/bookmarks'
+import historyAPI from './web-apis/history'
 
 // exported api
 // =
 
 export function setup () {
 
-  // wire up RPC
-  rpc.exportAPI('library', libraryManifest, libraryAPI)
+  // internal apis
+  rpc.exportAPI('profiles', profilesManifest, profilesAPI, internalOnly)
+
+  // external apis
+  rpc.exportAPI('archives', archivesManifest, archivesAPI)
   rpc.exportAPI('dat-archive', datArchiveManifest, datArchiveAPI)
   rpc.exportAPI('apps', appsManifest, appsAPI)
+  rpc.exportAPI('bookmarks', bookmarksManifest, bookmarksAPI)
+  rpc.exportAPI('history', historyManifest, historyAPI)
 
   // register a message-handler for setting up the client
   // - see lib/fg/import-web-apis.js
@@ -34,9 +50,7 @@ export function setup () {
     if (scheme === 'beaker:') {
       protos = {
         beakerBrowser,
-        beakerBookmarks,
         beakerDownloads,
-        beakerHistory,
         beakerSitedata
       }
       event.returnValue = protos

@@ -487,7 +487,7 @@ test('archive.writeFile & archive.createDirectory doesnt allow writes to archive
 
   await app.client.windowByIndex(0)
   var res = await app.client.executeAsync((done) => {
-    beaker.library.createArchive({ title: 'Another Test Dat' }).then(done, done)
+    beaker.archives.create({ title: 'Another Test Dat' }).then(done, done)
   })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
@@ -667,7 +667,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.library.createArchive().then(done,done)
+    beaker.archives.create().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -691,7 +691,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.library.createArchive().then(done,done)
+    beaker.archives.create().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -715,7 +715,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.library.createArchive().then(done,done)
+    beaker.archives.create().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -739,7 +739,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.library.createArchive().then(done,done)
+    beaker.archives.create().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -805,7 +805,7 @@ test('DatArchive.exportToArchive', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.library.createArchive().then(done,done)
+    beaker.archives.create().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -828,7 +828,7 @@ test('DatArchive.exportToArchive', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.library.createArchive().then(done,done)
+    beaker.archives.create().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -853,7 +853,7 @@ test('archive.createFileActivityStream', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.library.createArchive().then(done,done)
+    beaker.archives.create().then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)

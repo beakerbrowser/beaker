@@ -247,7 +247,7 @@ async function assertQuotaPermission (archive, senderOrigin, byteLength) {
   // fetch the archive meta, and the current quota for the site
   const [meta, userSettings] = await Promise.all([
     archivesDb.getArchiveMeta(archive.key),
-    archivesDb.getArchiveUserSettings(archive.key)
+    archivesDb.getArchiveUserSettings(0, archive.key)
   ])
 
   // fallback to default quota

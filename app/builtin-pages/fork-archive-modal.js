@@ -84,7 +84,7 @@ function onClickDownload (e) {
 async function onSubmit (e) {
   e.preventDefault()
   try {
-    var newArchive = await beaker.library.forkArchive(archive.info.key, { title, description, createdBy })
+    var newArchive = await beaker.archives.fork(archive.info.key, { title, description, createdBy })
     beakerBrowser.closeModal(null, {url: newArchive.url})
   } catch (e) {
     beakerBrowser.closeModal({
