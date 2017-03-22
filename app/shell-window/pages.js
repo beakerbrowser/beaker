@@ -146,11 +146,11 @@ export function create (opts) {
     toggleBookmark: function () {
       // update state
       if (page.bookmark) {
-        beakerBookmarks.remove(page.bookmark.url)
+        beaker.bookmarks.remove(page.bookmark.url)
         page.bookmark = null
       } else if (page.isActive) {
         page.bookmark = { url: page.getURL(), title: page.getTitle() }
-        beakerBookmarks.add(page.bookmark.url, page.bookmark.title)
+        beaker.bookmarks.add(page.bookmark.url, page.bookmark.title)
       }
       // update nav
       navbar.update(page)
@@ -535,7 +535,7 @@ function onLoadCommit (e) {
   var page = getByWebview(e.target)
   if (page) {
     // check if this page bookmarked
-    beakerBookmarks.get(e.url).then(bookmark => {
+    beaker.bookmarks.get(e.url).then(bookmark => {
       page.bookmark = bookmark
       navbar.update(page)
     })
@@ -577,7 +577,7 @@ function onDidStopLoading (e) {
     }
     if (protocol === 'dat:') {
       DatArchive.resolveName(hostname).then(key => {
-        beaker.library.get(key).then(info => {
+        beaker.archives.get(key).then(info => {
           page.siteInfo = info
           navbar.update(page)
         })
@@ -818,8 +818,7 @@ function parseURL (str) {
 function updateHistory (page) {
   var url = page.getURL()
   if (!url.startsWith('beaker:')) {
-    beakerHistory.addVisit({ url: page.getURL(), title: page.getTitle() || page.getURL() })
-    beakerBookmarks.addVisit(page.getURL())
+    beaker.history.addVisit({url: page.getURL(), title: page.getTitle() || page.getURL()})
     if (page.isPinned) {
       savePinnedToDB()
     }

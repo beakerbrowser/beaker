@@ -64,10 +64,10 @@ async function onSubmit (e) {
   e.preventDefault()
   try {
     if (isEditing) {
-      await beaker.library.updateArchiveManifest(archive.url, {title, description})
+      await beaker.archives.update(archive.url, {title, description})
       beakerBrowser.closeModal(null, true)
     } else {
-      var newArchive = await beaker.library.createArchive({title, description, createdBy})
+      var newArchive = await beaker.archives.create({title, description, createdBy})
       beakerBrowser.closeModal(null, {url: newArchive.url})
     }
   } catch (e) {

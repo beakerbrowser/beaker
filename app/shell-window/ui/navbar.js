@@ -1,5 +1,4 @@
 import { remote } from 'electron'
-import isIPFS from 'is-ipfs'
 import * as pages from '../pages'
 import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
@@ -358,9 +357,6 @@ function handleAutocompleteSearch (results) {
   var isProbablyUrl = (!v.includes(' ') && (
     /\.[A-z]/.test(v) ||
     isDatHashRegex.test(v) ||
-    isIPFS.multihash(multihashV) ||
-    isIPFS.ipfsPath(v) ||
-    isIPFS.ipnsPath(v) ||
     v.startsWith('localhost') ||
     v.includes('://') ||
     v.startsWith('beaker:') ||
@@ -373,10 +369,6 @@ function handleAutocompleteSearch (results) {
       vWithProtocol = 'dat://'+v
     } else if (v.startsWith('localhost')) {
       vWithProtocol = 'http://'+v
-    } else if (isIPFS.multihash(multihashV)) {
-      vWithProtocol = 'fs:/ipfs/' + multihashV
-    } else if (isIPFS.ipfsPath(v) || isIPFS.ipnsPath(v)) {
-      vWithProtocol = 'fs:' + v
     } else {
       vWithProtocol = 'https://'+v
       isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
@@ -416,10 +408,6 @@ function getAutocompleteSelection (i) {
   // autocorrect urls of known forms
   if (isDatHashRegex.test(url)) {
     url = 'dat://' + url
-  } else if (isIPFS.multihash(url)) {
-    vWithProtocol = 'fs:/ipfs/' + url
-  } else if (isIPFS.ipfsPath(url) || isIPFS.ipnsPath(url)) {
-    vWithProtocol = 'fs:' + url
   }
   return { url }
 }
@@ -646,7 +634,7 @@ function onInputLocation (e) {
   if (autocompleteValue && autocompleteCurrentValue != autocompleteValue) {
     autocompleteCurrentValue = autocompleteValue // update the current value
     autocompleteCurrentSelection = 0 // reset the selection
-    beakerHistory.search(value).then(handleAutocompleteSearch) // update the suggetsions
+    beaker.history.search(value).then(handleAutocompleteSearch) // update the suggetsions
   } else if (!autocompleteValue)
     clearAutocomplete() // no value, cancel out
 }

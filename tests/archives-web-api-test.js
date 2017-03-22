@@ -31,7 +31,7 @@ test.before(async t => {
 
   // create a owned archive
   var res = await app.client.executeAsync((done) => {
-    beaker.library.createArchive().then(done,done)
+    beaker.archives.create().then(done,done)
   })
   createdDatURL = res.value.url
   createdDatKey = createdDatURL.slice('dat://'.length)
@@ -55,31 +55,31 @@ test('library.add, library.remove', async t => {
       adds: 0,
       removes: 0
     }
-    window.beaker.library.addEventListener('added', event => {
+    window.beaker.archives.addEventListener('added', event => {
       window.stats.adds++
     })
-    window.beaker.library.addEventListener('removed', event => {
+    window.beaker.archives.addEventListener('removed', event => {
       window.stats.removes++
     })
   })
 
   // by url
   var res = await app.client.executeAsync((url, done) => {
-    window.beaker.library.add(url).then(done,done)
+    window.beaker.archives.add(url).then(done,done)
   }, createdDatURL)
   t.deepEqual(res.value.isSaved, true)
   var res = await app.client.executeAsync((url, done) => {
-    window.beaker.library.remove(url).then(done,done)
+    window.beaker.archives.remove(url).then(done,done)
   }, createdDatURL)
   t.deepEqual(res.value.isSaved, false)
 
   // by key
   var res = await app.client.executeAsync((key, done) => {
-    window.beaker.library.add(key).then(done,done)
+    window.beaker.archives.add(key).then(done,done)
   }, createdDatKey)
   t.deepEqual(res.value.isSaved, true)
   var res = await app.client.executeAsync((key, done) => {
-    window.beaker.library.remove(key).then(done,done)
+    window.beaker.archives.remove(key).then(done,done)
   }, createdDatKey)
   t.deepEqual(res.value.isSaved, false)
   
@@ -94,16 +94,16 @@ test('library.add, library.remove', async t => {
 test('library.list', async t => {
   // add the owned and unowned dats
   var res = await app.client.executeAsync((url, done) => {
-    window.beaker.library.add(url).then(done,done)
+    window.beaker.archives.add(url).then(done,done)
   }, createdDatURL)
   t.deepEqual(res.value.isSaved, true)
   var res = await app.client.executeAsync((url, done) => {
-    window.beaker.library.add(url).then(done,done)
+    window.beaker.archives.add(url).then(done,done)
   }, testStaticDatURL)
 
   // list all
   var res = await app.client.executeAsync((done) => {
-    window.beaker.library.list().then(done,done)
+    window.beaker.archives.list().then(done,done)
   })
   var items = res.value
   t.deepEqual(items.length, 2)
@@ -113,13 +113,13 @@ test('library.list', async t => {
 
   // list owned
   var res = await app.client.executeAsync((done) => {
-    window.beaker.library.list({ isOwner: true }).then(done,done)
+    window.beaker.archives.list({ isOwner: true }).then(done,done)
   })
   t.deepEqual(res.value.length, 1)
 
   // list unowned
   var res = await app.client.executeAsync((done) => {
-    window.beaker.library.list({ isOwner: false }).then(done,done)
+    window.beaker.archives.list({ isOwner: false }).then(done,done)
   })
   t.deepEqual(res.value.length, 1)
 })
@@ -127,30 +127,30 @@ test('library.list', async t => {
 test('library.get', async t => {
   // add the owned and remove the unowned dat
   var res = await app.client.executeAsync((url, done) => {
-    window.beaker.library.add(url).then(done,done)
+    window.beaker.archives.add(url).then(done,done)
   }, createdDatURL)
   t.deepEqual(res.value.isSaved, true)
   var res = await app.client.executeAsync((url, done) => {
-    window.beaker.library.remove(url).then(done,done)
+    window.beaker.archives.remove(url).then(done,done)
   }, testStaticDatURL)
 
   // get owned by url
   var res = await app.client.executeAsync((url, done) => {
-    window.beaker.library.get(url).then(done,done)
+    window.beaker.archives.get(url).then(done,done)
   }, createdDatURL)
   t.deepEqual(res.value.isOwner, true)
   t.deepEqual(res.value.userSettings.isSaved, true)
 
   // get owned by key
   var res = await app.client.executeAsync((key, done) => {
-    window.beaker.library.get(key).then(done,done)
+    window.beaker.archives.get(key).then(done,done)
   }, createdDatKey)
   t.deepEqual(res.value.isOwner, true)
   t.deepEqual(res.value.userSettings.isSaved, true)
 
   // get unowned by url
   var res = await app.client.executeAsync((url, done) => {
-    window.beaker.library.get(url).then(done,done)
+    window.beaker.archives.get(url).then(done,done)
   }, testStaticDatURL)
   t.deepEqual(res.value.isOwner, false)
   t.deepEqual(res.value.userSettings.isSaved, false)
@@ -160,14 +160,14 @@ test('library "updated" event', async t => {
   // register event listener
   await app.client.execute(() => {
     window.newTitle = false
-    window.beaker.library.addEventListener('updated', event => {
+    window.beaker.archives.addEventListener('updated', event => {
       window.newTitle = event.details.title
     })
   })
 
   // update manifest
   var res = await app.client.executeAsync((url, done) => {
-    beaker.library.updateArchiveManifest(url, { title: 'The New Title' }).then(done, done)
+    beaker.archives.update(url, { title: 'The New Title' }).then(done, done)
   }, createdDatURL)
 
   // need to sleep because there's a builtin delay to processing meta updates

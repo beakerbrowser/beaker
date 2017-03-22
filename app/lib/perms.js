@@ -20,7 +20,7 @@ function lazyDatTitleElement (archiveKey, title) {
   // no title, we need to look it up. render now, then update
   var el = yo`<span>${prettyHash(archiveKey)}</span>`
   el.id = 'lazy-' + archiveKey
-  beaker.library.get(archiveKey).then(details => {
+  beaker.archives.get(archiveKey).then(details => {
     datTitleMap[archiveKey] = details.title // cache
     el.textContent = details.title // render
   })

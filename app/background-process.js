@@ -20,9 +20,7 @@ import * as permissions from './background-process/ui/permissions'
 import * as archives from './background-process/dbs/archives'
 import * as settings from './background-process/dbs/settings'
 import * as sitedata from './background-process/dbs/sitedata'
-import * as bookmarks from './background-process/dbs/bookmarks'
-import * as history from './background-process/dbs/history'
-import * as profiles from './background-process/dbs/profiles'
+import * as profileDataDb from './background-process/dbs/profile-data-db'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
@@ -47,9 +45,7 @@ app.on('ready', function () {
   archives.setup()
   settings.setup()
   sitedata.setup()
-  bookmarks.setup()
-  history.setup()
-  profiles.setup()
+  profileDataDb.setup()
 
   // base
   beakerBrowser.setup()

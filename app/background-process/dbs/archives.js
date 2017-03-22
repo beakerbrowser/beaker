@@ -1,20 +1,17 @@
-import { app } from 'electron'
+import {app} from 'electron'
 import path from 'path'
 import url from 'url'
 import level from 'level'
 import subleveldown from 'subleveldown'
 import mkdirp from 'mkdirp'
-import { Transform } from 'stream'
-import concat from 'concat-stream'
-import pump from 'pump'
 import Events from 'events'
 import datEncoding from 'dat-encoding'
 import {InvalidArchiveKeyError} from 'beaker-error-constants'
-import { cbPromise } from '../../lib/functions'
-import { setupLevelDB, makeTxLock } from '../../lib/bg/db'
-import { transform, noopWritable } from '../../lib/streams'
-import { DAT_HASH_REGEX } from '../../lib/const'
-import { getOrLoadArchive } from '../networks/dat/library'
+import {cbPromise} from '../../lib/functions'
+import {setupLevelDB} from '../../lib/bg/db'
+import lock from '../../lib/lock'
+import {DAT_HASH_REGEX} from '../../lib/const'
+import * as profileDataDb from './profile-data-db'
 
 // globals
 // =
@@ -23,11 +20,8 @@ var dbPath // path to the hyperdrive folder
 var db // level instance
 var events = new Events()
 var archiveMetaDb // archive metadata sublevel
-var archiveUserSettingsDb // archive user-settings sublevel
-var globalSettingsDb // global settings sublevel
 var migrations
 var setupPromise
-var archiveUserSettingsTxLock = makeTxLock()
 
 // exported methods
 // =
@@ -38,8 +32,6 @@ export function setup () {
   mkdirp.sync(path.join(dbPath, 'Archives')) // make sure the folders exist
   db = level(dbPath)
   archiveMetaDb = subleveldown(db, 'archive-meta', { valueEncoding: 'json' })
-  archiveUserSettingsDb = subleveldown(db, 'archive-user-settings', { valueEncoding: 'json' })
-  globalSettingsDb = subleveldown(db, 'global-settings', { valueEncoding: 'json' })
   setupPromise = setupLevelDB(db, migrations, '[DAT ARCHIVES]')
 }
 
@@ -61,106 +53,114 @@ export const removeListener = events.removeListener.bind(events)
 // =
 
 // get an array of saved archives
-// - includes archive
 // - optional `query` keys:
 //   - `isSaved`: bool
 //   - `isOwner`: bool, does beaker have the secret key? requires opts.includeMeta
 // - optional `opt` keys:
 //   - `includeMeta`: bool, include the archive meta in the response?
-export function queryArchiveUserSettings (query, opts) {
+export async function queryArchiveUserSettings (profileId, query, opts) {
   query = query || {}
   opts = opts || {}
-  return setupPromise.then(() => new Promise((resolve, reject) => {
-    // read the stream
-    pump(
-      archiveUserSettingsDb.createReadStream(),
-      new QueryArchiveUserSettingsTransform(query, opts),
-      concat({ encoding: 'objects' }, objs => resolve(objs)),
-      err => { if (err) { reject(err) } }
-    )
-  }))
-}
+  await setupPromise
 
-class QueryArchiveUserSettingsTransform extends Transform {
-  constructor (query, opts) {
-    super({ objectMode: true })
-    this.query = query
-    this.opts = opts
-  }
-  _transform (entry, encoding, cb) {
-    var { key, value } = entry
-    const query = this.query
-    const opts = this.opts
-    value = archiveUserSettingsObject(key, value)
+  // fetch archive meta
+  var extra = query.isSaved ? 'AND isSaved = 1' : ''
+  var archives = await profileDataDb.all(`
+    SELECT * FROM archives WHERE profileId = ? ${extra}
+  `, [profileId])
 
-    // run query
-    if (('isSaved' in query) && value.isSaved != query.isSaved) return cb()
+  var values = []
+  await Promise.all(archives.map(async (entry) => {
+    var value = {
+      key: entry.key,
+      url: `dat://${entry.key}`,
+      isSaved: !!entry.isSaved
+    }
 
     // done?
     if (!opts.includeMeta && !('isOwner' in query)) {
-      return cb(null, value)
+      values.push(value)
+      return
     }
 
     // get meta
-    getArchiveMeta(key).then(
-      meta => {
-        // run extra query
-        if (query.isOwner === false && meta.isOwner === true) return cb()
-        if (query.isOwner === true && meta.isOwner === false) return cb()
+    var meta = await getArchiveMeta(value.key)
 
-        // done
-        meta.userSettings = {
-          isSaved: value.isSaved
-        }
-        cb(null, meta)
-      },
-      err => cb(err)
-    )
-  }
+    // run extra query
+    if (query.isOwner === false && meta.isOwner === true) return
+    if (query.isOwner === true && meta.isOwner === false) return
+
+    // done
+    meta.userSettings = {isSaved: value.isSaved}
+    values.push(meta)
+  }))
+  return values
 }
 
 // get a single archive's user settings
-// - supresses a not-found with a default response, with notFound == true
-export function getArchiveUserSettings (key) {
+// - supresses a not-found with an empty object
+export async function getArchiveUserSettings (profileId, key) {
   // massage inputs
   key = datEncoding.toStr(key)
 
   // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
+  if (!DAT_HASH_REGEX.test(key)) {
+    throw new InvalidArchiveKeyError()
+  }
 
   // fetch
-  return setupPromise.then(() => new Promise((resolve, reject) => {
-    archiveUserSettingsDb.get(key, (_, meta) => resolve(archiveUserSettingsObject(key, meta)))
-  }))
+  try {
+    var settings = await profileDataDb.get(`
+      SELECT * FROM archives WHERE profileId = ? AND key = ?
+    `, [profileId, key])
+    settings.isSaved = !!settings.isSaved
+    return settings
+  } catch (e) {
+    return {}
+  }
 }
 
 // write an archive's user setting
-export function setArchiveUserSettings (key, newValues = {}) {
+export async function setArchiveUserSettings (profileId, key, newValues = {}) {
   // massage inputs
   key = datEncoding.toStr(key)
 
   // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
+  if (!DAT_HASH_REGEX.test(key)) {
+    throw new InvalidArchiveKeyError()
+  }
 
-  return setupPromise.then(() => cbPromise(cb => {
-    archiveUserSettingsTxLock(endTx => {
-      archiveUserSettingsDb.get(key, (_, value) => {
-        value = archiveUserSettingsObject(key, value)
+  var release = await lock('archives-db')
+  try {
+    // fetch current
+    var value = await profileDataDb.get(`
+      SELECT * FROM archives WHERE profileId = ? AND key = ?
+    `, [profileId, key])
 
-        // extract the desired values
-        var { isSaved } = newValues
-        if (typeof isSaved === 'boolean') value.isSaved = isSaved
+    if (!value) {
+      // create
+      value = {
+        profileId,
+        key,
+        isSaved: newValues.isSaved
+      }
+      await profileDataDb.run(`
+        INSERT INTO archives (profileId, key, isSaved) VALUES (?, ?, ?)
+      `, [profileId, key, value.isSaved ? 1 : 0])
+    } else {
+      // update
+      var { isSaved } = newValues
+      if (typeof isSaved === 'boolean') value.isSaved = isSaved
+      await profileDataDb.run(`
+        UPDATE archives SET isSaved = ? WHERE profileId = ? AND key = ?
+      `, [value.isSaved ? 1 : 0, profileId, key])
+    }
 
-        // write
-        archiveUserSettingsDb.put(key, value, err => {
-          endTx()
-          if (err) return cb(err)
-          events.emit('update:archive-user-settings', key, value)
-          cb(null, value)
-        })
-      })
-    })
-  }))
+    events.emit('update:archive-user-settings', key, value)
+    return value
+  } finally {
+    release()
+  }
 }
 
 // exported methods: archive meta
@@ -168,59 +168,45 @@ export function setArchiveUserSettings (key, newValues = {}) {
 
 // get a single archive's metadata
 // - supresses a not-found with a default response, with notFound == true
-export function getArchiveMeta (key) {
+export async function getArchiveMeta (key) {
   // massage inputs
   key = datEncoding.toStr(key)
 
   // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
+  if (!DAT_HASH_REGEX.test(key)) {
+    throw new InvalidArchiveKeyError()
+  }
 
   // fetch
-  return setupPromise.then(() => new Promise((resolve, reject) => {
+  await setupPromise
+  return new Promise(resolve => {
     archiveMetaDb.get(key, (_, meta) => resolve(archiveMetaObject(key, meta)))
-  }))
+  })
 }
 
 // write an archive's metadata
-export function setArchiveMeta (key, value = {}) {
+export async function setArchiveMeta (key, value = {}) {
   // massage inputs
   key = datEncoding.toStr(key)
 
   // validate inputs
-  if (!DAT_HASH_REGEX.test(key)) return Promise.reject(new InvalidArchiveKeyError())
+  if (!DAT_HASH_REGEX.test(key)) {
+    throw new InvalidArchiveKeyError()
+  }
 
-  return setupPromise.then(() => cbPromise(cb => {
-    // extract the desired values
-    var { title, description, author, forkOf, createdBy, mtime, size, isOwner } = value
-    value = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
+  // extract the desired values
+  var { title, description, author, forkOf, createdBy, mtime, size, isOwner } = value
+  value = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
 
-    // write
+  // write
+  await setupPromise
+  return cbPromise(cb => {
     archiveMetaDb.put(key, value, err => {
       if (err) return cb(err)
       events.emit('update:archive-meta', key, value)
       cb()
     })
-  }))
-}
-
-// exported methods: global settings
-// =
-
-// read a global setting
-export function getGlobalSetting (key) {
-  return setupPromise.then(() => cbPromise(cb => globalSettingsDb.get(key, cb)))
-}
-
-// write a global setting
-export function setGlobalSetting (key, value = {}) {
-  return setupPromise.then(() => cbPromise(cb => {
-    globalSettingsDb.put(key, value, err => {
-      if (err) return cb(err)
-      events.emit('update:global-setting', key, value)
-      events.emit('update:global-setting:' + key, value)
-      cb()
-    })
-  }))
+  })
 }
 
 // internal methods
@@ -243,15 +229,6 @@ function archiveMetaObject (key, obj) {
   }, obj)
 }
 
-// helper to make sure archive-user-settings reads are well-formed
-function archiveUserSettingsObject (key, obj) {
-  obj = obj || { notFound: true }
-  return Object.assign({
-    key,
-    url: 'dat://' + key,
-    isSaved: false
-  }, obj)
-}
 
 export function extractOrigin (originURL) {
   var urlp = url.parse(originURL)
@@ -264,51 +241,5 @@ migrations = [
   function (cb) {
     // noop
     db.put('version', 1, cb)
-  },
-  // version 2
-  function (cb) {
-    // migrate all saved archives to use saveClaims
-    pump(
-      archiveUserSettingsDb.createReadStream(),
-      transform((chunk, cb) => {
-        // look for archives saved with the old schema
-        if (!chunk.value.isSaved || chunk.value.saveClaims) return cb() // noop
-        // update the user settings to the new format
-        chunk.value.saveClaims = ['beaker://archives']
-        archiveUserSettingsDb.put(chunk.key, chunk.value, cb)
-        // trigger an update to the meta as well
-        getOrLoadArchive(chunk.key).pullLatestArchiveMeta()
-      }),
-      noopWritable(),
-      err => {
-        if (err) cb(err)
-        // done
-        db.put('version', 2, cb)
-      }
-    )
-  },
-  // version 3
-  function (cb) {
-    // migrate all saved archives back off of save claims
-    pump(
-      archiveUserSettingsDb.createReadStream(),
-      transform((chunk, cb) => {
-        // look for archives saved with the old schema
-        if (!chunk.value.saveClaims) return cb() // noop
-        // update the user settings to the new format
-        chunk.value = {
-          isSaved: Array.isArray(chunk.value.saveClaims) && (chunk.value.saveClaims.length > 0)
-        }
-        archiveUserSettingsDb.put(chunk.key, chunk.value, cb)
-        // trigger an update to the meta as well
-        getOrLoadArchive(chunk.key).pullLatestArchiveMeta()
-      }),
-      noopWritable(),
-      err => {
-        if (err) cb(err)
-        // done
-        db.put('version', 3, cb)
-      }
-    )
   }
 ]

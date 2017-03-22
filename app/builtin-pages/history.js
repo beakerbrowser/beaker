@@ -1,5 +1,5 @@
 /*
-This uses the beakerHistory API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
+This uses the beaker.history API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
 */
 
 const yo = require('yo-yo')
@@ -32,7 +32,7 @@ function fetchMore (cb) {
     return cb()
 
   isFetching = true
-  beakerHistory.getVisitHistory({ offset: visits.length, limit: 100 }).then(rows => {
+  beaker.history.getVisitHistory({ offset: visits.length, limit: 100 }).then(rows => {
     if (rows.length == 0)
       isAtEnd = true
     else
@@ -116,7 +116,7 @@ function onClickDelete (i) {
   // remove
   var v = visits[i]
   visits.splice(i, 1)
-  beakerHistory.removeVisit(v.url)
+  beaker.history.removeVisit(v.url)
   render()
 }
 
@@ -126,14 +126,14 @@ function onClickDeleteBulk () {
   // clear all history
   if (period === 'all') {
     visits = []
-    beakerHistory.removeAllVisits()
+    beaker.history.removeAllVisits()
     render()
   } else {
     var threshold = moment().startOf(period).valueOf()
 
     // filter out visits that with a timestamp >= threshold
     visits = visits.filter(v => v.ts < threshold)
-    beakerHistory.removeVisitsAfter(threshold)
+    beaker.history.removeVisitsAfter(threshold)
 
     // fetch and render more visits if possible
     fetchMore(render)

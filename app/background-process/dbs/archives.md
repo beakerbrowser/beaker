@@ -1,11 +1,8 @@
 # archives dbs
 
-These dbs are leveldbs.
-
-
 ## archive-meta schema
 
-Computed information about archives
+LevelDB computed information about archives
 
 ```
 {
@@ -25,20 +22,3 @@ Computed information about archives
   }
 }
 ```
-
-## archive-user-settings schema
-
-Extra user settings 
-
-```
-{
-  key: String, archive key
-  value: {
-    isSaved: Boolean
-  }
-}
-```
-
-## global-settings schema
-
-Free form K/V for storing info about dat operation

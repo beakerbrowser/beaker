@@ -9,18 +9,7 @@ import {PermissionsError, InvalidURLError} from 'beaker-error-constants'
 // =
 
 export default {
-  async list(query={}) {
-    assertTmpBeakerOnly(this.sender)
-    return datLibrary.queryArchives(query, {includeMeta: true})
-  },
-
-  async get(url) {
-    assertTmpBeakerOnly(this.sender)
-    var key = toKey(url)
-    return datLibrary.getArchiveInfo(key)
-  },
-
-  async createArchive({title, description, createdBy} = {}) {
+  async create({title, description, createdBy} = {}) {
     assertTmpBeakerOnly(this.sender)
 
     // get origin info
@@ -34,7 +23,7 @@ export default {
     return datLibrary.createNewArchive({title, description, createdBy})
   },
 
-  async forkArchive(url, {title, description, createdBy} = {}) {
+  async fork(url, {title, description, createdBy} = {}) {
     assertTmpBeakerOnly(this.sender)
 
     // get origin info
@@ -48,7 +37,19 @@ export default {
     return datLibrary.forkArchive(url, {title, description, createdBy})
   },
 
-  async updateArchiveManifest(url, {title, description} = {}) {
+  async add(url) {
+    assertTmpBeakerOnly(this.sender)
+    var key = toKey(url)
+    return archivesDb.setArchiveUserSettings(0, key, {isSaved: true})
+  },
+
+  async remove(url) {
+    assertTmpBeakerOnly(this.sender)
+    var key = toKey(url)
+    return archivesDb.setArchiveUserSettings(0, key, {isSaved: false})
+  },
+
+  async update(url, {title, description} = {}) {
     assertTmpBeakerOnly(this.sender)
     var key = toKey(url)
     var archive = datLibrary.getOrLoadArchive(key)
@@ -56,16 +57,15 @@ export default {
     datLibrary.pullLatestArchiveMeta(archive)
   },
 
-  async add(url) {
+  async list(query={}) {
     assertTmpBeakerOnly(this.sender)
-    var key = toKey(url)
-    return archivesDb.setArchiveUserSettings(key, {isSaved: true})
+    return datLibrary.queryArchives(query, {includeMeta: true})
   },
 
-  async remove(url) {
+  async get(url) {
     assertTmpBeakerOnly(this.sender)
     var key = toKey(url)
-    return archivesDb.setArchiveUserSettings(key, {isSaved: false})
+    return datLibrary.getArchiveInfo(key)
   },
 
   createEventStream() {

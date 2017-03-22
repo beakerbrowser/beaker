@@ -1,72 +1,33 @@
-import {app} from 'electron'
-import sqlite3 from 'sqlite3'
-import path from 'path'
-import {cbPromise} from '../../lib/functions'
-import {setupSqliteDB} from '../../lib/bg/db'
+import * as db from './profile-data-db'
 
-// globals
+// exported api
 // =
 
-var db
-var migrations
-var setupPromise
-
-// exported methods
-// =
-
-export function setup () {
-  // open database
-  var dbPath = path.join(app.getPath('userData'), 'Profiles')
-  db = new sqlite3.Database(dbPath)
-  setupPromise = setupSqliteDB(db, migrations, '[PROFILES]')
+export function list () {
+  return db.all(`SELECT id, url, createdAt FROM profiles`)
 }
 
-export async function get (...args) {
-  await setupPromise
-  return cbPromise(cb => db.get(...args, cb))
+export function get (id) {
+  return db.get(`SELECT id, url, createdAt FROM profiles WHERE id`, [id])
 }
 
-export async function all (...args) {
-  await setupPromise
-  return cbPromise(cb => db.all(...args, cb))
+export function add (values) {
+  values = values || {}
+  return db.run(`
+    INSERT
+      INTO profiles (url)
+      VALUES (?)
+  `, [values.url || ''])
 }
 
-export async function run (...args) {
-  await setupPromise
-  return cbPromise(cb => db.run(...args, cb))
+export function update (id, values) {
+  return db.run(`
+    UPDATE profiles
+      SET url = ?
+      WHERE id = ?
+  `, [values.url, id])
 }
 
-// internal methods
-// =
-
-migrations = [
-  // version 1
-  function (cb) {
-    db.exec(`
-      CREATE TABLE profiles (
-        id INTEGER PRIMARY KEY,
-        name TEXT
-      );
-      CREATE TABLE apps (
-        profile_id INTEGER,
-        name TEXT,
-        url TEXT,
-        created_at INTEGER,
-
-        PRIMARY KEY (profile_id, name),
-        FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
-      );
-      CREATE TABLE bookmarks (
-        profile_id INTEGER,
-        url TEXT,
-        title TEXT,
-        pinned INTEGER,
-
-        PRIMARY KEY (profile_id, url),
-        FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
-      );
-      INSERT INTO profiles (id, name) VALUES (0, 'Default Profile');
-      PRAGMA user_version = 1;
-    `, cb)
-  }
-]
+export function remove (id) {
+  return db.run(`DELETE FROM profiles WHERE id = ?`, [id])
+}

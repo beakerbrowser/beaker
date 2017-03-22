@@ -1,5 +1,5 @@
 /*
-This uses the beakerBookmarks API, which is exposed by webview-preload to all
+This uses the beaker.bookmarks API, which is exposed by webview-preload to all
 sites loaded over the beaker: protocol
 */
 
@@ -23,8 +23,8 @@ var isAddingPin = false
 var bookmarks, pinnedBookmarks
 
 co(function* () {
-  bookmarks = (yield beakerBookmarks.list()) || []
-  pinnedBookmarks = (yield beakerBookmarks.listPinned()) || []
+  bookmarks = (yield beaker.bookmarks.list()) || []
+  pinnedBookmarks = (yield beaker.bookmarks.list({pinned: true})) || []
   update()
 
   let latestVersion = yield beakerSitedata.get('beaker://start', 'latest-version')
@@ -141,8 +141,8 @@ function pinBookmark (i) {
     e.stopPropagation()
 
     var b = bookmarks[i]
-    beakerBookmarks.add(b.url, b.title, 1).then(() => {
-      return beakerBookmarks.listPinned()
+    beaker.bookmarks.add(b.url, b.title, 1).then(() => {
+      return beaker.bookmarks.list({pinned: true})
     }).then(pinned => {
       pinnedBookmarks = pinned
       isAddingPin = false
@@ -167,8 +167,8 @@ function pinSite (e) {
     title = title.split('://')[1] || url.value
   } catch (e) {}
 
-  beakerBookmarks.add(url.value, title, 1).then(() => {
-    return beakerBookmarks.listPinned()
+  beaker.bookmarks.add(url.value, title, 1).then(() => {
+    return beaker.bookmarks.list({pinned: true})
   }).then(pinned => {
     pinnedBookmarks = pinned
     isAddingPin = false
@@ -178,9 +178,9 @@ function pinSite (e) {
 
 function unpinSite (e) {
   e.preventDefault()
-  beakerBookmarks.togglePinned(e.target.dataset.url, true)
+  beaker.bookmarks.togglePinned(e.target.dataset.url, true)
 
-  beakerBookmarks.listPinned().then(pinned => {
+  beaker.bookmarks.list({pinned: true}).then(pinned => {
     pinnedBookmarks = pinned
     update()
   })

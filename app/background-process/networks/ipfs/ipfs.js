@@ -1,5 +1,4 @@
 import createIPFSAPI from 'ipfs-api'
-import isIPFS from 'is-ipfs'
 import dns from 'dns'
 import path from 'path'
 import fs from 'fs'

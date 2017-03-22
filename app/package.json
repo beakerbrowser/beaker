@@ -8,6 +8,7 @@
   "copyright": "© 2016, Paul Frazee",
   "main": "background-process.build.js",
   "dependencies": {
+    "await-lock": "^1.1.2",
     "beaker-error-constants": "^1.0.0",
     "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib#69e34b7ccc9b2fe687728694eda4128351d5b333",
     "cids": "^0.2.0",
@@ -31,7 +32,6 @@
     "identify-filetype": "^1.0.0",
     "ipfs-api": "git://github.com/beakerbrowser/js-ipfs-api#d7b40ea4f95f6ae32d5edbd5f8df08beea99b8d5",
     "ipfs-unixfs": "^0.1.5",
-    "is-ipfs": "^0.2.1",
     "jayson": "^2.0.2",
     "level": "^1.5.0",
     "listen-random-port": "^1.0.0",
