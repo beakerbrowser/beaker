@@ -6,7 +6,7 @@ const yo = require('yo-yo')
 const co = require('co')
 const prettyBytes = require('pretty-bytes')
 const {DownloadsList} = require('builtin-pages-lib')
-import {render as renderDownloadsList} from './com/downloads-list'
+import {render as renderDownloadsList} from '../com/downloads-list'
 
 // globals
 // =
