@@ -43,20 +43,21 @@ function burnthemallMaybeTask () {
 gulp.task('burnthemall-maybe', burnthemallMaybeTask)
 
 var bundleApplication = function () {
-  var bpDir = srcDir.cwd('builtin-pages')
+  var bpViewsDir = srcDir.cwd('builtin-pages/views')
+  var bpBuildDir = srcDir.cwd('builtin-pages/build')
   return Q.all([
-    bundle(srcDir.path('background-process.js'),  srcDir.path('background-process.build.js')),
-    bundle(srcDir.path('webview-preload.js'),     srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd() }),
-    bundle(srcDir.path('shell-window.js'),        srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
-    bundle(srcDir.path('markdown-renderer.js'),   srcDir.path('markdown-renderer.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
-    bundle(bpDir.path('downloads.js'),            bpDir.path('downloads.build.js'), { browserify: true, basedir: bpDir.cwd() }),
-    bundle(bpDir.path('bookmarks.js'),            bpDir.path('bookmarks.build.js'), { browserify: true, basedir: bpDir.cwd() }),
-    bundle(bpDir.path('history.js'),              bpDir.path('history.build.js'), { browserify: true, basedir: bpDir.cwd() }),
-    bundle(bpDir.path('settings.js'),             bpDir.path('settings.build.js'), { browserify: true, basedir: bpDir.cwd() }),
-    bundle(bpDir.path('start.js'),                bpDir.path('start.build.js'), { browserify: true, basedir: bpDir.cwd() }),
-    bundle(bpDir.path('editor.js'),               bpDir.path('editor.build.js'), { browserify: true, basedir: bpDir.cwd() }),
-    bundle(bpDir.path('create-archive-modal.js'), bpDir.path('create-archive-modal.build.js'), { browserify: true, basedir: bpDir.cwd() }),
-    bundle(bpDir.path('fork-archive-modal.js'),   bpDir.path('fork-archive-modal.build.js'), { browserify: true, basedir: bpDir.cwd() })
+    bundle(srcDir.path('background-process.js'),       srcDir.path('background-process.build.js')),
+    bundle(srcDir.path('webview-preload.js'),          srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd() }),
+    bundle(srcDir.path('shell-window.js'),             srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
+    bundle(srcDir.path('markdown-renderer.js'),        srcDir.path('markdown-renderer.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
+    bundle(bpViewsDir.path('downloads.js'),            bpBuildDir.path('downloads.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('bookmarks.js'),            bpBuildDir.path('bookmarks.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('history.js'),              bpBuildDir.path('history.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('settings.js'),             bpBuildDir.path('settings.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('start.js'),                bpBuildDir.path('start.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('editor.js'),               bpBuildDir.path('editor.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('create-archive-modal.js'), bpBuildDir.path('create-archive-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('fork-archive-modal.js'),   bpBuildDir.path('fork-archive-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() })
   ]);
 };
 

@@ -1,13 +1,13 @@
 import yo from 'yo-yo'
 import mime from 'mime'
 import {Archive, ArchivesList, FileTree} from 'builtin-pages-lib'
-import {render as renderArchivesList, renderArchivesListItems} from './com/archives-list'
-import {render as renderArchiveView} from './com/editor-archive-view'
-import {render as renderEditorOptions, defaultEditorOptions} from './com/editor-options'
-import {render as rHeader} from './com/editor-header'
-import {pushUrl} from '../lib/fg/event-handlers'
-import {ucfirst} from '../lib/strings'
-import dragDrop from '../lib/fg/drag-drop'
+import {render as renderArchivesList, renderArchivesListItems} from '../com/archives-list'
+import {render as renderArchiveView} from '../com/editor-archive-view'
+import {render as renderEditorOptions, defaultEditorOptions} from '../com/editor-options'
+import {render as rHeader} from '../com/editor-header'
+import {pushUrl} from '../../lib/fg/event-handlers'
+import {ucfirst} from '../../lib/strings'
+import dragDrop from '../../lib/fg/drag-drop'
 
 // globals
 // =

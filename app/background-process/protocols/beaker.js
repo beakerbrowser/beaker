@@ -134,31 +134,31 @@ function beakerServer (req, res) {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/start.css'))
   }
   if (requestUrl === 'beaker://start/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/start.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/start.build.js'))
   }
   if (requestUrl === 'beaker://bookmarks/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/bookmarks.html'))
   }
   if (requestUrl === 'beaker://bookmarks/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/bookmarks.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/bookmarks.build.js'))
   }
   if (requestUrl === 'beaker://history/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/history.html'))
   }
   if (requestUrl === 'beaker://history/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/history.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/history.build.js'))
   }
   if (requestUrl === 'beaker://downloads/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/downloads.html'))
   }
   if (requestUrl === 'beaker://downloads/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/downloads.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/downloads.build.js'))
   }
   if (requestUrl === 'beaker://settings/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/settings.html'))
   }
   if (requestUrl === 'beaker://settings/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/settings.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/settings.build.js'))
   }
 
   // editor
@@ -167,7 +167,7 @@ function beakerServer (req, res) {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/editor.css'))
   }
   if (requestUrl === 'beaker://editor/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/editor.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/editor.build.js'))
   }
   if (requestUrl === 'beaker://editor/worker-proxy.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/editor-worker-proxy.js'))
@@ -192,7 +192,7 @@ function beakerServer (req, res) {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/create-archive-modal.css'))
   }
   if (requestUrl === 'beaker://create-archive-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/create-archive-modal.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/create-archive-modal.build.js'))
   }
   if (requestUrl === 'beaker://fork-archive-modal/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/fork-archive-modal.html'))
@@ -201,7 +201,7 @@ function beakerServer (req, res) {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/fork-archive-modal.css'))
   }
   if (requestUrl === 'beaker://fork-archive-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/fork-archive-modal.build.js'))
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/fork-archive-modal.build.js'))
   }
 
   // debugging
