@@ -1,4 +1,4 @@
-import { protocol } from 'electron'
+import {protocol} from 'electron'
 import path from 'path'
 import url from 'url'
 import once from 'once'
@@ -8,6 +8,7 @@ import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 import errorPage from '../../lib/error-page'
 import {archivesDebugPage} from '../networks/dat/debugging'
+import {getUserSetupStatus} from '../browser'
 
 // constants
 // =
@@ -16,7 +17,7 @@ import {archivesDebugPage} from '../networks/dat/debugging'
 // the hash is an inline script in the editor
 const BEAKER_CSP = `
   default-src 'self' beaker:;
-  img-src beaker-favicon: data: dat: http: https;
+  img-src beaker-favicon: beaker: data: dat: http: https;
   script-src 'self' beaker: 'sha256-aXLf/pvGPNctHq2g1HINOltlg+Ke/CFsPvJrFD7IXgc=';
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
@@ -58,7 +59,7 @@ export function setup () {
 // internal methods
 // =
 
-function beakerServer (req, res) {
+async function beakerServer (req, res) {
   var cb = once((code, status, contentType, path) => {
     res.writeHead(code, status, {
       'Content-Type': (contentType || 'text/html'),
@@ -119,6 +120,9 @@ function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/font-source-sans-pro-le') {
     return cb(200, 'OK', 'application/font-woff2', path.join(__dirname, 'assets/fonts/source-sans-pro-le.woff2'))
   }
+  if (requestUrl.startsWith('beaker://assets/logo2')) {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo2.png'))
+  }
   if (requestUrl.startsWith('beaker://assets/logo')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
   }
@@ -128,6 +132,11 @@ function beakerServer (req, res) {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages.css'))
   }
   if (requestUrl === 'beaker://start/') {
+    let status = await getUserSetupStatus()
+    if (status !== 'finished') {
+      // serve the setup if the user isnt finished with setup
+      return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/setup.html'))
+    }
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/start.html'))
   }
   if (requestUrl === 'beaker://start/main.css') {
@@ -135,6 +144,12 @@ function beakerServer (req, res) {
   }
   if (requestUrl === 'beaker://start/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/start.build.js'))
+  }
+  if (requestUrl === 'beaker://setup/main.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/setup.css'))
+  }
+  if (requestUrl === 'beaker://setup/main.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/setup.build.js'))
   }
   if (requestUrl === 'beaker://bookmarks/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/bookmarks.html'))

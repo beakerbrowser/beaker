@@ -10,6 +10,9 @@ export default {
   getSetting: 'promise',
   setSetting: 'promise',
 
+  getUserSetupStatus: 'promise',
+  setUserSetupStatus: 'promise',
+
   getDefaultProtocolSettings: 'promise',
   setAsDefaultProtocolClient: 'promise',
   removeAsDefaultProtocolClient: 'promise',

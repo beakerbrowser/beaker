@@ -1,4 +1,4 @@
-import { app, dialog, autoUpdater } from 'electron'
+import {app, dialog, autoUpdater} from 'electron'
 import os from 'os'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
@@ -6,9 +6,9 @@ import EventEmitter from 'events'
 var debug = require('debug')('beaker')
 import manifest from '../lib/api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
-import { internalOnly } from '../lib/bg/rpc'
-import { isDaemonActive as isIPFSDaemonActive } from './networks/ipfs/ipfs'
-import { open as openUrl } from './open-url'
+import {internalOnly} from '../lib/bg/rpc'
+import {isDaemonActive as isIPFSDaemonActive} from './networks/ipfs/ipfs'
+import {open as openUrl} from './open-url'
 import {closeModal} from './ui/modals'
 
 // constants
@@ -33,6 +33,10 @@ var updaterError = false // has there been an error?
 // is the updater available? must be on certain platform, and may be disabled if there's an error
 var isBrowserUpdatesSupported = (os.platform() == 'darwin' || os.platform() == 'win32')
 
+// where is the user in the setup flow?
+var userSetupStatus = false
+var userSetupStatusLookupPromise
+
 // events emitted to rpc clients
 var browserEvents = new EventEmitter()
 
@@ -53,6 +57,9 @@ export function setup () {
   }
   setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
 
+  // fetch user setup status
+  userSetupStatusLookupPromise = settingsDb.get('user-setup-status')
+
   // wire up RPC
   rpc.exportAPI('beakerBrowser', manifest, {
     eventsStream,
@@ -65,6 +72,9 @@ export function setup () {
     getSetting,
     getSettings,
     setSetting,
+
+    getUserSetupStatus,
+    setUserSetupStatus,
 
     getDefaultProtocolSettings,
     setAsDefaultProtocolClient,
@@ -193,6 +203,16 @@ export function getSettings () {
 
 export function setSetting (key, value) {
   return settingsDb.set(key, value)
+}
+
+export async function getUserSetupStatus () {
+  // if not cached, defer to the lookup promise
+  return (userSetupStatus) ? userSetupStatus : userSetupStatusLookupPromise
+}
+
+export function setUserSetupStatus (status) {
+  userSetupStatus = status // cache
+  return settingsDb.set('user-setup-status', status)
 }
 
 // rpc methods

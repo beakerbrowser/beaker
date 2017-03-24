@@ -8,7 +8,7 @@ export function list () {
 }
 
 export function get (id) {
-  return db.get(`SELECT id, url, createdAt FROM profiles WHERE id`, [id])
+  return db.get(`SELECT id, url, createdAt FROM profiles WHERE id = ?`, [id])
 }
 
 export function add (values) {
