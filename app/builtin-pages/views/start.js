@@ -169,10 +169,6 @@ function pinSite (e) {
 
   beaker.bookmarks.add(url.value, title, 1).then(() => {
     return beaker.bookmarks.list({pinned: true})
-  }).then(pinned => {
-    pinnedBookmarks = pinned
-    isAddingPin = false
-    update()
   })
 }
 
