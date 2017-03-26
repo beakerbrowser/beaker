@@ -6,6 +6,8 @@ sites loaded over the beaker: protocol
 import * as yo from 'yo-yo'
 import co from 'co'
 
+window.DatProfileSite = require('dat-profile-site')
+
 const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 
 // globals
