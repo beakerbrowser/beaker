@@ -1,0 +1,1 @@
+window.DatProfileSite = require('dat-profile-site')
