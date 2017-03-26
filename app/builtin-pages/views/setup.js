@@ -1,4 +1,5 @@
 import * as yo from 'yo-yo'
+import DatProfileSite from 'dat-profile-site'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 var Croppie = require('../../lib/fg/croppie')
 
@@ -201,7 +202,7 @@ async function setup () {
 
   // read profile dat
   try {
-    profileDat = new DatArchive((await beaker.profiles.get(0)).url)
+    profileDat = new DatProfileSite((await beaker.profiles.get(0)).url)
   } catch (e) {
     // ignore
     console.debug(e)
@@ -230,24 +231,21 @@ async function onSubmitStep2 () {
   // get form values
   var form = document.querySelector('form')
   var values = {
-    '@context': 'http://schema.org',
-    '@type': 'Person',
     name: form.name.value.trim(),
-    description: form.bio.value.trim(),
-    follows: []
+    description: form.bio.value.trim()
   }
 
   // create the dat
-  profileDat = await beaker.archives.create({
+  profileDat = new DatProfileSite(await beaker.archives.create({
     title: values.name || 'Personal Website',
     description: values.name ? `Personal website of ${values.name}` : ''
-  })
+  }))
 
   // update the profile
   await beaker.profiles.update(0, {url: profileDat.url})
 
   // write the profile.json
-  await profileDat.writeFile('/profile.json', JSON.stringify(values, null, 2))
+  await profileDat.setProfile(values)
 
   console.log(profileDat.url)
   advanceStep()
@@ -270,7 +268,7 @@ async function onStep3SelectFile () {
   imageURL = `${profileDat.url}/${imageName}`
   await DatArchive.importFromFilesystem({
     srcPath: paths[0],
-    dst: profileDat.url + '/',
+    dst: profileDat.url,
     inplaceImport: true
   })
 
@@ -285,12 +283,10 @@ async function onStep3Submit () {
     format = 'jpeg'
   }
   var imageBase64 = (await croppie.result({type: 'base64', format})).split(',')[1]
-  profileDat.writeFile(`/${imageName}`, imageBase64, 'base64')
+  profileDat.archive.writeFile(`/${imageName}`, imageBase64, 'base64')
 
   // update profile
-  var profileJson = JSON.parse(await profileDat.readFile('/profile.json'))
-  profileJson.image = `/${imageName}`
-  await profileDat.writeFile('/profile.json', JSON.stringify(profileJson, null, 2))
+  await profileDat.setProfile({image: `/${imageName}`})
 
   advanceStep()
 }
@@ -303,49 +299,12 @@ function onCopyLink () {
 async function onSubmitStep5 () {
   // get form values
   var form = document.querySelector('form')
-  var values = {
-    '@context': 'http://schema.org',
-    '@type': 'Comment',
-    text: form.post.value.trim()
-  }
+  var values = {text: form.post.value.trim()}
   if (!values.text) {
     return
   }
 
   // write post
-  var path = getPostPath()
-  await ensureParentDirectoryExists(path)
-  await profileDat.writeFile(path, JSON.stringify(values, null, 2))
-
+  await profileDat.broadcast(values)
   advanceStep()
-}
-
-// helpers
-// =
-
-async function ensureParentDirectoryExists (path) {
-  var pathParts = path.split('/').slice(0, -1) // drop the filename
-  for (var i = 1; i <= pathParts.length; i++) {
-    try { await profileDat.createDirectory(pathParts.slice(0, i).join('/')) }
-    catch (e) { console.debug(e) }
-  }
-}
-
-function getPostPath () {
-  var d = new Date()
-  var YYYY = d.getFullYear()
-  var MM = pad0(d.getMonth()+1)
-  var DD = pad0(d.getDate())
-  var hh = pad0(d.getHours())
-  var mm = pad0(d.getMinutes())
-  var ss = pad0(d.getSeconds())
-  return `/broadcasts/${YYYY}/${MM}/${DD}/comment-${hh}${mm}${ss}.json`
-}
-
-function pad0 (v) {
-  v = ''+v
-  if (v.length === 1) {
-    return '0' + v
-  }
-  return v
 }
