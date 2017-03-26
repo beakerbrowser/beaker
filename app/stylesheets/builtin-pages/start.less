@@ -11,7 +11,6 @@
 
 main {
   width: 825px;
-  // margin: calc(2 * @padding-component--thick) auto;
   margin: 0 auto;
 
   h2 {
@@ -65,42 +64,6 @@ header {
     line-height: 15px;
   }
 }
-
-form#new-post {
-  margin-bottom: @padding-component;
-
-  input[type="submit"] {
-    display: none;
-    margin-left: auto;
-  }
-
-  textarea {
-    border: 1px solid @border-menu;
-    border-radius: 2px;
-    display: block;
-    width: 100%;
-    height: 35px;
-    padding: 6px @padding-component--tight;
-    margin-bottom: 1rem;
-    resize: none;
-    overflow: hidden;
-    transition: height .2s ease;
-    cursor: text;
-    font-size: 14px;
-    letter-spacing: .3px;
-
-    &:focus {
-      border-color: @blue;
-      height: 75px;
-
-      + input[type="submit"] {
-        display: block;
-      }
-    }
-  }
-
-}
-
 .builtin-pages {
   flex: 1;
 }
@@ -193,123 +156,6 @@ form#new-post {
   * {
     vertical-align: middle;
     cursor: pointer;
-  }
-}
-
-.grid {
-  &:extend(.flex);
-  flex-wrap: nowrap;
-  margin-top: @padding-component--thick;
-}
-
-.feed-container {
-  width: 60%;
-  padding-right: @padding-component--thick;
-}
-
-.feed .update {
-  &:extend(.flex);
-  flex-wrap: nowrap;
-  padding: @padding-component--tight 0;
-
-  .metadata * {
-    line-height: 100%;
-    vertical-align: top;
-  }
-
-  .name {
-    &:extend(.link);
-    cursor: pointer;
-
-    &:hover {
-      &:extend(.link:hover);
-    }
-  }
-
-  .date {
-    color: @color-text--muted;
-    cursor: pointer;
-    margin-left: 3px;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  .avatar {
-    border-radius: 2px;
-    width: 35px;
-    height: 35px;
- }
-
-  .content {
-    margin-top: 0;
-  }
-
-  .container {
-    margin-left: @padding-component--tight;
-  }
-}
-
-.sidebar {
-  background: #fff;
-  width: 40%;
-
-  .buttons {
-    margin-bottom: @padding-component--tight;
-
-    i {
-      cursor: pointer;
-      margin-left: @margin-icon;
-    }
-  }
-
-}
-
-.sidebar-component {
-  border-radius: 2px;
-  border: 1px solid @border-menu;
-  margin-bottom: @padding-component;
-
-  > .title {
-    background: @background-menu;
-    border-bottom: 1px solid @border-menu;
-    height: 25px;
-
-    * {
-      display: inline-block;
-      line-height: 25px;
-      height: 25px;
-      vertical-align: middle;
-    }
-
-    h2 {
-      color: @color-text;
-      padding: 0 @padding-component--tight;
-      font-weight: 600;
-    }
-
-    .action {
-      cursor: pointer;
-      float: right;
-      padding: 0 @padding-component--tight;
-
-      &:hover {
-        &:extend(.link:hover);
-      }
-
-      i {
-        margin-left: @margin-icon;
-      }
-    }
-  }
-
-  .links-list {
-    padding: 3px 0;
-  }
-
-  .ll-row {
-    padding: 0 @padding-component--tight;
   }
 }
 
