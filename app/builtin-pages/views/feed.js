@@ -3,15 +3,15 @@ This uses the beaker.bookmarks API, which is exposed by webview-preload to all
 sites loaded over the beaker: protocol
 */
 
-import * as yo from 'yo-yo'
+import choo from 'choo'
+import html from 'choo/html'
 import DatProfileSite from 'dat-profile-site'
 import {niceDate} from '../../lib/time'
+import {pluralize} from '../../lib/strings'
 
 // globals
 // =
 
-var newPostText = false
-var profileDat
 
 // DEBUG
 var updates = [
@@ -57,22 +57,36 @@ var updates = [
   }
 ]
 
+var profileDat
+var app = choo()
+app.use(newPostStore)
+app.route('/', mainView)
+app.route('/profile/:key', profileView)
+app.route('/follows/:key', followsView)
+app.route('/edit-profile', editProfileView)
+
 setup()
 async function setup () {
+  // read profile
   profileDat = new DatProfileSite((await beaker.profiles.get(0)).url)
   profileDat.profile = await profileDat.getProfile()
-  update()
+  if ((profileDat.profile.image || '').startsWith('/')) {
+    profileDat.profile.image = profileDat.url + profileDat.profile.image
+  }
+  profileDat.profile.follows = profileDat.profile.follows || []
+
+  app.mount('main')
 }
 
-// rendering
+// views
 // =
 
-function update () {
-  yo.update(document.querySelector('main'), yo`
+function mainView (state, emit) {
+  return html`
     <main>
       <div class="grid">
         <div class="feed-container">
-          ${renderPostForm()}
+          ${renderPostForm(state, emit)}
           <h2>Your feed</h2>
           ${renderFeed()}
         </div>
@@ -81,18 +95,69 @@ function update () {
         </div>
       </div>
     </main>
-  `)
+  `
 }
+
+function profileView (state, emit) {
+  return html`
+    <main>
+      <div class="grid">
+        <div class="feed-container">
+          <a href="#">Back to feed</a><br />
+          TODO: posts of ${state.params.key}
+        </div>
+        <div class="sidebar">
+        </div>
+      </div>
+    </main>
+  `
+}
+
+function followsView (state, emit) {
+  return html`
+    <main>
+      <div class="grid">
+        <div class="feed-container">
+          <a href="#">Back to feed</a><br />
+          TODO: follows of ${state.params.key}
+        </div>
+        <div class="sidebar">
+        </div>
+      </div>
+    </main>
+  `
+}
+
+function editProfileView (state, emit) {
+  return html`
+    <main>
+      <div class="grid">
+        <div class="feed-container">
+          ${renderPostForm(state, emit)}
+          <h2>Your feed</h2>
+          ${renderFeed()}
+        </div>
+        <div class="sidebar">
+          Todo edit profile
+          <a href="#">Back</a>
+        </div>
+      </div>
+    </main>
+  `
+}
+
+// components
+// =
 
 function renderFeed () {
   if (updates.length) {
-    return yo`
+    return html`
       <ul class="feed">
         ${updates.map(renderUpdate)}
       </ul>
     `
   } else {
-    return yo`
+    return html`
       <p class="feed">
         No updates.
       </p>
@@ -101,7 +166,7 @@ function renderFeed () {
 }
 
 function renderUpdate (update) {
-  return yo`
+  return html`
     <li class="update">
       <img src=${update.avatar}/ class="avatar"/>
       <div class="container">
@@ -116,28 +181,30 @@ function renderUpdate (update) {
 }
 
 function renderProfile () {
-  return yo`
+  var numFollows = profileDat.profile.follows.length
+  return html`
     <div class="profile">
       <a href=${profileDat.url}><img class="avatar" src=${profileDat.profile.image} /></a>
       <div class="profile-info">
         <h1 class="name"><a href=${profileDat.url}>${profileDat.profile.name}</a></h1>
-        <div class="description">${profileDat.profile.description} <a href="#">Edit profile</a></div>
+        <div class="description">${profileDat.profile.description} <a href="#edit-profile">Edit profile</a></div>
         <hr />
-        <div>Posted <a href="#">10 broadcasts</a></div>
-        <div>Following <a href="#">23 sites</a></div>
+        <div>Posted <a href=${getViewProfileURL(profileDat)}>10 broadcasts</a></div>
+        <div>Following <a href=${getViewFollowsURL(profileDat)}>${numFollows} ${pluralize(numFollows, 'site')}</a></div>
       </div>
     </div>
   `
 }
 
-function renderPostForm () {
-  return yo`
-    <form id="new-post">
-      <textarea placeholder="Post a broadcast" onkeyup=${onChangePostText}>${newPostText || ''}</textarea>
-      ${newPostText ? yo`
+function renderPostForm (state, emit) {
+  var textareaCls = !!state.newPostText ? 'has-content' : ''
+  return html`
+    <form id="new-post" onsubmit=${onPostSubmit}>
+      <textarea class=${textareaCls} placeholder="Post a broadcast" onkeyup=${onChangePostText}>${state.newPostText}</textarea>
+      ${state.newPostText ? html`
         <div class="new-post-btns">
           <div>
-            ${''/*<button class="btn">Share a file<i class="fa fa-file-text-o"></i></button>
+            ${''/*TODO <button class="btn">Share a file<i class="fa fa-file-text-o"></i></button>
             <button class="btn">Share an image<i class="fa fa-picture-o"></i></button>*/}
           </div>
           <div>
@@ -147,12 +214,58 @@ function renderPostForm () {
       ` : ''}
     </form>
   `
+
+  function onChangePostText (e) {
+    emit('change-post-text', e.target.value)
+  }
+
+  function onPostSubmit (e) {
+    e.preventDefault()
+    emit('submit-post')
+  }
+}
+
+// stores
+// =
+
+function newPostStore (state, emitter) {
+  state.newPostText = ''
+  emitter.on('change-post-text', text => {
+    state.newPostText = text
+    emitter.emit('render')
+  })
+  emitter.on('submit-post', async () => {
+    try {
+      await profileDat.broadcast({text: state.newPostText})
+    } catch (e) {
+      console.error(e)
+      return
+    }
+
+    // clear form
+    state.newPostText = ''
+    emitter.emit('render')
+  })
 }
 
 // event handlers
 // =
 
-function onChangePostText (e) {
-  newPostText = e.target.value
-  update()
+
+
+function onPostSubmit (e) {
+
+}
+
+// helpers
+// =
+
+function getViewProfileURL (site) {
+  var url = site.url ? site.url : site
+  return 'beaker://feed#profile/' + url.slice('dat://'.length)
+}
+
+function getViewFollowsURL (site) {
+  var url = site.url ? site.url : site
+  return 'beaker://feed#follows/' + url.slice('dat://'.length)
 }

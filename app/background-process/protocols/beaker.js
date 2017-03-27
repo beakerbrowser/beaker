@@ -76,6 +76,11 @@ async function beakerServer (req, res) {
   })
   var queryParams = url.parse(req.url, true).query
   var requestUrl = queryParams.url
+  {
+    // strip off the hash
+    let i = requestUrl.indexOf('#')
+    if (i !== -1) requestUrl = requestUrl.slice(0, i)
+  }
 
   // check the nonce
   // (only want this process to access the server)
