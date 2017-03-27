@@ -47,23 +47,7 @@ co(function* () {
 function update () {
   yo.update(document.querySelector('main'), yo`
     <main>
-      ${renderHeader()}
-
-      <div class="grid">
-        <div class="feed-container">
-          ${renderPostForm()}
-          <h2>Your feed</h2>
-          ${renderFeed()}
-        </div>
-        <div class="sidebar">
-          <div class="buttons">
-            <button class="btn thick">Share a file<i class="fa fa-file-text-o"></i></button>
-          </div>
-          ${ pinnedBookmarks.length ? renderPinnedBookmarks() : '' }
-          ${renderArchivesList()}
-        </div>
-      </div>
-
+      ${renderPinnedBookmarks()}
       ${renderReleaseNotes()}
     </main>
   `)
@@ -73,7 +57,6 @@ function renderHeader () {
   return yo`
     <header>
       ${renderPinned()}
-      ${renderSocialHeader()}
     </header>
   `
 }
@@ -116,14 +99,6 @@ function renderArchive (archive) {
   `
 }
 
-function renderEditorPrompt () {
-  if (!archivesList.length) {
-    return yo`
-      <p>You don’t have any archives. Get started by <a href="">creating one from a template</a>.
-    `
-  }
-}
-
 function renderPinBookmarkForm () {
   if (isAddingPin) {
     return renderBookmarks()
@@ -132,73 +107,18 @@ function renderPinBookmarkForm () {
 
 function renderPinnedBookmarks () {
   var icon = isAddingPin ? 'close' : 'plus'
+  var caret = isAddingPin ? 'fa-angle-up' : 'fa-angle-down'
 
   return yo`
-    <div class="sidebar-component pinned-bookmarks">
-      <div class="title">
-        <h2>Pinned bookmarks</h2>
-        <a class="action add-pin-link" onclick=${toggleAddPin}>
-          ${ isAddingPin ? 'Close bookmarks' : 'Pin a bookmark' }
-          <i class="fa fa-${icon}"></i>
-        </a>
-      </div>
-
-      <ul class="links-list">
+    <div>
+      <div class="pinned-bookmarks">
         ${pinnedBookmarks.map(renderPinnedBookmark)}
-        ${renderPinBookmarkForm()}
-      </ul>
-    </div>
-  `
-}
-
-function renderFeed () {
-  if (updates.length) {
-    return yo`
-      <ul class="feed">
-        ${updates.map(renderUpdate)}
-      </ul>
-    `
-  } else {
-    return yo`
-      <p class="feed">
-        No updates.
-      </p>
-    `
-  }
-}
-
-function renderUpdate (update) {
-  return yo`
-    <li class="update">
-      <img src=${update.avatar}/ class="avatar"/>
-      <div class="container">
-        <div class="metadata">
-          <span class="name">${update.name}</span>
-          <a href="/"><span class="date">${niceDate(update.date)}</span></a>
-        </div>
-        <p class="content">${update.content}</p>
       </div>
-    </li>
-  `
-}
-
-function renderSocialHeader () {
-  return yo`
-    <div class="social-header">
-      <a href="/">Tara Vancil</a>
-      <img class="avatar" src="https://pbs.twimg.com/profile_images/772121822481354752/kb41H-gR_400x400.jpg"/>
+      ${renderPinBookmarkForm()}
+      <p class="add-pin-toggle" onclick=${toggleAddPin}>
+        <i class="fa ${caret}"></i>
+        ${isAddingPin ? 'Close bookmarks' : 'Pin a bookmark'}
     </div>
-  `
-}
-
-function renderPostForm () {
-  // var cls = isEditingPost ? 'active' : ''
-
-  return yo`
-    <form id="new-post">
-      <textarea placeholder="Post an update"></textarea>
-      <input type="submit" value="Post to feed" class="btn primary" />
-    </form>
   `
 }
 
@@ -224,49 +144,6 @@ function renderPinned () {
     </div>
   `
 }
-
-var updates = [
-  { name: '1337haxor',
-    avatar: 'https://pbs.twimg.com/profile_images/787519608794157057/dDnFKms0_400x400.jpg',
-    content: '<script>alert(1);</script>',
-    date: Date.now()
-  },
-  { name: 'Paul Frazee',
-    avatar: 'https://pbs.twimg.com/profile_images/822287293910134784/8Ho9TSEQ_400x400.jpg',
-    content: 'Tara gives the best kisses.',
-    date: Date.now() - 1e5
-  },
-  { name: 'Catmapper',
-    avatar: 'https://scontent-dft4-1.cdninstagram.com/t51.2885-19/s320x320/15625367_898987853571642_5241746154403659776_a.jpg',
-    content: 'Patrolling the streets of Portland looking for cats.',
-    date: Date.now() - 1e6
-  },
-  { name: 'Beaker Browser',
-    avatar: 'https://pbs.twimg.com/profile_images/779394213062451202/3wulCYBi_400x400.jpg',
-    content: 'Check out what\'s coming up in v0.7! A builtin editor, markdown sites, and more.',
-    date: Date.now() - 1e7
-  },
-  { name: 'Mathias Buus',
-    avatar: 'https://pbs.twimg.com/profile_images/788479487390412800/oTdpaOev_400x400.jpg',
-    content: 'The newest release of hypercore will be so good. Way faster.',
-    date: Date.now() - 1e8
-  },
-  { name: 'Maxwell Ogden',
-    avatar: 'https://pbs.twimg.com/profile_images/706616363599532032/b5z-Hw5g_400x400.jpg',
-    content: 'Submit an application to the Knight foundation prototype fund.',
-    date: Date.now() - 1e9
-  },
-  { name: 'Dat Project',
-    avatar: 'https://pbs.twimg.com/profile_images/794335424940343296/xyrU8_HA_400x400.jpg',
-    content: 'We just released Dat Desktop, a tool for managingi Dats on your desktop, duh.',
-    date: Date.now() - 1e10
-  },
-  { name: 'Beyonce',
-    avatar: 'https://pbs.twimg.com/profile_images/724054682579161088/3GgLeR65_400x400.jpg',
-    content: 'I have three hearts.',
-    date: Date.now() - 1e11
-  }
-]
 
 function renderBookmarks () {
   if (!isAddingPin) {
@@ -307,18 +184,13 @@ function renderBuiltinPage (item) {
 
 function renderPinnedBookmark (bookmark) {
   var { url, title } = bookmark
-
   return yo`
-    <li class="ll-row ll-link pinned-bookmark" href=${url}>
-      <a class="link" href=${url} title=${title}>
-        <img class="favicon" src=${'beaker-favicon:' + url} />
-        <span class="title">${title}</span>
-        <span class="url">${url}</span>
-      </a>
-      <div class="actions">
-        <i class="fa fa-close" data-url=${url} onclick=${unpinSite}></i>
+    <a class="pinned-bookmark" href=${url}>
+      <div class="favicon-container">
+        <img src=${'beaker-favicon:' + url} class="favicon"/>
       </div>
-    </li>
+      <div class="title">${title}</div>
+    </a>
   `
 }
 
