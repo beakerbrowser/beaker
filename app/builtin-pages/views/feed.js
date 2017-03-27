@@ -19,14 +19,17 @@ app.use(newPostStore)
 app.use(feedStore)
 app.route('/', mainView)
 app.route('/profile/:key', profileView)
-app.route('/follows/:key', followsView)
-app.route('/edit-profile', editProfileView)
+app.route('/profile/:key/follows', followsView)
+app.route('/profile/:key/edit', profileView)
 app.mount('main')
 
 // views
 // =
 
 function mainView (state, emit) {
+  if (!state.userProfile) {
+    return loadingView(state, emit)
+  }
   if (!state.broadcasts) {
     emit('load-feed')
   }
@@ -59,6 +62,7 @@ function profileView (state, emit) {
     emit('load-broadcasts')
     return loadingView(state, emit)
   }
+  var isEditMode = window.location.hash.endsWith('/edit')
   return html`
     <main>
       <div class="grid">
@@ -69,7 +73,9 @@ function profileView (state, emit) {
           ${renderFeed(state, emit)}
         </div>
         <div class="sidebar">
-          ${renderProfile(state, emit, state.currentProfile)}
+          ${isEditMode
+            ? renderProfileEditor(state, emit, state.currentProfile)
+            : renderProfile(state, emit, state.currentProfile)}
         </div>
       </div>
     </main>
@@ -95,25 +101,6 @@ function followsView (state, emit) {
         </div>
         <div class="sidebar">
           ${renderProfile(state, emit, state.currentProfile)}
-        </div>
-      </div>
-    </main>
-  `
-}
-
-function editProfileView (state, emit) {
-  return html`
-    <main>
-      <div class="grid">
-        <div class="feed-container">
-          ${renderError(state, emit)}
-          ${renderPostForm(state, emit)}
-          <h2>Your feed</h2>
-          ${renderFeed(state, emit)}
-        </div>
-        <div class="sidebar">
-          Todo edit profile
-          <a href="#">Back</a>
         </div>
       </div>
     </main>
@@ -226,7 +213,7 @@ function renderProfile (state, emit, site) {
         <h1 class="name"><a href=${getViewProfileURL(site)}>${site.profile.name}</a></h1>
         <div class="description">
           ${site.profile.description}
-          ${isUser ? html`<a href="#edit-profile">Edit profile</a>` : ''}
+          ${isUser ? html`<a href=${getEditProfileURL(site)}>Edit profile</a>` : ''}
         </div>
         ${isUser ? '' : html`<hr />`}
         ${isUser ? '' : html`<p>${renderFollowBtn(state, emit, site)}</p>`}
@@ -237,6 +224,41 @@ function renderProfile (state, emit, site) {
       </div>
     </div>
   `
+}
+
+function renderProfileEditor (state, emit, site) {
+  if (!site) {
+    return ''
+  }
+  return html`
+    <div class="profile">
+      <img class="avatar" src=${getAvatarURL(site, site.profile)} />
+      <div class="profile-info edit">
+        <form onsubmit=${onSubmit}>
+          <p>
+            <label for="name">Your name</label>
+            <input id="name" name="name" type="text" autofocus value=${site.profile.name} />
+          </p>
+          <p>
+            <label for="description">Your bio</label>
+            <textarea id="description" name="description" placeholder="Optional">${site.profile.description}</textarea>
+          </p>
+          <p>
+            <a href=${getViewProfileURL(site)} class="btn">Cancel</a>
+            <button type="submit" class="btn primary">Save</button>
+          </p>
+        </form>
+      </div>
+    </div>
+  `
+
+  function onSubmit (e) {
+    e.preventDefault()
+    emit('update-profile', {
+      name: e.target.name.value || '',
+      description: e.target.description.value || ''
+    })
+  }
 }
 
 function renderFollowBtn (state, emit, site) {
@@ -318,6 +340,17 @@ async function profileStore (state, emitter) {
       state.error = e
     }
     emitter.emit('render')
+  })
+
+  emitter.on('update-profile', async (values) => {
+    try {
+      await state.userProfile.setProfile(values)
+      state.userProfile.profile = await state.userProfile.getProfile()
+      console.log(state.userProfile.profile)
+    } catch (e) {
+      state.error = e
+    }
+    emitter.emit('pushState', getViewProfileURL(state.userProfile))    
   })
 
   // read main profile
@@ -407,13 +440,19 @@ function getViewProfileURL (site) {
   return 'beaker://feed#profile/' + url.slice('dat://'.length)
 }
 
+function getEditProfileURL (site) {
+  var url = site.url ? site.url : site
+  return 'beaker://feed#profile/' + url.slice('dat://'.length) + '/edit'
+}
+
 function getViewFollowsURL (site) {
   var url = site.url ? site.url : site
-  return 'beaker://feed#follows/' + url.slice('dat://'.length)
+  return 'beaker://feed#profile/' + url.slice('dat://'.length) + '/follows'
 }
 
 async function getIsFollowed (state, site) {
   if (state.userProfile && site.url !== state.userProfile.url) {
-    site.isFollowed = await state.userProfile.isFollowing(site.url)
+    return await state.userProfile.isFollowing(site.url)
   }
+  return false
 }
