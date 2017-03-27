@@ -40,7 +40,7 @@ function mainView (state, emit) {
           ${renderFeed(state, emit)}
         </div>
         <div class="sidebar">
-          ${renderProfile(state.userProfile)}
+          ${renderProfile(state, emit, state.userProfile)}
         </div>
       </div>
     </main>
@@ -48,6 +48,9 @@ function mainView (state, emit) {
 }
 
 function profileView (state, emit) {
+  if (!state.userProfile) {
+    return loadingView()
+  }
   if (!state.currentProfile) {
     emit('load-profile', 'dat://' + state.params.key)
     return loadingView()
@@ -66,7 +69,7 @@ function profileView (state, emit) {
           ${renderFeed(state, emit)}
         </div>
         <div class="sidebar">
-          ${renderProfile(state.currentProfile)}
+          ${renderProfile(state, emit, state.currentProfile)}
         </div>
       </div>
     </main>
@@ -164,23 +167,46 @@ function renderBroadcast (broadcast) {
   `
 }
 
-function renderProfile (site) {
+function renderProfile (state, emit, site) {
   if (!site) {
     return ''
   }
   var numFollows = site.profile.follows.length
+  var isUser = site.url === state.userProfile.url
   return html`
     <div class="profile">
       <a href=${getViewProfileURL(site)}><img class="avatar" src=${getAvatarURL(site, site.profile)} /></a>
       <div class="profile-info">
         <h1 class="name"><a href=${getViewProfileURL(site)}>${site.profile.name}</a></h1>
-        <div class="description">${site.profile.description} <a href="#edit-profile">Edit profile</a></div>
+        <div class="description">
+          ${site.profile.description}
+          ${isUser ? html`<a href="#edit-profile">Edit profile</a>` : ''}
+        </div>
+        ${isUser ? '' : html`<hr />`}
+        ${isUser ? '' : html`<p>${renderFollowBtn(state, emit, site)}</p>`}
         <hr />
         <div>Posted <a href=${getViewProfileURL(site)}>${site.numBroadcasts} broadcasts</a></div>
         <div>Following <a href=${getViewFollowsURL(site)}>${numFollows} ${pluralize(numFollows, 'site')}</a></div>
+        <p><a target="_blank" href=${site.url}><i class="fa fa-external-link"></i> View site</a></p>
       </div>
     </div>
   `
+}
+
+function renderFollowBtn (state, emit, site) {
+  if (site.isFollowed) {
+    return html`
+      <div><a onclick=${toggleFollow}><i class="fa fa-user-times"></i> Unfollow</a></div>
+    `
+  } else {
+    return html`
+      <div><a onclick=${toggleFollow}><i class="fa fa-user-plus"></i> Follow</a></div>
+    `
+  }
+
+  function toggleFollow () {
+    emit('toggle-follow', site)
+  }
 }
 
 function renderPostForm (state, emit) {
@@ -233,16 +259,35 @@ async function profileStore (state, emitter) {
     emitter.emit('render')
   })
 
+  emitter.on('toggle-follow', async (site) => {
+    try {
+      if (site.isFollowed) {
+        await state.userProfile.unfollow(site.url)
+        site.isFollowed = false
+      } else {
+        await state.userProfile.follow(site.url)
+        site.isFollowed = true        
+      }
+    } catch (e) {
+      state.error = e
+    }
+    emitter.emit('render')
+  })
+
   // read main profile
   state.userProfile = await readProfile((await beaker.profiles.get(0)).url)
+  emitter.emit('render')
 
   async function readProfile (url) {
     // TODO caching
-    var profileSite = new DatProfileSite(url)
-    profileSite.profile = await profileSite.getProfile()
-    profileSite.profile.follows = profileSite.profile.follows || []
-    profileSite.numBroadcasts = (await profileSite.listBroadcasts({metaOnly: true})).length
-    return profileSite
+    var site = new DatProfileSite(url)
+    site.profile = await site.getProfile()
+    site.profile.follows = site.profile.follows || []
+    site.numBroadcasts = (await site.listBroadcasts({metaOnly: true})).length
+    if (state.userProfile && url !== state.userProfile.url) {
+      site.isFollowed = await state.userProfile.isFollowing(url)
+    }
+    return site
   }
 }
 
