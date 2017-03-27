@@ -47,7 +47,6 @@ co(function* () {
 function update () {
   yo.update(document.querySelector('main'), yo`
     <main>
-      ${renderHeader()}
       ${renderPinnedBookmarks()}
       ${renderReleaseNotes()}
     </main>
@@ -108,21 +107,17 @@ function renderPinBookmarkForm () {
 
 function renderPinnedBookmarks () {
   var icon = isAddingPin ? 'close' : 'plus'
+  var caret = isAddingPin ? 'fa-angle-up' : 'fa-angle-down'
 
   return yo`
-    <div class="pinned-bookmarks">
-      <div class="title">
-        <h2>Pinned bookmarks</h2>
-        <a class="action add-pin-link" onclick=${toggleAddPin}>
-          ${ isAddingPin ? 'Close bookmarks' : 'Pin a bookmark' }
-          <i class="fa fa-${icon}"></i>
-        </a>
-      </div>
-
-      <ul class="links-list">
+    <div>
+      <div class="pinned-bookmarks">
         ${pinnedBookmarks.map(renderPinnedBookmark)}
-        ${renderPinBookmarkForm()}
-      </ul>
+      </div>
+      ${renderPinBookmarkForm()}
+      <p class="add-pin-toggle" onclick=${toggleAddPin}>
+        <i class="fa ${caret}"></i>
+        ${isAddingPin ? 'Close bookmarks' : 'Pin a bookmark'}
     </div>
   `
 }
@@ -189,18 +184,13 @@ function renderBuiltinPage (item) {
 
 function renderPinnedBookmark (bookmark) {
   var { url, title } = bookmark
-
   return yo`
-    <li class="ll-row ll-link pinned-bookmark" href=${url}>
-      <a class="link" href=${url} title=${title}>
-        <img class="favicon" src=${'beaker-favicon:' + url} />
-        <span class="title">${title}</span>
-        <span class="url">${url}</span>
-      </a>
-      <div class="actions">
-        <i class="fa fa-close" data-url=${url} onclick=${unpinSite}></i>
+    <a class="pinned-bookmark" href=${url}>
+      <div class="favicon-container">
+        <img src=${'beaker-favicon:' + url} class="favicon"/>
       </div>
-    </li>
+      <div class="title">${title}</div>
+    </a>
   `
 }
 
