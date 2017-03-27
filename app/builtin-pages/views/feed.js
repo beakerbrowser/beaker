@@ -14,24 +14,14 @@ import {pluralize} from '../../lib/strings'
 
 var profileDat
 var app = choo()
+app.use(profileStore)
 app.use(newPostStore)
 app.use(feedStore)
 app.route('/', mainView)
 app.route('/profile/:key', profileView)
 app.route('/follows/:key', followsView)
 app.route('/edit-profile', editProfileView)
-
-setup()
-async function setup () {
-  // read profile
-  profileDat = new DatProfileSite((await beaker.profiles.get(0)).url)
-  profileDat.profile = await profileDat.getProfile()
-  profileDat.profile.follows = profileDat.profile.follows || []
-  profileDat.numBroadcasts = (await profileDat.listBroadcasts({metaOnly: true})).length
-  window.profileDat = profileDat
-
-  app.mount('main')
-}
+app.mount('main')
 
 // views
 // =
@@ -50,7 +40,7 @@ function mainView (state, emit) {
           ${renderFeed(state, emit)}
         </div>
         <div class="sidebar">
-          ${renderProfile(profileDat)}
+          ${renderProfile(state.userProfile)}
         </div>
       </div>
     </main>
@@ -58,8 +48,13 @@ function mainView (state, emit) {
 }
 
 function profileView (state, emit) {
+  if (!state.currentProfile) {
+    emit('load-profile', 'dat://' + state.params.key)
+    return loadingView()
+  }
   if (!state.broadcasts) {
-    emit('load-broadcasts', state.params.key)
+    emit('load-broadcasts')
+    return loadingView()
   }
   return html`
     <main>
@@ -67,11 +62,11 @@ function profileView (state, emit) {
         <div class="feed-container">
           ${renderError(state, emit)}
           <p><a href="#"><i class="fa fa-caret-left"></i> Back to feed</a></p>
-          <h2>${state.params.key} feed</h2>
+          <h2>${state.currentProfile.profile.name + "'"}s broadcasts</h2>
           ${renderFeed(state, emit)}
         </div>
         <div class="sidebar">
-          ${renderProfile(state.currentProfileDat)}
+          ${renderProfile(state.currentProfile)}
         </div>
       </div>
     </main>
@@ -111,6 +106,10 @@ function editProfileView (state, emit) {
       </div>
     </main>
   `
+}
+
+function loadingView () {
+  return html`<main><div class="grid"><div class="feed-container">Loading...</div></div></main>`
 }
 
 // components
@@ -216,33 +215,59 @@ function renderPostForm (state, emit) {
 // stores
 // =
 
-function feedStore (state, emitter) {
-  state.error = null
-  state.broadcasts = null
-  state.currentProfileDat = null
+async function profileStore (state, emitter) {
+  state.userProfile = null
+  state.currentProfile = null
 
   emitter.on('pushState', () => {
     // clear page state
-    state.error = null
-    state.broadcasts = null
-    state.currentProfileDat = null
+    state.currentProfile = null
   })
 
-  emitter.on('load-feed', async () => {
+  emitter.on('load-profile', async (url) => {
     try {
-      state.broadcasts = await profileDat.listFeed({reverse: true})
+      state.currentProfile = await readProfile(url)
     } catch (e) {
       state.error = e
     }
     emitter.emit('render')
   })
 
-  emitter.on('load-broadcasts', async (profileKey) => {
+  // read main profile
+  state.userProfile = await readProfile((await beaker.profiles.get(0)).url)
+
+  async function readProfile (url) {
+    // TODO caching
+    var profileSite = new DatProfileSite(url)
+    profileSite.profile = await profileSite.getProfile()
+    profileSite.profile.follows = profileSite.profile.follows || []
+    profileSite.numBroadcasts = (await profileSite.listBroadcasts({metaOnly: true})).length
+    return profileSite
+  }
+}
+
+function feedStore (state, emitter) {
+  state.error = null
+  state.broadcasts = null
+
+  emitter.on('pushState', () => {
+    // clear page state
+    state.error = null
+    state.broadcasts = null
+  })
+
+  emitter.on('load-feed', async () => {
     try {
-      // TODO select the right profile
-      console.log('loading', profileKey)
-      state.currentProfileDat = profileDat
-      state.broadcasts = await state.currentProfileDat.listBroadcasts({reverse: true})
+      state.broadcasts = await state.userProfile.listFeed({reverse: true})
+    } catch (e) {
+      state.error = e
+    }
+    emitter.emit('render')
+  })
+
+  emitter.on('load-broadcasts', async () => {
+    try {
+      state.broadcasts = await state.currentProfile.listBroadcasts({reverse: true})
     } catch (e) {
       state.error = e
     }
@@ -258,8 +283,8 @@ function newPostStore (state, emitter) {
   })
   emitter.on('submit-post', async () => {
     try {
-      await profileDat.broadcast({text: state.newPostText})
-      profileDat.numBroadcasts++
+      await state.userProfile.broadcast({text: state.newPostText})
+      state.userProfile.numBroadcasts++
     } catch (e) {
       console.error(e)
       return
