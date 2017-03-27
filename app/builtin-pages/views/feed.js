@@ -12,54 +12,10 @@ import {pluralize} from '../../lib/strings'
 // globals
 // =
 
-
-// DEBUG
-var updates = [
-  { name: '1337haxor',
-    avatar: 'https://pbs.twimg.com/profile_images/787519608794157057/dDnFKms0_400x400.jpg',
-    content: '<script>alert(1);</script>',
-    date: Date.now()
-  },
-  { name: 'Paul Frazee',
-    avatar: 'https://pbs.twimg.com/profile_images/822287293910134784/8Ho9TSEQ_400x400.jpg',
-    content: 'Tara gives the best kisses.',
-    date: Date.now() - 1e5
-  },
-  { name: 'Catmapper',
-    avatar: 'https://scontent-dft4-1.cdninstagram.com/t51.2885-19/s320x320/15625367_898987853571642_5241746154403659776_a.jpg',
-    content: 'Patrolling the streets of Portland looking for cats.',
-    date: Date.now() - 1e6
-  },
-  { name: 'Beaker Browser',
-    avatar: 'https://pbs.twimg.com/profile_images/779394213062451202/3wulCYBi_400x400.jpg',
-    content: 'Check out what\'s coming up in v0.7! A builtin editor, markdown sites, and more.',
-    date: Date.now() - 1e7
-  },
-  { name: 'Mathias Buus',
-    avatar: 'https://pbs.twimg.com/profile_images/788479487390412800/oTdpaOev_400x400.jpg',
-    content: 'The newest release of hypercore will be so good. Way faster.',
-    date: Date.now() - 1e8
-  },
-  { name: 'Maxwell Ogden',
-    avatar: 'https://pbs.twimg.com/profile_images/706616363599532032/b5z-Hw5g_400x400.jpg',
-    content: 'Submit an application to the Knight foundation prototype fund.',
-    date: Date.now() - 1e9
-  },
-  { name: 'Dat Project',
-    avatar: 'https://pbs.twimg.com/profile_images/794335424940343296/xyrU8_HA_400x400.jpg',
-    content: 'We just released Dat Desktop, a tool for managingi Dats on your desktop, duh.',
-    date: Date.now() - 1e10
-  },
-  { name: 'Beyonce',
-    avatar: 'https://pbs.twimg.com/profile_images/724054682579161088/3GgLeR65_400x400.jpg',
-    content: 'I have three hearts.',
-    date: Date.now() - 1e11
-  }
-]
-
 var profileDat
 var app = choo()
 app.use(newPostStore)
+app.use(feedStore)
 app.route('/', mainView)
 app.route('/profile/:key', profileView)
 app.route('/follows/:key', followsView)
@@ -70,10 +26,9 @@ async function setup () {
   // read profile
   profileDat = new DatProfileSite((await beaker.profiles.get(0)).url)
   profileDat.profile = await profileDat.getProfile()
-  if ((profileDat.profile.image || '').startsWith('/')) {
-    profileDat.profile.image = profileDat.url + profileDat.profile.image
-  }
   profileDat.profile.follows = profileDat.profile.follows || []
+  profileDat.numBroadcasts = (await profileDat.listBroadcasts({metaOnly: true})).length
+  window.profileDat = profileDat
 
   app.mount('main')
 }
@@ -82,16 +37,20 @@ async function setup () {
 // =
 
 function mainView (state, emit) {
+  if (!state.broadcasts) {
+    emit('load-feed')
+  }
   return html`
     <main>
       <div class="grid">
         <div class="feed-container">
+          ${renderError(state, emit)}
           ${renderPostForm(state, emit)}
           <h2>Your feed</h2>
-          ${renderFeed()}
+          ${renderFeed(state, emit)}
         </div>
         <div class="sidebar">
-          ${renderProfile()}
+          ${renderProfile(profileDat)}
         </div>
       </div>
     </main>
@@ -99,14 +58,20 @@ function mainView (state, emit) {
 }
 
 function profileView (state, emit) {
+  if (!state.broadcasts) {
+    emit('load-broadcasts', state.params.key)
+  }
   return html`
     <main>
       <div class="grid">
         <div class="feed-container">
-          <a href="#">Back to feed</a><br />
-          TODO: posts of ${state.params.key}
+          ${renderError(state, emit)}
+          <p><a href="#"><i class="fa fa-caret-left"></i> Back to feed</a></p>
+          <h2>${state.params.key} feed</h2>
+          ${renderFeed(state, emit)}
         </div>
         <div class="sidebar">
+          ${renderProfile(state.currentProfileDat)}
         </div>
       </div>
     </main>
@@ -118,7 +83,8 @@ function followsView (state, emit) {
     <main>
       <div class="grid">
         <div class="feed-container">
-          <a href="#">Back to feed</a><br />
+          ${renderError(state, emit)}
+          <p><a href="#"><i class="fa fa-caret-left"></i> Back to feed</a></p>
           TODO: follows of ${state.params.key}
         </div>
         <div class="sidebar">
@@ -133,9 +99,10 @@ function editProfileView (state, emit) {
     <main>
       <div class="grid">
         <div class="feed-container">
+          ${renderError(state, emit)}
           ${renderPostForm(state, emit)}
           <h2>Your feed</h2>
-          ${renderFeed()}
+          ${renderFeed(state, emit)}
         </div>
         <div class="sidebar">
           Todo edit profile
@@ -149,48 +116,69 @@ function editProfileView (state, emit) {
 // components
 // =
 
-function renderFeed () {
-  if (updates.length) {
+function renderError (state, emit) {
+  if (!state.error) {
+    return ''
+  }
+  return html`
+    <p class="message error">${state.error.toString()}</p>
+  `
+}
+
+function renderFeed (state, emit) {
+  if (!state.broadcasts) {
+    return html`
+      <p class="feed">
+        Loading...
+      </p>
+    `
+  } else if (state.broadcasts.length) {
     return html`
       <ul class="feed">
-        ${updates.map(renderUpdate)}
+        ${state.broadcasts.map(renderBroadcast)}
       </ul>
     `
   } else {
     return html`
       <p class="feed">
-        No updates.
+        No broadcasts.
       </p>
     `
   }
 }
 
-function renderUpdate (update) {
+function renderBroadcast (broadcast) {
+  if (!broadcast.content.text) {
+    return ''
+  }
   return html`
     <li class="update">
-      <img src=${update.avatar}/ class="avatar"/>
+      <a href=${getViewProfileURL(broadcast.author)}><img src=${getAvatarURL(broadcast.author, broadcast.authorProfile)} class="avatar"/></a>
       <div class="container">
         <div class="metadata">
-          <span class="name">${update.name}</span>
-          <a href="/"><span class="date">${niceDate(update.date)}</span></a>
+          <a href=${getViewProfileURL(broadcast.author)} class="name">${broadcast.authorProfile.name}</span>
+          <a href=${broadcast.url} target="_blank"><span class="date">${niceDate(broadcast.publishTime)}</span></a>
         </div>
-        <p class="content">${update.content}</p>
+        <p class="content">${broadcast.content.text}</p>
       </div>
     </li>
   `
 }
 
-function renderProfile () {
-  var numFollows = profileDat.profile.follows.length
+function renderProfile (site) {
+  if (!site) {
+    return ''
+  }
+  var numFollows = site.profile.follows.length
   return html`
     <div class="profile">
-      <a href=${profileDat.url}><img class="avatar" src=${profileDat.profile.image} /></a>
+      <a href=${getViewProfileURL(site)}><img class="avatar" src=${getAvatarURL(site, site.profile)} /></a>
       <div class="profile-info">
-        <h1 class="name"><a href=${profileDat.url}>${profileDat.profile.name}</a></h1>
-        <div class="description">${profileDat.profile.description} <a href="#edit-profile">Edit profile</a></div>
+        <h1 class="name"><a href=${getViewProfileURL(site)}>${site.profile.name}</a></h1>
+        <div class="description">${site.profile.description} <a href="#edit-profile">Edit profile</a></div>
         <hr />
-        <div>Posted <a href=${getViewProfileURL(profileDat)}>10 broadcasts</a></div>
-        <div>Following <a href=${getViewFollowsURL(profileDat)}>${numFollows} ${pluralize(numFollows, 'site')}</a></div>
+        <div>Posted <a href=${getViewProfileURL(site)}>${site.numBroadcasts} broadcasts</a></div>
+        <div>Following <a href=${getViewFollowsURL(site)}>${numFollows} ${pluralize(numFollows, 'site')}</a></div>
       </div>
     </div>
   `
@@ -228,6 +216,40 @@ function renderPostForm (state, emit) {
 // stores
 // =
 
+function feedStore (state, emitter) {
+  state.error = null
+  state.broadcasts = null
+  state.currentProfileDat = null
+
+  emitter.on('pushState', () => {
+    // clear page state
+    state.error = null
+    state.broadcasts = null
+    state.currentProfileDat = null
+  })
+
+  emitter.on('load-feed', async () => {
+    try {
+      state.broadcasts = await profileDat.listFeed({reverse: true})
+    } catch (e) {
+      state.error = e
+    }
+    emitter.emit('render')
+  })
+
+  emitter.on('load-broadcasts', async (profileKey) => {
+    try {
+      // TODO select the right profile
+      console.log('loading', profileKey)
+      state.currentProfileDat = profileDat
+      state.broadcasts = await state.currentProfileDat.listBroadcasts({reverse: true})
+    } catch (e) {
+      state.error = e
+    }
+    emitter.emit('render')
+  })
+}
+
 function newPostStore (state, emitter) {
   state.newPostText = ''
   emitter.on('change-post-text', text => {
@@ -237,6 +259,7 @@ function newPostStore (state, emitter) {
   emitter.on('submit-post', async () => {
     try {
       await profileDat.broadcast({text: state.newPostText})
+      profileDat.numBroadcasts++
     } catch (e) {
       console.error(e)
       return
@@ -248,17 +271,18 @@ function newPostStore (state, emitter) {
   })
 }
 
-// event handlers
-// =
-
-
-
-function onPostSubmit (e) {
-
-}
-
 // helpers
 // =
+
+function getAvatarURL (site, profile) {
+  if (profile && typeof profile.image === 'string') {
+    if (profile.image.startsWith('/')) {
+      return site.url + profile.image
+    }
+    return profile.image
+  }
+  return '' // TODO need a fallback image
+}
 
 function getViewProfileURL (site) {
   var url = site.url ? site.url : site
