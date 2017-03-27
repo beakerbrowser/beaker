@@ -9,8 +9,12 @@
 @import "../components/link";
 @import "./components/links-list";
 
+body {
+  overflow: auto;
+}
+
 main {
-  width: 825px;
+  width: 670px;
   margin: 0 auto;
 
   h2 {
@@ -64,6 +68,62 @@ header {
     line-height: 15px;
   }
 }
+
+.pinned-bookmarks {
+  &:extend(.flex);
+  width: 100%;
+  margin-top: 150px;
+  margin-bottom: @padding-component;
+}
+
+.pinned-bookmark {
+  border-radius: 2px;
+  border: 1px solid @border-menu;
+  text-align: center;
+  width: 95px;
+  height: 95px;
+  margin-bottom: @padding-component;
+
+  &:hover {
+    border-color: shade(@border-menu, 20%);
+
+    .title {
+      border-color: shade(@border-menu, 20%);
+    }
+  }
+
+  * {
+    cursor: pointer;
+  }
+
+  + .pinned-bookmark {
+    margin-left: @padding-component;
+  }
+
+  &:nth-of-type(7n) {
+    margin-left: 0;
+  }
+
+  .title {
+    &:extend(.overflow-ellipsis);
+    height: 25px;
+    line-height: 25px;
+    vertical-align: middle;
+    border-top: 1px solid @border-menu;
+    color: fadeout(@color-text, 5%);
+    padding: 0 5px;
+  }
+
+  .favicon-container {
+    height: 70px;
+  }
+
+  .favicon {
+    width: 32px;
+    margin-top: 20px;
+  }
+}
+
 .builtin-pages {
   flex: 1;
 }
@@ -75,7 +135,7 @@ header {
   font-size: 14px;
 
   &:hover .label {
-    text-decoration: underline; 
+    text-decoration: underline;
   }
 
   + .pinned-item {
@@ -97,7 +157,7 @@ header {
   }
 
   i {
-    margin-right: @margin-icon; 
+    margin-right: @margin-icon;
   }
 
   .label {
@@ -160,16 +220,26 @@ header {
 }
 
 form#add-pinned-site {
-  padding: @padding-component--tight;
-  border-top: 1px solid @border-menu;
-  border-bottom: 1px solid @border-menu;
+  margin: @padding-component 0;
 
   legend {
-    margin-bottom: 3px;
+    margin-bottom: 5px;
     font-weight: 600;
   }
 
   input[type="text"] {
     width: 80%;
+  }
+}
+
+.add-pin-toggle {
+  &:extend(.link);
+
+  &:hover {
+    &:extend(.link:hover);
+  }
+
+  i {
+    margin-right: @margin-icon;
   }
 }
