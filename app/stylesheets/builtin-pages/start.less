@@ -77,15 +77,14 @@ header {
 }
 
 .pinned-bookmark {
-  border-radius: 2px;
-  border: 1px solid @border-menu;
   text-align: center;
-  width: 95px;
+  width: 118px;
   height: 95px;
   margin-bottom: @padding-component;
 
   &:hover {
     border-color: shade(@border-menu, 20%);
+    &:extend(.link:hover);
 
     .title {
       border-color: shade(@border-menu, 20%);
@@ -100,7 +99,7 @@ header {
     margin-left: @padding-component;
   }
 
-  &:nth-of-type(7n) {
+  &:nth-of-type(6n) {
     margin-left: 0;
   }
 
@@ -109,13 +108,14 @@ header {
     height: 25px;
     line-height: 25px;
     vertical-align: middle;
-    border-top: 1px solid @border-menu;
     color: fadeout(@color-text, 5%);
     padding: 0 5px;
+    font-size: 11px;
   }
 
   .favicon-container {
     height: 70px;
+    border-radius: 2px;
   }
 
   .favicon {

@@ -4,8 +4,10 @@ sites loaded over the beaker: protocol
 */
 
 import * as yo from 'yo-yo'
-import co from 'co'
 import {niceDate} from '../../lib/time'
+import ColorThief from '../../lib/fg/color-thief'
+
+const colorThief = new ColorThief()
 
 const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 
@@ -25,19 +27,36 @@ var showReleaseNotes = false
 var isAddingPin = false
 var bookmarks, pinnedBookmarks, archivesList
 
-co(function* () {
-  bookmarks = (yield beaker.bookmarks.list()) || []
-  pinnedBookmarks = (yield beaker.bookmarks.list({pinned: true})) || []
-  archivesList = (yield beaker.archives.list({isSaved: true})) || []
+setup()
+async function setup () {
+  bookmarks = (await beaker.bookmarks.list()) || []
+  pinnedBookmarks = (await beaker.bookmarks.list({pinned: true})) || []
+  archivesList = (await beaker.archives.list({isSaved: true})) || []
+
+  await Promise.all(pinnedBookmarks.map(bookmark => new Promise(resolve => {
+    var img = new Image()
+    img.setAttribute('crossOrigin', 'anonymous')
+    img.onload = e => {
+      var c = colorThief.getColor(img, 10)
+      c[0] = (c[0] / 4)|0 + 192
+      c[1] = (c[1] / 4)|0 + 192
+      c[2] = (c[2] / 4)|0 + 192
+      bookmark.dominantColor = c
+      resolve()
+    }
+    img.onerror = resolve
+    img.src = 'beaker-favicon:' + bookmark.url
+  })))
+
   update()
 
-  let latestVersion = yield beakerSitedata.get('beaker://start', 'latest-version')
+  let latestVersion = await beakerSitedata.get('beaker://start', 'latest-version')
   if (+latestVersion < LATEST_VERSION) {
     showReleaseNotes = true
     update()
     beakerSitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
   }
-})
+}
 
 // rendering
 // =
@@ -49,14 +68,6 @@ function update () {
       ${renderReleaseNotes()}
     </main>
   `)
-}
-
-function renderHeader () {
-  return yo`
-    <header>
-      ${renderPinned()}
-    </header>
-  `
 }
 
 function renderArchivesList () {
@@ -182,9 +193,10 @@ function renderBuiltinPage (item) {
 
 function renderPinnedBookmark (bookmark) {
   var { url, title } = bookmark
+  var [r, g, b] = bookmark.dominantColor || [255, 255, 255]
   return yo`
     <a class="pinned-bookmark" href=${url}>
-      <div class="favicon-container">
+      <div class="favicon-container" style="background: rgb(${r}, ${g}, ${b})">
         <img src=${'beaker-favicon:' + url} class="favicon"/>
       </div>
       <div class="title">${title}</div>
