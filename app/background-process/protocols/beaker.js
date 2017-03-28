@@ -156,15 +156,6 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://setup/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/setup.build.js'))
   }
-  if (requestUrl === 'beaker://feed/') {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/feed.html'))
-  }
-  if (requestUrl === 'beaker://feed/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/feed.build.js'))
-  }
-  if (requestUrl === 'beaker://feed/main.css') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/feed.css'))
-  }
   if (requestUrl === 'beaker://bookmarks/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/bookmarks.html'))
   }
