@@ -33,20 +33,8 @@ async function setup () {
   pinnedBookmarks = (await beaker.bookmarks.list({pinned: true})) || []
   archivesList = (await beaker.archives.list({isSaved: true})) || []
 
-  await Promise.all(pinnedBookmarks.map(bookmark => new Promise(resolve => {
-    var img = new Image()
-    img.setAttribute('crossOrigin', 'anonymous')
-    img.onload = e => {
-      var c = colorThief.getColor(img, 10)
-      c[0] = (c[0] / 4)|0 + 192
-      c[1] = (c[1] / 4)|0 + 192
-      c[2] = (c[2] / 4)|0 + 192
-      bookmark.dominantColor = c
-      resolve()
-    }
-    img.onerror = resolve
-    img.src = 'beaker-favicon:' + bookmark.url
-  })))
+  // load dominant colors of each pinned bookmark
+  await Promise.all(pinnedBookmarks.map(attachDominantColor))
 
   update()
 
@@ -263,5 +251,25 @@ function unpinSite (e) {
   beaker.bookmarks.list({pinned: true}).then(pinned => {
     pinnedBookmarks = pinned
     update()
+  })
+}
+
+// helpers
+// =
+
+function attachDominantColor (bookmark) {
+  return new Promise(resolve => {
+    var img = new Image()
+    img.setAttribute('crossOrigin', 'anonymous')
+    img.onload = e => {
+      var c = colorThief.getColor(img, 10)
+      c[0] = (c[0] / 4)|0 + 192
+      c[1] = (c[1] / 4)|0 + 192
+      c[2] = (c[2] / 4)|0 + 192
+      bookmark.dominantColor = c
+      resolve()
+    }
+    img.onerror = resolve
+    img.src = 'beaker-favicon:' + bookmark.url
   })
 }
