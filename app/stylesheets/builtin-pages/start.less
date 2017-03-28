@@ -9,13 +9,13 @@
 @import "../components/link";
 @import "./components/links-list";
 
-body {
+html {
   overflow: auto;
 }
 
 main {
   width: 670px;
-  margin: 0 auto;
+  margin: 0 auto 80px;
 
   h2 {
     font-weight: 400;
@@ -26,46 +26,51 @@ main {
 }
 
 header {
-  margin: @padding-component--tight 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   &:extend(.flex);
   flex-wrap: nowrap;
-  height: 35px;
-}
-
-.social-header {
+  padding: @padding-component--tight;
   height: 35px;
 
-  * {
-    display: inline-block;
-    line-height: 35px;
-    vertical-align: middle;
+  .actions {
     font-size: 14px;
-  }
 
-  .avatar {
-    width: 35px;
-    height: 100%;
-    border-radius: 2px;
-    margin-left: 10px;
-  }
+    a {
+      margin-right: @padding-component--tight;
 
-  a {
-    &:extend(.link);
-
-    &:hover {
-      &:extend(.link:hover);
+      i {
+        margin-right: @margin-icon;
+      }
     }
   }
 
-  .count {
-    background: @blue;
-    color: fadeout(#fff, 5%);
-    font-weight: bold;
-    font-size: 12px;
-    letter-spacing: .05rem;
-    padding: 0 7px;
-    border-radius: 12px;
-    line-height: 15px;
+  .profile-card {
+    height: 35px;
+
+    * {
+      display: inline-block;
+      line-height: 35px;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    .avatar {
+      width: 35px;
+      height: 100%;
+      border-radius: 2px;
+      margin-left: 10px;
+    }
+
+    a {
+      &:extend(.link);
+
+      &:hover {
+        &:extend(.link:hover);
+      }
+    }
   }
 }
 
