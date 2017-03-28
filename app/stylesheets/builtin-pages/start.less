@@ -15,7 +15,7 @@ html {
 
 main {
   width: 670px;
-  margin: 0 auto 80px;
+  margin: 0 auto 40px;
 
   h2 {
     font-weight: 400;
@@ -77,10 +77,10 @@ header {
 .bookmarks-container {
   margin-top: 150px;
 }
+
 .pinned-bookmarks {
   &:extend(.flex);
   width: 100%;
-  margin-bottom: @padding-component;
 }
 
 .pinned-bookmark {
@@ -198,5 +198,45 @@ header {
 
   i {
     margin-right: @margin-icon;
+  }
+}
+
+.archives-container {
+  margin-top: 40px;
+
+  .archives-title {
+    display: flex;
+    margin-bottom: 5px;
+
+    h2 {
+      flex: 1;
+    }
+
+    .action {
+      color: gray;
+      cursor: pointer;
+
+      &:hover {
+        &:extend(.link:hover);
+      }
+    }
+  }
+}
+
+.archives-list {
+  .archive {
+    height: auto;
+    padding: 5px 10px;
+    border-top: 1px solid @border-menu;
+    letter-spacing: 0.5px;
+  }
+
+  .label {
+    font-size: 11px;
+    margin-left: 5px;
+    background: @background-message;
+    padding: 2px 5px;
+    color: gray;
+    border-radius: 2px;
   }
 }
