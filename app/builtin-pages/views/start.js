@@ -52,10 +52,26 @@ async function setup () {
 function update () {
   yo.update(document.querySelector('main'), yo`
     <main>
-      ${renderPinnedBookmarks()}
+      <header>
+        <div class="actions">
+          <a href="#"><i class="fa fa-share-alt"></i> Share files</a>
+          <a href="#"><i class="fa fa-sticky-note-o"></i> Share a note</a>
+        </div>
+        <div style="flex: 1"></div>
+        ${renderProfileCard()}
+      </header>
       ${renderReleaseNotes()}
     </main>
   `)
+}
+
+function renderProfileCard () {
+  return yo`
+    <div class="profile-card">
+      <a href="#">Paul Frazee</a>
+      <img class="avatar" src="https://pbs.twimg.com/profile_images/822287293910134784/8Ho9TSEQ_400x400.jpg" />
+    </div>
+  `
 }
 
 function renderArchivesList () {
@@ -71,13 +87,11 @@ function renderArchivesList () {
       <ul class="links-list">
         ${archivesList.map(renderArchive)}
       </ul>
-      ${renderEditorPrompt()}
     </div>
   `
 }
 
 function renderArchive (archive) {
-  console.log(archive)
   var {url, title, key} = archive
 
   return yo`
