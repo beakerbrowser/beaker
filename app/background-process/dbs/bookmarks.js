@@ -20,7 +20,7 @@ export function changeUrl (profileId, oldUrl, newUrl) {
 }
 
 export function togglePinned (profileId, url, pinned) {
-  return db.run(`UPDATE bookmarks SET pinned = ? WHERE profileId = ? AND url = ?`, [!pinned ? 1 : 0, profileId, url])
+  return db.run(`UPDATE bookmarks SET pinned = ? WHERE profileId = ? AND url = ?`, [pinned ? 1 : 0, profileId, url])
 }
 
 export function remove (profileId, url) {

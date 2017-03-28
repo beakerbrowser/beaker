@@ -14,28 +14,14 @@ const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 =
 // globals
 // =
 
-var builtinPages = [
-  { href: 'beaker://history', label: 'History', icon: 'history', color: 'teal' },
-  { href: 'beaker://bookmarks', label: 'Bookmarks', icon: 'star', color: 'yellow' },
-  { href: 'beaker://settings', label: 'Settings', icon: 'gear', color: 'pink'},
-  { href: 'beaker://editor', label: 'Editor', icon: 'pencil', color: 'blue' },
-  { href: 'beaker://downloads', label: 'Downloads', icon: 'download', color: 'purple' },
-  { href: 'https://beakerbrowser.com/docs', label: 'Help', icon: 'question', color: 'orange' }
-]
-
 var showReleaseNotes = false
-var isAddingPin = false
+var isManagingBookmarks = false
 var bookmarks, pinnedBookmarks, archivesList
 
 setup()
 async function setup () {
-  bookmarks = (await beaker.bookmarks.list()) || []
-  pinnedBookmarks = (await beaker.bookmarks.list({pinned: true})) || []
+  await loadBookmarks()
   archivesList = (await beaker.archives.list({isSaved: true})) || []
-
-  // load dominant colors of each pinned bookmark
-  await Promise.all(pinnedBookmarks.map(attachDominantColor))
-
   update()
 
   let latestVersion = await beakerSitedata.get('beaker://start', 'latest-version')
@@ -60,6 +46,7 @@ function update () {
         <div style="flex: 1"></div>
         ${renderProfileCard()}
       </header>
+      ${renderPinnedBookmarks()}
       ${renderReleaseNotes()}
     </main>
   `)
@@ -110,26 +97,61 @@ function renderArchive (archive) {
   `
 }
 
-function renderPinBookmarkForm () {
-  if (isAddingPin) {
-    return renderBookmarks()
-  }
-}
-
 function renderPinnedBookmarks () {
-  var icon = isAddingPin ? 'close' : 'plus'
-  var caret = isAddingPin ? 'fa-angle-up' : 'fa-angle-down'
+  var icon = isManagingBookmarks ? 'caret-down' : 'wrench'
 
   return yo`
-    <div>
+    <div class="bookmarks-container">
+      <p class="add-pin-toggle" onclick=${toggleAddPin}>
+        <i class="fa fa-${icon}"></i>
+        ${isManagingBookmarks ? 'Close' : 'Manage bookmarks'}
+      </p>
       <div class="pinned-bookmarks">
         ${pinnedBookmarks.map(renderPinnedBookmark)}
       </div>
-      ${renderPinBookmarkForm()}
-      <p class="add-pin-toggle" onclick=${toggleAddPin}>
-        <i class="fa ${caret}"></i>
-        ${isAddingPin ? 'Close bookmarks' : 'Pin a bookmark'}
+      ${renderBookmarks()}
     </div>
+  `
+}
+
+function renderBookmarks () {
+  if (!isManagingBookmarks) {
+    return ''
+  }
+
+  const isNotPinned = row => !row.pinned
+
+  const renderRow = row =>
+    yo`
+      <li class="bookmark ll-row">
+        <a class="btn bookmark__pin" onclick=${e => pinBookmark(e, row)}>
+          <i class="fa fa-thumb-tack"></i> Pin
+        </a>
+        <a href=${row.url} class="link bookmark__link" title=${row.title} />
+          <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.url} />
+          <span class="title bookmark__title">${row.title}</span>
+          <span class="url">${row.url}</span>
+        </a>
+      </li>`
+
+  return yo`
+    <div class="bookmarks">
+      ${bookmarks.filter(isNotPinned).map(renderRow)}
+    </div>
+  `
+}
+
+function renderPinnedBookmark (bookmark) {
+  var { url, title } = bookmark
+  var [r, g, b] = bookmark.dominantColor || [255, 255, 255]
+  return yo`
+    <a class="pinned-bookmark ${isManagingBookmarks ? 'nolink' : ''}" href=${isManagingBookmarks ? '' : url}>
+      <div class="favicon-container" style="background: rgb(${r}, ${g}, ${b})">
+        ${isManagingBookmarks ? yo`<a class="unpin" onclick=${e => unpinBookmark(e, bookmark)}><i class="fa fa-times"></i></a>` : ''}
+        <img src=${'beaker-favicon:' + url} class="favicon"/>
+      </div>
+      <div class="title">${title}</div>
+    </a>
   `
 }
 
@@ -146,130 +168,42 @@ function renderReleaseNotes () {
   `
 }
 
-function renderPinned () {
-  const pinCls = isAddingPin ? ' adding' : ''
-
-  return yo`
-    <div class="builtin-pages">
-      ${builtinPages.map(renderBuiltinPage)}
-    </div>
-  `
-}
-
-function renderBookmarks () {
-  if (!isAddingPin) {
-    return ''
-  }
-
-  const renderRow = (row, i) =>
-    yo`
-      <li class="ll-row" data-row=${i} onclick=${pinBookmark(i)}>
-        <a class="link bookmark__link" href=${row.url} title=${row.title} />
-          <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.url} />
-          <span class="title bookmark__title">${row.title}</span>
-        </a>
-      </li>`
-
-  return yo`
-    <div class="bookmarks">
-      <form id="add-pinned-site" onsubmit=${pinSite}>
-        <legend>Add a new site or select a bookmark</legend>
-        <input name="url" type="text" placeholder="https://example.com" required autofocus="autofocus" />
-        <input type="submit" value="Add" class="btn primary">
-      </form>
-      ${bookmarks.map(renderRow)}
-    </div>
-  `
-}
-
-function renderBuiltinPage (item) {
-  // render items
-  var { href, label, icon, color } = item
-
-  return yo`
-    <a class="pinned-item ${color} builtin" href=${href}>
-      <i class="fa fa-${icon}" aria-hidden="true"></i>
-      <div class="label">${label}
-    </a>`
-}
-
-function renderPinnedBookmark (bookmark) {
-  var { url, title } = bookmark
-  var [r, g, b] = bookmark.dominantColor || [255, 255, 255]
-  return yo`
-    <a class="pinned-bookmark" href=${url}>
-      <div class="favicon-container" style="background: rgb(${r}, ${g}, ${b})">
-        <img src=${'beaker-favicon:' + url} class="favicon"/>
-      </div>
-      <div class="title">${title}</div>
-    </a>
-  `
-}
+// event handlers
+// =
 
 function toggleAddPin (url, title) {
-  isAddingPin = !isAddingPin
+  isManagingBookmarks = !isManagingBookmarks
   update()
 }
 
-function pinBookmark (i) {
-  return e => {
-    e.preventDefault()
-    e.stopPropagation()
+async function pinBookmark (e, {url}) {
+  e.preventDefault()
+  e.stopPropagation()
 
-    var b = bookmarks[i]
-    beaker.bookmarks.add(b.url, b.title, 1).then(() => {
-      return beaker.bookmarks.list({pinned: true})
-    }).then(pinned => {
-      pinnedBookmarks = pinned
-      isAddingPin = false
-      update()
-    })
-  }
+  await beaker.bookmarks.togglePinned(url, true)
+  await loadBookmarks()
+  update()
 }
 
-function pinSite (e) {
+async function unpinBookmark (e, {url}) {
   e.preventDefault()
+  e.stopPropagation()
 
-  var form = document.getElementById('add-pinned-site')
-  var { url } = form.elements
-
-  if (!url) return
-
-  // attempt to make a nice title
-  // TODO: temporary solution, this will clutter the bookmarks database
-  // with duplicates -tbv
-  var title = url.value
-  try {
-    title = title.split('://')[1] || url.value
-  } catch (e) {}
-
-  // add https:// to sites entered without a protocol
-  url = url.value
-  if (!(url.startsWith('http') || url.startsWith('dat://'))) {
-    url = 'https://' + url
-  }
-
-  beaker.bookmarks.add(url, title, 1).then(() => {
-    beaker.bookmarks.list({pinned: true}).then(pinned => {
-      pinnedBookmarks = pinned
-      toggleAddPin()
-      update()
-    })
-  })
-}
-
-function unpinSite (e) {
-  e.preventDefault()
-  beaker.bookmarks.togglePinned(e.target.dataset.url, true)
-
-  beaker.bookmarks.list({pinned: true}).then(pinned => {
-    pinnedBookmarks = pinned
-    update()
-  })
+  await beaker.bookmarks.togglePinned(url, false)
+  await loadBookmarks()
+  update()
 }
 
 // helpers
 // =
+
+async function loadBookmarks () {
+  bookmarks = (await beaker.bookmarks.list()) || []
+  pinnedBookmarks = (await beaker.bookmarks.list({pinned: true})) || []
+  
+  // load dominant colors of each pinned bookmark
+  await Promise.all(pinnedBookmarks.map(attachDominantColor))
+}
 
 function attachDominantColor (bookmark) {
   return new Promise(resolve => {
