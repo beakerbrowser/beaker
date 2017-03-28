@@ -17,7 +17,6 @@
     "concat-stream": "^1.5.2",
     "dat-dns": "^1.0.2",
     "dat-encoding": "^4.0.2",
-    "dat-profile-site": "^1.0.0",
     "datland-swarm-defaults": "^1.0.2",
     "debug": "^2.3.3",
     "discovery-swarm": "^4.1.0",

@@ -1,5 +1,4 @@
 import * as yo from 'yo-yo'
-import DatProfileSite from 'dat-profile-site'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 var Croppie = require('../../lib/fg/croppie')
 
@@ -202,7 +201,7 @@ async function setup () {
 
   // read profile dat
   try {
-    profileDat = new DatProfileSite((await beaker.profiles.get(0)).url)
+    profileDat = new DatArchive((await beaker.profiles.get(0)).url)
   } catch (e) {
     // ignore
     console.debug(e)
@@ -236,16 +235,13 @@ async function onSubmitStep2 () {
   }
 
   // create the dat
-  profileDat = new DatProfileSite(await beaker.archives.create({
+  profileDat = await beaker.archives.create({
     title: values.name || 'Personal Website',
-    description: values.name ? `Personal website of ${values.name}` : ''
-  }))
+    description: values.description || ''
+  })
 
   // update the profile
   await beaker.profiles.update(0, {url: profileDat.url})
-
-  // write the profile.json
-  await profileDat.setProfile(values)
 
   console.log(profileDat.url)
   advanceStep()
@@ -285,9 +281,6 @@ async function onStep3Submit () {
   var imageBase64 = (await croppie.result({type: 'base64', format})).split(',')[1]
   profileDat.archive.writeFile(`/${imageName}`, imageBase64, 'base64')
 
-  // update profile
-  await profileDat.setProfile({image: `/${imageName}`})
-
   advanceStep()
 }
 
@@ -304,7 +297,7 @@ async function onSubmitStep5 () {
     return
   }
 
-  // write post
-  await profileDat.broadcast(values)
+  // write post TODO remove
+  // await profileDat.broadcast(values)
   advanceStep()
 }
