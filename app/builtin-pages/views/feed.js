@@ -162,7 +162,7 @@ function renderBroadcast (broadcast) {
       <a href=${getViewProfileURL(broadcast.author)}><img src=${getAvatarURL(broadcast.author, broadcast.authorProfile)} class="avatar"/></a>
       <div class="container">
         <div class="metadata">
-          <a href=${getViewProfileURL(broadcast.author)} class="name">${broadcast.authorProfile.name}</span>
+          <a href=${getViewProfileURL(broadcast.author)} class="name">${broadcast.author.profile.name}</span>
           <a href=${broadcast.url} target="_blank"><span class="date">${niceDate(broadcast.publishTime)}</span></a>
         </div>
         <p class="content">${broadcast.content.text}</p>
