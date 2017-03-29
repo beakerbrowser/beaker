@@ -299,6 +299,11 @@ async function onNewFile (e) {
 }
 
 async function onOpenFile (e) {
+  // stop editing arhive details
+  if (selectedArchive) {
+    selectedArchive.isEditingDetails = false
+  }
+
   // update the location
   var archive = e.detail.archive
   var path = e.detail.path || ''
@@ -331,6 +336,13 @@ function onKeyDown (e) {
   if ((e.metaKey || e.ctrlKey) && e.keyCode === 83/*'S'*/) {
     e.preventDefault()
     save()
+  }
+  if (e.keyCode === 27/*Escape*/) {
+    if (selectedArchive && selectedArchive.isEditingDetails) {
+      // exit details editor
+      selectedArchive.isEditingDetails = false
+      render()
+    }
   }
 }
 

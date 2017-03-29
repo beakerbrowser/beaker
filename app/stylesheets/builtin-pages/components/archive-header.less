@@ -21,15 +21,19 @@
   }
 
   .edit {
-    &:extend(.link);
-    font-size: 14px;
+    cursor: pointer;
+  }
+}
 
-    i {
-      cursor: pointer;
-    }
-
-    &:hover {
-      &:extend(.link:hover);
-    }
+.archive-edit-details {
+  input[name="title"] {
+    width: 200px;
+  }
+  input[name="description"] {
+    width: 100%;
+  }
+  button {
+    height: 26px;
+    margin-left: 5px;
   }
 }
