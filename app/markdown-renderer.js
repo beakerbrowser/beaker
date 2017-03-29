@@ -62,15 +62,10 @@ if (!document.querySelector('main')) {
     try {
       var navMD = await self.readFile('/nav.md')
       navHTML = md.render(navMD)
+      document.querySelector('nav').innerHTML = navHTML
     } catch (e) {
-      var listing = await self.listFiles('/', {depth: 0})
-      navHTML = Object.keys(listing)
-        .filter(name => name.endsWith('md'))
-        .sort()
-        .map(name => `<div class="link"><a href="/${makeSafe(name)}">${makeSafe(name)}</a></div>`)
-        .join('')
+      // do nothing
     }
-    document.querySelector('nav').innerHTML = navHTML
   }
   function makeSafe (str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
