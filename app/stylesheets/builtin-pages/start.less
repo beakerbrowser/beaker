@@ -7,7 +7,7 @@
 @import "../utils/flex";
 @import "../components/buttons";
 @import "../components/link";
-@import "./components/links-list";
+@import "../components/messages";
 
 html {
   overflow: auto;
@@ -19,13 +19,6 @@ html, body {
 main {
   width: 670px;
   margin: 0 auto;
-
-  h2 {
-    font-weight: 400;
-    font-size: 13px;
-    letter-spacing: .5px;
-    color: @color-text--light;
-  }
 }
 
 header {
@@ -228,5 +221,61 @@ header {
     padding: 2px 5px;
     color: gray;
     border-radius: 2px;
+  }
+}
+
+.note-editor {
+  position: fixed;
+  background: rgba(255,255,255,0.85);
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: auto;
+  padding: 0 10px;
+
+  form {
+    width: 800px;
+    margin: 10px auto;
+    background: @background-message;
+    padding: @padding-component--tight @padding-component;
+  }
+
+  h2 {
+    font-size: 24px;
+    color: @color-message;
+    border-bottom: 1px solid @border-message;
+  }
+
+  label {
+    display: inline-block;
+    color: @color-message;
+    width: 60px;
+    vertical-align: top;
+  }
+
+  input, textarea {
+    &:extend(.system-font);
+    display: block;
+    width: 100%;
+    border: 1px solid @border-button;
+    border-radius: 2px;
+    padding: 4px 6px 3px;
+    font-size: 14px;
+  }
+
+  textarea {
+    height: 400px;
+    resize: vertical;
+  }
+
+  .actions {
+    text-align: right;
+
+    .btn:not(.primary) {
+      height: 27px;
+      margin-right: 5px;
+    }
   }
 }
