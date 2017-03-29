@@ -79,25 +79,41 @@ function renderArchive (archive, opts) {
 
 function renderArchiveDetails (archive, opts) {
   // hide fileview and editor header
-  document.getElementById('el-editor-container').classList.remove('active')
+  Array.from(document.querySelectorAll('.fileview,.editor')).forEach(el => el.classList.remove('active'))
 
   return yo`<div>
-    <div class="archive-view-header">
-      <h2 class="title">
-        <a href=${'dat://'+archive.info.key} title=${archive.niceName}>${archive.niceName}</a>
-        ${rTitleIcon(archive)}
-      </h2>
-    </div>
-
-    <p class="archive-desc">
-      ${rDescription(archive)}
-      ${rProvinence(archive)}
-    </p>
-
+    ${rHeader(archive, opts)}
     ${rMetadata(archive)}
     ${rToolbar(archive)}
     ${rBkrInstructions(archive)}
   </div>`
+}
+
+function rHeader (archive, opts) {
+  if (archive.isEditingDetails) {
+    return yo`
+      <form class="archive-edit-details" onsubmit=${e => onSubmitEditDetails(e, archive)}>
+        <p><input name="title" type="text" value=${archive.info.title || ''} placeholder="Title" tabindex="1" autofocus /> <button class="btn primary" type="submit" tabindex="3">Save</button></p>
+        <p><input name="description" type="text" value=${archive.info.description || ''} placeholder="Description" tabindex="2" /></p>
+      </form>
+    `
+  }
+
+  return yo`
+    <div>
+      <div class="archive-view-header">
+        <h2 class="title">
+          <a href=${'dat://'+archive.info.key} title=${archive.niceName}>${archive.niceName}</a>
+          ${rTitleIcon(archive)}
+        </h2>
+      </div>
+
+      <p class="archive-desc">
+        ${rDescription(archive)}
+        ${rProvinence(archive)}
+      </p>
+    </div>
+  `
 }
 
 function rDescription (archive) {
@@ -176,7 +192,7 @@ function rToolbar (archive) {
 function rTitleIcon (archive) {
   if (archive.info.isOwner) {
     return yo`
-      <i onclick=${() => onEditDetails(archive)} class="fa fa-pencil"></i>
+      <i onclick=${() => onEditDetails(archive)} class="fa fa-pencil edit"></i>
     `
   }
 
@@ -229,7 +245,20 @@ async function onFork (archive) {
 }
 
 function onEditDetails (archive) {
-  archive.updateManifest()  
+  archive.isEditingDetails = true
+  window.dispatchEvent(new Event('render'))
+}
+
+async function onSubmitEditDetails (e, archive) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  await beaker.archives.update(archive.url, {
+    title: (e.target.title.value || '').trim(),
+    description: (e.target.description.value || '').trim()
+  })
+  archive.isEditingDetails = false
+  window.dispatchEvent(new Event('render'))  
 }
 
 // helpers
