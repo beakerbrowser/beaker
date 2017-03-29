@@ -4,7 +4,6 @@ sites loaded over the beaker: protocol
 */
 
 import * as yo from 'yo-yo'
-import {niceDate} from '../../lib/time'
 import ColorThief from '../../lib/fg/color-thief'
 
 const colorThief = new ColorThief()
@@ -46,8 +45,8 @@ function update () {
     <main>
       <header>
         <div class="actions">
-          <a href="#"><i class="fa fa-share-alt"></i> Share files</a>
-          <a href="#"><i class="fa fa-sticky-note-o"></i> Share a note</a>
+          <a onclick=${shareFiles}><i class="fa fa-share-alt"></i> Share files</a>
+          <a><i class="fa fa-sticky-note-o"></i> Share a note</a>
         </div>
         <div style="flex: 1"></div>
         ${renderProfileCard()}
@@ -60,7 +59,7 @@ function update () {
 
 function renderProfileCard () {
   return yo`
-    <div class="profile-card">
+    <div class="profile">
       <a href=${userProfile.url}>${userProfile.title} <i class="fa fa-user-circle-o"></i></a>
     </div>
   `
@@ -140,6 +139,33 @@ function renderReleaseNotes () {
 // event handlers
 // =
 
+async function shareFiles (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  // have user select file
+  var paths = await beakerBrowser.showOpenDialog({
+    title: 'Select your files',
+    properties: ['openFile', 'openDirectory', 'multiSelections', 'showHiddenFiles']
+  })
+  if (!paths) {
+    return
+  }
+
+  // construct the destination folder
+  var d = new Date()
+  var date = pad0`${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}_${d.getHours()}:${d.getMinutes()}`
+  var dst = `${userProfile.url}/files/${date}/`
+
+  // import into the user profile
+  await Promise.all(paths.map(srcPath => 
+    DatArchive.importFromFilesystem({srcPath, dst, inplaceImport: true})
+  ))
+
+  // open
+  window.location = dst
+}
+
 function toggleAddPin (url, title) {
   isManagingBookmarks = !isManagingBookmarks
   update()
@@ -189,4 +215,19 @@ function attachDominantColor (bookmark) {
     img.onerror = resolve
     img.src = 'beaker-favicon:' + bookmark.url
   })
+}
+
+function pad0 (strings, ...args) {
+  var out = ''
+  for (var i = 0; i < strings.length; i++) {
+    out += strings[i]
+    if (args[i]) out += doPad0(args[i])
+  }
+  return out
+}
+
+function doPad0 (str) {
+  str = ''+str
+  if (str.length < 2) return '0' + str
+  return str
 }
