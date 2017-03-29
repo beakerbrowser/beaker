@@ -17,22 +17,17 @@ const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 =
 var showReleaseNotes = false
 var isManagingBookmarks = false
 var userProfile
-var bookmarks, pinnedBookmarks, archivesList
+var bookmarks, pinnedBookmarks
 
 setup()
 async function setup () {
   await loadBookmarks()
   userProfile = await beaker.profiles.get(0)
-  archivesList = (await beaker.archives.list({isSaved: true})) || []
-  archivesList.sort((a, b) => {
-    if (a.url === userProfile.url) {
-      return -1
-    }
-    if (b.url === userProfile.url) {
-      return 1
-    }
-    return a.title.localeCompare(b.title)
-  })
+  try {
+    userProfile.title = (await beaker.archives.get(userProfile.url)).title
+  } catch (e) {
+    userProfile.title = 'Your profile'
+  }
   update()
 
   let latestVersion = await beakerSitedata.get('beaker://start', 'latest-version')
@@ -59,7 +54,6 @@ function update () {
       </header>
       ${renderPinnedBookmarks()}
       ${renderReleaseNotes()}
-      ${renderArchivesList()}
     </main>
   `)
 }
@@ -67,47 +61,8 @@ function update () {
 function renderProfileCard () {
   return yo`
     <div class="profile-card">
-      <a href="#">Paul Frazee</a>
-      <img class="avatar" src="https://pbs.twimg.com/profile_images/822287293910134784/8Ho9TSEQ_400x400.jpg" />
+      <a href=${userProfile.url}>${userProfile.title} <i class="fa fa-user-circle-o"></i></a>
     </div>
-  `
-}
-
-function renderArchivesList () {
-  return yo`
-    <div class="archives-container">
-      <div class="archives-title">
-        <h2>Your archives</h2>
-        <a class="action" onclick=${onNewArchive}>
-          <i class="fa fa-plus"></i>
-          New archive
-        </a>
-      </div>
-      <ul class="links-list archives-list">
-        ${archivesList.map(renderArchive)}
-      </ul>
-    </div>
-  `
-}
-
-function renderArchive (archive) {
-  var {url, title, key} = archive
-  var isProfile = (url === userProfile.url)
-  var icon = isProfile ? 'user-circle-o' : 'folder-o'
-
-  return yo`
-    <li class="ll-row archive">
-      <a class="link" href=${url} title=${title}>
-        <i class="favicon fa fa-${icon}"></i>
-        <span class="title">${title}${isProfile ? yo`<span class="label">Profile Site</a>` : ''}</span>
-        <span class="url">${url}</span>
-      </a>
-      <div class="actions">
-        <a href="beaker://editor/${key}">
-          <i class="fa fa-pencil"></i>
-        </a>
-      </div>
-    </li>
   `
 }
 
@@ -184,14 +139,6 @@ function renderReleaseNotes () {
 
 // event handlers
 // =
-
-async function onNewArchive (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  var archive = await beaker.archives.create()
-  window.location = 'beaker://editor/' + archive.url.slice('dat://'.length)
-}
 
 function toggleAddPin (url, title) {
   isManagingBookmarks = !isManagingBookmarks
