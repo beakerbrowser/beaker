@@ -98,9 +98,11 @@ function renderPinnedBookmarks () {
 
   return yo`
     <div class="bookmarks-container">
-      <p class="add-pin-toggle" onclick=${toggleAddPin}>
-        <i class="fa fa-${icon}"></i>
-        ${isManagingBookmarks ? 'Close' : 'Manage bookmarks'}
+      <p>
+        <a class="add-pin-toggle" onclick=${toggleAddPin}>
+          <i class="fa fa-${icon}"></i>
+          ${isManagingBookmarks ? 'Close' : 'Manage bookmarks'}
+        </a>
       </p>
       <div class="pinned-bookmarks">
         ${pinnedBookmarks.map(renderPinnedBookmark)}
