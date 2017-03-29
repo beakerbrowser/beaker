@@ -5,6 +5,7 @@ import {render as renderArchivesList, renderArchivesListItems} from '../com/arch
 import {render as renderArchiveView} from '../com/editor-archive-view'
 import {render as renderEditorOptions, defaultEditorOptions} from '../com/editor-options'
 import {render as rHeader} from '../com/editor-header'
+import * as choosePathPopup from '../com/editor-choose-path-popup'
 import {pushUrl} from '../../lib/fg/event-handlers'
 import {ucfirst} from '../../lib/strings'
 import dragDrop from '../../lib/fg/drag-drop'
@@ -55,6 +56,7 @@ window.addEventListener('render', render)
 window.addEventListener('new-file', onNewFile)
 window.addEventListener('open-file', onOpenFile)
 window.addEventListener('save-file', onSaveFile)
+window.addEventListener('choose-path', onChoosePath)
 window.addEventListener('editor-created', onEditorCreated)
 window.addEventListener('keydown', onKeyDown)
 
@@ -97,6 +99,7 @@ async function setup () {
         selectedArchive.fileTree = new FileTree(selectedArchive)
         await selectedArchive.setup()
         await selectedArchive.fileTree.setup()
+        addUnsavedModelsToTree()
         selectedArchive.addEventListener('changed', onArchiveChanged)
         document.title = `${selectedArchive.niceName} - Editor`
         configureEditor()
@@ -206,6 +209,14 @@ function getURLPath () {
   }
 }
 
+function addUnsavedModelsToTree () {
+  for (var url in models) {
+    if (url.startsWith(selectedArchive.url) && models[url].path.startsWith('buffer~~')) {
+      selectedArchive.fileTree.addNode({ type: 'file', name: models[url].path })
+    }
+  }
+}
+
 function configureEditor () {
   if (!window.editor) return
 
@@ -293,8 +304,7 @@ function onCollapseToggle (e) {
 }
 
 async function onNewFile (e) {
-  var {path} = e.detail
-  await generate(selectedArchive, path)
+  var path = await generate(selectedArchive, 'buffer~~' + Date.now())
   window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${path}`)
 }
 
@@ -312,6 +322,29 @@ async function onOpenFile (e) {
 
 function onSaveFile (e) {
   save()
+}
+
+async function onChoosePath (e) {
+  var path = e.detail.path
+  if (!selectedArchive || !selectedModel) {
+    return
+  }
+
+  // get content
+  var content = selectedModel.getValue()
+
+  // close current model
+  closeModel()
+
+  // generate new model
+  var path = await generate(selectedArchive, path, content)
+
+  // save content
+  selectedModel = models[selectedArchive.url + '/' + path]
+  await save()
+
+  // go to file
+  window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${path}`)
 }
 
 function onDragDrop (files) {
@@ -437,21 +470,11 @@ function checkIfIsEditable (path) {
   return false
 }
 
-async function generate (archive, path) {
-  // check if the file exists already
+async function generate (archive, path, content='') {
   const url = archive.url + '/' + path
-  try {
-    const stat = await archive.stat(path)
-    if (!models[url]) {
-      return load(archive, path)
-    }
-    return
-  } catch (e) {
-    // does not exist
-  }
 
   // setup the model
-  models[url] = monaco.editor.createModel('', null, monaco.Uri.parse(url))
+  models[url] = monaco.editor.createModel(content, null, monaco.Uri.parse(url))
   models[url].path = path
   models[url].isEditable = true
   models[url].lang = models[url].getModeId()
@@ -459,6 +482,7 @@ async function generate (archive, path) {
   models[url].updateOptions(getModelOptions())
   dirtyFiles[url] = true
   archive.fileTree.addNode({ type: 'file', name: path })
+  return path
 }
 
 async function load (archive, path) {
@@ -480,12 +504,26 @@ async function save () {
     return
   }
 
+  // do we need to pick a filename?
+  if (selectedModel.path.startsWith('buffer~~')) {
+    return choosePathPopup.create(selectedArchive)
+  }
+
   // write the file content
   await selectedArchive.writeFile(selectedModel.path, selectedModel.getValue(), 'utf-8')
 
   // update state and render
   dirtyFiles[selectedModel.uri.toString()] = false
   render()
+}
+
+function closeModel () {
+  var url = selectedArchive.url + '/' + selectedModel.path
+  selectedModel.dispose()
+  selectedModel = null
+  delete models[url]
+  delete dirtyFiles[url]
+  // TODO remove from filetree
 }
 
 // find any models that don't need to stay in memory and delete them

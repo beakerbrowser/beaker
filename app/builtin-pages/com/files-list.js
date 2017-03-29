@@ -9,15 +9,6 @@ var lastClickedFolder = false // used in 'new' interface
 var lastClickedNode = false // used to highlight the nav
 var lastClickedUrl = false // used to highlight the save btn
 
-// set a handler to click out of the new-file poup
-document.body.addEventListener('click', e => {
-  var popup = document.getElementById('new-file-popup')
-  if (popup.children.length === 0) return
-  if (!findParent(e.target, node => node === popup)) {
-    destroyNewFilePopup()
-  }
-})
-
 // exported api
 // =
 
@@ -77,7 +68,7 @@ function rReadOnly (archive) {
     <span class="tooltip">
       <i class="tooltip-link fa fa-eye"></i>
       <div class="tooltip-content">
-        You're viewing a read-only version.
+        You${"'"}re viewing a read-only version.
         <a href="#" onclick=${e => onFork(e, archive)}>Fork to create an editable copy</a>.
       </div>
     </span>`
@@ -191,76 +182,8 @@ function onClickFile (e, archive, node) {
   window.dispatchEvent(evt)
 }
 
-function onNewFile (e, archive) {
-  // initial value
-  var value = ''
-  if (lastClickedFolder) {
-    value = lastClickedFolder + '/'
-  }
-
-  // render interface
-  yo.update(document.getElementById('new-file-popup'),
-    yo`<div id="new-file-popup">
-      <form class="new-file-form" onsubmit=${onSubmitNewFile}>
-        <div class="new">
-          <label>
-            New File<br>
-            <input type="text" name="name" />
-          </label>
-          <button class="btn" type="submit">Create</button>
-        </div>
-        <hr />
-        <div class="upload">
-          <button class="btn" onclick=${e => onImportFiles(e, archive)}><i class="fa fa-upload"></i> Import files</button>Destination folder: /${lastClickedFolder||''}
-        </div>
-      </form>
-    </div>`
-  )
-  var input = document.querySelector('#new-file-popup input')
-  input.value = value
-  input.focus()
-}
-
-function onSubmitNewFile (e) {
-  e.preventDefault()
-  lastClickedNode = null // clear so that our new file gets highlighted
-  lastClickedUrl = null
-  destroyNewFilePopup()
-
-  // dispatch an app event
-  var evt = new Event('new-file')
-  evt.detail = { path: normalizePath(e.target.name.value) }
-  window.dispatchEvent(evt)
-}
-
-async function onImportFiles (e, archive) {
-  e.preventDefault()
-  lastClickedNode = null // clear so that our new file gets highlighted
-  lastClickedUrl = null
-  destroyNewFilePopup()
-
-  // pick files
-  var files = await beakerBrowser.showOpenDialog({
-    title: 'Choose a folder or files to import',
-    buttonLabel: 'Import',
-    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
-  })
-  if (!files) {
-    return
-  }
-
-  files.forEach(file => {
-    // file-picker gives a string, while drag/drop gives { path: string }
-    var src = (typeof file === 'string') ? file : file.path
-    var dst = `/${lastClickedFolder || ''}`
-
-    // send to backend
-    DatArchive.importFromFilesystem({
-      srcPath: src,
-      dst: archive.url + dst,
-      inplaceImport: false
-    }).catch(console.warn.bind(console, 'Error writing file:'))
-  })
+function onNewFile (e) {
+  window.dispatchEvent(new Event('new-file'))
 }
 
 async function onFork (e, archive) {
@@ -289,9 +212,4 @@ function normalizePath (path) {
 
 function getUrl (archive, node) {
   return archive.url + '/' + normalizePath(node.entry.name)
-}
-
-function destroyNewFilePopup () {
-  var popup = document.getElementById('new-file-popup')
-  popup.removeChild(popup.firstChild)
 }

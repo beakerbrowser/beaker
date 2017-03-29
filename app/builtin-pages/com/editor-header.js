@@ -10,7 +10,7 @@ export function render (archive, path, activeUrl, isActiveFileDirty) {
     <div class="editor-header">
       <div class="path">
         ${rFileIcon(path)}
-        <span>${path}</span>
+        <span>${rFilePath(path)}</span>
       </div>
       ${rActions(path, activeUrl, isActiveFileDirty)}
     </div>`)
@@ -19,6 +19,12 @@ export function render (archive, path, activeUrl, isActiveFileDirty) {
 // renderers
 // =
 
+function rFilePath (path) {
+  if (path.startsWith('buffer~~')) {
+    return 'Unsaved file'
+  }
+  return path
+}
 
 function rActions (path, url, isDirty) {
   return yo`
