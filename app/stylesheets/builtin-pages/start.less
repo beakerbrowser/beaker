@@ -12,10 +12,13 @@
 html {
   overflow: auto;
 }
+html, body {
+  height: auto;
+}
 
 main {
   width: 670px;
-  margin: 0 auto 40px;
+  margin: 0 auto;
 
   h2 {
     font-weight: 400;
@@ -32,8 +35,7 @@ header {
   width: 100%;
   &:extend(.flex);
   flex-wrap: nowrap;
-  padding: @padding-component--tight;
-  height: 35px;
+  padding: @padding-component--tight @padding-component;
 
   .actions {
     font-size: 14px;
@@ -48,24 +50,14 @@ header {
   }
 
   .profile-card {
-    height: 35px;
-
-    * {
-      display: inline-block;
-      line-height: 35px;
+    a {
+      line-height: 25px;
       vertical-align: middle;
       font-size: 14px;
-    }
 
-    .avatar {
-      width: 35px;
-      height: 100%;
-      border-radius: 2px;
-      margin-left: 10px;
-    }
-
-    a {
-      &:extend(.link);
+      i {
+        margin-left: @margin-icon;
+      }
 
       &:hover {
         &:extend(.link:hover);
@@ -202,7 +194,7 @@ header {
 }
 
 .archives-container {
-  margin-top: 40px;
+  margin-top: 80px;
 
   .archives-title {
     display: flex;
@@ -213,7 +205,6 @@ header {
     }
 
     .action {
-      color: gray;
       cursor: pointer;
 
       &:hover {
