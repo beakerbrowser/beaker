@@ -36,32 +36,31 @@ header {
   &:extend(.flex);
   flex-wrap: nowrap;
   padding: @padding-component--tight @padding-component;
+  font-size: 14px;
 
-  .actions {
-    font-size: 14px;
+  a {
+    cursor: pointer;
 
-    a {
-      margin-right: @padding-component--tight;
-
-      i {
-        margin-right: @margin-icon;
-      }
+    &:hover {
+      &:extend(.link:hover);
+    }
+    i {
+      cursor: pointer;
     }
   }
 
-  .profile-card {
+  .actions {
     a {
-      line-height: 25px;
-      vertical-align: middle;
-      font-size: 14px;
+      margin-right: @padding-component--tight;
+    }
+    i {
+      margin-right: @margin-icon;
+    }
+  }
 
-      i {
-        margin-left: @margin-icon;
-      }
-
-      &:hover {
-        &:extend(.link:hover);
-      }
+  .profile {
+    i {
+      margin-left: @margin-icon;
     }
   }
 }
