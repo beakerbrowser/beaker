@@ -15,6 +15,8 @@ const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 =
 
 var showReleaseNotes = false
 var isManagingBookmarks = false
+var isWritingNote = false
+var error = false
 var userProfile
 var bookmarks, pinnedBookmarks
 
@@ -43,10 +45,11 @@ async function setup () {
 function update () {
   yo.update(document.querySelector('main'), yo`
     <main>
+      ${renderNoteEditor()}
       <header>
         <div class="actions">
           <a onclick=${shareFiles}><i class="fa fa-share-alt"></i> Share files</a>
-          <a><i class="fa fa-sticky-note-o"></i> Share a note</a>
+          <a onclick=${shareNote}><i class="fa fa-sticky-note-o"></i> Share a note</a>
         </div>
         <div style="flex: 1"></div>
         ${renderProfileCard()}
@@ -61,6 +64,31 @@ function renderProfileCard () {
   return yo`
     <div class="profile">
       <a href=${userProfile.url}>${userProfile.title} <i class="fa fa-user-circle-o"></i></a>
+    </div>
+  `
+}
+
+function renderNoteEditor () {
+  if (!isWritingNote) {
+    return ''
+  }
+
+  return yo`
+    <div class="note-editor">
+      <form onsubmit=${submitNote}>
+        <h2>Write a note</h2>
+        <p>
+          <input name="name" type="text" placeholder="Filename including extension..." />
+        </p>
+        <p>
+          <textarea name="text" placeholder="What do you want to share?"></textarea>
+        </p>
+        ${renderError()}
+        <p class="actions">
+          <a class="btn" onclick=${cancelNote}>Cancel</a>
+          <button class="btn primary" type="submit">Create public note</button>
+        </p>
+      </form>
     </div>
   `
 }
@@ -136,13 +164,19 @@ function renderReleaseNotes () {
   `
 }
 
+function renderError () {
+  if (!error) {
+    return ''
+  }
+  return yo`
+    <div class="message error"><i class="fa fa-exclamation-triangle"></i> ${error}</div>
+  `
+}
+
 // event handlers
 // =
 
-async function shareFiles (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
+async function shareFiles () {
   // have user select file
   var paths = await beakerBrowser.showOpenDialog({
     title: 'Select your files',
@@ -153,8 +187,7 @@ async function shareFiles (e) {
   }
 
   // construct the destination folder
-  var d = new Date()
-  var date = pad0`${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}_${d.getHours()}:${d.getMinutes()}`
+  var date = createDateString()
   var dst = `${userProfile.url}/files/${date}/`
 
   // import into the user profile
@@ -164,6 +197,46 @@ async function shareFiles (e) {
 
   // open
   window.location = dst
+}
+
+function shareNote () {
+  isWritingNote = true
+  update()
+}
+
+function cancelNote () {
+  isWritingNote = false
+  update()
+}
+
+async function submitNote (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  var name = (e.target.name.value || '').trim()
+  var text = (e.target.text.value || '').trim()
+
+  name = name || (Date.now() + '.txt')
+  var path = `/notes/${name}`
+
+  var archive = new DatArchive(userProfile.url)
+  // make sure dir exists
+  try { await archive.createDirectory('/notes') }
+  catch (e) {}
+  // make sure file does not exist
+  try {
+    await archive.stat(path)
+    error = 'A file already exists with this name, please choose another.'
+    return update()
+  } catch (e) {}
+  // write file
+  try {
+    await archive.writeFile(path, text, 'utf8')
+  } catch (e) {
+    error = e
+    return update()
+  }
+  window.location = archive.url + path
 }
 
 function toggleAddPin (url, title) {
@@ -215,6 +288,11 @@ function attachDominantColor (bookmark) {
     img.onerror = resolve
     img.src = 'beaker-favicon:' + bookmark.url
   })
+}
+
+function createDateString () {
+  var d = new Date()
+  return pad0`${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}_${d.getHours()}-${d.getMinutes()}`
 }
 
 function pad0 (strings, ...args) {
