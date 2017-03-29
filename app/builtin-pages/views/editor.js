@@ -219,10 +219,10 @@ function configureEditor () {
       +editorOptions.wordWrapLength
     ),
     rulers: editorOptions.wordWrap === 'fixed' ? [+editorOptions.wordWrapLength] : [],
-    quickSuggestions: editorOptions.autoSuggest,
-    suggestOnTriggerCharacters: editorOptions.autoSuggest,
-    wordBasedSuggestions: editorOptions.autoSuggest,
-    hover: editorOptions.hover
+    quickSuggestions: false,
+    suggestOnTriggerCharacters: false,
+    wordBasedSuggestions: false,
+    hover: false
   })
 }
 

@@ -8,7 +8,6 @@ export function render ({values, onSaveOptions, onToggleOptions}) {
   return yo`<div class="editor-options">
     <form onsubmit=${onSubmit({values, onSaveOptions})}>
       ${rWordWrap(values)}
-      ${rCodeIntelligence(values)}
       ${rTabs(values)}
       <p>
         <button type="submit" class="btn success">Save</button>
@@ -22,8 +21,6 @@ export function defaultEditorOptions () {
   return {
     wordWrap: 'auto',
     wordWrapLength: '80',
-    autoSuggest: true,
-    hoverTips: false,
     tabs: 'spaces',
     tabWidth: '2'
   }
@@ -59,13 +56,6 @@ function rWordWrap (values) {
     <label>${rRadio('wordWrap', 'off', values)} Off</label>
     <label>${rRadio('wordWrap', 'auto', values)} Automatic</label>
     <label>${rRadio('wordWrap', 'fixed', values)} Fixed: <input type="text" name="wordWrapLength" value=${values.wordWrapLength}></label>
-  </fieldset>`
-}
-
-function rCodeIntelligence (values) {
-  return yo`<fieldset>
-    <legend>Code Intelligence</legend>
-    <label>${rCheckbox('autoSuggest', 'on', values)} Auto-suggest</label>
   </fieldset>`
 }
 
