@@ -220,6 +220,14 @@ function datServer (req, res) {
 
           return cb(404, 'File Not Found')
         }
+        if (entry.type === 'directory') {
+          res.writeHead(200, 'OK', {
+            'Content-Type': 'text/html',
+            'Content-Security-Policy': DAT_CSP,
+            'Access-Control-Allow-Origin': '*'
+          })
+          return directoryListingPage(archive, urlp.path, html => res.end(html))
+        }
         
         // caching if-match
         // TODO
