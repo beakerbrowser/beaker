@@ -1,16 +1,24 @@
 import yo from 'yo-yo'
 
 var selectedPath
+var actionType
 
 // exported api
 // =
 
 export function render (archive) {
+  var title = 'Save as'
+  var actLabel = 'Save'
+  if (actionType === 'create-folder') {
+    title = 'Folder name'
+    actLabel = 'Create'
+  }
+
   return yo`
     <div id="choose-path-popup" class="active">
       <form class="choose-path-form" onsubmit=${onSubmitChoosePath}>
         <div class="filename">
-          <label for="name">Save as</label>
+          <label for="name">${title}</label>
           <input autofocus type="text" name="name" placeholder="filename" tabindex="1" />
         </div>
         <div class="folder-select">
@@ -18,16 +26,17 @@ export function render (archive) {
         </div>
         <div class="actions">
           <a class="btn" role="button" onclick=${onCancel} tabindex="2">Cancel</a>
-          <button class="btn primary" type="submit" tabindex="3">Save</button>
+          <button class="btn primary" type="submit" tabindex="3">${actLabel}</button>
         </div>
       </form>
     </div>
   `
 }
 
-export function create (archive, initialPath) {
+export function create (archive, {path, action} = {}) {
   // reset state
-  selectedPath = initialPath || ''
+  selectedPath = path || ''
+  actionType = action || 'save-file'
 
   // render interface
   yo.update(document.getElementById('choose-path-popup'), render(archive))
@@ -103,14 +112,14 @@ function onSubmitChoosePath (e) {
 
   // invalid paths
   if (path.endsWith('/')) {
-    // TODO tell user
+    alert('Files can not end with a /')
     return
   }
 
   destroy()
 
   var evt = new Event('choose-path')
-  evt.detail = {path}
+  evt.detail = {path, action: actionType}
   window.dispatchEvent(evt)
 }
 

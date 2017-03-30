@@ -5,7 +5,6 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 var currentContext
 window.addEventListener('set-context-target', e => {
   currentContext = e.detail
-  console.log('set-context-target', currentContext)
 })
 
 // exported api
@@ -69,7 +68,10 @@ function onClickNewFile () {
 }
 
 function onClickNewFolder () {
-  console.log('todo')
+  // emit an event for the toplevel editor to handle
+  var evt = new Event('new-folder')
+  evt.detail = {path: currentContext.path}
+  window.dispatchEvent(evt)
 }
 
 async function onClickImport () {

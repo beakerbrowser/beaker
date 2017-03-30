@@ -55,6 +55,7 @@ window.addEventListener('pushstate', setup)
 window.addEventListener('popstate', setup)
 window.addEventListener('render', render)
 window.addEventListener('new-file', onNewFile)
+window.addEventListener('new-folder', onNewFolder)
 window.addEventListener('open-file', onOpenFile)
 window.addEventListener('save-file', onSaveFile)
 window.addEventListener('import-files', onImportFiles)
@@ -318,12 +319,17 @@ function onCollapseToggle (e) {
 }
 
 async function onNewFile (e) {
-  var path = `buffer~~${Date.now()}~~`
-  if (e.detail && e.detail.path) {
-    path += e.detail.path
-  }
-  await generate(selectedArchive, path)
+  var path = `buffer~~${Date.now()}`
+  var model = await generate(selectedArchive, path)
+  model.suggestedPath = e.detail && e.detail.path
   window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${path}`)
+}
+
+async function onNewFolder (e) {
+  choosePathPopup.create(selectedArchive, {
+    action: 'create-folder',
+    path: e.detail.path
+  })  
 }
 
 async function onOpenFile (e) {
@@ -354,26 +360,38 @@ async function onImportFiles (e) {
 }
 
 async function onChoosePath (e) {
-  var path = e.detail.path
-  if (!selectedArchive || !selectedModel) {
+  var {path, action} = e.detail
+  if (!selectedArchive) {
     return
   }
+  if (action === 'save-file') {
+    if (!selectedModel) return
+    // get content
+    var content = selectedModel.getValue()
 
-  // get content
-  var content = selectedModel.getValue()
+    // close current model
+    closeModel()
 
-  // close current model
-  closeModel()
+    // generate new model
+    var model = await generate(selectedArchive, path, content)
 
-  // generate new model
-  var path = await generate(selectedArchive, path, content)
+    // save content
+    selectedModel = model
+    await save()
 
-  // save content
-  selectedModel = models[selectedArchive.url + '/' + path]
-  await save()
+    // go to file
+    window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${model.path}`)
+  }
+  if (action === 'create-folder') {
+    if (!selectedArchive) return
+    try {
+      await selectedArchive.createDirectory(path)
+      render()
+    } catch (e) {
+      alert('' + e)
+    }
 
-  // go to file
-  window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${path}`)
+  }
 }
 
 function onDragDrop (files) {
@@ -511,7 +529,7 @@ async function generate (archive, path, content='') {
   models[url].updateOptions(getModelOptions())
   dirtyFiles[url] = true
   archive.fileTree.addNode({ type: 'file', name: path })
-  return path
+  return models[url]
 }
 
 async function load (archive, path) {
@@ -535,7 +553,7 @@ async function save () {
 
   // do we need to pick a filename?
   if (selectedModel.path.startsWith('buffer~~')) {
-    return choosePathPopup.create(selectedArchive, selectedModel.path.split('~~').pop())
+    return choosePathPopup.create(selectedArchive, {path: selectedModel.suggestedPath})
   }
 
   // write the file content
