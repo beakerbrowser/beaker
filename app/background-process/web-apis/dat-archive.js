@@ -106,9 +106,11 @@ export default {
     await assertWritePermission(archive, this.sender)
     await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
     await assertValidFilePath(filepath)
+    /*
     if (isProtectedFilePath(filepath)) {
       throw new ProtectedFileNotWritableError()
     }
+    */
     return pda.writeFile(archive, filepath, data, opts)
   },
 
@@ -136,9 +138,11 @@ export default {
     var { archive, filepath } = lookupArchive(url)
     await assertWritePermission(archive, this.sender)
     await assertValidPath(filepath)
+    /*
     if (isProtectedFilePath(filepath)) {
       throw new ProtectedFileNotWritableError()
     }
+    */
     return pda.createDirectory(archive, filepath)
   },
 
@@ -205,9 +209,11 @@ export default {
 // =
 
 // helper to check if filepath refers to a file that userland is not allowed to edit directly
+/*
 function isProtectedFilePath (filepath) {
   return filepath === '/dat.json'
 }
+*/
 
 // temporary helper to make sure the call is made by a beaker: page
 function assertTmpBeakerOnly (sender) {
