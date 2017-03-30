@@ -70,6 +70,10 @@ module.exports = function (src, dest, opts) {
   }).then(function () {
     deferred.resolve();
   }).catch(function (err) {
+    if (err.code === 'PARSE_ERROR') {
+      console.log(err.loc)
+      console.log(err.frame)
+    }
     deferred.reject(err);
   });
 
