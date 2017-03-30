@@ -159,7 +159,18 @@ async function setupFile () {
         // load the file
         await load(selectedArchive, path)
       } catch (err) {
-        loadErr = err
+        console.error(err)
+        if (err.notFound) {
+          // somehow we were given a bad URL, just show the archive info
+          selectedModel = null
+          selectedPath = null
+          viewIsLoading = false
+          clearTimeout(to)
+          render()
+        } else {
+          loadErr = err
+        }
+        return
       }
 
       // make sure the file is still wanted
@@ -513,7 +524,7 @@ async function save () {
   await selectedArchive.writeFile(selectedModel.path, selectedModel.getValue(), 'utf-8')
 
   // update state and render
-  dirtyFiles[selectedModel.uri.toString()] = false
+  delete dirtyFiles[selectedModel.uri.toString()]
   render()
 }
 
