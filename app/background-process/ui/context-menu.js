@@ -6,7 +6,7 @@ import { download } from './downloads'
 export default function registerContextMenu () {
   // register the context menu on every created webContents
   app.on('web-contents-created', (e, webContents) => {
-    webContents.on('context-menu', (e, props) => {
+    webContents.on('context-menu', async (e, props) => {
       var menuItems = []
       const { mediaFlags, editFlags } = props
       const hasText = props.selectionText.trim().length > 0
@@ -23,11 +23,63 @@ export default function registerContextMenu () {
         return
 
       // helper to call code on the element under the cursor
-      const callOnElement = js => {
-        webContents.executeJavaScript(`
-          var el = document.elementFromPoint(${props.x}, ${props.y})
-          ${js}
+      const callOnElement = js => webContents.executeJavaScript(`
+        var el = document.elementFromPoint(${props.x}, ${props.y})
+        new Promise(resolve => { ${js} })
+      `)
+
+      // fetch custom menu information
+      try {
+        var customMenu = await callOnElement(`
+          if (!el) {
+            return resolve(null)
+          }
+
+          // check for a context menu setting
+          var contextMenuId
+          while (el && el.getAttribute) {
+            contextMenuId = el.getAttribute('contextmenu')
+            if (contextMenuId) break
+            el = el.parentNode
+          }
+          if (!contextMenuId) {
+            return resolve(null)
+          }
+
+          // lookup the context menu el
+          var contextMenuEl = document.querySelector('menu#' + contextMenuId)
+          if (!contextMenuEl) {
+            return resolve(null)
+          }
+
+          // extract the menu items that are commands
+          var menuItemEls = contextMenuEl.querySelectorAll('menuitem')
+          resolve(Array.from(menuItemEls)
+            .filter(el => {
+              var type = el.getAttribute('type')
+              return !type || type.toLowerCase() === 'command'
+            })
+            .map(el => {
+              return {
+                disabled: el.getAttribute('disabled'),
+                label: el.getAttribute('label'),
+                onclick: el.getAttribute('onclick')
+              }
+            })
+          )
         `)
+      } catch (e) {
+        console.error('Error checking for a custom context menu', e)
+      }
+      if (customMenu && customMenu.length) {
+        customMenu.forEach(customItem => {
+          menuItems.push({
+            label: customItem.label,
+            click: () => webContents.executeJavaScript(customItem.onclick || ''),
+            enabled: customItem.disabled === null
+          })
+        })
+        menuItems.push({ type: 'separator' })
       }
 
       // helper to run a download prompt for media
@@ -107,7 +159,7 @@ export default function registerContextMenu () {
 
       // show menu
       var menu = Menu.buildFromTemplate(menuItems)
-      menu.popup(targetWindow)
+      menu.popup(targetWindow, {async: true})
     })
   })
 }
