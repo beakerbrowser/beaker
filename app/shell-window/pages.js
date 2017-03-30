@@ -635,6 +635,9 @@ function onDidStopLoading (e) {
         background: #fff;
       }` +
 
+      // hide context menu definitions
+      `menu[type="context"] { display: none; }` +
+
       // adjust the positioning of fullpage media players
       `body:-webkit-full-page-media {
         background: #ddd;
