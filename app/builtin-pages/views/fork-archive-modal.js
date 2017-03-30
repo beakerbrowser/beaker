@@ -139,8 +139,8 @@ function render () {
 
             ${progressEl}
             <div class="form-actions">
-              <button type="button" class="btn cancel" onclick=${onClickCancel}>Cancel</button>
-              <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="3">
+              <button type="button" class="btn cancel" onclick=${onClickCancel} tabindex="3">Cancel</button>
+              <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="4">
                 Create fork ${!isComplete ? ' anyway' : ''}
               </button>
               ${downloadBtn}

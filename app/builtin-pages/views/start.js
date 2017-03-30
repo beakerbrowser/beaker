@@ -78,15 +78,15 @@ function renderNoteEditor () {
       <form onsubmit=${submitNote}>
         <h2>Write a note</h2>
         <p>
-          <input name="name" type="text" placeholder="Filename including extension..." />
+          <input autofocus name="name" type="text" placeholder="Filename including extension..." tabindex="1"/>
         </p>
         <p>
-          <textarea name="text" placeholder="What do you want to share?"></textarea>
+          <textarea name="text" placeholder="What do you want to share?" tabindex="2"></textarea>
         </p>
         ${renderError()}
         <p class="actions">
-          <a class="btn" onclick=${cancelNote}>Cancel</a>
-          <button class="btn primary" type="submit">Create public note</button>
+          <a class="btn" onclick=${cancelNote} tabindex="3">Cancel</a>
+          <button class="btn primary" type="submit" tabindex="4">Create public note</button>
         </p>
       </form>
     </div>

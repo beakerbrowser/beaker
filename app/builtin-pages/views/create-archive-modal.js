@@ -105,7 +105,7 @@ function render () {
 
           <form onsubmit=${onSubmit}>
             <label for="title">Title</label>
-            <input name="title" tabindex="1" value=${title || ''} placeholder="Title" onchange=${onChangeTitle} />
+            <input autofocus name="title" tabindex="1" value=${title || ''} placeholder="Title" onchange=${onChangeTitle} />
 
             <label for="desc">Description</label>
             <input name="desc" tabindex="2" value=${description || ''} placeholder="Description" onchange=${onChangeDescription} />
