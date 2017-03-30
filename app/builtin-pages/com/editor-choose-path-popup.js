@@ -11,14 +11,14 @@ export function render (archive) {
       <form class="choose-path-form" onsubmit=${onSubmitChoosePath}>
         <div class="filename">
           <label for="name">Save as</label>
-          <input type="text" name="name" placeholder="filename" />
+          <input autofocus type="text" name="name" placeholder="filename" tabindex="1" />
         </div>
         <div class="folder-select">
           ${rFolder(archive, archive.fileTree.rootNode)}
         </div>
         <div class="actions">
-          <a class="btn" onclick=${onCancel}>Cancel</a>
-          <button class="btn primary" type="submit">Save</button>
+          <a class="btn" role="button" onclick=${onCancel} tabindex="2">Cancel</a>
+          <button class="btn primary" type="submit" tabindex="3">Save</button>
         </div>
       </form>
     </div>
