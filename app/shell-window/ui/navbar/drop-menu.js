@@ -125,15 +125,15 @@ export class DropMenuNavbarBtn {
                 <i class="fa fa-history"></i>
                 History
               </div>
+              
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://editor')}>
+                <i class="fa fa-pencil"></i>
+                Editor
+              </div>
 
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
                 <i class="fa fa-star"></i>
                 Bookmarks
-              </div>
-
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://editor')}>
-                <i class="fa fa-pencil"></i>
-                Editor
               </div>
 
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
