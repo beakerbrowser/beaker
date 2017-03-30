@@ -210,10 +210,7 @@ async function onFork (e, archive) {
 }
 
 function onContextMenu (e) {
-  var itemEl = findParent(e.target, 'item')
-  if (!itemEl && e.target.classList.contains('project-title')) {
-    itemEl = e.target
-  }
+  var itemEl = findParent(e.target, el => !!el.dataset.url)
   if (!itemEl) {
     return
   }
