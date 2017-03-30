@@ -30,7 +30,13 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchiv
               </div>`
           : ''}
 
-        <div class="project-title" contextmenu="archive">
+        <div
+          class="project-title"
+          data-path=""
+          data-url=${archive.url}
+          contextmenu="archive"
+          oncontextmenu=${onContextMenu}
+        >
           <a class="title" href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>
             ${archive.niceName}
           </a>
@@ -82,7 +88,10 @@ function rChildren (archive, children, depth, dirtyFiles, selectedPath) {
 }
 
 function treeSorter (a, b) {
-  // directories at top
+  // unsaved buffers at top
+  if (a.entry.name.startsWith('buffer~~')) return -1
+  if (b.entry.name.startsWith('buffer~~')) return 1
+  // directories next
   if (a.entry.type == 'directory' && b.entry.type != 'directory')
     return -1
   if (a.entry.type != 'directory' && b.entry.type == 'directory')
@@ -120,8 +129,11 @@ function rDirectory (archive, node, depth, dirtyFiles, selectedPath) {
     <div>
       <div
         class="item folder ${cls}"
+        data-url=${getUrl(archive, node)}
+        data-path=${normalizePath(node.entry.name)}
         title=${node.niceName}
         onclick=${e => onClickDirectory(e, archive, node, dirtyFiles, selectedPath)}
+        oncontextmenu=${onContextMenu}
         contextmenu="directory"
         style=${'padding-left: ' + directoryPadding + 'px'}>
         <i class="fa fa-caret-${icon}"></i>
@@ -140,8 +152,11 @@ function rFile (archive, node, depth, dirtyFiles, selectedPath) {
   return yo`
     <div
       class="item file ${cls}"
+      data-url=${getUrl(archive, node)}
+      data-path=${normalizePath(node.entry.name)}
       title=${node.niceName}
       onclick=${e => onClickFile(e, archive, node)}
+      oncontextmenu=${onContextMenu}
       contextmenu="file"
       style=${'padding-left: ' + padding + 'px'}>
       ${node.niceName}${isChanged}
@@ -192,6 +207,19 @@ async function onFork (e, archive) {
   e.preventDefault()
   var newArchive = await DatArchive.fork(archive)
   window.location = 'beaker://editor/' + newArchive.url.slice('dat://'.length)
+}
+
+function onContextMenu (e) {
+  var itemEl = findParent(e.target, 'item')
+  if (!itemEl && e.target.classList.contains('project-title')) {
+    itemEl = e.target
+  }
+  if (!itemEl) {
+    return
+  }
+  var evt = new Event('set-context-target')
+  evt.detail = {url: itemEl.dataset.url, path: itemEl.dataset.path}
+  window.dispatchEvent(evt)
 }
 
 // internal helpers

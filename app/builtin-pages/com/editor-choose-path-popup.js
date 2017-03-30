@@ -25,9 +25,9 @@ export function render (archive) {
   `
 }
 
-export function create (archive) {
+export function create (archive, initialPath) {
   // reset state
-  selectedPath = ''
+  selectedPath = initialPath || ''
 
   // render interface
   yo.update(document.getElementById('choose-path-popup'), render(archive))

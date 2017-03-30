@@ -5,6 +5,7 @@ import {render as renderArchivesList, renderArchivesListItems} from '../com/arch
 import {render as renderArchiveView} from '../com/editor-archive-view'
 import {render as renderEditorOptions, defaultEditorOptions} from '../com/editor-options'
 import {render as rHeader} from '../com/editor-header'
+import renderContextMenu from '../com/editor-context-menu'
 import * as choosePathPopup from '../com/editor-choose-path-popup'
 import {pushUrl} from '../../lib/fg/event-handlers'
 import {ucfirst} from '../../lib/strings'
@@ -56,6 +57,7 @@ window.addEventListener('render', render)
 window.addEventListener('new-file', onNewFile)
 window.addEventListener('open-file', onOpenFile)
 window.addEventListener('save-file', onSaveFile)
+window.addEventListener('import-files', onImportFiles)
 window.addEventListener('choose-path', onChoosePath)
 window.addEventListener('editor-created', onEditorCreated)
 window.addEventListener('keydown', onKeyDown)
@@ -281,24 +283,7 @@ function render () {
           ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
           : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles, isArchivesListCollapsed: collapsed, onCollapseToggle})}
       </div>
-      <menu type="context" id="file">
-        <menuitem label="Rename" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
-        <menuitem label="Delete file" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
-        <menuitem label="View file externally" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
-      </menu>
-      <menu type="context" id="directory">
-        <menuitem label="New file" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
-        <menuitem label="New folder" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
-        <menuitem label="Import file(s)..." onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
-        <hr />
-        <menuitem label="Rename" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
-        <menuitem label="Delete folder" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
-      </menu>
-      <menu type="context" id="archive">
-        <menuitem label="New file" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
-        <menuitem label="New folder" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
-        <menuitem label="Import file(s)..." onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
-      </menu>
+      ${renderContextMenu()}
     </div>`)
 }
 
@@ -333,7 +318,11 @@ function onCollapseToggle (e) {
 }
 
 async function onNewFile (e) {
-  var path = await generate(selectedArchive, 'buffer~~' + Date.now())
+  var path = `buffer~~${Date.now()}~~`
+  if (e.detail && e.detail.path) {
+    path += e.detail.path
+  }
+  await generate(selectedArchive, path)
   window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${path}`)
 }
 
@@ -351,6 +340,17 @@ async function onOpenFile (e) {
 
 function onSaveFile (e) {
   save()
+}
+
+async function onImportFiles (e) {
+  await Promise.all(e.detail.files.map(src => {
+    // send to backend
+    return DatArchive.importFromFilesystem({
+      srcPath: src,
+      dst: e.detail.dst,
+      inplaceImport: false
+    })
+  }))
 }
 
 async function onChoosePath (e) {
@@ -535,7 +535,7 @@ async function save () {
 
   // do we need to pick a filename?
   if (selectedModel.path.startsWith('buffer~~')) {
-    return choosePathPopup.create(selectedArchive)
+    return choosePathPopup.create(selectedArchive, selectedModel.path.split('~~').pop())
   }
 
   // write the file content
