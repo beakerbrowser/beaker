@@ -50,7 +50,7 @@ export function create (archive, {path, action} = {}) {
 
 export function destroy () {
   var popup = document.getElementById('choose-path-popup')
-  popup.removeChild(popup.firstChild)
+  popup.innerHTML = ''
   popup.classList.remove('active')
 }
 
