@@ -10,9 +10,8 @@ export function render (archive) {
     <div id="choose-path-popup" class="active">
       <form class="choose-path-form" onsubmit=${onSubmitChoosePath}>
         <div class="filename">
-          <label>
-            Save as <input type="text" name="name" placeholder="filename" />
-          </label>
+          <label for="name">Save as</label>
+          <input type="text" name="name" placeholder="filename" />
         </div>
         <div class="folder-select">
           ${rFolder(archive, archive.fileTree.rootNode)}
