@@ -12,6 +12,7 @@ export function setup () {
   var isTouching = false // is touch event active?
   var leftSwipeArrowEl = document.getElementById('left-swipe-arrow')
   var rightSwipeArrowEl = document.getElementById('right-swipe-arrow')
+  var toolbarSize = document.getElementById('toolbar').clientHeight
 
   const canGoBack = () => {
     var page = pages.getActive()
@@ -85,7 +86,7 @@ export function setup () {
         (function() {
           var isScrolling = false
           // check if the element under the cursor, or any of its parents, are scrolling horizontally right now
-          var el = document.elementFromPoint(${data.cursorX}, ${data.cursorY})
+          var el = document.elementFromPoint(${data.cursorX}, ${(data.cursorY - toolbarSize)})
           while (el) {
             if (el.scrollWidth > el.clientWidth) {
               isScrolling = true
