@@ -30,7 +30,7 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchiv
               </div>`
           : ''}
 
-        <div class="project-title">
+        <div class="project-title" contextmenu="archive">
           <a class="title" href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>
             ${archive.niceName}
           </a>
@@ -122,6 +122,7 @@ function rDirectory (archive, node, depth, dirtyFiles, selectedPath) {
         class="item folder ${cls}"
         title=${node.niceName}
         onclick=${e => onClickDirectory(e, archive, node, dirtyFiles, selectedPath)}
+        contextmenu="directory"
         style=${'padding-left: ' + directoryPadding + 'px'}>
         <i class="fa fa-caret-${icon}"></i>
         ${node.niceName}
@@ -141,6 +142,7 @@ function rFile (archive, node, depth, dirtyFiles, selectedPath) {
       class="item file ${cls}"
       title=${node.niceName}
       onclick=${e => onClickFile(e, archive, node)}
+      contextmenu="file"
       style=${'padding-left: ' + padding + 'px'}>
       ${node.niceName}${isChanged}
     </div>

@@ -281,6 +281,24 @@ function render () {
           ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
           : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles, isArchivesListCollapsed: collapsed, onCollapseToggle})}
       </div>
+      <menu type="context" id="file">
+        <menuitem label="Rename" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
+        <menuitem label="Delete file" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
+        <menuitem label="View file externally" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
+      </menu>
+      <menu type="context" id="directory">
+        <menuitem label="New file" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
+        <menuitem label="New folder" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
+        <menuitem label="Import file(s)..." onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
+        <hr />
+        <menuitem label="Rename" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
+        <menuitem label="Delete folder" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
+      </menu>
+      <menu type="context" id="archive">
+        <menuitem label="New file" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
+        <menuitem label="New folder" onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
+        <menuitem label="Import file(s)..." onclick=${(e) => console.log('TODO', e.target, e)}></menuitem>
+      </menu>
     </div>`)
 }
 

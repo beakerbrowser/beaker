@@ -53,17 +53,20 @@ export default function registerContextMenu () {
           }
 
           // extract the menu items that are commands
-          var menuItemEls = contextMenuEl.querySelectorAll('menuitem')
+          var menuItemEls = contextMenuEl.querySelectorAll('menuitem, hr')
           resolve(Array.from(menuItemEls)
             .filter(el => {
+              if (el.tagName === 'HR') return true
               var type = el.getAttribute('type')
               return !type || type.toLowerCase() === 'command'
             })
             .map(el => {
+              if (el.tagName === 'HR') return { type: 'separator' }
               return {
+                menuId: contextMenuId,
+                type: 'command',
                 disabled: el.getAttribute('disabled'),
-                label: el.getAttribute('label'),
-                onclick: el.getAttribute('onclick')
+                label: el.getAttribute('label')
               }
             })
           )
@@ -72,12 +75,21 @@ export default function registerContextMenu () {
         console.error('Error checking for a custom context menu', e)
       }
       if (customMenu && customMenu.length) {
-        customMenu.forEach(customItem => {
-          menuItems.push({
-            label: customItem.label,
-            click: () => webContents.executeJavaScript(customItem.onclick || ''),
-            enabled: customItem.disabled === null
-          })
+        // add to the menu, with a 10 item limit
+        customMenu.slice(0, 10).forEach(customItem => {
+          if (customItem.type === 'separator') {
+            menuItems.push({ type: 'separator' })
+          } else if (customItem.label.trim()) {
+            menuItems.push({
+              label: customItem.label,
+              click: () => webContents.executeJavaScript(`
+                var el = document.querySelector('#${customItem.menuId} menuitem[label="${customItem.label}"]')
+                var evt = new MouseEvent('click', {bubbles: true, cancelable: true, view: window})
+                el.dispatchEvent(evt)
+              `),
+              enabled: customItem.disabled === null
+            })
+          }
         })
         menuItems.push({ type: 'separator' })
       }
