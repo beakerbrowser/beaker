@@ -452,9 +452,12 @@ function getNiceTitle (page) {
   if (!title) return false
 
   // if the title is just the URL, give the path
+  if (title !== page.getURL()) {
+    return title
+  }
   try {
     let { pathname, origin } = new URL(title)
-    if (pathname !== '/') {
+    if (!pathname.endsWith('/')) {
       pathname = pathname.split('/').pop()
     } else {
       pathname = 'index.html'
