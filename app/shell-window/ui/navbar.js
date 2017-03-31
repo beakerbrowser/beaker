@@ -187,6 +187,7 @@ function render (id, page) {
   var toolbarActionDat = ''
 
   if (isViewingDat) {
+    let numPeers = page.siteInfo ? page.siteInfo.peers : 0
     let forkBtnTitle = 'Fork (Duplicate) This Site'
     let editBtnTitle = 'Edit This Site'
     let liveReloadBtnCls = 'nav-live-reload-btn'
@@ -200,7 +201,7 @@ function render (id, page) {
     datBtns = [
       yo`
         <button class="nav-peers-btn">
-          <i class="fa fa-share-alt"></i> ${page.siteInfo.peers} ${pluralize(page.siteInfo.peers, 'peer')}
+          <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
         </button>`,
       yo`
         <button class=${liveReloadBtnCls} title=${liveReloadBtnTitle} onclick=${onClickLiveReload}>

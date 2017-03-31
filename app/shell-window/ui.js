@@ -28,6 +28,7 @@ export function setup (cb) {
   navbar.setup()
   commandHandlers.setup()
   swipeHandlers.setup()
+  pages.setup()
   pages.setActive(pages.create(pages.FIRST_TAB_URL))
   cb()
 }

@@ -47,6 +47,19 @@ export function getPinned () {
   return pages.filter(p => p.isPinned)
 }
 
+export function setup () {
+  beaker.archives.addEventListener('network-changed', ({key, peers}) => {
+    // check if any of the active pages matches this key
+    pages.forEach(page => {
+      if (page.siteInfo && page.siteInfo.key === key) {
+        // update info
+        page.siteInfo.peers = peers
+        navbar.update(page)
+      }
+    })
+  })
+}
+
 export function create (opts) {
   var url
   if (opts && typeof opts == 'object') {

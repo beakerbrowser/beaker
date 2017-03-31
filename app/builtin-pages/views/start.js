@@ -35,8 +35,8 @@ async function setup () {
   update()
 
   // subscribe to network changes
-  beaker.archives.addEventListener('network-changed', ({peers}) => {
-    archivesStatus.peers = peers
+  beaker.archives.addEventListener('network-changed', ({totalPeers}) => {
+    archivesStatus.peers = totalPeers
     update()
   })
 
