@@ -132,9 +132,10 @@ function renderBookmarks () {
         </a>
       </li>`
 
+  const unpinnedBookmarks = bookmarks.filter(isNotPinned)
   return yo`
     <div class="bookmarks">
-      ${bookmarks.filter(isNotPinned).map(renderRow)}
+      ${unpinnedBookmarks.length ? unpinnedBookmarks.map(renderRow) : 'All bookmarks are pinned'}
     </div>
   `
 }
