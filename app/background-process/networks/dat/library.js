@@ -252,6 +252,7 @@ export async function queryArchives (query) {
     var archive = getArchive(archiveInfo.key)
     if (archive) {
       archiveInfo.peers = archive.metadata.peers.length
+      archiveInfo.peerHistory = archive.peerHistory
     }
   })
   return archiveInfos
@@ -435,10 +436,18 @@ function fromKeyToURL (key) {
 function onNetworkChanged (e) {
   var key = datEncoding.toStr(this.key)
   var archive = archives[key]
-  archive.peerHistory.push({
-    ts: Date.now(),
-    peers: this.peers.length
-  })
+
+  var now = Date.now()
+  var lastHistory = archive.peerHistory.slice(-1)[0]
+  if (lastHistory && (now - lastHistory.ts) < 10e3) {
+    // if the last datapoint was < 10s ago, just update it
+    lastHistory.peers = this.peers.length
+  } else {
+    archive.peerHistory.push({
+      ts: Date.now(),
+      peers: this.peers.length
+    })
+  }
 
   // count # of peers
   var peers = 0

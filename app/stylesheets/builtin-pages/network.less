@@ -9,3 +9,42 @@
 * {
   box-sizing: border-box;
 }
+
+main {
+  font-family: system, -apple-system, ".SFNSDisplay-Regular", "Helvetica Neue", Helvetica, "Segoe UI", sans-serif;
+  font-size: 13px;
+}
+
+.archives-list {
+  margin: 2em;
+}
+
+.archive {
+  display: flex;
+  padding: 1em 0;
+  border-top: 1px solid #aaa;
+
+  &:last-child {
+    border-bottom: 1px solid #aaa;
+  }
+
+  .info {
+    flex: 1;
+  }
+
+  .peers {
+    flex: 0 0 50px;
+  }
+
+  .peer-history {
+    flex: 1;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .peers {
+    font-size: 21px;
+  }
+}
