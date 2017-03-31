@@ -7,6 +7,7 @@ import prettyHash from 'pretty-hash'
 import { UpdatesNavbarBtn } from './navbar/updates'
 import { DropMenuNavbarBtn } from './navbar/drop-menu'
 import { SiteInfoNavbarBtn } from './navbar/site-info'
+import {pluralize} from '../../lib/strings'
 
 const KEYCODE_DOWN = 40
 const KEYCODE_UP = 38
@@ -198,8 +199,12 @@ function render (id, page) {
 
     datBtns = [
       yo`
+        <button class="nav-peers-btn">
+          <i class="fa fa-share-alt"></i> ${page.siteInfo.peers} ${pluralize(page.siteInfo.peers, 'peer')}
+        </button>`,
+      yo`
         <button class=${liveReloadBtnCls} title=${liveReloadBtnTitle} onclick=${onClickLiveReload}>
-          <span class="fa fa-bolt"></span>
+          <i class="fa fa-bolt"></i>
         </button>`
     ]
 

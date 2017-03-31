@@ -9,6 +9,16 @@ import {PermissionsError, InvalidURLError} from 'beaker-error-constants'
 // =
 
 export default {
+  async status() {
+    var status = {archives: 0, peers: 0}
+    var archives = datLibrary.getActiveArchives()
+    for (var k in archives) {
+      status.archives++
+      status.peers += archives[k].metadata.peers.length
+    }
+    return status
+  },
+
   async create({title, description, createdBy} = {}) {
     assertTmpBeakerOnly(this.sender)
 

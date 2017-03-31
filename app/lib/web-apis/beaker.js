@@ -27,6 +27,7 @@ if (window.location.protocol === 'beaker:') {
     url = (typeof url.url === 'string') ? url.url : url
     return archivesRPC.fork(url, opts).then(newUrl => new DatArchive(newUrl))
   }
+  beaker.archives.status = archivesRPC.status
   beaker.archives.add = archivesRPC.add
   beaker.archives.remove = archivesRPC.remove
   beaker.archives.update = archivesRPC.update

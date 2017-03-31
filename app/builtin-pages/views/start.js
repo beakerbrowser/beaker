@@ -5,6 +5,7 @@ sites loaded over the beaker: protocol
 
 import * as yo from 'yo-yo'
 import ColorThief from '../../lib/fg/color-thief'
+import {pluralize} from '../../lib/strings'
 
 const colorThief = new ColorThief()
 
@@ -18,11 +19,13 @@ var isManagingBookmarks = false
 var isWritingNote = false
 var error = false
 var userProfile
+var archivesStatus
 var bookmarks, pinnedBookmarks
 
 setup()
 async function setup () {
   await loadBookmarks()
+  archivesStatus = await beaker.archives.status()
   userProfile = await beaker.profiles.get(0)
   try {
     userProfile.title = (await beaker.archives.get(userProfile.url)).title
@@ -30,6 +33,12 @@ async function setup () {
     userProfile.title = 'Your profile'
   }
   update()
+
+  // subscribe to network changes
+  beaker.archives.addEventListener('network-changed', ({peers}) => {
+    archivesStatus.peers = peers
+    update()
+  })
 
   let latestVersion = await beakerSitedata.get('beaker://start', 'latest-version')
   if (+latestVersion < LATEST_VERSION) {
@@ -63,7 +72,7 @@ function update () {
 function renderProfileCard () {
   return yo`
     <div class="profile">
-      <a class="network" href="beaker://network"><i class="fa fa-share-alt"></i> 0 peers</a>
+      <a class="network" href="beaker://network"><i class="fa fa-share-alt"></i> ${archivesStatus.peers} ${pluralize(archivesStatus.peers, 'peer')}</a>
       <a href=${userProfile.url}>${userProfile.title} <i class="fa fa-user-circle-o"></i></a>
     </div>
   `

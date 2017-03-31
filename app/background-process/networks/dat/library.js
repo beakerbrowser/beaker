@@ -352,6 +352,8 @@ export function joinSwarm (key, opts) {
   swarm.listen()
   swarm.on('error', err => debug('Swarm error for', keyStr, err))
   swarm.join(archive.discoveryKey)
+  archive.metadata.on('peer-add', onNetworkChanged)
+  archive.metadata.on('peer-remove', onNetworkChanged)
 
   debug('Swarming archive', datEncoding.toStr(archive.key), 'discovery key', datEncoding.toStr(archive.discoveryKey))
   archive.isSwarming = true
@@ -368,6 +370,8 @@ export function leaveSwarm (key, cb) {
 
   debug('Unswarming archive %s disconnected %d peers', keyStr, archive.metadata.peers.length)
   archive.unreplicate() // stop all active replications
+  archive.metadata.removeListener('peer-add', onNetworkChanged)
+  archive.metadata.removeListener('peer-remove', onNetworkChanged)
   swarm.leave(archive.discoveryKey)
   swarm.destroy()
   delete archive.swarm
@@ -424,4 +428,13 @@ function fromKeyToURL (key) {
     return `dat://${key}/`
   }
   return key
+}
+
+function onNetworkChanged (e) {
+  // count # of peers
+  var peers = 0
+  for (var k in archives) {
+    peers += archives[k].metadata.peers.length
+  }
+  archivesEvents.emit('network-changed', {peers})
 }
