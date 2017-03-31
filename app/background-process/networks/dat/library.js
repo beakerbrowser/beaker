@@ -203,6 +203,7 @@ export function loadArchive (key, { noSwarm } = {}) {
     file: name => raf(path.join(archivesDb.getArchiveFilesPath(archive), name))
   })
   archive.userSettings = null // will be set by `configureArchive` if at all
+  archive.peerHistory = [] // samples of the peer
   mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
   cacheArchive(archive)
   if (!noSwarm) joinSwarm(archive)
@@ -268,6 +269,7 @@ export async function getArchiveInfo (key, opts = {}) {
   ])
   meta.userSettings = { isSaved: userSettings.isSaved }
   meta.peers = archive.metadata.peers.length
+  meta.peerHistory = archive.peerHistory
 
   // optional data
   if (opts.contentBitfield) {
@@ -431,6 +433,13 @@ function fromKeyToURL (key) {
 }
 
 function onNetworkChanged (e) {
+  var key = datEncoding.toStr(this.key)
+  var archive = archives[key]
+  archive.peerHistory.push({
+    ts: Date.now(),
+    peers: this.peers.length
+  })
+
   // count # of peers
   var peers = 0
   for (var k in archives) {
