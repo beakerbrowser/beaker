@@ -85,7 +85,7 @@ function renderNoteEditor () {
         </p>
         ${renderError()}
         <p class="actions">
-          <button class="btn" onclick=${cancelNote} tabindex="3">Cancel</button>
+          <button class="btn" type="button" onclick=${cancelNote} tabindex="3">Cancel</button>
           <button class="btn primary" type="submit" tabindex="4">Create public note</button>
         </p>
       </form>
