@@ -9,7 +9,7 @@ import { debounce, throttle } from '../../lib/functions'
 
 const MAX_TAB_WIDTH = 235 // px
 const MIN_TAB_WIDTH = 52 // px
-const TAB_SPACING = 3 // px
+const TAB_SPACING = -1 // px
 
 // globals
 // =
@@ -78,11 +78,15 @@ function drawTab (page) {
   if (isActive) cls += ' chrome-tab-current'
   if (isTabDragging) cls += ' chrome-tab-dragging'
 
+  // styles
+  var {pageIndex, style} = getPageStyle(page)
+  if (pageIndex === 0) cls += ' leftmost'
+
   // pinned rendering:
   if (page.isPinned) {
     return yo`<div class=${'chrome-tab chrome-tab-pinned'+cls}
                 data-id=${page.id}
-                style=${getPageStyle(page)}
+                style=${style}
                 onclick=${onClickTab(page)}
                 oncontextmenu=${onContextMenuTab(page)}
                 onmousedown=${onMouseDown(page)}
@@ -97,7 +101,7 @@ function drawTab (page) {
   return yo`
   <div class=${'chrome-tab'+cls}
       data-id=${page.id}
-      style=${getPageStyle(page)}
+      style=${style}
       onclick=${onClickTab(page)}
       oncontextmenu=${onContextMenuTab(page)}
       onmousedown=${onMouseDown(page)}
@@ -133,8 +137,13 @@ function repositionTabs (e) {
   currentTabWidth = Math.min(MAX_TAB_WIDTH, Math.max(MIN_TAB_WIDTH, availableWidth / numUnpinnedTabs))|0
 
   // update tab positions
-  allPages.forEach(page => getTabEl(page, tabEl => tabEl.style = getPageStyle(page)))
-  tabsContainerEl.querySelector('.chrome-tab-add-btn').style = getPageStyle(allPages.length)
+  allPages.forEach(page => getTabEl(page, tabEl => {
+    var {style, pageIndex} = getPageStyle(page)
+    if (pageIndex === 0) tabEl.classList.add('leftmost')
+    if (pageIndex !== 0) tabEl.classList.remove('leftmost')
+    tabEl.style = style
+  }))
+  tabsContainerEl.querySelector('.chrome-tab-add-btn').style = getPageStyle(allPages.length).style
 }
 
 // page event
@@ -400,7 +409,7 @@ function getPageStyle (page) {
   if (pageObject) {
     style += ` width: ${getTabWidth(pageObject)}px;`
   }
-  return style
+  return {pageIndex, style}
 }
 
 // returns 0 for no, -1 or 1 for yes (the offset)
