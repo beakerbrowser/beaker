@@ -48,8 +48,8 @@ function update () {
       ${renderNoteEditor()}
       <header>
         <div class="actions">
-          <a onclick=${shareFiles}><i class="fa fa-share-alt"></i> Share files</a>
-          <a onclick=${shareNote}><i class="fa fa-sticky-note-o"></i> Share a note</a>
+          <a onclick=${shareFiles}><i class="fa fa-files-o"></i> Share files</a>
+          <a onclick=${shareNote}><i class="fa fa-edit"></i> Share a note</a>
         </div>
         <div style="flex: 1"></div>
         ${renderProfileCard()}
@@ -63,6 +63,7 @@ function update () {
 function renderProfileCard () {
   return yo`
     <div class="profile">
+      <a class="network" href="beaker://network"><i class="fa fa-share-alt"></i> 0 peers</a>
       <a href=${userProfile.url}>${userProfile.title} <i class="fa fa-user-circle-o"></i></a>
     </div>
   `
