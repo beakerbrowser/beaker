@@ -37,8 +37,10 @@
       border-top: 1px solid @border-shell-window;
       border-left: 1px solid @border-shell-window;
       border-right: 1px solid @border-shell-window;
+    }
+
+    &.leftmost .chrome-tab-bg {
       border-top-left-radius: 3px;
-      border-top-right-radius: 3px;
     }
 
     .chrome-tab-favicon {
@@ -110,6 +112,23 @@
       }
     }
 
+    &.chrome-tab-add-btn {
+      .chrome-tab-bg {
+        border-top-right-radius: 3px;
+      }
+
+      .chrome-tab-favicon {
+        top: 7px;
+        padding: 0 7px;
+      }
+
+      .fa {
+        font-size: 10px;
+        line-height: 17px;
+        color: #555; // TODO: -tbv
+      }
+    }
+
     &:hover {
       .chrome-tab-bg {
         background: @background-tab--hover;
@@ -132,35 +151,6 @@
       .chrome-tab-bg {
         height: 29px;
         background: @background-tab--current;
-      }
-    }
-
-    &.chrome-tab-add-btn {
-      .chrome-tab-bg {
-        visibility: hidden;
-        transition: none;
-        background: transparent;
-      }
-
-      .chrome-tab-favicon {
-        top: 7px;
-        padding: 0 7px;
-      }
-
-      .fa {
-        font-size: 10px;
-        line-height: 17px;
-        color: #777; // TODO: -tbv
-      }
-
-      &:hover {
-        .chrome-tab-bg {
-          visibility: visible;
-        }
-
-        .fa {
-          color: #555; // TODO: -tbv
-        }
       }
     }
   }
