@@ -186,7 +186,7 @@ function render (id, page) {
   var toolbarActionDat = ''
 
   if (isViewingDat) {
-    let forkBtnTitle = 'Fork This Site to Your Library'
+    let forkBtnTitle = 'Fork (Duplicate) This Site'
     let editBtnTitle = 'Edit This Site'
     let liveReloadBtnCls = 'nav-live-reload-btn'
     let liveReloadBtnTitle = 'Turn on live reloading'
@@ -195,7 +195,6 @@ function render (id, page) {
       liveReloadBtnCls += ' active'
       liveReloadBtnTitle = 'Turn off live reloading'
     }
-
 
     datBtns = [
       yo`
@@ -206,11 +205,11 @@ function render (id, page) {
 
     toolbarActionDatBtns = [
       yo`
-        <button class="toolbar-btn" title=${editBtnTitle} onclick=${onClickEditDat}>
-          <i class="fa fa-edit"></i>
+        <button class="toolbar-btn raised edit" title=${editBtnTitle} onclick=${onClickEditDat}>
+          <i class="fa fa-pencil"></i>
         </button>`,
       yo`
-        <button class="toolbar-btn" title=${forkBtnTitle} onclick=${onClickForkDat}>
+        <button class="toolbar-btn raised fork" title=${forkBtnTitle} onclick=${onClickForkDat}>
           <i class="fa fa-code-fork"></i>
         </button>`
     ]
