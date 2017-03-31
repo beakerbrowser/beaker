@@ -265,13 +265,17 @@ function render () {
   var editorHeader = document.querySelector('.editor-header')
   var fileview = document.querySelector('.fileview')
 
+  if (selectedModel) {
+    editorHeader.classList.add('active')
+  } else {
+    editorHeader.classList.remove('active')
+  }
+
   if (selectedModel && selectedModel.isEditable && !isViewingOptions && !viewError && !viewIsLoading) {
     editorEl.classList.add('active')
-    editorHeader.classList.add('active')
     fileview.classList.remove('active')
   } else {
     editorEl.classList.remove('active')
-    editorHeader.classList.remove('active')
   }
 
   // render view
