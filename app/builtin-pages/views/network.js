@@ -15,6 +15,14 @@ async function setup () {
   await archivesList.setup({isSaved: true})
   update()
 
+  // render canvas regularly
+  setInterval(() => {
+    archivesList.archives.forEach(archiveInfo => {
+      var canvas = document.querySelector(`#history-${archiveInfo.key}`)
+      renderCanvas(canvas, archiveInfo)
+    })
+  }, 5e3)
+
   // setup handlers
   archivesList.addEventListener('changed', update)
 }
@@ -33,28 +41,43 @@ function update () {
 }
 
 function rArchive (archiveInfo) {
-  console.log(archiveInfo)
   return yo`
     <div class="archive">
       <div class="info">
         <div class="title"><i class="fa fa-folder-o"></i> ${niceName(archiveInfo)}</div>
         <div class="description">${niceDesc(archiveInfo)}</div>
       </div>
+      <div class="peer-history">
+        <canvas
+          id="history-${archiveInfo.key}"
+          width="300" height="35"
+          onload=${el => renderCanvas(el, archiveInfo)}
+          onmousemove=${e => onCanvasMouseMove(e, archiveInfo)}
+          onmouseleave=${e => onCanvasMouseLeave(e, archiveInfo)}
+        ></canvas>
+      </div>
       <div class="peers">
         ${archiveInfo.peers}
-      </div>
-      <div class="peer-history">
-        <canvas id="history-${archiveInfo.key}" width="300" height="35" onload=${el => onCanvasLoad(el, archiveInfo)}></canvas>
       </div>
     </div>
   `
 }
 
+function renderCanvas (canvas, archiveInfo) {
+  sparkline(canvas, archiveInfo.peerHistory)
+}
+
 // event handlers
 // =
 
-function onCanvasLoad (canvas, archiveInfo) {
-  sparkline(canvas, archiveInfo.peerHistory)
+function onCanvasMouseMove (e, archiveInfo) {
+  e.target.mouseX = e.layerX
+  sparkline(e.target, archiveInfo.peerHistory)
+}
+
+function onCanvasMouseLeave (e, archiveInfo) {
+  delete e.target.mouseX
+  sparkline(e.target, archiveInfo.peerHistory)
 }
 
 // helpers
