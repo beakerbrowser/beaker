@@ -449,6 +449,12 @@ function onNetworkChanged (e) {
     })
   }
 
+  // keep peerHistory from getting too long
+  if (archive.peerHistory.length >= 500) {
+    // downsize to 360 points, which at 10s intervals covers one hour
+    archive.peerHistory = archive.peerHistory.slice(archive.peerHistory.length - 360)
+  }
+
   // count # of peers
   var peers = 0
   for (var k in archives) {

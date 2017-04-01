@@ -5,7 +5,9 @@ const LEGEND_WIDTH = 15
 const TIME_SPAN = 1e3 * 60 * 30 // past hour
 
 export default function sparkline (c, inData) {
-  if (!inData.length) return
+  if (!inData.length) {
+    inData = [{peers: 0, ts: Date.now()}]
+  }
 
   var ctx = c.getContext('2d')
   var height = c.height
@@ -25,7 +27,7 @@ export default function sparkline (c, inData) {
 
     // filter out old data
     if (age > TIME_SPAN) {
-      mouseValue = initValue = pt.peers // track last possible value
+      initValue = pt.peers // track last possible value
       continue
     }
 
@@ -54,6 +56,7 @@ export default function sparkline (c, inData) {
     x: 0,
     y: initValue || inData[inData.length - 1].peers
   })
+  if (!mouseValue) mouseValue = data[0].y
   // add an end point to represent now
   data.push({
     x: 1,
@@ -68,7 +71,7 @@ export default function sparkline (c, inData) {
   })
 
   // clear background
-  ctx.fillStyle = '#fafafa'
+  ctx.fillStyle = '#fff'
   ctx.fillRect(0, 0, width, height)
 
   // draw legend

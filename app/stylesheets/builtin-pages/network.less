@@ -3,6 +3,7 @@
 @import "../base/spacing.less";
 @import "../base/typography.less";
 
+@import "../components/link.less";
 @import "../components/buttons.less";
 @import "../com/spinner.less";
 
@@ -21,15 +22,20 @@ main {
 
 .archive {
   display: flex;
-  padding: 1em 0;
-  border-top: 1px solid #aaa;
+  padding: 20px 0;
+  border-top: 1px solid #eee;
+  color: #555;
 
   &:last-child {
-    border-bottom: 1px solid #aaa;
+    border-bottom: 1px solid #eee;
   }
 
   .info {
     flex: 1;
+  }
+
+  .status {
+    margin-top: 3px;
   }
 
   .peers {
@@ -37,7 +43,9 @@ main {
   }
 
   .peer-history {
-    flex: 1;
+    margin-right: 15px;
+    padding-right: 15px;
+    border-right: 1px solid #ddd;
   }
 
   .title {
@@ -45,6 +53,20 @@ main {
   }
 
   .peers {
-    font-size: 21px;
+    display: flex;
+    align-items: center;
+    margin-left: 15px;
+    padding-left: 10px;
+    border-left: 1px solid #ddd;
+
+    .num {
+      font-size: 27px;
+      margin-right: 5px;
+    }
+
+    .label {
+      font-size: 11px;
+      color: #666;
+    }
   }
 }

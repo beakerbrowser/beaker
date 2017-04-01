@@ -34,6 +34,7 @@ function update () {
   yo.update(document.querySelector('main'), yo`
     <main>
       <div class="archives-list">
+        <h1>Your network</h1>
         ${archivesList.archives.map(rArchive)}
       </div>
     </main>
@@ -43,21 +44,18 @@ function update () {
 function rArchive (archiveInfo) {
   return yo`
     <div class="archive">
-      <div class="info">
-        <div class="title"><i class="fa fa-folder-o"></i> ${niceName(archiveInfo)}</div>
-        <div class="description">${niceDesc(archiveInfo)}</div>
-      </div>
       <div class="peer-history">
         <canvas
           id="history-${archiveInfo.key}"
-          width="300" height="35"
+          width="300" height="40"
           onload=${el => renderCanvas(el, archiveInfo)}
           onmousemove=${e => onCanvasMouseMove(e, archiveInfo)}
           onmouseleave=${e => onCanvasMouseLeave(e, archiveInfo)}
         ></canvas>
       </div>
-      <div class="peers">
-        ${archiveInfo.peers}
+      <div class="info">
+        <div class="title"><a href=${archiveInfo.url} class="link">${niceName(archiveInfo)}</a></div>
+        <div class="status">${archiveInfo.peers} active peers</div>
       </div>
     </div>
   `
