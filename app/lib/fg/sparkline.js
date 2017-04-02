@@ -1,5 +1,6 @@
 // based on https://github.com/adactio/Canvas-Sparkline
 
+const MINMAX = 5
 const EDGE_PADDING = 5
 const LEGEND_WIDTH = 15
 const TIME_SPAN = 1e3 * 60 * 30 // past hour
@@ -61,7 +62,7 @@ export default function sparkline (c, inData) {
 
   // scale points
   if (!max) max = data[0].y
-  max = Math.max(max, 1)
+  max = Math.max(max, MINMAX)
   data.forEach(pt => {
     pt.x = (pt.x * (width - LEGEND_WIDTH)),
     pt.y = (1 - pt.y / max) * (height - EDGE_PADDING * 2) + EDGE_PADDING

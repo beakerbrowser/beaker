@@ -6,6 +6,7 @@ import sparkline from '../../lib/fg/sparkline'
 // globals
 // =
 
+var userProfileUrl
 var archivesList
 
 setup()
@@ -13,6 +14,12 @@ async function setup () {
   // load archives
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
+  userProfileUrl = (await beaker.profiles.get(0)).url
+  archivesList.archives.sort((a, b) => {
+    if (a.url === userProfileUrl) return -1
+    if (b.url === userProfileUrl) return 1
+    return niceName(a).localeCompare(niceName(b))
+  })
   update()
 
   // render canvas regularly
@@ -42,6 +49,10 @@ function update () {
 }
 
 function rArchive (archiveInfo) {
+  var icon = ''
+  if (archiveInfo.url === userProfileUrl) {
+    icon = yo`<i class="fa fa-user-circle-o"></i>`
+  }
   return yo`
     <div class="archive">
       <div class="peer-history">
@@ -54,7 +65,7 @@ function rArchive (archiveInfo) {
         ></canvas>
       </div>
       <div class="info">
-        <div class="title"><a href=${archiveInfo.url} class="link">${niceName(archiveInfo)}</a></div>
+        <div class="title"><a href=${archiveInfo.url} class="link">${icon} ${niceName(archiveInfo)}</a></div>
         <div class="status">${archiveInfo.peers} active peers</div>
       </div>
     </div>
