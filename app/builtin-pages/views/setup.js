@@ -29,10 +29,6 @@ function render () {
         showZoomer: true
     });
     croppie.bind({url: imageURL})
-    //on button click
-    // vanilla.result('blob').then(function(blob) {
-        // do something with cropped blob
-    // });
   }
 }
 
@@ -122,47 +118,6 @@ var steps = {
   `,
   5: () => yo`
     <main class="step5">
-      <div>
-        <h1>First post</h1>
-        <p>Sites in Beaker can be followed, just like a social media account.<br />Why not say hello to your fans?</p>
-        <form>
-          <p>
-            <label for="post">Your post</label>
-            <textarea id="post" name="post" placeholder="Hello, world!"></textarea>
-          </p>
-        </form>
-        <p>
-          <a class="btn" onclick=${onSubmitStep5}>Publish</a>
-        </p>
-        <p>
-          <a class="link" onclick=${advanceStep}>Skip <i class="fa fa-angle-right"></i></a>
-        </p>
-      </div>
-    </main>
-  `,
-  6: () => yo`
-    <main class="step6">
-      <div>
-        <h1>Follow sites</h1>
-        <p>Here are some sites you might want to follow!</p>
-        <div class="suggested-follows">
-          ${SUGGESTED_SITES.map(site => yo`
-            <div>
-              <img src=${site.img} />
-              <h2>${site.name}</h2>
-              <p>${site.description}</p>
-              <a class="btn">Follow</a>
-            </div>
-          `)}
-        </div>
-        <p>
-          <a class="btn" onclick=${advanceStep}>Next</a>
-        </p>
-      </div>
-    </main>
-  `,
-  7: () => yo`
-    <main class="step7">
       <div>
         <h1>Your URL</h1>
         <p>This is the URL for your profile. Share it with friends<br />so they can find your site.</p>
@@ -279,7 +234,7 @@ async function onStep3Submit () {
     format = 'jpeg'
   }
   var imageBase64 = (await croppie.result({type: 'base64', format})).split(',')[1]
-  profileDat.archive.writeFile(`/${imageName}`, imageBase64, 'base64')
+  profileDat.writeFile(`/${imageName}`, imageBase64, 'base64')
 
   advanceStep()
 }
@@ -287,17 +242,4 @@ async function onStep3Submit () {
 function onCopyLink () {
   writeToClipboard(profileDat.url)
   document.querySelector('.copy-link-text').textContent = 'Copied!'
-}
-
-async function onSubmitStep5 () {
-  // get form values
-  var form = document.querySelector('form')
-  var values = {text: form.post.value.trim()}
-  if (!values.text) {
-    return
-  }
-
-  // write post TODO remove
-  // await profileDat.broadcast(values)
-  advanceStep()
 }
