@@ -116,19 +116,24 @@ export class DropMenuNavbarBtn {
             <hr />
 
             <div class="grid default">
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
-                <i class="fa fa-download"></i>
-                Downloads
-              </div>
-
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
                 <i class="fa fa-history"></i>
                 History
+              </div>
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://network')}>
+                <i class="fa fa-share-alt"></i>
+                Network
               </div>
               
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://editor')}>
                 <i class="fa fa-pencil"></i>
                 Editor
+              </div>
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
+                <i class="fa fa-download"></i>
+                Downloads
               </div>
 
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
@@ -139,11 +144,6 @@ export class DropMenuNavbarBtn {
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
                 <i class="fa fa-gear"></i>
                 Settings
-              </div>
-
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'https://beakerbrowser.com/docs/')}>
-                <i class="fa fa-question"></i>
-                Help
               </div>
             </div>
 
@@ -160,6 +160,10 @@ export class DropMenuNavbarBtn {
               <a onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
                 <i class="fa fa-info-circle"></i>
                 <span>Report an Issue</span>
+              </a>
+              <a onclick=${e => this.onOpenPage(e, 'https://beakerbrowser.com/docs/')}>
+                <i class="fa fa-question"></i>
+                <span>Help</span>
               </a>
             </div>
           </div>

@@ -51,6 +51,7 @@ var bundleApplication = function () {
     bundle(srcDir.path('shell-window.js'),             srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(srcDir.path('markdown-renderer.js'),        srcDir.path('markdown-renderer.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(bpViewsDir.path('downloads.js'),            bpBuildDir.path('downloads.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('network.js'),              bpBuildDir.path('network.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('bookmarks.js'),            bpBuildDir.path('bookmarks.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('history.js'),              bpBuildDir.path('history.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('settings.js'),             bpBuildDir.path('settings.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),

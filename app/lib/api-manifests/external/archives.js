@@ -1,4 +1,5 @@
 export default {
+  status: 'promise',
   create: 'promise',
   fork: 'promise',
   add: 'promise',

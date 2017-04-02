@@ -203,6 +203,7 @@ export function loadArchive (key, { noSwarm } = {}) {
     file: name => raf(path.join(archivesDb.getArchiveFilesPath(archive), name))
   })
   archive.userSettings = null // will be set by `configureArchive` if at all
+  archive.peerHistory = [] // samples of the peer
   mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
   cacheArchive(archive)
   if (!noSwarm) joinSwarm(archive)
@@ -251,6 +252,7 @@ export async function queryArchives (query) {
     var archive = getArchive(archiveInfo.key)
     if (archive) {
       archiveInfo.peers = archive.metadata.peers.length
+      archiveInfo.peerHistory = archive.peerHistory
     }
   })
   return archiveInfos
@@ -268,6 +270,7 @@ export async function getArchiveInfo (key, opts = {}) {
   ])
   meta.userSettings = { isSaved: userSettings.isSaved }
   meta.peers = archive.metadata.peers.length
+  meta.peerHistory = archive.peerHistory
 
   // optional data
   if (opts.contentBitfield) {
@@ -352,6 +355,8 @@ export function joinSwarm (key, opts) {
   swarm.listen()
   swarm.on('error', err => debug('Swarm error for', keyStr, err))
   swarm.join(archive.discoveryKey)
+  archive.metadata.on('peer-add', onNetworkChanged)
+  archive.metadata.on('peer-remove', onNetworkChanged)
 
   debug('Swarming archive', datEncoding.toStr(archive.key), 'discovery key', datEncoding.toStr(archive.discoveryKey))
   archive.isSwarming = true
@@ -368,6 +373,8 @@ export function leaveSwarm (key, cb) {
 
   debug('Unswarming archive %s disconnected %d peers', keyStr, archive.metadata.peers.length)
   archive.unreplicate() // stop all active replications
+  archive.metadata.removeListener('peer-add', onNetworkChanged)
+  archive.metadata.removeListener('peer-remove', onNetworkChanged)
   swarm.leave(archive.discoveryKey)
   swarm.destroy()
   delete archive.swarm
@@ -424,4 +431,40 @@ function fromKeyToURL (key) {
     return `dat://${key}/`
   }
   return key
+}
+
+function onNetworkChanged (e) {
+  var key = datEncoding.toStr(this.key)
+  var archive = archives[key]
+
+  var now = Date.now()
+  var lastHistory = archive.peerHistory.slice(-1)[0]
+  if (lastHistory && (now - lastHistory.ts) < 10e3) {
+    // if the last datapoint was < 10s ago, just update it
+    lastHistory.peers = this.peers.length
+  } else {
+    archive.peerHistory.push({
+      ts: Date.now(),
+      peers: this.peers.length
+    })
+  }
+
+  // keep peerHistory from getting too long
+  if (archive.peerHistory.length >= 500) {
+    // downsize to 360 points, which at 10s intervals covers one hour
+    archive.peerHistory = archive.peerHistory.slice(archive.peerHistory.length - 360)
+  }
+
+  // count # of peers
+  var peers = 0
+  for (var k in archives) {
+    peers += archives[k].metadata.peers.length
+  }
+  archivesEvents.emit('network-changed', {
+    details: {
+      url: `dat://${key}`,
+      peers: this.peers.length,
+      totalPeers: peers
+    }
+  })
 }

@@ -7,6 +7,7 @@ import prettyHash from 'pretty-hash'
 import { UpdatesNavbarBtn } from './navbar/updates'
 import { DropMenuNavbarBtn } from './navbar/drop-menu'
 import { SiteInfoNavbarBtn } from './navbar/site-info'
+import {pluralize} from '../../lib/strings'
 
 const KEYCODE_DOWN = 40
 const KEYCODE_UP = 38
@@ -186,7 +187,8 @@ function render (id, page) {
   var toolbarActionDat = ''
 
   if (isViewingDat) {
-    let forkBtnTitle = 'Fork This Site to Your Library'
+    let numPeers = page.siteInfo ? page.siteInfo.peers : 0
+    let forkBtnTitle = 'Fork (Duplicate) This Site'
     let editBtnTitle = 'Edit This Site'
     let liveReloadBtnCls = 'nav-live-reload-btn'
     let liveReloadBtnTitle = 'Turn on live reloading'
@@ -196,21 +198,24 @@ function render (id, page) {
       liveReloadBtnTitle = 'Turn off live reloading'
     }
 
-
     datBtns = [
       yo`
+        <button class="nav-peers-btn">
+          <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
+        </button>`,
+      yo`
         <button class=${liveReloadBtnCls} title=${liveReloadBtnTitle} onclick=${onClickLiveReload}>
-          <span class="fa fa-bolt"></span>
+          <i class="fa fa-bolt"></i>
         </button>`
     ]
 
     toolbarActionDatBtns = [
       yo`
-        <button class="toolbar-btn" title=${editBtnTitle} onclick=${onClickEditDat}>
-          <i class="fa fa-edit"></i>
+        <button class="toolbar-btn raised edit" title=${editBtnTitle} onclick=${onClickEditDat}>
+          <i class="fa fa-pencil"></i>
         </button>`,
       yo`
-        <button class="toolbar-btn" title=${forkBtnTitle} onclick=${onClickForkDat}>
+        <button class="toolbar-btn raised fork" title=${forkBtnTitle} onclick=${onClickForkDat}>
           <i class="fa fa-code-fork"></i>
         </button>`
     ]
