@@ -130,7 +130,7 @@ var steps = {
           <a class="link" href="${profileDat.url}" target="_blank">${profileDat.url}</a>
         </div>
         ${IS_HASHBASE_AVAILABLE ? yo`
-          <p class="muted">
+          <p>
             You can get a personalized URL like <a class="link" href="dat://paul.hashbase.io" target="_blank">paul.hashbase.io</a><br />
             by joining a cloud host. <a class="link" href="https://hashbase.io" target="_blank">Learn more.</a>
           </p>
