@@ -21,7 +21,7 @@ setup()
 function render () {
   yo.update(document.querySelector('main'), steps[currentStep]())
 
-  if (currentStep === 3 && imageURL) {
+  if (currentStep === 4 && imageURL) {
     var el = document.querySelector('.filled-picture')
     croppie = new Croppie(el, {
         viewport: {width: 256, height: 256},
@@ -101,7 +101,7 @@ var steps = {
       return yo`
         <main class="upload-avatar">
           <div class="nocenter">
-            <h1>Picture</h1>
+            <h1>Crop and adjust your photo</h1>
             <div class="filled-picture"></div>
             <p>
               <a class="btn" onclick=${onStep3SelectFile}>Change File</a>
@@ -115,7 +115,10 @@ var steps = {
     return yo`
       <main class="upload-avatar">
         <div>
-          <h1>Picture</h1>
+          <h1>Set your profile picture</h1>
+          <p class="intro">
+            Add a photo to your profile site.
+          </p>
           <div class="empty-picture">
             <a class="btn" onclick=${onStep3SelectFile}>Select File</a>
           </div>
