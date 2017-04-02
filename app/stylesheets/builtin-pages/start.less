@@ -193,42 +193,91 @@ header {
   }
 }
 
-.archives-container {
-  margin-top: 80px;
-
-  .archives-title {
+.archives-list {
+  .archive {
     display: flex;
-    margin-bottom: 5px;
+    padding: 5px 0px;
+    color: fadeout(#333, 15%);
+    cursor: pointer;
 
-    h2 {
-      flex: 1;
+    * {
+      cursor: pointer;
     }
 
-    .action {
-      cursor: pointer;
+    i {
+      padding: 1px 10px 0 3px;
+      font-size: 15px;
+    }
 
-      &:hover {
-        &:extend(.link:hover);
+    .title {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &:hover {
+      background: @background-highlight;
+
+      .title {
+        text-decoration: underline;
       }
     }
   }
 }
 
-.archives-list {
-  .archive {
-    height: auto;
-    padding: 5px 10px;
-    border-top: 1px solid @border-menu;
-    letter-spacing: 0.5px;
+.shelf {
+  position: fixed;
+  right: 0;
+  z-index: 10;
+  overflow-y: auto;
+
+  &.closed {
+    top: 50px;
+    height: 50px;
+    width: 50px;
+    color: @color-button;
+    background: @background-button--gray;
+    text-align: center;
+    line-height: 50px;
+    font-size: 20px;
+  
+    cursor: pointer;
+    i {
+      cursor: pointer;
+    }
+
+    &:hover {
+      background: @background-button--gray--hover;
+    }
   }
 
-  .label {
-    font-size: 11px;
-    margin-left: 5px;
-    background: @background-message;
-    padding: 2px 5px;
-    color: gray;
-    border-radius: 2px;
+  &.open {
+    top: 0;
+    height: 100vh;
+    width: 300px;
+    background: #fff;
+    border-left: 1px solid @border-button;
+    padding: 10px 10px 10px 15px;
+  }
+
+  h3 {
+    font-size: 14px;
+    color: #555;
+  }
+
+  .archives-list {
+    margin-bottom: 10px;
+  }
+
+  .bookmark__link {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    .favicon {
+      margin-right: 8px;
+    }
   }
 }
 
