@@ -134,30 +134,20 @@ form {
     transform: translateY(-50%);
   }
 
-  .icon-btns {
-    margin: 60px;
+  .dat-url {
+    background: @background-menu;
+    border-radius: 2px;
+    border: 1px solid @border-menu;
+    padding: @padding-component;
+    margin: auto;
+    margin-top: @padding-component;
+    display: block;
+    color: @color-text--muted;
     font-size: 14px;
+    width: 650px;
 
-    a {
-      display: inline-block;
-      cursor: pointer;
-      padding: 10px;
-      margin: 0 20px;
-      border: 1px solid transparent;
-      border-radius: 2px;
-
-      &:hover {
-        border-color: @border-button;
-        background: @background-button;
-      }
-    }
-    i, span {
-      display: block;
-    }
-    i {
-      font-size: 32px;
-      position: relative;
-      left: 2px;
+    &:hover {
+      text-decoration: underline;
     }
   }
 }

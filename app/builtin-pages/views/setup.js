@@ -135,24 +135,15 @@ var steps = {
   5: () => yo`
     <main class="call-to-action">
       <div>
-        <h1>Ok!</h1>
-        <p>Your personal website is now being hosted by Beaker<br />on the peer-to-peer network.</p>
-        <div class="icon-btns">
-          <a href="${profileDat.url}" target="_blank">
-            <i class="fa fa-external-link"></i>
-            <span>View site</span>
-          </a>
-          <a href="beaker://editor/${profileDat.url.slice('dat://'.length)}" target="_blank">
-            <i class="fa fa-pencil-square-o"></i>
-            <span>Edit site</span>
-          </a>
-          <a onclick=${onCopyLink}>
-            <i class="fa fa-clipboard"></i>
-            <span class="copy-link-text">Copy link</span>
-          </a>
-        </div>
+        <h1>Success!</h1>
+        <p class="intro">
+          Your profile site is now being hosted by Beaker on the peer-to-peer network.
+        </p>
+
+        <a class="dat-url" href=${profileDat.url} target="_blank">${profileDat.url}</a>
+
         <p>
-          <a class="btn next" onclick=${advanceStep}>Next</a>
+          <a class="btn next" onclick=${advanceStep}>Customize your site</a>
         </p>
       </div>
     </main>
