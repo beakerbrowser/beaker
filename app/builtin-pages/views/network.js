@@ -95,7 +95,3 @@ function onCanvasMouseLeave (e, archiveInfo) {
 function niceName (archiveInfo) {
   return (archiveInfo.title || '').trim() || 'Untitled'
 }
-
-function niceDesc (archiveInfo) {
-  return archiveInfo.description || yo`<em>No description</em>`
-}

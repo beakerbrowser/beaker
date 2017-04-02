@@ -4,7 +4,9 @@ sites loaded over the beaker: protocol
 */
 
 import * as yo from 'yo-yo'
+import {ArchivesList} from 'builtin-pages-lib'
 import ColorThief from '../../lib/fg/color-thief'
+import {findParent} from '../../lib/fg/event-handlers'
 import {pluralize} from '../../lib/strings'
 
 const colorThief = new ColorThief()
@@ -17,10 +19,12 @@ const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 =
 var showReleaseNotes = false
 var isManagingBookmarks = false
 var isWritingNote = false
+var isShelfOpen = false
 var error = false
 var userProfile
 var archivesStatus
 var bookmarks, pinnedBookmarks
+var archivesList
 
 setup()
 async function setup () {
@@ -37,15 +41,25 @@ async function setup () {
   // subscribe to network changes
   beaker.archives.addEventListener('network-changed', ({details}) => {
     archivesStatus.peers = details.totalPeers
-    update()
+    yo.update(document.querySelector('a.network'), renderNetworkLink())
   })
 
+  // render version update info if appropriate
   let latestVersion = await beakerSitedata.get('beaker://start', 'latest-version')
   if (+latestVersion < LATEST_VERSION) {
     showReleaseNotes = true
     update()
     beakerSitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
   }
+
+  // load archives list after render (its not pressing)
+  archivesList = new ArchivesList({listenNetwork: true})
+  await archivesList.setup({isSaved: true})
+  archivesList.archives.sort((a, b) => {
+    if (a.url === userProfile.url) return -1
+    if (b.url === userProfile.url) return 1
+    return niceName(a).localeCompare(niceName(b))
+  })
 }
 
 // rendering
@@ -63,6 +77,7 @@ function update () {
         <div style="flex: 1"></div>
         ${renderProfileCard()}
       </header>
+      ${renderShelf()}
       ${renderPinnedBookmarks()}
       ${renderReleaseNotes()}
     </main>
@@ -72,9 +87,17 @@ function update () {
 function renderProfileCard () {
   return yo`
     <div class="profile">
-      <a class="network" href="beaker://network"><i class="fa fa-share-alt"></i> ${archivesStatus.peers} ${pluralize(archivesStatus.peers, 'peer')}</a>
+      ${renderNetworkLink()}
       <a href=${userProfile.url}>${userProfile.title} <i class="fa fa-user-circle-o"></i></a>
     </div>
+  `
+}
+
+function renderNetworkLink () {
+  return yo`
+    <a class="network" href="beaker://network">
+      <i class="fa fa-share-alt"></i> ${archivesStatus.peers} ${pluralize(archivesStatus.peers, 'peer')}
+    </a>
   `
 }
 
@@ -99,6 +122,46 @@ function renderNoteEditor () {
           <button class="btn primary" type="submit" tabindex="4">Create public note</button>
         </p>
       </form>
+    </div>
+  `
+}
+
+function renderShelf () {
+  if (!isShelfOpen) {
+    return yo`
+      <div class="shelf closed" onclick=${toggleShelf}>
+        <i class="fa fa-angle-left"></i>
+      </div>
+    `
+  }
+
+  return yo`
+    <div class="shelf open" onmouseout=${onMouseOutShelf}>
+      <h3>Your library</h3>
+      <div class="archives-list">
+        ${archivesList.archives.map(archiveInfo => {
+          const icon = archiveInfo.url === userProfile.url ? 'fa fa-user-circle-o' : 'fa fa-folder-o'
+          return yo`
+            <a class="archive" href=${archiveInfo.url}>
+              <i class=${icon}></i>
+              <span class="title">${niceName(archiveInfo)}</span>
+              <span>${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
+            </a>
+          `
+        })}
+      </div>
+      <h3>Your bookmarks</h3>
+      <div class="bookmarks">
+        ${bookmarks.map(row => {
+          return yo`
+            <li class="bookmark ll-row">
+              <a href=${row.url} class="link bookmark__link" title=${row.title} />
+                <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.url} />
+                <span class="title bookmark__title">${row.title}</span>
+              </a>
+            </li>`
+        })}
+      </div>
     </div>
   `
 }
@@ -252,6 +315,18 @@ async function submitNote (e) {
   window.location = archive.url + path
 }
 
+function toggleShelf () {
+  isShelfOpen = !isShelfOpen
+  update()
+}
+
+function onMouseOutShelf (e) {
+  if (!findParent(e.relatedTarget, 'shelf')) {
+    isShelfOpen = false
+    update()
+  }
+}
+
 function toggleAddPin (url, title) {
   isManagingBookmarks = !isManagingBookmarks
   update()
@@ -301,6 +376,10 @@ function attachDominantColor (bookmark) {
     img.onerror = resolve
     img.src = 'beaker-favicon:' + bookmark.url
   })
+}
+
+function niceName (archiveInfo) {
+  return (archiveInfo.title || '').trim() || 'Untitled'
 }
 
 function createDateString () {
