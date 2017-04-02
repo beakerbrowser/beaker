@@ -34,7 +34,7 @@ function render () {
 
 var steps = {
   1: () => yo`
-    <main class="step1">
+    <main class="welcome">
       <div>
         <img src="beaker://assets/logo.png" />
         <h1>Welcome</h1>
@@ -44,9 +44,14 @@ var steps = {
     </main>
   `,
   2: () => yo`
-    <main class="step2">
+    <main class="overview">
+      <p>Overview</p>
+    </main>
+  `,
+  3: () => yo`
+    <main class="create-profile">
       <div>
-        <h1>Profile</h1>
+        <h1>Create your profile site</h1>
         <form>
           <p>
             <label for="name">Your name</label>
@@ -63,10 +68,10 @@ var steps = {
       </div>
     </main>
   `,
-  3: () => {
+  4: () => {
     if (imageURL) {
       return yo`
-        <main class="step3">
+        <main class="upload-avatar">
           <div class="nocenter">
             <h1>Picture</h1>
             <div class="filled-picture"></div>
@@ -80,7 +85,7 @@ var steps = {
       `
     }
     return yo`
-      <main class="step3">
+      <main class="upload-avatar">
         <div>
           <h1>Picture</h1>
           <div class="empty-picture">
@@ -91,8 +96,8 @@ var steps = {
       </main>
     `
   },
-  4: () => yo`
-    <main class="step4">
+  5: () => yo`
+    <main class="call-to-action">
       <div>
         <h1>Ok!</h1>
         <p>Your personal website is now being hosted by Beaker<br />on the peer-to-peer network.</p>
@@ -116,49 +121,8 @@ var steps = {
       </div>
     </main>
   `,
-  5: () => yo`
-    <main class="step5">
-      <div>
-        <h1>First post</h1>
-        <p>Sites in Beaker can be followed, just like a social media account.<br />Why not say hello to your fans?</p>
-        <form>
-          <p>
-            <label for="post">Your post</label>
-            <textarea id="post" name="post" placeholder="Hello, world!"></textarea>
-          </p>
-        </form>
-        <p>
-          <a class="btn next" onclick=${onSubmitStep5}>Publish</a>
-        </p>
-        <p>
-          <a class="link" onclick=${advanceStep}>Skip <i class="fa fa-angle-right"></i></a>
-        </p>
-      </div>
-    </main>
-  `,
   6: () => yo`
-    <main class="step6">
-      <div>
-        <h1>Follow sites</h1>
-        <p>Here are some sites you might want to follow!</p>
-        <div class="suggested-follows">
-          ${SUGGESTED_SITES.map(site => yo`
-            <div>
-              <img src=${site.img} />
-              <h2>${site.name}</h2>
-              <p>${site.description}</p>
-              <a class="btn next">Follow</a>
-            </div>
-          `)}
-        </div>
-        <p>
-          <a class="btn next" onclick=${advanceStep}>Next</a>
-        </p>
-      </div>
-    </main>
-  `,
-  7: () => yo`
-    <main class="step7">
+    <main class="finish">
       <div>
         <h1>Your URL</h1>
         <p>This is the URL for your profile. Share it with friends<br />so they can find your site.</p>
