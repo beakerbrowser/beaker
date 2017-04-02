@@ -461,8 +461,10 @@ function onNetworkChanged (e) {
     peers += archives[k].metadata.peers.length
   }
   archivesEvents.emit('network-changed', {
-    key,
-    peers: this.peers.length,
-    totalPeers: peers
+    details: {
+      url: `dat://${key}`,
+      peers: this.peers.length,
+      totalPeers: peers
+    }
   })
 }

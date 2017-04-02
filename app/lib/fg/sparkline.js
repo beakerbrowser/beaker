@@ -51,17 +51,14 @@ export default function sparkline (c, inData) {
       mouseValue = pt.peers
     }
   }
+
   // add an initial point to represent pre-history
-  data.unshift({
-    x: 0,
-    y: initValue || inData[inData.length - 1].peers
-  })
+  data.unshift({x: 0, y: initValue})
   if (!mouseValue) mouseValue = data[0].y
+
   // add an end point to represent now
-  data.push({
-    x: 1,
-    y: data[data.length - 1].y
-  })
+  data.push({x: 1, y: data[data.length - 1].y})
+
   // scale points
   if (!max) max = data[0].y
   max = Math.max(max, 1)

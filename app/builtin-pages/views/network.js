@@ -11,7 +11,7 @@ var archivesList
 setup()
 async function setup () {
   // load archives
-  archivesList = new ArchivesList()
+  archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
   update()
 

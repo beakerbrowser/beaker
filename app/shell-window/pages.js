@@ -48,12 +48,12 @@ export function getPinned () {
 }
 
 export function setup () {
-  beaker.archives.addEventListener('network-changed', ({key, peers}) => {
-    // check if any of the active pages matches this key
+  beaker.archives.addEventListener('network-changed', ({details}) => {
+    // check if any of the active pages matches this url
     pages.forEach(page => {
-      if (page.siteInfo && page.siteInfo.key === key) {
+      if (page.siteInfo && page.siteInfo.url === details.url) {
         // update info
-        page.siteInfo.peers = peers
+        page.siteInfo.peers = details.peers
         navbar.update(page)
       }
     })
