@@ -73,6 +73,11 @@ var steps = {
             </p>
           </a>
         </div>
+
+        <p>
+          <button class="btn next" onclick=${advanceStep}>Next</button>
+        </p>
+
       </div>
     </main>
   `,
