@@ -17,6 +17,17 @@ main {
   &:extend(.system-font);
   font-size: 13px;
   height: 100vh;
+  padding: @padding-component--thick;
+
+  h1 {
+    font-size: 28px;
+
+    + p.intro {
+      font-size: 16px;
+      max-width: 450px;
+      margin: @padding-component--wide auto;
+    }
+  }
 
   .btn.next {
 
