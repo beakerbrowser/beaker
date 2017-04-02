@@ -32,6 +32,34 @@ function render () {
   }
 }
 
+var activeHowtoIdx = 0
+var howtos = [
+  { title: 'The Beaker editor',
+    img: '',
+    steps: [
+      'step 1',
+      'step 2',
+      'step 3'
+    ]
+  },
+  { title: 'Sharing files',
+    img: '',
+    steps: [
+      'test' 
+    ]
+  },
+  { title: 'Forking a site',
+    img: '',
+    steps: [
+      'test2' 
+    ]
+  },
+  { title: 'Sharing a note',
+    img: '',
+    steps: []
+  }
+]
+
 var steps = {
   1: () => yo`
     <main class="welcome">
@@ -143,12 +171,24 @@ var steps = {
         <a class="dat-url" href=${profileDat.url} target="_blank">${profileDat.url}</a>
 
         <p>
-          <a class="btn next" onclick=${advanceStep}>Customize your site</a>
+          <a class="btn next" onclick=${advanceStep}>Get started</a>
         </p>
       </div>
     </main>
   `,
   6: () => yo`
+    <main class="howto">
+      <div>
+        <ul class="links">
+          ${howtos.map((howto, idx) => yo`<li data-idx=${idx} onclick=${setActiveHowto}>${howto.title}</li>`)}
+        </ul>
+        <div class="howtos">
+          ${howtos.map((howto, idx) => renderHowto(howto, idx))}
+        </div>
+      </div>
+    </main>
+  `,
+  7: () => yo`
     <main class="finish">
       <div>
         <h1>Your URL</h1>
@@ -281,4 +321,23 @@ function setActiveScreenshot (e) {
   screenshots.forEach(s => s.classList.remove('active'))
 
   e.target.parentNode.classList.add('active')
+}
+
+function renderHowto (howto, idx) {
+  var isActive = activeHowtoIdx == idx ? 'active': ''
+
+  return yo`
+    <div class="howto ${isActive}">
+      <img src=${howto.img}/>
+      <h3>${howto.title}</h3>
+      <ol class="steps">
+        ${howto.steps.map(step => yo`<li>${step}</li>`)}
+      </ol>
+    </div>
+  `
+}
+
+function setActiveHowto (e) {
+  activeHowtoIdx = e.target.dataset.idx
+  render()
 }
