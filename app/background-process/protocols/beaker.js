@@ -128,7 +128,15 @@ async function beakerServer (req, res) {
   if (requestUrl.startsWith('beaker://assets/logo')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
   }
-
+  if (requestUrl === 'beaker://assets/website.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/website.png'))
+  }
+  if (requestUrl === 'beaker://assets/network.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/network.png'))
+  }
+  if (requestUrl === 'beaker://assets/share-files.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/share-files.png'))
+  }
   // builtin pages
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages.css'))

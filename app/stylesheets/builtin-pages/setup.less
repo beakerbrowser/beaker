@@ -175,6 +175,81 @@ form {
   }
 }
 
+.overview {
+  padding: @padding-component--thick @padding-component--wide;
+
+  > div {
+    transform: none;
+    top: 0;
+  }
+
+  .intro {
+    width: 750px;
+    margin: 0 auto @padding-component--thick auto;
+    font-size: 18px;
+  }
+
+  h2 {
+    font-size: 16px;
+    margin-bottom: @padding-component--thick;
+  }
+
+  .screenshots {
+    position: relative;
+  }
+
+  .screenshot {
+    display: inline-block;
+
+    + screenshot {
+      margin-left: @padding-component;
+    }
+
+    img {
+      opacity: .3;
+      border-radius: 2px;
+      width: 375px;
+      height: auto;
+      z-index: 0;
+      transition: transform .2s ease;
+      position: relative;
+      border: 1px solid @border-menu;
+    }
+
+    p.description {
+      width: 700px;
+      margin-top: 100px;
+      font-size: 16px;
+      line-height: 1.5;
+      display: none;
+      position: absolute;
+      width: 100%;
+      left: 0;
+    }
+
+    &:hover {
+
+      h2 {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .screenshot.active {
+
+    img {
+      opacity: 1;
+      z-index: 1;
+      transform: scale(1.2);
+      &:extend(.shadow);
+    }
+
+    p.description {
+      display: block;
+    }
+  }
+}
+
 @keyframes pulse {
   0% {
     -moz-box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.8);

@@ -45,7 +45,35 @@ var steps = {
   `,
   2: () => yo`
     <main class="overview">
-      <p>Overview</p>
+      <div>
+        <p class="intro">
+          Beaker is a browser for the peer-to-peer Web.
+        </p>
+
+        <div class="screenshots">
+          <a class="screenshot">
+            <h2>Share files</h2>
+            <img src="beaker://assets/share-files.png" onclick=${setActiveScreenshot}/>
+            <p class="description">
+              Share files on the Dat peer-to-peer network. Just choose your files then share the link!
+            </p>
+          </a>
+          <a class="screenshot active"> 
+            <h2>Host your website</h2>
+            <img src="beaker://assets/website.png" onclick=${setActiveScreenshot} />
+            <p class="description">
+              Host your website with the <a href="https://datproject.org">Dat protocol</a>. Peers on the network host your site${"'"}s files, so publishing your site is totally free.
+            </p>
+          </a>
+          <a class="screenshot">
+            <h2>Rehost sites you like</h2>
+            <img src="beaker://assets/network.png" onclick=${setActiveScreenshot} />
+            <p class="description">
+              Keep track of how many peers are hosting your files, and which sites you${"'"}re hosting on the network.
+            </p>
+          </a>
+        </div>
+      </div>
     </main>
   `,
   3: () => yo`
@@ -247,4 +275,11 @@ async function onStep3Submit () {
 function onCopyLink () {
   writeToClipboard(profileDat.url)
   document.querySelector('.copy-link-text').textContent = 'Copied!'
+}
+
+function setActiveScreenshot (e) {
+  var screenshots = document.querySelectorAll('.overview .screenshot')
+  screenshots.forEach(s => s.classList.remove('active'))
+
+  e.target.parentNode.classList.add('active')
 }
