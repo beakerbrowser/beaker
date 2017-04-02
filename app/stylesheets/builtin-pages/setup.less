@@ -5,6 +5,7 @@
 
 @import "../components/buttons.less";
 @import "../com/spinner.less";
+@import "../components/inputs";
 
 @import "../vendor/croppie.less";
 
@@ -63,19 +64,14 @@ form {
     display: block;
     margin-bottom: 5px;
     font-size: 14px;
-    letter-spacing: 1px;
     font-weight: normal;
   }
 
   input,
   textarea {
-    display: block;
     width: 100%;
-    padding: 0.5em 0.7em;
-    border-radius: 2px;
-    border: 1px solid #ccc;
-    font-size: 17px;
-    font-weight: 100;
+    font-size: 13px;
+    &:extend(input.roomy);
   }
 }
 
