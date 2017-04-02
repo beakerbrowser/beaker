@@ -18,6 +18,14 @@ main {
   font-size: 13px;
   height: 100vh;
 
+  .btn.next {
+
+    &:after {
+      content: '\203A';
+      margin-left: @margin-icon;
+    }
+  }
+
   & > div {
     text-align: center;
     transform: translateY(-70%);

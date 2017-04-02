@@ -58,7 +58,7 @@ var steps = {
           </p>
         </form>
         <p>
-          <a class="btn" onclick=${onSubmitStep2}>Save</a>
+          <button class="btn next" onclick=${onSubmitStep2}>Next</button>
         </p>
       </div>
     </main>
@@ -72,7 +72,7 @@ var steps = {
             <div class="filled-picture"></div>
             <p>
               <a class="btn" onclick=${onStep3SelectFile}>Change File</a>
-              <a class="btn" onclick=${onStep3Submit}>Save</a>
+              <a class="btn next" onclick=${onStep3Submit}>Next</a>
             </p>
             <p><a class="link" onclick=${advanceStep}>Skip <i class="fa fa-angle-right"></i></a></p>
           </div>
@@ -111,13 +111,54 @@ var steps = {
           </a>
         </div>
         <p>
-          <a class="btn" onclick=${advanceStep}>Next</a>
+          <a class="btn next" onclick=${advanceStep}>Next</a>
         </p>
       </div>
     </main>
   `,
   5: () => yo`
     <main class="step5">
+      <div>
+        <h1>First post</h1>
+        <p>Sites in Beaker can be followed, just like a social media account.<br />Why not say hello to your fans?</p>
+        <form>
+          <p>
+            <label for="post">Your post</label>
+            <textarea id="post" name="post" placeholder="Hello, world!"></textarea>
+          </p>
+        </form>
+        <p>
+          <a class="btn next" onclick=${onSubmitStep5}>Publish</a>
+        </p>
+        <p>
+          <a class="link" onclick=${advanceStep}>Skip <i class="fa fa-angle-right"></i></a>
+        </p>
+      </div>
+    </main>
+  `,
+  6: () => yo`
+    <main class="step6">
+      <div>
+        <h1>Follow sites</h1>
+        <p>Here are some sites you might want to follow!</p>
+        <div class="suggested-follows">
+          ${SUGGESTED_SITES.map(site => yo`
+            <div>
+              <img src=${site.img} />
+              <h2>${site.name}</h2>
+              <p>${site.description}</p>
+              <a class="btn next">Follow</a>
+            </div>
+          `)}
+        </div>
+        <p>
+          <a class="btn next" onclick=${advanceStep}>Next</a>
+        </p>
+      </div>
+    </main>
+  `,
+  7: () => yo`
+    <main class="step7">
       <div>
         <h1>Your URL</h1>
         <p>This is the URL for your profile. Share it with friends<br />so they can find your site.</p>
