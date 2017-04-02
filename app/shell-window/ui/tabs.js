@@ -81,6 +81,7 @@ function drawTab (page) {
   // styles
   var {pageIndex, style} = getPageStyle(page)
   if (pageIndex === 0) cls += ' leftmost'
+  if (pageIndex === pages.getAll().length - 1) cls += ' rightmost'
 
   // pinned rendering:
   if (page.isPinned) {
@@ -141,6 +142,8 @@ function repositionTabs (e) {
     var {style, pageIndex} = getPageStyle(page)
     if (pageIndex === 0) tabEl.classList.add('leftmost')
     if (pageIndex !== 0) tabEl.classList.remove('leftmost')
+    if (pageIndex === allPages.length - 1) tabEl.classList.add('rightmost')
+    if (pageIndex !== allPages.length - 1) tabEl.classList.remove('rightmost')
     tabEl.style = style
   }))
   tabsContainerEl.querySelector('.chrome-tab-add-btn').style = getPageStyle(allPages.length).style
