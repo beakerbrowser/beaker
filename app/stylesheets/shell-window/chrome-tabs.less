@@ -42,6 +42,9 @@
     &.leftmost .chrome-tab-bg {
       border-top-left-radius: 3px;
     }
+    &.rightmost .chrome-tab-bg {
+      border-top-right-radius: 3px;
+    }
 
     .chrome-tab-favicon {
       width: 16px;
@@ -113,8 +116,18 @@
     }
 
     &.chrome-tab-add-btn {
+
       .chrome-tab-bg {
-        border-top-right-radius: 3px;
+        border: none;
+        background: none;
+      }
+
+      &:hover {
+
+        .chrome-tab-bg {
+          background: darken(@background-tab--hover, 10%);
+          border-top-right-radius: 3px;
+        }
       }
 
       .chrome-tab-favicon {
