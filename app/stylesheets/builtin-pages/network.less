@@ -16,6 +16,13 @@ main {
   font-size: 13px;
 }
 
+h2 {
+  cursor: pointer;
+  * {
+    cursor: pointer;
+  }
+}
+
 .archives-list {
   margin: 2em;
 }
@@ -67,6 +74,25 @@ main {
     .label {
       font-size: 11px;
       color: #666;
+    }
+  }
+}
+
+.trash-list {
+  h2 {
+    margin-bottom: 10px;
+  }
+
+  div {
+    padding: 10px;
+    font-size: 14px;
+
+    &:nth-child(even) {
+      background: #fafafa;
+    }
+
+    a:hover {
+      text-decoration: underline;
     }
   }
 }

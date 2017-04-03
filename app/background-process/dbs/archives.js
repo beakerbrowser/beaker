@@ -64,7 +64,9 @@ export async function queryArchiveUserSettings (profileId, query, opts) {
   await setupPromise
 
   // fetch archive meta
-  var extra = query.isSaved ? 'AND isSaved = 1' : ''
+  var extra = ''
+  if (query.isSaved === true) extra = 'AND isSaved = 1'
+  if (query.isSaved === false) extra = 'AND isSaved = 0'
   var archives = await profileDataDb.all(`
     SELECT * FROM archives WHERE profileId = ? ${extra}
   `, [profileId])

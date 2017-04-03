@@ -8,6 +8,8 @@ import sparkline from '../../lib/fg/sparkline'
 
 var userProfileUrl
 var archivesList
+var trashList = []
+var isTrashOpen = false
 
 setup()
 async function setup () {
@@ -20,6 +22,10 @@ async function setup () {
     if (b.url === userProfileUrl) return 1
     return niceName(a).localeCompare(niceName(b))
   })
+  update()
+
+  // load deleted archives
+  trashList = await beaker.archives.list({isSaved: false})
   update()
 
   // render canvas regularly
@@ -41,8 +47,21 @@ function update () {
   yo.update(document.querySelector('main'), yo`
     <main>
       <div class="archives-list">
-        <h1>Your network</h1>
+        <h1>Your library</h1>
         ${archivesList.archives.map(rArchive)}
+        ${isTrashOpen
+          ? yo`
+            <div class="trash-list">
+              <h2 onclick=${onToggleTrash}>Trash <i class="fa fa-angle-up"></i></h2>
+              ${trashList.map(archiveInfo => yo`<div>
+                <a href=${archiveInfo.url}>${niceName(archiveInfo)}</a>
+                <a class="link" onclick=${e => onToggleSaved(e, archiveInfo)}>restore</a>
+              </div>
+              `)}
+            </div>
+          ` : yo`
+            <h2 onclick=${onToggleTrash}>Trash <i class="fa fa-angle-down"></i></h2>
+          `}
       </div>
     </main>
   `)
@@ -68,6 +87,9 @@ function rArchive (archiveInfo) {
         <div class="title"><a href=${archiveInfo.url} class="link">${icon} ${niceName(archiveInfo)}</a></div>
         <div class="status">${archiveInfo.peers} active peers</div>
       </div>
+      <div class="btns">
+        <a class="btn" onclick=${e => onToggleSaved(e, archiveInfo)}><i class="fa fa-trash"></i> Remove</a>
+      </div>
     </div>
   `
 }
@@ -87,6 +109,23 @@ function onCanvasMouseMove (e, archiveInfo) {
 function onCanvasMouseLeave (e, archiveInfo) {
   delete e.target.mouseX
   sparkline(e.target, archiveInfo.peerHistory)
+}
+
+async function onToggleSaved (e, archiveInfo) {
+  if (archiveInfo.userSettings.isSaved) {
+    trashList.unshift(archiveInfo)
+    await beaker.archives.remove(archiveInfo.key)
+    archiveInfo.userSettings.isSaved = false
+  } else {
+    trashList.splice(trashList.findIndex(a => a.key === archiveInfo.key), 1)
+    await beaker.archives.add(archiveInfo.key)
+    archiveInfo.userSettings.isSaved = true
+  }
+}
+
+function onToggleTrash () {
+  isTrashOpen = !isTrashOpen
+  update()
 }
 
 // helpers
