@@ -302,7 +302,7 @@ export class DropMenuNavbarBtn {
     if (!page || !page.getURL().startsWith('dat://')) {
       return
     }
-    var archive = await DatArchive.fork(page.getURL())
+    var archive = await DatArchive.fork(page.siteInfo.key)
     page.loadURL(archive.url)
   }
 
