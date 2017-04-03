@@ -215,16 +215,17 @@ var steps = {
           ${howtos.map((howto, idx) => yo`<li data-idx=${idx} onclick=${setActiveHowto}>${howto.title}</li>`)}
         </ul>
         <div class="howtos">
-          ${howtos.map((howto, idx) => renderHowto(howto, idx))}
+          ${howtos.map(renderHowto)}
         </div>
+        <button class="btn next" onclick=${advanceStep}>Skip</button>
       </div>
     </main>
   `,
   7: () => yo`
     <main class="finish">
       <div>
-        <h1>Your URL</h1>
-        <p>This is the URL for your profile. Share it with friends<br />so they can find your site.</p>
+        <h1>Your Profile Site URL</h1>
+        <p class="intro">This is the URL for your profile site. Share it with friends so they can find your site.</p>
         <div class="your-url">
           <a class="link" href="${profileDat.url}" target="_blank">${profileDat.url}</a>
         </div>
