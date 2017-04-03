@@ -88,7 +88,7 @@ function renderProfileCard () {
   return yo`
     <div class="profile">
       ${renderNetworkLink()}
-      <a href=${userProfile.url}>${userProfile.title} <i class="fa fa-user-circle-o"></i></a>
+      ${''/*DISABLED <a href=${userProfile.url}>${userProfile.title} <i class="fa fa-user-circle-o"></i></a>*/}
     </div>
   `
 }
