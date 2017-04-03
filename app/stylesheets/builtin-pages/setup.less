@@ -4,7 +4,10 @@
 @import "../base/typography.less";
 
 @import "../components/buttons.less";
+@import "../components/link";
 @import "../com/spinner.less";
+@import "../components/inputs";
+@import "../utils/flex";
 
 @import "../vendor/croppie.less";
 
@@ -13,9 +16,28 @@
 }
 
 main {
-  font-family: system, -apple-system, ".SFNSDisplay-Regular", "Helvetica Neue", Helvetica, "Segoe UI", sans-serif;
+  &:extend(.system-font);
   font-size: 13px;
   height: 100vh;
+  padding: @padding-component--thick;
+
+  h1 {
+    font-size: 28px;
+
+    + p.intro {
+      font-size: 16px;
+      max-width: 450px;
+      margin: @padding-component--wide auto;
+    }
+  }
+
+  .btn.next {
+
+    &:after {
+      content: '\203A';
+      margin-left: @margin-icon;
+    }
+  }
 
   & > div {
     text-align: center;
@@ -28,13 +50,7 @@ main {
       top: 0;
     }
 
-    font-weight: 100;
     font-size: 20px;
-    letter-spacing: 2px;
-
-    h1 {
-      font-weight: 600;
-    }
   }
 
   .link {
@@ -63,23 +79,17 @@ form {
     display: block;
     margin-bottom: 5px;
     font-size: 14px;
-    letter-spacing: 1px;
-    font-weight: normal;
   }
 
   input,
   textarea {
-    display: block;
     width: 100%;
-    padding: 0.5em 0.7em;
-    border-radius: 2px;
-    border: 1px solid #ccc;
-    font-size: 17px;
-    font-weight: 100;
+    font-size: 13px;
+    &:extend(input.roomy);
   }
 }
 
-.step1 {
+.welcome {
   background: @beaker-blue;
   color: #fff;
 
@@ -95,15 +105,13 @@ form {
     a {
       background: #fff;
       color: @beaker-blue;
-      
+
       cursor: pointer;
       border-radius: 5px;
       padding: 0.7em 2em 0.8em;
 
       font-size: 15px;
-      font-weight: bold;
-      letter-spacing: 0;
-      
+
       box-shadow: 0 0 0 rgba(255, 255, 255, 0.8);
 
       &:hover {
@@ -113,58 +121,48 @@ form {
   }
 }
 
-.step3 {
+.upload-avatar {
+
   .empty-picture {
     border: 1px solid @border-button;
-    width: 300px;
+    width: 350px;
     margin: 20px auto;
     padding: 100px 0;
   }
+
   .filled-picture {
     margin: 20px 0;
   }
 }
 
-.step4 {
+.call-to-action {
+
   & > div {
-    font-weight: 300;
     transform: translateY(-50%);
   }
 
-  .icon-btns {
-    margin: 60px;
+  .dat-url {
+    color: @blue;
+    border: 1px solid @border-menu;
+    padding: @padding-component;
+    margin: auto;
+    margin-top: @padding-component;
+    display: block;
     font-size: 14px;
-    letter-spacing: 1px;
+    width: 650px;
 
-    a {
-      display: inline-block;
-      cursor: pointer;
-      padding: 10px;
-      margin: 0 20px;
-      border: 1px solid transparent;
-      border-radius: 2px;
-
-      &:hover {
-        border-color: @border-button;
-        background: @background-button;
-      }
-    }
-    i, span {
-      display: block;
-    }
-    i {
-      font-size: 32px;
-      position: relative;
-      left: 2px;
+    &:hover {
+      text-decoration: underline;
     }
   }
 }
 
-.step5 {
+.finish {
+
   & > div {
-    font-weight: 300;
     line-height: 1.5;
   }
+
   .your-url {
     border: 1px solid @border-button;
     display: inline-block;
@@ -172,8 +170,182 @@ form {
     border-radius: 2px;
     font-size: 14px;
   }
-  .muted {
-    color: gray;
+}
+
+.overview {
+  padding: @padding-component--thick @padding-component--wide;
+
+
+  > div {
+    transform: none;
+    top: 0;
+  }
+
+  .btn.next {
+    margin-top: 150px;
+  }
+
+  .intro {
+    width: 750px;
+    margin: 0 auto @padding-component--thick auto;
+    font-size: 18px;
+  }
+
+  h2 {
+    font-size: 16px;
+    margin-bottom: @padding-component--thick;
+  }
+
+  .screenshots {
+    position: relative;
+  }
+
+  .screenshot {
+    display: inline-block;
+
+    + screenshot {
+      margin-left: @padding-component;
+    }
+
+    img {
+      opacity: .3;
+      border-radius: 2px;
+      width: 375px;
+      height: auto;
+      z-index: 0;
+      transition: transform .2s ease;
+      position: relative;
+      border: 1px solid @border-menu;
+    }
+
+    p.description {
+      width: 700px;
+      margin-top: 100px;
+      font-size: 16px;
+      line-height: 1.5;
+      display: none;
+      position: absolute;
+      width: 100%;
+      left: 0;
+    }
+
+    &:hover {
+
+      h2 {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .screenshot.active {
+
+    img {
+      opacity: 1;
+      z-index: 1;
+      transform: scale(1.2);
+      &:extend(.shadow);
+    }
+
+    p.description {
+      display: block;
+    }
+  }
+}
+
+main.howto {
+  position: relative;
+
+  > div {
+    text-align: left;
+    transform: none;
+    top: 0;
+    height: 100%;
+  }
+
+  .btn.next {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+  }
+
+  .links {
+    font-size: 14px;
+    margin-bottom: @padding-component--thick;
+
+    li {
+      display: inline-block;
+      &:extend(.link);
+
+      &:after {
+        content: '\00bb';
+        margin-left: @margin-icon;
+      }
+
+      &:not(:last-child) {
+        margin-right: 50px;
+      }
+
+      &:hover, &.active {
+        &:extend(.link:hover);
+      }
+    }
+  }
+
+  .howto {
+    display: none;
+
+    h3 {
+      font-size: 20px;
+      margin-bottom: @padding-component;
+    }
+
+    &.active {
+      &:extend(.flex);
+      align-items: flex-start;
+      flex-wrap: nowrap;
+    }
+
+    .steps {
+      font-size: 15px;
+      list-style: decimal;
+      margin-left: @padding-component;
+
+      li {
+        padding-left: 5px;
+        margin-bottom: @padding-component;
+      }
+    }
+  }
+
+  .howto container {
+    &:extend(.flex);
+  }
+
+  .howto .active-screenshot {
+    width: 700px;
+    height: auto;
+    border: 1px solid @border-menu;
+    margin-right: @padding-component;
+    margin-bottom: @padding-component;
+  }
+
+  .howto .thumbnails {
+    &:extend(.flex);
+    margin-bottom: @padding-component;
+  }
+
+  .howto .screenshot {
+    cursor: pointer;
+    width: 100px;
+    height: 65px;
+    opacity: .5;
+    border: 1px solid @border-menu;
+    margin-right: @padding-component;
+
+    &.active {
+      opacity: 1;
+      border: 1px solid @color-text--light;
+    }
   }
 }
 
