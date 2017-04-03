@@ -4,8 +4,10 @@
 @import "../base/typography.less";
 
 @import "../components/buttons.less";
+@import "../components/link";
 @import "../com/spinner.less";
 @import "../components/inputs";
+@import "../utils/flex";
 
 @import "../vendor/croppie.less";
 
@@ -255,14 +257,24 @@ form {
 }
 
 main.howto {
+  position: relative;
 
   > div {
+    text-align: left;
     transform: none;
     top: 0;
+    height: 100%;
+  }
+
+  .btn.next {
+    position: absolute;
+    right: 0;
+    bottom: 0;
   }
 
   .links {
     font-size: 14px;
+    margin-bottom: @padding-component--thick;
 
     li {
       display: inline-block;
@@ -286,8 +298,57 @@ main.howto {
   .howto {
     display: none;
 
+    h3 {
+      font-size: 20px;
+      margin-bottom: @padding-component;
+    }
+
     &.active {
-      display: block;
+      &:extend(.flex);
+      align-items: flex-start;
+      flex-wrap: nowrap;
+    }
+
+    .steps {
+      font-size: 15px;
+      list-style: decimal;
+      margin-left: @padding-component;
+
+      li {
+        padding-left: 5px;
+        margin-bottom: @padding-component;
+      }
+    }
+  }
+
+  .howto container {
+    &:extend(.flex);
+  }
+
+  .howto .active-screenshot {
+    width: 700px;
+    height: auto;
+    border: 1px solid @border-menu;
+    margin-right: @padding-component;
+    margin-bottom: @padding-component;
+  }
+
+  .howto .thumbnails {
+    &:extend(.flex);
+    margin-bottom: @padding-component;
+  }
+
+  .howto .screenshot {
+    cursor: pointer;
+    width: 100px;
+    height: 65px;
+    opacity: .5;
+    border: 1px solid @border-menu;
+    margin-right: @padding-component;
+
+    &.active {
+      opacity: 1;
+      border: 1px solid @color-text--light;
     }
   }
 }

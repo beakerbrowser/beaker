@@ -33,32 +33,61 @@ function render () {
 }
 
 var activeHowtoIdx = 0
+var activeHowtoScreenshotIdx = 0
+
 var howtos = [
-  { title: 'The Beaker editor',
-    img: '',
+  { title: 'Create a new site',
+    screenshots: [
+      'new-site-dropdown.png',
+      'new-site-editor.png',
+      'new-site-save.png',
+      'new-site-done.png'
+    ],
     steps: [
-      'step 1',
-      'step 2',
-      'step 3'
+      'Open the dropdown menu in the top righthand corner.',
+      'Click "New Site"',
+      'Beaker opens a a template for a new site in the editor. Give your site a name, and start adding files.',
+      'When you\'re finished, visit the Dat URL for your site to see your changes.'
     ]
   },
-  { title: 'Sharing files',
-    img: '',
+  { title: 'Share files',
+    screenshots: [
+      'share-files-start.png',
+      'share-files-upload.png',
+      'share-files-done.png'
+    ],
     steps: [
-      'test' 
+      'Click "Share files" on beaker://start.',
+      'Select the files you want to share.',
+      'View your files under the "files" directory of your profile site.'
     ]
   },
-  { title: 'Forking a site',
-    img: '',
+  { title: 'Fork a site',
+    screenshots: [],
     steps: [
-      'test2' 
+      'Visit a Dat site, like dat://taravancil.com.',
+      'Open the dropdown menu in the top righthand corner.',
+      'Click "Fork Site"',
+      'Give your copy of the site a new title and description, and click "Create fork".',
+      'You now have an editable copy of the site saved to your library.'
     ]
   },
-  { title: 'Sharing a note',
-    img: '',
-    steps: []
+  { title: 'Share a note',
+    screenshots: [
+      'note-start.png',
+      'note-write.png',
+      'note-done.png'
+    ],
+    steps: [
+      'Click "Share a note" on beaker://start.',
+      'Write a message and name your note.',
+      'Click "Create public note".',
+      'View your note under the "notes" directory of your profile site.'
+    ]
   }
 ]
+
+var activeHowtoScreenshot = howtos[0].screenshots[0]
 
 var steps = {
   1: () => yo`
@@ -328,16 +357,36 @@ function renderHowto (howto, idx) {
 
   return yo`
     <div class="howto ${isActive}">
-      <img src=${howto.img}/>
-      <h3>${howto.title}</h3>
-      <ol class="steps">
-        ${howto.steps.map(step => yo`<li>${step}</li>`)}
-      </ol>
-    </div>
+      <img class="active-screenshot" src="beaker://assets/${activeHowtoScreenshot}"/>
+      <div class="container">
+        <div class="thumbnails">
+          ${howto.screenshots.map(renderHowtoScreenshot)}
+        </div>
+        <h3>${howto.title}</h3>
+        <ol class="steps">
+          ${howto.steps.map(step => yo`<li>${step}</li>`)}
+        </ol>
+      </div>
+   </div>
   `
+}
+
+function renderHowtoScreenshot (src, idx) {
+  var isActive = activeHowtoScreenshotIdx == idx ? 'active' : ''
+
+  return yo`<img data-idx=${idx} class="screenshot ${isActive}" src="beaker://assets/${src}" onclick=${setActiveHowtoScreenshot}/>`
 }
 
 function setActiveHowto (e) {
   activeHowtoIdx = e.target.dataset.idx
+  // always show the first screenshot when rendering a new howto
+  activeHowtoScreenshotIdx = 0
+  activeHowtoScreenshot = howtos[activeHowtoIdx].screenshots[0]
+  render()
+}
+
+function setActiveHowtoScreenshot (e) {
+  activeHowtoScreenshotIdx = e.target.dataset.idx
+  activeHowtoScreenshot = howtos[activeHowtoIdx].screenshots[activeHowtoScreenshotIdx]
   render()
 }
