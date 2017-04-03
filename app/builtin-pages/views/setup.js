@@ -104,7 +104,7 @@ var steps = {
     <main class="overview">
       <div>
         <p class="intro">
-          Beaker is a browser for the peer-to-peer Web.
+          Beaker is a browser for the peer-to-peer Web. With Beaker you can:
         </p>
 
         <div class="screenshots">
