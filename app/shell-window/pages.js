@@ -152,7 +152,8 @@ export function create (opts) {
       // HACK to fix electron#8505
       // dont allow visibility: hidden until set active
       page.webviewEl.classList.remove('can-hide')
-      page.webviewEl.reload()
+      setTimeout(() => page.webviewEl.reload(), 100)
+      // ^ needs a delay or it doesnt take effect in time, SMH at this code though
     },
 
     // add/remove bookmark
