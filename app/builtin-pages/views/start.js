@@ -137,7 +137,7 @@ function renderShelf () {
 
   return yo`
     <div class="shelf open" onmouseout=${onMouseOutShelf}>
-      <h3>Your library</h3>
+      <h3><a href="beaker://network">Your library</a></h3>
       <div class="archives-list">
         ${archivesList.archives.map(archiveInfo => {
           const icon = archiveInfo.url === userProfile.url ? 'fa fa-user-circle-o' : 'fa fa-folder-o'
@@ -150,7 +150,7 @@ function renderShelf () {
           `
         })}
       </div>
-      <h3>Your bookmarks</h3>
+      <h3><a href="beaker://bookmarks">Your bookmarks</a></h3>
       <div class="bookmarks">
         ${bookmarks.map(row => {
           return yo`
