@@ -196,7 +196,7 @@ function render (id, page) {
 
     datBtns = [
       yo`
-        <button class="nav-peers-btn">
+        <button class="nav-peers-btn" onclick=${onClickPeers}>
           <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
         </button>`,
       yo`
@@ -540,6 +540,15 @@ function openDatView (e, view) {
 
 function onClickViewFiles (e) {
   openDatView(e, 'files')
+}
+
+function onClickPeers (e) {
+  var page = getEventPage(e)
+  if (e.metaKey || e.ctrlKey) { // popup
+    pages.setActive(pages.create('beaker://network'))
+  } else {
+    page.loadURL('beaker://network') // goto
+  }
 }
 
 function onClickLiveReload (e) {
