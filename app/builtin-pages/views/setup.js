@@ -142,10 +142,13 @@ var steps = {
     <main class="create-profile">
       <div>
         <h1>Create your profile site</h1>
+        <p class="intro">
+          Beaker uses peer-to-peer websites, like <a href="">this one</a>, to share files, host your profile picture, and more.
+        </p>
         <form>
           <p>
             <label for="name">Your name</label>
-            <input id="name" name="name" type="text" placeholder="Alice Roberts" autofocus />
+            <input autofocus id="name" name="name" type="text" placeholder="Alice Roberts" autofocus />
           </p>
           <p>
             <label for="bio">Your bio</label>
