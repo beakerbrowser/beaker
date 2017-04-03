@@ -183,13 +183,9 @@ function render (id, page) {
 
   // dat buttons
   var datBtns = ''
-  var toolbarActionDatBtns = ''
-  var toolbarActionDat = ''
 
   if (isViewingDat) {
     let numPeers = page.siteInfo ? page.siteInfo.peers : 0
-    let forkBtnTitle = 'Fork (Duplicate) This Site'
-    let editBtnTitle = 'Edit This Site'
     let liveReloadBtnCls = 'nav-live-reload-btn'
     let liveReloadBtnTitle = 'Turn on live reloading'
 
@@ -208,18 +204,6 @@ function render (id, page) {
           <i class="fa fa-bolt"></i>
         </button>`
     ]
-
-    toolbarActionDatBtns = [
-      yo`
-        <button class="toolbar-btn raised edit" title=${editBtnTitle} onclick=${onClickEditDat}>
-          <i class="fa fa-pencil"></i>
-        </button>`,
-      yo`
-        <button class="toolbar-btn raised fork" title=${forkBtnTitle} onclick=${onClickForkDat}>
-          <i class="fa fa-code-fork"></i>
-        </button>`
-    ]
-    toolbarActionDat = yo`<div class="toolbar-group dat">${toolbarActionDatBtns}</div>`
   } else if (siteHasDatAlternative) {
     datBtns = [
       yo`<button title="Go to Dat Version of this Site" onclick=${onClickGotoDatVersion}><span class="fa fa-share-alt"></span></button>`,
@@ -315,7 +299,6 @@ function render (id, page) {
       </button>
       ${autocompleteDropdown}
     </div>
-    ${toolbarActionDat}
     <div class="toolbar-group">
       ${dropMenuNavbarBtn.render()}
       ${updatesNavbarBtn.render()}
@@ -548,27 +531,6 @@ function openDatView (e, view) {
   if (!url) return
 
   // start loading
-  if (e.metaKey || e.ctrlKey) { // popup
-    pages.setActive(pages.create(url))
-  } else {
-    page.loadURL(url) // goto
-  }
-}
-
-async function onClickForkDat (e) {
-  var page = getEventPage(e)
-  if (!page || !page.getURL().startsWith('dat://')) return
-
-  var archive = await DatArchive.fork(page.getURL())
-  page.loadURL(archive.url)
-}
-
-async function onClickEditDat (e) {
-  var page = getEventPage(e)
-  if (!page || !page.getURL().startsWith('dat://')) return
-
-  // open tab loading
-  const url = `beaker://editor/${page.getURL().slice('dat://'.length)}`
   if (e.metaKey || e.ctrlKey) { // popup
     pages.setActive(pages.create(url))
   } else {
