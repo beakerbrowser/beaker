@@ -70,6 +70,29 @@
     }
   }
 
+  .list {
+    padding: 8px 0 10px;
+  }
+
+  .list-item {
+    padding: 3px 12px;
+    cursor: pointer;
+
+    * {
+      cursor: pointer;
+    }
+
+    i {
+      width: 20px;
+      text-align: center;
+      margin-right: 5px;
+    }
+
+    &:hover {
+      background: @background-menu;
+    }
+  }
+
   .grid {
     padding: @padding-component @padding-component @padding-component--tight @padding-component;
     &:extend(.flex);

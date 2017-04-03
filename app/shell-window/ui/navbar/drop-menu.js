@@ -45,6 +45,7 @@ export class DropMenuNavbarBtn {
     if (this.isDropdownOpen) {
       let page = pages.getActive()
       let isDatSite = page.getURL().startsWith('dat://')
+      let isDatSaved = page.siteInfo && page.siteInfo.userSettings.isSaved
 
       let downloadEls = activeDownloads.map(d => {
         // status
@@ -98,20 +99,34 @@ export class DropMenuNavbarBtn {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle visible">
-            <div class="grid page">
-              <div class="grid-item ${!isDatSite ? 'disabled' : ''}" onclick=${isDatSite ? (e => this.onEdit(e)) : undefined}>
-                <i class="fa fa-pencil-square-o"></i>
-                Edit Site
+            ${isDatSite ? yo`
+              <div class="list page">
+                ${!isDatSaved ?
+                  yo`
+                    <div class="list-item"  onclick=${e => this.onToggleSave(e)}>
+                      <i class="fa fa-floppy-o"></i>
+                      Save site to Library
+                    </div>
+                  ` : yo`
+                    <div class="list-item"  onclick=${e => this.onToggleSave(e)}>
+                      <i class="fa fa-trash"></i>
+                      Remove site from Library
+                    </div>
+                  `}
+                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onFork(e)}>
+                  <i class="fa fa-code-fork"></i>
+                  Fork site
+                </div>
+                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onEdit(e)}>
+                  <i class="fa fa-pencil-square-o"></i>
+                  Open in Editor
+                </div>
+                <div class="list-item" onclick=${e => this.onToggleLiveReloading(e)}>
+                  <i class="fa fa-bolt"></i>
+                  Turn ${page.isLiveReloading() ? 'off' : 'on'} live reloading
+                </div>
               </div>
-              <div class="grid-item ${!isDatSite ? 'disabled' : ''}" onclick=${isDatSite ? (e => this.onFork(e)) : undefined}>
-                <i class="fa fa-code-fork"></i>
-                Fork Site
-              </div>
-              <div class="grid-item" onclick=${e => this.onCreateSite(e)}>
-                <i class="fa fa-file-o"></i>
-                New Site
-              </div>
-            </div>
+            ` : ''}
 
             <hr />
 
@@ -293,6 +308,25 @@ export class DropMenuNavbarBtn {
     }
   }
 
+  async onToggleSave (e) {
+    // toggle saved
+    var page = pages.getActive()
+    if (!page || !page.getURL().startsWith('dat://')) {
+      return
+    }
+    if (page.siteInfo.userSettings.isSaved) {
+      await beaker.archives.remove(page.siteInfo.key)
+      page.siteInfo.userSettings.isSaved = false
+    } else {
+      await beaker.archives.add(page.siteInfo.key) 
+      page.siteInfo.userSettings.isSaved = true     
+    }
+
+    // close dropdown
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.updateActives()
+  }
+
   async onFork (e) {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
@@ -306,7 +340,6 @@ export class DropMenuNavbarBtn {
     page.loadURL(archive.url)
   }
 
-
   async onEdit (e) {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
@@ -317,18 +350,6 @@ export class DropMenuNavbarBtn {
       return
     }
     page.loadURL(`beaker://editor/${page.getURL().slice('dat://'.length)}`)
-  }
-
-  async onCreateSite (e) {
-    // close dropdown
-    this.isDropdownOpen = !this.isDropdownOpen
-    this.updateActives()
-
-    // create a new archive
-    var archive = await beaker.archives.create()
-
-    // open the archive in the editor in a new page
-    pages.setActive(pages.create(`beaker://editor/${archive.url.slice('dat://'.length)}`))
   }
 
   onToggleLiveReloading (e) {
