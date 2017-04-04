@@ -12,7 +12,7 @@ var lastClickedUrl = false // used to highlight the save btn
 // exported api
 // =
 
-export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchivesListCollapsed, onCollapseToggle}) {
+export default function rFilesList (archive, {selectedPath, dirtyFiles}) {
   const hasActiveFile = !!lastClickedNode
   const activeFileIsDirty = hasActiveFile && dirtyFiles[lastClickedUrl]
   if (!archive || !archive.fileTree.rootNode) {
@@ -22,14 +22,6 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchiv
   return yo`
     <div class="files-sidebar">
       <div class="header">
-        ${isArchivesListCollapsed
-          ? yo`<div class="btn-bar">
-                <button class="btn collapse" title="Expand Archives List" onclick=${onCollapseToggle}>
-                  <i class="fa fa-caret-square-o-right"></i>
-                </button>
-              </div>`
-          : ''}
-
         <div
           class="project-title"
           data-path=""

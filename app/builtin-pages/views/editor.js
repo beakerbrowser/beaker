@@ -1,7 +1,6 @@
 import yo from 'yo-yo'
 import mime from 'mime'
-import {Archive, ArchivesList, FileTree} from 'builtin-pages-lib'
-import {render as renderArchivesList, renderArchivesListItems} from '../com/archives-list'
+import {Archive, FileTree} from 'builtin-pages-lib'
 import {render as renderArchiveView} from '../com/editor-archive-view'
 import {render as renderEditorOptions, defaultEditorOptions} from '../com/editor-options'
 import {render as rHeader} from '../com/editor-header'
@@ -16,9 +15,6 @@ import dragDrop from '../../lib/fg/drag-drop'
 
 var viewError = null // toplevel error object
 var viewIsLoading = false // toplevel, is loading? false, 'archive', or 'file'
-var archivesList = null // ArchiveList, loaded once
-var currentFilter = '' // archivesList filter
-var isArchivesListCollapsed = false // render archives list collapsed?
 var selectedArchiveKey = null // selected archive's key
 var selectedArchive = null // selected Archive
 var selectedPath = null // selected filepath within the Archive
@@ -51,8 +47,8 @@ window.history.replaceState = _wr('replaceState')
 readEditorOptions()
 setup()
 // dragDrop(document.body, onDragDrop) TODO
-window.addEventListener('pushstate', setup)
-window.addEventListener('popstate', setup)
+window.addEventListener('pushstate', loadFile)
+window.addEventListener('popstate', loadFile)
 window.addEventListener('render', render)
 window.addEventListener('new-file', onNewFile)
 window.addEventListener('new-folder', onNewFolder)
@@ -65,62 +61,35 @@ window.addEventListener('keydown', onKeyDown)
 
 async function setup () {
   try {
-    // reset some state
-    viewError = null
-    var newArchiveKey = await getURLKey()
+    let to = setTimeout(() => {
+      // render loading screen (it's taking a sec)
+      viewIsLoading = 'archive'
+      render()
+    }, 500)
 
-    if (selectedArchiveKey === newArchiveKey) {
-      // a navigation within the same view
-      return await setupFile()
+    // parse out the archive key
+    var selectedArchiveKey = await getURLKey()
+    if (!selectedArchiveKey) {
+      return // TODO what do we do?
     }
 
-    // load the archive list, if needed
-    if (!archivesList) {
-      archivesList = new ArchivesList()
-      await archivesList.setup({isSaved: true})
-      archivesList.addEventListener('changed', render)
-    }
+    // load the archive
+    selectedArchive = new Archive(selectedArchiveKey)
+    selectedArchive.fileTree = new FileTree(selectedArchive)
+    await selectedArchive.setup()
+    await selectedArchive.fileTree.setup()
+    selectedArchive.addEventListener('changed', onArchiveChanged)
+    document.title = `${selectedArchive.niceName} - Editor`
+    configureEditor()
+    clearTimeout(to)
 
-    // update the archive, as needed
-    if (newArchiveKey !== selectedArchiveKey) {
-      if (selectedArchive) {
-        freeCleanModels()
-        selectedArchive.destroy()
-        selectedArchive = null
-        selectedPath = null
-      }
-
-      if (newArchiveKey) {
-        let to = setTimeout(() => {
-          // render loading screen (it's taking a sec)
-          viewIsLoading = 'archive'
-          render()
-        }, 500)
-
-        // load the archive
-        selectedArchive = new Archive(newArchiveKey)
-        selectedArchive.fileTree = new FileTree(selectedArchive)
-        await selectedArchive.setup()
-        await selectedArchive.fileTree.setup()
-        addUnsavedModelsToTree()
-        selectedArchive.addEventListener('changed', onArchiveChanged)
-        document.title = `${selectedArchive.niceName} - Editor`
-        configureEditor()
-        clearTimeout(to)
-
-        // close archives list
-        setSidebarCollapsed(true)
-      }
-      selectedArchiveKey = newArchiveKey
-    }
-
-    // render output
+    // render selected file
     viewIsLoading = false
-    await setupFile()
+    await loadFile()
   } catch (err) {
     // render the error state
     console.warn('Failed to fetch archive info', err)
-    viewIsLoading = null
+    viewIsLoading = false
     viewError = err
     render()
   }
@@ -129,7 +98,7 @@ async function setup () {
 // view state management
 // =
 
-async function setupFile () {
+async function loadFile () {
   // abort if the editor isn't loaded yet, and this will re-run when it's ready
   if (!window.editor || !selectedArchive) {
     return render()
@@ -223,14 +192,6 @@ function getURLPath () {
   }
 }
 
-function addUnsavedModelsToTree () {
-  for (var url in models) {
-    if (url.startsWith(selectedArchive.url) && models[url].path.startsWith('buffer~~')) {
-      selectedArchive.fileTree.addNode({ type: 'file', name: models[url].path })
-    }
-  }
-}
-
 function configureEditor () {
   if (!window.editor) return
 
@@ -277,15 +238,11 @@ function render () {
   }
 
   // render view
-  var collapsed = isArchivesListCollapsed && !!selectedArchiveKey
   yo.update(document.querySelector('#el-content'), yo`
     <div id="el-content">
-      <div class="archives">
-        ${renderArchivesList(archivesList, {selectedArchiveKey, currentFilter, onChangeFilter, selectedPath, isArchivesListCollapsed: collapsed, onCollapseToggle, onToggleOptions})}
-        ${isViewingOptions
-          ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
-          : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles, isArchivesListCollapsed: collapsed, onCollapseToggle})}
-      </div>
+      ${isViewingOptions
+        ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
+        : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles})}
       ${renderContextMenu()}
     </div>`)
 }
@@ -296,28 +253,14 @@ function render () {
 async function onEditorCreated () {
   configureEditor()
   try {
-    await setupFile()
+    await loadFile()
   } catch (err) {
     // render the error state
-    console.warn('Failed to fetch archive info', err)
-    viewIsLoading = null
+    console.warn('Failed to fetch file info', err)
+    viewIsLoading = false
     viewError = err
     render()
   }
-}
-
-function onChangeFilter (e) {
-  currentFilter = (e.target.value.toLowerCase())
-  yo.update(document.querySelector('.archives-list'), yo`
-    <ul class="archives-list">
-      ${renderArchivesListItems(archivesList, {selectedArchiveKey, currentFilter})}
-    </ul>`)
-}
-
-function onCollapseToggle (e) {
-  e.stopPropagation()
-  setSidebarCollapsed(!isArchivesListCollapsed)
-  render()
 }
 
 async function onNewFile (e) {
@@ -462,16 +405,6 @@ function onToggleOptions () {
 
 // helpers
 // =
-
-function setSidebarCollapsed (collapsed) {
-  isArchivesListCollapsed = collapsed
-  if (isArchivesListCollapsed) {
-    isViewingOptions = false // close options
-    document.body.classList.add('sidebar-collapsed')
-  } else {
-    document.body.classList.remove('sidebar-collapsed')    
-  }
-}
 
 function readEditorOptions () {
   try {

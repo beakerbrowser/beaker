@@ -1,5 +1,5 @@
 import * as yo from 'yo-yo'
-import renderFilesList from './files-list'
+import renderFilesList from './editor-files-list'
 import renderFileView from './editor-file-view'
 import { writeToClipboard } from '../../lib/fg/event-handlers'
 import prettyBytes from 'pretty-bytes'

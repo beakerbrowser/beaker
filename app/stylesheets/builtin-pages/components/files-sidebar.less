@@ -8,7 +8,7 @@
   &:extend(.hide-scrollbar all);
   position: fixed;
   z-index: 1;
-  left: 200px;
+  left: 0;
   top: 0;
   width: 200px;
   height: 100%;
@@ -30,11 +30,6 @@
       height: 100%;
       border: none;
       background: none;
-    }
-
-    .btn.collapse {
-      font-size: 13px;
-      border-right: 1px solid @border-menu;
     }
   }
 
@@ -70,8 +65,4 @@
     height: 100%;
     padding: 0 0 10px;
   }
-}
-
-.sidebar-collapsed .files-sidebar {
-  left: 0px;
 }
