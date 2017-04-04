@@ -3,6 +3,11 @@ import mime from 'mime'
 import renderDropdownMenuBar from './dropdown-menu-bar'
 import {niceDate} from '../../lib/time'
 
+// globals
+// =
+
+var dropMenuState = {}
+
 // exported api
 // =
 
@@ -59,15 +64,21 @@ function rFilePath (path) {
 }
 
 function rMenu (archive, path) {
-  return renderDropdownMenuBar([
+  return renderDropdownMenuBar(dropMenuState, [
     {
       label: 'File',
       menu: [
-        {label: 'Create new site'},
         {label: 'New file'},
         {label: 'New folder'},
         {label: 'Import file(s)...'},
-        {label: 'Save'}
+        '-',
+        {label: '&Save file'},
+        {label: 'Rename file', disabled: true},
+        {label: 'Delete file', disabled: true},
+        '-',
+        {label: 'View site'},
+        {label: 'View current file'},
+        {label: 'Copy URL'}
       ]
     },
     {
@@ -86,8 +97,10 @@ function rMenu (archive, path) {
     {
       label: 'Tools',
       menu: [
+        {label: 'Create new site'},
         {label: 'Fork this site'},
         {label: 'Delete this site'},
+        '-',
         {label: 'Settings'}
       ]
     }
