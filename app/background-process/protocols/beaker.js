@@ -210,14 +210,14 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://downloads/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/downloads.build.js'))
   }
-  if (requestUrl === 'beaker://network/') {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/network.html'))
+  if (requestUrl === 'beaker://library/') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/library.html'))
   }
-  if (requestUrl === 'beaker://network/main.css') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/network.css'))
+  if (requestUrl === 'beaker://library/main.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/library.css'))
   }
-  if (requestUrl === 'beaker://network/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/network.build.js'))
+  if (requestUrl === 'beaker://library/main.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/library.build.js'))
   }
   if (requestUrl === 'beaker://settings/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/settings.html'))
