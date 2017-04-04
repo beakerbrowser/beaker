@@ -3,16 +3,12 @@
 @import "../../utils/flex";
 
 .editor-header {
-  display: none;
+  &:extend(.flex);
   padding: 0 @padding-component--tight;
-  height: 30px;
+  height: 60px;
   line-height: 30px;
   border-bottom: 1px solid @border-menu;
   color: @color-text--muted;
-
-  &.active {
-    &:extend(.flex);
-  }
 
   .path {
     font-style: italic;

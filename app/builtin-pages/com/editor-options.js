@@ -3,7 +3,7 @@ import * as yo from 'yo-yo'
 // exported api
 // =
 
-export function render ({values, onSaveOptions, onToggleOptions}) {
+export function render (values, onSaveOptions, onToggleOptions) {
   values = values || defaultValues()
   return yo`<div class="editor-options">
     <form onsubmit=${onSubmit({values, onSaveOptions})}>

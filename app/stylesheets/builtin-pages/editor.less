@@ -3,16 +3,58 @@
 @import "../base/reset.less";
 
 // Built-in pages components
-@import "./components/archive-view.less";
-@import "./components/editor.less";
 @import "./components/editor-options.less";
 @import "./components/editor-header.less";
+@import "./components/editor-files-sidebar.less";
+@import "./components/files-list.less";
 @import "./components/protip.less";
 
 // Beaker components
 @import "../components/buttons.less";
 @import "../components/inputs.less";
 @import "../components/modal.less";
+@import "../components/messages.less";
 @import "../com/toolbar.less";
 @import "../com/spinner.less";
 @import "../components/tooltip";
+
+main {
+  position: absolute;
+  top: 60px;
+  left: 200px;
+  right: 0;
+  bottom: 0;
+}
+
+#editor-editor,
+#editor-viewer {
+  display: none;
+
+  &.active {
+    display: block;
+  }
+}
+
+#editor-editor {
+  height: ~"calc(100vh - 30px)";
+}
+
+#editor-viewer {
+  padding: @padding-component--tight;
+
+  audio, video {
+    width: 400px;
+  }
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .spinner {
+    float: left;
+    color: inherit;
+    margin-right: 10px;
+    margin-top: 1px;
+  }
+}

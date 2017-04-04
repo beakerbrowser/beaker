@@ -4,16 +4,16 @@ import mime from 'mime'
 // exported api
 // =
 
-export function render (archive, path, activeUrl, isActiveFileDirty) {
+export function update (archive, path, activeUrl, isActiveFileDirty) {
   if (! (archive && path)) return ''
   return yo.update(document.querySelector('.editor-header'), yo`
-    <div class="editor-header">
+    <header class="editor-header">
       <div class="path">
         ${rFileIcon(path)}
         <span>${rFilePath(path)}</span>
       </div>
       ${rActions(path, activeUrl, isActiveFileDirty)}
-    </div>`)
+    </header>`)
 }
 
 // renderers

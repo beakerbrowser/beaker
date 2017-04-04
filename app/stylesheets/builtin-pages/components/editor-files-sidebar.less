@@ -1,0 +1,24 @@
+@import "../../photon.min.less";
+
+@import "../../base/reset.less";
+@import "../../utils/decorators";
+@import "../../utils/flex";
+
+.files-sidebar {
+  &:extend(.hide-scrollbar all);
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 60px;
+  width: 200px;
+  height: 100%;
+  background: @background-menu;
+  border-right: 1px solid @border-menu;
+
+  .files-list {
+    &:extend(.hide-scrollbar all);
+    &:extend(.vertical-scroll);
+    height: 100%;
+    padding: 0 0 10px;
+  }
+}

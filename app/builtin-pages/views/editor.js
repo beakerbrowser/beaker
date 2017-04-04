@@ -1,9 +1,10 @@
 import yo from 'yo-yo'
 import mime from 'mime'
 import {Archive, FileTree} from 'builtin-pages-lib'
-import {render as renderArchiveView} from '../com/editor-archive-view'
 import {render as renderEditorOptions, defaultEditorOptions} from '../com/editor-options'
-import {render as rHeader} from '../com/editor-header'
+import {update as updateFilesList} from '../com/editor-files-list'
+import {render as renderFileView} from '../com/editor-file-view'
+import {update as updateHeader} from '../com/editor-header'
 import renderContextMenu from '../com/editor-context-menu'
 import * as choosePathPopup from '../com/editor-choose-path-popup'
 import {pushUrl} from '../../lib/fg/event-handlers'
@@ -49,7 +50,7 @@ setup()
 // dragDrop(document.body, onDragDrop) TODO
 window.addEventListener('pushstate', loadFile)
 window.addEventListener('popstate', loadFile)
-window.addEventListener('render', render)
+window.addEventListener('render', update)
 window.addEventListener('new-file', onNewFile)
 window.addEventListener('new-folder', onNewFolder)
 window.addEventListener('open-file', onOpenFile)
@@ -64,7 +65,7 @@ async function setup () {
     let to = setTimeout(() => {
       // render loading screen (it's taking a sec)
       viewIsLoading = 'archive'
-      render()
+      update()
     }, 500)
 
     // parse out the archive key
@@ -78,10 +79,10 @@ async function setup () {
     selectedArchive.fileTree = new FileTree(selectedArchive)
     await selectedArchive.setup()
     await selectedArchive.fileTree.setup()
+    clearTimeout(to)
     selectedArchive.addEventListener('changed', onArchiveChanged)
     document.title = `${selectedArchive.niceName} - Editor`
     configureEditor()
-    clearTimeout(to)
 
     // render selected file
     viewIsLoading = false
@@ -91,7 +92,7 @@ async function setup () {
     console.warn('Failed to fetch archive info', err)
     viewIsLoading = false
     viewError = err
-    render()
+    update()
   }
 }
 
@@ -101,7 +102,7 @@ async function setup () {
 async function loadFile () {
   // abort if the editor isn't loaded yet, and this will re-run when it's ready
   if (!window.editor || !selectedArchive) {
-    return render()
+    return update()
   }
 
   const path = getURLPath()
@@ -113,14 +114,14 @@ async function loadFile () {
   // deselection
   if (!path) {
     selectedModel = null
-    render()
+    update()
     return
   }
 
   let to = setTimeout(() => {
     // render loading screen (it's taking a sec)
     viewIsLoading = 'file'
-    render()
+    update()
   }, 500)
 
   // load according to editability
@@ -138,7 +139,7 @@ async function loadFile () {
           selectedPath = null
           viewIsLoading = false
           clearTimeout(to)
-          render()
+          update()
         } else {
           loadErr = err
         }
@@ -167,7 +168,7 @@ async function loadFile () {
   selectedModel = models[url]
   viewIsLoading = false
   clearTimeout(to)
-  render()
+  update()
 }
 
 async function getURLKey () {
@@ -215,36 +216,71 @@ function configureEditor () {
 // rendering
 // =
 
-function render () {
+function update () {
   // render header
   var activeUrl = selectedPath ? `${selectedArchive.url}/${selectedPath}`: ''
   var isActiveFileDirty = selectedPath && dirtyFiles && dirtyFiles[activeUrl]
-  rHeader(selectedArchive, selectedPath, activeUrl, isActiveFileDirty)
+  updateHeader(selectedArchive, selectedPath, activeUrl, isActiveFileDirty)
 
-  // show/hide the editor
-  var editorEl = document.querySelector('#el-editor-container .editor')
-  var editorHeader = document.querySelector('.editor-header')
-  var fileview = document.querySelector('.fileview')
+  // render files list
+  updateFilesList(selectedArchive, selectedPath, dirtyFiles)
 
-  if (selectedModel && !isViewingOptions && !viewError && !viewIsLoading) {
-    if (selectedModel.isEditable) {
-      editorEl.classList.add('active')
-      fileview.classList.remove('active')
-    }
-    editorHeader.classList.add('active')
+  // render the editor or viewer
+  var editorEl = document.querySelector('#editor-editor')
+  var viewerEl = document.querySelector('#editor-viewer')
+  if (selectedModel && selectedModel.isEditable && !isViewingOptions && !viewError && !viewIsLoading) {
+    editorEl.classList.add('active')
+    viewerEl.classList.remove('active')
   } else {
-    editorHeader.classList.remove('active')
     editorEl.classList.remove('active')
+    if (viewError) yo.update(viewerEl, rError())
+    else if (viewIsLoading) yo.update(viewerEl, rLoading())
+    else if (isViewingOptions) {
+      yo.update(viewerEl, yo`
+        <div id="editor-viewer" class="active">${renderEditorOptions(editorOptions, onSaveOptions, onToggleOptions)}</div>
+      `)
+    } else if (selectedModel) yo.update(viewerEl, yo`<div id="editor-viewer" class="active">${renderFileView(activeUrl)}</div>`)
+    else yo.update(viewerEl, yo`<div id="editor-viewer" class="active"></div>`) // empty view
   }
+}
 
-  // render view
-  yo.update(document.querySelector('#el-content'), yo`
-    <div id="el-content">
-      ${isViewingOptions
-        ? renderEditorOptions({onSaveOptions, onToggleOptions, values: editorOptions})
-        : renderArchiveView(selectedArchive, {viewIsLoading, viewError, selectedPath, selectedModel, dirtyFiles})}
-      ${renderContextMenu()}
-    </div>`)
+function rError () {
+  return yo`
+    <div id="editor-viewer" class="active">
+      <div class="message error archive-error">
+        <div>
+          <i class="fa fa-exclamation-triangle"></i>
+          <span>${viewError.toString()}</span>
+          <p>
+            Check your internet connection, and make sure you can connect to a user hosting the archive.
+          </p>
+        </div>
+        <div class="archive-error-narclink">
+        <a href="https://github.com/beakerbrowser/beaker/issues" target="_blank">Report Issue</a>
+        |
+        <a href="https://groups.google.com/forum/#!forum/beaker-browser" target="_blank">Request Help</a>
+      </div>
+    </div>
+  `
+}
+
+function rLoading (archive, opts) {
+  return yo`
+    <div id="editor-viewer" class="active">
+      <div class="message primary">
+        <div class="spinner"></div>
+        <div><strong>Searching the network for this ${viewIsLoading}. Please wait...</strong></div>
+        <p>Try:</p>
+        <ul>
+          <li>Checking your connection</li>
+          <li>Checking your firewall settings</li>
+        </ul>
+        <p>
+          Having trouble? <a href="https://groups.google.com/forum/#!forum/beaker-browser" target="_blank">Ask for help</a> or <a href="https://github.com/beakerbrowser/beaker/issues" target="_blank">Report a bug</a>.
+        </p>
+      </div>
+    </div>
+  `
 }
 
 // event handlers
@@ -259,7 +295,7 @@ async function onEditorCreated () {
     console.warn('Failed to fetch file info', err)
     viewIsLoading = false
     viewError = err
-    render()
+    update()
   }
 }
 
@@ -331,7 +367,7 @@ async function onChoosePath (e) {
     if (!selectedArchive) return
     try {
       await selectedArchive.createDirectory(path)
-      render()
+      update()
     } catch (e) {
       alert('' + e)
     }
@@ -352,7 +388,7 @@ function onDidChangeContent (archive, path) {
     if (!dirtyFiles[url]) {
       // update state and render
       dirtyFiles[url] = true
-      render()
+      update()
     }
   }
 }
@@ -366,7 +402,7 @@ function onKeyDown (e) {
     if (selectedArchive && selectedArchive.isEditingDetails) {
       // exit details editor
       selectedArchive.isEditingDetails = false
-      render()
+      update()
     }
   }
 }
@@ -374,7 +410,7 @@ function onKeyDown (e) {
 async function onArchiveChanged (e) {
   // reload the file listing
   await selectedArchive.fileTree.setup()
-  render()
+  update()
 }
 
 function onSaveOptions (values) {
@@ -394,12 +430,12 @@ function onSaveOptions (values) {
 
   // render
   isViewingOptions = false
-  render()
+  update()
 }
 
 function onToggleOptions () {
   isViewingOptions = !isViewingOptions
-  render()
+  update()
 }
 
 
@@ -496,7 +532,7 @@ async function save () {
 
   // update state and render
   delete dirtyFiles[selectedModel.uri.toString()]
-  render()
+  update()
 }
 
 function closeModel () {
