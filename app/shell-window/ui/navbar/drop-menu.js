@@ -121,11 +121,11 @@ export class DropMenuNavbarBtn {
                 History
               </div>
 
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://network')}>
-                <i class="fa fa-share-alt"></i>
-                Network
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
+                <i class="fa fa-list"></i>
+                Library
               </div>
-              
+
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://editor')}>
                 <i class="fa fa-pencil"></i>
                 Editor

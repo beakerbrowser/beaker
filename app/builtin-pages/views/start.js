@@ -95,7 +95,7 @@ function renderProfileCard () {
 
 function renderNetworkLink () {
   return yo`
-    <a class="network" href="beaker://network">
+    <a class="network" href="beaker://library">
       <i class="fa fa-share-alt"></i> ${archivesStatus.peers} ${pluralize(archivesStatus.peers, 'peer')}
     </a>
   `
