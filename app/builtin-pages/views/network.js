@@ -88,6 +88,7 @@ function rArchive (archiveInfo) {
         <div class="status">${archiveInfo.peers} active peers</div>
       </div>
       <div class="btns">
+        <a class="btn" href=${'beaker://editor/' + archiveInfo.key}><i class="fa fa-edit"></i> Open in Editor</a>
         <a class="btn" onclick=${e => onToggleSaved(e, archiveInfo)}><i class="fa fa-trash"></i> Remove</a>
       </div>
     </div>
