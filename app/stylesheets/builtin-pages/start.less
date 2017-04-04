@@ -38,21 +38,25 @@ header {
     &:hover {
       &:extend(.link:hover);
     }
+
     i {
       cursor: pointer;
     }
   }
 
   .actions {
+
     a {
       margin-right: @padding-component--tight;
     }
+
     i {
       margin-right: @margin-icon;
     }
   }
 
   .profile {
+
     .network {
     }
 
@@ -148,17 +152,26 @@ header {
   height: auto;
   white-space: nowrap;
 
-  &__pin {
-    margin-right: 10px;
+  * {
+    vertical-align: middle;
+    cursor: pointer;
   }
 
-  &__favicon {
+  .btn.pin {
+    margin-right: 10px;
+
+    i {
+      margin-right: 2px;
+    }
+  }
+
+  .favicon {
     height: 15px;
     width: 15px;
-    margin-right: 5px;
+    margin-right: @margin-icon;
   }
 
-  &__link {
+  .link {
     flex: 1;
     color: fadeout(#333, 15%);
 
@@ -170,11 +183,6 @@ header {
         text-decoration: underline;
       }
     }
-  }
-
-  * {
-    vertical-align: middle;
-    cursor: pointer;
   }
 }
 
