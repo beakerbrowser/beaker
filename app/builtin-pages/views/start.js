@@ -195,12 +195,12 @@ function renderBookmarks () {
   const renderRow = row =>
     yo`
       <li class="bookmark ll-row">
-        <a class="btn bookmark__pin" onclick=${e => pinBookmark(e, row)}>
+        <a class="btn pin" onclick=${e => pinBookmark(e, row)}>
           <i class="fa fa-thumb-tack"></i> Pin
         </a>
-        <a href=${row.url} class="link bookmark__link" title=${row.title} />
-          <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.url} />
-          <span class="title bookmark__title">${row.title}</span>
+        <a href=${row.url} class="link" title=${row.title} />
+          <img class="favicon" src=${'beaker-favicon:' + row.url} />
+          <span class="title">${row.title}</span>
           <span class="url">${row.url}</span>
         </a>
       </li>`
