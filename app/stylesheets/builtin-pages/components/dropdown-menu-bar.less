@@ -1,0 +1,17 @@
+@import "../../base/spacing";
+@import "../../base/colors";
+@import "../../utils/flex";
+
+.dropdown-menu-bar {
+  &:extend(.flex);
+  align-items: center;
+
+  .item {
+    padding: 0 6px;
+    background: @background-dropdown-menu-bar;
+
+    &:hover {
+      background: @background-dropdown-menu-bar--hover;
+    }
+  }
+}

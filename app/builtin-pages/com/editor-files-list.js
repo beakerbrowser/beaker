@@ -1,4 +1,5 @@
 import yo from 'yo-yo'
+import prettyBytes from 'pretty-bytes'
 import {findParent, pushUrl} from '../../lib/fg/event-handlers'
 
 // globals
@@ -31,6 +32,7 @@ function rFilesList (archive, selectedPath, dirtyFiles) {
       <div class="files-list">
         ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
       </div>
+      <div class="archive-size">${prettyBytes(archive.info.size)}</div>
     </nav>
   `
 }

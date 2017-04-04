@@ -9,7 +9,7 @@
   position: fixed;
   z-index: 1;
   left: 0;
-  top: 60px;
+  top: 61px;
   width: 200px;
   height: 100%;
   background: @background-menu;
@@ -18,7 +18,13 @@
   .files-list {
     &:extend(.hide-scrollbar all);
     &:extend(.vertical-scroll);
-    height: 100%;
-    padding: 0 0 10px;
+  }
+
+  .archive-size {
+    display: inline-block;
+    margin: 5px 10px;
+    padding: 5px 5px;
+    color: gray;
+    border-top: 1px solid #ddd;
   }
 }

@@ -4,59 +4,56 @@
 
 .editor-header {
   &:extend(.flex);
-  padding: 0 @padding-component--tight;
+  padding: 0 @padding-component--tight 0 0;
   height: 60px;
-  line-height: 30px;
+  box-sizing: content-box;
   border-bottom: 1px solid @border-menu;
-  color: @color-text--muted;
+
+  .main {
+    flex: 1;
+    padding: 0 @padding-component--tight;
+  }
+
+  .actions {
+    padding-top: 14px;
+    padding-right: 5px;
+
+    .btn {
+      font-size: 15px;
+      padding: 4px 16px;
+      height: auto;
+    }
+  }
 
   .path {
-    font-style: italic;
+    &:extend(.flex);
+    align-items: baseline;
+    height: 30px;
+    line-height: 32px;
+    padding: 0 5px;
 
     i {
       margin-right: @margin-icon;
     }
 
-    * {
-      line-height: 30px;
-      display: inline-block;
-      vertical-align: baseline;
+    .archive {
+      font-size: 19px;
+      letter-spacing: 0.5px;
+    }
+
+    .file {
+      padding: 0 @padding-component--tight;
     }
   }
-}
 
-.editor-header-actions {
+  .dropdown-menu-bar {
+    display: inline-flex;
+    height: 26px;
+    line-height: 26px;
+  }
 
-  .save-prompt {
-    font-style: italic;
+  .last-updated {
     color: @color-text--light;
+    padding: 0 @padding-component--tight;
   }
-
-  button {
-    border: none;
-    height: 24px;
-    line-height: 24px;
-    vertical-align: baseline;
-    margin: 3px 0;
-    border-radius: 2px;
-
-    * {
-      cursor: pointer;
-    }
-
-    &:disabled {
-      color: @color-text--light;
-      cursor: default;
-
-      * {
-        cursor: default;
-      }
-    }
-
-    &:hover:not(:disabled) {
-      background: @background-menu;
-    }
-  }
-
-  margin-left: auto;
 }
