@@ -41,7 +41,6 @@ var _wr = function(type) {
 window.history.pushState = _wr('pushState')
 window.history.replaceState = _wr('replaceState')
 
-window.models = models
 // main
 // =
 

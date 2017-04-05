@@ -239,17 +239,20 @@ async function shareFiles () {
     return
   }
 
-  // construct the destination folder
-  var date = createDateString()
-  var dst = `${userProfile.url}/files/${date}/`
+  // create a new dat
+  var d = new Date()
+  var archive = await DatArchive.create({
+    title: `Shared Files ${d.toLocaleDateString()}`,
+    description: `Files shared on ${d.toLocaleString()}`
+  })
 
   // import into the user profile
   await Promise.all(paths.map(srcPath => 
-    DatArchive.importFromFilesystem({srcPath, dst, inplaceImport: true})
+    DatArchive.importFromFilesystem({srcPath, dst: archive.url, inplaceImport: true})
   ))
 
   // open
-  window.location = dst
+  window.location = archive.url
 }
 
 function toggleShelf () {
@@ -322,24 +325,4 @@ function attachDominantColor (bookmark) {
 
 function niceName (archiveInfo) {
   return (archiveInfo.title || '').trim() || 'Untitled'
-}
-
-function createDateString () {
-  var d = new Date()
-  return pad0`${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}_${d.getHours()}-${d.getMinutes()}`
-}
-
-function pad0 (strings, ...args) {
-  var out = ''
-  for (var i = 0; i < strings.length; i++) {
-    out += strings[i]
-    if (args[i]) out += doPad0(args[i])
-  }
-  return out
-}
-
-function doPad0 (str) {
-  str = ''+str
-  if (str.length < 2) return '0' + str
-  return str
 }
