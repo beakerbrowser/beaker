@@ -8,12 +8,12 @@
   <link rel="stylesheet" href="beaker://editor/main.css">
 </head>
 <body>
-  <div id="el-content"></div>
-  <div id="el-editor-container">
-    <div class="editor-header"></div>
-    <div class="fileview"></div>
-    <div class="editor"></div>
-  </div>
+  <header class="editor-header"></header>
+  <nav class="files-sidebar"></nav>
+  <main>
+    <div id="editor-editor"></div>
+    <div id="editor-viewer"></div>
+  </main>
   <div id="choose-path-popup"></div>
   <script src="beaker://editor/min/vs/loader.js"></script>
   <script>
@@ -25,7 +25,7 @@
   };
   require(['vs/editor/editor.main'], function() {
     window.editor =
-      monaco.editor.create(document.querySelector('#el-editor-container .editor'), {
+      monaco.editor.create(document.querySelector('#editor-editor'), {
       lineNumbersMinChars: 4,
       automaticLayout: true,
       fixedOverflowWidgets: true,

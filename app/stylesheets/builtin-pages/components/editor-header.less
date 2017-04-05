@@ -3,64 +3,71 @@
 @import "../../utils/flex";
 
 .editor-header {
-  display: none;
-  padding: 0 @padding-component--tight;
-  height: 30px;
-  line-height: 30px;
+  &:extend(.flex);
+  padding: 0 @padding-component--tight 0 0;
+  height: 60px;
+  box-sizing: content-box;
   border-bottom: 1px solid @border-menu;
-  color: @color-text--muted;
 
-  &.active {
-    &:extend(.flex);
-  }
-
-  .path {
-    font-style: italic;
-
-    i {
-      margin-right: @margin-icon;
-    }
-
-    * {
-      line-height: 30px;
-      display: inline-block;
-      vertical-align: baseline;
-    }
-  }
-}
-
-.editor-header-actions {
-
-  .save-prompt {
-    font-style: italic;
-    color: @color-text--light;
-  }
-
-  button {
-    border: none;
-    height: 24px;
-    line-height: 24px;
-    vertical-align: baseline;
-    margin: 3px 0;
-    border-radius: 2px;
+  .bigbutton {
+    line-height: 60px;
+    background: @blue;
+    color: rgba(255,255,255,0.75);
+    width: 30px;
+    text-align: center;
+    font-size: 22px;
+    cursor: pointer;
 
     * {
       cursor: pointer;
     }
 
-    &:disabled {
-      color: @color-text--light;
-      cursor: default;
-
-      * {
-        cursor: default;
-      }
-    }
-
-    &:hover:not(:disabled) {
-      background: @background-menu;
+    &:hover {
+      background: darken(@blue, 5%);
     }
   }
 
-  margin-left: auto;
+  .main {
+    flex: 1;
+    padding: 0 @padding-component--tight;
+  }
+
+  .actions {
+    padding-top: 18px;
+    padding-right: 5px;
+  }
+
+  .path {
+    &:extend(.flex);
+    align-items: baseline;
+    height: 30px;
+    line-height: 32px;
+    padding: 0 5px;
+    letter-spacing: 0.5px;
+
+    i {
+      margin-right: @margin-icon;
+    }
+
+    .archive {
+      font-size: 19px;
+    }
+
+    .file {
+      padding: 0 7px;
+      font-size: 14px;
+      color: gray;
+    }
+  }
+
+  .dropdown-menu-bar {
+    display: inline-flex;
+    height: 26px;
+    line-height: 26px;
+  }
+
+  .last-updated {
+    color: @color-text--light;
+    padding: 0 @padding-component--tight;
+  }
 }

@@ -2,6 +2,7 @@ import yo from 'yo-yo'
 
 var selectedPath
 var actionType
+var currentPromise
 
 // exported api
 // =
@@ -12,11 +13,14 @@ export function render (archive) {
   if (actionType === 'create-folder') {
     title = 'Folder name'
     actLabel = 'Create'
+  } else if (actionType === 'import-files') {
+    title = 'Destination'
+    actLabel = 'Import'
   }
 
   return yo`
     <div id="choose-path-popup" class="active">
-      <form class="choose-path-form" onsubmit=${onSubmitChoosePath}>
+      <form class="choose-path-form ${actionType}" onsubmit=${onSubmitChoosePath}>
         <div class="filename">
           <label for="name">${title}</label>
           <input autofocus type="text" name="name" placeholder="filename" tabindex="1" />
@@ -34,18 +38,23 @@ export function render (archive) {
 }
 
 export function create (archive, {path, action} = {}) {
-  // reset state
-  selectedPath = path || ''
-  actionType = action || 'save-file'
+  return new Promise((resolve, reject) => {
+    // reset state
+    selectedPath = path || ''
+    actionType = action || 'save-file'
 
-  // render interface
-  yo.update(document.getElementById('choose-path-popup'), render(archive))
+    // render interface
+    yo.update(document.getElementById('choose-path-popup'), render(archive))
 
-  // select input
-  var input = document.querySelector('#choose-path-popup input')
-  input.value = 'untitled'
-  input.focus()
-  input.select()
+    // select input
+    var input = document.querySelector('#choose-path-popup input')
+    input.value = ''
+    input.focus()
+    input.select()
+
+    // store resolve, reject
+    currentPromise = {resolve, reject}
+  })
 }
 
 export function destroy () {
@@ -121,11 +130,15 @@ function onSubmitChoosePath (e) {
   var evt = new Event('choose-path')
   evt.detail = {path, action: actionType}
   window.dispatchEvent(evt)
+  currentPromise.resolve(path)
+  currentPromise = null
 }
 
 function onCancel (e) {
   e.preventDefault()
   destroy()
+  currentPromise.reject()
+  currentPromise = null
 }
 
 // helpers

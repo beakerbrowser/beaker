@@ -28,11 +28,6 @@ export default function render () {
         <menuitem label="Delete folder" onclick=${onClickDelete}></menuitem>
         <menuitem label="Copy URL" onclick=${onCopyURL}></menuitem>
       </menu>
-      <menu type="context" id="archive">
-        <menuitem label="New file" onclick=${onClickNewFile}></menuitem>
-        <menuitem label="New folder" onclick=${onClickNewFolder}></menuitem>
-        <menuitem label="Import file(s)..." onclick=${onClickImport}></menuitem>
-      </menu>
     </div>
   `
 }
@@ -75,18 +70,8 @@ function onClickNewFolder () {
 }
 
 async function onClickImport () {
-  // pick files
-  var files = await beakerBrowser.showOpenDialog({
-    title: 'Choose a folder or files to import',
-    buttonLabel: 'Import',
-    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
-  })
-  if (!files) {
-    return
-  }
-
   // emit an event for the toplevel editor to handle
   var evt = new Event('import-files')
-  evt.detail = {files, dst: currentContext.url}
+  evt.detail = {dst: currentContext.url}
   window.dispatchEvent(evt)
 }

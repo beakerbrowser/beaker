@@ -1,0 +1,30 @@
+@import "../../photon.min.less";
+
+@import "../../base/reset.less";
+@import "../../utils/decorators";
+@import "../../utils/flex";
+
+.files-sidebar {
+  &:extend(.hide-scrollbar all);
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 61px;
+  width: 200px;
+  height: 100%;
+  background: @background-menu;
+  border-right: 1px solid @border-menu;
+
+  .files-list {
+    &:extend(.hide-scrollbar all);
+    &:extend(.vertical-scroll);
+  }
+
+  .archive-size {
+    display: inline-block;
+    margin: 5px 10px;
+    padding: 5px 5px;
+    color: gray;
+    border-top: 1px solid #ddd;
+  }
+}

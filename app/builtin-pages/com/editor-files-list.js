@@ -1,4 +1,5 @@
 import yo from 'yo-yo'
+import prettyBytes from 'pretty-bytes'
 import {findParent, pushUrl} from '../../lib/fg/event-handlers'
 
 // globals
@@ -12,7 +13,14 @@ var lastClickedUrl = false // used to highlight the save btn
 // exported api
 // =
 
-export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchivesListCollapsed, onCollapseToggle}) {
+export function update (archive, selectedPath, dirtyFiles) {
+  yo.update(document.querySelector('.files-sidebar'), rFilesList(archive, selectedPath, dirtyFiles))
+}
+
+// renderers
+// =
+
+function rFilesList (archive, selectedPath, dirtyFiles) {
   const hasActiveFile = !!lastClickedNode
   const activeFileIsDirty = hasActiveFile && dirtyFiles[lastClickedUrl]
   if (!archive || !archive.fileTree.rootNode) {
@@ -20,46 +28,14 @@ export default function rFilesList (archive, {selectedPath, dirtyFiles, isArchiv
   }
 
   return yo`
-    <div class="files-sidebar">
-      <div class="header">
-        ${isArchivesListCollapsed
-          ? yo`<div class="btn-bar">
-                <button class="btn collapse" title="Expand Archives List" onclick=${onCollapseToggle}>
-                  <i class="fa fa-caret-square-o-right"></i>
-                </button>
-              </div>`
-          : ''}
-
-        <div
-          class="project-title"
-          data-path=""
-          data-url=${archive.url}
-          contextmenu="archive"
-          oncontextmenu=${onContextMenu}
-        >
-          <a class="title" href=${'beaker://editor/' + archive.url.slice('dat://'.length)} onclick=${pushUrl}>
-            ${archive.niceName}
-          </a>
-        </div>
-
-        <div class="btn-bar">
-          ${archive.info.isOwner
-            ? yo`
-              <button class="btn" title="New File" onclick=${e => onNewFile(e, archive)}>
-                <i class="fa fa-plus"></i>
-              </button>`
-            : rReadOnly(archive)}
-        </div>
-      </div>
+    <nav class="files-sidebar">
       <div class="files-list">
         ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
       </div>
-    </div>
+      <div class="archive-size">${prettyBytes(archive.info.size)}</div>
+    </nav>
   `
 }
-
-// renderers
-// =
 
 function redraw (archive, dirtyFiles, selectedPath) {
   yo.update(document.querySelector('.files-list'), yo`
@@ -67,17 +43,6 @@ function redraw (archive, dirtyFiles, selectedPath) {
       ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
     </div>
   `)
-}
-
-function rReadOnly (archive) {
-  return yo`
-    <span class="tooltip">
-      <i class="tooltip-link fa fa-eye"></i>
-      <div class="tooltip-content">
-        You${"'"}re viewing a read-only version.
-        <a href="#" onclick=${e => onFork(e, archive)}>Fork to create an editable copy</a>.
-      </div>
-    </span>`
 }
 
 function rChildren (archive, children, depth, dirtyFiles, selectedPath) {
@@ -201,12 +166,6 @@ function onClickFile (e, archive, node) {
 
 function onNewFile (e) {
   window.dispatchEvent(new Event('new-file'))
-}
-
-async function onFork (e, archive) {
-  e.preventDefault()
-  var newArchive = await DatArchive.fork(archive)
-  window.location = 'beaker://editor/' + newArchive.url.slice('dat://'.length)
 }
 
 function onContextMenu (e) {

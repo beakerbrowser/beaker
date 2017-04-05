@@ -4,46 +4,33 @@ import mime from 'mime'
 // exported api
 // =
 
-export default function renderFileView (archive, opts) {
-  if (!opts.selectedModel || opts.selectedModel.isEditable) {
-    return yo`</div>`
-  }
-
-  return rUneditable(archive, opts.selectedPath)
-}
-
-// renderers
-// =
-
-function rUneditable (archive, path) {
-  var el
+export function render (url) {
   // lookup the mimetype
-  var mimetype = mime.lookup(path)
+  var mimetype = mime.lookup(url)
   if (mimetype.startsWith('image/')) {
-    el = yo`
+    return yo`
       <div class="fileview uneditable active">
-        <img src=${archive.url + '/' + path} />
+        <img src=${url} />
       </div>
     `
   } else if (mimetype.startsWith('video/')) {
-    el =yo`
+    return yo`
       <div class="fileview uneditable active">
-        <video controls src=${archive.url + '/' + path}></video>
+        <video controls src=${url}></video>
       </div>
     `
   } else if (mimetype.startsWith('audio/')) {
-    el = yo`
+    return yo`
       <div class="fileview uneditable active">
-        <audio controls src=${archive.url + '/' + path}></audio>
+        <audio controls src=${url}></audio>
       </div>
     `
   } else {
-    el = yo`
+    return yo`
       <div class="fileview uneditable active">
         Unsupported filetype, ${mimetype}
       </div>
     `
   }
-
-  yo.update(document.querySelector('.fileview'), el)
+  return ''
 }

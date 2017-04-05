@@ -18,7 +18,7 @@ import {getUserSetupStatus} from '../browser'
 const BEAKER_CSP = `
   default-src 'self' beaker:;
   img-src beaker-favicon: beaker: data: dat: http: https;
-  script-src 'self' beaker: 'sha256-aXLf/pvGPNctHq2g1HINOltlg+Ke/CFsPvJrFD7IXgc=';
+  script-src 'self' beaker: 'sha256-6wiAJ64fH9B+ODgqTW/HbCGHfYgmJzkYnvp3GIDeJlg=';
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
 `.replace(/\n/g, '')
