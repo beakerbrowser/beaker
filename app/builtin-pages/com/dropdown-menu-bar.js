@@ -4,9 +4,9 @@ import * as yo from 'yo-yo'
 // =
 
 export default function render (state, menu) {
-  if (!state.toplevelClickHandler) {
-    state.toplevelClickHandler = onToplevelClick(state, menu)
-    window.addEventListener('click', state.toplevelClickHandler)
+  if (!state.windowClickHandler) {
+    state.windowClickHandler = onWindowClick(state, menu)
+    window.addEventListener('click', state.windowClickHandler)
   }
 
   return yo`
@@ -44,13 +44,14 @@ function rTopItem (state, menu, item, index) {
 }
 
 function rMenuItem (state, item) {
+  const onClick = e => onClickMenuItem(item)
   if (item === '-') {
     return yo`<hr />`
   }
   var cls = ''
   if (item.disabled) cls = 'disabled'
   return yo`
-    <a class=${cls}>${rLabel(item.label)}</a>
+    <a class=${cls} onclick=${onClick}>${rLabel(item.label)}</a>
   `
 }
 
@@ -80,6 +81,15 @@ function onClickTopItem (state, menu, index, e) {
   }
 }
 
+function onClickMenuItem (item) {
+  if (typeof item.click === 'function') {
+    item.click()
+  }
+  else if (typeof item.click === 'string') {
+    window.dispatchEvent(new Event(item.click))
+  }
+}
+
 function onHoverTopItem (state, menu, index) {
   if (state.active && state.openedMenuIndex !== index) {
     state.openedMenuIndex = index
@@ -87,7 +97,7 @@ function onHoverTopItem (state, menu, index) {
   }
 }
 
-function onToplevelClick (state, menu) {
+function onWindowClick (state, menu) {
   return e => {
     if (!state.active) return
     state.active = false

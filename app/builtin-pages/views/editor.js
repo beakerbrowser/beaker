@@ -41,7 +41,7 @@ var _wr = function(type) {
 window.history.pushState = _wr('pushState')
 window.history.replaceState = _wr('replaceState')
 
-
+window.models = models
 // main
 // =
 
@@ -57,6 +57,7 @@ window.addEventListener('open-file', onOpenFile)
 window.addEventListener('save-file', onSaveFile)
 window.addEventListener('import-files', onImportFiles)
 window.addEventListener('choose-path', onChoosePath)
+window.addEventListener('open-settings', onOpenSettings)
 window.addEventListener('editor-created', onEditorCreated)
 window.addEventListener('keydown', onKeyDown)
 
@@ -220,7 +221,7 @@ function update () {
   // render header
   var activeUrl = selectedPath ? `${selectedArchive.url}/${selectedPath}`: ''
   var isActiveFileDirty = selectedPath && dirtyFiles && dirtyFiles[activeUrl]
-  updateHeader(selectedArchive, selectedPath, activeUrl, isActiveFileDirty)
+  updateHeader(selectedArchive, selectedPath, activeUrl, isActiveFileDirty, selectedModel && selectedModel.isEditable)
 
   // render files list
   updateFilesList(selectedArchive, selectedPath, dirtyFiles)
@@ -309,8 +310,8 @@ async function onNewFile (e) {
 async function onNewFolder (e) {
   choosePathPopup.create(selectedArchive, {
     action: 'create-folder',
-    path: e.detail.path
-  })  
+    path: e.detail ? e.detail.path : ''
+  })
 }
 
 async function onOpenFile (e) {
@@ -330,13 +331,32 @@ function onSaveFile (e) {
 }
 
 async function onImportFiles (e) {
-  await Promise.all(e.detail.files.map(src => {
-    // send to backend
-    return DatArchive.importFromFilesystem({
-      srcPath: src,
-      dst: e.detail.dst,
-      inplaceImport: false
+  // pick files
+  var files = await beakerBrowser.showOpenDialog({
+    title: 'Choose a folder or files to import',
+    buttonLabel: 'Import',
+    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
+  })
+  if (!files) {
+    return
+  }
+
+  // pick the destination
+  var dst
+  if (e.detail) {
+    dst = e.detail.dst
+  } else {
+    let path = await choosePathPopup.create(selectedArchive, {
+      action: 'import-files',
+      path: ''
     })
+    dst = selectedArchive.url + '/' + path
+  }
+
+  // import
+  await Promise.all(files.map(srcPath => {
+    // send to backend
+    return DatArchive.importFromFilesystem({srcPath, dst, inplaceImport: false})
   }))
 }
 
@@ -430,6 +450,11 @@ function onSaveOptions (values) {
 
   // render
   isViewingOptions = false
+  update()
+}
+
+function onOpenSettings () {
+  isViewingOptions = true
   update()
 }
 

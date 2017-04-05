@@ -2,6 +2,7 @@ import * as yo from 'yo-yo'
 import mime from 'mime'
 import renderDropdownMenuBar from './dropdown-menu-bar'
 import {niceDate} from '../../lib/time'
+import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 // globals
 // =
@@ -11,7 +12,7 @@ var dropMenuState = {}
 // exported api
 // =
 
-export function update (archive, path, activeUrl, isActiveFileDirty) {
+export function update (archive, path, activeUrl, isActiveFileDirty, isEditable) {
   if (!archive) {
     return ''
   }
@@ -37,7 +38,7 @@ export function update (archive, path, activeUrl, isActiveFileDirty) {
           ${rArchiveName(archive)}
           ${rFilePath(path)}
         </div>
-        ${rMenu(archive, path)}
+        ${rMenu(archive, path, isEditable)}
         <span class="last-updated">Updated ${niceDate(archive.info.mtime)}</span>
       </div>
       ${rActions(path, activeUrl, isActiveFileDirty)}
@@ -69,45 +70,47 @@ function rFilePath (path) {
   `
 }
 
-function rMenu (archive, path) {
+function rMenu (archive, path, isEditable) {
   return renderDropdownMenuBar(dropMenuState, [
     {
       label: 'File',
       menu: [
-        {label: 'New file'},
-        {label: 'New folder'},
-        {label: 'Import file(s)...'},
+        {label: 'New file', click: 'new-file'},
+        {label: 'New folder', click: 'new-folder'},
+        {label: 'Import file(s)...', click: 'import-files'},
         '-',
-        {label: '&Save file'},
+        {label: '&Save file', disabled: !isEditable, click: 'save-file'},
         {label: 'Rename file', disabled: true},
         {label: 'Delete file', disabled: true},
         '-',
-        {label: 'View site'},
-        {label: 'View current file'},
-        {label: 'Copy URL'}
+        {label: 'View site', click: () => window.open(archive.url)},
+        {label: 'View current file', click: () => window.open(archive.url + '/' + path)},
+        {label: 'Copy URL', click: () => writeToClipboard(archive.url)}
       ]
     },
     {
       label: 'Edit',
       menu: [
-        {label: 'Edit site details...'},
+        {label: 'Undo', disabled: !isEditable, click: () => editor.executeCommand('keyboard', monaco.editor.Handler.Undo)},
+        {label: 'Redo', disabled: !isEditable, click: () => editor.executeCommand('keyboard', monaco.editor.Handler.Redo)},
         '-',
-        {label: 'Undo'},
-        {label: 'Redo'},
+        {label: 'Cut', disabled: !isEditable, click: () => { editor.focus(); document.execCommand('cut') }},
+        {label: 'Copy', disabled: !isEditable, click: () => { editor.focus(); document.execCommand('copy') }},
+        {label: 'Paste', disabled: !isEditable, click: () => { editor.focus(); document.execCommand('paste') }},
         '-',
-        {label: 'Cut'},
-        {label: 'Copy'},
-        {label: 'Paste'}
+        {label: 'Edit site details...', click: () => archive.updateManifest()}
       ]
     },
     {
       label: 'Tools',
       menu: [
-        {label: 'Create new site'},
-        {label: 'Fork this site'},
-        {label: 'Delete this site'},
+        {label: 'Create new site', click: onCreate},
+        {label: 'Fork this site', click: () => onFork(archive)},
+        archive && archive.info.userSettings.isSaved
+          ? {label: 'Delete this site', click: () => onDelete(archive)}
+          : {label: 'Save this site', click: () => onSave(archive)},
         '-',
-        {label: 'Settings'}
+        {label: 'Settings', click: 'open-settings'}
       ]
     }
   ])
@@ -121,15 +124,30 @@ function rActions (path, url, isDirty) {
   `
 }
 
-function onSaveFile (path, url) {
-  // dispatch an app event
-  var evt = new Event('save-file')
-  evt.detail = { path: path, url: url}
-  window.dispatchEvent(evt)
+// event handlers
+// =
+
+async function onCreate () {
+  var archive = await DatArchive.create()
+  window.location = 'beaker://editor/' + archive.url.slice('dat://'.length)
 }
 
-function onOpenInNewWindow (e, url) {
-  e.preventDefault()
-  e.stopPropagation()
-  beakerBrowser.openUrl(url)
+async function onFork (archive) {
+  var fork = await DatArchive.fork(archive, {
+    title: archive.info.title,
+    description: archive.info.description
+  })
+  window.location = 'beaker://editor/' + fork.url.slice('dat://'.length)
+}
+
+async function onSave (archive) {
+  await beaker.archives.add(archive.url)
+  archive.info.userSettings.isSaved = true
+  window.dispatchEvent(new Event('render'))
+}
+
+async function onDelete (archive) {
+  await beaker.archives.remove(archive.url)
+  archive.info.userSettings.isSaved = false
+  window.dispatchEvent(new Event('render'))
 }

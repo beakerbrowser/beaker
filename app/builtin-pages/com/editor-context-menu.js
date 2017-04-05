@@ -70,18 +70,8 @@ function onClickNewFolder () {
 }
 
 async function onClickImport () {
-  // pick files
-  var files = await beakerBrowser.showOpenDialog({
-    title: 'Choose a folder or files to import',
-    buttonLabel: 'Import',
-    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
-  })
-  if (!files) {
-    return
-  }
-
   // emit an event for the toplevel editor to handle
   var evt = new Event('import-files')
-  evt.detail = {files, dst: currentContext.url}
+  evt.detail = {dst: currentContext.url}
   window.dispatchEvent(evt)
 }
