@@ -217,10 +217,14 @@ function configureEditor () {
 // =
 
 function update () {
-  // render header
   var activeUrl = selectedPath ? `${selectedArchive.url}/${selectedPath}`: ''
-  var isActiveFileDirty = selectedPath && dirtyFiles && dirtyFiles[activeUrl]
-  updateHeader(selectedArchive, selectedPath, activeUrl, isActiveFileDirty, selectedModel && selectedModel.isEditable)
+  var isActiveFileDirty = selectedPath && dirtyFiles && dirtyFiles[activeUrl] // TODO needed?
+  var isOwner = selectedArchive.info.isOwner
+  var isSaved = selectedArchive.info.userSettings.isSaved
+  var isEditable = isOwner && selectedModel && selectedModel.isEditable
+
+  // render header
+  updateHeader(selectedArchive, selectedPath, activeUrl, isSaved, isOwner, isEditable)
 
   // render files list
   updateFilesList(selectedArchive, selectedPath, dirtyFiles)

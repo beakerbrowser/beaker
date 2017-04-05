@@ -133,7 +133,7 @@
   top: 24px;
   right: 0px;
   background: #fff;
-  border: 1px solid #ccc;
+  border: 1px solid @border-menu;
   width: 149px;
   box-shadow: 2px 2px 2px rgba(0,0,0,0.1);
   border-radius: 2px;
@@ -150,21 +150,46 @@
   & > div, & > a {
     display: block;
     padding: 7px 7px;
-    color: #555;
-    .icon {
+    color: @color-text;
+
+    i {
       width: 15px;
       display: inline-block;
       text-align: center;
     }
+
     &.disabled {
-      color: #999;
+      color: @color-text--light;
     }
+
     &:hover {
       text-decoration: none;
     }
+
     &:hover:not(.disabled) {
-      background: #fafafa;
-      color: #0091ff;
+      background: @blue;
+      color: #fff;
+    }
+  }
+
+  & > div {
+    padding: 12px 15px;
+    border-bottom: 1px solid @border-menu;
+
+    &:last-child {
+      border: 0;
+    }
+
+    .title {
+      font-size: 16px;
+    }
+
+    .desc {
+      color: @color-text--muted;
+    }
+
+    &:hover .desc {
+      color: fadeout(#fff, 10%)
     }
   }
 }
