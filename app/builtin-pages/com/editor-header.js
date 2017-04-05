@@ -18,6 +18,7 @@ export function update (archive, path, activeUrl, isSaved, isOwner, isEditable) 
     return ''
   }
   path = path || ''
+  let readonly = isOwner ? '' : yo`<span class="readonly"><i class="fa fa-eye"></i> Read-only</span>`
   return yo.update(document.querySelector('.editor-header'), yo`
     <header class="editor-header">
       <a class="bigbutton" href="beaker://library" title="Open your library">
@@ -29,6 +30,7 @@ export function update (archive, path, activeUrl, isSaved, isOwner, isEditable) 
           ${rFilePath(path)}
         </div>
         ${rMenu(archive, path, isEditable)}
+        ${readonly}
         <span class="last-updated">Updated ${niceDate(archive.info.mtime)}</span>
       </div>
       ${rActions(archive, isSaved, isOwner)}

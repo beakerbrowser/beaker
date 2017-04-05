@@ -227,7 +227,7 @@ function update () {
   updateHeader(selectedArchive, selectedPath, activeUrl, isSaved, isOwner, isEditable)
 
   // render files list
-  updateFilesList(selectedArchive, selectedPath, dirtyFiles)
+  updateFilesList(selectedArchive, selectedPath, dirtyFiles, isOwner)
 
   // render the editor or viewer
   var editorEl = document.querySelector('#editor-editor')

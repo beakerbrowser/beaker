@@ -13,22 +13,23 @@ var lastClickedUrl = false // used to highlight the save btn
 // exported api
 // =
 
-export function update (archive, selectedPath, dirtyFiles) {
-  yo.update(document.querySelector('.files-sidebar'), rFilesList(archive, selectedPath, dirtyFiles))
+export function update (archive, selectedPath, dirtyFiles, isOwner) {
+  yo.update(document.querySelector('.files-sidebar'), rFilesList(archive, selectedPath, dirtyFiles, isOwner))
 }
 
 // renderers
 // =
 
-function rFilesList (archive, selectedPath, dirtyFiles) {
+function rFilesList (archive, selectedPath, dirtyFiles, isOwner) {
   const hasActiveFile = !!lastClickedNode
   const activeFileIsDirty = hasActiveFile && dirtyFiles[lastClickedUrl]
   if (!archive || !archive.fileTree.rootNode) {
     return ''
   }
 
+  const cls = isOwner ? 'editable' : 'readonly'
   return yo`
-    <nav class="files-sidebar">
+    <nav class="files-sidebar ${cls}">
       <div class="files-list">
         ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
       </div>
