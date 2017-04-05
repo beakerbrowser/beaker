@@ -9,20 +9,32 @@
   box-sizing: content-box;
   border-bottom: 1px solid @border-menu;
 
+  .bigbutton {
+    line-height: 60px;
+    background: @blue;
+    color: rgba(255,255,255,0.75);
+    width: 30px;
+    text-align: center;
+    font-size: 22px;
+    cursor: pointer;
+
+    * {
+      cursor: pointer;
+    }
+
+    &:hover {
+      background: darken(@blue, 5%);
+    }
+  }
+
   .main {
     flex: 1;
     padding: 0 @padding-component--tight;
   }
 
   .actions {
-    padding-top: 14px;
+    padding-top: 18px;
     padding-right: 5px;
-
-    .btn {
-      font-size: 15px;
-      padding: 4px 16px;
-      height: auto;
-    }
   }
 
   .path {
@@ -31,6 +43,7 @@
     height: 30px;
     line-height: 32px;
     padding: 0 5px;
+    letter-spacing: 0.5px;
 
     i {
       margin-right: @margin-icon;
@@ -38,11 +51,12 @@
 
     .archive {
       font-size: 19px;
-      letter-spacing: 0.5px;
     }
 
     .file {
-      padding: 0 @padding-component--tight;
+      padding: 0 7px;
+      font-size: 14px;
+      color: gray;
     }
   }
 

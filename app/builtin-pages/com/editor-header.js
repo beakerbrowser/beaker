@@ -29,6 +29,9 @@ export function update (archive, path, activeUrl, isActiveFileDirty) {
       // </button>
   return yo.update(document.querySelector('.editor-header'), yo`
     <header class="editor-header">
+      <a class="bigbutton" href="beaker://library" title="Open your library">
+        <i class="fa fa-caret-left"></i>
+      </a>
       <div class="main">
         <div class="path">
           ${rArchiveName(archive)}
@@ -53,13 +56,16 @@ function rFilePath (path) {
     return ''
   }
 
-  var label = (path.startsWith('buffer~~')) ? 'New file' : path
+  var label
+  if (path.startsWith('buffer~~')) {
+    label = 'New file'
+  } else {
+    label = path.split('/').map(part => yo`
+      <span> / ${part}</span>
+    `)
+  }
   return yo`
-    <div class="file">
-      <i class="fa fa-angle-right"></i>
-      ${rFileIcon(path)}
-      ${label}
-    </div>
+    <div class="file">${label}</div>
   `
 }
 
@@ -113,28 +119,6 @@ function rActions (path, url, isDirty) {
       <a class="btn primary"><i class="fa fa-link"></i> Share</a>
     </div>
   `
-}
-
-function rFileIcon (path) {
-  // lookup the mimetype
-  var mimetype = mime.lookup(path)
-  var cls = 'file-o'
-
-  if (mimetype.startsWith('image/')) {
-    cls = 'file-image-o'
-  } else if (mimetype.startsWith('video/')) {
-    cls = 'file-video-o'
-  } else if (mimetype.startsWith('video/')) {
-    cls = 'file-video-o'
-  } else if (mimetype.startsWith('audio/')) {
-    cls = 'file-audio-o'
-  } else if (mimetype.startsWith('text/html')) {
-    cls = 'file-code-o'
-  } else if (mimetype.startsWith('text/')) {
-    cls = 'file-text-o'
-  }
-
-  return yo`<i class="fa fa-${cls}"></i>`
 }
 
 function onSaveFile (path, url) {
