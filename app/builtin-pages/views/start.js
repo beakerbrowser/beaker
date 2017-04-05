@@ -121,11 +121,12 @@ function renderShelf () {
             <a class="archive" href=${archiveInfo.url}>
               <i class=${icon}></i>
               <span class="title">${niceName(archiveInfo)}</span>
-              <span>${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
+              <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
+              <span class="edit"><a href=${`beaker://editor/${archiveInfo.key}`}><i class="fa fa-pencil"></i> edit</a></span>
             </a>
           `
         })}
-        <a class="link" href="beaker://library">View your library</a>
+        <a class="link" href="beaker://library">Manage your library</a>
       </div>
       <h3><a href="beaker://bookmarks">Your bookmarks</a></h3>
       <div class="bookmarks">
@@ -138,6 +139,7 @@ function renderShelf () {
               </a>
             </li>`
         })}
+        <a class="link" href="beaker://bookmarks">Manage your bookmarks</a>
       </div>
     </div>
   `
