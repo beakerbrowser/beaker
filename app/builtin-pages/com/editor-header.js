@@ -9,6 +9,7 @@ import toggleable, {closeAllToggleables} from './toggleable'
 // =
 
 var dropMenuState = {}
+var isEditingTitle = false
 
 // exported api
 // =
@@ -26,7 +27,7 @@ export function update (archive, path, activeUrl, isSaved, isOwner, isEditable) 
       </a>
       <div class="main">
         <div class="path">
-          ${rArchiveName(archive)}
+          ${rArchiveName(archive, isOwner)}
           ${rFilePath(path)}
         </div>
         ${rMenu(archive, path, isEditable)}
@@ -40,8 +41,25 @@ export function update (archive, path, activeUrl, isSaved, isOwner, isEditable) 
 // renderers
 // =
 
-function rArchiveName (archive) {
-  return yo`<div class="archive">${archive.niceName}</div>`
+function rArchiveName (archive, isOwner) {
+  if (!isOwner) {
+    return yo`<div class="archive">${archive.niceName}</div>`
+  }
+  if (!isEditingTitle) {
+    return yo`
+      <div class="archive editable" onclick=${e => onStartEditingTitle(archive, isOwner)}>
+        ${archive.niceName}
+      </div>`
+  }
+  return yo`
+    <div
+      class="archive editing"
+      onkeydown=${e => onTitleKeydown(e, archive, isOwner)}
+      onblur=${e => onStopEditingTitle(archive, isOwner)}
+      contenteditable="true"
+    >${archive.niceName}</div>`
+    // ^ important - dont put whitespace between the text content and the element tags
+    // when this becomes a contenteditable, the whitespace gets included as a value
 }
 
 function rFilePath (path) {
@@ -117,7 +135,7 @@ function rActions (archive, isSaved, isOwner) {
     icon = 'fa fa-pencil'
     label = 'Editable'
     saveDesc = 'Restore from the trash.'
-    delDesc = 'Put in the trash and let the files be deleted.'
+    delDesc = 'Move this site to the trash and let the files be deleted.'
   }
 
   return yo`
@@ -178,4 +196,48 @@ async function onDelete (archive) {
   await beaker.archives.remove(archive.url)
   archive.info.userSettings.isSaved = false
   window.dispatchEvent(new Event('render'))
+}
+
+function onStartEditingTitle (archive, isOwner) {
+  isEditingTitle = true
+  var el = document.querySelector('header .archive')
+
+  // re-render
+  yo.update(el, rArchiveName(archive, isOwner))
+
+  // focus and select text
+  el.focus()
+  var range = document.createRange()
+  range.selectNodeContents(el)
+  var sel = window.getSelection()
+  sel.removeAllRanges()
+  sel.addRange(range)
+}
+
+async function onStopEditingTitle (archive, isOwner, ignore) {
+  isEditingTitle = false
+  var el = document.querySelector('header .archive')
+
+  if (!ignore) {
+    // grab value
+    var newTitle = (el.textContent || '').trim()
+
+    // update if changed
+    if (newTitle !== archive.info.title) {
+      await beaker.archives.update(archive.url, {title: newTitle})
+      archive.info.title = newTitle
+    }
+  }
+  
+  // rerender
+  yo.update(document.querySelector('header .archive'), rArchiveName(archive, isOwner))
+}
+
+function onTitleKeydown (e, archive, isOwner) {
+  if (e.keyCode === 13 /*enter*/) {
+    onStopEditingTitle(archive, isOwner) 
+  }
+  if (e.keyCode === 27 /*escape*/) {
+    onStopEditingTitle(archive, isOwner, true)
+  }
 }

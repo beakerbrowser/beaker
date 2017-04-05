@@ -49,24 +49,34 @@
   .path {
     &:extend(.flex);
     align-items: baseline;
-    height: 30px;
-    line-height: 32px;
-    padding: 0 5px;
+    height: 25px;
+    line-height: 23px;
     letter-spacing: 0.5px;
+    margin-top: 5px;
+  }
 
-    i {
-      margin-right: @margin-icon;
-    }
+  .archive {
+    font-size: 19px;
+    padding: 0 5px;
+    border: 1px solid transparent;
 
-    .archive {
-      font-size: 19px;
-    }
+    &.editable {
+      cursor: text;
 
-    .file {
-      padding: 0 7px;
-      font-size: 14px;
-      color: gray;
+      &:hover {
+        border-color: shade(#fff, 25%);
+      }
     }
+    &.editing {
+      cursor: text;
+      border-color: shade(#fff, 25%);
+    }
+  }
+
+  .file {
+    padding: 0 2px;
+    font-size: 14px;
+    color: gray;
   }
 
   .dropdown-menu-bar {
