@@ -4,7 +4,11 @@ import * as yo from 'yo-yo'
 // =
 
 export default function render (state, menu) {
-  if (!state.windowClickHandler) {
+  if (state.windowClickHandler) {
+    window.removeEventListener('click', state.windowClickHandler)
+    state.windowClickHandler = null
+  }
+  if (state.active) {
     state.windowClickHandler = onWindowClick(state, menu)
     window.addEventListener('click', state.windowClickHandler)
   }

@@ -81,6 +81,8 @@ function rFilePath (path) {
 }
 
 function rMenu (archive, path, isEditable) {
+  console.log('path', path)
+  var isUnsavedFile = path.startsWith('buffer~~')
   return renderDropdownMenuBar(dropMenuState, [
     {
       label: 'File',
@@ -94,7 +96,7 @@ function rMenu (archive, path, isEditable) {
         {label: 'Delete file', disabled: true},
         '-',
         {label: 'View site', click: () => window.open(archive.url)},
-        {label: 'View current file', click: () => window.open(archive.url + '/' + path)},
+        {label: 'View current file', disabled: isUnsavedFile, click: () => window.open(archive.url + '/' + path)},
         {label: 'Copy URL', click: () => writeToClipboard(archive.url)}
       ]
     },
