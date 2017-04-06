@@ -145,6 +145,7 @@ function rActions (archive, isSaved, isOwner) {
 
   return yo`
     <div class="actions">
+      <a class="btn" href=${archive.url} target="_blank"><i class="fa fa-external-link"></i> View site</a>
       ${toggleable(yo`
         <div class="dropdown-btn-container">
           <button class="btn toggleable">
