@@ -30,6 +30,7 @@ function rFilesList (archive, selectedPath, dirtyFiles, isOwner) {
   const cls = isOwner ? 'editable' : 'readonly'
   return yo`
     <nav class="files-sidebar ${cls}">
+      <div class="files-header">Files</div>
       <div class="files-list">
         ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
       </div>
