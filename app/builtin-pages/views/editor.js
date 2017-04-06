@@ -210,6 +210,7 @@ function configureEditor () {
     ),
     rulers: editorOptions.wordWrap === 'fixed' ? [+editorOptions.wordWrapLength] : [],
     renderLineHighlight: 'gutter',
+    contextmenu: false,
     quickSuggestions: false,
     suggestOnTriggerCharacters: false,
     wordBasedSuggestions: false,
