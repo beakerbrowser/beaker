@@ -135,7 +135,7 @@ function rActions (archive, isSaved, isOwner) {
     icon = 'fa fa-pencil'
     label = 'Editable'
     saveDesc = 'Restore from the trash.'
-    delDesc = 'Move this site to the trash and let the files be deleted.'
+    delDesc = 'Move this site to the trash.'
   }
 
   return yo`
@@ -149,7 +149,7 @@ function rActions (archive, isSaved, isOwner) {
           <div class="dropdown-btn-list">
             <div onclick=${e => onFork(archive)}>
               <div class="title"><i class="fa fa-code-fork"></i> Fork this site</div>
-              <div class="desc">Create a duplicate of this site which you can edit.</div>
+              <div class="desc">Create an editable copy of this site.</div>
             </div>
             ${isSaved ? yo`
               <div onclick=${e => onDelete(archive)}>
