@@ -141,9 +141,9 @@ export class DropMenuNavbarBtn {
                 Library
               </div>
 
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://editor')}>
+              <div class="grid-item" onclick=${e => this.onCreateSite(e)}>
                 <i class="fa fa-pencil"></i>
-                Editor
+                New site
               </div>
 
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
@@ -325,6 +325,15 @@ export class DropMenuNavbarBtn {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
+  }
+
+  async onCreateSite (e) {
+    // close dropdown
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.updateActives()
+
+    var archive = await beaker.archives.create()
+    pages.getActive().loadURL('beaker://editor/' + archive.url.slice('dat://'.length))
   }
 
   async onFork (e) {
