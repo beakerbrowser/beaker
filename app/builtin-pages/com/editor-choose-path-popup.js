@@ -29,7 +29,7 @@ export function render (archive) {
           ${rFolder(archive, archive.fileTree.rootNode)}
         </div>
         <div class="actions">
-          <button class="btn" role="button" onclick=${onCancel} tabindex="2">Cancel</button>
+          <button class="btn" type="button" onclick=${onCancel} tabindex="2">Cancel</button>
           <button class="btn primary" type="submit" tabindex="3">${actLabel}</button>
         </div>
       </form>

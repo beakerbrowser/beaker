@@ -57,7 +57,6 @@ window.addEventListener('new-folder', onNewFolder)
 window.addEventListener('open-file', onOpenFile)
 window.addEventListener('save-file', onSaveFile)
 window.addEventListener('import-files', onImportFiles)
-window.addEventListener('choose-path', onChoosePath)
 window.addEventListener('open-settings', onOpenSettings)
 window.addEventListener('editor-created', onEditorCreated)
 window.addEventListener('keydown', onKeyDown)
@@ -318,10 +317,16 @@ async function onNewFile (e) {
 }
 
 async function onNewFolder (e) {
-  choosePathPopup.create(selectedArchive, {
+  var path = await choosePathPopup.create(selectedArchive, {
     action: 'create-folder',
     path: e.detail ? e.detail.path : ''
   })
+  try {
+    await selectedArchive.createDirectory(path)
+    update()
+  } catch (e) {
+    alert('' + e)
+  }
 }
 
 async function onOpenFile (e) {
@@ -368,41 +373,6 @@ async function onImportFiles (e) {
     // send to backend
     return DatArchive.importFromFilesystem({srcPath, dst, inplaceImport: false})
   }))
-}
-
-async function onChoosePath (e) {
-  var {path, action} = e.detail
-  if (!selectedArchive) {
-    return
-  }
-  if (action === 'save-file') {
-    if (!selectedModel) return
-    // get content
-    var content = selectedModel.getValue()
-
-    // close current model
-    closeModel()
-
-    // generate new model
-    var model = await generate(selectedArchive, path, content)
-
-    // save content
-    selectedModel = model
-    await save()
-
-    // go to file
-    window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${model.path}`)
-  }
-  if (action === 'create-folder') {
-    if (!selectedArchive) return
-    try {
-      await selectedArchive.createDirectory(path)
-      update()
-    } catch (e) {
-      alert('' + e)
-    }
-
-  }
 }
 
 function onDragDrop (files) {
@@ -553,13 +523,22 @@ async function load (archive, path) {
 }
 
 async function save () {
+  var newPath
   if (!selectedModel || !dirtyFiles[selectedModel.uri.toString()]) {
     return
   }
 
   // do we need to pick a filename?
   if (selectedModel.path.startsWith('buffer~~')) {
-    return choosePathPopup.create(selectedArchive, {path: selectedModel.suggestedPath})
+    newPath = await choosePathPopup.create(
+      selectedArchive,
+      {path: selectedModel.suggestedPath}
+    )
+
+    // generate new model
+    let content = selectedModel.getValue()
+    closeModel()
+    selectedModel = await generate(selectedArchive, newPath, content)
   }
 
   // write the file content
@@ -568,6 +547,11 @@ async function save () {
   // update state and render
   delete dirtyFiles[selectedModel.uri.toString()]
   update()
+
+  if (newPath) {
+    // go to file
+    window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${newPath}`)
+  }
 }
 
 function closeModel () {
