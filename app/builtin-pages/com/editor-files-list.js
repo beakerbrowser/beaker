@@ -24,7 +24,7 @@ function rFilesList (archive, selectedPath, dirtyFiles, isOwner) {
   const hasActiveFile = !!lastClickedNode
   const activeFileIsDirty = hasActiveFile && dirtyFiles[lastClickedUrl]
   if (!archive || !archive.fileTree.rootNode) {
-    return ''
+    return yo`<nav class="files-sidebar"></nav>`
   }
 
   const cls = isOwner ? 'editable' : 'readonly'

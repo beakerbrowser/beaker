@@ -16,7 +16,7 @@ var isEditingTitle = false
 
 export function update (archive, path, activeUrl, isSaved, isOwner, isEditable) {
   if (!archive) {
-    return ''
+    return
   }
   path = path || ''
   let readonly = isOwner ? '' : yo`<span class="readonly"><i class="fa fa-eye"></i> Read-only</span>`

@@ -71,7 +71,8 @@ async function setup () {
     // parse out the archive key
     var selectedArchiveKey = await getURLKey()
     if (!selectedArchiveKey) {
-      return // TODO what do we do?
+      window.location = 'beaker://library/'
+      return
     }
 
     // load the archive
@@ -181,7 +182,7 @@ async function getURLKey () {
     return DatArchive.resolveName(name)
   } catch (e) {
     console.error('Failed to parse URL', e)
-    return false
+    throw new Error('Invalid dat URL')
   }
 }
 
@@ -219,15 +220,9 @@ function configureEditor () {
 function update () {
   var activeUrl = selectedPath ? `${selectedArchive.url}/${selectedPath}`: ''
   var isActiveFileDirty = selectedPath && dirtyFiles && dirtyFiles[activeUrl] // TODO needed?
-  var isOwner = selectedArchive.info.isOwner
-  var isSaved = selectedArchive.info.userSettings.isSaved
+  var isOwner = selectedArchive && selectedArchive.info.isOwner
+  var isSaved = selectedArchive && selectedArchive.info.userSettings.isSaved
   var isEditable = isOwner && selectedModel && selectedModel.isEditable
-
-  // render header
-  updateHeader(selectedArchive, selectedPath, activeUrl, isSaved, isOwner, isEditable)
-
-  // render files list
-  updateFilesList(selectedArchive, selectedPath, dirtyFiles, isOwner)
 
   // render the editor or viewer
   var editorEl = document.querySelector('#editor-editor')
@@ -246,6 +241,12 @@ function update () {
     } else if (selectedModel) yo.update(viewerEl, yo`<div id="editor-viewer" class="active">${renderFileView(activeUrl)}</div>`)
     else yo.update(viewerEl, yo`<div id="editor-viewer" class="active"></div>`) // empty view
   }
+
+  // render header
+  updateHeader(selectedArchive, selectedPath, activeUrl, isSaved, isOwner, isEditable)
+
+  // render files list
+  updateFilesList(selectedArchive, selectedPath, dirtyFiles, isOwner)
 }
 
 function rError () {
