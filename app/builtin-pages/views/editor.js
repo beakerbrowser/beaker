@@ -382,13 +382,17 @@ function onDragDrop (files) {
   // }
 }
 
-function onDidChangeContent (archive, path) {
+function onDidChangeContent (model, archive, path) {
   return e => {
     const url = archive.url + '/' + path
-    if (!dirtyFiles[url]) {
-      // update state and render
+    // update state and render
+    var isDirty = model.savedAlternativeVersionId !== model.getAlternativeVersionId()
+    if (isDirty && !dirtyFiles[url]) {
       dirtyFiles[url] = true
       update()
+    } else if (!isDirty && dirtyFiles[url]) {
+      delete dirtyFiles[url]
+      update()      
     }
   }
 }
@@ -497,15 +501,16 @@ async function generate (archive, path, content='') {
   const url = archive.url + '/' + path
 
   // setup the model
-  models[url] = monaco.editor.createModel(content, null, monaco.Uri.parse(url))
-  models[url].path = path
-  models[url].isEditable = true
-  models[url].lang = models[url].getModeId()
-  models[url].onDidChangeContent(onDidChangeContent(archive, path))
-  models[url].updateOptions(getModelOptions())
+  var model = models[url] = monaco.editor.createModel(content, null, monaco.Uri.parse(url))
+  model.savedAlternativeVersionId = 1
+  model.path = path
+  model.isEditable = true
+  model.lang = model.getModeId()
+  model.onDidChangeContent(onDidChangeContent(model, archive, path))
+  model.updateOptions(getModelOptions())
   dirtyFiles[url] = true
   archive.fileTree.addNode({ type: 'file', name: path })
-  return models[url]
+  return model
 }
 
 async function load (archive, path) {
@@ -514,12 +519,13 @@ async function load (archive, path) {
   const str = await archive.readFile(path, 'utf8')
 
   // setup the model
-  models[url] = monaco.editor.createModel(str, null, monaco.Uri.parse(url))
-  models[url].path = path
-  models[url].isEditable = true
-  models[url].lang = models[url].getModeId()
-  models[url].onDidChangeContent(onDidChangeContent(archive, path))
-  models[url].updateOptions(getModelOptions())
+  var model = models[url] = monaco.editor.createModel(str, null, monaco.Uri.parse(url))
+  model.savedAlternativeVersionId = 1
+  model.path = path
+  model.isEditable = true
+  model.lang = model.getModeId()
+  model.onDidChangeContent(onDidChangeContent(model, archive, path))
+  model.updateOptions(getModelOptions())
 }
 
 async function save () {
@@ -545,6 +551,7 @@ async function save () {
   await selectedArchive.writeFile(selectedModel.path, selectedModel.getValue(), 'utf-8')
 
   // update state and render
+  selectedModel.savedAlternativeVersionId = selectedModel.getAlternativeVersionId()
   delete dirtyFiles[selectedModel.uri.toString()]
   update()
 
