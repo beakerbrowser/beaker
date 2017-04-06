@@ -69,7 +69,7 @@ function update () {
     <main>
       <header>
         <div class="actions">
-          <a onclick=${createSite}><i class="fa fa-edit"></i> Create a new site</a>
+          <a onclick=${createSite}><i class="fa fa-edit"></i> Create site</a>
           <a onclick=${shareFiles}><i class="fa fa-files-o"></i> Share files</a>
         </div>
         <div style="flex: 1"></div>
