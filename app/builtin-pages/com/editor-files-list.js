@@ -6,9 +6,6 @@ import {findParent, pushUrl} from '../../lib/fg/event-handlers'
 // =
 
 var expandedFolders = {}
-var lastClickedFolder = false // used in 'new' interface
-var lastClickedNode = false // used to highlight the nav
-var lastClickedUrl = false // used to highlight the save btn
 
 // exported api
 // =
@@ -21,8 +18,6 @@ export function update (archive, selectedPath, dirtyFiles, isOwner) {
 // =
 
 function rFilesList (archive, selectedPath, dirtyFiles, isOwner) {
-  const hasActiveFile = !!lastClickedNode
-  const activeFileIsDirty = hasActiveFile && dirtyFiles[lastClickedUrl]
   if (!archive || !archive.fileTree.rootNode) {
     return yo`<nav class="files-sidebar"></nav>`
   }
@@ -137,11 +132,6 @@ function rFile (archive, node, depth, dirtyFiles, selectedPath) {
 function onClickDirectory (e, archive, node, dirtyFiles, selectedPath) {
   var path = normalizePath(node.entry.name)
 
-  // track the click
-  lastClickedFolder = path
-  lastClickedNode = path
-  lastClickedUrl = getUrl(archive, node)
-
   // toggle expanded
   expandedFolders[node.entry.name] = !expandedFolders[node.entry.name]
   redraw(archive, dirtyFiles, selectedPath)
@@ -154,11 +144,6 @@ function onClickDirectory (e, archive, node, dirtyFiles, selectedPath) {
 
 function onClickFile (e, archive, node) {
   var path = normalizePath(node.entry.name)
-
-  // track the click
-  lastClickedFolder = path.split('/').slice(0, -1).join('/')
-  lastClickedNode = path
-  lastClickedUrl = getUrl(archive, node)
 
   // dispatch an app event
   var evt = new Event('open-file')
@@ -184,12 +169,6 @@ function onContextMenu (e) {
 // =
 
 function isSelected (archive, node, selectedPath) {
-  // if nothing is selected, then nothing should be highlighted
-  if (!selectedPath) return false
-  // check for the last clicked node first, so that we can highlight recently-clicked folders
-  if (lastClickedNode) {
-    return (lastClickedNode === normalizePath(node.entry.name))
-  }
   return (selectedPath === normalizePath(node.entry.name))
 }
 
