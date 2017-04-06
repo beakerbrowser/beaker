@@ -142,7 +142,10 @@ function rActions (archive, isSaved, isOwner) {
     <div class="actions">
       ${toggleable(yo`
         <div class="dropdown-btn-container">
-          <a class="btn toggleable"><i class=${icon}></i> ${label} <i class="fa fa-caret-down"></i></a>
+          <button class="btn toggleable">
+            <i class=${icon}></i> ${label} <i class="fa fa-caret-down"></i>
+          </button>
+
           <div class="dropdown-btn-list">
             <div onclick=${e => onFork(archive)}>
               <div class="title"><i class="fa fa-code-fork"></i> Fork this site</div>
@@ -162,7 +165,7 @@ function rActions (archive, isSaved, isOwner) {
           </div>
         </div>
       `)}
-      <a class="btn primary"><i class="fa fa-link"></i> Share</a>
+      <button class="btn primary"><i class="fa fa-link"></i> Share</button>
     </div>
   `
 }
