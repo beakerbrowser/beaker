@@ -27,4 +27,17 @@
     color: gray;
     border-top: 1px solid #ddd;
   }
+
+  &.readonly {
+    .files-list .item.selected {
+      background: shade(#fff, 50%);
+
+      &:after {
+        content: "\f06e";
+        font-family: FontAwesome;
+        opacity: 0.95;
+        float: right;
+      }
+    }
+  }
 }

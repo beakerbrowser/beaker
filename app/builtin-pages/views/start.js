@@ -18,7 +18,6 @@ const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 =
 
 var showReleaseNotes = false
 var isManagingBookmarks = false
-var isWritingNote = false
 var isShelfOpen = false
 var error = false
 var userProfile
@@ -68,11 +67,10 @@ async function setup () {
 function update () {
   yo.update(document.querySelector('main'), yo`
     <main>
-      ${renderNoteEditor()}
       <header>
         <div class="actions">
+          <a onclick=${createSite}><i class="fa fa-edit"></i> Create a new site</a>
           <a onclick=${shareFiles}><i class="fa fa-files-o"></i> Share files</a>
-          <a onclick=${shareNote}><i class="fa fa-edit"></i> Share a note</a>
         </div>
         <div style="flex: 1"></div>
         ${renderProfileCard()}
@@ -101,31 +99,6 @@ function renderNetworkLink () {
   `
 }
 
-function renderNoteEditor () {
-  if (!isWritingNote) {
-    return ''
-  }
-
-  return yo`
-    <div class="note-editor">
-      <form onsubmit=${submitNote}>
-        <h2>Write a note</h2>
-        <p>
-          <input autofocus name="name" type="text" placeholder="Filename including extension..." tabindex="1"/>
-        </p>
-        <p>
-          <textarea name="text" placeholder="What do you want to share?" tabindex="2"></textarea>
-        </p>
-        ${renderError()}
-        <p class="actions">
-          <button class="btn" type="button" onclick=${cancelNote} tabindex="3">Cancel</button>
-          <button class="btn primary" type="submit" tabindex="4">Create public note</button>
-        </p>
-      </form>
-    </div>
-  `
-}
-
 function renderShelf () {
   if (!isShelfOpen) {
     return yo`
@@ -137,7 +110,10 @@ function renderShelf () {
 
   return yo`
     <div class="shelf open" onmouseout=${onMouseOutShelf}>
-      <h3><a href="beaker://network">Your library</a></h3>
+      <h3>
+        <a href="beaker://library">Your library</a>
+        <a class="link" onclick=${createSite}>+ New site</a>
+      </h3>
       <div class="archives-list">
         ${archivesList.archives.map(archiveInfo => {
           const icon = archiveInfo.url === userProfile.url ? 'fa fa-user-circle-o' : 'fa fa-folder-o'
@@ -145,10 +121,12 @@ function renderShelf () {
             <a class="archive" href=${archiveInfo.url}>
               <i class=${icon}></i>
               <span class="title">${niceName(archiveInfo)}</span>
-              <span>${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
+              <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
+              <span class="edit"><a href=${`beaker://editor/${archiveInfo.key}`}><i class="fa fa-pencil"></i> edit</a></span>
             </a>
           `
         })}
+        <a class="link" href="beaker://library">Manage your library</a>
       </div>
       <h3><a href="beaker://bookmarks">Your bookmarks</a></h3>
       <div class="bookmarks">
@@ -161,6 +139,7 @@ function renderShelf () {
               </a>
             </li>`
         })}
+        <a class="link" href="beaker://bookmarks">Manage your bookmarks</a>
       </div>
     </div>
   `
@@ -262,62 +241,30 @@ async function shareFiles () {
     return
   }
 
-  // construct the destination folder
-  var date = createDateString()
-  var dst = `${userProfile.url}/files/${date}/`
+  // create a new dat
+  var d = new Date()
+  var archive = await DatArchive.create({
+    title: `Shared Files ${d.toLocaleDateString()}`,
+    description: `Files shared on ${d.toLocaleString()}`
+  })
 
   // import into the user profile
   await Promise.all(paths.map(srcPath => 
-    DatArchive.importFromFilesystem({srcPath, dst, inplaceImport: true})
+    DatArchive.importFromFilesystem({srcPath, dst: archive.url, inplaceImport: true})
   ))
 
   // open
-  window.location = dst
-}
-
-function shareNote () {
-  isWritingNote = true
-  update()
-}
-
-function cancelNote () {
-  isWritingNote = false
-  update()
-}
-
-async function submitNote (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  var name = (e.target.name.value || '').trim()
-  var text = (e.target.text.value || '').trim()
-
-  name = name || (Date.now() + '.txt')
-  var path = `/notes/${name}`
-
-  var archive = new DatArchive(userProfile.url)
-  // make sure dir exists
-  try { await archive.createDirectory('/notes') }
-  catch (e) {}
-  // make sure file does not exist
-  try {
-    await archive.stat(path)
-    error = 'A file already exists with this name, please choose another.'
-    return update()
-  } catch (e) {}
-  // write file
-  try {
-    await archive.writeFile(path, text, 'utf8')
-  } catch (e) {
-    error = e
-    return update()
-  }
-  window.location = archive.url + path
+  window.location = archive.url
 }
 
 function toggleShelf () {
   isShelfOpen = !isShelfOpen
   update()
+}
+
+async function createSite () {
+  var archive = await beaker.archives.create()
+  window.location = 'beaker://editor/' + archive.url.slice('dat://'.length)
 }
 
 function onMouseOutShelf (e) {
@@ -380,24 +327,4 @@ function attachDominantColor (bookmark) {
 
 function niceName (archiveInfo) {
   return (archiveInfo.title || '').trim() || 'Untitled'
-}
-
-function createDateString () {
-  var d = new Date()
-  return pad0`${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}_${d.getHours()}-${d.getMinutes()}`
-}
-
-function pad0 (strings, ...args) {
-  var out = ''
-  for (var i = 0; i < strings.length; i++) {
-    out += strings[i]
-    if (args[i]) out += doPad0(args[i])
-  }
-  return out
-}
-
-function doPad0 (str) {
-  str = ''+str
-  if (str.length < 2) return '0' + str
-  return str
 }

@@ -1,4 +1,4 @@
-import {app, dialog, autoUpdater} from 'electron'
+import {app, dialog, autoUpdater, BrowserWindow} from 'electron'
 import os from 'os'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
@@ -223,13 +223,23 @@ function eventsStream () {
 }
 
 function showOpenDialog (opts = {}) {
+  var wc = this.sender.webContents
+  if (wc.hostWebContents) {
+    wc = wc.hostWebContents
+  }
   return new Promise((resolve) => {
     dialog.showOpenDialog({
       title: opts.title,
       buttonLabel: opts.buttonLabel,
       filters: opts.filters,
       properties: opts.properties
-    }, filenames => resolve(filenames))
+    }, filenames => {
+      // return focus back to the the webview
+      wc.executeJavaScript(`
+        document.querySelector('webview:not(.hidden)').focus()
+      `)
+      resolve(filenames)
+    })
   })
 }
 

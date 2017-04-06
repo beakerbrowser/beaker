@@ -281,7 +281,7 @@ async function assertValidPath (fileOrFolderPath) {
 
 async function assertSenderIsFocused (sender) {
   if (!sender.isFocused()) {
-    throw new UserDeniedError()
+    throw new UserDeniedError('Application must be focused to spawn the Create Dat prompt')
   }
 }
 

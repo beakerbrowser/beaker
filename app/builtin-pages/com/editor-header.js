@@ -3,31 +3,23 @@ import mime from 'mime'
 import renderDropdownMenuBar from './dropdown-menu-bar'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
+import toggleable, {closeAllToggleables} from './toggleable'
 
 // globals
 // =
 
 var dropMenuState = {}
+var isEditingTitle = false
 
 // exported api
 // =
 
-export function update (archive, path, activeUrl, isActiveFileDirty, isEditable) {
+export function update (archive, path, activeUrl, isSaved, isOwner, isEditable) {
   if (!archive) {
     return ''
   }
   path = path || ''
-      // <span class="save-prompt">${isDirty ? 'Save changes' : ''}</span> TODO
-      // <button
-      //   ${!isDirty ? 'disabled' : ''}
-      //   onclick=${e => onSaveFile(path, url)}
-      //   class="save"
-      //   title="Save This File's Changes">
-      //   <i class="fa fa-save"></i>
-      // </button>
-      // <button title="Open File In New Window" onclick=${e => onOpenInNewWindow(e, url)}>
-      //   <i class="fa fa-external-link"></i>
-      // </button>
+  let readonly = isOwner ? '' : yo`<span class="readonly"><i class="fa fa-eye"></i> Read-only</span>`
   return yo.update(document.querySelector('.editor-header'), yo`
     <header class="editor-header">
       <a class="bigbutton" href="beaker://library" title="Open your library">
@@ -35,21 +27,39 @@ export function update (archive, path, activeUrl, isActiveFileDirty, isEditable)
       </a>
       <div class="main">
         <div class="path">
-          ${rArchiveName(archive)}
+          ${rArchiveName(archive, isOwner)}
           ${rFilePath(path)}
         </div>
         ${rMenu(archive, path, isEditable)}
+        ${readonly}
         <span class="last-updated">Updated ${niceDate(archive.info.mtime)}</span>
       </div>
-      ${rActions(path, activeUrl, isActiveFileDirty)}
+      ${rActions(archive, isSaved, isOwner)}
     </header>`)
 }
 
 // renderers
 // =
 
-function rArchiveName (archive) {
-  return yo`<div class="archive">${archive.niceName}</div>`
+function rArchiveName (archive, isOwner) {
+  if (!isOwner) {
+    return yo`<div class="archive">${archive.niceName}</div>`
+  }
+  if (!isEditingTitle) {
+    return yo`
+      <div class="archive editable" onclick=${e => onStartEditingTitle(archive, isOwner)}>
+        ${archive.niceName}
+      </div>`
+  }
+  return yo`
+    <div
+      class="archive editing"
+      onkeydown=${e => onTitleKeydown(e, archive, isOwner)}
+      onblur=${e => onStopEditingTitle(archive, isOwner)}
+      contenteditable="true"
+    >${archive.niceName}</div>`
+    // ^ important - dont put whitespace between the text content and the element tags
+    // when this becomes a contenteditable, the whitespace gets included as a value
 }
 
 function rFilePath (path) {
@@ -116,9 +126,42 @@ function rMenu (archive, path, isEditable) {
   ])
 }
 
-function rActions (path, url, isDirty) {
+function rActions (archive, isSaved, isOwner) {
+  let icon = 'fa fa-eye'
+  let label = 'Read-only'
+  let saveDesc = 'Keep this site permanently and receive updates.'
+  let delDesc = 'Stop receiving updates and let the files be deleted.'
+  if (isOwner) {
+    icon = 'fa fa-pencil'
+    label = 'Editable'
+    saveDesc = 'Restore from the trash.'
+    delDesc = 'Move this site to the trash and let the files be deleted.'
+  }
+
   return yo`
     <div class="actions">
+      ${toggleable(yo`
+        <div class="dropdown-btn-container">
+          <a class="btn toggleable"><i class=${icon}></i> ${label} <i class="fa fa-caret-down"></i></a>
+          <div class="dropdown-btn-list">
+            <div onclick=${e => onFork(archive)}>
+              <div class="title"><i class="fa fa-code-fork"></i> Fork this site</div>
+              <div class="desc">Create a duplicate of this site which you can edit.</div>
+            </div>
+            ${isSaved ? yo`
+              <div onclick=${e => onDelete(archive)}>
+                <div class="title"><i class="fa fa-trash"></i> Remove from library</div>
+                <div class="desc">${delDesc}</div>
+              </div>
+              ` : yo`
+              <div onclick=${e => onSave(archive)}>
+                <div class="title"><i class="fa fa-floppy-o"></i> Save to library</div>
+                <div class="desc">${saveDesc}</div>
+              </div>
+            `}
+          </div>
+        </div>
+      `)}
       <a class="btn primary"><i class="fa fa-link"></i> Share</a>
     </div>
   `
@@ -133,6 +176,7 @@ async function onCreate () {
 }
 
 async function onFork (archive) {
+  closeAllToggleables()
   var fork = await DatArchive.fork(archive, {
     title: archive.info.title,
     description: archive.info.description
@@ -141,13 +185,59 @@ async function onFork (archive) {
 }
 
 async function onSave (archive) {
+  closeAllToggleables()
   await beaker.archives.add(archive.url)
   archive.info.userSettings.isSaved = true
   window.dispatchEvent(new Event('render'))
 }
 
 async function onDelete (archive) {
+  closeAllToggleables()
   await beaker.archives.remove(archive.url)
   archive.info.userSettings.isSaved = false
   window.dispatchEvent(new Event('render'))
+}
+
+function onStartEditingTitle (archive, isOwner) {
+  isEditingTitle = true
+  var el = document.querySelector('header .archive')
+
+  // re-render
+  yo.update(el, rArchiveName(archive, isOwner))
+
+  // focus and select text
+  el.focus()
+  var range = document.createRange()
+  range.selectNodeContents(el)
+  var sel = window.getSelection()
+  sel.removeAllRanges()
+  sel.addRange(range)
+}
+
+async function onStopEditingTitle (archive, isOwner, ignore) {
+  isEditingTitle = false
+  var el = document.querySelector('header .archive')
+
+  if (!ignore) {
+    // grab value
+    var newTitle = (el.textContent || '').trim()
+
+    // update if changed
+    if (newTitle !== archive.info.title) {
+      await beaker.archives.update(archive.url, {title: newTitle})
+      archive.info.title = newTitle
+    }
+  }
+  
+  // rerender
+  yo.update(document.querySelector('header .archive'), rArchiveName(archive, isOwner))
+}
+
+function onTitleKeydown (e, archive, isOwner) {
+  if (e.keyCode === 13 /*enter*/) {
+    onStopEditingTitle(archive, isOwner) 
+  }
+  if (e.keyCode === 27 /*escape*/) {
+    onStopEditingTitle(archive, isOwner, true)
+  }
 }

@@ -101,6 +101,18 @@ export class DropMenuNavbarBtn {
           <div class="dropdown-items with-triangle visible">
             ${isDatSite ? yo`
               <div class="list page">
+                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onEdit(e)}>
+                  <i class="fa fa-pencil-square-o"></i>
+                  Open in Editor
+                </div>
+                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onFork(e)}>
+                  <i class="fa fa-code-fork"></i>
+                  Fork site
+                </div>
+                <div class="list-item" onclick=${e => this.onToggleLiveReloading(e)}>
+                  <i class="fa fa-bolt"></i>
+                  Turn ${page.isLiveReloading() ? 'off' : 'on'} live reloading
+                </div>
                 ${!isDatSaved ?
                   yo`
                     <div class="list-item"  onclick=${e => this.onToggleSave(e)}>
@@ -113,18 +125,6 @@ export class DropMenuNavbarBtn {
                       Remove site from Library
                     </div>
                   `}
-                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onFork(e)}>
-                  <i class="fa fa-code-fork"></i>
-                  Fork site
-                </div>
-                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onEdit(e)}>
-                  <i class="fa fa-pencil-square-o"></i>
-                  Open in Editor
-                </div>
-                <div class="list-item" onclick=${e => this.onToggleLiveReloading(e)}>
-                  <i class="fa fa-bolt"></i>
-                  Turn ${page.isLiveReloading() ? 'off' : 'on'} live reloading
-                </div>
               </div>
             ` : ''}
 
