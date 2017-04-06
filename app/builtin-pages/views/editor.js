@@ -5,7 +5,7 @@ import {render as renderEditorOptions, defaultEditorOptions} from '../com/editor
 import {update as updateFilesList} from '../com/editor-files-list'
 import {render as renderFileView} from '../com/editor-file-view'
 import {update as updateHeader} from '../com/editor-header'
-import renderContextMenu from '../com/editor-context-menu'
+import setupContextMenu from '../com/editor-context-menu'
 import * as choosePathPopup from '../com/editor-choose-path-popup'
 import defineTheme from '../com/monaco-theme'
 import {pushUrl} from '../../lib/fg/event-handlers'
@@ -46,6 +46,7 @@ window.history.replaceState = _wr('replaceState')
 // =
 
 readEditorOptions()
+setupContextMenu()
 setup()
 // dragDrop(document.body, onDragDrop) TODO
 window.addEventListener('pushstate', loadFile)
