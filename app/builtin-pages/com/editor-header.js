@@ -132,8 +132,13 @@ function rActions (archive, isSaved, isOwner) {
   let saveDesc = 'Keep this site permanently and receive updates.'
   let delDesc = 'Stop receiving updates and let the files be deleted.'
   if (isOwner) {
-    icon = 'fa fa-pencil'
-    label = 'Editable'
+    if (isSaved) {
+      icon = 'fa fa-pencil'
+      label = 'Editing'
+    } else {
+      icon = 'fa fa-trash'
+      label = 'Trashed'
+    }
     saveDesc = 'Restore from the trash.'
     delDesc = 'Move this site to the trash.'
   }
