@@ -7,6 +7,7 @@ import {render as renderFileView} from '../com/editor-file-view'
 import {update as updateHeader} from '../com/editor-header'
 import renderContextMenu from '../com/editor-context-menu'
 import * as choosePathPopup from '../com/editor-choose-path-popup'
+import defineTheme from '../com/monaco-theme'
 import {pushUrl} from '../../lib/fg/event-handlers'
 import {ucfirst} from '../../lib/strings'
 import dragDrop from '../../lib/fg/drag-drop'
@@ -199,6 +200,7 @@ function configureEditor () {
 
   // set editor to read-only if not the owner
   editor.updateOptions({
+    theme: 'beaker',
     readOnly: (!selectedArchive || !selectedArchive.info.isOwner),
     wordWrap: editorOptions.wordWrap !== 'off',
     wrappingColumn: (
@@ -207,6 +209,7 @@ function configureEditor () {
       +editorOptions.wordWrapLength
     ),
     rulers: editorOptions.wordWrap === 'fixed' ? [+editorOptions.wordWrapLength] : [],
+    renderLineHighlight: 'gutter',
     quickSuggestions: false,
     suggestOnTriggerCharacters: false,
     wordBasedSuggestions: false,
@@ -292,6 +295,7 @@ function rLoading (archive, opts) {
 // =
 
 async function onEditorCreated () {
+  defineTheme(window.monaco)
   configureEditor()
   try {
     await loadFile()
