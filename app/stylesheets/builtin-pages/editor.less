@@ -72,14 +72,33 @@ main {
   padding-right: 100px; // push everything to the left a little
   color: @color-text--light;
   font-size: 18px;
+
+  h3 {
+    font-size: 24px;
+  }
   
   i {
     font-size: 220px;
     color: @color-text--subtle;
 
+    @media(min-width: 1200px) {
+    }
+
     // this icon looks off center by default, correct against that
     position: relative;
     left: 24px;
+  }
+
+  @media(min-width: 1200px) {
+    font-size: 32px;
+
+    h3 {
+      font-size: 48px;
+    }
+
+    i {
+      font-size: 420px;
+    }
   }
 
   .editable, .editable * {
