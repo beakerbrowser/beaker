@@ -6,20 +6,18 @@
 
 .files-sidebar {
   &:extend(.hide-scrollbar all);
+  &:extend(.vertical-scroll);
   position: fixed;
   z-index: 1;
   left: 0;
   top: 61px;
   width: 200px;
-  height: 100%;
+  height: ~"calc(100vh - 61px)";
   background: @background-menu;
   border-right: 1px solid @border-menu;
 
   .files-list {
-    height: ~"calc(100vh - 61px)";
     padding-bottom: 40px; // for the 'total size' segment
-    &:extend(.hide-scrollbar all);
-    &:extend(.vertical-scroll);
   }
 
   .files-header {
