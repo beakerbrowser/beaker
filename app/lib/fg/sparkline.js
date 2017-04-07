@@ -3,7 +3,7 @@
 const MINMAX = 5
 const EDGE_PADDING = 5
 const LEGEND_WIDTH = 15
-const TIME_SPAN = 1e3 * 60 * 30 // past hour
+const TIME_SPAN = 1e3 * 60 * 10 // past ten minutes
 
 export default function sparkline (c, inData) {
   if (!inData.length) {
@@ -77,6 +77,8 @@ export default function sparkline (c, inData) {
   ctx.font = '10px monospace'
   ctx.fillText(0, width - LEGEND_WIDTH + EDGE_PADDING, height - EDGE_PADDING)
   ctx.fillText(max, width - LEGEND_WIDTH + EDGE_PADDING, EDGE_PADDING * 2)
+  ctx.fillStyle = '#808080'
+  ctx.fillText('10m', 0, EDGE_PADDING * 2)
 
   var x = data[0].x
   var y = data[0].y

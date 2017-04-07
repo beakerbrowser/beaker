@@ -54,7 +54,7 @@ function update () {
             <div class="trash-list">
               <h2 onclick=${onToggleTrash}>Trash <i class="fa fa-angle-up"></i></h2>
               ${trashList.map(archiveInfo => yo`<div>
-                <a href=${archiveInfo.url}>${niceName(archiveInfo)}</a>
+                <a href=${'beaker://editor/' + archiveInfo.key}>${niceName(archiveInfo)}</a>
                 <a class="link" onclick=${e => onToggleSaved(e, archiveInfo)}>restore</a>
               </div>
               `)}
@@ -77,19 +77,25 @@ function rArchive (archiveInfo) {
       <div class="peer-history">
         <canvas
           id="history-${archiveInfo.key}"
-          width="300" height="40"
+          width="200" height="40"
           onload=${el => renderCanvas(el, archiveInfo)}
           onmousemove=${e => onCanvasMouseMove(e, archiveInfo)}
           onmouseleave=${e => onCanvasMouseLeave(e, archiveInfo)}
         ></canvas>
       </div>
       <div class="info">
-        <div class="title"><a href=${archiveInfo.url} class="link">${icon} ${niceName(archiveInfo)}</a></div>
+        <div class="title"><a href=${'beaker://editor/' + archiveInfo.key} class="link">${icon} ${niceName(archiveInfo)}</a></div>
+        <div class="description">${niceDesc(archiveInfo)}</div>
         <div class="status">${archiveInfo.peers} active peers</div>
       </div>
-      <div class="btns">
-        <a class="btn" href=${'beaker://editor/' + archiveInfo.key}><i class="fa fa-edit"></i> Open in Editor</a>
-        <a class="btn" onclick=${e => onToggleSaved(e, archiveInfo)}><i class="fa fa-trash"></i> Remove</a>
+      <div class="actions">
+        <div class="btns">
+          <a class="btn" href=${archiveInfo.url}><i class="fa fa-external-link"></i> View site</a>
+          <a class="btn" onclick=${e => onToggleSaved(e, archiveInfo)}><i class="fa fa-trash"></i> Trash</a>
+        </div>
+        ${archiveInfo.isOwner
+          ? yo`<div class="ownership"><i class="fa fa-pencil"></i> Editable</div>`
+          : yo`<div class="ownership"><i class="fa fa-eye"></i> Read-only</div>`}
       </div>
     </div>
   `
@@ -134,4 +140,8 @@ function onToggleTrash () {
 
 function niceName (archiveInfo) {
   return (archiveInfo.title || '').trim() || 'Untitled'
+}
+
+function niceDesc (archiveInfo) {
+  return (archiveInfo.description || '').trim() || yo`<em>No description</em>`
 }
