@@ -44,6 +44,7 @@ main {
 
 #editor-viewer {
   padding: @padding-component--tight;
+  height: 100%;
 
   audio, video {
     width: 400px;
@@ -59,5 +60,30 @@ main {
     color: inherit;
     margin-right: 10px;
     margin-top: 1px;
+  }
+}
+
+.editor-blank-screen {
+  position: relative;
+  top: 50%;
+  transform: translateY(-60%);
+  text-align: center;
+  padding: @padding-component;
+  padding-right: 100px; // push everything to the left a little
+  color: @color-text--light;
+  font-size: 18px;
+  
+  i {
+    font-size: 220px;
+    color: @color-text--subtle;
+
+    // this icon looks off center by default, correct against that
+    position: relative;
+    left: 24px;
+  }
+
+  .editable, .editable * {
+    cursor: pointer;
+    display: inline-block;
   }
 }

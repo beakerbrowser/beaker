@@ -28,6 +28,7 @@ function rFilesList (archive, selectedPath, dirtyFiles, isOwner) {
       <div class="files-header">Files</div>
       <div class="files-list">
         ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
+        ${isOwner ? yo`<div class="item action" onclick=${onNewFile}>+ New file</div>` : ''}
       </div>
       <div class="archive-size">${prettyBytes(archive.info.size)}</div>
     </nav>

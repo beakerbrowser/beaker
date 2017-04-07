@@ -243,7 +243,7 @@ function update () {
         <div id="editor-viewer" class="active">${renderEditorOptions(editorOptions, onSaveOptions, onToggleOptions)}</div>
       `)
     } else if (selectedModel) yo.update(viewerEl, yo`<div id="editor-viewer" class="active">${renderFileView(activeUrl)}</div>`)
-    else yo.update(viewerEl, yo`<div id="editor-viewer" class="active"></div>`) // empty view
+    else if (selectedArchive) yo.update(viewerEl, rBlankScreen())
   }
 
   // render header
@@ -251,6 +251,26 @@ function update () {
 
   // render files list
   updateFilesList(selectedArchive, selectedPath, dirtyFiles, isOwner)
+}
+
+function rBlankScreen () {
+  var info = selectedArchive.info
+  const title = () =>
+    (!info.title && info.isOwner) ? yo`<em>Choose a title</em>` : info.title
+  const description = () =>
+    (!info.description && info.isOwner) ? yo`<em>Choose a description</em>` : info.description
+  const editable = inner =>
+    (info.isOwner) ? yo`<div><div class="editable" onclick=${onUpdate}>${inner}</div></div>` : inner
+  const onUpdate = () => selectedArchive.updateManifest()
+  return yo`
+    <div id="editor-viewer" class="active">
+      <div class="editor-blank-screen">
+        <i class="fa fa-pencil-square-o"></i>
+        ${editable(yo`<h3>${title()}</h3>`)}
+        ${editable(yo`<div>${description()}</div>`)}
+      </div>
+    </div>
+  `
 }
 
 function rError () {
