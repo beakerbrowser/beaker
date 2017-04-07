@@ -1,5 +1,6 @@
 import * as yo from 'yo-yo'
 import mime from 'mime'
+import * as sharePopup from './editor-share-popup'
 import renderDropdownMenuBar from './dropdown-menu-bar'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
@@ -172,7 +173,7 @@ function rActions (archive, isSaved, isOwner) {
           </div>
         </div>
       `)}
-      <button class="btn primary"><i class="fa fa-link"></i> Share</button>
+      <button class="btn primary" onclick=${e => onShare(archive)}><i class="fa fa-link"></i> Share</button>
     </div>
   `
 }
@@ -206,6 +207,10 @@ async function onDelete (archive) {
   await beaker.archives.remove(archive.url)
   archive.info.userSettings.isSaved = false
   window.dispatchEvent(new Event('render'))
+}
+
+function onShare (archive) {
+  sharePopup.create(archive)
 }
 
 function onStartEditingTitle (archive, isOwner) {
