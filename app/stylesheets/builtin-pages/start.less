@@ -79,7 +79,11 @@ header {
   text-align: center;
   width: 118px;
   height: 95px;
-  margin-bottom: @padding-component;
+  margin: 0 0 @padding-component @padding-component;
+
+  &:nth-of-type(5n+1) {
+    margin-left: 0;
+  }
 
   &:not(.nolink) {
     * {
@@ -89,14 +93,6 @@ header {
     &:hover {
       &:extend(.link:hover);
     }
-  }
-
-  + .pinned-bookmark {
-    margin-left: @padding-component;
-  }
-
-  &:nth-of-type(6n) {
-    margin-left: 0;
   }
 
   .title {
