@@ -4,6 +4,7 @@
 
 .editor-header {
   &:extend(.flex);
+  flex-wrap: nowrap;
   padding: 0 @padding-component--tight 0 0;
   height: 60px;
   box-sizing: content-box;
@@ -52,6 +53,8 @@
 
   .path {
     &:extend(.flex);
+    flex-wrap: nowrap;
+    white-space: nowrap;
     align-items: baseline;
     height: 25px;
     line-height: 23px;
@@ -79,6 +82,9 @@
   }
 
   .file {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     padding: 0 2px;
     font-size: 14px;
     color: @color-text--muted;

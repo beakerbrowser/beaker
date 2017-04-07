@@ -291,6 +291,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
   page.webviewEl.addEventListener('page-favicon-updated', onPageFaviconUpdated)
   page.webviewEl.addEventListener('update-target-url', onUpdateTargetUrl)
+  page.webviewEl.addEventListener('close', onClose)
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
   page.webviewEl.addEventListener('plugin-crashed', onCrashed)
@@ -766,6 +767,13 @@ function onPageFaviconUpdated (e) {
 
 function onUpdateTargetUrl ({ url }) {
   statusBar.set(url)
+}
+
+function onClose (e) {
+  var page = getByWebview(e.target)
+  if (page) {
+    remove(page)
+  }  
 }
 
 function onPageTitleUpdated (e) {

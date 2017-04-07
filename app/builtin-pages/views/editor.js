@@ -5,8 +5,9 @@ import {render as renderEditorOptions, defaultEditorOptions} from '../com/editor
 import {update as updateFilesList} from '../com/editor-files-list'
 import {render as renderFileView} from '../com/editor-file-view'
 import {update as updateHeader} from '../com/editor-header'
-import renderContextMenu from '../com/editor-context-menu'
+import setupContextMenu from '../com/editor-context-menu'
 import * as choosePathPopup from '../com/editor-choose-path-popup'
+import defineTheme from '../com/monaco-theme'
 import {pushUrl} from '../../lib/fg/event-handlers'
 import {ucfirst} from '../../lib/strings'
 import dragDrop from '../../lib/fg/drag-drop'
@@ -45,6 +46,7 @@ window.history.replaceState = _wr('replaceState')
 // =
 
 readEditorOptions()
+setupContextMenu()
 setup()
 // dragDrop(document.body, onDragDrop) TODO
 window.addEventListener('pushstate', loadFile)
@@ -55,7 +57,6 @@ window.addEventListener('new-folder', onNewFolder)
 window.addEventListener('open-file', onOpenFile)
 window.addEventListener('save-file', onSaveFile)
 window.addEventListener('import-files', onImportFiles)
-window.addEventListener('choose-path', onChoosePath)
 window.addEventListener('open-settings', onOpenSettings)
 window.addEventListener('editor-created', onEditorCreated)
 window.addEventListener('keydown', onKeyDown)
@@ -71,7 +72,8 @@ async function setup () {
     // parse out the archive key
     var selectedArchiveKey = await getURLKey()
     if (!selectedArchiveKey) {
-      return // TODO what do we do?
+      window.location = 'beaker://library/'
+      return
     }
 
     // load the archive
@@ -181,7 +183,7 @@ async function getURLKey () {
     return DatArchive.resolveName(name)
   } catch (e) {
     console.error('Failed to parse URL', e)
-    return false
+    throw new Error('Invalid dat URL')
   }
 }
 
@@ -198,6 +200,7 @@ function configureEditor () {
 
   // set editor to read-only if not the owner
   editor.updateOptions({
+    theme: 'beaker',
     readOnly: (!selectedArchive || !selectedArchive.info.isOwner),
     wordWrap: editorOptions.wordWrap !== 'off',
     wrappingColumn: (
@@ -206,6 +209,8 @@ function configureEditor () {
       +editorOptions.wordWrapLength
     ),
     rulers: editorOptions.wordWrap === 'fixed' ? [+editorOptions.wordWrapLength] : [],
+    renderLineHighlight: 'gutter',
+    contextmenu: false,
     quickSuggestions: false,
     suggestOnTriggerCharacters: false,
     wordBasedSuggestions: false,
@@ -219,15 +224,9 @@ function configureEditor () {
 function update () {
   var activeUrl = selectedPath ? `${selectedArchive.url}/${selectedPath}`: ''
   var isActiveFileDirty = selectedPath && dirtyFiles && dirtyFiles[activeUrl] // TODO needed?
-  var isOwner = selectedArchive.info.isOwner
-  var isSaved = selectedArchive.info.userSettings.isSaved
+  var isOwner = selectedArchive && selectedArchive.info.isOwner
+  var isSaved = selectedArchive && selectedArchive.info.userSettings.isSaved
   var isEditable = isOwner && selectedModel && selectedModel.isEditable
-
-  // render header
-  updateHeader(selectedArchive, selectedPath, activeUrl, isSaved, isOwner, isEditable)
-
-  // render files list
-  updateFilesList(selectedArchive, selectedPath, dirtyFiles, isOwner)
 
   // render the editor or viewer
   var editorEl = document.querySelector('#editor-editor')
@@ -244,8 +243,34 @@ function update () {
         <div id="editor-viewer" class="active">${renderEditorOptions(editorOptions, onSaveOptions, onToggleOptions)}</div>
       `)
     } else if (selectedModel) yo.update(viewerEl, yo`<div id="editor-viewer" class="active">${renderFileView(activeUrl)}</div>`)
-    else yo.update(viewerEl, yo`<div id="editor-viewer" class="active"></div>`) // empty view
+    else if (selectedArchive) yo.update(viewerEl, rBlankScreen())
   }
+
+  // render header
+  updateHeader(selectedArchive, selectedPath, activeUrl, isSaved, isOwner, isEditable)
+
+  // render files list
+  updateFilesList(selectedArchive, selectedPath, dirtyFiles, isOwner)
+}
+
+function rBlankScreen () {
+  var info = selectedArchive.info
+  const title = () =>
+    (!info.title && info.isOwner) ? yo`<em>Choose a title</em>` : info.title
+  const description = () =>
+    (!info.description && info.isOwner) ? yo`<em>Choose a description</em>` : info.description
+  const editable = inner =>
+    (info.isOwner) ? yo`<div><div class="editable" onclick=${onUpdate}>${inner}</div></div>` : inner
+  const onUpdate = () => selectedArchive.updateManifest()
+  return yo`
+    <div id="editor-viewer" class="active">
+      <div class="editor-blank-screen">
+        <i class="fa fa-pencil-square-o"></i>
+        ${editable(yo`<h3>${title()}</h3>`)}
+        ${editable(yo`<div>${description()}</div>`)}
+      </div>
+    </div>
+  `
 }
 
 function rError () {
@@ -291,6 +316,7 @@ function rLoading (archive, opts) {
 // =
 
 async function onEditorCreated () {
+  defineTheme(window.monaco)
   configureEditor()
   try {
     await loadFile()
@@ -311,10 +337,16 @@ async function onNewFile (e) {
 }
 
 async function onNewFolder (e) {
-  choosePathPopup.create(selectedArchive, {
+  var path = await choosePathPopup.create(selectedArchive, {
     action: 'create-folder',
     path: e.detail ? e.detail.path : ''
   })
+  try {
+    await selectedArchive.createDirectory(path)
+    update()
+  } catch (e) {
+    alert('' + e)
+  }
 }
 
 async function onOpenFile (e) {
@@ -363,41 +395,6 @@ async function onImportFiles (e) {
   }))
 }
 
-async function onChoosePath (e) {
-  var {path, action} = e.detail
-  if (!selectedArchive) {
-    return
-  }
-  if (action === 'save-file') {
-    if (!selectedModel) return
-    // get content
-    var content = selectedModel.getValue()
-
-    // close current model
-    closeModel()
-
-    // generate new model
-    var model = await generate(selectedArchive, path, content)
-
-    // save content
-    selectedModel = model
-    await save()
-
-    // go to file
-    window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${model.path}`)
-  }
-  if (action === 'create-folder') {
-    if (!selectedArchive) return
-    try {
-      await selectedArchive.createDirectory(path)
-      update()
-    } catch (e) {
-      alert('' + e)
-    }
-
-  }
-}
-
 function onDragDrop (files) {
   // TODO
   // if (selectedArchive) {
@@ -405,13 +402,17 @@ function onDragDrop (files) {
   // }
 }
 
-function onDidChangeContent (archive, path) {
+function onDidChangeContent (model, archive, path) {
   return e => {
     const url = archive.url + '/' + path
-    if (!dirtyFiles[url]) {
-      // update state and render
+    // update state and render
+    var isDirty = model.savedAlternativeVersionId !== model.getAlternativeVersionId()
+    if (isDirty && !dirtyFiles[url]) {
       dirtyFiles[url] = true
       update()
+    } else if (!isDirty && dirtyFiles[url]) {
+      delete dirtyFiles[url]
+      update()      
     }
   }
 }
@@ -520,15 +521,16 @@ async function generate (archive, path, content='') {
   const url = archive.url + '/' + path
 
   // setup the model
-  models[url] = monaco.editor.createModel(content, null, monaco.Uri.parse(url))
-  models[url].path = path
-  models[url].isEditable = true
-  models[url].lang = models[url].getModeId()
-  models[url].onDidChangeContent(onDidChangeContent(archive, path))
-  models[url].updateOptions(getModelOptions())
+  var model = models[url] = monaco.editor.createModel(content, null, monaco.Uri.parse(url))
+  model.savedAlternativeVersionId = 1
+  model.path = path
+  model.isEditable = true
+  model.lang = model.getModeId()
+  model.onDidChangeContent(onDidChangeContent(model, archive, path))
+  model.updateOptions(getModelOptions())
   dirtyFiles[url] = true
   archive.fileTree.addNode({ type: 'file', name: path })
-  return models[url]
+  return model
 }
 
 async function load (archive, path) {
@@ -537,30 +539,46 @@ async function load (archive, path) {
   const str = await archive.readFile(path, 'utf8')
 
   // setup the model
-  models[url] = monaco.editor.createModel(str, null, monaco.Uri.parse(url))
-  models[url].path = path
-  models[url].isEditable = true
-  models[url].lang = models[url].getModeId()
-  models[url].onDidChangeContent(onDidChangeContent(archive, path))
-  models[url].updateOptions(getModelOptions())
+  var model = models[url] = monaco.editor.createModel(str, null, monaco.Uri.parse(url))
+  model.savedAlternativeVersionId = 1
+  model.path = path
+  model.isEditable = true
+  model.lang = model.getModeId()
+  model.onDidChangeContent(onDidChangeContent(model, archive, path))
+  model.updateOptions(getModelOptions())
 }
 
 async function save () {
+  var newPath
   if (!selectedModel || !dirtyFiles[selectedModel.uri.toString()]) {
     return
   }
 
   // do we need to pick a filename?
   if (selectedModel.path.startsWith('buffer~~')) {
-    return choosePathPopup.create(selectedArchive, {path: selectedModel.suggestedPath})
+    newPath = await choosePathPopup.create(
+      selectedArchive,
+      {path: selectedModel.suggestedPath}
+    )
+
+    // generate new model
+    let content = selectedModel.getValue()
+    closeModel()
+    selectedModel = await generate(selectedArchive, newPath, content)
   }
 
   // write the file content
   await selectedArchive.writeFile(selectedModel.path, selectedModel.getValue(), 'utf-8')
 
   // update state and render
+  selectedModel.savedAlternativeVersionId = selectedModel.getAlternativeVersionId()
   delete dirtyFiles[selectedModel.uri.toString()]
   update()
+
+  if (newPath) {
+    // go to file
+    window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${newPath}`)
+  }
 }
 
 function closeModel () {

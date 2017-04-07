@@ -56,6 +56,10 @@ export function createShellWindow () {
   registerShortcut(win, 'Ctrl+Shift+Tab', onPrevTab(win))
   registerShortcut(win, 'CmdOrCtrl+[', onGoBack(win))
   registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
+  registerShortcut(win, 'CmdOrCtrl+N', onNewWindow(win))
+  registerShortcut(win, 'CmdOrCtrl+Q', onQuit(win))
+  registerShortcut(win, 'CmdOrCtrl+T', onNewTab(win))
+  registerShortcut(win, 'CmdOrCtrl+W', onCloseTab(win))
 
   // register event handlers
   win.on('scroll-touch-begin', sendScrollTouchBegin)
@@ -167,16 +171,34 @@ function onTabSelect (win, tabIndex) {
 function onNextTab (win) {
   return () => win.webContents.send('command', 'window:next-tab')
 }
+
 function onPrevTab (win) {
   return () => win.webContents.send('command', 'window:prev-tab')
 }
+
 function onGoBack (win) {
   return () => win.webContents.send('command', 'history:back')
 }
+
 function onGoForward (win) {
   return () => win.webContents.send('command', 'history:forward')
 }
 
+function onNewWindow (win) {
+  return () => createShellWindow()
+}
+
+function onQuit (win) {
+  return () => app.quit()
+}
+
+function onNewTab (win) {
+  return () => win.webContents.send('command', 'file:new-tab')
+}
+
+function onCloseTab (win) {
+  return () => win.webContents.send('command', 'file:close-tab')
+}
 
 // window event handlers
 // =

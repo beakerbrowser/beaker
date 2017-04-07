@@ -10,8 +10,7 @@ export function render (values, onSaveOptions, onToggleOptions) {
       ${rWordWrap(values)}
       ${rTabs(values)}
       <p>
-        <button type="submit" class="btn success">Save</button>
-        <button type="button" class="btn" onclick=${onToggleOptions}>Close</button>
+        <button type="submit" class="btn">Close</button>
       </p>
     </form>
   </div>`
@@ -37,6 +36,7 @@ function onSubmit ({values, onSaveOptions}) {
     var formEl = e.target
     for (var k in values) {
       let inputEl = formEl[k]
+      if (!inputEl) continue
       if (inputEl.type === 'checkbox') {
         values[k] = (inputEl.checked) ? true : false
       } else {

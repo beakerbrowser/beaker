@@ -3,9 +3,11 @@
 @import "../base/reset.less";
 
 // Built-in pages components
+@import "./components/monaco-editor.less";
 @import "./components/editor-options.less";
 @import "./components/editor-header.less";
 @import "./components/editor-files-sidebar.less";
+@import "./components/editor-share-popup.less";
 @import "./components/dropdown-menu-bar.less";
 @import "./components/files-list.less";
 @import "./components/protip.less";
@@ -38,11 +40,12 @@ main {
 }
 
 #editor-editor {
-  height: ~"calc(100vh - 30px)";
+  height: ~"calc(100vh - 61px)";
 }
 
 #editor-viewer {
   padding: @padding-component--tight;
+  height: 100%;
 
   audio, video {
     width: 400px;
@@ -58,5 +61,49 @@ main {
     color: inherit;
     margin-right: 10px;
     margin-top: 1px;
+  }
+}
+
+.editor-blank-screen {
+  position: relative;
+  top: 50%;
+  transform: translateY(-60%);
+  text-align: center;
+  padding: @padding-component;
+  padding-right: 100px; // push everything to the left a little
+  color: @color-text--light;
+  font-size: 18px;
+
+  h3 {
+    font-size: 24px;
+  }
+  
+  i {
+    font-size: 220px;
+    color: @color-text--subtle;
+
+    @media(min-width: 1200px) {
+    }
+
+    // this icon looks off center by default, correct against that
+    position: relative;
+    left: 24px;
+  }
+
+  @media(min-width: 1200px) {
+    font-size: 32px;
+
+    h3 {
+      font-size: 48px;
+    }
+
+    i {
+      font-size: 420px;
+    }
+  }
+
+  .editable, .editable * {
+    cursor: pointer;
+    display: inline-block;
   }
 }

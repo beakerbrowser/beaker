@@ -1,5 +1,6 @@
 import * as yo from 'yo-yo'
 import mime from 'mime'
+import * as sharePopup from './editor-share-popup'
 import renderDropdownMenuBar from './dropdown-menu-bar'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
@@ -16,7 +17,7 @@ var isEditingTitle = false
 
 export function update (archive, path, activeUrl, isSaved, isOwner, isEditable) {
   if (!archive) {
-    return ''
+    return
   }
   path = path || ''
   let readonly = isOwner ? '' : yo`<span class="readonly"><i class="fa fa-eye"></i> Read-only</span>`
@@ -81,6 +82,7 @@ function rFilePath (path) {
 }
 
 function rMenu (archive, path, isEditable) {
+  var isUnsavedFile = path.startsWith('buffer~~')
   return renderDropdownMenuBar(dropMenuState, [
     {
       label: 'File',
@@ -94,7 +96,7 @@ function rMenu (archive, path, isEditable) {
         {label: 'Delete file', disabled: true},
         '-',
         {label: 'View site', click: () => window.open(archive.url)},
-        {label: 'View current file', click: () => window.open(archive.url + '/' + path)},
+        {label: 'View current file', disabled: isUnsavedFile, click: () => window.open(archive.url + '/' + path)},
         {label: 'Copy URL', click: () => writeToClipboard(archive.url)}
       ]
     },
@@ -132,14 +134,20 @@ function rActions (archive, isSaved, isOwner) {
   let saveDesc = 'Keep this site permanently and receive updates.'
   let delDesc = 'Stop receiving updates and let the files be deleted.'
   if (isOwner) {
-    icon = 'fa fa-pencil'
-    label = 'Editable'
+    if (isSaved) {
+      icon = 'fa fa-pencil'
+      label = 'Editing'
+    } else {
+      icon = 'fa fa-trash'
+      label = 'Trashed'
+    }
     saveDesc = 'Restore from the trash.'
     delDesc = 'Move this site to the trash.'
   }
 
   return yo`
     <div class="actions">
+      <a class="btn" href=${archive.url} target="_blank"><i class="fa fa-external-link"></i> View site</a>
       ${toggleable(yo`
         <div class="dropdown-btn-container">
           <button class="btn toggleable">
@@ -165,7 +173,7 @@ function rActions (archive, isSaved, isOwner) {
           </div>
         </div>
       `)}
-      <button class="btn primary"><i class="fa fa-link"></i> Share</button>
+      <button class="btn primary" onclick=${e => onShare(archive)}><i class="fa fa-link"></i> Share</button>
     </div>
   `
 }
@@ -199,6 +207,10 @@ async function onDelete (archive) {
   await beaker.archives.remove(archive.url)
   archive.info.userSettings.isSaved = false
   window.dispatchEvent(new Event('render'))
+}
+
+function onShare (archive) {
+  sharePopup.create(archive)
 }
 
 function onStartEditingTitle (archive, isOwner) {

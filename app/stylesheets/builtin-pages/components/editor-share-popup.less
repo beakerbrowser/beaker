@@ -1,0 +1,36 @@
+@import "../../base/colors.less";
+@import "../../base/spacing.less";
+@import "./editor-popup.less";
+
+#editor-share-popup {
+  &:extend(.popup-wrapper);
+
+  .popup-inner {
+    div {
+      margin: 10px 0;
+      line-height: 1;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px 10px;
+    }
+
+    .head {
+      margin: 20px 0;
+    }
+
+    .title {
+      font-size: 24px;
+    }
+
+    .btn {
+      float: right;
+    }
+
+    .info {
+      color: @color-text--muted;
+      margin: 20px 0;
+    }
+  }
+}

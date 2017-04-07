@@ -10,13 +10,13 @@ window.addEventListener('set-context-target', e => {
 // exported api
 // =
 
-export default function render () {
-  return yo`
+export default function setup () {
+  document.body.appendChild(yo`
     <div>
       <menu type="context" id="file">
         <menuitem label="Rename" onclick=${onClickRename}></menuitem>
         <menuitem label="Delete file" onclick=${onClickDelete}></menuitem>
-        <menuitem label="View file externally" onclick=${onClickView}></menuitem>
+        <menuitem label="View file" onclick=${onClickView}></menuitem>
         <menuitem label="Copy URL" onclick=${onCopyURL}></menuitem>
       </menu>
       <menu type="context" id="directory">
@@ -29,7 +29,7 @@ export default function render () {
         <menuitem label="Copy URL" onclick=${onCopyURL}></menuitem>
       </menu>
     </div>
-  `
+  `)
 }
 
 // event handlers

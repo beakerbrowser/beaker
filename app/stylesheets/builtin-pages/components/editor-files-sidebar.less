@@ -6,27 +6,42 @@
 
 .files-sidebar {
   &:extend(.hide-scrollbar all);
+  &:extend(.vertical-scroll);
   position: fixed;
   z-index: 1;
   left: 0;
   top: 61px;
   width: 200px;
-  height: 100%;
+  height: ~"calc(100vh - 61px)";
   background: @background-menu;
   border-right: 1px solid @border-menu;
 
   .files-list {
-    &:extend(.hide-scrollbar all);
-    &:extend(.vertical-scroll);
+    padding-bottom: 40px; // for the 'total size' segment
+  }
+
+  .files-header {
+    padding: 2px 8px;
+    color: @color-text--muted;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+
+  .item.action {  
+    padding-left: 20px;
+    color: @color-text--muted;
+    font-size: 12px;
   }
 
   .archive-size {
     position: fixed;
     bottom: 0;
-    width: 200px;
+    width: 199px;
     padding: 5px @padding-component--tight;
     color: @color-text--muted;
     border-top: 1px solid fadeout(@color-text--muted, 75%);
+    background: @background-menu;
     font-weight: 600;
     text-align: right;
   }
