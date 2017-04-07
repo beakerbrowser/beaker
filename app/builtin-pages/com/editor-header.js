@@ -81,7 +81,6 @@ function rFilePath (path) {
 }
 
 function rMenu (archive, path, isEditable) {
-  console.log('path', path)
   var isUnsavedFile = path.startsWith('buffer~~')
   return renderDropdownMenuBar(dropMenuState, [
     {
