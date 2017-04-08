@@ -118,7 +118,7 @@ export default {
   fullscreen: {
     desc: 'go fullscreen',
     icon: 'resize-full',
-    persist: false,
+    persist: true,
     alwaysDisallow: false,
     requiresRefresh: false
   },
