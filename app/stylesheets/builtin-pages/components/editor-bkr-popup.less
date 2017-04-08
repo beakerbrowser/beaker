@@ -1,0 +1,52 @@
+@import "../../base/colors.less";
+@import "../../base/spacing.less";
+@import "./editor-popup.less";
+@import "../../components/inputs";
+@import "../../components/link";
+
+#editor-bkr-popup {
+  &:extend(.popup-wrapper);
+
+  .popup-inner {
+    width: 660px;
+
+    div {
+      margin: 10px 0;
+      line-height: 1;
+    }
+
+    .title {
+      font-size: 20px;
+    }
+
+    code {
+      &:extend(.code-font);
+    }
+
+    code.inline {
+      background: none;
+      border: none;
+    }
+
+    a {
+      &:extend(.link);
+
+      &:hover {
+        &:extend(.link:hover);
+      }
+    }
+
+    .copypasta {
+      &:extend(.overflow-ellipsis);
+      display: block;
+      padding: @padding-component--tight;
+      font-size: 12px;
+
+      &:before {
+        display: inline-block;
+        content: '$';
+        margin-right: 10px;
+      }
+    }
+  }
+}

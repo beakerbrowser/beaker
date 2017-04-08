@@ -1,6 +1,7 @@
 @import "../../photon.min.less";
 
 @import "../../base/reset.less";
+@import "../../base/typography";
 @import "../../utils/decorators";
 @import "../../utils/flex";
 
@@ -28,22 +29,42 @@
     text-transform: uppercase;
   }
 
-  .item.action {  
+  .item.action {
     padding-left: 20px;
     color: @color-text--muted;
     font-size: 12px;
   }
 
-  .archive-size {
+  .footer {
+    &:extend(.code-font);
+    &:extend(.flex);
+    justify-content: space-between;
     position: fixed;
     bottom: 0;
     width: 199px;
-    padding: 5px @padding-component--tight;
+    padding: 0 @padding-component--tight;
     color: @color-text--muted;
     border-top: 1px solid fadeout(@color-text--muted, 75%);
     background: @background-menu;
-    font-weight: 600;
-    text-align: right;
+    font-size: 11px;
+
+    .archive-size {
+      margin-top: 6px;
+    }
+
+    .bkr {
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      &:before {
+        display: inline-block;
+        margin-right: @margin-icon;
+        content: '\203A';
+        font-size: 14px;
+      }
+    }
   }
 
   &.readonly {
