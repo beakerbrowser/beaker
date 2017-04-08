@@ -1,6 +1,7 @@
 import * as yo from 'yo-yo'
 import mime from 'mime'
 import * as sharePopup from './editor-share-popup'
+import * as toast from './toast'
 import renderDropdownMenuBar from './dropdown-menu-bar'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
@@ -97,7 +98,10 @@ function rMenu (archive, path, isEditable) {
         '-',
         {label: 'View site', click: () => window.open(archive.url)},
         {label: 'View current file', disabled: isUnsavedFile, click: () => window.open(archive.url + '/' + path)},
-        {label: 'Copy URL', click: () => writeToClipboard(archive.url)}
+        {label: 'Copy URL', click: () => {
+          writeToClipboard(archive.url)
+          toast.create(`URL for ${archive.info.title} copied to clipboard.`)
+        }}
       ]
     },
     {
@@ -198,6 +202,7 @@ async function onFork (archive) {
 async function onSave (archive) {
   closeAllToggleables()
   await beaker.archives.add(archive.url)
+  toast.create(`Saved ${archive.info.title} to your library.`)
   archive.info.userSettings.isSaved = true
   window.dispatchEvent(new Event('render'))
 }
@@ -205,6 +210,7 @@ async function onSave (archive) {
 async function onDelete (archive) {
   closeAllToggleables()
   await beaker.archives.remove(archive.url)
+  toast.create(`Removed ${archive.info.title} from your library.`)
   archive.info.userSettings.isSaved = false
   window.dispatchEvent(new Event('render'))
 }
