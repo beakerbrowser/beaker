@@ -1,5 +1,6 @@
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
+import * as bkrPopup from '../com/editor-bkr-popup'
 import {findParent, pushUrl} from '../../lib/fg/event-handlers'
 
 // globals
@@ -30,7 +31,10 @@ function rFilesList (archive, selectedPath, dirtyFiles, isOwner) {
         ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
         ${isOwner ? yo`<div class="item action" onclick=${onNewFile}>+ New file</div>` : ''}
       </div>
-      <div class="archive-size">${prettyBytes(archive.info.size)}</div>
+      <div class="footer">
+        <button class="bkr" onclick=${e => onShowBkr(archive)}>Use CLI</button>
+        <span class="archive-size">${prettyBytes(archive.info.size)}</span>
+      </div>
     </nav>
   `
 }
@@ -180,4 +184,8 @@ function normalizePath (path) {
 
 function getUrl (archive, node) {
   return archive.url + '/' + normalizePath(node.entry.name)
+}
+
+function onShowBkr (archive) {
+  bkrPopup.create(archive)
 }
