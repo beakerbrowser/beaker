@@ -1,27 +1,25 @@
 @import "../../base/colors.less";
 @import "../../base/spacing.less";
 @import "./editor-popup.less";
+@import "../../components/inputs";
 
 #editor-share-popup {
   &:extend(.popup-wrapper);
 
   .popup-inner {
+
     div {
       margin: 10px 0;
       line-height: 1;
     }
 
     input {
+      &:extend(input.roomy);
       width: 100%;
-      padding: 8px 10px;
-    }
-
-    .head {
-      margin: 20px 0;
     }
 
     .title {
-      font-size: 24px;
+      font-size: 20px;
     }
 
     .btn {
