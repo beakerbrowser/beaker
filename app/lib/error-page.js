@@ -71,12 +71,13 @@ div.error-page-content {
   margin: auto;
   margin-top: 35vh;
 }
-div.error-page-content p {
+div.error-page-content .description {
   font-size: 14px;
-  margin: 20px 0;
-}
-div.error-page-content p .error {
   color: #707070;
+
+  p {
+    margin: 20px 0;
+  }
 }
 div.error-page-content i {
   margin-right: 5px;
@@ -92,16 +93,63 @@ h1 {
   padding-bottom: 10px;
   border-bottom: 1px solid #d9d9d9;
 }
+.icon {
+  float: right;
+}
+.icon.warning {
+  color: #e60b00;
+}
 `
 
-export default function (err) {
+export default function (e) {
+  var title = 'This site can’t be reached'
+  var info = ''
+  var icon = 'fa-info-circle'
+  var button = '<a class="btn" href="javascript:window.location.reload()">Try again</a>'
+  var errorDescription
+
+  if (typeof e === 'object') {
+    errorDescription = e.errorDescription
+    // remove trailing slash
+    var origin = e.validatedURL.slice(0, e.validatedURL.length - 1)
+
+    // strip protocol
+    if (origin.startsWith('https://')) {
+      origin = origin.slice(8)
+    } else if (origin.startsWith('http://')) {
+      origin = origin.slice(7)
+    }
+
+    switch (e.errorCode) {
+      case -106:
+        title = 'No internet connection'
+        info = '<p>Your computer is not connected to the internet.</p><p>Try:</p><ul><li>Resetting your Wi-Fi connection<li>Checking your router and modem.</li></ul>'
+        break
+      case -105:
+        info = `<p>Couldn’t resolve the DNS address for <strong>${origin}</strong></p>`
+        break
+      case -501:
+        title = 'Your connection is not secure'
+        info = `<p>Beaker cannot establish a secure connection to the server for <strong>${origin}</strong>.</p>`
+        icon = 'fa-warning warning'
+        button = '<a class="btn" href="javascript:window.history.back()">Go back</a>'
+        break
+    }
+  } else {
+    errorDescription = e
+  }
+
   return `
     <body>
       <style>${errorPageCSS}</style>
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="error-page-content">
-        <h1>This site can’t be reached</h1>
-        <p class="error">${err}</p>
-        <a class="btn primary" href="javascript:window.location.reload()">Try again</a>
+        <h1>${title} <i class="icon fa ${icon}"></i></h1>
+        <div class="description">
+          ${info}
+          <p>${errorDescription}</p>
+        </div>
+        ${button}
       </div>
     </body>`.replace(/\n/g,'')
 }
