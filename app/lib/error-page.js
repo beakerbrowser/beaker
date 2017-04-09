@@ -53,8 +53,6 @@ body {
 .btn.primary {
   -webkit-font-smoothing: antialiased;
   font-weight: 800;
-}
-.btn.primary {
   background: #007aff;
   color: #fff;
   border: none;
