@@ -67,7 +67,7 @@ a.btn span {
 div.error-page-content {
   max-width: 550px;
   margin: auto;
-  margin-top: 35vh;
+  margin-top: 30vh;
 }
 div.error-page-content .description {
   font-size: 14px;
