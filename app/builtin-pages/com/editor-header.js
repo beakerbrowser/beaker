@@ -88,9 +88,9 @@ function rMenu (archive, path, isEditable) {
     {
       label: 'File',
       menu: [
-        {label: 'New file', click: 'new-file'},
-        {label: 'New folder', click: 'new-folder'},
-        {label: 'Import file(s)...', click: 'import-files'},
+        {label: 'New file', disabled: !archive.info.isOwner, click: 'new-file'},
+        {label: 'New folder', disabled: !archive.info.isOwner, click: 'new-folder'},
+        {label: 'Import file(s)...', disabled: !archive.info.isOwner, click: 'import-files'},
         '-',
         {label: '&Save file', disabled: !isEditable, click: 'save-file'},
         {label: 'Rename file', disabled: true},
