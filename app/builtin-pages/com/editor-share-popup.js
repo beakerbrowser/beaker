@@ -1,4 +1,6 @@
 import yo from 'yo-yo'
+import * as toast from './toast'
+import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 // exported api
 // =
@@ -9,7 +11,7 @@ export function render (archive) {
       <div class="popup-inner">
         <div class="head">
           <span class="title">Share this site</span>
-          <button class="btn"><i class="fa fa-clipboard"></i> Copy link</button>
+          <button class="btn" onclick=${onCopyURL(archive)}><i class="fa fa-clipboard"></i> Copy link</button>
         </div>
         <div><input value=${archive.url} /></div>
         <div class="info"><i class="fa fa-lock"></i> Only people with this link can see your files.</div>
@@ -40,6 +42,13 @@ export function destroy () {
 function onClickWrapper (e) {
   if (e.target.id === 'editor-share-popup') {
     destroy()
+  }
+}
+
+function onCopyURL (archive) {
+  return e => {
+    writeToClipboard(archive.url)
+    toast.create(`URL for ${archive.niceName} copied to clipboard.`)
   }
 }
 
