@@ -10,9 +10,11 @@ var currentPromise
 export function render (archive) {
   var title = 'Save as'
   var actLabel = 'Save'
+  var placeholder = 'Filename'
   if (actionType === 'create-folder') {
-    title = 'Folder name'
+    title = 'New folder'
     actLabel = 'Create'
+    placeholder = 'Foldername'
   } else if (actionType === 'import-files') {
     title = 'Destination'
     actLabel = 'Import'
@@ -23,7 +25,7 @@ export function render (archive) {
       <form class="choose-path-form ${actionType}" onsubmit=${onSubmitChoosePath}>
         <div class="filename">
           <label for="name">${title}</label>
-          <input autofocus type="text" name="name" placeholder="filename" tabindex="1" />
+          <input autofocus type="text" name="name" placeholder=${placeholder} tabindex="1" />
         </div>
         <div class="folder-select">
           ${rFolder(archive, archive.fileTree.rootNode)}

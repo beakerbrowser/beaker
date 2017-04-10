@@ -14,6 +14,10 @@
     align-items: center;
   }
 
+  label {
+    margin: 0;
+  }
+
   input {
     flex: 1;
     margin-left: 10px;
@@ -25,7 +29,7 @@
 
   .folder-select {
     margin: @padding-component--tight 0;
-    border: 1px solid @border-menu;
+    border: 1px solid @border-popup;
     border-radius: 2px;
     padding: 5px 0;
     max-height: 200px;
@@ -38,8 +42,7 @@
     }
 
     &.selected {
-      background: @blue;
-      color: #fff;
+      background: @background-highlight-grayed;
     }
   }
 
