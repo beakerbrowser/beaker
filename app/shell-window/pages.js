@@ -745,7 +745,7 @@ function onDidFailLoad (e) {
     }
 
     // render failure page
-    var errorPageHTML = errorPage(e.errorDescription)
+    var errorPageHTML = errorPage(e)
     page.webviewEl.getWebContents().executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
   }
 }
