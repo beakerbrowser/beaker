@@ -100,7 +100,7 @@ function rMenu (archive, path, isEditable) {
         {label: 'View current file', disabled: isUnsavedFile, click: () => window.open(archive.url + '/' + path)},
         {label: 'Copy URL', click: () => {
           writeToClipboard(archive.url)
-          toast.create(`URL for ${archive.info.title} copied to clipboard.`)
+          toast.create(`URL for ${archive.niceName} copied to clipboard.`)
         }}
       ]
     },
@@ -202,7 +202,7 @@ async function onFork (archive) {
 async function onSave (archive) {
   closeAllToggleables()
   await beaker.archives.add(archive.url)
-  toast.create(`Saved ${archive.info.title} to your library.`)
+  toast.create(`Saved ${archive.niceName} to your library.`)
   archive.info.userSettings.isSaved = true
   window.dispatchEvent(new Event('render'))
 }
@@ -210,7 +210,7 @@ async function onSave (archive) {
 async function onDelete (archive) {
   closeAllToggleables()
   await beaker.archives.remove(archive.url)
-  toast.create(`Removed ${archive.info.title} from your library.`)
+  toast.create(`Removed ${archive.niceName} from your library.`)
   archive.info.userSettings.isSaved = false
   window.dispatchEvent(new Event('render'))
 }
