@@ -86,6 +86,7 @@ function onClickTopItem (state, menu, index, e) {
 }
 
 function onClickMenuItem (item) {
+  if (item.disabled) return
   if (typeof item.click === 'function') {
     item.click()
   }
