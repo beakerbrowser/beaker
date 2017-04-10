@@ -1,0 +1,27 @@
+@import "../../base/colors.less";
+@import "../../base/spacing.less";
+
+.toast-wrapper {
+  position: fixed;
+  top: @padding-component;
+  width: 100%;
+  z-index: 10;
+
+  transition: opacity .4s ease;
+
+  &.hidden {
+    opacity: 0;
+  }
+}
+
+.toast {
+  max-width: 450px;
+  text-align: center;
+  margin: auto;
+  background: @background-menu;
+  color: @color-text--muted;
+  font-style: italic;
+  padding: 5px 10px;
+  box-shadow: 0px 2px 2px rgba(0,0,0,.15);
+  border: 1px solid @border-menu;
+}

@@ -7,6 +7,7 @@ import {render as renderFileView} from '../com/editor-file-view'
 import {update as updateHeader} from '../com/editor-header'
 import setupContextMenu from '../com/editor-context-menu'
 import * as choosePathPopup from '../com/editor-choose-path-popup'
+import * as toast from '../com/toast'
 import defineTheme from '../com/monaco-theme'
 import {pushUrl} from '../../lib/fg/event-handlers'
 import {ucfirst} from '../../lib/strings'
@@ -393,6 +394,7 @@ async function onImportFiles (e) {
     // send to backend
     return DatArchive.importFromFilesystem({srcPath, dst, inplaceImport: false})
   }))
+  toast.create(`Imported ${files.length} ${files.length > 1 ? 'files' : 'file'}.`)
 }
 
 function onDragDrop (files) {
