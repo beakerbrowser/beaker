@@ -542,9 +542,9 @@ function onClickViewFiles (e) {
 function onClickPeers (e) {
   var page = getEventPage(e)
   if (e.metaKey || e.ctrlKey) { // popup
-    pages.setActive(pages.create('beaker://network'))
+    pages.setActive(pages.create('beaker://library'))
   } else {
-    page.loadURL('beaker://network') // goto
+    page.loadURL('beaker://library') // goto
   }
 }
 
