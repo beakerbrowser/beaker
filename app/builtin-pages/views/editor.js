@@ -251,7 +251,7 @@ function update () {
   updateHeader(selectedArchive, selectedPath, activeUrl, isSaved, isOwner, isEditable)
 
   // render files list
-  updateFilesList(selectedArchive, selectedPath, dirtyFiles, isOwner)
+  updateFilesList(selectedArchive, selectedPath, dirtyFiles)
 }
 
 function rBlankScreen () {

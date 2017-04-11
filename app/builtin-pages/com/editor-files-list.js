@@ -18,11 +18,12 @@ export function update (archive, selectedPath, dirtyFiles, isOwner) {
 // renderers
 // =
 
-function rFilesList (archive, selectedPath, dirtyFiles, isOwner) {
+function rFilesList (archive, selectedPath, dirtyFiles) {
   if (!archive || !archive.fileTree.rootNode) {
     return yo`<nav class="files-sidebar"></nav>`
   }
 
+  const isOwner = archive.info.isOwner
   const cls = isOwner ? 'editable' : 'readonly'
   return yo`
     <nav class="files-sidebar ${cls}">
@@ -40,9 +41,11 @@ function rFilesList (archive, selectedPath, dirtyFiles, isOwner) {
 }
 
 function redraw (archive, dirtyFiles, selectedPath) {
+  const isOwner = archive.info.isOwner
   yo.update(document.querySelector('.files-list'), yo`
     <div class="files-list">
       ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
+      ${isOwner ? yo`<div class="item action" onclick=${onNewFile}>+ New file</div>` : ''}
     </div>
   `)
 }
