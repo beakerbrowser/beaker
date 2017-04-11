@@ -35,7 +35,6 @@ import {InvalidURLError} from 'beaker-error-constants'
 // globals
 // =
 
-var drive // hyperdrive instance
 var archives = {} // in-memory cache of archive objects. key -> archive
 var archivesByDiscoveryKey = {} // mirror of the above cache, but discoveryKey -> archive
 var archivesEvents = new EventEmitter()
@@ -44,8 +43,6 @@ var archivesEvents = new EventEmitter()
 // =
 
 export function setup () {
-  drive = hyperdrive(archivesDb.getLevelInstance())
-
   // wire up event handlers
   archivesDb.on('update:archive-user-settings', (key, settings) => {
     // emit event
@@ -60,7 +57,7 @@ export function setup () {
   })
 
   // load and configure all saved archives
-  archivesDb.queryArchiveUserSettings(0, {isSaved: true}).then(
+  archivesDb.query(0, {isSaved: true}).then(
     archives => archives.forEach(a => configureArchive(a.key, a)),
     err => console.error('Failed to load networked archives', err)
   )
@@ -76,7 +73,7 @@ export async function generateCreatedBy (url) {
   var origin = archivesDb.extractOrigin(url)
   try {
     var originKey = /dat:\/\/([^\/]*)/.exec(origin)[1]
-    var originMeta = await archivesDb.getArchiveMeta(originKey)
+    var originMeta = await archivesDb.getMeta(originKey)
     originTitle = originMeta.title || null
   } catch (e) {}
 
@@ -92,8 +89,8 @@ export async function pullLatestArchiveMeta (archive) {
   try {
     var key = archive.key.toString('hex')
 
-    // open() just in case (we need .blocks)
-    await pify(archive.open.bind(archive))()
+    // ready() just in case (we need .blocks)
+    await pify(archive.ready.bind(archive))()
 
     // read the archive meta and size on disk
     var [manifest, size] = await Promise.all([
@@ -101,15 +98,15 @@ export async function pullLatestArchiveMeta (archive) {
       pify(getFolderSize)(archivesDb.getArchiveFilesPath(archive))
     ])
     manifest = manifest || {}
-    var { title, description, author, forkOf, createdBy } = manifest
+    var {title, description, forkOf, createdBy} = manifest
     var mtime = Date.now() // use our local update time
     var isOwner = archive.owner
     size = size || 0
 
     // write the record
-    var details = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
+    var details = {title, description, forkOf, createdBy, mtime, size, isOwner}
     debug('Writing meta', details)
-    await archivesDb.setArchiveMeta(key, details)
+    await archivesDb.setMeta(key, details)
 
     // emit the updated event
     details.url = 'dat://' + key
@@ -132,7 +129,7 @@ export async function createNewArchive (manifest) {
   await pda.writeManifest(archive, manifest)
 
   // write the user settings
-  await archivesDb.setArchiveUserSettings(0, key, { isSaved: true })
+  await archivesDb.setUserSettings(0, key, {isSaved: true})
 
   // write the metadata
   await pullLatestArchiveMeta(archive)
@@ -196,24 +193,21 @@ export function loadArchive (key, { noSwarm } = {}) {
   }
 
   // create the archive instance
-  var archive = drive.createArchive(key, {
-    live: true,
+  // TODO location
+  var archive = hyperdrive(key, {
     sparse: true,
-    verifyReplicationReads: true,
     file: name => raf(path.join(archivesDb.getArchiveFilesPath(archive), name))
   })
+  archive.replicationStreams = [] // list of all active replication streams
   archive.userSettings = null // will be set by `configureArchive` if at all
-  archive.peerHistory = [] // samples of the peer
-  mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists
+  archive.peerHistory = [] // samples of the peer count
+  // mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists TODO
   cacheArchive(archive)
   if (!noSwarm) joinSwarm(archive)
 
-  // prioritize the entire metadata feed, but leave content to be downloaded on-demand
-  archive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
-
   // wire up events
   archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
-  archive.metadata.on('download-finished', () => archive.pullLatestArchiveMeta())
+  // archive.metadata.on('download-finished', () => archive.pullLatestArchiveMeta()) TODO
 
   return archive
 }
@@ -245,7 +239,7 @@ export function getOrLoadArchive (key, opts) {
 
 export async function queryArchives (query) {
   // run the query
-  var archiveInfos = await archivesDb.queryArchiveUserSettings(0, query, { includeMeta: true })
+  var archiveInfos = await archivesDb.query(0, query)
 
   // attach some live data
   archiveInfos.forEach(archiveInfo => {
@@ -265,51 +259,12 @@ export async function getArchiveInfo (key, opts = {}) {
 
   // fetch archive data
   var [meta, userSettings] = await Promise.all([
-    archivesDb.getArchiveMeta(key),
-    archivesDb.getArchiveUserSettings(0, key)
+    archivesDb.getMeta(key),
+    archivesDb.getUserSettings(0, key)
   ])
   meta.userSettings = { isSaved: userSettings.isSaved }
   meta.peers = archive.metadata.peers.length
   meta.peerHistory = archive.peerHistory
-
-  // optional data
-  if (opts.contentBitfield) {
-    meta.contentBitfield = archive.content.bitfield.buffer
-  }
-  if (opts.stats) { 
-    // fetch the archive entries
-    var entries = await pify(archive.list.bind(archive))()
-
-    // TEMPORARY
-    // remove duplicates
-    // this is only needed until hyperdrive fixes its .list()
-    // see https://github.com/mafintosh/hyperdrive/pull/99
-    // -prf
-    var entriesDeDuped = {}
-    entries.forEach(entry => { entriesDeDuped[entry.name] = entry })
-    entries = Object.keys(entriesDeDuped).map(name => entriesDeDuped[name])
-
-    // tally the current state
-    var stats = {
-      filesTotal: 0,
-      meta: {
-        blocksProgress: archive.metadata.blocks - archive.metadata.blocksRemaining(),
-        blocksTotal: archive.metadata.blocks
-      },
-      content: {
-        bytesTotal: 0,
-        blocksProgress: 0,
-        blocksTotal: 0
-      }
-    }
-    entries.forEach(entry => {
-      stats.content.bytesTotal += entry.length
-      stats.content.blocksProgress += archive.countDownloadedBlocks(entry)
-      stats.content.blocksTotal += entry.blocks
-      stats.filesTotal++
-    })
-    meta.stats = stats
-  }
 
   return meta
 }
@@ -334,9 +289,12 @@ export function joinSwarm (key, opts) {
       debug('new connection chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort)
 
       // create the replication stream
-      var stream = archive.replicate({
-        download: true,
-        upload: (archive.userSettings && archive.userSettings.isSaved)
+      var stream = archive.replicate({live: true})
+      archive.replicationStreams.push(stream)
+      stream.once('close', () => {
+        var rs = archive.replicationStreams
+        var i = rs.indexOf(stream)
+        if (i !== -1) rs.splice(rs.indexOf(stream), 1)
       })
 
       // timeout the connection after 5s if handshake does not occur
@@ -372,7 +330,8 @@ export function leaveSwarm (key, cb) {
   var swarm = archive.swarm
 
   debug('Unswarming archive %s disconnected %d peers', keyStr, archive.metadata.peers.length)
-  archive.unreplicate() // stop all active replications
+  archive.replicationStreams.forEach(stream => stream.destroy()) // stop all active replications
+  archive.replicationStreams.length = 0
   archive.metadata.removeListener('peer-add', onNetworkChanged)
   archive.metadata.removeListener('peer-remove', onNetworkChanged)
   swarm.leave(archive.discoveryKey)
@@ -384,32 +343,10 @@ export function leaveSwarm (key, cb) {
 // internal methods
 // =
 
-// load archive and set the swarming behaviors
+// load archive and setup any behaviors
 function configureArchive (key, settings) {
-  var download = settings.isSaved
-  var upload = settings.isSaved
-  var archive = getOrLoadArchive(key, { noSwarm: true })
-  var wasUploading = (archive.userSettings && archive.userSettings.isSaved)
+  var archive = getOrLoadArchive(key)
   archive.userSettings = settings
-
-  archive.open(() => {
-    if (!archive.isSwarming) {
-      // announce
-      joinSwarm(archive)
-    } else if (upload !== wasUploading) {
-      // reset the replication feeds
-      debug('Resetting the replication stream with %d peers', archive.metadata.peers.length)
-      archive.metadata.peers.forEach(({ stream }) => {
-        archive.unreplicate(stream)
-        // HACK
-        // some state needs to get reset, but we havent figured out what event to watch for
-        // so... wait 3 seconds
-        // https://github.com/beakerbrowser/beaker/issues/205
-        // -prf
-        setTimeout(() => archive.replicate({ stream, download: true, upload }), 3e3)
-      })
-    }
-  })
 }
 
 function fromURLToKey (url) {

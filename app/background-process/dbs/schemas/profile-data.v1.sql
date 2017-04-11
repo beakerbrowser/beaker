@@ -11,6 +11,18 @@ CREATE TABLE archives (
   createdAt INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
+CREATE TABLE archives_meta (
+  key TEXT PRIMARY KEY,
+  title TEXT,
+  description TEXT,
+  forkOf TEXT,
+  createdByUrl TEXT,
+  createdByTitle TEXT,
+  mtime INTEGER,
+  size INTEGER,
+  isOwner INTEGER
+);
+
 CREATE TABLE apps (
   profileId INTEGER NOT NULL,
   name TEXT NOT NULL,

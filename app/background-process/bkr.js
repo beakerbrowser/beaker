@@ -67,7 +67,7 @@ export function setup () {
   }
 
   methods.setArchiveUserSettings = ([key, settings]) => {
-    return archivesDb.setArchiveUserSettings(0, key, settings)
+    return archivesDb.setUserSettings(0, key, settings)
   }
 
   methods.writeArchiveFileFromPath = ([dstKey, opts]) => {

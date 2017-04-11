@@ -276,8 +276,8 @@ async function assertWritePermission (archive, sender) {
 async function assertQuotaPermission (archive, senderOrigin, byteLength) {
   // fetch the archive meta, and the current quota for the site
   const [meta, userSettings] = await Promise.all([
-    archivesDb.getArchiveMeta(archive.key),
-    archivesDb.getArchiveUserSettings(0, archive.key)
+    archivesDb.getMeta(archive.key),
+    archivesDb.getUserSettings(0, archive.key)
   ])
 
   // fallback to default quota
@@ -347,7 +347,7 @@ async function getCreatedBy (sender) {
   var origin = archivesDb.extractOrigin(sender.getURL())
   try {
     var originKey = /dat:\/\/([^\/]*)/.exec(origin)[1]
-    var originMeta = await archivesDb.getArchiveMeta(originKey)
+    var originMeta = await archivesDb.getMeta(originKey)
     originTitle = originMeta.title || null
   } catch (e) {}
 

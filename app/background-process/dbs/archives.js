@@ -1,43 +1,41 @@
 import {app} from 'electron'
 import path from 'path'
 import url from 'url'
-import level from 'level'
-import subleveldown from 'subleveldown'
 import mkdirp from 'mkdirp'
 import Events from 'events'
 import datEncoding from 'dat-encoding'
 import {InvalidArchiveKeyError} from 'beaker-error-constants'
-import {cbPromise} from '../../lib/functions'
-import {setupLevelDB} from '../../lib/bg/db'
+import * as db from './profile-data-db' // TODO rename to db
 import lock from '../../lib/lock'
 import {DAT_HASH_REGEX} from '../../lib/const'
-import * as profileDataDb from './profile-data-db'
 
 // globals
 // =
 
-var dbPath // path to the hyperdrive folder
-var db // level instance
+var datPath // path to the dat folder
 var events = new Events()
-var archiveMetaDb // archive metadata sublevel
-var migrations
-var setupPromise
 
 // exported methods
 // =
 
 export function setup () {
-  // open database
-  dbPath = path.join(app.getPath('userData'), 'Hyperdrive')
-  mkdirp.sync(path.join(dbPath, 'Archives')) // make sure the folders exist
-  db = level(dbPath)
-  archiveMetaDb = subleveldown(db, 'archive-meta', { valueEncoding: 'json' })
-  setupPromise = setupLevelDB(db, migrations, '[DAT ARCHIVES]')
-}
+  // make sure the folders exist
+  datPath = path.join(app.getPath('userData'), 'Dat')
+  mkdirp.sync(path.join(datPath, 'Archives'))
 
-// get the leveldb instance
-export function getLevelInstance () {
-  return db
+  // DEBUG (delete me!)
+  db.run(`
+CREATE TABLE archives_meta (
+  key TEXT PRIMARY KEY,
+  title TEXT,
+  description TEXT,
+  forkOf TEXT,
+  createdByUrl TEXT,
+  createdByTitle TEXT,
+  mtime INTEGER,
+  size INTEGER,
+  isOwner INTEGER
+);`)
 }
 
 // get the path to an archive's files
@@ -55,53 +53,28 @@ export const removeListener = events.removeListener.bind(events)
 // get an array of saved archives
 // - optional `query` keys:
 //   - `isSaved`: bool
-//   - `isOwner`: bool, does beaker have the secret key? requires opts.includeMeta
-// - optional `opt` keys:
-//   - `includeMeta`: bool, include the archive meta in the response?
-export async function queryArchiveUserSettings (profileId, query, opts) {
+//   - `isOwner`: bool, does beaker have the secret key?
+export async function query (profileId, query) {
   query = query || {}
-  opts = opts || {}
-  await setupPromise
 
   // fetch archive meta
-  var extra = ''
-  if (query.isSaved === true) extra = 'AND isSaved = 1'
-  if (query.isSaved === false) extra = 'AND isSaved = 0'
-  var archives = await profileDataDb.all(`
-    SELECT * FROM archives WHERE profileId = ? ${extra}
+  var WHERE = ''
+  var JOIN
+  if (query.isOwner === true) WHERE = ' AND archives_meta.isOwner = 1'
+  if (query.isOwner === false) WHERE = ' AND archives_meta.isOwner = 0'
+  if ('isSaved' in query) {
+    JOIN = 'INNER JOIN archives ON archives_meta.key = archives.key'
+    if (query.isSaved === true) WHERE += ' AND archives.isSaved = 1'
+    if (query.isSaved === false) WHERE += ' AND archives.isSaved = 0'
+  }
+  return await db.all(`
+    SELECT * FROM archives_meta ${JOIN} WHERE profileId = ? ${WHERE}
   `, [profileId])
-
-  var values = []
-  await Promise.all(archives.map(async (entry) => {
-    var value = {
-      key: entry.key,
-      url: `dat://${entry.key}`,
-      isSaved: !!entry.isSaved
-    }
-
-    // done?
-    if (!opts.includeMeta && !('isOwner' in query)) {
-      values.push(value)
-      return
-    }
-
-    // get meta
-    var meta = await getArchiveMeta(value.key)
-
-    // run extra query
-    if (query.isOwner === false && meta.isOwner === true) return
-    if (query.isOwner === true && meta.isOwner === false) return
-
-    // done
-    meta.userSettings = {isSaved: value.isSaved}
-    values.push(meta)
-  }))
-  return values
 }
 
 // get a single archive's user settings
 // - supresses a not-found with an empty object
-export async function getArchiveUserSettings (profileId, key) {
+export async function getUserSettings (profileId, key) {
   // massage inputs
   key = datEncoding.toStr(key)
 
@@ -112,7 +85,7 @@ export async function getArchiveUserSettings (profileId, key) {
 
   // fetch
   try {
-    var settings = await profileDataDb.get(`
+    var settings = await db.get(`
       SELECT * FROM archives WHERE profileId = ? AND key = ?
     `, [profileId, key])
     settings.isSaved = !!settings.isSaved
@@ -123,7 +96,7 @@ export async function getArchiveUserSettings (profileId, key) {
 }
 
 // write an archive's user setting
-export async function setArchiveUserSettings (profileId, key, newValues = {}) {
+export async function setUserSettings (profileId, key, newValues = {}) {
   // massage inputs
   key = datEncoding.toStr(key)
 
@@ -135,7 +108,7 @@ export async function setArchiveUserSettings (profileId, key, newValues = {}) {
   var release = await lock('archives-db')
   try {
     // fetch current
-    var value = await profileDataDb.get(`
+    var value = await db.get(`
       SELECT * FROM archives WHERE profileId = ? AND key = ?
     `, [profileId, key])
 
@@ -146,14 +119,14 @@ export async function setArchiveUserSettings (profileId, key, newValues = {}) {
         key,
         isSaved: newValues.isSaved
       }
-      await profileDataDb.run(`
+      await db.run(`
         INSERT INTO archives (profileId, key, isSaved) VALUES (?, ?, ?)
       `, [profileId, key, value.isSaved ? 1 : 0])
     } else {
       // update
       var { isSaved } = newValues
       if (typeof isSaved === 'boolean') value.isSaved = isSaved
-      await profileDataDb.run(`
+      await db.run(`
         UPDATE archives SET isSaved = ? WHERE profileId = ? AND key = ?
       `, [value.isSaved ? 1 : 0, profileId, key])
     }
@@ -169,8 +142,8 @@ export async function setArchiveUserSettings (profileId, key, newValues = {}) {
 // =
 
 // get a single archive's metadata
-// - supresses a not-found with a default response, with notFound == true
-export async function getArchiveMeta (key) {
+// - supresses a not-found with an empty object
+export async function getMeta (key) {
   // massage inputs
   key = datEncoding.toStr(key)
 
@@ -179,15 +152,25 @@ export async function getArchiveMeta (key) {
     throw new InvalidArchiveKeyError()
   }
 
-  // fetch
-  await setupPromise
-  return new Promise(resolve => {
-    archiveMetaDb.get(key, (_, meta) => resolve(archiveMetaObject(key, meta)))
-  })
+  try {
+    // fetch
+    var meta = await db.get(`
+      SELECT * FROM archives_meta WHERE key = ?
+    `, [key])
+
+    // massage some values
+    meta.isOwner = !!meta.isOwner
+    try { meta.forkOf = JSON.parse(meta.forkOf) } catch (e) {}
+    meta.createdBy = {url: meta.createdByUrl, title: meta.createdByTitle}
+    delete meta.createdByUrl; delete meta.createdByTitle
+    return meta
+  } catch (e) {
+    return {}
+  }
 }
 
 // write an archive's metadata
-export async function setArchiveMeta (key, value = {}) {
+export async function setMeta (key, value = {}) {
   // massage inputs
   key = datEncoding.toStr(key)
 
@@ -197,51 +180,26 @@ export async function setArchiveMeta (key, value = {}) {
   }
 
   // extract the desired values
-  var { title, description, author, forkOf, createdBy, mtime, size, isOwner } = value
-  value = { title, description, author, forkOf, createdBy, mtime, size, isOwner }
+  var {title, description, forkOf, createdBy, mtime, size, isOwner} = value
+  isOwner = isOwner ? 1 : 0
+  forkOf = Array.isArray(forkOf) ? JSON.stringify(forkOf) : forkOf
+  var createdByUrl = createdBy && createdBy.url ? createdBy.url : ''
+  var createdByTitle = createdBy && createdBy.title ? createdBy.title : ''
 
   // write
-  await setupPromise
-  return cbPromise(cb => {
-    archiveMetaDb.put(key, value, err => {
-      if (err) return cb(err)
-      events.emit('update:archive-meta', key, value)
-      cb()
-    })
-  })
+  await db.run(`
+    INSERT OR REPLACE INTO 
+      archives_meta (key, title, description, forkOf, createdByUrl, createdByTitle, mtime, size, isOwner)
+      VALUES        (?,   ?,     ?,           ?,      ?,            ?,              ?,     ?,    ?)
+  `,                [key, title, description, forkOf, createdByUrl, createdByTitle, mtime, size, isOwner])
+  events.emit('update:archive-meta', key, value)
 }
 
 // internal methods
 // =
-
-// helper to make sure archive-meta reads are well-formed
-function archiveMetaObject (key, obj) {
-  obj = obj || { notFound: true }
-  return Object.assign({
-    key,
-    url: 'dat://' + key,
-    title: '',
-    description: '',
-    author: '',
-    createdBy: null,
-    forkOf: [],
-    mtime: 0,
-    size: 0,
-    isOwner: false
-  }, obj)
-}
-
 
 export function extractOrigin (originURL) {
   var urlp = url.parse(originURL)
   if (!urlp || !urlp.host || !urlp.protocol) return
   return (urlp.protocol + (urlp.slashes ? '//' : '') + urlp.host)
 }
-
-migrations = [
-  // version 1
-  function (cb) {
-    // noop
-    db.put('version', 1, cb)
-  }
-]

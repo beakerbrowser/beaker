@@ -75,33 +75,3 @@ export function setupSqliteDB (db, migrations, logTag) {
     })
   })
 }
-
-// runs needed migrations, returns a promise
-export function setupLevelDB (db, migrations, logTag) {
-  return new Promise((resolve, reject) => {
-    // run migrations
-    db.get('version', (err, version) => {
-      if (err && !err.notFound) return reject(err)
-      version = version || 0
-
-      var neededMigrations = migrations.slice(version)
-      if (neededMigrations.length == 0)
-        return resolve()
-
-      debug(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
-      runNeededMigrations()
-      function runNeededMigrations (err) {
-        if (err) return reject(err)
-
-        var migration = neededMigrations.shift()
-        if (!migration) {
-          // done
-          resolve()
-          return debug(logTag, 'Database migrations completed without error')
-        }
-
-        migration(runNeededMigrations)
-      }
-    })
-  })
-}

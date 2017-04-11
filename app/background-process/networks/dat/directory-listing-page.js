@@ -1,6 +1,7 @@
 import prettyBytes from 'pretty-bytes'
+import path from 'path'
 import {pluralize, makeSafe} from '../../../lib/strings'
-import {listFiles} from 'pauls-dat-api'
+import {stat, readdir} from 'pauls-dat-api'
 
 const styles = `<style>
   .entry {
@@ -19,36 +20,53 @@ const styles = `<style>
   }
 </style>`
 
-export default function renderDirectoryListingPage (archive, path, cb) {
-  listFiles(archive, path, (_, entries) => {
-    // sort the listing
-    var names = Object.keys(entries).sort((a, b) => {
-      var ea = entries[a]
-      var eb = entries[b]
-      // directories on top
-      if (ea.type === 'directory' && eb.type !== 'directory') return -1
-      if (ea.type !== 'directory' && eb.type === 'directory') return 1
-      // alphabetical after that
-      return a.localeCompare(b)
-    })
-    // show the updog if path is not top
-    var updog = ''
-    if (path !== '/' && path !== '') {
-      updog = `<div class="entry updog"><a href="..">..</a></div>`
-    }
-    // entries
-    var totalBytes = 0
-    var entries = names.map(name => {
-      var entry = entries[name]
-      totalBytes += entry.length
-      var url = makeSafe(entry.name)
-      if (!url.startsWith('/')) url = '/' + url // all urls should have a leading slash
-      if (entry.type === 'directory' && !url.endsWith('/')) url += '/' // all dirs should have a trailing slash
-      return `<div class="entry ${makeSafe(entry.type)}"><a href="${url}">${makeSafe(name)}</a></div>`
-    }).join('')
-    // summary
-    var summary = `<div class="entry">${names.length} ${pluralize(names.length, 'file')}, ${prettyBytes(totalBytes||0)}</div>`
-    // render
-    cb('<meta charset="UTF-8">' + styles + updog + entries + summary)
+export default async function renderDirectoryListingPage (archive, dirPath) {
+  // list files
+  var names = []
+  try { names = await readdir(archive, dirPath) }
+  catch (e) {}
+
+  // stat each file
+  var entries = await Promise.all(names.map(async (name) => {
+    var entry
+    var entryPath = path.join(dirPath, name)
+    try { entry = await stat(archive, entryPath) }
+    catch (e) { return false }
+    entry.path = entryPath
+    entry.name = name
+    return entry
+  }))
+  entries = entries.filter(Boolean)
+
+  // sort the listing
+  entries.sort((a, b) => {
+    // directories on top
+    if (a.isDirectory() && !b.isDirectory()) return -1
+    if (!a.isDirectory() && b.isDirectory()) return 1
+    // alphabetical after that
+    return a.name.localeCompare(b.name)
   })
+
+  // show the updog if path is not top
+  var updog = ''
+  if (dirPath !== '/' && dirPath !== '') {
+    updog = `<div class="entry updog"><a href="..">..</a></div>`
+  }
+
+  // render entries
+  var totalBytes = 0
+  entries = entries.map(entry => {
+    totalBytes += entry.size
+    var url = makeSafe(entry.path)
+    if (!url.startsWith('/')) url = '/' + url // all urls should have a leading slash
+    if (entry.isDirectory() && !url.endsWith('/')) url += '/' // all dirs should have a trailing slash
+    var type = entry.isDirectory() ? 'directory' : 'file'
+    return `<div class="entry ${type}"><a href="${url}">${makeSafe(entry.name)}</a></div>`
+  }).join('')
+
+  // render summary
+  var summary = `<div class="entry">${entries.length} ${pluralize(entries.length, 'file')}, ${prettyBytes(totalBytes||0)}</div>`
+
+  // render final
+  return '<meta charset="UTF-8">' + styles + updog + entries + summary
 }

@@ -50,13 +50,13 @@ export default {
   async add(url) {
     assertTmpBeakerOnly(this.sender)
     var key = toKey(url)
-    return archivesDb.setArchiveUserSettings(0, key, {isSaved: true})
+    return archivesDb.setUserSettings(0, key, {isSaved: true})
   },
 
   async remove(url) {
     assertTmpBeakerOnly(this.sender)
     var key = toKey(url)
-    return archivesDb.setArchiveUserSettings(0, key, {isSaved: false})
+    return archivesDb.setUserSettings(0, key, {isSaved: false})
   },
 
   async update(url, {title, description} = {}) {
