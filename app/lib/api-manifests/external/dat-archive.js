@@ -4,7 +4,6 @@ export default {
   loadArchive: 'promise',
 
   getInfo: 'promise',
-  updateManifest: 'promise',
   history: 'promise',
 
   stat: 'promise',

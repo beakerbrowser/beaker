@@ -40,7 +40,7 @@ CREATE TABLE archives_meta (
 
 // get the path to an archive's files
 export function getArchiveFilesPath (archiveOrKey) {
-  return path.join(dbPath, 'Archives', datEncoding.toStr(archiveOrKey.key || archiveOrKey))
+  return path.join(datPath, 'Archives', datEncoding.toStr(archiveOrKey.key || archiveOrKey))
 }
 
 export const on = events.on.bind(events)
@@ -67,9 +67,23 @@ export async function query (profileId, query) {
     if (query.isSaved === true) WHERE += ' AND archives.isSaved = 1'
     if (query.isSaved === false) WHERE += ' AND archives.isSaved = 0'
   }
-  return await db.all(`
+  var archives = await db.all(`
     SELECT * FROM archives_meta ${JOIN} WHERE profileId = ? ${WHERE}
   `, [profileId])
+
+  // add some attrs
+  archives.forEach(archive => {
+    archive.url = `dat://${archive.key}`
+    archive.isOwned = archive.isOwned != 0
+    archive.isSaved = archive.isSaved != 0
+    archive.createdBy = {
+      title: archive.createdByTitle,
+      url: archive.createdByUrl
+    }
+    delete archive.createdByTitle
+    delete archive.createdByUrl
+  })
+  return archives
 }
 
 // get a single archive's user settings

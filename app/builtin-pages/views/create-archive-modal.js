@@ -19,7 +19,7 @@ window.setup = async function (opts) {
     if (opts.url) {
       // fetch archive info
       archive = new Archive(opts.url)
-      await archive.setup('/')
+      await archive.setup()
     }
   } catch (e) {
     // ditch out
@@ -64,7 +64,7 @@ async function onSubmit (e) {
   e.preventDefault()
   try {
     if (isEditing) {
-      await beaker.archives.update(archive.url, {title, description})
+      await beaker.archives.updateManifest(archive.url, {title, description})
       beakerBrowser.closeModal(null, true)
     } else {
       var newArchive = await beaker.archives.create({title, description, createdBy})

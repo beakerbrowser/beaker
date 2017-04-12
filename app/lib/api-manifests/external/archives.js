@@ -4,7 +4,7 @@ export default {
   fork: 'promise',
   add: 'promise',
   remove: 'promise',
-  update: 'promise',
+  updateManifest: 'promise',
   list: 'promise',
   get: 'promise',
   createEventStream: 'readable'

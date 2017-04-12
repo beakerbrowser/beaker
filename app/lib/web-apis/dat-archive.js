@@ -50,10 +50,6 @@ export default class DatArchive extends EventTarget {
     return dat.getInfo(this.url, opts)
   }
 
-  updateManifest(manifest={}) {
-    return dat.updateManifest(this.url, manifest)
-  }
-
   history(opts={}) {
     return dat.history(this.url, opts)
   }

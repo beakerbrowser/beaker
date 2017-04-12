@@ -56,6 +56,7 @@ async function setup () {
   // load archives list after render (its not pressing)
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
+  console.log(archivesList.archives)
   archivesList.archives.sort((a, b) => {
     if (a.url === userProfile.url) return -1
     if (b.url === userProfile.url) return 1
@@ -265,8 +266,8 @@ async function shareFiles () {
   })
 
   // import into the user profile
-  await Promise.all(paths.map(srcPath =>
-    DatArchive.importFromFilesystem({srcPath, dst: archive.url, inplaceImport: true})
+  await Promise.all(paths.map(src => 
+    DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: true})
   ))
 
   // open

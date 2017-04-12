@@ -30,7 +30,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.status = archivesRPC.status
   beaker.archives.add = archivesRPC.add
   beaker.archives.remove = archivesRPC.remove
-  beaker.archives.update = archivesRPC.update
+  beaker.archives.updateManifest = archivesRPC.updateManifest
   beaker.archives.list = archivesRPC.list
   beaker.archives.get = archivesRPC.get
   bindEventStream(archivesRPC.createEventStream(), beaker.archives)

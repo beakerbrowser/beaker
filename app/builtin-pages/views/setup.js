@@ -323,7 +323,7 @@ async function onStep3SelectFile () {
   imageName = path.split('/').pop()
   imageURL = `${profileDat.url}/${imageName}`
   await DatArchive.importFromFilesystem({
-    srcPath: paths[0],
+    src: paths[0],
     dst: profileDat.url,
     inplaceImport: true
   })

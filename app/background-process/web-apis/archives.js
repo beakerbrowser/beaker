@@ -1,8 +1,10 @@
+import {BrowserWindow} from 'electron'
 import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX} from '../../lib/const'
+import {showModal} from '../ui/modals'
 import {PermissionsError, InvalidURLError} from 'beaker-error-constants'
 
 // exported api
@@ -59,10 +61,20 @@ export default {
     return archivesDb.setUserSettings(0, key, {isSaved: false})
   },
 
-  async update(url, {title, description} = {}) {
+  async updateManifest(url, manifestInfo) {
     assertTmpBeakerOnly(this.sender)
+
+    if (!manifestInfo) {
+      // show the update-info the modal
+      var win = BrowserWindow.fromWebContents(this.sender)
+      await assertSenderIsFocused(this.sender)
+      return await showModal(win, 'create-archive', {url})
+    }
+
+    // do a direct update
     var key = toKey(url)
-    var archive = datLibrary.getOrLoadArchive(key)
+    var archive = await datLibrary.getOrLoadArchive(key)
+    var {title, description} = manifestInfo
     await pda.updateManifest(archive, {title, description})
     datLibrary.pullLatestArchiveMeta(archive)
   },
@@ -92,6 +104,12 @@ export default {
 function assertTmpBeakerOnly (sender) {
   if (!sender.getURL().startsWith('beaker:')) {
     throw new PermissionsError()
+  }
+}
+
+async function assertSenderIsFocused (sender) {
+  if (!sender.isFocused()) {
+    throw new UserDeniedError('Application must be focused to spawn a prompt')
   }
 }
 

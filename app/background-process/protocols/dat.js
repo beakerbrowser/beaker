@@ -157,11 +157,8 @@ async function datServer (req, res) {
   }, REQUEST_TIMEOUT_MS)
 
   // start searching the network
-  var archive = datLibrary.getOrLoadArchive(archiveKey)
   try {
-    await new Promise((resolve, reject) => {
-      archive.ready(err => err ? reject(err) : resolve())
-    })
+    var archive = await datLibrary.getOrLoadArchive(archiveKey)
   } catch (err) {
     debug('Failed to open archive', archiveKey, err)
     cleanup()

@@ -114,7 +114,7 @@ function rMenu (archive, path, isEditable) {
         {label: 'Copy', disabled: !isEditable, click: () => { editor.focus(); document.execCommand('copy') }},
         {label: 'Paste', disabled: !isEditable, click: () => { editor.focus(); document.execCommand('paste') }},
         '-',
-        {label: 'Edit site details...', click: () => archive.updateManifest()}
+        {label: 'Edit site details...', click: () => beaker.archives.updateManifest(archive.url)}
       ]
     },
     {
@@ -268,7 +268,7 @@ async function onStopEditingTitle (archive, isOwner, ignore) {
 
     // update if changed
     if (newTitle !== archive.info.title) {
-      await beaker.archives.update(archive.url, {title: newTitle})
+      await beaker.archives.updateManifest(archive.url, {title: newTitle})
       archive.info.title = newTitle
     }
   }

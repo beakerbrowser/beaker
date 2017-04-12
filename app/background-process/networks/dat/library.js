@@ -3,6 +3,7 @@ import EventEmitter from 'events'
 import datEncoding from 'dat-encoding'
 import pify from 'pify'
 import pda from 'pauls-dat-api'
+import signatures from 'sodium-signatures'
 var debug = require('debug')('dat')
 import {debounce} from '../../../lib/functions'
 import {grantPermission} from '../../ui/permissions'
@@ -36,7 +37,6 @@ import {InvalidURLError} from 'beaker-error-constants'
 // =
 
 var archives = {} // in-memory cache of archive objects. key -> archive
-var archivesByDiscoveryKey = {} // mirror of the above cache, but discoveryKey -> archive
 var archivesEvents = new EventEmitter()
 
 // exported API
@@ -100,7 +100,7 @@ export async function pullLatestArchiveMeta (archive) {
     manifest = manifest || {}
     var {title, description, forkOf, createdBy} = manifest
     var mtime = Date.now() // use our local update time
-    var isOwner = archive.owner
+    var isOwner = archive.writable
     size = size || 0
 
     // write the record
@@ -121,7 +121,7 @@ export async function pullLatestArchiveMeta (archive) {
 
 export async function createNewArchive (manifest) {
   // create the archive
-  var archive = loadArchive(null)
+  var archive = await loadArchive(null)
   var key = datEncoding.toStr(archive.key)
   manifest.url = `dat://${key}/`
 
@@ -182,28 +182,42 @@ export async function forkArchive (srcArchiveUrl, manifest={}) {
 // archive management
 // =
 
-export function loadArchive (key, { noSwarm } = {}) {
+export async function loadArchive (key, { noSwarm } = {}) {
   // validate key
+  var secretKey
   if (key && !Buffer.isBuffer(key)) {
+    // existing dat
     key = fromURLToKey(key)
     if (!DAT_HASH_REGEX.test(key)) {
       throw new InvalidURLError()
     }
     key = datEncoding.toBuf(key)
+  } else {
+    // new dat, generate keys
+    var kp = signatures.keyPair()
+    key = kp.publicKey
+    secretKey = kp.secretKey
   }
 
+  // ensure the folder exists
+  var archivePath = archivesDb.getArchiveFilesPath(key)
+  mkdirp.sync(archivePath)
+
   // create the archive instance
-  // TODO location
-  var archive = hyperdrive(key, {
-    sparse: true,
-    file: name => raf(path.join(archivesDb.getArchiveFilesPath(archive), name))
+  var archive = hyperdrive(archivePath, key, {sparse: true, secretKey})
+  await new Promise((resolve, reject) => {
+    archive.ready(err => {
+      if (err) reject(err)
+      else resolve()
+    })
   })
   archive.replicationStreams = [] // list of all active replication streams
   archive.userSettings = null // will be set by `configureArchive` if at all
   archive.peerHistory = [] // samples of the peer count
-  // mkdirp.sync(archivesDb.getArchiveFilesPath(archive)) // ensure the folder exists TODO
-  cacheArchive(archive)
-  if (!noSwarm) joinSwarm(archive)
+  cacheArchive(key, archive)
+  if (!noSwarm) {
+    joinSwarm(archive)
+  }
 
   // wire up events
   archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
@@ -212,9 +226,8 @@ export function loadArchive (key, { noSwarm } = {}) {
   return archive
 }
 
-export function cacheArchive (archive) {
-  archives[datEncoding.toStr(archive.key)] = archive
-  archivesByDiscoveryKey[datEncoding.toStr(archive.discoveryKey)] = archive
+export function cacheArchive (key, archive) {
+  archives[datEncoding.toStr(key)] = archive
 }
 
 export function getArchive (key) {
@@ -226,7 +239,7 @@ export function getActiveArchives () {
   return archives
 }
 
-export function getOrLoadArchive (key, opts) {
+export async function getOrLoadArchive (key, opts) {
   var archive = getArchive(key)
   if (archive) {
     return archive
@@ -255,7 +268,7 @@ export async function queryArchives (query) {
 export async function getArchiveInfo (key) {
   // get the archive
   key = fromURLToKey(key)
-  var archive = getOrLoadArchive(key)
+  var archive = await getOrLoadArchive(key)
 
   // fetch archive data
   var [meta, userSettings] = await Promise.all([
@@ -274,7 +287,7 @@ export async function getArchiveInfo (key) {
 
 // put the archive into the network, for upload and download
 export function joinSwarm (key, opts) {
-  var archive = (typeof key == 'object' && key.discoveryKey) ? key : getArchive(key)
+  var archive = (typeof key == 'object' && key.key) ? key : getArchive(key)
   if (!archive || archive.isSwarming) return
 
   var keyStr = datEncoding.toStr(archive.key)
@@ -344,8 +357,8 @@ export function leaveSwarm (key, cb) {
 // =
 
 // load archive and setup any behaviors
-function configureArchive (key, settings) {
-  var archive = getOrLoadArchive(key)
+async function configureArchive (key, settings) {
+  var archive = await getOrLoadArchive(key)
   archive.userSettings = settings
 }
 
