@@ -5,17 +5,17 @@ export default {
 
   getInfo: 'promise',
   updateManifest: 'promise',
-  listHistory: 'promise',
+  history: 'promise',
 
   stat: 'promise',
   readFile: 'promise',
   writeFile: 'promise',
-  deleteFile: 'promise',
+  unlink: 'promise',
   download: 'promise',
 
-  listFiles: 'promise',
-  createDirectory: 'promise',
-  deleteDirectory: 'promise',
+  readdir: 'promise',
+  mkdir: 'promise',
+  rmdir: 'promise',
 
   createFileActivityStream: 'readable',
   createNetworkActivityStream: 'readable',

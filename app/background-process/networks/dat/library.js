@@ -252,7 +252,7 @@ export async function queryArchives (query) {
   return archiveInfos
 }
 
-export async function getArchiveInfo (key, opts = {}) {
+export async function getArchiveInfo (key) {
   // get the archive
   key = fromURLToKey(key)
   var archive = getOrLoadArchive(key)

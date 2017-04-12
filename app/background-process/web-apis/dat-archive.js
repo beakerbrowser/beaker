@@ -3,6 +3,7 @@ import path from 'path'
 import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
 import jetpack from 'fs-jetpack'
+import concat from 'concat-stream'
 const datDns = require('dat-dns')()
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
@@ -69,30 +70,22 @@ export default {
     return Promise.resolve(true)
   },
 
-  async getInfo(url, opts = {}) {
-    return datLibrary.getArchiveInfo(url, opts)
+  async getInfo(url) {
+    return datLibrary.getArchiveInfo(url)
   },
 
-  async listHistory(url) {
+  async history(url) {
     var { archive } = lookupArchive(url)
     return new Promise((resolve, reject) => {
-      archive.list({ live: false }, (err, entries) => {
-        if (err) reject(err)
-        else resolve(entries)
-      })
+      var stream = archive.history({live: false})
+      stream.pipe(concat({encoding: 'object'}, resolve))
+      stream.on('error', reject)
     })
   },
 
   async stat(url, opts = {}) {
     var { archive, filepath } = lookupArchive(url)
-    var downloadedBlocks = opts.downloadedBlocks === true
     var entry = await pda.lookupEntry(archive, filepath, opts)
-    if (!entry) {
-      throw new NotFoundError()
-    }
-    if (downloadedBlocks) {
-      entry.downloadedBlocks = archive.countDownloadedBlocks(entry)
-    }
     return entry
   },
 
@@ -108,6 +101,7 @@ export default {
     await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
     await assertValidFilePath(filepath)
     /*
+    TODO do we have protected files?
     if (isProtectedFilePath(filepath)) {
       throw new ProtectedFileNotWritableError()
     }
@@ -115,8 +109,17 @@ export default {
     return pda.writeFile(archive, filepath, data, opts)
   },
 
-  async deleteFile(url) {
-    throw new Error('not yet implemented') // TODO
+  async unlink(url) {
+    var { archive, filepath } = lookupArchive(url)
+    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+    await assertWritePermission(archive, this.sender)
+    /*
+    TODO do we have protected files?
+    if (isProtectedFilePath(filepath)) {
+      throw new ProtectedFileNotWritableError()
+    }
+    */
+    return pda.unlink(archive, filepath)
   },
 
   async download(url, opts) {
@@ -124,18 +127,12 @@ export default {
     return pda.download(archive, filepath, opts)
   },
 
-  async listFiles(url, opts = {}) {
+  async readdir(url, opts = {}) {
     var { archive, filepath } = lookupArchive(url)
-    var files = await pda.listFiles(archive, filepath, opts)
-    if (opts.downloadedBlocks) {
-      for (var k in files) {
-        files[k].downloadedBlocks = archive.countDownloadedBlocks(files[k])
-      }
-    }
-    return files
+    return pda.readdir(archive, filepath, opts)
   },
 
-  async createDirectory(url) {
+  async mkdir(url) {
     var { archive, filepath } = lookupArchive(url)
     await assertWritePermission(archive, this.sender)
     await assertValidPath(filepath)
@@ -144,11 +141,20 @@ export default {
       throw new ProtectedFileNotWritableError()
     }
     */
-    return pda.createDirectory(archive, filepath)
+    return pda.mkdir(archive, filepath)
   },
 
-  async deleteDirectory(url) {
-    throw new Error('not yet implemented') // TODO
+  async rmdir(url, opts = {}) {
+    var { archive, filepath } = lookupArchive(url)
+    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+    await assertWritePermission(archive, this.sender)
+    /*
+    TODO do we have protected files?
+    if (isProtectedFilePath(filepath)) {
+      throw new ProtectedFileNotWritableError()
+    }
+    */
+    return pda.rmdir(archive, filepath, opts)
   },
 
   createFileActivityStream(url, pathPattern) {
@@ -165,7 +171,7 @@ export default {
     assertTmpBeakerOnly(this.sender)
     var { archive, filepath } = lookupArchive(opts.dst)
     return pda.exportFilesystemToArchive({
-      srcPath: opts.srcPath,
+      srcPath: opts.src,
       dstArchive: archive,
       dstPath: filepath,
       ignore: opts.ignore,
@@ -203,7 +209,7 @@ export default {
     return pda.exportArchiveToFilesystem({
       srcArchive: archive,
       srcPath: filepath,
-      dstPath,
+      dstPath: opts.dst,
       ignore: opts.ignore,
       overwriteExisting: true,
       skipUndownloadedFiles: opts.skipUndownloadedFiles === false ? false : true

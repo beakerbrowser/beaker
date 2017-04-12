@@ -3,6 +3,7 @@ import rpc from 'pauls-electron-rpc'
 import datArchiveManifest from '../api-manifests/external/dat-archive'
 import {DAT_URL_REGEX} from '../const'
 import {EventTarget, fromEventStream} from './event-target'
+import Stat from './stat'
 import errors from 'beaker-error-constants'
 
 // create the dat rpc api
@@ -53,13 +54,13 @@ export default class DatArchive extends EventTarget {
     return dat.updateManifest(this.url, manifest)
   }
 
-  listHistory() {
-    return dat.listHistory(this.url)
+  history(opts={}) {
+    return dat.history(this.url, opts)
   }
 
-  stat(path, opts={}) {
+  async stat(path, opts={}) {
     const url = joinPath(this.url, path)
-    return dat.stat(url, opts)
+    return new Stat(await dat.stat(url, opts))
   }
 
   readFile(path, opts={}) {
@@ -72,9 +73,9 @@ export default class DatArchive extends EventTarget {
     return dat.writeFile(url, data, opts)
   }
 
-  deleteFile(path) {
+  unlink(path) {
     const url = joinPath(this.url, path)
-    return dat.deleteFile(url)
+    return dat.unlink(url)
   }
 
   download(path='/', opts={}) {
@@ -82,19 +83,19 @@ export default class DatArchive extends EventTarget {
     return dat.download(url, opts)
   }
 
-  listFiles(path='/', opts={}) {
+  readdir(path='/', opts={}) {
     const url = joinPath(this.url, path)
-    return dat.listFiles(url, opts)
+    return dat.readdir(url, opts)
   }
 
-  createDirectory(path) {
+  mkdir(path) {
     const url = joinPath(this.url, path)
-    return dat.createDirectory(url)
+    return dat.mkdir(url)
   }
 
-  deleteDirectory(path) {
+  rmdir(path, opts={}) {
     const url = joinPath(this.url, path)
-    return dat.deleteDirectory(url)
+    return dat.rmdir(url, opts)
   }
 
   createFileActivityStream(pathSpec=null) {
