@@ -54,9 +54,10 @@ export default async function renderDirectoryListingPage (archive, dirPath) {
   }
 
   // render entries
-  var totalBytes = 0
+  var totalBytes = 0, totalFiles = 0
   entries = entries.map(entry => {
     totalBytes += entry.size
+    totalFiles++
     var url = makeSafe(entry.path)
     if (!url.startsWith('/')) url = '/' + url // all urls should have a leading slash
     if (entry.isDirectory() && !url.endsWith('/')) url += '/' // all dirs should have a trailing slash
@@ -65,7 +66,7 @@ export default async function renderDirectoryListingPage (archive, dirPath) {
   }).join('')
 
   // render summary
-  var summary = `<div class="entry">${entries.length} ${pluralize(entries.length, 'file')}, ${prettyBytes(totalBytes||0)}</div>`
+  var summary = `<div class="entry">${totalFiles} ${pluralize(totalFiles, 'file')}, ${prettyBytes(totalBytes||0)}</div>`
 
   // render final
   return '<meta charset="UTF-8">' + styles + updog + entries + summary
