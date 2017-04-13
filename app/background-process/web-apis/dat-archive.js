@@ -150,21 +150,13 @@ export default {
     return pda.rmdir(archive, filepath, opts)
   },
 
-  createFileActivityStream(url, pathPattern) {
-    // TODO update stream handlers to handle async
-    // var { archive } = await lookupArchive(url)
-    var {archiveKey} = parseUrlParts(url)
-    var archive = datLibrary.getArchive(archiveKey)
-    if (!archive) throw new Error('Archive not available')
+  async createFileActivityStream(url, pathPattern) {
+    var { archive } = await lookupArchive(url)
     return pda.createFileActivityStream(archive, pathPattern)
   },
 
-  createNetworkActivityStream(url) {
-    // TODO update stream handlers to handle async
-    // var { archive } = await lookupArchive(url)
-    var {archiveKey} = parseUrlParts(url)
-    var archive = datLibrary.getArchive(archiveKey)
-    if (!archive) throw new Error('Archive not available')
+  async createNetworkActivityStream(url) {
+    var { archive } = await lookupArchive(url)
     return pda.createNetworkActivityStream(archive)
   },
 
