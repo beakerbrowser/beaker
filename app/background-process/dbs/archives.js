@@ -22,20 +22,6 @@ export function setup () {
   // make sure the folders exist
   datPath = path.join(app.getPath('userData'), 'Dat')
   mkdirp.sync(path.join(datPath, 'Archives'))
-
-  // DEBUG (delete me!)
-  db.run(`
-CREATE TABLE archives_meta (
-  key TEXT PRIMARY KEY,
-  title TEXT,
-  description TEXT,
-  forkOf TEXT,
-  createdByUrl TEXT,
-  createdByTitle TEXT,
-  mtime INTEGER,
-  size INTEGER,
-  isOwner INTEGER
-);`)
 }
 
 // get the path to an archive's files
@@ -58,30 +44,39 @@ export async function query (profileId, query) {
   query = query || {}
 
   // fetch archive meta
-  var WHERE = ''
-  var JOIN
-  if (query.isOwner === true) WHERE = ' AND archives_meta.isOwner = 1'
-  if (query.isOwner === false) WHERE = ' AND archives_meta.isOwner = 0'
+  var values = []
+  var WHERE = []
+  var JOIN = ''
+  if (query.isOwner === true) WHERE.push('archives_meta.isOwner = 1')
+  if (query.isOwner === false) WHERE.push('archives_meta.isOwner = 0')
   if ('isSaved' in query) {
     JOIN = 'INNER JOIN archives ON archives_meta.key = archives.key'
-    if (query.isSaved === true) WHERE += ' AND archives.isSaved = 1'
-    if (query.isSaved === false) WHERE += ' AND archives.isSaved = 0'
+    WHERE.push('archives.profileId = ?')
+    values.push(profileId)
+    if (query.isSaved)  WHERE.push('archives.isSaved = 1')
+    if (!query.isSaved) WHERE.push('archives.isSaved = 0')
   }
+  if (WHERE.length) WHERE = `WHERE ${WHERE.join(' AND ')}`
+  else WHERE = ''
   var archives = await db.all(`
-    SELECT * FROM archives_meta ${JOIN} WHERE profileId = ? ${WHERE}
-  `, [profileId])
+    SELECT * FROM archives_meta ${JOIN} ${WHERE}
+  `, values)
 
-  // add some attrs
+  // massage the output
   archives.forEach(archive => {
     archive.url = `dat://${archive.key}`
     archive.isOwner = archive.isOwner != 0
-    archive.isSaved = archive.isSaved != 0
     archive.createdBy = {
       title: archive.createdByTitle,
       url: archive.createdByUrl
     }
+    archive.userSettings = {
+      isSaved: archive.isSaved != 0
+    }
+
     delete archive.createdByTitle
     delete archive.createdByUrl
+    delete archive.isSaved
   })
   return archives
 }

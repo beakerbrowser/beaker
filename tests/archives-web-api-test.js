@@ -38,7 +38,7 @@ test.before(async t => {
 
   // open the default start page
   await app.client.windowByIndex(1)
-  await app.client.waitForExist('.start-wrapper')
+  await app.client.waitForExist('body > *')
 })
 test.after.always('cleanup', async t => {
   console.log(JSON.stringify(await app.client.getMainProcessLogs(), null, 2))
@@ -100,6 +100,7 @@ test('library.list', async t => {
   var res = await app.client.executeAsync((url, done) => {
     window.beaker.archives.add(url).then(done,done)
   }, testStaticDatURL)
+  t.deepEqual(res.value.isSaved, true)
 
   // list all
   var res = await app.client.executeAsync((done) => {
@@ -167,7 +168,7 @@ test('library "updated" event', async t => {
 
   // update manifest
   var res = await app.client.executeAsync((url, done) => {
-    beaker.archives.update(url, { title: 'The New Title' }).then(done, done)
+    beaker.archives.updateManifest(url, { title: 'The New Title' }).then(done, done)
   }, createdDatURL)
 
   // need to sleep because there's a builtin delay to processing meta updates

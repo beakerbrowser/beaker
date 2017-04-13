@@ -52,7 +52,12 @@ export default {
   async add(url) {
     assertTmpBeakerOnly(this.sender)
     var key = toKey(url)
-    return archivesDb.setUserSettings(0, key, {isSaved: true})
+    // update settings
+    var res = await archivesDb.setUserSettings(0, key, {isSaved: true})
+    // pull metadata
+    var archive = await datLibrary.getOrLoadArchive(key)
+    datLibrary.pullLatestArchiveMeta(archive)
+    return res
   },
 
   async remove(url) {
