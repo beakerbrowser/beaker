@@ -159,26 +159,6 @@ async function datServer (req, res) {
     // start searching the network
     var archive = await datLibrary.getOrLoadArchive(archiveKey)
     if (aborted) return
-
-    if (!archive.metadata.length) {
-      // wait to receive a first update
-      await new Promise((resolve, reject) => {
-        archive.metadata.update(err => {
-          if (err) reject(err)
-          else resolve()
-        })
-      })
-      if (aborted) return
-    }
-
-    // download the full metadata
-    await new Promise((resolve, reject) => {
-      archive.metadata.download({start: 0, end: archive.metadata.length}, err => {
-        if (err) reject(err)
-        else resolve()
-      })
-    })
-    if (aborted) return
   } catch (err) {
     debug('Failed to open archive', archiveKey, err)
     cleanup()

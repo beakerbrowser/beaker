@@ -16,6 +16,7 @@ export default function Stat (data) {
   this.size = data ? data.size : 0
   this.offset = data ? data.offset : 0
   this.blocks = data ? data.blocks : 0
+  this.downloaded = data ? data.downloaded : 0
   this.atime = new Date(data ? data.mtime : 0) // we just set this to mtime ...
   this.mtime = new Date(data ? data.mtime : 0)
   this.ctime = new Date(data ? data.ctime : 0)

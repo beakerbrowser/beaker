@@ -37,6 +37,7 @@ import {InvalidURLError} from 'beaker-error-constants'
 // =
 
 var archives = {} // in-memory cache of archive objects. key -> archive
+var archiveLoadPromises = {} // key -> promise
 var archivesEvents = new EventEmitter()
 
 // exported API
@@ -182,16 +183,18 @@ export async function forkArchive (srcArchiveUrl, manifest={}) {
 // archive management
 // =
 
-export async function loadArchive (key, { noSwarm } = {}) {
+export async function loadArchive (key) {
   // validate key
   var secretKey
-  if (key && !Buffer.isBuffer(key)) {
-    // existing dat
-    key = fromURLToKey(key)
-    if (!DAT_HASH_REGEX.test(key)) {
-      throw new InvalidURLError()
+  if (key) {
+    if (!Buffer.isBuffer(key)) {
+      // existing dat
+      key = fromURLToKey(key)
+      if (!DAT_HASH_REGEX.test(key)) {
+        throw new InvalidURLError()
+      }
+      key = datEncoding.toBuf(key)
     }
-    key = datEncoding.toBuf(key)
   } else {
     // new dat, generate keys
     var kp = signatures.keyPair()
@@ -199,30 +202,74 @@ export async function loadArchive (key, { noSwarm } = {}) {
     secretKey = kp.secretKey
   }
 
+  // fallback to the promise, if possible
+  var keyStr = datEncoding.toStr(key)
+  if (key in archiveLoadPromises) {
+    return archiveLoadPromises[key]
+  }
+
+  // run and cache the promise
+  var p = loadArchiveInner(key, secretKey)
+  archiveLoadPromises[keyStr] = p
+
+  // when done, clear the promise
+  const clear = () => delete archiveLoadPromises[keyStr]
+  p.then(clear, clear)
+
+  return p
+}
+
+// main logic, separated out so we can capture the promise
+async function loadArchiveInner (key, secretKey) {
+
   // ensure the folder exists
   var archivePath = archivesDb.getArchiveFilesPath(key)
   mkdirp.sync(archivePath)
 
   // create the archive instance
   var archive = hyperdrive(archivePath, key, {sparse: true, secretKey})
+  archive.replicationStreams = [] // list of all active replication streams
+  archive.userSettings = null // will be set by `configureArchive` if at all
+  archive.peerHistory = [] // samples of the peer count
+
+  // wait for ready
   await new Promise((resolve, reject) => {
     archive.ready(err => {
       if (err) reject(err)
       else resolve()
     })
   })
-  archive.replicationStreams = [] // list of all active replication streams
-  archive.userSettings = null // will be set by `configureArchive` if at all
-  archive.peerHistory = [] // samples of the peer count
-  cacheArchive(key, archive)
-  if (!noSwarm) {
-    joinSwarm(archive)
+
+  // join the swarm
+  joinSwarm(archive)
+
+  if (!archive.metadata.length) {
+    // wait to receive a first update
+    await new Promise((resolve, reject) => {
+      archive.metadata.update(err => {
+        if (err) reject(err)
+        else resolve()
+      })
+    })
+  }
+
+  if (!archive.writable) {
+    // download the full metadata
+    await new Promise((resolve, reject) => {
+      archive.metadata.download({start: 0, end: archive.metadata.length}, err => {
+        if (err) reject(err)
+        else resolve()
+      })
+    })
   }
 
   // wire up events
   archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
+  archive.metadata.on('peer-add', onNetworkChanged)
+  archive.metadata.on('peer-remove', onNetworkChanged)
   // archive.metadata.on('download-finished', () => archive.pullLatestArchiveMeta()) TODO
 
+  cacheArchive(key, archive)
   return archive
 }
 
@@ -326,8 +373,6 @@ export function joinSwarm (key, opts) {
   swarm.listen()
   swarm.on('error', err => debug('Swarm error for', keyStr, err))
   swarm.join(archive.discoveryKey)
-  archive.metadata.on('peer-add', onNetworkChanged)
-  archive.metadata.on('peer-remove', onNetworkChanged)
 
   debug('Swarming archive', datEncoding.toStr(archive.key), 'discovery key', datEncoding.toStr(archive.discoveryKey))
   archive.isSwarming = true

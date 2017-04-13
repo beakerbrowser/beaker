@@ -68,7 +68,7 @@ export default {
   },
 
   async history(url) {
-    var { archive } = lookupArchive(url)
+    var { archive } = await lookupArchive(url)
     return new Promise((resolve, reject) => {
       var stream = archive.history({live: false})
       stream.pipe(concat({encoding: 'object'}, resolve))
@@ -77,18 +77,18 @@ export default {
   },
 
   async stat(url, opts = {}) {
-    var { archive, filepath } = lookupArchive(url)
+    var { archive, filepath } = await lookupArchive(url)
     var entry = await pda.stat(archive, filepath, opts)
     return entry
   },
 
   async readFile(url, opts = {}) {
-    var { archive, filepath } = lookupArchive(url)
+    var { archive, filepath } = await lookupArchive(url)
     return pda.readFile(archive, filepath, opts)
   },
 
   async writeFile(url, data, opts = {}) {
-    var { archive, filepath } = lookupArchive(url)
+    var { archive, filepath } = await lookupArchive(url)
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
     await assertWritePermission(archive, this.sender)
     await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
@@ -103,7 +103,7 @@ export default {
   },
 
   async unlink(url) {
-    var { archive, filepath } = lookupArchive(url)
+    var { archive, filepath } = await lookupArchive(url)
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
     await assertWritePermission(archive, this.sender)
     /*
@@ -116,17 +116,17 @@ export default {
   },
 
   async download(url, opts) {
-    var { archive, filepath } = lookupArchive(url)
+    var { archive, filepath } = await lookupArchive(url)
     return pda.download(archive, filepath, opts)
   },
 
   async readdir(url, opts = {}) {
-    var { archive, filepath } = lookupArchive(url)
+    var { archive, filepath } = await lookupArchive(url)
     return pda.readdir(archive, filepath, opts)
   },
 
   async mkdir(url) {
-    var { archive, filepath } = lookupArchive(url)
+    var { archive, filepath } = await lookupArchive(url)
     await assertWritePermission(archive, this.sender)
     await assertValidPath(filepath)
     /*
@@ -138,7 +138,7 @@ export default {
   },
 
   async rmdir(url, opts = {}) {
-    var { archive, filepath } = lookupArchive(url)
+    var { archive, filepath } = await lookupArchive(url)
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
     await assertWritePermission(archive, this.sender)
     /*
@@ -151,18 +151,26 @@ export default {
   },
 
   createFileActivityStream(url, pathPattern) {
-    var { archive } = lookupArchive(url)
+    // TODO update stream handlers to handle async
+    // var { archive } = await lookupArchive(url)
+    var {archiveKey} = parseUrlParts(url)
+    var archive = datLibrary.getArchive(archiveKey)
+    if (!archive) throw new Error('Archive not available')
     return pda.createFileActivityStream(archive, pathPattern)
   },
 
   createNetworkActivityStream(url) {
-    var { archive } = lookupArchive(url)
+    // TODO update stream handlers to handle async
+    // var { archive } = await lookupArchive(url)
+    var {archiveKey} = parseUrlParts(url)
+    var archive = datLibrary.getArchive(archiveKey)
+    if (!archive) throw new Error('Archive not available')
     return pda.createNetworkActivityStream(archive)
   },
 
   async importFromFilesystem(opts) {
     assertTmpBeakerOnly(this.sender)
-    var { archive, filepath } = lookupArchive(opts.dst)
+    var { archive, filepath } = await lookupArchive(opts.dst)
     return pda.exportFilesystemToArchive({
       srcPath: opts.src,
       dstArchive: archive,
@@ -175,7 +183,7 @@ export default {
 
   async exportToFilesystem(opts) {
     assertTmpBeakerOnly(this.sender)
-    var { archive, filepath } = lookupArchive(opts.src)
+    var { archive, filepath } = await lookupArchive(opts.src)
 
     // check if there are files in the destination path
     var dstPath = opts.dstPath
@@ -211,8 +219,8 @@ export default {
 
   async exportToArchive(opts) {
     assertTmpBeakerOnly(this.sender)
-    var src = lookupArchive(opts.src)
-    var dst = lookupArchive(opts.dst)
+    var src = await lookupArchive(opts.src)
+    var dst = await lookupArchive(opts.dst)
     return pda.exportArchiveToArchive({
       srcArchive: src.archive,
       srcPath: src.filepath,
@@ -308,11 +316,7 @@ async function assertSenderIsFocused (sender) {
   }
 }
 
-// helper to handle the URL argument that's given to most args
-// - can get a dat hash, or dat url
-// - returns { archive, filepath }
-// - throws if the filepath is invalid
-function lookupArchive (url) {
+function parseUrlParts (url) {
   var archiveKey, filepath
   if (DAT_HASH_REGEX.test(url)) {
     // simple case: given the key
@@ -333,11 +337,19 @@ function lookupArchive (url) {
     archiveKey = urlp.host
     filepath = urlp.pathname || ''
   }
+  return {archiveKey, filepath}
+}
 
+// helper to handle the URL argument that's given to most args
+// - can get a dat hash, or dat url
+// - returns { archive, filepath }
+// - throws if the filepath is invalid
+async function lookupArchive (url) {
   // lookup the archive
+  var {archiveKey, filepath} = parseUrlParts(url)
   var archive = datLibrary.getArchive(archiveKey)
-  if (!archive) archive = datLibrary.loadArchive(new Buffer(archiveKey, 'hex'))
-  return { archive, filepath }
+  if (!archive) archive = await datLibrary.loadArchive(archiveKey)
+  return {archive, filepath}
 }
 
 async function getCreatedBy (sender) {

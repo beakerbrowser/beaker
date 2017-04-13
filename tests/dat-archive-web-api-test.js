@@ -50,7 +50,11 @@ test.after.always('cleanup', async t => {
 async function stat (url, path, opts) {
   var res = await app.client.executeAsync((url, path, opts, done) => {
     var archive = new DatArchive(url)
-    archive.stat(path, opts).then(v => done(stringify(v)), done)
+    archive.stat(path, opts).then(v => {
+      v.isFile = v.isFile()
+      v.isDirectory = v.isDirectory()
+      done(stringify(v))
+    }, done)
   }, url, path, opts)
   if (typeof res.value === 'string')
     res.value = JSON.parse(res.value)
@@ -73,21 +77,21 @@ async function writeFile (url, path, content, opts) {
 // tests
 //
 
-test('archive.listFiles', async t => {
-  async function listFiles (url, path, opts={}) {
-    return app.client.executeAsync((url, path, opts, done) => {
+test('archive.readdir', async t => {
+  async function readdir (url, path) {
+    return app.client.executeAsync((url, path, done) => {
       var archive = new DatArchive(url)
-      archive.listFiles(path, opts).then(done, done)
-    }, url, path, opts || null)
+      archive.readdir(path).then(done, done)
+    }, url, path)
   }
 
   // root dir
-  let listing1 = await listFiles(testStaticDatURL, '/')
-  t.deepEqual(Object.keys(listing1.value).sort(), ['beaker.png', 'hello.txt', 'subdir'])
+  let listing1 = await readdir(testStaticDatURL, '/')
+  t.deepEqual(listing1.value.sort(), ['beaker.png', 'hello.txt', 'subdir'])
 
   // subdir
-  let listing2 = await listFiles(testStaticDatURL, '/subdir')
-  t.deepEqual(Object.keys(listing2.value).sort(), ['hello.txt'])
+  let listing2 = await readdir(testStaticDatURL, '/subdir')
+  t.deepEqual(listing2.value.sort(), ['hello.txt'])
 })
 
 test('archive.readFile', async t => {
@@ -111,33 +115,26 @@ test('archive.readFile', async t => {
   var beakerPngBinary = await readFile(testStaticDatURL, 'beaker.png', 'binary')
   t.truthy(beakerPng.equals(Buffer.from(beakerPngBinary.value)))
 
-  // timeout: read an archive that does not exist
-  var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
-  var entry = await readFile(fakeUrl, 'hello.txt', { timeout: 500 })
-  t.deepEqual(entry.value.name, 'TimeoutError')
+  // TODO timeouts
+  // // timeout: read an archive that does not exist
+  // var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
+  // var entry = await readFile(fakeUrl, 'hello.txt', { timeout: 500 })
+  // t.deepEqual(entry.value.name, 'TimeoutError')
 })
 
 test('archive.stat', async t => {
   // stat root file
   var entry = await stat(testStaticDatURL, 'hello.txt', {})
-  t.deepEqual(entry.value.name, 'hello.txt', 'root file')
-  t.deepEqual(entry.value.type, 'file', 'root file')
-
-  // include downloadedBlocks
-  var entry = await stat(testStaticDatURL, 'hello.txt', { downloadedBlocks: true })
-  t.deepEqual(entry.value.name, 'hello.txt', 'downloadedBlocks')
-  t.deepEqual(entry.value.type, 'file', 'downloadedBlocks')
-  t.deepEqual(entry.value.downloadedBlocks, entry.value.blocks)
+  t.deepEqual(entry.value.isFile, true, 'root file')
+  t.deepEqual(entry.value.downloaded, entry.value.blocks)
 
   // stat subdir file
   var entry = await stat(testStaticDatURL, 'subdir/hello.txt', {})
-  t.deepEqual(entry.value.name, 'subdir/hello.txt', 'subdir file')
-  t.deepEqual(entry.value.type, 'file', 'subdir file')
+  t.deepEqual(entry.value.isFile, true, 'subdir file')
 
   // stat subdir
   var entry = await stat(testStaticDatURL, 'subdir', {})
-  t.deepEqual(entry.value.name, 'subdir', 'subdir')
-  t.deepEqual(entry.value.type, 'directory', 'subdir')
+  t.deepEqual(entry.value.isDirectory, true, 'subdir')
 
   // stat non-existent file
   var entry = await stat(testStaticDatURL, 'notfound', {})
@@ -145,13 +142,13 @@ test('archive.stat', async t => {
 
   // stat alt-formed path
   var entry = await stat(testStaticDatURL, '/hello.txt', {})
-  t.deepEqual(entry.value.name, 'hello.txt', 'alt-formed path')
-  t.deepEqual(entry.value.type, 'file', 'alt-formed path')
+  t.deepEqual(entry.value.isFile, true, 'alt-formed path')
 
+  // TODO
   // timeout: stat an archive that does not exist
-  var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
-  var entry = await stat(fakeUrl, 'hello.txt', { timeout: 500 })
-  t.deepEqual(entry.value.name, 'TimeoutError')
+  // var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
+  // var entry = await stat(fakeUrl, 'hello.txt', { timeout: 500 })
+  // t.deepEqual(entry.value.name, 'TimeoutError')
 })
 
 test('DatArchive.create rejection', async t => {
@@ -228,47 +225,6 @@ test('DatArchive.create', async t => {
   }, createdDatKey)
   await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.isSaved, true)
-})
-
-test('archive.updateManifest', async t => {
-
-  // updateManifest updates the manifest file
-  // =
-
-  // start the prompt
-  await app.client.execute(url => {
-    // put the result on the window, for checking later
-    window.res = null
-    var archive = new DatArchive(url)
-    archive.updateManifest({title: 'New Title', description: 'New Description'}).then(
-      res => window.res = res,
-      err => window.res = err
-    )
-  }, createdDatURL)
-
-  // accept the prompt
-  await app.client.windowByIndex(2)
-  await app.client.waitUntilWindowLoaded()
-  await app.client.waitForExist('button[type="submit"]')
-  await app.client.click('button[type="submit"]')
-  await app.client.windowByIndex(1)  
-
-  // check the dat.json
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.readFile('dat.json').then(done, done)
-  }, createdDatURL)
-  var manifest
-  try {
-    var manifest = JSON.parse(res.value)
-  } catch (e) {
-    console.log('unexpected error parsing manifest', res.value)
-  }
-  t.deepEqual(manifest.title, 'New Title')
-  t.deepEqual(manifest.description, 'New Description')
-  t.falsy(manifest.trash)
-  t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
-  t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
 })
 
 test('DatArchive.fork', async t => {
@@ -384,18 +340,17 @@ test('archive.writeFile protects the manifest', async t => {
   t.deepEqual(res.value.name, 'ProtectedFileNotWritableError')
 })
 
-test('archive.createDirectory', async t => {
+test('archive.mkdir', async t => {
   // create the directory
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.createDirectory('subdir').then(done, done)
+    archive.mkdir('subdir').then(done, done)
   }, createdDatURL)
   t.falsy(res.value)
 
   // read it back
   var res = await stat(createdDatURL, 'subdir', {})
-  t.deepEqual(res.value.name, '/subdir')
-  t.deepEqual(res.value.type, 'directory')
+  t.deepEqual(res.value.isDirectory, true)
 })
 
 test('archive.writeFile writes to subdirectories', async t => {
@@ -423,34 +378,34 @@ test('archive.writeFile doesnt overwrite folders', async t => {
   t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
 })
 
-test('archive.createDirectory doesnt overwrite files or folders', async t => {
+test('archive.mkdir doesnt overwrite files or folders', async t => {
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.createDirectory('/').then(done, done)
+    archive.mkdir('/').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
 
   // write to the subdir
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.createDirectory('/subdir').then(done, done)
+    archive.mkdir('/subdir').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
 
   // write to the file
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.createDirectory('/hello.txt').then(done, done)
+    archive.mkdir('/hello.txt').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
 })
 
-test('archive.createDirectory gives an error for malformed names', async t => {
+test('archive.mkdir gives an error for malformed names', async t => {
   // write with a bad char
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.createDirectory('hello`world').then(done, done)
+    archive.mkdir('hello`world').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'InvalidPathError')
 })
@@ -464,7 +419,7 @@ test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
 
-test('archive.writeFile and archive.createDirectory fail to write to unowned archives', async t => {
+test('archive.writeFile and archive.mkdir fail to write to unowned archives', async t => {
   // writeFile
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -472,15 +427,15 @@ test('archive.writeFile and archive.createDirectory fail to write to unowned arc
   }, testStaticDatURL)
   t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 
-  // createDirectory
+  // mkdir
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.createDirectory('/denythis').then(done, done)
+    archive.mkdir('/denythis').then(done, done)
   }, testStaticDatURL)
   t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 })
 
-test('archive.writeFile & archive.createDirectory doesnt allow writes to archives until write permission is given', async t => {
+test('archive.writeFile & archive.mkdir doesnt allow writes to archives until write permission is given', async t => {
 
   // create the target dat internally, so that it's writable but not owned by the test runner dat
   // =
@@ -516,7 +471,7 @@ test('archive.writeFile & archive.createDirectory doesnt allow writes to archive
   var res = await app.client.execute(() => { return window.res })
   t.deepEqual(res.value.name, 'UserDeniedError', 'write file denied')
 
-  // createDirectory deny
+  // mkdir deny
   //
 
   // start the prompt
@@ -524,7 +479,7 @@ test('archive.writeFile & archive.createDirectory doesnt allow writes to archive
     // put the result on the window, for checking later
     window.res = null
     var archive = new DatArchive(url)
-    archive.createDirectory('/denythis').then(
+    archive.mkdir('/denythis').then(
       res => window.res = res,
       err => window.res = err
     )
@@ -571,14 +526,14 @@ test('archive.writeFile & archive.createDirectory doesnt allow writes to archive
   }, newTestDatURL)
   t.falsy(res.value, 'write file 2 accepted')
 
-  // createDirectory accept persisted perm
+  // mkdir accept persisted perm
   // =
 
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.createDirectory('allowthis').then(done, done)
+    archive.mkdir('allowthis').then(done, done)
   }, newTestDatURL)
-  t.falsy(res.value, 'createdirectory accepted')
+  t.falsy(res.value, 'mkdir accepted')
 })
 
 test('archive.getInfo', async t => {
@@ -612,8 +567,8 @@ test('archive.download', async t => {
   var testStaticDat2URL = 'dat://' + testStaticDat2.archive.key.toString('hex')
 
   // ensure not yet downloaded
-  var res = await stat(testStaticDat2URL, '/hello.txt', {downloadedBlocks: true})
-  t.deepEqual(res.value.downloadedBlocks, 0)
+  var res = await stat(testStaticDat2URL, '/hello.txt')
+  t.deepEqual(res.value.downloaded, 0)
 
   // download
   var res = await app.client.executeAsync((url, done) => {
@@ -622,8 +577,8 @@ test('archive.download', async t => {
   }, testStaticDat2URL)
 
   // ensure downloaded
-  var res = await stat(testStaticDat2URL, '/hello.txt', {downloadedBlocks: true})
-  t.deepEqual(res.value.downloadedBlocks, res.value.blocks)
+  var res = await stat(testStaticDat2URL, '/hello.txt')
+  t.deepEqual(res.value.downloaded, res.value.blocks)
 
   // download fetches an entire folder
   // =
@@ -633,8 +588,8 @@ test('archive.download', async t => {
   var testStaticDat3URL = 'dat://' + testStaticDat3.archive.key.toString('hex')
 
   // ensure not yet downloaded
-  var res = await stat(testStaticDat3URL, '/subdir/hello.txt', {downloadedBlocks: true})
-  t.deepEqual(res.value.downloadedBlocks, 0)
+  var res = await stat(testStaticDat3URL, '/subdir/hello.txt')
+  t.deepEqual(res.value.downloaded, 0)
 
   // download
   var res = await app.client.executeAsync((url, done) => {
@@ -643,8 +598,8 @@ test('archive.download', async t => {
   }, testStaticDat3URL)
 
   // ensure downloaded
-  var res = await stat(testStaticDat3URL, '/subdir/hello.txt', {downloadedBlocks: true})
-  t.deepEqual(res.value.downloadedBlocks, res.value.blocks)
+  var res = await stat(testStaticDat3URL, '/subdir/hello.txt')
+  t.deepEqual(res.value.downloaded, res.value.blocks)
 
   // download times out on bad files
   // =
@@ -673,8 +628,8 @@ test('DatArchive.importFromFilesystem', async t => {
   t.truthy(archiveURL)
 
   // run import
-  var res = await app.client.executeAsync((srcPath, dst, done) => {
-    DatArchive.importFromFilesystem({srcPath, dst}).then(done,done)
+  var res = await app.client.executeAsync((src, dst, done) => {
+    DatArchive.importFromFilesystem({src, dst}).then(done,done)
   }, __dirname + '/scaffold/test-static-dat', archiveURL)
   t.deepEqual(res.value.addedFiles.length, 3)
 
@@ -697,8 +652,8 @@ test('DatArchive.importFromFilesystem', async t => {
   t.truthy(archiveURL)
 
   // run import
-  var res = await app.client.executeAsync((srcPath, dst, done) => {
-    DatArchive.importFromFilesystem({srcPath, dst, inplaceImport: false}).then(done,done)
+  var res = await app.client.executeAsync((src, dst, done) => {
+    DatArchive.importFromFilesystem({src, dst, inplaceImport: false}).then(done,done)
   }, __dirname + '/scaffold/test-static-dat', archiveURL)
   t.deepEqual(res.value.addedFiles.length, 3)
 
@@ -721,8 +676,8 @@ test('DatArchive.importFromFilesystem', async t => {
   t.truthy(archiveURL)
 
   // run import
-  var res = await app.client.executeAsync((srcPath, dst, done) => {
-    DatArchive.importFromFilesystem({srcPath, dst, ignore: ['**/*.txt']}).then(done,done)
+  var res = await app.client.executeAsync((src, dst, done) => {
+    DatArchive.importFromFilesystem({src, dst, ignore: ['**/*.txt']}).then(done,done)
   }, __dirname + '/scaffold/test-static-dat', archiveURL)
   t.deepEqual(res.value.addedFiles.length, 1)
 
@@ -745,8 +700,8 @@ test('DatArchive.importFromFilesystem', async t => {
   t.truthy(archiveURL)
 
   // run import
-  var res = await app.client.executeAsync((srcPath, dst, done) => {
-    DatArchive.importFromFilesystem({srcPath, dst, dryRun: true}).then(done,done)
+  var res = await app.client.executeAsync((src, dst, done) => {
+    DatArchive.importFromFilesystem({src, dst, dryRun: true}).then(done,done)
   }, __dirname + '/scaffold/test-static-dat', archiveURL)
   t.deepEqual(res.value.addedFiles.length, 3)
 
@@ -770,8 +725,8 @@ test('DatArchive.exportToFilesystem', async t => {
   var testDirPath = fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-')
 
   // export files
-  var res = await app.client.executeAsync((src, dstPath, done) => {
-    DatArchive.exportToFilesystem({src, dstPath, skipUndownloadedFiles: false}).then(done,done)
+  var res = await app.client.executeAsync((src, dst, done) => {
+    DatArchive.exportToFilesystem({src, dst, skipUndownloadedFiles: false}).then(done,done)
   }, testStaticDatURL, testDirPath)
   t.deepEqual(res.value.addedFiles.length, 3)
 
@@ -787,8 +742,8 @@ test('DatArchive.exportToFilesystem', async t => {
   var testDirPath = fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-')
 
   // export files
-  var res = await app.client.executeAsync((src, dstPath, done) => {
-    DatArchive.exportToFilesystem({src, dstPath, ignore:['**/*.txt'], skipUndownloadedFiles: false}).then(done,done)
+  var res = await app.client.executeAsync((src, dst, done) => {
+    DatArchive.exportToFilesystem({src, dst, ignore:['**/*.txt'], skipUndownloadedFiles: false}).then(done,done)
   }, testStaticDatURL, testDirPath)
   t.deepEqual(res.value.addedFiles.length, 1)
 
@@ -910,17 +865,17 @@ test('archive.createNetworkActivityStream', async t => {
     events.addEventListener('download', ({feed}) => {
       window.res[feed].down++
     })
-    events.addEventListener('download-finished', ({feed}) => {
-      window.res[feed].all = true
-    })
+    // events.addEventListener('download-finished', ({feed}) => {
+      // window.res[feed].all = true
+    // })
     archive.download()
   }, testStaticDat2URL)
 
   await sleep(500) // couldnt get waitUntil to work, for some reason
   var res = await app.client.execute(() => { return window.res })
   t.deepEqual(res.value.gotPeer, true)
-  t.deepEqual(res.value.metadata.all, true)
-  t.deepEqual(res.value.content.all, true)
+  // t.deepEqual(res.value.metadata.all, true) TODO restore
+  // t.deepEqual(res.value.content.all, true) TODO restore
 })
 
 function sleep (time) {
