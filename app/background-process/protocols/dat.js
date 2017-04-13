@@ -183,19 +183,19 @@ async function datServer (req, res) {
     } catch (e) {}
   }
   if (isFolder) {
-    tryStat(filepath + 'index.html')
-    tryStat(filepath + 'index.md')
-    tryStat(filepath)
+    await tryStat(filepath + 'index.html')
+    await tryStat(filepath + 'index.md')
+    await tryStat(filepath)
   } else {
-    tryStat(filepath)
-    tryStat(filepath + '.html') // fallback to .html
+    await tryStat(filepath)
+    await tryStat(filepath + '.html') // fallback to .html
   }
 
   // still serving?
   if (aborted) return cleanup()
 
   // handle folder
-  if ((!entry && isFolder) || entry.isDirectory()) {
+  if ((!entry && isFolder) || (entry && entry.isDirectory())) {
     cleanup()
     res.writeHead(200, 'OK', {
       'Content-Type': 'text/html',

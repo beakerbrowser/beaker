@@ -74,7 +74,7 @@ export async function query (profileId, query) {
   // add some attrs
   archives.forEach(archive => {
     archive.url = `dat://${archive.key}`
-    archive.isOwned = archive.isOwned != 0
+    archive.isOwner = archive.isOwner != 0
     archive.isSaved = archive.isSaved != 0
     archive.createdBy = {
       title: archive.createdByTitle,
