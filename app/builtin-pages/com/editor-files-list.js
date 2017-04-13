@@ -94,19 +94,19 @@ function treeSorter (a, b) {
   if (a.entry.name.startsWith('buffer~~')) return -1
   if (b.entry.name.startsWith('buffer~~')) return 1
   // directories next
-  if (a.entry.type == 'directory' && b.entry.type != 'directory')
+  if (a.entry.isDirectory() && !b.entry.isDirectory())
     return -1
-  if (a.entry.type != 'directory' && b.entry.type == 'directory')
+  if (!a.entry.isDirectory() && b.entry.isDirectory())
     return 1
   // by name
   return normalizePath(a.entry.name).localeCompare(normalizePath(b.entry.name))
 }
 
 function rNode (archive, node, depth, selectedPath) {
-  if (node.entry.type === 'directory') {
+  if (node.entry.isDirectory()) {
     return rDirectory(archive, node, depth, selectedPath)
   }
-  if (node.entry.type === 'file') {
+  if (node.entry.isFile()) {
     return rFile(archive, node, depth, selectedPath)
   }
   return ''

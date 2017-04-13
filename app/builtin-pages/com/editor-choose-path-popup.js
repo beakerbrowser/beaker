@@ -73,7 +73,7 @@ function rFolder (archive, node, depth=0) {
   const padding = 10 + (depth * 10)
   const cls = isSelected(node) ? 'selected' : ''
 
-  if (node.entry.type !== 'directory') {
+  if (!node.entry.isDirectory()) {
     return
   }
 
