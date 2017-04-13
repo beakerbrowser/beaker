@@ -85,7 +85,6 @@ export function getServerInfo () {
 
 async function datServer (req, res) {
   var cb = once((code, status) => {
-    if (aborted) return
     res.writeHead(code, status, {
       'Content-Type': 'text/html',
       'Content-Security-Policy': "default-src 'unsafe-inline';",
@@ -156,17 +155,35 @@ async function datServer (req, res) {
     cb(404, 'Not found')
   }, REQUEST_TIMEOUT_MS)
 
-  // start searching the network
   try {
+    // start searching the network
     var archive = await datLibrary.getOrLoadArchive(archiveKey)
+    if (aborted) return
+
+    if (!archive.metadata.length) {
+      // wait to receive a first update
+      await new Promise((resolve, reject) => {
+        archive.metadata.update(err => {
+          if (err) reject(err)
+          else resolve()
+        })
+      })
+      if (aborted) return
+    }
+
+    // download the full metadata
+    await new Promise((resolve, reject) => {
+      archive.metadata.download({start: 0, end: archive.metadata.length}, err => {
+        if (err) reject(err)
+        else resolve()
+      })
+    })
+    if (aborted) return
   } catch (err) {
     debug('Failed to open archive', archiveKey, err)
     cleanup()
     return cb(500, 'Failed')
   }
-
-  // still serving?
-  if (aborted) return cleanup()
 
   // lookup entry
   debug('attempting to lookup', archiveKey)
@@ -192,7 +209,7 @@ async function datServer (req, res) {
   }
 
   // still serving?
-  if (aborted) return cleanup()
+  if (aborted) return
 
   // handle folder
   if ((!entry && isFolder) || (entry && entry.isDirectory())) {
@@ -256,6 +273,7 @@ async function datServer (req, res) {
   // handle empty files
   fileReadStream.once('end', () => {
     if (!headersSent) {
+      cleanup()
       debug('Served empty file')
       res.writeHead(200, 'OK', {
         'Content-Security-Policy': DAT_CSP,
