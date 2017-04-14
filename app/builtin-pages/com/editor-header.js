@@ -125,6 +125,7 @@ function rMenu (archive, path, isEditable) {
         archive && archive.info.userSettings.isSaved
           ? {label: 'Delete this site', click: () => onDelete(archive)}
           : {label: 'Save this site', click: () => onSave(archive)},
+        {label: 'Export site files...', click: () => onExportFiles(archive)},
         '-',
         {label: 'Settings', click: 'open-settings'}
       ]
@@ -213,6 +214,28 @@ async function onDelete (archive) {
   toast.create(`Removed ${archive.niceName} from your library.`)
   archive.info.userSettings.isSaved = false
   window.dispatchEvent(new Event('render'))
+}
+
+async function onExportFiles (archive) {
+  // pick destination
+  var folders = await beakerBrowser.showOpenDialog({
+    title: 'Choose a folder to export to',
+    buttonLabel: 'Export',
+    properties: ['openDirectory', 'createDirectory', 'showHiddenFiles']
+  })
+  if (!folders) {
+    return
+  }
+  var dst = folders[0]
+
+  // export the files
+  var wasExported = await DatArchive.exportToFilesystem({
+    src: archive.url,
+    dstPath: dst
+  })
+  if (wasExported) {
+    toast.create(`Exported files to ${dst}`)
+  }
 }
 
 function onShare (archive) {

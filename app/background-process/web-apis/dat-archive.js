@@ -1,7 +1,8 @@
-import {BrowserWindow} from 'electron'
+import {dialog, BrowserWindow} from 'electron'
 import path from 'path'
 import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
+import jetpack from 'fs-jetpack'
 const datDns = require('dat-dns')()
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
@@ -176,12 +177,35 @@ export default {
   async exportToFilesystem(opts) {
     assertTmpBeakerOnly(this.sender)
     var { archive, filepath } = lookupArchive(opts.src)
+
+    // check if there are files in the destination path
+    var dstPath = opts.dstPath
+    try {
+      var files = await jetpack.listAsync(dstPath)
+      if (files && files.length > 0) {
+        // ask the user if they're sure
+        var res = await new Promise(resolve => {
+          dialog.showMessageBox({
+            type: 'question',
+            message: 'This folder is not empty. Some files may be overwritten. Continue export?',
+            buttons: ['Yes', 'No, cancel']
+          }, resolve)
+        })
+        if (res != 0) {
+          return false
+        }
+      }
+    } catch (e) {
+      // no files
+    }
+
+    // run
     return pda.exportArchiveToFilesystem({
       srcArchive: archive,
       srcPath: filepath,
-      dstPath: opts.dstPath,
+      dstPath,
       ignore: opts.ignore,
-      overwriteExisting: opts.overwriteExisting,
+      overwriteExisting: true,
       skipUndownloadedFiles: opts.skipUndownloadedFiles === false ? false : true
     })
   },
