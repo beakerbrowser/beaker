@@ -6,7 +6,7 @@ import fs from 'fs'
 import electron from '../node_modules/electron'
 
 import * as browserdriver from './lib/browser-driver'
-import { shareDat } from './lib/dat-helpers'
+import {shareDat, createDat} from './lib/dat-helpers'
 
 const app = new Application({
   path: electron,
@@ -115,11 +115,10 @@ test('archive.readFile', async t => {
   var beakerPngBinary = await readFile(testStaticDatURL, 'beaker.png', 'binary')
   t.truthy(beakerPng.equals(Buffer.from(beakerPngBinary.value)))
 
-  // TODO timeouts
-  // // timeout: read an archive that does not exist
-  // var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
-  // var entry = await readFile(fakeUrl, 'hello.txt', { timeout: 500 })
-  // t.deepEqual(entry.value.name, 'TimeoutError')
+  // timeout: read an archive that does not exist
+  var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
+  var entry = await readFile(fakeUrl, 'hello.txt', { timeout: 500 })
+  t.deepEqual(entry.value.name, 'TimeoutError')
 })
 
 test('archive.stat', async t => {
@@ -144,11 +143,10 @@ test('archive.stat', async t => {
   var entry = await stat(testStaticDatURL, '/hello.txt', {})
   t.deepEqual(entry.value.isFile, true, 'alt-formed path')
 
-  // TODO
   // timeout: stat an archive that does not exist
-  // var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
-  // var entry = await stat(fakeUrl, 'hello.txt', { timeout: 500 })
-  // t.deepEqual(entry.value.name, 'TimeoutError')
+  var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
+  var entry = await stat(fakeUrl, 'hello.txt', { timeout: 500 })
+  t.deepEqual(entry.value.name, 'TimeoutError')
 })
 
 test('DatArchive.create rejection', async t => {
@@ -819,6 +817,7 @@ test('archive.createFileActivityStream', async t => {
   }, archiveURL)
 
   // make changes
+  await sleep(500) // give stream time to setup
   await writeFile(archiveURL, '/a.txt', 'one', 'utf8')
   await writeFile(archiveURL, '/b.txt', 'one', 'utf8')
   await writeFile(archiveURL, '/a.txt', 'one', 'utf8')
@@ -836,7 +835,7 @@ test('archive.createNetworkActivityStream', async t => {
   await app.client.windowByIndex(0)
 
   // share the test static dat
-  var testStaticDat2 = await shareDat(__dirname + '/scaffold/test-static-dat')
+  var testStaticDat2 = await createDat()
   var testStaticDat2URL = 'dat://' + testStaticDat2.archive.key.toString('hex')
 
   // start the download & network stream
@@ -860,17 +859,29 @@ test('archive.createNetworkActivityStream', async t => {
     events.addEventListener('download', ({feed}) => {
       window.res[feed].down++
     })
-    // events.addEventListener('download-finished', ({feed}) => {
-      // window.res[feed].all = true
-    // })
-    archive.download()
+    events.addEventListener('sync', ({feed}) => {
+      window.res[feed].all = true
+    })
   }, testStaticDat2URL)
 
-  await sleep(500) // couldnt get waitUntil to work, for some reason
+  // do writes
+  await new Promise(resolve => {
+    testStaticDat2.importFiles(__dirname + '/scaffold/test-static-dat', resolve)
+  })
+
+  // download
+  await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.download().then(done, done)
+  }, testStaticDat2URL)
+
   var res = await app.client.execute(() => { return window.res })
+  console.log(res.value)
   t.deepEqual(res.value.gotPeer, true)
-  // t.deepEqual(res.value.metadata.all, true) TODO restore
-  // t.deepEqual(res.value.content.all, true) TODO restore
+  t.ok(res.value.metadata.down > 0)
+  t.ok(res.value.content.down > 0)
+  t.deepEqual(res.value.metadata.all, true)
+  t.deepEqual(res.value.content.all, true)
 })
 
 function sleep (time) {

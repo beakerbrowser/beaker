@@ -13,3 +13,13 @@ exports.shareDat = function (dir) {
     })
   })
 }
+
+exports.createDat = function () {
+  return new Promise((resolve, reject) => {
+    Dat(ram, function (err, dat) {
+      if (err) return reject(err)
+      dat.joinNetwork()
+      resolve(dat)
+    })
+  })
+}

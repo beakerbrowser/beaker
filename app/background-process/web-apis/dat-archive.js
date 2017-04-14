@@ -9,11 +9,13 @@ import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import * as sitedataDb from '../dbs/sitedata'
 import {showModal} from '../ui/modals'
+import {timer} from '../../lib/time'
 import {queryPermission, requestPermission} from '../ui/permissions'
 import { 
   DAT_HASH_REGEX,
   DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
   DAT_VALID_PATH_REGEX,
+  DEFAULT_DAT_API_TIMEOUT
 } from '../../lib/const'
 import {
   PermissionsError,
@@ -30,6 +32,11 @@ const DEFAULT_TIMEOUT = 5e3
 
 // exported api
 // =
+
+const to = (opts) =>
+  (opts && typeof opts.timeout !== 'undefined')
+    ? opts.timeout
+    : DEFAULT_DAT_API_TIMEOUT
 
 export default {
   async createArchive({title, description} = {}) {
@@ -67,101 +74,147 @@ export default {
     return datLibrary.getArchiveInfo(url)
   },
 
-  async history(url) {
-    var { archive } = await lookupArchive(url)
-    return new Promise((resolve, reject) => {
-      var stream = archive.history({live: false})
-      stream.pipe(concat({encoding: 'object'}, resolve))
-      stream.on('error', reject)
+  async history(url, opts = {}) {
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive} = await lookupArchive(url)
+      if (checkin('reading history')) return
+      return new Promise((resolve, reject) => {
+        var stream = archive.history({live: false})
+        stream.pipe(concat({encoding: 'object'}, resolve))
+        stream.on('error', reject)
+      })
     })
   },
 
   async stat(url, opts = {}) {
-    var { archive, filepath } = await lookupArchive(url)
-    var entry = await pda.stat(archive, filepath, opts)
-    return entry
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive, filepath} = await lookupArchive(url)
+      if (checkin('reading stat()')) return
+      return pda.stat(archive, filepath)
+    })
   },
 
   async readFile(url, opts = {}) {
-    var { archive, filepath } = await lookupArchive(url)
-    return pda.readFile(archive, filepath, opts)
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive, filepath} = await lookupArchive(url)
+      if (checkin('fetching file')) return
+      return pda.readFile(archive, filepath, opts)
+    })
   },
 
   async writeFile(url, data, opts = {}) {
-    var { archive, filepath } = await lookupArchive(url)
-    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-    await assertWritePermission(archive, this.sender)
-    await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
-    await assertValidFilePath(filepath)
-    await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.writeFile(archive, filepath, data, opts)
+    return timer(to(), async (checkin) => {
+      checkin('searching for archive')
+      var {archive, filepath} = await lookupArchive(url)
+      if (checkin('writing file')) return
+      var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+      await assertWritePermission(archive, this.sender)
+      await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
+      await assertValidFilePath(filepath)
+      await assertUnprotectedFilePath(filepath, this.sender)
+      return pda.writeFile(archive, filepath, data, opts)
+    })
   },
 
   async unlink(url) {
-    var { archive, filepath } = await lookupArchive(url)
-    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-    await assertWritePermission(archive, this.sender)
-    await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.unlink(archive, filepath)
+    return timer(to(), async (checkin) => {
+      checkin('searching for archive')
+      var {archive, filepath} = await lookupArchive(url)
+      if (checkin('unlinking file')) return
+      var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+      await assertWritePermission(archive, this.sender)
+      await assertUnprotectedFilePath(filepath, this.sender)
+      return pda.unlink(archive, filepath)
+    })
   },
 
-  async download(url, opts) {
-    var { archive, filepath } = await lookupArchive(url)
-    return pda.download(archive, filepath, opts)
+  async download(url, opts = {}) {
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive, filepath} = await lookupArchive(url)
+      if (checkin('downloading file(s)')) return
+      return pda.download(archive, filepath)
+    })
   },
 
   async readdir(url, opts = {}) {
-    var { archive, filepath } = await lookupArchive(url)
-    return pda.readdir(archive, filepath, opts)
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive, filepath} = await lookupArchive(url)
+      if (checkin('reading the directory')) return
+      var res = await pda.readdir(archive, filepath, opts)
+      return res
+    })
   },
 
   async mkdir(url) {
-    var { archive, filepath } = await lookupArchive(url)
-    await assertWritePermission(archive, this.sender)
-    await assertValidPath(filepath)
-    await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.mkdir(archive, filepath)
+    return timer(to(), async (checkin) => {
+      checkin('searching for archive')
+      var {archive, filepath} = await lookupArchive(url)
+      if (checkin('making the directory')) return
+      await assertWritePermission(archive, this.sender)
+      await assertValidPath(filepath)
+      await assertUnprotectedFilePath(filepath, this.sender)
+      return pda.mkdir(archive, filepath)
+    })
   },
 
   async rmdir(url, opts = {}) {
-    var { archive, filepath } = await lookupArchive(url)
-    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-    await assertWritePermission(archive, this.sender)
-    await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.rmdir(archive, filepath, opts)
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive, filepath} = await lookupArchive(url)
+      if (checkin('removing the directory')) return
+      var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+      await assertWritePermission(archive, this.sender)
+      await assertUnprotectedFilePath(filepath, this.sender)
+      return pda.rmdir(archive, filepath, opts)
+    })
   },
 
   async createFileActivityStream(url, pathPattern) {
-    var { archive } = await lookupArchive(url)
-    return pda.createFileActivityStream(archive, pathPattern)
+    return timer(to(), async (checkin) => {
+      checkin('searching for archive')
+      var {archive} = await lookupArchive(url)
+      if (checkin('creating the stream')) return
+      return pda.createFileActivityStream(archive, pathPattern)
+    })
   },
 
   async createNetworkActivityStream(url) {
-    var { archive } = await lookupArchive(url)
-    return pda.createNetworkActivityStream(archive)
+    return timer(to(), async (checkin) => {
+      checkin('searching for archive')
+      var {archive} = await lookupArchive(url)
+      if (checkin('creating the stream')) return
+      var stream = await pda.createNetworkActivityStream(archive)
+      return stream
+    })
   },
 
   async importFromFilesystem(opts) {
-    assertTmpBeakerOnly(this.sender)
-    var { archive, filepath } = await lookupArchive(opts.dst)
-    return pda.exportFilesystemToArchive({
-      srcPath: opts.src,
-      dstArchive: archive,
-      dstPath: filepath,
-      ignore: opts.ignore,
-      dryRun: opts.dryRun,
-      inplaceImport: opts.inplaceImport === false ? false : true
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      assertTmpBeakerOnly(this.sender)
+      var {archive, filepath} = await lookupArchive(opts.dst)
+      if (checkin('copying files')) return
+      return pda.exportFilesystemToArchive({
+        srcPath: opts.src,
+        dstArchive: archive,
+        dstPath: filepath,
+        ignore: opts.ignore,
+        dryRun: opts.dryRun,
+        inplaceImport: opts.inplaceImport === false ? false : true
+      })
     })
   },
 
   async exportToFilesystem(opts) {
-    assertTmpBeakerOnly(this.sender)
-    var { archive, filepath } = await lookupArchive(opts.src)
-
     // check if there are files in the destination path
-    var dstPath = opts.dstPath
+    var dst = opts.dst
     try {
-      var files = await jetpack.listAsync(dstPath)
+      var files = await jetpack.listAsync(dst)
       if (files && files.length > 0) {
         // ask the user if they're sure
         var res = await new Promise(resolve => {
@@ -179,28 +232,37 @@ export default {
       // no files
     }
 
-    // run
-    return pda.exportArchiveToFilesystem({
-      srcArchive: archive,
-      srcPath: filepath,
-      dstPath: opts.dst,
-      ignore: opts.ignore,
-      overwriteExisting: true,
-      skipUndownloadedFiles: opts.skipUndownloadedFiles === false ? false : true
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      assertTmpBeakerOnly(this.sender)
+      var {archive, filepath} = await lookupArchive(opts.src)
+      if (checkin('copying files')) return
+      return pda.exportArchiveToFilesystem({
+        srcArchive: archive,
+        srcPath: filepath,
+        dstPath: opts.dst,
+        ignore: opts.ignore,
+        overwriteExisting: opts.overwriteExisting,
+        skipUndownloadedFiles: opts.skipUndownloadedFiles === false ? false : true
+      })
     })
   },
 
   async exportToArchive(opts) {
-    assertTmpBeakerOnly(this.sender)
-    var src = await lookupArchive(opts.src)
-    var dst = await lookupArchive(opts.dst)
-    return pda.exportArchiveToArchive({
-      srcArchive: src.archive,
-      srcPath: src.filepath,
-      dstArchive: dst.archive,
-      dstPath: dst.filepath,
-      ignore: opts.ignore,
-      skipUndownloadedFiles: opts.skipUndownloadedFiles === false ? false : true
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      assertTmpBeakerOnly(this.sender)
+      var src = await lookupArchive(opts.src)
+      var dst = await lookupArchive(opts.dst)
+      if (checkin('copying files')) return
+      return pda.exportArchiveToArchive({
+        srcArchive: src.archive,
+        srcPath: src.filepath,
+        dstArchive: dst.archive,
+        dstPath: dst.filepath,
+        ignore: opts.ignore,
+        skipUndownloadedFiles: opts.skipUndownloadedFiles === false ? false : true
+      })
     })
   },
 
@@ -318,7 +380,7 @@ function parseUrlParts (url) {
 
 // helper to handle the URL argument that's given to most args
 // - can get a dat hash, or dat url
-// - returns { archive, filepath }
+// - returns {archive, filepath}
 // - throws if the filepath is invalid
 async function lookupArchive (url) {
   // lookup the archive

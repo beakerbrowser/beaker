@@ -13,3 +13,4 @@ export const DAT_MANIFEST_FILENAME = 'dat.json'
 export const DAT_QUOTA_DEFAULT_BYTES_ALLOWED = (process.env.beaker_dat_quota_default_bytes_allowed || 104857600) // 100mb
 export const DEFAULT_DAT_DNS_TTL = 3600 // 1hr
 export const MAX_DAT_DNS_TTL = 3600 * 24 * 7 // 1 week
+export const DEFAULT_DAT_API_TIMEOUT = 5e3 // 5s
