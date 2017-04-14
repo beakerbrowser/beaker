@@ -93,12 +93,7 @@ export default {
     await assertWritePermission(archive, this.sender)
     await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
     await assertValidFilePath(filepath)
-    /*
-    TODO do we have protected files?
-    if (isProtectedFilePath(filepath)) {
-      throw new ProtectedFileNotWritableError()
-    }
-    */
+    await assertUnprotectedFilePath(filepath, this.sender)
     return pda.writeFile(archive, filepath, data, opts)
   },
 
@@ -106,12 +101,7 @@ export default {
     var { archive, filepath } = await lookupArchive(url)
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
     await assertWritePermission(archive, this.sender)
-    /*
-    TODO do we have protected files?
-    if (isProtectedFilePath(filepath)) {
-      throw new ProtectedFileNotWritableError()
-    }
-    */
+    await assertUnprotectedFilePath(filepath, this.sender)
     return pda.unlink(archive, filepath)
   },
 
@@ -129,11 +119,7 @@ export default {
     var { archive, filepath } = await lookupArchive(url)
     await assertWritePermission(archive, this.sender)
     await assertValidPath(filepath)
-    /*
-    if (isProtectedFilePath(filepath)) {
-      throw new ProtectedFileNotWritableError()
-    }
-    */
+    await assertUnprotectedFilePath(filepath, this.sender)
     return pda.mkdir(archive, filepath)
   },
 
@@ -141,12 +127,7 @@ export default {
     var { archive, filepath } = await lookupArchive(url)
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
     await assertWritePermission(archive, this.sender)
-    /*
-    TODO do we have protected files?
-    if (isProtectedFilePath(filepath)) {
-      throw new ProtectedFileNotWritableError()
-    }
-    */
+    await assertUnprotectedFilePath(filepath, this.sender)
     return pda.rmdir(archive, filepath, opts)
   },
 
@@ -232,11 +213,14 @@ export default {
 // =
 
 // helper to check if filepath refers to a file that userland is not allowed to edit directly
-/*
-function isProtectedFilePath (filepath) {
-  return filepath === '/dat.json'
+function assertUnprotectedFilePath (filepath, sender) {
+  if (sender.getURL().startsWith('beaker:')) {
+    return // can write any file
+  }
+  if (filepath === '/dat.json') {
+    throw new ProtectedFileNotWritableError()
+  }
 }
-*/
 
 // temporary helper to make sure the call is made by a beaker: page
 function assertTmpBeakerOnly (sender) {
