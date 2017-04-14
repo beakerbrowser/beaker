@@ -13,7 +13,7 @@ const app = new Application({
   args: ['../app'],
   env: { 
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
-    beaker_dat_quota_default_bytes_allowed: 1024 * 10 // 10kb
+    beaker_dat_quota_default_bytes_allowed: 1024 * 20 // 20kb
   }
 })
 var testStaticDat, testStaticDatURL
@@ -263,7 +263,7 @@ test('DatArchive.fork', async t => {
   } catch (e) {
     console.log('unexpected error parsing manifest', res.value)
   }
-  t.deepEqual(manifest.title, 'New Title')
+  t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description 2')
   t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
   t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
@@ -546,7 +546,7 @@ test('archive.getInfo', async t => {
     archive.getInfo({stats: true}).then(done, done)
   }, createdDatURL)
   var info = res.value
-  t.deepEqual(info.title, 'New Title')
+  t.deepEqual(info.title, 'The Title')
   t.deepEqual(info.description, 'New Description')
   t.deepEqual(info.createdBy.url, testRunnerDatURL.slice(0, -1))
   t.deepEqual(info.createdBy.title, 'Test Runner Dat')

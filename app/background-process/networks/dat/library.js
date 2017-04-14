@@ -243,17 +243,18 @@ async function loadArchiveInner (key, secretKey) {
   // join the swarm
   joinSwarm(archive)
 
-  if (!archive.metadata.length) {
-    // wait to receive a first update
-    await new Promise((resolve, reject) => {
-      archive.metadata.update(err => {
-        if (err) reject(err)
-        else resolve()
-      })
-    })
-  }
-
+  // await metadata sync if not the owner
   if (!archive.writable) {
+    if (!archive.metadata.length) {
+      // wait to receive a first update
+      await new Promise((resolve, reject) => {
+        archive.metadata.update(err => {
+          if (err) reject(err)
+          else resolve()
+        })
+      })
+    }
+
     // download the full metadata
     await new Promise((resolve, reject) => {
       archive.metadata.download({start: 0, end: archive.metadata.length}, err => {
@@ -267,7 +268,12 @@ async function loadArchiveInner (key, secretKey) {
   archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
   archive.metadata.on('peer-add', onNetworkChanged)
   archive.metadata.on('peer-remove', onNetworkChanged)
-  // archive.metadata.on('download-finished', () => archive.pullLatestArchiveMeta()) TODO
+  archive.fileActStream = pda.createFileActivityStream(archive)
+  archive.fileActStream.on('data', ([event]) => {
+    if (event === 'changed') {
+      archive.pullLatestArchiveMeta()
+    }
+  })
 
   cacheArchive(key, archive)
   return archive
