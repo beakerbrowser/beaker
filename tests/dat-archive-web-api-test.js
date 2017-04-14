@@ -543,18 +543,13 @@ test('archive.getInfo', async t => {
 
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.getInfo({stats: true}).then(done, done)
+    archive.getInfo().then(done, done)
   }, createdDatURL)
   var info = res.value
   t.deepEqual(info.title, 'The Title')
-  t.deepEqual(info.description, 'New Description')
+  t.deepEqual(info.description, 'The Description')
   t.deepEqual(info.createdBy.url, testRunnerDatURL.slice(0, -1))
   t.deepEqual(info.createdBy.title, 'Test Runner Dat')
-  t.truthy(info.stats)
-  t.truthy(info.stats.meta.blocksTotal)
-  t.truthy(info.stats.content.blocksTotal)
-  t.deepEqual(info.stats.meta.blocksProgress, info.stats.meta.blocksTotal)
-  t.deepEqual(info.stats.content.blocksProgress, info.stats.content.blocksTotal)
 })
 
 test('archive.download', async t => {
