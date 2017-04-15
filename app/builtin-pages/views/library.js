@@ -43,40 +43,37 @@ async function setup () {
 function update () {
   yo.update(document.querySelector('main'), yo`
     <main>
-      <div class="archives-list">
-        <h1>Your library</h1>
+    <div class="sidebar">
+      <div class="sidebar-actions">
+        <input
+          class="filter"
+          label="query"
+          placeholder="Filter"
+          type="text"
+          value=${currentFilter || ''}
+          onkeyup=${onChangeFilter}/>
 
-        <div class="sidebar">
-          <div class="sidebar-actions">
-            <input
-              label="query"
-              placeholder="Filter"
-              type="text"
-              value=${currentFilter || ''}
-              onchange=${e => currentFilter=e.target.value} />
-            <label for="sort">Sort by</label>
-            <select name="sort">
-              <option value="alphabetical" selected=${currentSort === 'alphabetical'}>Name</option>
-              <option value="updated" selected=${currentSort === 'mtime'}>Recently updated</option>
-            </select>
-          </div>
-          <div class="archives-list">
-            ${rArchivesList()}
-          </div>
-        ${isTrashOpen
-          ? yo`
-            <div class="trash-list">
-              <h2 onclick=${onToggleTrash}>Trash <i class="fa fa-angle-up"></i></h2>
-              ${trashList.map(archiveInfo => yo`<div>
-                <a href=${'beaker://editor/' + archiveInfo.key}>${niceName(archiveInfo)}</a>
-                <a class="link" onclick=${e => onToggleSaved(e, archiveInfo)}>restore</a>
-              </div>
-              `)}
-            </div>
-          ` : yo`
-            <h2 onclick=${onToggleTrash}>Trash <i class="fa fa-angle-down"></i></h2>
-          `}
+        <div class="sort">
+          <label for="sort">Sort by</label>
+          <select name="sort" oninput=${onChangeSort}>
+            <option value="alphabetical" selected=${currentSort === 'alphabetical'}>
+              Name
+            </option>
+            <option value="mtime" selected=${currentSort === 'mtime'}>
+              Recently updated
+            </option>
+          </select>
+        </div>
       </div>
+
+      <div class="archives-list">${rArchivesList()}</div>
+
+      <div class="trash-controls">
+        <button onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
+          <i class="fa ${isTrashOpen ? 'fa-close' : 'fa-trash'}"></i>
+        </button>
+      </div>
+    </div>
     </main>
   `)
 }
@@ -101,7 +98,28 @@ function rArchivesList () {
     if (currentSort === 'alphabetical') return niceName(a).localeCompare(niceName(b))
     if (currentSort === 'mtime') return b.mtime - a.mtime
   })
-  filteredArchives.map(rArchive)
+
+  return filteredArchives.map(rArchiveListItem)
+}
+
+function rArchiveListItem (archiveInfo) {
+  var icon = ''
+  if (archiveInfo.url === userProfileUrl) {
+    icon = yo`<i class="fa fa-user-circle-o"></i>`
+  }
+  return yo`
+    <div class="archive">
+      <div class="title">
+        ${niceName(archiveInfo)}
+        ${archiveInfo.isOwner ? '' : yo`<i class="fa fa-eye"></i>`}
+      </div>
+      <span class="last-updated">Updated 3 minutes age</span>
+      <span class="peers">
+        <i class="fa fa-share-alt"></i>
+        ${archiveInfo.peers}
+      </span>
+    </div>
+  `
 }
 
 function rArchive (archiveInfo) {
