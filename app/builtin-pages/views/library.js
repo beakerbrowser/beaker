@@ -10,6 +10,7 @@ var userProfileUrl
 var archivesList
 var trashList = []
 var isTrashOpen = false
+var currentFilter = ''
 
 setup()
 async function setup () {
@@ -48,7 +49,24 @@ function update () {
     <main>
       <div class="archives-list">
         <h1>Your library</h1>
-        ${archivesList.archives.map(rArchive)}
+
+        <div class="sidebar">
+          <div class="sidebar-actions">
+            <input
+              label="query"
+              placeholder="Filter"
+              type="text"
+              value=${currentFilter || ''}
+              onchange=${e => currentFilter=e.target.value} />
+            <label for="sort">Sort by</label>
+            <select name="sort">
+              <option value="alphabetical" selected>Name</option>
+              <option value="updated">Recently updated</option>
+            </select>
+          </div>
+          <div class="archives-list">
+            ${rArchivesList()}
+          </div>
         ${isTrashOpen
           ? yo`
             <div class="trash-list">
@@ -65,6 +83,20 @@ function update () {
       </div>
     </main>
   `)
+}
+
+function rArchivesList () {
+  var filteredArchives = archivesList.archives.filter(archive => {
+    if (!currentFilter) {
+      return true
+    }
+    else if (currentFilter && archive.title.toLowerCase().indexOf(currentFilter) !== -1) {
+      return true
+    }
+    return false
+  })
+
+  filteredArchives.map(rArchive)
 }
 
 function rArchive (archiveInfo) {
