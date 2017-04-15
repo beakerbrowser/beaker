@@ -161,12 +161,14 @@ function rArchiveListItem (archiveInfo) {
 }
 
 function rArchive (archiveInfo) {
-  var icon = ''
-  if (archiveInfo.url === userProfileUrl) {
-    icon = yo`<i class="fa fa-user-circle-o"></i>`
-  }
   return yo`
     <div class="archive">
+      <div class="info">
+        <h1 class="title" title=${archiveInfo.title}>
+          <a href="dat://${archiveInfo.key}">${archiveInfo.title}</a>
+        </h1>
+        <p class="description">${niceDesc(archiveInfo)}</p>
+      </div>
       <div class="peer-history">
         <canvas
           id="history-${archiveInfo.key}"
@@ -255,7 +257,7 @@ function niceName (archiveInfo) {
 }
 
 function niceDesc (archiveInfo) {
-  return (archiveInfo.description || '').trim() || yo`<em>No description</em>`
+  return (archiveInfo.description || '').trim() || yo`No description`
 }
 
 function onChangeFilter (e) {
