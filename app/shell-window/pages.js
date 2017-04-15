@@ -842,11 +842,9 @@ function parseURL (str) {
 
 function updateHistory (page) {
   var url = page.getURL()
-  if (!url.startsWith('beaker:')) {
-    beaker.history.addVisit({url: page.getURL(), title: page.getTitle() || page.getURL()})
-    if (page.isPinned) {
-      savePinnedToDB()
-    }
+  beaker.history.addVisit({url: page.getURL(), title: page.getTitle() || page.getURL()})
+  if (page.isPinned) {
+    savePinnedToDB()
   }
   page.lastVisitedAt = Date.now()
   page.lastVisitedURL = url
