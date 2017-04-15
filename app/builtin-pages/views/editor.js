@@ -579,7 +579,6 @@ async function generate (archive, path, content='') {
   model.lang = model.getModeId()
   model.onDidChangeContent(onDidChangeContent(model, archive, path))
   model.updateOptions(getModelOptions())
-  dirtyFiles[url] = true
   return model
 }
 
