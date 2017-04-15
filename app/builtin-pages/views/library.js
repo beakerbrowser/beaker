@@ -182,3 +182,14 @@ function niceName (archiveInfo) {
 function niceDesc (archiveInfo) {
   return (archiveInfo.description || '').trim() || yo`<em>No description</em>`
 }
+
+function onChangeFilter (e) {
+  currentFilter = e.target.value
+  update()
+}
+
+function onChangeSort (e) {
+  var selectedIndex = e.target.selectedIndex
+  currentSort = e.target[selectedIndex].value
+  update()
+}
