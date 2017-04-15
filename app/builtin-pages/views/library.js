@@ -12,7 +12,7 @@ var archivesList
 var trashList = []
 var isTrashOpen = false
 var currentFilter = ''
-var currentSort = 'mtime'
+var currentSort = ''
 var selectedArchiveKey = ''
 
 setup()
@@ -135,12 +135,15 @@ function rArchivesList () {
 function rArchiveListItem (archiveInfo) {
   var cls = archiveInfo.key === selectedArchiveKey ? 'active' : ''
   var icon = ''
+
   if (archiveInfo.url === userProfileUrl) {
-    icon = yo`<i class="fa fa-user-circle-o"></i>`
+    icon = yo`<i class="fa fa-user"></i>`
   }
+
   return yo`
     <div class="archive ${cls}" data-key=${archiveInfo.key} onclick=${onSelectArchive}>
       <div class="title">
+        ${icon}
         ${niceName(archiveInfo)}
         ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
       </div>
