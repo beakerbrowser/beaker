@@ -2,6 +2,7 @@ import * as yo from 'yo-yo'
 import {ArchivesList} from 'builtin-pages-lib'
 import {pluralize} from '../../lib/strings'
 import sparkline from '../../lib/fg/sparkline'
+import {niceDate} from '../../lib/time'
 
 // globals
 // =
@@ -142,7 +143,7 @@ function rArchiveListItem (archiveInfo) {
         ${niceName(archiveInfo)}
         ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
       </div>
-      <span class="last-updated">Updated 3 minutes age</span>
+      <span class="last-updated">Updated ${niceDate(archiveInfo.mtime)}</span>
       <span class="peers">
         <i class="fa fa-share-alt"></i>
         ${archiveInfo.peers}
