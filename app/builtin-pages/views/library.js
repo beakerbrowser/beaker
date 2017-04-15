@@ -142,7 +142,7 @@ function rArchiveListItem (archiveInfo) {
     <div class="archive">
       <div class="title">
         ${niceName(archiveInfo)}
-        ${archiveInfo.isOwner ? '' : yo`<i class="fa fa-eye"></i>`}
+        ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
       </div>
       <span class="last-updated">Updated 3 minutes age</span>
       <span class="peers">
