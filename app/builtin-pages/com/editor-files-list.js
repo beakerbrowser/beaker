@@ -63,6 +63,7 @@ function rModels (archive, models, dirtyFiles, selectedPath) {
       }
       var path = normalizePath(url.slice(archive.url.length))
       var name = path.split('/').pop()
+      if (name.startsWith('buffer~~')) name = 'untitled'
       var cls = path === selectedPath ? 'selected' : ''
       const xIcon = dirtyFiles[url]
         ? yo`<i class="dirty fa fa-circle"></i>`
