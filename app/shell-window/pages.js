@@ -321,11 +321,16 @@ export function create (opts) {
   return page
 }
 
-export function remove (page) {
+export async function remove (page) {
   // find
   var i = pages.indexOf(page)
   if (i == -1)
     return console.warn('pages.remove() called for missing page', page)
+
+  // HACK to fix beaker#395
+  if (await runOnbeforeunload(page)) {
+    return
+  }
 
   // save, in case the user wants to restore it
   closedURLs.push(page.getURL())
@@ -606,8 +611,8 @@ function onDidStopLoading (e) {
     page.loadingURL = false
     page.manuallyTrackedIsLoading = false
     if (page.isActive) {
-      navbar.update(page)
       navbar.updateLocation(page)
+      navbar.update(page)
       statusBar.setIsLoading(false)
     }
 
@@ -773,7 +778,7 @@ function onClose (e) {
   var page = getByWebview(e.target)
   if (page) {
     remove(page)
-  }  
+  }
 }
 
 function onPageTitleUpdated (e) {
@@ -848,4 +853,14 @@ function updateHistory (page) {
   }
   page.lastVisitedAt = Date.now()
   page.lastVisitedURL = url
+}
+
+async function runOnbeforeunload (page) {
+  return await page.webviewEl.getWebContents().executeJavaScript(`
+    (function() {
+      if (window.__onbeforeunload__) {
+        return window.__onbeforeunload__({noSignal: true})
+      }
+    })()
+  `)
 }

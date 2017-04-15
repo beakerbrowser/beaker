@@ -61,6 +61,7 @@ window.addEventListener('import-files', onImportFiles)
 window.addEventListener('open-settings', onOpenSettings)
 window.addEventListener('editor-created', onEditorCreated)
 window.addEventListener('keydown', onKeyDown)
+window.addEventListener('beforeunload', onBeforeUnload)
 
 async function setup () {
   try {
@@ -433,6 +434,12 @@ function onKeyDown (e) {
   }
 }
 
+function onBeforeUnload (e) {
+  if (Object.keys(dirtyFiles).length) {
+    e.returnValue = true
+  }
+}
+
 async function onArchiveChanged (e) {
   // reload the file listing
   await selectedArchive.fileTree.setup()
@@ -590,17 +597,4 @@ function closeModel () {
   delete models[url]
   delete dirtyFiles[url]
   // TODO remove from filetree
-}
-
-// find any models that don't need to stay in memory and delete them
-function freeCleanModels () {
-  for (var k in models) {
-    if (!dirtyFiles[k]) {
-      if (models[k] && models[k].dispose) {
-        models[k].dispose()
-      }
-      delete models[k]
-      delete dirtyFiles[k]
-    }
-  }
 }
