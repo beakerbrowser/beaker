@@ -69,6 +69,9 @@ function update () {
             <option value="mtime" selected=${currentSort === 'mtime'}>
               Recently updated
             </option>
+            <option value="peers" selected=${currentSort === 'peers'}>
+              Active peers
+            </option>
           </select>
         </div>
       </div>
@@ -127,6 +130,7 @@ function rArchivesList () {
 
     if (currentSort === 'alphabetical') return niceName(a).localeCompare(niceName(b))
     if (currentSort === 'mtime') return b.mtime - a.mtime
+    if (currentSort === 'peers') return b.peers - a.peers
   })
 
   return filteredArchives.map(rArchiveListItem)
