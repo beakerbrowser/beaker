@@ -145,6 +145,39 @@ main {
   }
 }
 
+.view {
+  margin-left: 250px;
+  padding: 2rem;
+
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.view .trash {
+
+  .trash-list {
+    list-style: disc;
+    margin-left: 1rem;
+  }
+
+  .trash-item {
+    margin-bottom: .5rem;
+  }
+
+  button.restore {
+    padding: 3px 5px;
+    border-radius: 2px;
+    background: @background-menu;
+    border: 1px solid @border-menu;
+
+    &:hover {
+      background: @border-menu;
+    }
+  }
+}
+
 .archive {
   border-bottom: 1px solid @border-menu;
 

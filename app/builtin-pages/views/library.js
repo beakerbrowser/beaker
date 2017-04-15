@@ -79,8 +79,34 @@ function update () {
         </button>
       </div>
     </div>
+
+    <div class="view">
+      ${rView()}
+    </div>
     </main>
   `)
+}
+
+function rView () {
+  if (isTrashOpen) {
+    return yo`
+      <div class="trash">
+        <h1>Trash</h1>
+        ${trashList.length ? '' : yo`<p>No items in trash</p>`}
+        <ul class="trash-list">
+          ${trashList.map(archiveInfo => yo`
+            <li class="trash-item">
+              <a href=${archiveInfo.key}>${niceName(archiveInfo)}</a>
+              <button class="restore" onclick=${e => onToggleSaved(e, archiveInfo)}>
+                Restore
+              </button>
+            </li>`
+          )}
+        </ul>
+      </div>
+    `
+  }
+  return ''
 }
 
 function rArchivesList () {
