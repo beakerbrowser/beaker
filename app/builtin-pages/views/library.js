@@ -12,6 +12,7 @@ var trashList = []
 var isTrashOpen = false
 var currentFilter = ''
 var currentSort = 'mtime'
+var selectedArchiveKey = ''
 
 setup()
 async function setup () {
@@ -89,24 +90,21 @@ function update () {
 
 function rView () {
   if (isTrashOpen) {
-    return yo`
-      <div class="trash">
-        <h1>Trash</h1>
-        ${trashList.length ? '' : yo`<p>No items in trash</p>`}
-        <ul class="trash-list">
-          ${trashList.map(archiveInfo => yo`
-            <li class="trash-item">
-              <a href=${archiveInfo.key}>${niceName(archiveInfo)}</a>
-              <button class="restore" onclick=${e => onToggleSaved(e, archiveInfo)}>
-                Restore
-              </button>
-            </li>`
-          )}
-        </ul>
-      </div>
-    `
+    return rTrash()
+  } else if (selectedArchiveKey) {
+    var selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
+    return rArchive(selectedArchive)
   }
+
   return ''
+}
+
+function onSelectArchive () {
+  // close the trash if necessary
+  if (isTrashOpen) isTrashOpen = false
+
+  selectedArchiveKey = this.dataset.key
+  update()
 }
 
 function rArchivesList () {
@@ -139,7 +137,7 @@ function rArchiveListItem (archiveInfo) {
     icon = yo`<i class="fa fa-user-circle-o"></i>`
   }
   return yo`
-    <div class="archive">
+    <div class="archive" data-key=${archiveInfo.key} onclick=${onSelectArchive}>
       <div class="title">
         ${niceName(archiveInfo)}
         ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
@@ -183,6 +181,25 @@ function rArchive (archiveInfo) {
           ? yo`<div class="ownership"><i class="fa fa-pencil"></i> Editable</div>`
           : yo`<div class="ownership"><i class="fa fa-eye"></i> Read-only</div>`}
       </div>
+    </div>
+  `
+}
+
+function rTrash () {
+  return yo`
+    <div class="trash">
+      <h1>Trash</h1>
+      ${trashList.length ? '' : yo`<p>No items in trash</p>`}
+      <ul class="trash-list">
+        ${trashList.map(archiveInfo => yo`
+          <li class="trash-item">
+            <a href=${archiveInfo.key}>${niceName(archiveInfo)}</a>
+            <button class="restore" onclick=${e => onToggleSaved(e, archiveInfo)}>
+              Restore
+            </button>
+          </li>`
+        )}
+      </ul>
     </div>
   `
 }
