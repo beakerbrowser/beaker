@@ -20,6 +20,7 @@ export function setup () {
     if (typeof userHandler === 'function') {
       // use a fake event so the user cant set returnValue on us
       var fakeEvent = new Event('beforeunload', {bubbles: false, cancelable: true})
+      fakeEvent.returnValue = false
 
       // call the user-specified handler
       var res = userHandler(fakeEvent)
