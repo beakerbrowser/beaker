@@ -57,6 +57,7 @@ window.addEventListener('new-file', onNewFile)
 window.addEventListener('new-folder', onNewFolder)
 window.addEventListener('open-file', onOpenFile)
 window.addEventListener('save-file', onSaveFile)
+window.addEventListener('close-file', onCloseFile)
 window.addEventListener('import-files', onImportFiles)
 window.addEventListener('open-settings', onOpenSettings)
 window.addEventListener('editor-created', onEditorCreated)
@@ -334,7 +335,7 @@ async function onEditorCreated () {
 async function onNewFile (e) {
   var path = `buffer~~${Date.now()}`
   var model = await generate(selectedArchive, path)
-  model.suggestedPath = e.detail && e.detail.path
+  model.suggestedPath = e && e.detail && e.detail.path
   window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${path}`)
 }
 
@@ -365,6 +366,11 @@ async function onOpenFile (e) {
 
 function onSaveFile (e) {
   save()
+}
+
+function onCloseFile (e) {
+  closeModel()
+  window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/`)
 }
 
 async function onImportFiles (e) {
@@ -423,13 +429,13 @@ function onDidChangeContent (model, archive, path) {
 function onKeyDown (e) {
   if ((e.metaKey || e.ctrlKey) && e.keyCode === 83/*'S'*/) {
     e.preventDefault()
-    save()
+    return save()
   }
   if (e.keyCode === 27/*Escape*/) {
     if (selectedArchive && selectedArchive.isEditingDetails) {
       // exit details editor
       selectedArchive.isEditingDetails = false
-      update()
+      return update()
     }
   }
 }
