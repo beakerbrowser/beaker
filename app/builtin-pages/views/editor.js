@@ -398,7 +398,10 @@ function onCloseFile (e) {
 
   // update view
   if (isCurrent) {
-    window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/`)
+    let path = ''
+    let modelUrls = Object.keys(models)
+    if (modelUrls[0]) path = models[modelUrls[0]].path
+    window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${path}`)
   } else {
     update()
   }
