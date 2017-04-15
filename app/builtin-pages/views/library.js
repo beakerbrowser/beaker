@@ -11,6 +11,7 @@ var archivesList
 var trashList = []
 var isTrashOpen = false
 var currentFilter = ''
+var currentSort = 'mtime'
 
 setup()
 async function setup () {
@@ -18,11 +19,6 @@ async function setup () {
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
   userProfileUrl = (await beaker.profiles.get(0)).url
-  archivesList.archives.sort((a, b) => {
-    if (a.url === userProfileUrl) return -1
-    if (b.url === userProfileUrl) return 1
-    return niceName(a).localeCompare(niceName(b))
-  })
   update()
 
   // load deleted archives
@@ -60,8 +56,8 @@ function update () {
               onchange=${e => currentFilter=e.target.value} />
             <label for="sort">Sort by</label>
             <select name="sort">
-              <option value="alphabetical" selected>Name</option>
-              <option value="updated">Recently updated</option>
+              <option value="alphabetical" selected=${currentSort === 'alphabetical'}>Name</option>
+              <option value="updated" selected=${currentSort === 'mtime'}>Recently updated</option>
             </select>
           </div>
           <div class="archives-list">
@@ -86,6 +82,7 @@ function update () {
 }
 
 function rArchivesList () {
+  // apply filter
   var filteredArchives = archivesList.archives.filter(archive => {
     if (!currentFilter) {
       return true
@@ -96,6 +93,14 @@ function rArchivesList () {
     return false
   })
 
+  // sort
+  filteredArchives.sort((a, b) => {
+    if (a.url === userProfileUrl) return -1
+    if (b.url === userProfileUrl) return 1
+
+    if (currentSort === 'alphabetical') return niceName(a).localeCompare(niceName(b))
+    if (currentSort === 'mtime') return b.mtime - a.mtime
+  })
   filteredArchives.map(rArchive)
 }
 
