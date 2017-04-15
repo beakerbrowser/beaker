@@ -45,13 +45,18 @@ function update () {
     <main>
     <div class="sidebar">
       <div class="sidebar-actions">
-        <input
-          class="filter"
-          label="query"
-          placeholder="Filter"
-          type="text"
-          value=${currentFilter || ''}
-          onkeyup=${onChangeFilter}/>
+        <label for="filter">
+          <input
+            class="filter"
+            name="filter"
+            placeholder="Filter"
+            type="text"
+            value=${currentFilter || ''}
+            onkeyup=${onChangeFilter}/>
+          <button onclick=${onClearFilter} class="clear-filter ${currentFilter ? 'visible' : ''}">
+            <i class="fa fa-close"></i>
+          </button>
+        </label>
 
         <div class="sort">
           <label for="sort">Sort by</label>
@@ -209,5 +214,11 @@ function onChangeFilter (e) {
 function onChangeSort (e) {
   var selectedIndex = e.target.selectedIndex
   currentSort = e.target[selectedIndex].value
+  update()
+}
+
+function onClearFilter () {
+  currentFilter = ''
+  document.querySelector('input[name="filter"]').value = ''
   update()
 }

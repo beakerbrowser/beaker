@@ -36,6 +36,30 @@ main {
   z-index: 2;
   background: #fff;
 
+  label[for="filter"] {
+    position: relative;
+  }
+
+  .clear-filter {
+    visibility: hidden;
+    position: absolute;
+    left: calc(100px - 1.5rem);
+    top: -27px;
+    left: 225px;
+    color: @color-text--muted;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 14px;
+
+    &:hover {
+      background: @background-menu;
+    }
+
+    &.visible {
+      visibility: visible;
+    }
+  }
+
   .filter {
     &:extend(input.roomy);
     font-size: 14px;
