@@ -45,7 +45,7 @@ export function setup () {
   })
   // hold my beer, we're even going to wrap addEventListener
   var orgAddEventListener = window.addEventListener
-  window.addEventListener = (event, handler) => {
+  window.addEventListener = (event, handler, ...args) => {
     if (event === 'beforeunload') {
       // capture handler
       if (typeof handler === 'function') {
@@ -53,7 +53,7 @@ export function setup () {
       }
     } else {
       // pass through
-      orgAddEventListener.call(window, event, handler)
+      orgAddEventListener.call(window, event, handler, ...args)
     }
   }
 }
