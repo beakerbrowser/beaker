@@ -133,12 +133,13 @@ function rArchivesList () {
 }
 
 function rArchiveListItem (archiveInfo) {
+  var cls = archiveInfo.key === selectedArchiveKey ? 'active' : ''
   var icon = ''
   if (archiveInfo.url === userProfileUrl) {
     icon = yo`<i class="fa fa-user-circle-o"></i>`
   }
   return yo`
-    <div class="archive" data-key=${archiveInfo.key} onclick=${onSelectArchive}>
+    <div class="archive ${cls}" data-key=${archiveInfo.key} onclick=${onSelectArchive}>
       <div class="title">
         ${niceName(archiveInfo)}
         ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}

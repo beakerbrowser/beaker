@@ -92,6 +92,21 @@ main {
   position: relative;
   cursor: pointer;
 
+  &.active {
+    background: @blue;
+    color: #fff;
+    margin-left: 0;
+    padding-left: 1rem;
+
+    .last-updated, .peers {
+      color: #fff;
+    }
+
+    .last-updated {
+      left: 1rem;
+    }
+  }
+
   .title {
     font-weight: 600;
     margin-bottom: 1.25rem;
