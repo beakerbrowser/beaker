@@ -116,6 +116,9 @@ async function loadFile () {
   // update the selection
   selectedPath = path ? path : false
 
+  // close any non-dirty models
+  closeHalfOpenModels()
+
   // deselection
   if (!path) {
     selectedModel = null
@@ -253,7 +256,7 @@ function update () {
   updateHeader(selectedArchive, selectedPath, activeUrl, isSaved, isOwner, isEditable)
 
   // render files list
-  updateFilesList(selectedArchive, selectedPath, dirtyFiles)
+  updateFilesList(selectedArchive, selectedPath, models, dirtyFiles)
 }
 
 function rBlankScreen () {
@@ -353,15 +356,23 @@ async function onNewFolder (e) {
 }
 
 async function onOpenFile (e) {
-  // stop editing arhive details
+  // stop editing archive details
   if (selectedArchive) {
     selectedArchive.isEditingDetails = false
   }
-
-  // update the location
   var archive = e.detail.archive
   var path = e.detail.path || ''
-  window.history.pushState(null, '', `beaker://editor/${archive.info.key}/${path}`)
+
+  // update the location
+  if (path !== selectedPath) {
+    window.history.pushState(null, '', `beaker://editor/${archive.info.key}/${path}`)
+  }
+
+  // fully open?
+  if (e.detail.fullyOpen && selectedModel) {
+    selectedModel.isFullyOpen = true
+    update()
+  }
 }
 
 function onSaveFile (e) {
@@ -369,8 +380,17 @@ function onSaveFile (e) {
 }
 
 function onCloseFile (e) {
-  closeModel()
-  window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/`)
+  var selectedModelURL = selectedModel ? selectedModel.uri.toString() : undefined
+  var url = (e.detail && e.detail.path)
+    ? (e.detail.archive.url + '/' + e.detail.path)
+    : selectedModelURL
+  var isCurrent = url === selectedModelURL
+  closeModel(url)  
+  if (isCurrent) {
+    window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/`)
+  } else {
+    update()
+  }
 }
 
 async function onImportFiles (e) {
@@ -416,6 +436,7 @@ function onDidChangeContent (model, archive, path) {
     const url = archive.url + '/' + path
     // update state and render
     var isDirty = model.savedAlternativeVersionId !== model.getAlternativeVersionId()
+    model.isFullyOpen = true
     if (isDirty && !dirtyFiles[url]) {
       dirtyFiles[url] = true
       update()
@@ -540,11 +561,11 @@ async function generate (archive, path, content='') {
   model.savedAlternativeVersionId = 1
   model.path = path
   model.isEditable = true
+  model.isFullyOpen = true
   model.lang = model.getModeId()
   model.onDidChangeContent(onDidChangeContent(model, archive, path))
   model.updateOptions(getModelOptions())
   dirtyFiles[url] = true
-  archive.fileTree.addNode({ type: 'file', name: path })
   return model
 }
 
@@ -558,6 +579,7 @@ async function load (archive, path) {
   model.savedAlternativeVersionId = 1
   model.path = path
   model.isEditable = true
+  model.isFullyOpen = false
   model.lang = model.getModeId()
   model.onDidChangeContent(onDidChangeContent(model, archive, path))
   model.updateOptions(getModelOptions())
@@ -596,11 +618,21 @@ async function save () {
   }
 }
 
-function closeModel () {
-  var url = selectedArchive.url + '/' + selectedModel.path
-  selectedModel.dispose()
-  selectedModel = null
+function closeModel (url) {
+  var url = url ? url : selectedArchive.url + '/' + selectedModel.path
+  var model = models[url]
+  if (!model) return
+
+  model.dispose()
+  model = null
   delete models[url]
   delete dirtyFiles[url]
-  // TODO remove from filetree
+}
+
+function closeHalfOpenModels () {
+  for (var url in models) {
+    if (!models[url].isFullyOpen) {
+      closeModel(url)
+    }
+  }
 }

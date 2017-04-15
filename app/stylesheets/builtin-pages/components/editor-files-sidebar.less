@@ -17,13 +17,17 @@
   background: @background-menu;
   border-right: 1px solid @border-menu;
 
-  .files-list {
+  .files-list.open-files {
+    padding-bottom: 10px;
+    border-bottom: 1px solid @border-dropdown-menu-bar
+  }
+  .files-list.folders {
     padding-bottom: 40px; // for the 'total size' segment
   }
 
   .files-header {
-    padding: 2px 8px;
-    color: @color-text--muted;
+    padding: 6px 8px 2px;
+    color: #000;
     font-weight: 600;
     font-size: 11px;
     text-transform: uppercase;
@@ -33,6 +37,28 @@
     padding-left: 20px;
     color: @color-text--muted;
     font-size: 12px;
+  }
+
+  .item.model {
+    padding-left: 5px;
+
+    &.selected {
+      background: @background-menu--hover;
+      color: @color-text;
+    }
+
+    a {
+      display: inline-block;
+      vertical-align: top;
+      width: 15px;
+
+      .fa-times {
+        color: @color-text !important;
+      }
+      .fa-circle {
+        color: @blue !important;
+      }
+    }
   }
 
   .footer {
