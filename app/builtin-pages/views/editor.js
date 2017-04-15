@@ -385,7 +385,18 @@ function onCloseFile (e) {
     ? (e.detail.archive.url + '/' + e.detail.path)
     : selectedModelURL
   var isCurrent = url === selectedModelURL
-  closeModel(url)  
+
+  // prompt before closing
+  if (url && dirtyFiles[url]) {
+    if (!confirm('Are you sure you want to close this file? Your changes will be lost if you don\'t save them.')) {
+      return false
+    }
+  }
+
+  // close
+  closeModel(url)
+
+  // update view
   if (isCurrent) {
     window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/`)
   } else {
