@@ -163,7 +163,15 @@ function rArchiveListItem (archiveInfo) {
 }
 
 function rArchive (archiveInfo) {
-  console.log(archiveInfo)
+  var toggleSaveIcon, toggleSaveText
+  if (archiveInfo.userSettings.isSaved) {
+    toggleSaveIcon = 'fa-trash'
+    toggleSaveText = 'Remove from library'
+  } else {
+    toggleSaveIcon = 'fa-floppy-o'
+    toggleSaveText = 'Save to library'
+  }
+
   return yo`
     <div class="archive">
       <div class="info">
@@ -187,9 +195,9 @@ function rArchive (archiveInfo) {
                   <i class="fa fa-external-link"></i>
                   View site
                 </a>
-                <div class="dropdown-item">
-                  <i class="fa fa-trash"></i>
-                  Remove from library
+                <div class="dropdown-item" onclick=${e => toggleSaved(e, archiveInfo)}>
+                  <i class="fa ${toggleSaveIcon}"></i>
+                  ${toggleSaveText}
                 </div>
               </div>
             </div>
