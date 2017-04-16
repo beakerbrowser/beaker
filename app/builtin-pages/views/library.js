@@ -181,6 +181,7 @@ function rArchive (archiveInfo) {
         </h1>
         <p class="description">${niceDesc(archiveInfo)}</p>
         <div class="actions">
+          <span class="readonly">${archiveInfo.isOwner ? '' : yo`<em>(Read-only)</em>`}</span>
           <a class="editor-link btn primary" href="beaker://editor/${archiveInfo.key}">
             <i class="fa fa-pencil"></i>
             Open in editor
@@ -223,6 +224,7 @@ function rArchive (archiveInfo) {
           <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
           <tr><td class="label">Files</td><td>300</td></tr>
           <tr><td class="label">URL</td><td>dat://${archiveInfo.key}</td></tr>
+          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
         </table>
       </div>
 
