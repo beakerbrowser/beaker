@@ -3,6 +3,7 @@ import {ArchivesList} from 'builtin-pages-lib'
 import {pluralize} from '../../lib/strings'
 import sparkline from '../../lib/fg/sparkline'
 import {niceDate} from '../../lib/time'
+import prettyBytes from 'pretty-bytes'
 
 // globals
 // =
@@ -178,19 +179,19 @@ function rArchive (archiveInfo) {
           onmouseleave=${e => onCanvasMouseLeave(e, archiveInfo)}
         ></canvas>
       </div>
-      <div class="info">
-        <div class="title"><a href=${'beaker://editor/' + archiveInfo.key} class="link">${icon} ${niceName(archiveInfo)}</a></div>
-        <div class="description">${niceDesc(archiveInfo)}</div>
-        <div class="status">${archiveInfo.peers} active peers</div>
+
+      <h2>Metadata</h2>
+      <div class="metadata">
+        <table>
+          <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.size)}</td></tr>
+          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
+          <tr><td class="label">Files</td><td>300</td></tr>
+          <tr><td class="label">URL</td><td>dat://${archiveInfo.key}</td></tr>
+        </table>
       </div>
-      <div class="actions">
-        <div class="btns">
-          <a class="btn" href=${archiveInfo.url}><i class="fa fa-external-link"></i> View site</a>
-          <a class="btn" onclick=${e => onToggleSaved(e, archiveInfo)}><i class="fa fa-trash"></i> Trash</a>
-        </div>
-        ${archiveInfo.isOwner
-          ? yo`<div class="ownership"><i class="fa fa-pencil"></i> Editable</div>`
-          : yo`<div class="ownership"><i class="fa fa-eye"></i> Read-only</div>`}
+
+      <h2>History</h2>
+      <div class="history">
       </div>
     </div>
   `
