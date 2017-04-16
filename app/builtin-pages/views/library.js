@@ -195,7 +195,7 @@ function rArchive (archiveInfo) {
                   <i class="fa fa-external-link"></i>
                   View site
                 </a>
-                <div class="dropdown-item" onclick=${e => toggleSaved(e, archiveInfo)}>
+                <div class="dropdown-item" onclick=${e => onToggleSaved(e, archiveInfo)}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
                 </div>
