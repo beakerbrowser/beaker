@@ -1,5 +1,5 @@
 import * as yo from 'yo-yo'
-import {ArchivesList} from 'builtin-pages-lib'
+import {Archive, ArchivesList} from 'builtin-pages-lib'
 import {pluralize} from '../../lib/strings'
 import sparkline from '../../lib/fg/sparkline'
 import {niceDate} from '../../lib/time'
@@ -16,6 +16,7 @@ var isTrashOpen = false
 var currentFilter = ''
 var currentSort = ''
 var selectedArchiveKey = ''
+var selectedArchive
 
 setup()
 async function setup () {
@@ -95,21 +96,19 @@ function update () {
 }
 
 function rView () {
-  if (isTrashOpen) {
-    return rTrash()
-  } else if (selectedArchiveKey) {
-    var selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
-    return rArchive(selectedArchive)
-  }
-
+  if (isTrashOpen) return rTrash()
+  else if (selectedArchiveKey) return rArchive(selectedArchive)
   return ''
 }
 
-function onSelectArchive () {
+async function onSelectArchive () {
   // close the trash if necessary
   if (isTrashOpen) isTrashOpen = false
 
   selectedArchiveKey = this.dataset.key
+  selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
+  selectedArchive.history = (await (new DatArchive(selectedArchiveKey)).listHistory())
+
   update()
 }
 
@@ -230,9 +229,25 @@ function rArchive (archiveInfo) {
 
       <h2>History</h2>
       <div class="history">
+        ${rArchiveHistory(archiveInfo)}
       </div>
     </div>
   `
+}
+
+function rArchiveHistory (archiveInfo) {
+  var rowEls = []
+  archiveInfo.history.forEach(item => {
+    rowEls.push(yo`
+      <li class="history-item">
+        <span class="date">${niceDate(item.mtime)}</span>
+        ${item.name}
+        ${item.path}
+      </li>
+    `)
+  })
+
+  return yo`<ul>${rowEls}</ul>`
 }
 
 function rTrash () {
