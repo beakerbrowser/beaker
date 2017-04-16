@@ -169,14 +169,95 @@ main {
 .view {
   margin-left: 250px;
   padding: 2rem;
+  max-width: 675px;
 
   h1 {
     font-size: 1.5rem;
+    font-weight: 500;
+  }
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 500;
+    border-bottom: 1px solid @border-menu;
     margin-bottom: 1rem;
   }
 }
 
+.view .archive {
+  position: relative;
+
+  .info, .peer-history, .metadata, .history {
+    margin-bottom: 3rem;
+  }
+
+  .title {
+    &:extend(.overflow-ellipsis);
+    max-width: 450px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    .readonly {
+      color: @color-text--light;
+    }
+  }
+
+  .actions {
+    position: absolute;
+    right: 0;
+    top: 1px;
+
+    .btn {
+      display: inline-block;
+    }
+
+    .dropdown-btn-list {
+      width: 175px;
+      font-size: 13px;
+    }
+  }
+
+  .peer-history {
+  }
+
+  .peers {
+  }
+
+  .metadata {
+
+    table {
+      border: 1px solid @border-menu;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    tr {
+      border-bottom: 1px solid @border-menu;
+
+      &:nth-of-type(2n) {
+        background: tint(@background-menu, 35%);
+      }
+    }
+
+    td {
+      padding: .4rem .5rem;
+      border-bottom: 1px solid @border-menu;
+
+      &.label {
+        border-right: 1px solid @border-menu;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
 .view .trash {
+
+  h1 {
+    margin-bottom: 1rem;
+  }
 
   .trash-list {
     list-style: disc;
@@ -196,45 +277,6 @@ main {
     &:hover {
       background: @border-menu;
     }
-  }
-}
-
-.archive {
-  border-bottom: 1px solid @border-menu;
-
-  .peer-history {
-    margin-right: 15px;
-    padding-right: 15px;
-    padding-top: 7px;
-    padding-bottom: 5px;
-    border-right: 1px solid #ddd;
-  }
-
-  .title {
-    font-size: 18px;
-  }
-
-  .peers {
-    display: flex;
-    align-items: center;
-    margin-left: 15px;
-    padding-left: 10px;
-    border-left: 1px solid #ddd;
-
-    .num {
-      font-size: 27px;
-      margin-right: 5px;
-    }
-
-    .label {
-      font-size: 11px;
-      color: #666;
-    }
-  }
-
-  .ownership {
-    margin: 5px 0;
-    color: @color-text--muted;
   }
 }
 

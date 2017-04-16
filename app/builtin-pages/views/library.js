@@ -4,6 +4,7 @@ import {pluralize} from '../../lib/strings'
 import sparkline from '../../lib/fg/sparkline'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
+import toggleable, {closeAllToggleables} from '../com/toggleable'
 
 // globals
 // =
@@ -162,14 +163,41 @@ function rArchiveListItem (archiveInfo) {
 }
 
 function rArchive (archiveInfo) {
+  console.log(archiveInfo)
   return yo`
     <div class="archive">
       <div class="info">
         <h1 class="title" title=${archiveInfo.title}>
           <a href="dat://${archiveInfo.key}">${archiveInfo.title}</a>
+          ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
         </h1>
         <p class="description">${niceDesc(archiveInfo)}</p>
+        <div class="actions">
+          <a class="editor-link btn primary" href="beaker://editor/${archiveInfo.key}">
+            <i class="fa fa-pencil"></i>
+            Open in editor
+          </a>
+          ${toggleable(yo`
+            <div class="dropdown-btn-container toggleable-container">
+              <button class="btn toggleable">
+                <i class="fa fa-caret-down"></i>
+              </button>
+              <div class="dropdown-btn-list">
+                <a class="dropdown-item" href="dat://${archiveInfo.key}">
+                  <i class="fa fa-external-link"></i>
+                  View site
+                </a>
+                <div class="dropdown-item">
+                  <i class="fa fa-trash"></i>
+                  Remove from library
+                </div>
+              </div>
+            </div>
+          `)}
+        </div>
       </div>
+
+      <h2>Network activity</h2>
       <div class="peer-history">
         <canvas
           id="history-${archiveInfo.key}"
