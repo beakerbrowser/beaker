@@ -286,7 +286,7 @@ function niceName (archiveInfo) {
 }
 
 function niceDesc (archiveInfo) {
-  return (archiveInfo.description || '').trim() || yo`No description`
+  return (archiveInfo.description || '').trim() || yo`<em>No description</em>`
 }
 
 function onChangeFilter (e) {
