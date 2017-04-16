@@ -69,10 +69,17 @@ main {
   }
 
   .sort {
-    padding: .15rem 0 .15rem 1rem;
+    padding: .2rem 0 .15rem 1rem;
     font-size: 12px;
     background: @background-menu;
     border-top: 1px solid @border-menu;
+
+    select {
+      position: absolute;
+      top: 33px;
+      right: .5em;
+      background: none;
+    }
   }
 
   .filter, .sort {
@@ -82,7 +89,7 @@ main {
 }
 
 .sidebar .archives-list {
-  margin-top: 55px; // height of .sidebar-actions
+  margin-top: 58px; // height of .sidebar-actions
   margin-bottom: 38px; // height of .trash-controls
 }
 
