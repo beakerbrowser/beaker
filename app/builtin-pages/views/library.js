@@ -109,6 +109,9 @@ async function onSelectArchive () {
   selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
   selectedArchive.history = (await (new DatArchive(selectedArchiveKey)).listHistory())
 
+  // sort history in descending order
+  selectedArchive.history.sort((a, b) => b.mtime - a.mtime)
+
   update()
 }
 
