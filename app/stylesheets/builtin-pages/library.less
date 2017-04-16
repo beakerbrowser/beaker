@@ -97,21 +97,37 @@ main {
   padding: .5rem 0;
   margin-left: 1rem;
   position: relative;
-  cursor: pointer;
   border-bottom: 1px solid @border-menu;
+  transition: background: .15s ease;
+
+  &.active,
+  &:hover {
+    margin-left: 0;
+    padding-left: 1rem;
+
+    .last-updated {
+      left: 1rem;
+    }
+  }
+
+  &:hover {
+    background: @background-menu;
+
+    .editor-link {
+      opacity: 1;
+    }
+  }
 
   &.active {
     background: @blue;
     color: #fff;
-    margin-left: 0;
-    padding-left: 1rem;
 
     .last-updated, .peers, .title .readonly {
       color: #fff;
     }
 
-    .last-updated {
-      left: 1rem;
+    .editor-link {
+      opacity: 0;
     }
   }
 
@@ -126,7 +142,25 @@ main {
 
   .title, .description {
     &:extend(.overflow-ellipsis);
-    max-width: 200px;
+    max-width: 195px;
+  }
+
+  .editor-link {
+    opacity: 0;
+    position: absolute;
+    right: .5rem;
+    top: .5rem;
+    font-size: 11px;
+    color: @color-text--muted;
+    padding: 2px 5px;
+    border-radius: 2px;
+    background: shade(@background-menu, 10%);
+    transition: background .15s ease;
+    text-transform: uppercase;
+
+    &:hover {
+      background: shade(@background-menu, 15%);
+    }
   }
 
   .last-updated, .peers {
