@@ -279,6 +279,7 @@ async function onToggleSaved (e, archiveInfo) {
     await beaker.archives.add(archiveInfo.key)
     archiveInfo.userSettings.isSaved = true
   }
+  update()
 }
 
 function onToggleTrash () {
