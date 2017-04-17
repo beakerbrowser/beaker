@@ -7,6 +7,7 @@ import mime from 'mime'
 export function render (url) {
   // lookup the mimetype
   var mimetype = mime.lookup(url)
+  url += '?cache-buster=' + Date.now()
   if (mimetype.startsWith('image/')) {
     return yo`
       <div class="fileview uneditable active">

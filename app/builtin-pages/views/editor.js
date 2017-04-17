@@ -85,11 +85,15 @@ async function setup () {
     await selectedArchive.setup()
     await selectedArchive.fileTree.setup()
     clearTimeout(to)
-    selectedArchive.addEventListener('changed', onArchiveChanged)
     document.title = `${selectedArchive.niceName} - Editor`
     configureEditor()
 
-    // render selected file
+    // wire events
+    selectedArchive.addEventListener('changed', onArchiveChanged)
+    var fileEvents = selectedArchive.createFileActivityStream()
+    fileEvents.addEventListener('changed', onFileChanged)
+
+    // load selected file
     viewIsLoading = false
     await loadFile()
   } catch (err) {
@@ -445,9 +449,17 @@ function onDragDrop (files) {
   // }
 }
 
-function onDidChangeContent (model, archive, path) {
+function setDidChangeEvent (model) {
+  model.didChangeEvt = model.onDidChangeContent(onDidChangeContent(model))
+}
+
+function clearDidChangeEvent (model) {
+  model.didChangeEvt.dispose()
+}
+
+function onDidChangeContent (model) {
   return e => {
-    const url = archive.url + '/' + path
+    const url = selectedArchive.url + '/' + model.path
     // update state and render
     var isDirty = model.savedAlternativeVersionId !== model.getAlternativeVersionId()
     model.isFullyOpen = true
@@ -456,7 +468,7 @@ function onDidChangeContent (model, archive, path) {
       update()
     } else if (!isDirty && dirtyFiles[url]) {
       delete dirtyFiles[url]
-      update()      
+      update()
     }
   }
 }
@@ -485,6 +497,30 @@ async function onArchiveChanged (e) {
   // reload the file listing
   await selectedArchive.fileTree.setup()
   update()
+}
+
+async function onFileChanged (e) {
+  // a file we have loaded?
+  var path = e.path
+  var url = selectedArchive.url + path
+  var model = models[url]
+  if (model) {
+    // maybe reload content
+    if (model.isEditable) {
+      // did change?
+      const newValue = await selectedArchive.readFile(path, 'utf8')
+      if (newValue === model.getValue()) {
+        return // no
+      }
+
+      clearDidChangeEvent(model) // temporarily disable change event
+      model.setValue(newValue) // update value
+      setDidChangeEvent(model) // re-enable change event
+    } else {
+      // re-render view
+      update()
+    }
+  }
 }
 
 function onSaveOptions (values) {
@@ -577,7 +613,7 @@ async function generate (archive, path, content='') {
   model.isEditable = true
   model.isFullyOpen = true
   model.lang = model.getModeId()
-  model.onDidChangeContent(onDidChangeContent(model, archive, path))
+  setDidChangeEvent(model)
   model.updateOptions(getModelOptions())
   return model
 }
@@ -594,7 +630,7 @@ async function load (archive, path) {
   model.isEditable = true
   model.isFullyOpen = false
   model.lang = model.getModeId()
-  model.onDidChangeContent(onDidChangeContent(model, archive, path))
+  setDidChangeEvent(model)
   model.updateOptions(getModelOptions())
 }
 
