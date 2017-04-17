@@ -79,7 +79,10 @@ export default {
     // do a direct update
     var key = toKey(url)
     var archive = await datLibrary.getOrLoadArchive(key)
+    var archiveInfo = await archivesDb.getMeta(key)
     var {title, description} = manifestInfo
+    title = typeof title !== 'undefined' ? title : archiveInfo.title
+    description = typeof description !== 'undefined' ? description : archiveInfo.description
     await pda.updateManifest(archive, {title, description})
     datLibrary.pullLatestArchiveMeta(archive)
   },
