@@ -409,10 +409,104 @@ test('archive.mkdir gives an error for malformed names', async t => {
 })
 
 test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
-  // write to the subdir
+  // write a too-big file
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.writeFile('/denythis.txt', 'x'.repeat(1024 * 12), 'utf8').then(done, done)
+  }, createdDatURL)
+  t.deepEqual(res.value.name, 'QuotaExceededError')
+})
+
+test('archive.copy', async t => {
+  // file 1
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.copy('/hello.txt', '/hello2.txt').then(done, done)
+  }, createdDatURL)
+  t.falsy(res.value)
+  await t.deepEqual(
+    (await readFile(createdDatURL, '/hello.txt')).value,
+    (await readFile(createdDatURL, '/hello2.txt')).value
+  )
+
+  // file 2
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.copy('/subdir/hello.txt', '/subdir/hello2.txt').then(done, done)
+  }, createdDatURL)
+  t.falsy(res.value)
+  await t.deepEqual(
+    (await readFile(createdDatURL, '/subdir/hello.txt')).value,
+    (await readFile(createdDatURL, '/subdir/hello2.txt')).value
+  )
+
+  // subdir
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.copy('/subdir', '/subdir2').then(done, done)
+  }, createdDatURL)
+  t.falsy(res.value)
+  await t.deepEqual(
+    (await readFile(createdDatURL, '/subdir/hello.txt')).value,
+    (await readFile(createdDatURL, '/subdir2/hello.txt')).value
+  )
+  await t.deepEqual(
+    (await readFile(createdDatURL, '/subdir/hello2.txt')).value,
+    (await readFile(createdDatURL, '/subdir2/hello2.txt')).value
+  )
+})
+
+test('archive.rename', async t => {
+  // file 1
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.rename('/hello2.txt', '/hello-two.txt').then(done, done)
+  }, createdDatURL)
+  t.falsy(res.value)
+  await t.deepEqual(
+    (await readFile(createdDatURL, '/hello.txt')).value,
+    (await readFile(createdDatURL, '/hello-two.txt')).value
+  )
+
+  // file 2
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.rename('/subdir2/hello2.txt', '/subdir2/hello-two.txt').then(done, done)
+  }, createdDatURL)
+  t.falsy(res.value)
+  await t.deepEqual(
+    (await readFile(createdDatURL, '/subdir2/hello.txt')).value,
+    (await readFile(createdDatURL, '/subdir2/hello-two.txt')).value
+  )
+
+  // subdir
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.rename('/subdir2', '/subdir-two').then(done, done)
+  }, createdDatURL)
+  t.falsy(res.value)
+  await t.deepEqual(
+    (await readFile(createdDatURL, '/subdir/hello.txt')).value,
+    (await readFile(createdDatURL, '/subdir-two/hello.txt')).value
+  )
+  await t.deepEqual(
+    (await readFile(createdDatURL, '/subdir/hello-two.txt')).value,
+    (await readFile(createdDatURL, '/subdir-two/hello-two.txt')).value
+  )
+})
+
+test('archive.copy doesnt allow writes that exceed the quota', async t => {
+  // write an acceptable (but bug) file
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 6), 'utf8').then(done, done)
+  }, createdDatURL)
+  t.falsy(res.value)
+
+  // try to copy the file
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.writeFile('/bigfile.txt', '/bigfile2.txt').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
@@ -877,8 +971,7 @@ test('archive.createNetworkActivityStream', async t => {
   }, testStaticDat2URL)
 
   var res = await app.client.execute(() => { return window.res })
-  console.log(res.value)
-  // t.deepEqual(res.value.gotPeer, true)
+  // t.deepEqual(res.value.gotPeer, true) this is not consistent enough to test
   t.ok(res.value.metadata.down > 0)
   t.ok(res.value.content.down > 0)
   t.deepEqual(res.value.metadata.all, true)

@@ -10,6 +10,8 @@ export default {
   readFile: 'promise',
   writeFile: 'promise',
   unlink: 'promise',
+  copy: 'promise',
+  rename: 'promise',
   download: 'promise',
 
   readdir: 'promise',
