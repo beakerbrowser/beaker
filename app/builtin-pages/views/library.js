@@ -110,7 +110,7 @@ async function onSelectArchive () {
   selectedArchive.history = (await (new DatArchive(selectedArchiveKey)).history())
 
   // sort history in descending order
-  selectedArchive.history.sort((a, b) => b.value.mtime - a.value.mtime)
+  selectedArchive.history.reverse()
 
   update()
 }
@@ -242,12 +242,14 @@ function rArchive (archiveInfo) {
 function rArchiveHistory (archiveInfo) {
   var rowEls = []
   archiveInfo.history.forEach(item => {
+    var date = item.value ? niceDate(item.value.mtime) : ''
+    var size = item.value ? `(${prettyBytes(item.value.size)})` : ''
     rowEls.push(yo`
       <li class="history-item">
-        <span class="date">${niceDate(item.value.mtime)}</span>
+        <span class="date">${date}</span>
         ${item.type}
         ${item.name}
-        (${prettyBytes(item.value.size)})
+        ${size}
       </li>
     `)
   })
