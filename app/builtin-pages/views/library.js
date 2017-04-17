@@ -155,7 +155,7 @@ function rArchiveListItem (archiveInfo) {
         ${niceName(archiveInfo)}
         ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
       </div>
-      <a class="editor-link" href="beaker://editor/${archiveInfo.key}">Edit</a>
+      <a class="editor-link" onclick=${e => e.stopPropagation()} href="beaker://editor/${archiveInfo.key}">Edit</a>
       <span class="last-updated">Updated ${niceDate(archiveInfo.mtime)}</span>
       <span class="peers">
         <i class="fa fa-share-alt"></i>
