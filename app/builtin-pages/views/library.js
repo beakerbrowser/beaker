@@ -242,7 +242,6 @@ function rArchive (archiveInfo) {
 function rArchiveHistory (archiveInfo) {
   var rowEls = []
   archiveInfo.history.forEach(item => {
-    console.log(item)
     rowEls.push(yo`
       <li class="history-item">
         <span class="date">${niceDate(item.value.mtime)}</span>
