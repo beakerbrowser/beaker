@@ -11,14 +11,14 @@ var expandedFolders = {}
 // exported api
 // =
 
-export function update (archive, selectedPath, dirtyFiles, isOwner) {
-  yo.update(document.querySelector('.files-sidebar'), rFilesList(archive, selectedPath, dirtyFiles, isOwner))
+export function update (archive, selectedPath, models, dirtyFiles) {
+  yo.update(document.querySelector('.files-sidebar'), rFilesList(archive, selectedPath, models, dirtyFiles))
 }
 
 // renderers
 // =
 
-function rFilesList (archive, selectedPath, dirtyFiles) {
+function rFilesList (archive, selectedPath, models, dirtyFiles) {
   if (!archive || !archive.fileTree.rootNode) {
     return yo`<nav class="files-sidebar"></nav>`
   }
@@ -27,9 +27,13 @@ function rFilesList (archive, selectedPath, dirtyFiles) {
   const cls = isOwner ? 'editable' : 'readonly'
   return yo`
     <nav class="files-sidebar ${cls}">
-      <div class="files-header">Files</div>
-      <div class="files-list">
-        ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
+      <div class="files-header">Open Files</div>
+      <div class="files-list open-files">
+        ${rModels(archive, models, dirtyFiles, selectedPath)}
+      </div>
+      <div class="files-header">Folders</div>
+      <div class="files-list folders">
+        ${rChildren(archive, archive.fileTree.rootNode.children, 0, selectedPath)}
         ${isOwner ? yo`<div class="item action" onclick=${onNewFile}>+ New file</div>` : ''}
       </div>
       <div class="footer">
@@ -40,21 +44,49 @@ function rFilesList (archive, selectedPath, dirtyFiles) {
   `
 }
 
-function redraw (archive, dirtyFiles, selectedPath) {
+function redraw (archive, selectedPath) {
   const isOwner = archive.info.isOwner
-  yo.update(document.querySelector('.files-list'), yo`
-    <div class="files-list">
-      ${rChildren(archive, archive.fileTree.rootNode.children, 0, dirtyFiles, selectedPath)}
+  yo.update(document.querySelector('.folders'), yo`
+    <div class="files-list folders">
+      ${rChildren(archive, archive.fileTree.rootNode.children, 0, selectedPath)}
       ${isOwner ? yo`<div class="item action" onclick=${onNewFile}>+ New file</div>` : ''}
     </div>
   `)
 }
 
-function rChildren (archive, children, depth, dirtyFiles, selectedPath) {
+function rModels (archive, models, dirtyFiles, selectedPath) {
+  return Object.keys(models)
+    .map(url => {
+      var model = models[url]
+      if (!model.isFullyOpen) {
+        return ''
+      }
+      var path = normalizePath(url.slice(archive.url.length))
+      var name = path.split('/').pop()
+      if (name.startsWith('buffer~~')) name = 'untitled'
+      var cls = path === selectedPath ? 'selected' : ''
+      const xIcon = dirtyFiles[url]
+        ? yo`<i class="dirty fa fa-circle"></i>`
+        : yo`<i class="dirty fa fa-times"></i>`
+      return yo`
+        <div
+          class="item model ${cls}"
+          data-url=${url}
+          data-path=${path}
+          title=${name}
+          onclick=${e => onClickFile(e, archive, path)}>
+          <a onclick=${e => onCloseFile(e, archive, path)}>${xIcon}</a>
+          ${name}
+        </div>
+      `
+    })
+}
+
+function rChildren (archive, children, depth, selectedPath) {
   return Object.keys(children)
     .map(key => children[key])
     .sort(treeSorter)
-    .map(node => rNode(archive, node, depth, dirtyFiles, selectedPath))
+    .map(node => rNode(archive, node, depth, selectedPath))
 }
 
 function treeSorter (a, b) {
@@ -70,17 +102,17 @@ function treeSorter (a, b) {
   return normalizePath(a.entry.name).localeCompare(normalizePath(b.entry.name))
 }
 
-function rNode (archive, node, depth, dirtyFiles, selectedPath) {
+function rNode (archive, node, depth, selectedPath) {
   if (node.entry.type === 'directory') {
-    return rDirectory(archive, node, depth, dirtyFiles, selectedPath)
+    return rDirectory(archive, node, depth, selectedPath)
   }
   if (node.entry.type === 'file') {
-    return rFile(archive, node, depth, dirtyFiles, selectedPath)
+    return rFile(archive, node, depth, selectedPath)
   }
   return ''
 }
 
-function rDirectory (archive, node, depth, dirtyFiles, selectedPath) {
+function rDirectory (archive, node, depth, selectedPath) {
   let icon = 'right'
   let children = ''
   const directoryPadding = 10 + (depth * 10)
@@ -90,7 +122,7 @@ function rDirectory (archive, node, depth, dirtyFiles, selectedPath) {
   if (expandedFolders[node.entry.name]) {
     children = yo`
       <div class="subtree">
-        ${rChildren(archive, node.children, depth + 1, dirtyFiles, selectedPath)}
+        ${rChildren(archive, node.children, depth + 1, selectedPath)}
       </div>`
     icon = 'down'
   }
@@ -102,7 +134,7 @@ function rDirectory (archive, node, depth, dirtyFiles, selectedPath) {
         data-url=${getUrl(archive, node)}
         data-path=${normalizePath(node.entry.name)}
         title=${node.niceName}
-        onclick=${e => onClickDirectory(e, archive, node, dirtyFiles, selectedPath)}
+        onclick=${e => onClickDirectory(e, archive, node, selectedPath)}
         oncontextmenu=${onContextMenu}
         contextmenu="directory"
         style=${'padding-left: ' + directoryPadding + 'px'}>
@@ -114,9 +146,8 @@ function rDirectory (archive, node, depth, dirtyFiles, selectedPath) {
   `
 }
 
-function rFile (archive, node, depth, dirtyFiles, selectedPath) {
+function rFile (archive, node, depth, selectedPath) {
   const cls = isSelected(archive, node, selectedPath) ? 'selected' : ''
-  const isChanged = dirtyFiles[getUrl(archive, node)] ? yo`<i class="dirty fa fa-circle"></i>` : ''
   const padding = depth === 0 ? 20 : 25 + (depth * 5);
 
   return yo`
@@ -126,10 +157,11 @@ function rFile (archive, node, depth, dirtyFiles, selectedPath) {
       data-path=${normalizePath(node.entry.name)}
       title=${node.niceName}
       onclick=${e => onClickFile(e, archive, node)}
+      ondblclick=${e => onDblClickFile(e, archive, node)}
       oncontextmenu=${onContextMenu}
       contextmenu="file"
       style=${'padding-left: ' + padding + 'px'}>
-      ${node.niceName}${isChanged}
+      ${node.niceName}
     </div>
   `
 }
@@ -137,12 +169,12 @@ function rFile (archive, node, depth, dirtyFiles, selectedPath) {
 // event handlers
 // =
 
-function onClickDirectory (e, archive, node, dirtyFiles, selectedPath) {
+function onClickDirectory (e, archive, node, selectedPath) {
   var path = normalizePath(node.entry.name)
 
   // toggle expanded
   expandedFolders[node.entry.name] = !expandedFolders[node.entry.name]
-  redraw(archive, dirtyFiles, selectedPath)
+  redraw(archive, selectedPath)
 
   // dispatch an app event
   var evt = new Event('open-folder')
@@ -151,11 +183,30 @@ function onClickDirectory (e, archive, node, dirtyFiles, selectedPath) {
 }
 
 function onClickFile (e, archive, node) {
-  var path = normalizePath(node.entry.name)
+  var path = typeof node === 'string' ? node : normalizePath(node.entry.name)
 
   // dispatch an app event
   var evt = new Event('open-file')
-  evt.detail = { archive, path, node }
+  evt.detail = { archive, path, fullyOpen: false }
+  window.dispatchEvent(evt)
+}
+
+function onDblClickFile (e, archive, node) {
+  var path = typeof node === 'string' ? node : normalizePath(node.entry.name)
+
+  // dispatch an app event
+  var evt = new Event('open-file')
+  evt.detail = { archive, path, fullyOpen: true }
+  window.dispatchEvent(evt)
+}
+
+function onCloseFile (e, archive, node) {
+  e.stopPropagation()
+  var path = typeof node === 'string' ? node : normalizePath(node.entry.name)
+
+  // dispatch an app event
+  var evt = new Event('close-file')
+  evt.detail = { archive, path }
   window.dispatchEvent(evt)
 }
 

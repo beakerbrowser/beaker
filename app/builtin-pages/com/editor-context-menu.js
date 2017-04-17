@@ -18,6 +18,7 @@ export default function setup () {
         <menuitem label="Delete file" onclick=${onClickDelete}></menuitem>
         <menuitem label="View file" onclick=${onClickView}></menuitem>
         <menuitem label="Copy URL" onclick=${onCopyURL}></menuitem>
+        <menuitem label="Copy path" onclick=${onCopyRelativePath}></menuitem>
       </menu>
       <menu type="context" id="directory">
         <menuitem label="New file" onclick=${onClickNewFile}></menuitem>
@@ -27,6 +28,7 @@ export default function setup () {
         <menuitem label="Rename" onclick=${onClickRename}></menuitem>
         <menuitem label="Delete folder" onclick=${onClickDelete}></menuitem>
         <menuitem label="Copy URL" onclick=${onCopyURL}></menuitem>
+        <menuitem label="Copy path" onclick=${onCopyRelativePath}></menuitem>
       </menu>
     </div>
   `)
@@ -53,6 +55,12 @@ function onCopyURL () {
   if (currentContext) {
     writeToClipboard(currentContext.url)
   }
+}
+
+function onCopyRelativePath () {
+  if (currentContext) {
+    writeToClipboard('/' + currentContext.path)
+  }  
 }
 
 function onClickNewFile () {

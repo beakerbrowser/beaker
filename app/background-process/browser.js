@@ -1,4 +1,4 @@
-import {app, dialog, autoUpdater, BrowserWindow} from 'electron'
+import {app, dialog, autoUpdater, BrowserWindow, ipcMain} from 'electron'
 import os from 'os'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
@@ -85,6 +85,12 @@ export function setup () {
 
     closeModal
   }, internalOnly)
+
+  // HACK to fix beaker#395
+  ipcMain.on('onbeforeunload-abort', e => {
+    e.sender.stop()
+    e.returnValue = true
+  })
 }
 
 export function getDefaultProtocolSettings () {

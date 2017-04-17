@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, ipcMain } from 'electron'
+import { app, BrowserWindow, screen, ipcMain, webContents } from 'electron'
 import { register as registerShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import jetpack from 'fs-jetpack'
 import path from 'path'
@@ -82,6 +82,19 @@ export function getActiveWindow () {
   return win
 }
 
+export async function getFocusedWebContents (win) {
+  win = win || getActiveWindow()
+  var id = await win.webContents.executeJavaScript(`
+    (function () {
+      var webview = document.querySelector('webview:not(.hidden)')
+      return webview && webview.getWebContents().id
+    })()
+  `)
+  if (id) {
+    return webContents.fromId(id)
+  }
+}
+
 // internal methods
 // =
 
@@ -141,6 +154,20 @@ function ensureVisibleOnSomeDisplay (windowState) {
   return windowState
 }
 
+async function editorAction (event) {
+  var wc = await getFocusedWebContents()
+  if (wc && wc.getURL().startsWith('beaker://editor/')) {
+    // send the desired event
+    wc.executeJavaScript(`
+      window.dispatchEvent(new Event('${event}'))
+    `)
+    return true
+  }
+}
+
+// shortcut event handlers
+// =
+
 function onClose (win) {
   return e => {
     numActiveWindows--
@@ -160,9 +187,6 @@ function onClose (win) {
     }
   }
 }
-
-// shortcut event handlers
-// =
 
 function onTabSelect (win, tabIndex) {
   return () => win.webContents.send('command', 'set-tab', tabIndex)
@@ -185,7 +209,14 @@ function onGoForward (win) {
 }
 
 function onNewWindow (win) {
-  return () => createShellWindow()
+  return async () => {
+    // HACK let editor override this shortcut -prf
+    if (await editorAction('new-file')) {
+      return // do nothing, will be handled by editor
+    }
+
+    createShellWindow()
+  }
 }
 
 function onQuit (win) {
@@ -197,7 +228,13 @@ function onNewTab (win) {
 }
 
 function onCloseTab (win) {
-  return () => win.webContents.send('command', 'file:close-tab')
+  return async () => {
+    // HACK let editor override this shortcut -prf
+    if (await editorAction('close-file')) {
+      return // do nothing, will be handled by editor
+    }
+    win.webContents.send('command', 'file:close-tab')
+  }
 }
 
 // window event handlers
