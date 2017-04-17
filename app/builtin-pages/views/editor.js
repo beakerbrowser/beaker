@@ -636,7 +636,9 @@ function closeModel (url) {
   var model = models[url]
   if (!model) return
 
-  model.dispose()
+  if (model.dispose) {
+    model.dispose()
+  }
   model = null
   delete models[url]
   delete dirtyFiles[url]
