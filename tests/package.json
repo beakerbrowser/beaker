@@ -7,7 +7,7 @@
   "dependencies": {
     "ava": "^0.16.0",
     "bkr": "~2.0.0",
-    "dat-node": "git://github.com/datproject/dat-node#cd878159d5a08ecde352834ddc164ee5e9ea0434",
+    "dat-node": "^2.0.0",
     "random-access-memory": "^2.4.0",
     "spectron": "^3.6.0"
   },
