@@ -511,6 +511,15 @@ test('archive.copy doesnt allow writes that exceed the quota', async t => {
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
 
+test('archive.rename protects the manifest', async t => {
+  // write to the manifest
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.rename('dat.json', 'dat2.json').then(done, done)
+  }, createdDatURL)
+  t.deepEqual(res.value.name, 'ProtectedFileNotWritableError')
+})
+
 test('archive.writeFile and archive.mkdir fail to write to unowned archives', async t => {
   // writeFile
   var res = await app.client.executeAsync((url, done) => {

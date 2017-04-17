@@ -150,6 +150,7 @@ export default {
       if (checkin('renaming file')) return
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
+      await assertUnprotectedFilePath(filepath, this.sender)
       await assertUnprotectedFilePath(dstPath, this.sender)
       return pda.rename(archive, filepath, dstPath)
     })
