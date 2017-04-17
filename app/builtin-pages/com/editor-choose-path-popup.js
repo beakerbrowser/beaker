@@ -18,6 +18,10 @@ export function render (archive) {
   } else if (actionType === 'import-files') {
     title = 'Destination'
     actLabel = 'Import'
+  } else if (actionType === 'rename') {
+    title = 'Rename to'
+    actLabel = 'Rename'
+    placeholder = 'New name'
   }
 
   return yo`
@@ -39,7 +43,7 @@ export function render (archive) {
   `
 }
 
-export function create (archive, {path, action} = {}) {
+export function create (archive, {path, action, value} = {}) {
   return new Promise((resolve, reject) => {
     // reset state
     selectedPath = path || ''
@@ -50,7 +54,7 @@ export function create (archive, {path, action} = {}) {
 
     // select input
     var input = document.querySelector('#choose-path-popup input')
-    input.value = ''
+    input.value = value || ''
     input.focus()
     input.select()
 
@@ -158,5 +162,6 @@ function normalizePath (path) {
 }
 
 function isSelected (node) {
+  console.log(node, selectedPath)
   return (selectedPath === normalizePath(node.entry.name))
 }

@@ -437,7 +437,32 @@ function onDragDrop (files) {
 }
 
 async function onRename (e) {
-  // TODO
+  // get parent folder and basename
+  var dirname = ''
+  var basename = ''
+  if (e.detail.path.indexOf('/') === -1) {
+    dirname = ''
+    basename = e.detail.path
+  } else {
+    let pathParts = (e.detail.path || '').split('/')
+    basename = pathParts.pop()
+    dirname = pathParts.join('/') || ''
+  }
+
+  // get targetpath
+  let targetPath = await choosePathPopup.create(selectedArchive, {
+    action: 'rename',
+    path: dirname,
+    value: basename
+  })
+
+  // do rename
+  await selectedArchive.rename(e.detail.path, targetPath)
+
+  // open if the current file
+  if (selectedPath === e.detail.path) {
+    window.history.pushState(null, '', `beaker://editor/${selectedArchive.info.key}/${targetPath}`)
+  }
 }
 
 async function onDelete (e) {
