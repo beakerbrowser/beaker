@@ -16,9 +16,10 @@ export default function setup () {
       <menu type="context" id="file">
         <menuitem label="Rename" onclick=${onClickRename}></menuitem>
         <menuitem label="Delete file" onclick=${onClickDelete}></menuitem>
-        <menuitem label="View file" onclick=${onClickView}></menuitem>
+        <hr />
         <menuitem label="Copy URL" onclick=${onCopyURL}></menuitem>
         <menuitem label="Copy path" onclick=${onCopyRelativePath}></menuitem>
+        <menuitem label="View file" onclick=${onClickView}></menuitem>
       </menu>
       <menu type="context" id="directory">
         <menuitem label="New file" onclick=${onClickNewFile}></menuitem>

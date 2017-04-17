@@ -444,7 +444,7 @@ async function doImport (paths, dst) {
     // send to backend
     return DatArchive.importFromFilesystem({src, dst, inplaceImport: false})
   }))
-  toast.create(`Imported ${files.length} ${files.length > 1 ? 'files' : 'file'}.`)
+  toast.create(`Imported ${paths.length} ${paths.length > 1 ? 'files' : 'file'}.`)
 }
 
 function setDidChangeEvent (model) {
