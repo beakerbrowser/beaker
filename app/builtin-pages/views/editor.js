@@ -49,7 +49,7 @@ window.history.replaceState = _wr('replaceState')
 readEditorOptions()
 setupContextMenu()
 setup()
-// dragDrop(document.body, onDragDrop) TODO
+dragDrop(document.body, onDragDrop)
 window.addEventListener('pushstate', loadFile)
 window.addEventListener('popstate', loadFile)
 window.addEventListener('render', update)
@@ -413,20 +413,25 @@ function onCloseFile (e) {
 
 async function onImportFiles (e) {
   // pick files
-  var files = await beakerBrowser.showOpenDialog({
+  var paths = await beakerBrowser.showOpenDialog({
     title: 'Choose a folder or files to import',
     buttonLabel: 'Import',
     properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory', 'showHiddenFiles']
   })
-  if (!files) {
+  if (!paths) {
     return
   }
+  return doImport(paths, e && e.detail ? e.detail.dst : false)
+}
 
+function onDragDrop (files) {
+  var paths = files.map(f => f.path)
+  return doImport(paths)
+}
+
+async function doImport (paths, dst) {
   // pick the destination
-  var dst
-  if (e.detail) {
-    dst = e.detail.dst
-  } else {
+  if (!dst) {
     let path = await choosePathPopup.create(selectedArchive, {
       action: 'import-files',
       path: ''
@@ -435,18 +440,11 @@ async function onImportFiles (e) {
   }
 
   // import
-  await Promise.all(files.map(src => {
+  await Promise.all(paths.map(src => {
     // send to backend
     return DatArchive.importFromFilesystem({src, dst, inplaceImport: false})
   }))
   toast.create(`Imported ${files.length} ${files.length > 1 ? 'files' : 'file'}.`)
-}
-
-function onDragDrop (files) {
-  // TODO
-  // if (selectedArchive) {
-  //   addFiles(selectedArchive, files)
-  // }
 }
 
 function setDidChangeEvent (model) {
