@@ -143,7 +143,7 @@ header {
   padding: 0;
 }
 
-.bookmark {
+.bookmarks-container .bookmark {
   padding: 2px;
   height: auto;
   white-space: nowrap;
@@ -169,11 +169,10 @@ header {
 
   .link {
     flex: 1;
-    color: fadeout(#333, 15%);
+    color: @color-text;
 
     &:hover {
       text-decoration: none;
-      color: fadeout(#333, 15%);
 
       .title {
         text-decoration: underline;
@@ -194,56 +193,6 @@ header {
   }
 }
 
-.archives-list {
-  .archive {
-    display: flex;
-    padding: 5px 0px;
-    color: fadeout(#333, 15%);
-    cursor: pointer;
-
-    * {
-      cursor: pointer;
-    }
-
-    i.fa-folder-o {
-      padding: 1px 10px 0 3px;
-      font-size: 15px;
-    }
-
-    .title {
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .edit {
-      display: none;
-      padding-right: 5px;
-      
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-
-    &:hover {
-      background: @background-highlight;
-
-      .title {
-        text-decoration: underline;
-      }
-
-      .peers {
-        display: none;
-      }
-
-      .edit {
-        display: block;
-      }
-    }
-  }
-}
-
 .shelf {
   position: fixed;
   right: 0;
@@ -259,8 +208,8 @@ header {
     text-align: center;
     line-height: 50px;
     font-size: 20px;
-  
     cursor: pointer;
+
     i {
       cursor: pointer;
     }
@@ -276,41 +225,121 @@ header {
     width: 300px;
     background: #fff;
     border-left: 1px solid @border-button;
-    padding: 10px 10px 10px 15px;
   }
 
-  h3 {
-    font-size: 14px;
-    color: #555;
+  .section-header {
+    position: relative;
+    background: @background-menu;
+    border-top: 1px solid @border-menu;
+    border-bottom: 1px solid @border-menu;
+    padding: 3px .5rem;
 
-    a:hover {
+    h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .action {
+      background: #fff;
+      position: absolute;
+      right: .5em;
+      top: 1.25px;
+      border-radius: 2px;
+      border: 1px solid @border-menu;
+      padding: 1px 5px;
+      color: @color-text--muted;
+      font-size: 11.5px;
+      cursor: pointer;
+
+      i {
+        font-size: 10px;
+      }
+
+      &:hover {
+        background: @background-menu;
+      }
+    }
+  }
+
+  .list-item {
+    &:extend(.flex);
+    height: 30px;
+    padding: 5px .5rem;
+
+    &:hover {
+      background: @background-menu;
+    }
+
+    .title {
+      max-width: 175px;
+      &:extend(.overflow-ellipsis);
+      cursor: pointer;
+
+      * {
+        cursor: pointer;
+      }
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    &.manage {
+      font-weight: 600;
       text-decoration: underline;
-    }
+      margin-bottom: .5rem;
 
-    .link {
-      float: right;
-      font-weight: normal;
-      font-size: 13px;
-    }
-  }
-
-  .bookmarks,
-  .archives-list {
-    margin-bottom: 10px;
-
-    & > .link {
-      display: block;
-      padding: 4px 0;
+      &:hover {
+        background: none;
+      }
     }
   }
 
-  .bookmark__link {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+  .bookmark-link {
+    &:extend(.overflow-hidden);
 
     .favicon {
-      margin-right: 8px;
+      margin-right: @margin-icon;
     }
+  }
+}
+
+.shelf .archives-list {
+
+  .archive {
+    cursor: pointer;
+
+    &:hover {
+
+      .edit {
+        display: inline-block;
+      }
+    }
+
+    .edit {
+      display: none;
+      color: @color-text--muted;
+      margin-left: auto;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .peers {
+      color: @color-text--light;
+      margin-left: @margin-icon;
+    }
+  }
+}
+
+.shelf .bookmarks-list {
+  list-style: none;
+
+  .favicon {
+    margin-right: @margin-icon;
+    height: 16px;
+    margin-top: 2px;
   }
 }
