@@ -110,36 +110,48 @@ function renderShelf () {
 
   return yo`
     <div class="shelf open" onmouseout=${onMouseOutShelf}>
-      <h3>
-        <a href="beaker://library">Your library</a>
-        <a class="link" onclick=${createSite}>+ New site</a>
-      </h3>
+      <div class="section-header">
+        <h3><a href="beaker://library">Your library</a></h3>
+        <a class="action" onclick=${createSite}>
+          <i class="fa fa-plus"></i>
+          New site
+        </a>
+      </div>
       <div class="archives-list">
         ${archivesList.archives.map(archiveInfo => {
-          const icon = archiveInfo.url === userProfile.url ? 'fa fa-user-circle-o' : 'fa fa-folder-o'
           return yo`
-            <a class="archive" href=${archiveInfo.url}>
-              <i class=${icon}></i>
-              <span class="title">${niceName(archiveInfo)}</span>
-              <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
-              <span class="edit"><a href=${`beaker://editor/${archiveInfo.key}`}><i class="fa fa-pencil"></i> edit</a></span>
+            <a class="archive list-item" href=${archiveInfo.url}>
+             <span class="title">${niceName(archiveInfo)}</span>
+             <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
+             <span class="edit">
+              <a href=${`beaker://editor/${archiveInfo.key}`}>Edit</a>
+              <i class="fa fa-pencil"></i>
+             </span>
             </a>
           `
         })}
-        <a class="link" href="beaker://library">Manage your library</a>
+        <a class="list-item manage" href="beaker://library">
+          Manage your library
+        </a>
       </div>
-      <h3><a href="beaker://bookmarks">Your bookmarks</a></h3>
-      <div class="bookmarks">
+
+      <div class="section-header">
+        <h3><a href="beaker://bookmarks">Your bookmarks</a></h3>
+      </div>
+
+      <div class="bookmarks-list">
         ${bookmarks.map(row => {
           return yo`
-            <li class="bookmark ll-row">
-              <a href=${row.url} class="link bookmark__link" title=${row.title} />
-                <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.url} />
-                <span class="title bookmark__title">${row.title}</span>
+            <li class="bookmark list-item">
+              <img class="favicon" src=${'beaker-favicon:' + row.url} />
+              <a href=${row.url} class="bookmark-link" title=${row.title} />
+                <span class="title">${row.title}</span>
               </a>
             </li>`
         })}
-        <a class="link" href="beaker://bookmarks">Manage your bookmarks</a>
+        <a class="list-item manage" href="beaker://bookmarks">
+          Manage your bookmarks
+        </a>
       </div>
     </div>
   `
@@ -249,7 +261,7 @@ async function shareFiles () {
   })
 
   // import into the user profile
-  await Promise.all(paths.map(srcPath => 
+  await Promise.all(paths.map(srcPath =>
     DatArchive.importFromFilesystem({srcPath, dst: archive.url, inplaceImport: true})
   ))
 
@@ -303,7 +315,7 @@ async function unpinBookmark (e, {url}) {
 async function loadBookmarks () {
   bookmarks = (await beaker.bookmarks.list()) || []
   pinnedBookmarks = (await beaker.bookmarks.list({pinned: true})) || []
-  
+
   // load dominant colors of each pinned bookmark
   await Promise.all(pinnedBookmarks.map(attachDominantColor))
 }
