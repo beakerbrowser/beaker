@@ -107,10 +107,10 @@ async function onSelectArchive () {
 
   selectedArchiveKey = this.dataset.key
   selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
-  selectedArchive.history = (await (new DatArchive(selectedArchiveKey)).listHistory())
+  selectedArchive.history = (await (new DatArchive(selectedArchiveKey)).history())
 
   // sort history in descending order
-  selectedArchive.history.sort((a, b) => b.mtime - a.mtime)
+  selectedArchive.history.sort((a, b) => b.value.mtime - a.value.mtime)
 
   update()
 }
@@ -242,11 +242,13 @@ function rArchive (archiveInfo) {
 function rArchiveHistory (archiveInfo) {
   var rowEls = []
   archiveInfo.history.forEach(item => {
+    console.log(item)
     rowEls.push(yo`
       <li class="history-item">
-        <span class="date">${niceDate(item.mtime)}</span>
+        <span class="date">${niceDate(item.value.mtime)}</span>
+        ${item.type}
         ${item.name}
-        ${item.path}
+        (${prettyBytes(item.value.size)})
       </li>
     `)
   })
