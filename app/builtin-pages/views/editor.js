@@ -59,6 +59,8 @@ window.addEventListener('open-file', onOpenFile)
 window.addEventListener('save-file', onSaveFile)
 window.addEventListener('close-file', onCloseFile)
 window.addEventListener('import-files', onImportFiles)
+window.addEventListener('rename', onRename)
+window.addEventListener('delete', onDelete)
 window.addEventListener('open-settings', onOpenSettings)
 window.addEventListener('editor-created', onEditorCreated)
 window.addEventListener('keydown', onKeyDown)
@@ -412,6 +414,11 @@ function onCloseFile (e) {
 }
 
 async function onImportFiles (e) {
+  var dst = null
+  if (e && e.detail && e.detail.path) {
+    dst = selectedArchive.url + '/' + e.detail.path
+  }
+
   // pick files
   var paths = await beakerBrowser.showOpenDialog({
     title: 'Choose a folder or files to import',
@@ -421,7 +428,7 @@ async function onImportFiles (e) {
   if (!paths) {
     return
   }
-  return doImport(paths, e && e.detail ? e.detail.dst : false)
+  return doImport(paths, dst)
 }
 
 function onDragDrop (files) {
@@ -429,30 +436,21 @@ function onDragDrop (files) {
   return doImport(paths)
 }
 
-async function doImport (paths, dst) {
-  // pick the destination
-  if (!dst) {
-    let path = await choosePathPopup.create(selectedArchive, {
-      action: 'import-files',
-      path: ''
-    })
-    dst = selectedArchive.url + '/' + path
+async function onRename (e) {
+  // TODO
+}
+
+async function onDelete (e) {
+  // delete files
+  var path = e.detail.path
+  var st = await selectedArchive.stat(path)
+  if (st.isDirectory()) {
+    if (!confirm('Delete folder?')) return
+    await selectedArchive.rmdir(path, {recursive: true})
+  } else {
+    if (!confirm('Delete file?')) return
+    await selectedArchive.unlink(path)
   }
-
-  // import
-  await Promise.all(paths.map(src => {
-    // send to backend
-    return DatArchive.importFromFilesystem({src, dst, inplaceImport: false})
-  }))
-  toast.create(`Imported ${paths.length} ${paths.length > 1 ? 'files' : 'file'}.`)
-}
-
-function setDidChangeEvent (model) {
-  model.didChangeEvt = model.onDidChangeContent(onDidChangeContent(model))
-}
-
-function clearDidChangeEvent (model) {
-  model.didChangeEvt.dispose()
 }
 
 function onDidChangeContent (model) {
@@ -684,4 +682,30 @@ function closeHalfOpenModels () {
       closeModel(url)
     }
   }
+}
+
+async function doImport (paths, dst) {
+  // pick the destination
+  if (!dst) {
+    let path = await choosePathPopup.create(selectedArchive, {
+      action: 'import-files',
+      path: ''
+    })
+    dst = selectedArchive.url + '/' + path
+  }
+
+  // import
+  await Promise.all(paths.map(src => {
+    // send to backend
+    return DatArchive.importFromFilesystem({src, dst, inplaceImport: false})
+  }))
+  toast.create(`Imported ${paths.length} ${paths.length > 1 ? 'files' : 'file'}.`)
+}
+
+function setDidChangeEvent (model) {
+  model.didChangeEvt = model.onDidChangeContent(onDidChangeContent(model))
+}
+
+function clearDidChangeEvent (model) {
+  model.didChangeEvt.dispose()
 }

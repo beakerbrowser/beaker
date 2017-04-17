@@ -38,14 +38,6 @@ export default function setup () {
 // event handlers
 // =
 
-function onClickRename () {
-  alert('Not yet implemented')
-}
-
-function onClickDelete () {
-  alert('Not yet implemented')
-}
-
 function onClickView () {
   if (currentContext) {
     window.open(currentContext.url)
@@ -64,23 +56,30 @@ function onCopyRelativePath () {
   }  
 }
 
-function onClickNewFile () {
+function emitEvent (type) {
+  if (!currentContext) return
   // emit an event for the toplevel editor to handle
-  var evt = new Event('new-file')
+  var evt = new Event(type)
   evt.detail = {path: currentContext.path}
-  window.dispatchEvent(evt)
+  window.dispatchEvent(evt)  
+}
+
+function onClickNewFile () {
+  emitEvent('new-file')
 }
 
 function onClickNewFolder () {
-  // emit an event for the toplevel editor to handle
-  var evt = new Event('new-folder')
-  evt.detail = {path: currentContext.path}
-  window.dispatchEvent(evt)
+  emitEvent('new-folder')
 }
 
 async function onClickImport () {
-  // emit an event for the toplevel editor to handle
-  var evt = new Event('import-files')
-  evt.detail = {dst: currentContext.url}
-  window.dispatchEvent(evt)
+  emitEvent('import-files')
+}
+
+function onClickRename () {
+  emitEvent('rename')
+}
+
+function onClickDelete () {
+  emitEvent('delete')
 }
