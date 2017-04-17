@@ -6,6 +6,7 @@
 @import "../components/link.less";
 @import "../components/buttons.less";
 @import "../com/spinner.less";
+@import "../components/inputs.less";
 
 * {
   box-sizing: border-box;
@@ -13,75 +14,322 @@
 
 main {
   &:extend(.system-font);
-  font-size: 13px;
+  font-size: 14px;
 }
 
-h2 {
-  cursor: pointer;
-  * {
-    cursor: pointer;
+.sidebar {
+  &:extend(.vertical-scroll);
+  &:extend(.hide-scrollbar all);
+  position: fixed;
+  left: 0;
+  width: 250px;
+  height: 100%;
+  border-right: 1px solid @border-menu;
+  background: #fff;
+}
+
+.sidebar-actions {
+  position: fixed;
+  width: 250px;
+  border-bottom: 1px solid @border-menu;
+  border-right: 1px solid @border-menu;
+  z-index: 2;
+  background: #fff;
+
+  label[for="filter"] {
+    position: relative;
+  }
+
+  .clear-filter {
+    visibility: hidden;
+    position: absolute;
+    left: calc(100px - 1.5rem);
+    top: -27px;
+    left: 225px;
+    color: @color-text--muted;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 14px;
+
+    &:hover {
+      background: @background-menu;
+    }
+
+    &.visible {
+      visibility: visible;
+    }
+  }
+
+  .filter {
+    &:extend(input.roomy);
+    font-size: 14px;
+    border-radius: 0;
+    border: none;
+    padding-left: 1rem;
+  }
+
+  .sort {
+    padding: .2rem 0 .15rem 1rem;
+    font-size: 12px;
+    background: @background-menu;
+    border-top: 1px solid @border-menu;
+
+    select {
+      position: absolute;
+      top: 33px;
+      right: .5em;
+      background: none;
+    }
+  }
+
+  .filter, .sort {
+    display: block;
+    width: 100%;
   }
 }
 
-.archives-list {
-  margin: 2em;
+.sidebar .archives-list {
+  margin-top: 58px; // height of .sidebar-actions
+  margin-bottom: 38px; // height of .trash-controls
 }
 
-.archive {
-  display: flex;
-  padding: 20px 0;
-  border-top: 1px solid #eee;
-  color: #555;
+.sidebar .archive {
+  padding: .5rem 0;
+  margin-left: 1rem;
+  position: relative;
+  border-bottom: 1px solid @border-menu;
+  cursor: default;
 
-  &:last-child {
-    border-bottom: 1px solid #eee;
+  &.active,
+  &:hover {
+    margin-left: 0;
+    padding-left: 1rem;
+
+    .last-updated {
+      left: 1rem;
+    }
   }
 
-  .info {
-    flex: 1;
+  &:hover {
+    background: @background-menu;
+
+    .editor-link {
+      opacity: 1;
+    }
   }
 
-  .desc {
-    margin: 3px 0;
-  }
+  &.active {
+    background: @blue;
+    color: #fff;
 
-  .peers {
-    flex: 0 0 50px;
-  }
+    .last-updated, .peers, .title .readonly {
+      color: #fff;
+    }
 
-  .peer-history {
-    margin-right: 15px;
-    padding-right: 15px;
-    padding-top: 7px;
-    padding-bottom: 5px;
-    border-right: 1px solid #ddd;
+    .editor-link {
+      opacity: 0;
+    }
   }
 
   .title {
-    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+
+    .readonly {
+      color: @color-text--muted;
+    }
+  }
+
+  .title, .description {
+    &:extend(.overflow-ellipsis);
+    max-width: 195px;
+  }
+
+  .editor-link {
+    opacity: 0;
+    position: absolute;
+    right: .5rem;
+    top: .5rem;
+    font-size: 11px;
+    color: @color-text--muted;
+    padding: 2px 5px;
+    border-radius: 2px;
+    background: shade(@background-menu, 10%);
+    transition: background .15s ease;
+    text-transform: uppercase;
+
+    &:hover {
+      background: shade(@background-menu, 15%);
+    }
+  }
+
+  .last-updated, .peers {
+    position: absolute;
+    bottom: .5rem;
+    font-size: 12px;
+    color: @color-text--muted;
+  }
+
+  .last-updated {
+    left: 0;
   }
 
   .peers {
-    display: flex;
-    align-items: center;
-    margin-left: 15px;
-    padding-left: 10px;
-    border-left: 1px solid #ddd;
+    right: .5rem;
+  }
+}
 
-    .num {
-      font-size: 27px;
-      margin-right: 5px;
-    }
+.sidebar .trash-controls {
+  position: fixed;
+  width: 250px;
+  bottom: 0;
+  background: @background-menu;
+  border-top: 1px solid @border-menu;
+  border-right: 1px solid @border-menu;
+  padding: .5rem .5rem .5rem 1rem;
+  text-align: right;
 
-    .label {
-      font-size: 11px;
-      color: #666;
+  button {
+    font-size: 13px;
+    border-radius: 2px;
+
+    &:hover {
+      background: @border-menu;
     }
   }
 
-  .ownership {
-    margin: 5px 0;
-    color: @color-text--muted;
+  i {
+    margin-left: @margin-icon;
+  }
+}
+
+.view {
+  margin-left: 250px;
+  padding: 2rem;
+  max-width: 675px;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 500;
+    border-bottom: 1px solid @border-menu;
+    margin-bottom: 1rem;
+  }
+}
+
+.view .archive {
+  position: relative;
+
+  .info, .peer-history, .metadata, .history {
+    margin-bottom: 3rem;
+  }
+
+  .title {
+    &:extend(.overflow-ellipsis);
+    max-width: 450px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    .readonly {
+      color: @color-text--light;
+    }
+  }
+
+  .actions {
+    position: absolute;
+    right: 0;
+    top: 1px;
+
+    .btn {
+      display: inline-block;
+    }
+
+    .dropdown-btn-list {
+      width: 175px;
+      font-size: 13px;
+    }
+
+    .readonly {
+      position: absolute;
+      right: 0;
+      top: 31px;
+      font-size: 13px;
+    }
+  }
+
+  .metadata {
+
+    table {
+      border: 1px solid @border-menu;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    tr {
+      border-bottom: 1px solid @border-menu;
+
+      &:nth-of-type(2n) {
+        background: tint(@background-menu, 35%);
+      }
+    }
+
+    td {
+      padding: .4rem .5rem;
+      border-bottom: 1px solid @border-menu;
+
+      &.label {
+        border-right: 1px solid @border-menu;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .history {
+    font-size: 13px;
+
+    .history-item {
+      margin-bottom: .5rem;
+
+      .date {
+        display: inline-block;
+        min-width: 80px;
+        color: @color-text--muted;
+        margin-right: 1rem;
+      }
+    }
+  }
+}
+
+.view .trash {
+
+  h1 {
+    margin-bottom: 1rem;
+  }
+
+  .trash-list {
+    list-style: disc;
+    margin-left: 1rem;
+  }
+
+  .trash-item {
+    margin-bottom: .5rem;
+  }
+
+  button.restore {
+    padding: 3px 5px;
+    border-radius: 2px;
+    background: @background-menu;
+    border: 1px solid @border-menu;
+
+    &:hover {
+      background: @border-menu;
+    }
   }
 }
 
