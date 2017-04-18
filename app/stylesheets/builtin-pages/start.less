@@ -297,10 +297,7 @@ header {
 
   .section-header {
     position: relative;
-    background: @background-menu;
-    border-top: 1px solid @border-menu;
-    border-bottom: 1px solid @border-menu;
-    padding: 3px .5rem;
+    padding: 10px 0.7rem 3px;
 
     h3 {
       font-size: 12px;
@@ -311,8 +308,8 @@ header {
     .action {
       background: #fff;
       position: absolute;
-      right: .5em;
-      top: 1.25px;
+      right: 8px;
+      top: 8px;
       border-radius: 2px;
       border: 1px solid @border-menu;
       padding: 1px 5px;
@@ -330,17 +327,18 @@ header {
     }
   }
 
+  hr {
+    margin: 15px 0 0;
+  }
+
   .list-item {
     &:extend(.flex);
-    height: 30px;
-    padding: 5px .5rem;
-
-    &:hover {
-      background: @background-menu;
-    }
+    height: 32px;
+    padding: 5px 0.7rem;
 
     .title {
-      max-width: 175px;
+      display: block;
+      max-width: 250px;
       &:extend(.overflow-ellipsis);
       cursor: pointer;
 
@@ -352,23 +350,13 @@ header {
         text-decoration: underline;
       }
     }
-
-    &.manage {
-      font-weight: 600;
-      text-decoration: underline;
-      margin-bottom: .5rem;
-
-      &:hover {
-        background: none;
-      }
-    }
   }
 
   .bookmark-link {
     &:extend(.overflow-hidden);
 
     .favicon {
-      margin-right: @margin-icon;
+      margin-right: 8px;
     }
   }
 }
@@ -376,10 +364,7 @@ header {
 .shelf .archives-list {
 
   .archive {
-    cursor: pointer;
-
     &:hover {
-
       .edit {
         display: inline-block;
       }
@@ -388,7 +373,11 @@ header {
     .edit {
       display: none;
       color: @color-text--muted;
-      margin-left: auto;
+      margin-left: @margin-icon;
+
+      .fa {
+        cursor: pointer;
+      }
 
       &:hover {
         text-decoration: underline;
@@ -397,7 +386,7 @@ header {
 
     .peers {
       color: @color-text--light;
-      margin-left: @margin-icon;
+      margin-left: auto;
     }
   }
 }

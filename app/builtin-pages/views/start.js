@@ -125,20 +125,19 @@ function renderShelf () {
       <div class="archives-list">
         ${archivesList.archives.map(archiveInfo => {
           return yo`
-            <a class="archive list-item" href=${archiveInfo.url}>
-             <span class="title">${niceName(archiveInfo)}</span>
-             <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
+            <div class="archive list-item">
+             <a class="title" href=${archiveInfo.url}>${niceName(archiveInfo)}</a>
              <span class="edit">
-              <a href=${`beaker://editor/${archiveInfo.key}`}>Edit</a>
               <i class="fa fa-pencil"></i>
+              <a href=${`beaker://editor/${archiveInfo.key}`}>Edit</a>
              </span>
-            </a>
+             <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>             
+            </div>
           `
         })}
-        <a class="list-item manage" href="beaker://library">
-          Manage your library
-        </a>
       </div>
+
+      <hr />
 
       <div class="section-header">
         <h3><a href="beaker://bookmarks">Your bookmarks</a></h3>
@@ -154,9 +153,6 @@ function renderShelf () {
               </a>
             </li>`
         })}
-        <a class="list-item manage" href="beaker://bookmarks">
-          Manage your bookmarks
-        </a>
       </div>
     </div>
   `
@@ -286,7 +282,7 @@ async function createSite () {
 
 function onMouseOutShelf (e) {
   if (!findParent(e.relatedTarget, 'shelf')) {
-    isShelfOpen = false
+    // isShelfOpen = false
     update()
   }
 }

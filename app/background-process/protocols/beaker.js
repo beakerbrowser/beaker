@@ -67,7 +67,12 @@ async function beakerServer (req, res) {
       'Access-Control-Allow-Origin': '*'
     })
     if (typeof path === 'string') {
-      fs.createReadStream(path).pipe(res)
+      var rs = fs.createReadStream(path)
+      rs.pipe(res)
+      rs.on('error', err => {
+        res.writeHead(404)
+        res.end(' ') // need to put some content on the wire for some reason
+      })
     } else if (typeof path === 'function') {
       res.end(path())
     } else {
