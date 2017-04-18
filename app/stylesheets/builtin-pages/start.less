@@ -12,14 +12,82 @@
 
 html {
   overflow: auto;
+  height: 100vh;
+  background-image: url("beaker://start/background-image");
+  background-size: cover;
+  background-position: center;
 }
-html, body {
+body {
   height: auto;
 }
 
 main {
   width: 670px;
   margin: 0 auto;
+
+  // styles for if background image set
+  &.light,
+  &.dark {
+
+    .bookmarks-container {
+      padding: 5px 20px;
+      width: 710px;
+      border-radius: 3px;
+
+    }
+
+    .bookmark.ll-row {
+      border-radius: 2px;
+
+      &:hover {
+        background: fadeout(#fff, 75%);
+      }
+    }
+  }
+
+  // light theme
+  &.light {
+
+    .pinned-bookmark .title {
+      font-weight: bold;
+     }
+
+    .shelf.closed {
+      background: fadeout(#fff, 50%);
+    }
+
+    .bookmarks-container {
+      background: fadeout(#fff, 50%);
+    }
+  }
+
+  // dark theme
+  &.dark {
+
+    .bookmarks-container, .shelf.closed {
+      background: fadeout(#000, 40%);
+    }
+
+    .shelf.closed {
+      border: 1px solid fadeout(#fff, 80%);
+      color: #fff;
+      overflow:hidden;
+
+      &:hover {
+        background: fadeout(#000, 60%);
+      }
+    }
+
+    header,
+    .add-pin-toggle,
+    .pinned-bookmark .title,
+    .bookmark .link,
+    .bookmark.ll-row .url {
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+      font-weight: bold;
+    }
+  }
 }
 
 header {

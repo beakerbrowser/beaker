@@ -1,5 +1,7 @@
 import {app, dialog, autoUpdater, BrowserWindow, ipcMain} from 'electron'
 import os from 'os'
+import path from 'path'
+import fs from 'fs'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
@@ -76,6 +78,8 @@ export function setup () {
     getUserSetupStatus,
     setUserSetupStatus,
 
+    setStartPageBackgroundImage,
+
     getDefaultProtocolSettings,
     setAsDefaultProtocolClient,
     removeAsDefaultProtocolClient,
@@ -90,6 +94,20 @@ export function setup () {
   ipcMain.on('onbeforeunload-abort', e => {
     e.sender.stop()
     e.returnValue = true
+  })
+}
+
+export function setStartPageBackgroundImage (srcPath) {
+  var destPath = path.join(app.getPath('userData'), 'start-background-image')
+
+  return new Promise((resolve) => {
+    if (srcPath) {
+      fs.readFile(srcPath, (err, data) => {
+        fs.writeFile(destPath, data, () => resolve())
+      })
+    } else {
+      fs.writeFile(destPath, '', () => resolve())
+    }
   })
 }
 

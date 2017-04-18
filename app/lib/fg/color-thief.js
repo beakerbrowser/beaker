@@ -77,6 +77,9 @@ ColorThief.prototype.getColor = function(sourceImage, quality) {
     return dominantColor;
 };
 
+ColorThief.prototype.getPalette = function(sourceImage, quality) {
+  return this.getPalette(sourceImage, 5, quality);
+}
 
 /*
  * getPalette(sourceImage[, colorCount, quality])
