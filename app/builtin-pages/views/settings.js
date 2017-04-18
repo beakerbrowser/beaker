@@ -46,10 +46,13 @@ function render () {
       <h2 class="ll-heading">Auto-updater</h2>
       ${renderAutoUpdater()}
 
-      <h2 class="ll-heading">Protocol Settings</h2>
+      <h2 class="ll-heading">Protocol settings</h2>
       ${renderProtocolSettings()}
 
-      <h2 class="ll-heading">Beaker Information</h2>
+      <h2 class="ll-heading">Start page settings</h2>
+      ${renderStartPageSettings()}
+
+      <h2 class="ll-heading">Beaker information</h2>
       <ul class="settings-section">
         <li>Version: ${browserInfo.version}</li>
         <li>User data: ${browserInfo.paths.userData}</li>
@@ -146,6 +149,24 @@ function renderAutoUpdateCheckbox () {
   return yo`<label>
     <input type="checkbox" checked=${isAutoUpdateEnabled()} onclick=${onToggleAutoUpdate} /> Check for updates automatically
   </label>`
+}
+
+function renderStartPageSettings () {
+  return yo`
+    <div class="settings-section start-page">
+    <label for="start-background-image">
+      Upload a background image for beaker://start
+      <input name="start-background-image" type="file" accept="image/*"/>
+    </label>
+
+    <label for="start-theme">
+      Select a theme for beaker://start
+      <input type="radio" name="start-theme" value="light" label="Light background (default)"/> Light background (default)
+      <input type="radio" name="start-theme" value="dark" label="Dark background" />
+      Dark background
+    </label>
+    </div>
+  `
 }
 
 // event handlers
