@@ -29,6 +29,13 @@ main {
   &.light,
   &.dark {
 
+    .bookmarks-container {
+      padding: 5px 20px;
+      width: 710px;
+      border-radius: 3px;
+
+    }
+
     .bookmark.ll-row {
       border-radius: 2px;
 
@@ -38,8 +45,38 @@ main {
     }
   }
 
+  // light theme
+  &.light {
+
+    .pinned-bookmark .title {
+      font-weight: bold;
+     }
+
+    .shelf.closed {
+      background: fadeout(#fff, 50%);
+    }
+
+    .bookmarks-container {
+      background: fadeout(#fff, 50%);
+    }
+  }
+
   // dark theme
   &.dark {
+
+    .bookmarks-container, .shelf.closed {
+      background: fadeout(#000, 40%);
+    }
+
+    .shelf.closed {
+      border: 1px solid fadeout(#fff, 80%);
+      color: #fff;
+      overflow:hidden;
+
+      &:hover {
+        background: fadeout(#000, 60%);
+      }
+    }
 
     header,
     .add-pin-toggle,
