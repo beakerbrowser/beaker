@@ -237,17 +237,30 @@ function isAutoUpdateEnabled () {
 }
 
 function setStartPageTheme () {
+
+  function getBrightness (r, g, b) {
+    return = Math.sqrt(
+      .241 * Math.pow(r, 2) +
+      .691 * Math.pow(g, 2) +
+      .068 * Math.pow(b, 2))
+  }
+
   return new Promise(resolve => {
     var img = new Image()
     img.setAttribute('crossOrigin', 'anonymous')
     img.onload = e => {
-      var [r, g, b] = colorThief.getColor(img, 10)
-      var brightness = Math.sqrt(
-        .241 * Math.pow(r, 2) +
-        .691 * Math.pow(g, 2) +
-        .068 * Math.pow(b, 2))
-      var theme = brightness < 130 ? 'dark' : 'light'
+      var palette = colorThief.getPalette(img, 10)
+      var totalBrightness = 0
+
+      palette.forEach(color => {
+        totalBrightness += getBrightness(...color)
+      })
+
+      var brightness = totalBrightness / palette.length
+
+      var theme = brightness < 150 ? 'dark' : 'light'
       beakerBrowser.setSetting('start_page_background_image', theme)
+      settings.start_page_background_image = theme
       resolve()
     }
     img.onerror = resolve
