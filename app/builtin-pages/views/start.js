@@ -24,6 +24,7 @@ var userProfile
 var archivesStatus
 var bookmarks, pinnedBookmarks
 var archivesList
+var settings
 
 setup()
 async function setup () {
@@ -35,6 +36,7 @@ async function setup () {
   } catch (e) {
     userProfile.title = 'Your profile'
   }
+  settings = await beakerBrowser.getSettings()
   update()
 
   // subscribe to network changes
@@ -65,8 +67,10 @@ async function setup () {
 // =
 
 function update () {
+  var theme = settings.start_page_background_image
+
   yo.update(document.querySelector('main'), yo`
-    <main>
+    <main class="${theme}">
       <header>
         <div class="actions">
           <a onclick=${createSite}><i class="fa fa-pencil"></i> New site</a>

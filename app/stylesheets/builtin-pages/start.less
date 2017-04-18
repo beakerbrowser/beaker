@@ -24,6 +24,33 @@ body {
 main {
   width: 670px;
   margin: 0 auto;
+
+  // styles for if background image set
+  &.light,
+  &.dark {
+
+    .bookmark.ll-row {
+      border-radius: 2px;
+
+      &:hover {
+        background: fadeout(#fff, 75%);
+      }
+    }
+  }
+
+  // dark theme
+  &.dark {
+
+    header,
+    .add-pin-toggle,
+    .pinned-bookmark .title,
+    .bookmark .link,
+    .bookmark.ll-row .url {
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+      font-weight: bold;
+    }
+  }
 }
 
 header {
