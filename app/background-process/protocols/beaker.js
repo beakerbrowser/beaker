@@ -81,6 +81,12 @@ async function beakerServer (req, res) {
     let i = requestUrl.indexOf('#')
     if (i !== -1) requestUrl = requestUrl.slice(0, i)
   }
+  {
+    // strip off the query
+    let i = requestUrl.indexOf('?')
+    if (i !== -1) requestUrl = requestUrl.slice(0, i)
+  }
+
 
   // check the nonce
   // (only want this process to access the server)

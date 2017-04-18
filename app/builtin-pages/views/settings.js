@@ -169,7 +169,7 @@ function renderStartPageSettings () {
             <i class="fa fa-close"></i>
             Remove
           </button>
-          <img src="beaker://start/background-image" />
+          <img src=${'beaker://start/background-image?cache-buster=' + Date.now()} />
         </div>
         `
       : ''
@@ -214,7 +214,10 @@ async function onUpdateStartPageBackgroundImage () {
 
   // is the image light or dark?
   if (this.files) await setStartPageTheme()
-  else await beakerBrowser.setSetting('start_page_background_image', '')
+  else {
+    settings.start_page_background_image = ''
+    await beakerBrowser.setSetting('start_page_background_image', '')
+  }
   render()
 }
 
