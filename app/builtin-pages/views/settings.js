@@ -239,7 +239,7 @@ function isAutoUpdateEnabled () {
 function setStartPageTheme () {
 
   function getBrightness (r, g, b) {
-    return = Math.sqrt(
+    return Math.sqrt(
       .241 * Math.pow(r, 2) +
       .691 * Math.pow(g, 2) +
       .068 * Math.pow(b, 2))
