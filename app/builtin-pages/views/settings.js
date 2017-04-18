@@ -2,9 +2,13 @@
 This uses the beakerBrowser API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
 */
 
+import {create as createToast} from '../com/toast'
+import ColorThief from '../../lib/fg/color-thief'
+
 const yo = require('yo-yo')
 const co = require('co')
 const emitStream = require('emit-stream')
+const colorThief = new ColorThief()
 
 // globals
 // =
@@ -158,7 +162,17 @@ function renderStartPageSettings () {
       Upload a background image for beaker://start
       <input onchange=${onUpdateStartPageBackgroundImage} name="start-background-image" type="file" accept="image/*"/>
     </label>
-    <button onclick=${onUpdateStartPageBackgroundImage}>Remove background image</button>
+    ${settings.start_page_background_image
+      ? yo`
+        <div>
+          <button onclick=${onUpdateStartPageBackgroundImage}>
+            Remove background image
+          </button>
+          <img src="beaker://start/background-image" />
+        </div>
+        `
+      : ''
+    }
     </div>
   `
 }
@@ -190,15 +204,17 @@ function onUpdaterStateChanged (state) {
   render()
 }
 
-function onUpdateStartPageBackgroundImage () {
-  settings.start_page_background_image = ''
-  if (this.files) settings.start_page_background_image = this.files[0].path
-  render()
-
-  // is the image light or dark?
+async function onUpdateStartPageBackgroundImage () {
+  var srcPath = ''
+  if (this.files) srcPath = this.files[0].path
 
   // write the image to start_background_image
-  beakerBrowser.setStartPageBackgroundImage(settings.start_page_background_image)
+  await beakerBrowser.setStartPageBackgroundImage(srcPath)
+
+  // is the image light or dark?
+  if (this.files) await setStartPageTheme()
+  else await beakerBrowser.setSetting('start_page_background_image', '')
+  render()
 }
 
 function onUpdaterError (err) {
@@ -214,4 +230,23 @@ function onUpdaterError (err) {
 
 function isAutoUpdateEnabled () {
   return +settings.auto_update_enabled === 1
+}
+
+function setStartPageTheme () {
+  return new Promise(resolve => {
+    var img = new Image()
+    img.setAttribute('crossOrigin', 'anonymous')
+    img.onload = e => {
+      var [r, g, b] = colorThief.getColor(img, 10)
+      var brightness = Math.sqrt(
+        .241 * Math.pow(r, 2) +
+        .691 * Math.pow(g, 2) +
+        .068 * Math.pow(b, 2))
+      var theme = brightness < 130 ? 'dark' : 'light'
+      beakerBrowser.setSetting('start_page_background_image', theme)
+      resolve()
+    }
+    img.onerror = resolve
+    img.src = 'beaker://start/background-image'
+  })
 }

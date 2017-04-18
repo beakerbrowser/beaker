@@ -1,4 +1,4 @@
-import {protocol} from 'electron'
+import {app, protocol} from 'electron'
 import path from 'path'
 import url from 'url'
 import once from 'once'
@@ -179,6 +179,9 @@ async function beakerServer (req, res) {
       return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/setup.html'))
     }
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/start.html'))
+  }
+  if (requestUrl === 'beaker://start/background-image') {
+    return cb(200, 'OK', 'image/png', path.join(app.getPath('userData'), 'start-background-image'))
   }
   if (requestUrl === 'beaker://start/main.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/start.css'))
