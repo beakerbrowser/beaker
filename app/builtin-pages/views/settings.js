@@ -165,8 +165,9 @@ function renderStartPageSettings () {
     ${settings.start_page_background_image
       ? yo`
         <div>
-          <button onclick=${onUpdateStartPageBackgroundImage}>
-            Remove background image
+          <button class="btn" onclick=${onUpdateStartPageBackgroundImage}>
+            <i class="fa fa-close"></i>
+            Remove
           </button>
           <img src="beaker://start/background-image" />
         </div>
