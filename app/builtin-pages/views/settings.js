@@ -156,15 +156,9 @@ function renderStartPageSettings () {
     <div class="settings-section start-page">
     <label for="start-background-image">
       Upload a background image for beaker://start
-      <input name="start-background-image" type="file" accept="image/*"/>
+      <input onchange=${onUpdateStartPageBackgroundImage} name="start-background-image" type="file" accept="image/*"/>
     </label>
-
-    <label for="start-theme">
-      Select a theme for beaker://start
-      <input type="radio" name="start-theme" value="light" label="Light background (default)"/> Light background (default)
-      <input type="radio" name="start-theme" value="dark" label="Dark background" />
-      Dark background
-    </label>
+    <button onclick=${onUpdateStartPageBackgroundImage}>Remove background image</button>
     </div>
   `
 }
@@ -194,6 +188,17 @@ function onUpdaterStateChanged (state) {
   browserInfo.updater.state = state
   browserInfo.updater.error = false
   render()
+}
+
+function onUpdateStartPageBackgroundImage () {
+  settings.start_page_background_image = ''
+  if (this.files) settings.start_page_background_image = this.files[0].path
+  render()
+
+  // is the image light or dark?
+
+  // write the image to start_background_image
+  beakerBrowser.setStartPageBackgroundImage(settings.start_page_background_image)
 }
 
 function onUpdaterError (err) {
