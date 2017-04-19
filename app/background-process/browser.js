@@ -9,7 +9,6 @@ var debug = require('debug')('beaker')
 import manifest from '../lib/api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
 import {internalOnly} from '../lib/bg/rpc'
-import {isDaemonActive as isIPFSDaemonActive} from './networks/ipfs/ipfs'
 import {open as openUrl} from './open-url'
 import {closeModal} from './ui/modals'
 
@@ -68,8 +67,6 @@ export function setup () {
     getInfo,
     checkForUpdates,
     restartBrowser,
-
-    isIPFSDaemonActive,
 
     getSetting,
     getSettings,

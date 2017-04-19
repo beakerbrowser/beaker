@@ -10,7 +10,6 @@ const co = require('co')
 
 // bookmarks, cached in memory
 var bookmarks = []
-var isIPFSDaemonActive = beakerBrowser.isIPFSDaemonActive()
 
 // main
 // =

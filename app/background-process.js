@@ -26,7 +26,6 @@ import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 import * as datProtocol from './background-process/protocols/dat'
 import * as appProtocol from './background-process/protocols/app'
-import * as fsProtocol from './background-process/protocols/fs'
 
 import * as openURL from './background-process/open-url'
 
@@ -63,7 +62,6 @@ app.on('ready', function () {
   beakerFaviconProtocol.setup()
   datProtocol.setup()
   appProtocol.setup()
-  fsProtocol.setup()
 
   // configure chromium's permissions for the protocols
   protocol.registerServiceWorkerSchemes(['dat', 'app'])

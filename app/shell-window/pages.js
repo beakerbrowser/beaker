@@ -731,7 +731,6 @@ function onDidFailLoad (e) {
     return
 
   // also ignore non-errors
-  // - appears to happen if you go to an IPFS site that needs to do a redirect, then hit back btn
   if (e.errorCode == 0)
     return
 

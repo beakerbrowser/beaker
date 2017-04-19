@@ -344,12 +344,11 @@ function handleAutocompleteSearch (results) {
     isDatHashRegex.test(v) ||
     v.startsWith('localhost') ||
     v.includes('://') ||
-    v.startsWith('beaker:') ||
-    v.startsWith('fs:/')
+    v.startsWith('beaker:')
   ))
   var vWithProtocol = v
   var isGuessingTheScheme = false
-  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('fs:/'))) {
+  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:'))) {
     if (isDatHashRegex.test(v)) {
       vWithProtocol = 'dat://'+v
     } else if (v.startsWith('localhost')) {
