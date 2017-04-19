@@ -188,7 +188,7 @@ function render (id, page) {
     let numPeers = page.siteInfo ? page.siteInfo.peers : 0
     datBtns = [
       yo`
-        <button class="nav-peers-btn" onclick=${onClickPeers}>
+        <button class="nav-peers-btn">
           <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
         </button>`
     ]
@@ -536,15 +536,6 @@ function openDatView (e, view) {
 
 function onClickViewFiles (e) {
   openDatView(e, 'files')
-}
-
-function onClickPeers (e) {
-  var page = getEventPage(e)
-  if (e.metaKey || e.ctrlKey) { // popup
-    pages.setActive(pages.create('beaker://library'))
-  } else {
-    page.loadURL('beaker://library') // goto
-  }
 }
 
 function onClickLiveReload (e) {
