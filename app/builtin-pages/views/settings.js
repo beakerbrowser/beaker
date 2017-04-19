@@ -165,7 +165,7 @@ function renderStartPageSettings () {
     ${settings.start_page_background_image
       ? yo`
         <div>
-          <button class="btn" onclick=${onUpdateStartPageBackgroundImage}>
+          <button class="btn transparent" onclick=${onUpdateStartPageBackgroundImage}>
             <i class="fa fa-close"></i>
             Remove
           </button>
