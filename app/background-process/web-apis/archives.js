@@ -3,12 +3,18 @@ import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
-import {DAT_HASH_REGEX} from '../../lib/const'
+import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
 import {showModal} from '../ui/modals'
+import {timer} from '../../lib/time'
 import {PermissionsError, InvalidURLError} from 'beaker-error-constants'
 
 // exported api
 // =
+
+const to = (opts) =>
+  (opts && typeof opts.timeout !== 'undefined')
+    ? opts.timeout
+    : DEFAULT_DAT_API_TIMEOUT
 
 export default {
   async status() {
@@ -89,13 +95,15 @@ export default {
 
   async list(query={}) {
     assertTmpBeakerOnly(this.sender)
-    return datLibrary.queryArchives(query, {includeMeta: true})
+    return datLibrary.queryArchives(query)
   },
 
-  async get(url) {
+  async get(url, opts) {
     assertTmpBeakerOnly(this.sender)
-    var key = toKey(url)
-    return datLibrary.getArchiveInfo(key)
+    return timer(to(opts), async (checkin) => {
+      var key = toKey(url)
+      return datLibrary.getArchiveInfo(key)
+    })
   },
 
   createEventStream() {

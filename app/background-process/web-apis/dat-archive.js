@@ -28,8 +28,6 @@ import {
   InvalidPathError
 } from 'beaker-error-constants'
 
-const DEFAULT_TIMEOUT = 5e3
-
 // exported api
 // =
 

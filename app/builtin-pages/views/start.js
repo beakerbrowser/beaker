@@ -32,7 +32,7 @@ async function setup () {
   archivesStatus = await beaker.archives.status()
   userProfile = await beaker.profiles.get(0)
   try {
-    userProfile.title = (await beaker.archives.get(userProfile.url)).title
+    userProfile.title = (await beaker.archives.get(userProfile.url, {timeout: 500})).title
   } catch (e) {
     userProfile.title = 'Your profile'
   }
