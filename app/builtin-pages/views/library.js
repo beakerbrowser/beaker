@@ -178,7 +178,7 @@ function rArchive (archiveInfo) {
     <div class="archive">
       <div class="info">
         <h1 class="title" title=${archiveInfo.title}>
-          <a href="dat://${archiveInfo.key}">${archiveInfo.title}</a>
+          <a href="dat://${archiveInfo.key}">${niceName(archiveInfo)}</a>
           ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
         </h1>
         <p class="description">${niceDesc(archiveInfo)}</p>
