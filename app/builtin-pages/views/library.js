@@ -128,9 +128,6 @@ function rArchivesList () {
 
   // sort
   filteredArchives.sort((a, b) => {
-    if (!currentSort && a.url === userProfileUrl) return -1
-    if (!currentSort && b.url === userProfileUrl) return 1
-
     if (currentSort === 'alphabetical') return niceName(a).localeCompare(niceName(b))
     if (currentSort === 'mtime') return b.mtime - a.mtime
     if (currentSort === 'peers') return b.peers - a.peers
