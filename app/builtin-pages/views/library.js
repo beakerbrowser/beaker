@@ -1,7 +1,7 @@
 import * as yo from 'yo-yo'
 import {Archive, ArchivesList} from 'builtin-pages-lib'
 import {pluralize} from '../../lib/strings'
-import sparkline from '../../lib/fg/sparkline'
+import renderGraph from '../com/peer-history-graph'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
@@ -30,12 +30,11 @@ async function setup () {
   trashList = await beaker.archives.list({isSaved: false})
   update()
 
-  // render canvas regularly
+  // render graph regularly
   setInterval(() => {
-    archivesList.archives.forEach(archiveInfo => {
-      var canvas = document.querySelector(`#history-${archiveInfo.key}`)
-      renderCanvas(canvas, archiveInfo)
-    })
+    if (selectedArchive) {
+      updateGraph(selectedArchive)
+    }
   }, 5e3)
 
   // setup handlers
@@ -211,13 +210,7 @@ function rArchive (archiveInfo) {
 
       <h2>Network activity</h2>
       <div class="peer-history">
-        <canvas
-          id="history-${archiveInfo.key}"
-          width="200" height="40"
-          onload=${el => renderCanvas(el, archiveInfo)}
-          onmousemove=${e => onCanvasMouseMove(e, archiveInfo)}
-          onmouseleave=${e => onCanvasMouseLeave(e, archiveInfo)}
-        ></canvas>
+        ${renderGraph(archiveInfo)}
       </div>
 
       <h2>Metadata</h2>
@@ -276,22 +269,13 @@ function rTrash () {
   `
 }
 
-function renderCanvas (canvas, archiveInfo) {
-  sparkline(canvas, archiveInfo.peerHistory)
+function updateGraph (archiveInfo) {
+  var el = document.querySelector(`#history-${archiveInfo.key}`)
+  yo.update(el, renderGraph(archiveInfo))
 }
 
 // event handlers
 // =
-
-function onCanvasMouseMove (e, archiveInfo) {
-  e.target.mouseX = e.layerX
-  sparkline(e.target, archiveInfo.peerHistory)
-}
-
-function onCanvasMouseLeave (e, archiveInfo) {
-  delete e.target.mouseX
-  sparkline(e.target, archiveInfo.peerHistory)
-}
 
 async function onToggleSaved (e, archiveInfo) {
   if (archiveInfo.userSettings.isSaved) {
