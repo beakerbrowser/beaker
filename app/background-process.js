@@ -25,7 +25,6 @@ import * as profileDataDb from './background-process/dbs/profile-data-db'
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 import * as datProtocol from './background-process/protocols/dat'
-import * as appProtocol from './background-process/protocols/app'
 
 import * as openURL from './background-process/open-url'
 
@@ -37,7 +36,7 @@ if (process.env.beaker_user_data_path) {
 }
 
 // configure the protocols
-protocol.registerStandardSchemes(['dat', 'app', 'beaker'], { secure: true })
+protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
 
 app.on('ready', function () {
   // databases
@@ -61,7 +60,6 @@ app.on('ready', function () {
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
   datProtocol.setup()
-  appProtocol.setup()
 
   // configure chromium's permissions for the protocols
   protocol.registerServiceWorkerSchemes(['dat', 'app'])
