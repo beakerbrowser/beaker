@@ -34,7 +34,7 @@ function rFilesList (archive, selectedPath, models, dirtyFiles) {
       <div class="files-header">Folders</div>
       <div class="files-list folders">
         ${rChildren(archive, archive.fileTree.rootNode.children, 0, selectedPath)}
-        ${isOwner ? yo`<div class="item action" onclick=${onNewFile}>+ New file</div>` : ''}
+        ${isOwner ? yo`<div class="item action" onclick=${onNewFile}>New file +</div>` : ''}
       </div>
       <div class="footer">
         <button class="bkr" onclick=${e => onShowBkr(archive)}>Use CLI</button>
