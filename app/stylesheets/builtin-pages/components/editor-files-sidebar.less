@@ -21,8 +21,9 @@
     padding-bottom: 10px;
     border-bottom: 1px solid @border-dropdown-menu-bar
   }
+
   .files-list.folders {
-    padding-bottom: 40px; // for the 'total size' segment
+    padding-bottom: 40px; // account for the fixed footer
   }
 
   .files-header {
@@ -52,11 +53,20 @@
       vertical-align: top;
       width: 15px;
 
-      .fa-times {
-        color: @color-text !important;
+      i.dirty {
+        color: @blue;
       }
-      .fa-circle {
-        color: @blue !important;
+
+      i.dirty.close {
+        width: 10px;
+        height: 10px;
+        line-height: 100%;
+        color: @color-text;
+        text-align: center;
+
+        &:hover {
+          background: shade(@border-menu, 15%);
+        }
       }
     }
   }
