@@ -25,7 +25,7 @@ export class SiteInfoNavbarBtn {
         protocolCls = 'secure'
       } else if (this.protocolInfo.scheme === 'http:') {
         icon = 'unlock'
-      } else if (['dat:', 'fs:'].indexOf(this.protocolInfo.scheme) != -1) {
+      } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
         icon = 'share-alt'
         protocolLabel = 'Secure P2P'
         protocolCls = 'p2p'
@@ -53,7 +53,7 @@ export class SiteInfoNavbarBtn {
         protocolDesc = 'Your connection to this site is private.'
       } else if (this.protocolInfo.scheme === 'http:') {
         protocolDesc = 'Your connection to this site is not private.'
-      } else if (['dat:', 'fs:'].indexOf(this.protocolInfo.scheme) != -1) {
+      } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
         protocolDesc = yo`<span>
           This site was downloaded from a secure peer-to-peer network.
           <a onclick=${e => this.learnMore()}>Learn More</a>
