@@ -52,11 +52,20 @@
       vertical-align: top;
       width: 15px;
 
-      .fa-times {
-        color: @color-text !important;
+      i.dirty {
+        color: @blue;
       }
-      .fa-circle {
-        color: @blue !important;
+
+      i.dirty.close {
+        width: 10px;
+        height: 10px;
+        line-height: 100%;
+        color: @color-text;
+        text-align: center;
+
+        &:hover {
+          background: shade(@border-menu, 15%);
+        }
       }
     }
   }

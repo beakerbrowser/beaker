@@ -67,7 +67,7 @@ function rModels (archive, models, dirtyFiles, selectedPath) {
       var cls = path === selectedPath ? 'selected' : ''
       const xIcon = dirtyFiles[url]
         ? yo`<i class="dirty fa fa-circle"></i>`
-        : yo`<i class="dirty fa fa-times"></i>`
+        : yo`<i class="close dirty fa fa-times"></i>`
       return yo`
         <div
           class="item model ${cls}"
