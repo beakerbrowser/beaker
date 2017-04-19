@@ -15,18 +15,8 @@ var mouseX
 // exported api
 // =
 
-var inData = [
-  {peers: 0, ts: Date.now() - 60e3 * 10},
-  {peers: 1, ts: Date.now() - 60e3 * 9},
-  {peers: 2, ts: Date.now() - 60e3 * 8},
-  {peers: 5, ts: Date.now() - 60e3 * 6},
-  {peers: 4, ts: Date.now() - 60e3 * 4},
-  {peers: 10, ts: Date.now() - 60e3 * 2},
-  {peers: 4, ts: Date.now() - 60e3 * 1},
-]
-
 export default function render (archiveInfo) {
-  // var inData = archiveInfo.peerHistory
+  var inData = archiveInfo.peerHistory
   if (!inData.length) {
     inData = [{peers: 0, ts: Date.now()}]
   }
