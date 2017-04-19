@@ -120,7 +120,7 @@ function rArchivesList () {
     if (!currentFilter) {
       return true
     }
-    else if (currentFilter && archive.title.toLowerCase().indexOf(currentFilter) !== -1) {
+    else if (currentFilter && archive.title && archive.title.toLowerCase().indexOf(currentFilter) !== -1) {
       return true
     }
     return false
