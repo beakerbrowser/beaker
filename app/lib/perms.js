@@ -119,7 +119,7 @@ export default {
     desc: 'go fullscreen',
     icon: 'resize-full',
     persist: true,
-    alwaysDisallow: false,
+    alwaysAllow: true,
     requiresRefresh: false
   },
   openExternal: {

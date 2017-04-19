@@ -93,8 +93,9 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
   }
   const url = webContents.getURL()
 
-  // check if the perm is disallowed
+  // check if the perm is auto-allowed or auto-disallowed
   const PERM = PERMS[getPermId(permission)]
+  if (PERM && PERM.alwaysAllow) return cb(true)
   if (PERM && PERM.alwaysDisallow) return cb(false)
 
   // check the sitedatadb
