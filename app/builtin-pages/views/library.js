@@ -14,7 +14,7 @@ var archivesList
 var trashList = []
 var isTrashOpen = false
 var currentFilter = ''
-var currentSort = ''
+var currentSort = 'mtime'
 var selectedArchiveKey = ''
 var selectedArchive
 
@@ -65,13 +65,13 @@ function update () {
         <div class="sort">
           <label for="sort">Sort by</label>
           <select name="sort" oninput=${onChangeSort}>
-            <option value="alphabetical" selected=${currentSort === 'alphabetical'}>
-              Name
-            </option>
             <option value="mtime" selected=${currentSort === 'mtime'}>
               Recently updated
             </option>
-            <option value="peers" selected=${currentSort === 'peers'}>
+            <option value="alphabetical" selected=${currentSort === 'alphabetical'}>
+              Name
+            </option>
+           <option value="peers" selected=${currentSort === 'peers'}>
               Active peers
             </option>
           </select>
