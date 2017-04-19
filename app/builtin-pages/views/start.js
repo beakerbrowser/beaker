@@ -131,7 +131,7 @@ function renderShelf () {
               <i class="fa fa-pencil"></i>
               <a href=${`beaker://editor/${archiveInfo.key}`}>Edit</a>
              </span>
-             <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>             
+             <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
             </div>
           `
         })}
@@ -146,12 +146,12 @@ function renderShelf () {
       <div class="bookmarks-list">
         ${bookmarks.map(row => {
           return yo`
-            <li class="bookmark list-item">
+            <a href=${row.url } class="bookmark list-item">
               <img class="favicon" src=${'beaker-favicon:' + row.url} />
-              <a href=${row.url} class="bookmark-link" title=${row.title} />
+              <span href=${row.url} class="bookmark-link" title=${row.title} />
                 <span class="title">${row.title}</span>
-              </a>
-            </li>`
+              </span>
+            </a>`
         })}
       </div>
     </div>
