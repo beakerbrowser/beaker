@@ -157,7 +157,7 @@ function renderAutoUpdateCheckbox () {
 
 function renderStartPageSettings () {
   return yo`
-    <div class="settings-section start-page">
+  <div class="settings-section start-page">
     <label for="start-background-image">
       Upload a background image for beaker://start
       <input onchange=${onUpdateStartPageBackgroundImage} name="start-background-image" type="file" accept="image/*"/>
@@ -165,13 +165,18 @@ function renderStartPageSettings () {
     ${settings.start_page_background_image
       ? yo`
         <div>
-          <button class="btn" onclick=${onUpdateStartPageBackgroundImage}>
+          <button class="btn transparent" onclick=${onUpdateStartPageBackgroundImage}>
             <i class="fa fa-close"></i>
             Remove
           </button>
-          <img src=${'beaker://start/background-image?cache-buster=' + Date.now()} />
+          <img class="bg-preview" src=${'beaker://start/background-image?cache-buster=' + Date.now()} />
+          <label for="start-page-theme">
+            Start page theme
+            <input type="radio" value="light" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === "light"}/>Light
+            <input type="radio" value="dark" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === "dark"}/>Dark
+          </label>
         </div>
-        `
+                `
       : ''
     }
     </div>
@@ -202,6 +207,13 @@ function onUpdaterStateChanged (state) {
   // render new state
   browserInfo.updater.state = state
   browserInfo.updater.error = false
+  render()
+}
+
+function onUpdateStartPageTheme (e) {
+  var theme = e.target.value
+  settings.start_page_background_image = theme
+  beakerBrowser.setSetting('start_page_background_image', theme)
   render()
 }
 

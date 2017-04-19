@@ -36,12 +36,16 @@
 
     input {
       margin-left: @padding-component--tight;
+
+      &[type="radio"] {
+        margin-right: 5px;
+      }
     }
 
-    img {
+    img.bg-preview {
       display: block;
       max-width: 40%;
-      margin-top: @padding-component--tight;
+      margin: @padding-component--tight 0 @padding-component 0;
     }
   }
 
