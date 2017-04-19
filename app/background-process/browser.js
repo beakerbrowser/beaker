@@ -106,7 +106,7 @@ export function setStartPageBackgroundImage (srcPath) {
         fs.writeFile(destPath, data, () => resolve())
       })
     } else {
-      fs.writeFile(destPath, '', () => resolve())
+      fs.unlink(destPath, () => resolve())
     }
   })
 }
