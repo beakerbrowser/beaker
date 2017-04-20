@@ -23,6 +23,8 @@ const TRIGGER_LIVE_RELOAD_DEBOUNCE = 1e3 // debounce live-reload triggers by thi
 export const FIRST_TAB_URL = 'beaker://start'
 export const DEFAULT_URL = 'beaker://start'
 
+const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
+
 // globals
 // =
 
@@ -164,7 +166,7 @@ export function create (opts) {
       // set and go
       page.loadingURL = url
       page.isGuessingTheURLScheme = opts && opts.isGuessingTheScheme
-      page.webviewEl.loadURL(url)
+      page.loadURLAsync(url)
     },
 
     // HACK wrap reload so we can remove can-hide class
@@ -253,7 +255,7 @@ export function create (opts) {
     },
 
     async toggleDevTools () {
-      if (await this.isDevToolsOpened()) {
+      if (await this.isDevToolsOpenedAsync()) {
         this.closeDevToolsAsync()
       } else {
         this.openDevToolsAsync()        
@@ -638,7 +640,7 @@ function onDidStopLoading (e) {
         pre { background: #fafafa; padding: 1em }
       `)
       if (!cachedMarkdownRendererScript) {
-        cachedMarkdownRendererScript = fs.readFileSync(path.join(remote.app.getAppPath(), 'markdown-renderer.build.js'), 'utf8')
+        cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
       }
       page.webviewEl.executeJavaScript(cachedMarkdownRendererScript)
     }
@@ -752,7 +754,7 @@ function onDidFailLoad (e) {
 
     // render failure page
     var errorPageHTML = errorPage(e)
-    page.webviewEl.getWebContents().executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
+    page.webviewEl.executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
   }
 }
 
@@ -825,7 +827,7 @@ function hide (page) {
 function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
-  el.setAttribute('preload', 'file://'+path.join(remote.app.getAppPath(), 'webview-preload.build.js'))
+  el.setAttribute('preload', 'file://'+path.join(APP_PATH, 'webview-preload.build.js'))
   el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,contentIsolation')
   el.setAttribute('src', url || DEFAULT_URL)
   return el
@@ -863,12 +865,12 @@ async function updateHistory (page) {
   navbar.update(page)
 }
 
-async function runOnbeforeunload (page) {
-  return await page.webviewEl.getWebContents().executeJavaScript(`
+function runOnbeforeunload (page) {
+  return new Promise(resolve => page.webviewEl.executeJavaScript(`
     (function() {
       if (window.__onbeforeunload__) {
         return window.__onbeforeunload__({noSignal: true})
       }
     })()
-  `)
+  `, true, resolve))
 }

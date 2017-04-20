@@ -1,4 +1,4 @@
-import { remote, ipcRenderer } from 'electron'
+import { ipcRenderer } from 'electron'
 import * as yo from 'yo-yo'
 import * as promptbar from '../promptbar'
 import * as pages from '../../pages'
