@@ -204,8 +204,8 @@ export async function loadArchive (key) {
 
   // fallback to the promise, if possible
   var keyStr = datEncoding.toStr(key)
-  if (key in archiveLoadPromises) {
-    return archiveLoadPromises[key]
+  if (keyStr in archiveLoadPromises) {
+    return archiveLoadPromises[keyStr]
   }
 
   // run and cache the promise
