@@ -352,7 +352,9 @@ export function joinSwarm (key, opts) {
       var dkeyStr = datEncoding.toStr(archive.discoveryKey)
       var chan = dkeyStr.slice(0,6) + '..' + dkeyStr.slice(-2)
       var keyStrShort = keyStr.slice(0,6) + '..' + keyStr.slice(-2)
-      debug('new connection chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort)
+      var connId = archive.replicationStreams.length
+      var start = Date.now()
+      debug('new connection id=%s chan=%s type=%s host=%s key=%s', connId, chan, info.type, info.host, keyStrShort)
 
       // create the replication stream
       var stream = archive.replicate({live: true})
@@ -365,14 +367,17 @@ export function joinSwarm (key, opts) {
 
       // timeout the connection after 5s if handshake does not occur
       var TO = setTimeout(() => {
-        debug('handshake timeout chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort)
+        debug('handshake timeout (%dms) id=%s chan=%s type=%s host=%s key=%s', Date.now() - start, connId, chan, info.type, info.host, keyStrShort)
         stream.destroy(new Error('Timed out waiting for handshake'))
       }, 5000)
-      stream.once('handshake', () => clearTimeout(TO))
+      stream.once('handshake', () => {
+        debug('got handshake (%dms) id=%s chan=%s type=%s host=%s key=%s', Date.now() - start, connId, chan, info.type, info.host, keyStrShort)
+        clearTimeout(TO)
+      })
 
       // debugging
-      stream.on('error', err => debug('error chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort, err))
-      stream.on('close', err => debug('closing connection chan=%s type=%s host=%s key=%s', chan, info.type, info.host, keyStrShort))
+      stream.on('error', err => debug('error (%dms) id=%s chan=%s type=%s host=%s key=%s', Date.now() - start, connId, chan, info.type, info.host, keyStrShort, err))
+      stream.on('close', err => debug('closing connection (%dms) id=%s chan=%s type=%s host=%s key=%s', Date.now() - start, connId, chan, info.type, info.host, keyStrShort))
       return stream
     }
   }))
