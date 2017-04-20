@@ -249,8 +249,8 @@ function onClickReopenClosedTab () {
 }
 
 function onContextMenuTab (page) {
-  const { Menu } = remote
   return e => {
+    const { Menu } = remote
     var menu = Menu.buildFromTemplate([
       { label: 'New Tab', click: onClickNew },
       { type: 'separator' },

@@ -1,4 +1,4 @@
-import {app, dialog, autoUpdater, BrowserWindow, ipcMain} from 'electron'
+import {app, dialog, autoUpdater, BrowserWindow, webContents, ipcMain} from 'electron'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
@@ -83,6 +83,7 @@ export function setup () {
 
     showOpenDialog,
     openUrl: url => { openUrl(url) }, // dont return anything
+    doWebcontentsCmd,
 
     closeModal
   }, internalOnly)
@@ -262,6 +263,12 @@ function showOpenDialog (opts = {}) {
       resolve(filenames)
     })
   })
+}
+
+async function doWebcontentsCmd (method, wcId, ...args) {
+  var wc = webContents.fromId(+wcId)
+  if (!wc) throw new Error(`WebContents not found (${wcId})`)
+  return wc[method](...args)
 }
 
 // internal methods

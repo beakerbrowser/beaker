@@ -78,11 +78,11 @@ export function showInpageFind (page) {
   // do we want it back?
   // -prf
   // if (el.value)
-    // page.findInPage(el.value)
+    // page.findInPageAsync(el.value)
 }
 
 export function hideInpageFind (page) {
-  page.stopFindInPage('clearSelection')
+  page.stopFindInPageAsync('clearSelection')
   page.isInpageFinding = false
   update(page)
 }
@@ -481,14 +481,16 @@ function getEventPage (e) {
 
 function onClickBack (e) {
   var page = getEventPage(e)
-  if (page && page.canGoBack())
-    page.goBack()
+  if (page && page.canGoBack()) {
+    page.goBackAsync()
+  }
 }
 
 function onClickForward (e) {
   var page = getEventPage(e)
-  if (page && page.canGoForward())
-    page.goForward()
+  if (page && page.canGoForward()) {
+    page.goForwardAsync()
+  }
 }
 
 function onClickReload (e) {
@@ -499,8 +501,9 @@ function onClickReload (e) {
 
 function onClickCancel (e) {
   var page = getEventPage(e)
-  if (page)
-    page.stop()
+  if (page) {
+    page.stopAsync()
+  }
 }
 
 function onClickBookmark (e) {
@@ -659,8 +662,8 @@ function onInputFind (e) {
   var str = e.target.value
   var page = getEventPage(e)
   if (page) {
-    if (str) page.findInPage(str)
-    else     page.stopFindInPage('clearSelection')
+    if (str) page.findInPageAsync(str)
+    else     page.stopFindInPageAsync('clearSelection')
   }
 }
 
@@ -678,8 +681,8 @@ function onKeydownFind (e) {
     let backwards = e.shiftKey // search backwords on shift+enter
     let page = getEventPage(e)
     if (page) {
-      if (str) page.findInPage(str, { findNext: true, forward: !backwards })
-      else     page.stopFindInPage('clearSelection')
+      if (str) page.findInPageAsync(str, { findNext: true, forward: !backwards })
+      else     page.stopFindInPageAsync('clearSelection')
     }
   }
 }
