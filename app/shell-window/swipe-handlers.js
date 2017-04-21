@@ -108,11 +108,11 @@ export function setup () {
       // trigger navigation
       if (shouldGoBack()) {
         var page = pages.getActive()
-        if (page) page.goBack()
+        if (page) page.goBackAsync()
       }
       if (shouldGoForward()) {
         var page = pages.getActive()
-        if (page) page.goForward()
+        if (page) page.goForwardAsync()
       }
 
       // reset arrows

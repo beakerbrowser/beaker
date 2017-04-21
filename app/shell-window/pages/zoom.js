@@ -12,8 +12,7 @@ export function setZoomFromSitedata (page, origin) {
     if (typeof v != 'undefined') {
       page.zoom = +v
       navbar.update(page)
-      var wc = page.webviewEl.getWebContents()
-      wc.setZoomLevel(page.zoom)
+      page.setZoomLevelAsync(page.zoom)
     }
   })
 }
@@ -25,7 +24,7 @@ export function setZoom(page, z) {
 
   // update
   page.zoom = z
-  page.webviewEl.getWebContents().setZoomLevel(page.zoom)
+  page.setZoomLevelAsync(page.zoom)
   navbar.update(page)
 
   // persist to sitedata

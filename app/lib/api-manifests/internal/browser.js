@@ -19,6 +19,7 @@ export default {
 
   showOpenDialog: 'promise',
   openUrl: 'sync',
+  doWebcontentsCmd: 'promise',
 
   closeModal: 'sync'
 }

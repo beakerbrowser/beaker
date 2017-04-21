@@ -9,6 +9,7 @@ import * as statusBar from './ui/statusbar'
 import { urlToData } from '../lib/fg/img'
 import { debounce } from '../lib/functions'
 import errorPage from '../lib/error-page'
+import addAsyncAlternatives from './webview-async'
 
 // constants
 // =
@@ -21,6 +22,8 @@ const TRIGGER_LIVE_RELOAD_DEBOUNCE = 1e3 // debounce live-reload triggers by thi
 
 export const FIRST_TAB_URL = 'beaker://start'
 export const DEFAULT_URL = 'beaker://start'
+
+const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
 
 // globals
 // =
@@ -76,12 +79,15 @@ export function create (opts) {
   var id = (Math.random()*1000|0) + Date.now()
   var page = {
     id: id,
+    wcID: null, // the id of the webcontents
     webviewEl: createWebviewEl(id, url),
     navbarEl: navbar.createEl(id),
     promptbarEl: promptbar.createEl(id),
 
     // page state
+    url, // what is the actual current URL?
     loadingURL: url, // what URL is being loaded, if any?
+    title: '', // what is the current pages title?
     isGuessingTheURLScheme: false, // did beaker guess at the url scheme? if so, a bad load may deserve a second try
     manuallyTrackedIsLoading: true, // used because the webview may never be ready, so webview.isLoading() isnt enough
     isWebviewReady: false, // has the webview loaded its methods?
@@ -107,6 +113,8 @@ export function create (opts) {
     // history
     lastVisitedAt: 0, // when is last time url updated?
     lastVisitedURL: null, // last URL added into history
+    _canGoBack: false, // cached to avoid sync calls to the main process
+    _canGoForward: false, // cached to avoid sync calls to the main process
 
     // prompts
     prompts: [], // list of active prompts (used with perms)
@@ -116,8 +124,18 @@ export function create (opts) {
     isTabDragging: false, // being dragged?
     tabDragOffset: 0, // if being dragged, this is the current offset
 
+    // get the current URL
+    getURL () {
+      return this.url
+    },
+
+    // get the current title
+    getTitle () {
+      return this.title
+    },
+
     // get the URL of the page we want to load (vs which is currently loaded)
-    getIntendedURL: function () {
+    getIntendedURL () {
       var url = page.loadingURL || page.getURL()
       if (url.startsWith('beaker:') && page.siteInfoOverride && page.siteInfoOverride.url) {
         // override, only if on a builtin beaker site
@@ -127,12 +145,16 @@ export function create (opts) {
     },
 
     // custom isLoading
-    isLoading: function() {
+    isLoading () {
       return page.manuallyTrackedIsLoading
     },
 
+    // cache getters to avoid sync calls to the main process
+    canGoBack() { return this._canGoBack },
+    canGoForward() { return this._canGoForward },
+
     // wrap webview loadURL to set the `loadingURL`
-    loadURL: function (url, opts) {
+    loadURL (url, opts) {
       // reset some state
       page.isReceivingAssets = false
       page.siteInfoOverride = null
@@ -144,7 +166,7 @@ export function create (opts) {
       // set and go
       page.loadingURL = url
       page.isGuessingTheURLScheme = opts && opts.isGuessingTheScheme
-      page.webviewEl.loadURL(url)
+      page.loadURLAsync(url)
     },
 
     // HACK wrap reload so we can remove can-hide class
@@ -152,12 +174,12 @@ export function create (opts) {
       // HACK to fix electron#8505
       // dont allow visibility: hidden until set active
       page.webviewEl.classList.remove('can-hide')
-      setTimeout(() => page.webviewEl.reload(), 100)
+      setTimeout(() => page.reloadAsync().then(console.log, console.log), 100)
       // ^ needs a delay or it doesnt take effect in time, SMH at this code though
     },
 
     // add/remove bookmark
-    toggleBookmark: function () {
+    toggleBookmark () {
       // update state
       if (page.bookmark) {
         beaker.bookmarks.remove(page.bookmark.url)
@@ -170,11 +192,11 @@ export function create (opts) {
       navbar.update(page)
     },
 
-    getURLOrigin: function () {
+    getURLOrigin () {
       return parseURL(this.getURL()).origin
     },
 
-    getViewFilesURL: function (subview) {
+    getViewFilesURL (subview) {
       var urlp = parseURL(this.getURL())
       if (!urlp) return false
       var path = urlp.pathname
@@ -190,7 +212,7 @@ export function create (opts) {
     },
 
     // start/stop live reloading
-    toggleLiveReloading: function () {
+    toggleLiveReloading () {
       if (page.liveReloadEvents) {
         page.liveReloadEvents.close()
         page.liveReloadEvents = false
@@ -230,47 +252,28 @@ export function create (opts) {
         this.siteHasDatAlternative = !!res
         navbar.update(page)
       }).catch(err => console.log('Name does not have a Dat alternative', name))
+    },
+
+    async toggleDevTools () {
+      if (await this.isDevToolsOpenedAsync()) {
+        this.closeDevToolsAsync()
+      } else {
+        this.openDevToolsAsync()        
+      }
     }
   }
 
-  if (opts.isPinned)
+  if (opts.isPinned) {
     pages.splice(indexOfLastPinnedTab(), 0, page)
-  else
+  } else {
     pages.push(page)
+  }
 
-  // create proxies for webview methods
-  //   webviews need to be dom-ready before their methods work
-  //   this wraps the methods so the call isnt made if not ready
-  ;([
-    ['getURL', ''],
-    ['getTitle', ''],
+  // add *Async alternatives to all methods, *Sync really should never be used
+  addAsyncAlternatives(page)
 
-    ['goBack'],
-    ['canGoBack'],
-    ['goForward'],
-    ['canGoForward'],
-
-    // ['reload'], TEMPORARY see definition
-    ['reloadIgnoringCache'],
-    ['stop'],
-
-    ['isDevToolsOpened', false],
-    ['openDevTools'],
-    ['closeDevTools'],
-    ['send'],
-
-    ['findInPage'],
-    ['stopFindInPage']
-  ]).forEach(methodSpec => {
-    var name = methodSpec[0]
-    var defaultReturn = methodSpec[1]
-    page[name] = (...args) => {
-      if (page.isWebviewReady)
-        return page.webviewEl[name].apply(page.webviewEl, args)
-      return defaultReturn
-    }
-  })
-  hide(page) // hidden by default
+  // add but leave hidden
+  hide(page)
   webviewsDiv.appendChild(page.webviewEl)
 
   // emit
@@ -299,20 +302,10 @@ export function create (opts) {
   page.webviewEl.addEventListener('page-title-updated', onPageTitleUpdated)
 
   // rebroadcasts
-  page.webviewEl.addEventListener('load-commit', rebroadcastEvent)
-  page.webviewEl.addEventListener('did-finish-load', rebroadcastEvent)
-  page.webviewEl.addEventListener('did-fail-load', rebroadcastEvent)
   page.webviewEl.addEventListener('did-start-loading', rebroadcastEvent)
   page.webviewEl.addEventListener('did-stop-loading', rebroadcastEvent)
-  page.webviewEl.addEventListener('did-get-response-details', rebroadcastEvent)
-  page.webviewEl.addEventListener('did-get-redirect-request', rebroadcastEvent)
-  page.webviewEl.addEventListener('dom-ready', rebroadcastEvent)
   page.webviewEl.addEventListener('page-title-updated', rebroadcastEvent)
   page.webviewEl.addEventListener('page-favicon-updated', rebroadcastEvent)
-  page.webviewEl.addEventListener('console-message', rebroadcastEvent)
-  page.webviewEl.addEventListener('will-navigate', rebroadcastEvent)
-  page.webviewEl.addEventListener('did-navigate', rebroadcastEvent)
-  page.webviewEl.addEventListener('did-navigate-in-page', rebroadcastEvent)
 
   // make active if none others are
   if (!activePage)
@@ -473,9 +466,9 @@ export function getByWebview (el) {
   return getById(el.dataset.id)
 }
 
-export function getByWebContents (webContents) {
+export function getByWebContentsID (wcID) {
   for (var i=0; i < pages.length; i++) {
-    if (pages[i].webviewEl && pages[i].webviewEl.getWebContents() == webContents)
+    if (pages[i].wcID === wcID)
       return pages[i]
   }
   return null
@@ -507,6 +500,9 @@ function onDomReady (e) {
   var page = getByWebview(e.target)
   if (page) {
     page.isWebviewReady = true
+    if (!page.wcID) {
+      page.wcID = e.target.getWebContents().id // NOTE: this is a sync op
+    }
     if (!navbar.isLocationFocused(page)) {
       page.webviewEl.focus()
     }
@@ -582,7 +578,12 @@ function onDidStartLoading (e) {
 function onDidStopLoading (e) {
   var page = getByWebview(e.target)
   if (page) {
-    var url = page.getURL()
+    // update url
+    if (page.loadingURL) {
+      url = page.url = page.loadingURL
+    }
+    var url = page.url
+
     // update history
     updateHistory(page)
 
@@ -639,7 +640,7 @@ function onDidStopLoading (e) {
         pre { background: #fafafa; padding: 1em }
       `)
       if (!cachedMarkdownRendererScript) {
-        cachedMarkdownRendererScript = fs.readFileSync(path.join(remote.app.getAppPath(), 'markdown-renderer.build.js'), 'utf8')
+        cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
       }
       page.webviewEl.executeJavaScript(cachedMarkdownRendererScript)
     }
@@ -710,7 +711,10 @@ function onDidGetResponseDetails (e) {
 function onDidFinishLoad (e) {
   var page = getByWebview(e.target)
   if (page) {
-    // reset page object
+    // update page object
+    if (page.loadingURL) {
+      page.url = page.loadingURL
+    }
     page.loadingURL = false
     page.isGuessingTheURLScheme = false
     page.favicons = null
@@ -750,7 +754,7 @@ function onDidFailLoad (e) {
 
     // render failure page
     var errorPageHTML = errorPage(e)
-    page.webviewEl.getWebContents().executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
+    page.webviewEl.executeJavaScript('document.documentElement.innerHTML = \''+errorPageHTML+'\'')
   }
 }
 
@@ -782,9 +786,10 @@ function onClose (e) {
 
 function onPageTitleUpdated (e) {
   var page = getByWebview(e.target)
+  page.title = e.title
 
   // if page title changed within 15 seconds, update it again
-  if (page.getURL() === page.lastVisitedURL && Date.now() - page.lastVisitedAt < 15 * 1000) {
+  if (page.getIntendedURL() === page.lastVisitedURL && Date.now() - page.lastVisitedAt < 15 * 1000) {
     updateHistory(page)
   }
 }
@@ -822,7 +827,7 @@ function hide (page) {
 function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
-  el.setAttribute('preload', 'file://'+path.join(remote.app.getAppPath(), 'webview-preload.build.js'))
+  el.setAttribute('preload', 'file://'+path.join(APP_PATH, 'webview-preload.build.js'))
   el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,contentIsolation')
   el.setAttribute('src', url || DEFAULT_URL)
   return el
@@ -844,7 +849,7 @@ function parseURL (str) {
   catch (e) { return {} }
 }
 
-function updateHistory (page) {
+async function updateHistory (page) {
   var url = page.getURL()
   beaker.history.addVisit({url: page.getURL(), title: page.getTitle() || page.getURL()})
   if (page.isPinned) {
@@ -852,14 +857,20 @@ function updateHistory (page) {
   }
   page.lastVisitedAt = Date.now()
   page.lastVisitedURL = url
+
+  // read and cache current nav state
+  var [b, f] = await Promise.all([page.canGoBackAsync(), page.canGoForwardAsync()])
+  page._canGoBack = b
+  page._canGoForward = f
+  navbar.update(page)
 }
 
-async function runOnbeforeunload (page) {
-  return await page.webviewEl.getWebContents().executeJavaScript(`
+function runOnbeforeunload (page) {
+  return new Promise(resolve => page.webviewEl.executeJavaScript(`
     (function() {
       if (window.__onbeforeunload__) {
         return window.__onbeforeunload__({noSignal: true})
       }
     })()
-  `)
+  `, true, resolve))
 }
