@@ -7,6 +7,7 @@ CREATE TABLE profiles (
 CREATE TABLE archives (
   profileId INTEGER NOT NULL,
   key TEXT NOT NULL,
+  localPath TEXT,
   isSaved INTEGER,
   createdAt INTEGER DEFAULT (strftime('%s', 'now'))
 );

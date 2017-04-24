@@ -59,7 +59,7 @@ export async function query (profileId, query) {
   if (WHERE.length) WHERE = `WHERE ${WHERE.join(' AND ')}`
   else WHERE = ''
   var archives = await db.all(`
-    SELECT * FROM archives_meta ${JOIN} ${WHERE}
+    SELECT archives_meta.*, archives.isSaved FROM archives_meta ${JOIN} ${WHERE}
   `, values)
 
   // massage the output
@@ -126,18 +126,20 @@ export async function setUserSettings (profileId, key, newValues = {}) {
       value = {
         profileId,
         key,
-        isSaved: newValues.isSaved
+        isSaved: newValues.isSaved,
+        localPath: newValues.localPath
       }
       await db.run(`
-        INSERT INTO archives (profileId, key, isSaved) VALUES (?, ?, ?)
-      `, [profileId, key, value.isSaved ? 1 : 0])
+        INSERT INTO archives (profileId, key, isSaved, localPath) VALUES (?, ?, ?)
+      `, [profileId, key, value.isSaved ? 1 : 0], localPath)
     } else {
       // update
-      var { isSaved } = newValues
+      var { isSaved, localPath } = newValues
       if (typeof isSaved === 'boolean') value.isSaved = isSaved
+      if (typeof localPath === 'string') value.localPath = localPath
       await db.run(`
-        UPDATE archives SET isSaved = ? WHERE profileId = ? AND key = ?
-      `, [value.isSaved ? 1 : 0, profileId, key])
+        UPDATE archives SET isSaved = ?, localPath = ? WHERE profileId = ? AND key = ?
+      `, [value.isSaved ? 1 : 0, value.localPath, profileId, key])
     }
 
     events.emit('update:archive-user-settings', key, value)
