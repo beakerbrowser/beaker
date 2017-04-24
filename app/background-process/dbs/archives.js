@@ -59,7 +59,7 @@ export async function query (profileId, query) {
   if (WHERE.length) WHERE = `WHERE ${WHERE.join(' AND ')}`
   else WHERE = ''
   var archives = await db.all(`
-    SELECT archives_meta.*, archives.isSaved FROM archives_meta ${JOIN} ${WHERE}
+    SELECT archives_meta.*, archives.isSaved, archives.localPath FROM archives_meta ${JOIN} ${WHERE}
   `, values)
 
   // massage the output
@@ -71,12 +71,14 @@ export async function query (profileId, query) {
       url: archive.createdByUrl
     }
     archive.userSettings = {
-      isSaved: archive.isSaved != 0
+      isSaved: archive.isSaved != 0,
+      localPath: archive.localPath
     }
 
     delete archive.createdByTitle
     delete archive.createdByUrl
     delete archive.isSaved
+    delete archive.localPath
   })
   return archives
 }
