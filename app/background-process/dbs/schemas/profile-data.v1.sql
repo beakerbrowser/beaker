@@ -23,16 +23,6 @@ CREATE TABLE archives_meta (
   isOwner INTEGER
 );
 
-CREATE TABLE apps (
-  profileId INTEGER NOT NULL,
-  name TEXT NOT NULL,
-  url TEXT NOT NULL,
-  createdAt INTEGER DEFAULT (strftime('%s', 'now')),
-
-  PRIMARY KEY (profileId, name),
-  FOREIGN KEY (profileId) REFERENCES profiles (id) ON DELETE CASCADE
-);
-
 CREATE TABLE bookmarks (
   profileId INTEGER,
   url TEXT NOT NULL,

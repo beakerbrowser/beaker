@@ -3,7 +3,6 @@ import rpc from 'pauls-electron-rpc'
 import {EventTarget, bindEventStream} from './event-target'
 import errors from 'beaker-error-constants'
 
-import appsManifest from '../api-manifests/external/apps'
 import archivesManifest from '../api-manifests/external/archives'
 import bookmarksManifest from '../api-manifests/external/bookmarks'
 import historyManifest from '../api-manifests/external/history'
@@ -13,7 +12,6 @@ var beaker = {}
 if (window.location.protocol === 'beaker:') {
   var opts = {timeout: false, errors}
   const archivesRPC  = rpc.importAPI('archives',  archivesManifest,  opts)
-  const appsRPC      = rpc.importAPI('apps',      appsManifest,      opts)
   const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
   const historyRPC   = rpc.importAPI('history',   historyManifest,   opts)
   const profilesRPC  = rpc.importAPI('profiles',  profilesManifest,  opts)
@@ -34,14 +32,6 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.list = archivesRPC.list
   beaker.archives.get = archivesRPC.get
   bindEventStream(archivesRPC.createEventStream(), beaker.archives)
-
-  // beaker.apps
-  beaker.apps = new EventTarget()
-  beaker.apps.get = appsRPC.get
-  beaker.apps.list = appsRPC.list
-  beaker.apps.bind = appsRPC.bind
-  beaker.apps.unbind = appsRPC.unbind
-  // bindEventStream(appsRPC.createEventStream(), beaker.apps) TODO
 
   // beaker.bookmarks
   beaker.bookmarks = new EventTarget()
