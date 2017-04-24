@@ -75,7 +75,6 @@ function update () {
       <header>
         <div class="actions">
           <a onclick=${createSite}><i class="fa fa-pencil"></i> New site</a>
-          <a onclick=${shareFiles}><i class="fa fa-files-o"></i> Share files</a>
         </div>
         <div style="flex: 1"></div>
         ${renderProfileCard()}
@@ -244,32 +243,6 @@ function renderError () {
 // event handlers
 // =
 
-async function shareFiles () {
-  // have user select file
-  var paths = await beakerBrowser.showOpenDialog({
-    title: 'Select your files',
-    properties: ['openFile', 'openDirectory', 'multiSelections', 'showHiddenFiles']
-  })
-  if (!paths) {
-    return
-  }
-
-  // create a new dat
-  var d = new Date()
-  var archive = await DatArchive.create({
-    title: `Shared Files ${d.toLocaleDateString()}`,
-    description: `Files shared on ${d.toLocaleString()}`
-  })
-
-  // import into the user profile
-  await Promise.all(paths.map(src => 
-    DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: true})
-  ))
-
-  // open
-  window.location = archive.url
-}
-
 function toggleShelf () {
   isShelfOpen = !isShelfOpen
   update()
@@ -277,7 +250,7 @@ function toggleShelf () {
 
 async function createSite () {
   var archive = await beaker.archives.create()
-  window.location = 'beaker://editor/' + archive.url.slice('dat://'.length)
+  window.location = 'beaker://library/' + archive.url.slice('dat://'.length)
 }
 
 function onMouseOutShelf (e) {

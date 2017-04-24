@@ -333,7 +333,7 @@ export class DropMenuNavbarBtn {
     this.updateActives()
 
     var archive = await beaker.archives.create()
-    pages.getActive().loadURL('beaker://editor/' + archive.url.slice('dat://'.length))
+    pages.getActive().loadURL('beaker://library/' + archive.url.slice('dat://'.length))
   }
 
   async onFork (e) {

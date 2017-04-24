@@ -132,8 +132,8 @@ export async function setUserSettings (profileId, key, newValues = {}) {
         localPath: newValues.localPath
       }
       await db.run(`
-        INSERT INTO archives (profileId, key, isSaved, localPath) VALUES (?, ?, ?)
-      `, [profileId, key, value.isSaved ? 1 : 0], localPath)
+        INSERT INTO archives (profileId, key, isSaved, localPath) VALUES (?, ?, ?, ?)
+      `, [profileId, key, value.isSaved ? 1 : 0, value.localPath])
     } else {
       // update
       var { isSaved, localPath } = newValues
