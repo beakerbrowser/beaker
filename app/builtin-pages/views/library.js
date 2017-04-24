@@ -221,9 +221,9 @@ function rArchive (archiveInfo) {
         <p class="description">${niceDesc(archiveInfo)}</p>
         <div class="actions">
           <span class="readonly">${archiveInfo.isOwner ? '' : yo`<em>(Read-only)</em>`}</span>
-          <a class="editor-link btn primary" href="beaker://editor/${archiveInfo.key}">
-            <i class="fa fa-pencil"></i>
-            Open in editor
+          <a class="editor-link btn primary" href="dat://${archiveInfo.key}">
+            <i class="fa fa-external-link"></i>
+            View site
           </a>
           ${toggleable(yo`
             <div class="dropdown-btn-container toggleable-container">
@@ -231,10 +231,15 @@ function rArchive (archiveInfo) {
                 <i class="fa fa-caret-down"></i>
               </button>
               <div class="dropdown-btn-list">
-                <a class="dropdown-item" href="dat://${archiveInfo.key}">
-                  <i class="fa fa-external-link"></i>
-                  View site
-                </a>
+                ${archiveInfo.userSettings.localPath
+                  ? yo`<a class="dropdown-item" onclick=${e => onOpenFolder(e, archiveInfo)}>
+                      <i class="fa fa-folder-open-o"></i>
+                      Open folder
+                    </a>`
+                  : yo`<a class="dropdown-item disabled">
+                      <i class="fa fa-folder-open-o"></i>
+                      Open folder
+                    </a>`}
                 <div class="dropdown-item" onclick=${e => onToggleSaved(e, archiveInfo)}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
@@ -313,6 +318,13 @@ function updateGraph (archiveInfo) {
 
 // event handlers
 // =
+
+function onOpenFolder (e, archiveInfo) {
+  if (archiveInfo.userSettings.localPath) {
+    beakerBrowser.openFolder(archiveInfo.userSettings.localPath)
+  }
+  update()
+}
 
 async function onToggleSaved (e, archiveInfo) {
   if (archiveInfo.userSettings.isSaved) {
