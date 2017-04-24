@@ -28,8 +28,6 @@ export default {
   },
 
   async create({title, description, createdBy} = {}) {
-    assertTmpBeakerOnly(this.sender)
-
     // get origin info
     if (!createdBy) {
       createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
@@ -42,7 +40,6 @@ export default {
   },
 
   async fork(url, {title, description, createdBy} = {}) {
-    assertTmpBeakerOnly(this.sender)
 
     // get origin info
     if (!createdBy) {
@@ -56,7 +53,6 @@ export default {
   },
 
   async add(url) {
-    assertTmpBeakerOnly(this.sender)
     var key = toKey(url)
     // update settings
     var res = await archivesDb.setUserSettings(0, key, {isSaved: true})
@@ -67,13 +63,11 @@ export default {
   },
 
   async remove(url) {
-    assertTmpBeakerOnly(this.sender)
     var key = toKey(url)
     return archivesDb.setUserSettings(0, key, {isSaved: false})
   },
 
   async updateManifest(url, manifestInfo) {
-    assertTmpBeakerOnly(this.sender)
 
     if (!manifestInfo) {
       // show the update-info the modal
@@ -94,12 +88,10 @@ export default {
   },
 
   async list(query={}) {
-    assertTmpBeakerOnly(this.sender)
     return datLibrary.queryArchives(query)
   },
 
   async get(url, opts) {
-    assertTmpBeakerOnly(this.sender)
     return timer(to(opts), async (checkin) => {
       var key = toKey(url)
       return datLibrary.getArchiveInfo(key)
@@ -107,19 +99,7 @@ export default {
   },
 
   createEventStream() {
-    try {
-      assertTmpBeakerOnly(this.sender)
-    } catch (e) {
-      return
-    }
     return datLibrary.createEventStream()
-  }
-}
-
-// temporary helper to make sure the call is made by a beaker: page
-function assertTmpBeakerOnly (sender) {
-  if (!sender.getURL().startsWith('beaker:')) {
-    throw new PermissionsError()
   }
 }
 

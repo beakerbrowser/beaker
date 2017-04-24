@@ -3,9 +3,9 @@ import rpc from 'pauls-electron-rpc'
 import {EventTarget, bindEventStream} from './event-target'
 import errors from 'beaker-error-constants'
 
-import archivesManifest from '../api-manifests/external/archives'
-import bookmarksManifest from '../api-manifests/external/bookmarks'
-import historyManifest from '../api-manifests/external/history'
+import archivesManifest from '../api-manifests/internal/archives'
+import bookmarksManifest from '../api-manifests/internal/bookmarks'
+import historyManifest from '../api-manifests/internal/history'
 import profilesManifest from '../api-manifests/internal/profiles'
 
 var beaker = {}
