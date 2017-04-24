@@ -249,13 +249,13 @@ function toggleShelf () {
 }
 
 async function createSite () {
-  var archive = await beaker.archives.create()
+  var archive = await DatArchive.create()
   window.location = 'beaker://library/' + archive.url.slice('dat://'.length)
 }
 
 function onMouseOutShelf (e) {
   if (!findParent(e.relatedTarget, 'shelf')) {
-    // isShelfOpen = false
+    isShelfOpen = false
     update()
   }
 }

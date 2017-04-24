@@ -332,7 +332,7 @@ export class DropMenuNavbarBtn {
     this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
 
-    var archive = await beaker.archives.create()
+    var archive = await DatArchive.create()
     pages.getActive().loadURL('beaker://library/' + archive.url.slice('dat://'.length))
   }
 

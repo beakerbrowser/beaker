@@ -258,7 +258,8 @@ function showOpenDialog (opts = {}) {
     }, filenames => {
       // return focus back to the the webview
       wc.executeJavaScript(`
-        document.querySelector('webview:not(.hidden)').focus()
+        var wv = document.querySelector('webview:not(.hidden)')
+        if (wv) wv.focus()
       `)
       resolve(filenames)
     })

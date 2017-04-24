@@ -18,12 +18,12 @@ if (window.location.protocol === 'beaker:') {
 
   // beaker.archives
   beaker.archives = new EventTarget()
-  beaker.archives.create = function (opts={}) {
-    return archivesRPC.create(opts).then(newUrl => new DatArchive(newUrl))
+  beaker.archives.create = function (manifest={}, userSettings={}) {
+    return archivesRPC.create(manifest, userSettings).then(newUrl => new DatArchive(newUrl))
   }
-  beaker.archives.fork = function (url, opts={}) {
+  beaker.archives.fork = function (url, manifest={}, userSettings={}) {
     url = (typeof url.url === 'string') ? url.url : url
-    return archivesRPC.fork(url, opts).then(newUrl => new DatArchive(newUrl))
+    return archivesRPC.fork(url, manifest, userSettings).then(newUrl => new DatArchive(newUrl))
   }
   beaker.archives.status = archivesRPC.status
   beaker.archives.add = archivesRPC.add

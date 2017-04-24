@@ -120,7 +120,7 @@ export async function pullLatestArchiveMeta (archive) {
 // archive creation
 // =
 
-export async function createNewArchive (manifest) {
+export async function createNewArchive (manifest = {}, userSettings = {}) {
   // create the archive
   var archive = await loadArchive(null)
   var key = datEncoding.toStr(archive.key)
@@ -130,7 +130,10 @@ export async function createNewArchive (manifest) {
   await pda.writeManifest(archive, manifest)
 
   // write the user settings
-  await archivesDb.setUserSettings(0, key, {isSaved: true})
+  await archivesDb.setUserSettings(0, key, {
+    localPath: userSettings.localPath,
+    isSaved: true
+  })
 
   // write the metadata
   await pullLatestArchiveMeta(archive)
@@ -143,7 +146,7 @@ export async function createNewArchive (manifest) {
   return manifest.url
 }
 
-export async function forkArchive (srcArchiveUrl, manifest={}) {
+export async function forkArchive (srcArchiveUrl, manifest={}, userSettings = {}) {
   srcArchiveUrl = fromKeyToURL(srcArchiveUrl)
 
   // get the old archive
@@ -166,7 +169,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}) {
   }
 
   // create the new archive
-  var dstArchiveUrl = await createNewArchive(dstManifest)
+  var dstArchiveUrl = await createNewArchive(dstManifest, userSettings)
   var dstArchive = getArchive(dstArchiveUrl)
 
   // copy files

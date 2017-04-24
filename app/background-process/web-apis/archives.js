@@ -27,7 +27,7 @@ export default {
     return status
   },
 
-  async create({title, description, createdBy} = {}) {
+  async create({title, description, createdBy}={}, {localPath} = {}) {
     // get origin info
     if (!createdBy) {
       createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
@@ -36,10 +36,10 @@ export default {
     }
 
     // create the archive
-    return datLibrary.createNewArchive({title, description, createdBy})
+    return datLibrary.createNewArchive({title, description, createdBy}, {localPath})
   },
 
-  async fork(url, {title, description, createdBy} = {}) {
+  async fork(url, {title, description, createdBy} = {}, {localPath} = {}) {
 
     // get origin info
     if (!createdBy) {
@@ -49,7 +49,7 @@ export default {
     }
 
     // create the archive
-    return datLibrary.forkArchive(url, {title, description, createdBy})
+    return datLibrary.forkArchive(url, {title, description, createdBy}, {localPath})
   },
 
   async add(url) {

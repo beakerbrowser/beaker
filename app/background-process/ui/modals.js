@@ -2,8 +2,8 @@ import {app, BrowserWindow} from 'electron'
 import path from 'path'
 
 const SIZES = {
-  'create-archive': {width: 500, height: 320},
-  'fork-archive': {width: 500, height: 390}
+  'create-archive': {width: 500, height: 390},
+  'fork-archive': {width: 500, height: 460}
 }
 
 // state
@@ -54,14 +54,15 @@ export function showModal (parentWindow, modalName, opts={}) {
 
 export function closeModal (err, res) {
   if (!modalWindow) return true
+  var w = modalWindow
+  modalWindow = null
 
   // resolve/reject the promise
-  if (err) modalWindow.reject(err)
-  else modalWindow.resolve(res)
-  modalWindow.promise = null
+  if (err) w.reject(err)
+  else w.resolve(res)
+  w.promise = null
 
   // destroy
-  modalWindow.close()
-  modalWindow = null
+  w.close()
   return true
 }
