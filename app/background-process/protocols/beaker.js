@@ -224,14 +224,14 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://downloads/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/downloads.build.js'))
   }
-  if (requestUrl === 'beaker://library/') {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/library.html'))
-  }
   if (requestUrl === 'beaker://library/main.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/library.css'))
   }
   if (requestUrl === 'beaker://library/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/library.build.js'))
+  }
+  if (requestUrl === 'beaker://library/' || requestUrl.startsWith('beaker://library/')) {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/library.html'))
   }
   if (requestUrl === 'beaker://settings/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/settings.html'))

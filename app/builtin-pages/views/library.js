@@ -6,6 +6,22 @@ import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
 
+// HACK FIX
+// the good folk of whatwg didnt think to include an event for pushState(), so let's add one
+// -prf
+var _wr = function(type) {
+  var orig = window.history[type];
+  return function() {
+    var rv = orig.apply(this, arguments);
+    var e = new Event(type.toLowerCase());
+    e.arguments = arguments;
+    window.dispatchEvent(e);
+    return rv;
+  };
+};
+window.history.pushState = _wr('pushState')
+window.history.replaceState = _wr('replaceState')
+
 // globals
 // =
 
@@ -24,7 +40,7 @@ async function setup () {
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
   userProfileUrl = (await beaker.profiles.get(0)).url
-  update()
+  await loadCurrentArchive()
 
   // load deleted archives
   trashList = await beaker.archives.list({isSaved: false})
@@ -39,6 +55,44 @@ async function setup () {
 
   // setup handlers
   archivesList.addEventListener('changed', update)
+  window.addEventListener('pushstate', loadCurrentArchive)
+  window.addEventListener('popstate', loadCurrentArchive)
+}
+
+async function parseURLKey () {
+  var path = window.location.pathname
+  if (path === '/' || !path) return false
+  try {
+    // extract key from url
+    var name = /^\/([^\/]+)/.exec(path)[1]
+    if (/[0-9a-f]{64}/i.test(name)) return name
+    return DatArchive.resolveName(name)
+  } catch (e) {
+    console.error('Failed to parse URL', e)
+    throw new Error('Invalid dat URL')
+  }
+}
+
+async function loadCurrentArchive () {
+  // close the trash if necessary
+  if (isTrashOpen) isTrashOpen = false
+
+  try {
+    selectedArchiveKey = await parseURLKey()
+    if (selectedArchiveKey) {
+      selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
+      selectedArchive.history = (await (new DatArchive(selectedArchiveKey)).history())
+
+      // sort history in descending order
+      selectedArchive.history.reverse()
+    } else {
+      selectedArchive = null
+    }
+  } catch (e) {
+    console.error(e)
+  }
+
+  update()
 }
 
 // rendering
@@ -100,20 +154,6 @@ function rView () {
   return ''
 }
 
-async function onSelectArchive () {
-  // close the trash if necessary
-  if (isTrashOpen) isTrashOpen = false
-
-  selectedArchiveKey = this.dataset.key
-  selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
-  selectedArchive.history = (await (new DatArchive(selectedArchiveKey)).history())
-
-  // sort history in descending order
-  selectedArchive.history.reverse()
-
-  update()
-}
-
 function rArchivesList () {
   // apply filter
   var filteredArchives = archivesList.archives.filter(archive => {
@@ -145,7 +185,7 @@ function rArchiveListItem (archiveInfo) {
   }
 
   return yo`
-    <div class="archive ${cls}" data-key=${archiveInfo.key} onclick=${onSelectArchive}>
+    <div class="archive ${cls}" onclick=${onSelectArchive(archiveInfo)}>
       <div class="title">
         ${icon}
         ${niceName(archiveInfo)}
@@ -290,6 +330,12 @@ async function onToggleSaved (e, archiveInfo) {
 function onToggleTrash () {
   isTrashOpen = !isTrashOpen
   update()
+}
+
+function onSelectArchive (archiveInfo) {
+  return e => {
+    history.pushState({}, null, 'beaker://library/' + archiveInfo.key)
+  }
 }
 
 // helpers
