@@ -536,6 +536,7 @@ function onDidNavigateInPage (e) {
   var page = getByWebview(e.target)
   if (page) {
     // update ui
+    page.url = e.url
     navbar.updateLocation(page)
 
     // update history
