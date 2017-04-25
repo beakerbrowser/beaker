@@ -11,6 +11,7 @@ import {grantPermission} from '../../ui/permissions'
 // db modules
 import * as archivesDb from '../../dbs/archives'
 import hyperdrive from 'hyperdrive'
+import hyperstaging from 'hyperdrive-staging-area'
 
 // network modules
 import swarmDefaults from 'datland-swarm-defaults'
@@ -19,7 +20,6 @@ const datDns = require('dat-dns')()
 
 // file modules
 import path from 'path'
-import raf from 'random-access-file'
 import mkdirp from 'mkdirp'
 import getFolderSize from 'get-folder-size'
 
@@ -52,14 +52,11 @@ export function setup () {
       isSaved: settings.isSaved
     }
     archivesEvents.emit(settings.isSaved ? 'added' : 'removed', {details})
-
-    // respond to change internally
-    configureArchive(key, settings)
   })
 
   // load and configure all saved archives
   archivesDb.query(0, {isSaved: true}).then(
-    archives => archives.forEach(a => configureArchive(a.key, a)),
+    archives => archives.forEach(a => loadArchive(a.key, a.userSettings)),
     err => console.error('Failed to load networked archives', err)
   )
 }
@@ -95,8 +92,8 @@ export async function pullLatestArchiveMeta (archive) {
 
     // read the archive meta and size on disk
     var [manifest, size] = await Promise.all([
-      pda.readManifest(archive).catch(err => {}),
-      pify(getFolderSize)(archivesDb.getArchiveFilesPath(archive))
+      pda.readManifest(archive.staging).catch(err => {}),
+      pify(getFolderSize)(archive.staging.path)
     ])
     manifest = manifest || {}
     var {title, description, forkOf, createdBy} = manifest
@@ -122,12 +119,12 @@ export async function pullLatestArchiveMeta (archive) {
 
 export async function createNewArchive (manifest = {}, userSettings = {}) {
   // create the archive
-  var archive = await loadArchive(null)
+  var archive = await loadArchive(null, userSettings)
   var key = datEncoding.toStr(archive.key)
   manifest.url = `dat://${key}/`
 
   // write the manifest then resolve
-  await pda.writeManifest(archive, manifest)
+  await pda.writeManifest(archive.staging, manifest)
 
   // write the user settings
   await archivesDb.setUserSettings(0, key, {
@@ -157,7 +154,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}, userSettings = {}
   }
 
   // fetch old archive meta
-  var srcManifest = await pda.readManifest(srcArchive).catch(err => {})
+  var srcManifest = await pda.readManifest(srcArchive.staging).catch(err => {})
   srcManifest = srcManifest || {}
 
   // override any manifest data
@@ -174,8 +171,8 @@ export async function forkArchive (srcArchiveUrl, manifest={}, userSettings = {}
 
   // copy files
   await pda.exportArchiveToArchive({
-    srcArchive,
-    dstArchive,
+    srcArchive: srcArchive.staging,
+    dstArchive: dstArchive.staging,
     skipUndownloadedFiles: true,
     ignore: ['/dat.json']
   })
@@ -186,7 +183,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}, userSettings = {}
 // archive management
 // =
 
-export async function loadArchive (key) {
+export async function loadArchive (key, userSettings=null) {
   // validate key
   var secretKey
   if (key) {
@@ -212,7 +209,7 @@ export async function loadArchive (key) {
   }
 
   // run and cache the promise
-  var p = loadArchiveInner(key, secretKey)
+  var p = loadArchiveInner(key, secretKey, userSettings)
   archiveLoadPromises[keyStr] = p
 
   // when done, clear the promise
@@ -223,16 +220,26 @@ export async function loadArchive (key) {
 }
 
 // main logic, separated out so we can capture the promise
-async function loadArchiveInner (key, secretKey) {
+async function loadArchiveInner (key, secretKey, userSettings=null) {
+  // load the user settings as needed
+  if (!userSettings) {
+    try {
+      userSettings = await archivesDb.getUserSettings(key)
+    } catch (e) {
+      userSettings = {}
+    }
+  }
 
-  // ensure the folder exists
-  var archivePath = archivesDb.getArchiveFilesPath(key)
-  mkdirp.sync(archivePath)
+  // ensure the folders exist
+  var metaPath = archivesDb.getArchiveMetaPath(key)
+  var stagingPath = userSettings.localPath || archivesDb.getArchiveStagingPath(key)
+  mkdirp.sync(metaPath)
+  mkdirp.sync(stagingPath)
 
   // create the archive instance
-  var archive = hyperdrive(archivePath, key, {sparse: true, secretKey})
+  var archive = hyperdrive(metaPath, key, {sparse: true, secretKey})
+  archive.staging = hyperstaging(archive, stagingPath)
   archive.replicationStreams = [] // list of all active replication streams
-  archive.userSettings = null // will be set by `configureArchive` if at all
   archive.peerHistory = [] // samples of the peer count
 
   // wait for ready
@@ -414,12 +421,6 @@ export function leaveSwarm (key, cb) {
 
 // internal methods
 // =
-
-// load archive and setup any behaviors
-async function configureArchive (key, settings) {
-  var archive = await getOrLoadArchive(key)
-  archive.userSettings = settings
-}
 
 function fromURLToKey (url) {
   if (Buffer.isBuffer(url)) {

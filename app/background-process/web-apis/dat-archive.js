@@ -72,6 +72,36 @@ export default {
     return datLibrary.getArchiveInfo(url)
   },
 
+  async diff(url, opts = {}) {
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive} = await lookupArchive(url)
+      if (checkin('diffing')) return
+      if (!archive.staging) return []
+      return pda.diff(archive.staging)
+    })
+  },
+
+  async commit(url, opts = {}) {
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive} = await lookupArchive(url)
+      if (checkin('committing')) return
+      if (!archive.staging) return []
+      return pda.commit(archive.staging)
+    })
+  },
+
+  async revert(url, opts = {}) {
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive} = await lookupArchive(url)
+      if (checkin('reverting')) return
+      if (!archive.staging) return []
+      return pda.revert(archive.staging)
+    })
+  },
+
   async history(url, opts = {}) {
     return timer(to(opts), async (checkin) => {
       checkin('searching for archive')
@@ -90,7 +120,7 @@ export default {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
       if (checkin('reading stat()')) return
-      return pda.stat(archive, filepath)
+      return pda.stat(archive.staging, filepath)
     })
   },
 
@@ -99,7 +129,7 @@ export default {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
       if (checkin('fetching file')) return
-      return pda.readFile(archive, filepath, opts)
+      return pda.readFile(archive.staging, filepath, opts)
     })
   },
 
@@ -113,7 +143,7 @@ export default {
       await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
       await assertValidFilePath(filepath)
       await assertUnprotectedFilePath(filepath, this.sender)
-      return pda.writeFile(archive, filepath, data, opts)
+      return pda.writeFile(archive.staging, filepath, data, opts)
     })
   },
 
@@ -125,7 +155,7 @@ export default {
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
       await assertUnprotectedFilePath(filepath, this.sender)
-      return pda.unlink(archive, filepath)
+      return pda.unlink(archive.staging, filepath)
     })
   },
 
@@ -137,7 +167,7 @@ export default {
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
       await assertUnprotectedFilePath(dstPath, this.sender)
-      return pda.copy(archive, filepath, dstPath)
+      return pda.copy(archive.staging, filepath, dstPath)
     })
   },
 
@@ -150,7 +180,7 @@ export default {
       await assertWritePermission(archive, this.sender)
       await assertUnprotectedFilePath(filepath, this.sender)
       await assertUnprotectedFilePath(dstPath, this.sender)
-      return pda.rename(archive, filepath, dstPath)
+      return pda.rename(archive.staging, filepath, dstPath)
     })
   },
 
@@ -168,8 +198,7 @@ export default {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
       if (checkin('reading the directory')) return
-      var res = await pda.readdir(archive, filepath, opts)
-      return res
+      return pda.readdir(archive.staging, filepath, opts)
     })
   },
 
@@ -181,7 +210,7 @@ export default {
       await assertWritePermission(archive, this.sender)
       await assertValidPath(filepath)
       await assertUnprotectedFilePath(filepath, this.sender)
-      return pda.mkdir(archive, filepath)
+      return pda.mkdir(archive.staging, filepath)
     })
   },
 
@@ -193,7 +222,7 @@ export default {
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
       await assertUnprotectedFilePath(filepath, this.sender)
-      return pda.rmdir(archive, filepath, opts)
+      return pda.rmdir(archive.staging, filepath, opts)
     })
   },
 
@@ -224,7 +253,7 @@ export default {
       if (checkin('copying files')) return
       return pda.exportFilesystemToArchive({
         srcPath: opts.src,
-        dstArchive: archive,
+        dstArchive: archive.staging,
         dstPath: filepath,
         ignore: opts.ignore,
         dryRun: opts.dryRun,
@@ -261,7 +290,7 @@ export default {
       var {archive, filepath} = await lookupArchive(opts.src)
       if (checkin('copying files')) return
       return pda.exportArchiveToFilesystem({
-        srcArchive: archive,
+        srcArchive: archive.staging,
         srcPath: filepath,
         dstPath: opts.dst,
         ignore: opts.ignore,
@@ -279,9 +308,9 @@ export default {
       var dst = await lookupArchive(opts.dst)
       if (checkin('copying files')) return
       return pda.exportArchiveToArchive({
-        srcArchive: src.archive,
+        srcArchive: src.archive.staging,
         srcPath: src.filepath,
-        dstArchive: dst.archive,
+        dstArchive: dst.archive.staging,
         dstPath: dst.filepath,
         ignore: opts.ignore,
         skipUndownloadedFiles: opts.skipUndownloadedFiles === false ? false : true

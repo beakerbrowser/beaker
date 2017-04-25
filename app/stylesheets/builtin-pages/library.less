@@ -7,6 +7,7 @@
 @import "../components/buttons.less";
 @import "../com/spinner.less";
 @import "../components/inputs.less";
+@import "../components/messages.less";
 
 * {
   box-sizing: border-box;
@@ -26,6 +27,14 @@ main {
   height: 100%;
   border-right: 1px solid @border-menu;
   background: #fff;
+}
+
+.unpublished-message {
+  display: flex;
+
+  & > div:first-child {
+    flex: 1;
+  }
 }
 
 .sidebar-actions {
@@ -225,7 +234,7 @@ main {
   position: relative;
 
   .info, .peer-history, .metadata, .history {
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
   }
 
   .title {

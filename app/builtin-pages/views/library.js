@@ -81,7 +81,11 @@ async function loadCurrentArchive () {
     selectedArchiveKey = await parseURLKey()
     if (selectedArchiveKey) {
       selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
-      selectedArchive.history = (await (new DatArchive(selectedArchiveKey)).history())
+
+      var a = new DatArchive(selectedArchiveKey)
+      var [history, diff] = await Promise.all([a.history(), a.diff()])
+      selectedArchive.history = history
+      selectedArchive.diff = diff
 
       // sort history in descending order
       selectedArchive.history.reverse()
@@ -250,6 +254,8 @@ function rArchive (archiveInfo) {
         </div>
       </div>
 
+      ${rDiffSummary(archiveInfo)}
+
       <h2>Network activity</h2>
       <div class="peer-history">
         ${renderGraph(archiveInfo)}
@@ -270,6 +276,29 @@ function rArchive (archiveInfo) {
       <div class="history">
         ${rArchiveHistory(archiveInfo)}
       </div>
+    </div>
+  `
+}
+
+function rDiffSummary (archiveInfo) {
+  var diff = archiveInfo.diff
+  if (diff.length === 0) {
+    return ''
+  }
+
+  var stats = {add: 0, mod: 0, del: 0}
+  diff.forEach(d => { stats[d.change]++ })
+
+  return yo`
+    <div class="message info unpublished-message">
+      <div>
+        There are ${stats.add} ${pluralize(stats.add, 'addition')},
+        ${stats.mod} ${pluralize(stats.mod, 'change')},
+        and ${stats.del} ${pluralize(stats.del, 'delete')}.
+      </div>
+      <div>
+        <a href="#"><i class="fa fa-caret-right"></i>Review and publish</a>
+      </div> 
     </div>
   `
 }

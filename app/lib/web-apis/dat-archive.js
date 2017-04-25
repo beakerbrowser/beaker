@@ -50,6 +50,18 @@ export default class DatArchive extends EventTarget {
     return dat.getInfo(this.url, opts)
   }
 
+  diff(opts={}) {
+    return dat.diff(this.url, opts)
+  }
+
+  commit(opts={}) {
+    return dat.commit(this.url, opts)
+  }
+
+  revert(opts={}) {
+    return dat.revert(this.url, opts)
+  }
+
   history(opts={}) {
     return dat.history(this.url, opts)
   }
