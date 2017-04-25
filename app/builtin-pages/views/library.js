@@ -1,7 +1,9 @@
 import * as yo from 'yo-yo'
-import {Archive, ArchivesList} from 'builtin-pages-lib'
+import {FileTree, ArchivesList} from 'builtin-pages-lib'
 import {pluralize} from '../../lib/strings'
+import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
+import renderFiles from '../com/library-files-list'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
@@ -31,6 +33,7 @@ var trashList = []
 var isTrashOpen = false
 var currentFilter = ''
 var currentSort = 'mtime'
+var currentSection = 'Files'
 var selectedArchiveKey = ''
 var selectedArchive
 
@@ -76,6 +79,7 @@ async function parseURLKey () {
 async function loadCurrentArchive () {
   // close the trash if necessary
   if (isTrashOpen) isTrashOpen = false
+  currentSection = 'Files' // reset section
 
   try {
     selectedArchiveKey = await parseURLKey()
@@ -83,9 +87,15 @@ async function loadCurrentArchive () {
       selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
 
       var a = new DatArchive(selectedArchiveKey)
-      var [history, diff] = await Promise.all([a.history(), a.diff()])
+      var fileTree = new FileTree(a)
+      var [history, diff, fileTreeRess] = await Promise.all([
+        a.history(),
+        a.diff(),
+        fileTree.setup()
+      ])
       selectedArchive.history = history
       selectedArchive.diff = diff
+      selectedArchive.fileTree = fileTree
 
       // sort history in descending order
       selectedArchive.history.reverse()
@@ -217,7 +227,7 @@ function rArchive (archiveInfo) {
 
   return yo`
     <div class="archive">
-      <div class="info">
+      <section class="info">
         <h1 class="title" title=${archiveInfo.title}>
           <a href="dat://${archiveInfo.key}">${niceName(archiveInfo)}</a>
           ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
@@ -225,7 +235,7 @@ function rArchive (archiveInfo) {
         <p class="description">${niceDesc(archiveInfo)}</p>
         <div class="actions">
           <span class="readonly">${archiveInfo.isOwner ? '' : yo`<em>(Read-only)</em>`}</span>
-          <a class="editor-link btn primary" href="dat://${archiveInfo.key}">
+          <a class="btn" href="dat://${archiveInfo.key}">
             <i class="fa fa-external-link"></i>
             View site
           </a>
@@ -252,30 +262,27 @@ function rArchive (archiveInfo) {
             </div>
           `)}
         </div>
-      </div>
+      </section>
 
       ${rDiffSummary(archiveInfo)}
 
       <h2>Network activity</h2>
-      <div class="peer-history">
+      <section class="peer-history">
         ${renderGraph(archiveInfo)}
-      </div>
+      </section>
 
-      <h2>Metadata</h2>
-      <div class="metadata">
-        <table>
-          <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.size)}</td></tr>
-          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-          <tr><td class="label">URL</td><td>dat://${archiveInfo.key}</td></tr>
-          <tr><td class="label">Local path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
-          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
-        </table>
-      </div>
-
-      <h2>History</h2>
-      <div class="history">
-        ${rArchiveHistory(archiveInfo)}
-      </div>
+      <section>
+        ${renderTabs(currentSection, [
+          {label: 'Files', onclick: onClickTab('Files')},
+          {label: 'History', onclick: onClickTab('History')},
+          {label: 'Metadata', onclick: onClickTab('Metadata')}
+        ])}
+        ${({
+          Files: () => renderFiles(archiveInfo),
+          History: () => rHistory(archiveInfo),
+          Metadata: () => rMetadata(archiveInfo)
+        })[currentSection]()}
+      </section>
     </div>
   `
 }
@@ -290,20 +297,20 @@ function rDiffSummary (archiveInfo) {
   diff.forEach(d => { stats[d.change]++ })
 
   return yo`
-    <div class="message info unpublished-message">
+    <section class="message info diff-summary">
       <div>
         There are ${stats.add} ${pluralize(stats.add, 'addition')},
         ${stats.mod} ${pluralize(stats.mod, 'change')},
-        and ${stats.del} ${pluralize(stats.del, 'delete')}.
+        and ${stats.del} ${pluralize(stats.del, 'deletion')}.
       </div>
       <div>
-        <a href="#"><i class="fa fa-caret-right"></i>Review and publish</a>
+        <a href="#">Review and publish</a>
       </div> 
-    </div>
+    </section>
   `
 }
 
-function rArchiveHistory (archiveInfo) {
+function rHistory (archiveInfo) {
   var rowEls = []
   archiveInfo.history.forEach(item => {
     var date = item.value ? niceDate(item.value.mtime) : ''
@@ -318,7 +325,25 @@ function rArchiveHistory (archiveInfo) {
     `)
   })
 
-  return yo`<ul>${rowEls}</ul>`
+  if (rowEls.length === 0) {
+    rowEls.push(yo`<em>Nothing has been published yet.</em>`)
+  }
+
+  return yo`<ul class="history">${rowEls}</ul>`
+}
+
+function rMetadata (archiveInfo) {
+  return yo`
+    <div class="metadata">
+      <table>
+        <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.size)}</td></tr>
+        <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
+        <tr><td class="label">URL</td><td>dat://${archiveInfo.key}</td></tr>
+        <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
+        <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
+      </table>
+    </div>
+  `
 }
 
 function rTrash () {
@@ -376,6 +401,13 @@ function onToggleTrash () {
 function onSelectArchive (archiveInfo) {
   return e => {
     history.pushState({}, null, 'beaker://library/' + archiveInfo.key)
+  }
+}
+
+function onClickTab (tab) {
+  return e => {
+    currentSection = tab
+    update()
   }
 }
 

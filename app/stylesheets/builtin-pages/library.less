@@ -7,7 +7,9 @@
 @import "../components/buttons.less";
 @import "../com/spinner.less";
 @import "../components/inputs.less";
+@import "../components/tabs.less";
 @import "../components/messages.less";
+@import "../components/files-list.less";
 
 * {
   box-sizing: border-box;
@@ -29,12 +31,16 @@ main {
   background: #fff;
 }
 
-.unpublished-message {
+.diff-summary {
   display: flex;
 
   & > div:first-child {
     flex: 1;
   }
+}
+
+.tabs {
+  margin-bottom: 1rem;
 }
 
 .sidebar-actions {
@@ -233,7 +239,7 @@ main {
 .view .archive {
   position: relative;
 
-  .info, .peer-history, .metadata, .history {
+  section {
     margin-bottom: 2rem;
   }
 
