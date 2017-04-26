@@ -83,27 +83,31 @@ async function parseURLKey () {
 async function loadCurrentArchive () {
   // close the trash if necessary
   if (isTrashOpen) isTrashOpen = false
+  if (selectedArchive && selectedArchive.events) {
+    selectedArchive.events.close()
+    selectedArchive.events = null
+  }
   currentSection = 'files' // reset section
 
   try {
     selectedArchiveKey = await parseURLKey()
     if (selectedArchiveKey) {
       selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
+      await reloadDiff()
 
+      // load all data needed
       var a = new DatArchive(selectedArchiveKey)
       var fileTree = new FileTree(a)
-      var [history, diff, fileTreeRes] = await Promise.all([
+      var [history, fileTreeRes] = await Promise.all([
         a.history(),
-        a.diff(),
         fileTree.setup()
       ])
       selectedArchive.history = history
-      selectedArchive.diff = diff
       selectedArchive.fileTree = fileTree
+      selectedArchive.events = a.createFileActivityStream()
 
-      var stats = {add: 0, mod: 0, del: 0}
-      diff.forEach(d => { stats[d.change]++ })
-      selectedArchive.diffStats = stats
+      // wire up events
+      selectedArchive.events.addEventListener('changed', onFileChanged)
 
       // sort history in descending order
       selectedArchive.history.reverse()
@@ -115,6 +119,19 @@ async function loadCurrentArchive () {
   }
 
   update()
+}
+
+async function reloadDiff () {
+  if (!selectedArchive) return
+
+  // load diff
+  var a = new DatArchive(selectedArchiveKey)
+  var diff = selectedArchive.diff = await a.diff()
+
+  // calc diff stats
+  var stats = {add: 0, mod: 0, del: 0}
+  diff.forEach(d => { stats[d.change]++ })
+  selectedArchive.diffStats = stats
 }
 
 // rendering
@@ -429,13 +446,11 @@ async function onPublish () {
   try {
     var a = new DatArchive(selectedArchiveKey)
     await a.commit()
-    await loadCurrentArchive()
     toast.create('Your changes have been published')
   } catch (e) {
     console.error(e)
     toast.create(e.toString())
   }
-  update()
 }
 
 async function onRevert () {
@@ -446,12 +461,15 @@ async function onRevert () {
   try {
     var a = new DatArchive(selectedArchiveKey)
     await a.revert()
-    await loadCurrentArchive()
     toast.create('Your files have been reverted')
   } catch (e) {
     console.error(e)
     toast.create(e.toString())
   }
+}
+
+async function onFileChanged () {
+  await reloadDiff()
   update()
 }
 

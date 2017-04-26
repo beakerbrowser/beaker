@@ -45,13 +45,19 @@ var archivesEvents = new EventEmitter()
 
 export function setup () {
   // wire up event handlers
-  archivesDb.on('update:archive-user-settings', (key, settings) => {
+  archivesDb.on('update:archive-user-settings', async (key, settings) => {
     // emit event
     var details = {
       url: 'dat://' + key,
       isSaved: settings.isSaved
     }
     archivesEvents.emit(settings.isSaved ? 'added' : 'removed', {details})
+
+    // update the staging based on these settings
+    var archive = getArchive(key)
+    if (archive) {
+      configureStaging(archive, settings)
+    }
   })
 
   // load and configure all saved archives
@@ -92,8 +98,8 @@ export async function pullLatestArchiveMeta (archive) {
 
     // read the archive meta and size on disk
     var [manifest, size] = await Promise.all([
-      pda.readManifest(archive.staging).catch(err => {}),
-      pify(getFolderSize)(archive.staging.path)
+      pda.readManifest(archive.currentFS).catch(err => {}),
+      pify(getFolderSize)(archivesDb.getArchiveMetaPath(key))
     ])
     manifest = manifest || {}
     var {title, description, forkOf, createdBy} = manifest
@@ -154,7 +160,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}, userSettings = {}
   }
 
   // fetch old archive meta
-  var srcManifest = await pda.readManifest(srcArchive.staging).catch(err => {})
+  var srcManifest = await pda.readManifest(srcArchive.currentFS).catch(err => {})
   srcManifest = srcManifest || {}
 
   // override any manifest data
@@ -171,8 +177,8 @@ export async function forkArchive (srcArchiveUrl, manifest={}, userSettings = {}
 
   // copy files
   await pda.exportArchiveToArchive({
-    srcArchive: srcArchive.staging,
-    dstArchive: dstArchive.staging,
+    srcArchive: srcArchive.currentFS,
+    dstArchive: dstArchive.currentFS,
     skipUndownloadedFiles: true,
     ignore: ['/dat.json']
   })
@@ -232,15 +238,16 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
 
   // ensure the folders exist
   var metaPath = archivesDb.getArchiveMetaPath(key)
-  var stagingPath = userSettings.localPath || archivesDb.getArchiveStagingPath(key)
   mkdirp.sync(metaPath)
-  mkdirp.sync(stagingPath)
 
   // create the archive instance
   var archive = hyperdrive(metaPath, key, {sparse: true, secretKey})
-  archive.staging = hyperstaging(archive, stagingPath)
   archive.replicationStreams = [] // list of all active replication streams
   archive.peerHistory = [] // samples of the peer count
+  configureStaging(archive, userSettings, !!secretKey)
+  Object.defineProperty(archive, 'currentFS', {
+    get: () => !!secretKey ? archive.staging : archive
+  })
 
   // wait for ready
   await new Promise((resolve, reject) => {
@@ -255,8 +262,8 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
 
   // await metadata sync if not the owner
   if (!archive.writable) {
+    // wait to receive a first update
     if (!archive.metadata.length) {
-      // wait to receive a first update
       await new Promise((resolve, reject) => {
         archive.metadata.update(err => {
           if (err) reject(err)
@@ -441,6 +448,33 @@ function fromKeyToURL (key) {
     return `dat://${key}/`
   }
   return key
+}
+
+function configureStaging (archive, userSettings, isWritableOverride) {
+  // create staging if writable or saved
+  var isWritable = (archive.writable || isWritableOverride)
+  var isSaved = (userSettings.isSaved && !!userSettings.localPath)
+  if (isWritable || isSaved) {
+    if (archive.staging) {
+      return // noop
+    }
+
+    // setup staging
+    let stagingPath = userSettings.localPath || archivesDb.getArchiveStagingPath(archive)
+    archive.staging = hyperstaging(archive, stagingPath)
+    mkdirp.sync(stagingPath)
+
+    // autosync if not writable
+    if (!isWritable) {
+      archive.staging.startAutoSync()
+    }
+  } else {
+    // close staging if it exists
+    if (archive.staging) {
+      archive.staging.stopAutoSync()      
+    }
+    archive.staging = null
+  }
 }
 
 function onNetworkChanged (e) {
