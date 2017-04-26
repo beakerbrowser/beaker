@@ -1,6 +1,7 @@
-import {BrowserWindow} from 'electron'
+import {dialog, BrowserWindow} from 'electron'
 import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
+import jetpack from 'fs-jetpack'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
@@ -40,7 +41,6 @@ export default {
   },
 
   async fork(url, {title, description, createdBy} = {}, {localPath} = {}) {
-
     // get origin info
     if (!createdBy) {
       createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
@@ -52,10 +52,28 @@ export default {
     return datLibrary.forkArchive(url, {title, description, createdBy}, {localPath})
   },
 
-  async add(url) {
+  async add(url, {localPath} = {}) {
     var key = toKey(url)
+
+    // load localPath if needed
+    if (!localPath) {
+      try {
+        let settings = await archivesDb.getUserSettings(0, key)
+        localPath = settings.localPath
+      } catch (e) {}
+    }
+
+    // prompt localPath if needed
+    if (!localPath) {
+      localPath = await promptLocalPath()
+      if (!localPath) {
+        throw new Error('Cancelled')
+      }
+    }
+
     // update settings
-    var res = await archivesDb.setUserSettings(0, key, {isSaved: true})
+    var res = await archivesDb.setUserSettings(0, key, {isSaved: true, localPath})
+
     // pull metadata
     var archive = await datLibrary.getOrLoadArchive(key)
     datLibrary.pullLatestArchiveMeta(archive)
@@ -128,4 +146,44 @@ function toKey (url) {
   }
 
   return urlp.host
+}
+
+async function promptLocalPath () {
+  while (true) {
+    // prompt for destination
+    var localPath = await new Promise((resolve) => {
+      dialog.showOpenDialog({
+        title: 'Save site files',
+        buttonLabel: 'Save',
+        properties: ['openDirectory', 'showHiddenFiles', 'createDirectory']
+      }, filenames => {
+        resolve(filenames && filenames[0])
+      })
+    })
+    if (!localPath) {
+      return
+    }
+
+    // check if the target is empty
+    try {
+      var files = await jetpack.listAsync(localPath)
+      if (files && files.length > 0) {
+        // ask the user if they're sure
+        var res = await new Promise(resolve => {
+          dialog.showMessageBox({
+            type: 'question',
+            message: 'This folder is not empty. Some files may be overwritten. Save to this folder?',
+            buttons: ['Yes', 'Cancel']
+          }, resolve)
+        })
+        if (res != 0) {
+          continue
+        }
+      }
+    } catch (e) {
+      // no files
+    }
+
+    return localPath
+  }
 }

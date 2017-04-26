@@ -318,7 +318,7 @@ export class DropMenuNavbarBtn {
       await beaker.archives.remove(page.siteInfo.key)
       page.siteInfo.userSettings.isSaved = false
     } else {
-      await beaker.archives.add(page.siteInfo.key) 
+      await beaker.archives.add(page.siteInfo.key)
       page.siteInfo.userSettings.isSaved = true     
     }
 
