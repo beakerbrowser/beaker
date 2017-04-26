@@ -175,7 +175,7 @@ async function datServer (req, res) {
   const tryStat = async (path) => {
     if (entry) return
     try {
-      entry = await pda.stat(archive, path)
+      entry = await pda.stat(archive.staging, path)
       entry.path = path
     } catch (e) {}
   }
@@ -199,7 +199,7 @@ async function datServer (req, res) {
       'Content-Security-Policy': DAT_CSP,
       'Access-Control-Allow-Origin': '*'
     })
-    res.end(await directoryListingPage(archive, urlp.path))
+    res.end(await directoryListingPage(archive.staging, urlp.path))
   }
 
   // handle not found
@@ -230,7 +230,7 @@ async function datServer (req, res) {
 
   // fetch the entry and stream the response
   debug('Entry found:', entry.path)
-  fileReadStream = archive.createReadStream(entry.path)
+  fileReadStream = archive.staging.createReadStream(entry.path)
   fileReadStream
     .pipe(mime.identifyStream(entry.path, mimeType => {
       // cleanup the timeout now, as bytes have begun to stream
