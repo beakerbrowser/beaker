@@ -42,7 +42,7 @@
 @border-message--primary: tint(@blue, 68%);
 @background-message--info: tint(@yellow, 80%);
 @color-message--info : mix(@color-text, tint(@yellow, 50%), 40%);
-@border-message--info : tint(@yellow, 68%);
+@border-message--info : mix(@color-text, tint(@yellow, 68%), 8%);
 @background-message--error: tint(@red, 80%);
 @color-message--error: mix(@color-text, tint(@red, 50%), 40%);
 @border-message--error: tint(@red, 68%);
@@ -65,8 +65,13 @@
 @border-popup: shade(#fff, 25%);
 
 // Files list
-@color-files-list-item-link: #1565C0;
+@color-files-list-item-link: @color-link;
 @background-files-list-item--hover: tint(@blue, 95%);
+
+// Changes
+@color-change--add: @green;
+@color-change--mod: @yellow;
+@color-change--del: @red;
 
 // Shell window
 @background-shell-window: shade(#fff, 3%);// #fafafa;

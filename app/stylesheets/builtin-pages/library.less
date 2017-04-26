@@ -10,12 +10,13 @@
 @import "../components/tabs.less";
 @import "../components/messages.less";
 @import "../components/files-list.less";
+@import "./components/toast";
 
 * {
   box-sizing: border-box;
 }
 
-main {
+body {
   &:extend(.system-font);
   font-size: 14px;
 }
@@ -256,7 +257,7 @@ main {
     }
   }
 
-  .actions {
+  .info .actions {
     position: absolute;
     right: 0;
     top: 1px;
@@ -316,6 +317,69 @@ main {
         min-width: 80px;
         color: @color-text--muted;
         margin-right: 1rem;
+      }
+    }
+  }
+
+  .changes {
+    display: flex;
+
+    .actions {
+      flex: 0 0 150px;
+      padding-right: 15px;
+
+      .btn {
+        display: block;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+    }
+
+    .heading {
+      display: inline-block;
+      cursor: pointer;
+
+      i {
+        width: 14px;
+        text-align: center;
+        margin-right: @margin-icon;
+      }
+
+      &:hover span {
+        text-decoration: underline;
+      }
+
+      &.add .op {
+        color: @color-change--add;
+      }
+      &.mod .op {
+        color: @color-change--mod;
+      }
+      &.del .op {
+        color: @color-change--del;
+      }
+    }
+
+    .files {
+      padding: 5px 15px;
+      border-left: 1px solid @border-menu;
+      margin: 6px;
+      font-size: 13px;
+
+      & > div {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .link {
+        color: @color-text--muted;
+      }
+
+      .show-all {
+        display: inline-block;
+        margin-top: 5px;
+        color: @color-link;
       }
     }
   }

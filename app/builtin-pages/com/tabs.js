@@ -5,7 +5,7 @@ export default function tabs (current, tabs) {
     <div class="tabs">
       ${tabs.map(tab => {
         var cls = 'tab'
-        if (tab.label === current) {
+        if (tab.id === current) {
           cls += ' active'
         }
         return yo`<a class=${cls} onclick=${tab.onclick}>${tab.label}</a>`

@@ -4,9 +4,13 @@ import {pluralize} from '../../lib/strings'
 import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
 import renderFiles from '../com/library-files-list'
+import renderChanges from '../com/archive-changes'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
+import * as toast from '../com/toast'
+
+window.toast = toast
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -33,7 +37,7 @@ var trashList = []
 var isTrashOpen = false
 var currentFilter = ''
 var currentSort = 'mtime'
-var currentSection = 'Files'
+var currentSection = 'files'
 var selectedArchiveKey = ''
 var selectedArchive
 
@@ -79,7 +83,7 @@ async function parseURLKey () {
 async function loadCurrentArchive () {
   // close the trash if necessary
   if (isTrashOpen) isTrashOpen = false
-  currentSection = 'Files' // reset section
+  currentSection = 'files' // reset section
 
   try {
     selectedArchiveKey = await parseURLKey()
@@ -88,7 +92,7 @@ async function loadCurrentArchive () {
 
       var a = new DatArchive(selectedArchiveKey)
       var fileTree = new FileTree(a)
-      var [history, diff, fileTreeRess] = await Promise.all([
+      var [history, diff, fileTreeRes] = await Promise.all([
         a.history(),
         a.diff(),
         fileTree.setup()
@@ -96,6 +100,10 @@ async function loadCurrentArchive () {
       selectedArchive.history = history
       selectedArchive.diff = diff
       selectedArchive.fileTree = fileTree
+
+      var stats = {add: 0, mod: 0, del: 0}
+      diff.forEach(d => { stats[d.change]++ })
+      selectedArchive.diffStats = stats
 
       // sort history in descending order
       selectedArchive.history.reverse()
@@ -225,6 +233,11 @@ function rArchive (archiveInfo) {
     toggleSaveText = 'Save to library'
   }
 
+  var changesLabel = 'Changes'
+  if (archiveInfo.diff.length > 0) {
+    changesLabel = `Changes (${archiveInfo.diff.length})`
+  }
+
   return yo`
     <div class="archive">
       <section class="info">
@@ -273,14 +286,16 @@ function rArchive (archiveInfo) {
 
       <section>
         ${renderTabs(currentSection, [
-          {label: 'Files', onclick: onClickTab('Files')},
-          {label: 'History', onclick: onClickTab('History')},
-          {label: 'Metadata', onclick: onClickTab('Metadata')}
+          {id: 'files', label: 'Files', onclick: onClickTab('files')},
+          {id: 'changes', label: changesLabel, onclick: onClickTab('changes')},
+          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')},
+          {id: 'log', label: 'Log', onclick: onClickTab('log')},
         ])}
         ${({
-          Files: () => renderFiles(archiveInfo),
-          History: () => rHistory(archiveInfo),
-          Metadata: () => rMetadata(archiveInfo)
+          files: () => renderFiles(archiveInfo),
+          log: () => rHistory(archiveInfo),
+          metadata: () => rMetadata(archiveInfo),
+          changes: () => renderChanges(archiveInfo, {onPublish, onRevert})
         })[currentSection]()}
       </section>
     </div>
@@ -293,9 +308,7 @@ function rDiffSummary (archiveInfo) {
     return ''
   }
 
-  var stats = {add: 0, mod: 0, del: 0}
-  diff.forEach(d => { stats[d.change]++ })
-
+  var stats = archiveInfo.diffStats
   return yo`
     <section class="message info diff-summary">
       <div>
@@ -304,7 +317,7 @@ function rDiffSummary (archiveInfo) {
         and ${stats.del} ${pluralize(stats.del, 'deletion')}.
       </div>
       <div>
-        <a href="#">Review and publish</a>
+        <a onclick=${onClickTab('changes')} href="#">Review and publish</a>
       </div> 
     </section>
   `
@@ -406,9 +419,40 @@ function onSelectArchive (archiveInfo) {
 
 function onClickTab (tab) {
   return e => {
+    e.preventDefault()
     currentSection = tab
     update()
   }
+}
+
+async function onPublish () {
+  try {
+    var a = new DatArchive(selectedArchiveKey)
+    await a.commit()
+    await loadCurrentArchive()
+    toast.create('Your changes have been published')
+  } catch (e) {
+    console.error(e)
+    toast.create(e.toString())
+  }
+  update()
+}
+
+async function onRevert () {
+  if (!confirm('This will revert all files to the last published state. Are you sure?')) {
+    return
+  }
+
+  try {
+    var a = new DatArchive(selectedArchiveKey)
+    await a.revert()
+    await loadCurrentArchive()
+    toast.create('Your files have been reverted')
+  } catch (e) {
+    console.error(e)
+    toast.create(e.toString())
+  }
+  update()
 }
 
 // helpers
