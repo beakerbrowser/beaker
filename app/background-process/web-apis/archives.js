@@ -52,7 +52,7 @@ export default {
     return datLibrary.forkArchive(url, {title, description, createdBy}, {localPath})
   },
 
-  async add(url, {localPath} = {}) {
+  async add(url, {localPath, promptLocalPath} = {}) {
     var key = toKey(url)
 
     // load localPath if needed
@@ -64,8 +64,8 @@ export default {
     }
 
     // prompt localPath if needed
-    if (!localPath) {
-      localPath = await promptLocalPath()
+    if (!localPath || promptLocalPath) {
+      localPath = await localPathPrompt()
       if (!localPath) {
         throw new Error('Cancelled')
       }
@@ -148,7 +148,7 @@ function toKey (url) {
   return urlp.host
 }
 
-async function promptLocalPath () {
+async function localPathPrompt () {
   while (true) {
     // prompt for destination
     var localPath = await new Promise((resolve) => {

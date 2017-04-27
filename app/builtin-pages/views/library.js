@@ -92,11 +92,10 @@ async function loadCurrentArchive () {
   try {
     selectedArchiveKey = await parseURLKey()
     if (selectedArchiveKey) {
-      selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
-
       // load all data needed
       var a = new DatArchive(selectedArchiveKey)
       var fileTree = new FileTree(a)
+      selectedArchive = await a.getInfo()
       var [history, fileTreeRes, _] = await Promise.all([
         a.history(),
         fileTree.setup(),
@@ -105,6 +104,7 @@ async function loadCurrentArchive () {
       selectedArchive.history = history
       selectedArchive.fileTree = fileTree
       selectedArchive.events = a.createFileActivityStream()
+    console.log(selectedArchive)      
 
       // wire up events
       selectedArchive.events.addEventListener('changed', onFileChanged)
@@ -122,19 +122,22 @@ async function loadCurrentArchive () {
 }
 
 async function reloadDiff () {
-  console.log(selectedArchive)
   if (!selectedArchive || !selectedArchive.isOwner) {
     return
   }
 
-  // load diff
-  var a = new DatArchive(selectedArchiveKey)
-  var diff = selectedArchive.diff = await a.diff()
+  selectedArchive.diff = []
+  var stats = selectedArchive.diffStats = {add: 0, mod: 0, del: 0}
+  try {
+    // load diff
+    var a = new DatArchive(selectedArchiveKey)
+    var diff = selectedArchive.diff = await a.diff()
 
-  // calc diff stats
-  var stats = {add: 0, mod: 0, del: 0}
-  diff.forEach(d => { stats[d.change]++ })
-  selectedArchive.diffStats = stats
+    // calc diff stats
+    diff.forEach(d => { stats[d.change]++ })
+  } catch (e) {
+    // this can happen if the site's folder has disappeared
+  }
 }
 
 // rendering
@@ -253,6 +256,7 @@ function rArchive (archiveInfo) {
     toggleSaveText = 'Save to library'
   }
 
+  var showChanges = archiveInfo.isOwner && archiveInfo.userSettings.isSaved
   var changesLabel = 'Changes'
   if (archiveInfo.diff && archiveInfo.diff.length > 0) {
     changesLabel = `Changes (${archiveInfo.diff.length})`
@@ -297,7 +301,9 @@ function rArchive (archiveInfo) {
         </div>
       </section>
 
-      ${rDiffSummary(archiveInfo)}
+      ${rNotSaved(archiveInfo)}
+      ${rMissingLocalPathMessage(archiveInfo)}
+      ${rDiffMessage(archiveInfo)}
 
       <h2>Network activity</h2>
       <section class="peer-history">
@@ -307,9 +313,9 @@ function rArchive (archiveInfo) {
       <section>
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Files', onclick: onClickTab('files')},
-          archiveInfo.isOwner ? {id: 'changes', label: changesLabel, onclick: onClickTab('changes')} : undefined,
-          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')},
+          showChanges ? {id: 'changes', label: changesLabel, onclick: onClickTab('changes')} : undefined,
           {id: 'log', label: 'Log', onclick: onClickTab('log')},
+          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')}
         ].filter(Boolean))}
         ${({
           files: () => renderFiles(archiveInfo),
@@ -322,11 +328,44 @@ function rArchive (archiveInfo) {
   `
 }
 
-function rDiffSummary (archiveInfo) {
-  if (!archiveInfo.isOwner) {
+function rNotSaved (archiveInfo) {
+  if (archiveInfo.userSettings.isSaved) {
     return ''
   }
-  
+  return yo`
+    <section class="message primary">
+      This archive is not saved to your library. <a href="#" onclick=${onToggleSaved}>Save now.</a>
+    </section>
+  `
+}
+
+function rMissingLocalPathMessage (archiveInfo) {
+  if (!archiveInfo.userSettings.isSaved || archiveInfo.localPathExists) {
+    return ''
+  }
+  return yo`
+    <section class="message error missing-local-path">
+      <div>
+        <i class="fa fa-exclamation-triangle"></i>
+        <strong>Beaker cannot find the local copy of this site.</strong>
+        This is probably because the folder was moved or deleted.
+      </div>
+      <ul>
+        <li>If it was moved, you can <a href="#" onclick=${onUpdateLocation}>update the location</a> and things will resume as before.</li>
+        <li>If it was deleted accidentally (or you dont know what happened) you can <a href="#" onclick=${onUpdateLocation}>choose a
+          new location</a> and we${"'"}ll restore the files from the last published state.</li>
+        <li>If it was deleted on purpose, and you don${"'"}t want to keep the site anymore,
+          you can <a href="#" onclick=${onToggleSaved}>delete it from your library</a>.</li>
+      </ul>
+    </section>
+  `
+}
+
+function rDiffMessage (archiveInfo) {
+  if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
+    return ''
+  }
+
   var diff = archiveInfo.diff
   if (diff.length === 0) {
     return ''
@@ -392,7 +431,7 @@ function rTrash () {
         ${trashList.map(archiveInfo => yo`
           <li class="trash-item">
             <a href=${archiveInfo.key}>${niceName(archiveInfo)}</a>
-            <button class="restore" onclick=${e => onToggleSaved(e, archiveInfo)}>
+            <button class="restore" onclick=${onToggleSaved}>
               Restore
             </button>
           </li>`
@@ -417,15 +456,16 @@ function onOpenFolder (e, archiveInfo) {
   update()
 }
 
-async function onToggleSaved (e, archiveInfo) {
-  if (archiveInfo.userSettings.isSaved) {
-    trashList.unshift(archiveInfo)
-    await beaker.archives.remove(archiveInfo.key)
-    archiveInfo.userSettings.isSaved = false
+async function onToggleSaved (e) {
+  e.preventDefault()
+  if (selectedArchive.userSettings.isSaved) {
+    trashList.unshift(selectedArchive)
+    await beaker.archives.remove(selectedArchive.key)
+    selectedArchive.userSettings.isSaved = false
   } else {
-    trashList.splice(trashList.findIndex(a => a.key === archiveInfo.key), 1)
-    await beaker.archives.add(archiveInfo.key)
-    archiveInfo.userSettings.isSaved = true
+    trashList.splice(trashList.findIndex(a => a.key === selectedArchive.key), 1)
+    await beaker.archives.add(selectedArchive.key)
+    selectedArchive.userSettings.isSaved = true
   }
   update()
 }
@@ -478,6 +518,12 @@ async function onRevert () {
 async function onFileChanged () {
   await reloadDiff()
   update()
+}
+
+async function onUpdateLocation (e) {
+  e.preventDefault()
+  await beaker.archives.add(selectedArchiveKey, {promptLocalPath: true})
+  loadCurrentArchive()
 }
 
 // helpers

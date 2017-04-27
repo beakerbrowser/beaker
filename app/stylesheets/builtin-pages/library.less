@@ -32,11 +32,19 @@ body {
   background: #fff;
 }
 
-.diff-summary {
-  display: flex;
+.message {
+  &.missing-local-path {
+    li {
+      margin: 1em 0;
+    }
+  }
 
-  & > div:first-child {
-    flex: 1;
+  &.diff-summary {
+    display: flex;
+
+    & > div:first-child {
+      flex: 1;
+    }
   }
 }
 

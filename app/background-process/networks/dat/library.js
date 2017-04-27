@@ -22,6 +22,7 @@ const datDns = require('dat-dns')()
 import path from 'path'
 import mkdirp from 'mkdirp'
 import getFolderSize from 'get-folder-size'
+import jetpack from 'fs-jetpack'
 
 // constants
 // =
@@ -244,7 +245,7 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
   var archive = hyperdrive(metaPath, key, {sparse: true, secretKey})
   archive.replicationStreams = [] // list of all active replication streams
   archive.peerHistory = [] // samples of the peer count
-  configureStaging(archive, userSettings, !!secretKey)
+  await configureStaging(archive, userSettings, !!secretKey)
   Object.defineProperty(archive, 'currentFS', {
     get: () => !!secretKey ? archive.staging : archive
   })
@@ -345,9 +346,12 @@ export async function getArchiveInfo (key) {
   ])
   meta.key = key
   meta.url = `dat://${key}`
-  meta.userSettings = { isSaved: userSettings.isSaved }
+  meta.userSettings = {localPath: userSettings.localPath, isSaved: userSettings.isSaved}
   meta.peers = archive.metadata.peers.length
   meta.peerHistory = archive.peerHistory
+  if (userSettings.localPath) {
+    meta.localPathExists = ((await jetpack.existsAsync(userSettings.localPath)) === 'dir')
+  }
 
   return meta
 }
@@ -450,19 +454,18 @@ function fromKeyToURL (key) {
   return key
 }
 
-function configureStaging (archive, userSettings, isWritableOverride) {
+async function configureStaging (archive, userSettings, isWritableOverride) {
   // create staging if writable or saved
   var isWritable = (archive.writable || isWritableOverride)
-  var isSaved = (userSettings.isSaved && !!userSettings.localPath)
-  if (isWritable || isSaved) {
+  var isSaved = userSettings.isSaved
+  if ((isWritable || isSaved) && !!userSettings.localPath) {
     if (archive.staging) {
       return // noop
     }
 
     // setup staging
-    let stagingPath = userSettings.localPath || archivesDb.getArchiveStagingPath(archive)
+    let stagingPath = userSettings.localPath
     archive.staging = hyperstaging(archive, stagingPath)
-    mkdirp.sync(stagingPath)
 
     // autosync if not writable
     if (!isWritable) {

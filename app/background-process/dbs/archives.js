@@ -75,6 +75,7 @@ export async function query (profileId, query) {
       title: archive.createdByTitle,
       url: archive.createdByUrl
     }
+    try { archive.forkOf = JSON.parse(archive.forkOf) } catch (e) {}
     archive.userSettings = {
       isSaved: archive.isSaved != 0,
       localPath: archive.localPath
