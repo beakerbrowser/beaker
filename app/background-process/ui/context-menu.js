@@ -157,9 +157,9 @@ export default function registerContextMenu () {
         menuItems.push({ type: 'separator' })      
       }
 
-      // edit source
+      // dat items
       if (props.pageURL.startsWith('dat://')) {
-        menuItems.push({ label: 'Edit Source', click: (item, win) => win.webContents.send('command', 'file:new-tab', 'beaker://editor/' + props.pageURL.slice('dat://'.length)) })        
+        menuItems.push({ label: 'View Site Files', click: (item, win) => win.webContents.send('command', 'file:new-tab', 'beaker://library/' + props.pageURL.slice('dat://'.length)) })        
       }
 
       // inspector

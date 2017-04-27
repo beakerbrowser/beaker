@@ -101,9 +101,9 @@ export class DropMenuNavbarBtn {
           <div class="dropdown-items with-triangle visible">
             ${isDatSite ? yo`
               <div class="list page">
-                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onEdit(e)}>
-                  <i class="fa fa-pencil-square-o"></i>
-                  Open in Editor
+                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onViewFiles(e)}>
+                  <i class="fa fa-files-o"></i>
+                  View site files
                 </div>
                 <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onFork(e)}>
                   <i class="fa fa-code-fork"></i>
@@ -349,7 +349,7 @@ export class DropMenuNavbarBtn {
     page.loadURL(archive.url)
   }
 
-  async onEdit (e) {
+  async onViewFiles (e) {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
@@ -358,7 +358,7 @@ export class DropMenuNavbarBtn {
     if (!page || !page.getURL().startsWith('dat://')) {
       return
     }
-    page.loadURL(`beaker://editor/${page.getURL().slice('dat://'.length)}`)
+    page.loadURL(`beaker://library/${page.getURL().slice('dat://'.length)}`)
   }
 
   onToggleLiveReloading (e) {
