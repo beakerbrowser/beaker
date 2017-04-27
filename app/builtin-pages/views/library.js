@@ -235,7 +235,7 @@ function rArchiveListItem (archiveInfo) {
         ${niceName(archiveInfo)}
         ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
       </div>
-      <span class="last-updated">Updated ${niceDate(archiveInfo.mtime)}</span>
+      <span class="last-updated">Updated ${niceDate(archiveInfo.mtime || 0)}</span>
       <span class="peers">
         <i class="fa fa-share-alt"></i>
         ${archiveInfo.peers}
@@ -255,9 +255,9 @@ function rArchive (archiveInfo) {
   }
 
   var showChanges = archiveInfo.isOwner && archiveInfo.userSettings.isSaved
-  var changesLabel = 'Changes'
+  var changesLabel = 'Diff'
   if (archiveInfo.diff && archiveInfo.diff.length > 0) {
-    changesLabel = `Changes (${archiveInfo.diff.length})`
+    changesLabel = `Diff (${archiveInfo.diff.length})`
   }
 
   return yo`
@@ -293,6 +293,10 @@ function rArchive (archiveInfo) {
                       <i class="fa fa-folder-open-o"></i>
                       Open folder
                     </a>`}
+                <div class="dropdown-item" onclick=${onFork}>
+                  <i class="fa fa-code-fork"></i>
+                  Fork this site
+                </div>
                 <div class="dropdown-item" onclick=${onToggleSaved}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
@@ -460,6 +464,13 @@ function onOpenFolder (e) {
     beakerBrowser.openFolder(selectedArchive.userSettings.localPath)
   }
   update()
+}
+
+async function onFork (e) {
+  e.preventDefault()
+  update()
+  var a = await DatArchive.fork(selectedArchive.url)
+  history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
 }
 
 async function onToggleSaved (e) {
