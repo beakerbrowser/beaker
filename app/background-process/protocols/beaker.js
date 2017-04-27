@@ -14,11 +14,10 @@ import {getUserSetupStatus} from '../browser'
 // =
 
 // content security policies
-// the hash is an inline script in the editor
 const BEAKER_CSP = `
   default-src 'self' beaker:;
   img-src beaker-favicon: beaker: data: dat: http: https;
-  script-src 'self' beaker: 'sha256-6wiAJ64fH9B+ODgqTW/HbCGHfYgmJzkYnvp3GIDeJlg=';
+  script-src 'self' beaker:;
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
 `.replace(/\n/g, '')
@@ -238,29 +237,6 @@ async function beakerServer (req, res) {
   }
   if (requestUrl === 'beaker://settings/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/settings.build.js'))
-  }
-
-  // editor
-  // =
-  if (requestUrl === 'beaker://editor/main.css') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/editor.css'))
-  }
-  if (requestUrl === 'beaker://editor/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/editor.build.js'))
-  }
-  if (requestUrl === 'beaker://editor/worker-proxy.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/editor-worker-proxy.js'))
-  }
-  if (requestUrl.startsWith('beaker://editor/min/')) {
-    let subpath = requestUrl.slice('beaker://editor/min/'.length).replace(/\.\./g, '')
-    subpath = subpath.split('#')[0]
-    var type = 'application/javascript'
-    if (subpath.endsWith('css')) type = 'text/css'
-    if (subpath.endsWith('svg')) type = 'image/svg+xml'
-    return cb(200, 'OK', type, path.join(__dirname, 'node_modules/monaco-editor/min/', subpath))
-  }
-  if (requestUrl === 'beaker://editor/' || requestUrl.startsWith('beaker://editor/')) {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/editor.html'))
   }
 
   // modals
