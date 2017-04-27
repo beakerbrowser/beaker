@@ -260,17 +260,15 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
   // join the swarm
   joinSwarm(archive)
 
-  // await metadata sync if not the owner
-  if (!archive.writable) {
+  // await initial metadata sync if not the owner
+  if (!archive.writable && !archive.metadata.length) {
     // wait to receive a first update
-    if (!archive.metadata.length) {
-      await new Promise((resolve, reject) => {
-        archive.metadata.update(err => {
-          if (err) reject(err)
-          else resolve()
-        })
+    await new Promise((resolve, reject) => {
+      archive.metadata.update(err => {
+        if (err) reject(err)
+        else resolve()
       })
-    }
+    })
 
     // download the full metadata
     await new Promise((resolve, reject) => {
@@ -345,6 +343,8 @@ export async function getArchiveInfo (key) {
     archivesDb.getMeta(key),
     archivesDb.getUserSettings(0, key)
   ])
+  meta.key = key
+  meta.url = `dat://${key}`
   meta.userSettings = { isSaved: userSettings.isSaved }
   meta.peers = archive.metadata.peers.length
   meta.peerHistory = archive.peerHistory
@@ -466,6 +466,7 @@ function configureStaging (archive, userSettings, isWritableOverride) {
 
     // autosync if not writable
     if (!isWritable) {
+      archive.staging.revert({skipIgnore: true}) // do a revert to capture already-DLed state
       archive.staging.startAutoSync()
     }
   } else {

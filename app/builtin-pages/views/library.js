@@ -93,14 +93,14 @@ async function loadCurrentArchive () {
     selectedArchiveKey = await parseURLKey()
     if (selectedArchiveKey) {
       selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
-      await reloadDiff()
 
       // load all data needed
       var a = new DatArchive(selectedArchiveKey)
       var fileTree = new FileTree(a)
-      var [history, fileTreeRes] = await Promise.all([
+      var [history, fileTreeRes, _] = await Promise.all([
         a.history(),
-        fileTree.setup()
+        fileTree.setup(),
+        await reloadDiff()
       ])
       selectedArchive.history = history
       selectedArchive.fileTree = fileTree
@@ -122,7 +122,10 @@ async function loadCurrentArchive () {
 }
 
 async function reloadDiff () {
-  if (!selectedArchive) return
+  console.log(selectedArchive)
+  if (!selectedArchive || !selectedArchive.isOwner) {
+    return
+  }
 
   // load diff
   var a = new DatArchive(selectedArchiveKey)
@@ -251,7 +254,7 @@ function rArchive (archiveInfo) {
   }
 
   var changesLabel = 'Changes'
-  if (archiveInfo.diff.length > 0) {
+  if (archiveInfo.diff && archiveInfo.diff.length > 0) {
     changesLabel = `Changes (${archiveInfo.diff.length})`
   }
 
@@ -304,10 +307,10 @@ function rArchive (archiveInfo) {
       <section>
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Files', onclick: onClickTab('files')},
-          {id: 'changes', label: changesLabel, onclick: onClickTab('changes')},
+          archiveInfo.isOwner ? {id: 'changes', label: changesLabel, onclick: onClickTab('changes')} : undefined,
           {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')},
           {id: 'log', label: 'Log', onclick: onClickTab('log')},
-        ])}
+        ].filter(Boolean))}
         ${({
           files: () => renderFiles(archiveInfo),
           log: () => rHistory(archiveInfo),
@@ -320,6 +323,10 @@ function rArchive (archiveInfo) {
 }
 
 function rDiffSummary (archiveInfo) {
+  if (!archiveInfo.isOwner) {
+    return ''
+  }
+  
   var diff = archiveInfo.diff
   if (diff.length === 0) {
     return ''
