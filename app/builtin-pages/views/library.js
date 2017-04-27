@@ -9,8 +9,7 @@ import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
 import * as toast from '../com/toast'
-
-window.toast = toast
+import * as sharePopup from '../com/share-popup'
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -56,7 +55,7 @@ async function setup () {
   // render graph regularly
   setInterval(() => {
     if (selectedArchive) {
-      updateGraph(selectedArchive)
+      updateGraph()
     }
   }, 5e3)
 
@@ -272,7 +271,11 @@ function rArchive (archiveInfo) {
         <p class="description">${niceDesc(archiveInfo)}</p>
         <div class="actions">
           <span class="readonly">${archiveInfo.isOwner ? '' : yo`<em>(Read-only)</em>`}</span>
-          <a class="btn" href="dat://${archiveInfo.key}">
+          <a class="btn primary" onclick=${onShare}>
+            <i class="fa fa-link"></i>
+            Share site
+          </a>
+          <a class="btn" target="_blank" href="dat://${archiveInfo.key}">
             <i class="fa fa-external-link"></i>
             View site
           </a>
@@ -283,7 +286,7 @@ function rArchive (archiveInfo) {
               </button>
               <div class="dropdown-btn-list">
                 ${archiveInfo.userSettings.localPath
-                  ? yo`<a class="dropdown-item" onclick=${e => onOpenFolder(e, archiveInfo)}>
+                  ? yo`<a class="dropdown-item" onclick=${onOpenFolder}>
                       <i class="fa fa-folder-open-o"></i>
                       Open folder
                     </a>`
@@ -291,7 +294,7 @@ function rArchive (archiveInfo) {
                       <i class="fa fa-folder-open-o"></i>
                       Open folder
                     </a>`}
-                <div class="dropdown-item" onclick=${e => onToggleSaved(e, archiveInfo)}>
+                <div class="dropdown-item" onclick=${onToggleSaved}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
                 </div>
@@ -441,17 +444,21 @@ function rTrash () {
   `
 }
 
-function updateGraph (archiveInfo) {
-  var el = document.querySelector(`#history-${archiveInfo.key}`)
-  yo.update(el, renderGraph(archiveInfo))
+function updateGraph () {
+  var el = document.querySelector(`#history-${selectedArchive.key}`)
+  yo.update(el, renderGraph(selectedArchive))
 }
 
 // event handlers
 // =
 
-function onOpenFolder (e, archiveInfo) {
-  if (archiveInfo.userSettings.localPath) {
-    beakerBrowser.openFolder(archiveInfo.userSettings.localPath)
+function onShare (e) {
+  sharePopup.create(selectedArchive.url)
+}
+
+function onOpenFolder (e) {
+  if (selectedArchive.userSettings.localPath) {
+    beakerBrowser.openFolder(selectedArchive.userSettings.localPath)
   }
   update()
 }

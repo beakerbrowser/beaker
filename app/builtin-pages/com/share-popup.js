@@ -5,24 +5,24 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 // exported api
 // =
 
-export function render (archive) {
+export function render (url) {
   return yo`
-    <div id="editor-share-popup" class="active" onclick=${onClickWrapper}>
+    <div id="share-popup" class="popup-wrapper" onclick=${onClickWrapper}>
       <div class="popup-inner">
         <div class="head">
           <span class="title">Share this site</span>
-          <button class="btn" onclick=${onCopyURL(archive)}><i class="fa fa-clipboard"></i> Copy link</button>
+          <button class="btn" onclick=${onCopyURL(url)}><i class="fa fa-clipboard"></i> Copy link</button>
         </div>
-        <div><input value=${archive.url} /></div>
+        <div><input value=${url} /></div>
         <div class="info"><i class="fa fa-lock"></i> Only people with this link can see your files.</div>
       </div>
     </div>
   `
 }
 
-export function create (archive) {
+export function create (url) {
   // render interface
-  var popup = render(archive)
+  var popup = render(url)
   document.body.appendChild(popup)
 
   // select input
@@ -32,7 +32,7 @@ export function create (archive) {
 }
 
 export function destroy () {
-  var popup = document.getElementById('editor-share-popup')
+  var popup = document.getElementById('share-popup')
   document.body.removeChild(popup)
 }
 
@@ -40,15 +40,15 @@ export function destroy () {
 // =
 
 function onClickWrapper (e) {
-  if (e.target.id === 'editor-share-popup') {
+  if (e.target.id === 'share-popup') {
     destroy()
   }
 }
 
-function onCopyURL (archive) {
+function onCopyURL (url) {
   return e => {
-    writeToClipboard(archive.url)
-    toast.create(`URL for ${archive.niceName} copied to clipboard.`)
+    writeToClipboard(url)
+    toast.create(`URL copied to clipboard.`)
   }
 }
 

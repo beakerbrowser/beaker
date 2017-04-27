@@ -1,6 +1,6 @@
 import * as yo from 'yo-yo'
 import mime from 'mime'
-import * as sharePopup from './editor-share-popup'
+import * as sharePopup from './share-popup'
 import * as toast from './toast'
 import renderDropdownMenuBar from './dropdown-menu-bar'
 import {niceDate} from '../../lib/time'
