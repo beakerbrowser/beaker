@@ -51,11 +51,9 @@ export async function query (profileId, query) {
   // fetch archive meta
   var values = []
   var WHERE = []
-  var JOIN = ''
   if (query.isOwner === true) WHERE.push('archives_meta.isOwner = 1')
   if (query.isOwner === false) WHERE.push('archives_meta.isOwner = 0')
   if ('isSaved' in query) {
-    JOIN = 'INNER JOIN archives ON archives_meta.key = archives.key'
     WHERE.push('archives.profileId = ?')
     values.push(profileId)
     if (query.isSaved)  WHERE.push('archives.isSaved = 1')
@@ -64,7 +62,10 @@ export async function query (profileId, query) {
   if (WHERE.length) WHERE = `WHERE ${WHERE.join(' AND ')}`
   else WHERE = ''
   var archives = await db.all(`
-    SELECT archives_meta.*, archives.isSaved, archives.localPath FROM archives_meta ${JOIN} ${WHERE}
+    SELECT archives_meta.*, archives.isSaved, archives.localPath
+      FROM archives_meta
+      LEFT JOIN archives ON archives_meta.key = archives.key
+      ${WHERE}
   `, values)
 
   // massage the output
