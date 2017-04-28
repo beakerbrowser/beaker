@@ -1,10 +1,31 @@
 import * as yo from 'yo-yo'
-import {Archive, ArchivesList} from 'builtin-pages-lib'
+import {FileTree, ArchivesList} from 'builtin-pages-lib'
 import {pluralize} from '../../lib/strings'
+import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
+import renderFiles from '../com/library-files-list'
+import renderChanges from '../com/archive-changes'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
+import * as toast from '../com/toast'
+import * as sharePopup from '../com/share-popup'
+
+// HACK FIX
+// the good folk of whatwg didnt think to include an event for pushState(), so let's add one
+// -prf
+var _wr = function(type) {
+  var orig = window.history[type];
+  return function() {
+    var rv = orig.apply(this, arguments);
+    var e = new Event(type.toLowerCase());
+    e.arguments = arguments;
+    window.dispatchEvent(e);
+    return rv;
+  };
+};
+window.history.pushState = _wr('pushState')
+window.history.replaceState = _wr('replaceState')
 
 // globals
 // =
@@ -15,6 +36,7 @@ var trashList = []
 var isTrashOpen = false
 var currentFilter = ''
 var currentSort = 'mtime'
+var currentSection = 'files'
 var selectedArchiveKey = ''
 var selectedArchive
 
@@ -24,7 +46,7 @@ async function setup () {
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
   userProfileUrl = (await beaker.profiles.get(0)).url
-  update()
+  await loadCurrentArchive()
 
   // load deleted archives
   trashList = await beaker.archives.list({isSaved: false})
@@ -33,12 +55,88 @@ async function setup () {
   // render graph regularly
   setInterval(() => {
     if (selectedArchive) {
-      updateGraph(selectedArchive)
+      updateGraph()
     }
   }, 5e3)
 
   // setup handlers
   archivesList.addEventListener('changed', update)
+  window.addEventListener('pushstate', loadCurrentArchive)
+  window.addEventListener('popstate', loadCurrentArchive)
+}
+
+async function parseURLKey () {
+  var path = window.location.pathname
+  if (path === '/' || !path) return false
+  try {
+    // extract key from url
+    var name = /^\/([^\/]+)/.exec(path)[1]
+    if (/[0-9a-f]{64}/i.test(name)) return name
+    return DatArchive.resolveName(name)
+  } catch (e) {
+    console.error('Failed to parse URL', e)
+    throw new Error('Invalid dat URL')
+  }
+}
+
+async function loadCurrentArchive () {
+  // close the trash if necessary
+  if (isTrashOpen) isTrashOpen = false
+  if (selectedArchive && selectedArchive.events) {
+    selectedArchive.events.close()
+    selectedArchive.events = null
+  }
+  currentSection = 'files' // reset section
+
+  try {
+    selectedArchiveKey = await parseURLKey()
+    if (selectedArchiveKey) {
+      // load all data needed
+      var a = new DatArchive(selectedArchiveKey)
+      var fileTree = new FileTree(a)
+      selectedArchive = await a.getInfo()
+      var [history, fileTreeRes, _] = await Promise.all([
+        a.history(),
+        fileTree.setup(),
+        await reloadDiff()
+      ])
+      selectedArchive.history = history
+      selectedArchive.fileTree = fileTree
+      selectedArchive.events = a.createFileActivityStream()
+    console.log(selectedArchive)      
+
+      // wire up events
+      selectedArchive.events.addEventListener('changed', onFileChanged)
+
+      // sort history in descending order
+      selectedArchive.history.reverse()
+    } else {
+      selectedArchive = null
+    }
+  } catch (e) {
+    console.error(e)
+  }
+
+  update()
+}
+
+async function reloadDiff () {
+  if (!selectedArchive || !selectedArchive.isOwner) {
+    return
+  }
+
+  selectedArchive.diff = []
+  var stats = selectedArchive.diffStats = {add: 0, mod: 0, del: 0}
+  try {
+    // load diff
+    var a = new DatArchive(selectedArchiveKey)
+    var diff = selectedArchive.diff = await a.diff()
+
+    // calc diff stats
+    diff.forEach(d => { stats[d.change]++ })
+  } catch (e) {
+    // this can happen if the site's folder has disappeared
+  }
 }
 
 // rendering
@@ -100,20 +198,6 @@ function rView () {
   return ''
 }
 
-async function onSelectArchive () {
-  // close the trash if necessary
-  if (isTrashOpen) isTrashOpen = false
-
-  selectedArchiveKey = this.dataset.key
-  selectedArchive = archivesList.archives.find(archive => archive.key === selectedArchiveKey)
-  selectedArchive.history = (await (new DatArchive(selectedArchiveKey)).history())
-
-  // sort history in descending order
-  selectedArchive.history.reverse()
-
-  update()
-}
-
 function rArchivesList () {
   // apply filter
   var filteredArchives = archivesList.archives.filter(archive => {
@@ -145,14 +229,13 @@ function rArchiveListItem (archiveInfo) {
   }
 
   return yo`
-    <div class="archive ${cls}" data-key=${archiveInfo.key} onclick=${onSelectArchive}>
+    <div class="archive ${cls}" onclick=${onSelectArchive(archiveInfo)}>
       <div class="title">
         ${icon}
         ${niceName(archiveInfo)}
         ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
       </div>
-      <a class="editor-link" onclick=${e => e.stopPropagation()} href="beaker://editor/${archiveInfo.key}">Edit</a>
-      <span class="last-updated">Updated ${niceDate(archiveInfo.mtime)}</span>
+      <span class="last-updated">Updated ${niceDate(archiveInfo.mtime || 0)}</span>
       <span class="peers">
         <i class="fa fa-share-alt"></i>
         ${archiveInfo.peers}
@@ -171,9 +254,15 @@ function rArchive (archiveInfo) {
     toggleSaveText = 'Save to library'
   }
 
+  var showChanges = archiveInfo.isOwner && archiveInfo.userSettings.isSaved
+  var changesLabel = 'Diff'
+  if (archiveInfo.diff && archiveInfo.diff.length > 0) {
+    changesLabel = `Diff (${archiveInfo.diff.length})`
+  }
+
   return yo`
     <div class="archive">
-      <div class="info">
+      <section class="info">
         <h1 class="title" title=${archiveInfo.title}>
           <a href="dat://${archiveInfo.key}">${niceName(archiveInfo)}</a>
           ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
@@ -181,9 +270,13 @@ function rArchive (archiveInfo) {
         <p class="description">${niceDesc(archiveInfo)}</p>
         <div class="actions">
           <span class="readonly">${archiveInfo.isOwner ? '' : yo`<em>(Read-only)</em>`}</span>
-          <a class="editor-link btn primary" href="beaker://editor/${archiveInfo.key}">
-            <i class="fa fa-pencil"></i>
-            Open in editor
+          <a class="btn primary" onclick=${onShare}>
+            <i class="fa fa-link"></i>
+            Share site
+          </a>
+          <a class="btn" target="_blank" href="dat://${archiveInfo.key}">
+            <i class="fa fa-external-link"></i>
+            View site
           </a>
           ${toggleable(yo`
             <div class="dropdown-btn-container toggleable-container">
@@ -191,11 +284,20 @@ function rArchive (archiveInfo) {
                 <i class="fa fa-caret-down"></i>
               </button>
               <div class="dropdown-btn-list">
-                <a class="dropdown-item" href="dat://${archiveInfo.key}">
-                  <i class="fa fa-external-link"></i>
-                  View site
-                </a>
-                <div class="dropdown-item" onclick=${e => onToggleSaved(e, archiveInfo)}>
+                ${archiveInfo.userSettings.localPath
+                  ? yo`<a class="dropdown-item" onclick=${onOpenFolder}>
+                      <i class="fa fa-folder-open-o"></i>
+                      Open folder
+                    </a>`
+                  : yo`<a class="dropdown-item disabled">
+                      <i class="fa fa-folder-open-o"></i>
+                      Open folder
+                    </a>`}
+                <div class="dropdown-item" onclick=${onFork}>
+                  <i class="fa fa-code-fork"></i>
+                  Fork this site
+                </div>
+                <div class="dropdown-item" onclick=${onToggleSaved}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
                 </div>
@@ -203,33 +305,94 @@ function rArchive (archiveInfo) {
             </div>
           `)}
         </div>
-      </div>
+      </section>
+
+      ${rNotSaved(archiveInfo)}
+      ${rMissingLocalPathMessage(archiveInfo)}
+      ${rDiffMessage(archiveInfo)}
 
       <h2>Network activity</h2>
-      <div class="peer-history">
+      <section class="peer-history">
         ${renderGraph(archiveInfo)}
-      </div>
+      </section>
 
-      <h2>Metadata</h2>
-      <div class="metadata">
-        <table>
-          <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.size)}</td></tr>
-          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-          <tr><td class="label">Files</td><td>300</td></tr>
-          <tr><td class="label">URL</td><td>dat://${archiveInfo.key}</td></tr>
-          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
-        </table>
-      </div>
-
-      <h2>History</h2>
-      <div class="history">
-        ${rArchiveHistory(archiveInfo)}
-      </div>
+      <section>
+        ${renderTabs(currentSection, [
+          {id: 'files', label: 'Files', onclick: onClickTab('files')},
+          showChanges ? {id: 'changes', label: changesLabel, onclick: onClickTab('changes')} : undefined,
+          {id: 'log', label: 'Log', onclick: onClickTab('log')},
+          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')}
+        ].filter(Boolean))}
+        ${({
+          files: () => renderFiles(archiveInfo),
+          log: () => rHistory(archiveInfo),
+          metadata: () => rMetadata(archiveInfo),
+          changes: () => renderChanges(archiveInfo, {onPublish, onRevert})
+        })[currentSection]()}
+      </section>
     </div>
   `
 }
 
-function rArchiveHistory (archiveInfo) {
+function rNotSaved (archiveInfo) {
+  if (archiveInfo.userSettings.isSaved) {
+    return ''
+  }
+  return yo`
+    <section class="message primary">
+      This archive is not saved to your library. <a href="#" onclick=${onToggleSaved}>Save now.</a>
+    </section>
+  `
+}
+
+function rMissingLocalPathMessage (archiveInfo) {
+  if (!archiveInfo.userSettings.isSaved || archiveInfo.localPathExists) {
+    return ''
+  }
+  return yo`
+    <section class="message error missing-local-path">
+      <div>
+        <i class="fa fa-exclamation-triangle"></i>
+        <strong>Beaker cannot find the local copy of this site.</strong>
+        This is probably because the folder was moved or deleted.
+      </div>
+      <ul>
+        <li>If it was moved, you can <a href="#" onclick=${onUpdateLocation}>update the location</a> and things will resume as before.</li>
+        <li>If it was deleted accidentally (or you dont know what happened) you can <a href="#" onclick=${onUpdateLocation}>choose a
+          new location</a> and we${"'"}ll restore the files from the last published state.</li>
+        <li>If it was deleted on purpose, and you don${"'"}t want to keep the site anymore,
+          you can <a href="#" onclick=${onToggleSaved}>delete it from your library</a>.</li>
+      </ul>
+    </section>
+  `
+}
+
+function rDiffMessage (archiveInfo) {
+  if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
+    return ''
+  }
+
+  var diff = archiveInfo.diff
+  if (diff.length === 0) {
+    return ''
+  }
+
+  var stats = archiveInfo.diffStats
+  return yo`
+    <section class="message info diff-summary">
+      <div>
+        There are ${stats.add} ${pluralize(stats.add, 'addition')},
+        ${stats.mod} ${pluralize(stats.mod, 'change')},
+        and ${stats.del} ${pluralize(stats.del, 'deletion')}.
+      </div>
+      <div>
+        <a onclick=${onClickTab('changes')} href="#">Review and publish</a>
+      </div> 
+    </section>
+  `
+}
+
+function rHistory (archiveInfo) {
   var rowEls = []
   archiveInfo.history.forEach(item => {
     var date = item.value ? niceDate(item.value.mtime) : ''
@@ -244,7 +407,25 @@ function rArchiveHistory (archiveInfo) {
     `)
   })
 
-  return yo`<ul>${rowEls}</ul>`
+  if (rowEls.length === 0) {
+    rowEls.push(yo`<em>Nothing has been published yet.</em>`)
+  }
+
+  return yo`<ul class="history">${rowEls}</ul>`
+}
+
+function rMetadata (archiveInfo) {
+  return yo`
+    <div class="metadata">
+      <table>
+        <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.size)}</td></tr>
+        <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
+        <tr><td class="label">URL</td><td>dat://${archiveInfo.key}</td></tr>
+        <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
+        <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
+      </table>
+    </div>
+  `
 }
 
 function rTrash () {
@@ -256,7 +437,7 @@ function rTrash () {
         ${trashList.map(archiveInfo => yo`
           <li class="trash-item">
             <a href=${archiveInfo.key}>${niceName(archiveInfo)}</a>
-            <button class="restore" onclick=${e => onToggleSaved(e, archiveInfo)}>
+            <button class="restore" onclick=${onToggleSaved}>
               Restore
             </button>
           </li>`
@@ -266,23 +447,42 @@ function rTrash () {
   `
 }
 
-function updateGraph (archiveInfo) {
-  var el = document.querySelector(`#history-${archiveInfo.key}`)
-  yo.update(el, renderGraph(archiveInfo))
+function updateGraph () {
+  var el = document.querySelector(`#history-${selectedArchive.key}`)
+  yo.update(el, renderGraph(selectedArchive))
 }
 
 // event handlers
 // =
 
-async function onToggleSaved (e, archiveInfo) {
-  if (archiveInfo.userSettings.isSaved) {
-    trashList.unshift(archiveInfo)
-    await beaker.archives.remove(archiveInfo.key)
-    archiveInfo.userSettings.isSaved = false
+function onShare (e) {
+  sharePopup.create(selectedArchive.url)
+}
+
+function onOpenFolder (e) {
+  if (selectedArchive.userSettings.localPath) {
+    beakerBrowser.openFolder(selectedArchive.userSettings.localPath)
+  }
+  update()
+}
+
+async function onFork (e) {
+  e.preventDefault()
+  update()
+  var a = await DatArchive.fork(selectedArchive.url)
+  history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
+}
+
+async function onToggleSaved (e) {
+  e.preventDefault()
+  if (selectedArchive.userSettings.isSaved) {
+    trashList.unshift(selectedArchive)
+    await beaker.archives.remove(selectedArchive.key)
+    selectedArchive.userSettings.isSaved = false
   } else {
-    trashList.splice(trashList.findIndex(a => a.key === archiveInfo.key), 1)
-    await beaker.archives.add(archiveInfo.key)
-    archiveInfo.userSettings.isSaved = true
+    trashList.splice(trashList.findIndex(a => a.key === selectedArchive.key), 1)
+    await beaker.archives.add(selectedArchive.key)
+    selectedArchive.userSettings.isSaved = true
   }
   update()
 }
@@ -290,6 +490,57 @@ async function onToggleSaved (e, archiveInfo) {
 function onToggleTrash () {
   isTrashOpen = !isTrashOpen
   update()
+}
+
+function onSelectArchive (archiveInfo) {
+  return e => {
+    history.pushState({}, null, 'beaker://library/' + archiveInfo.key)
+  }
+}
+
+function onClickTab (tab) {
+  return e => {
+    e.preventDefault()
+    currentSection = tab
+    update()
+  }
+}
+
+async function onPublish () {
+  try {
+    var a = new DatArchive(selectedArchiveKey)
+    await a.commit()
+    toast.create('Your changes have been published')
+  } catch (e) {
+    console.error(e)
+    toast.create(e.toString())
+  }
+}
+
+async function onRevert () {
+  if (!confirm('This will revert all files to the last published state. Are you sure?')) {
+    return
+  }
+
+  try {
+    var a = new DatArchive(selectedArchiveKey)
+    await a.revert()
+    toast.create('Your files have been reverted')
+  } catch (e) {
+    console.error(e)
+    toast.create(e.toString())
+  }
+}
+
+async function onFileChanged () {
+  await reloadDiff()
+  update()
+}
+
+async function onUpdateLocation (e) {
+  e.preventDefault()
+  await beaker.archives.add(selectedArchiveKey, {promptLocalPath: true})
+  loadCurrentArchive()
 }
 
 // helpers

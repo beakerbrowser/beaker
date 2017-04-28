@@ -8,6 +8,7 @@ var archive
 // form variables
 var title = ''
 var description = ''
+var localPath = ''
 var createdBy
 
 // exported api
@@ -21,7 +22,16 @@ window.setup = async function (opts) {
       archive = new Archive(opts.url)
       await archive.setup()
     }
+
+    // render
+    var archiveInfo = archive ? archive.info : {userSettings: {}}
+    title = opts.title || archiveInfo.title || ''
+    description = opts.description || archiveInfo.description || ''
+    localPath = opts.localPath || archiveInfo.userSettings.localPath || ''
+    createdBy = opts.createdBy || undefined
+    render()
   } catch (e) {
+    console.error(e)
     // ditch out
     return beakerBrowser.closeModal({
       name: e.name,
@@ -29,13 +39,6 @@ window.setup = async function (opts) {
       internalError: true
     })
   }
-
-  // render
-  var archiveInfo = archive ? archive.info : {}
-  title = opts.title || archiveInfo.title || ''
-  description = opts.description || archiveInfo.description || ''
-  createdBy = opts.createdBy || undefined
-  render()
 }
 
 // event handlers
@@ -55,6 +58,19 @@ function onChangeDescription (e) {
   description = e.target.value
 }
 
+async function onChooseFolder () {
+  var folders = await beakerBrowser.showOpenDialog({
+    title: 'Choose the folder to contain your site',
+    buttonLabel: 'Select',
+    properties: ['openDirectory', 'createDirectory', 'showHiddenFiles']
+  })
+  if (!folders) {
+    return
+  }
+  localPath = folders[0]
+  render()
+}
+
 function onClickCancel (e) {
   e.preventDefault()
   beakerBrowser.closeModal()
@@ -62,12 +78,13 @@ function onClickCancel (e) {
 
 async function onSubmit (e) {
   e.preventDefault()
+  if (!localPath) return
   try {
     if (isEditing) {
       await beaker.archives.updateManifest(archive.url, {title, description})
       beakerBrowser.closeModal(null, true)
     } else {
-      var newArchive = await beaker.archives.create({title, description, createdBy})
+      var newArchive = await beaker.archives.create({title, description, createdBy}, {localPath})
       beakerBrowser.closeModal(null, {url: newArchive.url})
     }
   } catch (e) {
@@ -83,6 +100,7 @@ async function onSubmit (e) {
 // =
 
 function render () {
+  var canSubmit = !!localPath
   var uititle = isEditing
     ? `Editing ${renderArchiveTitle()}`
     : 'New site'
@@ -104,15 +122,21 @@ function render () {
           </p>
 
           <form onsubmit=${onSubmit}>
+            <label for="path">Folder</label>
+            <div class="input input-file-picker">
+              <button autofocus type="button" class="btn" name="path" tabindex="1" onclick=${onChooseFolder}>Choose folder</button>
+              <span>${localPath || yo`<span class="placeholder">Folder (required)</span>`}</span>
+            </div>
+
             <label for="title">Title</label>
-            <input autofocus name="title" tabindex="1" value=${title || ''} placeholder="Title" onchange=${onChangeTitle} />
+            <input name="title" tabindex="2" value=${title || ''} placeholder="Title (optional)" onchange=${onChangeTitle} />
 
             <label for="desc">Description</label>
-            <input name="desc" tabindex="2" value=${description || ''} placeholder="Description" onchange=${onChangeDescription} />
+            <input name="desc" tabindex="3" value=${description || ''} placeholder="Description (optional)" onchange=${onChangeDescription} />
 
             <div class="form-actions">
-              <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="3">Cancel</button>
-              <button type="submit" class="btn ${isEditing ? ' primary' : ' success'}" tabindex="4">
+              <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+              <button type="submit" class="btn ${isEditing ? ' primary' : ' success'}" tabindex="5" disabled=${!canSubmit}>
                 ${isEditing ? 'Save' : 'Create site'}
               </button>
             </div>

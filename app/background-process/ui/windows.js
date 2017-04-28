@@ -154,17 +154,6 @@ function ensureVisibleOnSomeDisplay (windowState) {
   return windowState
 }
 
-async function editorAction (event) {
-  var wc = await getFocusedWebContents()
-  if (wc && wc.getURL().startsWith('beaker://editor/')) {
-    // send the desired event
-    wc.executeJavaScript(`
-      window.dispatchEvent(new Event('${event}'))
-    `)
-    return true
-  }
-}
-
 // shortcut event handlers
 // =
 
@@ -209,14 +198,7 @@ function onGoForward (win) {
 }
 
 function onNewWindow (win) {
-  return async () => {
-    // HACK let editor override this shortcut -prf
-    if (await editorAction('new-file')) {
-      return // do nothing, will be handled by editor
-    }
-
-    createShellWindow()
-  }
+  return () => createShellWindow()
 }
 
 function onQuit (win) {
@@ -228,13 +210,7 @@ function onNewTab (win) {
 }
 
 function onCloseTab (win) {
-  return async () => {
-    // HACK let editor override this shortcut -prf
-    if (await editorAction('close-file')) {
-      return // do nothing, will be handled by editor
-    }
-    win.webContents.send('command', 'file:close-tab')
-  }
+  return () => win.webContents.send('command', 'file:close-tab')
 }
 
 // window event handlers

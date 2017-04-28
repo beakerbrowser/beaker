@@ -4,63 +4,46 @@
 
 .files-list {
   border: 1px solid @border-menu;
-  border-radius: 2px;
-  margin: @margin-component 0;
-  padding-bottom: 30px; // offset the 30px taken by the sidebar header
+  border-radius: 3px;
 
   &.empty {
     display: none;
   }
-}
 
-.files-list-item {
-  &:extend(.flex);
-  padding: calc(@padding-component--tight/2) @padding-component--tight;
-
-  &:not(:first-child) {
+  .item {
+    &:extend(.flex);
+    padding: calc(@padding-component/2) @padding-component;
     border-top: 1px solid @border-menu;
-  }
-
-  .name {
-
-    i {
-      margin-right: @margin-icon;
-    }
-
-    span {
-      &:extend(.link);
-
-      &:hover {
-        &:extend(.link:hover);
-      }
-    }
-  }
-
-  &.parent .name a {
-    &:extend(.link);
 
     &:hover {
-      &:extend(.link:hover);
-    }  
+      background: @background-files-list-item--hover;
+    }
+
+    .name {
+
+      i {
+        margin-right: @margin-icon;
+      }
+
+      .link {
+        color: @color-files-list-item-link;
+      }
+    }
+
+    .size, .updated {
+      color: @color-text--muted;
+    }
+
+    .size {
+      margin: 0 @margin-icon;
+    }
+
+    .updated {
+      margin-left: auto; // right align the .updated element
+    }
   }
 
-  &.directory .name i {
-    color: @color-link;
-  }
-
-  &.not-downloaded .name span {
-    color: @color-text--muted;
-  }
-
-  .size, .updated {
-    color: @color-text--muted;
-  }
-
-  .size {
-    margin: 0 @margin-icon;
-  }
-
-  .updated {
-    margin-left: auto; // right align the .updated element
+  & > :first-child, & > :first-child > .item {
+    border: 0;
   }
 }

@@ -18,7 +18,8 @@ export default {
   setStartPageBackgroundImage: 'promise',
 
   showOpenDialog: 'promise',
-  openUrl: 'sync',
+  openUrl: 'promise',
+  openFolder: 'promise',
   doWebcontentsCmd: 'promise',
 
   closeModal: 'sync'

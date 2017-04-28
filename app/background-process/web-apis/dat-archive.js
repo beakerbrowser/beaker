@@ -72,6 +72,36 @@ export default {
     return datLibrary.getArchiveInfo(url)
   },
 
+  async diff(url, opts = {}) {
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive} = await lookupArchive(url)
+      if (checkin('diffing')) return
+      if (!archive.staging) return []
+      return pda.diff(archive.staging)
+    })
+  },
+
+  async commit(url, opts = {}) {
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive} = await lookupArchive(url)
+      if (checkin('committing')) return
+      if (!archive.staging) return []
+      return pda.commit(archive.staging)
+    })
+  },
+
+  async revert(url, opts = {}) {
+    return timer(to(opts), async (checkin) => {
+      checkin('searching for archive')
+      var {archive} = await lookupArchive(url)
+      if (checkin('reverting')) return
+      if (!archive.staging) return []
+      return pda.revert(archive.staging)
+    })
+  },
+
   async history(url, opts = {}) {
     return timer(to(opts), async (checkin) => {
       checkin('searching for archive')
@@ -90,7 +120,7 @@ export default {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
       if (checkin('reading stat()')) return
-      return pda.stat(archive, filepath)
+      return pda.stat(archive.currentFS, filepath)
     })
   },
 
@@ -99,7 +129,7 @@ export default {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
       if (checkin('fetching file')) return
-      return pda.readFile(archive, filepath, opts)
+      return pda.readFile(archive.currentFS, filepath, opts)
     })
   },
 
@@ -113,7 +143,7 @@ export default {
       await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
       await assertValidFilePath(filepath)
       await assertUnprotectedFilePath(filepath, this.sender)
-      return pda.writeFile(archive, filepath, data, opts)
+      return pda.writeFile(archive.currentFS, filepath, data, opts)
     })
   },
 
@@ -125,11 +155,12 @@ export default {
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
       await assertUnprotectedFilePath(filepath, this.sender)
-      return pda.unlink(archive, filepath)
+      return pda.unlink(archive.currentFS, filepath)
     })
   },
 
-  async copy(url, dstPath) {
+  // TODO copy-disabled
+  /*async copy(url, dstPath) {
     return timer(to(), async (checkin) => {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
@@ -137,11 +168,12 @@ export default {
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
       await assertUnprotectedFilePath(dstPath, this.sender)
-      return pda.copy(archive, filepath, dstPath)
+      return pda.copy(archive.currentFS, filepath, dstPath)
     })
-  },
+  },*/
 
-  async rename(url, dstPath) {
+  // TODO rename-disabled
+  /*async rename(url, dstPath) {
     return timer(to(), async (checkin) => {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
@@ -150,9 +182,9 @@ export default {
       await assertWritePermission(archive, this.sender)
       await assertUnprotectedFilePath(filepath, this.sender)
       await assertUnprotectedFilePath(dstPath, this.sender)
-      return pda.rename(archive, filepath, dstPath)
+      return pda.rename(archive.currentFS, filepath, dstPath)
     })
-  },
+  },*/
 
   async download(url, opts = {}) {
     return timer(to(opts), async (checkin) => {
@@ -168,8 +200,7 @@ export default {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
       if (checkin('reading the directory')) return
-      var res = await pda.readdir(archive, filepath, opts)
-      return res
+      return pda.readdir(archive.currentFS, filepath, opts)
     })
   },
 
@@ -181,7 +212,7 @@ export default {
       await assertWritePermission(archive, this.sender)
       await assertValidPath(filepath)
       await assertUnprotectedFilePath(filepath, this.sender)
-      return pda.mkdir(archive, filepath)
+      return pda.mkdir(archive.currentFS, filepath)
     })
   },
 
@@ -193,7 +224,7 @@ export default {
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
       await assertUnprotectedFilePath(filepath, this.sender)
-      return pda.rmdir(archive, filepath, opts)
+      return pda.rmdir(archive.currentFS, filepath, opts)
     })
   },
 
@@ -202,7 +233,11 @@ export default {
       checkin('searching for archive')
       var {archive} = await lookupArchive(url)
       if (checkin('creating the stream')) return
-      return pda.createFileActivityStream(archive, pathPattern)
+      if (archive.staging) {
+        return pda.createFileActivityStream(archive, archive.currentFS, pathPattern)
+      } else {
+        return pda.createFileActivityStream(archive, pathPattern)
+      }
     })
   },
 
@@ -224,7 +259,7 @@ export default {
       if (checkin('copying files')) return
       return pda.exportFilesystemToArchive({
         srcPath: opts.src,
-        dstArchive: archive,
+        dstArchive: archive.currentFS,
         dstPath: filepath,
         ignore: opts.ignore,
         dryRun: opts.dryRun,
@@ -261,7 +296,7 @@ export default {
       var {archive, filepath} = await lookupArchive(opts.src)
       if (checkin('copying files')) return
       return pda.exportArchiveToFilesystem({
-        srcArchive: archive,
+        srcArchive: archive.currentFS,
         srcPath: filepath,
         dstPath: opts.dst,
         ignore: opts.ignore,
@@ -279,9 +314,9 @@ export default {
       var dst = await lookupArchive(opts.dst)
       if (checkin('copying files')) return
       return pda.exportArchiveToArchive({
-        srcArchive: src.archive,
+        srcArchive: src.archive.currentFS,
         srcPath: src.filepath,
-        dstArchive: dst.archive,
+        dstArchive: dst.archive.currentFS,
         dstPath: dst.filepath,
         ignore: opts.ignore,
         skipUndownloadedFiles: opts.skipUndownloadedFiles === false ? false : true

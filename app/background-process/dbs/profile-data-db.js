@@ -20,6 +20,11 @@ export function setup () {
   var dbPath = path.join(app.getPath('userData'), 'Profiles')
   db = new sqlite3.Database(dbPath)
   setupPromise = setupSqliteDB(db, migrations, '[PROFILES]')
+
+  // DEBUG
+  // run(`
+  //   ALTER TABLE archives ADD COLUMN localPath TEXT;
+  // `)
 }
 
 export async function get (...args) {

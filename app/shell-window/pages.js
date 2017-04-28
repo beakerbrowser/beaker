@@ -204,7 +204,7 @@ export function create (opts) {
         // strip the filename at the end
         path = path.slice(0, path.lastIndexOf('/'))
       }
-      return `beaker://editor/${urlp.host}${path}${subview?'#'+subview:''}`
+      return `beaker://library/${urlp.host}${path}${subview?'#'+subview:''}`
     },
 
     isLiveReloading() {
@@ -536,6 +536,7 @@ function onDidNavigateInPage (e) {
   var page = getByWebview(e.target)
   if (page) {
     // update ui
+    page.url = e.url
     navbar.updateLocation(page)
 
     // update history

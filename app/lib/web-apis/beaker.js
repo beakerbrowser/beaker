@@ -3,29 +3,27 @@ import rpc from 'pauls-electron-rpc'
 import {EventTarget, bindEventStream} from './event-target'
 import errors from 'beaker-error-constants'
 
-import appsManifest from '../api-manifests/external/apps'
-import archivesManifest from '../api-manifests/external/archives'
-import bookmarksManifest from '../api-manifests/external/bookmarks'
-import historyManifest from '../api-manifests/external/history'
+import archivesManifest from '../api-manifests/internal/archives'
+import bookmarksManifest from '../api-manifests/internal/bookmarks'
+import historyManifest from '../api-manifests/internal/history'
 import profilesManifest from '../api-manifests/internal/profiles'
 
 var beaker = {}
 if (window.location.protocol === 'beaker:') {
   var opts = {timeout: false, errors}
   const archivesRPC  = rpc.importAPI('archives',  archivesManifest,  opts)
-  const appsRPC      = rpc.importAPI('apps',      appsManifest,      opts)
   const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
   const historyRPC   = rpc.importAPI('history',   historyManifest,   opts)
   const profilesRPC  = rpc.importAPI('profiles',  profilesManifest,  opts)
 
   // beaker.archives
   beaker.archives = new EventTarget()
-  beaker.archives.create = function (opts={}) {
-    return archivesRPC.create(opts).then(newUrl => new DatArchive(newUrl))
+  beaker.archives.create = function (manifest={}, userSettings={}) {
+    return archivesRPC.create(manifest, userSettings).then(newUrl => new DatArchive(newUrl))
   }
-  beaker.archives.fork = function (url, opts={}) {
+  beaker.archives.fork = function (url, manifest={}, userSettings={}) {
     url = (typeof url.url === 'string') ? url.url : url
-    return archivesRPC.fork(url, opts).then(newUrl => new DatArchive(newUrl))
+    return archivesRPC.fork(url, manifest, userSettings).then(newUrl => new DatArchive(newUrl))
   }
   beaker.archives.status = archivesRPC.status
   beaker.archives.add = archivesRPC.add
@@ -34,14 +32,6 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.list = archivesRPC.list
   beaker.archives.get = archivesRPC.get
   bindEventStream(archivesRPC.createEventStream(), beaker.archives)
-
-  // beaker.apps
-  beaker.apps = new EventTarget()
-  beaker.apps.get = appsRPC.get
-  beaker.apps.list = appsRPC.list
-  beaker.apps.bind = appsRPC.bind
-  beaker.apps.unbind = appsRPC.unbind
-  // bindEventStream(appsRPC.createEventStream(), beaker.apps) TODO
 
   // beaker.bookmarks
   beaker.bookmarks = new EventTarget()

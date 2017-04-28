@@ -1,4 +1,4 @@
-import {app, dialog, autoUpdater, BrowserWindow, webContents, ipcMain} from 'electron'
+import {app, dialog, autoUpdater, BrowserWindow, webContents, ipcMain, shell} from 'electron'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
@@ -83,6 +83,7 @@ export function setup () {
 
     showOpenDialog,
     openUrl: url => { openUrl(url) }, // dont return anything
+    openFolder,
     doWebcontentsCmd,
 
     closeModal
@@ -258,11 +259,16 @@ function showOpenDialog (opts = {}) {
     }, filenames => {
       // return focus back to the the webview
       wc.executeJavaScript(`
-        document.querySelector('webview:not(.hidden)').focus()
+        var wv = document.querySelector('webview:not(.hidden)')
+        if (wv) wv.focus()
       `)
       resolve(filenames)
     })
   })
+}
+
+function openFolder (folderPath) {
+  shell.openExternal('file://'+folderPath)
 }
 
 async function doWebcontentsCmd (method, wcId, ...args) {

@@ -25,8 +25,13 @@ export function setup () {
 }
 
 // get the path to an archive's files
-export function getArchiveFilesPath (archiveOrKey) {
-  return path.join(datPath, 'Archives', datEncoding.toStr(archiveOrKey.key || archiveOrKey))
+export function getArchiveStagingPath (archiveOrKey) {
+  var key = datEncoding.toStr(archiveOrKey.key || archiveOrKey)
+  return path.join(datPath, 'Archives', 'Content', key.slice(0, 2), key.slice(2))
+}
+export function getArchiveMetaPath (archiveOrKey) {
+  var key = datEncoding.toStr(archiveOrKey.key || archiveOrKey)
+  return path.join(datPath, 'Archives', 'Meta', key.slice(0, 2), key.slice(2))
 }
 
 export const on = events.on.bind(events)
@@ -46,11 +51,9 @@ export async function query (profileId, query) {
   // fetch archive meta
   var values = []
   var WHERE = []
-  var JOIN = ''
   if (query.isOwner === true) WHERE.push('archives_meta.isOwner = 1')
   if (query.isOwner === false) WHERE.push('archives_meta.isOwner = 0')
   if ('isSaved' in query) {
-    JOIN = 'INNER JOIN archives ON archives_meta.key = archives.key'
     WHERE.push('archives.profileId = ?')
     values.push(profileId)
     if (query.isSaved)  WHERE.push('archives.isSaved = 1')
@@ -59,7 +62,10 @@ export async function query (profileId, query) {
   if (WHERE.length) WHERE = `WHERE ${WHERE.join(' AND ')}`
   else WHERE = ''
   var archives = await db.all(`
-    SELECT * FROM archives_meta ${JOIN} ${WHERE}
+    SELECT archives_meta.*, archives.isSaved, archives.localPath
+      FROM archives_meta
+      LEFT JOIN archives ON archives_meta.key = archives.key
+      ${WHERE}
   `, values)
 
   // massage the output
@@ -70,13 +76,16 @@ export async function query (profileId, query) {
       title: archive.createdByTitle,
       url: archive.createdByUrl
     }
+    try { archive.forkOf = JSON.parse(archive.forkOf) } catch (e) {}
     archive.userSettings = {
-      isSaved: archive.isSaved != 0
+      isSaved: archive.isSaved != 0,
+      localPath: archive.localPath
     }
 
     delete archive.createdByTitle
     delete archive.createdByUrl
     delete archive.isSaved
+    delete archive.localPath
   })
   return archives
 }
@@ -126,18 +135,20 @@ export async function setUserSettings (profileId, key, newValues = {}) {
       value = {
         profileId,
         key,
-        isSaved: newValues.isSaved
+        isSaved: newValues.isSaved,
+        localPath: newValues.localPath
       }
       await db.run(`
-        INSERT INTO archives (profileId, key, isSaved) VALUES (?, ?, ?)
-      `, [profileId, key, value.isSaved ? 1 : 0])
+        INSERT INTO archives (profileId, key, isSaved, localPath) VALUES (?, ?, ?, ?)
+      `, [profileId, key, value.isSaved ? 1 : 0, value.localPath])
     } else {
       // update
-      var { isSaved } = newValues
+      var { isSaved, localPath } = newValues
       if (typeof isSaved === 'boolean') value.isSaved = isSaved
+      if (typeof localPath === 'string') value.localPath = localPath
       await db.run(`
-        UPDATE archives SET isSaved = ? WHERE profileId = ? AND key = ?
-      `, [value.isSaved ? 1 : 0, profileId, key])
+        UPDATE archives SET isSaved = ?, localPath = ? WHERE profileId = ? AND key = ?
+      `, [value.isSaved ? 1 : 0, value.localPath, profileId, key])
     }
 
     events.emit('update:archive-user-settings', key, value)

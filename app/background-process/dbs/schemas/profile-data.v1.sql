@@ -7,6 +7,7 @@ CREATE TABLE profiles (
 CREATE TABLE archives (
   profileId INTEGER NOT NULL,
   key TEXT NOT NULL,
+  localPath TEXT,
   isSaved INTEGER,
   createdAt INTEGER DEFAULT (strftime('%s', 'now'))
 );
@@ -21,16 +22,6 @@ CREATE TABLE archives_meta (
   mtime INTEGER,
   size INTEGER,
   isOwner INTEGER
-);
-
-CREATE TABLE apps (
-  profileId INTEGER NOT NULL,
-  name TEXT NOT NULL,
-  url TEXT NOT NULL,
-  createdAt INTEGER DEFAULT (strftime('%s', 'now')),
-
-  PRIMARY KEY (profileId, name),
-  FOREIGN KEY (profileId) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
 CREATE TABLE bookmarks (

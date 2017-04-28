@@ -75,7 +75,6 @@ function update () {
       <header>
         <div class="actions">
           <a onclick=${createSite}><i class="fa fa-pencil"></i> New site</a>
-          <a onclick=${shareFiles}><i class="fa fa-files-o"></i> Share files</a>
         </div>
         <div style="flex: 1"></div>
         ${renderProfileCard()}
@@ -117,22 +116,14 @@ function renderShelf () {
     <div class="shelf open" onmouseout=${onMouseOutShelf}>
       <div class="section-header">
         <h3><a href="beaker://library">Your library</a></h3>
-        <a class="action" onclick=${createSite}>
-          <i class="fa fa-plus"></i>
-          New site
-        </a>
       </div>
       <div class="archives-list">
         ${archivesList.archives.map(archiveInfo => {
           return yo`
-            <div class="archive list-item">
-             <a class="title" href=${archiveInfo.url}>${niceName(archiveInfo)}</a>
-             <span class="edit">
-              <i class="fa fa-pencil"></i>
-              <a href=${`beaker://editor/${archiveInfo.key}`}>Edit</a>
-             </span>
-             <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
-            </div>
+            <a class="archive list-item" href=${`beaker://library/${archiveInfo.key}`}>
+              <span class="title">${niceName(archiveInfo)}</span>
+              <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
+            </a>
           `
         })}
       </div>
@@ -244,45 +235,19 @@ function renderError () {
 // event handlers
 // =
 
-async function shareFiles () {
-  // have user select file
-  var paths = await beakerBrowser.showOpenDialog({
-    title: 'Select your files',
-    properties: ['openFile', 'openDirectory', 'multiSelections', 'showHiddenFiles']
-  })
-  if (!paths) {
-    return
-  }
-
-  // create a new dat
-  var d = new Date()
-  var archive = await DatArchive.create({
-    title: `Shared Files ${d.toLocaleDateString()}`,
-    description: `Files shared on ${d.toLocaleString()}`
-  })
-
-  // import into the user profile
-  await Promise.all(paths.map(src => 
-    DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: true})
-  ))
-
-  // open
-  window.location = archive.url
-}
-
 function toggleShelf () {
   isShelfOpen = !isShelfOpen
   update()
 }
 
 async function createSite () {
-  var archive = await beaker.archives.create()
-  window.location = 'beaker://editor/' + archive.url.slice('dat://'.length)
+  var archive = await DatArchive.create()
+  window.location = 'beaker://library/' + archive.url.slice('dat://'.length)
 }
 
 function onMouseOutShelf (e) {
   if (!findParent(e.relatedTarget, 'shelf')) {
-    // isShelfOpen = false
+    isShelfOpen = false
     update()
   }
 }

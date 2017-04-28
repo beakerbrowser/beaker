@@ -4,14 +4,17 @@ export default {
   loadArchive: 'promise',
 
   getInfo: 'promise',
+  diff: 'promise',
+  commit: 'promise',
+  revert: 'promise',
   history: 'promise',
 
   stat: 'promise',
   readFile: 'promise',
   writeFile: 'promise',
   unlink: 'promise',
-  copy: 'promise',
-  rename: 'promise',
+  // copy: 'promise', // TODO copy-disabled
+  // rename: 'promise', // TODO rename-disabled
   download: 'promise',
 
   readdir: 'promise',

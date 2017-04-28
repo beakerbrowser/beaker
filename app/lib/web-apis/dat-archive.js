@@ -50,6 +50,18 @@ export default class DatArchive extends EventTarget {
     return dat.getInfo(this.url, opts)
   }
 
+  diff(opts={}) {
+    return dat.diff(this.url, opts)
+  }
+
+  commit(opts={}) {
+    return dat.commit(this.url, opts)
+  }
+
+  revert(opts={}) {
+    return dat.revert(this.url, opts)
+  }
+
   history(opts={}) {
     return dat.history(this.url, opts)
   }
@@ -74,15 +86,17 @@ export default class DatArchive extends EventTarget {
     return dat.unlink(url)
   }
 
-  copy(path, dstPath) {
+  // TODO copy-disabled
+  /*copy(path, dstPath) {
     const url = joinPath(this.url, path)
     return dat.copy(url, dstPath)
-  }
+  }*/
 
-  rename(path, dstPath) {
+  // TODO rename-disabled
+  /*rename(path, dstPath) {
     const url = joinPath(this.url, path)
     return dat.rename(url, dstPath)
-  }
+  }*/
 
   download(path='/', opts={}) {
     const url = joinPath(this.url, path)
