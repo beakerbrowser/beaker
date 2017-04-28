@@ -86,15 +86,17 @@ export default class DatArchive extends EventTarget {
     return dat.unlink(url)
   }
 
-  copy(path, dstPath) {
+  // TODO copy-disabled
+  /*copy(path, dstPath) {
     const url = joinPath(this.url, path)
     return dat.copy(url, dstPath)
-  }
+  }*/
 
-  rename(path, dstPath) {
+  // TODO rename-disabled
+  /*rename(path, dstPath) {
     const url = joinPath(this.url, path)
     return dat.rename(url, dstPath)
-  }
+  }*/
 
   download(path='/', opts={}) {
     const url = joinPath(this.url, path)

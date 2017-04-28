@@ -543,7 +543,8 @@ test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
 
-test('archive.copy', async t => {
+// TODO copy-disabled
+/*test('archive.copy', async t => {
   // file 1
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -587,9 +588,10 @@ test('archive.copy', async t => {
     archive.commit().then(done, done)
   }, createdDatURL)
   t.truthy(Array.isArray(res.value))
-})
+})*/
 
-test('archive.rename', async t => {
+// TODO rename-disabled
+/*test('archive.rename', async t => {
   // file 1
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -633,9 +635,10 @@ test('archive.rename', async t => {
     archive.commit().then(done, done)
   }, createdDatURL)
   t.truthy(Array.isArray(res.value))
-})
+})*/
 
-test('archive.copy doesnt allow writes that exceed the quota', async t => {
+// TODO copy-disabled
+/*test('archive.copy doesnt allow writes that exceed the quota', async t => {
   // write an acceptable (but big) file
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -649,9 +652,10 @@ test('archive.copy doesnt allow writes that exceed the quota', async t => {
     archive.writeFile('/bigfile.txt', '/bigfile2.txt').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'QuotaExceededError')
-})
+})*/
 
-test('archive.rename protects the manifest', async t => {
+// TODO rename-disabled
+/*test('archive.rename protects the manifest', async t => {
   // rename the manifest to something else
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -665,16 +669,17 @@ test('archive.rename protects the manifest', async t => {
     archive.rename('hello.txt', 'dat.json').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
-})
+})*/
 
-test('archive.copy protects the manifest', async t => {
+// TODO rename-disabled
+/*test('archive.copy protects the manifest', async t => {
   // copy over the manifest
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.rename('hello.txt', 'dat.json').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
-})
+})*/
 
 test('Fail to write to unowned archives', async t => {
   // writeFile
@@ -691,19 +696,21 @@ test('Fail to write to unowned archives', async t => {
   }, testStaticDatURL)
   t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 
+  // TODO rename-disabled
   // rename
-  var res = await app.client.executeAsync((url, done) => {
+  /*var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.rename('hello.txt', 'denythis.txt').then(done, done)
   }, testStaticDatURL)
-  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')*/
 
+  // TODO copy-disabled
   // copy
-  var res = await app.client.executeAsync((url, done) => {
+  /*var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.copy('hello.txt', 'denythis.txt').then(done, done)
   }, testStaticDatURL)
-  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')*/
 })
 
 test('archive.writeFile & archive.mkdir doesnt allow writes to archives until write permission is given', async t => {

@@ -159,7 +159,8 @@ export default {
     })
   },
 
-  async copy(url, dstPath) {
+  // TODO copy-disabled
+  /*async copy(url, dstPath) {
     return timer(to(), async (checkin) => {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
@@ -169,9 +170,10 @@ export default {
       await assertUnprotectedFilePath(dstPath, this.sender)
       return pda.copy(archive.currentFS, filepath, dstPath)
     })
-  },
+  },*/
 
-  async rename(url, dstPath) {
+  // TODO rename-disabled
+  /*async rename(url, dstPath) {
     return timer(to(), async (checkin) => {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
@@ -182,7 +184,7 @@ export default {
       await assertUnprotectedFilePath(dstPath, this.sender)
       return pda.rename(archive.currentFS, filepath, dstPath)
     })
-  },
+  },*/
 
   async download(url, opts = {}) {
     return timer(to(opts), async (checkin) => {
