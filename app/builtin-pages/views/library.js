@@ -61,6 +61,7 @@ async function setup () {
 
   // setup handlers
   archivesList.addEventListener('changed', update)
+  beaker.archives.addEventListener('updated', onArchivesUpdated)
   window.addEventListener('pushstate', loadCurrentArchive)
   window.addEventListener('popstate', loadCurrentArchive)
 }
@@ -293,6 +294,10 @@ function rArchive (archiveInfo) {
                       <i class="fa fa-folder-open-o"></i>
                       Open folder
                     </a>`}
+                <div class="dropdown-item" onclick=${onEditSettings}>
+                  <i class="fa fa-pencil"></i>
+                  Edit site settings
+                </div>
                 <div class="dropdown-item" onclick=${onFork}>
                   <i class="fa fa-code-fork"></i>
                   Fork this site
@@ -455,6 +460,12 @@ function updateGraph () {
 // event handlers
 // =
 
+function onArchivesUpdated (e) {
+  if (selectedArchive && e.details.url === selectedArchive.url) {
+    loadCurrentArchive()
+  }
+}
+
 function onShare (e) {
   sharePopup.create(selectedArchive.url)
 }
@@ -464,6 +475,12 @@ function onOpenFolder (e) {
     beakerBrowser.openFolder(selectedArchive.userSettings.localPath)
   }
   update()
+}
+
+async function onEditSettings (e) {
+  e.preventDefault()
+  update()
+  await beaker.archives.updateManifest(selectedArchive.url)
 }
 
 async function onFork (e) {
