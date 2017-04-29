@@ -98,17 +98,16 @@ export async function pullLatestArchiveMeta (archive) {
     await pify(archive.ready.bind(archive))()
 
     // read the archive meta and size on disk
-    var [manifest, metaSize, stagingSize] = await Promise.all([
+    var [manifest, _] = await Promise.all([
       pda.readManifest(archive.currentFS).catch(err => {}),
-      getFolderSize(archivesDb.getArchiveMetaPath(key)),
-      archive.staging ? getFolderSize(archive.staging.path) : 0
+      updateSizeTracking(archive)
     ])
     manifest = manifest || {}
     var {title, description, forkOf, createdBy} = manifest
     var mtime = Date.now() // use our local update time
     var isOwner = archive.writable
-    metaSize = metaSize || 0
-    stagingSize = stagingSize || 0
+    var metaSize = archive.metaSize || 0
+    var stagingSize = archive.stagingSize || 0
 
     // write the record
     var details = {title, description, forkOf, createdBy, mtime, metaSize, stagingSize, isOwner}
@@ -259,6 +258,7 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
       else resolve()
     })
   })
+  await updateSizeTracking(archive)
 
   // join the swarm
   joinSwarm(archive)
@@ -316,6 +316,15 @@ export async function getOrLoadArchive (key, opts) {
     return archive
   }
   return loadArchive(key, opts)
+}
+
+export async function updateSizeTracking (archive) {
+  var [metaSize, stagingSize] = await Promise.all([
+    getFolderSize(archivesDb.getArchiveMetaPath(archive)),
+    archive.staging ? getFolderSize(archive.staging.path) : 0
+  ])
+  archive.metaSize = metaSize
+  archive.stagingSize = stagingSize
 }
 
 // archive fetch/query
