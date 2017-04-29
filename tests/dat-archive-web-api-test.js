@@ -14,7 +14,7 @@ const app = new Application({
   args: ['../app'],
   env: { 
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
-    beaker_dat_quota_default_bytes_allowed: 1024 * 20 // 20kb
+    beaker_dat_quota_default_bytes_allowed: '25kb'
   }
 })
 var testStaticDat, testStaticDatURL
@@ -538,8 +538,53 @@ test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
   // write a too-big file
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.writeFile('/denythis.txt', 'x'.repeat(1024 * 12), 'utf8').then(done, done)
+    archive.writeFile('/denythis.txt', 'x'.repeat(1024 * 25), 'utf8').then(done, done)
   }, createdDatURL)
+  t.deepEqual(res.value.name, 'QuotaExceededError')
+})
+
+test('archive.commit does allow you to exceed the quota, but subsequent writes will fail', async t => {
+  // create a fresh dat
+  await app.client.windowByIndex(0)
+  var res = await app.client.executeAsync((localPath, done) => {
+    beaker.archives.create({title: 'Another Test Dat'}, {localPath}).then(done, done)
+  }, tempy.directory())
+  t.falsy(res.value.name, 'create didnt fail')
+  var newTestDatURL = res.value.url
+  await app.client.windowByIndex(1)
+
+  // write an acceptable (but big) file
+  await app.client.execute(url => {
+    // put the result on the window, for checking later
+    window.res = null
+    var archive = new DatArchive(url)
+    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 20), 'utf8').then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, newTestDatURL)
+
+  // accept the prompt
+  await app.client.windowByIndex(0)
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & check the res
+  var res = await app.client.execute(() => { return window.res })
+  t.falsy(res.value, 'write file accepted')
+
+  // commit the file
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.commit().then(done, done)
+  }, newTestDatURL)
+  t.deepEqual(Array.isArray(res.value), true)
+
+  // write a very small file
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.writeFile('/denythis.txt', 'x', 'utf8').then(done, done)
+  }, newTestDatURL)
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
 

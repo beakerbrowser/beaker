@@ -11,6 +11,7 @@
     "await-lock": "^1.1.2",
     "beaker-error-constants": "^1.1.1",
     "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib#8c2b8f69de4718a3d505f95876c20117349adb25",
+    "bytes": "^2.5.0",
     "choo": "^5.0.4",
     "co": "^4.6.0",
     "concat-stream": "^1.5.2",

@@ -20,7 +20,8 @@ CREATE TABLE archives_meta (
   createdByUrl TEXT,
   createdByTitle TEXT,
   mtime INTEGER,
-  size INTEGER,
+  metaSize INTEGER,
+  stagingSize INTEGER,
   isOwner INTEGER
 );
 

@@ -88,7 +88,11 @@ export default {
       var {archive} = await lookupArchive(url)
       if (checkin('committing')) return
       if (!archive.staging) return []
-      return pda.commit(archive.staging)
+      var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+      await assertWritePermission(archive, this.sender)
+      var res = await pda.commit(archive.staging)
+      await datLibrary.updateSizeTracking(archive)
+      return res
     })
   },
 
@@ -98,7 +102,10 @@ export default {
       var {archive} = await lookupArchive(url)
       if (checkin('reverting')) return
       if (!archive.staging) return []
-      return pda.revert(archive.staging)
+      await assertWritePermission(archive, this.sender)
+      var res = await pda.revert(archive.staging)
+      await datLibrary.updateSizeTracking(archive)
+      return res
     })
   },
 
@@ -377,17 +384,14 @@ async function assertWritePermission (archive, sender) {
 }
 
 async function assertQuotaPermission (archive, senderOrigin, byteLength) {
-  // fetch the archive meta, and the current quota for the site
-  const [meta, userSettings] = await Promise.all([
-    archivesDb.getMeta(archive.key),
-    archivesDb.getUserSettings(0, archive.key)
-  ])
+  // fetch the archive settings
+  const userSettings = await archivesDb.getUserSettings(0, archive.key)
 
   // fallback to default quota
   var bytesAllowed = userSettings.bytesAllowed || DAT_QUOTA_DEFAULT_BYTES_ALLOWED
 
   // check the new size
-  var newSize = meta.size + byteLength
+  var newSize = (archive.metaSize + archive.stagingSize + byteLength)
   if (newSize > bytesAllowed) {
     throw new QuotaExceededError()
   }
