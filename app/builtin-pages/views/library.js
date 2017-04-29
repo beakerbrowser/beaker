@@ -256,9 +256,9 @@ function rArchive (archiveInfo) {
   }
 
   var showChanges = archiveInfo.isOwner && archiveInfo.userSettings.isSaved
-  var changesLabel = 'Diff'
+  var changesLabel = 'Staging'
   if (archiveInfo.diff && archiveInfo.diff.length > 0) {
-    changesLabel = `Diff (${archiveInfo.diff.length})`
+    changesLabel = `Staging (${archiveInfo.diff.length})`
   }
 
   return yo`
@@ -325,7 +325,7 @@ function rArchive (archiveInfo) {
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Files', onclick: onClickTab('files')},
           showChanges ? {id: 'changes', label: changesLabel, onclick: onClickTab('changes')} : undefined,
-          {id: 'log', label: 'Log', onclick: onClickTab('log')},
+          {id: 'log', label: 'History', onclick: onClickTab('log')},
           {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')}
         ].filter(Boolean))}
         ${({
