@@ -124,7 +124,7 @@ function render () {
           <form onsubmit=${onSubmit}>
             <label for="path">Folder</label>
             <div class="input input-file-picker">
-              <button autofocus type="button" class="btn" name="path" tabindex="1" onclick=${onChooseFolder}>Choose folder</button>
+              <button type="button" class="btn" name="path" tabindex="1" onclick=${onChooseFolder}>Choose folder</button>
               <span>${localPath || yo`<span class="placeholder">Folder (required)</span>`}</span>
             </div>
 
