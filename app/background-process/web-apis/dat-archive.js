@@ -387,7 +387,7 @@ async function assertQuotaPermission (archive, senderOrigin, byteLength) {
   var bytesAllowed = userSettings.bytesAllowed || DAT_QUOTA_DEFAULT_BYTES_ALLOWED
 
   // check the new size
-  var newSize = meta.size + byteLength
+  var newSize = meta.stagingSize + byteLength
   if (newSize > bytesAllowed) {
     throw new QuotaExceededError()
   }

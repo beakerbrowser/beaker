@@ -21,8 +21,8 @@ const datDns = require('dat-dns')()
 // file modules
 import path from 'path'
 import mkdirp from 'mkdirp'
-import getFolderSize from 'get-folder-size'
 import jetpack from 'fs-jetpack'
+const getFolderSize = pify(require('get-folder-size'))
 
 // constants
 // =
@@ -98,18 +98,20 @@ export async function pullLatestArchiveMeta (archive) {
     await pify(archive.ready.bind(archive))()
 
     // read the archive meta and size on disk
-    var [manifest, size] = await Promise.all([
+    var [manifest, metaSize, stagingSize] = await Promise.all([
       pda.readManifest(archive.currentFS).catch(err => {}),
-      pify(getFolderSize)(archivesDb.getArchiveMetaPath(key))
+      getFolderSize(archivesDb.getArchiveMetaPath(key)),
+      archive.staging ? getFolderSize(archive.staging.path) : 0
     ])
     manifest = manifest || {}
     var {title, description, forkOf, createdBy} = manifest
     var mtime = Date.now() // use our local update time
     var isOwner = archive.writable
-    size = size || 0
+    metaSize = metaSize || 0
+    stagingSize = stagingSize || 0
 
     // write the record
-    var details = {title, description, forkOf, createdBy, mtime, size, isOwner}
+    var details = {title, description, forkOf, createdBy, mtime, metaSize, stagingSize, isOwner}
     debug('Writing meta', details)
     await archivesDb.setMeta(key, details)
 

@@ -401,13 +401,11 @@ function rHistory (archiveInfo) {
   var rowEls = []
   archiveInfo.history.forEach(item => {
     var date = item.value ? niceDate(item.value.mtime) : ''
-    var size = item.value ? `(${prettyBytes(item.value.size)})` : ''
     rowEls.push(yo`
       <li class="history-item">
         <span class="date">${date}</span>
         ${item.type}
         ${item.name}
-        ${size}
       </li>
     `)
   })
@@ -423,7 +421,8 @@ function rMetadata (archiveInfo) {
   return yo`
     <div class="metadata">
       <table>
-        <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.size)}</td></tr>
+        <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSize)}</td></tr>
+        <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
         <tr><td class="label">URL</td><td>dat://${archiveInfo.key}</td></tr>
         <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
