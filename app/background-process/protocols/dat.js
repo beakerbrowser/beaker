@@ -169,12 +169,7 @@ async function datServer (req, res) {
   // checkout version if needed
   var archiveFS = archive.currentFS
   if (urlp.version) {
-    let match = /^c([0-9]+)$/.exec(urlp.version)
-    if (!match) {
-      debug('Invalid version format', urlp.version)
-      return cb(404, 'Invalid version format')
-    }
-    let seq = +match[1]
+    let seq = +urlp.version
     if (seq <= 0) {
       return cb(404, 'Version too low')      
     }
