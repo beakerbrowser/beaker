@@ -245,7 +245,7 @@ async function datServer (req, res) {
         'Cache-Control': 'public, max-age: 60'
         // ETag
       }
-      if (entry.size) headers['Content-size'] = entry.length
+      if (entry.size) headers['Content-size'] = entry.size
       res.writeHead(200, 'OK', headers)
     }))
     .pipe(res)
