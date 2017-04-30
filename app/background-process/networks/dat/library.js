@@ -246,9 +246,8 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
   var archive = hyperdrive(metaPath, key, {sparse: true, secretKey})
   archive.replicationStreams = [] // list of all active replication streams
   archive.peerHistory = [] // samples of the peer count
-  await configureStaging(archive, userSettings, !!secretKey)
   Object.defineProperty(archive, 'currentFS', {
-    get: () => !!secretKey ? archive.staging : archive
+    get: () => archive.writable ? archive.staging : archive
   })
 
   // wait for ready
@@ -258,6 +257,7 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
       else resolve()
     })
   })
+  await configureStaging(archive, userSettings, !!secretKey)
   await updateSizeTracking(archive)
 
   // join the swarm
