@@ -399,11 +399,12 @@ function rDiffMessage (archiveInfo) {
 
 function rHistory (archiveInfo) {
   var rowEls = []
-  archiveInfo.history.forEach(item => {
+  archiveInfo.history.forEach((item, i) => {
+    var rev = archiveInfo.history.length - i
     var date = item.value ? niceDate(item.value.mtime) : ''
     rowEls.push(yo`
       <li class="history-item">
-        <span class="date">${date}</span>
+        <a class="date link" href=${`dat://${archiveInfo.key}+${rev}`} target="_blank">Revision ${rev}</a>
         ${item.type}
         ${item.name}
       </li>
