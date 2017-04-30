@@ -531,27 +531,6 @@ function onClickBookmark (e) {
   }
 }
 
-// helper for some click events
-function openDatView (e, view) {
-  var page = getEventPage(e)
-  if (!page || !page.getURL().startsWith('dat://')) return
-
-  // get the target url
-  var url = page.getViewFilesURL(view)
-  if (!url) return
-
-  // start loading
-  if (e.metaKey || e.ctrlKey) { // popup
-    pages.setActive(pages.create(url))
-  } else {
-    page.loadURL(url) // goto
-  }
-}
-
-function onClickViewFiles (e) {
-  openDatView(e, 'files')
-}
-
 function onClickLiveReload (e) {
   var page = getEventPage(e)
   if (!page || !page.siteInfo) return

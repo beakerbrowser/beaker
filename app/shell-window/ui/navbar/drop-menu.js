@@ -292,22 +292,6 @@ export class DropMenuNavbarBtn {
     this.updateActives()
   }
 
-  onOpenView (e, view) {
-    // close dropdown
-    this.isDropdownOpen = !this.isDropdownOpen
-    this.updateActives()
-
-    var page = pages.getActive()
-    if (page.getURL().startsWith('dat://')) {
-      // get the target url
-      var url = page.getViewFilesURL(view)
-      if (!url) return
-
-      // load url
-      page.loadURL(url)
-    }
-  }
-
   async onToggleSave (e) {
     // toggle saved
     var page = pages.getActive()
