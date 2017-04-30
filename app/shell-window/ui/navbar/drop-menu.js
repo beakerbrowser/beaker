@@ -358,7 +358,10 @@ export class DropMenuNavbarBtn {
     if (!page || !page.getURL().startsWith('dat://')) {
       return
     }
-    page.loadURL(`beaker://library/${page.getURL().slice('dat://'.length)}`)
+    var url = page.getURL()
+    url = url.slice('dat://'.length)
+    url = url.slice(0, url.search(/\+|\/|$/))
+    page.loadURL(`beaker://library/${url}`)
   }
 
   onToggleLiveReloading (e) {
