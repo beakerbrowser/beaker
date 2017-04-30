@@ -11,7 +11,7 @@ import {pluralize} from '../../lib/strings'
 
 const colorThief = new ColorThief()
 
-const LATEST_VERSION = 6001 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
+const LATEST_VERSION = 7000 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 
 // globals
 // =
@@ -215,10 +215,9 @@ function renderReleaseNotes () {
     return ''
   }
   return yo`
-    <div class="alert alert__info alert__release-notes">
-      <strong>Welcome to Beaker 0.6.1!</strong>
-      New start page, Dat-DNS, and an improved bkr command-line.
-      <a href="https://github.com/beakerbrowser/beaker/releases/tag/0.6.1">Learn more</a>
+    <div class="message info">
+      <strong>Welcome to the Beaker 0.7 pre-release.</strong>
+      Let us know if anything breaks.
     </div>
   `
 }

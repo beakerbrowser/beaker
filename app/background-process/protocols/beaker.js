@@ -183,11 +183,12 @@ async function beakerServer (req, res) {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages.css'))
   }
   if (requestUrl === 'beaker://start/') {
-    let status = await getUserSetupStatus()
+    // TODO re-enable
+    /*let status = await getUserSetupStatus()
     if (status !== 'finished') {
       // serve the setup if the user isnt finished with setup
       return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/setup.html'))
-    }
+    }*/
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/start.html'))
   }
   if (requestUrl === 'beaker://start/background-image') {
