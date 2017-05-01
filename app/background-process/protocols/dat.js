@@ -20,7 +20,7 @@ import * as mime from '../../lib/mime'
 // =
 
 // how long till we give up?
-const REQUEST_TIMEOUT_MS = 5e3 // 5 seconds
+const REQUEST_TIMEOUT_MS = 15e3 // 15 seconds
 
 // content security policies
 const DAT_CSP = `
