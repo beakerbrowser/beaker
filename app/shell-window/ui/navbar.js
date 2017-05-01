@@ -308,7 +308,17 @@ function renderPrettyLocation (value, isHidden) {
   if (/^(dat|http|https):/.test(value)) {
     try {
       var { protocol, host, pathname, search, hash } = new URL(value)
-      if (protocol === 'dat:' && isDatHashRegex.test(host)) host = prettyHash(host)
+      var hostVersion
+      if (protocol === 'dat:') {
+        let match = /(.*)\+(.*)/.exec(host)
+        if (match) {
+          host = match[1]
+          hostVersion = '+' + match[2]
+        }
+        if (isDatHashRegex.test(host)) {
+          host = prettyHash(host)
+        }
+      }
       var cls = 'protocol'
       if (['beaker:','https:'].includes(protocol)) cls += ' protocol-secure'
       if (['dat:'].includes(protocol)) cls += ' protocol-p2p'
@@ -316,8 +326,9 @@ function renderPrettyLocation (value, isHidden) {
         yo`<span class=${cls}>${protocol.slice(0, -1)}</span>`,
         yo`<span class="syntax">://</span>`,
         yo`<span class="host">${host}</span>`,
+        hostVersion ? yo`<span class="host-version">${hostVersion}</span>` : false,
         yo`<span class="path">${pathname}${search}${hash}</span>`,
-      ]
+      ].filter(Boolean)
     } catch (e) {
       // invalid URL, just use value
     }
@@ -518,27 +529,6 @@ function onClickBookmark (e) {
     //   {textShadow: '0 0 16px rgba(0, 18, 150, 0.0)'}
     // ], { duration: 300 })
   }
-}
-
-// helper for some click events
-function openDatView (e, view) {
-  var page = getEventPage(e)
-  if (!page || !page.getURL().startsWith('dat://')) return
-
-  // get the target url
-  var url = page.getViewFilesURL(view)
-  if (!url) return
-
-  // start loading
-  if (e.metaKey || e.ctrlKey) { // popup
-    pages.setActive(pages.create(url))
-  } else {
-    page.loadURL(url) // goto
-  }
-}
-
-function onClickViewFiles (e) {
-  openDatView(e, 'files')
 }
 
 function onClickLiveReload (e) {

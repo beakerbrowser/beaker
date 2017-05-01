@@ -2,6 +2,7 @@ import { remote } from 'electron'
 import EventEmitter from 'events'
 import path from 'path'
 import fs from 'fs'
+import parseDatURL from 'parse-dat-url'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as promptbar from './ui/promptbar'
@@ -194,17 +195,6 @@ export function create (opts) {
 
     getURLOrigin () {
       return parseURL(this.getURL()).origin
-    },
-
-    getViewFilesURL (subview) {
-      var urlp = parseURL(this.getURL())
-      if (!urlp) return false
-      var path = urlp.pathname
-      if (!path.endsWith('/')) {
-        // strip the filename at the end
-        path = path.slice(0, path.lastIndexOf('/'))
-      }
-      return `beaker://library/${urlp.host}${path}${subview?'#'+subview:''}`
     },
 
     isLiveReloading() {
@@ -589,7 +579,7 @@ function onDidStopLoading (e) {
     updateHistory(page)
 
     // fetch protocol and page info
-    var { protocol, hostname } = parseURL(url)
+    var { protocol, hostname } = url.startsWith('dat://') ? parseDatURL(url) : parseURL(url)
     page.siteInfo = null
     page.sitePerms = null
     page.siteHasDatAlternative = false

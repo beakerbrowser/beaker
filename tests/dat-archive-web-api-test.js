@@ -55,12 +55,18 @@ async function stat (url, path, opts) {
     archive.stat(path, opts).then(v => {
       v.isFile = v.isFile()
       v.isDirectory = v.isDirectory()
-      done(stringify(v))
+      done(window.JSON.stringify(v))
     }, done)
   }, url, path, opts)
   if (typeof res.value === 'string')
     res.value = JSON.parse(res.value)
   return res
+}
+async function readdir (url, path, opts) {
+  return app.client.executeAsync((url, path, done) => {
+    var archive = new DatArchive(url)
+    archive.readdir(path).then(done, done)
+  }, url, path)
 }
 async function readFile (url, path, opts) {
   return app.client.executeAsync((url, path, opts, done) => {
@@ -74,6 +80,12 @@ async function writeFile (url, path, content, opts) {
     var archive = new DatArchive(url)
     archive.writeFile(path, content, opts).then(done, done)
   }, url, path, content, opts)
+}
+async function commit (url) {
+  return app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.commit().then(done, done)
+  }, url)
 }
 
 // tests
@@ -541,6 +553,83 @@ test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
     archive.writeFile('/denythis.txt', 'x'.repeat(1024 * 25), 'utf8').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'QuotaExceededError')
+})
+
+test('versioned reads and writes', async t => {
+  // create a fresh dat
+  await app.client.windowByIndex(0)
+  var res = await app.client.executeAsync((localPath, done) => {
+    beaker.archives.create({title: 'Another Test Dat'}, {localPath}).then(done, done)
+  }, tempy.directory())
+  t.falsy(res.value.name, 'create didnt fail')
+  var newTestDatURL = res.value.url
+
+  // do some writes
+  await writeFile(newTestDatURL, '/one.txt', 'a', 'utf8')
+  await commit(newTestDatURL)
+  await writeFile(newTestDatURL, '/two.txt', 'b', 'utf8')
+  await commit(newTestDatURL)
+  await sleep(1e3) // have to make sure 1s passes for the change to be detected
+  await writeFile(newTestDatURL, '/one.txt', 'c', 'utf8')
+  await commit(newTestDatURL)
+
+  // check history
+  var history = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.history().then(done, done)
+  }, newTestDatURL)
+  if (history.value.length !== 4) {
+    console.log('Weird history', history.value)
+  }
+  t.deepEqual(history.value.length, 4)
+
+  // read back versions
+  t.deepEqual((await readdir(newTestDatURL + '+1', '/')).value.length, 1)
+  t.deepEqual((await readdir(newTestDatURL + '+2', '/')).value.length, 2)
+  t.deepEqual((await readdir(newTestDatURL + '+3', '/')).value.length, 3)
+  t.deepEqual((await readFile(newTestDatURL + '+2', '/one.txt')).value, 'a')
+  t.deepEqual((await readFile(newTestDatURL + '+4', '/one.txt')).value, 'c')
+  var statRev2 = await stat(newTestDatURL + '+2', '/one.txt')
+  var statRev4 = await stat(newTestDatURL + '+4', '/one.txt')
+  console.log(statRev2.value, statRev4.value)
+  t.truthy(statRev2.value.offset < statRev4.value.offset)
+
+  // dont allow writes to old versions
+  // writeFile
+  var res = await writeFile(newTestDatURL + '+1', '/three.txt', 'foo', 'utf8')
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
+  // mkdir
+  var res = await (app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.mkdir('/foo').then(done, done)
+  }, newTestDatURL + '+1'))
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
+  // unlink
+  var res = await (app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.unlink('/one.txt').then(done, done)
+  }, newTestDatURL + '+1'))
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
+  // rmdir
+  var res = await (app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.rmdir('/there-is-no-dir-but-it-doesnt-matter').then(done, done)
+  }, newTestDatURL + '+1'))
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
+  // commit
+  var res = await (app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.commit().then(done, done)
+  }, newTestDatURL + '+1'))
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
+  // revert
+  var res = await (app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.revert().then(done, done)
+  }, newTestDatURL + '+1'))
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
+
+  await app.client.windowByIndex(1)
 })
 
 test('archive.commit does allow you to exceed the quota, but subsequent writes will fail', async t => {

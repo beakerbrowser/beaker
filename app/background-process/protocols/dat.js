@@ -1,5 +1,6 @@
 import { protocol } from 'electron'
-import url from 'url'
+import {parse as parseUrl} from 'url'
+import parseDatUrl from 'parse-dat-url'
 import once from 'once'
 import http from 'http'
 import crypto from 'crypto'
@@ -92,7 +93,7 @@ async function datServer (req, res) {
     })
     res.end(errorPage(code + ' ' + status))
   })
-  var queryParams = url.parse(req.url, true).query
+  var queryParams = parseUrl(req.url, true).query
   var fileReadStream
   var headersSent = false
 
@@ -103,7 +104,7 @@ async function datServer (req, res) {
   }
 
   // validate request
-  var urlp = url.parse(queryParams.url)
+  var urlp = parseDatUrl(queryParams.url)
   if (!urlp.host) {
     return cb(404, 'Archive Not Found')
   }
@@ -165,6 +166,19 @@ async function datServer (req, res) {
     return cb(500, 'Failed')
   }
 
+  // checkout version if needed
+  var archiveFS = archive.stagingFS
+  if (urlp.version) {
+    let seq = +urlp.version
+    if (seq <= 0) {
+      return cb(404, 'Version too low')      
+    }
+    if (seq > archive.version) {
+      return cb(404, 'Version too high')
+    }
+    archiveFS = archive.checkout(seq)
+  }
+
   // lookup entry
   debug('attempting to lookup', archiveKey)
   var filepath = decodeURIComponent(urlp.path)
@@ -175,7 +189,7 @@ async function datServer (req, res) {
   const tryStat = async (path) => {
     if (entry) return
     try {
-      entry = await pda.stat(archive.currentFS, path)
+      entry = await pda.stat(archiveFS, path)
       entry.path = path
     } catch (e) {}
   }
@@ -199,7 +213,7 @@ async function datServer (req, res) {
       'Content-Security-Policy': DAT_CSP,
       'Access-Control-Allow-Origin': '*'
     })
-    res.end(await directoryListingPage(archive.currentFS, urlp.path))
+    res.end(await directoryListingPage(archiveFS, urlp.path))
   }
 
   // handle not found
@@ -230,7 +244,7 @@ async function datServer (req, res) {
 
   // fetch the entry and stream the response
   debug('Entry found:', entry.path)
-  fileReadStream = archive.currentFS.createReadStream(entry.path)
+  fileReadStream = archiveFS.createReadStream(entry.path)
   fileReadStream
     .pipe(mime.identifyStream(entry.path, mimeType => {
       // cleanup the timeout now, as bytes have begun to stream

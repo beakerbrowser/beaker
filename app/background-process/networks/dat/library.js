@@ -99,7 +99,7 @@ export async function pullLatestArchiveMeta (archive) {
 
     // read the archive meta and size on disk
     var [manifest, _] = await Promise.all([
-      pda.readManifest(archive.currentFS).catch(err => {}),
+      pda.readManifest(archive.stagingFS).catch(err => {}),
       updateSizeTracking(archive)
     ])
     manifest = manifest || {}
@@ -162,7 +162,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}, userSettings = {}
   }
 
   // fetch old archive meta
-  var srcManifest = await pda.readManifest(srcArchive.currentFS).catch(err => {})
+  var srcManifest = await pda.readManifest(srcArchive.stagingFS).catch(err => {})
   srcManifest = srcManifest || {}
 
   // override any manifest data
@@ -179,8 +179,8 @@ export async function forkArchive (srcArchiveUrl, manifest={}, userSettings = {}
 
   // copy files
   await pda.exportArchiveToArchive({
-    srcArchive: srcArchive.currentFS,
-    dstArchive: dstArchive.currentFS,
+    srcArchive: srcArchive.stagingFS,
+    dstArchive: dstArchive.stagingFS,
     skipUndownloadedFiles: true,
     ignore: ['/dat.json']
   })
@@ -246,7 +246,7 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
   var archive = hyperdrive(metaPath, key, {sparse: true, secretKey})
   archive.replicationStreams = [] // list of all active replication streams
   archive.peerHistory = [] // samples of the peer count
-  Object.defineProperty(archive, 'currentFS', {
+  Object.defineProperty(archive, 'stagingFS', {
     get: () => archive.writable ? archive.staging : archive
   })
 

@@ -292,22 +292,6 @@ export class DropMenuNavbarBtn {
     this.updateActives()
   }
 
-  onOpenView (e, view) {
-    // close dropdown
-    this.isDropdownOpen = !this.isDropdownOpen
-    this.updateActives()
-
-    var page = pages.getActive()
-    if (page.getURL().startsWith('dat://')) {
-      // get the target url
-      var url = page.getViewFilesURL(view)
-      if (!url) return
-
-      // load url
-      page.loadURL(url)
-    }
-  }
-
   async onToggleSave (e) {
     // toggle saved
     var page = pages.getActive()
@@ -358,7 +342,10 @@ export class DropMenuNavbarBtn {
     if (!page || !page.getURL().startsWith('dat://')) {
       return
     }
-    page.loadURL(`beaker://library/${page.getURL().slice('dat://'.length)}`)
+    var url = page.getURL()
+    url = url.slice('dat://'.length)
+    url = url.slice(0, url.search(/\+|\/|$/))
+    page.loadURL(`beaker://library/${url}`)
   }
 
   onToggleLiveReloading (e) {
