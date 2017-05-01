@@ -71,7 +71,7 @@ export default {
 
   async getInfo(url, opts = {}) {
     return timer(to(opts), async (checkin) => {
-      datLibrary.getArchiveInfo(url)
+      return datLibrary.getArchiveInfo(url)
     })
   },
 

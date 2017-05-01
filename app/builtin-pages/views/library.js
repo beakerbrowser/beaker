@@ -39,6 +39,7 @@ var currentSort = 'mtime'
 var currentSection = 'files'
 var selectedArchiveKey = ''
 var selectedArchive
+var viewError
 
 setup()
 async function setup () {
@@ -46,6 +47,9 @@ async function setup () {
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
   userProfileUrl = (await beaker.profiles.get(0)).url
+  update()
+
+  // load current archive
   await loadCurrentArchive()
 
   // load deleted archives
@@ -81,17 +85,21 @@ async function parseURLKey () {
 }
 
 async function loadCurrentArchive () {
-  // close the trash if necessary
+  // reset state
   if (isTrashOpen) isTrashOpen = false
   if (selectedArchive && selectedArchive.events) {
     selectedArchive.events.close()
     selectedArchive.events = null
   }
-  currentSection = 'files' // reset section
+  viewError = null
+  currentSection = 'files'
 
   try {
     selectedArchiveKey = await parseURLKey()
     if (selectedArchiveKey) {
+      // show 'loading...'
+      update()
+      
       // load all data needed
       var a = new DatArchive(selectedArchiveKey)
       var fileTree = new FileTree(a)
@@ -104,7 +112,6 @@ async function loadCurrentArchive () {
       selectedArchive.history = history
       selectedArchive.fileTree = fileTree
       selectedArchive.events = a.createFileActivityStream()
-    console.log(selectedArchive)      
 
       // wire up events
       selectedArchive.events.addEventListener('changed', onFileChanged)
@@ -115,7 +122,9 @@ async function loadCurrentArchive () {
       selectedArchive = null
     }
   } catch (e) {
+    selectedArchive = null
     console.error(e)
+    viewError = e
   }
 
   update()
@@ -194,8 +203,10 @@ function update () {
 }
 
 function rView () {
-  if (isTrashOpen) return rTrash()
-  else if (selectedArchiveKey) return rArchive(selectedArchive)
+  if (viewError) return rError()
+  else if (isTrashOpen) return rTrash()
+  else if (selectedArchive) return rArchive(selectedArchive)
+  else if (selectedArchiveKey) return 'Loading...'
   return ''
 }
 
@@ -335,6 +346,14 @@ function rArchive (archiveInfo) {
           changes: () => renderChanges(archiveInfo, {onPublish, onRevert})
         })[currentSection]()}
       </section>
+    </div>
+  `
+}
+
+function rError () {
+  return yo`
+    <div class="message error">
+      <i class="fa fa-exclamation-triangle"></i> ${viewError.toString()}
     </div>
   `
 }
