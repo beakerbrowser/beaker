@@ -20,7 +20,7 @@ import * as mime from '../../lib/mime'
 // =
 
 // how long till we give up?
-const REQUEST_TIMEOUT_MS = 5e3 // 5 seconds
+const REQUEST_TIMEOUT_MS = 15e3 // 15 seconds
 
 // content security policies
 const DAT_CSP = `
@@ -85,13 +85,13 @@ export function getServerInfo () {
 }
 
 async function datServer (req, res) {
-  var cb = once((code, status) => {
+  var cb = once((code, status, errorPageInfo) => {
     res.writeHead(code, status, {
       'Content-Type': 'text/html',
-      'Content-Security-Policy': "default-src 'unsafe-inline';",
+      'Content-Security-Policy': "default-src 'unsafe-inline' beaker:;",
       'Access-Control-Allow-Origin': '*'
     })
-    res.end(errorPage(code + ' ' + status))
+    res.end(errorPage(errorPageInfo ? errorPageInfo : (code + ' ' + status)))
   })
   var queryParams = parseUrl(req.url, true).query
   var fileReadStream
@@ -153,7 +153,10 @@ async function datServer (req, res) {
     }
 
     // error page
-    cb(404, 'Not found')
+    cb(504, 'Timed out searching for site', {
+      errorCode: 'dat-timeout',
+      validatedURL: urlp.href
+    })
   }, REQUEST_TIMEOUT_MS)
 
   try {

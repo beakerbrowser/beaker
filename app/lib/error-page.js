@@ -97,6 +97,12 @@ h1 {
 .icon.warning {
   color: #e60b00;
 }
+li {
+  margin-bottom: 0.5em;
+}
+li:last-child {
+  margin: 0;
+}
 `
 
 export default function (e) {
@@ -105,6 +111,7 @@ export default function (e) {
   var icon = 'fa-info-circle'
   var button = '<a class="btn" href="javascript:window.location.reload()">Try again</a>'
   var errorDescription
+  var moreHelp = ''
 
   if (typeof e === 'object') {
     errorDescription = e.errorDescription
@@ -132,6 +139,18 @@ export default function (e) {
         icon = 'fa-warning warning'
         button = '<a class="btn" href="javascript:window.history.back()">Go back</a>'
         break
+      case 'dat-timeout':
+        title = 'Timed out'
+        info = `<p>It took too long to find this site on the peer-to-peer network.</p>`
+        errorDescription = `Beaker will keep searching. Wait a few moments and try again.`
+        moreHelp = `
+          <p><strong>Troubleshooting</strong></p>
+          <ul>
+            <li>There may not be any peers hosting this site right now.</li>
+            <li>Your firewall may be blocking peer-to-peer traffic.</li>
+          </ul>
+        `
+        break
     }
   } else {
     errorDescription = e
@@ -145,6 +164,7 @@ export default function (e) {
         <h1>${title} <i class="icon fa ${icon}"></i></h1>
         <div class="description">
           ${info}
+          ${moreHelp}
           <p>${errorDescription}</p>
         </div>
         ${button}
