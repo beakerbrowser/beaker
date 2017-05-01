@@ -69,8 +69,10 @@ export default {
     return Promise.resolve(true)
   },
 
-  async getInfo(url) {
-    return datLibrary.getArchiveInfo(url)
+  async getInfo(url, opts = {}) {
+    return timer(to(opts), async (checkin) => {
+      datLibrary.getArchiveInfo(url)
+    })
   },
 
   async diff(url, opts = {}) {
