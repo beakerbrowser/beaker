@@ -167,7 +167,7 @@ async function datServer (req, res) {
   }
 
   // checkout version if needed
-  var archiveFS = archive.currentFS
+  var archiveFS = archive.stagingFS
   if (urlp.version) {
     let seq = +urlp.version
     if (seq <= 0) {

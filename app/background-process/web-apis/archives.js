@@ -101,7 +101,7 @@ export default {
     var {title, description} = manifestInfo
     title = typeof title !== 'undefined' ? title : archiveInfo.title
     description = typeof description !== 'undefined' ? description : archiveInfo.description
-    await pda.updateManifest(archive.currentFS, {title, description})
+    await pda.updateManifest(archive.stagingFS, {title, description})
     datLibrary.pullLatestArchiveMeta(archive)
   },
 
