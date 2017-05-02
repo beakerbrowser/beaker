@@ -291,16 +291,20 @@ body {
 
   .history {
     font-size: 13px;
+    overflow: hidden;
+    white-space: nowrap;
 
-    .history-item {
-      margin-bottom: .5rem;
+    .date {
+      display: inline-block;
+      width: 100px;
+    }
 
-      .date {
-        display: inline-block;
-        min-width: 80px;
-        color: @color-text--muted;
-        margin-right: 1rem;
-      }
+    .load-more {
+      display: block;
+      background: @background-button;
+      text-align: center;
+      margin-top: 1em;
+      padding: 1em;
     }
   }
 

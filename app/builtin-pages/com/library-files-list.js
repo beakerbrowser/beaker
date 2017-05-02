@@ -100,8 +100,11 @@ function rFile (archiveInfo, node, depth) {
 // event handlers
 // =
 
-function onClickDirectory (e, archiveInfo, node) {
+async function onClickDirectory (e, archiveInfo, node) {
   node.isExpanded = !node.isExpanded
+  if (node.isExpanded) {
+    await archiveInfo.fileTree.readFolder(node)
+  }
   redraw(archiveInfo)
 }
 
