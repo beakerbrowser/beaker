@@ -141,12 +141,12 @@ export default function (e) {
         break
       case 'dat-timeout':
         title = 'Timed out'
-        info = `<p>It took too long to find this site on the peer-to-peer network.</p>`
+        info = `<p>It took too long to find this ${e.resource} on the peer-to-peer network.</p>`
         errorDescription = `Beaker will keep searching. Wait a few moments and try again.`
         moreHelp = `
           <p><strong>Troubleshooting</strong></p>
           <ul>
-            <li>There may not be any peers hosting this site right now.</li>
+            <li>There may not be any peers hosting this ${e.resource} right now.</li>
             <li>Your firewall may be blocking peer-to-peer traffic.</li>
           </ul>
         `

@@ -96,6 +96,7 @@ async function datServer (req, res) {
   var queryParams = parseUrl(req.url, true).query
   var fileReadStream
   var headersSent = false
+  var archive
 
   // check the nonce
   // (only want this process to access the server)
@@ -153,7 +154,9 @@ async function datServer (req, res) {
     }
 
     // error page
-    cb(504, 'Timed out searching for site', {
+    var resource = !!archive ? 'page' : 'site'
+    cb(504, 'Timed out searching for ${resource}', {
+      resource,
       errorCode: 'dat-timeout',
       validatedURL: urlp.href
     })
@@ -161,7 +164,7 @@ async function datServer (req, res) {
 
   try {
     // start searching the network
-    var archive = await datLibrary.getOrLoadArchive(archiveKey)
+    archive = await datLibrary.getOrLoadArchive(archiveKey)
     if (aborted) return
   } catch (err) {
     debug('Failed to open archive', archiveKey, err)
