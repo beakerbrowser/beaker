@@ -116,16 +116,36 @@ export default {
   },
 
   async history(url, opts = {}) {
+    var reverse = opts.reverse === true
+    var {start, end} = opts
     return timer(to(opts), async (checkin) => {
       checkin('searching for archive')
       var {archive, version} = await lookupArchive(url)
       if (checkin('reading history')) return
+
+      // if reversing the output, modify start/end
+      start = start || 0
+      end = end || archive.version
+      if (reverse) {
+        // swap values
+        let t = start
+        start = end
+        end = t
+        // start from the end
+        start = archive.version - start + 1
+        end = archive.version - end + 1
+      }
+
       return new Promise((resolve, reject) => {
         // .stagingFS doesnt provide history()
         // and .checkoutFS falls back to .stagingFS
         // so we need to manually select checkoutFS or archive
-        var stream = ((version) ? archive.checkoutFS : archive).history({live: false})
-        stream.pipe(concat({encoding: 'object'}, resolve))
+        var ctx = ((version) ? archive.checkoutFS : archive)
+        var stream = ctx.history({live: false, start, end})
+        stream.pipe(concat({encoding: 'object'}, values => {
+          if (reverse) values.reverse()
+          resolve(values)
+        }))
         stream.on('error', reject)
       })
     })

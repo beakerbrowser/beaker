@@ -102,22 +102,20 @@ async function loadCurrentArchive () {
       
       // load all data needed
       var a = new DatArchive(selectedArchiveKey)
-      var fileTree = new FileTree(a)
+      var fileTree = new FileTree(a, {onDemand: true})
       selectedArchive = await a.getInfo()
       var [history, fileTreeRes, _] = await Promise.all([
-        a.history(),
+        a.history({end: 500, reverse: true}),
         fileTree.setup(),
         await reloadDiff()
       ])
       selectedArchive.history = history
       selectedArchive.fileTree = fileTree
-      selectedArchive.events = a.createFileActivityStream()
+      selectedArchive.historyPaginationOffset = 500
+      // selectedArchive.events = a.createFileActivityStream()
 
       // wire up events
-      selectedArchive.events.addEventListener('changed', onFileChanged)
-
-      // sort history in descending order
-      selectedArchive.history.reverse()
+      // selectedArchive.events.addEventListener('changed', onFileChanged)
     } else {
       selectedArchive = null
     }
@@ -417,9 +415,8 @@ function rDiffMessage (archiveInfo) {
 }
 
 function rHistory (archiveInfo) {
-  var len = archiveInfo.history.length
-  var rowEls = archiveInfo.history.map(function (item, i) {
-    var rev = len - i
+  var rows = archiveInfo.history.map(function (item, i) {
+    var rev = item.version
     return `
       <div class="history-item">
         <div class="date"><a class="link" href=${`dat://${archiveInfo.key}+${rev}`} target="_blank">Revision ${rev}</a></div>
@@ -429,14 +426,21 @@ function rHistory (archiveInfo) {
     `
   })
 
-  if (rowEls.length === 0) {
-    rowEls.push(`<em>Nothing has been published yet.</em>`)
+  if (rows.length === 0) {
+    rows.push(`<em>Nothing has been published yet.</em>`)
+  }
+
+  var loadMoreBtn = ''
+  if (archiveInfo.version > archiveInfo.historyPaginationOffset) {
+    loadMoreBtn = yo`<div>
+      <a class="link load-more" href="#" onclick=${onLoadMoreHistory}>Load more</a>
+    </div>`
   }
 
   // use innerHTML instead of yo to speed up this render
-  var el = yo`<div class="history"></div>`
-  el.innerHTML = rowEls.join('')
-  return el
+  var rowEls = yo`<div></div>`
+  rowEls.innerHTML = rows.join('')
+  return yo`<div class="history">${rowEls}${loadMoreBtn}</div>`
 }
 
 function rMetadata (archiveInfo) {
@@ -579,6 +583,23 @@ async function onUpdateLocation (e) {
   e.preventDefault()
   await beaker.archives.add(selectedArchiveKey, {promptLocalPath: true})
   loadCurrentArchive()
+}
+
+async function onLoadMoreHistory (e) {
+  e.preventDefault()
+
+  // read more history
+  var a = new DatArchive(selectedArchiveKey)
+  var moreHistory = await a.history({
+    start: selectedArchive.historyPaginationOffset,
+    end: selectedArchive.historyPaginationOffset + 500,
+    reverse: true
+  })
+
+  // add to tracked history and update
+  selectedArchive.history = selectedArchive.history.concat(moreHistory)
+  selectedArchive.historyPaginationOffset += 500
+  update()
 }
 
 // helpers
