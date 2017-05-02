@@ -1,0 +1,31 @@
+@import "../base/typography.less";
+@import "../components/buttons";
+
+html {
+  background: #fff;
+}
+
+#messageDiv {
+  &:extend(.system-font);
+  margin: 15px 5px;
+  font-size: 16px;
+  overflow: hidden;
+  white-space: pre;
+  text-overflow: ellipsis;
+}
+
+#promptInput {
+  width: 460px;
+  padding: 5px 6px;
+  font-size: 16px;
+  margin: 5px;
+}
+
+.actions {
+  margin: 10px 4px;
+  text-align: right;
+}
+
+.btn {
+  width: 100px;
+}

@@ -3,7 +3,8 @@ import path from 'path'
 
 const SIZES = {
   'create-archive': {width: 500, height: 390},
-  'fork-archive': {width: 500, height: 460}
+  'fork-archive': {width: 500, height: 460},
+  prompt: {width: 500, height: 170}
 }
 
 // state
@@ -32,7 +33,7 @@ export function showModal (parentWindow, modalName, opts={}) {
       preload: path.join(app.getAppPath(), 'webview-preload.build.js')
     }
   })
-  modalWindow.loadURL('beaker:' + modalName + '-modal')
+  modalWindow.loadURL('beaker://' + modalName + '-modal')
   modalWindow.once('ready-to-show', () => {
     // inject config
     modalWindow.webContents.executeJavaScript(`

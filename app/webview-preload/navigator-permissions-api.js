@@ -9,6 +9,7 @@ res.status // => 'blocked'
 
 import { ipcRenderer } from 'electron'
 import rpc from 'pauls-electron-rpc'
+import permissionsManifest from '../lib/api-manifests/external/permissions'
 
 // globals
 // =
@@ -19,11 +20,7 @@ var origQuery = navigator.permissions.query
 
 // this is the actual RPC interface, but we want to expose it via the standard web platform, navigator.permissions
 // so, this RPC interface will be kept unexposed to apps
-var beakerPermissions = rpc.importAPI('beakerPermissions', {
-  requestPermission: 'promise',
-  revokePermission: 'promise',
-  queryPermission: 'promise'
-}, { timeout: false })
+var beakerPermissions = rpc.importAPI('beakerPermissions', permissionsManifest, { timeout: false })
 
 // exported api
 // =
