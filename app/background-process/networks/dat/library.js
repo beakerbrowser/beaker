@@ -357,6 +357,7 @@ export async function getArchiveInfo (key) {
   ])
   meta.key = key
   meta.url = `dat://${key}`
+  meta.version = archive.version
   meta.userSettings = {localPath: userSettings.localPath, isSaved: userSettings.isSaved}
   meta.peers = archive.metadata.peers.length
   meta.peerHistory = archive.peerHistory
