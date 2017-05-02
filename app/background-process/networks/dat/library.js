@@ -376,6 +376,7 @@ export function joinSwarm (key, opts) {
   var archive = (typeof key == 'object' && key.key) ? key : getArchive(key)
   if (!archive || archive.isSwarming) return
 
+  var connIdCounter = 0
   var keyStr = datEncoding.toStr(archive.key)
   var swarm = discoverySwarm(swarmDefaults({
     hash: false,
@@ -385,7 +386,7 @@ export function joinSwarm (key, opts) {
       var dkeyStr = datEncoding.toStr(archive.discoveryKey)
       var chan = dkeyStr.slice(0,6) + '..' + dkeyStr.slice(-2)
       var keyStrShort = keyStr.slice(0,6) + '..' + keyStr.slice(-2)
-      var connId = archive.replicationStreams.length
+      var connId = ++connIdCounter
       var start = Date.now()
       debug('new connection id=%s chan=%s type=%s host=%s key=%s', connId, chan, info.type, info.host, keyStrShort)
 
