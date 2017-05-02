@@ -125,15 +125,15 @@ export default {
 
       // if reversing the output, modify start/end
       start = start || 0
-      end = end || archive.version
+      end = end || archive.metadata.length
       if (reverse) {
         // swap values
         let t = start
         start = end
         end = t
         // start from the end
-        start = archive.version - start + 1
-        end = archive.version - end + 1
+        start = archive.metadata.length - start
+        end = archive.metadata.length - end
       }
 
       return new Promise((resolve, reject) => {
