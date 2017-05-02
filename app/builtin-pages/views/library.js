@@ -110,12 +110,12 @@ async function loadCurrentArchive () {
         await reloadDiff()
       ])
       selectedArchive.history = history
-      selectedArchive.fileTree = fileTree
       selectedArchive.historyPaginationOffset = 500
-      // selectedArchive.events = a.createFileActivityStream()
+      selectedArchive.fileTree = fileTree
+      selectedArchive.events = a.createFileActivityStream()
 
       // wire up events
-      // selectedArchive.events.addEventListener('changed', onFileChanged)
+      selectedArchive.events.addEventListener('changed', onFileChanged)
     } else {
       selectedArchive = null
     }
