@@ -28,7 +28,7 @@
     "fs-jetpack": "^0.9.0",
     "function-queue": "0.0.12",
     "get-folder-size": "^1.0.0",
-    "hyperdrive": "^9.0.0",
+    "hyperdrive": "^9.1.0",
     "hyperdrive-staging-area": "^1.1.0",
     "identify-filetype": "^1.0.0",
     "jayson": "^2.0.2",
