@@ -1,6 +1,6 @@
 import * as yo from 'yo-yo'
 import {FileTree, ArchivesList} from 'builtin-pages-lib'
-import {pluralize} from '../../lib/strings'
+import {pluralize, makeSafe} from '../../lib/strings'
 import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
 import renderFiles from '../com/library-files-list'
@@ -417,24 +417,26 @@ function rDiffMessage (archiveInfo) {
 }
 
 function rHistory (archiveInfo) {
-  var rowEls = []
-  archiveInfo.history.forEach((item, i) => {
-    var rev = archiveInfo.history.length - i
-    var date = item.value ? niceDate(item.value.mtime) : ''
-    rowEls.push(yo`
-      <li class="history-item">
-        <a class="date link" href=${`dat://${archiveInfo.key}+${rev}`} target="_blank">Revision ${rev}</a>
-        ${item.type}
-        ${item.name}
-      </li>
-    `)
+  var len = archiveInfo.history.length
+  var rowEls = archiveInfo.history.map(function (item, i) {
+    var rev = len - i
+    return `
+      <div class="history-item">
+        <div class="date"><a class="link" href=${`dat://${archiveInfo.key}+${rev}`} target="_blank">Revision ${rev}</a></div>
+        ${makeSafe(item.type)}
+        ${makeSafe(item.name)}
+      </div>
+    `
   })
 
   if (rowEls.length === 0) {
-    rowEls.push(yo`<em>Nothing has been published yet.</em>`)
+    rowEls.push(`<em>Nothing has been published yet.</em>`)
   }
 
-  return yo`<ul class="history">${rowEls}</ul>`
+  // use innerHTML instead of yo to speed up this render
+  var el = yo`<div class="history"></div>`
+  el.innerHTML = rowEls.join('')
+  return el
 }
 
 function rMetadata (archiveInfo) {

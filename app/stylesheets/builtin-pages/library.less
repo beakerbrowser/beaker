@@ -291,16 +291,12 @@ body {
 
   .history {
     font-size: 13px;
-
-    .history-item {
-      margin-bottom: .5rem;
-
-      .date {
-        display: inline-block;
-        min-width: 80px;
-        color: @color-text--muted;
-        margin-right: 1rem;
-      }
+    overflow: hidden;
+    white-space: nowrap;
+    
+    .date {
+      display: inline-block;
+      width: 100px;
     }
   }
 
