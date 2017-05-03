@@ -105,7 +105,7 @@ test('archive.readdir', async t => {
 
   // subdir
   let listing2 = await readdir(testStaticDatURL, '/subdir')
-  t.deepEqual(listing2.value.sort(), ['hello.txt'])
+  t.deepEqual(listing2.value.sort(), ['hello.txt', 'space in the name.txt'])
 })
 
 test('archive.readFile', async t => {
@@ -115,6 +115,10 @@ test('archive.readFile', async t => {
 
   // read utf8 2
   var helloTxt2 = await readFile(testStaticDatURL, '/subdir/hello.txt', 'utf8')
+  t.deepEqual(helloTxt2.value, 'hi')
+
+  // read utf8 when spaces are in the name
+  var helloTxt2 = await readFile(testStaticDatURL, '/subdir/space in the name.txt', 'utf8')
   t.deepEqual(helloTxt2.value, 'hi')
 
   // read hex
@@ -156,6 +160,14 @@ test('archive.stat', async t => {
   // stat alt-formed path
   var entry = await stat(testStaticDatURL, '/hello.txt', {})
   t.deepEqual(entry.value.isFile, true, 'alt-formed path')
+
+  // stat path w/spaces in it
+  var entry = await stat(testStaticDatURL, '/subdir/space in the name.txt', {})
+  t.deepEqual(entry.value.isFile, true, 'path w/spaces in it')
+
+  // stat path w/spaces in it
+  var entry = await stat(testStaticDatURL, '/subdir/space%20in%20the%20name.txt', {})
+  t.deepEqual(entry.value.isFile, true, 'path w/spaces in it')
 
   // timeout: stat an archive that does not exist
   var fakeUrl = 'dat://' + ('f'.repeat(64)) + '/'
@@ -591,7 +603,6 @@ test('versioned reads and writes', async t => {
   t.deepEqual((await readFile(newTestDatURL + '+4', '/one.txt')).value, 'c')
   var statRev2 = await stat(newTestDatURL + '+2', '/one.txt')
   var statRev4 = await stat(newTestDatURL + '+4', '/one.txt')
-  console.log(statRev2.value, statRev4.value)
   t.truthy(statRev2.value.offset < statRev4.value.offset)
 
   // dont allow writes to old versions
@@ -1039,7 +1050,7 @@ test('DatArchive.importFromFilesystem', async t => {
   var res = await app.client.executeAsync((src, dst, done) => {
     DatArchive.importFromFilesystem({src, dst}).then(done,done)
   }, __dirname + '/scaffold/test-static-dat', archiveURL)
-  t.deepEqual(res.value.addedFiles.length, 3)
+  t.deepEqual(res.value.addedFiles.length, 4)
 
   // test files
   var res = await readFile(archiveURL, 'hello.txt')
@@ -1063,7 +1074,7 @@ test('DatArchive.importFromFilesystem', async t => {
   var res = await app.client.executeAsync((src, dst, done) => {
     DatArchive.importFromFilesystem({src, dst, inplaceImport: false}).then(done,done)
   }, __dirname + '/scaffold/test-static-dat', archiveURL)
-  t.deepEqual(res.value.addedFiles.length, 3)
+  t.deepEqual(res.value.addedFiles.length, 4)
 
   // test files
   var res = await readFile(archiveURL, 'test-static-dat/hello.txt')
@@ -1111,7 +1122,7 @@ test('DatArchive.importFromFilesystem', async t => {
   var res = await app.client.executeAsync((src, dst, done) => {
     DatArchive.importFromFilesystem({src, dst, dryRun: true}).then(done,done)
   }, __dirname + '/scaffold/test-static-dat', archiveURL + '/dryrun-import')
-  t.deepEqual(res.value.addedFiles.length, 3)
+  t.deepEqual(res.value.addedFiles.length, 4)
 
   // test files
   var res = await readFile(archiveURL, 'dryrun-import/hello.txt')
@@ -1136,7 +1147,7 @@ test('DatArchive.exportToFilesystem', async t => {
   var res = await app.client.executeAsync((src, dst, done) => {
     DatArchive.exportToFilesystem({src, dst, skipUndownloadedFiles: false}).then(done,done)
   }, testStaticDatURL, testDirPath)
-  t.deepEqual(res.value.addedFiles.length, 3)
+  t.deepEqual(res.value.addedFiles.length, 4)
 
   // test files
   t.deepEqual(fs.readFileSync(path.join(testDirPath, 'hello.txt'), 'utf8'), 'hello')

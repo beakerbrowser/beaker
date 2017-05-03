@@ -471,7 +471,7 @@ function parseUrlParts (url) {
     }
 
     archiveKey = urlp.host
-    filepath = urlp.pathname || ''
+    filepath = decodeURIComponent(urlp.pathname || '')
     version = urlp.version
   }
   return {archiveKey, filepath, version}
