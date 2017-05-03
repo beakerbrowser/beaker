@@ -1,5 +1,6 @@
 @import "../base/typography.less";
 @import "../components/buttons";
+@import "../utils/decorators";
 
 html {
   background: #fff;
@@ -7,11 +8,9 @@ html {
 
 #messageDiv {
   &:extend(.system-font);
-  margin: 15px 5px;
+  &:extend(.overflow-ellipsis);
+  margin: 20px 5px 15px;
   font-size: 16px;
-  overflow: hidden;
-  white-space: pre;
-  text-overflow: ellipsis;
 }
 
 #promptInput {
@@ -27,5 +26,5 @@ html {
 }
 
 .btn {
-  width: 100px;
+  width: 75px;
 }
