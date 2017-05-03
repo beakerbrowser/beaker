@@ -10,7 +10,7 @@ import manifest from '../lib/api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
 import {internalOnly} from '../lib/bg/rpc'
 import {open as openUrl} from './open-url'
-import {closeModal} from './ui/modals'
+import {showModal, closeModal} from './ui/modals'
 
 // constants
 // =
@@ -93,6 +93,19 @@ export function setup () {
   ipcMain.on('onbeforeunload-abort', e => {
     e.sender.stop()
     e.returnValue = true
+  })
+
+  // window.prompt handling
+  //  - we have use ipc directly instead of using rpc, because we need custom
+  //    response-lifecycle management in the main thread
+  ipcMain.on('page-prompt-dialog', async (e, message, def) => {
+    var win = BrowserWindow.fromWebContents(e.sender.hostWebContents)
+    try {
+      var res = await showModal(win, 'prompt', {message, default: def})
+      e.returnValue = res && res.value ? res.value : false
+    } catch (e) {
+      e.returnValue = false
+    }
   })
 }
 
