@@ -104,11 +104,11 @@ async function loadCurrentArchive () {
       var a = new DatArchive(selectedArchiveKey)
       var fileTree = new FileTree(a, {onDemand: true})
       selectedArchive = await a.getInfo()
-      var [history, fileTreeRes, _] = await Promise.all([
-        a.history({end: 500, reverse: true}),
-        fileTree.setup(),
-        await reloadDiff()
+      var [history, fileTreeRes,] = await Promise.all([
+        a.history({end: 20, reverse: true, timeout: 10e3}),
+        fileTree.setup()
       ])
+      /*dont await*/ reloadDiff()
       selectedArchive.history = history
       selectedArchive.historyPaginationOffset = 500
       selectedArchive.fileTree = fileTree
@@ -145,6 +145,7 @@ async function reloadDiff () {
   } catch (e) {
     // this can happen if the site's folder has disappeared
   }
+  update()
 }
 
 // rendering
@@ -575,8 +576,7 @@ async function onRevert () {
 }
 
 async function onFileChanged () {
-  await reloadDiff()
-  update()
+  reloadDiff()
 }
 
 async function onUpdateLocation (e) {
