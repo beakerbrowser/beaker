@@ -102,6 +102,7 @@ export default {
     title = typeof title !== 'undefined' ? title : archiveInfo.title
     description = typeof description !== 'undefined' ? description : archiveInfo.description
     await pda.updateManifest(archive.stagingFS, {title, description})
+    await pda.commit(archive.stagingFS, {filter: manifestFilter})
     datLibrary.pullLatestArchiveMeta(archive)
   },
 
@@ -186,4 +187,9 @@ async function localPathPrompt () {
 
     return localPath
   }
+}
+
+function manifestFilter (path) {
+  // only allow /dat.json
+  return (path !== '/dat.json') // (true => dont handle)
 }

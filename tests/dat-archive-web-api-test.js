@@ -658,7 +658,7 @@ test('archive.commit does allow you to exceed the quota, but subsequent writes w
     // put the result on the window, for checking later
     window.res = null
     var archive = new DatArchive(url)
-    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 20), 'utf8').then(
+    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 15), 'utf8').then(
       res => window.res = res,
       err => window.res = err
     )

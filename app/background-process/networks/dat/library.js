@@ -133,6 +133,7 @@ export async function createNewArchive (manifest = {}, userSettings = {}) {
 
   // write the manifest then resolve
   await pda.writeManifest(archive.staging, manifest)
+  await pda.commit(archive.stagingFS, {filter: manifestFilter})
 
   // write the user settings
   await archivesDb.setUserSettings(0, key, {
@@ -528,4 +529,9 @@ function onNetworkChanged (e) {
       totalPeers: peers
     }
   })
+}
+
+function manifestFilter (path) {
+  // only allow /dat.json
+  return (path !== '/dat.json') // (true => dont handle)
 }
