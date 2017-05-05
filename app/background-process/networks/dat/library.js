@@ -375,7 +375,20 @@ export async function reconfigureStaging (archive, userSettings) {
     archive.staging.stopAutoSync()
     archive.staging = null
   }
+
+  // recreate staging
   await configureStaging(archive, userSettings)
+
+  if (archive.writable) {
+    // copy out the dat.json to the new location, if needed
+    let [stagingSt, archiveSt] = await Promise.all([
+      pda.stat(archive.staging, '/dat.json').catch(() => null),
+      pda.stat(archive, '/dat.json').catch(() => null)
+    ])
+    if (archiveSt && (!stagingSt || stagingSt.mtime < archiveSt.mtime)) {
+      archive.staging.revert({filter: manifestFilter})
+    }
+  }
 }
 
 // archive networking
