@@ -219,7 +219,7 @@ async function datServer (req, res) {
       'Content-Security-Policy': DAT_CSP,
       'Access-Control-Allow-Origin': '*'
     })
-    res.end(await directoryListingPage(archiveFS, urlp.path))
+    res.end(await directoryListingPage(archiveFS, filepath))
   }
 
   // handle not found
