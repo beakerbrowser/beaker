@@ -81,7 +81,7 @@ async function onSubmit (e) {
   if (!localPath) return
   try {
     if (isEditing) {
-      await beaker.archives.updateManifest(archive.url, {title, description})
+      await beaker.archives.update(archive.url, {title, description}, {localPath})
       beakerBrowser.closeModal(null, true)
     } else {
       var newArchive = await beaker.archives.create({title, description, createdBy}, {localPath})

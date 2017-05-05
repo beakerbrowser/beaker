@@ -506,7 +506,8 @@ function onOpenFolder (e) {
 async function onEditSettings (e) {
   e.preventDefault()
   update()
-  await beaker.archives.updateManifest(selectedArchive.url)
+  await beaker.archives.update(selectedArchive.url)
+  loadCurrentArchive()
 }
 
 async function onFork (e) {

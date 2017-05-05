@@ -369,6 +369,15 @@ export async function getArchiveInfo (key) {
   return meta
 }
 
+export async function reconfigureStaging (archive, userSettings) {
+  if (archive.staging) {
+    // close staging if it exists
+    archive.staging.stopAutoSync()
+    archive.staging = null
+  }
+  await configureStaging(archive, userSettings)
+}
+
 // archive networking
 // =
 
