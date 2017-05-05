@@ -133,6 +133,7 @@ export async function createNewArchive (manifest = {}, userSettings = {}) {
 
   // write the manifest then resolve
   await pda.writeManifest(archive.staging, manifest)
+  await pda.commit(archive.stagingFS, {filter: manifestFilter})
 
   // write the user settings
   await archivesDb.setUserSettings(0, key, {
@@ -368,6 +369,28 @@ export async function getArchiveInfo (key) {
   return meta
 }
 
+export async function reconfigureStaging (archive, userSettings) {
+  if (archive.staging) {
+    // close staging if it exists
+    archive.staging.stopAutoSync()
+    archive.staging = null
+  }
+
+  // recreate staging
+  await configureStaging(archive, userSettings)
+
+  if (archive.writable) {
+    // copy out the dat.json to the new location, if needed
+    let [stagingSt, archiveSt] = await Promise.all([
+      pda.stat(archive.staging, '/dat.json').catch(() => null),
+      pda.stat(archive, '/dat.json').catch(() => null)
+    ])
+    if (archiveSt && (!stagingSt || stagingSt.mtime < archiveSt.mtime)) {
+      archive.staging.revert({filter: manifestFilter})
+    }
+  }
+}
+
 // archive networking
 // =
 
@@ -528,4 +551,9 @@ function onNetworkChanged (e) {
       totalPeers: peers
     }
   })
+}
+
+function manifestFilter (path) {
+  // only allow /dat.json
+  return (path !== '/dat.json') // (true => dont handle)
 }

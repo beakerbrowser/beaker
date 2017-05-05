@@ -52,6 +52,35 @@ export default {
     return datLibrary.forkArchive(url, {title, description, createdBy}, {localPath})
   },
 
+  async update(url, manifestInfo, {localPath} = {}) {
+
+    if (!manifestInfo) {
+      // show the update-info the modal
+      var win = BrowserWindow.fromWebContents(this.sender)
+      await assertSenderIsFocused(this.sender)
+      return await showModal(win, 'create-archive', {url})
+    }
+
+    // update manifest file
+    var key = toKey(url)
+    var archive = await datLibrary.getOrLoadArchive(key)
+    var archiveInfo = await archivesDb.getMeta(key)
+    var {title, description} = manifestInfo
+    title = typeof title !== 'undefined' ? title : archiveInfo.title
+    description = typeof description !== 'undefined' ? description : archiveInfo.description
+    if (title !== archiveInfo.title || description !== archiveInfo.description) {
+      await pda.updateManifest(archive.stagingFS, {title, description})
+      await pda.commit(archive.stagingFS, {filter: manifestFilter})
+      datLibrary.pullLatestArchiveMeta(archive)
+    }
+
+    // update settings
+    if (localPath) {
+      var userSettings = await archivesDb.setUserSettings(0, key, {localPath})
+      await datLibrary.reconfigureStaging(archive, userSettings)
+    }
+  },
+
   async add(url, {localPath, promptLocalPath} = {}) {
     var key = toKey(url)
 
@@ -83,26 +112,6 @@ export default {
   async remove(url) {
     var key = toKey(url)
     return archivesDb.setUserSettings(0, key, {isSaved: false})
-  },
-
-  async updateManifest(url, manifestInfo) {
-
-    if (!manifestInfo) {
-      // show the update-info the modal
-      var win = BrowserWindow.fromWebContents(this.sender)
-      await assertSenderIsFocused(this.sender)
-      return await showModal(win, 'create-archive', {url})
-    }
-
-    // do a direct update
-    var key = toKey(url)
-    var archive = await datLibrary.getOrLoadArchive(key)
-    var archiveInfo = await archivesDb.getMeta(key)
-    var {title, description} = manifestInfo
-    title = typeof title !== 'undefined' ? title : archiveInfo.title
-    description = typeof description !== 'undefined' ? description : archiveInfo.description
-    await pda.updateManifest(archive.stagingFS, {title, description})
-    datLibrary.pullLatestArchiveMeta(archive)
   },
 
   async list(query={}) {
@@ -186,4 +195,9 @@ async function localPathPrompt () {
 
     return localPath
   }
+}
+
+function manifestFilter (path) {
+  // only allow /dat.json
+  return (path !== '/dat.json') // (true => dont handle)
 }
