@@ -523,6 +523,11 @@ function onWillNavigate (e) {
 // did-navigate-in-page is triggered by hash/virtual-url changes
 // we need to update the url bar but no load event occurs
 function onDidNavigateInPage (e) {
+  // ignore if this is a subresource
+  if (!e.isMainFrame) {
+    return
+  }
+
   var page = getByWebview(e.target)
   if (page) {
     // update ui
@@ -536,8 +541,9 @@ function onDidNavigateInPage (e) {
 
 function onLoadCommit (e) {
   // ignore if this is a subresource
-  if (!e.isMainFrame)
+  if (!e.isMainFrame) {
     return
+  }
 
   var page = getByWebview(e.target)
   if (page) {
@@ -680,8 +686,9 @@ function onDidGetRedirectRequest (e) {
 }
 
 function onDidGetResponseDetails (e) {
-  if (e.resourceType != 'mainFrame')
+  if (e.resourceType != 'mainFrame') {
     return
+  }
 
   var page = getByWebview(e.target)
   if (page) {
