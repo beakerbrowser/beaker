@@ -557,6 +557,9 @@ function onLoadCommit (e) {
     navbar.clearAutocomplete()
     // close any prompts
     promptbar.forceRemoveAll(page)
+    // set title in tabs
+    page.title = e.target.getTitle() // NOTE sync operation
+    navbar.update(page)
   }
 }
 
@@ -698,7 +701,7 @@ function onDidGetResponseDetails (e) {
       page.contentType = e.headers['content-type'][0] || null
     } catch (e) {
       page.contentType = null
-    }
+    }    
     // set URL in navbar
     page.loadingURL = e.newURL
     page.siteInfoOverride = null
