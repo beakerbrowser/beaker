@@ -1316,6 +1316,25 @@ test('archive.createNetworkActivityStream', async t => {
   t.deepEqual(res.value.content.all, true)
 })
 
+test('archive.writeFile does not allow self-modification', async t => {
+  // navigate to the created dat
+  // (we have to be really sleepy about this to not hang the navigation)
+  await sleep(500)
+  var tabIndex = await browserdriver.newTab(app)
+  await sleep(500)
+  await browserdriver.navigateTo(app, createdDatURL)
+  await sleep(500)
+  await app.client.windowByIndex(tabIndex)
+  await app.client.waitForExist('.entry') // an element on the directory listing page
+
+  // fail a self-write
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.writeFile('/denythis.txt', 'hello world', 'utf8').then(done, done)
+  }, createdDatURL)
+  t.deepEqual(res.value.name, 'PermissionsError')
+})
+
 function sleep (time) {
   return new Promise(resolve => setTimeout(resolve, time))
 }
