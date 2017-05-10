@@ -1,6 +1,6 @@
 @import "../components/link";
 
-.history {
+.window-content.history {
 
   button.clear {
     &:extend(.link);
@@ -10,5 +10,13 @@
   h2.ll-heading {
     font-size: 13px; // same size as rest of body
     border-bottom: 1px solid @border-menu;
+  }
+
+  .history.links-list {
+    margin-top: @padding-component--tight;
+  }
+
+  .ll-row {
+    max-width: 600px;
   }
 }
