@@ -7,7 +7,7 @@ import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as promptbar from './ui/promptbar'
 import * as statusBar from './ui/statusbar'
-import { urlToData } from '../lib/fg/img'
+import {urlsToData} from '../lib/fg/img'
 import { debounce } from '../lib/functions'
 import errorPage from '../lib/error-page'
 import addAsyncAlternatives from './webview-async'
@@ -101,7 +101,6 @@ export function create (opts) {
     // current page's info
     contentType: null, // what is the content-type of the page?
     favicons: null, // what are the favicons of the page?
-    faviconDominantColor: null, // what's the computed dominant color of favicon?
     bookmark: null, // this page's bookmark object, if it's bookmarked
 
     // current site's info
@@ -759,18 +758,15 @@ function onDidFailLoad (e) {
   }
 }
 
-function onPageFaviconUpdated (e) {
+async function onPageFaviconUpdated (e) {
   if (e.favicons && e.favicons[0]) {
     var page = getByWebview(e.target)
     page.favicons = e.favicons
-    page.faviconDominantColor = null
-    urlToData(e.favicons[0], 64, 64, (err, res) => {
-      if (res) {
-        beakerSitedata.set(page.getURL(), 'favicon', res.url)
-        page.faviconDominantColor = res.dominantColor
-        events.emit('page-favicon-updated', getByWebview(e.target))
-      }
-    })
+    events.emit('page-favicon-updated', getByWebview(e.target))
+
+    // store favicon to db
+    var res = await urlsToData(e.favicons, 64, 64)
+    beakerSitedata.set(page.getURL(), 'favicon', res.dataUrl)
   }
 }
 
