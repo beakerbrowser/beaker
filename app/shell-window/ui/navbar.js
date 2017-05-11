@@ -99,6 +99,7 @@ export function clearAutocomplete () {
 export function update (page) {
   // fetch current page, if not given
   page = page || pages.getActive()
+  if (!page.webviewEl) return
 
   // render
   yo.update(page.navbarEl, render(page.id, page))
