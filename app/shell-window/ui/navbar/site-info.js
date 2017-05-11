@@ -29,11 +29,13 @@ export class SiteInfoNavbarBtn {
         icon = 'share-alt'
         protocolLabel = 'Secure P2P'
         protocolCls = 'p2p'
+      } else if (this.protocolInfo.scheme === 'beaker:') {
+        protocolCls = 'beaker'
       }
     }
 
     // render btn
-    var iconEl = (icon) ? yo`<span class="fa fa-${icon}"></span>` : ''
+    var iconEl = (icon) ? yo`<i class="fa fa-${icon}"></i>` : ''
     var titleEl = (protocolLabel) ? yo`<span class="title">${protocolLabel}</span>`: ''
     return yo`<div class="toolbar-site-info ${protocolCls}">
       <button onclick=${e => this.toggleDropdown(e)}>${iconEl} ${titleEl}</button>
