@@ -59,8 +59,10 @@ INSERT INTO profiles (id) VALUES (0);
 
 -- default bookmarks
 INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Homepage', 'https://beakerbrowser.com', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Twitter', 'https://twitter.com/beakerbrowser', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Hashbase.io', 'https://hashbase.io', 1);
 INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Mailing List', 'https://groups.google.com/forum/#!forum/beaker-browser', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'DuckDuckGo (the default search engine)', 'https://duckduckgo.com', 0);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'DuckDuckGo (the default search engine)', 'https://duckduckgo.com', 1);
 INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'The Dat Protocol - Decentralized Archive Transport', 'dat://www.datprotocol.com', 0);
 
 PRAGMA user_version = 1;
