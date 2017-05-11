@@ -66,6 +66,7 @@ async function setup () {
   // setup handlers
   archivesList.addEventListener('changed', update)
   beaker.archives.addEventListener('updated', onArchivesUpdated)
+  beaker.archives.addEventListener('network-changed', onNetworkChanged)
   window.addEventListener('pushstate', loadCurrentArchive)
   window.addEventListener('popstate', loadCurrentArchive)
 }
@@ -490,6 +491,13 @@ function onArchivesUpdated (e) {
   if (selectedArchive && e.details.url === selectedArchive.url) {
     loadCurrentArchive()
   }
+}
+
+function onNetworkChanged (e) {
+  if (selectedArchive && e.details.url === selectedArchive.url) {
+    selectedArchive.peerHistory.push({ts: Date.now(), peers: e.details.peers})
+    updateGraph()
+  }  
 }
 
 function onShare (e) {
