@@ -111,10 +111,12 @@
       padding: 0 0 0 3px;
       border: 0;
       min-width: 0;
+      height: 100%;
 
       .fa {
         padding: 7px 0 4px 6px;
         font-size: 14px;
+
         &.fa-lock {
           font-size: 15px;
           position: relative;
@@ -138,8 +140,23 @@
       color: #3c943c !important;
     }
 
-    &.insecure .fa-unlock{
-      padding-right: 6px;
+    &.insecure {
+
+      button {
+        color: mix(@color-text, @red, 20%);
+      }
+
+      i {
+        padding-right: 8px;
+      }
+    }
+
+    &.insecure:not(:empty) + .nav-location-pretty {
+      padding-left: 0;
+
+      + .nav-location-input {
+        padding-left: 0;
+      }
     }
 
     &.p2p button {

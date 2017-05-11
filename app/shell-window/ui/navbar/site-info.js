@@ -24,16 +24,18 @@ export class SiteInfoNavbarBtn {
         protocolLabel = 'Secure'
         protocolCls = 'secure'
       } else if (this.protocolInfo.scheme === 'http:') {
-        icon = 'unlock'
+        icon = 'exclamation-circle'
       } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
         icon = 'share-alt'
         protocolLabel = 'Secure P2P'
         protocolCls = 'p2p'
+      } else if (this.protocolInfo.scheme === 'beaker:') {
+        protocolCls = 'beaker'
       }
     }
 
     // render btn
-    var iconEl = (icon) ? yo`<span class="fa fa-${icon}"></span>` : ''
+    var iconEl = (icon) ? yo`<i class="fa fa-${icon}"></i>` : ''
     var titleEl = (protocolLabel) ? yo`<span class="title">${protocolLabel}</span>`: ''
     return yo`<div class="toolbar-site-info ${protocolCls}">
       <button onclick=${e => this.toggleDropdown(e)}>${iconEl} ${titleEl}</button>
@@ -50,9 +52,19 @@ export class SiteInfoNavbarBtn {
     var protocolDesc = ''
     if (this.protocolInfo) {
       if (['https:'].includes(this.protocolInfo.scheme)) {
-        protocolDesc = 'Your connection to this site is private.'
+        protocolDesc = 'Your connection to this site is secure.'
       } else if (this.protocolInfo.scheme === 'http:') {
-        protocolDesc = 'Your connection to this site is not private.'
+        protocolDesc = yo`
+          <div>
+            <p>
+              Your connection to this site is not secure.
+            </p>
+
+            <small>
+              You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
+            </small>
+          </div>
+        `
       } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
         protocolDesc = yo`<span>
           This site was downloaded from a secure peer-to-peer network.
