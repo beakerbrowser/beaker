@@ -495,7 +495,14 @@ function onArchivesUpdated (e) {
 
 function onNetworkChanged (e) {
   if (selectedArchive && e.details.url === selectedArchive.url) {
-    selectedArchive.peerHistory.push({ts: Date.now(), peers: e.details.peers})
+    var now = Date.now()
+    var lastHistory = selectedArchive.peerHistory.slice(-1)[0]
+    if (lastHistory && (now - lastHistory.ts) < 10e3) {
+      // if the last datapoint was < 10s ago, just update it
+      lastHistory.peers = e.details.peers
+    } else {
+      selectedArchive.peerHistory.push({ts: now, peers: e.details.peers})
+    }
     updateGraph()
   }  
 }
