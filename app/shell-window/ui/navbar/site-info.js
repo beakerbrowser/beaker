@@ -24,7 +24,7 @@ export class SiteInfoNavbarBtn {
         protocolLabel = 'Secure'
         protocolCls = 'secure'
       } else if (this.protocolInfo.scheme === 'http:') {
-        icon = 'unlock'
+        icon = 'exclamation-circle'
       } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
         icon = 'share-alt'
         protocolLabel = 'Secure P2P'
