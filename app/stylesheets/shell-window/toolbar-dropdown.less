@@ -189,7 +189,7 @@
   position: absolute;
   left: -80px;
   top: 30px;
-  width: 350px;
+  width: 400px;
 
   a {
     &:extend(.link);
@@ -200,13 +200,22 @@
   }
 
   .dropdown-items {
+    width: 300px;
+    left: 65px;
+
     &::before {
       left: 25px;
     }
   }
 
   .details {
-    padding: @padding-component;
+    padding: @padding-component 15px;
+    font-size: .85rem;
+
+    small {
+      font-size: .75rem;
+      color: @color-text--muted;
+    }
   }
 
   .details-title {
@@ -215,6 +224,7 @@
 
   .details-desc {
     margin-bottom: 0;
+    line-height: 1.3;
   }
 
   .perms {
