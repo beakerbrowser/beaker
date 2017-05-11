@@ -27,7 +27,7 @@ const DAT_CSP = `
 default-src 'self' dat:;
 script-src 'self' 'unsafe-eval' 'unsafe-inline' dat:;
 style-src 'self' 'unsafe-inline' dat:;
-img-src 'self' data: dat:;
+img-src 'self' data: dat: blob:;
 object-src 'none';
 `.replace(/\n/g, ' ')
 
@@ -38,9 +38,9 @@ const CUSTOM_DAT_CSP = origins => {
 default-src 'self' dat:;
 script-src 'self' 'unsafe-eval' 'unsafe-inline' dat:;
 style-src 'self' 'unsafe-inline' dat:;
-img-src 'self' data: dat: ${origins};
+img-src 'self' data: dat: ${origins} blob:;
 font-src 'self' dat: ${origins};
-media-src 'self' dat: ${origins}; 
+media-src 'self' dat: ${origins};
 connect-src 'self' dat: ${origins};
 object-src 'none';
 `.replace(/\n/g, ' ')
