@@ -7,7 +7,7 @@ import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as promptbar from './ui/promptbar'
 import * as statusBar from './ui/statusbar'
-import { urlToData } from '../lib/fg/img'
+import {urlsToData} from '../lib/fg/img'
 import { debounce } from '../lib/functions'
 import errorPage from '../lib/error-page'
 import addAsyncAlternatives from './webview-async'
@@ -101,7 +101,6 @@ export function create (opts) {
     // current page's info
     contentType: null, // what is the content-type of the page?
     favicons: null, // what are the favicons of the page?
-    faviconDominantColor: null, // what's the computed dominant color of favicon?
     bookmark: null, // this page's bookmark object, if it's bookmarked
 
     // current site's info
@@ -523,6 +522,11 @@ function onWillNavigate (e) {
 // did-navigate-in-page is triggered by hash/virtual-url changes
 // we need to update the url bar but no load event occurs
 function onDidNavigateInPage (e) {
+  // ignore if this is a subresource
+  if (!e.isMainFrame) {
+    return
+  }
+
   var page = getByWebview(e.target)
   if (page) {
     // update ui
@@ -536,8 +540,9 @@ function onDidNavigateInPage (e) {
 
 function onLoadCommit (e) {
   // ignore if this is a subresource
-  if (!e.isMainFrame)
+  if (!e.isMainFrame) {
     return
+  }
 
   var page = getByWebview(e.target)
   if (page) {
@@ -551,6 +556,9 @@ function onLoadCommit (e) {
     navbar.clearAutocomplete()
     // close any prompts
     promptbar.forceRemoveAll(page)
+    // set title in tabs
+    page.title = e.target.getTitle() // NOTE sync operation
+    navbar.update(page)
   }
 }
 
@@ -680,8 +688,9 @@ function onDidGetRedirectRequest (e) {
 }
 
 function onDidGetResponseDetails (e) {
-  if (e.resourceType != 'mainFrame')
+  if (e.resourceType != 'mainFrame') {
     return
+  }
 
   var page = getByWebview(e.target)
   if (page) {
@@ -691,7 +700,7 @@ function onDidGetResponseDetails (e) {
       page.contentType = e.headers['content-type'][0] || null
     } catch (e) {
       page.contentType = null
-    }
+    }    
     // set URL in navbar
     page.loadingURL = e.newURL
     page.siteInfoOverride = null
@@ -749,18 +758,15 @@ function onDidFailLoad (e) {
   }
 }
 
-function onPageFaviconUpdated (e) {
+async function onPageFaviconUpdated (e) {
   if (e.favicons && e.favicons[0]) {
     var page = getByWebview(e.target)
     page.favicons = e.favicons
-    page.faviconDominantColor = null
-    urlToData(e.favicons[0], 64, 64, (err, res) => {
-      if (res) {
-        beakerSitedata.set(page.getURL(), 'favicon', res.url)
-        page.faviconDominantColor = res.dominantColor
-        events.emit('page-favicon-updated', getByWebview(e.target))
-      }
-    })
+    events.emit('page-favicon-updated', getByWebview(e.target))
+
+    // store favicon to db
+    var res = await urlsToData(e.favicons, 64, 64)
+    beakerSitedata.set(page.getURL(), 'favicon', res.dataUrl)
   }
 }
 
@@ -855,8 +861,10 @@ async function updateHistory (page) {
   page._canGoForward = f
   navbar.update(page)
 }
-
 function runOnbeforeunload (page) {
+  if (page.webviewEl.isWaitingForResponse()) {
+    return false
+  }
   return new Promise(resolve => page.webviewEl.executeJavaScript(`
     (function() {
       if (window.__onbeforeunload__) {

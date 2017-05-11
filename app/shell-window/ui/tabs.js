@@ -225,20 +225,23 @@ function onClickTabClose (page) {
 }
 
 function onClickCloseOtherTabs (page) {
-  return () => {
+  return async () => {
     pages.setActive(page)
-    pages.getAll().slice().forEach(p => {
-      if (p != page)
-        pages.remove(p)
-    })
+    var ps = pages.getAll().slice()
+    for (var i = 0; i < ps.length; i++) {
+      if (ps[i] != page) {
+        await pages.remove(ps[i])
+      }
+    }
   }
 }
+
 function onClickCloseTabsToTheRight (page) {
-  return () => {
+  return async () => {
     var ps = pages.getAll()
     var index = ps.indexOf(page)
     for (var i = ps.length - 1; i > index; i--) {
-      pages.remove(ps[i])
+      await pages.remove(ps[i])
     }
   }
 }

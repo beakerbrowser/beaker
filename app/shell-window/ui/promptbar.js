@@ -74,6 +74,7 @@ export function forceRemoveAll (page) {
 export function update (page) {
   // fetch current page, if not given
   page = page || pages.getActive()
+  if (!page.webviewEl) return
 
   // render
   yo.update(page.promptbarEl, render(page.id, page))
