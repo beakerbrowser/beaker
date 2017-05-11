@@ -861,8 +861,10 @@ async function updateHistory (page) {
   page._canGoForward = f
   navbar.update(page)
 }
-
 function runOnbeforeunload (page) {
+  if (page.webviewEl.isWaitingForResponse()) {
+    return false
+  }
   return new Promise(resolve => page.webviewEl.executeJavaScript(`
     (function() {
       if (window.__onbeforeunload__) {
