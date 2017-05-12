@@ -36,12 +36,6 @@
         ]
       },
       {
-        "name": "IPFS",
-        "schemes": [
-          "fs"
-        ]
-      },
-      {
         "name": "dat",
         "schemes": [
           "dat"
