@@ -204,7 +204,13 @@ function render (id, page) {
     }
   } else if (siteHasDatAlternative) {
     datBtns = [
-      yo`<button title="Go to Dat Version of this Site" onclick=${onClickGotoDatVersion}><span class="fa fa-share-alt"></span></button>`,
+      yo`<button
+        class="callout"
+        title="Go to Dat Version of this Site"
+        onclick=${onClickGotoDatVersion}
+      >
+        <span class="fa fa-share-alt"></span> P2P version available
+      </button>`,
     ]
   }
 
