@@ -163,10 +163,11 @@
     }
 
     &.insecure:not(:empty) + .nav-location-pretty {
-      padding-left: 0;
+      // TODO: still need to fix spacing between .fa-exclamation and URL
+      // on insecure sites. But this is easier to tolerate than the URL
+      // input jittering. -tbv
 
       + .nav-location-input {
-        padding-left: 0;
       }
     }
 
@@ -185,6 +186,10 @@
 
     .protocol-secure {
       color: #3c943c;
+    }
+
+    .protocol-insecure {
+      color: mix(@color-text, @red, 20%); 
     }
 
     .protocol-p2p {
