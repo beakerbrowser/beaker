@@ -105,6 +105,7 @@ export function create (opts) {
 
     // current site's info
     protocolInfo: null, // info about the current page's delivery protocol
+    siteLoadError: null, // info about the current page's last load's error (null if no error)
     siteInfo: null, // metadata about the current page, derived from protocol knowledge
     sitePerms: null, // saved permissions for the current page
     siteInfoOverride: null, // explicit overrides on the siteinfo, used by beaker: pages
@@ -554,6 +555,8 @@ function onLoadCommit (e) {
 
   var page = getByWebview(e.target)
   if (page) {
+    // clear out the page's error
+    page.siteLoadError = null
     // turn off live reloading
     page.stopLiveReloading()
     // check if this page bookmarked
@@ -601,7 +604,7 @@ function onDidStopLoading (e) {
     page.siteInfo = null
     page.sitePerms = null
     page.siteHasDatAlternative = false
-    page.protocolInfo = { url, hostname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase() }
+    page.protocolInfo = {url, hostname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase()}
     if (protocol === 'https:') {
       page.checkForDatAlternative(hostname)
     }
@@ -750,8 +753,12 @@ function onDidFailLoad (e) {
 
   var page = getByWebview(e.target)
   if (page) {
+    var isInsecureResponse = [ERR_INSECURE_RESPONSE, ERR_CONNECTION_REFUSED].indexOf(e.errorCode) >= 0
+    page.siteLoadError = {isInsecureResponse, errorCode: e.errorCode, errorDescription: e.errorDescription}
+    navbar.update(page)
+
     // if https fails for some specific reasons, and beaker *assumed* https, then fallback to http
-    if (page.isGuessingTheURLScheme && [ERR_INSECURE_RESPONSE, ERR_CONNECTION_REFUSED].indexOf(e.errorCode) >= 0) {
+    if (page.isGuessingTheURLScheme && isInsecureResponse) {
       console.log('Guessed the URL scheme was HTTPS, but got back', e.errorDescription, ' - trying HTTP')
       var url = page.getIntendedURL()
       page.isGuessingTheURLScheme = false // no longer doing that!
