@@ -105,9 +105,9 @@ async function loadCurrentArchive () {
       var a = new DatArchive(selectedArchiveKey)
       var fileTree = new FileTree(a, {onDemand: true})
       selectedArchive = await a.getInfo()
-      var [history, fileTreeRes,] = await Promise.all([
+      var [history, fileTreeRes] = await Promise.all([
         a.history({end: 20, reverse: true, timeout: 10e3}),
-        fileTree.setup()
+        fileTree.setup().catch(err => null)
       ])
       /*dont await*/ reloadDiff()
       selectedArchive.history = history
