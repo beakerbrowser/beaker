@@ -9,7 +9,6 @@ import { app, Menu, protocol } from 'electron'
 
 import * as beakerBrowser from './background-process/browser'
 import * as webAPIs from './background-process/web-apis'
-import * as bkr from './background-process/bkr'
 
 import * as windows from './background-process/ui/windows'
 import buildWindowMenu from './background-process/ui/window-menu'
@@ -51,7 +50,6 @@ app.on('ready', function () {
 
   // base
   beakerBrowser.setup()
-  bkr.setup()
 
   // ui
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu()))
