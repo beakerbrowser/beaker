@@ -167,7 +167,12 @@ export function create (opts) {
       // set and go
       page.loadingURL = url
       page.isGuessingTheURLScheme = opts && opts.isGuessingTheScheme
-      page.loadURLAsync(url)
+      if (!page.isWebviewReady) {
+        // just do a sync call, otherwise loadURLAsync will drop it on the floor
+        page.webviewEl.loadURL(url) // NOTE sync call
+      } else {
+        page.loadURLAsync(url)
+      }
     },
 
     // HACK wrap reload so we can remove can-hide class
@@ -755,6 +760,7 @@ function onDidFailLoad (e) {
   if (page) {
     var isInsecureResponse = [ERR_INSECURE_RESPONSE, ERR_CONNECTION_REFUSED].indexOf(e.errorCode) >= 0
     page.siteLoadError = {isInsecureResponse, errorCode: e.errorCode, errorDescription: e.errorDescription}
+    page.title = page.getIntendedURL()
     navbar.update(page)
 
     // if https fails for some specific reasons, and beaker *assumed* https, then fallback to http
