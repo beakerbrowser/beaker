@@ -57,7 +57,7 @@ export function setup () {
     // update the staging based on these settings
     var archive = getArchive(key)
     if (archive) {
-      configureStaging(archive, settings)
+      reconfigureStaging(archive, settings)
     }
   })
 
