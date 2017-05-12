@@ -1,59 +1,49 @@
-@import "../../base/reset.less";
-@import "../../utils/decorators";
-
+@import "../../base/spacing";
+@import "../../utils/flex";
+@import "../../components/link";
 
 .files-list {
+  border: 1px solid @border-menu;
+  border-radius: 3px;
+
+  &.empty {
+    display: none;
+  }
 
   .item {
-    &:extend(.overflow-ellipsis);
-    padding: 0 10px;
-    -webkit-user-select: none;
-    cursor: pointer;
-    height: 25px;
-    line-height: 25px;
-
-    * {
-      line-height: 25px;
-      vertical-align: middle;
-    }
+    &:extend(.flex);
+    padding: calc(@padding-component/2) @padding-component;
+    border-top: 1px solid @border-menu;
 
     &:hover {
-      background: @background-menu--hover;
+      background: @background-files-list-item--hover;
     }
 
-    &.selected {
-      background: @blue;
-      color: #fff;
+    .name {
+
+      i {
+        margin-right: @margin-icon;
+      }
+
+      .link {
+        color: @color-files-list-item-link;
+      }
     }
 
-    &.file {
-      padding-left: 20px;
+    .size, .updated {
+      color: @color-text--muted;
     }
 
-    i {
-      margin-right: 3px;
+    .size {
+      margin: 0 @margin-icon;
     }
 
-    i.dirty {
-      margin-left: @margin-icon;
-      margin-top: -2px; // center on the line a bit
-      font-size: 9px;
+    .updated {
+      margin-left: auto; // right align the .updated element
     }
+  }
 
-    .btn {
-      border: none;
-      background: none;
-      visibility: hidden;
-    }
-
-    &:hover .btn {
-      visibility: visible;
-    }
-
-    &.selected i.dirty,
-    &.selected .btn {
-      visibility: visible;
-      color: #fff;
-    }
+  & > :first-child, & > :first-child > .item {
+    border: 0;
   }
 }
