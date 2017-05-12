@@ -169,7 +169,7 @@ test('library "updated" event', async t => {
 
   // update manifest
   var res = await app.client.executeAsync((url, done) => {
-    beaker.archives.updateManifest(url, { title: 'The New Title' }).then(done, done)
+    beaker.archives.update(url, { title: 'The New Title' }).then(done, done)
   }, createdDatURL)
 
   // need to sleep because there's a builtin delay to processing meta updates
