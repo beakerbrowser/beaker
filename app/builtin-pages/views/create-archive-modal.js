@@ -109,9 +109,11 @@ function render () {
   var uititle = isEditing
     ? `Editing ${renderArchiveTitle()}`
     : 'New site'
-  var helpText = isEditing
-    ? 'Update your site\'s title and description.'
-    : 'Create a new site and add it to your library.'
+  var helpText = isReadOnly
+    ? 'Update where you\'d like to save this site.'
+    : isEditing
+      ? 'Update your site\'s title and description.'
+      : 'Create a new site and add it to your library.'
   if (createdBy && !createdBy.startsWith('beaker:')) {
     helpText = 'This page wants to ' + helpText.toLowerCase()
   }
