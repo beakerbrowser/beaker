@@ -71,8 +71,9 @@ function rDirectory (archiveInfo, node, depth) {
         title=${node.niceName}
         onclick=${e => onClickDirectory(e, archiveInfo, node)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
-        <div class="name">
-          <a href=${join(archiveInfo.url, node.entry.name)} class="link"><i class="fa fa-${icon}"></i>${node.niceName}</a>
+        <div class="name link">
+          <i class="fa fa-${icon}"></i>
+          ${node.niceName}
         </div>
       </div>
       ${children}
