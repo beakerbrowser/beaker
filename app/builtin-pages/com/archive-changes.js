@@ -14,9 +14,20 @@ export default function renderChanges (archiveInfo, {onPublish, onRevert}) {
   }
 
   // helper to render files
-  const rFile = d => (
-    yo`<div><a class="link" href=${archiveInfo.url + d.path}>${d.path.slice(1)}</a></div>`
-  )
+  const rFile = (d, icon, change) => {
+    var formattedPath = d.path.slice(1)
+    var len = d.path.slice(1).length
+
+    if (len > 25) {
+      formattedPath = '...' + formattedPath.slice(len - 25, len + 1)
+    }
+
+    return yo`
+      <div class="file">
+        <i class="op ${change} fa fa-${icon}"></i>
+        <a class="link" title=${d.path} href=${archiveInfo.url + d.path}>${formattedPath}</a>
+      </div>`
+  }
 
   // helper to render a kind of change (add / mod / del)
   const rChange = (change, icon, label) => {
@@ -24,7 +35,11 @@ export default function renderChanges (archiveInfo, {onPublish, onRevert}) {
     if (files.length === 0) {
       return ''
     }
-    var sliceEnd = isExpanded[change] ? files.length : 5
+    var sliceEnd = 20
+    // if expanded or files.length is one item longer than limit, show all files
+    if (isExpanded[change] || (files.length - sliceEnd === 1)) {
+      sliceEnd = files.length
+    }
     var hasMore = sliceEnd < files.length
     return yo`
       <div class="change">
