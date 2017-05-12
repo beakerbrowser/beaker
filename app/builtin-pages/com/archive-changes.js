@@ -42,39 +42,30 @@ export default function renderChanges (archiveInfo, {onPublish, onRevert}) {
     }
     var hasMore = sliceEnd < files.length
     return yo`
-      <div class="change">
-        <div class="heading ${change}"><i class="fa fa-${icon} op"></i> <span>${stats[change]} ${pluralize(stats[change], label)}</span></div>
-        <div class="files">
-          ${files.slice(0, sliceEnd).map(rFile)}
-          ${hasMore ? yo`<a class="link show-all" onclick=${onToggle(change)}>Show more</a>` : ''}
-        </div>
+      <div class="files">
+        ${files.slice(0, sliceEnd).map(d => rFile(d, icon, change))}
+        ${hasMore ? yo`<a class="link show-all" onclick=${onExpand(change)}>Show more <i class="fa fa-angle-down"></i></a>` : ''}
       </div>
     `
   }
 
   // helper to render all
   const rChanges = () => yo`
-    <div class="changes">
-      <div class="actions">
-        <a class="btn primary" onclick=${onPublish}>Publish changes</a>
-        <a class="btn" onclick=${onRevert}>Revert changes</a>
-      </div>
-      <div>
-        ${rChange('add', 'plus', 'addition')}
-        ${rChange('mod', 'circle-o', 'change')}
-        ${rChange('del', 'close', 'deletion')}
-      </div>
+    <div class="changes-list">
+      ${rChange('add', 'plus', 'addition')}
+      ${rChange('mod', 'circle-o', 'change')}
+      ${rChange('del', 'close', 'deletion')}
     </div>
   `
 
   // helper to expand the changes list
-  const onToggle = change => e => {
+  const onExpand = change => e => {
     isExpanded[change] = !isExpanded[change]
     redraw()
   }
 
   const redraw = () => {
-    yo.update(document.querySelector('.changes'), rChanges())
+    yo.update(document.querySelector('.changes-list'), rChanges())
   }
 
   return rChanges()
