@@ -308,7 +308,7 @@ function rArchive (archiveInfo) {
                     </a>`}
                 <div class="dropdown-item" onclick=${onEditSettings}>
                   <i class="fa fa-pencil"></i>
-                  Edit site settings
+                  Edit site info
                 </div>
                 <div class="dropdown-item" onclick=${onFork}>
                   <i class="fa fa-code-fork"></i>
@@ -412,7 +412,7 @@ function rDiffMessage (archiveInfo) {
       </div>
       <div>
         <a onclick=${onClickTab('changes')} href="#">Review and publish</a>
-      </div> 
+      </div>
     </section>
   `
 }
@@ -505,7 +505,7 @@ function onNetworkChanged (e) {
       selectedArchive.peerHistory.push({ts: now, peers: e.details.peers})
     }
     updateGraph()
-  }  
+  }
 }
 
 function onShare (e) {
