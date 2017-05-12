@@ -3,6 +3,7 @@ import {Archive} from 'builtin-pages-lib'
 
 // state
 var isEditing = false
+var isReadOnly = false
 var archive
 
 // form variables
@@ -17,6 +18,7 @@ var createdBy
 window.setup = async function (opts) {
   try {
     isEditing = !!opts.url
+    isReadOnly = !!opts.isReadOnly
     if (opts.url) {
       // fetch archive info
       archive = new Archive(opts.url)
@@ -80,7 +82,10 @@ async function onSubmit (e) {
   e.preventDefault()
   if (!localPath) return
   try {
-    if (isEditing) {
+    if (isReadOnly) {
+      await beaker.archives.add(archive.url, {localPath})
+      beakerBrowser.closeModal(null, true)
+    } else if (isEditing) {
       await beaker.archives.update(archive.url, {title, description}, {localPath})
       beakerBrowser.closeModal(null, true)
     } else {
@@ -128,11 +133,13 @@ function render () {
               <span>${localPath || yo`<span class="placeholder">Folder (required)</span>`}</span>
             </div>
 
-            <label for="title">Title</label>
-            <input name="title" tabindex="2" value=${title || ''} placeholder="Title (optional)" onchange=${onChangeTitle} />
+            ${isReadOnly ? '' : yo`<div>
+              <label for="title">Title</label>
+              <input name="title" tabindex="2" value=${title || ''} placeholder="Title (optional)" onchange=${onChangeTitle} />
 
-            <label for="desc">Description</label>
-            <input name="desc" tabindex="3" value=${description || ''} placeholder="Description (optional)" onchange=${onChangeDescription} />
+              <label for="desc">Description</label>
+              <input name="desc" tabindex="3" value=${description || ''} placeholder="Description (optional)" onchange=${onChangeDescription} />
+            </div>`}
 
             <div class="form-actions">
               <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
