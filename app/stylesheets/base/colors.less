@@ -26,7 +26,7 @@
 @border-button--disabled: shade(#fff, 15%);
 @background-button: shade(#fff, 2%);
 @background-button--disabled: shade(#fff, 2%);
-@background-button--success: @green;
+@background-button--success: shade(@green, 8%);
 @background-button--active: shade(#fff, 6%);
 @background-button--gray: shade(#fff, 10%);
 @background-button--gray--hover: shade(#fff, 20%);
@@ -66,9 +66,9 @@
 @border-popup: shade(#fff, 25%);
 
 // Changes
-@color-change--add: @green;
-@color-change--mod: @yellow;
-@color-change--del: @red;
+@color-change--add: mix(@color-text, @green, 15%);
+@color-change--mod: mix(@color-text, @yellow, 10%);
+@color-change--del: mix(@color-text, @red, 15%);
 
 // Shell window
 @background-shell-window: shade(#fff, 3%);// #fafafa;

@@ -310,54 +310,75 @@ body {
   }
 
   .changes {
-    display: flex;
+    border: 1px solid @border-menu;
+    border-radius: 3px;
 
-    .actions {
-      flex: 0 0 150px;
-      padding-right: 15px;
+    .changes-heading {
+      &:extend(.flex);
+      background: @background-menu;
+      border-bottom: 1px solid @border-menu;
+      align-items: center;
+      padding: 5px 10px;
 
-      .btn {
-        display: block;
-        margin-bottom: 10px;
-        text-align: center;
+      .diff-summary {
+        font-style: italic;
+        font-size: 13px;
+        color: @color-text--muted;
+      }
+
+      .actions {
+        margin-left: auto;
       }
     }
 
-    .heading {
-      display: inline-block;
-      cursor: pointer;
+    .changes-list {
+      &:extend(.flex);
+      padding: 10px;
+    }
 
-      i {
-        width: 14px;
-        text-align: center;
-        margin-right: @margin-icon;
+    .change {
+      display: block;
+
+      &:not(:last-child) {
+        margin-bottom: 5px;
       }
+    }
+
+    .files {
+      line-height: 14px;
 
       &:hover span {
         text-decoration: underline;
       }
 
-      &.add .op {
-        color: @color-change--add;
-      }
-      &.mod .op {
-        color: @color-change--mod;
-      }
-      &.del .op {
-        color: @color-change--del;
-      }
-    }
+        }
 
     .files {
-      padding: 5px 15px;
-      border-left: 1px solid @border-menu;
-      margin: 6px;
+      display: inline-block;
       font-size: 13px;
+      flex: 1;
 
-      & > div {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+      .file {
+        padding: 2px 0;
+      }
+
+      i.op {
+        width: 14px;
+        font-size: 10px;
+        text-align: center;
+        margin-right: @margin-icon;
+
+        &.add {
+          color: @color-change--add;
+        }
+
+        &.mod {
+          color: @color-change--mod;
+        }
+
+        &.del{
+          color: @color-change--del;
+        }
       }
 
       .link {
@@ -365,8 +386,9 @@ body {
       }
 
       .show-all {
-        display: inline-block;
+        display: block;
         margin-top: 5px;
+        margin-left: 22px;
         color: @color-link;
       }
     }

@@ -331,7 +331,7 @@ function rArchive (archiveInfo) {
 
       ${rNotSaved(archiveInfo)}
       ${rMissingLocalPathMessage(archiveInfo)}
-      ${rDiffMessage(archiveInfo)}
+      ${rStagingArea(archiveInfo)}
 
       <h2>Network activity</h2>
       <section class="peer-history">
@@ -341,7 +341,6 @@ function rArchive (archiveInfo) {
       <section>
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Files', onclick: onClickTab('files')},
-          showChanges ? {id: 'changes', label: changesLabel, onclick: onClickTab('changes')} : undefined,
           {id: 'log', label: 'History', onclick: onClickTab('log')},
           {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')}
         ].filter(Boolean))}
@@ -349,7 +348,6 @@ function rArchive (archiveInfo) {
           files: () => renderFiles(archiveInfo),
           log: () => rHistory(archiveInfo),
           metadata: () => rMetadata(archiveInfo),
-          changes: () => renderChanges(archiveInfo, {onPublish, onRevert})
         })[currentSection]()}
       </section>
     </div>
@@ -397,7 +395,7 @@ function rMissingLocalPathMessage (archiveInfo) {
   `
 }
 
-function rDiffMessage (archiveInfo) {
+function rStagingArea (archiveInfo) {
   if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
     return ''
   }
@@ -409,14 +407,20 @@ function rDiffMessage (archiveInfo) {
 
   var stats = archiveInfo.diffStats
   return yo`
-    <section class="message info diff-summary">
-      <div>
-        There are ${stats.add} ${pluralize(stats.add, 'addition')},
-        ${stats.mod} ${pluralize(stats.mod, 'change')},
-        and ${stats.del} ${pluralize(stats.del, 'deletion')}.
-      </div>
-      <div>
-        <a onclick=${onClickTab('changes')} href="#">Review and publish</a>
+    <section class="staging">
+      <div class="changes">
+        <div class="changes-heading">
+          <span class="diff-summary">
+            ${stats.add} ${pluralize(stats.add, 'addition')},
+            ${stats.mod} ${pluralize(stats.mod, 'change')}, and
+            ${stats.del} ${pluralize(stats.del, 'deletion')}
+          </span>
+          <div class="actions">
+            <button onclick=${onRevert} class="btn transparent">Revert changes</button>
+            <button onclick=${onPublish} class="btn success">Publish</button>
+          </div>
+        </div>
+        ${renderChanges(archiveInfo, {onPublish, onRevert})}
       </div>
     </section>
   `
