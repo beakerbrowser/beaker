@@ -220,6 +220,9 @@ export async function loadArchive (key, userSettings=null) {
   // run and cache the promise
   var p = loadArchiveInner(key, secretKey, userSettings)
   archiveLoadPromises[keyStr] = p
+  p.catch(err => {
+    console.error('Failed to load archive', err)
+  })
 
   // when done, clear the promise
   const clear = () => delete archiveLoadPromises[keyStr]
@@ -321,8 +324,8 @@ export async function getOrLoadArchive (key, opts) {
 
 export async function updateSizeTracking (archive) {
   var [metaSize, stagingSize] = await Promise.all([
-    getFolderSize(archivesDb.getArchiveMetaPath(archive)),
-    archive.staging ? getFolderSize(archive.staging.path) : 0
+    getFolderSize(archivesDb.getArchiveMetaPath(archive)).catch(err => 0),
+    archive.staging ? getFolderSize(archive.staging.path).catch(err => 0) : 0
   ])
   archive.metaSize = metaSize
   archive.stagingSize = stagingSize
