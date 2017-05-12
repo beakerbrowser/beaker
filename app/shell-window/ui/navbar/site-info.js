@@ -11,19 +11,25 @@ export class SiteInfoNavbarBtn {
     this.sitePerms = false
     this.siteInfoOverride = false
     this.protocolInfo = false
+    this.siteLoadError = false
     window.addEventListener('click', e => this.onClickAnywhere(e)) // close dropdown on click outside
     pages.on('set-active', e => this.closeDropdown()) // close dropdown on tab change
   }
 
-  render() {
+  render () {
     // pull details
-    var icon = '', protocolCls = 'insecure', protocolLabel = ''
+    var icon = '', protocolLabel = ''
+    var protocolCls = 'insecure'
+    var gotInsecureResponse = this.siteLoadError && this.siteLoadError.isInsecureResponse
+
     if (this.protocolInfo) {
-      if (['https:'].includes(this.protocolInfo.scheme)) {
+      var isHttps = ['https:'].includes(this.protocolInfo.scheme)
+
+      if (isHttps && !gotInsecureResponse) {
         icon = 'lock'
         protocolLabel = 'Secure'
         protocolCls = 'secure'
-      } else if (this.protocolInfo.scheme === 'http:') {
+      } else if (this.protocolInfo.scheme === 'http:' || (isHttps && gotInsecureResponse)) {
         icon = 'exclamation-circle'
       } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
         icon = 'share-alt'
@@ -31,6 +37,7 @@ export class SiteInfoNavbarBtn {
         protocolCls = 'p2p'
       } else if (this.protocolInfo.scheme === 'beaker:') {
         protocolCls = 'beaker'
+        icon = ''
       }
     }
 

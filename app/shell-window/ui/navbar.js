@@ -125,6 +125,7 @@ function render (id, page) {
   const isLoading = page && page.isLoading()
   const isViewingDat = page && page.getURL().startsWith('dat:')
   const siteHasDatAlternative = page && page.siteHasDatAlternative
+  const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
 
   // back/forward should be disabled if its not possible go back/forward
   var backDisabled = (page && page.canGoBack()) ? '' : 'disabled'
@@ -257,6 +258,7 @@ function render (id, page) {
   siteInfoNavbarBtn.siteInfo = (page && page.siteInfo)
   siteInfoNavbarBtn.sitePerms = (page && page.sitePerms)
   siteInfoNavbarBtn.siteInfoOverride = (page && page.siteInfoOverride)
+  siteInfoNavbarBtn.siteLoadError = (page && page.siteLoadError)
 
   // the main URL input
   var locationInput = yo`
@@ -271,7 +273,7 @@ function render (id, page) {
   `
 
   // a prettified rendering of the main URL input
-  var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused)
+  var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused, gotInsecureResponse)
 
   // render
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
@@ -303,7 +305,7 @@ function render (id, page) {
   </div>`
 }
 
-function renderPrettyLocation (value, isHidden) {
+function renderPrettyLocation (value, isHidden, gotInsecureResponse) {
   var valueRendered = value
   if (/^(dat|http|https):/.test(value)) {
     try {
@@ -320,7 +322,9 @@ function renderPrettyLocation (value, isHidden) {
         }
       }
       var cls = 'protocol'
-      if (['beaker:','https:'].includes(protocol)) cls += ' protocol-secure'
+      if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
+      if (['https:'].includes(protocol) && !gotInsecureResponse) cls += ' protocol-secure'
+      if (['https:'].includes(protocol) && gotInsecureResponse) cls += ' protocol-insecure'
       if (['dat:'].includes(protocol)) cls += ' protocol-p2p'
       valueRendered = [
         yo`<span class=${cls}>${protocol.slice(0, -1)}</span>`,
