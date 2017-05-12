@@ -452,10 +452,9 @@ function getNiceTitle (page) {
     let { pathname, origin } = new URL(title)
     if (!pathname.endsWith('/')) {
       pathname = pathname.split('/').pop()
-    } else {
-      pathname = 'index.html'
+      return `${pathname} - ${origin}`
     }
-    return `${pathname} - ${origin}`
+    return origin
   } catch (e) {
     return title
   }

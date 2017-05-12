@@ -755,6 +755,7 @@ function onDidFailLoad (e) {
   if (page) {
     var isInsecureResponse = [ERR_INSECURE_RESPONSE, ERR_CONNECTION_REFUSED].indexOf(e.errorCode) >= 0
     page.siteLoadError = {isInsecureResponse, errorCode: e.errorCode, errorDescription: e.errorDescription}
+    page.title = page.getIntendedURL()
     navbar.update(page)
 
     // if https fails for some specific reasons, and beaker *assumed* https, then fallback to http
