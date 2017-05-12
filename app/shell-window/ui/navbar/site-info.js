@@ -22,15 +22,21 @@ export class SiteInfoNavbarBtn {
     var protocolCls = 'insecure'
     var gotInsecureResponse = this.siteLoadError && this.siteLoadError.isInsecureResponse
 
+    if (this.siteLoadError) {
+      icon = 'exclamation-circle'
+      protocolLabel = ''
+    }
+
     if (this.protocolInfo) {
       var isHttps = ['https:'].includes(this.protocolInfo.scheme)
 
-      if (isHttps && !gotInsecureResponse) {
+      if (isHttps && !gotInsecureResponse && !this.siteLoadError) {
         icon = 'lock'
         protocolLabel = 'Secure'
         protocolCls = 'secure'
       } else if (this.protocolInfo.scheme === 'http:' || (isHttps && gotInsecureResponse)) {
-        icon = 'exclamation-circle'
+        icon = 'exclamation-circle https-error'
+        protocolLabel = 'Not secure'
       } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
         icon = 'share-alt'
         protocolLabel = 'Secure P2P'
@@ -153,7 +159,7 @@ export class SiteInfoNavbarBtn {
 
   closeDropdown() {
     this.isDropdownOpen = false
-    this.updateActives()    
+    this.updateActives()
   }
 
   toggleDropdown(e) {

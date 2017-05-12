@@ -66,7 +66,7 @@
       padding-right: 8px;
     }
 
-    &.callout {    
+    &.callout {
       font-size: 12px;
       background: @background-button--active;
       margin: 3px;
@@ -152,14 +152,20 @@
     }
 
     &.insecure {
+      color: @color-text--muted;
 
-      button {
+      .title {
         color: mix(@color-text, @red, 20%);
+        margin-top: 4px;
       }
 
       i {
-        padding-right: 8px;
         padding-top: 5px;
+        color: @color-text--light;
+
+        &.https-error {
+          color: mix(@color-text, @red, 20%);
+        }
       }
     }
 
@@ -184,6 +190,10 @@
     padding: 3px 0 1px 7px;
     cursor: text;
     letter-spacing: -.2px;
+
+    .protocol {
+      color: @color-text--light;
+    }
 
     .protocol-secure {
       color: #3c943c;
