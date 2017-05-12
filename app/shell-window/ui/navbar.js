@@ -99,6 +99,7 @@ export function clearAutocomplete () {
 export function update (page) {
   // fetch current page, if not given
   page = page || pages.getActive()
+  if (!page.webviewEl) return
 
   // render
   yo.update(page.navbarEl, render(page.id, page))
@@ -338,9 +339,15 @@ function renderPrettyLocation (value, isHidden, gotInsecureResponse) {
     }
   }
 
-  return yo`<div class="nav-location-pretty${(isHidden) ? ' hidden' : ''}" onclick=${onFocusLocation}>
-    ${valueRendered}
-  </div>`
+  return yo`
+    <div
+      class="nav-location-pretty${(isHidden) ? ' hidden' : ''}"
+      onclick=${onFocusLocation}
+      onmousedown=${onFocusLocation}
+    >
+      ${valueRendered}
+    </div>
+  `
 }
 
 function handleAutocompleteSearch (results) {
@@ -568,7 +575,8 @@ function onFocusLocation (e) {
   if (page) {
     page.navbarEl.querySelector('.nav-location-pretty').classList.add('hidden')
     page.navbarEl.querySelector('.nav-location-input').classList.remove('hidden')
-    page.navbarEl.querySelector('.nav-location-input').select()
+    // wait till next tick to avoid events messing with each other
+    setTimeout(() => page.navbarEl.querySelector('.nav-location-input').select(), 0)
   }
 }
 

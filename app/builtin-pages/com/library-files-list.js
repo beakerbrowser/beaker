@@ -71,8 +71,9 @@ function rDirectory (archiveInfo, node, depth) {
         title=${node.niceName}
         onclick=${e => onClickDirectory(e, archiveInfo, node)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
-        <div class="name">
-          <a href=${join(archiveInfo.url, node.entry.name)} class="link"><i class="fa fa-${icon}"></i>${node.niceName}</a>
+        <div class="name link">
+          <i class="fa fa-${icon}"></i>
+          ${node.niceName}
         </div>
       </div>
       ${children}
@@ -89,7 +90,7 @@ function rFile (archiveInfo, node, depth) {
       title=${node.niceName}
       style=${'padding-left: ' + padding + 'px'}>
       <div class="name">
-        <a href=${join(archiveInfo.url, node.entry.name)} class="link"><i class="fa fa-file-o"></i>${node.niceName}</a>
+        <a href=${join(archiveInfo.url, node.entry.name)} class="link"><i class="fa fa-file-text-o"></i>${node.niceName}</a>
       </div>
       <div class="size">${prettyBytes(node.entry.size)}</div>
       <div class="updated">${niceDate(+node.entry.mtime)}</div>

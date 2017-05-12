@@ -66,6 +66,7 @@ async function setup () {
   // setup handlers
   archivesList.addEventListener('changed', update)
   beaker.archives.addEventListener('updated', onArchivesUpdated)
+  beaker.archives.addEventListener('network-changed', onNetworkChanged)
   window.addEventListener('pushstate', loadCurrentArchive)
   window.addEventListener('popstate', loadCurrentArchive)
 }
@@ -113,6 +114,7 @@ async function loadCurrentArchive () {
       selectedArchive.historyPaginationOffset = 500
       selectedArchive.fileTree = fileTree
       selectedArchive.events = a.createFileActivityStream()
+      console.log(selectedArchive)
 
       // wire up events
       selectedArchive.events.addEventListener('changed', onFileChanged)
@@ -306,7 +308,7 @@ function rArchive (archiveInfo) {
                     </a>`}
                 <div class="dropdown-item" onclick=${onEditSettings}>
                   <i class="fa fa-pencil"></i>
-                  Edit site settings
+                  Edit site info
                 </div>
                 <div class="dropdown-item" onclick=${onFork}>
                   <i class="fa fa-code-fork"></i>
@@ -410,7 +412,7 @@ function rDiffMessage (archiveInfo) {
       </div>
       <div>
         <a onclick=${onClickTab('changes')} href="#">Review and publish</a>
-      </div> 
+      </div>
     </section>
   `
 }
@@ -489,6 +491,20 @@ function updateGraph () {
 function onArchivesUpdated (e) {
   if (selectedArchive && e.details.url === selectedArchive.url) {
     loadCurrentArchive()
+  }
+}
+
+function onNetworkChanged (e) {
+  if (selectedArchive && e.details.url === selectedArchive.url) {
+    var now = Date.now()
+    var lastHistory = selectedArchive.peerHistory.slice(-1)[0]
+    if (lastHistory && (now - lastHistory.ts) < 10e3) {
+      // if the last datapoint was < 10s ago, just update it
+      lastHistory.peers = e.details.peers
+    } else {
+      selectedArchive.peerHistory.push({ts: now, peers: e.details.peers})
+    }
+    updateGraph()
   }
 }
 
