@@ -167,7 +167,12 @@ export function create (opts) {
       // set and go
       page.loadingURL = url
       page.isGuessingTheURLScheme = opts && opts.isGuessingTheScheme
-      page.loadURLAsync(url)
+      if (!page.isWebviewReady) {
+        // just do a sync call, otherwise loadURLAsync will drop it on the floor
+        page.webviewEl.loadURL(url) // NOTE sync call
+      } else {
+        page.loadURLAsync(url)
+      }
     },
 
     // HACK wrap reload so we can remove can-hide class
