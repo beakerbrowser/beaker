@@ -216,6 +216,13 @@ export function create (opts) {
       navbar.update(page)
     },
 
+    stopLiveReloading () {
+      if (page.liveReloadEvents) {
+        page.liveReloadEvents.close()
+        page.liveReloadEvents = false
+      }
+    },
+
     // reload the page due to changes in the dat
     triggerLiveReload: debounce(archiveKey => {
       // double check that we're still on the page
@@ -325,6 +332,7 @@ export async function remove (page) {
   }
 
   // remove
+  page.stopLiveReloading()
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)
 
@@ -546,6 +554,8 @@ function onLoadCommit (e) {
 
   var page = getByWebview(e.target)
   if (page) {
+    // turn off live reloading
+    page.stopLiveReloading()
     // check if this page bookmarked
     beaker.bookmarks.get(e.url).then(bookmark => {
       page.bookmark = bookmark
