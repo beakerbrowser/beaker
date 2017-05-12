@@ -26,17 +26,25 @@
   .popup-inner {
 
     div {
-      margin: 10px 0;
+      margin: @padding-component--tight 0;
       line-height: 1;
     }
 
     input {
+      &:extend(.code-font);
       &:extend(input.roomy);
+      color: @color-text;
       width: 100%;
+      margin-top: @padding-component--tight;
+      font-size: .85rem;
+
+      &:focus {
+        outline: none;
+      }
     }
 
     .title {
-      font-size: 20px;
+      font-size: 18px;
     }
 
     .btn {
@@ -44,8 +52,13 @@
     }
 
     .info {
+      margin: @padding-component--tight 0;
       color: @color-text--muted;
-      margin: 20px 0;
+      font-size: .8rem;
+
+      i {
+        margin-right: 3px;
+      }
     }
   }
 }
