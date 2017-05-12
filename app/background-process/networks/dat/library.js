@@ -57,7 +57,7 @@ export function setup () {
     // update the staging based on these settings
     var archive = getArchive(key)
     if (archive) {
-      configureStaging(archive, settings)
+      reconfigureStaging(archive, settings)
     }
   })
 
@@ -373,6 +373,11 @@ export async function getArchiveInfo (key) {
 }
 
 export async function reconfigureStaging (archive, userSettings) {
+  if (archive.staging && archive.staging.path === userSettings.localPath) {
+    // no changes needed
+    return
+  }
+
   if (archive.staging) {
     // close staging if it exists
     archive.staging.stopAutoSync()

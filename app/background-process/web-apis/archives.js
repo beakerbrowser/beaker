@@ -53,17 +53,22 @@ export default {
   },
 
   async update(url, manifestInfo, {localPath} = {}) {
+    var key = toKey(url)
+    var archive = await datLibrary.getOrLoadArchive(key)
 
     if (!manifestInfo) {
       // show the update-info the modal
-      var win = BrowserWindow.fromWebContents(this.sender)
+      let win = BrowserWindow.fromWebContents(this.sender)
       await assertSenderIsFocused(this.sender)
-      return await showModal(win, 'create-archive', {url})
+      let isReadOnly = !archive.writable
+      return await showModal(win, 'create-archive', {
+        url,
+        isReadOnly,
+        size: isReadOnly ? 'create-archive-readonly' : 'create-archive'
+      })
     }
 
     // update manifest file
-    var key = toKey(url)
-    var archive = await datLibrary.getOrLoadArchive(key)
     var archiveInfo = await archivesDb.getMeta(key)
     var {title, description} = manifestInfo
     title = typeof title !== 'undefined' ? title : archiveInfo.title

@@ -306,10 +306,15 @@ function rArchive (archiveInfo) {
                       <i class="fa fa-folder-open-o"></i>
                       Open folder
                     </a>`}
-                <div class="dropdown-item" onclick=${onEditSettings}>
-                  <i class="fa fa-pencil"></i>
-                  Edit site info
-                </div>
+                ${archiveInfo.userSettings.localPath
+                  ? yo`<div class="dropdown-item" onclick=${onEditSettings}>
+                      <i class="fa fa-pencil"></i>
+                      Edit site info
+                    </div>`
+                  : yo`<a class="dropdown-item disabled">
+                      <i class="fa fa-pencil"></i>
+                      Edit site info
+                    </a>`}
                 <div class="dropdown-item" onclick=${onFork}>
                   <i class="fa fa-code-fork"></i>
                   Fork this site
