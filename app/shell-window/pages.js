@@ -260,7 +260,7 @@ export function create (opts) {
       if (await this.isDevToolsOpenedAsync()) {
         this.closeDevToolsAsync()
       } else {
-        this.openDevToolsAsync()        
+        this.openDevToolsAsync()
       }
     }
   }
@@ -718,7 +718,7 @@ function onDidGetResponseDetails (e) {
       page.contentType = e.headers['content-type'][0] || null
     } catch (e) {
       page.contentType = null
-    }    
+    }
     // set URL in navbar
     page.loadingURL = e.newURL
     page.siteInfoOverride = null
