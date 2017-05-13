@@ -24,13 +24,26 @@ export default function toggleable (el) {
 
   Array.from(el.querySelectorAll('.toggleable')).forEach(el2 => {
     el2.addEventListener(el2.dataset.toggleOn||'click', onToggle)
+    el2.addEventListener('keyup', function (e) {
+      if (e.keyCode === 27) onToggle(e)
+    })
+    document.addEventListener('click', onToggle)
   })
   Array.from(el.querySelectorAll('.toggleon')).forEach(el2 => {
     el2.addEventListener(el2.dataset.toggleOn||'click', onToggleOn)
+    el2.addEventListener('keyup', function (e) {
+      if (e.keyCode === 27) onToggleOn(e)
+    })
+    document.addEventListener('click', onToggleOn)
   })
   Array.from(el.querySelectorAll('.toggleoff')).forEach(el2 => {
     el2.addEventListener(el2.dataset.toggleOn||'click', onToggleOff)
+    el2.addEventListener('keyup', function (e) {
+      if (e.keyCode === 27) onToggleOff(e)
+    })
+    document.addEventListener('click', onToggleOff)
   })
+
   function onToggle (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -38,6 +51,8 @@ export default function toggleable (el) {
     closeAllToggleables()
     if (newState) {
       el.classList.add('open')
+    } else {
+      document.removeEventListener('click', onToggle)
     }
     if (id) {
       // persist state
@@ -57,6 +72,7 @@ export default function toggleable (el) {
     e.preventDefault()
     e.stopPropagation()
     el.classList.remove('open')
+    document.removeEventListener('click', onToggleOff)
     if (id) {
       // persist state
       toggleState[id] = false
