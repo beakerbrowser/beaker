@@ -233,6 +233,15 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://library/' || requestUrl.startsWith('beaker://library/')) {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/library.html'))
   }
+  if (requestUrl === 'beaker://view-source/main.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/view-source.css'))
+  }
+  if (requestUrl === 'beaker://view-source/main.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/view-source.build.js'))
+  }
+  if (requestUrl === 'beaker://view-source/' || requestUrl.startsWith('beaker://view-source/')) {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/view-source.html'))
+  }
   if (requestUrl === 'beaker://settings/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/settings.html'))
   }
