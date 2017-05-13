@@ -439,7 +439,9 @@ function rHistory (archiveInfo) {
           Version ${rev}</a>
         </div>
         ${revType}
-        ${makeSafe(item.name.slice(1))}
+        <a class="path" href="${`dat://${archiveInfo.key}+${rev}${item.name}`}" target="_blank">
+          ${makeSafe(item.name.slice(1))}
+        </a>
       </div>
     `
   })
