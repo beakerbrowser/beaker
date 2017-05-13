@@ -439,7 +439,7 @@ function rHistory (archiveInfo) {
           Revision ${rev}</a>
         </div>
         ${revType}
-        ${makeSafe(item.name)}
+        ${makeSafe(item.name.slice(1))}
       </div>
     `
   })
