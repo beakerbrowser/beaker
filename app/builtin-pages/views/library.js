@@ -3,7 +3,7 @@ import {FileTree, ArchivesList} from 'builtin-pages-lib'
 import {pluralize, makeSafe} from '../../lib/strings'
 import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
-import renderFiles from '../com/library-files-list'
+import renderFiles from '../com/files-list'
 import renderChanges from '../com/archive-changes'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
@@ -319,6 +319,10 @@ function rArchive (archiveInfo) {
                   <i class="fa fa-code-fork"></i>
                   Fork this site
                 </div>
+                <div class="dropdown-item" onclick=${onViewSource}>
+                  <i class="fa fa-code"></i>
+                  View source
+                </div>
                 <div class="dropdown-item" onclick=${onToggleSaved}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
@@ -540,6 +544,10 @@ async function onFork (e) {
   update()
   var a = await DatArchive.fork(selectedArchive.url)
   history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
+}
+
+function onViewSource () {
+  window.location = 'beaker://view-source/' + selectedArchive.url.slice('dat://'.length)
 }
 
 async function onToggleSaved (e) {
