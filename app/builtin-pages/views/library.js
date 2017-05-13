@@ -100,7 +100,7 @@ async function loadCurrentArchive () {
     if (selectedArchiveKey) {
       // show 'loading...'
       update()
-      
+
       // load all data needed
       var a = new DatArchive(selectedArchiveKey)
       var fileTree = new FileTree(a, {onDemand: true})
@@ -429,10 +429,16 @@ function rStagingArea (archiveInfo) {
 function rHistory (archiveInfo) {
   var rows = archiveInfo.history.map(function (item, i) {
     var rev = item.version
+    var revType = makeSafe(item.type)
+    revType = revType === 'put' ? 'added' : 'deleted'
+
     return `
       <div class="history-item">
-        <div class="date"><a class="link" href=${`dat://${archiveInfo.key}+${rev}`} target="_blank">Revision ${rev}</a></div>
-        ${makeSafe(item.type)}
+        <div class="date">
+          <a class="link" href=${`dat://${archiveInfo.key}+${rev}`} target="_blank">
+          Revision ${rev}</a>
+        </div>
+        ${revType}
         ${makeSafe(item.name)}
       </div>
     `
