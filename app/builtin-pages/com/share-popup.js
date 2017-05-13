@@ -45,7 +45,6 @@ export function destroy () {
 function onKeyUp (e) {
   e.preventDefault()
   e.stopPropagation()
-  console.log('butt')
 
   if (e.keyCode === 27) {
     destroy()
