@@ -24,20 +24,32 @@ export function create (url) {
   // render interface
   var popup = render(url)
   document.body.appendChild(popup)
+  document.addEventListener('keyup', onKeyUp)
 
   // select input
   var input = popup.querySelector('input')
   input.focus()
   input.select()
+
 }
 
 export function destroy () {
   var popup = document.getElementById('share-popup')
   document.body.removeChild(popup)
+  document.removeEventListener('keyup', onKeyUp)
 }
 
 // event handlers
 // =
+
+function onKeyUp (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  if (e.keyCode === 27) {
+    destroy()
+  }
+}
 
 function onClickWrapper (e) {
   if (e.target.id === 'share-popup') {
