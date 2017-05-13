@@ -652,7 +652,7 @@ function onDidStopLoading (e) {
         td, th { padding: 0.5em 1em; }
         tbody tr:nth-child(odd) { background: #fafafa; }
         tbody td { border-top: 1px solid #bbb; }
-        .switcher { position: absolute; top: 5px; right: 5px; font-family: monospace; font-weight: bold; cursor: pointer; }
+        .switcher { position: absolute; top: 5px; right: 5px; font-family: Consolas, 'Lucida Console', Monaco, monospace ; font-weight: bold; cursor: pointer; }
         code { font-size: 1.3em; background: #fafafa; }
         pre { background: #fafafa; padding: 1em }
       `)
