@@ -1,0 +1,81 @@
+@import "../base/reset.less";
+@import "../base/colors.less";
+@import "../base/spacing.less";
+@import "../base/typography.less";
+@import "../utils/decorators.less";
+
+@import "./components/files-list.less";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+main {
+  height: 100%;
+}
+
+body {
+  &:extend(.system-font);
+  font-size: 14px;
+}
+
+main {
+  display: flex;
+
+  .sidebar {
+    flex: 0 0 300px;
+    height: 100%;
+    &:extend(.vertical-scroll);
+    border-right: 1px solid @border-menu;
+  }
+
+  .sidebar-footer {
+    color: @color-text--muted;
+    padding: 5px 0;
+    font-size: 13px;
+
+    & > div {
+      margin: 5px 10px;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .files-list {
+    border-radius: 0;
+    border: 0;
+    border-bottom: 1px solid @border-menu;
+
+    .size,
+    .updated {
+      display: none;
+    }
+  }
+
+  .file-view {
+    flex: 1;
+    height: 100%;
+    &:extend(.vertical-scroll);
+
+    img,
+    video,
+    audio {
+      max-width: 100%;
+    }
+
+    textarea {
+      &:extend(.code-font);
+      width: 100%;
+      height: 100%;
+      resize: none;
+      border: 0;
+      outline: 0;
+      font-size: 13px;
+      padding: 10px;
+    }
+  }
+}
