@@ -43,16 +43,23 @@ function burnthemallMaybeTask () {
 gulp.task('burnthemall-maybe', burnthemallMaybeTask)
 
 var bundleApplication = function () {
+  var bpViewsDir = srcDir.cwd('builtin-pages/views')
+  var bpBuildDir = srcDir.cwd('builtin-pages/build')
   return Q.all([
-    bundle(srcDir.path('background-process.js'), srcDir.path('background-process.build.js')),
-    bundle(srcDir.path('webview-preload.js'), srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
-    bundle(srcDir.path('shell-window.js'), srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
-    bundle(srcDir.path('builtin-pages/downloads.js'), srcDir.path('builtin-pages/downloads.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/library.js'), srcDir.path('builtin-pages/library.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/bookmarks.js'), srcDir.path('builtin-pages/bookmarks.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/history.js'), srcDir.path('builtin-pages/history.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/settings.js'), srcDir.path('builtin-pages/settings.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') }),
-    bundle(srcDir.path('builtin-pages/start.js'), srcDir.path('builtin-pages/start.build.js'), { browserify: true, basedir: srcDir.path('builtin-pages') })
+    bundle(srcDir.path('background-process.js'),       srcDir.path('background-process.build.js')),
+    bundle(srcDir.path('webview-preload.js'),          srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd() }),
+    bundle(srcDir.path('shell-window.js'),             srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
+    bundle(srcDir.path('markdown-renderer.js'),        srcDir.path('markdown-renderer.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
+    bundle(bpViewsDir.path('downloads.js'),            bpBuildDir.path('downloads.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('library.js'),              bpBuildDir.path('library.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('bookmarks.js'),            bpBuildDir.path('bookmarks.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('history.js'),              bpBuildDir.path('history.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('settings.js'),             bpBuildDir.path('settings.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('start.js'),                bpBuildDir.path('start.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('setup.js'),                bpBuildDir.path('setup.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('create-archive-modal.js'), bpBuildDir.path('create-archive-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('fork-archive-modal.js'),   bpBuildDir.path('fork-archive-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('prompt-modal.js'),         bpBuildDir.path('prompt-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() })
   ]);
 };
 
@@ -80,6 +87,8 @@ var buildLess = function (src, dest) {
 }
 var lessTask = function () {
   return  Q.all([
+    buildLess('app/stylesheets/*.less', srcDir.path('stylesheets')),
+    buildLess('app/stylesheets/builtin-pages/*.less', srcDir.path('stylesheets/builtin-pages')),
     buildLess('app/stylesheets/shell-window.less', srcDir.path('stylesheets')),
     buildLess('app/stylesheets/builtin-pages.less', srcDir.path('stylesheets')),
     buildLess('app/stylesheets/icons.less', srcDir.path('stylesheets'))

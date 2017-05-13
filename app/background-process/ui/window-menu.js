@@ -171,7 +171,7 @@ var historyMenu = {
       label: 'Show Full History',
       accelerator: showHistoryAccelerator,
       click: function (item, win) {
-        if (win) win.webContents.send('command', 'file:new-tab', 'beaker:history')
+        if (win) win.webContents.send('command', 'file:new-tab', 'beaker://history')
       }
     }
   ]
@@ -266,7 +266,7 @@ if (process.platform !== 'darwin') {
     label: 'About',
     role: 'about',
     click: function (item, win) {
-      if (win) win.webContents.send('command', 'file:new-tab', 'beaker:settings')
+      if (win) win.webContents.send('command', 'file:new-tab', 'beaker://settings')
     }
   })
 }

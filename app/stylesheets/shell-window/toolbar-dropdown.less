@@ -1,92 +1,171 @@
-.toolbar-dropdown {
-  position: absolute;
-  left: -180px;
-  top: 29px;
-  width: 210px;
-  padding: 6px 0;
-  background: #fff;
-  box-shadow: 0px 3px 13px rgba(0, 0, 0, 0.25);
-  border: 1px solid #ccc;
-  border-radius: 2px;
-  z-index: 1;
-  text-align: left;
-  font-size: 12px;
-  line-height: 16px;
-  color: #555;
+@import "../components/dropdown";
+@import "../components/link";
+@import "../utils/flex";
+@import "../base/spacing";
+@import "../base/colors";
 
-  &:before {
-    // the arrow
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: 189px;
-    width: 8px;
-    height: 8px;
-    background: #fff;
-    box-shadow: -1px -1px 1px rgba(0,0,0,.15);
-    transform: rotateZ(45deg);
-  }
-}
-
-.toolbar-drop-menu {
-  display: inline-block;
+.toolbar-dropdown-menu-btn {
   position: relative;
 
-  .icon-attention {
-    position: relative;
-    left: -.5px;
-  }
-  .icon-down-circled {
-    position: relative;
-    left: -1px;
-  }
-  .icon-back-in-time {
-    position: relative;
-    left: -2px;
-  }
-}
-
-.toolbar-drop-menu-btn {
-  position: relative;
-  & > progress {
-    width: 26px;
+  progress {
     position: absolute;
-    top: 14px;
+    // TODO: This is jank. Instead of automatically opening the menu and showing this progress
+    // bar, let's add a similar pop up like Chrome does on the bottom of the
+    // screen. -tbv
+    bottom: -43%;
     left: 0;
+    width: 100%;
+    height: 100%;
   }
 }
 
-.toolbar-drop-menu-dropdown {
-  hr {
-    margin: 5px 0;
+.toolbar-dropdown {
+
+  h2 {
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0;
   }
 
-  .td-item {
-    padding: 6px 18px;
+  hr {
+    // TODO: remove this once we pull out photonkit -tbv
+    margin: 0;
+    border-bottom: 1px solid @border-menu;
+  }
 
-    &:hover {
-      background: #f5f5f5;
+  .dropdown-items {
+    width: 275px;
+  }
+
+  .footer {
+    display: flex;
+    border-top: 1px solid @border-menu;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+
+    i {
+      margin-right: 5px;
+      width: 15px;
+      text-align: center;
     }
 
-    .icon {
-      display: inline-block;
-      width: 16px;
-      &.icon-flash {
-        padding-left: 3px;
+    a {
+      padding: @padding-component--tight @padding-component;
+      cursor: pointer;
+      background: @background-menu;
+      border-bottom-left-radius: 2px;
+      border-bottom-right-radius: 2px;
+
+      &:hover span {
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      &:first-child {
+        padding-right: 0;
+      }
+      &:last-child {
+        flex: 1;
       }
     }
+  }
 
-    .td-item-name {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: pre;
+  .list {
+    padding: 8px 0 10px;
+  }
+
+  .list-item {
+    padding: 3px 12px;
+    cursor: pointer;
+
+    * {
+      cursor: pointer;
     }
 
-    progress {
+    i {
+      width: 20px;
+      text-align: center;
+      margin-right: 5px;
+    }
+
+    &:hover {
+      background: @background-menu;
+    }
+  }
+
+  .grid {
+    padding: @padding-component @padding-component @padding-component--tight @padding-component;
+    &:extend(.flex);
+    justify-content: space-between;
+
+    // Make the last item in the flex container float to the left
+    &.default:after {
+      content: '';
+      flex: auto;
+      flex-basis: 33%
+    }
+  }
+
+  .grid-item {
+    flex-basis: 33%;
+    height: 60px;
+    text-align: center;
+    line-height: 12px;
+    font-size: 11px;
+    padding: 5px;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    margin-bottom: 5px;
+
+    i {
+      cursor: default;
       width: 100%;
-      position: relative;
-      left: -2px;
+      font-size: 25px;
+      margin-bottom: @margin-icon;
     }
+
+    &:hover {
+      background: @background-menu;
+      border: 1px solid @border-menu;
+    }
+
+    &.disabled {
+      color: @color-text--light;
+      background: transparent;
+      border: 1px solid transparent;
+    }
+  }
+
+  .downloads {
+    padding: @padding-component--tight @padding-component;
+    font-size: 11px;
+
+    a {
+      &:extend(.link);
+    }
+
+    a:hover {
+      &:extend(.link:hover);
+    }
+  }
+
+  .downloads-list {
+    margin: @padding-component--tight 0;
+  }
+
+  .download-item {
+    width: 100%;
+    margin-bottom: @padding-component--tight;
+
+    .status progress {
+      width: 50px;
+      position: relative;
+      top: 3px;
+    }
+  }
+
+  .download-item-ctrls a {
+    margin-right: 3px;
   }
 }
 
@@ -106,61 +185,56 @@
   }
 }
 
-.toolbar-site-info {
-  position: relative;
-}
-
 .toolbar-site-info-dropdown {
-  // this dropdown is unique
-  // because the button is inside a site-info toolbar, which hides overflow,
-  // this dropdown has to be positioned out on its own
-  position: fixed;
-  left: 82px;
-  top: 70px;
+  position: absolute;
+  left: -80px;
+  top: 30px;
+  width: 400px;
 
-  width: 350px;
-  padding: 0;
-  font-size: 15px;
+  a {
+    &:extend(.link);
+  }
 
-  &:before {
-    left: 39px;
+  a:hover {
+    &:extend(.link:hover);
+  }
+
+  .dropdown-items {
+    width: 300px;
+    left: 65px;
+
+    &::before {
+      left: 25px;
+    }
   }
 
   .details {
-    padding: 12px 20px;
+    padding: @padding-component 15px;
+    font-size: .85rem;
 
-    & > div {
-      margin-bottom: 2px;
+    small {
+      font-size: .75rem;
+      color: @color-text--muted;
     }
+  }
 
-    .details-title {
-      display: flex;
-      font-size: 17px;
-      margin: 6px 0;
-      & > :last-child {
-        flex: 1;
-        padding-left: 5px;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: pre;
-      }
-    }
+  .details-title {
+    font-weight: bold;
+  }
 
-    a {
-      margin-right: 5px;
-    }
-
-    .btn {
-      padding: 0px 5px;
-    }
+  .details-desc {
+    margin-bottom: 0;
+    line-height: 1.3;
   }
 
   .perms {
     font-size: 13px;
     background: #fafafa;
+
     div {
       border-top: 1px solid #eee;
     }
+
     label {
       display: block;
       padding: 10px;
@@ -169,9 +243,11 @@
         background: #fff;
       }
     }
+
     input {
       margin-right: 4px;
     }
+
     .icon {
       width: 15px;
       text-align: center;

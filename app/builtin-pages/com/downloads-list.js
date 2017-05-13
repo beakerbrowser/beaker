@@ -8,30 +8,53 @@ import { ucfirst } from '../../lib/strings'
 
 export function render (downloadsList) {
   var downloadEls = downloadsList.downloads.map(d => {
-    var progress, status, action
+    var progress, actions
+    var status = ''
+    var progress = ''
+    var size = ''
     var canShow = false
     var canCancel = false
     if (d.state === 'progressing') {
       // progress
       status = (d.isPaused) ? 'Paused' : (prettyBytes(d.downloadSpeed||0) + '/s')
-      progress = `${prettyBytes(d.receivedBytes||0)} / ${prettyBytes(d.totalBytes||0)}`
+
+      progress = yo`
+        <div class="progress">
+          <div class="progressbar">
+            <progress value=${d.receivedBytes} max=${d.totalBytes}></progress>
+          </div>
+          <span>${prettyBytes(d.receivedBytes||0)} / ${prettyBytes(d.totalBytes||0)}</span>
+        </div>`
 
       // actions
       canCancel = true
       if (d.isPaused) {
-        action = yo`<a class="btn" onclick=${e => downloadsList.resumeDownload(d)} title="Resume"><span class="icon icon-play"></span> Resume</a>`
+        actions = yo`<a onclick=${e => downloadsList.resumeDownload(d)}>Resume</a>`
       } else {
-        action = yo`<a class="btn" onclick=${e => downloadsList.pauseDownload(d)} title="Pause"><span class="icon icon-pause"></span> Pause</a>`
+        actions = yo`
+          <a onclick=${e => downloadsList.pauseDownload(d)}>
+            <i class="fa fa-pause"></i>
+            Pause
+          </a>`
       }
     } else if (d.state === 'completed') {
-      // progress
-      progress = prettyBytes(d.totalBytes||0)
-      status = 'Done'
+      size = yo`<span>${prettyBytes(d.totalBytes||0)}</span>`
 
       // actions
       if (!d.fileNotFound) {
         canShow = true
-        action = yo`<a class="btn" onclick=${e => downloadsList.openDownload(d)} title="Open"><span class="icon icon-popup"></span> Open</a>`
+
+        var removeBtn = yo`<a onclick=${e => downloadsList.removeDownload(d)}>Remove Download</a>`
+
+        if (canCancel) {
+          removeBtn = ''// yo`<a onclick=${e => downloadsList.cancelDownload(d)}>Cancel Download</a>`
+        }
+
+        actions = [
+          yo`<a onclick=${e => downloadsList.openDownload(d)}>Open</a>`,
+          yo`<a onclick=${e => downloadsList.showDownload(d)}>Show in Finder</a>`,
+          removeBtn
+        ]
       } else {
         // TODO
         // action = yo`<div>File not found (moved or deleted)</div>`
@@ -41,38 +64,24 @@ export function render (downloadsList) {
     }
 
     // render download
-    return yo`<div class="ll-row download">
-      <div class="ll-link">
-        <img class="favicon" src=${'beaker-favicon:' + d.url} />
-        ${ canShow
-          ? yo`<a class="ll-title" onclick=${e => downloadsList.openDownload(d)} title=${d.name}>${d.name}</a>`
-          : yo`<span class="ll-title" title=${d.name}>${d.name}</a>` }
-      </div>
-      <div class="ll-status">${status}</div>
-      <div class="ll-progress">${progress}</div>
-      <div class="ll-progressbar"><progress value=${d.receivedBytes} max=${d.totalBytes}></progress></div>
-      <div class="ll-serve">${action}</div>
-      <div class="ll-dropdown">${toggleable(yo`
-        <div class="dropdown-btn-container" data-toggle-id=${`download-${d.id}`}>
-          <a class="toggleable btn"><span class="icon icon-down-open-mini"></span></a>
-          <div class="dropdown-btn-list">
-            ${ canShow
-              ? yo`<a onclick=${e => downloadsList.showDownload(d)}><span class="icon icon-docs"></span> Show in Finder</a>`
-              : yo`<a class="disabled"><span class="icon icon-docs"></span> Show in Finder</a>` }
-            <div onclick=${e => downloadsList.copyDownloadLink(d)}><span class="icon icon-link"></span> Copy Link</div>
-            <hr>
-            ${ canCancel
-              ? yo`<a onclick=${e => downloadsList.cancelDownload(d)}><span class="icon icon-cancel"></span> Cancel</a>`
-              : yo`<a onclick=${e => downloadsList.removeDownload(d)}><span class="icon icon-cancel"></span> Remove</a>` }
-          </div>
+    return yo`
+      <div class="ll-row download">
+        <div class="link">
+          <img class="favicon" src=${'beaker-favicon:' + d.url} />
+          ${ canShow
+            ? yo`<a class="title" onclick=${e => downloadsList.openDownload(d)} title=${d.name}>${d.name}</a>`
+            : yo`<span class="title" title=${d.name}>${d.name}</a>` }
         </div>
-      `)}</div>
-    </div>`
+        <div class="status">${status}</div>
+        ${progress}
+        ${size}
+        <div class="actions">${actions}</div>
+      </div>`
   }).reverse()
 
   // empty state
   if (downloadEls.length === 0) {
-    downloadEls = yo`<div class="ll-empty">Files that you download will appear here.</div>`
+    downloadEls = yo`<div class="ll-empty">No downloads.</div>`
   }
 
   return yo`<div class="links-list">${downloadEls}</div>`

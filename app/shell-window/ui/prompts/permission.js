@@ -1,4 +1,4 @@
-import { remote, ipcRenderer } from 'electron'
+import { ipcRenderer } from 'electron'
 import * as yo from 'yo-yo'
 import * as promptbar from '../promptbar'
 import * as pages from '../../pages'
@@ -19,7 +19,7 @@ export default function (reqId, webContentsId, permission, opts = {}) {
   }
 
   // look up the page, deny if failed
-  page = pages.getByWebContents(remote.webContents.fromId(webContentsId))
+  page = pages.getByWebContentsID(webContentsId)
   if (!page)
     return respond(false)
 

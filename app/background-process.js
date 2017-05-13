@@ -9,7 +9,6 @@ import { app, Menu, protocol } from 'electron'
 
 import * as beakerBrowser from './background-process/browser'
 import * as webAPIs from './background-process/web-apis'
-import * as bkr from './background-process/bkr'
 
 import * as windows from './background-process/ui/windows'
 import buildWindowMenu from './background-process/ui/window-menu'
@@ -20,13 +19,11 @@ import * as permissions from './background-process/ui/permissions'
 import * as archives from './background-process/dbs/archives'
 import * as settings from './background-process/dbs/settings'
 import * as sitedata from './background-process/dbs/sitedata'
-import * as bookmarks from './background-process/dbs/bookmarks'
-import * as history from './background-process/dbs/history'
+import * as profileDataDb from './background-process/dbs/profile-data-db'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 import * as datProtocol from './background-process/protocols/dat'
-import * as fsProtocol from './background-process/protocols/fs'
 
 import * as openURL from './background-process/open-url'
 
@@ -37,20 +34,22 @@ if (process.env.beaker_user_data_path) {
   app.setPath('userData', process.env.beaker_user_data_path)
 }
 
-// load the installed protocols
-protocol.registerStandardSchemes(['dat'], { secure: true })
+process.on('unhandledRejection', (reason, p) => {
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
+})
+
+// configure the protocols
+protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
 
 app.on('ready', function () {
   // databases
   archives.setup()
   settings.setup()
   sitedata.setup()
-  bookmarks.setup()
-  history.setup()
+  profileDataDb.setup()
 
   // base
   beakerBrowser.setup()
-  bkr.setup()
 
   // ui
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu()))
@@ -63,7 +62,9 @@ app.on('ready', function () {
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
   datProtocol.setup()
-  fsProtocol.setup()
+
+  // configure chromium's permissions for the protocols
+  protocol.registerServiceWorkerSchemes(['dat', 'app'])
 
   // web APIs
   webAPIs.setup()

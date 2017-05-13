@@ -20,7 +20,7 @@ function lazyDatTitleElement (archiveKey, title) {
   // no title, we need to look it up. render now, then update
   var el = yo`<span>${prettyHash(archiveKey)}</span>`
   el.id = 'lazy-' + archiveKey
-  datInternalAPI.getArchiveDetails(archiveKey).then(details => {
+  beaker.archives.get(archiveKey).then(details => {
     datTitleMap[archiveKey] = details.title // cache
     el.textContent = details.title // render
   })
@@ -60,7 +60,7 @@ export default {
     desc: (param, pages, opts = {}) => {
       const firstWord = opts.capitalize ? 'Write' : 'write'
       const title = lazyDatTitleElement(param, opts.title)
-      const viewArchive = () => pages.setActive(pages.create('beaker:library/' + param))
+      const viewArchive = () => pages.setActive(pages.create('beaker://library/' + param))
       return yo`<span>${firstWord} files to <a onclick=${viewArchive}>${title}</a></span>`
     },
     icon: 'folder',
@@ -72,7 +72,7 @@ export default {
     desc: (param, pages, opts = {}) => {
       const firstWord = opts.capitalize ? 'Delete' : 'delete'
       const title = lazyDatTitleElement(param, opts.title)
-      const viewArchive = () => pages.setActive(pages.create('beaker:library/' + param))
+      const viewArchive = () => pages.setActive(pages.create('beaker://library/' + param))
       return yo`<span>${firstWord} the archive <a onclick=${viewArchive}>${title}</a></span>`
     },
     icon: 'folder',
@@ -118,8 +118,8 @@ export default {
   fullscreen: {
     desc: 'go fullscreen',
     icon: 'resize-full',
-    persist: false,
-    alwaysDisallow: false,
+    persist: true,
+    alwaysAllow: true,
     requiresRefresh: false
   },
   openExternal: {

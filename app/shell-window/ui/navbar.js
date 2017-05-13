@@ -1,5 +1,4 @@
 import { remote } from 'electron'
-import isIPFS from 'is-ipfs'
 import * as pages from '../pages'
 import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
@@ -8,6 +7,7 @@ import prettyHash from 'pretty-hash'
 import { UpdatesNavbarBtn } from './navbar/updates'
 import { DropMenuNavbarBtn } from './navbar/drop-menu'
 import { SiteInfoNavbarBtn } from './navbar/site-info'
+import {pluralize} from '../../lib/strings'
 
 const KEYCODE_DOWN = 40
 const KEYCODE_UP = 38
@@ -78,11 +78,11 @@ export function showInpageFind (page) {
   // do we want it back?
   // -prf
   // if (el.value)
-    // page.findInPage(el.value)
+    // page.findInPageAsync(el.value)
 }
 
 export function hideInpageFind (page) {
-  page.stopFindInPage('clearSelection')
+  page.stopFindInPageAsync('clearSelection')
   page.isInpageFinding = false
   update(page)
 }
@@ -99,6 +99,7 @@ export function clearAutocomplete () {
 export function update (page) {
   // fetch current page, if not given
   page = page || pages.getActive()
+  if (!page.webviewEl) return
 
   // render
   yo.update(page.navbarEl, render(page.id, page))
@@ -125,6 +126,8 @@ function render (id, page) {
   const isLoading = page && page.isLoading()
   const isViewingDat = page && page.getURL().startsWith('dat:')
   const siteHasDatAlternative = page && page.siteHasDatAlternative
+  const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
+  const siteLoadError = page && page.siteLoadError
 
   // back/forward should be disabled if its not possible go back/forward
   var backDisabled = (page && page.canGoBack()) ? '' : 'disabled'
@@ -132,12 +135,14 @@ function render (id, page) {
 
   // render reload/cancel btn
   var reloadBtn = (isLoading)
-    ? yo`<button class="toolbar-btn nav-cancel-btn" onclick=${onClickCancel}>
-        <span class="icon icon-cancel"></span>
-      </button>`
-    : yo`<button class="toolbar-btn nav-reload-btn" onclick=${onClickReload}>
-        <span class="icon icon-cw"></span>
-      </button>`
+    ? yo`
+        <button class="toolbar-btn nav-cancel-btn" onclick=${onClickCancel}>
+          <span class="fa fa-times"></span>
+        </button>`
+    : yo`
+        <button class="toolbar-btn nav-reload-btn" onclick=${onClickReload} title="Reload this page">
+          <span class="fa fa-refresh"></span>
+        </button>`
 
   // `page` is null on initial render
   // and the toolbar should be hidden on initial render
@@ -171,25 +176,43 @@ function render (id, page) {
       '0': 100,
       '0.5': 110, '1': 125, '1.5': 150, '2': 175, '2.5': 200, '3': 250, '3.5': 300, '4': 400, '4.5': 500
     })[page.zoom]
-    zoomBtn = yo`<button onclick=${onClickZoom}><span class="icon icon-search"></span> <small>${zoomPct}%</small></button>`
+    var zoomIcon = zoomPct < 100 ? '-minus' : '-plus'
+    zoomBtn = yo`
+      <button onclick=${onClickZoom} title="Zoom: ${zoomPct}%" class="zoom">
+        <i class=${'fa fa-search' + zoomIcon}></i>
+        ${zoomPct}%
+      </button>`
   }
 
   // dat buttons
   var datBtns = ''
+
   if (isViewingDat) {
-    let saveBtnClass = 'nav-save-btn'
-    if (page.siteInfo && page.siteInfo.userSettings.isSaved) saveBtnClass += ' active'
-    let liveReloadBtnCls = 'nav-live-reload-btn'
-    if (page.isLiveReloading) liveReloadBtnCls += ' active'
+    let numPeers = page.siteInfo ? page.siteInfo.peers : 0
     datBtns = [
-      yo`<button class=${liveReloadBtnCls} title="Live Reloading" onclick=${onClickLiveReload}><span class="icon icon-flash"></span></button>`,
-      yo`<button title="Fork Site" onclick=${onClickForkDat}><span class="icon icon-flow-branch"></span></button>`,
-      yo`<button title="View Site Files" onclick=${onClickViewFiles}><span class="icon icon-folder"></span></button>`,
-      yo`<button class=${saveBtnClass} title="Save Site" onclick=${onClickSaveDat}><span class="icon icon-floppy"></span></button>`
+      yo`
+        <button class="nav-peers-btn">
+          <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
+        </button>`
     ]
+
+    if (page.isLiveReloading()) {
+      datBtns.push(
+        yo`
+          <button class="nav-live-reload-btn active" title="Turn off live reloading" onclick=${onClickLiveReload}>
+            <i class="fa fa-bolt"></i>
+          </button>`
+      )
+    }
   } else if (siteHasDatAlternative) {
     datBtns = [
-      yo`<button title="Go to Dat Version of this Site" onclick=${onClickGotoDatVersion}><span class="icon icon-share"></span></button>`,
+      yo`<button
+        class="callout"
+        title="Go to Dat Version of this Site"
+        onclick=${onClickGotoDatVersion}
+      >
+        <span class="fa fa-share-alt"></span> P2P version available
+      </button>`,
     ]
   }
 
@@ -243,6 +266,7 @@ function render (id, page) {
   siteInfoNavbarBtn.siteInfo = (page && page.siteInfo)
   siteInfoNavbarBtn.sitePerms = (page && page.sitePerms)
   siteInfoNavbarBtn.siteInfoOverride = (page && page.siteInfoOverride)
+  siteInfoNavbarBtn.siteLoadError = (page && page.siteLoadError)
 
   // the main URL input
   var locationInput = yo`
@@ -257,18 +281,18 @@ function render (id, page) {
   `
 
   // a prettified rendering of the main URL input
-  var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused)
+  var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused, gotInsecureResponse, siteLoadError)
 
   // render
   return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
     <div class="toolbar-group">
       <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-        <span class="icon icon-left-open-big"></span>
+        <span class="fa fa-arrow-left"></span>
       </button>
       <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-        <span class="icon icon-right-open-big"></span>
+        <span class="fa fa-arrow-right"></span>
       </button>
-      ${reloadBtn}      
+      ${reloadBtn}
     </div>
     <div class="toolbar-input-group">
       ${siteInfoNavbarBtn.render()}
@@ -277,7 +301,9 @@ function render (id, page) {
       ${inpageFinder}
       ${zoomBtn}
       ${datBtns}
-      <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark"><span class="icon icon-star"></span></button>
+      <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark this page">
+        <span class=${(page && !!page.bookmark) ? "fa fa-star" : "fa fa-star-o"}></span>
+      </button>
       ${autocompleteDropdown}
     </div>
     <div class="toolbar-group">
@@ -287,29 +313,48 @@ function render (id, page) {
   </div>`
 }
 
-function renderPrettyLocation (value, isHidden) {
+function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadError) {
   var valueRendered = value
   if (/^(dat|http|https):/.test(value)) {
     try {
       var { protocol, host, pathname, search, hash } = new URL(value)
-      if (protocol === 'dat:' && isDatHashRegex.test(host)) host = prettyHash(host)
+      var hostVersion
+      if (protocol === 'dat:') {
+        let match = /(.*)\+(.*)/.exec(host)
+        if (match) {
+          host = match[1]
+          hostVersion = '+' + match[2]
+        }
+        if (isDatHashRegex.test(host)) {
+          host = prettyHash(host)
+        }
+      }
       var cls = 'protocol'
-      if (['beaker:','https:'].includes(protocol)) cls += ' protocol-secure'
+      if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
+      if (['https:'].includes(protocol) && !siteLoadError && !gotInsecureResponse) cls += ' protocol-secure'
+      if (['https:'].includes(protocol) && gotInsecureResponse) cls += ' protocol-insecure'
       if (['dat:'].includes(protocol)) cls += ' protocol-p2p'
       valueRendered = [
         yo`<span class=${cls}>${protocol.slice(0, -1)}</span>`,
         yo`<span class="syntax">://</span>`,
         yo`<span class="host">${host}</span>`,
+        hostVersion ? yo`<span class="host-version">${hostVersion}</span>` : false,
         yo`<span class="path">${pathname}${search}${hash}</span>`,
-      ]
+      ].filter(Boolean)
     } catch (e) {
       // invalid URL, just use value
     }
   }
 
-  return yo`<div class="nav-location-pretty${(isHidden) ? ' hidden' : ''}" onclick=${onFocusLocation}>
-    ${valueRendered}
-  </div>`
+  return yo`
+    <div
+      class="nav-location-pretty${(isHidden) ? ' hidden' : ''}"
+      onclick=${onFocusLocation}
+      onmousedown=${onFocusLocation}
+    >
+      ${valueRendered}
+    </div>
+  `
 }
 
 function handleAutocompleteSearch (results) {
@@ -326,25 +371,17 @@ function handleAutocompleteSearch (results) {
   var isProbablyUrl = (!v.includes(' ') && (
     /\.[A-z]/.test(v) ||
     isDatHashRegex.test(v) ||
-    isIPFS.multihash(multihashV) ||
-    isIPFS.ipfsPath(v) ||
-    isIPFS.ipnsPath(v) ||
     v.startsWith('localhost') ||
     v.includes('://') ||
-    v.startsWith('beaker:') ||
-    v.startsWith('fs:/')
+    v.startsWith('beaker:')
   ))
   var vWithProtocol = v
   var isGuessingTheScheme = false
-  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('fs:/'))) {
+  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:'))) {
     if (isDatHashRegex.test(v)) {
       vWithProtocol = 'dat://'+v
     } else if (v.startsWith('localhost')) {
       vWithProtocol = 'http://'+v
-    } else if (isIPFS.multihash(multihashV)) {
-      vWithProtocol = 'fs:/ipfs/' + multihashV
-    } else if (isIPFS.ipfsPath(v) || isIPFS.ipnsPath(v)) {
-      vWithProtocol = 'fs:' + v
     } else {
       vWithProtocol = 'https://'+v
       isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
@@ -384,10 +421,6 @@ function getAutocompleteSelection (i) {
   // autocorrect urls of known forms
   if (isDatHashRegex.test(url)) {
     url = 'dat://' + url
-  } else if (isIPFS.multihash(url)) {
-    vWithProtocol = 'fs:/ipfs/' + url
-  } else if (isIPFS.ipfsPath(url) || isIPFS.ipnsPath(url)) {
-    vWithProtocol = 'fs:' + url
   }
   return { url }
 }
@@ -477,14 +510,16 @@ function getEventPage (e) {
 
 function onClickBack (e) {
   var page = getEventPage(e)
-  if (page && page.canGoBack())
-    page.goBack()
+  if (page && page.canGoBack()) {
+    page.goBackAsync()
+  }
 }
 
 function onClickForward (e) {
   var page = getEventPage(e)
-  if (page && page.canGoForward())
-    page.goForward()
+  if (page && page.canGoForward()) {
+    page.goForwardAsync()
+  }
 }
 
 function onClickReload (e) {
@@ -495,8 +530,9 @@ function onClickReload (e) {
 
 function onClickCancel (e) {
   var page = getEventPage(e)
-  if (page)
-    page.stop()
+  if (page) {
+    page.stopAsync()
+  }
 }
 
 function onClickBookmark (e) {
@@ -504,49 +540,13 @@ function onClickBookmark (e) {
   if (page) {
     page.toggleBookmark()
 
-    // animate the element
-    document.querySelector('.toolbar-actions:not(.hidden) .nav-bookmark-btn .icon').animate([
-      {textShadow: '0 0 0px rgba(255, 188, 0, 1.0)'},
-      {textShadow: '0 0 8px rgba(255, 188, 0, 1.0)'},
-      {textShadow: '0 0 16px rgba(255, 188, 0, 0.0)'}
-    ], { duration: 300 })
+    // animate the element TODO
+    // document.querySelector('.toolbar-actions:not(.hidden) .nav-bookmark-btn .fa').animate([
+    //   {textShadow: '0 0 0px rgba(0, 18, 150, 1.0)'},
+    //   {textShadow: '0 0 8px rgba(0, 18, 150, 1.0)'},
+    //   {textShadow: '0 0 16px rgba(0, 18, 150, 0.0)'}
+    // ], { duration: 300 })
   }
-}
-
-// helper for some click events
-function openDatView (e, view) {
-  var page = getEventPage(e)
-  if (!page || !page.getURL().startsWith('dat://')) return
-
-  // get the target url
-  var url = page.getViewFilesURL(view)
-  if (!url) return
-
-  // start loading
-  if (e.metaKey || e.ctrlKey) { // popup
-    pages.setActive(pages.create(url))
-  } else {
-    page.loadURL(url) // goto
-  }
-}
-
-function onClickForkDat (e) {
-  openDatView(e, 'fork')
-}
-
-function onClickViewFiles (e) {
-  openDatView(e, 'files')  
-}
-
-function onClickSaveDat (e) {
-  var page = getEventPage(e)
-  if (!page || !page.siteInfo) return
-
-  var info = page.siteInfo
-  datInternalAPI.setArchiveUserSettings(info.key, { isSaved: !info.userSettings.isSaved }).then(settings => {
-    info.userSettings = settings
-    update(page)
-  })
 }
 
 function onClickLiveReload (e) {
@@ -582,7 +582,8 @@ function onFocusLocation (e) {
   if (page) {
     page.navbarEl.querySelector('.nav-location-pretty').classList.add('hidden')
     page.navbarEl.querySelector('.nav-location-input').classList.remove('hidden')
-    page.navbarEl.querySelector('.nav-location-input').select()
+    // wait till next tick to avoid events messing with each other
+    setTimeout(() => page.navbarEl.querySelector('.nav-location-input').select(), 0)
   }
 }
 
@@ -608,7 +609,7 @@ function onInputLocation (e) {
   if (autocompleteValue && autocompleteCurrentValue != autocompleteValue) {
     autocompleteCurrentValue = autocompleteValue // update the current value
     autocompleteCurrentSelection = 0 // reset the selection
-    beakerHistory.search(value).then(handleAutocompleteSearch) // update the suggetsions
+    beaker.history.search(value).then(handleAutocompleteSearch) // update the suggetsions
   } else if (!autocompleteValue)
     clearAutocomplete() // no value, cancel out
 }
@@ -670,8 +671,8 @@ function onInputFind (e) {
   var str = e.target.value
   var page = getEventPage(e)
   if (page) {
-    if (str) page.findInPage(str)
-    else     page.stopFindInPage('clearSelection')
+    if (str) page.findInPageAsync(str)
+    else     page.stopFindInPageAsync('clearSelection')
   }
 }
 
@@ -689,8 +690,8 @@ function onKeydownFind (e) {
     let backwards = e.shiftKey // search backwords on shift+enter
     let page = getEventPage(e)
     if (page) {
-      if (str) page.findInPage(str, { findNext: true, forward: !backwards })
-      else     page.stopFindInPage('clearSelection')
+      if (str) page.findInPageAsync(str, { findNext: true, forward: !backwards })
+      else     page.stopFindInPageAsync('clearSelection')
     }
   }
 }

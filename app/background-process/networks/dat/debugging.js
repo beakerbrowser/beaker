@@ -1,4 +1,4 @@
-import {getActiveArchives} from './dat'
+import {getActiveArchives} from './library'
 
 export function archivesDebugPage () {
   var archives = getActiveArchives()

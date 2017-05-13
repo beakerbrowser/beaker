@@ -11,63 +11,78 @@ export class SiteInfoNavbarBtn {
     this.sitePerms = false
     this.siteInfoOverride = false
     this.protocolInfo = false
+    this.siteLoadError = false
     window.addEventListener('click', e => this.onClickAnywhere(e)) // close dropdown on click outside
     pages.on('set-active', e => this.closeDropdown()) // close dropdown on tab change
   }
 
-  render() {
+  render () {
     // pull details
-    var icon = '', protocolCls = 'insecure', protocolLabel = ''
+    var icon = '', protocolLabel = ''
+    var protocolCls = 'insecure'
+    var gotInsecureResponse = this.siteLoadError && this.siteLoadError.isInsecureResponse
+
+    if (this.siteLoadError) {
+      icon = 'exclamation-circle'
+      protocolLabel = ''
+    }
+
     if (this.protocolInfo) {
-      if (['https:'].includes(this.protocolInfo.scheme)) {
+      var isHttps = ['https:'].includes(this.protocolInfo.scheme)
+
+      if (isHttps && !gotInsecureResponse && !this.siteLoadError) {
         icon = 'lock'
         protocolLabel = 'Secure'
         protocolCls = 'secure'
-      } else if (this.protocolInfo.scheme === 'http:') {
-        icon = 'info-circled'
-      } else if (['dat:', 'fs:'].indexOf(this.protocolInfo.scheme) != -1) {
-        icon = 'share'
+      } else if (this.protocolInfo.scheme === 'http:' || (isHttps && gotInsecureResponse)) {
+        icon = 'exclamation-circle https-error'
+        protocolLabel = 'Not secure'
+      } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
+        icon = 'share-alt'
         protocolLabel = 'Secure P2P'
         protocolCls = 'p2p'
+      } else if (this.protocolInfo.scheme === 'beaker:') {
+        protocolCls = 'beaker'
+        icon = ''
       }
     }
 
     // render btn
-    var iconEl = (icon) ? yo`<span class="icon icon-${icon}"></span>` : ''
+    var iconEl = (icon) ? yo`<i class="fa fa-${icon}"></i>` : ''
     var titleEl = (protocolLabel) ? yo`<span class="title">${protocolLabel}</span>`: ''
     return yo`<div class="toolbar-site-info ${protocolCls}">
       <button onclick=${e => this.toggleDropdown(e)}>${iconEl} ${titleEl}</button>
+      ${this.renderDropdown()}
     </div>`
   }
 
   renderDropdown() {
     if (!this.isDropdownOpen) {
-      return yo`<div></div>`
+      return ''
     }
 
     // pull details
     var protocolDesc = ''
     if (this.protocolInfo) {
       if (['https:'].includes(this.protocolInfo.scheme)) {
-        protocolDesc = 'Your connection to this site is private.'
+        protocolDesc = 'Your connection to this site is secure.'
       } else if (this.protocolInfo.scheme === 'http:') {
-        protocolDesc = 'Your connection to this site is not private.'
-      } else if (['dat:', 'fs:'].indexOf(this.protocolInfo.scheme) != -1) {
+        protocolDesc = yo`
+          <div>
+            <p>
+              Your connection to this site is not secure.
+            </p>
+
+            <small>
+              You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
+            </small>
+          </div>
+        `
+      } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
         protocolDesc = yo`<span>
           This site was downloaded from a secure peer-to-peer network.
           <a onclick=${e => this.learnMore()}>Learn More</a>
         </span>`
-      }
-    }
-
-    // site controls
-    let siteCtrlsEl = ''
-    if (this.protocolInfo) {
-      if (this.protocolInfo.scheme === 'dat:') {
-        siteCtrlsEl = yo`<div><hr /><span>
-          <a onclick=${e => this.viewSiteFiles('files')}>View site files</a>|
-          <a onclick=${e => this.viewSiteFiles('fork')}>Fork site</a>
-        </span></div>`
       }
     }
 
@@ -85,17 +100,20 @@ export class SiteInfoNavbarBtn {
     }
 
     // dropdown
-    return yo`<div class="toolbar-dropdown toolbar-site-info-dropdown">
-      <div class="details">
-        <div class="details-title">
-          <img src="beaker-favicon:${this.getUrl()}" />
-          <strong>${this.getTitle() || this.getHostname() || this.getUrl()}</strong>
+    return yo`
+      <div class="dropdown toolbar-dropdown toolbar-site-info-dropdown">
+        <div class="dropdown-items visible with-triangle left">
+          <div class="details">
+            <div class="details-title">
+              ${this.getTitle() || this.getHostname() || this.getUrl()}
+            </div>
+            <p class="details-desc">
+              ${protocolDesc}
+            </p>
+          </div>
+          <div class="perms">${permsEls}</div>
         </div>
-        <div><small>${protocolDesc}</small></div>
-        ${siteCtrlsEl}
-      </div>
-      <div class="perms">${permsEls}</div>
-    </div>`
+      </div>`
   }
 
   getTitle() {
@@ -125,13 +143,6 @@ export class SiteInfoNavbarBtn {
     // ...this entire thing is kind of bad
     // -prf
     Array.from(document.querySelectorAll('.toolbar-site-info')).forEach(el => yo.update(el, this.render()))
-    Array.from(document.querySelectorAll('.toolbar-site-info-dropdown')).forEach(el => {
-      if (this.isDropdownOpen) {
-        yo.update(el, this.renderDropdown())
-      } else {
-        el.parentNode.removeChild(el)
-      }
-    })
   }
 
   onClickAnywhere(e) {
@@ -148,7 +159,7 @@ export class SiteInfoNavbarBtn {
 
   closeDropdown() {
     this.isDropdownOpen = false
-    this.updateActives()    
+    this.updateActives()
   }
 
   toggleDropdown(e) {
@@ -158,10 +169,6 @@ export class SiteInfoNavbarBtn {
     }
 
     this.isDropdownOpen = !this.isDropdownOpen
-    if (this.isDropdownOpen) {
-      // create a new dropdown el on the page
-      document.body.appendChild(this.renderDropdown())
-    }
     this.updateActives()
   }
 
@@ -195,7 +202,7 @@ export class SiteInfoNavbarBtn {
 
   viewSiteFiles(subpage) {
     const { hostname } = this.protocolInfo
-    pages.setActive(pages.create('beaker:library/' + hostname + '#' + subpage))
+    pages.setActive(pages.create('beaker://library/' + hostname + '#' + subpage))
     this.closeDropdown()
   }
 

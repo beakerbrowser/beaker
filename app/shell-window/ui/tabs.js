@@ -7,9 +7,9 @@ import { debounce, throttle } from '../../lib/functions'
 // constants
 // =
 
-const MAX_TAB_WIDTH = 250 // px
-const MIN_TAB_WIDTH = 56 // px
-const TAB_SPACING = -12 // px
+const MAX_TAB_WIDTH = 235 // px
+const MIN_TAB_WIDTH = 52 // px
+const TAB_SPACING = -1 // px
 
 // globals
 // =
@@ -26,14 +26,8 @@ export function setup () {
   // render
   tabsContainerEl = yo`<div class="chrome-tabs">
     <div class="chrome-tab chrome-tab-add-btn" onclick=${onClickNew} title="Open new tab">
-      <svg width="15" height="30" class="left-edge">
-        <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
-      </svg>
       <div class="chrome-tab-bg"></div>
-      <div class="chrome-tab-favicon"><span class="icon icon-plus"></span></div>
-      <svg width="15" height="30" class="right-edge">
-        <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
-      </svg>
+      <div class="chrome-tab-favicon"><span class="fa fa-plus"></span></div>
     </div>
   </div>`
   yo.update(document.getElementById('toolbar-tabs'), yo`<div id="toolbar-tabs" class="chrome-tabs-shell">
@@ -61,7 +55,7 @@ function drawTab (page) {
 
   // pick a favicon
   var favicon
-  if (page.isLoading()) {
+  if (page.isLoading() && page.getIntendedURL() !== pages.DEFAULT_URL) {
     // loading spinner
     favicon = yo`<div class="spinner"></div>`
     if (!page.isReceivingAssets)
@@ -84,25 +78,22 @@ function drawTab (page) {
   if (isActive) cls += ' chrome-tab-current'
   if (isTabDragging) cls += ' chrome-tab-dragging'
 
+  // styles
+  var {pageIndex, style} = getPageStyle(page)
+  if (pageIndex === 0) cls += ' leftmost'
+  if (pageIndex === pages.getAll().length - 1) cls += ' rightmost'
+
   // pinned rendering:
   if (page.isPinned) {
     return yo`<div class=${'chrome-tab chrome-tab-pinned'+cls}
                 data-id=${page.id}
-                style=${getPageStyle(page)}
+                style=${style}
                 onclick=${onClickTab(page)}
                 oncontextmenu=${onContextMenuTab(page)}
                 onmousedown=${onMouseDown(page)}
                 title=${getNiceTitle(page)}>
-      <svg width="15" height="30" class="left-edge">
-        <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
-        <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
-      </svg>
       <div class="chrome-tab-bg"></div>
       <div class="chrome-tab-favicon">${favicon}</div>
-      <svg width="15" height="30" class="right-edge">
-        <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
-        <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
-      </svg>
     </div>`
   }
 
@@ -111,23 +102,15 @@ function drawTab (page) {
   return yo`
   <div class=${'chrome-tab'+cls}
       data-id=${page.id}
-      style=${getPageStyle(page)}
+      style=${style}
       onclick=${onClickTab(page)}
       oncontextmenu=${onContextMenuTab(page)}
       onmousedown=${onMouseDown(page)}
       title=${getNiceTitle(page)}>
-    <svg width="15" height="30" class="left-edge">
-      <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
-      <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
-    </svg>
     <div class="chrome-tab-bg"></div>
     <div class="chrome-tab-favicon">${favicon}</div>
-    <div class="chrome-tab-title">${getNiceTitle(page) || 'New tab'}</div>
+    <div class="chrome-tab-title">${getNiceTitle(page) || 'New Tab'}</div>
     <div class="chrome-tab-close" title="Close tab" onclick=${onClickTabClose(page)}></div>
-    <svg width="15" height="30" class="right-edge">
-      <path class="edge-bg" d="m14,29l0,-28l-2,0.1l-11.45,27.9l13.2,0z" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" />
-      <path class="edge-border" d="m1,28.5l11.1,-28l1.9,0" stroke-linejoin="round" stroke-dasharray="null" stroke-width="null" fill="none" />
-    </svg>
   </div>`
 }
 
@@ -155,8 +138,15 @@ function repositionTabs (e) {
   currentTabWidth = Math.min(MAX_TAB_WIDTH, Math.max(MIN_TAB_WIDTH, availableWidth / numUnpinnedTabs))|0
 
   // update tab positions
-  allPages.forEach(page => getTabEl(page, tabEl => tabEl.style = getPageStyle(page)))
-  tabsContainerEl.querySelector('.chrome-tab-add-btn').style = getPageStyle(allPages.length)
+  allPages.forEach(page => getTabEl(page, tabEl => {
+    var {style, pageIndex} = getPageStyle(page)
+    if (pageIndex === 0) tabEl.classList.add('leftmost')
+    if (pageIndex !== 0) tabEl.classList.remove('leftmost')
+    if (pageIndex === allPages.length - 1) tabEl.classList.add('rightmost')
+    if (pageIndex !== allPages.length - 1) tabEl.classList.remove('rightmost')
+    tabEl.style = style
+  }))
+  tabsContainerEl.querySelector('.chrome-tab-add-btn').style = getPageStyle(allPages.length).style
 }
 
 // page event
@@ -207,8 +197,7 @@ function onClickNew () {
 }
 
 function onClickDuplicate (page) {
-  // HACK https://github.com/electron/electron/issues/8505 forces setActive(), would prefer not to -prf
-  return () => pages.setActive(pages.create(page.getURL()))
+  return () => pages.create(page.getURL())
 }
 
 function onClickPin (page) {
@@ -236,20 +225,24 @@ function onClickTabClose (page) {
 }
 
 function onClickCloseOtherTabs (page) {
-  return () => {
+  return async () => {
     pages.setActive(page)
-    pages.getAll().slice().forEach(p => {
-      if (p != page)
-        pages.remove(p)
-    })
+    var ps = pages.getAll().slice()
+    for (var i = 0; i < ps.length; i++) {
+      if (ps[i] != page) {
+        await pages.remove(ps[i])
+      }
+    }
   }
 }
+
 function onClickCloseTabsToTheRight (page) {
-  return () => {
+  return async () => {
     var ps = pages.getAll()
     var index = ps.indexOf(page)
-    for (var i = ps.length - 1; i > index; i--)
-      pages.remove(ps[i])
+    for (var i = ps.length - 1; i > index; i--) {
+      await pages.remove(ps[i])
+    }
   }
 }
 
@@ -259,8 +252,8 @@ function onClickReopenClosedTab () {
 }
 
 function onContextMenuTab (page) {
-  const { Menu } = remote
   return e => {
+    const { Menu } = remote
     var menu = Menu.buildFromTemplate([
       { label: 'New Tab', click: onClickNew },
       { type: 'separator' },
@@ -422,7 +415,7 @@ function getPageStyle (page) {
   if (pageObject) {
     style += ` width: ${getTabWidth(pageObject)}px;`
   }
-  return style
+  return {pageIndex, style}
 }
 
 // returns 0 for no, -1 or 1 for yes (the offset)
@@ -452,14 +445,16 @@ function getNiceTitle (page) {
   if (!title) return false
 
   // if the title is just the URL, give the path
+  if (title !== page.getURL()) {
+    return title
+  }
   try {
     let { pathname, origin } = new URL(title)
-    if (pathname !== '/') {
+    if (!pathname.endsWith('/')) {
       pathname = pathname.split('/').pop()
-    } else {
-      pathname = 'index.html'
+      return `${pathname} - ${origin}`
     }
-    return `${pathname} - ${origin}`
+    return origin
   } catch (e) {
     return title
   }

@@ -1,0 +1,59 @@
+@import "../base/colors";
+@import "../base/spacing";
+
+.settings {
+
+  h1 {
+    font-size: 18px;
+    margin: 10px 0;
+    padding: 0;
+    border-bottom: 1px solid @border-menu;
+  }
+
+  h2 {
+    font-size: 13px;
+    border-bottom: 1px solid @border-menu;
+  }
+}
+
+.settings-section {
+  padding: 0 @padding-component--tight;
+
+  a {
+
+    &:extend(.link);
+
+    &:hover {
+      &:extend(.link:hover);
+    }
+  }
+
+  &.start-page {
+
+    label {
+      display: block;
+    }
+
+    input {
+      margin-left: @padding-component--tight;
+
+      &[type="radio"] {
+        margin-right: 5px;
+      }
+    }
+
+    img.bg-preview {
+      display: block;
+      max-width: 40%;
+      margin: @padding-component--tight 0 @padding-component 0;
+    }
+  }
+
+  &.protocols a {
+    margin-left: 5px;
+  }
+}
+
+ul.settings-section {
+  margin-left: @padding-component;
+}

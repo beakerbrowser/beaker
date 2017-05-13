@@ -1,14 +1,16 @@
-import { app, dialog, autoUpdater } from 'electron'
+import {app, dialog, autoUpdater, BrowserWindow, webContents, ipcMain, shell} from 'electron'
 import os from 'os'
+import path from 'path'
+import fs from 'fs'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 var debug = require('debug')('beaker')
-import manifest from './api-manifests/internal/browser'
+import manifest from '../lib/api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
-import { internalOnly } from '../lib/bg/rpc'
-import { isDaemonActive as isIPFSDaemonActive } from './networks/ipfs/ipfs'
-import { open as openUrl } from './open-url'
+import {internalOnly} from '../lib/bg/rpc'
+import {open as openUrl} from './open-url'
+import {showModal, closeModal} from './ui/modals'
 
 // constants
 // =
@@ -32,6 +34,10 @@ var updaterError = false // has there been an error?
 // is the updater available? must be on certain platform, and may be disabled if there's an error
 var isBrowserUpdatesSupported = (os.platform() == 'darwin' || os.platform() == 'win32')
 
+// where is the user in the setup flow?
+var userSetupStatus = false
+var userSetupStatusLookupPromise
+
 // events emitted to rpc clients
 var browserEvents = new EventEmitter()
 
@@ -52,6 +58,9 @@ export function setup () {
   }
   setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
 
+  // fetch user setup status
+  userSetupStatusLookupPromise = settingsDb.get('user-setup-status')
+
   // wire up RPC
   rpc.exportAPI('beakerBrowser', manifest, {
     eventsStream,
@@ -59,19 +68,59 @@ export function setup () {
     checkForUpdates,
     restartBrowser,
 
-    isIPFSDaemonActive,
-
     getSetting,
     getSettings,
     setSetting,
+
+    getUserSetupStatus,
+    setUserSetupStatus,
+
+    setStartPageBackgroundImage,
 
     getDefaultProtocolSettings,
     setAsDefaultProtocolClient,
     removeAsDefaultProtocolClient,
 
     showOpenDialog,
-    openUrl
+    openUrl: url => { openUrl(url) }, // dont return anything
+    openFolder,
+    doWebcontentsCmd,
+
+    closeModal
   }, internalOnly)
+
+  // HACK to fix beaker#395
+  ipcMain.on('onbeforeunload-abort', e => {
+    e.sender.stop()
+    e.returnValue = true
+  })
+
+  // window.prompt handling
+  //  - we have use ipc directly instead of using rpc, because we need custom
+  //    response-lifecycle management in the main thread
+  ipcMain.on('page-prompt-dialog', async (e, message, def) => {
+    var win = BrowserWindow.fromWebContents(e.sender.hostWebContents)
+    try {
+      var res = await showModal(win, 'prompt', {message, default: def})
+      e.returnValue = res && res.value ? res.value : false
+    } catch (e) {
+      e.returnValue = false
+    }
+  })
+}
+
+export function setStartPageBackgroundImage (srcPath) {
+  var destPath = path.join(app.getPath('userData'), 'start-background-image')
+
+  return new Promise((resolve) => {
+    if (srcPath) {
+      fs.readFile(srcPath, (err, data) => {
+        fs.writeFile(destPath, data, () => resolve())
+      })
+    } else {
+      fs.unlink(destPath, () => resolve())
+    }
+  })
 }
 
 export function getDefaultProtocolSettings () {
@@ -192,6 +241,16 @@ export function setSetting (key, value) {
   return settingsDb.set(key, value)
 }
 
+export async function getUserSetupStatus () {
+  // if not cached, defer to the lookup promise
+  return (userSetupStatus) ? userSetupStatus : userSetupStatusLookupPromise
+}
+
+export function setUserSetupStatus (status) {
+  userSetupStatus = status // cache
+  return settingsDb.set('user-setup-status', status)
+}
+
 // rpc methods
 // =
 
@@ -200,14 +259,35 @@ function eventsStream () {
 }
 
 function showOpenDialog (opts = {}) {
+  var wc = this.sender.webContents
+  if (wc.hostWebContents) {
+    wc = wc.hostWebContents
+  }
   return new Promise((resolve) => {
     dialog.showOpenDialog({
       title: opts.title,
       buttonLabel: opts.buttonLabel,
       filters: opts.filters,
       properties: opts.properties
-    }, filenames => resolve(filenames))
+    }, filenames => {
+      // return focus back to the the webview
+      wc.executeJavaScript(`
+        var wv = document.querySelector('webview:not(.hidden)')
+        if (wv) wv.focus()
+      `)
+      resolve(filenames)
+    })
   })
+}
+
+function openFolder (folderPath) {
+  shell.openExternal('file://'+folderPath)
+}
+
+async function doWebcontentsCmd (method, wcId, ...args) {
+  var wc = webContents.fromId(+wcId)
+  if (!wc) throw new Error(`WebContents not found (${wcId})`)
+  return wc[method](...args)
 }
 
 // internal methods

@@ -68,5 +68,12 @@ migrations = [
       INSERT INTO settings (key, value) VALUES ('auto_update_enabled', 1);
       PRAGMA user_version = 1;
     `, cb)
+  },
+  // version 2
+  function (cb) {
+    db.exec(`
+      INSERT INTO settings (key, value) VALUES ('start_page_background_image', '');
+      PRAGMA user_version = 2
+    `, cb)
   }
 ]

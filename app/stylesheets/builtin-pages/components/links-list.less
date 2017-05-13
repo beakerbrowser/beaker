@@ -1,0 +1,120 @@
+@import "../../utils/flex";
+
+.links-list {
+
+  .link {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+    color: @color-text;
+    margin-right: 5px;
+
+    &:hover {
+      // TODO: This is necessary because @import "components/link" from other
+      // builtin pages are being included here. Ulitmately each builtin page
+      // should request its own CSS and nothing else, instead of having a global
+      // builtin pages stylesheet. I sure am missing Sass placeholders right
+      // now! -tbv
+      text-decoration: none;
+    }
+  }
+
+  .ll-progressbar {
+    flex: 0 0 100px;
+    padding: 6px 8px;
+    progress {
+      width: 80px;
+      position: relative;
+      top: 3px;
+    }
+  }
+  .ll-progress {
+    padding: 6px 8px;
+    color: #999;
+    min-width: 45px;
+    text-align: right;
+  }
+  .ll-status {
+    padding: 6px 8px;
+    color: #999;
+    text-align: right;
+  }
+  .ll-serve {
+    padding: 6px 0;
+    flex: 0 0 90px;
+    text-align: right;
+  }
+}
+
+.ll-heading {
+  font-size: 18px;
+}
+
+.ll-row {
+  &:extend(.flex);
+  flex-wrap: nowrap;
+  height: 25px;
+  padding: 0 5px;
+  justify-content: space-between;
+
+  * {
+    text-decoration: none;
+    line-height: 25px;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  &:hover, .editing {
+    background: @background-highlight;
+
+    .url, .actions {
+      opacity: 1;
+    }
+  }
+
+  .favicon, .title, .url {
+    margin-right: @margin-icon;
+  }
+
+  .favicon {
+    width: 16px;
+    height: 16px;
+  }
+
+  i.favicon {
+    width: auto;
+    height: auto;
+    margin-left: 1px;
+  }
+
+  .url {
+    color: @color-text--light;
+    opacity: 0;
+  }
+
+  .actions {
+    color: @color-text--muted;
+    opacity: 0;
+  }
+
+  .actions {
+
+    i {
+      &:hover {
+        color: @color-text;
+      }
+
+      &:not(:last-child) {
+        margin-right: @margin-icon;
+      }
+    }
+  }
+
+  .inputs {
+
+    input {
+      display: inline-block;
+      height: 20px;
+    }
+  }
+}

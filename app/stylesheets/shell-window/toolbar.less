@@ -1,18 +1,27 @@
-// draggable region for OSX
-body.darwin #toolbar {
-  display: block;
-  -webkit-app-region: drag;
-}
+@import "../base/reset";
+@import "../base/typography";
+@import "../base/colors";
+
 
 #toolbar {
+  &:extend(.system-font);
   height: 75px;
-  background: #ddd;
+  background: #eee;
 
   .toolbar-group {
     padding: 0 4px;
     display: flex;
     height: 28px;
   }
+}
+
+body.darwin #toolbar {
+  // draggable region for OSX
+  display: block;
+  -webkit-app-region: drag;
+
+  // transparency
+  background: transparent;
 }
 
 .download-started-animation {
@@ -33,7 +42,7 @@ body.darwin #toolbar {
 .window-blurred {
   // when the window isnt focused, lighten the toolbar
   #toolbar {
-    background: #eee;
+    background: @background-shell-window--unfocused;
 
     .chrome-tabs .chrome-tab.chrome-tab-add-btn:before,
     .chrome-tabs .chrome-tab.chrome-tab-add-btn:after,
@@ -41,7 +50,7 @@ body.darwin #toolbar {
       display: none;
     }
 
-    .toolbar-input-group .toolbar-site-info button .icon,
+    .toolbar-input-group .toolbar-site-info button .fa,
     .toolbar-input-group .toolbar-site-info button .title,
     .toolbar-input-group .nav-location-pretty .protocol,
     .toolbar-actions input,

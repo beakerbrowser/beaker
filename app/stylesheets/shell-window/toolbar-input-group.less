@@ -1,8 +1,11 @@
+@import "../base/colors";
+@import "../utils/decorators";
+
 .toolbar-input-group {
   flex: 1;
   display: flex;
 
-  width: calc(100vw - 154px); // so that long URLs dont overflow 
+  width: calc(100vw - 154px); // so that long URLs dont overflow
   // ^ will need to be recalculated each time the navbar adds/removes components
   position: relative; // for the :after el, and autocomplete dropdown, to position off of
 
@@ -21,11 +24,11 @@
     border: 0;
     background: transparent;
     cursor: text;
+    letter-spacing: -.2px;
 
     &:focus {
       outline: 0;
       background: #fff;
-      color: #555;
     }
 
     &.nav-find-input {
@@ -63,92 +66,148 @@
       padding-right: 8px;
     }
 
+    &.callout {
+      font-size: 12px;
+      background: @background-button--active;
+      margin: 3px;
+      border-radius: 2px;
+
+      &:hover {
+        background: @background-button--gray;
+      }
+    }
+
     // navbar btn styles
     &.nav-save-btn {
+
       &.active {
-        color: #007eff;
-      } 
-    }
-    &.nav-bookmark-btn {
-      font-size: 16px;
-      color: transparent;
-      -webkit-text-stroke: 1px #777;
-      &.active {
-        color: #007eff;
-        -webkit-text-stroke: 1px #007eff;
+        color: @blue;
       }
+    }
+
+    &.zoom {
+      font-size: 14px;
+    }
+
+    &.nav-peers-btn {
+      font-size: 14px;
+
+      &:hover {
+        cursor: default;
+        background: none;
+      }
+    }
+
+    &.nav-bookmark-btn,
+    &.nav-live-reload-btn {
+      font-size: 16px;
+
+      &.active {
+        color: @yellow;
+        &:extend(.text-outline);
+        -webkit-text-stroke: 1px shade(@yellow, 10%);
+      }
+
       &:disabled {
         color: gray;
       }
     }
-    &.nav-live-reload-btn {
-      .icon {
-        font-size: 17px;
-      }
-      &.active {
-        color: gold;
-        -webkit-text-stroke: 1px #eabb33;
-        animation-name: navLiveReloadBtnGlow;
-        animation-duration: 2s;
-        animation-iteration-count: infinite;
-      }
-    }
-
-    small {
-      position: relative;
-      top: -1px;
-      font-size: 12px;
-    }
   }
 
   .toolbar-site-info {
+
     button {
       display: flex;
       color: #555;
       padding: 0 0 0 3px;
       border: 0;
       min-width: 0;
+      height: 100%;
 
-      .icon {
+      .fa {
         padding: 7px 0 4px 6px;
         font-size: 14px;
-        &.icon-lock {
-          font-size: 15px;
+
+        &.fa-lock {
+          font-size: 14px;
           position: relative;
-          top: -1px;
+          top: -1.4px;
           vertical-align: top;
         }
       }
 
       .title {
         font-size: 14px;
+        line-height: 14px;
         margin-top: 5px; // use margin so the border on the right will have spacing from the top border
-        padding: 2px 7px 1px 5px;
+        padding: 1px 7px 2px 5px;
         border: 0;
         border-right: 1px solid #ddd;
+        letter-spacing: -.2px;
       }
     }
+
     &.secure button {
       color: #3c943c !important;
     }
+
+    &.insecure {
+      color: @color-text--muted;
+
+      .title {
+        color: mix(@color-text, @red, 20%);
+        margin-top: 4px;
+      }
+
+      i {
+        padding-top: 5px;
+        color: @color-text--light;
+
+        &.https-error {
+          color: mix(@color-text, @red, 20%);
+        }
+      }
+    }
+
+    &.insecure:not(:empty) + .nav-location-pretty {
+      // TODO: still need to fix spacing between .fa-exclamation and URL
+      // on insecure sites. But this is easier to tolerate than the URL
+      // input jittering. -tbv
+
+      + .nav-location-input {
+      }
+    }
+
     &.p2p button {
       color: #016fde !important;
     }
   }
 
   .nav-location-pretty {
+    &:extend(.overflow-ellipsis);
+    color: #000;
     flex: 1;
     padding: 3px 0 1px 7px;
     cursor: text;
-    text-overflow: ellipsis;
-    overflow: hidden;
+    letter-spacing: -.2px;
+
+    .protocol {
+      color: @color-text--light;
+    }
 
     .protocol-secure {
       color: #3c943c;
     }
+
+    .protocol-insecure {
+      color: mix(@color-text, @red, 20%);
+    }
+
     .protocol-p2p {
       color: #016fde;
     }
+
+    .host-version,
     .syntax,
     .path {
       color: #aaa;
@@ -162,7 +221,7 @@
     width: 100%;
     top: 28px;
     background: #fff;
-    z-index: 2;
+    z-index: 20;
     border: 1px solid #ddd;
     border-top: 0;
     padding-bottom: 3px;
@@ -170,51 +229,47 @@
 
     .result {
       padding: 2px 10px;
-      font-size: 15px;
       display: flex;
+
       .icon {
         margin-right: 10px;
         width: 15px;
         display: inline-block;
         text-align: center;
+
         &.icon-search {
           font-size: 17px;
         }
       }
+
       .result-url {
-        color: #397EEF;
+        color: @blue;
 
         // set a width limit
+        &:extend(.overflow-ellipsis);
         display: inline-block;
         max-width: 40%;
-        overflow: hidden;
-        text-overflow: ellipsis;
         vertical-align: top;
-        white-space: pre;
       }
+
       .result-title {
+        &:extend(.overflow-ellipsis);
         margin-left: 2px;
         color: gray;
-        white-space: pre;
-        overflow: hidden;
-        text-overflow: ellipsis;
+
         &:before {
           content: '-';
           margin-right: 5px;
         }
       }
+
       &.selected {
         background: lightgoldenrodyellow;
       }
+
       &:hover {
         background: #eee;
       }
     }
   }
-}
-
-@keyframes navLiveReloadBtnGlow {
-  from { text-shadow: 0 0 0 #eabb33; }
-  50% { text-shadow: 0 0 5px #eabb33; }
-  to { text-shadow: 0 0 0 #eabb33; }
 }

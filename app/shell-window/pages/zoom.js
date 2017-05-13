@@ -3,17 +3,16 @@ import * as navbar from '../ui/navbar'
 
 const ZOOM_STEP = 0.5
 
-export function setZoomFromSitedata (page) {
+export function setZoomFromSitedata (page, origin) {
   // load zoom from sitedata
-  var origin = page.getURLOrigin()
+  origin = origin || page.getURLOrigin()
   if (!origin)
     return
   beakerSitedata.get(origin, 'zoom').then(v => {
     if (typeof v != 'undefined') {
       page.zoom = +v
       navbar.update(page)
-      var wc = page.webviewEl.getWebContents()
-      wc.setZoomLevel(page.zoom)
+      page.setZoomLevelAsync(page.zoom)
     }
   })
 }
@@ -25,7 +24,7 @@ export function setZoom(page, z) {
 
   // update
   page.zoom = z
-  page.webviewEl.getWebContents().setZoomLevel(page.zoom)
+  page.setZoomLevelAsync(page.zoom)
   navbar.update(page)
 
   // persist to sitedata

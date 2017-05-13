@@ -35,6 +35,7 @@ export class DropMenuNavbarBtn {
 
     // render the progress bar if downloading anything
     var progressEl = ''
+
     if ((progressingDownloads.length > 0 || this.shouldPersistProgressBar) && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
       progressEl = yo`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
     }
@@ -42,20 +43,13 @@ export class DropMenuNavbarBtn {
     // render the dropdown if open
     var dropdownEl = ''
     if (this.isDropdownOpen) {
-      let pageSpecificEls
       let page = pages.getActive()
-      if (page.getURL().startsWith('dat://')) {
-        pageSpecificEls = [
-          yo`<div class="td-item" onclick=${e => this.onOpenView(e, 'files')}><span class="icon icon-folder"></span> View Site Files</div>`,
-          yo`<div class="td-item" onclick=${e => this.onOpenView(e, 'fork')}><span class="icon icon-flow-branch" style="position: relative; left: 2px"></span> Fork this Site</div>`,
-          yo`<div class="td-item" onclick=${e => this.onToggleLiveReloading(e)}><span class="icon icon-flash" style="position: relative; left: -1px"></span> Turn ${page.isLiveReloading ? 'off' : 'on'} Live Reloading</div>`,
-          yo`<hr />`
-        ]
-      }
+      let isDatSite = page.getURL().startsWith('dat://')
+      let isDatSaved = page.siteInfo && page.siteInfo.userSettings.isSaved
 
       let downloadEls = activeDownloads.map(d => {
         // status
-        var status = d.state
+        var status = d.state === 'completed' ? '' : d.state
         if (status == 'progressing') {
           status = prettyBytes(d.receivedBytes) + ' / ' + prettyBytes(d.totalBytes)
           if (d.isPaused)
@@ -68,62 +62,146 @@ export class DropMenuNavbarBtn {
         if (d.state == 'completed') {
           // actions
           if (!d.fileNotFound) {
-            ctrlsEl = yo`<div class="td-item-ctrls">
-              <a href="#" onclick=${e => this.onOpen(e, d)}>open file</a> |
-              <a href="#" onclick=${e => this.onShow(e, d)}>show in folder</buttoan>
-            </div>`
+            ctrlsEl = yo`
+              <li class="download-item-ctrls complete">
+                <a onclick=${e => this.onOpen(e, d)}>Open file</a>
+                <a onclick=${e => this.onShow(e, d)}>Show in folder</a>
+              </li>`
           } else {
-            ctrlsEl = yo`<div class="td-item-ctrls">File not found (moved or deleted)</div>`
+            ctrlsEl = yo`
+              <li class="download-item-ctrls not-found">
+                File not found (moved or deleted)
+              </li>`
           }
         } else if (d.state == 'progressing') {
-          ctrlsEl = yo`<div class="td-item-ctrls">
-            ${d.isPaused
-             ? yo`<a href="#" onclick=${e => this.onResume(e, d)}>resume</a>`
-             : yo`<a href="#" onclick=${e => this.onPause(e, d)}>pause</a>`}
-            |
-            <a href="#" onclick=${e => this.onCancel(e, d)}>cancel</a>
-          </div>`
+          ctrlsEl = yo`
+            <li class="download-item-ctrls paused">
+              ${d.isPaused
+              ? yo`<a onclick=${e => this.onResume(e, d)}>Resume</a>`
+              : yo`<a onclick=${e => this.onPause(e, d)}>Pause</a>`}
+              <a onclick=${e => this.onCancel(e, d)}>Cancel</a>
+            </li>`
         }
 
         // render download
-        return yo`<div class="td-item border">
-          <div class="td-item-name"><strong>${d.name}</strong></div>
-          <div class="td-item-status">${status}</div>
-          ${ d.state == 'progressing'
-            ? yo`<div class="td-item-progress"><progress value=${d.receivedBytes} max=${d.totalBytes}></progress></div>`
-            : '' }
-          ${ctrlsEl}
-        </div>`
+        return yo`
+          <li class="download-item">
+            <div class="name">${d.name}</div>
+            <div class="status">
+              ${ d.state == 'progressing'
+                ? yo`<progress value=${d.receivedBytes} max=${d.totalBytes}></progress>`
+                : '' }
+              ${status}
+            </div>
+            ${ctrlsEl}
+          </li>`
       })
-      dropdownEl = yo`<div class="toolbar-dropdown toolbar-drop-menu-dropdown">
-        ${pageSpecificEls}
-        <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:downloads')}><span class="icon icon-down-circled"></span> Downloads</div>
-        <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:history')}><span class="icon icon-back-in-time"></span> History</div>
-        <div class="td-item" onclick=${e => this.onOpenPage(e, 'beaker:settings')}><span class="icon icon-list"></span> Settings</div>
-        ${downloadEls.length ? yo`<hr />` : ''}
-        ${downloadEls}
-        <hr />
-        <div class="td-item" onclick=${e => this.onOpenPage(e, 'https://groups.google.com/forum/#!forum/beaker-browser')}><span class="icon icon-mail"></span> Mailing List</div>
-        <div class="td-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}><span class="icon icon-attention"></span> Report an Issue</div>
-      </div>`
+      dropdownEl = yo`
+        <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
+          <div class="dropdown-items with-triangle visible">
+            ${isDatSite ? yo`
+              <div class="list page">
+                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onViewFiles(e)}>
+                  <i class="fa fa-files-o"></i>
+                  View site files
+                </div>
+                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onFork(e)}>
+                  <i class="fa fa-code-fork"></i>
+                  Fork site
+                </div>
+                <div class="list-item" onclick=${e => this.onToggleLiveReloading(e)}>
+                  <i class="fa fa-bolt"></i>
+                  Turn ${page.isLiveReloading() ? 'off' : 'on'} live reloading
+                </div>
+                ${!isDatSaved ?
+                  yo`
+                    <div class="list-item"  onclick=${e => this.onToggleSave(e)}>
+                      <i class="fa fa-floppy-o"></i>
+                      Save site to Library
+                    </div>
+                  ` : yo`
+                    <div class="list-item"  onclick=${e => this.onToggleSave(e)}>
+                      <i class="fa fa-trash"></i>
+                      Remove site from Library
+                    </div>
+                  `}
+              </div>
+            ` : ''}
+
+            <hr />
+
+            <div class="grid default">
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
+                <i class="fa fa-history"></i>
+                History
+              </div>
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
+                <i class="fa fa-list"></i>
+                Library
+              </div>
+
+              <div class="grid-item" onclick=${e => this.onCreateSite(e)}>
+                <i class="fa fa-pencil"></i>
+                New site
+              </div>
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
+                <i class="fa fa-download"></i>
+                Downloads
+              </div>
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
+                <i class="fa fa-star"></i>
+                Bookmarks
+              </div>
+
+              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
+                <i class="fa fa-gear"></i>
+                Settings
+              </div>
+            </div>
+
+            ${downloadEls.length ? yo`
+              <div>
+                <hr>
+                <div class="downloads">
+                  <h2>Downloads</h2>
+                  <ul class="downloads-list">${downloadEls}</ul>
+                </div>
+              </div>` : ''}
+
+            <div class="footer">
+              <a onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
+                <i class="fa fa-info-circle"></i>
+                <span>Report an Issue</span>
+              </a>
+              <a onclick=${e => this.onOpenPage(e, 'https://beakerbrowser.com/docs/')}>
+                <i class="fa fa-question"></i>
+                <span>Help</span>
+              </a>
+            </div>
+          </div>
+        </div>`
     }
 
     // render btn
-    return yo`<div class="toolbar-drop-menu">
-      <button class="toolbar-btn toolbar-drop-menu-btn ${this.isDropdownOpen?'pressed':''}" onclick=${e => this.onClickBtn(e)} title="Menu">
-        <span class="icon icon-down-open-big"></span>
-        ${progressEl}
-      </button>
-      ${dropdownEl}
-    </div>`
+    return yo`
+      <div class="toolbar-dropdown-menu">
+        <button class="toolbar-btn toolbar-dropdown-menu-btn ${this.isDropdownOpen?'pressed':''}" onclick=${e => this.onClickBtn(e)} title="Menu">
+          <span class="fa fa-bars"></span>
+          ${progressEl}
+        </button>
+        ${dropdownEl}
+      </div>`
   }
 
   updateActives () {
-    Array.from(document.querySelectorAll('.toolbar-drop-menu')).forEach(el => yo.update(el, this.render()))
+    Array.from(document.querySelectorAll('.toolbar-dropdown-menu')).forEach(el => yo.update(el, this.render()))
   }
 
   doAnimation () {
-    Array.from(document.querySelectorAll('.toolbar-drop-menu-btn')).forEach(el => 
+    Array.from(document.querySelectorAll('.toolbar-dropdown-menu-btn')).forEach(el =>
       el.animate([
         {transform: 'scale(1.0)', color:'inherit'},
         {transform: 'scale(1.5)', color:'#06c'},
@@ -140,6 +218,10 @@ export class DropMenuNavbarBtn {
 
   onNewDownload () {
     this.doAnimation()
+
+    // open the dropdown
+    this.isDropdownOpen = true
+    this.updateActives()
   }
 
   onSumProgress (sumProgress) {
@@ -203,20 +285,67 @@ export class DropMenuNavbarBtn {
       })
   }
 
-  onOpenView (e, view) {
+  onClearDownloads (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    this.downloads = []
+    this.updateActives()
+  }
+
+  async onToggleSave (e) {
+    // toggle saved
+    var page = pages.getActive()
+    if (!page || !page.getURL().startsWith('dat://')) {
+      return
+    }
+    if (page.siteInfo.userSettings.isSaved) {
+      await beaker.archives.remove(page.siteInfo.key)
+      page.siteInfo.userSettings.isSaved = false
+    } else {
+      await beaker.archives.add(page.siteInfo.key)
+      page.siteInfo.userSettings.isSaved = true     
+    }
+
+    // close dropdown
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.updateActives()
+  }
+
+  async onCreateSite (e) {
+    // close dropdown
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.updateActives()
+
+    var archive = await DatArchive.create()
+    pages.getActive().loadURL('beaker://library/' + archive.url.slice('dat://'.length))
+  }
+
+  async onFork (e) {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
 
     var page = pages.getActive()
-    if (page.getURL().startsWith('dat://')) {
-      // get the target url
-      var url = page.getViewFilesURL(view)
-      if (!url) return
-
-      // load url
-      page.loadURL(url)
+    if (!page || !page.getURL().startsWith('dat://')) {
+      return
     }
+    var archive = await DatArchive.fork(page.siteInfo.key)
+    page.loadURL(archive.url)
+  }
+
+  async onViewFiles (e) {
+    // close dropdown
+    this.isDropdownOpen = !this.isDropdownOpen
+    this.updateActives()
+
+    var page = pages.getActive()
+    if (!page || !page.getURL().startsWith('dat://')) {
+      return
+    }
+    var url = page.getURL()
+    url = url.slice('dat://'.length)
+    url = url.slice(0, url.search(/\+|\/|$/))
+    page.loadURL(`beaker://library/${url}`)
   }
 
   onToggleLiveReloading (e) {

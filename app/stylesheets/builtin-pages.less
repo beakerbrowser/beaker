@@ -1,17 +1,18 @@
 @import "./photon.min.less";
 
-@import "./com/btn.less";
+@import "./components/buttons.less";
 @import "./com/toolbar.less";
-@import "./com/links-list.less";
-@import "./com/files-list.less";
 @import "./com/downloads.less";
 @import "./com/spinner.less";
 @import "./com/markdown.less";
-@import "./com/modal.less";
-@import "./com/archive-view.less";
+@import "./components/modal.less";
 
-@import "./views/archives.less";
-@import "./views/settings.less";
+@import "./builtin-pages/bookmarks";
+@import "./builtin-pages/history";
+@import "./builtin-pages/downloads";
+@import "./builtin-pages/settings";
+@import "./builtin-pages/components/links-list";
+@import "./builtin-pages/components/files-list.less";
 
 @import "./vendor/shepherd-theme-arrows.less";
 
@@ -44,11 +45,6 @@
   color: gray;
 }
 
-.bookmarks-wrapper {
-  padding: 5px 20px;
-  width: 100%;
-}
-
 .window-content.start {
   display: block;
 
@@ -68,7 +64,6 @@
   padding: 0 0 15px 0; // TODO: list-styles should be opt-in -tbv
   list-style: none;
 }
-
 
 .pinned {
   // TODO: make a flexbox-container extend -tbv

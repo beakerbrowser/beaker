@@ -12,6 +12,7 @@ export function setup () {
   var isTouching = false // is touch event active?
   var leftSwipeArrowEl = document.getElementById('left-swipe-arrow')
   var rightSwipeArrowEl = document.getElementById('right-swipe-arrow')
+  var toolbarSize = document.getElementById('toolbar').clientHeight
 
   const canGoBack = () => {
     var page = pages.getActive()
@@ -73,11 +74,32 @@ export function setup () {
   // for various humorous reasons, the 'scroll-touch-end' event is emitted in the background process
   // so, listen for it over ipc
   // https://github.com/electron/electron/pull/4181
-  ipcRenderer.on('window-event', function (event, type) {
+  ipcRenderer.on('window-event', async function (event, type, data) {
     if (type == 'scroll-touch-begin') {
       leftSwipeArrowEl.classList.remove('returning')
       rightSwipeArrowEl.classList.remove('returning')
-      isTouching = true
+
+      // check if the item under the cursor is scrolling
+      var page = pages.getActive()
+      if (!page) return
+      page.webviewEl.executeJavaScript(`
+        (function() {
+          var isScrolling = false
+          // check if the element under the cursor, or any of its parents, are scrolling horizontally right now
+          var el = document.elementFromPoint(${data.cursorX}, ${(data.cursorY - toolbarSize)})
+          while (el) {
+            if (el.scrollWidth > el.clientWidth) {
+              isScrolling = true
+              break
+            }
+            el = el.parentNode
+          }
+          return isScrolling
+        })()
+      `, true, (isScrollingEl) => {
+        if (isScrollingEl) return // dont do anything
+        isTouching = true
+      })
     }
 
     if (type == 'scroll-touch-end' && isTouching) {
@@ -86,11 +108,11 @@ export function setup () {
       // trigger navigation
       if (shouldGoBack()) {
         var page = pages.getActive()
-        if (page) page.goBack()
+        if (page) page.goBackAsync()
       }
       if (shouldGoForward()) {
         var page = pages.getActive()
-        if (page) page.goForward()
+        if (page) page.goForwardAsync()
       }
 
       // reset arrows

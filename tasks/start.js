@@ -1,5 +1,7 @@
 'use strict'
 
+const NODE_FLAGS = `--js-flags="--throw-deprecation"`
+
 var childProcess = require('child_process')
 var electron = require('electron')
 var gulp = require('gulp')
@@ -12,7 +14,7 @@ function start () {
     electron = process.env.ELECTRON_PATH
   }
   console.log('Spawning electron', electron)
-  childProcess.spawn(electron, ['./app'], {
+  childProcess.spawn(electron, [NODE_FLAGS, './app'], {
     stdio: 'inherit',
     env: process.env // inherit
   })

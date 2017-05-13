@@ -1,38 +1,33 @@
 import { protocol } from 'electron'
-import url from 'url'
+import {parse as parseUrl} from 'url'
+import parseDatUrl from 'parse-dat-url'
 import once from 'once'
 import http from 'http'
 import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 var debug = require('debug')('dat')
-import rpc from 'pauls-electron-rpc'
 import pda from 'pauls-dat-api'
 const datDns = require('dat-dns')()
 
-import { ProtocolSetupError } from '../../lib/const'
-import datInternalAPIManifest from '../api-manifests/internal/dat-internal'
-import datExternalAPIManifest from '../api-manifests/external/dat'
-
-import * as dat from '../networks/dat/dat'
-import datWebAPI from '../networks/dat/web-api'
+import {ProtocolSetupError} from 'beaker-error-constants'
+import * as datLibrary from '../networks/dat/library'
 import * as sitedataDb from '../dbs/sitedata'
 import directoryListingPage from '../networks/dat/directory-listing-page'
 import errorPage from '../../lib/error-page'
 import * as mime from '../../lib/mime'
-import { internalOnly } from '../../lib/bg/rpc'
 
 // constants
 // =
 
 // how long till we give up?
-const REQUEST_TIMEOUT_MS = 5e3 // 5 seconds
+const REQUEST_TIMEOUT_MS = 15e3 // 15 seconds
 
 // content security policies
 const DAT_CSP = `
 default-src 'self' dat:;
 script-src 'self' 'unsafe-eval' 'unsafe-inline' dat:;
 style-src 'self' 'unsafe-inline' dat:;
-img-src 'self' data: dat:;
+img-src 'self' data: dat: blob:;
 object-src 'none';
 `.replace(/\n/g, ' ')
 
@@ -43,9 +38,9 @@ const CUSTOM_DAT_CSP = origins => {
 default-src 'self' dat:;
 script-src 'self' 'unsafe-eval' 'unsafe-inline' dat:;
 style-src 'self' 'unsafe-inline' dat:;
-img-src 'self' data: dat: ${origins};
+img-src 'self' data: dat: ${origins} blob:;
 font-src 'self' dat: ${origins};
-media-src 'self' dat: ${origins}; 
+media-src 'self' dat: ${origins};
 connect-src 'self' dat: ${origins};
 object-src 'none';
 `.replace(/\n/g, ' ')
@@ -65,11 +60,7 @@ export function setup () {
   requestNonce = crypto.randomBytes(4).readUInt32LE(0)
 
   // setup the network & db
-  dat.setup()
-
-  // wire up RPC
-  rpc.exportAPI('datInternalAPI', datInternalAPIManifest, dat, internalOnly)
-  rpc.exportAPI('dat', datExternalAPIManifest, datWebAPI)
+  datLibrary.setup()
 
   // setup the protocol handler
   protocol.registerHttpProtocol('dat',
@@ -84,26 +75,28 @@ export function setup () {
     }
   )
 
-  // configure chromium's permissions for the protocol
-  protocol.registerServiceWorkerSchemes(['dat'])
-
   // create the internal dat HTTP server
   var server = http.createServer(datServer)
   listenRandomPort(server, { host: '127.0.0.1' }, (_, port) => { serverPort = port })
 }
 
-function datServer (req, res) {
-  var cb = once((code, status) => {
+export function getServerInfo () {
+  return {serverPort, requestNonce}
+}
+
+async function datServer (req, res) {
+  var cb = once((code, status, errorPageInfo) => {
     res.writeHead(code, status, {
       'Content-Type': 'text/html',
-      'Content-Security-Policy': "default-src 'unsafe-inline';",
+      'Content-Security-Policy': "default-src 'unsafe-inline' beaker:;",
       'Access-Control-Allow-Origin': '*'
     })
-    res.end(errorPage(code + ' ' + status))
+    res.end(errorPage(errorPageInfo ? errorPageInfo : (code + ' ' + status)))
   })
-  var queryParams = url.parse(req.url, true).query
+  var queryParams = parseUrl(req.url, true).query
   var fileReadStream
   var headersSent = false
+  var archive
 
   // check the nonce
   // (only want this process to access the server)
@@ -112,7 +105,7 @@ function datServer (req, res) {
   }
 
   // validate request
-  var urlp = url.parse(queryParams.url)
+  var urlp = parseDatUrl(queryParams.url)
   if (!urlp.host) {
     return cb(404, 'Archive Not Found')
   }
@@ -139,166 +132,172 @@ function datServer (req, res) {
 
   // resolve the name
   // (if it's a hostname, do a DNS lookup)
-  datDns.resolveName(urlp.host, (err, archiveKey) => {
-    if (aborted) return cleanup()
-    if (err) return cb(404, 'No DNS record found for ' + urlp.host)
+  try {
+    var archiveKey = await datDns.resolveName(urlp.host)
+    if (aborted) return
+  } catch (err) {
+    cleanup()
+    return cb(404, 'No DNS record found for ' + urlp.host)
+  }
 
+  // setup a timeout
+  timeout = setTimeout(() => {
+    if (aborted) return
+
+    // cleanup
+    aborted = true
+    debug('Timed out searching for', archiveKey)
+    var hadFileReadStream = !!fileReadStream
+    if (fileReadStream) {
+      fileReadStream.destroy()
+      fileReadStream = null
+    }
+
+    // error page
+    var resource = !!archive ? 'page' : 'site'
+    cb(504, 'Timed out searching for ${resource}', {
+      resource,
+      errorCode: 'dat-timeout',
+      validatedURL: urlp.href
+    })
+  }, REQUEST_TIMEOUT_MS)
+
+  try {
     // start searching the network
-    var archive = dat.getOrLoadArchive(archiveKey)
+    archive = await datLibrary.getOrLoadArchive(archiveKey)
+    if (aborted) return
+  } catch (err) {
+    debug('Failed to open archive', archiveKey, err)
+    cleanup()
+    return cb(500, 'Failed')
+  }
 
-    // declare a redirect helper
-    var redirectToViewDat = once(hashOpt => {
-      hashOpt = hashOpt || ''
-      // the following code crashes the shit out of electron (https://github.com/electron/electron/issues/6492)
-      // res.writeHead(302, 'Found', { 'Location': 'beaker:library/'+archiveKey+urlp.path })
-      // return res.end()
+  // checkout version if needed
+  var archiveFS = archive.stagingFS
+  if (urlp.version) {
+    let seq = +urlp.version
+    if (seq <= 0) {
+      return cb(404, 'Version too low')      
+    }
+    if (seq > archive.version) {
+      return cb(404, 'Version too high')
+    }
+    archiveFS = archive.checkout(seq)
+  }
 
-      // use the html redirect instead, for now
+  // lookup entry
+  debug('attempting to lookup', archiveKey)
+  var filepath = decodeURIComponent(urlp.path)
+  if (!filepath) filepath = '/'
+  if (filepath.indexOf('?') !== -1) filepath = filepath.slice(0, filepath.indexOf('?')) // strip off any query params
+  var isFolder = filepath.endsWith('/')
+  var entry
+  const tryStat = async (path) => {
+    if (entry) return
+    try {
+      entry = await pda.stat(archiveFS, path)
+      entry.path = path
+    } catch (e) {}
+  }
+  if (isFolder) {
+    await tryStat(filepath + 'index.html')
+    await tryStat(filepath + 'index.md')
+    await tryStat(filepath)
+  } else {
+    await tryStat(filepath)
+    await tryStat(filepath + '.html') // fallback to .html
+  }
+
+  // still serving?
+  if (aborted) return
+
+  // handle folder
+  if ((!entry && isFolder) || (entry && entry.isDirectory())) {
+    cleanup()
+    res.writeHead(200, 'OK', {
+      'Content-Type': 'text/html',
+      'Content-Security-Policy': DAT_CSP,
+      'Access-Control-Allow-Origin': '*'
+    })
+    res.end(await directoryListingPage(archiveFS, filepath))
+  }
+
+  // handle not found
+  if (!entry) {
+    debug('Entry not found:', urlp.path)
+    cleanup()
+    return cb(404, 'File Not Found')
+  }
+  
+  // caching if-match
+  // TODO
+  // this unfortunately caches the CSP header too
+  // we'll need the etag to change when CSP perms change
+  // TODO- try including all headers...
+  // -prf
+  // const ETag = 'block-' + entry.content.blockOffset
+  // if (req.headers['if-none-match'] === ETag) {
+  //   return cb(304, 'Not Modified')
+  // }
+
+  // fetch the permissions
+  var origins
+  try {
+    origins = await sitedataDb.getNetworkPermissions('dat://' + archiveKey)
+  } catch (e) {
+    origins = []
+  }
+
+  // fetch the entry and stream the response
+  debug('Entry found:', entry.path)
+  fileReadStream = archiveFS.createReadStream(entry.path)
+  fileReadStream
+    .pipe(mime.identifyStream(entry.path, mimeType => {
+      // cleanup the timeout now, as bytes have begun to stream
+      cleanup()
+
+      // send headers, now that we can identify the data
+      headersSent = true
+      var headers = {
+        'Content-Type': mimeType,
+        'Content-Security-Policy': CUSTOM_DAT_CSP(origins),
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, max-age: 60'
+        // ETag
+      }
+      if (entry.size) headers['Content-size'] = entry.size
+      res.writeHead(200, 'OK', headers)
+    }))
+    .pipe(res)
+
+  // handle empty files
+  fileReadStream.once('end', () => {
+    if (!headersSent) {
+      cleanup()
+      debug('Served empty file')
       res.writeHead(200, 'OK', {
-        'Content-Type': 'text/html',
         'Content-Security-Policy': DAT_CSP,
         'Access-Control-Allow-Origin': '*'
       })
-      res.end('<meta http-equiv="refresh" content="0;URL=beaker:library/' + archiveKey + urlp.path + hashOpt + '">')
-      return
-    })
+      res.end('\n')
+      // TODO
+      // for some reason, sending an empty end is not closing the request
+      // this may be an issue in beaker's interpretation of the page-load ?
+      // but Im solving it here for now, with a '\n'
+      // -prf
+    }
+  })
 
-    // setup a timeout
-    timeout = setTimeout(() => {
-      if (aborted) return
+  // handle read-stream errors
+  fileReadStream.once('error', err => {
+    debug('Error reading file', err)
+    if (!headersSent) cb(500, 'Failed to read file')
+  })
 
-      // cleanup
-      aborted = true
-      debug('Timed out searching for', archiveKey)
-      var hadFileReadStream = !!fileReadStream
-      if (fileReadStream) {
-        fileReadStream.destroy()
-        fileReadStream = null
-      }
-
-      // respond
-      if (!hadFileReadStream && (!urlp.path || urlp.path.endsWith('/') || urlp.path.endsWith('.html'))) {
-        // redirect to view-dat, to give a nice interface, if this looks like a page-request
-        redirectToViewDat('#timeout')
-      } else {
-        // error page
-        cb(408, 'Timed out')
-      }
-    }, REQUEST_TIMEOUT_MS)
-
-    archive.open(err => {
-      if (aborted) return cleanup()
-      if (err) {
-        debug('Failed to open archive', archiveKey, err)
-        cleanup()
-        return cb(500, 'Failed')
-      }
-
-      // lookup entry
-      debug('attempting to lookup', archiveKey)
-      var hasExactMatch = false // if there's ever an exact match, then dont look for near-matches
-      var filepath = decodeURIComponent(urlp.path)
-      if (!filepath) filepath = '/index.html'
-      if (filepath.indexOf('?') !== -1) filepath = filepath.slice(0, filepath.indexOf('?')) // strip off any query params
-      if (filepath.endsWith('/')) filepath += 'index.html'
-      const checkMatch = (entry, name) => {
-        // check exact match
-        if (name === filepath) {
-          hasExactMatch = true
-          return true
-        }
-        // check inexact matches
-        if (!hasExactMatch) {
-          // try appending .html
-          if (name === filepath + '.html') return true
-          // try appending .htm
-          if (name === filepath + '.htm') return true
-        }
-      }
-      pda.lookupEntry(archive, checkMatch, (err, entry) => {
-        // still serving?
-        if (aborted) return cleanup()
-
-        // caching if-match
-        const ETag = 'block-' + entry.content.blockOffset
-        if (req.headers['if-none-match'] === ETag) {
-          return cb(304, 'Not Modified')
-        }
-
-        // not found
-        if (!entry) {
-          debug('Entry not found:', urlp.path)
-          cleanup()
-
-          // if we're looking for a directory, render the file listing
-          if (!urlp.path || urlp.path.endsWith('/')) {
-            res.writeHead(200, 'OK', {
-              'Content-Type': 'text/html',
-              'Content-Security-Policy': DAT_CSP,
-              'Access-Control-Allow-Origin': '*'
-            })
-            return directoryListingPage(archive, urlp.path, html => res.end(html))
-          }
-
-          return cb(404, 'File Not Found')
-        }
-
-        // fetch the permissions
-        sitedataDb.getNetworkPermissions('dat://' + archiveKey).catch(err => []).then(origins => {
-
-          // fetch the entry and stream the response
-          debug('Entry found:', urlp.path)
-          fileReadStream = archive.createFileReadStream(entry)
-          fileReadStream
-            .pipe(mime.identifyStream(entry.name, mimeType => {
-              // cleanup the timeout now, as bytes have begun to stream
-              cleanup()
-
-              // send headers, now that we can identify the data
-              headersSent = true
-              var headers = {
-                'Content-Type': mimeType,
-                'Content-Security-Policy': CUSTOM_DAT_CSP(origins),
-                'Access-Control-Allow-Origin': '*',
-                'Cache-Control': 'public, max-age: 60',
-                ETag
-              }
-              if (entry.length) headers['Content-Length'] = entry.length
-              res.writeHead(200, 'OK', headers)
-            }))
-            .pipe(res)
-
-          // handle empty files
-          fileReadStream.once('end', () => {
-            if (!headersSent) {
-              debug('Served empty file')
-              res.writeHead(200, 'OK', {
-                'Content-Security-Policy': DAT_CSP,
-                'Access-Control-Allow-Origin': '*'
-              })
-              res.end('\n')
-              // TODO
-              // for some reason, sending an empty end is not closing the request
-              // this may be an issue in beaker's interpretation of the page-load ?
-              // but Im solving it here for now, with a '\n'
-              // -prf
-            }
-          })
-
-          // handle read-stream errors
-          fileReadStream.once('error', err => {
-            debug('Error reading file', err)
-            if (!headersSent) cb(500, 'Failed to read file')
-          })
-
-          // abort if the client aborts
-          req.once('aborted', () => {
-            if (fileReadStream) {
-              fileReadStream.destroy()
-            }
-          })
-        })
-      })
-    })
+  // abort if the client aborts
+  req.once('aborted', () => {
+    if (fileReadStream) {
+      fileReadStream.destroy()
+    }
   })
 }

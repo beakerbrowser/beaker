@@ -1,0 +1,58 @@
+import yo from 'yo-yo'
+import * as toast from './toast'
+import {writeToClipboard} from '../../lib/fg/event-handlers'
+
+// exported api
+// =
+
+export function render (url) {
+  return yo`
+    <div id="share-popup" class="popup-wrapper" onclick=${onClickWrapper}>
+      <div class="popup-inner">
+        <div class="head">
+          <span class="title">Share this site</span>
+          <button class="btn" onclick=${onCopyURL(url)}><i class="fa fa-clipboard"></i> Copy link</button>
+        </div>
+        <div><input value=${url} /></div>
+        <div class="info"><i class="fa fa-lock"></i> Only people with this link can see your files.</div>
+      </div>
+    </div>
+  `
+}
+
+export function create (url) {
+  // render interface
+  var popup = render(url)
+  document.body.appendChild(popup)
+
+  // select input
+  var input = popup.querySelector('input')
+  input.focus()
+  input.select()
+}
+
+export function destroy () {
+  var popup = document.getElementById('share-popup')
+  document.body.removeChild(popup)
+}
+
+// event handlers
+// =
+
+function onClickWrapper (e) {
+  if (e.target.id === 'share-popup') {
+    destroy()
+  }
+}
+
+function onCopyURL (url) {
+  return e => {
+    writeToClipboard(url)
+    toast.create(`URL copied to clipboard.`)
+  }
+}
+
+function onClose (e) {
+  e.preventDefault()
+  destroy()
+}

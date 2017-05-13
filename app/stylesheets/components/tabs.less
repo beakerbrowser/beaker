@@ -1,0 +1,25 @@
+@import "../base/colors.less";
+@import "../utils/flex";
+
+.tabs {
+  &:extend(.flex);
+  border-bottom: 1px solid @border-menu;
+
+  .tab {
+    position: relative;
+    top: 1px;
+    padding: 5px 10px;
+    margin-left: 5px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    font-size: .85rem;
+
+    &.active {
+      background: #fff;
+      border-color: @border-menu;
+      border-top-left-radius: 2px;
+      border-top-right-radius: 2px;
+    }
+  }
+}

@@ -1,5 +1,5 @@
 #webviews {
-  height: ~"calc(100vh - 77px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
+  height: ~"calc(100vh - 75px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
   position: relative;
 
   webview {
@@ -8,20 +8,20 @@
     outline: none;
     position: absolute;
     transform: translateX(0); // put the webview in another compositing layer, to reduce layout render times
+    background: #fff; // so that something is painted during load
 
+    // HACK
+    // to address https://github.com/electron/electron/issues/8505
+    // the default way of hiding content will be by z-index
+    // but can then switch to visibility: hidden after the initial render
+    z-index: 10;
     &.hidden {
-      // use transform instead of display: none
-      // (this ensures that, even if hidden, the webview will do work)
+      display: flex; // the default display type
+      z-index: 9;
+    }
+    &.can-hide.hidden {
       display: flex; // the default display type
       visibility: hidden;
-
-      // this is what electron's docs recommend...
-      // causes the pages to relayout on unhide, though, which sucks
-      // but, keep an eye out for bugs that would make the following better
-      // -prf
-      /*flex: 0 1;
-      width: 0px;
-      height: 0px;*/
     }
   }
 }

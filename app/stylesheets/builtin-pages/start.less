@@ -1,0 +1,364 @@
+@import "../photon.min.less";
+
+@import "../base/reset.less";
+@import "../base/colors";
+@import "../base/spacing";
+@import "../utils/decorators";
+@import "../utils/flex";
+@import "../components/buttons";
+@import "../components/link";
+@import "../components/messages";
+@import "./components/links-list";
+
+html {
+  overflow: auto;
+  height: 100vh;
+  background-image: url("beaker://start/background-image");
+  background-size: cover;
+  background-position: center;
+}
+body {
+  height: auto;
+}
+
+main {
+  width: 670px;
+  margin: 0 auto;
+
+  // styles for if background image set
+  &.light,
+  &.dark {
+
+    .bookmarks-container {
+      padding: 5px 20px;
+      width: 710px;
+      border-radius: 3px;
+
+    }
+
+    .bookmark.ll-row {
+      border-radius: 2px;
+
+      &:hover {
+        background: fadeout(#fff, 75%);
+      }
+    }
+  }
+
+  // light theme
+  &.light {
+
+    .pinned-bookmark .title {
+      font-weight: bold;
+     }
+
+    .shelf.closed {
+      background: fadeout(#fff, 50%);
+    }
+
+    .bookmarks-container {
+      background: fadeout(#fff, 50%);
+    }
+  }
+
+  // dark theme
+  &.dark {
+
+    .bookmarks-container, .shelf.closed {
+      background: fadeout(#000, 40%);
+    }
+
+    .shelf.closed {
+      border: 1px solid fadeout(#fff, 80%);
+      color: #fff;
+      overflow:hidden;
+
+      &:hover {
+        background: fadeout(#000, 60%);
+      }
+    }
+
+    header,
+    .add-pin-toggle,
+    .pinned-bookmark .title,
+    .bookmark .link,
+    .bookmark.ll-row .url {
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+      font-weight: bold;
+    }
+  }
+}
+
+header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  &:extend(.flex);
+  flex-wrap: nowrap;
+  padding: @padding-component--tight @padding-component;
+  font-size: 14px;
+
+  a {
+    cursor: pointer;
+
+    &:hover {
+      &:extend(.link:hover);
+    }
+
+    i {
+      cursor: pointer;
+    }
+  }
+
+  .actions {
+
+    a {
+      margin-right: @padding-component--tight;
+    }
+
+    i {
+      margin-right: @margin-icon;
+    }
+  }
+
+  .profile {
+
+    .network {
+    }
+
+    i {
+      margin: 0 @margin-icon;
+    }
+  }
+}
+
+.bookmarks-container {
+  margin-top: 150px;
+}
+
+.pinned-bookmarks {
+  &:extend(.flex);
+  width: 100%;
+}
+
+.pinned-bookmark {
+  text-align: center;
+  width: 118px;
+  height: 95px;
+  margin: 0 0 @padding-component @padding-component;
+
+  &:nth-of-type(5n+1) {
+    margin-left: 0;
+  }
+
+  &:not(.nolink) {
+    * {
+      cursor: pointer;
+    }
+
+    &:hover {
+      &:extend(.link:hover);
+    }
+  }
+
+  .title {
+    &:extend(.overflow-ellipsis);
+    height: 25px;
+    line-height: 25px;
+    vertical-align: middle;
+    color: fadeout(@color-text, 5%);
+    padding: 0 5px;
+    font-size: 11px;
+  }
+
+  .favicon-container {
+    position: relative;
+    height: 70px;
+    border-radius: 2px;
+
+    .unpin {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #fff;
+      cursor: pointer;
+      border: 1px solid @border-menu;
+      width: 22px;
+      height: 20px;
+      line-height: 18px;
+      border-radius: 2px;
+
+      &:hover {
+        background: @background-highlight-grayed;
+      }
+
+      * {
+        cursor: pointer;
+      }
+    }
+  }
+
+  .favicon {
+    width: 32px;
+    margin-top: 20px;
+  }
+}
+
+.bookmarks-list {
+  margin: 0;
+  padding: 0;
+}
+
+.bookmarks-container .bookmark {
+  padding: 2px;
+  height: auto;
+  white-space: nowrap;
+
+  * {
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  .btn.pin {
+    margin-right: 10px;
+
+    i {
+      margin-right: 2px;
+    }
+  }
+
+  .favicon {
+    height: 15px;
+    width: 15px;
+    margin-right: @margin-icon;
+  }
+
+  .link {
+    flex: 1;
+    color: @color-text;
+
+    &:hover {
+      text-decoration: none;
+
+      .title {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.add-pin-toggle {
+  cursor: pointer;
+
+  &:hover {
+    &:extend(.link:hover);
+  }
+
+  i {
+    margin-right: @margin-icon;
+  }
+}
+
+.shelf {
+  position: fixed;
+  right: 0;
+  z-index: 10;
+  overflow-y: auto;
+
+  &.closed {
+    top: 50px;
+    height: 50px;
+    width: 50px;
+    color: @color-button;
+    background: @background-button--gray;
+    text-align: center;
+    line-height: 50px;
+    font-size: 20px;
+    cursor: pointer;
+
+    i {
+      cursor: pointer;
+    }
+
+    &:hover {
+      background: @background-button--gray--hover;
+    }
+  }
+
+  &.open {
+    top: 0;
+    height: 100vh;
+    width: 300px;
+    background: #fff;
+    border-left: 1px solid @border-button;
+  }
+
+  .section-header {
+    position: relative;
+    padding: 10px 0.7rem 3px;
+
+    h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+  }
+
+  hr {
+    margin: 0;
+  }
+
+  .list-item {
+    &:extend(.flex);
+    height: 32px;
+    padding: 5px 0.7rem;
+
+    &:hover {
+      background: @background-menu;
+    }
+
+    .title {
+      display: block;
+      max-width: 250px;
+      &:extend(.overflow-ellipsis);
+      cursor: pointer;
+
+      * {
+        cursor: pointer;
+      }
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .bookmark-link {
+    &:extend(.overflow-hidden);
+
+    .favicon {
+      margin-right: 8px;
+    }
+  }
+}
+
+.shelf .archives-list {
+  .archive {
+    .peers {
+      color: @color-text--light;
+      margin-left: auto;
+    }
+  }
+}
+
+.shelf .bookmarks-list {
+  list-style: none;
+
+  .favicon {
+    margin-right: @margin-icon;
+    height: 16px;
+    margin-top: 2px;
+  }
+}

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, ipcMain } from 'electron'
+import { app, BrowserWindow, screen, ipcMain, webContents } from 'electron'
 import { register as registerShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import jetpack from 'fs-jetpack'
 import path from 'path'
@@ -36,8 +36,9 @@ export function createShellWindow () {
   var { x, y, width, height } = ensureVisibleOnSomeDisplay(restoreState())
   var win = new BrowserWindow({ 
     titleBarStyle: 'hidden-inset',
-    'standard-window': false,
+    fullscreenable: false,
     x, y, width, height,
+    vibrancy: 'light',
     webPreferences: {
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
       allowRunningInsecureContent: false
@@ -55,9 +56,13 @@ export function createShellWindow () {
   registerShortcut(win, 'Ctrl+Shift+Tab', onPrevTab(win))
   registerShortcut(win, 'CmdOrCtrl+[', onGoBack(win))
   registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
+  registerShortcut(win, 'CmdOrCtrl+N', onNewWindow(win))
+  registerShortcut(win, 'CmdOrCtrl+Q', onQuit(win))
+  registerShortcut(win, 'CmdOrCtrl+T', onNewTab(win))
+  registerShortcut(win, 'CmdOrCtrl+W', onCloseTab(win))
 
   // register event handlers
-  win.on('scroll-touch-begin', sendToWebContents('scroll-touch-begin'))
+  win.on('scroll-touch-begin', sendScrollTouchBegin)
   win.on('scroll-touch-end', sendToWebContents('scroll-touch-end'))
   win.on('focus', sendToWebContents('focus'))
   win.on('blur', sendToWebContents('blur'))
@@ -77,12 +82,25 @@ export function getActiveWindow () {
   return win
 }
 
+export async function getFocusedWebContents (win) {
+  win = win || getActiveWindow()
+  var id = await win.webContents.executeJavaScript(`
+    (function () {
+      var webview = document.querySelector('webview:not(.hidden)')
+      return webview && webview.getWebContents().id
+    })()
+  `)
+  if (id) {
+    return webContents.fromId(id)
+  }
+}
+
 // internal methods
 // =
 
 function loadShell (win) {
-  win.loadURL('beaker:shell-window')
-  debug('Opening beaker:shell-window')  
+  win.loadURL('beaker://shell-window')
+  debug('Opening beaker://shell-window')  
 }
 
 function getCurrentPosition (win) {
@@ -136,6 +154,9 @@ function ensureVisibleOnSomeDisplay (windowState) {
   return windowState
 }
 
+// shortcut event handlers
+// =
+
 function onClose (win) {
   return e => {
     numActiveWindows--
@@ -156,9 +177,6 @@ function onClose (win) {
   }
 }
 
-// shortcut event handlers
-// =
-
 function onTabSelect (win, tabIndex) {
   return () => win.webContents.send('command', 'set-tab', tabIndex)
 }
@@ -166,20 +184,49 @@ function onTabSelect (win, tabIndex) {
 function onNextTab (win) {
   return () => win.webContents.send('command', 'window:next-tab')
 }
+
 function onPrevTab (win) {
   return () => win.webContents.send('command', 'window:prev-tab')
 }
+
 function onGoBack (win) {
   return () => win.webContents.send('command', 'history:back')
 }
+
 function onGoForward (win) {
   return () => win.webContents.send('command', 'history:forward')
 }
 
+function onNewWindow (win) {
+  return () => createShellWindow()
+}
+
+function onQuit (win) {
+  return () => app.quit()
+}
+
+function onNewTab (win) {
+  return () => win.webContents.send('command', 'file:new-tab')
+}
+
+function onCloseTab (win) {
+  return () => win.webContents.send('command', 'file:close-tab')
+}
 
 // window event handlers
 // =
 
 function sendToWebContents (event) {
   return e => e.sender.webContents.send('window-event', event)
+}
+
+function sendScrollTouchBegin(e) {
+  // get the cursor x/y within the window
+  var cursorPos = screen.getCursorScreenPoint()
+  var winPos = e.sender.getBounds()
+  cursorPos.x -= winPos.x; cursorPos.y -= winPos.y
+  e.sender.webContents.send('window-event', 'scroll-touch-begin', {
+    cursorX: cursorPos.x,
+    cursorY: cursorPos.y
+  })
 }
