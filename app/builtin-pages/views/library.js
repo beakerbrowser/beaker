@@ -204,6 +204,7 @@ function update () {
 }
 
 function rView () {
+  document.title = 'Library'
   if (viewError) return rError()
   else if (isTrashOpen) return rTrash()
   else if (selectedArchive) return rArchive(selectedArchive)
@@ -258,6 +259,7 @@ function rArchiveListItem (archiveInfo) {
 }
 
 function rArchive (archiveInfo) {
+  document.title = `Library - ${archiveInfo.title || 'dat://' + archiveInfo.key}`
   var toggleSaveIcon, toggleSaveText
   if (archiveInfo.userSettings.isSaved) {
     toggleSaveIcon = 'fa-trash'
@@ -482,6 +484,7 @@ function rMetadata (archiveInfo) {
 }
 
 function rTrash () {
+  document.title = 'Library - Trash'
   return yo`
     <div class="trash">
       <h1>Trash</h1>
