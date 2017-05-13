@@ -241,6 +241,11 @@ body {
     }
   }
 
+  .description {
+    margin-top: 20px;
+    font-style: italic;
+  }
+
   .info .actions {
     position: absolute;
     right: 0;
@@ -295,9 +300,17 @@ body {
     overflow: hidden;
     white-space: nowrap;
 
+    .history-item {
+      margin-bottom: 3px;
+    }
+
     .date {
       display: inline-block;
-      width: 100px;
+      width: 75px;
+    }
+
+    .path:hover {
+      &:extend(.link:hover);
     }
 
     .load-more {

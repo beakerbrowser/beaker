@@ -1,6 +1,5 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import toggleable from './toggleable'
 import { ucfirst } from '../../lib/strings'
 
 // exported api

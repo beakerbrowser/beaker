@@ -140,7 +140,7 @@ function render () {
               <input name="title" tabindex="2" value=${title || ''} placeholder="Title (optional)" onchange=${onChangeTitle} />
 
               <label for="desc">Description</label>
-              <input name="desc" tabindex="3" value=${description || ''} placeholder="Description (optional)" onchange=${onChangeDescription} />
+              <textarea name="desc" tabindex="3" placeholder="Description (optional)" onchange=${onChangeDescription}>${description || ''}</textarea>
             </div>`}
 
             <div class="form-actions">

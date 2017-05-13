@@ -95,7 +95,7 @@ var steps = {
       <div>
         <img src="beaker://assets/logo.png" />
         <h1>Welcome</h1>
-        <p>Let${"'"}s create your personal website.</p>
+        <p>Let’s create your personal website.</p>
         <p><a onclick=${advanceStep}>Get Started</a></p>
       </div>
     </main>
@@ -115,18 +115,18 @@ var steps = {
               Share files on the Dat peer-to-peer network. Just choose your files then share the link!
             </p>
           </a>
-          <a class="screenshot active"> 
+          <a class="screenshot active">
             <h2>Host your website</h2>
             <img src="beaker://assets/website.png" onclick=${setActiveScreenshot} />
             <p class="description">
-              Host your website with the <a href="https://datproject.org">Dat protocol</a>. Peers on the network host your site${"'"}s files, so publishing your site is totally free.
+              Host your website with the <a href="https://datproject.org">Dat protocol</a>. Peers on the network host your site’s files, so publishing your site is totally free.
             </p>
           </a>
           <a class="screenshot">
             <h2>Rehost sites you like</h2>
             <img src="beaker://assets/network.png" onclick=${setActiveScreenshot} />
             <p class="description">
-              Keep track of how many peers are hosting your files, and which sites you${"'"}re hosting on the network.
+              Keep track of how many peers are hosting your files, and which sites you’re hosting on the network.
             </p>
           </a>
         </div>

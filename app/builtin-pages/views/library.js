@@ -100,7 +100,7 @@ async function loadCurrentArchive () {
     if (selectedArchiveKey) {
       // show 'loading...'
       update()
-      
+
       // load all data needed
       var a = new DatArchive(selectedArchiveKey)
       var fileTree = new FileTree(a, {onDemand: true})
@@ -204,6 +204,7 @@ function update () {
 }
 
 function rView () {
+  document.title = 'Library'
   if (viewError) return rError()
   else if (isTrashOpen) return rTrash()
   else if (selectedArchive) return rArchive(selectedArchive)
@@ -258,6 +259,7 @@ function rArchiveListItem (archiveInfo) {
 }
 
 function rArchive (archiveInfo) {
+  document.title = `Library - ${archiveInfo.title || 'dat://' + archiveInfo.key}`
   var toggleSaveIcon, toggleSaveText
   if (archiveInfo.userSettings.isSaved) {
     toggleSaveIcon = 'fa-trash'
@@ -281,6 +283,9 @@ function rArchive (archiveInfo) {
           ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
         </h1>
         <p class="description">${niceDesc(archiveInfo)}</p>
+        <p class="dat-url code-font">
+          <a class="link" href="dat://${archiveInfo.key}">dat://${archiveInfo.key}</a>
+        </p>
         <div class="actions">
           <span class="readonly">${archiveInfo.isOwner ? '' : yo`<em>(Read-only)</em>`}</span>
           <a class="btn primary" onclick=${onShare}>
@@ -391,8 +396,8 @@ function rMissingLocalPathMessage (archiveInfo) {
       <ul>
         <li>If it was moved, you can <a href="#" onclick=${onUpdateLocation}>update the location</a> and things will resume as before.</li>
         <li>If it was deleted accidentally (or you dont know what happened) you can <a href="#" onclick=${onUpdateLocation}>choose a
-          new location</a> and we${"'"}ll restore the files from the last published state.</li>
-        <li>If it was deleted on purpose, and you don${"'"}t want to keep the site anymore,
+          new location</a> and we’ll restore the files from the last published state.</li>
+        <li>If it was deleted on purpose, and you don’t want to keep the site anymore,
           you can <a href="#" onclick=${onToggleSaved}>delete it from your library</a>.</li>
       </ul>
     </section>
@@ -433,11 +438,19 @@ function rStagingArea (archiveInfo) {
 function rHistory (archiveInfo) {
   var rows = archiveInfo.history.map(function (item, i) {
     var rev = item.version
+    var revType = makeSafe(item.type)
+    revType = revType === 'put' ? 'added' : 'deleted'
+
     return `
       <div class="history-item">
-        <div class="date"><a class="link" href=${`dat://${archiveInfo.key}+${rev}`} target="_blank">Revision ${rev}</a></div>
-        ${makeSafe(item.type)}
-        ${makeSafe(item.name)}
+        <div class="date">
+          <a class="link" href=${`dat://${archiveInfo.key}+${rev}`} target="_blank">
+          Revision ${rev}</a>
+        </div>
+        ${revType}
+        <a class="path" href="${`dat://${archiveInfo.key}+${rev}${item.name}`}" target="_blank">
+          ${makeSafe(item.name.slice(1))}
+        </a>
       </div>
     `
   })
@@ -475,6 +488,7 @@ function rMetadata (archiveInfo) {
 }
 
 function rTrash () {
+  document.title = 'Library - Trash'
   return yo`
     <div class="trash">
       <h1>Trash</h1>

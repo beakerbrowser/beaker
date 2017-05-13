@@ -2,7 +2,7 @@ import {app, BrowserWindow} from 'electron'
 import path from 'path'
 
 const SIZES = {
-  'create-archive': {width: 500, height: 390},
+  'create-archive': {width: 500, height: 410},
   'create-archive-readonly': {width: 500, height: 250},
   'fork-archive': {width: 500, height: 460},
   prompt: {width: 500, height: 170}
