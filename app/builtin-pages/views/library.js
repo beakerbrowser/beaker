@@ -281,6 +281,9 @@ function rArchive (archiveInfo) {
           ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
         </h1>
         <p class="description">${niceDesc(archiveInfo)}</p>
+        <p class="dat-url">
+          <a class="link" href="dat://${archiveInfo.key}">dat://${archiveInfo.key}</a>
+        </p>
         <div class="actions">
           <span class="readonly">${archiveInfo.isOwner ? '' : yo`<em>(Read-only)</em>`}</span>
           <a class="btn primary" onclick=${onShare}>
