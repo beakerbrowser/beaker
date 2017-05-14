@@ -27,11 +27,44 @@ body {
   &:extend(.vertical-scroll);
   &:extend(.hide-scrollbar all);
   position: fixed;
-  left: 0;
+  left: -250px;
   width: 250px;
   height: 100%;
   border-right: 1px solid @border-menu;
   background: #fff;
+  z-index: 1;
+  transition: left .2s ease;
+
+  .menu {
+    position: absolute;
+    right: 2px;
+    top: 4px;
+    z-index: 3;
+
+    i {
+      font-size: 20px;
+    }
+  }
+
+  &.open {
+    left: 0;
+
+    + .view .trash {
+      margin-left: 250px;
+
+      .menu {
+        display: none;
+      }
+    }
+  }
+
+  @media (min-width: 925px) {
+    left: 0;
+
+    .menu {
+      display: none;
+    }
+  }
 }
 
 .message {
@@ -207,6 +240,26 @@ body {
   margin-left: 250px;
   padding: 2rem;
   max-width: 675px;
+  margin: auto;
+  position: relative;
+
+  @media (min-width: 925px) {
+    margin-left: 250px;
+  }
+
+  .menu {
+    position: absolute;
+    top: 10px;
+    left: 2em;
+
+    i {
+      font-size: 20px;
+    }
+
+    @media (min-width: 925px) {
+      display: none;
+    }
+  }
 
   h1 {
     font-size: 1.5rem;
@@ -231,6 +284,12 @@ body {
   .title {
     &:extend(.overflow-ellipsis);
     max-width: 450px;
+    margin-top: 25px;
+
+    // max-width of .title + width of .actions
+    @media (min-width: 665px) {
+      margin-top: 0;
+    }
 
     &:hover {
       text-decoration: underline;
