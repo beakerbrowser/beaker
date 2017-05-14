@@ -304,6 +304,15 @@ body {
     font-style: italic;
   }
 
+  .dat-url {
+    &:extend(.overflow-ellipsis);
+    max-width: 100%;
+
+    @media (min-width: 925px) {
+      max-width: 450px;
+    }
+  }
+
   .info .actions {
     position: absolute;
     right: 0;
