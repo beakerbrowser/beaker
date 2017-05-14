@@ -490,7 +490,7 @@ function rMetadata (archiveInfo) {
         <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSize)}</td></tr>
         <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-        <tr><td class="label">URL</td><td>dat://${archiveInfo.key}</td></tr>
+        <tr><td class="label">URL</td><td title="dat://${archiveInfo.key}">dat://${archiveInfo.key}</td></tr>
         <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
         <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
       </table>
