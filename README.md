@@ -59,7 +59,7 @@ sudo apt-get install libtool m4 automake
 To build:
 
 ```
-git clone https://github.com/pfrazee/beaker.git
+git clone https://github.com/beakerbrowser/beaker.git
 cd beaker
 npm install
 npm run rebuild #see https://github.com/electron/electron/issues/5851
