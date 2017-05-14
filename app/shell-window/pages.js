@@ -874,12 +874,15 @@ function parseURL (str) {
 
 async function updateHistory (page) {
   var url = page.getURL()
-  beaker.history.addVisit({url: page.getURL(), title: page.getTitle() || page.getURL()})
-  if (page.isPinned) {
-    savePinnedToDB()
+
+  if (!url.startsWith('beaker://') || url.match(/beaker:\/\/library\/[0-9,a-f]{64}/g)) {
+    beaker.history.addVisit({url: page.getURL(), title: page.getTitle() || page.getURL()})
+    if (page.isPinned) {
+      savePinnedToDB()
+    }
+    page.lastVisitedAt = Date.now()
+    page.lastVisitedURL = url
   }
-  page.lastVisitedAt = Date.now()
-  page.lastVisitedURL = url
 
   // read and cache current nav state
   var [b, f] = await Promise.all([page.canGoBackAsync(), page.canGoForwardAsync()])
