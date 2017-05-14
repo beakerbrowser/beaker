@@ -260,7 +260,7 @@ export function create (opts) {
       if (await this.isDevToolsOpenedAsync()) {
         this.closeDevToolsAsync()
       } else {
-        this.openDevToolsAsync()        
+        this.openDevToolsAsync()
       }
     }
   }
@@ -673,6 +673,9 @@ function onDidStopLoading (e) {
         background: #fff;
       }` +
 
+      // style file listings
+      `pre{font-family: Consolas, 'Lucida Console', Monaco, monospace; font-size: 13px;}` +
+
       // hide context menu definitions
       `menu[type="context"] { display: none; }` +
 
@@ -718,7 +721,7 @@ function onDidGetResponseDetails (e) {
       page.contentType = e.headers['content-type'][0] || null
     } catch (e) {
       page.contentType = null
-    }    
+    }
     // set URL in navbar
     page.loadingURL = e.newURL
     page.siteInfoOverride = null
