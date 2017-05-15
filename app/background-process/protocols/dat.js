@@ -133,7 +133,7 @@ async function datServer (req, res) {
   // resolve the name
   // (if it's a hostname, do a DNS lookup)
   try {
-    var archiveKey = await datDns.resolveName(urlp.host)
+    var archiveKey = await datDns.resolveName(urlp.host, {ignoreCachedMiss: true})
     if (aborted) return
   } catch (err) {
     cleanup()
