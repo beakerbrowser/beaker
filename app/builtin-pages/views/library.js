@@ -1,6 +1,7 @@
 import * as yo from 'yo-yo'
 import {FileTree, ArchivesList} from 'builtin-pages-lib'
 import {pluralize, makeSafe} from '../../lib/strings'
+import {throttle} from '../../lib/functions'
 import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
 import renderFiles from '../com/files-list'
@@ -40,6 +41,7 @@ var currentSection = 'files'
 var selectedArchiveKey = ''
 var selectedArchive
 var viewError
+const reloadDiffThrottled = throttle(reloadDiff, 1.5e3)
 
 setup()
 async function setup () {
@@ -624,7 +626,7 @@ async function onRevert () {
 }
 
 async function onFileChanged () {
-  reloadDiff()
+  reloadDiffThrottled()
 }
 
 async function onUpdateLocation (e) {
