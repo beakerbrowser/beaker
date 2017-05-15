@@ -16,7 +16,6 @@ import hyperstaging from 'hyperdrive-staging-area'
 // network modules
 import swarmDefaults from 'datland-swarm-defaults'
 import discoverySwarm from 'discovery-swarm'
-const datDns = require('dat-dns')()
 
 // file modules
 import path from 'path'
