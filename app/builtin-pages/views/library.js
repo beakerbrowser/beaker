@@ -34,6 +34,7 @@ var userProfileUrl
 var archivesList
 var trashList = []
 var isTrashOpen = false
+var isSidebarOpen = false
 var currentFilter = ''
 var currentSort = 'mtime'
 var currentSection = 'files'
@@ -54,6 +55,10 @@ async function setup () {
 
   // load deleted archives
   trashList = await beaker.archives.list({isSaved: false})
+
+  // check if sidebar should be open
+  isSidebarOpen = !selectedArchive
+
   update()
 
   // render graph regularly
@@ -156,7 +161,12 @@ async function reloadDiff () {
 function update () {
   yo.update(document.querySelector('main'), yo`
     <main>
-    <div class="sidebar">
+    <div class="sidebar ${isSidebarOpen ? 'open' : ''}">
+      <div class="menu">
+        <button onclick=${onToggleSidebar}>
+          <i class="fa fa-bars"></i>
+        </button>
+      </div>
       <div class="sidebar-actions">
         <label for="filter">
           <input
@@ -197,6 +207,11 @@ function update () {
     </div>
 
     <div class="view">
+      <div onclick=${onToggleSidebar} class="menu">
+        <button>
+          <i class="fa fa-bars"></i>
+        </button>
+      </div>
       ${rView()}
     </div>
     </main>
@@ -475,7 +490,7 @@ function rMetadata (archiveInfo) {
         <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSize)}</td></tr>
         <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-        <tr><td class="label">URL</td><td>dat://${archiveInfo.key}</td></tr>
+        <tr><td class="label">URL</td><td title="dat://${archiveInfo.key}">dat://${archiveInfo.key}</td></tr>
         <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
         <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
       </table>
@@ -572,6 +587,11 @@ async function onToggleSaved (e) {
 
 function onToggleTrash () {
   isTrashOpen = !isTrashOpen
+  update()
+}
+
+function onToggleSidebar () {
+  isSidebarOpen = !isSidebarOpen
   update()
 }
 
