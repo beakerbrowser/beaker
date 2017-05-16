@@ -8,7 +8,6 @@ import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 import errorPage from '../../lib/error-page'
 import {archivesDebugPage} from '../networks/dat/debugging'
-import {getUserSetupStatus} from '../browser'
 
 // constants
 // =
@@ -183,13 +182,10 @@ async function beakerServer (req, res) {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages.css'))
   }
   if (requestUrl === 'beaker://start/') {
-    // TODO re-enable
-    /*let status = await getUserSetupStatus()
-    if (status !== 'finished') {
-      // serve the setup if the user isnt finished with setup
-      return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/setup.html'))
-    }*/
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/start.html'))
+  }
+  if (requestUrl === 'beaker://tour/') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/setup.html'))
   }
   if (requestUrl === 'beaker://start/background-image') {
     return cb(200, 'OK', 'image/png', path.join(app.getPath('userData'), 'start-background-image'))
