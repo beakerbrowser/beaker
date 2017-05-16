@@ -242,3 +242,8 @@ function onClickNext () {
   }
   render()
 }
+
+async function createSite () {
+  var archive = await DatArchive.create()
+  window.location = 'beaker://library/' + archive.url.slice('dat://'.length)
+}
