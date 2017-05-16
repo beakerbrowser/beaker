@@ -121,7 +121,6 @@ async function loadCurrentArchive () {
       selectedArchive.historyPaginationOffset = 500
       selectedArchive.fileTree = fileTree
       selectedArchive.events = a.createFileActivityStream()
-      console.log(selectedArchive)
 
       // wire up events
       selectedArchive.events.addEventListener('changed', onFileChanged)
@@ -284,12 +283,6 @@ function rArchive (archiveInfo) {
   } else {
     toggleSaveIcon = 'fa-floppy-o'
     toggleSaveText = 'Save to library'
-  }
-
-  var showChanges = archiveInfo.isOwner && archiveInfo.userSettings.isSaved
-  var changesLabel = 'Staging'
-  if (archiveInfo.diff && archiveInfo.diff.length > 0) {
-    changesLabel = `Staging (${archiveInfo.diff.length})`
   }
 
   return yo`
