@@ -172,17 +172,19 @@ function renderStep (step) {
 }
 
 function renderBackBtn () {
+  // is very first step
   if (currentSectionIdx === 0 && currentStepIdx === 0) return ''
 
   return yo`
     <a class="back" onclick=${onClickBack}>
       <i class="fa fa-angle-double-left"></i>
-      Back
+      Previous
     </a>
   `
 }
 
 function renderNextBtn () {
+  // is very last step
   if (currentStepIdx === steps.length - 1 && currentSectionIdx === steps[currentStepIdx].sections.length - 1) return ''
 
   return yo`
