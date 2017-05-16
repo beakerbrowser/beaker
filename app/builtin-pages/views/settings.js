@@ -61,6 +61,9 @@ function render () {
         <li>Version: ${browserInfo.version}</li>
         <li>User data: ${browserInfo.paths.userData}</li>
       </ul>
+
+      <h2 class="ll-heading">Help</h2>
+      ${renderTour()}
     </div>
   </div>`)
 }
@@ -179,6 +182,14 @@ function renderStartPageSettings () {
                 `
       : ''
     }
+    </div>
+  `
+}
+
+function renderTour () {
+  return yo`
+    <div class="settings-section tour">
+      <p><a href="beaker://tour/">Take a tour of Beaker</a></p>
     </div>
   `
 }
