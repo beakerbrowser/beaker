@@ -562,8 +562,10 @@ function onLoadCommit (e) {
   if (page) {
     // clear out the page's error
     page.siteLoadError = null
-    // turn off live reloading
-    page.stopLiveReloading()
+    // turn off live reloading if we're leaving the domain
+    if (isDifferentDomain(e.url, page.url)) {
+      page.stopLiveReloading()
+    }
     // check if this page bookmarked
     beaker.bookmarks.get(e.url).then(bookmark => {
       page.bookmark = bookmark
@@ -870,6 +872,10 @@ function warnIfError (label) {
 function parseURL (str) {
   try { return new URL(str) }
   catch (e) { return {} }
+}
+
+function isDifferentDomain (a, b) {
+  return parseURL(a).origin !== parseURL(b).origin
 }
 
 async function updateHistory (page) {
