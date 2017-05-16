@@ -41,8 +41,6 @@ export default function toggleable (el) {
     closeAllToggleables()
     if (newState) {
       el.classList.add('open')
-    } else {
-      document.removeEventListener('click', onToggle)
     }
     if (id) {
       // persist state
@@ -62,7 +60,6 @@ export default function toggleable (el) {
     e.preventDefault()
     e.stopPropagation()
     el.classList.remove('open')
-    document.removeEventListener('click', onToggleOff)
     if (id) {
       // persist state
       toggleState[id] = false
