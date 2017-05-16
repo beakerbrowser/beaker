@@ -176,6 +176,54 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/note-done.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
   }
+  if (requestUrl === 'beaker://assets/setup-fork-modal.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-fork-modal.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-fork.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-fork.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-library-view.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-library-view.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-new-site-modal.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-new-site-modal.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-new-site-publish-changes.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-new-site-publish-changes.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-new-site-publish.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-new-site-publish.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-new-site.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-new-site.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-remove-from-library.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-remove-from-library.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-save-to-library.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-save-to-library.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-share-site.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-share-site.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-site-files.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-site-files.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-site-peer-count.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-site-peer-count.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-view-site.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-view-site.png'))
+  }
+  if (requestUrl === 'beaker://assets/note-done.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
+  }
+  if (requestUrl === 'beaker://assets/note-done.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
+  }
+  if (requestUrl === 'beaker://assets/note-done.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
+  }
 
   // builtin pages
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
