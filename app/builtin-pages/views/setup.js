@@ -162,6 +162,15 @@ function renderStepLink (step) {
 function renderStep (step) {
   var currentSection = step.sections[currentSectionIdx]
 
+  var screenshot
+  if (currentSection.screenshot) {
+    screenshot = yo`
+      <div class="screenshot-container">
+        <img class="screenshot" src="beaker://assets/${currentSection.screenshot}"/>
+      </div>
+    `
+  }
+
   return yo`
     <div class="step">
       <h2 class="title">${currentSection.title}</h2>
@@ -174,9 +183,7 @@ function renderStep (step) {
           ${renderNextBtn()}
         </div>
       </div>
-      <div class="screenshot-container">
-        <img class="screenshot" src="beaker://assets/${currentSection.screenshot}"/>
-      </div>
+      ${screenshot}
     </div>
   `
 }
