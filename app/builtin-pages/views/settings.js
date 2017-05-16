@@ -63,7 +63,7 @@ function render () {
       </ul>
 
       <h2 class="ll-heading">Help</h2>
-      ${renderTour()}
+      ${renderHelp()}
     </div>
   </div>`)
 }
@@ -186,11 +186,13 @@ function renderStartPageSettings () {
   `
 }
 
-function renderTour () {
+function renderHelp () {
   return yo`
-    <div class="settings-section tour">
-      <p><a href="beaker://tour/">Take a tour of Beaker</a></p>
-    </div>
+    <ul class="settings-section help">
+      <li><a href="beaker://tour/">Take a tour of Beaker</a></li>
+      <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
+      <li><a href="https://github.com/beakerbrowser/beaker/issues">Report an issue</a></li>
+    </ul>
   `
 }
 
