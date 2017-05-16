@@ -1,4 +1,5 @@
 import * as yo from 'yo-yo'
+import { findParent } from '../../lib/fg/event-handlers'
 
 // globals
 // =
@@ -13,6 +14,7 @@ var toggleState = {}
 // give class .toggleable, .toggleon, or .toggleoff to trigger
 // include data-toggle-on="event", where `event` sets what triggers toggle (default click)
 // include data-toggle-id if you want to keep the toggle state across renderings
+
 export default function toggleable (el) {
   var id = el.dataset.toggleId
 
@@ -24,24 +26,12 @@ export default function toggleable (el) {
 
   Array.from(el.querySelectorAll('.toggleable')).forEach(el2 => {
     el2.addEventListener(el2.dataset.toggleOn||'click', onToggle)
-    el2.addEventListener('keyup', function (e) {
-      if (e.keyCode === 27) onToggle(e)
-    })
-    document.addEventListener('click', onToggle)
   })
   Array.from(el.querySelectorAll('.toggleon')).forEach(el2 => {
     el2.addEventListener(el2.dataset.toggleOn||'click', onToggleOn)
-    el2.addEventListener('keyup', function (e) {
-      if (e.keyCode === 27) onToggleOn(e)
-    })
-    document.addEventListener('click', onToggleOn)
   })
   Array.from(el.querySelectorAll('.toggleoff')).forEach(el2 => {
     el2.addEventListener(el2.dataset.toggleOn||'click', onToggleOff)
-    el2.addEventListener('keyup', function (e) {
-      if (e.keyCode === 27) onToggleOff(e)
-    })
-    document.addEventListener('click', onToggleOff)
   })
 
   function onToggle (e) {
@@ -102,6 +92,17 @@ export function closeToggleable (el) {
   }
 }
 
+// event listeners
+  document.addEventListener('click', function (e) {
+    // if click happens outside of .toggleable-container, close all toggleables
+    if (!findParent(e.target, 'toggleable-container')) {
+      closeAllToggleables()
+    }
+  })
+
+  document.addEventListener('keyup', function (e) {
+    if (e.keyCode === 27) closeAllToggleables()
+  })
 // NOTE
 // look through the commit history for a much nicer version of this
 // there was an edgecase in the old version that I couldnt make work
