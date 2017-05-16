@@ -59,7 +59,6 @@ async function setup () {
   // load archives list after render (its not pressing)
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
-  console.log(archivesList.archives)
   archivesList.archives.sort((a, b) => {
     if (a.url === userProfile.url) return -1
     if (b.url === userProfile.url) return 1
