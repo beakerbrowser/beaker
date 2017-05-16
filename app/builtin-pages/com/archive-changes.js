@@ -13,13 +13,20 @@ export default function renderChanges (archiveInfo, {onPublish, onRevert}) {
     return yo`<em>No changes have been made.</em>`
   }
 
+  var numColumns = 0
+  numColumns += archiveInfo.diff.find(d => d.change === 'add') ? 1 : 0
+  numColumns += archiveInfo.diff.find(d => d.change === 'mod') ? 1 : 0
+  numColumns += archiveInfo.diff.find(d => d.change === 'del') ? 1 : 0
+  var maxLen = ([100, 35, 20])[numColumns - 1]
+  console.log(maxLen)
+
   // helper to render files
   const rFile = (d, icon, change) => {
     var formattedPath = d.path.slice(1)
     var len = d.path.slice(1).length
 
-    if (len > 25) {
-      formattedPath = '...' + formattedPath.slice(len - 25, len + 1)
+    if (len > maxLen) {
+      formattedPath = '...' + formattedPath.slice(len - maxLen, len + 1)
     }
 
     return yo`
