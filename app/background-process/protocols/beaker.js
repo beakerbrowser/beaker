@@ -182,6 +182,9 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/setup-fork.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-fork.png'))
   }
+  if (requestUrl === 'beaker://assets/setup-intro.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-intro.png'))
+  }
   if (requestUrl === 'beaker://assets/setup-library-view.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-library-view.png'))
   }
@@ -209,8 +212,14 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/setup-site-files.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-site-files.png'))
   }
+  if (requestUrl === 'beaker://assets/setup-site-history.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-site-history.png'))
+  }
   if (requestUrl === 'beaker://assets/setup-site-peer-count.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-site-peer-count.png'))
+  }
+  if (requestUrl === 'beaker://assets/setup-site-versions.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-site-versions.png'))
   }
   if (requestUrl === 'beaker://assets/setup-view-site.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/setup-view-site.png'))
