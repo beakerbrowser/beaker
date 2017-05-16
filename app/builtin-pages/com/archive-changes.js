@@ -18,7 +18,6 @@ export default function renderChanges (archiveInfo, {onPublish, onRevert}) {
   numColumns += archiveInfo.diff.find(d => d.change === 'mod') ? 1 : 0
   numColumns += archiveInfo.diff.find(d => d.change === 'del') ? 1 : 0
   var maxLen = ([100, 35, 20])[numColumns - 1]
-  console.log(maxLen)
 
   // helper to render files
   const rFile = (d, icon, change) => {
