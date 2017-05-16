@@ -21,7 +21,7 @@ var isManagingBookmarks = false
 var isShelfOpen = false
 var error = false
 var userProfile
-var userSetupStatus
+var hasSeenTour
 var archivesStatus
 var bookmarks, pinnedBookmarks
 var archivesList
@@ -38,7 +38,7 @@ async function setup () {
     userProfile.title = 'Your profile'
   }
   settings = await beakerBrowser.getSettings()
-  userSetupStatus = await beakerBrowser.getUserSetupStatus()
+  hasSeenTour = await beakerSitedata.get('beaker://start', 'watched-tour') || false
 
   update()
 
@@ -108,7 +108,7 @@ function renderNetworkLink () {
 }
 
 function renderWelcome () {
-  if (userSetupStatus === 'skipped' || userSetupStatus === 'completed') return ''
+  if (hasSeenTour) return ''
   return yo`
     <div class="beaker-welcome">
       <p>
@@ -263,13 +263,13 @@ async function createSite () {
 }
 
 async function takeTour () {
-  await beakerBrowser.setUserSetupStatus('completed')
   window.location = 'beaker://tour/'
+  beakerSitedata.set('beaker://start', 'watched-tour', true)
 }
 
-async function dismissWelcome () {
-  await beakerBrowser.setUserSetupStatus('skipped')
+function dismissWelcome () {
   document.querySelector('.beaker-welcome').remove()
+  beakerSitedata.set('beaker://start', 'watched-tour', true)
 }
 
 function onMouseOutShelf (e) {
