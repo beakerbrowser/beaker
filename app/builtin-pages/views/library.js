@@ -121,7 +121,6 @@ async function loadCurrentArchive () {
       selectedArchive.historyPaginationOffset = 500
       selectedArchive.fileTree = fileTree
       selectedArchive.events = a.createFileActivityStream()
-      console.log(selectedArchive)
 
       // wire up events
       selectedArchive.events.addEventListener('changed', onFileChanged)
