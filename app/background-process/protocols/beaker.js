@@ -8,7 +8,6 @@ import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 import errorPage from '../../lib/error-page'
 import {archivesDebugPage} from '../networks/dat/debugging'
-import {getUserSetupStatus} from '../browser'
 
 // constants
 // =
@@ -177,19 +176,73 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/note-done.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
   }
+  if (requestUrl === 'beaker://assets/tour-fork-modal.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-fork-modal.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-fork.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-fork.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-intro.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-intro.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-library-view.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-library-view.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-new-site-modal.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-modal.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-new-site-publish-changes.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-publish-changes.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-new-site-publish.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-publish.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-new-site.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-remove-from-library.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-remove-from-library.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-save-to-library.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-save-to-library.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-share-site.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-share-site.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-site-files.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-files.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-site-history.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-history.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-site-peer-count.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-peer-count.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-site-versions.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-versions.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-view-site.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-view-site.png'))
+  }
+  if (requestUrl === 'beaker://assets/note-done.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
+  }
+  if (requestUrl === 'beaker://assets/note-done.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
+  }
+  if (requestUrl === 'beaker://assets/note-done.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
+  }
 
   // builtin pages
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages.css'))
   }
   if (requestUrl === 'beaker://start/') {
-    // TODO re-enable
-    /*let status = await getUserSetupStatus()
-    if (status !== 'finished') {
-      // serve the setup if the user isnt finished with setup
-      return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/setup.html'))
-    }*/
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/start.html'))
+  }
+  if (requestUrl === 'beaker://tour/') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/tour.html'))
   }
   if (requestUrl === 'beaker://start/background-image') {
     return cb(200, 'OK', 'image/png', path.join(app.getPath('userData'), 'start-background-image'))
@@ -200,11 +253,11 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://start/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/start.build.js'))
   }
-  if (requestUrl === 'beaker://setup/main.css') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/setup.css'))
+  if (requestUrl === 'beaker://tour/main.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/tour.css'))
   }
-  if (requestUrl === 'beaker://setup/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/setup.build.js'))
+  if (requestUrl === 'beaker://tour/main.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/tour.build.js'))
   }
   if (requestUrl === 'beaker://bookmarks/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/bookmarks.html'))

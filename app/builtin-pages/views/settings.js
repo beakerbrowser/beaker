@@ -61,6 +61,9 @@ function render () {
         <li>Version: ${browserInfo.version}</li>
         <li>User data: ${browserInfo.paths.userData}</li>
       </ul>
+
+      <h2 class="ll-heading">Help</h2>
+      ${renderHelp()}
     </div>
   </div>`)
 }
@@ -180,6 +183,16 @@ function renderStartPageSettings () {
       : ''
     }
     </div>
+  `
+}
+
+function renderHelp () {
+  return yo`
+    <ul class="settings-section help">
+      <li><a href="beaker://tour/">Take a tour of Beaker</a></li>
+      <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
+      <li><a href="https://github.com/beakerbrowser/beaker/issues">Report an issue</a></li>
+    </ul>
   `
 }
 
