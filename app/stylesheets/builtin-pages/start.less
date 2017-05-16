@@ -21,6 +21,44 @@ body {
   height: auto;
 }
 
+.beaker-welcome {
+  width: 400px;
+  padding: 7px 10px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1.5px solid @blue;
+  color: @blue;
+  border-radius: 4px;
+  font-size: 13.5px;
+  margin-top: 100px;
+  margin-bottom: -100px;
+  position: relative;
+
+  p {
+    margin: 0;
+  }
+
+  i {
+    position: absolute;
+    right: 8px;
+    top: 10px;
+    font-weight: 300;
+    padding: 2px;
+    cursor: pointer;
+
+    &:hover {
+      background: @blue;
+      color: #fff;
+    }
+  }
+
+  a {
+    text-decoration: none !important;
+    border-bottom: 1px dotted;
+    cursor: pointer;
+  }
+}
+
 main {
   width: 670px;
   margin: 0 auto;

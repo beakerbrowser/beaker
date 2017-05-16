@@ -21,6 +21,7 @@ var isManagingBookmarks = false
 var isShelfOpen = false
 var error = false
 var userProfile
+var userSetupStatus
 var archivesStatus
 var bookmarks, pinnedBookmarks
 var archivesList
@@ -37,6 +38,8 @@ async function setup () {
     userProfile.title = 'Your profile'
   }
   settings = await beakerBrowser.getSettings()
+  userSetupStatus = await beakerBrowser.getUserSetupStatus()
+
   update()
 
   // subscribe to network changes
@@ -80,6 +83,7 @@ function update () {
         ${renderProfileCard()}
       </header>
       ${renderShelf()}
+      ${renderWelcome()}
       ${renderPinnedBookmarks()}
       ${renderReleaseNotes()}
     </main>
@@ -100,6 +104,20 @@ function renderNetworkLink () {
     <a class="network" href="beaker://library">
       <i class="fa fa-share-alt"></i> ${archivesStatus.peers} ${pluralize(archivesStatus.peers, 'peer')}
     </a>
+  `
+}
+
+function renderWelcome () {
+  if (userSetupStatus === 'skipped' || userSetupStatus === 'completed') return ''
+  return yo`
+    <div class="beaker-welcome">
+      <p>
+        Welcome to Beaker!
+        <a onclick=${createSite}>Create a peer-to-peer site</a> or
+        <a onclick=${takeTour}>take a tour</a>.
+        <i onclick=${dismissWelcome} class="fa fa-close"></i>
+      </p>
+    </div>
   `
 }
 
@@ -242,6 +260,16 @@ function toggleShelf () {
 async function createSite () {
   var archive = await DatArchive.create()
   window.location = 'beaker://library/' + archive.url.slice('dat://'.length)
+}
+
+async function takeTour () {
+  await beakerBrowser.setUserSetupStatus('completed')
+  window.location = 'beaker://tour/'
+}
+
+async function dismissWelcome () {
+  await beakerBrowser.setUserSetupStatus('skipped')
+  document.querySelector('.beaker-welcome').remove()
 }
 
 function onMouseOutShelf (e) {
