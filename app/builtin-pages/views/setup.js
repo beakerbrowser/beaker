@@ -49,13 +49,13 @@ var steps = [
     sections: [
       {
         title: 'Creating a peer-to-peer Web site',
-        description: () => yo`<div class="description"><p>With Beaker, you can publish your own peer-to-peer Web sites. Simply choose a directory on your computer, and Beaker will set up a Dat archive.</p></div>`,
+        description: () => yo`<div class="description"><p>With Beaker, you can publish your own peer-to-peer Web sites. Click the "New site" button in the dropdown menu.</p></div>`,
         screenshot: 'setup-new-site.png'
 
       },
       {
         title: 'Choosing your site’s files',
-        description: () => yo`<div class="description"><p>modal</p></div>`,
+        description: () => yo`<div class="description"><p>Choose a directory on your computer that will house your site, and Beaker will initialize a Dat archive inside that directory.</p></div>`,
         screenshot: 'setup-new-site-modal.png'
       },
       {
