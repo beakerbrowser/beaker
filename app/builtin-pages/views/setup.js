@@ -33,9 +33,9 @@ var steps = [
         screenshot: 'setup-save-to-library.png'
       },
       {
-        title: 'TODO',
-        description: () => yo`<div class="description"><p>The site’s files will be saved to your computer, and visitors to the site can fetch its files from your device when you’re online.</p></div>`,
-        screenshot: 'setup-library-view.png'
+        title: 'Saving site files to your computer',
+        description: () => yo`<div class="description"><p>If you save a site to your Library, its files will be saved to your computer, and visitors to the site can fetch its files from your device when you’re online.</p></div>`,
+        screenshot: 'setup-site-files.png'
       },
       {
         title: 'Removing a site from your Library',
@@ -69,14 +69,24 @@ var steps = [
         screenshot: 'setup-new-site-publish-changes.png'
       },
       {
-        title: 'TODO',
-        description: () => yo`<div class="description"><p>versions</p></div>`,
-        screenshot: ''
-      },
-      {
         title: 'Sharing your site',
         description: () => yo`<div class="description"><p>The URL for Dat  archives are unguessable, so your files can only be seen by people you share the URL with.</p></div>`,
         screenshot: 'setup-share-site.png'
+      }
+    ]
+  },
+  {
+    title: 'History and versions',
+    sections: [
+      {
+        title: 'Viewing a site’s history',
+        description: () => yo`<div class="description"><p>Every addition, deletion, and modification to your site is added to your site’s history log. You can review every change in the "History" section in your Library.</p></div>`,
+        screenshot: 'setup-site-history.png'
+      },
+      {
+        title: 'Site versions',
+        description: () => yo`<div class="description"><p>Each revision made to a site creates a new version of the site. You can view any version of a site by adding <code>+\${versionNumber}</code> to the end of the URL.</p></div>`,
+        screenshot: 'setup-site-versions.png'
       }
     ]
   },
@@ -89,8 +99,8 @@ var steps = [
         screenshot: 'setup-fork.png',
       },
       {
-        title: 'todo',
-        description: () => yo`<div class="description"><p>fork modal</p></div>`,
+        title: 'Choose a location for your forked site',
+        description: () => yo`<div class="description"><p>Choose a destination directory, and Beaker will make a new directory within it to hold your copy of the site’s files.</p></div>`,
         screenshot: 'setup-fork-modal.png'
       }
     ]
@@ -99,8 +109,8 @@ var steps = [
     title: 'Availability and reliability',
     sections: [
       {
-        title: 'todo',
-        description: () => yo`<div class="description"><p>availability</p></div>`,
+        title: 'Cloud hosting',
+          description: () => yo`<div class="description"><p>Availability is not guaranteed for sites transported with a peer-to-peer protocol like <a href="https://github.com/datproject/dat">Dat</a>. If no peers are actively hosting your files, then your site won’t be available to visitors.</p><p>You can use a cloud host which acts like a "super peer" and makes sure your files are always available.</p><p>In addition to rehosting your files, services like <a href="https://hashbase.io">Hashbase</a> provide unique short names, like <code>dat://mysite.hashbase.io</code> and HTTP mirroring.</p><p>Get started: <ul><li onclick=${createSite}><a>Create a site</a></li><li><a href="beaker://start">Go to the start page</a></li></ul></p></div>`,
         screenshot: '',
       }
     ]
