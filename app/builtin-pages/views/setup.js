@@ -1,396 +1,225 @@
 import * as yo from 'yo-yo'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
-var Croppie = require('../../lib/fg/croppie')
 
-const SUGGESTED_SITES = [
-  {img: 'beaker://assets/logo.png', name: 'Beaker News', description: 'The latest updates on your favorite p2p browser.'},
-  {img: 'beaker://assets/logo.png', name: 'Beaker News', description: 'The latest updates on your favorite p2p browser.'},
-  {img: 'beaker://assets/logo.png', name: 'Beaker News', description: 'The latest updates on your favorite p2p browser.'}
-]
 const IS_HASHBASE_AVAILABLE = false
 
-var currentStep
-var profileDat
-var imageURL, imageName
-var croppie
-setup()
+var steps = [
+  {
+    title: 'The peer-to-peer Web',
+    sections: [
+      {
+        title: 'What is a peer-to-peer Web site?',
+        description: yo`<div class="description"><p>Peer-to-peer Web sites are just like any other Web site -- a collection of files.</p><p>But in Beaker, peer-to-peer sites are transported with Dat, a new protocol for efficiently sharing, syncing, and verifying files across a network.</p></div>`,
+        screenshot: 'setup-site-files.png',
+      },
+      {
+        title: 'Browsing the peer-to-peer Web',
+        description: yo`<div class="description"><p>With Beaker, you can browse peer-to-peer sites like any other Web site. But instead of being served from a datacenter, files are hosted by peers on your network.</p></div>`,
+        screenshot: 'setup-view-site.png',
+      },
+      {
+        title: 'Viewing network activity',
+        description: yo`<div class="description"><p>You can even see how many peers are hosting the site’s files at any given moment!</p></div>`,
+        screenshot: 'setup-site-peer-count.png',
+      },
+    ]
+  },
+  {
+    title: 'Rehosting files',
+    sections: [
+      {
+        title: 'Saving sites to your Library',
+        description: yo`<div class="description"><p>If you want to help host a site, simply save it to your Library.</p></div>`,
+        screenshot: 'setup-save-to-library.png'
+      },
+      {
+        title: 'TODO',
+        description: yo`<div class="description"><p>The site’s files will be saved to your computer, and visitors to the site can fetch its files from your device when you’re online.</p></div>`,
+        screenshot: 'setup-library-view.png'
+      },
+      {
+        title: 'Removing a site from your Library',
+        description: yo`<div class="description"><p>If you don’t want to help rehost the site’s files, simply remove it from your Library.</p></div>`,
+        screenshot: 'setup-remove-from-library.png'
+      }
+    ]
+  },
+  {
+    title: 'Publishing with Beaker',
+    sections: [
+      {
+        title: 'Creating a peer-to-peer Web site',
+        description: yo`<div class="description"><p>With Beaker, you can publish your own peer-to-peer Web sites. Simply choose a directory on your computer, and Beaker will set up a Dat archive.</p></div>`,
+        screenshot: 'setup-new-site.png'
+
+      },
+      {
+        title: 'Choosing your site’s files',
+        description: yo`<div class="description"><p>modal</p></div>`,
+        screenshot: 'setup-new-site-modal.png'
+      },
+      {
+        title: 'Publishing your site',
+        description: yo`<div class="description"><p>Review your files, and when you’re ready, publish your site on the network!</p></div>`,
+        screenshot: 'setup-new-site-publish.png'
+      },
+      {
+        title: 'Beaker’s staging area',
+        description: yo`<div class="description"><p>Any time you add, delete, or change your site’s files, you can review your changes before you publish them.</p><p>If you make a mistake, just revert your changes!</p></div>`,
+        screenshot: 'setup-new-site-publish-changes.png'
+      },
+      {
+        title: 'TODO',
+        description: yo`<div class="description"><p>versions</p></div>`,
+        screenshot: ''
+      },
+      {
+        title: 'Sharing your site',
+        description: yo`<div class="description"><p>The URL for Dat  archives are unguessable, so your files can only be seen by people you share the URL with.</p></div>`,
+        screenshot: 'setup-share-site.png'
+      }
+    ]
+  },
+  {
+    title: 'Forking a site',
+    sections: [
+      {
+        title: 'How to fork a site',
+        description: yo`<div class="description"><p>You can also fork other peoples’ sites! Forking saves an editable copy of the site to your library.</p></div>`,
+        screenshot: 'setup-fork.png',
+      },
+      {
+        title: 'todo',
+        description: yo`<div class="description"><p>fork modal</p></div>`,
+        screenshot: 'setup-fork-modal.png'
+      }
+    ]
+  },
+  {
+    title: 'Availability and reliability',
+    sections: [
+      {
+        title: 'todo',
+        description: yo`<div class="description"><p>availability</p></div>`,
+        screenshot: '',
+      }
+    ]
+  }
+]
+
+var currentStepIdx = 0
+var currentSectionIdx = 0
+render()
 
 // rendering
 // =
 
 function render () {
-  yo.update(document.querySelector('main'), steps[currentStep]())
-
-  if (currentStep === 4 && imageURL) {
-    var el = document.querySelector('.filled-picture')
-    croppie = new Croppie(el, {
-        viewport: {width: 256, height: 256},
-        boundary: {width: 300, height: 300},
-        showZoomer: true
-    });
-    croppie.bind({url: imageURL})
-  }
-}
-
-var activeHowtoIdx = 0
-var activeHowtoScreenshotIdx = 0
-
-var howtos = [
-  { title: 'Create a new site',
-    screenshots: [
-      'new-site-dropdown.png',
-      'new-site-editor.png',
-      'new-site-save.png',
-      'new-site-done.png'
-    ],
-    steps: [
-      'Open the dropdown menu in the top righthand corner.',
-      'Click "New Site"',
-      'Beaker opens a a template for a new site in the editor. Give your site a name, and start adding files.',
-      'When you\'re finished, visit the Dat URL for your site to see your changes.'
-    ]
-  },
-  { title: 'Share files',
-    screenshots: [
-      'share-files-start.png',
-      'share-files-upload.png',
-      'share-files-done.png'
-    ],
-    steps: [
-      'Click "Share files" on beaker://start.',
-      'Select the files you want to share.',
-      'View your files under the "files" directory of your profile site.'
-    ]
-  },
-  { title: 'Fork a site',
-    screenshots: [],
-    steps: [
-      'Visit a Dat site, like dat://taravancil.com.',
-      'Open the dropdown menu in the top righthand corner.',
-      'Click "Fork Site"',
-      'Give your copy of the site a new title and description, and click "Create fork".',
-      'You now have an editable copy of the site saved to your library.'
-    ]
-  },
-  { title: 'Share a note',
-    screenshots: [
-      'note-start.png',
-      'note-write.png',
-      'note-done.png'
-    ],
-    steps: [
-      'Click "Share a note" on beaker://start.',
-      'Write a message and name your note.',
-      'Click "Create public note".',
-      'View your note under the "notes" directory of your profile site.'
-    ]
-  }
-]
-
-var activeHowtoScreenshot = howtos[0].screenshots[0]
-
-var steps = {
-  1: () => yo`
-    <main class="welcome">
-      <div>
-        <img src="beaker://assets/logo.png" />
-        <h1>Welcome</h1>
-        <p>Let’s create your personal website.</p>
-        <p><a onclick=${advanceStep}>Get Started</a></p>
-      </div>
-    </main>
-  `,
-  2: () => yo`
-    <main class="overview">
-      <div>
-        <p class="intro">
-          Beaker is a browser for the peer-to-peer Web. With Beaker you can:
-        </p>
-
-        <div class="screenshots">
-          <a class="screenshot">
-            <h2>Share files</h2>
-            <img src="beaker://assets/share-files.png" onclick=${setActiveScreenshot}/>
-            <p class="description">
-              Share files on the Dat peer-to-peer network. Just choose your files then share the link!
-            </p>
-          </a>
-          <a class="screenshot active">
-            <h2>Host your website</h2>
-            <img src="beaker://assets/website.png" onclick=${setActiveScreenshot} />
-            <p class="description">
-              Host your website with the <a href="https://datproject.org">Dat protocol</a>. Peers on the network host your site’s files, so publishing your site is totally free.
-            </p>
-          </a>
-          <a class="screenshot">
-            <h2>Rehost sites you like</h2>
-            <img src="beaker://assets/network.png" onclick=${setActiveScreenshot} />
-            <p class="description">
-              Keep track of how many peers are hosting your files, and which sites you’re hosting on the network.
-            </p>
-          </a>
+  yo.update(
+    document.querySelector('main'),
+    yo`
+      <main>
+        <div class="links">
+          <ol>${steps.map(renderStepLink)}</ol>
         </div>
-
-        <p>
-          <button class="btn next" onclick=${advanceStep}>Next</button>
-        </p>
-
-      </div>
-    </main>
-  `,
-  3: () => yo`
-    <main class="create-profile">
-      <div>
-        <h1>Create your profile site</h1>
-        <p class="intro">
-          Beaker uses peer-to-peer websites, like <a href="">this one</a>, to share files, host your profile picture, and more.
-        </p>
-        <form>
-          <p>
-            <label for="name">Your name</label>
-            <input autofocus id="name" name="name" type="text" placeholder="Alice Roberts" autofocus />
-          </p>
-          <p>
-            <label for="bio">Your bio</label>
-            <textarea id="bio" name="bio" placeholder="Optional"></textarea>
-          </p>
-        </form>
-        <p>
-          <button class="btn next" onclick=${onSubmitStep2}>Next</button>
-        </p>
-      </div>
-    </main>
-  `,
-  4: () => {
-    if (imageURL) {
-      return yo`
-        <main class="upload-avatar">
-          <div class="nocenter">
-            <h1>Crop and adjust your photo</h1>
-            <div class="filled-picture"></div>
-            <p>
-              <a class="btn" onclick=${onStep3SelectFile}>Change File</a>
-              <a class="btn next" onclick=${onStep3Submit}>Next</a>
-            </p>
-            <p><a class="link" onclick=${advanceStep}>Skip <i class="fa fa-angle-right"></i></a></p>
-          </div>
-        </main>
-      `
-    }
-    return yo`
-      <main class="upload-avatar">
-        <div>
-          <h1>Set your profile picture</h1>
-          <p class="intro">
-            Add a photo to your profile site.
-          </p>
-          <div class="empty-picture">
-            <a class="btn" onclick=${onStep3SelectFile}>Select File</a>
-          </div>
-          <p><a class="link" onclick=${advanceStep}>Skip <i class="fa fa-angle-right"></i></a></p>
-        </div>
+        ${renderStep(steps[currentStepIdx])}
       </main>
     `
-  },
-  5: () => yo`
-    <main class="call-to-action">
-      <div>
-        <h1>Success!</h1>
-        <p class="intro">
-          Your profile site is now being hosted by Beaker on the peer-to-peer network.
-        </p>
-
-        <a class="dat-url" href=${profileDat.url} target="_blank">${profileDat.url}</a>
-
-        <p>
-          <a class="btn next" onclick=${advanceStep}>Get started</a>
-        </p>
-      </div>
-    </main>
-  `,
-  6: () => yo`
-    <main class="howto">
-      <div>
-        <ul class="links">
-          ${howtos.map((howto, idx) => yo`<li data-idx=${idx} onclick=${setActiveHowto}>${howto.title}</li>`)}
-        </ul>
-        <div class="howtos">
-          ${howtos.map(renderHowto)}
-        </div>
-        <button class="btn next" onclick=${advanceStep}>Skip</button>
-      </div>
-    </main>
-  `,
-  7: () => yo`
-    <main class="finish">
-      <div>
-        <h1>Your Profile Site URL</h1>
-        <p class="intro">This is the URL for your profile site. Share it with friends so they can find your site.</p>
-        <div class="your-url">
-          <a class="link" href="${profileDat.url}" target="_blank">${profileDat.url}</a>
-        </div>
-        ${IS_HASHBASE_AVAILABLE ? yo`
-          <p>
-            You can get a personalized URL like <a class="link" href="dat://paul.hashbase.io" target="_blank">paul.hashbase.io</a><br />
-            by joining a cloud host. <a class="link" href="https://hashbase.io" target="_blank">Learn more.</a>
-          </p>
-        ` : ''}
-        <p>
-          <a class="btn" onclick=${finish}>Finish</a>
-        </p>
-      </div>
-    </main>
-  `
+  )
 }
 
-// state management
-// =
-
-async function setup () {
-  // read status
-  var status = await beakerBrowser.getUserSetupStatus()
-  if (status === 'finished') {
-    // reload page, setup is done
-    window.location.reload()
-    return
-  } else if (status && status.startsWith('step')) {
-    currentStep = +(/^step([\d]+)$/.exec(status)[1])
-  } else {
-    currentStep = 1
-  }
-
-  // read profile dat
-  try {
-    profileDat = new DatArchive((await beaker.profiles.get(0)).url)
-  } catch (e) {
-    // ignore
-    console.debug(e)
-  }
-  console.debug(profileDat)
-
-  // ready
-  render()
-}
-
-async function advanceStep () {
-  currentStep++
-  await beakerBrowser.setUserSetupStatus('step' + currentStep)
-  render()
-}
-
-async function finish () {
-  await beakerBrowser.setUserSetupStatus('finished')
-  window.location.reload()
-}
-
-// handlers
-// =
-
-async function onSubmitStep2 () {
-  // get form values
-  var form = document.querySelector('form')
-  var values = {
-    name: form.name.value.trim(),
-    description: form.bio.value.trim()
-  }
-
-  // create the dat
-  profileDat = await beaker.archives.create({
-    title: values.name || 'Personal Website',
-    description: values.description || ''
-  })
-
-  // update the profile
-  await beaker.profiles.update(0, {url: profileDat.url})
-
-  console.log(profileDat.url)
-  advanceStep()
-}
-
-async function onStep3SelectFile () {
-  // have user select file
-  var paths = await beakerBrowser.showOpenDialog({
-    title: 'Select your image',
-    filters: [{name: 'Images', extensions: ['png', 'jpg', 'jpeg']}],
-    properties: ['openFile']
-  })
-  if (!paths) {
-    return
-  }
-
-  // import into the user profile
-  var path = paths[0]
-  imageName = path.split('/').pop()
-  imageURL = `${profileDat.url}/${imageName}`
-  await DatArchive.importFromFilesystem({
-    src: paths[0],
-    dst: profileDat.url,
-    inplaceImport: true
-  })
-
-  // render
-  render()
-}
-
-async function onStep3Submit () {
-  // write file
-  var format = imageName.split('.').pop()
-  if (format === 'jpg') {
-    format = 'jpeg'
-  }
-  var imageBase64 = (await croppie.result({type: 'base64', format})).split(',')[1]
-  profileDat.writeFile(`/${imageName}`, imageBase64, 'base64')
-
-  advanceStep()
-}
-
-function onCopyLink () {
-  writeToClipboard(profileDat.url)
-  document.querySelector('.copy-link-text').textContent = 'Copied!'
-}
-
-function setActiveScreenshot (e) {
-  var screenshots = document.querySelectorAll('.overview .screenshot')
-  screenshots.forEach(s => s.classList.remove('active'))
-
-  e.target.parentNode.classList.add('active')
-}
-
-function renderHowto (howto, idx) {
-  var isActive = activeHowtoIdx == idx ? 'active': ''
+function renderStepLink (step) {
+  var stepIdx = steps.indexOf(step)
+  var step = steps[stepIdx]
+  var cls = currentStepIdx === stepIdx ? 'active' : ''
 
   return yo`
-    <div class="howto ${isActive}">
-      <img class="active-screenshot" src="beaker://assets/${activeHowtoScreenshot}"/>
-      <div class="container">
-        <div class="thumbnails">
-          ${howto.screenshots.map(renderHowtoScreenshot)}
-        </div>
-        <h3>${howto.title}</h3>
-        <ol class="steps">
-          ${howto.steps.map(step => yo`<li>${step}</li>`)}
-        </ol>
-      </div>
-   </div>
+    <li onclick=${e => onSwitchSection(stepIdx, 0)} class="step-link ${cls}">
+      <span class="title">${step.title}</span>
+      <ul class="subnav">
+        ${step.sections.map((section, idx) => {
+          return yo`
+            <li onclick=${e => {e.stopPropagation(); onSwitchSection(stepIdx, idx)}}>
+              ${section.title}
+            </li>
+          `
+        })}
+      </ul>
+    </li>
   `
 }
 
-function renderHowtoScreenshot (src, idx) {
-  var isActive = activeHowtoScreenshotIdx == idx ? 'active' : ''
+function renderStep (step) {
+  var currentSection = step.sections[currentSectionIdx]
 
-  return yo`<img data-idx=${idx} class="screenshot ${isActive}" src="beaker://assets/${src}" onclick=${setActiveHowtoScreenshot}/>`
+  return yo`
+    <div class="step">
+      <h2 class="title">${currentSection.title}</h2>
+      <div class="info">
+        <div class="description">
+          ${currentSection.description}
+        </div>
+        <div class="navigation">
+          ${renderBackBtn()}
+          ${renderNextBtn()}
+        </div>
+      </div>
+      <div class="screenshot-container">
+        <img class="screenshot" src="beaker://assets/${currentSection.screenshot}"/>
+      </div>
+    </div>
+  `
 }
 
-function setActiveHowto (e) {
-  activeHowtoIdx = e.target.dataset.idx
-  // always show the first screenshot when rendering a new howto
-  activeHowtoScreenshotIdx = 0
-  activeHowtoScreenshot = howtos[activeHowtoIdx].screenshots[0]
+function renderBackBtn () {
+  if (currentSectionIdx === 0 && currentStepIdx === 0) return ''
+
+  return yo`
+    <a class="back" onclick=${onClickBack}>
+      <i class="fa fa-angle-double-left"></i>
+      Back
+    </a>
+  `
+}
+
+function renderNextBtn () {
+  if (currentStepIdx === steps.length - 1 && currentSectionIdx === steps[currentStepIdx].sections.length - 1) return ''
+
+  return yo`
+    <a class="next" onclick=${onClickNext}>
+      Next
+      <i class="fa fa-angle-double-right"></i>
+    </a>
+  `
+}
+
+
+// event handlers
+
+function onSwitchSection (newStep, newStepSection) {
+  currentSectionIdx = newStepSection
+  currentStepIdx = newStep
   render()
 }
 
-function setActiveHowtoScreenshot (e) {
-  activeHowtoScreenshotIdx = e.target.dataset.idx
-  activeHowtoScreenshot = howtos[activeHowtoIdx].screenshots[activeHowtoScreenshotIdx]
+function onClickBack () {
+  if (currentSectionIdx === 0) {
+    currentStepIdx = currentStepIdx - 1
+    currentSectionIdx = steps[currentStepIdx].sections.length - 1
+  } else {
+    currentSectionIdx = currentSectionIdx - 1
+  }
+  render()
+}
+
+function onClickNext () {
+  var lastStepSection = steps[currentStepIdx].sections.length - 1
+
+  if (currentSectionIdx === lastStepSection) {
+    currentStepIdx = currentStepIdx + 1
+    currentSectionIdx = 0
+  } else {
+    currentSectionIdx = currentSectionIdx + 1
+  }
   render()
 }
