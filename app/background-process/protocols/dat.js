@@ -1,6 +1,7 @@
 import { protocol } from 'electron'
 import {parse as parseUrl} from 'url'
 import parseDatUrl from 'parse-dat-url'
+import parseRange from 'range-parser'
 import once from 'once'
 import http from 'http'
 import crypto from 'crypto'
@@ -248,9 +249,25 @@ async function datServer (req, res) {
     origins = []
   }
 
+  // handle range
+  var statusCode = 200
+  res.setHeader('Accept-Ranges', 'bytes')
+  var range = req.headers.range && parseRange(entry.size, req.headers.range)
+  if (range && range.type === 'bytes') {
+    range = range[0] // only handle first range given
+    statusCode = 206
+    res.setHeader('Content-Range', 'bytes ' + range.start + '-' + range.end + '/' + entry.size)
+    res.setHeader('Content-Length', range.end - range.start + 1)
+    debug('Serving range:', range)
+  } else {
+    if (entry.size) {
+      res.setHeader('Content-Length', entry.size)
+    }
+  }
+
   // fetch the entry and stream the response
   debug('Entry found:', entry.path)
-  fileReadStream = archiveFS.createReadStream(entry.path)
+  fileReadStream = archiveFS.createReadStream(entry.path, range)
   fileReadStream
     .pipe(mime.identifyStream(entry.path, mimeType => {
       // cleanup the timeout now, as bytes have begun to stream
@@ -265,8 +282,7 @@ async function datServer (req, res) {
         'Cache-Control': 'public, max-age: 60'
         // ETag
       }
-      if (entry.size) headers['Content-size'] = entry.size
-      res.writeHead(200, 'OK', headers)
+      res.writeHead(statusCode, 'OK', headers)
     }))
     .pipe(res)
 
