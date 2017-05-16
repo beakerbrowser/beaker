@@ -499,7 +499,7 @@ function rTrash () {
         ${trashList.map(archiveInfo => yo`
           <li class="trash-item">
             <a href=${archiveInfo.key}>${niceName(archiveInfo)}</a>
-            <button class="restore" onclick=${onToggleSaved}>
+            <button class="restore" onclick=${e => onRestore(e, archiveInfo.key)}>
               Restore
             </button>
           </li>`
@@ -577,6 +577,13 @@ async function onToggleSaved (e) {
     await beaker.archives.add(selectedArchive.key)
     selectedArchive.userSettings.isSaved = true
   }
+  update()
+}
+
+async function onRestore (e, key) {
+  e.preventDefault()
+  trashList.splice(trashList.findIndex(a => a.key === key), 1)
+  await beaker.archives.add(key)
   update()
 }
 
