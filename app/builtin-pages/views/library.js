@@ -286,12 +286,6 @@ function rArchive (archiveInfo) {
     toggleSaveText = 'Save to library'
   }
 
-  var showChanges = archiveInfo.isOwner && archiveInfo.userSettings.isSaved
-  var changesLabel = 'Staging'
-  if (archiveInfo.diff && archiveInfo.diff.length > 0) {
-    changesLabel = `Staging (${archiveInfo.diff.length})`
-  }
-
   return yo`
     <div class="archive">
       <section class="info">
