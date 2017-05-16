@@ -108,6 +108,14 @@ main {
     p {
       font-size: 14px;
     }
+
+    a {
+      &:extend(.link);
+
+      &:hover {
+        &:extend(.link:hover);
+      }
+    }
   }
 
   .sections {

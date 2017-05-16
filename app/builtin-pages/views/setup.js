@@ -9,17 +9,17 @@ var steps = [
     sections: [
       {
         title: 'What is a peer-to-peer Web site?',
-        description: yo`<div class="description"><p>Peer-to-peer Web sites are just like any other Web site -- a collection of files.</p><p>But in Beaker, peer-to-peer sites are transported with Dat, a new protocol for efficiently sharing, syncing, and verifying files across a network.</p></div>`,
-        screenshot: 'setup-site-files.png',
+        description: () => yo`<div class="description"><p>Peer-to-peer Web sites are just like any other Web site -- a collection of files.</p><p>But in Beaker, peer-to-peer sites are transported with <a href="https://github.com/datproject/dat/">Dat</a>, a new protocol for efficiently sharing, syncing, and verifying files across a network.</p></div>`,
+        screenshot: 'setup-intro.png',
       },
       {
         title: 'Browsing the peer-to-peer Web',
-        description: yo`<div class="description"><p>With Beaker, you can browse peer-to-peer sites like any other Web site. But instead of being served from a datacenter, files are hosted by peers on your network.</p></div>`,
+        description: () => yo`<div class="description"><p>With Beaker, you can browse peer-to-peer sites like any other Web site. But instead of being served from a datacenter, files are hosted by peers on your network.</p></div>`,
         screenshot: 'setup-view-site.png',
       },
       {
         title: 'Viewing network activity',
-        description: yo`<div class="description"><p>You can even see how many peers are hosting the site’s files at any given moment!</p></div>`,
+        description: () => yo`<div class="description"><p>You can even see how many peers are hosting the site’s files at any given moment!</p></div>`,
         screenshot: 'setup-site-peer-count.png',
       },
     ]
@@ -29,17 +29,17 @@ var steps = [
     sections: [
       {
         title: 'Saving sites to your Library',
-        description: yo`<div class="description"><p>If you want to help host a site, simply save it to your Library.</p></div>`,
+        description: () => yo`<div class="description"><p>If you want to help host a site, simply save it to your Library.</p></div>`,
         screenshot: 'setup-save-to-library.png'
       },
       {
         title: 'TODO',
-        description: yo`<div class="description"><p>The site’s files will be saved to your computer, and visitors to the site can fetch its files from your device when you’re online.</p></div>`,
+        description: () => yo`<div class="description"><p>The site’s files will be saved to your computer, and visitors to the site can fetch its files from your device when you’re online.</p></div>`,
         screenshot: 'setup-library-view.png'
       },
       {
         title: 'Removing a site from your Library',
-        description: yo`<div class="description"><p>If you don’t want to help rehost the site’s files, simply remove it from your Library.</p></div>`,
+        description: () => yo`<div class="description"><p>If you don’t want to help rehost the site’s files, simply remove it from your Library.</p></div>`,
         screenshot: 'setup-remove-from-library.png'
       }
     ]
@@ -49,33 +49,33 @@ var steps = [
     sections: [
       {
         title: 'Creating a peer-to-peer Web site',
-        description: yo`<div class="description"><p>With Beaker, you can publish your own peer-to-peer Web sites. Simply choose a directory on your computer, and Beaker will set up a Dat archive.</p></div>`,
+        description: () => yo`<div class="description"><p>With Beaker, you can publish your own peer-to-peer Web sites. Simply choose a directory on your computer, and Beaker will set up a Dat archive.</p></div>`,
         screenshot: 'setup-new-site.png'
 
       },
       {
         title: 'Choosing your site’s files',
-        description: yo`<div class="description"><p>modal</p></div>`,
+        description: () => yo`<div class="description"><p>modal</p></div>`,
         screenshot: 'setup-new-site-modal.png'
       },
       {
         title: 'Publishing your site',
-        description: yo`<div class="description"><p>Review your files, and when you’re ready, publish your site on the network!</p></div>`,
+        description: () => yo`<div class="description"><p>Review your files, and when you’re ready, publish your site on the network!</p></div>`,
         screenshot: 'setup-new-site-publish.png'
       },
       {
         title: 'Beaker’s staging area',
-        description: yo`<div class="description"><p>Any time you add, delete, or change your site’s files, you can review your changes before you publish them.</p><p>If you make a mistake, just revert your changes!</p></div>`,
+        description: () => yo`<div class="description"><p>Any time you add, delete, or change your site’s files, you can review your changes before you publish them.</p><p>If you make a mistake, just revert your changes!</p></div>`,
         screenshot: 'setup-new-site-publish-changes.png'
       },
       {
         title: 'TODO',
-        description: yo`<div class="description"><p>versions</p></div>`,
+        description: () => yo`<div class="description"><p>versions</p></div>`,
         screenshot: ''
       },
       {
         title: 'Sharing your site',
-        description: yo`<div class="description"><p>The URL for Dat  archives are unguessable, so your files can only be seen by people you share the URL with.</p></div>`,
+        description: () => yo`<div class="description"><p>The URL for Dat  archives are unguessable, so your files can only be seen by people you share the URL with.</p></div>`,
         screenshot: 'setup-share-site.png'
       }
     ]
@@ -85,12 +85,12 @@ var steps = [
     sections: [
       {
         title: 'How to fork a site',
-        description: yo`<div class="description"><p>You can also fork other peoples’ sites! Forking saves an editable copy of the site to your library.</p></div>`,
+        description: () => yo`<div class="description"><p>You can also fork other peoples’ sites! Forking saves an editable copy of the site to your library.</p></div>`,
         screenshot: 'setup-fork.png',
       },
       {
         title: 'todo',
-        description: yo`<div class="description"><p>fork modal</p></div>`,
+        description: () => yo`<div class="description"><p>fork modal</p></div>`,
         screenshot: 'setup-fork-modal.png'
       }
     ]
@@ -100,7 +100,7 @@ var steps = [
     sections: [
       {
         title: 'todo',
-        description: yo`<div class="description"><p>availability</p></div>`,
+        description: () => yo`<div class="description"><p>availability</p></div>`,
         screenshot: '',
       }
     ]
@@ -157,7 +157,7 @@ function renderStep (step) {
       <h2 class="title">${currentSection.title}</h2>
       <div class="info">
         <div class="description">
-          ${currentSection.description}
+          ${currentSection.description()}
         </div>
         <div class="navigation">
           ${renderBackBtn()}
