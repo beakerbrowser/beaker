@@ -652,7 +652,7 @@ function onDidStopLoading (e) {
         td, th { padding: 0.5em 1em; }
         tbody tr:nth-child(odd) { background: #fafafa; }
         tbody td { border-top: 1px solid #bbb; }
-        .switcher { position: absolute; top: 5px; right: 5px; font-family: monospace; font-weight: bold; cursor: pointer; }
+        .switcher { position: absolute; top: 5px; right: 5px; font-family: Consolas, 'Lucida Console', Monaco, monospace ; font-weight: bold; cursor: pointer; }
         code { font-size: 1.3em; background: #fafafa; }
         pre { background: #fafafa; padding: 1em }
       `)
@@ -672,6 +672,9 @@ function onDidStopLoading (e) {
       `body {
         background: #fff;
       }` +
+
+      // style file listings
+      `pre{font-family: Consolas, 'Lucida Console', Monaco, monospace; font-size: 13px;}` +
 
       // hide context menu definitions
       `menu[type="context"] { display: none; }` +
@@ -871,12 +874,15 @@ function parseURL (str) {
 
 async function updateHistory (page) {
   var url = page.getURL()
-  beaker.history.addVisit({url: page.getURL(), title: page.getTitle() || page.getURL()})
-  if (page.isPinned) {
-    savePinnedToDB()
+
+  if (!url.startsWith('beaker://') || url.match(/beaker:\/\/library\/[0-9,a-f]{64}/g)) {
+    beaker.history.addVisit({url: page.getURL(), title: page.getTitle() || page.getURL()})
+    if (page.isPinned) {
+      savePinnedToDB()
+    }
+    page.lastVisitedAt = Date.now()
+    page.lastVisitedURL = url
   }
-  page.lastVisitedAt = Date.now()
-  page.lastVisitedURL = url
 
   // read and cache current nav state
   var [b, f] = await Promise.all([page.canGoBackAsync(), page.canGoForwardAsync()])

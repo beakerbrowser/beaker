@@ -21,6 +21,7 @@ var isManagingBookmarks = false
 var isShelfOpen = false
 var error = false
 var userProfile
+var hasSeenTour
 var archivesStatus
 var bookmarks, pinnedBookmarks
 var archivesList
@@ -37,6 +38,8 @@ async function setup () {
     userProfile.title = 'Your profile'
   }
   settings = await beakerBrowser.getSettings()
+  hasSeenTour = await beakerSitedata.get('beaker://start', 'watched-tour') || false
+
   update()
 
   // subscribe to network changes
@@ -56,7 +59,6 @@ async function setup () {
   // load archives list after render (its not pressing)
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
-  console.log(archivesList.archives)
   archivesList.archives.sort((a, b) => {
     if (a.url === userProfile.url) return -1
     if (b.url === userProfile.url) return 1
@@ -80,6 +82,7 @@ function update () {
         ${renderProfileCard()}
       </header>
       ${renderShelf()}
+      ${renderWelcome()}
       ${renderPinnedBookmarks()}
       ${renderReleaseNotes()}
     </main>
@@ -100,6 +103,20 @@ function renderNetworkLink () {
     <a class="network" href="beaker://library">
       <i class="fa fa-share-alt"></i> ${archivesStatus.peers} ${pluralize(archivesStatus.peers, 'peer')}
     </a>
+  `
+}
+
+function renderWelcome () {
+  if (hasSeenTour) return ''
+  return yo`
+    <div class="beaker-welcome">
+      <p>
+        Welcome to Beaker!
+        <a onclick=${createSite}>Create a peer-to-peer site</a> or
+        <a onclick=${takeTour}>take a tour</a>.
+        <i onclick=${dismissWelcome} class="fa fa-close"></i>
+      </p>
+    </div>
   `
 }
 
@@ -242,6 +259,16 @@ function toggleShelf () {
 async function createSite () {
   var archive = await DatArchive.create()
   window.location = 'beaker://library/' + archive.url.slice('dat://'.length)
+}
+
+async function takeTour () {
+  window.location = 'beaker://tour/'
+  beakerSitedata.set('beaker://start', 'watched-tour', true)
+}
+
+function dismissWelcome () {
+  document.querySelector('.beaker-welcome').remove()
+  beakerSitedata.set('beaker://start', 'watched-tour', true)
 }
 
 function onMouseOutShelf (e) {

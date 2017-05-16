@@ -174,7 +174,7 @@ export class DropMenuNavbarBtn {
             <div class="footer">
               <a onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
                 <i class="fa fa-info-circle"></i>
-                <span>Report an Issue</span>
+                <span>Report an issue</span>
               </a>
               <a onclick=${e => this.onOpenPage(e, 'https://beakerbrowser.com/docs/')}>
                 <i class="fa fa-question"></i>
