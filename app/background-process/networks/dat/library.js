@@ -34,7 +34,9 @@ import {
   INVALID_SAVE_FOLDER_CHAR_REGEX
 } from '../../../lib/const'
 import {InvalidURLError} from 'beaker-error-constants'
-const DEFAULT_DATS_FOLDER = path.join(app.getPath('home'), 'Sites')
+const DEFAULT_DATS_FOLDER = process.env.beaker_sites_path
+  ? process.env.beaker_sites_path
+  : path.join(app.getPath('home'), 'Sites')
 
 // globals
 // =

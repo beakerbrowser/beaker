@@ -29,6 +29,7 @@ npm install -g bkr
 
 - `DEBUG`: which log systems to output? A comma-separated string. Can be `beaker`, `dat`, `ipfs`, `bittorrent-dht`, `dns-discovery`, `hypercore-protocol`. Specify `*` for all.
 - `beaker_user_data_path`: override the user-data path, therefore changing where data is read/written. Useful for testing.
+- `beaker_sites_path`: override the default path for saving sites. Useful for testing.
 - `beaker_dat_quota_default_bytes_allowed`: override the default max-quota for bytes allowed to be written by a dat site. Useful for testing.
 
 ## Running the tests
