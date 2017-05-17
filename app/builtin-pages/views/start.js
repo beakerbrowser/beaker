@@ -153,15 +153,17 @@ function renderShelf () {
       </div>
 
       <div class="bookmarks-list">
-        ${bookmarks.map(row => {
-          return yo`
-            <a href=${row.url } class="bookmark list-item">
-              <img class="favicon" src=${'beaker-favicon:' + row.url} />
-              <span href=${row.url} class="bookmark-link" title=${row.title} />
-                <span class="title">${row.title}</span>
-              </span>
-            </a>`
-        })}
+        ${bookmarks.length ?
+          bookmarks.map(row => {
+            return yo`
+              <a href=${row.url } class="bookmark list-item">
+                <img class="favicon" src=${'beaker-favicon:' + row.url} />
+                <span href=${row.url} class="bookmark-link" title=${row.title} />
+                  <span class="title">${row.title}</span>
+                </span>
+              </a>`
+          }) :
+          yo`<p class="no-bookmarks">No bookmarks</p>`}
       </div>
     </div>
   `
