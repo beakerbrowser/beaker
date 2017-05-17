@@ -651,7 +651,8 @@ async function onFileChanged () {
 
 async function onUpdateLocation (e) {
   e.preventDefault()
-  await beaker.archives.add(selectedArchiveKey, {promptLocalPath: true})
+  var localPath = await beakerBrowser.showLocalPathDialog()
+  await beaker.archives.add(selectedArchiveKey, {localPath})
   loadCurrentArchive()
 }
 

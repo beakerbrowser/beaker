@@ -1,13 +1,13 @@
-import {dialog, BrowserWindow} from 'electron'
+import {BrowserWindow} from 'electron'
 import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
-import jetpack from 'fs-jetpack'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
 import {showModal} from '../ui/modals'
+import {showLocalPathDialog, validateLocalPath} from '../browser'
 import {timer} from '../../lib/time'
-import {PermissionsError, InvalidURLError} from 'beaker-error-constants'
+import {PermissionsError, InvalidURLError, InvalidPathError} from 'beaker-error-constants'
 
 // exported api
 // =
@@ -36,6 +36,10 @@ export default {
       createdBy = await datLibrary.generateCreatedBy(createdBy)
     }
 
+    if (!validateLocalPath(localPath).valid) {
+      return new InvalidPathError('Cannot save the site to that folder')
+    }
+
     // create the archive
     return datLibrary.createNewArchive({title, description, createdBy}, {localPath})
   },
@@ -48,6 +52,10 @@ export default {
       createdBy = await datLibrary.generateCreatedBy(createdBy)
     }
 
+    if (!validateLocalPath(localPath).valid) {
+      return new InvalidPathError('Cannot save the site to that folder')
+    }
+
     // create the archive
     return datLibrary.forkArchive(url, {title, description, createdBy}, {localPath})
   },
@@ -55,6 +63,10 @@ export default {
   async update(url, manifestInfo, {localPath} = {}) {
     var key = toKey(url)
     var archive = await datLibrary.getOrLoadArchive(key)
+
+    if (localPath && !validateLocalPath(localPath).valid) {
+      return new InvalidPathError('Cannot save the site to that folder')
+    }
 
     if (!manifestInfo) {
       // show the update-info the modal
@@ -86,7 +98,7 @@ export default {
     }
   },
 
-  async add(url, {localPath, promptLocalPath} = {}) {
+  async add(url, {localPath} = {}) {
     var key = toKey(url)
 
     // load localPath if needed
@@ -98,11 +110,15 @@ export default {
     }
 
     // prompt localPath if needed
-    if (!localPath || promptLocalPath) {
-      localPath = await localPathPrompt()
+    if (!localPath) {
+      localPath = await showLocalPathDialog()
       if (!localPath) {
         throw new Error('Cancelled')
       }
+    }
+
+    if (!validateLocalPath(localPath).valid) {
+      return new InvalidPathError('Cannot save the site to that folder')
     }
 
     // update settings
@@ -160,46 +176,6 @@ function toKey (url) {
   }
 
   return urlp.host
-}
-
-async function localPathPrompt () {
-  while (true) {
-    // prompt for destination
-    var localPath = await new Promise((resolve) => {
-      dialog.showOpenDialog({
-        title: 'Save site files',
-        buttonLabel: 'Save',
-        properties: ['openDirectory', 'showHiddenFiles', 'createDirectory']
-      }, filenames => {
-        resolve(filenames && filenames[0])
-      })
-    })
-    if (!localPath) {
-      return
-    }
-
-    // check if the target is empty
-    try {
-      var files = await jetpack.listAsync(localPath)
-      if (files && files.length > 0) {
-        // ask the user if they're sure
-        var res = await new Promise(resolve => {
-          dialog.showMessageBox({
-            type: 'question',
-            message: 'This folder is not empty. Some files may be overwritten. Save to this folder?',
-            buttons: ['Yes', 'Cancel']
-          }, resolve)
-        })
-        if (res != 0) {
-          continue
-        }
-      }
-    } catch (e) {
-      // no files
-    }
-
-    return localPath
-  }
 }
 
 function manifestFilter (path) {

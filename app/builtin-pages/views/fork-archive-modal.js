@@ -74,15 +74,11 @@ function onChangeDescription (e) {
 }
 
 async function onChooseFolder () {
-  var folders = await beakerBrowser.showOpenDialog({
-    title: 'Choose the folder to contain your site',
-    buttonLabel: 'Select',
-    properties: ['openDirectory', 'createDirectory', 'showHiddenFiles']
-  })
-  if (!folders) {
+  var folder = await beakerBrowser.showLocalPathDialog({folderName: title})
+  if (!folder) {
     return
   }
-  localPath = folders[0]
+  localPath = folder
   render()
 }
 
