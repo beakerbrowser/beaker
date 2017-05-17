@@ -14,6 +14,7 @@ const app = new Application({
   args: ['../app'],
   env: { 
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
+    beaker_sites_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
     beaker_dat_quota_default_bytes_allowed: '25kb'
   }
 })
@@ -175,12 +176,6 @@ test('archive.stat', async t => {
   t.deepEqual(entry.value.name, 'TimeoutError')
 })
 
-/*
-
-TODO
-It's not currently possible to test these prompts because they involve
-OS-native prompts, which we cant drive.
-
 test('DatArchive.create rejection', async t => {
   // start the prompt
   await app.client.execute(() => {
@@ -298,81 +293,6 @@ test('DatArchive.fork', async t => {
   t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
   t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
   t.deepEqual(manifest.forkOf[0].replace(/(\/)$/,''), createdDatURL)
-})
-*/
-test('create and fork dats', async t => {
-  // replacement for the above tests
-
-  // create
-  await app.client.windowByIndex(0)
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({title: 'The Title', description: 'The Description'}, {localPath}).then(done,done)
-  }, tempy.directory())
-  createdDatURL = res.value.url
-  t.truthy(createdDatURL.startsWith('dat://'))
-  createdDatKey = createdDatURL.slice('dat://'.length)
-  await app.client.windowByIndex(1)
-
-  // check the dat.json
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.readFile('dat.json').then(done, done)
-  }, createdDatURL)
-  var manifest
-  try {
-    var manifest = JSON.parse(res.value)
-  } catch (e) {
-    console.log('unexpected error parsing manifest', res.value)
-  }
-  t.deepEqual(manifest.title, 'The Title')
-  t.deepEqual(manifest.description, 'The Description')
-  t.deepEqual(manifest.createdBy.url, 'beaker://shell-window')
-
-  // check the settings
-  await app.client.windowByIndex(0)
-  var details = await app.client.executeAsync((key, done) => {
-    var archive = new DatArchive(key)
-    archive.getInfo().then(done, err => done({ err }))
-  }, createdDatKey)
-  await app.client.windowByIndex(1)
-  t.deepEqual(details.value.userSettings.isSaved, true)
-
-  // fork
-  await app.client.windowByIndex(0)
-  var res = await app.client.executeAsync((url, localPath, done) => {
-    beaker.archives.fork(url, {description: 'The Description 2'}, {localPath}).then(done,done)
-  }, createdDatURL, tempy.directory())
-  var forkedDatURL = res.value.url
-  t.truthy(forkedDatURL.startsWith('dat://'))
-  await app.client.windowByIndex(1)
-
-  // check the dat.json
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.readFile('dat.json').then(done, done)
-  }, forkedDatURL)
-  var manifest
-  try {
-    var manifest = JSON.parse(res.value)
-  } catch (e) {
-    console.log('unexpected error parsing manifest', res.value)
-  }
-  t.deepEqual(manifest.title, 'The Title')
-  t.deepEqual(manifest.description, 'The Description 2')
-  t.deepEqual(manifest.createdBy.url, 'beaker://shell-window')
-  t.deepEqual(manifest.forkOf[0].replace(/(\/)$/,''), createdDatURL)
-
-  // do a write to give the test-runner perms to touch the created dat
-  var res = await app.client.execute((url, filename, content, encoding) => {
-    var archive = new DatArchive(url)
-    archive.writeFile(filename, content, encoding)
-  }, createdDatURL, '/give-me-perms.txt', 'plz', 'utf8')
-  t.falsy(res.value)
-
-  // accept the prompt
-  await app.client.windowByIndex(0)
-  await app.client.click('.prompt-accept')
-  await app.client.windowByIndex(1)
 })
 
 test('archive.writeFile', async t => {
@@ -570,9 +490,9 @@ test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
 test('versioned reads and writes', async t => {
   // create a fresh dat
   await app.client.windowByIndex(0)
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({title: 'Another Test Dat'}, {localPath}).then(done, done)
-  }, tempy.directory())
+  var res = await app.client.executeAsync((done) => {
+    beaker.archives.create({title: 'Another Test Dat'}).then(done, done)
+  })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
 
@@ -646,9 +566,9 @@ test('versioned reads and writes', async t => {
 test('archive.commit does allow you to exceed the quota, but subsequent writes will fail', async t => {
   // create a fresh dat
   await app.client.windowByIndex(0)
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({title: 'Another Test Dat'}, {localPath}).then(done, done)
-  }, tempy.directory())
+  var res = await app.client.executeAsync((done) => {
+    beaker.archives.create({title: 'Another Test Dat'}).then(done, done)
+  })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
   await app.client.windowByIndex(1)
@@ -864,9 +784,9 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
   // =
 
   await app.client.windowByIndex(0)
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({title: 'Another Test Dat'}, {localPath}).then(done, done)
-  }, tmpDirPath1)
+  var res = await app.client.executeAsync((done) => {
+    beaker.archives.create({title: 'Another Test Dat'}).then(done, done)
+  })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
   await app.client.windowByIndex(1)
@@ -971,9 +891,8 @@ test('archive.getInfo', async t => {
   var info = res.value
   t.deepEqual(info.title, 'The Title')
   t.deepEqual(info.description, 'The Description')
-  t.deepEqual(info.createdBy.url, 'beaker://shell-window')
-  // t.deepEqual(info.createdBy.url, testRunnerDatURL.slice(0, -1))
-  // t.deepEqual(info.createdBy.title, 'Test Runner Dat')
+  t.deepEqual(info.createdBy.url, testRunnerDatURL.slice(0, -1))
+  t.deepEqual(info.createdBy.title, 'Test Runner Dat')
 })
 
 test('archive.download', async t => {
@@ -1040,9 +959,9 @@ test('DatArchive.importFromFilesystem', async t => {
   // =
 
   // create a new archive
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({}, {localPath}).then(done,done)
-  }, tmpDirPath1)
+  var res = await app.client.executeAsync((done) => {
+    beaker.archives.create({}).then(done,done)
+  })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
 
@@ -1064,9 +983,9 @@ test('DatArchive.importFromFilesystem', async t => {
   // =
 
   // create a new archive
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({}, {localPath}).then(done,done)
-  }, tmpDirPath1)
+  var res = await app.client.executeAsync((done) => {
+    beaker.archives.create({}).then(done,done)
+  })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
 
@@ -1088,9 +1007,9 @@ test('DatArchive.importFromFilesystem', async t => {
   // =
 
   // create a new archive
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({}, {localPath}).then(done,done)
-  }, tmpDirPath1)
+  var res = await app.client.executeAsync((done) => {
+    beaker.archives.create({}).then(done,done)
+  })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
 
@@ -1112,9 +1031,9 @@ test('DatArchive.importFromFilesystem', async t => {
   // =
 
   // create a new archive
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({}, {localPath}).then(done,done)
-  }, tmpDirPath1)
+  var res = await app.client.executeAsync((done) => {
+    beaker.archives.create({}).then(done,done)
+  })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
 
@@ -1178,9 +1097,9 @@ test('DatArchive.exportToArchive', async t => {
   // =
 
   // create a new archive
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({}, {localPath}).then(done,done)
-  }, tmpDirPath1)
+  var res = await app.client.executeAsync((done) => {
+    beaker.archives.create({}).then(done,done)
+  })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
 
@@ -1201,9 +1120,9 @@ test('DatArchive.exportToArchive', async t => {
   // =
 
   // create a new archive
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({}, {localPath}).then(done,done)
-  }, tempy.directory())
+  var res = await app.client.executeAsync((done) => {
+    beaker.archives.create({}).then(done,done)
+  })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
 
@@ -1226,9 +1145,9 @@ test('archive.createFileActivityStream', async t => {
   await app.client.windowByIndex(0)
 
   // create a new archive
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({}, {localPath}).then(done,done)
-  }, tmpDirPath1)
+  var res = await app.client.executeAsync((done) => {
+    beaker.archives.create({}).then(done,done)
+  })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
 
