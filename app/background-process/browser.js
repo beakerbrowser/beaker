@@ -312,16 +312,6 @@ export async function showLocalPathDialog ({folderName} = {}) {
       return
     }
 
-    if (folderName) {
-      // find an available variant of folderName
-      let tryNum = 0
-      let folderNameVariant = folderName
-      while (await jetpack.existsAsync(path.join(localPath, folderNameVariant))) {
-        folderNameVariant = `${folderName} (${++tryNum})`
-      }
-      localPath = path.join(localPath, folderNameVariant)
-    }
-
     // make sure it's a valid destination
     let validation = validateLocalPath(localPath)
     if (!validation.valid) {

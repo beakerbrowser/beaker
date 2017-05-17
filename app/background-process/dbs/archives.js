@@ -25,10 +25,6 @@ export function setup () {
 }
 
 // get the path to an archive's files
-export function getArchiveStagingPath (archiveOrKey) {
-  var key = datEncoding.toStr(archiveOrKey.key || archiveOrKey)
-  return path.join(datPath, 'Archives', 'Content', key.slice(0, 2), key.slice(2))
-}
 export function getArchiveMetaPath (archiveOrKey) {
   var key = datEncoding.toStr(archiveOrKey.key || archiveOrKey)
   return path.join(datPath, 'Archives', 'Meta', key.slice(0, 2), key.slice(2))

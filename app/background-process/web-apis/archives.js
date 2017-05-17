@@ -7,7 +7,12 @@ import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
 import {showModal} from '../ui/modals'
 import {showLocalPathDialog, validateLocalPath} from '../browser'
 import {timer} from '../../lib/time'
-import {PermissionsError, InvalidURLError, InvalidPathError} from 'beaker-error-constants'
+import {
+  ArchiveNotWritableError,
+  PermissionsError,
+  InvalidURLError,
+  InvalidPathError
+} from 'beaker-error-constants'
 
 // exported api
 // =
@@ -28,7 +33,7 @@ export default {
     return status
   },
 
-  async create({title, description, createdBy}={}, {localPath} = {}) {
+  async create({title, description, createdBy}={}) {
     // get origin info
     if (!createdBy) {
       createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
@@ -36,15 +41,11 @@ export default {
       createdBy = await datLibrary.generateCreatedBy(createdBy)
     }
 
-    if (!validateLocalPath(localPath).valid) {
-      return new InvalidPathError('Cannot save the site to that folder')
-    }
-
     // create the archive
-    return datLibrary.createNewArchive({title, description, createdBy}, {localPath})
+    return datLibrary.createNewArchive({title, description, createdBy})
   },
 
-  async fork(url, {title, description, createdBy} = {}, {localPath} = {}) {
+  async fork(url, {title, description, createdBy} = {}) {
     // get origin info
     if (!createdBy) {
       createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
@@ -52,43 +53,41 @@ export default {
       createdBy = await datLibrary.generateCreatedBy(createdBy)
     }
 
-    if (!validateLocalPath(localPath).valid) {
-      return new InvalidPathError('Cannot save the site to that folder')
-    }
-
     // create the archive
-    return datLibrary.forkArchive(url, {title, description, createdBy}, {localPath})
+    return datLibrary.forkArchive(url, {title, description, createdBy})
   },
 
   async update(url, manifestInfo, {localPath} = {}) {
     var key = toKey(url)
     var archive = await datLibrary.getOrLoadArchive(key)
 
-    if (localPath && !validateLocalPath(localPath).valid) {
-      return new InvalidPathError('Cannot save the site to that folder')
-    }
-
-    if (!manifestInfo) {
+    // no info provided: open modal
+    if (!manifestInfo && !localPath) {
+      if (!archive.writable) {
+        throw new ArchiveNotWritableError()
+      }
       // show the update-info the modal
       let win = BrowserWindow.fromWebContents(this.sender)
       await assertSenderIsFocused(this.sender)
-      let isReadOnly = !archive.writable
-      return await showModal(win, 'create-archive', {
-        url,
-        isReadOnly,
-        size: isReadOnly ? 'create-archive-readonly' : 'create-archive'
-      })
+      return await showModal(win, 'create-archive', {url})
+    }
+
+    // validate path
+    if (localPath && !validateLocalPath(localPath).valid) {
+      throw new InvalidPathError('Cannot save the site to that folder')
     }
 
     // update manifest file
-    var archiveInfo = await archivesDb.getMeta(key)
-    var {title, description} = manifestInfo
-    title = typeof title !== 'undefined' ? title : archiveInfo.title
-    description = typeof description !== 'undefined' ? description : archiveInfo.description
-    if (title !== archiveInfo.title || description !== archiveInfo.description) {
-      await pda.updateManifest(archive.stagingFS, {title, description})
-      await pda.commit(archive.stagingFS, {filter: manifestFilter})
-      datLibrary.pullLatestArchiveMeta(archive)
+    if (manifestInfo) {
+      var archiveInfo = await archivesDb.getMeta(key)
+      var {title, description} = manifestInfo
+      title = typeof title !== 'undefined' ? title : archiveInfo.title
+      description = typeof description !== 'undefined' ? description : archiveInfo.description
+      if (title !== archiveInfo.title || description !== archiveInfo.description) {
+        await pda.updateManifest(archive.stagingFS, {title, description})
+        await pda.commit(archive.stagingFS, {filter: manifestFilter})
+        datLibrary.pullLatestArchiveMeta(archive)
+      }
     }
 
     // update settings
@@ -98,36 +97,23 @@ export default {
     }
   },
 
-  async add(url, {localPath} = {}) {
+  async add(url) {
     var key = toKey(url)
-
-    // load localPath if needed
-    if (!localPath) {
-      try {
-        let settings = await archivesDb.getUserSettings(0, key)
-        localPath = settings.localPath
-      } catch (e) {}
-    }
-
-    // prompt localPath if needed
-    if (!localPath) {
-      localPath = await showLocalPathDialog()
-      if (!localPath) {
-        throw new Error('Cancelled')
-      }
-    }
-
-    if (!validateLocalPath(localPath).valid) {
-      return new InvalidPathError('Cannot save the site to that folder')
-    }
-
-    // update settings
-    var res = await archivesDb.setUserSettings(0, key, {isSaved: true, localPath})
 
     // pull metadata
     var archive = await datLibrary.getOrLoadArchive(key)
-    datLibrary.pullLatestArchiveMeta(archive)
-    return res
+    var meta = await datLibrary.pullLatestArchiveMeta(archive)
+
+    // select a default local path, if needed
+    var localPath
+    try {
+      let userSettings = await archivesDb.getUserSettings(0, key)
+      localPath = userSettings.localPath
+    } catch (e) {}
+    localPath = localPath || await datLibrary.selectDefaultLocalPath(meta.title)
+
+    // update settings
+    return archivesDb.setUserSettings(0, key, {isSaved: true, localPath})
   },
 
   async remove(url) {

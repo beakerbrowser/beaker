@@ -3,7 +3,6 @@ import path from 'path'
 
 const SIZES = {
   'create-archive': {width: 500, height: 410},
-  'create-archive-readonly': {width: 500, height: 250},
   'fork-archive': {width: 500, height: 460},
   prompt: {width: 500, height: 170}
 }
@@ -25,8 +24,8 @@ export function showModal (parentWindow, modalName, opts={}) {
   // create the modal window
   parentWindow = parentWindow || BrowserWindow.getFocusedWindow()
   modalWindow = new BrowserWindow({
-    width: SIZES[opts.size || modalName].width,
-    height: SIZES[opts.size || modalName].height,
+    width: SIZES[modalName].width,
+    height: SIZES[modalName].height,
     parent: parentWindow,
     modal: true,
     show: false,

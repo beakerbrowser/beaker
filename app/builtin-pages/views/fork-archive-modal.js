@@ -10,7 +10,6 @@ var isSelfFork = false
 var title = ''
 var description = ''
 var createdBy
-var localPath = ''
 
 // exported api
 // =
@@ -39,7 +38,6 @@ window.setup = async function (opts) {
     var archiveInfo = archive ? archive.info : {}
     title = opts.title || archiveInfo.title || ''
     description = opts.description || archiveInfo.description || ''
-    localPath = opts.localPath || ''
     createdBy = opts.createdBy || undefined
     render()
 
@@ -73,15 +71,6 @@ function onChangeDescription (e) {
   description = e.target.value
 }
 
-async function onChooseFolder () {
-  var folder = await beakerBrowser.showLocalPathDialog({folderName: title})
-  if (!folder) {
-    return
-  }
-  localPath = folder
-  render()
-}
-
 function onClickCancel (e) {
   e.preventDefault()
   beakerBrowser.closeModal()
@@ -96,9 +85,8 @@ function onClickDownload (e) {
 
 async function onSubmit (e) {
   e.preventDefault()
-  if (!localPath) return
   try {
-    var newArchive = await beaker.archives.fork(archive.info.key, {title, description, createdBy}, {localPath})
+    var newArchive = await beaker.archives.fork(archive.info.key, {title, description, createdBy})
     beakerBrowser.closeModal(null, {url: newArchive.url})
   } catch (e) {
     beakerBrowser.closeModal({
@@ -113,7 +101,6 @@ async function onSubmit (e) {
 // =
 
 function render () {
-  var canSubmit = !!localPath
   var isComplete = archive.info.isOwner || archive.progress.isComplete
   var progressEl, downloadBtn
   if (!isComplete) {
@@ -146,12 +133,6 @@ function render () {
           <p class="help-text">${helpText}</p>
 
           <form onsubmit=${onSubmit}>
-            <label for="path">Folder</label>
-            <div class="input input-file-picker">
-              <button type="button" class="btn" name="path" tabindex="1" onclick=${onChooseFolder}>Choose folder</button>
-              <span>${localPath || yo`<span class="placeholder">Folder (required)</span>`}</span>
-            </div>
-
             <label for="title">Title</label>
             <input name="title" tabindex="2" value=${title} placeholder="Title (optional)" onchange=${onChangeTitle} />
 
@@ -161,7 +142,7 @@ function render () {
             ${progressEl}
             <div class="form-actions">
               <button type="button" class="btn cancel" onclick=${onClickCancel} tabindex="4">Cancel</button>
-              <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="5" disabled=${!canSubmit}>
+              <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="5">
                 Create fork ${!isComplete ? ' anyway' : ''}
               </button>
               ${downloadBtn}

@@ -14,6 +14,8 @@ export const DEFAULT_DAT_DNS_TTL = 3600 // 1hr
 export const MAX_DAT_DNS_TTL = 3600 * 24 * 7 // 1 week
 export const DEFAULT_DAT_API_TIMEOUT = 5e3 // 5s
 
+// dat staging paths
+export const INVALID_SAVE_FOLDER_CHAR_REGEX = /[^0-9a-zA-Z-_ ]/g
 export const DISALLOWED_SAVE_PATH_NAMES = [
   'home',
   'desktop',

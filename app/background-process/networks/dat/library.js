@@ -1,3 +1,4 @@
+import {app} from 'electron'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import datEncoding from 'dat-encoding'
@@ -29,9 +30,11 @@ const getFolderSize = pify(require('get-folder-size'))
 import {
   DAT_MANIFEST_FILENAME,
   DAT_HASH_REGEX,
-  DAT_URL_REGEX
+  DAT_URL_REGEX,
+  INVALID_SAVE_FOLDER_CHAR_REGEX
 } from '../../../lib/const'
 import {InvalidURLError} from 'beaker-error-constants'
+const DEFAULT_DATS_FOLDER = path.join(app.getPath('home'), 'Sites')
 
 // globals
 // =
@@ -44,6 +47,9 @@ var archivesEvents = new EventEmitter()
 // =
 
 export function setup () {
+  // make sure the default dats folder exists
+  mkdirp.sync(DEFAULT_DATS_FOLDER)
+
   // wire up event handlers
   archivesDb.on('update:archive-user-settings', async (key, settings) => {
     // emit event
@@ -116,6 +122,7 @@ export async function pullLatestArchiveMeta (archive) {
     // emit the updated event
     details.url = 'dat://' + key
     archivesEvents.emit('updated', {details})
+    return details
   } catch (e) {
     console.error('Error pulling meta', e)
   }
@@ -124,7 +131,12 @@ export async function pullLatestArchiveMeta (archive) {
 // archive creation
 // =
 
-export async function createNewArchive (manifest = {}, userSettings = {}) {
+export async function createNewArchive (manifest = {}) {
+  var userSettings = {
+    localPath: await selectDefaultLocalPath(manifest.title),
+    isSaved: true
+  }
+
   // create the archive
   var archive = await loadArchive(null, userSettings)
   var key = datEncoding.toStr(archive.key)
@@ -135,10 +147,7 @@ export async function createNewArchive (manifest = {}, userSettings = {}) {
   await pda.commit(archive.stagingFS, {filter: manifestFilter})
 
   // write the user settings
-  await archivesDb.setUserSettings(0, key, {
-    localPath: userSettings.localPath,
-    isSaved: true
-  })
+  await archivesDb.setUserSettings(0, key, userSettings)
 
   // write the metadata
   await pullLatestArchiveMeta(archive)
@@ -151,7 +160,7 @@ export async function createNewArchive (manifest = {}, userSettings = {}) {
   return manifest.url
 }
 
-export async function forkArchive (srcArchiveUrl, manifest={}, userSettings = {}) {
+export async function forkArchive (srcArchiveUrl, manifest={}) {
   srcArchiveUrl = fromKeyToURL(srcArchiveUrl)
 
   // get the old archive
@@ -174,7 +183,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}, userSettings = {}
   }
 
   // create the new archive
-  var dstArchiveUrl = await createNewArchive(dstManifest, userSettings)
+  var dstArchiveUrl = await createNewArchive(dstManifest)
   var dstArchive = getArchive(dstArchiveUrl)
 
   // copy files
@@ -396,6 +405,27 @@ export async function reconfigureStaging (archive, userSettings) {
       archive.staging.revert({filter: manifestFilter})
     }
   }
+}
+
+export async function selectDefaultLocalPath (title) {
+  // massage the title
+  title = typeof title === 'string' ? title : ''
+  title = title.replace(INVALID_SAVE_FOLDER_CHAR_REGEX, '')
+  if (!title.trim()) {
+    title = 'Untitled'
+  }
+
+  // find an available variant of title
+  var tryNum = 0
+  var titleVariant = title
+  while (await jetpack.existsAsync(path.join(DEFAULT_DATS_FOLDER, titleVariant))) {
+    titleVariant = `${title} (${++tryNum})`
+  }
+  var localPath = path.join(DEFAULT_DATS_FOLDER, titleVariant)
+
+  // create the folder
+  mkdirp.sync(localPath)
+  return localPath
 }
 
 // archive networking
