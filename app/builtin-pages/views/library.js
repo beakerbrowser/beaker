@@ -160,6 +160,8 @@ async function reloadDiff () {
 // =
 
 function update () {
+  var isEmpty = !(isTrashOpen || selectedArchive || selectedArchiveKey)
+  var viewCls = isEmpty ? 'empty' : ''
   yo.update(document.querySelector('main'), yo`
     <main>
     <div class="sidebar ${isSidebarOpen ? 'open' : ''}">
@@ -207,7 +209,7 @@ function update () {
       </div>
     </div>
 
-    <div class="view">
+    <div class="view ${viewCls}">
       <div onclick=${onToggleSidebar} class="menu">
         <button>
           <i class="fa fa-bars"></i>
@@ -225,7 +227,7 @@ function rView () {
   else if (isTrashOpen) return rTrash()
   else if (selectedArchive) return rArchive(selectedArchive)
   else if (selectedArchiveKey) return 'Loading...'
-  return ''
+  return rEmpty()
 }
 
 function rArchivesList () {
@@ -513,6 +515,14 @@ function rTrash () {
           </li>`
         )}
       </ul>
+    </div>
+  `
+}
+
+function rEmpty () {
+  return yo`
+    <div class="empty">
+      <i class="fa fa-folder-open-o"></i>
     </div>
   `
 }

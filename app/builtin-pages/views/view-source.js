@@ -35,7 +35,6 @@ async function setup () {
   archive = new DatArchive(archiveKey)
   fileTree = new FileTree(archive, {onDemand: true})
   await fileTree.setup().catch(err => null)
-  console.log(archive, fileTree)
   update()
   await loadFile()
 
@@ -104,7 +103,13 @@ function renderFile () {
   var url = archive.url + filePath
   var mimetype = mime.lookup(url)
   url += '?cache-buster=' + Date.now()
-  if (mimetype.startsWith('image/')) {
+  if (!fileContent) {
+    return yo`
+      <div class="file-view empty">
+        <i class="fa fa-code"></i>
+      </div>
+    `
+  } else if (mimetype.startsWith('image/')) {
     return yo`
       <div class="file-view">
         <img src=${url} />
