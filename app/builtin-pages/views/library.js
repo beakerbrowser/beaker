@@ -326,15 +326,16 @@ function rArchive (archiveInfo) {
                       <i class="fa fa-folder-open-o"></i>
                       Open folder
                     </a>`}
-                ${archiveInfo.userSettings.localPath
+                <div class="dropdown-item" onclick=${onChooseNewLocation}>
+                  <i class="fa fa-folder-o"></i>
+                  Change folder
+                </div>
+                ${archiveInfo.isOwner
                   ? yo`<div class="dropdown-item" onclick=${onEditSettings}>
                       <i class="fa fa-pencil"></i>
                       Edit site info
                     </div>`
-                  : yo`<a class="dropdown-item disabled">
-                      <i class="fa fa-pencil"></i>
-                      Edit site info
-                    </a>`}
+                  : ''}
                 <div class="dropdown-item" onclick=${onFork}>
                   <i class="fa fa-code-fork"></i>
                   Fork this site
@@ -409,8 +410,8 @@ function rMissingLocalPathMessage (archiveInfo) {
         This is probably because the folder was moved or deleted.
       </div>
       <ul>
-        <li>If it was moved, you can <a href="#" onclick=${onUpdateLocation}>update the location</a> and things will resume as before.</li>
-        <li>If it was deleted accidentally (or you dont know what happened) you can <a href="#" onclick=${onUpdateLocation}>choose a
+        <li>If it was moved, you can <a href="#" onclick=${onChooseNewLocation}>update the location</a> and things will resume as before.</li>
+        <li>If it was deleted accidentally (or you dont know what happened) you can <a href="#" onclick=${onChooseNewLocation}>choose a
           new location</a> and we’ll restore the files from the last published state.</li>
         <li>If it was deleted on purpose, and you don’t want to keep the site anymore,
           you can <a href="#" onclick=${onToggleSaved}>delete it from your library</a>.</li>
@@ -645,6 +646,7 @@ async function onRevert () {
     var a = new DatArchive(selectedArchiveKey)
     await a.revert()
     toast.create('Your files have been reverted')
+    reloadDiffThrottled()
   } catch (e) {
     console.error(e)
     toast.create(e.toString())
@@ -655,10 +657,12 @@ async function onFileChanged () {
   reloadDiffThrottled()
 }
 
-async function onUpdateLocation (e) {
+async function onChooseNewLocation (e) {
   e.preventDefault()
-  var localPath = await beakerBrowser.showLocalPathDialog()
-  await beaker.archives.add(selectedArchiveKey, {localPath})
+  var localPath = await beakerBrowser.showLocalPathDialog({
+    warnIfNotEmpty: !selectedArchive.isOwner
+  })
+  await beaker.archives.update(selectedArchiveKey, null, {localPath})
   loadCurrentArchive()
 }
 

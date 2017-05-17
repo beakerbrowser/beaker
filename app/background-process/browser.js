@@ -294,7 +294,7 @@ export function validateLocalPath (localPath) {
   return {valid: true}
 }
 
-export async function showLocalPathDialog ({folderName} = {}) {
+export async function showLocalPathDialog ({folderName, warnIfNotEmpty} = {}) {
   while (true) {
     // prompt for destination
     var localPath = await new Promise((resolve) => {
@@ -332,23 +332,25 @@ export async function showLocalPathDialog ({folderName} = {}) {
     }
 
     // check if the target is empty
-    try {
-      var files = await jetpack.listAsync(localPath)
-      if (files && files.length > 0) {
-        // ask the user if they're sure
-        var res = await new Promise(resolve => {
-          dialog.showMessageBox({
-            type: 'question',
-            message: 'This folder is not empty. Some files may be overwritten. Save to this folder?',
-            buttons: ['Yes', 'Cancel']
-          }, resolve)
-        })
-        if (res != 0) {
-          continue
+    if (warnIfNotEmpty) {
+      try {
+        var files = await jetpack.listAsync(localPath)
+        if (files && files.length > 0) {
+          // ask the user if they're sure
+          var res = await new Promise(resolve => {
+            dialog.showMessageBox({
+              type: 'question',
+              message: 'This folder is not empty. Files that are not a part of this site will be deleted or overwritten. Save to this folder?',
+              buttons: ['Yes', 'Cancel']
+            }, resolve)
+          })
+          if (res != 0) {
+            continue
+          }
         }
+      } catch (e) {
+        // no files
       }
-    } catch (e) {
-      // no files
     }
 
     return localPath
