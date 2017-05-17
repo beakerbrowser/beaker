@@ -13,6 +13,7 @@ import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {queryPermission, requestPermission} from '../ui/permissions'
 import { 
+  DAT_MANIFEST_FILENAME,
   DAT_HASH_REGEX,
   DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
   DAT_VALID_PATH_REGEX,
@@ -494,7 +495,12 @@ async function lookupArchive (url) {
   if (version) {
     archive.checkoutFS = archive.checkout(+version)
   } else {
-    archive.checkoutFS = archive.stagingFS
+    // access dat.json from archive only (never from staging)
+    if (filepath === '/' + DAT_MANIFEST_FILENAME) {
+      archive.checkoutFS = archive
+    } else {
+      archive.checkoutFS = archive.stagingFS
+    }
   }
 
   return {archive, filepath, version}
