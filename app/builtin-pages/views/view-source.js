@@ -35,7 +35,6 @@ async function setup () {
   archive = new DatArchive(archiveKey)
   fileTree = new FileTree(archive, {onDemand: true})
   await fileTree.setup().catch(err => null)
-  console.log(archive, fileTree)
   update()
   await loadFile()
 
