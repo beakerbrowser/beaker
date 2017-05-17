@@ -83,8 +83,8 @@ function update () {
       </header>
       ${renderShelf()}
       ${renderWelcome()}
-      ${renderPinnedBookmarks()}
       ${renderReleaseNotes()}
+      ${renderPinnedBookmarks()}
     </main>
   `)
 }
