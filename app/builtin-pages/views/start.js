@@ -135,14 +135,15 @@ function renderShelf () {
         <h3><a href="beaker://library">Your library</a></h3>
       </div>
       <div class="archives-list">
-        ${archivesList.archives.map(archiveInfo => {
-          return yo`
-            <a class="archive list-item" href=${`beaker://library/${archiveInfo.key}`}>
-              <span class="title">${niceName(archiveInfo)}</span>
-              <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
-            </a>
-          `
-        })}
+        ${archivesList.length ?
+          archivesList.archives.map(archiveInfo => {
+            return yo`
+              <a class="archive list-item" href=${`beaker://library/${archiveInfo.key}`}>
+                <span class="title">${niceName(archiveInfo)}</span>
+                <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
+              </a>`
+        }) :
+        yo`<p class="no-archives">No archives in your library</p>`}
       </div>
 
       <hr />
