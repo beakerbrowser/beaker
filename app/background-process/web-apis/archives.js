@@ -84,8 +84,7 @@ export default {
       title = typeof title !== 'undefined' ? title : archiveInfo.title
       description = typeof description !== 'undefined' ? description : archiveInfo.description
       if (title !== archiveInfo.title || description !== archiveInfo.description) {
-        await pda.updateManifest(archive.stagingFS, {title, description})
-        await pda.commit(archive.stagingFS, {filter: manifestFilter})
+        await pda.updateManifest(archive, {title, description})
         datLibrary.pullLatestArchiveMeta(archive)
       }
     }
@@ -162,9 +161,4 @@ function toKey (url) {
   }
 
   return urlp.host
-}
-
-function manifestFilter (path) {
-  // only allow /dat.json
-  return (path !== '/dat.json') // (true => dont handle)
 }

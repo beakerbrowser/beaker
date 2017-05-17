@@ -16,6 +16,7 @@ import * as sitedataDb from '../dbs/sitedata'
 import directoryListingPage from '../networks/dat/directory-listing-page'
 import errorPage from '../../lib/error-page'
 import * as mime from '../../lib/mime'
+import {DAT_MANIFEST_FILENAME} from '../../lib/const'
 
 // constants
 // =
@@ -173,6 +174,12 @@ async function datServer (req, res) {
     return cb(500, 'Failed')
   }
 
+  // parse path
+  var filepath = decodeURIComponent(urlp.path)
+  if (!filepath) filepath = '/'
+  if (filepath.indexOf('?') !== -1) filepath = filepath.slice(0, filepath.indexOf('?')) // strip off any query params
+  var isFolder = filepath.endsWith('/')
+
   // checkout version if needed
   var archiveFS = archive.stagingFS
   if (urlp.version) {
@@ -184,14 +191,15 @@ async function datServer (req, res) {
       return cb(404, 'Version too high')
     }
     archiveFS = archive.checkout(seq)
+  } else {
+    // read dat.json from archive only (never from staging)
+    if (filepath === '/' + DAT_MANIFEST_FILENAME) {
+      archiveFS = archive
+    }
   }
 
   // lookup entry
-  debug('attempting to lookup', archiveKey)
-  var filepath = decodeURIComponent(urlp.path)
-  if (!filepath) filepath = '/'
-  if (filepath.indexOf('?') !== -1) filepath = filepath.slice(0, filepath.indexOf('?')) // strip off any query params
-  var isFolder = filepath.endsWith('/')
+  debug('Attempting to lookup', archiveKey, filepath)
   var entry
   const tryStat = async (path) => {
     if (entry) return

@@ -28,7 +28,6 @@ const getFolderSize = pify(require('get-folder-size'))
 // =
 
 import {
-  DAT_MANIFEST_FILENAME,
   DAT_HASH_REGEX,
   DAT_URL_REGEX,
   INVALID_SAVE_FOLDER_CHAR_REGEX
@@ -106,7 +105,7 @@ export async function pullLatestArchiveMeta (archive) {
 
     // read the archive meta and size on disk
     var [manifest, _] = await Promise.all([
-      pda.readManifest(archive.stagingFS).catch(err => {}),
+      pda.readManifest(archive).catch(err => {}),
       updateSizeTracking(archive)
     ])
     manifest = manifest || {}
@@ -144,9 +143,8 @@ export async function createNewArchive (manifest = {}) {
   var key = datEncoding.toStr(archive.key)
   manifest.url = `dat://${key}/`
 
-  // write the manifest then resolve
-  await pda.writeManifest(archive.staging, manifest)
-  await pda.commit(archive.stagingFS, {filter: manifestFilter})
+  // write the manifest
+  await pda.writeManifest(archive, manifest)
 
   // write the user settings
   await archivesDb.setUserSettings(0, key, userSettings)
@@ -173,7 +171,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}) {
   }
 
   // fetch old archive meta
-  var srcManifest = await pda.readManifest(srcArchive.stagingFS).catch(err => {})
+  var srcManifest = await pda.readManifest(srcArchive).catch(err => {})
   srcManifest = srcManifest || {}
 
   // override any manifest data
@@ -396,17 +394,6 @@ export async function reconfigureStaging (archive, userSettings) {
 
   // recreate staging
   await configureStaging(archive, userSettings)
-
-  if (archive.writable) {
-    // copy out the dat.json to the new location, if needed
-    let [stagingSt, archiveSt] = await Promise.all([
-      pda.stat(archive.staging, '/dat.json').catch(() => null),
-      pda.stat(archive, '/dat.json').catch(() => null)
-    ])
-    if (archiveSt && (!stagingSt || stagingSt.mtime < archiveSt.mtime)) {
-      archive.staging.revert({filter: manifestFilter})
-    }
-  }
 }
 
 export async function selectDefaultLocalPath (title) {
@@ -540,11 +527,13 @@ async function configureStaging (archive, userSettings, isWritableOverride) {
 
     // setup staging
     let stagingPath = userSettings.localPath
-    archive.staging = hyperstaging(archive, stagingPath)
+    archive.staging = hyperstaging(archive, stagingPath, {
+      ignore: ['/.dat', '/.git', '/dat.json']
+    })
 
     // autosync if not writable
     if (!isWritable) {
-      archive.staging.revert({skipIgnore: true}) // do a revert to capture already-DLed state
+      archive.staging.revert({skipDatIgnore: true}) // do a revert to capture already-DLed state
       archive.staging.startAutoSync()
     }
   } else {
@@ -590,9 +579,4 @@ function onNetworkChanged (e) {
       totalPeers: peers
     }
   })
-}
-
-function manifestFilter (path) {
-  // only allow /dat.json
-  return (path !== '/dat.json') // (true => dont handle)
 }
