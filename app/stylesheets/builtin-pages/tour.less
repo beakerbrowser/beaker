@@ -41,13 +41,14 @@ main {
         padding: 10px;
 
         &:hover {
-          background: @background-menu;
+          background: @background-menu--hover;
         }
       }
 
       .title,
       .subnav {
         border-bottom: 1px solid @border-menu;
+        background: @background-menu;
       }
 
       .subnav {
@@ -55,11 +56,22 @@ main {
         display: none;
         padding: 10px;
         color: @color-link;
-        list-style-type: disc;
-        padding-left: 25px;
+        padding-left: 20px;
 
         li:not(last-child) {
           margin-bottom: 3px;
+        }
+
+        li.active {
+          position: relative;
+          color: @color-text;
+          font-weight: bold;
+        }
+
+        i {
+          position: absolute;
+          left: -10px;
+          top: 2px;
         }
 
         li:hover {
@@ -75,7 +87,8 @@ main {
 
         .title {
           font-weight: bold;
-          background: @background-menu;
+          background: @color-link;
+          color: #fff;
         }
       }
     }
