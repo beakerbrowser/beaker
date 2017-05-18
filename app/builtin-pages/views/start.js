@@ -135,7 +135,7 @@ function renderShelf () {
         <h3><a href="beaker://library">Your library</a></h3>
       </div>
       <div class="archives-list">
-        ${archivesList.length ?
+        ${archivesList.archives.length ?
           archivesList.archives.map(archiveInfo => {
             return yo`
               <a class="archive list-item" href=${`beaker://library/${archiveInfo.key}`}>
