@@ -143,8 +143,14 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/tour-new-site-in-library.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-in-library.png'))
   }
-  if (requestUrl === 'beaker://assets/tour-new-site-publish.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-publish.png'))
+  if (requestUrl === 'beaker://assets/tour-new-site-publish1.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-publish1.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-new-site-publish2.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-publish2.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-new-site-publish3.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-publish3.png'))
   }
   if (requestUrl === 'beaker://assets/tour-new-site.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site.png'))

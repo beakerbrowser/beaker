@@ -39,18 +39,31 @@ var steps = [
       {
         title: 'Beaker’s library view',
         description: () => yo`<div class="description">
-          <p>Beaker will redirect you to the library view of your site.</p>
-          <p>Here, you can view the network history, files, active changes, history, and metadata of the site.</p>
+          <p>Beaker will open the library view, where you can modify the site.</p>
         </div>`,
         screenshot: 'tour-new-site-in-library.png'
       },
       {
         title: 'Adding and publishing files',
-        description: () => yo`<div class="description">
-          <p>Click "Open folder", then add the files you want to publish to that folder. Then, in Beaker, click publish.</p>
-          <p>Publishing writes the files to the site’s metadata, and makes it possible for other users to browse and download them.</p>
+        description: () => yo`<div>
+        <div class="screenshot-container">
+          <img class="screenshot" src="beaker://assets/tour-new-site-publish1.png"/>
+        </div>
+        <div class="description">
+          <p>Click "Open folder."<br /><br /></p>
+        </div>
+        <div class="screenshot-container">
+          <img class="screenshot" src="beaker://assets/tour-new-site-publish2.png"/>
+        </div>
+        <div class="description">
+          <p>Add the files you want to publish to that folder.</p>
+        </div>
+        <div class="screenshot-container">
+          <img class="screenshot" src="beaker://assets/tour-new-site-publish3.png"/>
+        </div>
+        <div class="description">
+          <p>Then click "Publish." Other users can now browse to the files in the site.</p>
         </div>`,
-        screenshot: 'tour-new-site-publish.png'
       },
       {
         title: 'Sharing your site',
@@ -92,7 +105,7 @@ var steps = [
     title: 'Saving sites you visit',
     sections: [
       {
-        title: 'Saving to your Library',
+        title: 'Saving a site to your Library',
         description: () => yo`<div class="description">
           <p>If you want to keep a site you visit, simply save it to your Library. This will store a read-only version of the site, which will automatically update as the owner makes changes.</p>
         </div>`,
@@ -227,11 +240,14 @@ function renderBackBtn () {
 
 function renderNextBtn () {
   // is very last step
-  if (currentStepIdx === steps.length - 1 && currentSectionIdx === steps[currentStepIdx].sections.length - 1) return ''
+  var isLastStep = (
+    currentStepIdx === steps.length - 1 &&
+    currentSectionIdx === steps[currentStepIdx].sections.length - 1
+  )
 
   return yo`
     <a class="next btn primary thick" onclick=${onClickNext}>
-      Next
+      ${isLastStep ? 'End Tour' : 'Next'}
       <i class="fa fa-angle-double-right"></i>
     </a>
   `
@@ -265,7 +281,12 @@ function onClickNext () {
   } else {
     currentSectionIdx = currentSectionIdx + 1
   }
-  render()
+
+  if (currentStepIdx >= steps.length) {
+    window.location = 'beaker://start'
+  } else {
+    render()
+  }
 }
 
 async function createSite () {
