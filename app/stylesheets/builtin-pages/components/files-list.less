@@ -2,9 +2,31 @@
 @import "../../utils/flex";
 @import "../../components/link";
 
+
+.dat-local-path {
+  &:extend(.flex);
+  justify-content: space-between;
+  font-size: .8rem;
+  color: @color-text--muted;
+  border-radius: 3px 3px 0 0;
+  padding: 7px @padding-component--tight;
+  margin: 0;
+  border: 1px solid @border-menu;
+  background: @background-menu;
+  border-bottom: 0;
+
+  a:hover {
+    &:extend(.link:hover);
+  }
+
+  i {
+    margin-left: @margin-icon;
+  }
+}
+
 .files-list {
   border: 1px solid @border-menu;
-  border-radius: 3px;
+  border-radius: 0 0 3px 3px;
   font-size: .8rem;
 
   &.empty {

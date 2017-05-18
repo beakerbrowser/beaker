@@ -7,14 +7,22 @@ import {niceDate} from '../../lib/time'
 
 export default function rFilesList (archiveInfo) {
   if (!archiveInfo || !archiveInfo.fileTree.rootNode) {
-    return yo`<div class="files-list"></div>`
+    return yo`
+      <div>
+        ${rFolder(archiveInfo)}
+        <div class="files-list"></div>
+      </div>
+    `
   }
 
   var hasFiles = Object.keys(archiveInfo.fileTree.rootNode.children).length > 0
   return yo`
-    <div class="files-list">
-      ${!hasFiles ? yo`<div class="item"><em>Empty folder</em></div>` : ''}
-      ${rChildren(archiveInfo, archiveInfo.fileTree.rootNode.children)}
+    <div>
+      ${rFolder(archiveInfo)}
+      <div class="files-list">
+        ${!hasFiles ? yo`<div class="item"><em>Empty folder</em></div>` : ''}
+        ${rChildren(archiveInfo, archiveInfo.fileTree.rootNode.children)}
+      </div>
     </div>
   `
 }
@@ -24,6 +32,18 @@ export default function rFilesList (archiveInfo) {
 
 function redraw (archiveInfo) {
   yo.update(document.querySelector('.files-list'), rFilesList(archiveInfo))
+}
+
+function rFolder (archiveInfo) {
+  return yo`
+    <p class="dat-local-path">
+      ${archiveInfo.userSettings.localPath}
+      <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
+        Open folder
+        <i class="fa fa-folder-open-o"></i>
+      </a>
+    </p>
+  `
 }
 
 function rChildren (archiveInfo, children, depth=0) {
@@ -109,6 +129,14 @@ async function onClickDirectory (e, archiveInfo, node) {
     await archiveInfo.fileTree.readFolder(node)
   }
   redraw(archiveInfo)
+}
+
+function onOpenFolder (e, archiveInfo) {
+  e.preventDefault()
+  if (archiveInfo.userSettings.localPath) {
+    beakerBrowser.openFolder(archiveInfo.userSettings.localPath)
+  }
+  // update()
 }
 
 // helpers

@@ -298,11 +298,6 @@ function rArchive (archiveInfo) {
         <p class="dat-url code-font">
           <a class="link" href="dat://${archiveInfo.key}">dat://${archiveInfo.key}</a>
         </p>
-        <p class="dat-local-path">
-          <a onclick=${onOpenFolder} href="#">
-            <i class="fa fa-folder-open-o"></i>${archiveInfo.userSettings.localPath}
-          </a>
-        </p>
         <div class="actions">
           <span class="readonly">${archiveInfo.isOwner ? '' : yo`<em>(Read-only)</em>`}</span>
           <a class="btn primary" onclick=${onShare}>
