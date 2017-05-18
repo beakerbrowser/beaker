@@ -179,16 +179,14 @@ function renderStep (step) {
   return yo`
     <div class="step">
       <h2 class="title">${currentSection.title}</h2>
-      <div class="info">
-        <div class="description">
-          ${currentSection.description()}
-        </div>
-        <div class="navigation">
-          ${renderBackBtn()}
-          ${renderNextBtn()}
-        </div>
-      </div>
       ${screenshot}
+      <div class="info">
+        ${currentSection.description()}
+      </div>
+      <div class="navigation">
+        ${renderBackBtn()}
+        ${renderNextBtn()}
+      </div>
     </div>
   `
 }
@@ -210,7 +208,7 @@ function renderNextBtn () {
   if (currentStepIdx === steps.length - 1 && currentSectionIdx === steps[currentStepIdx].sections.length - 1) return ''
 
   return yo`
-    <a class="next" onclick=${onClickNext}>
+    <a class="next btn primary thick" onclick=${onClickNext}>
       Next
       <i class="fa fa-angle-double-right"></i>
     </a>

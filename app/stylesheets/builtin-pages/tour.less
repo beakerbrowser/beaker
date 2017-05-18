@@ -97,18 +97,18 @@ main {
   .step {
     position: absolute;
     left: 340px;
-    top: 0;
-    padding: 20px;
+    top: 20px;
 
     .title {
+      font-size: 2rem;
       margin-bottom: @padding-component;
     }
   }
 
   .screenshot-container {
     width: 600px;
-    margin-top: @padding-component;
-    border: 1px solid @border-menu;
+    margin-bottom: @padding-component;
+    text-align: center;
 
     img.screenshot {
       max-width: 100%;
@@ -117,9 +117,11 @@ main {
 
   .info {
     width: 600px;
+    padding-bottom: 70px;
 
     p {
-      font-size: 14px;
+      font-size: 17px;
+      text-align: justify;
     }
 
     ul {
@@ -175,18 +177,19 @@ main {
     .back,
     .next {
       cursor: pointer;
-
-      &:hover {
-        &:extend(.link:hover);
-      }
     }
 
     .next {
       margin-left: auto;
+      font-size: 16px;
     }
 
     .back {
       margin-right: auto;
+      padding: 8px 0;
+      &:hover {
+        &:extend(.link:hover);
+      }
     }
   }
 }
