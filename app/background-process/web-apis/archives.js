@@ -1,13 +1,18 @@
-import {dialog, BrowserWindow} from 'electron'
+import {BrowserWindow} from 'electron'
 import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
-import jetpack from 'fs-jetpack'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
 import {showModal} from '../ui/modals'
+import {showLocalPathDialog, validateLocalPath} from '../browser'
 import {timer} from '../../lib/time'
-import {PermissionsError, InvalidURLError} from 'beaker-error-constants'
+import {
+  ArchiveNotWritableError,
+  PermissionsError,
+  InvalidURLError,
+  InvalidPathError
+} from 'beaker-error-constants'
 
 // exported api
 // =
@@ -28,7 +33,7 @@ export default {
     return status
   },
 
-  async create({title, description, createdBy}={}, {localPath} = {}) {
+  async create({title, description, createdBy}={}) {
     // get origin info
     if (!createdBy) {
       createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
@@ -37,10 +42,10 @@ export default {
     }
 
     // create the archive
-    return datLibrary.createNewArchive({title, description, createdBy}, {localPath})
+    return datLibrary.createNewArchive({title, description, createdBy})
   },
 
-  async fork(url, {title, description, createdBy} = {}, {localPath} = {}) {
+  async fork(url, {title, description, createdBy} = {}) {
     // get origin info
     if (!createdBy) {
       createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
@@ -49,34 +54,39 @@ export default {
     }
 
     // create the archive
-    return datLibrary.forkArchive(url, {title, description, createdBy}, {localPath})
+    return datLibrary.forkArchive(url, {title, description, createdBy})
   },
 
   async update(url, manifestInfo, {localPath} = {}) {
     var key = toKey(url)
     var archive = await datLibrary.getOrLoadArchive(key)
 
-    if (!manifestInfo) {
+    // no info provided: open modal
+    if (!manifestInfo && !localPath) {
+      if (!archive.writable) {
+        throw new ArchiveNotWritableError()
+      }
       // show the update-info the modal
       let win = BrowserWindow.fromWebContents(this.sender)
       await assertSenderIsFocused(this.sender)
-      let isReadOnly = !archive.writable
-      return await showModal(win, 'create-archive', {
-        url,
-        isReadOnly,
-        size: isReadOnly ? 'create-archive-readonly' : 'create-archive'
-      })
+      return await showModal(win, 'create-archive', {url})
+    }
+
+    // validate path
+    if (localPath && !validateLocalPath(localPath).valid) {
+      throw new InvalidPathError('Cannot save the site to that folder')
     }
 
     // update manifest file
-    var archiveInfo = await archivesDb.getMeta(key)
-    var {title, description} = manifestInfo
-    title = typeof title !== 'undefined' ? title : archiveInfo.title
-    description = typeof description !== 'undefined' ? description : archiveInfo.description
-    if (title !== archiveInfo.title || description !== archiveInfo.description) {
-      await pda.updateManifest(archive.stagingFS, {title, description})
-      await pda.commit(archive.stagingFS, {filter: manifestFilter})
-      datLibrary.pullLatestArchiveMeta(archive)
+    if (manifestInfo) {
+      var archiveInfo = await archivesDb.getMeta(key)
+      var {title, description} = manifestInfo
+      title = typeof title !== 'undefined' ? title : archiveInfo.title
+      description = typeof description !== 'undefined' ? description : archiveInfo.description
+      if (title !== archiveInfo.title || description !== archiveInfo.description) {
+        await pda.updateManifest(archive, {title, description})
+        datLibrary.pullLatestArchiveMeta(archive)
+      }
     }
 
     // update settings
@@ -86,32 +96,23 @@ export default {
     }
   },
 
-  async add(url, {localPath, promptLocalPath} = {}) {
+  async add(url) {
     var key = toKey(url)
-
-    // load localPath if needed
-    if (!localPath) {
-      try {
-        let settings = await archivesDb.getUserSettings(0, key)
-        localPath = settings.localPath
-      } catch (e) {}
-    }
-
-    // prompt localPath if needed
-    if (!localPath || promptLocalPath) {
-      localPath = await localPathPrompt()
-      if (!localPath) {
-        throw new Error('Cancelled')
-      }
-    }
-
-    // update settings
-    var res = await archivesDb.setUserSettings(0, key, {isSaved: true, localPath})
 
     // pull metadata
     var archive = await datLibrary.getOrLoadArchive(key)
-    datLibrary.pullLatestArchiveMeta(archive)
-    return res
+    var meta = await datLibrary.pullLatestArchiveMeta(archive)
+
+    // select a default local path, if needed
+    var localPath
+    try {
+      let userSettings = await archivesDb.getUserSettings(0, key)
+      localPath = userSettings.localPath
+    } catch (e) {}
+    localPath = localPath || await datLibrary.selectDefaultLocalPath(meta.title)
+
+    // update settings
+    return archivesDb.setUserSettings(0, key, {isSaved: true, localPath})
   },
 
   async remove(url) {
@@ -160,49 +161,4 @@ function toKey (url) {
   }
 
   return urlp.host
-}
-
-async function localPathPrompt () {
-  while (true) {
-    // prompt for destination
-    var localPath = await new Promise((resolve) => {
-      dialog.showOpenDialog({
-        title: 'Save site files',
-        buttonLabel: 'Save',
-        properties: ['openDirectory', 'showHiddenFiles', 'createDirectory']
-      }, filenames => {
-        resolve(filenames && filenames[0])
-      })
-    })
-    if (!localPath) {
-      return
-    }
-
-    // check if the target is empty
-    try {
-      var files = await jetpack.listAsync(localPath)
-      if (files && files.length > 0) {
-        // ask the user if they're sure
-        var res = await new Promise(resolve => {
-          dialog.showMessageBox({
-            type: 'question',
-            message: 'This folder is not empty. Some files may be overwritten. Save to this folder?',
-            buttons: ['Yes', 'Cancel']
-          }, resolve)
-        })
-        if (res != 0) {
-          continue
-        }
-      }
-    } catch (e) {
-      // no files
-    }
-
-    return localPath
-  }
-}
-
-function manifestFilter (path) {
-  // only allow /dat.json
-  return (path !== '/dat.json') // (true => dont handle)
 }

@@ -5,12 +5,12 @@ import {Archive} from 'builtin-pages-lib'
 var archive
 var isDownloading = false
 var isSelfFork = false
+var isProcessing = false
 
 // form variables
 var title = ''
 var description = ''
 var createdBy
-var localPath = ''
 
 // exported api
 // =
@@ -39,7 +39,6 @@ window.setup = async function (opts) {
     var archiveInfo = archive ? archive.info : {}
     title = opts.title || archiveInfo.title || ''
     description = opts.description || archiveInfo.description || ''
-    localPath = opts.localPath || ''
     createdBy = opts.createdBy || undefined
     render()
 
@@ -73,19 +72,6 @@ function onChangeDescription (e) {
   description = e.target.value
 }
 
-async function onChooseFolder () {
-  var folders = await beakerBrowser.showOpenDialog({
-    title: 'Choose the folder to contain your site',
-    buttonLabel: 'Select',
-    properties: ['openDirectory', 'createDirectory', 'showHiddenFiles']
-  })
-  if (!folders) {
-    return
-  }
-  localPath = folders[0]
-  render()
-}
-
 function onClickCancel (e) {
   e.preventDefault()
   beakerBrowser.closeModal()
@@ -100,9 +86,11 @@ function onClickDownload (e) {
 
 async function onSubmit (e) {
   e.preventDefault()
-  if (!localPath) return
+  if (isProcessing) return
   try {
-    var newArchive = await beaker.archives.fork(archive.info.key, {title, description, createdBy}, {localPath})
+    isProcessing = true
+    render()
+    var newArchive = await beaker.archives.fork(archive.info.key, {title, description, createdBy})
     beakerBrowser.closeModal(null, {url: newArchive.url})
   } catch (e) {
     beakerBrowser.closeModal({
@@ -117,7 +105,6 @@ async function onSubmit (e) {
 // =
 
 function render () {
-  var canSubmit = !!localPath
   var isComplete = archive.info.isOwner || archive.progress.isComplete
   var progressEl, downloadBtn
   if (!isComplete) {
@@ -150,12 +137,6 @@ function render () {
           <p class="help-text">${helpText}</p>
 
           <form onsubmit=${onSubmit}>
-            <label for="path">Folder</label>
-            <div class="input input-file-picker">
-              <button type="button" class="btn" name="path" tabindex="1" onclick=${onChooseFolder}>Choose folder</button>
-              <span>${localPath || yo`<span class="placeholder">Folder (required)</span>`}</span>
-            </div>
-
             <label for="title">Title</label>
             <input name="title" tabindex="2" value=${title} placeholder="Title (optional)" onchange=${onChangeTitle} />
 
@@ -164,9 +145,11 @@ function render () {
 
             ${progressEl}
             <div class="form-actions">
-              <button type="button" class="btn cancel" onclick=${onClickCancel} tabindex="4">Cancel</button>
-              <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="5" disabled=${!canSubmit}>
-                Create fork ${!isComplete ? ' anyway' : ''}
+              <button type="button" class="btn cancel" onclick=${onClickCancel} tabindex="4" disabled=${isProcessing}>Cancel</button>
+              <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="5" disabled=${isProcessing}>
+                ${isProcessing
+                  ? yo`<span><span class="spinner"></span> Forking...</span>`
+                  : `Create fork ${!isComplete ? ' anyway' : ''}`}
               </button>
               ${downloadBtn}
             </div>

@@ -31,9 +31,9 @@ test.before(async t => {
   testStaticDatURL = 'dat://' + testStaticDat.archive.key.toString('hex') + '/'
 
   // create a owned archive
-  var res = await app.client.executeAsync((localPath, done) => {
-    beaker.archives.create({}, {localPath}).then(done,done)
-  }, tempy.directory())
+  var res = await app.client.executeAsync((done) => {
+    beaker.archives.create({}).then(done,done)
+  })
   createdDatURL = res.value.url
   createdDatKey = createdDatURL.slice('dat://'.length)
 
@@ -65,9 +65,9 @@ test('library.add, library.remove', async t => {
   })
 
   // by url
-  var res = await app.client.executeAsync((url, localPath, done) => {
-    window.beaker.archives.add(url, {localPath}).then(done,done)
-  }, createdDatURL, tempy.directory())
+  var res = await app.client.executeAsync((url, done) => {
+    window.beaker.archives.add(url).then(done,done)
+  }, createdDatURL)
   t.deepEqual(res.value.isSaved, true)
   var res = await app.client.executeAsync((url, done) => {
     window.beaker.archives.remove(url).then(done,done)
@@ -75,9 +75,9 @@ test('library.add, library.remove', async t => {
   t.deepEqual(res.value.isSaved, false)
 
   // by key
-  var res = await app.client.executeAsync((key, localPath, done) => {
-    window.beaker.archives.add(key, {localPath}).then(done,done)
-  }, createdDatKey, tempy.directory())
+  var res = await app.client.executeAsync((key, done) => {
+    window.beaker.archives.add(key).then(done,done)
+  }, createdDatKey)
   t.deepEqual(res.value.isSaved, true)
   var res = await app.client.executeAsync((key, done) => {
     window.beaker.archives.remove(key).then(done,done)
@@ -94,13 +94,13 @@ test('library.add, library.remove', async t => {
 
 test('library.list', async t => {
   // add the owned and unowned dats
-  var res = await app.client.executeAsync((url, localPath, done) => {
-    window.beaker.archives.add(url, {localPath}).then(done,done)
-  }, createdDatURL, tempy.directory())
+  var res = await app.client.executeAsync((url, done) => {
+    window.beaker.archives.add(url).then(done,done)
+  }, createdDatURL)
   t.deepEqual(res.value.isSaved, true)
-  var res = await app.client.executeAsync((url, localPath, done) => {
-    window.beaker.archives.add(url, {localPath}).then(done,done)
-  }, testStaticDatURL, tempy.directory())
+  var res = await app.client.executeAsync((url, done) => {
+    window.beaker.archives.add(url).then(done,done)
+  }, testStaticDatURL)
   t.deepEqual(res.value.isSaved, true)
 
   // list all
@@ -128,9 +128,9 @@ test('library.list', async t => {
 
 test('library.get', async t => {
   // add the owned and remove the unowned dat
-  var res = await app.client.executeAsync((url, localPath, done) => {
-    window.beaker.archives.add(url, {localPath}).then(done,done)
-  }, createdDatURL, tempy.directory())
+  var res = await app.client.executeAsync((url, done) => {
+    window.beaker.archives.add(url).then(done,done)
+  }, createdDatURL)
   t.deepEqual(res.value.isSaved, true)
   var res = await app.client.executeAsync((url, done) => {
     window.beaker.archives.remove(url).then(done,done)
