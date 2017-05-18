@@ -294,11 +294,12 @@ export function validateLocalPath (localPath) {
   return {valid: true}
 }
 
-export async function showLocalPathDialog ({folderName, warnIfNotEmpty} = {}) {
+export async function showLocalPathDialog ({folderName, defaultPath, warnIfNotEmpty} = {}) {
   while (true) {
     // prompt for destination
     var localPath = await new Promise((resolve) => {
       dialog.showOpenDialog({
+        defaultPath,
         title: (folderName)
           ? 'Choose where to put the site folder'
           : 'Choose the site folder',

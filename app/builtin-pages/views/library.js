@@ -660,6 +660,7 @@ async function onFileChanged () {
 async function onChooseNewLocation (e) {
   e.preventDefault()
   var localPath = await beakerBrowser.showLocalPathDialog({
+    defaultPath: selectedArchive.userSettings.localPath,
     warnIfNotEmpty: !selectedArchive.isOwner
   })
   await beaker.archives.update(selectedArchiveKey, null, {localPath})
