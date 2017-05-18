@@ -10,8 +10,10 @@ export default function rFilesList (archiveInfo) {
     return yo`<div class="files-list"></div>`
   }
 
+  var hasFiles = Object.keys(archiveInfo.fileTree.rootNode.children).length > 0
   return yo`
     <div class="files-list">
+      ${!hasFiles ? yo`<div class="item"><em>Empty folder</em></div>` : ''}
       ${rChildren(archiveInfo, archiveInfo.fileTree.rootNode.children)}
     </div>
   `
