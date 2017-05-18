@@ -137,62 +137,11 @@ async function beakerServer (req, res) {
   if (requestUrl.startsWith('beaker://assets/logo')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
   }
-  if (requestUrl === 'beaker://assets/website.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/website.png'))
-  }
-  if (requestUrl === 'beaker://assets/network.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/network.png'))
-  }
-  if (requestUrl === 'beaker://assets/share-files.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/share-files.png'))
-  }
-  if (requestUrl === 'beaker://assets/new-site-dropdown.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/new-site-dropdown.png'))
-  }
-  if (requestUrl === 'beaker://assets/new-site-editor.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/new-site-editor.png'))
-  }
-  if (requestUrl === 'beaker://assets/new-site-save.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/new-site-save.png'))
-  }
-  if (requestUrl === 'beaker://assets/new-site-done.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/new-site-done.png'))
-  }
-  if (requestUrl === 'beaker://assets/share-files-start.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/share-files-start.png'))
-  }
-  if (requestUrl === 'beaker://assets/share-files-upload.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/share-files-upload.png'))
-  }
-  if (requestUrl === 'beaker://assets/share-files-done.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/share-files-done.png'))
-  }
-  if (requestUrl === 'beaker://assets/note-start.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-start.png'))
-  }
-  if (requestUrl === 'beaker://assets/note-write.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-write.png'))
-  }
-  if (requestUrl === 'beaker://assets/note-done.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-fork-modal.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-fork-modal.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-fork.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-fork.png'))
-  }
   if (requestUrl === 'beaker://assets/tour-intro.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-intro.png'))
   }
-  if (requestUrl === 'beaker://assets/tour-library-view.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-library-view.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-new-site-modal.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-modal.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-new-site-publish-changes.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-publish-changes.png'))
+  if (requestUrl === 'beaker://assets/tour-new-site-in-library.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-in-library.png'))
   }
   if (requestUrl === 'beaker://assets/tour-new-site-publish.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-publish.png'))
@@ -200,38 +149,32 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/tour-new-site.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site.png'))
   }
-  if (requestUrl === 'beaker://assets/tour-remove-from-library.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-remove-from-library.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-save-to-library.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-save-to-library.png'))
+  if (requestUrl === 'beaker://assets/tour-set-site-info.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-set-site-info.png'))
   }
   if (requestUrl === 'beaker://assets/tour-share-site.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-share-site.png'))
   }
-  if (requestUrl === 'beaker://assets/tour-site-files.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-files.png'))
+  if (requestUrl === 'beaker://assets/tour-site-peer-count.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-peer-count.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-staging-area.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-staging-area.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-fork.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-fork.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-library-view.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-library-view.png'))
+  }
+  if (requestUrl === 'beaker://assets/tour-save-to-library.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-save-to-library.png'))
   }
   if (requestUrl === 'beaker://assets/tour-site-history.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-history.png'))
   }
-  if (requestUrl === 'beaker://assets/tour-site-peer-count.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-peer-count.png'))
-  }
   if (requestUrl === 'beaker://assets/tour-site-versions.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-versions.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-view-site.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-view-site.png'))
-  }
-  if (requestUrl === 'beaker://assets/note-done.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
-  }
-  if (requestUrl === 'beaker://assets/note-done.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
-  }
-  if (requestUrl === 'beaker://assets/note-done.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/note-done.png'))
   }
 
   // builtin pages
