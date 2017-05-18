@@ -193,6 +193,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}) {
     skipUndownloadedFiles: true,
     ignore: ['/dat.json']
   })
+  await pda.commit(dstArchive.staging)
 
   return dstArchiveUrl
 }

@@ -5,6 +5,7 @@ import {Archive} from 'builtin-pages-lib'
 var archive
 var isDownloading = false
 var isSelfFork = false
+var isProcessing = false
 
 // form variables
 var title = ''
@@ -85,7 +86,10 @@ function onClickDownload (e) {
 
 async function onSubmit (e) {
   e.preventDefault()
+  if (isProcessing) return
   try {
+    isProcessing = true
+    render()
     var newArchive = await beaker.archives.fork(archive.info.key, {title, description, createdBy})
     beakerBrowser.closeModal(null, {url: newArchive.url})
   } catch (e) {
@@ -141,9 +145,11 @@ function render () {
 
             ${progressEl}
             <div class="form-actions">
-              <button type="button" class="btn cancel" onclick=${onClickCancel} tabindex="4">Cancel</button>
-              <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="5">
-                Create fork ${!isComplete ? ' anyway' : ''}
+              <button type="button" class="btn cancel" onclick=${onClickCancel} tabindex="4" disabled=${isProcessing}>Cancel</button>
+              <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="5" disabled=${isProcessing}>
+                ${isProcessing
+                  ? yo`<span><span class="spinner"></span> Forking...</span>`
+                  : `Create fork ${!isComplete ? ' anyway' : ''}`}
               </button>
               ${downloadBtn}
             </div>
