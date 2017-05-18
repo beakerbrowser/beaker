@@ -13,6 +13,9 @@ export function archivesDebugPage () {
             <tr><td>Content DKey</td><td>${a.content.discoveryKey.toString('hex')}</td></tr>
             <tr><td>Meta Key</td><td>${a.key.toString('hex')}</td></tr>
             <tr><td>Content Key</td><td>${a.content.key.toString('hex')}</td></tr>
+            ${a.replicationStreams.map((s, i) => `
+              <tr><td>Peer ${i}</td><td>${s.peerInfo.type} ${s.peerInfo.host}:${s.peerInfo.port}</td></tr>
+            `).join('')}
           </table>
         </div>`
       }).join('')}

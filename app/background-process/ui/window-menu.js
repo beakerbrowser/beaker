@@ -227,6 +227,11 @@ var beakerDevMenu = {
       BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
     }
   },{
+    label: 'Open Archives Debug Page',
+    click: function (item, win) {
+      if (win) win.webContents.send('command', 'file:new-tab', 'beaker://internal-archives/')
+    }
+  },{
     label: 'Toggle Shell-Window DevTools',
     click: function () {
       BrowserWindow.getFocusedWindow().toggleDevTools()

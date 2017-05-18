@@ -443,6 +443,7 @@ export function joinSwarm (key, opts) {
       // create the replication stream
       var stream = archive.replicate({live: true})
       archive.replicationStreams.push(stream)
+      stream.peerInfo = info
       stream.once('close', () => {
         var rs = archive.replicationStreams
         var i = rs.indexOf(stream)
