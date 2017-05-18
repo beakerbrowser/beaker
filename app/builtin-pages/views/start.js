@@ -235,10 +235,11 @@ function renderReleaseNotes () {
     return ''
   }
   return yo`
-    <div class="message info">
-      <strong>Welcome to the Beaker 0.7 pre-release.</strong>
-      Let us know if anything breaks.
-    </div>
+    <p class="release-notes">
+      You’re using the Beaker v0.7 pre-release.
+      <a href="https://groups.google.com/forum/#!topic/beaker-browser/zDRrk194bbM">
+      See what’s new</a>.
+    </p>
   `
 }
 
