@@ -43,7 +43,7 @@ var steps = [
         screenshotOrder: 2
       },
       {
-        title: 'Beaker’s library view',
+        title: 'Beaker’s Library',
         description: () => yo`<div class="description">
           <p>Beaker will open the library view, where you can modify the site.</p>
         </div>`,
@@ -53,24 +53,26 @@ var steps = [
       },
       {
         title: 'Adding and publishing files',
-        description: () => yo`<div>
+        description: () => yo`<div class="description">
         <div class="screenshot-container">
-          <img class="screenshot" src="beaker://assets/tour-new-site-publish1.png"/>
-        </div>
-        <div class="description">
-          <p>Click "Open folder."<br /><br /></p>
-        </div>
-        <div class="screenshot-container">
-          <img class="screenshot" src="beaker://assets/tour-new-site-publish2.png"/>
-        </div>
-        <div class="description">
-          <p>Add the files you want to publish to that folder.</p>
+          <figure>
+            <img class="screenshot" src="beaker://assets/tour-new-site-publish1.png"/>
+            <figcaption>Click "Open folder" to open the site’s source directory.</figcaption>
+          </figure>
         </div>
         <div class="screenshot-container">
-          <img class="screenshot" src="beaker://assets/tour-new-site-publish3.png"/>
+          <figure>
+            <img class="screenshot" src="beaker://assets/tour-new-site-publish2.png"/>
+            <figcaption>Add files to the site’s source folder.</figcaption>
+          </figure>
         </div>
-        <div class="description">
-          <p>Then click "Publish." Other users can now browse to the files in the site.</p>
+        <div class="screenshot-container">
+          <figure>
+            <img class="screenshot" src="beaker://assets/tour-new-site-publish3.png"/>
+            <figcaption>
+              Review your changes, then click "Publish". People who know your site’s URL can now view the files.
+            </figcaption>
+          </figure>
         </div>`,
         bordered: true,
         screenshotOrder: 2
@@ -91,24 +93,28 @@ var steps = [
     title: 'Managing your sites',
     sections: [
       {
-        title: 'Beaker’s library',
+        title: 'Beaker’s Library',
         description: () => yo`<div class="description">
-          <p>The library stores all the sites you have saved and created.</p>
+          <p><code>beaker://library</code> is home to sites that you’ve saved to your device, including sites that you created.</p>
         </div>`,
-        screenshot: 'tour-library-view.png'
+        screenshot: 'tour-library-view.png',
+        bordered: true,
+        screenshotOrder: 2
       },
       {
-        title: 'The site staging area',
+        title: 'The staging area',
         description: () => yo`<div class="description">
           <p>Any time you add, delete, or change your site’s files, you can review your changes before you publish them.</p>
           <p>If you make a mistake, just revert your changes!</p>
         </div>`,
-        screenshot: 'tour-staging-area.png'
+        screenshot: 'tour-staging-area.png',
+        bordered: true,
+        screenshotOrder: 2
       },
       {
         title: 'Unpublished changes',
         description: () => yo`<div class="description">
-          <p>You can open the site prior to publishing and see the changes in progress. Until published, only you will see the changes.</p>
+          <p>Prior to publishing, you can open your site to preview the unpublished changes. Until your changes are published, only you will see the changes.</p>
         </div>`
       }
     ]
