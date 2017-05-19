@@ -330,7 +330,7 @@ export class DropMenuNavbarBtn {
       return
     }
     var archive = await DatArchive.fork(page.siteInfo.key)
-    page.loadURL(archive.url)
+    page.loadURL('beaker://library/' + archive.url.slice('dat://'.length))
   }
 
   async onViewFiles (e) {
