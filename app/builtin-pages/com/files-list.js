@@ -35,6 +35,7 @@ function redraw (archiveInfo) {
 }
 
 function rFolder (archiveInfo) {
+  if (!archiveInfo.userSettings) return ''
   return yo`
     <p class="dat-local-path">
       ${archiveInfo.userSettings.localPath}
