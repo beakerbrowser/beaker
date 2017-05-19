@@ -104,9 +104,13 @@ main {
   }
 
   .step {
+    &:extend(.flex);
+    flex-wrap: wrap;
+    flex-direction: column;
     position: absolute;
     left: 340px;
     top: 20px;
+    padding-bottom: 100px;
 
     .title {
       font-size: 1.6rem;
