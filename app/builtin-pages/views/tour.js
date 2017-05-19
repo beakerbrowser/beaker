@@ -14,11 +14,14 @@ var steps = [
           <p>This makes it easy for anybody to host a site!</p>
         </div>`,
         screenshot: 'tour-intro.png',
+        screenshotOrder: 1
       },
       {
         title: 'Browsing the peer-to-peer network',
         description: () => yo`<div class="description"><p>You can see how many peers are hosting the site’s files. When you navigate to a site, you${"'"}ll automatically share the files you download for a short period.</p></div>`,
         screenshot: 'tour-site-peer-count.png',
+        bordered: true,
+        screenshotOrder: 2
       },
     ]
   },
@@ -28,20 +31,25 @@ var steps = [
       {
         title: 'Creating a new Web site',
         description: () => yo`<div class="description"><p>With Beaker, you can publish your own peer-to-peer Web sites. Click the "New site" button in the dropdown menu.</p></div>`,
-        screenshot: 'tour-new-site.png'
-
+        screenshot: 'tour-new-site.png',
+        bordered: true,
+        screenshotOrder: 2
       },
       {
         title: 'Setting a title and description',
         description: () => yo`<div class="description"><p>Choose a title for your site. You can also set a longer description of what the site will contain.</p></div>`,
-        screenshot: 'tour-set-site-info.png'
+        screenshot: 'tour-set-site-info.png',
+        bordered: true,
+        screenshotOrder: 2
       },
       {
         title: 'Beaker’s library view',
         description: () => yo`<div class="description">
           <p>Beaker will open the library view, where you can modify the site.</p>
         </div>`,
-        screenshot: 'tour-new-site-in-library.png'
+        screenshot: 'tour-new-site-in-library.png',
+        bordered: true,
+        screenshotOrder: 2
       },
       {
         title: 'Adding and publishing files',
@@ -64,6 +72,8 @@ var steps = [
         <div class="description">
           <p>Then click "Publish." Other users can now browse to the files in the site.</p>
         </div>`,
+        bordered: true,
+        screenshotOrder: 2
       },
       {
         title: 'Sharing your site',
@@ -71,7 +81,9 @@ var steps = [
           <p>Share the URL with friends, and keep Beaker online, so that your friends can download the site.</p>
           <p>The URL for Dat  archives are unguessable, and your files can only be seen by people you share the URL with.</p>
         </div>`,
-        screenshot: 'tour-share-site.png'
+        screenshot: 'tour-share-site.png',
+        bordered: true,
+        screenshotOrder: 2
       }
     ]
   },
@@ -109,7 +121,9 @@ var steps = [
         description: () => yo`<div class="description">
           <p>If you want to keep a site you visit, simply save it to your Library. This will store a read-only version of the site, which will automatically update as the owner makes changes.</p>
         </div>`,
-        screenshot: 'tour-save-to-library.png'
+        screenshot: 'tour-save-to-library.png',
+        bordered: true,
+        screenshotOrder: 2
       },
       {
         title: 'Forking a site',
@@ -118,6 +132,8 @@ var steps = [
           <p>Forked sites are given an entirely new URL, which you control.</p>
         </div>`,
         screenshot: 'tour-fork.png',
+        bordered: true,
+        screenshotOrder: 2
       }
     ]
   },
@@ -129,14 +145,18 @@ var steps = [
         description: () => yo`<div class="description">
           <p>Every addition, deletion, and modification to your site is added to your site’s history log. You can review every change in the "History" section in your Library.</p>
         </div>`,
-        screenshot: 'tour-site-history.png'
+        screenshot: 'tour-site-history.png',
+        bordered: true,
+        screenshotOrder: 2
       },
       {
         title: 'Site versions',
         description: () => yo`<div class="description">
           <p>Each revision made to a site creates a new version of the site. You can view any version of a site by adding <code>+\${versionNumber}</code> to the end of the domain.</p>
         </div>`,
-        screenshot: 'tour-site-versions.png'
+        screenshot: 'tour-site-versions.png',
+        bordered: true,
+        screenshotOrder: 2
       }
     ]
   },
@@ -147,6 +167,8 @@ var steps = [
         title: 'Public peers',
           description: () => yo`<div class="description"><p>Uptime is not guaranteed for sites transported with a peer-to-peer protocol like <a href="https://github.com/datproject/dat">Dat</a>. If no peers are actively hosting your files, then your site won’t be available to visitors.</p><p>You can use a public peer service which makes sure your files are always available.</p><p>The Beaker team runs an open-source, self-deployable public peer service called <a href="https://hashbase.io">Hashbase</a>. In addition to rehosting your files, <a href="https://hashbase.io">Hashbase</a> provides short URLs like <code>dat://mysite.hashbase.io</code>, plus HTTPs mirroring.</p></div>`,
         screenshot: '',
+        bordered: true,
+        screenshotOrder: 2
       }
     ]
   }
@@ -213,12 +235,15 @@ function renderStepLink (step) {
 
 function renderStep (step) {
   var currentSection = step.sections[currentSectionIdx]
+  var borderedCls = currentSection.bordered ? 'bordered' : ''
 
   var screenshot
   if (currentSection.screenshot) {
     screenshot = yo`
-      <div class="screenshot-container">
-        <img class="screenshot" src="beaker://assets/${currentSection.screenshot}"/>
+      <div style="${'order: ' + currentSection.screenshotOrder}" class="screenshot-container">
+        <img
+          class="screenshot ${borderedCls}"
+          src="beaker://assets/${currentSection.screenshot}"/>
       </div>
     `
   }
@@ -227,7 +252,7 @@ function renderStep (step) {
     <div class="step">
       <h2 class="title">${currentSection.title}</h2>
       ${screenshot}
-      <div class="info">
+      <div style="{'order: ' + currentSection.screenshotOrder === 1 ? '2' : ''}" class="info ${borderedCls}">
         ${currentSection.description()}
       </div>
       <div class="navigation">

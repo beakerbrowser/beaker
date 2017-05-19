@@ -121,12 +121,50 @@ main {
 
     img.screenshot {
       max-width: 100%;
+      border-radius: 2px;
+
+      &.bordered {
+        border: 1px solid fadeout(@border-menu, 35%);
+      }
     }
+  }
+
+  figure {
+    margin: 0;
+    margin-bottom: 3em;
+
+    img {
+      border-radius: 2px 2px 0 0 !important;
+      border-bottom: 0 !important;
+      width: 100%;
+    }
+  }
+
+  figcaption {
+    border-radius: 0 0 2px 2px;
+    border: 1px solid fadeout(@border-menu, 35%);
+    background: @background-menu;
+    font-size: 12.5px;
+    padding: 5px 0;
+    margin-top: -3px;
+  }
+
+  .description {
   }
 
   .info {
     width: 600px;
-    padding-bottom: 100px;
+
+    img {
+      border-radius: 2px;
+    }
+
+    &.bordered {
+
+      img {
+        border: 1px solid @border-menu;
+      }
+    }
 
     p {
       margin-bottom: 1.5em;
