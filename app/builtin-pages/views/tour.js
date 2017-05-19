@@ -54,6 +54,7 @@ var steps = [
       {
         title: 'Adding and publishing files',
         description: () => yo`<div class="description">
+        <p>Once you’ve created a site, you can start adding files to its source folder.</p>
         <div class="screenshot-container">
           <figure>
             <img class="screenshot" src="beaker://assets/tour-new-site-publish1.png"/>
