@@ -184,11 +184,16 @@ function render () {
 function renderStepLink (step) {
   var stepIdx = steps.indexOf(step)
   var step = steps[stepIdx]
-  var cls = currentStepIdx === stepIdx ? 'active' : ''
+  var isStepActive = currentStepIdx === stepIdx
+  var stepCls = isStepActive ? 'active' : ''
+  var stepIcon = isStepActive ? 'fa-caret-down' : 'fa-caret-right'
 
   return yo`
-    <li onclick=${e => onSwitchSection(stepIdx, 0)} class="step-link ${cls}">
-      <span class="title">${step.title}</span>
+    <li onclick=${e => onSwitchSection(stepIdx, 0)} class="step-link ${stepCls}">
+      <span class="title">
+        <i class="fa ${stepIcon}"></i>
+        ${step.title}
+      </span>
       <ul class="subnav">
         ${step.sections.map((section, idx) => {
           var isActive = currentStepIdx === stepIdx && currentSectionIdx === idx
@@ -197,7 +202,6 @@ function renderStepLink (step) {
               class=${isActive ? 'active' : ''}
               onclick=${e => {e.stopPropagation(); onSwitchSection(stepIdx, idx)}}
             >
-              ${isActive ? yo`<i class="fa fa-caret-right"/>` : ''}
               ${section.title}
             </li>
           `
