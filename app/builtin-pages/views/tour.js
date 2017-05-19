@@ -243,7 +243,7 @@ function renderBackBtn () {
   if (currentSectionIdx === 0 && currentStepIdx === 0) return ''
 
   return yo`
-    <a class="back" onclick=${onClickBack}>
+    <a class="back btn primary thick" onclick=${onClickBack}>
       <i class="fa fa-angle-double-left"></i>
       Previous
     </a>
