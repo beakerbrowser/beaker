@@ -22,14 +22,22 @@ main {
   width: 1200px;
   position: relative;
 
-  .links {
-    font-size: 14px;
-    border: 1px solid @border-menu;
-    border-radius: 3px;
+  .nav {
     width: 300px;
     position: fixed;
     left: 20px;
     top: 20px;
+
+    ul {
+      list-style: disc;
+      padding-left: 2em;
+    }
+  }
+
+  .links {
+    font-size: 14px;
+    border: 1px solid @border-menu;
+    border-radius: 3px;
     background: #fff;
 
     li.step-link {
@@ -57,6 +65,7 @@ main {
         padding: 10px;
         color: @color-link;
         padding-left: 20px;
+        list-style: none;
 
         li:not(last-child) {
           margin-bottom: 3px;

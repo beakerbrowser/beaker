@@ -164,8 +164,16 @@ function render () {
     document.querySelector('main'),
     yo`
       <main>
-        <div class="links">
-          <ol>${steps.map(renderStepLink)}</ol>
+        <div class="nav">
+          <div class="links">
+            <ol>${steps.map(renderStepLink)}</ol>
+          </div>
+          <p>Links:</p>
+          <ul>
+            <li><a class="link" href="https://beakerbrowser.com/docs/" target="_blank">Documentation</a></li>
+            <li><a class="link" href="https://github.com/beakerbrowser/beaker" target="_blank">Project repository</a></li>
+            <li><a class="link" href="https://groups.google.com/forum/#!forum/beaker-browser" target="_blank">Mailing list</a></li>
+          </ul>
         </div>
         ${renderStep(steps[currentStepIdx])}
       </main>
