@@ -9,69 +9,115 @@ var steps = [
     sections: [
       {
         title: 'What is a peer-to-peer Web site?',
-        description: () => yo`<div class="description"><p>Peer-to-peer Web sites are just like any other Web site -- a collection of files.</p><p>But in Beaker, peer-to-peer sites are transported with <a href="https://github.com/datproject/dat/">Dat</a>, a new protocol for efficiently sharing, syncing, and verifying files across a network.</p></div>`,
+        description: () => yo`<div class="description">
+          <p>Peer-to-peer sites are just like any other Web site. But instead of being served from a datacenter, files are hosted by peers on your network.</p>
+          <p>This makes it easy for anybody to host a site!</p>
+        </div>`,
         screenshot: 'tour-intro.png',
       },
       {
-        title: 'Browsing the peer-to-peer Web',
-        description: () => yo`<div class="description"><p>With Beaker, you can browse peer-to-peer sites like any other Web site. But instead of being served from a datacenter, files are hosted by peers on your network.</p></div>`,
-        screenshot: 'tour-view-site.png',
-      },
-      {
-        title: 'Viewing network activity',
-        description: () => yo`<div class="description"><p>You can even see how many peers are hosting the site’s files at any given moment!</p></div>`,
+        title: 'Browsing the peer-to-peer network',
+        description: () => yo`<div class="description"><p>You can see how many peers are hosting the site’s files. When you navigate to a site, you${"'"}ll automatically share the files you download for a short period.</p></div>`,
         screenshot: 'tour-site-peer-count.png',
       },
-    ]
-  },
-  {
-    title: 'Rehosting files',
-    sections: [
-      {
-        title: 'Saving sites to your Library',
-        description: () => yo`<div class="description"><p>If you want to help host a site, simply save it to your Library.</p></div>`,
-        screenshot: 'tour-save-to-library.png'
-      },
-      {
-        title: 'Saving site files to your computer',
-        description: () => yo`<div class="description"><p>If you save a site to your Library, its files will be saved to your computer, and visitors to the site can fetch its files from your device when you’re online.</p></div>`,
-        screenshot: 'tour-site-files.png'
-      },
-      {
-        title: 'Removing a site from your Library',
-        description: () => yo`<div class="description"><p>If you don’t want to help rehost the site’s files, simply remove it from your Library.</p></div>`,
-        screenshot: 'tour-remove-from-library.png'
-      }
     ]
   },
   {
     title: 'Publishing with Beaker',
     sections: [
       {
-        title: 'Creating a peer-to-peer Web site',
+        title: 'Creating a new Web site',
         description: () => yo`<div class="description"><p>With Beaker, you can publish your own peer-to-peer Web sites. Click the "New site" button in the dropdown menu.</p></div>`,
         screenshot: 'tour-new-site.png'
 
       },
       {
-        title: 'Choosing your site’s files',
-        description: () => yo`<div class="description"><p>Choose a directory on your computer that will house your site, and Beaker will initialize a Dat archive inside that directory.</p></div>`,
-        screenshot: 'tour-new-site-modal.png'
+        title: 'Setting a title and description',
+        description: () => yo`<div class="description"><p>Choose a title for your site. You can also set a longer description of what the site will contain.</p></div>`,
+        screenshot: 'tour-set-site-info.png'
       },
       {
-        title: 'Publishing your site',
-        description: () => yo`<div class="description"><p>Review your files, and when you’re ready, publish your site on the network!</p></div>`,
-        screenshot: 'tour-new-site-publish.png'
+        title: 'Beaker’s library view',
+        description: () => yo`<div class="description">
+          <p>Beaker will open the library view, where you can modify the site.</p>
+        </div>`,
+        screenshot: 'tour-new-site-in-library.png'
       },
       {
-        title: 'Beaker’s staging area',
-        description: () => yo`<div class="description"><p>Any time you add, delete, or change your site’s files, you can review your changes before you publish them.</p><p>If you make a mistake, just revert your changes!</p></div>`,
-        screenshot: 'tour-new-site-publish-changes.png'
+        title: 'Adding and publishing files',
+        description: () => yo`<div>
+        <div class="screenshot-container">
+          <img class="screenshot" src="beaker://assets/tour-new-site-publish1.png"/>
+        </div>
+        <div class="description">
+          <p>Click "Open folder."<br /><br /></p>
+        </div>
+        <div class="screenshot-container">
+          <img class="screenshot" src="beaker://assets/tour-new-site-publish2.png"/>
+        </div>
+        <div class="description">
+          <p>Add the files you want to publish to that folder.</p>
+        </div>
+        <div class="screenshot-container">
+          <img class="screenshot" src="beaker://assets/tour-new-site-publish3.png"/>
+        </div>
+        <div class="description">
+          <p>Then click "Publish." Other users can now browse to the files in the site.</p>
+        </div>`,
       },
       {
         title: 'Sharing your site',
-        description: () => yo`<div class="description"><p>The URL for Dat  archives are unguessable, so your files can only be seen by people you share the URL with.</p></div>`,
+        description: () => yo`<div class="description">
+          <p>Share the URL with friends, and keep Beaker online, so that your friends can download the site.</p>
+          <p>The URL for Dat  archives are unguessable, and your files can only be seen by people you share the URL with.</p>
+        </div>`,
         screenshot: 'tour-share-site.png'
+      }
+    ]
+  },
+  {
+    title: 'Managing your sites',
+    sections: [
+      {
+        title: 'Beaker’s library',
+        description: () => yo`<div class="description">
+          <p>The library stores all the sites you have saved and created.</p>
+        </div>`,
+        screenshot: 'tour-library-view.png'
+      },
+      {
+        title: 'The site staging area',
+        description: () => yo`<div class="description">
+          <p>Any time you add, delete, or change your site’s files, you can review your changes before you publish them.</p>
+          <p>If you make a mistake, just revert your changes!</p>
+        </div>`,
+        screenshot: 'tour-staging-area.png'
+      },
+      {
+        title: 'Unpublished changes',
+        description: () => yo`<div class="description">
+          <p>You can open the site prior to publishing and see the changes in progress. Until published, only you will see the changes.</p>
+        </div>`
+      }
+    ]
+  },
+  {
+    title: 'Saving sites you visit',
+    sections: [
+      {
+        title: 'Saving a site to your Library',
+        description: () => yo`<div class="description">
+          <p>If you want to keep a site you visit, simply save it to your Library. This will store a read-only version of the site, which will automatically update as the owner makes changes.</p>
+        </div>`,
+        screenshot: 'tour-save-to-library.png'
+      },
+      {
+        title: 'Forking a site',
+        description: () => yo`<div class="description">
+          <p>If you want to create an editable copy of a site you visit, you can "fork" the site. Forking creates a new, editable duplicate of the site in your library. You will own the new site, and have the ability to publish changes to it.</p>
+          <p>Forked sites are given an entirely new URL, which you control.</p>
+        </div>`,
+        screenshot: 'tour-fork.png',
       }
     ]
   },
@@ -80,28 +126,17 @@ var steps = [
     sections: [
       {
         title: 'Viewing a site’s history',
-        description: () => yo`<div class="description"><p>Every addition, deletion, and modification to your site is added to your site’s history log. You can review every change in the "History" section in your Library.</p></div>`,
+        description: () => yo`<div class="description">
+          <p>Every addition, deletion, and modification to your site is added to your site’s history log. You can review every change in the "History" section in your Library.</p>
+        </div>`,
         screenshot: 'tour-site-history.png'
       },
       {
         title: 'Site versions',
-        description: () => yo`<div class="description"><p>Each revision made to a site creates a new version of the site. You can view any version of a site by adding <code>+\${versionNumber}</code> to the end of the URL.</p></div>`,
+        description: () => yo`<div class="description">
+          <p>Each revision made to a site creates a new version of the site. You can view any version of a site by adding <code>+\${versionNumber}</code> to the end of the domain.</p>
+        </div>`,
         screenshot: 'tour-site-versions.png'
-      }
-    ]
-  },
-  {
-    title: 'Forking a site',
-    sections: [
-      {
-        title: 'How to fork a site',
-        description: () => yo`<div class="description"><p>You can also fork other peoples’ sites! Forking saves an editable copy of the site to your library.</p></div>`,
-        screenshot: 'tour-fork.png',
-      },
-      {
-        title: 'Choose a location for your forked site',
-        description: () => yo`<div class="description"><p>Choose a destination directory, and Beaker will make a new directory within it to hold your copy of the site’s files.</p></div>`,
-        screenshot: 'tour-fork-modal.png'
       }
     ]
   },
@@ -109,8 +144,8 @@ var steps = [
     title: 'Availability and reliability',
     sections: [
       {
-        title: 'Cloud hosting',
-          description: () => yo`<div class="description"><p>Availability is not guaranteed for sites transported with a peer-to-peer protocol like <a href="https://github.com/datproject/dat">Dat</a>. If no peers are actively hosting your files, then your site won’t be available to visitors.</p><p>You can use a cloud host which acts like a "super peer" and makes sure your files are always available.</p><p>In addition to rehosting your files, services like <a href="https://hashbase.io">Hashbase</a> provide unique short names, like <code>dat://mysite.hashbase.io</code> and HTTP mirroring.</p><p>Get started: <ul><li onclick=${createSite}><a>Create a site</a></li><li><a href="beaker://start">Go to the start page</a></li></ul></p></div>`,
+        title: 'Public peers',
+          description: () => yo`<div class="description"><p>Uptime is not guaranteed for sites transported with a peer-to-peer protocol like <a href="https://github.com/datproject/dat">Dat</a>. If no peers are actively hosting your files, then your site won’t be available to visitors.</p><p>You can use a public peer service which makes sure your files are always available.</p><p>The Beaker team runs an open-source, self-deployable public peer service called <a href="https://hashbase.io">Hashbase</a>. In addition to rehosting your files, <a href="https://hashbase.io">Hashbase</a> provides short URLs like <code>dat://mysite.hashbase.io</code>, plus HTTPs mirroring.</p></div>`,
         screenshot: '',
       }
     ]
@@ -129,8 +164,16 @@ function render () {
     document.querySelector('main'),
     yo`
       <main>
-        <div class="links">
-          <ol>${steps.map(renderStepLink)}</ol>
+        <div class="nav">
+          <div class="links">
+            <ol>${steps.map(renderStepLink)}</ol>
+          </div>
+          <p>Links:</p>
+          <ul>
+            <li><a class="link" href="https://beakerbrowser.com/docs/" target="_blank">Documentation</a></li>
+            <li><a class="link" href="https://github.com/beakerbrowser/beaker" target="_blank">Project repository</a></li>
+            <li><a class="link" href="https://groups.google.com/forum/#!forum/beaker-browser" target="_blank">Mailing list</a></li>
+          </ul>
         </div>
         ${renderStep(steps[currentStepIdx])}
       </main>
@@ -148,8 +191,13 @@ function renderStepLink (step) {
       <span class="title">${step.title}</span>
       <ul class="subnav">
         ${step.sections.map((section, idx) => {
+          var isActive = currentStepIdx === stepIdx && currentSectionIdx === idx
           return yo`
-            <li onclick=${e => {e.stopPropagation(); onSwitchSection(stepIdx, idx)}}>
+            <li
+              class=${isActive ? 'active' : ''}
+              onclick=${e => {e.stopPropagation(); onSwitchSection(stepIdx, idx)}}
+            >
+              ${isActive ? yo`<i class="fa fa-caret-right"/>` : ''}
               ${section.title}
             </li>
           `
@@ -174,16 +222,14 @@ function renderStep (step) {
   return yo`
     <div class="step">
       <h2 class="title">${currentSection.title}</h2>
-      <div class="info">
-        <div class="description">
-          ${currentSection.description()}
-        </div>
-        <div class="navigation">
-          ${renderBackBtn()}
-          ${renderNextBtn()}
-        </div>
-      </div>
       ${screenshot}
+      <div class="info">
+        ${currentSection.description()}
+      </div>
+      <div class="navigation">
+        ${renderBackBtn()}
+        ${renderNextBtn()}
+      </div>
     </div>
   `
 }
@@ -202,11 +248,14 @@ function renderBackBtn () {
 
 function renderNextBtn () {
   // is very last step
-  if (currentStepIdx === steps.length - 1 && currentSectionIdx === steps[currentStepIdx].sections.length - 1) return ''
+  var isLastStep = (
+    currentStepIdx === steps.length - 1 &&
+    currentSectionIdx === steps[currentStepIdx].sections.length - 1
+  )
 
   return yo`
-    <a class="next" onclick=${onClickNext}>
-      Next
+    <a class="next btn primary thick" onclick=${onClickNext}>
+      ${isLastStep ? 'End Tour' : 'Next'}
       <i class="fa fa-angle-double-right"></i>
     </a>
   `
@@ -240,7 +289,12 @@ function onClickNext () {
   } else {
     currentSectionIdx = currentSectionIdx + 1
   }
-  render()
+
+  if (currentStepIdx >= steps.length) {
+    window.location = 'beaker://start'
+  } else {
+    render()
+  }
 }
 
 async function createSite () {
