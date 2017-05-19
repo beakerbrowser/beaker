@@ -59,32 +59,30 @@ main {
 
       .title,
       .subnav {
-        border-bottom: 1px solid @border-menu;
         background: @background-menu;
+        border-bottom: 1px solid @border-menu;
       }
 
       .subnav {
         background: #fff;
         display: none;
-        padding: 10px;
         color: @color-link;
         padding-left: 20px;
         list-style: none;
+        padding: 0;
 
-        li:not(last-child) {
-          margin-bottom: 3px;
+        li {
+          padding: 10px;
+          border-left: 3px solid transparent;
+        }
+
+        li:not(:last-child) {
+          border-bottom: 1px solid @border-menu;
         }
 
         li.active {
           position: relative;
-          color: @color-text;
-          font-weight: bold;
-        }
-
-        i {
-          position: absolute;
-          left: -10px;
-          top: 2px;
+          border-left: 3px solid;
         }
 
         li:hover {
