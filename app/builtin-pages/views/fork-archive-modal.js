@@ -138,7 +138,7 @@ function render () {
 
           <form onsubmit=${onSubmit}>
             <label for="title">Title</label>
-            <input name="title" tabindex="2" value=${title} placeholder="Title (optional)" onchange=${onChangeTitle} />
+            <input name="title" tabindex="2" value=${title} placeholder="Title" onchange=${onChangeTitle} />
 
             <label for="desc">Description</label>
             <input name="desc" tabindex="3" value=${description} placeholder="Description (optional)" onchange=${onChangeDescription} />
