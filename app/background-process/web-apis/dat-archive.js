@@ -42,7 +42,11 @@ export default {
   async createArchive({title, description} = {}) {
     // initiate the modal
     var win = BrowserWindow.fromWebContents(this.sender)
-    await assertSenderIsFocused(this.sender)
+    // DISABLED
+    // this mechanism is a bit too temperamental
+    // are we sure it's the best policy anyway?
+    // -prf
+    // await assertSenderIsFocused(this.sender)
     var createdBy = this.sender.getURL()
     var res = await showModal(win, 'create-archive', {title, description, createdBy})
     if (!res || !res.url) throw new UserDeniedError()
@@ -52,7 +56,11 @@ export default {
   async forkArchive(url, {title, description} = {}) {
     // initiate the modal
     var win = BrowserWindow.fromWebContents(this.sender)
-    await assertSenderIsFocused(this.sender)
+    // DISABLED
+    // this mechanism is a bit too temperamental
+    // are we sure it's the best policy anyway?
+    // -prf
+    // await assertSenderIsFocused(this.sender)
     var createdBy = this.sender.getURL()
     var key1 = await lookupUrlDatKey(url)
     var key2 = await lookupUrlDatKey(createdBy)
