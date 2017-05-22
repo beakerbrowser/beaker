@@ -80,7 +80,29 @@ export default {
 
   async getInfo(url, opts = {}) {
     return timer(to(opts), async (checkin) => {
-      return datLibrary.getArchiveInfo(url)
+      var info = await datLibrary.getArchiveInfo(url)
+      if (this.sender.getURL().startsWith('beaker:')) {
+        return info
+      }
+      // return a subset of the data
+      return {
+        key: info.key,
+        url: info.url,
+        isOwner: info.isOwner,
+
+        // state
+        version: info.version,
+        peers: info.peers,
+        mtime: info.mtime,
+        metaSize: info.metaSize,
+        stagingSize: info.stagingSize,
+
+        // manifest
+        title: info.title,
+        description: info.description,
+        forkOf: info.forkOf,
+        createdBy: info.createdBy
+      }
     })
   },
 
