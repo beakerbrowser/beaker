@@ -152,6 +152,7 @@ export default {
         var ctx = ((version) ? archive.checkoutFS : archive)
         var stream = ctx.history({live: false, start, end})
         stream.pipe(concat({encoding: 'object'}, values => {
+          values = values.map(massageHistoryObj)
           if (reverse) values.reverse()
           resolve(values)
         }))
@@ -542,4 +543,8 @@ async function lookupUrlDatKey (url) {
   } catch (e) {
     return false
   }
+}
+
+function massageHistoryObj ({name, version, type}) {
+  return {path: name, version, type}
 }
