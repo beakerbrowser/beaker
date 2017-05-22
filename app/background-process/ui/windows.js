@@ -41,7 +41,8 @@ export function createShellWindow () {
     vibrancy: 'light',
     webPreferences: {
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
-      allowRunningInsecureContent: false
+      allowRunningInsecureContent: false,
+      nativeWindowOpen: true
     },
     icon: path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
   })
