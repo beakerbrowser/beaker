@@ -322,11 +322,6 @@ export async function remove (page) {
   if (i == -1)
     return console.warn('pages.remove() called for missing page', page)
 
-  // HACK to fix beaker#395
-  if (await runOnbeforeunload(page)) {
-    return
-  }
-
   // save, in case the user wants to restore it
   closedURLs.push(page.getURL())
 
@@ -895,16 +890,4 @@ async function updateHistory (page) {
   page._canGoBack = b
   page._canGoForward = f
   navbar.update(page)
-}
-function runOnbeforeunload (page) {
-  if (page.webviewEl.isWaitingForResponse()) {
-    return false
-  }
-  return new Promise(resolve => page.webviewEl.executeJavaScript(`
-    (function() {
-      if (window.__onbeforeunload__) {
-        return window.__onbeforeunload__({noSignal: true})
-      }
-    })()
-  `, true, resolve))
 }

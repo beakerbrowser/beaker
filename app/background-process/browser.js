@@ -92,11 +92,8 @@ export function setup () {
     closeModal
   }, internalOnly)
 
-  // HACK to fix beaker#395
-  ipcMain.on('onbeforeunload-abort', e => {
-    e.sender.stop()
-    e.returnValue = true
-  })
+  // wire up events
+  app.on('web-contents-created', onWebContentsCreated)
 
   // window.prompt handling
   //  - we have use ipc directly instead of using rpc, because we need custom
@@ -412,4 +409,23 @@ function onUpdateError (e) {
   setUpdaterState(UPDATER_STATUS_IDLE)
   updaterError = e.toString()
   browserEvents.emit('updater-error', e.toString())
+}
+
+function onWebContentsCreated (e, webContents) {
+  webContents.on('will-prevent-unload', onWillPreventUnload)
+}
+
+function onWillPreventUnload (e) {
+  var choice = dialog.showMessageBox({
+    type: 'question',
+    buttons: ['Leave', 'Stay'],
+    title: 'Do you want to leave this site?',
+    message: 'Changes you made may not be saved.',
+    defaultId: 0,
+    cancelId: 1
+  })
+  var leave = (choice === 0)
+  if (leave) {
+    e.preventDefault()
+  }
 }

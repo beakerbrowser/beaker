@@ -4,7 +4,6 @@ import DatArchive from './lib/web-apis/dat-archive'
 import beaker from './lib/web-apis/beaker'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
 import { setup as setupNavigatorPermissions } from './webview-preload/navigator-permissions-api'
-import { setup as setupOnbeforeunload } from './webview-preload/onbeforeunload'
 import { setup as setupPrompt } from './webview-preload/prompt'
 
 // register protocol behaviors
@@ -24,5 +23,4 @@ if (['beaker:','dat:'].includes(window.location.protocol)) {
 }
 setupLocationbar()
 setupNavigatorPermissions()
-setupOnbeforeunload()
 setupPrompt()
