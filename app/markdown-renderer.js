@@ -1,7 +1,7 @@
 import Remarkable from 'remarkable'
 
 var md = new Remarkable('full', {
-  html:         false,        // Enable HTML tags in source
+  html:         true,         // Enable HTML tags in source
   xhtmlOut:     false,        // Use '/' to close single tags (<br />)
   breaks:       true,         // Convert '\n' in paragraphs into <br>
   langPrefix:   'language-',  // CSS language prefix for fenced blocks
@@ -78,7 +78,7 @@ function slugify (text) {
       slug;
 
   // Note: we trim hyphens after truncating because truncating can cause dangling hyphens.
-  // Example string:                               // " ⚡⚡ Don't forget: URL fragments should be i18n-friendly, hyphenated, short, and clean."
+  // Example string:                               // "⚡⚡ Don't forget: URL fragments should be i18n-friendly, hyphenated, short, and clean."
   slug = text.trim()                               // "⚡⚡ Don't forget: URL fragments should be i18n-friendly, hyphenated, short, and clean."
              .replace(/\'/gi, '')                  // "⚡⚡ Dont forget: URL fragments should be i18n-friendly, hyphenated, short, and clean."
              .replace(nonsafeChars, '-')           // "⚡⚡-Dont-forget--URL-fragments-should-be-i18n-friendly--hyphenated--short--and-clean-"
