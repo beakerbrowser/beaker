@@ -15,7 +15,7 @@ const app = new Application({
   env: { 
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
     beaker_sites_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
-    beaker_dat_quota_default_bytes_allowed: '70kb'
+    beaker_dat_quota_default_bytes_allowed: '90kb'
   }
 })
 var testStaticDat, testStaticDatURL
@@ -28,7 +28,7 @@ var tmpDirPath1 = tempy.directory()
 test.before(async t => {
   // open the window
   await app.start()
-  await app.client.waitUntilWindowLoaded()
+  await app.client.waitUntilWindowLoaded(20e3)
 
   // share the test static dat
   testStaticDat = await shareDat(__dirname + '/scaffold/test-static-dat')
@@ -41,7 +41,7 @@ test.before(async t => {
   // open the test-runner dat
   await browserdriver.navigateTo(app, testRunnerDatURL)
   await app.client.windowByIndex(1)
-  await app.client.waitForExist('h1#loaded')
+  await app.client.waitForExist('h1#loaded', 10e3)
 })
 test.after.always('cleanup', async t => {
   console.log(JSON.stringify(await app.client.getMainProcessLogs(), null, 2))
@@ -188,6 +188,7 @@ test('DatArchive.create rejection', async t => {
   })
 
   // reject the prompt
+  await sleep(500)
   await app.client.windowByIndex(2)
   await app.client.waitUntilWindowLoaded()
   await app.client.waitForExist('.cancel')
@@ -195,7 +196,7 @@ test('DatArchive.create rejection', async t => {
   await app.client.windowByIndex(1)
 
   // fetch & test the res
-  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }))
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
   var res = await app.client.execute(() => { return window.res })
   t.deepEqual(res.value.name, 'UserDeniedError')
 })
@@ -212,6 +213,7 @@ test('DatArchive.create', async t => {
   })
 
   // accept the prompt
+  await sleep(500)
   await app.client.windowByIndex(2)
   await app.client.waitUntilWindowLoaded()
   await app.client.waitForExist('button[type="submit"]')
@@ -220,7 +222,7 @@ test('DatArchive.create', async t => {
 
   // fetch & test the res
   await app.client.pause(500)
-  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }))
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
   var res = await app.client.execute(() => { return window.res })
   createdDatURL = res.value.url
   t.truthy(createdDatURL.startsWith('dat://'))
@@ -264,6 +266,7 @@ test('DatArchive.fork', async t => {
   }, createdDatURL)
 
   // accept the prompt
+  await sleep(500)
   await app.client.windowByIndex(2)
   await app.client.waitUntilWindowLoaded()
   await app.client.waitForExist('button[type="submit"]')
@@ -272,7 +275,7 @@ test('DatArchive.fork', async t => {
 
   // fetch & test the res
   await app.client.pause(500)
-  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }))
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
   var res = await app.client.execute(() => { return window.res })
   var forkedDatURL = res.value.url
   t.truthy(forkedDatURL.startsWith('dat://'))
@@ -578,7 +581,7 @@ test('archive.commit does allow you to exceed the quota, but subsequent writes w
     // put the result on the window, for checking later
     window.res = null
     var archive = new DatArchive(url)
-    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 15), 'utf8').then(
+    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 25), 'utf8').then(
       res => window.res = res,
       err => window.res = err
     )
@@ -586,6 +589,7 @@ test('archive.commit does allow you to exceed the quota, but subsequent writes w
 
   // accept the prompt
   await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-accept')
   await app.client.click('.prompt-accept')
   await app.client.windowByIndex(1)
 
@@ -807,6 +811,7 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
 
   // reject the prompt
   await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-reject')
   await app.client.click('.prompt-reject')
   await app.client.windowByIndex(1)
 
@@ -830,6 +835,7 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
 
   // accept the prompt
   await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-reject')
   await app.client.click('.prompt-reject')
   await app.client.windowByIndex(1)
 
@@ -853,6 +859,7 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
 
   // accept the prompt
   await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-accept')
   await app.client.click('.prompt-accept')
   await app.client.windowByIndex(1)
 
@@ -1175,7 +1182,7 @@ test('archive.createFileActivityStream', async t => {
   }, archiveURL)
   t.truthy(Array.isArray(res.value))
 
-  await app.client.waitUntil(() => app.client.execute(() => { return window.res.length == 6 }))
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res.length == 6 }), 5e3)
   var res = await app.client.execute(() => { return window.res })
   t.deepEqual(res.value, ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt'])
 })
@@ -1226,7 +1233,7 @@ test('archive.createNetworkActivityStream', async t => {
     archive.download().then(done, done)
   }, testStaticDat2URL)
 
-  await app.client.waitUntil(() => app.client.execute(() => { return window.res.content.all }))
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res.content.all }), 5e3)
   var res = await app.client.execute(() => { return window.res })
   // t.deepEqual(res.value.gotPeer, true) this is not consistent enough to test
   t.ok(res.value.metadata.down > 0)

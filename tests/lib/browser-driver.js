@@ -1,6 +1,6 @@
 exports.navigateTo = function (app, url) {
   return app.client.windowByIndex(0)
-    .then(() => app.client.waitForExist('.toolbar-actions:not(.hidden) .nav-location-input'))
+    .then(() => app.client.waitForExist('.toolbar-actions:not(.hidden) .nav-location-input', 10e3))
     .then(() => {
       return app.client.click('.toolbar-actions:not(.hidden) .nav-location-pretty')
       .catch(() => app.client.click('.toolbar-actions:not(.hidden) .nav-location-input'))
