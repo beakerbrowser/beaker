@@ -1,7 +1,7 @@
 import Remarkable from 'remarkable'
 
 var md = new Remarkable('full', {
-  html:         false,        // Enable HTML tags in source
+  html:         true,         // Enable HTML tags in source
   xhtmlOut:     false,        // Use '/' to close single tags (<br />)
   breaks:       true,         // Convert '\n' in paragraphs into <br>
   langPrefix:   'language-',  // CSS language prefix for fenced blocks
