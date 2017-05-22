@@ -80,7 +80,29 @@ export default {
 
   async getInfo(url, opts = {}) {
     return timer(to(opts), async (checkin) => {
-      return datLibrary.getArchiveInfo(url)
+      var info = await datLibrary.getArchiveInfo(url)
+      if (this.sender.getURL().startsWith('beaker:')) {
+        return info
+      }
+      // return a subset of the data
+      return {
+        key: info.key,
+        url: info.url,
+        isOwner: info.isOwner,
+
+        // state
+        version: info.version,
+        peers: info.peers,
+        mtime: info.mtime,
+        metaSize: info.metaSize,
+        stagingSize: info.stagingSize,
+
+        // manifest
+        title: info.title,
+        description: info.description,
+        forkOf: info.forkOf,
+        createdBy: info.createdBy
+      }
     })
   },
 
@@ -152,6 +174,7 @@ export default {
         var ctx = ((version) ? archive.checkoutFS : archive)
         var stream = ctx.history({live: false, start, end})
         stream.pipe(concat({encoding: 'object'}, values => {
+          values = values.map(massageHistoryObj)
           if (reverse) values.reverse()
           resolve(values)
         }))
@@ -542,4 +565,8 @@ async function lookupUrlDatKey (url) {
   } catch (e) {
     return false
   }
+}
+
+function massageHistoryObj ({name, version, type}) {
+  return {path: name, version, type}
 }
