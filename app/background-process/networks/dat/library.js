@@ -22,7 +22,7 @@ import discoverySwarm from 'discovery-swarm'
 import path from 'path'
 import mkdirp from 'mkdirp'
 import jetpack from 'fs-jetpack'
-const getFolderSize = pify(require('get-folder-size'))
+const du = pify(require('du'))
 
 // constants
 // =
@@ -333,8 +333,8 @@ export async function getOrLoadArchive (key, opts) {
 
 export async function updateSizeTracking (archive) {
   var [metaSize, stagingSize] = await Promise.all([
-    getFolderSize(archivesDb.getArchiveMetaPath(archive)).catch(err => 0),
-    archive.staging ? getFolderSize(archive.staging.path).catch(err => 0) : 0
+    du(archivesDb.getArchiveMetaPath(archive), {disk: true}).catch(err => 0),
+    archive.staging ? du(archive.staging.path, {disk: true}).catch(err => 0) : 0
   ])
   archive.metaSize = metaSize
   archive.stagingSize = stagingSize
