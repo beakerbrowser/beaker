@@ -41,7 +41,7 @@ const to = (opts) =>
 export default {
   async createArchive({title, description} = {}) {
     // initiate the modal
-    var win = BrowserWindow.fromWebContents(this.sender)
+    var win = getSenderWindow(this.sender)
     // DISABLED
     // this mechanism is a bit too temperamental
     // are we sure it's the best policy anyway?
@@ -55,7 +55,7 @@ export default {
 
   async forkArchive(url, {title, description} = {}) {
     // initiate the modal
-    var win = BrowserWindow.fromWebContents(this.sender)
+    var win = getSenderWindow(this.sender)
     // DISABLED
     // this mechanism is a bit too temperamental
     // are we sure it's the best policy anyway?
@@ -569,4 +569,11 @@ async function lookupUrlDatKey (url) {
 
 function massageHistoryObj ({name, version, type}) {
   return {path: name, version, type}
+}
+
+function getSenderWindow (wc) {
+  while (wc && wc.hostWebContents) {
+    wc = wc.hostWebContents
+  }
+  return BrowserWindow.fromWebContents(wc)
 }
