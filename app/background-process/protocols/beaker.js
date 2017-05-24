@@ -137,51 +137,6 @@ async function beakerServer (req, res) {
   if (requestUrl.startsWith('beaker://assets/logo')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
   }
-  if (requestUrl === 'beaker://assets/tour-intro.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-intro.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-new-site-in-library.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-in-library.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-new-site-publish1.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-publish1.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-new-site-publish2.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-publish2.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-new-site-publish3.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site-publish3.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-new-site.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-new-site.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-set-site-info.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-set-site-info.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-share-site.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-share-site.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-site-peer-count.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-peer-count.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-staging-area.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-staging-area.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-fork.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-fork.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-library-view.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-library-view.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-save-to-library.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-save-to-library.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-site-history.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-history.png'))
-  }
-  if (requestUrl === 'beaker://assets/tour-site-versions.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/tour-site-versions.png'))
-  }
 
   // builtin pages
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
@@ -189,9 +144,6 @@ async function beakerServer (req, res) {
   }
   if (requestUrl === 'beaker://start/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/start.html'))
-  }
-  if (requestUrl === 'beaker://tour/') {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/tour.html'))
   }
   if (requestUrl === 'beaker://start/background-image') {
     return cb(200, 'OK', 'image/png', path.join(app.getPath('userData'), 'start-background-image'))
@@ -201,12 +153,6 @@ async function beakerServer (req, res) {
   }
   if (requestUrl === 'beaker://start/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/start.build.js'))
-  }
-  if (requestUrl === 'beaker://tour/main.css') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/tour.css'))
-  }
-  if (requestUrl === 'beaker://tour/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/tour.build.js'))
   }
   if (requestUrl === 'beaker://bookmarks/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/bookmarks.html'))
