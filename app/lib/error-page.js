@@ -157,17 +157,22 @@ export default function (e) {
   }
 
   return `
-    <body>
-      <style>${errorPageCSS}</style>
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="error-page-content">
-        <h1>${title} <i class="icon fa ${icon}"></i></h1>
-        <div class="description">
-          ${info}
-          ${moreHelp}
-          <p>${errorDescription}</p>
+    <html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+      <body>
+        <style>${errorPageCSS}</style>
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+        <div class="error-page-content">
+          <h1>${title} <i class="icon fa ${icon}"></i></h1>
+          <div class="description">
+            ${info}
+            ${moreHelp}
+            <p>${errorDescription}</p>
+          </div>
+          ${button}
         </div>
-        ${button}
-      </div>
-    </body>`.replace(/\n/g,'')
+      </body>
+    </html>`.replace(/\n/g,'')
 }
