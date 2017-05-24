@@ -266,7 +266,7 @@ async function createSite () {
 }
 
 async function takeTour () {
-  window.location = 'beaker://tour/'
+  window.location = 'https://beakerbrowser.com/docs/using-beaker'
   beakerSitedata.set('beaker://start', 'watched-tour', true)
 }
 
