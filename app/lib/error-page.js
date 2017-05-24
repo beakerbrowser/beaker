@@ -64,6 +64,10 @@ body {
 a.btn span {
   vertical-align: baseline;
 }
+a.link {
+  color: blue;
+  text-decoration: underline;
+}
 div.error-page-content {
   max-width: 550px;
   margin: auto;
@@ -147,7 +151,7 @@ export default function (e) {
           <p><strong>Troubleshooting</strong></p>
           <ul>
             <li>There may not be any peers hosting this ${e.resource} right now.</li>
-            <li>Your firewall may be blocking peer-to-peer traffic.</li>
+            <li>Your firewall may be blocking peer-to-peer traffic.<br /><a class="link" href="https://beakerbrowser.com/docs/using-beaker/troubleshooting.html" target="_blank">How to configure your firewall.</a></li>
           </ul>
         `
         break
