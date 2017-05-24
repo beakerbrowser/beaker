@@ -11,19 +11,16 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 ## Binaries
 
-### [OSX 64-bit](https://download.beakerbrowser.net/download/latest/osx)
-
-## CLI Tool
-
-Beaker has [a handy CLI tool called bkr](https://github.com/beakerbrowser/bkr).
-
-```
-npm install -g bkr
-```
+### [OSX 64-bit .dmg](https://download.beakerbrowser.net/download/latest/osx)
 
 ## Documentation
 
 - [Beaker Docs](https://beakerbrowser.com/docs/)
+- [The Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
+- [Privacy and security in Beaker](https://beakerbrowser.com/docs/inside-beaker/privacy-and-security.html)
+- [The "Thick applications model"](https://beakerbrowser.com/docs/inside-beaker/thick-applications.html)
+- [Why Dat vs Other technologies](https://beakerbrowser.com/docs/inside-beaker/other-technologies.html)
+- [Project mission](https://beakerbrowser.com/docs/inside-beaker/mission.html)
 
 ## Env Vars
 
@@ -31,22 +28,6 @@ npm install -g bkr
 - `beaker_user_data_path`: override the user-data path, therefore changing where data is read/written. Useful for testing.
 - `beaker_sites_path`: override the default path for saving sites. Useful for testing.
 - `beaker_dat_quota_default_bytes_allowed`: override the default max-quota for bytes allowed to be written by a dat site. Useful for testing.
-
-## Running the tests
-
-Tests use their own package.json:
-
-```
-cd tests
-npm install
-```
-
-To run:
-
-```
-cd tests
-npm test
-```
 
 ## Building from source
 
@@ -78,6 +59,22 @@ This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-ma
 
 If you're doing development, `npm run watch` to have assets build automatically.
 
+## Running the tests
+
+Tests use their own package.json:
+
+```
+cd tests
+npm install
+```
+
+To run:
+
+```
+cd tests
+npm test
+```
+
 ## Known issues
 
 ### tmux
@@ -88,25 +85,10 @@ Launching from tmux is known to cause issues with GUI apps in MacOS. On Beaker, 
 
 Modified MIT License (MIT)
 
-Copyright (c) 2016 Paul Frazee
+Copyright (c) 2017 Paul Frazee
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
- 1. Any project using the Software will include a link to the Beaker project page,
-along with a statement of credit. (eg "Forked from Beaker")
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
- 2. The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
