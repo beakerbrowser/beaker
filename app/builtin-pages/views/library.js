@@ -200,7 +200,12 @@ function update () {
         </div>
       </div>
 
-      <div class="archives-list">${rArchivesList()}</div>
+      <div class="archives-list">
+        ${rArchivesList()}
+        <div class="new-archive" onclick=${onCreateArchive}>
+          <i class="fa fa-plus"></i> Create new site
+        </div>
+      </div>
 
       <div class="trash-controls">
         <button onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
@@ -689,17 +694,6 @@ async function onLoadMoreHistory (e) {
   update()
 }
 
-// helpers
-// =
-
-function niceName (archiveInfo) {
-  return (archiveInfo.title || '').trim() || 'Untitled'
-}
-
-function niceDesc (archiveInfo) {
-  return (archiveInfo.description || '').trim() || yo`<em>No description</em>`
-}
-
 function onChangeFilter (e) {
   currentFilter = e.target.value
   update()
@@ -715,4 +709,20 @@ function onClearFilter () {
   currentFilter = ''
   document.querySelector('input[name="filter"]').value = ''
   update()
+}
+
+async function onCreateArchive () {
+  var archive = await DatArchive.create()
+  history.pushState({}, null, 'beaker://library/' + archive.url.slice('dat://'.length))
+}
+
+// helpers
+// =
+
+function niceName (archiveInfo) {
+  return (archiveInfo.title || '').trim() || 'Untitled'
+}
+
+function niceDesc (archiveInfo) {
+  return (archiveInfo.description || '').trim() || yo`<em>No description</em>`
 }
