@@ -16,11 +16,17 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 ## Documentation
 
 - [Beaker Docs](https://beakerbrowser.com/docs/)
-- [The Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
-- [Privacy and security in Beaker](https://beakerbrowser.com/docs/inside-beaker/privacy-and-security.html)
-- [The "Thick applications model"](https://beakerbrowser.com/docs/inside-beaker/thick-applications.html)
-- [Why Dat vs Other technologies](https://beakerbrowser.com/docs/inside-beaker/other-technologies.html)
-- [Project mission](https://beakerbrowser.com/docs/inside-beaker/mission.html)
+- Inside Beaker
+  - [The Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
+  - [Privacy and security in Beaker](https://beakerbrowser.com/docs/inside-beaker/privacy-and-security.html)
+  - [The "Thick applications model"](https://beakerbrowser.com/docs/inside-beaker/thick-applications.html)
+  - [Why Dat vs Other technologies](https://beakerbrowser.com/docs/inside-beaker/other-technologies.html)
+  - [Project mission](https://beakerbrowser.com/docs/inside-beaker/mission.html)
+- Web APIs
+  - [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
+  - [Permissions](https://beakerbrowser.com/docs/apis/permissions.html)
+  - [Dat.json site manifest](https://beakerbrowser.com/docs/apis/manifest.html)
+- [Tutorials](https://beakerbrowser.com/docs/tutorials/)
 
 ## Env Vars
 
