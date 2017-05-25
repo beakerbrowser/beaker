@@ -301,7 +301,7 @@ export async function showLocalPathDialog ({folderName, defaultPath, warnIfNotEm
           ? 'Choose where to put the site folder'
           : 'Choose the site folder',
         buttonLabel: 'Save',
-        properties: ['openDirectory', 'showHiddenFiles', 'createDirectory']
+        properties: ['openDirectory', 'createDirectory']
       }, filenames => {
         resolve(filenames && filenames[0])
       })

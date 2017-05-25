@@ -172,10 +172,8 @@ test('library "updated" event', async t => {
     beaker.archives.update(url, { title: 'The New Title' }).then(done, done)
   }, createdDatURL)
 
-  // need to sleep because there's a builtin delay to processing meta updates
-  await sleep(1000)
-  
   // check result
+    await app.client.waitUntil(() => app.client.execute(() => { return window.newTitle }), 5e3)
   var res = await app.client.execute(() => { return window.newTitle })
   t.deepEqual(res.value, 'The New Title')
 })
