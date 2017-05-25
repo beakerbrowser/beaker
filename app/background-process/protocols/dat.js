@@ -208,6 +208,16 @@ async function datServer (req, res) {
       entry.path = path
     } catch (e) {}
   }
+  // detect if this is a folder without a trailing slash
+  if (!isFolder) {
+    await tryStat(filepath)
+    if (entry && entry.isDirectory()) {
+      filepath = filepath + '/'
+      isFolder = true
+    }
+  }
+  entry = false
+  // do actual lookup
   if (isFolder) {
     await tryStat(filepath + 'index.html')
     await tryStat(filepath + 'index.md')
