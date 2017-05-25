@@ -1,4 +1,4 @@
-import { ipcRenderer } from 'electron'
+import { webFrame, ipcRenderer } from 'electron'
 import url from 'url'
 import * as tabs from './ui/tabs'
 import * as navbar from './ui/navbar'
@@ -22,6 +22,10 @@ export function setup (cb) {
       return false
     }
   }
+
+  // disable zooming in the shell window
+  webFrame.setVisualZoomLevelLimits(1, 1)
+  webFrame.setLayoutZoomLevelLimits(0, 0)
 
   // setup subsystems
   tabs.setup()
