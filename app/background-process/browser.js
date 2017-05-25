@@ -124,7 +124,7 @@ export function setStartPageBackgroundImage (srcPath) {
 }
 
 export function getDefaultProtocolSettings () {
-  return Promise.resolve(['http', 'dat', 'fs'].reduce((res, x) => {
+  return Promise.resolve(['http', 'dat'].reduce((res, x) => {
     res[x] = app.isDefaultProtocolClient(x)
     return res
   }, {}))
