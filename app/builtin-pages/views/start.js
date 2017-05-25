@@ -112,8 +112,7 @@ function renderWelcome () {
     <div class="beaker-welcome">
       <p>
         Welcome to Beaker!
-        <a onclick=${createSite}>Create a peer-to-peer site</a> or
-        <a onclick=${takeTour}>take a tour</a>.
+        <a onclick=${takeTour}>Take a tour</a>.
         <i onclick=${dismissWelcome} class="fa fa-close"></i>
       </p>
     </div>
