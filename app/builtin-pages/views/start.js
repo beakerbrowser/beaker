@@ -112,8 +112,7 @@ function renderWelcome () {
     <div class="beaker-welcome">
       <p>
         Welcome to Beaker!
-        <a onclick=${createSite}>Create a peer-to-peer site</a> or
-        <a onclick=${takeTour}>take a tour</a>.
+        <a onclick=${takeTour}>Take a tour</a>.
         <i onclick=${dismissWelcome} class="fa fa-close"></i>
       </p>
     </div>
@@ -236,9 +235,10 @@ function renderReleaseNotes () {
   }
   return yo`
     <p class="release-notes">
-      You’re using the Beaker v0.7 pre-release.
-      <a href="https://groups.google.com/forum/#!topic/beaker-browser/zDRrk194bbM">
-      See what’s new</a>.
+      You’re using Beaker v0.7.
+      <a href="https://github.com/beakerbrowser/beaker/releases/tag/0.7.0">
+        See what’s new
+      </a>.
     </p>
   `
 }
