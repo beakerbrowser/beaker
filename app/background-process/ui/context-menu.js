@@ -154,13 +154,14 @@ export default function registerContextMenu () {
       }
       else if (hasText) {
         menuItems.push({ label: 'Copy', role: 'copy', enabled: can('Copy') })
-        menuItems.push({ type: 'separator' })      
+        menuItems.push({ type: 'separator' })
       }
 
       // dat items
       if (props.pageURL.startsWith('dat://')) {
-        menuItems.push({ label: 'View in Library', click: (item, win) => win.webContents.send('command', 'file:new-tab', 'beaker://library/' + props.pageURL.slice('dat://'.length)) })
+        menuItems.push({ label: 'Fork this site', click: (item, win) => win.webContents.executeJavaScript(`DatArchive.fork("${props.pageURL}").catch(()=>{})`) })
         menuItems.push({ label: 'View Source', click: (item, win) => win.webContents.send('command', 'file:new-tab', 'beaker://view-source/' + props.pageURL.slice('dat://'.length)) })
+        menuItems.push({ type: 'separator' })
       }
 
       // inspector
