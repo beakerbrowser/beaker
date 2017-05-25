@@ -235,9 +235,10 @@ function renderReleaseNotes () {
   }
   return yo`
     <p class="release-notes">
-      You’re using the Beaker v0.7 pre-release.
-      <a href="https://groups.google.com/forum/#!topic/beaker-browser/zDRrk194bbM">
-      See what’s new</a>.
+      You’re using Beaker v0.7.
+      <a href="https://github.com/beakerbrowser/beaker/releases/tag/0.7.0">
+        See what’s new
+      </a>.
     </p>
   `
 }
