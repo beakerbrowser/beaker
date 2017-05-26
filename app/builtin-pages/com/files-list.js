@@ -5,11 +5,19 @@ import {niceDate} from '../../lib/time'
 // exported api
 // =
 
-export default function rFilesList (archiveInfo) {
+export default function render (archiveInfo) {
+  return yo`
+    <div>
+      ${rFolder(archiveInfo)}
+      ${rFilesList(archiveInfo)}
+    </div>
+  `
+}
+
+function rFilesList (archiveInfo) {
   if (!archiveInfo || !archiveInfo.fileTree.rootNode) {
     return yo`
       <div>
-        ${rFolder(archiveInfo)}
         <div class="files-list"></div>
       </div>
     `
@@ -18,7 +26,6 @@ export default function rFilesList (archiveInfo) {
   var hasFiles = Object.keys(archiveInfo.fileTree.rootNode.children).length > 0
   return yo`
     <div>
-      ${rFolder(archiveInfo)}
       <div class="files-list">
         ${!hasFiles ? yo`<div class="item"><em>Empty folder</em></div>` : ''}
         ${rChildren(archiveInfo, archiveInfo.fileTree.rootNode.children)}
