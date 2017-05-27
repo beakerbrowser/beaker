@@ -190,6 +190,15 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://view-source/' || requestUrl.startsWith('beaker://view-source/')) {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/view-source.html'))
   }
+  if (requestUrl === 'beaker://swarm-debugger/main.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/swarm-debugger.css'))
+  }
+  if (requestUrl === 'beaker://swarm-debugger/main.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/swarm-debugger.build.js'))
+  }
+  if (requestUrl === 'beaker://swarm-debugger/' || requestUrl.startsWith('beaker://swarm-debugger/')) {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/swarm-debugger.html'))
+  }
   if (requestUrl === 'beaker://settings/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/settings.html'))
   }
