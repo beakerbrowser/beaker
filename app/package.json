@@ -10,7 +10,7 @@
   "dependencies": {
     "await-lock": "^1.1.2",
     "beaker-error-constants": "^1.1.1",
-    "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib#bdbc8260a7e58b83a46a263c29c89ee53853629c",
+    "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib.git#bdbc8260a7e58b83a46a263c29c89ee53853629c",
     "bytes": "^2.5.0",
     "choo": "^5.0.4",
     "co": "^4.6.0",
@@ -19,7 +19,7 @@
     "dat-encoding": "^4.0.2",
     "datland-swarm-defaults": "^1.0.2",
     "debug": "^2.3.3",
-    "discovery-swarm": "^4.3.2",
+    "discovery-swarm": "^4.3.8",
     "du": "^0.1.0",
     "electron-localshortcut": "^0.6.0",
     "emit-stream": "^0.1.2",
