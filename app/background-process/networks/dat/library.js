@@ -1,4 +1,5 @@
 import {app} from 'electron'
+import crypto from 'crypto'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import datEncoding from 'dat-encoding'
@@ -43,6 +44,7 @@ const DEFAULT_DATS_FOLDER = process.env.beaker_sites_path
 // globals
 // =
 
+var networkId = crypto.randomBytes(32)
 var archives = {} // in-memory cache of archive objects. key -> archive
 var archivesByDKey = {} // same, but discoveryKey -> archive
 var archiveLoadPromises = {} // key -> promise
@@ -74,6 +76,7 @@ export function setup () {
 
   // setup the archive swarm
   archiveSwarm = discoverySwarm(swarmDefaults({
+    id: networkId,
     hash: false,
     utp: true,
     tcp: true,
@@ -559,7 +562,7 @@ function createReplicationStream (info) {
     debug('new connection id=%s chan=%s type=%s host=%s key=%s', connId, chan, info.type, info.host, keyStrShort)
 
     // create the replication stream
-    archive.replicate({stream, live: true})
+    archive.replicate({id: networkId, stream, live: true})
     archive.replicationStreams.push(stream)
     stream.once('close', () => {
       var rs = archive.replicationStreams
