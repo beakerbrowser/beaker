@@ -524,9 +524,9 @@ function createReplicationStream (info) {
   var connId = ++connIdCounter
   var start = Date.now()
   var stream = hypercoreProtocol({
+    id: networkId,
     live: true,
     encrypt: true
-    // id: null TODO do we need to provide an id?
   })
   stream.peerInfo = info
 
