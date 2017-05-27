@@ -319,8 +319,6 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
 
   // wire up events
   archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
-  archive.metadata.on('peer-add', onNetworkChanged)
-  archive.metadata.on('peer-remove', onNetworkChanged)
   archive.fileActStream = pda.createFileActivityStream(archive)
   archive.fileActStream.on('data', ([event]) => {
     if (event === 'changed') {
@@ -392,6 +390,10 @@ export async function getArchiveInfo (key) {
   meta.version = archive.version
   meta.userSettings = {localPath: userSettings.localPath, isSaved: userSettings.isSaved}
   meta.peers = archive.metadata.peers.length
+  meta.peerInfo = archive.replicationStreams.map(s => ({
+    host: s.peerInfo.host,
+    port: s.peerInfo.port
+  }))
   meta.peerHistory = archive.peerHistory
   if (userSettings.localPath) {
     meta.localPathExists = ((await jetpack.existsAsync(userSettings.localPath)) === 'dir')
@@ -459,8 +461,6 @@ export function leaveSwarm (key, cb) {
 
   archive.replicationStreams.forEach(stream => stream.destroy()) // stop all active replications
   archive.replicationStreams.length = 0
-  archive.metadata.removeListener('peer-add', onNetworkChanged)
-  archive.metadata.removeListener('peer-remove', onNetworkChanged)
   archiveSwarm.leave(archive.discoveryKey)
   archive.isSwarming = false
 }
@@ -560,10 +560,12 @@ function createReplicationStream (info) {
     // create the replication stream
     archive.replicate({stream, live: true})
     archive.replicationStreams.push(stream)
+    onNetworkChanged(archive)
     stream.once('close', () => {
       var rs = archive.replicationStreams
       var i = rs.indexOf(stream)
       if (i !== -1) rs.splice(rs.indexOf(stream), 1)
+      onNetworkChanged(archive)
     })
   }
 
@@ -584,19 +586,16 @@ function createReplicationStream (info) {
   return stream
 }
 
-function onNetworkChanged (e) {
-  var key = datEncoding.toStr(this.key)
-  var archive = archives[key]
-
+function onNetworkChanged (archive) {
   var now = Date.now()
   var lastHistory = archive.peerHistory.slice(-1)[0]
   if (lastHistory && (now - lastHistory.ts) < 10e3) {
     // if the last datapoint was < 10s ago, just update it
-    lastHistory.peers = this.peers.length
+    lastHistory.peers = archive.replicationStreams.length
   } else {
     archive.peerHistory.push({
       ts: Date.now(),
-      peers: this.peers.length
+      peers: archive.replicationStreams.length
     })
   }
 
@@ -607,15 +606,16 @@ function onNetworkChanged (e) {
   }
 
   // count # of peers
-  var peers = 0
+  var totalPeerCount = 0
   for (var k in archives) {
-    peers += archives[k].metadata.peers.length
+    totalPeerCount += archives[k].replicationStreams.length
   }
   archivesEvents.emit('network-changed', {
     details: {
-      url: `dat://${key}`,
-      peers: this.peers.length,
-      totalPeers: peers
+      url: `dat://${datEncoding.toStr(archive.key)}`,
+      peers: archive.replicationStreams.map(s => ({host: s.peerInfo.host, port: s.peerInfo.port})),
+      peerCount: archive.replicationStreams.length,
+      totalPeerCount
     }
   })
 }

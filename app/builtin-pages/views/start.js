@@ -42,7 +42,7 @@ async function setup () {
 
   // subscribe to network changes
   beaker.archives.addEventListener('network-changed', ({details}) => {
-    archivesStatus.peers = details.totalPeers
+    archivesStatus.peers = details.totalPeerCount
     yo.update(document.querySelector('a.network'), renderNetworkLink())
   })
 

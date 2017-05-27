@@ -57,7 +57,7 @@ export function setup () {
     pages.forEach(page => {
       if (page.siteInfo && page.siteInfo.url === details.url) {
         // update info
-        page.siteInfo.peers = details.peers
+        page.siteInfo.peers = details.peerCount
         navbar.update(page)
       }
     })
