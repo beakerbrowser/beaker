@@ -8,7 +8,7 @@
     "ava": "^0.16.0",
     "dat-node": "^3.0.0",
     "random-access-memory": "^2.4.0",
-    "spectron": "^3.6.0",
+    "spectron": "^3.6.4",
     "tempy": "^0.1.0"
   },
   "scripts": {

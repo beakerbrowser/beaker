@@ -9,8 +9,10 @@ var debug = require('debug')('dat')
 import {debounce} from '../../../lib/functions'
 import {grantPermission} from '../../ui/permissions'
 
-// db modules
+// dat modules
 import * as archivesDb from '../../dbs/archives'
+import hypercore from 'hypercore'
+import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
 import hyperstaging from 'hyperdrive-staging-area'
 
@@ -30,6 +32,7 @@ const du = pify(require('du'))
 import {
   DAT_HASH_REGEX,
   DAT_URL_REGEX,
+  DAT_SWARM_PORT,
   INVALID_SAVE_FOLDER_CHAR_REGEX
 } from '../../../lib/const'
 import {InvalidURLError} from 'beaker-error-constants'
@@ -41,8 +44,10 @@ const DEFAULT_DATS_FOLDER = process.env.beaker_sites_path
 // =
 
 var archives = {} // in-memory cache of archive objects. key -> archive
+var archivesByDKey = {} // same, but discoveryKey -> archive
 var archiveLoadPromises = {} // key -> promise
 var archivesEvents = new EventEmitter()
+var archiveSwarm
 
 // exported API
 // =
@@ -66,6 +71,16 @@ export function setup () {
       reconfigureStaging(archive, settings)
     }
   })
+
+  // setup the archive swarm
+  archiveSwarm = discoverySwarm(swarmDefaults({
+    hash: false,
+    utp: true,
+    tcp: true,
+    stream: createReplicationStream
+  }))
+  archiveSwarm.once('error', () => archiveSwarm.listen(0))
+  archiveSwarm.listen(DAT_SWARM_PORT)
 
   // load and configure all saved archives
   archivesDb.query(0, {isSaved: true}).then(
@@ -273,6 +288,10 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
   await configureStaging(archive, userSettings, !!secretKey)
   await updateSizeTracking(archive)
 
+  // store in the discovery listing, so the swarmer can find it
+  // but not yet in the regular archives listing, because it's not fully loaded
+  archivesByDKey[datEncoding.toStr(archive.discoveryKey)] = archive
+
   // join the swarm
   joinSwarm(archive)
 
@@ -306,12 +325,9 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
     }
   })
 
-  cacheArchive(key, archive)
+  // now store in main archives listing, as loaded
+  archives[datEncoding.toStr(archive.key)] = archive
   return archive
-}
-
-export function cacheArchive (key, archive) {
-  archives[datEncoding.toStr(key)] = archive
 }
 
 export function getArchive (key) {
@@ -425,54 +441,9 @@ export async function selectDefaultLocalPath (title) {
 export function joinSwarm (key, opts) {
   var archive = (typeof key == 'object' && key.key) ? key : getArchive(key)
   if (!archive || archive.isSwarming) return
-
-  var connIdCounter = 0
-  var keyStr = datEncoding.toStr(archive.key)
-  var swarm = discoverySwarm(swarmDefaults({
-    hash: false,
-    utp: true,
-    tcp: true,
-    stream: (info) => {
-      var dkeyStr = datEncoding.toStr(archive.discoveryKey)
-      var chan = dkeyStr.slice(0,6) + '..' + dkeyStr.slice(-2)
-      var keyStrShort = keyStr.slice(0,6) + '..' + keyStr.slice(-2)
-      var connId = ++connIdCounter
-      var start = Date.now()
-      debug('new connection id=%s chan=%s type=%s host=%s key=%s', connId, chan, info.type, info.host, keyStrShort)
-
-      // create the replication stream
-      var stream = archive.replicate({live: true})
-      archive.replicationStreams.push(stream)
-      stream.peerInfo = info
-      stream.once('close', () => {
-        var rs = archive.replicationStreams
-        var i = rs.indexOf(stream)
-        if (i !== -1) rs.splice(rs.indexOf(stream), 1)
-      })
-
-      // timeout the connection after 5s if handshake does not occur
-      var TO = setTimeout(() => {
-        debug('handshake timeout (%dms) id=%s chan=%s type=%s host=%s key=%s', Date.now() - start, connId, chan, info.type, info.host, keyStrShort)
-        stream.destroy(new Error('Timed out waiting for handshake'))
-      }, 5000)
-      stream.once('handshake', () => {
-        debug('got handshake (%dms) id=%s chan=%s type=%s host=%s key=%s', Date.now() - start, connId, chan, info.type, info.host, keyStrShort)
-        clearTimeout(TO)
-      })
-
-      // debugging
-      stream.on('error', err => debug('error (%dms) id=%s chan=%s type=%s host=%s key=%s', Date.now() - start, connId, chan, info.type, info.host, keyStrShort, err))
-      stream.on('close', err => debug('closing connection (%dms) id=%s chan=%s type=%s host=%s key=%s', Date.now() - start, connId, chan, info.type, info.host, keyStrShort))
-      return stream
-    }
-  }))
-  swarm.listen()
-  swarm.on('error', err => debug('Swarm error for', keyStr, err))
-  swarm.join(archive.discoveryKey)
-
+  archiveSwarm.join(archive.discoveryKey)
   debug('Swarming archive', datEncoding.toStr(archive.key), 'discovery key', datEncoding.toStr(archive.discoveryKey))
   archive.isSwarming = true
-  archive.swarm = swarm
 }
 
 // take the archive out of the network
@@ -481,16 +452,13 @@ export function leaveSwarm (key, cb) {
   if (!archive || !archive.isSwarming) return
 
   var keyStr = datEncoding.toStr(archive.key)
-  var swarm = archive.swarm
-
   debug('Unswarming archive %s disconnected %d peers', keyStr, archive.metadata.peers.length)
+
   archive.replicationStreams.forEach(stream => stream.destroy()) // stop all active replications
   archive.replicationStreams.length = 0
   archive.metadata.removeListener('peer-add', onNetworkChanged)
   archive.metadata.removeListener('peer-remove', onNetworkChanged)
-  swarm.leave(archive.discoveryKey)
-  swarm.destroy()
-  delete archive.swarm
+  archiveSwarm.leave(archive.discoveryKey)
   archive.isSwarming = false
 }
 
@@ -545,6 +513,76 @@ async function configureStaging (archive, userSettings, isWritableOverride) {
     }
     archive.staging = null
   }
+}
+
+var connIdCounter = 0 // for debugging
+function createReplicationStream (info) {
+  // create the protocol stream
+  var connId = ++connIdCounter
+  var start = Date.now()
+  var stream = hypercoreProtocol({
+    live: true,
+    encrypt: true
+    // id: null TODO do we need to provide an id?
+  })
+  stream.peerInfo = info
+
+  // add the archive if the discovery network gave us any info
+  var dkey = info.discoveryKey || info.channel
+  if (!dkey && info.key) {
+    dkey = hypercore.discoveryKey(datEncoding.toBuf(info.key))
+  }
+  if (dkey) {
+    add(dkey)
+  }
+
+  // add any requested archives
+  stream.on('feed', add)  
+
+  function add (dkey) {
+    // lookup the archive
+    var dkeyStr = datEncoding.toStr(dkey)
+    var chan = dkeyStr.slice(0,6) + '..' + dkeyStr.slice(-2)
+    var archive = archivesByDKey[dkeyStr]
+    if (!archive) {
+      return
+    }
+
+    // ditch if we already have this stream
+    if (archive.replicationStreams.indexOf(stream) !== -1) {
+      return
+    }
+
+    // do some logging
+    var keyStr = datEncoding.toStr(archive.key)
+    var keyStrShort = keyStr.slice(0,6) + '..' + keyStr.slice(-2)
+    debug('new connection id=%s chan=%s type=%s host=%s key=%s', connId, chan, info.type, info.host, keyStrShort)
+
+    // create the replication stream
+    archive.replicate({stream, live: true})
+    archive.replicationStreams.push(stream)
+    stream.once('close', () => {
+      var rs = archive.replicationStreams
+      var i = rs.indexOf(stream)
+      if (i !== -1) rs.splice(rs.indexOf(stream), 1)
+    })
+  }
+
+  // timeout the connection after 5s if handshake does not occur
+  // TODO needed?
+  // var TO = setTimeout(() => {
+  //   debug('handshake timeout (%dms) id=%s chan=%s type=%s host=%s key=%s', Date.now() - start, connId, chan, info.type, info.host, keyStrShort)
+  //   stream.destroy(new Error('Timed out waiting for handshake'))
+  // }, 5000)
+  stream.once('handshake', () => {
+    debug('got handshake (%dms) id=%s type=%s host=%s', Date.now() - start, connId, info.type, info.host)
+    // clearTimeout(TO)
+  })
+
+  // debugging
+  stream.on('error', err => debug('error (%dms) id=%s type=%s host=%s', Date.now() - start, connId,  info.type, info.host, err))
+  stream.on('close', err => debug('closing connection (%dms) id=%s type=%s host=%s', Date.now() - start, connId, info.type, info.host))
+  return stream
 }
 
 function onNetworkChanged (e) {
