@@ -150,7 +150,7 @@ export default function (e) {
         moreHelp = `
           <p><strong>Troubleshooting</strong></p>
           <ul>
-            <li>There may not be any peers hosting this ${e.resource} right now.</li>
+            <li>There may not be any peers hosting this ${e.resource} right now.<br /><a class="link" href="beaker://swarm-debugger/${e.validatedURL.slice('dat://'.length)}">Try the swarm debugger</a>.</li>
             <li>Your firewall may be blocking peer-to-peer traffic.<br /><a class="link" href="https://beakerbrowser.com/docs/using-beaker/troubleshooting.html" target="_blank">How to configure your firewall.</a></li>
           </ul>
         `
