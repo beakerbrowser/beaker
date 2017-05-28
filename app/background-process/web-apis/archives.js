@@ -133,6 +133,10 @@ export default {
 
   createEventStream() {
     return datLibrary.createEventStream()
+  },
+
+  createDebugStream() {
+    return datLibrary.createDebugStream()
   }
 }
 

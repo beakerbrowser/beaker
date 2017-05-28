@@ -346,6 +346,10 @@ function rArchive (archiveInfo) {
                   <i class="fa fa-code"></i>
                   View source
                 </div>
+                <div class="dropdown-item" onclick=${onViewSwarmDebugger}>
+                  <i class="fa fa-bug"></i>
+                  Swarm debugger
+                </div>
                 <div class="dropdown-item" onclick=${onToggleSaved}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
@@ -553,9 +557,9 @@ function onNetworkChanged (e) {
     var lastHistory = selectedArchive.peerHistory.slice(-1)[0]
     if (lastHistory && (now - lastHistory.ts) < 10e3) {
       // if the last datapoint was < 10s ago, just update it
-      lastHistory.peers = e.details.peers
+      lastHistory.peers = e.details.peerCount
     } else {
-      selectedArchive.peerHistory.push({ts: now, peers: e.details.peers})
+      selectedArchive.peerHistory.push({ts: now, peers: e.details.peerCount})
     }
     updateGraph()
   }
@@ -589,6 +593,10 @@ async function onFork (e) {
 
 function onViewSource () {
   window.location = 'beaker://view-source/' + selectedArchive.url.slice('dat://'.length)
+}
+
+function onViewSwarmDebugger () {
+  window.location = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)  
 }
 
 async function onToggleSaved (e) {

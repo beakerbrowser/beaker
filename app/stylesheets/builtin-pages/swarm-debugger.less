@@ -1,0 +1,57 @@
+@import "../base/reset.less";
+@import "../base/colors.less";
+@import "../base/spacing.less";
+@import "../base/typography.less";
+@import "../utils/decorators.less";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+main {
+  height: 100%;
+}
+
+body {
+  &:extend(.system-font);
+  font-size: 14px;
+}
+
+main {
+  
+  .columns {
+    display: flex;
+    height: 100%;
+  }
+
+  .column {
+    flex: 1;
+    padding: 1rem;
+  }
+
+  .log {
+    .code-font;
+    background: @background-message;
+    overflow: auto;
+    padding-top: 0.5rem;
+  }
+
+  .peers > div {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    font-family: Consolas, 'Lucida Console', Monaco, monospace;
+    box-shadow: 0 2px 2px rgba(0,0,0,.05);
+    border-radius: 2px;
+  }
+
+  .log > div {
+    text-indent: -15px;
+    padding-left: 15px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}

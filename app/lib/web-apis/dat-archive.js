@@ -122,7 +122,7 @@ export default class DatArchive extends EventTarget {
     return fromEventStream(dat.createFileActivityStream(this.url, pathSpec))
   }
 
-  createNetworkActivityStream(opts) {
+  createNetworkActivityStream() {
     return fromEventStream(dat.createNetworkActivityStream(this.url))
   }
 

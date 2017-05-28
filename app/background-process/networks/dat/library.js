@@ -49,6 +49,7 @@ var archives = {} // in-memory cache of archive objects. key -> archive
 var archivesByDKey = {} // same, but discoveryKey -> archive
 var archiveLoadPromises = {} // key -> promise
 var archivesEvents = new EventEmitter()
+var debugEvents = new EventEmitter()
 var archiveSwarm
 
 // exported API
@@ -94,6 +95,10 @@ export function setup () {
 
 export function createEventStream () {
   return emitStream(archivesEvents)
+}
+
+export function createDebugStream () {
+  return emitStream(debugEvents)
 }
 
 export async function generateCreatedBy (url) {
@@ -319,8 +324,6 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
 
   // wire up events
   archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
-  archive.metadata.on('peer-add', onNetworkChanged)
-  archive.metadata.on('peer-remove', onNetworkChanged)
   archive.fileActStream = pda.createFileActivityStream(archive)
   archive.fileActStream.on('data', ([event]) => {
     if (event === 'changed') {
@@ -392,6 +395,10 @@ export async function getArchiveInfo (key) {
   meta.version = archive.version
   meta.userSettings = {localPath: userSettings.localPath, isSaved: userSettings.isSaved}
   meta.peers = archive.metadata.peers.length
+  meta.peerInfo = archive.replicationStreams.map(s => ({
+    host: s.peerInfo.host,
+    port: s.peerInfo.port
+  }))
   meta.peerHistory = archive.peerHistory
   if (userSettings.localPath) {
     meta.localPathExists = ((await jetpack.existsAsync(userSettings.localPath)) === 'dir')
@@ -445,7 +452,8 @@ export function joinSwarm (key, opts) {
   var archive = (typeof key == 'object' && key.key) ? key : getArchive(key)
   if (!archive || archive.isSwarming) return
   archiveSwarm.join(archive.discoveryKey)
-  debug('Swarming archive', datEncoding.toStr(archive.key), 'discovery key', datEncoding.toStr(archive.discoveryKey))
+  var keyStr = datEncoding.toStr(archive.key)
+  log(keyStr, `Swarming archive, discovery key: ${datEncoding.toStr(archive.discoveryKey)}`)
   archive.isSwarming = true
 }
 
@@ -455,12 +463,10 @@ export function leaveSwarm (key, cb) {
   if (!archive || !archive.isSwarming) return
 
   var keyStr = datEncoding.toStr(archive.key)
-  debug('Unswarming archive %s disconnected %d peers', keyStr, archive.metadata.peers.length)
+  log(keyStr, `Unswarming archive (disconnected ${archive.metadata.peers.length} peers)`)
 
   archive.replicationStreams.forEach(stream => stream.destroy()) // stop all active replications
   archive.replicationStreams.length = 0
-  archive.metadata.removeListener('peer-add', onNetworkChanged)
-  archive.metadata.removeListener('peer-remove', onNetworkChanged)
   archiveSwarm.leave(archive.discoveryKey)
   archive.isSwarming = false
 }
@@ -536,7 +542,7 @@ function createReplicationStream (info) {
   }
 
   // add any requested archives
-  stream.on('feed', add)  
+  stream.on('feed', add)
 
   function add (dkey) {
     // lookup the archive
@@ -555,48 +561,43 @@ function createReplicationStream (info) {
     // do some logging
     var keyStr = datEncoding.toStr(archive.key)
     var keyStrShort = keyStr.slice(0,6) + '..' + keyStr.slice(-2)
-    debug('new connection id=%s chan=%s type=%s host=%s key=%s', connId, chan, info.type, info.host, keyStrShort)
+    log(keyStr, `new connection id=${connId} dkey=${chan} type=${info.type} host=${info.host}:${info.port}`)
 
     // create the replication stream
     archive.replicate({stream, live: true})
     archive.replicationStreams.push(stream)
+    onNetworkChanged(archive)
     stream.once('close', () => {
       var rs = archive.replicationStreams
       var i = rs.indexOf(stream)
       if (i !== -1) rs.splice(rs.indexOf(stream), 1)
+      onNetworkChanged(archive)
     })
   }
 
-  // timeout the connection after 5s if handshake does not occur
-  // TODO needed?
-  // var TO = setTimeout(() => {
-  //   debug('handshake timeout (%dms) id=%s chan=%s type=%s host=%s key=%s', Date.now() - start, connId, chan, info.type, info.host, keyStrShort)
-  //   stream.destroy(new Error('Timed out waiting for handshake'))
-  // }, 5000)
-  stream.once('handshake', () => {
-    debug('got handshake (%dms) id=%s type=%s host=%s', Date.now() - start, connId, info.type, info.host)
-    // clearTimeout(TO)
-  })
-
   // debugging
-  stream.on('error', err => debug('error (%dms) id=%s type=%s host=%s', Date.now() - start, connId,  info.type, info.host, err))
-  stream.on('close', err => debug('closing connection (%dms) id=%s type=%s host=%s', Date.now() - start, connId, info.type, info.host))
+  stream.once('handshake', () => {
+    log(false, `got handshake (${Date.now() - start}ms) id=${connId} type=${info.type} host=${info.host}:${info.port}`)
+  })
+  stream.on('error', err => {
+    log(false, `error (${Date.now() - start}ms) id=${connId} type=${info.type} host=${info.host}:${info.port} error=${err.toString()}`)
+  })
+  stream.on('close', err => {
+    log(false, `closing connection (${Date.now() - start}ms) id=${connId} type=${info.type} host=${info.host}:${info.port}`)
+  })
   return stream
 }
 
-function onNetworkChanged (e) {
-  var key = datEncoding.toStr(this.key)
-  var archive = archives[key]
-
+function onNetworkChanged (archive) {
   var now = Date.now()
   var lastHistory = archive.peerHistory.slice(-1)[0]
   if (lastHistory && (now - lastHistory.ts) < 10e3) {
     // if the last datapoint was < 10s ago, just update it
-    lastHistory.peers = this.peers.length
+    lastHistory.peers = archive.replicationStreams.length
   } else {
     archive.peerHistory.push({
       ts: Date.now(),
-      peers: this.peers.length
+      peers: archive.replicationStreams.length
     })
   }
 
@@ -607,15 +608,24 @@ function onNetworkChanged (e) {
   }
 
   // count # of peers
-  var peers = 0
+  var totalPeerCount = 0
   for (var k in archives) {
-    peers += archives[k].metadata.peers.length
+    totalPeerCount += archives[k].replicationStreams.length
   }
   archivesEvents.emit('network-changed', {
     details: {
-      url: `dat://${key}`,
-      peers: this.peers.length,
-      totalPeers: peers
+      url: `dat://${datEncoding.toStr(archive.key)}`,
+      peers: archive.replicationStreams.map(s => ({host: s.peerInfo.host, port: s.peerInfo.port})),
+      peerCount: archive.replicationStreams.length,
+      totalPeerCount
     }
   })
+}
+
+function log (...args) {
+  // pull out the key
+  var key = args[0]
+  args = args.slice(1)
+  debug(...args, `key=${key}`)
+  debugEvents.emit(key || 'all', {args})
 }
