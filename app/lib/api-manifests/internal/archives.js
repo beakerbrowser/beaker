@@ -7,5 +7,6 @@ export default {
   update: 'promise',
   list: 'promise',
   get: 'promise',
-  createEventStream: 'readable'
+  createEventStream: 'readable',
+  createDebugStream: 'readable'
 }

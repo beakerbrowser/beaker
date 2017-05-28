@@ -10,6 +10,7 @@ setup()
 async function setup () {
   archiveKey = await parseURL()
   render()
+  updatePeers()
 
   var archive = new DatArchive(archiveKey)
   var info = await archive.getInfo()
@@ -23,8 +24,10 @@ async function setup () {
       updatePeers()
     }
   })
+  var debugEvents = beaker.archives.createDebugStream()
+  debugEvents.addEventListener('all', onLog)
+  debugEvents.addEventListener(archiveKey, onLog)
 }
-
 
 async function parseURL () {
   var path = window.location.pathname
@@ -71,5 +74,8 @@ function updatePeers () {
       ${peers.length === 0 ? yo`<p>No peers are currently connected for this archive.</p>` : ''}
     </div>
   `)
+}
 
+function onLog ({args}) {
+  document.querySelector('.log').appendChild(yo`<div>${args.join('')}</div>`)
 }

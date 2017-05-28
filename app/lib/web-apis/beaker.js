@@ -1,6 +1,6 @@
 import {ipcRenderer} from 'electron'
 import rpc from 'pauls-electron-rpc'
-import {EventTarget, bindEventStream} from './event-target'
+import {EventTarget, bindEventStream, fromEventStream} from './event-target'
 import errors from 'beaker-error-constants'
 
 import archivesManifest from '../api-manifests/internal/archives'
@@ -31,6 +31,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.update = archivesRPC.update
   beaker.archives.list = archivesRPC.list
   beaker.archives.get = archivesRPC.get
+  beaker.archives.createDebugStream = () => fromEventStream(archivesRPC.createDebugStream())
   bindEventStream(archivesRPC.createEventStream(), beaker.archives)
 
   // beaker.bookmarks

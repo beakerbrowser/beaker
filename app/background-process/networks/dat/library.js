@@ -49,6 +49,7 @@ var archives = {} // in-memory cache of archive objects. key -> archive
 var archivesByDKey = {} // same, but discoveryKey -> archive
 var archiveLoadPromises = {} // key -> promise
 var archivesEvents = new EventEmitter()
+var debugEvents = new EventEmitter()
 var archiveSwarm
 
 // exported API
@@ -94,6 +95,10 @@ export function setup () {
 
 export function createEventStream () {
   return emitStream(archivesEvents)
+}
+
+export function createDebugStream () {
+  return emitStream(debugEvents)
 }
 
 export async function generateCreatedBy (url) {
@@ -447,7 +452,8 @@ export function joinSwarm (key, opts) {
   var archive = (typeof key == 'object' && key.key) ? key : getArchive(key)
   if (!archive || archive.isSwarming) return
   archiveSwarm.join(archive.discoveryKey)
-  debug('Swarming archive', datEncoding.toStr(archive.key), 'discovery key', datEncoding.toStr(archive.discoveryKey))
+  var keyStr = datEncoding.toStr(archive.key)
+  log(keyStr, `Swarming archive, discovery key: ${datEncoding.toStr(archive.discoveryKey)}`)
   archive.isSwarming = true
 }
 
@@ -457,7 +463,7 @@ export function leaveSwarm (key, cb) {
   if (!archive || !archive.isSwarming) return
 
   var keyStr = datEncoding.toStr(archive.key)
-  debug('Unswarming archive %s disconnected %d peers', keyStr, archive.metadata.peers.length)
+  log(keyStr, `Unswarming archive (disconnected ${archive.metadata.peers.length} peers)`)
 
   archive.replicationStreams.forEach(stream => stream.destroy()) // stop all active replications
   archive.replicationStreams.length = 0
@@ -536,7 +542,7 @@ function createReplicationStream (info) {
   }
 
   // add any requested archives
-  stream.on('feed', add)  
+  stream.on('feed', add)
 
   function add (dkey) {
     // lookup the archive
@@ -555,7 +561,7 @@ function createReplicationStream (info) {
     // do some logging
     var keyStr = datEncoding.toStr(archive.key)
     var keyStrShort = keyStr.slice(0,6) + '..' + keyStr.slice(-2)
-    debug('new connection id=%s chan=%s type=%s host=%s key=%s', connId, chan, info.type, info.host, keyStrShort)
+    log(keyStr, `new connection id=${connId} dkey=${chan} type=${info.type} host=${info.host}:${info.port}`)
 
     // create the replication stream
     archive.replicate({stream, live: true})
@@ -569,20 +575,16 @@ function createReplicationStream (info) {
     })
   }
 
-  // timeout the connection after 5s if handshake does not occur
-  // TODO needed?
-  // var TO = setTimeout(() => {
-  //   debug('handshake timeout (%dms) id=%s chan=%s type=%s host=%s key=%s', Date.now() - start, connId, chan, info.type, info.host, keyStrShort)
-  //   stream.destroy(new Error('Timed out waiting for handshake'))
-  // }, 5000)
-  stream.once('handshake', () => {
-    debug('got handshake (%dms) id=%s type=%s host=%s', Date.now() - start, connId, info.type, info.host)
-    // clearTimeout(TO)
-  })
-
   // debugging
-  stream.on('error', err => debug('error (%dms) id=%s type=%s host=%s', Date.now() - start, connId,  info.type, info.host, err))
-  stream.on('close', err => debug('closing connection (%dms) id=%s type=%s host=%s', Date.now() - start, connId, info.type, info.host))
+  stream.once('handshake', () => {
+    log(false, `got handshake (${Date.now() - start}ms) id=${connId} type=${info.type} host=${info.host}:${info.port}`)
+  })
+  stream.on('error', err => {
+    log(false, `error (${Date.now() - start}ms) id=${connId} type=${info.type} host=${info.host}:${info.port} error=${err.toString()}`)
+  })
+  stream.on('close', err => {
+    log(false, `closing connection (${Date.now() - start}ms) id=${connId} type=${info.type} host=${info.host}:${info.port}`)
+  })
   return stream
 }
 
@@ -618,4 +620,12 @@ function onNetworkChanged (archive) {
       totalPeerCount
     }
   })
+}
+
+function log (...args) {
+  // pull out the key
+  var key = args[0]
+  args = args.slice(1)
+  debug(...args, `key=${key}`)
+  debugEvents.emit(key || 'all', {args})
 }
