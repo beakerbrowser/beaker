@@ -20,7 +20,7 @@ export class UpdatesNavbarBtn {
     if (this.isDropdownOpen) {
       dropdownEl = yo`<div class="toolbar-dropdown toolbar-updates-dropdown">
         <div class="toolbar-updates-dropdown-inner">
-          A new version of beaker is ready to install. <a href="#" onclick=${this.onClickRestart.bind(this)}>Restart now.</a>
+          A new version of Beaker is ready to install. <a href="#" onclick=${this.onClickRestart.bind(this)}>Restart now.</a>
         </div>
       </div>`
     }
