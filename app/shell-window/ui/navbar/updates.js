@@ -18,11 +18,13 @@ export class UpdatesNavbarBtn {
     // render the dropdown if open
     var dropdownEl = ''
     if (this.isDropdownOpen) {
-      dropdownEl = yo`<div class="toolbar-dropdown toolbar-updates-dropdown">
-        <div class="toolbar-updates-dropdown-inner">
-          A new version of Beaker is ready to install. <a href="#" onclick=${this.onClickRestart.bind(this)}>Restart now.</a>
-        </div>
-      </div>`
+      dropdownEl = yo`
+        <div class="toolbar-dropdown toolbar-updates-dropdown">
+          <div class="toolbar-updates-dropdown-inner dropdown-items">
+            A new version of Beaker is ready to install.
+            <a href="#" onclick=${this.onClickRestart.bind(this)}>Restart now.</a>
+          </div>
+        </div>`
     }
 
     // render btn
