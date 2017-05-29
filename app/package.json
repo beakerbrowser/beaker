@@ -30,7 +30,7 @@
     "function-queue": "0.0.12",
     "hypercore": "^6.3.7",
     "hypercore-protocol": "^6.3.1",
-    "hyperdrive": "^9.1.0",
+    "hyperdrive": "^9.2.9",
     "hyperdrive-staging-area": "^2.0.0",
     "identify-filetype": "^1.0.0",
     "listen-random-port": "^1.0.0",
