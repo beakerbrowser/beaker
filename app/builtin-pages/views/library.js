@@ -293,7 +293,6 @@ function rArchive (archiveInfo) {
   }
 
   var hasStagedChanges = archiveInfo.diff.length
-  var viewSiteBtnTitle = hasStagedChanges ? 'View your changes' : 'View site'
 
   return yo`
     <div class="archive">
@@ -312,7 +311,7 @@ function rArchive (archiveInfo) {
             <i class="fa fa-link"></i>
             Share site
           </a>
-          <a title=${viewSiteBtnTitle} class="btn view-site ${hasStagedChanges ? 'has-diff' : ''}" target="_blank" href="dat://${archiveInfo.key}">
+          <a title="View site" class="btn view-site ${hasStagedChanges ? 'has-diff' : ''}" target="_blank" href="dat://${archiveInfo.key}">
             <i class="fa fa-external-link"></i>
             View site ${hasStagedChanges ? yo`<i class="fa fa-circle"></i>` : ''}
           </a>
