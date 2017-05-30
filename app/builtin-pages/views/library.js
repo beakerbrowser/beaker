@@ -108,10 +108,15 @@ async function loadCurrentArchive () {
       // show 'loading...'
       update()
 
-      // load all data needed
+      // load archive metadata
       var a = new DatArchive(selectedArchiveKey)
-      var fileTree = new FileTree(a, {onDemand: true})
       selectedArchive = await a.getInfo()
+
+      // load the filetree from the last published, not from the staging
+      var aLastPublish = new DatArchive(`${selectedArchiveKey}+${selectedArchive.version}`)
+      var fileTree = new FileTree(aLastPublish, {onDemand: true})
+
+      // fetch all data
       var [history, fileTreeRes] = await Promise.all([
         a.history({end: 20, reverse: true, timeout: 10e3}),
         fileTree.setup().catch(err => null)
