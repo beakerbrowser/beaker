@@ -178,8 +178,14 @@ body {
   }
 
   &.active {
+    -webkit-font-smoothing: antialiased;
     background: @blue;
     color: #fff;
+    font-weight: 500;
+
+    .title {
+      font-weight: 700;
+    }
 
     .last-updated, .peers, .title .readonly {
       color: #fff;
