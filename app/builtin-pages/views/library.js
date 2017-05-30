@@ -36,6 +36,7 @@ var archivesList
 var trashList = []
 var isTrashOpen = false
 var isSidebarOpen = false
+var isPublishing = false
 var currentFilter = ''
 var currentSort = 'mtime'
 var currentSection = 'files'
@@ -451,7 +452,9 @@ function rStagingArea (archiveInfo) {
           </span>
           <div class="actions">
             <button onclick=${onRevert} class="btn transparent">Revert changes</button>
-            <button onclick=${onPublish} class="btn success">Publish</button>
+            ${isPublishing
+              ? yo`<button class="btn success" disabled><span class="spinner"></span> Publishing...</button>`
+              : yo`<button onclick=${onPublish} class="btn success">Publish</button>`}
           </div>
         </div>
         ${renderChanges(archiveInfo)}
@@ -648,7 +651,12 @@ function onClickTab (tab) {
 }
 
 async function onPublish () {
+  // update UI
+  isPublishing = true
+  update()
+
   try {
+    // publish
     var a = new DatArchive(selectedArchiveKey)
     await a.commit({timeout: 30e3})
     toast.create('Your changes have been published')
@@ -656,6 +664,11 @@ async function onPublish () {
     console.error(e)
     toast.create(e.toString())
   }
+
+  // update UI
+  selectedArchive.diff = [] // optimistically clear it to speed up rendering
+  isPublishing = false
+  update()
 }
 
 async function onRevert () {
