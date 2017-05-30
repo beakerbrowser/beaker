@@ -442,9 +442,7 @@ function rStagingArea (archiveInfo) {
       <div class="changes">
         <div class="changes-heading">
           <span class="diff-summary">
-            ${stats.add} ${pluralize(stats.add, 'addition')},
-            ${stats.mod} ${pluralize(stats.mod, 'change')}, and
-            ${stats.del} ${pluralize(stats.del, 'deletion')}
+            There are unpublished changes:
           </span>
           <div class="actions">
             <button onclick=${onRevert} class="btn transparent">Revert changes</button>
