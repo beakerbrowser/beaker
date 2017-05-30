@@ -292,6 +292,9 @@ function rArchive (archiveInfo) {
     toggleSaveText = 'Save to library'
   }
 
+  var hasStagedChanges = archiveInfo.diff.length
+  var viewSiteBtnTitle = hasStagedChanges ? 'View your changes' : 'View site'
+
   return yo`
     <div class="archive">
       <section class="info">
@@ -309,9 +312,9 @@ function rArchive (archiveInfo) {
             <i class="fa fa-link"></i>
             Share site
           </a>
-          <a class="btn" target="_blank" href="dat://${archiveInfo.key}">
+          <a title=${viewSiteBtnTitle} class="btn view-site ${hasStagedChanges ? 'has-diff' : ''}" target="_blank" href="dat://${archiveInfo.key}">
             <i class="fa fa-external-link"></i>
-            View site
+            View site ${hasStagedChanges ? yo`<i class="fa fa-circle"></i>` : ''}
           </a>
           ${toggleable(yo`
             <div class="dropdown-btn-container toggleable-container">
@@ -594,7 +597,7 @@ function onViewSource () {
 }
 
 function onViewSwarmDebugger () {
-  window.location = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)  
+  window.location = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
 }
 
 async function onToggleSaved (e) {
