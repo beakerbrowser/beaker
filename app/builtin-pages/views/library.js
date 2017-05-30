@@ -650,7 +650,7 @@ function onClickTab (tab) {
 async function onPublish () {
   try {
     var a = new DatArchive(selectedArchiveKey)
-    await a.commit()
+    await a.commit({timeout: 30e3})
     toast.create('Your changes have been published')
   } catch (e) {
     console.error(e)
