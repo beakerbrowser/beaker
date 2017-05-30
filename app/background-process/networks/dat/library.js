@@ -6,6 +6,7 @@ import datEncoding from 'dat-encoding'
 import pify from 'pify'
 import pda from 'pauls-dat-api'
 import signatures from 'sodium-signatures'
+import slugify from 'slugify'
 var debug = require('debug')('dat')
 import {debounce} from '../../../lib/functions'
 import {grantPermission} from '../../ui/permissions'
@@ -430,12 +431,13 @@ export async function selectDefaultLocalPath (title) {
   if (!title.trim()) {
     title = 'Untitled'
   }
+  title = slugify(title).toLowerCase()
 
   // find an available variant of title
-  var tryNum = 0
+  var tryNum = 1
   var titleVariant = title
   while (await jetpack.existsAsync(path.join(DEFAULT_DATS_FOLDER, titleVariant))) {
-    titleVariant = `${title} (${++tryNum})`
+    titleVariant = `${title}-${++tryNum}`
   }
   var localPath = path.join(DEFAULT_DATS_FOLDER, titleVariant)
 
