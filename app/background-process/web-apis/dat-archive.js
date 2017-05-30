@@ -11,6 +11,7 @@ import * as archivesDb from '../dbs/archives'
 import * as sitedataDb from '../dbs/sitedata'
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
+import {getWebContentsWindow} from '../../lib/electron'
 import {queryPermission, requestPermission} from '../ui/permissions'
 import { 
   DAT_MANIFEST_FILENAME,
@@ -41,7 +42,7 @@ const to = (opts) =>
 export default {
   async createArchive({title, description} = {}) {
     // initiate the modal
-    var win = getSenderWindow(this.sender)
+    var win = getWebContentsWindow(this.sender)
     // DISABLED
     // this mechanism is a bit too temperamental
     // are we sure it's the best policy anyway?
@@ -55,7 +56,7 @@ export default {
 
   async forkArchive(url, {title, description} = {}) {
     // initiate the modal
-    var win = getSenderWindow(this.sender)
+    var win = getWebContentsWindow(this.sender)
     // DISABLED
     // this mechanism is a bit too temperamental
     // are we sure it's the best policy anyway?
@@ -569,11 +570,4 @@ async function lookupUrlDatKey (url) {
 
 function massageHistoryObj ({name, version, type}) {
   return {path: name, version, type}
-}
-
-function getSenderWindow (wc) {
-  while (wc && wc.hostWebContents) {
-    wc = wc.hostWebContents
-  }
-  return BrowserWindow.fromWebContents(wc)
 }

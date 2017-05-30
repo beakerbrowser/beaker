@@ -225,6 +225,15 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://fork-archive-modal/main.js') {
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/fork-archive-modal.build.js'))
   }
+  if (requestUrl === 'beaker://basic-auth-modal/') {
+    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/basic-auth-modal.html'))
+  }
+  if (requestUrl === 'beaker://basic-auth-modal/main.css') {
+    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/basic-auth-modal.css'))
+  }
+  if (requestUrl === 'beaker://basic-auth-modal/main.js') {
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/basic-auth-modal.build.js'))
+  }
   if (requestUrl === 'beaker://prompt-modal/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/prompt-modal.html'))
   }
