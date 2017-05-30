@@ -454,7 +454,7 @@ function rStagingArea (archiveInfo) {
             <button onclick=${onPublish} class="btn success">Publish</button>
           </div>
         </div>
-        ${renderChanges(archiveInfo, {onPublish, onRevert})}
+        ${renderChanges(archiveInfo)}
       </div>
     </section>
   `

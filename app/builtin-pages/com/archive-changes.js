@@ -4,7 +4,7 @@ import {pluralize} from '../../lib/strings'
 // exported api
 // =
 
-export default function renderChanges (archiveInfo, {onPublish, onRevert}) {
+export default function renderChanges (archiveInfo) {
   var stats = archiveInfo.diffStats
   var isExpanded = {add: false, mod: false, del: false}
 
