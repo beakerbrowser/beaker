@@ -442,7 +442,7 @@ function rStagingArea (archiveInfo) {
       <div class="changes">
         <div class="changes-heading">
           <span class="diff-summary">
-            There are unpublished changes:
+            Unpublished changes:
           </span>
           <div class="actions">
             <button onclick=${onRevert} class="btn transparent">Revert changes</button>
