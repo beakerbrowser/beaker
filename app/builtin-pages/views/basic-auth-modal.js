@@ -56,7 +56,7 @@ function render () {
 
           <form onsubmit=${onSubmit}>
             <label for="username">Username</label>
-            <input name="username" tabindex="2" value=${username || ''} placeholder="Username" onchange=${onChangeUsername} />
+            <input name="username" tabindex="2" value=${username || ''} placeholder="Username" onchange=${onChangeUsername} autofocus />
 
             <label for="password">Password</label>
             <input name="password" type="password" tabindex="3" value=${password || ''}  placeholder="Password" onchange=${onChangePassword} />
