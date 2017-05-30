@@ -112,6 +112,7 @@ async function loadCurrentArchive () {
       // load archive metadata
       var a = new DatArchive(selectedArchiveKey)
       selectedArchive = await a.getInfo()
+      console.log(selectedArchive)
 
       // load the filetree from the last published, not from the staging
       var aLastPublish = new DatArchive(`${selectedArchiveKey}+${selectedArchive.version}`)
@@ -504,7 +505,7 @@ function rMetadata (archiveInfo) {
   return yo`
     <div class="metadata">
       <table>
-        <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSize)}</td></tr>
+        <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
         <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
         <tr><td class="label">URL</td><td title="dat://${archiveInfo.key}">dat://${archiveInfo.key}</td></tr>

@@ -138,9 +138,10 @@ export async function pullLatestArchiveMeta (archive) {
     var isOwner = archive.writable
     var metaSize = archive.metaSize || 0
     var stagingSize = archive.stagingSize || 0
+    var stagingSizeLessIgnored = archive.stagingSizeLessIgnored || 0
 
     // write the record
-    var details = {title, description, forkOf, createdBy, mtime, metaSize, stagingSize, isOwner}
+    var details = {title, description, forkOf, createdBy, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner}
     debug('Writing meta', details)
     await archivesDb.setMeta(key, details)
 
@@ -355,12 +356,29 @@ export async function getOrLoadArchive (key, opts) {
 }
 
 export async function updateSizeTracking (archive) {
-  var [metaSize, stagingSize] = await Promise.all([
+  // read the datignore
+  var filter
+  if (archive.staging) {
+    var ignoreFilter = await new Promise(resolve => {
+      archive.staging.readIgnore({}, resolve)
+    })
+    // wrap the filter to work correctly with du
+    var pathlen = archive.staging.path.length
+    filter = (filepath) => {
+      filepath = filepath.slice(pathlen)
+      return ignoreFilter(filepath)
+    }
+  }
+
+  // fetch sizes
+  var [metaSize, stagingSize, stagingSizeLessIgnored] = await Promise.all([
     du(archivesDb.getArchiveMetaPath(archive), {disk: true}).catch(err => 0),
-    archive.staging ? du(archive.staging.path, {disk: true}).catch(err => 0) : 0
+    archive.staging ? du(archive.staging.path, {disk: true}).catch(err => 0) : 0,
+    archive.staging ? du(archive.staging.path, {disk: true, filter}).catch(err => 0) : 0
   ])
   archive.metaSize = metaSize
   archive.stagingSize = stagingSize
+  archive.stagingSizeLessIgnored = stagingSizeLessIgnored
 }
 
 // archive fetch/query
@@ -394,6 +412,9 @@ export async function getArchiveInfo (key) {
   meta.key = key
   meta.url = `dat://${key}`
   meta.version = archive.version
+  meta.metaSize = archive.metaSize
+  meta.stagingSize = archive.stagingSize
+  meta.stagingSizeLessIgnored = archive.stagingSizeLessIgnored
   meta.userSettings = {localPath: userSettings.localPath, isSaved: userSettings.isSaved}
   meta.peers = archive.metadata.peers.length
   meta.peerInfo = archive.replicationStreams.map(s => ({

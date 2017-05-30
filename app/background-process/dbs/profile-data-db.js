@@ -20,11 +20,6 @@ export function setup () {
   var dbPath = path.join(app.getPath('userData'), 'Profiles')
   db = new sqlite3.Database(dbPath)
   setupPromise = setupSqliteDB(db, migrations, '[PROFILES]')
-
-  // DEBUG
-  // run(`
-  //   ALTER TABLE archives ADD COLUMN localPath TEXT;
-  // `)
 }
 
 export async function get (...args) {
@@ -54,7 +49,8 @@ export function parallelize () {
 // =
 
 migrations = [
-  migration('profile-data.v1.sql')
+  migration('profile-data.v1.sql'),
+  migration('profile-data.v2.sql')
 ]
 function migration (file) {
   return cb => db.exec(fs.readFileSync(path.join(__dirname, 'background-process', 'dbs', 'schemas', file), 'utf8'), cb)
