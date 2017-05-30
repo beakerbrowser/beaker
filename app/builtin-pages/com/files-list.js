@@ -6,8 +6,12 @@ import {niceDate} from '../../lib/time'
 // =
 
 export default function render (archiveInfo) {
+  var lastPublishedURL = yo`
+    <a href="${archiveInfo.url}+${archiveInfo.version}">${archiveInfo.version}</a>`
+
   return yo`
     <div>
+      <p>Latest revision: ${lastPublishedURL}</p>
       ${rFolder(archiveInfo)}
       ${rFilesList(archiveInfo)}
     </div>
@@ -44,13 +48,13 @@ function redraw (archiveInfo) {
 function rFolder (archiveInfo) {
   if (!archiveInfo.userSettings) return ''
   return yo`
-    <p class="dat-local-path">
+    <div class="dat-local-path">
       ${archiveInfo.userSettings.localPath}
       <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
         Open folder
         <i class="fa fa-folder-open-o"></i>
       </a>
-    </p>
+    </div>
   `
 }
 
