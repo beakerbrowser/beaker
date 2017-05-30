@@ -311,9 +311,9 @@ function rArchive (archiveInfo) {
             <i class="fa fa-link"></i>
             Share site
           </a>
-          <a title="View site" class="btn view-site ${hasStagedChanges ? 'has-diff' : ''}" target="_blank" href="dat://${archiveInfo.key}">
+          <a title="View site" class="btn" target="_blank" href="dat://${archiveInfo.key}">
             <i class="fa fa-external-link"></i>
-            View site ${hasStagedChanges ? yo`<i class="fa fa-circle"></i>` : ''}
+            View site
           </a>
           ${toggleable(yo`
             <div class="dropdown-btn-container toggleable-container">
