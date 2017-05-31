@@ -297,6 +297,7 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
   })
   await configureStaging(archive, userSettings, !!secretKey)
   await updateSizeTracking(archive)
+  archivesDb.touch(key).catch(err => console.error('Failed to update lastAccessTime for archive', key, err))
 
   // store in the discovery listing, so the swarmer can find it
   // but not yet in the regular archives listing, because it's not fully loaded

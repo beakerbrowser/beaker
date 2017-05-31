@@ -7,7 +7,7 @@ import datEncoding from 'dat-encoding'
 import {InvalidArchiveKeyError} from 'beaker-error-constants'
 import * as db from './profile-data-db' // TODO rename to db
 import lock from '../../lib/lock'
-import {DAT_HASH_REGEX} from '../../lib/const'
+import {DAT_HASH_REGEX, DAT_GC_EXPIRATION_AGE} from '../../lib/const'
 
 // globals
 // =
@@ -84,6 +84,28 @@ export async function query (profileId, query) {
     delete archive.localPath
   })
   return archives
+}
+
+// get all archives that are ready for garbage collection
+export async function listExpiredArchives ({olderThan} = {}) {
+  olderThan = olderThan || DAT_GC_EXPIRATION_AGE
+  return db.all(`
+    SELECT archives_meta.key
+      FROM archives_meta
+      LEFT JOIN archives ON archives_meta.key = archives.key
+      WHERE
+        archives.isSaved != 1
+        AND archives_meta.lastAccessTime < ?
+  `, [Date.now() - olderThan])
+}
+
+// upsert the last-access time
+export async function touch (key) {
+  var now = Date.now()
+  return db.run(`
+    UPDATE archives_meta SET lastAccessTime=? WHERE key=?;
+    INSERT OR IGNORE INTO archives_meta (key, lastAccessTime) VALUES (?, ?);
+  `, [key, now, key, now])
 }
 
 // get a single archive's user settings
