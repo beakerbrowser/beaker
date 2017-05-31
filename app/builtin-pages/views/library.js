@@ -208,7 +208,10 @@ function update () {
       </div>
 
       <div class="trash-controls">
-        <button onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
+        <button onclick=${onClickBulkDelete} class="bulk-delete btn primary">
+          <i class="fa fa-trash"></i>
+        </button>
+        <button class="view-trash" onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
           <i class="fa ${isTrashOpen ? 'fa-close' : 'fa-trash'}"></i>
         </button>
       </div>
@@ -273,6 +276,7 @@ function rArchiveListItem (archiveInfo) {
         ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
       </div>
       <span class="last-updated">Updated ${niceDate(archiveInfo.mtime || 0)}</span>
+      <input data-key=${archiveInfo.key} onclick=${onSelectArchiveListItem} type="checkbox"/>
       <span class="peers">
         <i class="fa fa-share-alt"></i>
         ${archiveInfo.peers}
@@ -599,6 +603,12 @@ function onViewSwarmDebugger () {
   window.location = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
 }
 
+async function removeArchive (archiveInfo) {
+  trashList.unshift(archiveInfo)
+  await beaker.archives.remove(archiveInfo.key)
+  archiveInfo.userSettings.isSaved = false
+}
+
 async function onToggleSaved (e) {
   e.preventDefault()
   if (selectedArchive.userSettings.isSaved) {
@@ -717,6 +727,29 @@ function onClearFilter () {
   currentFilter = ''
   document.querySelector('input[name="filter"]').value = ''
   update()
+}
+
+async function onClickBulkDelete () {
+  var checked = document.querySelectorAll('.sidebar .archive input:checked')
+
+  for (var i = 0; i < checked.length; i++) {
+    var archive = new DatArchive(checked[i].dataset.key)
+    var archiveInfo = await archive.getInfo()
+    await removeArchive(archiveInfo)
+  }
+  update()
+}
+
+function onSelectArchiveListItem (e) {
+  e.stopPropagation()
+  var checked = document.querySelectorAll('.sidebar .archive input:checked')
+  var bulkDeleteBtn = document.querySelector('.bulk-delete')
+
+  if (!checked.length) {
+    bulkDeleteBtn.classList.remove('visible')
+  } else if (!bulkDeleteBtn.classList.contains('visible')) {
+    bulkDeleteBtn.classList.add('visible')
+  }
 }
 
 async function onCreateArchive () {

@@ -166,15 +166,32 @@ body {
   &.active,
   &:hover {
     margin-left: 0;
-    padding-left: 1rem;
+    padding-left: 1.75rem;
 
     .last-updated {
-      left: 1rem;
+      left: 1.75rem;
     }
   }
 
   &:hover {
     background: @background-menu;
+
+    input {
+      display: block;
+    }
+  }
+
+  input {
+    display: none;
+    position: absolute;
+    right: .5rem;
+    top: .5rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  input:checked {
+    display: block;
   }
 
   &.active {
@@ -245,6 +262,8 @@ body {
 }
 
 .sidebar .trash-controls {
+  &:extend(.flex);
+  justify-content: space-between;
   position: fixed;
   width: 250px;
   bottom: 0;
@@ -256,15 +275,27 @@ body {
 
   button {
     font-size: 13px;
+  }
+
+  .view-trash {
     border-radius: 2px;
+    margin-left: auto;
+
+    i {
+      margin-left: @margin-icon;
+    }
 
     &:hover {
       background: @border-menu;
     }
   }
 
-  i {
-    margin-left: @margin-icon;
+  .bulk-delete {
+    visibility: hidden;
+
+    &.visible {
+      visibility: visible;
+    }
   }
 }
 
