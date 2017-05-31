@@ -472,6 +472,7 @@ function rHistory (archiveInfo) {
   var rows = archiveInfo.history.map(function (item, i) {
     var rev = item.version
     var revType = makeSafe(item.type)
+    var urlRev = (revType === 'put') ? rev : (rev - 1)  // give the one revision prior for deletions
     revType = revType === 'put' ? 'added' : 'deleted'
 
     return `
@@ -481,7 +482,7 @@ function rHistory (archiveInfo) {
           Revision ${rev}</a>
         </div>
         ${revType}
-        <a class="path" href="${`dat://${archiveInfo.key}+${rev}${item.path}`}" target="_blank">
+        <a class="path" href="${`dat://${archiveInfo.key}+${urlRev}${item.path}`}" target="_blank">
           ${makeSafe(item.path.slice(1))}
         </a>
       </div>
