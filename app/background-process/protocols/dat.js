@@ -18,6 +18,17 @@ import errorPage from '../../lib/error-page'
 import * as mime from '../../lib/mime'
 import {DAT_MANIFEST_FILENAME} from '../../lib/const'
 
+// HACK
+// attempt to load utp-native to make sure it's correctly built
+// discovery-swarm intentionally swallows that failure but we want
+// it to be logged
+// -prf
+try {
+  require('utp-native')
+} catch (err) {
+  console.error('Failed to load utp-native. Peer-to-peer connectivity may be degraded.', err)
+}
+
 // constants
 // =
 
