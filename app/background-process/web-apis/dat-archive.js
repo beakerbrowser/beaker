@@ -455,6 +455,11 @@ async function assertWritePermission (archive, sender) {
 }
 
 async function assertQuotaPermission (archive, senderOrigin, byteLength) {
+  // beaker: always allowed
+  if (senderOrigin.startsWith('beaker:')) {
+    return
+  }
+
   // fetch the archive settings
   const userSettings = await archivesDb.getUserSettings(0, archive.key)
 

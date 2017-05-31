@@ -196,7 +196,7 @@ export async function setMeta (key, value = {}) {
   }
 
   // extract the desired values
-  var {title, description, forkOf, createdBy, mtime, metaSize, stagingSize, isOwner} = value
+  var {title, description, forkOf, createdBy, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner} = value
   isOwner = isOwner ? 1 : 0
   forkOf = Array.isArray(forkOf) ? JSON.stringify(forkOf) : forkOf
   var createdByUrl = createdBy && createdBy.url ? createdBy.url : ''
@@ -205,9 +205,9 @@ export async function setMeta (key, value = {}) {
   // write
   await db.run(`
     INSERT OR REPLACE INTO 
-      archives_meta (key, title, description, forkOf, createdByUrl, createdByTitle, mtime, metaSize, stagingSize, isOwner)
-      VALUES        (?,   ?,     ?,           ?,      ?,            ?,              ?,     ?,        ?,           ?)
-  `,                [key, title, description, forkOf, createdByUrl, createdByTitle, mtime, metaSize, stagingSize, isOwner])
+      archives_meta (key, title, description, forkOf, createdByUrl, createdByTitle, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner)
+      VALUES        (?,   ?,     ?,           ?,      ?,            ?,              ?,     ?,        ?,           ?,                      ?)
+  `,                [key, title, description, forkOf, createdByUrl, createdByTitle, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner])
   events.emit('update:archive-meta', key, value)
 }
 

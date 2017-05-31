@@ -36,6 +36,7 @@ var archivesList
 var trashList = []
 var isTrashOpen = false
 var isSidebarOpen = false
+var isPublishing = false
 var currentFilter = ''
 var currentSort = 'mtime'
 var currentSection = 'files'
@@ -108,10 +109,16 @@ async function loadCurrentArchive () {
       // show 'loading...'
       update()
 
-      // load all data needed
+      // load archive metadata
       var a = new DatArchive(selectedArchiveKey)
-      var fileTree = new FileTree(a, {onDemand: true})
       selectedArchive = await a.getInfo()
+      console.log(selectedArchive)
+
+      // load the filetree from the last published, not from the staging
+      var aLastPublish = new DatArchive(`${selectedArchiveKey}+${selectedArchive.version}`)
+      var fileTree = new FileTree(aLastPublish, {onDemand: true})
+
+      // fetch all data
       var [history, fileTreeRes] = await Promise.all([
         a.history({end: 20, reverse: true, timeout: 10e3}),
         fileTree.setup().catch(err => null)
@@ -452,10 +459,12 @@ function rStagingArea (archiveInfo) {
           </span>
           <div class="actions">
             <button onclick=${onRevert} class="btn transparent">Revert changes</button>
-            <button onclick=${onPublish} class="btn success">Publish</button>
+            ${isPublishing
+              ? yo`<button class="btn success" disabled><span class="spinner"></span> Publishing...</button>`
+              : yo`<button onclick=${onPublish} class="btn success">Publish</button>`}
           </div>
         </div>
-        ${renderChanges(archiveInfo, {onPublish, onRevert})}
+        ${renderChanges(archiveInfo)}
       </div>
     </section>
   `
@@ -502,7 +511,7 @@ function rMetadata (archiveInfo) {
   return yo`
     <div class="metadata">
       <table>
-        <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSize)}</td></tr>
+        <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
         <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
         <tr><td class="label">URL</td><td title="dat://${archiveInfo.key}">dat://${archiveInfo.key}</td></tr>
@@ -655,14 +664,24 @@ function onClickTab (tab) {
 }
 
 async function onPublish () {
+  // update UI
+  isPublishing = true
+  update()
+
   try {
+    // publish
     var a = new DatArchive(selectedArchiveKey)
-    await a.commit()
+    await a.commit({timeout: 30e3})
     toast.create('Your changes have been published')
   } catch (e) {
     console.error(e)
     toast.create(e.toString())
   }
+
+  // update UI
+  selectedArchive.diff = [] // optimistically clear it to speed up rendering
+  isPublishing = false
+  update()
 }
 
 async function onRevert () {
