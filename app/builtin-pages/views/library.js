@@ -303,8 +303,6 @@ function rArchive (archiveInfo) {
     toggleSaveText = 'Save to library'
   }
 
-  var hasStagedChanges = archiveInfo.diff.length
-
   return yo`
     <div class="archive">
       <section class="info">
