@@ -77,6 +77,8 @@ export function setup () {
     getUserSetupStatus,
     setUserSetupStatus,
 
+    fetchBody,
+
     setStartPageBackgroundImage,
 
     getDefaultProtocolSettings,
@@ -106,6 +108,19 @@ export function setup () {
     } catch (e) {
       e.returnValue = false
     }
+  })
+}
+
+export function fetchBody (url) {
+  return new Promise((resolve) => {
+
+    var http = url.startsWith('https') ? require('https') : require('http')
+
+    http.get(url, (res) => {
+      var body = ''
+      res.on('data', (data) => body += data )
+      res.on('end', () => resolve(body))
+    })
   })
 }
 
