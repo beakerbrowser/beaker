@@ -160,8 +160,16 @@ export default function registerContextMenu () {
       // dat items
       if (props.pageURL.startsWith('dat://')) {
         menuItems.push({ label: 'Fork this site', click: (item, win) => win.webContents.executeJavaScript(`DatArchive.fork("${props.pageURL}").catch(()=>{})`) })
-        menuItems.push({ label: 'View Source', click: (item, win) => win.webContents.send('command', 'file:new-tab', 'beaker://view-source/' + props.pageURL.slice('dat://'.length)) })
         menuItems.push({ type: 'separator' })
+      }
+
+      // view source
+      if (!props.pageURL.startsWith('beaker://')) {
+        var viewSourceURL = props.pageURL
+        if (props.pageURL.startsWith('dat://')) viewSourceURL = props.pageURL.slice('dat://'.length)
+        menuItems.push({ label: 'View Source', click: (item, win) => {
+          win.webContents.send('command', 'file:new-tab', 'beaker://view-source/' + viewSourceURL)
+        }})
       }
 
       // inspector
