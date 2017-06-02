@@ -4,10 +4,11 @@ import url from 'url'
 import mkdirp from 'mkdirp'
 import Events from 'events'
 import datEncoding from 'dat-encoding'
+import jetpack from 'fs-jetpack'
 import {InvalidArchiveKeyError} from 'beaker-error-constants'
 import * as db from './profile-data-db' // TODO rename to db
 import lock from '../../lib/lock'
-import {DAT_HASH_REGEX} from '../../lib/const'
+import {DAT_HASH_REGEX, DAT_GC_EXPIRATION_AGE} from '../../lib/const'
 
 // globals
 // =
@@ -28,6 +29,15 @@ export function setup () {
 export function getArchiveMetaPath (archiveOrKey) {
   var key = datEncoding.toStr(archiveOrKey.key || archiveOrKey)
   return path.join(datPath, 'Archives', 'Meta', key.slice(0, 2), key.slice(2))
+}
+
+// delete all db entries and files for an archive
+export async function deleteArchive (key) {
+  await Promise.all([
+    db.run(`DELETE FROM archives WHERE key=?`, key),
+    db.run(`DELETE FROM archives_meta WHERE key=?`, key),
+    jetpack.removeAsync(getArchiveMetaPath(key))
+  ])
 }
 
 export const on = events.on.bind(events)
@@ -84,6 +94,27 @@ export async function query (profileId, query) {
     delete archive.localPath
   })
   return archives
+}
+
+// get all archives that are ready for garbage collection
+export async function listExpiredArchives ({olderThan} = {}) {
+  olderThan = olderThan || DAT_GC_EXPIRATION_AGE
+  return db.all(`
+    SELECT archives_meta.key
+      FROM archives_meta
+      LEFT JOIN archives ON archives_meta.key = archives.key
+      WHERE
+        (archives.isSaved != 1 OR archives.isSaved IS NULL)
+        AND archives_meta.lastAccessTime < ?
+  `, [Date.now() - olderThan])
+}
+
+// upsert the last-access time
+export async function touch (key) {
+  var now = Date.now()
+  key = datEncoding.toStr(key)
+  await db.run(`UPDATE archives_meta SET lastAccessTime=? WHERE key=?`, [now, key])
+  await db.run(`INSERT OR IGNORE INTO archives_meta (key, lastAccessTime) VALUES (?, ?)`, [key, now])
 }
 
 // get a single archive's user settings

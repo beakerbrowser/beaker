@@ -50,7 +50,8 @@ export function parallelize () {
 
 migrations = [
   migration('profile-data.v1.sql'),
-  migration('profile-data.v2.sql')
+  migration('profile-data.v2.sql'),
+  migration('profile-data.v3.sql')
 ]
 function migration (file) {
   return cb => db.exec(fs.readFileSync(path.join(__dirname, 'background-process', 'dbs', 'schemas', file), 'utf8'), cb)
