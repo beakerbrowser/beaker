@@ -4,6 +4,7 @@ import url from 'url'
 import mkdirp from 'mkdirp'
 import Events from 'events'
 import datEncoding from 'dat-encoding'
+import jetpack from 'fs-jetpack'
 import {InvalidArchiveKeyError} from 'beaker-error-constants'
 import * as db from './profile-data-db' // TODO rename to db
 import lock from '../../lib/lock'
@@ -28,6 +29,15 @@ export function setup () {
 export function getArchiveMetaPath (archiveOrKey) {
   var key = datEncoding.toStr(archiveOrKey.key || archiveOrKey)
   return path.join(datPath, 'Archives', 'Meta', key.slice(0, 2), key.slice(2))
+}
+
+// delete all db entries and files for an archive
+export async function deleteArchive (key) {
+  await Promise.all([
+    db.run(`DELETE FROM archives WHERE key=?`, key),
+    db.run(`DELETE FROM archives_meta WHERE key=?`, key),
+    jetpack.removeAsync(getArchiveMetaPath(key))
+  ])
 }
 
 export const on = events.on.bind(events)
@@ -101,11 +111,9 @@ export async function listExpiredArchives ({olderThan} = {}) {
 
 // upsert the last-access time
 export async function touch (key) {
-  var now = Date.now()
-  return db.run(`
-    UPDATE archives_meta SET lastAccessTime=? WHERE key=?;
-    INSERT OR IGNORE INTO archives_meta (key, lastAccessTime) VALUES (?, ?);
-  `, [key, now, key, now])
+  var values = [key, Date.now()]
+  await db.run(`UPDATE archives_meta SET lastAccessTime=? WHERE key=?`, values)
+  await db.run(`INSERT OR IGNORE INTO archives_meta (key, lastAccessTime) VALUES (?, ?)`, values)
 }
 
 // get a single archive's user settings

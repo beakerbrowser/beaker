@@ -15,7 +15,9 @@ export const DAT_QUOTA_DEFAULT_BYTES_ALLOWED = bytes.parse(process.env.beaker_da
 export const DEFAULT_DAT_DNS_TTL = ms('1h')
 export const MAX_DAT_DNS_TTL = ms('7d')
 export const DEFAULT_DAT_API_TIMEOUT = ms('5s')
-export const DAT_GC_EXPIRATION_AGE = ms('1d')
+export const DAT_GC_EXPIRATION_AGE = ms('5d') // how old do archives need to be before deleting them from the cache?
+export const DAT_GC_FIRST_COLLECT_WAIT = ms('5m') // how long after process start to do first collect?
+export const DAT_GC_REGULAR_COLLECT_WAIT = ms('2h') // how long between GCs to collect?
 
 // dat staging paths
 export const INVALID_SAVE_FOLDER_CHAR_REGEX = /[^0-9a-zA-Z-_ ]/g

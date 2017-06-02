@@ -13,6 +13,7 @@ import {grantPermission} from '../../ui/permissions'
 
 // dat modules
 import * as archivesDb from '../../dbs/archives'
+import * as datGC from './garbage-collector'
 import hypercore from 'hypercore'
 import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
@@ -77,6 +78,7 @@ export function setup () {
   })
 
   // setup the archive swarm
+  datGC.setup()
   archiveSwarm = discoverySwarm(swarmDefaults({
     id: networkId,
     hash: false,
