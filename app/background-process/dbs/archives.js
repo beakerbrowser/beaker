@@ -111,9 +111,10 @@ export async function listExpiredArchives ({olderThan} = {}) {
 
 // upsert the last-access time
 export async function touch (key) {
-  var values = [key, Date.now()]
-  await db.run(`UPDATE archives_meta SET lastAccessTime=? WHERE key=?`, values)
-  await db.run(`INSERT OR IGNORE INTO archives_meta (key, lastAccessTime) VALUES (?, ?)`, values)
+  var now = Date.now()
+  key = datEncoding.toStr(key)
+  await db.run(`UPDATE archives_meta SET lastAccessTime=? WHERE key=?`, [now, key])
+  await db.run(`INSERT OR IGNORE INTO archives_meta (key, lastAccessTime) VALUES (?, ?)`, [key, now])
 }
 
 // get a single archive's user settings
