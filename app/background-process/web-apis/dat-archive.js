@@ -437,10 +437,10 @@ async function assertWritePermission (archive, sender) {
     return true
   }
 
-  // self-modification NEVER allowed
+  // self-modification ALWAYS allowed
   var senderDatKey = await lookupUrlDatKey(sender.getURL())
   if (senderDatKey === archiveKey) {
-    throw new PermissionsError('Dat sites are not allowed to self-modify')
+    return true
   }
 
   // ensure the sender is allowed to write
