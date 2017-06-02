@@ -118,6 +118,7 @@ export function fetchBody (url) {
 
     http.get(url, (res) => {
       var body = ''
+      res.setEncoding('utf8')
       res.on('data', (data) => body += data )
       res.on('end', () => resolve(body))
     })
