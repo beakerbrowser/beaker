@@ -104,7 +104,7 @@ export async function listExpiredArchives ({olderThan} = {}) {
       FROM archives_meta
       LEFT JOIN archives ON archives_meta.key = archives.key
       WHERE
-        archives.isSaved != 1
+        (archives.isSaved != 1 OR archives.isSaved IS NULL)
         AND archives_meta.lastAccessTime < ?
   `, [Date.now() - olderThan])
 }
