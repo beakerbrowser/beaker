@@ -1242,7 +1242,7 @@ test('archive.createNetworkActivityStream', async t => {
   t.deepEqual(res.value.content.all, true)
 })
 
-test('archive.writeFile does not allow self-modification', async t => {
+test('archive.writeFile does allow self-modification', async t => {
   // navigate to the created dat
   // (we have to be really sleepy about this to not hang the navigation)
   await sleep(500)
@@ -1256,9 +1256,9 @@ test('archive.writeFile does not allow self-modification', async t => {
   // fail a self-write
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.writeFile('/denythis.txt', 'hello world', 'utf8').then(done, done)
+    archive.writeFile('/allowthis.txt', 'hello world', 'utf8').then(done, done)
   }, createdDatURL)
-  t.deepEqual(res.value.name, 'PermissionsError')
+  t.falsy(res.value)
 })
 
 function sleep (time) {
