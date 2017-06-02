@@ -15,6 +15,8 @@ export default {
   setAsDefaultProtocolClient: 'promise',
   removeAsDefaultProtocolClient: 'promise',
 
+  fetchBody: 'promise',
+
   setStartPageBackgroundImage: 'promise',
 
   showOpenDialog: 'promise',
