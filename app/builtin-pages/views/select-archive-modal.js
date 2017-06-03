@@ -133,9 +133,7 @@ function renderArchivePicker () {
 }
 
 function renderArchivesList () {
-  var filtered = archives.filter(a =>
-    a.title.toLowerCase().includes(currentFilter) ||
-    a.description.includes(currentFilter))
+  var filtered = archives.filter(a => (a.title && a.title.toLowerCase().includes(currentFilter)) || (a.description && a.description.toLowerCase().includes(currentFilter)))
 
   return yo`<ul class="archives-list">${filtered.map(renderArchive)}</ul>`
 }
