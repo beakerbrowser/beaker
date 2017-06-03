@@ -1,14 +1,12 @@
 import * as yo from 'yo-yo'
 import {Archive} from 'builtin-pages-lib'
 
-// state
 var currentFilter = ''
-
-// form variables
+var selectedArchiveKey = ''
+var archives
 var title = ''
 var description = ''
 var createdBy
-var archives
 
 // exported api
 // =
@@ -40,10 +38,12 @@ window.addEventListener('keyup', e => {
 })
 
 function onChangeTitle (e) {
+  selectedArchiveKey = ''
   title = e.target.value
 }
 
 function onChangeDescription (e) {
+  selectedArchiveKey = ''
   description = e.target.value
 }
 
@@ -57,22 +57,26 @@ function onChangeFilter (e) {
   render()
 }
 
+function onChangeSelectedArchive (e) {
+  selectedArchiveKey = e.currentTarget.dataset.key
+  render()
+}
+
 async function onSubmit (e) {
   e.preventDefault()
-  try {
-    if (true) {
-      await beaker.archives.update(archive.url, {title, description})
-      beakerBrowser.closeModal(null, true)
-    } else {
+  if (!selectedArchiveKey) {
+    try {
       var newArchive = await beaker.archives.create({title, description, createdBy})
       beakerBrowser.closeModal(null, {url: newArchive.url})
-    }
-  } catch (e) {
-    beakerBrowser.closeModal({
+    } catch (e) {
+      beakerBrowser.closeModal({
       name: e.name,
       message: e.message || e.toString(),
       internalError: true
-    })
+      })
+    }
+  } else {
+    beakerBrowser.closeModal(null, {url: selectedArchiveKey})
   }
 }
 
@@ -141,7 +145,7 @@ function renderArchivesList () {
 function renderArchive (archive) {
   console.log(archive)
   return yo`
-    <li>
+    <li onclick=${onChangeSelectedArchive} data-key=${archive.key}>
       <span class="title">${archive.title}</span>
       <span class="description">${archive.description}</span>
       <span class="path">butt${archive.userSettings.localPath}</span>
