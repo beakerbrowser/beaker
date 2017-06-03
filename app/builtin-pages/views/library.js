@@ -388,7 +388,7 @@ function rArchive (archiveInfo) {
           {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')}
         ].filter(Boolean))}
         ${({
-          files: () => renderFiles(archiveInfo),
+          files: () => rFiles(archiveInfo),
           log: () => rHistory(archiveInfo),
           metadata: () => rMetadata(archiveInfo),
         })[currentSection]()}
@@ -467,6 +467,18 @@ function rStagingArea (archiveInfo) {
       </div>
     </section>
   `
+}
+
+function rFiles (archiveInfo) {
+  return yo`<div>
+    <p>
+      Latest revision:
+      <a href="${archiveInfo.url}+${archiveInfo.version}">
+        ${archiveInfo.version}
+      </a>
+    </p>
+    ${renderFiles(archiveInfo)}
+  </div>`
 }
 
 function rHistory (archiveInfo) {

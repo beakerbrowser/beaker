@@ -6,12 +6,8 @@ import {niceDate} from '../../lib/time'
 // =
 
 export default function render (archiveInfo) {
-  var lastPublishedURL = yo`
-    <a href="${archiveInfo.url}+${archiveInfo.version}">${archiveInfo.version}</a>`
-
   return yo`
     <div>
-      <p>Latest revision: ${lastPublishedURL}</p>
       ${rFolder(archiveInfo)}
       ${rFilesList(archiveInfo)}
     </div>
