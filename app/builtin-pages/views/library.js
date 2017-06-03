@@ -42,6 +42,7 @@ var currentSort = 'mtime'
 var currentSection = 'files'
 var selectedArchiveKey = ''
 var selectedArchive
+var selectedArchives = []
 var viewError
 const reloadDiffThrottled = throttle(reloadDiff, 1.5e3)
 
@@ -215,7 +216,7 @@ function update () {
       </div>
 
       <div class="trash-controls">
-        <button onclick=${onClickBulkDelete} class="bulk-delete btn primary">
+        <button onclick=${onClickBulkDelete} class="bulk-delete btn primary ${selectedArchives.length ? 'visible' : ''}">
           <i class="fa fa-trash"></i>
         </button>
         <button class="view-trash" onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
@@ -283,7 +284,7 @@ function rArchiveListItem (archiveInfo) {
         ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
       </div>
       <span class="last-updated">Updated ${niceDate(archiveInfo.mtime || 0)}</span>
-      <input data-key=${archiveInfo.key} onclick=${onSelectArchiveListItem} type="checkbox"/>
+      <input checked=${selectedArchives.includes(archiveInfo.key)} data-key=${archiveInfo.key} onclick=${onChangeArchiveListItem} type="checkbox"/>
       <span class="peers">
         <i class="fa fa-share-alt"></i>
         ${archiveInfo.peers}
@@ -748,26 +749,24 @@ function onClearFilter () {
 }
 
 async function onClickBulkDelete () {
-  var checked = document.querySelectorAll('.sidebar .archive input:checked')
-
-  for (var i = 0; i < checked.length; i++) {
-    var archive = new DatArchive(checked[i].dataset.key)
+  for (const key of selectedArchives) {
+    var archive = new DatArchive(key)
     var archiveInfo = await archive.getInfo()
     await removeArchive(archiveInfo)
   }
+
+  selectedArchives = []
   update()
 }
 
-function onSelectArchiveListItem (e) {
+function onChangeArchiveListItem (e) {
   e.stopPropagation()
-  var checked = document.querySelectorAll('.sidebar .archive input:checked')
+  var key = e.target.dataset.key
   var bulkDeleteBtn = document.querySelector('.bulk-delete')
 
-  if (!checked.length) {
-    bulkDeleteBtn.classList.remove('visible')
-  } else if (!bulkDeleteBtn.classList.contains('visible')) {
-    bulkDeleteBtn.classList.add('visible')
-  }
+  if (e.target.checked) selectedArchives.push(key)
+  else selectedArchives.splice(selectedArchives.indexOf(key), 1)
+  update()
 }
 
 async function onCreateArchive () {
