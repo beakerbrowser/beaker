@@ -335,7 +335,7 @@ export default {
     return datDns.resolveName(name)
   },
 
-  async selectArchive ({message, buttonLabel} = {}) {
+  async selectArchive ({title, buttonLabel} = {}) {
     // initiate the modal
     var win = getWebContentsWindow(this.sender)
     // DISABLED
@@ -344,7 +344,7 @@ export default {
     // -prf
     // await assertSenderIsFocused(this.sender)
     var createdBy = this.sender.getURL()
-    var res = await showModal(win, 'select-archive', {message, buttonLabel, createdBy})
+    var res = await showModal(win, 'select-archive', {title, buttonLabel, createdBy})
     if (!res || !res.url) throw new UserDeniedError()
     return res.url
   },

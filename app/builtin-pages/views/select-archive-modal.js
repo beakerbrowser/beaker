@@ -8,7 +8,7 @@ var title = ''
 var description = ''
 var createdBy
 var buttonLabel = 'Submit'
-var customHelpText = ''
+var customTitle = ''
 
 // exported api
 // =
@@ -16,7 +16,7 @@ var customHelpText = ''
 window.setup = async function (opts) {
   try {
     buttonLabel = opts.buttonLabel || buttonLabel
-    customHelpText = opts.message || ''
+    customTitle = opts.title || ''
     archives = await beaker.archives.list()
     // render
     createdBy = opts.createdBy || undefined
@@ -92,10 +92,7 @@ function render () {
     <div class="modal">
       <div class="modal-inner">
         <div class="select-archive-modal">
-          <h2 class="title">Select an archive</h2>
-          Selected: ${selectedArchiveKey}
-
-          ${customHelpText ? yo`<p class="custom-help-text">${customHelpText}</p>` : ''}
+          <h1 class="title">${customTitle || 'Select an archive'}</h1>
 
           <p class="help-text">
             Choose an existing Dat archive or create a new one.
