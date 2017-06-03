@@ -28,5 +28,7 @@ export default {
   exportToFilesystem: 'promise',
   exportToArchive: 'promise',
 
-  resolveName: 'promise'
+  resolveName: 'promise',
+
+  selectArchive: 'promise'
 }

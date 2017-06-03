@@ -333,7 +333,22 @@ export default {
 
   async resolveName(name) {
     return datDns.resolveName(name)
-  }
+  },
+
+  async selectArchive ({message, buttonLabel} = {}) {
+    // initiate the modal
+    var win = getWebContentsWindow(this.sender)
+    // DISABLED
+    // this mechanism is a bit too temperamental
+    // are we sure it's the best policy anyway?
+    // -prf
+    // await assertSenderIsFocused(this.sender)
+    var createdBy = this.sender.getURL()
+    var res = await showModal(win, 'select-archive', {message, buttonLabel, createdBy})
+    if (!res || !res.url) throw new UserDeniedError()
+    // TODO is this actually what we want to return for the picker?
+    return res.url
+  },
 }
 
 // internal helpers
