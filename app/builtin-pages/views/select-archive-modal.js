@@ -9,6 +9,7 @@ var description = ''
 var createdBy
 var buttonLabel = 'Submit'
 var customTitle = ''
+var currentTab = 'archivePicker'
 
 // exported api
 // =
@@ -66,6 +67,11 @@ function onChangeSelectedArchive (e) {
   render()
 }
 
+function onUpdateActiveTab (e) {
+  currentTab = e.target.dataset.content
+  render()
+}
+
 async function onSubmit (e) {
   e.preventDefault()
   if (!selectedArchiveKey) {
@@ -98,18 +104,22 @@ function render () {
             Choose an existing Dat archive or create a new one.
           </p>
 
-          ${renderArchivePicker()}
-
           <form onsubmit=${onSubmit}>
-            <label for="title">Title</label>
-            <input name="title" tabindex="2" value=${title || ''} placeholder="Title" onchange=${onChangeTitle} />
-
-            <label for="desc">Description</label>
-            <textarea name="desc" tabindex="3" placeholder="Description (optional)" onchange=${onChangeDescription}>${description || ''}</textarea>
+            <div class="tabs-container">
+              <div class="tabs">
+                <div onclick=${onUpdateActiveTab} data-content="archivePicker" class="tab ${currentTab === 'archivePicker' ? 'selected' : ''}">
+                  Select an archive
+                </div>
+                <div onclick=${onUpdateActiveTab} data-content="newArchive" class="tab ${currentTab === 'newArchive' ? 'selected' : ''} ">
+                  Create new archive
+                </div>
+              </div>
+              ${renderActiveTabContent()}
+            </div>
 
             <div class="form-actions">
               <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-              <button type="submit" class="btn success" tabindex="5">
+              <button type="submit" class="btn primary" tabindex="5">
                 ${buttonLabel}
               </button>
             </div>
@@ -120,14 +130,34 @@ function render () {
   </main>`)
 }
 
+function renderActiveTabContent () {
+  if (currentTab === 'archivePicker') return renderArchivePicker()
+  else if (currentTab === 'newArchive') return renderNewArchiveForm()
+}
+
+function renderNewArchiveForm () {
+  return yo`
+    <div class="tab-content create-archive">
+      <label for="title">Title</label>
+      <input name="title" tabindex="2" value=${title || ''} placeholder="Title" onchange=${onChangeTitle} />
+
+      <label for="desc">Description</label>
+      <textarea name="desc" tabindex="3" placeholder="Description (optional)" onchange=${onChangeDescription}>${description || ''}</textarea>
+    </div>
+
+  `
+}
+
 function renderArchivePicker () {
   if (!archives.length) {
     return 'No archives'
   }
 
   return yo`
-    <div class="archive-picker">
-      <input onkeyup=${onChangeFilter} id="filter" class="filter" type="text" placeholder="Search..."/>
+    <div class="tab-content archive-picker">
+      <div class="filter-container">
+        <input onkeyup=${onChangeFilter} id="filter" class="filter" type="text" placeholder="Search your archives..."/>
+      </div>
       <ul class="archives-list">${renderArchivesList()}</ul>
     </div>
   `
@@ -136,16 +166,17 @@ function renderArchivePicker () {
 function renderArchivesList () {
   var filtered = archives.filter(a => (a.title && a.title.toLowerCase().includes(currentFilter)) || (a.description && a.description.toLowerCase().includes(currentFilter)))
 
-  return yo`<ul class="archives-list">${filtered.map(renderArchive)}</ul>`
+  return yo`<ul class="archivs-list">${filtered.map(renderArchive)}</ul>`
 }
 
 function renderArchive (archive) {
-  console.log(archive)
   return yo`
-    <li onclick=${onChangeSelectedArchive} data-key=${archive.key}>
-      <span class="title">${archive.title}</span>
-      <span class="description">${archive.description}</span>
-      <span class="path">butt${archive.userSettings.localPath}</span>
+    <li class="archive ${archive.key === selectedArchiveKey ? 'selected' : ''}" onclick=${onChangeSelectedArchive} data-key=${archive.key}>
+      <div class="info">
+        <span class="title">${archive.title || 'Untitled'}</span>
+        <span class="path">butt${archive.userSettings.localPath}</span>
+      </div>
+      <span class="description">${archive.description || yo`<em>No description</em>`}</span>
     </li>
   `
 }

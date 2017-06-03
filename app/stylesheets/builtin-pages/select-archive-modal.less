@@ -13,10 +13,72 @@ body {
 }
 
 .archive-picker {
-  max-height: 150px;
+  height: 212px;
+  border: 1px solid @border-menu;
+  overflow: hidden;
+
+  .filter-container {
+    padding: 1rem;
+    border-bottom: 1px solid @border-menu;
+    background: @background-menu, 25%;
+  }
+
+  .filter {
+    margin: 0;
+  }
 }
 
 .archives-list {
-  height: 125px;
+  height: 150px;
   overflow-y: auto;
+
+  .archive {
+    padding: .3rem 1rem;
+    border-bottom: 1px solid @border-menu;
+
+    &:hover {
+      background: @background-menu;
+    }
+
+    &.selected {
+      background: @background-highlight;
+    }
+  }
+
+  .title {
+    font-weight: 600;
+  }
+
+  .path {
+    color: @color-text--light;
+  }
+}
+
+.tabs {
+  border-bottom: 1px solid @border-menu;
+}
+
+.tab-content {
+  margin: 1.5rem 0;
+}
+
+.tab {
+  display: inline-block;
+  cursor: pointer;
+  padding: .15rem .5rem;
+  color: @color-text--muted;
+
+  &:hover,
+  &.selected {
+    color: @color-text;
+  }
+
+  &.selected {
+    border-top: 1px solid @border-menu;
+    border-right: 1px solid @border-menu;
+    border-left: 1px solid @border-menu;
+    border-radius: 3px 3px 0 0;
+    margin-bottom: -1px;
+    border-bottom: 2px solid #fff;
+  }
 }
