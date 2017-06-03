@@ -5,6 +5,7 @@ const SIZES = {
   'create-archive': {width: 500, height: 340},
   'fork-archive': {width: 500, height: 390},
   'basic-auth': {width: 500, height: 320},
+  'select-archive': {width: 600, height: 500},
   prompt: {width: 500, height: 170}
 }
 

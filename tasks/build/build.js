@@ -61,7 +61,8 @@ var bundleApplication = function () {
     bundle(bpViewsDir.path('create-archive-modal.js'), bpBuildDir.path('create-archive-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('fork-archive-modal.js'),   bpBuildDir.path('fork-archive-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('basic-auth-modal.js'),     bpBuildDir.path('basic-auth-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
-    bundle(bpViewsDir.path('prompt-modal.js'),         bpBuildDir.path('prompt-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() })
+    bundle(bpViewsDir.path('prompt-modal.js'),         bpBuildDir.path('prompt-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('select-archive-modal.js'), bpBuildDir.path('select-archive-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() })
   ]);
 };
 

@@ -151,8 +151,8 @@ function toKey (url) {
   if (DAT_HASH_REGEX.test(url)) {
     // simple case: given the key
     return url
-  } 
-  
+  }
+
   var urlp = parseURL(url)
 
   // validate
