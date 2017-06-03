@@ -201,6 +201,16 @@ export async function forkArchive (srcArchiveUrl, manifest={}) {
   var srcManifest = await pda.readManifest(srcArchive).catch(err => {})
   srcManifest = srcManifest || {}
 
+  // fetch old archive ignore rules
+  var ignore = ['/.dat', '/.git']
+  try {
+    let ignoreRaw = await pda.readFile(srcArchive.stagingFS, '/.datignore', 'utf8')
+    let ignoreCustomRules = hyperstaging.parseIgnoreRules(ignoreRaw)
+    ignore = ignore.concat(ignoreCustomRules)
+  } catch (e) {
+    // ignore
+  }
+
   // override any manifest data
   var dstManifest = {
     title: (manifest.title) ? manifest.title : srcManifest.title,
@@ -218,7 +228,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}) {
     srcArchive: srcArchive.stagingFS,
     dstArchive: dstArchive.stagingFS,
     skipUndownloadedFiles: true,
-    ignore: ['/dat.json']
+    ignore
   })
   await pda.commit(dstArchive.staging)
 
