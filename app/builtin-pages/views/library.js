@@ -331,15 +331,14 @@ function rArchive (archiveInfo) {
                 <i class="fa fa-caret-down"></i>
               </button>
               <div class="dropdown-btn-list">
-                ${archiveInfo.userSettings.localPath
-                  ? yo`<a class="dropdown-item" onclick=${onOpenFolder}>
-                      <i class="fa fa-folder-open-o"></i>
-                      Open folder
-                    </a>`
-                  : yo`<a class="dropdown-item disabled">
-                      <i class="fa fa-folder-open-o"></i>
-                      Open folder
-                    </a>`}
+                <div class="dropdown-item" onclick=${onFork}>
+                  <i class="fa fa-code-fork"></i>
+                  Fork this site
+                </div>
+                <div class="dropdown-item" onclick=${onViewSource}>
+                  <i class="fa fa-code"></i>
+                  View source
+                </div>
                 <div class="dropdown-item" onclick=${onChooseNewLocation}>
                   <i class="fa fa-folder-o"></i>
                   Change folder
@@ -350,14 +349,6 @@ function rArchive (archiveInfo) {
                       Edit site info
                     </div>`
                   : ''}
-                <div class="dropdown-item" onclick=${onFork}>
-                  <i class="fa fa-code-fork"></i>
-                  Fork this site
-                </div>
-                <div class="dropdown-item" onclick=${onViewSource}>
-                  <i class="fa fa-code"></i>
-                  View source
-                </div>
                 <div class="dropdown-item" onclick=${onViewSwarmDebugger}>
                   <i class="fa fa-bug"></i>
                   Swarm debugger
@@ -592,14 +583,6 @@ function onNetworkChanged (e) {
 
 function onShare (e) {
   sharePopup.create(selectedArchive.url)
-}
-
-function onOpenFolder (e) {
-  e.preventDefault()
-  if (selectedArchive.userSettings.localPath) {
-    beakerBrowser.openFolder(selectedArchive.userSettings.localPath)
-  }
-  update()
 }
 
 async function onEditSettings (e) {
