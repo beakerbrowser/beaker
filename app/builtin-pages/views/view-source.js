@@ -188,7 +188,11 @@ function renderFile () {
 
 function onClickFilesList (e) {
   e.preventDefault()
-  var href = e.target.getAttribute('href')
+  var node = e.target
+  if (node.tagName !== 'A') {
+    node = node.querySelector('a')
+  }
+  var href = node && node.getAttribute('href')
   if (href && href.startsWith('dat://')) {
     window.history.pushState(null, '', 'beaker://view-source/' + href.slice('dat://'.length))
   }
