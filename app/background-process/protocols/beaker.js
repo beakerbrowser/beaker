@@ -246,7 +246,7 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://select-archive-modal/') {
     return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/select-archive-modal.html'))
   }
-  if (requestUrl === 'beaker://select-archive/main.css') {
+  if (requestUrl === 'beaker://select-archive-modal/main.css') {
     return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/select-archive-modal.css'))
   }
   if (requestUrl === 'beaker://select-archive-modal/main.js') {
