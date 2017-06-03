@@ -142,8 +142,8 @@ export default class DatArchive extends EventTarget {
     return dat.resolveName(name)
   }
 
-  static selectArchive (message, buttonLabel) {
-    return dat.selectArchive(message, buttonLabel)
+  static selectArchive (opts={}) {
+    return dat.selectArchive(opts)
   }
 }
 

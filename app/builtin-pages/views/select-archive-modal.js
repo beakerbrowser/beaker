@@ -7,12 +7,16 @@ var archives
 var title = ''
 var description = ''
 var createdBy
+var buttonLabel = 'Submit'
+var customHelpText = ''
 
 // exported api
 // =
 
 window.setup = async function (opts) {
   try {
+    buttonLabel = opts.buttonLabel || buttonLabel
+    customHelpText = opts.message || ''
     archives = await beaker.archives.list()
     // render
     createdBy = opts.createdBy || undefined
@@ -84,24 +88,20 @@ async function onSubmit (e) {
 // =
 
 function render () {
-  var helpText = 'Choose an existing Dat archive or create a new one'
-  // TODO differernt msg based on createdBy?
-
-  // if (createdBy && !createdBy.startsWith('beaker:')) {
-  //   helpText = 'This page wants to ' + helpText.toLowerCase()
-  // }
-
   yo.update(document.querySelector('main'), yo`<main>
     <div class="modal">
       <div class="modal-inner">
         <div class="select-archive-modal">
           <h2 class="title">Select an archive</h2>
+          Selected: ${selectedArchiveKey}
 
-          ${renderArchivePicker()}
+          ${customHelpText ? yo`<p class="custom-help-text">${customHelpText}</p>` : ''}
 
           <p class="help-text">
-            ${helpText}
+            Choose an existing Dat archive or create a new one.
           </p>
+
+          ${renderArchivePicker()}
 
           <form onsubmit=${onSubmit}>
             <label for="title">Title</label>
@@ -113,7 +113,7 @@ function render () {
             <div class="form-actions">
               <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
               <button type="submit" class="btn success" tabindex="5">
-                TODO
+                ${buttonLabel}
               </button>
             </div>
           </form>
