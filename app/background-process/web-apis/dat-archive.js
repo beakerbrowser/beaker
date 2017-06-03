@@ -346,7 +346,6 @@ export default {
     var createdBy = this.sender.getURL()
     var res = await showModal(win, 'select-archive', {message, buttonLabel, createdBy})
     if (!res || !res.url) throw new UserDeniedError()
-    // TODO is this actually what we want to return for the picker?
     return res.url
   },
 }
