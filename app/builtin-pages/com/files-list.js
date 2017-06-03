@@ -1,17 +1,15 @@
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
+import * as toast from './toast'
 import {niceDate} from '../../lib/time'
+import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 // exported api
 // =
 
 export default function render (archiveInfo) {
-  var lastPublishedURL = yo`
-    <a href="${archiveInfo.url}+${archiveInfo.version}">${archiveInfo.version}</a>`
-
   return yo`
     <div>
-      <p>Latest revision: ${lastPublishedURL}</p>
       ${rFolder(archiveInfo)}
       ${rFilesList(archiveInfo)}
     </div>
@@ -49,11 +47,19 @@ function rFolder (archiveInfo) {
   if (!archiveInfo.userSettings) return ''
   return yo`
     <div class="dat-local-path">
-      ${archiveInfo.userSettings.localPath}
-      <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
-        Open folder
-        <i class="fa fa-folder-open-o"></i>
-      </a>
+      <span>
+        ${archiveInfo.userSettings.localPath}
+      </span>
+      <span>
+        <a onclick=${e => onCopyFolder(e, archiveInfo)} href="#">
+          <i class="fa fa-clipboard"></i>
+          Copy path
+        </a>
+        <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
+          <i class="fa fa-folder-open-o"></i>
+          Open folder
+        </a>
+      </span>
     </div>
   `
 }
@@ -143,12 +149,23 @@ async function onClickDirectory (e, archiveInfo, node) {
   redraw(archiveInfo)
 }
 
+function onCopyFolder (e, archiveInfo) {
+  e.preventDefault()
+  if (archiveInfo.userSettings.localPath) {
+    var path = archiveInfo.userSettings.localPath
+    if (path.indexOf(' ') !== -1) {
+      path = `"${path}"`
+    }
+    writeToClipboard(path)
+    toast.create(`Folder path copied to clipboard.`)
+  }
+}
+
 function onOpenFolder (e, archiveInfo) {
   e.preventDefault()
   if (archiveInfo.userSettings.localPath) {
     beakerBrowser.openFolder(archiveInfo.userSettings.localPath)
   }
-  // update()
 }
 
 // helpers
