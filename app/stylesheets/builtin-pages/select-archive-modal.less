@@ -122,6 +122,10 @@ body {
   cursor: pointer;
   padding: .15rem .5rem;
   color: @color-text--muted;
+  border-top: 1px solid transparent;
+  border-right: 1px solid transparent;
+  border-left: 1px solid transparent;
+  border-radius: 3px 3px 0 0;
 
   &:hover,
   &.selected {
@@ -132,7 +136,6 @@ body {
     border-top: 1px solid @border-menu;
     border-right: 1px solid @border-menu;
     border-left: 1px solid @border-menu;
-    border-radius: 3px 3px 0 0;
     margin-bottom: -1px;
     border-bottom: 2px solid #fff;
   }
