@@ -13,35 +13,47 @@ body {
 }
 
 .archive-picker {
-  height: 212px;
-  border: 1px solid @border-menu;
+  height: 190px;
   overflow: hidden;
 
-  .filter-container {
-    padding: 1rem;
-    border-bottom: 1px solid @border-menu;
-    background: @background-menu, 25%;
-  }
-
   .filter {
+    border: 0;
     margin: 0;
+    padding: .5rem 1rem;
+    border: 1px solid @border-menu;
+    border-radius: 0;
+
+    &:focus {
+      outline: none;
+      background: @background-highlight;
+    }
   }
 }
 
 .archives-list {
   height: 150px;
   overflow-y: auto;
+  border: 1px solid @border-menu;
+  border-top: 0;
 
   .archive {
     padding: .3rem 1rem;
-    border-bottom: 1px solid @border-menu;
+    position: relative;
+
+    &:not(:last-of-type) {
+      border-bottom: 1px solid @border-menu;
+    }
 
     &:hover {
       background: @background-menu;
+
+      .checkmark {
+        opacity: 1;
+      }
     }
 
     &.selected {
-      background: @background-highlight;
+      background: @background-menu;
     }
   }
 
@@ -60,6 +72,13 @@ body {
 
 .tab-content {
   margin: 1.5rem 0;
+
+  &.create-archive {
+
+    textarea {
+      height: 97px; // to make the form as tall as the dat picker tab
+    }
+  }
 }
 
 .tab {

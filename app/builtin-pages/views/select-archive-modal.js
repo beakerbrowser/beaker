@@ -10,6 +10,7 @@ var createdBy
 var buttonLabel = 'Submit'
 var customTitle = ''
 var currentTab = 'archivePicker'
+var isFormDisabled = true
 
 // exported api
 // =
@@ -63,11 +64,13 @@ function onChangeFilter (e) {
 }
 
 function onChangeSelectedArchive (e) {
+  isFormDisabled = false
   selectedArchiveKey = e.currentTarget.dataset.key
   render()
 }
 
 function onUpdateActiveTab (e) {
+  isFormDisabled = false
   currentTab = e.target.dataset.content
   render()
 }
@@ -119,7 +122,7 @@ function render () {
 
             <div class="form-actions">
               <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-              <button type="submit" class="btn primary" tabindex="5">
+              <button disabled=${isFormDisabled ? 'disabled' : 'false'} type="submit" class="btn primary" tabindex="5">
                 ${buttonLabel}
               </button>
             </div>
@@ -139,7 +142,7 @@ function renderNewArchiveForm () {
   return yo`
     <div class="tab-content create-archive">
       <label for="title">Title</label>
-      <input name="title" tabindex="2" value=${title || ''} placeholder="Title" onchange=${onChangeTitle} />
+      <input autofocus name="title" tabindex="2" value=${title || ''} placeholder="Title" onchange=${onChangeTitle} />
 
       <label for="desc">Description</label>
       <textarea name="desc" tabindex="3" placeholder="Description (optional)" onchange=${onChangeDescription}>${description || ''}</textarea>
@@ -155,9 +158,7 @@ function renderArchivePicker () {
 
   return yo`
     <div class="tab-content archive-picker">
-      <div class="filter-container">
-        <input onkeyup=${onChangeFilter} id="filter" class="filter" type="text" placeholder="Search your archives..."/>
-      </div>
+      <input autofocus onkeyup=${onChangeFilter} id="filter" class="filter" type="text" placeholder="Search your archives..."/>
       <ul class="archives-list">${renderArchivesList()}</ul>
     </div>
   `
@@ -170,8 +171,9 @@ function renderArchivesList () {
 }
 
 function renderArchive (archive) {
+  var isSelected = selectedArchiveKey === archive.key
   return yo`
-    <li class="archive ${archive.key === selectedArchiveKey ? 'selected' : ''}" onclick=${onChangeSelectedArchive} data-key=${archive.key}>
+    <li class="archive ${isSelected ? 'selected' : ''}" onclick=${onChangeSelectedArchive} data-key=${archive.key}>
       <div class="info">
         <span class="title">${archive.title || 'Untitled'}</span>
         <span class="path">butt${archive.userSettings.localPath}</span>
