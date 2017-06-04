@@ -20,7 +20,7 @@ window.setup = async function (opts) {
     buttonLabel = opts.buttonLabel || buttonLabel
     customTitle = opts.title || ''
 
-    if (opts.writable) archives = await beaker.archives.list({isOwner: true})
+    if (opts.filters && opts.filters.isOwner) archives = await beaker.archives.list({isOwner: true})
     else archives = await beaker.archives.list()
 
     // render
