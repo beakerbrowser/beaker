@@ -158,7 +158,10 @@ function renderArchivePicker () {
 
   return yo`
     <div class="tab-content archive-picker">
-      <input autofocus onkeyup=${onChangeFilter} id="filter" class="filter" type="text" placeholder="Search your archives..."/>
+      <div class="filter-container">
+        <i class="fa fa-search"></i>
+        <input autofocus onkeyup=${onChangeFilter} id="filter" class="filter" type="text" placeholder="Search your archives..."/>
+      </div>
       <ul class="archives-list">${renderArchivesList()}</ul>
     </div>
   `
