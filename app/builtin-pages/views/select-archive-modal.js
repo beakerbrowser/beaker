@@ -178,11 +178,11 @@ function renderArchive (archive) {
   return yo`
     <li class="archive ${isSelected ? 'selected' : ''}" onclick=${onChangeSelectedArchive} data-key=${archive.key}>
       <div class="info">
-        <span class="title">
+        <span class="title" title="${archive.title} ${archive.isOwner ? '' : '(Read-only)'}">
           ${archive.title || 'Untitled'}
           ${archive.isOwner ? '' : yo`<i class="fa fa-eye"></i>`}
         </span>
-        <span class="path">butt${archive.userSettings.localPath}</span>
+        <span class="path" title=${archive.userSettings.localPath}>butt${archive.userSettings.localPath}</span>
       </div>
       <span class="description">${archive.description || yo`<em>No description</em>`}</span>
     </li>
