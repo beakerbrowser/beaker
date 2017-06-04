@@ -50,9 +50,30 @@ body {
   border-top: 0;
 
   .archive {
+    position: relative;
     padding: .3rem 1rem;
     position: relative;
     border-bottom: 1px solid @border-menu;
+
+    &.readonly {
+
+      .info {
+        max-width: 345px;
+      }
+    }
+
+    .readonly {
+      position: absolute;
+      font-size: 9.5px;
+      padding: 0 5px;
+      border: 1px solid @border-menu;
+      background: @background-menu;
+      border-radius: 2px;
+      top: .4rem;
+      right: 1rem;
+      text-transform: uppercase;
+      color: @color-text--muted;
+    }
 
     &:hover {
       background: @background-menu;
@@ -69,7 +90,7 @@ body {
 
   .info {
     &:extend(.overflow-ellipsis);
-    max-width: 410px;
+    max-width: 405px;
   }
 
   .title {

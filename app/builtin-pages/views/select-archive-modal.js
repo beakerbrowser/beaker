@@ -179,7 +179,7 @@ function renderArchivesList () {
 function renderArchive (archive) {
   var isSelected = selectedArchiveKey === archive.key
   return yo`
-    <li class="archive ${isSelected ? 'selected' : ''}" onclick=${onChangeSelectedArchive} data-key=${archive.key}>
+    <li class="archive ${isSelected ? 'selected' : ''} ${archive.isOwner ? '' : 'readonly'}" onclick=${onChangeSelectedArchive} data-key=${archive.key}>
       <div class="info">
         <span class="title" title="${archive.title} ${archive.isOwner ? '' : '(Read-only)'}">
           ${archive.title || 'Untitled'}
@@ -187,6 +187,7 @@ function renderArchive (archive) {
         </span>
         <span class="path" title=${archive.userSettings.localPath}>${archive.userSettings.localPath}</span>
       </div>
+      ${archive.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
       <span class="description">${archive.description || yo`<em>No description</em>`}</span>
     </li>
   `
