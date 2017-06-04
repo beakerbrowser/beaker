@@ -133,7 +133,7 @@ function render () {
     <div class="modal">
       <div class="modal-inner">
         <div class="fork-dat-modal">
-          <h2 class="title">Fork ${renderArchiveTitle('archive')}</h2>
+          <h1 class="title">Fork ${renderArchiveTitle('archive')}</h1>
           <p class="help-text">${helpText}</p>
 
           <form onsubmit=${onSubmit}>
