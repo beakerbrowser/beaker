@@ -178,7 +178,10 @@ function renderArchive (archive) {
   return yo`
     <li class="archive ${isSelected ? 'selected' : ''}" onclick=${onChangeSelectedArchive} data-key=${archive.key}>
       <div class="info">
-        <span class="title">${archive.title || 'Untitled'}</span>
+        <span class="title">
+          ${archive.title || 'Untitled'}
+          ${archive.isOwner ? '' : yo`<i class="fa fa-eye"></i>`}
+        </span>
         <span class="path">butt${archive.userSettings.localPath}</span>
       </div>
       <span class="description">${archive.description || yo`<em>No description</em>`}</span>
