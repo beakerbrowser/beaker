@@ -3,6 +3,7 @@
 @import "../components/buttons.less";
 @import "../components/inputs.less";
 @import "../components/modal.less";
+@import "../utils/decorators";
 
 body {
   background: #fff;
@@ -64,6 +65,11 @@ body {
     &.selected {
       background: @background-menu;
     }
+  }
+
+  .info {
+    &:extend(.overflow-ellipsis);
+    max-width: 410px;
   }
 
   .title {
