@@ -48,7 +48,7 @@ function render () {
     <div class="modal">
       <div class="modal-inner">
         <div class="basic-auth-modal">
-          <h2 class="title">Login required</h2>
+          <h1 class="title">Login required</h1>
 
           <p class="help-text">
             ${authInfo.host} requires a username and password

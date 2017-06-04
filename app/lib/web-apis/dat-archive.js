@@ -129,17 +129,21 @@ export default class DatArchive extends EventTarget {
   static importFromFilesystem(opts={}) {
     return dat.importFromFilesystem(opts)
   }
-  
+
   static exportToFilesystem(opts={}) {
     return dat.exportToFilesystem(opts)
   }
-  
+
   static exportToArchive(opts={}) {
     return dat.exportToArchive(opts)
   }
 
   static resolveName(name) {
     return dat.resolveName(name)
+  }
+
+  static selectArchive (opts={}) {
+    return dat.selectArchive(opts)
   }
 }
 

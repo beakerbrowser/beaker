@@ -1,0 +1,142 @@
+@import "../photon.min.less";
+@import "../base/reset.less";
+@import "../components/buttons.less";
+@import "../components/inputs.less";
+@import "../components/modal.less";
+@import "../utils/decorators";
+
+body {
+  background: #fff;
+}
+
+.modal {
+  margin: 0;
+}
+
+.archive-picker {
+  height: 190px;
+  overflow: hidden;
+
+  .filter-container {
+    position: relative;
+
+    i {
+      position: absolute;
+      left: 1rem;
+      top: 10px;
+      color: @color-text--muted;
+    }
+  }
+
+  .filter {
+    border: 0;
+    margin: 0;
+    height: 100%;
+    padding: .5rem 1rem .5rem 2.15rem;
+    border: 1px solid @border-menu;
+    border-radius: 0;
+
+    &:focus {
+      outline: none;
+      background: @background-highlight;
+    }
+  }
+}
+
+.archives-list {
+  height: 150px;
+  overflow-y: auto;
+  border: 1px solid @border-menu;
+  border-top: 0;
+
+  .archive {
+    position: relative;
+    padding: .3rem 1rem;
+    position: relative;
+    border-bottom: 1px solid @border-menu;
+
+    &.readonly {
+
+      .info {
+        max-width: 345px;
+      }
+    }
+
+    .readonly {
+      position: absolute;
+      font-size: 9.5px;
+      padding: 0 5px;
+      border: 1px solid @border-menu;
+      background: @background-menu;
+      border-radius: 2px;
+      top: .4rem;
+      right: 1rem;
+      text-transform: uppercase;
+      color: @color-text--muted;
+    }
+
+    &:hover {
+      background: @background-menu;
+
+      .checkmark {
+        opacity: 1;
+      }
+    }
+
+    &.selected {
+      background: @background-menu;
+    }
+  }
+
+  .info {
+    &:extend(.overflow-ellipsis);
+    max-width: 405px;
+  }
+
+  .title {
+    font-weight: 600;
+  }
+
+  .path {
+    color: @color-text--light;
+  }
+}
+
+.tabs {
+  border-bottom: 1px solid @border-menu;
+}
+
+.tab-content {
+  margin: 1.5rem 0;
+
+  &.create-archive {
+
+    textarea {
+      height: 97px; // to make the form as tall as the dat picker tab
+    }
+  }
+}
+
+.tab {
+  display: inline-block;
+  cursor: pointer;
+  padding: .15rem .5rem;
+  color: @color-text--muted;
+  border-top: 1px solid transparent;
+  border-right: 1px solid transparent;
+  border-left: 1px solid transparent;
+  border-radius: 3px 3px 0 0;
+
+  &:hover,
+  &.selected {
+    color: @color-text;
+  }
+
+  &.selected {
+    border-top: 1px solid @border-menu;
+    border-right: 1px solid @border-menu;
+    border-left: 1px solid @border-menu;
+    margin-bottom: -1px;
+    border-bottom: 2px solid #fff;
+  }
+}

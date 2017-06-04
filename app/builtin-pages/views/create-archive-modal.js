@@ -98,7 +98,7 @@ function render () {
     <div class="modal">
       <div class="modal-inner">
         <div class="edit-site-modal">
-          <h2 class="title">${uititle}</h2>
+          <h1 class="title">${uititle}</h1>
 
           <p class="help-text">
             ${helpText}
