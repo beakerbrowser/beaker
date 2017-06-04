@@ -182,7 +182,7 @@ function renderArchive (archive) {
           ${archive.title || 'Untitled'}
           ${archive.isOwner ? '' : yo`<i class="fa fa-eye"></i>`}
         </span>
-        <span class="path" title=${archive.userSettings.localPath}>butt${archive.userSettings.localPath}</span>
+        <span class="path" title=${archive.userSettings.localPath}>${archive.userSettings.localPath}</span>
       </div>
       <span class="description">${archive.description || yo`<em>No description</em>`}</span>
     </li>
