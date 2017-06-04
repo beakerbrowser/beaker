@@ -38,6 +38,12 @@ test.before(async t => {
   testRunnerDat = await shareDat(__dirname + '/scaffold/test-runner-dat')
   testRunnerDatURL = 'dat://' + testRunnerDat.archive.key.toString('hex') + '/'
 
+  // save the test-runner dat to the library
+  var res = await app.client.executeAsync((url, done) => {
+    beaker.archives.add(url).then(done,done)
+  }, testRunnerDatURL)
+  t.deepEqual(res.value.isSaved, true)
+
   // open the test-runner dat
   await browserdriver.navigateTo(app, testRunnerDatURL)
   await app.client.windowByIndex(1)
@@ -296,6 +302,124 @@ test('DatArchive.fork', async t => {
   t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
   t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
   t.deepEqual(manifest.forkOf[0].replace(/(\/)$/,''), createdDatURL)
+})
+
+test('DatArchive.selectArchive rejection', async t => {
+  // start the prompt
+  await app.client.execute(() => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.selectArchive({ message: 'Help message', buttonLabel: 'button' }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  })
+
+  // reject the prompt
+  await sleep(500)
+  await app.client.windowByIndex(2)
+  await app.client.waitUntilWindowLoaded()
+  await app.client.waitForExist('.cancel')
+  await app.client.click('.cancel')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
+  t.deepEqual(res.value.name, 'UserDeniedError')
+})
+
+test('DatArchive.selectArchive: create', async t => {
+  // start the prompt
+  await app.client.execute(() => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.selectArchive({ message: 'Custom title', buttonLabel: 'button' }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  })
+
+  await sleep(500)
+  await app.client.windowByIndex(2)
+  await app.client.waitUntilWindowLoaded()
+
+  // open the create archive view
+  await app.client.waitForExist('.tab[data-content="newArchive"]')
+  app.client.click('.tab[data-content="newArchive"]')
+
+  // input a title for a now archive
+  await app.client.waitForExist('input[name="title"]')
+  await app.client.setValue('input[name="title"]', 'The Title')
+
+  // accept the prompt
+  await app.client.click('button[type="submit"]')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
+  var newArchiveURL = res.value
+  t.truthy(res.value.startsWith('dat://'))
+
+  // check the dat.json
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.readFile('dat.json').then(done, done)
+  }, newArchiveURL)
+
+  var manifest
+  try {
+    var manifest = JSON.parse(res.value)
+  } catch (e) {
+    console.log('unexpected error parsing manifest', res.value)
+  }
+  t.deepEqual(manifest.title, 'The Title')
+  t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
+  t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
+
+  // check the settings
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.getInfo().then(done, err => done({ err }))
+  }, newArchiveURL)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.isSaved, true)
+})
+
+test('DatArchive.selectArchive: select', async t => {
+  // start the prompt
+  await app.client.execute(() => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.selectArchive().then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  })
+
+  await sleep(500)
+  await app.client.windowByIndex(2)
+  await app.client.waitUntilWindowLoaded()
+
+  await app.client.waitForExist('button[type="submit"]')
+
+  // click one of the archives
+  var testRunnerDatKey = testRunnerDat.archive.key.toString('hex')
+  await app.client.click(`li[data-key="${testRunnerDatKey}"]`)
+
+  // accept the prompt
+  await app.client.click('button[type="submit"]')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
+  t.truthy(res.value.startsWith('dat://'))
+  t.is(res.value, testRunnerDatURL)
 })
 
 test('archive.writeFile', async t => {
