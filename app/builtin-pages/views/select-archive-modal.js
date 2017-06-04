@@ -92,7 +92,7 @@ async function onSubmit (e) {
       })
     }
   } else {
-    beakerBrowser.closeModal(null, {url: selectedArchiveKey})
+    beakerBrowser.closeModal(null, {url: `dat://${selectedArchiveKey}/`})
   }
 }
 
