@@ -66,7 +66,7 @@ app.on('ready', function () {
   datProtocol.setup()
 
   // configure chromium's permissions for the protocols
-  protocol.registerServiceWorkerSchemes(['dat', 'app'])
+  protocol.registerServiceWorkerSchemes(['dat'])
 
   // web APIs
   webAPIs.setup()
