@@ -70,10 +70,10 @@ async function stat (url, path, opts) {
   return res
 }
 async function readdir (url, path, opts) {
-  return app.client.executeAsync((url, path, done) => {
+  return app.client.executeAsync((url, path, opts, done) => {
     var archive = new DatArchive(url)
-    archive.readdir(path).then(done, done)
-  }, url, path)
+    archive.readdir(path, opts || {}).then(done, done)
+  }, url, path, opts)
 }
 async function readFile (url, path, opts) {
   return app.client.executeAsync((url, path, opts, done) => {
@@ -99,11 +99,11 @@ async function commit (url) {
 //
 
 test('archive.readdir', async t => {
-  async function readdir (url, path) {
-    return app.client.executeAsync((url, path, done) => {
+  async function readdir (url, path, opts) {
+    return app.client.executeAsync((url, path, opts, done) => {
       var archive = new DatArchive(url)
-      archive.readdir(path).then(done, done)
-    }, url, path)
+      archive.readdir(path, opts || {}).then(done, done)
+    }, url, path, opts)
   }
 
   // root dir
@@ -113,6 +113,24 @@ test('archive.readdir', async t => {
   // subdir
   let listing2 = await readdir(testStaticDatURL, '/subdir')
   t.deepEqual(listing2.value.sort(), ['hello.txt', 'space in the name.txt'])
+
+  // root dir stat=true
+  let listing3 = await readdir(testStaticDatURL, '/', {stat: true})
+  listing3 = listing3.value.sort()
+  t.is(listing3[0].name, 'beaker.png')
+  t.truthy(listing3[0].stat)
+  t.is(listing3[1].name, 'hello.txt')
+  t.truthy(listing3[1].stat)
+  t.is(listing3[2].name, 'subdir')
+  t.truthy(listing3[2].stat)
+
+  // subdir stat=true
+  let listing4 = await readdir(testStaticDatURL, '/subdir', {stat: true})
+  listing4 = listing4.value.sort()
+  t.is(listing4[0].name, 'hello.txt')
+  t.truthy(listing4[0].stat)
+  t.is(listing4[1].name, 'space in the name.txt')
+  t.truthy(listing4[1].stat)
 })
 
 test('archive.readFile', async t => {

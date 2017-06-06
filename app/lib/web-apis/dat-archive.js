@@ -103,9 +103,13 @@ export default class DatArchive extends EventTarget {
     return dat.download(url, opts)
   }
 
-  readdir(path='/', opts={}) {
+  async readdir(path='/', opts={}) {
     const url = joinPath(this.url, path)
-    return dat.readdir(url, opts)
+    var names = await dat.readdir(url, opts)
+    if (opts.stat) {
+      names.forEach(name => { name.stat = new Stat(name.stat) })
+    }
+    return names
   }
 
   mkdir(path) {
