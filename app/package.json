@@ -10,7 +10,7 @@
   "dependencies": {
     "await-lock": "^1.1.2",
     "beaker-error-constants": "^1.1.1",
-    "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib.git#bdbc8260a7e58b83a46a263c29c89ee53853629c",
+    "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib.git#5deeae527ef12ac6ac2fc5f11ce50773bd51c847",
     "bytes": "^2.5.0",
     "choo": "^5.6.2",
     "co": "^4.6.0",

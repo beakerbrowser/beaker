@@ -232,7 +232,16 @@ export default {
 
   async readdir(url, opts = {}) {
     var {archive, filepath, version} = await lookupArchive(url, opts)
-    return pda.readdir(archive.checkoutFS, filepath, opts)
+    var names = await pda.readdir(archive.checkoutFS, filepath, opts)
+    if (opts.stat) {
+      for (let i = 0; i < names.length; i++) {
+        names[i] = {
+          name: names[i],
+          stat: await pda.stat(archive.checkoutFS, path.join(filepath, names[i]))
+        }
+      }
+    }
+    return names
   },
 
   async mkdir(url) {
