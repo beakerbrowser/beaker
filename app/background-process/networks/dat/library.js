@@ -327,14 +327,6 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
         else resolve()
       })
     })
-
-    // download the full metadata
-    await new Promise((resolve, reject) => {
-      archive.metadata.download({start: 0, end: archive.metadata.length}, err => {
-        if (err) reject(err)
-        else resolve()
-      })
-    })
   }
 
   // wire up events
