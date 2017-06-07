@@ -5,6 +5,10 @@ import beaker from './lib/web-apis/beaker'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
 import { setup as setupNavigatorPermissions } from './webview-preload/navigator-permissions-api'
 import { setup as setupPrompt } from './webview-preload/prompt'
+import setupRedirectHackfix from './webview-preload/redirect-hackfix'
+
+// HACKS
+setupRedirectHackfix()
 
 // register protocol behaviors
 /* This marks the scheme as:
