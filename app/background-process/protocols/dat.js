@@ -37,9 +37,9 @@ const REQUEST_TIMEOUT_MS = 15e3 // 15 seconds
 
 // content security policies
 const DAT_CSP = `
-default-src 'self' dat:;
-script-src 'self' 'unsafe-eval' 'unsafe-inline' dat:;
-style-src 'self' 'unsafe-inline' dat:;
+default-src 'self' dat: blob:;
+script-src 'self' 'unsafe-eval' 'unsafe-inline' dat: blob:;
+style-src 'self' 'unsafe-inline' dat: blob:;
 img-src 'self' data: dat: blob:;
 object-src 'none';
 `.replace(/\n/g, ' ')
@@ -48,12 +48,12 @@ const CUSTOM_DAT_CSP = origins => {
   if (Array.isArray(origins)) origins = origins.map(o => `http://${o} https://${o}`).join(' ')
   else origins = ''
   return `
-default-src 'self' dat:;
-script-src 'self' 'unsafe-eval' 'unsafe-inline' dat:;
-style-src 'self' 'unsafe-inline' dat:;
+default-src 'self' dat: blob:;
+script-src 'self' 'unsafe-eval' 'unsafe-inline' dat: blob:;
+style-src 'self' 'unsafe-inline' dat: blob:;
 img-src 'self' data: dat: ${origins} blob:;
-font-src 'self' dat: ${origins};
-media-src 'self' dat: ${origins};
+font-src 'self' dat: ${origins} blob:;
+media-src 'self' dat: ${origins} blob:;
 connect-src 'self' dat: ${origins};
 object-src 'none';
 `.replace(/\n/g, ' ')
