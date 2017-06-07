@@ -14,6 +14,7 @@ import {grantPermission} from '../../ui/permissions'
 // dat modules
 import * as archivesDb from '../../dbs/archives'
 import * as datGC from './garbage-collector'
+import beakerStorage from './storage'
 import hypercore from 'hypercore'
 import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
@@ -293,7 +294,8 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
   mkdirp.sync(metaPath)
 
   // create the archive instance
-  var archive = hyperdrive(metaPath, key, {sparse: true, secretKey})
+  var s = beakerStorage(metaPath, secretKey ? null : userSettings.localPath)
+  var archive = hyperdrive(s, key, {sparse: true, secretKey})
   archive.replicationStreams = [] // list of all active replication streams
   archive.peerHistory = [] // samples of the peer count
   Object.defineProperty(archive, 'stagingFS', {
@@ -439,14 +441,6 @@ export async function reconfigureStaging (archive, userSettings) {
     // no changes needed
     return
   }
-
-  if (archive.staging) {
-    // close staging if it exists
-    archive.staging.stopAutoSync()
-    archive.staging = null
-  }
-
-  // recreate staging
   await configureStaging(archive, userSettings)
 }
 
@@ -524,30 +518,15 @@ function fromKeyToURL (key) {
 }
 
 async function configureStaging (archive, userSettings, isWritableOverride) {
-  // create staging if writable or saved
+  // create staging if writable
   var isWritable = (archive.writable || isWritableOverride)
-  var isSaved = userSettings.isSaved
-  if ((isWritable || isSaved) && !!userSettings.localPath) {
-    if (archive.staging) {
-      return // noop
-    }
-
+  if (isWritable && !!userSettings.localPath) {
     // setup staging
     let stagingPath = userSettings.localPath
     archive.staging = hyperstaging(archive, stagingPath, {
       ignore: ['/.dat', '/.git', '/dat.json']
     })
-
-    // autosync if not writable
-    if (!isWritable) {
-      archive.staging.revert({skipDatIgnore: true}) // do a revert to capture already-DLed state
-      archive.staging.startAutoSync()
-    }
   } else {
-    // close staging if it exists
-    if (archive.staging) {
-      archive.staging.stopAutoSync()      
-    }
     archive.staging = null
   }
 }
