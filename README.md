@@ -17,13 +17,13 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 #### Features
 
  - :zap: **Host sites and files from the browser**
+ - :zap: Save sites for offline use
  - :zap: **Share files secretly between devices (secret URLs)**
- - :zap: **Save sites for offline use**
  - :zap: **Fork sites to modify and share**
- - :zap: **Versioned URLs for historic lookup**
+ - :zap: Versioned URLs for historic lookup
  - :zap: **Write P2P applications with new Web APIs**
- - :zap: **Live reloading to speed up site development**
- - :zap: **Native markdown (.md) rendering**
+ - :zap: Live reloading to speed up site development
+ - :zap: Native markdown (.md) rendering
  
 #### P2P Web APIs
 
