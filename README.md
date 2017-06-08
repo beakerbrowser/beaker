@@ -4,7 +4,7 @@ Beaker Browser
 ![logo.png](build/icons/256x256.png)
 
 Beaker is an experimental Browser.
-It adds new technologies for Peer-to-Peer applications while staying compatible with the rest of the Web.
+It adds new technologies for peer-to-peer applications while remaining compatible with the rest of the Web.
 [Visit the website.](https://beakerbrowser.com/)
 
 Please feel free to open usability issues. Join us at #beakerbrowser on Freenode.
@@ -16,25 +16,25 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 #### Features
 
 :zap: **Host sites and files from the browser**<br>
-:zap: Save sites for offline use<br>
-:zap: Share files secretly between devices (secret URLs)<br>
+:zap: **Save sites for offline use**<br>
+:zap: **Share files secretly between devices (secret URLs)**<br>
 :zap: Fork sites to modify and share<br>
-:zap: Versioned URLs for historic lookup<br>
-:zap: Write P2P applications with new Web APIs<br>
+:zap: Versioned URLs for historic lookup<b
+:zap: Write peer-to-peer applications with new Web APIs<br>
 :zap: Live reloading to speed up site development<br>
 :zap: Native markdown (.md) rendering
  
 #### Why Beaker? 
  
-Beaker's better than the HTTP/S Web because:
+Beaker is better than the HTTP/S Web because:
 
  - Users can share files with end-to-end secrecy
- - Data published via the P2P protocol is controlled by the user
- - P2P sites can be forked, modified, and shared
- - P2P sites work better offline, because they don't rely on hosts
- - P2P sites are versioned, so users can peg a version or go back in time
+ - Data published via the Dat peer-to-peer protocol is controlled by the user
+ - Peer-to-peer websites can be forked, modified, and shared
+ - Peer-to-peer websites work offline, because they don't rely on hosts
+ - Peer-to-peer websites are versioned, so users can peg a version or view a website at any point in its history
  
-Beaker's better than a blockchain Web because:
+Beaker is better than a blockchain Web because:
 
  - There's no Proof-of-Work or overhead for achieving global consensus
  - Users don't need to download a large dataset to participate (the blockchain history)
@@ -42,7 +42,7 @@ Beaker's better than a blockchain Web because:
  
 #### P2P Web APIs
 
-An example of the [Dat P2P Web API](https://beakerbrowser.com/docs/apis/dat.html):
+An example of the [Dat peer-to-peer Web API](https://beakerbrowser.com/docs/apis/dat.html):
 
 ```js
 var archive = await DatArchive.create({
