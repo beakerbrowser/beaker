@@ -18,30 +18,28 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
  - :zap: **Host sites and files from the browser**
  - :zap: Save sites for offline use
- - :zap: **Share files secretly between devices (secret URLs)**
- - :zap: **Fork sites to modify and share**
+ - :zap: Share files secretly between devices (secret URLs)**
+ - :zap: Fork sites to modify and share
  - :zap: Versioned URLs for historic lookup
- - :zap: **Write P2P applications with new Web APIs**
+ - :zap: Write P2P applications with new Web APIs
  - :zap: Live reloading to speed up site development
  - :zap: Native markdown (.md) rendering
  
-It's better than the HTTP/S Web because:
+#### Why Beaker? 
+ 
+Beaker's better than the HTTP/S Web because:
 
  - Users can share files with end-to-end secrecy
- - Data published via the P2P protocol is signed by the user's device, leaving them in control of it
- - If a service shuts down users will still be in possession and control of their data ("amazing journey resilient")
+ - Data published via the P2P protocol is controlled by the user
  - P2P sites can be forked, modified, and shared
  - P2P sites work better offline, because they don't rely on hosts
- - P2P sites store data on the user's device, in their control
  - P2P sites are versioned, so users can peg a version or go back in time
- - Users can self-host large files and the P2P network will help share the bandwidth cost
  
 It's better than a blockchain Web because:
 
  - There's no Proof-of-Work or overhead for achieving global consensus
  - Users don't need to download a large dataset to participate (the blockchain history)
  - No upfront payment is required to participate
- - There's no negative ecological impact from Proof-of-Work computation
  
 #### P2P Web APIs
 
