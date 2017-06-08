@@ -19,7 +19,7 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 :zap: **Save sites for offline use**<br>
 :zap: **Share files secretly between devices (secret URLs)**<br>
 :zap: Fork sites to modify and share<br>
-:zap: Versioned URLs for historic lookup<b
+:zap: Versioned URLs for historic lookup<br>
 :zap: Write peer-to-peer applications with new Web APIs<br>
 :zap: Live reloading to speed up site development<br>
 :zap: Native markdown (.md) rendering
