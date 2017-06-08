@@ -1,4 +1,4 @@
-beaker browser
+Beaker Browser
 ======
 
 ![logo.png](build/icons/256x256.png)
@@ -7,11 +7,38 @@ Beaker is an experimental Browser.
 It adds new technologies for Peer-to-Peer applications while staying compatible with the rest of the Web.
 [Visit the website.](https://beakerbrowser.com/)
 
+**Beaker is designed as a proof-of-concept, to demonstrate how we can move the Web platform away from a service-based infrastructure.**
+
 Please feel free to open usability issues. Join us at #beakerbrowser on Freenode.
 
 ## Binaries
 
 ### [OSX 64-bit .dmg](https://download.beakerbrowser.net/download/latest/osx)
+
+#### Features
+
+ - :zap: **Host sites and files from the browser**
+ - :zap: Share files secretly between devices (secret URLs)
+ - :zap: Save sites for offline use
+ - :zap: Fork sites to modify and share
+ - :zap: Versioned URLs
+ - :zap: Write P2P applications with new Web APIs
+ - :zap: Live reloading to speed up site development
+ - :zap: Native markdown (.md) rendering
+ 
+#### P2P Web APIs
+
+```js
+var archive = await DatArchive.create({
+  title: 'My Site',
+  description: 'My peer-to-peer website'
+})
+await archive.writeFile('/hello.txt', 'hello')
+await archive.commit()
+
+console.log(archive.url)
+// => dat://da2ce4..dc/
+```
 
 ## Documentation
 
