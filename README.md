@@ -5,7 +5,6 @@ Beaker Browser
 
 Beaker is an experimental Browser.
 It adds new technologies for Peer-to-Peer applications while staying compatible with the rest of the Web.
-Beaker is designed as a proof-of-concept, to demonstrate how we can move the Web platform away from a service-based infrastructure.
 [Visit the website.](https://beakerbrowser.com/)
 
 Please feel free to open usability issues. Join us at #beakerbrowser on Freenode.
@@ -16,14 +15,14 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 #### Features
 
- - :zap: **Host sites and files from the browser**
- - :zap: Save sites for offline use
- - :zap: Share files secretly between devices (secret URLs)**
- - :zap: Fork sites to modify and share
- - :zap: Versioned URLs for historic lookup
- - :zap: Write P2P applications with new Web APIs
- - :zap: Live reloading to speed up site development
- - :zap: Native markdown (.md) rendering
+:zap: **Host sites and files from the browser**<br>
+:zap: Save sites for offline use<br>
+:zap: Share files secretly between devices (secret URLs)<br>
+:zap: Fork sites to modify and share<br>
+:zap: Versioned URLs for historic lookup<br>
+:zap: Write P2P applications with new Web APIs<br>
+:zap: Live reloading to speed up site development<br>
+:zap: Native markdown (.md) rendering
  
 #### Why Beaker? 
  
@@ -35,13 +34,15 @@ Beaker's better than the HTTP/S Web because:
  - P2P sites work better offline, because they don't rely on hosts
  - P2P sites are versioned, so users can peg a version or go back in time
  
-It's better than a blockchain Web because:
+Beaker's better than a blockchain Web because:
 
  - There's no Proof-of-Work or overhead for achieving global consensus
  - Users don't need to download a large dataset to participate (the blockchain history)
  - No upfront payment is required to participate
  
 #### P2P Web APIs
+
+An example of the [Dat P2P Web API](https://beakerbrowser.com/docs/apis/dat.html):
 
 ```js
 var archive = await DatArchive.create({
@@ -57,24 +58,23 @@ console.log(archive.url)
 
 ## Documentation
 
-- [Beaker Docs](https://beakerbrowser.com/docs/)
-- Inside Beaker
-  - **[The Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)**
+- **Inside Beaker**
+  - [The Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html) :star:
   - [Privacy and security in Beaker](https://beakerbrowser.com/docs/inside-beaker/privacy-and-security.html)
   - [The "Thick applications model"](https://beakerbrowser.com/docs/inside-beaker/thick-applications.html)
-  - **[Why Dat vs Other technologies](https://beakerbrowser.com/docs/inside-beaker/other-technologies.html)**
+  - [Why Dat vs Other technologies](https://beakerbrowser.com/docs/inside-beaker/other-technologies.html)
   - [Project mission](https://beakerbrowser.com/docs/inside-beaker/mission.html)
   - [Is Dat "Secure P2P?"](https://github.com/beakerbrowser/beaker/wiki/Is-Dat-%22Secure-P2P%3F%22)
   - [Worm Prevention (Security Discussion)](https://github.com/beakerbrowser/beaker/wiki/Worm-Prevention-(Security-Discussion))
-- Web APIs
-  - **[DatArchive](https://beakerbrowser.com/docs/apis/dat.html)**
+- **Web APIs**
+  - [DatArchive](https://beakerbrowser.com/docs/apis/dat.html) :star:
   - [Permissions](https://beakerbrowser.com/docs/apis/permissions.html)
   - [Dat.json site manifest](https://beakerbrowser.com/docs/apis/manifest.html)
-- Specs and Proposals
-  - **[Authenticated Dat URLs and HTTPS to Dat Discovery](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery) (Beaker's solution to DNS shortnames for Dat sites)**
-  - **[Thick Applications: Unifying WebExtensions with the Web platform and moving beyond injections](https://github.com/beakerbrowser/beaker/wiki/Thick-Applications:-Unifying-WebExtensions-with-the-Web-platform-and-moving-beyond-injections)**
+- **Specs and Proposals**
+  - [Authenticated Dat URLs and HTTPS to Dat Discovery](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery) (Beaker's solution to DNS shortnames for Dat sites) :star:
+  - [Thick Applications: Unifying WebExtensions with the Web platform and moving beyond injections](https://github.com/beakerbrowser/beaker/wiki/Thick-Applications:-Unifying-WebExtensions-with-the-Web-platform-and-moving-beyond-injections) :star:
   - [App Scheme (dead spec)](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
-- [Tutorials](https://beakerbrowser.com/docs/tutorials/)
+- **Tutorials**
   - [Create a peer-to-peer blog](https://beakerbrowser.com/docs/tutorials/create-a-blog.html)
   - [Create a markdown site](https://beakerbrowser.com/docs/tutorials/create-a-markdown-site.html)
   - [Host outside of Beaker](https://beakerbrowser.com/docs/tutorials/host-outside-of-beaker.html)
