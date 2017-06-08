@@ -25,6 +25,24 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
  - :zap: Live reloading to speed up site development
  - :zap: Native markdown (.md) rendering
  
+It's better than the HTTP/S Web because:
+
+ - Users can share files with end-to-end secrecy
+ - Data published via the P2P protocol is signed by the user's device, leaving them in control of it
+ - If a service shuts down users will still be in possession and control of their data ("amazing journey resilient")
+ - P2P sites can be forked, modified, and shared
+ - P2P sites work better offline, because they don't rely on hosts
+ - P2P sites store data on the user's device, in their control
+ - P2P sites are versioned, so users can peg a version or go back in time
+ - Users can self-host large files and the P2P network will help share the bandwidth cost
+ 
+It's better than a blockchain Web because:
+
+ - There's no Proof-of-Work or overhead for achieving global consensus
+ - Users don't need to download a large dataset to participate (the blockchain history)
+ - No upfront payment is required to participate
+ - There's no negative ecological impact from Proof-of-Work computation
+ 
 #### P2P Web APIs
 
 ```js
@@ -43,16 +61,31 @@ console.log(archive.url)
 
 - [Beaker Docs](https://beakerbrowser.com/docs/)
 - Inside Beaker
-  - [The Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
+  - **[The Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)**
   - [Privacy and security in Beaker](https://beakerbrowser.com/docs/inside-beaker/privacy-and-security.html)
   - [The "Thick applications model"](https://beakerbrowser.com/docs/inside-beaker/thick-applications.html)
-  - [Why Dat vs Other technologies](https://beakerbrowser.com/docs/inside-beaker/other-technologies.html)
+  - **[Why Dat vs Other technologies](https://beakerbrowser.com/docs/inside-beaker/other-technologies.html)**
   - [Project mission](https://beakerbrowser.com/docs/inside-beaker/mission.html)
+  - [Is Dat "Secure P2P?"](https://github.com/beakerbrowser/beaker/wiki/Is-Dat-%22Secure-P2P%3F%22)
+  - [Worm Prevention (Security Discussion)](https://github.com/beakerbrowser/beaker/wiki/Worm-Prevention-(Security-Discussion))
 - Web APIs
-  - [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
+  - **[DatArchive](https://beakerbrowser.com/docs/apis/dat.html)**
   - [Permissions](https://beakerbrowser.com/docs/apis/permissions.html)
   - [Dat.json site manifest](https://beakerbrowser.com/docs/apis/manifest.html)
+- Specs and Proposals
+  - **[Authenticated Dat URLs and HTTPS to Dat Discovery](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery) (Beaker's solution to DNS shortnames for Dat sites)**
+  - **[Thick Applications: Unifying WebExtensions with the Web platform and moving beyond injections](https://github.com/beakerbrowser/beaker/wiki/Thick-Applications:-Unifying-WebExtensions-with-the-Web-platform-and-moving-beyond-injections)**
+  - [App Scheme (dead spec)](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
 - [Tutorials](https://beakerbrowser.com/docs/tutorials/)
+  - [Create a peer-to-peer blog](https://beakerbrowser.com/docs/tutorials/create-a-blog.html)
+  - [Create a markdown site](https://beakerbrowser.com/docs/tutorials/create-a-markdown-site.html)
+  - [Host outside of Beaker](https://beakerbrowser.com/docs/tutorials/host-outside-of-beaker.html)
+  - [Share files secretly](https://beakerbrowser.com/docs/tutorials/share-files-secretly.html)
+  - [Code: Read site files](https://beakerbrowser.com/docs/tutorials/read-site-files.html)
+  - [Code: Write site files](https://beakerbrowser.com/docs/tutorials/write-site-files.html)
+  - [Code: Diff, commit, revert](https://beakerbrowser.com/docs/tutorials/diff-commit-revert.html)
+  - [Code: Listen for file changes](https://beakerbrowser.com/docs/tutorials/listen-for-file-changes.html)
+  - [Code: Create or fork a site](https://beakerbrowser.com/docs/tutorials/create-or-fork-a-site.html)
 
 ## Env Vars
 
