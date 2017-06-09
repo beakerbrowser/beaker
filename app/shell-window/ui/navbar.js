@@ -6,6 +6,7 @@ import emitStream from 'emit-stream'
 import prettyHash from 'pretty-hash'
 import { UpdatesNavbarBtn } from './navbar/updates'
 import { DropMenuNavbarBtn } from './navbar/drop-menu'
+import { DatSidebarBtn } from './navbar/dat-sidebar'
 import { SiteInfoNavbarBtn } from './navbar/site-info'
 import {pluralize} from '../../lib/strings'
 
@@ -23,6 +24,7 @@ const isDatHashRegex = /^[a-z0-9]{64}/i
 
 var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
+var datSidebarBtn = null
 var dropMenuNavbarBtn = null
 var siteInfoNavbarBtn = null
 
@@ -37,6 +39,7 @@ var autocompleteResults = null // if set to an array, will render dropdown
 export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
+  datSidebarBtn = new DatSidebarBtn()
   dropMenuNavbarBtn = new DropMenuNavbarBtn()
   siteInfoNavbarBtn = new SiteInfoNavbarBtn()
 }
@@ -284,31 +287,34 @@ function render (id, page) {
   var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused, gotInsecureResponse, siteLoadError)
 
   // render
-  return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
-    <div class="toolbar-group">
-      <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-        <span class="fa fa-arrow-left"></span>
-      </button>
-      <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-        <span class="fa fa-arrow-right"></span>
-      </button>
-      ${reloadBtn}
-    </div>
-    <div class="toolbar-input-group">
-      ${siteInfoNavbarBtn.render()}
-      ${locationPrettyView}
-      ${locationInput}
-      ${inpageFinder}
-      ${zoomBtn}
-      ${datBtns}
-      <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark this page">
-        <span class=${(page && !!page.bookmark) ? "fa fa-star" : "fa fa-star-o"}></span>
-      </button>
-      ${autocompleteDropdown}
-    </div>
-    <div class="toolbar-group">
-      ${dropMenuNavbarBtn.render()}
-      ${updatesNavbarBtn.render()}
+  return yo`
+    <div data-id=${id} class="toolbar-actions${toolbarHidden}">
+      <div class="toolbar-group">
+        <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
+          <span class="fa fa-arrow-left"></span>
+        </button>
+        <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
+          <span class="fa fa-arrow-right"></span>
+        </button>
+        ${reloadBtn}
+      </div>
+      <div class="toolbar-input-group">
+        ${siteInfoNavbarBtn.render()}
+        ${locationPrettyView}
+        ${locationInput}
+        ${inpageFinder}
+        ${zoomBtn}
+        ${datBtns}
+        <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark this page">
+          <span class=${(page && !!page.bookmark) ? "fa fa-star" : "fa fa-star-o"}></span>
+        </button>
+        ${autocompleteDropdown}
+      </div>
+      <div class="toolbar-group">
+        ${isViewingDat ? datSidebarBtn.render(addrValue) : ''}
+        ${dropMenuNavbarBtn.render()}
+        ${updatesNavbarBtn.render()}
+      </div>
     </div>
   </div>`
 }

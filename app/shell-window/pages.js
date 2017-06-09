@@ -848,7 +848,7 @@ function hide (page) {
   events.emit('hide', page)
 }
 
-function createWebviewEl (id, url) {
+export function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
   el.setAttribute('preload', 'file://'+path.join(APP_PATH, 'webview-preload.build.js'))
