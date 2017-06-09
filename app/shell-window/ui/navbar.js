@@ -189,21 +189,17 @@ function render (id, page) {
 
   if (isViewingDat) {
     let numPeers = page.siteInfo ? page.siteInfo.peers : 0
+    var isLiveReloading = page.isLiveReloading()
+
     datBtns = [
       yo`
         <button class="nav-peers-btn">
           <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
+        </button>`,
+      yo`<button class="nav-live-reload-btn ${isLiveReloading ? 'active': ''}" title="Turn {$isLiveReloading ? 'off' : 'on'} live reloading" onclick=${onClickLiveReload}>
+          <i class="fa fa-bolt"></i>
         </button>`
     ]
-
-    if (page.isLiveReloading()) {
-      datBtns.push(
-        yo`
-          <button class="nav-live-reload-btn active" title="Turn off live reloading" onclick=${onClickLiveReload}>
-            <i class="fa fa-bolt"></i>
-          </button>`
-      )
-    }
   } else if (siteHasDatAlternative) {
     datBtns = [
       yo`<button
@@ -553,6 +549,7 @@ function onClickLiveReload (e) {
   var page = getEventPage(e)
   if (!page || !page.siteInfo) return
   page.toggleLiveReloading()
+  update()
 }
 
 function onClickGotoDatVersion (e) {
