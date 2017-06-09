@@ -349,10 +349,6 @@ function rArchive (archiveInfo) {
                       Edit site info
                     </div>`
                   : ''}
-                <div class="dropdown-item" onclick=${onViewSwarmDebugger}>
-                  <i class="fa fa-bug"></i>
-                  Swarm debugger
-                </div>
                 <div class="dropdown-item" onclick=${onToggleSaved}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
