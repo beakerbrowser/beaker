@@ -535,13 +535,6 @@ function onClickBookmark (e) {
   var page = getEventPage(e)
   if (page) {
     page.toggleBookmark()
-
-    // animate the element TODO
-    // document.querySelector('.toolbar-actions:not(.hidden) .nav-bookmark-btn .fa').animate([
-    //   {textShadow: '0 0 0px rgba(0, 18, 150, 1.0)'},
-    //   {textShadow: '0 0 8px rgba(0, 18, 150, 1.0)'},
-    //   {textShadow: '0 0 16px rgba(0, 18, 150, 0.0)'}
-    // ], { duration: 300 })
   }
 }
 
