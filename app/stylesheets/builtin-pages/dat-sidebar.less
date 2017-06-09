@@ -1,0 +1,69 @@
+@import "../base/reset.less";
+@import "../base/colors.less";
+@import "../base/spacing.less";
+@import "../base/typography.less";
+@import "../components/link.less";
+@import "../components/buttons.less";
+@import "../com/spinner.less";
+@import "../components/inputs.less";
+@import "../components/tabs.less";
+@import "../components/messages.less";
+@import "../components/popups.less";
+@import "./components/toast";
+
+@import "./components/files-list.less";
+
+body {
+  &:extend(.system-font);
+  background: #fff;
+  border-left: 1px solid @border-menu;
+  height: 100vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.info,
+.peer-history {
+  padding: 1rem;
+}
+
+.btn:focus {
+  outline: 0;
+}
+
+h1 {
+  font-size: 1rem;
+  margin-top: 0;
+}
+
+h2 {
+  font-size: .95rem;
+}
+
+.description {
+  font-size: .85rem;
+}
+
+.dat-local-path {
+  display: none;
+}
+
+.files-list {
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+  margin: 1rem 0;
+}
+
+.history,
+.metadata {
+  margin: 1rem;
+}
+
+.tabs-content {
+  font-size: .825rem;
+}
