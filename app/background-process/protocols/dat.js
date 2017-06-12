@@ -33,7 +33,7 @@ try {
 // =
 
 // how long till we give up?
-const REQUEST_TIMEOUT_MS = 15e3 // 15 seconds
+const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 
 // content security policies
 const DAT_CSP = `
@@ -168,7 +168,7 @@ async function datServer (req, res) {
 
     // error page
     var resource = !!archive ? 'page' : 'site'
-    cb(504, 'Timed out searching for ${resource}', {
+    cb(504, `Timed out searching for ${resource}`, {
       resource,
       errorCode: 'dat-timeout',
       validatedURL: urlp.href
