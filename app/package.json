@@ -43,7 +43,7 @@
     "multicb": "^1.2.1",
     "once": "^1.4.0",
     "parse-dat-url": "^2.0.0",
-    "pauls-dat-api": "^4.1.0",
+    "pauls-dat-api": "^4.2.2",
     "pauls-electron-rpc": "~3.1.0",
     "pify": "^2.3.0",
     "pretty-bytes": "^3.0.1",
