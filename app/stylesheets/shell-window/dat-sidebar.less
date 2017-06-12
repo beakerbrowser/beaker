@@ -1,8 +1,24 @@
 #dat-sidebar-webview {
+  box-shadow: 0 2px 10px fadeout(#000, 55%);
   position: absolute;
-  z-index: 1000;
-  top: 75px; // height of tabs + URL bar
   right: 0;
-  width: 350px;
-  height: 100vh;
+  border-radius: 4px;
+  z-index: 1000;
+  top: 70px;
+  width: 275px;
+  height: 600px;
+  // overflow: hidden; TODO
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    right: 45px;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    box-shadow: -1px -1px 10px rgba(0, 0, 0, 0.15);
+    transform: rotateZ(45deg);
+    z-index: -1;
+  }
 }

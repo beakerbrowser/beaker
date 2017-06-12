@@ -53,47 +53,54 @@ export function render () {
   var toggleSaveIcon, toggleSaveText
   if (archiveInfo.userSettings.isSaved) {
     toggleSaveIcon = 'fa-trash'
-    toggleSaveText = 'Remove from library'
+    toggleSaveText = 'Remove'
   } else {
     toggleSaveIcon = 'fa-floppy-o'
-    toggleSaveText = 'Save to library'
+    toggleSaveText = 'Save'
   }
 
   yo.update(document.querySelector('main'), yo`
     <main>
     <div class="archive">
+      <section class="actions">
+        <button onclick=${onToggleSaved}>
+          <div class="content">
+          <i class="fa ${toggleSaveIcon}"></i>
+          <span>${toggleSaveText}</span>
+          </div>
+        </button>
+
+        <button onclick>
+          <div class="content">
+          <i class="fa fa-code-fork"></i>
+          <span>Fork</span>
+          </div>
+        </button>
+
+        <button onclick>
+          <div class="content">
+          <i class="fa fa-code"></i>
+          <span>Library</span>
+          </div>
+        </button>
+      </section>
+
       <section class="info">
         <h1 class="title" title=${archiveInfo.title}>
           ${niceName(archiveInfo)}
           ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
         </h1>
-        <p class="description">${niceDesc(archiveInfo)}</p>
-        <div class="actions">
-          <button class="btn" onclick=${onToggleSaved}>
-            <i class="fa ${toggleSaveIcon}"></i>
-            ${toggleSaveText}
-          </button>
-
-          <button class="btn" onclick=${onCopyURL(archiveInfo.url)}>
-            <i class="fa fa-clipboard"></i>
-            Copy URL
-          </button>
-        </div>
-      </section>
-
-      <section class="peer-history">
-      <h2>Network activity</h2>
-        ${renderGraph(archiveInfo)}
+        <p>${niceDesc(archiveInfo.description)}</p>
       </section>
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-          {id: 'files', label: 'Published files', onclick: onClickTab('files')},
+          {id: 'files', label: 'Files', onclick: onClickTab('files')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
           {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')}
         ].filter(Boolean))}
         ${({
-          files: () => renderFiles(archiveInfo),
+          files: () => renderFiles(archiveInfo, {hideDate: true}),
           log: () => rHistory(archiveInfo),
           metadata: () => rMetadata(archiveInfo),
         })[currentSection]()}
@@ -148,7 +155,6 @@ function rMetadata (archiveInfo) {
         <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
         <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-        <tr><td class="label">URL</td><td title="dat://${archiveInfo.key}">dat://${archiveInfo.key}</td></tr>
         <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
         <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
       </table>

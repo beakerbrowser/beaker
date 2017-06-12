@@ -3,20 +3,15 @@
 @import "../base/spacing.less";
 @import "../base/typography.less";
 @import "../components/link.less";
-@import "../components/buttons.less";
-@import "../com/spinner.less";
 @import "../components/inputs.less";
 @import "../components/tabs.less";
-@import "../components/messages.less";
-@import "../components/popups.less";
-@import "./components/toast";
-
+@import "../components/dropdown.less";
 @import "./components/files-list.less";
 
 body {
   &:extend(.system-font);
   background: #fff;
-  border-left: 1px solid @border-menu;
+  border-left: 1px solid @border-shell-window;
   height: 100vh;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -26,17 +21,89 @@ body {
   }
 }
 
-.info,
-.peer-history {
+.archive {
   padding: 1rem;
+}
+
+.actions {
+  &:extend(.flex);
+  border-radius: 3px;
+  border: 1px solid transparent;
+  overflow: hidden;
+  border-top: 1px solid @border-menu;
+  border-bottom: 1px solid @border-menu;
+
+  &:hover {
+    border: 1px solid @border-menu;
+
+    button .content {
+      padding: .5rem .6rem;
+      margin: 0;
+    }
+  }
+
+  button {
+    cursor: pointer;
+    color: @color-text;
+    font-weight: 400;
+    background: none;
+    flex: 1 ;
+    padding: 0;
+    font-size: .7rem;
+    line-height: 100%;
+    vertical-align: middle;
+
+    i {
+      color: @color-text--muted;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &:hover {
+      background: @background-menu;
+    }
+
+    .content {
+      &:extend(.flex);
+      justify-content: space-between;
+      padding: 0 .6rem;
+      margin: .5rem 0;
+    }
+
+    &:not(:first-of-type) {
+
+      .content {
+        border-left: 1px solid @border-menu
+      }
+    }
+  }
+}
+
+.info {
+  font-size: .75rem;
+
+  h1 {
+    font-size: .8rem;
+    border-bottom: 1px solid @border-menu;
+  }
+
+  i {
+    color: @color-text--muted;
+  }
 }
 
 .btn:focus {
   outline: 0;
 }
 
+h1,
+h2 {
+  font-weight: 500;
+}
+
 h1 {
-  font-size: 1rem;
   margin-top: 0;
 }
 
@@ -44,8 +111,23 @@ h2 {
   font-size: .95rem;
 }
 
-.description {
-  font-size: .85rem;
+section {
+  margin-bottom: 2rem;
+}
+
+.section-heading {
+  &:extend(.flex);
+  justify-content: space-between;
+  margin-bottom: .5rem;
+  border-bottom: 1px solid @border-menu;
+
+  a {
+    font-size: .8rem;
+
+    &:hover {
+      &:extend(.link:hover);
+    }
+  }
 }
 
 .dat-local-path {
@@ -57,13 +139,60 @@ h2 {
   border-right: 0;
   border-radius: 0;
   margin: 1rem 0;
+
+  .item {
+    padding: 5px 0;
+
+    .link {
+      color: @color-text;
+    }
+  }
+
+  .item.file {
+
+    i {
+      display: none;
+    }
+  }
 }
 
 .history,
 .metadata {
-  margin: 1rem;
+  margin: 1rem 0;
+}
+
+.tab,
+.tabs-content {
+  font-size: .8rem !important;
 }
 
 .tabs-content {
-  font-size: .825rem;
+  margin-bottom: 0;
+}
+
+.metadata {
+
+  td.label {
+    width: 65px;
+  }
+}
+
+.history-item {
+  &:extend(.flex);
+  margin-bottom: .25rem;
+
+  .date {
+    display: inline-block;
+    width: 85px;
+  }
+
+  .path {
+    &:extend(.overflow-ellipsis);
+    max-width: 100px;
+    margin-left: 5px;
+
+    &:hover {
+      &:extend(.link:hover);
+    }
+  }
 }
