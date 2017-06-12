@@ -33,7 +33,7 @@ try {
 // =
 
 // how long till we give up?
-const REQUEST_TIMEOUT_MS = 15e3 // 15 seconds
+const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 
 // content security policies
 const DAT_CSP = `
