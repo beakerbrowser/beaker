@@ -168,7 +168,7 @@ async function datServer (req, res) {
 
     // error page
     var resource = !!archive ? 'page' : 'site'
-    cb(504, 'Timed out searching for ${resource}', {
+    cb(504, `Timed out searching for ${resource}`, {
       resource,
       errorCode: 'dat-timeout',
       validatedURL: urlp.href
