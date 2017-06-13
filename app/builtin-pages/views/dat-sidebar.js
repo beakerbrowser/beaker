@@ -62,6 +62,26 @@ export function render () {
   yo.update(document.querySelector('main'), yo`
     <main>
     <div class="archive">
+      <section class="info">
+        <div class="heading">
+          <h1 class="title" title=${archiveInfo.title}>
+            ${niceName(archiveInfo)}
+            ${archiveInfo.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
+          </h1>
+        </div>
+        <p class="description">${niceDesc(archiveInfo)}</p>
+      </section>
+      <section class="network-info">
+        <span>
+          <i class="fa fa-share-alt"></i>
+          ${archiveInfo.peers} peers
+        </span>
+        <a href>
+          <i class="fa fa-bug"></i>
+          Network debugger
+        </a>
+      </section>
+
       <section class="actions">
         <button onclick=${onToggleSaved}>
           <div class="content">
@@ -83,14 +103,6 @@ export function render () {
           <span>Library</span>
           </div>
         </button>
-      </section>
-
-      <section class="info">
-        <h1 class="title" title=${archiveInfo.title}>
-          ${niceName(archiveInfo)}
-          ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
-        </h1>
-        <p>${niceDesc(archiveInfo.description)}</p>
       </section>
 
       <section class="tabs-content">

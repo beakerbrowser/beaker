@@ -11,10 +11,10 @@
 body {
   &:extend(.system-font);
   background: #fff;
-  border-left: 1px solid @border-shell-window;
   height: 100vh;
   overflow-y: scroll;
   overflow-x: hidden;
+  font-size: .7rem !important;
 
   &::-webkit-scrollbar {
     display: none;
@@ -22,19 +22,21 @@ body {
 }
 
 .archive {
-  padding: 1rem;
+  padding: ~"calc(1rem + 30px)" 0; // height of fixed footer
+  padding-top: 0;
+
+  * {
+    font-size: .7rem !important;
+  }
 }
 
 .actions {
   &:extend(.flex);
-  border-radius: 3px;
-  border: 1px solid transparent;
   overflow: hidden;
   border-top: 1px solid @border-menu;
   border-bottom: 1px solid @border-menu;
 
   &:hover {
-    border: 1px solid @border-menu;
 
     button .content {
       padding: .5rem .6rem;
@@ -51,7 +53,7 @@ body {
     padding: 0;
     font-size: .7rem;
     line-height: 100%;
-    vertical-align: middle;
+    text-align: center;
 
     i {
       color: @color-text--muted;
@@ -66,10 +68,12 @@ body {
     }
 
     .content {
-      &:extend(.flex);
-      justify-content: space-between;
       padding: 0 .6rem;
-      margin: .5rem 0;
+      margin: .5rem auto;
+
+      i {
+        margin-right: 3px;
+      }
     }
 
     &:not(:first-of-type) {
@@ -82,16 +86,75 @@ body {
 }
 
 .info {
-  font-size: .75rem;
+  width: 100%;
+  margin-bottom: 0;
+
+  .readonly {
+    text-transform: uppercase;
+    border: 1px solid @border-menu;
+    border-radius: 2px;
+    font-size: .6rem !important;
+    background: @background-menu;
+    margin-left: 3px;
+    padding: 1px 3px;
+    display: inline-block;
+  }
+
+  .heading {
+    &:extend(.flex);
+    justify-content: space-between;
+    padding: .65rem 0 .5rem 0;
+    margin: 0 .5rem;
+  }
+
+  .heading i {
+    margin-top: 3px;
+    width: 10px;
+    height: 10px;
+    text-align: center;
+    cursor: pointer;
+    color: @color-text--muted;
+
+    &:hover {
+      // box-shadow: inset 1px 1px 1px fadeout(#000, 50%);
+      background: @background-menu--hover;
+      border-radius: 2px;
+    }
+  }
+
+  .description {
+    // display: none;
+    margin-top: .25rem;
+    padding: 0 .5rem;
+
+    &.visible {
+      display: block;
+    }
+  }
 
   h1 {
-    font-size: .8rem;
-    border-bottom: 1px solid @border-menu;
+    font-weight: 400;
+  }
+}
+
+.network-info {
+  &:extend(.flex);
+  justify-content: space-between;
+  position: fixed;
+  padding: .5rem;
+  margin: 0;
+  background: @background-menu;
+  bottom: 0;
+  width: 100%;
+  border-top: 1px solid @border-menu;
+
+  a {
+
+    &:hover {
+      &:extend(.link:hover);
+    }
   }
 
-  i {
-    color: @color-text--muted;
-  }
 }
 
 .btn:focus {
@@ -108,11 +171,11 @@ h1 {
 }
 
 h2 {
-  font-size: .95rem;
+  // font-size: .95rem;
 }
 
 section {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .section-heading {
@@ -122,7 +185,7 @@ section {
   border-bottom: 1px solid @border-menu;
 
   a {
-    font-size: .8rem;
+    // font-size: .8rem;
 
     &:hover {
       &:extend(.link:hover);
@@ -141,7 +204,13 @@ section {
   margin: 1rem 0;
 
   .item {
+    justify-content: space-between;
     padding: 5px 0;
+
+    .name {
+      &:extend(.overflow-ellipsis);
+      max-width: 150px;
+    }
 
     .link {
       color: @color-text;
@@ -158,16 +227,25 @@ section {
 
 .history,
 .metadata {
-  margin: 1rem 0;
+  margin: 1rem .5rem;
+}
+
+.history {
+
+  .load-more {
+    &:extend(.link:hover);
+    display: block;
+    margin-top: .5rem;
+  }
 }
 
 .tab,
 .tabs-content {
-  font-size: .8rem !important;
+  // font-size: .8rem !important;
 }
 
 .tabs-content {
-  margin-bottom: 0;
+  margin: 0 .5rem;
 }
 
 .metadata {
