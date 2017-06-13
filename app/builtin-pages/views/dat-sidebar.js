@@ -85,7 +85,7 @@ export function render () {
           <i class="fa fa-share-alt"></i>
           ${archiveInfo.peers} peers
         </span>
-        <a href>
+        <a href="beaker://swarm-debugger/${archiveInfo.key}">
           <i class="fa fa-bug"></i>
           Network debugger
         </a>
