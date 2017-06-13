@@ -26,6 +26,9 @@ export class DatSidebarBtn {
     var {key} = page.siteInfo
     this.webview = pages.createWebviewEl('dat-sidebar-webview', `beaker://dat-sidebar/${key}`)
     this.webview.id = 'dat-sidebar-webview'
+    this.webview.style.position = 'absolute'
+    this.webview.style.background = '#fff'
+    this.webview.style.borderRadius = '2px'
     document.querySelector('#dat-sidebar').appendChild(this.webview)
   }
 
