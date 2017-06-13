@@ -23,6 +23,15 @@ setup ()
 async function setup () {
   archiveKey = await parseURLKey()
 
+  // open anchor links in the main webview
+  document.addEventListener('click', (e) => {
+    var href = e.target.href || e.currentTarget.href
+    if (href) {
+      e.preventDefault()
+      beakerBrowser.openUrl(href)
+    }
+  })
+
   if (archiveKey) {
     archive = new DatArchive(archiveKey)
     archiveInfo = await archive.getInfo()
