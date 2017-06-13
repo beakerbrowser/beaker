@@ -183,11 +183,6 @@ function rMetadata (archiveInfo) {
   `
 }
 
-function onClickBtn (e) {
-  isSidebarOpen = !isSidebarOpen
-  render()
-}
-
 async function onToggleSaved (e) {
   // toggle saved
   if (archiveInfo.userSettings.isSaved) {
@@ -199,12 +194,6 @@ async function onToggleSaved (e) {
   }
 
   render()
-}
-
-function onCopyURL (url) {
-  return e => {
-    writeToClipboard(url)
-  }
 }
 
 async function onFork (e) {
