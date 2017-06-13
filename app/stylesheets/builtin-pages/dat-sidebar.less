@@ -35,20 +35,13 @@ body {
   overflow: hidden;
   border-top: 1px solid @border-menu;
   border-bottom: 1px solid @border-menu;
-
-  &:hover {
-
-    button .content {
-      padding: .5rem .6rem;
-      margin: 0;
-    }
-  }
+  margin-bottom: .25rem;
 
   button {
     cursor: pointer;
     color: @color-text;
     font-weight: 400;
-    background: none;
+    background: @background-menu;
     flex: 1 ;
     padding: 0;
     font-size: .7rem;
@@ -64,12 +57,16 @@ body {
     }
 
     &:hover {
-      background: @background-menu;
+      background: @background-menu--hover;
+
+      i {
+        color: @color-text;
+      }
     }
 
     .content {
-      padding: 0 .6rem;
-      margin: .5rem auto;
+      padding: .5rem .6rem;
+      margin: 0;
 
       i {
         margin-right: 3px;
@@ -87,7 +84,7 @@ body {
 
 .info {
   width: 100%;
-  margin-bottom: 0;
+  margin-bottom: 1rem;
 
   .readonly {
     text-transform: uppercase;
