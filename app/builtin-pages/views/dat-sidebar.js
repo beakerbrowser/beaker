@@ -90,7 +90,7 @@ export function render () {
           </div>
         </button>
 
-        <button onclick>
+        <button onclick=${onFork}>
           <div class="content">
           <i class="fa fa-code-fork"></i>
           <span>Fork</span>
@@ -200,14 +200,9 @@ function onCopyURL (url) {
 
 async function onFork (e) {
   render()
-
-  var page = pages.getActive()
-  if (!page || !page.getURL().startsWith('dat://')) {
-    return
-  }
-  var archive = await DatArchive.fork(page.siteInfo.key)
+  var newArchive = await DatArchive.fork(archiveKey)
   // TODO
-  // page.loadURL('beaker://library/' + archive.url.slice('dat://'.length))
+  // page.loadURL('beaker://library/' + newArchive.url.slice('dat://'.length))
 }
 
 function onClickTab (tab) {
