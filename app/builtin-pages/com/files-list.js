@@ -24,8 +24,6 @@ function rFilesList (archiveInfo, opts) {
       </div>
     `
   }
-  console.log('filesList', opts)
-  console.log('gonna render filesList')
 
   var hasFiles = Object.keys(archiveInfo.fileTree.rootNode.children).length > 0
   return yo`
@@ -41,8 +39,8 @@ function rFilesList (archiveInfo, opts) {
 // rendering
 // =
 
-function redraw (archiveInfo) {
-  yo.update(document.querySelector('.files-list'), rFilesList(archiveInfo))
+function redraw (archiveInfo, opts={}) {
+  yo.update(document.querySelector('.files-list'), rFilesList(archiveInfo, opts))
 }
 
 function rFolder (archiveInfo, opts) {
@@ -67,7 +65,6 @@ function rFolder (archiveInfo, opts) {
 }
 
 function rChildren (archiveInfo, children, depth=0, opts={}) {
-  console.log('rChildren', opts.hideDate)
   return Object.keys(children)
     .map(key => children[key])
     .sort(treeSorter)
@@ -85,9 +82,8 @@ function treeSorter (a, b) {
 }
 
 function rNode (archiveInfo, node, depth, opts) {
-  console.log(opts.hideDate)
   if (node.entry.isDirectory()) {
-    return rDirectory(archiveInfo, node, depth)
+    return rDirectory(archiveInfo, node, depth, opts)
   }
   if (node.entry.isFile()) {
     return rFile(archiveInfo, node, depth, opts)
@@ -95,7 +91,7 @@ function rNode (archiveInfo, node, depth, opts) {
   return ''
 }
 
-function rDirectory (archiveInfo, node, depth) {
+function rDirectory (archiveInfo, node, depth, opts) {
   let icon = 'folder'
   let children = ''
   const directoryPadding = 10 + (depth * 10)
@@ -103,7 +99,7 @@ function rDirectory (archiveInfo, node, depth) {
   if (node.isExpanded) {
     children = yo`
       <div class="subtree">
-        ${rChildren(archiveInfo, node.children, depth + 1)}
+        ${rChildren(archiveInfo, node.children, depth + 1, opts)}
       </div>`
     icon = 'folder-open'
   }
@@ -113,7 +109,7 @@ function rDirectory (archiveInfo, node, depth) {
       <div
         class="item folder"
         title=${node.niceName}
-        onclick=${e => onClickDirectory(e, archiveInfo, node)}
+        onclick=${e => onClickDirectory(e, archiveInfo, node, opts)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
         <div class="name link">
           <i class="fa fa-${icon}"></i>
@@ -145,12 +141,12 @@ function rFile (archiveInfo, node, depth, opts) {
 // event handlers
 // =
 
-async function onClickDirectory (e, archiveInfo, node) {
+async function onClickDirectory (e, archiveInfo, node, opts={}) {
   node.isExpanded = !node.isExpanded
   if (node.isExpanded) {
     await archiveInfo.fileTree.readFolder(node)
   }
-  redraw(archiveInfo)
+  redraw(archiveInfo, opts)
 }
 
 function onCopyFolder (e, archiveInfo) {
