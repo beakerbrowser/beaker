@@ -1403,6 +1403,20 @@ test('archive.writeFile does allow self-modification', async t => {
   t.falsy(res.value)
 })
 
+test('DatArchive can resolve and read dats with shortnames', async t => {
+  // do this in the shell so we dont have to ask permission
+  await app.client.windowByIndex(0)
+
+  var res = await app.client.executeAsync((done) => {
+    var archive = new DatArchive('dat://beakerbrowser.com/')
+    archive.readdir('/').then(done, done)
+  })
+  console.log(res.value)
+  t.truthy(Array.isArray(res.value))
+  
+  await app.client.windowByIndex(1)
+})
+
 function sleep (time) {
   return new Promise(resolve => setTimeout(resolve, time))
 }

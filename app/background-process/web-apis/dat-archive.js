@@ -75,6 +75,7 @@ export default {
     if (!url || typeof url !== 'string') {
       return Promise.reject(new InvalidURLError())
     }
+    url = await datDns.resolveName(url)
     await datLibrary.getOrLoadArchive(url)
     return Promise.resolve(true)
   },
@@ -448,7 +449,7 @@ async function assertSenderIsFocused (sender) {
   }
 }
 
-function parseUrlParts (url) {
+async function parseUrlParts (url) {
   var archiveKey, filepath, version
   if (DAT_HASH_REGEX.test(url)) {
     // simple case: given the key
@@ -462,8 +463,7 @@ function parseUrlParts (url) {
       throw new InvalidURLError('URL must be a dat: scheme')
     }
     if (!DAT_HASH_REGEX.test(urlp.host)) {
-      // TODO- support dns lookup?
-      throw new InvalidURLError('Hostname is not a valid hash')
+      urlp.host = await datDns.resolveName(url)
     }
 
     archiveKey = urlp.host
@@ -483,7 +483,7 @@ async function lookupArchive (url, opts = {}) {
     checkin('searching for archive')
 
     // lookup the archive
-    var {archiveKey, filepath, version} = parseUrlParts(url)
+    var {archiveKey, filepath, version} = await parseUrlParts(url)
     var archive = datLibrary.getArchive(archiveKey)
     if (!archive) archive = await datLibrary.loadArchive(archiveKey)
 
