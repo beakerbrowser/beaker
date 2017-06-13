@@ -217,16 +217,16 @@ async function onLoadMoreHistory (e) {
   e.preventDefault()
 
   // read more history
-  var a = new DatArchive(selectedArchiveKey)
+  var a = new DatArchive(archiveKey)
   var moreHistory = await a.history({
-    start: selectedArchive.historyPaginationOffset,
-    end: selectedArchive.historyPaginationOffset + 500,
+    start: archive.historyPaginationOffset,
+    end: archive.historyPaginationOffset + 500,
     reverse: true
   })
 
   // add to tracked history and update
-  selectedArchive.history = selectedArchive.history.concat(moreHistory)
-  selectedArchive.historyPaginationOffset += 500
+  archiveInfo.history = archiveInfo.history.concat(moreHistory)
+  archiveInfo.historyPaginationOffset += 500
   render()
 }
 
