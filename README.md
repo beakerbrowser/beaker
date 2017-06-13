@@ -96,10 +96,10 @@ console.log(archive.url)
 ## Building from source
 
 Requires node 6.2.1.
-In linux (possibly also OSX) you need libtool, m4, and automake.
+In linux (possibly also OSX) you need libtool, m4, automake, make, and g++.
 
 ```
-sudo apt-get install libtool m4 automake
+sudo apt-get install libtool m4 automake make g++
 ```
 
 To build:
