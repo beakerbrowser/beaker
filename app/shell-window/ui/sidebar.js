@@ -106,6 +106,7 @@ export function close () {
     isOpen = false
     sidebarEl.classList.remove('open')
     destroyWebviews()
+    doResize()
   }
 }
 
@@ -132,16 +133,19 @@ function destroyWebviews () {
     sidebarEl.removeChild(sidebarWebviews[id])
   }
   sidebarWebviews = {}
-  webviewsEl.style.width = '100%'
 }
 
 // resizing behaviors
 // =
 
 function doResize () {
-  var pageSize = document.body.getClientRects()[0]
-  webviewsEl.style.width = `${pageSize.width - sidebarWidth}px`
-  sidebarEl.style.width = `${sidebarWidth}px`
+  if (isOpen) {
+    var pageSize = document.body.getClientRects()[0]
+    webviewsEl.style.width = `${pageSize.width - sidebarWidth}px`
+    sidebarEl.style.width = `${sidebarWidth}px`
+  } else {
+    webviewsEl.style.width = '100%'    
+  }
 }
 
 function onDragMouseDown (e) {
