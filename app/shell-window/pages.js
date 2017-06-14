@@ -844,6 +844,15 @@ export function onIPCMessage (e) {
         navbar.update(page)
       }
       break
+    case 'open-url':
+      var {url, newTab} = e.args[0]
+      if (newTab) {
+        create(url)
+      } else {
+        getActive().loadURL(url)
+      }
+      navbar.closeMenus()
+      break
     case 'close-menus':
       navbar.closeMenus()
       break

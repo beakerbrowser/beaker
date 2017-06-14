@@ -29,8 +29,7 @@ async function setup () {
     var href = e.target.href || e.currentTarget.href
     if (href) {
       e.preventDefault()
-      locationbar.closeMenus()
-      beakerBrowser.openUrl(href)
+      locationbar.openUrl(href, {newTab: !!e.metaKey})
     }
   })
 
@@ -187,7 +186,7 @@ function rHistory (archiveInfo) {
   var loadMoreBtn = ''
   if (archiveInfo.version > archiveInfo.historyPaginationOffset) {
     loadMoreBtn = yo`<div>
-      <a class="link load-more" href="#" onclick=${onLoadMoreHistory}>Load more</a>
+      <a class="link load-more" onclick=${onLoadMoreHistory}>Load more</a>
     </div>`
   }
 

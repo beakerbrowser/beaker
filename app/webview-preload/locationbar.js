@@ -9,6 +9,7 @@ export function setup () {
   if (window.location.protocol === 'beaker:') {
     window.locationbar.setSiteInfoOverride = setSiteInfoOverride
     window.locationbar.clearSiteInfoOverride = clearSiteInfoOverride
+    window.locationbar.openUrl = openUrl
     window.locationbar.closeMenus = closeMenus
   }
 }
@@ -21,7 +22,10 @@ function clearSiteInfoOverride () {
   ipcRenderer.sendToHost('site-info-override:clear')
 }
 
+function openUrl (url, {newTab} = {}) {
+  ipcRenderer.sendToHost('open-url', {url, newTab})
+}
+
 function closeMenus () {
-  console.log('closing menus')
   ipcRenderer.sendToHost('close-menus')
 }
