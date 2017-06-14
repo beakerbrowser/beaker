@@ -5,7 +5,7 @@ var isDragging = false
 
 var webviewsEl
 var sidebarEl
-var sidebarWebview
+var sidebarWebviews = {} // pageId => webview element
 var dragHandleEl
 
 // exported api
@@ -23,41 +23,71 @@ export function setup () {
   dragHandleEl.addEventListener('mouseup', onDragMouseUp)
 }
 
-export function open (url) {
-  if (!isOpen) {
-    sidebarEl.classList.add('open')
-    createWebview(url)
-    isOpen = true
-  } else {
-    sidebarWebview.loadURL(url)
+export function open (page) {
+  if (!page || !page.id) {
+    return console.log(new Error('Passed a bad page object'))
   }
+
+  if (!isOpen) {
+    isOpen = true
+    sidebarEl.classList.add('open')
+
+    // resize main webviews
+    var pageSize = document.body.getClientRects()[0]
+    var sidebarSize = sidebarEl.getClientRects()[0]
+    webviewsEl.style.width = `${pageSize.width - sidebarSize.width}px`
+  }
+
+  // create the webview for the given page, if dne
+  getOrCreateWebview(page)
+}
+
+export function setActive (page) {
+  if (!isOpen) {
+    // ignore, we're closed
+    return
+  }
+
+  // create the webview for the given page, if dne
+  var wv = getOrCreateWebview(page)
+
+  // set active
+  for (var id in sidebarWebviews) {
+    sidebarWebviews[id].classList.add('hidden')
+  }
+  wv.classList.remove('hidden')
 }
 
 export function close () {
   if (isOpen) {
-    sidebarEl.classList.remove('open')
-    destroyWebview()
     isOpen = false
+    sidebarEl.classList.remove('open')
+    destroyWebviews()
   }
 }
 
 // internal methods
 // =
 
-function createWebview (url) {
+function getOrCreateWebview (page) {
+  if (sidebarWebviews[page.id]) {
+    return sidebarWebviews[page.id]
+  }
+
   // create webview
-  sidebarWebview = pages.createWebviewEl('dat-sidebar-webview', url)
-  sidebarWebview.addEventListener('ipc-message', pages.onIPCMessage)
-  sidebarEl.appendChild(sidebarWebview)
-  // resize other webviews
-  var pageSize = document.body.getClientRects()[0]
-  var sidebarSize = sidebarEl.getClientRects()[0]
-  console.log(pageSize, sidebarSize, pageSize.width - sidebarSize.width)
-  webviewsEl.style.width = `${pageSize.width - sidebarSize.width}px`
+  var url = `beaker://dat-sidebar/${page.url}`
+  var wv = pages.createWebviewEl('dat-sidebar-webview', url)
+  wv.addEventListener('ipc-message', pages.onIPCMessage)
+  sidebarEl.appendChild(wv)
+  sidebarWebviews[page.id] = wv
+  return wv
 }
 
-function destroyWebview () {
-  sidebarEl.removeChild(sidebarWebview)
+function destroyWebviews () {
+  for (var id in sidebarWebviews) {
+    sidebarEl.removeChild(sidebarWebviews[id])
+  }
+  sidebarWebviews = {}
   webviewsEl.style.width = '100%'
 }
 

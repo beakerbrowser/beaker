@@ -8,23 +8,17 @@ export class DatSidebarBtn {
 
   render () {
     return yo`
-      <button title="Show info" class="toolbar-btn dat-sidebar btn" onclick=${e => this.onClickBtn(e)} title="Menu">
+      <button title="Toggle sidebar" class="toolbar-btn dat-sidebar btn" onclick=${e => this.onClickBtn(e)} title="Menu">
         <i class="fa fa-toggle-${sidebar.getIsOpen()?'right':'left'}"></i>
       </button>
     `
-  }
-
-  openSidebar() {
-    var page = pages.getActive()
-    var key = (page && page.siteInfo) ? page.siteInfo.key : ''
-    sidebar.open(`beaker://dat-sidebar/${key}`)
   }
 
   onClickBtn (e) {
     if (sidebar.getIsOpen()) {
       sidebar.close()
     } else {
-      this.openSidebar()
+      sidebar.open(pages.getActive())
     }
     this.updateActives()
   }

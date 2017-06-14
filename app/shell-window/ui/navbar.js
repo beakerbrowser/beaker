@@ -317,7 +317,7 @@ function render (id, page) {
         ${autocompleteDropdown}
       </div>
       <div class="toolbar-group">
-        ${isViewingDat ? datSidebarBtn.render(addrValue) : ''}
+        ${datSidebarBtn.render(addrValue)}
         ${dropMenuNavbarBtn.render()}
         ${updatesNavbarBtn.render()}
       </div>

@@ -5,6 +5,7 @@ import fs from 'fs'
 import parseDatURL from 'parse-dat-url'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
+import * as sidebar from './ui/sidebar'
 import * as promptbar from './ui/promptbar'
 import * as statusBar from './ui/statusbar'
 import {urlsToData} from '../lib/fg/img'
@@ -370,6 +371,7 @@ export function setActive (page) {
   page.isActive = 1
   page.webviewEl.focus()
   statusBar.setIsLoading(page.isLoading())
+  sidebar.setActive(page)
   navbar.update()
   promptbar.update()
   events.emit('set-active', page)

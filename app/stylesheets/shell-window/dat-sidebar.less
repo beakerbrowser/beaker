@@ -29,5 +29,19 @@
     position: absolute;
     transform: translateX(0); // put the webview in another compositing layer, to reduce layout render times
     background: #f2f2f2; // so that something is painted during load
+
+    // HACK
+    // to address https://github.com/electron/electron/issues/8505
+    // the default way of hiding content will be by z-index
+    // but can then switch to visibility: hidden after the initial render
+    z-index: 10;
+    &.hidden {
+      display: flex; // the default display type
+      z-index: 9;
+    }
+    &.can-hide.hidden {
+      display: flex; // the default display type
+      visibility: hidden;
+    }
   }
 }
