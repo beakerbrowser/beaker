@@ -125,7 +125,6 @@ export function updateLocation (page) {
 export function closeMenus () {
   dropMenuNavbarBtn.isDropdownOpen = false
   dropMenuNavbarBtn.updateActives()
-  datSidebarBtn.closeSidebar()
 }
 
 // internal helpers

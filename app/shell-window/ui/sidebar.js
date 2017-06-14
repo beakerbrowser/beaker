@@ -42,9 +42,39 @@ export function open (page) {
   getOrCreateWebview(page)
 }
 
+export function updatePage (page) {
+  if (!isOpen) {
+    // abort, we're closed
+    return
+  }
+
+  // get page's webview
+  var wv = sidebarWebviews[page.id]
+  if (!wv) {
+    // abort, the wv isnt loaded yet
+    return
+  }
+
+  // load a new URL if the domain has changed
+  var oldUrl = wv.dataset.target
+  var newUrl = page.url
+  try {
+    var oldUrlParsed = new URL(oldUrl)
+    var newUrlParsed = new URL(newUrl)
+    if (oldUrlParsed.origin === newUrlParsed.origin) {
+      // abort, origin hasnt changed
+      return
+    }
+  } catch (e) {/* ignore */}
+
+  // load the new url
+  wv.dataset.target = newUrl
+  wv.loadURL(`beaker://dat-sidebar/${newUrl}`)
+}
+
 export function setActive (page) {
   if (!isOpen) {
-    // ignore, we're closed
+    // abort, we're closed
     return
   }
 
@@ -77,6 +107,7 @@ function getOrCreateWebview (page) {
   // create webview
   var url = `beaker://dat-sidebar/${page.url}`
   var wv = pages.createWebviewEl('dat-sidebar-webview', url)
+  wv.dataset.target = page.url
   wv.addEventListener('ipc-message', pages.onIPCMessage)
   sidebarEl.appendChild(wv)
   sidebarWebviews[page.id] = wv

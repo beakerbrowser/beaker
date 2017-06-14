@@ -600,7 +600,8 @@ function onDidStopLoading (e) {
     }
     var url = page.url
 
-    // update history
+    // update history and UI
+    sidebar.updatePage(page)
     updateHistory(page)
 
     // fetch protocol and page info
@@ -744,6 +745,7 @@ function onDidFinishLoad (e) {
     page.favicons = null
     navbar.update(page)
     navbar.updateLocation(page)
+    sidebar.updatePage(page)
   }
 }
 
