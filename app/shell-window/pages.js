@@ -231,11 +231,7 @@ export function create (opts) {
 
     // reload the page due to changes in the dat
     triggerLiveReload: debounce(archiveKey => {
-      // double check that we're still on the page
-      if (page.getIntendedURL().startsWith('dat://' + archiveKey)) {
-        // reload
-        page.reload()
-      }
+      page.reload()
     }, TRIGGER_LIVE_RELOAD_DEBOUNCE, true),
     // ^ note this is on the front edge of the debouncer.
     // That means snappier reloads (no delay) but possible double reloads if multiple files change
