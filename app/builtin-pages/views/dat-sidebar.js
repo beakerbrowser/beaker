@@ -12,6 +12,7 @@ import { writeToClipboard } from '../../lib/fg/event-handlers'
 // =
 
 var currentSection = 'files'
+var hostname = false
 var archiveKey
 var archive
 var archiveInfo
@@ -21,7 +22,7 @@ var isDatSaved
 setup ()
 
 async function setup () {
-  archiveKey = await parseURLKey()
+  await parseURL()
 
   // open anchor links in the main webview
   document.addEventListener('click', (e) => {
@@ -55,11 +56,28 @@ async function setup () {
   render()
 }
 
-async function parseURLKey () {
-  return window.location.pathname.slice(1, window.location.pathname.length)
+async function parseURL () {
+  var url = window.location.pathname.slice(1, window.location.pathname.length)
+  if (!url) {
+    return
+  }
+
+  try {
+    var urlp = new URL(url)
+    hostname = urlp.origin
+    if (urlp.protocol === 'dat:') {
+      archiveKey = await DatArchive.resolveName(urlp.hostname)
+    }
+  } catch (e) {
+    console.warn(e)
+  }
 }
 
-export function render () {
+function render () {
+  if (!archiveKey) {
+    return rNonArchive()
+  }
+
   var toggleSaveIcon, toggleSaveText
   if (archiveInfo.userSettings.isSaved) {
     toggleSaveIcon = 'fa-trash'
@@ -128,6 +146,15 @@ export function render () {
         })[currentSection]()}
       </section>
     </div>
+    </main>
+  `)
+}
+
+function rNonArchive () {
+  yo.update(document.querySelector('main'), yo`
+    <main>
+      <h1>${hostname || ''}</h1>
+      <p>Not a peer-to-peer Website.</p>
     </main>
   `)
 }
