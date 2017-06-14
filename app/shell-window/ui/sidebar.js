@@ -7,6 +7,7 @@ var webviewsEl
 var sidebarEl
 var sidebarWebviews = {} // pageId => webview element
 var dragHandleEl
+var sidebarWidth = 300
 
 // exported api
 // =
@@ -21,6 +22,7 @@ export function setup () {
   dragHandleEl = document.getElementById('dat-sidebar-draghandle')
   dragHandleEl.addEventListener('mousedown', onDragMouseDown)
   dragHandleEl.addEventListener('mouseup', onDragMouseUp)
+  window.addEventListener('resize', doResize)
 }
 
 export function open (page) {
@@ -31,11 +33,7 @@ export function open (page) {
   if (!isOpen) {
     isOpen = true
     sidebarEl.classList.add('open')
-
-    // resize main webviews
-    var pageSize = document.body.getClientRects()[0]
-    var sidebarSize = sidebarEl.getClientRects()[0]
-    webviewsEl.style.width = `${pageSize.width - sidebarSize.width}px`
+    doResize()
   }
 
   // create the webview for the given page, if dne
@@ -125,6 +123,12 @@ function destroyWebviews () {
 // resizing behaviors
 // =
 
+function doResize () {
+  var pageSize = document.body.getClientRects()[0]
+  webviewsEl.style.width = `${pageSize.width - sidebarWidth}px`
+  sidebarEl.style.width = `${sidebarWidth}px`
+}
+
 function onDragMouseDown (e) {
   isDragging = true
   window.addEventListener('mousemove', onDragMouseMove)
@@ -138,6 +142,8 @@ function onDragMouseUp (e) {
 
 function onDragMouseMove (e) {
   var pageSize = document.body.getClientRects()[0]
-  webviewsEl.style.width = `${e.x}px`
-  sidebarEl.style.width = `${(pageSize.width - e.x)}px`
+  sidebarWidth = pageSize.width - e.x
+  if (sidebarWidth < 300) sidebarWidth = 300
+  webviewsEl.style.width = `${pageSize.width - sidebarWidth}px`
+  sidebarEl.style.width = `${sidebarWidth}px`
 }
