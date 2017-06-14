@@ -334,6 +334,7 @@ export async function remove (page) {
   }
 
   // remove
+  sidebar.closePage(page)
   page.stopLiveReloading()
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)

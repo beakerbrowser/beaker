@@ -86,6 +86,21 @@ export function setActive (page) {
   wv.classList.remove('hidden')
 }
 
+export function closePage (page) {
+  if (!page || !page.id) {
+    return console.log(new Error('Passed a bad page object'))
+  }
+
+  if (!isOpen || !(page.id in sidebarWebviews)) {
+    // abort
+    return
+  }
+
+  // remove webview
+  sidebarEl.removeChild(sidebarWebviews[page.id])
+  delete sidebarWebviews[page.id]
+}
+
 export function close () {
   if (isOpen) {
     isOpen = false
