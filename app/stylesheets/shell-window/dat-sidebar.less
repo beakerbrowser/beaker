@@ -1,24 +1,34 @@
-#dat-sidebar-webview {
-  box-shadow: 0 2px 10px fadeout(#000, 55%);
+#dat-sidebar {
+  display: none;
   position: absolute;
-  right: 8px;
-  border-radius: 4px;
-  z-index: 1000;
-  top: 68px;
-  width: 275px;
-  height: 450px;
-  // overflow: hidden; TODO
+  right: 0;
+  top: 74px;
+  width: 300px;
+  height: ~"calc(100vh - 74px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
+  z-index: 1000; // TODO remove
+  border-left: 1px solid @border-shell-window;
 
-  &:before {
-    content: '';
+  &.open {
+    display: block;
+  }
+
+  // resize drag handle
+  #dat-sidebar-draghandle {
     position: absolute;
-    top: -4px;
-    right: 38px;
-    width: 8px;
-    height: 8px;
-    background: #fff;
-    box-shadow: -1px -1px 10px rgba(0, 0, 0, 0.15);
-    transform: rotateZ(45deg);
-    z-index: -1;
+    top: 0;
+    bottom: 0;
+    left: -3px;
+    width: 4px;
+    z-index: 1;
+    cursor: ew-resize;
+  }
+
+  webview {
+    width: 100%;
+    height: 100%;
+    outline: none;
+    position: absolute;
+    transform: translateX(0); // put the webview in another compositing layer, to reduce layout render times
+    background: #f2f2f2; // so that something is painted during load
   }
 }

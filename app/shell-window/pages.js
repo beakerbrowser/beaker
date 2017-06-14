@@ -822,12 +822,26 @@ function onCrashed (e) {
   console.error('Webview crash', e)
 }
 
-function onIPCMessage (e) {
+export function onIPCMessage (e) {
   var page = getByWebview(e.target)
-  if (!page) return
   switch (e.channel) {
-    case 'site-info-override:set': page.siteInfoOverride = e.args[0]; navbar.updateLocation(page); navbar.update(page); break
-    case 'site-info-override:clear': page.siteInfoOverride = null; navbar.updateLocation(page); navbar.update(page); break
+    case 'site-info-override:set':
+      if (page) {
+        page.siteInfoOverride = e.args[0]
+        navbar.updateLocation(page)
+        navbar.update(page)
+      }
+      break
+    case 'site-info-override:clear':
+      if (page) {
+        page.siteInfoOverride = null
+        navbar.updateLocation(page)
+        navbar.update(page)
+      }
+      break
+    case 'close-menus':
+      navbar.closeMenus()
+      break
   }
 }
 

@@ -28,6 +28,7 @@ async function setup () {
     var href = e.target.href || e.currentTarget.href
     if (href) {
       e.preventDefault()
+      locationbar.closeMenus()
       beakerBrowser.openUrl(href)
     }
   })

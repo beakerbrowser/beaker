@@ -1,48 +1,40 @@
 import * as yo from 'yo-yo'
 import * as pages from '../../pages'
+import * as sidebar from '../sidebar'
 
 export class DatSidebarBtn {
   constructor () {
-    this.isSidebarOpen = false
   }
 
   render () {
     return yo`
-      <button title="Show info" class="toolbar-btn dat-sidebar btn ${this.isSidebarOpen?'pressed':''}" onclick=${e => this.onClickBtn(e)} title="Menu">
-        <i class="fa fa-info-circle"></i>
+      <button title="Show info" class="toolbar-btn dat-sidebar btn" onclick=${e => this.onClickBtn(e)} title="Menu">
+        <i class="fa fa-toggle-${sidebar.getIsOpen()?'right':'left'}"></i>
       </button>
     `
   }
 
   openSidebar() {
     var page = pages.getActive()
-    if (!page) return
-
-    // are we on a dat site?
-    if (!page.siteInfo) {
-      return
-    }
-
-    var {key} = page.siteInfo
-    this.webview = pages.createWebviewEl('dat-sidebar-webview', `beaker://dat-sidebar/${key}`)
-    this.webview.id = 'dat-sidebar-webview'
-    this.webview.style.position = 'absolute'
-    this.webview.style.background = '#fff'
-    this.webview.style.borderRadius = '2px'
-    document.querySelector('#dat-sidebar').appendChild(this.webview)
-  }
-
-  closeSidebar() {
-    document.querySelector('#dat-sidebar').innerHTML = ''
+    var key = (page && page.siteInfo) ? page.siteInfo.key : ''
+    sidebar.open(`beaker://dat-sidebar/${key}`)
   }
 
   onClickBtn (e) {
-    this.isSidebarOpen = !this.isSidebarOpen
-    this.render()
-    if (this.isSidebarOpen) {
-      this.openSidebar()
+    if (sidebar.getIsOpen()) {
+      sidebar.close()
     } else {
-      this.closeSidebar()
+      this.openSidebar()
     }
+    this.updateActives()
+  }
+
+  updateActives() {
+    // FIXME
+    // calling `this.render` for all active site-infos is definitely wrong
+    // there is state captured in `this` that is specific to each instance
+    // ...this entire thing is kind of bad
+    // -prf
+    Array.from(document.querySelectorAll('.dat-sidebar.btn')).forEach(el => yo.update(el, this.render()))
   }
 }
