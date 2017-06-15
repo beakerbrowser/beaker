@@ -27,11 +27,9 @@ function rFilesList (archiveInfo, opts) {
 
   var hasFiles = Object.keys(archiveInfo.fileTree.rootNode.children).length > 0
   return yo`
-    <div>
-      <div class="files-list">
-        ${!hasFiles ? yo`<div class="item"><em>Empty folder</em></div>` : ''}
-        ${rChildren(archiveInfo, archiveInfo.fileTree.rootNode.children, 0, opts)}
-      </div>
+    <div class="files-list">
+      ${!hasFiles ? yo`<div class="item"><em>Empty folder</em></div>` : ''}
+      ${rChildren(archiveInfo, archiveInfo.fileTree.rootNode.children, 0, opts)}
     </div>
   `
 }
