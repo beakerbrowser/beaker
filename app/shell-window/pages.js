@@ -635,7 +635,7 @@ function onDidStopLoading (e) {
 
     // markdown rendering
     // inject the renderer script if the page is markdown
-    if (page.contentType === 'text/markdown' || page.contentType === 'text/x-markdown') {
+    if (page.contentType.startsWith('text/markdown') || page.contentType.startsWith('text/x-markdown')) {
       // hide the unformatted text and provide some basic styles
       page.webviewEl.insertCSS(`
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }

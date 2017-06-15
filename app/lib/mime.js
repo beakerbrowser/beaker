@@ -5,6 +5,7 @@ var debug = require('debug')('beaker')
 
 // config default mimetype
 mime.default_type = 'text/plain'
+const TEXT_TYPE_RE = /^text\/|^application\/(javascript|json)/
 
 export function identify (name, chunk) {
   // try to identify the type by the chunk contents
@@ -25,7 +26,12 @@ export function identify (name, chunk) {
   // inline svgs can be falsely interpretted as svgs
   // double check that
   if (identifiedExt === 'svg' && mime.lookup(name) === 'text/html') {
-    return 'text/html'
+    return 'text/html; charset=utf8'
+  }
+
+  // assume utf-8 for text types
+  if (TEXT_TYPE_RE.test(mimeType)) {
+    mimeType += '; charset=utf8'
   }
 
   return mimeType
