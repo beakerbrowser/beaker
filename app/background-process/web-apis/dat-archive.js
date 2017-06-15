@@ -112,7 +112,7 @@ export default {
     var {archive, version} = await lookupArchive(url, opts)
     if (version) return [] // TODO
     if (!archive.staging) return []
-    return pda.diff(archive.staging)
+    return pda.diff(archive.staging, {shallow: opts.shallow})
   },
 
   async commit(url, opts = {}) {

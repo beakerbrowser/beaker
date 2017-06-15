@@ -154,7 +154,7 @@ async function reloadDiff () {
   try {
     // load diff
     var a = new DatArchive(selectedArchiveKey)
-    var diff = selectedArchive.diff = await a.diff()
+    var diff = selectedArchive.diff = await a.diff({shallow: true})
 
     // calc diff stats
     diff.forEach(d => { stats[d.change]++ })
