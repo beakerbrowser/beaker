@@ -884,7 +884,7 @@ async function updateHistory (page) {
   var url = page.getURL()
 
   if (!url.startsWith('beaker://') || url.match(/beaker:\/\/library\/[0-9,a-f]{64}/g)) {
-    beaker.history.addVisit({url: page.getURL(), title: page.getTitle() || page.getURL()})
+    beaker.history.addVisit({url: page.getIntendedURL(), title: page.getTitle() || page.getURL()})
     if (page.isPinned) {
       savePinnedToDB()
     }
