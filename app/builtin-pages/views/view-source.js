@@ -174,6 +174,12 @@ function renderFile () {
         <audio controls src=${url}></audio>
       </div>
     `
+  } else if (mimetype === 'application/pdf') {
+    return yo`
+      <div class="file-view" style="padding: 1rem">
+        <a class="link" href=${url}>PDF (click to open)</a>
+      </div>
+    `
   } else {
     return yo`
       <div class="file-view">
