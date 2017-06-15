@@ -44,7 +44,7 @@ var selectedArchiveKey = ''
 var selectedArchive
 var selectedArchives = []
 var viewError
-const reloadDiffThrottled = throttle(reloadDiff, 1.5e3)
+const reloadDiffThrottled = throttle(reloadDiff, 500)
 
 setup()
 async function setup () {
