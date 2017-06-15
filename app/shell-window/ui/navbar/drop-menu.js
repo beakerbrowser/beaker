@@ -2,6 +2,7 @@ import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
 import prettyBytes from 'pretty-bytes'
 import { ucfirst } from '../../../lib/strings'
+import { findParent } from '../../../lib/fg/event-handlers'
 import * as pages from '../../pages'
 
 // there can be many drop menu btns rendered at once, but they are all showing the same information
@@ -26,6 +27,7 @@ export class DropMenuNavbarBtn {
     dlEvents.on('sum-progress', this.onSumProgress.bind(this))
     dlEvents.on('updated', this.onUpdate.bind(this))
     dlEvents.on('done', this.onDone.bind(this))
+    window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
   }
 
   render() {
@@ -214,6 +216,13 @@ export class DropMenuNavbarBtn {
     this.isDropdownOpen = !this.isDropdownOpen
     this.shouldPersistProgressBar = false // stop persisting if we were, the user clicked
     this.updateActives()
+  }
+
+  onClickAnywhere (e) {
+    var parent = findParent(e.target, 'toolbar-dropdown-menu')
+    if (parent) return // abort - this was a click on us!
+    this.isDropdownOpen = false
+    this.updateActives()    
   }
 
   onNewDownload () {
