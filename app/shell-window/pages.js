@@ -611,6 +611,12 @@ function onDidStopLoading (e) {
         beaker.archives.get(key).then(info => {
           page.siteInfo = info
           navbar.update(page)
+
+          // fallback the tab title to the site title, if needed
+          if (page.getTitle() === page.getURL() && info.title) {
+            page.title = info.title
+            events.emit('page-title-updated', page)
+          }
         })
       })
     }
