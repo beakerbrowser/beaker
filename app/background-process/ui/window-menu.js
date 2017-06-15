@@ -136,7 +136,7 @@ var viewMenu = {
   { type: "separator" },
   {
     label: 'Toggle DevTools',
-    accelerator: 'Alt+CmdOrCtrl+I',
+    accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
     click: function (item, win) {
       if (win) win.webContents.send('command', 'view:toggle-dev-tools')
     }
