@@ -1,4 +1,4 @@
-import {app} from 'electron'
+import {app, dialog} from 'electron'
 import crypto from 'crypto'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
@@ -436,7 +436,7 @@ export async function getArchiveInfo (key) {
 
 export async function reconfigureStaging (archive, userSettings) {
   if (archive.staging && archive.staging.path === userSettings.localPath) {
-    // no changes needed
+    // no further changes needed
     return
   }
 
@@ -470,6 +470,36 @@ export async function selectDefaultLocalPath (title) {
   // create the folder
   mkdirp.sync(localPath)
   return localPath
+}
+
+export async function deleteOldStagingFolder (oldpath) {
+  // check if the old path still exists
+  var info = await jetpack.inspectAsync(oldpath)
+  if (!info || info.type !== 'dir') {
+    return
+  }
+
+  // check if there's any content
+  var shouldDelete = true
+  var contents = await jetpack.listAsync(oldpath)
+
+  // if so, prompt the user about whether to delete the folder
+  if (contents.length > 0) {
+    let choice = await new Promise(resolve => {
+      dialog.showMessageBox({
+        type: 'question',
+        message: `Delete the staging folder and its contents at ${oldpath}?`,
+        detail: 'This will delete your old folder. If you want to still want to access your old files, select "No."',
+        buttons: ['Yes', 'No']
+      }, resolve)
+    })
+    shouldDelete = choice == 0
+  }
+
+  // delete the old folder
+  if (shouldDelete) {
+    await jetpack.removeAsync(oldpath)
+  }
 }
 
 // archive networking
