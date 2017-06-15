@@ -44,7 +44,7 @@ var selectedArchiveKey = ''
 var selectedArchive
 var selectedArchives = []
 var viewError
-const reloadDiffThrottled = throttle(reloadDiff, 1.5e3)
+const reloadDiffThrottled = throttle(reloadDiff, 500)
 
 setup()
 async function setup () {
@@ -154,7 +154,7 @@ async function reloadDiff () {
   try {
     // load diff
     var a = new DatArchive(selectedArchiveKey)
-    var diff = selectedArchive.diff = await a.diff()
+    var diff = selectedArchive.diff = await a.diff({shallow: true})
 
     // calc diff stats
     diff.forEach(d => { stats[d.change]++ })
