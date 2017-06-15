@@ -12,9 +12,9 @@ export function setup () {
   schedule(DAT_GC_FIRST_COLLECT_WAIT)
 }
 
-export async function collect ({olderThan} = {}) {
+export async function collect ({olderThan, biggerThan} = {}) {
   var startTime = Date.now()
-  var expiredArchives = await archivesDb.listExpiredArchives({olderThan})
+  var expiredArchives = await archivesDb.listExpiredArchives({olderThan, biggerThan})
   debug('GC cleaning out %d expired archives', expiredArchives.length)
   for (let i = 0; i < expiredArchives.length; i++) {
     await archivesDb.deleteArchive(expiredArchives[i].key)
