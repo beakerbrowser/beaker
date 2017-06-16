@@ -22,6 +22,10 @@ body {
   }
 }
 
+h1 {
+  font-size: .75rem !important;
+}
+
 .archive {
   padding: ~"calc(1rem + 30px)" 0; // height of fixed footer
   padding-top: 0;
@@ -121,6 +125,13 @@ body {
 .info {
   width: 100%;
   margin-bottom: 1rem;
+  margin-top: ~"calc(30px + .25rem)";
+
+  &.http {
+    margin-top: 0;
+    padding: .75rem;
+    font-size: .75rem;
+  }
 
   .readonly {
     text-transform: uppercase;
@@ -131,6 +142,7 @@ body {
     margin-left: 3px;
     padding: 1px 3px;
     display: inline-block;
+    font-weight: 400;
   }
 
   .heading {
@@ -166,7 +178,7 @@ body {
   }
 
   h1 {
-    font-weight: 400;
+    font-weight: 500;
   }
 }
 
@@ -203,10 +215,6 @@ h1 {
   margin-top: 0;
 }
 
-h2 {
-  // font-size: .95rem;
-}
-
 section {
   margin-bottom: 1.5rem;
 }
@@ -218,7 +226,6 @@ section {
   border-bottom: 1px solid @border-menu;
 
   a {
-    // font-size: .8rem;
 
     &:hover {
       &:extend(.link:hover);

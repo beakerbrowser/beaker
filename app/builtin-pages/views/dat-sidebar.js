@@ -208,8 +208,10 @@ function render () {
 function rNonArchive () {
   yo.update(document.querySelector('main'), yo`
     <main>
-      <h1>${hostname || ''}</h1>
-      <p>Not a peer-to-peer Website.</p>
+      <div class="info http">
+        <h1>${hostname || ''}</h1>
+        <p>Not a peer-to-peer Website.</p>
+      </div>
     </main>
   `)
 }
