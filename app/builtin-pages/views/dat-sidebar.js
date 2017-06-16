@@ -122,7 +122,7 @@ function render () {
             <div class="dropdown-item" onclick=${onClickLocalSync}>
               ${archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
               <i class="fa fa-check-circle"></i>
-              Sync for offline use
+              Sync${archiveInfo.userSettings.isSaved ? 'ed' : ''} for offline use
             </div>
             <div class="dropdown-item" onclick=${onClickOnlineOnly}>
               ${!archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
