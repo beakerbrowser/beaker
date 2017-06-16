@@ -136,6 +136,10 @@ function render () {
                   </div>`
                 : ''
               }
+              <a class="dropdown-item" onclick=${onDownloadZip}>
+                <i class="fa fa-file-archive-o"></i>
+                Download as Zip
+              </a>
             </div>
           </div>
         `)}
@@ -217,16 +221,16 @@ function rSyncButton () {
     `
   } else {
     var syncIcon, syncTitle
-
-    if (archiveInfo.userSettings.isSaved) {
-      if (downloadProgress && downloadProgress.current < 100) {
-        syncIcon = yo`<span class="spinner"></span>`
-      } else {
-        syncIcon = yo`<i class="fa fa-check-circle"></i>`
-      }
-      syncTitle = 'These files are saved for offline viewing'
+    if (downloadProgress && downloadProgress.current < 100) {
+      syncIcon = yo`<span class="spinner"></span>`
+    } else if (archiveInfo.userSettings.isSaved) {
+      syncIcon = yo`<i class="fa fa-check-circle"></i>`
     } else {
       syncIcon = yo`<i class="fa fa-cloud"></i>`
+    }
+    if (archiveInfo.userSettings.isSaved) {
+      syncTitle = 'These files are saved for offline viewing'
+    } else {
       syncTitle = 'These files are only available online'
     }
     return yo`
@@ -371,6 +375,11 @@ function onClickLocalSync () {
 
 function onClickOnlineOnly () {
   if (archiveInfo.userSettings.isSaved) onToggleSaved()
+}
+
+async function onDownloadZip () {
+  closeAllToggleables()
+  locationbar.openUrl(`dat://${archiveInfo.key}/?download_as=zip`, {newTab: false})
 }
 
 async function onLoadMoreHistory (e) {
