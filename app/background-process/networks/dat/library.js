@@ -488,8 +488,8 @@ export async function deleteOldStagingFolder (oldpath) {
     let choice = await new Promise(resolve => {
       dialog.showMessageBox({
         type: 'question',
-        message: `Delete the staging folder and its contents at ${oldpath}?`,
-        detail: 'This will delete your old folder. If you want to still want to access your old files, select "No."',
+        message: `Delete the staging folder?`,
+        detail: `In addition to removing this Dat from Beaker, do you want to delete the files at ${oldpath}?`,
         buttons: ['Yes', 'No']
       }, resolve)
     })
