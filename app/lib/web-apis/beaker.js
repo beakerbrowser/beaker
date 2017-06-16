@@ -31,6 +31,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.update = archivesRPC.update
   beaker.archives.list = archivesRPC.list
   beaker.archives.get = archivesRPC.get
+  beaker.archives.clearDnsCache = archivesRPC.clearDnsCache
   beaker.archives.createDebugStream = () => fromEventStream(archivesRPC.createDebugStream())
   bindEventStream(archivesRPC.createEventStream(), beaker.archives)
 
