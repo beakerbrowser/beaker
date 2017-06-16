@@ -9,7 +9,7 @@ export class DatSidebarBtn {
   render () {
     return yo`
       <button title="Toggle sidebar" class="toolbar-btn dat-sidebar btn" onclick=${e => this.onClickBtn(e)} title="Menu">
-        <i class="fa fa-toggle-${sidebar.getIsOpen()?'right':'left'}"></i>
+        <i class="fa fa-columns"></i>
       </button>
     `
   }
