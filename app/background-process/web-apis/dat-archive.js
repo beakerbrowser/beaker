@@ -5,7 +5,7 @@ import parseDatURL from 'parse-dat-url'
 import pda from 'pauls-dat-api'
 import jetpack from 'fs-jetpack'
 import concat from 'concat-stream'
-const datDns = require('dat-dns')()
+import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import * as sitedataDb from '../dbs/sitedata'

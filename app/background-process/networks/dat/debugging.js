@@ -1,4 +1,5 @@
 import {getActiveArchives} from './library'
+import datDns from './dns'
 
 export function archivesDebugPage () {
   var archives = getActiveArchives()
@@ -21,4 +22,31 @@ export function archivesDebugPage () {
       }).join('')}
     </body>
   </html>`
+}
+
+export function datDnsCachePage () {
+  var cache = datDns.listCache()
+  return `<html>
+    <body>
+      <h1>Dat DNS cache</h1>
+      <p><button>Clear cache</button></p>
+      <table style="font-family: monospace">
+        ${Object.keys(cache).map(name => {
+          var key = cache[name]
+          return `<tr><td><strong>${name}</strong></td><td>${key}</td></tr>`
+        }).join('')}
+      </table>
+      <script src="beaker://dat-dns-cache/main.js"></script>
+    </body>
+  </html>`
+}
+
+export function datDnsCacheJS () {
+  return `
+    document.querySelector('button').addEventListener('click', clear)
+    async function clear () {
+      await beaker.archives.clearDnsCache()
+      location.reload()
+    }
+  `
 }

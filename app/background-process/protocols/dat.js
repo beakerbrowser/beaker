@@ -8,9 +8,9 @@ import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 var debug = require('debug')('dat')
 import pda from 'pauls-dat-api'
-const datDns = require('dat-dns')()
 
 import {ProtocolSetupError} from 'beaker-error-constants'
+import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as sitedataDb from '../dbs/sitedata'
 import directoryListingPage from '../networks/dat/directory-listing-page'

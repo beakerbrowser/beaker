@@ -1,6 +1,7 @@
 import {BrowserWindow} from 'electron'
 import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
+import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
@@ -129,6 +130,10 @@ export default {
       var key = toKey(url)
       return datLibrary.getArchiveInfo(key)
     })
+  },
+
+  clearDnsCache() {
+    datDns.flushCache()
   },
 
   createEventStream() {

@@ -7,7 +7,7 @@ import http from 'http'
 import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 import errorPage from '../../lib/error-page'
-import {archivesDebugPage} from '../networks/dat/debugging'
+import {archivesDebugPage, datDnsCachePage, datDnsCacheJS} from '../networks/dat/debugging'
 
 // constants
 // =
@@ -256,6 +256,12 @@ async function beakerServer (req, res) {
   // debugging
   if (requestUrl === 'beaker://internal-archives/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', archivesDebugPage)
+  }
+  if (requestUrl === 'beaker://dat-dns-cache/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', datDnsCachePage)
+  }
+  if (requestUrl === 'beaker://dat-dns-cache/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', datDnsCacheJS)
   }
 
   return cb(404, 'Not Found')

@@ -232,6 +232,11 @@ var beakerDevMenu = {
       if (win) win.webContents.send('command', 'file:new-tab', 'beaker://internal-archives/')
     }
   },{
+    label: 'Open Dat-DNS Cache Page',
+    click: function (item, win) {
+      if (win) win.webContents.send('command', 'file:new-tab', 'beaker://dat-dns-cache/')
+    }
+  },{
     label: 'Toggle Shell-Window DevTools',
     click: function () {
       BrowserWindow.getFocusedWindow().toggleDevTools()
