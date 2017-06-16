@@ -6,6 +6,7 @@
 @import "../components/inputs.less";
 @import "../components/tabs.less";
 @import "../components/dropdown.less";
+@import "../components/buttons.less";
 @import "./components/files-list.less";
 
 body {
@@ -32,12 +33,51 @@ body {
 
 .actions {
   &:extend(.flex);
-  overflow: hidden;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  z-index: 3;
   border-top: 1px solid @border-menu;
   border-bottom: 1px solid @border-menu;
   margin-bottom: .25rem;
 
   button {
+    padding: 0;
+    width: 100%;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  i.fa-check-circle {
+    color: @background-button--success !important;
+    font-size: 12px;
+  }
+
+  .sync {
+
+    .dropdown-btn-list {
+      left: 0;
+      width: 177px;
+      text-align: left;
+
+      .fa-cloud {
+        color: @color-text--muted;
+      }
+    }
+
+    .dropdown-item {
+      margin-left: -8px;
+
+      &:hover {
+        background: @background-menu;
+        color: @color-text;
+      }
+    }
+  }
+
+  .action {
     cursor: pointer;
     color: @color-text;
     font-weight: 400;
@@ -59,7 +99,7 @@ body {
     &:hover {
       background: @background-menu--hover;
 
-      i {
+      .content > i {
         color: @color-text;
       }
     }
@@ -68,12 +108,13 @@ body {
       padding: .5rem .6rem;
       margin: 0;
 
-      i {
+      > i {
+        color: @color-text--muted;
         margin-right: 3px;
       }
     }
 
-    &:not(:first-of-type) {
+    &:not(:first-child) {
 
       .content {
         border-left: 1px solid @border-menu

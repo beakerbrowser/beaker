@@ -4,9 +4,11 @@ import {FileTree, ArchivesList} from 'builtin-pages-lib'
 import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
 import renderFiles from '../com/files-list'
+import toggleable, {closeAllToggleables} from '../com/toggleable'
 import { makeSafe } from '../../lib/strings'
 import { niceDate } from '../../lib/time'
 import { writeToClipboard } from '../../lib/fg/event-handlers'
+
 
 // globals
 // =
@@ -77,25 +79,67 @@ function render () {
     return rNonArchive()
   }
 
-  var toggleSaveIcon, toggleSaveText
-  if (archiveInfo.userSettings.isSaved) {
-    toggleSaveIcon = 'fa-trash'
-    toggleSaveText = 'Remove'
+  var syncButton
+  if (archiveInfo.isOwner) {
+    var toggleSaveIcon, toggleSaveText
+
+    if (archiveInfo.userSettings.isSaved) {
+      toggleSaveIcon = 'fa-trash'
+      toggleSaveText = 'Delete'
+    } else {
+      toggleSaveIcon = 'fa-floppy-o'
+      toggleSaveText = 'Restore'
+    }
+    syncButton = yo`
+      <button class="action" onclick=${onToggleSaved}>
+        <div class="content">
+          <i class="fa ${toggleSaveIcon}"></i>
+          <span>${toggleSaveText}</span>
+        </div>
+      </button>
+    `
   } else {
-    toggleSaveIcon = 'fa-floppy-o'
-    toggleSaveText = 'Save'
+    var syncIcon, syncTitle
+
+    if (archiveInfo.userSettings.isSaved) {
+      syncIcon = 'fa-check-circle'
+      syncTitle = 'These files are saved for offline viewing'
+    } else {
+      syncIcon = 'fa-cloud'
+      syncTitle = 'These files are only available online'
+    }
+    syncButton = yo`
+      ${toggleable(yo`
+        <div class="action sync dropdown-btn-container toggleable-container" title=${syncTitle}>
+          <button class="toggleable">
+            <div class="content">
+              <i class="fa ${syncIcon}"></i>
+              <span>Sync</span>
+            </div>
+          </button>
+
+          <div id="butt" type="context" class="dropdown-btn-list">
+            <div class="dropdown-item" onclick=${onClickLocalSync}>
+              ${archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+              <i class="fa fa-check-circle"></i>
+              Synced for offline use
+            </div>
+            <div class="dropdown-item" onclick=${onClickOnlineOnly}>
+              ${!archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+              <i class="fa fa-cloud"></i>
+              Online only
+            </div>
+          </div>
+        </div>
+      `)}
+    `
   }
 
   yo.update(document.querySelector('main'), yo`
     <main>
     <div class="archive">
       <section class="actions">
-        <button onclick=${onToggleSaved}>
-          <div class="content">
-          <i class="fa ${toggleSaveIcon}"></i>
-          <span>${toggleSaveText}</span>
-          </div>
-        </button>
+        ${syncButton}
 
         <button onclick=${onFork}>
           <div class="content">
@@ -236,6 +280,15 @@ function onClickTab (tab) {
     currentSection = tab
     render()
   }
+}
+
+function onClickLocalSync () {
+  if(!archiveInfo.userSettings.isSaved) onToggleSaved()
+
+}
+
+function onClickOnlineOnly () {
+  if (archiveInfo.userSettings.isSaved) onToggleSaved()
 }
 
 async function onLoadMoreHistory (e) {
