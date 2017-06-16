@@ -284,8 +284,8 @@ async function onToggleSaved (e) {
 async function onFork (e) {
   render()
   var newArchive = await DatArchive.fork(archiveKey)
-  // TODO
-  // page.loadURL('beaker://library/' + newArchive.url.slice('dat://'.length))
+  var info = await newArchive.getInfo()
+  locationbar.openUrl(`beaker://library/${info.key}`)
 }
 
 function onClickTab (tab) {
