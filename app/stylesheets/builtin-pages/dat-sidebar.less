@@ -13,9 +13,7 @@ body {
   &:extend(.system-font);
   background: #fff;
   height: 100vh;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  font-size: .7rem !important;
+  overflow: hidden;
 
   &::-webkit-scrollbar {
     display: none;
@@ -242,6 +240,12 @@ section {
   border-right: 0;
   border-radius: 0;
   margin: 1rem 0;
+  overflow-y: auto;
+  height: ~"calc(100vh - 200px)";
+
+  i {
+    color: @color-text--muted;
+  }
 
   .item {
     justify-content: space-between;
@@ -249,25 +253,26 @@ section {
 
     .name {
       &:extend(.overflow-ellipsis);
-      max-width: 150px;
+      flex: 1;
     }
 
     .link {
       color: @color-text;
     }
   }
+}
 
-  .item.file {
-
-    i {
-      display: none;
-    }
-  }
+.history,
+.metadata,
+.files-list {
+  height: ~"calc(100vh - 200px)";
+  overflow-y: auto;
 }
 
 .history,
 .metadata {
   margin: 1rem .5rem;
+  overflow-y: auto;
 }
 
 .history {
