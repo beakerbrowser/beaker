@@ -25,9 +25,14 @@ export function setup () {
   window.addEventListener('resize', doResize)
 }
 
+export function toggle () {
+  if (isOpen) close()
+  else open()
+}
+
 export function open (page) {
   if (!page || !page.id) {
-    return console.log(new Error('Passed a bad page object'))
+    page = pages.getActive()
   }
 
   if (!isOpen) {
