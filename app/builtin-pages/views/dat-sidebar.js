@@ -118,7 +118,7 @@ function render () {
             </div>
           </button>
 
-          <div id="butt" type="context" class="dropdown-btn-list">
+          <div class="dropdown-btn-list">
             <div class="dropdown-item" onclick=${onClickLocalSync}>
               ${archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
               <i class="fa fa-check-circle"></i>
