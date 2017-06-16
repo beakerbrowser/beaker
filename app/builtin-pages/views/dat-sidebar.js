@@ -162,6 +162,14 @@ function render () {
                 <i class="fa fa-code"></i>
                 Open in Library
               </a>
+              ${archiveInfo.userSettings.localPath
+                ? yo`
+                  <div onclick=${onOpenFolder} class="dropdown-item">
+                    <i class="fa fa-folder"></i>
+                    Open folder
+                  </div>`
+                : ''
+              }
             </div>
           </div>
         `)}
@@ -279,6 +287,12 @@ async function onToggleSaved (e) {
   }
 
   render()
+}
+
+function onOpenFolder () {
+  if (archiveInfo.userSettings.localPath) {
+    beakerBrowser.openFolder(archiveInfo.userSettings.localPath)
+  }
 }
 
 async function onFork (e) {
