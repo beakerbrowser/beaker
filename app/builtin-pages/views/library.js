@@ -295,6 +295,8 @@ function rArchiveListItem (archiveInfo) {
 
 function rArchive (archiveInfo) {
   document.title = `Library - ${archiveInfo.title || 'dat://' + archiveInfo.key}`
+  var debugLink = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
+
   var toggleSaveIcon, toggleSaveText
   if (archiveInfo.userSettings.isSaved) {
     toggleSaveIcon = 'fa-trash'
@@ -349,10 +351,6 @@ function rArchive (archiveInfo) {
                       Edit site info
                     </div>`
                   : ''}
-                <div class="dropdown-item" onclick=${onViewSwarmDebugger}>
-                  <i class="fa fa-bug"></i>
-                  Swarm debugger
-                </div>
                 <div class="dropdown-item" onclick=${onToggleSaved}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
@@ -367,7 +365,16 @@ function rArchive (archiveInfo) {
       ${rMissingLocalPathMessage(archiveInfo)}
       ${rStagingArea(archiveInfo)}
 
-      <h2>Network activity</h2>
+      <div class="section-heading">
+        <h2 class="peer-history">
+          Network activity
+        </h2>
+        <a href=${debugLink} title="Open network debugger" onclick=${onViewSwarmDebugger}>
+          Network debugger
+          <i class="fa fa-bug"></i>
+        </a>
+      </div>
+
       <section class="peer-history">
         ${renderGraph(archiveInfo)}
       </section>
