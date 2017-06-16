@@ -8,7 +8,7 @@ import pda from 'pauls-dat-api'
 import signatures from 'sodium-signatures'
 import slugify from 'slugify'
 var debug = require('debug')('dat')
-import {debounce} from '../../../lib/functions'
+import {throttle, debounce} from '../../../lib/functions'
 import {grantPermission} from '../../ui/permissions'
 
 // dat modules
@@ -73,7 +73,8 @@ export function setup () {
     // update the staging based on these settings
     var archive = getArchive(key)
     if (archive) {
-      reconfigureStaging(archive, settings)
+      configureStaging(archive, settings)
+      configureAutoDownload(archive, settings)
     }
   })
 
@@ -309,6 +310,7 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
   })
   await configureStaging(archive, userSettings, !!secretKey)
   await updateSizeTracking(archive)
+  configureAutoDownload(archive, userSettings)
   archivesDb.touch(key).catch(err => console.error('Failed to update lastAccessTime for archive', key, err))
 
   // store in the discovery listing, so the swarmer can find it
@@ -434,20 +436,21 @@ export async function getArchiveInfo (key) {
   return meta
 }
 
-export async function reconfigureStaging (archive, userSettings) {
+export async function configureStaging (archive, userSettings, isWritableOverride) {
+  var isWritable = (archive.writable || isWritableOverride)
   if (archive.staging && archive.staging.path === userSettings.localPath) {
     // no further changes needed
     return
   }
 
-  if (archive.staging) {
-    // close staging if it exists
-    archive.staging.stopAutoSync()
+  // recreate staging
+  if (isWritable && !!userSettings.localPath) {
+    archive.staging = hyperstaging(archive, userSettings.localPath, {
+      ignore: ['/.dat', '/.git', '/dat.json']
+    })
+  } else {
     archive.staging = null
   }
-
-  // recreate staging
-  await configureStaging(archive, userSettings)
 }
 
 export async function selectDefaultLocalPath (title) {
@@ -553,33 +556,34 @@ function fromKeyToURL (key) {
   return key
 }
 
-async function configureStaging (archive, userSettings, isWritableOverride) {
-  // create staging if writable or saved
-  var isWritable = (archive.writable || isWritableOverride)
-  var isSaved = userSettings.isSaved
-  if ((isWritable || isSaved) && !!userSettings.localPath) {
-    if (archive.staging) {
-      return // noop
-    }
-
-    // setup staging
-    let stagingPath = userSettings.localPath
-    archive.staging = hyperstaging(archive, stagingPath, {
-      ignore: ['/.dat', '/.git', '/dat.json']
-    })
-
-    // autosync if not writable
-    if (!isWritable) {
-      archive.staging.revert({skipDatIgnore: true}) // do a revert to capture already-DLed state
-      archive.staging.startAutoSync()
-    }
-  } else {
-    // close staging if it exists
-    if (archive.staging) {
-      archive.staging.stopAutoSync()      
-    }
-    archive.staging = null
+function configureAutoDownload (archive, userSettings) {
+  if (archive.writable) {
+    return // abort, only used for unwritable
   }
+  // HACK
+  // mafintosh is planning to put APIs for this inside of hyperdrive
+  // till then, we'll do our own inefficient downloader
+  // -prf
+  if (!archive._autodownloader && userSettings.isSaved) {
+    // setup the autodownload
+    archive._autodownloader = {
+      undownloadAll: () => {
+        archive.content._selections.forEach(range => archive.content.undownload(range))
+      },
+      onUpdate: throttle(() => {
+        // cancel ALL previous, then prioritize ALL current
+        archive._autodownloader.undownloadAll()
+        pda.download(archive, '/')
+      }, 5e3)
+    }
+    archive.metadata.on('download', archive._autodownloader.onUpdate)
+    pda.download(archive, '/')
+  } else if (archive._autodownloader && !userSettings.isSaved) {
+    // tear down the autodownload
+    archive._autodownloader.undownloadAll()
+    archive.metadata.removeListener('download', archive._autodownloader.onUpdate)
+    archive._autodownloader = null
+  } 
 }
 
 var connIdCounter = 0 // for debugging

@@ -94,7 +94,7 @@ export default {
     if (localPath) {
       var oldLocalPath = archive.staging ? archive.staging.path : false
       var userSettings = await archivesDb.setUserSettings(0, key, {localPath})
-      await datLibrary.reconfigureStaging(archive, userSettings)
+      await datLibrary.configureStaging(archive, userSettings)
       if (localPath !== oldLocalPath) {
         datLibrary.deleteOldStagingFolder(oldLocalPath)
       }
@@ -110,11 +110,13 @@ export default {
 
     // select a default local path, if needed
     var localPath
-    try {
-      let userSettings = await archivesDb.getUserSettings(0, key)
-      localPath = userSettings.localPath
-    } catch (e) {}
-    localPath = localPath || await datLibrary.selectDefaultLocalPath(meta.title)
+    if (archive.writable) {
+      try {
+        let userSettings = await archivesDb.getUserSettings(0, key)
+        localPath = userSettings.localPath
+      } catch (e) {}
+      localPath = localPath || await datLibrary.selectDefaultLocalPath(meta.title)
+    }
 
     // update settings
     return archivesDb.setUserSettings(0, key, {isSaved: true, localPath})
