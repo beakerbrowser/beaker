@@ -303,16 +303,15 @@ section {
 
 .history-item {
   &:extend(.flex);
+  flex-wrap: nowrap;
   margin-bottom: .25rem;
 
   .date {
-    display: inline-block;
-    width: 85px;
+    flex: 0 0 85px;
   }
 
   .path {
     &:extend(.overflow-ellipsis);
-    max-width: 100px;
     margin-left: 5px;
 
     &:hover {
