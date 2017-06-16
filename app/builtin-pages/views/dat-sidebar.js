@@ -141,19 +141,31 @@ function render () {
       <section class="actions">
         ${syncButton}
 
-        <button onclick=${onFork}>
+        <button class="action" onclick=${onFork}>
           <div class="content">
           <i class="fa fa-code-fork"></i>
           <span>Fork</span>
           </div>
         </button>
 
-        <button onclick>
-          <div class="content">
-          <i class="fa fa-code"></i>
-          <span>Library</span>
+        ${toggleable(yo`
+          <div class="action dropdown-btn-container toggleable-container">
+            <button class="toggleable" onclick>
+              <div class="content">
+              <i class="fa fa-caret-down"></i>
+              <span>More</span>
+              </div>
+            </button>
+
+            <div class="dropdown-btn-list">
+              <a href="beaker://library/${archiveInfo.key}/" class="dropdown-item">
+                <i class="fa fa-code"></i>
+                Open in Library
+              </a>
+            </div>
           </div>
-        </button>
+        `)}
+
       </section>
 
       <section class="info">
