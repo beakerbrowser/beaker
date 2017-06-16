@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog } from 'electron'
 import { createShellWindow } from './windows'
+import datDns from '../networks/dat/dns'
 
 var darwinMenu = {
   label: 'Beaker',
@@ -108,6 +109,13 @@ var viewMenu = {
     label: 'Hard Reload (Clear Cache)',
     accelerator: 'CmdOrCtrl+Shift+R',
     click: function (item, win) {
+      // HACK
+      // this is *super* lazy but it works
+      // clear all dat-dns cache on hard reload, to make sure the next
+      // load is fresh
+      // -prf
+      datDns.flushCache()
+
       if (win) win.webContents.send('command', 'view:hard-reload')
     }
   },
