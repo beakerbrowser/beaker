@@ -5,6 +5,7 @@ import fs from 'fs'
 import parseDatURL from 'parse-dat-url'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
+import * as sidebar from './ui/sidebar'
 import * as promptbar from './ui/promptbar'
 import * as statusBar from './ui/statusbar'
 import {urlsToData} from '../lib/fg/img'
@@ -329,6 +330,7 @@ export async function remove (page) {
   }
 
   // remove
+  sidebar.closePage(page)
   page.stopLiveReloading()
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)
@@ -366,6 +368,7 @@ export function setActive (page) {
   page.isActive = 1
   page.webviewEl.focus()
   statusBar.setIsLoading(page.isLoading())
+  sidebar.setActive(page)
   navbar.update()
   promptbar.update()
   events.emit('set-active', page)
@@ -594,7 +597,8 @@ function onDidStopLoading (e) {
     }
     var url = page.url
 
-    // update history
+    // update history and UI
+    sidebar.updatePage(page)
     updateHistory(page)
 
     // fetch protocol and page info
@@ -744,6 +748,7 @@ function onDidFinishLoad (e) {
     page.favicons = null
     navbar.update(page)
     navbar.updateLocation(page)
+    sidebar.updatePage(page)
   }
 }
 
@@ -824,12 +829,35 @@ function onCrashed (e) {
   console.error('Webview crash', e)
 }
 
-function onIPCMessage (e) {
+export function onIPCMessage (e) {
   var page = getByWebview(e.target)
-  if (!page) return
   switch (e.channel) {
-    case 'site-info-override:set': page.siteInfoOverride = e.args[0]; navbar.updateLocation(page); navbar.update(page); break
-    case 'site-info-override:clear': page.siteInfoOverride = null; navbar.updateLocation(page); navbar.update(page); break
+    case 'site-info-override:set':
+      if (page) {
+        page.siteInfoOverride = e.args[0]
+        navbar.updateLocation(page)
+        navbar.update(page)
+      }
+      break
+    case 'site-info-override:clear':
+      if (page) {
+        page.siteInfoOverride = null
+        navbar.updateLocation(page)
+        navbar.update(page)
+      }
+      break
+    case 'open-url':
+      var {url, newTab} = e.args[0]
+      if (newTab) {
+        create(url)
+      } else {
+        getActive().loadURL(url)
+      }
+      navbar.closeMenus()
+      break
+    case 'close-menus':
+      navbar.closeMenus()
+      break
   }
 }
 
@@ -850,7 +878,7 @@ function hide (page) {
   events.emit('hide', page)
 }
 
-function createWebviewEl (id, url) {
+export function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
   el.setAttribute('preload', 'file://'+path.join(APP_PATH, 'webview-preload.build.js'))
