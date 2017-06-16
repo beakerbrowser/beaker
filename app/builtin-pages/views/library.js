@@ -415,7 +415,7 @@ function rNotSaved (archiveInfo) {
 }
 
 function rMissingLocalPathMessage (archiveInfo) {
-  if (!archiveInfo.userSettings.isSaved || archiveInfo.localPathExists) {
+  if (!archiveInfo.isOwner || !archiveInfo.userSettings.isSaved || archiveInfo.localPathExists) {
     return ''
   }
   return yo`
