@@ -2,6 +2,7 @@
 @import "../base/colors.less";
 @import "../base/spacing.less";
 @import "../base/typography.less";
+@import "../com/spinner.less";
 @import "../components/link.less";
 @import "../components/inputs.less";
 @import "../components/tabs.less";
@@ -58,6 +59,15 @@ h1 {
 
   .dropdown-btn-list {
     text-align: left;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    top: 1px;
+    position: relative;
+    border-width: 1px;
   }
 
   .sync {
@@ -120,6 +130,26 @@ h1 {
       }
     }
   }
+}
+
+.progress {
+  position: fixed;
+  top: 17px;
+  width: 100%;
+
+  progress {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 2px;
+  }
+}
+
+progress::-webkit-progress-bar {
+  background: @background-progressbar;
+}
+
+progress::-webkit-progress-value {
+  background: @background-progressbar--value;
 }
 
 .info {

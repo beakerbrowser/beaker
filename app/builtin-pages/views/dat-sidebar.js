@@ -1,6 +1,6 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import {FileTree, ArchivesList} from 'builtin-pages-lib'
+import {ProgressMonitor, FileTree, ArchivesList} from 'builtin-pages-lib'
 import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
 import renderFiles from '../com/files-list'
@@ -18,6 +18,7 @@ var hostname = false
 var archiveKey
 var archive
 var archiveInfo
+var downloadProgress
 var page
 var isDatSaved
 
@@ -52,8 +53,29 @@ async function setup () {
     archiveInfo.historyPaginationOffset = 20
     archiveInfo.fileTree = fileTree
     archiveInfo.events = archive.createFileActivityStream()
+    updateProgressMonitor()
   }
 
+  render()
+}
+
+async function updateProgressMonitor () {
+  // saved readonly?
+  if (!archiveInfo.isOwner && archiveInfo.userSettings.isSaved) {
+    // create if needed
+    if (!downloadProgress) {
+      let p = new ProgressMonitor(archive)
+      await p.setup()
+      p.addEventListener('changed', updateDownloadProgress)
+      downloadProgress = p
+    }
+  } else {
+    // destroy if needed
+    if (downloadProgress) {
+      downloadProgress.destroy()
+      downloadProgress = null
+    }
+  }
   render()
 }
 
@@ -79,67 +101,11 @@ function render () {
     return rNonArchive()
   }
 
-  var syncButton
-  if (archiveInfo.isOwner) {
-    var toggleSaveIcon, toggleSaveText
-
-    if (archiveInfo.userSettings.isSaved) {
-      toggleSaveIcon = 'fa-trash'
-      toggleSaveText = 'Delete'
-    } else {
-      toggleSaveIcon = 'fa-floppy-o'
-      toggleSaveText = 'Restore'
-    }
-    syncButton = yo`
-      <button class="action" onclick=${onToggleSaved}>
-        <div class="content">
-          <i class="fa ${toggleSaveIcon}"></i>
-          <span>${toggleSaveText}</span>
-        </div>
-      </button>
-    `
-  } else {
-    var syncIcon, syncTitle
-
-    if (archiveInfo.userSettings.isSaved) {
-      syncIcon = 'fa-check-circle'
-      syncTitle = 'These files are saved for offline viewing'
-    } else {
-      syncIcon = 'fa-cloud'
-      syncTitle = 'These files are only available online'
-    }
-    syncButton = yo`
-      ${toggleable(yo`
-        <div class="action sync dropdown-btn-container toggleable-container" title=${syncTitle}>
-          <button class="toggleable">
-            <div class="content">
-              <i class="fa ${syncIcon}"></i>
-              <span>Sync</span>
-            </div>
-          </button>
-
-          <div class="dropdown-btn-list">
-            <div class="dropdown-item" onclick=${onClickLocalSync}>
-              ${archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-              <i class="fa fa-check-circle"></i>
-              Sync${archiveInfo.userSettings.isSaved ? 'ed' : ''} for offline use
-            </div>
-            <div class="dropdown-item" onclick=${onClickOnlineOnly}>
-              ${!archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-              <i class="fa fa-cloud"></i>
-              Online only
-            </div>
-          </div>
-        </div>
-      `)}
-    `
-  }
-
   yo.update(document.querySelector('main'), yo`
     <main>
     <div class="archive">
       <section class="actions">
-        ${syncButton}
+        ${rSyncButton()}
 
         <button class="action" onclick=${onFork}>
           <div class="content">
@@ -173,8 +139,9 @@ function render () {
             </div>
           </div>
         `)}
-
       </section>
+
+      ${rDownloadProgress()}
 
       <section class="info">
         <div class="heading">
@@ -222,6 +189,83 @@ function rNonArchive () {
       </div>
     </main>
   `)
+}
+
+function updateDownloadProgress () {
+  yo.update(document.querySelector('#sync-btn'), rSyncButton())
+  yo.update(document.querySelector('.progress'), rDownloadProgress())
+}
+
+function rSyncButton () {
+  if (archiveInfo.isOwner) {
+    var toggleSaveIcon, toggleSaveText
+
+    if (archiveInfo.userSettings.isSaved) {
+      toggleSaveIcon = 'fa-trash'
+      toggleSaveText = 'Delete'
+    } else {
+      toggleSaveIcon = 'fa-floppy-o'
+      toggleSaveText = 'Restore'
+    }
+    return yo`
+      <button id="sync-btn" class="action" onclick=${onToggleSaved}>
+        <div class="content">
+          <i class="fa ${toggleSaveIcon}"></i>
+          <span>${toggleSaveText}</span>
+        </div>
+      </button>
+    `
+  } else {
+    var syncIcon, syncTitle
+
+    if (archiveInfo.userSettings.isSaved) {
+      if (downloadProgress && downloadProgress.current < 100) {
+        syncIcon = yo`<span class="spinner"></span>`
+      } else {
+        syncIcon = yo`<i class="fa fa-check-circle"></i>`
+      }
+      syncTitle = 'These files are saved for offline viewing'
+    } else {
+      syncIcon = yo`<i class="fa fa-cloud"></i>`
+      syncTitle = 'These files are only available online'
+    }
+    return yo`
+      ${toggleable(yo`
+        <div id="sync-btn" class="action sync dropdown-btn-container toggleable-container" title=${syncTitle}>
+          <button class="toggleable">
+            <div class="content">
+              ${syncIcon}
+              <span>Sync</span>
+            </div>
+          </button>
+
+          <div class="dropdown-btn-list">
+            <div class="dropdown-item" onclick=${onClickLocalSync}>
+              ${archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+              <i class="fa fa-check-circle"></i>
+              Sync${archiveInfo.userSettings.isSaved ? 'ed' : ''} for offline use
+            </div>
+            <div class="dropdown-item" onclick=${onClickOnlineOnly}>
+              ${!archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+              <i class="fa fa-cloud"></i>
+              Online only
+            </div>
+          </div>
+        </div>
+      `)}
+    `
+  }
+}
+
+function rDownloadProgress () {
+  if (!downloadProgress || downloadProgress.current >= 100) {
+    return yo`<div class="progress"></div>`
+  }
+  return yo`
+    <div class="progress">
+      <progress value=${downloadProgress ? downloadProgress.current : 50} max="100"></progress>
+    </div>
+  `
 }
 
 function rHistory (archiveInfo) {
@@ -296,8 +340,8 @@ async function onToggleSaved (e) {
     await beaker.archives.add(archiveKey)
     archiveInfo.userSettings.isSaved = true
   }
-
   render()
+  updateProgressMonitor()
 }
 
 function onOpenFolder () {
@@ -323,7 +367,6 @@ function onClickTab (tab) {
 
 function onClickLocalSync () {
   if(!archiveInfo.userSettings.isSaved) onToggleSaved()
-
 }
 
 function onClickOnlineOnly () {
