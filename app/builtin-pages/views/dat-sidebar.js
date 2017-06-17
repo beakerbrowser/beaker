@@ -19,9 +19,6 @@ var archiveKey
 var archive
 var archiveInfo
 var downloadProgress
-var page
-var isDatSaved
-var isDownloadingAsZip = false
 
 setup ()
 
@@ -149,6 +146,14 @@ function update () {
                   </div>`
                 : ''
               }
+              ${archiveInfo.isOwner
+                ? yo`
+                    <a class="dropdown-item" onclick=${onChooseNewLocation}>
+                      <i class="fa fa-folder-o"></i>
+                      Change folder
+                    </a>
+                  `
+                : ''}
               <a class="dropdown-item" onclick=${onDownloadZip}>
                 <i class="fa fa-file-archive-o"></i>
                 Download as Zip
@@ -397,6 +402,16 @@ function onClickLocalSync () {
 
 function onClickOnlineOnly () {
   if (archiveInfo.userSettings.isSaved) onToggleSaved()
+}
+
+async function onChooseNewLocation () {
+  closeAllToggleables()
+  var localPath = await beakerBrowser.showLocalPathDialog({
+    defaultPath: archiveInfo.userSettings.localPath,
+    warnIfNotEmpty: false
+  })
+  await beaker.archives.update(archiveKey, null, {localPath})
+  loadCurrentArchive()
 }
 
 async function onDownloadZip () {
