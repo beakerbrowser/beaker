@@ -21,6 +21,7 @@ var archiveInfo
 var downloadProgress
 var page
 var isDatSaved
+var isDownloadingAsZip = false
 
 setup ()
 
@@ -36,6 +37,15 @@ async function setup () {
     }
   })
 
+  // listen for changes to the archive
+  beaker.archives.addEventListener('updated', onArchivesUpdated)
+
+  // load and render
+  await loadCurrentArchive()
+}
+
+async function loadCurrentArchive () {
+  update()
   if (archiveKey) {
     archive = new DatArchive(archiveKey)
     archiveInfo = await archive.getInfo()
@@ -52,16 +62,14 @@ async function setup () {
     archiveInfo.history = history
     archiveInfo.historyPaginationOffset = 20
     archiveInfo.fileTree = fileTree
-    archiveInfo.events = archive.createFileActivityStream()
     updateProgressMonitor()
   }
-
-  render()
+  update()
 }
 
-async function updateProgressMonitor () {
+async function updateProgressMonitor (createOverride) {
   // saved readonly?
-  if (!archiveInfo.isOwner && archiveInfo.userSettings.isSaved) {
+  if (createOverride || (!archiveInfo.isOwner && archiveInfo.userSettings.isSaved)) {
     // create if needed
     if (!downloadProgress) {
       let p = new ProgressMonitor(archive)
@@ -76,7 +84,7 @@ async function updateProgressMonitor () {
       downloadProgress = null
     }
   }
-  render()
+  update()
 }
 
 async function parseURL () {
@@ -96,9 +104,14 @@ async function parseURL () {
   }
 }
 
-function render () {
+function update () {
   if (!archiveKey) {
-    return rNonArchive()
+    return updateNonArchive()
+  }
+
+  if (!archiveInfo) {
+    // TODO "loading"?
+    return
   }
 
   yo.update(document.querySelector('main'), yo`
@@ -184,7 +197,7 @@ function render () {
   `)
 }
 
-function rNonArchive () {
+function updateNonArchive () {
   yo.update(document.querySelector('main'), yo`
     <main>
       <div class="info http">
@@ -335,6 +348,15 @@ function rMetadata (archiveInfo) {
   }
 }
 
+// event handlers
+// =
+
+function onArchivesUpdated (e) {
+  if (archive && e.details.url === archive.url) {
+    loadCurrentArchive()
+  }
+}
+
 async function onToggleSaved (e) {
   // toggle saved
   if (archiveInfo.userSettings.isSaved) {
@@ -344,7 +366,7 @@ async function onToggleSaved (e) {
     await beaker.archives.add(archiveKey)
     archiveInfo.userSettings.isSaved = true
   }
-  render()
+  update()
   updateProgressMonitor()
 }
 
@@ -355,7 +377,7 @@ function onOpenFolder () {
 }
 
 async function onFork (e) {
-  render()
+  update()
   var newArchive = await DatArchive.fork(archiveKey)
   var info = await newArchive.getInfo()
   locationbar.openUrl(`beaker://library/${info.key}`)
@@ -365,7 +387,7 @@ function onClickTab (tab) {
   return e => {
     e.preventDefault()
     currentSection = tab
-    render()
+    update()
   }
 }
 
@@ -396,7 +418,7 @@ async function onLoadMoreHistory (e) {
   // add to tracked history and update
   archiveInfo.history = archiveInfo.history.concat(moreHistory)
   archiveInfo.historyPaginationOffset += 500
-  render()
+  update()
 }
 
 // helpers
