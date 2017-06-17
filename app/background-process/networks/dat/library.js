@@ -573,11 +573,11 @@ function configureAutoDownload (archive, userSettings) {
       onUpdate: throttle(() => {
         // cancel ALL previous, then prioritize ALL current
         archive._autodownloader.undownloadAll()
-        pda.download(archive, '/')
+        pda.download(archive, '/').catch(e => {/* ignore cancels */})
       }, 5e3)
     }
     archive.metadata.on('download', archive._autodownloader.onUpdate)
-    pda.download(archive, '/')
+    pda.download(archive, '/').catch(e => {/* ignore cancels */})
   } else if (archive._autodownloader && !userSettings.isSaved) {
     // tear down the autodownload
     archive._autodownloader.undownloadAll()
