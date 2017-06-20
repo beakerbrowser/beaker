@@ -1,4 +1,4 @@
-import {app, dialog} from 'electron'
+import {app} from 'electron'
 import crypto from 'crypto'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
@@ -330,6 +330,9 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
       })
     })
   }
+  
+  // pull meta
+  await pullLatestArchiveMeta(archive)
 
   // wire up events
   archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
@@ -475,32 +478,16 @@ export async function selectDefaultLocalPath (title) {
   return localPath
 }
 
-export async function deleteOldStagingFolder (oldpath) {
+export async function deleteOldStagingFolder (oldpath, {alwaysDelete} = {}) {
   // check if the old path still exists
   var info = await jetpack.inspectAsync(oldpath)
   if (!info || info.type !== 'dir') {
     return
   }
 
-  // check if there's any content
-  var shouldDelete = true
-  var contents = await jetpack.listAsync(oldpath)
-
-  // if so, prompt the user about whether to delete the folder
-  if (contents.length > 0) {
-    let choice = await new Promise(resolve => {
-      dialog.showMessageBox({
-        type: 'question',
-        message: `Delete the staging folder?`,
-        detail: `In addition to removing this Dat from Beaker, do you want to delete the files at ${oldpath}?`,
-        buttons: ['Yes', 'No']
-      }, resolve)
-    })
-    shouldDelete = choice == 0
-  }
-
-  // delete the old folder
-  if (shouldDelete) {
+  // delete if its empty
+  var contents = (!alwaysDelete) ? (await jetpack.listAsync(oldpath)) : []
+  if (contents.length === 0 || alwaysDelete) {
     await jetpack.removeAsync(oldpath)
   }
 }

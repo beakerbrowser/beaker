@@ -1,19 +1,31 @@
+import EventEmitter from 'events'
 import * as pages from '../pages'
 
 var isOpen = false
 var isDragging = false
 
+var events = new EventEmitter()
 var webviewsEl
 var sidebarEl
-var sidebarWebviews = {} // pageId => webview element
 var dragHandleEl
+var activePanel
+var panels = {} // pageId => {webview: Element,visible: boolean}
 var sidebarWidth = 300
 
 // exported api
 // =
 
+export function on (...args) {
+  events.on.apply(events, args)
+}
+
 export function getIsOpen () {
   return isOpen
+}
+
+export function getIsAvailable () {
+  var page = pages.getActive()
+  return (page && page.url && page.url.startsWith('dat://'))
 }
 
 export function setup () {
@@ -31,126 +43,169 @@ export function toggle () {
 }
 
 export function open (page) {
-  if (!page || !page.id) {
-    page = pages.getActive()
-  }
-
   if (!isOpen) {
     isOpen = true
-    sidebarEl.classList.add('open')
-    doResize()
+    events.emit('change')
   }
 
-  // create the webview for the given page, if dne
-  getOrCreateWebview(page)
-}
-
-export function updatePage (page) {
-  if (!isOpen) {
-    // abort, we're closed
-    return
-  }
-
-  // get page's webview
-  var wv = sidebarWebviews[page.id]
-  if (!wv) {
-    // abort, the wv isnt loaded yet
-    return
-  }
-
-  // load a new URL if the domain has changed
-  var oldUrl = wv.dataset.target
-  var newUrl = page.url
-  try {
-    var oldUrlParsed = new URL(oldUrl)
-    var newUrlParsed = new URL(newUrl)
-    if (oldUrlParsed.origin === newUrlParsed.origin) {
-      // abort, origin hasnt changed
-      return
-    }
-  } catch (e) {/* ignore */}
-
-  // load the new url
-  wv.dataset.target = newUrl
-  wv.loadURL(`beaker://dat-sidebar/${newUrl}`)
-}
-
-export function setActive (page) {
-  if (!isOpen) {
-    // abort, we're closed
-    return
-  }
-
-  // create the webview for the given page, if dne
-  var wv = getOrCreateWebview(page)
-
-  // set active
-  for (var id in sidebarWebviews) {
-    sidebarWebviews[id].classList.add('hidden')
-  }
-  wv.classList.remove('hidden')
-}
-
-export function closePage (page) {
-  if (!page || !page.id) {
-    return console.log(new Error('Passed a bad page object'))
-  }
-
-  if (!isOpen || !(page.id in sidebarWebviews)) {
-    // abort
-    return
-  }
-
-  // remove webview
-  sidebarEl.removeChild(sidebarWebviews[page.id])
-  delete sidebarWebviews[page.id]
+  setActivePanel(setupPanel(page || pages.getActive()))
+  setActivePanelVisibility()
 }
 
 export function close () {
   if (isOpen) {
     isOpen = false
-    sidebarEl.classList.remove('open')
-    destroyWebviews()
-    doResize()
+    hideSidebar()
+    destroyPanels()
+    events.emit('change')
   }
 }
 
-// internal methods
+export function onPageChangeLocation (page) {
+  if (!isOpen) return
+  setupPanel(page)
+  setActivePanelVisibility()
+  events.emit('change')
+}
+
+export function onPageSetActive (page) {
+  if (!isOpen) return
+  setActivePanel(setupPanel(page))
+  setActivePanelVisibility()
+  events.emit('change')
+}
+
+export function onPageClose (page) {
+  if (!page || !page.id) {
+    return console.log(new Error('Passed a bad page object'))
+  }
+  if (!isOpen || !(page.id in panels)) {
+    return
+  }
+  destroyPanel(page.id)
+  events.emit('change')
+}
+
+// panel management
 // =
 
-function getOrCreateWebview (page) {
-  if (sidebarWebviews[page.id]) {
-    return sidebarWebviews[page.id]
+function setupPanel (page) {
+  // get/create the panel
+  var panel = panels[page.id]
+  if (!panel) {
+    panel = panels[page.id] = {webview: null, target: null, visible: false}
+  }
+  var oldUrl = panel.target
+  panel.target = page.url
+
+  // only make visible for dat pages
+  panel.visible = page.url.startsWith('dat://')
+
+  if (panel.visible) {
+    var wvUrl = `beaker://dat-sidebar/${page.url}`
+
+    // create/update webview as needed
+    if (!panel.webview) {
+      var wv = pages.createWebviewEl('dat-sidebar-webview', wvUrl)
+      wv.addEventListener('ipc-message', pages.onIPCMessage)
+      sidebarEl.appendChild(wv)
+      panel.webview = wv
+    } else {
+      // only load a new URL if the domain has changed
+      let isNewLocation = true
+      try {
+        let oldUrlParsed = new URL(oldUrl)
+        let newUrlParsed = new URL(page.url)
+        isNewLocation = (oldUrlParsed.origin !== newUrlParsed.origin)
+      } catch (e) {/* ignore */}
+      if (isNewLocation) {
+        panel.webview.loadURL(wvUrl)
+      }
+    }
+  } else {
+    // destroy the webview as needed
+    if (panel.webview) {
+      sidebarEl.removeChild(panel.webview)
+      panel.webview = null
+    }
   }
 
-  // create webview
-  var url = `beaker://dat-sidebar/${page.url}`
-  var wv = pages.createWebviewEl('dat-sidebar-webview', url)
-  wv.dataset.target = page.url
-  wv.addEventListener('ipc-message', pages.onIPCMessage)
-  sidebarEl.appendChild(wv)
-  sidebarWebviews[page.id] = wv
-  return wv
+  return panel
 }
 
-function destroyWebviews () {
-  for (var id in sidebarWebviews) {
-    sidebarEl.removeChild(sidebarWebviews[id])
+function setActivePanel (panel) {
+  if (activePanel === panel) return
+  activePanel = panel
+}
+
+function destroyPanel (id) {
+  var panel = panels[id]
+  if (panel.webview) {
+   sidebarEl.removeChild(panel.webview)
   }
-  sidebarWebviews = {}
+  delete panels[id]
+}
+
+function destroyPanels () {
+  for (var id in panels) {
+    destroyPanel(id)
+  }
+  panels = {}
+}
+
+// sidebar rendering
+// =
+
+function setActivePanelVisibility () {
+  if (!activePanel) return
+  if (activePanel.visible) {
+    // hide all sidebar webviews
+    for (var id in panels) {
+      if (panels[id].webview) {
+        panels[id].webview.classList.add('hidden')
+      }
+    }
+
+    // make visible
+    activePanel.webview.classList.remove('hidden')
+    showSidebar()
+  } else {
+    hideSidebar()
+  }
+}
+
+function showSidebar () {
+  sidebarEl.classList.add('open')
+  doResize()
+}
+
+function hideSidebar () {
+  sidebarEl.classList.remove('open')
+  doResize()
 }
 
 // resizing behaviors
 // =
 
+function getCurrentWebview () {
+  if (!activePanel) return
+
+}
+
 function doResize () {
-  if (isOpen) {
-    var pageSize = document.body.getClientRects()[0]
-    webviewsEl.style.width = `${pageSize.width - sidebarWidth}px`
-    sidebarEl.style.width = `${sidebarWidth}px`
-  } else {
-    webviewsEl.style.width = '100%'    
-  }
+  // set the sidebar width
+  sidebarEl.style.width = `${sidebarWidth}px`
+
+  // resize each webview individually
+  var pageSize = document.body.getClientRects()[0]
+  Array.from(webviewsEl.querySelectorAll('webview')).forEach(wv => {
+    var id = wv.dataset.id || ''
+    if (isOpen && panels[id] && panels[id].visible) {
+      wv.style.width = `${pageSize.width - sidebarWidth}px`
+    } else {
+      wv.style.width = '100%'    
+    }
+  })
 }
 
 function onDragMouseDown (e) {
@@ -168,6 +223,5 @@ function onDragMouseMove (e) {
   var pageSize = document.body.getClientRects()[0]
   sidebarWidth = pageSize.width - e.x
   if (sidebarWidth < 300) sidebarWidth = 300
-  webviewsEl.style.width = `${pageSize.width - sidebarWidth}px`
-  sidebarEl.style.width = `${sidebarWidth}px`
+  doResize()
 }

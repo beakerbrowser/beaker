@@ -573,6 +573,15 @@ function rMetadata (archiveInfo) {
     titleEl = yo`<td>${niceName(archiveInfo)}</td>`
     descEl = yo`<td>${niceDesc(archiveInfo)}</td>`
   }
+  var sizeRows
+  if (archiveInfo.isOwner) {
+    sizeRows = [
+      yo`<tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>`,
+      yo`<tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
+    ]
+  } else {
+    sizeRows = yo`<tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
+  }
   return yo`
     <div class="metadata">
       <table>
@@ -699,22 +708,18 @@ function onViewSource () {
   window.location = 'beaker://view-source/' + selectedArchive.url.slice('dat://'.length)
 }
 
-async function removeArchive (archiveInfo) {
-  trashList.unshift(archiveInfo)
-  await beaker.archives.remove(archiveInfo.key)
-  archiveInfo.userSettings.isSaved = false
-}
-
 async function onToggleSaved (e) {
   e.preventDefault()
   if (selectedArchive.userSettings.isSaved) {
-    trashList.unshift(selectedArchive)
-    await beaker.archives.remove(selectedArchive.key)
-    selectedArchive.userSettings.isSaved = false
+    selectedArchive.userSettings = await beaker.archives.remove(selectedArchive.key)
+    if (selectedArchive.userSettings.isSaved == false) {
+      trashList.unshift(selectedArchive)
+    }
   } else {
-    trashList.splice(trashList.findIndex(a => a.key === selectedArchive.key), 1)
-    await beaker.archives.add(selectedArchive.key)
-    selectedArchive.userSettings.isSaved = true
+    selectedArchive.userSettings = await beaker.archives.add(selectedArchive.key)
+    if (selectedArchive.userSettings.isSaved == true) {
+      trashList.splice(trashList.findIndex(a => a.key === selectedArchive.key), 1)
+    }
   }
   update()
 }
@@ -836,11 +841,13 @@ function onClearFilter () {
 }
 
 async function onClickBulkDelete () {
-  for (const key of selectedArchives) {
-    var archive = new DatArchive(key)
-    var archiveInfo = await archive.getInfo()
-    await removeArchive(archiveInfo)
-  }
+  var resultingSettings = await beaker.archives.bulkRemove(selectedArchives)
+  selectedArchives.forEach(async (key, i) => {
+    var settings = resultingSettings[i]
+    if (!settings.isSaved) {
+      trashList.unshift(await (new DatArchive(key)).getInfo())
+    }
+  })
 
   selectedArchives = []
   update()

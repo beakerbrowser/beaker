@@ -365,11 +365,9 @@ function onArchivesUpdated (e) {
 async function onToggleSaved (e) {
   // toggle saved
   if (archiveInfo.userSettings.isSaved) {
-    await beaker.archives.remove(archiveKey)
-    archiveInfo.userSettings.isSaved = false
+    archiveInfo.userSettings = await beaker.archives.remove(archiveKey)
   } else {
-    await beaker.archives.add(archiveKey)
-    archiveInfo.userSettings.isSaved = true
+    archiveInfo.userSettings = await beaker.archives.add(archiveKey)
   }
   update()
   updateProgressMonitor()
