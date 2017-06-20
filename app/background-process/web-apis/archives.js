@@ -126,8 +126,9 @@ export default {
     var key = toKey(url)
 
     // check with the user
+    var meta = await archivesDb.getMeta(key)
     var settings = await archivesDb.getUserSettings(0, key)
-    var {shouldDelete, preserveStagingFolder} = await showDeleteArchivePrompt(settings.localPath)
+    var {shouldDelete, preserveStagingFolder} = await showDeleteArchivePrompt(meta.title || key, settings.localPath)
     if (!shouldDelete) {
       return settings
     }
@@ -138,6 +139,47 @@ export default {
       datLibrary.deleteOldStagingFolder(settings.localPath, {alwaysDelete: true})
     }
     return settings
+  },
+
+  async bulkRemove(urls) {
+    var bulkShouldDelete = false
+    var preserveStagingFolder = false
+    // if user chooses yes-to-all, then preserveStagingFolder will be the last given value
+    var results = []
+
+    // sanity check
+    if (!urls || !Array.isArray(urls)) {
+      return []
+    }
+
+    for (var i = 0; i < urls.length; i++) {
+      let key = toKey(urls[i])
+
+      if (!bulkShouldDelete) {
+        // check with the user
+        let meta = await archivesDb.getMeta(key)
+        let settings = await archivesDb.getUserSettings(0, key)
+        let res = await showDeleteArchivePrompt(meta.title || key, settings.localPath, {bulk: true})
+        preserveStagingFolder = res.preserveStagingFolder
+
+        if (res.bulkYesToAll) {
+          // 'yes to all' chosen
+          bulkShouldDelete = true
+        } else if (!res.shouldDelete) {
+          // 'no' chosen
+          results.push(settings) // give settings unchanged
+          continue
+        }
+      }
+
+      // delete
+      let settings = await archivesDb.setUserSettings(0, key, {isSaved: false})
+      if (settings.localPath && !preserveStagingFolder) {
+        datLibrary.deleteOldStagingFolder(settings.localPath, {alwaysDelete: true})
+      }
+      results.push(settings)
+    }
+    return results
   },
 
   async list(query={}) {

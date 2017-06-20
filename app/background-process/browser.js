@@ -371,18 +371,21 @@ export async function showLocalPathDialog ({folderName, defaultPath, warnIfNotEm
   }
 }
 
-export async function showDeleteArchivePrompt (oldpath) {
+export async function showDeleteArchivePrompt (sitename, oldpath, {bulk} = {}) {
   return new Promise(resolve => {
     dialog.showMessageBox({
       type: 'question',
-      message: 'Delete this site?',
+      message: `Delete '${sitename}'?`,
       detail: 'Deleting this site will remove it from your library and delete the keys. You may undo this action for a short period.',
       checkboxLabel: `Delete the files at ${oldpath}`,
       checkboxChecked: true,
-      buttons: ['Yes', 'No']
+      buttons: bulk
+        ? ['Yes to all', 'Yes', 'No']
+        : ['Yes', 'No']
     }, (choice, checkboxChecked) => {
       resolve({
-        shouldDelete: choice == 0,
+        shouldDelete: (bulk && choice != 2) || (!bulk && choice == 0),
+        bulkYesToAll: bulk && choice == 0,
         preserveStagingFolder: !checkboxChecked
       })
     })

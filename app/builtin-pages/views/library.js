@@ -624,11 +624,6 @@ function onViewSwarmDebugger () {
   window.location = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
 }
 
-async function removeArchive (archiveInfo) {
-  trashList.unshift(archiveInfo)
-  archiveInfo.userSettings = await beaker.archives.remove(archiveInfo.key)
-}
-
 async function onToggleSaved (e) {
   e.preventDefault()
   if (selectedArchive.userSettings.isSaved) {
@@ -762,11 +757,13 @@ function onClearFilter () {
 }
 
 async function onClickBulkDelete () {
-  for (const key of selectedArchives) {
-    var archive = new DatArchive(key)
-    var archiveInfo = await archive.getInfo()
-    await removeArchive(archiveInfo)
-  }
+  var resultingSettings = await beaker.archives.bulkRemove(selectedArchives)
+  selectedArchives.forEach(async (key, i) => {
+    var settings = resultingSettings[i]
+    if (!settings.isSaved) {
+      trashList.unshift(await (new DatArchive(key)).getInfo())
+    }
+  })
 
   selectedArchives = []
   update()
