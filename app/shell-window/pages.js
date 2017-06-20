@@ -330,7 +330,7 @@ export async function remove (page) {
   }
 
   // remove
-  sidebar.closePage(page)
+  sidebar.onPageClose(page)
   page.stopLiveReloading()
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)
@@ -368,7 +368,7 @@ export function setActive (page) {
   page.isActive = 1
   page.webviewEl.focus()
   statusBar.setIsLoading(page.isLoading())
-  sidebar.setActive(page)
+  sidebar.onPageSetActive(page)
   navbar.update()
   promptbar.update()
   events.emit('set-active', page)
@@ -598,7 +598,7 @@ function onDidStopLoading (e) {
     var url = page.url
 
     // update history and UI
-    sidebar.updatePage(page)
+    sidebar.onPageChangeLocation(page)
     updateHistory(page)
 
     // fetch protocol and page info
@@ -748,7 +748,7 @@ function onDidFinishLoad (e) {
     page.favicons = null
     navbar.update(page)
     navbar.updateLocation(page)
-    sidebar.updatePage(page)
+    sidebar.onPageChangeLocation(page)
   }
 }
 
