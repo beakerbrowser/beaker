@@ -1,8 +1,10 @@
+import EventEmitter from 'events'
 import * as pages from '../pages'
 
 var isOpen = false
 var isDragging = false
 
+var events = new EventEmitter()
 var webviewsEl
 var sidebarEl
 var sidebarWebviews = {} // pageId => webview element
@@ -11,6 +13,10 @@ var sidebarWidth = 300
 
 // exported api
 // =
+
+export function on (...args) {
+  events.on.apply(events, args)
+}
 
 export function getIsOpen () {
   return isOpen
@@ -39,6 +45,7 @@ export function open (page) {
     isOpen = true
     sidebarEl.classList.add('open')
     doResize()
+    events.emit('change')
   }
 
   // create the webview for the given page, if dne
@@ -112,6 +119,7 @@ export function close () {
     sidebarEl.classList.remove('open')
     destroyWebviews()
     doResize()
+    events.emit('change')
   }
 }
 

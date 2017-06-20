@@ -1,5 +1,6 @@
 import { remote } from 'electron'
 import * as pages from '../pages'
+import * as sidebar from './sidebar'
 import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
@@ -201,7 +202,7 @@ function render (id, page) {
 
     datBtns = [
       yo`
-        <button class="nav-peers-btn">
+        <button class="nav-peers-btn" onclick=${onClickPeercount}>
           <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
         </button>`,
       yo`<button class="nav-live-reload-btn ${isLiveReloading ? 'active': ''}" title="Turn {$isLiveReloading ? 'off' : 'on'} live reloading" onclick=${onClickLiveReload}>
@@ -547,6 +548,10 @@ function onClickBookmark (e) {
   if (page) {
     page.toggleBookmark()
   }
+}
+
+function onClickPeercount (e) {
+  sidebar.toggle()
 }
 
 function onClickLiveReload (e) {
