@@ -361,7 +361,7 @@ function rArchive (archiveInfo) {
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-          {id: 'files', label: 'Published files', onclick: onClickTab('files')},
+          {id: 'files', label: 'Files', onclick: onClickTab('files')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
           {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')},
           {id: 'network', label: 'Network', onclick: onClickTab('network')}
@@ -463,15 +463,11 @@ function rStagingArea (archiveInfo) {
 }
 
 function rFiles (archiveInfo) {
-  return yo`<div>
-    <p>
-      Latest revision:
-      <a href="${archiveInfo.url}+${archiveInfo.version}">
-        ${archiveInfo.version}
-      </a>
-    </p>
-    ${renderFiles(archiveInfo)}
-  </div>`
+  return yo`
+    <div>
+      ${renderFiles(archiveInfo)}
+    </div>
+  `
 }
 
 function rHistory (archiveInfo) {
