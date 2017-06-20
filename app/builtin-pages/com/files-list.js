@@ -80,6 +80,10 @@ function treeSorter (a, b) {
 }
 
 function rNode (archiveInfo, node, depth, opts) {
+  if (node.entry.name === 'dat.json') {
+    // hide dat.json for now
+    return ''
+  }
   if (node.entry.isDirectory()) {
     return rDirectory(archiveInfo, node, depth, opts)
   }
