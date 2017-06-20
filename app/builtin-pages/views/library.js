@@ -308,25 +308,21 @@ function rArchive (archiveInfo) {
 
   return yo`
     <div class="archive">
-      <section class="info">
+      <section class="header">
         <h1 class="title" title=${archiveInfo.title}>
           <a href="dat://${archiveInfo.key}">${niceName(archiveInfo)}</a>
           ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
         </h1>
-        <p class="description">${niceDesc(archiveInfo)}</p>
-        <p class="dat-url code-font">
-          <a class="link" href="dat://${archiveInfo.key}">dat://${archiveInfo.key}</a>
-        </p>
         <div class="actions">
           <span class="readonly">${archiveInfo.isOwner ? '' : yo`<em>(Read-only)</em>`}</span>
-          <a class="btn primary" onclick=${onShare}>
+          <button class="btn primary" onclick=${onShare}>
             <i class="fa fa-link"></i>
             Share site
-          </a>
-          <a title="View site" class="btn" target="_blank" href="dat://${archiveInfo.key}">
-            <i class="fa fa-external-link"></i>
-            View site
-          </a>
+          </button>
+          <button disabled=${archiveInfo.isOwner ? 'false' : 'true'} title="Import files" class="btn" onclick>
+            <i class="fa fa-plus"></i>
+            Import files
+          </button>
           ${toggleable(yo`
             <div class="dropdown-btn-container toggleable-container">
               <button class="btn toggleable">
