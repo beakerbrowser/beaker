@@ -361,7 +361,7 @@ function rArchive (archiveInfo) {
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-          {id: 'files', label: 'Files', onclick: onClickTab('files')},
+          {id: 'files', label: 'Published files', onclick: onClickTab('files')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
           {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')},
           {id: 'network', label: 'Network', onclick: onClickTab('network')}
