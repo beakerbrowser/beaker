@@ -330,6 +330,9 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
       })
     })
   }
+  
+  // pull meta
+  await pullLatestArchiveMeta(archive)
 
   // wire up events
   archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)

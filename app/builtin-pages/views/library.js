@@ -518,17 +518,28 @@ function rHistory (archiveInfo) {
 }
 
 function rMetadata (archiveInfo) {
-  return yo`
-    <div class="metadata">
-      <table>
-        <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
-        <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
-        <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-        <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
-        <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
-      </table>
-    </div>
-  `
+  if (archiveInfo.isOwner) {
+    return yo`
+      <div class="metadata">
+        <table>
+          <tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
+          <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
+          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
+          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
+        </table>
+      </div>
+    `
+  } else {
+    return yo`
+      <div class="metadata">
+        <table>
+          <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
+          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
+          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
+        </table>
+      </div>
+    `    
+  }
 }
 
 function rTrash () {
