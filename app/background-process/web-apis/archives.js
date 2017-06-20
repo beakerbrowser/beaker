@@ -1,6 +1,7 @@
 import {BrowserWindow} from 'electron'
 import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
+import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
@@ -91,8 +92,12 @@ export default {
 
     // update settings
     if (localPath) {
+      var oldLocalPath = archive.staging ? archive.staging.path : false
       var userSettings = await archivesDb.setUserSettings(0, key, {localPath})
-      await datLibrary.reconfigureStaging(archive, userSettings)
+      await datLibrary.configureStaging(archive, userSettings)
+      if (localPath !== oldLocalPath) {
+        datLibrary.deleteOldStagingFolder(oldLocalPath)
+      }
     }
   },
 
@@ -105,11 +110,13 @@ export default {
 
     // select a default local path, if needed
     var localPath
-    try {
-      let userSettings = await archivesDb.getUserSettings(0, key)
-      localPath = userSettings.localPath
-    } catch (e) {}
-    localPath = localPath || await datLibrary.selectDefaultLocalPath(meta.title)
+    if (archive.writable) {
+      try {
+        let userSettings = await archivesDb.getUserSettings(0, key)
+        localPath = userSettings.localPath
+      } catch (e) {}
+      localPath = localPath || await datLibrary.selectDefaultLocalPath(meta.title)
+    }
 
     // update settings
     return archivesDb.setUserSettings(0, key, {isSaved: true, localPath})
@@ -117,7 +124,11 @@ export default {
 
   async remove(url) {
     var key = toKey(url)
-    return archivesDb.setUserSettings(0, key, {isSaved: false})
+    var settings = await archivesDb.setUserSettings(0, key, {isSaved: false})
+    if (settings.localPath) {
+      datLibrary.deleteOldStagingFolder(settings.localPath)
+    }
+    return settings
   },
 
   async list(query={}) {
@@ -129,6 +140,10 @@ export default {
       var key = toKey(url)
       return datLibrary.getArchiveInfo(key)
     })
+  },
+
+  clearDnsCache() {
+    datDns.flushCache()
   },
 
   createEventStream() {

@@ -8,9 +8,11 @@ import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 var debug = require('debug')('dat')
 import pda from 'pauls-dat-api'
-const datDns = require('dat-dns')()
+import toZipStream from 'hyperdrive-to-zip-stream'
+import slugify from 'slugify'
 
 import {ProtocolSetupError} from 'beaker-error-constants'
+import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as sitedataDb from '../dbs/sitedata'
 import directoryListingPage from '../networks/dat/directory-listing-page'
@@ -33,7 +35,7 @@ try {
 // =
 
 // how long till we give up?
-const REQUEST_TIMEOUT_MS = 15e3 // 15 seconds
+const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 
 // content security policies
 const DAT_CSP = `
@@ -118,7 +120,7 @@ async function datServer (req, res) {
   }
 
   // validate request
-  var urlp = parseDatUrl(queryParams.url)
+  var urlp = parseDatUrl(queryParams.url, true)
   if (!urlp.host) {
     return cb(404, 'Archive Not Found')
   }
@@ -168,7 +170,7 @@ async function datServer (req, res) {
 
     // error page
     var resource = !!archive ? 'page' : 'site'
-    cb(504, 'Timed out searching for ${resource}', {
+    cb(504, `Timed out searching for ${resource}`, {
       resource,
       errorCode: 'dat-timeout',
       validatedURL: urlp.href
@@ -183,6 +185,29 @@ async function datServer (req, res) {
     debug('Failed to open archive', archiveKey, err)
     cleanup()
     return cb(500, 'Failed')
+  }
+
+  // handle zip download
+  if (urlp.query.download_as === 'zip') {
+    cleanup()
+
+    // (try to) get the title from the manifest
+    let zipname = false
+    try {
+      let manifest = await pda.readManifest(archive)
+      zipname = slugify(manifest.title || '').toLowerCase()
+    } catch (e) {/*ignore*/}
+    zipname = zipname || 'archive'
+
+    // serve the zip
+    res.writeHead(200, 'OK', {
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${zipname}.zip"`,
+      'Content-Security-Policy': DAT_CSP,
+      'Access-Control-Allow-Origin': '*'
+    })
+    toZipStream(archive).pipe(res)
+    return
   }
 
   // parse path

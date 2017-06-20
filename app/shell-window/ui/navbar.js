@@ -6,6 +6,7 @@ import emitStream from 'emit-stream'
 import prettyHash from 'pretty-hash'
 import { UpdatesNavbarBtn } from './navbar/updates'
 import { DropMenuNavbarBtn } from './navbar/drop-menu'
+import { DatSidebarBtn } from './navbar/dat-sidebar'
 import { SiteInfoNavbarBtn } from './navbar/site-info'
 import {pluralize} from '../../lib/strings'
 
@@ -23,6 +24,7 @@ const isDatHashRegex = /^[a-z0-9]{64}/i
 
 var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
+var datSidebarBtn = null
 var dropMenuNavbarBtn = null
 var siteInfoNavbarBtn = null
 
@@ -37,6 +39,7 @@ var autocompleteResults = null // if set to an array, will render dropdown
 export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
+  datSidebarBtn = new DatSidebarBtn()
   dropMenuNavbarBtn = new DropMenuNavbarBtn()
   siteInfoNavbarBtn = new SiteInfoNavbarBtn()
 }
@@ -119,6 +122,11 @@ export function updateLocation (page) {
   }
 }
 
+export function closeMenus () {
+  dropMenuNavbarBtn.isDropdownOpen = false
+  dropMenuNavbarBtn.updateActives()
+}
+
 // internal helpers
 // =
 
@@ -189,21 +197,17 @@ function render (id, page) {
 
   if (isViewingDat) {
     let numPeers = page.siteInfo ? page.siteInfo.peers : 0
+    var isLiveReloading = page.isLiveReloading()
+
     datBtns = [
       yo`
         <button class="nav-peers-btn">
           <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
+        </button>`,
+      yo`<button class="nav-live-reload-btn ${isLiveReloading ? 'active': ''}" title="Turn {$isLiveReloading ? 'off' : 'on'} live reloading" onclick=${onClickLiveReload}>
+          <i class="fa fa-bolt"></i>
         </button>`
     ]
-
-    if (page.isLiveReloading()) {
-      datBtns.push(
-        yo`
-          <button class="nav-live-reload-btn active" title="Turn off live reloading" onclick=${onClickLiveReload}>
-            <i class="fa fa-bolt"></i>
-          </button>`
-      )
-    }
   } else if (siteHasDatAlternative) {
     datBtns = [
       yo`<button
@@ -284,31 +288,34 @@ function render (id, page) {
   var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused, gotInsecureResponse, siteLoadError)
 
   // render
-  return yo`<div data-id=${id} class="toolbar-actions${toolbarHidden}">
-    <div class="toolbar-group">
-      <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-        <span class="fa fa-arrow-left"></span>
-      </button>
-      <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-        <span class="fa fa-arrow-right"></span>
-      </button>
-      ${reloadBtn}
-    </div>
-    <div class="toolbar-input-group">
-      ${siteInfoNavbarBtn.render()}
-      ${locationPrettyView}
-      ${locationInput}
-      ${inpageFinder}
-      ${zoomBtn}
-      ${datBtns}
-      <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark this page">
-        <span class=${(page && !!page.bookmark) ? "fa fa-star" : "fa fa-star-o"}></span>
-      </button>
-      ${autocompleteDropdown}
-    </div>
-    <div class="toolbar-group">
-      ${dropMenuNavbarBtn.render()}
-      ${updatesNavbarBtn.render()}
+  return yo`
+    <div data-id=${id} class="toolbar-actions${toolbarHidden}">
+      <div class="toolbar-group">
+        <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
+          <span class="fa fa-arrow-left"></span>
+        </button>
+        <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
+          <span class="fa fa-arrow-right"></span>
+        </button>
+        ${reloadBtn}
+      </div>
+      <div class="toolbar-input-group">
+        ${siteInfoNavbarBtn.render()}
+        ${locationPrettyView}
+        ${locationInput}
+        ${inpageFinder}
+        ${zoomBtn}
+        ${datBtns}
+        <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark this page">
+          <span class=${(page && !!page.bookmark) ? "fa fa-star" : "fa fa-star-o"}></span>
+        </button>
+        ${autocompleteDropdown}
+      </div>
+      <div class="toolbar-group">
+        ${datSidebarBtn.render(addrValue)}
+        ${dropMenuNavbarBtn.render()}
+        ${updatesNavbarBtn.render()}
+      </div>
     </div>
   </div>`
 }
@@ -539,13 +546,6 @@ function onClickBookmark (e) {
   var page = getEventPage(e)
   if (page) {
     page.toggleBookmark()
-
-    // animate the element TODO
-    // document.querySelector('.toolbar-actions:not(.hidden) .nav-bookmark-btn .fa').animate([
-    //   {textShadow: '0 0 0px rgba(0, 18, 150, 1.0)'},
-    //   {textShadow: '0 0 8px rgba(0, 18, 150, 1.0)'},
-    //   {textShadow: '0 0 16px rgba(0, 18, 150, 0.0)'}
-    // ], { duration: 300 })
   }
 }
 
@@ -553,6 +553,7 @@ function onClickLiveReload (e) {
   var page = getEventPage(e)
   if (!page || !page.siteInfo) return
   page.toggleLiveReloading()
+  update()
 }
 
 function onClickGotoDatVersion (e) {

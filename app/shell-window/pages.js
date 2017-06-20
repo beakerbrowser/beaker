@@ -5,6 +5,7 @@ import fs from 'fs'
 import parseDatURL from 'parse-dat-url'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
+import * as sidebar from './ui/sidebar'
 import * as promptbar from './ui/promptbar'
 import * as statusBar from './ui/statusbar'
 import {urlsToData} from '../lib/fg/img'
@@ -231,11 +232,7 @@ export function create (opts) {
 
     // reload the page due to changes in the dat
     triggerLiveReload: debounce(archiveKey => {
-      // double check that we're still on the page
-      if (page.getIntendedURL().startsWith('dat://' + archiveKey)) {
-        // reload
-        page.reload()
-      }
+      page.reload()
     }, TRIGGER_LIVE_RELOAD_DEBOUNCE, true),
     // ^ note this is on the front edge of the debouncer.
     // That means snappier reloads (no delay) but possible double reloads if multiple files change
@@ -333,6 +330,7 @@ export async function remove (page) {
   }
 
   // remove
+  sidebar.closePage(page)
   page.stopLiveReloading()
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)
@@ -370,6 +368,7 @@ export function setActive (page) {
   page.isActive = 1
   page.webviewEl.focus()
   statusBar.setIsLoading(page.isLoading())
+  sidebar.setActive(page)
   navbar.update()
   promptbar.update()
   events.emit('set-active', page)
@@ -598,7 +597,8 @@ function onDidStopLoading (e) {
     }
     var url = page.url
 
-    // update history
+    // update history and UI
+    sidebar.updatePage(page)
     updateHistory(page)
 
     // fetch protocol and page info
@@ -615,6 +615,12 @@ function onDidStopLoading (e) {
         beaker.archives.get(key).then(info => {
           page.siteInfo = info
           navbar.update(page)
+
+          // fallback the tab title to the site title, if needed
+          if (page.getTitle() === page.getURL() && info.title) {
+            page.title = info.title
+            events.emit('page-title-updated', page)
+          }
         })
       })
     }
@@ -633,7 +639,7 @@ function onDidStopLoading (e) {
 
     // markdown rendering
     // inject the renderer script if the page is markdown
-    if (page.contentType === 'text/markdown' || page.contentType === 'text/x-markdown') {
+    if (page.contentType.startsWith('text/markdown') || page.contentType.startsWith('text/x-markdown')) {
       // hide the unformatted text and provide some basic styles
       page.webviewEl.insertCSS(`
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }
@@ -742,6 +748,7 @@ function onDidFinishLoad (e) {
     page.favicons = null
     navbar.update(page)
     navbar.updateLocation(page)
+    sidebar.updatePage(page)
   }
 }
 
@@ -822,12 +829,35 @@ function onCrashed (e) {
   console.error('Webview crash', e)
 }
 
-function onIPCMessage (e) {
+export function onIPCMessage (e) {
   var page = getByWebview(e.target)
-  if (!page) return
   switch (e.channel) {
-    case 'site-info-override:set': page.siteInfoOverride = e.args[0]; navbar.updateLocation(page); navbar.update(page); break
-    case 'site-info-override:clear': page.siteInfoOverride = null; navbar.updateLocation(page); navbar.update(page); break
+    case 'site-info-override:set':
+      if (page) {
+        page.siteInfoOverride = e.args[0]
+        navbar.updateLocation(page)
+        navbar.update(page)
+      }
+      break
+    case 'site-info-override:clear':
+      if (page) {
+        page.siteInfoOverride = null
+        navbar.updateLocation(page)
+        navbar.update(page)
+      }
+      break
+    case 'open-url':
+      var {url, newTab} = e.args[0]
+      if (newTab) {
+        create(url)
+      } else {
+        getActive().loadURL(url)
+      }
+      navbar.closeMenus()
+      break
+    case 'close-menus':
+      navbar.closeMenus()
+      break
   }
 }
 
@@ -848,7 +878,7 @@ function hide (page) {
   events.emit('hide', page)
 }
 
-function createWebviewEl (id, url) {
+export function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
   el.setAttribute('preload', 'file://'+path.join(APP_PATH, 'webview-preload.build.js'))
@@ -882,7 +912,7 @@ async function updateHistory (page) {
   var url = page.getURL()
 
   if (!url.startsWith('beaker://') || url.match(/beaker:\/\/library\/[0-9,a-f]{64}/g)) {
-    beaker.history.addVisit({url: page.getURL(), title: page.getTitle() || page.getURL()})
+    beaker.history.addVisit({url: page.getIntendedURL(), title: page.getTitle() || page.getURL()})
     if (page.isPinned) {
       savePinnedToDB()
     }

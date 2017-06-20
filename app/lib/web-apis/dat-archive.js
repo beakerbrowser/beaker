@@ -13,6 +13,11 @@ export default class DatArchive extends EventTarget {
   constructor(url) {
     super()
 
+    // simple case: new DatArchive(window.location)
+    if (url === window.location) {
+      url = window.location.toString()
+    }
+
     // basic URL validation
     if (!url || typeof url !== 'string') {
       throw new Error('Invalid dat:// URL')
@@ -143,6 +148,10 @@ export default class DatArchive extends EventTarget {
   }
 
   static resolveName(name) {
+    // simple case: DatArchive.resolveName(window.location)
+    if (name === window.location) {
+      name = window.location.toString()
+    }
     return dat.resolveName(name)
   }
 

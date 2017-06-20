@@ -7,16 +7,16 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 // exported api
 // =
 
-export default function render (archiveInfo) {
+export default function render (archiveInfo, opts = {}) {
   return yo`
     <div>
-      ${rFolder(archiveInfo)}
-      ${rFilesList(archiveInfo)}
+      ${rFolder(archiveInfo, opts)}
+      ${rFilesList(archiveInfo, opts)}
     </div>
   `
 }
 
-function rFilesList (archiveInfo) {
+function rFilesList (archiveInfo, opts) {
   if (!archiveInfo || !archiveInfo.fileTree.rootNode) {
     return yo`
       <div>
@@ -27,11 +27,9 @@ function rFilesList (archiveInfo) {
 
   var hasFiles = Object.keys(archiveInfo.fileTree.rootNode.children).length > 0
   return yo`
-    <div>
-      <div class="files-list">
-        ${!hasFiles ? yo`<div class="item"><em>Empty folder</em></div>` : ''}
-        ${rChildren(archiveInfo, archiveInfo.fileTree.rootNode.children)}
-      </div>
+    <div class="files-list">
+      ${!hasFiles ? yo`<div class="item"><em>Empty folder</em></div>` : ''}
+      ${rChildren(archiveInfo, archiveInfo.fileTree.rootNode.children, 0, opts)}
     </div>
   `
 }
@@ -39,11 +37,11 @@ function rFilesList (archiveInfo) {
 // rendering
 // =
 
-function redraw (archiveInfo) {
-  yo.update(document.querySelector('.files-list'), rFilesList(archiveInfo))
+function redraw (archiveInfo, opts={}) {
+  yo.update(document.querySelector('.files-list'), rFilesList(archiveInfo, opts))
 }
 
-function rFolder (archiveInfo) {
+function rFolder (archiveInfo, opts) {
   if (!archiveInfo.userSettings) return ''
   return yo`
     <div class="dat-local-path">
@@ -64,11 +62,11 @@ function rFolder (archiveInfo) {
   `
 }
 
-function rChildren (archiveInfo, children, depth=0) {
+function rChildren (archiveInfo, children, depth=0, opts={}) {
   return Object.keys(children)
     .map(key => children[key])
     .sort(treeSorter)
-    .map(node => rNode(archiveInfo, node, depth))
+    .map(node => rNode(archiveInfo, node, depth, opts))
 }
 
 function treeSorter (a, b) {
@@ -81,21 +79,21 @@ function treeSorter (a, b) {
   return a.entry.name.localeCompare(b.entry.name)
 }
 
-function rNode (archiveInfo, node, depth) {
+function rNode (archiveInfo, node, depth, opts) {
   if (node.entry.name === 'dat.json') {
     // hide dat.json for now
     return ''
   }
   if (node.entry.isDirectory()) {
-    return rDirectory(archiveInfo, node, depth)
+    return rDirectory(archiveInfo, node, depth, opts)
   }
   if (node.entry.isFile()) {
-    return rFile(archiveInfo, node, depth)
+    return rFile(archiveInfo, node, depth, opts)
   }
   return ''
 }
 
-function rDirectory (archiveInfo, node, depth) {
+function rDirectory (archiveInfo, node, depth, opts) {
   let icon = 'folder'
   let children = ''
   const directoryPadding = 10 + (depth * 10)
@@ -103,7 +101,7 @@ function rDirectory (archiveInfo, node, depth) {
   if (node.isExpanded) {
     children = yo`
       <div class="subtree">
-        ${rChildren(archiveInfo, node.children, depth + 1)}
+        ${rChildren(archiveInfo, node.children, depth + 1, opts)}
       </div>`
     icon = 'folder-open'
   }
@@ -113,7 +111,7 @@ function rDirectory (archiveInfo, node, depth) {
       <div
         class="item folder"
         title=${node.niceName}
-        onclick=${e => onClickDirectory(e, archiveInfo, node)}
+        onclick=${e => onClickDirectory(e, archiveInfo, node, opts)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
         <div class="name link">
           <i class="fa fa-${icon}"></i>
@@ -125,7 +123,7 @@ function rDirectory (archiveInfo, node, depth) {
   `
 }
 
-function rFile (archiveInfo, node, depth) {
+function rFile (archiveInfo, node, depth, opts) {
   const padding = 10 + (depth * 10)
 
   return yo`
@@ -137,7 +135,7 @@ function rFile (archiveInfo, node, depth) {
         <a href=${join(archiveInfo.url, node.entry.name)} class="link"><i class="fa fa-file-text-o"></i>${node.niceName}</a>
       </div>
       <div class="size">${prettyBytes(node.entry.size)}</div>
-      <div class="updated">${niceDate(+node.entry.mtime)}</div>
+      ${!opts.hideDate ? yo`<div class="updated">${niceDate(+node.entry.mtime)}</div>` : ''}
     </div>
   `
 }
@@ -145,12 +143,12 @@ function rFile (archiveInfo, node, depth) {
 // event handlers
 // =
 
-async function onClickDirectory (e, archiveInfo, node) {
+async function onClickDirectory (e, archiveInfo, node, opts={}) {
   node.isExpanded = !node.isExpanded
   if (node.isExpanded) {
     await archiveInfo.fileTree.readFolder(node)
   }
-  redraw(archiveInfo)
+  redraw(archiveInfo, opts)
 }
 
 function onCopyFolder (e, archiveInfo) {

@@ -44,7 +44,7 @@ var selectedArchiveKey = ''
 var selectedArchive
 var selectedArchives = []
 var viewError
-const reloadDiffThrottled = throttle(reloadDiff, 1.5e3)
+const reloadDiffThrottled = throttle(reloadDiff, 500)
 
 setup()
 async function setup () {
@@ -154,7 +154,7 @@ async function reloadDiff () {
   try {
     // load diff
     var a = new DatArchive(selectedArchiveKey)
-    var diff = selectedArchive.diff = await a.diff()
+    var diff = selectedArchive.diff = await a.diff({shallow: true})
 
     // calc diff stats
     diff.forEach(d => { stats[d.change]++ })
@@ -295,6 +295,8 @@ function rArchiveListItem (archiveInfo) {
 
 function rArchive (archiveInfo) {
   document.title = `Library - ${archiveInfo.title || 'dat://' + archiveInfo.key}`
+  var debugLink = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
+
   var toggleSaveIcon, toggleSaveText
   if (archiveInfo.userSettings.isSaved) {
     toggleSaveIcon = 'fa-trash'
@@ -349,10 +351,6 @@ function rArchive (archiveInfo) {
                       Edit site info
                     </div>`
                   : ''}
-                <div class="dropdown-item" onclick=${onViewSwarmDebugger}>
-                  <i class="fa fa-bug"></i>
-                  Swarm debugger
-                </div>
                 <div class="dropdown-item" onclick=${onToggleSaved}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
@@ -367,7 +365,16 @@ function rArchive (archiveInfo) {
       ${rMissingLocalPathMessage(archiveInfo)}
       ${rStagingArea(archiveInfo)}
 
-      <h2>Network activity</h2>
+      <div class="section-heading">
+        <h2 class="peer-history">
+          Network activity
+        </h2>
+        <a href=${debugLink} title="Open network debugger" onclick=${onViewSwarmDebugger}>
+          Network debugger
+          <i class="fa fa-bug"></i>
+        </a>
+      </div>
+
       <section class="peer-history">
         ${renderGraph(archiveInfo)}
       </section>
@@ -408,7 +415,7 @@ function rNotSaved (archiveInfo) {
 }
 
 function rMissingLocalPathMessage (archiveInfo) {
-  if (!archiveInfo.userSettings.isSaved || archiveInfo.localPathExists) {
+  if (!archiveInfo.isOwner || !archiveInfo.userSettings.isSaved || archiveInfo.localPathExists) {
     return ''
   }
   return yo`
@@ -511,18 +518,28 @@ function rHistory (archiveInfo) {
 }
 
 function rMetadata (archiveInfo) {
-  return yo`
-    <div class="metadata">
-      <table>
-        <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
-        <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
-        <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-        <tr><td class="label">URL</td><td title="dat://${archiveInfo.key}">dat://${archiveInfo.key}</td></tr>
-        <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
-        <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
-      </table>
-    </div>
-  `
+  if (archiveInfo.isOwner) {
+    return yo`
+      <div class="metadata">
+        <table>
+          <tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
+          <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
+          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
+          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
+        </table>
+      </div>
+    `
+  } else {
+    return yo`
+      <div class="metadata">
+        <table>
+          <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
+          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
+          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
+        </table>
+      </div>
+    `    
+  }
 }
 
 function rTrash () {

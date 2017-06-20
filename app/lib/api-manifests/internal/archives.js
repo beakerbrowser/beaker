@@ -7,6 +7,7 @@ export default {
   update: 'promise',
   list: 'promise',
   get: 'promise',
+  clearDnsCache: 'promise',
   createEventStream: 'readable',
   createDebugStream: 'readable'
 }

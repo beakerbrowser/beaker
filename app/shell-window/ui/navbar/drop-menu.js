@@ -2,6 +2,7 @@ import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
 import prettyBytes from 'pretty-bytes'
 import { ucfirst } from '../../../lib/strings'
+import { findParent } from '../../../lib/fg/event-handlers'
 import * as pages from '../../pages'
 
 // there can be many drop menu btns rendered at once, but they are all showing the same information
@@ -26,6 +27,7 @@ export class DropMenuNavbarBtn {
     dlEvents.on('sum-progress', this.onSumProgress.bind(this))
     dlEvents.on('updated', this.onUpdate.bind(this))
     dlEvents.on('done', this.onDone.bind(this))
+    window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
   }
 
   render() {
@@ -99,37 +101,6 @@ export class DropMenuNavbarBtn {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle visible">
-            ${isDatSite ? yo`
-              <div class="list page">
-                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onViewFiles(e)}>
-                  <i class="fa fa-files-o"></i>
-                  View site files
-                </div>
-                <div class="list-item ${!isDatSite ? 'disabled' : ''}" onclick=${e => this.onFork(e)}>
-                  <i class="fa fa-code-fork"></i>
-                  Fork site
-                </div>
-                <div class="list-item" onclick=${e => this.onToggleLiveReloading(e)}>
-                  <i class="fa fa-bolt"></i>
-                  Turn ${page.isLiveReloading() ? 'off' : 'on'} live reloading
-                </div>
-                ${!isDatSaved ?
-                  yo`
-                    <div class="list-item"  onclick=${e => this.onToggleSave(e)}>
-                      <i class="fa fa-floppy-o"></i>
-                      Save site to Library
-                    </div>
-                  ` : yo`
-                    <div class="list-item"  onclick=${e => this.onToggleSave(e)}>
-                      <i class="fa fa-trash"></i>
-                      Remove site from Library
-                    </div>
-                  `}
-              </div>
-            ` : ''}
-
-            <hr />
-
             <div class="grid default">
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
                 <i class="fa fa-history"></i>
@@ -214,6 +185,13 @@ export class DropMenuNavbarBtn {
     this.isDropdownOpen = !this.isDropdownOpen
     this.shouldPersistProgressBar = false // stop persisting if we were, the user clicked
     this.updateActives()
+  }
+
+  onClickAnywhere (e) {
+    var parent = findParent(e.target, 'toolbar-dropdown-menu')
+    if (parent) return // abort - this was a click on us!
+    this.isDropdownOpen = false
+    this.updateActives()    
   }
 
   onNewDownload () {
@@ -318,43 +296,6 @@ export class DropMenuNavbarBtn {
 
     var archive = await DatArchive.create()
     pages.getActive().loadURL('beaker://library/' + archive.url.slice('dat://'.length))
-  }
-
-  async onFork (e) {
-    // close dropdown
-    this.isDropdownOpen = !this.isDropdownOpen
-    this.updateActives()
-
-    var page = pages.getActive()
-    if (!page || !page.getURL().startsWith('dat://')) {
-      return
-    }
-    var archive = await DatArchive.fork(page.siteInfo.key)
-    page.loadURL('beaker://library/' + archive.url.slice('dat://'.length))
-  }
-
-  async onViewFiles (e) {
-    // close dropdown
-    this.isDropdownOpen = !this.isDropdownOpen
-    this.updateActives()
-
-    var page = pages.getActive()
-    if (!page || !page.getURL().startsWith('dat://')) {
-      return
-    }
-    var url = page.getURL()
-    url = url.slice('dat://'.length)
-    url = url.slice(0, url.search(/\+|\/|$/))
-    page.loadURL(`beaker://library/${url}`)
-  }
-
-  onToggleLiveReloading (e) {
-    // close dropdown
-    this.isDropdownOpen = !this.isDropdownOpen
-    this.updateActives()
-
-    // toggle
-    pages.getActive().toggleLiveReloading()
   }
 
   onOpenPage (e, url) {

@@ -39,6 +39,7 @@ export function createShellWindow () {
     fullscreenable: false,
     x, y, width, height,
     vibrancy: 'light',
+    defaultEncoding: 'UTF-8',
     webPreferences: {
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
       allowRunningInsecureContent: false,

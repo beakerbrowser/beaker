@@ -58,6 +58,7 @@ var bundleApplication = function () {
     bundle(bpViewsDir.path('start.js'),                bpBuildDir.path('start.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('view-source.js'),          bpBuildDir.path('view-source.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('swarm-debugger.js'),       bpBuildDir.path('swarm-debugger.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
+    bundle(bpViewsDir.path('dat-sidebar.js'),          bpBuildDir.path('dat-sidebar.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('create-archive-modal.js'), bpBuildDir.path('create-archive-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('fork-archive-modal.js'),   bpBuildDir.path('fork-archive-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('basic-auth-modal.js'),     bpBuildDir.path('basic-auth-modal.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),

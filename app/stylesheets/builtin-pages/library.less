@@ -327,6 +327,21 @@ body {
     }
   }
 
+  .section-heading {
+    &:extend(.flex);
+    justify-content: space-between;
+    border-bottom: 1px solid @border-menu;
+    margin-bottom: 1rem;
+
+    a {
+      font-size: .75rem;
+
+      &:hover {
+        &:extend(.link:hover);
+      }
+    }
+  }
+
   h1 {
     font-size: 1.5rem;
     font-weight: 500;
@@ -335,8 +350,6 @@ body {
   h2 {
     font-size: 1rem;
     font-weight: 500;
-    border-bottom: 1px solid @border-menu;
-    margin-bottom: 1rem;
   }
 }
 
@@ -509,8 +522,7 @@ body {
       &:hover span {
         text-decoration: underline;
       }
-
-        }
+    }
 
     .files {
       display: inline-block;
@@ -607,4 +619,3 @@ section.tabs-content {
     &:extend(.link);
   }
 }
-
