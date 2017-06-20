@@ -331,7 +331,7 @@ function rArchive (archiveInfo) {
             <i class="fa fa-link"></i>
             Share site
           </button>
-          <button disabled=${archiveInfo.isOwner ? 'false' : 'true'} title="Import files" class="btn" onclick>
+          <button disabled=${archiveInfo.isOwner ? 'false' : 'true'} title="Import files" class="btn" onclick=${onImportFiles}>
             <i class="fa fa-plus"></i>
             Import files
           </button>
@@ -658,6 +658,24 @@ function onNetworkChanged (e) {
 
 function onShare (e) {
   sharePopup.create(selectedArchive.url)
+}
+
+async function onImportFiles (e) {
+  var files = await beakerBrowser.showOpenDialog({
+    title: 'Import files to this site',
+    buttonLabel: 'Import',
+    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory']
+  })
+  if (files) {
+    files.forEach(src => DatArchive.importFromFilesystem({
+      src,
+      dst: selectedArchive.url,
+      ignore: ['dat.json'],
+      inplaceImport: true
+    }))
+    currentSection = 'staging'
+    update()
+  }
 }
 
 async function onFork (e) {
