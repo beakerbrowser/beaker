@@ -95,6 +95,7 @@ function setupPanel (page) {
   if (!panel) {
     panel = panels[page.id] = {webview: null, target: null, visible: false}
   }
+  var oldUrl = panel.target
   panel.target = page.url
 
   // only make visible for dat pages
@@ -113,7 +114,7 @@ function setupPanel (page) {
       // only load a new URL if the domain has changed
       let isNewLocation = true
       try {
-        let oldUrlParsed = new URL(panel.target)
+        let oldUrlParsed = new URL(oldUrl)
         let newUrlParsed = new URL(page.url)
         isNewLocation = (oldUrlParsed.origin !== newUrlParsed.origin)
       } catch (e) {/* ignore */}
