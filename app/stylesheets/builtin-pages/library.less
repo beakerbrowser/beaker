@@ -466,6 +466,7 @@ body {
   .metadata {
 
     table {
+      width: 100%;
       max-width: 100%;
       overflow: hidden;
       border: 1px solid @border-menu;
@@ -477,17 +478,20 @@ body {
       border-bottom: 1px solid @border-menu;
 
       &:nth-of-type(2n) {
-        background: tint(@background-menu, 35%);
+        // background: tint(@background-menu, 35%);
       }
     }
 
     td {
-      padding: .4rem .5rem;
-      border-bottom: 1px solid @border-menu;
+      padding: 2px 0;
+      padding: 8px;
 
       &.label {
+        background: @background-menu;
         border-right: 1px solid @border-menu;
         font-weight: 500;
+        padding-right: 5px;
+        width: 125px;
       }
     }
   }

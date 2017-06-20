@@ -375,8 +375,8 @@ function rArchive (archiveInfo) {
       <section class="tabs-content">
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Published files', onclick: onClickTab('files')},
+          {id: 'metadata', label: 'About', onclick: onClickTab('metadata')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
-          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')},
           {id: 'network', label: 'Network', onclick: onClickTab('network')},
           yo`${stagingTab}`
         ].filter(Boolean))}
@@ -549,6 +549,8 @@ function rMetadata (archiveInfo) {
   return yo`
     <div class="metadata">
       <table>
+        <tr><td class="label">Title</td><td>${niceName(archiveInfo)}</td></tr>
+        <tr><td class="label">Description</td><td>${niceDesc(archiveInfo)}</td></tr>
         <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
         <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
