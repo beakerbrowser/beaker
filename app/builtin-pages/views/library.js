@@ -37,6 +37,7 @@ var trashList = []
 var isTrashOpen = false
 var isSidebarOpen = false
 var isPublishing = false
+var isEditingInfo = false
 var currentFilter = ''
 var currentSort = 'mtime'
 var currentSection = 'files'
@@ -102,7 +103,6 @@ async function loadCurrentArchive () {
     selectedArchive.events = null
   }
   viewError = null
-  currentSection = 'files'
 
   try {
     selectedArchiveKey = await parseURLKey()
@@ -546,17 +546,45 @@ function rHistory (archiveInfo) {
 }
 
 function rMetadata (archiveInfo) {
+  var titleEl, descEl
+  if (archiveInfo.isOwner && isEditingInfo) {
+    titleEl = yo`
+      <td>
+        <input id="title" onkeyup=${settingsOnKeyup} value=${niceName(archiveInfo)} type="text"/>
+      </td>
+    `
+    descEl = yo`
+      <td>
+        <input id="desc" onkeyup=${settingsOnKeyup} value=${archiveInfo.description || ''} type="text"/>
+      </td>
+    `
+  } else if (archiveInfo.isOwner) {
+    titleEl = yo`
+      <td>
+        ${niceName(archiveInfo)}
+        <i onclick=${onClickEdit} class="fa fa-pencil"></i>
+      </td>`
+    descEl = yo`
+      <td>
+        ${niceDesc(archiveInfo)}
+        <i onclick=${onClickEdit} class="fa fa-pencil"></i>
+      </td>`
+  } else {
+    titleEl = yo`<td>${niceName(archiveInfo)}</td>`
+    descEl = yo`<td>${niceDesc(archiveInfo)}</td>`
+  }
   return yo`
     <div class="metadata">
       <table>
-        <tr><td class="label">Title</td><td>${niceName(archiveInfo)}</td></tr>
-        <tr><td class="label">Description</td><td>${niceDesc(archiveInfo)}</td></tr>
+        <tr><td class="label">Title</td>${titleEl}</tr>
+        <tr><td class="label">Description</td>${descEl}</tr>
         <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
         <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
         <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
         <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
       </table>
+      ${archiveInfo.isOwner && isEditingInfo ? yo`<button onclick=${onSaveSettings} class="save btn">Apply changes</button>` : ''}
     </div>
   `
 }
@@ -623,6 +651,13 @@ function onShare (e) {
   sharePopup.create(selectedArchive.url)
 }
 
+async function onFork (e) {
+  e.preventDefault()
+  update()
+  var a = await DatArchive.fork(selectedArchive.url)
+  history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
+}
+
 async function onEditSettings (e) {
   e.preventDefault()
   update()
@@ -630,11 +665,34 @@ async function onEditSettings (e) {
   loadCurrentArchive()
 }
 
-async function onFork (e) {
-  e.preventDefault()
+function onClickEdit() {
+  isEditingInfo = true
   update()
-  var a = await DatArchive.fork(selectedArchive.url)
-  history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
+}
+
+async function onSaveSettings () {
+  var newTitle = document.querySelector('input#title').value
+  var newDesc = document.querySelector('input#desc').value
+
+  // update
+  await beaker.archives.update(selectedArchive.url, {title: newTitle, description: newDesc})
+
+  // exit edit-mode
+  isEditingInfo = false
+  update()
+}
+
+async function settingsOnKeyup (e) {
+  // enter-key
+  if (e.keyCode == 13) {
+    onSaveSettings()
+  }
+
+  // escape-key
+  else if (e.keyCode == 27) {
+    isEditingInfo = false
+    update()
+  }
 }
 
 function onViewSource () {

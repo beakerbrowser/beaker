@@ -472,6 +472,16 @@ body {
       border: 1px solid @border-menu;
       border-collapse: collapse;
       font-size: 13px;
+      margin-bottom: 1rem;
+    }
+
+    button.save {
+      float: right;
+    }
+
+    input,
+    textarea {
+      width: 100%;
     }
 
     tr {
@@ -479,8 +489,8 @@ body {
     }
 
     td {
-      padding: 2px 0;
-      padding: 6px 8px;
+      height: 35px;
+      padding: 0 8px;
 
       &.label {
         background: @background-menu;
@@ -488,6 +498,16 @@ body {
         font-weight: 500;
         padding-right: 5px;
         width: 125px;
+      }
+    }
+
+    i {
+      margin-left: 3px;
+      color: @color-text--light;
+      cursor: pointer;
+
+      &:hover {
+        color: @color-text--muted;
       }
     }
   }
