@@ -6,7 +6,7 @@ import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
 import {showModal} from '../ui/modals'
-import {showLocalPathDialog, validateLocalPath} from '../browser'
+import {showLocalPathDialog, validateLocalPath, showDeleteArchivePrompt} from '../browser'
 import {timer} from '../../lib/time'
 import {
   ArchiveNotWritableError,
@@ -124,9 +124,18 @@ export default {
 
   async remove(url) {
     var key = toKey(url)
-    var settings = await archivesDb.setUserSettings(0, key, {isSaved: false})
-    if (settings.localPath) {
-      datLibrary.deleteOldStagingFolder(settings.localPath)
+
+    // check with the user
+    var settings = await archivesDb.getUserSettings(0, key)
+    var {shouldDelete, preserveStagingFolder} = await showDeleteArchivePrompt(settings.localPath)
+    if (!shouldDelete) {
+      return settings
+    }
+
+    // delete
+    settings = await archivesDb.setUserSettings(0, key, {isSaved: false})
+    if (settings.localPath && !preserveStagingFolder) {
+      datLibrary.deleteOldStagingFolder(settings.localPath, {alwaysDelete: true})
     }
     return settings
   },

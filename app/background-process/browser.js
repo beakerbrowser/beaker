@@ -371,6 +371,24 @@ export async function showLocalPathDialog ({folderName, defaultPath, warnIfNotEm
   }
 }
 
+export async function showDeleteArchivePrompt (oldpath) {
+  return new Promise(resolve => {
+    dialog.showMessageBox({
+      type: 'question',
+      message: 'Delete this site?',
+      detail: 'Deleting this site will remove it from your library and delete the keys. You may undo this action for a short period.',
+      checkboxLabel: `Delete the files at ${oldpath}`,
+      checkboxChecked: true,
+      buttons: ['Yes', 'No']
+    }, (choice, checkboxChecked) => {
+      resolve({
+        shouldDelete: choice == 0,
+        preserveStagingFolder: !checkboxChecked
+      })
+    })
+  })
+}
+
 function openFolder (folderPath) {
   shell.openExternal('file://'+folderPath)
 }

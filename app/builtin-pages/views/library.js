@@ -626,20 +626,21 @@ function onViewSwarmDebugger () {
 
 async function removeArchive (archiveInfo) {
   trashList.unshift(archiveInfo)
-  await beaker.archives.remove(archiveInfo.key)
-  archiveInfo.userSettings.isSaved = false
+  archiveInfo.userSettings = await beaker.archives.remove(archiveInfo.key)
 }
 
 async function onToggleSaved (e) {
   e.preventDefault()
   if (selectedArchive.userSettings.isSaved) {
-    trashList.unshift(selectedArchive)
-    await beaker.archives.remove(selectedArchive.key)
-    selectedArchive.userSettings.isSaved = false
+    selectedArchive.userSettings = await beaker.archives.remove(selectedArchive.key)
+    if (selectedArchive.userSettings.isSaved == false) {
+      trashList.unshift(selectedArchive)
+    }
   } else {
-    trashList.splice(trashList.findIndex(a => a.key === selectedArchive.key), 1)
-    await beaker.archives.add(selectedArchive.key)
-    selectedArchive.userSettings.isSaved = true
+    selectedArchive.userSettings = await beaker.archives.add(selectedArchive.key)
+    if (selectedArchive.userSettings.isSaved == true) {
+      trashList.splice(trashList.findIndex(a => a.key === selectedArchive.key), 1)
+    }
   }
   update()
 }
