@@ -295,7 +295,6 @@ function rArchiveListItem (archiveInfo) {
 
 function rArchive (archiveInfo) {
   document.title = `Library - ${archiveInfo.title || 'dat://' + archiveInfo.key}`
-  var debugLink = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
 
   var toggleSaveIcon, toggleSaveText
   if (archiveInfo.userSettings.isSaved) {
@@ -360,30 +359,18 @@ function rArchive (archiveInfo) {
       ${rMissingLocalPathMessage(archiveInfo)}
       ${rStagingArea(archiveInfo)}
 
-      <div class="section-heading">
-        <h2 class="peer-history">
-          Network activity
-        </h2>
-        <a href=${debugLink} title="Open network debugger" onclick=${onViewSwarmDebugger}>
-          Network debugger
-          <i class="fa fa-bug"></i>
-        </a>
-      </div>
-
-      <section class="peer-history">
-        ${renderGraph(archiveInfo)}
-      </section>
-
       <section class="tabs-content">
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Published files', onclick: onClickTab('files')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
-          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')}
+          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')},
+          {id: 'network', label: 'Network', onclick: onClickTab('network')}
         ].filter(Boolean))}
         ${({
           files: () => rFiles(archiveInfo),
           log: () => rHistory(archiveInfo),
           metadata: () => rMetadata(archiveInfo),
+          network: () => rNetwork(archiveInfo),
         })[currentSection]()}
       </section>
     </div>
@@ -428,6 +415,19 @@ function rMissingLocalPathMessage (archiveInfo) {
           you can <a href="#" onclick=${onToggleSaved}>delete it from your library</a>.</li>
       </ul>
     </section>
+  `
+}
+
+function rNetwork (archiveInfo) {
+  var debugLink = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
+  return yo`
+    <div class="network">
+      ${renderGraph(archiveInfo)}
+      <a href=${debugLink} title="Open network debugger">
+        <i class="fa fa-bug"></i>
+        Network debugger
+      </a>
+    </div>
   `
 }
 
