@@ -641,10 +641,6 @@ function onViewSource () {
   window.location = 'beaker://view-source/' + selectedArchive.url.slice('dat://'.length)
 }
 
-function onViewSwarmDebugger () {
-  window.location = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
-}
-
 async function removeArchive (archiveInfo) {
   trashList.unshift(archiveInfo)
   await beaker.archives.remove(archiveInfo.key)
