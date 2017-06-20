@@ -378,7 +378,7 @@ function rArchive (archiveInfo) {
           {id: 'metadata', label: 'About', onclick: onClickTab('metadata')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
           {id: 'network', label: 'Network', onclick: onClickTab('network')},
-          yo`${stagingTab}`
+          stagingTab
         ].filter(Boolean))}
         ${({
           files: () => rFiles(archiveInfo),
