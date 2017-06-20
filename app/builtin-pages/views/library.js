@@ -305,6 +305,20 @@ function rArchive (archiveInfo) {
     toggleSaveText = 'Save to library'
   }
 
+  // staging tab setup
+  var diffCount, stagingTab
+  if (archiveInfo.isOwner && archiveInfo.diff) {
+    diffCount = archiveInfo.diff.length
+  }
+
+  if (archiveInfo.isOwner) {
+    var stagingTab = {
+      id: 'staging',
+      label: yo`<span>Staging <span class="changes-count">${diffCount || ''}</span></span>`,
+      onclick: onClickTab('staging')
+    }
+  }
+
   return yo`
     <div class="archive">
       <section class="header">
@@ -357,20 +371,21 @@ function rArchive (archiveInfo) {
 
       ${rNotSaved(archiveInfo)}
       ${rMissingLocalPathMessage(archiveInfo)}
-      ${rStagingArea(archiveInfo)}
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Published files', onclick: onClickTab('files')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
           {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')},
-          {id: 'network', label: 'Network', onclick: onClickTab('network')}
+          {id: 'network', label: 'Network', onclick: onClickTab('network')},
+          yo`${stagingTab}`
         ].filter(Boolean))}
         ${({
           files: () => rFiles(archiveInfo),
           log: () => rHistory(archiveInfo),
           metadata: () => rMetadata(archiveInfo),
           network: () => rNetwork(archiveInfo),
+          staging: () => rStagingArea(archiveInfo)
         })[currentSection]()}
       </section>
     </div>
@@ -431,7 +446,7 @@ function rNetwork (archiveInfo) {
   `
 }
 
-function rStagingArea (archiveInfo) {
+function rStagingNotification (archiveInfo) {
   if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
     return ''
   }
@@ -439,6 +454,27 @@ function rStagingArea (archiveInfo) {
   var diff = archiveInfo.diff
   if (diff.length === 0) {
     return ''
+  }
+
+  return yo`
+    <div class="staging-notification">
+      <span>${diff.length} unpublished changes</span>
+      <div class="actions">
+        <button onclick=${e => { e.preventDefault(); currentSection = 'staging'; update() }} class="btn">Review changes</button>
+        <button onclick=${onPublish} class="btn success">Publish changes</button>
+      </div>
+    </div>
+  `
+}
+
+function rStagingArea (archiveInfo) {
+  if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
+    return ''
+  }
+
+  var diff = archiveInfo.diff
+  if (diff.length === 0) {
+    return yo`<em>No unpublished changes</em>`
   }
 
   var stats = archiveInfo.diffStats
@@ -464,7 +500,8 @@ function rStagingArea (archiveInfo) {
 
 function rFiles (archiveInfo) {
   return yo`
-    <div>
+    <div class="published-files">
+      ${rStagingNotification(archiveInfo)}
       ${renderFiles(archiveInfo)}
     </div>
   `
