@@ -23,6 +23,11 @@ export function getIsOpen () {
   return isOpen
 }
 
+export function getIsAvailable () {
+  var page = pages.getActive()
+  return (page && page.url && page.url.startsWith('dat://'))
+}
+
 export function setup () {
   webviewsEl = document.getElementById('webviews')
   sidebarEl = document.getElementById('dat-sidebar')
@@ -60,12 +65,14 @@ export function onPageChangeLocation (page) {
   if (!isOpen) return
   setupPanel(page)
   setActivePanelVisibility()
+  events.emit('change')
 }
 
 export function onPageSetActive (page) {
   if (!isOpen) return
   setActivePanel(setupPanel(page))
   setActivePanelVisibility()
+  events.emit('change')
 }
 
 export function onPageClose (page) {
@@ -76,6 +83,7 @@ export function onPageClose (page) {
     return
   }
   destroyPanel(page.id)
+  events.emit('change')
 }
 
 // panel management
@@ -178,14 +186,25 @@ function hideSidebar () {
 // resizing behaviors
 // =
 
+function getCurrentWebview () {
+  if (!activePanel) return
+
+}
+
 function doResize () {
-  if (isOpen && (!activePanel || activePanel.visible)) {
-    var pageSize = document.body.getClientRects()[0]
-    webviewsEl.style.width = `${pageSize.width - sidebarWidth}px`
-    sidebarEl.style.width = `${sidebarWidth}px`
-  } else {
-    webviewsEl.style.width = '100%'    
-  }
+  // set the sidebar width
+  sidebarEl.style.width = `${sidebarWidth}px`
+
+  // resize each webview individually
+  var pageSize = document.body.getClientRects()[0]
+  Array.from(webviewsEl.querySelectorAll('webview')).forEach(wv => {
+    var id = wv.dataset.id || ''
+    if (isOpen && panels[id] && panels[id].visible) {
+      wv.style.width = `${pageSize.width - sidebarWidth}px`
+    } else {
+      wv.style.width = '100%'    
+    }
+  })
 }
 
 function onDragMouseDown (e) {
@@ -203,6 +222,5 @@ function onDragMouseMove (e) {
   var pageSize = document.body.getClientRects()[0]
   sidebarWidth = pageSize.width - e.x
   if (sidebarWidth < 300) sidebarWidth = 300
-  webviewsEl.style.width = `${pageSize.width - sidebarWidth}px`
-  sidebarEl.style.width = `${sidebarWidth}px`
+  doResize()
 }
