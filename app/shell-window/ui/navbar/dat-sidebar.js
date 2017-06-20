@@ -7,8 +7,9 @@ export class DatSidebarBtn {
   }
 
   render () {
+    const pressed = sidebar.getIsOpen() ? 'pressed' : ''
     return yo`
-      <button title="Toggle sidebar" class="toolbar-btn dat-sidebar btn" onclick=${e => this.onClickBtn(e)} title="Menu">
+      <button title="Toggle sidebar" class="toolbar-btn dat-sidebar btn ${pressed}" onclick=${e => this.onClickBtn(e)} title="Menu">
         <i class="fa fa-columns"></i>
       </button>
     `
