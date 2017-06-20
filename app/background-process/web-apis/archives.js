@@ -125,12 +125,14 @@ export default {
   async remove(url) {
     var key = toKey(url)
 
-    // check with the user
+    // check with the user if they're the owner
     var meta = await archivesDb.getMeta(key)
-    var settings = await archivesDb.getUserSettings(0, key)
-    var {shouldDelete, preserveStagingFolder} = await showDeleteArchivePrompt(meta.title || key, settings.localPath)
-    if (!shouldDelete) {
-      return settings
+    if (meta.isOwner) {
+      var settings = await archivesDb.getUserSettings(0, key)
+      var {shouldDelete, preserveStagingFolder} = await showDeleteArchivePrompt(meta.title || key, settings.localPath)
+      if (!shouldDelete) {
+        return settings
+      }
     }
 
     // delete
@@ -156,19 +158,21 @@ export default {
       let key = toKey(urls[i])
 
       if (!bulkShouldDelete) {
-        // check with the user
+        // check with the user if they're the owner
         let meta = await archivesDb.getMeta(key)
-        let settings = await archivesDb.getUserSettings(0, key)
-        let res = await showDeleteArchivePrompt(meta.title || key, settings.localPath, {bulk: true})
-        preserveStagingFolder = res.preserveStagingFolder
+        if (meta.isOwner) {
+          let settings = await archivesDb.getUserSettings(0, key)
+          let res = await showDeleteArchivePrompt(meta.title || key, settings.localPath, {bulk: true})
+          preserveStagingFolder = res.preserveStagingFolder
 
-        if (res.bulkYesToAll) {
-          // 'yes to all' chosen
-          bulkShouldDelete = true
-        } else if (!res.shouldDelete) {
-          // 'no' chosen
-          results.push(settings) // give settings unchanged
-          continue
+          if (res.bulkYesToAll) {
+            // 'yes to all' chosen
+            bulkShouldDelete = true
+          } else if (!res.shouldDelete) {
+            // 'no' chosen
+            results.push(settings) // give settings unchanged
+            continue
+          }
         }
       }
 

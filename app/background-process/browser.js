@@ -377,7 +377,7 @@ export async function showDeleteArchivePrompt (sitename, oldpath, {bulk} = {}) {
       type: 'question',
       message: `Delete '${sitename}'?`,
       detail: 'Deleting this site will remove it from your library and delete the keys. You may undo this action for a short period.',
-      checkboxLabel: `Delete the files at ${oldpath}`,
+      checkboxLabel: oldpath ? `Delete the files at ${oldpath}` : undefined,
       checkboxChecked: true,
       buttons: bulk
         ? ['Yes to all', 'Yes', 'No']
