@@ -311,10 +311,9 @@ function rArchive (archiveInfo) {
       <section class="header">
         <h1 class="title" title=${archiveInfo.title}>
           <a href="dat://${archiveInfo.key}">${niceName(archiveInfo)}</a>
-          ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
+          ${archiveInfo.isOwner ? '' : yo`<span class="readonly"><i class="fa fa-eye"></i>Read-only</span>`}
         </h1>
         <div class="actions">
-          <span class="readonly">${archiveInfo.isOwner ? '' : yo`<em>(Read-only)</em>`}</span>
           <button class="btn primary" onclick=${onShare}>
             <i class="fa fa-link"></i>
             Share site

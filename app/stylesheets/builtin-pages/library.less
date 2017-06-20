@@ -204,7 +204,7 @@ body {
       font-weight: 700;
     }
 
-    .last-updated, .peers, .title .readonly {
+    .last-updated, .peers, .title {
       color: #fff;
     }
   }
@@ -212,10 +212,6 @@ body {
   .title {
     font-weight: 600;
     margin-bottom: 1.25rem;
-
-    .readonly {
-      color: @color-text--muted;
-    }
   }
 
   .title, .description {
@@ -369,25 +365,6 @@ body {
     margin-bottom: 2rem;
   }
 
-  .title {
-    &:extend(.overflow-ellipsis);
-    max-width: 450px;
-    margin-top: 25px;
-
-    // max-width of .title + width of .actions
-    @media (min-width: 665px) {
-      margin-top: 0;
-    }
-
-    &:hover {
-      text-decoration: underline;
-    }
-
-    .readonly {
-      color: @color-text--light;
-    }
-  }
-
   .description {
     margin-top: 20px;
     font-style: italic;
@@ -398,30 +375,61 @@ body {
     max-width: 100%;
   }
 
-  .header .actions {
-    position: absolute;
-    right: 0;
-    top: -45px;
+  .header {
 
-    // max-width of .title + width of .actions
-    @media (min-width: 665px) {
-      top: 1px;
-    }
+    .title {
+      &:extend(.flex);
+      &:extend(.overflow-ellipsis);
+      align-items: center;
+      max-width: 450px;
+      margin-top: 25px;
 
-    .btn {
-      display: inline-block;
-    }
+      // max-width of .title + width of .actions
+      @media (min-width: 665px) {
+        margin-top: 0;
+      }
 
-    .dropdown-btn-list {
-      width: 175px;
-      font-size: 13px;
+      a:hover {
+        text-decoration: underline;
+      }
     }
 
     .readonly {
+      text-transform: uppercase;
+      border: 1px solid @border-menu;
+      border-radius: 2px;
+      font-size: .65rem;
+      background: @background-menu;
+      margin-left: 5px;
+      margin-top: 2px;
+      padding: 1px 5px;
+      display: inline-block;
+      color: @color-text--muted;
+      font-weight: 400;
+
+      i {
+        margin-right: 3px;
+      }
+    }
+
+    .actions {
       position: absolute;
       right: 0;
-      top: 31px;
-      font-size: 13px;
+      top: -45px;
+
+      // max-width of .title + width of .actions
+      @media (min-width: 665px) {
+        top: 1px;
+      }
+
+      .btn {
+        display: inline-block;
+      }
+
+      .dropdown-btn-list {
+        width: 175px;
+        font-size: 13px;
+      }
     }
   }
 
