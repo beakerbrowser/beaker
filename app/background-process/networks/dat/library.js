@@ -629,12 +629,14 @@ function createReplicationStream (info) {
     archive.replicate({stream, live: true})
     archive.replicationStreams.push(stream)
     onNetworkChanged(archive)
-    stream.once('close', () => {
+    function onend () {
       var rs = archive.replicationStreams
       var i = rs.indexOf(stream)
-      if (i !== -1) rs.splice(rs.indexOf(stream), 1)
+      if (i !== -1) rs.splice(i, 1)
       onNetworkChanged(archive)
-    })
+    }
+    stream.once('error', onend)
+    stream.once('close', onend)
   }
 
   // debugging
