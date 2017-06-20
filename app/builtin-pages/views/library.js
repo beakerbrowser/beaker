@@ -37,6 +37,7 @@ var trashList = []
 var isTrashOpen = false
 var isSidebarOpen = false
 var isPublishing = false
+var isEditingInfo = false
 var currentFilter = ''
 var currentSort = 'mtime'
 var currentSection = 'files'
@@ -102,7 +103,6 @@ async function loadCurrentArchive () {
     selectedArchive.events = null
   }
   viewError = null
-  currentSection = 'files'
 
   try {
     selectedArchiveKey = await parseURLKey()
@@ -295,7 +295,6 @@ function rArchiveListItem (archiveInfo) {
 
 function rArchive (archiveInfo) {
   document.title = `Library - ${archiveInfo.title || 'dat://' + archiveInfo.key}`
-  var debugLink = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
 
   var toggleSaveIcon, toggleSaveText
   if (archiveInfo.userSettings.isSaved) {
@@ -306,27 +305,36 @@ function rArchive (archiveInfo) {
     toggleSaveText = 'Save to library'
   }
 
+  // staging tab setup
+  var diffCount, stagingTab
+  if (archiveInfo.isOwner && archiveInfo.diff) {
+    diffCount = archiveInfo.diff.length
+  }
+
+  if (archiveInfo.isOwner) {
+    var stagingTab = {
+      id: 'staging',
+      label: yo`<span>Staging <span class="changes-count">${diffCount || ''}</span></span>`,
+      onclick: onClickTab('staging')
+    }
+  }
+
   return yo`
     <div class="archive">
-      <section class="info">
+      <section class="header">
         <h1 class="title" title=${archiveInfo.title}>
           <a href="dat://${archiveInfo.key}">${niceName(archiveInfo)}</a>
-          ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
+          ${archiveInfo.isOwner ? '' : yo`<span class="readonly"><i class="fa fa-eye"></i>Read-only</span>`}
         </h1>
-        <p class="description">${niceDesc(archiveInfo)}</p>
-        <p class="dat-url code-font">
-          <a class="link" href="dat://${archiveInfo.key}">dat://${archiveInfo.key}</a>
-        </p>
         <div class="actions">
-          <span class="readonly">${archiveInfo.isOwner ? '' : yo`<em>(Read-only)</em>`}</span>
-          <a class="btn primary" onclick=${onShare}>
+          <button class="btn primary" onclick=${onShare}>
             <i class="fa fa-link"></i>
             Share site
-          </a>
-          <a title="View site" class="btn" target="_blank" href="dat://${archiveInfo.key}">
-            <i class="fa fa-external-link"></i>
-            View site
-          </a>
+          </button>
+          <button disabled=${archiveInfo.isOwner ? 'false' : 'true'} title="Import files" class="btn" onclick>
+            <i class="fa fa-plus"></i>
+            Import files
+          </button>
           ${toggleable(yo`
             <div class="dropdown-btn-container toggleable-container">
               <button class="btn toggleable">
@@ -363,32 +371,21 @@ function rArchive (archiveInfo) {
 
       ${rNotSaved(archiveInfo)}
       ${rMissingLocalPathMessage(archiveInfo)}
-      ${rStagingArea(archiveInfo)}
-
-      <div class="section-heading">
-        <h2 class="peer-history">
-          Network activity
-        </h2>
-        <a href=${debugLink} title="Open network debugger" onclick=${onViewSwarmDebugger}>
-          Network debugger
-          <i class="fa fa-bug"></i>
-        </a>
-      </div>
-
-      <section class="peer-history">
-        ${renderGraph(archiveInfo)}
-      </section>
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Published files', onclick: onClickTab('files')},
+          {id: 'metadata', label: 'About', onclick: onClickTab('metadata')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
-          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')}
+          {id: 'network', label: 'Network', onclick: onClickTab('network')},
+          stagingTab
         ].filter(Boolean))}
         ${({
           files: () => rFiles(archiveInfo),
           log: () => rHistory(archiveInfo),
           metadata: () => rMetadata(archiveInfo),
+          network: () => rNetwork(archiveInfo),
+          staging: () => rStagingArea(archiveInfo)
         })[currentSection]()}
       </section>
     </div>
@@ -436,7 +433,20 @@ function rMissingLocalPathMessage (archiveInfo) {
   `
 }
 
-function rStagingArea (archiveInfo) {
+function rNetwork (archiveInfo) {
+  var debugLink = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
+  return yo`
+    <div class="network">
+      ${renderGraph(archiveInfo)}
+      <a href=${debugLink} title="Open network debugger">
+        <i class="fa fa-bug"></i>
+        Network debugger
+      </a>
+    </div>
+  `
+}
+
+function rStagingNotification (archiveInfo) {
   if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
     return ''
   }
@@ -444,6 +454,27 @@ function rStagingArea (archiveInfo) {
   var diff = archiveInfo.diff
   if (diff.length === 0) {
     return ''
+  }
+
+  return yo`
+    <div class="staging-notification">
+      <span>${diff.length} unpublished changes</span>
+      <div class="actions">
+        <button onclick=${e => { e.preventDefault(); currentSection = 'staging'; update() }} class="btn">Review changes</button>
+        <button onclick=${onPublish} class="btn success">Publish changes</button>
+      </div>
+    </div>
+  `
+}
+
+function rStagingArea (archiveInfo) {
+  if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
+    return ''
+  }
+
+  var diff = archiveInfo.diff
+  if (diff.length === 0) {
+    return yo`<em>No unpublished changes</em>`
   }
 
   var stats = archiveInfo.diffStats
@@ -468,15 +499,12 @@ function rStagingArea (archiveInfo) {
 }
 
 function rFiles (archiveInfo) {
-  return yo`<div>
-    <p>
-      Latest revision:
-      <a href="${archiveInfo.url}+${archiveInfo.version}">
-        ${archiveInfo.version}
-      </a>
-    </p>
-    ${renderFiles(archiveInfo)}
-  </div>`
+  return yo`
+    <div class="published-files">
+      ${rStagingNotification(archiveInfo)}
+      ${renderFiles(archiveInfo)}
+    </div>
+  `
 }
 
 function rHistory (archiveInfo) {
@@ -518,28 +546,56 @@ function rHistory (archiveInfo) {
 }
 
 function rMetadata (archiveInfo) {
-  if (archiveInfo.isOwner) {
-    return yo`
-      <div class="metadata">
-        <table>
-          <tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
-          <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
-          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
-        </table>
-      </div>
+  var titleEl, descEl
+  if (archiveInfo.isOwner && isEditingInfo) {
+    titleEl = yo`
+      <td>
+        <input id="title" onkeyup=${settingsOnKeyup} value=${niceName(archiveInfo)} type="text"/>
+      </td>
     `
+    descEl = yo`
+      <td>
+        <input id="desc" onkeyup=${settingsOnKeyup} value=${archiveInfo.description || ''} type="text"/>
+      </td>
+    `
+  } else if (archiveInfo.isOwner) {
+    titleEl = yo`
+      <td>
+        ${niceName(archiveInfo)}
+        <i onclick=${onClickEdit} class="fa fa-pencil"></i>
+      </td>`
+    descEl = yo`
+      <td>
+        ${niceDesc(archiveInfo)}
+        <i onclick=${onClickEdit} class="fa fa-pencil"></i>
+      </td>`
   } else {
-    return yo`
-      <div class="metadata">
-        <table>
-          <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
-          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
-        </table>
-      </div>
-    `    
+    titleEl = yo`<td>${niceName(archiveInfo)}</td>`
+    descEl = yo`<td>${niceDesc(archiveInfo)}</td>`
   }
+  var sizeRows
+  if (archiveInfo.isOwner) {
+    sizeRows = [
+      yo`<tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>`,
+      yo`<tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
+    ]
+  } else {
+    sizeRows = yo`<tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
+  }
+  return yo`
+    <div class="metadata">
+      <table>
+        <tr><td class="label">Title</td>${titleEl}</tr>
+        <tr><td class="label">Description</td>${descEl}</tr>
+        <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
+        <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
+        <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
+        <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
+        <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
+      </table>
+      ${archiveInfo.isOwner && isEditingInfo ? yo`<button onclick=${onSaveSettings} class="save btn">Apply changes</button>` : ''}
+    </div>
+  `
 }
 
 function rTrash () {
@@ -571,8 +627,10 @@ function rEmpty () {
 }
 
 function updateGraph () {
-  var el = document.querySelector(`#history-${selectedArchive.key}`)
-  yo.update(el, renderGraph(selectedArchive))
+  if (currentSection === 'network') {
+    var el = document.querySelector(`#history-${selectedArchive.key}`)
+    yo.update(el, renderGraph(selectedArchive))
+  }
 }
 
 // event handlers
@@ -602,13 +660,6 @@ function onShare (e) {
   sharePopup.create(selectedArchive.url)
 }
 
-async function onEditSettings (e) {
-  e.preventDefault()
-  update()
-  await beaker.archives.update(selectedArchive.url)
-  loadCurrentArchive()
-}
-
 async function onFork (e) {
   e.preventDefault()
   update()
@@ -616,12 +667,45 @@ async function onFork (e) {
   history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
 }
 
-function onViewSource () {
-  window.location = 'beaker://view-source/' + selectedArchive.url.slice('dat://'.length)
+async function onEditSettings (e) {
+  e.preventDefault()
+  update()
+  await beaker.archives.update(selectedArchive.url)
+  loadCurrentArchive()
 }
 
-function onViewSwarmDebugger () {
-  window.location = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
+function onClickEdit() {
+  isEditingInfo = true
+  update()
+}
+
+async function onSaveSettings () {
+  var newTitle = document.querySelector('input#title').value
+  var newDesc = document.querySelector('input#desc').value
+
+  // update
+  await beaker.archives.update(selectedArchive.url, {title: newTitle, description: newDesc})
+
+  // exit edit-mode
+  isEditingInfo = false
+  update()
+}
+
+async function settingsOnKeyup (e) {
+  // enter-key
+  if (e.keyCode == 13) {
+    onSaveSettings()
+  }
+
+  // escape-key
+  else if (e.keyCode == 27) {
+    isEditingInfo = false
+    update()
+  }
+}
+
+function onViewSource () {
+  window.location = 'beaker://view-source/' + selectedArchive.url.slice('dat://'.length)
 }
 
 async function onToggleSaved (e) {

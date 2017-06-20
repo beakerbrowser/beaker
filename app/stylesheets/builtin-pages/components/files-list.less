@@ -48,12 +48,16 @@
 
     .name {
 
+      &:hover {
+        &:extend(.link:hover);
+      }
+
       i {
         margin-right: @margin-icon;
       }
     }
 
-    .size, .updated {
+    .size, .updated, i {
       color: @color-text--muted;
     }
 

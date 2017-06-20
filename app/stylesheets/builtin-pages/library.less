@@ -89,6 +89,20 @@ body {
 
 .tabs {
   margin-bottom: 1rem;
+
+  .changes-count {
+    padding: 0 5px;
+    border-radius: 40%;
+    background: @background-menu;
+    font-weight: 500;
+    font-size: .7rem;
+    color: @color-text--muted;
+    border: 1px solid shade(@background-menu, 10%);
+
+    &:empty {
+      display: none;
+    }
+  }
 }
 
 .sidebar-actions {
@@ -204,7 +218,7 @@ body {
       font-weight: 700;
     }
 
-    .last-updated, .peers, .title .readonly {
+    .last-updated, .peers, .title {
       color: #fff;
     }
   }
@@ -212,10 +226,6 @@ body {
   .title {
     font-weight: 600;
     margin-bottom: 1.25rem;
-
-    .readonly {
-      color: @color-text--muted;
-    }
   }
 
   .title, .description {
@@ -369,25 +379,6 @@ body {
     margin-bottom: 2rem;
   }
 
-  .title {
-    &:extend(.overflow-ellipsis);
-    max-width: 450px;
-    margin-top: 25px;
-
-    // max-width of .title + width of .actions
-    @media (min-width: 665px) {
-      margin-top: 0;
-    }
-
-    &:hover {
-      text-decoration: underline;
-    }
-
-    .readonly {
-      color: @color-text--light;
-    }
-  }
-
   .description {
     margin-top: 20px;
     font-style: italic;
@@ -398,58 +389,138 @@ body {
     max-width: 100%;
   }
 
-  .info .actions {
-    position: absolute;
-    right: 0;
-    top: -45px;
+  .header {
 
-    // max-width of .title + width of .actions
-    @media (min-width: 665px) {
-      top: 1px;
-    }
+    .title {
+      &:extend(.flex);
+      &:extend(.overflow-ellipsis);
+      align-items: center;
+      max-width: 450px;
+      margin-top: 25px;
 
-    .btn {
-      display: inline-block;
-    }
+      // max-width of .title + width of .actions
+      @media (min-width: 665px) {
+        margin-top: 0;
+      }
 
-    .dropdown-btn-list {
-      width: 175px;
-      font-size: 13px;
+      a:hover {
+        text-decoration: underline;
+      }
     }
 
     .readonly {
+      text-transform: uppercase;
+      border: 1px solid @border-menu;
+      border-radius: 2px;
+      font-size: .65rem;
+      background: @background-menu;
+      margin-left: 5px;
+      margin-top: 2px;
+      padding: 1px 5px;
+      display: inline-block;
+      color: @color-text--muted;
+      font-weight: 400;
+
+      i {
+        margin-right: 3px;
+      }
+    }
+
+    .actions {
       position: absolute;
       right: 0;
-      top: 31px;
-      font-size: 13px;
+      top: -45px;
+
+      // max-width of .title + width of .actions
+      @media (min-width: 665px) {
+        top: 1px;
+      }
+
+      .btn {
+        display: inline-block;
+      }
+
+      .dropdown-btn-list {
+        width: 175px;
+        font-size: 13px;
+      }
+    }
+  }
+
+  .published-files {
+
+    .staging-notification {
+      &:extend(.flex);
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 5px @padding-component--tight;
+      font-size: .8rem;
+      color: @color-message--info;
+      background: @background-message--info;
+      border: 1px solid @border-message--info;
+      border-radius: 2px;
     }
   }
 
   .metadata {
 
     table {
+      width: 100%;
       max-width: 100%;
       overflow: hidden;
       border: 1px solid @border-menu;
       border-collapse: collapse;
       font-size: 13px;
+      margin-bottom: 1rem;
+    }
+
+    button.save {
+      float: right;
+    }
+
+    input,
+    textarea {
+      width: 100%;
     }
 
     tr {
       border-bottom: 1px solid @border-menu;
-
-      &:nth-of-type(2n) {
-        background: tint(@background-menu, 35%);
-      }
     }
 
     td {
-      padding: .4rem .5rem;
-      border-bottom: 1px solid @border-menu;
+      height: 35px;
+      padding: 0 8px;
 
       &.label {
+        background: @background-menu;
         border-right: 1px solid @border-menu;
         font-weight: 500;
+        padding-right: 5px;
+        width: 125px;
+      }
+    }
+
+    i {
+      margin-left: 3px;
+      color: @color-text--light;
+      cursor: pointer;
+
+      &:hover {
+        color: @color-text--muted;
+      }
+    }
+  }
+
+  .network {
+
+    a {
+      margin-top: .5rem;
+      display: block;
+      font-size: .75rem;
+
+      &:hover {
+        &:extend(.link:hover);
       }
     }
   }
@@ -494,7 +565,6 @@ body {
 
       .diff-summary {
         font-size: 13px;
-        font-weight: 500;
         color: @color-text--muted;
       }
 
@@ -517,17 +587,14 @@ body {
     }
 
     .files {
+      display: inline-block;
+      font-size: 13px;
+      flex: 1;
       line-height: 14px;
 
       &:hover span {
         text-decoration: underline;
       }
-    }
-
-    .files {
-      display: inline-block;
-      font-size: 13px;
-      flex: 1;
 
       .file {
         padding: 2px 0;
