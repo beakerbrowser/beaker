@@ -4,6 +4,7 @@ export default {
   fork: 'promise',
   add: 'promise',
   remove: 'promise',
+  bulkRemove: 'promise',
   update: 'promise',
   list: 'promise',
   get: 'promise',

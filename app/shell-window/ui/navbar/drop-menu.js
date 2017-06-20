@@ -270,25 +270,6 @@ export class DropMenuNavbarBtn {
     this.updateActives()
   }
 
-  async onToggleSave (e) {
-    // toggle saved
-    var page = pages.getActive()
-    if (!page || !page.getURL().startsWith('dat://')) {
-      return
-    }
-    if (page.siteInfo.userSettings.isSaved) {
-      await beaker.archives.remove(page.siteInfo.key)
-      page.siteInfo.userSettings.isSaved = false
-    } else {
-      await beaker.archives.add(page.siteInfo.key)
-      page.siteInfo.userSettings.isSaved = true     
-    }
-
-    // close dropdown
-    this.isDropdownOpen = !this.isDropdownOpen
-    this.updateActives()
-  }
-
   async onCreateSite (e) {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen

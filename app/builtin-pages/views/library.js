@@ -624,22 +624,18 @@ function onViewSwarmDebugger () {
   window.location = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
 }
 
-async function removeArchive (archiveInfo) {
-  trashList.unshift(archiveInfo)
-  await beaker.archives.remove(archiveInfo.key)
-  archiveInfo.userSettings.isSaved = false
-}
-
 async function onToggleSaved (e) {
   e.preventDefault()
   if (selectedArchive.userSettings.isSaved) {
-    trashList.unshift(selectedArchive)
-    await beaker.archives.remove(selectedArchive.key)
-    selectedArchive.userSettings.isSaved = false
+    selectedArchive.userSettings = await beaker.archives.remove(selectedArchive.key)
+    if (selectedArchive.userSettings.isSaved == false) {
+      trashList.unshift(selectedArchive)
+    }
   } else {
-    trashList.splice(trashList.findIndex(a => a.key === selectedArchive.key), 1)
-    await beaker.archives.add(selectedArchive.key)
-    selectedArchive.userSettings.isSaved = true
+    selectedArchive.userSettings = await beaker.archives.add(selectedArchive.key)
+    if (selectedArchive.userSettings.isSaved == true) {
+      trashList.splice(trashList.findIndex(a => a.key === selectedArchive.key), 1)
+    }
   }
   update()
 }
@@ -761,11 +757,13 @@ function onClearFilter () {
 }
 
 async function onClickBulkDelete () {
-  for (const key of selectedArchives) {
-    var archive = new DatArchive(key)
-    var archiveInfo = await archive.getInfo()
-    await removeArchive(archiveInfo)
-  }
+  var resultingSettings = await beaker.archives.bulkRemove(selectedArchives)
+  selectedArchives.forEach(async (key, i) => {
+    var settings = resultingSettings[i]
+    if (!settings.isSaved) {
+      trashList.unshift(await (new DatArchive(key)).getInfo())
+    }
+  })
 
   selectedArchives = []
   update()
