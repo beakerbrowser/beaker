@@ -588,8 +588,10 @@ function rEmpty () {
 }
 
 function updateGraph () {
-  var el = document.querySelector(`#history-${selectedArchive.key}`)
-  yo.update(el, renderGraph(selectedArchive))
+  if (currentSection === 'network') {
+    var el = document.querySelector(`#history-${selectedArchive.key}`)
+    yo.update(el, renderGraph(selectedArchive))
+  }
 }
 
 // event handlers
