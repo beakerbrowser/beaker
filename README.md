@@ -23,9 +23,9 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 :zap: Write peer-to-peer applications with new Web APIs<br>
 :zap: Live reloading to speed up site development<br>
 :zap: Native markdown (.md) rendering
- 
-#### Why Beaker? 
- 
+
+#### Why Beaker?
+
 Beaker is better than the HTTP/S Web because:
 
  - Users can share files with end-to-end secrecy
@@ -33,13 +33,13 @@ Beaker is better than the HTTP/S Web because:
  - Peer-to-peer websites can be forked, modified, and shared
  - Peer-to-peer websites work offline, because they don't rely on hosts
  - Peer-to-peer websites are versioned, so users can peg a version or view a website at any point in its history
- 
+
 Beaker is better than a blockchain Web because:
 
  - There's no Proof-of-Work or overhead for achieving global consensus
  - Users don't need to download a large dataset to participate (the blockchain history)
  - No upfront payment is required to participate
- 
+
 #### P2P Web APIs
 
 An example of the [Dat peer-to-peer Web API](https://beakerbrowser.com/docs/apis/dat.html):
@@ -100,6 +100,12 @@ In linux (possibly also OSX) you need libtool, m4, automake, make, and g++.
 
 ```
 sudo apt-get install libtool m4 automake make g++
+```
+
+In Fedora:
+
+```
+sudo dnf install libtool m4 make gcc-c++
 ```
 
 To build:
