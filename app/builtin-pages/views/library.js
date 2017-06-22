@@ -662,7 +662,7 @@ function onShare (e) {
 
 async function onImportFiles (e) {
   var files = await beakerBrowser.showOpenDialog({
-    title: 'Import files to this site',
+    title: 'Import files to this archive',
     buttonLabel: 'Import',
     properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory']
   })
