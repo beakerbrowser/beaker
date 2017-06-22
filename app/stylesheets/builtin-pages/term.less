@@ -1,0 +1,40 @@
+@import "../base/reset.less";
+@import "../base/colors.less";
+@import "../base/spacing.less";
+@import "../base/typography.less";
+
+@import "../com/spinner.less";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  &:extend(.system-font);
+  font-size: 14px;
+}
+
+main {
+  padding: 1rem;
+}
+
+.output {
+  .entry {
+    margin-bottom: 1rem;
+
+    .entry-header {
+      color: #555;
+    }
+  }
+}
+
+.prompt {
+  input {
+    width: 100%;
+    font-family: monospace;
+    line-height: 1;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 0.5rem 0.5rem 0.4rem;
+  }
+}
