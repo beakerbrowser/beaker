@@ -573,15 +573,6 @@ function rMetadata (archiveInfo) {
     titleEl = yo`<td>${niceName(archiveInfo)}</td>`
     descEl = yo`<td>${niceDesc(archiveInfo)}</td>`
   }
-  var sizeRows
-  if (archiveInfo.isOwner) {
-    sizeRows = [
-      yo`<tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>`,
-      yo`<tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
-    ]
-  } else {
-    sizeRows = yo`<tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
-  }
   return yo`
     <div class="metadata">
       <table>
