@@ -114,6 +114,9 @@ async function evalEnvironment () {
 
 function setCWD (location) {
   try {
+    if (location.startsWith('//')) {
+      location = `dat://${location}`
+    }
     let locationParsed = new URL(location)
     location = `${locationParsed.host}${locationParsed.pathname}`
   } catch (err) {
