@@ -241,7 +241,7 @@ export async function setMeta (key, value = {}) {
 
   // write
   await db.run(`
-    INSERT OR REPLACE INTO 
+    INSERT OR REPLACE INTO
       archives_meta (key, title, description, forkOf, createdByUrl, createdByTitle, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner)
       VALUES        (?,   ?,     ?,           ?,      ?,            ?,              ?,     ?,        ?,           ?,                      ?)
   `,                [key, title, description, forkOf, createdByUrl, createdByTitle, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner])
