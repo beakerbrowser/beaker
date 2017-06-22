@@ -22,7 +22,7 @@ export function setup () {
   requestNonce = '' + crypto.randomBytes(4).readUInt32LE(0)
 
   // setup the protocol handler
-  protocol.registerHttpProtocol('cli',
+  protocol.registerHttpProtocol('term',
     (request, cb) => {
       // send requests to the protocol server
       cb({
@@ -31,20 +31,20 @@ export function setup () {
       })
     }, err => {
       if (err) {
-        throw new Error('Failed to create protocol: cli. ' + err)
+        throw new Error('Failed to create protocol: term. ' + err)
       }
     }
   )
 
-  // create the internal cli HTTP server
-  var server = http.createServer(cliServer)
+  // create the internal term HTTP server
+  var server = http.createServer(termServer)
   listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => serverPort = port)
 }
 
 // internal methods
 // =
 
-async function cliServer (req, res) {
+async function termServer (req, res) {
   var cb = once((code, status, contentType, path) => {
     res.writeHead(code, status, {
       'Content-Type': (contentType || 'text/html; charset=utf-8'),
@@ -81,14 +81,14 @@ async function cliServer (req, res) {
   }
 
   // interface
-  if (requestUrl === 'cli://_internal/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/cli.css'))
+  if (requestUrl === 'term://_internal/main.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/term.css'))
   }
-  if (requestUrl === 'cli://_internal/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/cli.build.js'))
+  if (requestUrl === 'term://_internal/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/term.build.js'))
   }
-  if (requestUrl.startsWith('cli://')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/cli.html'))
+  if (requestUrl.startsWith('term://')) {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/term.html'))
   }
 
   return cb(404, 'Not Found')
