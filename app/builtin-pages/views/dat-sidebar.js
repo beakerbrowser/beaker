@@ -273,7 +273,7 @@ function update () {
           stagingTab
         ].filter(Boolean))}
         ${({
-          files: () => rFiles(archiveInfo, {hideDate: true}),
+          files: () => renderFiles(archiveInfo, {hideDate: true}),
           log: () => rHistory(archiveInfo),
           metadata: () => rMetadata(archiveInfo),
           staging: () => rStagingArea(archiveInfo)
