@@ -141,19 +141,11 @@ function update () {
               ${archiveInfo.userSettings.localPath
                 ? yo`
                   <div onclick=${onOpenFolder} class="dropdown-item">
-                    <i class="fa fa-folder"></i>
+                    <i class="fa fa-folder-o"></i>
                     Open folder
                   </div>`
                 : ''
               }
-              ${archiveInfo.isOwner
-                ? yo`
-                    <a class="dropdown-item" onclick=${onChooseNewLocation}>
-                      <i class="fa fa-folder-o"></i>
-                      Change folder
-                    </a>
-                  `
-                : ''}
               <a class="dropdown-item" onclick=${onDownloadZip}>
                 <i class="fa fa-file-archive-o"></i>
                 Download as Zip
@@ -349,7 +341,7 @@ function rMetadata (archiveInfo) {
           <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
         </table>
       </div>
-    `    
+    `
   }
 }
 
