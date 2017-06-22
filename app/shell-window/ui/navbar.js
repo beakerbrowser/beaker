@@ -205,7 +205,7 @@ function render (id, page) {
         <button class="nav-peers-btn" onclick=${onClickPeercount}>
           <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
         </button>`,
-      yo`<button class="nav-live-reload-btn ${isLiveReloading ? 'active': ''}" title="Turn {$isLiveReloading ? 'off' : 'on'} live reloading" onclick=${onClickLiveReload}>
+      yo`<button class="nav-live-reload-btn ${isLiveReloading ? 'active': ''}" title="Turn ${isLiveReloading ? 'off' : 'on'} live reloading" onclick=${onClickLiveReload}>
           <i class="fa fa-bolt"></i>
         </button>`
     ]
