@@ -18,12 +18,16 @@ export function setup () {
         let target = 'start'
         if (page) {
           target = page.getIntendedURL()
-          try {
-            let targetParsed = new URL(target)
-            target = targetParsed.host + targetParsed.pathname
-          } catch (e) {
-            // ignore
-            console.debug(e)
+          if (target.startsWith('term://')) {
+            target = target.slice('term://'.length)
+          } else {
+            try {
+              let targetParsed = new URL(target)
+              target = targetParsed.host + targetParsed.pathname
+            } catch (e) {
+              // ignore
+              console.debug(e)
+            }
           }
         }
         pages.setActive(pages.create(`term://${target}`))
