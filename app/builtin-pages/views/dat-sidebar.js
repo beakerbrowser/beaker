@@ -440,20 +440,10 @@ function renderChanges () {
     return yo`<div class="staging"><em>No unpublished changes.</em></div>`
   }
 
-  var numColumns = 0
-  numColumns += archiveInfo.diff.find(d => d.change === 'add') ? 1 : 0
-  numColumns += archiveInfo.diff.find(d => d.change === 'mod') ? 1 : 0
-  numColumns += archiveInfo.diff.find(d => d.change === 'del') ? 1 : 0
-  var maxLen = ([100, 35, 20])[numColumns - 1]
-
   // helper to render files
   const rFile = (d, icon, change) => {
     var formattedPath = d.path.slice(1)
     var len = d.path.slice(1).length
-
-    if (len > maxLen) {
-      formattedPath = '...' + formattedPath.slice(len - maxLen, len + 1)
-    }
 
     return yo`
       <div class="file">
