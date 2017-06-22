@@ -7,10 +7,10 @@
 
 * {
   box-sizing: border-box;
+  font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
 }
 
 body {
-  &:extend(.system-font);
   font-size: 14px;
 }
 
@@ -23,13 +23,11 @@ main {
     margin-bottom: 1rem;
 
     .entry-header {
-      font-family: monospace;
       line-height: 1;
       font-size: 16px;
     }
     .entry-content {
       white-space: pre;
-      font-family: monospace;
     }
   }
 
@@ -39,7 +37,6 @@ main {
     .error-stack {
       padding: 1rem;
       background: #fafafa;
-      font-family: monospace;
       font-weight: bold;
       font-size: 12px;
     }
@@ -48,15 +45,13 @@ main {
 
 .prompt {
   display: flex;
-  font-family: monospace;
   line-height: 1;
   font-size: 16px;
 
   input {
     position: relative;
-    top: -1px;
+    top: -2px;
     flex: 1;
-    font-family: monospace;
     line-height: 1;
     font-size: 16px;
     padding: 0 0 0 10px;
