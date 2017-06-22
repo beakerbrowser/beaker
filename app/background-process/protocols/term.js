@@ -87,6 +87,9 @@ async function termServer (req, res) {
   if (requestUrl === 'term://_internal/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/term.build.js'))
   }
+  if (requestUrl === 'term://_internal/env.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'term-fallback-env.build.js'))
+  }
   if (requestUrl.startsWith('term://')) {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/term.html'))
   }
