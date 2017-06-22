@@ -7,6 +7,7 @@ import renderFiles from '../com/files-list'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
 import { makeSafe } from '../../lib/strings'
 import { niceDate } from '../../lib/time'
+import { throttle } from '../../lib/functions'
 import { writeToClipboard } from '../../lib/fg/event-handlers'
 
 
@@ -19,6 +20,8 @@ var archiveKey
 var archive
 var archiveInfo
 var downloadProgress
+var isPublishing = false
+const reloadDiffThrottled = throttle(reloadDiff, 500)
 
 setup ()
 
@@ -59,7 +62,12 @@ async function loadCurrentArchive () {
     archiveInfo.history = history
     archiveInfo.historyPaginationOffset = 20
     archiveInfo.fileTree = fileTree
+    archiveInfo.events = archive.createFileActivityStream()
+
+    // wire up events
+    archiveInfo.events.addEventListener('changed', onFileChanged)
     updateProgressMonitor()
+    reloadDiff()
   }
   update()
 }
@@ -80,6 +88,61 @@ async function updateProgressMonitor (createOverride) {
       downloadProgress.destroy()
       downloadProgress = null
     }
+  }
+  update()
+}
+
+async function onRevert () {
+  if (!confirm('This will revert all files to the last published state. Are you sure?')) {
+    return
+  }
+
+  try {
+    await archive.revert()
+    reloadDiffThrottled()
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function onPublish () {
+  // update UI
+  isPublishing = true
+  update()
+
+  try {
+    // publish
+    await archive.commit({timeout: 30e3})
+  } catch (e) {
+    console.error(e)
+  }
+
+  // update UI
+  archiveInfo.diff = [] // optimistically clear it to speed up rendering
+  isPublishing = false
+  update()
+}
+
+async function onFileChanged () {
+  reloadDiffThrottled()
+}
+
+async function reloadDiff () {
+  if (!archiveInfo || !archiveInfo.isOwner) {
+    return
+  }
+
+  archiveInfo.diff = []
+  var stats = archiveInfo.diffStats = {add: 0, mod: 0, del: 0}
+  try {
+    // load diff
+    // var a = new DatArchive(selectedArchiveKey)
+    var diff = archiveInfo.diff = await archive.diff({shallow: true})
+
+    // calc diff stats
+    diff.forEach(d => { stats[d.change]++ })
+  } catch (e) {
+    // this can happen if the site's folder has disappeared
   }
   update()
 }
@@ -109,6 +172,20 @@ function update () {
   if (!archiveInfo) {
     // TODO "loading"?
     return
+  }
+
+  // staging tab setup
+  var diffCount, stagingTab
+  if (archiveInfo.isOwner && archiveInfo.diff) {
+    diffCount = archiveInfo.diff.length
+  }
+
+  if (archiveInfo.isOwner) {
+    var stagingTab = {
+      id: 'staging',
+      label: yo`<span>Staging <span class="changes-count">${diffCount || ''}</span></span>`,
+      onclick: onClickTab('staging')
+    }
   }
 
   yo.update(document.querySelector('main'), yo`
@@ -174,6 +251,9 @@ function update () {
         </div>
         <p class="description">${niceDesc(archiveInfo)}</p>
       </section>
+
+      ${rStagingNotification(archiveInfo)}
+
       <section class="network-info">
         <span>
           <i class="fa fa-share-alt"></i>
@@ -189,12 +269,14 @@ function update () {
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Files', onclick: onClickTab('files')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
-          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')}
+          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')},
+          stagingTab
         ].filter(Boolean))}
         ${({
-          files: () => renderFiles(archiveInfo, {hideDate: true}),
+          files: () => rFiles(archiveInfo, {hideDate: true}),
           log: () => rHistory(archiveInfo),
           metadata: () => rMetadata(archiveInfo),
+          staging: () => rStagingArea(archiveInfo)
         })[currentSection]()}
       </section>
     </div>
@@ -326,6 +408,128 @@ function rHistory (archiveInfo) {
   var rowEls = yo`<div></div>`
   rowEls.innerHTML = rows.join('')
   return yo`<div class="history">${rowEls}${loadMoreBtn}</div>`
+}
+
+function rStagingNotification (archiveInfo) {
+  if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
+    return ''
+  }
+
+  var diff = archiveInfo.diff
+  if (diff.length === 0) {
+    return ''
+  }
+
+  return yo`
+    <div class="staging-notification">
+      <span>${diff.length} unpublished changes</span>
+      <div class="actions">
+        <span onclick=${e => { e.preventDefault(); currentSection = 'staging'; update() }}>Review</span>
+        <span onclick=${onPublish}>Publish</span>
+      </div>
+    </div>
+  `
+}
+
+function renderChanges () {
+  var stats = archiveInfo.diffStats
+  var isExpanded = {add: false, mod: false, del: false}
+
+  // no changes
+  if (archiveInfo.diff.length === 0) {
+    return yo`<div class="staging"><em>No unpublished changes.</em></div>`
+  }
+
+  var numColumns = 0
+  numColumns += archiveInfo.diff.find(d => d.change === 'add') ? 1 : 0
+  numColumns += archiveInfo.diff.find(d => d.change === 'mod') ? 1 : 0
+  numColumns += archiveInfo.diff.find(d => d.change === 'del') ? 1 : 0
+  var maxLen = ([100, 35, 20])[numColumns - 1]
+
+  // helper to render files
+  const rFile = (d, icon, change) => {
+    var formattedPath = d.path.slice(1)
+    var len = d.path.slice(1).length
+
+    if (len > maxLen) {
+      formattedPath = '...' + formattedPath.slice(len - maxLen, len + 1)
+    }
+
+    return yo`
+      <div class="file">
+        <i class="op ${change} fa fa-${icon}"></i>
+        <a class="link" title=${d.path} href=${archiveInfo.url + d.path}>${formattedPath}</a>
+      </div>`
+  }
+
+  // helper to render a kind of change (add / mod / del)
+  const rChange = (change, icon, label) => {
+    var files = archiveInfo.diff.filter(d => d.change === change)
+    if (files.length === 0) {
+      return ''
+    }
+    var sliceEnd = 20
+    // if expanded or files.length is one item longer than limit, show all files
+    if (isExpanded[change] || (files.length - sliceEnd === 1)) {
+      sliceEnd = files.length
+    }
+    var hasMore = sliceEnd < files.length
+    return yo`
+      <div class="files">
+        ${files.slice(0, sliceEnd).map(d => rFile(d, icon, change))}
+        ${hasMore ? yo`<a class="link show-all" onclick=${onExpand(change)}>Show more <i class="fa fa-angle-down"></i></a>` : ''}
+      </div>
+    `
+  }
+
+  // helper to render all
+  const rChanges = () => yo`
+    <div class="changes-list">
+      ${rChange('add', 'plus', 'addition')}
+      ${rChange('mod', 'circle-o', 'change')}
+      ${rChange('del', 'close', 'deletion')}
+    </div>
+  `
+
+  // helper to expand the changes list
+  const onExpand = change => e => {
+    isExpanded[change] = !isExpanded[change]
+    redraw()
+  }
+
+  const redraw = () => {
+    yo.update(document.querySelector('.changes-list'), rChanges())
+  }
+
+  return rChanges()
+}
+
+function rStagingArea (archiveInfo) {
+  if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
+    return ''
+  }
+
+  var diff = archiveInfo.diff
+  if (diff.length === 0) {
+    return yo`<section class="staging"><em>No unpublished changes</em></section>`
+  }
+
+  var stats = archiveInfo.diffStats
+  return yo`
+    <section class="staging">
+      <div class="changes">
+        ${renderChanges(archiveInfo)}
+        <div class="changes-footer">
+          <div class="actions">
+            <span onclick=${onRevert}>Revert<i class="fa fa-undo"></i></span>
+            ${isPublishing
+              ? yo`<span>Publishing...</span>`
+              : yo`<span onclick=${onPublish}>Publish<i class="fa fa-check"></i></span>`}
+          </div>
+        </div>
+      </div>
+    </section>
+  `
 }
 
 function rMetadata (archiveInfo) {
