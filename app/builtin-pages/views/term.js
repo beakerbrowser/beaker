@@ -106,7 +106,6 @@ function parseCommand (str) {
   }
 
   console.log(`${cmd}(${args.map(JSON.stringify).join(', ')})`)
-
   return `${cmd}(${args.map(JSON.stringify).join(', ')})`
 }
 
