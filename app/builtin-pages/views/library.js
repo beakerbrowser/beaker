@@ -589,7 +589,7 @@ function rMetadata (archiveInfo) {
         <tr><td class="label">Description</td>${descEl}</tr>
         ${sizeRows}
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-        <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
+        ${archiveInfo.isOwner ? yo`<tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>` : ''}
         <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
       </table>
       ${archiveInfo.isOwner && isEditingInfo ? yo`<button onclick=${onSaveSettings} class="save btn">Apply changes</button>` : ''}
