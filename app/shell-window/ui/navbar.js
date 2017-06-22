@@ -371,7 +371,7 @@ function handleAutocompleteSearch (results) {
 
   // decorate result with bolded regions
   // explicitly replace special characters to match sqlite fts tokenization
-  var searchTerms = v.replace(/[:^*-\.]/g, ' ').split(' ').filter(Boolean)
+  var searchTerms = v.replace(/[:^*-\.\/]/g, ' ').split(' ').filter(Boolean)
   results.forEach(r => decorateResultMatches(searchTerms, r))
 
   // does the value look like a url?
