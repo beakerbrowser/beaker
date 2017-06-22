@@ -9,10 +9,24 @@ export function setup () {
   ipcRenderer.on('command', function (event, type, arg1, arg2, arg3, arg4) {
     var page = pages.getActive()
     switch (type) {
-      case 'file:new-tab':           
-        var page = pages.create(arg1)
-        pages.setActive(page)
-        navbar.focusLocation(page)
+      case 'file:new-tab':
+        let newPage = pages.create(arg1)
+        pages.setActive(newPage)
+        navbar.focusLocation(newPage)
+        return
+      case 'file:new-terminal':
+        let target = 'start'
+        if (page) {
+          target = page.getIntendedURL()
+          try {
+            let targetParsed = new URL(target)
+            target = targetParsed.host + targetParsed.pathname
+          } catch (e) {
+            // ignore
+            console.debug(e)
+          }
+        }
+        pages.setActive(pages.create(`term://${target}`))
         return
       case 'file:open-location':     return navbar.focusLocation(page)
       case 'file:close-tab':         return pages.remove(page)

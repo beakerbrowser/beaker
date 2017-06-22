@@ -28,6 +28,13 @@ var fileMenu = {
       }
     },
     {
+      label: 'New Terminal',
+      accelerator: 'CmdOrCtrl+`',
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'file:new-terminal')
+      }
+    },
+    {
       label: 'New Window',
       accelerator: 'CmdOrCtrl+N',
       click: function () { createShellWindow() }
