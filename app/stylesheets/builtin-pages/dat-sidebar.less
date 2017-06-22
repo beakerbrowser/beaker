@@ -299,10 +299,10 @@ section {
 .files-list {
   border: 0;
   border-top: 1px solid @border-menu;
+  border-bottom: 1px solid @border-menu;
   border-radius: 0;
   margin: 1rem 0;
   overflow-y: auto;
-  height: ~"calc(100vh - 200px)";
 
   i {
     color: @color-text--muted;
@@ -326,7 +326,7 @@ section {
 .history,
 .metadata,
 .files-list {
-  height: ~"calc(100vh - 200px)";
+  max-height: ~"calc(100vh - 200px)";
   overflow-y: auto;
 }
 
