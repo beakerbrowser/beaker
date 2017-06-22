@@ -1,5 +1,8 @@
 import path from 'path'
 
+// current working directory methods
+// =
+
 export async function ls (opts = {}, location = '') {
   // pick target location
   const cwd = env.term.getCWD()
@@ -7,6 +10,7 @@ export async function ls (opts = {}, location = '') {
   if (!location.startsWith('/')) {
     location = path.join(cwd.pathname, location)
   }
+  // TODO add support for other domains than CWD
 
   // read
   var listing = await cwd.archive.readdir(location, {stat: true})
@@ -45,8 +49,12 @@ export function cd (opts = {}, location) {
 }
 
 export function pwd () {
-  return env.term.getCWD().url
+  const cwd = env.term.getCWD()
+  return `//${cwd.host}${cwd.pathname}`
 }
+
+// utilities
+// =
 
 export function echo (opts, ...args) {
   return args.join(' ')

@@ -24,7 +24,7 @@ document.addEventListener('keydown', onKeyDown, {capture: true})
 readCWD()
 updatePrompt()
 evalEnvironment()
-appendOutput(yo`<div><strong>Welcome to webterm.</strong> Type <code>help()</code> if you get lost.</div>`, cwd.pathname)
+appendOutput(yo`<div><strong>Welcome to webterm.</strong> Type <code>help</code> if you get lost.</div>`, cwd.pathname)
 
 // output
 // =
@@ -160,14 +160,17 @@ function setCWD (location) {
 }
 
 function readCWD () {
-  let url = window.location.pathname.slice(2)
-  let host = url.slice(0, url.indexOf('/'))
-  let pathname = url.slice(url.indexOf('/'))
-  let archive = new DatArchive(host)
-  cwd = {url, host, pathname, archive}
+  cwd = parseURL(window.location.pathname.slice(2))
 
   console.log('CWD', cwd)
   document.title = `${cwd.host || cwd.url} | Terminal`
+}
+
+function parseURL (url) {
+  let host = url.slice(0, url.indexOf('/'))
+  let pathname = url.slice(url.indexOf('/'))
+  let archive = new DatArchive(host)
+  return {url, host, pathname, archive}
 }
 
 // builtins
