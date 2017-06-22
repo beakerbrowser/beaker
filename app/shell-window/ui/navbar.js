@@ -86,9 +86,11 @@ export function showInpageFind (page) {
 }
 
 export function hideInpageFind (page) {
-  page.stopFindInPageAsync('clearSelection')
-  page.isInpageFinding = false
-  update(page)
+  if (page.isInpageFinding) {
+    page.stopFindInPageAsync('clearSelection')
+    page.isInpageFinding = false
+    update(page)
+  }
 }
 
 export function clearAutocomplete () {
