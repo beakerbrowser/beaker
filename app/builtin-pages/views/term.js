@@ -10,35 +10,42 @@ const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
 var cwd // current working directory. {url:, host:, pathname:, archive:}
 var env // current working environment
 
+// helper elem
+const gt = () => {
+  var el = yo`<span></span>`
+  el.innerHTML = '&gt;'
+  return el
+}
+
 // start
 // =
 
+document.addEventListener('keydown', onKeyDown, {capture: true})
 readCWD()
 updatePrompt()
-focusPrompt()
 evalEnvironment()
-appendOutput(yo`<div><strong>Welcome to webterm.</strong> Type <code>help()</code> if you get lost.</div>`)
+appendOutput(yo`<div><strong>Welcome to webterm.</strong> Type <code>help()</code> if you get lost.</div>`, cwd.pathname)
 
 // output
 // =
 
-function appendOutput (output ,cmd) {
+function appendOutput (output, thenCWD, cmd) {
   document.querySelector('.output').appendChild(yo`
     <div class="entry">
-      <div class="entry-header">${(new Date()).toLocaleTimeString()} ${cmd || ''}</div>
+      <div class="entry-header">//${thenCWD.host}${thenCWD.pathname}${gt()} ${cmd || ''}</div>
       <div class="entry-content">${output}</div>
     </div>
   `)
   window.scrollTo(0, document.body.scrollHeight)
 }
 
-function appendError (msg, err, cmd) {
+function appendError (msg, err, thenCWD, cmd) {
   appendOutput(yo`
     <div class="error">
       <div class="error-header">${msg}</div>
       <div class="error-stack">${err.toString()}</div>
     </div>
-  `, cmd)
+  `, thenCWD, cmd)
 }
 
 // prompt
@@ -47,48 +54,48 @@ function appendError (msg, err, cmd) {
 function updatePrompt () {
   yo.update(document.querySelector('.prompt'), yo`
     <div class="prompt">
-      <input onblur=${focusPrompt} onkeyup=${onPromptKeyup} />
+      //${cwd.host}${cwd.pathname}${gt()} <input onkeyup=${onPromptKeyUp} />
     </div>
   `)
 }
 
-function focusPrompt () {
+function onKeyDown (e) {
   document.querySelector('.prompt input').focus()
 }
 
-function onPromptKeyup (e) {
-  // console.log(e.keyCode)
-  if (e.keyCode === 13) {
+function onPromptKeyUp (e) {
+  if (e.code === 'Enter') {
     evalPrompt()
   }
 }
 
 function evalPrompt () {
-  evalPromptInternal(appendOutput, appendError, env, parseCommand)  
+  evalPromptInternal(appendOutput, appendError, env, parseCommand, updatePrompt)  
 }
 
 // use the func constructor to relax 'use strict'
 // that way we can use with {}
-var evalPromptInternal = new AsyncFunction('appendOutput', 'appendError', 'env', 'parseCommand', `
+var evalPromptInternal = new AsyncFunction('appendOutput', 'appendError', 'env', 'parseCommand', 'updatePrompt', `
   var prompt = document.querySelector('.prompt input')
   if (!prompt.value.trim()) {
     return
   }
   try {
     var res
+    var oldCWD = Object.assign({}, env.term.getCWD())
     with (env) {
       res = await eval(parseCommand(prompt.value))
     }
     if (typeof res !== 'undefined') {
-      appendOutput(JSON.stringify(res, null, 4) + '\\nOk.', prompt.value)
+      appendOutput(JSON.stringify(res, null, 4), oldCWD, prompt.value)
     } else {
-      appendOutput('Ok.', prompt.value)
+      appendOutput('Ok.', oldCWD, prompt.value)
     }
   } catch (err) {
-    appendError('Command error', err, prompt.value)
+    appendError('Command error', err, oldCWD, prompt.value)
   }
   prompt.value = ''
-  prompt.focus()
+  updatePrompt()
 `)
 
 function parseCommand (str) {
@@ -118,7 +125,7 @@ async function evalEnvironment () {
     var res = await req.send({url: 'term://_internal/env.js'})
   } catch (err) {
     console.error(err)
-    return appendError('Failed to read environment script', err)
+    return appendError('Failed to read environment script', err, cwd)
   }
   try {
     env = eval(res.responseText)(1)
@@ -127,7 +134,7 @@ async function evalEnvironment () {
     console.log('Environment', env)
   } catch (err) {
     console.error(err)
-    return appendError('Failed to evaluate environment script', err)
+    return appendError('Failed to evaluate environment script', err, cwd)
   }
 }
 
