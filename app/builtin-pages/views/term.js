@@ -1,6 +1,7 @@
 import * as yo from 'yo-yo'
 import XHR from 'xhr-promise'
 import path from 'path'
+import minimist from 'minimist'
 const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
 
 // globals
@@ -63,17 +64,20 @@ function onPromptKeyup (e) {
 }
 
 function evalPrompt () {
-  evalPromptInternal(appendOutput, appendError, env)  
+  evalPromptInternal(appendOutput, appendError, env, parseCommand)  
 }
 
 // use the func constructor to relax 'use strict'
 // that way we can use with {}
-var evalPromptInternal = new AsyncFunction('appendOutput', 'appendError', 'env', `
+var evalPromptInternal = new AsyncFunction('appendOutput', 'appendError', 'env', 'parseCommand', `
   var prompt = document.querySelector('.prompt input')
+  if (!prompt.value.trim()) {
+    return
+  }
   try {
     var res
     with (env) {
-      res = await eval(prompt.value)
+      res = await eval(parseCommand(prompt.value))
     }
     if (typeof res !== 'undefined') {
       appendOutput(JSON.stringify(res, null, 4) + '\\nOk.', prompt.value)
@@ -86,6 +90,25 @@ var evalPromptInternal = new AsyncFunction('appendOutput', 'appendError', 'env',
   prompt.value = ''
   prompt.focus()
 `)
+
+function parseCommand (str) {
+  // parse the command
+  var parts = str.split(' ')
+  var cmd = parts[0]
+  var argsParsed = minimist(parts.slice(1))
+  console.log(JSON.stringify(argsParsed))
+
+  // form the js call
+  var args = argsParsed._
+  delete argsParsed._
+  if (Object.keys(argsParsed).length > 0) {
+    args.push(argsParsed)
+  }
+
+  console.log(`${cmd}(${args.map(JSON.stringify).join(', ')})`)
+
+  return `${cmd}(${args.map(JSON.stringify).join(', ')})`
+}
 
 // environment
 // =
@@ -116,6 +139,8 @@ function setCWD (location) {
   try {
     if (location.startsWith('//')) {
       location = `dat://${location}`
+    } else if (location.startsWith('/')) {
+      location = `dat://${cwd.host}${location}`
     }
     let locationParsed = new URL(location)
     location = `${locationParsed.host}${locationParsed.pathname}`
