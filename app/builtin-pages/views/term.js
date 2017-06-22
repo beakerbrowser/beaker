@@ -30,6 +30,13 @@ appendOutput(yo`<div><strong>Welcome to webterm.</strong> Type <code>help()</cod
 // =
 
 function appendOutput (output, thenCWD, cmd) {
+  if (typeof output === 'undefined') {
+    output = 'Ok.'
+  } else if (output.toHTML) {
+    output = output.toHTML()
+  } else if (typeof output !== 'string' && !(output instanceof Element)) {
+    output = JSON.stringify(output).replace(/^"|"$/g, '')
+  }
   document.querySelector('.output').appendChild(yo`
     <div class="entry">
       <div class="entry-header">//${thenCWD.host}${thenCWD.pathname}${gt()} ${cmd || ''}</div>
@@ -86,11 +93,7 @@ var evalPromptInternal = new AsyncFunction('appendOutput', 'appendError', 'env',
     with (env) {
       res = await eval(parseCommand(prompt.value))
     }
-    if (typeof res !== 'undefined') {
-      appendOutput(JSON.stringify(res, null, 4), oldCWD, prompt.value)
-    } else {
-      appendOutput('Ok.', oldCWD, prompt.value)
-    }
+    appendOutput(res, oldCWD, prompt.value)
   } catch (err) {
     appendError('Command error', err, oldCWD, prompt.value)
   }
@@ -173,6 +176,7 @@ function readCWD () {
 // =
 
 const builtins = {
+  html: yo,
   term: {
     getCWD () {
       return cwd
