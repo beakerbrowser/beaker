@@ -269,7 +269,7 @@ function update () {
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Files', onclick: onClickTab('files')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
-          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')},
+          {id: 'metadata', label: 'About', onclick: onClickTab('metadata')},
           stagingTab
         ].filter(Boolean))}
         ${({
