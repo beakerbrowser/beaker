@@ -134,6 +134,14 @@ function update () {
             </button>
 
             <div class="dropdown-btn-list">
+              ${archiveInfo.isOwner ?
+                yo`
+                  <button onclick=${onImportFiles} class="dropdown-item">
+                    <i class="fa fa-plus"></i>
+                    Import files
+                  </button>
+                ` : ''
+              }
               <a href="beaker://library/${archiveInfo.key}/" class="dropdown-item">
                 <i class="fa fa-code"></i>
                 Open in Library
@@ -363,6 +371,24 @@ async function onToggleSaved (e) {
   }
   update()
   updateProgressMonitor()
+}
+
+async function onImportFiles (e) {
+  var files = await beakerBrowser.showOpenDialog({
+    title: 'Import files to this archive',
+    buttonLabel: 'Import',
+    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory']
+  })
+  if (files) {
+    files.forEach(src => DatArchive.importFromFilesystem({
+      src,
+      dst: archiveInfo.url,
+      ignore: ['dat.json'],
+      inplaceImport: true
+    }))
+    currentSection = 'staging'
+    update()
+  }
 }
 
 function onOpenFolder () {
