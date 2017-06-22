@@ -292,13 +292,13 @@ export function create (opts) {
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
   page.webviewEl.addEventListener('page-favicon-updated', onPageFaviconUpdated)
+  page.webviewEl.addEventListener('page-title-updated', onPageTitleUpdated)
   page.webviewEl.addEventListener('update-target-url', onUpdateTargetUrl)
   page.webviewEl.addEventListener('close', onClose)
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
   page.webviewEl.addEventListener('plugin-crashed', onCrashed)
   page.webviewEl.addEventListener('ipc-message', onIPCMessage)
-  page.webviewEl.addEventListener('page-title-updated', onPageTitleUpdated)
 
   // rebroadcasts
   page.webviewEl.addEventListener('did-start-loading', rebroadcastEvent)
@@ -501,7 +501,7 @@ function onDomReady (e) {
       page.wcID = e.target.getWebContents().id // NOTE: this is a sync op
     }
     if (!navbar.isLocationFocused(page)) {
-      page.webviewEl.focus()
+      page.webviewEl.shadowRoot.querySelector('object').focus()
     }
   }
 }
@@ -583,8 +583,9 @@ function onDidStartLoading (e) {
     page.manuallyTrackedIsLoading = true
     navbar.update(page)
     navbar.hideInpageFind(page)
-    if (page.isActive)
+    if (page.isActive) {
       statusBar.setIsLoading(true)
+    }
   }
 }
 

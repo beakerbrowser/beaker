@@ -277,7 +277,7 @@ function render (id, page) {
   var locationInput = yo`
     <input
       type="text"
-      class="nav-location-input${(!isAddrElFocused) ? ' hidden' : ''}"
+      class="nav-location-input ${(!isAddrElFocused) ? ' hidden' : ''}"
       onfocus=${onFocusLocation}
       onblur=${onBlurLocation}
       onkeydown=${onKeydownLocation}
