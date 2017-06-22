@@ -523,28 +523,28 @@ function rStagingArea (archiveInfo) {
 }
 
 function rMetadata (archiveInfo) {
+  var sizeRows
   if (archiveInfo.isOwner) {
-    return yo`
-      <div class="metadata">
-        <table>
-          <tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
-          <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
-          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
-        </table>
-      </div>
-    `
+    sizeRows = [
+      yo`<tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>`,
+      yo`<tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
+    ]
   } else {
-    return yo`
-      <div class="metadata">
-        <table>
-          <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
-          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
-        </table>
-      </div>
-    `
+    sizeRows = yo`<tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
   }
+
+  return yo`
+    <div class="metadata">
+      <table>
+        <tr><td class="label">Title</td>${archiveInfo.title || yo`<em>Untitled</em>`}</tr>
+        <tr><td class="label">Description</td>${archiveInfo.description || yo`<em>No description</em>`}</tr>
+        ${sizeRows}
+        <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
+        ${archiveInfo.isOwner ? yo`<tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>` : ''}
+        <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
+      </table>
+    </div>
+  `
 }
 
 // event handlers
