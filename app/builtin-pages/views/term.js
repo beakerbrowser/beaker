@@ -111,9 +111,7 @@ function parseCommand (str) {
   // form the js call
   var args = argsParsed._
   delete argsParsed._
-  if (Object.keys(argsParsed).length > 0) {
-    args.push(argsParsed)
-  }
+  args.unshift(argsParsed) // opts always go first
 
   console.log(`${cmd}(${args.map(JSON.stringify).join(', ')})`)
   return `${cmd}(${args.map(JSON.stringify).join(', ')})`

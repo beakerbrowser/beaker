@@ -1,6 +1,7 @@
 import path from 'path'
 
-export async function ls (location = '') {
+export async function ls (opts = {}, location = '') {
+  // pick target location
   const cwd = env.term.getCWD()
   location = location.toString()
   if (!location.startsWith('/')) {
@@ -39,14 +40,14 @@ export async function ls (location = '') {
   return listing
 }
 
-export function cd (location) {
-  env.term.setCWD(location || '')
+export function cd (opts = {}, location) {
+  env.term.setCWD((location || '').toString())
 }
 
 export function pwd () {
   return env.term.getCWD().url
 }
 
-export function echo (...args) {
+export function echo (opts, ...args) {
   return args.join(' ')
 }
