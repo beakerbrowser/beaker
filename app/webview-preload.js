@@ -21,7 +21,7 @@ webFrame.registerURLSchemeAsPrivileged('dat', { bypassCSP: false })
 
 // setup APIs
 importWebAPIs()
-if (['beaker:','dat:'].includes(window.location.protocol)) {
+if (['beaker:','dat:','term:'].includes(window.location.protocol)) {
   window.DatArchive = DatArchive
   window.beaker = beaker
 }
