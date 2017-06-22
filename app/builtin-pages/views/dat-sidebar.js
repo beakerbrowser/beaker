@@ -511,10 +511,10 @@ function rStagingArea (archiveInfo) {
         ${renderChanges(archiveInfo)}
         <div class="changes-footer">
           <div class="actions">
-            <span onclick=${onRevert}>Revert<i class="fa fa-undo"></i></span>
+            <button class="btn small" onclick=${onRevert}>Revert</button>
             ${isPublishing
-              ? yo`<span>Publishing...</span>`
-              : yo`<span onclick=${onPublish}>Publish<i class="fa fa-check"></i></span>`}
+              ? yo`<span class="btn success small">Publishing...</span>`
+              : yo`<button class="btn success small" onclick=${onPublish}>Publish</button>`}
           </div>
         </div>
       </div>
