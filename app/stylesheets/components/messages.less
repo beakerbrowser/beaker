@@ -1,12 +1,13 @@
 @import "../base/spacing";
 
 .message {
+  &:extend(.flex);
+  justify-content: space-between;
   background: @background-message;
   color: @color-message;
   font-size: 12px;
   border: 1px solid;
   border-color: @border-message;
-  border-radius: 2px;
   padding: 10px 15px; // TODO: make a module extend that has consistent padding, margin -tbv
 
   ul {

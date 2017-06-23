@@ -406,7 +406,8 @@ function rNotSaved (archiveInfo) {
   }
   return yo`
     <section class="message primary">
-      This archive is not saved to your library. <a href="#" onclick=${onToggleSaved}>Save now.</a>
+      <span>This archive is not saved to your library.</span>
+      <a href="#" onclick=${onToggleSaved}>Save now</a>
     </section>
   `
 }
