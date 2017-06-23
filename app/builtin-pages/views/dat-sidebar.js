@@ -268,8 +268,8 @@ function update () {
       <section class="tabs-content">
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Published files', onclick: onClickTab('files')},
-          {id: 'log', label: 'History', onclick: onClickTab('log')},
           {id: 'metadata', label: 'About', onclick: onClickTab('metadata')},
+          {id: 'log', label: 'History', onclick: onClickTab('log')},
           stagingTab
         ].filter(Boolean))}
         ${({
