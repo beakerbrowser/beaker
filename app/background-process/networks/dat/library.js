@@ -142,10 +142,10 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
     var metaSize = archive.metaSize || 0
     var stagingSize = archive.stagingSize || 0
     var stagingSizeLessIgnored = archive.stagingSizeLessIgnored || 0
-    var meta = updateMTime ? Date.now() : oldMeta.mtime
+    var mtime = updateMTime ? Date.now() : oldMeta.mtime
 
     // write the record
-    var details = {title, description, forkOf, createdBy, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner}    
+    var details = {title, description, forkOf, createdBy, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner}
     debug('Writing meta', details)
     await archivesDb.setMeta(key, details)
 
