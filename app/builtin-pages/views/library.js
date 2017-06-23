@@ -535,7 +535,10 @@ function rHistory (archiveInfo) {
   var loadMoreBtn = ''
   if (archiveInfo.version > archiveInfo.historyPaginationOffset) {
     loadMoreBtn = yo`<div>
-      <a class="link load-more" href="#" onclick=${onLoadMoreHistory}>Load more</a>
+      <a class="load-more" href="#" onclick=${onLoadMoreHistory}>
+        Load more
+        <i class="fa fa-caret-down"></i>
+      </a>
     </div>`
   }
 

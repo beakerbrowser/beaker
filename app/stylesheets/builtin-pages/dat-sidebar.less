@@ -350,9 +350,13 @@ section {
 .history {
 
   .load-more {
-    &:extend(.link:hover);
+    &:extend(.link);
     display: block;
     margin-top: .5rem;
+
+    &:hover {
+      &:extend(.link:hover);
+    }
   }
 }
 
