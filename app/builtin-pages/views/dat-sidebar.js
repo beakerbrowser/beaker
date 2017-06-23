@@ -175,7 +175,7 @@ function update () {
   }
 
   // staging tab setup
-  var diffCount, stagingTab
+  var diffCount, stagingTab, buttons
   if (archiveInfo.isOwner && archiveInfo.diff) {
     diffCount = archiveInfo.diff.length
   }
@@ -186,21 +186,43 @@ function update () {
       label: yo`<span>Staging <span class="changes-count">${diffCount || ''}</span></span>`,
       onclick: onClickTab('staging')
     }
-  }
 
-  yo.update(document.querySelector('main'), yo`
-    <main>
-    <div class="archive">
-      <section class="actions">
-        ${rSyncButton()}
-
+    var buttons = [
+      yo`
+        <button onclick=${onImportFiles} class="action">
+          <div class="content">
+            <i class="fa fa-plus"></i>
+            <span>Import files</span>
+          </div>
+        </button>
+      `,
+      yo`
+        <button onclick=${onClickLiveReload} class="action ${true ? 'active': ''}" title="Turn ${true ? 'off' : 'on'} live reloading">
+          <div class="content">
+            <i class="fa fa-bolt"></i>
+            <span>Live reload</span>
+          </div>
+        </button>
+      `
+    ]
+  } else {
+    buttons = [
+      rSyncButton(),
+      yo`
         <button class="action" onclick=${onFork}>
           <div class="content">
           <i class="fa fa-code-fork"></i>
           <span>Fork</span>
           </div>
         </button>
-
+      `
+    ]
+  }
+  yo.update(document.querySelector('main'), yo`
+    <main>
+    <div class="archive">
+      <section class="actions">
+        ${buttons}
         ${toggleable(yo`
           <div class="action dropdown-btn-container toggleable-container">
             <button class="toggleable" onclick>
@@ -211,14 +233,6 @@ function update () {
             </button>
 
             <div class="dropdown-btn-list">
-              ${archiveInfo.isOwner ?
-                yo`
-                  <button onclick=${onImportFiles} class="dropdown-item">
-                    <i class="fa fa-plus"></i>
-                    Import files
-                  </button>
-                ` : ''
-              }
               <a href="beaker://library/${archiveInfo.key}/" class="dropdown-item">
                 <i class="fa fa-code"></i>
                 Open in Library
@@ -235,6 +249,7 @@ function update () {
                 <i class="fa fa-file-archive-o"></i>
                 Download as .zip
               </a>
+              ${archiveInfo.isOwner ? rSaveButton(archiveInfo) : ''}
             </div>
           </div>
         `)}
@@ -300,65 +315,63 @@ function updateDownloadProgress () {
   yo.update(document.querySelector('.progress'), rDownloadProgress())
 }
 
-function rSyncButton () {
-  if (archiveInfo.isOwner) {
-    var toggleSaveIcon, toggleSaveText
+function rSaveButton () {
+  var toggleSaveIcon, toggleSaveText
 
-    if (archiveInfo.userSettings.isSaved) {
-      toggleSaveIcon = 'fa-trash'
-      toggleSaveText = 'Delete'
-    } else {
-      toggleSaveIcon = 'fa-floppy-o'
-      toggleSaveText = 'Restore'
-    }
-    return yo`
-      <button id="sync-btn" class="action" onclick=${onToggleSaved}>
-        <div class="content">
-          <i class="fa ${toggleSaveIcon}"></i>
-          <span>${toggleSaveText}</span>
-        </div>
-      </button>
-    `
+  if (archiveInfo.userSettings.isSaved) {
+    toggleSaveIcon = 'fa-trash'
+    toggleSaveText = 'Delete'
   } else {
-    var syncIcon, syncTitle
-    if (downloadProgress && downloadProgress.current < 100) {
-      syncIcon = yo`<span class="spinner"></span>`
-    } else if (archiveInfo.userSettings.isSaved) {
-      syncIcon = yo`<i class="fa fa-check-circle"></i>`
-    } else {
-      syncIcon = yo`<i class="fa fa-cloud"></i>`
-    }
-    if (archiveInfo.userSettings.isSaved) {
-      syncTitle = 'These files are saved for offline viewing'
-    } else {
-      syncTitle = 'These files are only available online'
-    }
-    return yo`
-      ${toggleable(yo`
-        <div id="sync-btn" class="action sync dropdown-btn-container toggleable-container" title=${syncTitle}>
-          <button class="toggleable">
-            <div class="content">
-              ${syncIcon}
-              <span>Sync</span>
-            </div>
-          </button>
+    toggleSaveIcon = 'fa-floppy-o'
+    toggleSaveText = 'Restore'
+  }
+  return yo`
+    <button class="dropdown-item" onclick=${onToggleSaved}>
+      <i class="fa ${toggleSaveIcon}"></i>
+      <span>${toggleSaveText}</span>
+    </button>
+  `
+}
 
-          <div class="dropdown-btn-list">
-            <div class="dropdown-item" onclick=${onClickLocalSync}>
-              ${archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-              <i class="fa fa-check-circle"></i>
-              Sync${archiveInfo.userSettings.isSaved ? 'ed' : ''} for offline use
-            </div>
-            <div class="dropdown-item" onclick=${onClickOnlineOnly}>
-              ${!archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-              <i class="fa fa-cloud"></i>
-              Online only
-            </div>
+function rSyncButton () {
+  var syncIcon, syncTitle
+  if (downloadProgress && downloadProgress.current < 100) {
+    syncIcon = yo`<span class="spinner"></span>`
+  } else if (archiveInfo.userSettings.isSaved) {
+    syncIcon = yo`<i class="fa fa-check-circle"></i>`
+  } else {
+    syncIcon = yo`<i class="fa fa-cloud"></i>`
+  }
+  if (archiveInfo.userSettings.isSaved) {
+    syncTitle = 'These files are saved for offline viewing'
+  } else {
+    syncTitle = 'These files are only available online'
+  }
+  return yo`
+    ${toggleable(yo`
+      <div id="sync-btn" class="action sync dropdown-btn-container toggleable-container" title=${syncTitle}>
+        <button class="toggleable">
+          <div class="content">
+            ${syncIcon}
+            <span>Sync</span>
+          </div>
+        </button>
+
+        <div class="dropdown-btn-list">
+          <div class="dropdown-item" onclick=${onClickLocalSync}>
+            ${archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+            <i class="fa fa-check-circle"></i>
+            Sync${archiveInfo.userSettings.isSaved ? 'ed' : ''} for offline use
+          </div>
+          <div class="dropdown-item" onclick=${onClickOnlineOnly}>
+            ${!archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+            <i class="fa fa-cloud"></i>
+            Online only
           </div>
         </div>
-      `)}
-    `
-  }
+      </div>
+    `)}
+  `
 }
 
 function rDownloadProgress () {
@@ -552,6 +565,10 @@ function onArchivesUpdated (e) {
   if (archive && e.details.url === archive.url) {
     loadCurrentArchive()
   }
+}
+
+async function onClickLiveReload (e) {
+  // TODO Paul
 }
 
 async function onToggleSaved (e) {
