@@ -233,7 +233,7 @@ function update () {
               }
               <a class="dropdown-item" onclick=${onDownloadZip}>
                 <i class="fa fa-file-archive-o"></i>
-                Download as Zip
+                Download as .zip
               </a>
             </div>
           </div>
