@@ -11,6 +11,7 @@ export function setup () {
     window.locationbar.clearSiteInfoOverride = clearSiteInfoOverride
     window.locationbar.openUrl = openUrl
     window.locationbar.closeMenus = closeMenus
+    window.locationbar.toggleLiveReloading = toggleLiveReloading
   }
 }
 
@@ -28,4 +29,8 @@ function openUrl (url, {newTab} = {}) {
 
 function closeMenus () {
   ipcRenderer.sendToHost('close-menus')
+}
+
+function toggleLiveReloading () {
+  ipcRenderer.sendToHost('toggle-live-reloading')
 }

@@ -859,6 +859,11 @@ export function onIPCMessage (e) {
     case 'close-menus':
       navbar.closeMenus()
       break
+    case 'toggle-live-reloading':
+      if (activePage) {
+        activePage.toggleLiveReloading()
+      }
+      break
   }
 }
 

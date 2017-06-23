@@ -579,7 +579,7 @@ function onArchivesUpdated (e) {
 }
 
 async function onClickLiveReload (e) {
-  // TODO Paul
+  locationbar.toggleLiveReloading()
 }
 
 async function onToggleSaved (e) {
