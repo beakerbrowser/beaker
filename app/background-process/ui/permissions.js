@@ -55,7 +55,7 @@ export function queryPermission (permission, webContents) {
 }
 
 export function denyAllRequests (win) {
-  // remove all requests in the window, denying as we go 
+  // remove all requests in the window, denying as we go
   activeRequests = activeRequests.filter(req => {
     if (req.win === win) {
       debug('Denying outstanding permission-request for closing window, req #'+req.id+' for '+req.permission)

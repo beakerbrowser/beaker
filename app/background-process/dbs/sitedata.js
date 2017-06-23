@@ -7,6 +7,7 @@ import manifest from '../../lib/api-manifests/internal/sitedata'
 import { cbPromise } from '../../lib/functions'
 import { setupSqliteDB } from '../../lib/bg/db'
 import { internalOnly } from '../../lib/bg/rpc'
+import datDns from '../networks/dat/dns'
 
 // globals
 // =
@@ -27,33 +28,36 @@ export function setup () {
   rpc.exportAPI('beakerSitedata', manifest, { get, set, getPermissions, getPermission, setPermission }, internalOnly)
 }
 
-export function set (url, key, value) {
-  return setupPromise.then(v => cbPromise(cb => {
-    var origin = extractOrigin(url)
-    if (!origin) return cb()
+export async function set (url, key, value) {
+  await setupPromise
+  var origin = await extractOrigin(url)
+  if (!origin) return null
+  return cbPromise(cb => {
     db.run(`
       INSERT OR REPLACE
         INTO sitedata (origin, key, value)
         VALUES (?, ?, ?)
     `, [origin, key, value], cb)
-  }))
+  })
 }
 
-export function get (url, key) {
-  return setupPromise.then(v => cbPromise(cb => {
-    var origin = extractOrigin(url)
-    if (!origin) return cb()
+export async function get (url, key) {
+  await setupPromise
+  var origin = await extractOrigin(url)
+  if (!origin) return null
+  return cbPromise(cb => {
     db.get(`SELECT value FROM sitedata WHERE origin = ? AND key = ?`, [origin, key], (err, res) => {
       if (err) return cb(err)
       cb(null, res && res.value)
     })
-  }))
+  })
 }
 
-export function getPermissions (url) {
-  return setupPromise.then(v => cbPromise(cb => {
-    var origin = extractOrigin(url)
-    if (!origin) return cb()
+export async function getPermissions (url) {
+  await setupPromise
+  var origin = await extractOrigin(url)
+  if (!origin) return null
+  return cbPromise(cb => {
     db.all(`SELECT key, value FROM sitedata WHERE origin = ? AND key LIKE 'perm:%'`, [origin], (err, rows) => {
       if (err) return cb(err)
 
@@ -63,13 +67,14 @@ export function getPermissions (url) {
       if (rows) rows.forEach(row => { perms[row.key.slice('5')] = row.value })
       cb(null, perms)
     })
-  }))
+  })
 }
 
-export function getNetworkPermissions (url) {
-  return setupPromise.then(v => cbPromise(cb => {
-    var origin = extractOrigin(url)
-    if (!origin) return cb()
+export async function getNetworkPermissions (url) {
+  await setupPromise
+  var origin = await extractOrigin(url)
+  if (!origin) return null
+  return cbPromise(cb => {
     db.all(`SELECT key, value FROM sitedata WHERE origin = ? AND key LIKE 'perm:network:%'`, [origin], (err, rows) => {
       if (err) return cb(err)
 
@@ -82,7 +87,7 @@ export function getNetworkPermissions (url) {
       }
       cb(null, origins)
     })
-  }))  
+  })
 }
 
 export function getPermission (url, key) {
@@ -94,14 +99,16 @@ export function setPermission (url, key, value) {
   return set(url, 'perm:' + key, value)
 }
 
-export function query (values) {
-  return setupPromise.then(v => cbPromise(cb => {
-    // massage query
-    if ('origin' in values) {
-      values.origin = extractOrigin(values.origin)
-    }
+export async function query (values) {
+  await setupPromise
 
-    // run query 
+  // massage query
+  if ('origin' in values) {
+    values.origin = await extractOrigin(values.origin)
+  }
+
+  return cbPromise(cb => {
+    // run query
     const keys = Object.keys(values)
     const where = keys.map(k => `${k} = ?`).join(' AND ')
     const values = keys.map(k => values[k])
@@ -109,15 +116,18 @@ export function query (values) {
       if (err) return cb(err)
       cb(null, res && res.value)
     })
-  }))
+  })
 }
 
 // internal methods
 // =
 
-function extractOrigin (originURL) {
+async function extractOrigin (originURL) {
   var urlp = url.parse(originURL)
   if (!urlp || !urlp.host || !urlp.protocol) return
+  if (urlp.protocol === 'dat:') {
+    urlp.host = await datDns.resolveName(urlp.host)
+  }
   return (urlp.protocol + urlp.host)
 }
 

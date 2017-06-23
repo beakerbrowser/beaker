@@ -62,5 +62,8 @@
     "utp-native": "^1.5.1",
     "yo-yo": "^1.4.0",
     "zerr": "^1.0.4"
+  },
+  "devDependencies": {
+    "devtron": "^1.4.0"
   }
 }

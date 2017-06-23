@@ -86,9 +86,11 @@ export function showInpageFind (page) {
 }
 
 export function hideInpageFind (page) {
-  page.stopFindInPageAsync('clearSelection')
-  page.isInpageFinding = false
-  update(page)
+  if (page.isInpageFinding) {
+    page.stopFindInPageAsync('clearSelection')
+    page.isInpageFinding = false
+    update(page)
+  }
 }
 
 export function clearAutocomplete () {
@@ -277,7 +279,7 @@ function render (id, page) {
   var locationInput = yo`
     <input
       type="text"
-      class="nav-location-input${(!isAddrElFocused) ? ' hidden' : ''}"
+      class="nav-location-input ${(!isAddrElFocused) ? ' hidden' : ''}"
       onfocus=${onFocusLocation}
       onblur=${onBlurLocation}
       onkeydown=${onKeydownLocation}
@@ -371,7 +373,7 @@ function handleAutocompleteSearch (results) {
 
   // decorate result with bolded regions
   // explicitly replace special characters to match sqlite fts tokenization
-  var searchTerms = v.replace(/[:^*-\.]/g, ' ').split(' ').filter(Boolean)
+  var searchTerms = v.replace(/[:^*-\.\/]/g, ' ').split(' ').filter(Boolean)
   results.forEach(r => decorateResultMatches(searchTerms, r))
 
   // does the value look like a url?

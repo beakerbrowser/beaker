@@ -123,7 +123,7 @@ export async function generateCreatedBy (url) {
 }
 
 // read metadata for the archive, and store it in the meta db
-export async function pullLatestArchiveMeta (archive) {
+export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
   try {
     var key = archive.key.toString('hex')
 
@@ -131,17 +131,18 @@ export async function pullLatestArchiveMeta (archive) {
     await pify(archive.ready.bind(archive))()
 
     // read the archive meta and size on disk
-    var [manifest, _] = await Promise.all([
+    var [manifest, oldMeta, _] = await Promise.all([
       pda.readManifest(archive).catch(err => {}),
+      archivesDb.getMeta(key),
       updateSizeTracking(archive)
     ])
     manifest = manifest || {}
     var {title, description, forkOf, createdBy} = manifest
-    var mtime = Date.now() // use our local update time
     var isOwner = archive.writable
     var metaSize = archive.metaSize || 0
     var stagingSize = archive.stagingSize || 0
     var stagingSizeLessIgnored = archive.stagingSizeLessIgnored || 0
+    var mtime = updateMTime ? Date.now() : oldMeta.mtime
 
     // write the record
     var details = {title, description, forkOf, createdBy, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner}
@@ -330,16 +331,16 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
       })
     })
   }
-  
+
   // pull meta
   await pullLatestArchiveMeta(archive)
 
   // wire up events
-  archive.pullLatestArchiveMeta = debounce(() => pullLatestArchiveMeta(archive), 1e3)
+  archive.pullLatestArchiveMeta = debounce(opts => pullLatestArchiveMeta(archive, opts), 1e3)
   archive.fileActStream = pda.createFileActivityStream(archive)
   archive.fileActStream.on('data', ([event]) => {
     if (event === 'changed') {
-      archive.pullLatestArchiveMeta()
+      archive.pullLatestArchiveMeta({updateMTime: true})
     }
   })
 
@@ -570,7 +571,7 @@ function configureAutoDownload (archive, userSettings) {
     archive._autodownloader.undownloadAll()
     archive.metadata.removeListener('download', archive._autodownloader.onUpdate)
     archive._autodownloader = null
-  } 
+  }
 }
 
 var connIdCounter = 0 // for debugging
