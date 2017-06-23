@@ -43,6 +43,7 @@ default-src 'self' dat: blob:;
 script-src 'self' 'unsafe-eval' 'unsafe-inline' dat: blob:;
 style-src 'self' 'unsafe-inline' dat: blob:;
 img-src 'self' data: dat: blob:;
+font-src 'self' data: dat: blob:;
 object-src 'none';
 `.replace(/\n/g, ' ')
 
@@ -54,7 +55,7 @@ default-src 'self' dat: blob:;
 script-src 'self' 'unsafe-eval' 'unsafe-inline' dat: blob:;
 style-src 'self' 'unsafe-inline' dat: blob:;
 img-src 'self' data: dat: ${origins} blob:;
-font-src 'self' dat: ${origins} blob:;
+font-src 'self' data: dat: ${origins} blob:;
 media-src 'self' dat: ${origins} blob:;
 connect-src 'self' dat: ${origins};
 object-src 'none';
@@ -221,7 +222,7 @@ async function datServer (req, res) {
   if (urlp.version) {
     let seq = +urlp.version
     if (seq <= 0) {
-      return cb(404, 'Version too low')      
+      return cb(404, 'Version too low')
     }
     if (seq > archive.version) {
       return cb(404, 'Version too high')
@@ -283,7 +284,7 @@ async function datServer (req, res) {
     cleanup()
     return cb(404, 'File Not Found')
   }
-  
+
   // caching if-match
   // TODO
   // this unfortunately caches the CSP header too
