@@ -356,10 +356,13 @@ function rArchive (archiveInfo) {
                 <i class="fa fa-caret-down"></i>
               </button>
               <div class="dropdown-btn-list">
-                <div class="dropdown-item" onclick=${onFork}>
-                  <i class="fa fa-code-fork"></i>
-                  Fork this site
-                </div>
+                ${ownerButtons}
+                ${archiveInfo.isOwner ? '' : yo`
+                  <div class="dropdown-item" onclick=${onFork}>
+                    <i class="fa fa-code-fork"></i>
+                    Fork this site
+                  </div>
+                `}
                 <div class="dropdown-item" onclick=${onViewSource}>
                   <i class="fa fa-code"></i>
                   View source
