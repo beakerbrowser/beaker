@@ -63,8 +63,27 @@ function rFolder (archiveInfo, opts) {
 }
 
 function rChildren (archiveInfo, children, depth=0, opts={}) {
-  return Object.keys(children)
+  var children = Object.keys(children)
     .map(key => children[key])
+    .filter(node => {
+      if (node.entry.name === 'dat.json') {
+        // hide dat.json for now
+        return false
+      }
+      return true
+    })
+
+  if (children.length === 0 && depth === 0) {
+    return yo`
+      <div
+        class="item empty"
+        title="No files">
+        <div class="name"><em>No files</em></div>
+      </div>
+    `
+  }
+
+  return children
     .sort(treeSorter)
     .map(node => rNode(archiveInfo, node, depth, opts))
 }
@@ -80,10 +99,6 @@ function treeSorter (a, b) {
 }
 
 function rNode (archiveInfo, node, depth, opts) {
-  if (node.entry.name === 'dat.json') {
-    // hide dat.json for now
-    return ''
-  }
   if (node.entry.isDirectory()) {
     return rDirectory(archiveInfo, node, depth, opts)
   }
