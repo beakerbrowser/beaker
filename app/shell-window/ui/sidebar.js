@@ -10,7 +10,7 @@ var sidebarEl
 var dragHandleEl
 var activePanel
 var panels = {} // pageId => {webview: Element,visible: boolean}
-var sidebarWidth = 300
+var sidebarWidth = 310
 
 // exported api
 // =
@@ -203,7 +203,7 @@ function doResize () {
     if (isOpen && panels[id] && panels[id].visible) {
       wv.style.width = `${pageSize.width - sidebarWidth}px`
     } else {
-      wv.style.width = '100%'    
+      wv.style.width = '100%'
     }
   })
 }
@@ -222,6 +222,6 @@ function onDragMouseUp (e) {
 function onDragMouseMove (e) {
   var pageSize = document.body.getClientRects()[0]
   sidebarWidth = pageSize.width - e.x
-  if (sidebarWidth < 300) sidebarWidth = 300
+  if (sidebarWidth < 310) sidebarWidth = 310
   doResize()
 }

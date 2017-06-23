@@ -16,6 +16,11 @@
   padding: 0 8px;
   letter-spacing: .2px;
 
+  &.small {
+    height: 20px;
+    line-height: 20px;
+  }
+
   * {
     cursor: pointer;
     display: inline-block;
@@ -132,7 +137,6 @@
 
 .dropdown-btn-list {
   display: none;
-
   position: absolute;
   z-index: 1;
   top: 24px;
@@ -150,7 +154,10 @@
   hr {
     margin: 2px 0;
   }
-  & > div, & > a {
+
+  // TODO this should just be .dropdown-item -tbv
+  .dropdown-item, & > div, & > a {
+    width: 100%;
     display: block;
     padding: 7px 7px;
     color: @color-text;

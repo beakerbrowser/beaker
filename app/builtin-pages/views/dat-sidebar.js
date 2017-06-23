@@ -7,6 +7,7 @@ import renderFiles from '../com/files-list'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
 import { makeSafe } from '../../lib/strings'
 import { niceDate } from '../../lib/time'
+import { throttle } from '../../lib/functions'
 import { writeToClipboard } from '../../lib/fg/event-handlers'
 
 
@@ -19,6 +20,8 @@ var archiveKey
 var archive
 var archiveInfo
 var downloadProgress
+var isPublishing = false
+const reloadDiffThrottled = throttle(reloadDiff, 500)
 
 setup ()
 
@@ -59,7 +62,12 @@ async function loadCurrentArchive () {
     archiveInfo.history = history
     archiveInfo.historyPaginationOffset = 20
     archiveInfo.fileTree = fileTree
+    archiveInfo.events = archive.createFileActivityStream()
+
+    // wire up events
+    archiveInfo.events.addEventListener('changed', onFileChanged)
     updateProgressMonitor()
+    reloadDiff()
   }
   update()
 }
@@ -80,6 +88,61 @@ async function updateProgressMonitor (createOverride) {
       downloadProgress.destroy()
       downloadProgress = null
     }
+  }
+  update()
+}
+
+async function onRevert () {
+  if (!confirm('This will revert all files to the last published state. Are you sure?')) {
+    return
+  }
+
+  try {
+    await archive.revert()
+    reloadDiffThrottled()
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function onPublish () {
+  // update UI
+  isPublishing = true
+  update()
+
+  try {
+    // publish
+    await archive.commit({timeout: 30e3})
+  } catch (e) {
+    console.error(e)
+  }
+
+  // update UI
+  archiveInfo.diff = [] // optimistically clear it to speed up rendering
+  isPublishing = false
+  update()
+}
+
+async function onFileChanged () {
+  reloadDiffThrottled()
+}
+
+async function reloadDiff () {
+  if (!archiveInfo || !archiveInfo.isOwner) {
+    return
+  }
+
+  archiveInfo.diff = []
+  var stats = archiveInfo.diffStats = {add: 0, mod: 0, del: 0}
+  try {
+    // load diff
+    // var a = new DatArchive(selectedArchiveKey)
+    var diff = archiveInfo.diff = await archive.diff({shallow: true})
+
+    // calc diff stats
+    diff.forEach(d => { stats[d.change]++ })
+  } catch (e) {
+    // this can happen if the site's folder has disappeared
   }
   update()
 }
@@ -111,19 +174,55 @@ function update () {
     return
   }
 
-  yo.update(document.querySelector('main'), yo`
-    <main>
-    <div class="archive">
-      <section class="actions">
-        ${rSyncButton()}
+  // staging tab setup
+  var diffCount, stagingTab, buttons
+  if (archiveInfo.isOwner && archiveInfo.diff) {
+    diffCount = archiveInfo.diff.length
+  }
 
+  if (archiveInfo.isOwner) {
+    var stagingTab = {
+      id: 'staging',
+      label: yo`<span>Staging <span class="changes-count">${diffCount || ''}</span></span>`,
+      onclick: onClickTab('staging')
+    }
+
+    var buttons = [
+      yo`
+        <button onclick=${onImportFiles} class="action">
+          <div class="content">
+            <i class="fa fa-plus"></i>
+            <span>Import files</span>
+          </div>
+        </button>
+      `,
+      yo`
+        <button onclick=${onClickLiveReload} class="action ${true ? 'active': ''}" title="Turn ${true ? 'off' : 'on'} live reloading">
+          <div class="content">
+            <i class="fa fa-bolt"></i>
+            <span>Live reload</span>
+          </div>
+        </button>
+      `
+    ]
+  } else {
+    buttons = [
+      rSyncButton(),
+      yo`
         <button class="action" onclick=${onFork}>
           <div class="content">
           <i class="fa fa-code-fork"></i>
           <span>Fork</span>
           </div>
         </button>
-
+      `
+    ]
+  }
+  yo.update(document.querySelector('main'), yo`
+    <main>
+    <div class="archive">
+      <section class="actions">
+        ${buttons}
         ${toggleable(yo`
           <div class="action dropdown-btn-container toggleable-container">
             <button class="toggleable" onclick>
@@ -146,10 +245,19 @@ function update () {
                   </div>`
                 : ''
               }
+              ${archiveInfo.isOwner
+                ? yo`
+                  <div onclick=${onFork} class="dropdown-item">
+                    <i class="fa fa-code-fork"></i>
+                    Fork
+                  </div>`
+                : ''
+              }
               <a class="dropdown-item" onclick=${onDownloadZip}>
                 <i class="fa fa-file-archive-o"></i>
-                Download as Zip
+                Download as .zip
               </a>
+              ${archiveInfo.isOwner ? rSaveButton(archiveInfo) : ''}
             </div>
           </div>
         `)}
@@ -166,6 +274,9 @@ function update () {
         </div>
         <p class="description">${niceDesc(archiveInfo)}</p>
       </section>
+
+      ${rStagingNotification(archiveInfo)}
+
       <section class="network-info">
         <span>
           <i class="fa fa-share-alt"></i>
@@ -179,14 +290,16 @@ function update () {
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-          {id: 'files', label: 'Files', onclick: onClickTab('files')},
+          {id: 'files', label: 'Published files', onclick: onClickTab('files')},
+          {id: 'metadata', label: 'About', onclick: onClickTab('metadata')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
-          {id: 'metadata', label: 'Metadata', onclick: onClickTab('metadata')}
+          stagingTab
         ].filter(Boolean))}
         ${({
           files: () => renderFiles(archiveInfo, {hideDate: true}),
           log: () => rHistory(archiveInfo),
           metadata: () => rMetadata(archiveInfo),
+          staging: () => rStagingArea(archiveInfo)
         })[currentSection]()}
       </section>
     </div>
@@ -210,65 +323,63 @@ function updateDownloadProgress () {
   yo.update(document.querySelector('.progress'), rDownloadProgress())
 }
 
-function rSyncButton () {
-  if (archiveInfo.isOwner) {
-    var toggleSaveIcon, toggleSaveText
+function rSaveButton () {
+  var toggleSaveIcon, toggleSaveText
 
-    if (archiveInfo.userSettings.isSaved) {
-      toggleSaveIcon = 'fa-trash'
-      toggleSaveText = 'Delete'
-    } else {
-      toggleSaveIcon = 'fa-floppy-o'
-      toggleSaveText = 'Restore'
-    }
-    return yo`
-      <button id="sync-btn" class="action" onclick=${onToggleSaved}>
-        <div class="content">
-          <i class="fa ${toggleSaveIcon}"></i>
-          <span>${toggleSaveText}</span>
-        </div>
-      </button>
-    `
+  if (archiveInfo.userSettings.isSaved) {
+    toggleSaveIcon = 'fa-trash'
+    toggleSaveText = 'Delete'
   } else {
-    var syncIcon, syncTitle
-    if (downloadProgress && downloadProgress.current < 100) {
-      syncIcon = yo`<span class="spinner"></span>`
-    } else if (archiveInfo.userSettings.isSaved) {
-      syncIcon = yo`<i class="fa fa-check-circle"></i>`
-    } else {
-      syncIcon = yo`<i class="fa fa-cloud"></i>`
-    }
-    if (archiveInfo.userSettings.isSaved) {
-      syncTitle = 'These files are saved for offline viewing'
-    } else {
-      syncTitle = 'These files are only available online'
-    }
-    return yo`
-      ${toggleable(yo`
-        <div id="sync-btn" class="action sync dropdown-btn-container toggleable-container" title=${syncTitle}>
-          <button class="toggleable">
-            <div class="content">
-              ${syncIcon}
-              <span>Sync</span>
-            </div>
-          </button>
+    toggleSaveIcon = 'fa-floppy-o'
+    toggleSaveText = 'Restore'
+  }
+  return yo`
+    <button class="dropdown-item" onclick=${onToggleSaved}>
+      <i class="fa ${toggleSaveIcon}"></i>
+      <span>${toggleSaveText}</span>
+    </button>
+  `
+}
 
-          <div class="dropdown-btn-list">
-            <div class="dropdown-item" onclick=${onClickLocalSync}>
-              ${archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-              <i class="fa fa-check-circle"></i>
-              Sync${archiveInfo.userSettings.isSaved ? 'ed' : ''} for offline use
-            </div>
-            <div class="dropdown-item" onclick=${onClickOnlineOnly}>
-              ${!archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-              <i class="fa fa-cloud"></i>
-              Online only
-            </div>
+function rSyncButton () {
+  var syncIcon, syncTitle
+  if (downloadProgress && downloadProgress.current < 100) {
+    syncIcon = yo`<span class="spinner"></span>`
+  } else if (archiveInfo.userSettings.isSaved) {
+    syncIcon = yo`<i class="fa fa-check-circle"></i>`
+  } else {
+    syncIcon = yo`<i class="fa fa-cloud"></i>`
+  }
+  if (archiveInfo.userSettings.isSaved) {
+    syncTitle = 'These files are saved for offline viewing'
+  } else {
+    syncTitle = 'These files are only available online'
+  }
+  return yo`
+    ${toggleable(yo`
+      <div id="sync-btn" class="action sync dropdown-btn-container toggleable-container" title=${syncTitle}>
+        <button class="toggleable">
+          <div class="content">
+            ${syncIcon}
+            <span>Sync</span>
+          </div>
+        </button>
+
+        <div class="dropdown-btn-list">
+          <div class="dropdown-item" onclick=${onClickLocalSync}>
+            ${archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+            <i class="fa fa-check-circle"></i>
+            Sync${archiveInfo.userSettings.isSaved ? 'ed' : ''} for offline use
+          </div>
+          <div class="dropdown-item" onclick=${onClickOnlineOnly}>
+            ${!archiveInfo.userSettings.isSaved ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+            <i class="fa fa-cloud"></i>
+            Online only
           </div>
         </div>
-      `)}
-    `
-  }
+      </div>
+    `)}
+  `
 }
 
 function rDownloadProgress () {
@@ -310,7 +421,10 @@ function rHistory (archiveInfo) {
   var loadMoreBtn = ''
   if (archiveInfo.version > archiveInfo.historyPaginationOffset) {
     loadMoreBtn = yo`<div>
-      <a class="link load-more" onclick=${onLoadMoreHistory}>Load more</a>
+      <a class="load-more" onclick=${onLoadMoreHistory}>
+        Load more
+        <i class="fa fa-caret-down"></i>
+      </a>
     </div>`
   }
 
@@ -320,29 +434,139 @@ function rHistory (archiveInfo) {
   return yo`<div class="history">${rowEls}${loadMoreBtn}</div>`
 }
 
-function rMetadata (archiveInfo) {
-  if (archiveInfo.isOwner) {
+function rStagingNotification (archiveInfo) {
+  if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
+    return ''
+  }
+
+  var diff = archiveInfo.diff
+  if (diff && diff.length) {
     return yo`
-      <div class="metadata">
-        <table>
-          <tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
-          <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
-          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
-        </table>
+      <div class="staging-notification">
+        <span>${diff.length} unpublished changes</span>
+        <div class="actions">
+          <span onclick=${e => { e.preventDefault(); currentSection = 'staging'; update() }}>Review</span>
+          <span onclick=${onPublish}>Publish</span>
+        </div>
       </div>
     `
-  } else {
+  } else return ''
+}
+
+function renderChanges () {
+  var stats = archiveInfo.diffStats
+  var isExpanded = {add: false, mod: false, del: false}
+
+  // no changes
+  if (archiveInfo.diff.length === 0) {
+    return yo`<div class="staging"><em>No unpublished changes.</em></div>`
+  }
+
+  // helper to render files
+  const rFile = (d, icon, change) => {
+    var formattedPath = d.path.slice(1)
+    var len = d.path.slice(1).length
+
     return yo`
-      <div class="metadata">
-        <table>
-          <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
-          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
-        </table>
+      <div class="file">
+        <i class="op ${change} fa fa-${icon}"></i>
+        <a class="link" title=${d.path} href=${archiveInfo.url + d.path}>${formattedPath}</a>
+      </div>`
+  }
+
+  // helper to render a kind of change (add / mod / del)
+  const rChange = (change, icon, label) => {
+    var files = archiveInfo.diff.filter(d => d.change === change)
+    if (files.length === 0) {
+      return ''
+    }
+    var sliceEnd = 20
+    // if expanded or files.length is one item longer than limit, show all files
+    if (isExpanded[change] || (files.length - sliceEnd === 1)) {
+      sliceEnd = files.length
+    }
+    var hasMore = sliceEnd < files.length
+    return yo`
+      <div class="files">
+        ${files.slice(0, sliceEnd).map(d => rFile(d, icon, change))}
+        ${hasMore ? yo`<a class="link show-all" onclick=${onExpand(change)}>Show more <i class="fa fa-angle-down"></i></a>` : ''}
       </div>
     `
   }
+
+  // helper to render all
+  const rChanges = () => yo`
+    <div class="changes-list">
+      ${rChange('add', 'plus', 'addition')}
+      ${rChange('mod', 'circle-o', 'change')}
+      ${rChange('del', 'close', 'deletion')}
+    </div>
+  `
+
+  // helper to expand the changes list
+  const onExpand = change => e => {
+    isExpanded[change] = !isExpanded[change]
+    redraw()
+  }
+
+  const redraw = () => {
+    yo.update(document.querySelector('.changes-list'), rChanges())
+  }
+
+  return rChanges()
+}
+
+function rStagingArea (archiveInfo) {
+  if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
+    return ''
+  }
+
+  var diff = archiveInfo.diff
+  if (diff.length === 0) {
+    return yo`<section class="staging"><em>No unpublished changes</em></section>`
+  }
+
+  var stats = archiveInfo.diffStats
+  return yo`
+    <section class="staging">
+      <div class="changes">
+        ${renderChanges(archiveInfo)}
+        <div class="changes-footer">
+          <div class="actions">
+            <button class="btn small" onclick=${onRevert}>Revert</button>
+            ${isPublishing
+              ? yo`<span class="btn success small">Publishing...</span>`
+              : yo`<button class="btn success small" onclick=${onPublish}>Publish</button>`}
+          </div>
+        </div>
+      </div>
+    </section>
+  `
+}
+
+function rMetadata (archiveInfo) {
+  var sizeRows
+  if (archiveInfo.isOwner) {
+    sizeRows = [
+      yo`<tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>`,
+      yo`<tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
+    ]
+  } else {
+    sizeRows = yo`<tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
+  }
+
+  return yo`
+    <div class="metadata">
+      <table>
+        <tr><td class="label">Title</td>${archiveInfo.title || yo`<em>Untitled</em>`}</tr>
+        <tr><td class="label">Description</td>${archiveInfo.description || yo`<em>No description</em>`}</tr>
+        ${sizeRows}
+        <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
+        ${archiveInfo.isOwner ? yo`<tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>` : ''}
+        <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
+      </table>
+    </div>
+  `
 }
 
 // event handlers
@@ -354,6 +578,10 @@ function onArchivesUpdated (e) {
   }
 }
 
+async function onClickLiveReload (e) {
+  // TODO Paul
+}
+
 async function onToggleSaved (e) {
   // toggle saved
   if (archiveInfo.userSettings.isSaved) {
@@ -363,6 +591,24 @@ async function onToggleSaved (e) {
   }
   update()
   updateProgressMonitor()
+}
+
+async function onImportFiles (e) {
+  var files = await beakerBrowser.showOpenDialog({
+    title: 'Import files to this archive',
+    buttonLabel: 'Import',
+    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory']
+  })
+  if (files) {
+    files.forEach(src => DatArchive.importFromFilesystem({
+      src,
+      dst: archiveInfo.url,
+      ignore: ['dat.json'],
+      inplaceImport: true
+    }))
+    currentSection = 'staging'
+    update()
+  }
 }
 
 function onOpenFolder () {
