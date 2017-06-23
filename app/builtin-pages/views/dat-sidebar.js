@@ -245,6 +245,14 @@ function update () {
                   </div>`
                 : ''
               }
+              ${archiveInfo.isOwner
+                ? yo`
+                  <div onclick=${onFork} class="dropdown-item">
+                    <i class="fa fa-code-fork"></i>
+                    Fork
+                  </div>`
+                : ''
+              }
               <a class="dropdown-item" onclick=${onDownloadZip}>
                 <i class="fa fa-file-archive-o"></i>
                 Download as .zip
