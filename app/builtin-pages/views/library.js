@@ -317,6 +317,21 @@ function rArchive (archiveInfo) {
       label: yo`<span>Staging <span class="changes-count">${diffCount || ''}</span></span>`,
       onclick: onClickTab('staging')
     }
+
+    var ownerButtons = [
+      yo`
+        <div class="dropdown-item" onclick=${onEditSettings}>
+          <i class="fa fa-pencil"></i>
+          Edit site info
+        </div>
+      `,
+      yo`
+        <div class="dropdown-item" onclick=${onChooseNewLocation}>
+          <i class="fa fa-folder-o"></i>
+          Change folder
+        </div>
+      `
+    ]
   }
 
   return yo`
@@ -349,16 +364,6 @@ function rArchive (archiveInfo) {
                   <i class="fa fa-code"></i>
                   View source
                 </div>
-                <div class="dropdown-item" onclick=${onChooseNewLocation}>
-                  <i class="fa fa-folder-o"></i>
-                  Change folder
-                </div>
-                ${archiveInfo.isOwner
-                  ? yo`<div class="dropdown-item" onclick=${onEditSettings}>
-                      <i class="fa fa-pencil"></i>
-                      Edit site info
-                    </div>`
-                  : ''}
                 <div class="dropdown-item" onclick=${onToggleSaved}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
@@ -416,6 +421,7 @@ function rMissingLocalPathMessage (archiveInfo) {
   if (!archiveInfo.isOwner || !archiveInfo.userSettings.isSaved || archiveInfo.localPathExists) {
     return ''
   }
+
   return yo`
     <section class="message error missing-local-path">
       <div>
