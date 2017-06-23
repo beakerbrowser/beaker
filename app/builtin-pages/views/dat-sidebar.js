@@ -416,19 +416,17 @@ function rStagingNotification (archiveInfo) {
   }
 
   var diff = archiveInfo.diff
-  if (diff.length === 0) {
-    return ''
-  }
-
-  return yo`
-    <div class="staging-notification">
-      <span>${diff.length} unpublished changes</span>
-      <div class="actions">
-        <span onclick=${e => { e.preventDefault(); currentSection = 'staging'; update() }}>Review</span>
-        <span onclick=${onPublish}>Publish</span>
+  if (diff && diff.length) {
+    return yo`
+      <div class="staging-notification">
+        <span>${diff.length} unpublished changes</span>
+        <div class="actions">
+          <span onclick=${e => { e.preventDefault(); currentSection = 'staging'; update() }}>Review</span>
+          <span onclick=${onPublish}>Publish</span>
+        </div>
       </div>
-    </div>
-  `
+    `
+  } else return ''
 }
 
 function renderChanges () {
