@@ -317,6 +317,21 @@ function rArchive (archiveInfo) {
       label: yo`<span>Staging <span class="changes-count">${diffCount || ''}</span></span>`,
       onclick: onClickTab('staging')
     }
+
+    var ownerButtons = [
+      yo`
+        <div class="dropdown-item" onclick=${onEditSettings}>
+          <i class="fa fa-pencil"></i>
+          Edit site info
+        </div>
+      `,
+      yo`
+        <div class="dropdown-item" onclick=${onChooseNewLocation}>
+          <i class="fa fa-folder-o"></i>
+          Change folder
+        </div>
+      `
+    ]
   }
 
   return yo`
@@ -341,24 +356,17 @@ function rArchive (archiveInfo) {
                 <i class="fa fa-caret-down"></i>
               </button>
               <div class="dropdown-btn-list">
-                <div class="dropdown-item" onclick=${onFork}>
-                  <i class="fa fa-code-fork"></i>
-                  Fork this site
-                </div>
+                ${ownerButtons}
+                ${archiveInfo.isOwner ? '' : yo`
+                  <div class="dropdown-item" onclick=${onFork}>
+                    <i class="fa fa-code-fork"></i>
+                    Fork this site
+                  </div>
+                `}
                 <div class="dropdown-item" onclick=${onViewSource}>
                   <i class="fa fa-code"></i>
                   View source
                 </div>
-                <div class="dropdown-item" onclick=${onChooseNewLocation}>
-                  <i class="fa fa-folder-o"></i>
-                  Change folder
-                </div>
-                ${archiveInfo.isOwner
-                  ? yo`<div class="dropdown-item" onclick=${onEditSettings}>
-                      <i class="fa fa-pencil"></i>
-                      Edit site info
-                    </div>`
-                  : ''}
                 <div class="dropdown-item" onclick=${onToggleSaved}>
                   <i class="fa ${toggleSaveIcon}"></i>
                   ${toggleSaveText}
@@ -406,7 +414,8 @@ function rNotSaved (archiveInfo) {
   }
   return yo`
     <section class="message primary">
-      This archive is not saved to your library. <a href="#" onclick=${onToggleSaved}>Save now.</a>
+      <span>This archive is not saved to your library.</span>
+      <a href="#" onclick=${onToggleSaved}>Save now</a>
     </section>
   `
 }
@@ -415,6 +424,7 @@ function rMissingLocalPathMessage (archiveInfo) {
   if (!archiveInfo.isOwner || !archiveInfo.userSettings.isSaved || archiveInfo.localPathExists) {
     return ''
   }
+
   return yo`
     <section class="message error missing-local-path">
       <div>
@@ -535,7 +545,10 @@ function rHistory (archiveInfo) {
   var loadMoreBtn = ''
   if (archiveInfo.version > archiveInfo.historyPaginationOffset) {
     loadMoreBtn = yo`<div>
-      <a class="link load-more" href="#" onclick=${onLoadMoreHistory}>Load more</a>
+      <a class="load-more" href="#" onclick=${onLoadMoreHistory}>
+        Load more
+        <i class="fa fa-caret-down"></i>
+      </a>
     </div>`
   }
 
@@ -587,10 +600,9 @@ function rMetadata (archiveInfo) {
       <table>
         <tr><td class="label">Title</td>${titleEl}</tr>
         <tr><td class="label">Description</td>${descEl}</tr>
-        <tr><td class="label">Files</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>
-        <tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>
+        ${sizeRows}
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime)}</td></tr>
-        <tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>
+        ${archiveInfo.isOwner ? yo`<tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>` : ''}
         <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
       </table>
       ${archiveInfo.isOwner && isEditingInfo ? yo`<button onclick=${onSaveSettings} class="save btn">Apply changes</button>` : ''}
@@ -662,7 +674,7 @@ function onShare (e) {
 
 async function onImportFiles (e) {
   var files = await beakerBrowser.showOpenDialog({
-    title: 'Import files to this site',
+    title: 'Import files to this archive',
     buttonLabel: 'Import',
     properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory']
   })

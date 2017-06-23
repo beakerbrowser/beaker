@@ -544,11 +544,13 @@ body {
     }
 
     .load-more {
+      &:extend(.link);
       display: block;
-      background: @background-button;
-      text-align: center;
-      margin-top: 1em;
-      padding: 1em;
+      margin-top: .5rem;
+
+      &:hover {
+        &:extend(.link:hover);
+      }
     }
   }
 
