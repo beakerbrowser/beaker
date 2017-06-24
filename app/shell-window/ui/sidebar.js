@@ -168,7 +168,7 @@ function setActivePanelVisibility () {
 
     // make visible
     activePanel.webview.classList.remove('hidden')
-    reflowWebview(activePanel.webview)
+    setTimeout(() => reflowWebview(activePanel.webview), 60)
     showSidebar()
   } else {
     hideSidebar()
