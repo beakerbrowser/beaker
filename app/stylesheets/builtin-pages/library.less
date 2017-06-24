@@ -399,10 +399,8 @@ body {
       margin-top: 25px;
 
       .fa-external-link {
-        font-size: 0.55em;
-        color: @color-text--muted;
-        position: relative;
-        top: -1px;
+        font-size: 1.175rem;
+        color: fadeout(@color-text--light, 10%);
       }
 
       // max-width of .title + width of .actions
@@ -411,7 +409,14 @@ body {
       }
 
       a:hover {
-        text-decoration: underline;
+
+        span {
+          text-decoration: underline;
+        }
+
+        i {
+          color: @color-text;
+        }
       }
     }
 
