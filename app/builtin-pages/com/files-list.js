@@ -193,6 +193,7 @@ async function onImportFiles (e, archiveInfo) {
       ignore: ['dat.json'],
       inplaceImport: true
     }))
+    window.dispatchEvent(new Event('files-added'))
   }
 }
 

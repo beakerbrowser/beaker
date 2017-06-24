@@ -79,6 +79,7 @@ async function setup () {
   beaker.archives.addEventListener('network-changed', onNetworkChanged)
   window.addEventListener('pushstate', loadCurrentArchive)
   window.addEventListener('popstate', loadCurrentArchive)
+  window.addEventListener('files-added', onFilesAdded)
 }
 
 async function parseURLKey () {
@@ -760,6 +761,12 @@ function onClickTab (tab) {
   }
 }
 
+function onFilesAdded () {
+  // go to staging tab
+  currentSection = 'staging'
+  update()
+}
+
 async function onPublish () {
   // update UI
   isPublishing = true
@@ -778,6 +785,7 @@ async function onPublish () {
   // update UI
   selectedArchive.diff = [] // optimistically clear it to speed up rendering
   isPublishing = false
+  currentSection = 'files'
   update()
 }
 
