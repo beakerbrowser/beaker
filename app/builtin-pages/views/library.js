@@ -782,11 +782,14 @@ async function onPublish () {
     toast.create(e.toString())
   }
 
-  // update UI
-  selectedArchive.diff = [] // optimistically clear it to speed up rendering
+  // update UI optimistically
   isPublishing = false
   currentSection = 'files'
+  selectedArchive.diff = [] // optimistically clear it to speed up rendering
   update()
+
+  // then load latest
+  loadCurrentArchive()
 }
 
 async function onRevert () {
