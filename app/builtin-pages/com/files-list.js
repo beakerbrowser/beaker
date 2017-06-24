@@ -47,12 +47,11 @@ function rFolder (archiveInfo, opts) {
     <div class="dat-local-path">
       <span>
         ${archiveInfo.userSettings.localPath}
+        <a onclick=${e => onCopyFolder(e, archiveInfo)} href="#" title="Copy path to your clipboard">
+          <i class="fa fa-clipboard"></i>
+        </a>
       </span>
       <span>
-        <a onclick=${e => onCopyFolder(e, archiveInfo)} href="#">
-          <i class="fa fa-clipboard"></i>
-          Copy path
-        </a>
         <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
           <i class="fa fa-folder-open-o"></i>
           Open folder
