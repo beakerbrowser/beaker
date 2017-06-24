@@ -343,17 +343,25 @@ function rArchive (archiveInfo) {
       <section class="header">
         <h1 class="title" title=${archiveInfo.title}>
           <a href="dat://${archiveInfo.key}">${niceName(archiveInfo)} <i class="fa fa-external-link"></i></a>
-          ${archiveInfo.isOwner ? '' : yo`<span class="readonly"><i class="fa fa-eye"></i>Read-only</span>`}
         </h1>
         <div class="actions">
           <button class="btn primary" onclick=${onShare}>
             <i class="fa fa-link"></i>
             Share site
           </button>
-          <button disabled=${archiveInfo.isOwner ? 'false' : 'true'} title="Import files" class="btn" onclick=${onImportFiles}>
-            <i class="fa fa-plus"></i>
-            Import files
-          </button>
+          ${archiveInfo.isOwner
+            ? yo`
+                <button title="Import files" class="btn" onclick=${onImportFiles}>
+                  <i class="fa fa-plus"></i>
+                  Import files
+                </button>
+              `
+            : yo`
+                <button disabled title="Read only" class="btn">
+                  <i class="fa fa-eye"></i>
+                  Read-only
+                </button>
+              `}
           ${toggleable(yo`
             <div class="dropdown-btn-container toggleable-container">
               <button class="btn toggleable">
