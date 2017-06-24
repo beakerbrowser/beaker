@@ -12,7 +12,7 @@ import { shareDat } from './lib/dat-helpers'
 const app = new Application({
   path: electron,
   args: ['../app'],
-  env: { 
+  env: {
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
     beaker_dat_quota_default_bytes_allowed: 1024 * 10 // 10kb
   }
@@ -70,7 +70,7 @@ test('library.add, library.remove', async t => {
   }, createdDatURL)
   t.deepEqual(res.value.isSaved, true)
   var res = await app.client.executeAsync((url, done) => {
-    window.beaker.archives.remove(url).then(done,done)
+    window.beaker.archives.remove(url, {noPrompt: true}).then(done,done)
   }, createdDatURL)
   t.deepEqual(res.value.isSaved, false)
 
@@ -80,10 +80,10 @@ test('library.add, library.remove', async t => {
   }, createdDatKey)
   t.deepEqual(res.value.isSaved, true)
   var res = await app.client.executeAsync((key, done) => {
-    window.beaker.archives.remove(key).then(done,done)
+    window.beaker.archives.remove(key, {noPrompt: true}).then(done,done)
   }, createdDatKey)
   t.deepEqual(res.value.isSaved, false)
-  
+
   // check stats
   var stats = await app.client.execute(() => { return window.stats })
   t.deepEqual(stats.value, {
@@ -133,7 +133,7 @@ test('library.get', async t => {
   }, createdDatURL)
   t.deepEqual(res.value.isSaved, true)
   var res = await app.client.executeAsync((url, done) => {
-    window.beaker.archives.remove(url).then(done,done)
+    window.beaker.archives.remove(url, {noPrompt: true}).then(done,done)
   }, testStaticDatURL)
 
   // get owned by url

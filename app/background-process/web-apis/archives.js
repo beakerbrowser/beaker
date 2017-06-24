@@ -122,12 +122,12 @@ export default {
     return archivesDb.setUserSettings(0, key, {isSaved: true, localPath})
   },
 
-  async remove(url) {
+  async remove(url, {noPrompt} = {}) {
     var key = toKey(url)
 
     // check with the user if they're the owner
     var meta = await archivesDb.getMeta(key)
-    if (meta.isOwner) {
+    if (meta.isOwner && !noPrompt) {
       var settings = await archivesDb.getUserSettings(0, key)
       var {shouldDelete, preserveStagingFolder} = await showDeleteArchivePrompt(meta.title || key, settings.localPath)
       if (!shouldDelete) {
