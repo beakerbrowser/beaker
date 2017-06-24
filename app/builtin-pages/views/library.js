@@ -320,12 +320,6 @@ function rArchive (archiveInfo) {
 
     var ownerButtons = [
       yo`
-        <div class="dropdown-item" onclick=${onEditSettings}>
-          <i class="fa fa-pencil"></i>
-          Edit site info
-        </div>
-      `,
-      yo`
         <div class="dropdown-item" onclick=${onChooseNewLocation}>
           <i class="fa fa-folder-o"></i>
           Change folder
@@ -695,13 +689,6 @@ async function onFork (e) {
   update()
   var a = await DatArchive.fork(selectedArchive.url)
   history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
-}
-
-async function onEditSettings (e) {
-  e.preventDefault()
-  update()
-  await beaker.archives.update(selectedArchive.url)
-  loadCurrentArchive()
 }
 
 function onClickEdit() {
