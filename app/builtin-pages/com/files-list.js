@@ -51,7 +51,11 @@ function rFolder (archiveInfo, opts) {
           <i class="fa fa-clipboard"></i>
         </a>
       </span>
-      <span>
+      <span class="files-list-actions">
+        <a onclick=${e => onImportFiles(e, archiveInfo)} href="#">
+          <i class="fa fa-plus"></i>
+          Add files
+        </a>
         <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
           <i class="fa fa-folder-open-o"></i>
           Open folder
@@ -173,6 +177,22 @@ function onCopyFolder (e, archiveInfo) {
     }
     writeToClipboard(path)
     toast.create(`Folder path copied to clipboard.`)
+  }
+}
+
+async function onImportFiles (e, archiveInfo) {
+  var files = await beakerBrowser.showOpenDialog({
+    title: 'Import files to this archive',
+    buttonLabel: 'Import',
+    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory']
+  })
+  if (files) {
+    files.forEach(src => DatArchive.importFromFilesystem({
+      src,
+      dst: archiveInfo.url,
+      ignore: ['dat.json'],
+      inplaceImport: true
+    }))
   }
 }
 
