@@ -168,6 +168,7 @@ function setActivePanelVisibility () {
 
     // make visible
     activePanel.webview.classList.remove('hidden')
+    reflowWebview(activePanel.webview)
     showSidebar()
   } else {
     hideSidebar()
@@ -182,6 +183,16 @@ function showSidebar () {
 function hideSidebar () {
   sidebarEl.classList.remove('open')
   doResize()
+}
+
+// HACK
+// on some devices, the webview has some rendering errors
+// by triggering a reflow, we seem to force the errors to resolve
+// -prf
+function reflowWebview (el) {
+  el.style.width = 'auto'
+  el.offsetHeight; // trigger reflow
+  el.style.width = '100%'
 }
 
 // resizing behaviors
