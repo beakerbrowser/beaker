@@ -52,11 +52,11 @@ function rFolder (archiveInfo, opts) {
         </a>
       </span>
       <span class="files-list-actions">
-        <a onclick=${e => onImportFiles(e, archiveInfo)} href="#">
+        <a onclick=${e => onImportFiles(e, archiveInfo)} href="#" title="Add files to ${archiveInfo.userSettings.localPath}">
           <i class="fa fa-plus"></i>
           Add files
         </a>
-        <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
+        <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#" title="Open ${archiveInfo.userSettings.localPath}">
           <i class="fa fa-folder-open-o"></i>
           Open folder
         </a>
