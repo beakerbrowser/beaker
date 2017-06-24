@@ -297,12 +297,22 @@ function rArchive (archiveInfo) {
   document.title = `Library - ${archiveInfo.title || 'dat://' + archiveInfo.key}`
 
   var toggleSaveIcon, toggleSaveText
-  if (archiveInfo.userSettings.isSaved) {
-    toggleSaveIcon = 'fa-trash'
-    toggleSaveText = 'Remove from library'
+  if (archiveInfo.isOwner) {
+    if (archiveInfo.userSettings.isSaved) {
+      toggleSaveIcon = 'fa-trash'
+      toggleSaveText = 'Delete'
+    } else {
+      toggleSaveIcon = 'fa-floppy-o'
+      toggleSaveText = 'Restore'
+    }
   } else {
-    toggleSaveIcon = 'fa-floppy-o'
-    toggleSaveText = 'Save to library'
+    if (archiveInfo.userSettings.isSaved) {
+      toggleSaveIcon = 'fa-times-circle'
+      toggleSaveText = 'Stop syncing'
+    } else {
+      toggleSaveIcon = 'fa-check-circle'
+      toggleSaveText = 'Sync for offline'
+    }
   }
 
   // staging tab setup
