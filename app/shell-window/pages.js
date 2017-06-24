@@ -192,7 +192,7 @@ export function create (opts) {
         beaker.bookmarks.remove(page.bookmark.url)
         page.bookmark = null
       } else if (page.isActive) {
-        page.bookmark = { url: page.getURL(), title: page.getTitle() }
+        page.bookmark = { url: page.getIntendedURL(), title: page.getTitle() }
         beaker.bookmarks.add(page.bookmark.url, page.bookmark.title)
       }
       // update nav
