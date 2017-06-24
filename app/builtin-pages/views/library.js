@@ -338,7 +338,7 @@ function rArchive (archiveInfo) {
     <div class="archive">
       <section class="header">
         <h1 class="title" title=${archiveInfo.title}>
-          <a href="dat://${archiveInfo.key}">${niceName(archiveInfo)}</a>
+          <a href="dat://${archiveInfo.key}">${niceName(archiveInfo)} <i class="fa fa-external-link"></i></a>
           ${archiveInfo.isOwner ? '' : yo`<span class="readonly"><i class="fa fa-eye"></i>Read-only</span>`}
         </h1>
         <div class="actions">
