@@ -2,13 +2,22 @@
 
 .message {
   &:extend(.flex);
-  justify-content: space-between;
-  background: @background-message;
-  color: @color-message;
-  font-size: 12px;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 13.5px;
   border: 1px solid;
-  border-color: @border-message;
-  padding: 10px 15px; // TODO: make a module extend that has consistent padding, margin -tbv
+  padding: 10px;
+  margin: 1rem 0;
+
+  > i {
+    font-size: 1.3rem;
+    padding-right: @margin-icon;
+  }
+
+  .btn {
+    background: #fff;
+    margin-left: auto; // message buttons are always pulled to the right
+  }
 
   ul {
     list-style: disc;
@@ -16,27 +25,99 @@
   }
 
   &.success {
-   background: @background-message--success;
-   color: @color-message--success;
-   border-color: @border-message--success;
+    background: @background-message--success;
+    color: @color-message--success;
+    border-color: @border-message--success;
+
+    i {
+     color: @color-message--success;
+    }
+
+    .btn {
+      border-color: @border-message--success;
+      color: @color-message--success;
+
+      &:focus,
+      &:active {
+        border-color: @color-message--success;
+      }
+
+      &:hover {
+        background: @background-message--success;
+      }
+    }
   }
 
   &.primary {
-   background: @background-message--primary;
-   color: @color-message--primary;
-   border-color: @border-message--primary;
+    background: @background-message--primary;
+    color: @color-message--primary;
+    border-color: @border-message--primary;
+
+    i {
+     color: @color-message--primary;
+    }
+
+    .btn {
+      border-color: @border-message--primary;
+      color: @color-message--primary;
+
+      &:focus,
+      &:active {
+        border-color: @color-message--primary;
+      }
+
+      &:hover {
+        background: @background-message--primary;
+      }
+    }
   }
 
   &.info {
-   background: @background-message--info;
-   color: @color-message--info;
-   border-color: @border-message--info;
+    background: @background-message--info;
+    color: @color-message--info;
+    border-color: @border-message--info;
+
+    i {
+     color: @color-message--info;
+    }
+
+    .btn {
+      border-color: @border-message--info;
+      color: @color-message--info;
+
+      &:focus,
+      &:active {
+        border-color: @color-message--info;
+      }
+
+      &:hover {
+        background: @background-message--info;
+      }
+    }
   }
 
   &.error {
-   background: @background-message--error;
-   color: @color-message--error;
-   border-color: @border-message--error;
+    background: @background-message--error;
+    color: @color-message--error;
+    border-color: @border-message--error;
+
+    i {
+     color: @color-message--error;
+    }
+
+    .btn {
+      border-color: @border-message--error;
+      color: @color-message--error;
+
+      &:focus,
+      &:active {
+        border-color: @color-message--error;
+      }
+
+      &:hover {
+        background: @background-message--error;
+      }
+    }
   }
 
   i {
