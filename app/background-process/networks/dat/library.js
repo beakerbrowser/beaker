@@ -620,7 +620,9 @@ function createReplicationStream (info) {
     function onend () {
       var rs = archive.replicationStreams
       var i = rs.indexOf(stream)
-      if (i !== -1) rs.splice(i, 1)
+      if (i !== -1) {
+        rs.splice(i, 1)
+      }
       onNetworkChanged(archive)
     }
     stream.once('error', onend)
@@ -645,11 +647,11 @@ function onNetworkChanged (archive) {
   var lastHistory = archive.peerHistory.slice(-1)[0]
   if (lastHistory && (now - lastHistory.ts) < 10e3) {
     // if the last datapoint was < 10s ago, just update it
-    lastHistory.peers = archive.replicationStreams.length
+    lastHistory.peers = archive.metadata.peers.length
   } else {
     archive.peerHistory.push({
       ts: Date.now(),
-      peers: archive.replicationStreams.length
+      peers: archive.metadata.peers.length
     })
   }
 
@@ -662,13 +664,13 @@ function onNetworkChanged (archive) {
   // count # of peers
   var totalPeerCount = 0
   for (var k in archives) {
-    totalPeerCount += archives[k].replicationStreams.length
+    totalPeerCount += archives[k].metadata.peers.length
   }
   archivesEvents.emit('network-changed', {
     details: {
       url: `dat://${datEncoding.toStr(archive.key)}`,
       peers: archive.replicationStreams.map(s => ({host: s.peerInfo.host, port: s.peerInfo.port})),
-      peerCount: archive.replicationStreams.length,
+      peerCount: archive.metadata.peers.length,
       totalPeerCount
     }
   })
