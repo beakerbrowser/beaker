@@ -207,7 +207,9 @@ async function datServer (req, res) {
       'Content-Security-Policy': DAT_CSP,
       'Access-Control-Allow-Origin': '*'
     })
-    toZipStream(archive).pipe(res)
+    var zs = toZipStream(archive)
+    zs.on('error', err => console.log('Error while producing .zip file', err))
+    zs.pipe(res)
     return
   }
 
