@@ -11,12 +11,13 @@ import {pluralize} from '../../lib/strings'
 
 const colorThief = new ColorThief()
 
-const LATEST_VERSION = 7002 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
+const LATEST_VERSION = 7003 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
+const WELCOME_URL = 'https://beakerbrowser.com/docs/using-beaker/'
+const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-3'
 
 // globals
 // =
 
-var showReleaseNotes = false
 var isManagingBookmarks = false
 var isShelfOpen = false
 var error = false
@@ -28,6 +29,20 @@ var settings
 
 setup()
 async function setup () {
+  // open update info if appropriate
+  let latestVersion = await beakerSitedata.get('beaker://start', 'latest-version')
+  if (+latestVersion < LATEST_VERSION) {
+    await beakerSitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
+    if (!latestVersion) {
+      window.open('beaker://start')
+      window.location = WELCOME_URL
+    } else {
+      window.open('beaker://start')
+      window.location = RELEASE_NOTES_URL
+    }
+    return
+  }
+
   await loadBookmarks()
   archivesStatus = await beaker.archives.status()
   userProfile = await beaker.profiles.get(0)
@@ -45,15 +60,6 @@ async function setup () {
     archivesStatus.peers = details.totalPeerCount
     yo.update(document.querySelector('a.network'), renderNetworkLink())
   })
-
-  // render version update info if appropriate
-  let latestVersion = await beakerSitedata.get('beaker://start', 'latest-version')
-  if (+latestVersion < LATEST_VERSION) {
-    if (!latestVersion) showReleaseNotes = 'welcome'
-    else showReleaseNotes = 'update'
-    update()
-    beakerSitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
-  }
 
   // load archives list after render (its not pressing)
   archivesList = new ArchivesList({listenNetwork: true})
@@ -81,7 +87,6 @@ function update () {
         ${renderProfileCard()}
       </header>
       ${renderShelf()}
-      ${renderWelcome()}
       ${renderPinnedBookmarks()}
     </main>
   `)
@@ -101,32 +106,6 @@ function renderNetworkLink () {
     <a class="network" href="beaker://library">
       <i class="fa fa-share-alt"></i> ${archivesStatus.peers} ${pluralize(archivesStatus.peers, 'peer')}
     </a>
-  `
-}
-
-function renderWelcome () {
-  if (!showReleaseNotes) return ''
-  if (showReleaseNotes === 'welcome') {
-    return yo`
-      <div class="beaker-welcome">
-        <p>
-          Welcome to Beaker 0.7.2!
-          <a href="https://www.youtube.com/watch?v=U2B9mwRFE8U" target="_blank">Watch the intro</a>
-          or
-          <a href="https://github.com/beakerbrowser/beaker/releases/tag/0.7.2" target="_blank">See what’s new</a>.
-          <i onclick=${dismissWelcome} class="fa fa-close"></i>
-        </p>
-      </div>
-    `
-  }
-  return yo`
-    <div class="beaker-welcome">
-      <p>
-        Beaker has updated to 0.7.2.
-        <a href="https://github.com/beakerbrowser/beaker/releases/tag/0.7.2" target="_blank">See what’s new</a>.
-        <i onclick=${dismissWelcome} class="fa fa-close"></i>
-      </p>
-    </div>
   `
 }
 
@@ -260,10 +239,6 @@ function toggleShelf () {
 async function createSite () {
   var archive = await DatArchive.create()
   window.location = 'beaker://library/' + archive.url.slice('dat://'.length)
-}
-
-function dismissWelcome () {
-  document.querySelector('.beaker-welcome').remove()
 }
 
 function onMouseOutShelf (e) {
