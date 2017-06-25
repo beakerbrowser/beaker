@@ -411,16 +411,24 @@ function rError () {
 }
 
 function rNotSaved (archiveInfo) {
-  if (archiveInfo.userSettings.isSaved) {
-    return ''
+  if (archiveInfo.userSettings.isSaved) return ''
+  if (archiveInfo.isOwner && !archiveInfo.userSettings.isSaved) {
+    return yo`
+      <section class="message info">
+        <i class="fa fa-info-circle"></i>
+        <span>This archive's files were deleted</span>
+        <button class="btn" onclick=${onToggleSaved} title="Restore this archive's files">Restore</button>
+      </section>
+    `
+  } else {
+    return yo`
+      <section class="message primary">
+        <i class="fa fa-info-circle"></i>
+        <span>This archive isn't saved to your Library</span>
+        <button class="btn" onclick=${onToggleSaved} title="Save this archive to your Library">Save to Library</button>
+      </section>
+    `
   }
-  return yo`
-    <section class="message info">
-      <i class="fa fa-info-circle"></i>
-      <span>This archive's files were deleted</span>
-      <button class="btn" href="#" onclick=${onToggleSaved} title="Restore this archive's files">Restore</button>
-    </section>
-  `
 }
 
 function rMissingLocalPathMessage (archiveInfo) {
