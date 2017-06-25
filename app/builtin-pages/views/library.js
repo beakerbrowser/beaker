@@ -438,18 +438,11 @@ function rMissingLocalPathMessage (archiveInfo) {
 
   return yo`
     <section class="message error missing-local-path">
-      <div>
-        <i class="fa fa-exclamation-triangle"></i>
-        <strong>Beaker cannot find the local copy of this site.</strong>
-        This is probably because the folder was moved or deleted.
-      </div>
-      <ul>
-        <li>If it was moved, you can <a href="#" onclick=${onChooseNewLocation}>update the location</a> and things will resume as before.</li>
-        <li>If it was deleted accidentally (or you dont know what happened) you can <a href="#" onclick=${onChooseNewLocation}>choose a
-          new location</a> and we’ll restore the files from the last published state.</li>
-        <li>If it was deleted on purpose, and you don’t want to keep the site anymore,
-          you can <a href="#" onclick=${onToggleSaved}>delete it from your library</a>.</li>
-      </ul>
+      <i class="fa fa-exclamation-circle"></i>
+      <span>
+        Beaker cannot find the folder for these files
+      </span>
+      <button class="btn" onclick=${onChooseNewLocation}>Choose a new folder</button>
     </section>
   `
 }
