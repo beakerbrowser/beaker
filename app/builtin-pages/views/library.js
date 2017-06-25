@@ -35,6 +35,7 @@ var userProfileUrl
 var archivesList
 var trashList = []
 var isTrashOpen = false
+var isStagingOpen = false
 var isSidebarOpen = false
 var isPublishing = false
 var isEditingInfo = false
@@ -243,6 +244,7 @@ function rView () {
   document.title = 'Library'
   if (viewError) return rError()
   else if (isTrashOpen) return rTrash()
+  else if (isStagingOpen) return rStagingArea(selectedArchive)
   else if (selectedArchive) return rArchive(selectedArchive)
   else if (selectedArchiveKey) return 'Loading...'
   return rEmpty()
@@ -295,6 +297,32 @@ function rArchiveListItem (archiveInfo) {
 function rArchive (archiveInfo) {
   document.title = `Library - ${archiveInfo.title || 'dat://' + archiveInfo.key}`
 
+  return yo`
+    <div class="archive">
+      ${rViewHeader(archiveInfo)}
+      ${rNotSaved(archiveInfo)}
+      ${rMissingLocalPathMessage(archiveInfo)}
+
+      <section class="tabs-content">
+        ${renderTabs(currentSection, [
+          {id: 'files', label: 'Published files', onclick: onClickTab('files')},
+          {id: 'metadata', label: 'About', onclick: onClickTab('metadata')},
+          {id: 'log', label: 'History', onclick: onClickTab('log')},
+          {id: 'network', label: 'Network', onclick: onClickTab('network')}
+        ].filter(Boolean))}
+        ${({
+          files: () => rFiles(archiveInfo),
+          log: () => rHistory(archiveInfo),
+          metadata: () => rMetadata(archiveInfo),
+          network: () => rNetwork(archiveInfo)
+        })[currentSection]()}
+      </section>
+    </div>
+  `
+}
+
+function rViewHeader (archiveInfo) {
+  // set up icons and labels for save/unsave buttons
   var toggleSaveIcon, toggleSaveText
   if (archiveInfo.isOwner) {
     if (archiveInfo.userSettings.isSaved) {
@@ -314,19 +342,7 @@ function rArchive (archiveInfo) {
     }
   }
 
-  // staging tab setup
-  var diffCount, stagingTab
-  if (archiveInfo.isOwner && archiveInfo.diff) {
-    diffCount = archiveInfo.diff.length
-  }
-
   if (archiveInfo.isOwner) {
-    var stagingTab = {
-      id: 'staging',
-      label: yo`<span>Staging <span class="changes-count">${diffCount || ''}</span></span>`,
-      onclick: onClickTab('staging')
-    }
-
     var ownerButtons = [
       yo`
         <div class="dropdown-item" onclick=${onChooseNewLocation}>
@@ -338,67 +354,45 @@ function rArchive (archiveInfo) {
   }
 
   return yo`
-    <div class="archive">
-      <section class="header">
-        <h1 class="title" title=${archiveInfo.title}>
-          <a href="dat://${archiveInfo.key}">
-            <span>${niceName(archiveInfo)}</span>
-            <i class="fa fa-external-link"></i>
-          </a>
-          ${archiveInfo.isOwner ? '' : yo`<span class="readonly"><i class="fa fa-eye"></i>Read-only</span>`}
-        </h1>
-        <div class="actions">
-          <button class="btn primary" onclick=${onShare}>
-            <i class="fa fa-link"></i>
-            Share site
-          </button>
-          ${toggleable(yo`
-            <div class="dropdown-btn-container toggleable-container">
-              <button class="btn toggleable">
-                <i class="fa fa-caret-down"></i>
-              </button>
-              <div class="dropdown-btn-list">
-                ${ownerButtons}
-                ${archiveInfo.isOwner ? '' : yo`
-                  <div class="dropdown-item" onclick=${onFork}>
-                    <i class="fa fa-code-fork"></i>
-                    Fork this site
-                  </div>
-                `}
-                <div class="dropdown-item" onclick=${onViewSource}>
-                  <i class="fa fa-code"></i>
-                  View source
+    <section class="header">
+      <h1 class="title" title=${archiveInfo.title}>
+        <a href="dat://${archiveInfo.key}">
+          <span>${niceName(archiveInfo)}</span>
+          <i class="fa fa-external-link"></i>
+        </a>
+        ${archiveInfo.isOwner ? '' : yo`<span class="readonly"><i class="fa fa-eye"></i>Read-only</span>`}
+      </h1>
+      <div class="actions">
+        <button class="btn primary" onclick=${onShare}>
+          <i class="fa fa-link"></i>
+          Share site
+        </button>
+        ${toggleable(yo`
+          <div class="dropdown-btn-container toggleable-container">
+            <button class="btn toggleable">
+              <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-btn-list">
+              ${ownerButtons}
+              ${archiveInfo.isOwner ? '' : yo`
+                <div class="dropdown-item" onclick=${onFork}>
+                  <i class="fa fa-code-fork"></i>
+                  Fork this site
                 </div>
-                <div class="dropdown-item" onclick=${onToggleSaved}>
-                  <i class="fa ${toggleSaveIcon}"></i>
-                  ${toggleSaveText}
-                </div>
+              `}
+              <div class="dropdown-item" onclick=${onViewSource}>
+                <i class="fa fa-code"></i>
+                View source
+              </div>
+              <div class="dropdown-item" onclick=${onToggleSaved}>
+                <i class="fa ${toggleSaveIcon}"></i>
+                ${toggleSaveText}
               </div>
             </div>
-          `)}
-        </div>
-      </section>
-
-      ${rNotSaved(archiveInfo)}
-      ${rMissingLocalPathMessage(archiveInfo)}
-
-      <section class="tabs-content">
-        ${renderTabs(currentSection, [
-          {id: 'files', label: 'Published files', onclick: onClickTab('files')},
-          {id: 'metadata', label: 'About', onclick: onClickTab('metadata')},
-          {id: 'log', label: 'History', onclick: onClickTab('log')},
-          {id: 'network', label: 'Network', onclick: onClickTab('network')},
-          stagingTab
-        ].filter(Boolean))}
-        ${({
-          files: () => rFiles(archiveInfo),
-          log: () => rHistory(archiveInfo),
-          metadata: () => rMetadata(archiveInfo),
-          network: () => rNetwork(archiveInfo),
-          staging: () => rStagingArea(archiveInfo)
-        })[currentSection]()}
-      </section>
-    </div>
+          </div>
+        `)}
+      </div>
+    </section>
   `
 }
 
@@ -471,12 +465,12 @@ function rStagingNotification (archiveInfo) {
   }
 
   return yo`
-    <div class="staging-notification">
+    <div class="message primary">
+      <i class="fa fa-plus-circle"></i>
       <span>${diff.length} unpublished changes</span>
-      <div class="actions">
-        <button onclick=${e => { e.preventDefault(); currentSection = 'staging'; update() }} class="btn">Review changes</button>
-        <button onclick=${onPublish} class="btn success">Publish changes</button>
-      </div>
+      <button onclick=${e => { e.preventDefault(); isStagingOpen = true; update() }} class="btn">
+        Review changes
+      </button>
     </div>
   `
 }
@@ -486,29 +480,44 @@ function rStagingArea (archiveInfo) {
     return ''
   }
 
+  const backLink = () => yo`
+      <span class="back" onclick=${e => {isStagingOpen = false; update();}}>
+        <i class="fa fa-angle-left"></i>
+        Back
+      </span>
+    `
+
   var diff = archiveInfo.diff
   if (diff.length === 0) {
-    return yo`<em>No unpublished changes</em>`
+    return yo`
+      <div class="staging">
+        ${rViewHeader(archiveInfo)}
+        ${backLink()}
+        <em>No unpublished changes</em>
+      </div>
+    `
   }
 
   var stats = archiveInfo.diffStats
   return yo`
-    <section class="staging">
-      <div class="changes">
+    <div class="staging">
+      ${rViewHeader(archiveInfo)}
+      ${backLink()}
+      <section class="changes">
         <div class="changes-heading">
           <span class="diff-summary">
             Unpublished changes:
           </span>
           <div class="actions">
-            <button onclick=${onRevert} class="btn transparent">Revert changes</button>
+            <button onclick=${onRevert} class="btn">Revert changes</button>
             ${isPublishing
               ? yo`<button class="btn success" disabled><span class="spinner"></span> Publishing...</button>`
               : yo`<button onclick=${onPublish} class="btn success">Publish</button>`}
           </div>
         </div>
         ${renderChanges(archiveInfo)}
-      </div>
-    </section>
+      </section>
+    </div>
   `
 }
 
@@ -787,6 +796,7 @@ async function onPublish () {
 
   // update UI optimistically
   isPublishing = false
+  isStagingOpen = false
   currentSection = 'files'
   selectedArchive.diff = [] // optimistically clear it to speed up rendering
   update()
