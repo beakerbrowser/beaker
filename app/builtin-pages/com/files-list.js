@@ -42,7 +42,7 @@ function redraw (archiveInfo, opts={}) {
 }
 
 function rFolder (archiveInfo, opts) {
-  if (!(archiveInfo.userSettings && archiveInfo.userSettings.localPath)) return ''
+  if (!archiveInfo.localPathExists) return ''
   return yo`
     <div class="dat-local-path">
       <span>
@@ -52,14 +52,22 @@ function rFolder (archiveInfo, opts) {
         </a>
       </span>
       <span class="files-list-actions">
-        <a onclick=${e => onImportFiles(e, archiveInfo)} href="#" title="Add files to ${archiveInfo.userSettings.localPath}">
-          <i class="fa fa-plus"></i>
-          Add files
-        </a>
-        <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#" title="Open ${archiveInfo.userSettings.localPath}">
-          <i class="fa fa-folder-open-o"></i>
-          Open folder
-        </a>
+        ${archiveInfo.isOwner && archiveInfo.localPathExists
+          ? yo `
+            <a onclick=${e => onImportFiles(e, archiveInfo)} href="#">
+              <i class="fa fa-plus"></i>
+              Add files
+            </a>
+          ` : ''
+        }
+        ${archiveInfo.localPathExists
+          ? yo`
+            <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
+              <i class="fa fa-folder-open-o"></i>
+              Open folder
+             </a>
+          ` : ''
+        }
       </span>
     </div>
   `
