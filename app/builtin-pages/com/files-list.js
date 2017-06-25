@@ -86,11 +86,7 @@ function rChildren (archiveInfo, children, depth=0, opts={}) {
 
   if (children.length === 0 && depth === 0) {
     return yo`
-      <div
-        class="item empty"
-        title="No files">
-        <div class="name"><em>No files</em></div>
-      </div>
+      <div class="item empty"><em>No files</em></div>
     `
   }
 
