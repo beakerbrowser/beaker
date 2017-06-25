@@ -171,6 +171,24 @@ async function reloadDiff () {
 function update () {
   var isEmpty = !(isTrashOpen || selectedArchive || selectedArchiveKey)
   var viewCls = isEmpty ? 'empty' : ''
+
+/*
+  TODO - sort control, needs to be restored? -prf
+  <div class="sort">
+    <select name="sort" oninput=${onChangeSort}>
+      <option value="mtime" selected=${currentSort === 'mtime'}>
+        Recently updated
+      </option>
+      <option value="alphabetical" selected=${currentSort === 'alphabetical'}>
+        Name
+      </option>
+     <option value="peers" selected=${currentSort === 'peers'}>
+        Active peers
+      </option>
+    </select>
+  </div>
+*/
+
   yo.update(document.querySelector('main'), yo`
     <main>
     <div class="sidebar ${isSidebarOpen ? 'open' : ''}">
@@ -181,10 +199,11 @@ function update () {
       </div>
       <div class="sidebar-actions">
         <label for="filter">
+          <i class="fa fa-search"></i>
           <input
             class="filter"
             name="filter"
-            placeholder="Filter"
+            placeholder="Search"
             type="text"
             value=${currentFilter || ''}
             onkeyup=${onChangeFilter}/>
@@ -192,28 +211,10 @@ function update () {
             <i class="fa fa-close"></i>
           </button>
         </label>
-
-        <div class="sort">
-          <label for="sort">Sort by</label>
-          <select name="sort" oninput=${onChangeSort}>
-            <option value="mtime" selected=${currentSort === 'mtime'}>
-              Recently updated
-            </option>
-            <option value="alphabetical" selected=${currentSort === 'alphabetical'}>
-              Name
-            </option>
-           <option value="peers" selected=${currentSort === 'peers'}>
-              Active peers
-            </option>
-          </select>
-        </div>
       </div>
 
       <div class="archives-list">
         ${rArchivesList()}
-        <div class="new-archive" onclick=${onCreateArchive}>
-          <i class="fa fa-plus"></i> Create new site
-        </div>
       </div>
 
       <div class="trash-controls">
@@ -282,10 +283,7 @@ function rArchiveListItem (archiveInfo) {
       <div class="title">
         ${icon}
         ${niceName(archiveInfo)}
-        ${archiveInfo.isOwner ? '' : yo`<i class="readonly fa fa-eye"></i>`}
       </div>
-      <span class="last-updated">Updated ${niceDate(archiveInfo.mtime || 0)}</span>
-      <input checked=${selectedArchives.includes(archiveInfo.key)} data-key=${archiveInfo.key} onclick=${onChangeArchiveListItem} type="checkbox"/>
       <span class="peers">
         <i class="fa fa-share-alt"></i>
         ${archiveInfo.peers}
@@ -881,11 +879,6 @@ function onChangeArchiveListItem (e) {
   if (e.target.checked) selectedArchives.push(key)
   else selectedArchives.splice(selectedArchives.indexOf(key), 1)
   update()
-}
-
-async function onCreateArchive () {
-  var archive = await DatArchive.create()
-  history.pushState({}, null, 'beaker://library/' + archive.url.slice('dat://'.length))
 }
 
 // helpers
