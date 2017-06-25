@@ -417,9 +417,10 @@ function rNotSaved (archiveInfo) {
     return ''
   }
   return yo`
-    <section class="message primary">
-      <span>This archive is not saved to your library.</span>
-      <a href="#" onclick=${onToggleSaved}>Save now</a>
+    <section class="message info">
+      <i class="fa fa-info-circle"></i>
+      <span>This archive's files were deleted</span>
+      <button class="btn" href="#" onclick=${onToggleSaved} title="Restore this archive's files">Restore</button>
     </section>
   `
 }
