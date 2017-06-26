@@ -314,6 +314,11 @@ section {
   margin: 1rem 0;
   overflow-y: auto;
 
+  &.empty {
+    border: 0;
+    margin: .5rem;
+  }
+
   i {
     color: @color-text--muted;
   }
@@ -323,7 +328,7 @@ section {
     padding: 5px 0;
 
     &.empty {
-      padding: 0 5px;
+      padding: 0;
     }
 
     .name {
