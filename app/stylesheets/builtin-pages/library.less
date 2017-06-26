@@ -57,10 +57,6 @@ body {
       }
     }
 
-    input.filter {
-      width: 210px;
-    }
-
     button.clear-filter {
       left: 193px;
     }
@@ -164,7 +160,11 @@ body {
 
   .filter, .sort {
     display: block;
-    width: 236px;
+    width: 210px;
+
+    @media (min-width: 925px) {
+      width: 236px;
+    }
   }
 }
 

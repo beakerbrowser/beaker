@@ -193,11 +193,6 @@ function update () {
   yo.update(document.querySelector('main'), yo`
     <main>
     <div class="sidebar ${isSidebarOpen ? 'open' : ''}">
-      <div class="menu">
-        <button onclick=${onToggleSidebar}>
-          <i class="fa fa-bars"></i>
-        </button>
-      </div>
       <div class="sidebar-actions">
         <label for="filter">
           <i class="fa fa-search"></i>
@@ -212,6 +207,11 @@ function update () {
             <i class="fa fa-close"></i>
           </button>
         </label>
+        <div class="menu">
+          <button onclick=${onToggleSidebar}>
+            <i class="fa fa-bars"></i>
+          </button>
+        </div>
       </div>
 
       <div class="archives-list">
