@@ -38,7 +38,7 @@ body {
   .menu {
     position: absolute;
     right: 2px;
-    top: 4px;
+    top: 7.25px;
     z-index: 3;
 
     i {
@@ -55,6 +55,14 @@ body {
       .menu {
         display: none;
       }
+    }
+
+    input.filter {
+      width: 210px;
+    }
+
+    button.clear-filter {
+      left: 193px;
     }
   }
 
@@ -89,25 +97,12 @@ body {
 
 .tabs {
   margin-bottom: 1rem;
-
-  .changes-count {
-    padding: 0 5px;
-    border-radius: 40%;
-    background: @background-menu;
-    font-weight: 500;
-    font-size: .7rem;
-    color: @color-text--muted;
-    border: 1px solid shade(@background-menu, 10%);
-
-    &:empty {
-      display: none;
-    }
-  }
 }
 
 .sidebar-actions {
   position: fixed;
   width: 250px;
+  background: @background-menu;
   border-right: 1px solid @border-menu;
   z-index: 2;
 
@@ -402,22 +397,6 @@ body {
   .dat-url {
     &:extend(.overflow-ellipsis);
     max-width: 100%;
-  }
-
-  .published-files {
-
-    .staging-notification {
-      &:extend(.flex);
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      padding: 5px @padding-component--tight;
-      font-size: .8rem;
-      color: @color-message--info;
-      background: @background-message--info;
-      border: 1px solid @border-message--info;
-      border-radius: 2px;
-    }
   }
 
   .metadata {
