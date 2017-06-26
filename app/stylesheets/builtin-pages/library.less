@@ -89,20 +89,6 @@ body {
 
 .tabs {
   margin-bottom: 1rem;
-
-  .changes-count {
-    padding: 0 5px;
-    border-radius: 40%;
-    background: @background-menu;
-    font-weight: 500;
-    font-size: .7rem;
-    color: @color-text--muted;
-    border: 1px solid shade(@background-menu, 10%);
-
-    &:empty {
-      display: none;
-    }
-  }
 }
 
 .sidebar-actions {
@@ -402,22 +388,6 @@ body {
   .dat-url {
     &:extend(.overflow-ellipsis);
     max-width: 100%;
-  }
-
-  .published-files {
-
-    .staging-notification {
-      &:extend(.flex);
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      padding: 5px @padding-component--tight;
-      font-size: .8rem;
-      color: @color-message--info;
-      background: @background-message--info;
-      border: 1px solid @border-message--info;
-      border-radius: 2px;
-    }
   }
 
   .metadata {
