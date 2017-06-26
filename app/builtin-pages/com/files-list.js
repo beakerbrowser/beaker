@@ -42,21 +42,32 @@ function redraw (archiveInfo, opts={}) {
 }
 
 function rFolder (archiveInfo, opts) {
-  if (!(archiveInfo.userSettings && archiveInfo.userSettings.localPath)) return ''
+  if (!archiveInfo.localPathExists) return ''
   return yo`
     <div class="dat-local-path">
       <span>
         ${archiveInfo.userSettings.localPath}
-      </span>
-      <span>
-        <a onclick=${e => onCopyFolder(e, archiveInfo)} href="#">
+        <a onclick=${e => onCopyFolder(e, archiveInfo)} href="#" title="Copy path to your clipboard">
           <i class="fa fa-clipboard"></i>
-          Copy path
         </a>
-        <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
-          <i class="fa fa-folder-open-o"></i>
-          Open folder
-        </a>
+      </span>
+      <span class="files-list-actions">
+        ${archiveInfo.isOwner && archiveInfo.localPathExists
+          ? yo `
+            <a onclick=${e => onImportFiles(e, archiveInfo)} href="#">
+              <i class="fa fa-plus"></i>
+              Add files
+            </a>
+          ` : ''
+        }
+        ${archiveInfo.localPathExists
+          ? yo`
+            <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
+              <i class="fa fa-folder-open-o"></i>
+              Open folder
+             </a>
+          ` : ''
+        }
       </span>
     </div>
   `
@@ -75,11 +86,7 @@ function rChildren (archiveInfo, children, depth=0, opts={}) {
 
   if (children.length === 0 && depth === 0) {
     return yo`
-      <div
-        class="item empty"
-        title="No files">
-        <div class="name"><em>No files</em></div>
-      </div>
+      <div class="item empty"><em>No files</em></div>
     `
   }
 
@@ -174,6 +181,23 @@ function onCopyFolder (e, archiveInfo) {
     }
     writeToClipboard(path)
     toast.create(`Folder path copied to clipboard.`)
+  }
+}
+
+async function onImportFiles (e, archiveInfo) {
+  var files = await beakerBrowser.showOpenDialog({
+    title: 'Import files to this archive',
+    buttonLabel: 'Import',
+    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory']
+  })
+  if (files) {
+    files.forEach(src => DatArchive.importFromFilesystem({
+      src,
+      dst: archiveInfo.url,
+      ignore: ['dat.json'],
+      inplaceImport: true
+    }))
+    window.dispatchEvent(new Event('files-added'))
   }
 }
 

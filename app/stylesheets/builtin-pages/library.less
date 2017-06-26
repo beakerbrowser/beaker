@@ -31,7 +31,7 @@ body {
   width: 250px;
   height: 100%;
   border-right: 1px solid @border-menu;
-  background: #fff;
+  background: @background-menu;
   z-index: 1;
   transition: left .2s ease;
 
@@ -108,21 +108,26 @@ body {
 .sidebar-actions {
   position: fixed;
   width: 250px;
-  border-bottom: 1px solid @border-menu;
   border-right: 1px solid @border-menu;
   z-index: 2;
-  background: #fff;
 
   label[for="filter"] {
     position: relative;
   }
 
+  .fa-search {
+    position: absolute;
+    left: 13px;
+    z-index: 3;
+    top: 12px;
+    color: @color-text--light;
+  }
+
   .clear-filter {
     visibility: hidden;
     position: absolute;
-    left: calc(100px - 1.5rem);
-    top: -27px;
-    left: 225px;
+    top: -30px;
+    left: 218px;
     color: @color-text--muted;
     padding: 2px 5px;
     border-radius: 2px;
@@ -138,18 +143,21 @@ body {
   }
 
   .filter {
-    &:extend(input.roomy);
-    font-size: 14px;
-    border-radius: 0;
-    border: none;
-    padding-left: 1rem;
+    font-size: 12px;
+    margin: 0.5em;
+    padding: 5px;
+    text-align: center;
+
+    &:focus {
+      text-align: left;
+      padding-left: 25px;
+    }
   }
 
   .sort {
     padding: .2rem 0 .15rem 1rem;
     font-size: 12px;
     background: @background-menu;
-    border-top: 1px solid @border-menu;
 
     select {
       position: absolute;
@@ -161,51 +169,23 @@ body {
 
   .filter, .sort {
     display: block;
-    width: 100%;
+    width: 236px;
   }
 }
 
 .sidebar .archives-list {
-  margin-top: 54px; // height of .sidebar-actions
+  margin-top: 38px; // height of .sidebar-actions
   margin-bottom: 38px; // height of .trash-controls
 }
 
 .sidebar .archive {
-  padding: .5rem 0;
-  margin-left: 1rem;
+  display: flex;
+  padding: 0.4rem 1em;
   position: relative;
-  border-bottom: 1px solid @border-menu;
   cursor: default;
 
-  &.active,
   &:hover {
-    margin-left: 0;
-    padding-left: 1rem;
-
-    .last-updated {
-      left: 1rem;
-    }
-  }
-
-  &:hover {
-    background: @background-menu;
-
-    input {
-      display: block;
-    }
-  }
-
-  input {
-    display: none;
-    position: absolute;
-    right: .5rem;
-    top: .5rem;
-    margin: 0;
-    padding: 0;
-  }
-
-  input:checked {
-    display: block;
+    background: @background-menu--hover;
   }
 
   &.active {
@@ -224,50 +204,15 @@ body {
   }
 
   .title {
-    font-weight: 600;
-    margin-bottom: 1.25rem;
-  }
-
-  .title, .description {
     &:extend(.overflow-ellipsis);
-    max-width: 195px;
-  }
-
-  .last-updated, .peers {
-    position: absolute;
-    bottom: .5rem;
-    font-size: 12px;
-    color: @color-text--muted;
-  }
-
-  .last-updated {
-    left: 0;
+    color: @color-text;
+    flex: 1;
   }
 
   .peers {
-    right: .5rem;
-  }
-}
-
-.sidebar .new-archive {
-  padding: .5rem 0;
-  margin-left: 1rem;
-  position: relative;
-  border-bottom: 1px solid @border-menu;
-  cursor: pointer;
-  color: @color-text--muted;
-
-  &:hover {
-    margin-left: 0;
-    padding-left: 1rem;
-    background: @background-menu;
-  }
-
-  i {
-    font-size: 10px;
-    position: relative;
-    top: -1px;
-    margin: 0 2px 0 4px;
+    font-size: 12px;
+    color: @color-text--muted;
+    padding-left: 1em;
   }
 }
 
@@ -314,6 +259,76 @@ body {
   max-width: 675px;
   margin: auto;
   position: relative;
+
+  .header {
+
+    .title {
+      &:extend(.flex);
+      &:extend(.overflow-ellipsis);
+      align-items: center;
+      max-width: 450px;
+      margin-top: 25px;
+
+      .fa-external-link {
+        font-size: 1.2rem;
+        color: fadeout(@color-text--light, 10%);
+      }
+
+      // max-width of .title + width of .actions
+      @media (min-width: 665px) {
+        margin-top: 0;
+      }
+
+      a:hover {
+
+        span {
+          text-decoration: underline;
+        }
+
+        i {
+          color: @color-text;
+        }
+      }
+    }
+
+    .readonly {
+      text-transform: uppercase;
+      border: 1px solid @border-menu;
+      border-radius: 2px;
+      font-size: .65rem;
+      background: @background-menu;
+      margin-left: 5px;
+      margin-top: 2px;
+      padding: 1px 5px;
+      display: inline-block;
+      color: @color-text--muted;
+      font-weight: 400;
+
+      i {
+        margin-right: 3px;
+      }
+    }
+
+    .actions {
+      position: absolute;
+      right: 0;
+      top: -45px;
+
+      // max-width of .title + width of .actions
+      @media (min-width: 665px) {
+        top: 1px;
+      }
+
+      .btn {
+        display: inline-block;
+      }
+
+      .dropdown-btn-list {
+        width: 175px;
+        font-size: 13px;
+      }
+    }
+  }
 
   &.empty {
     max-width: 100%;
@@ -389,64 +404,6 @@ body {
     max-width: 100%;
   }
 
-  .header {
-
-    .title {
-      &:extend(.flex);
-      &:extend(.overflow-ellipsis);
-      align-items: center;
-      max-width: 450px;
-      margin-top: 25px;
-
-      // max-width of .title + width of .actions
-      @media (min-width: 665px) {
-        margin-top: 0;
-      }
-
-      a:hover {
-        text-decoration: underline;
-      }
-    }
-
-    .readonly {
-      text-transform: uppercase;
-      border: 1px solid @border-menu;
-      border-radius: 2px;
-      font-size: .65rem;
-      background: @background-menu;
-      margin-left: 5px;
-      margin-top: 2px;
-      padding: 1px 5px;
-      display: inline-block;
-      color: @color-text--muted;
-      font-weight: 400;
-
-      i {
-        margin-right: 3px;
-      }
-    }
-
-    .actions {
-      position: absolute;
-      right: 0;
-      top: -45px;
-
-      // max-width of .title + width of .actions
-      @media (min-width: 665px) {
-        top: 1px;
-      }
-
-      .btn {
-        display: inline-block;
-      }
-
-      .dropdown-btn-list {
-        width: 175px;
-        font-size: 13px;
-      }
-    }
-  }
-
   .published-files {
 
     .staging-notification {
@@ -495,7 +452,6 @@ body {
       &.label {
         background: @background-menu;
         border-right: 1px solid @border-menu;
-        font-weight: 500;
         padding-right: 5px;
         width: 125px;
       }
@@ -551,6 +507,24 @@ body {
       &:hover {
         &:extend(.link:hover);
       }
+    }
+  }
+}
+
+.view .staging {
+  position: relative;
+
+  section {
+    margin-bottom: 2rem;
+  }
+
+  .back {
+    margin-bottom: 1rem;
+    display: block;
+    cursor: pointer;
+
+    &:hover {
+      &:extend(.link:hover);
     }
   }
 

@@ -19,8 +19,14 @@
     &:extend(.link:hover);
   }
 
-  i {
-    margin-left: @margin-icon;
+  .fa-clipboard {
+    font-size: 0.9em;
+  }
+
+  .files-list-actions {
+    a {
+      margin-left: 5px;
+    }
   }
 }
 
@@ -38,7 +44,7 @@
     padding: 7px @padding-component--tight;
     border-top: 1px solid @border-menu;
 
-    &:hover {
+    &:not(.empty):hover {
       background: @background-highlight;
     }
 

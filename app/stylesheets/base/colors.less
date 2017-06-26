@@ -35,18 +35,18 @@
 @background-message: shade(#fff, 5%);
 @color-message: shade(#fff, 55%);
 @border-message: shade(#fff, 12%);
-@background-message--success: tint(@green, 80%);
-@color-message--success: mix(@color-text, tint(@green, 50%), 40%);
-@border-message--success: tint(@green, 68%);
-@background-message--primary: tint(@blue, 80%);
-@color-message--primary: mix(@color-text, tint(@blue, 50%), 40%);
-@border-message--primary: tint(@blue, 68%);
-@background-message--info: tint(@yellow, 80%);
-@color-message--info : mix(@color-text, tint(@yellow, 50%), 40%);
-@border-message--info : mix(@color-text, tint(@yellow, 68%), 8%);
-@background-message--error: tint(@red, 80%);
-@color-message--error: mix(@color-text, tint(@red, 50%), 40%);
-@border-message--error: tint(@red, 68%);
+@background-message--success: fadeout(@green, 99%);
+@color-message--success: mix(@color-text, fadeout(@green, 5%), 20%);
+@border-message--success: mix(@color-text, fadeout(@green, 50%), 15%);
+@background-message--primary: fadeout(@blue, 98%);
+@color-message--primary: fadeout(@blue, 10%);
+@border-message--primary: fadeout(@blue, 40%);
+@background-message--info: fadeout(@orange, 99%);
+@color-message--info : mix(@color-text, fadeout(@orange, 20%), 10%);
+@border-message--info : mix(@color-text, fadeout(@orange, 60%), 5%);
+@background-message--error: fadeout(@red, 98%);
+@color-message--error: mix(@color-text, fadeout(@red, 30%), 15%);
+@border-message--error: mix(@color-text, fadeout(@red, 55%), 5%);
 
 // Selections
 @background-highlight: tint(@blue, 95%);
