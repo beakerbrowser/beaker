@@ -197,10 +197,10 @@ function update () {
         </button>
       `,
       yo`
-        <button onclick=${onClickLiveReload} class="action ${true ? 'active': ''}" title="Turn ${true ? 'off' : 'on'} live reloading">
+        <button onclick=${onOpenFolder} class="action" title="Open folder">
           <div class="content">
-            <i class="fa fa-bolt"></i>
-            <span>Live reload</span>
+            <i class="fa fa-folder"></i>
+            <span>Open folder</span>
           </div>
         </button>
       `
@@ -237,14 +237,6 @@ function update () {
                 <i class="fa fa-code"></i>
                 Open in Library
               </a>
-              ${archiveInfo.userSettings.localPath
-                ? yo`
-                  <div onclick=${onOpenFolder} class="dropdown-item">
-                    <i class="fa fa-folder-o"></i>
-                    Open folder
-                  </div>`
-                : ''
-              }
               ${archiveInfo.isOwner
                 ? yo`
                   <div onclick=${onFork} class="dropdown-item">
@@ -577,10 +569,6 @@ function onArchivesUpdated (e) {
   if (archive && e.details.url === archive.url) {
     loadCurrentArchive()
   }
-}
-
-async function onClickLiveReload (e) {
-  locationbar.toggleLiveReloading()
 }
 
 async function onToggleSaved (e) {

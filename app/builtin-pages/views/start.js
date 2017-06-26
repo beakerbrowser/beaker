@@ -225,7 +225,7 @@ function renderError () {
     return ''
   }
   return yo`
-    <div class="message error"><i class="fa fa-exclamation-triangle"></i> ${error}</div>
+    <div class="message error"><i class="fa fa-exclamation-circle"></i> ${error}</div>
   `
 }
 
