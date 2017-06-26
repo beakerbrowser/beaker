@@ -777,7 +777,7 @@ function onClickTab (tab) {
 
 function onFilesAdded () {
   // go to staging tab
-  currentSection = 'staging'
+  isStagingOpen = true
   update()
 }
 
