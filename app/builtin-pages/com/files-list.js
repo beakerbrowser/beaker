@@ -25,10 +25,10 @@ function rFilesList (archiveInfo, opts) {
     `
   }
 
-  var hasFiles = Object.keys(archiveInfo.fileTree.rootNode.children).length > 0
+  // this accounts for dat.json, which is hidden by default
+  var hasFiles = Object.keys(archiveInfo.fileTree.rootNode.children).length > 1
   return yo`
-    <div class="files-list">
-      ${!hasFiles ? yo`<div class="item"><em>Empty folder</em></div>` : ''}
+    <div class="files-list ${!hasFiles ? 'empty' : ''}">
       ${rChildren(archiveInfo, archiveInfo.fileTree.rootNode.children, 0, opts)}
     </div>
   `

@@ -36,7 +36,7 @@
   font-size: .8rem;
 
   &.empty {
-    display: none;
+    border: 0;
   }
 
   .item {
@@ -46,10 +46,6 @@
 
     &:not(.empty):hover {
       background: @background-highlight;
-    }
-
-    &.empty {
-      color: @color-text--muted;
     }
 
     &.folder {
