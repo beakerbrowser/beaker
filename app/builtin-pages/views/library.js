@@ -855,6 +855,7 @@ async function onLoadMoreHistory (e) {
 }
 
 function onChangeFilter (e) {
+  if (e.keyCode === 27) onClearFilter()
   currentFilter = e.target.value
   update()
 }
