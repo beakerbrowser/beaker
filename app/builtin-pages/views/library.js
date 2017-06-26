@@ -733,6 +733,8 @@ async function onToggleSaved (e) {
     if (selectedArchive.userSettings.isSaved == false) {
       trashList.unshift(selectedArchive)
     }
+    selectedArchiveKey = ''
+    selectedArchive = ''
   } else {
     selectedArchive.userSettings = await beaker.archives.add(selectedArchive.key)
     if (selectedArchive.userSettings.isSaved == true) {
