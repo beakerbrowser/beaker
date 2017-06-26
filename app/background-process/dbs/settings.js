@@ -31,6 +31,11 @@ export function set (key, value) {
 }
 
 export function get (key) {
+  // env variables
+  if (key === 'noWelcomeTab') {
+    return (process.env.beaker_no_welcome_tab == 1)
+  }
+  // stored values
   return setupPromise.then(v => cbPromise(cb => {
     db.get(`SELECT value FROM settings WHERE key = ?`, [key], (err, row) => {
       if (row)
@@ -48,6 +53,7 @@ export function getAll () {
 
       var obj = {}
       rows.forEach(row => obj[row.key] = row.value)
+      obj.noWelcomeTab = (process.env.beaker_no_welcome_tab == 1)
       cb(null, obj)
     })
   }))

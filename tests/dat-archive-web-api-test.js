@@ -13,6 +13,7 @@ const app = new Application({
   path: electron,
   args: ['../app'],
   env: {
+    beaker_no_welcome_tab: 1,
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
     beaker_sites_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
     beaker_dat_quota_default_bytes_allowed: '90kb'

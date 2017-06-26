@@ -12,6 +12,7 @@ const app = new Application({
   path: electron,
   args: ['../app'],
   env: { 
+    beaker_no_welcome_tab: 1,
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-')
   }
 })

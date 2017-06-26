@@ -29,20 +29,6 @@ var settings
 
 setup()
 async function setup () {
-  // open update info if appropriate
-  let latestVersion = await beakerSitedata.get('beaker://start', 'latest-version')
-  if (+latestVersion < LATEST_VERSION) {
-    await beakerSitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
-    if (!latestVersion) {
-      window.open('beaker://start')
-      window.location = WELCOME_URL
-    } else {
-      window.open('beaker://start')
-      window.location = RELEASE_NOTES_URL
-    }
-    return
-  }
-
   await loadBookmarks()
   archivesStatus = await beaker.archives.status()
   userProfile = await beaker.profiles.get(0)
@@ -52,8 +38,23 @@ async function setup () {
     userProfile.title = 'Your profile'
   }
   settings = await beakerBrowser.getSettings()
-
   update()
+
+  // open update info if appropriate
+  if (!settings.noWelcomeTab) {
+    let latestVersion = await beakerSitedata.get('beaker://start', 'latest-version')
+    if (+latestVersion < LATEST_VERSION) {
+      await beakerSitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
+      if (!latestVersion) {
+        window.open('beaker://start')
+        window.location = WELCOME_URL
+      } else {
+        window.open('beaker://start')
+        window.location = RELEASE_NOTES_URL
+      }
+      return
+    }
+  }
 
   // subscribe to network changes
   beaker.archives.addEventListener('network-changed', ({details}) => {
