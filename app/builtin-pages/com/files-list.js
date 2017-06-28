@@ -42,14 +42,18 @@ function redraw (archiveInfo, opts={}) {
 }
 
 function rFolder (archiveInfo, opts) {
-  if (!archiveInfo.localPathExists) return ''
+  if (!archiveInfo.userSettings.localPath) return ''
   return yo`
     <div class="dat-local-path">
       <span>
         ${archiveInfo.userSettings.localPath}
-        <a onclick=${e => onCopyFolder(e, archiveInfo)} href="#" title="Copy path to your clipboard">
-          <i class="fa fa-clipboard"></i>
-        </a>
+        ${archiveInfo.localPathExists
+          ? yo`
+            <a onclick=${e => onCopyFolder(e, archiveInfo)} href="#" title="Copy path to your clipboard">
+              <i class="fa fa-clipboard"></i>
+            </a>`
+          : yo`<i class="fa fa-exclamation"></i>`
+        }
       </span>
       <span class="files-list-actions">
         ${archiveInfo.isOwner && archiveInfo.localPathExists
@@ -65,8 +69,8 @@ function rFolder (archiveInfo, opts) {
             <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
               <i class="fa fa-folder-open-o"></i>
               Open folder
-             </a>
-          ` : ''
+            </a>`
+          : yo`<em>This folder no longer exists</em>`
         }
       </span>
     </div>
