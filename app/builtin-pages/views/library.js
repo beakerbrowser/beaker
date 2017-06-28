@@ -365,7 +365,7 @@ function rViewHeader (archiveInfo) {
       <div class="actions">
         <button class="btn primary" onclick=${onShare}>
           <i class="fa fa-link"></i>
-          Share site
+          Share
         </button>
         ${toggleable(yo`
           <div class="dropdown-btn-container toggleable-container">
