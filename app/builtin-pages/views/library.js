@@ -436,7 +436,7 @@ function rMissingLocalPathMessage (archiveInfo) {
       <span>
         Beaker cannot find the folder for these files
       </span>
-      <button class="btn" onclick=${onChooseNewLocation}>Choose a new folder</button>
+      <button class="btn" onclick>Restore old folder</button>
     </section>
   `
 }
