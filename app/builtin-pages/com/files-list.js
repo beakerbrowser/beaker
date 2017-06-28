@@ -52,7 +52,7 @@ function rFolder (archiveInfo, opts) {
             <a onclick=${e => onCopyFolder(e, archiveInfo)} href="#" title="Copy path to your clipboard">
               <i class="fa fa-clipboard"></i>
             </a>`
-          : yo`<i class="fa fa-exclamation"></i>`
+          : ''
         }
       </span>
       <span class="files-list-actions">
@@ -70,7 +70,11 @@ function rFolder (archiveInfo, opts) {
               <i class="fa fa-folder-open-o"></i>
               Open folder
             </a>`
-          : yo`<em>This folder no longer exists</em>`
+          : yo`
+            <span class="folder-warning">
+              <em>This folder no longer exists</em>
+              <i class="fa fa-exclamation-circle"></i>
+            </span>`
         }
       </span>
     </div>
