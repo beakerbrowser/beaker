@@ -26,7 +26,7 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 #### Why Beaker?
 
- - You can share files privacy
+ - You can share files privately
  - You control your data
  - You can duplicate, modify, and share websites
  - You can use P2P apps while offline
