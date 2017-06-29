@@ -62,12 +62,15 @@ console.log(archive.url)
   - :point_right: [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
   - [Permissions](https://beakerbrowser.com/docs/apis/permissions.html)
   - [Dat.json site manifest](https://beakerbrowser.com/docs/apis/manifest.html)
-- **Specs and Proposals**
-  - [WebTerm](https://github.com/beakerbrowser/beaker/wiki/WebTerm) a bashlike terminal for Web (proposed spec)
-  - [Dat DNS: Authenticated Dat URLs and HTTPS to Dat Discovery](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery) (Beaker's solution to DNS shortnames for Dat sites) (implemented spec)
-  - [Thick Applications: Unifying WebExtensions with the Web platform and moving beyond injections](https://github.com/beakerbrowser/beaker/wiki/Thick-Applications:-Unifying-WebExtensions-with-the-Web-platform-and-moving-beyond-injections)
-  - [Service Discovery: PSA Web Service Discovery Protocol](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol) (proposed spec)
-  - [App Scheme](https://github.com/beakerbrowser/beaker/wiki/App-Scheme) (dead spec)
+- **Specs**
+  - Implemented
+    - [Dat DNS](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery)
+  - Proposed
+    - [WebTerm](https://github.com/beakerbrowser/beaker/wiki/WebTerm) a bashlike terminal for Web
+    - [Thick Applications](https://github.com/beakerbrowser/beaker/wiki/Thick-Applications:-Unifying-WebExtensions-with-the-Web-platform-and-moving-beyond-injections)
+    - [Service Discovery](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol)
+  - Dormant
+    - [App Scheme](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
 - **Tutorials**
   - :point_right: [Create a peer-to-peer blog](https://beakerbrowser.com/docs/tutorials/create-a-blog.html)
   - :point_right: [Create a markdown site](https://beakerbrowser.com/docs/tutorials/create-a-markdown-site.html)
