@@ -29,12 +29,14 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
  - You can share files privately
  - You control your data
  - You can duplicate, modify, and share websites
- - You can use P2P apps while offline
+ - You can use apps while offline
  - You can go back in time and see previous verions of your content
 
-#### P2P Web APIs
+With Beaker, we're combining the flexibility of the desktop with the connectivity of the Web.
 
-An example of the [Dat peer-to-peer Web API](https://beakerbrowser.com/docs/apis/dat.html):
+#### New Web APIs
+
+An example of the [Dat Files API](https://beakerbrowser.com/docs/apis/dat.html):
 
 ```js
 var archive = await DatArchive.create({
