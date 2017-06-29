@@ -26,19 +26,11 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 #### Why Beaker?
 
-Beaker is better than the HTTP/S Web because:
-
  - Users can share files with end-to-end secrecy
  - Data published via the Dat peer-to-peer protocol is controlled by the user
  - Peer-to-peer websites can be forked, modified, and shared
  - Peer-to-peer websites work offline, because they don't rely on hosts
  - Peer-to-peer websites are versioned, so users can peg a version or view a website at any point in its history
-
-Beaker is better than a blockchain Web because:
-
- - There's no Proof-of-Work or overhead for achieving global consensus
- - Users don't need to download a large dataset to participate (the blockchain history)
- - No upfront payment is required to participate
 
 #### P2P Web APIs
 
@@ -71,6 +63,7 @@ console.log(archive.url)
   - [Permissions](https://beakerbrowser.com/docs/apis/permissions.html)
   - [Dat.json site manifest](https://beakerbrowser.com/docs/apis/manifest.html)
 - **Specs and Proposals**
+  - [WebTerm](https://github.com/beakerbrowser/beaker/wiki/WebTerm)
   - [Dat DNS: Authenticated Dat URLs and HTTPS to Dat Discovery](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery) (Beaker's solution to DNS shortnames for Dat sites)
   - [Thick Applications: Unifying WebExtensions with the Web platform and moving beyond injections](https://github.com/beakerbrowser/beaker/wiki/Thick-Applications:-Unifying-WebExtensions-with-the-Web-platform-and-moving-beyond-injections)
   - [Service Discovery: PSA Web Service Discovery Protocol](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol)
