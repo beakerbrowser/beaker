@@ -50,20 +50,13 @@ console.log(archive.url)
 
 ## Documentation
 
-- **Inside Beaker**
-  - :point_right: [The Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
-  - :point_right: [Privacy and security in Beaker](https://beakerbrowser.com/docs/inside-beaker/privacy-and-security.html)
-  - :point_right: [The "Thick applications model"](https://beakerbrowser.com/docs/inside-beaker/thick-applications.html)
-  - :point_right: [Why Dat vs Other technologies](https://beakerbrowser.com/docs/inside-beaker/other-technologies.html)
-  - [Project mission](https://beakerbrowser.com/docs/inside-beaker/mission.html)
-  - [Is Dat "Secure P2P?"](https://github.com/beakerbrowser/beaker/wiki/Is-Dat-%22Secure-P2P%3F%22)
-  - [Worm Prevention (Security Discussion)](https://github.com/beakerbrowser/beaker/wiki/Worm-Prevention-(Security-Discussion))
 - **Web APIs**
-  - :point_right: [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
+  - [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
   - [Permissions](https://beakerbrowser.com/docs/apis/permissions.html)
   - [Dat.json site manifest](https://beakerbrowser.com/docs/apis/manifest.html)
 - **Specs**
   - Implemented
+    - [Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
     - [Dat DNS](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery)
   - Proposed
     - [WebTerm](https://github.com/beakerbrowser/beaker/wiki/WebTerm) a bashlike terminal for Web
@@ -71,16 +64,7 @@ console.log(archive.url)
     - [Service Discovery](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol)
   - Dormant
     - [App Scheme](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
-- **Tutorials**
-  - :point_right: [Create a peer-to-peer blog](https://beakerbrowser.com/docs/tutorials/create-a-blog.html)
-  - :point_right: [Create a markdown site](https://beakerbrowser.com/docs/tutorials/create-a-markdown-site.html)
-  - :point_right: [Host outside of Beaker](https://beakerbrowser.com/docs/tutorials/host-outside-of-beaker.html)
-  - [Share files secretly](https://beakerbrowser.com/docs/tutorials/share-files-secretly.html)
-  - [Code: Read site files](https://beakerbrowser.com/docs/tutorials/read-site-files.html)
-  - [Code: Write site files](https://beakerbrowser.com/docs/tutorials/write-site-files.html)
-  - [Code: Diff, commit, revert](https://beakerbrowser.com/docs/tutorials/diff-commit-revert.html)
-  - [Code: Listen for file changes](https://beakerbrowser.com/docs/tutorials/listen-for-file-changes.html)
-  - [Code: Create or fork a site](https://beakerbrowser.com/docs/tutorials/create-or-fork-a-site.html)
+- [**Tutorials**](https://beakerbrowser.com/docs/tutorials/)
 
 ## Env Vars
 
