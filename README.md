@@ -26,11 +26,11 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 #### Why Beaker?
 
- - Users can share files with end-to-end secrecy
- - Data published via the Dat peer-to-peer protocol is controlled by the user
- - Peer-to-peer websites can be forked, modified, and shared
- - Peer-to-peer websites work offline, because they don't rely on hosts
- - Peer-to-peer websites are versioned, so users can peg a version or view a website at any point in its history
+ - You can share files privacy
+ - You control your data
+ - You can duplicate, modify, and share websites
+ - You can use P2P apps while offline
+ - You can go back in time and see previous verions of your content
 
 #### P2P Web APIs
 
