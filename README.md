@@ -3,9 +3,7 @@ Beaker Browser
 
 ![logo.png](build/icons/256x256.png)
 
-Beaker is an experimental peer-to-peer Web browser.
-
-It adds new APIs for building hostless applications, while remaining compatible with the rest of the Web. [Visit the website.](https://beakerbrowser.com/)
+Beaker is an experimental peer-to-peer Web browser. It adds new APIs for building hostless applications, while remaining compatible with the rest of the Web. [Visit the website.](https://beakerbrowser.com/)
 
 Please feel free to open usability issues. Join us at #beakerbrowser on Freenode.
 
@@ -27,14 +25,13 @@ Beaker is a new browser that combines the flexibility of the desktop with the co
  
 ### Features
 
-:zap: Host sites and files from the browser<br>
-:zap: Save sites for offline use<br>
-:zap: Share files secretly between devices (secret URLs)<br>
-:zap: Fork sites to modify and share<br>
-:zap: Versioned URLs for historic lookup<br>
-:zap: New Web APIs<br>
-:zap: Live reloading<br>
-:zap: Native markdown (.md) rendering
+ - Host sites from the browser
+ - Save sites for offline use
+ - Share files secretly between devices
+ - Versioned URLs for historic lookup
+ - New Web APIs
+ - Live reloading
+ - Native markdown (.md) rendering
 
 With Beaker, we're combining the flexibility of the desktop with the connectivity of the Web.
 
