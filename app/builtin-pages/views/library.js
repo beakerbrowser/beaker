@@ -115,6 +115,9 @@ async function loadCurrentArchive () {
       // load archive metadata
       var a = new DatArchive(selectedArchiveKey)
       selectedArchive = await a.getInfo()
+      selectedArchive.diff = []
+      selectedArchive.history = []
+      selectedArchive.fileTree = {rootNode: null}
       console.log(selectedArchive)
 
       // load the filetree from the last published, not from the staging
@@ -365,7 +368,7 @@ function rViewHeader (archiveInfo) {
       <div class="actions">
         <button class="btn primary" onclick=${onShare}>
           <i class="fa fa-link"></i>
-          Share site
+          Share
         </button>
         ${toggleable(yo`
           <div class="dropdown-btn-container toggleable-container">
@@ -436,7 +439,7 @@ function rMissingLocalPathMessage (archiveInfo) {
       <span>
         Beaker cannot find the folder for these files
       </span>
-      <button class="btn" onclick=${onChooseNewLocation}>Choose a new folder</button>
+      <button class="btn" onclick=${onRestoreOldFolder}>Restore old folder</button>
     </section>
   `
 }
@@ -633,7 +636,7 @@ function rTrash () {
         ${trashList.map(archiveInfo => yo`
           <li class="trash-item">
             <a href=${archiveInfo.key}>${niceName(archiveInfo)}</a>
-            <button class="restore" onclick=${e => onRestore(e, archiveInfo.key)}>
+            <button class="restore" onclick=${e => onUndelete(e, archiveInfo.key)}>
               Restore
             </button>
           </li>`
@@ -732,23 +735,28 @@ async function onToggleSaved (e) {
     selectedArchive.userSettings = await beaker.archives.remove(selectedArchive.key)
     if (selectedArchive.userSettings.isSaved == false) {
       trashList.unshift(selectedArchive)
-      selectedArchiveKey = ''
-      selectedArchive = ''
     }
   } else {
     selectedArchive.userSettings = await beaker.archives.add(selectedArchive.key)
+    await beaker.archives.restore(selectedArchive.key)
     if (selectedArchive.userSettings.isSaved == true) {
       trashList.splice(trashList.findIndex(a => a.key === selectedArchive.key), 1)
     }
   }
-  update()
+  loadCurrentArchive()
 }
 
-async function onRestore (e, key) {
+async function onUndelete (e, key) {
   e.preventDefault()
   trashList.splice(trashList.findIndex(a => a.key === key), 1)
   await beaker.archives.add(key)
-  update()
+  await beaker.archives.restore(key)
+  loadCurrentArchive()
+}
+
+async function onRestoreOldFolder () {
+  await beaker.archives.restore(selectedArchive.key)
+  loadCurrentArchive()
 }
 
 function onToggleTrash () {

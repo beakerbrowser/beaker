@@ -186,6 +186,16 @@ export default {
     return results
   },
 
+  async restore (url) {
+    var key = toKey(url)
+    var settings = await archivesDb.getUserSettings(0, key)
+    if (settings.localPath) {
+      await datLibrary.restoreStagingFolder(key, settings.localPath)
+      return true
+    }
+    return false
+  },
+
   async list(query={}) {
     return datLibrary.queryArchives(query)
   },

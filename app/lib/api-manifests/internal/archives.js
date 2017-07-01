@@ -5,6 +5,7 @@ export default {
   add: 'promise',
   remove: 'promise',
   bulkRemove: 'promise',
+  restore: 'promise',
   update: 'promise',
   list: 'promise',
   get: 'promise',
