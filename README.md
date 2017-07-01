@@ -3,9 +3,7 @@ Beaker Browser
 
 ![logo.png](build/icons/256x256.png)
 
-Beaker is an experimental Browser.
-It adds new technologies for peer-to-peer applications while remaining compatible with the rest of the Web.
-[Visit the website.](https://beakerbrowser.com/)
+Beaker is an experimental peer-to-peer Web browser. It adds new APIs for building hostless applications, while remaining compatible with the rest of the Web. [Visit the website.](https://beakerbrowser.com/)
 
 Please feel free to open usability issues. Join us at #beakerbrowser on Freenode.
 
@@ -13,36 +11,33 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 ### [OSX 64-bit .dmg](https://download.beakerbrowser.net/download/latest/osx)
 
-#### Features
+## About
 
-:zap: **Host sites and files from the browser**<br>
-:zap: **Save sites for offline use**<br>
-:zap: **Share files secretly between devices (secret URLs)**<br>
-:zap: Fork sites to modify and share<br>
-:zap: Versioned URLs for historic lookup<br>
-:zap: Write peer-to-peer applications with new Web APIs<br>
-:zap: Live reloading to speed up site development<br>
-:zap: Native markdown (.md) rendering
+Beaker is a new browser that combines the flexibility of the desktop with the connectivity of the Web.
 
-#### Why Beaker?
+### Why Beaker?
 
-Beaker is better than the HTTP/S Web because:
+ - You can share files privately
+ - You control your data
+ - You can duplicate, modify, and share websites
+ - You can use apps while offline
+ - You can go back in time and see previous verions of your content
+ 
+### Features
 
- - Users can share files with end-to-end secrecy
- - Data published via the Dat peer-to-peer protocol is controlled by the user
- - Peer-to-peer websites can be forked, modified, and shared
- - Peer-to-peer websites work offline, because they don't rely on hosts
- - Peer-to-peer websites are versioned, so users can peg a version or view a website at any point in its history
+ - Host sites from the browser
+ - Save sites for offline use
+ - Share files secretly between devices
+ - Versioned URLs for historic lookup
+ - New Web APIs
+ - Live reloading
+ - Native markdown (.md) rendering
 
-Beaker is better than a blockchain Web because:
+With Beaker, we're combining the flexibility of the desktop with the connectivity of the Web.
 
- - There's no Proof-of-Work or overhead for achieving global consensus
- - Users don't need to download a large dataset to participate (the blockchain history)
- - No upfront payment is required to participate
+#### New Web APIs
 
-#### P2P Web APIs
-
-An example of the [Dat peer-to-peer Web API](https://beakerbrowser.com/docs/apis/dat.html):
+An example of the [Dat Files API](https://beakerbrowser.com/docs/apis/dat.html):
 
 ```js
 var archive = await DatArchive.create({
@@ -58,33 +53,22 @@ console.log(archive.url)
 
 ## Documentation
 
-- **Inside Beaker**
-  - :point_right: [The Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
-  - :point_right: [Privacy and security in Beaker](https://beakerbrowser.com/docs/inside-beaker/privacy-and-security.html)
-  - :point_right: [The "Thick applications model"](https://beakerbrowser.com/docs/inside-beaker/thick-applications.html)
-  - :point_right: [Why Dat vs Other technologies](https://beakerbrowser.com/docs/inside-beaker/other-technologies.html)
-  - [Project mission](https://beakerbrowser.com/docs/inside-beaker/mission.html)
-  - [Is Dat "Secure P2P?"](https://github.com/beakerbrowser/beaker/wiki/Is-Dat-%22Secure-P2P%3F%22)
-  - [Worm Prevention (Security Discussion)](https://github.com/beakerbrowser/beaker/wiki/Worm-Prevention-(Security-Discussion))
 - **Web APIs**
-  - :point_right: [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
+  - [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
   - [Permissions](https://beakerbrowser.com/docs/apis/permissions.html)
   - [Dat.json site manifest](https://beakerbrowser.com/docs/apis/manifest.html)
-- **Specs and Proposals**
-  - [Dat DNS: Authenticated Dat URLs and HTTPS to Dat Discovery](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery) (Beaker's solution to DNS shortnames for Dat sites)
-  - [Thick Applications: Unifying WebExtensions with the Web platform and moving beyond injections](https://github.com/beakerbrowser/beaker/wiki/Thick-Applications:-Unifying-WebExtensions-with-the-Web-platform-and-moving-beyond-injections)
-  - [Service Discovery: PSA Web Service Discovery Protocol](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol)
-  - [App Scheme (dead spec)](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
-- **Tutorials**
-  - :point_right: [Create a peer-to-peer blog](https://beakerbrowser.com/docs/tutorials/create-a-blog.html)
-  - :point_right: [Create a markdown site](https://beakerbrowser.com/docs/tutorials/create-a-markdown-site.html)
-  - :point_right: [Host outside of Beaker](https://beakerbrowser.com/docs/tutorials/host-outside-of-beaker.html)
-  - [Share files secretly](https://beakerbrowser.com/docs/tutorials/share-files-secretly.html)
-  - [Code: Read site files](https://beakerbrowser.com/docs/tutorials/read-site-files.html)
-  - [Code: Write site files](https://beakerbrowser.com/docs/tutorials/write-site-files.html)
-  - [Code: Diff, commit, revert](https://beakerbrowser.com/docs/tutorials/diff-commit-revert.html)
-  - [Code: Listen for file changes](https://beakerbrowser.com/docs/tutorials/listen-for-file-changes.html)
-  - [Code: Create or fork a site](https://beakerbrowser.com/docs/tutorials/create-or-fork-a-site.html)
+- **Specs**
+  - Implemented
+    - [Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
+    - [Dat DNS](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery)
+  - Proposed
+    - [Installable Web Applications](https://github.com/beakerbrowser/beaker/wiki/Installable-Web-Applications)
+    - [Intents](https://github.com/beakerbrowser/beaker/wiki/Intent-Scheme) a URI scheme for composing interactions between apps
+    - [Service Discovery](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol)
+    - [WebTerm](https://github.com/beakerbrowser/beaker/wiki/WebTerm) a bashlike terminal for Web
+  - Dead
+    - [App Scheme](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
+- [**Tutorials**](https://beakerbrowser.com/docs/tutorials/)
 
 ## Env Vars
 
