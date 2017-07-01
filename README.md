@@ -65,11 +65,11 @@ console.log(archive.url)
     - [Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
     - [Dat DNS](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery)
   - Proposed
-    - [WebTerm](https://github.com/beakerbrowser/beaker/wiki/WebTerm) a bashlike terminal for Web
+    - [Installable Web Applications](https://github.com/beakerbrowser/beaker/wiki/Installable-Web-Applications)
     - [Intents](https://github.com/beakerbrowser/beaker/wiki/Intent-Scheme) a URI scheme for composing interactions between apps
-    - [Thick Applications](https://github.com/beakerbrowser/beaker/wiki/Thick-Applications:-Unifying-WebExtensions-with-the-Web-platform-and-moving-beyond-injections)
     - [Service Discovery](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol)
-  - Dormant
+    - [WebTerm](https://github.com/beakerbrowser/beaker/wiki/WebTerm) a bashlike terminal for Web
+  - Dead
     - [App Scheme](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
 - [**Tutorials**](https://beakerbrowser.com/docs/tutorials/)
 
