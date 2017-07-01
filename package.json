@@ -1,4 +1,6 @@
 {
+  "bin": "./tasks/start-cli.js",
+  "name": "beakerbrowser",
   "devDependencies": {
     "asar": "^0.11.0",
     "browserify": "^13.0.1",
