@@ -29,6 +29,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.add = archivesRPC.add
   beaker.archives.remove = archivesRPC.remove
   beaker.archives.bulkRemove = archivesRPC.bulkRemove
+  beaker.archives.restore = archivesRPC.restore
   beaker.archives.update = archivesRPC.update
   beaker.archives.list = archivesRPC.list
   beaker.archives.get = archivesRPC.get

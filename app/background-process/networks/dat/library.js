@@ -479,6 +479,19 @@ export async function selectDefaultLocalPath (title) {
   return localPath
 }
 
+export async function restoreStagingFolder (key, oldpath) {
+  // TODO prompt the user if the folder is non empty?
+
+  // make sure the folder exists
+  await jetpack.dirAsync(oldpath)
+
+  // restore files
+  var archive = await getOrLoadArchive(key)
+  if (archive.staging) {
+    await pda.revert(archive.staging)
+  }
+}
+
 export async function deleteOldStagingFolder (oldpath, {alwaysDelete} = {}) {
   // check if the old path still exists
   var info = await jetpack.inspectAsync(oldpath)
