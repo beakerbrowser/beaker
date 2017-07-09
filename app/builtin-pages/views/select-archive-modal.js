@@ -7,9 +7,9 @@ var archives
 var title = ''
 var description = ''
 var createdBy
-var buttonLabel = 'Submit'
+var buttonLabel = 'Select'
 var customTitle = ''
-var currentTab = 'archivePicker'
+var currentView = 'archivePicker'
 var isFormDisabled = true
 
 // exported api
@@ -72,9 +72,8 @@ function onChangeSelectedArchive (e) {
   render()
 }
 
-function onUpdateActiveTab (e) {
-  isFormDisabled = false
-  currentTab = e.target.dataset.content
+function onUpdateActiveView (e) {
+  currentView = e.target.dataset.content
   render()
 }
 
@@ -104,53 +103,68 @@ function render () {
     <div class="modal">
       <div class="modal-inner">
         <div class="select-archive-modal">
-          <h1 class="title">${customTitle || 'Select an archive'}</h1>
-
-          <p class="help-text">
-            Choose an existing Dat archive or create a new one.
-          </p>
-
-          <form onsubmit=${onSubmit}>
-            <div class="tabs-container">
-              <div class="tabs">
-                <div onclick=${onUpdateActiveTab} data-content="archivePicker" class="tab ${currentTab === 'archivePicker' ? 'selected' : ''}">
-                  Select an archive
-                </div>
-                <div onclick=${onUpdateActiveTab} data-content="newArchive" class="tab ${currentTab === 'newArchive' ? 'selected' : ''} ">
-                  Create new archive
-                </div>
-              </div>
-              ${renderActiveTabContent()}
-            </div>
-
-            <div class="form-actions">
-              <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-              <button disabled=${isFormDisabled ? 'disabled' : 'false'} type="submit" class="btn primary" tabindex="5">
-                ${buttonLabel}
-              </button>
-            </div>
-          </form>
+          ${renderActiveViewContent()}
         </div>
       </div>
     </div>
   </main>`)
 }
 
-function renderActiveTabContent () {
-  if (currentTab === 'archivePicker') return renderArchivePicker()
-  else if (currentTab === 'newArchive') return renderNewArchiveForm()
+function renderActiveViewContent () {
+  if (currentView === 'archivePicker') return renderSelectArchiveForm()
+  else if (currentView === 'newArchive') return renderNewArchiveForm()
 }
 
 function renderNewArchiveForm () {
   return yo`
-    <div class="tab-content create-archive">
-      <label for="title">Title</label>
-      <input autofocus name="title" tabindex="2" value=${title || ''} placeholder="Title" onchange=${onChangeTitle} />
+    <form onsubmit=${onSubmit}>
+      <h1 class="title">${customTitle || 'Select an archive'}</h1>
+      <div class="view create-archive">
+        <label for="title">Title</label>
+        <input autofocus name="title" tabindex="2" value=${title || ''} placeholder="Title" onchange=${onChangeTitle} />
 
-      <label for="desc">Description</label>
-      <textarea name="desc" tabindex="3" placeholder="Description (optional)" onchange=${onChangeDescription}>${description || ''}</textarea>
-    </div>
+        <label for="desc">Description</label>
+        <textarea name="desc" tabindex="3" placeholder="Description (optional)" onchange=${onChangeDescription}>${description || ''}</textarea>
+      </div>
 
+      <div class="form-actions">
+        <div class="left">
+          <button type="button" onclick=${onUpdateActiveView} data-content="archivePicker" class="btn">
+            <i class="fa fa-caret-left"></i> Back
+          </button>
+        </div>
+        <div class="right">
+          <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+          <button type="submit" class="btn primary" tabindex="5">
+            Create
+          </button>
+        </div>
+      </div>
+    </form>
+  `
+}
+
+function renderSelectArchiveForm () {
+  return yo`
+    <form onsubmit=${onSubmit}>
+      <h1 class="title">${customTitle || 'Select an archive'}</h1>
+
+      ${renderArchivePicker()}
+
+      <div class="form-actions">
+        <div class="left">
+          <button type="button" onclick=${onUpdateActiveView} data-content="newArchive" class="btn">
+            Create new archive
+          </button>
+        </div>
+        <div class="right">
+          <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+          <button disabled=${isFormDisabled ? 'disabled' : 'false'} type="submit" class="btn primary" tabindex="5">
+            ${buttonLabel}
+          </button>
+        </div>
+      </div>
+    </form>
   `
 }
 
@@ -160,12 +174,12 @@ function renderArchivePicker () {
   }
 
   return yo`
-    <div class="tab-content archive-picker">
+    <div class="view archive-picker">
       <div class="filter-container">
         <i class="fa fa-search"></i>
-        <input autofocus onkeyup=${onChangeFilter} id="filter" class="filter" type="text" placeholder="Search your archives..."/>
+        <input autofocus onkeyup=${onChangeFilter} id="filter" class="filter" type="text" placeholder="Search"/>
       </div>
-      <ul class="archives-list">${renderArchivesList()}</ul>
+      ${renderArchivesList()}
     </div>
   `
 }
@@ -173,7 +187,7 @@ function renderArchivePicker () {
 function renderArchivesList () {
   var filtered = archives.filter(a => (a.title && a.title.toLowerCase().includes(currentFilter)) || (a.description && a.description.toLowerCase().includes(currentFilter)))
 
-  return yo`<ul class="archivs-list">${filtered.map(renderArchive)}</ul>`
+  return yo`<ul class="archives-list">${filtered.map(renderArchive)}</ul>`
 }
 
 function renderArchive (archive) {
@@ -183,12 +197,10 @@ function renderArchive (archive) {
       <div class="info">
         <span class="title" title="${archive.title} ${archive.isOwner ? '' : '(Read-only)'}">
           ${archive.title || 'Untitled'}
-          ${archive.isOwner ? '' : yo`<i class="fa fa-eye"></i>`}
         </span>
         <span class="path" title=${archive.userSettings.localPath}>${archive.userSettings.localPath}</span>
       </div>
       ${archive.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
-      <span class="description">${archive.description || yo`<em>No description</em>`}</span>
     </li>
   `
 }
