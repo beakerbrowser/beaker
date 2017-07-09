@@ -11,10 +11,28 @@ body {
 
 .modal {
   margin: 0;
+
+  form {
+    padding: 0;
+  }
+
+
+  .form-actions {
+    display: flex;
+    text-align: left;
+
+    .left {
+      flex: 1;
+    }
+  }
+
+  h1.title {
+    border: 0;
+  }
 }
 
 .archive-picker {
-  height: 190px;
+  height: 250px;
   overflow: hidden;
 
   .filter-container {
@@ -37,26 +55,28 @@ body {
     border-radius: 0;
 
     &:focus {
-      outline: none;
-      background: @background-highlight;
+//      outline: none;
     }
   }
 }
 
 .archives-list {
-  height: 150px;
+  height: 205px;
   overflow-y: auto;
   border: 1px solid @border-menu;
   border-top: 0;
+  -webkit-font-smoothing: antialiased;
 
   .archive {
     position: relative;
-    padding: .3rem 1rem;
-    position: relative;
-    border-bottom: 1px solid @border-menu;
+    padding: 0.6rem 0.7rem;
+    border-bottom: 1px solid @background-menu;
+
+    &:last-child {
+      border-bottom: 0;
+    }
 
     &.readonly {
-
       .info {
         max-width: 345px;
       }
@@ -67,24 +87,29 @@ body {
       font-size: 9.5px;
       padding: 0 5px;
       border: 1px solid @border-menu;
-      background: @background-menu;
       border-radius: 2px;
-      top: .4rem;
+      top: .75rem;
       right: 1rem;
       text-transform: uppercase;
       color: @color-text--muted;
     }
 
     &:hover {
-      background: @background-menu;
-
-      .checkmark {
-        opacity: 1;
-      }
+      background: @background-message;
     }
 
     &.selected {
-      background: @background-menu;
+      background: @blue;
+      color: #fff;
+
+      .path {
+        color: tint(@blue, 70%);
+      }
+
+      .readonly {
+        border-color: tint(@blue, 70%);
+        color: tint(@blue, 70%);
+      }
     }
   }
 
@@ -94,49 +119,18 @@ body {
   }
 
   .title {
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .path {
-    color: @color-text--light;
+    color: @color-text--midlight;
   }
 }
 
-.tabs {
-  border-bottom: 1px solid @border-menu;
-}
+.create-archive {
+  height: 250px;
 
-.tab-content {
-  margin: 1.5rem 0;
-
-  &.create-archive {
-
-    textarea {
-      height: 97px; // to make the form as tall as the dat picker tab
-    }
-  }
-}
-
-.tab {
-  display: inline-block;
-  cursor: pointer;
-  padding: .15rem .5rem;
-  color: @color-text--muted;
-  border-top: 1px solid transparent;
-  border-right: 1px solid transparent;
-  border-left: 1px solid transparent;
-  border-radius: 3px 3px 0 0;
-
-  &:hover,
-  &.selected {
-    color: @color-text;
-  }
-
-  &.selected {
-    border-top: 1px solid @border-menu;
-    border-right: 1px solid @border-menu;
-    border-left: 1px solid @border-menu;
-    margin-bottom: -1px;
-    border-bottom: 2px solid #fff;
+  textarea {
+    height: 97px; // to make the form as tall as the dat picker tab
   }
 }
