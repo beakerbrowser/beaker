@@ -1,5 +1,7 @@
 import rpc from 'pauls-electron-rpc'
 
+const SECURE_ORIGIN_REGEX = /^(beaker:|dat:|https:|http:\/\/localhost(\/|:))/i
+
 export function internalOnly (event, methodName, args) {
   return (event && event.sender && event.sender.getURL().startsWith('beaker:'))
 }
@@ -9,5 +11,5 @@ export function secureOnly (event, methodName, args) {
     return false
   }
   var url = event.sender.getURL()
-  return url.startsWith('beaker:') || url.startsWith('dat:') || url.startsWith('https:')
+  return SECURE_ORIGIN_REGEX.test(url)
 }
