@@ -245,11 +245,10 @@ function update () {
                   </div>`
                 : ''
               }
-              ${'' /* TODO re-enable when fixed
               <a class="dropdown-item" onclick=${onDownloadZip}>
                 <i class="fa fa-file-archive-o"></i>
                 Download as .zip
-              </a>*/}
+              </a>
               ${archiveInfo.isOwner ? rSaveButton(archiveInfo) : ''}
             </div>
           </div>
@@ -641,7 +640,7 @@ async function onChooseNewLocation () {
 
 async function onDownloadZip () {
   closeAllToggleables()
-  locationbar.openUrl(`dat://${archiveInfo.key}/?download_as=zip`, {newTab: false})
+  beakerBrowser.downloadURL(`dat://${archiveInfo.key}/?download_as=zip`)
 }
 
 async function onLoadMoreHistory (e) {
