@@ -78,6 +78,7 @@ export function setup () {
     setUserSetupStatus,
 
     fetchBody,
+    downloadURL,
 
     setStartPageBackgroundImage,
 
@@ -123,6 +124,10 @@ export function fetchBody (url) {
       res.on('end', () => resolve(body))
     })
   })
+}
+
+export async function downloadURL (url) {
+  this.sender.downloadURL(url)
 }
 
 export function setStartPageBackgroundImage (srcPath) {

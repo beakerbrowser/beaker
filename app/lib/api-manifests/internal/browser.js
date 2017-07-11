@@ -16,6 +16,7 @@ export default {
   removeAsDefaultProtocolClient: 'promise',
 
   fetchBody: 'promise',
+  downloadURL: 'promise',
 
   setStartPageBackgroundImage: 'promise',
 
