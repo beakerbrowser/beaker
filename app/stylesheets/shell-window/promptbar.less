@@ -28,15 +28,16 @@
     border-left: 1px solid #bbb;
   }
 
-  .btn {
-    padding: 0px 8px;
-    font-size: 13px;
+  a {
+    &:extend(.link);
+    &:hover {
+      &:extend(.link:hover);
+    }
   }
 
   .promptbar-btns {
-    a {
+    button {
       margin-left: 5px;
-      color: #555;
     }
   }
 
