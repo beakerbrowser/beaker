@@ -202,9 +202,12 @@ export default {
 
   async get(url, opts) {
     return timer(to(opts), async (checkin) => {
-      var key = toKey(url)
-      return datLibrary.getArchiveInfo(key)
+      return datLibrary.getArchiveInfo(toKey(url))
     })
+  },
+
+  async clearFileCache(url) {
+    return datLibrary.clearFileCache(toKey(url))
   },
 
   clearDnsCache() {

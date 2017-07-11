@@ -9,6 +9,7 @@ export default {
   update: 'promise',
   list: 'promise',
   get: 'promise',
+  clearFileCache: 'promise',
   clearDnsCache: 'promise',
   createEventStream: 'readable',
   createDebugStream: 'readable'

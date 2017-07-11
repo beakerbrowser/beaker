@@ -286,7 +286,7 @@ async function loadArchiveInner (key, secretKey, userSettings=null) {
   // load the user settings as needed
   if (!userSettings) {
     try {
-      userSettings = await archivesDb.getUserSettings(key)
+      userSettings = await archivesDb.getUserSettings(0, key)
     } catch (e) {
       userSettings = {}
     }
@@ -513,6 +513,26 @@ export async function deleteOldStagingFolder (oldpath, {alwaysDelete} = {}) {
   }
 }
 
+export async function clearFileCache (key) {
+  var archive = await getOrLoadArchive(key)
+  if (archive.writable) {
+    return // abort, only clear the content cache of downloaded archives
+  }
+
+  // clear the cache
+  await new Promise((resolve, reject) => {
+    archive.content.clear(0, archive.content.length, err => {
+      if (err) reject(err)
+      else resolve()
+    })
+  })
+
+  // force a reconfig of the autodownloader
+  var userSettings = await archivesDb.getUserSettings(0, key)
+  stopAutodownload(archive)
+  configureAutoDownload(archive, userSettings)
+}
+
 // archive networking
 // =
 
@@ -588,7 +608,12 @@ function configureAutoDownload (archive, userSettings) {
     archive.metadata.on('download', archive._autodownloader.onUpdate)
     pda.download(archive, '/').catch(e => {/* ignore cancels */})
   } else if (archive._autodownloader && !isAutoDownloading) {
-    // tear down the autodownload
+    stopAutodownload(archive)
+  }
+}
+
+function stopAutodownload (archive) {
+  if (archive._autodownloader) {
     archive._autodownloader.undownloadAll()
     archive.metadata.removeListener('download', archive._autodownloader.onUpdate)
     archive._autodownloader = null

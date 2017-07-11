@@ -84,13 +84,16 @@ async function updateProgressMonitor () {
       downloadProgress = p
     }
   } else {
-    // destroy if needed
-    if (downloadProgress) {
-      downloadProgress.destroy()
-      downloadProgress = null
-    }
+    destroyDownloadProgress()
   }
   update()
+}
+
+function destroyDownloadProgress () {
+  if (downloadProgress) {
+    downloadProgress.destroy()
+    downloadProgress = null
+  }  
 }
 
 async function onRevert () {
@@ -526,6 +529,7 @@ function rStagingArea (archiveInfo) {
 function rSettings (archiveInfo) {
   var sizeRows
   var networkSettingsEls
+  var toolsEls
   const isSaved = archiveInfo.userSettings.isSaved
   const isChecked = {
     autoDownload: isSaved && archiveInfo.userSettings.autoDownload,
@@ -576,6 +580,11 @@ function rSettings (archiveInfo) {
         </div>
       `*/
     ]
+    toolsEls = yo`
+      <div class="tools">
+        <a class="link" onclick=${onDeleteDownloadedFiles}><i class="fa fa-trash"></i> Delete downloaded files</a>
+      </div>
+    `
   }
 
   return yo`
@@ -586,6 +595,7 @@ function rSettings (archiveInfo) {
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime || 0)}</td></tr>
         ${archiveInfo.isOwner ? yo`<tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>` : ''}
       </table>
+      ${toolsEls}
     </div>
   `
 }
@@ -674,6 +684,18 @@ async function onChooseNewLocation () {
     warnIfNotEmpty: false
   })
   await beaker.archives.update(archiveKey, null, {localPath})
+  loadCurrentArchive()
+}
+
+async function onDeleteDownloadedFiles () {
+  if (!confirm('Delete downloaded files? You will be able to redownload them from the p2p network.')) {
+    return false
+  }
+  await beaker.archives.clearFileCache(archiveKey)
+  alert('All downloaded files have been deleted.')
+
+  // force a reload of the download progress
+  destroyDownloadProgress()
   loadCurrentArchive()
 }
 
