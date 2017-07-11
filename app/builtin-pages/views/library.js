@@ -338,10 +338,10 @@ function rViewHeader (archiveInfo) {
   } else {
     if (archiveInfo.userSettings.isSaved) {
       toggleSaveIcon = 'fa-times-circle'
-      toggleSaveText = 'Stop syncing'
+      toggleSaveText = 'Remove from library'
     } else {
-      toggleSaveIcon = 'fa-check-circle'
-      toggleSaveText = 'Sync for offline'
+      toggleSaveIcon = 'fa-plus'
+      toggleSaveText = 'Add to library'
     }
   }
 
