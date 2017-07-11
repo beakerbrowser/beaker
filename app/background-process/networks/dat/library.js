@@ -66,7 +66,9 @@ export function setup () {
     // emit event
     var details = {
       url: 'dat://' + key,
-      isSaved: settings.isSaved
+      isSaved: settings.isSaved,
+      autoDownload: settings.autoDownload,
+      autoUpload: settings.autoUpload
     }
     archivesEvents.emit(settings.isSaved ? 'added' : 'removed', {details})
 
@@ -426,7 +428,12 @@ export async function getArchiveInfo (key) {
   meta.metaSize = archive.metaSize
   meta.stagingSize = archive.stagingSize
   meta.stagingSizeLessIgnored = archive.stagingSizeLessIgnored
-  meta.userSettings = {localPath: userSettings.localPath, isSaved: userSettings.isSaved}
+  meta.userSettings = {
+    localPath: userSettings.localPath,
+    isSaved: userSettings.isSaved,
+    autoDownload: userSettings.autoDownload,
+    autoUpload: userSettings.autoUpload
+  }
   meta.peers = archive.metadata.peers.length
   meta.peerInfo = archive.replicationStreams.map(s => ({
     host: s.peerInfo.host,
@@ -565,7 +572,8 @@ function configureAutoDownload (archive, userSettings) {
   // mafintosh is planning to put APIs for this inside of hyperdrive
   // till then, we'll do our own inefficient downloader
   // -prf
-  if (!archive._autodownloader && userSettings.isSaved) {
+  const isAutoDownloading = userSettings.isSaved && userSettings.autoDownload
+  if (!archive._autodownloader && isAutoDownloading) {
     // setup the autodownload
     archive._autodownloader = {
       undownloadAll: () => {
@@ -579,7 +587,7 @@ function configureAutoDownload (archive, userSettings) {
     }
     archive.metadata.on('download', archive._autodownloader.onUpdate)
     pda.download(archive, '/').catch(e => {/* ignore cancels */})
-  } else if (archive._autodownloader && !userSettings.isSaved) {
+  } else if (archive._autodownloader && !isAutoDownloading) {
     // tear down the autodownload
     archive._autodownloader.undownloadAll()
     archive.metadata.removeListener('download', archive._autodownloader.onUpdate)
