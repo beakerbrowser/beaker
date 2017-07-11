@@ -805,7 +805,9 @@ async function onPageFaviconUpdated (e) {
 
     // store favicon to db
     var res = await urlsToData(e.favicons, 64, 64)
-    beakerSitedata.set(page.getURL(), 'favicon', res.dataUrl)
+    if (res) {
+      beakerSitedata.set(page.getURL(), 'favicon', res.dataUrl)
+    }
   }
 }
 

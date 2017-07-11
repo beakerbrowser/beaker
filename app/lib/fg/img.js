@@ -15,6 +15,7 @@ export function urlToData (url, width, height, cb) {
 
 // like urlToData, but loads all images and takes the one that fits the target dimensions best
 export async function urlsToData (urls, width, height) {
+  // load all images
   var imgs = await Promise.all(urls.map(url => {
     return new Promise(resolve => {
       var img = new Image()
@@ -23,6 +24,14 @@ export async function urlsToData (urls, width, height) {
       img.src = url
     })
   }))
+
+  // filter out failures and abort if none loaded
+  imgs = imgs.filter(Boolean)
+  if (!imgs.length) {
+    return false
+  }
+
+  // choose the image with the closest dimensions to our target
   var bestImg = imgs[0]
   var bestDist = dist(imgs[0].width, imgs[0].height, width, height)
   for (var i = 1; i < imgs.length; i++) {
