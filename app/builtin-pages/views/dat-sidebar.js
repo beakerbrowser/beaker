@@ -550,7 +550,7 @@ function rSettings (archiveInfo) {
           `,
       yo`
         <div class="setting ${!isSaved?'disabled':''}">
-          <h5>Download</h5>
+          <h5>Download files</h5>
           <fieldset>
             <label onclick=${(e) => onSetAutoDownload(e, false)}>
               <input type="radio" name="download_setting" disabled=${!isSaved} checked=${!isChecked.autoDownload} />
