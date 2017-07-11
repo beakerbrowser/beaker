@@ -220,7 +220,7 @@ function update () {
   }
   yo.update(document.querySelector('main'), yo`
     <main>
-    <div class="archive">
+    <div class="archive ${diffCount ? 'has-changes' : ''}">
       <section class="actions">
         ${buttons}
         ${toggleable(yo`

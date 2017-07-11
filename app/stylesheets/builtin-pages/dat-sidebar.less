@@ -346,8 +346,18 @@ section {
 .metadata,
 .files-list,
 .changes {
-  height: ~"calc(100vh - 175px)";
+  max-height: ~"calc(100vh - 175px)";
   overflow-y: auto;
+}
+
+.archive.has-changes {
+
+  .history,
+  .metadata,
+  .files-list,
+  .changes {
+    max-height: ~"calc(100vh - 230px)";
+  }
 }
 
 .history,
