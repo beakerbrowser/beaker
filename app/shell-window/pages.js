@@ -507,9 +507,13 @@ function onDomReady (e) {
 }
 
 function onNewWindow (e) {
-  var page = create(e.url)
-  if (e.disposition == 'foreground-tab')
-    setActive(page)
+  var page = getByWebview(e.target)
+  if (page && page.isActive) { // only open if coming from the active tab
+    var newPage = create(e.url)
+    if (e.disposition === 'foreground-tab' || e.disposition === 'new-window') {
+      setActive(newPage)
+    }
+  }
 }
 
 // will-navigate is the first event called when a link is clicked
