@@ -364,8 +364,8 @@ test('DatArchive.selectArchive: create', async t => {
   await app.client.waitUntilWindowLoaded()
 
   // open the create archive view
-  await app.client.waitForExist('.tab[data-content="newArchive"]')
-  app.client.click('.tab[data-content="newArchive"]')
+  await app.client.waitForExist('.btn[data-content="newArchive"]')
+  app.client.click('.btn[data-content="newArchive"]')
 
   // input a title for a now archive
   await app.client.waitForExist('input[name="title"]')

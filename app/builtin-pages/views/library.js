@@ -309,14 +309,14 @@ function rArchive (archiveInfo) {
       <section class="tabs-content">
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Published files', onclick: onClickTab('files')},
-          {id: 'metadata', label: 'About', onclick: onClickTab('metadata')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
-          {id: 'network', label: 'Network', onclick: onClickTab('network')}
+          {id: 'network', label: 'Network', onclick: onClickTab('network')},
+          {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
         ].filter(Boolean))}
         ${({
           files: () => rFiles(archiveInfo),
           log: () => rHistory(archiveInfo),
-          metadata: () => rMetadata(archiveInfo),
+          settings: () => rSettings(archiveInfo),
           network: () => rNetwork(archiveInfo)
         })[currentSection]()}
       </section>
@@ -338,10 +338,10 @@ function rViewHeader (archiveInfo) {
   } else {
     if (archiveInfo.userSettings.isSaved) {
       toggleSaveIcon = 'fa-times-circle'
-      toggleSaveText = 'Stop syncing'
+      toggleSaveText = 'Remove from library'
     } else {
-      toggleSaveIcon = 'fa-check-circle'
-      toggleSaveText = 'Sync for offline'
+      toggleSaveIcon = 'fa-plus'
+      toggleSaveText = 'Add to library'
     }
   }
 
@@ -574,7 +574,14 @@ function rHistory (archiveInfo) {
   return yo`<div class="history">${rowEls}${loadMoreBtn}</div>`
 }
 
-function rMetadata (archiveInfo) {
+function rSettings (archiveInfo) {
+  const isSaved = archiveInfo.userSettings.isSaved
+  const isChecked = {
+    autoDownload: isSaved && archiveInfo.userSettings.autoDownload,
+    autoUpload: isSaved && archiveInfo.userSettings.autoDownload
+  }
+
+  // editable title and description
   var titleEl, descEl
   if (archiveInfo.isOwner && isEditingInfo) {
     titleEl = yo`
@@ -602,7 +609,11 @@ function rMetadata (archiveInfo) {
     titleEl = yo`<td>${niceName(archiveInfo)}</td>`
     descEl = yo`<td>${niceDesc(archiveInfo)}</td>`
   }
+
+  // tools that differ if owner
   var sizeRows
+  var networkSettingsEls
+  var toolsEls
   if (archiveInfo.isOwner) {
     sizeRows = [
       yo`<tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>`,
@@ -610,9 +621,39 @@ function rMetadata (archiveInfo) {
     ]
   } else {
     sizeRows = yo`<tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
+    networkSettingsEls = [
+      isSaved
+        ? ''
+        : yo`
+            <p><a onclick=${onToggleSaved} class="link">Add this site to your library</a> to configure the download settings.</p>
+          `,
+      yo`
+        <div class="setting ${!isSaved?'disabled':''}">
+          <h5>Download files</h5>
+          <fieldset>
+            <label onclick=${(e) => onSetAutoDownload(e, false)}>
+              <input type="radio" name="download_setting" disabled=${!isSaved} checked=${!isChecked.autoDownload} />
+              When I visit
+            </label>
+            <label onclick=${(e) => onSetAutoDownload(e, true)}>
+              <input type="radio" name="download_setting" disabled=${!isSaved} checked=${isChecked.autoDownload} />
+              Always <span class="muted">(Sync for offline use)</span>
+            </label>
+          </fieldset>
+        </div>
+      `
+    ]
+    toolsEls = yo`
+      <div class="tools">
+        <a class="link" onclick=${onDeleteDownloadedFiles}><i class="fa fa-trash"></i> Delete downloaded files</a>
+      </div>
+    `
   }
+
+  // render
   return yo`
-    <div class="metadata">
+    <div class="settings">
+      ${networkSettingsEls}
       <table>
         <tr><td class="label">Title</td>${titleEl}</tr>
         <tr><td class="label">Description</td>${descEl}</tr>
@@ -622,6 +663,7 @@ function rMetadata (archiveInfo) {
         <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
       </table>
       ${archiveInfo.isOwner && isEditingInfo ? yo`<button onclick=${onSaveSettings} class="save btn">Apply changes</button>` : ''}
+      ${toolsEls}
     </div>
   `
 }
@@ -756,6 +798,25 @@ async function onUndelete (e, key) {
 
 async function onRestoreOldFolder () {
   await beaker.archives.restore(selectedArchive.key)
+  loadCurrentArchive()
+}
+
+async function onSetAutoDownload (e, value) {
+  if (selectedArchive.userSettings.autoDownload === value) {
+    return
+  }
+  selectedArchive.userSettings.autoDownload = value
+  await beaker.archives.update(selectedArchive.key, null, {autoDownload: value})
+  update()
+  toast.create('Settings updated.')
+}
+
+async function onDeleteDownloadedFiles () {
+  if (!confirm('Delete downloaded files? You will be able to redownload them from the p2p network.')) {
+    return false
+  }
+  await beaker.archives.clearFileCache(selectedArchive.key)
+  toast.create('All downloaded files have been deleted.')
   loadCurrentArchive()
 }
 

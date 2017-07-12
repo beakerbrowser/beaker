@@ -58,12 +58,12 @@ export default {
     return datLibrary.forkArchive(url, {title, description, createdBy})
   },
 
-  async update(url, manifestInfo, {localPath} = {}) {
+  async update(url, manifestInfo, userSettings) {
     var key = toKey(url)
     var archive = await datLibrary.getOrLoadArchive(key)
 
     // no info provided: open modal
-    if (!manifestInfo && !localPath) {
+    if (!manifestInfo && !userSettings) {
       if (!archive.writable) {
         throw new ArchiveNotWritableError()
       }
@@ -74,7 +74,7 @@ export default {
     }
 
     // validate path
-    if (localPath && !validateLocalPath(localPath).valid) {
+    if (userSettings && userSettings.localPath && !validateLocalPath(userSettings.localPath).valid) {
       throw new InvalidPathError('Cannot save the site to that folder')
     }
 
@@ -91,11 +91,11 @@ export default {
     }
 
     // update settings
-    if (localPath) {
+    if (userSettings) {
       var oldLocalPath = archive.staging ? archive.staging.path : false
-      var userSettings = await archivesDb.setUserSettings(0, key, {localPath})
+      var userSettings = await archivesDb.setUserSettings(0, key, userSettings)
       await datLibrary.configureStaging(archive, userSettings)
-      if (localPath !== oldLocalPath) {
+      if (userSettings.localPath && userSettings.localPath !== oldLocalPath) {
         datLibrary.deleteOldStagingFolder(oldLocalPath)
       }
     }
@@ -202,9 +202,12 @@ export default {
 
   async get(url, opts) {
     return timer(to(opts), async (checkin) => {
-      var key = toKey(url)
-      return datLibrary.getArchiveInfo(key)
+      return datLibrary.getArchiveInfo(toKey(url))
     })
+  },
+
+  async clearFileCache(url) {
+    return datLibrary.clearFileCache(toKey(url))
   },
 
   clearDnsCache() {

@@ -112,6 +112,8 @@ test('library.list', async t => {
   t.deepEqual(items.length, 2)
   t.deepEqual(items[0].userSettings.isSaved, true)
   t.deepEqual(items[1].userSettings.isSaved, true)
+  t.deepEqual(items[0].userSettings.autoDownload, true)
+  t.deepEqual(items[1].userSettings.autoDownload, true)
   t.deepEqual(items.filter(i => i.isOwner).length, 1)
 
   // list owned
@@ -157,6 +159,7 @@ test('library.get', async t => {
   }, testStaticDatURL)
   t.deepEqual(res.value.isOwner, false)
   t.deepEqual(res.value.userSettings.isSaved, false)
+  t.deepEqual(res.value.userSettings.autoDownload, true)
 })
 
 test('library "updated" event', async t => {

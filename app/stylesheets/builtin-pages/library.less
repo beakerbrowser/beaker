@@ -399,7 +399,7 @@ body {
     max-width: 100%;
   }
 
-  .metadata {
+  .settings {
 
     table {
       width: 100%;
@@ -409,15 +409,15 @@ body {
       border-collapse: collapse;
       font-size: 13px;
       margin-bottom: 1rem;
+
+      input,
+      textarea {
+        width: 100%;
+      }
     }
 
     button.save {
       float: right;
-    }
-
-    input,
-    textarea {
-      width: 100%;
     }
 
     tr {
@@ -429,7 +429,7 @@ body {
       padding: 0 8px;
 
       &.label {
-        background: @background-menu;
+        background: @background-button;
         border-right: 1px solid @border-menu;
         padding-right: 5px;
         width: 125px;
@@ -442,6 +442,53 @@ body {
       cursor: pointer;
 
       &:hover {
+        color: @color-text--muted;
+      }
+    }
+
+    .setting {
+      margin-bottom: 0.5rem;
+      padding: 0.25rem 0;
+
+      h5 {
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+      }
+
+      fieldset {
+        font-size: 0.8rem;
+        border: 1px solid @border-menu;
+        background: @background-button;
+        padding: 0;
+        margin: 0;
+        border-radius: 2px;
+      }
+
+      label {
+        display: block;
+        margin: 0.5rem;
+      }
+
+      .muted {
+        color: @color-text--muted;
+        font-weight: 100;
+      }
+
+      &.disabled {
+        color: @color-text--midlight;
+
+        .muted {
+          color: @color-text--light;
+        }
+      }
+    }
+
+    .tools {
+      margin: 0.7rem 0.2rem;
+      padding: 1rem 0 0;
+      border-top: 1px solid @border-menu;
+
+      .link {
         color: @color-text--muted;
       }
     }
