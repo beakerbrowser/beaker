@@ -165,11 +165,9 @@ export async function setUserSettings (profileId, key, newValues = {}) {
   var release = await lock('archives-db')
   try {
     // fetch current
-    var value = await db.get(`
-      SELECT * FROM archives WHERE profileId = ? AND key = ?
-    `, [profileId, key])
+    var value = await getUserSettings(profileId, key)
 
-    if (!value) {
+    if (typeof value.key === 'undefined') {
       // create
       value = {
         profileId,
