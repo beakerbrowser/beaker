@@ -12,7 +12,7 @@ import * as sitedataDb from '../dbs/sitedata'
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {getWebContentsWindow} from '../../lib/electron'
-import {queryPermission, requestPermission} from '../ui/permissions'
+import {queryPermission, grantPermission, requestPermission} from '../ui/permissions'
 import { 
   DAT_MANIFEST_FILENAME,
   DAT_HASH_REGEX,
@@ -48,9 +48,14 @@ export default {
     // are we sure it's the best policy anyway?
     // -prf
     // await assertSenderIsFocused(this.sender)
-    var createdBy = this.sender.getURL()
-    var res = await showModal(win, 'create-archive', {title, description, createdBy})
+
+    // run the creation modal
+    var res = await showModal(win, 'create-archive', {title, description})
     if (!res || !res.url) throw new UserDeniedError()
+
+    // grant write permissions to the creating app
+    var newArchiveKey = await lookupUrlDatKey(res.url)
+    grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
     return res.url
   },
 
@@ -62,12 +67,17 @@ export default {
     // are we sure it's the best policy anyway?
     // -prf
     // await assertSenderIsFocused(this.sender)
-    var createdBy = this.sender.getURL()
+
+    // run the fork modal
     var key1 = await lookupUrlDatKey(url)
-    var key2 = await lookupUrlDatKey(createdBy)
+    var key2 = await lookupUrlDatKey(this.sender.getURL())
     var isSelfFork = key1 === key2
-    var res = await showModal(win, 'fork-archive', {url, title, description, createdBy, isSelfFork})
+    var res = await showModal(win, 'fork-archive', {url, title, description, isSelfFork})
     if (!res || !res.url) throw new UserDeniedError()
+
+    // grant write permissions to the creating app
+    var newArchiveKey = await lookupUrlDatKey(res.url)
+    grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
     return res.url
   },
 
@@ -101,9 +111,7 @@ export default {
 
         // manifest
         title: info.title,
-        description: info.description,
-        forkOf: info.forkOf,
-        createdBy: info.createdBy
+        description: info.description
       }
     })
   },
@@ -353,8 +361,7 @@ export default {
     // are we sure it's the best policy anyway?
     // -prf
     // await assertSenderIsFocused(this.sender)
-    var createdBy = this.sender.getURL()
-    var res = await showModal(win, 'select-archive', {title, buttonLabel, filters, createdBy})
+    var res = await showModal(win, 'select-archive', {title, buttonLabel, filters})
     if (!res || !res.url) throw new UserDeniedError()
     return res.url
   },
@@ -502,23 +509,6 @@ async function lookupArchive (url, opts = {}) {
 
     return {archive, filepath, version}
   })
-}
-
-async function getCreatedBy (sender) {
-  // fetch some origin info
-  var originTitle = null
-  var origin = archivesDb.extractOrigin(sender.getURL())
-  try {
-    var originKey = /dat:\/\/([^\/]*)/.exec(origin)[1]
-    var originMeta = await archivesDb.getMeta(originKey)
-    originTitle = originMeta.title || null
-  } catch (e) {}
-
-  // construct info
-  if (originTitle) {
-    return {url: origin, title: originTitle}
-  }
-  return {url: origin}
 }
 
 async function lookupUrlDatKey (url) {

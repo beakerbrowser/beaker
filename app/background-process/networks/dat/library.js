@@ -9,7 +9,6 @@ import signatures from 'sodium-signatures'
 import slugify from 'slugify'
 var debug = require('debug')('dat')
 import {throttle, debounce} from '../../../lib/functions'
-import {grantPermission} from '../../ui/permissions'
 
 // dat modules
 import * as archivesDb from '../../dbs/archives'
@@ -107,23 +106,6 @@ export function createDebugStream () {
   return emitStream(debugEvents)
 }
 
-export async function generateCreatedBy (url) {
-  // fetch some origin info
-  var originTitle = null
-  var origin = archivesDb.extractOrigin(url)
-  try {
-    var originKey = /dat:\/\/([^\/]*)/.exec(origin)[1]
-    var originMeta = await archivesDb.getMeta(originKey)
-    originTitle = originMeta.title || null
-  } catch (e) {}
-
-  // construct info
-  if (originTitle) {
-    return {url: origin, title: originTitle}
-  }
-  return {url: origin}
-}
-
 // read metadata for the archive, and store it in the meta db
 export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
   try {
@@ -139,7 +121,7 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
       updateSizeTracking(archive)
     ])
     manifest = manifest || {}
-    var {title, description, forkOf, createdBy} = manifest
+    var {title, description} = manifest
     var isOwner = archive.writable
     var metaSize = archive.metaSize || 0
     var stagingSize = archive.stagingSize || 0
@@ -147,7 +129,7 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
     var mtime = updateMTime ? Date.now() : oldMeta.mtime
 
     // write the record
-    var details = {title, description, forkOf, createdBy, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner}
+    var details = {title, description, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner}
     debug('Writing meta', details)
     await archivesDb.setMeta(key, details)
 
@@ -183,11 +165,6 @@ export async function createNewArchive (manifest = {}) {
   // write the metadata
   await pullLatestArchiveMeta(archive)
 
-  // write the perms
-  if (manifest.createdBy && manifest.createdBy.url) {
-    grantPermission('modifyDat:' + key, manifest.createdBy.url)
-  }
-
   return manifest.url
 }
 
@@ -218,9 +195,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}) {
   // override any manifest data
   var dstManifest = {
     title: (manifest.title) ? manifest.title : srcManifest.title,
-    description: (manifest.description) ? manifest.description : srcManifest.description,
-    createdBy: manifest.createdBy,
-    forkOf: (srcManifest.forkOf || []).concat(srcArchiveUrl)
+    description: (manifest.description) ? manifest.description : srcManifest.description
   }
 
   // create the new archive
