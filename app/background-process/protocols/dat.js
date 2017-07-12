@@ -1,5 +1,6 @@
 import { protocol } from 'electron'
 import {parse as parseUrl} from 'url'
+import {join as joinPaths} from 'path'
 import parseDatUrl from 'parse-dat-url'
 import parseRange from 'range-parser'
 import once from 'once'
@@ -188,31 +189,6 @@ async function datServer (req, res) {
     return cb(500, 'Failed')
   }
 
-  // handle zip download
-  if (urlp.query.download_as === 'zip') {
-    cleanup()
-
-    // (try to) get the title from the manifest
-    let zipname = false
-    try {
-      let manifest = await pda.readManifest(archive)
-      zipname = slugify(manifest.title || '').toLowerCase()
-    } catch (e) {/*ignore*/}
-    zipname = zipname || 'archive'
-
-    // serve the zip
-    res.writeHead(200, 'OK', {
-      'Content-Type': 'application/zip',
-      'Content-Disposition': `attachment; filename="${zipname}.zip"`,
-      'Content-Security-Policy': DAT_CSP,
-      'Access-Control-Allow-Origin': '*'
-    })
-    var zs = toZipStream(archive)
-    zs.on('error', err => console.log('Error while producing .zip file', err))
-    zs.pipe(res)
-    return
-  }
-
   // parse path
   var filepath = decodeURIComponent(urlp.path)
   if (!filepath) filepath = '/'
@@ -232,12 +208,51 @@ async function datServer (req, res) {
     archiveFS = archive.checkout(seq)
   }
 
+  // read the manifest (it's needed in a couple places)
+  var manifest
+  try { manifest = await pda.readManifest(archiveFS) }
+  catch (e) { manifest = null }
+
+  // handle zip download
+  if (urlp.query.download_as === 'zip') {
+    cleanup()
+
+    // (try to) get the title from the manifest
+    let zipname = false
+    if (manifest) {
+      zipname = slugify(manifest.title || '').toLowerCase()
+    }
+    zipname = zipname || 'archive'
+
+    // serve the zip
+    res.writeHead(200, 'OK', {
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${zipname}.zip"`,
+      'Content-Security-Policy': DAT_CSP,
+      'Access-Control-Allow-Origin': '*'
+    })
+    var zs = toZipStream(archive)
+    zs.on('error', err => console.log('Error while producing .zip file', err))
+    zs.pipe(res)
+    return
+  }
+
   // lookup entry
   debug('Attempting to lookup', archiveKey, filepath)
   var statusCode = 200
   var entry
   const tryStat = async (path) => {
+    // abort if we've already found it
     if (entry) return
+    // apply the web_root config
+    if (manifest && manifest.web_root) {
+      if (path) {
+        path = joinPaths(manifest.web_root, path)
+      } else {
+        path = manifest.web_root
+      }
+    }
+    // attempt lookup
     try {
       entry = await pda.stat(archiveFS, path)
       entry.path = path
@@ -273,20 +288,17 @@ async function datServer (req, res) {
       'Content-Security-Policy': DAT_CSP,
       'Access-Control-Allow-Origin': '*'
     })
-    return res.end(await directoryListingPage(archiveFS, filepath))
+    return res.end(await directoryListingPage(archiveFS, filepath, manifest && manifest.web_root))
   }
 
   // handle not found
   if (!entry) {
     statusCode = 404
     debug('Entry not found:', urlp.path)
-    try {
-      // check for a fallback page
-      let manifest = await pda.readManifest(archiveFS)
-      await tryStat(manifest.fallback_page)
-    } catch (e) {
-      // ignore
-    }
+
+    // check for a fallback page
+    await tryStat(manifest.fallback_page)
+
     if (!entry) {
       cleanup()
       return cb(404, 'File Not Found')
