@@ -230,11 +230,6 @@ async function datServer (req, res) {
       return cb(404, 'Version too high')
     }
     archiveFS = archive.checkout(seq)
-  } else {
-    // read dat.json from archive only (never from staging)
-    if (filepath === '/' + DAT_MANIFEST_FILENAME) {
-      archiveFS = archive
-    }
   }
 
   // lookup entry

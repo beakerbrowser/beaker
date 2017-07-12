@@ -375,7 +375,7 @@ function assertUnprotectedFilePath (filepath, sender) {
   if (sender.getURL().startsWith('beaker:')) {
     return // can write any file
   }
-  if (filepath === '/dat.json') {
+  if (filepath === '/' + DAT_MANIFEST_FILENAME) {
     throw new ProtectedFileNotWritableError()
   }
 }
@@ -499,12 +499,7 @@ async function lookupArchive (url, opts = {}) {
       checkin('checking out a previous version from history')
       archive.checkoutFS = archive.checkout(+version)
     } else {
-      // access dat.json from archive only (never from staging)
-      if (filepath === '/' + DAT_MANIFEST_FILENAME) {
-        archive.checkoutFS = archive
-      } else {
-        archive.checkoutFS = archive.stagingFS
-      }
+      archive.checkoutFS = archive.stagingFS
     }
 
     return {archive, filepath, version}
