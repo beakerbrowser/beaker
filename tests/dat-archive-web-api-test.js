@@ -266,8 +266,6 @@ test('DatArchive.create', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
-  t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
-  t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
 
   // check the settings
   await app.client.windowByIndex(0)
@@ -318,9 +316,6 @@ test('DatArchive.fork', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description 2')
-  t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
-  t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
-  t.deepEqual(manifest.forkOf[0].replace(/(\/)$/,''), createdDatURL)
 })
 
 test('DatArchive.selectArchive rejection', async t => {
@@ -395,8 +390,6 @@ test('DatArchive.selectArchive: create', async t => {
     console.log('unexpected error parsing manifest', res.value)
   }
   t.deepEqual(manifest.title, 'The Title')
-  t.deepEqual(manifest.createdBy.url, testRunnerDatURL.slice(0, -1))
-  t.deepEqual(manifest.createdBy.title, 'Test Runner Dat')
 
   // check the settings
   await app.client.windowByIndex(0)
@@ -1041,8 +1034,6 @@ test('archive.getInfo', async t => {
   var info = res.value
   t.deepEqual(info.title, 'The Title')
   t.deepEqual(info.description, 'The Description')
-  t.deepEqual(info.createdBy.url, testRunnerDatURL.slice(0, -1))
-  t.deepEqual(info.createdBy.title, 'Test Runner Dat')
 })
 
 test('archive.download', async t => {

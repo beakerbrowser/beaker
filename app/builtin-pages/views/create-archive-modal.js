@@ -8,7 +8,6 @@ var archive
 // form variables
 var title = ''
 var description = ''
-var createdBy
 
 // exported api
 // =
@@ -26,7 +25,6 @@ window.setup = async function (opts) {
     var archiveInfo = archive ? archive.info : {userSettings: {}}
     title = opts.title || archiveInfo.title || ''
     description = opts.description || archiveInfo.description || ''
-    createdBy = opts.createdBy || undefined
     render()
   } catch (e) {
     console.error(e)
@@ -68,7 +66,7 @@ async function onSubmit (e) {
       await beaker.archives.update(archive.url, {title, description})
       beakerBrowser.closeModal(null, true)
     } else {
-      var newArchive = await beaker.archives.create({title, description, createdBy})
+      var newArchive = await beaker.archives.create({title, description})
       beakerBrowser.closeModal(null, {url: newArchive.url})
     }
   } catch (e) {
@@ -90,9 +88,6 @@ function render () {
   var helpText = isEditing
     ? 'Update your site\'s title and description.'
     : 'Create a new site and add it to your library.'
-  if (createdBy && !createdBy.startsWith('beaker:')) {
-    helpText = 'This page wants to ' + helpText.toLowerCase()
-  }
 
   yo.update(document.querySelector('main'), yo`<main>
     <div class="modal">

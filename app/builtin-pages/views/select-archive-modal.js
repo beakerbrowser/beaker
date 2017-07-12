@@ -6,7 +6,6 @@ var selectedArchiveKey = ''
 var archives
 var title = ''
 var description = ''
-var createdBy
 var buttonLabel = 'Select'
 var customTitle = ''
 var currentView = 'archivePicker'
@@ -25,8 +24,6 @@ window.setup = async function (opts) {
       isOwner: (opts.filters && opts.filters.isOwner)
     })
 
-    // render
-    createdBy = opts.createdBy || undefined
     render()
   } catch (e) {
     console.error(e)
@@ -83,7 +80,7 @@ async function onSubmit (e) {
   e.preventDefault()
   if (!selectedArchiveKey) {
     try {
-      var newArchive = await beaker.archives.create({title, description, createdBy})
+      var newArchive = await beaker.archives.create({title, description})
       beakerBrowser.closeModal(null, {url: newArchive.url})
     } catch (e) {
       beakerBrowser.closeModal({

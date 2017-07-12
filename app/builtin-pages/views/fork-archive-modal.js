@@ -10,7 +10,6 @@ var isProcessing = false
 // form variables
 var title = ''
 var description = ''
-var createdBy
 
 // exported api
 // =
@@ -39,7 +38,6 @@ window.setup = async function (opts) {
     var archiveInfo = archive ? archive.info : {}
     title = opts.title || archiveInfo.title || ''
     description = opts.description || archiveInfo.description || ''
-    createdBy = opts.createdBy || undefined
     render()
 
     // select and focus title input
@@ -90,7 +88,7 @@ async function onSubmit (e) {
   try {
     isProcessing = true
     render()
-    var newArchive = await beaker.archives.fork(archive.info.key, {title, description, createdBy})
+    var newArchive = await beaker.archives.fork(archive.info.key, {title, description})
     beakerBrowser.closeModal(null, {url: newArchive.url})
   } catch (e) {
     beakerBrowser.closeModal({

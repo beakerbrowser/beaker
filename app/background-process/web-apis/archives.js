@@ -34,28 +34,12 @@ export default {
     return status
   },
 
-  async create({title, description, createdBy}={}) {
-    // get origin info
-    if (!createdBy) {
-      createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
-    } else if (typeof createdBy === 'string') {
-      createdBy = await datLibrary.generateCreatedBy(createdBy)
-    }
-
-    // create the archive
-    return datLibrary.createNewArchive({title, description, createdBy})
+  async create({title, description} = {}) {
+    return datLibrary.createNewArchive({title, description})
   },
 
-  async fork(url, {title, description, createdBy} = {}) {
-    // get origin info
-    if (!createdBy) {
-      createdBy = await datLibrary.generateCreatedBy(this.sender.getURL())
-    } else if (typeof createdBy === 'string') {
-      createdBy = await datLibrary.generateCreatedBy(createdBy)
-    }
-
-    // create the archive
-    return datLibrary.forkArchive(url, {title, description, createdBy})
+  async fork(url, {title, description} = {}) {
+    return datLibrary.forkArchive(url, {title, description})
   },
 
   async update(url, manifestInfo, userSettings) {

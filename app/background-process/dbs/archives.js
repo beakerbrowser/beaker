@@ -82,11 +82,6 @@ export async function query (profileId, query) {
   archives.forEach(archive => {
     archive.url = `dat://${archive.key}`
     archive.isOwner = archive.isOwner != 0
-    archive.createdBy = {
-      title: archive.createdByTitle,
-      url: archive.createdByUrl
-    }
-    try { archive.forkOf = JSON.parse(archive.forkOf) } catch (e) {}
     archive.userSettings = {
       isSaved: archive.isSaved != 0,
       autoDownload: archive.autoDownload != 0,
@@ -94,8 +89,6 @@ export async function query (profileId, query) {
       localPath: archive.localPath
     }
 
-    delete archive.createdByTitle
-    delete archive.createdByUrl
     delete archive.isSaved
     delete archive.autoDownload
     delete archive.autoUpload
@@ -221,9 +214,6 @@ export async function getMeta (key) {
 
     // massage some values
     meta.isOwner = !!meta.isOwner
-    try { meta.forkOf = JSON.parse(meta.forkOf) } catch (e) {}
-    meta.createdBy = {url: meta.createdByUrl, title: meta.createdByTitle}
-    delete meta.createdByUrl; delete meta.createdByTitle
     return meta
   } catch (e) {
     return {}
@@ -241,18 +231,15 @@ export async function setMeta (key, value = {}) {
   }
 
   // extract the desired values
-  var {title, description, forkOf, createdBy, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner} = value
+  var {title, description, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner} = value
   isOwner = isOwner ? 1 : 0
-  forkOf = Array.isArray(forkOf) ? JSON.stringify(forkOf) : forkOf
-  var createdByUrl = createdBy && createdBy.url ? createdBy.url : ''
-  var createdByTitle = createdBy && createdBy.title ? createdBy.title : ''
 
   // write
   await db.run(`
     INSERT OR REPLACE INTO
-      archives_meta (key, title, description, forkOf, createdByUrl, createdByTitle, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner)
-      VALUES        (?,   ?,     ?,           ?,      ?,            ?,              ?,     ?,        ?,           ?,                      ?)
-  `,                [key, title, description, forkOf, createdByUrl, createdByTitle, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner])
+      archives_meta (key, title, description, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner)
+      VALUES        (?,   ?,     ?,           ?,     ?,        ?,           ?,                      ?)
+  `,                [key, title, description, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner])
   events.emit('update:archive-meta', key, value)
 }
 
