@@ -25,8 +25,7 @@ function rFilesList (archiveInfo, opts) {
     `
   }
 
-  // this accounts for dat.json, which is hidden by default
-  var hasFiles = Object.keys(archiveInfo.fileTree.rootNode.children).length > 1
+  var hasFiles = Object.keys(archiveInfo.fileTree.rootNode.children).length > 0
   return yo`
     <div class="files-list ${!hasFiles ? 'empty' : ''}">
       ${rChildren(archiveInfo, archiveInfo.fileTree.rootNode.children, 0, opts)}
@@ -84,13 +83,6 @@ function rFolder (archiveInfo, opts) {
 function rChildren (archiveInfo, children, depth=0, opts={}) {
   var children = Object.keys(children)
     .map(key => children[key])
-    .filter(node => {
-      if (node.entry.name === 'dat.json') {
-        // hide dat.json for now
-        return false
-      }
-      return true
-    })
 
   if (children.length === 0 && depth === 0) {
     return yo`

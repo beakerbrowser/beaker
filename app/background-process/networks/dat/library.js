@@ -158,6 +158,7 @@ export async function createNewArchive (manifest = {}) {
 
   // write the manifest
   await pda.writeManifest(archive, manifest)
+  await pda.writeManifest(archive.stagingFS, manifest)
 
   // write the user settings
   await archivesDb.setUserSettings(0, key, userSettings)
@@ -183,7 +184,7 @@ export async function forkArchive (srcArchiveUrl, manifest={}) {
   srcManifest = srcManifest || {}
 
   // fetch old archive ignore rules
-  var ignore = ['/.dat', '/.git']
+  var ignore = ['/.dat', '/.git', '/dat.json']
   try {
     let ignoreRaw = await pda.readFile(srcArchive.stagingFS, '/.datignore', 'utf8')
     let ignoreCustomRules = hyperstaging.parseIgnoreRules(ignoreRaw)
@@ -432,11 +433,18 @@ export async function configureStaging (archive, userSettings, isWritableOverrid
   // recreate staging
   if (isWritable && !!userSettings.localPath) {
     archive.staging = hyperstaging(archive, userSettings.localPath, {
-      ignore: ['/.dat', '/.git', '/dat.json']
+      ignore: ['/.dat', '/.git']
     })
+
+    // restore dat.json if needed
+    const datJsonOnly = path => path !== '/dat.json'
+    var diff = await pda.diff(archive.staging, {filter: datJsonOnly})
+    if (diff.length === 1 && diff[0].change === 'del') {
+      await pda.revert(archive.staging, {filter: datJsonOnly})
+    }
   } else {
     archive.staging = null
-  }
+  }  
 }
 
 export async function selectDefaultLocalPath (title) {
