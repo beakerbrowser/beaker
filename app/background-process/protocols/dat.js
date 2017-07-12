@@ -234,6 +234,7 @@ async function datServer (req, res) {
 
   // lookup entry
   debug('Attempting to lookup', archiveKey, filepath)
+  var statusCode = 200
   var entry
   const tryStat = async (path) => {
     if (entry) return
@@ -277,9 +278,19 @@ async function datServer (req, res) {
 
   // handle not found
   if (!entry) {
+    statusCode = 404
     debug('Entry not found:', urlp.path)
-    cleanup()
-    return cb(404, 'File Not Found')
+    try {
+      // check for a fallback page
+      let manifest = await pda.readManifest(archiveFS)
+      await tryStat(manifest.fallback_page)
+    } catch (e) {
+      // ignore
+    }
+    if (!entry) {
+      cleanup()
+      return cb(404, 'File Not Found')
+    }
   }
 
   // caching if-match
@@ -302,7 +313,6 @@ async function datServer (req, res) {
   }
 
   // handle range
-  var statusCode = 200
   res.setHeader('Accept-Ranges', 'bytes')
   var range = req.headers.range && parseRange(entry.size, req.headers.range)
   if (range && range.type === 'bytes') {
