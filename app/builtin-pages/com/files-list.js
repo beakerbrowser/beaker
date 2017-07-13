@@ -44,7 +44,7 @@ function rFolder (archiveInfo, opts) {
   if (!archiveInfo.userSettings.localPath) return ''
   return yo`
     <div class="dat-local-path">
-      <span>
+      <span class="path" title="${archiveInfo.userSettings.localPath}">
         ${archiveInfo.userSettings.localPath}
         ${archiveInfo.localPathExists
           ? yo`
