@@ -363,7 +363,7 @@ function rViewHeader (archiveInfo) {
           <span>${niceName(archiveInfo)}</span>
           <i class="fa fa-external-link"></i>
         </a>
-        ${archiveInfo.isOwner ? '' : yo`<span class="readonly"><i class="fa fa-eye"></i>Read-only</span>`}
+        ${archiveInfo.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
       </h1>
       <div class="actions">
         <button class="btn primary" onclick=${onShare}>

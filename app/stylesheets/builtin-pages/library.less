@@ -258,7 +258,6 @@ body {
   .header {
 
     .title {
-      &:extend(.flex);
       &:extend(.overflow-ellipsis);
       align-items: center;
       max-width: 450px;
@@ -533,6 +532,14 @@ body {
       &:hover {
         &:extend(.link:hover);
       }
+    }
+  }
+
+  .dat-local-path {
+
+    .path {
+      &:extend(.overflow-ellipsis);
+      max-width: 340px;
     }
   }
 }
