@@ -1,6 +1,7 @@
 import { webFrame } from 'electron'
 import importWebAPIs from './lib/fg/import-web-apis' // TODO remove
 import DatArchive from './lib/web-apis/dat-archive'
+import {DatUserProfile, DatUserProfileWritable} from './lib/web-apis/dat-user-profile'
 import beaker from './lib/web-apis/beaker'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
 import { setup as setupNavigatorPermissions } from './webview-preload/navigator-permissions-api'
@@ -24,6 +25,12 @@ importWebAPIs()
 if (['beaker:','dat:','https:'].includes(window.location.protocol) || 
     (window.location.protocol === 'http:' && window.location.hostname === 'localhost')) {
   window.DatArchive = DatArchive
+  if (window.location.protocol === 'beaker:') {
+    // special writable form for beaker:
+    window.DatUserProfile = DatUserProfileWritable
+  } else {
+    window.DatUserProfile = DatUserProfile
+  }
 }
 if (window.location.protocol === 'beaker:') {
   window.beaker = beaker
