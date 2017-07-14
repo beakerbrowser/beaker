@@ -32,7 +32,7 @@ export class DatUserProfile extends DatArchive {
   }
 }
 
-// writable form
+// writable form (internal)
 export class DatUserProfileWritable extends DatUserProfile {
   constructor(url) {
     super(url)

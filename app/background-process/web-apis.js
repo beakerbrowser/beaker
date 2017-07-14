@@ -1,6 +1,6 @@
 import {ipcMain} from 'electron'
 import rpc from 'pauls-electron-rpc'
-import {internalOnly, secureOnly} from '../lib/bg/rpc'
+import {internalOnly, secureOnly, datOnly} from '../lib/bg/rpc'
 
 // internal manifests
 import beakerBrowser from '../lib/api-manifests/internal/browser'
@@ -19,9 +19,11 @@ import historyAPI from './web-apis/history'
 
 // external manifests
 import datArchiveManifest from '../lib/api-manifests/external/dat-archive'
+import userSessionManifest from '../lib/api-manifests/external/user-session'
 
 // external apis
 import datArchiveAPI from './web-apis/dat-archive'
+import userSessionAPI from './web-apis/user-session'
 
 // exported api
 // =
@@ -36,6 +38,7 @@ export function setup () {
 
   // external apis
   rpc.exportAPI('dat-archive', datArchiveManifest, datArchiveAPI, secureOnly)
+  rpc.exportAPI('user-session', userSessionManifest, userSessionAPI, datOnly)
 
   // register a message-handler for setting up the client
   // - see lib/fg/import-web-apis.js

@@ -1,4 +1,3 @@
-import {ipcRenderer} from 'electron'
 import rpc from 'pauls-electron-rpc'
 import datArchiveManifest from '../api-manifests/external/dat-archive'
 import {DAT_URL_REGEX} from '../const'

@@ -1,11 +1,10 @@
 import {dialog, BrowserWindow} from 'electron'
 import path from 'path'
 import {parse as parseURL} from 'url'
-import parseDatURL from 'parse-dat-url'
 import pda from 'pauls-dat-api'
 import jetpack from 'fs-jetpack'
 import concat from 'concat-stream'
-import datDns from '../networks/dat/dns'
+import datDns, {lookupUrlDatKey, parseUrlParts} from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import * as sitedataDb from '../dbs/sitedata'
@@ -15,7 +14,6 @@ import {getWebContentsWindow} from '../../lib/electron'
 import {queryPermission, grantPermission, requestPermission} from '../ui/permissions'
 import { 
   DAT_MANIFEST_FILENAME,
-  DAT_HASH_REGEX,
   DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
   DAT_VALID_PATH_REGEX,
   DEFAULT_DAT_API_TIMEOUT
@@ -456,30 +454,6 @@ async function assertSenderIsFocused (sender) {
   }
 }
 
-async function parseUrlParts (url) {
-  var archiveKey, filepath, version
-  if (DAT_HASH_REGEX.test(url)) {
-    // simple case: given the key
-    archiveKey = url
-    filepath = '/'
-  } else {
-    var urlp = parseDatURL(url)
-
-    // validate
-    if (urlp.protocol !== 'dat:') {
-      throw new InvalidURLError('URL must be a dat: scheme')
-    }
-    if (!DAT_HASH_REGEX.test(urlp.host)) {
-      urlp.host = await datDns.resolveName(url)
-    }
-
-    archiveKey = urlp.host
-    filepath = decodeURIComponent(urlp.pathname || '')
-    version = urlp.version
-  }
-  return {archiveKey, filepath, version}
-}
-
 // helper to handle the URL argument that's given to most args
 // - can get a dat hash, or dat url
 // - returns {archive, filepath, version}
@@ -504,19 +478,6 @@ async function lookupArchive (url, opts = {}) {
 
     return {archive, filepath, version}
   })
-}
-
-async function lookupUrlDatKey (url) {
-  if (url.startsWith('dat://') === false) {
-    return false // not a dat site
-  }
-
-  var urlp = parseDatURL(url)
-  try {
-    return await datDns.resolveName(urlp.hostname)
-  } catch (e) {
-    return false
-  }
 }
 
 function massageHistoryObj ({name, version, type}) {
