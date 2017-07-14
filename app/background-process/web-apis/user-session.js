@@ -13,7 +13,7 @@ export default {
 
   async fetch () {
     assertDatOnly(this.sender)
-    return await datUserSessions.get(this.sender)
+    return await datUserSessions.getSession(this.sender)
   },
 
   async requestSignin () {
@@ -21,34 +21,37 @@ export default {
 
     // capture the requester's info
     var manifest = await getManifest(this.sender.getURL())
-    var requester = {
-      url: this.sender.getURL(),
-      manifest
+    var request = {
+      requester: {
+        url: this.sender.getURL(),
+        manifest
+      }
     }
 
+    // create the session request
+    var sessionId = datUserSessions.createSessionRequest(request)
+
     // open the signin page
-    this.sender.once('did-finish-load', () => {
-      this.sender.executeJavaScript(`
-        window.setup({requester: ${JSON.stringify(requester)}})
-      `)
-    })
-    this.sender.loadURL('beaker://signin')
-    // TODO
+    this.sender.loadURL('beaker://signin/' + sessionId)
   },
 
   async signout () {
     assertDatOnly(this.sender)
-    await datUserSessions.destroy(this.sender)
+    await datUserSessions.destroySession(this.sender)
   },
 
   // beaker: only
   // =
 
+  async getSessionRequest (id) {
+    return datUserSessions.getSessionRequest(id)
+  },
+
   async createSession (opts) {
     assertBeakerOnly(this.sender)
 
     // create the session
-    // var sessionId = datUserSessions.create(this.sender, {
+    // var sessionId = datUserSessions.createSession(this.sender, {
     //   // TODO
     // })
 

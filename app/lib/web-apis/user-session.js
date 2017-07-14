@@ -35,6 +35,9 @@ export class UserSessionWritable extends UserSession {
   static async createSession (opts) {
     return await userSessionRPC.createSession(opts)
   }
+  static async getSessionRequest (id) {
+    return await userSessionRPC.getSessionRequest(id)
+  }
 }
 
 function populate (sess, sessionData) {

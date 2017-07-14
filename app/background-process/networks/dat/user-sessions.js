@@ -1,25 +1,42 @@
+const uuidv4 = require('uuid/v4')
 import {cbPromise} from '../../../lib/functions'
 
 const SESSION_COOKIE_NAME = 'dat_user_session_id'
 
+// globals
+// =
+
+var sessionRequests = {}
+var sessions = {}
+
 // exported api
 // =
 
-export async function get (wc) {
+export async function getSession (wc) {
   var sessionId = await getCookieSessionID(wc)
   // TODO
 }
 
-export async function create (wc, opts) {
+export async function createSession (wc, opts) {
   // TODO
 
   // store in the cookies
   await setCookieSessionID(wc, sessionId)
 }
 
-export async function destroy (wc) {
+export async function destroySession (wc) {
   await clearCookieSessionID(wc)
   // TODO
+}
+
+export function getSessionRequest (id) {
+  return sessionRequests[id]
+}
+
+export function createSessionRequest (request) {
+  request.id = uuidv4()
+  sessionRequests[request.id] = request
+  return request.id
 }
 
 // cookie utils

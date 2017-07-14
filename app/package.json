@@ -59,6 +59,7 @@
     "through2": "^2.0.1",
     "unused-filename": "^0.1.0",
     "utp-native": "^1.5.1",
+    "uuid": "^3.1.0",
     "yo-yo": "^1.4.0",
     "zerr": "^1.0.4"
   },

@@ -4,5 +4,6 @@ export default {
   signout: 'promise',
 
   // internal
-  createSession: 'promise'
+  createSession: 'promise',
+  getSessionRequest: 'promise'
 }
