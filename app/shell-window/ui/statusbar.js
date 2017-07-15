@@ -2,7 +2,7 @@ var isLoading = false
 var currentStr
 
 export function setup () {
-  
+
 }
 
 export function set (str) {
@@ -18,12 +18,10 @@ export function setIsLoading (b) {
 function render () {
   var el = document.getElementById('statusbar')
   var str = currentStr
-  if (!str && isLoading)
-    str = 'Loading...'
-  
+  if (!str && isLoading) { str = 'Loading...' }
+
   if (str) {
     el.classList.remove('hidden')
     el.textContent = str
-  } else
-    el.classList.add('hidden')
+  } else { el.classList.add('hidden') }
 }

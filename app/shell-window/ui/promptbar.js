@@ -12,7 +12,6 @@ var promptBarsDiv = document.getElementById('promptbars')
 export function setup () {
 }
 
-
 export function createEl (id) {
   // render
   var el = render(id, null)
@@ -23,9 +22,8 @@ export function createEl (id) {
 export function add (page, { type, render, duration, onForceClose }) {
   // if 'type' is set, only allow one of the type
   if (type) {
-    for (var i=0; i < page.prompts.length; i++) {
-      if (page.prompts[i].type == type)
-        return false
+    for (var i = 0; i < page.prompts.length; i++) {
+      if (page.prompts[i].type == type) { return false }
     }
   }
 
@@ -47,8 +45,7 @@ export function add (page, { type, render, duration, onForceClose }) {
 }
 
 export function remove (page, prompt) {
-  if (!page.prompts)
-    return // page no longer exists
+  if (!page.prompts) { return } // page no longer exists
 
   // find and remove
   var i = page.prompts.indexOf(prompt)
@@ -59,13 +56,11 @@ export function remove (page, prompt) {
 }
 
 export function forceRemoveAll (page) {
-  if (!page.prompts)
-    return // page no longer exists
+  if (!page.prompts) { return } // page no longer exists
 
   // find and remove
   page.prompts.forEach(p => {
-    if (typeof p.onForceClose == 'function')
-      p.onForceClose()
+    if (typeof p.onForceClose == 'function') { p.onForceClose() }
   })
   page.prompts = []
   update(page)
@@ -84,17 +79,16 @@ export function update (page) {
 // =
 
 function render (id, page) {
-  if (!page)
-    return yo`<div data-id=${id} class="hidden"></div>`
+  if (!page) { return yo`<div data-id=${id} class="hidden"></div>` }
 
   return yo`<div data-id=${id} class=${page.isActive ? '' : 'hidden'}>
     ${page.prompts.map(prompt => {
-      return yo`<div class="promptbar">
+    return yo`<div class="promptbar">
         ${prompt.render({
-          rerender: () => update(page),
-          onClose: () => remove(page, prompt)
-        })}
+    rerender: () => update(page),
+    onClose: () => remove(page, prompt)
+  })}
       </div>`
-    })}
+  })}
   </div>`
 }

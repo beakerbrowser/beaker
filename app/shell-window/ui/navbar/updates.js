@@ -1,8 +1,10 @@
+/* globals beakerBrowser */
+
 import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
 
 export class UpdatesNavbarBtn {
-  constructor() {
+  constructor () {
     this.isUpdateAvailable = false
     this.isDropdownOpen = false
 
@@ -10,10 +12,9 @@ export class UpdatesNavbarBtn {
     browserEvents.on('updater-state-changed', this.onUpdaterStateChange.bind(this))
   }
 
-  render() {
+  render () {
     // render nothing if no update is availabe
-    if (!this.isUpdateAvailable)
-      return yo`<div class="toolbar-updates"></div>`
+    if (!this.isUpdateAvailable) { return yo`<div class="toolbar-updates"></div>` }
 
     // render the dropdown if open
     var dropdownEl = ''
@@ -29,28 +30,28 @@ export class UpdatesNavbarBtn {
 
     // render btn
     return yo`<div class="toolbar-updates">
-      <button class="toolbar-btn toolbar-updates-btn ${this.isDropdownOpen?'pressed':''}" onclick=${e => this.onClickUpdates(e)} title="Update available">
+      <button class="toolbar-btn toolbar-updates-btn ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickUpdates(e)} title="Update available">
         <span class="icon icon-up-circled"></span>
       </button>
       ${dropdownEl}
     </div>`
   }
 
-  updateActives() {
+  updateActives () {
     Array.from(document.querySelectorAll('.toolbar-updates')).forEach(el => yo.update(el, this.render()))
   }
 
-  onClickUpdates(e) {
+  onClickUpdates (e) {
     this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
   }
 
-  onUpdaterStateChange(state) {
+  onUpdaterStateChange (state) {
     this.isUpdateAvailable = state == 'downloaded'
     this.updateActives()
   }
 
-  onClickRestart(e) {
+  onClickRestart (e) {
     e.preventDefault()
     beakerBrowser.restartBrowser()
   }

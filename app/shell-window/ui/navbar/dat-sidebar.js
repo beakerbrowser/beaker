@@ -30,7 +30,7 @@ export class DatSidebarBtn {
     this.updateActives()
   }
 
-  updateActives() {
+  updateActives () {
     Array.from(document.querySelectorAll('.dat-sidebar.btn')).forEach(el => yo.update(el, this.render()))
   }
 }

@@ -1,8 +1,10 @@
+/* globals URL */
+
 import * as yo from 'yo-yo'
 import * as pages from '../pages'
 import * as navbar from './navbar'
-import { remote } from 'electron'
-import { debounce, throttle } from '../../lib/functions'
+import {remote} from 'electron'
+import {debounce} from '../../lib/functions'
 
 // constants
 // =
@@ -58,19 +60,18 @@ function drawTab (page) {
   if (page.isLoading() && page.getIntendedURL() !== pages.DEFAULT_URL) {
     // loading spinner
     favicon = yo`<div class="spinner"></div>`
-    if (!page.isReceivingAssets)
-      favicon.classList.add('reverse')
+    if (!page.isReceivingAssets) { favicon.classList.add('reverse') }
   } else {
     // page's explicit favicon
     if (page.favicons && page.favicons[0]) {
       favicon = yo`<img src=${page.favicons[0]}>`
       favicon.onerror = onFaviconError(page)
-    }
-    // fallbacks
-    else if (page.getURL().startsWith('beaker:'))
+    } else if (page.getURL().startsWith('beaker:')) {
       favicon = yo`<img src="beaker-favicon:beaker">`
-    else // fallback to a potentially-cached icon
+    } else {
+      // (check for cached icon)
       favicon = yo`<img src="beaker-favicon:${page.getURL()}">`
+    }
   }
 
   // class
@@ -85,7 +86,7 @@ function drawTab (page) {
 
   // pinned rendering:
   if (page.isPinned) {
-    return yo`<div class=${'chrome-tab chrome-tab-pinned'+cls}
+    return yo`<div class=${'chrome-tab chrome-tab-pinned' + cls}
                 data-id=${page.id}
                 style=${style}
                 onclick=${onClickTab(page)}
@@ -100,7 +101,7 @@ function drawTab (page) {
   // normal rendering:
 
   return yo`
-  <div class=${'chrome-tab'+cls}
+  <div class=${'chrome-tab' + cls}
       data-id=${page.id}
       style=${style}
       onclick=${onClickTab(page)}
@@ -124,18 +125,17 @@ function repositionTabs (e) {
   var numUnpinnedTabs = 0
   var availableWidth = window.innerWidth
   // correct for traffic lights on darwin
-  if (window.process.platform == 'darwin' && !document.body.classList.contains('fullscreen'))
-    availableWidth -= 80
+  if (window.process.platform == 'darwin' && !document.body.classList.contains('fullscreen')) { availableWidth -= 80 }
   // correct for new-tab btn
   availableWidth -= (MIN_TAB_WIDTH + TAB_SPACING)
   // count the unpinned-tabs, and correct for the spacing and pinned-tabs
   allPages.forEach(p => {
     availableWidth -= TAB_SPACING
     if (p.isPinned) availableWidth -= MIN_TAB_WIDTH
-    else            numUnpinnedTabs++
+    else numUnpinnedTabs++
   })
   // now calculate a (clamped) size
-  currentTabWidth = Math.min(MAX_TAB_WIDTH, Math.max(MIN_TAB_WIDTH, availableWidth / numUnpinnedTabs))|0
+  currentTabWidth = Math.min(MAX_TAB_WIDTH, Math.max(MIN_TAB_WIDTH, availableWidth / numUnpinnedTabs)) | 0
 
   // update tab positions
   allPages.forEach(page => getTabEl(page, tabEl => {
@@ -246,7 +246,6 @@ function onClickCloseTabsToTheRight (page) {
   }
 }
 
-
 function onClickReopenClosedTab () {
   pages.reopenLastRemoved()
 }
@@ -272,7 +271,6 @@ function onContextMenuTab (page) {
 
 function onMouseDown (page) {
   return e => {
-
     // left-click only
     if (e.which !== 1) {
       return
@@ -293,9 +291,9 @@ function onMouseDown (page) {
 
     // throttle so we only rerender as much as needed
     // - actually throttling seems to cause jank
-    var rerender = /*throttle(*/() => {
+    var rerender = /* throttle( */() => {
       repositionTabs()
-    }/*, 30)*/
+    }/*, 30) */
 
     // drag handler
     var hasSetDragClass = false
@@ -367,20 +365,17 @@ function getTabX (pageIndex) {
 
   // calculate base X off of the widths of the pages before it
   var x = 0
-  for (var i = 0; i < pageIndex; i++)
-    x += getTabWidth(allPages[i]) + TAB_SPACING
+  for (var i = 0; i < pageIndex; i++) { x += getTabWidth(allPages[i]) + TAB_SPACING }
 
   // add the page offset
-  if (allPages[pageIndex])
-    x += allPages[pageIndex].tabDragOffset
+  if (allPages[pageIndex]) { x += allPages[pageIndex].tabDragOffset }
 
   // done
   return x
 }
 
 function getTabWidth (page) {
-  if (page.isPinned)
-    return MIN_TAB_WIDTH
+  if (page.isPinned) { return MIN_TAB_WIDTH }
   return currentTabWidth
 }
 
@@ -421,23 +416,12 @@ function getPageStyle (page) {
 // returns 0 for no, -1 or 1 for yes (the offset)
 function shouldReorderTab (page) {
   // has the tab been dragged far enough to change order?
-  if (!page.isTabDragging)
-    return 0
+  if (!page.isTabDragging) { return 0 }
 
   var limit = (page.isPinned ? 40 : getTabWidth(page)) / 2
-  if (page.tabDragOffset < -1 * limit)
-    return -1
-  if (page.tabDragOffset > limit)
-    return 1
+  if (page.tabDragOffset < -1 * limit) { return -1 }
+  if (page.tabDragOffset > limit) { return 1 }
   return 0
-}
-
-function findTabParentEl (el) {
-  while (el) {
-    if (el.classList && el.classList.contains('chrome-tab'))
-      return el
-    el = el.parentNode
-  }
 }
 
 function getNiceTitle (page) {
