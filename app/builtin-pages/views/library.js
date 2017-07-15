@@ -1,6 +1,8 @@
+/* globals Event beaker DatArchive history beakerBrowser confirm */
+
 import * as yo from 'yo-yo'
 import {FileTree, ArchivesList} from 'builtin-pages-lib'
-import {pluralize, makeSafe} from '../../lib/strings'
+import {makeSafe} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
 import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
@@ -8,23 +10,23 @@ import renderFiles from '../com/files-list'
 import renderChanges from '../com/archive-changes'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
-import toggleable, {closeAllToggleables} from '../com/toggleable'
+import toggleable from '../com/toggleable'
 import * as toast from '../com/toast'
 import * as sharePopup from '../com/share-popup'
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
 // -prf
-var _wr = function(type) {
-  var orig = window.history[type];
-  return function() {
-    var rv = orig.apply(this, arguments);
-    var e = new Event(type.toLowerCase());
-    e.arguments = arguments;
-    window.dispatchEvent(e);
-    return rv;
-  };
-};
+var _wr = function (type) {
+  var orig = window.history[type]
+  return function () {
+    var rv = orig.apply(this, arguments)
+    var e = new Event(type.toLowerCase())
+    e.arguments = arguments
+    window.dispatchEvent(e)
+    return rv
+  }
+}
 window.history.pushState = _wr('pushState')
 window.history.replaceState = _wr('replaceState')
 
@@ -88,7 +90,7 @@ async function parseURLKey () {
   if (path === '/' || !path) return false
   try {
     // extract key from url
-    var name = /^\/([^\/]+)/.exec(path)[1]
+    var name = /^\/([^/]+)/.exec(path)[1]
     if (/[0-9a-f]{64}/i.test(name)) return name
     return DatArchive.resolveName(name)
   } catch (e) {
@@ -125,11 +127,11 @@ async function loadCurrentArchive () {
       var fileTree = new FileTree(aLastPublish, {onDemand: true})
 
       // fetch all data
-      var [history, fileTreeRes] = await Promise.all([
+      var [history] = await Promise.all([
         a.history({end: 20, reverse: true, timeout: 10e3}),
         fileTree.setup().catch(err => null)
       ])
-      /*dont await*/ reloadDiff()
+      /* dont await */ reloadDiff()
       selectedArchive.history = history
       selectedArchive.historyPaginationOffset = 20
       selectedArchive.fileTree = fileTree
@@ -176,7 +178,7 @@ function update () {
   var isEmpty = !(isTrashOpen || selectedArchive || selectedArchiveKey)
   var viewCls = isEmpty ? 'empty' : ''
 
-/*
+  /*
   TODO - sort control, needs to be restored? -prf
   <div class="sort">
     <select name="sort" oninput=${onChangeSort}>
@@ -258,8 +260,7 @@ function rArchivesList () {
   var filteredArchives = archivesList.archives.filter(archive => {
     if (!currentFilter) {
       return true
-    }
-    else if (currentFilter && archive.title && archive.title.toLowerCase().indexOf(currentFilter) !== -1) {
+    } else if (currentFilter && archive.title && archive.title.toLowerCase().indexOf(currentFilter) !== -1) {
       return true
     }
     return false
@@ -308,17 +309,17 @@ function rArchive (archiveInfo) {
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-          {id: 'files', label: 'Published files', onclick: onClickTab('files')},
-          {id: 'log', label: 'History', onclick: onClickTab('log')},
-          {id: 'network', label: 'Network', onclick: onClickTab('network')},
-          {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
-        ].filter(Boolean))}
+    {id: 'files', label: 'Published files', onclick: onClickTab('files')},
+    {id: 'log', label: 'History', onclick: onClickTab('log')},
+    {id: 'network', label: 'Network', onclick: onClickTab('network')},
+    {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
+  ].filter(Boolean))}
         ${({
-          files: () => rFiles(archiveInfo),
-          log: () => rHistory(archiveInfo),
-          settings: () => rSettings(archiveInfo),
-          network: () => rNetwork(archiveInfo)
-        })[currentSection]()}
+    files: () => rFiles(archiveInfo),
+    log: () => rHistory(archiveInfo),
+    settings: () => rSettings(archiveInfo),
+    network: () => rNetwork(archiveInfo)
+  })[currentSection]()}
       </section>
     </div>
   `
@@ -484,7 +485,7 @@ function rStagingArea (archiveInfo) {
   }
 
   const backLink = () => yo`
-      <span class="back" onclick=${e => {isStagingOpen = false; update();}}>
+      <span class="back" onclick=${e => { isStagingOpen = false; update() }}>
         <i class="fa fa-angle-left"></i>
         Back
       </span>
@@ -501,7 +502,6 @@ function rStagingArea (archiveInfo) {
     `
   }
 
-  var stats = archiveInfo.diffStats
   return yo`
     <div class="staging">
       ${rViewHeader(archiveInfo)}
@@ -514,8 +514,8 @@ function rStagingArea (archiveInfo) {
           <div class="actions">
             <button onclick=${onRevert} class="btn">Revert changes</button>
             ${isPublishing
-              ? yo`<button class="btn success" disabled><span class="spinner"></span> Publishing...</button>`
-              : yo`<button onclick=${onPublish} class="btn success">Publish</button>`}
+    ? yo`<button class="btn success" disabled><span class="spinner"></span> Publishing...</button>`
+    : yo`<button onclick=${onPublish} class="btn success">Publish</button>`}
           </div>
         </div>
         ${renderChanges(archiveInfo)}
@@ -537,7 +537,7 @@ function rHistory (archiveInfo) {
   var rows = archiveInfo.history.map(function (item, i) {
     var rev = item.version
     var revType = makeSafe(item.type)
-    var urlRev = (revType === 'put') ? rev : (rev - 1)  // give the one revision prior for deletions
+    var urlRev = (revType === 'put') ? rev : (rev - 1) // give the one revision prior for deletions
     revType = revType === 'put' ? 'added' : 'deleted'
 
     return `
@@ -628,7 +628,7 @@ function rSettings (archiveInfo) {
             <p><a onclick=${onToggleSaved} class="link">Add this site to your library</a> to configure the download settings.</p>
           `,
       yo`
-        <div class="setting ${!isSaved?'disabled':''}">
+        <div class="setting ${!isSaved ? 'disabled' : ''}">
           <h5>Download files</h5>
           <fieldset>
             <label onclick=${(e) => onSetAutoDownload(e, false)}>
@@ -682,7 +682,7 @@ function rTrash () {
               Restore
             </button>
           </li>`
-        )}
+  )}
       </ul>
     </div>
   `
@@ -737,7 +737,7 @@ async function onFork (e) {
   history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
 }
 
-function onClickEdit() {
+function onClickEdit () {
   isEditingInfo = true
   update()
 }
@@ -755,13 +755,11 @@ async function onSaveSettings () {
 }
 
 async function settingsOnKeyup (e) {
-  // enter-key
   if (e.keyCode == 13) {
+    // enter-key
     onSaveSettings()
-  }
-
-  // escape-key
-  else if (e.keyCode == 27) {
+  } else if (e.keyCode == 27) {
+    // escape-key
     isEditingInfo = false
     update()
   }
@@ -929,11 +927,11 @@ function onChangeFilter (e) {
   update()
 }
 
-function onChangeSort (e) {
-  var selectedIndex = e.target.selectedIndex
-  currentSort = e.target[selectedIndex].value
-  update()
-}
+// function onChangeSort (e) {
+//   var selectedIndex = e.target.selectedIndex
+//   currentSort = e.target[selectedIndex].value
+//   update()
+// }
 
 function onClearFilter () {
   currentFilter = ''
@@ -951,16 +949,6 @@ async function onClickBulkDelete () {
   })
 
   selectedArchives = []
-  update()
-}
-
-function onChangeArchiveListItem (e) {
-  e.stopPropagation()
-  var key = e.target.dataset.key
-  var bulkDeleteBtn = document.querySelector('.bulk-delete')
-
-  if (e.target.checked) selectedArchives.push(key)
-  else selectedArchives.splice(selectedArchives.indexOf(key), 1)
   update()
 }
 

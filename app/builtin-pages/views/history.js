@@ -1,6 +1,4 @@
-/*
-This uses the beaker.history API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
-*/
+/* globals beaker */
 
 const yo = require('yo-yo')
 const moment = require('moment')
@@ -25,18 +23,13 @@ fetchMore(render)
 
 var isFetching = false
 function fetchMore (cb) {
-  if (isFetching)
-    return
+  if (isFetching) { return }
 
-  if (isAtEnd)
-    return cb()
+  if (isAtEnd) { return cb() }
 
   isFetching = true
   beaker.history.getVisitHistory({ offset: visits.length, limit: 100 }).then(rows => {
-    if (rows.length == 0)
-      isAtEnd = true
-    else
-      visits = visits.concat(rows || [])
+    if (rows.length == 0) { isAtEnd = true } else { visits = visits.concat(rows || []) }
     isFetching = false
     cb()
   })
@@ -62,7 +55,7 @@ function render () {
       yo`
         <div class="ll-row">
           <a class="link" href=${row.url} title=${row.title}>
-            <img class="favicon" src=${'beaker-favicon:'+row.url} />
+            <img class="favicon" src=${'beaker-favicon:' + row.url} />
             <span class="title">${row.title}</span>
             <span class="url">${row.url}</span>
           </a>
@@ -102,8 +95,7 @@ function render () {
 // =
 
 function onScrollContent (e) {
-  if (isAtEnd)
-    return
+  if (isAtEnd) { return }
 
   var el = e.target
   if (el.offsetHeight + el.scrollTop + BEGIN_LOAD_OFFSET >= el.scrollHeight) {
@@ -149,16 +141,10 @@ function ucfirst (str) {
 
 function niceDate (ts, opts) {
   const endOfToday = moment().endOf('day')
-  if (typeof ts == 'number')
-    ts = moment(ts)
+  if (typeof ts == 'number') { ts = moment(ts) }
   if (ts.isSame(endOfToday, 'day')) {
-    if (opts && opts.noTime)
-      return 'today'
+    if (opts && opts.noTime) { return 'today' }
     return ts.fromNow()
-  }
-  else if (ts.isSame(endOfToday.subtract(1, 'day'), 'day'))
-    return 'yesterday'
-  else if (ts.isSame(endOfToday, 'month'))
-    return ts.fromNow()
-  return ts.format("ll")
+  } else if (ts.isSame(endOfToday.subtract(1, 'day'), 'day')) { return 'yesterday' } else if (ts.isSame(endOfToday, 'month')) { return ts.fromNow() }
+  return ts.format('ll')
 }

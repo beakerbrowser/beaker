@@ -30,7 +30,6 @@ export function create (url) {
   var input = popup.querySelector('input')
   input.focus()
   input.select()
-
 }
 
 export function destroy () {
@@ -62,9 +61,4 @@ function onCopyURL (url) {
     writeToClipboard(url)
     toast.create(`URL copied to clipboard.`)
   }
-}
-
-function onClose (e) {
-  e.preventDefault()
-  destroy()
 }

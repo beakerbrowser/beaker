@@ -1,3 +1,5 @@
+/* globals beakerBrowser */
+
 import * as yo from 'yo-yo'
 
 // state

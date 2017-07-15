@@ -26,9 +26,11 @@ export default function render (archiveInfo) {
 
   // reduce dataset to past hour, and scale the x points accordingly
   var now = Date.now()
-  var data = [], lastPt
-  var max = 0, initValue = 0
-  for (var i = 0; i < inData.length; i++) {
+  var data = []
+  var lastPt
+  var max = 0
+  var initValue = 0
+  for (let i = 0; i < inData.length; i++) {
     var pt = inData[i]
     var age = now - pt.ts
 
@@ -70,7 +72,7 @@ export default function render (archiveInfo) {
   if (!max) max = data[0].y
   max = Math.max(max, MINMAX)
   data.forEach(pt => {
-    pt.x = (pt.x * (WIDTH - LEGEND_WIDTH)),
+    pt.x = (pt.x * (WIDTH - LEGEND_WIDTH))
     pt.y = (1 - pt.y / max) * (HEIGHT - EDGE_PADDING * 2) + EDGE_PADDING
   })
 
@@ -78,7 +80,7 @@ export default function render (archiveInfo) {
   var graphLines = []
   var x = data[0].x
   var y = data[0].y
-  for (var i = 1; i < data.length; i++) {
+  for (let i = 1; i < data.length; i++) {
     // line from old x,y to new x,y
     graphLines.push(yo`
       <line

@@ -1,10 +1,5 @@
-/*
-This uses the beakerDownloads API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
-*/
-
 const yo = require('yo-yo')
 const co = require('co')
-const prettyBytes = require('pretty-bytes')
 const {DownloadsList} = require('builtin-pages-lib')
 import {render as renderDownloadsList} from '../com/downloads-list'
 
@@ -16,7 +11,7 @@ var downloadsList
 // main
 // =
 
-co(function* () {
+co(function * () {
   // fetch downloads
   downloadsList = new DownloadsList()
   yield downloadsList.setup()
@@ -25,7 +20,6 @@ co(function* () {
   // render
   render()
 })
-
 
 // rendering
 // =

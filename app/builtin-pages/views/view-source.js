@@ -1,3 +1,5 @@
+/* globals Event DatArchive beakerBrowser */
+
 import * as yo from 'yo-yo'
 import {FileTree} from 'builtin-pages-lib'
 import mime from 'mime'
@@ -6,16 +8,16 @@ import renderFiles from '../com/files-list'
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
 // -prf
-var _wr = function(type) {
-  var orig = window.history[type];
-  return function() {
-    var rv = orig.apply(this, arguments);
-    var e = new Event(type.toLowerCase());
-    e.arguments = arguments;
-    window.dispatchEvent(e);
-    return rv;
-  };
-};
+var _wr = function (type) {
+  var orig = window.history[type]
+  return function () {
+    var rv = orig.apply(this, arguments)
+    var e = new Event(type.toLowerCase())
+    e.arguments = arguments
+    window.dispatchEvent(e)
+    return rv
+  }
+}
 window.history.pushState = _wr('pushState')
 window.history.replaceState = _wr('replaceState')
 
@@ -32,7 +34,6 @@ var pathInfo
 setup()
 async function setup () {
   update()
-
 
   pathInfo = await parseURL()
   if (pathInfo.type === 'dat') {
@@ -59,7 +60,6 @@ async function loadFile () {
 
   var mimetype = mime.lookup(filePath)
   if (/^(video|audio|image)/.test(mimetype) == false) {
-
     if (pathInfo.type === 'dat') {
       try {
         fileContent = await archive.readFile(filePath, 'utf8')
@@ -89,7 +89,9 @@ async function parseURL () {
 
   try {
     // extract key from url
-    var [_, key, path] = /^\/([^\/]+)(.*)/.exec(path)
+    var parts = /^\/([^/]+)(.*)/.exec(path)
+    var key = parts[1]
+    path = parts[2]
     if (/[0-9a-f]{64}/i.test(key) == false) {
       key = await DatArchive.resolveName(key)
     }
@@ -105,10 +107,8 @@ async function parseURL () {
 
 function update () {
   if (pathInfo && pathInfo.type === 'dat') {
-
     if (!archive) {
       yo.update(document.querySelector('main'), yo`<main>Loading...</main>`)
-      return
     } else {
       yo.update(document.querySelector('main'), yo`
         <main>

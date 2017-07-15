@@ -7,7 +7,7 @@ import { ucfirst } from '../../lib/strings'
 
 export function render (downloadsList) {
   var downloadEls = downloadsList.downloads.map(d => {
-    var progress, actions
+    var actions
     var status = ''
     var progress = ''
     var size = ''
@@ -15,14 +15,14 @@ export function render (downloadsList) {
     var canCancel = false
     if (d.state === 'progressing') {
       // progress
-      status = (d.isPaused) ? 'Paused' : (prettyBytes(d.downloadSpeed||0) + '/s')
+      status = (d.isPaused) ? 'Paused' : (prettyBytes(d.downloadSpeed || 0) + '/s')
 
       progress = yo`
         <div class="progress">
           <div class="progressbar">
             <progress value=${d.receivedBytes} max=${d.totalBytes}></progress>
           </div>
-          <span>${prettyBytes(d.receivedBytes||0)} / ${prettyBytes(d.totalBytes||0)}</span>
+          <span>${prettyBytes(d.receivedBytes || 0)} / ${prettyBytes(d.totalBytes || 0)}</span>
         </div>`
 
       // actions
@@ -37,7 +37,7 @@ export function render (downloadsList) {
           </a>`
       }
     } else if (d.state === 'completed') {
-      size = yo`<span>${prettyBytes(d.totalBytes||0)}</span>`
+      size = yo`<span>${prettyBytes(d.totalBytes || 0)}</span>`
 
       // actions
       if (!d.fileNotFound) {
@@ -67,9 +67,9 @@ export function render (downloadsList) {
       <div class="ll-row download">
         <div class="link">
           <img class="favicon" src=${'beaker-favicon:' + d.url} />
-          ${ canShow
-            ? yo`<a class="title" onclick=${e => downloadsList.openDownload(d)} title=${d.name}>${d.name}</a>`
-            : yo`<span class="title" title=${d.name}>${d.name}</a>` }
+          ${canShow
+    ? yo`<a class="title" onclick=${e => downloadsList.openDownload(d)} title=${d.name}>${d.name}</a>`
+    : yo`<span class="title" title=${d.name}>${d.name}</a>`}
         </div>
         <div class="status">${status}</div>
         ${progress}

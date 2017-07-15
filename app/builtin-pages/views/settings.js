@@ -1,8 +1,5 @@
-/*
-This uses the beakerBrowser API, which is exposed by webview-preload to all sites loaded over the beaker: protocol
-*/
+/* globals beakerBrowser Image */
 
-import {create as createToast} from '../com/toast'
 import ColorThief from '../../lib/fg/color-thief'
 
 const yo = require('yo-yo')
@@ -21,7 +18,7 @@ var defaultProtocolSettings
 // main
 // =
 
-co(function* () {
+co(function * () {
   // wire up events
   browserEvents = emitStream(beakerBrowser.eventsStream())
   browserEvents.on('updater-state-changed', onUpdaterStateChanged)
@@ -41,8 +38,7 @@ co(function* () {
 
 function render () {
   // only render if this page is active
-  if (!browserInfo)
-    return
+  if (!browserInfo) { return }
 
   yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
     <div class="settings">
@@ -77,14 +73,13 @@ function renderProtocolSettings () {
       render()
     }
   }
-  var registered   = Object.keys(defaultProtocolSettings).filter(k => defaultProtocolSettings[k])
+  var registered = Object.keys(defaultProtocolSettings).filter(k => defaultProtocolSettings[k])
   var unregistered = Object.keys(defaultProtocolSettings).filter(k => !defaultProtocolSettings[k])
 
-  return yo
-    `<div class="settings-section protocols">
+  return yo`<div class="settings-section protocols">
       ${registered.length
-        ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
-        : '' }
+    ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
+    : ''}
       ${unregistered.map(proto => yo`
         <div>
           <strong>${proto}</strong>
@@ -110,12 +105,12 @@ function renderAutoUpdater () {
       return yo`<div class="settings-section">
         <button class="btn btn-default" onclick=${onClickCheckUpdates}>Check for updates</button>
         <span class="version-info">
-          ${ browserInfo.updater.error
-            ? yo`<span><span class="icon icon-cancel"></span> ${browserInfo.updater.error}</span>`
-            : yo`<span>
+          ${browserInfo.updater.error
+    ? yo`<span><span class="icon icon-cancel"></span> ${browserInfo.updater.error}</span>`
+    : yo`<span>
                 <span class="icon icon-check"></span>
                 <strong>Beaker v${browserInfo.version}</strong> is up-to-date
-              </span>` }
+              </span>`}
           ${renderAutoUpdateCheckbox()}
         </span>
       </div>`
@@ -166,7 +161,7 @@ function renderStartPageSettings () {
       <input onchange=${onUpdateStartPageBackgroundImage} name="start-background-image" type="file" accept="image/*"/>
     </label>
     ${settings.start_page_background_image
-      ? yo`
+    ? yo`
         <div>
           <button class="btn transparent" onclick=${onUpdateStartPageBackgroundImage}>
             <i class="fa fa-close"></i>
@@ -175,13 +170,13 @@ function renderStartPageSettings () {
           <img class="bg-preview" src=${'beaker://start/background-image?cache-buster=' + Date.now()} />
           <label for="start-page-theme">
             Start page theme
-            <input type="radio" value="light" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === "light"}/>Light
-            <input type="radio" value="dark" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === "dark"}/>Dark
+            <input type="radio" value="light" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === 'light'}/>Light
+            <input type="radio" value="dark" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === 'dark'}/>Dark
           </label>
         </div>
                 `
-      : ''
-    }
+    : ''
+}
     </div>
   `
 }
@@ -215,8 +210,7 @@ function onClickRestart () {
 }
 
 function onUpdaterStateChanged (state) {
-  if (!browserInfo)
-    return
+  if (!browserInfo) { return }
   // render new state
   browserInfo.updater.state = state
   browserInfo.updater.error = false
@@ -247,8 +241,7 @@ async function onUpdateStartPageBackgroundImage () {
 }
 
 function onUpdaterError (err) {
-  if (!browserInfo)
-    return
+  if (!browserInfo) { return }
   // render new state
   browserInfo.updater.error = err
   render()
@@ -262,12 +255,11 @@ function isAutoUpdateEnabled () {
 }
 
 function setStartPageTheme () {
-
   function getBrightness (r, g, b) {
     return Math.sqrt(
-      .241 * Math.pow(r, 2) +
-      .691 * Math.pow(g, 2) +
-      .068 * Math.pow(b, 2))
+      0.241 * Math.pow(r, 2) +
+      0.691 * Math.pow(g, 2) +
+      0.068 * Math.pow(b, 2))
   }
 
   return new Promise(resolve => {

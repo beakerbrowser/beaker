@@ -1,3 +1,5 @@
+/* globals messageDiv promptInput mainForm cancelBtn beakerBrowser */
+
 // exported api
 // =
 

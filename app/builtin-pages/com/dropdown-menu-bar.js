@@ -1,3 +1,5 @@
+/* globals Event */
+
 import * as yo from 'yo-yo'
 
 // exported api
@@ -89,8 +91,7 @@ function onClickMenuItem (item) {
   if (item.disabled) return
   if (typeof item.click === 'function') {
     item.click()
-  }
-  else if (typeof item.click === 'string') {
+  } else if (typeof item.click === 'string') {
     window.dispatchEvent(new Event(item.click))
   }
 }
