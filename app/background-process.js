@@ -1,4 +1,4 @@
-Error.stackTraceLimit = Infinity;
+Error.stackTraceLimit = Infinity
 
 // This is main process of Electron, started as first thing when your
 // app starts. This script is running through entire life of your application.
@@ -76,11 +76,9 @@ app.on('ready', function () {
 })
 
 app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin')
-    app.quit()
+  if (process.platform !== 'darwin') { app.quit() }
 })
 
 app.on('open-url', function (e, url) {
   openURL.open(url)
 })
-

@@ -94,7 +94,7 @@
     "postinstall": "cd app && npm install",
     "build": "gulp build",
     "burnthemall": "rm -Rf ./node_modules ./app/node_modules; npm i; npm run rebuild",
-    "lint": "eslint --fix --ignore-pattern 'color-thief.js' --ignore-pattern 'app/node_modules' --ignore-pattern '*.build.js' app/shell-window",
+    "lint": "eslint --fix --ignore-pattern 'color-thief.js' --ignore-pattern 'app/node_modules' --ignore-pattern '*.build.js' app",
     "rebuild": "(cd app && npm rebuild --runtime=electron --target=1.7.4 --disturl=https://atom.io/download/atom-shell --build-from-source); gulp build",
     "release": "build -m -p never",
     "start": "gulp start",

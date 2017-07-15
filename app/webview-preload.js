@@ -21,7 +21,7 @@ webFrame.registerURLSchemeAsPrivileged('dat', { bypassCSP: false })
 
 // setup APIs
 importWebAPIs()
-if (['beaker:','dat:','https:'].includes(window.location.protocol) || 
+if (['beaker:', 'dat:', 'https:'].includes(window.location.protocol) ||
     (window.location.protocol === 'http:' && window.location.hostname === 'localhost')) {
   window.DatArchive = DatArchive
 }
