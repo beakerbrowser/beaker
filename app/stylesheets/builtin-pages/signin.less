@@ -1,3 +1,58 @@
+@import "../base/reset.less";
+@import "../base/colors.less";
+@import "../base/spacing.less";
+@import "../base/typography.less";
+
+@import "../components/link.less";
+@import "../components/buttons.less";
+@import "../components/inputs.less";
+
+@import "../utils/flex.less";
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  color: red;
+  &:extend(.system-font);
+  font-size: 14px;
+}
+
+main {
+  padding: 1rem;
+}
+
+.profiles {
+  &:extend(.flex);
+}
+
+.profile {  
+  font-size: 1.3rem;
+  margin: 1rem;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+
+  .icon,
+  img {
+    width: 200px;
+    height: 200px;
+  }
+
+  i {
+    margin-top: 70px;
+    font-size: 3rem;
+  }
+
+  &:hover {
+    background: @background-menu;
+  }
+}
+
+.new-profile {
+  margin: 1.5rem;
+
+  form > div {
+    margin: 0.5rem;
+  }
 }

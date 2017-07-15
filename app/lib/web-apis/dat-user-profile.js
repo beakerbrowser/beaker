@@ -14,7 +14,6 @@ export class DatUserProfile extends DatArchive {
     // normalize
     return {
       display_name: normalizeString(obj.display_name),
-      bio: normalizeString(obj.bio),
       avatar: normalizeString(obj.avatar),
       datasets: normalizeDatasets(obj.datasets)
     }
@@ -42,7 +41,6 @@ export class DatUserProfileWritable extends DatUserProfile {
     // normalize
     obj = {
       display_name: normalizeString(obj.display_name),
-      bio: normalizeString(obj.bio),
       avatar: normalizeString(obj.avatar),
       datasets: normalizeDatasets(obj.datasets)
     }
