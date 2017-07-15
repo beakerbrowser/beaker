@@ -55,8 +55,7 @@ export function setupSqliteDB (db, migrations, logTag) {
 
       var version = (res && res.user_version) ? +res.user_version : 0
       var neededMigrations = migrations.slice(version)
-      if (neededMigrations.length == 0)
-        return resolve()
+      if (neededMigrations.length == 0) { return resolve() }
 
       debug(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
       runNeededMigrations()

@@ -11,8 +11,7 @@ export function identify (name, chunk) {
   // try to identify the type by the chunk contents
   var mimeType
   var identifiedExt = (chunk) ? identifyFiletype(chunk) : false
-  if (identifiedExt)
-    mimeType = mime.lookup(identifiedExt)
+  if (identifiedExt) { mimeType = mime.lookup(identifiedExt) }
   if (mimeType) {
     debug('[DAT] Identified entry mimetype as', mimeType)
   } else {

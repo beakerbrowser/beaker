@@ -2,8 +2,7 @@ import * as yo from 'yo-yo'
 
 export function pushUrl (e) {
   // ignore ctrl/cmd+click
-  if (e.metaKey)
-    return
+  if (e.metaKey) { return }
 
   var el = findParent(e.target, el => el.tagName === 'A')
   var url = el.getAttribute('href') || el.dataset.href

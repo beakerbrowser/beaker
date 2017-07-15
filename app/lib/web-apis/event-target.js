@@ -1,18 +1,18 @@
 // this emulates the implementation of event-targets by browsers
 
 export class EventTarget {
-  constructor() {
+  constructor () {
     this.listeners = {}
   }
 
-  addEventListener(type, callback) {
+  addEventListener (type, callback) {
     if (!(type in this.listeners)) {
       this.listeners[type] = []
     }
     this.listeners[type].push(callback)
   }
 
-  removeEventListener(type, callback) {
+  removeEventListener (type, callback) {
     if (!(type in this.listeners)) {
       return
     }
@@ -23,7 +23,7 @@ export class EventTarget {
     }
   }
 
-  dispatchEvent(event) {
+  dispatchEvent (event) {
     if (!(event.type in this.listeners)) {
       return
     }
