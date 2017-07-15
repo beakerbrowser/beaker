@@ -27,7 +27,6 @@ import datArchiveAPI from './web-apis/dat-archive'
 // =
 
 export function setup () {
-
   // internal apis
   rpc.exportAPI('profiles', profilesManifest, profilesAPI, internalOnly)
   rpc.exportAPI('archives', archivesManifest, archivesAPI, internalOnly)

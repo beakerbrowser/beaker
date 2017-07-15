@@ -6,8 +6,8 @@ export function archivesDebugPage () {
   return `<html>
     <body>
       ${Object.keys(archives).map(key => {
-        var a = archives[key]
-        return `<div style="font-family: monospace">
+    var a = archives[key]
+    return `<div style="font-family: monospace">
           <h3>${a.key.toString('hex')}</h3>
           <table>
             <tr><td>Meta DKey</td><td>${a.discoveryKey.toString('hex')}</td></tr>
@@ -19,7 +19,7 @@ export function archivesDebugPage () {
             `).join('')}
           </table>
         </div>`
-      }).join('')}
+  }).join('')}
     </body>
   </html>`
 }
@@ -32,9 +32,9 @@ export function datDnsCachePage () {
       <p><button>Clear cache</button></p>
       <table style="font-family: monospace">
         ${Object.keys(cache).map(name => {
-          var key = cache[name]
-          return `<tr><td><strong>${name}</strong></td><td>${key}</td></tr>`
-        }).join('')}
+    var key = cache[name]
+    return `<tr><td><strong>${name}</strong></td><td>${key}</td></tr>`
+  }).join('')}
       </table>
       <script src="beaker://dat-dns-cache/main.js"></script>
     </body>

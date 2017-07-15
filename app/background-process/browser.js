@@ -49,8 +49,7 @@ var browserEvents = new EventEmitter()
 export function setup () {
   // setup auto-updater
   try {
-    if (!isBrowserUpdatesSupported)
-      throw new Error('Disabled. Only available on macOS and Windows.')
+    if (!isBrowserUpdatesSupported) { throw new Error('Disabled. Only available on macOS and Windows.') }
     autoUpdater.setFeedURL(getAutoUpdaterFeedURL())
     autoUpdater.once('update-available', onUpdateAvailable)
     autoUpdater.on('error', onUpdateError)
@@ -114,13 +113,12 @@ export function setup () {
 
 export function fetchBody (url) {
   return new Promise((resolve) => {
-
     var http = url.startsWith('https') ? require('https') : require('http')
 
     http.get(url, (res) => {
       var body = ''
       res.setEncoding('utf8')
-      res.on('data', (data) => body += data )
+      res.on('data', (data) => { body += data })
       res.on('end', () => resolve(body))
     })
   })
@@ -135,7 +133,7 @@ export function setStartPageBackgroundImage (srcPath) {
 
   return new Promise((resolve) => {
     if (srcPath) {
-      fs.readFile(srcPath, (err, data) => {
+      fs.readFile(srcPath, (_, data) => {
         fs.writeFile(destPath, data, () => resolve())
       })
     } else {
@@ -180,12 +178,11 @@ export function getInfo () {
 // -prf
 export function checkForUpdates () {
   // dont overlap
-  if (updaterState != UPDATER_STATUS_IDLE)
-    return
+  if (updaterState != UPDATER_STATUS_IDLE) { return }
 
   // track result states for this run
   var isBrowserChecking = false // still checking?
-  var isBrowserUpdated = false  // got an update?
+  var isBrowserUpdated = false // got an update?
 
   // update global state
   debug('[AUTO-UPDATE] Checking for a new version.')
@@ -222,8 +219,7 @@ export function checkForUpdates () {
 
   // check the result states and emit accordingly
   function checkDone () {
-    if (isBrowserChecking)
-      return // still checking
+    if (isBrowserChecking) { return } // still checking
 
     // done, emit based on result
     if (isBrowserUpdated) {
@@ -264,7 +260,7 @@ export function setSetting (key, value) {
 
 export async function getUserSetupStatus () {
   // if not cached, defer to the lookup promise
-  return (userSetupStatus) ? userSetupStatus : userSetupStatusLookupPromise
+  return (userSetupStatus) || userSetupStatusLookupPromise
 }
 
 export function setUserSetupStatus (status) {
@@ -302,7 +298,7 @@ function showOpenDialog (opts = {}) {
 }
 
 export function validateLocalPath (localPath) {
-  for (let i=0; i < DISALLOWED_SAVE_PATH_NAMES.length; i++) {
+  for (let i = 0; i < DISALLOWED_SAVE_PATH_NAMES.length; i++) {
     let disallowedSavePathName = DISALLOWED_SAVE_PATH_NAMES[i]
     let disallowedSavePath = app.getPath(disallowedSavePathName)
     if (path.normalize(localPath) === path.normalize(disallowedSavePath)) {
@@ -334,16 +330,15 @@ export async function showLocalPathDialog ({folderName, defaultPath, warnIfNotEm
     // make sure it's a valid destination
     let validation = validateLocalPath(localPath)
     if (!validation.valid) {
-      var content = validation.name === 'home' ? 'personal data' : validation.name
       await new Promise(resolve => {
         dialog.showMessageBox({
           type: 'error',
           message: 'This folder is protected. Please pick another folder or subfolder.',
           detail:
-            `This is the OS ${validation.name} folder. `
-          + `We${"'"}re not comfortable letting you use an important folder, `
-          + `because Beaker has tools and APIs that can delete files. `
-          + `Instead, you should pick a child folder, or some other location entirely.`,
+            `This is the OS ${validation.name} folder. ` +
+          `We${"'"}re not comfortable letting you use an important folder, ` +
+          `because Beaker has tools and APIs that can delete files. ` +
+          `Instead, you should pick a child folder, or some other location entirely.`,
           buttons: ['OK']
         }, resolve)
       })
@@ -398,7 +393,7 @@ export async function showDeleteArchivePrompt (sitename, oldpath, {bulk} = {}) {
 }
 
 function openFolder (folderPath) {
-  shell.openExternal('file://'+folderPath)
+  shell.openExternal('file://' + folderPath)
 }
 
 async function doWebcontentsCmd (method, wcId, ...args) {
@@ -417,11 +412,10 @@ function setUpdaterState (state) {
 
 function getAutoUpdaterFeedURL () {
   if (os.platform() == 'darwin') {
-    return 'https://download.beakerbrowser.net/update/osx/'+app.getVersion()
-  }
-  else if (os.platform() == 'win32') {
+    return 'https://download.beakerbrowser.net/update/osx/' + app.getVersion()
+  } else if (os.platform() == 'win32') {
     let bits = (os.arch().indexOf('64') === -1) ? 32 : 64
-    return 'https://download.beakerbrowser.net/update/win'+bits+'/'+app.getVersion()
+    return 'https://download.beakerbrowser.net/update/win' + bits + '/' + app.getVersion()
   }
 }
 
@@ -429,8 +423,7 @@ function getAutoUpdaterFeedURL () {
 function scheduledAutoUpdate () {
   settingsDb.get('auto_update_enabled').then(v => {
     // if auto updates are enabled, run the check
-    if (+v === 1)
-      checkForUpdates()
+    if (+v === 1) { checkForUpdates() }
 
     // schedule next check
     setTimeout(scheduledAutoUpdate, SCHEDULED_AUTO_UPDATE_DELAY)

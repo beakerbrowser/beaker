@@ -34,10 +34,13 @@ export function setup () {
 export function createShellWindow () {
   // create window
   var { x, y, width, height } = ensureVisibleOnSomeDisplay(restoreState())
-  var win = new BrowserWindow({ 
+  var win = new BrowserWindow({
     titleBarStyle: 'hidden-inset',
     fullscreenable: false,
-    x, y, width, height,
+    x,
+    y,
+    width,
+    height,
     vibrancy: 'light',
     defaultEncoding: 'UTF-8',
     webPreferences: {
@@ -52,8 +55,7 @@ export function createShellWindow () {
   numActiveWindows++
 
   // register shortcuts
-  for (var i=1; i <= 9; i++)
-    registerShortcut(win, 'CmdOrCtrl+'+i, onTabSelect(win, i-1))
+  for (var i = 1; i <= 9; i++) { registerShortcut(win, 'CmdOrCtrl+' + i, onTabSelect(win, i - 1)) }
   registerShortcut(win, 'Ctrl+Tab', onNextTab(win))
   registerShortcut(win, 'Ctrl+Shift+Tab', onPrevTab(win))
   registerShortcut(win, 'CmdOrCtrl+[', onGoBack(win))
@@ -102,7 +104,7 @@ export async function getFocusedWebContents (win) {
 
 function loadShell (win) {
   win.loadURL('beaker://shell-window')
-  debug('Opening beaker://shell-window')  
+  debug('Opening beaker://shell-window')
 }
 
 function getCurrentPosition (win) {
@@ -222,7 +224,7 @@ function sendToWebContents (event) {
   return e => e.sender.webContents.send('window-event', event)
 }
 
-function sendScrollTouchBegin(e) {
+function sendScrollTouchBegin (e) {
   // get the cursor x/y within the window
   var cursorPos = screen.getCursorScreenPoint()
   var winPos = e.sender.getBounds()

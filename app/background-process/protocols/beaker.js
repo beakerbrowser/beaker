@@ -51,7 +51,7 @@ export function setup () {
 
   // create the internal beaker HTTP server
   var server = http.createServer(beakerServer)
-  listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => serverPort = port)
+  listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => { serverPort = port })
 }
 
 // internal methods
@@ -89,7 +89,6 @@ async function beakerServer (req, res) {
     let i = requestUrl.indexOf('?')
     if (i !== -1) requestUrl = requestUrl.slice(0, i)
   }
-
 
   // check the nonce
   // (only want this process to access the server)

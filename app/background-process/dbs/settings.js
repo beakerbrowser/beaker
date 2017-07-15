@@ -38,8 +38,7 @@ export function get (key) {
   // stored values
   return setupPromise.then(v => cbPromise(cb => {
     db.get(`SELECT value FROM settings WHERE key = ?`, [key], (err, row) => {
-      if (row)
-        row = row.value
+      if (row) { row = row.value }
       cb(err, row)
     })
   }))
@@ -48,11 +47,10 @@ export function get (key) {
 export function getAll () {
   return setupPromise.then(v => cbPromise(cb => {
     db.all(`SELECT key, value FROM settings`, (err, rows) => {
-      if (err)
-        return cb(err)
+      if (err) { return cb(err) }
 
       var obj = {}
-      rows.forEach(row => obj[row.key] = row.value)
+      rows.forEach(row => { obj[row.key] = row.value })
       obj.noWelcomeTab = (process.env.beaker_no_welcome_tab == 1)
       cb(null, obj)
     })

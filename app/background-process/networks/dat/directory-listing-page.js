@@ -1,4 +1,3 @@
-import path from 'path'
 import {pluralize, makeSafe} from '../../../lib/strings'
 import {stat, readdir} from 'pauls-dat-api'
 import {join as joinPaths, relative} from 'path'
@@ -29,15 +28,13 @@ export default async function renderDirectoryListingPage (archive, dirPath, webR
 
   // list files
   var names = []
-  try { names = await readdir(archive, realPath(dirPath)) }
-  catch (e) {}
+  try { names = await readdir(archive, realPath(dirPath)) } catch (e) {}
 
   // stat each file
   var entries = await Promise.all(names.map(async (name) => {
     var entry
-    var entryPath = path.join(dirPath, name)
-    try { entry = await stat(archive, realPath(entryPath)) }
-    catch (e) { return false }
+    var entryPath = joinPaths(dirPath, name)
+    try { entry = await stat(archive, realPath(entryPath)) } catch (e) { return false }
     entry.path = webrootPath(entryPath)
     entry.name = name
     return entry
