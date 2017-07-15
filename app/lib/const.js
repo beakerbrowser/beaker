@@ -6,7 +6,7 @@ export const DAT_HASH_REGEX = /^[0-9a-f]{64}$/i
 export const DAT_URL_REGEX = /^(?:dat:\/\/)?([0-9a-f]{64})/i
 
 // url file paths
-export const DAT_VALID_PATH_REGEX = /^[a-z0-9\-._~!$&'()*+,;=:@\/]+$/i
+export const DAT_VALID_PATH_REGEX = /^[a-z0-9\-._~!$&'()*+,;=:@/]+$/i
 
 // dat settings
 export const DAT_SWARM_PORT = 3282

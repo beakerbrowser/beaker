@@ -1,3 +1,5 @@
+/* globals beaker beakerBrowser */
+
 import * as yo from 'yo-yo'
 import {Archive} from 'builtin-pages-lib'
 
@@ -119,7 +121,7 @@ function render () {
   </main>`)
 }
 
-function renderArchiveTitle() {
+function renderArchiveTitle () {
   var t = archive.info.title ? `"${archive.info.title}"` : 'site'
   if (t.length > 100) {
     t = t.slice(0, 96) + '..."'

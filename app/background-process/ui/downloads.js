@@ -31,14 +31,13 @@ export function registerListener (win, opts = {}) {
   const listener = (e, item, webContents) => {
     // dont touch if already being handled
     // - if `opts.saveAs` is being used, there may be multiple active event handlers
-    if (item.isHandled)
-      return
+    if (item.isHandled) { return }
 
     // build a path to an unused name in the downloads folder
     const filePath = opts.saveAs ? opts.saveAs : unusedFilename.sync(path.join(app.getPath('downloads'), item.getFilename()))
 
     // track as an active download
-    item.id = (''+Date.now())+(''+Math.random()) // pretty sure this is collision proof but replace if not -prf
+    item.id = ('' + Date.now()) + ('' + Math.random()) // pretty sure this is collision proof but replace if not -prf
     item.name = path.basename(filePath)
     item.setSavePath(filePath)
     item.isHandled = true
@@ -121,29 +120,25 @@ function getDownloads () {
 
 function pause (id) {
   var download = downloads.find(d => d.id == id)
-  if (download)
-    download.pause()
+  if (download) { download.pause() }
   return Promise.resolve()
 }
 
 function resume (id) {
   var download = downloads.find(d => d.id == id)
-  if (download)
-    download.resume()
+  if (download) { download.resume() }
   return Promise.resolve()
 }
 
 function cancel (id) {
   var download = downloads.find(d => d.id == id)
-  if (download)
-    download.cancel()
+  if (download) { download.cancel() }
   return Promise.resolve()
 }
 
 function remove (id) {
   var download = downloads.find(d => d.id == id)
-  if (download && download.getState() != 'progressing')
-    downloads.splice(downloads.indexOf(download), 1)
+  if (download && download.getState() != 'progressing') { downloads.splice(downloads.indexOf(download), 1) }
   return Promise.resolve()
 }
 
@@ -151,13 +146,11 @@ function open (id) {
   return new Promise((resolve, reject) => {
     // find the download
     var download = downloads.find(d => d.id == id)
-    if (!download || download.state != 'completed')
-      return reject()
+    if (!download || download.state != 'completed') { return reject() }
 
     // make sure the file is still there
     fs.stat(download.getSavePath(), err => {
-      if (err)
-        return reject()
+      if (err) { return reject() }
 
       // open
       shell.openItem(download.getSavePath())
@@ -170,13 +163,11 @@ function showInFolder (id) {
   return new Promise((resolve, reject) => {
     // find the download
     var download = downloads.find(d => d.id == id)
-    if (!download || download.state != 'completed')
-      return reject()
+    if (!download || download.state != 'completed') { return reject() }
 
     // make sure the file is still there
     fs.stat(download.getSavePath(), err => {
-      if (err)
-        return reject()
+      if (err) { return reject() }
 
       // open
       shell.showItemInFolder(download.getSavePath())
@@ -219,12 +210,12 @@ function capture (item) {
 
 // sum of received bytes
 function getSumReceivedBytes () {
-  return getActiveDownloads().reduce((acc, item) => acc + item.getReceivedBytes(), 0) 
+  return getActiveDownloads().reduce((acc, item) => acc + item.getReceivedBytes(), 0)
 }
 
 // sum of total bytes
 function getSumTotalBytes () {
-  return getActiveDownloads().reduce((acc, item) => acc + item.getTotalBytes(), 0) 
+  return getActiveDownloads().reduce((acc, item) => acc + item.getTotalBytes(), 0)
 }
 
 function getActiveDownloads () {

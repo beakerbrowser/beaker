@@ -10,24 +10,23 @@ export function ucfirst (str) {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-export function pluralize (num, base, suffix='s') {
-  if (num === 1)
-    return base
+export function pluralize (num, base, suffix = 's') {
+  if (num === 1) { return base }
   return base + suffix
 }
 
-export function shorten (str, n=6) {
-  if (str.length > (n+3)) {
+export function shorten (str, n = 6) {
+  if (str.length > (n + 3)) {
     return str.slice(0, n) + '...'
   }
   return str
 }
 
-export function shortenHash (str, n=6) {
+export function shortenHash (str, n = 6) {
   if (str.startsWith('dat://')) {
     return 'dat://' + shortenHash(str.slice('dat://'.length).replace(/\/$/, '')) + '/'
   }
-  if (str.length > (n+5)) {
+  if (str.length > (n + 5)) {
     return str.slice(0, n) + '..' + str.slice(-2)
   }
   return str

@@ -1,3 +1,5 @@
+/* globals DatArchive beaker */
+
 import * as yo from 'yo-yo'
 
 // globals
@@ -36,7 +38,8 @@ async function parseURL () {
   }
   try {
     // extract key from url
-    var [_, key] = /^\/([^\/]+)/.exec(path)
+    var parts = /^\/([^/]+)/.exec(path)
+    var key = parts[1]
     if (/[0-9a-f]{64}/i.test(key) == false) {
       key = await DatArchive.resolveName(key)
     }
@@ -69,8 +72,8 @@ function updatePeers () {
   yo.update(document.querySelector('.peers'), yo`
     <div class="peers">
       ${peers.map(peer => {
-        return yo`<div>${peer.host}:${peer.port}</div>`
-      })}
+    return yo`<div>${peer.host}:${peer.port}</div>`
+  })}
       ${peers.length === 0 ? yo`<p>No peers are currently connected for this archive.</p>` : ''}
     </div>
   `)

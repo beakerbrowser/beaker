@@ -4,7 +4,6 @@ This provides window.prompt(), which electron does not do for us.
 
 import {ipcRenderer} from 'electron'
 
-
 // exported api
 // =
 

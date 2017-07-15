@@ -7,14 +7,13 @@ res = await navigator.permissions.revoke({ name: 'network', hostname: 'github.co
 res.status // => 'blocked'
 */
 
-import { ipcRenderer } from 'electron'
 import rpc from 'pauls-electron-rpc'
 import permissionsManifest from '../lib/api-manifests/external/permissions'
 
 // globals
 // =
 
-var origRequest = navigator.permissions.request || (()=>Promise.reject(new Error('Invalid permission type')))
+var origRequest = navigator.permissions.request || (() => Promise.reject(new Error('Invalid permission type')))
 var origRevoke = navigator.permissions.revoke
 var origQuery = navigator.permissions.query
 
@@ -44,7 +43,7 @@ function customRequest (descriptor) {
     return beakerPermissions.requestPermission(descriptor.name + ':' + descriptor.hostname)
       .then(res => ({ state: (res) ? 'granted' : 'denied' })) // convert the response to look like PermissionStatus
   }
-  
+
   // default behavior
   return origRequest.call(navigator.permissions, descriptor)
 }
@@ -59,13 +58,13 @@ function customRevoke (descriptor) {
     return beakerPermissions.revokePermission(descriptor.name + ':' + descriptor.hostname)
       .then(res => ({ state: (res) ? 'granted' : 'prompt' })) // convert the response to look like PermissionStatus
   }
-  
+
   // default behavior
   return origRevoke.call(navigator.permissions, descriptor)
 }
 
 function customQuery (descriptor) {
-  if (!descriptor) return Promise.reject(new Error('1 Argument required'))  
+  if (!descriptor) return Promise.reject(new Error('1 Argument required'))
 
   // custom behaviors
   if (descriptor.name === 'network') {
@@ -74,7 +73,7 @@ function customQuery (descriptor) {
     return beakerPermissions.queryPermission(descriptor.name + ':' + descriptor.hostname)
       .then(res => ({ state: (res) ? 'granted' : 'prompt' })) // convert the response to look like PermissionStatus
   }
-  
+
   // default behavior
   return origQuery.call(navigator.permissions, descriptor)
 }
@@ -82,9 +81,8 @@ function customQuery (descriptor) {
 // internal methods
 // =
 
-var hostnameRegex = /^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$/i
+var hostnameRegex = /^(([a-z0-9]|[a-z0-9][a-z0-9-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9-]*[a-z0-9])$/i
 function validateHostname (descriptor) {
-  if (typeof descriptor.hostname !== 'string' || !(descriptor.hostname === '*' || hostnameRegex.test(descriptor.hostname)))
-    return false
+  if (typeof descriptor.hostname !== 'string' || !(descriptor.hostname === '*' || hostnameRegex.test(descriptor.hostname))) { return false }
   return true
 }

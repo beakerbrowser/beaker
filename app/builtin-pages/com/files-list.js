@@ -1,3 +1,5 @@
+/* globals beakerBrowser DatArchive Event */
+
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import * as toast from './toast'
@@ -36,7 +38,7 @@ function rFilesList (archiveInfo, opts) {
 // rendering
 // =
 
-function redraw (archiveInfo, opts={}) {
+function redraw (archiveInfo, opts = {}) {
   yo.update(document.querySelector('.files-list'), rFilesList(archiveInfo, opts))
 }
 
@@ -47,42 +49,41 @@ function rFolder (archiveInfo, opts) {
       <span class="path" title="${archiveInfo.userSettings.localPath}">
         ${archiveInfo.userSettings.localPath}
         ${archiveInfo.localPathExists
-          ? yo`
+    ? yo`
             <a onclick=${e => onCopyFolder(e, archiveInfo)} href="#" title="Copy path to your clipboard">
               <i class="fa fa-clipboard"></i>
             </a>`
-          : ''
-        }
+    : ''
+}
       </span>
       <span class="files-list-actions">
         ${archiveInfo.isOwner && archiveInfo.localPathExists
-          ? yo `
+    ? yo`
             <a onclick=${e => onImportFiles(e, archiveInfo)} href="#">
               <i class="fa fa-plus"></i>
               Add files
             </a>
           ` : ''
-        }
+}
         ${archiveInfo.localPathExists
-          ? yo`
+    ? yo`
             <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
               <i class="fa fa-folder-open-o"></i>
               Open folder
             </a>`
-          : yo`
+    : yo`
             <span class="folder-warning">
               <em>This folder no longer exists</em>
               <i class="fa fa-exclamation-circle"></i>
             </span>`
-        }
+}
       </span>
     </div>
   `
 }
 
-function rChildren (archiveInfo, children, depth=0, opts={}) {
-  var children = Object.keys(children)
-    .map(key => children[key])
+function rChildren (archiveInfo, children, depth = 0, opts = {}) {
+  children = Object.keys(children).map(key => children[key])
 
   if (children.length === 0 && depth === 0) {
     return yo`
@@ -97,10 +98,8 @@ function rChildren (archiveInfo, children, depth=0, opts={}) {
 
 function treeSorter (a, b) {
   // directories at top
-  if (a.entry.isDirectory() && !b.entry.isDirectory())
-    return -1
-  if (!a.entry.isDirectory() && b.entry.isDirectory())
-    return 1
+  if (a.entry.isDirectory() && !b.entry.isDirectory()) { return -1 }
+  if (!a.entry.isDirectory() && b.entry.isDirectory()) { return 1 }
   // by name
   return a.entry.name.localeCompare(b.entry.name)
 }
@@ -164,7 +163,7 @@ function rFile (archiveInfo, node, depth, opts) {
 // event handlers
 // =
 
-async function onClickDirectory (e, archiveInfo, node, opts={}) {
+async function onClickDirectory (e, archiveInfo, node, opts = {}) {
   node.isExpanded = !node.isExpanded
   if (node.isExpanded) {
     await archiveInfo.fileTree.readFolder(node)

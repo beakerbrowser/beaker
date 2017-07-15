@@ -178,5 +178,5 @@ export default function (e) {
           ${button}
         </div>
       </body>
-    </html>`.replace(/\n/g,'')
+    </html>`.replace(/\n/g, '')
 }

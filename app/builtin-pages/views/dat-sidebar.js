@@ -1,15 +1,14 @@
+/* globals beaker locationbar DatArchive confirm URL beakerBrowser alert */
+
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import {ProgressMonitor, FileTree, ArchivesList} from 'builtin-pages-lib'
+import {ProgressMonitor, FileTree} from 'builtin-pages-lib'
 import renderTabs from '../com/tabs'
-import renderGraph from '../com/peer-history-graph'
 import renderFiles from '../com/files-list'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
 import { makeSafe } from '../../lib/strings'
 import { niceDate } from '../../lib/time'
 import { throttle } from '../../lib/functions'
-import { writeToClipboard } from '../../lib/fg/event-handlers'
-
 
 // globals
 // =
@@ -23,7 +22,7 @@ var downloadProgress
 var isPublishing = false
 const reloadDiffThrottled = throttle(reloadDiff, 500)
 
-setup ()
+setup()
 
 async function setup () {
   await parseURL()
@@ -55,7 +54,7 @@ async function loadCurrentArchive () {
     var fileTree = new FileTree(aLastPublish, {onDemand: true})
 
     // fetch all data
-    var [history, fileTreeRes] = await Promise.all([
+    var [history] = await Promise.all([
       archive.history({end: 20, reverse: true, timeout: 10e3}),
       fileTree.setup().catch(err => null)
     ])
@@ -93,7 +92,7 @@ function destroyDownloadProgress () {
   if (downloadProgress) {
     downloadProgress.destroy()
     downloadProgress = null
-  }  
+  }
 }
 
 async function onRevert () {
@@ -185,13 +184,13 @@ function update () {
   }
 
   if (archiveInfo.isOwner) {
-    var stagingTab = {
+    stagingTab = {
       id: 'staging',
       label: yo`<span>Staging <span class="changes-count">${diffCount || ''}</span></span>`,
       onclick: onClickTab('staging')
     }
 
-    var buttons = [
+    buttons = [
       yo`
         <button onclick=${onImportFiles} class="action">
           <div class="content">
@@ -272,17 +271,17 @@ function update () {
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-          {id: 'files', label: 'Files', onclick: onClickTab('files')},
-          stagingTab,
-          {id: 'log', label: 'History', onclick: onClickTab('log')},
-          {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
-        ].filter(Boolean))}
+    {id: 'files', label: 'Files', onclick: onClickTab('files')},
+    stagingTab,
+    {id: 'log', label: 'History', onclick: onClickTab('log')},
+    {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
+  ].filter(Boolean))}
         ${({
-          files: () => renderFiles(archiveInfo, {hideDate: true}),
-          log: () => rHistory(archiveInfo),
-          settings: () => rSettings(archiveInfo),
-          staging: () => rStagingArea(archiveInfo)
-        })[currentSection]()}
+    files: () => renderFiles(archiveInfo, {hideDate: true}),
+    log: () => rHistory(archiveInfo),
+    settings: () => rSettings(archiveInfo),
+    staging: () => rStagingArea(archiveInfo)
+  })[currentSection]()}
       </section>
     </div>
     </main>
@@ -379,7 +378,7 @@ function rHistory (archiveInfo) {
   var rows = archiveInfo.history.map(function (item, i) {
     var rev = item.version
     var revType = makeSafe(item.type)
-    var urlRev = (revType === 'put') ? rev : (rev - 1)  // give the one revision prior for deletions
+    var urlRev = (revType === 'put') ? rev : (rev - 1) // give the one revision prior for deletions
     revType = revType === 'put' ? 'added' : 'deleted'
 
     return `
@@ -436,7 +435,6 @@ function rStagingNotification (archiveInfo) {
 }
 
 function renderChanges () {
-  var stats = archiveInfo.diffStats
   var isExpanded = {add: false, mod: false, del: false}
 
   // no changes
@@ -447,7 +445,6 @@ function renderChanges () {
   // helper to render files
   const rFile = (d, icon, change) => {
     var formattedPath = d.path.slice(1)
-    var len = d.path.slice(1).length
 
     return yo`
       <div class="file">
@@ -508,7 +505,6 @@ function rStagingArea (archiveInfo) {
     return yo`<section class="staging"><em>No unpublished changes</em></section>`
   }
 
-  var stats = archiveInfo.diffStats
   return yo`
     <section class="staging">
       <div class="changes">
@@ -517,8 +513,8 @@ function rStagingArea (archiveInfo) {
           <div class="actions">
             <button class="btn small" onclick=${onRevert}>Revert</button>
             ${isPublishing
-              ? yo`<span class="btn success small">Publishing...</span>`
-              : yo`<button class="btn success small" onclick=${onPublish}>Publish</button>`}
+    ? yo`<span class="btn success small">Publishing...</span>`
+    : yo`<button class="btn success small" onclick=${onPublish}>Publish</button>`}
           </div>
         </div>
       </div>
@@ -549,7 +545,7 @@ function rSettings (archiveInfo) {
             <p><a onclick=${onToggleSaved} class="link">Add this site to your library</a> to configure the download settings.</p>
           `,
       yo`
-        <div class="setting ${!isSaved?'disabled':''}">
+        <div class="setting ${!isSaved ? 'disabled' : ''}">
           <h5>Download files</h5>
           <fieldset>
             <label onclick=${(e) => onSetAutoDownload(e, false)}>
@@ -578,7 +574,7 @@ function rSettings (archiveInfo) {
             </label>
           </fieldset>
         </div>
-      `*/
+      ` */
     ]
     toolsEls = yo`
       <div class="tools">
@@ -670,21 +666,11 @@ function onClickTab (tab) {
 }
 
 function onClickLocalSync () {
-  if(!archiveInfo.userSettings.isSaved) onToggleSaved()
+  if (!archiveInfo.userSettings.isSaved) onToggleSaved()
 }
 
 function onClickOnlineOnly () {
   if (archiveInfo.userSettings.isSaved) onToggleSaved()
-}
-
-async function onChooseNewLocation () {
-  closeAllToggleables()
-  var localPath = await beakerBrowser.showLocalPathDialog({
-    defaultPath: archiveInfo.userSettings.localPath,
-    warnIfNotEmpty: false
-  })
-  await beaker.archives.update(archiveKey, null, {localPath})
-  loadCurrentArchive()
 }
 
 async function onDeleteDownloadedFiles () {

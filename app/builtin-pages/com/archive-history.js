@@ -20,7 +20,7 @@ export function archiveHistory (archive) {
             <i class="favicon fa fa-plus-square"></i>
             <span class="title">${c.name}</span>
             <span class="updated" title=${mtime}>${mtime}</span>
-            <span class="progress">${prettyBytes(c.length||0)}</span>
+            <span class="progress">${prettyBytes(c.length || 0)}</span>
           </li>`
         break
       case 'directory':

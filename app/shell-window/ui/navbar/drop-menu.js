@@ -1,3 +1,5 @@
+/* globals beakerDownloads DatArchive */
+
 import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
 import prettyBytes from 'pretty-bytes'
@@ -9,7 +11,7 @@ import * as pages from '../../pages'
 // the DropMenuNavbarBtn manages all instances, and you should only create one
 
 export class DropMenuNavbarBtn {
-  constructor() {
+  constructor () {
     this.downloads = []
     this.sumProgress = null // null means no active downloads
     this.isDropdownOpen = false
@@ -30,10 +32,10 @@ export class DropMenuNavbarBtn {
     window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
   }
 
-  render() {
+  render () {
     // show active, then inactive, with a limit of 5 items
     var progressingDownloads = this.downloads.filter(d => d.state == 'progressing').reverse()
-    var activeDownloads = (progressingDownloads.concat(this.downloads.filter(d => d.state != 'progressing').reverse())).slice(0,5)
+    var activeDownloads = (progressingDownloads.concat(this.downloads.filter(d => d.state != 'progressing').reverse())).slice(0, 5)
 
     // render the progress bar if downloading anything
     var progressEl = ''
@@ -45,19 +47,13 @@ export class DropMenuNavbarBtn {
     // render the dropdown if open
     var dropdownEl = ''
     if (this.isDropdownOpen) {
-      let page = pages.getActive()
-      let isDatSite = page.getURL().startsWith('dat://')
-      let isDatSaved = page.siteInfo && page.siteInfo.userSettings.isSaved
-
       let downloadEls = activeDownloads.map(d => {
         // status
         var status = d.state === 'completed' ? '' : d.state
         if (status == 'progressing') {
           status = prettyBytes(d.receivedBytes) + ' / ' + prettyBytes(d.totalBytes)
-          if (d.isPaused)
-            status += ', Paused'
-        } else
-          status = ucfirst(status)
+          if (d.isPaused) { status += ', Paused' }
+        } else { status = ucfirst(status) }
 
         // ctrls
         var ctrlsEl
@@ -79,8 +75,8 @@ export class DropMenuNavbarBtn {
           ctrlsEl = yo`
             <li class="download-item-ctrls paused">
               ${d.isPaused
-              ? yo`<a onclick=${e => this.onResume(e, d)}>Resume</a>`
-              : yo`<a onclick=${e => this.onPause(e, d)}>Pause</a>`}
+    ? yo`<a onclick=${e => this.onResume(e, d)}>Resume</a>`
+    : yo`<a onclick=${e => this.onPause(e, d)}>Pause</a>`}
               <a onclick=${e => this.onCancel(e, d)}>Cancel</a>
             </li>`
         }
@@ -90,9 +86,9 @@ export class DropMenuNavbarBtn {
           <li class="download-item">
             <div class="name">${d.name}</div>
             <div class="status">
-              ${ d.state == 'progressing'
-                ? yo`<progress value=${d.receivedBytes} max=${d.totalBytes}></progress>`
-                : '' }
+              ${d.state == 'progressing'
+    ? yo`<progress value=${d.receivedBytes} max=${d.totalBytes}></progress>`
+    : ''}
               ${status}
             </div>
             ${ctrlsEl}
@@ -159,7 +155,7 @@ export class DropMenuNavbarBtn {
     // render btn
     return yo`
       <div class="toolbar-dropdown-menu">
-        <button class="toolbar-btn toolbar-dropdown-menu-btn ${this.isDropdownOpen?'pressed':''}" onclick=${e => this.onClickBtn(e)} title="Menu">
+        <button class="toolbar-btn toolbar-dropdown-menu-btn ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
           <span class="fa fa-bars"></span>
           ${progressEl}
         </button>
@@ -174,9 +170,9 @@ export class DropMenuNavbarBtn {
   doAnimation () {
     Array.from(document.querySelectorAll('.toolbar-dropdown-menu-btn')).forEach(el =>
       el.animate([
-        {transform: 'scale(1.0)', color:'inherit'},
-        {transform: 'scale(1.5)', color:'#06c'},
-        {transform: 'scale(1.0)', color:'inherit'}
+        {transform: 'scale(1.0)', color: 'inherit'},
+        {transform: 'scale(1.5)', color: '#06c'},
+        {transform: 'scale(1.0)', color: 'inherit'}
       ], { duration: 300 })
     )
   }
@@ -191,7 +187,7 @@ export class DropMenuNavbarBtn {
     var parent = findParent(e.target, 'toolbar-dropdown-menu')
     if (parent) return // abort - this was a click on us!
     this.isDropdownOpen = false
-    this.updateActives()    
+    this.updateActives()
   }
 
   onNewDownload () {
@@ -212,10 +208,8 @@ export class DropMenuNavbarBtn {
     var target = this.downloads.find(d => d.id == download.id)
     if (target) {
       // patch item
-      for (var k in download)
-        target[k] = download[k]
-    } else
-      this.downloads.push(download)
+      for (var k in download) { target[k] = download[k] }
+    } else { this.downloads.push(download) }
     this.updateActives()
   }
 

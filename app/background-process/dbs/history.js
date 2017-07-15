@@ -89,8 +89,8 @@ export async function search (q) {
     // prep search terms
     q = q
       .toLowerCase() // all lowercase. (uppercase is interpretted as a directive by sqlite.)
-      .replace(/[:^*]/g, '') // strip symbols that sqlite interprets.
-      + '*' // allow partial matches
+      .replace(/[:^*]/g, '') + // strip symbols that sqlite interprets.
+      '*' // allow partial matches
 
     // run query
     return await db.all(`

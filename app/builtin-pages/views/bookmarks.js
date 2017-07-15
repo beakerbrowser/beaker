@@ -1,6 +1,4 @@
-/*
-This uses the beaker.bookmarks APIs, which is exposed by webview-preload to all sites loaded over the beaker: protocol
-*/
+/* globals beaker */
 
 const yo = require('yo-yo')
 const co = require('co')
@@ -14,7 +12,7 @@ var bookmarks = []
 // main
 // =
 
-co(function*() {
+co(function * () {
   // get the bookmarks, ordered by # of views
   bookmarks = yield beaker.bookmarks.list()
   bookmarks = bookmarks || []
@@ -60,7 +58,7 @@ function render () {
 
   yo.update(
     document.querySelector('.bookmarks-wrapper'),
-      yo`
+    yo`
         <div class="bookmarks-wrapper">
           <h1 class="ll-heading">Bookmarks</h1>
           <ul class="links-list bookmarks">
@@ -73,99 +71,63 @@ function render () {
 // event handlers
 // =
 
-function onClickGridItem (item) {
-  return e => {
-    // ignore ctrl/cmd+click
-    if (e.metaKey) return
-    e.preventDefault()
-
-    if (window.location.protocol == 'beaker:' && item.href.startsWith('beaker:')) {
-      // just navigate virtually, if we're on and going to a beaker: page
-      window.history.pushState(null, '', item.href)
-    } else {
-      // actually go to the page
-      window.location = item.href
-    }
-  }
-}
-
-
 function onClickEdit (i) {
-return e => {
-  e.preventDefault()
-  e.stopPropagation()
-
-  // capture initial value
-  bookmarks[i].editTitle = bookmarks[i].title
-  bookmarks[i].editUrl = bookmarks[i].url
-
-  // enter edit-mode
-  bookmarks[i].isEditing = true
-  render()
-  document.querySelector(`[data-row="${i}"] input`).focus()
-}
-}
-
-function onKeyUp (i) {
-return e => {
-  // enter-key
-  if (e.keyCode == 13) {
-    // capture the old url
-    var oldUrl = bookmarks[i].url
-
-    // update values
-    bookmarks[i].title = document.querySelector(`[data-row="${i}"] [name="title"]`).value
-    bookmarks[i].url = document.querySelector(`[data-row="${i}"] [name="url"]`).value
-
-    // exit edit-mode
-    bookmarks[i].isEditing = false
-    render()
-
-    // save in backend
-    beaker.bookmarks.changeTitle(oldUrl, bookmarks[i].title)
-    beaker.bookmarks.changeUrl(oldUrl, bookmarks[i].url)
-  }
-
-  // escape-key
-  else if (e.keyCode == 27) {
-    // exit edit-mode
-    bookmarks[i].isEditing = false
-    render()
-  }
-
-  // all else
-  else {
-    // update edit values
-    if (e.target.name == 'title')
-      bookmarks[i].editTitle = e.target.value
-    if (e.target.name == 'url')
-      bookmarks[i].editUrl = e.target.value
-  }
-}
-}
-
-function onClickDelete (i) {
-return e => {
-  e.preventDefault()
-  e.stopPropagation()
-
-  // delete bookmark
-  var b = bookmarks[i]
-  bookmarks.splice(i, 1)
-    beaker.bookmarks.remove(b.url)
-    render()
-  }
-}
-
-function togglePinned (i) {
   return e => {
     e.preventDefault()
     e.stopPropagation()
 
-    var { url, title, pinned } = bookmarks[i]
+    // capture initial value
+    bookmarks[i].editTitle = bookmarks[i].title
+    bookmarks[i].editUrl = bookmarks[i].url
 
-    beaker.bookmarks.togglePinned(url, pinned)
-    bookmarks[i].pinned = pinned ? 0 : 1
+    // enter edit-mode
+    bookmarks[i].isEditing = true
+    render()
+    document.querySelector(`[data-row="${i}"] input`).focus()
+  }
+}
+
+function onKeyUp (i) {
+  return e => {
+    if (e.keyCode == 13) {
+      // enter-key
+      // capture the old url
+      var oldUrl = bookmarks[i].url
+
+      // update values
+      bookmarks[i].title = document.querySelector(`[data-row="${i}"] [name="title"]`).value
+      bookmarks[i].url = document.querySelector(`[data-row="${i}"] [name="url"]`).value
+
+      // exit edit-mode
+      bookmarks[i].isEditing = false
+      render()
+
+      // save in backend
+      beaker.bookmarks.changeTitle(oldUrl, bookmarks[i].title)
+      beaker.bookmarks.changeUrl(oldUrl, bookmarks[i].url)
+    } else if (e.keyCode == 27) {
+      // escape-key
+      // exit edit-mode
+      bookmarks[i].isEditing = false
+      render()
+    } else {
+      // all else
+      // update edit values
+      if (e.target.name == 'title') { bookmarks[i].editTitle = e.target.value }
+      if (e.target.name == 'url') { bookmarks[i].editUrl = e.target.value }
+    }
+  }
+}
+
+function onClickDelete (i) {
+  return e => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    // delete bookmark
+    var b = bookmarks[i]
+    bookmarks.splice(i, 1)
+    beaker.bookmarks.remove(b.url)
     render()
   }
 }

@@ -19,7 +19,6 @@ import * as sitedataDb from '../dbs/sitedata'
 import directoryListingPage from '../networks/dat/directory-listing-page'
 import errorPage from '../../lib/error-page'
 import * as mime from '../../lib/mime'
-import {DAT_MANIFEST_FILENAME} from '../../lib/const'
 
 // HACK
 // attempt to load utp-native to make sure it's correctly built
@@ -108,7 +107,7 @@ async function datServer (req, res) {
       'Content-Security-Policy': "default-src 'unsafe-inline' beaker:;",
       'Access-Control-Allow-Origin': '*'
     })
-    res.end(errorPage(errorPageInfo ? errorPageInfo : (code + ' ' + status)))
+    res.end(errorPage(errorPageInfo || (code + ' ' + status)))
   })
   var queryParams = parseUrl(req.url, true).query
   var fileReadStream
@@ -164,14 +163,13 @@ async function datServer (req, res) {
     // cleanup
     aborted = true
     debug('Timed out searching for', archiveKey)
-    var hadFileReadStream = !!fileReadStream
     if (fileReadStream) {
       fileReadStream.destroy()
       fileReadStream = null
     }
 
     // error page
-    var resource = !!archive ? 'page' : 'site'
+    var resource = archive ? 'page' : 'site'
     cb(504, `Timed out searching for ${resource}`, {
       resource,
       errorCode: 'dat-timeout',
@@ -210,8 +208,7 @@ async function datServer (req, res) {
 
   // read the manifest (it's needed in a couple places)
   var manifest
-  try { manifest = await pda.readManifest(archiveFS) }
-  catch (e) { manifest = null }
+  try { manifest = await pda.readManifest(archiveFS) } catch (e) { manifest = null }
 
   // handle zip download
   if (urlp.query.download_as === 'zip') {

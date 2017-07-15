@@ -1,7 +1,4 @@
-/*
-This uses the beaker.bookmarks API, which is exposed by webview-preload to all
-sites loaded over the beaker: protocol
-*/
+/* globals beaker beakerBrowser beakerSitedata DatArchive Image */
 
 import * as yo from 'yo-yo'
 import {ArchivesList} from 'builtin-pages-lib'
@@ -20,7 +17,6 @@ const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-3/?updated=tru
 
 var isManagingBookmarks = false
 var isShelfOpen = false
-var error = false
 var userProfile
 var archivesStatus
 var bookmarks, pinnedBookmarks
@@ -97,7 +93,7 @@ function renderProfileCard () {
   return yo`
     <div class="profile">
       ${renderNetworkLink()}
-      ${''/*DISABLED <a href=${userProfile.url}>${userProfile.title} <i class="fa fa-user-circle-o"></i></a>*/}
+      ${''/* DISABLED <a href=${userProfile.url}>${userProfile.title} <i class="fa fa-user-circle-o"></i></a> */}
     </div>
   `
 }
@@ -125,15 +121,15 @@ function renderShelf () {
         <h3><a href="beaker://library">Your library</a></h3>
       </div>
       <div class="archives-list">
-        ${archivesList.archives.length ?
-          archivesList.archives.map(archiveInfo => {
-            return yo`
+        ${archivesList.archives.length
+    ? archivesList.archives.map(archiveInfo => {
+      return yo`
               <a class="archive list-item" href=${`beaker://library/${archiveInfo.key}`}>
                 <span class="title">${niceName(archiveInfo)}</span>
                 <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
               </a>`
-        }) :
-        yo`<p class="no-archives">No archives in your library</p>`}
+    })
+    : yo`<p class="no-archives">No archives in your library</p>`}
       </div>
 
       <hr />
@@ -143,17 +139,17 @@ function renderShelf () {
       </div>
 
       <div class="bookmarks-list">
-        ${bookmarks.length ?
-          bookmarks.map(row => {
-            return yo`
-              <a href=${row.url } class="bookmark list-item">
+        ${bookmarks.length
+    ? bookmarks.map(row => {
+      return yo`
+              <a href=${row.url} class="bookmark list-item">
                 <img class="favicon" src=${'beaker-favicon:' + row.url} />
                 <span href=${row.url} class="bookmark-link" title=${row.title} />
                   <span class="title">${row.title}</span>
                 </span>
               </a>`
-          }) :
-          yo`<p class="no-bookmarks">No bookmarks</p>`}
+    })
+    : yo`<p class="no-bookmarks">No bookmarks</p>`}
       </div>
     </div>
   `
@@ -220,15 +216,6 @@ function renderPinnedBookmark (bookmark) {
   `
 }
 
-function renderError () {
-  if (!error) {
-    return ''
-  }
-  return yo`
-    <div class="message error"><i class="fa fa-exclamation-circle"></i> ${error}</div>
-  `
-}
-
 // event handlers
 // =
 
@@ -289,9 +276,9 @@ function attachDominantColor (bookmark) {
     img.setAttribute('crossOrigin', 'anonymous')
     img.onload = e => {
       var c = colorThief.getColor(img, 10)
-      c[0] = (c[0] / 4)|0 + 192
-      c[1] = (c[1] / 4)|0 + 192
-      c[2] = (c[2] / 4)|0 + 192
+      c[0] = (c[0] / 4) | 0 + 192
+      c[1] = (c[1] / 4) | 0 + 192
+      c[2] = (c[2] / 4) | 0 + 192
       bookmark.dominantColor = c
       resolve()
     }

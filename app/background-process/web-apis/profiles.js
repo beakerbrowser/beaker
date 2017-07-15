@@ -1,4 +1,3 @@
-import {parse as parseURL} from 'url'
 import * as profilesDb from '../dbs/profiles'
 
 // exported api

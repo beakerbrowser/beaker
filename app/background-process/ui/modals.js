@@ -17,7 +17,7 @@ var modalWindow
 // exported apis
 // =
 
-export function showModal (parentWindow, modalName, opts={}) {
+export function showModal (parentWindow, modalName, opts = {}) {
   if (modalWindow) {
     // TODO create a new Error type
     return Promise.reject(new Error('Modal already active'))

@@ -1,5 +1,6 @@
+/* globals beaker beakerBrowser */
+
 import * as yo from 'yo-yo'
-import {Archive} from 'builtin-pages-lib'
 
 var currentFilter = ''
 var selectedArchiveKey = ''
@@ -84,9 +85,9 @@ async function onSubmit (e) {
       beakerBrowser.closeModal(null, {url: newArchive.url})
     } catch (e) {
       beakerBrowser.closeModal({
-      name: e.name,
-      message: e.message || e.toString(),
-      internalError: true
+        name: e.name,
+        message: e.message || e.toString(),
+        internalError: true
       })
     }
   } else {
@@ -202,12 +203,4 @@ function renderArchive (archive) {
       ${archive.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
     </li>
   `
-}
-
-function renderArchiveTitle() {
-  var t = archive.info.title ? `"${archive.info.title}"` : 'site'
-  if (t.length > 100) {
-    t = t.slice(0, 96) + '..."'
-  }
-  return t
 }

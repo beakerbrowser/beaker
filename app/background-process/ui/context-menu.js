@@ -1,5 +1,4 @@
 import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
-import url from 'url'
 import path from 'path'
 import { download } from './downloads'
 
@@ -15,12 +14,10 @@ export default function registerContextMenu () {
       // get the focused window, ignore if not available (not in focus)
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
       var targetWindow = BrowserWindow.getFocusedWindow()
-      if (!targetWindow)
-        return
+      if (!targetWindow) { return }
 
       // ignore clicks on the shell window
-      if (props.pageURL == 'beaker://shell-window')
-        return
+      if (props.pageURL == 'beaker://shell-window') { return }
 
       // helper to call code on the element under the cursor
       const callOnElement = js => webContents.executeJavaScript(`
@@ -98,8 +95,7 @@ export default function registerContextMenu () {
       const downloadPrompt = (item, win) => {
         var defaultPath = path.join(app.getPath('downloads'), path.basename(props.srcURL))
         dialog.showSaveDialog({ title: `Save ${props.mediaType} as...`, defaultPath }, filepath => {
-          if (filepath)
-            download(win, props.srcURL, { saveAs: filepath })
+          if (filepath) { download(win, props.srcURL, { saveAs: filepath }) }
         })
       }
 
@@ -122,10 +118,8 @@ export default function registerContextMenu () {
       // videos and audios
       if (props.mediaType == 'video' || props.mediaType == 'audio') {
         menuItems.push({ label: 'Loop', type: 'checkbox', checked: mediaFlags.isLooping, click: () => callOnElement('el.loop = !el.loop') })
-        if (mediaFlags.hasAudio)
-          menuItems.push({ label: 'Muted', type: 'checkbox', checked: mediaFlags.isMuted, click: () => callOnElement('el.muted = !el.muted') })
-        if (mediaFlags.canToggleControls)
-          menuItems.push({ label: 'Show Controls', type: 'checkbox', checked: mediaFlags.isControlsVisible, click: () => callOnElement('el.controls = !el.controls') })
+        if (mediaFlags.hasAudio) { menuItems.push({ label: 'Muted', type: 'checkbox', checked: mediaFlags.isMuted, click: () => callOnElement('el.muted = !el.muted') }) }
+        if (mediaFlags.canToggleControls) { menuItems.push({ label: 'Show Controls', type: 'checkbox', checked: mediaFlags.isControlsVisible, click: () => callOnElement('el.controls = !el.controls') }) }
         menuItems.push({ type: 'separator' })
       }
 
@@ -151,8 +145,7 @@ export default function registerContextMenu () {
         menuItems.push({ label: 'Copy', role: 'copy', enabled: can('Copy') })
         menuItems.push({ label: 'Paste', role: 'paste', enabled: editFlags.canPaste })
         menuItems.push({ type: 'separator' })
-      }
-      else if (hasText) {
+      } else if (hasText) {
         menuItems.push({ label: 'Copy', role: 'copy', enabled: can('Copy') })
         menuItems.push({ type: 'separator' })
       }
@@ -167,17 +160,18 @@ export default function registerContextMenu () {
       if (!props.pageURL.startsWith('beaker://')) {
         var viewSourceURL = props.pageURL
         if (props.pageURL.startsWith('dat://')) viewSourceURL = props.pageURL.slice('dat://'.length)
-        menuItems.push({ label: 'View Source', click: (item, win) => {
-          win.webContents.send('command', 'file:new-tab', 'beaker://view-source/' + viewSourceURL)
-        }})
+        menuItems.push({ label: 'View Source',
+          click: (item, win) => {
+            win.webContents.send('command', 'file:new-tab', 'beaker://view-source/' + viewSourceURL)
+          }})
       }
 
       // inspector
-      menuItems.push({ label: 'Inspect Element', click: item => {
-        webContents.inspectElement(props.x, props.y)
-        if (webContents.isDevToolsOpened())
-          webContents.devToolsWebContents.focus()
-      }})
+      menuItems.push({ label: 'Inspect Element',
+        click: item => {
+          webContents.inspectElement(props.x, props.y)
+          if (webContents.isDevToolsOpened()) { webContents.devToolsWebContents.focus() }
+        }})
 
       // show menu
       var menu = Menu.buildFromTemplate(menuItems)

@@ -1,3 +1,5 @@
+/* globals beakerBrowser */
+
 /*
 The webview has a set of sync method calls to the main process
 which will stall the renderer if called while the main is
@@ -63,7 +65,6 @@ const methods = [
 ]
 
 export default function addAsyncAlternatives (page) {
-  var wcId = false
   methods.forEach(method => {
     page[method + 'Async'] = async (...args) => {
       if (!page.isWebviewReady) return false

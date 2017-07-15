@@ -1,10 +1,7 @@
 import { Transform, Writable } from 'stream'
 
 export class NoopWritable extends Writable {
-  constructor(opts) {
-    super(opts)
-  }
-  _write (chunk, encoding, cb) { 
+  _write (chunk, encoding, cb) {
     cb() // just discard
   }
 }

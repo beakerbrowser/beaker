@@ -6,13 +6,13 @@ import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
 import {showModal} from '../ui/modals'
-import {showLocalPathDialog, validateLocalPath, showDeleteArchivePrompt} from '../browser'
+import {validateLocalPath, showDeleteArchivePrompt} from '../browser'
 import {timer} from '../../lib/time'
 import {
   ArchiveNotWritableError,
-  PermissionsError,
   InvalidURLError,
-  InvalidPathError
+  InvalidPathError,
+  UserDeniedError
 } from 'beaker-error-constants'
 
 // exported api
@@ -24,7 +24,7 @@ const to = (opts) =>
     : DEFAULT_DAT_API_TIMEOUT
 
 export default {
-  async status() {
+  async status () {
     var status = {archives: 0, peers: 0}
     var archives = datLibrary.getActiveArchives()
     for (var k in archives) {
@@ -34,15 +34,15 @@ export default {
     return status
   },
 
-  async create({title, description} = {}) {
+  async create ({title, description} = {}) {
     return datLibrary.createNewArchive({title, description})
   },
 
-  async fork(url, {title, description} = {}) {
+  async fork (url, {title, description} = {}) {
     return datLibrary.forkArchive(url, {title, description})
   },
 
-  async update(url, manifestInfo, userSettings) {
+  async update (url, manifestInfo, userSettings) {
     var key = toKey(url)
     var archive = await datLibrary.getOrLoadArchive(key)
 
@@ -54,7 +54,7 @@ export default {
       // show the update-info the modal
       let win = BrowserWindow.fromWebContents(this.sender)
       await assertSenderIsFocused(this.sender)
-      return await showModal(win, 'create-archive', {url})
+      return showModal(win, 'create-archive', {url})
     }
 
     // validate path
@@ -77,7 +77,7 @@ export default {
     // update settings
     if (userSettings) {
       var oldLocalPath = archive.staging ? archive.staging.path : false
-      var userSettings = await archivesDb.setUserSettings(0, key, userSettings)
+      userSettings = await archivesDb.setUserSettings(0, key, userSettings)
       await datLibrary.configureStaging(archive, userSettings)
       if (userSettings.localPath && userSettings.localPath !== oldLocalPath) {
         datLibrary.deleteOldStagingFolder(oldLocalPath)
@@ -85,7 +85,7 @@ export default {
     }
   },
 
-  async add(url) {
+  async add (url) {
     var key = toKey(url)
 
     // pull metadata
@@ -106,7 +106,7 @@ export default {
     return archivesDb.setUserSettings(0, key, {isSaved: true, localPath})
   },
 
-  async remove(url, {noPrompt} = {}) {
+  async remove (url, {noPrompt} = {}) {
     var key = toKey(url)
 
     // check with the user if they're the owner
@@ -127,7 +127,7 @@ export default {
     return settings
   },
 
-  async bulkRemove(urls) {
+  async bulkRemove (urls) {
     var bulkShouldDelete = false
     var preserveStagingFolder = false
     // if user chooses yes-to-all, then preserveStagingFolder will be the last given value
@@ -180,29 +180,29 @@ export default {
     return false
   },
 
-  async list(query={}) {
+  async list (query = {}) {
     return datLibrary.queryArchives(query)
   },
 
-  async get(url, opts) {
+  async get (url, opts) {
     return timer(to(opts), async (checkin) => {
       return datLibrary.getArchiveInfo(toKey(url))
     })
   },
 
-  async clearFileCache(url) {
+  async clearFileCache (url) {
     return datLibrary.clearFileCache(toKey(url))
   },
 
-  clearDnsCache() {
+  clearDnsCache () {
     datDns.flushCache()
   },
 
-  createEventStream() {
+  createEventStream () {
     return datLibrary.createEventStream()
   },
 
-  createDebugStream() {
+  createDebugStream () {
     return datLibrary.createDebugStream()
   }
 }

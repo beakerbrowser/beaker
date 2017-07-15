@@ -1,8 +1,9 @@
+/* globals URL */
+
 import EventEmitter from 'events'
 import * as pages from '../pages'
 
 var isOpen = false
-var isDragging = false
 
 var events = new EventEmitter()
 var webviewsEl
@@ -117,7 +118,7 @@ function setupPanel (page) {
         let oldUrlParsed = new URL(oldUrl)
         let newUrlParsed = new URL(page.url)
         isNewLocation = (oldUrlParsed.origin !== newUrlParsed.origin)
-      } catch (e) {/* ignore */}
+      } catch (e) { /* ignore */ }
       if (isNewLocation) {
         panel.webview.loadURL(wvUrl)
       }
@@ -141,7 +142,7 @@ function setActivePanel (panel) {
 function destroyPanel (id) {
   var panel = panels[id]
   if (panel.webview) {
-   sidebarEl.removeChild(panel.webview)
+    sidebarEl.removeChild(panel.webview)
   }
   delete panels[id]
 }
@@ -191,17 +192,13 @@ function hideSidebar () {
 // -prf
 function reflowWebview (el) {
   el.style.width = 'auto'
-  el.offsetHeight; // trigger reflow
+  // trigger reflow
+  el.offsetHeight // eslint-disable-line no-unused-expressions
   el.style.width = '100%'
 }
 
 // resizing behaviors
 // =
-
-function getCurrentWebview () {
-  if (!activePanel) return
-
-}
 
 function doResize () {
   // set the sidebar width
@@ -220,13 +217,11 @@ function doResize () {
 }
 
 function onDragMouseDown (e) {
-  isDragging = true
   window.addEventListener('mousemove', onDragMouseMove)
   window.addEventListener('mouseup', onDragMouseUp, {once: true})
 }
 
 function onDragMouseUp (e) {
-  isDragging = false
   window.removeEventListener('mousemove', onDragMouseMove)
 }
 

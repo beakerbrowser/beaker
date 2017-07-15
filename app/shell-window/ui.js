@@ -1,5 +1,4 @@
 import { webFrame, ipcRenderer } from 'electron'
-import url from 'url'
 import * as tabs from './ui/tabs'
 import * as navbar from './ui/navbar'
 import * as sidebar from './ui/sidebar'
@@ -40,15 +39,11 @@ export function setup (cb) {
 }
 
 function onWindowEvent (event, type) {
-  if (type == 'blur')
-    document.body.classList.add('window-blurred')
+  if (type == 'blur') { document.body.classList.add('window-blurred') }
   if (type == 'focus') {
     document.body.classList.remove('window-blurred')
-    try { pages.getActive().webviewEl.focus() }
-    catch (e) {}
+    try { pages.getActive().webviewEl.focus() } catch (e) {}
   }
-  if (type == 'enter-full-screen')
-    document.body.classList.add('fullscreen')
-  if (type == 'leave-full-screen')
-    document.body.classList.remove('fullscreen')
+  if (type == 'enter-full-screen') { document.body.classList.add('fullscreen') }
+  if (type == 'leave-full-screen') { document.body.classList.remove('fullscreen') }
 }

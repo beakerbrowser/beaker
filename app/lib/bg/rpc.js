@@ -1,5 +1,3 @@
-import rpc from 'pauls-electron-rpc'
-
 const SECURE_ORIGIN_REGEX = /^(beaker:|dat:|https:|http:\/\/localhost(\/|:))/i
 
 export function internalOnly (event, methodName, args) {

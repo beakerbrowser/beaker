@@ -1,3 +1,5 @@
+/* globals Image */
+
 import ColorThief from './color-thief'
 
 const colorThief = new ColorThief()
@@ -35,7 +37,7 @@ export async function urlsToData (urls, width, height) {
   var bestImg = imgs[0]
   var bestDist = dist(imgs[0].width, imgs[0].height, width, height)
   for (var i = 1; i < imgs.length; i++) {
-    let imgDist =  dist(imgs[i].width, imgs[i].height, width, height)
+    let imgDist = dist(imgs[i].width, imgs[i].height, width, height)
     if (imgDist < bestDist) {
       bestImg = imgs[i]
       bestDist = imgDist
@@ -50,11 +52,8 @@ export async function urlsToData (urls, width, height) {
 // convert and resize an <img> to a data url
 export function imgToData (img, width, height) {
   var ratio = img.width / img.height
-  if (width / height > ratio)
-    height = width / ratio
-  else
-    width = height * ratio
-  
+  if (width / height > ratio) { height = width / ratio } else { width = height * ratio }
+
   var canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height

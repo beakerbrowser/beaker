@@ -1,4 +1,5 @@
-import {ipcRenderer} from 'electron'
+/* globals DatArchive */
+
 import rpc from 'pauls-electron-rpc'
 import {EventTarget, bindEventStream, fromEventStream} from './event-target'
 import errors from 'beaker-error-constants'
@@ -11,17 +12,17 @@ import profilesManifest from '../api-manifests/internal/profiles'
 var beaker = {}
 if (window.location.protocol === 'beaker:') {
   var opts = {timeout: false, errors}
-  const archivesRPC  = rpc.importAPI('archives',  archivesManifest,  opts)
+  const archivesRPC = rpc.importAPI('archives', archivesManifest, opts)
   const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
-  const historyRPC   = rpc.importAPI('history',   historyManifest,   opts)
-  const profilesRPC  = rpc.importAPI('profiles',  profilesManifest,  opts)
+  const historyRPC = rpc.importAPI('history', historyManifest, opts)
+  const profilesRPC = rpc.importAPI('profiles', profilesManifest, opts)
 
   // beaker.archives
   beaker.archives = new EventTarget()
-  beaker.archives.create = function (manifest={}, userSettings={}) {
+  beaker.archives.create = function (manifest = {}, userSettings = {}) {
     return archivesRPC.create(manifest, userSettings).then(newUrl => new DatArchive(newUrl))
   }
-  beaker.archives.fork = function (url, manifest={}, userSettings={}) {
+  beaker.archives.fork = function (url, manifest = {}, userSettings = {}) {
     url = (typeof url.url === 'string') ? url.url : url
     return archivesRPC.fork(url, manifest, userSettings).then(newUrl => new DatArchive(newUrl))
   }

@@ -1,3 +1,5 @@
+/* globals beakerSitedata */
+
 import * as yo from 'yo-yo'
 import * as pages from '../../pages'
 import { findParent } from '../../../lib/fg/event-handlers'
@@ -5,7 +7,7 @@ import PERMS from '../../../lib/perms'
 import { ucfirst, getPermId, getPermParam } from '../../../lib/strings'
 
 export class SiteInfoNavbarBtn {
-  constructor() {
+  constructor () {
     this.isDropdownOpen = false
     this.siteInfo = false
     this.sitePerms = false
@@ -18,7 +20,8 @@ export class SiteInfoNavbarBtn {
 
   render () {
     // pull details
-    var icon = '', protocolLabel = ''
+    var icon = ''
+    var protocolLabel = ''
     var protocolCls = 'insecure'
     var gotInsecureResponse = this.siteLoadError && this.siteLoadError.isInsecureResponse
 
@@ -49,14 +52,14 @@ export class SiteInfoNavbarBtn {
 
     // render btn
     var iconEl = (icon) ? yo`<i class="fa fa-${icon}"></i>` : ''
-    var titleEl = (protocolLabel) ? yo`<span class="title">${protocolLabel}</span>`: ''
+    var titleEl = (protocolLabel) ? yo`<span class="title">${protocolLabel}</span>` : ''
     return yo`<div class="toolbar-site-info ${protocolCls}">
       <button onclick=${e => this.toggleDropdown(e)}>${iconEl} ${titleEl}</button>
       ${this.renderDropdown()}
     </div>`
   }
 
-  renderDropdown() {
+  renderDropdown () {
     if (!this.isDropdownOpen) {
       return ''
     }
@@ -116,7 +119,7 @@ export class SiteInfoNavbarBtn {
       </div>`
   }
 
-  getTitle() {
+  getTitle () {
     var title = ''
     if (this.siteInfoOverride && this.siteInfoOverride.title) {
       title = this.siteInfoOverride.title
@@ -128,15 +131,15 @@ export class SiteInfoNavbarBtn {
     return title
   }
 
-  getUrl() {
+  getUrl () {
     return (this.protocolInfo) ? this.protocolInfo.url : ''
   }
 
-  getHostname() {
+  getHostname () {
     return (this.protocolInfo) ? this.protocolInfo.hostname : ''
   }
 
-  updateActives() {
+  updateActives () {
     // FIXME
     // calling `this.render` for all active site-infos is definitely wrong
     // there is state captured in `this` that is specific to each instance
@@ -145,24 +148,24 @@ export class SiteInfoNavbarBtn {
     Array.from(document.querySelectorAll('.toolbar-site-info')).forEach(el => yo.update(el, this.render()))
   }
 
-  onClickAnywhere(e) {
+  onClickAnywhere (e) {
     if (!this.isDropdownOpen) return
     // close the dropdown if not a click within the dropdown
     if (findParent(e.target, 'toolbar-site-info-dropdown')) return
     this.closeDropdown()
   }
 
-  onClickRefresh() {
+  onClickRefresh () {
     pages.getActive().reload()
     this.closeDropdown()
   }
 
-  closeDropdown() {
+  closeDropdown () {
     this.isDropdownOpen = false
     this.updateActives()
   }
 
-  toggleDropdown(e) {
+  toggleDropdown (e) {
     if (e) {
       e.preventDefault()
       e.stopPropagation()
@@ -175,13 +178,12 @@ export class SiteInfoNavbarBtn {
   renderPerm (perm, value) {
     const permId = getPermId(perm)
     const permParam = getPermParam(perm)
-    const checked = !!value
     var icon = PERMS[permId] ? PERMS[permId].icon : ''
     var desc = PERMS[permId] ? PERMS[permId].desc : ''
     if (typeof desc === 'function') desc = desc(permParam, pages, { capitalize: true })
     if (typeof desc === 'string') desc = ucfirst(desc)
     return yo`<div>
-      <label class=${value ? 'checked' : ''} onclick=${e=>this.togglePerm(perm)}><input type="checkbox" value="${perm}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${desc}</label>
+      <label class=${value ? 'checked' : ''} onclick=${e => this.togglePerm(perm)}><input type="checkbox" value="${perm}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${desc}</label>
     </div>`
   }
 
@@ -200,18 +202,13 @@ export class SiteInfoNavbarBtn {
     })
   }
 
-  viewSiteFiles(subpage) {
+  viewSiteFiles (subpage) {
     const { hostname } = this.protocolInfo
     pages.setActive(pages.create('beaker://library/' + hostname + '#' + subpage))
     this.closeDropdown()
   }
 
-  learnMore() {
+  learnMore () {
     pages.setActive(pages.create('https://github.com/beakerbrowser/beaker/wiki/Is-Dat-%22Secure-P2P%3F%22'))
   }
-}
-
-function shorten (str) {
-  if (str.length > 40) return (str.slice(0, 37) + '...')
-  return str
 }

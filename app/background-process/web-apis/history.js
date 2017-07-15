@@ -1,6 +1,4 @@
-import {parse as parseURL} from 'url'
 import * as historyDb from '../dbs/history'
-import {PermissionsError} from 'beaker-error-constants'
 
 // exported api
 // =

@@ -7,7 +7,7 @@
 import {ipcRenderer} from 'electron'
 
 export default function () {
-  ipcRenderer.on('redirect-hackfix', function(event, url) {
+  ipcRenderer.on('redirect-hackfix', function (event, url) {
     window.location.assign(url)
   })
 }

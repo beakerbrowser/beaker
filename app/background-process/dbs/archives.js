@@ -66,7 +66,7 @@ export async function query (profileId, query) {
   if ('isSaved' in query) {
     WHERE.push('archives.profileId = ?')
     values.push(profileId)
-    if (query.isSaved)  WHERE.push('archives.isSaved = 1')
+    if (query.isSaved) WHERE.push('archives.isSaved = 1')
     if (!query.isSaved) WHERE.push('archives.isSaved = 0')
   }
   if (WHERE.length) WHERE = `WHERE ${WHERE.join(' AND ')}`
@@ -239,7 +239,7 @@ export async function setMeta (key, value = {}) {
     INSERT OR REPLACE INTO
       archives_meta (key, title, description, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner)
       VALUES        (?,   ?,     ?,           ?,     ?,        ?,           ?,                      ?)
-  `,                [key, title, description, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner])
+  `, [key, title, description, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner])
   events.emit('update:archive-meta', key, value)
 }
 

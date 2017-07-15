@@ -1,3 +1,5 @@
+/* globals beaker */
+
 import prettyHash from 'pretty-hash'
 
 // front-end only:
@@ -46,7 +48,6 @@ export default {
     requiresRefresh: true
   },
   createDat: {
-    desc: 'create a new Dat archive',
     desc: (param, pages, opts = {}) => {
       if (opts.title) return `create a new Dat archive, "${opts.title}"`
       return 'create a new Dat archive'

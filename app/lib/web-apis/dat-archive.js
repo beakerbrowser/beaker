@@ -1,7 +1,7 @@
-import {ipcRenderer} from 'electron'
+/* globals URL */
+
 import rpc from 'pauls-electron-rpc'
 import datArchiveManifest from '../api-manifests/external/dat-archive'
-import {DAT_URL_REGEX} from '../const'
 import {EventTarget, fromEventStream} from './event-target'
 import Stat from './stat'
 import errors from 'beaker-error-constants'
@@ -10,7 +10,7 @@ import errors from 'beaker-error-constants'
 const dat = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, errors })
 
 export default class DatArchive extends EventTarget {
-  constructor(url) {
+  constructor (url) {
     super()
 
     // simple case: new DatArchive(window.location)
@@ -40,75 +40,75 @@ export default class DatArchive extends EventTarget {
     })
   }
 
-  static create (opts={}) {
+  static create (opts = {}) {
     return dat.createArchive(opts)
       .then(newUrl => new DatArchive(newUrl))
   }
 
-  static fork (url, opts={}) {
+  static fork (url, opts = {}) {
     url = (typeof url.url === 'string') ? url.url : url
     return dat.forkArchive(url, opts)
       .then(newUrl => new DatArchive(newUrl))
   }
 
-  getInfo(opts={}) {
+  getInfo (opts = {}) {
     return dat.getInfo(this.url, opts)
   }
 
-  diff(opts={}) {
+  diff (opts = {}) {
     return dat.diff(this.url, opts)
   }
 
-  commit(opts={}) {
+  commit (opts = {}) {
     return dat.commit(this.url, opts)
   }
 
-  revert(opts={}) {
+  revert (opts = {}) {
     return dat.revert(this.url, opts)
   }
 
-  history(opts={}) {
+  history (opts = {}) {
     return dat.history(this.url, opts)
   }
 
-  async stat(path, opts={}) {
+  async stat (path, opts = {}) {
     const url = joinPath(this.url, path)
     return new Stat(await dat.stat(url, opts))
   }
 
-  readFile(path, opts={}) {
+  readFile (path, opts = {}) {
     const url = joinPath(this.url, path)
     return dat.readFile(url, opts)
   }
 
-  writeFile(path, data, opts={}) {
+  writeFile (path, data, opts = {}) {
     const url = joinPath(this.url, path)
     return dat.writeFile(url, data, opts)
   }
 
-  unlink(path) {
+  unlink (path) {
     const url = joinPath(this.url, path)
     return dat.unlink(url)
   }
 
   // TODO copy-disabled
-  /*copy(path, dstPath) {
+  /* copy(path, dstPath) {
     const url = joinPath(this.url, path)
     return dat.copy(url, dstPath)
-  }*/
+  } */
 
   // TODO rename-disabled
-  /*rename(path, dstPath) {
+  /* rename(path, dstPath) {
     const url = joinPath(this.url, path)
     return dat.rename(url, dstPath)
-  }*/
+  } */
 
-  download(path='/', opts={}) {
+  download (path = '/', opts = {}) {
     const url = joinPath(this.url, path)
     return dat.download(url, opts)
   }
 
-  async readdir(path='/', opts={}) {
+  async readdir (path = '/', opts = {}) {
     const url = joinPath(this.url, path)
     var names = await dat.readdir(url, opts)
     if (opts.stat) {
@@ -117,37 +117,37 @@ export default class DatArchive extends EventTarget {
     return names
   }
 
-  mkdir(path) {
+  mkdir (path) {
     const url = joinPath(this.url, path)
     return dat.mkdir(url)
   }
 
-  rmdir(path, opts={}) {
+  rmdir (path, opts = {}) {
     const url = joinPath(this.url, path)
     return dat.rmdir(url, opts)
   }
 
-  createFileActivityStream(pathSpec=null) {
+  createFileActivityStream (pathSpec = null) {
     return fromEventStream(dat.createFileActivityStream(this.url, pathSpec))
   }
 
-  createNetworkActivityStream() {
+  createNetworkActivityStream () {
     return fromEventStream(dat.createNetworkActivityStream(this.url))
   }
 
-  static importFromFilesystem(opts={}) {
+  static importFromFilesystem (opts = {}) {
     return dat.importFromFilesystem(opts)
   }
 
-  static exportToFilesystem(opts={}) {
+  static exportToFilesystem (opts = {}) {
     return dat.exportToFilesystem(opts)
   }
 
-  static exportToArchive(opts={}) {
+  static exportToArchive (opts = {}) {
     return dat.exportToArchive(opts)
   }
 
-  static resolveName(name) {
+  static resolveName (name) {
     // simple case: DatArchive.resolveName(window.location)
     if (name === window.location) {
       name = window.location.toString()
@@ -155,7 +155,7 @@ export default class DatArchive extends EventTarget {
     return dat.resolveName(name)
   }
 
-  static selectArchive (opts={}) {
+  static selectArchive (opts = {}) {
     return dat.selectArchive(opts)
   }
 }

@@ -58,7 +58,7 @@ export function denyAllRequests (win) {
   // remove all requests in the window, denying as we go
   activeRequests = activeRequests.filter(req => {
     if (req.win === win) {
-      debug('Denying outstanding permission-request for closing window, req #'+req.id+' for '+req.permission)
+      debug('Denying outstanding permission-request for closing window, req #' + req.id + ' for ' + req.permission)
       req.cb(false)
       return false
     }
@@ -88,7 +88,7 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
   // look up the containing window
   var win = getContainingWindow(webContents)
   if (!win) {
-    console.error('Warning: failed to find containing window of permission request, '+permission)
+    console.error('Warning: failed to find containing window of permission request, ' + permission)
     return cb(false)
   }
   const url = webContents.getURL()
@@ -111,7 +111,7 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
       req.cb = decision => { oldCb(decision); cb(decision) }
     } else {
       // track the new cb
-      var req = { id: ++idCounter, win, url, permission, cb }
+      req = { id: ++idCounter, win, url, permission, cb }
       activeRequests.push(req)
     }
 
@@ -121,12 +121,9 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
 }
 
 function onPermissionResponseHandler (e, reqId, decision) {
-  var win = e.sender
-
   // lookup the cb
   var req = activeRequests.find(req => req.id == reqId)
-  if (!req)
-    return console.error('Warning: failed to find permission request for response #'+reqId)
+  if (!req) { return console.error('Warning: failed to find permission request for response #' + reqId) }
 
   // untrack
   activeRequests.splice(activeRequests.indexOf(req), 1)

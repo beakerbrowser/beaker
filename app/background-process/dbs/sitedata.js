@@ -1,4 +1,4 @@
-import { app, ipcMain } from 'electron'
+import {app} from 'electron'
 import sqlite3 from 'sqlite3'
 import path from 'path'
 import url from 'url'
@@ -63,7 +63,7 @@ export async function getPermissions (url) {
 
       // convert to a dictionary
       // TODO - pull defaults from browser settings
-      var perms = { /*js: true*/ }
+      var perms = { /* js: true */ }
       if (rows) rows.forEach(row => { perms[row.key.slice('5')] = row.value })
       cb(null, perms)
     })
@@ -111,7 +111,7 @@ export async function query (values) {
     // run query
     const keys = Object.keys(values)
     const where = keys.map(k => `${k} = ?`).join(' AND ')
-    const values = keys.map(k => values[k])
+    values = keys.map(k => values[k])
     db.all(`SELECT * FROM sitedata WHERE ${where}`, values, (err, res) => {
       if (err) return cb(err)
       cb(null, res && res.value)

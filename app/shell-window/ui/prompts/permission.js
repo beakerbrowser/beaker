@@ -20,8 +20,7 @@ export default function (reqId, webContentsId, permission, opts = {}) {
 
   // look up the page, deny if failed
   page = pages.getByWebContentsID(webContentsId)
-  if (!page)
-    return respond(false)
+  if (!page) { return respond(false) }
 
   // lookup the perm description. auto-deny if it's not a known perm.
   const permId = getPermId(permission)
@@ -43,16 +42,16 @@ export default function (reqId, webContentsId, permission, opts = {}) {
 
   // create the prompt
   promptbar.add(page, {
-    type: 'permission:'+permission,
+    type: 'permission:' + permission,
     render: ({ rerender, onClose }) => {
       return yo`<div>
         <span class="icon icon-${permIcon || 'help-circled'}"></span>
         This site would like to ${permDesc}.
         <span class="promptbar-btns">
-          <button class="btn primary prompt-accept" onclick=${() => { respond(true); onClose(); }}>Allow</button>
-          <button class="btn prompt-reject" onclick=${() => { respond(false); onClose(); }}>Don't Allow</button>
+          <button class="btn primary prompt-accept" onclick=${() => { respond(true); onClose() }}>Allow</button>
+          <button class="btn prompt-reject" onclick=${() => { respond(false); onClose() }}>Don't Allow</button>
         </span>
-        <a class="promptbar-close icon icon-cancel-squared" onclick=${() => { respond(false); onClose(); }}></a>
+        <a class="promptbar-close icon icon-cancel-squared" onclick=${() => { respond(false); onClose() }}></a>
       </div>`
     },
     onForceClose: () => {
