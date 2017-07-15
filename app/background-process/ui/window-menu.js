@@ -5,7 +5,12 @@ import datDns from '../networks/dat/dns'
 var darwinMenu = {
   label: 'Beaker',
   submenu: [
-    { label: 'About Beaker', role: 'about' },
+    {
+      label: 'Preferences',
+      click (item, win) {
+        if (win) win.webContents.send('command', 'file:new-tab', 'beaker://settings')
+      }
+    },
     { type: 'separator' },
     { label: 'Services', role: 'services', submenu: [] },
     { type: 'separator' },
