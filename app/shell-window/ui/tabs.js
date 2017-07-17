@@ -10,7 +10,7 @@ import {debounce} from '../../lib/functions'
 // =
 
 const MAX_TAB_WIDTH = 235 // px
-const MIN_TAB_WIDTH = 52 // px
+const MIN_TAB_WIDTH = 48 // px
 const TAB_SPACING = -1 // px
 
 // globals
