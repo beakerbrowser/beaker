@@ -5,6 +5,7 @@ import errors from 'beaker-error-constants'
 import datArchiveManifest from '../api-manifests/external/dat-archive'
 import {EventTarget, fromEventStream} from './event-target'
 import Stat from './stat'
+import {DAT_HASH_REGEX} from '../const'
 
 const URL_PROMISE = Symbol()
 const VERSION_REGEX = /^(dat:\/\/)?([^/]+)(\+[^/]+)(.*)$/i
@@ -27,10 +28,10 @@ export default class DatArchive extends EventTarget {
     }
 
     // parse the URL
-    const urlParsed = new URL(url.startsWith('dat://') ? url : `dat://${url}`)
-    if (urlParsed.protocol !== 'dat:') {
+    if (!isDatURL(url)) {
       throw new Error('Invalid URL: must be a dat:// URL')
     }
+    const urlParsed = new URL(url.startsWith('dat://') ? url : `dat://${url}`)
     // pull out the version specially
     const urlParsed2 = VERSION_REGEX.exec(urlParsed.hostname)
     url = 'dat://' + (urlParsed2 ? urlParsed2[2] : urlParsed.hostname)
@@ -65,6 +66,9 @@ export default class DatArchive extends EventTarget {
 
   static fork (url, opts = {}) {
     url = (typeof url.url === 'string') ? url.url : url
+    if (!isDatURL(url)) {
+      return Promise.reject(new Error('Invalid URL: must be a dat:// URL'))
+    }
     return dat.forkArchive(url, opts)
       .then(newUrl => new DatArchive(newUrl))
   }
@@ -191,6 +195,10 @@ export default class DatArchive extends EventTarget {
   static selectArchive (opts = {}) {
     return dat.selectArchive(opts)
   }
+}
+
+function isDatURL (url) {
+  return url.startsWith('dat://') || DAT_HASH_REGEX.test(url)
 }
 
 function joinPath (url, path) {
