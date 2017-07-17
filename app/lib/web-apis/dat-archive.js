@@ -1,10 +1,13 @@
 /* globals URL */
 
 import rpc from 'pauls-electron-rpc'
+import errors from 'beaker-error-constants'
 import datArchiveManifest from '../api-manifests/external/dat-archive'
 import {EventTarget, fromEventStream} from './event-target'
 import Stat from './stat'
-import errors from 'beaker-error-constants'
+
+const URL_PROMISE = Symbol()
+const VERSION_REGEX = /^(dat:\/\/)?([^/]+)(\+[^/]+)(.*)$/i
 
 // create the dat rpc api
 const dat = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, errors })
@@ -24,14 +27,29 @@ export default class DatArchive extends EventTarget {
     }
 
     // parse the URL
-    var urlParsed = new URL(url.startsWith('dat://') ? url : `dat://${url}`)
+    const urlParsed = new URL(url.startsWith('dat://') ? url : `dat://${url}`)
     if (urlParsed.protocol !== 'dat:') {
       throw new Error('Invalid URL: must be a dat:// URL')
     }
-    url = 'dat://' + urlParsed.hostname
+    // pull out the version specially
+    const urlParsed2 = VERSION_REGEX.exec(urlParsed.hostname)
+    url = 'dat://' + (urlParsed2 ? urlParsed2[2] : urlParsed.hostname)
+    const urlVersion = urlParsed2 ? urlParsed2[3].slice(1) : false
 
     // load into the 'active' (in-memory) cache
     dat.loadArchive(url)
+
+    // resolve the URL (DNS)
+    const urlPromise = DatArchive.resolveName(url).then(url => {
+      if (urlVersion) {
+        url += `+${urlVersion}`
+      }
+      return url
+    })
+    Object.defineProperty(this, URL_PROMISE, {
+      enumerable: false,
+      value: urlPromise
+    })
 
     // define this.url as a frozen getter
     Object.defineProperty(this, 'url', {
@@ -51,65 +69,78 @@ export default class DatArchive extends EventTarget {
       .then(newUrl => new DatArchive(newUrl))
   }
 
-  getInfo (opts = {}) {
-    return dat.getInfo(this.url, opts)
+  async getInfo (opts = {}) {
+    var url = await this[URL_PROMISE]
+    return dat.getInfo(url, opts)
   }
 
-  diff (opts = {}) {
-    return dat.diff(this.url, opts)
+  async diff (opts = {}) {
+    var url = await this[URL_PROMISE]
+    return dat.diff(url, opts)
   }
 
-  commit (opts = {}) {
-    return dat.commit(this.url, opts)
+  async commit (opts = {}) {
+    var url = await this[URL_PROMISE]
+    return dat.commit(url, opts)
   }
 
-  revert (opts = {}) {
-    return dat.revert(this.url, opts)
+  async revert (opts = {}) {
+    var url = await this[URL_PROMISE]
+    return dat.revert(url, opts)
   }
 
-  history (opts = {}) {
-    return dat.history(this.url, opts)
+  async history (opts = {}) {
+    var url = await this[URL_PROMISE]
+    return dat.history(url, opts)
   }
 
   async stat (path, opts = {}) {
-    const url = joinPath(this.url, path)
+    var url = await this[URL_PROMISE]
+    url = joinPath(url, path)
     return new Stat(await dat.stat(url, opts))
   }
 
-  readFile (path, opts = {}) {
-    const url = joinPath(this.url, path)
+  async readFile (path, opts = {}) {
+    var url = await this[URL_PROMISE]
+    url = joinPath(url, path)
     return dat.readFile(url, opts)
   }
 
-  writeFile (path, data, opts = {}) {
-    const url = joinPath(this.url, path)
+  async writeFile (path, data, opts = {}) {
+    var url = await this[URL_PROMISE]
+    url = joinPath(url, path)
     return dat.writeFile(url, data, opts)
   }
 
-  unlink (path) {
-    const url = joinPath(this.url, path)
+  async unlink (path) {
+    var url = await this[URL_PROMISE]
+    url = joinPath(url, path)
     return dat.unlink(url)
   }
 
   // TODO copy-disabled
-  /* copy(path, dstPath) {
-    const url = joinPath(this.url, path)
+  /*async copy(path, dstPath) {
+    var url = await this[URL_PROMISE]
+    url = joinPath(url, path)
     return dat.copy(url, dstPath)
   } */
 
   // TODO rename-disabled
-  /* rename(path, dstPath) {
-    const url = joinPath(this.url, path)
+  /*async rename(path, dstPath) {
+    var url = await this[URL_PROMISE]
+    url = joinPath(url, path)
     return dat.rename(url, dstPath)
   } */
 
-  download (path = '/', opts = {}) {
-    const url = joinPath(this.url, path)
+  async download (path = '/', opts = {}) {
+    var url = await this[URL_PROMISE]
+    url = joinPath(url, path)
     return dat.download(url, opts)
   }
 
   async readdir (path = '/', opts = {}) {
-    const url = joinPath(this.url, path)
+    var url = await this[URL_PROMISE]
+    url = joinPath(url, path)
     var names = await dat.readdir(url, opts)
     if (opts.stat) {
       names.forEach(name => { name.stat = new Stat(name.stat) })
@@ -117,13 +148,15 @@ export default class DatArchive extends EventTarget {
     return names
   }
 
-  mkdir (path) {
-    const url = joinPath(this.url, path)
+  async mkdir (path) {
+    var url = await this[URL_PROMISE]
+    url = joinPath(url, path)
     return dat.mkdir(url)
   }
 
-  rmdir (path, opts = {}) {
-    const url = joinPath(this.url, path)
+  async rmdir (path, opts = {}) {
+    var url = await this[URL_PROMISE]
+    url = joinPath(url, path)
     return dat.rmdir(url, opts)
   }
 
