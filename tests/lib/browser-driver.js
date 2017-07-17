@@ -5,6 +5,8 @@ exports.navigateTo = function (app, url) {
       return app.client.click('.toolbar-actions:not(.hidden) .nav-location-pretty')
       .catch(() => app.client.click('.toolbar-actions:not(.hidden) .nav-location-input'))
     })
+    .then(() => app.client.pause(500)) // need to wait a sec for the UI to catch up
+    .then(() => app.client.keys('\uE003')) // backspace
     .then(() => app.client.setValue('.toolbar-actions:not(.hidden) .nav-location-input', url))
     .then(() => app.client.pause(500)) // need to wait a sec for the UI to catch up
     .then(() => app.client.keys('\uE007')) // enter
