@@ -2,13 +2,13 @@
 
 import rpc from 'pauls-electron-rpc'
 import errors from 'beaker-error-constants'
+import parseDatURL from 'parse-dat-url'
 import datArchiveManifest from '../api-manifests/external/dat-archive'
 import {EventTarget, fromEventStream} from './event-target'
 import Stat from './stat'
 import {DAT_HASH_REGEX} from '../const'
 
 const URL_PROMISE = Symbol()
-const VERSION_REGEX = /^(dat:\/\/)?([^/]+)(\+[^/]+)(.*)$/i
 
 // create the dat rpc api
 const dat = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, errors })
@@ -31,21 +31,18 @@ export default class DatArchive extends EventTarget {
     if (!isDatURL(url)) {
       throw new Error('Invalid URL: must be a dat:// URL')
     }
-    const urlParsed = new URL(url.startsWith('dat://') ? url : `dat://${url}`)
-    // pull out the version specially
-    const urlParsed2 = VERSION_REGEX.exec(urlParsed.hostname)
-    url = 'dat://' + (urlParsed2 ? urlParsed2[2] : urlParsed.hostname)
-    const urlVersion = urlParsed2 ? urlParsed2[3].slice(1) : false
+    const urlParsed = parseDatURL(url.startsWith('dat://') ? url : `dat://${url}`)
+    url = 'dat://' + urlParsed.hostname
 
     // load into the 'active' (in-memory) cache
     dat.loadArchive(url)
 
     // resolve the URL (DNS)
     const urlPromise = DatArchive.resolveName(url).then(url => {
-      if (urlVersion) {
-        url += `+${urlVersion}`
+      if (urlParsed.version) {
+        url += `+${urlParsed.version}`
       }
-      return url
+      return 'dat://' + url
     })
     Object.defineProperty(this, URL_PROMISE, {
       enumerable: false,

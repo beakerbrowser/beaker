@@ -3,6 +3,7 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import {ProgressMonitor, FileTree} from 'builtin-pages-lib'
+import parseDatURL from 'parse-dat-url'
 import renderTabs from '../com/tabs'
 import renderFiles from '../com/files-list'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
@@ -16,6 +17,7 @@ import { throttle } from '../../lib/functions'
 var currentSection = 'files'
 var hostname = false
 var archiveKey
+var archiveVersion
 var archive
 var archiveInfo
 var downloadProgress
@@ -46,11 +48,13 @@ async function setup () {
 async function loadCurrentArchive () {
   update()
   if (archiveKey) {
+    // TODO
+    // archive = new DatArchive(archiveVersion ? `dat://${archiveKey}+${archiveVersion}` : archiveKey)
     archive = new DatArchive(archiveKey)
     archiveInfo = await archive.getInfo()
 
     // load the filetree from the last published, not from the staging
-    var aLastPublish = new DatArchive(`${archiveKey}+${archiveInfo.version}`)
+    var aLastPublish = new DatArchive(`dat://${archiveKey}+${archiveInfo.version}`)
     var fileTree = new FileTree(aLastPublish, {onDemand: true})
 
     // fetch all data
@@ -157,10 +161,11 @@ async function parseURL () {
   }
 
   try {
-    var urlp = new URL(url)
+    var urlp = parseDatURL(url)
     hostname = urlp.origin
     if (urlp.protocol === 'dat:') {
       archiveKey = await DatArchive.resolveName(urlp.hostname)
+      archiveVersion = urlp.version || false
     }
   } catch (e) {
     console.warn(e)
