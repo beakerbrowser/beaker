@@ -28,10 +28,10 @@ export default class DatArchive extends EventTarget {
     }
 
     // parse the URL
-    if (!isDatURL(url)) {
+    const urlParsed = parseDatURL(url)
+    if (!urlParsed || urlParsed.protocol !== 'dat:') {
       throw new Error('Invalid URL: must be a dat:// URL')
     }
-    const urlParsed = parseDatURL(url.startsWith('dat://') ? url : `dat://${url}`)
     url = 'dat://' + urlParsed.hostname
 
     // load into the 'active' (in-memory) cache
@@ -195,7 +195,8 @@ export default class DatArchive extends EventTarget {
 }
 
 function isDatURL (url) {
-  return url.startsWith('dat://') || DAT_HASH_REGEX.test(url)
+  var urlp = parseDatURL(url)
+  return urlp && urlp.protocol === 'dat:'
 }
 
 function joinPath (url, path) {
