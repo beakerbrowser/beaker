@@ -27,22 +27,37 @@ const reloadDiffThrottled = throttle(reloadDiff, 500)
 setup()
 
 async function setup () {
-  await parseURL()
+  try {
+    await parseURL()
 
-  // open anchor links in the main webview
-  document.addEventListener('click', (e) => {
-    var href = e.target.href || e.currentTarget.href
-    if (href) {
-      e.preventDefault()
-      locationbar.openUrl(href, {newTab: !!e.metaKey})
+    // open anchor links in the main webview
+    document.addEventListener('click', (e) => {
+      var href = e.target.href || e.currentTarget.href
+      if (href) {
+        e.preventDefault()
+        locationbar.openUrl(href, {newTab: !!e.metaKey})
+      }
+    })
+
+    // listen for changes to the archive
+    beaker.archives.addEventListener('updated', onArchivesUpdated)
+
+    // load and render
+    await loadCurrentArchive()
+  } catch (e) {
+    console.error('Failed to load archive', e)
+    let err = 'Failed to load the archive'
+    if (e.name === 'TimeoutError') {
+      err = 'Archive not found'
     }
-  })
-
-  // listen for changes to the archive
-  beaker.archives.addEventListener('updated', onArchivesUpdated)
-
-  // load and render
-  await loadCurrentArchive()
+    yo.update(document.querySelector('main'), yo`
+      <main>
+        <div class="message error">
+          <i class="fa fa-exclamation-triangle"></i> ${err}
+        </div>
+      </main>
+    `)
+  }
 }
 
 async function loadCurrentArchive () {
@@ -178,7 +193,9 @@ function update () {
   }
 
   if (!archiveInfo) {
-    // TODO "loading"?
+    yo.update(document.querySelector('main'), yo`
+      <main><div class="spinner"></div></main>
+    `)
     return
   }
 
