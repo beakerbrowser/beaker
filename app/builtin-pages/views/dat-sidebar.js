@@ -264,10 +264,6 @@ function update () {
       ${rStagingNotification(archiveInfo)}
 
       <section class="network-info">
-        <span>
-          <i class="fa fa-share-alt"></i>
-          ${archiveInfo.peers} peers
-        </span>
         <a href="beaker://swarm-debugger/${archiveInfo.key}">
           <i class="fa fa-bug"></i>
           Network debugger
@@ -276,17 +272,17 @@ function update () {
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-    {id: 'files', label: 'Files', onclick: onClickTab('files')},
-    stagingTab,
-    {id: 'log', label: 'History', onclick: onClickTab('log')},
-    {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
-  ].filter(Boolean))}
+            {id: 'files', label: 'Files', onclick: onClickTab('files')},
+            stagingTab,
+            {id: 'log', label: 'History', onclick: onClickTab('log')},
+            {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
+          ].filter(Boolean))}
         ${({
-    files: () => renderFiles(archiveInfo, {hideDate: true}),
-    log: () => rHistory(archiveInfo),
-    settings: () => rSettings(archiveInfo),
-    staging: () => rStagingArea(archiveInfo)
-  })[currentSection]()}
+          files: () => renderFiles(archiveInfo, {hideDate: true}),
+          log: () => rHistory(archiveInfo),
+          settings: () => rSettings(archiveInfo),
+          staging: () => rStagingArea(archiveInfo)
+        })[currentSection]()}
       </section>
     </div>
     </main>
