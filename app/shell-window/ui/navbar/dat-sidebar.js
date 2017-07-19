@@ -21,11 +21,7 @@ export class DatSidebarBtn {
   }
 
   onClickBtn (e) {
-    if (sidebar.getIsOpen()) {
-      sidebar.close()
-    } else {
-      sidebar.open(pages.getActive())
-    }
+    sidebar.toggle()
     this.updateActives()
   }
 
