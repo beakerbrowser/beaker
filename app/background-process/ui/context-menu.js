@@ -10,6 +10,7 @@ export default function registerContextMenu () {
       const { mediaFlags, editFlags } = props
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
+      const isDat = props.pageURL.startsWith('dat://')
 
       // get the focused window, ignore if not available (not in focus)
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
@@ -150,28 +151,41 @@ export default function registerContextMenu () {
         menuItems.push({ type: 'separator' })
       }
 
-      // dat items
-      if (props.pageURL.startsWith('dat://')) {
-        menuItems.push({ label: 'Fork this site', click: (item, win) => win.webContents.executeJavaScript(`DatArchive.fork("${props.pageURL}").catch(()=>{})`) })
-        menuItems.push({ type: 'separator' })
-      }
-
       // view source
       if (!props.pageURL.startsWith('beaker://')) {
         var viewSourceURL = props.pageURL
-        if (props.pageURL.startsWith('dat://')) viewSourceURL = props.pageURL.slice('dat://'.length)
-        menuItems.push({ label: 'View Source',
+        if (isDat) {
+          viewSourceURL = props.pageURL.slice('dat://'.length)
+        }
+        menuItems.push({
+          label: 'View Source',
           click: (item, win) => {
             win.webContents.send('command', 'file:new-tab', 'beaker://view-source/' + viewSourceURL)
-          }})
+          }
+        })
+      }
+      
+      // fork
+      if (isDat) {
+        menuItems.push({ label: 'Fork this site', click: (item, win) => win.webContents.executeJavaScript(`DatArchive.fork("${props.pageURL}").catch(()=>{})`) })
       }
 
       // inspector
-      menuItems.push({ label: 'Inspect Element',
+      if (isDat) {
+        menuItems.push({
+          label: 'Inspect Site Files',
+          click: (item, win) => {
+            win.webContents.send('command', 'view:open-sidebar')
+          }
+        })
+      }
+      menuItems.push({
+        label: 'Inspect Element',
         click: item => {
           webContents.inspectElement(props.x, props.y)
           if (webContents.isDevToolsOpened()) { webContents.devToolsWebContents.focus() }
-        }})
+        }
+      })
 
       // show menu
       var menu = Menu.buildFromTemplate(menuItems)

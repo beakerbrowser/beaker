@@ -3,14 +3,12 @@
 import EventEmitter from 'events'
 import * as pages from '../pages'
 
-var isOpen = false
-
 var events = new EventEmitter()
 var webviewsEl
 var sidebarEl
 var dragHandleEl
 var activePanel
-var panels = {} // pageId => {webview: Element,visible: boolean}
+var panels = {} // pageId => {webview: Element, target: String (the url)}
 var sidebarWidth = 310
 
 // exported api
@@ -20,8 +18,9 @@ export function on (...args) {
   events.on.apply(events, args)
 }
 
-export function getIsOpen () {
-  return isOpen
+export function getIsOpen (page) {
+  page = page || pages.getActive()
+  return (page.id in panels)
 }
 
 export function getIsAvailable () {
@@ -38,40 +37,35 @@ export function setup () {
   window.addEventListener('resize', doResize)
 }
 
-export function toggle () {
-  if (isOpen) close()
-  else open()
+export function toggle (page) {
+  if (getIsOpen(page)) close(page)
+  else open(page)
 }
 
 export function open (page) {
-  if (!isOpen) {
-    isOpen = true
-    events.emit('change')
-  }
-
+  if (getIsOpen(page)) return
   setActivePanel(setupPanel(page || pages.getActive()))
   setActivePanelVisibility()
+  events.emit('change')
 }
 
-export function close () {
-  if (isOpen) {
-    isOpen = false
-    hideSidebar()
-    destroyPanels()
-    events.emit('change')
-  }
+export function close (page) {
+  page = page || pages.getActive()
+  if (!getIsOpen(page)) return
+  destroyPanel(page.id)
+  setActivePanelVisibility()
+  events.emit('change')
 }
 
 export function onPageChangeLocation (page) {
-  if (!isOpen) return
+  if (!getIsOpen(page)) return
   setupPanel(page)
   setActivePanelVisibility()
   events.emit('change')
 }
 
 export function onPageSetActive (page) {
-  if (!isOpen) return
-  setActivePanel(setupPanel(page))
+  setActivePanel(panels[page.id])
   setActivePanelVisibility()
   events.emit('change')
 }
@@ -80,66 +74,56 @@ export function onPageClose (page) {
   if (!page || !page.id) {
     return console.log(new Error('Passed a bad page object'))
   }
-  if (!isOpen || !(page.id in panels)) {
-    return
-  }
-  destroyPanel(page.id)
-  events.emit('change')
+  close(page)
 }
 
 // panel management
 // =
 
 function setupPanel (page) {
+  // only make visible for dat pages
+  if (!page.url.startsWith('dat://')) {
+    destroyPanel(page.id)
+    return null
+  }
+
   // get/create the panel
   var panel = panels[page.id]
   if (!panel) {
-    panel = panels[page.id] = {webview: null, target: null, visible: false}
+    panel = panels[page.id] = {webview: null, target: null}
   }
   var oldUrl = panel.target
   panel.target = page.url
+  var wvUrl = `beaker://dat-sidebar/${page.url}`
 
-  // only make visible for dat pages
-  panel.visible = page.url.startsWith('dat://')
-
-  if (panel.visible) {
-    var wvUrl = `beaker://dat-sidebar/${page.url}`
-
-    // create/update webview as needed
-    if (!panel.webview) {
-      var wv = pages.createWebviewEl('dat-sidebar-webview', wvUrl)
-      wv.addEventListener('ipc-message', pages.onIPCMessage)
-      sidebarEl.appendChild(wv)
-      panel.webview = wv
-    } else {
-      // only load a new URL if the domain has changed
-      checkIsNewLocation()
-      async function checkIsNewLocation () {
-        let isNewLocation = true
-        try {
-          let oldUrlParsed = new URL(oldUrl)
-          let newUrlParsed = new URL(page.url)
-          if (oldUrlParsed.protocol === newUrlParsed.protocol) {
-            // resolve the DNS
-            let [oldKey, newKey] = await Promise.all([
-              DatArchive.resolveName(oldUrlParsed.hostname),
-              DatArchive.resolveName(newUrlParsed.hostname)
-            ])
-            if (oldKey === newKey) {
-              isNewLocation = false
-            }
-          }
-        } catch (e) { /* ignore */ }
-        if (isNewLocation) {
-          panel.webview.loadURL(wvUrl)
-        }
-      }
-    }
+  // create/update webview as needed
+  if (!panel.webview) {
+    var wv = pages.createWebviewEl('dat-sidebar-webview', wvUrl)
+    wv.addEventListener('ipc-message', pages.onIPCMessage)
+    sidebarEl.appendChild(wv)
+    panel.webview = wv
   } else {
-    // destroy the webview as needed
-    if (panel.webview) {
-      sidebarEl.removeChild(panel.webview)
-      panel.webview = null
+    // only load a new URL if the domain has changed
+    checkIsNewLocation()
+    async function checkIsNewLocation () {
+      let isNewLocation = true
+      try {
+        let oldUrlParsed = new URL(oldUrl)
+        let newUrlParsed = new URL(page.url)
+        if (oldUrlParsed.protocol === newUrlParsed.protocol) {
+          // resolve the DNS
+          let [oldKey, newKey] = await Promise.all([
+            DatArchive.resolveName(oldUrlParsed.hostname),
+            DatArchive.resolveName(newUrlParsed.hostname)
+          ])
+          if (oldKey === newKey) {
+            isNewLocation = false
+          }
+        }
+      } catch (e) { /* ignore */ }
+      if (isNewLocation) {
+        panel.webview.loadURL(wvUrl)
+      }
     }
   }
 
@@ -147,14 +131,17 @@ function setupPanel (page) {
 }
 
 function setActivePanel (panel) {
-  if (activePanel === panel) return
   activePanel = panel
 }
 
 function destroyPanel (id) {
   var panel = panels[id]
+  if (!panel) return
   if (panel.webview) {
     sidebarEl.removeChild(panel.webview)
+  }
+  if (activePanel === panel) {
+    activePanel = null
   }
   delete panels[id]
 }
@@ -170,22 +157,22 @@ function destroyPanels () {
 // =
 
 function setActivePanelVisibility () {
-  if (!activePanel) return
-  if (activePanel.visible) {
-    // hide all sidebar webviews
-    for (var id in panels) {
-      if (panels[id].webview) {
-        panels[id].webview.classList.add('hidden')
-      }
-    }
-
-    // make visible
-    activePanel.webview.classList.remove('hidden')
-    setTimeout(() => reflowWebview(activePanel.webview), 60)
-    showSidebar()
-  } else {
+  if (!activePanel) {
     hideSidebar()
+    return
   }
+
+  // hide all sidebar webviews
+  for (var id in panels) {
+    if (panels[id].webview) {
+      panels[id].webview.classList.add('hidden')
+    }
+  }
+
+  // make visible
+  activePanel.webview.classList.remove('hidden')
+  setTimeout(() => reflowWebview(activePanel.webview), 60)
+  showSidebar()
 }
 
 function showSidebar () {
@@ -220,7 +207,7 @@ function doResize () {
   var pageSize = document.body.getClientRects()[0]
   Array.from(webviewsEl.querySelectorAll('webview')).forEach(wv => {
     var id = wv.dataset.id || ''
-    if (isOpen && panels[id] && panels[id].visible) {
+    if (panels[id] && panels[id].visible) {
       wv.style.width = `${pageSize.width - sidebarWidth}px`
     } else {
       wv.style.width = '100%'
