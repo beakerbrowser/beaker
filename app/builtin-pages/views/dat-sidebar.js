@@ -63,8 +63,6 @@ async function setup () {
 async function loadCurrentArchive () {
   update()
   if (archiveKey) {
-    // TODO
-    // archive = new DatArchive(archiveVersion ? `dat://${archiveKey}+${archiveVersion}` : archiveKey)
     archive = new DatArchive(archiveKey)
     archiveInfo = await archive.getInfo()
 
@@ -158,7 +156,6 @@ async function reloadDiff () {
   var stats = archiveInfo.diffStats = {add: 0, mod: 0, del: 0}
   try {
     // load diff
-    // var a = new DatArchive(selectedArchiveKey)
     var diff = archiveInfo.diff = await archive.diff({shallow: true})
 
     // calc diff stats
