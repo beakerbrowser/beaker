@@ -191,6 +191,7 @@ export default class DatArchive extends EventTarget {
 
   static selectArchive (opts = {}) {
     return dat.selectArchive(opts)
+      .then(url => new DatArchive(url))
   }
 }
 

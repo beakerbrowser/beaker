@@ -349,7 +349,7 @@ test('DatArchive.selectArchive: create', async t => {
     // put the result on the window, for checking later
     window.res = null
     DatArchive.selectArchive({ message: 'Custom title', buttonLabel: 'button' }).then(
-      res => window.res = res,
+      res => window.res = res.url,
       err => window.res = err
     )
   })
@@ -407,7 +407,7 @@ test('DatArchive.selectArchive: select', async t => {
     // put the result on the window, for checking later
     window.res = null
     DatArchive.selectArchive().then(
-      res => window.res = res,
+      res => window.res = res.url,
       err => window.res = err
     )
   })
@@ -431,7 +431,7 @@ test('DatArchive.selectArchive: select', async t => {
   await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
   var res = await app.client.execute(() => { return window.res })
   t.truthy(res.value.startsWith('dat://'))
-  t.is(res.value, testRunnerDatURL)
+  t.is(res.value, testRunnerDatURL.slice(0, -1))
 })
 
 test('archive.writeFile', async t => {
