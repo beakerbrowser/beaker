@@ -280,6 +280,9 @@ function render (id, page) {
   // preserve the current address value
   var addrEl = page && page.navbarEl.querySelector('.nav-location-input')
   var addrValue = addrEl ? addrEl.value : ''
+  if (!addrValue && page) {
+    addrValue = page.getIntendedURL()
+  }
   var isAddrElFocused = addrEl && addrEl.matches(':focus')
 
   // setup site-perms dropdown

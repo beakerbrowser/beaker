@@ -3,6 +3,7 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import {ProgressMonitor, FileTree} from 'builtin-pages-lib'
+import parseDatURL from 'parse-dat-url'
 import renderTabs from '../com/tabs'
 import renderFiles from '../com/files-list'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
@@ -16,6 +17,7 @@ import { throttle } from '../../lib/functions'
 var currentSection = 'files'
 var hostname = false
 var archiveKey
+var archiveVersion
 var archive
 var archiveInfo
 var downloadProgress
@@ -25,22 +27,37 @@ const reloadDiffThrottled = throttle(reloadDiff, 500)
 setup()
 
 async function setup () {
-  await parseURL()
+  try {
+    await parseURL()
 
-  // open anchor links in the main webview
-  document.addEventListener('click', (e) => {
-    var href = e.target.href || e.currentTarget.href
-    if (href) {
-      e.preventDefault()
-      locationbar.openUrl(href, {newTab: !!e.metaKey})
+    // open anchor links in the main webview
+    document.addEventListener('click', (e) => {
+      var href = e.target.href || e.currentTarget.href
+      if (href) {
+        e.preventDefault()
+        locationbar.openUrl(href, {newTab: !!e.metaKey})
+      }
+    })
+
+    // listen for changes to the archive
+    beaker.archives.addEventListener('updated', onArchivesUpdated)
+
+    // load and render
+    await loadCurrentArchive()
+  } catch (e) {
+    console.error('Failed to load archive', e)
+    let err = 'Failed to load the archive'
+    if (e.name === 'TimeoutError') {
+      err = 'Archive not found'
     }
-  })
-
-  // listen for changes to the archive
-  beaker.archives.addEventListener('updated', onArchivesUpdated)
-
-  // load and render
-  await loadCurrentArchive()
+    yo.update(document.querySelector('main'), yo`
+      <main>
+        <div class="message error">
+          <i class="fa fa-exclamation-triangle"></i> ${err}
+        </div>
+      </main>
+    `)
+  }
 }
 
 async function loadCurrentArchive () {
@@ -50,7 +67,7 @@ async function loadCurrentArchive () {
     archiveInfo = await archive.getInfo()
 
     // load the filetree from the last published, not from the staging
-    var aLastPublish = new DatArchive(`${archiveKey}+${archiveInfo.version}`)
+    var aLastPublish = new DatArchive(`dat://${archiveKey}+${archiveInfo.version}`)
     var fileTree = new FileTree(aLastPublish, {onDemand: true})
 
     // fetch all data
@@ -139,7 +156,6 @@ async function reloadDiff () {
   var stats = archiveInfo.diffStats = {add: 0, mod: 0, del: 0}
   try {
     // load diff
-    // var a = new DatArchive(selectedArchiveKey)
     var diff = archiveInfo.diff = await archive.diff({shallow: true})
 
     // calc diff stats
@@ -157,10 +173,11 @@ async function parseURL () {
   }
 
   try {
-    var urlp = new URL(url)
+    var urlp = parseDatURL(url)
     hostname = urlp.origin
     if (urlp.protocol === 'dat:') {
       archiveKey = await DatArchive.resolveName(urlp.hostname)
+      archiveVersion = urlp.version || false
     }
   } catch (e) {
     console.warn(e)
@@ -173,7 +190,9 @@ function update () {
   }
 
   if (!archiveInfo) {
-    // TODO "loading"?
+    yo.update(document.querySelector('main'), yo`
+      <main><div class="spinner"></div></main>
+    `)
     return
   }
 
@@ -259,10 +278,6 @@ function update () {
       ${rStagingNotification(archiveInfo)}
 
       <section class="network-info">
-        <span>
-          <i class="fa fa-share-alt"></i>
-          ${archiveInfo.peers} peers
-        </span>
         <a href="beaker://swarm-debugger/${archiveInfo.key}">
           <i class="fa fa-bug"></i>
           Network debugger
@@ -271,17 +286,17 @@ function update () {
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-    {id: 'files', label: 'Files', onclick: onClickTab('files')},
-    stagingTab,
-    {id: 'log', label: 'History', onclick: onClickTab('log')},
-    {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
-  ].filter(Boolean))}
+            {id: 'files', label: 'Files', onclick: onClickTab('files')},
+            stagingTab,
+            {id: 'log', label: 'History', onclick: onClickTab('log')},
+            {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
+          ].filter(Boolean))}
         ${({
-    files: () => renderFiles(archiveInfo, {hideDate: true}),
-    log: () => rHistory(archiveInfo),
-    settings: () => rSettings(archiveInfo),
-    staging: () => rStagingArea(archiveInfo)
-  })[currentSection]()}
+          files: () => renderFiles(archiveInfo, {hideDate: true}),
+          log: () => rHistory(archiveInfo),
+          settings: () => rSettings(archiveInfo),
+          staging: () => rStagingArea(archiveInfo)
+        })[currentSection]()}
       </section>
     </div>
     </main>

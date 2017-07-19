@@ -113,14 +113,26 @@ function setupPanel (page) {
       panel.webview = wv
     } else {
       // only load a new URL if the domain has changed
-      let isNewLocation = true
-      try {
-        let oldUrlParsed = new URL(oldUrl)
-        let newUrlParsed = new URL(page.url)
-        isNewLocation = (oldUrlParsed.origin !== newUrlParsed.origin)
-      } catch (e) { /* ignore */ }
-      if (isNewLocation) {
-        panel.webview.loadURL(wvUrl)
+      checkIsNewLocation()
+      async function checkIsNewLocation () {
+        let isNewLocation = true
+        try {
+          let oldUrlParsed = new URL(oldUrl)
+          let newUrlParsed = new URL(page.url)
+          if (oldUrlParsed.protocol === newUrlParsed.protocol) {
+            // resolve the DNS
+            let [oldKey, newKey] = await Promise.all([
+              DatArchive.resolveName(oldUrlParsed.hostname),
+              DatArchive.resolveName(newUrlParsed.hostname)
+            ])
+            if (oldKey === newKey) {
+              isNewLocation = false
+            }
+          }
+        } catch (e) { /* ignore */ }
+        if (isNewLocation) {
+          panel.webview.loadURL(wvUrl)
+        }
       }
     }
   } else {

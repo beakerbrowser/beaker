@@ -610,7 +610,7 @@ function onDidStopLoading (e) {
           navbar.update(page)
 
           // fallback the tab title to the site title, if needed
-          if (page.getTitle() === page.getURL() && info.title) {
+          if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
             page.title = info.title
             events.emit('page-title-updated', page)
           }
@@ -891,6 +891,10 @@ function rebroadcastEvent (e) {
 
 function parseURL (str) {
   try { return new URL(str) } catch (e) { return {} }
+}
+
+function isEqualURL (a, b) {
+  return parseURL(a).origin === parseURL(b).origin
 }
 
 function isDifferentDomain (a, b) {
