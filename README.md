@@ -53,6 +53,8 @@ console.log(archive.url)
 
 ## Documentation
 
+Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=YuE9OO-ZDYo) and take a look at [the build notes](./build-notes.md).
+
 - **Web APIs**
   - [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
   - [Permissions](https://beakerbrowser.com/docs/apis/permissions.html)
