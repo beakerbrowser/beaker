@@ -8,14 +8,13 @@ export class DatSidebarBtn {
   }
 
   render () {
-    if (!sidebar.getIsAvailable()) {
+    if (!sidebar.getIsAvailable() || !sidebar.getIsOpen()) {
       // hide the button
       return yo`<button class="toolbar-btn dat-sidebar btn hidden"></button>`
     }
 
-    const pressed = sidebar.getIsOpen() ? 'pressed' : ''
     return yo`
-      <button title="Toggle sidebar" class="toolbar-btn dat-sidebar btn ${pressed}" onclick=${e => this.onClickBtn(e)}>
+      <button title="Toggle sidebar" class="toolbar-btn dat-sidebar btn pressed" onclick=${e => this.onClickBtn(e)}>
         <i class="fa fa-columns"></i>
       </button>
     `
