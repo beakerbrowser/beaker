@@ -1,4 +1,4 @@
-/* globals URL */
+/* globals URL DatArchive */
 
 import EventEmitter from 'events'
 import * as pages from '../pages'
@@ -144,13 +144,6 @@ function destroyPanel (id) {
     activePanel = null
   }
   delete panels[id]
-}
-
-function destroyPanels () {
-  for (var id in panels) {
-    destroyPanel(id)
-  }
-  panels = {}
 }
 
 // sidebar rendering

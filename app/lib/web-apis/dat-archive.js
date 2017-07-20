@@ -1,14 +1,11 @@
-/* globals URL */
-
 import rpc from 'pauls-electron-rpc'
 import errors from 'beaker-error-constants'
 import parseDatURL from 'parse-dat-url'
 import datArchiveManifest from '../api-manifests/external/dat-archive'
 import {EventTarget, fromEventStream} from './event-target'
 import Stat from './stat'
-import {DAT_HASH_REGEX} from '../const'
 
-const URL_PROMISE = Symbol()
+const URL_PROMISE = Symbol('URL_PROMISE')
 
 // create the dat rpc api
 const dat = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, errors })
@@ -120,14 +117,14 @@ export default class DatArchive extends EventTarget {
   }
 
   // TODO copy-disabled
-  /*async copy(path, dstPath) {
+  /* async copy(path, dstPath) {
     var url = await this[URL_PROMISE]
     url = joinPath(url, path)
     return dat.copy(url, dstPath)
   } */
 
   // TODO rename-disabled
-  /*async rename(path, dstPath) {
+  /* async rename(path, dstPath) {
     var url = await this[URL_PROMISE]
     url = joinPath(url, path)
     return dat.rename(url, dstPath)

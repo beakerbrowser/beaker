@@ -164,7 +164,7 @@ export default function registerContextMenu () {
           }
         })
       }
-      
+
       // fork
       if (isDat) {
         menuItems.push({ label: 'Fork this site', click: (item, win) => win.webContents.executeJavaScript(`DatArchive.fork("${props.pageURL}").catch(()=>{})`) })

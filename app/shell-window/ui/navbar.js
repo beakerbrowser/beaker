@@ -76,14 +76,6 @@ export function showInpageFind (page) {
   var el = page.navbarEl.querySelector('.nav-find-input')
   el.focus()
   el.select()
-
-  // init search if there's a value leftover
-  // FIXME
-  // this behavior got lost in the switch over to using yo-yo
-  // do we want it back?
-  // -prf
-  // if (el.value)
-  // page.findInPageAsync(el.value)
 }
 
 export function hideInpageFind (page) {
