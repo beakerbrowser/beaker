@@ -2,6 +2,8 @@ import { ipcRenderer } from 'electron'
 import * as pages from './pages'
 import * as zoom from './pages/zoom'
 
+const isDarwin = window.process.platform === 'darwin'
+
 var SWIPE_TRIGGER_DIST = 400 // how far do you need to travel to trigger the navigation
 var ARROW_OFF_DIST = 80 // how far off-screen are the arrows
 
@@ -30,8 +32,7 @@ export function setup () {
   }
 
   window.addEventListener('mousewheel', e => {
-    // TODO add key for macOS
-    if (e.ctrlKey === true) {
+    if (!isDarwin && e.ctrlKey === true) {
       var page = pages.getActive()
       if (e.deltaY > 0) zoom.zoomOut(page)
       if (e.deltaY < 0) zoom.zoomIn(page)
