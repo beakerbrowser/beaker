@@ -8,9 +8,9 @@ import { findParent } from '../../../lib/fg/event-handlers'
 import * as pages from '../../pages'
 
 // there can be many drop menu btns rendered at once, but they are all showing the same information
-// the DropMenuNavbarBtn manages all instances, and you should only create one
+// the BrowserMenuNavbarBtn manages all instances, and you should only create one
 
-export class DropMenuNavbarBtn {
+export class BrowserMenuNavbarBtn {
   constructor () {
     this.downloads = []
     this.sumProgress = null // null means no active downloads
@@ -154,7 +154,7 @@ export class DropMenuNavbarBtn {
 
     // render btn
     return yo`
-      <div class="toolbar-dropdown-menu">
+      <div class="toolbar-dropdown-menu browser-dropdown-menu">
         <button class="toolbar-btn toolbar-dropdown-menu-btn ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
           <span class="fa fa-bars"></span>
           ${progressEl}
@@ -164,11 +164,11 @@ export class DropMenuNavbarBtn {
   }
 
   updateActives () {
-    Array.from(document.querySelectorAll('.toolbar-dropdown-menu')).forEach(el => yo.update(el, this.render()))
+    Array.from(document.querySelectorAll('.browser-dropdown-menu')).forEach(el => yo.update(el, this.render()))
   }
 
   doAnimation () {
-    Array.from(document.querySelectorAll('.toolbar-dropdown-menu-btn')).forEach(el =>
+    Array.from(document.querySelectorAll('.browser-dropdown-menu .toolbar-btn')).forEach(el =>
       el.animate([
         {transform: 'scale(1.0)', color: 'inherit'},
         {transform: 'scale(1.5)', color: '#06c'},
@@ -184,7 +184,7 @@ export class DropMenuNavbarBtn {
   }
 
   onClickAnywhere (e) {
-    var parent = findParent(e.target, 'toolbar-dropdown-menu')
+    var parent = findParent(e.target, 'browser-dropdown-menu')
     if (parent) return // abort - this was a click on us!
     this.isDropdownOpen = false
     this.updateActives()

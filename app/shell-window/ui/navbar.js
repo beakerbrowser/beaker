@@ -7,7 +7,8 @@ import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
 import { UpdatesNavbarBtn } from './navbar/updates'
-import { DropMenuNavbarBtn } from './navbar/drop-menu'
+import { BrowserMenuNavbarBtn } from './navbar/browser-menu'
+import { PageMenuNavbarBtn } from './navbar/page-menu'
 import { DatSidebarBtn } from './navbar/dat-sidebar'
 import { SiteInfoNavbarBtn } from './navbar/site-info'
 import {pluralize} from '../../lib/strings'
@@ -27,7 +28,8 @@ const isDatHashRegex = /^[a-z0-9]{64}/i
 var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
 var datSidebarBtn = null
-var dropMenuNavbarBtn = null
+var browserMenuNavbarBtn = null
+var pageMenuNavbarBtn = null
 var siteInfoNavbarBtn = null
 
 // autocomplete data
@@ -42,7 +44,8 @@ export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
   datSidebarBtn = new DatSidebarBtn()
-  dropMenuNavbarBtn = new DropMenuNavbarBtn()
+  browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
+  pageMenuNavbarBtn = new PageMenuNavbarBtn()
   siteInfoNavbarBtn = new SiteInfoNavbarBtn()
 }
 
@@ -76,14 +79,6 @@ export function showInpageFind (page) {
   var el = page.navbarEl.querySelector('.nav-find-input')
   el.focus()
   el.select()
-
-  // init search if there's a value leftover
-  // FIXME
-  // this behavior got lost in the switch over to using yo-yo
-  // do we want it back?
-  // -prf
-  // if (el.value)
-  // page.findInPageAsync(el.value)
 }
 
 export function hideInpageFind (page) {
@@ -128,8 +123,9 @@ export function updateLocation (page) {
 }
 
 export function closeMenus () {
-  dropMenuNavbarBtn.isDropdownOpen = false
-  dropMenuNavbarBtn.updateActives()
+  browserMenuNavbarBtn.isDropdownOpen = false
+  browserMenuNavbarBtn.updateActives()
+  pageMenuNavbarBtn.close()
 }
 
 // internal helpers
@@ -285,7 +281,7 @@ function render (id, page) {
   }
   var isAddrElFocused = addrEl && addrEl.matches(':focus')
 
-  // setup site-perms dropdown
+  // setup menus
   siteInfoNavbarBtn.protocolInfo = (page && page.protocolInfo)
   siteInfoNavbarBtn.siteInfo = (page && page.siteInfo)
   siteInfoNavbarBtn.sitePerms = (page && page.sitePerms)
@@ -329,11 +325,12 @@ function render (id, page) {
         <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark this page">
           <span class=${(page && !!page.bookmark) ? 'fa fa-star' : 'fa fa-star-o'}></span>
         </button>
+        ${pageMenuNavbarBtn.render()}
         ${autocompleteDropdown}
       </div>
       <div class="toolbar-group">
         ${datSidebarBtn.render(addrValue)}
-        ${dropMenuNavbarBtn.render()}
+        ${browserMenuNavbarBtn.render()}
         ${updatesNavbarBtn.render()}
       </div>
     </div>

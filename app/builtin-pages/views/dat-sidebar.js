@@ -1,4 +1,4 @@
-/* globals beaker locationbar DatArchive confirm URL beakerBrowser alert */
+/* globals beaker locationbar DatArchive confirm beakerBrowser alert */
 
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
@@ -17,7 +17,6 @@ import { throttle } from '../../lib/functions'
 var currentSection = 'files'
 var hostname = false
 var archiveKey
-var archiveVersion
 var archive
 var archiveInfo
 var downloadProgress
@@ -177,7 +176,6 @@ async function parseURL () {
     hostname = urlp.origin
     if (urlp.protocol === 'dat:') {
       archiveKey = await DatArchive.resolveName(urlp.hostname)
-      archiveVersion = urlp.version || false
     }
   } catch (e) {
     console.warn(e)
@@ -286,17 +284,17 @@ function update () {
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-            {id: 'files', label: 'Files', onclick: onClickTab('files')},
-            stagingTab,
-            {id: 'log', label: 'History', onclick: onClickTab('log')},
-            {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
-          ].filter(Boolean))}
+    {id: 'files', label: 'Files', onclick: onClickTab('files')},
+    stagingTab,
+    {id: 'log', label: 'History', onclick: onClickTab('log')},
+    {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
+  ].filter(Boolean))}
         ${({
-          files: () => renderFiles(archiveInfo, {hideDate: true}),
-          log: () => rHistory(archiveInfo),
-          settings: () => rSettings(archiveInfo),
-          staging: () => rStagingArea(archiveInfo)
-        })[currentSection]()}
+    files: () => renderFiles(archiveInfo, {hideDate: true}),
+    log: () => rHistory(archiveInfo),
+    settings: () => rSettings(archiveInfo),
+    staging: () => rStagingArea(archiveInfo)
+  })[currentSection]()}
       </section>
     </div>
     </main>

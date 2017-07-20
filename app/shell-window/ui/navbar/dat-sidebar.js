@@ -1,5 +1,4 @@
 import * as yo from 'yo-yo'
-import * as pages from '../../pages'
 import * as sidebar from '../sidebar'
 
 export class DatSidebarBtn {
