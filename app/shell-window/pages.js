@@ -11,7 +11,7 @@ import * as sidebar from './ui/sidebar'
 import * as promptbar from './ui/promptbar'
 import * as statusBar from './ui/statusbar'
 import {urlsToData} from '../lib/fg/img'
-import { debounce } from '../lib/functions'
+import {throttle} from '../lib/functions'
 import errorPage from '../lib/error-page'
 import addAsyncAlternatives from './webview-async'
 
@@ -22,7 +22,7 @@ const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
 const ERR_INSECURE_RESPONSE = -501
 
-const TRIGGER_LIVE_RELOAD_DEBOUNCE = 1e3 // debounce live-reload triggers by this amount
+const TRIGGER_LIVE_RELOAD_DEBOUNCE = 1e3 // throttle live-reload triggers by this amount
 
 export const FIRST_TAB_URL = 'beaker://start'
 export const DEFAULT_URL = 'beaker://start'
@@ -182,7 +182,7 @@ export function create (opts) {
       // HACK to fix electron#8505
       // dont allow visibility: hidden until set active
       page.webviewEl.classList.remove('can-hide')
-      setTimeout(() => page.reloadAsync().then(console.log, console.log), 100)
+      setTimeout(() => page.reloadAsync(), 100)
       // ^ needs a delay or it doesnt take effect in time, SMH at this code though
     },
 
@@ -218,7 +218,7 @@ export function create (opts) {
         page.liveReloadEvents = archive.createFileActivityStream()
         let event = (page.siteInfo.isOwner) ? 'changed' : 'invalidated'
         page.liveReloadEvents.addEventListener(event, () => {
-          page.triggerLiveReload(page.siteInfo.key)
+          page.triggerLiveReload()
         })
       }
       navbar.update(page)
@@ -232,10 +232,10 @@ export function create (opts) {
     },
 
     // reload the page due to changes in the dat
-    triggerLiveReload: debounce(archiveKey => {
+    triggerLiveReload: throttle(() => {
       page.reload()
-    }, TRIGGER_LIVE_RELOAD_DEBOUNCE, true),
-    // ^ note this is on the front edge of the debouncer.
+    }, TRIGGER_LIVE_RELOAD_DEBOUNCE),
+    // ^ note this is run on the front edge.
     // That means snappier reloads (no delay) but possible double reloads if multiple files change
 
     // helper to load the perms
