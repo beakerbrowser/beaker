@@ -1,3 +1,5 @@
+/* globals beaker DatArchive beakerBrowser */
+
 import * as yo from 'yo-yo'
 import {findParent} from '../../../lib/fg/event-handlers'
 import * as pages from '../../pages'
@@ -112,7 +114,7 @@ export class PageMenuNavbarBtn {
     if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
       return
     }
-    page.siteInfo.userSettings = await beaker.archives.add(page.siteInfo.key)    
+    page.siteInfo.userSettings = await beaker.archives.add(page.siteInfo.key)
   }
 
   async onClickRemove () {
@@ -126,7 +128,7 @@ export class PageMenuNavbarBtn {
 
   onClickOpenwith () {
     this.isOpenwithOpen = !this.isOpenwithOpen
-    this.updateActives()    
+    this.updateActives()
   }
 
   onClickOpenwithLibrary () {
