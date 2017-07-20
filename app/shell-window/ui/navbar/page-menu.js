@@ -17,6 +17,7 @@ export class PageMenuNavbarBtn {
     if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
       return yo`<span />`
     }
+    const isSaved = page.siteInfo && page.siteInfo.userSettings && page.siteInfo.userSettings.isSaved
 
     // render the dropdown if open
     var dropdownEl = ''
@@ -26,7 +27,7 @@ export class PageMenuNavbarBtn {
         openwithSublist = yo`
           <div class="dropdown-items sublist">
             <div class="list">
-              <div class="list-item">
+              <div class="list-item" onclick=${() => this.onClickOpenwithLibrary()}>
                 Library
               </div>
             </div>
@@ -37,10 +38,19 @@ export class PageMenuNavbarBtn {
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle visible">
             <div class="list">
-              <div class="list-item">
-                <i class="fa fa-plus"></i>
-                Add to Library
-              </div>
+              ${isSaved
+                ? yo`
+                    <div class="list-item" onclick=${() => this.onClickRemove()}>
+                      <i class="fa fa-trash"></i>
+                      Remove from Library
+                    </div>
+                  `
+                : yo`
+                    <div class="list-item" onclick=${() => this.onClickAdd()}>
+                      <i class="fa fa-plus"></i>
+                      Add to Library
+                    </div>
+                  `}
               <hr />
               <div class="list-item" onclick=${() => this.onClickOpenwith()}>
                 <i class="fa fa-share"></i>
@@ -49,11 +59,11 @@ export class PageMenuNavbarBtn {
                 ${openwithSublist}
               </div>
               <hr />
-              <div class="list-item">
+              <div class="list-item" onclick=${() => this.onClickFork()}>
                 <i class="fa fa-code-fork"></i>
                 Fork this site
               </div>
-              <div class="list-item">
+              <div class="list-item" onclick=${() => this.onClickDownloadZip()}>
                 <i class="fa fa-file-archive-o"></i>
                 Download as .zip
               </div>
@@ -96,8 +106,53 @@ export class PageMenuNavbarBtn {
     this.close()
   }
 
+  async onClickAdd () {
+    this.close()
+    var page = pages.getActive()
+    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
+      return
+    }
+    page.siteInfo.userSettings = await beaker.archives.add(page.siteInfo.key)    
+  }
+
+  async onClickRemove () {
+    this.close()
+    var page = pages.getActive()
+    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
+      return
+    }
+    page.siteInfo.userSettings = await beaker.archives.remove(page.siteInfo.key)
+  }
+
   onClickOpenwith () {
     this.isOpenwithOpen = !this.isOpenwithOpen
     this.updateActives()    
+  }
+
+  onClickOpenwithLibrary () {
+    this.close()
+    var page = pages.getActive()
+    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
+      return
+    }
+    page.loadURL(`beaker://library/${page.siteInfo.key}`)
+  }
+
+  onClickFork () {
+    this.close()
+    var page = pages.getActive()
+    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
+      return
+    }
+    DatArchive.fork(page.siteInfo.key).catch(() => {})
+  }
+
+  onClickDownloadZip () {
+    this.close()
+    var page = pages.getActive()
+    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
+      return
+    }
+    beakerBrowser.downloadURL(`dat://${page.siteInfo.key}/?download_as=zip`)
   }
 }
