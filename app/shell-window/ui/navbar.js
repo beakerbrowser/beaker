@@ -572,7 +572,7 @@ function onClickGotoDatVersion (e) {
   const page = getEventPage(e)
   if (!page || !page.protocolInfo) return
 
-  const url = `dat://${page.protocolInfo.hostname}`
+  const url = `dat://${page.protocolInfo.hostname}${page.protocolInfo.pathname}`
   if (e.metaKey || e.ctrlKey) { // popup
     pages.setActive(pages.create(url))
   } else {

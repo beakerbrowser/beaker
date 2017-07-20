@@ -595,11 +595,11 @@ function onDidStopLoading (e) {
     updateHistory(page)
 
     // fetch protocol and page info
-    var { protocol, hostname } = url.startsWith('dat://') ? parseDatURL(url) : parseURL(url)
+    var { protocol, hostname, pathname } = url.startsWith('dat://') ? parseDatURL(url) : parseURL(url)
     page.siteInfo = null
     page.sitePerms = null
     page.siteHasDatAlternative = false
-    page.protocolInfo = {url, hostname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase()}
+    page.protocolInfo = {url, hostname, pathname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase()}
     if (protocol === 'https:') {
       page.checkForDatAlternative(hostname)
     }
