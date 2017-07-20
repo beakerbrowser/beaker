@@ -122,14 +122,14 @@ function renderShelf () {
       </div>
       <div class="archives-list">
         ${archivesList.archives.length
-    ? archivesList.archives.map(archiveInfo => {
-      return yo`
+          ? archivesList.archives.map(archiveInfo => {
+            return yo`
               <a class="archive list-item" href=${`beaker://library/${archiveInfo.key}`}>
                 <span class="title">${niceName(archiveInfo)}</span>
                 <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
               </a>`
-    })
-    : yo`<p class="no-archives">No archives in your library</p>`}
+            })
+          : yo`<p class="no-archives">No archives in your library</p>`}
       </div>
 
       <hr />
@@ -140,16 +140,17 @@ function renderShelf () {
 
       <div class="bookmarks-list">
         ${bookmarks.length
-    ? bookmarks.map(row => {
-      return yo`
+          ? bookmarks.map(row => {
+            return yo`
               <a href=${row.url} class="bookmark list-item">
                 <img class="favicon" src=${'beaker-favicon:' + row.url} />
                 <span href=${row.url} class="bookmark-link" title=${row.title} />
                   <span class="title">${row.title}</span>
                 </span>
               </a>`
-    })
-    : yo`<p class="no-bookmarks">No bookmarks</p>`}
+          })
+          : yo`<p class="no-bookmarks">No bookmarks</p>`
+        }
       </div>
     </div>
   `

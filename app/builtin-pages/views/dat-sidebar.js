@@ -284,17 +284,17 @@ function update () {
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-    {id: 'files', label: 'Files', onclick: onClickTab('files')},
-    stagingTab,
-    {id: 'log', label: 'History', onclick: onClickTab('log')},
-    {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
-  ].filter(Boolean))}
+          {id: 'files', label: 'Files', onclick: onClickTab('files')},
+          stagingTab,
+          {id: 'log', label: 'History', onclick: onClickTab('log')},
+          {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
+        ].filter(Boolean))}
         ${({
-    files: () => renderFiles(archiveInfo, {hideDate: true}),
-    log: () => rHistory(archiveInfo),
-    settings: () => rSettings(archiveInfo),
-    staging: () => rStagingArea(archiveInfo)
-  })[currentSection]()}
+          files: () => renderFiles(archiveInfo, {hideDate: true}),
+          log: () => rHistory(archiveInfo),
+          settings: () => rSettings(archiveInfo),
+          staging: () => rStagingArea(archiveInfo)
+        })[currentSection]()}
       </section>
     </div>
     </main>
@@ -526,8 +526,8 @@ function rStagingArea (archiveInfo) {
           <div class="actions">
             <button class="btn small" onclick=${onRevert}>Revert</button>
             ${isPublishing
-    ? yo`<span class="btn success small">Publishing...</span>`
-    : yo`<button class="btn success small" onclick=${onPublish}>Publish</button>`}
+              ? yo`<span class="btn success small">Publishing...</span>`
+              : yo`<button class="btn success small" onclick=${onPublish}>Publish</button>`}
           </div>
         </div>
       </div>

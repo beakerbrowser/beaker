@@ -78,8 +78,8 @@ function renderProtocolSettings () {
 
   return yo`<div class="settings-section protocols">
       ${registered.length
-    ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
-    : ''}
+        ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
+        : ''}
       ${unregistered.map(proto => yo`
         <div>
           <strong>${proto}</strong>
@@ -106,11 +106,12 @@ function renderAutoUpdater () {
         <button class="btn btn-default" onclick=${onClickCheckUpdates}>Check for updates</button>
         <span class="version-info">
           ${browserInfo.updater.error
-    ? yo`<span><span class="icon icon-cancel"></span> ${browserInfo.updater.error}</span>`
-    : yo`<span>
-                <span class="icon icon-check"></span>
-                <strong>Beaker v${browserInfo.version}</strong> is up-to-date
-              </span>`}
+            ? yo`<span><span class="icon icon-cancel"></span> ${browserInfo.updater.error}</span>`
+            : yo`<span>
+              <span class="icon icon-check"></span>
+              <strong>Beaker v${browserInfo.version}</strong> is up-to-date
+            </span>`
+          }
           ${renderAutoUpdateCheckbox()}
         </span>
       </div>`
@@ -161,7 +162,7 @@ function renderStartPageSettings () {
       <input onchange=${onUpdateStartPageBackgroundImage} name="start-background-image" type="file" accept="image/*"/>
     </label>
     ${settings.start_page_background_image
-    ? yo`
+      ? yo`
         <div>
           <button class="btn transparent" onclick=${onUpdateStartPageBackgroundImage}>
             <i class="fa fa-close"></i>
@@ -173,10 +174,9 @@ function renderStartPageSettings () {
             <input type="radio" value="light" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === 'light'}/>Light
             <input type="radio" value="dark" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === 'dark'}/>Dark
           </label>
-        </div>
-                `
-    : ''
-}
+        </div>`
+      : ''
+    }
     </div>
   `
 }

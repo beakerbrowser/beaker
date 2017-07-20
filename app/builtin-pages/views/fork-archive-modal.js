@@ -111,8 +111,8 @@ function render () {
     // status/progress of download
     progressEl = yo`<div class="fork-dat-progress">
       ${archive.progress.current > 0
-    ? yo`<progress value=${archive.progress.current} max="100"></progress>`
-    : ''}
+        ? yo`<progress value=${archive.progress.current} max="100"></progress>`
+        : ''}
       Some files have not been downloaded, and will be missing from your fork.
     </div>`
     if (!isComplete) {
@@ -148,8 +148,8 @@ function render () {
               <button type="button" class="btn cancel" onclick=${onClickCancel} tabindex="4" disabled=${isProcessing}>Cancel</button>
               <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="5" disabled=${isProcessing}>
                 ${isProcessing
-    ? yo`<span><span class="spinner"></span> Forking...</span>`
-    : `Create fork ${!isComplete ? ' anyway' : ''}`}
+                  ? yo`<span><span class="spinner"></span> Forking...</span>`
+                  : `Create fork ${!isComplete ? ' anyway' : ''}`}
               </button>
               ${downloadBtn}
             </div>

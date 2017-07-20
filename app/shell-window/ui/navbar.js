@@ -240,35 +240,35 @@ function render (id, page) {
     autocompleteDropdown = yo`
       <div class="autocomplete-dropdown" onclick=${onClickAutocompleteDropdown}>
         ${autocompleteResults.map((r, i) => {
-    // content
-    var iconCls = 'icon icon-' + ((r.search) ? 'search' : 'window')
-    var contentColumn
-    if (r.search) { contentColumn = yo`<span class="result-search">${r.search}</span>` } else {
-      contentColumn = yo`<span class="result-url"></span>`
-      if (r.urlDecorated) {
-        contentColumn.innerHTML = r.urlDecorated // use innerHTML so our decoration can show
-      } else {
-        contentColumn.textContent = r.url
-      }
-    }
-    var titleColumn = yo`<span class="result-title"></span>`
-    if (r.titleDecorated) {
-      titleColumn.innerHTML = r.titleDecorated // use innerHTML so our decoration can show
-    } else {
-      titleColumn.textContent = r.title
-    }
+          // content
+          var iconCls = 'icon icon-' + ((r.search) ? 'search' : 'window')
+          var contentColumn
+          if (r.search) { contentColumn = yo`<span class="result-search">${r.search}</span>` } else {
+            contentColumn = yo`<span class="result-url"></span>`
+            if (r.urlDecorated) {
+              contentColumn.innerHTML = r.urlDecorated // use innerHTML so our decoration can show
+            } else {
+              contentColumn.textContent = r.url
+            }
+          }
+          var titleColumn = yo`<span class="result-title"></span>`
+          if (r.titleDecorated) {
+            titleColumn.innerHTML = r.titleDecorated // use innerHTML so our decoration can show
+          } else {
+            titleColumn.textContent = r.title
+          }
 
-    // selection
-    var rowCls = 'result'
-    if (i == autocompleteCurrentSelection) { rowCls += ' selected' }
+          // selection
+          var rowCls = 'result'
+          if (i == autocompleteCurrentSelection) { rowCls += ' selected' }
 
-    // result row
-    return yo`<div class=${rowCls} data-result-index=${i}>
+          // result row
+          return yo`<div class=${rowCls} data-result-index=${i}>
             <span class=${iconCls}></span>
             ${contentColumn}
             ${titleColumn}
           </div>`
-  })}
+        })}
       </div>
     `
   }

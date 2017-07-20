@@ -49,34 +49,34 @@ function rFolder (archiveInfo, opts) {
       <span class="path" title="${archiveInfo.userSettings.localPath}">
         ${archiveInfo.userSettings.localPath}
         ${archiveInfo.localPathExists
-    ? yo`
+          ? yo`
             <a onclick=${e => onCopyFolder(e, archiveInfo)} href="#" title="Copy path to your clipboard">
               <i class="fa fa-clipboard"></i>
             </a>`
-    : ''
-}
+          : ''
+        }
       </span>
       <span class="files-list-actions">
         ${archiveInfo.isOwner && archiveInfo.localPathExists
-    ? yo`
+          ? yo`
             <a onclick=${e => onImportFiles(e, archiveInfo)} href="#">
               <i class="fa fa-plus"></i>
               Add files
             </a>
           ` : ''
-}
+        }
         ${archiveInfo.localPathExists
-    ? yo`
+          ? yo`
             <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
               <i class="fa fa-folder-open-o"></i>
               Open folder
             </a>`
-    : yo`
+          : yo`
             <span class="folder-warning">
               <em>This folder no longer exists</em>
               <i class="fa fa-exclamation-circle"></i>
             </span>`
-}
+          }
       </span>
     </div>
   `

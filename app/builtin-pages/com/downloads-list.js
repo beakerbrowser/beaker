@@ -68,8 +68,8 @@ export function render (downloadsList) {
         <div class="link">
           <img class="favicon" src=${'beaker-favicon:' + d.url} />
           ${canShow
-    ? yo`<a class="title" onclick=${e => downloadsList.openDownload(d)} title=${d.name}>${d.name}</a>`
-    : yo`<span class="title" title=${d.name}>${d.name}</a>`}
+            ? yo`<a class="title" onclick=${e => downloadsList.openDownload(d)} title=${d.name}>${d.name}</a>`
+            : yo`<span class="title" title=${d.name}>${d.name}</a>`}
         </div>
         <div class="status">${status}</div>
         ${progress}

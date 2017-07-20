@@ -75,8 +75,8 @@ export class BrowserMenuNavbarBtn {
           ctrlsEl = yo`
             <li class="download-item-ctrls paused">
               ${d.isPaused
-    ? yo`<a onclick=${e => this.onResume(e, d)}>Resume</a>`
-    : yo`<a onclick=${e => this.onPause(e, d)}>Pause</a>`}
+                ? yo`<a onclick=${e => this.onResume(e, d)}>Resume</a>`
+                : yo`<a onclick=${e => this.onPause(e, d)}>Pause</a>`}
               <a onclick=${e => this.onCancel(e, d)}>Cancel</a>
             </li>`
         }
@@ -87,8 +87,8 @@ export class BrowserMenuNavbarBtn {
             <div class="name">${d.name}</div>
             <div class="status">
               ${d.state == 'progressing'
-    ? yo`<progress value=${d.receivedBytes} max=${d.totalBytes}></progress>`
-    : ''}
+                ? yo`<progress value=${d.receivedBytes} max=${d.totalBytes}></progress>`
+                : ''}
               ${status}
             </div>
             ${ctrlsEl}

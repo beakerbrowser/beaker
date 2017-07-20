@@ -309,17 +309,17 @@ function rArchive (archiveInfo) {
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-    {id: 'files', label: 'Published files', onclick: onClickTab('files')},
-    {id: 'log', label: 'History', onclick: onClickTab('log')},
-    {id: 'network', label: 'Network', onclick: onClickTab('network')},
-    {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
-  ].filter(Boolean))}
+          {id: 'files', label: 'Published files', onclick: onClickTab('files')},
+          {id: 'log', label: 'History', onclick: onClickTab('log')},
+          {id: 'network', label: 'Network', onclick: onClickTab('network')},
+          {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
+        ].filter(Boolean))}
         ${({
-    files: () => rFiles(archiveInfo),
-    log: () => rHistory(archiveInfo),
-    settings: () => rSettings(archiveInfo),
-    network: () => rNetwork(archiveInfo)
-  })[currentSection]()}
+          files: () => rFiles(archiveInfo),
+          log: () => rHistory(archiveInfo),
+          settings: () => rSettings(archiveInfo),
+          network: () => rNetwork(archiveInfo)
+        })[currentSection]()}
       </section>
     </div>
   `
@@ -514,8 +514,8 @@ function rStagingArea (archiveInfo) {
           <div class="actions">
             <button onclick=${onRevert} class="btn">Revert changes</button>
             ${isPublishing
-    ? yo`<button class="btn success" disabled><span class="spinner"></span> Publishing...</button>`
-    : yo`<button onclick=${onPublish} class="btn success">Publish</button>`}
+              ? yo`<button class="btn success" disabled><span class="spinner"></span> Publishing...</button>`
+              : yo`<button onclick=${onPublish} class="btn success">Publish</button>`}
           </div>
         </div>
         ${renderChanges(archiveInfo)}
@@ -682,7 +682,7 @@ function rTrash () {
               Restore
             </button>
           </li>`
-  )}
+        )}
       </ul>
     </div>
   `
