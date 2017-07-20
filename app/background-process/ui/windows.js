@@ -99,6 +99,12 @@ export async function getFocusedWebContents (win) {
   }
 }
 
+export function ensureOneWindowExists () {
+  if (numActiveWindows === 0) {
+    createShellWindow()
+  }
+}
+
 // internal methods
 // =
 

@@ -75,10 +75,9 @@ app.on('ready', function () {
   openURL.setup()
 })
 
+app.on('activate', () => windows.ensureOneWindowExists())
+app.on('open-url', (e, url) => openURL.open(url))
+
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') { app.quit() }
-})
-
-app.on('open-url', function (e, url) {
-  openURL.open(url)
 })
