@@ -40,7 +40,7 @@ export class SiteInfoNavbarBtn {
       } else if (this.protocolInfo.scheme === 'http:' || (isHttps && gotInsecureResponse)) {
         icon = 'exclamation-circle https-error'
         protocolLabel = 'Not secure'
-      } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
+      } else if (this.protocolInfo.scheme === 'dat:') {
         icon = 'share-alt'
         protocolLabel = 'Secure P2P'
         protocolCls = 'p2p'
