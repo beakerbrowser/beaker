@@ -372,7 +372,7 @@ function rViewHeader (archiveInfo) {
           Share
         </button>
         ${toggleable(yo`
-          <div class="dropdown-btn-container toggleable-container">
+          <div class="dropdown-btn-container toggleable-container" data-toggle-id="archive-dropdown-menu">
             <button class="btn toggleable">
               <i class="fa fa-caret-down"></i>
             </button>
