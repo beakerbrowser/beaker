@@ -69,7 +69,10 @@ export default {
       title = typeof title !== 'undefined' ? title : archiveInfo.title
       description = typeof description !== 'undefined' ? description : archiveInfo.description
       if (title !== archiveInfo.title || description !== archiveInfo.description) {
-        await pda.updateManifest(archive, {title, description})
+        await Promise.all([
+          pda.updateManifest(archive, {title, description}),
+          pda.updateManifest(archive.staging, {title, description})
+        ])
         datLibrary.pullLatestArchiveMeta(archive)
       }
     }
