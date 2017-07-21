@@ -11,6 +11,7 @@ export class PageMenuNavbarBtn {
   constructor () {
     this.isDropdownOpen = false
     this.isOpenwithOpen = false
+    this.openwithMouseLeaveTimer = null
     window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
   }
 
@@ -54,7 +55,11 @@ export class PageMenuNavbarBtn {
                     </div>
                   `}
               <hr />
-              <div class="list-item" onclick=${() => this.onClickOpenwith()}>
+              <div
+                class="list-item"
+                onmouseenter=${() => this.onMouseEnterOpenwith()}
+                onmouseleave=${() => this.onMouseLeaveOpenwith()}
+              >
                 <i class="fa fa-share"></i>
                 Open with...
                 <i class="fa fa-caret-right"></i>
@@ -126,9 +131,20 @@ export class PageMenuNavbarBtn {
     page.siteInfo.userSettings = await beaker.archives.remove(page.siteInfo.key)
   }
 
-  onClickOpenwith () {
-    this.isOpenwithOpen = !this.isOpenwithOpen
+  onMouseEnterOpenwith () {
+    if (this.openwithMouseLeaveTimer) {
+      clearTimeout(this.openwithMouseLeaveTimer)
+      this.openwithMouseLeaveTimer = null
+    }
+    this.isOpenwithOpen = true
     this.updateActives()
+  }
+
+  onMouseLeaveOpenwith () {
+    this.openwithMouseLeaveTimer = setTimeout(() => {
+      this.isOpenwithOpen = false
+      this.updateActives()
+    }, 300)
   }
 
   onClickOpenwithLibrary () {
