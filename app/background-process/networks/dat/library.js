@@ -433,6 +433,9 @@ export async function configureStaging (archive, userSettings, isWritableOverrid
     archive.staging = hyperstaging(archive, userSettings.localPath, {
       ignore: ['/.dat', '/.git']
     })
+    if ((await jetpack.existsAsync(userSettings.localPath)) !== 'dir') {
+      return // abort here, the folder is AWOL
+    }
 
     // restore dat.json if needed
     const datJsonOnly = path => path !== '/dat.json'
