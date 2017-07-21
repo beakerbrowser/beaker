@@ -230,9 +230,14 @@ export default {
   }, */
 
   async download (url, opts = {}) {
-    var {archive, filepath, version} = await lookupArchive(url, opts)
-    if (version) throw new Error('Not yet supported: can\'t download() old versions yet. Sorry!') // TODO
-    return pda.download(archive, filepath)
+    return timer(to(opts), async (checkin) => {
+      var {archive, filepath, version} = await lookupArchive(url, false)
+      if (version) throw new Error('Not yet supported: can\'t download() old versions yet. Sorry!') // TODO
+      if (archive.writable) {
+        return // no need to download
+      }
+      return pda.download(archive, filepath)
+    })
   },
 
   async readdir (url, opts = {}) {
@@ -481,7 +486,7 @@ async function parseUrlParts (url) {
 // - sets archive.checkoutFS to what's requested by version
 // - throws if the filepath is invalid
 async function lookupArchive (url, opts = {}) {
-  return timer(to(opts), async (checkin) => {
+  async function lookupArchiveInner (checkin) {
     checkin('searching for archive')
 
     // lookup the archive
@@ -498,7 +503,14 @@ async function lookupArchive (url, opts = {}) {
     }
 
     return {archive, filepath, version}
-  })
+  }
+  if (opts === false) {
+    // dont use timeout
+    return lookupArchiveInner(noop)
+  } else {
+    // use timeout
+    return timer(to(opts), lookupArchiveInner)
+  }
 }
 
 async function lookupUrlDatKey (url) {
@@ -517,3 +529,5 @@ async function lookupUrlDatKey (url) {
 function massageHistoryObj ({name, version, type}) {
   return {path: name, version, type}
 }
+
+function noop () {}
