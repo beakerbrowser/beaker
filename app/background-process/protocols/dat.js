@@ -39,28 +39,11 @@ const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 
 // content security policies
 const DAT_CSP = `
-default-src 'self' dat: blob:;
-script-src 'self' 'unsafe-eval' 'unsafe-inline' dat: blob:;
-style-src 'self' 'unsafe-inline' dat: blob:;
-img-src 'self' data: dat: blob:;
-font-src 'self' data: dat: blob:;
+default-src * data: blob:;
+script-src * 'unsafe-eval' 'unsafe-inline' data: blob:;
+style-src * 'unsafe-inline' data: blob:;
 object-src 'none';
 `.replace(/\n/g, ' ')
-
-const CUSTOM_DAT_CSP = origins => {
-  if (Array.isArray(origins)) origins = origins.map(o => `http://${o} https://${o}`).join(' ')
-  else origins = ''
-  return `
-default-src 'self' dat: blob:;
-script-src 'self' 'unsafe-eval' 'unsafe-inline' dat: blob:;
-style-src 'self' 'unsafe-inline' dat: blob:;
-img-src 'self' data: dat: ${origins} blob:;
-font-src 'self' data: dat: ${origins} blob:;
-media-src 'self' dat: ${origins} blob:;
-connect-src 'self' dat: ${origins};
-object-src 'none';
-`.replace(/\n/g, ' ')
-}
 
 // globals
 // =
@@ -314,12 +297,13 @@ async function datServer (req, res) {
   // }
 
   // fetch the permissions
-  var origins
-  try {
-    origins = await sitedataDb.getNetworkPermissions('dat://' + archiveKey)
-  } catch (e) {
-    origins = []
-  }
+  // TODO this has been disabled until we can create a better UX -prf
+  // var origins
+  // try {
+  //   origins = await sitedataDb.getNetworkPermissions('dat://' + archiveKey)
+  // } catch (e) {
+  //   origins = []
+  // }
 
   // handle range
   res.setHeader('Accept-Ranges', 'bytes')
@@ -348,7 +332,7 @@ async function datServer (req, res) {
       headersSent = true
       var headers = {
         'Content-Type': mimeType,
-        'Content-Security-Policy': CUSTOM_DAT_CSP(origins),
+        'Content-Security-Policy': DAT_CSP,
         'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'public, max-age: 60'
         // ETag
