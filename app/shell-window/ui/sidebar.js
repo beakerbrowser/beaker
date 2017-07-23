@@ -200,7 +200,7 @@ function doResize () {
   var pageSize = document.body.getClientRects()[0]
   Array.from(webviewsEl.querySelectorAll('webview')).forEach(wv => {
     var id = wv.dataset.id || ''
-    if (panels[id] && panels[id].visible) {
+    if (panels[id]) {
       wv.style.width = `${pageSize.width - sidebarWidth}px`
     } else {
       wv.style.width = '100%'
