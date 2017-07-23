@@ -19,6 +19,13 @@ export function createEl (id) {
   return el
 }
 
+export function destroyEl (id) {
+  var el = document.querySelector(`#promptbars [data-id="${id}"]`)
+  if (el) {
+    promptBarsDiv.removeChild(el)
+  }
+}
+
 export function add (page, { type, render, duration, onForceClose }) {
   // if 'type' is set, only allow one of the type
   if (type) {

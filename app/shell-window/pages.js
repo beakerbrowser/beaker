@@ -332,6 +332,8 @@ export async function remove (page) {
   page.stopLiveReloading()
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)
+  navbar.destroyEl(page.id)
+  promptbar.destroyEl(page.id)
 
   // persist pins w/o this one, if that was
   if (page.isPinned) { savePinnedToDB() }
