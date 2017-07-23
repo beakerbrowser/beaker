@@ -94,9 +94,11 @@ export class PageMenuNavbarBtn {
   }
 
   close () {
-    this.isDropdownOpen = false
-    this.isOpenwithOpen = false
-    this.updateActives()
+    if (this.isDropdownOpen) {
+      this.isDropdownOpen = false
+      this.isOpenwithOpen = false
+      this.updateActives()
+    }
   }
 
   onClickBtn (e) {

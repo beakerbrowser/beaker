@@ -186,8 +186,10 @@ export class BrowserMenuNavbarBtn {
   onClickAnywhere (e) {
     var parent = findParent(e.target, 'browser-dropdown-menu')
     if (parent) return // abort - this was a click on us!
-    this.isDropdownOpen = false
-    this.updateActives()
+    if (this.isDropdownOpen) {
+      this.isDropdownOpen = false
+      this.updateActives()
+    }
   }
 
   onNewDownload () {

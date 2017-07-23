@@ -161,8 +161,10 @@ export class SiteInfoNavbarBtn {
   }
 
   closeDropdown () {
-    this.isDropdownOpen = false
-    this.updateActives()
+    if (this.isDropdownOpen) {
+      this.isDropdownOpen = false
+      this.updateActives()
+    }
   }
 
   toggleDropdown (e) {
