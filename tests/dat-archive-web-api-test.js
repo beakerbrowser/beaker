@@ -79,7 +79,12 @@ async function readdir (url, path, opts) {
 async function readFile (url, path, opts) {
   return app.client.executeAsync((url, path, opts, done) => {
     var archive = new DatArchive(url)
-    archive.readFile(path, opts).then(done, done)
+    archive.readFile(path, opts).then(v => {
+      if (v instanceof ArrayBuffer) {
+        v = new Uint8Array(v)
+      }
+      done(v)
+    }, done)
   }, url, path, opts)
 }
 async function writeFile (url, path, content, opts) {
@@ -445,10 +450,7 @@ test('archive.writeFile', async t => {
     t.falsy(res.value)
 
     // read it back
-    var res = await app.client.executeAsync((url, filename, opts, done) => {
-      var archive = new DatArchive(url)
-      archive.readFile(filename, opts).then(done, done)
-    }, createdDatURL, filename, encoding)
+    var res = await readFile(createdDatURL, filename, encoding)
     if (encoding === 'binary') {
       t.truthy(content.equals(Buffer.from(res.value)))
     } else {
@@ -463,10 +465,7 @@ test('archive.writeFile', async t => {
     t.truthy(Array.isArray(res.value))
 
     // read it back again
-    var res = await app.client.executeAsync((url, filename, opts, done) => {
-      var archive = new DatArchive(url)
-      archive.readFile(filename, opts).then(done, done)
-    }, createdDatURL, filename, encoding)
+    var res = await readFile(createdDatURL, filename, encoding)
     if (encoding === 'binary') {
       t.truthy(content.equals(Buffer.from(res.value)))
     } else {

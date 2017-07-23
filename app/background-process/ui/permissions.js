@@ -1,10 +1,8 @@
 import { ipcMain, session, BrowserWindow } from 'electron'
 var debug = require('debug')('beaker')
-import rpc from 'pauls-electron-rpc'
 import * as siteData from '../dbs/sitedata'
 import PERMS from '../../lib/perms'
 import { getPermId } from '../../lib/strings'
-import manifest from '../../lib/api-manifests/external/permissions'
 
 // globals
 // =
@@ -19,9 +17,6 @@ export function setup () {
   // wire up handlers
   session.defaultSession.setPermissionRequestHandler(onPermissionRequestHandler)
   ipcMain.on('permission-response', onPermissionResponseHandler)
-
-  // wire up RPC
-  rpc.exportAPI('beakerPermissions', manifest, RPCAPI)
 }
 
 export function requestPermission (permission, webContents, opts) {
@@ -64,21 +59,6 @@ export function denyAllRequests (win) {
     }
     return true
   })
-}
-
-// rpc api
-// =
-
-const RPCAPI = {
-  requestPermission (permission) {
-    return requestPermission(permission, this.sender)
-  },
-  revokePermission (permission) {
-    return revokePermission(permission, this.sender)
-  },
-  queryPermission (permission) {
-    return queryPermission(permission, this.sender)
-  }
 }
 
 // event handlers
