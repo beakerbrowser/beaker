@@ -177,7 +177,9 @@ test('library "updated" event', async t => {
   }, createdDatURL)
 
   // check result
-    await app.client.waitUntil(() => app.client.execute(() => { return window.newTitle }), 5e3)
+  await app.client.waitUntil(() => {
+    return app.client.execute(() => { return !!window.newTitle }).then(res => res.value)
+  }, 5e3)
   var res = await app.client.execute(() => { return window.newTitle })
   t.deepEqual(res.value, 'The New Title')
 })
