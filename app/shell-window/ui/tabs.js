@@ -206,9 +206,7 @@ function onClickPin (page) {
 
 function onClickTab (page) {
   return e => {
-    if (e.which === 2) {
-      pages.remove(page)
-    } else {
+    if (e.which !== 2) {
       pages.setActive(page)
     }
   }
@@ -271,7 +269,13 @@ function onContextMenuTab (page) {
 
 function onMouseDown (page) {
   return e => {
-    // left-click only
+    // middle click
+    if (e.which === 2) {
+      pages.remove(page)
+      return
+    }
+
+    // left click
     if (e.which !== 1) {
       return
     }
