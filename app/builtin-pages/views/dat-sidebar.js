@@ -15,7 +15,7 @@ import { throttle } from '../../lib/functions'
 // =
 
 var currentSection = 'files'
-var hostname = false
+var origin = false
 var archiveKey
 var archive
 var archiveInfo
@@ -173,7 +173,7 @@ async function parseURL () {
 
   try {
     var urlp = parseDatURL(url)
-    hostname = urlp.origin
+    origin = urlp.origin
     if (urlp.protocol === 'dat:') {
       archiveKey = await DatArchive.resolveName(urlp.hostname)
     }
@@ -290,7 +290,7 @@ function update () {
           {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
         ].filter(Boolean))}
         ${({
-          files: () => renderFiles(archiveInfo, {hideDate: true}),
+          files: () => renderFiles(archiveInfo, {hideDate: true, baseUrl: origin}),
           log: () => rHistory(archiveInfo),
           settings: () => rSettings(archiveInfo),
           staging: () => rStagingArea(archiveInfo)
@@ -305,7 +305,7 @@ function updateNonArchive () {
   yo.update(document.querySelector('main'), yo`
     <main>
       <div class="info http">
-        <h1>${hostname || ''}</h1>
+        <h1>${origin || ''}</h1>
         <p>Not a peer-to-peer Website.</p>
       </div>
     </main>

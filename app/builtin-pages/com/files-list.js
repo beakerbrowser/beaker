@@ -9,6 +9,9 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 // exported api
 // =
 
+// opts:
+//  - hideDate: show the date on the files (bool)
+//  - baseUrl: override the base URL of file links (string)
 export default function render (archiveInfo, opts = {}) {
   return yo`
     <div>
@@ -152,7 +155,7 @@ function rFile (archiveInfo, node, depth, opts) {
       title=${node.niceName}
       style=${'padding-left: ' + padding + 'px'}>
       <div class="name">
-        <a href=${join(archiveInfo.url, node.entry.name)}><i class="fa fa-file-text-o"></i>${node.niceName}</a>
+        <a href=${join(opts.baseUrl || archiveInfo.url, node.entry.name)}><i class="fa fa-file-text-o"></i>${node.niceName}</a>
       </div>
       <div class="size">${prettyBytes(node.entry.size)}</div>
       ${!opts.hideDate ? yo`<div class="updated">${niceDate(+node.entry.mtime)}</div>` : ''}
