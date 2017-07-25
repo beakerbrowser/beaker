@@ -91,7 +91,7 @@
     }
   },
   "scripts": {
-    "postinstall": "cd app && npm install",
+    "postinstall": "cd app && npm install && opencollective postinstall",
     "build": "gulp build",
     "burnthemall": "rm -Rf ./node_modules ./app/node_modules; npm i; npm run rebuild",
     "lint": "eslint --ignore-pattern 'color-thief.js' --ignore-pattern 'app/node_modules' --ignore-pattern '*.build.js' app",
@@ -100,5 +100,13 @@
     "start": "gulp start",
     "start-logging": "DEBUG=*,-bittorrent-dht $(node -e \"console.log(require('electron'))\") -r trace ./app",
     "watch": "gulp start-watch"
+  },
+  "dependencies": {
+    "opencollective": "^1.0.3"
+  },
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/beaker",
+    "logo": "https://opencollective.com/opencollective/logo.txt"
   }
 }
