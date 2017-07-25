@@ -23,7 +23,7 @@ Beaker is a new browser that combines the flexibility of the desktop with the co
  - You can duplicate, modify, and share websites
  - You can use apps while offline
  - You can go back in time and see previous verions of your content
- 
+
 ### Features
 
  - Host sites from the browser
@@ -141,7 +141,8 @@ Launching from tmux is known to cause issues with GUI apps in MacOS. On Beaker, 
 ## Contributors
 
 This project exists thanks to all the people who contribute. [[Contribute]](CONTRIBUTING.md).
-<a href="graphs/contributors"><img src="https://opencollective.com/beaker/contributors.svg?width=890" /></a>
+[![](https://opencollective.com/beaker/contributors.svg?width=890)](https://github.com/beakerbrowser/beaker/graphs/contributors)
+
 
 
 ## Backers
