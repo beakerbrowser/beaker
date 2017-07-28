@@ -42,11 +42,9 @@ async function setup () {
     if (+latestVersion < LATEST_VERSION) {
       await beakerSitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
       if (!latestVersion) {
-        window.open('beaker://start')
-        window.location = WELCOME_URL
+        window.open(WELCOME_URL)
       } else {
-        window.open('beaker://start')
-        window.location = RELEASE_NOTES_URL
+        window.open(RELEASE_NOTES_URL)
       }
       return
     }
