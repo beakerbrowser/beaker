@@ -100,5 +100,10 @@
     "start": "gulp start",
     "start-logging": "DEBUG=*,-bittorrent-dht $(node -e \"console.log(require('electron'))\") -r trace ./app",
     "watch": "gulp start-watch"
+  },
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/beaker",
+    "logo": "https://opencollective.com/opencollective/logo.txt"
   }
 }
