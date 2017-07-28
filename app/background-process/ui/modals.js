@@ -1,4 +1,5 @@
 import {app, BrowserWindow} from 'electron'
+import {ModalActiveError} from 'beaker-error-constants'
 import path from 'path'
 
 const SIZES = {
@@ -19,8 +20,7 @@ var modalWindow
 
 export function showModal (parentWindow, modalName, opts = {}) {
   if (modalWindow) {
-    // TODO create a new Error type
-    return Promise.reject(new Error('Modal already active'))
+    return Promise.reject(new ModalActiveError())
   }
 
   // create the modal window
