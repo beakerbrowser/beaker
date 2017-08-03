@@ -117,7 +117,7 @@ export default {
     var {archive, version} = await lookupArchive(url, opts)
     if (version) return [] // TODO
     if (!archive.staging) return []
-    return pda.diff(archive.staging, {shallow: opts.shallow})
+    return pda.diff(archive.staging, {shallow: opts.shallow, compareContent: true})
   },
 
   async commit (url, opts = {}) {
@@ -125,7 +125,7 @@ export default {
     if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
     if (!archive.staging) return []
     await assertWritePermission(archive, this.sender)
-    var res = await pda.commit(archive.staging)
+    var res = await pda.commit(archive.staging, {compareContent: true})
     await datLibrary.updateSizeTracking(archive)
     return res
   },
