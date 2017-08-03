@@ -18,7 +18,7 @@
     "dat-dns": "^1.3.2",
     "dat-encoding": "^4.0.2",
     "datland-swarm-defaults": "^1.0.2",
-    "debug": "^2.3.3",
+    "debug": "git://github.com/beakerbrowser/debug.git#8d79a96e2c5f79527d7580960be3da9ae246ed8e",
     "discovery-swarm": "^4.3.8",
     "du": "git://github.com/beakerbrowser/node-du.git#8db9ed862712a964289d2d07e58f2d7ec543a56e",
     "electron-localshortcut": "^0.6.0",

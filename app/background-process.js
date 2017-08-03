@@ -1,4 +1,5 @@
 Error.stackTraceLimit = Infinity
+import setupDebugLogger from './background-process/debug-logger'
 
 // This is main process of Electron, started as first thing when your
 // app starts. This script is running through entire life of your application.
@@ -29,6 +30,7 @@ import * as datProtocol from './background-process/protocols/dat'
 import * as openURL from './background-process/open-url'
 
 // read config from env vars
+setupDebugLogger()
 if (process.env.beaker_user_data_path) {
   console.log('User data path set by environment variables')
   console.log('userData:', process.env.beaker_user_data_path)
