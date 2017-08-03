@@ -13,6 +13,7 @@ const dat = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, e
 export default class DatArchive extends EventTarget {
   constructor (url) {
     super()
+    var errStack = (new Error()).stack
 
     // simple case: new DatArchive(window.location)
     if (url === window.location) {
@@ -21,13 +22,13 @@ export default class DatArchive extends EventTarget {
 
     // basic URL validation
     if (!url || typeof url !== 'string') {
-      throw new Error('Invalid dat:// URL')
+      throwWithFixedStack(new Error('Invalid dat:// URL'), errStack)
     }
 
     // parse the URL
     const urlParsed = parseDatURL(url)
     if (!urlParsed || urlParsed.protocol !== 'dat:') {
-      throw new Error('Invalid URL: must be a dat:// URL')
+      throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
     }
     url = 'dat://' + urlParsed.hostname
 
@@ -54,66 +55,115 @@ export default class DatArchive extends EventTarget {
   }
 
   static create (opts = {}) {
+    var errStack = (new Error()).stack
     return dat.createArchive(opts)
       .then(newUrl => new DatArchive(newUrl))
+      .catch(e => throwWithFixedStack(e, errStack))
   }
 
   static fork (url, opts = {}) {
+    var errStack = (new Error()).stack
     url = (typeof url.url === 'string') ? url.url : url
     if (!isDatURL(url)) {
-      return Promise.reject(new Error('Invalid URL: must be a dat:// URL'))
+      throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
     }
     return dat.forkArchive(url, opts)
       .then(newUrl => new DatArchive(newUrl))
+      .catch(e => throwWithFixedStack(e, errStack))
   }
 
   async getInfo (opts = {}) {
-    var url = await this[URL_PROMISE]
-    return dat.getInfo(url, opts)
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      return await dat.getInfo(url, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   async diff (opts = {}) {
-    var url = await this[URL_PROMISE]
-    return dat.diff(url, opts)
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      return await dat.diff(url, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   async commit (opts = {}) {
-    var url = await this[URL_PROMISE]
-    return dat.commit(url, opts)
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      return await dat.commit(url, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   async revert (opts = {}) {
-    var url = await this[URL_PROMISE]
-    return dat.revert(url, opts)
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      return await dat.revert(url, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   async history (opts = {}) {
-    var url = await this[URL_PROMISE]
-    return dat.history(url, opts)
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      return await dat.history(url, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   async stat (path, opts = {}) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    return new Stat(await dat.stat(url, opts))
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      url = joinPath(url, path)
+      return new Stat(await dat.stat(url, opts))
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   async readFile (path, opts = {}) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    return dat.readFile(url, opts)
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      url = joinPath(url, path)
+      return await dat.readFile(url, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   async writeFile (path, data, opts = {}) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    return dat.writeFile(url, data, opts)
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      url = joinPath(url, path)
+      return await dat.writeFile(url, data, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   async unlink (path) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    return dat.unlink(url)
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      url = joinPath(url, path)
+      return await dat.unlink(url)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   // TODO copy-disabled
@@ -131,64 +181,116 @@ export default class DatArchive extends EventTarget {
   } */
 
   async download (path = '/', opts = {}) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    return dat.download(url, opts)
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      url = joinPath(url, path)
+      return await dat.download(url, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   async readdir (path = '/', opts = {}) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    var names = await dat.readdir(url, opts)
-    if (opts.stat) {
-      names.forEach(name => { name.stat = new Stat(name.stat) })
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      url = joinPath(url, path)
+      var names = await dat.readdir(url, opts)
+      if (opts.stat) {
+        names.forEach(name => { name.stat = new Stat(name.stat) })
+      }
+      return names
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
     }
-    return names
   }
 
   async mkdir (path) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    return dat.mkdir(url)
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      url = joinPath(url, path)
+      return await dat.mkdir(url)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   async rmdir (path, opts = {}) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    return dat.rmdir(url, opts)
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      url = joinPath(url, path)
+      return await dat.rmdir(url, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   createFileActivityStream (pathSpec = null) {
-    return fromEventStream(dat.createFileActivityStream(this.url, pathSpec))
+    var errStack = (new Error()).stack
+    try {
+      return fromEventStream(dat.createFileActivityStream(this.url, pathSpec))
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   createNetworkActivityStream () {
-    return fromEventStream(dat.createNetworkActivityStream(this.url))
-  }
-
-  static importFromFilesystem (opts = {}) {
-    return dat.importFromFilesystem(opts)
-  }
-
-  static exportToFilesystem (opts = {}) {
-    return dat.exportToFilesystem(opts)
-  }
-
-  static exportToArchive (opts = {}) {
-    return dat.exportToArchive(opts)
-  }
-
-  static resolveName (name) {
-    // simple case: DatArchive.resolveName(window.location)
-    if (name === window.location) {
-      name = window.location.toString()
+    var errStack = (new Error()).stack
+    try {
+      return fromEventStream(dat.createNetworkActivityStream(this.url))
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
     }
-    return dat.resolveName(name)
+  }
+
+  static async importFromFilesystem (opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      return await dat.importFromFilesystem(opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
+
+  static async exportToFilesystem (opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      return await dat.exportToFilesystem(opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
+
+  static async exportToArchive (opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      return await dat.exportToArchive(opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
+
+  static async resolveName (name) {
+    var errStack = (new Error()).stack
+    try {
+      // simple case: DatArchive.resolveName(window.location)
+      if (name === window.location) {
+        name = window.location.toString()
+      }
+      return await dat.resolveName(name)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
   }
 
   static selectArchive (opts = {}) {
+    var errStack = (new Error()).stack
     return dat.selectArchive(opts)
       .then(url => new DatArchive(url))
+      .catch(e => throwWithFixedStack(e, errStack))
   }
 }
 
@@ -200,4 +302,10 @@ function isDatURL (url) {
 function joinPath (url, path) {
   if (path.charAt(0) === '/') return url + path
   return url + '/' + path
+}
+
+function throwWithFixedStack (e, errStack) {
+  e = e || new Error()
+  e.stack = e.stack.split('\n')[0] + '\n' + errStack.split('\n').slice(2).join('\n')
+  throw e
 }
