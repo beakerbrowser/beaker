@@ -8,6 +8,7 @@ import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 import errorPage from '../../lib/error-page'
 import {archivesDebugPage, datDnsCachePage, datDnsCacheJS} from '../networks/dat/debugging'
+import {getLogFilePath} from '../debug-logger'
 
 // constants
 // =
@@ -270,6 +271,9 @@ async function beakerServer (req, res) {
   }
   if (requestUrl === 'beaker://dat-dns-cache/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', datDnsCacheJS)
+  }
+  if (requestUrl === 'beaker://debug-log/') {
+    return cb(200, 'OK', 'text/plain', getLogFilePath())
   }
 
   return cb(404, 'Not Found')

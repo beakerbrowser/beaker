@@ -18,10 +18,14 @@ export default function setup () {
   debug.overrideUseColors()
 
   logFileWriteStream = fs.createWriteStream(logFilePath)
-  logFileWriteStream.write(format('Log started at %s', new Date()))
+  logFileWriteStream.write(format('Log started at %s\n', new Date()))
   debug.useColors = () => false
   debug.log = (...args) => logFileWriteStream.write(format(...args) + '\n')
   logFileWriteStream.on('error', e => {
     console.log('Failed to open debug.log', e)
   })
+}
+
+export function getLogFilePath () {
+  return logFilePath
 }

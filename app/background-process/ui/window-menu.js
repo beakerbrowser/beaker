@@ -254,6 +254,11 @@ var beakerDevMenu = {
       if (win) win.webContents.send('command', 'file:new-tab', 'beaker://dat-dns-cache/')
     }
   }, {
+    label: 'Open Debug Log Page',
+    click: function (item, win) {
+      if (win) win.webContents.send('command', 'file:new-tab', 'beaker://debug-log/')
+    }
+  }, {
     label: 'Toggle Shell-Window DevTools',
     click: function () {
       BrowserWindow.getFocusedWindow().toggleDevTools()
