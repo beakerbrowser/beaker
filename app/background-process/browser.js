@@ -160,6 +160,9 @@ export function removeAsDefaultProtocolClient (protocol) {
 export function getInfo () {
   return Promise.resolve({
     version: app.getVersion(),
+    electronVersion: process.versions.electron,
+    chromiumVersion: process.versions.chrome,
+    nodeVersion: process.versions.node,
     platform: os.platform(),
     updater: {
       isBrowserUpdatesSupported,

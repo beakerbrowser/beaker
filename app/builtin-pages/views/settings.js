@@ -54,7 +54,7 @@ function render () {
 
       <h2 class="ll-heading">Beaker information</h2>
       <ul class="settings-section">
-        <li>Version: ${browserInfo.version}</li>
+        <li>Version: ${browserInfo.version} <small>Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</small></li>
         <li>User data: ${browserInfo.paths.userData}</li>
       </ul>
 
