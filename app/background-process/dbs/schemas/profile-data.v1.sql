@@ -62,6 +62,5 @@ INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Homepag
 INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Twitter', 'https://twitter.com/beakerbrowser', 1);
 INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Mailing List', 'https://groups.google.com/forum/#!forum/beaker-browser', 1);
 INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Report an Issue', 'https://github.com/beakerbrowser/beaker/issues', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'DuckDuckGo', 'https://duckduckgo.com', 1);
 
 PRAGMA user_version = 1;
