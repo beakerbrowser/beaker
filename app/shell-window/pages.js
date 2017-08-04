@@ -63,6 +63,10 @@ export function setup () {
         page.siteInfo.peers = details.peerCount
         navbar.update(page)
       }
+      // refresh if this was a 503ed site
+      if (page.siteWasADatTimeout && page.url.startsWith(details.url)) {
+        page.reload()
+      }
     })
   })
 }
@@ -112,6 +116,7 @@ export function create (opts) {
     sitePerms: null, // saved permissions for the current page
     siteInfoOverride: null, // explicit overrides on the siteinfo, used by beaker: pages
     siteHasDatAlternative: false, // is there a dat:// version we can redirect to?
+    siteWasADatTimeout: false, // did we timeout trying to find this site on the dat network?
 
     // history
     lastVisitedAt: 0, // when is last time url updated?
@@ -575,6 +580,7 @@ function onDidStartLoading (e) {
   if (page) {
     // update state
     page.manuallyTrackedIsLoading = true
+    page.siteWasADatTimeout = false
     navbar.update(page)
     navbar.hideInpageFind(page)
     if (page.isActive) {
@@ -606,17 +612,19 @@ function onDidStopLoading (e) {
       page.checkForDatAlternative(hostname)
     }
     if (protocol === 'dat:') {
-      DatArchive.resolveName(hostname).then(key => {
-        beaker.archives.get(key).then(info => {
-          page.siteInfo = info
-          navbar.update(page)
+      DatArchive.resolveName(hostname)
+        .catch(err => hostname) // try the hostname as-is, might be a hash
+        .then(key => {
+          beaker.archives.get(key).then(info => {
+            page.siteInfo = info
+            navbar.update(page)
 
-          // fallback the tab title to the site title, if needed
-          if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
-            page.title = info.title
-            events.emit('page-title-updated', page)
-          }
-        })
+            // fallback the tab title to the site title, if needed
+            if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
+              page.title = info.title
+              events.emit('page-title-updated', page)
+            }
+          })
       })
     }
     if (protocol !== 'beaker:') {
@@ -728,6 +736,10 @@ function onDidGetResponseDetails (e) {
     page.loadingURL = e.newURL
     page.siteInfoOverride = null
     navbar.updateLocation(page)
+    // if it's a failed dat discovery...
+    if (e.httpResponseCode === 504 && e.newURL.startsWith('dat://')) {
+      page.siteWasADatTimeout = true
+    }
   }
 }
 

@@ -350,6 +350,7 @@ export default {
   },
 
   async resolveName (name) {
+    if (DAT_HASH_REGEX.test(name)) return name
     return datDns.resolveName(name)
   },
 
