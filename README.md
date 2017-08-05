@@ -86,13 +86,13 @@ Requires node 6.2.1.
 In linux (possibly also OSX) you need libtool, m4, automake, make, and g++.
 
 ```
-sudo apt-get install libtool m4 automake make g++
+sudo apt-get install libtool m4 automake make g++ npm
 ```
 
 In Fedora:
 
 ```
-sudo dnf install libtool m4 make gcc-c++
+sudo dnf install libtool m4 make gcc-c++ npm
 ```
 
 To build:
