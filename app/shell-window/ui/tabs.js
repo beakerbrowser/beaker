@@ -64,7 +64,7 @@ function drawTab (page) {
   } else {
     // page's explicit favicon
     if (page.favicons && page.favicons[0]) {
-      favicon = yo`<img src=${page.favicons[0]}>`
+      favicon = yo`<img src=${page.favicons[page.favicons.length - 1]}>`
       favicon.onerror = onFaviconError(page)
     } else if (page.getURL().startsWith('beaker:')) {
       favicon = yo`<img src="beaker-favicon:beaker">`
