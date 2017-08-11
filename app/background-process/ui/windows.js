@@ -1,5 +1,6 @@
 import { app, BrowserWindow, screen, ipcMain, webContents, Menu, Tray } from 'electron'
 import { register as registerShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
+import os from 'os'
 import jetpack from 'fs-jetpack'
 import path from 'path'
 import * as openURL from '../open-url'
@@ -13,7 +14,13 @@ var userDataDir
 var stateStoreFile = 'shell-window-state.json'
 var numActiveWindows = 0
 var tray = null
-var isQuittingExplicitly = process.env.NODE_ENV === 'test'
+var isReadyToQuit = false
+
+// dont do explicit quits in test mode or linux
+// (electron + linux cant reliably do tray icons)
+if (os.platform() !== 'darwin' || process.env.NODE_ENV === 'test') {
+  isReadyToQuit = true
+}
 
 // exported methods
 // =
@@ -47,7 +54,7 @@ export function setup () {
   app.on('activate', () => ensureOneWindowExists())
   app.on('open-url', (e, url) => openURL.open(url))
   app.on('before-quit', e => {
-    if (!isQuittingExplicitly) {
+    if (!isReadyToQuit) {
       e.preventDefault()
       // do close all windows
       BrowserWindow.getAllWindows().forEach(w => w.close())
@@ -58,12 +65,12 @@ export function setup () {
   return createShellWindow()
 }
 
-export function setIsQuittingExplicitly (v) {
-  isQuittingExplicitly = v
+export function setIsReadyToQuit (v) {
+  isReadyToQuit = v
 }
 
 export function explicitQuit () {
-  isQuittingExplicitly = true
+  isReadyToQuit = true
   app.quit()
 }
 
