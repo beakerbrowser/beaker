@@ -76,10 +76,3 @@ app.on('ready', function () {
   // listen OSX open-url event
   openURL.setup()
 })
-
-app.on('activate', () => windows.ensureOneWindowExists())
-app.on('open-url', (e, url) => openURL.open(url))
-
-app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') { app.quit() }
-})

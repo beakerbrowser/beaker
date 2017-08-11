@@ -1,7 +1,9 @@
-import { app, BrowserWindow, screen, ipcMain, webContents } from 'electron'
+import { app, BrowserWindow, screen, ipcMain, webContents, Menu, Tray } from 'electron'
 import { register as registerShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
+import os from 'os'
 import jetpack from 'fs-jetpack'
 import path from 'path'
+import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
 var debug = require('debug')('beaker')
@@ -11,6 +13,14 @@ var debug = require('debug')('beaker')
 var userDataDir
 var stateStoreFile = 'shell-window-state.json'
 var numActiveWindows = 0
+var tray = null
+var isReadyToQuit = false
+
+// dont do explicit quits in test mode or linux
+// (electron + linux cant reliably do tray icons)
+if (os.platform() !== 'darwin' || process.env.NODE_ENV === 'test') {
+  isReadyToQuit = true
+}
 
 // exported methods
 // =
@@ -18,6 +28,19 @@ var numActiveWindows = 0
 export function setup () {
   // config
   userDataDir = jetpack.cwd(app.getPath('userData'))
+
+  // setup tray
+  tray = new Tray(path.join(__dirname, './assets/img/logo-favicon.png'))
+  const contextMenu = Menu.buildFromTemplate([
+    {label: 'New Tab', click: openTab()},
+    {type: 'separator'},
+    {label: 'Library...', click: openTab('beaker://library/')},
+    {label: 'Preferences...', click: openTab('beaker://settings/')},
+    {type: 'separator'},
+    {label: 'Quit Beaker', click: explicitQuit}
+  ])
+  tray.setToolTip('Actively sharing on the p2p network.')
+  tray.setContextMenu(contextMenu)
 
   // load pinned tabs
   ipcMain.on('shell-window-ready', e => {
@@ -27,8 +50,28 @@ export function setup () {
     }
   })
 
+  // set up app events
+  app.on('activate', () => ensureOneWindowExists())
+  app.on('open-url', (e, url) => openURL.open(url))
+  app.on('before-quit', e => {
+    if (!isReadyToQuit) {
+      e.preventDefault()
+      // do close all windows
+      BrowserWindow.getAllWindows().forEach(w => w.close())
+    }
+  })
+
   // create first shell window
   return createShellWindow()
+}
+
+export function setIsReadyToQuit (v) {
+  isReadyToQuit = v
+}
+
+export function explicitQuit () {
+  isReadyToQuit = true
+  app.quit()
 }
 
 export function createShellWindow () {
@@ -111,6 +154,22 @@ export function ensureOneWindowExists () {
 function loadShell (win) {
   win.loadURL('beaker://shell-window')
   debug('Opening beaker://shell-window')
+}
+
+function openTab (location) {
+  return () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      let win = createShellWindow()
+      if (location) {
+        ipcMain.once('shell-window-ready', () => {
+          win.webContents.send('command', 'file:new-tab', location)
+        })
+      }
+    } else {
+      let win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+      if (win) win.webContents.send('command', 'file:new-tab', location)
+    }
+  }
 }
 
 function getCurrentPosition (win) {

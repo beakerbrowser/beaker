@@ -13,6 +13,7 @@ import * as settingsDb from './dbs/settings'
 import {internalOnly} from '../lib/bg/rpc'
 import {open as openUrl} from './open-url'
 import {showModal, closeModal} from './ui/modals'
+import {setIsReadyToQuit} from './ui/windows'
 
 // constants
 // =
@@ -239,6 +240,7 @@ export function checkForUpdates () {
 export function restartBrowser () {
   if (updaterState == UPDATER_STATUS_DOWNLOADED) {
     // run the update installer
+    setIsReadyToQuit(true)
     autoUpdater.quitAndInstall()
     debug('[AUTO-UPDATE] Quitting and installing.')
   } else {
