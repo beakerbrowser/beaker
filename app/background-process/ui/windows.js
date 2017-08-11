@@ -13,7 +13,7 @@ var userDataDir
 var stateStoreFile = 'shell-window-state.json'
 var numActiveWindows = 0
 var tray = null
-var isQuittingExplicitly = false
+var isQuittingExplicitly = process.env.NODE_ENV === 'test'
 
 // exported methods
 // =
