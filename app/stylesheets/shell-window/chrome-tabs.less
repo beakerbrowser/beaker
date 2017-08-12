@@ -80,6 +80,7 @@
     }
 
     .chrome-tab-close {
+      display: none;
       position: absolute;
       right: 8px;
       top: 11px;
@@ -88,6 +89,7 @@
       z-index: 2;
       border-radius: 50%;
       text-align: center;
+      color: #888;
 
       &:before {
         display: block;
@@ -114,13 +116,6 @@
         background: none;
       }
 
-      &:hover {
-
-        .chrome-tab-bg {
-          background: @background-tab--hover;
-        }
-      }
-
       .chrome-tab-favicon {
         top: 11px;
         padding: 0 5px;
@@ -129,13 +124,24 @@
       .fa {
         font-size: 10px;
         line-height: 17px;
-        color: #555; // TODO: -tbv
+        color: #888; // TODO: -tbv
+      }
+
+      &:hover {
+
+        .chrome-tab-bg {
+          //background: @background-tab--hover;
+        }
+
+        .fa {
+          color: #777;
+        }
       }
     }
 
     &:hover {
       .chrome-tab-bg {
-        background: @background-tab--hover;
+        //background: @background-tab--hover;
         //transition: .5s background ease;
       }
 
@@ -155,6 +161,10 @@
       .chrome-tab-bg {
         height: 36px;
         background: @background-tab--current;
+      }
+
+      .chrome-tab-close {
+        display: block;
       }
     }
   }
