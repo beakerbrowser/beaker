@@ -147,6 +147,36 @@ var viewMenu = {
   },
   { type: 'separator' },
   {
+    type: 'submenu',
+    label: 'Advanced Tools',
+    submenu: [{
+      label: 'Reload Shell-Window',
+      click: function () {
+        BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
+      }
+    }, {
+      label: 'Open Archives Debug Page',
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'file:new-tab', 'beaker://internal-archives/')
+      }
+    }, {
+      label: 'Open Dat-DNS Cache Page',
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'file:new-tab', 'beaker://dat-dns-cache/')
+      }
+    }, {
+      label: 'Open Debug Log Page',
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'file:new-tab', 'beaker://debug-log/')
+      }
+    }, {
+      label: 'Toggle Shell-Window DevTools',
+      click: function () {
+        BrowserWindow.getFocusedWindow().toggleDevTools()
+      }
+    }]
+  },
+  {
     label: 'Toggle DevTools',
     accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
     click: function (item, win) {
@@ -236,36 +266,6 @@ if (process.platform == 'darwin') {
   })
 }
 
-var beakerDevMenu = {
-  label: 'BeakerDev',
-  submenu: [{
-    label: 'Reload Shell-Window',
-    click: function () {
-      BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
-    }
-  }, {
-    label: 'Open Archives Debug Page',
-    click: function (item, win) {
-      if (win) win.webContents.send('command', 'file:new-tab', 'beaker://internal-archives/')
-    }
-  }, {
-    label: 'Open Dat-DNS Cache Page',
-    click: function (item, win) {
-      if (win) win.webContents.send('command', 'file:new-tab', 'beaker://dat-dns-cache/')
-    }
-  }, {
-    label: 'Open Debug Log Page',
-    click: function (item, win) {
-      if (win) win.webContents.send('command', 'file:new-tab', 'beaker://debug-log/')
-    }
-  }, {
-    label: 'Toggle Shell-Window DevTools',
-    click: function () {
-      BrowserWindow.getFocusedWindow().toggleDevTools()
-    }
-  }]
-}
-
 var helpMenu = {
   label: 'Help',
   role: 'help',
@@ -305,6 +305,5 @@ if (process.platform !== 'darwin') {
 export default function buildWindowMenu () {
   var menus = [fileMenu, editMenu, viewMenu, historyMenu, windowMenu, helpMenu]
   if (process.platform === 'darwin') menus.unshift(darwinMenu)
-  menus.push(beakerDevMenu) // TODO: remove in release build?
   return menus
 }
