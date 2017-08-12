@@ -1,9 +1,14 @@
+@import "./components/sidebar";
 @import "../base/spacing";
 @import "../base/colors";
 
 .bookmarks-wrapper {
+  &:extend(.flex);
   width: 100%;
-  padding: @padding-component--tight @padding-component; // TODO: This padding should be applied to the page container -tbv
+
+  .bookmarks-content {
+    margin-left: 55px;
+  }
 
   h1 {
     margin: 10px 0;

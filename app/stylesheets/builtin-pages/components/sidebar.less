@@ -1,0 +1,36 @@
+.sidebar {
+  position: fixed;
+  height: 100%;
+  width: 40px;
+  background: #111;
+  color: fadeout(#fff, 5%);
+  padding: 15px 5px;
+  text-align: center;
+  margin-right: 15px;
+
+  img {
+    width: 20px;
+  }
+
+  .sidebar-link {
+    position: relative;
+    height: auto;
+    display: block;
+    margin-bottom: 10px;
+
+    .tooltip {
+      display: none;
+      position: absolute;
+      left: 40px;
+      top: -2px;
+      padding: 5px 10px;
+      background: #111;
+      border-radius: 4px;
+      color: fadeout(#fff, 15%);
+    }
+
+    &:hover .tooltip {
+      display: block;
+    }
+  }
+}

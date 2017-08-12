@@ -2,6 +2,7 @@
 
 const yo = require('yo-yo')
 const co = require('co')
+import renderSidebar from '../com/sidebar'
 
 // globals
 //
@@ -60,11 +61,14 @@ function render () {
     document.querySelector('.bookmarks-wrapper'),
     yo`
         <div class="bookmarks-wrapper">
-          <h1 class="ll-heading">Bookmarks</h1>
-          <ul class="links-list bookmarks">
-            ${bookmarks.map(renderRow)}
-            ${helpEl}
-          </ul>
+          ${renderSidebar()}
+          <div class="bookmarks-content">
+            <h1 class="ll-heading">Bookmarks</h1>
+            <ul class="links-list bookmarks">
+              ${bookmarks.map(renderRow)}
+              ${helpEl}
+            </ul>
+          </div>
         </div>`)
 }
 

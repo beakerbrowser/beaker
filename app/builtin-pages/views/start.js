@@ -5,6 +5,7 @@ import {ArchivesList} from 'builtin-pages-lib'
 import ColorThief from '../../lib/fg/color-thief'
 import {findParent} from '../../lib/fg/event-handlers'
 import {pluralize} from '../../lib/strings'
+import renderSidebar from '../com/sidebar'
 
 const colorThief = new ColorThief()
 
@@ -74,14 +75,7 @@ function update () {
 
   yo.update(document.querySelector('main'), yo`
     <main class="${theme}">
-      <header>
-        <div class="actions">
-          <a onclick=${createSite}><i class="fa fa-pencil"></i> New site</a>
-        </div>
-        <div style="flex: 1"></div>
-        ${renderProfileCard()}
-      </header>
-      ${renderShelf()}
+      ${renderSidebar()}
       ${renderPinnedBookmarks()}
     </main>
   `)
