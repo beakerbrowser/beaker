@@ -296,101 +296,193 @@ header {
     margin-bottom: 35px;
     color: fadeout(#333, 25%);
     text-align: center;
-    line-height: 50px;
-    font-size: 20px;
+    cursor: pointer; // TODO: extends for different cursor styles -tbv
+
+    a {
+      cursor: pointer;
+    }
+
+    &:not(:last-child) {
+      margin-right: 20px;
+    }
+
+    &:hover {
+      color: fadeout(#333, 15%);
+      text-decoration: none;
+
+      .remove-pin {
+        display: block;
+      }
+    }
+  }
+
+  &__item-square {
+    width: 55px;
+    height: 55px;
+    margin: 0 auto 5px auto;
+    border: 1px solid fadeout(#333, 75%); // TODO: use color variables -tbv
+    border-radius: 4px; // TODO: make a rounded extend -tbv
     cursor: pointer;
 
-    i {
+    * {
       cursor: pointer;
     }
 
-    &:hover {
-      background: @background-button--gray--hover;
-    }
-  }
-
-  &.open {
-    top: 0;
-    height: 100vh;
-    width: 300px;
-    background: #fff;
-    border-left: 1px solid @border-button;
-  }
-
-  .section-header {
-    position: relative;
-    padding: 10px 0.7rem 3px;
-
-    h3 {
-      font-size: 12px;
-      text-transform: uppercase;
-      font-weight: 600;
-    }
-  }
-
-  hr {
-    margin: 0;
-  }
-
-  .list-item {
-    &:extend(.flex);
-    height: 32px;
-    padding: 5px 0.7rem;
-
-    &:hover {
-      background: @background-menu;
-    }
-
-    .title {
-      display: block;
-      max-width: 250px;
-      &:extend(.overflow-ellipsis);
-      cursor: pointer;
-
-      * {
-        cursor: pointer;
-      }
+    &.add {
+      border: 1px dashed fadeout(#333, 75%);
 
       &:hover {
-        text-decoration: underline;
+        border: 1px dashed fadeout(#333, 60%);
+        background: fadeout(#333, 93%);
+      }
+    }
+
+    &:hover {
+      border: 1px solid fadeout(#333, 60%);
+    }
+
+    .icon {
+      font-size: 22px;
+      margin-top: 15px;
+      height: 22px;
+
+      &:before {
+        margin-top: 15px;
       }
     }
   }
 
-  .bookmark-link {
-    &:extend(.overflow-ellipsis);
+  &__item-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+  }
 
-    .favicon {
-      margin-right: 8px;
+  .pin-site {
+    display: block;
+    background: none;
+    outline: 0;
+
+    .icon::before {
+      margin-top: 10px;
+      transition: transform 0.1s;
+    }
+
+    &.adding {
+      .icon::before {
+        transform: rotate(45deg);
+      }
     }
   }
-}
 
-.shelf .archives-list {
-  .no-archives {
-    padding: 5px .7rem;
+  .remove-pin {
+    position: absolute;
+    top: -4px;
+    right: 4px;
+    border: none;
+    outline: none;
+    background: none;
+    background: #333;
+    color: white;
+    width: 13px;
+    height: 13px;
     margin: 0;
+    padding: 0px;
+    text-align: center;
+    display: none;
+    cursor: pointer;
+
+    &::before {
+      vertical-align: top;
+    }
   }
 
-  .archive {
-    .peers {
-      color: @color-text--light;
-      margin-left: auto;
-    }
+  .links a {
+    color: fadeout(#333, 25%) !important; // TODO link styles should be opt in
   }
 }
 
-.shelf .bookmarks-list {
+form#add-pinned-site {
+  width: 100%;
+  color: fadeout(#333, 15%);
+  margin-bottom: 20px;
+
+  legend {
+    margin-bottom: 10px;
+  }
+
+  input[type="text"] {
+    padding: 0 5px;
+    width: 300px;
+  }
+}
+
+.bookmarks-list {
   list-style: none;
+  margin: 0;
+  padding: 0;
+}
 
-  .no-bookmarks {
-    padding: 5px .7rem;
-    margin: 0;
+.bookmark {
+  padding: 2px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  cursor: pointer;
+
+  &:hover {
+    background: fadeout(#333, 98%);
+    border-top: 1px solid fadeout(#333, 95%);
+    border-bottom: 1px solid fadeout(#333, 95%);
   }
 
-  .favicon {
-    margin-right: @margin-icon;
-    height: 16px;
-    margin-top: 2px;
+  &__favicon {
+    height: 15px;
+    width: 15px;
+    margin-right: 5px;
+  }
+
+  &__link {
+    color: fadeout(#333, 15%);
+
+    &:hover {
+      text-decoration: none;
+      color: fadeout(#333, 15%);
+    }
+  }
+
+  * {
+    vertical-align: middle;
+    cursor: pointer;
   }
 }
+
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+
+  &__info {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+
+    a {
+      color: #31708f;
+      text-decoration: underline;
+    }
+  }
+
+  &__release-notes {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+}
+
