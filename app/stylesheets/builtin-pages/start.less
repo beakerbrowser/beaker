@@ -93,10 +93,6 @@ main {
       font-weight: bold;
      }
 
-    .shelf.closed {
-      background: fadeout(#fff, 50%);
-    }
-
     .bookmarks-container {
       background: fadeout(#fff, 50%);
     }
@@ -104,20 +100,6 @@ main {
 
   // dark theme
   &.dark {
-
-    .bookmarks-container, .shelf.closed {
-      background: fadeout(#000, 40%);
-    }
-
-    .shelf.closed {
-      border: 1px solid fadeout(#fff, 80%);
-      color: #fff;
-      overflow:hidden;
-
-      &:hover {
-        background: fadeout(#000, 60%);
-      }
-    }
 
     header,
     .add-pin-toggle,
@@ -302,18 +284,17 @@ header {
   }
 }
 
-.shelf {
-  position: fixed;
-  right: 0;
-  z-index: 10;
-  overflow-y: auto;
+.pinned {
+  // TODO: make a flexbox-container extend -tbv
+  display: flex;
+  flex-wrap: wrap;
+  margin: ~"calc(50vh - 155px)" auto 0 auto;
 
-  &.closed {
-    top: 50px;
-    height: 50px;
-    width: 50px;
-    color: @color-button;
-    background: @background-button--gray;
+  &__item {
+    position: relative;
+    width: 75px;
+    margin-bottom: 35px;
+    color: fadeout(#333, 25%);
     text-align: center;
     line-height: 50px;
     font-size: 20px;
