@@ -110,50 +110,6 @@ main {
   }
 }
 
-header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  &:extend(.flex);
-  flex-wrap: nowrap;
-  padding: @padding-component--tight @padding-component;
-  font-size: 14px;
-
-  a {
-    cursor: pointer;
-
-    &:hover {
-      &:extend(.link:hover);
-    }
-
-    i {
-      cursor: pointer;
-    }
-  }
-
-  .actions {
-
-    a {
-      margin-right: @padding-component--tight;
-    }
-
-    i {
-      margin-right: @margin-icon;
-    }
-  }
-
-  .profile {
-
-    .network {
-    }
-
-    i {
-      margin: 0 @margin-icon;
-    }
-  }
-}
-
 .pinned-bookmarks {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
