@@ -155,12 +155,18 @@ header {
 }
 
 .pinned-bookmarks {
-  &:extend(.flex);
-  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 35px;
+
+  @media (min-width: 700px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
 }
 
 .pinned-bookmark {
   text-align: center;
+  cursor: pointer;
 
   &:hover {
     &:extend(.link:hover);
