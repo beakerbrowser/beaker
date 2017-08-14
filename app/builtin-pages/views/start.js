@@ -74,7 +74,7 @@ function update () {
   var theme = settings.start_page_background_image
 
   yo.update(document.querySelector('.window-content.start'), yo`
-    <div class="window-content start ${theme}">
+    <div class="window-content builtin start ${theme}">
       ${renderSidebar()}
       <div class="builtin-wrapper start-wrapper">
         <div class="builtin-main center">
