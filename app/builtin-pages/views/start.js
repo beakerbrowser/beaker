@@ -153,16 +153,8 @@ function renderShelf () {
 }
 
 function renderPinnedBookmarks () {
-  var icon = isManagingBookmarks ? 'caret-down' : 'wrench'
-
   return yo`
     <div class="bookmarks-container">
-      <p>
-        <a class="add-pin-toggle" onclick=${toggleAddPin}>
-          <i class="fa fa-${icon}"></i>
-          ${isManagingBookmarks ? 'Close' : 'Manage bookmarks'}
-        </a>
-      </p>
       <div class="pinned-bookmarks">
         ${pinnedBookmarks.map(renderPinnedBookmark)}
       </div>
@@ -172,10 +164,6 @@ function renderPinnedBookmarks () {
 }
 
 function renderBookmarks () {
-  if (!isManagingBookmarks) {
-    return ''
-  }
-
   const isNotPinned = row => !row.pinned
 
   const renderRow = row =>
@@ -203,9 +191,8 @@ function renderPinnedBookmark (bookmark) {
   var { url, title } = bookmark
   var [r, g, b] = bookmark.dominantColor || [255, 255, 255]
   return yo`
-    <a class="pinned-bookmark ${isManagingBookmarks ? 'nolink' : ''}" href=${isManagingBookmarks ? '' : url}>
+    <a class="pinned-bookmark" href=${url}>
       <div class="favicon-container" style="background: rgb(${r}, ${g}, ${b})">
-        ${isManagingBookmarks ? yo`<a class="unpin" onclick=${e => unpinBookmark(e, bookmark)}><i class="fa fa-times"></i></a>` : ''}
         <img src=${'beaker-favicon:' + url} class="favicon"/>
       </div>
       <div class="title">${title}</div>
@@ -231,11 +218,6 @@ function onMouseOutShelf (e) {
     isShelfOpen = false
     update()
   }
-}
-
-function toggleAddPin (url, title) {
-  isManagingBookmarks = !isManagingBookmarks
-  update()
 }
 
 async function pinBookmark (e, {url}) {
