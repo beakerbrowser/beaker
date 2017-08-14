@@ -173,44 +173,6 @@ function renderPinnedBookmark (bookmark) {
   `
 }
 
-// event handlers
-// =
-
-function toggleShelf () {
-  isShelfOpen = !isShelfOpen
-  update()
-}
-
-async function createSite () {
-  var archive = await DatArchive.create()
-  window.location = 'beaker://library/' + archive.url.slice('dat://'.length)
-}
-
-function onMouseOutShelf (e) {
-  if (!findParent(e.relatedTarget, 'shelf')) {
-    isShelfOpen = false
-    update()
-  }
-}
-
-async function pinBookmark (e, {url}) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  await beaker.bookmarks.togglePinned(url, true)
-  await loadBookmarks()
-  update()
-}
-
-async function unpinBookmark (e, {url}) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  await beaker.bookmarks.togglePinned(url, false)
-  await loadBookmarks()
-  update()
-}
-
 // helpers
 // =
 
