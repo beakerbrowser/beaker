@@ -2,6 +2,7 @@
 
 const yo = require('yo-yo')
 const moment = require('moment')
+import renderSidebar from '../com/sidebar'
 
 // globals
 // =
@@ -11,7 +12,10 @@ const BEGIN_LOAD_OFFSET = 500
 
 // visits, cached in memory
 var visits = []
+var filteredVisits = []
 var isAtEnd = false
+var query = []
+var currentPeriodFilter = 'all'
 
 // main
 // =
@@ -29,7 +33,12 @@ function fetchMore (cb) {
 
   isFetching = true
   beaker.history.getVisitHistory({ offset: visits.length, limit: 100 }).then(rows => {
-    if (rows.length == 0) { isAtEnd = true } else { visits = visits.concat(rows || []) }
+    if (rows.length == 0) {
+      isAtEnd = true
+    } else {
+      visits = visits.concat(rows || [])
+      filteredVisits = visits
+    }
     isFetching = false
     cb()
   })
@@ -38,16 +47,16 @@ function fetchMore (cb) {
 // rendering
 // =
 
-function render () {
+function renderRows () {
   var rowEls = []
   var lastDate = moment().startOf('day').add(1, 'day')
 
-  visits.forEach((row, i) => {
+  filteredVisits.forEach((row, i) => {
     // render a date heading if this post is from a different day than the last
     var oldLastDate = lastDate
     lastDate = moment(row.ts).endOf('day')
     if (!lastDate.isSame(oldLastDate, 'day')) {
-      rowEls.push(yo`<h2 class="ll-heading">${ucfirst(niceDate(lastDate, { noTime: true }))}</h2>`)
+      rowEls.push(yo`<h2>${ucfirst(niceDate(lastDate, { noTime: true }))}</h2>`)
     }
 
     // render row
@@ -60,39 +69,107 @@ function render () {
             <span class="url">${row.url}</span>
           </a>
           <div class="actions">
-            <i class="fa fa-window-close" onclick=${onClickDelete.bind(window, i)} title="Remove from history"></i>
+            <img class="close" src="beaker://assets/icon/close.svg" onclick=${onClickDelete.bind(window, i)} title="Remove from history"/>
           </div>
         </div>`)
   })
 
   // empty state
   if (rowEls.length == 0) {
-    rowEls.push(yo`<div class="ll-help">
-      <span class="icon icon-info-circled"></span> Your history is empty
-    </div>`)
+    rowEls.push(yo`<em>No results</em>`)
   }
 
-  yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content" onscroll=${onScrollContent}>
-    <div class="page-toolbar">
-     <button class="clear" onclick=${onClickDeleteBulk.bind(window)}>
-       Clear Browsing History
-     </button>
-     <select id="delete-period">
-       <option value="day" selected>from today</option>
-       <option value="week">from this week</option>
-       <option value="month">from this month</option>
-       <option value="all">from all time</option>
-     </select>
-    </div>
+  return rowEls
+}
 
-    <div class="history links-list">
-      ${rowEls}
-    </div>
-  </div>`)
+function render () {
+  yo.update(
+    document.querySelector('.history-wrapper'),
+    yo`
+      <div>
+        ${renderSidebar()}
+        <div class="builtin-wrapper history-wrapper" onscroll=${onScrollContent}>
+          <div class="builtin-sidebar">
+            <h1>History</h1>
+            <div class="section">
+              <div onclick=${onUpdatePeriodFilter} data-period="all" class="nav-item ${currentPeriodFilter === 'all' ? 'active' : ''}">
+                All history
+              </div>
+              <div onclick=${onUpdatePeriodFilter} data-period="today" class="nav-item ${currentPeriodFilter === 'today' ? 'active' : ''}">
+                Today
+              </div>
+              <div onclick=${onUpdatePeriodFilter} data-period="yesterday" class="nav-item ${currentPeriodFilter === 'yesterday' ? 'active' : ''}">
+                Yesterday
+              </div>
+            </div>
+          </div>
+
+          <div class="builtin-main">
+            <div class="builtin-header">
+              <div class="search-container">
+                <input required autofocus onkeyup=${onFilterVisits} placeholder="Search your browsing history" type="text" class="search"/>
+                <img onclick=${onClearQuery} class="close" src="beaker://assets/icon/close.svg"/>
+              </div>
+
+              <div class="btn" onclick=${onClickDeleteBulk.bind(window)}>
+                Clear browsing history
+              </div>
+
+              <select id="delete-period">
+                <option value="day" selected>from today</option>
+                <option value="week">from this week</option>
+                <option value="month">from this month</option>
+                <option value="all">from all time</option>
+              </select>
+            </div>
+
+            <div class="links-list history">
+              ${renderRows()}
+            </div>
+          </div>
+        </div>
+      </div>`)
 }
 
 // event handlers
 // =
+
+function onClearQuery () {
+  query = ''
+  filteredVisits = visits
+  render()
+}
+
+function onFilterVisits (e) {
+  query = e.target.value.toLowerCase()
+  filteredVisits = visits.filter(v => {
+    return v.title.toLowerCase().includes(query) || v.url.toLowerCase().includes(query)
+  })
+
+  yo.update(
+    document.querySelector('.links-list.history'),
+    yo`
+      <div class="links-list history">
+        ${renderRows()}
+      </div>
+    `)
+}
+
+function onUpdatePeriodFilter (e) {
+  currentPeriodFilter = e.target.dataset.period
+  if (currentPeriodFilter === 'all') {
+    filteredVisits = visits
+  } else {
+    // TODO either account for current search query or clear it -tbv
+
+    var dayOffset = currentPeriodFilter === 'yesterday' ? 1 : 0
+    filteredVisits = visits.filter(v => {
+      var ts = moment(v.ts)
+      return ts.isSame(moment().endOf('day').subtract(dayOffset, 'day'), 'day')
+    })
+  }
+  render()
+}
 
 function onScrollContent (e) {
   if (isAtEnd) { return }
