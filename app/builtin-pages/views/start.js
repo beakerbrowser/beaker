@@ -154,10 +154,8 @@ function renderShelf () {
 
 function renderPinnedBookmarks () {
   return yo`
-    <div class="bookmarks-container">
-      <div class="pinned-bookmarks">
-        ${pinnedBookmarks.map(renderPinnedBookmark)}
-      </div>
+    <div class="pinned-bookmarks">
+      ${pinnedBookmarks.map(renderPinnedBookmark)}
     </div>
   `
 }
