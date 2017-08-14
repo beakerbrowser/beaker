@@ -57,8 +57,9 @@ const renderRowDefault = (row, i) =>
         <span class="url bookmark__url">${row.url}</span>
       </a>
       <div class="actions bookmark__actions">
-        <i class="fa fa-pencil" onclick=${onClickEdit(i)} title="Edit Bookmark"></i>
-        <i class="fa fa-window-close" onclick=${onClickDelete(i)} title="Remove Bookmark"></span>
+        <img src="beaker://assets/icon/pin${row.pinned ? '-blue' : ''}.svg" class="pin" onclick=${() => onTogglePinned(i)} title="${row.pinned ? 'Unpin' : 'Pin'} bookmark"/>
+        <img src="beaker://assets/icon/pencil.svg" class="pencil" onclick=${onClickEdit(i)} title="Edit bookmark"/>
+        <img src="beaker://assets/icon/trash.svg" class="trash" onclick=${onClickDelete(i)} title="Remove bookmark"/>
       </div>
     </li>`
 
@@ -152,6 +153,13 @@ function onFilterBookmarks (e) {
         ${filteredBookmarks.map(renderRow)}
       </div>
     `)
+}
+
+async function onTogglePinned (i) {
+  var b = bookmarks[i]
+  bookmarks[i].pinned = !b.pinned
+  await beaker.bookmarks.togglePinned(b.url, bookmarks[i].pinned)
+  render()
 }
 
 function onClickEdit (i) {
