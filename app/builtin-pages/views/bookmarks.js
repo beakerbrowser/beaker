@@ -83,11 +83,11 @@ function render () {
                 <img src="beaker://assets/icon/star-fill.svg"/>
                 All bookmarks
               </div>
-              <div class="nav-item indent">
+              <div class="nav-item">
                 <img class="globe" src="beaker://assets/icon/globe.svg"/>
                 Shared by you
               </div>
-              <div class="nav-item indent">
+              <div class="nav-item">
                 <img class="padlock" src="beaker://assets/icon/padlock.svg" />
                 Private
               </div>
