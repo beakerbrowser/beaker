@@ -113,6 +113,18 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/icon/star.svg') {
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/star.svg'))
   }
+  if (requestUrl === 'beaker://assets/icon/close.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/close.svg'))
+  }
+  if (requestUrl === 'beaker://assets/icon/padlock.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/padlock.svg'))
+  }
+  if (requestUrl === 'beaker://assets/icon/star-fill.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/star-fill.svg'))
+  }
+  if (requestUrl === 'beaker://assets/icon/globe.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/globe.svg'))
+  }
   if (requestUrl === 'beaker://assets/icon/history.svg') {
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/history.svg'))
   }

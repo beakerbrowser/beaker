@@ -1,1 +1,10 @@
-<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" x="0px" y="0px" viewBox="0 0 100 125"><g transform="translate(0,-952.36218)"><path style="text-indent:0;text-transform:none;direction:ltr;block-progression:tb;baseline-shift:baseline;color:#000000;enable-background:accumulate;" d="m 73.0048,1039.3482 a 2.0055958,1.9948186 0 0 0 1.8506,-2.2169 l -2.7962,-23.956 16.4126,-17.72176 A 2.0055958,1.9948186 0 0 0 87.3912,992.1349 L 63.6164,987.39207 51.7426,966.37851 a 2.0055958,1.9948186 0 0 0 -3.4852,0 l -11.8738,21.01356 -23.7748,4.74283 a 2.0055958,1.9948186 0 0 0 -1.0806,3.31864 l 16.4126,17.72176 -2.7962,23.956 a 2.0055958,1.9948186 0 0 0 2.8233,2.0422 L 50,1029.1101 l 22.0322,10.0634 a 2.0055958,1.9948186 0 0 0 0.9726,0.1747 z m -2.5396,-5.2803 -19.6277,-8.9616 a 2.0055958,1.9948186 0 0 0 -1.675,0 l -19.6277,8.9616 2.4991,-21.336 a 2.0055958,1.9948186 0 0 0 -0.5133,-1.5854 L 16.891,995.35949 38.0586,991.12722 a 2.0055958,1.9948186 0 0 0 1.3508,-0.98081 L 50,971.41693 60.5906,990.14641 a 2.0055958,1.9948186 0 0 0 1.3508,0.98081 l 21.1676,4.23227 -14.6296,15.78701 a 2.0055958,1.9948186 0 0 0 -0.5133,1.5854 l 2.4991,21.336 z" fill="rgba(255,255,255,.85)" fill-opacity="1" stroke="none" marker="none" visibility="visible" display="inline" overflow="visible"/></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="30px" viewBox="0 0 32 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 46 (44423) - http://www.bohemiancoding.com/sketch -->
+    <title>star</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-opacity="0.85" stroke-linejoin="round">
+        <polygon id="star" stroke="#FFFFFF" stroke-width="2" points="16 23.5 7.18322122 28.1352549 8.86707613 18.3176275 1.73415226 11.3647451 11.5916106 9.93237254 16 1 20.4083894 9.93237254 30.2658477 11.3647451 23.1329239 18.3176275 24.8167788 28.1352549"></polygon>
+    </g>
+</svg>
