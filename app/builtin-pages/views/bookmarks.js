@@ -91,6 +91,10 @@ function render () {
                 <img class="padlock" src="beaker://assets/icon/padlock.svg" />
                 Private
               </div>
+              <div class="nav-item">
+                <img class="pin" src="beaker://assets/icon/pin.svg" />
+                Pinned
+              </div>
             </div>
 
             <div class="section">
