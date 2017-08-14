@@ -82,6 +82,13 @@ function renderRows () {
   return rowEls
 }
 
+function renderHistoryListing () {
+  yo.update(document.querySelector('.links-list.history'), yo`
+    <div class="links-list history">
+      ${renderRows()}
+    </div>`)
+}
+
 function render () {
   yo.update(
     document.querySelector('.history-wrapper'),
@@ -146,13 +153,7 @@ function onFilterVisits (e) {
     return v.title.toLowerCase().includes(query) || v.url.toLowerCase().includes(query)
   })
 
-  yo.update(
-    document.querySelector('.links-list.history'),
-    yo`
-      <div class="links-list history">
-        ${renderRows()}
-      </div>
-    `)
+  renderHistoryListing()
 }
 
 function onUpdatePeriodFilter (e) {
