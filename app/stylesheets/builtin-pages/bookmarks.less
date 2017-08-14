@@ -3,20 +3,65 @@
 @import "../base/colors";
 
 .bookmarks-wrapper {
-  &:extend(.flex);
-  width: 100%;
 
-  .bookmarks-content {
-    margin-left: 55px;
+  .bookmarks-list {
+    margin-left: 300px;
+    display: inline-block;
+    padding: 20px;
+    max-width: 875px;
   }
 
-  h1 {
-    margin: 10px 0;
-    padding: 0;
-    border-bottom: 1px solid @border-menu;
+  .links-list {
+    border: 1px solid rgb(210, 210, 213);
+    background: #fff;
+    border-radius: 4px;
   }
 
   .ll-row {
-    max-width: 600px;
+    &:extend(.flex);
+    align-items: center;
+    height: 29px;
+    padding: 0 10px;
+    width: 100%;
+    max-width: 100% !important;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid rgb(230, 230, 230);
+    }
+
+    &:hover {
+      background: rgb(246, 246, 249);
+    }
+
+    .title {
+      &:extend(.overflow-ellipsis);
+      width: 300px;
+      display: inline-block;
+      margin-right: 100px;
+    }
+  }
+
+  .bookmarks-breadcrumbs {
+    color: rgba(0,0,0,.6);
+    margin-bottom: 5px;
+
+    .breadcrumb {
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      &:not(:last-of-type) {
+
+        &:after {
+          display: inline-block;
+          content: '\00BB';
+          margin-left: 5px;
+        }
+      }
+    }
   }
 }
