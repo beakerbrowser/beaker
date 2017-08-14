@@ -11,13 +11,14 @@
 @import "./components/links-list";
 @import "./components/sidebar";
 
-html {
+.window-content.start {
   overflow: auto;
   height: 100vh;
   background-image: url("beaker://start/background-image");
   background-size: cover;
   background-position: center;
 }
+
 body {
   height: auto;
 }
@@ -72,9 +73,7 @@ main {
 
     .bookmarks-container {
       padding: 5px 20px;
-      width: 710px;
       border-radius: 3px;
-
     }
 
     .bookmark.ll-row {
@@ -155,10 +154,6 @@ header {
       margin: 0 @margin-icon;
     }
   }
-}
-
-.bookmarks-container {
-  margin-top: 150px;
 }
 
 .pinned-bookmarks {

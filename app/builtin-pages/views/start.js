@@ -73,11 +73,15 @@ async function setup () {
 function update () {
   var theme = settings.start_page_background_image
 
-  yo.update(document.querySelector('main'), yo`
-    <main class="${theme}">
+  yo.update(document.querySelector('.window-content.start'), yo`
+    <div class="window-content start ${theme}">
       ${renderSidebar()}
-      ${renderPinnedBookmarks()}
-    </main>
+      <div class="builtin-wrapper start-wrapper">
+        <div class="builtin-main center">
+          ${renderPinnedBookmarks()}
+        </div>
+      </div>
+    </div>
   `)
 }
 
