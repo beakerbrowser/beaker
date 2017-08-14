@@ -158,31 +158,6 @@ function renderPinnedBookmarks () {
       <div class="pinned-bookmarks">
         ${pinnedBookmarks.map(renderPinnedBookmark)}
       </div>
-      ${renderBookmarks()}
-    </div>
-  `
-}
-
-function renderBookmarks () {
-  const isNotPinned = row => !row.pinned
-
-  const renderRow = row =>
-    yo`
-      <li class="bookmark ll-row">
-        <a class="btn pin" onclick=${e => pinBookmark(e, row)}>
-          <i class="fa fa-thumb-tack"></i> Pin
-        </a>
-        <a href=${row.url} class="link" title=${row.title} />
-          <img class="favicon" src=${'beaker-favicon:' + row.url} />
-          <span class="title">${row.title}</span>
-          <span class="url">${row.url}</span>
-        </a>
-      </li>`
-
-  const unpinnedBookmarks = bookmarks.filter(isNotPinned)
-  return yo`
-    <div class="bookmarks">
-      ${unpinnedBookmarks.length ? unpinnedBookmarks.map(renderRow) : 'All bookmarks are pinned'}
     </div>
   `
 }
