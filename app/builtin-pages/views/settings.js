@@ -1,6 +1,7 @@
 /* globals beakerBrowser Image */
 
 import ColorThief from '../../lib/fg/color-thief'
+import renderSidebar from '../com/sidebar'
 
 const yo = require('yo-yo')
 const co = require('co')
@@ -40,26 +41,43 @@ function render () {
   // only render if this page is active
   if (!browserInfo) { return }
 
-  yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="settings">
-      <h1>Settings</h1>
-      <h2 class="ll-heading">Auto-updater</h2>
-      ${renderAutoUpdater()}
+  yo.update(document.querySelector('.settings-wrapper'), yo`<div class="pane" id="el-content">
+    <div class="settings-wrapper builtin-wrapper">
+      ${renderSidebar()}
 
-      <h2 class="ll-heading">Protocol settings</h2>
-      ${renderProtocolSettings()}
+      <div>
+        <div class="builtin-sidebar">
+          <h1>Settings</h1>
+          <p class="builtin-blurb">Manage Beaker's appearance and preferences.</p>
 
-      <h2 class="ll-heading">Start page settings</h2>
-      ${renderStartPageSettings()}
+          <div class="section">
+            <div class="nav-item">Auto-updater</div>
+            <div class="nav-item">Protocol settings</div>
+            <div class="nav-item">Appearance</div>
+            <div class="nav-item">Information & Help</div>
+          </div>
+        </div>
 
-      <h2 class="ll-heading">Beaker information</h2>
-      <ul class="settings-section">
-        <li>Version: ${browserInfo.version} <small>Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</small></li>
-        <li>User data: ${browserInfo.paths.userData}</li>
-      </ul>
+        <div class="builtin-main">
+          <h2 class="ll-heading">Auto-updater</h2>
+          ${renderAutoUpdater()}
 
-      <h2 class="ll-heading">Help</h2>
-      ${renderHelp()}
+          <h2 class="ll-heading">Protocol settings</h2>
+          ${renderProtocolSettings()}
+
+          <h2 class="ll-heading">Start page settings</h2>
+          ${renderStartPageSettings()}
+
+          <h2 class="ll-heading">Beaker information</h2>
+          <ul class="settings-section">
+            <li>Version: ${browserInfo.version} <small>Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</small></li>
+            <li>User data: ${browserInfo.paths.userData}</li>
+          </ul>
+
+          <h2 class="ll-heading">Help</h2>
+          ${renderHelp()}
+        </div>
+      </div>
     </div>
   </div>`)
 }

@@ -1,26 +1,22 @@
 @import "../base/colors";
 @import "../base/spacing";
 
-.settings {
+.settings-wrapper {
 
-  h1 {
-    font-size: 18px;
-    margin: 10px 0;
-    padding: 0;
-    border-bottom: 1px solid @border-menu;
+  .builtin-main {
+    padding: 30px;
+
+    h2:first-of-type {
+      margin-top: 0;
+    }
   }
 
-  h2 {
-    font-size: 13px;
-    border-bottom: 1px solid @border-menu;
-  }
 }
 
 .settings-section {
-  padding: 0 @padding-component--tight;
+  margin-bottom: 40px;
 
   a {
-
     &:extend(.link);
 
     &:hover {
@@ -36,7 +32,7 @@
     }
 
     label {
-      margin-left: 1rem;      
+      margin-left: 1rem;
     }
   }
 
