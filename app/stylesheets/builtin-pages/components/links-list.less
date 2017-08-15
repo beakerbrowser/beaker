@@ -99,12 +99,36 @@
 
     .action {
       display: inline-block;
+
+      &.pinned {
+
+        .icon {
+
+          * {
+            fill: @color-link;
+          }
+        }
+      }
     }
 
     .icon {
       width: 12px;
       height: 12px;
-      margin-left: 6px;
+      margin-left: 8px;
+
+      * {
+        stroke: rgba(0,0,0,.35);
+        stroke-opacity: 1;
+        fill-opacity: 1;
+        transition: all .15s ease;
+      }
+
+      &:hover {
+
+        * {
+          stroke: rgba(0,0,0,.75);
+        }
+      }
 
       &:not(:last-child) {
         margin-right: 7px;
@@ -112,6 +136,15 @@
 
       &.pin {
         width: 10px;
+        margin-right: -1px;
+
+        * {
+          fill: rgba(0,0,0,.35);
+        }
+
+        &:hover * {
+          fill: rgba(0,0,0,.75);
+        }
       }
 
       &.pencil {
@@ -120,6 +153,10 @@
 
       &.trash {
         margin-bottom: 2px;
+
+        &:hover * {
+          stroke: darken(@red, 15%);
+        }
       }
     }
   }
