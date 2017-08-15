@@ -606,7 +606,7 @@ function onShare (e) {
 async function onFork (e) {
   e.preventDefault()
   update()
-  var a = await DatArchive.fork(selectedArchive.url)
+  var a = await DatArchive.fork(selectedArchive.url, {prompt: true})
   history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
 }
 

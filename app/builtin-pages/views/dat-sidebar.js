@@ -473,7 +473,7 @@ function onOpenFolder () {
 
 async function onFork (e) {
   update()
-  var newArchive = await DatArchive.fork(archiveKey)
+  var newArchive = await DatArchive.fork(archiveKey, {prompt: true})
   var info = await newArchive.getInfo()
   locationbar.openUrl(`beaker://library/${info.key}`)
 }
