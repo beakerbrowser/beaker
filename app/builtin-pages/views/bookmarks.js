@@ -63,11 +63,21 @@ const renderRowDefault = (row, i) =>
       </div>
     </li>`
 
+function renderBookmarksList () {
+  yo.update(
+    document.querySelector('.links-list.bookmarks'),
+    yo`
+      <div class="links-list bookmarks">
+        ${filteredBookmarks.length
+          ? filteredBookmarks.map(renderRow)
+          : yo`<em class="empty">No bookmarks</em>`
+        }
+      </div>
+    `)
+}
+
 function render () {
-  var helpEl = ''
-  if (bookmarks.length === 0) {
-    helpEl = yo`<em>No bookmarks</em>`
-  }
+  var helpEl = filteredBookmarks.length ? '' : yo`<em class="empty">No results</em>`
 
   yo.update(
     document.querySelector('.bookmarks-wrapper'),
@@ -150,13 +160,7 @@ function onFilterBookmarks (e) {
     return b.title.toLowerCase().includes(query) || b.url.toLowerCase().includes(query)
   })
 
-  yo.update(
-    document.querySelector('.links-list.bookmarks'),
-    yo`
-      <div class="links-list bookmarks">
-        ${filteredBookmarks.map(renderRow)}
-      </div>
-    `)
+  renderBookmarksList()
 }
 
 async function onTogglePinned (i) {
