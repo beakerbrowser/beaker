@@ -37,45 +37,67 @@ const to = (opts) =>
     : DEFAULT_DAT_API_TIMEOUT
 
 export default {
-  async createArchive ({title, description} = {}) {
-    // initiate the modal
-    var win = getWebContentsWindow(this.sender)
-    // DISABLED
-    // this mechanism is a bit too temperamental
-    // are we sure it's the best policy anyway?
-    // -prf
-    // await assertSenderIsFocused(this.sender)
+  async createArchive ({title, description, prompt} = {}) {
+    var newArchiveUrl
 
-    // run the creation modal
-    var res = await showModal(win, 'create-archive', {title, description})
-    if (!res || !res.url) throw new UserDeniedError()
+    // check the quota for permission
+    // TODO
+
+    if (prompt) {
+      // initiate the modal
+      let win = getWebContentsWindow(this.sender)
+      // DISABLED
+      // this mechanism is a bit too temperamental
+      // are we sure it's the best policy anyway?
+      // -prf
+      // await assertSenderIsFocused(this.sender)
+
+      // run the creation modal
+      let res = await showModal(win, 'create-archive', {title, description})
+      if (!res || !res.url) throw new UserDeniedError()
+      newArchiveUrl = res.url
+    } else {
+      // no modal
+      newArchiveUrl = await datLibrary.createNewArchive({title, description})
+    }
 
     // grant write permissions to the creating app
-    var newArchiveKey = await lookupUrlDatKey(res.url)
+    let newArchiveKey = await lookupUrlDatKey(newArchiveUrl)
     grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
-    return res.url
+    return newArchiveUrl
   },
 
-  async forkArchive (url, {title, description} = {}) {
-    // initiate the modal
-    var win = getWebContentsWindow(this.sender)
-    // DISABLED
-    // this mechanism is a bit too temperamental
-    // are we sure it's the best policy anyway?
-    // -prf
-    // await assertSenderIsFocused(this.sender)
+  async forkArchive (url, {title, description, prompt} = {}) {
+    var newArchiveUrl
 
-    // run the fork modal
-    var key1 = await lookupUrlDatKey(url)
-    var key2 = await lookupUrlDatKey(this.sender.getURL())
-    var isSelfFork = key1 === key2
-    var res = await showModal(win, 'fork-archive', {url, title, description, isSelfFork})
-    if (!res || !res.url) throw new UserDeniedError()
+    // check the quota for permission
+    // TODO
+
+    if (prompt) {
+      // initiate the modal
+      let win = getWebContentsWindow(this.sender)
+      // DISABLED
+      // this mechanism is a bit too temperamental
+      // are we sure it's the best policy anyway?
+      // -prf
+      // await assertSenderIsFocused(this.sender)
+
+      // run the fork modal
+      let key1 = await lookupUrlDatKey(url)
+      let key2 = await lookupUrlDatKey(this.sender.getURL())
+      let isSelfFork = key1 === key2
+      let res = await showModal(win, 'fork-archive', {url, title, description, isSelfFork})
+      if (!res || !res.url) throw new UserDeniedError()
+      newArchiveUrl = res.url
+    } else {
+      // no modal
+      newArchiveUrl = await datLibrary.forkArchive(url, {title, description})
+    }
 
     // grant write permissions to the creating app
-    var newArchiveKey = await lookupUrlDatKey(res.url)
+    let newArchiveKey = await lookupUrlDatKey(newArchiveUrl)
     grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
-    return res.url
+    return newArchiveUrl
   },
 
   async loadArchive (url) {

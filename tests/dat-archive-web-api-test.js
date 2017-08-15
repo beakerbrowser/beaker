@@ -199,13 +199,45 @@ test('archive.stat', async t => {
   var entry = await stat(fakeUrl, 'hello.txt', { timeout: 500 })
   t.deepEqual(entry.value.name, 'TimeoutError')
 })
+test('DatArchive.create prompt=false', async t => {
+  // create
+  var res = await app.client.executeAsync((done) => {
+    DatArchive.create({ title: 'The Title', description: 'The Description' }).then(done,done)
+  })
+  var datUrl = res.value.url
+  t.truthy(datUrl.startsWith('dat://'))
+  createdDatKey = datUrl.slice('dat://'.length)
 
-test('DatArchive.create rejection', async t => {
+  // check the dat.json
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.readFile('dat.json').then(done, done)
+  }, datUrl)
+  var manifest
+  try {
+    var manifest = JSON.parse(res.value)
+  } catch (e) {
+    console.log('unexpected error parsing manifest', res.value)
+  }
+  t.deepEqual(manifest.title, 'The Title')
+  t.deepEqual(manifest.description, 'The Description')
+
+  // check the settings
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, createdDatKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.isSaved, true)
+})
+
+test('DatArchive.create prompt=true rejection', async t => {
   // start the prompt
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.create({ title: 'The Title', description: 'The Description' }).then(
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -225,12 +257,12 @@ test('DatArchive.create rejection', async t => {
   t.deepEqual(res.value.name, 'UserDeniedError')
 })
 
-test('DatArchive.create', async t => {
+test('DatArchive.create prompt=true', async t => {
   // start the prompt
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.create({ title: 'The Title', description: 'The Description' }).then(
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -276,12 +308,35 @@ test('DatArchive.create', async t => {
   t.deepEqual(details.value.userSettings.isSaved, true)
 })
 
-test('DatArchive.fork', async t => {
+test('DatArchive.fork prompt=false', async t => {
+  // start the prompt
+  var res = await app.client.executeAsync((url, done) => {
+    DatArchive.fork(url, { description: 'The Description 2' }).then(done, done)
+  }, createdDatURL)
+  var forkedDatURL = res.value.url
+  t.truthy(forkedDatURL.startsWith('dat://'))
+
+  // check the dat.json
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.readFile('dat.json').then(done, done)
+  }, forkedDatURL)
+  var manifest
+  try {
+    var manifest = JSON.parse(res.value)
+  } catch (e) {
+    console.log('unexpected error parsing manifest', res.value)
+  }
+  t.deepEqual(manifest.title, 'The Title')
+  t.deepEqual(manifest.description, 'The Description 2')
+})
+
+test('DatArchive.fork prompt=true', async t => {
   // start the prompt
   await app.client.execute((url) => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.fork(url, { description: 'The Description 2' }).then(
+    DatArchive.fork(url, { description: 'The Description 2', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
