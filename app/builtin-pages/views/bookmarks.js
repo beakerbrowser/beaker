@@ -126,9 +126,11 @@ function render () {
 
           <div class="bookmarks-main">
             <div class="bookmarks-list">
-              <div class="search-container">
-                <input required autofocus onkeyup=${onFilterBookmarks} placeholder="Search bookmarks" type="text" class="search"/>
-                <img onclick=${onClearQuery} class="close" src="beaker://assets/icon/close.svg"/>
+              <div class="builtin-header">
+                <div class="search-container">
+                  <input required autofocus onkeyup=${onFilterBookmarks} placeholder="Search bookmarks" type="text" class="search"/>
+                  <img onclick=${onClearQuery} class="close" src="beaker://assets/icon/close.svg"/>
+                </div>
               </div>
 
               <div class="bookmarks-breadcrumbs">
