@@ -3,6 +3,7 @@
 const yo = require('yo-yo')
 const moment = require('moment')
 import renderSidebar from '../com/sidebar'
+import renderTrashIcon from '../icon/trash'
 
 // globals
 // =
@@ -69,7 +70,9 @@ function renderRows () {
             <span class="url">${row.url}</span>
           </a>
           <div class="actions">
-            <img class="close" src="beaker://assets/icon/close.svg" onclick=${onClickDelete.bind(window, i)} title="Remove from history"/>
+            <div class="action" onclick=${onClickDelete.bind(window, i)} title="Remove from history">
+              ${renderTrashIcon()}
+            </div>
           </div>
         </div>`)
   })
