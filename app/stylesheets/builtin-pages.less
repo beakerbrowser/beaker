@@ -59,6 +59,8 @@
   .ll-row {
     &:extend(.flex);
     align-items: center;
+    position: relative;
+    align-items: center;
     width: 100%;
     height: 28px;
     padding: 0 15px;
@@ -66,18 +68,30 @@
     border-right: 1px solid rgb(230, 230, 230);
     border-bottom: 1px solid rgb(230, 230, 230);
 
+    .link {
+      &:extend(.flex);
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+
     &:hover {
       background: rgb(249, 249, 249);
     }
 
     .title {
       &:extend(.overflow-ellipsis);
-      width: 300px;
+      width: 250px;
       display: inline-block;
-      margin-right: 100px;
+      margin-right: 20px;
     }
 
-    img.close {
+    .url {
+      &:extend(.overflow-ellipsis);
+      width: 150px;
+      margin-right: 20px;
+    }
+
+    .icon#close {
       width: 7px;
     }
   }
@@ -147,7 +161,7 @@
     margin-bottom: 1px;
     color: fadeout(@color-text, 10%);
 
-    img {
+    svg.icon {
       width: 18px;
       margin-right: 5px;
 
@@ -164,9 +178,9 @@
       }
 
       &.pin {
-        width: 12px;
-        margin-left: 3px;
-        margin-right: 8px;
+        width: 11px;
+        margin-left: 3.25px;
+        margin-right: 8.75px;
       }
     }
 

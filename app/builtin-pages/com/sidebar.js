@@ -1,18 +1,21 @@
 import yo from 'yo-yo'
+import renderGridIcon from '../icon/grid'
+import renderStarIcon from '../icon/star'
+import renderHistoryIcon from '../icon/history'
 
 export default function render (message) {
   return yo`
     <div class="sidebar">
       <a class="sidebar-link" href="beaker://start">
-        <img class="grid" src="beaker://assets/icon/grid.svg"/>
+        ${renderGridIcon()}
         <span class="tooltip start">Start page</span>
       </a>
       <a class="sidebar-link" href="beaker://bookmarks">
-        <img class="star" src="beaker://assets/icon/star.svg"/>
+        ${renderStarIcon()}
         <span class="tooltip">Bookmarks</span>
       </a>
       <a class="sidebar-link" href="beaker://history">
-        <img class="history" src="beaker://assets/icon/history.svg"/>
+        ${renderHistoryIcon()}
         <span class="tooltip">History</span>
       </a>
     </div>

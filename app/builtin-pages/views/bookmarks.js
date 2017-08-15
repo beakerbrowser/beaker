@@ -3,6 +3,15 @@
 const yo = require('yo-yo')
 const co = require('co')
 import renderSidebar from '../com/sidebar'
+import renderCloseIcon from '../icon/close'
+import renderGlobeIcon from '../icon/globe'
+import renderHistoryIcon from '../icon/history'
+import renderPinIcon from '../icon/pin'
+import renderPinFillIcon from '../icon/pin-fill'
+import renderPadlockIcon from '../icon/padlock'
+import renderStarFillIcon from '../icon/star-fill'
+import renderTrashIcon from '../icon/trash'
+import renderPencilIcon from '../icon/pencil'
 
 // globals
 //
@@ -57,9 +66,15 @@ const renderRowDefault = (row, i) =>
         <span class="url bookmark__url">${row.url}</span>
       </a>
       <div class="actions bookmark__actions">
-        <img src="beaker://assets/icon/pin${row.pinned ? '-blue' : ''}.svg" class="pin" onclick=${() => onTogglePinned(i)} title="${row.pinned ? 'Unpin' : 'Pin'} bookmark"/>
-        <img src="beaker://assets/icon/pencil.svg" class="pencil" onclick=${onClickEdit(i)} title="Edit bookmark"/>
-        <img src="beaker://assets/icon/trash.svg" class="trash" onclick=${onClickDelete(i)} title="Remove bookmark"/>
+        <div class="action" onclick=${() => onTogglePinned(i)}>
+          ${row.pinned ? renderPinFillIcon() : renderPinIcon()}
+        </div>
+        <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
+          ${renderPencilIcon()}
+        </div>
+        <div class="action" onclick=${onClickDelete(i)} title="Delete bookmark">
+          ${renderTrashIcon()}
+        </div>
       </div>
     </li>`
 
@@ -90,20 +105,20 @@ function render () {
             <div class="section">
               <h2>Your bookmarks</h2>
               <div class="nav-item active">
-                <img src="beaker://assets/icon/star-fill.svg"/>
+                ${renderStarFillIcon()}
                 All bookmarks
               </div>
               <div class="nav-item">
-                <img class="globe" src="beaker://assets/icon/globe.svg"/>
+                ${renderPinIcon()}
+                Pinned
+              </div>
+              <div class="nav-item">
+                ${renderGlobeIcon()}
                 Shared by you
               </div>
               <div class="nav-item">
-                <img class="padlock" src="beaker://assets/icon/padlock.svg" />
+                ${renderPadlockIcon()}
                 Private
-              </div>
-              <div class="nav-item">
-                <img class="pin" src="beaker://assets/icon/pin.svg" />
-                Pinned
               </div>
             </div>
 
@@ -124,24 +139,24 @@ function render () {
             </div>
           </div>
 
-          <div class="bookmarks-main">
-            <div class="bookmarks-list">
-              <div class="builtin-header">
-                <div class="search-container">
-                  <input required autofocus onkeyup=${onFilterBookmarks} placeholder="Search bookmarks" type="text" class="search"/>
-                  <img onclick=${onClearQuery} class="close" src="beaker://assets/icon/close.svg"/>
+          <div class="builtin-main">
+            <div class="builtin-header">
+              <div class="search-container">
+                <input required autofocus onkeyup=${onFilterBookmarks} placeholder="Search bookmarks" type="text" class="search"/>
+                <div onclick=${onClearQuery} class="close">
+                  ${renderCloseIcon()}
                 </div>
               </div>
+            </div>
 
-              <div class="bookmarks-breadcrumbs">
-                <a href="" class="breadcrumb">All bookmarks</a>
-                <a href="" class="breadcrumb">Shared by you</a>
-              </div>
+            <div class="bookmarks-breadcrumbs">
+              <a href="" class="breadcrumb">All bookmarks</a>
+              <a href="" class="breadcrumb">Shared by you</a>
+            </div>
 
-              <div class="links-list bookmarks">
-                ${filteredBookmarks.map(renderRow)}
-                ${helpEl}
-              </div>
+            <div class="links-list bookmarks">
+              ${filteredBookmarks.map(renderRow)}
+              ${helpEl}
             </div>
           </div>
         </div>`)

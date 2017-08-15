@@ -96,12 +96,15 @@
   .actions {
     color: @color-text--muted;
     opacity: 0;
-  }
 
-  .actions {
+    .action {
+      display: inline-block;
+    }
 
-    img {
+    .icon {
       width: 12px;
+      height: 12px;
+      margin-left: 6px;
 
       &:not(:last-child) {
         margin-right: 7px;
@@ -109,6 +112,14 @@
 
       &.pin {
         width: 10px;
+      }
+
+      &.pencil {
+        margin-bottom: 1px;
+      }
+
+      &.trash {
+        margin-bottom: 2px;
       }
     }
   }
