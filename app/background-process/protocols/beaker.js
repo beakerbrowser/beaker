@@ -128,6 +128,9 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/icon/padlock.svg') {
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/padlock.svg'))
   }
+  if (requestUrl === 'beaker://assets/icon/grid.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/grid.svg'))
+  }
   if (requestUrl === 'beaker://assets/icon/star.svg') {
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/star.svg'))
   }

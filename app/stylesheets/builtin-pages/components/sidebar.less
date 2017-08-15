@@ -14,23 +14,31 @@
     &.history {
       width: 16px;
     }
+
+    &.grid {
+      width: 15px;
+    }
   }
 
   .sidebar-link {
     position: relative;
-    height: auto;
     display: block;
+    height: 18px;
     margin-bottom: 20px;
 
     .tooltip {
       display: none;
       position: absolute;
       left: 40px;
-      top: -2px;
-      padding: 5px 10px;
+      top: -6px;
+      padding: 4px 10px 5px 10px;
       background: #111;
       border-radius: 4px;
       color: fadeout(#fff, 15%);
+
+      &.start {
+        width: 85px;
+      }
     }
 
     &:hover .tooltip {
