@@ -12,6 +12,10 @@
     width: 17px;
     height: 17px;
 
+    * {
+      stroke: fadeout(#fff, 15%);
+    }
+
     &.history {
       width: 16px;
     }
@@ -43,8 +47,18 @@
       }
     }
 
-    &:hover .tooltip {
-      visibility: visible;
+    &:hover {
+
+      .tooltip {
+        visibility: visible;
+      }
+
+      .icon {
+
+        * {
+          stroke: #fff;
+        }
+      }
     }
   }
 }
