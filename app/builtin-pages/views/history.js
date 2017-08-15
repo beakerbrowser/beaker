@@ -76,7 +76,7 @@ function renderRows () {
 
   // empty state
   if (rowEls.length == 0) {
-    rowEls.push(yo`<em>No results</em>`)
+    rowEls.push(yo`<em class="empty">No results</em>`)
   }
 
   return rowEls
