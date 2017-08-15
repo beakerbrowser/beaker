@@ -16,7 +16,6 @@ const app = new Application({
     NODE_ENV: 'test',
     beaker_no_welcome_tab: 1,
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
-    beaker_sites_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
     beaker_dat_quota_default_bytes_allowed: '90kb'
   }
 })
@@ -94,12 +93,6 @@ async function writeFile (url, path, content, opts) {
     var archive = new DatArchive(url)
     archive.writeFile(path, content, opts).then(done, done)
   }, url, path, content, opts)
-}
-async function commit (url) {
-  return app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, url)
 }
 
 // tests
@@ -442,7 +435,7 @@ test('DatArchive.selectArchive: select', async t => {
 
 test('archive.writeFile', async t => {
   async function dotest (filename, content, encoding) {
-    // write to the top-level
+    // write the file
     var res = await app.client.executeAsync((url, filename, content, encoding, done) => {
       if (content.data) content = new Uint8Array(content.data) // spectron fucks up our data, unfuck it
       var archive = new DatArchive(url)
@@ -451,21 +444,6 @@ test('archive.writeFile', async t => {
     t.falsy(res.value)
 
     // read it back
-    var res = await readFile(createdDatURL, filename, encoding)
-    if (encoding === 'binary') {
-      t.truthy(content.equals(Buffer.from(res.value)))
-    } else {
-      t.deepEqual(res.value, content)
-    }
-
-    // commit the file
-    var res = await app.client.executeAsync((url, done) => {
-      var archive = new DatArchive(url)
-      archive.commit().then(done, done)
-    }, createdDatURL)
-    t.truthy(Array.isArray(res.value))
-
-    // read it back again
     var res = await readFile(createdDatURL, filename, encoding)
     if (encoding === 'binary') {
       t.truthy(content.equals(Buffer.from(res.value)))
@@ -533,17 +511,6 @@ test('archive.mkdir', async t => {
   // read it back
   var res = await stat(createdDatURL, 'subdir', {})
   t.deepEqual(res.value.isDirectory, true)
-
-  // commit
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, createdDatURL)
-  t.truthy(Array.isArray(res.value))
-
-  // read it back again
-  var res = await stat(createdDatURL, 'subdir', {})
-  t.deepEqual(res.value.isDirectory, true)
 })
 
 test('archive.writeFile writes to subdirectories', async t => {
@@ -555,20 +522,6 @@ test('archive.writeFile writes to subdirectories', async t => {
   t.falsy(res.value)
 
   // read it back
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.readFile('subdir/hello.txt', 'utf8').then(done, done)
-  }, createdDatURL)
-  t.deepEqual(res.value, 'hello world')
-
-  // commit
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, createdDatURL)
-  t.truthy(Array.isArray(res.value))
-
-  // read it back again
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.readFile('subdir/hello.txt', 'utf8').then(done, done)
@@ -621,7 +574,7 @@ test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
   // write a too-big file
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.writeFile('/denythis.txt', 'x'.repeat(1024 * 25), 'utf8').then(done, done)
+    archive.writeFile('/denythis.txt', 'x'.repeat(1024 * 50), 'utf8').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
@@ -637,12 +590,9 @@ test('versioned reads and writes', async t => {
 
   // do some writes
   await writeFile(newTestDatURL, '/one.txt', 'a', 'utf8')
-  await commit(newTestDatURL)
   await writeFile(newTestDatURL, '/two.txt', 'b', 'utf8')
-  await commit(newTestDatURL)
   await sleep(1e3) // have to make sure 1s passes for the change to be detected
   await writeFile(newTestDatURL, '/one.txt', 'c', 'utf8')
-  await commit(newTestDatURL)
 
   // check history
   var history = await app.client.executeAsync((url, done) => {
@@ -686,66 +636,8 @@ test('versioned reads and writes', async t => {
     archive.rmdir('/there-is-no-dir-but-it-doesnt-matter').then(done, done)
   }, newTestDatURL + '+1'))
   t.deepEqual(res.value.name, 'ArchiveNotWritableError')
-  // commit
-  var res = await (app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, newTestDatURL + '+1'))
-  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
-  // revert
-  var res = await (app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.revert().then(done, done)
-  }, newTestDatURL + '+1'))
-  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 
   await app.client.windowByIndex(1)
-})
-
-test('archive.commit does allow you to exceed the quota, but subsequent writes will fail', async t => {
-  // create a fresh dat
-  await app.client.windowByIndex(0)
-  var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({title: 'Another Test Dat'}).then(done, done)
-  })
-  t.falsy(res.value.name, 'create didnt fail')
-  var newTestDatURL = res.value.url
-  await app.client.windowByIndex(1)
-
-  // write an acceptable (but big) file
-  await app.client.execute(url => {
-    // put the result on the window, for checking later
-    window.res = null
-    var archive = new DatArchive(url)
-    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 25), 'utf8').then(
-      res => window.res = res,
-      err => window.res = err
-    )
-  }, newTestDatURL)
-
-  // accept the prompt
-  await app.client.windowByIndex(0)
-  await app.client.waitForExist('.prompt-accept')
-  await app.client.click('.prompt-accept')
-  await app.client.windowByIndex(1)
-
-  // fetch & check the res
-  var res = await app.client.execute(() => { return window.res })
-  t.falsy(res.value, 'write file accepted')
-
-  // commit the file
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, newTestDatURL)
-  t.deepEqual(Array.isArray(res.value), true)
-
-  // write a very small file
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.writeFile('/denythis.txt', 'x', 'utf8').then(done, done)
-  }, newTestDatURL)
-  t.deepEqual(res.value.name, 'QuotaExceededError')
 })
 
 // TODO copy-disabled
@@ -786,13 +678,6 @@ test('archive.commit does allow you to exceed the quota, but subsequent writes w
     (await readFile(createdDatURL, '/subdir/hello2.txt')).value,
     (await readFile(createdDatURL, '/subdir2/hello2.txt')).value
   )
-
-  // commit
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, createdDatURL)
-  t.truthy(Array.isArray(res.value))
 })*/
 
 // TODO rename-disabled
@@ -833,13 +718,6 @@ test('archive.commit does allow you to exceed the quota, but subsequent writes w
     (await readFile(createdDatURL, '/subdir/hello-two.txt')).value,
     (await readFile(createdDatURL, '/subdir-two/hello-two.txt')).value
   )
-
-  // commit
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, createdDatURL)
-  t.truthy(Array.isArray(res.value))
 })*/
 
 // TODO copy-disabled
@@ -1310,10 +1188,7 @@ test('archive.createFileActivityStream', async t => {
   await writeFile(archiveURL, '/a.txt', 'two', 'utf8')
   await writeFile(archiveURL, '/b.txt', 'two', 'utf8')
   await writeFile(archiveURL, '/c.txt', 'one', 'utf8')
-  var res = await app.client.executeAsync((url, done) => {
-    var a = new DatArchive(url)
-    a.commit().then(done, done)
-  }, archiveURL)
+  var res = await app.client.execute(() => { return window.res })
   t.truthy(Array.isArray(res.value))
 
   await app.client.waitUntil(() => app.client.execute(() => { return window.res.length == 6 }), 5e3)

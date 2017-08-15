@@ -83,33 +83,21 @@ export default class DatArchive extends EventTarget {
   }
 
   async diff (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      var url = await this[URL_PROMISE]
-      return await dat.diff(url, opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
+    // noop
+    console.warn('The DatArchive diff() API has been deprecated.')
+    return []
   }
 
   async commit (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      var url = await this[URL_PROMISE]
-      return await dat.commit(url, opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
+    // noop
+    console.warn('The DatArchive commit() API has been deprecated.')
+    return []
   }
 
   async revert (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      var url = await this[URL_PROMISE]
-      return await dat.revert(url, opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
+    // noop
+    console.warn('The DatArchive revert() API has been deprecated.')
+    return []
   }
 
   async history (opts = {}) {

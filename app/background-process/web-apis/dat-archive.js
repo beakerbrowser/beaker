@@ -103,41 +103,13 @@ export default {
         version: info.version,
         peers: info.peers,
         mtime: info.mtime,
-        metaSize: info.metaSize,
-        stagingSize: info.stagingSize,
+        size: info.size,
 
         // manifest
         title: info.title,
         description: info.description
       }
     })
-  },
-
-  async diff (url, opts = {}) {
-    var {archive, version} = await lookupArchive(url, opts)
-    if (version) return [] // TODO
-    if (!archive.staging) return []
-    return pda.diff(archive.staging, {shallow: opts.shallow, compareContent: true})
-  },
-
-  async commit (url, opts = {}) {
-    var {archive, version} = await lookupArchive(url, opts)
-    if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    if (!archive.staging) return []
-    await assertWritePermission(archive, this.sender)
-    var res = await pda.commit(archive.staging, {compareContent: true})
-    await datLibrary.updateSizeTracking(archive)
-    return res
-  },
-
-  async revert (url, opts = {}) {
-    var {archive, version} = await lookupArchive(url, opts)
-    if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    if (!archive.staging) return []
-    await assertWritePermission(archive, this.sender)
-    var res = await pda.revert(archive.staging)
-    await datLibrary.updateSizeTracking(archive)
-    return res
   },
 
   async history (url, opts = {}) {
@@ -159,11 +131,7 @@ export default {
     }
 
     return new Promise((resolve, reject) => {
-      // .stagingFS doesnt provide history()
-      // and .checkoutFS falls back to .stagingFS
-      // so we need to manually select checkoutFS or archive
-      var ctx = ((version) ? archive.checkoutFS : archive)
-      var stream = ctx.history({live: false, start, end})
+      var stream = archive.checkoutFS.history({live: false, start, end})
       stream.pipe(concat({encoding: 'object'}, values => {
         values = values.map(massageHistoryObj)
         if (reverse) values.reverse()
@@ -191,7 +159,7 @@ export default {
     await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
     await assertValidFilePath(filepath)
     await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.writeFile(archive.stagingFS, filepath, data, opts)
+    return pda.writeFile(archive, filepath, data, opts)
   },
 
   async unlink (url) {
@@ -199,7 +167,7 @@ export default {
     if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
     await assertWritePermission(archive, this.sender)
     await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.unlink(archive.stagingFS, filepath)
+    return pda.unlink(archive, filepath)
   },
 
   // TODO copy-disabled
@@ -211,7 +179,7 @@ export default {
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
       await assertUnprotectedFilePath(dstPath, this.sender)
-      return pda.copy(archive.stagingFS, filepath, dstPath)
+      return pda.copy(archive, filepath, dstPath)
     })
   }, */
 
@@ -225,7 +193,7 @@ export default {
       await assertWritePermission(archive, this.sender)
       await assertUnprotectedFilePath(filepath, this.sender)
       await assertUnprotectedFilePath(dstPath, this.sender)
-      return pda.rename(archive.stagingFS, filepath, dstPath)
+      return pda.rename(archive, filepath, dstPath)
     })
   }, */
 
@@ -260,7 +228,7 @@ export default {
     await assertWritePermission(archive, this.sender)
     await assertValidPath(filepath)
     await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.mkdir(archive.stagingFS, filepath)
+    return pda.mkdir(archive, filepath)
   },
 
   async rmdir (url, opts = {}) {
@@ -268,16 +236,12 @@ export default {
     if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
     await assertWritePermission(archive, this.sender)
     await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.rmdir(archive.stagingFS, filepath, opts)
+    return pda.rmdir(archive, filepath, opts)
   },
 
   async createFileActivityStream (url, pathPattern) {
     var {archive} = await lookupArchive(url)
-    if (archive.staging) {
-      return pda.createFileActivityStream(archive, archive.stagingFS, pathPattern)
-    } else {
-      return pda.createFileActivityStream(archive, pathPattern)
-    }
+    return pda.createFileActivityStream(archive, pathPattern)
   },
 
   async createNetworkActivityStream (url) {
@@ -291,7 +255,7 @@ export default {
     if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
     return pda.exportFilesystemToArchive({
       srcPath: opts.src,
-      dstArchive: archive.stagingFS,
+      dstArchive: archive,
       dstPath: filepath,
       ignore: opts.ignore,
       dryRun: opts.dryRun,
@@ -342,7 +306,7 @@ export default {
     return pda.exportArchiveToArchive({
       srcArchive: src.archive.checkoutFS,
       srcPath: src.filepath,
-      dstArchive: dst.archive.stagingFS,
+      dstArchive: dst.archive,
       dstPath: dst.filepath,
       ignore: opts.ignore,
       skipUndownloadedFiles: opts.skipUndownloadedFiles !== false
@@ -432,7 +396,7 @@ async function assertQuotaPermission (archive, senderOrigin, byteLength) {
   var bytesAllowed = userSettings.bytesAllowed || DAT_QUOTA_DEFAULT_BYTES_ALLOWED
 
   // check the new size
-  var newSize = (archive.metaSize + archive.stagingSize + byteLength)
+  var newSize = (archive.size + byteLength)
   if (newSize > bytesAllowed) {
     throw new QuotaExceededError()
   }
@@ -475,7 +439,7 @@ async function parseUrlParts (url) {
     }
 
     archiveKey = urlp.host
-    filepath = decodeURIComponent(urlp.pathname || '')
+    filepath = decodeURIComponent(urlp.pathname || '') || '/'
     version = urlp.version
   }
   return {archiveKey, filepath, version}
@@ -500,7 +464,7 @@ async function lookupArchive (url, opts = {}) {
       checkin('checking out a previous version from history')
       archive.checkoutFS = archive.checkout(+version)
     } else {
-      archive.checkoutFS = archive.stagingFS
+      archive.checkoutFS = archive
     }
 
     return {archive, filepath, version}

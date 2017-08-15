@@ -15,7 +15,6 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 export default function render (archiveInfo, opts = {}) {
   return yo`
     <div>
-      ${rFolder(archiveInfo, opts)}
       ${rFilesList(archiveInfo, opts)}
     </div>
   `
@@ -43,46 +42,6 @@ function rFilesList (archiveInfo, opts) {
 
 function redraw (archiveInfo, opts = {}) {
   yo.update(document.querySelector('.files-list'), rFilesList(archiveInfo, opts))
-}
-
-function rFolder (archiveInfo, opts) {
-  if (!archiveInfo.userSettings || !archiveInfo.userSettings.localPath) return ''
-  return yo`
-    <div class="dat-local-path">
-      <span class="path" title="${archiveInfo.userSettings.localPath}">
-        ${archiveInfo.userSettings.localPath}
-        ${archiveInfo.localPathExists
-          ? yo`
-            <a onclick=${e => onCopyFolder(e, archiveInfo)} href="#" title="Copy path to your clipboard">
-              <i class="fa fa-clipboard"></i>
-            </a>`
-          : ''
-        }
-      </span>
-      <span class="files-list-actions">
-        ${archiveInfo.isOwner && archiveInfo.localPathExists
-          ? yo`
-            <a onclick=${e => onImportFiles(e, archiveInfo)} href="#">
-              <i class="fa fa-plus"></i>
-              Add files
-            </a>
-          ` : ''
-        }
-        ${archiveInfo.localPathExists
-          ? yo`
-            <a onclick=${e => onOpenFolder(e, archiveInfo)} href="#">
-              <i class="fa fa-folder-open-o"></i>
-              Open folder
-            </a>`
-          : yo`
-            <span class="folder-warning">
-              <em>This folder no longer exists</em>
-              <i class="fa fa-exclamation-circle"></i>
-            </span>`
-          }
-      </span>
-    </div>
-  `
 }
 
 function rChildren (archiveInfo, children, depth = 0, opts = {}) {
@@ -172,42 +131,6 @@ async function onClickDirectory (e, archiveInfo, node, opts = {}) {
     await archiveInfo.fileTree.readFolder(node)
   }
   redraw(archiveInfo, opts)
-}
-
-function onCopyFolder (e, archiveInfo) {
-  e.preventDefault()
-  if (archiveInfo.userSettings.localPath) {
-    var path = archiveInfo.userSettings.localPath
-    if (path.indexOf(' ') !== -1) {
-      path = `"${path}"`
-    }
-    writeToClipboard(path)
-    toast.create(`Folder path copied to clipboard.`)
-  }
-}
-
-async function onImportFiles (e, archiveInfo) {
-  var files = await beakerBrowser.showOpenDialog({
-    title: 'Import files to this archive',
-    buttonLabel: 'Import',
-    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory']
-  })
-  if (files) {
-    files.forEach(src => DatArchive.importFromFilesystem({
-      src,
-      dst: archiveInfo.url,
-      ignore: ['dat.json'],
-      inplaceImport: true
-    }))
-    window.dispatchEvent(new Event('files-added'))
-  }
-}
-
-function onOpenFolder (e, archiveInfo) {
-  e.preventDefault()
-  if (archiveInfo.userSettings.localPath) {
-    beakerBrowser.openFolder(archiveInfo.userSettings.localPath)
-  }
 }
 
 // helpers

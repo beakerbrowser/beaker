@@ -6,7 +6,6 @@ import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
 import {showModal} from '../ui/modals'
-import {validateLocalPath, showDeleteArchivePrompt} from '../browser'
 import {timer} from '../../lib/time'
 import {
   ArchiveNotWritableError,
@@ -57,11 +56,6 @@ export default {
       return showModal(win, 'create-archive', {url})
     }
 
-    // validate path
-    if (userSettings && userSettings.localPath && !validateLocalPath(userSettings.localPath).valid) {
-      throw new InvalidPathError('Cannot save the site to that folder')
-    }
-
     // update manifest file
     if (manifestInfo) {
       var archiveInfo = await archivesDb.getMeta(key)
@@ -69,22 +63,14 @@ export default {
       title = typeof title !== 'undefined' ? title : archiveInfo.title
       description = typeof description !== 'undefined' ? description : archiveInfo.description
       if (title !== archiveInfo.title || description !== archiveInfo.description) {
-        await Promise.all([
-          pda.updateManifest(archive, {title, description}),
-          pda.updateManifest(archive.staging, {title, description})
-        ])
+        await pda.updateManifest(archive, {title, description})
         datLibrary.pullLatestArchiveMeta(archive)
       }
     }
 
     // update settings
     if (userSettings) {
-      var oldLocalPath = archive.staging ? archive.staging.path : false
       userSettings = await archivesDb.setUserSettings(0, key, userSettings)
-      await datLibrary.configureStaging(archive, userSettings)
-      if (userSettings.localPath && userSettings.localPath !== oldLocalPath) {
-        datLibrary.deleteOldStagingFolder(oldLocalPath)
-      }
     }
   },
 
@@ -95,45 +81,16 @@ export default {
     var archive = await datLibrary.getOrLoadArchive(key)
     var meta = await datLibrary.pullLatestArchiveMeta(archive)
 
-    // select a default local path, if needed
-    var localPath
-    if (archive.writable) {
-      try {
-        let userSettings = await archivesDb.getUserSettings(0, key)
-        localPath = userSettings.localPath
-      } catch (e) {}
-      localPath = localPath || await datLibrary.selectDefaultLocalPath(meta.title)
-    }
-
     // update settings
-    return archivesDb.setUserSettings(0, key, {isSaved: true, localPath})
+    return archivesDb.setUserSettings(0, key, {isSaved: true})
   },
 
-  async remove (url, {noPrompt} = {}) {
+  async remove (url) {
     var key = toKey(url)
-
-    // check with the user if they're the owner
-    var meta = await archivesDb.getMeta(key)
-    if (meta.isOwner && !noPrompt) {
-      var settings = await archivesDb.getUserSettings(0, key)
-      var {shouldDelete, preserveStagingFolder} = await showDeleteArchivePrompt(meta.title || key, settings.localPath)
-      if (!shouldDelete) {
-        return settings
-      }
-    }
-
-    // delete
-    settings = await archivesDb.setUserSettings(0, key, {isSaved: false})
-    if (settings.localPath && !preserveStagingFolder) {
-      datLibrary.deleteOldStagingFolder(settings.localPath, {alwaysDelete: true})
-    }
-    return settings
+    return archivesDb.setUserSettings(0, key, {isSaved: false})
   },
 
   async bulkRemove (urls) {
-    var bulkShouldDelete = false
-    var preserveStagingFolder = false
-    // if user chooses yes-to-all, then preserveStagingFolder will be the last given value
     var results = []
 
     // sanity check
@@ -143,44 +100,14 @@ export default {
 
     for (var i = 0; i < urls.length; i++) {
       let key = toKey(urls[i])
-
-      if (!bulkShouldDelete) {
-        // check with the user if they're the owner
-        let meta = await archivesDb.getMeta(key)
-        if (meta.isOwner) {
-          let settings = await archivesDb.getUserSettings(0, key)
-          let res = await showDeleteArchivePrompt(meta.title || key, settings.localPath, {bulk: true})
-          preserveStagingFolder = res.preserveStagingFolder
-
-          if (res.bulkYesToAll) {
-            // 'yes to all' chosen
-            bulkShouldDelete = true
-          } else if (!res.shouldDelete) {
-            // 'no' chosen
-            results.push(settings) // give settings unchanged
-            continue
-          }
-        }
-      }
-
-      // delete
-      let settings = await archivesDb.setUserSettings(0, key, {isSaved: false})
-      if (settings.localPath && !preserveStagingFolder) {
-        datLibrary.deleteOldStagingFolder(settings.localPath, {alwaysDelete: true})
-      }
-      results.push(settings)
+      results.push(await archivesDb.setUserSettings(0, key, {isSaved: false}))
     }
     return results
   },
 
   async restore (url) {
     var key = toKey(url)
-    var settings = await archivesDb.getUserSettings(0, key)
-    if (settings.localPath) {
-      await datLibrary.restoreStagingFolder(key, settings.localPath)
-      return true
-    }
-    return false
+    return archivesDb.getUserSettings(0, key)
   },
 
   async list (query = {}) {

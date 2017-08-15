@@ -72,7 +72,7 @@ export async function query (profileId, query) {
   if (WHERE.length) WHERE = `WHERE ${WHERE.join(' AND ')}`
   else WHERE = ''
   var archives = await db.all(`
-    SELECT archives_meta.*, archives.isSaved, archives.autoDownload, archives.autoUpload, archives.localPath
+    SELECT archives_meta.*, archives.isSaved, archives.autoDownload, archives.autoUpload
       FROM archives_meta
       LEFT JOIN archives ON archives_meta.key = archives.key
       ${WHERE}
@@ -85,14 +85,12 @@ export async function query (profileId, query) {
     archive.userSettings = {
       isSaved: archive.isSaved != 0,
       autoDownload: archive.autoDownload != 0,
-      autoUpload: archive.autoUpload != 0,
-      localPath: archive.localPath
+      autoUpload: archive.autoUpload != 0
     }
 
     delete archive.isSaved
     delete archive.autoDownload
     delete archive.autoUpload
-    delete archive.localPath
   })
   return archives
 }
@@ -167,22 +165,20 @@ export async function setUserSettings (profileId, key, newValues = {}) {
         key,
         isSaved: newValues.isSaved,
         autoDownload: ('autoDownload' in newValues) ? newValues.autoDownload : newValues.isSaved,
-        autoUpload: ('autoUpload' in newValues) ? newValues.autoUpload : newValues.isSaved,
-        localPath: newValues.localPath
+        autoUpload: ('autoUpload' in newValues) ? newValues.autoUpload : newValues.isSaved
       }
       await db.run(`
-        INSERT INTO archives (profileId, key, isSaved, autoDownload, autoUpload, localPath) VALUES (?, ?, ?, ?, ?, ?)
-      `, [profileId, key, flag(value.isSaved), flag(value.autoDownload), flag(value.autoUpload), value.localPath])
+        INSERT INTO archives (profileId, key, isSaved, autoDownload, autoUpload) VALUES (?, ?, ?, ?, ?)
+      `, [profileId, key, flag(value.isSaved), flag(value.autoDownload), flag(value.autoUpload)])
     } else {
       // update
-      var { isSaved, autoDownload, autoUpload, localPath } = newValues
+      var { isSaved, autoDownload, autoUpload } = newValues
       if (typeof isSaved === 'boolean') value.isSaved = isSaved
       if (typeof autoDownload === 'boolean') value.autoDownload = autoDownload
       if (typeof autoUpload === 'boolean') value.autoUpload = autoUpload
-      if (typeof localPath === 'string') value.localPath = localPath
       await db.run(`
-        UPDATE archives SET isSaved = ?, autoDownload = ?, autoUpload = ?, localPath = ? WHERE profileId = ? AND key = ?
-      `, [flag(value.isSaved), flag(value.autoDownload), flag(value.autoUpload), value.localPath, profileId, key])
+        UPDATE archives SET isSaved = ?, autoDownload = ?, autoUpload = ? WHERE profileId = ? AND key = ?
+      `, [flag(value.isSaved), flag(value.autoDownload), flag(value.autoUpload), profileId, key])
     }
 
     events.emit('update:archive-user-settings', key, value)
@@ -231,15 +227,15 @@ export async function setMeta (key, value = {}) {
   }
 
   // extract the desired values
-  var {title, description, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner} = value
+  var {title, description, mtime, isOwner} = value
   isOwner = isOwner ? 1 : 0
 
   // write
   await db.run(`
     INSERT OR REPLACE INTO
-      archives_meta (key, title, description, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner)
-      VALUES        (?,   ?,     ?,           ?,     ?,        ?,           ?,                      ?)
-  `, [key, title, description, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner])
+      archives_meta (key, title, description, mtime, isOwner)
+      VALUES        (?,   ?,     ?,           ?,     ?)
+  `, [key, title, description, mtime, isOwner])
   events.emit('update:archive-meta', key, value)
 }
 
