@@ -161,20 +161,50 @@
     margin-bottom: 1px;
     color: fadeout(@color-text, 10%);
 
-    svg.icon {
+    .icon {
       width: 18px;
       margin-right: 5px;
+
+      &.star-fill {
+
+        * {
+          fill: rgba(0,0,0,.25);
+          stroke-opacity: 0;
+        }
+      }
 
       &.padlock {
         width: 11px;
         margin-left: 3px;
         margin-right: 9px;
+        margin-top: -1px;
+
+        #top {
+          stroke: rgba(0,0,0,.25);
+        }
+
+        #bottom {
+          fill: rgba(0,0,0,.25);
+        }
       }
 
       &.globe {
         width: 14px;
         margin-left: 2px;
         margin-right: 7px;
+
+        #water {
+          fill: rgba(0,0,0,.25);
+        }
+
+        .earth {
+          fill: fadeout(#fff, 10%);
+        }
+      }
+
+      &.pin *,
+      &.star-fill * {
+        fill: rgba(0,0,0,.25);
       }
 
       &.pin {
@@ -186,11 +216,44 @@
 
     &:hover {
       background: rgb(233, 233, 236);
+
+      .icon {
+
+      }
     }
 
     &.active {
       background: rgb(225, 237, 250); // TODO decide if this is color we will use -tbv
       font-weight: 500;
+
+      .icon {
+
+        &.star-fill,
+        &.pin {
+         * {
+            fill: fadeout(@color-text, 25%);
+            stroke: fadeout(@color-text, 25%);
+          }
+        }
+
+        &.globe {
+
+          #water {
+            fill: fadeout(@color-text, 25%);
+          }
+        }
+
+        &.padlock {
+
+          #top {
+            stroke: fadeout(@color-text, 25%);
+          }
+
+          #bottom {
+            fill: fadeout(@color-text, 25%);
+          }
+        }
+      }
     }
 
     &.friend {
