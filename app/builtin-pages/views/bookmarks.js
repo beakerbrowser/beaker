@@ -7,7 +7,6 @@ import renderCloseIcon from '../icon/close'
 import renderGlobeIcon from '../icon/globe'
 import renderHistoryIcon from '../icon/history'
 import renderPinIcon from '../icon/pin'
-import renderPinFillIcon from '../icon/pin-fill'
 import renderPadlockIcon from '../icon/padlock'
 import renderStarFillIcon from '../icon/star-fill'
 import renderTrashIcon from '../icon/trash'
@@ -66,8 +65,8 @@ const renderRowDefault = (row, i) =>
         <span class="url bookmark__url">${row.url}</span>
       </a>
       <div class="actions bookmark__actions">
-        <div class="action" onclick=${() => onTogglePinned(i)}>
-          ${row.pinned ? renderPinFillIcon() : renderPinIcon()}
+        <div class="action ${row.pinned ? 'pinned' : ''}" onclick=${() => onTogglePinned(i)}>
+          ${renderPinIcon()}
         </div>
         <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
           ${renderPencilIcon()}
