@@ -7,38 +7,11 @@
   .bookmarks-list {
     margin-left: 300px;
     display: inline-block;
-    padding: 20px;
-    max-width: 875px;
-  }
-
-  .links-list {
-    border: 1px solid rgb(210, 210, 213);
-    background: #fff;
-    border-radius: 4px;
   }
 
   .ll-row {
-    &:extend(.flex);
-    align-items: center;
-    height: 29px;
-    padding: 0 10px;
-    width: 100%;
-    max-width: 100% !important;
-
-    &:not(:last-child) {
-      border-bottom: 1px solid rgb(230, 230, 230);
-    }
-
-    &:hover {
-      background: rgb(246, 246, 249);
-    }
-
-    .title {
-      &:extend(.overflow-ellipsis);
-      width: 300px;
-      display: inline-block;
-      margin-right: 100px;
-    }
+    border-top: 1px solid rgb(230, 230, 230);
+    border-bottom: 0 !important;
   }
 
   .bookmarks-breadcrumbs {
