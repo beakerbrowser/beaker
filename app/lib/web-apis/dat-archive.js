@@ -82,6 +82,16 @@ export default class DatArchive extends EventTarget {
     }
   }
 
+  async setInfo (info, opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      return await dat.setInfo(url, info, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
+
   async diff (opts = {}) {
     // noop
     console.warn('The DatArchive diff() API has been deprecated.')

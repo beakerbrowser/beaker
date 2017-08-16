@@ -488,6 +488,23 @@ test('DatArchive.selectArchive: select', async t => {
   t.is(res.value, testRunnerDatURL.slice(0, -1))
 })
 
+test('archive.setInfo', async t => {
+  // write the manifest
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.setInfo({title: 'The Changed Title', description: 'The Changed Description'}).then(done, done)
+  }, createdDatURL)
+  t.falsy(res.value)
+
+  // read it back
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.getInfo().then(done, done)
+  }, createdDatURL)
+  t.deepEqual(res.value.title, 'The Changed Title')
+  t.deepEqual(res.value.description, 'The Changed Description')
+})
+
 test('archive.writeFile', async t => {
   async function dotest (filename, content, encoding) {
     // write the file
@@ -965,8 +982,8 @@ test('archive.getInfo', async t => {
     archive.getInfo().then(done, done)
   }, createdDatURL)
   var info = res.value
-  t.deepEqual(info.title, 'The Title')
-  t.deepEqual(info.description, 'The Description')
+  t.deepEqual(info.title, 'The Changed Title')
+  t.deepEqual(info.description, 'The Changed Description')
 })
 
 test('archive.download', async t => {

@@ -134,6 +134,17 @@ export default {
     })
   },
 
+  async setInfo (url, info, opts) {
+    var {archive, filepath, version} = await lookupArchive(url, opts)
+    if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
+    if (!info || typeof info !== 'object') throw new Error('Invalid argument')
+    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+    await assertWritePermission(archive, this.sender)
+    await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(JSON.stringify(info), opts.encoding))
+    await pda.updateManifest(archive, info)
+    await datLibrary.pullLatestArchiveMeta(archive)
+  },
+
   async history (url, opts = {}) {
     var reverse = opts.reverse === true
     var {start, end} = opts
