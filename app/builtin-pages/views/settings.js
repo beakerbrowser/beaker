@@ -15,6 +15,7 @@ var settings
 var browserInfo
 var browserEvents
 var defaultProtocolSettings
+var activeSection = ''
 
 // main
 // =
@@ -51,24 +52,32 @@ function render () {
           <p class="builtin-blurb">Manage Beaker's appearance and preferences.</p>
 
           <div class="section">
-            <div class="nav-item">Auto-updater</div>
-            <div class="nav-item">Protocol settings</div>
-            <div class="nav-item">Appearance</div>
-            <div class="nav-item">Information & Help</div>
+            <div class="nav-item ${activeSection === 'auto-updater' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="auto-updater">
+              Auto-updater
+            </div>
+            <div class="nav-item ${activeSection === 'protocol-settings' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="protocol-settings">
+              Protocol settings
+            </div>
+            <div class="nav-item ${activeSection === 'appearance' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="appearance">
+              Appearance
+            </div>
+            <div class="nav-item ${activeSection === 'info' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="info">
+              Information & Help
+            </div>
           </div>
         </div>
 
         <div class="builtin-main">
-          <h2 class="ll-heading">Auto-updater</h2>
+          <h2 id="auto-updater" class="ll-heading">Auto-updater</h2>
           ${renderAutoUpdater()}
 
-          <h2 class="ll-heading">Protocol settings</h2>
+          <h2 id="protocol-settings" class="ll-heading">Protocol settings</h2>
           ${renderProtocolSettings()}
 
-          <h2 class="ll-heading">Start page settings</h2>
+          <h2 id="appearance" class="ll-heading">Start page settings</h2>
           ${renderStartPageSettings()}
 
-          <h2 class="ll-heading">Beaker information</h2>
+          <h2 id="info" class="ll-heading">Beaker information</h2>
           <ul class="settings-section">
             <li>Version: ${browserInfo.version} <small>Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</small></li>
             <li>User data: ${browserInfo.paths.userData}</li>
@@ -211,6 +220,14 @@ function renderHelp () {
 
 // event handlers
 // =
+
+function onUpdateActiveSection (e) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'))
+  e.target.classList.add('active')
+
+  activeSection = e.target.dataset.section
+  document.querySelector(`#${activeSection}`).scrollIntoView()
+}
 
 function onClickCheckUpdates () {
   // trigger check
