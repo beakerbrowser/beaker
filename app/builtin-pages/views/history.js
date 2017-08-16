@@ -97,7 +97,7 @@ function render () {
     document.querySelector('.history-wrapper'),
     yo`
       <div class="history-wrapper">
-        ${renderSidebar()}
+        ${renderSidebar('history')}
         <div class="builtin-wrapper history-wrapper" onscroll=${onScrollContent}>
           <div class="builtin-sidebar">
             <h1>History</h1>

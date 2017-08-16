@@ -75,7 +75,7 @@ function update () {
 
   yo.update(document.querySelector('.window-content.start'), yo`
     <div class="window-content builtin start ${theme}">
-      ${renderSidebar()}
+      ${renderSidebar('start')}
       <div class="builtin-wrapper start-wrapper">
         <div class="builtin-main center">
           ${renderPinnedBookmarks()}

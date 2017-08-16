@@ -15,7 +15,7 @@
     transition: transform .15s ease-in-out;
 
     * {
-      stroke: fadeout(#fff, 15%);
+      stroke: fadeout(#fff, 25%);
     }
 
     &.history {
@@ -46,6 +46,13 @@
 
       &.start {
         width: 85px;
+      }
+    }
+
+    &.active {
+
+      * {
+        stroke: #fff;
       }
     }
 
