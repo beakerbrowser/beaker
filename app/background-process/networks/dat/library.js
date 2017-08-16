@@ -8,6 +8,7 @@ import pda from 'pauls-dat-api'
 import signatures from 'sodium-signatures'
 import slugify from 'slugify'
 var debug = require('debug')('dat')
+import * as siteData from '../../dbs/sitedata'
 import {throttle, debounce} from '../../../lib/functions'
 
 // dat modules
@@ -62,6 +63,11 @@ export function setup () {
       autoUpload: settings.autoUpload
     }
     archivesEvents.emit(settings.isSaved ? 'added' : 'removed', {details})
+
+    // delete all perms for deleted archives
+    if (!settings.isSaved) {
+      siteData.clearPermissionAllOrigins('modifyDat:' + key)
+    }
 
     // update the download based on these settings
     var archive = getArchive(key)

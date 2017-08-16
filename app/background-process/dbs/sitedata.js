@@ -25,7 +25,7 @@ export function setup () {
   setupPromise = setupSqliteDB(db, migrations, '[SITEDATA]')
 
   // wire up RPC
-  rpc.exportAPI('beakerSitedata', manifest, { get, set, getPermissions, getPermission, setPermission }, internalOnly)
+  rpc.exportAPI('beakerSitedata', manifest, { get, set, getPermissions, getPermission, setPermission, clearPermission, clearPermissionAllOrigins }, internalOnly)
 }
 
 export async function set (url, key, value) {
@@ -38,6 +38,17 @@ export async function set (url, key, value) {
         INTO sitedata (origin, key, value)
         VALUES (?, ?, ?)
     `, [origin, key, value], cb)
+  })
+}
+
+export async function clear (url, key) {
+  await setupPromise
+  var origin = await extractOrigin(url)
+  if (!origin) return null
+  return cbPromise(cb => {
+    db.run(`
+      DELETE FROM sitedata WHERE origin = ? AND key = ?
+    `, [origin, key], cb)
   })
 }
 
@@ -96,7 +107,22 @@ export function getPermission (url, key) {
 
 export function setPermission (url, key, value) {
   value = !!value
+  if (!value) return clear(url, 'perm:' + key)
   return set(url, 'perm:' + key, value)
+}
+
+export function clearPermission (url, key) {
+  return clear(url, 'perm:' + key)
+}
+
+export async function clearPermissionAllOrigins (key) {
+  await setupPromise
+  key = 'perm:' + key
+  return cbPromise(cb => {
+    db.run(`
+      DELETE FROM sitedata WHERE key = ?
+    `, [key], cb)
+  })
 }
 
 export async function query (values) {

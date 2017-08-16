@@ -10,11 +10,13 @@ import * as archivesDb from '../dbs/archives'
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {getWebContentsWindow} from '../../lib/electron'
+import {getPermissions} from '../dbs/sitedata'
 import {queryPermission, grantPermission, requestPermission} from '../ui/permissions'
 import {
   DAT_MANIFEST_FILENAME,
   DAT_HASH_REGEX,
   DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
+  DAT_QUOTA_DEFAULT_ARCHIVES_ALLOWED,
   DAT_VALID_PATH_REGEX,
   DEFAULT_DAT_API_TIMEOUT
 } from '../../lib/const'
@@ -41,7 +43,7 @@ export default {
     var newArchiveUrl
 
     // check the quota for permission
-    // TODO
+    await assertCreateArchivePermission(this.sender)
 
     if (prompt) {
       // initiate the modal
@@ -71,7 +73,7 @@ export default {
     var newArchiveUrl
 
     // check the quota for permission
-    // TODO
+    await assertCreateArchivePermission(this.sender)
 
     if (prompt) {
       // initiate the modal
@@ -395,6 +397,24 @@ function assertUnprotectedFilePath (filepath, sender) {
 function assertTmpBeakerOnly (sender) {
   if (!sender.getURL().startsWith('beaker:')) {
     throw new PermissionsError()
+  }
+}
+
+async function assertCreateArchivePermission (sender) {
+  // beaker: always allowed
+  if (sender.getURL().startsWith('beaker:')) {
+    return true
+  }
+
+  // count the modifyDat perms
+  var perms = await getPermissions(sender.getURL())
+  var numArchives = Object.keys(perms).filter(name => (
+    name.startsWith('modifyDat:') && perms[name]
+  )).length
+
+  // allow if not too many
+  if (numArchives >= DAT_QUOTA_DEFAULT_ARCHIVES_ALLOWED) {
+    throw new QuotaExceededError('This site cannot create any more archives. Delete some existing archives to create new ones.')
   }
 }
 

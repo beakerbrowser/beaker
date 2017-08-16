@@ -40,7 +40,7 @@ export function revokePermission (permission, webContents) {
   // update the DB
   const PERM = PERMS[getPermId(permission)]
   if (PERM && PERM.persist) {
-    siteData.setPermission(siteURL, permission, 0)
+    siteData.clearPermission(siteURL, permission)
   }
   return Promise.resolve()
 }

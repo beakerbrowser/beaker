@@ -16,6 +16,7 @@ const app = new Application({
     NODE_ENV: 'test',
     beaker_no_welcome_tab: 1,
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
+    beaker_dat_quota_default_archives_allowed: 100,
     beaker_dat_quota_default_bytes_allowed: '90kb'
   }
 })
@@ -1516,7 +1517,6 @@ test('DatArchive can resolve and read dats with shortnames', async t => {
     var archive = new DatArchive('dat://beakerbrowser.com/')
     archive.readdir('/').then(done, done)
   })
-  console.log(res.value)
   t.truthy(Array.isArray(res.value))
   
   await app.client.windowByIndex(1)

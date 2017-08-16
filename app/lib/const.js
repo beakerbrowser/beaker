@@ -11,6 +11,7 @@ export const DAT_VALID_PATH_REGEX = /^[a-z0-9\-._~!$&'()*+,;=:@\/\s]+$/i
 // dat settings
 export const DAT_SWARM_PORT = 3282
 export const DAT_MANIFEST_FILENAME = 'dat.json'
+export const DAT_QUOTA_DEFAULT_ARCHIVES_ALLOWED = process.env.beaker_dat_quota_default_archives_allowed || 5
 export const DAT_QUOTA_DEFAULT_BYTES_ALLOWED = bytes.parse(process.env.beaker_dat_quota_default_bytes_allowed || '500mb')
 export const DEFAULT_DAT_DNS_TTL = ms('1h')
 export const MAX_DAT_DNS_TTL = ms('7d')
