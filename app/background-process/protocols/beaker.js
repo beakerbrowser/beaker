@@ -110,39 +110,6 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/icons.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/icons.css'))
   }
-  if (requestUrl === 'beaker://assets/icon/trash.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/trash.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/pencil.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/pencil.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/close.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/close.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/pin.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/pin.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/pin-blue.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/pin-blue.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/padlock.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/padlock.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/grid.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/grid.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/star.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/star.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/star-fill.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/star-fill.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/globe.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/globe.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/history.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/history.svg'))
-  }
   if (requestUrl === 'beaker://assets/font-awesome.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/fonts/font-awesome/css/font-awesome.min.css'))
   }
