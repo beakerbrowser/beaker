@@ -57,6 +57,7 @@ export function setup () {
     var details = {
       url: 'dat://' + key,
       isSaved: settings.isSaved,
+      networked: settings.networked,
       autoDownload: settings.autoDownload,
       autoUpload: settings.autoUpload
     }
@@ -65,6 +66,7 @@ export function setup () {
     // update the download based on these settings
     var archive = getArchive(key)
     if (archive) {
+      configureNetwork(archive, settings)
       configureAutoDownload(archive, settings)
     }
   })
@@ -133,9 +135,10 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
 // archive creation
 // =
 
-export async function createNewArchive (manifest = {}) {
+export async function createNewArchive (manifest = {}, settings = false) {
   var userSettings = {
-    isSaved: true
+    isSaved: true,
+    networked: settings && settings.networked === false ? false : true
   }
 
   // create the archive
@@ -155,7 +158,7 @@ export async function createNewArchive (manifest = {}) {
   return manifest.url
 }
 
-export async function forkArchive (srcArchiveUrl, manifest = {}) {
+export async function forkArchive (srcArchiveUrl, manifest = {}, settings = false) {
   srcArchiveUrl = fromKeyToURL(srcArchiveUrl)
 
   // get the old archive
@@ -176,7 +179,7 @@ export async function forkArchive (srcArchiveUrl, manifest = {}) {
   }
 
   // create the new archive
-  var dstArchiveUrl = await createNewArchive(dstManifest)
+  var dstArchiveUrl = await createNewArchive(dstManifest, settings)
   var dstArchive = getArchive(dstArchiveUrl)
 
   // copy files
@@ -240,8 +243,11 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
     try {
       userSettings = await archivesDb.getUserSettings(0, key)
     } catch (e) {
-      userSettings = {}
+      userSettings = {networked: true}
     }
+  }
+  if (!('networked' in userSettings)) {
+    userSettings.networked = true
   }
 
   // ensure the folders exist
@@ -261,7 +267,6 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
     })
   })
   await updateSizeTracking(archive)
-  configureAutoDownload(archive, userSettings)
   archivesDb.touch(key).catch(err => console.error('Failed to update lastAccessTime for archive', key, err))
 
   // store in the discovery listing, so the swarmer can find it
@@ -269,7 +274,8 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
   archivesByDKey[datEncoding.toStr(archive.discoveryKey)] = archive
 
   // join the swarm
-  joinSwarm(archive)
+  configureNetwork(archive, userSettings)
+  configureAutoDownload(archive, userSettings)
 
   // await initial metadata sync if not the owner
   if (!archive.writable && !archive.metadata.length) {
@@ -332,7 +338,7 @@ export async function queryArchives (query) {
   archiveInfos.forEach(archiveInfo => {
     var archive = getArchive(archiveInfo.key)
     if (archive) {
-      archiveInfo.peers = archive.metadata.peers.length
+      archiveInfo.peers = archive.replicationStreams.length
       archiveInfo.peerHistory = archive.peerHistory
     }
   })
@@ -355,10 +361,11 @@ export async function getArchiveInfo (key) {
   meta.size = archive.size
   meta.userSettings = {
     isSaved: userSettings.isSaved,
+    networked: userSettings.networked,
     autoDownload: userSettings.autoDownload,
     autoUpload: userSettings.autoUpload
   }
-  meta.peers = archive.metadata.peers.length
+  meta.peers = archive.replicationStreams.length
   meta.peerInfo = archive.replicationStreams.map(s => ({
     host: s.peerInfo.host,
     port: s.peerInfo.port
@@ -391,6 +398,15 @@ export async function clearFileCache (key) {
 // archive networking
 // =
 
+// set the networking of an archive based on settings
+function configureNetwork (archive, settings) {
+  if (!settings || settings.networked) {
+    joinSwarm(archive)
+  } else {
+    leaveSwarm(archive)
+  }
+}
+
 // put the archive into the network, for upload and download
 export function joinSwarm (key, opts) {
   var archive = (typeof key === 'object' && key.key) ? key : getArchive(key)
@@ -402,7 +418,7 @@ export function joinSwarm (key, opts) {
 }
 
 // take the archive out of the network
-export function leaveSwarm (key, cb) {
+export function leaveSwarm (key) {
   var archive = (typeof key === 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || !archive.isSwarming) return
 
@@ -500,7 +516,7 @@ function createReplicationStream (info) {
     var dkeyStr = datEncoding.toStr(dkey)
     var chan = dkeyStr.slice(0, 6) + '..' + dkeyStr.slice(-2)
     var archive = archivesByDKey[dkeyStr]
-    if (!archive) {
+    if (!archive || !archive.isSwarming) {
       return
     }
 

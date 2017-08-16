@@ -37,7 +37,7 @@ const to = (opts) =>
     : DEFAULT_DAT_API_TIMEOUT
 
 export default {
-  async createArchive ({title, description, prompt} = {}) {
+  async createArchive ({title, description, networked, prompt} = {}) {
     var newArchiveUrl
 
     // check the quota for permission
@@ -53,12 +53,12 @@ export default {
       // await assertSenderIsFocused(this.sender)
 
       // run the creation modal
-      let res = await showModal(win, 'create-archive', {title, description})
+      let res = await showModal(win, 'create-archive', {title, description, networked})
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {
       // no modal
-      newArchiveUrl = await datLibrary.createNewArchive({title, description})
+      newArchiveUrl = await datLibrary.createNewArchive({title, description}, {networked})
     }
 
     // grant write permissions to the creating app
@@ -67,7 +67,7 @@ export default {
     return newArchiveUrl
   },
 
-  async forkArchive (url, {title, description, prompt} = {}) {
+  async forkArchive (url, {title, description, networked, prompt} = {}) {
     var newArchiveUrl
 
     // check the quota for permission
@@ -86,12 +86,12 @@ export default {
       let key1 = await lookupUrlDatKey(url)
       let key2 = await lookupUrlDatKey(this.sender.getURL())
       let isSelfFork = key1 === key2
-      let res = await showModal(win, 'fork-archive', {url, title, description, isSelfFork})
+      let res = await showModal(win, 'fork-archive', {url, title, description, networked, isSelfFork})
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {
       // no modal
-      newArchiveUrl = await datLibrary.forkArchive(url, {title, description})
+      newArchiveUrl = await datLibrary.forkArchive(url, {title, description}, {networked})
     }
 
     // grant write permissions to the creating app
@@ -127,6 +127,7 @@ export default {
         key: info.key,
         url: info.url,
         isOwner: info.isOwner,
+        networked: info.userSettings.networked,
 
         // state
         version: info.version,
@@ -141,15 +142,20 @@ export default {
     })
   },
 
-  async configure (url, info, opts) {
+  async configure (url, settings, opts) {
     var {archive, filepath, version} = await lookupArchive(url, opts)
     if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    if (!info || typeof info !== 'object') throw new Error('Invalid argument')
+    if (!settings || typeof settings !== 'object') throw new Error('Invalid argument')
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
     await assertWritePermission(archive, this.sender)
-    await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(JSON.stringify(info), opts.encoding))
-    await pda.updateManifest(archive, info)
-    await datLibrary.pullLatestArchiveMeta(archive)
+    await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(JSON.stringify(settings), opts.encoding))
+    if ('title' in settings || 'description' in settings) {
+      await pda.updateManifest(archive, settings)
+      await datLibrary.pullLatestArchiveMeta(archive)
+    }
+    if ('networked' in settings) {
+      await archivesDb.setUserSettings(0, archive.key, {networked: settings.networked})      
+    }
   },
 
   async history (url, opts = {}) {

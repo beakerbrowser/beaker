@@ -72,7 +72,7 @@ export async function query (profileId, query) {
   if (WHERE.length) WHERE = `WHERE ${WHERE.join(' AND ')}`
   else WHERE = ''
   var archives = await db.all(`
-    SELECT archives_meta.*, archives.isSaved, archives.autoDownload, archives.autoUpload
+    SELECT archives_meta.*, archives.isSaved, archives.networked, archives.autoDownload, archives.autoUpload
       FROM archives_meta
       LEFT JOIN archives ON archives_meta.key = archives.key
       ${WHERE}
@@ -84,11 +84,13 @@ export async function query (profileId, query) {
     archive.isOwner = archive.isOwner != 0
     archive.userSettings = {
       isSaved: archive.isSaved != 0,
+      networked: archive.networked != 0,
       autoDownload: archive.autoDownload != 0,
       autoUpload: archive.autoUpload != 0
     }
 
     delete archive.isSaved
+    delete archive.networked
     delete archive.autoDownload
     delete archive.autoUpload
   })
@@ -135,6 +137,7 @@ export async function getUserSettings (profileId, key) {
       SELECT * FROM archives WHERE profileId = ? AND key = ?
     `, [profileId, key])
     settings.isSaved = !!settings.isSaved
+    settings.networked = !!settings.networked
     settings.autoDownload = !!settings.autoDownload
     settings.autoUpload = !!settings.autoUpload
     return settings
@@ -158,27 +161,29 @@ export async function setUserSettings (profileId, key, newValues = {}) {
     // fetch current
     var value = await getUserSettings(profileId, key)
 
-    if (typeof value.key === 'undefined') {
+    if (!value || typeof value.key === 'undefined') {
       // create
       value = {
         profileId,
         key,
         isSaved: newValues.isSaved,
+        networked: ('networked' in newValues) ? newValues.networked : true,
         autoDownload: ('autoDownload' in newValues) ? newValues.autoDownload : newValues.isSaved,
         autoUpload: ('autoUpload' in newValues) ? newValues.autoUpload : newValues.isSaved
       }
       await db.run(`
-        INSERT INTO archives (profileId, key, isSaved, autoDownload, autoUpload) VALUES (?, ?, ?, ?, ?)
-      `, [profileId, key, flag(value.isSaved), flag(value.autoDownload), flag(value.autoUpload)])
+        INSERT INTO archives (profileId, key, isSaved, networked, autoDownload, autoUpload) VALUES (?, ?, ?, ?, ?, ?)
+      `, [profileId, key, flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload)])
     } else {
       // update
-      var { isSaved, autoDownload, autoUpload } = newValues
+      var { isSaved, networked, autoDownload, autoUpload } = newValues
       if (typeof isSaved === 'boolean') value.isSaved = isSaved
+      if (typeof networked === 'boolean') value.networked = networked
       if (typeof autoDownload === 'boolean') value.autoDownload = autoDownload
       if (typeof autoUpload === 'boolean') value.autoUpload = autoUpload
       await db.run(`
-        UPDATE archives SET isSaved = ?, autoDownload = ?, autoUpload = ? WHERE profileId = ? AND key = ?
-      `, [flag(value.isSaved), flag(value.autoDownload), flag(value.autoUpload), profileId, key])
+        UPDATE archives SET isSaved = ?, networked = ?, autoDownload = ?, autoUpload = ? WHERE profileId = ? AND key = ?
+      `, [flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload), profileId, key])
     }
 
     events.emit('update:archive-user-settings', key, value)

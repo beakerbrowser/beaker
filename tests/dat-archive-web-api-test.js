@@ -546,6 +546,131 @@ test('archive.configure', async t => {
   t.deepEqual(res.value.description, 'The Changed Description')
 })
 
+
+test('offline archives', async t => {
+  // create a dat (prompt=false)
+  var res = await app.client.executeAsync((done) => {
+    DatArchive.create({ networked: false }).then(done,done)
+  })
+  var datUrl = res.value.url
+  t.truthy(datUrl.startsWith('dat://'))
+  var datKey = datUrl.slice('dat://'.length)
+
+  // check the settings
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.networked, false)
+
+  // change the settings
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.configure({networked: true}).then(done, done)
+  }, datUrl)
+  t.falsy(res.value)
+
+  // check the settings
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.networked, true)
+
+  // create a dat (prompt=true)
+  // start the prompt
+  await app.client.execute(() => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.create({ networked: false, prompt: true }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  })
+
+  // accept the prompt
+  await sleep(500)
+  await app.client.windowByIndex(2)
+  await app.client.waitUntilWindowLoaded()
+  await app.client.waitForExist('button[type="submit"]')
+  await app.client.click('button[type="submit"]')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
+  var datUrl2 = res.value.url
+  t.truthy(datUrl2.startsWith('dat://'))
+  var datKey2 = datUrl2.slice('dat://'.length)
+
+  // check the settings
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey2)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.networked, false)
+
+  // fork a dat (prompt=false)
+  var res = await app.client.executeAsync((url, done) => {
+    DatArchive.fork(url, { networked: false }).then(done,done)
+  }, datUrl)
+  var datUrl3 = res.value.url
+  t.truthy(datUrl3.startsWith('dat://'))
+  var datKey3 = datUrl3.slice('dat://'.length)
+
+  // check the settings
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey3)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.networked, false)
+
+  // fork a dat (prompt=true)
+  // start the prompt
+  await app.client.execute((url) => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.fork(url, { networked: false, prompt: true }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, datUrl)
+
+  // accept the prompt
+  await sleep(500)
+  await app.client.windowByIndex(2)
+  await app.client.waitUntilWindowLoaded()
+  await app.client.waitForExist('button[type="submit"]')
+  await app.client.click('button[type="submit"]')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
+  var datUrl4 = res.value.url
+  t.truthy(datUrl4.startsWith('dat://'))
+  var datKey4 = datUrl4.slice('dat://'.length)
+
+  // check the settings
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey4)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.networked, false)
+})
+
 test('archive.writeFile', async t => {
   async function dotest (filename, content, encoding) {
     // write the file

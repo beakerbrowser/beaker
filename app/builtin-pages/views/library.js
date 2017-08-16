@@ -262,10 +262,12 @@ function rArchiveListItem (archiveInfo) {
         ${icon}
         ${niceName(archiveInfo)}
       </div>
-      <span class="peers">
-        <i class="fa fa-share-alt"></i>
-        ${archiveInfo.peers}
-      </span>
+      ${archiveInfo.userSettings.networked
+        ? yo`<span class="peers">
+            <i class="fa fa-share-alt"></i>
+            ${archiveInfo.peers}
+          </span>`
+        : ''}
     </div>
   `
 }
@@ -458,6 +460,7 @@ function rHistory (archiveInfo) {
 function rSettings (archiveInfo) {
   const isSaved = archiveInfo.userSettings.isSaved
   const isChecked = {
+    networked: archiveInfo.userSettings.networked,
     autoDownload: isSaved && archiveInfo.userSettings.autoDownload,
     autoUpload: isSaved && archiveInfo.userSettings.autoDownload
   }
@@ -494,7 +497,25 @@ function rSettings (archiveInfo) {
   // tools that differ if owner
   var networkSettingsEls
   var toolsEls
-  if (!archiveInfo.isOwner) {
+  if (archiveInfo.isOwner) {
+    networkSettingsEls = [
+      yo`
+        <div class="setting ${!isSaved ? 'disabled' : ''}">
+          <h5>Network Sharing</h5>
+          <fieldset>
+            <label onclick=${(e) => onSetNetworked(e, true)}>
+              <input type="radio" name="networked_setting" disabled=${!isSaved} checked=${isChecked.networked} />
+              Share these files on the network
+            </label>
+            <label onclick=${(e) => onSetNetworked(e, false)}>
+              <input type="radio" name="networked_setting" disabled=${!isSaved} checked=${!isChecked.networked} />
+              Offline
+            </label>
+          </fieldset>
+        </div>
+      `
+    ]
+  } else {
     networkSettingsEls = [
       isSaved
         ? ''
@@ -683,6 +704,17 @@ async function onUndelete (e, key) {
   await beaker.archives.add(key)
   await beaker.archives.restore(key)
   loadCurrentArchive()
+}
+
+async function onSetNetworked (e, value) {
+  if (selectedArchive.userSettings.networked === value) {
+    return
+  }
+  selectedArchive.userSettings.networked = value
+  await beaker.archives.update(selectedArchive.key, null, {networked: value})
+  await archivesList.setup({isSaved: true}) // reload listing
+  update()
+  toast.create('Settings updated.')
 }
 
 async function onSetAutoDownload (e, value) {
