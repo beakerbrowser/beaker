@@ -3,7 +3,7 @@ import renderGridIcon from '../icon/grid'
 import renderStarIcon from '../icon/star'
 import renderHistoryIcon from '../icon/history'
 
-export default function render (message) {
+export default function render () {
   return yo`
     <div class="sidebar">
       <a class="sidebar-link" href="beaker://start">
