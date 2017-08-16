@@ -65,14 +65,6 @@
     cursor: pointer;
   }
 
-  &:hover, .editing {
-    background: @background-highlight;
-
-    .url, .actions {
-      opacity: 1;
-    }
-  }
-
   .favicon, .title, .url {
     margin-right: @margin-icon;
   }
@@ -95,10 +87,14 @@
 
   .actions {
     color: @color-text--muted;
-    opacity: 0;
 
     .action {
       display: inline-block;
+      opacity: 0;
+
+      &.pin {
+        opacity: 1;
+      }
 
       &.pinned {
 
@@ -162,6 +158,14 @@
     input {
       display: inline-block;
       height: 20px;
+    }
+  }
+
+  &:hover, .editing {
+    background: @background-highlight;
+
+    .url, .action {
+      opacity: 1;
     }
   }
 }

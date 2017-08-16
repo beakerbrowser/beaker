@@ -65,14 +65,14 @@ const renderRowDefault = (row, i) =>
         <span class="url bookmark__url">${row.url}</span>
       </a>
       <div class="actions bookmark__actions">
-        <div class="action ${row.pinned ? 'pinned' : ''}" onclick=${() => onTogglePinned(i)}>
-          ${renderPinIcon()}
-        </div>
         <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
           ${renderPencilIcon()}
         </div>
         <div class="action" onclick=${onClickDelete(i)} title="Delete bookmark">
           ${renderTrashIcon()}
+        </div>
+        <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)}>
+          ${renderPinIcon()}
         </div>
       </div>
     </li>`
