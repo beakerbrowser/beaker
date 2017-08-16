@@ -44,7 +44,7 @@ function render () {
 
   yo.update(document.querySelector('.settings-wrapper'), yo`<div class="pane" id="el-content">
     <div class="settings-wrapper builtin-wrapper">
-      ${renderSidebar()}
+      ${renderSidebar('settings')}
 
       <div>
         <div class="builtin-sidebar">

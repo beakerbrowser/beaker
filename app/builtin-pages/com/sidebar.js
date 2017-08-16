@@ -2,6 +2,7 @@ import yo from 'yo-yo'
 import renderGridIcon from '../icon/grid'
 import renderStarIcon from '../icon/star'
 import renderHistoryIcon from '../icon/history'
+import renderGearIcon from '../icon/gear'
 
 export default function render (activePage) {
   return yo`
@@ -17,6 +18,10 @@ export default function render (activePage) {
       <a class="sidebar-link ${activePage === 'history' ? 'active' : ''}" href="beaker://history">
         ${renderHistoryIcon()}
         <span class="tooltip">History</span>
+      </a>
+      <a class="sidebar-link ${activePage === 'settings' ? 'active' : ''}" href="beaker://settings">
+        ${renderGearIcon()}
+        <span class="tooltip">Settings</span>
       </a>
     </div>
   `
