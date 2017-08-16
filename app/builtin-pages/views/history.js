@@ -96,7 +96,7 @@ function render () {
   yo.update(
     document.querySelector('.history-wrapper'),
     yo`
-      <div>
+      <div class="history-wrapper">
         ${renderSidebar()}
         <div class="builtin-wrapper history-wrapper" onscroll=${onScrollContent}>
           <div class="builtin-sidebar">

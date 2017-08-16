@@ -96,9 +96,9 @@ function render () {
   yo.update(
     document.querySelector('.bookmarks-wrapper'),
     yo`
-      <div>
+      <div class="bookmarks-wrapper builtin-wrapper">
         ${renderSidebar()}
-        <div class="builtin-wrapper bookmarks-wrapper">
+        <div>
           <div class="builtin-sidebar">
             <h1>Bookmarks</h1>
             <div class="section">
