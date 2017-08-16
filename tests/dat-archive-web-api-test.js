@@ -206,7 +206,7 @@ test('DatArchive.create prompt=false', async t => {
   })
   var datUrl = res.value.url
   t.truthy(datUrl.startsWith('dat://'))
-  createdDatKey = datUrl.slice('dat://'.length)
+  var datKey = datUrl.slice('dat://'.length)
 
   // check the dat.json
   var res = await app.client.executeAsync((url, done) => {
@@ -227,7 +227,7 @@ test('DatArchive.create prompt=false', async t => {
   var details = await app.client.executeAsync((key, done) => {
     var archive = new DatArchive(key)
     archive.getInfo().then(done, err => done({ err }))
-  }, createdDatKey)
+  }, datKey)
   await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.isSaved, true)
 })
@@ -370,6 +370,47 @@ test('DatArchive.fork prompt=true', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description 2')
+})
+
+test('DatArchive.unlink', async t => {
+
+  // create a dat
+
+  var res = await app.client.executeAsync((done) => {
+    DatArchive.create({ title: 'The Title', description: 'The Description' }).then(done,done)
+  })
+  var datUrl = res.value.url
+  t.truthy(datUrl.startsWith('dat://'))
+  var datKey = datUrl.slice('dat://'.length)
+
+  // start the prompt
+  await app.client.execute(url => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.unlink(url).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, datUrl)
+
+  // accept the prompt
+  await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-accept')
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.falsy(res.value)
+
+  // check the settings
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.isSaved, false)
 })
 
 test('DatArchive.selectArchive rejection', async t => {

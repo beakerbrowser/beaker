@@ -72,6 +72,16 @@ export default class DatArchive extends EventTarget {
       .catch(e => throwWithFixedStack(e, errStack))
   }
 
+  static unlink (url) {
+    var errStack = (new Error()).stack
+    url = (typeof url.url === 'string') ? url.url : url
+    if (!isDatURL(url)) {
+      throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
+    }
+    return dat.unlinkArchive(url)
+      .catch(e => throwWithFixedStack(e, errStack))
+  }
+
   async getInfo (opts = {}) {
     var errStack = (new Error()).stack
     try {

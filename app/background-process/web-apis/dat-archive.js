@@ -100,6 +100,13 @@ export default {
     return newArchiveUrl
   },
 
+  async unlinkArchive (url) {
+    var {archive, filepath, version} = await lookupArchive(url)
+    if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
+    await assertDeleteArchivePermission(archive, this.sender)
+    await archivesDb.setUserSettings(0, archive.key, {isSaved: false})
+  },
+
   async loadArchive (url) {
     if (!url || typeof url !== 'string') {
       return Promise.reject(new InvalidURLError())
@@ -412,6 +419,22 @@ async function assertWritePermission (archive, sender) {
   // ask the user
   var details = await datLibrary.getArchiveInfo(archiveKey)
   allowed = await requestPermission(perm, sender, { title: details.title })
+  if (!allowed) throw new UserDeniedError()
+  return true
+}
+
+async function assertDeleteArchivePermission (archive, sender) {
+  var archiveKey = archive.key.toString('hex')
+  const perm = ('deleteDat:' + archiveKey)
+
+  // beaker: always allowed
+  if (sender.getURL().startsWith('beaker:')) {
+    return true
+  }
+
+  // ask the user
+  var details = await datLibrary.getArchiveInfo(archiveKey)
+  var allowed = await requestPermission(perm, sender, { title: details.title })
   if (!allowed) throw new UserDeniedError()
   return true
 }

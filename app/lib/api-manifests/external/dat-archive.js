@@ -1,7 +1,8 @@
 export default {
+  loadArchive: 'promise',
   createArchive: 'promise',
   forkArchive: 'promise',
-  loadArchive: 'promise',
+  unlinkArchive: 'promise',
 
   getInfo: 'promise',
   setInfo: 'promise',
