@@ -112,10 +112,14 @@ main {
 
 .pinned-bookmarks {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-gap: 25px;
 
-  @media (min-width: 700px) {
+  @media (min-width: 600px) {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  @media (min-width: 900px) {
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   }
 }
