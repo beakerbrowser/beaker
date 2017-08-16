@@ -5,7 +5,7 @@ export default {
   unlinkArchive: 'promise',
 
   getInfo: 'promise',
-  setInfo: 'promise',
+  configure: 'promise',
   history: 'promise',
 
   stat: 'promise',

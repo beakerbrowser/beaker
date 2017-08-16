@@ -141,7 +141,7 @@ export default {
     })
   },
 
-  async setInfo (url, info, opts) {
+  async configure (url, info, opts) {
     var {archive, filepath, version} = await lookupArchive(url, opts)
     if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
     if (!info || typeof info !== 'object') throw new Error('Invalid argument')

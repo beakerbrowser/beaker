@@ -529,11 +529,11 @@ test('DatArchive.selectArchive: select', async t => {
   t.is(res.value, testRunnerDatURL.slice(0, -1))
 })
 
-test('archive.setInfo', async t => {
+test('archive.configure', async t => {
   // write the manifest
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.setInfo({title: 'The Changed Title', description: 'The Changed Description'}).then(done, done)
+    archive.configure({title: 'The Changed Title', description: 'The Changed Description'}).then(done, done)
   }, createdDatURL)
   t.falsy(res.value)
 
