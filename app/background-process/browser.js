@@ -129,7 +129,11 @@ export async function downloadURL (url) {
   this.sender.downloadURL(url)
 }
 
-export function setStartPageBackgroundImage (srcPath) {
+export function setStartPageBackgroundImage (srcPath, appendCurrentDir) {
+  if (appendCurrentDir) {
+    srcPath = path.join(__dirname, `/${srcPath}`)
+  }
+
   var destPath = path.join(app.getPath('userData'), 'start-background-image')
 
   return new Promise((resolve) => {

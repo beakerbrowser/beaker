@@ -18,17 +18,17 @@ var defaultProtocolSettings
 var activeSection = ''
 
 var bgImages = [
-  {path: '1.jpg'},
-  {path: '2.jpg', selected: true},
-  {path: '3.jpg'},
-  {path: '4.jpg'},
-  {path: '5.jpg'},
-  {path: '6.jpg'},
-  {path: '7.jpg'},
-  {path: '8.jpg'},
-  {path: '9.jpg'},
-  {path: '10.jpg'},
-  {path: '11.jpg'}]
+  {path: '1.jpg', thumbnailPath: '1-thumbnail.jpg',},
+  {path: '2.jpg', thumbnailPath: '2-thumbnail.jpg', selected: true},
+  {path: '3.jpg', thumbnailPath: '3-thumbnail.jpg'},
+  {path: '4.jpg', thumbnailPath: '4-thumbnail.jpg'},
+  {path: '5.jpg', thumbnailPath: '5-thumbnail.jpg'},
+  {path: '6.jpg', thumbnailPath: '6-thumbnail.jpg'},
+  {path: '7.jpg', thumbnailPath: '7-thumbnail.jpg'},
+  {path: '8.jpg', thumbnailPath: '8-thumbnail.jpg'},
+  {path: '9.jpg', thumbnailPath: '9-thumbnail.jpg'},
+  {path: '10.jpg', thumbnailPath: '10-thumbnail.jpg'},
+  {path: '11.jpg', thumbnailPath: '11-thumbnail.jpg'}]
 
 // main
 // =
@@ -204,8 +204,8 @@ function renderStartPageSettings () {
       </div>
       ${bgImages.map(img => {
         return yo`
-          <div class="bg-image-container ${img.selected ? 'selected' : ''}">
-            <img class="bg-image" width="90" height="60" src="beaker://start/background-image-default/${img.path}"/>
+          <div onclick=${() => onUpdateStartPageBackgroundImage(`assets/img/start/${img.path}`)} class="bg-image-container ${img.selected ? 'selected' : ''}">
+            <img class="bg-image" width="90" height="60" src="beaker://start/background-image-default/${img.thumbnailPath}"/>
           </div>`
       })}
     </div>
@@ -282,19 +282,22 @@ function onUpdateStartPageTheme (e) {
   render()
 }
 
-async function onUpdateStartPageBackgroundImage () {
-  var srcPath = ''
-  if (this.files) srcPath = this.files[0].path
+async function onUpdateStartPageBackgroundImage (srcPath) {
+  var isUpload = this && this.files
+  if (isUpload) srcPath = this.files[0].path
 
   // write the image to start_background_image
-  await beakerBrowser.setStartPageBackgroundImage(srcPath)
+  var appendDir = isUpload ? false : true
+  await beakerBrowser.setStartPageBackgroundImage(srcPath, appendDir)
 
+  // TODO: we might not need this. disabling for now -tbv
   // is the image light or dark?
-  if (this.files) await setStartPageTheme()
-  else {
-    settings.start_page_background_image = ''
-    await beakerBrowser.setSetting('start_page_background_image', '')
-  }
+  // if (isUpload) await setStartPageTheme()
+  // if (true) await setStartPageTheme()
+  // else {
+  //   settings.start_page_background_image = ''
+  //   await beakerBrowser.setSetting('start_page_background_image', '')
+  // }
   render()
 }
 

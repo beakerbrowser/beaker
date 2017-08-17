@@ -145,12 +145,12 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://start/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/start.html'))
   }
-  if (requestUrl.startsWith('beaker://start/background-image-custom')) {
-    return cb(200, 'OK', 'image/png', path.join(app.getPath('userData'), 'start-background-image'))
-  }
   if (requestUrl.startsWith('beaker://start/background-image-default')) {
     var imgPath = requestUrl.slice('beaker://start/background-image-default'.length)
     return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/start${imgPath}`))
+  }
+  if (requestUrl === 'beaker://start/background-image') {
+    return cb(200, 'OK', 'image/png', path.join(app.getPath('userData'), 'start-background-image'))
   }
   if (requestUrl === 'beaker://start/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/start.css'))
