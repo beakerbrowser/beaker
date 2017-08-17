@@ -414,7 +414,10 @@ async function assertCreateArchivePermission (sender) {
 
   // allow if not too many
   if (numArchives >= DAT_QUOTA_DEFAULT_ARCHIVES_ALLOWED) {
-    throw new QuotaExceededError('This site cannot create any more archives. Delete some existing archives to create new ones.')
+    let allowed = await requestPermission('createMoreArchives', sender, {numArchives})
+    if (!allowed) {
+      throw new QuotaExceededError('This site cannot create any more archives. Delete some existing archives to create new ones.')
+    }
   }
 }
 

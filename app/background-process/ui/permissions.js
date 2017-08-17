@@ -87,6 +87,10 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
     // if we're already tracking this kind of permission request, then bundle them
     var req = activeRequests.find(req => req.win === win && req.permission === permission)
     if (req) {
+      if (PERM.alwaysAsk) {
+        // deny now
+        return cb(false)
+      }
       var oldCb = req.cb
       req.cb = decision => { oldCb(decision); cb(decision) }
     } else {
