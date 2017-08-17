@@ -209,25 +209,6 @@ function renderStartPageSettings () {
           </div>`
       })}
     </div>
-
-    ${settings.start_page_background_image
-      ? yo`
-        <div>
-          <button class="btn transparent" onclick=${onUpdateStartPageBackgroundImage}>
-            <i class="fa fa-close"></i>
-            Remove
-          </button>
-
-          <img class="bg-preview" src=${'beaker://start/background-image?cache-buster=' + Date.now()} />
-          <label for="start-page-theme">
-            Start page theme
-            <input type="radio" value="light" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === 'light'}/>Light
-            <input type="radio" value="dark" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === 'dark'}/>Dark
-          </label>
-        </div>`
-      : ''
-    }
-    </div>
   `
 }
 
