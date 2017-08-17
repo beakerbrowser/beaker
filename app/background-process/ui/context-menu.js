@@ -171,7 +171,7 @@ export default function registerContextMenu () {
           label: 'Fork this site',
           click: async (item, win) => {
             var res = await win.webContents.executeJavaScript(`
-              DatArchive.fork("${props.pageURL}")
+              DatArchive.fork("${props.pageURL}", {prompt: true})
                 .then(archive => archive.url)
                 .catch(() => false)
             `)

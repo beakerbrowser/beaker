@@ -21,7 +21,6 @@ export default {
   setStartPageBackgroundImage: 'promise',
 
   showOpenDialog: 'promise',
-  showLocalPathDialog: 'promise',
   openUrl: 'promise',
   openFolder: 'promise',
   doWebcontentsCmd: 'promise',

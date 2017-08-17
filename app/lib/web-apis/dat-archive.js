@@ -72,6 +72,16 @@ export default class DatArchive extends EventTarget {
       .catch(e => throwWithFixedStack(e, errStack))
   }
 
+  static unlink (url) {
+    var errStack = (new Error()).stack
+    url = (typeof url.url === 'string') ? url.url : url
+    if (!isDatURL(url)) {
+      throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
+    }
+    return dat.unlinkArchive(url)
+      .catch(e => throwWithFixedStack(e, errStack))
+  }
+
   async getInfo (opts = {}) {
     var errStack = (new Error()).stack
     try {
@@ -82,34 +92,32 @@ export default class DatArchive extends EventTarget {
     }
   }
 
-  async diff (opts = {}) {
+  async configure (info, opts = {}) {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await dat.diff(url, opts)
+      return await dat.configure(url, info, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
+  }
+
+  async diff (opts = {}) {
+    // noop
+    console.warn('The DatArchive diff() API has been deprecated.')
+    return []
   }
 
   async commit (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      var url = await this[URL_PROMISE]
-      return await dat.commit(url, opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
+    // noop
+    console.warn('The DatArchive commit() API has been deprecated.')
+    return []
   }
 
   async revert (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      var url = await this[URL_PROMISE]
-      return await dat.revert(url, opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
+    // noop
+    console.warn('The DatArchive revert() API has been deprecated.')
+    return []
   }
 
   async history (opts = {}) {

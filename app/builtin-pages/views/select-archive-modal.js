@@ -198,7 +198,6 @@ function renderArchive (archive) {
         <span class="title" title="${archive.title} ${archive.isOwner ? '' : '(Read-only)'}">
           ${archive.title || 'Untitled'}
         </span>
-        <span class="path" title=${archive.userSettings.localPath}>${archive.userSettings.localPath}</span>
       </div>
       ${archive.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
     </li>

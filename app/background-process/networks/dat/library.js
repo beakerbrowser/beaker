@@ -8,6 +8,7 @@ import pda from 'pauls-dat-api'
 import signatures from 'sodium-signatures'
 import slugify from 'slugify'
 var debug = require('debug')('dat')
+import * as siteData from '../../dbs/sitedata'
 import {throttle, debounce} from '../../../lib/functions'
 
 // dat modules
@@ -15,7 +16,6 @@ import * as archivesDb from '../../dbs/archives'
 import * as datGC from './garbage-collector'
 import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
-import hyperstaging from 'hyperdrive-staging-area'
 
 // network modules
 import swarmDefaults from 'datland-swarm-defaults'
@@ -33,13 +33,9 @@ const du = pify(require('du'))
 import {
   DAT_HASH_REGEX,
   DAT_URL_REGEX,
-  DAT_SWARM_PORT,
-  INVALID_SAVE_FOLDER_CHAR_REGEX
+  DAT_SWARM_PORT
 } from '../../../lib/const'
 import {InvalidURLError} from 'beaker-error-constants'
-const DEFAULT_DATS_FOLDER = process.env.beaker_sites_path
-  ? process.env.beaker_sites_path
-  : path.join(app.getPath('home'), 'Sites')
 
 // globals
 // =
@@ -56,24 +52,27 @@ var archiveSwarm
 // =
 
 export function setup () {
-  // make sure the default dats folder exists
-  mkdirp.sync(DEFAULT_DATS_FOLDER)
-
   // wire up event handlers
   archivesDb.on('update:archive-user-settings', async (key, settings) => {
     // emit event
     var details = {
       url: 'dat://' + key,
       isSaved: settings.isSaved,
+      networked: settings.networked,
       autoDownload: settings.autoDownload,
       autoUpload: settings.autoUpload
     }
     archivesEvents.emit(settings.isSaved ? 'added' : 'removed', {details})
 
-    // update the staging based on these settings
+    // delete all perms for deleted archives
+    if (!settings.isSaved) {
+      siteData.clearPermissionAllOrigins('modifyDat:' + key)
+    }
+
+    // update the download based on these settings
     var archive = getArchive(key)
     if (archive) {
-      configureStaging(archive, settings)
+      configureNetwork(archive, settings)
       configureAutoDownload(archive, settings)
     }
   })
@@ -122,13 +121,11 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
     manifest = manifest || {}
     var {title, description} = manifest
     var isOwner = archive.writable
-    var metaSize = archive.metaSize || 0
-    var stagingSize = archive.stagingSize || 0
-    var stagingSizeLessIgnored = archive.stagingSizeLessIgnored || 0
+    var size = archive.size || 0
     var mtime = updateMTime ? Date.now() : oldMeta.mtime
 
     // write the record
-    var details = {title, description, mtime, metaSize, stagingSize, stagingSizeLessIgnored, isOwner}
+    var details = {title, description, mtime, size, isOwner}
     debug('Writing meta', details)
     await archivesDb.setMeta(key, details)
 
@@ -144,10 +141,10 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
 // archive creation
 // =
 
-export async function createNewArchive (manifest = {}) {
+export async function createNewArchive (manifest = {}, settings = false) {
   var userSettings = {
-    localPath: await selectDefaultLocalPath(manifest.title),
-    isSaved: true
+    isSaved: true,
+    networked: settings && settings.networked === false ? false : true
   }
 
   // create the archive
@@ -157,7 +154,6 @@ export async function createNewArchive (manifest = {}) {
 
   // write the manifest
   await pda.writeManifest(archive, manifest)
-  await pda.writeManifest(archive.stagingFS, manifest)
 
   // write the user settings
   await archivesDb.setUserSettings(0, key, userSettings)
@@ -168,7 +164,7 @@ export async function createNewArchive (manifest = {}) {
   return manifest.url
 }
 
-export async function forkArchive (srcArchiveUrl, manifest = {}) {
+export async function forkArchive (srcArchiveUrl, manifest = {}, settings = false) {
   srcArchiveUrl = fromKeyToURL(srcArchiveUrl)
 
   // get the old archive
@@ -181,15 +177,6 @@ export async function forkArchive (srcArchiveUrl, manifest = {}) {
   var srcManifest = await pda.readManifest(srcArchive).catch(_ => {})
   srcManifest = srcManifest || {}
 
-  // fetch old archive ignore rules
-  var ignore = ['/.dat', '/.git', '/dat.json']
-  try {
-    let ignoreRaw = await pda.readFile(srcArchive.stagingFS, '/.datignore', 'utf8')
-    let ignoreCustomRules = hyperstaging.parseIgnoreRules(ignoreRaw)
-    ignore = ignore.concat(ignoreCustomRules)
-  } catch (e) {
-    // ignore
-  }
 
   // override any manifest data
   var dstManifest = {
@@ -198,17 +185,17 @@ export async function forkArchive (srcArchiveUrl, manifest = {}) {
   }
 
   // create the new archive
-  var dstArchiveUrl = await createNewArchive(dstManifest)
+  var dstArchiveUrl = await createNewArchive(dstManifest, settings)
   var dstArchive = getArchive(dstArchiveUrl)
 
   // copy files
+  var ignore = ['/.dat', '/.git', '/dat.json']
   await pda.exportArchiveToArchive({
-    srcArchive: srcArchive.stagingFS,
-    dstArchive: dstArchive.stagingFS,
+    srcArchive,
+    dstArchive,
     skipUndownloadedFiles: true,
     ignore
   })
-  await pda.commit(dstArchive.staging)
 
   return dstArchiveUrl
 }
@@ -262,8 +249,11 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
     try {
       userSettings = await archivesDb.getUserSettings(0, key)
     } catch (e) {
-      userSettings = {}
+      userSettings = {networked: true}
     }
+  }
+  if (!('networked' in userSettings)) {
+    userSettings.networked = true
   }
 
   // ensure the folders exist
@@ -274,9 +264,6 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
   var archive = hyperdrive(metaPath, key, {sparse: true, secretKey})
   archive.replicationStreams = [] // list of all active replication streams
   archive.peerHistory = [] // samples of the peer count
-  Object.defineProperty(archive, 'stagingFS', {
-    get: () => archive.writable ? archive.staging : archive
-  })
 
   // wait for ready
   await new Promise((resolve, reject) => {
@@ -285,9 +272,7 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
       else resolve()
     })
   })
-  await configureStaging(archive, userSettings, !!secretKey)
   await updateSizeTracking(archive)
-  configureAutoDownload(archive, userSettings)
   archivesDb.touch(key).catch(err => console.error('Failed to update lastAccessTime for archive', key, err))
 
   // store in the discovery listing, so the swarmer can find it
@@ -295,7 +280,8 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
   archivesByDKey[datEncoding.toStr(archive.discoveryKey)] = archive
 
   // join the swarm
-  joinSwarm(archive)
+  configureNetwork(archive, userSettings)
+  configureAutoDownload(archive, userSettings)
 
   // await initial metadata sync if not the owner
   if (!archive.writable && !archive.metadata.length) {
@@ -343,29 +329,8 @@ export async function getOrLoadArchive (key, opts) {
 }
 
 export async function updateSizeTracking (archive) {
-  // read the datignore
-  var filter
-  if (archive.staging) {
-    var ignoreFilter = await new Promise(resolve => {
-      archive.staging.readIgnore({}, resolve)
-    })
-    // wrap the filter to work correctly with du
-    var pathlen = archive.staging.path.length
-    filter = (filepath) => {
-      filepath = filepath.slice(pathlen)
-      return ignoreFilter(filepath)
-    }
-  }
-
-  // fetch sizes
-  var [metaSize, stagingSize, stagingSizeLessIgnored] = await Promise.all([
-    du(archivesDb.getArchiveMetaPath(archive), {disk: true}).catch(_ => 0),
-    archive.staging ? du(archive.staging.path, {disk: true}).catch(_ => 0) : 0,
-    archive.staging ? du(archive.staging.path, {disk: true, filter}).catch(_ => 0) : 0
-  ])
-  archive.metaSize = metaSize
-  archive.stagingSize = stagingSize
-  archive.stagingSizeLessIgnored = stagingSizeLessIgnored
+  // fetch size
+  archive.size = await du(archivesDb.getArchiveMetaPath(archive), {disk: true})
 }
 
 // archive fetch/query
@@ -379,7 +344,7 @@ export async function queryArchives (query) {
   archiveInfos.forEach(archiveInfo => {
     var archive = getArchive(archiveInfo.key)
     if (archive) {
-      archiveInfo.peers = archive.metadata.peers.length
+      archiveInfo.peers = archive.replicationStreams.length
       archiveInfo.peerHistory = archive.peerHistory
     }
   })
@@ -399,102 +364,21 @@ export async function getArchiveInfo (key) {
   meta.key = key
   meta.url = `dat://${key}`
   meta.version = archive.version
-  meta.metaSize = archive.metaSize
-  meta.stagingSize = archive.stagingSize
-  meta.stagingSizeLessIgnored = archive.stagingSizeLessIgnored
+  meta.size = archive.size
   meta.userSettings = {
-    localPath: userSettings.localPath,
     isSaved: userSettings.isSaved,
+    networked: userSettings.networked,
     autoDownload: userSettings.autoDownload,
     autoUpload: userSettings.autoUpload
   }
-  meta.peers = archive.metadata.peers.length
+  meta.peers = archive.replicationStreams.length
   meta.peerInfo = archive.replicationStreams.map(s => ({
     host: s.peerInfo.host,
     port: s.peerInfo.port
   }))
   meta.peerHistory = archive.peerHistory
-  if (userSettings.localPath) {
-    meta.localPathExists = ((await jetpack.existsAsync(userSettings.localPath)) === 'dir')
-  }
 
   return meta
-}
-
-export async function configureStaging (archive, userSettings, isWritableOverride) {
-  var isWritable = (archive.writable || isWritableOverride)
-  if (archive.staging && archive.staging.path === userSettings.localPath) {
-    // no further changes needed
-    return
-  }
-
-  // recreate staging
-  if (isWritable && !!userSettings.localPath) {
-    archive.staging = hyperstaging(archive, userSettings.localPath, {
-      ignore: ['/.dat', '/.git']
-    })
-    if ((await jetpack.existsAsync(userSettings.localPath)) !== 'dir') {
-      return // abort here, the folder is AWOL
-    }
-
-    // restore dat.json if needed
-    const datJsonOnly = path => path !== '/dat.json'
-    var diff = await pda.diff(archive.staging, {filter: datJsonOnly})
-    if (diff.length === 1 && diff[0].change === 'del') {
-      await pda.revert(archive.staging, {filter: datJsonOnly})
-    }
-  } else {
-    archive.staging = null
-  }
-}
-
-export async function selectDefaultLocalPath (title) {
-  // massage the title
-  title = typeof title === 'string' ? title : ''
-  title = title.replace(INVALID_SAVE_FOLDER_CHAR_REGEX, '')
-  if (!title.trim()) {
-    title = 'Untitled'
-  }
-  title = slugify(title).toLowerCase()
-
-  // find an available variant of title
-  var tryNum = 1
-  var titleVariant = title
-  while (await jetpack.existsAsync(path.join(DEFAULT_DATS_FOLDER, titleVariant))) {
-    titleVariant = `${title}-${++tryNum}`
-  }
-  var localPath = path.join(DEFAULT_DATS_FOLDER, titleVariant)
-
-  // create the folder
-  mkdirp.sync(localPath)
-  return localPath
-}
-
-export async function restoreStagingFolder (key, oldpath) {
-  // TODO prompt the user if the folder is non empty?
-
-  // make sure the folder exists
-  await jetpack.dirAsync(oldpath)
-
-  // restore files
-  var archive = await getOrLoadArchive(key)
-  if (archive.staging) {
-    await pda.revert(archive.staging)
-  }
-}
-
-export async function deleteOldStagingFolder (oldpath, {alwaysDelete} = {}) {
-  // check if the old path still exists
-  var info = await jetpack.inspectAsync(oldpath)
-  if (!info || info.type !== 'dir') {
-    return
-  }
-
-  // delete if its empty
-  var contents = (!alwaysDelete) ? (await jetpack.listAsync(oldpath)) : []
-  if (contents.length === 0 || alwaysDelete) {
-    await jetpack.removeAsync(oldpath)
-  }
 }
 
 export async function clearFileCache (key) {
@@ -520,6 +404,15 @@ export async function clearFileCache (key) {
 // archive networking
 // =
 
+// set the networking of an archive based on settings
+function configureNetwork (archive, settings) {
+  if (!settings || settings.networked) {
+    joinSwarm(archive)
+  } else {
+    leaveSwarm(archive)
+  }
+}
+
 // put the archive into the network, for upload and download
 export function joinSwarm (key, opts) {
   var archive = (typeof key === 'object' && key.key) ? key : getArchive(key)
@@ -531,7 +424,7 @@ export function joinSwarm (key, opts) {
 }
 
 // take the archive out of the network
-export function leaveSwarm (key, cb) {
+export function leaveSwarm (key) {
   var archive = (typeof key === 'object' && key.discoveryKey) ? key : getArchive(key)
   if (!archive || !archive.isSwarming) return
 
@@ -629,7 +522,7 @@ function createReplicationStream (info) {
     var dkeyStr = datEncoding.toStr(dkey)
     var chan = dkeyStr.slice(0, 6) + '..' + dkeyStr.slice(-2)
     var archive = archivesByDKey[dkeyStr]
-    if (!archive) {
+    if (!archive || !archive.isSwarming) {
       return
     }
 

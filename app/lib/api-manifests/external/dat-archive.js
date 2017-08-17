@@ -1,12 +1,11 @@
 export default {
+  loadArchive: 'promise',
   createArchive: 'promise',
   forkArchive: 'promise',
-  loadArchive: 'promise',
+  unlinkArchive: 'promise',
 
   getInfo: 'promise',
-  diff: 'promise',
-  commit: 'promise',
-  revert: 'promise',
+  configure: 'promise',
   history: 'promise',
 
   stat: 'promise',
