@@ -17,6 +17,19 @@ var browserEvents
 var defaultProtocolSettings
 var activeSection = ''
 
+var bgImages = [
+  {path: '1.jpg'},
+  {path: '2.jpg', selected: true},
+  {path: '3.jpg'},
+  {path: '4.jpg'},
+  {path: '5.jpg'},
+  {path: '6.jpg'},
+  {path: '7.jpg'},
+  {path: '8.jpg'},
+  {path: '9.jpg'},
+  {path: '10.jpg'},
+  {path: '11.jpg'}]
+
 // main
 // =
 
@@ -184,10 +197,19 @@ function renderAutoUpdateCheckbox () {
 function renderStartPageSettings () {
   return yo`
   <div class="settings-section start-page">
-    <label for="start-background-image">
-      Upload a background image for beaker://start
-      <input onchange=${onUpdateStartPageBackgroundImage} name="start-background-image" type="file" accept="image/*"/>
-    </label>
+    <div class="bg-images">
+      <div width="90" height="60" class="bg-image-container add">
+        <input onchange=${onUpdateStartPageBackgroundImage} name="start-background-image" type="file" accept="image/*"/>
+        +
+      </div>
+      ${bgImages.map(img => {
+        return yo`
+          <div class="bg-image-container ${img.selected ? 'selected' : ''}">
+            <img class="bg-image" width="90" height="60" src="beaker://start/background-image-default/${img.path}"/>
+          </div>`
+      })}
+    </div>
+
     ${settings.start_page_background_image
       ? yo`
         <div>
@@ -195,6 +217,7 @@ function renderStartPageSettings () {
             <i class="fa fa-close"></i>
             Remove
           </button>
+
           <img class="bg-preview" src=${'beaker://start/background-image?cache-buster=' + Date.now()} />
           <label for="start-page-theme">
             Start page theme
