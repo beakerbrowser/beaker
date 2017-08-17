@@ -70,5 +70,33 @@
 }
 
 ul.settings-section {
-  margin-left: @padding-component;
+  margin-left: @padding-component--tight;
+}
+
+.bg-images {
+  &:extend(.flex);
+  max-width: 400px;
+}
+
+.bg-image-container {
+  position: relative;
+  margin-right: 10px;
+  margin-bottom: 5px;
+
+  &.selected:after {
+    display: block;
+    content: '✓';
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    color: rgba(255,255,255,.95);
+    background: fadeout(@color-link, 8%);
+    border-radius: 50%;
+    margin: auto;
+    left: 31px;
+    top: 17px;
+    line-height: 1.475;
+    font-size: 18px;
+    text-align: center;
+  }
 }
