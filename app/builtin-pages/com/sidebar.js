@@ -6,7 +6,7 @@ import renderGearIcon from '../icon/gear'
 
 export default function render (activePage) {
   return yo`
-    <div class="sidebar">
+    <div class="sidebar dark">
       <a class="sidebar-link ${activePage === 'start' ? 'active' : ''}" href="beaker://start">
         ${renderGridIcon()}
         <span class="tooltip start">Start page</span>

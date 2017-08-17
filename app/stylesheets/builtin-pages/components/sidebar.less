@@ -1,10 +1,21 @@
 .sidebar {
+  background: none;
+  --icon-color: #333;
+  --icon-color-active: #111;
+  --bg-color: transparent;
+
+  &.dark {
+    --icon-color: fadeout(#fff, 30%);
+    --icon-color-active: #fff;
+    --bg-color: #111;
+  }
+
   position: fixed;
   z-index: 3;
   left: 0;
   height: 100%;
   width: 40px;
-  background: #111;
+  background: var(--bg-color);
   padding: 15px 5px;
   text-align: center;
   margin-right: 15px;
@@ -15,7 +26,7 @@
     transition: transform .15s ease-in-out;
 
     * {
-      stroke: fadeout(#fff, 30%);
+      stroke: var(--icon-color);
     }
 
     &.history {
@@ -52,7 +63,7 @@
     &.active {
 
       * {
-        stroke: #fff;
+        stroke: var(--icon-color-active);
       }
     }
 
@@ -66,7 +77,7 @@
         transform: scale(1.075);
 
         * {
-          stroke: #fff;
+          stroke: var(--icon-color-active);
         }
       }
     }
