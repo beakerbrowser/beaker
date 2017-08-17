@@ -21,6 +21,17 @@
 .window-content.builtin {
   &:extend(.system-font);
   background: rgb(245, 245, 248);
+
+  // TODO
+  // This is a temporary change to the builtin page button styles. Ultimately
+  // they'll need to be applied to all buttons, but those changes will need to
+  // tested thoroughly before they're launched. -tbv
+  .btn {
+    border-radius: 4px;
+    height: 26px;
+    font-weight: 400;
+
+  }
 }
 
 .builtin-wrapper {
