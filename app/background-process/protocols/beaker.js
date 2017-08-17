@@ -142,6 +142,18 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages.css'))
   }
+  if (requestUrl === 'beaker://assets/icon/grid.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/grid.svg'))
+  }
+  if (requestUrl === 'beaker://assets/icon/star.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/star.svg'))
+  }
+  if (requestUrl === 'beaker://assets/icon/history.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/history.svg'))
+  }
+  if (requestUrl === 'beaker://assets/icon/gear.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/gear.svg'))
+  }
   if (requestUrl === 'beaker://start/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/start.html'))
   }
