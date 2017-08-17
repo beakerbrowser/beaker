@@ -98,7 +98,7 @@ function render () {
     yo`
       <div class="history-wrapper">
         ${renderSidebar('history')}
-        <div class="builtin-wrapper history-wrapper" onscroll=${onScrollContent}>
+        <div onscroll=${onScrollContent}>
           <div class="builtin-sidebar">
             <h1>History</h1>
             <div class="section">
