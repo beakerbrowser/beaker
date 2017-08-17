@@ -142,9 +142,9 @@ function render () {
             <div class="builtin-header">
               <div class="search-container">
                 <input required autofocus onkeyup=${onFilterBookmarks} placeholder="Search bookmarks" type="text" class="search"/>
-                <div onclick=${onClearQuery} class="close">
+                <span onclick=${onClearQuery} class="close-container">
                   ${renderCloseIcon()}
-                </div>
+                </span>
               </div>
             </div>
 
@@ -165,6 +165,7 @@ function render () {
 // =
 
 function onClearQuery () {
+  document.querySelector('input.search').value = ''
   query = ''
   filteredBookmarks = bookmarks
   render()

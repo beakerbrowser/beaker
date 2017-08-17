@@ -4,6 +4,7 @@ const yo = require('yo-yo')
 const moment = require('moment')
 import renderSidebar from '../com/sidebar'
 import renderTrashIcon from '../icon/trash'
+import renderCloseIcon from '../icon/close'
 
 // globals
 // =
@@ -118,7 +119,9 @@ function render () {
             <div class="builtin-header">
               <div class="search-container">
                 <input required autofocus onkeyup=${onFilterVisits} placeholder="Search your browsing history" type="text" class="search"/>
-                <img onclick=${onClearQuery} class="close" src="beaker://assets/icon/close.svg"/>
+                <span onclick=${onClearQuery} class="close-container">
+                  ${renderCloseIcon()}
+                </span>
               </div>
 
               <div class="btn" onclick=${onClickDeleteBulk.bind(window)}>
@@ -145,6 +148,7 @@ function render () {
 // =
 
 function onClearQuery () {
+  document.querySelector('input.search').value = ''
   query = ''
   filteredVisits = visits
   render()
