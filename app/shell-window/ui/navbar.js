@@ -594,6 +594,14 @@ function onClickCancel (e) {
 
 function onClickBookmark (e) {
   var page = getEventPage(e)
+  // TODO:
+  // This logic needs to be changed now that we have the bookmark dropdown editor
+
+  // if (page && !page.bookmarked) {
+  //   if (!page.bookmarked) bookmark the page
+  // }
+  // open the dropdown bookmark editor
+
   if (page) {
     page.toggleBookmark()
   }
