@@ -592,6 +592,14 @@ function onClickCancel (e) {
   }
 }
 
+function onClickRemoveBookmark (e) {
+  // TODO -tbv
+}
+
+function onClickSaveBookmark (e) {
+  // TODO -tbv
+}
+
 function onClickBookmark (e) {
   var page = getEventPage(e)
   // TODO:
