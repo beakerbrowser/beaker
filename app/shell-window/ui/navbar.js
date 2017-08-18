@@ -280,6 +280,43 @@ function render (id, page) {
     `
   }
 
+  var bookmarksDropdown = ''
+  bookmarksDropdown = yo`
+    <div class="dropdown">
+      <div class="dropdown-items with-triangle visible">
+        <div class="header">
+          <i class="fa fa-star"></i>
+          Edit this bookmark
+        </div>
+
+        <form>
+          <div class="input-group">
+            <label for="title">Title</label>
+            <input autofocus type="text" name="title" value="Beaker | a p2p Web browser"/>
+          </div>
+
+          <p class="visibility-info">
+            This bookmark will not be shared with any of your followers.
+          </p>
+
+          <div class="input-group visibility">
+            <input checked type="radio" name="visibility" id="private" value="public"/>
+            <label for="private" class="">
+              <i class="fa fa-lock"></i>
+              Private
+            </label>
+
+            <input type="radio" name="visibility" id="public" value="public"/>
+            <label for="public">
+              Public
+              <i class="fa fa-globe"></i>
+            </label>
+          </div>
+        </form>
+      </div>
+    </div>
+  `
+
   // preserve the current address value
   var addrEl = page && page.navbarEl.querySelector('.nav-location-input')
   var addrValue = addrEl ? addrEl.value : ''
@@ -314,6 +351,7 @@ function render (id, page) {
         <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
           <span class="fa fa-arrow-left"></span>
         </button>
+
         <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
           <span class="fa fa-arrow-right"></span>
         </button>
@@ -328,6 +366,7 @@ function render (id, page) {
         ${datBtns}
         <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark this page">
           <span class=${(page && !!page.bookmark) ? 'fa fa-star' : 'fa fa-star-o'}></span>
+          ${bookmarksDropdown}
         </button>
         ${pageMenuNavbarBtn.render()}
         ${autocompleteDropdown}
@@ -378,8 +417,7 @@ function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadErr
     <div
       class="nav-location-pretty${(isHidden) ? ' hidden' : ''}"
       onclick=${onFocusLocation}
-      onmousedown=${onFocusLocation}
-    >
+      onmousedown=${onFocusLocation}>
       ${valueRendered}
     </div>
   `
