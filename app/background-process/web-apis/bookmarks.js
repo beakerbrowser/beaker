@@ -23,6 +23,7 @@ export default {
   // check if bookmark exists in the current user's public & private data
   async isBookmarked (href) {
     assertString(href, 'Parameter one must be a URL')
+    var archive = await getProfileArchive(0)
     var res = await getAPI().isBookmarked(archive, href)
     if (res) return true
     // TEMP check private db -prf
