@@ -248,7 +248,11 @@ function onClickDelete (i) {
     // delete bookmark
     var b = bookmarks[i]
     bookmarks.splice(i, 1)
-    beaker.bookmarks.remove(b.url)
+    if (b.private) {
+      beaker.bookmarks.unbookmarkPrivate(b.href)
+    } else {
+      beaker.bookmarks.unbookmarkPublic(b.href)
+    }
     render()
   }
 }
