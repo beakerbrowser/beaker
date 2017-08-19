@@ -47,7 +47,7 @@ export default {
   async setCurrentProfile (data) {
     assertObject(data, 'Parameter one must be an object')
     var profileRecord = await getProfileRecord(0)
-    return getAPI().setProfile(profileRecord.url, data)
+    await getAPI().setProfile(profileRecord.url, data)
   },
 
   // update the given user's profile
@@ -56,7 +56,7 @@ export default {
   async setProfile (archive, data) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     assertObject(data, 'Parameter two must be an object')
-    return getAPI().setProfile(archive, data)
+    await getAPI().setProfile(archive, data)
   },
 
   // write a new avatar image to the current user's profile
@@ -66,7 +66,7 @@ export default {
     assertBuffer(imgData, 'Parameter two must be an ArrayBuffer or base64-encoded string')
     assertString(imgExtension, 'Parameter three must be a string')
     var profileRecord = await getProfileRecord(0)
-    return getAPI().setAvatar(profileRecord.url, imgData, imgExtension)
+    await getAPI().setAvatar(profileRecord.url, imgData, imgExtension)
   },
 
   // write a new avatar image to the given user's profile
@@ -76,7 +76,7 @@ export default {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     assertBuffer(imgData, 'Parameter two must be an ArrayBuffer or base64-encoded string')
     assertString(imgExtension, 'Parameter three must be a string')
-    return getAPI().setAvatar(archive, imgData, imgExtension)
+    await getAPI().setAvatar(archive, imgData, imgExtension)
   },
 
   // social relationships
@@ -85,13 +85,13 @@ export default {
   async follow (archive, targetUser, targetUserName) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     assertArchive(targetUser, 'Parameter two must be an archive object, or the URL of an archive')
-    return getAPI().follow(archive, targetUser, targetUserName)
+    await getAPI().follow(archive, targetUser, targetUserName)
   },
 
   async unfollow (archive, targetUser) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     assertArchive(targetUser, 'Parameter two must be an archive object, or the URL of an archive')
-    return getAPI().unfollow(archive, targetUser)
+    await getAPI().unfollow(archive, targetUser)
   },
 
   async listFollowers (archive) {

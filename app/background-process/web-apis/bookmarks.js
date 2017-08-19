@@ -43,14 +43,14 @@ export default {
   async bookmarkPublic (href, data) {
     assertString(href, 'Parameter one must be a URL')
     var archive = await getProfileArchive(0)
-    return getAPI().bookmark(archive, href, data)
+    await getAPI().bookmark(archive, href, data)
   },
 
   // delete public bookmark
   async unbookmarkPublic (href) {
     assertString(href, 'Parameter one must be a URL')
     var archive = await getProfileArchive(0)
-    return getAPI().unbookmark(archive, href)
+    await getAPI().unbookmark(archive, href)
   },
 
   // list public bookmarks
@@ -73,9 +73,9 @@ export default {
     var archive = await getProfileArchive(0)
     // TEMP find which db it's in -prf
     if (await getAPI().isBookmarked(archive, href)) {
-      return getAPI().setBookmarkPinned(href, pinned)
+      await getAPI().setBookmarkPinned(href, pinned)
     } else {
-      return privateBookmarksDb.setBookmarkPinned(0, href, pinned)
+      await privateBookmarksDb.setBookmarkPinned(0, href, pinned)
     }
   },
 
@@ -96,13 +96,13 @@ export default {
   // - data.title: string
   async bookmarkPrivate (href, data) {
     assertString(href, 'Parameter one must be a URL')
-    return privateBookmarksDb.bookmark(0, href, data)
+    await privateBookmarksDb.bookmark(0, href, data)
   },
 
   // delete private bookmark
   async unbookmarkPrivate (href) {
     assertString(href, 'Parameter one must be a URL')
-    return privateBookmarksDb.unbookmark(0, href)
+    await privateBookmarksDb.unbookmark(0, href)
   },
 
   // list private bookmarks
