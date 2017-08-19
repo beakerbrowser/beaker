@@ -28,7 +28,7 @@ export function setBookmarkPinned (profileId, url, pinned) {
 }
 
 export async function getBookmark (profileId, url) {
-  return toNewFormat(await db.get(`SELECT url, title FROM bookmarks WHERE profileId = ? AND url = ?`, [profileId, url]))
+  return toNewFormat(await db.get(`SELECT url, title, pinned FROM bookmarks WHERE profileId = ? AND url = ?`, [profileId, url]))
 }
 
 export async function listBookmarks (profileId) {
