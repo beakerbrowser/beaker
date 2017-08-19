@@ -22,7 +22,7 @@ export async function setup () {
     profileArchive = new DatArchive(profileRecord.url)
   } else {
     profileArchive = await DatArchive.create({
-      title: 'Unnamed User',
+      title: 'User: anonymous',
       description: 'Beaker user profile'
     })
     profileRecord.url = profileArchive.url
