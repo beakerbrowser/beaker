@@ -90,23 +90,153 @@ test('avatars', async t => {
   })
 })
 
-// test('following', async t => {
-//   // follow: 'promise',
-//   // unfollow: 'promise',
-//   // listFollowers: 'promise',
-//   // countFollowers: 'promise',
-//   // listFriends: 'promise',
-//   // countFriends: 'promise',
-//   // isFollowing: 'promise',
-//   // isFriendsWith: 'promise'
-// })
+test('following', async t => {
+  // get alice's url
+  var res = await app.client.executeAsync((done) => {
+    window.beaker.profiles.getCurrentArchive().then(done,done)
+  })
+  var aliceUrl = res.value.url
+  t.truthy(aliceUrl.startsWith('dat://'))
+
+  // create new users
+  var res = await app.client.executeAsync((done) => {
+    DatArchive.create().then(done,done)
+  })
+  var bobUrl = res.value.url
+  t.truthy(bobUrl.startsWith('dat://'))
+  var res = await app.client.executeAsync((done) => {
+    DatArchive.create().then(done,done)
+  })
+  var carlaUrl = res.value.url
+  t.truthy(carlaUrl.startsWith('dat://'))
+
+  // set profiles
+  var res = await app.client.executeAsync((url, done) => {
+    window.beaker.profiles.setProfile(url, {
+      name: 'Bob',
+      bio: 'Cool hacker guy'
+    }).then(done,done)
+  }, bobUrl)
+  t.falsy(res.value)
+  var res = await app.client.executeAsync((url, done) => {
+    window.beaker.profiles.setProfile(url, {
+      name: 'Carla',
+      bio: 'Cool hacker girl'
+    }).then(done,done)
+  }, carlaUrl)
+  t.falsy(res.value)
+
+  // follow
+  var res = await app.client.executeAsync((aliceUrl, bobUrl, done) => {
+    window.beaker.profiles.follow(aliceUrl, bobUrl, 'Robert').then(done,done)
+  }, aliceUrl, bobUrl)
+  var res = await app.client.executeAsync((aliceUrl, carlaUrl, done) => {
+    window.beaker.profiles.follow(aliceUrl, carlaUrl).then(done,done)
+  }, aliceUrl, carlaUrl)
+  var res = await app.client.executeAsync((aliceUrl, carlaUrl, done) => {
+    window.beaker.profiles.follow(carlaUrl, aliceUrl).then(done,done)
+  }, aliceUrl, carlaUrl)
+
+  // list followers
+  var res = await app.client.executeAsync((aliceUrl, done) => {
+    window.beaker.profiles.listFollowers(aliceUrl).then(done,done)
+  }, aliceUrl)
+  t.deepEqual(res.value.length, 1)
+  res.value[0] = profileSubset(res.value[0])
+  t.deepEqual(res.value[0], {
+    avatar: null,
+    bio: 'Cool hacker girl',
+    followUrls: [ aliceUrl ],
+    follows: [ { url: aliceUrl, name: null } ],
+    name: 'Carla'
+  })
+  var res = await app.client.executeAsync((bobUrl, done) => {
+    window.beaker.profiles.listFollowers(bobUrl).then(done,done)
+  }, bobUrl)
+  t.deepEqual(res.value.length, 1)
+  res.value[0] = profileSubset(res.value[0])
+  t.deepEqual(res.value[0], {
+    avatar: '/avatar.png',
+    bio: 'Cool hacker girl',
+    followUrls: [ bobUrl, carlaUrl ].sort(),
+    follows: [ { url: bobUrl, name: 'Robert' }, { url: carlaUrl, name: null } ].sort((a,b) => a.url.localeCompare(b.url)),
+    name: 'Alice'
+  })
+
+  // count followers
+  var res = await app.client.executeAsync((aliceUrl, done) => {
+    window.beaker.profiles.countFollowers(aliceUrl).then(done,done)
+  }, aliceUrl)
+  t.deepEqual(res.value, 1)
+  var res = await app.client.executeAsync((bobUrl, done) => {
+    window.beaker.profiles.countFollowers(bobUrl).then(done,done)
+  }, bobUrl)
+  t.deepEqual(res.value, 1)
+
+  // list friends
+  var res = await app.client.executeAsync((aliceUrl, done) => {
+    window.beaker.profiles.listFriends(aliceUrl).then(done,done)
+  }, aliceUrl)
+  t.deepEqual(res.value.length, 1)
+  res.value[0] = profileSubset(res.value[0])
+  t.deepEqual(res.value[0], {
+    avatar: null,
+    bio: 'Cool hacker girl',
+    followUrls: [ aliceUrl ],
+    follows: [ { url: aliceUrl, name: null } ],
+    name: 'Carla'
+  })
+  var res = await app.client.executeAsync((bobUrl, done) => {
+    window.beaker.profiles.listFriends(bobUrl).then(done,done)
+  }, bobUrl)
+  t.deepEqual(res.value.length, 0)
+
+  // count friends
+  var res = await app.client.executeAsync((aliceUrl, done) => {
+    window.beaker.profiles.countFriends(aliceUrl).then(done,done)
+  }, aliceUrl)
+  t.deepEqual(res.value, 1)
+  var res = await app.client.executeAsync((bobUrl, done) => {
+    window.beaker.profiles.countFriends(bobUrl).then(done,done)
+  }, bobUrl)
+  t.deepEqual(res.value, 0)
+
+  // is following
+  var res = await app.client.executeAsync((aliceUrl, bobUrl, done) => {
+    window.beaker.profiles.isFollowing(aliceUrl, bobUrl).then(done,done)
+  }, aliceUrl, bobUrl)
+  t.deepEqual(res.value, true)
+  var res = await app.client.executeAsync((aliceUrl, bobUrl, done) => {
+    window.beaker.profiles.isFollowing(bobUrl, aliceUrl).then(done,done)
+  }, aliceUrl, bobUrl)
+  t.deepEqual(res.value, false)
+
+  // is friends with
+  var res = await app.client.executeAsync((aliceUrl, bobUrl, done) => {
+    window.beaker.profiles.isFriendsWith(aliceUrl, bobUrl).then(done,done)
+  }, aliceUrl, bobUrl)
+  t.deepEqual(res.value, false)
+  var res = await app.client.executeAsync((aliceUrl, carlaUrl, done) => {
+    window.beaker.profiles.isFriendsWith(aliceUrl, carlaUrl).then(done,done)
+  }, aliceUrl, carlaUrl)
+  t.deepEqual(res.value, true)
+
+  // unfollow
+  var res = await app.client.executeAsync((aliceUrl, bobUrl, done) => {
+    window.beaker.profiles.unfollow(aliceUrl, bobUrl).then(done,done)
+  }, aliceUrl, bobUrl)
+  var res = await app.client.executeAsync((aliceUrl, bobUrl, done) => {
+    window.beaker.profiles.isFollowing(aliceUrl, bobUrl).then(done,done)
+  }, aliceUrl, bobUrl)
+  t.deepEqual(res.value, false)
+})
 
 function profileSubset (p) {
   return {
     avatar: p.avatar,
     bio: p.bio,
-    followUrls: p.followUrls,
-    follows: p.follows,
+    followUrls: p.followUrls.sort(),
+    follows: p.follows.sort((a,b) => a.url.localeCompare(b.url)),
     name: p.name
   }
 }
