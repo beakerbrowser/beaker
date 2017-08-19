@@ -39,16 +39,16 @@ export default {
 
   // bookmark publicly
   // - data.title: string
-  async bookmarkPublic (archive, href, data) {
-    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
-    assertString(href, 'Parameter two must be a URL')
+  async bookmarkPublic (href, data) {
+    assertString(href, 'Parameter one must be a URL')
+    var archive = await getProfileArchive(0)
     return getAPI().bookmark(archive, href, data)
   },
 
   // delete public bookmark
-  async unbookmarkPublic (archive, href) {
-    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
-    assertString(href, 'Parameter two must be a URL')
+  async unbookmarkPublic (href) {
+    assertString(href, 'Parameter one must be a URL')
+    var archive = await getProfileArchive(0)
     return getAPI().unbookmark(archive, href)
   },
 
@@ -67,9 +67,9 @@ export default {
   // =
 
   // pin a bookmark (public or private)
-  async setBookmarkPinned (archive, href, pinned) {
-    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
-    assertString(href, 'Parameter two must be a URL')
+  async setBookmarkPinned (href, pinned) {
+    assertString(href, 'Parameter one must be a URL')
+    var archive = await getProfileArchive(0)
     // TEMP find which db it's in -prf
     if (await getAPI().isBookmarked(archive, href)) {
       return getAPI().setBookmarkPinned(href, pinned)
