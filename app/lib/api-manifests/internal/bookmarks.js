@@ -1,15 +1,19 @@
 export default {
-  bookmark: 'promise',
-  unbookmark: 'promise',
-  listBookmarks: 'promise',
+  // current user
   getBookmark: 'promise',
   isBookmarked: 'promise',
+
+  // public
+  bookmarkPublic: 'promise',
+  unbookmarkPublic: 'promise',
+  listPublicBookmarks: 'promise',
+
+  // pins
   setBookmarkPinned: 'promise',
   listPinnedBookmarks: 'promise',
 
-  // private (temporary!)
+  // private
   bookmarkPrivate: 'promise',
   unbookmarkPrivate: 'promise',
-  listPrivateBookmarks: 'promise',
-  getPrivateBookmark: 'promise'
+  listPrivateBookmarks: 'promise'
 }

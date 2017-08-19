@@ -7,34 +7,22 @@ import * as privateBookmarksDb from '../dbs/bookmarks'
 
 export default {
 
-  // public
+  // current user
   // =
 
-  async bookmark (archive, href, data) {
-    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
-    assertString(href, 'Parameter two must be a URL')
-    return getAPI().bookmark(archive, href, data)
-  },
-
-  async unbookmark (archive, href) {
-    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
-    assertString(href, 'Parameter two must be a URL')
-    return getAPI().unbookmark(archive, href)
-  },
-
-  async listBookmarks (opts) {
-    return getAPI().listBookmarks(opts)
-  },
-
-  async getBookmark (archive, href) {
-    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
-    assertString(href, 'Parameter two must be a URL')
-    return getAPI().getBookmark(archive, href)
-  },
-
-  async isBookmarked (href) {
+  // fetch bookmark data from the current user's public & private data
+  async getBookmark (href) {
     assertString(href, 'Parameter one must be a URL')
     var archive = await getProfileArchive(0)
+    var bookmark = await getAPI().getBookmark(archive, href)
+    if (bookmark) return bookmark
+    // TEMP check private db -prf
+    return privateBookmarksDb.getBookmark(0, href)
+  },
+
+  // check if bookmark exists in the current user's public & private data
+  async isBookmarked (href) {
+    assertString(href, 'Parameter one must be a URL')
     var res = await getAPI().isBookmarked(archive, href)
     if (res) return true
     // TEMP check private db -prf
@@ -46,6 +34,39 @@ export default {
     }
   },
 
+  // public
+  // =
+
+  // bookmark publicly
+  // - data.title: string
+  async bookmarkPublic (archive, href, data) {
+    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    assertString(href, 'Parameter two must be a URL')
+    return getAPI().bookmark(archive, href, data)
+  },
+
+  // delete public bookmark
+  async unbookmarkPublic (archive, href) {
+    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    assertString(href, 'Parameter two must be a URL')
+    return getAPI().unbookmark(archive, href)
+  },
+
+  // list public bookmarks
+  // - opts.author: url | DatArchive | Array<url | DatArchive>,
+  // - opts.pinned: boolean
+  // - opts.offset: number
+  // - opts.limit: number
+  // - opts.reverse: boolean
+  // - opts.fetchAuthor: boolean
+  async listPublicBookmarks (opts) {
+    return getAPI().listBookmarks(opts)
+  },
+
+  // pins
+  // =
+
+  // pin a bookmark (public or private)
   async setBookmarkPinned (archive, href, pinned) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     assertString(href, 'Parameter two must be a URL')
@@ -57,6 +78,7 @@ export default {
     }
   },
 
+  // list pinned bookmarks (public and private)
   async listPinnedBookmarks () {
     // TEMP merge bookmarks from private DB
     var archive = await getProfileArchive(0)
@@ -69,23 +91,22 @@ export default {
   // TODO replace this with private files in dat -prf
   // =
 
+  // bookmark privately
+  // - data.title: string
   async bookmarkPrivate (href, data) {
     assertString(href, 'Parameter one must be a URL')
     return privateBookmarksDb.bookmark(0, href, data)
   },
 
+  // delete private bookmark
   async unbookmarkPrivate (href) {
     assertString(href, 'Parameter one must be a URL')
     return privateBookmarksDb.unbookmark(0, href)
   },
 
+  // list private bookmarks
   async listPrivateBookmarks (opts) {
     return privateBookmarksDb.listBookmarks(0, opts)
-  },
-
-  async getPrivateBookmark (href) {
-    assertString(href, 'Parameter one must be a URL')
-    return privateBookmarksDb.getBookmark(0, href)
   }
 }
 
