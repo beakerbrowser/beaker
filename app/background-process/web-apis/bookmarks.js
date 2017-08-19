@@ -94,7 +94,7 @@ export default {
 
   // bookmark privately
   // - data.title: string
-  async bookmarkPrivate (href, data) {
+  async bookmarkPrivate (href, data = {}) {
     assertString(href, 'Parameter one must be a URL')
     await privateBookmarksDb.bookmark(0, href, data)
   },
