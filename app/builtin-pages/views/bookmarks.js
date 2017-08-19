@@ -52,7 +52,7 @@ const renderRowEditing = (row, i) =>
     <div class="link">
       <div class="inputs bookmarks__inputs">
         <input name="title" value=${row.editTitle} onkeyup=${onKeyUp(i)} />
-        <input name="url" value=${row.editUrl} onkeyup=${onKeyUp(i)} />
+        <input name="url" value=${row.editHref} onkeyup=${onKeyUp(i)} />
       </div>
     </div>
   </li>`
@@ -68,7 +68,7 @@ const renderRowDefault = (row, i) =>
             : yo`${row.title}`
           }
         </span>
-        <span class="url bookmark__url">${row.url}</span>
+        <span class="url bookmark__url">${row.href}</span>
       </a>
       <div class="actions bookmark__actions">
         <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
@@ -218,7 +218,7 @@ function onClickEdit (i) {
 
     // capture initial value
     bookmarks[i].editTitle = bookmarks[i].title
-    bookmarks[i].editUrl = bookmarks[i].url
+    bookmarks[i].editHref = bookmarks[i].href
 
     // enter edit-mode
     bookmarks[i].isEditing = true
@@ -254,7 +254,7 @@ function onKeyUp (i) {
       // all else
       // update edit values
       if (e.target.name == 'title') { bookmarks[i].editTitle = e.target.value }
-      if (e.target.name == 'url') { bookmarks[i].editUrl = e.target.value }
+      if (e.target.name == 'url') { bookmarks[i].editHref = e.target.value }
     }
   }
 }

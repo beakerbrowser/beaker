@@ -193,6 +193,7 @@ function onClickDelete (i) {
   // remove
   var v = visits[i]
   visits.splice(i, 1)
+  filteredVisits = visits
   beaker.history.removeVisit(v.url)
   render()
 }
@@ -203,6 +204,7 @@ function onClickDeleteBulk () {
   // clear all history
   if (period === 'all') {
     visits = []
+    filteredVisits = visits
     beaker.history.removeAllVisits()
     render()
   } else {
@@ -210,6 +212,7 @@ function onClickDeleteBulk () {
 
     // filter out visits that with a timestamp >= threshold
     visits = visits.filter(v => v.ts < threshold)
+    filteredVisits = visits
     beaker.history.removeVisitsAfter(threshold)
 
     // fetch and render more visits if possible
