@@ -9,11 +9,12 @@ export default {
   // profiles
   // =
 
-  // get the current user's profile data
+  // get the current user's profile
   // - ._origin: string, the url of the user archive
   // - ._url: string, the url of the profile record
   // - .name: string
   // - .bio: string
+  // - .avatar: string, the path of the avatar image
   // - .follows[n].url: string, the url of the followed user archive
   // - .follows[n].name: string, the name of the followed user
   async getCurrentProfile () {
@@ -21,11 +22,12 @@ export default {
     return getAPI().getProfile(profileRecord.url)
   },
 
-  // get the given user's profile data
+  // get the given user's profile
   // - ._origin: string, the url of the user archive
   // - ._url: string, the url of the profile record
   // - .name: string
   // - .bio: string
+  // - .avatar: string, the path of the avatar image
   // - .follows[n].url: string, the url of the followed user archive
   // - .follows[n].name: string, the name of the followed user
   async getProfile (archive) {
@@ -33,7 +35,7 @@ export default {
     return getAPI().getProfile(archive)
   },
 
-  // update the current user's profile data
+  // update the current user's profile
   // - data.name: string
   // - data.bio: string
   async setCurrentProfile (data) {
@@ -42,13 +44,33 @@ export default {
     return getAPI().setProfile(profileRecord.url, data)
   },
 
-  // update the given user's profile data
+  // update the given user's profile
   // - data.name: string
   // - data.bio: string
   async setProfile (archive, data) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     assertObject(data, 'Parameter two must be an object')
     return getAPI().setProfile(archive, data)
+  },
+
+  // write a new avatar image to the current user's profile
+  // - imgData: ArrayBuffer|string, the image content. If a string, assumed encoding is 'base64'.
+  // - imgExtension: string, the file-extension of the data. Eg 'png' 'jpg' 'gif'
+  async setCurrentAvatar (imgData, imgExtension) {
+    assertBuffer(imgData, 'Parameter two must be an ArrayBuffer or base64-encoded string')
+    assertString(imgExtension, 'Parameter three must be a string')
+    var profileRecord = await getProfileRecord(0)
+    return getAPI().setAvatar(profileRecord.url, imgData, imgExtension)
+  },
+
+  // write a new avatar image to the given user's profile
+  // - imgData: ArrayBuffer|string, the image content. If a string, assumed encoding is 'base64'.
+  // - imgExtension: string, the file-extension of the data. Eg 'png' 'jpg' 'gif'
+  async setAvatar (archive, imgData, imgExtension) {
+    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    assertBuffer(imgData, 'Parameter two must be an ArrayBuffer or base64-encoded string')
+    assertString(imgExtension, 'Parameter three must be a string')
+    return getAPI().setAvatar(archive, imgData, imgExtension)
   },
 
   // social relationships
@@ -109,4 +131,15 @@ function assertString (v, msg) {
 
 function assertObject (v, msg) {
   assert(!!v && typeof v === 'object', msg)
+}
+
+function assertBuffer (v, msg) {
+  if (v && typeof v === 'string') {
+    try {
+      v = new Buffer(v, 'base64')
+    } catch (e) {
+      throw new Error(msg)
+    }
+  }
+  assert(v && Buffer.isBuffer(v), msg)
 }
