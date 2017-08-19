@@ -20,18 +20,23 @@ var query = ''
 
 // bookmarks, cached in memory
 var bookmarks = []
+var privateBookmarks = []
+var publicBookmarks = []
 var filteredBookmarks = []
 
 // main
 // =
 
-co(function * () {
+setup()
+async function setup () {
   // get the bookmarks, ordered by # of views
-  bookmarks = yield beaker.bookmarks.list()
-  bookmarks = bookmarks || []
+  publicBookmarks = await beaker.bookmarks.listPublicBookmarks()
+  privateBookmarks = await beaker.bookmarks.listPrivateBookmarks()
+
+  bookmarks = publicBookmarks.concat(privateBookmarks)
   filteredBookmarks = bookmarks
   render()
-})
+}
 
 // rendering
 // =
