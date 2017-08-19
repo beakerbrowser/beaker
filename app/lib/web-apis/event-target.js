@@ -50,3 +50,19 @@ export function fromEventStream (stream) {
   }
   return target
 }
+
+export function fromAsyncEventStream (asyncStream) {
+  var target = new EventTarget()
+  asyncStream.then(
+    stream => bindEventStream(stream, target),
+    err => {
+      target.dispatchEvent({type: 'error', details: err})
+      target.close()
+    }
+  )
+  target.close = () => {
+    target.listeners = {}
+    asyncStream.then(stream => stream.close())
+  }
+  return target
+}
