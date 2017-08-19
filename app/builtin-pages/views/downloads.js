@@ -32,7 +32,7 @@ function render () {
 
       <div>
         <div class="builtin-sidebar">
-          <h1 class="ll-heading">Downloads</h1>
+          <h1>Downloads</h1>
         </div>
 
         <div class="builtin-main">
