@@ -17,6 +17,7 @@ import renderPencilIcon from '../icon/pencil'
 
 // current search query
 var query = ''
+var currentViewFilter = ''
 
 // bookmarks, cached in memory
 var bookmarks = []
@@ -108,19 +109,19 @@ function render () {
             <h1>Bookmarks</h1>
             <div class="section">
               <h2>Your bookmarks</h2>
-              <div class="nav-item active">
+              <div class="nav-item ${currentViewFilter === '' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('')}>
                 ${renderStarFillIcon()}
                 All bookmarks
               </div>
-              <div class="nav-item">
+              <div class="nav-item ${currentViewFilter === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
                 ${renderPinIcon()}
                 Pinned
               </div>
-              <div class="nav-item">
+              <div class="nav-item ${currentViewFilter === 'public' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('public')}>
                 ${renderGlobeIcon()}
                 Shared by you
               </div>
-              <div class="nav-item">
+              <div class="nav-item ${currentViewFilter === 'private' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('private')}>
                 ${renderPadlockIcon()}
                 Private
               </div>
@@ -153,10 +154,17 @@ function render () {
               </div>
             </div>
 
-            <div class="bookmarks-breadcrumbs">
-              <a href="" class="breadcrumb">All bookmarks</a>
-              <a href="" class="breadcrumb">Shared by you</a>
-            </div>
+            ${currentViewFilter !== ''
+              ? yo`
+                <div class="bookmarks-breadcrumbs">
+                  <span onclick=${() => onUpdateViewFilter('all')} class="breadcrumb">
+                    All bookmarks
+                  </span>
+                  <span class="breadcrumb">
+                    ${currentViewFilter.charAt(0).toUpperCase() + currentViewFilter.slice(1)} bookmarks
+                  </span>
+                </div>`
+              : ''}
 
             <div class="links-list bookmarks">
               ${filteredBookmarks.map(renderRow)}
@@ -168,6 +176,17 @@ function render () {
 
 // event handlers
 // =
+
+function onUpdateViewFilter (filter) {
+  currentViewFilter = filter || ''
+
+  if (!filter) filteredBookmarks = bookmarks
+  else if (filter === 'pinned') filteredBookmarks = bookmarks.filter(b => b.pinned)
+  else if (filter === 'public') filteredBookmarks = bookmarks.filter(b => !b.private)
+  else if (filter === 'private') filteredBookmarks = bookmarks.filter(b => b.private)
+  else filteredBookmarks = bookmarks
+  render()
+}
 
 function onClearQuery () {
   document.querySelector('input.search').value = ''
