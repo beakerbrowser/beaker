@@ -32,9 +32,9 @@ export default {
     return getAPI().getBookmark(archive, href)
   },
 
-  async isBookmarked (archive, href) {
-    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
-    assertString(href, 'Parameter two must be a URL')
+  async isBookmarked (href) {
+    assertString(href, 'Parameter one must be a URL')
+    var archive = await getProfileArchive(0)
     var res = await getAPI().isBookmarked(archive, href)
     if (res) return true
     // TEMP check private db -prf
