@@ -41,16 +41,16 @@ if (window.location.protocol === 'beaker:') {
 
   // beaker.bookmarks
   beaker.bookmarks = new EventTarget()
-  beaker.bookmarks.getBookmark = boomarksRPC.getBookmark
-  beaker.bookmarks.isBookmarked = boomarksRPC.isBookmarked
-  beaker.bookmarks.bookmarkPublic = boomarksRPC.bookmarkPublic
-  beaker.bookmarks.unbookmarkPublic = boomarksRPC.unbookmarkPublic
-  beaker.bookmarks.listPublicBookmarks = boomarksRPC.listPublicBookmarks
-  beaker.bookmarks.setBookmarkPinned = boomarksRPC.setBookmarkPinned
-  beaker.bookmarks.listPinnedBookmarks = boomarksRPC.listPinnedBookmarks
-  beaker.bookmarks.bookmarkPrivate = boomarksRPC.bookmarkPrivate
-  beaker.bookmarks.unbookmarkPrivate = boomarksRPC.unbookmarkPrivate
-  beaker.bookmarks.listPrivateBookmarks = boomarksRPC.listPrivateBookmarks
+  beaker.bookmarks.getBookmark = bookmarksRPC.getBookmark
+  beaker.bookmarks.isBookmarked = bookmarksRPC.isBookmarked
+  beaker.bookmarks.bookmarkPublic = bookmarksRPC.bookmarkPublic
+  beaker.bookmarks.unbookmarkPublic = bookmarksRPC.unbookmarkPublic
+  beaker.bookmarks.listPublicBookmarks = bookmarksRPC.listPublicBookmarks
+  beaker.bookmarks.setBookmarkPinned = bookmarksRPC.setBookmarkPinned
+  beaker.bookmarks.listPinnedBookmarks = bookmarksRPC.listPinnedBookmarks
+  beaker.bookmarks.bookmarkPrivate = bookmarksRPC.bookmarkPrivate
+  beaker.bookmarks.unbookmarkPrivate = bookmarksRPC.unbookmarkPrivate
+  beaker.bookmarks.listPrivateBookmarks = bookmarksRPC.listPrivateBookmarks
   // bindEventStream(bookmarksRPC.createEventStream(), beaker.bookmarks) TODO
 
   // beaker.history
