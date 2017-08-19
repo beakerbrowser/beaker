@@ -48,6 +48,10 @@ if (window.location.protocol === 'beaker:') {
   beaker.bookmarks.isBookmarked = bookmarksRPC.isBookmarked
   beaker.bookmarks.setBookmarkPinned = bookmarksRPC.setBookmarkPinned
   beaker.bookmarks.listPinnedBookmarks = bookmarksRPC.listPinnedBookmarks
+  beaker.bookmarks.bookmarkPrivate = bookmarksRPC.bookmarkPrivate
+  beaker.bookmarks.unbookmarkPrivate = bookmarksRPC.unbookmarkPrivate
+  beaker.bookmarks.listPrivateBookmarks = bookmarksRPC.listPrivateBookmarks
+  beaker.bookmarks.getPrivateBookmark = bookmarksRPC.getPrivateBookmark
   // bindEventStream(bookmarksRPC.createEventStream(), beaker.bookmarks) TODO
 
   // beaker.history
@@ -63,9 +67,16 @@ if (window.location.protocol === 'beaker:') {
 
   // beaker.profiles
   beaker.profiles = {}
-  beaker.profiles.getUserProfile = profilesRPC.getUserProfile
+  beaker.profiles.getCurrentArchive = async () => {
+    var url = await profilesRPC.getCurrentArchive()
+    return new DatArchive(url)
+  }
+  beaker.profiles.getCurrentProfile = profilesRPC.getCurrentProfile
+  beaker.profiles.setCurrentProfile = profilesRPC.setCurrentProfile
+  beaker.profiles.setCurrentAvatar = profilesRPC.setCurrentAvatar
   beaker.profiles.getProfile = profilesRPC.getProfile
   beaker.profiles.setProfile = profilesRPC.setProfile
+  beaker.profiles.setAvatar = profilesRPC.setAvatar
   beaker.profiles.follow = profilesRPC.follow
   beaker.profiles.unfollow = profilesRPC.unfollow
   beaker.profiles.listFollowers = profilesRPC.listFollowers

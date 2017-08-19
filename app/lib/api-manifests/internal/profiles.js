@@ -1,7 +1,11 @@
 export default {
-  getUserProfile: 'promise',
+  getCurrentArchive: 'promise',
+  getCurrentProfile: 'promise',
+  setCurrentProfile: 'promise',
+  setCurrentAvatar: 'promise',
   getProfile: 'promise',
   setProfile: 'promise',
+  setAvatar: 'promise',
   follow: 'promise',
   unfollow: 'promise',
   listFollowers: 'promise',

@@ -9,6 +9,12 @@ export default {
   // profiles
   // =
 
+  // get the current user's archive
+  async getCurrentArchive () {
+    var profileRecord = await getProfileRecord(0)
+    return profileRecord.url
+  },
+
   // get the current user's profile
   // - ._origin: string, the url of the user archive
   // - ._url: string, the url of the profile record
