@@ -9,16 +9,42 @@ export default {
   // profiles
   // =
 
-  async getUserProfile () {
+  // get the current user's profile data
+  // - ._origin: string, the url of the user archive
+  // - ._url: string, the url of the profile record
+  // - .name: string
+  // - .bio: string
+  // - .follows[n].url: string, the url of the followed user archive
+  // - .follows[n].name: string, the name of the followed user
+  async getCurrentProfile () {
     var profileRecord = await getProfileRecord(0)
     return getAPI().getProfile(profileRecord.url)
   },
 
+  // get the given user's profile data
+  // - ._origin: string, the url of the user archive
+  // - ._url: string, the url of the profile record
+  // - .name: string
+  // - .bio: string
+  // - .follows[n].url: string, the url of the followed user archive
+  // - .follows[n].name: string, the name of the followed user
   async getProfile (archive) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     return getAPI().getProfile(archive)
   },
 
+  // update the current user's profile data
+  // - data.name: string
+  // - data.bio: string
+  async setCurrentProfile (data) {
+    assertObject(data, 'Parameter one must be an object')
+    var profileRecord = await getProfileRecord(0)
+    return getAPI().setProfile(profileRecord.url, data)
+  },
+
+  // update the given user's profile data
+  // - data.name: string
+  // - data.bio: string
   async setProfile (archive, data) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     assertObject(data, 'Parameter two must be an object')
