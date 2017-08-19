@@ -66,6 +66,7 @@ export default {
     assertBuffer(imgData, 'Parameter two must be an ArrayBuffer or base64-encoded string')
     assertString(imgExtension, 'Parameter three must be a string')
     var profileRecord = await getProfileRecord(0)
+    imgData = typeof imgData === 'string' ? new Buffer(imgData, 'base64') : imgData
     await getAPI().setAvatar(profileRecord.url, imgData, imgExtension)
   },
 
@@ -76,6 +77,7 @@ export default {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     assertBuffer(imgData, 'Parameter two must be an ArrayBuffer or base64-encoded string')
     assertString(imgExtension, 'Parameter three must be a string')
+    imgData = typeof imgData === 'string' ? new Buffer(imgData, 'base64') : imgData
     await getAPI().setAvatar(archive, imgData, imgExtension)
   },
 
