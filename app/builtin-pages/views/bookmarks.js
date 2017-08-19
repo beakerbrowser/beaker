@@ -20,18 +20,23 @@ var query = ''
 
 // bookmarks, cached in memory
 var bookmarks = []
+var privateBookmarks = []
+var publicBookmarks = []
 var filteredBookmarks = []
 
 // main
 // =
 
-co(function * () {
+setup()
+async function setup () {
   // get the bookmarks, ordered by # of views
-  bookmarks = yield beaker.bookmarks.list()
-  bookmarks = bookmarks || []
+  publicBookmarks = await beaker.bookmarks.listPublicBookmarks()
+  privateBookmarks = await beaker.bookmarks.listPrivateBookmarks()
+
+  bookmarks = publicBookmarks.concat(privateBookmarks)
   filteredBookmarks = bookmarks
   render()
-})
+}
 
 // rendering
 // =
@@ -55,7 +60,7 @@ const renderRowDefault = (row, i) =>
   yo`
     <li class="ll-row bookmarks__row" data-row=${i}>
       <a class="link bookmark__link" href=${row.url} title=${row.title} />
-        <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.url} />
+        <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
         <span class="title bookmark__title">
           ${row.title.startsWith('dat://')
             ? yo`<em>Untitled</em>`
@@ -174,7 +179,7 @@ function onClearQuery () {
 function onFilterBookmarks (e) {
   query = e.target.value.toLowerCase()
   filteredBookmarks = bookmarks.filter(b => {
-    return b.title.toLowerCase().includes(query) || b.url.toLowerCase().includes(query)
+    return b.title.toLowerCase().includes(query) || b.href.toLowerCase().includes(query)
   })
 
   renderBookmarksList()
@@ -183,7 +188,7 @@ function onFilterBookmarks (e) {
 async function onTogglePinned (i) {
   var b = bookmarks[i]
   bookmarks[i].pinned = !b.pinned
-  await beaker.bookmarks.togglePinned(b.url, bookmarks[i].pinned)
+  await beaker.bookmarks.setBookmarkPinned(b.href, bookmarks[i])
   render()
 }
 
@@ -243,7 +248,11 @@ function onClickDelete (i) {
     // delete bookmark
     var b = bookmarks[i]
     bookmarks.splice(i, 1)
-    beaker.bookmarks.remove(b.url)
+    if (b.private) {
+      beaker.bookmarks.unbookmarkPrivate(b.href)
+    } else {
+      beaker.bookmarks.unbookmarkPublic(b.href)
+    }
     render()
   }
 }
