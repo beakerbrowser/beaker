@@ -188,7 +188,7 @@ function onFilterBookmarks (e) {
 async function onTogglePinned (i) {
   var b = bookmarks[i]
   bookmarks[i].pinned = !b.pinned
-  await beaker.bookmarks.togglePinned(b.url, bookmarks[i].pinned)
+  await beaker.bookmarks.setBookmarkPinned(b.href, bookmarks[i])
   render()
 }
 
