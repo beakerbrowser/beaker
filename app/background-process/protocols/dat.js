@@ -177,7 +177,7 @@ async function datServer (req, res) {
   var isFolder = filepath.endsWith('/')
 
   // checkout version if needed
-  var archiveFS = archive.stagingFS
+  var archiveFS = archive
   if (urlp.version) {
     let seq = +urlp.version
     if (seq <= 0) {

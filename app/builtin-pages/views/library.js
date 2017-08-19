@@ -7,10 +7,9 @@ import {throttle} from '../../lib/functions'
 import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
 import renderFiles from '../com/files-list'
-import renderChanges from '../com/archive-changes'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
-import toggleable from '../com/toggleable'
+import toggleable, {closeAllToggleables} from '../com/toggleable'
 import * as toast from '../com/toast'
 import * as sharePopup from '../com/share-popup'
 
@@ -37,9 +36,7 @@ var userProfileUrl
 var archivesList
 var trashList = []
 var isTrashOpen = false
-var isStagingOpen = false
 var isSidebarOpen = false
-var isPublishing = false
 var isEditingInfo = false
 var currentFilter = ''
 var currentSort = 'mtime'
@@ -48,14 +45,13 @@ var selectedArchiveKey = ''
 var selectedArchive
 var selectedArchives = []
 var viewError
-const reloadDiffThrottled = throttle(reloadDiff, 500)
 
 setup()
 async function setup () {
   // load archives
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
-  userProfileUrl = (await beaker.profiles.get(0)).url
+  userProfileUrl = null//TODO (await beaker.profiles.getUserProfile()).url
   update()
 
   // load current archive
@@ -82,7 +78,6 @@ async function setup () {
   beaker.archives.addEventListener('network-changed', onNetworkChanged)
   window.addEventListener('pushstate', loadCurrentArchive)
   window.addEventListener('popstate', loadCurrentArchive)
-  window.addEventListener('files-added', onFilesAdded)
 }
 
 async function parseURLKey () {
@@ -117,12 +112,11 @@ async function loadCurrentArchive () {
       // load archive metadata
       var a = new DatArchive(selectedArchiveKey)
       selectedArchive = await a.getInfo()
-      selectedArchive.diff = []
       selectedArchive.history = []
       selectedArchive.fileTree = {rootNode: null}
       console.log(selectedArchive)
 
-      // load the filetree from the last published, not from the staging
+      // load the filetree from the last published
       var aLastPublish = new DatArchive(`${selectedArchiveKey}+${selectedArchive.version}`)
       var fileTree = new FileTree(aLastPublish, {onDemand: true})
 
@@ -131,14 +125,13 @@ async function loadCurrentArchive () {
         a.history({end: 20, reverse: true, timeout: 10e3}),
         fileTree.setup().catch(err => null)
       ])
-      /* dont await */ reloadDiff()
       selectedArchive.history = history
       selectedArchive.historyPaginationOffset = 20
       selectedArchive.fileTree = fileTree
       selectedArchive.events = a.createFileActivityStream()
 
       // wire up events
-      selectedArchive.events.addEventListener('changed', onFileChanged)
+      selectedArchive.events.addEventListener('changed', update)
     } else {
       selectedArchive = null
     }
@@ -148,26 +141,6 @@ async function loadCurrentArchive () {
     viewError = e
   }
 
-  update()
-}
-
-async function reloadDiff () {
-  if (!selectedArchive || !selectedArchive.isOwner) {
-    return
-  }
-
-  selectedArchive.diff = []
-  var stats = selectedArchive.diffStats = {add: 0, mod: 0, del: 0}
-  try {
-    // load diff
-    var a = new DatArchive(selectedArchiveKey)
-    var diff = selectedArchive.diff = await a.diff({shallow: true})
-
-    // calc diff stats
-    diff.forEach(d => { stats[d.change]++ })
-  } catch (e) {
-    // this can happen if the site's folder has disappeared
-  }
   update()
 }
 
@@ -249,7 +222,6 @@ function rView () {
   document.title = 'Library'
   if (viewError) return rError()
   else if (isTrashOpen) return rTrash()
-  else if (isStagingOpen) return rStagingArea(selectedArchive)
   else if (selectedArchive) return rArchive(selectedArchive)
   else if (selectedArchiveKey) return 'Loading...'
   return rEmpty()
@@ -290,10 +262,12 @@ function rArchiveListItem (archiveInfo) {
         ${icon}
         ${niceName(archiveInfo)}
       </div>
-      <span class="peers">
-        <i class="fa fa-share-alt"></i>
-        ${archiveInfo.peers}
-      </span>
+      ${archiveInfo.userSettings.networked
+        ? yo`<span class="peers">
+            <i class="fa fa-share-alt"></i>
+            ${archiveInfo.peers}
+          </span>`
+        : ''}
     </div>
   `
 }
@@ -305,11 +279,10 @@ function rArchive (archiveInfo) {
     <div class="archive">
       ${rViewHeader(archiveInfo)}
       ${rNotSaved(archiveInfo)}
-      ${rMissingLocalPathMessage(archiveInfo)}
 
       <section class="tabs-content">
         ${renderTabs(currentSection, [
-          {id: 'files', label: 'Published files', onclick: onClickTab('files')},
+          {id: 'files', label: 'Files', onclick: onClickTab('files')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
           {id: 'network', label: 'Network', onclick: onClickTab('network')},
           {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
@@ -346,17 +319,6 @@ function rViewHeader (archiveInfo) {
     }
   }
 
-  if (archiveInfo.isOwner) {
-    var ownerButtons = [
-      yo`
-        <div class="dropdown-item" onclick=${onChooseNewLocation}>
-          <i class="fa fa-folder-o"></i>
-          Change folder
-        </div>
-      `
-    ]
-  }
-
   return yo`
     <section class="header">
       <h1 class="title" title=${archiveInfo.title}>
@@ -377,13 +339,16 @@ function rViewHeader (archiveInfo) {
               <i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-btn-list">
-              ${ownerButtons}
-              ${archiveInfo.isOwner ? '' : yo`
-                <div class="dropdown-item" onclick=${onFork}>
-                  <i class="fa fa-code-fork"></i>
-                  Fork this site
+              ${archiveInfo.isOwner ? yo`
+                <div class="dropdown-item" onclick=${onImportFiles}>
+                  <i class="fa fa-plus"></i>
+                  Import files
                 </div>
-              `}
+              ` : ''}
+              <div class="dropdown-item" onclick=${onFork}>
+                <i class="fa fa-code-fork"></i>
+                Fork this site
+              </div>
               <div class="dropdown-item" onclick=${onViewSource}>
                 <i class="fa fa-code"></i>
                 View source
@@ -414,8 +379,8 @@ function rNotSaved (archiveInfo) {
     return yo`
       <section class="message info">
         <i class="fa fa-info-circle"></i>
-        <span>This archive's files were deleted</span>
-        <button class="btn" onclick=${onToggleSaved} title="Restore this archive's files">Restore</button>
+        <span>This archive has been deleted</span>
+        <button class="btn" onclick=${onToggleSaved} title="Restore this archive">Restore</button>
       </section>
     `
   } else {
@@ -427,22 +392,7 @@ function rNotSaved (archiveInfo) {
       </section>
     `
   }
-}
 
-function rMissingLocalPathMessage (archiveInfo) {
-  if (!archiveInfo.isOwner || !archiveInfo.userSettings.isSaved || archiveInfo.localPathExists) {
-    return ''
-  }
-
-  return yo`
-    <section class="message error missing-local-path">
-      <i class="fa fa-exclamation-circle"></i>
-      <span>
-        Beaker cannot find the folder for these files
-      </span>
-      <button class="btn" onclick=${onRestoreOldFolder}>Restore old folder</button>
-    </section>
-  `
 }
 
 function rNetwork (archiveInfo) {
@@ -458,76 +408,9 @@ function rNetwork (archiveInfo) {
   `
 }
 
-function rStagingNotification (archiveInfo) {
-  if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
-    return ''
-  }
-
-  var diff = archiveInfo.diff
-  if (diff.length === 0) {
-    return ''
-  }
-
-  return yo`
-    <div class="message primary">
-      <i class="fa fa-plus-circle"></i>
-      <span>${diff.length} unpublished changes</span>
-      <button onclick=${e => { e.preventDefault(); isStagingOpen = true; update() }} class="btn">
-        Review changes
-      </button>
-    </div>
-  `
-}
-
-function rStagingArea (archiveInfo) {
-  if (!archiveInfo.userSettings.isSaved || !archiveInfo.isOwner) {
-    return ''
-  }
-
-  const backLink = () => yo`
-      <span class="back" onclick=${e => { isStagingOpen = false; update() }}>
-        <i class="fa fa-angle-left"></i>
-        Back
-      </span>
-    `
-
-  var diff = archiveInfo.diff
-  if (diff.length === 0) {
-    return yo`
-      <div class="staging">
-        ${rViewHeader(archiveInfo)}
-        ${backLink()}
-        <em>No unpublished changes</em>
-      </div>
-    `
-  }
-
-  return yo`
-    <div class="staging">
-      ${rViewHeader(archiveInfo)}
-      ${backLink()}
-      <section class="changes">
-        <div class="changes-heading">
-          <span class="diff-summary">
-            Unpublished changes:
-          </span>
-          <div class="actions">
-            <button onclick=${onRevert} class="btn">Revert changes</button>
-            ${isPublishing
-              ? yo`<button class="btn success" disabled><span class="spinner"></span> Publishing...</button>`
-              : yo`<button onclick=${onPublish} class="btn success">Publish</button>`}
-          </div>
-        </div>
-        ${renderChanges(archiveInfo)}
-      </section>
-    </div>
-  `
-}
-
 function rFiles (archiveInfo) {
   return yo`
     <div class="published-files">
-      ${rStagingNotification(archiveInfo)}
       ${renderFiles(archiveInfo)}
     </div>
   `
@@ -577,6 +460,7 @@ function rHistory (archiveInfo) {
 function rSettings (archiveInfo) {
   const isSaved = archiveInfo.userSettings.isSaved
   const isChecked = {
+    networked: archiveInfo.userSettings.networked,
     autoDownload: isSaved && archiveInfo.userSettings.autoDownload,
     autoUpload: isSaved && archiveInfo.userSettings.autoDownload
   }
@@ -611,16 +495,27 @@ function rSettings (archiveInfo) {
   }
 
   // tools that differ if owner
-  var sizeRows
   var networkSettingsEls
   var toolsEls
   if (archiveInfo.isOwner) {
-    sizeRows = [
-      yo`<tr><td class="label">Staging</td><td>${prettyBytes(archiveInfo.stagingSizeLessIgnored)} (${prettyBytes(archiveInfo.stagingSize - archiveInfo.stagingSizeLessIgnored)} ignored)</td></tr>`,
-      yo`<tr><td class="label">History</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
+    networkSettingsEls = [
+      yo`
+        <div class="setting ${!isSaved ? 'disabled' : ''}">
+          <h5>Network Sharing</h5>
+          <fieldset>
+            <label onclick=${(e) => onSetNetworked(e, true)}>
+              <input type="radio" name="networked_setting" disabled=${!isSaved} checked=${isChecked.networked} />
+              Share these files on the network
+            </label>
+            <label onclick=${(e) => onSetNetworked(e, false)}>
+              <input type="radio" name="networked_setting" disabled=${!isSaved} checked=${!isChecked.networked} />
+              Offline
+            </label>
+          </fieldset>
+        </div>
+      `
     ]
   } else {
-    sizeRows = yo`<tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.metaSize)}</td></tr>`
     networkSettingsEls = [
       isSaved
         ? ''
@@ -657,9 +552,8 @@ function rSettings (archiveInfo) {
       <table>
         <tr><td class="label">Title</td>${titleEl}</tr>
         <tr><td class="label">Description</td>${descEl}</tr>
-        ${sizeRows}
+        <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.size)}</td></tr>
         <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime || 0)}</td></tr>
-        ${archiveInfo.isOwner ? yo`<tr><td class="label">Path</td><td>${archiveInfo.userSettings.localPath || ''}</td></tr>` : ''}
         <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
       </table>
       ${archiveInfo.isOwner && isEditingInfo ? yo`<button onclick=${onSaveSettings} class="save btn">Apply changes</button>` : ''}
@@ -733,8 +627,25 @@ function onShare (e) {
 async function onFork (e) {
   e.preventDefault()
   update()
-  var a = await DatArchive.fork(selectedArchive.url)
+  var a = await DatArchive.fork(selectedArchive.url, {prompt: true})
   history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
+}
+
+async function onImportFiles (e, archiveInfo) {
+  var files = await beakerBrowser.showOpenDialog({
+    title: 'Import files to this archive',
+    buttonLabel: 'Import',
+    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory']
+  })
+  if (files) {
+    files.forEach(src => DatArchive.importFromFilesystem({
+      src,
+      dst: archiveInfo.url,
+      ignore: ['dat.json'],
+      inplaceImport: true
+    }))
+    update()
+  }
 }
 
 function onClickEdit () {
@@ -783,6 +694,7 @@ async function onToggleSaved (e) {
       trashList.splice(trashList.findIndex(a => a.key === selectedArchive.key), 1)
     }
   }
+  closeAllToggleables()
   loadCurrentArchive()
 }
 
@@ -794,9 +706,15 @@ async function onUndelete (e, key) {
   loadCurrentArchive()
 }
 
-async function onRestoreOldFolder () {
-  await beaker.archives.restore(selectedArchive.key)
-  loadCurrentArchive()
+async function onSetNetworked (e, value) {
+  if (selectedArchive.userSettings.networked === value) {
+    return
+  }
+  selectedArchive.userSettings.networked = value
+  await beaker.archives.update(selectedArchive.key, null, {networked: value})
+  await archivesList.setup({isSaved: true}) // reload listing
+  update()
+  toast.create('Settings updated.')
 }
 
 async function onSetAutoDownload (e, value) {
@@ -840,68 +758,6 @@ function onClickTab (tab) {
     currentSection = tab
     update()
   }
-}
-
-function onFilesAdded () {
-  // go to staging tab
-  isStagingOpen = true
-  update()
-}
-
-async function onPublish () {
-  // update UI
-  isPublishing = true
-  update()
-
-  try {
-    // publish
-    var a = new DatArchive(selectedArchiveKey)
-    await a.commit({timeout: 30e3})
-    toast.create('Your changes have been published')
-  } catch (e) {
-    console.error(e)
-    toast.create(e.toString())
-  }
-
-  // update UI optimistically
-  isPublishing = false
-  isStagingOpen = false
-  currentSection = 'files'
-  selectedArchive.diff = [] // optimistically clear it to speed up rendering
-  update()
-
-  // then load latest
-  loadCurrentArchive()
-}
-
-async function onRevert () {
-  if (!confirm('This will revert all files to the last published state. Are you sure?')) {
-    return
-  }
-
-  try {
-    var a = new DatArchive(selectedArchiveKey)
-    await a.revert()
-    toast.create('Your files have been reverted')
-    reloadDiffThrottled()
-  } catch (e) {
-    console.error(e)
-    toast.create(e.toString())
-  }
-}
-
-async function onFileChanged () {
-  reloadDiffThrottled()
-}
-
-async function onChooseNewLocation (e) {
-  e.preventDefault()
-  var localPath = await beakerBrowser.showLocalPathDialog({
-    defaultPath: selectedArchive.userSettings.localPath,
-    warnIfNotEmpty: !selectedArchive.isOwner
-  })
-  await beaker.archives.update(selectedArchiveKey, null, {localPath})
-  loadCurrentArchive()
 }
 
 async function onLoadMoreHistory (e) {

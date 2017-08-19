@@ -6,7 +6,6 @@ import jetpack from 'fs-jetpack'
 import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
-import {DISALLOWED_SAVE_PATH_NAMES} from '../lib/const'
 var debug = require('debug')('beaker')
 import manifest from '../lib/api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
@@ -87,7 +86,6 @@ export function setup () {
     removeAsDefaultProtocolClient,
 
     showOpenDialog,
-    showLocalPathDialog,
     openUrl: url => { openUrl(url) }, // dont return anything
     openFolder,
     doWebcontentsCmd,
@@ -302,101 +300,6 @@ function showOpenDialog (opts = {}) {
         if (wv) wv.focus()
       `)
       resolve(filenames)
-    })
-  })
-}
-
-export function validateLocalPath (localPath) {
-  for (let i = 0; i < DISALLOWED_SAVE_PATH_NAMES.length; i++) {
-    let disallowedSavePathName = DISALLOWED_SAVE_PATH_NAMES[i]
-    let disallowedSavePath = app.getPath(disallowedSavePathName)
-    if (path.normalize(localPath) === path.normalize(disallowedSavePath)) {
-      return {valid: false, name: disallowedSavePathName}
-    }
-  }
-  return {valid: true}
-}
-
-export async function showLocalPathDialog ({folderName, defaultPath, warnIfNotEmpty} = {}) {
-  while (true) {
-    // prompt for destination
-    var localPath = await new Promise((resolve) => {
-      dialog.showOpenDialog({
-        defaultPath,
-        title: (folderName)
-          ? 'Choose where to put the site folder'
-          : 'Choose the site folder',
-        buttonLabel: 'Save',
-        properties: ['openDirectory', 'createDirectory']
-      }, filenames => {
-        resolve(filenames && filenames[0])
-      })
-    })
-    if (!localPath) {
-      return
-    }
-
-    // make sure it's a valid destination
-    let validation = validateLocalPath(localPath)
-    if (!validation.valid) {
-      await new Promise(resolve => {
-        dialog.showMessageBox({
-          type: 'error',
-          message: 'This folder is protected. Please pick another folder or subfolder.',
-          detail:
-            `This is the OS ${validation.name} folder. ` +
-          `We${"'"}re not comfortable letting you use an important folder, ` +
-          `because Beaker has tools and APIs that can delete files. ` +
-          `Instead, you should pick a child folder, or some other location entirely.`,
-          buttons: ['OK']
-        }, resolve)
-      })
-      continue
-    }
-
-    // check if the target is empty
-    if (warnIfNotEmpty) {
-      try {
-        var files = await jetpack.listAsync(localPath)
-        if (files && files.length > 0) {
-          // ask the user if they're sure
-          var res = await new Promise(resolve => {
-            dialog.showMessageBox({
-              type: 'question',
-              message: 'This folder is not empty. Files that are not a part of this site will be deleted or overwritten. Save to this folder?',
-              buttons: ['Yes', 'Cancel']
-            }, resolve)
-          })
-          if (res != 0) {
-            continue
-          }
-        }
-      } catch (e) {
-        // no files
-      }
-    }
-
-    return localPath
-  }
-}
-
-export async function showDeleteArchivePrompt (sitename, oldpath, {bulk} = {}) {
-  return new Promise(resolve => {
-    dialog.showMessageBox({
-      type: 'question',
-      message: `Delete '${sitename}'?`,
-      detail: 'Deleting this site will remove it from your library and delete the keys. You may undo this action for a short period.',
-      checkboxLabel: oldpath ? `Delete the files at ${oldpath}` : undefined,
-      checkboxChecked: true,
-      buttons: bulk
-        ? ['Yes to all', 'Yes', 'No']
-        : ['Yes', 'No']
-    }, (choice, checkboxChecked) => {
-      resolve({
-        shouldDelete: (bulk && choice != 2) || (!bulk && choice == 0),
-        bulkYesToAll: bulk && choice == 0,
-        preserveStagingFolder: !checkboxChecked
-      })
     })
   })
 }

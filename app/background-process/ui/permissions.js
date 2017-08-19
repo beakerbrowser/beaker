@@ -40,7 +40,7 @@ export function revokePermission (permission, webContents) {
   // update the DB
   const PERM = PERMS[getPermId(permission)]
   if (PERM && PERM.persist) {
-    siteData.setPermission(siteURL, permission, 0)
+    siteData.clearPermission(siteURL, permission)
   }
   return Promise.resolve()
 }
@@ -87,6 +87,10 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
     // if we're already tracking this kind of permission request, then bundle them
     var req = activeRequests.find(req => req.win === win && req.permission === permission)
     if (req) {
+      if (PERM.alwaysAsk) {
+        // deny now
+        return cb(false)
+      }
       var oldCb = req.cb
       req.cb = decision => { oldCb(decision); cb(decision) }
     } else {

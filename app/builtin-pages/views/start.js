@@ -16,7 +16,7 @@ const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-5/?updated=tru
 // globals
 // =
 
-var bookmarks, pinnedBookmarks
+var pinnedBookmarks
 var settings
 
 setup()
@@ -67,12 +67,12 @@ function renderPinnedBookmarks () {
 }
 
 function renderPinnedBookmark (bookmark) {
-  var { url, title } = bookmark
+  var { href, title } = bookmark
   var [r, g, b] = bookmark.dominantColor || [255, 255, 255]
   return yo`
-    <a class="pinned-bookmark" href=${url}>
+    <a class="pinned-bookmark" href=${href}>
       <div class="favicon-container" style="background: rgb(${r}, ${g}, ${b})">
-        <img src=${'beaker-favicon:' + url} class="favicon"/>
+        <img src=${'beaker-favicon:' + href} class="favicon"/>
       </div>
       <div class="title">${title}</div>
     </a>
@@ -83,8 +83,7 @@ function renderPinnedBookmark (bookmark) {
 // =
 
 async function loadBookmarks () {
-  bookmarks = (await beaker.bookmarks.list()) || []
-  pinnedBookmarks = (await beaker.bookmarks.list({pinned: true})) || []
+  pinnedBookmarks = (await beaker.bookmarks.listPinnedBookmarks()) || []
 
   // load dominant colors of each pinned bookmark
   await Promise.all(pinnedBookmarks.map(attachDominantColor))
@@ -103,7 +102,7 @@ function attachDominantColor (bookmark) {
       resolve()
     }
     img.onerror = resolve
-    img.src = 'beaker-favicon:' + bookmark.url
+    img.src = 'beaker-favicon:' + bookmark.href
   })
 }
 

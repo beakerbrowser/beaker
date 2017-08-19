@@ -1,9 +1,13 @@
 export default {
-  list: 'promise',
-  get: 'promise',
-  add: 'promise',
-  update: 'promise',
-  remove: 'promise',
-  getCurrent: 'promise',
-  setCurrent: 'promise'
+  getUserProfile: 'promise',
+  getProfile: 'promise',
+  setProfile: 'promise',
+  follow: 'promise',
+  unfollow: 'promise',
+  listFollowers: 'promise',
+  countFollowers: 'promise',
+  listFriends: 'promise',
+  countFriends: 'promise',
+  isFollowing: 'promise',
+  isFriendsWith: 'promise'
 }

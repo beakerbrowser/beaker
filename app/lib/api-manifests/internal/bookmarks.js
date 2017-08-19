@@ -1,9 +1,15 @@
 export default {
-  add: 'promise',
-  changeTitle: 'promise',
-  changeUrl: 'promise',
-  remove: 'promise',
-  get: 'promise',
-  list: 'promise',
-  togglePinned: 'promise'
+  bookmark: 'promise',
+  unbookmark: 'promise',
+  listBookmarks: 'promise',
+  getBookmark: 'promise',
+  isBookmarked: 'promise',
+  setBookmarkPinned: 'promise',
+  listPinnedBookmarks: 'promise',
+
+  // private (temporary!)
+  bookmarkPrivate: 'promise',
+  unbookmarkPrivate: 'promise',
+  listPrivateBookmarks: 'promise',
+  getPrivateBookmark: 'promise'
 }

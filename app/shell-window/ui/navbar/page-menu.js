@@ -164,7 +164,7 @@ export class PageMenuNavbarBtn {
     if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
       return
     }
-    DatArchive.fork(page.siteInfo.key).catch(() => {})
+    DatArchive.fork(page.siteInfo.key, {prompt: true}).catch(() => {})
   }
 
   onClickDownloadZip () {
