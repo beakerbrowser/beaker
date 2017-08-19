@@ -14,8 +14,8 @@ import * as db from './profile-data-db'
 export function bookmark (profileId, url, {title}) {
   return db.run(`
     INSERT OR REPLACE
-      INTO bookmarks (profileId, url, title)
-      VALUES (?, ?, ?)
+      INTO bookmarks (profileId, url, title, pinned)
+      VALUES (?, ?, ?, 0)
   `, [profileId, url, title])
 }
 
