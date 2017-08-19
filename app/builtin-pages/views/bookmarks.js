@@ -179,7 +179,7 @@ function onClearQuery () {
 function onFilterBookmarks (e) {
   query = e.target.value.toLowerCase()
   filteredBookmarks = bookmarks.filter(b => {
-    return b.title.toLowerCase().includes(query) || b.url.toLowerCase().includes(query)
+    return b.title.toLowerCase().includes(query) || b.href.toLowerCase().includes(query)
   })
 
   renderBookmarksList()
