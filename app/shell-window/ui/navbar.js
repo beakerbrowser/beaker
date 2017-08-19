@@ -31,6 +31,7 @@ var datSidebarBtn = null
 var browserMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
 var siteInfoNavbarBtn = null
+var isBookmarkEditorOpen = false
 
 // autocomplete data
 var autocompleteCurrentValue = null
@@ -280,10 +281,10 @@ function render (id, page) {
     `
   }
 
-  var bookmarksDropdown = ''
-  bookmarksDropdown = yo`
+  var bookmarkDropdown = ''
+  bookmarkDropdown = yo`
     <div class="dropdown">
-      <div class="dropdown-items with-triangle visible">
+      <div class="dropdown-items with-triangle ${isBookmarkEditorOpen ? 'visible' : 'hidden'}">
         <div class="header">
           <i class="fa fa-star"></i>
           Edit this bookmark
@@ -292,7 +293,7 @@ function render (id, page) {
         <form>
           <div class="input-group">
             <label for="title">Title</label>
-            <input autofocus type="text" name="title" value="Beaker | a p2p Web browser"/>
+            <input id="bookmark-title" type="text" name="title" value="Beaker | a p2p Web browser"/>
           </div>
 
           <p class="visibility-info">
@@ -364,9 +365,9 @@ function render (id, page) {
         ${inpageFinder}
         ${zoomBtn}
         ${datBtns}
-        <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark this page">
-          <span class=${(page && !!page.bookmark) ? 'fa fa-star' : 'fa fa-star-o'}></span>
-          ${bookmarksDropdown}
+        <button class=${bookmarkBtnClass} title="Bookmark this page">
+          <span class=${(page && !!page.bookmark) ? 'fa fa-star' : 'fa fa-star-o'} onclick=${onClickBookmark}></span>
+          ${bookmarkDropdown}
         </button>
         ${pageMenuNavbarBtn.render()}
         ${autocompleteDropdown}
@@ -608,11 +609,16 @@ function onClickBookmark (e) {
   // if (page && !page.bookmarked) {
   //   if (!page.bookmarked) bookmark the page
   // }
-  // open the dropdown bookmark editor
 
-  if (page) {
-    page.toggleBookmark()
-  }
+  // toggle the dropdown bookmark editor
+  isBookmarkEditorOpen = !isBookmarkEditorOpen
+  update()
+  if (isBookmarkEditorOpen) document.getElementById('bookmark-title').focus()
+
+  // TODO: Temporarily disable -tbv
+  // if (page) {
+  //   page.toggleBookmark()
+  // }
 }
 
 function onClickPeercount (e) {
