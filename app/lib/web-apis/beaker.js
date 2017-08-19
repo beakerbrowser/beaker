@@ -41,13 +41,13 @@ if (window.location.protocol === 'beaker:') {
 
   // beaker.bookmarks
   beaker.bookmarks = new EventTarget()
-  beaker.bookmarks.add = bookmarksRPC.add
-  beaker.bookmarks.changeTitle = bookmarksRPC.changeTitle
-  beaker.bookmarks.changeUrl = bookmarksRPC.changeUrl
-  beaker.bookmarks.remove = bookmarksRPC.remove
-  beaker.bookmarks.get = bookmarksRPC.get
-  beaker.bookmarks.list = bookmarksRPC.list
-  beaker.bookmarks.togglePinned = bookmarksRPC.togglePinned
+  beaker.bookmarks.bookmark = bookmarksRPC.bookmark
+  beaker.bookmarks.unbookmark = bookmarksRPC.unbookmark
+  beaker.bookmarks.listBookmarks = bookmarksRPC.listBookmarks
+  beaker.bookmarks.getBookmark = bookmarksRPC.getBookmark
+  beaker.bookmarks.isBookmarked = bookmarksRPC.isBookmarked
+  beaker.bookmarks.setBookmarkPinned = bookmarksRPC.setBookmarkPinned
+  beaker.bookmarks.listPinnedBookmarks = bookmarksRPC.listPinnedBookmarks
   // bindEventStream(bookmarksRPC.createEventStream(), beaker.bookmarks) TODO
 
   // beaker.history
@@ -63,13 +63,17 @@ if (window.location.protocol === 'beaker:') {
 
   // beaker.profiles
   beaker.profiles = {}
-  beaker.profiles.list = profilesRPC.list
-  beaker.profiles.get = profilesRPC.get
-  beaker.profiles.add = profilesRPC.add
-  beaker.profiles.update = profilesRPC.update
-  beaker.profiles.remove = profilesRPC.remove
-  beaker.profiles.getCurrent = profilesRPC.getCurrent
-  beaker.profiles.setCurrent = profilesRPC.setCurrent
+  beaker.profiles.getUserProfile = profilesRPC.getUserProfile
+  beaker.profiles.getProfile = profilesRPC.getProfile
+  beaker.profiles.setProfile = profilesRPC.setProfile
+  beaker.profiles.follow = profilesRPC.follow
+  beaker.profiles.unfollow = profilesRPC.unfollow
+  beaker.profiles.listFollowers = profilesRPC.listFollowers
+  beaker.profiles.countFollowers = profilesRPC.countFollowers
+  beaker.profiles.listFriends = profilesRPC.listFriends
+  beaker.profiles.countFriends = profilesRPC.countFriends
+  beaker.profiles.isFollowing = profilesRPC.isFollowing
+  beaker.profiles.isFriendsWith = profilesRPC.isFriendsWith
   // bindEventStream(profilesRPC.createEventStream(), beaker.profiles) TODO
 }
 

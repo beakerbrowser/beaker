@@ -27,6 +27,8 @@ import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 import * as datProtocol from './background-process/protocols/dat'
 
+import * as profiles from './background-process/injests/profiles'
+
 import * as openURL from './background-process/open-url'
 
 // read config from env vars
@@ -44,7 +46,7 @@ process.on('unhandledRejection', (reason, p) => {
 // configure the protocols
 protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
 
-app.on('ready', function () {
+app.on('ready', async function () {
   // databases
   archives.setup()
   settings.setup()
@@ -72,6 +74,9 @@ app.on('ready', function () {
 
   // web APIs
   webAPIs.setup()
+
+  // injests
+  await profiles.setup()
 
   // listen OSX open-url event
   openURL.setup()

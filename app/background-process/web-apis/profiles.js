@@ -1,37 +1,86 @@
-import * as profilesDb from '../dbs/profiles'
+import assert from 'assert'
+import {getProfileRecord, getAPI} from '../injests/profiles'
 
 // exported api
 // =
 
 export default {
-  async list (...args) {
-    return profilesDb.list(...args)
+  
+  // profiles
+  // =
+
+  async getUserProfile () {
+    var profileRecord = await getProfileRecord(0)
+    return getAPI().getProfile(profileRecord.url)
   },
 
-  async get (...args) {
-    return profilesDb.get(...args)
+  async getProfile (archive) {
+    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    return getAPI().getProfile(archive)
   },
 
-  async add (...args) {
-    return profilesDb.add(...args)
+  async setProfile (archive, data) {
+    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    assertObject(data, 'Parameter two must be an object')
+    return getAPI().setProfile(archive, data)
   },
 
-  async update (...args) {
-    return profilesDb.update(...args)
+  // social relationships
+  // =
+
+  async follow (archive, targetUser, targetUserName) {
+    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    assertArchive(targetUser, 'Parameter two must be an archive object, or the URL of an archive')
+    return getAPI().follow(archive, targetUser, targetUserName)
   },
 
-  async remove (...args) {
-    return profilesDb.remove(...args)
+  async unfollow (archive, targetUser) {
+    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    assertArchive(targetUser, 'Parameter two must be an archive object, or the URL of an archive')
+    return getAPI().unfollow(archive, targetUser)
   },
 
-  async getCurrent (...args) {
-    throw new Error('Not yet implemented')
-    // return profilesDb.getCurrent(...args)
+  async listFollowers (archive) {
+    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    return getAPI().listFollowers(archive)
   },
 
-  async setCurrent (...args) {
-    throw new Error('Not yet implemented')
-    // return profilesDb.setCurrent(...args)
+  async countFollowers (archive) {
+    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    return getAPI().countFollowers(archive)
+  },
+
+  async listFriends (archive) {
+    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    return getAPI().listFriends(archive)
+  },
+
+  async countFriends (archive) {
+    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    return getAPI().countFriends(archive)
+  },
+
+  async isFollowing (archiveA, archiveB) {
+    assertArchive(archiveA, 'Parameter one must be an archive object, or the URL of an archive')
+    assertArchive(archiveB, 'Parameter two must be an archive object, or the URL of an archive')
+    return getAPI().isFollowing(archiveA, archiveB)
+  },
+
+  async isFriendsWith (archiveA, archiveB) {
+    assertArchive(archiveA, 'Parameter one must be an archive object, or the URL of an archive')
+    assertArchive(archiveB, 'Parameter two must be an archive object, or the URL of an archive')
+    return getAPI().isFriendsWith(archiveA, archiveB)    
   }
+}
 
+function assertArchive (v, msg) {
+  assert(!!v && (typeof v === 'string' || typeof v.url === 'string'), msg)
+}
+
+function assertString (v, msg) {
+  assert(!!v && typeof v === 'string', msg)
+}
+
+function assertObject (v, msg) {
+  assert(!!v && typeof v === 'object', msg)
 }

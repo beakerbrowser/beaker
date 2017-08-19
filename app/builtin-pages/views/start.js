@@ -27,14 +27,11 @@ setup()
 async function setup () {
   await loadBookmarks()
   archivesStatus = await beaker.archives.status()
-  userProfile = await beaker.profiles.get(0)
-  try {
-    userProfile.title = (await beaker.archives.get(userProfile.url, {timeout: 500})).title
-  } catch (e) {
-    userProfile.title = 'Your profile'
-  }
+  userProfile = await beaker.profiles.getUserProfile()
   settings = await beakerBrowser.getSettings()
   update()
+
+  console.log('user profile', userProfile)
 
   // open update info if appropriate
   if (!settings.noWelcomeTab) {
@@ -60,8 +57,6 @@ async function setup () {
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
   archivesList.archives.sort((a, b) => {
-    if (a.url === userProfile.url) return -1
-    if (b.url === userProfile.url) return 1
     return niceName(a).localeCompare(niceName(b))
   })
 }
@@ -140,9 +135,9 @@ function renderShelf () {
         ${bookmarks.length
           ? bookmarks.map(row => {
             return yo`
-              <a href=${row.url} class="bookmark list-item">
-                <img class="favicon" src=${'beaker-favicon:' + row.url} />
-                <span href=${row.url} class="bookmark-link" title=${row.title} />
+              <a href=${row.href} class="bookmark list-item">
+                <img class="favicon" src=${'beaker-favicon:' + row.href} />
+                <span href=${row.href} class="bookmark-link" title=${row.title} />
                   <span class="title">${row.title}</span>
                 </span>
               </a>`
@@ -186,10 +181,10 @@ function renderBookmarks () {
         <a class="btn pin" onclick=${e => pinBookmark(e, row)}>
           <i class="fa fa-thumb-tack"></i> Pin
         </a>
-        <a href=${row.url} class="link" title=${row.title} />
-          <img class="favicon" src=${'beaker-favicon:' + row.url} />
+        <a href=${row.href} class="link" title=${row.title} />
+          <img class="favicon" src=${'beaker-favicon:' + row.href} />
           <span class="title">${row.title}</span>
-          <span class="url">${row.url}</span>
+          <span class="url">${row.href}</span>
         </a>
       </li>`
 
@@ -202,13 +197,13 @@ function renderBookmarks () {
 }
 
 function renderPinnedBookmark (bookmark) {
-  var { url, title } = bookmark
+  var { href, title } = bookmark
   var [r, g, b] = bookmark.dominantColor || [255, 255, 255]
   return yo`
-    <a class="pinned-bookmark ${isManagingBookmarks ? 'nolink' : ''}" href=${isManagingBookmarks ? '' : url}>
+    <a class="pinned-bookmark ${isManagingBookmarks ? 'nolink' : ''}" href=${isManagingBookmarks ? '' : href}>
       <div class="favicon-container" style="background: rgb(${r}, ${g}, ${b})">
         ${isManagingBookmarks ? yo`<a class="unpin" onclick=${e => unpinBookmark(e, bookmark)}><i class="fa fa-times"></i></a>` : ''}
-        <img src=${'beaker-favicon:' + url} class="favicon"/>
+        <img src=${'beaker-favicon:' + href} class="favicon"/>
       </div>
       <div class="title">${title}</div>
     </a>
@@ -240,20 +235,20 @@ function toggleAddPin (url, title) {
   update()
 }
 
-async function pinBookmark (e, {url}) {
+async function pinBookmark (e, {href}) {
   e.preventDefault()
   e.stopPropagation()
 
-  await beaker.bookmarks.togglePinned(url, true)
+  await beaker.bookmarks.togglePinned(href, true)
   await loadBookmarks()
   update()
 }
 
-async function unpinBookmark (e, {url}) {
+async function unpinBookmark (e, {href}) {
   e.preventDefault()
   e.stopPropagation()
 
-  await beaker.bookmarks.togglePinned(url, false)
+  await beaker.bookmarks.togglePinned(href, false)
   await loadBookmarks()
   update()
 }
@@ -262,8 +257,9 @@ async function unpinBookmark (e, {url}) {
 // =
 
 async function loadBookmarks () {
-  bookmarks = (await beaker.bookmarks.list()) || []
-  pinnedBookmarks = (await beaker.bookmarks.list({pinned: true})) || []
+  bookmarks = /*TODO (await beaker.bookmarks.list()) ||*/ []
+  pinnedBookmarks = (await beaker.bookmarks.listPinnedBookmarks()) || []
+  console.log(pinnedBookmarks)
 
   // load dominant colors of each pinned bookmark
   await Promise.all(pinnedBookmarks.map(attachDominantColor))
@@ -282,7 +278,7 @@ function attachDominantColor (bookmark) {
       resolve()
     }
     img.onerror = resolve
-    img.src = 'beaker-favicon:' + bookmark.url
+    img.src = 'beaker-favicon:' + bookmark.href
   })
 }
 

@@ -51,7 +51,7 @@ async function setup () {
   // load archives
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
-  userProfileUrl = (await beaker.profiles.get(0)).url
+  userProfileUrl = null//TODO (await beaker.profiles.getUserProfile()).url
   update()
 
   // load current archive
