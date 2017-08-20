@@ -125,7 +125,7 @@ async function onToggleFollowing () {
     await beaker.profiles.unfollow(currentUserProfile._origin, currentProfile._origin)
     currentProfile.isFollowing = false
   } else {
-    await beaker.profiles.follow(currentUserProfile._origin, currentProfile._origin)
+    await beaker.profiles.follow(currentUserProfile._origin, currentProfile._origin, currentProfile.name || '')
     currentProfile.isFollowing = true
   }
   render()
