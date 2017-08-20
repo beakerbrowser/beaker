@@ -69,7 +69,6 @@ function renderPinnedBookmarks () {
 
 function renderPinnedBookmark (bookmark) {
   var { href, title } = bookmark
-  var [r, g, b] = bookmark.dominantColor || [255, 255, 255]
   return yo`
     <a class="pinned-bookmark" href=${href}>
       <div class="favicon-container">
@@ -87,7 +86,7 @@ async function loadBookmarks () {
   pinnedBookmarks = (await beaker.bookmarks.listPinnedBookmarks()) || []
 
   // load dominant colors of each pinned bookmark
-  await Promise.all(pinnedBookmarks.map(attachDominantColor))
+  // await Promise.all(pinnedBookmarks.map(attachDominantColor))
 }
 
 function attachDominantColor (bookmark) {
