@@ -7,6 +7,13 @@ So this is used for the private bookmarks
 */
 
 import * as db from './profile-data-db'
+import normalizeUrl from 'normalize-url'
+
+const NORMALIZE_OPTS = {
+  stripFragment: false,
+  stripWWW: false,
+  removeQueryParameters: false
+}
 
 // exported methods
 // =
@@ -39,6 +46,18 @@ export async function listBookmarks (profileId) {
 export async function listPinnedBookmarks (profileId) {
   var bookmarks = await db.all(`SELECT url, title, pinned FROM bookmarks WHERE profileId = ? AND pinned = 1 ORDER BY createdAt DESC`, [profileId])
   return bookmarks.map(toNewFormat)
+}
+
+// TEMP
+// apply normalization to old bookmarks
+// (can probably remove this in 2018 or so)
+// -prf
+export async function fixOldBookmarks () {
+  var bookmarks = await db.all(`SELECT url FROM bookmarks`)
+  bookmarks.forEach(b => {
+    let newUrl = normalizeUrl(b.url, NORMALIZE_OPTS)
+    db.run(`UPDATE bookmarks SET url = ? WHERE url = ?`, [newUrl, b.url])
+  })
 }
 
 function toNewFormat (b) {

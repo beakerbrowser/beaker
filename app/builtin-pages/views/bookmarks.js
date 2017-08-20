@@ -60,7 +60,7 @@ const renderRowEditing = (row, i) =>
 const renderRowDefault = (row, i) =>
   yo`
     <li class="ll-row bookmarks__row" data-row=${i}>
-      <a class="link bookmark__link" href=${row.url} title=${row.title} />
+      <a class="link bookmark__link" href=${row.href} title=${row.title} />
         <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
         <span class="title bookmark__title">
           ${row.title.startsWith('dat://')
