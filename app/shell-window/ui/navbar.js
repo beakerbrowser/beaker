@@ -6,11 +6,12 @@ import * as sidebar from './sidebar'
 import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
-import { UpdatesNavbarBtn } from './navbar/updates'
-import { BrowserMenuNavbarBtn } from './navbar/browser-menu'
-import { PageMenuNavbarBtn } from './navbar/page-menu'
-import { DatSidebarBtn } from './navbar/dat-sidebar'
-import { SiteInfoNavbarBtn } from './navbar/site-info'
+import {UpdatesNavbarBtn} from './navbar/updates'
+import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
+import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
+import {PageMenuNavbarBtn} from './navbar/page-menu'
+import {DatSidebarBtn} from './navbar/dat-sidebar'
+import {SiteInfoNavbarBtn} from './navbar/site-info'
 import {pluralize} from '../../lib/strings'
 
 const KEYCODE_DOWN = 40
@@ -29,9 +30,9 @@ var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
 var datSidebarBtn = null
 var browserMenuNavbarBtn = null
+var bookmarkMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
 var siteInfoNavbarBtn = null
-var isBookmarkEditorOpen = false
 
 // autocomplete data
 var autocompleteCurrentValue = null
@@ -46,6 +47,7 @@ export function setup () {
   updatesNavbarBtn = new UpdatesNavbarBtn()
   datSidebarBtn = new DatSidebarBtn()
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
+  bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   pageMenuNavbarBtn = new PageMenuNavbarBtn()
   siteInfoNavbarBtn = new SiteInfoNavbarBtn()
 }
@@ -134,6 +136,7 @@ export function closeMenus () {
   browserMenuNavbarBtn.isDropdownOpen = false
   browserMenuNavbarBtn.updateActives()
   pageMenuNavbarBtn.close()
+  bookmarkMenuNavbarBtn.close()
 }
 
 // internal helpers
@@ -180,9 +183,6 @@ function render (id, page) {
             onkeydown=${onKeydownFind}
             value=${findValue} />`
     : ''
-
-  // bookmark toggle state
-  var bookmarkBtnClass = 'nav-bookmark-btn' + ((page && !!page.bookmark) ? ' active' : '')
 
   // zoom btn should only show if zoom is not the default setting
   var zoomBtn = ''
@@ -281,48 +281,6 @@ function render (id, page) {
     `
   }
 
-  var bookmarkDropdown = ''
-  bookmarkDropdown = yo`
-    <div class="dropdown">
-      <div class="dropdown-items with-triangle ${isBookmarkEditorOpen ? 'visible' : 'hidden'}">
-        <div class="header">
-          <i class="fa fa-star"></i>
-          Edit this bookmark
-        </div>
-
-        <form onsubmit=${onSaveBookmark}>
-          <div class="input-group">
-            <label for="title">Title</label>
-            <input id="bookmark-title" type="text" name="title" value=${page && page.bookmark ? page.bookmark.title : ''}/>
-          </div>
-
-          <p class="visibility-info">
-            This bookmark will not be shared with any of your followers.
-          </p>
-
-          <div class="input-group visibility">
-            <input checked type="radio" name="visibility" id="private" value="public"/>
-            <label for="private" class="">
-              <i class="fa fa-lock"></i>
-              Private
-            </label>
-
-            <input type="radio" name="visibility" id="public" value="public"/>
-            <label for="public">
-              Public
-              <i class="fa fa-globe"></i>
-            </label>
-          </div>
-
-          <div>
-            <button type="button" onclick=${onClickRemoveBookmark}>Remove</button>
-            <button type="submit">Save</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  `
-
   // preserve the current address value
   var addrEl = page && page.navbarEl.querySelector('.nav-location-input')
   var addrValue = addrEl ? addrEl.value : ''
@@ -370,10 +328,7 @@ function render (id, page) {
         ${inpageFinder}
         ${zoomBtn}
         ${datBtns}
-        <button class="star ${bookmarkBtnClass}" title="Bookmark this page">
-          <span class="star ${page && page.bookmark ? 'fa fa-star' : 'fa fa-star-o'}" onclick=${onClickBookmark}></span>
-          ${bookmarkDropdown}
-        </button>
+        ${bookmarkMenuNavbarBtn.render()}
         ${pageMenuNavbarBtn.render()}
         ${autocompleteDropdown}
       </div>
@@ -596,44 +551,6 @@ function onClickCancel (e) {
   if (page) {
     page.stopAsync()
   }
-}
-
-async function onSaveBookmark (e) {
-  e.preventDefault()
-  var page = getEventPage(e)
-  var b = page.bookmark || {}
-  b.title = e.target.title.value || ''
-
-  if (b.private) {
-    await beaker.bookmarks.bookmarkPrivate(b.href, b)
-  } else {
-    await beaker.bookmarks.bookmarkPublic(b.href, b)
-  }
-}
-
-// TODO
-// Close the editing menu and re-render after removing bookmark -tbv
-async function onClickRemoveBookmark (e) {
-  var page = getEventPage(e)
-  var b = page.bookmark || {}
-  if (b.private) {
-    await beaker.bookmarks.unbookmarkPrivate(page.url)
-  } else {
-    await beaker.bookmarks.unbookmarkPublic(page.url)
-  }
-}
-
-async function onClickBookmark (e) {
-  var page = getEventPage(e)
-  if (!page.bookmark) {
-    // set the bookmark privately
-    beaker.bookmarks.bookmarkPrivate(page.url, {title: page.title || '', pinned: false})
-  }
-
-  // toggle the dropdown bookmark editor
-  isBookmarkEditorOpen = !isBookmarkEditorOpen
-  update()
-  if (isBookmarkEditorOpen) document.getElementById('bookmark-title').focus()
 }
 
 function onClickPeercount (e) {

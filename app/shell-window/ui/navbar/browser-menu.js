@@ -96,7 +96,7 @@ export class BrowserMenuNavbarBtn {
       })
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
-          <div class="dropdown-items with-triangle visible">
+          <div class="dropdown-items with-triangle">
             <div class="grid default">
               <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
                 <i class="fa fa-history"></i>

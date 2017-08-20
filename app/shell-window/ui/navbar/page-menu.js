@@ -39,7 +39,7 @@ export class PageMenuNavbarBtn {
       }
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
-          <div class="dropdown-items with-triangle visible">
+          <div class="dropdown-items with-triangle">
             <div class="list">
               ${isSaved
                 ? yo`

@@ -105,7 +105,7 @@ export class SiteInfoNavbarBtn {
     // dropdown
     return yo`
       <div class="dropdown toolbar-dropdown toolbar-site-info-dropdown">
-        <div class="dropdown-items visible with-triangle left">
+        <div class="dropdown-items with-triangle left">
           <div class="details">
             <div class="details-title">
               ${this.getTitle() || this.getHostname() || this.getUrl()}
