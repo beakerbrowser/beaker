@@ -1,6 +1,13 @@
 import assert from 'assert'
 import {getProfileArchive, getAPI} from '../injests/profiles'
 import * as privateBookmarksDb from '../dbs/bookmarks'
+import normalizeUrl from 'normalize-url'
+
+const NORMALIZE_OPTS = {
+  stripFragment: false,
+  stripWWW: false,
+  removeQueryParameters: false
+}
 
 // exported api
 // =
@@ -13,6 +20,7 @@ export default {
   // fetch bookmark data from the current user's public & private data
   async getBookmark (href) {
     assertString(href, 'Parameter one must be a URL')
+    href = normalizeUrl(href, NORMALIZE_OPTS)
     var archive = await getProfileArchive(0)
     var bookmark = await getAPI().getBookmark(archive, href)
     if (bookmark) return bookmark
@@ -23,6 +31,7 @@ export default {
   // check if bookmark exists in the current user's public & private data
   async isBookmarked (href) {
     assertString(href, 'Parameter one must be a URL')
+    href = normalizeUrl(href, NORMALIZE_OPTS)
     var archive = await getProfileArchive(0)
     var res = await getAPI().isBookmarked(archive, href)
     if (res) return true
@@ -42,6 +51,7 @@ export default {
   // - data.title: string
   async bookmarkPublic (href, data) {
     assertString(href, 'Parameter one must be a URL')
+    href = normalizeUrl(href, NORMALIZE_OPTS)
     var archive = await getProfileArchive(0)
     await getAPI().bookmark(archive, href, data)
   },
@@ -49,6 +59,7 @@ export default {
   // delete public bookmark
   async unbookmarkPublic (href) {
     assertString(href, 'Parameter one must be a URL')
+    href = normalizeUrl(href, NORMALIZE_OPTS)
     var archive = await getProfileArchive(0)
     await getAPI().unbookmark(archive, href)
   },
@@ -70,6 +81,7 @@ export default {
   // pin a bookmark (public or private)
   async setBookmarkPinned (href, pinned) {
     assertString(href, 'Parameter one must be a URL')
+    href = normalizeUrl(href, NORMALIZE_OPTS)
     var archive = await getProfileArchive(0)
     // TEMP find which db it's in -prf
     if (await getAPI().isBookmarked(archive, href)) {
@@ -96,12 +108,14 @@ export default {
   // - data.title: string
   async bookmarkPrivate (href, data = {}) {
     assertString(href, 'Parameter one must be a URL')
+    href = normalizeUrl(href, NORMALIZE_OPTS)
     await privateBookmarksDb.bookmark(0, href, data)
   },
 
   // delete private bookmark
   async unbookmarkPrivate (href) {
     assertString(href, 'Parameter one must be a URL')
+    href = normalizeUrl(href, NORMALIZE_OPTS)
     await privateBookmarksDb.unbookmark(0, href)
   },
 
