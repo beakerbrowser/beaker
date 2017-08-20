@@ -11,9 +11,12 @@
   .edit-link {
     &:extend(.flex);
     align-items: center;
+    justify-content: flex-end;
     position: absolute;
-    bottom: 15px;
-    left: 15px;
+    padding: 15px;
+    left: 0;
+    bottom: 0;
+    width: 100%;
     color: rgba(0,0,0,.7);
     cursor: pointer;
     transition: color .1s ease;
@@ -39,7 +42,12 @@
   }
 
   .profile-view {
-    margin: 15px;
+    padding: 0 15px 15px 15px;
+    border-bottom: 1px solid rgba(0,0,0,.1);
+
+    > *:last-child {
+      margin-bottom: 0;
+    }
 
     .header {
       &:extend(.flex);
@@ -53,6 +61,12 @@
 
     .bio {
       color: rgba(0,0,0,.7);
+    }
+
+    .follow-btn {
+      margin-top: 5px;
+      width: 100%;
+      height: 28px !important; // bump up button height, it looks weird at the normal 26px when full width
     }
   }
 
