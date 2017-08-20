@@ -1,6 +1,7 @@
 const yo = require('yo-yo')
 const co = require('co')
 import renderSidebar from '../com/sidebar'
+import renderPencilIcon from '../icon/pencil'
 
 // globals
 // =
@@ -50,6 +51,14 @@ function render () {
             ? renderProfileEditor()
             : renderProfile()
           }
+
+          ${!isEditingProfile
+            ? yo`
+              <span class="edit-link" onclick=${onEditProfile}>
+                Edit your profile
+                ${renderPencilIcon()}
+              </span>`
+            : ''}
         </div>
 
         <div class="builtin-main"></div>
