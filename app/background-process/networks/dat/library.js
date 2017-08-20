@@ -293,6 +293,10 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
       })
     })
   }
+  if (!archive.writable) {
+    // always download all metadata
+    archive.metadata.download({start: 0, end: -1})
+  }
 
   // pull meta
   await pullLatestArchiveMeta(archive)
