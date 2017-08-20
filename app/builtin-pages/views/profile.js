@@ -69,6 +69,8 @@ async function loadCurrentProfile () {
       currentProfile = currentUserProfile
       history.pushState({}, null, 'beaker://profile/' + currentProfile._origin.slice('dat://'.length))
     }
+
+    currentProfile.isFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, currentProfile._origin)
   } catch (e) {
     // TODO
   }
@@ -118,10 +120,23 @@ function onToggleEditingProfile () {
   render()
 }
 
+async function onToggleFollowing () {
+  if (currentProfile.isFollowing) {
+    await beaker.profiles.unfollow(currentUserProfile._origin, currentProfile._origin)
+    currentProfile.isFollowing = false
+  } else {
+    await beaker.profiles.follow(currentUserProfile._origin, currentProfile._origin)
+    currentProfile.isFollowing = true
+  }
+  render()
+}
+
 // rendering
 // =
 
 function render () {
+  var isUserProfile = currentProfile && currentProfile._origin === currentUserProfile._origin
+
   yo.update(document.querySelector('.profile-wrapper'), yo`
     <div class="profile-wrapper builtin-wrapper">
       ${renderSidebar('profile')}
@@ -132,12 +147,9 @@ function render () {
           <p class="builtin-blurb">
           </p>
 
-          ${isEditingProfile
-            ? renderProfileEditor()
-            : renderProfile()
-          }
+          ${isUserProfile && isEditingProfile ? renderProfileEditor() : renderProfile()}
 
-          ${!isEditingProfile
+          ${isUserProfile && !isEditingProfile
             ? yo`
               <span class="edit-link" onclick=${onToggleEditingProfile}>
                 Edit your profile
@@ -180,6 +192,8 @@ function renderProfile () {
       </div>
 
       <p class="bio">${currentProfile.bio}</p>
+
+      ${isUserProfile ? '' : renderFollowButton()}
     </div>
   `
 }
@@ -207,4 +221,11 @@ function renderProfileEditor () {
         <button type="submit" class="btn primary">Save</button>
     </form>
   `
+}
+
+function renderFollowButton () {
+  return yo`
+    <button class="btn primary" onclick=${onToggleFollowing}>
+      ${currentProfile.isFollowing ? 'Following ✓' : 'Follow +'}
+    </button>`
 }
