@@ -65,8 +65,8 @@ export default {
   // - imgData: ArrayBuffer|string, the image content. If a string, assumed encoding is 'base64'.
   // - imgExtension: string, the file-extension of the data. Eg 'png' 'jpg' 'gif'
   async setCurrentAvatar (imgData, imgExtension) {
-    assertBuffer(imgData, 'Parameter two must be an ArrayBuffer or base64-encoded string')
-    assertString(imgExtension, 'Parameter three must be a string')
+    assertBuffer(imgData, 'Parameter one must be an ArrayBuffer or base64-encoded string')
+    assertString(imgExtension, 'Parameter two must be a string')
     var profileRecord = await getProfileRecord(0)
     imgData = typeof imgData === 'string' ? new Buffer(imgData, 'base64') : imgData
     await getAPI().setAvatar(profileRecord.url, imgData, imgExtension)

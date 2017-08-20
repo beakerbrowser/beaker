@@ -7,7 +7,8 @@ import renderPencilIcon from '../icon/pencil'
 // =
 
 var currentProfile
-var isEditingProfile = false
+var isEditingProfile
+var tmpAvatar
 
 // main
 // =
@@ -30,10 +31,31 @@ async function onSaveProfile (e) {
   var bio = e.target.bio.value || ''
   await beaker.profiles.setCurrentProfile({name, bio})
 
-  currentProfile.name = name
-  currentProfile.bio = bio
+  // if the avatar's changed, update the profile avatar
+  if (tmpAvatar) {
+    await beaker.profiles.setCurrentAvatar(tmpAvatar.imgData, tmpAvatar.imgExtension)
+  }
+
+  tmpAvatar = undefined
   isEditingProfile = false
+  currentProfile = await beaker.profiles.getCurrentProfile()
   render()
+}
+
+function onUpdateTmpAvatar (e) {
+  if (e.target.files) {
+    var f = e.target.files[0]
+    var reader = new FileReader()
+
+    reader.onload = function () {
+      document.querySelector('img.editor.avatar').src = reader.result
+      tmpAvatar = {
+        imgData: reader.result.split(',')[1],
+        imgExtension: f.name.split('.')[1] || '',
+      }
+    }
+    reader.readAsDataURL(f)
+  }
 }
 
 function onToggleEditingProfile () {
@@ -73,27 +95,48 @@ function render () {
 
 function renderProfile () {
   return yo`
-    <div>
-      <p>${currentProfile.name}</p>
-      <p>${currentProfile.bio}</p>
+    <div class="profile-view">
+      <div class="header">
+        ${currentProfile.avatar
+          ? yo`
+            <div class="avatar-container">
+              <img class="avatar" src="${currentProfile._origin}${currentProfile.avatar}?cache_buster=${Date.now()}"/>
+            </div>`
+          : yo`
+            <div class="avatar-container">
+              <span class="avatar empty"></span>
+            </div>`
+        }
+
+        <span class="name">${currentProfile.name}</span>
+      </div>
+
+      <p class="bio">${currentProfile.bio}</p>
     </div>
   `
 }
 
 function renderProfileEditor () {
   return yo`
-    <div>
-      <form class="edit-profile" onsubmit=${onSaveProfile}>
-        <label for="name">Name</label>
-        <input autofocus type="text" name="name" placeholder="Name" value=${currentProfile.name || ''}/>
+    <form class="edit-profile" onsubmit=${onSaveProfile}>
+      <h2>Edit your profile</h2>
 
-        <label for="bio">Bio (optional)</label>
-        <textarea name="bio" placeholder="Enter a short bio">${currentProfile.bio || ''}</textarea>
+      <label for="avatar">Avatar</label>
+      <div title="Update your avatar" class="avatar-container">
+        <input onchange=${onUpdateTmpAvatar} name="avatar" class="avatar-input" type="file" accept="image/*"/>
+        <img class="avatar editor" src=${currentProfile.avatar ? currentProfile._origin + currentProfile.avatar : ''}/>
+        ${currentProfile.avatar ? '' : yo`<span class="avatar editor empty">+</span>`}
+      </div>
 
-        <div class="actions">
-          <button type="button" class="btn" onclick=${onToggleEditingProfile}>Cancel</button>
-          <button type="submit" class="btn primary">Save</button>
-      </form>
-    </div>
+      <label for="name">Name</label>
+      <input autofocus type="text" name="name" placeholder="Name" value=${currentProfile.name || ''}/>
+
+      <label for="bio">Bio (optional)</label>
+      <textarea name="bio" placeholder="Enter a short bio">${currentProfile.bio || ''}</textarea>
+
+      <div class="actions">
+        <button type="button" class="btn" onclick=${onToggleEditingProfile}>Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+    </form>
   `
 }
