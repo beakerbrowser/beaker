@@ -38,6 +38,7 @@ export default {
   // - .follows[n].name: string, the name of the followed user
   async getProfile (archive) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    await getAPI().addArchive(archive)
     return getAPI().getProfile(archive)
   },
 
@@ -56,6 +57,7 @@ export default {
   async setProfile (archive, data) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     assertObject(data, 'Parameter two must be an object')
+    await getAPI().addArchive(archive)
     await getAPI().setProfile(archive, data)
   },
 
@@ -78,6 +80,7 @@ export default {
     assertBuffer(imgData, 'Parameter two must be an ArrayBuffer or base64-encoded string')
     assertString(imgExtension, 'Parameter three must be a string')
     imgData = typeof imgData === 'string' ? new Buffer(imgData, 'base64') : imgData
+    await getAPI().addArchive(archive)
     await getAPI().setAvatar(archive, imgData, imgExtension)
   },
 
@@ -87,44 +90,64 @@ export default {
   async follow (archive, targetUser, targetUserName) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     assertArchive(targetUser, 'Parameter two must be an archive object, or the URL of an archive')
+    await Promise.all([
+      getAPI().addArchive(archive),
+      getAPI().addArchive(targetUser)
+    ])
     await getAPI().follow(archive, targetUser, targetUserName)
   },
 
   async unfollow (archive, targetUser) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     assertArchive(targetUser, 'Parameter two must be an archive object, or the URL of an archive')
+    await Promise.all([
+      getAPI().addArchive(archive),
+      getAPI().addArchive(targetUser)
+    ])
     await getAPI().unfollow(archive, targetUser)
   },
 
   async listFollowers (archive) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    await getAPI().addArchive(archive)
     return getAPI().listFollowers(archive)
   },
 
   async countFollowers (archive) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    await getAPI().addArchive(archive)
     return getAPI().countFollowers(archive)
   },
 
   async listFriends (archive) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    await getAPI().addArchive(archive)
     return getAPI().listFriends(archive)
   },
 
   async countFriends (archive) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
+    await getAPI().addArchive(archive)
     return getAPI().countFriends(archive)
   },
 
   async isFollowing (archiveA, archiveB) {
     assertArchive(archiveA, 'Parameter one must be an archive object, or the URL of an archive')
     assertArchive(archiveB, 'Parameter two must be an archive object, or the URL of an archive')
+    await Promise.all([
+      getAPI().addArchive(archiveA),
+      getAPI().addArchive(archiveB)
+    ])
     return getAPI().isFollowing(archiveA, archiveB)
   },
 
   async isFriendsWith (archiveA, archiveB) {
     assertArchive(archiveA, 'Parameter one must be an archive object, or the URL of an archive')
     assertArchive(archiveB, 'Parameter two must be an archive object, or the URL of an archive')
+    await Promise.all([
+      getAPI().addArchive(archiveA),
+      getAPI().addArchive(archiveB)
+    ])
     return getAPI().isFriendsWith(archiveA, archiveB)    
   }
 }
