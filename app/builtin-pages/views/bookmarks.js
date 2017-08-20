@@ -206,8 +206,8 @@ function onFilterBookmarks (e) {
 
 async function onTogglePinned (i) {
   var b = bookmarks[i]
-  bookmarks[i].pinned = !b.pinned
-  await beaker.bookmarks.setBookmarkPinned(b.href, bookmarks[i])
+  b.pinned = !b.pinned
+  await beaker.bookmarks.setBookmarkPinned(b.href, b.pinned)
   render()
 }
 
@@ -264,7 +264,7 @@ function onKeyUp (i) {
 }
 
 function onClickDelete (i) {
-  return e => {
+  return async e => {
     e.preventDefault()
     e.stopPropagation()
 
@@ -272,9 +272,9 @@ function onClickDelete (i) {
     var b = bookmarks[i]
     bookmarks.splice(i, 1)
     if (b.private) {
-      beaker.bookmarks.unbookmarkPrivate(b.href)
+      await beaker.bookmarks.unbookmarkPrivate(b.href)
     } else {
-      beaker.bookmarks.unbookmarkPublic(b.href)
+      await beaker.bookmarks.unbookmarkPublic(b.href)
     }
     render()
   }
