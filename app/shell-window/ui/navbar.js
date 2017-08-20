@@ -290,10 +290,10 @@ function render (id, page) {
           Edit this bookmark
         </div>
 
-        <form>
+        <form onsubmit=${onSaveBookmark}>
           <div class="input-group">
             <label for="title">Title</label>
-            <input id="bookmark-title" type="text" name="title" value="Beaker | a p2p Web browser"/>
+            <input id="bookmark-title" type="text" name="title" value=${page && page.bookmark ? page.bookmark.title : ''}/>
           </div>
 
           <p class="visibility-info">
@@ -312,6 +312,11 @@ function render (id, page) {
               Public
               <i class="fa fa-globe"></i>
             </label>
+          </div>
+
+          <div>
+            <button type="button" onclick=${onClickRemoveBookmark}>Remove</button>
+            <button type="submit">Save</button>
           </div>
         </form>
       </div>
@@ -593,32 +598,42 @@ function onClickCancel (e) {
   }
 }
 
-function onClickRemoveBookmark (e) {
-  // TODO -tbv
-}
-
-function onClickSaveBookmark (e) {
-  // TODO -tbv
-}
-
-function onClickBookmark (e) {
+async function onSaveBookmark (e) {
+  e.preventDefault()
   var page = getEventPage(e)
-  // TODO:
-  // This logic needs to be changed now that we have the bookmark dropdown editor
+  var b = page.bookmark || {}
+  b.title = e.target.title.value || ''
 
-  // if (page && !page.bookmarked) {
-  //   if (!page.bookmarked) bookmark the page
-  // }
+  if (b.private) {
+    await beaker.bookmarks.bookmarkPrivate(b.href, b)
+  } else {
+    await beaker.bookmarks.bookmarkPublic(b.href, b)
+  }
+}
+
+// TODO
+// Close the editing menu and re-render after removing bookmark -tbv
+async function onClickRemoveBookmark (e) {
+  var page = getEventPage(e)
+  var b = page.bookmark || {}
+  if (b.private) {
+    await beaker.bookmarks.unbookmarkPrivate(page.url)
+  } else {
+    await beaker.bookmarks.unbookmarkPublic(page.url)
+  }
+}
+
+async function onClickBookmark (e) {
+  var page = getEventPage(e)
+  if (!page.bookmark) {
+    // set the bookmark privately
+    beaker.bookmarks.bookmarkPrivate(page.url, {title: page.title || '', pinned: false})
+  }
 
   // toggle the dropdown bookmark editor
   isBookmarkEditorOpen = !isBookmarkEditorOpen
   update()
   if (isBookmarkEditorOpen) document.getElementById('bookmark-title').focus()
-
-  // TODO: Temporarily disable -tbv
-  // if (page) {
-  //   page.toggleBookmark()
-  // }
 }
 
 function onClickPeercount (e) {
