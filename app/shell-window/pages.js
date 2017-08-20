@@ -560,7 +560,7 @@ function onLoadCommit (e) {
       page.stopLiveReloading()
     }
     // check if this page bookmarked
-    beaker.bookmarks.get(e.url).then(bookmark => {
+    beaker.bookmarks.getBookmark(e.url).then(bookmark => {
       page.bookmark = bookmark
       navbar.update(page)
     })
