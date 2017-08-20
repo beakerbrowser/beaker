@@ -228,23 +228,27 @@ function onClickEdit (i) {
 }
 
 function onKeyUp (i) {
-  return e => {
+  return async e => {
     if (e.keyCode == 13) {
       // enter-key
       // capture the old url
-      var oldUrl = bookmarks[i].url
+      var oldUrl = bookmarks[i].href
 
       // update values
       bookmarks[i].title = document.querySelector(`[data-row="${i}"] [name="title"]`).value
-      bookmarks[i].url = document.querySelector(`[data-row="${i}"] [name="url"]`).value
+      bookmarks[i].href = document.querySelector(`[data-row="${i}"] [name="url"]`).value
 
       // exit edit-mode
       bookmarks[i].isEditing = false
       render()
 
       // save in backend
-      beaker.bookmarks.changeTitle(oldUrl, bookmarks[i].title)
-      beaker.bookmarks.changeUrl(oldUrl, bookmarks[i].url)
+      var b = bookmarks[i]
+      if (b.private) {
+        await beaker.bookmarks.bookmarkPrivate(oldUrl, {title: b.title, url: b.url})
+      } else {
+        await beaker.bookmarks.bookmarkPublic(oldUrl, {title: b.title, url: b.url})
+      }
     } else if (e.keyCode == 27) {
       // escape-key
       // exit edit-mode
