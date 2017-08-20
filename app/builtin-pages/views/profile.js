@@ -5,8 +5,6 @@ import renderSidebar from '../com/sidebar'
 // globals
 // =
 
-var downloadsList
-
 // main
 // =
 
