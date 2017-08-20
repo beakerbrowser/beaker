@@ -69,6 +69,8 @@ async function loadCurrentProfile () {
       currentProfile = currentUserProfile
       history.pushState({}, null, 'beaker://profile/' + currentProfile._origin.slice('dat://'.length))
     }
+
+    currentProfile.isFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, currentProfile._origin)
   } catch (e) {
     // TODO
   }
@@ -118,6 +120,17 @@ function onToggleEditingProfile () {
   render()
 }
 
+async function onToggleFollowing () {
+  if (currentProfile.isFollowing) {
+    await beaker.profiles.unfollow(currentUserProfile._origin, currentProfile._origin)
+    currentProfile.isFollowing = false
+  } else {
+    await beaker.profiles.follow(currentUserProfile._origin, currentProfile._origin)
+    currentProfile.isFollowing = true
+  }
+  render()
+}
+
 // rendering
 // =
 
@@ -160,6 +173,7 @@ function renderProfile () {
     `
   }
 
+  var isUserProfile = currentProfile && currentProfile._origin === currentUserProfile._origin
   return yo`
     <div class="profile-view">
       <div class="header">
@@ -178,6 +192,8 @@ function renderProfile () {
       </div>
 
       <p class="bio">${currentProfile.bio}</p>
+
+      ${isUserProfile ? '' : renderFollowButton()}
     </div>
   `
 }
@@ -205,4 +221,11 @@ function renderProfileEditor () {
         <button type="submit" class="btn primary">Save</button>
     </form>
   `
+}
+
+function renderFollowButton () {
+  return yo`
+    <button class="btn primary" onclick=${onToggleFollowing}>
+      ${currentProfile.isFollowing ? 'Following ✓' : 'Follow +'}
+    </button>`
 }
