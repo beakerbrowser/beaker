@@ -28,11 +28,11 @@ render()
 setup()
 async function setup () {
   // load and render bookmarks
+  userProfile = await beaker.profiles.getCurrentProfile()
   await loadBookmarks()
   render()
 
-  // now wait for and render profile
-  var userProfile = await beaker.profiles.getCurrentProfile()
+  // now render profiles
   followedUserProfiles = await Promise.all(
     userProfile.followUrls.map(u => beaker.profiles.getProfile(u))
   )
@@ -45,13 +45,17 @@ async function loadBookmarks () {
       bookmarks = await beaker.bookmarks.listPinnedBookmarks()
       break
     case 'public':
-      bookmarks = await beaker.bookmarks.listPublicBookmarks()
+      bookmarks = await beaker.bookmarks.listPublicBookmarks({
+        author: userProfile._origin
+      })
       break
     case 'private':
       bookmarks = await beaker.bookmarks.listPrivateBookmarks()
       break
     case 'all':
-      let publicBookmarks = await beaker.bookmarks.listPublicBookmarks()
+      let publicBookmarks = await beaker.bookmarks.listPublicBookmarks({
+        author: userProfile._origin
+      })
       let privateBookmarks = await beaker.bookmarks.listPrivateBookmarks()
       bookmarks = publicBookmarks.concat(privateBookmarks)
       break
@@ -126,10 +130,6 @@ function renderBookmarksList () {
 function render () {
   var helpEl = bookmarks.length ? '' : yo`<em class="empty">No results</em>`
 
-  var currentFitlerTitle = (currentViewFilter.startsWith('dat://'))
-    ? findCurrentViewFilterUsername()
-    : currentViewFilter
-
   yo.update(
     document.querySelector('.bookmarks-wrapper'),
     yo`
@@ -185,19 +185,7 @@ function render () {
               </div>
             </div>
 
-
-            <div class="bookmarks-breadcrumbs">
-              <span onclick=${() => onUpdateViewFilter('all')} class="breadcrumb">
-                All bookmarks
-              </span>
-              ${currentViewFilter !== 'all'
-                ? yo`
-                    <span class="breadcrumb">
-                      ${currentFitlerTitle.charAt(0).toUpperCase() + currentFitlerTitle.slice(1)}
-                    </span>
-                  `
-                : ''}
-            </div>
+            ${renderBreadcrumbs()}
 
             <div class="links-list bookmarks">
               ${bookmarks.map(renderRow)}
@@ -205,6 +193,45 @@ function render () {
             </div>
           </div>
         </div>`)
+}
+
+function renderBreadcrumbs () {
+
+  if (currentViewFilter.startsWith('dat://')) {
+    return yo`
+      <div class="bookmarks-breadcrumbs">
+        <span class="breadcrumb" >
+          ${findCurrentViewFilterUsername()}
+        </span>
+        <a href="beaker://profile/${currentViewFilter.slice('dat://'.length)}">
+          view profile
+        </a>
+      </div>
+    `
+  } else if (currentViewFilter === 'feed') {
+    return yo`
+      <div class="bookmarks-breadcrumbs">
+        <span class="breadcrumb">
+          Feed
+        </span
+      </div>
+    `
+  } else {
+    return yo`
+      <div class="bookmarks-breadcrumbs">
+        <span onclick=${() => onUpdateViewFilter('all')} class="breadcrumb">
+          Your bookmarks
+        </span>
+        ${currentViewFilter !== 'all'
+          ? yo`
+              <span class="breadcrumb">
+                ${currentViewFilter.charAt(0).toUpperCase() + currentViewFilter.slice(1)}
+              </span>
+            `
+          : ''}
+      </div>
+    `
+  }
 }
 
 // event handlers
