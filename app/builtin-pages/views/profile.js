@@ -1,17 +1,45 @@
 const yo = require('yo-yo')
 const co = require('co')
 import renderSidebar from '../com/sidebar'
+import renderPencilIcon from '../icon/pencil'
 
 // globals
 // =
 
+var currentProfile
+var isEditingProfile = false
+
 // main
 // =
 
-co(function * () {
+setup()
+async function setup () {
+  currentProfile = await beaker.profiles.getCurrentProfile()
+  console.log(currentProfile)
   // render
   render()
-})
+}
+
+// events
+// =
+
+async function onSaveProfile (e) {
+  e.preventDefault()
+
+  var name = e.target.name.value || ''
+  var bio = e.target.bio.value || ''
+  await beaker.profiles.setCurrentProfile({name, bio})
+
+  currentProfile.name = name
+  currentProfile.bio = bio
+  isEditingProfile = false
+  render()
+}
+
+function onToggleEditingProfile () {
+  isEditingProfile = !isEditingProfile
+  render()
+}
 
 // rendering
 // =
@@ -20,15 +48,52 @@ function render () {
   yo.update(document.querySelector('.profile-wrapper'), yo`
     <div class="profile-wrapper builtin-wrapper">
       ${renderSidebar('profile')}
-
       <div>
         <div class="builtin-sidebar">
-          <h1>Your profile</h1>
+          ${!isEditingProfile ? yo`<button class="btn" onclick=${onEditProfile}>Edit profile</button>` : ''}
+          ${!currentProfile || isEditingProfile
+            ? renderProfileEditor()
+            : renderProfile()
+          }
+
+          ${!isEditingProfile
+            ? yo`
+              <span class="edit-link" onclick=${onToggleEditingProfile}>
+                Edit your profile
+                ${renderPencilIcon()}
+              </span>`
+            : ''}
         </div>
 
-        <div class="builtin-main">
-        </div>
+        <div class="builtin-main"></div>
       </div>
     </div>
   </div>`)
+}
+
+function renderProfile () {
+  return yo`
+    <div>
+      <p>${currentProfile.name}</p>
+      <p>${currentProfile.bio}</p>
+    </div>
+  `
+}
+
+function renderProfileEditor () {
+  return yo`
+    <div>
+      <form class="edit-profile" onsubmit=${onSaveProfile}>
+        <label for="name">Name</label>
+        <input autofocus type="text" name="name" placeholder="Name" value=${currentProfile.name || ''}/>
+
+        <label for="bio">Bio (optional)</label>
+        <textarea name="bio" placeholder="Enter a short bio">${currentProfile.bio || ''}</textarea>
+
+        <div class="actions">
+          <button type="button" class="btn" onclick=${onToggleEditingProfile}>Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
+      </form>
+    </div>
+  `
 }

@@ -1,0 +1,70 @@
+@import "./components/sidebar";
+@import "../base/spacing";
+@import "../base/colors";
+
+.profile-wrapper {
+
+  .builtin-sidebar {
+    position: relative;
+  }
+
+  .edit-link {
+    &:extend(.flex);
+    align-items: center;
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    color: rgba(0,0,0,.7);
+    cursor: pointer;
+    transition: color .1s ease;
+
+    .icon {
+      width: 13px;
+      height: 13px;
+      margin-left: 5px;
+
+      * {
+        transition: stroke .1s ease;
+        stroke: rgba(0,0,0,.7);
+      }
+    }
+
+    &:hover {
+      color: @color-text;
+
+      .icon * {
+        stroke: @color-text;
+      }
+    }
+  }
+
+  form.edit-profile {
+    margin: 15px;
+
+    input,
+    textarea,
+    label {
+      display: block;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    textarea {
+      height: 70px;
+      padding-top: 3px;
+    }
+
+    .actions {
+      &:extend(.flex);
+      justify-content: flex-end;
+
+      button {
+        margin-left: 5px;
+      }
+    }
+  }
+}

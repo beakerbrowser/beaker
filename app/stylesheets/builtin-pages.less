@@ -9,10 +9,13 @@
 @import "./com/markdown.less";
 @import "./components/modal.less";
 
+// TODO: shouldn't import each of these on all builtin pages
+// just reference them in their respective HTML -tbv
 @import "./builtin-pages/bookmarks";
 @import "./builtin-pages/history";
 @import "./builtin-pages/downloads";
 @import "./builtin-pages/settings";
+@import "./builtin-pages/profile";
 @import "./builtin-pages/components/links-list";
 @import "./builtin-pages/components/files-list.less";
 @import "./builtin-pages/components/sidebar";
@@ -30,6 +33,11 @@
     border-radius: 4px;
     height: 26px;
     font-weight: 400;
+
+    &.primary,
+    &.success {
+      font-weight: 500;
+    }
   }
 }
 
