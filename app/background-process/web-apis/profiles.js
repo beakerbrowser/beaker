@@ -25,7 +25,8 @@ export default {
   // - .follows[n].name: string, the name of the followed user
   async getCurrentProfile () {
     var profileRecord = await getProfileRecord(0)
-    return getAPI().getProfile(profileRecord.url)
+    var profile = await getAPI().getProfile(profileRecord.url)
+    return profile || defaultProfile()
   },
 
   // get the given user's profile
@@ -39,7 +40,8 @@ export default {
   async getProfile (archive) {
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     await getAPI().addArchive(archive)
-    return getAPI().getProfile(archive)
+    var profile = await getAPI().getProfile(archive)
+    return profile || defaultProfile()
   },
 
   // update the current user's profile
@@ -149,6 +151,14 @@ export default {
       getAPI().addArchive(archiveB)
     ])
     return getAPI().isFriendsWith(archiveA, archiveB)    
+  }
+}
+
+function defaultProfile () {
+  return {
+    name: '',
+    bio: '',
+    avatar: false
   }
 }
 
