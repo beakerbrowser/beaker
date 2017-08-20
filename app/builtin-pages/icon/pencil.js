@@ -1,7 +1,8 @@
 import * as yo from 'yo-yo'
+import * as svg from '../../lib/fg/svg'
 
 export default function render () {
-  return yo`
+  return svg.render(`
     <svg class="icon pencil" width="141px" height="145px" viewBox="0 0 141 145" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g id="pencil" transform="translate(6.000000, -7.000000)" stroke="#B8B8B8">
@@ -11,5 +12,5 @@ export default function render () {
         </g>
       </g>
     </svg>
-  `
+  `)
 }

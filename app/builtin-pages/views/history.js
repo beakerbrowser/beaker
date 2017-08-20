@@ -22,6 +22,7 @@ var currentPeriodFilter = 'all'
 // main
 // =
 
+render()
 fetchMore(render)
 
 // data

@@ -1,7 +1,8 @@
 import * as yo from 'yo-yo'
+import * as svg from '../../lib/fg/svg'
 
 export default function render () {
-  return yo`
+  return svg.render(`
     <svg class="icon gear" width="335px" height="345px" viewBox="0 0 335 345" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
         <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
             <g id="gear" transform="translate(7.000000, 7.000000)" stroke="#000000" stroke-width="20">
@@ -10,5 +11,5 @@ export default function render () {
             </g>
         </g>
     </svg>
-  `
+  `)
 }

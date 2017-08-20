@@ -1,7 +1,8 @@
 import * as yo from 'yo-yo'
+import * as svg from '../../lib/fg/svg'
 
 export default function render () {
-  return yo`
+  return svg.render(`
     <svg class="icon history" width="34px" height="34px" viewBox="0 0 34 34" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-opacity="0.85">
         <g id="history" transform="translate(2.000000, 2.000000)" stroke="#FFFFFF" stroke-width="3">
@@ -10,5 +11,5 @@ export default function render () {
         </g>
       </g>
     </svg>
-  `
+  `)
 }

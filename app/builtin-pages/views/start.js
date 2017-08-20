@@ -16,9 +16,10 @@ const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-5/?updated=tru
 // globals
 // =
 
-var pinnedBookmarks
+var pinnedBookmarks = []
 var settings
 
+update()
 setup()
 async function setup () {
   await loadBookmarks()

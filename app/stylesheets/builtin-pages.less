@@ -20,6 +20,16 @@
 @import "./builtin-pages/components/files-list.less";
 @import "./builtin-pages/components/sidebar";
 
+.window:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #111111;
+  width: 40px;
+  z-index: 1;
+}
 
 .window-content.builtin {
   &:extend(.system-font);

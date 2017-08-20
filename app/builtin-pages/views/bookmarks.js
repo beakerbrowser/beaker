@@ -22,6 +22,7 @@ var bookmarks = []
 // main
 // =
 
+render()
 setup()
 async function setup () {
   await loadBookmarks()
@@ -51,10 +52,11 @@ async function loadBookmarks () {
 // =
 
 
-const renderRow = (row, i) =>
-  row.isHidden ? ''
+function renderRow (row, i) {
+  return row.isHidden ? ''
     : row.isEditing ? renderRowEditing(row, i)
                     : renderRowDefault(row, i)
+}
 
 const renderRowEditing = (row, i) =>
   yo`

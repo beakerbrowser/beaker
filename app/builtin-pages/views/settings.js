@@ -35,6 +35,8 @@ var activeSection = ''
 // =
 
 co(function * () {
+  render()
+
   // wire up events
   browserEvents = emitStream(beakerBrowser.eventsStream())
   browserEvents.on('updater-state-changed', onUpdaterStateChanged)
@@ -45,7 +47,6 @@ co(function * () {
   settings = yield beakerBrowser.getSettings()
   defaultProtocolSettings = yield beakerBrowser.getDefaultProtocolSettings()
 
-  // render
   render()
 })
 
@@ -54,7 +55,14 @@ co(function * () {
 
 function render () {
   // only render if this page is active
-  if (!browserInfo) { return }
+  if (!browserInfo) {
+    yo.update(document.querySelector('.settings-wrapper'), yo`<div class="pane" id="el-content">
+      <div class="settings-wrapper builtin-wrapper">
+        ${renderSidebar('settings')}
+      </div>
+    </div>`)
+    return
+  }
 
   yo.update(document.querySelector('.settings-wrapper'), yo`<div class="pane" id="el-content">
     <div class="settings-wrapper builtin-wrapper">
