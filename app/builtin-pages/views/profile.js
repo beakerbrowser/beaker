@@ -25,9 +25,13 @@ async function setup () {
 
 async function onSaveProfile (e) {
   e.preventDefault()
+
   var name = e.target.name.value || ''
   var bio = e.target.bio.value || ''
   await beaker.profiles.setCurrentProfile({name, bio})
+
+  currentProfile.name = name
+  currentProfile.bio = bio
   isEditingProfile = false
   render()
 }
