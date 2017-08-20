@@ -15,28 +15,36 @@ import renderPencilIcon from '../icon/pencil'
 // globals
 //
 
-// current search query
-var query = ''
+var query = '' // current search query
 var currentViewFilter = ''
-
-// bookmarks, cached in memory
 var bookmarks = []
-var privateBookmarks = []
-var publicBookmarks = []
-var filteredBookmarks = []
 
 // main
 // =
 
 setup()
 async function setup () {
-  // get the bookmarks, ordered by # of views
-  publicBookmarks = await beaker.bookmarks.listPublicBookmarks()
-  privateBookmarks = await beaker.bookmarks.listPrivateBookmarks()
-
-  bookmarks = publicBookmarks.concat(privateBookmarks)
-  filteredBookmarks = bookmarks
+  await loadBookmarks()
   render()
+}
+
+async function loadBookmarks () {
+  switch (currentViewFilter) {
+    case 'pinned':
+      bookmarks = await beaker.bookmarks.listPinnedBookmarks()
+      break
+    case 'public':
+      bookmarks = await beaker.bookmarks.listPublicBookmarks()
+      break
+    case 'private':
+      bookmarks = await beaker.bookmarks.listPrivateBookmarks()
+      break
+    default:
+      let publicBookmarks = await beaker.bookmarks.listPublicBookmarks()
+      let privateBookmarks = await beaker.bookmarks.listPrivateBookmarks()
+      bookmarks = publicBookmarks.concat(privateBookmarks)
+      break
+  }
 }
 
 // rendering
@@ -44,7 +52,9 @@ async function setup () {
 
 
 const renderRow = (row, i) =>
-  row.isEditing ? renderRowEditing(row, i) : renderRowDefault(row, i)
+  row.isHidden ? ''
+    : row.isEditing ? renderRowEditing(row, i)
+                    : renderRowDefault(row, i)
 
 const renderRowEditing = (row, i) =>
   yo`
@@ -88,8 +98,8 @@ function renderBookmarksList () {
     document.querySelector('.links-list.bookmarks'),
     yo`
       <div class="links-list bookmarks">
-        ${filteredBookmarks.length
-          ? filteredBookmarks.map(renderRow)
+        ${bookmarks.length
+          ? bookmarks.map(renderRow)
           : yo`<em class="empty">No bookmarks</em>`
         }
       </div>
@@ -97,7 +107,7 @@ function renderBookmarksList () {
 }
 
 function render () {
-  var helpEl = filteredBookmarks.length ? '' : yo`<em class="empty">No results</em>`
+  var helpEl = bookmarks.length ? '' : yo`<em class="empty">No results</em>`
 
   yo.update(
     document.querySelector('.bookmarks-wrapper'),
@@ -147,7 +157,7 @@ function render () {
           <div class="builtin-main">
             <div class="builtin-header">
               <div class="search-container">
-                <input required autofocus onkeyup=${onFilterBookmarks} placeholder="Search bookmarks" type="text" class="search"/>
+                <input required autofocus onkeyup=${onQueryBookmarks} placeholder="Search bookmarks" type="text" class="search"/>
                 <span onclick=${onClearQuery} class="close-container">
                   ${renderCloseIcon()}
                 </span>
@@ -167,7 +177,7 @@ function render () {
               : ''}
 
             <div class="links-list bookmarks">
-              ${filteredBookmarks.map(renderRow)}
+              ${bookmarks.map(renderRow)}
               ${helpEl}
             </div>
           </div>
@@ -177,30 +187,25 @@ function render () {
 // event handlers
 // =
 
-function onUpdateViewFilter (filter) {
+async function onUpdateViewFilter (filter) {
   currentViewFilter = filter || ''
-
-  if (!filter) filteredBookmarks = bookmarks
-  else if (filter === 'pinned') filteredBookmarks = bookmarks.filter(b => b.pinned)
-  else if (filter === 'public') filteredBookmarks = bookmarks.filter(b => !b.private)
-  else if (filter === 'private') filteredBookmarks = bookmarks.filter(b => b.private)
-  else filteredBookmarks = bookmarks
+  document.querySelector('input.search').value = ''
+  query = ''
+  await loadBookmarks()
   render()
 }
 
 function onClearQuery () {
   document.querySelector('input.search').value = ''
   query = ''
-  filteredBookmarks = bookmarks
   render()
 }
 
-function onFilterBookmarks (e) {
+function onQueryBookmarks (e) {
   query = e.target.value.toLowerCase()
-  filteredBookmarks = bookmarks.filter(b => {
-    return b.title.toLowerCase().includes(query) || b.href.toLowerCase().includes(query)
+  bookmarks.forEach(b => {
+    b.isHidden = !(b.title.toLowerCase().includes(query) || b.href.toLowerCase().includes(query))
   })
-
   renderBookmarksList()
 }
 
