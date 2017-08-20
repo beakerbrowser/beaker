@@ -18,6 +18,8 @@ import renderPencilIcon from '../icon/pencil'
 var query = '' // current search query
 var currentViewFilter = 'all'
 var bookmarks = []
+var userProfile = null
+var followedUserProfiles = null
 
 // main
 // =
@@ -25,7 +27,15 @@ var bookmarks = []
 render()
 setup()
 async function setup () {
+  // load and render bookmarks
   await loadBookmarks()
+  render()
+
+  // now wait for and render profile
+  var userProfile = await beaker.profiles.getCurrentProfile()
+  followedUserProfiles = await Promise.all(
+    userProfile.followUrls.map(u => beaker.profiles.getProfile(u))
+  )
   render()
 }
 
@@ -40,10 +50,15 @@ async function loadBookmarks () {
     case 'private':
       bookmarks = await beaker.bookmarks.listPrivateBookmarks()
       break
-    default:
+    case 'all':
       let publicBookmarks = await beaker.bookmarks.listPublicBookmarks()
       let privateBookmarks = await beaker.bookmarks.listPrivateBookmarks()
       bookmarks = publicBookmarks.concat(privateBookmarks)
+      break
+    default:
+      if (currentViewFilter.startsWith('dat://')) {
+        bookmarks = await beaker.bookmarks.listPublicBookmarks({author: currentViewFilter})
+      }
       break
   }
 }
@@ -111,6 +126,10 @@ function renderBookmarksList () {
 function render () {
   var helpEl = bookmarks.length ? '' : yo`<em class="empty">No results</em>`
 
+  var currentFitlerTitle = (currentViewFilter.startsWith('dat://'))
+    ? findCurrentViewFilterUsername()
+    : currentViewFilter
+
   yo.update(
     document.querySelector('.bookmarks-wrapper'),
     yo`
@@ -141,18 +160,18 @@ function render () {
 
             <div class="section">
               <h2>Friends</h2>
-              <div class="friend nav-item">
-                <img src="https://pbs.twimg.com/profile_images/868195193253535744/yXQt-VYo_400x400.jpg"/>
-                <span class="name">Paul Frazee</span>
-              </div>
-              <div class="friend nav-item">
-                <img src="https://pbs.twimg.com/profile_images/706616363599532032/b5z-Hw5g_400x400.jpg"/>
-                <span class="name">Max Ogden</span>
-              </div>
-              <div class="friend nav-item">
-                <img src="https://pbs.twimg.com/profile_images/791404539517607936/eU8RPmL-_400x400.jpg"/>
-                <span class="name">Karisa McKelvey</span>
-              </div>
+              ${followedUserProfiles
+                ? followedUserProfiles.length
+                  ? followedUserProfiles.map(p => {
+                    return yo`
+                      <div class="friend nav-item ${currentViewFilter === p._origin ? 'active' : ''}" onclick=${() => onUpdateViewFilter(p._origin)}>
+                        <img src=${p.avatar ? p._origin + p.avatar : ''} />
+                        <span class="name">${p.name || 'Anonymous'}</span>
+                      </div>
+                    `
+                  })
+                  : yo`<div class="nav-item"><em>Not following anybody.</em></div>`
+                : yo`<div class="nav-item"><em>Loading...</em></div>`}
             </div>
           </div>
 
@@ -174,7 +193,7 @@ function render () {
               ${currentViewFilter !== 'all'
                 ? yo`
                     <span class="breadcrumb">
-                      ${currentViewFilter.charAt(0).toUpperCase() + currentViewFilter.slice(1)} bookmarks
+                      ${currentFitlerTitle.charAt(0).toUpperCase() + currentFitlerTitle.slice(1)}
                     </span>
                   `
                 : ''}
@@ -287,4 +306,14 @@ function onClickDelete (i) {
     }
     render()
   }
+}
+
+// internal helpers
+// =
+
+function findCurrentViewFilterUsername () {
+  if (!followedUserProfiles) return ''
+  var p = followedUserProfiles.find(p => p._origin === currentViewFilter)
+  if (p) return p.name
+  return ''
 }
