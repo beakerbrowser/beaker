@@ -38,6 +38,24 @@
     }
   }
 
+  .profile-view {
+    margin: 15px;
+
+    .header {
+      &:extend(.flex);
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+
+    .name {
+      font-size: .95rem;
+    }
+
+    .bio {
+      color: rgba(0,0,0,.7);
+    }
+  }
+
   form.edit-profile {
     margin: 15px;
 
@@ -66,5 +84,54 @@
         margin-left: 5px;
       }
     }
+
+    .avatar-container {
+      margin-bottom: 15px;
+    }
+  }
+
+  .avatar-container {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    border-radius: 2px;
+    overflow: hidden;
+    cursor: pointer;
+
+    &:hover {
+
+      .avatar.empty {
+        background: rgba(0,0,0,.125);
+      }
+    }
+  }
+
+  .avatar-input {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+  }
+
+  .avatar {
+    width: 100%;
+    height: 100%;
+    transition: background .1s ease;
+
+    &.empty {
+      background: rgba(0,0,0,.075);
+      color: #fff;
+      font-size: 36px;
+      text-align: center;
+      line-height: 35px;
+      padding: 0;
+    }
+  }
+
+  img.avatar.empty {
+    opacity: 0;
   }
 }
