@@ -132,6 +132,7 @@ export class BookmarkMenuNavbarBtn {
     } else {
       await beaker.bookmarks.bookmarkPublic(b.href, b)
     }
+    page.bookmark = await beaker.bookmarks.getBookmark(b.href)
     this.close()
   }
 
