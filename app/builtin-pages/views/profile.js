@@ -72,7 +72,11 @@ function render () {
       ${renderSidebar('profile')}
       <div>
         <div class="builtin-sidebar">
-          ${!isEditingProfile ? yo`<button class="btn" onclick=${onEditProfile}>Edit profile</button>` : ''}
+          <h1>Your profile</h1>
+
+          <p class="builtin-blurb">
+          </p>
+
           ${!currentProfile || isEditingProfile
             ? renderProfileEditor()
             : renderProfile()
