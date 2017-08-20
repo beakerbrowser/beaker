@@ -42,6 +42,7 @@ export async function listPinnedBookmarks (profileId) {
 }
 
 function toNewFormat (b) {
+  if (!b) return b
   return {
     _origin: false,
     _url: false,
