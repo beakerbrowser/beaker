@@ -83,9 +83,9 @@ function renderProfile () {
 function renderProfileEditor () {
   return yo`
     <div>
-      <form onsubmit=${onSaveProfile}>
+      <form class="edit-profile" onsubmit=${onSaveProfile}>
         <label for="name">Name</label>
-        <input type="text" name="name" placeholder="Name" value=${currentProfile.name || ''}/>
+        <input autofocus type="text" name="name" placeholder="Name" value=${currentProfile.name || ''}/>
 
         <label for="bio">Bio (optional)</label>
         <textarea name="bio" placeholder="Enter a short bio">${currentProfile.bio || ''}</textarea>

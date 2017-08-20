@@ -37,4 +37,34 @@
       }
     }
   }
+
+  form.edit-profile {
+    margin: 15px;
+
+    input,
+    textarea,
+    label {
+      display: block;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    textarea {
+      height: 70px;
+      padding-top: 3px;
+    }
+
+    .actions {
+      &:extend(.flex);
+      justify-content: flex-end;
+
+      button {
+        margin-left: 5px;
+      }
+    }
+  }
 }
