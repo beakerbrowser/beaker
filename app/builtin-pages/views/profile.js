@@ -122,6 +122,8 @@ function onToggleEditingProfile () {
 // =
 
 function render () {
+  var isUserProfile = currentProfile && currentProfile._origin === currentUserProfile._origin
+
   yo.update(document.querySelector('.profile-wrapper'), yo`
     <div class="profile-wrapper builtin-wrapper">
       ${renderSidebar('profile')}
@@ -132,12 +134,9 @@ function render () {
           <p class="builtin-blurb">
           </p>
 
-          ${isEditingProfile
-            ? renderProfileEditor()
-            : renderProfile()
-          }
+          ${isUserProfile && isEditingProfile ? renderProfileEditor() : renderProfile()}
 
-          ${!isEditingProfile
+          ${isUserProfile && !isEditingProfile
             ? yo`
               <span class="edit-link" onclick=${onToggleEditingProfile}>
                 Edit your profile
@@ -161,7 +160,6 @@ function renderProfile () {
     `
   }
 
-  var isUserProfile = currentProfile && currentProfile._origin === currentUserProfile._origin
   return yo`
     <div class="profile-view">
       <div class="header">
