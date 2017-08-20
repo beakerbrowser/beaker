@@ -6,18 +6,73 @@ import renderPencilIcon from '../icon/pencil'
 // globals
 // =
 
+var currentUserProfile
 var currentProfile
 var isEditingProfile
 var tmpAvatar
+
+// HACK FIX
+// the good folk of whatwg didnt think to include an event for pushState(), so let's add one
+// -prf
+var _wr = function (type) {
+  var orig = window.history[type]
+  return function () {
+    var rv = orig.apply(this, arguments)
+    var e = new Event(type.toLowerCase())
+    e.arguments = arguments
+    window.dispatchEvent(e)
+    return rv
+  }
+}
+window.history.pushState = _wr('pushState')
+window.history.replaceState = _wr('replaceState')
 
 // main
 // =
 
 setup()
 async function setup () {
-  currentProfile = await beaker.profiles.getCurrentProfile()
-  console.log(currentProfile)
+  currentUserProfile = await beaker.profiles.getCurrentProfile()
+  await loadCurrentProfile()
+
   // render
+  render()
+
+  window.addEventListener('pushstate', loadCurrentProfile)
+  window.addEventListener('popstate', loadCurrentProfile)
+}
+
+async function parseURLKey () {
+  var path = window.location.pathname
+  if (path === '/' || !path) return false
+  try {
+    // extract key from url
+    var name = /^\/([^/]+)/.exec(path)[1]
+    if (/[0-9a-f]{64}/i.test(name)) return name
+    return DatArchive.resolveName(name)
+  } catch (e) {
+    console.error('Failed to parse URL', e)
+    throw new Error('Invalid dat URL')
+  }
+}
+
+async function loadCurrentProfile () {
+  // reset state
+  isEditingProfile = false
+  tmpAvatar = undefined
+
+  try {
+    var selectedProfileKey = await parseURLKey()
+    currentProfile = await beaker.profiles.getProfile(`dat://${selectedProfileKey}`)
+
+    if (!(currentProfile && currentProfile._origin)) {
+      currentProfile = currentUserProfile
+      history.pushState({}, null, 'beaker://profile/' + currentProfile._origin.slice('dat://'.length))
+    }
+  } catch (e) {
+    // TODO
+  }
+
   render()
 }
 
@@ -77,7 +132,7 @@ function render () {
           <p class="builtin-blurb">
           </p>
 
-          ${!currentProfile || isEditingProfile
+          ${isEditingProfile
             ? renderProfileEditor()
             : renderProfile()
           }
@@ -98,6 +153,15 @@ function render () {
 }
 
 function renderProfile () {
+  if (!currentProfile) {
+    return yo`
+      <div class="profile-view">
+        <p>Profile not found</p>
+      </div>
+    `
+  }
+
+  var isUserProfile = currentProfile && currentProfile._origin === currentUserProfile._origin
   return yo`
     <div class="profile-view">
       <div class="header">
