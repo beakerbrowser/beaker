@@ -17,18 +17,19 @@ var browserEvents
 var defaultProtocolSettings
 var activeSection = ''
 
-var bgImages = [
-  {path: '1.jpg', thumbnailPath: '1-thumbnail.jpg',},
-  {path: '2.jpg', thumbnailPath: '2-thumbnail.jpg', selected: true},
-  {path: '3.jpg', thumbnailPath: '3-thumbnail.jpg'},
-  {path: '4.jpg', thumbnailPath: '4-thumbnail.jpg'},
-  {path: '5.jpg', thumbnailPath: '5-thumbnail.jpg'},
-  {path: '6.jpg', thumbnailPath: '6-thumbnail.jpg'},
-  {path: '7.jpg', thumbnailPath: '7-thumbnail.jpg'},
-  {path: '8.jpg', thumbnailPath: '8-thumbnail.jpg'},
-  {path: '9.jpg', thumbnailPath: '9-thumbnail.jpg'},
-  {path: '10.jpg', thumbnailPath: '10-thumbnail.jpg'},
-  {path: '11.jpg', thumbnailPath: '11-thumbnail.jpg'}]
+// TODO(bgimg) disabled for now -prf
+// var bgImages = [
+//   {path: '1.jpg', thumbnailPath: '1-thumbnail.jpg',},
+//   {path: '2.jpg', thumbnailPath: '2-thumbnail.jpg', selected: true},
+//   {path: '3.jpg', thumbnailPath: '3-thumbnail.jpg'},
+//   {path: '4.jpg', thumbnailPath: '4-thumbnail.jpg'},
+//   {path: '5.jpg', thumbnailPath: '5-thumbnail.jpg'},
+//   {path: '6.jpg', thumbnailPath: '6-thumbnail.jpg'},
+//   {path: '7.jpg', thumbnailPath: '7-thumbnail.jpg'},
+//   {path: '8.jpg', thumbnailPath: '8-thumbnail.jpg'},
+//   {path: '9.jpg', thumbnailPath: '9-thumbnail.jpg'},
+//   {path: '10.jpg', thumbnailPath: '10-thumbnail.jpg'},
+//   {path: '11.jpg', thumbnailPath: '11-thumbnail.jpg'}]
 
 // main
 // =
@@ -71,9 +72,6 @@ function render () {
             <div class="nav-item ${activeSection === 'protocol-settings' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="protocol-settings">
               Protocol settings
             </div>
-            <div class="nav-item ${activeSection === 'appearance' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="appearance">
-              Appearance
-            </div>
             <div class="nav-item ${activeSection === 'info' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="info">
               Information & Help
             </div>
@@ -86,9 +84,6 @@ function render () {
 
           <h2 id="protocol-settings" class="ll-heading">Protocol settings</h2>
           ${renderProtocolSettings()}
-
-          <h2 id="appearance" class="ll-heading">Start page settings</h2>
-          ${renderStartPageSettings()}
 
           <h2 id="info" class="ll-heading">Beaker information</h2>
           <ul class="settings-section">
@@ -194,23 +189,24 @@ function renderAutoUpdateCheckbox () {
   </label>`
 }
 
-function renderStartPageSettings () {
-  return yo`
-  <div class="settings-section start-page">
-    <div class="bg-images">
-      <div width="90" height="60" class="bg-image-container add">
-        <input onchange=${onUpdateStartPageBackgroundImage} name="start-background-image" type="file" accept="image/*"/>
-        +
-      </div>
-      ${bgImages.map(img => {
-        return yo`
-          <div onclick=${() => onUpdateStartPageBackgroundImage(`assets/img/start/${img.path}`)} class="bg-image-container ${img.selected ? 'selected' : ''}">
-            <img class="bg-image" width="90" height="60" src="beaker://start/background-image-default/${img.thumbnailPath}"/>
-          </div>`
-      })}
-    </div>
-  `
-}
+// TODO(bgimg) disabled for now -prf
+// function renderStartPageSettings () {
+//   return yo`
+//   <div class="settings-section start-page">
+//     <div class="bg-images">
+//       <div width="90" height="60" class="bg-image-container add">
+//         <input onchange=${onUpdateStartPageBackgroundImage} name="start-background-image" type="file" accept="image/*"/>
+//         +
+//       </div>
+//       ${bgImages.map(img => {
+//         return yo`
+//           <div onclick=${() => onUpdateStartPageBackgroundImage(`assets/img/start/${img.path}`)} class="bg-image-container ${img.selected ? 'selected' : ''}">
+//             <img class="bg-image" width="90" height="60" src="beaker://start/background-image-default/${img.thumbnailPath}"/>
+//           </div>`
+//       })}
+//     </div>
+//   `
+// }
 
 function renderHelp () {
   return yo`
