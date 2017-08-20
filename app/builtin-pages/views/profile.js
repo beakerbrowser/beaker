@@ -142,12 +142,8 @@ function render () {
       ${renderSidebar('profile')}
       <div>
         <div class="builtin-sidebar">
-          <h1>Your profile</h1>
-
-          <p class="builtin-blurb">
-          </p>
-
-          ${isUserProfile && isEditingProfile ? renderProfileEditor() : renderProfile()}
+          ${renderProfile()}
+          ${isUserProfile && isEditingProfile ? renderProfileEditor() : ''}
 
           ${isUserProfile && !isEditingProfile
             ? yo`
@@ -225,7 +221,7 @@ function renderProfileEditor () {
 
 function renderFollowButton () {
   return yo`
-    <button class="btn primary" onclick=${onToggleFollowing}>
+    <button class="follow-btn btn primary" onclick=${onToggleFollowing}>
       ${currentProfile.isFollowing ? 'Following ✓' : 'Follow +'}
     </button>`
 }
