@@ -44,10 +44,11 @@ async function setup () {
 // =
 
 function update () {
-  var theme = settings.start_page_background_image
+  // TODO(bgimg) restore when background images are restored -prf
+  // var theme = settings.start_page_background_image
 
   yo.update(document.querySelector('.window-content.start'), yo`
-    <div class="window-content builtin start ${theme}">
+    <div class="window-content builtin start ${''/*TODO(bgimg) theme*/}">
       ${renderSidebar('start')}
       <div class="builtin-wrapper start-wrapper">
         <div class="builtin-main center">
@@ -71,7 +72,7 @@ function renderPinnedBookmark (bookmark) {
   var [r, g, b] = bookmark.dominantColor || [255, 255, 255]
   return yo`
     <a class="pinned-bookmark" href=${href}>
-      <div class="favicon-container" style="background: rgb(${r}, ${g}, ${b})">
+      <div class="favicon-container">
         <img src=${'beaker-favicon:' + href} class="favicon"/>
       </div>
       <div class="title">${title}</div>
@@ -95,9 +96,9 @@ function attachDominantColor (bookmark) {
     img.setAttribute('crossOrigin', 'anonymous')
     img.onload = e => {
       var c = colorThief.getColor(img, 10)
-      c[0] = (c[0] / 4) | 0 + 192
-      c[1] = (c[1] / 4) | 0 + 192
-      c[2] = (c[2] / 4) | 0 + 192
+      // c[0] = (c[0] / 4) | 0 + 192
+      // c[1] = (c[1] / 4) | 0 + 192
+      // c[2] = (c[2] / 4) | 0 + 192
       bookmark.dominantColor = c
       resolve()
     }

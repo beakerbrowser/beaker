@@ -17,9 +17,10 @@
   // background-size: cover;
   // background-position: center;
 
-  .sidebar {
-    background: fadeout(#111, 50%);
-  }
+  // TODO(bgimg) disabled for now -prf
+  //.sidebar {
+  //  background: fadeout(#111, 50%);
+  //}
 }
 
 body {
@@ -141,19 +142,23 @@ main {
     vertical-align: middle;
     color: fadeout(@color-text, 5%);
     padding: 0 5px;
+
+    /*
+    TODO(bgimg) restore with background images -prf
     color: #fff;
     text-shadow: 0 0 4px fadeout(black, 50%);
     -webkit-font-smoothing: antialiased;
     font-weight: 600;
+    */
   }
 
   .favicon-container {
     position: relative;
     height: 100px;
     margin-bottom: 5px;
-    border: 1px solid rgba(0,0,0,.075);
-    border-radius: 4px;
-    box-shadow: 0 0 3px rgba(0,0,0,.25);
+    border: 1px solid rgba(0,0,0,.33);
+    border-radius: 3px;
+    background: rgba(255,255,255,.7);
     cursor: pointer;
   }
 
