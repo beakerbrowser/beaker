@@ -370,8 +370,8 @@ function render (id, page) {
         ${inpageFinder}
         ${zoomBtn}
         ${datBtns}
-        <button class=${bookmarkBtnClass} title="Bookmark this page">
-          <span class=${(page && !!page.bookmark) ? 'fa fa-star' : 'fa fa-star-o'} onclick=${onClickBookmark}></span>
+        <button class="star ${bookmarkBtnClass}" title="Bookmark this page">
+          <span class="star ${page && page.bookmark ? 'fa fa-star' : 'fa fa-star-o'}" onclick=${onClickBookmark}></span>
           ${bookmarkDropdown}
         </button>
         ${pageMenuNavbarBtn.render()}
