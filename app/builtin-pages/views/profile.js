@@ -36,8 +36,8 @@ async function onSaveProfile (e) {
   render()
 }
 
-function onEditProfile () {
-  isEditingProfile = true
+function onToggleEditingProfile () {
+  isEditingProfile = !isEditingProfile
   render()
 }
 
@@ -58,7 +58,7 @@ function render () {
 
           ${!isEditingProfile
             ? yo`
-              <span class="edit-link" onclick=${onEditProfile}>
+              <span class="edit-link" onclick=${onToggleEditingProfile}>
                 Edit your profile
                 ${renderPencilIcon()}
               </span>`
@@ -88,8 +88,11 @@ function renderProfileEditor () {
         <input type="text" name="name" placeholder="Name" value=${currentProfile.name || ''}/>
 
         <label for="bio">Bio (optional)</label>
-        <textarea name="bio" placeholder="Enter a short bio" value=${currentProfile.bio || ''}></textarea>
-        <button type="submit" class="btn primary">Save</button>
+        <textarea name="bio" placeholder="Enter a short bio">${currentProfile.bio || ''}</textarea>
+
+        <div class="actions">
+          <button type="button" class="btn" onclick=${onToggleEditingProfile}>Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
       </form>
     </div>
   `
