@@ -16,7 +16,7 @@ import renderPencilIcon from '../icon/pencil'
 //
 
 var query = '' // current search query
-var currentViewFilter = ''
+var currentViewFilter = 'all'
 var bookmarks = []
 
 // main
@@ -119,7 +119,7 @@ function render () {
             <h1>Bookmarks</h1>
             <div class="section">
               <h2>Your bookmarks</h2>
-              <div class="nav-item ${currentViewFilter === '' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('')}>
+              <div class="nav-item ${currentViewFilter === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('')}>
                 ${renderStarFillIcon()}
                 All bookmarks
               </div>
@@ -164,17 +164,19 @@ function render () {
               </div>
             </div>
 
-            ${currentViewFilter !== ''
-              ? yo`
-                <div class="bookmarks-breadcrumbs">
-                  <span onclick=${() => onUpdateViewFilter('all')} class="breadcrumb">
-                    All bookmarks
-                  </span>
-                  <span class="breadcrumb">
-                    ${currentViewFilter.charAt(0).toUpperCase() + currentViewFilter.slice(1)} bookmarks
-                  </span>
-                </div>`
-              : ''}
+
+            <div class="bookmarks-breadcrumbs">
+              <span onclick=${() => onUpdateViewFilter('all')} class="breadcrumb">
+                All bookmarks
+              </span>
+              ${currentViewFilter !== 'all'
+                ? yo`
+                    <span class="breadcrumb">
+                      ${currentViewFilter.charAt(0).toUpperCase() + currentViewFilter.slice(1)} bookmarks
+                    </span>
+                  `
+                : ''}
+            </div>
 
             <div class="links-list bookmarks">
               ${bookmarks.map(renderRow)}
@@ -188,7 +190,7 @@ function render () {
 // =
 
 async function onUpdateViewFilter (filter) {
-  currentViewFilter = filter || ''
+  currentViewFilter = filter || 'all'
   document.querySelector('input.search').value = ''
   query = ''
   await loadBookmarks()
