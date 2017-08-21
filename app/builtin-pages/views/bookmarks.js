@@ -2,6 +2,7 @@
 
 const yo = require('yo-yo')
 const co = require('co')
+import groupBy from 'lodash.groupby'
 import renderSidebar from '../com/sidebar'
 import renderCloseIcon from '../icon/close'
 import renderGlobeIcon from '../icon/globe'
@@ -16,7 +17,7 @@ import renderPencilIcon from '../icon/pencil'
 //
 
 var query = '' // current search query
-var currentViewFilter = 'all'
+var currentView = 'feed'
 var bookmarks = []
 var userProfile = null
 var followedUserProfiles = null
@@ -40,7 +41,12 @@ async function setup () {
 }
 
 async function loadBookmarks () {
-  switch (currentViewFilter) {
+  switch (currentView) {
+    case 'feed':
+      bookmarks = await beaker.bookmarks.listPublicBookmarks({
+        limit: 50
+      })
+      break
     case 'pinned':
       bookmarks = await beaker.bookmarks.listPinnedBookmarks()
       break
@@ -60,8 +66,8 @@ async function loadBookmarks () {
       bookmarks = publicBookmarks.concat(privateBookmarks)
       break
     default:
-      if (currentViewFilter.startsWith('dat://')) {
-        bookmarks = await beaker.bookmarks.listPublicBookmarks({author: currentViewFilter})
+      if (currentView.startsWith('dat://')) {
+        bookmarks = await beaker.bookmarks.listPublicBookmarks({author: currentView})
       }
       break
   }
@@ -77,8 +83,8 @@ function renderRow (row, i) {
                     : renderRowDefault(row, i)
 }
 
-const renderRowEditing = (row, i) =>
-  yo`
+function renderRowEditing (row, i) {
+  return yo`
   <li class="ll-row editing ll-link bookmarks__row bookmarks__row--editing" data-row=${i}>
     <div class="link">
       <div class="inputs bookmarks__inputs">
@@ -87,9 +93,18 @@ const renderRowEditing = (row, i) =>
       </div>
     </div>
   </li>`
+}
 
-const renderRowDefault = (row, i) =>
-  yo`
+function renderRowDefault (row, i) {
+  if (row.private || row._origin === userProfile._origin) {
+    return renderRowEditable(row, i)
+  } else {
+    return renderRowUneditable(row, i)
+  }
+}
+
+function renderRowEditable (row, i) {
+  return yo`
     <li class="ll-row bookmarks__row" data-row=${i}>
       <a class="link bookmark__link" href=${row.href} title=${row.title} />
         <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
@@ -113,6 +128,23 @@ const renderRowDefault = (row, i) =>
         </div>
       </div>
     </li>`
+}
+
+function renderRowUneditable (row, i) {
+  return yo`
+    <li class="ll-row bookmarks__row" data-row=${i}>
+      <a class="link bookmark__link" href=${row.href} title=${row.title} />
+        <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
+        <span class="title bookmark__title">
+          ${row.title.startsWith('dat://')
+            ? yo`<em>Untitled</em>`
+            : yo`${row.title}`
+          }
+        </span>
+        <span class="url bookmark__url">${row.href}</span>
+      </a>
+    </li>`
+}
 
 function renderBookmarksList () {
   yo.update(
@@ -128,8 +160,6 @@ function renderBookmarksList () {
 }
 
 function render () {
-  var helpEl = bookmarks.length ? '' : yo`<em class="empty">No results</em>`
-
   yo.update(
     document.querySelector('.bookmarks-wrapper'),
     yo`
@@ -139,20 +169,27 @@ function render () {
           <div class="builtin-sidebar">
             <h1>Bookmarks</h1>
             <div class="section">
+              <div class="nav-item ${currentView === 'feed' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('feed')}>
+                ${renderHistoryIcon()}
+                Latest shared
+              </div>
+            </div>
+
+            <div class="section">
               <h2>Your bookmarks</h2>
-              <div class="nav-item ${currentViewFilter === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('')}>
+              <div class="nav-item ${currentView === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('all')}>
                 ${renderStarFillIcon()}
                 All bookmarks
               </div>
-              <div class="nav-item ${currentViewFilter === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
+              <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
                 ${renderPinIcon()}
                 Pinned
               </div>
-              <div class="nav-item ${currentViewFilter === 'public' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('public')}>
+              <div class="nav-item ${currentView === 'public' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('public')}>
                 ${renderGlobeIcon()}
                 Shared by you
               </div>
-              <div class="nav-item ${currentViewFilter === 'private' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('private')}>
+              <div class="nav-item ${currentView === 'private' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('private')}>
                 ${renderPadlockIcon()}
                 Private
               </div>
@@ -164,7 +201,7 @@ function render () {
                 ? followedUserProfiles.length
                   ? followedUserProfiles.map(p => {
                     return yo`
-                      <div class="friend nav-item ${currentViewFilter === p._origin ? 'active' : ''}" onclick=${() => onUpdateViewFilter(p._origin)}>
+                      <div class="friend nav-item ${currentView === p._origin ? 'active' : ''}" onclick=${() => onUpdateViewFilter(p._origin)}>
                         <img src=${p.avatar ? p._origin + p.avatar : ''} />
                         <span class="name">${p.name || 'Anonymous'}</span>
                       </div>
@@ -185,35 +222,19 @@ function render () {
               </div>
             </div>
 
-            ${renderBreadcrumbs()}
-
-            <div class="links-list bookmarks">
-              ${bookmarks.map(renderRow)}
-              ${helpEl}
-            </div>
+            ${renderCurrentView()}
           </div>
         </div>`)
 }
 
-function renderBreadcrumbs () {
-
-  if (currentViewFilter.startsWith('dat://')) {
+function renderBreadcrumb (v) {
+  v = v || currentView
+  if (v.startsWith('dat://')) {
     return yo`
       <div class="bookmarks-breadcrumbs">
-        <span class="breadcrumb" >
-          ${findCurrentViewFilterUsername()}
-        </span>
-        <a href="beaker://profile/${currentViewFilter.slice('dat://'.length)}">
-          view profile
+        <a href="beaker://profile/${v.slice('dat://'.length)}" class="breadcrumb">
+          ${findUsernameFor(v)}
         </a>
-      </div>
-    `
-  } else if (currentViewFilter === 'feed') {
-    return yo`
-      <div class="bookmarks-breadcrumbs">
-        <span class="breadcrumb">
-          Feed
-        </span
       </div>
     `
   } else {
@@ -222,10 +243,10 @@ function renderBreadcrumbs () {
         <span onclick=${() => onUpdateViewFilter('all')} class="breadcrumb">
           Your bookmarks
         </span>
-        ${currentViewFilter !== 'all'
+        ${v !== 'all'
           ? yo`
               <span class="breadcrumb">
-                ${currentViewFilter.charAt(0).toUpperCase() + currentViewFilter.slice(1)}
+                ${v.charAt(0).toUpperCase() + v.slice(1)}
               </span>
             `
           : ''}
@@ -234,11 +255,51 @@ function renderBreadcrumbs () {
   }
 }
 
+function renderCurrentView () {
+  if (currentView === 'feed') {
+    return renderFeed()
+  } else {
+    return renderBookmarks()
+  }
+}
+
+function renderFeed () {
+  var groups = groupBy(bookmarks, '_origin')
+  console.log(groups, bookmarks)
+  return yo`
+    <div>
+      ${Object.keys(groups).map(origin => {
+        return yo`
+          <div>
+            ${renderBreadcrumb(origin)}
+            <div class="links-list bookmarks">
+              ${groups[origin].map(renderRow)}
+            </div>
+          </div>
+        `
+      })}
+    </div>
+  `
+}
+
+function renderBookmarks () {
+  var helpEl = bookmarks.length ? '' : yo`<em class="empty">No results</em>`
+  return yo`
+    <div>
+      ${renderBreadcrumb(currentView)}
+      <div class="links-list bookmarks">
+        ${bookmarks.map(renderRow)}
+        ${helpEl}
+      </div>
+    </div>
+  `
+}
+
 // event handlers
 // =
 
 async function onUpdateViewFilter (filter) {
-  currentViewFilter = filter || 'all'
+  currentView = filter || 'all'
   document.querySelector('input.search').value = ''
   query = ''
   await loadBookmarks()
@@ -338,9 +399,10 @@ function onClickDelete (i) {
 // internal helpers
 // =
 
-function findCurrentViewFilterUsername () {
+function findUsernameFor (origin) {
   if (!followedUserProfiles) return ''
-  var p = followedUserProfiles.find(p => p._origin === currentViewFilter)
+  if (origin === userProfile._origin) return 'You'
+  var p = followedUserProfiles.find(p => p._origin === origin)
   if (p) return p.name
   return ''
 }
