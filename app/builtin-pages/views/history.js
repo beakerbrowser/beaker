@@ -14,7 +14,6 @@ const BEGIN_LOAD_OFFSET = 500
 
 // visits, cached in memory
 var visits = []
-var filteredVisits = []
 var isAtEnd = false
 var query = []
 var currentPeriodFilter = 'all'
@@ -49,7 +48,6 @@ function loadVisits (offset, cb) {
         return ts.isSame(moment().endOf('day').subtract(dayOffset, 'day'), 'day')
       })
     }
-    filteredVisits = visits
     isFetching = false
     cb()
   })
@@ -62,29 +60,18 @@ function renderRows () {
   var rowEls = []
   var lastDate = moment().startOf('day').add(1, 'day')
 
-  filteredVisits.forEach((row, i) => {
-    // render a date heading if this post is from a different day than the last
-    var oldLastDate = lastDate
-    lastDate = moment(row.ts).endOf('day')
-    if (!lastDate.isSame(oldLastDate, 'day')) {
-      rowEls.push(yo`<h2>${ucfirst(niceDate(lastDate, { noTime: true }))}</h2>`)
+  visits.forEach((row, i) => {
+    if (!row.isHidden) {
+      // render a date heading if this post is from a different day than the last
+      var oldLastDate = lastDate
+      lastDate = moment(row.ts).endOf('day')
+      if (!lastDate.isSame(oldLastDate, 'day')) {
+        rowEls.push(yo`<h2>${ucfirst(niceDate(lastDate, { noTime: true }))}</h2>`)
+      }
     }
 
     // render row
-    rowEls.push(
-      yo`
-        <div class="ll-row">
-          <a class="link" href=${row.url} title=${row.title}>
-            <img class="favicon" src=${'beaker-favicon:' + row.url}/>
-            <span class="title">${row.title.replace(/[^\x00-\x7F]/g, "")}</span>
-            <span class="url">${row.url}</span>
-          </a>
-          <div class="actions">
-            <div class="action" onclick=${onClickDelete.bind(window, i)} title="Remove from history">
-              ${renderTrashIcon()}
-            </div>
-          </div>
-        </div>`)
+    rowEls.push(renderRow(row, i))
   })
 
   // empty state
@@ -93,6 +80,26 @@ function renderRows () {
   }
 
   return rowEls
+}
+
+function renderRow (row, i) {
+  return row.isHidden ? '' : renderRowDefault(row, i)
+}
+
+function renderRowDefault (row, i) {
+  return yo`
+    <div class="ll-row">
+      <a class="link" href=${row.url} title=${row.title}>
+        <img class="favicon" src=${'beaker-favicon:' + row.url}/>
+        <span class="title">${row.title.replace(/[^\x00-\x7F]/g, "")}</span>
+        <span class="url">${row.url}</span>
+      </a>
+      <div class="actions">
+        <div class="action" onclick=${onClickDelete.bind(window, i)} title="Remove from history">
+          ${renderTrashIcon()}
+        </div>
+      </div>
+    </div>`
 }
 
 function renderHistoryListing () {
@@ -156,21 +163,19 @@ function render () {
 // event handlers
 // =
 
-function onClearQuery () {
-  document.querySelector('input.search').value = ''
-  query = ''
-  filteredVisits = visits
-  render()
-}
-
 function onUpdateSearchQuery (e) {
   query = e.target.value.toLowerCase()
 
-  // filter by query
-  filteredVisits = visits.filter(v => {
-    return v.title.toLowerCase().includes(query) || v.url.toLowerCase().includes(query)
+  visits.forEach(v => {
+    v.isHidden = !(v.title.toLowerCase().includes(query) || v.url.toLowerCase().includes(query))
   })
   renderHistoryListing()
+}
+
+async function onClearQuery () {
+  document.querySelector('input.search').value = ''
+  query = ''
+  loadBookmarks(0, renderHistoryListing)
 }
 
 function onUpdatePeriodFilter (e) {
@@ -196,7 +201,6 @@ function onClickDelete (i) {
   // remove
   var v = visits[i]
   visits.splice(i, 1)
-  filteredVisits = visits
   beaker.history.removeVisit(v.url)
   render()
 }
@@ -207,7 +211,6 @@ function onClickDeleteBulk () {
   // clear all history
   if (period === 'all') {
     visits = []
-    filteredVisits = visits
     beaker.history.removeAllVisits()
     render()
   } else {
@@ -215,7 +218,6 @@ function onClickDeleteBulk () {
 
     // filter out visits that with a timestamp >= threshold
     visits = visits.filter(v => v.ts < threshold)
-    filteredVisits = visits
     beaker.history.removeVisitsAfter(threshold)
 
     // fetch and render more visits if possible
