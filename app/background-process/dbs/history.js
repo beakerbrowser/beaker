@@ -49,11 +49,26 @@ export async function addVisit (profileId, {url, title}) {
   }
 }
 
-export async function getVisitHistory (profileId, { offset, limit }) {
+export async function getVisitHistory (profileId, { search, offset, limit }) {
   var release = await lock('history-db')
   try {
     offset = offset || 0
     limit = limit || 50
+    if (search) {
+      // prep search terms
+      search = search
+        .toLowerCase() // all lowercase. (uppercase is interpretted as a directive by sqlite.)
+        .replace(/[:^*]/g, '') + // strip symbols that sqlite interprets.
+        '*' // allow partial matches
+      return await db.all(`
+        SELECT visits.*
+          FROM visit_fts
+            LEFT JOIN visits ON visits.url = visit_fts.url
+          WHERE visits.profileId = ? AND visit_fts MATCH ?
+          ORDER BY visits.ts DESC
+          LIMIT ? OFFSET ?
+      `, [profileId, search, limit, offset])
+    }
     return await db.all('SELECT * FROM visits WHERE profileId = ? ORDER BY ts DESC LIMIT ? OFFSET ?', [profileId, limit, offset])
   } finally {
     release()

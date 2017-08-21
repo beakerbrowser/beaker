@@ -17,7 +17,7 @@ const BATCH_SIZE = 20
 // visits, cached in memory
 var visits = []
 var isAtEnd = false
-var query = []
+var query = ''
 var currentPeriodFilter = 'all'
 
 // main
@@ -38,50 +38,49 @@ function fetchMore (cb) {
   loadVisits(visits.length, cb)
 }
 
-function loadVisits (offset, cb) {
+async function loadVisits (offset, cb) {
   // reset isAtEnd if starting from 0
   if (offset === 0) {
     isAtEnd = false
   }
 
   isFetching = true
-  beaker.history.getVisitHistory({ offset, limit: BATCH_SIZE }).then(rows => {
-    let numFetched = rows.length
-    if (currentPeriodFilter !== 'all') {
-      // apply day filter
-      let lastTs
-      let day = moment()
-      if (currentPeriodFilter === 'yesterday') {
-        day = day.subtract(1, 'day')
-      }
-      rows = rows.filter(r => {
-        let ts = moment(r.ts)
-        lastTs = ts
-        return ts.isSame(day, 'day')
-      })
-
-      // did we reach the end?
-      if (numFetched < BATCH_SIZE || lastTs.isBefore(day, 'day')) {
-        isAtEnd = true
-      }
-    } else {
-      // did we reach the end?
-      if (rows.length === 0) {
-        isAtEnd = true
-      }
+  var rows = await beaker.history.getVisitHistory({ offset, limit: BATCH_SIZE, search: query ? query : false })
+  let numFetched = rows.length
+  if (currentPeriodFilter !== 'all') {
+    // apply day filter
+    let lastTs
+    let day = moment()
+    if (currentPeriodFilter === 'yesterday') {
+      day = day.subtract(1, 'day')
     }
+    rows = rows.filter(r => {
+      let ts = moment(r.ts)
+      lastTs = ts
+      return ts.isSame(day, 'day')
+    })
 
-    if (offset > 0) {
-      // append to the end
-      visits = visits.concat(rows)
-    } else {
-      // new results
-      visits = rows
+    // did we reach the end?
+    if (numFetched < BATCH_SIZE || lastTs.isBefore(day, 'day')) {
+      isAtEnd = true
     }
+  } else {
+    // did we reach the end?
+    if (rows.length === 0) {
+      isAtEnd = true
+    }
+  }
 
-    isFetching = false
-    cb()
-  })
+  if (offset > 0) {
+    // append to the end
+    visits = visits.concat(rows)
+  } else {
+    // new results
+    visits = rows
+  }
+
+  isFetching = false
+  cb()
 }
 
 // rendering
@@ -92,13 +91,11 @@ function renderRows () {
   var lastDate = moment().startOf('day').add(1, 'day')
 
   visits.forEach((row, i) => {
-    if (!row.isHidden) {
-      // render a date heading if this post is from a different day than the last
-      var oldLastDate = lastDate
-      lastDate = moment(row.ts).endOf('day')
-      if (!lastDate.isSame(oldLastDate, 'day')) {
-        rowEls.push(yo`<h2>${ucfirst(niceDate(lastDate, { noTime: true }))}</h2>`)
-      }
+    // render a date heading if this post is from a different day than the last
+    var oldLastDate = lastDate
+    lastDate = moment(row.ts).endOf('day')
+    if (!lastDate.isSame(oldLastDate, 'day')) {
+      rowEls.push(yo`<h2>${ucfirst(niceDate(lastDate, { noTime: true }))}</h2>`)
     }
 
     // render row
@@ -114,10 +111,6 @@ function renderRows () {
 }
 
 function renderRow (row, i) {
-  return row.isHidden ? '' : renderRowDefault(row, i)
-}
-
-function renderRowDefault (row, i) {
   return yo`
     <div class="ll-row">
       <a class="link" href=${row.url} title=${row.title}>
@@ -195,18 +188,16 @@ function render () {
 // =
 
 function onUpdateSearchQuery (e) {
-  query = e.target.value.toLowerCase()
-
-  visits.forEach(v => {
-    v.isHidden = !(v.title.toLowerCase().includes(query) || v.url.toLowerCase().includes(query))
-  })
-  renderHistoryListing()
+  if (e.code === 'Enter') {
+    query = e.target.value.toLowerCase()
+    loadVisits(0, render)
+  }
 }
 
 async function onClearQuery () {
   document.querySelector('input.search').value = ''
   query = ''
-  loadVisits(0, renderHistoryListing)
+  loadVisits(0, render)
 }
 
 function onUpdatePeriodFilter (e) {
