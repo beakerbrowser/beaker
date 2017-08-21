@@ -25,19 +25,19 @@ var followedUserProfiles = null
 // main
 // =
 
-render()
+renderToPage()
 setup()
 async function setup () {
   // load and render bookmarks
   userProfile = await beaker.profiles.getCurrentProfile()
   await loadBookmarks()
-  render()
+  renderToPage()
 
   // now render profiles
   followedUserProfiles = await Promise.all(
     userProfile.followUrls.map(u => beaker.profiles.getProfile(u))
   )
-  render()
+  renderToPage()
 }
 
 async function loadBookmarks () {
@@ -59,11 +59,20 @@ async function loadBookmarks () {
       bookmarks = await beaker.bookmarks.listPrivateBookmarks()
       break
     case 'all':
-      let publicBookmarks = await beaker.bookmarks.listPublicBookmarks({
-        author: userProfile._origin
-      })
-      let privateBookmarks = await beaker.bookmarks.listPrivateBookmarks()
-      bookmarks = publicBookmarks.concat(privateBookmarks)
+      {
+        let publicBookmarks = await beaker.bookmarks.listPublicBookmarks({
+          author: userProfile._origin
+        })
+        let privateBookmarks = await beaker.bookmarks.listPrivateBookmarks()
+        bookmarks = publicBookmarks.concat(privateBookmarks)
+      }
+      break
+    case 'search':
+      {
+        let publicBookmarks = await beaker.bookmarks.listPublicBookmarks()
+        let privateBookmarks = await beaker.bookmarks.listPrivateBookmarks()
+        bookmarks = publicBookmarks.concat(privateBookmarks)
+      }
       break
     default:
       if (currentView.startsWith('dat://')) {
@@ -146,7 +155,7 @@ function renderRowUneditable (row, i) {
     </li>`
 }
 
-function renderBookmarksList () {
+function renderBookmarksListToPage () {
   yo.update(
     document.querySelector('.links-list.bookmarks'),
     yo`
@@ -159,7 +168,7 @@ function renderBookmarksList () {
     `)
 }
 
-function render () {
+function renderToPage () {
   yo.update(
     document.querySelector('.bookmarks-wrapper'),
     yo`
@@ -237,6 +246,17 @@ function renderBreadcrumb (v) {
         </a>
       </div>
     `
+  } else if (v === 'search') {
+    return yo`
+      <div class="bookmarks-breadcrumbs">
+        <span onclick=${() => onUpdateViewFilter('feed')} class="breadcrumb">
+          All bookmarks
+        </span>
+        <span class="breadcrumb">
+          Search
+        </span>
+      </div>
+    `
   } else {
     return yo`
       <div class="bookmarks-breadcrumbs">
@@ -265,7 +285,6 @@ function renderCurrentView () {
 
 function renderFeed () {
   var groups = groupBy(bookmarks, '_origin')
-  console.log(groups, bookmarks)
   return yo`
     <div>
       ${Object.keys(groups).map(origin => {
@@ -303,28 +322,36 @@ async function onUpdateViewFilter (filter) {
   document.querySelector('input.search').value = ''
   query = ''
   await loadBookmarks()
-  render()
+  renderToPage()
 }
 
-function onClearQuery () {
+async function onClearQuery () {
   document.querySelector('input.search').value = ''
   query = ''
-  render()
+  currentView = 'all'
+  await loadBookmarks()
+  renderToPage()
 }
 
-function onQueryBookmarks (e) {
+async function onQueryBookmarks (e) {
   query = e.target.value.toLowerCase()
+  if (!query) return onClearQuery()
+  if (currentView !== 'search') {
+    currentView = 'search'
+    await loadBookmarks()
+    renderToPage()
+  }
   bookmarks.forEach(b => {
     b.isHidden = !(b.title.toLowerCase().includes(query) || b.href.toLowerCase().includes(query))
   })
-  renderBookmarksList()
+  renderBookmarksListToPage()
 }
 
 async function onTogglePinned (i) {
   var b = bookmarks[i]
   b.pinned = !b.pinned
   await beaker.bookmarks.setBookmarkPinned(b.href, b.pinned)
-  render()
+  renderToPage()
 }
 
 function onClickEdit (i) {
@@ -338,7 +365,7 @@ function onClickEdit (i) {
 
     // enter edit-mode
     bookmarks[i].isEditing = true
-    render()
+    renderToPage()
     document.querySelector(`[data-row="${i}"] input`).focus()
   }
 }
@@ -356,7 +383,7 @@ function onKeyUp (i) {
 
       // exit edit-mode
       bookmarks[i].isEditing = false
-      render()
+      renderToPage()
 
       // save in backend
       var b = bookmarks[i]
@@ -369,7 +396,7 @@ function onKeyUp (i) {
       // escape-key
       // exit edit-mode
       bookmarks[i].isEditing = false
-      render()
+      renderToPage()
     } else {
       // all else
       // update edit values
@@ -392,7 +419,7 @@ function onClickDelete (i) {
     } else {
       await beaker.bookmarks.unbookmarkPublic(b.href)
     }
-    render()
+    renderToPage()
   }
 }
 
