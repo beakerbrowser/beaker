@@ -165,6 +165,10 @@ function onFilterVisits (e) {
 }
 
 function onUpdatePeriodFilter (e) {
+  // reset the search query
+  query = ''
+  document.querySelector('input.search').value = ''
+
   currentPeriodFilter = e.target.dataset.period
   if (currentPeriodFilter === 'all') {
     filteredVisits = visits
