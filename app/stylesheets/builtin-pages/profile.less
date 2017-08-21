@@ -4,8 +4,11 @@
 
 .profile-wrapper {
 
-  .builtin-sidebar {
-    position: relative;
+  .builtin-main {
+
+    h2 {
+      margin: 10px;
+    }
   }
 
   .edit-link {
@@ -147,5 +150,14 @@
 
   img.avatar.empty {
     opacity: 0;
+  }
+
+  .ll-row {
+
+    &:first-of-type {
+      border-top: 1px solid rgb(230, 230, 230);
+    }
+
+    height: 45px !important;
   }
 }
