@@ -11,6 +11,8 @@ import renderCloseIcon from '../icon/close'
 
 // how many px from bottom till more is loaded?
 const BEGIN_LOAD_OFFSET = 500
+// how many to load in a batch?
+const BATCH_SIZE = 20
 
 // visits, cached in memory
 var visits = []
@@ -23,31 +25,60 @@ var currentPeriodFilter = 'all'
 
 render()
 fetchMore(render)
+document.body.querySelector('.window-content').addEventListener('scroll', onScrollContent)
 
 // data
 // =
 
 var isFetching = false
 function fetchMore (cb) {
-  if (isFetching) { return }
-  if (isAtEnd) { return cb() }
+  if (isFetching) return
+  if (isAtEnd) return cb()
 
   loadVisits(visits.length, cb)
 }
 
 function loadVisits (offset, cb) {
-  isFetching = true
-  beaker.history.getVisitHistory({ offset: offset, limit: 100 }).then(rows => {
-    if (currentPeriodFilter === 'all') {
-      visits = rows
-    } else {
+  // reset isAtEnd if starting from 0
+  if (offset === 0) {
+    isAtEnd = false
+  }
 
-      var dayOffset = currentPeriodFilter === 'yesterday' ? 1 : 0
-      visits = rows.filter(r => {
-        var ts = moment(r.ts)
-        return ts.isSame(moment().endOf('day').subtract(dayOffset, 'day'), 'day')
+  isFetching = true
+  beaker.history.getVisitHistory({ offset, limit: BATCH_SIZE }).then(rows => {
+    let numFetched = rows.length
+    if (currentPeriodFilter !== 'all') {
+      // apply day filter
+      let lastTs
+      let day = moment()
+      if (currentPeriodFilter === 'yesterday') {
+        day = day.subtract(1, 'day')
+      }
+      rows = rows.filter(r => {
+        let ts = moment(r.ts)
+        lastTs = ts
+        return ts.isSame(day, 'day')
       })
+
+      // did we reach the end?
+      if (numFetched < BATCH_SIZE || lastTs.isBefore(day, 'day')) {
+        isAtEnd = true
+      }
+    } else {
+      // did we reach the end?
+      if (rows.length === 0) {
+        isAtEnd = true
+      }
     }
+
+    if (offset > 0) {
+      // append to the end
+      visits = visits.concat(rows)
+    } else {
+      // new results
+      visits = rows
+    }
+
     isFetching = false
     cb()
   })
@@ -115,7 +146,7 @@ function render () {
     yo`
       <div class="history-wrapper builtin-wrapper">
         ${renderSidebar('history')}
-        <div onscroll=${onScrollContent}>
+        <div>
           <div class="builtin-sidebar">
             <h1>History</h1>
             <div class="section">
@@ -175,7 +206,7 @@ function onUpdateSearchQuery (e) {
 async function onClearQuery () {
   document.querySelector('input.search').value = ''
   query = ''
-  loadBookmarks(0, renderHistoryListing)
+  loadVisits(0, renderHistoryListing)
 }
 
 function onUpdatePeriodFilter (e) {
