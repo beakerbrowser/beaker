@@ -67,8 +67,8 @@ function renderRows () {
       yo`
         <div class="ll-row">
           <a class="link" href=${row.url} title=${row.title}>
-            <img class="favicon" src=${'beaker-favicon:' + row.url} />
-            <span class="title">${row.title}</span>
+            <img class="favicon" src=${'beaker-favicon:' + row.url}/>
+            <span class="title">${row.title.replace(/[^\x00-\x7F]/g, "")}</span>
             <span class="url">${row.url}</span>
           </a>
           <div class="actions">
