@@ -10,7 +10,7 @@ var currentUserProfile
 var currentProfile
 var isEditingProfile
 var tmpAvatar
-var currentViewFilter
+var currentView
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -83,7 +83,7 @@ async function loadCurrentProfile () {
 // =
 
 async function onUpdateViewFilter (filter) {
-  currentViewFilter = filter || ''
+  currentView = filter || ''
   render()
 }
 
@@ -122,7 +122,7 @@ function onUpdateTmpAvatar (e) {
 }
 
 function onToggleEditingProfile () {
-  isEditingProfile = !isEditingProfile
+  currentView = currentView === 'editing' ? '' : 'editing'
   render()
 }
 
@@ -141,6 +141,7 @@ async function onToggleFollowing () {
 // =
 
 function render () {
+  var isEditingProfile = currentView === 'editing'
   var isUserProfile = currentProfile && currentProfile._origin === currentUserProfile._origin
 
   yo.update(document.querySelector('.profile-wrapper'), yo`
@@ -149,7 +150,6 @@ function render () {
       <div>
         <div class="builtin-sidebar">
           ${renderProfile()}
-          ${isUserProfile && isEditingProfile ? renderProfileEditor() : ''}
 
           ${isUserProfile && !isEditingProfile
             ? yo`
@@ -183,9 +183,12 @@ function render () {
 }
 
 function renderView () {
-  switch (currentViewFilter) {
+  console.log('currentView', currentView)
+  switch (currentView) {
     case 'following':
       return renderFollowing()
+    case 'editing':
+      return renderProfileEditor()
     default:
       return ''
   }
@@ -246,27 +249,32 @@ function renderProfile () {
 }
 
 function renderProfileEditor () {
+  console.log('rendering')
   return yo`
-    <form class="edit-profile" onsubmit=${onSaveProfile}>
+    <div>
       <h2>Edit your profile</h2>
 
-      <label for="avatar">Avatar</label>
-      <div title="Update your avatar" class="avatar-container">
-        <input onchange=${onUpdateTmpAvatar} name="avatar" class="avatar-input" type="file" accept="image/*"/>
-        <img class="avatar editor" src=${currentProfile.avatar ? currentProfile._origin + currentProfile.avatar : ''}/>
-        ${currentProfile.avatar ? '' : yo`<span class="avatar editor empty">+</span>`}
-      </div>
+      <form class="edit-profile" onsubmit=${onSaveProfile}>
 
-      <label for="name">Name</label>
-      <input autofocus type="text" name="name" placeholder="Name" value=${currentProfile.name || ''}/>
+        <label for="avatar">Avatar</label>
+        <div title="Update your avatar" class="avatar-container">
+          <input onchange=${onUpdateTmpAvatar} name="avatar" class="avatar-input" type="file" accept="image/*"/>
+          <img class="avatar editor" src=${currentProfile.avatar ? currentProfile._origin + currentProfile.avatar : ''}/>
+          ${currentProfile.avatar ? '' : yo`<span class="avatar editor empty">+</span>`}
+        </div>
 
-      <label for="bio">Bio (optional)</label>
-      <textarea name="bio" placeholder="Enter a short bio">${currentProfile.bio || ''}</textarea>
+        <label for="name">Name</label>
+        <input autofocus type="text" name="name" placeholder="Name" value=${currentProfile.name || ''}/>
 
-      <div class="actions">
-        <button type="button" class="btn" onclick=${onToggleEditingProfile}>Cancel</button>
-        <button type="submit" class="btn primary">Save</button>
-    </form>
+        <label for="bio">Bio (optional)</label>
+        <textarea name="bio" placeholder="Enter a short bio">${currentProfile.bio || ''}</textarea>
+
+        <div class="actions">
+          <button type="button" class="btn" onclick=${onToggleEditingProfile}>Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
+        </div>
+      </form>
+    </div>
   `
 }
 
