@@ -162,13 +162,13 @@ function render () {
 
           <div class="section">
             <h2>${isUserProfile ? 'Your' : `${currentProfile.name}'s`} profile</h2>
-            <div class="nav-item ${currentViewFilter === 'following' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('following')}>
+            <div class="nav-item ${currentView === 'following' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('following')}>
               Following
             </div>
-            <div class="nav-item ${currentViewFilter === 'following' ? 'bookmarks' : ''}" onclick=${() => onUpdateViewFilter('bookmarks')}>
+            <div class="nav-item ${currentView === 'following' ? 'bookmarks' : ''}" onclick=${() => onUpdateViewFilter('bookmarks')}>
               Bookmarks
             </div>
-            <div class="nav-item ${currentViewFilter === 'feed' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('feed')}>
+            <div class="nav-item ${currentView === 'feed' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('feed')}>
               Feed
             </div>
           </div>
