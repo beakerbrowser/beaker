@@ -180,7 +180,7 @@ function renderToPage () {
             <div class="section">
               <div class="nav-item ${currentView === 'feed' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('feed')}>
                 ${renderHistoryIcon()}
-                Latest shared
+                Feed
               </div>
             </div>
 
