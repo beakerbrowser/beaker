@@ -10,6 +10,7 @@ var currentUserProfile
 var currentProfile
 var isEditingProfile
 var tmpAvatar
+var currentViewFilter
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -80,6 +81,11 @@ async function loadCurrentProfile () {
 
 // events
 // =
+
+async function onUpdateViewFilter (filter) {
+  currentViewFilter = filter || ''
+  render()
+}
 
 async function onSaveProfile (e) {
   e.preventDefault()
@@ -152,12 +158,57 @@ function render () {
                 ${renderPencilIcon()}
               </span>`
             : ''}
+
+
+          <div class="section">
+            <h2>${isUserProfile ? 'Your' : `${currentProfile.name}'s`} profile</h2>
+            <div class="nav-item ${currentViewFilter === 'following' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('following')}>
+              Following
+            </div>
+            <div class="nav-item ${currentViewFilter === 'following' ? 'bookmarks' : ''}" onclick=${() => onUpdateViewFilter('bookmarks')}>
+              Bookmarks
+            </div>
+            <div class="nav-item ${currentViewFilter === 'feed' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('feed')}>
+              Feed
+            </div>
+          </div>
         </div>
 
-        <div class="builtin-main"></div>
+        <div class="builtin-main">
+          <div class="view">${renderView()}</div>
+        </div>
       </div>
     </div>
   </div>`)
+}
+
+function renderView () {
+  switch (currentViewFilter) {
+    case 'following':
+      return renderFollowing()
+    default:
+      return ''
+  }
+}
+
+function renderFollowing () {
+  return yo`
+    <div>
+      <h2>Following</h2>
+
+      <div class="links-list">
+        ${currentProfile.follows.map(f => yo`
+          <div class="ll-row">
+            <a class="link" href="beaker://profile/${f.url.slice('dat://'.length)}" title=${f.name || ''} />
+              <span class="title">${f.name || ''}</span>
+            </a>
+            <div class="actions bookmark__actions">
+            </div>
+          </div>`
+        )}
+      </div>
+    </div>
+  `
 }
 
 function renderProfile () {
