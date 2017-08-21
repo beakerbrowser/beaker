@@ -173,8 +173,6 @@ function onUpdatePeriodFilter (e) {
   if (currentPeriodFilter === 'all') {
     filteredVisits = visits
   } else {
-    // TODO either account for current search query or clear it -tbv
-
     var dayOffset = currentPeriodFilter === 'yesterday' ? 1 : 0
     filteredVisits = visits.filter(v => {
       var ts = moment(v.ts)
