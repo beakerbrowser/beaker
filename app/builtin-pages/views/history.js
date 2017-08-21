@@ -31,17 +31,25 @@ fetchMore(render)
 var isFetching = false
 function fetchMore (cb) {
   if (isFetching) { return }
-
   if (isAtEnd) { return cb() }
 
+  loadVisits(visits.length, cb)
+}
+
+function loadVisits (offset, cb) {
   isFetching = true
-  beaker.history.getVisitHistory({ offset: visits.length, limit: 100 }).then(rows => {
-    if (rows.length == 0) {
-      isAtEnd = true
+  beaker.history.getVisitHistory({ offset: offset, limit: 100 }).then(rows => {
+    if (currentPeriodFilter === 'all') {
+      visits = rows
     } else {
-      visits = visits.concat(rows || [])
-      filteredVisits = visits
+
+      var dayOffset = currentPeriodFilter === 'yesterday' ? 1 : 0
+      visits = rows.filter(r => {
+        var ts = moment(r.ts)
+        return ts.isSame(moment().endOf('day').subtract(dayOffset, 'day'), 'day')
+      })
     }
+    filteredVisits = visits
     isFetching = false
     cb()
   })
@@ -119,7 +127,7 @@ function render () {
           <div class="builtin-main">
             <div class="builtin-header">
               <div class="search-container">
-                <input required autofocus onkeyup=${onFilterVisits} placeholder="Search your browsing history" type="text" class="search"/>
+                <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your browsing history" type="text" class="search"/>
                 <span onclick=${onClearQuery} class="close-container">
                   ${renderCloseIcon()}
                 </span>
@@ -155,12 +163,13 @@ function onClearQuery () {
   render()
 }
 
-function onFilterVisits (e) {
+function onUpdateSearchQuery (e) {
   query = e.target.value.toLowerCase()
+
+  // filter by query
   filteredVisits = visits.filter(v => {
     return v.title.toLowerCase().includes(query) || v.url.toLowerCase().includes(query)
   })
-
   renderHistoryListing()
 }
 
@@ -170,16 +179,7 @@ function onUpdatePeriodFilter (e) {
   document.querySelector('input.search').value = ''
 
   currentPeriodFilter = e.target.dataset.period
-  if (currentPeriodFilter === 'all') {
-    filteredVisits = visits
-  } else {
-    var dayOffset = currentPeriodFilter === 'yesterday' ? 1 : 0
-    filteredVisits = visits.filter(v => {
-      var ts = moment(v.ts)
-      return ts.isSame(moment().endOf('day').subtract(dayOffset, 'day'), 'day')
-    })
-  }
-  render()
+  loadVisits(0, render)
 }
 
 function onScrollContent (e) {
