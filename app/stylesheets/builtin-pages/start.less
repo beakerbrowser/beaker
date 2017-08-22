@@ -70,34 +70,46 @@ body {
 .pinned-bookmarks {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-gap: 25px;
+  grid-gap: 15px;
 
-  @media (min-width: 600px) {
+  @media (min-width: 550px) {
     grid-template-columns: 1fr 1fr 1fr;
   }
 
-  @media (min-width: 900px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  @media (min-width: 700px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
   }
 }
 
 .pinned-bookmark {
   text-align: center;
-  cursor: pointer;
+  background: #fff;
+  border: 3px solid #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.15);
+  border: 1px solid rgba(0,0,0,.1);
+
+  * {
+    cursor: pointer;
+  }
 
   &:hover {
-    &:extend(.link:hover);
+    box-shadow: 0 2px 0 rgba(0,0,0,.15);
+  }
+
+  .info {
+    padding: 0 10px;
+    font-size: .7rem;
   }
 
   .title {
     &:extend(.overflow-ellipsis);
-    max-width: 150px;
     margin: auto;
     height: 25px;
     line-height: 25px;
     vertical-align: middle;
-    color: fadeout(@color-text, 5%);
-    padding: 0 5px;
+    color: fadeout(@color-text, 10%);
+    max-width: 125px;
 
     /*
     TODO(bgimg) restore with background images -prf
@@ -110,17 +122,13 @@ body {
 
   .favicon-container {
     position: relative;
-    height: 100px;
+    height: 70px;
     margin-bottom: 5px;
-    border: 1px solid rgba(0,0,0,.33);
-    border-radius: 3px;
-    background: rgba(255,255,255,.7);
-    cursor: pointer;
   }
 
   .favicon {
     width: 32px;
-    margin-top: 30px;
+    margin-top: 25px;
   }
 }
 
