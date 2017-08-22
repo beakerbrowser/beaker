@@ -68,7 +68,6 @@ async function loadViewedProfile () {
       viewedProfile = await beaker.profiles.getProfile(`dat://${selectedProfileKey}`)
     }
     if (!(viewedProfile && viewedProfile._origin)) {
-      console.log('swiching to', currentUserProfile)
       viewedProfile = currentUserProfile
       history.pushState({}, null, 'beaker://profile/' + viewedProfile._origin.slice('dat://'.length))
       return

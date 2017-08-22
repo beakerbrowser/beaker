@@ -804,7 +804,7 @@ async function onPageFaviconUpdated (e) {
     events.emit('page-favicon-updated', getByWebview(e.target))
 
     // store favicon to db
-    var res = await urlsToData(e.favicons, 64, 64)
+  var res = await urlsToData(e.favicons)
     if (res) {
       beakerSitedata.set(page.getURL(), 'favicon', res.dataUrl)
     }
