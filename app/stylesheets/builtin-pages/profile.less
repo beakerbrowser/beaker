@@ -122,18 +122,25 @@
     &:hover {
 
       .avatar.empty {
-        background: rgba(0,0,0,.125);
+        // background: rgba(0,0,0,.125);
       }
     }
   }
 
   .avatar-input {
-    width: 100%;
+    width: 200%;
     height: 100%;
+    padding-left: 50px; // push the "Choose files" button out of view
     position: absolute;
     left: 0;
     top: 0;
     opacity: 0;
+    background: fadeout(#fff, 70%);
+    transition: opacity .1s ease;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 
   .avatar {
