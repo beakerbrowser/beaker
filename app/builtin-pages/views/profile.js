@@ -257,7 +257,7 @@ function renderProfileEditor () {
         <label for="avatar">Avatar</label>
         <div title="Update your avatar" class="avatar-container">
           <input onchange=${onUpdateTmpAvatar} name="avatar" class="avatar-input" type="file" accept="image/*"/>
-          <img class="avatar editor" src=${viewedProfile.avatar ? viewedProfile._origin + viewedProfile.avatar : ''}/>
+          <img class="avatar editor" src="${viewedProfile.avatar ? viewedProfile._origin + viewedProfile.avatar : ''}?cache-buster=${Date.now()}"/>
           ${viewedProfile.avatar ? '' : yo`<span class="avatar editor empty">+</span>`}
         </div>
 
