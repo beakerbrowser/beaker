@@ -171,9 +171,6 @@ function render () {
             <div class="nav-item ${currentView === 'following' ? 'bookmarks' : ''}" onclick=${() => onUpdateViewFilter('bookmarks')}>
               Bookmarks
             </div>
-            <div class="nav-item ${currentView === 'feed' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('feed')}>
-              Feed
-            </div>
           </div>
         </div>
 
