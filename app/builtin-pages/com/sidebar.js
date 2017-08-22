@@ -28,6 +28,10 @@ export default function render (activePage) {
         ${renderGearIcon()}
         <span class="tooltip">Settings</span>
       </a>
+      <a class="sidebar-link ${activePage === 'library' ? 'active' : ''}" href="beaker://library">
+        ${renderGridIcon()}
+        <span class="tooltip library">Filesystem</span>
+      </a>
     </div>
   `
 }

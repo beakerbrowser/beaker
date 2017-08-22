@@ -1,6 +1,7 @@
 /* globals Event beaker DatArchive history beakerBrowser confirm */
 
 import * as yo from 'yo-yo'
+import renderSidebar from '../com/sidebar'
 import {FileTree, ArchivesList} from 'builtin-pages-lib'
 import {makeSafe} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
@@ -168,53 +169,46 @@ function update () {
   </div>
 */
 
-  yo.update(document.querySelector('main'), yo`
-    <main>
-    <div class="sidebar ${isSidebarOpen ? 'open' : ''}">
-      <div class="sidebar-actions">
-        <label for="filter">
-          <i class="fa fa-search"></i>
-          <input
-            class="filter"
-            name="filter"
-            placeholder="Search"
-            type="text"
-            value=${currentFilter || ''}
-            onkeyup=${onChangeFilter}/>
-          <button onclick=${onClearFilter} class="clear-filter ${currentFilter ? 'visible' : ''}">
-            <i class="fa fa-close"></i>
+  yo.update(document.querySelector('.library-wrapper'), yo`
+    <div class="library-wrapper builtin-wrapper">
+      ${renderSidebar('library')}
+      <div class="builtin-sidebar">
+        <h1>Filesystem</h1>
+
+        <div class="section archives-list">
+          <h2>Your files</h2>
+          <div class="sidebar-actions">
+            <label for="filter">
+              <i class="fa fa-search"></i>
+              <input
+                class="filter"
+                name="filter"
+                placeholder="Search"
+                type="text"
+                value=${currentFilter || ''}
+                onkeyup=${onChangeFilter}/>
+              <a onclick=${onClearFilter} class="clear-filter ${currentFilter ? 'visible' : ''}">
+                <i class="fa fa-close"></i>
+              </a>
+            </label>
+          </div>
+          ${rArchivesList()}
+        </div>
+
+        <div class="trash-controls">
+          <button onclick=${onClickBulkDelete} class="bulk-delete btn primary ${selectedArchives.length ? 'visible' : ''}">
+            <i class="fa fa-trash"></i>
           </button>
-        </label>
-        <div class="menu">
-          <button onclick=${onToggleSidebar}>
-            <i class="fa fa-bars"></i>
+          <button class="view-trash" onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
+            <i class="fa ${isTrashOpen ? 'fa-close' : 'fa-trash'}"></i>
           </button>
         </div>
       </div>
 
-      <div class="archives-list">
-        ${rArchivesList()}
-      </div>
-
-      <div class="trash-controls">
-        <button onclick=${onClickBulkDelete} class="bulk-delete btn primary ${selectedArchives.length ? 'visible' : ''}">
-          <i class="fa fa-trash"></i>
-        </button>
-        <button class="view-trash" onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
-          <i class="fa ${isTrashOpen ? 'fa-close' : 'fa-trash'}"></i>
-        </button>
+      <div class="builtin-main ${viewCls}">
+        ${rView()}
       </div>
     </div>
-
-    <div class="view ${viewCls}">
-      <div onclick=${onToggleSidebar} class="menu">
-        <button>
-          <i class="fa fa-bars"></i>
-        </button>
-      </div>
-      ${rView()}
-    </div>
-    </main>
   `)
 }
 
@@ -257,7 +251,7 @@ function rArchiveListItem (archiveInfo) {
   }
 
   return yo`
-    <div class="archive ${cls}" onclick=${onSelectArchive(archiveInfo)}>
+    <div class="nav-item archive ${cls}" onclick=${onSelectArchive(archiveInfo)}>
       <div class="title">
         ${icon}
         ${niceName(archiveInfo)}
@@ -738,11 +732,6 @@ async function onDeleteDownloadedFiles () {
 
 function onToggleTrash () {
   isTrashOpen = !isTrashOpen
-  update()
-}
-
-function onToggleSidebar () {
-  isSidebarOpen = !isSidebarOpen
   update()
 }
 

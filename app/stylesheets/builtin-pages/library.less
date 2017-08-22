@@ -1,84 +1,13 @@
-@import "../base/reset.less";
-@import "../base/colors.less";
-@import "../base/spacing.less";
-@import "../base/typography.less";
-
 @import "../components/link.less";
-@import "../components/buttons.less";
-@import "../com/spinner.less";
 @import "../components/inputs.less";
 @import "../components/tabs.less";
 @import "../components/messages.less";
 @import "../components/popups.less";
-@import "./components/toast";
-
 @import "./components/files-list.less";
-
-* {
-  box-sizing: border-box;
-}
 
 body {
   &:extend(.system-font);
   font-size: 14px;
-}
-
-.sidebar {
-  &:extend(.vertical-scroll);
-  &:extend(.hide-scrollbar all);
-  position: fixed;
-  left: -250px;
-  width: 250px;
-  height: 100%;
-  border-right: 1px solid @border-menu;
-  background: @background-menu;
-  z-index: 1;
-  transition: left .2s ease;
-
-  .menu {
-    position: absolute;
-    right: 2px;
-    top: 7.25px;
-    z-index: 3;
-
-    i {
-      font-size: 20px;
-    }
-  }
-
-  &.open {
-    left: 0;
-
-    + .view .trash {
-      margin-left: 250px;
-
-      .menu {
-        display: none;
-      }
-    }
-
-    button.clear-filter {
-      left: 193px;
-    }
-  }
-
-  @media (min-width: 925px) {
-    left: 0;
-
-    .menu {
-      display: none;
-    }
-
-    .sidebar.open {
-      .view .trash {
-        margin-left: 0;
-      }
-
-      button.clear-filter {
-        left: 218px;
-      }
-    }
-  }
 }
 
 .message {
@@ -101,109 +30,7 @@ body {
   margin-bottom: 1rem;
 }
 
-.sidebar-actions {
-  position: fixed;
-  width: 250px;
-  background: @background-menu;
-  border-right: 1px solid @border-menu;
-  z-index: 2;
-
-  label[for="filter"] {
-    position: relative;
-  }
-
-  .fa-search {
-    position: absolute;
-    left: 13px;
-    z-index: 3;
-    top: 12px;
-    color: @color-text--light;
-  }
-
-  .clear-filter {
-    visibility: hidden;
-    position: absolute;
-    top: -30px;
-    left: 218px;
-    color: @color-text--muted;
-    padding: 2px 5px;
-    border-radius: 2px;
-    font-size: 14px;
-
-    &:hover {
-      background: @background-menu;
-    }
-
-    &.visible {
-      visibility: visible;
-    }
-  }
-
-  .filter {
-    font-size: 12px;
-    margin: 0.5em;
-    padding: 5px;
-    text-align: center;
-
-    &:focus {
-      text-align: left;
-      padding-left: 25px;
-    }
-  }
-
-  .sort {
-    padding: .2rem 0 .15rem 1rem;
-    font-size: 12px;
-    background: @background-menu;
-
-    select {
-      position: absolute;
-      top: 33px;
-      right: .5em;
-      background: none;
-    }
-  }
-
-  .filter, .sort {
-    display: block;
-    width: 210px;
-
-    @media (min-width: 925px) {
-      width: 236px;
-    }
-  }
-}
-
-.sidebar .archives-list {
-  margin-top: 38px; // height of .sidebar-actions
-  margin-bottom: 38px; // height of .trash-controls
-}
-
-.sidebar .archive {
-  display: flex;
-  padding: 0.4rem 1em;
-  position: relative;
-  cursor: default;
-
-  &:hover {
-    background: @background-menu--hover;
-  }
-
-  &.active {
-    -webkit-font-smoothing: antialiased;
-    background: @blue;
-    color: #fff;
-    font-weight: 500;
-
-    .title {
-      font-weight: 700;
-    }
-
-    .last-updated, .peers, .title {
-      color: #fff;
-    }
-  }
-
+.builtin-sidebar .archive {
   .title {
     &:extend(.overflow-ellipsis);
     color: @color-text;
@@ -216,6 +43,55 @@ body {
     padding-left: 1em;
   }
 }
+
+.sidebar-actions {
+  padding: 0 16px 4px;
+
+  label[for="filter"] {
+    position: relative;
+  }
+
+  .fa-search {
+    position: absolute;
+    left: 8px;
+    z-index: 3;
+    top: 8px;
+    color: @color-text--light;
+  }
+
+  .clear-filter {
+    visibility: hidden;
+    position: absolute;
+    top: -28px;
+    left: 240px;
+    color: @color-text--midlight;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 14px;
+
+    &:hover {
+      color: @color-text--muted;
+    }
+
+    &.visible {
+      visibility: visible;
+    }
+  }
+
+  .filter {
+    display: block;
+    width: 268px;
+    font-size: 12px;
+    padding: 5px;
+    text-align: center;
+
+    &:focus {
+      text-align: left;
+      padding-left: 25px;
+    }
+  }
+}
+
 
 .sidebar .trash-controls {
   &:extend(.flex);
@@ -255,10 +131,9 @@ body {
   }
 }
 
-.view {
+.builtin-main {
   padding: 2rem;
   max-width: 675px;
-  margin: auto;
   position: relative;
 
   .header {
@@ -379,7 +254,7 @@ body {
   }
 }
 
-.view > .empty {
+.builtin-main > .empty {
   font-size: 20rem;
   text-align: center;
   color: fadeout(@color-text--light, 80%);
@@ -388,7 +263,7 @@ body {
   -webkit-text-stroke-color: #fff;
 }
 
-.view .archive {
+.builtin-main .archive {
   position: relative;
 
   section {
@@ -551,7 +426,7 @@ body {
   }
 }
 
-.view .staging {
+.builtin-main .staging {
   position: relative;
 
   section {
@@ -649,7 +524,7 @@ body {
   }
 }
 
-.view .trash {
+.builtin-main .trash {
 
   h1 {
     margin-bottom: 1rem;
