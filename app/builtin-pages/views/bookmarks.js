@@ -177,12 +177,6 @@ function renderToPage () {
         <div>
           <div class="builtin-sidebar">
             <h1>Bookmarks</h1>
-            <div class="section">
-              <div class="nav-item ${currentView === 'feed' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('feed')}>
-                ${renderHistoryIcon()}
-                Feed
-              </div>
-            </div>
 
             <div class="section">
               <h2>Your bookmarks</h2>
@@ -206,6 +200,10 @@ function renderToPage () {
 
             <div class="section">
               <h2>Friends</h2>
+              <div class="nav-item ${currentView === 'feed' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('feed')}>
+                ${renderHistoryIcon()}
+                Latest
+              </div>
               ${followedUserProfiles
                 ? followedUserProfiles.length
                   ? followedUserProfiles.map(p => {
