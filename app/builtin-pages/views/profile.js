@@ -183,7 +183,6 @@ function render () {
 }
 
 function renderView () {
-  console.log('currentView', currentView)
   switch (currentView) {
     case 'following':
       return renderFollowing()
