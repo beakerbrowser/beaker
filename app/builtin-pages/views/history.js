@@ -156,7 +156,7 @@ function render () {
           </div>
 
           <div class="builtin-main">
-            <div class="builtin-header">
+            <div class="builtin-header fixed">
               <div class="search-container">
                 <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your browsing history" type="text" class="search"/>
                 <span onclick=${onClearQuery} class="close-container">

@@ -220,7 +220,7 @@ function renderToPage () {
           </div>
 
           <div class="builtin-main">
-            <div class="builtin-header">
+            <div class="builtin-header fixed">
               <div class="search-container">
                 <input required autofocus onkeyup=${onQueryBookmarks} placeholder="Search bookmarks" type="text" class="search"/>
                 <span onclick=${onClearQuery} class="close-container">

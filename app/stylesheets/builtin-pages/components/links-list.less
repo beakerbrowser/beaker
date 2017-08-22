@@ -54,6 +54,7 @@
 .ll-row {
   &:extend(.flex);
   flex-wrap: nowrap;
+  position: relative;
   height: 25px;
   padding: 0 5px;
   justify-content: space-between;
@@ -70,6 +71,8 @@
   }
 
   .favicon {
+    display: inline;
+    flex-basis: 16px;
     width: 16px;
     height: 16px;
     margin-right: 8px;

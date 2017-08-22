@@ -4,17 +4,28 @@
 
 .bookmarks-wrapper {
 
-  .ll-row {
-    border-top: 1px solid rgb(230, 230, 230);
-    border-bottom: 0 !important;
+  .builtin-main {
+    max-width: ~"calc(100vw - 340px)"; // width of main sidebar + builtin-sidebar
 
-    &:last-child {
-      border-bottom: 1px solid rgb(230, 230, 230) !important;
+    .links-list.bookmarks {
+      max-width: 950px;
+      width: 100%;
     }
 
-    .icon {
+    .ll-row {
+      max-width: 950px;
+      width: 100%;
 
-      .pin {
+      .link {
+        width: 100%;
+      }
+
+      .url {
+        margin-left: auto;
+        margin-right: 30px;
+      }
+
+      .icon .pin {
         margin-right: -1px;
       }
     }
