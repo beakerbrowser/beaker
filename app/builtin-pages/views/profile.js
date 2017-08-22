@@ -7,7 +7,7 @@ import renderPencilIcon from '../icon/pencil'
 // =
 
 var currentUserProfile
-var currentProfile
+var viewedProfile
 var isEditingProfile
 var tmpAvatar
 var currentView
@@ -34,13 +34,13 @@ window.history.replaceState = _wr('replaceState')
 setup()
 async function setup () {
   currentUserProfile = await beaker.profiles.getCurrentProfile()
-  await loadCurrentProfile()
+  await loadViewedProfile()
 
   // render
   render()
 
-  window.addEventListener('pushstate', loadCurrentProfile)
-  window.addEventListener('popstate', loadCurrentProfile)
+  window.addEventListener('pushstate', loadViewedProfile)
+  window.addEventListener('popstate', loadViewedProfile)
 }
 
 async function parseURLKey () {
@@ -57,21 +57,24 @@ async function parseURLKey () {
   }
 }
 
-async function loadCurrentProfile () {
+async function loadViewedProfile () {
   // reset state
   isEditingProfile = false
   tmpAvatar = undefined
 
   try {
     var selectedProfileKey = await parseURLKey()
-    currentProfile = await beaker.profiles.getProfile(`dat://${selectedProfileKey}`)
-
-    if (!(currentProfile && currentProfile._origin)) {
-      currentProfile = currentUserProfile
-      history.pushState({}, null, 'beaker://profile/' + currentProfile._origin.slice('dat://'.length))
+    if (selectedProfileKey) {
+      viewedProfile = await beaker.profiles.getProfile(`dat://${selectedProfileKey}`)
+    }
+    if (!(viewedProfile && viewedProfile._origin)) {
+      console.log('swiching to', currentUserProfile)
+      viewedProfile = currentUserProfile
+      history.pushState({}, null, 'beaker://profile/' + viewedProfile._origin.slice('dat://'.length))
+      return
     }
 
-    currentProfile.isFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, currentProfile._origin)
+    viewedProfile.isFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, viewedProfile._origin)
   } catch (e) {
     // TODO
   }
@@ -101,7 +104,7 @@ async function onSaveProfile (e) {
 
   tmpAvatar = undefined
   isEditingProfile = false
-  currentProfile = await beaker.profiles.getCurrentProfile()
+  viewedProfile = await beaker.profiles.getCurrentProfile()
   render()
 }
 
@@ -127,12 +130,12 @@ function onToggleEditingProfile () {
 }
 
 async function onToggleFollowing () {
-  if (currentProfile.isFollowing) {
-    await beaker.profiles.unfollow(currentUserProfile._origin, currentProfile._origin)
-    currentProfile.isFollowing = false
+  if (viewedProfile.isFollowing) {
+    await beaker.profiles.unfollow(currentUserProfile._origin, viewedProfile._origin)
+    viewedProfile.isFollowing = false
   } else {
-    await beaker.profiles.follow(currentUserProfile._origin, currentProfile._origin, currentProfile.name || '')
-    currentProfile.isFollowing = true
+    await beaker.profiles.follow(currentUserProfile._origin, viewedProfile._origin, viewedProfile.name || '')
+    viewedProfile.isFollowing = true
   }
   render()
 }
@@ -141,8 +144,9 @@ async function onToggleFollowing () {
 // =
 
 function render () {
+  if (!viewedProfile) return
   var isEditingProfile = currentView === 'editing'
-  var isUserProfile = currentProfile && currentProfile._origin === currentUserProfile._origin
+  var isUserProfile = viewedProfile._origin === currentUserProfile._origin
 
   yo.update(document.querySelector('.profile-wrapper'), yo`
     <div class="profile-wrapper builtin-wrapper">
@@ -161,7 +165,7 @@ function render () {
 
 
           <div class="section">
-            <h2>${isUserProfile ? 'Your' : `${currentProfile.name}'s`} profile</h2>
+            <h2>${isUserProfile ? 'Your' : `${viewedProfile.name}'s`} profile</h2>
             <div class="nav-item ${currentView === 'following' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('following')}>
               Following
             </div>
@@ -200,7 +204,7 @@ function renderFollowing () {
       <h2>Following</h2>
 
       <div class="links-list">
-        ${currentProfile.follows.map(f => yo`
+        ${viewedProfile.follows.map(f => yo`
           <div class="ll-row">
             <a class="link" href="beaker://profile/${f.url.slice('dat://'.length)}" title=${f.name || ''} />
               <span class="title">${f.name || ''}</span>
@@ -215,7 +219,7 @@ function renderFollowing () {
 }
 
 function renderProfile () {
-  if (!currentProfile) {
+  if (!viewedProfile) {
     return yo`
       <div class="profile-view">
         <p>Profile not found</p>
@@ -223,14 +227,14 @@ function renderProfile () {
     `
   }
 
-  var isUserProfile = currentProfile && currentProfile._origin === currentUserProfile._origin
+  var isUserProfile = viewedProfile && viewedProfile._origin === currentUserProfile._origin
   return yo`
     <div class="profile-view">
       <div class="header">
-        ${currentProfile.avatar
+        ${viewedProfile.avatar
           ? yo`
             <div class="avatar-container">
-              <img class="avatar" src="${currentProfile._origin}${currentProfile.avatar}?cache_buster=${Date.now()}"/>
+              <img class="avatar" src="${viewedProfile._origin}${viewedProfile.avatar}?cache_buster=${Date.now()}"/>
             </div>`
           : yo`
             <div class="avatar-container">
@@ -238,10 +242,10 @@ function renderProfile () {
             </div>`
         }
 
-        <span class="name">${currentProfile.name}</span>
+        <span class="name">${viewedProfile.name}</span>
       </div>
 
-      <p class="bio">${currentProfile.bio}</p>
+      <p class="bio">${viewedProfile.bio}</p>
 
       ${isUserProfile ? '' : renderFollowButton()}
     </div>
@@ -249,7 +253,6 @@ function renderProfile () {
 }
 
 function renderProfileEditor () {
-  console.log('rendering')
   return yo`
     <div>
       <h2>Edit your profile</h2>
@@ -259,15 +262,15 @@ function renderProfileEditor () {
         <label for="avatar">Avatar</label>
         <div title="Update your avatar" class="avatar-container">
           <input onchange=${onUpdateTmpAvatar} name="avatar" class="avatar-input" type="file" accept="image/*"/>
-          <img class="avatar editor" src=${currentProfile.avatar ? currentProfile._origin + currentProfile.avatar : ''}/>
-          ${currentProfile.avatar ? '' : yo`<span class="avatar editor empty">+</span>`}
+          <img class="avatar editor" src=${viewedProfile.avatar ? viewedProfile._origin + viewedProfile.avatar : ''}/>
+          ${viewedProfile.avatar ? '' : yo`<span class="avatar editor empty">+</span>`}
         </div>
 
         <label for="name">Name</label>
-        <input autofocus type="text" name="name" placeholder="Name" value=${currentProfile.name || ''}/>
+        <input autofocus type="text" name="name" placeholder="Name" value=${viewedProfile.name || ''}/>
 
         <label for="bio">Bio (optional)</label>
-        <textarea name="bio" placeholder="Enter a short bio">${currentProfile.bio || ''}</textarea>
+        <textarea name="bio" placeholder="Enter a short bio">${viewedProfile.bio || ''}</textarea>
 
         <div class="actions">
           <button type="button" class="btn" onclick=${onToggleEditingProfile}>Cancel</button>
@@ -281,6 +284,6 @@ function renderProfileEditor () {
 function renderFollowButton () {
   return yo`
     <button class="follow-btn btn primary" onclick=${onToggleFollowing}>
-      ${currentProfile.isFollowing ? 'Following ✓' : 'Follow +'}
+      ${viewedProfile.isFollowing ? 'Following ✓' : 'Follow +'}
     </button>`
 }
