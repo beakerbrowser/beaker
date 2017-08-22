@@ -102,7 +102,7 @@ async function onSaveProfile (e) {
   }
 
   tmpAvatar = undefined
-  isEditingProfile = false
+  currentView = ''
   viewedProfile = await beaker.profiles.getCurrentProfile()
   render()
 }
