@@ -17,7 +17,7 @@ import renderPencilIcon from '../icon/pencil'
 //
 
 var query = '' // current search query
-var currentView = 'feed'
+var currentView = 'all'
 var bookmarks = []
 var userProfile = null
 var followedUserProfiles = null
