@@ -4,6 +4,7 @@ import renderStarIcon from '../icon/star'
 import renderHistoryIcon from '../icon/history'
 import renderGearIcon from '../icon/gear'
 import renderAvatarIcon from '../icon/avatar'
+import renderFilesystemIcon from '../icon/filesystem'
 
 export default function render (activePage) {
   return yo`
@@ -20,6 +21,10 @@ export default function render (activePage) {
         ${renderHistoryIcon()}
         <span class="tooltip">History</span>
       </a>
+      <a class="sidebar-link ${activePage === 'library' ? 'active' : ''}" href="beaker://library">
+        ${renderFilesystemIcon()}
+        <span class="tooltip library">Filesystem</span>
+      </a>
       <a class="sidebar-link avatar ${activePage === 'profile' ? 'active' : ''}" href="beaker://profile">
         ${renderAvatarIcon()}
         <span class="tooltip avatar">Your profile</span>
@@ -27,10 +32,6 @@ export default function render (activePage) {
       <a class="sidebar-link settings ${activePage === 'settings' ? 'active' : ''}" href="beaker://settings">
         ${renderGearIcon()}
         <span class="tooltip">Settings</span>
-      </a>
-      <a class="sidebar-link ${activePage === 'library' ? 'active' : ''}" href="beaker://library">
-        ${renderGridIcon()}
-        <span class="tooltip library">Filesystem</span>
       </a>
     </div>
   `
