@@ -234,45 +234,6 @@ function renderToPage () {
         </div>`)
 }
 
-function renderBreadcrumb (v) {
-  v = v || currentView
-  if (v.startsWith('dat://')) {
-    return yo`
-      <div class="bookmarks-breadcrumbs">
-        <a href="beaker://profile/${v.slice('dat://'.length)}" class="breadcrumb">
-          ${findUsernameFor(v)}
-        </a>
-      </div>
-    `
-  } else if (v === 'search') {
-    return yo`
-      <div class="bookmarks-breadcrumbs">
-        <span onclick=${() => onUpdateViewFilter('feed')} class="breadcrumb">
-          All bookmarks
-        </span>
-        <span class="breadcrumb">
-          Search
-        </span>
-      </div>
-    `
-  } else {
-    return yo`
-      <div class="bookmarks-breadcrumbs">
-        <span onclick=${() => onUpdateViewFilter('all')} class="breadcrumb">
-          Your bookmarks
-        </span>
-        ${v !== 'all'
-          ? yo`
-              <span class="breadcrumb">
-                ${v.charAt(0).toUpperCase() + v.slice(1)}
-              </span>
-            `
-          : ''}
-      </div>
-    `
-  }
-}
-
 function renderCurrentView () {
   if (currentView === 'feed') {
     return renderFeed()
@@ -288,7 +249,6 @@ function renderFeed () {
       ${Object.keys(groups).map(origin => {
         return yo`
           <div>
-            ${renderBreadcrumb(origin)}
             <div class="links-list bookmarks">
               ${groups[origin].map(renderRow)}
             </div>
@@ -303,7 +263,6 @@ function renderBookmarks () {
   var helpEl = bookmarks.length ? '' : yo`<em class="empty">No results</em>`
   return yo`
     <div>
-      ${renderBreadcrumb(currentView)}
       <div class="links-list bookmarks">
         ${bookmarks.map(renderRow)}
         ${helpEl}
