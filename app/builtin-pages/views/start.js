@@ -75,7 +75,9 @@ function renderPinnedBookmark (bookmark) {
       <div class="favicon-container">
         <img src=${'beaker-favicon:' + href} class="favicon"/>
       </div>
-      <div class="title">${title}</div>
+      <div class="info">
+        <div class="title">${title}</div>
+      </div>
     </a>
   `
 }
