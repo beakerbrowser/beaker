@@ -181,7 +181,7 @@ function update () {
           <h2>Your files</h2>
           <div class="sidebar-actions">
             <label for="filter">
-              <i class="fa fa-search"></i>
+              ${renderSearchIcon()}
               <input
                 class="filter"
                 name="filter"

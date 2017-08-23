@@ -19,9 +19,22 @@
       }
 
       .peers {
+        &:extend(.flex);
+        align-items: center;
+        height: 100%;
         font-size: 12px;
         color: @color-text--muted;
         padding-left: 1em;
+
+        .icon {
+          width: 11px;
+          height: 11px;
+          margin-right: 3px;
+
+          * {
+            fill: rgba(0,0,0,.5);
+          }
+        }
       }
     }
 
@@ -32,12 +45,21 @@
         position: relative;
       }
 
-      .fa-search {
+      .icon.search {
         position: absolute;
-        left: 8px;
+        left: 9px;
+        top: 9px;
         z-index: 3;
-        top: 8px;
-        color: @color-text--light;
+        width: 11.5px;
+        height: 11.5px;
+
+        #magnifier {
+          stroke: @color-text--light;
+        }
+
+        #handle {
+          fill: @color-text--light;
+        }
       }
 
       .clear-filter {
@@ -92,10 +114,6 @@
       .view-trash {
         border-radius: 2px;
         margin-left: auto;
-
-        i {
-          margin-left: @margin-icon;
-        }
 
         &:hover {
           background: @border-menu;
