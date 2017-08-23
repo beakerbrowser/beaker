@@ -158,16 +158,18 @@ function render () {
                 </span>
               </div>
 
-              <div class="btn" onclick=${onClickDeleteBulk.bind(window)}>
-                Clear browsing history
-              </div>
+              <div>
+                <div class="btn" onclick=${onClickDeleteBulk.bind(window)}>
+                  Clear history
+                </div>
 
-              <select id="delete-period">
-                <option value="day" selected>from today</option>
-                <option value="week">from this week</option>
-                <option value="month">from this month</option>
-                <option value="all">from all time</option>
-              </select>
+                <select id="delete-period">
+                  <option value="day" selected>from today</option>
+                  <option value="week">from this week</option>
+                  <option value="month">from this month</option>
+                  <option value="all">from all time</option>
+                </select>
+              </div>
             </div>
 
             <div class="links-list history">
