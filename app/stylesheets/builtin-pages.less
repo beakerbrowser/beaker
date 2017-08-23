@@ -182,9 +182,11 @@
   &.fixed {
     &:extend(.flex);
     align-items: center;
+    justify-content: space-between;
     position: fixed;
     z-index: 3;
     width: 100%;
+    max-width: ~"calc(100% - 340px)";
     height: 70px;
     padding: 0 15px;
     background: rgb(245, 245, 248);
