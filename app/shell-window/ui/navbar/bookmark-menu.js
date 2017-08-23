@@ -91,21 +91,24 @@ export class BookmarkMenuNavbarBtn {
   }
 
   async onClickBookmark (e) {
-    var page = pages.getActive()
-    console.log(page.bookmark)
-    if (!page.bookmark) {
-      // set the bookmark privately
-      await beaker.bookmarks.bookmarkPrivate(page.url, {title: page.title || '', pinned: false})
-      page.bookmark = await beaker.bookmarks.getBookmark(page.url)
-      this.isPrivate = true
-    } else {
-      this.isPrivate = page.bookmark.private
-    }
-
     // toggle the dropdown bookmark editor
-    this.isDropdownOpen = true
+    this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
-    document.getElementById('bookmark-title').focus()
+
+    if (this.isDropdownOpen) {
+      var page = pages.getActive()
+
+      if (!page.bookmark) {
+        // set the bookmark privately
+        await beaker.bookmarks.bookmarkPrivate(page.url, {title: page.title || '', pinned: false})
+        page.bookmark = await beaker.bookmarks.getBookmark(page.url)
+        this.isPrivate = true
+      } else {
+        this.isPrivate = page.bookmark.private
+      }
+
+      document.getElementById('bookmark-title').focus()
+    }
   }
 
   async onSaveBookmark (e) {
