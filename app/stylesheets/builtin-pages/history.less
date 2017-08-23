@@ -10,19 +10,31 @@
     .links-list.history {
       max-width: 950px;
       width: 100%;
-    }
 
-    .ll-row {
-      max-width: 950px;
-      width: 100%;
-
-      .link {
-        width: 100%;
+      h2 {
+        position: sticky;
+        top: 61px;
+        z-index: 1;
+        padding: 10px 10px 0;
+        margin: 0;
+        border-bottom: 1px solid rgb(230, 230, 230);
+        text-transform: none;
+        letter-spacing: 0;
+        background: #fff;
       }
 
-      .url {
-        margin-left: auto;
-        margin-right: 10px;
+      .ll-row {
+        max-width: 950px;
+        width: 100%;
+
+        .link {
+          width: 100%;
+        }
+
+        .url {
+          margin-left: auto;
+          margin-right: 10px;
+        }
       }
     }
 
@@ -30,13 +42,5 @@
       margin-right: 5px;
     }
 
-    h2 {
-      padding: 0 10px;
-      margin: 0;
-      border-bottom: 1px solid rgb(230, 230, 230);
-      text-transform: none;
-      letter-spacing: 0;
-      background: #fff;
-    }
   }
 }
