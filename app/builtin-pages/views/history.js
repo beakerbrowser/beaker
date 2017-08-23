@@ -45,30 +45,24 @@ async function loadVisits (offset, cb) {
   }
 
   isFetching = true
-  var rows = await beaker.history.getVisitHistory({ offset, limit: BATCH_SIZE, search: query ? query : false })
-  let numFetched = rows.length
-  if (currentPeriodFilter !== 'all') {
-    // apply day filter
-    let lastTs
-    let day = moment()
-    if (currentPeriodFilter === 'yesterday') {
-      day = day.subtract(1, 'day')
-    }
-    rows = rows.filter(r => {
-      let ts = moment(r.ts)
-      lastTs = ts
-      return ts.isSame(day, 'day')
-    })
-
-    // did we reach the end?
-    if (numFetched < BATCH_SIZE || lastTs.isBefore(day, 'day')) {
-      isAtEnd = true
-    }
-  } else {
-    // did we reach the end?
-    if (rows.length === 0) {
-      isAtEnd = true
-    }
+  var before
+  var after
+  if (currentPeriodFilter === 'today') {
+    after = moment().startOf('day')
+  } else if (currentPeriodFilter === 'yesterday') {
+    after = moment().subtract(1, 'day').startOf('day')
+    before = moment().startOf('day')
+  }
+  var rows = await beaker.history.getVisitHistory({
+    before: +before,
+    after: +after,
+    offset,
+    limit: BATCH_SIZE,
+    search: query ? query : false 
+  })
+  // did we reach the end?
+  if (rows.length === 0) {
+    isAtEnd = true
   }
 
   if (offset > 0) {
