@@ -182,10 +182,8 @@ function render () {
 // =
 
 function onUpdateSearchQuery (e) {
-  if (e.code === 'Enter') {
-    query = e.target.value.toLowerCase()
-    loadVisits(0, render)
-  }
+  query = e.target.value.toLowerCase()
+  loadVisits(0, render)
 }
 
 async function onClearQuery () {
