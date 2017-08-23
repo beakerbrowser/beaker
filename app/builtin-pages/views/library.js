@@ -8,6 +8,7 @@ import {throttle} from '../../lib/functions'
 import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
 import renderFiles from '../com/files-list'
+import renderNetworkIcon from '../icon/network'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
@@ -258,7 +259,7 @@ function rArchiveListItem (archiveInfo) {
       </div>
       ${archiveInfo.userSettings.networked
         ? yo`<span class="peers">
-            <i class="fa fa-share-alt"></i>
+            ${renderNetworkIcon()}
             ${archiveInfo.peers}
           </span>`
         : ''}
