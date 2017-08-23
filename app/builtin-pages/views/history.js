@@ -19,6 +19,7 @@ var visits = []
 var isAtEnd = false
 var query = ''
 var currentPeriodFilter = 'all'
+var lastRenderedDate
 
 // main
 // =
@@ -74,7 +75,7 @@ async function loadVisits (offset, cb) {
   }
 
   isFetching = false
-  cb()
+  cb(rows)
 }
 
 // rendering
@@ -82,14 +83,14 @@ async function loadVisits (offset, cb) {
 
 function renderRows () {
   var rowEls = []
-  var lastDate = moment().startOf('day').add(1, 'day')
+  lastRenderedDate = moment().startOf('day').add(1, 'day')
 
   visits.forEach((row, i) => {
     // render a date heading if this post is from a different day than the last
-    var oldLastDate = lastDate
-    lastDate = moment(row.ts).endOf('day')
-    if (!lastDate.isSame(oldLastDate, 'day')) {
-      rowEls.push(yo`<h2>${ucfirst(niceDate(lastDate, { noTime: true }))}</h2>`)
+    var oldLastDate = lastRenderedDate
+    lastRenderedDate = moment(row.ts).endOf('day')
+    if (!lastRenderedDate.isSame(oldLastDate, 'day')) {
+      rowEls.push(yo`<h2>${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</h2>`)
     }
 
     // render row
@@ -102,6 +103,23 @@ function renderRows () {
   }
 
   return rowEls
+}
+
+function renderAndAppendRows (v) {
+  if (!v || v.length === 0) return
+  var parentEl = document.querySelector('.links-list.history')
+
+  v.forEach((row, i) => {
+    // render a date heading if this post is from a different day than the last
+    var oldLastDate = lastRenderedDate
+    lastRenderedDate = moment(row.ts).endOf('day')
+    if (!lastRenderedDate.isSame(oldLastDate, 'day')) {
+      parentEl.appendChild(yo`<h2>${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</h2>`)
+    }
+
+    // render row
+    parentEl.appendChild(renderRow(row, i))
+  })
 }
 
 function renderRow (row, i) {
@@ -209,7 +227,7 @@ function onScrollContent (e) {
   var el = e.target
   if (el.offsetHeight + el.scrollTop + BEGIN_LOAD_OFFSET >= el.scrollHeight) {
     // hit bottom
-    fetchMore(render)
+    fetchMore(renderAndAppendRows)
   }
 }
 
