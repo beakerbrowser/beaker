@@ -17,7 +17,8 @@
   position: absolute;
   right: 0px;
   background: #fff;
-  border-radius: 2px;
+  border: 1px solid rgba(0,0,0,.175);
+  border-radius: 4px;
 
   li.menu-link {
     padding: 0 @padding-component--tight;
@@ -36,14 +37,15 @@
   &.with-triangle:before {
     content: '';
     position: absolute;
-    top: -4px;
-    right: @padding-component--tight;
-    width: 8px;
-    height: 8px;
-    background: #fff;
-    //&:extend(.shadow);
-    box-shadow: -1px -1px 10px rgba(0, 0, 0, .15);
-    transform: rotateZ(45deg);
-    z-index: -1;
+    top: -8px;
+    right: 10px;
+    width: 12px;
+    height: 12px;
+    z-index: 3;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #fff;
   }
 }
