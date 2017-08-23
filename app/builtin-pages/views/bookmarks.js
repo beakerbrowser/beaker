@@ -6,7 +6,7 @@ import groupBy from 'lodash.groupby'
 import renderSidebar from '../com/sidebar'
 import renderCloseIcon from '../icon/close'
 import renderGlobeIcon from '../icon/globe'
-import renderHistoryIcon from '../icon/history'
+import renderRssIcon from '../icon/rss'
 import renderPinIcon from '../icon/pin'
 import renderPadlockIcon from '../icon/padlock'
 import renderStarFillIcon from '../icon/star-fill'
@@ -199,11 +199,11 @@ function renderToPage () {
             </div>
 
             <div class="section">
-              <h2>Friends</h2>
-              <div class="nav-item ${currentView === 'feed' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('feed')}>
-                ${renderHistoryIcon()}
-                Latest
-              </div>
+              <h2 onclick=${() => onUpdateViewFilter('feed')} class="clickable">
+                Friends
+                <span>${renderRssIcon()}</span>
+              </h2>
+
               ${followedUserProfiles
                 ? followedUserProfiles.length
                   ? followedUserProfiles.map(p => {
