@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="242px" height="282px" viewBox="0 0 242 282" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 46 (44423) - http://www.bohemiancoding.com/sketch -->
+    <title>file-text-o</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M241,74.7806971 L241,266 C241,274.836556 233.836556,282 225,282 L16,282 C7.163444,282 0,274.836556 0,266 L0,17 C0,8.163444 7.163444,1 16,1 L169.105723,1 L207.296372,38.9606523 C207.381196,39.044966 218.615739,50.984981 241,74.7806971 Z" id="path-1"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="file-text-o">
+            <g id="Combined-Shape">
+                <use fill-opacity="0.2" fill="#D8D8D8" fill-rule="evenodd" xlink:href="#path-1"></use>
+                <path stroke="#000000" stroke-width="21" d="M230.5,78.9431888 C220.721814,68.5485482 213.268053,60.6255122 208.138801,55.174169 C205.330697,52.189731 203.219429,49.9462505 201.805209,48.4439539 C201.09879,47.69354 200.566545,47.1283282 200.208883,46.748752 C199.963259,46.4881224 199.963259,46.4881224 199.807543,46.3230825 C199.667937,46.1765418 199.667937,46.1765418 199.894208,46.4076638 L164.775045,11.5 L16,11.5 C12.9624339,11.5 10.5,13.9624339 10.5,17 L10.5,266 C10.5,269.037566 12.9624339,271.5 16,271.5 L225,271.5 C228.037566,271.5 230.5,269.037566 230.5,266 L230.5,78.9431888 Z"></path>
+            </g>
+            <path d="M231.5,77.9427982 L201.0232,45.5402655 C200.98095,45.4953449 200.937946,45.4511381 200.894208,45.4076638 L165.775045,10.5 L151.5,10.5 L151.5,85 C151.5,88.0375661 153.962434,90.5 157,90.5 L231.5,90.5 L231.5,77.9427982 Z" id="Combined-Shape-Copy-2" stroke="#000000" stroke-width="21"></path>
+            <g id="text-lines" transform="translate(60.000000, 121.000000)" fill="#000000">
+                <rect id="Rectangle-7" x="0" y="0" width="121" height="21" rx="5"></rect>
+                <rect id="Rectangle-7-Copy-2" x="0" y="40" width="121" height="21" rx="5"></rect>
+                <rect id="Rectangle-7-Copy-3" x="0" y="80" width="121" height="21" rx="5"></rect>
+            </g>
+        </g>
+    </g>
+</svg>
