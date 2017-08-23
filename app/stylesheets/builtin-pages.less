@@ -223,6 +223,28 @@
 
     h2 {
       padding: 1px 20px;
+
+      &.clickable {
+        cursor: pointer;
+      }
+
+      .icon {
+        width: 9px;
+        height: 9px;
+        margin-left: 3px;
+
+        * {
+          fill: rgba(0,0,0,.25);
+          transition: fill .1s ease;
+        }
+      }
+
+      &:hover {
+
+        .icon * {
+          fill: rgba(0,0,0,.5);
+        }
+      }
     }
   }
 
