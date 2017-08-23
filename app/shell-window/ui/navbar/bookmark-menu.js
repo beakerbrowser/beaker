@@ -7,7 +7,10 @@ import * as navbar from '../navbar'
 
 export class BookmarkMenuNavbarBtn {
   constructor () {
-    this.isPrivate = true
+    this.values = {
+      title: '',
+      private: false
+    }
     this.isDropdownOpen = false
     window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
   }
@@ -29,23 +32,23 @@ export class BookmarkMenuNavbarBtn {
             <form onsubmit=${e => this.onSaveBookmark(e)}>
               <div class="input-group">
                 <label for="title">Title</label>
-                <input id="bookmark-title" type="text" name="title" value=${page && page.bookmark ? page.bookmark.title : ''}/>
+                <input id="bookmark-title" type="text" name="title" value=${this.values.title} onkeyup=${e => this.onChangeTitle(e)}/>
               </div>
 
               <p class="visibility-info">
-                ${this.isPrivate
+                ${this.values.private
                   ? 'This bookmark will not be shared with any of your friends.'
                   : 'This bookmark will be publicly visible.'}
               </p>
 
               <div class="input-group visibility">
-                <input checked=${this.isPrivate} type="radio" name="visibility" id="private" value="private" onchange=${e => this.onChangeVisibility('private')}/>
+                <input checked=${this.values.private} type="radio" name="visibility" id="private" value="private" onchange=${e => this.onChangeVisibility('private')}/>
                 <label for="private" class="">
                   <i class="fa fa-lock"></i>
                   Private
                 </label>
 
-                <input checked=${!this.isPrivate} type="radio" name="visibility" id="public" value="public" onchange=${e => this.onChangeVisibility('public')}/>
+                <input checked=${!this.values.private} type="radio" name="visibility" id="public" value="public" onchange=${e => this.onChangeVisibility('public')}/>
                 <label for="public">
                   Public
                   <i class="fa fa-globe"></i>
@@ -54,7 +57,7 @@ export class BookmarkMenuNavbarBtn {
 
               <div>
                 <button type="button" onclick=${e => this.onClickRemoveBookmark(e)}>Remove</button>
-                <button type="submit">Save</button>
+                ${this.doesNeedSave ? yo`<button type="submit">Save</button>` : ''}
               </div>
             </form>
           </div>
@@ -78,6 +81,15 @@ export class BookmarkMenuNavbarBtn {
     Array.from(document.querySelectorAll('.bookmark-navbar-menu')).forEach(el => yo.update(el, this.render()))
   }
 
+  get doesNeedSave () {
+    const page = pages.getActive()
+    if (!page || !page.bookmark) {
+      return false
+    }
+    const b = page.bookmark
+    return (b.title !== this.values.title || b.private !== this.values.private)
+  }
+
   close () {
     if (this.isDropdownOpen) {
       this.isDropdownOpen = false
@@ -94,7 +106,6 @@ export class BookmarkMenuNavbarBtn {
   async onClickBookmark (e) {
     // toggle the dropdown bookmark editor
     this.isDropdownOpen = !this.isDropdownOpen
-    this.updateActives()
 
     if (this.isDropdownOpen) {
       var page = pages.getActive()
@@ -103,12 +114,16 @@ export class BookmarkMenuNavbarBtn {
         // set the bookmark privately
         await beaker.bookmarks.bookmarkPrivate(page.url, {title: page.title || '', pinned: false})
         page.bookmark = await beaker.bookmarks.getBookmark(page.url)
-        this.isPrivate = true
         navbar.update()
-      } else {
-        this.isPrivate = page.bookmark.private
       }
 
+      // set form values
+      this.values.private = page.bookmark.private
+      this.values.title = page.bookmark.title
+    }
+
+    this.updateActives()
+    if (this.isDropdownOpen) {
       document.getElementById('bookmark-title').focus()
     }
   }
@@ -122,17 +137,17 @@ export class BookmarkMenuNavbarBtn {
 
     // update bookmark
     var b = page.bookmark
-    b.title = e.target.title.value || ''
+    b.title = this.values.title
 
     // delete old bookmark if privacy changed
-    if (this.isPrivate && !b.private) {
+    if (this.values.private && !b.private) {
       await beaker.bookmarks.unbookmarkPublic(b.href)
-    } else if (!this.isPrivate && b.private) {
+    } else if (!this.values.private && b.private) {
       await beaker.bookmarks.unbookmarkPrivate(b.href)
     }
 
     // create new bookmark
-    if (this.isPrivate) {
+    if (this.values.private) {
       await beaker.bookmarks.bookmarkPrivate(b.href, b)
     } else {
       await beaker.bookmarks.bookmarkPublic(b.href, b)
@@ -156,8 +171,13 @@ export class BookmarkMenuNavbarBtn {
     this.close()
   }
 
+  onChangeTitle (e) {
+    this.values.title = e.target.value
+    this.updateActives()
+  }
+
   onChangeVisibility (v) {
-    this.isPrivate = v === 'private'
+    this.values.private = v === 'private'
     this.updateActives()
   }
 }
