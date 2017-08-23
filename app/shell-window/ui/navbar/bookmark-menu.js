@@ -3,6 +3,7 @@
 import * as yo from 'yo-yo'
 import {findParent} from '../../../lib/fg/event-handlers'
 import * as pages from '../../pages'
+import * as navbar from '../navbar'
 
 export class BookmarkMenuNavbarBtn {
   constructor () {
@@ -103,6 +104,7 @@ export class BookmarkMenuNavbarBtn {
         await beaker.bookmarks.bookmarkPrivate(page.url, {title: page.title || '', pinned: false})
         page.bookmark = await beaker.bookmarks.getBookmark(page.url)
         this.isPrivate = true
+        navbar.update()
       } else {
         this.isPrivate = page.bookmark.private
       }
@@ -136,6 +138,7 @@ export class BookmarkMenuNavbarBtn {
       await beaker.bookmarks.bookmarkPublic(b.href, b)
     }
     page.bookmark = await beaker.bookmarks.getBookmark(b.href)
+    navbar.update()
     this.close()
   }
 
@@ -149,6 +152,7 @@ export class BookmarkMenuNavbarBtn {
       await beaker.bookmarks.unbookmarkPublic(page.url)
     }
     page.bookmark = null
+    navbar.update()
     this.close()
   }
 
