@@ -110,18 +110,18 @@ test('library.list', async t => {
     window.beaker.archives.list().then(done,done)
   })
   var items = res.value
-  t.deepEqual(items.length, 2)
+  t.deepEqual(items.length, 3)
   t.deepEqual(items[0].userSettings.isSaved, true)
   t.deepEqual(items[1].userSettings.isSaved, true)
   t.deepEqual(items[0].userSettings.autoDownload, true)
   t.deepEqual(items[1].userSettings.autoDownload, true)
-  t.deepEqual(items.filter(i => i.isOwner).length, 1)
+  t.deepEqual(items.filter(i => i.isOwner).length, 2)
 
   // list owned
   var res = await app.client.executeAsync((done) => {
     window.beaker.archives.list({ isOwner: true }).then(done,done)
   })
-  t.deepEqual(res.value.length, 1)
+  t.deepEqual(res.value.length, 2)
 
   // list unowned
   var res = await app.client.executeAsync((done) => {

@@ -40,11 +40,11 @@ test('profiles', async t => {
   })
   t.truthy(res.value.url)
 
-  // check current profile is null
+  // check current profile is blank
   var res = await app.client.executeAsync((done) => {
     window.beaker.profiles.getCurrentProfile().then(done,done)
   })
-  t.falsy(res.value)
+  t.deepEqual(res.value, {avatar: false, bio: '', name: ''})
 
   // set current profile
   var res = await app.client.executeAsync((done) => {

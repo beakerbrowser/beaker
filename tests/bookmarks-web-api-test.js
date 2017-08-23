@@ -50,7 +50,7 @@ test('public bookmarks', async t => {
   })
   res.value = res.value.map(bookmarkSubset)
   t.deepEqual(res.value, [
-    { href: 'dat://beakerbrowser.com/',
+    { href: 'dat://beakerbrowser.com',
       id: 'dat!beakerbrowser.com',
       pinned: false,
       private: false,
@@ -74,7 +74,7 @@ test('public bookmarks', async t => {
   })
   res.value = res.value.map(bookmarkSubset)
   t.deepEqual(res.value, [
-    { href: 'dat://beakerbrowser.com/',
+    { href: 'dat://beakerbrowser.com',
       id: 'dat!beakerbrowser.com',
       pinned: false,
       private: false,
@@ -138,7 +138,7 @@ test('current user bookmarks', async t => {
     window.beaker.bookmarks.getBookmark('dat://beakerbrowser.com/').then(done,done)
   })
   t.deepEqual(bookmarkSubset(res.value), 
-    { href: 'dat://beakerbrowser.com/',
+    { href: 'dat://beakerbrowser.com',
       id: 'dat!beakerbrowser.com',
       pinned: false,
       private: false,
@@ -147,7 +147,7 @@ test('current user bookmarks', async t => {
   var res = await app.client.executeAsync((done) => {
     window.beaker.bookmarks.getBookmark('https://notabookmark.com/').then(done,() => done({error: true}))
   })
-  t.truthy(res.value.error)
+  t.deepEqual(res.value, null)
 
   // is bookmarked?
   var res = await app.client.executeAsync((done) => {
