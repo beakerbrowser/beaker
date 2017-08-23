@@ -5,6 +5,7 @@ import prettyBytes from 'pretty-bytes'
 import * as toast from './toast'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
+import renderFileTextOIcon from '../icon/file-text-o'
 
 // exported api
 // =
@@ -114,7 +115,10 @@ function rFile (archiveInfo, node, depth, opts) {
       title=${node.niceName}
       style=${'padding-left: ' + padding + 'px'}>
       <div class="name">
-        <a href=${join(opts.baseUrl || archiveInfo.url, node.entry.name)}><i class="fa fa-file-text-o"></i>${node.niceName}</a>
+        <a href=${join(opts.baseUrl || archiveInfo.url, node.entry.name)}>
+          ${renderFileTextOIcon()}
+          ${node.niceName}
+        </a>
       </div>
       <div class="size">${prettyBytes(node.entry.size)}</div>
       ${!opts.hideDate ? yo`<div class="updated">${niceDate(+node.entry.mtime)}</div>` : ''}
