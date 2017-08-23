@@ -4,6 +4,7 @@ import pda from 'pauls-dat-api'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
+import {getProfileRecord} from '../injests/profiles'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
@@ -87,6 +88,7 @@ export default {
 
   async remove (url) {
     var key = toKey(url)
+    await assertArchiveDeletable(key)
     return archivesDb.setUserSettings(0, key, {isSaved: false})
   },
 
@@ -140,6 +142,13 @@ export default {
 async function assertSenderIsFocused (sender) {
   if (!sender.isFocused()) {
     throw new UserDeniedError('Application must be focused to spawn a prompt')
+  }
+}
+
+async function assertArchiveDeletable (key) {
+  var profileRecord = await getProfileRecord(0)
+  if ('dat://' + key === profileRecord.url) {
+    throw new PermissionsError('Unable to delete the user archive.')
   }
 }
 

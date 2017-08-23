@@ -7,6 +7,7 @@ import concat from 'concat-stream'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
+import {getProfileRecord} from '../injests/profiles'
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {getWebContentsWindow} from '../../lib/electron'
@@ -103,9 +104,9 @@ export default {
   },
 
   async unlinkArchive (url) {
-    var {archive, filepath, version} = await lookupArchive(url)
-    if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
+    var {archive, filepath} = await lookupArchive(url)
     await assertDeleteArchivePermission(archive, this.sender)
+    await assertArchiveDeletable(archive)
     await archivesDb.setUserSettings(0, archive.key, {isSaved: false})
   },
 
@@ -466,6 +467,13 @@ async function assertDeleteArchivePermission (archive, sender) {
   var allowed = await requestPermission(perm, sender, { title: details.title })
   if (!allowed) throw new UserDeniedError()
   return true
+}
+
+async function assertArchiveDeletable (archive) {
+  var profileRecord = await getProfileRecord(0)
+  if ('dat://' + archive.key.toString('hex') === profileRecord.url) {
+    throw new PermissionsError('Unable to delete the user archive.')
+  }
 }
 
 async function assertQuotaPermission (archive, senderOrigin, byteLength) {
