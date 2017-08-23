@@ -169,6 +169,11 @@ function renderBookmarksListToPage () {
 }
 
 function renderToPage () {
+  var searchPlaceholder = 'Search bookmarks'
+  if (currentView === 'pinned' || currentView === 'public' || currentView === 'private') {
+    searchPlaceholder = `Search ${currentView} bookmarks`
+  }
+
   yo.update(
     document.querySelector('.bookmarks-wrapper'),
     yo`
@@ -222,7 +227,7 @@ function renderToPage () {
           <div class="builtin-main">
             <div class="builtin-header fixed">
               <div class="search-container">
-                <input required autofocus onkeyup=${onQueryBookmarks} placeholder="Search bookmarks" type="text" class="search"/>
+                <input required autofocus onkeyup=${onQueryBookmarks} placeholder=${searchPlaceholder} type="text" class="search"/>
                 <span onclick=${onClearQuery} class="close-container">
                   ${renderCloseIcon()}
                 </span>
