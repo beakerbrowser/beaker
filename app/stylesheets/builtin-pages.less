@@ -146,9 +146,15 @@
     height: 30px;
     margin-bottom: 10px;
 
-    .search,
+    .close,
+    .search {
+      position: absolute;
+    }
+
     .close {
       position: absolute;
+      right: 7px;
+      top: 9px;
     }
 
     .search {
@@ -158,19 +164,6 @@
 
       &:invalid + .close-container {
         opacity: 0;
-      }
-    }
-
-    .close {
-      right: 7px;
-      top: 9px;
-      width: 13px;
-      height: 13px;
-      padding: 3px;
-
-      &:hover {
-        background: rgba(0,0,0,.1);
-        border-radius: 50%;
       }
     }
   }
@@ -387,5 +380,16 @@
     padding: 0 50px;
     width: 100%;
     max-width: 750px;
+  }
+}
+
+svg.close {
+  width: 13px;
+  height: 13px;
+  padding: 3px;
+
+  &:hover {
+    background: rgba(0,0,0,.1);
+    border-radius: 50%;
   }
 }

@@ -82,6 +82,7 @@ body {
 }
 
 .pinned-bookmark {
+  position: relative;
   text-align: center;
   background: #fff;
   border: 3px solid #fff;
@@ -95,6 +96,21 @@ body {
 
   &:hover {
     box-shadow: 0 2px 0 rgba(0,0,0,.15);
+
+    button.close {
+      opacity: 1;
+    }
+  }
+
+  button.close {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    padding: 0;
+    width: 13px;
+    height: 13px;
+    opacity: 0;
+    transition: opacity .15s ease;
   }
 
   .info {

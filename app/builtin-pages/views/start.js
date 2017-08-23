@@ -6,6 +6,7 @@ import ColorThief from '../../lib/fg/color-thief'
 import {findParent} from '../../lib/fg/event-handlers'
 import {pluralize} from '../../lib/strings'
 import renderSidebar from '../com/sidebar'
+import renderCloseIcon from '../icon/close'
 
 const colorThief = new ColorThief()
 
@@ -39,6 +40,16 @@ async function setup () {
       return
     }
   }
+}
+
+// events
+// =
+
+async function onUnpinBookmark (e) {
+  e.preventDefault()
+  await beaker.bookmarks.setBookmarkPinned(e.currentTarget.dataset.href, false)
+  await loadBookmarks()
+  update()
 }
 
 // rendering
@@ -78,6 +89,9 @@ function renderPinnedBookmark (bookmark) {
       <div class="info">
         <div class="title">${title}</div>
       </div>
+      <button class="close nofocus" data-href=${href} title="Unpin this bookmark" onclick=${onUnpinBookmark}>
+        ${renderCloseIcon()}
+      </button>
     </a>
   `
 }
