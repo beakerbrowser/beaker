@@ -19,9 +19,22 @@
       }
 
       .peers {
+        &:extend(.flex);
+        align-items: center;
+        height: 100%;
         font-size: 12px;
         color: @color-text--muted;
         padding-left: 1em;
+
+        .icon {
+          width: 11px;
+          height: 11px;
+          margin-right: 3px;
+
+          * {
+            fill: rgba(0,0,0,.5);
+          }
+        }
       }
     }
 
