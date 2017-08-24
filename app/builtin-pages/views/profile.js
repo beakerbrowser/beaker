@@ -151,13 +151,18 @@ function onToggleEditingProfile () {
   render()
 }
 
-async function onToggleFollowing () {
-  if (viewedProfile.isCurrentUserFollowing) {
-    await beaker.profiles.unfollow(currentUserProfile._origin, viewedProfile._origin)
-    viewedProfile.isCurrentUserFollowing = false
+async function onToggleFollowing (e, user) {
+  console.log('hit', e, user)
+  e.preventDefault()
+  e.stopPropagation()
+  console.log('stopped')
+  var userUrl = user._origin || user.url // we may be given a profile record or a follows record
+  if (user.isCurrentUserFollowing) {
+    await beaker.profiles.unfollow(currentUserProfile._origin, userUrl)
+    user.isCurrentUserFollowing = false
   } else {
-    await beaker.profiles.follow(currentUserProfile._origin, viewedProfile._origin, viewedProfile.name || '')
-    viewedProfile.isCurrentUserFollowing = true
+    await beaker.profiles.follow(currentUserProfile._origin, userUrl, user.name || '')
+    user.isCurrentUserFollowing = true
   }
   render()
 }
@@ -227,7 +232,6 @@ function renderFollowing () {
         ''}
       <div class="following-list">
         ${viewedProfile.follows.map(f => {
-          console.log(f)
           const name = f.name || 'Anonymous'
           return yo`
             <a class="following-card" href="beaker://profile/${f.url.slice('dat://'.length)}" title=${name}>
@@ -235,8 +239,8 @@ function renderFollowing () {
               <span class="title">${name}</span>
               ${f.isCurrentUser ? yo`<div class="you-label">You</div>` :
                 f.isCurrentUserFollowing ?
-                  yo`<button class="follow-btn following primary btn">✓</button>` :
-                  yo`<button class="follow-btn btn">+</button>`}
+                  yo`<button onclick=${(e) => onToggleFollowing(e, f)} class="follow-btn following primary btn">✓</button>` :
+                  yo`<button onclick=${(e) => onToggleFollowing(e, f)} class="follow-btn btn">+</button>`}
             </a>
           `
         })}
@@ -340,7 +344,7 @@ function renderProfileEditor () {
 
 function renderFollowButton () {
   return yo`
-    <button class="follow-btn btn primary" onclick=${onToggleFollowing}>
+    <button class="follow-btn btn primary" onclick=${(e) => onToggleFollowing(e, viewedProfile)}>
       ${viewedProfile.isCurrentUserFollowing ? 'Following ✓' : 'Follow +'}
     </button>`
 }
