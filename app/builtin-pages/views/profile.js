@@ -72,10 +72,11 @@ async function loadViewedProfile () {
     }
     if (!(viewedProfile && viewedProfile._origin)) {
       viewedProfile = currentUserProfile
+      viewedProfile.isCurrentUserFollowing = false
       history.pushState({}, null, 'beaker://profile/' + viewedProfile._origin.slice('dat://'.length))
-      return
+    } else {
+      viewedProfile.isCurrentUserFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, viewedProfile._origin)
     }
-    viewedProfile.isCurrentUserFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, viewedProfile._origin)
     render()
 
     // load extra data and render again
@@ -152,10 +153,8 @@ function onToggleEditingProfile () {
 }
 
 async function onToggleFollowing (e, user) {
-  console.log('hit', e, user)
   e.preventDefault()
   e.stopPropagation()
-  console.log('stopped')
   var userUrl = user._origin || user.url // we may be given a profile record or a follows record
   if (user.isCurrentUserFollowing) {
     await beaker.profiles.unfollow(currentUserProfile._origin, userUrl)
