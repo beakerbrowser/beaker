@@ -267,9 +267,10 @@ function rArchive (archiveInfo) {
   return yo`
     <div class="archive">
       ${rViewHeader(archiveInfo)}
+
       ${rNotSaved(archiveInfo)}
 
-      <section class="tabs-content">
+      <div class="tabs-content">
         ${renderTabs(currentSection, [
           {id: 'files', label: 'Files', onclick: onClickTab('files')},
           {id: 'log', label: 'History', onclick: onClickTab('log')},
@@ -282,7 +283,7 @@ function rArchive (archiveInfo) {
           settings: () => rSettings(archiveInfo),
           network: () => rNetwork(archiveInfo)
         })[currentSection]()}
-      </section>
+      </div>
     </div>
   `
 }
@@ -309,14 +310,17 @@ function rViewHeader (archiveInfo) {
   }
 
   return yo`
-    <section class="header">
-      <h1 class="title" title=${archiveInfo.title}>
+    <div class="builtin-header fixed">
+      <h2 class="title" title=${archiveInfo.title}>
         <a href="dat://${archiveInfo.key}">
           <span>${niceName(archiveInfo)}</span>
           <i class="fa fa-external-link"></i>
         </a>
         ${archiveInfo.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
-      </h1>
+      </h2>
+
+      <p class="desc">${archiveInfo.description || yo`<em>No description</em>`}</p>
+
       <div class="actions">
         <button class="btn primary" onclick=${onShare}>
           <i class="fa fa-link"></i>
@@ -350,7 +354,7 @@ function rViewHeader (archiveInfo) {
           </div>
         `)}
       </div>
-    </section>
+    </div>
   `
 }
 

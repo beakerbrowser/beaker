@@ -130,15 +130,58 @@
     }
   }
 
+  .builtin-header {
+    position: relative;
+    display: block;
+    padding: 15px !important;
+    height: 77px !important;
+    box-shadow: 0;
+    border-bottom: 0 !important;
+
+    h2.title {
+      &:extend(.overflow-ellipsis);
+      max-width: 450px;
+      margin-top: 0;
+      text-transform: none;
+      line-height: 1;
+      letter-spacing: 0;
+
+      a {
+        text-decoration: none;
+        color: rgba(0,0,0,.7);
+      }
+    }
+
+    .desc {
+      color: @color-text--muted;
+      font-style: italic;
+    }
+
+    .actions {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+
+      .caret {
+        font-size: 16px;
+        line-height: 16px;
+      }
+    }
+  }
+
   .builtin-main {
+    background: #fff;
 
     .header {
 
-      .title {
+      h2.title {
         &:extend(.overflow-ellipsis);
         align-items: center;
         max-width: 450px;
         margin-top: 25px;
+        text-transform: none;
+        text-decoration: none;
+        color: inherit;
 
         .fa-external-link {
           font-size: 1.2rem;
@@ -191,8 +234,20 @@
           top: 1px;
         }
 
+        .caret {
+          font-size: 16px;
+          line-height: 16px;
+        }
+
         .btn {
           display: inline-block;
+
+          .icon {
+            margin-left: auto;
+            width: 12px;
+            height: 12px;
+            fill: rgba(0,0,0,.55);
+          }
         }
 
         .dropdown-btn-list {
@@ -204,10 +259,6 @@
 
     &.empty {
       max-width: 100%;
-    }
-
-    @media (min-width: 925px) {
-      margin-left: 250px;
     }
 
     .menu {
@@ -548,6 +599,7 @@
   }
 
   .trash-list {
+
     h2 {
       margin-bottom: 10px;
     }
@@ -566,11 +618,49 @@
     }
   }
 
-  section.tabs-content {
+  .tabs-content .history,
+  .tabs-content .network,
+  .tabs-content .settings {
+    padding: 15px;
+  }
+
+  .tabs-content {
+    padding-top: 77px !important; // height of .library-wrapper .builtin-header
     font-size: .85rem;
 
-    p > a {
-      &:extend(.link);
+    .nav {
+      width: 100%;
+      padding: 0 5px 0 15px;
+      background: #fff;
+      border-top: 1px solid rgba(0,0,0,.125);
+      border-bottom: 1px solid rgba(0,0,0,.1);
+      box-shadow: 0 0 7px rgba(0,0,0,.05);
+      color: @color-text--muted;
+
+      .icon {
+        margin-left: auto;
+        width: 12px;
+        height: 12px;
+        fill: rgba(0,0,0,.55);
+      }
+    }
+
+    .nav-item {
+      display: inline-block;
+      margin-right: 0;
+      padding: 5px 10px;
+      height: 100%;
+
+      &:hover {
+        background: rgba(0,0,0,.03);
+      }
+
+      &.active {
+        background: rgba(0,0,0,.05);
+      }
+    }
+      p > a {
+        &:extend(.link);
+      }
     }
   }
-}
