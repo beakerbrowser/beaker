@@ -341,26 +341,6 @@ function rArchive (archiveInfo) {
 }
 
 function rViewHeader (archiveInfo) {
-  // set up icons and labels for save/unsave buttons
-  var toggleSaveIcon, toggleSaveText
-  if (archiveInfo.isOwner) {
-    if (archiveInfo.userSettings.isSaved) {
-      toggleSaveIcon = 'fa-trash'
-      toggleSaveText = 'Delete'
-    } else {
-      toggleSaveIcon = 'fa-floppy-o'
-      toggleSaveText = 'Restore'
-    }
-  } else {
-    if (archiveInfo.userSettings.isSaved) {
-      toggleSaveIcon = 'fa-times-circle'
-      toggleSaveText = 'Remove from library'
-    } else {
-      toggleSaveIcon = 'fa-plus'
-      toggleSaveText = 'Add to library'
-    }
-  }
-
   return yo`
     <div class="builtin-header fixed">
       <h2 class="title" title=${archiveInfo.title}>

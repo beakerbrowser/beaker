@@ -249,16 +249,74 @@
             fill: rgba(0,0,0,.55);
           }
         }
-
-        .dropdown-btn-list {
-          width: 175px;
-          font-size: 13px;
-        }
       }
     }
 
     &.empty {
       max-width: 100%;
+    }
+
+    .nav-wrapper {
+      padding-top: 85px;
+    }
+
+    .nav {
+      &:extend(.flex);
+      align-items: center;
+      height: 32px;
+      padding: 0 5px 0 15px; // 85px is height of .library-wrapper .builtin-header
+      width: 100%;
+      background: #fff;
+      border-top: 1px solid rgba(0,0,0,.125);
+      border-bottom: 1px solid rgba(0,0,0,.1);
+      box-shadow: 0 0 7px rgba(0,0,0,.05);
+      color: @color-text--muted;
+
+      .icon {
+        margin-left: auto;
+        width: 12px;
+        height: 12px;
+        fill: rgba(0,0,0,.55);
+      }
+    }
+
+    .nav-item {
+      display: inline-block;
+      margin-right: 0;
+      padding: 5px 10px;
+      height: 100%;
+
+      &:hover {
+        background: rgba(0,0,0,.03);
+      }
+
+      &.dropdown {
+        margin-left: auto;
+        margin-top: 3px;
+        cursor: pointer;
+
+        &:hover {
+          background: none;
+
+          .icon * {
+            fill: @color-text;
+          }
+        }
+
+        .icon {
+          width: 15px;
+          height: 15px;
+          cursor: pointer;
+
+          * {
+            fill: rgba(0,0,0,.5);
+          }
+        }
+      }
+
+      &.active {
+        background: rgba(0,0,0,.05);
+      }
     }
 
     .menu {
@@ -612,62 +670,57 @@
       font-weight: 400;
       margin-top: 0;
     }
+  }
 
-    .nav {
-      width: 100%;
-      padding: 0 5px 0 15px;
-      background: #fff;
-      border-top: 1px solid rgba(0,0,0,.125);
-      border-bottom: 1px solid rgba(0,0,0,.1);
-      box-shadow: 0 0 7px rgba(0,0,0,.05);
-      color: @color-text--muted;
+  // TODO
+  // temporarily override the default .dropdown-btn-list styles
+  // eventually i'd like them all to use these styles, but it will require some work
+  // -tbv
+  .dropdown-btn-list {
+    background: #f5f5f6;
+    border-radius: 4px;
+    width: 130px;
+    top: 33px;
+    right: -1.5px;
+  }
 
-      .icon {
-        margin-left: auto;
-        width: 12px;
-        height: 12px;
-        fill: rgba(0,0,0,.55);
+  .dropdown-item {
+    padding: 3px 10px !important;
+    color: rgba(0,0,0,.7) !important;
+    font-size: .8rem;
+    position: relative;
+    border-bottom: 0;
+
+    .icon {
+      position: absolute;
+      right: 10px;
+      top: -1px;
+      font-size: 16px;
+      color: rgba(0,0,0,.5);
+
+      * {
+        stroke: black;
+        stroke-width: 5;
+      }
+
+      &.trash {
+        top: 7px;
+        right: 11px;
       }
     }
 
-    .nav-item {
-      display: inline-block;
-      margin-right: 0;
-      padding: 5px 10px;
-      height: 100%;
-
-      &:hover {
-        background: rgba(0,0,0,.03);
-      }
-
-      &.dropdown {
-        float: right;
-
-        &:hover {
-          background: none;
-
-          .icon * {
-            fill: @color-text;
-          }
-        }
-
-        .icon {
-          width: 15px;
-          height: 15px;
-          margin-top: 2px;
-
-          * {
-            fill: rgba(0,0,0,.5);
-          }
-        }
-      }
-
-      &.active {
-        background: rgba(0,0,0,.05);
-      }
+    span.icon {
+      padding: 0;
     }
-      p > a {
-        &:extend(.link);
-      }
+
+    svg.icon {
+      width: 11px !important;
+      height: 11px !important;
+    }
+
+    &:hover {
+      background: #eee !important;
+      color: rgba(0,0,0,.95) !important;
     }
   }
+}
