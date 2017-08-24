@@ -162,6 +162,54 @@
     opacity: 0;
   }
 
+  .following-list {
+    margin: 0 25px 10px 25px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 15pxs;
+  }
+
+  .following-card {
+    &:extend(.flex);
+    align-items: center;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 2px;
+    box-shadow: 0 1px 0 rgba(0,0,0,.2);
+    width: 250px;
+
+    .link {
+      margin-right: 10px;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .avatar {
+      margin-right: 10px;
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+    }
+
+    .follow-btn {
+      padding: 0;
+      margin-left: auto;
+      width: 22px !important;
+      height: 22px !important;
+      line-height: 22px;
+      vertical-align: middle;
+      text-align: center;
+      font-size: 1rem;
+      line-height: 1.15;
+
+      &.following {
+        font-size: 0.85rem;
+        line-height: 1.1;
+      }
+    }
+  }
+
   .ll-row {
 
     &:first-of-type {
@@ -169,5 +217,11 @@
     }
 
     height: 45px !important;
+
+    .avatar {
+      border-radius: 50%;
+      width: 27px;
+      height: 27px;
+    }
   }
 }

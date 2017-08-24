@@ -210,17 +210,28 @@ function renderView () {
 
 function renderFollowing () {
   return yo`
-    <div>
+    <div class="following">
       <h2>Following</h2>
 
-      <div class="links-list">
+      <div class="following-list">
+        <div class="following-card">
+          <img class="avatar" src="https://pbs.twimg.com/profile_images/864579983787700225/31XiVW6B_400x400.jpg"/>
+
+          <a class="link" href>
+            <span class="title">Mathias Buus</span>
+          </a>
+
+          <div class="follow-btn btn">+</div>
+        </div>
         ${viewedProfile.follows.map(f => yo`
-          <div class="ll-row">
+          <div class="following-card">
+            <img class="avatar" src="${f.url}/avatar.png"/>
+
             <a class="link" href="beaker://profile/${f.url.slice('dat://'.length)}" title=${f.name || ''} />
               <span class="title">${f.name || ''}</span>
             </a>
-            <div class="actions bookmark__actions">
-            </div>
+
+            <button class="follow-btn following primary btn">✓</button>
           </div>`
         )}
       </div>
