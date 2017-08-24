@@ -162,15 +162,25 @@
     opacity: 0;
   }
 
+  .following-view {
+    .empty {
+      font-style: italic;
+      padding: 15px 50px;
+    }
+  }
+
   .following-list {
     margin: 0 25px 10px 25px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-gap: 15pxs;
+    grid-gap: 15px;
+    width: 516px;
   }
 
   .following-card {
     &:extend(.flex);
+    color: #555;
+    text-decoration: none;
     align-items: center;
     padding: 10px;
     background: #fff;
@@ -179,10 +189,9 @@
     box-shadow: 0 1px 0 rgba(0,0,0,.2);
     width: 250px;
 
-    .link {
-      margin-right: 10px;
-      color: inherit;
-      text-decoration: none;
+    cursor: pointer;
+    * {
+      cursor: pointer;
     }
 
     .avatar {
@@ -190,6 +199,12 @@
       width: 27px;
       height: 27px;
       border-radius: 50%;
+    }
+
+    .you-label {
+      padding-right: 5px;
+      margin-left: auto;
+      color: @color-text--light;
     }
 
     .follow-btn {

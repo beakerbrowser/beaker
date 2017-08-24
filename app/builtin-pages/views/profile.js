@@ -65,6 +65,7 @@ async function loadViewedProfile () {
   tmpAvatar = undefined
 
   try {
+    // load the profile
     var selectedProfileKey = await parseURLKey()
     if (selectedProfileKey) {
       viewedProfile = await beaker.profiles.getProfile(`dat://${selectedProfileKey}`)
@@ -74,13 +75,20 @@ async function loadViewedProfile () {
       history.pushState({}, null, 'beaker://profile/' + viewedProfile._origin.slice('dat://'.length))
       return
     }
+    viewedProfile.isCurrentUserFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, viewedProfile._origin)
+    render()
 
-    viewedProfile.isFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, viewedProfile._origin)
+    // load extra data and render again
+    await Promise.all(viewedProfile.follows.map(async (f) => {
+      f.isCurrentUser = f.url === currentUserProfile._origin
+      f.isCurrentUserFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, f.url)
+    }))
+    render()
   } catch (e) {
     // TODO
+    console.error(e)
   }
 
-  render()
 }
 
 async function loadBookmarks () {
@@ -144,12 +152,12 @@ function onToggleEditingProfile () {
 }
 
 async function onToggleFollowing () {
-  if (viewedProfile.isFollowing) {
+  if (viewedProfile.isCurrentUserFollowing) {
     await beaker.profiles.unfollow(currentUserProfile._origin, viewedProfile._origin)
-    viewedProfile.isFollowing = false
+    viewedProfile.isCurrentUserFollowing = false
   } else {
     await beaker.profiles.follow(currentUserProfile._origin, viewedProfile._origin, viewedProfile.name || '')
-    viewedProfile.isFollowing = true
+    viewedProfile.isCurrentUserFollowing = true
   }
   render()
 }
@@ -178,7 +186,7 @@ function render () {
             : ''}
 
           <div class="section">
-            <h2>${isUserProfile ? 'Your' : `${viewedProfile.name}'s`} profile</h2>
+            <h2>${isUserProfile ? 'Your' : `${viewedProfile.name}${"'"}s`} profile</h2>
             <div class="nav-item ${currentView === 'following' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('following')}>
               Following
             </div>
@@ -211,30 +219,27 @@ function renderView () {
 
 function renderFollowing () {
   return yo`
-    <div class="following">
+    <div class="following-view">
       <h2>Following</h2>
 
+      ${viewedProfile.follows.length === 0 ?
+        yo`<div class="empty">${viewedProfile.name} is not following anybody.</div>` :
+        ''}
       <div class="following-list">
-        <div class="following-card">
-          <img class="avatar" src="https://pbs.twimg.com/profile_images/864579983787700225/31XiVW6B_400x400.jpg"/>
-
-          <a class="link" href>
-            <span class="title">Mathias Buus</span>
-          </a>
-
-          <div class="follow-btn btn">+</div>
-        </div>
-        ${viewedProfile.follows.map(f => yo`
-          <div class="following-card">
-            ${imgWithFallbacks(`${f.url}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
-
-            <a class="link" href="beaker://profile/${f.url.slice('dat://'.length)}" title=${f.name || ''} />
-              <span class="title">${f.name || ''}</span>
+        ${viewedProfile.follows.map(f => {
+          console.log(f)
+          const name = f.name || 'Anonymous'
+          return yo`
+            <a class="following-card" href="beaker://profile/${f.url.slice('dat://'.length)}" title=${name}>
+              ${imgWithFallbacks(`${f.url}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
+              <span class="title">${name}</span>
+              ${f.isCurrentUser ? yo`<div class="you-label">You</div>` :
+                f.isCurrentUserFollowing ?
+                  yo`<button class="follow-btn following primary btn">✓</button>` :
+                  yo`<button class="follow-btn btn">+</button>`}
             </a>
-
-            <button class="follow-btn following primary btn">✓</button>
-          </div>`
-        )}
+          `
+        })}
       </div>
     </div>
   `
@@ -336,6 +341,6 @@ function renderProfileEditor () {
 function renderFollowButton () {
   return yo`
     <button class="follow-btn btn primary" onclick=${onToggleFollowing}>
-      ${viewedProfile.isFollowing ? 'Following ✓' : 'Follow +'}
+      ${viewedProfile.isCurrentUserFollowing ? 'Following ✓' : 'Follow +'}
     </button>`
 }
