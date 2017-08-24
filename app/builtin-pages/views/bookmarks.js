@@ -1,12 +1,9 @@
 /* globals beaker */
 
 const yo = require('yo-yo')
-const co = require('co')
-import groupBy from 'lodash.groupby'
 import renderSidebar from '../com/sidebar'
 import renderCloseIcon from '../icon/close'
 import renderGlobeIcon from '../icon/globe'
-import renderRssIcon from '../icon/rss'
 import renderPinIcon from '../icon/pin'
 import renderPadlockIcon from '../icon/padlock'
 import renderStarFillIcon from '../icon/star-fill'
@@ -42,11 +39,6 @@ async function setup () {
 
 async function loadBookmarks () {
   switch (currentView) {
-    case 'feed':
-      bookmarks = await beaker.bookmarks.listPublicBookmarks({
-        limit: 50
-      })
-      break
     case 'pinned':
       bookmarks = await beaker.bookmarks.listPinnedBookmarks()
       break
@@ -204,9 +196,8 @@ function renderToPage () {
             </div>
 
             <div class="section">
-              <h2 onclick=${() => onUpdateViewFilter('feed')} class="clickable">
+              <h2>
                 Friends
-                <span>${renderRssIcon()}</span>
               </h2>
 
               ${followedUserProfiles
@@ -234,34 +225,9 @@ function renderToPage () {
               </div>
             </div>
 
-            ${renderCurrentView()}
+            ${renderBookmarks()}
           </div>
         </div>`)
-}
-
-function renderCurrentView () {
-  if (currentView === 'feed') {
-    return renderFeed()
-  } else {
-    return renderBookmarks()
-  }
-}
-
-function renderFeed () {
-  var groups = groupBy(bookmarks, '_origin')
-  return yo`
-    <div>
-      ${Object.keys(groups).map(origin => {
-        return yo`
-          <div>
-            <div class="links-list bookmarks">
-              ${groups[origin].map(renderRow)}
-            </div>
-          </div>
-        `
-      })}
-    </div>
-  `
 }
 
 function renderBookmarks () {
