@@ -6,6 +6,7 @@ import * as toast from './toast'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import renderFileTextOIcon from '../icon/file-text-o'
+import renderFolderIcon from '../icon/folder'
 
 // exported api
 // =
@@ -98,7 +99,8 @@ function rDirectory (archiveInfo, node, depth, opts) {
         onclick=${e => onClickDirectory(e, archiveInfo, node, opts)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
         <div class="name">
-          <i class="fa fa-${icon}"></i>${node.niceName}
+          ${renderFolderIcon()}
+          ${node.niceName}
         </div>
       </div>
       ${children}
