@@ -1,5 +1,7 @@
 import yo from 'yo-yo'
 
+// to try /avatar.png, /avatar.jpg, /avatar.gif, in that order:
+// imgWithFallbacks(`${f.url}/avatar`, ['png', 'jpg', 'gif'], {cls: 'avatar'})
 export default function imgWithFallbacks(baseSrc, exts, {cls} = {}) {
   var el = render()
   return el
