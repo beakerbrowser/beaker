@@ -2,6 +2,7 @@ const yo = require('yo-yo')
 const co = require('co')
 import renderSidebar from '../com/sidebar'
 import renderPencilIcon from '../icon/pencil'
+import imgWithFallbacks from '../com/img-with-fallbacks'
 
 // globals
 // =
@@ -225,7 +226,7 @@ function renderFollowing () {
         </div>
         ${viewedProfile.follows.map(f => yo`
           <div class="following-card">
-            <img class="avatar" src="${f.url}/avatar.png"/>
+            ${imgWithFallbacks(`${f.url}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
 
             <a class="link" href="beaker://profile/${f.url.slice('dat://'.length)}" title=${f.name || ''} />
               <span class="title">${f.name || ''}</span>
