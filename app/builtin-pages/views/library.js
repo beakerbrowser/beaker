@@ -707,7 +707,7 @@ async function onSetNetworked (e, value) {
   await beaker.archives.update(selectedArchive.key, null, {networked: value})
   await archivesList.setup({isSaved: true}) // reload listing
   update()
-  toast.create('Settings updated.')
+  toast.create('Settings updated')
 }
 
 async function onSetAutoDownload (e, value) {
@@ -717,7 +717,7 @@ async function onSetAutoDownload (e, value) {
   selectedArchive.userSettings.autoDownload = value
   await beaker.archives.update(selectedArchive.key, null, {autoDownload: value})
   update()
-  toast.create('Settings updated.')
+  toast.create('Settings updated')
 }
 
 async function onDeleteDownloadedFiles () {
@@ -725,7 +725,7 @@ async function onDeleteDownloadedFiles () {
     return false
   }
   await beaker.archives.clearFileCache(selectedArchive.key)
-  toast.create('All downloaded files have been deleted.')
+  toast.create('All downloaded files have been deleted')
   loadCurrentArchive()
 }
 

@@ -59,6 +59,6 @@ function onClickWrapper (e) {
 function onCopyURL (url) {
   return e => {
     writeToClipboard(url)
-    toast.create(`URL copied to clipboard.`)
+    toast.create(`URL copied to clipboard`)
   }
 }
