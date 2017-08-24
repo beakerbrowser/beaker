@@ -549,7 +549,6 @@ function rSettings (archiveInfo) {
   // render
   return yo`
     <div class="settings">
-      ${networkSettingsEls}
       <table>
         <tr><td class="label">Title</td>${titleEl}</tr>
         <tr><td class="label">Description</td>${descEl}</tr>
