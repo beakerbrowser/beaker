@@ -389,9 +389,63 @@ function rNotSaved (archiveInfo) {
 }
 
 function rNetwork (archiveInfo) {
-  var debugLink = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
+  const isSaved = archiveInfo.userSettings.isSaved
+  const isChecked = {
+    networked: archiveInfo.userSettings.networked,
+    autoDownload: isSaved && archiveInfo.userSettings.autoDownload,
+    autoUpload: isSaved && archiveInfo.userSettings.autoDownload
+  }
+  const debugLink = 'beaker://swarm-debugger/' + selectedArchive.url.slice('dat://'.length)
+
+  let networkSettingsEls
+  if (archiveInfo.isOwner) {
+    networkSettingsEls = [
+      yo`
+        <div class="sharing-settings ${!isSaved ? 'disabled' : ''}">
+          <h3>Network Sharing</h3>
+          <fieldset>
+            <label onclick=${(e) => onSetNetworked(e, true)}>
+              <input type="radio" name="networked_setting" disabled=${!isSaved} checked=${isChecked.networked} />
+              Share these files on the network
+            </label>
+            <label onclick=${(e) => onSetNetworked(e, false)}>
+              <input type="radio" name="networked_setting" disabled=${!isSaved} checked=${!isChecked.networked} />
+              Offline
+            </label>
+          </fieldset>
+        </div>
+      `
+    ]
+  } else {
+    networkSettingsEls = [
+      isSaved
+        ? ''
+        : yo`
+            <p><a onclick=${onToggleSaved} class="link">Add this site to your library</a> to configure the download settings.</p>
+          `,
+      yo`
+        <div class="setting ${!isSaved ? 'disabled' : ''}">
+          <h5>Download files</h5>
+          <fieldset>
+            <label onclick=${(e) => onSetAutoDownload(e, false)}>
+              <input type="radio" name="download_setting" disabled=${!isSaved} checked=${!isChecked.autoDownload} />
+              When I visit
+            </label>
+            <label onclick=${(e) => onSetAutoDownload(e, true)}>
+              <input type="radio" name="download_setting" disabled=${!isSaved} checked=${isChecked.autoDownload} />
+              Always <span class="muted">(Sync for offline use)</span>
+            </label>
+          </fieldset>
+        </div>
+      `
+    ]
+  }
+
   return yo`
     <div class="network">
+      ${networkSettingsEls}
+
+      <h3>Network activity</h3>
       ${renderGraph(archiveInfo)}
       <a href=${debugLink} title="Open network debugger">
         <i class="fa fa-bug"></i>
@@ -452,11 +506,6 @@ function rHistory (archiveInfo) {
 
 function rSettings (archiveInfo) {
   const isSaved = archiveInfo.userSettings.isSaved
-  const isChecked = {
-    networked: archiveInfo.userSettings.networked,
-    autoDownload: isSaved && archiveInfo.userSettings.autoDownload,
-    autoUpload: isSaved && archiveInfo.userSettings.autoDownload
-  }
 
   // editable title and description
   var titleEl, descEl
@@ -488,49 +537,8 @@ function rSettings (archiveInfo) {
   }
 
   // tools that differ if owner
-  var networkSettingsEls
   var toolsEls
-  if (archiveInfo.isOwner) {
-    networkSettingsEls = [
-      yo`
-        <div class="setting ${!isSaved ? 'disabled' : ''}">
-          <h5>Network Sharing</h5>
-          <fieldset>
-            <label onclick=${(e) => onSetNetworked(e, true)}>
-              <input type="radio" name="networked_setting" disabled=${!isSaved} checked=${isChecked.networked} />
-              Share these files on the network
-            </label>
-            <label onclick=${(e) => onSetNetworked(e, false)}>
-              <input type="radio" name="networked_setting" disabled=${!isSaved} checked=${!isChecked.networked} />
-              Offline
-            </label>
-          </fieldset>
-        </div>
-      `
-    ]
-  } else {
-    networkSettingsEls = [
-      isSaved
-        ? ''
-        : yo`
-            <p><a onclick=${onToggleSaved} class="link">Add this site to your library</a> to configure the download settings.</p>
-          `,
-      yo`
-        <div class="setting ${!isSaved ? 'disabled' : ''}">
-          <h5>Download files</h5>
-          <fieldset>
-            <label onclick=${(e) => onSetAutoDownload(e, false)}>
-              <input type="radio" name="download_setting" disabled=${!isSaved} checked=${!isChecked.autoDownload} />
-              When I visit
-            </label>
-            <label onclick=${(e) => onSetAutoDownload(e, true)}>
-              <input type="radio" name="download_setting" disabled=${!isSaved} checked=${isChecked.autoDownload} />
-              Always <span class="muted">(Sync for offline use)</span>
-            </label>
-          </fieldset>
-        </div>
-      `
-    ]
+  if (!archiveInfo.isOwner) {
     toolsEls = yo`
       <div class="tools">
         <a class="link" onclick=${onDeleteDownloadedFiles}><i class="fa fa-trash"></i> Delete downloaded files</a>

@@ -364,43 +364,6 @@
         }
       }
 
-      .setting {
-        margin-bottom: 0.5rem;
-        padding: 0.25rem 0;
-
-        h5 {
-          margin-bottom: 0.25rem;
-          font-weight: 500;
-        }
-
-        fieldset {
-          font-size: 0.8rem;
-          border: 1px solid @border-menu;
-          background: @background-button;
-          padding: 0;
-          margin: 0;
-          border-radius: 2px;
-        }
-
-        label {
-          display: block;
-          margin: 0.5rem;
-        }
-
-        .muted {
-          color: @color-text--muted;
-          font-weight: 100;
-        }
-
-        &.disabled {
-          color: @color-text--midlight;
-
-          .muted {
-            color: @color-text--light;
-          }
-        }
-      }
-
       .tools {
         margin: 0.7rem 0.2rem;
         padding: 1rem 0 0;
@@ -414,7 +377,34 @@
 
     .network {
 
+      .sharing-settings {
+        margin-bottom: 20px;
+
+        input {
+          height: initial;
+          margin-right: 5px;
+        }
+
+        fieldset {
+          border: 1px solid @border-menu;
+          background: @background-button;
+          padding: 15px;
+          border-radius: 2px;
+          max-width: 400px;
+        }
+
+        label {
+          display: block;
+          margin-bottom: 10px;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+
       a {
+        &:extend(.link);
         margin-top: .5rem;
         display: block;
         font-size: .75rem;
@@ -617,6 +607,12 @@
   .tabs-content {
     padding-top: 77px !important; // height of .library-wrapper .builtin-header
     font-size: .85rem;
+
+    h3 {
+      font-size: .95rem;
+      font-weight: 400;
+      margin-top: 0;
+    }
 
     .nav {
       width: 100%;
