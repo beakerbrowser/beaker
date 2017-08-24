@@ -85,15 +85,15 @@
 
     .name,
     .name a {
-
         &:extend(.flex);
         align-items: center;
+        cursor: pointer;
     }
 
     .name {
       color: @color-link;
-      color: @color-text--muted;
-      color: rgba(0,0,0,.75);
+      // color: @color-text--muted;
+      // color: rgba(0,0,0,.75);
 
       &:hover {
         &:extend(.link:hover);
@@ -105,8 +105,11 @@
       }
     }
 
-    .size, .updated, i {
-      color: @color-text--muted;
+    .size, .updated {
+      color: @color-text;
+      font-size: .73rem;
+      color: rgba(0,0,0,.5);
+      font-weight: 500;
     }
 
     .size {
