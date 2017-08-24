@@ -38,13 +38,14 @@
 }
 
 .files-list {
-  border: 1px solid @border-menu;
-  border-radius: 0 0 3px 3px;
+  border-bottom: 1px solid @border-menu;
   font-size: .8rem;
 
   .item {
     &:extend(.flex);
-    padding: 7px @padding-component--tight;
+    align-items: center;
+    padding: 0 15px;
+    height: 33px;
     border-top: 1px solid @border-menu;
 
     &:not(.empty):hover {
@@ -55,15 +56,12 @@
       cursor: pointer;
     }
 
-    .name {
+    .icon {
+      width: 13px;
+      height: 13px;
+      margin-right: @margin-icon;
 
-      &:hover {
-        &:extend(.link:hover);
-      }
-
-      .icon {
-        width: 13px;
-        height: 13px;
+      &.file-text-o {
 
         * {
           stroke: rgba(0,0,0,.5);
@@ -73,8 +71,37 @@
           fill: rgba(0,0,0,.5);
         }
       }
-      i {
-        margin-right: @margin-icon;
+
+      &.folder {
+        width: 14px;
+        height: 14px;
+
+        * {
+          fill: rgba(0,0,0,.15);
+          stroke: rgba(0,0,0,.15) !important;
+        }
+      }
+    }
+
+    .name,
+    .name a {
+
+        &:extend(.flex);
+        align-items: center;
+    }
+
+    .name {
+      color: @color-link;
+      color: @color-text--muted;
+      color: rgba(0,0,0,.75);
+
+      &:hover {
+        &:extend(.link:hover);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
       }
     }
 
