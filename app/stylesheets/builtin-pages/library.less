@@ -641,6 +641,28 @@
         background: rgba(0,0,0,.03);
       }
 
+      &.dropdown {
+        float: right;
+
+        &:hover {
+          background: none;
+
+          .icon * {
+            fill: @color-text;
+          }
+        }
+
+        .icon {
+          width: 15px;
+          height: 15px;
+          margin-top: 2px;
+
+          * {
+            fill: rgba(0,0,0,.5);
+          }
+        }
+      }
+
       &.active {
         background: rgba(0,0,0,.05);
       }
