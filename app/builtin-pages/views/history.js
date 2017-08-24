@@ -59,7 +59,7 @@ async function loadVisits (offset, cb) {
     after: +after,
     offset,
     limit: BATCH_SIZE,
-    search: query ? query : false 
+    search: query ? query : false
   })
   // did we reach the end?
   if (rows.length === 0) {
