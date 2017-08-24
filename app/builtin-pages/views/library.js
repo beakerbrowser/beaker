@@ -9,6 +9,8 @@ import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
 import renderFiles from '../com/files-list'
 import renderSearchIcon from '../icon/search'
+import renderDotsIcon from '../icon/three-dots'
+import renderTrashIcon from '../icon/trash'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
@@ -264,19 +266,69 @@ function rArchiveListItem (archiveInfo) {
 function rArchive (archiveInfo) {
   document.title = `Library - ${archiveInfo.title || 'dat://' + archiveInfo.key}`
 
+  // set up icons and labels for save/unsave buttons
+  var toggleSaveIcon, toggleSaveText
+  if (archiveInfo.isOwner) {
+    if (archiveInfo.userSettings.isSaved) {
+      toggleSaveIcon = '' // 'fa-trash'
+      toggleSaveText = 'Delete'
+    } else {
+      toggleSaveIcon = '' // 'fa-floppy-o'
+      toggleSaveText = 'Restore'
+    }
+  } else {
+    if (archiveInfo.userSettings.isSaved) {
+      toggleSaveIcon = '' // fa-times-circle'
+      toggleSaveText = 'Remove from library'
+    } else {
+      toggleSaveIcon = '' // fa-plus'
+      toggleSaveText = 'Add to library'
+    }
+  }
+
   return yo`
     <div class="archive">
       ${rViewHeader(archiveInfo)}
 
       ${rNotSaved(archiveInfo)}
 
+      <div class="nav-wrapper">
+        <div class="nav">
+          ${renderTabs(currentSection, [
+            {id: 'files', label: 'Files', onclick: onClickTab('files')},
+            {id: 'log', label: 'History', onclick: onClickTab('log')},
+            {id: 'network', label: 'Network', onclick: onClickTab('network')},
+            {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
+          ].filter(Boolean))}
+
+          ${toggleable(yo`
+            <div class="dropdown-btn-container toggleable-container" data-toggle-id="archive-dropdown-menu">
+              <span class="nav-item dropdown toggleable">
+                ${renderDotsIcon()}
+              </span>
+
+              <div class="dropdown-btn-list">
+                ${archiveInfo.isOwner ? yo`
+                  <div class="dropdown-item" onclick=${onImportFiles}>
+                    Import files
+                    <span class="icon">+</span>
+                  </div>
+                ` : ''}
+                <div class="dropdown-item" onclick=${onFork}>
+                  Fork this site
+                  <span class="icon">+</span>
+                </div>
+                <div class="dropdown-item" onclick=${onToggleSaved}>
+                  ${toggleSaveText}
+                  ${renderTrashIcon()}
+                </div>
+              </div>
+            </div>
+          `)}
+        </div>
+      </div>
+
       <div class="tabs-content">
-        ${renderTabs(currentSection, [
-          {id: 'files', label: 'Files', onclick: onClickTab('files')},
-          {id: 'log', label: 'History', onclick: onClickTab('log')},
-          {id: 'network', label: 'Network', onclick: onClickTab('network')},
-          {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
-        ].filter(Boolean))}
         ${({
           files: () => rFiles(archiveInfo),
           log: () => rHistory(archiveInfo),
@@ -326,33 +378,6 @@ function rViewHeader (archiveInfo) {
           <i class="fa fa-link"></i>
           Share
         </button>
-        ${toggleable(yo`
-          <div class="dropdown-btn-container toggleable-container" data-toggle-id="archive-dropdown-menu">
-            <button class="btn toggleable">
-              <i class="fa fa-caret-down"></i>
-            </button>
-            <div class="dropdown-btn-list">
-              ${archiveInfo.isOwner ? yo`
-                <div class="dropdown-item" onclick=${onImportFiles}>
-                  <i class="fa fa-plus"></i>
-                  Import files
-                </div>
-              ` : ''}
-              <div class="dropdown-item" onclick=${onFork}>
-                <i class="fa fa-code-fork"></i>
-                Fork this site
-              </div>
-              <div class="dropdown-item" onclick=${onViewSource}>
-                <i class="fa fa-code"></i>
-                View source
-              </div>
-              <div class="dropdown-item" onclick=${onToggleSaved}>
-                <i class="fa ${toggleSaveIcon}"></i>
-                ${toggleSaveText}
-              </div>
-            </div>
-          </div>
-        `)}
       </div>
     </div>
   `
