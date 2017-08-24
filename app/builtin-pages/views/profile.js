@@ -11,6 +11,7 @@ var viewedProfile
 var isEditingProfile
 var tmpAvatar
 var currentView
+var bookmarks
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -81,11 +82,24 @@ async function loadViewedProfile () {
   render()
 }
 
+async function loadBookmarks () {
+  bookmarks = await beaker.bookmarks.listPublicBookmarks({
+    author: viewedProfile._origin
+  })
+}
+
 // events
 // =
 
 async function onUpdateViewFilter (filter) {
+  // reset data
+  bookmarks = null
+
+  // update view
   currentView = filter || ''
+  if (currentView === 'bookmarks') {
+    await loadBookmarks()
+  }
   render()
 }
 
@@ -162,13 +176,12 @@ function render () {
               </span>`
             : ''}
 
-
           <div class="section">
             <h2>${isUserProfile ? 'Your' : `${viewedProfile.name}'s`} profile</h2>
             <div class="nav-item ${currentView === 'following' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('following')}>
               Following
             </div>
-            <div class="nav-item ${currentView === 'following' ? 'bookmarks' : ''}" onclick=${() => onUpdateViewFilter('bookmarks')}>
+            <div class="nav-item ${currentView === 'bookmarks' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('bookmarks')}>
               Bookmarks
             </div>
           </div>
@@ -186,6 +199,8 @@ function renderView () {
   switch (currentView) {
     case 'following':
       return renderFollowing()
+    case 'bookmarks':
+      return renderBookmarks()
     case 'editing':
       return renderProfileEditor()
     default:
@@ -245,6 +260,36 @@ function renderProfile () {
       ${isUserProfile ? '' : renderFollowButton()}
     </div>
   `
+}
+
+function renderBookmarks () {
+  return yo`
+    <div>
+      <h2>Bookmarks</h2>
+      <div class="links-list bookmarks">
+        ${bookmarks.length
+          ? bookmarks.map(renderBookmark)
+          : yo`<em class="empty">No bookmarks</em>`
+        }
+      </div>
+    </div>
+  `
+}
+
+function renderBookmark (row, i) {
+  return yo`
+    <li class="ll-row bookmarks__row" data-row=${i}>
+      <a class="link bookmark__link" href=${row.href} title=${row.title} />
+        <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
+        <span class="title bookmark__title">
+          ${row.title.startsWith('dat://')
+            ? yo`<em>Untitled</em>`
+            : yo`${row.title}`
+          }
+        </span>
+        <span class="url bookmark__url">${row.href}</span>
+      </a>
+    </li>`
 }
 
 function renderProfileEditor () {
