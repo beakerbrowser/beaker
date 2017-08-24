@@ -179,7 +179,6 @@ function update () {
         <h1>Filesystem</h1>
 
         <div class="section archives-list">
-          <h2>Your files</h2>
           <div class="sidebar-actions">
             <label for="filter">
               ${renderSearchIcon()}
