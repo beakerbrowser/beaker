@@ -191,11 +191,14 @@ function render () {
 
           <div class="section">
             <h2>${isUserProfile ? 'Your' : `${viewedProfile.name}${"'"}s`} profile</h2>
+            <div class="nav-item ${currentView === 'bookmarks' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('bookmarks')}>
+              Bookmarks
+            </div>
             <div class="nav-item ${currentView === 'following' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('following')}>
               Following
             </div>
-            <div class="nav-item ${currentView === 'bookmarks' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('bookmarks')}>
-              Bookmarks
+            <div class="nav-item disabled">
+              Timeline <span class="coming-soon">Coming soon</span>
             </div>
           </div>
         </div>

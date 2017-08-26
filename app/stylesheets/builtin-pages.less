@@ -318,10 +318,6 @@
 
     &:hover {
       background: rgb(233, 233, 236);
-
-      .icon {
-
-      }
     }
 
     &.active {
@@ -365,6 +361,20 @@
         height: 20px;
         border-radius: 50%;
         margin-right: 5px;
+      }
+    }
+
+    &.disabled {
+      color: @color-text--midlight;
+
+      &:hover {
+        background: transparent;
+      }
+
+      .coming-soon {
+        display: inline-block;
+        font-style: italic;
+        margin-left: 0.5rem;
       }
     }
   }
