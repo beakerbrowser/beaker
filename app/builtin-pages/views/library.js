@@ -176,8 +176,6 @@ function update () {
     <div class="library-wrapper builtin-wrapper">
       ${renderSidebar('library')}
       <div class="builtin-sidebar">
-        <h1>Filesystem</h1>
-
         <div class="section archives-list">
           <div class="sidebar-actions">
             <label for="filter">
