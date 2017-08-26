@@ -46,9 +46,9 @@ export function render () {
               onmouseout=${onCanvasMouseUp}
               onmousemove=${onCanvasMouseMove} />
             ></canvas>
-            <input type="range" value="0" min="0" max="100" onchange=${onResize} />
+            <input type="range" value="0" min="0" max="100" onchange=${onResize} oninput=${onResize} />
           </div>
-          <div class="btns"><button class="btn thick primary" onclick=${onDone}>Done</button></div>
+          <div class="btns"><button class="btn primary" onclick=${onDone}>Done</button></div>
         </div>
       </div>
     </div>
