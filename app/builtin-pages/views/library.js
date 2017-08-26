@@ -192,7 +192,23 @@ function update () {
               </a>
             </label>
           </div>
-          ${rArchivesList()}
+
+          ${isTrashOpen
+            ? rTrash()
+            : yo`
+              <div>
+              <div class="section">
+                <h2>Recent</h2>
+                ${rRecentArchivesList()}
+              </div>
+
+              <div class="section">
+                <h2>Created by you</h2>
+                ${rYourArchivesList()}
+              </div>
+              </div>
+            `
+          }
         </div>
 
         <div class="trash-controls">
@@ -565,21 +581,21 @@ function rSettings (archiveInfo) {
 }
 
 function rTrash () {
-  document.title = 'Library - Trash'
   return yo`
-    <div class="trash">
-      <h1>Trash</h1>
+    <div class="section trash">
+      <h2>Trash</h2>
       ${trashList.length ? '' : yo`<p>No items in trash</p>`}
-      <ul class="trash-list">
+
+      <div class="trash-list">
         ${trashList.map(archiveInfo => yo`
-          <li class="trash-item">
-            <a href=${archiveInfo.key}>${niceName(archiveInfo)}</a>
-            <button class="restore" onclick=${e => onUndelete(e, archiveInfo.key)}>
+          <div class="nav-item archive" onclick=${onSelectArchive(archiveInfo)}>
+            <div class="title">${niceName(archiveInfo)}</div>
+            <button class="btn restore" onclick=${e => onUndelete(e, archiveInfo.key)}>
               Restore
             </button>
-          </li>`
+          </div>`
         )}
-      </ul>
+      </div>
     </div>
   `
 }
