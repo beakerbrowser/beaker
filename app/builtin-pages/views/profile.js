@@ -1,6 +1,7 @@
 const yo = require('yo-yo')
 const co = require('co')
 import renderSidebar from '../com/sidebar'
+import * as cropPopup from '../com/crop-popup'
 import renderPencilIcon from '../icon/pencil'
 import imgWithFallbacks from '../com/img-with-fallbacks'
 
@@ -137,11 +138,11 @@ function onUpdateTmpAvatar (e) {
     var reader = new FileReader()
 
     reader.onload = function () {
-      document.querySelector('img.editor.avatar').src = reader.result
-      tmpAvatar = {
-        imgData: reader.result.split(',')[1],
-        imgExtension: f.name.split('.')[1] || '',
-      }
+      e.target.value = null // clear the input
+      cropPopup.create(reader.result, res => {
+        document.querySelector('img.editor.avatar').src = res.dataUrl
+        tmpAvatar = res
+      })
     }
     reader.readAsDataURL(f)
   }

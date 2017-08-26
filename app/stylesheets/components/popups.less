@@ -20,6 +20,10 @@
   border: 1px solid @border-popup;
   width: 450px;
   margin: 80px auto 0;
+
+  .title {
+    font-size: 18px;
+  }
 }
 
 #share-popup {
@@ -43,10 +47,6 @@
       }
     }
 
-    .title {
-      font-size: 18px;
-    }
-
     .btn {
       float: right;
     }
@@ -59,6 +59,31 @@
       i {
         margin-right: 3px;
       }
+    }
+  }
+}
+
+#crop-popup {
+  .popup-inner {
+    width: 298px;
+
+    .controls {
+      width: 256px;    
+      margin: 1rem 0 0;
+    }
+
+    canvas {
+      display: block;
+      border: 1px solid gray;
+      border-radius: 2px;
+    }
+
+    input[type="range"] {
+      width: 256px;
+    }
+
+    .btns {
+      text-align: right;
     }
   }
 }
