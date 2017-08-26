@@ -103,7 +103,7 @@ export class BookmarkMenuNavbarBtn {
     this.close()
   }
 
-  async onClickBookmark (e) {
+  async onClickBookmark () {
     // toggle the dropdown bookmark editor
     this.isDropdownOpen = !this.isDropdownOpen
 

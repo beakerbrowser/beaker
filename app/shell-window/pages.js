@@ -191,20 +191,6 @@ export function create (opts) {
       // ^ needs a delay or it doesnt take effect in time, SMH at this code though
     },
 
-    // add/remove bookmark
-    toggleBookmark () {
-      // update state
-      if (page.bookmark) {
-        beaker.bookmarks.remove(page.bookmark.url)
-        page.bookmark = null
-      } else if (page.isActive) {
-        page.bookmark = { url: page.getIntendedURL(), title: page.getTitle() }
-        beaker.bookmarks.add(page.bookmark.url, page.bookmark.title)
-      }
-      // update nav
-      navbar.update(page)
-    },
-
     getURLOrigin () {
       return parseURL(this.getURL()).origin
     },
