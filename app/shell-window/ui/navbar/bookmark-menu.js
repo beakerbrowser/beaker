@@ -112,8 +112,8 @@ export class BookmarkMenuNavbarBtn {
 
       if (!page.bookmark) {
         // set the bookmark privately
-        await beaker.bookmarks.bookmarkPrivate(page.url, {title: page.title || '', pinned: false})
-        page.bookmark = await beaker.bookmarks.getBookmark(page.url)
+        await beaker.bookmarks.bookmarkPrivate(page.getIntendedURL(), {title: page.title || '', pinned: false})
+        page.bookmark = await beaker.bookmarks.getBookmark(page.getIntendedURL())
         navbar.update()
       }
 
@@ -162,9 +162,9 @@ export class BookmarkMenuNavbarBtn {
     var b = page.bookmark
     if (!b) return
     if (b.private) {
-      await beaker.bookmarks.unbookmarkPrivate(page.url)
+      await beaker.bookmarks.unbookmarkPrivate(page.getIntendedURL())
     } else {
-      await beaker.bookmarks.unbookmarkPublic(page.url)
+      await beaker.bookmarks.unbookmarkPublic(page.getIntendedURL())
     }
     page.bookmark = null
     navbar.update()
