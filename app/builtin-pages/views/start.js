@@ -6,6 +6,7 @@ import ColorThief from '../../lib/fg/color-thief'
 import {findParent} from '../../lib/fg/event-handlers'
 import {pluralize} from '../../lib/strings'
 import renderSidebar from '../com/sidebar'
+import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
 import renderCloseIcon from '../icon/close'
 
 const colorThief = new ColorThief()
@@ -52,6 +53,21 @@ async function onUnpinBookmark (e) {
   update()
 }
 
+async function onClickAddBookmark (e) {
+  try {
+    var b = await addPinnedBookmarkPopup.create()
+    if (!(await beaker.bookmarks.isBookmarked(b.url))) {
+      await beaker.bookmarks.bookmarkPrivate(b.url, {title: b.title})
+    }
+    await beaker.bookmarks.setBookmarkPinned(b.url, true)
+    await loadBookmarks()
+    update()
+  } catch (e) {
+    // ignore
+    console.log(e)
+  }
+}
+
 // rendering
 // =
 
@@ -75,6 +91,7 @@ function renderPinnedBookmarks () {
   return yo`
     <div class="pinned-bookmarks">
       ${pinnedBookmarks.map(renderPinnedBookmark)}
+      <a class="add-bookmark-btn" onclick=${onClickAddBookmark}>+</a>
     </div>
   `
 }
@@ -101,9 +118,6 @@ function renderPinnedBookmark (bookmark) {
 
 async function loadBookmarks () {
   pinnedBookmarks = (await beaker.bookmarks.listPinnedBookmarks()) || []
-
-  // load dominant colors of each pinned bookmark
-  // await Promise.all(pinnedBookmarks.map(attachDominantColor))
 }
 
 function attachDominantColor (bookmark) {

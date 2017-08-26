@@ -28,6 +28,7 @@ export function setup () {
       case 'view:toggle-sidebar': return sidebar.toggle()
       case 'history:back': return page.goBackAsync()
       case 'history:forward': return page.goForwardAsync()
+      case 'bookmark:create': return navbar.bookmarkAndOpenMenu()
       case 'window:next-tab': return pages.changeActiveBy(1)
       case 'window:prev-tab': return pages.changeActiveBy(-1)
       case 'set-tab': return pages.changeActiveTo(arg1)

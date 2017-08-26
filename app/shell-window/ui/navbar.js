@@ -132,6 +132,10 @@ export function updateLocation (page) {
   }
 }
 
+export function bookmarkAndOpenMenu () {
+  bookmarkMenuNavbarBtn.onClickBookmark()
+}
+
 export function closeMenus () {
   browserMenuNavbarBtn.isDropdownOpen = false
   browserMenuNavbarBtn.updateActives()

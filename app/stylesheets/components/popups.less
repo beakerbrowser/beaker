@@ -87,3 +87,46 @@
     }
   }
 }
+
+#add-pinned-bookmark-popup {
+  .popup-inner {
+    .head {
+      position: relative;
+      margin-bottom: 10px;
+
+      .x {
+        position: absolute;
+        top: 0;
+        right: 0;
+        &, * {
+          cursor: pointer;
+        }
+      }
+    }
+
+    label,
+    input {
+      display: block;
+    }
+
+    label {
+      margin: 0;
+      font-weight: 500;
+      font-size: 0.8rem;
+    }
+
+    input {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .actions {
+      display: flex;
+      margin-top: 16px;
+
+      .primary {
+        margin-left: auto;
+      }
+    }
+  }
+}

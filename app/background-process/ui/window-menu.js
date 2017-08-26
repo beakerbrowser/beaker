@@ -222,6 +222,14 @@ var historyMenu = {
       click: function (item, win) {
         if (win) win.webContents.send('command', 'file:new-tab', 'beaker://history')
       }
+    },
+    { type: 'separator' },
+    {
+      label: 'Bookmark this Page',
+      accelerator: 'CmdOrCtrl+D',
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'bookmark:create')
+      }
     }
   ]
 }
