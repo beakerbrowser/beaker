@@ -8,6 +8,52 @@
 
 .library-wrapper {
 
+  .archive-info {
+    background: #fff;
+    display: inline-block;
+    width: 275px;
+    overflow: hidden;
+    height: 100%;
+    vertical-align: top;
+    padding: 15px;
+    border-right: 1px solid rgba(0,0,0,.1);
+    border-left: 1px solid rgba(0,0,0,.1);
+    font-size: .8rem;
+    position: fixed;
+
+    h2 {
+      text-transform: none;
+      color: @color-text;
+      letter-spacing: 0;
+      margin-top: 0;
+    }
+  }
+
+  .archive-info-header {
+    &:extend(.flex);
+    justify-content: space-between;
+  }
+
+  .archive-info-desc {
+    color: rgba(0,0,0,.75);
+  }
+
+  .archive-info-metadata {
+    font-size: .75rem;
+    color: rgba(0,0,0,.75);
+    padding: 5px 0;
+    border-top: 1px solid rgba(0,0,0,.075);
+    border-bottom: 1px solid rgba(0,0,0,.075);
+
+    td {
+      padding-left: 0;
+
+      &.label {
+        font-weight: 500;
+      }
+    }
+  }
+
   .builtin-sidebar {
 
     .archive {
@@ -159,7 +205,7 @@
     .header {
 
       h2.title {
-        &:extend(.-ellipsis);
+        &:extend(overflow.-ellipsis);
         align-items: center;
         max-width: 450px;
         margin-top: 25px;
