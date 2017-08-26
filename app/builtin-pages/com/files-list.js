@@ -5,7 +5,7 @@ import prettyBytes from 'pretty-bytes'
 import * as toast from './toast'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
-import renderFileTextOIcon from '../icon/file-text-o'
+import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder'
 
 // exported api
@@ -117,8 +117,8 @@ function rFile (archiveInfo, node, depth, opts) {
       title=${node.niceName}
       style=${'padding-left: ' + padding + 'px'}>
       <div class="name">
+        ${renderFileOIcon()}
         <a href=${join(opts.baseUrl || archiveInfo.url, node.entry.name)}>
-          ${renderFileTextOIcon()}
           ${node.niceName}
         </a>
       </div>
