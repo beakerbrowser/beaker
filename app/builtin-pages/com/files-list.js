@@ -5,7 +5,7 @@ import prettyBytes from 'pretty-bytes'
 import * as toast from './toast'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
-import renderFileTextOIcon from '../icon/file-text-o'
+import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder'
 
 // exported api
@@ -81,7 +81,7 @@ function rNode (archiveInfo, node, depth, opts) {
 function rDirectory (archiveInfo, node, depth, opts) {
   let icon = 'folder'
   let children = ''
-  const directoryPadding = 10 + (depth * 10)
+  const directoryPadding = 15 + (depth * 15)
 
   if (node.isExpanded) {
     children = yo`
@@ -109,7 +109,7 @@ function rDirectory (archiveInfo, node, depth, opts) {
 }
 
 function rFile (archiveInfo, node, depth, opts) {
-  const padding = 10 + (depth * 10)
+  const padding = 15 + (depth * 15)
 
   return yo`
     <div
@@ -117,8 +117,8 @@ function rFile (archiveInfo, node, depth, opts) {
       title=${node.niceName}
       style=${'padding-left: ' + padding + 'px'}>
       <div class="name">
+        ${renderFileOIcon()}
         <a href=${join(opts.baseUrl || archiveInfo.url, node.entry.name)}>
-          ${renderFileTextOIcon()}
           ${node.niceName}
         </a>
       </div>

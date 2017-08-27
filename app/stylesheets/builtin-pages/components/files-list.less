@@ -39,18 +39,17 @@
 
 .files-list {
   border-bottom: 1px solid @border-menu;
-  font-size: .8rem;
+  font-size: .75rem;
+
+  > *:nth-child(2n) {
+    background: rgb(248, 248, 248);
+  }
 
   .item {
     &:extend(.flex);
     align-items: center;
     padding: 0 15px;
-    height: 33px;
-    border-top: 1px solid @border-menu;
-
-    &:not(.empty):hover {
-      background: @background-highlight;
-    }
+    height: 24px;
 
     &.folder {
       cursor: pointer;
@@ -61,14 +60,12 @@
       height: 13px;
       margin-right: @margin-icon;
 
-      &.file-text-o {
+      &.file-o {
+        background: none;
 
         * {
-          stroke: rgba(0,0,0,.5);
-        }
-
-        #text-lines {
-          fill: rgba(0,0,0,.5);
+          stroke: #ddd;
+          fill: #fff;
         }
       }
 
@@ -78,7 +75,7 @@
 
         * {
           fill: rgba(0,0,0,.15);
-          stroke: rgba(0,0,0,.15) !important;
+          stroke: none;
         }
       }
     }
@@ -91,9 +88,7 @@
     }
 
     .name {
-      color: @color-link;
-      // color: @color-text--muted;
-      // color: rgba(0,0,0,.75);
+      color: rgba(0,0,0,.9);
 
       &:hover {
         &:extend(.link:hover);

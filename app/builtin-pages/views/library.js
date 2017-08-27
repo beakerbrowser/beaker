@@ -176,8 +176,6 @@ function update () {
     <div class="library-wrapper builtin-wrapper">
       ${renderSidebar('library')}
       <div class="builtin-sidebar">
-        <h1>Filesystem</h1>
-
         <div class="section archives-list">
           <div class="sidebar-actions">
             <label for="filter">
@@ -194,7 +192,23 @@ function update () {
               </a>
             </label>
           </div>
-          ${rArchivesList()}
+
+          ${isTrashOpen
+            ? rTrash()
+            : yo`
+              <div>
+              <div class="section">
+                <h2>Recent</h2>
+                ${rRecentArchivesList()}
+              </div>
+
+              <div class="section">
+                <h2>Created by you</h2>
+                ${rYourArchivesList()}
+              </div>
+              </div>
+            `
+          }
         </div>
 
         <div class="trash-controls">
@@ -209,21 +223,122 @@ function update () {
 
       <div class="builtin-main ${viewCls}">
         ${rView()}
+        ${selectedArchive ? rNewSidebar(selectedArchive) : ''}
       </div>
     </div>
   `)
 }
 
+function rNewSidebar (archiveInfo) {
+  // set up icons and labels for save/unsave buttons
+  var toggleSaveIcon, toggleSaveText
+  if (archiveInfo.isOwner) {
+    if (archiveInfo.userSettings.isSaved) {
+      toggleSaveIcon = '' // 'fa-trash'
+      toggleSaveText = 'Delete'
+    } else {
+      toggleSaveIcon = '' // 'fa-floppy-o'
+      toggleSaveText = 'Restore'
+    }
+  } else {
+    if (archiveInfo.userSettings.isSaved) {
+      toggleSaveIcon = '' // fa-times-circle'
+      toggleSaveText = 'Remove from library'
+    } else {
+      toggleSaveIcon = '' // fa-plus'
+      toggleSaveText = 'Add to library'
+    }
+  }
+
+  // editable title and description
+  var titleEl, descEl
+  if (archiveInfo.isOwner && isEditingInfo) {
+    titleEl = yo`
+      <td>
+        <input id="title" onkeyup=${settingsOnKeyup} value=${niceName(archiveInfo)} type="text"/>
+      </td>
+    `
+    descEl = yo`
+      <td>
+        <input id="desc" onkeyup=${settingsOnKeyup} value=${archiveInfo.description || ''} type="text"/>
+      </td>
+    `
+  } else if (archiveInfo.isOwner) {
+    titleEl = yo`
+      <td>
+        ${niceName(archiveInfo)}
+        <i onclick=${onClickEdit} class="fa fa-pencil"></i>
+      </td>`
+    descEl = yo`
+      <td>
+        ${niceDesc(archiveInfo)}
+        <i onclick=${onClickEdit} class="fa fa-pencil"></i>
+      </td>`
+  } else {
+    titleEl = yo`<td>${niceName(archiveInfo)}</td>`
+    descEl = yo`<td>${niceDesc(archiveInfo)}</td>`
+  }
+
+  return yo`
+    <div class="archive-info">
+      <div class="archive-info-header">
+        <h2>${archiveInfo.title || 'Untitled'}</h2>
+
+        ${toggleable(yo`
+          <div class="dropdown-btn-container toggleable-container" data-toggle-id="archive-dropdown-menu">
+            <span class="nav-item dropdown toggleable">
+              ${renderDotsIcon()}
+            </span>
+
+            <div class="dropdown-btn-list">
+              ${archiveInfo.isOwner ? yo`
+                <div class="dropdown-item" onclick=${onImportFiles}>
+                  Import files
+                  <span class="icon">+</span>
+                </div>
+              ` : ''}
+              <div class="dropdown-item" onclick=${onFork}>
+                Fork this site
+                <span class="icon">+</span>
+              </div>
+              <div class="dropdown-item" onclick=${onToggleSaved}>
+                ${toggleSaveText}
+                ${renderTrashIcon()}
+              </div>
+            </div>
+          </div>
+        `)}
+      </div>
+
+      <p class="archive-info-desc">${archiveInfo.description || yo`<em>No description</em>`}</p>
+
+      <div class="archive-info-metadata">
+        <table>
+          <tr><td class="label">Title</td>${titleEl}</tr>
+          <tr><td class="label">Description</td>${descEl}</tr>
+          <tr><td class="label">Size</td><td>${prettyBytes(archiveInfo.size)}</td></tr>
+          <tr><td class="label">Updated</td><td>${niceDate(archiveInfo.mtime || 0)}</td></tr>
+          <tr><td class="label">Editable</td><td>${archiveInfo.isOwner}</td></tr>
+        </table>
+
+        ${archiveInfo.isOwner && isEditingInfo
+          ? yo`<button onclick=${onSaveSettings} class="save btn">Save</button>`
+          : ''
+        }
+      </div>
+    </div>
+  `
+}
+
 function rView () {
   document.title = 'Library'
   if (viewError) return rError()
-  else if (isTrashOpen) return rTrash()
-  else if (selectedArchive) return rArchive(selectedArchive)
+  else if (selectedArchive) return rFiles(selectedArchive) //rArchive(selectedArchive)
   else if (selectedArchiveKey) return 'Loading...'
   return rEmpty()
 }
 
-function rArchivesList () {
+function rYourArchivesList () {
   // apply filter
   var filteredArchives = archivesList.archives.filter(archive => {
     if (!currentFilter) {
@@ -241,7 +356,28 @@ function rArchivesList () {
     if (currentSort === 'peers') return b.peers - a.peers
   })
 
-  return filteredArchives.map(rArchiveListItem)
+  return filteredArchives.slice(0,6).map(rArchiveListItem)
+}
+
+function rRecentArchivesList () {
+  // apply filter
+  var filteredArchives = archivesList.archives.filter(archive => {
+    if (!currentFilter) {
+      return true
+    } else if (currentFilter && archive.title && archive.title.toLowerCase().indexOf(currentFilter) !== -1) {
+      return true
+    }
+    return false
+  })
+
+  // sort
+  filteredArchives.sort((a, b) => {
+    if (currentSort === 'alphabetical') return niceName(a).localeCompare(niceName(b))
+    if (currentSort === 'mtime') return b.mtime - a.mtime
+    if (currentSort === 'peers') return b.peers - a.peers
+  })
+
+  return filteredArchives.slice(0,5).map(rArchiveListItem)
 }
 
 function rArchiveListItem (archiveInfo) {
@@ -285,58 +421,7 @@ function rArchive (archiveInfo) {
     }
   }
 
-  return yo`
-    <div class="archive">
-      ${rViewHeader(archiveInfo)}
-
-      ${rNotSaved(archiveInfo)}
-
-      <div class="nav-wrapper">
-        <div class="nav">
-          ${renderTabs(currentSection, [
-            {id: 'files', label: 'Files', onclick: onClickTab('files')},
-            {id: 'log', label: 'History', onclick: onClickTab('log')},
-            {id: 'network', label: 'Network', onclick: onClickTab('network')},
-            {id: 'settings', label: 'Settings', onclick: onClickTab('settings')}
-          ].filter(Boolean))}
-
-          ${toggleable(yo`
-            <div class="dropdown-btn-container toggleable-container" data-toggle-id="archive-dropdown-menu">
-              <span class="nav-item dropdown toggleable">
-                ${renderDotsIcon()}
-              </span>
-
-              <div class="dropdown-btn-list">
-                ${archiveInfo.isOwner ? yo`
-                  <div class="dropdown-item" onclick=${onImportFiles}>
-                    Import files
-                    <span class="icon">+</span>
-                  </div>
-                ` : ''}
-                <div class="dropdown-item" onclick=${onFork}>
-                  Fork this site
-                  <span class="icon">+</span>
-                </div>
-                <div class="dropdown-item" onclick=${onToggleSaved}>
-                  ${toggleSaveText}
-                  ${renderTrashIcon()}
-                </div>
-              </div>
-            </div>
-          `)}
-        </div>
-      </div>
-
-      <div class="tabs-content">
-        ${({
-          files: () => rFiles(archiveInfo),
-          log: () => rHistory(archiveInfo),
-          settings: () => rSettings(archiveInfo),
-          network: () => rNetwork(archiveInfo)
-        })[currentSection]()}
-      </div>
-    </div>
-  `
+  return yo``
 }
 
 function rViewHeader (archiveInfo) {
@@ -462,6 +547,9 @@ function rNetwork (archiveInfo) {
 function rFiles (archiveInfo) {
   return yo`
     <div class="published-files">
+      <div class="published-files-header">
+        ${archiveInfo.title || 'Untitled'}
+      </div>
       ${renderFiles(archiveInfo)}
     </div>
   `
@@ -567,21 +655,21 @@ function rSettings (archiveInfo) {
 }
 
 function rTrash () {
-  document.title = 'Library - Trash'
   return yo`
-    <div class="trash">
-      <h1>Trash</h1>
+    <div class="section trash">
+      <h2>Trash</h2>
       ${trashList.length ? '' : yo`<p>No items in trash</p>`}
-      <ul class="trash-list">
+
+      <div class="trash-list">
         ${trashList.map(archiveInfo => yo`
-          <li class="trash-item">
-            <a href=${archiveInfo.key}>${niceName(archiveInfo)}</a>
-            <button class="restore" onclick=${e => onUndelete(e, archiveInfo.key)}>
+          <div class="nav-item archive" onclick=${onSelectArchive(archiveInfo)}>
+            <div class="title">${niceName(archiveInfo)}</div>
+            <button class="btn restore" onclick=${e => onUndelete(e, archiveInfo.key)}>
               Restore
             </button>
-          </li>`
+          </div>`
         )}
-      </ul>
+      </div>
     </div>
   `
 }
