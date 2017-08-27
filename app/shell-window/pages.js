@@ -604,6 +604,7 @@ function onDidStopLoading (e) {
         .then(key => {
           beaker.archives.get(key).then(info => {
             page.siteInfo = info
+            console.log('site info', info)
             navbar.update(page)
 
             // fallback the tab title to the site title, if needed

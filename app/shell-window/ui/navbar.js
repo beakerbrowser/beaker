@@ -8,6 +8,7 @@ import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
 import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
+import {RehostMenuNavbarBtn} from './navbar/rehost-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
 import {DatSidebarBtn} from './navbar/dat-sidebar'
@@ -31,6 +32,7 @@ var updatesNavbarBtn = null
 var datSidebarBtn = null
 var browserMenuNavbarBtn = null
 var bookmarkMenuNavbarBtn = null
+var rehostMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
 var siteInfoNavbarBtn = null
 
@@ -48,6 +50,7 @@ export function setup () {
   datSidebarBtn = new DatSidebarBtn()
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
+  rehostMenuNavbarBtn = new RehostMenuNavbarBtn()
   pageMenuNavbarBtn = new PageMenuNavbarBtn()
   siteInfoNavbarBtn = new SiteInfoNavbarBtn()
 }
@@ -141,6 +144,7 @@ export function closeMenus () {
   browserMenuNavbarBtn.updateActives()
   pageMenuNavbarBtn.close()
   bookmarkMenuNavbarBtn.close()
+  rehostMenuNavbarBtn.close()
 }
 
 // internal helpers
@@ -229,11 +233,15 @@ function render (id, page) {
       yo`
         <button class="nav-peers-btn" onclick=${onClickPeercount}>
           <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
-        </button>`,
-      yo`<button class="nav-live-reload-btn ${isLiveReloading ? 'active' : ''}" title="Turn ${isLiveReloading ? 'off' : 'on'} live reloading" onclick=${onClickLiveReload}>
-          <i class="fa fa-bolt"></i>
         </button>`
     ]
+    if (isLiveReloading) {
+      datBtns.push(
+        yo`<button class="nav-live-reload-btn active" title="Turn off live reloading" onclick=${onClickLiveReload}>
+            <i class="fa fa-bolt"></i>
+          </button>`
+      )
+    }
   } else if (siteHasDatAlternative) {
     datBtns = [
       yo`<button
@@ -332,6 +340,7 @@ function render (id, page) {
         ${inpageFinder}
         ${zoomBtn}
         ${datBtns}
+        ${rehostMenuNavbarBtn.render()}
         ${bookmarkMenuNavbarBtn.render()}
         ${pageMenuNavbarBtn.render()}
         ${autocompleteDropdown}

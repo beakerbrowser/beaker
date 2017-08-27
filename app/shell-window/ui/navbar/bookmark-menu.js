@@ -70,8 +70,8 @@ export class BookmarkMenuNavbarBtn {
 
     // render btn
     return yo`<div class="bookmark-navbar-menu">
-      <button class="star ${bookmarkBtnClass}" title="Bookmark this page">
-        <span class="star ${page && page.bookmark ? 'fa fa-star' : 'fa fa-star-o'}" onclick=${e => this.onClickBookmark(e)}></span>
+      <button class="star ${bookmarkBtnClass}" title="Bookmark this page" onclick=${e => this.onClickBookmark(e)}>
+        <span class="star ${page && page.bookmark ? 'fa fa-star' : 'fa fa-star-o'}"></span>
       </button>
       ${dropdownEl}
     </div>`

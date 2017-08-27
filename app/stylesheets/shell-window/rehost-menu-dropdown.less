@@ -1,0 +1,66 @@
+.rehost-menu-dropdown {
+  padding-top: 10px;
+  margin-right: -10px;
+}
+
+.rehost-menu-dropdown-items {
+  padding: 15px;
+  color: @color-text;
+  width: 290px;
+  font-size: .775rem;
+
+  strong {
+    font-weight: 600;
+  }
+
+  &.dropdown-items.with-triangle:before {
+    right: 16px;
+  }
+
+  .btn {
+    &:extend(.btn);
+  }
+
+  .header {
+    &:extend(.flex);
+    align-items: center;
+    font-size: .875rem;
+    font-weight: 500;
+    margin-bottom: 15px;
+  }
+
+  .labels {
+    &:extend(.flex);
+    align-items: center;
+    .policy {
+      flex: 1;
+    }
+  }
+
+  input[type=range] {
+    width: 100%;
+  }
+
+  .fa-cloud-upload {
+    border: none;
+    -webkit-text-stroke: 1px #d6d6d6;
+    font-size: 30px;
+    margin-right: 10px;
+    color: transparent;
+    text-shadow: 0px 0px 4px rgba(255, 255, 255, 0.5);
+    background-color: #d0d0d0;
+    -webkit-background-clip: text;
+  }
+
+  .fa-circle {
+    &.green {
+      color: @green;
+    }
+    &.yellow {
+      color: @yellow;
+    }
+    &.red {
+      color: @red;
+    }
+  }
+}
