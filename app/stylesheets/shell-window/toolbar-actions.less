@@ -22,6 +22,16 @@
     border-radius: 2px;
     border: 1px solid transparent;
 
+    .icon * {
+      stroke: rgba(0,0,0,.5);
+      stroke-width: 1.75;
+    }
+
+    #triangle {
+      stroke-width: .75px !important;
+      fill: rgba(0,0,0,.5);
+    }
+
     .fa {
       cursor: pointer;
     }
@@ -42,7 +52,10 @@
     }
 
     &:disabled {
-      color: @color-toolbar-btn--disabled;
+
+      .icon * {
+        stroke: rgba(0,0,0,.2) !important;
+      }
     }
 
     &:focus {
@@ -63,7 +76,7 @@
     }
 
     &.nav-back-btn, &.nav-forward-btn {
-      -webkit-text-stroke: 1.6px @background-shell-window;
+      stroke: rgba(0,0,0,.7);
 
       &:hover:not(:disabled) {
         -webkit-text-stroke: 1.6px @background-toolbar-btn--hover;
@@ -84,9 +97,14 @@
     &.nav-reload-btn,
     &.nav-cancel-btn {
       padding: 2px 5px 5px;
+      padding: 0;
       margin: 0 2px;
       font-size: 18px;
       line-height: 17px;
+
+      .icon {
+        height: 100%;
+      }
 
       .fa {
         position: relative;

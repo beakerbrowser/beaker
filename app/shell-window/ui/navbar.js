@@ -12,6 +12,8 @@ import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
 import {SiteInfoNavbarBtn} from './navbar/site-info'
 import {pluralize} from '../../lib/strings'
+import renderNavArrowIcon from './icon/nav-arrow'
+import renderRefreshIcon from './icon/refresh'
 
 const KEYCODE_DOWN = 40
 const KEYCODE_UP = 38
@@ -165,7 +167,7 @@ function render (id, page) {
         </button>`
     : yo`
         <button class="toolbar-btn nav-reload-btn" onclick=${onClickReload} title="Reload this page">
-          <span class="fa fa-refresh"></span>
+          ${renderRefreshIcon()}
         </button>`
 
   // `page` is null on initial render
@@ -320,12 +322,12 @@ function render (id, page) {
   return yo`
     <div data-id=${id} class="toolbar-actions${toolbarHidden}">
       <div class="toolbar-group">
-        <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-          <span class="fa fa-arrow-left"></span>
+        <button style="transform: scaleX(-1);" class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
+          ${renderNavArrowIcon()}
         </button>
 
         <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-          <span class="fa fa-arrow-right"></span>
+          ${renderNavArrowIcon()}
         </button>
         ${reloadBtn}
       </div>
