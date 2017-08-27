@@ -184,12 +184,13 @@ export default function registerContextMenu () {
 
       // inspector
       if (isDat) {
-        menuItems.push({
-          label: 'Inspect Site Files',
-          click: (item, win) => {
-            win.webContents.send('command', 'view:open-sidebar')
-          }
-        })
+        // TODO restore with open in filesystem?
+        // menuItems.push({
+        //   label: 'Inspect Site Files',
+        //   click: (item, win) => {
+        //     win.webContents.send('command', 'view:open-sidebar')
+        //   }
+        // })
       }
       menuItems.push({
         label: 'Inspect Element',

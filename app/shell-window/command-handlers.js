@@ -2,7 +2,6 @@ import { ipcRenderer } from 'electron'
 import * as pages from './pages'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
-import * as sidebar from './ui/sidebar'
 import permsPrompt from './ui/prompts/permission'
 
 export function setup () {
@@ -24,8 +23,6 @@ export function setup () {
       case 'view:zoom-out': return zoom.zoomOut(page)
       case 'view:zoom-reset': return zoom.zoomReset(page)
       case 'view:toggle-dev-tools': return page.toggleDevTools()
-      case 'view:open-sidebar': return sidebar.open()
-      case 'view:toggle-sidebar': return sidebar.toggle()
       case 'history:back': return page.goBackAsync()
       case 'history:forward': return page.goForwardAsync()
       case 'bookmark:create': return navbar.bookmarkAndOpenMenu()

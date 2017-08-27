@@ -233,15 +233,6 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://settings/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/settings.build.js'))
   }
-  if (requestUrl === 'beaker://dat-sidebar/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/dat-sidebar.build.js'))
-  }
-  if (requestUrl === 'beaker://dat-sidebar/main.css') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/dat-sidebar.css'))
-  }
-  if (requestUrl === 'beaker://dat-sidebar/' || requestUrl.startsWith('beaker://dat-sidebar/')) {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/dat-sidebar.html'))
-  }
 
   // modals
   if (requestUrl === 'beaker://create-archive-modal/') {

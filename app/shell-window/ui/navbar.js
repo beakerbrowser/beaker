@@ -2,7 +2,6 @@
 
 import { remote } from 'electron'
 import * as pages from '../pages'
-import * as sidebar from './sidebar'
 import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
@@ -11,7 +10,6 @@ import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
 import {RehostMenuNavbarBtn} from './navbar/rehost-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
-import {DatSidebarBtn} from './navbar/dat-sidebar'
 import {SiteInfoNavbarBtn} from './navbar/site-info'
 import {pluralize} from '../../lib/strings'
 
@@ -29,7 +27,6 @@ const isDatHashRegex = /^[a-z0-9]{64}/i
 
 var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
-var datSidebarBtn = null
 var browserMenuNavbarBtn = null
 var bookmarkMenuNavbarBtn = null
 var rehostMenuNavbarBtn = null
@@ -47,7 +44,6 @@ var autocompleteResults = null // if set to an array, will render dropdown
 export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
-  datSidebarBtn = new DatSidebarBtn()
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   rehostMenuNavbarBtn = new RehostMenuNavbarBtn()
@@ -346,7 +342,6 @@ function render (id, page) {
         ${autocompleteDropdown}
       </div>
       <div class="toolbar-group">
-        ${datSidebarBtn.render(addrValue)}
         ${browserMenuNavbarBtn.render()}
         ${updatesNavbarBtn.render()}
       </div>
@@ -567,7 +562,7 @@ function onClickCancel (e) {
 }
 
 function onClickPeercount (e) {
-  sidebar.toggle()
+  // TODO anything?
 }
 
 function onClickLiveReload (e) {
