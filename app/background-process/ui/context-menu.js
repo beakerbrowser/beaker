@@ -165,23 +165,6 @@ export default function registerContextMenu () {
         })
       }
 
-      // fork
-      if (isDat) {
-        menuItems.push({
-          label: 'Fork this site',
-          click: async (item, win) => {
-            var res = await win.webContents.executeJavaScript(`
-              DatArchive.fork("${props.pageURL}", {prompt: true})
-                .then(archive => archive.url)
-                .catch(() => false)
-            `)
-            if (res) {
-              win.webContents.send('command', 'file:new-tab', res)
-            }
-          } 
-        })
-      }
-
       // inspector
       if (isDat) {
         // TODO restore with open in filesystem?
