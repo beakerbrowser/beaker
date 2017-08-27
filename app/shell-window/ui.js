@@ -1,7 +1,6 @@
 import { webFrame, ipcRenderer } from 'electron'
 import * as tabs from './ui/tabs'
 import * as navbar from './ui/navbar'
-import * as sidebar from './ui/sidebar'
 import * as pages from './pages'
 import * as commandHandlers from './command-handlers'
 import * as swipeHandlers from './swipe-handlers'
@@ -30,7 +29,6 @@ export function setup (cb) {
   // setup subsystems
   tabs.setup()
   navbar.setup()
-  sidebar.setup()
   commandHandlers.setup()
   swipeHandlers.setup()
   pages.setup()

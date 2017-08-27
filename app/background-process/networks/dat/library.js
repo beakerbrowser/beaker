@@ -373,7 +373,8 @@ export async function getArchiveInfo (key) {
     isSaved: userSettings.isSaved,
     networked: userSettings.networked,
     autoDownload: userSettings.autoDownload,
-    autoUpload: userSettings.autoUpload
+    autoUpload: userSettings.autoUpload,
+    expiresAt: userSettings.expiresAt
   }
   meta.peers = archive.replicationStreams.length
   meta.peerInfo = archive.replicationStreams.map(s => ({

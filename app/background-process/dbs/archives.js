@@ -169,21 +169,23 @@ export async function setUserSettings (profileId, key, newValues = {}) {
         isSaved: newValues.isSaved,
         networked: ('networked' in newValues) ? newValues.networked : true,
         autoDownload: ('autoDownload' in newValues) ? newValues.autoDownload : newValues.isSaved,
-        autoUpload: ('autoUpload' in newValues) ? newValues.autoUpload : newValues.isSaved
+        autoUpload: ('autoUpload' in newValues) ? newValues.autoUpload : newValues.isSaved,
+        expiresAt: newValues.expiresAt
       }
       await db.run(`
-        INSERT INTO archives (profileId, key, isSaved, networked, autoDownload, autoUpload) VALUES (?, ?, ?, ?, ?, ?)
-      `, [profileId, key, flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload)])
+        INSERT INTO archives (profileId, key, isSaved, networked, autoDownload, autoUpload, expiresAt) VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, [profileId, key, flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload), value.expiresAt])
     } else {
       // update
-      var { isSaved, networked, autoDownload, autoUpload } = newValues
+      var { isSaved, networked, autoDownload, autoUpload, expiresAt } = newValues
       if (typeof isSaved === 'boolean') value.isSaved = isSaved
       if (typeof networked === 'boolean') value.networked = networked
       if (typeof autoDownload === 'boolean') value.autoDownload = autoDownload
       if (typeof autoUpload === 'boolean') value.autoUpload = autoUpload
+      if (typeof expiresAt === 'number') value.expiresAt =expiresAt
       await db.run(`
-        UPDATE archives SET isSaved = ?, networked = ?, autoDownload = ?, autoUpload = ? WHERE profileId = ? AND key = ?
-      `, [flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload), profileId, key])
+        UPDATE archives SET isSaved = ?, networked = ?, autoDownload = ?, autoUpload = ?, expiresAt = ? WHERE profileId = ? AND key = ?
+      `, [flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload), value.expiresAt, profileId, key])
     }
 
     events.emit('update:archive-user-settings', key, value)

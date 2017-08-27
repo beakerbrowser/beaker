@@ -182,13 +182,6 @@ var viewMenu = {
     click: function (item, win) {
       if (win) win.webContents.send('command', 'view:toggle-dev-tools')
     }
-  },
-  {
-    label: 'Toggle Sidebar',
-    accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+B' : 'Shift+CmdOrCtrl+B',
-    click: function (item, win) {
-      if (win) win.webContents.send('command', 'view:toggle-sidebar')
-    }
   }]
 }
 

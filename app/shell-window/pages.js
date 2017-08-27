@@ -7,7 +7,6 @@ import fs from 'fs'
 import parseDatURL from 'parse-dat-url'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
-import * as sidebar from './ui/sidebar'
 import * as promptbar from './ui/promptbar'
 import * as statusBar from './ui/statusbar'
 import {urlsToData} from '../lib/fg/img'
@@ -319,7 +318,6 @@ export async function remove (page) {
   }
 
   // remove
-  sidebar.onPageClose(page)
   page.stopLiveReloading()
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)
@@ -358,7 +356,6 @@ export function setActive (page) {
   page.isActive = 1
   page.webviewEl.focus()
   statusBar.setIsLoading(page.isLoading())
-  sidebar.onPageSetActive(page)
   navbar.closeMenus()
   navbar.update()
   promptbar.update()
@@ -586,7 +583,6 @@ function onDidStopLoading (e) {
     var url = page.url
 
     // update history and UI
-    sidebar.onPageChangeLocation(page)
     updateHistory(page)
 
     // fetch protocol and page info
@@ -604,6 +600,7 @@ function onDidStopLoading (e) {
         .then(key => {
           beaker.archives.get(key).then(info => {
             page.siteInfo = info
+            console.log('site info', info)
             navbar.update(page)
 
             // fallback the tab title to the site title, if needed
@@ -742,7 +739,6 @@ function onDidFinishLoad (e) {
     page.favicons = null
     navbar.update(page)
     navbar.updateLocation(page)
-    sidebar.onPageChangeLocation(page)
   }
 }
 
