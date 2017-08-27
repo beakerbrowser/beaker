@@ -9,9 +9,11 @@ export class BookmarkMenuNavbarBtn {
   constructor () {
     this.values = {
       title: '',
-      private: false
+      private: false,
+      pinned: false
     }
     this.isDropdownOpen = false
+    this.isPrivacyDropdownOpen = false
     window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
   }
 
@@ -35,29 +37,55 @@ export class BookmarkMenuNavbarBtn {
                 <input id="bookmark-title" type="text" name="title" value=${this.values.title} onkeyup=${e => this.onChangeTitle(e)}/>
               </div>
 
-              <p class="visibility-info">
-                ${this.values.private
-                  ? 'This bookmark will not be shared with any of your friends.'
-                  : 'This bookmark will be publicly visible.'}
-              </p>
-
-              <div class="input-group visibility">
-                <input checked=${this.values.private} type="radio" name="visibility" id="private" value="private" onchange=${e => this.onChangeVisibility('private')}/>
-                <label for="private" class="">
-                  <i class="fa fa-lock"></i>
-                  Private
-                </label>
-
-                <input checked=${!this.values.private} type="radio" name="visibility" id="public" value="public" onchange=${e => this.onChangeVisibility('public')}/>
-                <label for="public">
-                  Public
-                  <i class="fa fa-globe"></i>
+              <div class="input-group pinned">
+                <label>
+                  <input onchange=${(e) => this.onChangePinned(e)} checked=${this.values.pinned || false} type="checkbox" name="pinned" value="pinned">
+                  Pin to start page
                 </label>
               </div>
 
-              <div>
-                <button type="button" onclick=${e => this.onClickRemoveBookmark(e)}>Remove</button>
-                ${this.doesNeedSave ? yo`<button type="submit">Save</button>` : ''}
+              <div class="buttons">
+                <button type="button" class="btn remove" onclick=${e => this.onClickRemoveBookmark(e)}>
+                  Remove
+                </button>
+
+
+                <button onclick=${e => this.onTogglePrivacyDropdown()} type="button" class="toggleable btn options-dropdown">
+                  <i class="fa fa-caret-down"></i>
+                  <i class="fa fa-${this.values.private ? 'lock' : 'globe'}"></i>
+
+                  <div class="options-dropdown-items ${this.isPrivacyDropdownOpen ? 'open' : ''}">
+                    <div onclick=${e => this.onChangeVisibility(e, 'private')} class="options-dropdown-item ${this.values.private ? 'selected' : ''}">
+                      <div class="heading">
+                        <div>
+                          <i class="fa fa-lock"></i>
+                          Private
+                        </div>
+
+                        <i class="fa fa-check"></i>
+                      </div>
+
+                      <div class="info">Save privately</div>
+                    </div>
+
+                    <div onclick=${e => this.onChangeVisibility(e, 'public')} class="options-dropdown-item ${!this.values.private ? 'selected' : ''}">
+                      <div class="heading">
+                        <div>
+                          <i class="fa fa-globe"></i>
+                          Public
+                        </div>
+
+                        <i class="fa fa-check"></i>
+                      </div>
+
+                      <div class="info">Share with followers</div>
+                    </div>
+                  </div>
+                </button>
+
+                <button class="btn primary" disabled=${!this.doesNeedSave} type="submit">
+                  Save
+                </button>
               </div>
             </form>
           </div>
@@ -87,7 +115,7 @@ export class BookmarkMenuNavbarBtn {
       return false
     }
     const b = page.bookmark
-    return (b.title !== this.values.title || b.private !== this.values.private)
+    return (b.title !== this.values.title || b.private !== this.values.private || b.pinned !== this.values.pinned)
   }
 
   close () {
@@ -120,6 +148,7 @@ export class BookmarkMenuNavbarBtn {
       // set form values
       this.values.private = page.bookmark.private
       this.values.title = page.bookmark.title
+      this.values.pinned = page.bookmark.pinned
     }
 
     this.updateActives()
@@ -152,6 +181,10 @@ export class BookmarkMenuNavbarBtn {
     } else {
       await beaker.bookmarks.bookmarkPublic(b.href, b)
     }
+
+    // set the pinned status of the bookmark
+    await beaker.bookmarks.setBookmarkPinned(b.href, this.values.pinned)
+
     page.bookmark = await beaker.bookmarks.getBookmark(b.href)
     navbar.update()
     this.close()
@@ -176,8 +209,20 @@ export class BookmarkMenuNavbarBtn {
     this.updateActives()
   }
 
-  onChangeVisibility (v) {
+  onChangePinned (e) {
+    this.values.pinned = e.target.checked
+    this.updateActives()
+  }
+
+  onChangeVisibility (e, v) {
+    e.stopPropagation()
     this.values.private = v === 'private'
+    this.isPrivacyDropdownOpen = false
+    this.updateActives()
+  }
+
+  onTogglePrivacyDropdown () {
+    this.isPrivacyDropdownOpen = !this.isPrivacyDropdownOpen
     this.updateActives()
   }
 }
