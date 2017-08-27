@@ -29,7 +29,7 @@ export function setup () {
   tabsContainerEl = yo`<div class="chrome-tabs">
     <div class="chrome-tab chrome-tab-add-btn" onclick=${onClickNew} title="Open new tab">
       <div class="chrome-tab-bg"></div>
-      <div class="chrome-tab-favicon"><span class="fa fa-plus"></span></div>
+      <span class="plus">+</span>
     </div>
   </div>`
   yo.update(document.getElementById('toolbar-tabs'), yo`<div id="toolbar-tabs" class="chrome-tabs-shell">
