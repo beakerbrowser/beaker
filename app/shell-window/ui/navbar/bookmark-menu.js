@@ -83,7 +83,7 @@ export class BookmarkMenuNavbarBtn {
                   </div>
                 </button>
 
-                <button class="btn primary" disabled=${!this.doesNeedSave} type="submit">
+                <button class="btn primary" type="submit">
                   Save
                 </button>
               </div>
@@ -107,15 +107,6 @@ export class BookmarkMenuNavbarBtn {
 
   updateActives () {
     Array.from(document.querySelectorAll('.bookmark-navbar-menu')).forEach(el => yo.update(el, this.render()))
-  }
-
-  get doesNeedSave () {
-    const page = pages.getActive()
-    if (!page || !page.bookmark) {
-      return false
-    }
-    const b = page.bookmark
-    return (b.title !== this.values.title || b.private !== this.values.private || b.pinned !== this.values.pinned)
   }
 
   close () {
