@@ -181,13 +181,17 @@ function render (id, page) {
 
   // inpage finder ctrl
   var inpageFinder = (page && page.isInpageFinding)
-    ? yo`<input
+    ? yo`
+        <div class="nav-find-wrapper">
+          <input
             type="text"
-            class="nav-find-input"
+            class="nav-find-input nav-location-input"
             placeholder="Find in page..."
             oninput=${onInputFind}
             onkeydown=${onKeydownFind}
-            value=${findValue} />`
+            value=${findValue} />
+        </div>
+      `
     : ''
 
   // zoom btn should only show if zoom is not the default setting

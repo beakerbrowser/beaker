@@ -34,10 +34,6 @@
       outline: 0;
       background: #fff;
     }
-
-    &.nav-find-input {
-      border-left: 1px solid #bbb;
-    }
   }
 
   button {
@@ -219,6 +215,32 @@
     .path {
       color: #aaa;
       white-space: nowrap;
+    }
+  }
+
+  .nav-find-wrapper {
+    position: absolute;
+    bottom: -40px;
+    right: -1px;
+    width: 250px;
+    z-index: 1000;
+    padding: 4px 7px 7px 7px;
+    background: @background-shell-window;
+    border: 1px solid @border-shell-window;
+    border-top: 0;
+    border-radius: 0 0 4px 4px;
+
+    .nav-find-input {
+      width: 100%;
+      height: 22px;
+      font-size: 11.5px;
+      border: 1px solid rgba(0,0,0,.15);
+      background: #fff;
+
+      &:focus {
+        border: 1px solid fadeout(@color-link, 20%);
+        box-shadow: 0 0 0 2px fadeout(@color-link, 80%);
+      }
     }
   }
 
