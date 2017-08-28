@@ -83,31 +83,31 @@
       display: none;
       position: absolute;
       right: 8px;
-      top: 9px;
-      width: 14px;
-      height: 14px;
+      top: 7.5px;
+      width: 16px;
+      height: 16px;
       z-index: 2;
-      border-radius: 50%;
+      border-radius: 2px;
       text-align: center;
-      color: #888;
+      color: #333;
 
       &:before {
         display: block;
         content: "\00D7";
-        font-size: 17px;
+        font-size: 20px;
         font-weight: 200;
         opacity: 0;
+        line-height: .71;
       }
 
       &:hover:before,
       &:active:before {
-        color: #fff;
         opacity: 1;
       }
 
       &:hover,
       &:active {
-        background: @background-close-tab--active;
+        background: #ddd;
       }
     }
 
