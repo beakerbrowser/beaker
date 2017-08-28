@@ -35,7 +35,7 @@
 
 .window-content.builtin {
   &:extend(.system-font);
-  background: rgb(245, 245, 248);
+  background: @background-builtin-page;
 
   // TODO
   // This is a temporary change to the builtin page button styles. Ultimately
@@ -169,8 +169,7 @@
 
 .builtin-header {
   padding: 15px;
-  background: rgb(245, 245, 248);
-  background: #f5f5f7;
+  background: @background-builtin-page;
 
   &.fixed {
     &:extend(.flex);
@@ -197,8 +196,7 @@
 
 .builtin-sidebar {
   position: fixed;
-  background: rgb(245, 245, 248);
-  background: #f5f5f7;
+  background: @background-builtin-page;
   padding: 10px 0;
   border-right: 1px solid rgb(210, 210, 213);
   display: inline-block;
