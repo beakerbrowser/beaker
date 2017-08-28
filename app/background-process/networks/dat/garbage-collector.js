@@ -14,11 +14,21 @@ export function setup () {
 
 export async function collect ({olderThan, biggerThan} = {}) {
   var startTime = Date.now()
-  var expiredArchives = await archivesDb.listExpiredArchives({olderThan, biggerThan})
-  debug('GC cleaning out %d expired archives', expiredArchives.length)
+
+  // first unsave expired archives
+  var expiredArchives = await archivesDb.listExpiredArchives()
+  debug('GC unsaving %d expired archives', expiredArchives.length)
   for (let i = 0; i < expiredArchives.length; i++) {
-    await archivesDb.deleteArchive(expiredArchives[i].key)
+    await archivesDb.setUserSettings(0, expiredArchives[i].key, {isSaved: false})
   }
+
+  // now GC old archives
+  var unusedArchives = await archivesDb.listGarbageCollectableArchives({olderThan, biggerThan})
+  debug('GC cleaning out %d unused archives', unusedArchives.length)
+  for (let i = 0; i < unusedArchives.length; i++) {
+    await archivesDb.deleteArchive(unusedArchives[i].key)
+  }
+  
   debug('GC completed in %d ms', Date.now() - startTime)
   schedule(DAT_GC_REGULAR_COLLECT_WAIT)
 }
