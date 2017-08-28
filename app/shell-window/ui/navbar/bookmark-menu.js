@@ -34,7 +34,7 @@ export class BookmarkMenuNavbarBtn {
             <form onsubmit=${e => this.onSaveBookmark(e)}>
               <div class="input-group">
                 <label for="title">Title</label>
-                <input id="bookmark-title" type="text" name="title" value=${this.values.title} onkeyup=${e => this.onChangeTitle(e)}/>
+                <input class="bookmark-title" type="text" name="title" value=${this.values.title} onkeyup=${e => this.onChangeTitle(e)}/>
               </div>
 
               <div class="input-group pinned">
@@ -143,9 +143,9 @@ export class BookmarkMenuNavbarBtn {
     }
 
     this.updateActives()
-    if (this.isDropdownOpen) {
-      document.getElementById('bookmark-title').focus()
-    }
+
+    // focus the title input
+    document.querySelectorAll('.bookmark-title').forEach(el => el.focus())
   }
 
   async onSaveBookmark (e) {
