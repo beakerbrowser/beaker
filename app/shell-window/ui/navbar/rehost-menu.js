@@ -40,7 +40,7 @@ export class RehostMenuNavbarBtn {
     // calculate the current state
     const isSaved = page.siteInfo.userSettings.isSaved
     const expiresAt = page.siteInfo.userSettings.expiresAt
-    const timeRemaining = expiresAt ? moment.duration(expiresAt - Date.now()) : null
+    const timeRemaining = (expiresAt && expiresAt > Date.now()) ? moment.duration(expiresAt - Date.now()) : null
     var currentSetting
     if (!isSaved) currentSetting = NOT
     else if (!expiresAt) currentSetting = FOREVER

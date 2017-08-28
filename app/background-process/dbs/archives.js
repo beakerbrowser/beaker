@@ -97,8 +97,22 @@ export async function query (profileId, query) {
   return archives
 }
 
+// get all archives that should be unsaved
+export async function listExpiredArchives () {
+  var now = Date.now()
+  return db.all(`
+    SELECT archives.key
+      FROM archives
+      WHERE
+        archives.isSaved = 1
+        AND archives.expiresAt != 0
+        AND archives.expiresAt IS NOT NULL
+        AND archives.expiresAt < ?
+  `, [Date.now()])
+}
+
 // get all archives that are ready for garbage collection
-export async function listExpiredArchives ({olderThan, biggerThan} = {}) {
+export async function listGarbageCollectableArchives ({olderThan, biggerThan} = {}) {
   olderThan = olderThan || DAT_GC_EXPIRATION_AGE
   biggerThan = biggerThan || DAT_GC_DEFAULT_MINIMUM_SIZE
   return db.all(`
@@ -182,7 +196,7 @@ export async function setUserSettings (profileId, key, newValues = {}) {
       if (typeof networked === 'boolean') value.networked = networked
       if (typeof autoDownload === 'boolean') value.autoDownload = autoDownload
       if (typeof autoUpload === 'boolean') value.autoUpload = autoUpload
-      if (typeof expiresAt === 'number') value.expiresAt =expiresAt
+      if (typeof expiresAt === 'number') value.expiresAt = expiresAt
       await db.run(`
         UPDATE archives SET isSaved = ?, networked = ?, autoDownload = ?, autoUpload = ?, expiresAt = ? WHERE profileId = ? AND key = ?
       `, [flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload), value.expiresAt, profileId, key])
