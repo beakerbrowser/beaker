@@ -5,6 +5,15 @@ input, textarea {
   color: @color-text--muted;
   border: 1px solid @border-menu;
 
+  &[type="checkbox"],
+  &[type="radio"],
+  &[type="range"] {
+
+    &:focus {
+      box-shadow: none;
+    }
+  }
+
   &.roomy {
     padding: 7px 9px;
   }
