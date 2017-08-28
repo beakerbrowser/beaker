@@ -25,7 +25,7 @@
 
   h2 {
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 500;
     margin: 0;
   }
 
@@ -159,7 +159,11 @@
 
   .downloads {
     padding: @padding-component--tight @padding-component;
-    font-size: 11px;
+    font-size: .725rem;
+
+    h2 {
+      margin-bottom: 10px;
+    }
 
     a {
       &:extend(.link);
@@ -170,13 +174,12 @@
     }
   }
 
-  .downloads-list {
-    margin: @padding-component--tight 0;
-  }
-
   .download-item {
     width: 100%;
-    margin-bottom: @padding-component--tight;
+
+    &:not(:last-child) {
+      margin-bottom: 5px;
+    }
 
     .status progress {
       width: 50px;
