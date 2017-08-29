@@ -642,6 +642,40 @@
   }
 
   .trash-list {
+
+    .nav-item {
+
+      &:hover {
+
+        .btn.restore {
+          display: block;
+        }
+      }
+    }
+
+    .btn.restore {
+      height: 20px;
+      line-height: .95;
+      background: none;
+      border-color: rgba(0,0,0,.25);
+      font-size: 11px;
+      display: none;
+
+      &:hover {
+        background: rgba(0,0,0,.15);
+        border-color: transparent;
+      }
+    }
+
+    .icon.restore {
+      width: 11px;
+      height: 11px;
+      margin: 0 0 -2px 3px;
+
+      * {
+        stroke: @color-text--muted;
+      }
+    }
   }
 
   .tabs-content .history,

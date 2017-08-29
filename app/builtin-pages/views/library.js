@@ -11,6 +11,7 @@ import renderFiles from '../com/files-list'
 import renderSearchIcon from '../icon/search'
 import renderDotsIcon from '../icon/three-dots'
 import renderTrashIcon from '../icon/trash'
+import renderRestoreIcon from '../icon/restore'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
 import toggleable, {closeAllToggleables} from '../com/toggleable'
@@ -679,6 +680,7 @@ function rTrash () {
             <div class="title">${niceName(archiveInfo)}</div>
             <button class="btn restore" onclick=${e => onUndelete(e, archiveInfo.key)}>
               Restore
+              ${renderRestoreIcon()}
             </button>
           </div>`
         )}
