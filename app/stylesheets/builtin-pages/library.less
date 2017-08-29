@@ -62,7 +62,24 @@
       display: none;
     }
 
-    .archive {
+    .nav-item.archive {
+
+      &:hover {
+
+        input[type="checkbox"] {
+          display: block;
+        }
+      }
+
+      input[type="checkbox"] {
+        display: none;
+        font-size: large;
+        margin: 0;
+
+        &:checked {
+          display: block;
+        }
+      }
 
       .title {
         &:extend(.overflow-ellipsis);
@@ -191,6 +208,18 @@
 
       .bulk-delete {
         visibility: hidden;
+
+        .icon {
+          width: 11px;
+          height: 11px;
+          margin-left: 3px;
+          margin-bottom: -1px;
+
+          * {
+            stroke: #fff;
+            stroke-width: 5px;
+          }
+        }
 
         &.visible {
           visibility: visible;

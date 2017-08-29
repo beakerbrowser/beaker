@@ -207,11 +207,17 @@ function update () {
 
         <div class="trash-controls">
           <button onclick=${onClickBulkDelete} class="bulk-delete btn primary ${selectedArchives.length ? 'visible' : ''}">
-            <i class="fa fa-trash"></i>
+            Delete selected
+            ${renderTrashIcon()}
           </button>
-          <button class="btn trash" onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
-            ${isTrashOpen ? renderCloseIcon() : renderTrashIcon()}
-          </button>
+          ${selectedArchives.length
+            ? yo`
+              <button class="btn" onclick=${onResetSelected}>Deselect all</button>`
+            : yo`
+              <button class="btn trash" onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
+                ${isTrashOpen ? renderCloseIcon() : renderTrashIcon()}
+              </button>`
+          }
         </div>
       </div>
 
@@ -401,6 +407,7 @@ function rArchiveListItem (archiveInfo) {
   return yo`
     <div class="nav-item archive ${cls}" onclick=${onSelectArchive(archiveInfo)}>
       <div class="title">${niceName(archiveInfo)}</div>
+      <input onclick=${onToggleSelected} value=${archiveInfo.url} type="checkbox" checked=${selectedArchives.indexOf(archiveInfo.url) !== -1}/>
     </div>
   `
 }
@@ -897,6 +904,25 @@ function onChangeFilter (e) {
 function onClearFilter () {
   currentFilter = ''
   document.querySelector('input[name="filter"]').value = ''
+  update()
+}
+
+function onResetSelected () {
+  selectedArchives = []
+  update()
+}
+
+function onToggleSelected (e) {
+  console.log(e.target.value)
+  e.stopPropagation()
+  var key = e.target.value
+
+  var idx = selectedArchives.indexOf(key)
+  if (idx === -1) {
+    selectedArchives.push(key)
+  } else {
+    selectedArchives.splice(idx, 1)
+  }
   update()
 }
 
