@@ -397,18 +397,10 @@ function rRecentArchivesList () {
 
 function rArchiveListItem (archiveInfo) {
   var cls = archiveInfo.key === selectedArchiveKey ? 'active' : ''
-  var icon = ''
-
-  if (archiveInfo.url === userProfileUrl) {
-    icon = yo`<i class="fa fa-user"></i>`
-  }
 
   return yo`
     <div class="nav-item archive ${cls}" onclick=${onSelectArchive(archiveInfo)}>
-      <div class="title">
-        ${icon}
-        ${niceName(archiveInfo)}
-      </div>
+      <div class="title">${niceName(archiveInfo)}</div>
     </div>
   `
 }
