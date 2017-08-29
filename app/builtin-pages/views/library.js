@@ -185,7 +185,7 @@ function update () {
               <input
                 class="filter"
                 name="filter"
-                placeholder="Search ${isTrashOpen ? 'trash' : ''}"
+                placeholder="Search ${isTrashOpen ? 'Trash' : ''}"
                 type="text"
                 value=${currentFilter || ''}
                 onkeyup=${onChangeFilter}/>
