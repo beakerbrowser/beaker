@@ -197,15 +197,7 @@ function update () {
             ? rTrash()
             : yo`
               <div>
-              <div class="section">
-                <h2>Recent</h2>
-                ${rRecentArchivesList()}
-              </div>
-
-              <div class="section">
-                <h2>Created by you</h2>
-                ${rYourArchivesList()}
-              </div>
+                ${rArchivesList()}
               </div>
             `
           }
@@ -336,6 +328,27 @@ function rView () {
   else if (selectedArchive) return rFiles(selectedArchive) //rArchive(selectedArchive)
   else if (selectedArchiveKey) return 'Loading...'
   return rEmpty()
+}
+
+function rArchivesList () {
+  // apply filter
+  var filteredArchives = archivesList.archives.filter(archive => {
+    if (!currentFilter) {
+      return true
+    } else if (currentFilter && archive.title && archive.title.toLowerCase().indexOf(currentFilter) !== -1) {
+      return true
+    }
+    return false
+  })
+
+  // sort
+  filteredArchives.sort((a, b) => {
+    if (currentSort === 'alphabetical') return niceName(a).localeCompare(niceName(b))
+    if (currentSort === 'mtime') return b.mtime - a.mtime
+    if (currentSort === 'peers') return b.peers - a.peers
+  })
+
+  return filteredArchives.map(rArchiveListItem)
 }
 
 function rYourArchivesList () {
