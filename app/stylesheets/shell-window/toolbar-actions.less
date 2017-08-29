@@ -24,6 +24,7 @@
 
     .icon {
       max-width: 100%;
+      cursor: pointer;
 
       * {
         stroke: #666;
@@ -35,10 +36,6 @@
       stroke-width: .5px !important;
       stroke: #666;
       fill: #666;
-    }
-
-    .fa {
-      cursor: pointer;
     }
 
     &.raised {
@@ -57,9 +54,14 @@
     }
 
     &:disabled {
+      cursor: default;
 
-      .icon * {
-        stroke: #ccc !important;
+      .icon {
+        cursor: default;
+
+        * {
+          stroke: #ccc !important;
+        }
       }
     }
 
