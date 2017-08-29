@@ -53,10 +53,13 @@ export class SiteInfoNavbarBtn {
     // render btn
     var iconEl = (icon) ? yo`<i class="fa fa-${icon}"></i>` : ''
     var titleEl = (protocolLabel) ? yo`<span class="title">${protocolLabel}</span>` : ''
-    return yo`<div class="toolbar-site-info ${protocolCls}">
-      <button onclick=${e => this.toggleDropdown(e)}>${iconEl} ${titleEl}</button>
-      ${this.renderDropdown()}
-    </div>`
+    var buttonEl = (titleEl) ? yo`<button onclick=${e => this.toggleDropdown(e)}>${iconEl} ${titleEl}</button>` : ''
+    return yo`
+      <div class="toolbar-site-info ${protocolCls}">
+        ${buttonEl}
+        ${this.renderDropdown()}
+      </div>
+    `
   }
 
   renderDropdown () {
