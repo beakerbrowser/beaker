@@ -47,6 +47,7 @@
     font-size: 16px;
     line-height: 1.1;
     min-width: 24px;
+    height: 100%;
 
     border: 0;
     border-radius: 0;
@@ -105,9 +106,8 @@
       .fa-star,
       .fa-star-o {
         display: block;
-        height: 27px;
-        line-height: 27px;
-        vertical-align: middle;
+        height: 100%;
+        line-height: 24px;
         padding: 0 6px 0 7px;
 
         &:hover {
@@ -196,7 +196,7 @@
     &:extend(.overflow-ellipsis);
     color: #000;
     flex: 1;
-    padding: 3px 0 1px 7px;
+    padding: 0 7px;
     cursor: text;
     letter-spacing: -.2px;
 
@@ -308,4 +308,9 @@
       }
     }
   }
+
+  .bookmark-navbar-menu {
+    height: 100%;
+  }
 }
+
