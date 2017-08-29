@@ -17,6 +17,11 @@
   background: #fff;
   margin: 0 2px 0 5px;
 
+  &.input-focused {
+    border: 1px solid fadeout(@color-link, 20%);
+    box-shadow: 0 0 0 2px fadeout(@color-link, 80%);
+  }
+
   input.nav-location-input {
     // override the default input styles
     box-shadow: none;

@@ -606,6 +606,7 @@ function onFocusLocation (e) {
   if (page) {
     page.navbarEl.querySelector('.nav-location-pretty').classList.add('hidden')
     page.navbarEl.querySelector('.nav-location-input').classList.remove('hidden')
+    page.navbarEl.querySelector('.toolbar-input-group').classList.add('input-focused')
     // wait till next tick to avoid events messing with each other
     setTimeout(() => page.navbarEl.querySelector('.nav-location-input').select(), 0)
   }
@@ -621,6 +622,7 @@ function onBlurLocation (e) {
   if (page) {
     page.navbarEl.querySelector('.nav-location-pretty').classList.remove('hidden')
     page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
+    page.navbarEl.querySelector('.toolbar-input-group').classList.remove('input-focused')
   }
 }
 
