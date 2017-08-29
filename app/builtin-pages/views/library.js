@@ -184,7 +184,7 @@ function update () {
               <input
                 class="filter"
                 name="filter"
-                placeholder="Search"
+                placeholder="Search ${isTrashOpen ? 'trash' : ''}"
                 type="text"
                 value=${currentFilter || ''}
                 onkeyup=${onChangeFilter}/>
@@ -669,13 +669,23 @@ function rSettings (archiveInfo) {
 }
 
 function rTrash () {
+  // apply filter
+  var filteredArchives = trashList.filter(archive => {
+    if (!currentFilter) {
+      return true
+    } else if (currentFilter && archive.title && archive.title.toLowerCase().indexOf(currentFilter) !== -1) {
+      return true
+    }
+    return false
+  })
+
   return yo`
     <div class="section trash">
       <h2>Trash</h2>
       ${trashList.length ? '' : yo`<p>No items in trash</p>`}
 
       <div class="trash-list">
-        ${trashList.map(archiveInfo => yo`
+        ${filteredArchives.map(archiveInfo => yo`
           <div class="nav-item archive" onclick=${onSelectArchive(archiveInfo)}>
             <div class="title">${niceName(archiveInfo)}</div>
             <button class="btn restore" onclick=${e => onUndelete(e, archiveInfo.key)}>
