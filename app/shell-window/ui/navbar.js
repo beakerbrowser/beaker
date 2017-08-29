@@ -235,7 +235,8 @@ function render (id, page) {
     datBtns = [
       yo`
         <button class="nav-peers-btn" onclick=${onClickPeercount}>
-          <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
+          <i class="fa fa-share-alt"></i>
+          ${numPeers}
         </button>`
     ]
     if (isLiveReloading) {
