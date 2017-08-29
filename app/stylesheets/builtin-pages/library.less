@@ -764,14 +764,16 @@
       color: rgba(255,255,255,.6);
 
       * {
-        stroke: black;
-        stroke: #fff;
+        stroke: fadeout(#fff, 40%);
         stroke-width: 5;
       }
 
       &.trash {
         top: 7px;
-        right: 11px;
+
+        * {
+          stroke-width: 5px;
+        }
       }
     }
 
