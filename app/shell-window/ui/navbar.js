@@ -14,6 +14,7 @@ import {SiteInfoNavbarBtn} from './navbar/site-info'
 import {pluralize} from '../../lib/strings'
 import renderNavArrowIcon from './icon/nav-arrow'
 import renderRefreshIcon from './icon/refresh'
+import renderCloseIcon from './icon/close'
 
 const KEYCODE_DOWN = 40
 const KEYCODE_UP = 38
@@ -163,7 +164,7 @@ function render (id, page) {
   var reloadBtn = (isLoading)
     ? yo`
         <button class="toolbar-btn nav-cancel-btn" onclick=${onClickCancel}>
-          <span class="fa fa-times"></span>
+          ${renderCloseIcon()}
         </button>`
     : yo`
         <button class="toolbar-btn nav-reload-btn" onclick=${onClickReload} title="Reload this page">
