@@ -55,6 +55,12 @@
   }
 
   .builtin-sidebar {
+    &:extend(.vertical-scroll);
+    padding-bottom: 45px; // height of .trash-controls
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
 
     .archive {
 
@@ -145,8 +151,9 @@
       &:extend(.flex);
       justify-content: space-between;
       position: fixed;
-      width: 300px;
       bottom: 0;
+      width: 300px;
+      height: 45px;
       background: @background-menu;
       border-top: 1px solid @border-menu;
       border-right: 1px solid @border-menu;
