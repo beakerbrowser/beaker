@@ -153,16 +153,32 @@
       padding: .5rem .5rem .5rem 1rem;
       text-align: right;
 
-      button {
-        font-size: 13px;
-      }
-
-      .view-trash {
-        border-radius: 2px;
+      .btn.trash {
         margin-left: auto;
+        color: @color-text;
+        border-color: #ccc;
 
-        &:hover {
-          background: @border-menu;
+        .icon {
+          width: 11px;
+          height: 11px;
+          margin-left: 3px;
+
+          &.close {
+            width: 9px;
+            height: 9px;
+          }
+
+          &.trash {
+            margin-bottom: -1px;
+
+            * {
+              stroke-width: 5px;
+            }
+          }
+
+          * {
+            stroke: @color-text;
+          }
         }
       }
 

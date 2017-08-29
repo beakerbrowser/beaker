@@ -11,6 +11,7 @@ import renderFiles from '../com/files-list'
 import renderSearchIcon from '../icon/search'
 import renderDotsIcon from '../icon/three-dots'
 import renderTrashIcon from '../icon/trash'
+import renderCloseIcon from '../icon/close'
 import renderRestoreIcon from '../icon/restore'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
@@ -208,8 +209,8 @@ function update () {
           <button onclick=${onClickBulkDelete} class="bulk-delete btn primary ${selectedArchives.length ? 'visible' : ''}">
             <i class="fa fa-trash"></i>
           </button>
-          <button class="view-trash" onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
-            <i class="fa ${isTrashOpen ? 'fa-close' : 'fa-trash'}"></i>
+          <button class="btn trash" onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
+            ${isTrashOpen ? renderCloseIcon() : renderTrashIcon()}
           </button>
         </div>
       </div>
