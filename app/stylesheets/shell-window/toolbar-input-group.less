@@ -4,12 +4,13 @@
 .toolbar-input-group {
   flex: 1;
   display: flex;
+  align-items: center;
 
   width: calc(100vw - 154px); // so that long URLs dont overflow
   // ^ will need to be recalculated each time the navbar adds/removes components
   position: relative; // for the :after el, and autocomplete dropdown, to position off of
 
-  height: 29px;
+  height: 26px;
   border: 1px solid #ddd;
   border-radius: 2px;
   font-size: 14px;
