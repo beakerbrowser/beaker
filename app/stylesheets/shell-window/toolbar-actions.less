@@ -22,14 +22,19 @@
     border-radius: 2px;
     border: 1px solid transparent;
 
-    .icon * {
-      stroke: rgba(0,0,0,.5);
-      stroke-width: 1.75;
+    .icon {
+      max-width: 100%;
+
+      * {
+        stroke: #666;
+        stroke-width: 1.75;
+      }
     }
 
     #triangle {
-      stroke-width: .75px !important;
-      fill: rgba(0,0,0,.5);
+      stroke-width: .5px !important;
+      stroke: #666;
+      fill: #666;
     }
 
     .fa {
@@ -54,7 +59,7 @@
     &:disabled {
 
       .icon * {
-        stroke: rgba(0,0,0,.2) !important;
+        stroke: #ccc !important;
       }
     }
 
@@ -76,7 +81,7 @@
     }
 
     &.nav-back-btn, &.nav-forward-btn {
-      stroke: rgba(0,0,0,.7);
+      stroke: #333;
 
       &:hover:not(:disabled) {
         -webkit-text-stroke: 1.6px @background-toolbar-btn--hover;
