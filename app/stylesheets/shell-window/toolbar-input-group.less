@@ -133,32 +133,38 @@
   }
 
   .toolbar-site-info {
+    height: 100%;
+
+    &:blank {
+      display: none;
+    }
 
     button {
       display: flex;
       color: #555;
-      padding: 0 0 0 3px;
+      padding: 0 0 0 7px;
+      margin: 1px;
+      border-radius: 3px 0 0 3px;
       border: 0;
       min-width: 0;
-      height: 100%;
+      height: ~"calc(100% - 2px)";
+
+      &:blank {
+        display: none;
+      }
 
       .fa {
-        padding: 7px 0 4px 6px;
+        margin-right: 5px;
         font-size: 14px;
 
-        &.fa-lock {
-          font-size: 14px;
-          position: relative;
-          top: -1.4px;
-          vertical-align: top;
+        &.fa-share {
+          font-size: 13px;
         }
       }
 
       .title {
-        font-size: 14px;
-        line-height: 14px;
-        margin-top: 5px; // use margin so the border on the right will have spacing from the top border
-        padding: 1px 7px 2px 5px;
+        font-size: 13px;
+        padding-right: 7px;
         border: 0;
         border-right: 1px solid #ddd;
         letter-spacing: -.2px;
@@ -174,11 +180,9 @@
 
       .title {
         color: mix(@color-text, @red, 20%);
-        margin-top: 4px;
       }
 
       i {
-        padding-top: 5px;
         color: @color-text--light;
 
         &.https-error {
