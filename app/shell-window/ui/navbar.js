@@ -337,7 +337,7 @@ function render (id, page) {
         </button>
         ${reloadBtn}
       </div>
-      <div class="toolbar-input-group">
+      <div class="toolbar-input-group ${autocompleteResults ? 'autocomplete' : ''}">
         ${siteInfoNavbarBtn.render()}
         ${locationPrettyView}
         ${locationInput}
