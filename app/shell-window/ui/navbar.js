@@ -343,9 +343,9 @@ function render (id, page) {
         ${locationInput}
         ${inpageFinder}
         ${zoomBtn}
-        ${datBtns}
         ${rehostMenuNavbarBtn.render()}
         ${bookmarkMenuNavbarBtn.render()}
+        ${datBtns}
         ${pageMenuNavbarBtn.render()}
         ${autocompleteDropdown}
       </div>
