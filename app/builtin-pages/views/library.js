@@ -189,8 +189,8 @@ function update () {
                 type="text"
                 value=${currentFilter || ''}
                 onkeyup=${onChangeFilter}/>
-              <a onclick=${onClearFilter} class="clear-filter ${currentFilter ? 'visible' : ''}">
-                <i class="fa fa-close"></i>
+              <a onclick=${onClearFilter} class="clear-filter close-btn ${currentFilter ? 'visible' : ''}">
+                ${renderCloseIcon()}
               </a>
             </label>
           </div>
