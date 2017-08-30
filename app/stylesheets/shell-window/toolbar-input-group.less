@@ -18,6 +18,10 @@
   background: #fff;
   margin: 0 2px 0 5px;
 
+  &.autocomplete {
+    border-radius: 4px 4px 0 0;
+  }
+
   &.input-focused {
     border: 1px solid fadeout(@color-link, 20%);
     box-shadow: 0 0 0 2px fadeout(@color-link, 80%);
@@ -260,7 +264,7 @@
     position: absolute;
     left: -1px;
     width: 100%;
-    top: 26px;
+    top: 24px;
     background: #fff;
     z-index: 20;
     border: 1px solid #ddd;
