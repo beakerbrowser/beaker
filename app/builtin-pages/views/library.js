@@ -748,7 +748,7 @@ async function onFork (e) {
   history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
 }
 
-async function onImportFiles (e, archiveInfo) {
+async function onImportFiles (e) {
   var files = await beakerBrowser.showOpenDialog({
     title: 'Import files to this archive',
     buttonLabel: 'Import',
@@ -757,7 +757,7 @@ async function onImportFiles (e, archiveInfo) {
   if (files) {
     files.forEach(src => DatArchive.importFromFilesystem({
       src,
-      dst: archiveInfo.url,
+      dst: selectedArchive.url,
       ignore: ['dat.json'],
       inplaceImport: true
     }))
