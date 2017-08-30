@@ -36,6 +36,8 @@ var rehostMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
 var siteInfoNavbarBtn = null
 
+var isURLFocused = false
+
 // autocomplete data
 var autocompleteCurrentValue = null
 var autocompleteCurrentSelection = 0
@@ -70,8 +72,12 @@ export function destroyEl (id) {
 
 export function focusLocation (page) {
   var el = page.navbarEl.querySelector('.nav-location-input')
+
+  // the container el which has :focus styles applied
+  var containerEl = page.navbarEl.querySelector('.toolbar-input-group')
   el.classList.remove('hidden')
   el.focus()
+  isURLFocused = true
   el.select()
 }
 
@@ -337,7 +343,7 @@ function render (id, page) {
         </button>
         ${reloadBtn}
       </div>
-      <div class="toolbar-input-group ${autocompleteResults ? 'autocomplete' : ''}">
+      <div class="toolbar-input-group${isURLFocused ? ' input-focused' : ''}${autocompleteResults ? ' autocomplete' : ''}">
         ${siteInfoNavbarBtn.render()}
         ${locationPrettyView}
         ${locationInput}
@@ -624,6 +630,7 @@ function onBlurLocation (e) {
     page.navbarEl.querySelector('.nav-location-pretty').classList.remove('hidden')
     page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
     page.navbarEl.querySelector('.toolbar-input-group').classList.remove('input-focused')
+    isURLFocused = false
   }
 }
 
