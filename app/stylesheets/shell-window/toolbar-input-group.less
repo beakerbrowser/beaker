@@ -8,7 +8,7 @@
 
   width: calc(100vw - 154px); // so that long URLs dont overflow
   // ^ will need to be recalculated each time the navbar adds/removes components
-  position: relative; // for the :after el, and autocomplete dropdown, to position off of
+  // position: relative; // for the :after el, and autocomplete dropdown, to position off of
 
   height: 26px;
   border: 1px solid #ddd;
@@ -17,10 +17,6 @@
   -webkit-app-region: no-drag;
   background: #fff;
   margin: 0 2px 0 5px;
-
-  &.autocomplete {
-    border-radius: 4px 4px 0 0;
-  }
 
   &.input-focused {
     border: 1px solid fadeout(@color-link, 20%);
@@ -263,68 +259,69 @@
     }
   }
 
-  .autocomplete-dropdown {
-    position: absolute;
-    left: -1px;
-    width: 100%;
-    top: 24px;
-    background: #fff;
-    z-index: 20;
-    border: 1px solid #ddd;
-    padding-bottom: 3px;
-    box-sizing: content-box;
-
-    .result {
-      padding: 0 10px;
-      display: flex;
-      align-items: center;
-      height: 28px;
-
-      .icon {
-        margin-right: 10px;
-        width: 15px;
-        display: inline-block;
-        text-align: center;
-
-        &.icon-search {
-          font-size: 17px;
-        }
-      }
-
-      .result-url {
-        color: @blue;
-
-        // set a width limit
-        &:extend(.overflow-ellipsis);
-        display: inline-block;
-        max-width: 40%;
-        vertical-align: top;
-      }
-
-      .result-title {
-        &:extend(.overflow-ellipsis);
-        margin-left: 2px;
-        color: gray;
-
-        &:before {
-          content: '-';
-          margin-right: 5px;
-        }
-      }
-
-      &.selected {
-        background: lightgoldenrodyellow;
-      }
-
-      &:hover {
-        background: #eee;
-      }
-    }
-  }
-
   .rehost-navbar-menu,
   .bookmark-navbar-menu {
     height: 100%;
   }
 }
 
+.autocomplete-dropdown {
+  position: absolute;
+  left: -1px;
+  width: 100%;
+  top: 24px;
+  top: 72px;
+  background: #fff;
+  z-index: 20;
+  border: 1px solid #ddd;
+  padding: 5px 0;
+  box-sizing: content-box;
+  box-shadow: 0 2px 7px rgba(0,0,0,.1);
+
+  .result {
+    padding: 0 10px 0 112px;
+    display: flex;
+    align-items: center;
+    height: 28px;
+
+    .icon {
+      margin-right: 10px;
+      width: 15px;
+      display: inline-block;
+      text-align: center;
+
+      &.icon-search {
+        font-size: 17px;
+      }
+    }
+
+    .result-url {
+      color: @blue;
+
+      // set a width limit
+      &:extend(.overflow-ellipsis);
+      display: inline-block;
+      max-width: 40%;
+      vertical-align: top;
+    }
+
+    .result-title {
+      &:extend(.overflow-ellipsis);
+      margin-left: 2px;
+      color: @color-text--muted;
+
+      &:before {
+        content: '-';
+        margin-right: 5px;
+      }
+    }
+
+    &.selected {
+      background: lightgoldenrodyellow;
+    }
+
+    &:hover {
+      background: #eee;
+    }
+  }
+}

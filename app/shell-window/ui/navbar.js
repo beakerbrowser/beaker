@@ -353,12 +353,12 @@ function render (id, page) {
         ${bookmarkMenuNavbarBtn.render()}
         ${datBtns}
         ${pageMenuNavbarBtn.render()}
-        ${autocompleteDropdown}
       </div>
       <div class="toolbar-group">
         ${browserMenuNavbarBtn.render()}
         ${updatesNavbarBtn.render()}
       </div>
+      ${autocompleteDropdown}
     </div>
   </div>`
 }
