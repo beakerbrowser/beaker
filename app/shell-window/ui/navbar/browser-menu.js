@@ -271,7 +271,7 @@ export class BrowserMenuNavbarBtn {
     this.isDropdownOpen = !this.isDropdownOpen
     this.updateActives()
 
-    var archive = await DatArchive.create()
+    var archive = await DatArchive.create({prompt: true})
     pages.getActive().loadURL('beaker://library/' + archive.url.slice('dat://'.length))
   }
 
