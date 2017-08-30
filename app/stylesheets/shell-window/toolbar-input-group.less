@@ -12,7 +12,7 @@
 
   height: 26px;
   border: 1px solid #ddd;
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 13.5px;
   -webkit-app-region: no-drag;
   background: #fff;
@@ -29,7 +29,7 @@
     max-height: 100%;
     color: @color-text;
     flex: 1;
-    padding: 1px 0 1px 7px;
+    padding: 1px 0 1px 8px;
     border-radius: 3px;
     border: 0;
     background: transparent;
@@ -88,12 +88,12 @@
     }
 
     &.zoom {
-      font-size: 14px;
+      font-size: 13px;
     }
 
     &.nav-peers-btn {
       height: 18px;
-      font-size: 12px;
+      font-size: 11.5px;
       padding: 1px 7px;
       border-radius: 4px;
       background: #eee;
@@ -105,10 +105,6 @@
       }
     }
 
-    &.cloud-upload {
-      padding-top: 6px;
-    }
-
     &.star {
       margin: 0;
       padding: 0;
@@ -118,7 +114,7 @@
         display: block;
         height: 100%;
         line-height: 24px;
-        padding: 0 6px 0 7px;
+        padding: 0 7px;
 
         &:hover {
           background: #eee;
@@ -145,10 +141,6 @@
   .toolbar-site-info {
     height: 100%;
 
-    &:blank {
-      display: none;
-    }
-
     button {
       display: flex;
       color: #555;
@@ -159,7 +151,7 @@
       min-width: 0;
       height: ~"calc(100% - 2px)";
 
-      &:blank {
+      &:empty {
         display: none;
       }
 
@@ -210,7 +202,7 @@
     &:extend(.overflow-ellipsis);
     color: #000;
     flex: 1;
-    padding: 0 7px;
+    padding: 0 8px;
     cursor: text;
     letter-spacing: -.2px;
 
@@ -323,6 +315,7 @@
     }
   }
 
+  .rehost-navbar-menu,
   .bookmark-navbar-menu {
     height: 100%;
   }

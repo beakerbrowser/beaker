@@ -17,13 +17,14 @@
     font-size: 17px;
     line-height: 1.1;
     color: @color-toolbar-btn;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border-radius: 2px;
     border: 1px solid transparent;
 
     .icon {
       max-width: 100%;
+      cursor: pointer;
 
       * {
         stroke: #666;
@@ -35,10 +36,6 @@
       stroke-width: .5px !important;
       stroke: #666;
       fill: #666;
-    }
-
-    .fa {
-      cursor: pointer;
     }
 
     &.raised {
@@ -57,9 +54,14 @@
     }
 
     &:disabled {
+      cursor: default;
 
-      .icon * {
-        stroke: #ccc !important;
+      .icon {
+        cursor: default;
+
+        * {
+          stroke: #ccc !important;
+        }
       }
     }
 
