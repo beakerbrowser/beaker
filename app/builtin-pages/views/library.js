@@ -744,6 +744,7 @@ function onShare (e) {
 async function onFork (e) {
   e.preventDefault()
   update()
+  closeAllToggleables()
   var a = await DatArchive.fork(selectedArchive.url, {prompt: true})
   history.pushState({}, null, 'beaker://library/' + a.url.slice('dat://'.length))
 }
@@ -761,6 +762,7 @@ async function onImportFiles (e) {
       ignore: ['dat.json'],
       inplaceImport: true
     }))
+    closeAllToggleables()
     update()
   }
 }
