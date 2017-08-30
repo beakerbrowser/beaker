@@ -4,7 +4,6 @@ import * as yo from 'yo-yo'
 import renderSidebar from '../com/sidebar'
 import {FileTree, ArchivesList} from 'builtin-pages-lib'
 import {makeSafe} from '../../lib/strings'
-import {throttle} from '../../lib/functions'
 import renderTabs from '../com/tabs'
 import renderGraph from '../com/peer-history-graph'
 import renderFiles from '../com/files-list'
@@ -116,28 +115,15 @@ async function loadCurrentArchive () {
       update()
 
       // load archive metadata
-      var a = new DatArchive(selectedArchiveKey)
-      selectedArchive = await a.getInfo()
-      selectedArchive.history = []
-      selectedArchive.fileTree = {rootNode: null}
-      console.log(selectedArchive)
-
-      // load the filetree from the last published
-      var aLastPublish = new DatArchive(`${selectedArchiveKey}+${selectedArchive.version}`)
-      var fileTree = new FileTree(aLastPublish, {onDemand: true})
-
-      // fetch all data
-      var [history] = await Promise.all([
-        a.history({end: 20, reverse: true, timeout: 10e3}),
-        fileTree.setup().catch(err => null)
-      ])
-      selectedArchive.history = history
-      selectedArchive.historyPaginationOffset = 20
-      selectedArchive.fileTree = fileTree
-      selectedArchive.events = a.createFileActivityStream()
+      const a = await loadCurrentArchiveMetadata()
 
       // wire up events
-      selectedArchive.events.addEventListener('changed', update)
+      selectedArchive.events = a.createFileActivityStream()
+      selectedArchive.events.addEventListener('changed', async () => {
+        // refresh files
+        await loadCurrentArchiveMetadata()
+        update()
+      })
     } else {
       selectedArchive = null
     }
@@ -148,6 +134,20 @@ async function loadCurrentArchive () {
   }
 
   update()
+}
+
+async function loadCurrentArchiveMetadata () {
+  const a = new DatArchive(selectedArchiveKey)
+  selectedArchive = await a.getInfo()
+  selectedArchive.fileTree = {rootNode: null}
+  console.log(selectedArchive)
+
+  // load the filetree from the last published
+  const aLastPublish = new DatArchive(`${selectedArchiveKey}+${selectedArchive.version}`)
+  selectedArchive.fileTree = new FileTree(aLastPublish, {onDemand: true})
+  await selectedArchive.fileTree.setup()
+
+  return a
 }
 
 // rendering
