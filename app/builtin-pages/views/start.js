@@ -106,7 +106,7 @@ function renderPinnedBookmark (bookmark) {
       <div class="info">
         <div class="title">${title}</div>
       </div>
-      <button class="close nofocus" data-href=${href} title="Unpin this bookmark" onclick=${onUnpinBookmark}>
+      <button class="close-btn nofocus" data-href=${href} title="Unpin this bookmark" onclick=${onUnpinBookmark}>
         ${renderCloseIcon()}
       </button>
     </a>

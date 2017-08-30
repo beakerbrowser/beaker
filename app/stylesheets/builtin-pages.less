@@ -21,6 +21,7 @@
 @import "./builtin-pages/components/links-list";
 @import "./builtin-pages/components/files-list.less";
 @import "./builtin-pages/components/sidebar";
+@import "./builtin-pages/components/close-btn";
 
 .window:before {
   content: '';
@@ -124,10 +125,6 @@
       margin-right: 20px;
     }
 
-    .icon#close {
-      width: 7px;
-    }
-
     .actions {
       &:extend(.flex);
       align-items: center;
@@ -144,23 +141,14 @@
     height: 30px;
     margin-bottom: 10px;
 
-    .close,
+    .close-btn,
     .search {
       position: absolute;
     }
 
-    .close {
-      position: absolute;
+    .close-btn {
       right: 7px;
-      top: 9px;
-      width: 13px;
-      height: 13px;
-      padding: 3px;
-
-      &:hover {
-        background: rgba(0,0,0,.1);
-        border-radius: 50%;
-      }
+      top: 7px;
     }
 
     .search {
@@ -168,7 +156,7 @@
       height: 100%;
       padding: 0 10px;
 
-      &:invalid + .close-container {
+      &:invalid + .close-btn {
         opacity: 0;
       }
     }

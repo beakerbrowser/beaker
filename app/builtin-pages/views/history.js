@@ -171,7 +171,7 @@ function render () {
             <div class="builtin-header fixed">
               <div class="search-container">
                 <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your browsing history" type="text" class="search"/>
-                <span onclick=${onClearQuery} class="close-container">
+                <span onclick=${onClearQuery} class="close-btn">
                   ${renderCloseIcon()}
                 </span>
               </div>
