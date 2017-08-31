@@ -645,6 +645,8 @@ function onInputLocation (e) {
     autocompleteCurrentSelection = 0 // reset the selection
     beaker.history.search(value).then(handleAutocompleteSearch) // update the suggetsions
   } else if (!autocompleteValue) { clearAutocomplete() } // no value, cancel out
+
+  isLocationHighlighted = true
 }
 
 function onKeydownLocation (e) {
