@@ -348,7 +348,7 @@ export async function queryArchives (query) {
   archiveInfos.forEach(archiveInfo => {
     var archive = getArchive(archiveInfo.key)
     if (archive) {
-      archiveInfo.peers = archive.replicationStreams.length
+      archiveInfo.peers = archive.metadata.peers.length
       archiveInfo.peerHistory = archive.peerHistory
     }
   })
@@ -376,7 +376,7 @@ export async function getArchiveInfo (key) {
     autoUpload: userSettings.autoUpload,
     expiresAt: userSettings.expiresAt
   }
-  meta.peers = archive.replicationStreams.length
+  meta.peers = archive.metadata.peers.length
   meta.peerInfo = archive.replicationStreams.map(s => ({
     host: s.peerInfo.host,
     port: s.peerInfo.port
