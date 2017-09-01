@@ -2,35 +2,118 @@
 @import "../utils/flex";
 @import "../components/link";
 
-.downloads {
+.downloads-wrapper {
+  // color: blue !important;
 
-}
+  .ll-row.download {
+    justify-content: flex-start;
+    align-items: center;
+    padding: 10px 15px;
+    width: 600px;
+    height: 70px;
 
-.ll-row.download {
+    .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      opacity: 0;
+    }
 
-  .actions {
-    opacity: 1;
-    margin-left: auto;
-    &:extend(.link);
+    &:hover {
 
-    a {
+      .close-btn {
+        opacity: 1;
+      }
+    }
+
+    img {
+      width: auto;
+      height: 35px;
+      margin-right: 10px;
+    }
+
+    .info {
+      flex: 1;
+      height: 35px;
+      line-height: 1;
+      vertical-align: top;
+
+      h3.title {
+        font-size: 12.25px;
+        font-weight: 500;
+        margin: 0;
+        padding: 0;
+        line-height: 1.2;
+        vertical-align: top;
+      }
+
+      .metadata {
+        &:extend(.flex);
+        align-items: center;
+        margin-top: -1px;
+        font-size: 11px;
+
+        &.progress {
+          justify-content: space-between;
+        }
+
+        span:not(:first-child) {
+          margin-left: 5px;
+        }
+
+        span {
+          margin-right: 3px;
+        }
+      }
+
+      .progressbar {
+        display: inline-block;
+
+        progress {
+          width: 350px;
+          flex: 1;
+        }
+      }
+
+      // pause, resume, close buttons
+      .controls {
+        vertical-align: top;
+
+        .fa {
+          color: rgba(0,0,0,.25);
+
+          &:not(:last-of-type) {
+            margin-right: 5px;
+          }
+
+          &:hover {
+            color: rgba(0,0,0,.4);
+          }
+        }
+
+        .fa-pause,
+        .fa-stop {
+          font-size: 10px;
+        }
+      }
+    }
+
+    .link {
       &:extend(.link);
+      font-weight: 400;
 
       &:hover {
         &:extend(.link:hover);
       }
 
-      &:not(last-child) {
-        margin-right: 10px;
+      &.show {
+        // margin-left: auto !important;
       }
     }
-  }
 
-  .status {
-    margin-right: 5px;
-  }
-
-  .progress * {
-    display: inline-block;
+    .actions {
+      opacity: 1;
+      margin-left: auto;
+    }
   }
 }

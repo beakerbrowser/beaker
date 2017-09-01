@@ -35,3 +35,20 @@ export function shortenHash (str, n = 6) {
 export function makeSafe (str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '')
 }
+
+export function getHostname (str) {
+    var hostname
+
+    if (str.indexOf("://") > -1) {
+      hostname = str.split('/')[2]
+    } else {
+      hostname = str.split('/')[0]
+    }
+
+    //find & remove port number
+    hostname = hostname.split(':')[0]
+    //find & remove "?"
+    hostname = hostname.split('?')[0]
+
+    return hostname
+}

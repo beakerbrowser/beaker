@@ -11,6 +11,15 @@ export function niceDate (ts, opts) {
   return ts.format('ll')
 }
 
+export function downloadTimestamp (ts) {
+  if (typeof ts === 'string') {
+    ts = moment(Number(ts))
+  } else if (typeof ts === 'number') {
+    ts = moment(ts)
+  }
+  return moment(ts).local().format('ddd MMM D, h:mma')
+}
+
 export function timer (ms, fn) {
   var currentAction
   var isTimedOut = false

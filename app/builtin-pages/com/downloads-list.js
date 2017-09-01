@@ -1,80 +1,104 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import { ucfirst } from '../../lib/strings'
+import { downloadTimestamp } from '../../lib/time'
+import { getHostname } from '../../lib/strings'
+import renderCloseIcon from '../icon/close'
 
 // exported api
 // =
 
 export function render (downloadsList) {
   var downloadEls = downloadsList.downloads.map(d => {
-    var actions
-    var status = ''
-    var progress = ''
-    var size = ''
-    var canShow = false
-    var canCancel = false
-    if (d.state === 'progressing') {
-      // progress
-      status = (d.isPaused) ? 'Paused' : (prettyBytes(d.downloadSpeed || 0) + '/s')
+    var metadataEl = ''
 
-      progress = yo`
-        <div class="progress">
-          <div class="progressbar">
-            <progress value=${d.receivedBytes} max=${d.totalBytes}></progress>
-          </div>
-          <span>${prettyBytes(d.receivedBytes || 0)} / ${prettyBytes(d.totalBytes || 0)}</span>
-        </div>`
+    if (d.state == 'progressing') {
+      var status = (d.isPaused) ? 'Paused' : (prettyBytes(d.downloadSpeed || 0) + '/s')
+      var controls = ''
 
-      // actions
-      canCancel = true
+      var cancelBtn = yo`<i title="Cancel download" class="fa fa-stop" onclick=${e => downloadsList.cancelDownload(d)}></i>`
+
       if (d.isPaused) {
-        actions = yo`<a onclick=${e => downloadsList.resumeDownload(d)}>Resume</a>`
+        controls = yo`
+          <span class="controls">
+            ${cancelBtn}
+            <i title="Resume download" class="fa fa-play" onclick=${e => downloadsList.resumeDownload(d)}></i>
+          </span>`
       } else {
-        actions = yo`
-          <a onclick=${e => downloadsList.pauseDownload(d)}>
-            <i class="fa fa-pause"></i>
-            Pause
-          </a>`
+        controls = yo`
+          <span class="controls">
+            ${cancelBtn}
+            <i title="Pause download" class="fa fa-pause" onclick=${e => downloadsList.pauseDownload(d)}></i>
+          </span>
+        `
       }
+
+      metadataEl = yo`
+        <div class="metadata progress">
+          <div class="progress">
+            <div class="progressbar">
+              <progress value=${d.receivedBytes} max=${d.totalBytes}></progress>
+            </div>
+          </div>
+
+          <div>
+            <span class="status">
+              ${prettyBytes(d.receivedBytes || 0)} / ${prettyBytes(d.totalBytes || 0)}
+              (${status})
+            </span>
+            ${controls}
+          </div>
+        </div>
+      `
     } else if (d.state === 'completed') {
-      size = yo`<span>${prettyBytes(d.totalBytes || 0)}</span>`
-
       // actions
+      var actions
       if (!d.fileNotFound) {
-        canShow = true
-
-        var removeBtn = yo`<a onclick=${e => downloadsList.removeDownload(d)}>Remove Download</a>`
-
-        if (canCancel) {
-          removeBtn = ''// yo`<a onclick=${e => downloadsList.cancelDownload(d)}>Cancel Download</a>`
-        }
+        var removeBtn = yo`
+          <span onclick=${e => downloadsList.removeDownload(d)} class="close-btn">
+            ${renderCloseIcon()}
+          </span>
+        `
 
         actions = [
-          yo`<a onclick=${e => downloadsList.openDownload(d)}>Open</a>`,
-          yo`<a onclick=${e => downloadsList.showDownload(d)}>Show in Finder</a>`,
-          removeBtn
+          yo`<span class="link show" onclick=${e => {e.stopPropagation(); downloadsList.showDownload(d)}}>Show in Finder</span>`,
         ]
       } else {
-        // TODO
-        // action = yo`<div>File not found (moved or deleted)</div>`
+        actions = [
+          yo`<span>File not found (moved or deleted)</span>`
+        ]
       }
+
+      metadataEl = yo`
+        <div class="metadata">
+          <span>${prettyBytes(d.totalBytes || 0)}</span>
+          —
+          <span>${getHostname(d.url)}</span>
+          —
+          ${downloadTimestamp(d.id)}
+          —
+          ${actions}
+        </div>
+      `
     } else {
-      status = ucfirst(d.state)
+      metadataEl = yo`
+        <div class="metadata">
+          <span class="status">${ucfirst(d.state)}</span>
+        </div>
+      `
     }
 
     // render download
     return yo`
-      <div class="ll-row download">
-        <div class="link">
-          <img class="favicon" src=${'beaker-favicon:' + d.url} />
-          ${canShow
-            ? yo`<a class="title" onclick=${e => downloadsList.openDownload(d)} title=${d.name}>${d.name}</a>`
-            : yo`<span class="title" title=${d.name}>${d.name}</a>`}
+      <div class="ll-row download" ondblclick=${(e) => downloadsList.openDownload(d)}>
+        ${removeBtn}
+
+        <img class="favicon" src="beaker-favicon:"/>
+
+        <div class="info">
+          <h3 class="title">${d.name}</h3>
+          ${metadataEl}
         </div>
-        <div class="status">${status}</div>
-        ${progress}
-        ${size}
-        <div class="actions">${actions}</div>
       </div>`
   }).reverse()
 
