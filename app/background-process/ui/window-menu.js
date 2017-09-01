@@ -182,6 +182,12 @@ var viewMenu = {
     click: function (item, win) {
       if (win) win.webContents.send('command', 'view:toggle-dev-tools')
     }
+  },
+  {
+    label: 'Toggle Live Reloading',
+    click: function (item, win) {
+      if (win) win.webContents.send('command', 'view:toggle-live-reloading')
+    }
   }]
 }
 

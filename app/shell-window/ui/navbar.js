@@ -246,10 +246,10 @@ function render (id, page) {
         </button>`
     ]
     if (isLiveReloading) {
-      datBtns.push(
-        yo`<button class="nav-live-reload-btn active" title="Turn off live reloading" onclick=${onClickLiveReload}>
+      datBtns.unshift(
+        yo`<span class="live-reload-indicator" title="Live reloading active">
             <i class="fa fa-bolt"></i>
-          </button>`
+          </span>`
       )
     }
   } else if (siteHasDatAlternative) {
@@ -577,13 +577,6 @@ function onClickCancel (e) {
 
 function onClickPeercount (e) {
   // TODO anything?
-}
-
-function onClickLiveReload (e) {
-  var page = getEventPage(e)
-  if (!page || !page.siteInfo) return
-  page.toggleLiveReloading()
-  update()
 }
 
 function onClickGotoDatVersion (e) {
