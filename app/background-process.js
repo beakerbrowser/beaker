@@ -6,13 +6,13 @@ import setupDebugLogger from './background-process/debug-logger'
 // It doesn't have any windows which you can see on screen, but we can open
 // window from here.
 
-import { app, Menu, protocol } from 'electron'
+import { app, protocol } from 'electron'
 
 import * as beakerBrowser from './background-process/browser'
 import * as webAPIs from './background-process/web-apis'
 
 import * as windows from './background-process/ui/windows'
-import buildWindowMenu from './background-process/ui/window-menu'
+import * as windowMenu from './background-process/ui/window-menu'
 import registerContextMenu from './background-process/ui/context-menu'
 import * as downloads from './background-process/ui/downloads'
 import * as permissions from './background-process/ui/permissions'
@@ -60,7 +60,7 @@ app.on('ready', async function () {
   beakerBrowser.setup()
 
   // ui
-  Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu()))
+  windowMenu.setup()
   registerContextMenu()
   windows.setup()
   downloads.setup()

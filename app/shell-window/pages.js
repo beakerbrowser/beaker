@@ -1,6 +1,6 @@
 /* globals beaker DatArchive beakerSitedata URL beakerBrowser */
 
-import { remote } from 'electron'
+import { ipcRenderer, remote } from 'electron'
 import EventEmitter from 'events'
 import path from 'path'
 import fs from 'fs'
@@ -91,7 +91,12 @@ export function create (opts) {
     promptbarEl: promptbar.createEl(id),
 
     // page state
-    url, // what is the actual current URL?
+    _url: url, // what is the actual current URL?
+    get url () { return this._url },
+    set url (v) {
+      this._url = v
+      ipcRenderer.send('shell-window:set-current-location', v) // inform main process
+    },
     loadingURL: url, // what URL is being loaded, if any?
     title: '', // what is the current pages title?
     isGuessingTheURLScheme: false, // did beaker guess at the url scheme? if so, a bad load may deserve a second try
@@ -360,6 +365,7 @@ export function setActive (page) {
   navbar.update()
   promptbar.update()
   events.emit('set-active', page)
+  ipcRenderer.send('shell-window:set-current-location', page.getIntendedURL())
 
   // HACK to fix electron#8505
   // can now allow visibility: hidden
