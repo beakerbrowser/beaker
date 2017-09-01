@@ -222,15 +222,13 @@ export function buildWindowMenu (opts = {}) {
         if (win) win.webContents.send('command', 'view:toggle-dev-tools')
       }
     },
-    isDat
-      ? {
-        label: 'Toggle Live Reloading',
-        click: function (item, win) {
-          if (win) win.webContents.send('command', 'view:toggle-live-reloading')
-        }
+    {
+      label: `Toggle Live Reloading${isDat ? '' : ' (Dat Only)'}`,
+      enabled: !!isDat,
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'view:toggle-live-reloading')
       }
-      : false
-    ].filter(Boolean)
+    }]
   }
 
   var showHistoryAccelerator = 'Ctrl+h'
