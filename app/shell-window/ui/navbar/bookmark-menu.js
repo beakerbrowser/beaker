@@ -7,6 +7,7 @@ import * as navbar from '../navbar'
 
 export class BookmarkMenuNavbarBtn {
   constructor () {
+    this.justCreatedBookmark = false // did we create the bookmark on open?
     this.values = {
       title: '',
       notes: '',
@@ -95,7 +96,7 @@ export class BookmarkMenuNavbarBtn {
                   </div>
                 </button>
 
-                <button class="btn primary" type="submit">
+                <button class="btn primary" type="submit" disabled=${!this.doesNeedSave}>
                   Save
                 </button>
               </div>
@@ -119,6 +120,20 @@ export class BookmarkMenuNavbarBtn {
 
   updateActives () {
     Array.from(document.querySelectorAll('.bookmark-navbar-menu')).forEach(el => yo.update(el, this.render()))
+  }
+
+  get doesNeedSave () {
+    const page = pages.getActive()
+    if (!page || !page.bookmark) {
+      return false
+    }
+    const b = page.bookmark
+    return (
+      this.justCreatedBookmark ||
+      b.title !== this.values.title ||
+      b.private !== this.values.private ||
+      b.pinned !== this.values.pinned
+    )
   }
 
   close () {
@@ -145,7 +160,10 @@ export class BookmarkMenuNavbarBtn {
         // set the bookmark privately
         await beaker.bookmarks.bookmarkPrivate(page.getIntendedURL(), {title: page.title || '', pinned: false})
         page.bookmark = await beaker.bookmarks.getBookmark(page.getIntendedURL())
+        this.justCreatedBookmark = true
         navbar.update()
+      } else {
+        this.justCreatedBookmark = false
       }
 
       // set form values
