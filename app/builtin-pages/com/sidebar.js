@@ -17,13 +17,13 @@ export default function render (activePage) {
         ${renderStarIcon()}
         <span class="tooltip">Bookmarks</span>
       </a>
+      <a class="sidebar-link ${activePage === 'library' ? 'active' : ''}" href="beaker://library">
+        ${renderFilesystemIcon()}
+        <span class="tooltip library">Files</span>
+      </a>
       <a class="sidebar-link ${activePage === 'history' ? 'active' : ''}" href="beaker://history">
         ${renderHistoryIcon()}
         <span class="tooltip">History</span>
-      </a>
-      <a class="sidebar-link ${activePage === 'library' ? 'active' : ''}" href="beaker://library">
-        ${renderFilesystemIcon()}
-        <span class="tooltip library">Filesystem</span>
       </a>
       <a class="sidebar-link avatar ${activePage === 'profile' ? 'active' : ''}" href="beaker://profile">
         ${renderAvatarIcon()}
