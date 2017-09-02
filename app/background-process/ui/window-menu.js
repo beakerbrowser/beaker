@@ -360,7 +360,7 @@ export function buildWindowMenu (opts = {}) {
 
 var lastURLWasDat = false
 function requiresRebuild (url) {
-  const urlIsDat = url.startsWith('dat://')
+  const urlIsDat = url && url.startsWith('dat://')
   // check if this is a change from dat->* or from *->dat
   const b = (lastURLWasDat !== urlIsDat)
   lastURLWasDat = urlIsDat
