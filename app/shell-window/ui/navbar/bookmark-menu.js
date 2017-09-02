@@ -9,6 +9,8 @@ export class BookmarkMenuNavbarBtn {
   constructor () {
     this.values = {
       title: '',
+      notes: '',
+      tags: [],
       private: false,
       pinned: false
     }
@@ -35,6 +37,16 @@ export class BookmarkMenuNavbarBtn {
               <div class="input-group">
                 <label for="title">Title</label>
                 <input class="bookmark-title" type="text" name="title" value=${this.values.title} onkeyup=${e => this.onChangeTitle(e)}/>
+              </div>
+
+              <div class="input-group">
+                <label>Tags</label>
+                <input type="text" name="tags" onkeyup=${e => this.onChangeTags(e)}/>
+              </div>
+
+              <div class="input-group">
+                <label>Notes</label>
+                <textarea class="bookmark-notes" name="notes" onkeyup=${e => this.onChangeNotes(e)}>${this.values.notes}</textarea>
               </div>
 
               <div class="input-group pinned">
@@ -197,6 +209,25 @@ export class BookmarkMenuNavbarBtn {
 
   onChangeTitle (e) {
     this.values.title = e.target.value
+    this.updateActives()
+  }
+
+  onChangeTags (e) {
+    var tagsStr = e.target.value
+    if (tagsStr.length) {
+      // split into array of tags and remove duplicates
+      this.values.tags = tagsStr.split(' ').filter((tag, i, arr) => {
+        return arr.indexOf(tag) === i && tag.length
+      })
+    } else {
+      this.values.tags = []
+    }
+
+    this.updateActives()
+  }
+
+  onChangeNotes (e) {
+    this.values.notes = e.target.value
     this.updateActives()
   }
 
