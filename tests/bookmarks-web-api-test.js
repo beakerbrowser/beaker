@@ -36,7 +36,7 @@ test('public bookmarks', async t => {
 
   // write some public bookmarks
   var res = await app.client.executeAsync((done) => {
-    window.beaker.bookmarks.bookmarkPublic('dat://beakerbrowser.com/', {title: 'Beaker Browser'}).then(done,done)
+    window.beaker.bookmarks.bookmarkPublic('dat://beakerbrowser.com/', {title: 'Beaker Browser', tags: ['tag1', 'tag2'], notes: 'Foo'}).then(done,done)
   })
   t.falsy(res.value)
   var res = await app.client.executeAsync((done) => {
@@ -52,13 +52,17 @@ test('public bookmarks', async t => {
   t.deepEqual(res.value, [
     { href: 'dat://beakerbrowser.com',
       id: 'dat!beakerbrowser.com',
+      notes: 'Foo',
       pinned: false,
       private: false,
+      tags: ['tag1', 'tag2'],
       title: 'Beaker Browser' },
     { href: 'https://beakerbrowser.com/docs',
       id: 'https!beakerbrowser.com!docs',
+      notes: null,
       pinned: false,
       private: false,
+      tags: [],
       title: null }
   ])
 
@@ -76,8 +80,10 @@ test('public bookmarks', async t => {
   t.deepEqual(res.value, [
     { href: 'dat://beakerbrowser.com',
       id: 'dat!beakerbrowser.com',
+      notes: 'Foo',
       pinned: false,
       private: false,
+      tags: ['tag1', 'tag2'],
       title: 'Beaker Browser' }
   ])
 })
@@ -86,7 +92,7 @@ test('private bookmarks', async t => {
 
   // write some private bookmarks
   var res = await app.client.executeAsync((done) => {
-    window.beaker.bookmarks.bookmarkPrivate('https://bluelinklabs.com/', {title: 'Blue Link Labs'}).then(done,done)
+    window.beaker.bookmarks.bookmarkPrivate('https://bluelinklabs.com/', {title: 'Blue Link Labs', tags: ['tag1', 'tag2'], notes: 'Bar'}).then(done,done)
   })
   t.falsy(res.value)
   var res = await app.client.executeAsync((done) => {
@@ -100,11 +106,46 @@ test('private bookmarks', async t => {
   })
   res.value.sort((a, b) => a.href.localeCompare(b.href))
   t.deepEqual(res.value.length, NUM_DEFAULT_BOOKMARKS + 2)
-  t.deepEqual(bookmarkSubset(res.value[0]), {
+  var b = bookmarkSubset(res.value[0])
+  t.deepEqual(b, {
     href: 'dat://pastedat-taravancil.hashbase.io',
     id: undefined,
+    notes: null,
     pinned: true,
+    tags: [],
     title: 'Pastedat',
+    private: true
+  })
+  var res = await app.client.executeAsync((done) => {
+    window.beaker.bookmarks.getBookmark('https://bluelinklabs.com/').then(done,done)
+  })
+  var b = bookmarkSubset(res.value)
+  t.deepEqual(b, {
+    href: 'https://bluelinklabs.com',
+    id: undefined,
+    notes: 'Bar',
+    pinned: false,
+    tags: ['tag1', 'tag2'],
+    title: 'Blue Link Labs',
+    private: true
+  })
+
+  // make a partial update
+  var res = await app.client.executeAsync((done) => {
+    window.beaker.bookmarks.bookmarkPrivate('https://bluelinklabs.com/', {tags: ['tag1'], notes: 'Baz'}).then(done,done)
+  })
+  t.falsy(res.value)
+  var res = await app.client.executeAsync((done) => {
+    window.beaker.bookmarks.getBookmark('https://bluelinklabs.com/').then(done,done)
+  })
+  var b = bookmarkSubset(res.value)
+  t.deepEqual(b, {
+    href: 'https://bluelinklabs.com',
+    id: undefined,
+    notes: 'Baz',
+    pinned: false,
+    tags: ['tag1'],
+    title: 'Blue Link Labs',
     private: true
   })
 
@@ -130,7 +171,9 @@ test('current user bookmarks', async t => {
   t.deepEqual(res.value, {
     href: 'dat://pastedat-taravancil.hashbase.io',
     id: undefined,
+    notes: null,
     pinned: true,
+    tags: [],
     title: 'Pastedat',
     private: true
   })
@@ -140,8 +183,10 @@ test('current user bookmarks', async t => {
   t.deepEqual(bookmarkSubset(res.value), 
     { href: 'dat://beakerbrowser.com',
       id: 'dat!beakerbrowser.com',
+      notes: 'Foo',
       pinned: false,
       private: false,
+      tags: ['tag1', 'tag2'],
       title: 'Beaker Browser' }
   )
   var res = await app.client.executeAsync((done) => {
@@ -175,7 +220,9 @@ test('pinned bookmarks', async t => {
   t.deepEqual(bookmarkSubset(res.value[0]), {
     href: 'dat://pastedat-taravancil.hashbase.io',
     id: undefined,
+    notes: null,
     pinned: true,
+    tags: [],
     title: 'Pastedat',
     private: true
   })
@@ -204,7 +251,9 @@ function bookmarkSubset (b) {
   return {
     href: b.href,
     id: b.id,
+    notes: b.notes,
     pinned: b.pinned,
+    tags: b.tags,
     title: b.title,
     private: !!b.private
   }

@@ -8,6 +8,7 @@ So this is used for the private bookmarks
 
 import * as db from './profile-data-db'
 import normalizeUrl from 'normalize-url'
+import lock from '../../lib/lock'
 
 const NORMALIZE_OPTS = {
   stripFragment: false,
@@ -18,12 +19,27 @@ const NORMALIZE_OPTS = {
 // exported methods
 // =
 
-export function bookmark (profileId, url, {title}) {
-  return db.run(`
-    INSERT OR REPLACE
-      INTO bookmarks (profileId, url, title, pinned)
-      VALUES (?, ?, ?, 0)
-  `, [profileId, url, title])
+export async function bookmark (profileId, url, {title, tags, notes}) {
+  tags = tagsToString(tags)
+  var release = await lock(`bookmark:${url}`)
+  try {
+    // read old bookmark and fallback to old values as needed
+    var oldBookmark = await db.get(`SELECT url, title, pinned FROM bookmarks WHERE profileId = ? AND url = ?`, [profileId, url])
+    oldBookmark = oldBookmark || {}
+    const pinned = oldBookmark.pinned ? 1 : 0
+    title = typeof title === 'undefined' ? oldBookmark.title : title
+    tags  = typeof tags  === 'undefined' ? oldBookmark.tags  : tags
+    notes = typeof notes === 'undefined' ? oldBookmark.notes : notes
+
+    // update record
+    return db.run(`
+      INSERT OR REPLACE
+        INTO bookmarks (profileId, url, title, tags, notes, pinned)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `, [profileId, url, title, tags, notes, pinned])
+  } finally {
+    release()
+  }
 }
 
 export function unbookmark (profileId, url) {
@@ -35,16 +51,16 @@ export function setBookmarkPinned (profileId, url, pinned) {
 }
 
 export async function getBookmark (profileId, url) {
-  return toNewFormat(await db.get(`SELECT url, title, pinned FROM bookmarks WHERE profileId = ? AND url = ?`, [profileId, url]))
+  return toNewFormat(await db.get(`SELECT url, title, tags, notes, pinned FROM bookmarks WHERE profileId = ? AND url = ?`, [profileId, url]))
 }
 
 export async function listBookmarks (profileId) {
-  var bookmarks = await db.all(`SELECT url, title, pinned FROM bookmarks WHERE profileId = ? ORDER BY createdAt DESC`, [profileId])
+  var bookmarks = await db.all(`SELECT url, title, tags, notes, pinned FROM bookmarks WHERE profileId = ? ORDER BY createdAt DESC`, [profileId])
   return bookmarks.map(toNewFormat)
 }
 
 export async function listPinnedBookmarks (profileId) {
-  var bookmarks = await db.all(`SELECT url, title, pinned FROM bookmarks WHERE profileId = ? AND pinned = 1 ORDER BY createdAt DESC`, [profileId])
+  var bookmarks = await db.all(`SELECT url, title, tags, notes, pinned FROM bookmarks WHERE profileId = ? AND pinned = 1 ORDER BY createdAt DESC`, [profileId])
   return bookmarks.map(toNewFormat)
 }
 
@@ -60,6 +76,13 @@ export async function fixOldBookmarks () {
   })
 }
 
+function tagsToString (v) {
+  if (Array.isArray(v)) {
+    v = v.join(' ')
+  }
+  return v
+}
+
 function toNewFormat (b) {
   if (!b) return b
   return {
@@ -68,6 +91,8 @@ function toNewFormat (b) {
     private: true,
     href: b.url,
     title: b.title,
+    tags: b.tags ? b.tags.split(' ').filter(Boolean) : [],
+    notes: b.notes,
     pinned: !!b.pinned
   }
 }

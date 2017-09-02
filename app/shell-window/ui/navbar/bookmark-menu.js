@@ -11,7 +11,7 @@ export class BookmarkMenuNavbarBtn {
     this.values = {
       title: '',
       notes: '',
-      tags: [],
+      tags: '',
       private: false,
       pinned: false
     }
@@ -36,17 +36,17 @@ export class BookmarkMenuNavbarBtn {
 
             <form onsubmit=${e => this.onSaveBookmark(e)}>
               <div class="input-group">
-                <label for="title">Title</label>
+                <label for="title">Title:</label>
                 <input class="bookmark-title" type="text" name="title" value=${this.values.title} onkeyup=${e => this.onChangeTitle(e)}/>
               </div>
 
               <div class="input-group">
-                <label>Tags</label>
-                <input type="text" name="tags" onkeyup=${e => this.onChangeTags(e)}/>
+                <label>Tags:</label>
+                <input type="text" name="tags" value=${this.values.tags} onkeyup=${e => this.onChangeTags(e)}/>
               </div>
 
               <div class="input-group">
-                <label>Notes</label>
+                <label>Notes:</label>
                 <textarea class="bookmark-notes" name="notes" onkeyup=${e => this.onChangeNotes(e)}>${this.values.notes}</textarea>
               </div>
 
@@ -131,6 +131,8 @@ export class BookmarkMenuNavbarBtn {
     return (
       this.justCreatedBookmark ||
       b.title !== this.values.title ||
+      tagsToString(b.tags) !== this.values.tags ||
+      b.notes !== this.values.notes ||
       b.private !== this.values.private ||
       b.pinned !== this.values.pinned
     )
@@ -169,6 +171,8 @@ export class BookmarkMenuNavbarBtn {
       // set form values
       this.values.private = page.bookmark.private
       this.values.title = page.bookmark.title
+      this.values.tags = tagsToString(page.bookmark.tags)
+      this.values.notes = page.bookmark.notes
       this.values.pinned = page.bookmark.pinned
     }
 
@@ -188,6 +192,8 @@ export class BookmarkMenuNavbarBtn {
     // update bookmark
     var b = page.bookmark
     b.title = this.values.title
+    b.tags = this.values.tags.split(' ').filter(Boolean)
+    b.notes = this.values.notes
 
     // delete old bookmark if privacy changed
     if (this.values.private && !b.private) {
@@ -231,16 +237,7 @@ export class BookmarkMenuNavbarBtn {
   }
 
   onChangeTags (e) {
-    var tagsStr = e.target.value
-    if (tagsStr.length) {
-      // split into array of tags and remove duplicates
-      this.values.tags = tagsStr.split(' ').filter((tag, i, arr) => {
-        return arr.indexOf(tag) === i && tag.length
-      })
-    } else {
-      this.values.tags = []
-    }
-
+    this.values.tags = e.target.value
     this.updateActives()
   }
 
@@ -265,4 +262,8 @@ export class BookmarkMenuNavbarBtn {
     this.isPrivacyDropdownOpen = !this.isPrivacyDropdownOpen
     this.updateActives()
   }
+}
+
+function tagsToString (tags) {
+  return (tags || []).join(' ')
 }
