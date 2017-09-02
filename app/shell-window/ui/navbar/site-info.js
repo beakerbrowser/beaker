@@ -2,6 +2,7 @@
 
 import * as yo from 'yo-yo'
 import * as pages from '../../pages'
+import renderPadlockIcon from '../icon/padlock'
 import { findParent } from '../../../lib/fg/event-handlers'
 import PERMS from '../../../lib/perms'
 import { ucfirst, getPermId, getPermParam } from '../../../lib/strings'
@@ -21,6 +22,7 @@ export class SiteInfoNavbarBtn {
   render () {
     // pull details
     var icon = ''
+    var iconEl = ''
     var protocolLabel = ''
     var protocolCls = 'insecure'
     var gotInsecureResponse = this.siteLoadError && this.siteLoadError.isInsecureResponse
@@ -34,29 +36,22 @@ export class SiteInfoNavbarBtn {
       var isHttps = ['https:'].includes(this.protocolInfo.scheme)
 
       if (isHttps && !gotInsecureResponse && !this.siteLoadError) {
-        icon = 'lock'
-        protocolLabel = 'Secure'
         protocolCls = 'secure'
+        iconEl = renderPadlockIcon()
       } else if (this.protocolInfo.scheme === 'http:' || (isHttps && gotInsecureResponse)) {
-        icon = 'exclamation-circle https-error'
-        protocolLabel = 'Not secure'
+        iconEl = yo`<i class="fa fa-exclamation-circle"></i>`
       } else if (this.protocolInfo.scheme === 'dat:') {
-        icon = 'share-alt'
-        protocolLabel = 'Secure P2P'
         protocolCls = 'p2p'
+        iconEl = yo`<i class="fa fa-share-alt"></i>`
       } else if (this.protocolInfo.scheme === 'beaker:') {
         protocolCls = 'beaker'
-        icon = ''
+        iconEl = ''
       }
     }
 
-    // render btn
-    var iconEl = (icon) ? yo`<i class="fa fa-${icon}"></i>` : ''
-    var titleEl = (protocolLabel) ? yo`<span class="title">${protocolLabel}</span>` : ''
-    var buttonEl = (titleEl) ? yo`<button onclick=${e => this.toggleDropdown(e)}>${iconEl} ${titleEl}</button>` : ''
     return yo`
       <div class="toolbar-site-info ${protocolCls}">
-        ${buttonEl}
+        <button onclick=${e => this.toggleDropdown(e)}>${iconEl}</button>
         ${this.renderDropdown()}
       </div>
     `

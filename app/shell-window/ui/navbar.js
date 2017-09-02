@@ -343,6 +343,7 @@ function render (id, page) {
         </button>
         ${reloadBtn}
       </div>
+
       <div class="toolbar-input-group${isLocationHighlighted ? ' input-focused' : ''}${autocompleteResults ? ' autocomplete' : ''}">
         ${siteInfoNavbarBtn.render()}
         ${locationPrettyView}

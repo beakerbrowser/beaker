@@ -153,15 +153,46 @@
   .toolbar-site-info {
     height: 100%;
 
+    i,
+    .icon {
+      border-right: 1px solid #ddd;
+      display: block;
+      height: 12.25px;
+      margin: 5px 0;
+
+      &.padlock {
+
+        #top {
+          stroke: #3c943c;
+        }
+
+        #bottom {
+          fill: #3c943c;
+        }
+      }
+
+      &.fa-share-alt {
+        color: @blue;
+        font-size: 14.5px;
+      }
+    }
+
+    i {
+      margin-left: 10px;
+      margin-right: 0;
+      padding-right: 10px;
+    }
+
     button {
       display: flex;
-      color: #555;
-      padding: 0 0 0 7px;
+      min-width: 0;
+      max-width: 30px;
+      height: ~"calc(100% - 2px)";
       margin: 1px;
+      padding: 0;
+      color: #555;
       border-radius: 3px 0 0 3px;
       border: 0;
-      min-width: 0;
-      height: ~"calc(100% - 2px)";
 
       &:empty {
         display: none;
@@ -185,8 +216,15 @@
       }
     }
 
-    &.secure button {
-      color: #3c943c !important;
+    &.secure {
+
+      button {
+        color: #3c943c !important;
+      }
+
+      .details-summary {
+        color: #3c943c;
+      }
     }
 
     &.insecure {
@@ -203,10 +241,21 @@
           color: mix(@color-text, @red, 20%);
         }
       }
+
+      .details-summary {
+        color: mix(@color-text, @red, 20%);
+      }
     }
 
-    &.p2p button {
-      color: @blue;
+    &.p2p {
+
+      button {
+        color: @blue;
+      }
+
+      .details-summary {
+        color: #3c943c;
+      }
     }
   }
 
