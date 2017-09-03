@@ -1,6 +1,7 @@
 /* globals beaker */
 
 const yo = require('yo-yo')
+import {getHostname} from '../../lib/strings'
 import renderSidebar from '../com/sidebar'
 import renderCloseIcon from '../icon/close'
 import renderGlobeIcon from '../icon/globe'
@@ -19,6 +20,8 @@ var bookmarks = []
 var tags = []
 var userProfile = null
 var followedUserProfiles = null
+
+var bookmarksView = ''
 
 // main
 // =
@@ -122,7 +125,7 @@ function renderRowEditable (row, i) {
             : yo`${row.title}`
           }
         </span>
-        <span class="url bookmark__url">${row.href}</span>
+        <span class="url bookmark__url">${getHostname(row.href)}</span>
       </a>
       <div class="actions bookmark__actions">
         <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
@@ -135,6 +138,15 @@ function renderRowEditable (row, i) {
           ${renderPinIcon()}
         </div>
       </div>
+
+      ${bookmarksView === 'expanded' ? yo`
+        <div class="tags">
+          <span class="tag">p2p</span>
+          <span class="tag">beaker</span>
+          <span class="tag">read-later</span>
+        </div>
+      ` : ''}
+
     </li>`
 }
 
