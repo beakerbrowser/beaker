@@ -79,10 +79,9 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
   if (PERM && PERM.alwaysDisallow) return cb(false)
 
   // check the sitedatadb
-  siteData.getPermission(url, permission).catch(err => false).then(res => {
-    if (res === 1) {
-      return cb(true)
-    }
+  siteData.getPermission(url, permission).catch(err => undefined).then(res => {
+    if (res === 1) return cb(true)
+    if (res === 0) return cb(false)
 
     // if we're already tracking this kind of permission request, then bundle them
     var req = activeRequests.find(req => req.win === win && req.permission === permission)
@@ -104,10 +103,16 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
   })
 }
 
-function onPermissionResponseHandler (e, reqId, decision) {
+async function onPermissionResponseHandler (e, reqId, decision) {
   // lookup the cb
   var req = activeRequests.find(req => req.id == reqId)
   if (!req) { return console.error('Warning: failed to find permission request for response #' + reqId) }
+
+  // persist decisions
+  const PERM = PERMS[getPermId(req.permission)]
+  if (PERM && PERM.persist) {
+    await siteData.setPermission(req.url, req.permission, decision)
+  }
 
   // untrack
   activeRequests.splice(activeRequests.indexOf(req), 1)
@@ -115,12 +120,6 @@ function onPermissionResponseHandler (e, reqId, decision) {
   // hand down the decision
   var cb = req.cb
   cb(decision)
-
-  // persist approvals
-  const PERM = PERMS[getPermId(req.permission)]
-  if (decision && PERM && PERM.persist) {
-    siteData.setPermission(req.url, req.permission, 1)
-  }
 }
 
 function getContainingWindow (webContents) {

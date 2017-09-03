@@ -106,8 +106,7 @@ export function getPermission (url, key) {
 }
 
 export function setPermission (url, key, value) {
-  value = !!value
-  if (!value) return clear(url, 'perm:' + key)
+  value = (!!value) ? 1 : 0
   return set(url, 'perm:' + key, value)
 }
 
