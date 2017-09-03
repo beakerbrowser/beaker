@@ -15,5 +15,8 @@ export default {
   // private
   bookmarkPrivate: 'promise',
   unbookmarkPrivate: 'promise',
-  listPrivateBookmarks: 'promise'
+  listPrivateBookmarks: 'promise',
+
+  // tags
+  listBookmarkTags: 'promise'
 }

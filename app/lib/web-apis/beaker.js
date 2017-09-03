@@ -51,6 +51,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.bookmarks.bookmarkPrivate = bookmarksRPC.bookmarkPrivate
   beaker.bookmarks.unbookmarkPrivate = bookmarksRPC.unbookmarkPrivate
   beaker.bookmarks.listPrivateBookmarks = bookmarksRPC.listPrivateBookmarks
+  beaker.bookmarks.listBookmarkTags = bookmarksRPC.listBookmarkTags
   // bindEventStream(bookmarksRPC.createEventStream(), beaker.bookmarks) TODO
 
   // beaker.history

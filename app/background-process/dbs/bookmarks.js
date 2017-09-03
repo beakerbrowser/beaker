@@ -54,14 +54,38 @@ export async function getBookmark (profileId, url) {
   return toNewFormat(await db.get(`SELECT url, title, tags, notes, pinned FROM bookmarks WHERE profileId = ? AND url = ?`, [profileId, url]))
 }
 
-export async function listBookmarks (profileId) {
+export async function listBookmarks (profileId, {tag} = {}) {
   var bookmarks = await db.all(`SELECT url, title, tags, notes, pinned FROM bookmarks WHERE profileId = ? ORDER BY createdAt DESC`, [profileId])
-  return bookmarks.map(toNewFormat)
+  bookmarks = bookmarks.map(toNewFormat)
+
+  // apply tag filter
+  if (tag) {
+    if (Array.isArray(tag)) {
+      bookmarks = bookmarks.filter(b => {
+        return tag.reduce((agg, t) => agg & b.tags.includes(t), true)
+      })
+    } else {
+      bookmarks = bookmarks.filter(b => b.tags.includes(tag))
+    }
+  }
+
+  return bookmarks
 }
 
 export async function listPinnedBookmarks (profileId) {
   var bookmarks = await db.all(`SELECT url, title, tags, notes, pinned FROM bookmarks WHERE profileId = ? AND pinned = 1 ORDER BY createdAt DESC`, [profileId])
   return bookmarks.map(toNewFormat)
+}
+
+export async function listBookmarkTags (profileId) {
+  var tagSet = new Set()
+  var bookmarks = await db.all(`SELECT tags FROM bookmarks WHERE profileId = ?`, [profileId])
+  bookmarks.forEach(b => {
+    if (b.tags) {
+      b.tags.split(' ').forEach(t => tagSet.add(t))
+    }
+  })
+  return Array.from(tagSet)
 }
 
 // TEMP

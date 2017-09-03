@@ -16,6 +16,7 @@ import renderPencilIcon from '../icon/pencil'
 var query = '' // current search query
 var currentView = 'all'
 var bookmarks = []
+var tags = []
 var userProfile = null
 var followedUserProfiles = null
 
@@ -30,7 +31,8 @@ async function setup () {
   await loadBookmarks()
   renderToPage()
 
-  // now render profiles
+  // now load & render tags and profiles
+  tags = await beaker.bookmarks.listBookmarkTags()
   followedUserProfiles = await Promise.all(
     userProfile.followUrls.map(u => beaker.profiles.getProfile(u))
   )
@@ -67,7 +69,12 @@ async function loadBookmarks () {
       }
       break
     default:
-      if (currentView.startsWith('dat://')) {
+      if (currentView.startsWith('tag:')) {
+        let tag = currentView.slice('tag:'.length)
+        let publicBookmarks = await beaker.bookmarks.listPublicBookmarks({tag})
+        let privateBookmarks = await beaker.bookmarks.listPrivateBookmarks({tag})
+        bookmarks = publicBookmarks.concat(privateBookmarks)
+      } else if (currentView.startsWith('dat://')) {
         bookmarks = await beaker.bookmarks.listPublicBookmarks({author: currentView})
       }
       break
@@ -196,9 +203,7 @@ function renderToPage () {
             </div>
 
             <div class="section">
-              <h2>
-                Friends
-              </h2>
+              <h2>Friends</h2>
 
               ${followedUserProfiles
                 ? followedUserProfiles.length
@@ -212,6 +217,18 @@ function renderToPage () {
                   })
                   : yo`<div class="nav-item"><em>Not following anybody.</em></div>`
                 : yo`<div class="nav-item"><em>Loading...</em></div>`}
+            </div>
+
+            <div class="section">
+              <h2>Tags</h2>
+
+              <div class="nav-link-cloud">
+                ${tags.map(t => {
+                  const view = `tag:${t}`
+                  const cls = currentView === view ? 'active' : undefined
+                  return yo`<a class=${cls} onclick=${() => onUpdateViewFilter(view)}>${t}</a>`
+                })}
+              </div>
             </div>
           </div>
 

@@ -122,6 +122,17 @@ export default {
   // list private bookmarks
   async listPrivateBookmarks (opts) {
     return privateBookmarksDb.listBookmarks(0, opts)
+  },
+
+  // tags
+  // =
+
+  async listBookmarkTags () {
+    var [privateTags, publicTags] = await Promise.all([
+      privateBookmarksDb.listBookmarkTags(0),
+      getAPI().listBookmarkTags(),
+    ])
+    return Array.from(new Set(privateTags.concat(publicTags)))
   }
 }
 
