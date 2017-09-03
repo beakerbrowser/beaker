@@ -123,6 +123,40 @@ function renderRowDefault (row, i) {
 }
 
 function renderRowExpanded (row, i) {
+  return yo`
+    <li class="ll-row bookmarks__row expanded" data-row=${i}>
+      <a class="link bookmark__link" href=${row.href} title=${row.title} />
+        <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
+          <span class="title bookmark__title">
+          ${row.title.startsWith('dat://')
+            ? yo`<em>Untitled</em>`
+            : yo`${row.title}`
+          }
+          <span class="url bookmark__url">${getHostname(row.href)}</span>
+        </span>
+
+        <div class="notes">${row.notes || yo`<em>No notes</em>`}</div>
+
+        <div class="tags ${row.tags.length ? '' : 'empty'}">
+          ${row.tags.map(t => {
+            const view = `tag:${t}`
+            return yo`<span onclick=${(e) => {e.stopPropagation(); e.preventDefault(); onUpdateViewFilter(view);}} class="tag">${t}</span>`
+          })}
+        </div>
+      </a>
+
+      <div class="actions bookmark__actions">
+        <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
+          ${renderPencilIcon()}
+        </div>
+        <div class="action" onclick=${onClickDelete(i)} title="Delete bookmark">
+          ${renderTrashIcon()}
+        </div>
+        <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)}>
+          ${renderPinIcon()}
+        </div>
+      </div>
+    </li>`
 }
 
 function renderRowGrid (row, i) {
@@ -142,7 +176,7 @@ function renderRowGrid (row, i) {
 
         <div class="notes">${row.notes || yo`<em>No notes</em>`}</div>
 
-        <div class="tags">
+        <div class="tags ${row.tags.length ? '' : 'empty'}">
           ${row.tags.map(t => {
             const view = `tag:${t}`
             return yo`<span onclick=${(e) => {e.stopPropagation(); e.preventDefault(); onUpdateViewFilter(view);}} class="tag">${t}</span>`
@@ -211,7 +245,7 @@ function renderBookmarksListToPage () {
   yo.update(
     document.querySelector('.links-list.bookmarks'),
     yo`
-      <div class="links-list bookmarks ${bookmarksView}">
+      <div class="links-list bookmarks ${currentRenderingMode}">
         ${bookmarks.length
           ? bookmarks.map(renderRow)
           : yo`<em class="empty">No bookmarks</em>`
