@@ -39,7 +39,12 @@ export function makeSafe (str) {
 export function getHostname (str) {
     var hostname
 
-    if (str.indexOf("://") > -1) {
+    if (str.startsWith('dat://')) {
+      hostname = str
+      return hostname
+    }
+
+    if (str.indexOf("://") !== -1) {
       hostname = str.split('/')[2]
     } else {
       hostname = str.split('/')[0]
