@@ -93,6 +93,7 @@ export function isLocationFocused (page) {
 export function showInpageFind (page) {
   // show control and highlight text
   page.isInpageFinding = true
+  page.inpageFindInfo = null
   update(page)
   var el = page.navbarEl.querySelector('.nav-find-input')
   el.focus()
@@ -103,6 +104,7 @@ export function hideInpageFind (page) {
   if (page.isInpageFinding) {
     page.stopFindInPageAsync('clearSelection')
     page.isInpageFinding = false
+    page.inpageFindInfo = null
     update(page)
   }
 }
@@ -197,6 +199,14 @@ function render (id, page) {
             oninput=${onInputFind}
             onkeydown=${onKeydownFind}
             value=${findValue} />
+          ${page.inpageFindInfo
+            ? yo`
+              <span class="nav-find-info">
+                ${page.inpageFindInfo.activeMatchOrdinal}
+                of
+                ${page.inpageFindInfo.matches}
+              </span>`
+            : ''}
         </div>
       `
     : ''

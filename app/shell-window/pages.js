@@ -105,6 +105,7 @@ export function create (opts) {
     isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
+    inpageFindInfo: null, // any info available on the inpage find {activeMatchOrdinal, matches}
     liveReloadEvents: false, // live-reload event stream
     zoom: 0, // what's the current zoom level?
 
@@ -290,6 +291,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('page-favicon-updated', onPageFaviconUpdated)
   page.webviewEl.addEventListener('page-title-updated', onPageTitleUpdated)
   page.webviewEl.addEventListener('update-target-url', onUpdateTargetUrl)
+  page.webviewEl.addEventListener('found-in-page', onFoundInPage)
   page.webviewEl.addEventListener('close', onClose)
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
@@ -801,6 +803,12 @@ async function onPageFaviconUpdated (e) {
 
 function onUpdateTargetUrl ({ url }) {
   statusBar.set(url)
+}
+
+function onFoundInPage (e) {
+  var page = getByWebview(e.target)
+  page.inpageFindInfo = e.result
+  navbar.update(page)
 }
 
 function onClose (e) {
