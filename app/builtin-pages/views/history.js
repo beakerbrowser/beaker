@@ -2,6 +2,7 @@
 
 const yo = require('yo-yo')
 const moment = require('moment')
+import {getHostname} from '../../lib/strings'
 import renderSidebar from '../com/sidebar'
 import renderTrashIcon from '../icon/trash'
 import renderCloseIcon from '../icon/close'
@@ -128,7 +129,7 @@ function renderRow (row, i) {
       <a class="link" href=${row.url} title=${row.title}>
         <img class="favicon" src=${'beaker-favicon:' + row.url}/>
         <span class="title">${row.title.replace(/[^\x00-\x7F]/g, "")}</span>
-        <span class="url">${row.url}</span>
+        <span class="url">${getHostname(row.url)}</span>
       </a>
       <div class="actions">
         <div class="action" onclick=${onClickDelete.bind(window, i)} title="Remove from history">
