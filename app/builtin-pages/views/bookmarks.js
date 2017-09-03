@@ -145,7 +145,7 @@ function renderRowGrid (row, i) {
         <div class="tags">
           ${row.tags.map(t => {
             const view = `tag:${t}`
-            return yo`<span onclick=${(e) => {e.stopPropagation(); onUpdateViewFilter(view);}} class="tag">${t}</span>`
+            return yo`<span onclick=${(e) => {e.stopPropagation(); e.preventDefault(); onUpdateViewFilter(view);}} class="tag">${t}</span>`
           })}
         </div>
       </a>
