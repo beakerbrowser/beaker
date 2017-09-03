@@ -16,12 +16,12 @@ import renderPencilIcon from '../icon/pencil'
 
 var query = '' // current search query
 var currentView = 'all'
+var currentRenderingMode = ''
 var bookmarks = []
 var tags = []
 var userProfile = null
 var followedUserProfiles = null
 
-var bookmarksView = 'grid'
 
 // main
 // =
@@ -91,10 +91,10 @@ async function loadBookmarks () {
 function renderRow (row, i) {
   if (row.isHidden) {
     return ''
-  } else if (bookmarksView === 'grid') {
+  } else if (currentRenderingMode === 'grid') {
     return renderRowGrid(row, i)
-  } else if (bookmarksView === 'expanded') {
-    //
+  } else if (currentRenderingMode === 'expanded') {
+    return renderRowExpanded(row, i)
   } else if (row.isEditing) {
     return renderRowEditing(row, i)
   } else {
@@ -293,6 +293,12 @@ function renderToPage () {
                   ${renderCloseIcon()}
                 </span>
               </div>
+
+              <div class="view-controls">
+                <span onclick=${() => onUpdateViewRendering('')}>list</span>
+                <span onclick=${() => onUpdateViewRendering('grid')}>grid</span>
+                <span onclick=${() => onUpdateViewRendering('expanded')}>expanded</span>
+              </div>
             </div>
 
             ${renderBookmarks()}
@@ -304,7 +310,7 @@ function renderBookmarks () {
   var helpEl = bookmarks.length ? '' : yo`<em class="empty">No results</em>`
   return yo`
     <div>
-      <div class="links-list bookmarks ${bookmarksView}">
+      <div class="links-list bookmarks ${currentRenderingMode}">
         ${bookmarks.map(renderRow)}
         ${helpEl}
       </div>
@@ -320,6 +326,11 @@ async function onUpdateViewFilter (filter) {
   document.querySelector('input.search').value = ''
   query = ''
   await loadBookmarks()
+  renderToPage()
+}
+
+async function onUpdateViewRendering (mode) {
+  currentRenderingMode = mode
   renderToPage()
 }
 
