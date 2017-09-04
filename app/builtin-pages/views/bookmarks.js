@@ -20,13 +20,16 @@ import renderListExpandedIcon from '../icon/list-expanded'
 
 var query = '' // current search query
 var currentView = 'all'
-var currentRenderingMode = ''
-var currentSort = 'alpha'
+var currentRenderingMode
+var currentSort
 var bookmarks = []
 var tags = []
 var userProfile = null
 var followedUserProfiles = null
 
+// read current view config
+currentRenderingMode = localStorage.currentRenderingMode || 'expanded'
+currentSort = localStorage.currentSort || 'recent'
 
 // main
 // =
@@ -371,7 +374,7 @@ function renderToPage () {
               </div>
 
               <div class="view-controls btn-bar">
-                <span class="btn ${!currentRenderingMode.length ? 'depressed' : ''}" title="List view" onclick=${() => onUpdateViewRendering('')}>
+                <span class="btn ${currentRenderingMode === 'compact' ? 'depressed' : ''}" title="List view" onclick=${() => onUpdateViewRendering('compact')}>
                   ${renderListIcon()}
                 </span>
 
@@ -415,12 +418,14 @@ async function onUpdateViewFilter (filter) {
 
 function onUpdateSort (sort) {
   currentSort = sort
+  localStorage.currentSort = sort
   sortBookmarks()
   renderToPage()
 }
 
 function onUpdateViewRendering (mode) {
   currentRenderingMode = mode
+  localStorage.currentRenderingMode = mode
   renderToPage()
 }
 
