@@ -73,7 +73,7 @@ export function render (downloadsList) {
         <div class="metadata">
           <span>${prettyBytes(d.totalBytes || 0)}</span>
           —
-          <span>${getHostname(d.url)}</span>
+          <span class="url">${getHostname(d.url)}</span>
           —
           ${downloadTimestamp(d.id)}
           —
