@@ -58,11 +58,18 @@ async function loadBookmarks () {
     case 'private':
       bookmarks = await beaker.bookmarks.listPrivateBookmarks()
       break
-    case 'all':
+    case 'mine':
       {
         let publicBookmarks = await beaker.bookmarks.listPublicBookmarks({
           author: userProfile._origin
         })
+        let privateBookmarks = await beaker.bookmarks.listPrivateBookmarks()
+        bookmarks = publicBookmarks.concat(privateBookmarks)
+      }
+      break
+    case 'all':
+      {
+        let publicBookmarks = await beaker.bookmarks.listPublicBookmarks()
         let privateBookmarks = await beaker.bookmarks.listPrivateBookmarks()
         bookmarks = publicBookmarks.concat(privateBookmarks)
       }
@@ -273,10 +280,17 @@ function renderToPage () {
             <h1>Bookmarks</h1>
 
             <div class="section">
-              <h2>Your bookmarks</h2>
               <div class="nav-item ${currentView === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('all')}>
                 ${renderStarFillIcon()}
                 All bookmarks
+              </div>
+            </div>
+
+            <div class="section">
+              <h2>Your bookmarks</h2>
+              <div class="nav-item ${currentView === 'mine' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('mine')}>
+                ${renderStarFillIcon()}
+                Your bookmarks
               </div>
               <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
                 ${renderPinIcon()}
