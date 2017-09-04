@@ -39,9 +39,8 @@ export function makeSafe (str) {
 export function getHostname (str) {
   try {
     const u = new URL(str)
-    if (u.hostname.length === 64) {
-      // 99% odds that's a dat hash
-      return shortenHash(u.hostname)
+    if (u.protocol === 'dat:' && u.hostname.length === 64) {
+      return 'dat://' + shortenHash(u.hostname)
     }
     return u.hostname
   } catch (e) {

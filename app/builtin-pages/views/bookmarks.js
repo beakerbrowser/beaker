@@ -364,11 +364,11 @@ function renderToPage () {
               </div>
 
               <div class="sort-controls btn-bar">
-                <span class="btn ${currentSort === 'alpha' ? 'depressed' : ''}" title="Alphabetical sort" onclick=${() => onUpdateSort('alpha')}>
+                <span class="btn ${currentSort === 'alpha' ? 'depressed' : ''}" title="Sort by name" onclick=${() => onUpdateSort('alpha')}>
                   ${renderListIcon()}
                 </span>
 
-                <span class="btn ${currentSort === 'recent' ? 'depressed' : ''}" title="Latest-first sort" onclick=${() => onUpdateSort('recent')}>
+                <span class="btn ${currentSort === 'recent' ? 'depressed' : ''}" title="Sort by latest" onclick=${() => onUpdateSort('recent')}>
                   ${renderHistoryIcon()}
                 </span>
               </div>
