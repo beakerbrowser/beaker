@@ -246,7 +246,7 @@ function renderRowUneditable (row, i) {
             : yo`${row.title}`
           }
         </span>
-        <span class="url bookmark__url">${row.href}</span>
+        <span class="url bookmark__url">${getHostname(row.href)}</span>
       </a>
     </li>`
 }

@@ -37,23 +37,14 @@ export function makeSafe (str) {
 }
 
 export function getHostname (str) {
-    var hostname
-
-    if (str.startsWith('dat://')) {
-      hostname = str
-      return hostname
+  try {
+    const u = new URL(str)
+    if (u.hostname.length === 64) {
+      // 99% odds that's a dat hash
+      return shortenHash(u.hostname)
     }
-
-    if (str.indexOf("://") !== -1) {
-      hostname = str.split('/')[2]
-    } else {
-      hostname = str.split('/')[0]
-    }
-
-    //find & remove port number
-    hostname = hostname.split(':')[0]
-    //find & remove "?"
-    hostname = hostname.split('?')[0]
-
-    return hostname
+    return u.hostname
+  } catch (e) {
+    return str
+  }
 }
