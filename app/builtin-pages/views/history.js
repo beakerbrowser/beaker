@@ -26,7 +26,7 @@ var lastRenderedDate
 // =
 
 render()
-fetchMore(render)
+fillPage()
 document.body.querySelector('.window-content').addEventListener('scroll', onScrollContent)
 
 // data
@@ -38,6 +38,27 @@ function fetchMore (cb) {
   if (isAtEnd) return cb()
 
   loadVisits(visits.length, cb)
+}
+
+// load history until the scroll bar is visible, or no more history is found
+function fillPage () {
+  var container = document.body.querySelector('.window-content')
+  visits.length = 0 // reset
+  isAtEnd = false
+  nextBatch()
+
+  function nextBatch () {
+    fetchMore(() => {
+      render()
+
+      // has scroll bar, or at end?
+      if (container.scrollHeight > container.clientHeight || isAtEnd) {
+        // done
+      } else {
+        nextBatch()
+      }
+    })
+  }
 }
 
 async function loadVisits (offset, cb) {
@@ -203,14 +224,17 @@ function render () {
 // =
 
 function onUpdateSearchQuery (e) {
-  query = e.target.value.toLowerCase()
-  loadVisits(0, render)
+  var newQuery = e.target.value.toLowerCase()
+  if (newQuery !== query) {
+    query = newQuery
+    fillPage()
+  }
 }
 
 async function onClearQuery () {
   document.querySelector('input.search').value = ''
   query = ''
-  loadVisits(0, render)
+  fillPage()
 }
 
 function onUpdatePeriodFilter (e) {
@@ -219,7 +243,7 @@ function onUpdatePeriodFilter (e) {
   document.querySelector('input.search').value = ''
 
   currentPeriodFilter = e.target.dataset.period
-  loadVisits(0, render)
+  fillPage()
 }
 
 function onScrollContent (e) {
