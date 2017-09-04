@@ -10,6 +10,9 @@ import renderPadlockIcon from '../icon/padlock'
 import renderStarFillIcon from '../icon/star-fill'
 import renderTrashIcon from '../icon/trash'
 import renderPencilIcon from '../icon/pencil'
+import renderGridIcon from '../icon/grid'
+import renderListIcon from '../icon/list'
+import renderListExpandedIcon from '../icon/list-expanded'
 
 // globals
 //
@@ -328,10 +331,18 @@ function renderToPage () {
                 </span>
               </div>
 
-              <div class="view-controls">
-                <span onclick=${() => onUpdateViewRendering('')}>list</span>
-                <span onclick=${() => onUpdateViewRendering('grid')}>grid</span>
-                <span onclick=${() => onUpdateViewRendering('expanded')}>expanded</span>
+              <div class="view-controls btn-bar">
+                <span class="btn ${!currentRenderingMode.length ? 'depressed' : ''}" title="List view" onclick=${() => onUpdateViewRendering('')}>
+                  ${renderListIcon()}
+                </span>
+
+                <span class="btn ${currentRenderingMode === 'grid' ? 'depressed' : ''}" title="Grid view" onclick=${() => onUpdateViewRendering('grid')}>
+                  ${renderGridIcon()}
+                </span>
+
+                <span class="btn ${currentRenderingMode === 'expanded' ? 'depressed' : ''}"  title="Expanded list view" onclick=${() => onUpdateViewRendering('expanded')}>
+                  ${renderListExpandedIcon()}
+                </span>
               </div>
             </div>
 

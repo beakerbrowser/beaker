@@ -4,6 +4,54 @@
 
 .bookmarks-wrapper {
 
+  .builtin-header {
+
+    .view-controls {
+
+      .btn {
+        &:extend(.flex);
+        align-items: center;
+        padding: 0 10px;
+      }
+
+      .icon {
+        width: 13px;
+        height: 13px;
+
+        * {
+          stroke: #aaa;
+        }
+
+        &.list-expanded {
+          height: 13px;
+          width: 15px;
+
+          * {
+            stroke: #aaa;
+          }
+        }
+
+        &.list {
+          height: 11px;
+          width: auto;
+
+          * {
+            fill: #aaa;
+          }
+        }
+
+        &.grid {
+          height: 12px;
+
+          * {
+            fill: #aaa;
+            stroke: #aaa;
+          }
+        }
+      }
+    }
+  }
+
   .builtin-main {
     max-width: ~"calc(100vw - 340px)"; // width of main sidebar + builtin-sidebar
 
@@ -60,7 +108,6 @@
 
         .tags {
           margin-left: 23px;
-          margin-top: 10px;
 
           &:not(.empty) {
             margin-bottom: 5px;
