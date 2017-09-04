@@ -157,6 +157,9 @@ export default {
       await datLibrary.pullLatestArchiveMeta(archive)
     }
     if ('networked' in settings) {
+      if (settings.networked === false) {
+        await assertArchiveOfflineable(archive)
+      }
       await archivesDb.setUserSettings(0, archive.key, {networked: settings.networked})      
     }
   },
@@ -467,6 +470,13 @@ async function assertDeleteArchivePermission (archive, sender) {
   var allowed = await requestPermission(perm, sender, { title: details.title })
   if (!allowed) throw new UserDeniedError()
   return true
+}
+
+async function assertArchiveOfflineable (archive) {
+  var profileRecord = await getProfileRecord(0)
+  if ('dat://' + archive.key.toString('hex') === profileRecord.url) {
+    throw new PermissionsError('Unable to set the user archive to offline.')
+  }  
 }
 
 async function assertArchiveDeletable (archive) {

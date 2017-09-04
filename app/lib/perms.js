@@ -76,7 +76,7 @@ export default {
       return yo`<span>${firstWord} files to <a onclick=${viewArchive}>${title}</a></span>`
     },
     icon: 'folder',
-    persist: true,
+    persist: 'allow', // dont persist 'deny'
     alwaysDisallow: false,
     requiresRefresh: false
   },

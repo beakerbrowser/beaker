@@ -6,7 +6,6 @@ import path from 'path'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
-var debug = require('debug')('beaker')
 
 // globals
 // =
@@ -93,7 +92,7 @@ export function createShellWindow () {
     icon: path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
   })
   downloads.registerListener(win)
-  loadShell(win)
+  win.loadURL('beaker://shell-window')
   numActiveWindows++
 
   // register shortcuts
@@ -149,11 +148,6 @@ export function ensureOneWindowExists () {
 
 // internal methods
 // =
-
-function loadShell (win) {
-  win.loadURL('beaker://shell-window')
-  debug('Opening beaker://shell-window')
-}
 
 function openTab (location) {
   return () => {

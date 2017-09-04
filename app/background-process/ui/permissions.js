@@ -1,5 +1,4 @@
 import { ipcMain, session, BrowserWindow } from 'electron'
-var debug = require('debug')('beaker')
 import * as siteData from '../dbs/sitedata'
 import PERMS from '../../lib/perms'
 import { getPermId } from '../../lib/strings'
@@ -53,7 +52,6 @@ export function denyAllRequests (win) {
   // remove all requests in the window, denying as we go
   activeRequests = activeRequests.filter(req => {
     if (req.win === win) {
-      debug('Denying outstanding permission-request for closing window, req #' + req.id + ' for ' + req.permission)
       req.cb(false)
       return false
     }
@@ -111,7 +109,13 @@ async function onPermissionResponseHandler (e, reqId, decision) {
   // persist decisions
   const PERM = PERMS[getPermId(req.permission)]
   if (PERM && PERM.persist) {
-    await siteData.setPermission(req.url, req.permission, decision)
+    if (PERM.persist === 'allow' && !decision) {
+      // only persist allows
+      await siteData.clearPermission(req.url, req.permission)
+    } else {
+      // persist all decisions
+      await siteData.setPermission(req.url, req.permission, decision)
+    }
   }
 
   // untrack

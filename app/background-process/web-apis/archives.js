@@ -71,6 +71,9 @@ export default {
 
     // update settings
     if (userSettings) {
+      if (userSettings.networked === false) {
+        await assertArchiveOfflineable(key)
+      }
       userSettings = await archivesDb.setUserSettings(0, key, userSettings)
     }
   },
@@ -102,6 +105,7 @@ export default {
 
     for (var i = 0; i < urls.length; i++) {
       let key = toKey(urls[i])
+      await assertArchiveDeletable(key)
       results.push(await archivesDb.setUserSettings(0, key, {isSaved: false}))
     }
     return results
@@ -142,6 +146,13 @@ export default {
 async function assertSenderIsFocused (sender) {
   if (!sender.isFocused()) {
     throw new UserDeniedError('Application must be focused to spawn a prompt')
+  }
+}
+
+async function assertArchiveOfflineable (key) {
+  var profileRecord = await getProfileRecord(0)
+  if ('dat://' + key === profileRecord.url) {
+    throw new PermissionsError('Unable to set the user archive to offline.')
   }
 }
 

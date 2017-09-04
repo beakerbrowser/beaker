@@ -24,12 +24,16 @@ export function setup () {
 
   // watch for changes to the currently active window
   app.on('browser-window-focus', async (e, win) => {
-    // fetch the current url
-    const url = await win.webContents.executeJavaScript(`pages.getActive().getIntendedURL()`)
+    try {
+      // fetch the current url
+      const url = await win.webContents.executeJavaScript(`pages.getActive().getIntendedURL()`)
 
-    // rebuild as needed
-    if (requiresRebuild(url)) {
-      setApplicationMenu({url})
+      // rebuild as needed
+      if (requiresRebuild(url)) {
+        setApplicationMenu({url})
+      }
+    } catch (e) {
+      // `pages` not set yet
     }
   })
 }
@@ -194,6 +198,13 @@ export function buildWindowMenu (opts = {}) {
           BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
         }
       }, {
+        label: 'Toggle Shell-Window DevTools',
+        click: function () {
+          BrowserWindow.getFocusedWindow().toggleDevTools()
+        }
+      },
+      { type: 'separator' },
+      {
         label: 'Open Archives Debug Page',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'file:new-tab', 'beaker://internal-archives/')
@@ -207,11 +218,6 @@ export function buildWindowMenu (opts = {}) {
         label: 'Open Debug Log Page',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'file:new-tab', 'beaker://debug-log/')
-        }
-      }, {
-        label: 'Toggle Shell-Window DevTools',
-        click: function () {
-          BrowserWindow.getFocusedWindow().toggleDevTools()
         }
       }]
     },
