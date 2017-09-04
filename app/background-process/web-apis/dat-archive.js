@@ -427,11 +427,17 @@ async function assertCreateArchivePermission (sender) {
 
 async function assertWritePermission (archive, sender) {
   var archiveKey = archive.key.toString('hex')
+  var details = await datLibrary.getArchiveInfo(archiveKey)
   const perm = ('modifyDat:' + archiveKey)
 
   // ensure we have the archive's private key
   if (!archive.writable) {
     throw new ArchiveNotWritableError()
+  }
+
+  // ensure we havent deleted the archive
+  if (!details.userSettings.isSaved) {
+    throw new ArchiveNotWritableError('This archive has been deleted. Restore it to continue making changes.')
   }
 
   // beaker: always allowed
@@ -450,7 +456,6 @@ async function assertWritePermission (archive, sender) {
   if (allowed) return true
 
   // ask the user
-  var details = await datLibrary.getArchiveInfo(archiveKey)
   allowed = await requestPermission(perm, sender, { title: details.title })
   if (!allowed) throw new UserDeniedError()
   return true
