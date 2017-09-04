@@ -5,6 +5,7 @@ import {getHostname} from '../../lib/strings'
 import renderSidebar from '../com/sidebar'
 import renderCloseIcon from '../icon/close'
 import renderGlobeIcon from '../icon/globe'
+import renderHistoryIcon from '../icon/history'
 import renderPinIcon from '../icon/pin'
 import renderPadlockIcon from '../icon/padlock'
 import renderStarFillIcon from '../icon/star-fill'
@@ -20,6 +21,7 @@ import renderListExpandedIcon from '../icon/list-expanded'
 var query = '' // current search query
 var currentView = 'all'
 var currentRenderingMode = ''
+var currentSort = 'alpha'
 var bookmarks = []
 var tags = []
 var userProfile = null
@@ -46,6 +48,7 @@ async function setup () {
 }
 
 async function loadBookmarks () {
+  // read data
   switch (currentView) {
     case 'pinned':
       bookmarks = await beaker.bookmarks.listPinnedBookmarks()
@@ -92,6 +95,18 @@ async function loadBookmarks () {
       }
       break
   }
+
+  // apply sort
+  sortBookmarks()
+}
+
+function sortBookmarks () {
+  if (currentSort === 'recent') {
+    bookmarks.sort((a, b) => b.createdAt - a.createdAt)
+  } else if (currentSort === 'alpha') {
+    bookmarks.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+  }
+  console.log(bookmarks)
 }
 
 // rendering
@@ -345,6 +360,16 @@ function renderToPage () {
                 </span>
               </div>
 
+              <div class="sort-controls btn-bar">
+                <span class="btn ${currentSort === 'alpha' ? 'depressed' : ''}" title="Alphabetical sort" onclick=${() => onUpdateSort('alpha')}>
+                  ${renderListIcon()}
+                </span>
+
+                <span class="btn ${currentSort === 'recent' ? 'depressed' : ''}" title="Latest-first sort" onclick=${() => onUpdateSort('recent')}>
+                  ${renderHistoryIcon()}
+                </span>
+              </div>
+
               <div class="view-controls btn-bar">
                 <span class="btn ${!currentRenderingMode.length ? 'depressed' : ''}" title="List view" onclick=${() => onUpdateViewRendering('')}>
                   ${renderListIcon()}
@@ -388,7 +413,13 @@ async function onUpdateViewFilter (filter) {
   renderToPage()
 }
 
-async function onUpdateViewRendering (mode) {
+function onUpdateSort (sort) {
+  currentSort = sort
+  sortBookmarks()
+  renderToPage()
+}
+
+function onUpdateViewRendering (mode) {
   currentRenderingMode = mode
   renderToPage()
 }

@@ -51,11 +51,11 @@ export function setBookmarkPinned (profileId, url, pinned) {
 }
 
 export async function getBookmark (profileId, url) {
-  return toNewFormat(await db.get(`SELECT url, title, tags, notes, pinned FROM bookmarks WHERE profileId = ? AND url = ?`, [profileId, url]))
+  return toNewFormat(await db.get(`SELECT url, title, tags, notes, pinned, createdAt FROM bookmarks WHERE profileId = ? AND url = ?`, [profileId, url]))
 }
 
 export async function listBookmarks (profileId, {tag} = {}) {
-  var bookmarks = await db.all(`SELECT url, title, tags, notes, pinned FROM bookmarks WHERE profileId = ? ORDER BY createdAt DESC`, [profileId])
+  var bookmarks = await db.all(`SELECT url, title, tags, notes, pinned, createdAt FROM bookmarks WHERE profileId = ? ORDER BY createdAt DESC`, [profileId])
   bookmarks = bookmarks.map(toNewFormat)
 
   // apply tag filter
@@ -73,7 +73,7 @@ export async function listBookmarks (profileId, {tag} = {}) {
 }
 
 export async function listPinnedBookmarks (profileId) {
-  var bookmarks = await db.all(`SELECT url, title, tags, notes, pinned FROM bookmarks WHERE profileId = ? AND pinned = 1 ORDER BY createdAt DESC`, [profileId])
+  var bookmarks = await db.all(`SELECT url, title, tags, notes, pinned, createdAt FROM bookmarks WHERE profileId = ? AND pinned = 1 ORDER BY createdAt DESC`, [profileId])
   return bookmarks.map(toNewFormat)
 }
 
@@ -113,6 +113,7 @@ function toNewFormat (b) {
     _origin: false,
     _url: false,
     private: true,
+    createdAt: b.createdAt * 1e3, // convert to ms
     href: b.url,
     title: b.title,
     tags: b.tags ? b.tags.split(' ').filter(Boolean) : [],
