@@ -98,12 +98,15 @@
 
     .name,
     .name a {
-        &:extend(.flex);
-        align-items: center;
-        cursor: pointer;
+      &:extend(.flex);
+      flex-wrap: nowrap;
+      align-items: center;
+      cursor: pointer;
     }
 
     .name {
+      &:extend(.overflow-ellipsis);
+      max-width: 75%;
       color: rgba(0,0,0,.9);
 
       &:hover {
@@ -111,6 +114,8 @@
       }
 
       a {
+        &:extend(.overflow-ellipsis);
+        display: block;
         color: inherit;
         text-decoration: none;
       }
