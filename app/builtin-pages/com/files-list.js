@@ -81,7 +81,8 @@ function rNode (archiveInfo, node, depth, opts) {
 function rDirectory (archiveInfo, node, depth, opts) {
   let icon = 'folder'
   let children = ''
-  const directoryPadding = 15 + (depth * 15)
+  const directoryPadding = 20 + (depth * 20)
+  const caretPosition = directoryPadding - 15
 
   if (node.isExpanded) {
     children = yo`
@@ -94,10 +95,13 @@ function rDirectory (archiveInfo, node, depth, opts) {
   return yo`
     <div>
       <div
-        class="item folder"
+        class="item folder ${hasChildren ? '' : 'empty'}"
         title=${node.niceName}
         onclick=${e => onClickDirectory(e, archiveInfo, node, opts)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
+
+        <div class="caret" style="left: ${caretPosition}px; ${node.isExpanded ? 'transform: rotate(90deg);' : ''}">▶︎</div>
+
         <div class="name">
           ${renderFolderIcon()}
           ${node.niceName}

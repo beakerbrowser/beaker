@@ -48,8 +48,24 @@
   .item {
     &:extend(.flex);
     align-items: center;
-    padding: 0 15px;
+    position: relative;
+    padding: 0 15px 0 50px;
     height: 24px;
+
+    .caret {
+      position: absolute;
+      font-size: 10.5px;
+      color: #bbb;
+      display: inline-block;
+    }
+
+    &.empty {
+
+      .name:hover {
+        text-decoration: none;
+        cursor: default;
+      }
+    }
 
     &.folder {
       cursor: pointer;
