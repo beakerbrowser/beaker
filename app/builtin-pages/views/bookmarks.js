@@ -138,7 +138,7 @@ function renderRowExpanded (row, i) {
           <span class="url bookmark__url">${getHostname(row.href)}</span>
         </span>
 
-        <div class="notes">${row.notes || yo`<em>No notes</em>`}</div>
+        <div class="notes">${row.notes || ''}</div>
 
         <div class="tags ${row.tags.length ? '' : 'empty'}">
           ${row.tags.map(t => {
