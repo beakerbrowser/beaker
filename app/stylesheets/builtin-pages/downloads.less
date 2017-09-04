@@ -53,6 +53,11 @@
         margin-top: -1px;
         font-size: 11px;
 
+        .url {
+          &:extend(.overflow-ellipsis);
+          max-width: 240px;
+        }
+
         &.progress {
           justify-content: space-between;
         }
