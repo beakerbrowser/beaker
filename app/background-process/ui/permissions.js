@@ -109,7 +109,13 @@ async function onPermissionResponseHandler (e, reqId, decision) {
   // persist decisions
   const PERM = PERMS[getPermId(req.permission)]
   if (PERM && PERM.persist) {
-    await siteData.setPermission(req.url, req.permission, decision)
+    if (PERM.persist === 'allow' && !decision) {
+      // only persist allows
+      await siteData.clearPermission(req.url, req.permission)
+    } else {
+      // persist all decisions
+      await siteData.setPermission(req.url, req.permission, decision)
+    }
   }
 
   // untrack
