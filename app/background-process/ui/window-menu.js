@@ -194,6 +194,13 @@ export function buildWindowMenu (opts = {}) {
           BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
         }
       }, {
+        label: 'Toggle Shell-Window DevTools',
+        click: function () {
+          BrowserWindow.getFocusedWindow().toggleDevTools()
+        }
+      },
+      { type: 'separator' },
+      {
         label: 'Open Archives Debug Page',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'file:new-tab', 'beaker://internal-archives/')
@@ -207,11 +214,6 @@ export function buildWindowMenu (opts = {}) {
         label: 'Open Debug Log Page',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'file:new-tab', 'beaker://debug-log/')
-        }
-      }, {
-        label: 'Toggle Shell-Window DevTools',
-        click: function () {
-          BrowserWindow.getFocusedWindow().toggleDevTools()
         }
       }]
     },

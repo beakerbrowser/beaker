@@ -1,7 +1,6 @@
 import through2 from 'through2'
 import identifyFiletype from 'identify-filetype'
 import mime from 'mime'
-var debug = require('debug')('beaker')
 
 // config default mimetype
 mime.default_type = 'text/plain'
@@ -12,12 +11,9 @@ export function identify (name, chunk) {
   var mimeType
   var identifiedExt = (chunk) ? identifyFiletype(chunk) : false
   if (identifiedExt) { mimeType = mime.lookup(identifiedExt) }
-  if (mimeType) {
-    debug('[DAT] Identified entry mimetype as', mimeType)
-  } else {
+  if (!mimeType) {
     // fallback to using the entry name
     mimeType = mime.lookup(name)
-    debug('[DAT] Assumed mimetype from entry name', mimeType)
   }
 
   // hackish fix

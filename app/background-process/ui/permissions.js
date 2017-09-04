@@ -1,5 +1,4 @@
 import { ipcMain, session, BrowserWindow } from 'electron'
-var debug = require('debug')('beaker')
 import * as siteData from '../dbs/sitedata'
 import PERMS from '../../lib/perms'
 import { getPermId } from '../../lib/strings'
@@ -53,7 +52,6 @@ export function denyAllRequests (win) {
   // remove all requests in the window, denying as we go
   activeRequests = activeRequests.filter(req => {
     if (req.win === win) {
-      debug('Denying outstanding permission-request for closing window, req #' + req.id + ' for ' + req.permission)
       req.cb(false)
       return false
     }

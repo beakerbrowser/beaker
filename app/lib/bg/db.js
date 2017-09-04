@@ -1,4 +1,4 @@
-var debug = require('debug')('beaker')
+var debug = require('debug')('beaker-sqlite')
 import FnQueue from 'function-queue'
 import { cbPromise } from '../functions'
 

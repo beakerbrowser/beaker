@@ -7,7 +7,7 @@ import once from 'once'
 import http from 'http'
 import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
-var debug = require('debug')('dat')
+var debug = require('debug')('dat-serve')
 import pda from 'pauls-dat-api'
 import toZipStream from 'hyperdrive-to-zip-stream'
 import slugify from 'slugify'
