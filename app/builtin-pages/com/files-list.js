@@ -95,7 +95,7 @@ function rDirectory (archiveInfo, node, depth, opts) {
   return yo`
     <div>
       <div
-        class="item folder ${hasChildren ? '' : 'empty'}"
+        class="item folder"
         title=${node.niceName}
         onclick=${e => onClickDirectory(e, archiveInfo, node, opts)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
