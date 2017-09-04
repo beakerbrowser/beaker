@@ -36,3 +36,21 @@ export function writeToClipboard (str) {
   document.execCommand('copy')
   document.body.removeChild(textarea)
 }
+
+export function polyfillHistoryEvents () {
+  // HACK FIX
+  // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
+  // -prf
+  var _wr = function (type) {
+    var orig = window.history[type]
+    return function () {
+      var rv = orig.apply(this, arguments)
+      var e = new Event(type.toLowerCase())
+      e.arguments = arguments
+      window.dispatchEvent(e)
+      return rv
+    }
+  }
+  window.history.pushState = _wr('pushState')
+  window.history.replaceState = _wr('replaceState')
+}

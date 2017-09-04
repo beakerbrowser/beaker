@@ -14,27 +14,18 @@ import renderFolderIcon from '../icon/folder'
 // opts:
 //  - hideDate: show the date on the files (bool)
 //  - baseUrl: override the base URL of file links (string)
-export default function render (archiveInfo, opts = {}) {
-  return yo`
-    <div>
-      ${rFilesList(archiveInfo, opts)}
-    </div>
-  `
+export default function render (root, opts = {}) {
+  return rFilesList(root, opts)
 }
 
-function rFilesList (archiveInfo, opts) {
-  if (!archiveInfo || !archiveInfo.fileTree.rootNode) {
-    return yo`
-      <div>
-        <div class="files-list"></div>
-      </div>
-    `
+function rFilesList (root, opts) {
+  if (!root) {
+    return yo`<div class="files-list"></div>`
   }
 
-  var hasFiles = Object.keys(archiveInfo.fileTree.rootNode.children).length > 0
   return yo`
-    <div class="files-list ${!hasFiles ? 'empty' : ''}">
-      ${rChildren(archiveInfo, archiveInfo.fileTree.rootNode.children, 0, opts)}
+    <div class="files-list ${root.isEmpty ? 'empty' : ''}">
+      ${rChildren(root, root.children, 0, opts)}
     </div>
   `
 }
@@ -42,43 +33,29 @@ function rFilesList (archiveInfo, opts) {
 // rendering
 // =
 
-function redraw (archiveInfo, opts = {}) {
-  yo.update(document.querySelector('.files-list'), rFilesList(archiveInfo, opts))
+function redraw (root, opts = {}) {
+  yo.update(document.querySelector('.files-list'), rFilesList(root, opts))
 }
 
-function rChildren (archiveInfo, children, depth = 0, opts = {}) {
-  children = Object.keys(children).map(key => children[key])
-
+function rChildren (root, children, depth = 0, opts = {}) {
   if (children.length === 0 && depth === 0) {
     return yo`
       <div class="item empty"><em>No files</em></div>
     `
   }
 
-  return children
-    .sort(treeSorter)
-    .map(node => rNode(archiveInfo, node, depth, opts))
+  return children.map(childNode => rNode(root, childNode, depth, opts))
 }
 
-function treeSorter (a, b) {
-  // directories at top
-  if (a.entry.isDirectory() && !b.entry.isDirectory()) { return -1 }
-  if (!a.entry.isDirectory() && b.entry.isDirectory()) { return 1 }
-  // by name
-  return a.entry.name.localeCompare(b.entry.name)
-}
-
-function rNode (archiveInfo, node, depth, opts) {
-  if (node.entry.isDirectory()) {
-    return rDirectory(archiveInfo, node, depth, opts)
+function rNode (root, node, depth, opts) {
+  if (node.isContainer) {
+    return rDirectory(root, node, depth, opts)
+  } else {
+    return rFile(root, node, depth, opts)
   }
-  if (node.entry.isFile()) {
-    return rFile(archiveInfo, node, depth, opts)
-  }
-  return ''
 }
 
-function rDirectory (archiveInfo, node, depth, opts) {
+function rDirectory (root, node, depth, opts) {
   let icon = 'folder'
   let children = ''
   const directoryPadding = 20 + (depth * 20)
@@ -87,7 +64,7 @@ function rDirectory (archiveInfo, node, depth, opts) {
   if (node.isExpanded) {
     children = yo`
       <div class="subtree">
-        ${rChildren(archiveInfo, node.children, depth + 1, opts)}
+        ${rChildren(root, node.children, depth + 1, opts)}
       </div>`
     icon = 'folder-open'
   }
@@ -96,15 +73,15 @@ function rDirectory (archiveInfo, node, depth, opts) {
     <div>
       <div
         class="item folder"
-        title=${node.niceName}
-        onclick=${e => onClickDirectory(e, archiveInfo, node, opts)}
+        title=${node.name}
+        onclick=${e => onClickDirectory(e, root, node, opts)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
 
         <div class="caret" style="left: ${caretPosition}px; ${node.isExpanded ? 'transform: rotate(90deg);' : ''}">▶︎</div>
 
         <div class="name">
           ${renderFolderIcon()}
-          ${node.niceName}
+          ${node.name}
         </div>
       </div>
       ${children}
@@ -112,22 +89,22 @@ function rDirectory (archiveInfo, node, depth, opts) {
   `
 }
 
-function rFile (archiveInfo, node, depth, opts) {
+function rFile (root, node, depth, opts) {
   const padding = 15 + (depth * 15)
 
   return yo`
     <div
       class="item file"
-      title=${node.niceName}
+      title=${node.name}
       style=${'padding-left: ' + padding + 'px'}>
       <div class="name">
         ${renderFileOIcon()}
-        <a href=${join(opts.baseUrl || archiveInfo.url, node.entry.name)}>
-          ${node.niceName}
+        <a href=${node.url}>
+          ${node.name}
         </a>
       </div>
-      <div class="size">${prettyBytes(node.entry.size)}</div>
-      ${!opts.hideDate ? yo`<div class="updated">${niceDate(+node.entry.mtime)}</div>` : ''}
+      <div class="size">${prettyBytes(node.size)}</div>
+      ${!opts.hideDate ? yo`<div class="updated">${niceDate(+node.mtime)}</div>` : ''}
     </div>
   `
 }
@@ -135,23 +112,10 @@ function rFile (archiveInfo, node, depth, opts) {
 // event handlers
 // =
 
-async function onClickDirectory (e, archiveInfo, node, opts = {}) {
+async function onClickDirectory (e, root, node, opts = {}) {
   node.isExpanded = !node.isExpanded
   if (node.isExpanded) {
-    await archiveInfo.fileTree.readFolder(node)
+    await node.readData()
   }
-  redraw(archiveInfo, opts)
-}
-
-// helpers
-// =
-
-function join (a, b) {
-  if (!a.endsWith('/') && !b.startsWith('/')) {
-    return a + '/' + b
-  }
-  if (a.endsWith('/') && b.startsWith('/')) {
-    return a + b.slice(1)
-  }
-  return a + b
+  redraw(root, opts)
 }
