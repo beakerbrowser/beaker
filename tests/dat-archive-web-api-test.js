@@ -412,6 +412,10 @@ test('DatArchive.unlink', async t => {
   }, datKey)
   await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.isSaved, false)
+
+  // dont allow writes
+  var res = await writeFile(datUrl, '/foo.txt', 'bar', 'utf8')
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 })
 
 test('DatArchive.selectArchive rejection', async t => {
