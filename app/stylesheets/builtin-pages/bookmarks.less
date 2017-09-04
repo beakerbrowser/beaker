@@ -4,8 +4,57 @@
 
 .bookmarks-wrapper {
 
+  .builtin-header {
+
+    .view-controls {
+
+      .btn {
+        &:extend(.flex);
+        align-items: center;
+        padding: 0 10px;
+      }
+
+      .icon {
+        width: 13px;
+        height: 13px;
+
+        * {
+          stroke: #aaa;
+        }
+
+        &.list-expanded {
+          height: 13px;
+          width: 15px;
+
+          * {
+            stroke: #aaa;
+          }
+        }
+
+        &.list {
+          height: 11px;
+          width: auto;
+
+          * {
+            fill: #aaa;
+          }
+        }
+
+        &.grid {
+          height: 12px;
+
+          * {
+            fill: #aaa;
+            stroke: #aaa;
+          }
+        }
+      }
+    }
+  }
+
   .builtin-main {
     max-width: ~"calc(100vw - 340px)"; // width of main sidebar + builtin-sidebar
+    background: #fff;
 
     .links-list.bookmarks {
       max-width: 950px;
@@ -60,7 +109,6 @@
 
         .tags {
           margin-left: 23px;
-          margin-top: 10px;
 
           &:not(.empty) {
             margin-bottom: 5px;
@@ -74,6 +122,7 @@
         padding: 0;
         border: 1px solid #ddd;
         border-radius: 2px;
+        box-shadow: 0 1px 0 rgba(0,0,0,.15);
 
         .header {
           display: inline-block;
@@ -116,7 +165,6 @@
         .notes {
           color: @color-text--muted;
           font-size: 12px;
-          margin-bottom: 10px;
           white-space: normal;
           line-height: 1.45;
 
@@ -148,6 +196,7 @@
       .tags {
         display: flex;
         height: 17px;
+        margin-top: 10px;
 
         &.empty {
           display: none;
