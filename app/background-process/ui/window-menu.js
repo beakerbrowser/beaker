@@ -24,12 +24,16 @@ export function setup () {
 
   // watch for changes to the currently active window
   app.on('browser-window-focus', async (e, win) => {
-    // fetch the current url
-    const url = await win.webContents.executeJavaScript(`pages.getActive().getIntendedURL()`)
+    try {
+      // fetch the current url
+      const url = await win.webContents.executeJavaScript(`pages.getActive().getIntendedURL()`)
 
-    // rebuild as needed
-    if (requiresRebuild(url)) {
-      setApplicationMenu({url})
+      // rebuild as needed
+      if (requiresRebuild(url)) {
+        setApplicationMenu({url})
+      }
+    } catch (e) {
+      // `pages` not set yet
     }
   })
 }
