@@ -214,8 +214,9 @@ function update () {
             ? yo`
               <button class="btn" onclick=${onResetSelected}>Deselect all</button>`
             : yo`
-              <button class="btn trash" onclick=${onToggleTrash}>${isTrashOpen ? 'Close Trash' : 'Show Trash'}
-                ${isTrashOpen ? renderCloseIcon() : renderTrashIcon()}
+              <button class="btn trash" onclick=${onToggleTrash}>
+                ${''/* this weird hack with the <span> solves an SVG rendering bug in yoyo */}
+                <span>${isTrashOpen ? 'Close Trash' : 'Show Trash'}</span><span>${isTrashOpen ? '' : renderTrashIcon()}</span><span>${isTrashOpen ? renderCloseIcon() : ''}</span>
               </button>`
           }
         </div>
