@@ -60,53 +60,6 @@ export class BrowserMenuNavbarBtn {
     // render the dropdown if open
     var dropdownEl = ''
     if (this.isDropdownOpen) {
-      let downloadEls = activeDownloads.map(d => {
-        // status
-        var status = d.state === 'completed' ? '' : d.state
-        if (status == 'progressing') {
-          status = prettyBytes(d.receivedBytes) + ' / ' + prettyBytes(d.totalBytes)
-          if (d.isPaused) { status += ', Paused' }
-        } else { status = ucfirst(status) }
-
-        // ctrls
-        var ctrlsEl
-        if (d.state == 'completed') {
-          // actions
-          if (!d.fileNotFound) {
-            ctrlsEl = yo`
-              <li class="download-item-ctrls complete">
-                <a onclick=${e => this.onOpen(e, d)}>Open file</a>
-                <a onclick=${e => this.onShow(e, d)}>Show in folder</a>
-              </li>`
-          } else {
-            ctrlsEl = yo`
-              <li class="download-item-ctrls not-found">
-                File not found (moved or deleted)
-              </li>`
-          }
-        } else if (d.state == 'progressing') {
-          ctrlsEl = yo`
-            <li class="download-item-ctrls paused">
-              ${d.isPaused
-                ? yo`<a onclick=${e => this.onResume(e, d)}>Resume</a>`
-                : yo`<a onclick=${e => this.onPause(e, d)}>Pause</a>`}
-              <a onclick=${e => this.onCancel(e, d)}>Cancel</a>
-            </li>`
-        }
-
-        // render download
-        return yo`
-          <li class="download-item">
-            <div class="name">${d.name}</div>
-            <div class="status">
-              ${d.state == 'progressing'
-                ? yo`<progress value=${d.receivedBytes} max=${d.totalBytes}></progress>`
-                : ''}
-              ${status}
-            </div>
-            ${ctrlsEl}
-          </li>`
-      })
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle">
