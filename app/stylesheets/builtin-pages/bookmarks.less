@@ -136,13 +136,23 @@
         border-radius: 2px;
         box-shadow: 0 1px 0 rgba(0,0,0,.15);
 
-        .header {
+        .favicon {
+          flex-basis: 32px;
+        }
+
+        .header,
+        .favicon {
           display: inline-block;
-          max-width: 170px;
-          height: 32px;
-          line-height: 1;
-          vertical-align: top;
-          margin-bottom: 10px;
+        }
+
+        .header {
+          display: flex;
+
+          .info {
+            vertical-align: top;
+            line-height: 1;
+            max-width: 170px;
+          }
 
           .url,
           .title {
@@ -151,7 +161,10 @@
         }
 
         .link {
-          display: block;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          flex-direction: column;
+          align-items: flex-start;
           width: 100%;
           height: 100%;
           padding: 10px;
@@ -160,7 +173,7 @@
         .favicon {
           width: 32px;
           height: 32px;
-          margin-right: 3px;
+          margin-right: 10px;
         }
 
         .title {
@@ -179,9 +192,14 @@
           font-size: 12px;
           white-space: normal;
           line-height: 1.45;
+          margin-top: 10px;
 
           em {
             color: #aaa;
+          }
+
+          &.empty {
+            display: none;
           }
         }
 

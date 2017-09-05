@@ -177,18 +177,21 @@ function renderRowGrid (row, i) {
   return yo`
     <li class="ll-row bookmarks__row grid" data-row=${i}>
       <a class="link bookmark__link" href=${row.href} title=${row.title} />
-        <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
         <span class="header">
-          <span class="title bookmark__title">
-            ${row.title.startsWith('dat://')
-              ? yo`<em>Untitled</em>`
-              : yo`${row.title}`
-            }
-          </span>
-          <span class="url bookmark__url">${getHostname(row.href)}</span>
+          <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
+
+          <div class="info">
+            <span class="title bookmark__title">
+              ${row.title.startsWith('dat://')
+                ? yo`<em>Untitled</em>`
+                : yo`${row.title}`
+              }
+            </span>
+            <span class="url bookmark__url">${getHostname(row.href)}</span>
+          </div>
         </span>
 
-        <div class="notes">${row.notes || yo`<em>No notes</em>`}</div>
+        <div class="notes ${row.notes ? '' : 'empty'}">${row.notes || ''}</div>
 
         <div class="tags ${row.tags.length ? '' : 'empty'}">
           ${row.tags.map(t => {
