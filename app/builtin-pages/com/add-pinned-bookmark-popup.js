@@ -18,18 +18,24 @@ export function render (url) {
       <form class="popup-inner" onsubmit=${onSubmit}>
         <div class="head">
           <span class="title">Add a pinned bookmark</span>
+
+          <span title="Cancel" onclick=${destroy} class="close-btn square">
+            ${closeIcon()}
+          </span>
         </div>
 
-        <div>
-          <label for="url-input">URL</label>
-          <input type="text" id="url-input" name="url" required />
-          <label for="title-input">Title</label>
-          <input type="text" id="title-input" name="title" required />
-        </div>
+        <div class="body">
+          <div>
+            <label for="url-input">URL</label>
+            <input type="text" id="url-input" name="url" required />
+            <label for="title-input">Title</label>
+            <input type="text" id="title-input" name="title" required />
+          </div>
 
-        <div class="actions">
-          <button type="button" class="btn" onclick=${destroy} tabindex="2">Cancel</button>
-          <button type="submit" class="btn primary" tabindex="1">Save</button>
+          <div class="actions">
+            <button type="button" class="btn" onclick=${destroy} tabindex="2">Cancel</button>
+            <button type="submit" class="btn primary" tabindex="1">Save</button>
+          </div>
         </div>
       </form>
     </div>
