@@ -28,7 +28,7 @@ function update () {
     <div class="library-wrapper builtin-wrapper">
       ${renderSidebar('library')}
       <div class="builtin-main">
-        ${renderFiles(fsRoot)}
+        ${renderFiles(fsRoot, {filesListView: true})}
         ${''/*TODO selectedArchive ? rNewSidebar(selectedArchive) : ''*/}
       </div>
     </div>

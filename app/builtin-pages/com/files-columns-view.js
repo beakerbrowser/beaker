@@ -2,6 +2,7 @@
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
+import renderFilesList from './files-list'
 import {niceDate} from '../../lib/time'
 import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder'
@@ -9,8 +10,9 @@ import renderFolderIcon from '../icon/folder'
 // exported api
 // =
 
-export default function render (root, activePath = [], opts = {}) {
-  return rFilesColumnsView(root, activePath, opts)
+// - opts.filesListView: boolean (default false). If true, will use com/files-list for archives
+export default function render (root, opts = {}) {
+  return rFilesColumnsView(root, [], opts)
 }
 
 function rFilesColumnsView (root, activePath, opts) {
@@ -34,6 +36,10 @@ function redraw (root, activePath, opts = {}) {
 }
 
 function rColumn (root, node, activePath, depth, opts = {}) {
+  if (opts.filesListView && node.type === 'archive') {
+    return renderFilesList(node, opts)
+  }
+
   if (node.isEmpty) {
     return yo`
       <div class="column empty"><em>No files</em></div>

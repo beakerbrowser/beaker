@@ -4,13 +4,6 @@
 
 
 .files-list {
-  border-bottom: 1px solid @border-menu;
-  font-size: .75rem;
-
-  > *:nth-child(2n) {
-    background: rgb(248, 248, 248);
-  }
-
   .item {
     &:extend(.flex);
     align-items: center;
@@ -101,9 +94,5 @@
     .updated {
       margin-left: auto; // right align the .updated element
     }
-  }
-
-  & > :first-child, & > :first-child > .item {
-    border: 0;
   }
 }

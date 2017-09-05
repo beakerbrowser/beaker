@@ -4,16 +4,33 @@
 
 .files-columns-view {
   &:extend(.flex);
+  background: #fff;
+  height: 100vh;
 
   .column {
     min-width: 200px;
     max-width: 500px;
+    height: 100%;
+    overflow-y: auto;
     background: #fff;
-    border-right: 1px solid #ddd;
+    border-right: 1px solid #eee;
     padding: 5px 0;
+
+    &.empty {
+      padding: 10px;
+    }
   }
 
-  .item {
+  .files-list {
+    flex: 1;
+    max-width: 500px;
+    height: 100%;
+    overflow-y: auto;
+    background: #fff;
+    border-right: 1px solid #eee;
+  }
+
+  .column > .item {
     &:extend(.flex);
     align-items: center;
     position: relative;
