@@ -156,9 +156,10 @@ export class BrowserMenuNavbarBtn {
                 <span class="label">Beaker Filesystem</span>
               </div>
 
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
+              <div class="menu-item downloads" style=${progressEl ? "height: 41px" : ''} onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
                 <i class="fa fa-download"></i>
                 <span class="label">Downloads</span>
+                ${progressEl}
               </div>
             </div>
 
@@ -197,7 +198,6 @@ export class BrowserMenuNavbarBtn {
       <div class="toolbar-dropdown-menu browser-dropdown-menu">
         <button class="toolbar-btn toolbar-dropdown-menu-btn ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
           <span class="fa fa-bars"></span>
-          ${progressEl}
         </button>
         ${dropdownEl}
       </div>`
