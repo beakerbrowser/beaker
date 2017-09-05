@@ -3,7 +3,7 @@
 import * as yo from 'yo-yo'
 import renderSidebar from '../com/sidebar'
 import {FSVirtualRoot} from 'beaker-virtual-fs'
-import renderFiles from '../com/files-list'
+import renderFiles from '../com/files-columns-view'
 import renderDotsIcon from '../icon/three-dots'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'

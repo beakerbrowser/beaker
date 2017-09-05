@@ -3,40 +3,6 @@
 @import "../../components/link";
 
 
-.dat-local-path {
-  &:extend(.flex);
-  justify-content: space-between;
-  font-size: .8rem;
-  color: @color-text--muted;
-  border-radius: 3px 3px 0 0;
-  padding: 7px @padding-component--tight;
-  margin: 0;
-  border: 1px solid @border-menu;
-  background: @background-menu;
-  border-bottom: 0;
-
-  .folder-warning {
-
-    i {
-      margin-left: 3px;
-    }
-  }
-
-  a:hover {
-    &:extend(.link:hover);
-  }
-
-  .fa-clipboard {
-    font-size: 0.9em;
-  }
-
-  .files-list-actions {
-    a {
-      margin-left: 5px;
-    }
-  }
-}
-
 .files-list {
   border-bottom: 1px solid @border-menu;
   font-size: .75rem;

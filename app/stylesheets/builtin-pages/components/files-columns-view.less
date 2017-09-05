@@ -1,0 +1,74 @@
+@import "../../base/spacing";
+@import "../../utils/flex";
+@import "../../components/link";
+
+.files-columns-view {
+  &:extend(.flex);
+
+  .column {
+    min-width: 200px;
+    max-width: 500px;
+    background: #fff;
+    border-right: 1px solid #ddd;
+    padding: 5px 0;
+  }
+
+  .item {
+    &:extend(.flex);
+    align-items: center;
+    position: relative;
+    height: 24px;
+    padding: 0 10px;
+
+    &.folder {
+      cursor: pointer;
+    }
+
+    .icon {
+      width: 13px;
+      height: 13px;
+      margin-right: @margin-icon;
+
+      &.file-o {
+        background: none;
+
+        * {
+          stroke: #ddd;
+          fill: #fff;
+        }
+      }
+
+      &.folder {
+        width: 14px;
+        height: 14px;
+
+        * {
+          fill: rgba(0,0,0,.25);
+          stroke: none;
+        }
+      }
+    }
+
+    .size, .updated {
+      color: @color-text;
+      font-size: .73rem;
+      color: rgba(0,0,0,.5);
+      font-weight: 500;
+    }
+
+    .size {
+      margin: 0 @margin-icon;
+    }
+
+    .updated {
+      margin-left: auto; // right align the .updated element
+    }
+
+    &.active {
+      background: #008dfd;
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+      font-weight: 500;
+    }
+  }
+}

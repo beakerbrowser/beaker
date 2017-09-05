@@ -2,9 +2,7 @@
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import * as toast from './toast'
 import {niceDate} from '../../lib/time'
-import {writeToClipboard} from '../../lib/fg/event-handlers'
 import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder'
 
@@ -56,7 +54,6 @@ function rNode (root, node, depth, opts) {
 }
 
 function rDirectory (root, node, depth, opts) {
-  let icon = 'folder'
   let children = ''
   const directoryPadding = 20 + (depth * 20)
   const caretPosition = directoryPadding - 15
@@ -66,7 +63,6 @@ function rDirectory (root, node, depth, opts) {
       <div class="subtree">
         ${rChildren(root, node.children, depth + 1, opts)}
       </div>`
-    icon = 'folder-open'
   }
 
   return yo`
