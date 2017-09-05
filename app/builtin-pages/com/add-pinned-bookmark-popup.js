@@ -26,6 +26,7 @@ export function render (url) {
           <div>
             <label for="url-input">URL</label>
             <input type="text" id="url-input" name="url" required />
+
             <label for="title-input">Title</label>
             <input type="text" id="title-input" name="title" required />
           </div>

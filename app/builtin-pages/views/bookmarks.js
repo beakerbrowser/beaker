@@ -2,6 +2,7 @@
 
 const yo = require('yo-yo')
 import {getHostname} from '../../lib/strings'
+import * as editBookmarkPopup from '../com/edit-bookmark-popup'
 import renderSidebar from '../com/sidebar'
 import renderCloseIcon from '../icon/close'
 import renderGlobeIcon from '../icon/globe'
@@ -459,18 +460,50 @@ async function onTogglePinned (i) {
 }
 
 function onClickEdit (i) {
-  return e => {
+  return async e => {
     e.preventDefault()
     e.stopPropagation()
 
     // capture initial value
-    bookmarks[i].editTitle = bookmarks[i].title
-    bookmarks[i].editHref = bookmarks[i].href
+    var bOriginal = bookmarks[i]
+    bOriginal.isPrivate = bOriginal.private
 
-    // enter edit-mode
-    bookmarks[i].isEditing = true
-    renderToPage()
-    document.querySelector(`[data-row="${i}"] input`).focus()
+    // render popup
+    try {
+      var b = await editBookmarkPopup.create(bOriginal.href, bOriginal)
+
+      // delete old bookmark if url changed
+      if (bOriginal.href !== b.href) {
+        if (bOriginal.private) {
+          await beaker.bookmarks.unbookmarkPrivate(bOriginal.href)
+        } else {
+          await beaker.bookmarks.unbookmarkPublic(bOriginal.href)
+        }
+      }
+
+      // delete old bookmark if privacy changed
+      else if (bOriginal.private && !b.private) {
+        await beaker.bookmarks.unbookmarkPrivate(b.href)
+      } else if (!bOriginal.private && b.private) {
+        await beaker.bookmarks.unbookmarkPublic(b.href)
+      }
+
+      // set the bookmark
+      if (b.private) {
+        await beaker.bookmarks.bookmarkPrivate(b.href, b)
+      } else {
+        beaker.bookmarks.bookmarkPublic(b.href, b)
+      }
+
+      // set the pinned status of the bookmark
+      await beaker.bookmarks.setBookmarkPinned(b.href, b.pinned)
+
+      await loadBookmarks()
+      renderToPage()
+    } catch (e) {
+      // ignore
+      console.log(e)
+    }
   }
 }
 
