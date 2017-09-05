@@ -99,7 +99,7 @@ export class BrowserMenuNavbarBtn {
               </div>
 
               <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
-                <i class="fa fa-clock-o"></i>
+                <i class="fa fa-history"></i>
                 <span class="label">History</span>
                 <span class="shortcut">${this.accelerators.history}</span>
               </div>
