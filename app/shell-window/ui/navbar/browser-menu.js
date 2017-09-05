@@ -65,13 +65,13 @@ export class BrowserMenuNavbarBtn {
           <div class="dropdown-items with-triangle">
             <div class="section">
               <div class="menu-item" onclick=${e => this.onOpenNewWindow()}>
-                <i></i>
+                <i class="fa fa-window-maximize"></i>
                 <span class="label">New Window</span>
                 <span class="shortcut">${this.accelerators.newWindow}</span>
               </div>
 
               <div class="menu-item" onclick=${e => this.onOpenNewTab()}>
-                <i></i>
+                <i class="fa fa-file-o"></i>
                 <span class="label">New Tab</span>
                 <span class="shortcut">${this.accelerators.newTab}</span>
               </div>
