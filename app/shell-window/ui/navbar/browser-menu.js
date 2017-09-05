@@ -1,8 +1,11 @@
-/* globals beakerDownloads DatArchive */
+/* globals beakerBrowser beakerDownloads DatArchive */
 
+import os from 'os'
 import * as yo from 'yo-yo'
+import {ipcRenderer} from 'electron'
 import emitStream from 'emit-stream'
 import prettyBytes from 'pretty-bytes'
+import { showInpageFind } from '../navbar'
 import { ucfirst } from '../../../lib/strings'
 import { findParent } from '../../../lib/fg/event-handlers'
 import * as pages from '../../pages'
@@ -12,6 +15,16 @@ import * as pages from '../../pages'
 
 export class BrowserMenuNavbarBtn {
   constructor () {
+    const isDarwin = os.platform() === 'darwin'
+    const cmdOrCtrlChar = isDarwin ? '⌘' : '^'
+    this.accelerators = {
+      newWindow: cmdOrCtrlChar + 'N',
+      newTab: cmdOrCtrlChar + 'T',
+      findInPage: cmdOrCtrlChar + 'F',
+      history: cmdOrCtrlChar + 'Y',
+      openFile: cmdOrCtrlChar + 'O'
+    }
+
     this.downloads = []
     this.sumProgress = null // null means no active downloads
     this.isDropdownOpen = false
@@ -97,56 +110,83 @@ export class BrowserMenuNavbarBtn {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle">
-            <div class="grid default">
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
-                <i class="fa fa-history"></i>
-                History
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenNewWindow()}>
+                <i></i>
+                <span class="label">New Window</span>
+                <span class="shortcut">${this.accelerators.newWindow}</span>
               </div>
 
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
-                <i class="fa fa-list"></i>
-                Library
-              </div>
-
-              <div class="grid-item" onclick=${e => this.onCreateSite(e)}>
-                <i class="fa fa-pencil"></i>
-                New site
-              </div>
-
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
-                <i class="fa fa-download"></i>
-                Downloads
-              </div>
-
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
-                <i class="fa fa-star"></i>
-                Bookmarks
-              </div>
-
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
-                <i class="fa fa-gear"></i>
-                Settings
+              <div class="menu-item" onclick=${e => this.onOpenNewTab()}>
+                <i></i>
+                <span class="label">New Tab</span>
+                <span class="shortcut">${this.accelerators.newTab}</span>
               </div>
             </div>
 
-            ${downloadEls.length ? yo`
-              <div>
-                <hr>
-                <div class="downloads">
-                  <h2>Downloads</h2>
-                  <ul class="downloads-list">${downloadEls}</ul>
-                </div>
-              </div>` : ''}
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onFindInPage(e)}>
+                <i class="fa fa-search"></i>
+                <span class="label">Find in Page</span>
+                <span class="shortcut">${this.accelerators.findInPage}</span>
+              </div>
+            </div>
 
-            <div class="footer">
-              <a onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
-                <i class="fa fa-info-circle"></i>
-                <span>Report an issue</span>
-              </a>
-              <a onclick=${e => this.onOpenPage(e, 'https://beakerbrowser.com/docs')}>
-                <i class="fa fa-question"></i>
-                <span>Help</span>
-              </a>
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onCreateSite(e)}>
+                <i class="fa fa-plus-square-o"></i>
+                <span class="label">Create New Site</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
+                <i class="fa fa-star-o"></i>
+                <span class="label">Bookmarks</span>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
+                <i class="fa fa-clock-o"></i>
+                <span class="label">History</span>
+                <span class="shortcut">${this.accelerators.history}</span>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
+                <i class="fa fa-code"></i>
+                <span class="label">Beaker Filesystem</span>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
+                <i class="fa fa-download"></i>
+                <span class="label">Downloads</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
+                <i class="fa fa-gear"></i>
+                <span class="label">Settings</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenFile()}>
+                <i></i>
+                <span class="label">Open File...</span>
+                <span class="shortcut">${this.accelerators.openFile}</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'dat://beakerbrowser.com/docs/')}>
+                <i class="fa fa-question-circle-o"></i>
+                <span class="label">Help</span>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
+                <i class="fa fa-flag-o"></i>
+                <span class="label">Report an Issue</span>
+              </div>
             </div>
           </div>
         </div>`
@@ -175,6 +215,24 @@ export class BrowserMenuNavbarBtn {
         {transform: 'scale(1.0)', color: 'inherit'}
       ], { duration: 300 })
     )
+  }
+
+  onOpenNewWindow () {
+    ipcRenderer.send('new-window')
+  }
+
+  onOpenNewTab () {
+    pages.setActive(pages.create('beaker://start'))
+  }
+
+  async onOpenFile () {
+    var files = await beakerBrowser.showOpenDialog({
+       title: 'Open file...',
+       properties: ['openFile', 'createDirectory']
+    })
+    if (files && files[0]) {
+      pages.setActive(pages.create('file://' + files[0]))
+    }
   }
 
   onClickBtn (e) {
@@ -257,6 +315,16 @@ export class BrowserMenuNavbarBtn {
         download.fileNotFound = true
         this.updateActives()
       })
+  }
+
+  onFindInPage (e) {
+    e.preventDefault()
+    e.stopPropagation()
+
+    // close dropdown
+    this.isDropdownOpen = false
+
+    showInpageFind(pages.getActive())
   }
 
   onClearDownloads (e) {

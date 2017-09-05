@@ -42,7 +42,7 @@ export function setup () {
   tray.setContextMenu(contextMenu)
 
   // load pinned tabs
-  ipcMain.on('shell-window-ready', e => {
+  ipcMain.once('shell-window-ready', e => {
     // if this is the first window opened (since app start or since all windows closing)
     if (numActiveWindows === 1) {
       e.sender.webContents.send('command', 'load-pinned-tabs')
@@ -52,6 +52,7 @@ export function setup () {
   // set up app events
   app.on('activate', () => ensureOneWindowExists())
   app.on('open-url', (e, url) => openURL.open(url))
+  ipcMain.on('new-window', createShellWindow)
   app.on('before-quit', e => {
     if (!isReadyToQuit) {
       e.preventDefault()

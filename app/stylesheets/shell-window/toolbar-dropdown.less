@@ -28,6 +28,7 @@
 .toolbar-dropdown {
   padding-top: 10px;
   margin-right: -4px;
+  z-index: 1000;
 
   h2 {
     font-size: 12px;
@@ -39,38 +40,6 @@
     // TODO: remove this once we pull out photonkit -tbv
     margin: 0;
     border-bottom: 1px solid @border-menu;
-  }
-
-  .footer {
-    display: flex;
-    border-top: 1px solid @border-menu;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    overflow: hidden;
-
-    i {
-      margin-right: 5px;
-      width: 15px;
-      text-align: center;
-    }
-
-    a {
-      padding: @padding-component--tight @padding-component;
-      cursor: pointer;
-      background: @background-menu;
-
-      &:hover span {
-        cursor: pointer;
-        text-decoration: underline;
-      }
-
-      &:first-child {
-        padding-right: 0;
-      }
-      &:last-child {
-        flex: 1;
-      }
-    }
   }
 
   .list {
@@ -112,15 +81,6 @@
     }
   }
 
-  .sublist {
-    left: -180px;
-    top: -5px;
-
-    .list-item {
-      padding: 3px 15px;
-    }
-  }
-
   .grid {
     padding: @padding-component @padding-component @padding-component--tight @padding-component;
     &:extend(.flex);
@@ -133,77 +93,60 @@
       flex-basis: 33%
     }
   }
-
-  .grid-item {
-    flex-basis: 33%;
-    height: 60px;
-    text-align: center;
-    line-height: 12px;
-    font-size: 11px;
-    padding: 5px;
-    border-radius: 2px;
-    border: 1px solid transparent;
-    margin-bottom: 5px;
-
-    i {
-      cursor: default;
-      width: 100%;
-      font-size: 25px;
-      margin-bottom: @margin-icon;
-    }
-
-    &:hover {
-      background: @background-menu;
-      border: 1px solid @border-menu;
-    }
-
-    &.disabled {
-      color: @color-text--light;
-      background: transparent;
-      border: 1px solid transparent;
-    }
-  }
-
-  .downloads {
-    padding: @padding-component--tight @padding-component;
-    font-size: .725rem;
-
-    h2 {
-      margin-bottom: 10px;
-    }
-
-    a {
-      &:extend(.link);
-    }
-
-    a:hover {
-      &:extend(.link:hover);
-    }
-  }
-
-  .download-item {
-    width: 100%;
-
-    &:not(:last-child) {
-      margin-bottom: 5px;
-    }
-
-    .status progress {
-      width: 50px;
-      position: relative;
-      top: 3px;
-    }
-  }
-
-  .download-item-ctrls a {
-    margin-right: 3px;
-  }
 }
 
 .browser-dropdown-menu {
+
+  .section {
+    border-bottom: 1px solid #eee;
+    padding: 5px 0;
+  }
+
+  .menu-item {
+    &:extend(.flex);
+    align-items: center;
+    height: 25px;
+    padding: 0 15px 0 10px;
+
+    &:hover {
+      background: #eee;
+      cursor: pointer;
+    }
+
+    i {
+      color: fadeout(@color-text, 3%);
+      width: 22px;
+      font-size: 16px;
+      padding-right: 3px;
+
+      // this icon is noticeably bigger than the others for some reason
+      &.file-o {
+        font-size: 14.5px;
+      }
+
+      &.fa-search {
+        font-size: 15px;
+      }
+
+      // these icons are a bit too thick
+      &.fa-download,
+      &.fa-search,
+      &.fa-clock-o {
+        -webkit-text-stroke: .5px #fff;
+      }
+    }
+
+    .shortcut {
+      color: #777;
+      margin-left: auto;
+      font-size: 12px;
+      -webkit-font-smoothing: antialiased;
+    }
+  }
+
   .dropdown-items {
     border-radius: 4px;
-    width: 275px;
+    width: 225px;
   }
 }
 
