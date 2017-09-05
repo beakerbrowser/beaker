@@ -1,7 +1,5 @@
 import yo from 'yo-yo'
-import * as toast from './toast'
 import closeIcon from '../icon/close'
-import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 // globals
 // =
