@@ -123,23 +123,9 @@ function renderRow (row, i) {
     return renderRowGrid(row, i)
   } else if (currentRenderingMode === 'expanded') {
     return renderRowExpanded(row, i)
-  } else if (row.isEditing) {
-    return renderRowEditing(row, i)
   } else {
     return renderRowDefault(row, i)
   }
-}
-
-function renderRowEditing (row, i) {
-  return yo`
-  <li class="ll-row editing ll-link bookmarks__row bookmarks__row--editing" data-row=${i}>
-    <div class="link">
-      <div class="inputs bookmarks__inputs">
-        <input name="title" value=${row.editTitle} onkeyup=${onKeyUp(i)} />
-        <input name="url" value=${row.editHref} onkeyup=${onKeyUp(i)} />
-      </div>
-    </div>
-  </li>`
 }
 
 function renderRowDefault (row, i) {
@@ -502,42 +488,6 @@ function onClickEdit (i) {
     } catch (e) {
       // ignore
       console.log(e)
-    }
-  }
-}
-
-function onKeyUp (i) {
-  return async e => {
-    if (e.keyCode == 13) {
-      // enter-key
-      // capture the old url
-      var oldUrl = bookmarks[i].href
-
-      // update values
-      bookmarks[i].title = document.querySelector(`[data-row="${i}"] [name="title"]`).value
-      bookmarks[i].href = document.querySelector(`[data-row="${i}"] [name="url"]`).value
-
-      // exit edit-mode
-      bookmarks[i].isEditing = false
-      renderToPage()
-
-      // save in backend
-      var b = bookmarks[i]
-      if (b.private) {
-        await beaker.bookmarks.bookmarkPrivate(oldUrl, {title: b.title, url: b.url})
-      } else {
-        await beaker.bookmarks.bookmarkPublic(oldUrl, {title: b.title, url: b.url})
-      }
-    } else if (e.keyCode == 27) {
-      // escape-key
-      // exit edit-mode
-      bookmarks[i].isEditing = false
-      renderToPage()
-    } else {
-      // all else
-      // update edit values
-      if (e.target.name == 'title') { bookmarks[i].editTitle = e.target.value }
-      if (e.target.name == 'url') { bookmarks[i].editHref = e.target.value }
     }
   }
 }
