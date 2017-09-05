@@ -110,7 +110,6 @@ function sortBookmarks () {
   } else if (currentSort === 'alpha') {
     bookmarks.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
   }
-  console.log(bookmarks)
 }
 
 // rendering
