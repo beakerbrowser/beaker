@@ -232,44 +232,6 @@ export class BrowserMenuNavbarBtn {
     this.onUpdate(download)
   }
 
-  onPause (e, download) {
-    e.preventDefault()
-    e.stopPropagation()
-    beakerDownloads.pause(download.id)
-  }
-
-  onResume (e, download) {
-    e.preventDefault()
-    e.stopPropagation()
-    beakerDownloads.resume(download.id)
-  }
-
-  onCancel (e, download) {
-    e.preventDefault()
-    e.stopPropagation()
-    beakerDownloads.cancel(download.id)
-  }
-
-  onShow (e, download) {
-    e.preventDefault()
-    e.stopPropagation()
-    beakerDownloads.showInFolder(download.id)
-      .catch(err => {
-        download.fileNotFound = true
-        this.updateActives()
-      })
-  }
-
-  onOpen (e, download) {
-    e.preventDefault()
-    e.stopPropagation()
-    beakerDownloads.open(download.id)
-      .catch(err => {
-        download.fileNotFound = true
-        this.updateActives()
-      })
-  }
-
   onFindInPage (e) {
     e.preventDefault()
     e.stopPropagation()
