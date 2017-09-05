@@ -36,13 +36,47 @@
     }
   }
 
+  .title {
+    font-size: .85rem;
+    font-weight: 500;
+  }
+
   .body {
     padding: 12px;
   }
 
-  .title {
-    font-size: .85rem;
-    font-weight: 500;
+  textarea,
+  label,
+  input {
+    display: block;
+    width: 100%;
+  }
+
+  label {
+    margin-bottom: 3px;
+    font-size: 0.75rem;
+    color: fadeout(@color-text, 10%);
+  }
+
+  textarea,
+  input {
+    margin-bottom: 10px;
+  }
+
+  textarea {
+    height: 50px;
+    padding-top: 3px;
+  }
+
+  .actions {
+    display: flex;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+
+    .primary {
+      margin-left: auto;
+    }
   }
 }
 
@@ -106,52 +140,6 @@
 
     .btns {
       text-align: right;
-    }
-  }
-}
-
-#add-pinned-bookmark-popup {
-
-  .popup-inner {
-
-    .head {
-
-      .x {
-        position: absolute;
-        top: 0;
-        right: 0;
-
-        &, * {
-          cursor: pointer;
-        }
-      }
-    }
-
-    label,
-    input {
-      display: block;
-    }
-
-    label {
-      margin-bottom: 3px;
-      font-size: 0.75rem;
-      color: fadeout(@color-text, 10%);
-    }
-
-    input {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-
-    .actions {
-      display: flex;
-      margin-top: 15px;
-      padding-top: 10px;
-      border-top: 1px solid #eee;
-
-      .primary {
-        margin-left: auto;
-      }
     }
   }
 }
