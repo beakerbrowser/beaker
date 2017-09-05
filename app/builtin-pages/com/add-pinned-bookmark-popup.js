@@ -19,9 +19,9 @@ export function render (url) {
         <div class="head">
           <span class="title">Add a pinned bookmark</span>
 
-          <span title="Cancel" onclick=${destroy} class="close-btn square">
+          <button title="Cancel" onclick=${destroy} class="close-btn square">
             ${closeIcon()}
-          </span>
+          </button>
         </div>
 
         <div class="body">
