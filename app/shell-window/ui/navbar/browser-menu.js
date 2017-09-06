@@ -28,9 +28,9 @@ export class BrowserMenuNavbarBtn {
     this.downloads = []
     this.sumProgress = null // null means no active downloads
     this.isDropdownOpen = false
-    this.shouldPersistProgressBar = false
+    this.shouldPersistDownloadsIndicator = false
 
-    // fetch current
+    // fetch current downloads
     beakerDownloads.getDownloads().then(ds => {
       this.downloads = ds
       this.updateActives()
@@ -52,10 +52,11 @@ export class BrowserMenuNavbarBtn {
 
     // render the progress bar if downloading anything
     var progressEl = ''
-
-    if ((progressingDownloads.length > 0 || this.shouldPersistProgressBar) && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
+    if (progressingDownloads.length > 0 && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
       progressEl = yo`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
     }
+
+    var downloadsIndicator = ''
 
     // render the dropdown if open
     var dropdownEl = ''
@@ -109,9 +110,10 @@ export class BrowserMenuNavbarBtn {
                 <span class="label">Beaker Filesystem</span>
               </div>
 
-              <div class="menu-item downloads" style=${progressEl ? "height: 41px" : ''} onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
+              <div class="menu-item downloads" style=${progressEl ? "height: 41px" : ''} onclick=${e => this.onClickDownloads(e)}>
                 <i class="fa fa-download"></i>
                 <span class="label">Downloads</span>
+                ${this.shouldPersistDownloadsIndicator ? yo`<i class="fa fa-circle"></i>` : ''}
                 ${progressEl}
               </div>
             </div>
@@ -190,7 +192,6 @@ export class BrowserMenuNavbarBtn {
 
   onClickBtn (e) {
     this.isDropdownOpen = !this.isDropdownOpen
-    this.shouldPersistProgressBar = false // stop persisting if we were, the user clicked
     this.updateActives()
   }
 
@@ -201,6 +202,11 @@ export class BrowserMenuNavbarBtn {
       this.isDropdownOpen = false
       this.updateActives()
     }
+  }
+
+  onClickDownloads (e) {
+    this.shouldPersistDownloadsIndicator = false
+    this.onOpenPage(e, 'beaker://downloads')
   }
 
   onNewDownload () {
@@ -227,7 +233,7 @@ export class BrowserMenuNavbarBtn {
   }
 
   onDone (download) {
-    this.shouldPersistProgressBar = true // keep progress bar up so the user notices
+    this.shouldPersistDownloadsIndicator = true
     this.doAnimation()
     this.onUpdate(download)
   }
