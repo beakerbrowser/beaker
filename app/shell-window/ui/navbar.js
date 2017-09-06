@@ -281,7 +281,6 @@ function render (id, page) {
       <div class="autocomplete-dropdown" onclick=${onClickAutocompleteDropdown}>
         ${autocompleteResults.map((r, i) => {
           // content
-          var iconCls = 'icon icon-' + ((r.search) ? 'search' : 'window')
           var contentColumn
           if (r.search) { contentColumn = yo`<span class="result-search">${r.search}</span>` } else {
             contentColumn = yo`<span class="result-url"></span>`
@@ -304,7 +303,10 @@ function render (id, page) {
 
           // result row
           return yo`<div class=${rowCls} data-result-index=${i}>
-            <span class=${iconCls}></span>
+            ${r.search
+              ? yo`<i class="icon icon-search"></i>`
+              : yo`<img class="icon" src=${'beaker-favicon:' + r.url}/>`
+            }
             ${contentColumn}
             ${titleColumn}
           </div>`
