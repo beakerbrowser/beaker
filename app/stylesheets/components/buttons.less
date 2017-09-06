@@ -43,17 +43,17 @@
     padding: 0 12px;
   }
 
-  &.depressed {
-    background: #ddd;
-    box-shadow: inset 0 0 5px shade(#eaeaea, 10%);
+  &.pressed {
+    box-shadow: inset 0px 0 5px rgba(0,0,0,0.1);
+    background: linear-gradient(to top, #ddd, #ccc);
 
     &:hover {
-      background: #ddd;
+      box-shadow: inset 0px 0 2px rgba(0,0,0,0.1);
+      background: linear-gradient(to top, #ddd, #ccc);
       cursor: default;
     }
   }
 
-  &.pressed,
   &:hover {
     text-decoration: none;
     background: @background-button--active;

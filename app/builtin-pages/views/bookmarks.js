@@ -353,25 +353,25 @@ function renderToPage () {
               </div>
 
               <div class="sort-controls btn-bar">
-                <span class="btn ${currentSort === 'alpha' ? 'depressed' : ''}" title="Sort by name" onclick=${() => onUpdateSort('alpha')}>
+                <span class="btn ${currentSort === 'alpha' ? 'pressed' : ''}" title="Sort by name" onclick=${() => onUpdateSort('alpha')}>
                   ${renderListIcon()}
                 </span>
 
-                <span class="btn ${currentSort === 'recent' ? 'depressed' : ''}" title="Sort by latest" onclick=${() => onUpdateSort('recent')}>
+                <span class="btn ${currentSort === 'recent' ? 'pressed' : ''}" title="Sort by latest" onclick=${() => onUpdateSort('recent')}>
                   ${renderHistoryIcon()}
                 </span>
               </div>
 
               <div class="view-controls btn-bar">
-                <span class="btn ${currentRenderingMode === 'compact' ? 'depressed' : ''}" title="List view" onclick=${() => onUpdateViewRendering('compact')}>
+                <span class="btn ${currentRenderingMode === 'compact' ? 'pressed' : ''}" title="List view" onclick=${() => onUpdateViewRendering('compact')}>
                   ${renderListIcon()}
                 </span>
 
-                <span class="btn ${currentRenderingMode === 'grid' ? 'depressed' : ''}" title="Grid view" onclick=${() => onUpdateViewRendering('grid')}>
+                <span class="btn ${currentRenderingMode === 'grid' ? 'pressed' : ''}" title="Grid view" onclick=${() => onUpdateViewRendering('grid')}>
                   ${renderGridIcon()}
                 </span>
 
-                <span class="btn ${currentRenderingMode === 'expanded' ? 'depressed' : ''}"  title="Expanded list view" onclick=${() => onUpdateViewRendering('expanded')}>
+                <span class="btn ${currentRenderingMode === 'expanded' ? 'pressed' : ''}"  title="Expanded list view" onclick=${() => onUpdateViewRendering('expanded')}>
                   ${renderListExpandedIcon()}
                 </span>
               </div>
