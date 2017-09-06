@@ -365,12 +365,12 @@
     }
 
     .result-url {
-      color: @blue;
+      color: darken(@blue, 7%);
 
       // set a width limit
       &:extend(.overflow-ellipsis);
       display: inline-block;
-      max-width: 40%;
+      max-width: 35%;
       vertical-align: top;
     }
 
@@ -386,7 +386,11 @@
     }
 
     &.selected {
-      background: lightgoldenrodyellow;
+      background: #dbebff;
+
+      .result-title {
+        color: @color-text;
+      }
     }
 
     &:hover {
