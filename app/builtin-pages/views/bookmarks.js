@@ -131,9 +131,12 @@ function renderRow (row, i) {
 }
 
 function renderRowCompact (row, i) {
+  const isOwner = row.private || row._origin === userProfile._origin
+
   return yo`
-    <li class="ll-row bookmarks__row" data-row=${i}>
+    <li class="ll-row bookmarks__row compact ${row.private ? 'private' : 'public'}" data-row=${i}>
       <a class="link bookmark__link" href=${row.href} title=${row.title} />
+        ${!isOwner ? yo`<a class="avatar-container" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : ''}
         <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
         <span class="title bookmark__title">
           ${row.title.startsWith('dat://')

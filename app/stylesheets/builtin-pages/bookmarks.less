@@ -104,6 +104,31 @@
         line-height: 1.45;
       }
 
+      &.compact {
+        padding-left: 20px;
+
+        .avatar-container {
+          position: absolute;
+          left: 5px;
+          top: 2px;
+          overflow: hidden;
+
+          &:hover {
+
+            .avatar {
+              border-color: @color-link;
+            }
+          }
+
+          .avatar {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #fafafa;
+            border-radius: 50%;
+          }
+        }
+      }
+
       &.grid,
       &.expanded {
         border: 1px solid #ddd;
