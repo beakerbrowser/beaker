@@ -36,6 +36,11 @@ export class BrowserMenuNavbarBtn {
       this.updateActives()
     })
 
+    beakerBrowser.getInfo().then(info => {
+      this.browserInfo = info
+      this.updateActives()
+    })
+
     // wire up events
     var dlEvents = emitStream(beakerDownloads.eventsStream())
     dlEvents.on('new-download', this.onNewDownload.bind(this))
@@ -58,12 +63,27 @@ export class BrowserMenuNavbarBtn {
 
     var downloadsIndicator = ''
 
+    // auto-updater
+    var autoUpdaterEl = ''
+    if (this.browserInfo && this.browserInfo.updater.isBrowserUpdatesSupported && this.browserInfo.updater.state === 'downloaded') {
+      autoUpdaterEl = yo`
+        <div class="section auto-updater">
+          <div class="menu-item auto-updater" onclick=${e => this.onClickRestart()}>
+            <i class="fa fa-arrow-circle-up"></i>
+            <span class="label">Restart to update Beaker</span>
+          </div>
+        </div>
+      `
+    }
+
     // render the dropdown if open
     var dropdownEl = ''
     if (this.isDropdownOpen) {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle">
+            ${autoUpdaterEl}
+
             <div class="section">
               <div class="menu-item" onclick=${e => this.onOpenNewWindow()}>
                 <i class="fa fa-window-maximize"></i>
@@ -268,5 +288,9 @@ export class BrowserMenuNavbarBtn {
     pages.setActive(pages.create(url))
     this.isDropdownOpen = false
     this.updateActives()
+  }
+
+  onClickRestart () {
+    beakerBrowser.restartBrowser()
   }
 }

@@ -100,6 +100,11 @@
   .section {
     border-bottom: 1px solid #eee;
     padding: 5px 0;
+
+    &.auto-updater {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
   }
 
   .menu-item {
@@ -108,6 +113,21 @@
     height: 25px;
     padding: 0 15px 0 10px;
     cursor: default;
+
+    &.auto-updater {
+      height: 35px;
+      background: #DCEDC8;
+      border-top: 1px solid #c5e1a5;
+      border-bottom: 1px solid #c5e1a5;
+
+      i {
+        color: #7CB342;
+      }
+
+      &:hover {
+        background: darken(#DCEDC8, 5%);
+      }
+    }
 
     * {
       cursor: default;
@@ -174,7 +194,7 @@
 
   .dropdown-items {
     border-radius: 4px;
-    width: 225px;
+    width: 230px;
   }
 }
 
