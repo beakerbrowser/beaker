@@ -123,17 +123,29 @@ function renderRow (row, i) {
     return renderRowGrid(row, i)
   } else if (currentRenderingMode === 'expanded') {
     return renderRowExpanded(row, i)
+  } else if (currentRenderingMode === 'compact') {
+    return renderRowCompact(row, i)
   } else {
-    return renderRowDefault(row, i)
+    return ''
   }
 }
 
-function renderRowDefault (row, i) {
-  if (row.private || row._origin === userProfile._origin) {
-    return renderRowEditable(row, i)
-  } else {
-    return renderRowUneditable(row, i)
-  }
+function renderRowCompact (row, i) {
+  return yo`
+    <li class="ll-row bookmarks__row" data-row=${i}>
+      <a class="link bookmark__link" href=${row.href} title=${row.title} />
+        <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
+        <span class="title bookmark__title">
+          ${row.title.startsWith('dat://')
+            ? yo`<em>Untitled</em>`
+            : yo`${row.title}`
+          }
+        </span>
+        <span class="url bookmark__url">${getHostname(row.href)}</span>
+      </a>
+
+      ${renderActions(row, i)}
+    </li>`
 }
 
 function renderRowExpanded (row, i) {
@@ -164,17 +176,7 @@ function renderRowExpanded (row, i) {
         </div>
       </a>
 
-      <div class="actions bookmark__actions">
-        <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
-          ${renderPencilIcon()}
-        </div>
-        <div class="action" onclick=${onClickDelete(i)} title="Delete bookmark">
-          ${renderTrashIcon()}
-        </div>
-        <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)}>
-          ${renderPinIcon()}
-        </div>
-      </div>
+      ${renderActions(row, i)}
     </li>`
 }
 
@@ -206,61 +208,26 @@ function renderRowGrid (row, i) {
         </div>
       </a>
 
-      <div class="actions bookmark__actions">
-        <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
-          ${renderPencilIcon()}
-        </div>
-        <div class="action" onclick=${onClickDelete(i)} title="Delete bookmark">
-          ${renderTrashIcon()}
-        </div>
-        <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)}>
-          ${renderPinIcon()}
-        </div>
-      </div>
+      ${renderActions(row, i)}
     </li>`
 }
 
-function renderRowEditable (row, i) {
-  return yo`
-    <li class="ll-row bookmarks__row" data-row=${i}>
-      <a class="link bookmark__link" href=${row.href} title=${row.title} />
-        <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
-        <span class="title bookmark__title">
-          ${row.title.startsWith('dat://')
-            ? yo`<em>Untitled</em>`
-            : yo`${row.title}`
-          }
-        </span>
-        <span class="url bookmark__url">${getHostname(row.href)}</span>
-      </a>
-      <div class="actions bookmark__actions">
-        <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
-          ${renderPencilIcon()}
-        </div>
-        <div class="action" onclick=${onClickDelete(i)} title="Delete bookmark">
-          ${renderTrashIcon()}
-        </div>
-        <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)}>
-          ${renderPinIcon()}
-        </div>
-      </div>
-    </li>`
-}
+function renderActions (row, i) {
+  const isOwner = row.private || row._origin === userProfile._origin
 
-function renderRowUneditable (row, i) {
+  if (!isOwner) return ''
   return yo`
-    <li class="ll-row bookmarks__row" data-row=${i}>
-      <a class="link bookmark__link" href=${row.href} title=${row.title} />
-        <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
-        <span class="title bookmark__title">
-          ${row.title.startsWith('dat://')
-            ? yo`<em>Untitled</em>`
-            : yo`${row.title}`
-          }
-        </span>
-        <span class="url bookmark__url">${getHostname(row.href)}</span>
-      </a>
-    </li>`
+    <div class="actions bookmark__actions">
+      <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
+        ${renderPencilIcon()}
+      </div>
+      <div class="action" onclick=${onClickDelete(i)} title="Delete bookmark">
+        ${renderTrashIcon()}
+      </div>
+      <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)}>
+        ${renderPinIcon()}
+      </div>
+    </div>`
 }
 
 function renderBookmarksListToPage () {
