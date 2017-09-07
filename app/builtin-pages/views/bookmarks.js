@@ -140,16 +140,21 @@ function renderRowExpanded (row, i) {
   return yo`
     <li class="ll-row bookmarks__row expanded" data-row=${i}>
       <a class="link bookmark__link" href=${row.href} title=${row.title} />
-        <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
-          <span class="title bookmark__title">
-          ${row.title.startsWith('dat://')
-            ? yo`<em>Untitled</em>`
-            : yo`${row.title}`
-          }
-          <span class="url bookmark__url">${getHostname(row.href)}</span>
+        <span class="header">
+          <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
+
+          <div class="info">
+            <span class="title bookmark__title">
+              ${row.title.startsWith('dat://')
+                ? yo`<em>Untitled</em>`
+                : yo`${row.title}`
+              }
+            </span>
+            <span class="url bookmark__url">${getHostname(row.href)}</span>
+          </div>
         </span>
 
-        <div class="notes">${row.notes || ''}</div>
+        <div class="notes ${row.notes ? '' : 'empty'}">${row.notes || ''}</div>
 
         <div class="tags ${row.tags.length ? '' : 'empty'}">
           ${row.tags.map(t => {
