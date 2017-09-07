@@ -34,12 +34,12 @@ export default {
     return status
   },
 
-  async create ({title, description} = {}) {
-    return datLibrary.createNewArchive({title, description})
+  async create ({title, type, description} = {}) {
+    return datLibrary.createNewArchive({title, type, description})
   },
 
-  async fork (url, {title, description} = {}) {
-    return datLibrary.forkArchive(url, {title, description})
+  async fork (url, {title, type, description} = {}) {
+    return datLibrary.forkArchive(url, {title, type, description})
   },
 
   async update (url, manifestInfo, userSettings) {
@@ -59,14 +59,8 @@ export default {
 
     // update manifest file
     if (manifestInfo) {
-      var archiveInfo = await archivesDb.getMeta(key)
-      var {title, description} = manifestInfo
-      title = typeof title !== 'undefined' ? title : archiveInfo.title
-      description = typeof description !== 'undefined' ? description : archiveInfo.description
-      if (title !== archiveInfo.title || description !== archiveInfo.description) {
-        await pda.updateManifest(archive, {title, description})
-        datLibrary.pullLatestArchiveMeta(archive)
-      }
+      await pda.updateManifest(archive, manifestInfo)
+      datLibrary.pullLatestArchiveMeta(archive)
     }
 
     // update settings

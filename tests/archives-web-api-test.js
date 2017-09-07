@@ -34,7 +34,7 @@ test.before(async t => {
 
   // create a owned archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    beaker.archives.create({type: ['foo', 'bar']}).then(done,done)
   })
   createdDatURL = res.value.url
   createdDatKey = createdDatURL.slice('dat://'.length)
@@ -128,6 +128,21 @@ test('library.list', async t => {
     window.beaker.archives.list({ isOwner: false }).then(done,done)
   })
   t.deepEqual(res.value.length, 1)
+
+  // list by type
+  var res = await app.client.executeAsync((done) => {
+    window.beaker.archives.list({ type: 'foo' }).then(done,done)
+  })
+  t.deepEqual(res.value.length, 1)
+  var res = await app.client.executeAsync((done) => {
+    window.beaker.archives.list({ type: 'bar' }).then(done,done)
+  })
+  t.deepEqual(res.value.length, 1)
+  var res = await app.client.executeAsync((done) => {
+    window.beaker.archives.list({ type: 'baz' }).then(done,done)
+  })
+  t.deepEqual(res.value.length, 0)
+
 })
 
 test('library.get', async t => {

@@ -16,6 +16,7 @@ var fsRoot = new FSVirtualRoot()
 
 setup()
 async function setup () {
+  await fsRoot.readData()
   console.log(fsRoot)
   update()
 }

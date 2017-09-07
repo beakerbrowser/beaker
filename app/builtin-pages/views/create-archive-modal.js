@@ -6,6 +6,7 @@ import {Archive} from 'builtin-pages-lib'
 // state
 var isEditing = false
 var archive
+var type
 var networked = true
 
 // form variables
@@ -28,6 +29,7 @@ window.setup = async function (opts) {
     var archiveInfo = archive ? archive.info : {userSettings: {}}
     title = opts.title || archiveInfo.title || ''
     description = opts.description || archiveInfo.description || ''
+    type = opts.type
     networked = ('networked' in opts) ? opts.networked : true
     render()
   } catch (e) {
@@ -67,10 +69,10 @@ async function onSubmit (e) {
   e.preventDefault()
   try {
     if (isEditing) {
-      await beaker.archives.update(archive.url, {title, description}, {networked})
+      await beaker.archives.update(archive.url, {title, description, type}, {networked})
       beakerBrowser.closeModal(null, true)
     } else {
-      var newArchive = await DatArchive.create({title, description, networked})
+      var newArchive = await DatArchive.create({title, description, type, networked})
       beakerBrowser.closeModal(null, {url: newArchive.url})
     }
   } catch (e) {

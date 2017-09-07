@@ -40,6 +40,7 @@ export async function deleteArchive (key) {
   await Promise.all([
     db.run(`DELETE FROM archives WHERE key=?`, key),
     db.run(`DELETE FROM archives_meta WHERE key=?`, key),
+    db.run(`DELETE FROM archives_meta_type WHERE key=?`, key),
     jetpack.removeAsync(getArchiveMetaPath(key))
   ])
 }
@@ -54,6 +55,7 @@ export const removeListener = events.removeListener.bind(events)
 // get an array of saved archives
 // - optional `query` keys:
 //   - `isSaved`: bool
+//   - `isNetworked`: bool
 //   - `isOwner`: bool, does beaker have the secret key?
 export async function query (profileId, query) {
   query = query || {}
@@ -63,25 +65,41 @@ export async function query (profileId, query) {
   var WHERE = []
   if (query.isOwner === true) WHERE.push('archives_meta.isOwner = 1')
   if (query.isOwner === false) WHERE.push('archives_meta.isOwner = 0')
+  if (query.isNetworked === true) WHERE.push('archives.networked = 1')
+  if (query.isNetworked === false) WHERE.push('archives.networked = 0')
   if ('isSaved' in query) {
     WHERE.push('archives.profileId = ?')
     values.push(profileId)
     if (query.isSaved) WHERE.push('archives.isSaved = 1')
     if (!query.isSaved) WHERE.push('archives.isSaved = 0')
   }
+  if ('type' in query) {
+    WHERE.push('archives_meta_type.type = ?')
+    values.push(query.type)
+  }
   if (WHERE.length) WHERE = `WHERE ${WHERE.join(' AND ')}`
   else WHERE = ''
+
   var archives = await db.all(`
-    SELECT archives_meta.*, archives.isSaved, archives.networked, archives.autoDownload, archives.autoUpload
+    SELECT
+        archives_meta.*,
+        GROUP_CONCAT(archives_meta_type.type) AS type,
+        archives.isSaved,
+        archives.networked,
+        archives.autoDownload,
+        archives.autoUpload
       FROM archives_meta
-      LEFT JOIN archives ON archives_meta.key = archives.key
+      LEFT JOIN archives ON archives.key = archives_meta.key
+      LEFT JOIN archives_meta_type ON archives_meta_type.key = archives_meta.key
       ${WHERE}
+      GROUP BY archives_meta.key
   `, values)
 
   // massage the output
   archives.forEach(archive => {
     archive.url = `dat://${archive.key}`
     archive.isOwner = archive.isOwner != 0
+    archive.type = archive.type ? archive.type.split(',') : []
     archive.userSettings = {
       isSaved: archive.isSaved != 0,
       networked: archive.networked != 0,
@@ -223,18 +241,22 @@ export async function getMeta (key) {
     throw new InvalidArchiveKeyError()
   }
 
-  try {
-    // fetch
-    var meta = await db.get(`
-      SELECT * FROM archives_meta WHERE key = ?
-    `, [key])
+  // fetch
+  var meta = await db.get(`
+    SELECT
+        archives_meta.*,
+        GROUP_CONCAT(archives_meta_type.type) AS type
+      FROM archives_meta
+      LEFT JOIN archives_meta_type ON archives_meta_type.key = archives_meta.key      
+      WHERE archives_meta.key = ?
+      GROUP BY archives_meta.key
+  `, [key])
+  if (!meta) return {}
 
-    // massage some values
-    meta.isOwner = !!meta.isOwner
-    return meta
-  } catch (e) {
-    return {}
-  }
+  // massage some values
+  meta.isOwner = !!meta.isOwner
+  meta.type = meta.type ? meta.type.split(',') : []
+  return meta
 }
 
 // write an archive's metadata
@@ -248,15 +270,30 @@ export async function setMeta (key, value = {}) {
   }
 
   // extract the desired values
-  var {title, description, mtime, isOwner} = value
-  isOwner = isOwner ? 1 : 0
+  var {title, description, type, mtime, isOwner} = value
+  title = typeof title === 'string' ? title : ''
+  description = typeof description === 'string' ? description : ''
+  if (typeof type === 'string') type = type.split(' ')
+  else if (Array.isArray(type)) type = type.filter(v => v && typeof v === 'string')
+  isOwner = flag(isOwner)
 
   // write
-  await db.run(`
-    INSERT OR REPLACE INTO
-      archives_meta (key, title, description, mtime, isOwner)
-      VALUES        (?,   ?,     ?,           ?,     ?)
-  `, [key, title, description, mtime, isOwner])
+  var release = await lock('archives-db:setMeta')
+  try {
+    await db.run(`
+      INSERT OR REPLACE INTO
+        archives_meta (key, title, description, mtime, isOwner)
+        VALUES        (?,   ?,     ?,           ?,     ?)
+    `, [key, title, description, mtime, isOwner])
+    db.run(`DELETE FROM archives_meta_type WHERE key=?`, key)
+    if (type) {
+      await Promise.all(type.map(t => (
+        db.run(`INSERT INTO archives_meta_type (key, type) VALUES (?, ?)`, [key, t])
+      )))
+    }
+  } finally {
+    release()
+  }
   events.emit('update:archive-meta', key, value)
 }
 

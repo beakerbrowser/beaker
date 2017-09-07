@@ -40,7 +40,7 @@ const to = (opts) =>
     : DEFAULT_DAT_API_TIMEOUT
 
 export default {
-  async createArchive ({title, description, networked, prompt} = {}) {
+  async createArchive ({title, description, type, networked, prompt} = {}) {
     var newArchiveUrl
 
     // check the quota for permission
@@ -56,12 +56,12 @@ export default {
       // await assertSenderIsFocused(this.sender)
 
       // run the creation modal
-      let res = await showModal(win, 'create-archive', {title, description, networked})
+      let res = await showModal(win, 'create-archive', {title, description, type, networked})
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {
       // no modal
-      newArchiveUrl = await datLibrary.createNewArchive({title, description}, {networked})
+      newArchiveUrl = await datLibrary.createNewArchive({title, description, type}, {networked})
     }
 
     // grant write permissions to the creating app
@@ -70,7 +70,7 @@ export default {
     return newArchiveUrl
   },
 
-  async forkArchive (url, {title, description, networked, prompt} = {}) {
+  async forkArchive (url, {title, description, type, networked, prompt} = {}) {
     var newArchiveUrl
 
     // check the quota for permission
@@ -89,12 +89,12 @@ export default {
       let key1 = await lookupUrlDatKey(url)
       let key2 = await lookupUrlDatKey(this.sender.getURL())
       let isSelfFork = key1 === key2
-      let res = await showModal(win, 'fork-archive', {url, title, description, networked, isSelfFork})
+      let res = await showModal(win, 'fork-archive', {url, title, description, type, networked, isSelfFork})
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {
       // no modal
-      newArchiveUrl = await datLibrary.forkArchive(url, {title, description}, {networked})
+      newArchiveUrl = await datLibrary.forkArchive(url, {title, description, type}, {networked})
     }
 
     // grant write permissions to the creating app
@@ -140,7 +140,8 @@ export default {
 
         // manifest
         title: info.title,
-        description: info.description
+        description: info.description,
+        type: info.type
       }
     })
   },
@@ -152,7 +153,7 @@ export default {
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
     await assertWritePermission(archive, this.sender)
     await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(JSON.stringify(settings), opts.encoding))
-    if ('title' in settings || 'description' in settings) {
+    if ('title' in settings || 'description' in settings || 'type' in settings) {
       await pda.updateManifest(archive, settings)
       await datLibrary.pullLatestArchiveMeta(archive)
     }

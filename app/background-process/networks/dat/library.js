@@ -119,13 +119,13 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
       updateSizeTracking(archive)
     ])
     manifest = manifest || {}
-    var {title, description} = manifest
+    var {title, description, type} = manifest
     var isOwner = archive.writable
     var size = archive.size || 0
     var mtime = updateMTime ? Date.now() : oldMeta.mtime
 
     // write the record
-    var details = {title, description, mtime, size, isOwner}
+    var details = {title, description, type, mtime, size, isOwner}
     debug('Writing meta', details)
     await archivesDb.setMeta(key, details)
 
@@ -181,7 +181,8 @@ export async function forkArchive (srcArchiveUrl, manifest = {}, settings = fals
   // override any manifest data
   var dstManifest = {
     title: (manifest.title) ? manifest.title : srcManifest.title,
-    description: (manifest.description) ? manifest.description : srcManifest.description
+    description: (manifest.description) ? manifest.description : srcManifest.description,
+    type: (manifest.type) ? manifest.type : srcManifest.type
   }
 
   // create the new archive

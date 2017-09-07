@@ -203,7 +203,7 @@ test('archive.stat', async t => {
 test('DatArchive.create prompt=false', async t => {
   // create
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({ title: 'The Title', description: 'The Description' }).then(done,done)
+    DatArchive.create({ title: 'The Title', description: 'The Description', type: 'website' }).then(done,done)
   })
   var datUrl = res.value.url
   t.truthy(datUrl.startsWith('dat://'))
@@ -222,6 +222,7 @@ test('DatArchive.create prompt=false', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
+  t.deepEqual(manifest.type, ['website'])
 
   // check the settings
   await app.client.windowByIndex(0)
@@ -238,7 +239,7 @@ test('DatArchive.create prompt=true rejection', async t => {
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: true }).then(
+    DatArchive.create({ title: 'The Title', description: 'The Description', type: 'website', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -263,7 +264,7 @@ test('DatArchive.create prompt=true', async t => {
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: true }).then(
+    DatArchive.create({ title: 'The Title', description: 'The Description', type: 'website', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -298,6 +299,7 @@ test('DatArchive.create prompt=true', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
+  t.deepEqual(manifest.type, ['website'])
 
   // check the settings
   await app.client.windowByIndex(0)
@@ -312,7 +314,7 @@ test('DatArchive.create prompt=true', async t => {
 test('DatArchive.fork prompt=false', async t => {
   // start the prompt
   var res = await app.client.executeAsync((url, done) => {
-    DatArchive.fork(url, { description: 'The Description 2' }).then(done, done)
+    DatArchive.fork(url, { description: 'The Description 2', type: 'webshite' }).then(done, done)
   }, createdDatURL)
   var forkedDatURL = res.value.url
   t.truthy(forkedDatURL.startsWith('dat://'))
@@ -330,6 +332,7 @@ test('DatArchive.fork prompt=false', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description 2')
+  t.deepEqual(manifest.type, ['webshite'])
 })
 
 test('DatArchive.fork prompt=true', async t => {
@@ -337,7 +340,7 @@ test('DatArchive.fork prompt=true', async t => {
   await app.client.execute((url) => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.fork(url, { description: 'The Description 2', prompt: true }).then(
+    DatArchive.fork(url, { description: 'The Description 2', type: 'webshite', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -371,6 +374,7 @@ test('DatArchive.fork prompt=true', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description 2')
+  t.deepEqual(manifest.type, ['webshite'])
 })
 
 test('DatArchive.unlink', async t => {
@@ -538,7 +542,11 @@ test('archive.configure', async t => {
   // write the manifest
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.configure({title: 'The Changed Title', description: 'The Changed Description'}).then(done, done)
+    archive.configure({
+      title: 'The Changed Title',
+      description: 'The Changed Description',
+      type: ['foo', 'bar']
+    }).then(done, done)
   }, createdDatURL)
   t.falsy(res.value)
 
@@ -549,6 +557,7 @@ test('archive.configure', async t => {
   }, createdDatURL)
   t.deepEqual(res.value.title, 'The Changed Title')
   t.deepEqual(res.value.description, 'The Changed Description')
+  t.deepEqual(res.value.type, ['foo', 'bar'])
 })
 
 
@@ -1155,6 +1164,7 @@ test('archive.getInfo', async t => {
   var info = res.value
   t.deepEqual(info.title, 'The Changed Title')
   t.deepEqual(info.description, 'The Changed Description')
+  t.deepEqual(info.type, ['foo', 'bar'])
 })
 
 test('archive.download', async t => {
