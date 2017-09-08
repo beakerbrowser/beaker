@@ -134,9 +134,9 @@ function renderRowCompact (row, i) {
   const isOwner = row.private || row._origin === userProfile._origin
 
   return yo`
-    <li class="ll-row bookmarks__row compact ${row.private ? 'private' : 'public'}" data-row=${i}>
+    <li class="ll-row bookmarks__row compact ${row.private ? 'private' : 'public'} ${isOwner ? 'is-owner' : ''}" data-row=${i}>
       <a class="link bookmark__link" href=${row.href} title=${row.title} />
-        ${!isOwner ? yo`<a class="avatar-container" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : ''}
+        ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : '' }
         <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
         <span class="title bookmark__title">
           ${row.title.startsWith('dat://')
@@ -144,7 +144,15 @@ function renderRowCompact (row, i) {
             : yo`${row.title}`
           }
         </span>
+
         <span class="url bookmark__url">${getHostname(row.href)}</span>
+
+        ${isOwner && !row.private ? yo`
+          <span>
+            <span class="separator">•</span>
+            ${renderGlobeIcon()}
+          </span>`
+          : ''}
       </a>
 
       ${renderActions(row, i)}

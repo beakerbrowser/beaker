@@ -116,8 +116,32 @@
       &.compact {
         padding-left: 20px;
 
-        .avatar-container {
-          position: absolute;
+        .separator {
+          color: rgba(0,0,0,.3);
+            margin: 0 3px;
+        }
+
+        .url {
+          margin: 0;
+        }
+
+        .icon {
+
+          &.globe {
+            width: 12px;
+            height: 12px;
+
+            #water {
+              fill: rgba(0,0,0,.3);
+            }
+
+            #earth {
+              fill: fadeout(#fff, 15%);
+            }
+          }
+        }
+
+        .row-modifier {
           left: 5px;
           width: 22px;
           height: 22px;
@@ -125,7 +149,6 @@
 
         .avatar-container {
           top: 2px;
-          overflow: hidden;
 
           &:hover {
 
@@ -137,8 +160,6 @@
           .avatar {
             width: 22px;
             height: 22px;
-            border: 2px solid #fafafa;
-            border-radius: 50%;
           }
         }
       }
