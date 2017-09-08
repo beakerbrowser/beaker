@@ -152,9 +152,13 @@ function renderRowCompact (row, i) {
 }
 
 function renderRowExpanded (row, i) {
+  const isOwner = row.private || row._origin === userProfile._origin
+
   return yo`
     <li class="ll-row bookmarks__row expanded" data-row=${i}>
       <a class="link bookmark__link" href=${row.href} title=${row.title} />
+        ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : '' }
+
         <span class="header">
           <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
 
@@ -184,9 +188,13 @@ function renderRowExpanded (row, i) {
 }
 
 function renderRowGrid (row, i) {
+  const isOwner = row.private || row._origin === userProfile._origin
+
   return yo`
     <li class="ll-row bookmarks__row grid" data-row=${i}>
       <a class="link bookmark__link" href=${row.href} title=${row.title} />
+        ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : '' }
+
         <span class="header">
           <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
 

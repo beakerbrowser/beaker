@@ -94,6 +94,15 @@
       max-width: 950px;
       width: 100%;
 
+      .row-modifier {
+        position: absolute;
+      }
+
+      .avatar {
+        border: 2px solid #fafafa;
+        border-radius: 50%;
+      }
+
       .link {
         width: 100%;
       }
@@ -110,6 +119,11 @@
         .avatar-container {
           position: absolute;
           left: 5px;
+          width: 22px;
+          height: 22px;
+        }
+
+        .avatar-container {
           top: 2px;
           overflow: hidden;
 
@@ -135,6 +149,16 @@
         border-radius: 2px;
         box-shadow: 0 1px 0 rgba(0,0,0,.15);
 
+        .row-modifier {
+          top: 22px;
+          left: 28px;
+        }
+
+        .avatar {
+          width: 20px;
+          height: 20px;
+        }
+
         .header {
           display: flex;
 
@@ -154,6 +178,7 @@
           height: 32px;
           flex-basis: 32px;
           margin-right: 10px;
+          margin-right: 13px;
         }
 
         .info {
@@ -196,7 +221,7 @@
         max-width: 600px;
         height: auto;
         min-height: 45px;
-        padding: 10px 15px;
+        padding: 10px;
         margin-bottom: 15px;
 
         .info {
