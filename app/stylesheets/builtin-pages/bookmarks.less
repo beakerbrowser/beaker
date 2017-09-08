@@ -152,13 +152,14 @@
           &:hover {
 
             .avatar {
-              border-color: @color-link;
+              transition: transform .1s ease-in-out;
+              transform: scale(1.1);
             }
           }
 
           .avatar {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
           }
         }
       }
@@ -172,6 +173,17 @@
         .row-modifier {
           top: 22px;
           left: 28px;
+        }
+
+        .avatar-container {
+
+          &:hover {
+
+            .avatar {
+              transition: transform .1s ease-in-out;
+              transform: scale(1.1);
+            }
+          }
         }
 
         .avatar {
