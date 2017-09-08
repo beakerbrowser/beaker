@@ -32,8 +32,8 @@ export function render (url) {
           </div>
 
           <div class="actions">
-            <button type="button" class="btn" onclick=${destroy} tabindex="2">Cancel</button>
-            <button type="submit" class="btn primary" tabindex="1">Save</button>
+            <button type="button" class="btn" onclick=${destroy}>Cancel</button>
+            <button type="submit" class="btn primary">Save</button>
           </div>
         </div>
       </form>
