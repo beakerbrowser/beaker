@@ -48,7 +48,7 @@ function rColumn (root, node, selectedPath, depth, opts = {}) {
   }
 
   if (node.isEmpty) {
-    return ''
+    return yo`<div class="column"></div>`
   }
 
   return yo`
