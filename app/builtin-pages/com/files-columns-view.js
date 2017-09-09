@@ -20,7 +20,7 @@ export default function render (root, opts = {}) {
   return rFilesColumnsView(root, [], opts)
 }
 
-function rFilesColumnsView (root, activePath, opts) {
+function rFilesColumnsView (root, selectedPath, opts) {
   if (!root) {
     return yo`<div class="files-columns-view"></div>`
   }
@@ -29,8 +29,8 @@ function rFilesColumnsView (root, activePath, opts) {
 
   return yo`
     <div class="files-columns-view ${root.isEmpty ? 'empty' : ''}">
-      ${rColumn(root, root, activePath, 0, opts)}
-      ${activePath.map((node, i) => rColumn(root, node, activePath, i+1, opts))}
+      ${rColumn(root, root, selectedPath, 0, opts)}
+      ${selectedPath.map((node, i) => rColumn(root, node, selectedPath, i+1, opts))}
     </div>
   `
 }
@@ -38,11 +38,11 @@ function rFilesColumnsView (root, activePath, opts) {
 // rendering
 // =
 
-function redraw (root, activePath, opts = {}) {
-  yo.update(document.querySelector('.files-columns-view'), rFilesColumnsView(root, activePath, opts))
+function redraw (root, selectedPath, opts = {}) {
+  yo.update(document.querySelector('.files-columns-view'), rFilesColumnsView(root, selectedPath, opts))
 }
 
-function rColumn (root, node, activePath, depth, opts = {}) {
+function rColumn (root, node, selectedPath, depth, opts = {}) {
   if (opts.filesListView && node.type === 'archive') {
     return renderFilesList(node, opts)
   }
@@ -55,13 +55,13 @@ function rColumn (root, node, activePath, depth, opts = {}) {
 
   return yo`
     <div class="column">
-      ${node.children.map(childNode => rNode(root, childNode, activePath, depth, opts))}
+      ${node.children.map(childNode => rNode(root, childNode, selectedPath, depth, opts))}
     </div>
   `
 }
 
-function rNode (root, node, activePath, depth, opts) {
-  const isActive = activePath.reduce((agg, activeNode) => agg || activeNode === node, false)
+function rNode (root, node, selectedPath, depth, opts) {
+  const isSelected = selectedPath.reduce((agg, activeNode) => agg || activeNode === node, false)
   let icon = ''
   switch (node.constructor.name) {
     case 'FSVirtualFolder_User':
@@ -86,9 +86,9 @@ function rNode (root, node, activePath, depth, opts) {
 
   return yo`
     <div
-      class="item ${node.type} ${isActive ? 'active' : ''}"
+      class="item ${node.type} ${isSelected ? 'selected' : ''}"
       title=${node.name}
-      onclick=${e => onClickNode(e, root, node, activePath, depth, opts)}>
+      onclick=${e => onClickNode(e, root, node, selectedPath, depth, opts)}>
       ${icon}
       <div class="name">${node.name}</div>
       ${node.size ? yo`<div class="size">${prettyBytes(node.size)}</div>` : ''}
@@ -101,12 +101,14 @@ function rNode (root, node, activePath, depth, opts) {
 // event handlers
 // =
 
-async function onClickNode (e, root, node, activePath, depth, opts = {}) {
-  // render
-  activePath.length = depth // truncate all nodes with equal or greater depth
-  activePath.push(node) // add (or readd) this node
+async function onClickNode (e, root, node, selectedPath, depth, opts = {}) {
+  // update state
+  selectedPath.length = depth // truncate all nodes with equal or greater depth
+  selectedPath.push(node) // add (or readd) this node
   await node.readData()
-  redraw(root, activePath, opts)
+
+  // render
+  redraw(root, selectedPath, opts)
 
   // scroll to the rightmost point
   const container = document.querySelector('.files-columns-view')

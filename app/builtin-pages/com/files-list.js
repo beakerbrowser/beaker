@@ -13,17 +13,17 @@ import renderFolderIcon from '../icon/folder-color'
 //  - hideDate: show the date on the files (bool)
 //  - baseUrl: override the base URL of file links (string)
 export default function render (root, opts = {}) {
-  return rFilesList(root, opts)
+  return rFilesList(root, [], opts)
 }
 
-function rFilesList (root, opts) {
+function rFilesList (root, selectedNode, opts) {
   if (!root) {
     return yo`<div class="files-list"></div>`
   }
 
   return yo`
     <div class="files-list ${root.isEmpty ? 'empty' : ''}">
-      ${rChildren(root, root.children, 0, opts)}
+      ${rChildren(root, root.children, selectedNode, 0, opts)}
     </div>
   `
 }
@@ -31,29 +31,30 @@ function rFilesList (root, opts) {
 // rendering
 // =
 
-function redraw (root, opts = {}) {
-  yo.update(document.querySelector('.files-list'), rFilesList(root, opts))
+function redraw (root, selectedNode, opts = {}) {
+  yo.update(document.querySelector('.files-list'), rFilesList(root, selectedNode, opts))
 }
 
-function rChildren (root, children, depth = 0, opts = {}) {
+function rChildren (root, children, selectedNode, depth, opts = {}) {
   if (children.length === 0 && depth === 0) {
     return yo`
       <div class="item empty"><em>No files</em></div>
     `
   }
 
-  return children.map(childNode => rNode(root, childNode, depth, opts))
+  return children.map(childNode => rNode(root, childNode, selectedNode, depth, opts))
 }
 
-function rNode (root, node, depth, opts) {
+function rNode (root, node, selectedNode, depth, opts) {
   if (node.isContainer) {
-    return rDirectory(root, node, depth, opts)
+    return rDirectory(root, node, selectedNode, depth, opts)
   } else {
-    return rFile(root, node, depth, opts)
+    return rFile(root, node, selectedNode, depth, opts)
   }
 }
 
-function rDirectory (root, node, depth, opts) {
+function rDirectory (root, node, selectedNode, depth, opts) {
+  const isSelected = node === selectedNode
   let children = ''
   const directoryPadding = 20 + (depth * 20)
   const caretPosition = directoryPadding - 15
@@ -61,19 +62,20 @@ function rDirectory (root, node, depth, opts) {
   if (node.isExpanded) {
     children = yo`
       <div class="subtree">
-        ${rChildren(root, node.children, depth + 1, opts)}
+        ${rChildren(root, node.children, selectedNode, depth + 1, opts)}
       </div>`
   }
 
   return yo`
     <div>
       <div
-        class="item folder"
+        class="item folder ${isSelected ? 'selected' : ''}"
         title=${node.name}
+        onclick=${e => onClickNode(e, root, node, selectedNode, depth, opts)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
         <div
           class="caret"
-          onclick=${e => onClickDirectoryCaret(e, root, node, opts)}
+          onclick=${e => onClickDirectoryCaret(e, root, node, selectedNode, opts)}
           style="left: ${caretPosition}px; ${node.isExpanded ? 'transform: rotate(90deg);' : ''}"
         >▶︎</div>
         <div class="name">
@@ -86,13 +88,15 @@ function rDirectory (root, node, depth, opts) {
   `
 }
 
-function rFile (root, node, depth, opts) {
+function rFile (root, node, selectedNode, depth, opts) {
+  const isSelected = node === selectedNode
   const padding = 20 + (depth * 20)
 
   return yo`
     <div
-      class="item file"
+      class="item file ${isSelected ? 'selected' : ''}"
       title=${node.name}
+      onclick=${e => onClickNode(e, root, node, selectedNode, depth, opts)}
       style=${'padding-left: ' + padding + 'px'}>
       <div class="name">
         ${renderFileOIcon()}
@@ -107,10 +111,23 @@ function rFile (root, node, depth, opts) {
 // event handlers
 // =
 
-async function onClickDirectoryCaret (e, root, node, opts = {}) {
+async function onClickNode (e, root, node, selectedNode, depth, opts = {}) {
+  e.preventDefault()
+  e.stopPropagation()
+  
+  // update state
+  selectedNode = node
+
+  // render
+  redraw(root, selectedNode, opts)
+}
+
+async function onClickDirectoryCaret (e, root, node, selectedNode, opts = {}) {
+  e.preventDefault()
+  e.stopPropagation()
   node.isExpanded = !node.isExpanded
   if (node.isExpanded) {
     await node.readData()
   }
-  redraw(root, opts)
+  redraw(root, selectedNode, opts)
 }
