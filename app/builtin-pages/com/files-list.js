@@ -114,7 +114,7 @@ function rFile (root, node, selectedNode, depth, opts) {
 async function onClickNode (e, root, node, selectedNode, depth, opts = {}) {
   e.preventDefault()
   e.stopPropagation()
-  
+
   // update state
   selectedNode = node
 

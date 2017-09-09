@@ -59,7 +59,8 @@ function rColumn (root, node, selectedPath, depth, opts = {}) {
 }
 
 function rNode (root, node, selectedPath, depth, opts) {
-  const isSelected = selectedPath.reduce((agg, activeNode) => agg || activeNode === node, false)
+  const isHighlighted = selectedPath.reduce((agg, activeNode) => agg || activeNode === node, false)
+  const isSelected = isHighlighted && selectedPath.length - 1 === depth
   let icon = ''
   switch (node.constructor.name) {
     case 'FSVirtualFolder_User':
@@ -84,7 +85,7 @@ function rNode (root, node, selectedPath, depth, opts) {
 
   return yo`
     <div
-      class="item ${node.type} ${isSelected ? 'selected' : ''}"
+      class="item ${node.type} ${isHighlighted ? 'highlighted' : ''} ${isSelected ? 'selected' : ''}"
       title=${node.name}
       onclick=${e => onClickNode(e, root, node, selectedPath, depth, opts)}>
       ${icon}
