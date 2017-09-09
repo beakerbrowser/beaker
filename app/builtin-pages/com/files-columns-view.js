@@ -5,7 +5,12 @@ import prettyBytes from 'pretty-bytes'
 import renderFilesList from './files-list'
 import {niceDate} from '../../lib/time'
 import renderFileOIcon from '../icon/file-o'
-import renderFolderIcon from '../icon/folder'
+import renderFolderIcon from '../icon/folder-color'
+import renderGlobeIcon from '../icon/globe'
+import renderTrashIcon from '../icon/trash'
+import renderBoxIcon from '../icon/box'
+import renderPhotosIcon from '../icon/photos'
+import renderVideosIcon from '../icon/videos'
 
 // exported api
 // =
@@ -19,6 +24,8 @@ function rFilesColumnsView (root, activePath, opts) {
   if (!root) {
     return yo`<div class="files-columns-view"></div>`
   }
+
+  console.log(root)
 
   return yo`
     <div class="files-columns-view ${root.isEmpty ? 'empty' : ''}">
@@ -55,15 +62,34 @@ function rColumn (root, node, activePath, depth, opts = {}) {
 
 function rNode (root, node, activePath, depth, opts) {
   const isActive = activePath.reduce((agg, activeNode) => agg || activeNode === node, false)
+  let icon = ''
+  switch (node.constructor.name) {
+    case 'FSVirtualFolder_User':
+      // TODO handle user profile vs just a profile
+      icon = yo`<i class="fa fa-home"></i>`
+      break
+    case 'FSVirtualFolder_Network':
+      icon = renderGlobeIcon()
+      break
+    case 'FSVirtualFolder_Trash':
+      icon = renderTrashIcon()
+      break
+    case 'FSVirtualFolder_TypeFilter':
+      if (node._type === 'module') icon = renderBoxIcon()
+      else if (node._type === 'photo') icon = yo`<img class="icon photos" src="beaker://assets/icon/photos.png"/>`
+      else if (node._type === 'video') icon = renderVideosIcon()
+      break
+    default:
+      icon = renderFolderIcon()
+  }
+
   return yo`
     <div
       class="item ${node.type} ${isActive ? 'active' : ''}"
       title=${node.name}
       onclick=${e => onClickNode(e, root, node, activePath, depth, opts)}>
-      ${node.isContainer ? renderFolderIcon() : renderFileOIcon()}
-      ${node.isContainer
-        ? yo`<div class="name">${node.name}</div>`
-        : yo`<div class="name"><a href=${node.url}>${node.name}</a></div>`}
+      ${icon}
+      <div class="name">${node.name}</div>
       ${node.size ? yo`<div class="size">${prettyBytes(node.size)}</div>` : ''}
       ${node.mtime ? yo`<div class="updated">${niceDate(+node.mtime)}</div>` : ''}
     </div>

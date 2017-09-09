@@ -4,7 +4,7 @@ import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import {niceDate} from '../../lib/time'
 import renderFileOIcon from '../icon/file-o'
-import renderFolderIcon from '../icon/folder'
+import renderFolderIcon from '../icon/folder-color'
 
 // exported api
 // =

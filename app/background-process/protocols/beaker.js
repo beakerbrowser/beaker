@@ -142,6 +142,9 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages.css'))
   }
+  if (requestUrl === 'beaker://assets/icon/photos.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/icon/photos.png'))
+  }
   if (requestUrl === 'beaker://assets/icon/avatar.svg') {
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/avatar.svg'))
   }
