@@ -4,8 +4,10 @@
 
 .files-columns-view {
   &:extend(.flex);
+  flex-wrap: nowrap;
   background: #fff;
   height: 100vh;
+  overflow-x: auto;
 
   .column {
     min-width: 200px;
@@ -23,6 +25,7 @@
 
   .files-list {
     flex: 1;
+    min-width: 400px;
     max-width: 500px;
     height: 100%;
     overflow-y: auto;
@@ -31,9 +34,8 @@
   }
 
   .column > .item {
-    &:extend(.flex);
+    display: flex;
     align-items: center;
-    position: relative;
     height: 24px;
     padding: 0 10px;
 
@@ -64,6 +66,12 @@
           stroke: none;
         }
       }
+    }
+
+    .name {
+      white-space: pre;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .size, .updated {

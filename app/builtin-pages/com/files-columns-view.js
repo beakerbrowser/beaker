@@ -60,17 +60,10 @@ function rNode (root, node, activePath, depth, opts) {
       class="item ${node.type} ${isActive ? 'active' : ''}"
       title=${node.name}
       onclick=${e => onClickNode(e, root, node, activePath, depth, opts)}>
+      ${node.isContainer ? renderFolderIcon() : renderFileOIcon()}
       ${node.isContainer
-        ? yo`<div class="name">
-            ${renderFolderIcon()}
-            ${node.name}
-          </div>`
-        : yo`<div class="name">
-            ${renderFileOIcon()}
-            <a href=${node.url}>
-              ${node.name}
-            </a>
-          </div>`}
+        ? yo`<div class="name">${node.name}</div>`
+        : yo`<div class="name"><a href=${node.url}>${node.name}</a></div>`}
       ${node.size ? yo`<div class="size">${prettyBytes(node.size)}</div>` : ''}
       ${node.mtime ? yo`<div class="updated">${niceDate(+node.mtime)}</div>` : ''}
     </div>
