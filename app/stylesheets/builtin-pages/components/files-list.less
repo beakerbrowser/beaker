@@ -68,5 +68,17 @@
     .updated {
       margin-left: auto; // right align the .updated element
     }
+
+    &.selected {
+      background: #008dfd;
+      -webkit-font-smoothing: antialiased;
+
+      .name {
+        color: #fff;
+      }
+      .size, .updated {
+        color: rgba(255,255,255, 0.75);
+      }
+    }
   }
 }
