@@ -48,9 +48,7 @@ function rColumn (root, node, selectedPath, depth, opts = {}) {
   }
 
   if (node.isEmpty) {
-    return yo`
-      <div class="column empty"><em>No files</em></div>
-    `
+    return ''
   }
 
   return yo`
