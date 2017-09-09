@@ -70,11 +70,12 @@ function rDirectory (root, node, depth, opts) {
       <div
         class="item folder"
         title=${node.name}
-        onclick=${e => onClickDirectory(e, root, node, opts)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
-
-        <div class="caret" style="left: ${caretPosition}px; ${node.isExpanded ? 'transform: rotate(90deg);' : ''}">▶︎</div>
-
+        <div
+          class="caret"
+          onclick=${e => onClickDirectoryCaret(e, root, node, opts)}
+          style="left: ${caretPosition}px; ${node.isExpanded ? 'transform: rotate(90deg);' : ''}"
+        >▶︎</div>
         <div class="name">
           ${renderFolderIcon()}
           ${node.name}
@@ -86,7 +87,7 @@ function rDirectory (root, node, depth, opts) {
 }
 
 function rFile (root, node, depth, opts) {
-  const padding = 15 + (depth * 15)
+  const padding = 20 + (depth * 20)
 
   return yo`
     <div
@@ -95,9 +96,7 @@ function rFile (root, node, depth, opts) {
       style=${'padding-left: ' + padding + 'px'}>
       <div class="name">
         ${renderFileOIcon()}
-        <a href=${node.url}>
-          ${node.name}
-        </a>
+        ${node.name}
       </div>
       <div class="size">${prettyBytes(node.size)}</div>
       ${!opts.hideDate ? yo`<div class="updated">${niceDate(+node.mtime)}</div>` : ''}
@@ -108,7 +107,7 @@ function rFile (root, node, depth, opts) {
 // event handlers
 // =
 
-async function onClickDirectory (e, root, node, opts = {}) {
+async function onClickDirectoryCaret (e, root, node, opts = {}) {
   node.isExpanded = !node.isExpanded
   if (node.isExpanded) {
     await node.readData()

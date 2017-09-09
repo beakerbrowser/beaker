@@ -17,17 +17,6 @@
       font-size: 10.5px;
       color: #bbb;
       display: inline-block;
-    }
-
-    &.empty {
-
-      .name:hover {
-        text-decoration: none;
-        cursor: default;
-      }
-    }
-
-    &.folder {
       cursor: pointer;
     }
 
@@ -56,29 +45,13 @@
       }
     }
 
-    .name,
-    .name a {
+    .name {
       &:extend(.flex);
+      &:extend(.overflow-ellipsis);
       flex-wrap: nowrap;
       align-items: center;
-      cursor: pointer;
-    }
-
-    .name {
-      &:extend(.overflow-ellipsis);
       max-width: 75%;
       color: rgba(0,0,0,.9);
-
-      &:hover {
-        &:extend(.link:hover);
-      }
-
-      a {
-        &:extend(.overflow-ellipsis);
-        display: block;
-        color: inherit;
-        text-decoration: none;
-      }
     }
 
     .size, .updated {
