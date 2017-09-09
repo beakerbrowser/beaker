@@ -74,8 +74,13 @@ function rNode (root, node, activePath, depth, opts) {
 // =
 
 async function onClickNode (e, root, node, activePath, depth, opts = {}) {
+  // render
   activePath.length = depth // truncate all nodes with equal or greater depth
   activePath.push(node) // add (or readd) this node
   await node.readData()
   redraw(root, activePath, opts)
+
+  // scroll to the rightmost point
+  const container = document.querySelector('.files-columns-view')
+  container.scrollLeft = container.scrollWidth
 }
