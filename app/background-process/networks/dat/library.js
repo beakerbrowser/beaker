@@ -349,8 +349,13 @@ export async function queryArchives (query) {
   archiveInfos.forEach(archiveInfo => {
     var archive = getArchive(archiveInfo.key)
     if (archive) {
+      archiveInfo.size = archive.size
       archiveInfo.peers = archive.metadata.peers.length
       archiveInfo.peerHistory = archive.peerHistory
+    } else {
+      archiveInfo.size = 0
+      archiveInfo.peers = 0
+      archiveInfo.peerHistory = []
     }
   })
   return archiveInfos

@@ -5,6 +5,7 @@ import prettyBytes from 'pretty-bytes'
 import {niceDate} from '../../lib/time'
 import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder-color'
+import renderFilesListSidebar from './files-list-sidebar'
 
 // exported api
 // =
@@ -18,12 +19,17 @@ export default function render (root, opts = {}) {
 
 function rFilesList (root, selectedNode, opts) {
   if (!root) {
-    return yo`<div class="files-list"></div>`
+    return yo`<div class="files-list-view"></div>`
   }
 
   return yo`
-    <div class="files-list ${root.isEmpty ? 'empty' : ''}">
-      ${rChildren(root, root.children, selectedNode, 0, opts)}
+    <div class="files-list-view">
+      <div class="files-list ${root.isEmpty ? 'empty' : ''}">
+        ${rChildren(root, root.children, selectedNode, 0, opts)}
+      </div>
+      <div class="files-list-sidebar">
+        ${renderFilesListSidebar(root)}
+      </div>
     </div>
   `
 }
@@ -32,7 +38,7 @@ function rFilesList (root, selectedNode, opts) {
 // =
 
 function redraw (root, selectedNode, opts = {}) {
-  yo.update(document.querySelector('.files-list'), rFilesList(root, selectedNode, opts))
+  yo.update(document.querySelector('.files-list-view'), rFilesList(root, selectedNode, opts))
 }
 
 function rChildren (root, children, selectedNode, depth, opts = {}) {
