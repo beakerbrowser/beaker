@@ -605,19 +605,18 @@ function onDidStopLoading (e) {
     if (protocol === 'dat:') {
       DatArchive.resolveName(hostname)
         .catch(err => hostname) // try the hostname as-is, might be a hash
-        .then(key => {
-          beaker.archives.get(key).then(info => {
-            page.siteInfo = info
-            console.log('site info', info)
-            navbar.update(page)
+        .then(key => (new DatArchive(key)).getInfo())
+        .then(info => {
+          page.siteInfo = info
+          console.log('site info', info)
+          navbar.update(page)
 
-            // fallback the tab title to the site title, if needed
-            if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
-              page.title = info.title
-              events.emit('page-title-updated', page)
-            }
-          })
-      })
+          // fallback the tab title to the site title, if needed
+          if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
+            page.title = info.title
+            events.emit('page-title-updated', page)
+          }
+        })
     }
     if (protocol !== 'beaker:') {
       page.fetchSitePerms()

@@ -177,8 +177,9 @@ export class RehostMenuNavbarBtn {
     if (this.sliderState == ONEDAY) expiresAt = +(moment().add(1, 'day'))
     if (this.sliderState == ONEWEEK) expiresAt = +(moment().add(1, 'week'))
     if (this.sliderState == ONEMONTH) expiresAt = +(moment().add(1, 'month'))
-    await beaker.archives.update(page.siteInfo.key, false, {isSaved, expiresAt})
-    page.siteInfo = await beaker.archives.get(page.siteInfo.key)
+    if (isSaved) await beaker.archives.add(page.siteInfo.key, {expiresAt})
+    else await beaker.archives.remove(page.siteInfo.key)
+    page.siteInfo = await (new DatArchive(page.siteInfo.key)).getInfo()
 
     this.updateActives()
   }

@@ -69,7 +69,8 @@ async function onSubmit (e) {
   e.preventDefault()
   try {
     if (isEditing) {
-      await beaker.archives.update(archive.url, {title, description, type}, {networked})
+      let a = new DatArchive(archive.url)
+      await a.configure({title, description, type, networked})
       beakerBrowser.closeModal(null, true)
     } else {
       var newArchive = await DatArchive.create({title, description, type, networked})

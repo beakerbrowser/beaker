@@ -835,7 +835,7 @@ test('versioned reads and writes', async t => {
   // create a fresh dat
   await app.client.windowByIndex(0)
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({title: 'Another Test Dat'}).then(done, done)
+    DatArchive.create({title: 'Another Test Dat'}).then(done, done)
   })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
@@ -1055,7 +1055,7 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
 
   await app.client.windowByIndex(0)
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({title: 'Another Test Dat'}).then(done, done)
+    DatArchive.create({title: 'Another Test Dat'}).then(done, done)
   })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
@@ -1232,7 +1232,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1256,7 +1256,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1280,7 +1280,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1304,7 +1304,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1370,7 +1370,7 @@ test('DatArchive.exportToArchive', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1393,7 +1393,7 @@ test('DatArchive.exportToArchive', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1418,7 +1418,7 @@ test('archive.createFileActivityStream', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)

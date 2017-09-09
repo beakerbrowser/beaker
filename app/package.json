@@ -10,7 +10,7 @@
   "dependencies": {
     "await-lock": "^1.1.2",
     "beaker-error-constants": "^1.2.0",
-    "beaker-profiles-api": "^2.1.0",
+    "beaker-profiles-api": "^2.3.1",
     "beaker-virtual-fs": "git://github.com/beakerbrowser/beaker-virtual-fs.git#fef254dc2b0752441469b2366d63a572010202c6",
     "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib.git#f85cbf6627e54d2bb46b10a362c0dc3fd2925723",
     "bytes": "^2.5.0",
@@ -61,7 +61,7 @@
     "slugify": "^1.2.1",
     "sodium-signatures": "^2.1.0",
     "speedometer": "^1.0.0",
-    "sqlite3": "^3.1.9",
+    "sqlite3": "^3.1.10",
     "through2": "^2.0.1",
     "unused-filename": "^0.1.0",
     "utp-native": "^1.5.4",

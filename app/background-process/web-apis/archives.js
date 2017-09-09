@@ -4,7 +4,7 @@ import pda from 'pauls-dat-api'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
-import {getProfileRecord} from '../injests/profiles'
+import * as profilesInjest from '../injests/profiles'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
@@ -24,6 +24,10 @@ const to = (opts) =>
     : DEFAULT_DAT_API_TIMEOUT
 
 export default {
+
+  // system state
+  // =
+
   async status () {
     var status = {archives: 0, peers: 0}
     var archives = datLibrary.getActiveArchives()
@@ -34,45 +38,10 @@ export default {
     return status
   },
 
-  async create ({title, type, description} = {}) {
-    return datLibrary.createNewArchive({title, type, description})
-  },
+  // local cache management and querying
+  // =
 
-  async fork (url, {title, type, description} = {}) {
-    return datLibrary.forkArchive(url, {title, type, description})
-  },
-
-  async update (url, manifestInfo, userSettings) {
-    var key = toKey(url)
-    var archive = await datLibrary.getOrLoadArchive(key)
-
-    // no info provided: open modal
-    if (!manifestInfo && !userSettings) {
-      if (!archive.writable) {
-        throw new ArchiveNotWritableError()
-      }
-      // show the update-info the modal
-      let win = BrowserWindow.fromWebContents(this.sender)
-      await assertSenderIsFocused(this.sender)
-      return showModal(win, 'create-archive', {url})
-    }
-
-    // update manifest file
-    if (manifestInfo) {
-      await pda.updateManifest(archive, manifestInfo)
-      datLibrary.pullLatestArchiveMeta(archive)
-    }
-
-    // update settings
-    if (userSettings) {
-      if (userSettings.networked === false) {
-        await assertArchiveOfflineable(key)
-      }
-      userSettings = await archivesDb.setUserSettings(0, key, userSettings)
-    }
-  },
-
-  async add (url) {
+  async add (url, opts = {}) {
     var key = toKey(url)
 
     // pull metadata
@@ -80,7 +49,7 @@ export default {
     var meta = await datLibrary.pullLatestArchiveMeta(archive)
 
     // update settings
-    return archivesDb.setUserSettings(0, key, {isSaved: true})
+    return archivesDb.setUserSettings(0, key, {isSaved: true, expiresAt: opts.expiresAt})
   },
 
   async remove (url) {
@@ -105,20 +74,40 @@ export default {
     return results
   },
 
-  async restore (url) {
-    var key = toKey(url)
-    return archivesDb.getUserSettings(0, key)
-  },
-
   async list (query = {}) {
     return datLibrary.queryArchives(query)
   },
 
-  async get (url, opts) {
-    return timer(to(opts), async (checkin) => {
-      return datLibrary.getArchiveInfo(toKey(url))
-    })
+  // publishing
+  // =
+
+  async publish (archiveUrl) {
+    const profileRecord = await profilesInjest.getProfileRecord(0)
+    archiveUrl = typeof archiveUrl.url === 'string' ? archiveUrl.url : archiveUrl
+    const archiveInfo = await datLibrary.getArchiveInfo(archiveUrl)
+    return profilesInjest.getAPI().publishArchive(profileRecord.url, archiveInfo)
   },
+
+  async unpublish (archiveUrl) {
+    const profileRecord = await profilesInjest.getProfileRecord(0)
+    archiveUrl = typeof archiveUrl.url === 'string' ? archiveUrl.url : archiveUrl
+    return profilesInjest.getAPI().unpublishArchive(profileRecord.url, archiveUrl)
+  },
+
+  async listPublished (opts) {
+    return profilesInjest.getAPI().listPublishedArchives(opts)
+  },
+
+  async countPublished (opts) {
+    return profilesInjest.getAPI().countPublishedArchives(opts)
+  },
+
+  async getPublishRecord (recordUrl) {
+    return profilesInjest.getAPI().getPublishedArchive(recordUrl)
+  },
+
+  // internal management
+  // =
 
   async clearFileCache (url) {
     return datLibrary.clearFileCache(toKey(url))
@@ -127,6 +116,9 @@ export default {
   clearDnsCache () {
     datDns.flushCache()
   },
+
+  // events
+  // =
 
   createEventStream () {
     return datLibrary.createEventStream()
@@ -144,14 +136,14 @@ async function assertSenderIsFocused (sender) {
 }
 
 async function assertArchiveOfflineable (key) {
-  var profileRecord = await getProfileRecord(0)
+  var profileRecord = await profilesInjest.getProfileRecord(0)
   if ('dat://' + key === profileRecord.url) {
     throw new PermissionsError('Unable to set the user archive to offline.')
   }
 }
 
 async function assertArchiveDeletable (key) {
-  var profileRecord = await getProfileRecord(0)
+  var profileRecord = await profilesInjest.getProfileRecord(0)
   if ('dat://' + key === profileRecord.url) {
     throw new PermissionsError('Unable to delete the user archive.')
   }
