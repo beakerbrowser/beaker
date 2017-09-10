@@ -28,7 +28,6 @@ export default function render () {
                     <rect stroke="#B3A26B" stroke-width="1" x="0.5" y="9.5" width="52" height="33" rx="2"></rect>
                 </g>
                 <g fill="#FFECAD" id="Combined-Shape">
-                    <use fill="#FFECAD" fill-rule="evenodd" xlink:href="#path-4"></use>
                     <path stroke="#B3A36B" stroke-width="1" d="M0.5,9.5 L52.5,9.5 L52.5,7 C52.5,6.17157288 51.8284271,5.5 51,5.5 L17.7932111,5.5 L16.1863713,2.39243237 C15.5853176,1.23001719 14.3860117,0.5 13.0773961,0.5 L2,0.5 C1.17157288,0.5 0.5,1.17157288 0.5,2 L0.5,9.5 Z"></path>
                 </g>
             </g>

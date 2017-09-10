@@ -1,25 +1,55 @@
 .files-list-sidebar {
-  .archive-info {
-    background: #fff;
-    overflow: hidden;
-    height: 100%;
-    vertical-align: top;
+  .preview {
+    text-align: center;
     padding: 15px;
-    border-left: 1px solid rgba(0,0,0,.1);
-    font-size: .8rem;
+
+    .icon-wrapper {
+      transform: scale(1.5);
+      margin: 40px 0 20px;
+
+      svg {
+        width: 40px;
+        height: 40px;
+      }
+    }
+
+    .text,
+    img,
+    video,
+    audio {
+      width: 100%;
+      border: 1px solid #ccc;
+    }
+
+    .text {
+      padding: 2px 5px;
+      text-align: left;
+      white-space: pre;
+      font-size: 0.6rem;
+      max-height: 70vh;
+      overflow: hidden;
+    }
   }
-  .archive-info-metadata {
-    font-size: .75rem;
+
+  .metadata {
+    padding: 15px;
     color: rgba(0,0,0,.75);
-    padding: 5px 0;
-    border-top: 1px solid rgba(0,0,0,.075);
-    border-bottom: 1px solid rgba(0,0,0,.075);
+
+    .name {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
 
     td {
-      padding-left: 0;
+      padding: 0;
 
       &.label {
+        width: 40%;
         font-weight: 500;
+        text-align: right;
+        color: #aaa;
+        padding-right: 8px;
       }
     }
   }

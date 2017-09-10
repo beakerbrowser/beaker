@@ -15,7 +15,7 @@ import renderFilesListSidebar from './files-list-sidebar'
 //  - hideDate: show the date on the files (bool)
 //  - baseUrl: override the base URL of file links (string)
 export default function render (root, opts = {}) {
-  return rFilesList(root, [], opts)
+  return rFilesList(root, null, opts)
 }
 
 function rFilesList (root, selectedNode, opts) {
@@ -29,9 +29,7 @@ function rFilesList (root, selectedNode, opts) {
         ${renderFilesListHeader(root)}
         ${rChildren(root, root.children, selectedNode, 0, opts)}
       </div>
-      <div class="files-list-sidebar">
-        ${renderFilesListSidebar(root)}
-      </div>
+      ${renderFilesListSidebar(selectedNode || root)}
     </div>
   `
 }
@@ -128,6 +126,12 @@ async function onClickNode (e, root, node, selectedNode, depth, opts = {}) {
 
   // render
   redraw(root, selectedNode, opts)
+
+  // read data if needed, and redraw
+  if (node.type === 'file') {
+    await node.readData()
+    redraw(root, selectedNode, opts)
+  }
 }
 
 async function onClickDirectoryCaret (e, root, node, selectedNode, opts = {}) {

@@ -107,8 +107,6 @@ function rNode (root, node, selectedPath, depth, opts) {
       onclick=${e => onClickNode(e, root, node, selectedPath, depth, opts)}>
       ${rIcon(node)}
       <div class="name">${node.name}</div>
-      ${node.size ? yo`<div class="size">${prettyBytes(node.size)}</div>` : ''}
-      ${node.mtime ? yo`<div class="updated">${niceDate(+node.mtime)}</div>` : ''}
       ${node.isContainer ? yo`<span class="caret right">▶</span>` : ''}
     </div>
   `
