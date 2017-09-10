@@ -17,6 +17,11 @@
     margin-right: 7px;
     flex: 0 0 12px;
 
+    &.home {
+      flex: 0 0 13.5px;
+      height: 13.5px;
+    }
+
     &.box {
       width: 20px;
       height: 20px;
@@ -60,6 +65,8 @@
 
     .breadcrumb {
       &:extend(.flex);
+      flex-wrap: nowrap;
+      flex: 1;
       align-items: center;
       margin-right: 6px;
 

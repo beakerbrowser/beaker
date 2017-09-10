@@ -11,6 +11,7 @@ import renderTrashIcon from '../icon/trash'
 import renderBoxIcon from '../icon/box'
 import renderPhotosIcon from '../icon/photos'
 import renderVideosIcon from '../icon/videos'
+import renderHomeIcon from '../icon/home'
 
 // exported api
 // =
@@ -48,7 +49,7 @@ function rIcon (node) {
   switch (node.constructor.name) {
     case 'FSVirtualFolder_User':
       // TODO handle user profile vs just a profile
-      icon = yo`<i class="fa fa-home"></i>`
+      icon = renderHomeIcon()
       break
     case 'FSVirtualFolder_Network':
       icon = renderGlobeIcon()
