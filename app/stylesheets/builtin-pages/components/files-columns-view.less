@@ -102,9 +102,30 @@
     flex: 0 0 210px;
     height: 100%;
     overflow-y: auto;
-    border-right: 1px solid #eee;
+    border-right: 1px solid #eaeaea;
     background: #fff;
     padding: 5px 0;
+
+    // the main column
+    &.first {
+      flex: 0 0 150px;
+      background: rgb(253, 254, 254);
+
+      .item {
+        height: 24px;
+
+        .caret {
+          display: none;
+        }
+
+        &.highlighted,
+        &.selected {
+          background: linear-gradient(to right, rgba(232, 237, 237, .6), rgba(233, 234, 235, .5));
+          color: inherit;
+          font-weight: 400;
+        }
+      }
+    }
 
     &.empty {
       padding: 10px;

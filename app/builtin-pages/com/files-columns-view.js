@@ -92,7 +92,7 @@ function rColumn (root, node, selectedPath, depth, opts = {}) {
   }
 
   return yo`
-    <div class="column">
+    <div class="column ${depth === 0 ? 'first' : ''}">
       ${node.children.map(childNode => rNode(root, childNode, selectedPath, depth, opts))}
     </div>
   `
