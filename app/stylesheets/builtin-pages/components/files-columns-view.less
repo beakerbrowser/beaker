@@ -111,6 +111,22 @@
       flex: 0 0 150px;
       background: rgb(253, 254, 254);
 
+      .item {
+
+        .name {
+          font-size: 11.2px;
+          color: @color-text--muted;
+          letter-spacing: .15px;
+        }
+
+        &.highlighted {
+
+          .name {
+            color: @color-text;
+          }
+        }
+      }
+
       .icon {
         flex: 0 0 15px;
         width: 15px;
