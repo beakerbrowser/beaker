@@ -5,13 +5,17 @@
 .files-list-view {
   &:extend(.flex);
   flex-wrap: nowrap;
-  
+
   .files-list {
     flex: 1;
     min-width: 400px;
     max-width: 500px;
     overflow-y: auto;
     border-right: 1px solid #eee;
+
+    * {
+      -webkit-user-select: none;
+    }
   }
 
   .files-list-sidebar {
