@@ -8,6 +8,7 @@ import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder-color'
 import renderGlobeIcon from '../icon/globe'
 import renderTrashIcon from '../icon/trash'
+import renderTrashGrayscaleIcon from '../icon/trash-grayscale'
 import renderBoxIcon from '../icon/box'
 import renderPhotosIcon from '../icon/photos'
 import renderVideosIcon from '../icon/videos'
@@ -58,7 +59,7 @@ function rIcon (node, grayscale=false) {
       icon = renderGlobeIcon()
       break
     case 'FSVirtualFolder_Trash':
-      icon = renderTrashIcon()
+      icon = grayscale ? renderTrashGrayscaleIcon() : renderTrashIcon()
       break
     case 'FSVirtualFolder_TypeFilter':
       if (node._type === 'module') icon = renderBoxIcon()
