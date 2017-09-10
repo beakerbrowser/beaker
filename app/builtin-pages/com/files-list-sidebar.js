@@ -1,9 +1,6 @@
 import * as yo from 'yo-yo'
-import renderDotsIcon from '../icon/three-dots'
-import renderTrashIcon from '../icon/trash'
 import {niceDate} from '../../lib/time'
 import prettyBytes from 'pretty-bytes'
-import toggleable, {closeAllToggleables} from '../com/toggleable'
 
 // exported api
 // =
@@ -12,26 +9,6 @@ export default function render (node) {
   const isEditingInfo = false // TODO
   const archiveInfo = node._archiveInfo
   if (!archiveInfo) return yo`<div></div>`
-
-  // set up icons and labels for save/unsave buttons
-  var toggleSaveIcon, toggleSaveText
-  if (archiveInfo.isOwner) {
-    if (archiveInfo.userSettings.isSaved) {
-      toggleSaveIcon = '' // 'fa-trash'
-      toggleSaveText = 'Delete'
-    } else {
-      toggleSaveIcon = '' // 'fa-floppy-o'
-      toggleSaveText = 'Restore'
-    }
-  } else {
-    if (archiveInfo.userSettings.isSaved) {
-      toggleSaveIcon = '' // fa-times-circle'
-      toggleSaveText = 'Remove from library'
-    } else {
-      toggleSaveIcon = '' // fa-plus'
-      toggleSaveText = 'Add to library'
-    }
-  }
 
   // editable title and description
   var titleEl, descEl
@@ -64,37 +41,6 @@ export default function render (node) {
 
   return yo`
     <div class="archive-info">
-      <div class="archive-info-header">
-        <h2>${archiveInfo.title || 'Untitled'}</h2>
-
-        ${toggleable(yo`
-          <div class="dropdown-btn-container toggleable-container" data-toggle-id="archive-dropdown-menu">
-            <span class="nav-item dropdown toggleable">
-              ${renderDotsIcon()}
-            </span>
-
-            <div class="dropdown-btn-list">
-              ${archiveInfo.isOwner ? yo`
-                <div class="dropdown-item" onclick=${onImportFiles}>
-                  Import files
-                  <span class="icon">+</span>
-                </div>
-              ` : ''}
-              <div class="dropdown-item" onclick=${onFork}>
-                Fork this site
-                <span class="icon">+</span>
-              </div>
-              <div class="dropdown-item" onclick=${onToggleSaved}>
-                ${toggleSaveText}
-                ${renderTrashIcon()}
-              </div>
-            </div>
-          </div>
-        `)}
-      </div>
-
-      <p class="archive-info-desc">${archiveInfo.description || yo`<em>No description</em>`}</p>
-
       <div class="archive-info-metadata">
         <table>
           <tr><td class="label">Title</td>${titleEl}</tr>
@@ -122,18 +68,6 @@ function onClickEdit () {
 
 function onSaveSettings () {
   // TODO
-}
-
-function onImportFiles () {
-  // TODO
-}
-
-function onFork () {
-  // TODO
-}
-
-function onToggleSaved () {
-  // TODOyou 
 }
 
 // helpers

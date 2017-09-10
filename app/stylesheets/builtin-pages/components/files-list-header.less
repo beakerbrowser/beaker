@@ -1,0 +1,108 @@
+.files-list-header {
+  padding: 6px 10px;
+  position: relative;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 6px;
+  background: #fafafa;
+
+  h3 {
+    &:extend(.overflow-ellipsis);
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 100;
+  }
+
+  .desc {
+    color: rgba(0,0,0,.5);
+    margin: 0;
+  }
+
+  .nav-item.dropdown {
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+  
+  .dropdown-btn-container {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+  }
+
+  // TODO
+  // temporarily override the default .dropdown-btn-list styles
+  // eventually i'd like them all to use these styles, but it will require some work
+  // -tbv
+  .dropdown-btn-list {
+    background: #f5f5f6;
+    background: #333 !important;
+    border-radius: 6px;
+    width: 130px;
+    top: 33px;
+    right: -10px;
+    box-shadow: none;
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      right: 10px;
+      width: 12px;
+      height: 12px;
+      z-index: 3;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 8px solid #333;
+    }
+  }
+
+  .dropdown-item {
+    padding: 3px 10px !important;
+    color: rgba(0,0,0,.7) !important;
+    color: rgba(255,255,255,.8) !important;
+    font-size: .8rem;
+    position: relative;
+    border-bottom: 0;
+    &:extend(.antialiased);
+
+    .icon {
+      position: absolute;
+      right: 10px;
+      top: -1px;
+      font-size: 16px;
+      color: rgba(0,0,0,.5);
+      color: rgba(255,255,255,.6);
+
+      * {
+        stroke: fadeout(#fff, 40%);
+        stroke-width: 5;
+      }
+
+      &.trash {
+        top: 7px;
+
+        * {
+          stroke-width: 5px;
+        }
+      }
+    }
+
+    span.icon {
+      padding: 0;
+    }
+
+    svg.icon {
+      width: 11px !important;
+      height: 11px !important;
+    }
+
+    &:hover {
+      background: #eee !important;
+      background: #111 !important;
+      // color: rgba(0,0,0,.95) !important;
+    }
+  }
+}

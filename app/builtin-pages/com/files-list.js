@@ -5,6 +5,7 @@ import prettyBytes from 'pretty-bytes'
 import {niceDate} from '../../lib/time'
 import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder-color'
+import renderFilesListHeader from './files-list-header'
 import renderFilesListSidebar from './files-list-sidebar'
 
 // exported api
@@ -25,6 +26,7 @@ function rFilesList (root, selectedNode, opts) {
   return yo`
     <div class="files-list-view">
       <div class="files-list ${root.isEmpty ? 'empty' : ''}">
+        ${renderFilesListHeader(root)}
         ${rChildren(root, root.children, selectedNode, 0, opts)}
       </div>
       <div class="files-list-sidebar">
