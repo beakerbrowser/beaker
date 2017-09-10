@@ -148,6 +148,9 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/icon/avatar.svg') {
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/avatar.svg'))
   }
+  if (requestUrl === 'beaker://assets/icon/folder-color.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/icon/folder-color.png'))
+  }
   if (requestUrl === 'beaker://assets/icon/grid.svg') {
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/grid.svg'))
   }

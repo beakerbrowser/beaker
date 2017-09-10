@@ -86,7 +86,7 @@ function rDirectory (root, node, selectedNode, depth, opts) {
           style="left: ${caretPosition}px; ${node.isExpanded ? 'transform: rotate(90deg);' : ''}"
         >▶︎</div>
         <div class="name">
-          ${renderFolderIcon()}
+          <img class="icon folder" src="beaker://assets/icon/folder-color.png"/>
           ${node.name}
         </div>
       </div>
