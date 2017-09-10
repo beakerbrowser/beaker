@@ -29,6 +29,7 @@ function rFilesColumnsView (root, selectedPath, opts) {
 
   return yo`
     <div class="files-columns-view ${root.isEmpty ? 'empty' : ''}">
+      ${rBreadcrumbs(root, selectedPath)}
       ${rColumn(root, root, selectedPath, 0, opts)}
       ${selectedPath.map((node, i) => rColumn(root, node, selectedPath, i+1, opts))}
     </div>
@@ -68,8 +69,14 @@ function rIcon (node) {
 }
 
 function rBreadcrumbs (root, selectedPath) {
+  return yo`<div class="breadcrumbs">${selectedPath.map(rBreadcrumb)}</div>`
+}
+
+function rBreadcrumb (node) {
   return yo`
-    <div class="breadcrumbs">
+    <div class="breadcrumb">
+      ${rIcon(node)}
+      ${node.name}
     </div>
   `
 }

@@ -5,12 +5,82 @@
 .files-columns-view {
   &:extend(.flex);
   flex-wrap: nowrap;
+  position: relative;
   background: #fff;
   height: 100vh;
   overflow-x: auto;
+  margin-bottom: 25px; // height of breadcrumbs
+
+  .icon {
+    width: 12px;
+    height: 12px;
+    margin-right: 7px;
+    flex: 0 0 12px;
+
+    &.box {
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
+    }
+
+    &.trash {
+      width: 11px;
+      height: 11px;
+      flex: 0 0 11px;
+    }
+
+    &.file-o {
+      background: none;
+
+      * {
+        stroke: #ddd;
+        fill: #fff;
+      }
+    }
+
+    &.folder {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 17px;
+    }
+  }
+
+  .breadcrumbs {
+    &:extend(.flex);
+    align-items: center;
+    position: fixed;
+    left: 40px;
+    bottom: 0;
+    width: 100%;
+    height: 25px;
+    padding: 0 10px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    font-size: 11.75px;
+
+    .breadcrumb {
+      &:extend(.flex);
+      align-items: center;
+      margin-right: 6px;
+
+      &:not(:last-of-type):after {
+        display: inline-block;
+        content: '>';
+        margin-left: 5px;
+        margin-top: -2px;
+        font-weight: 700;
+        font-size: 10px;
+        color: @color-text--muted;
+      }
+
+      .icon {
+        margin-right: 5px;
+      }
+    }
+  }
 
   .column {
-    width: 210px;
+    flex: 0 0 210px;
     height: 100%;
     overflow-y: scroll;
     background: #fff;
@@ -44,40 +114,6 @@
 
     &.folder {
       cursor: pointer;
-    }
-
-    .icon {
-      width: 12px;
-      height: 12px;
-      margin-right: 7px;
-      flex: 0 0 12px;
-
-      &.box {
-        width: 20px;
-        height: 20px;
-        flex: 0 0 20px;
-      }
-
-      &.trash {
-        width: 11px;
-        height: 11px;
-        flex: 0 0 11px;
-      }
-
-      &.file-o {
-        background: none;
-
-        * {
-          stroke: #ddd;
-          fill: #fff;
-        }
-      }
-
-      &.folder {
-        width: 17px;
-        height: 17px;
-        flex: 0 0 17px;
-      }
     }
 
     .name {
