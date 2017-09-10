@@ -18,11 +18,13 @@ import renderHomeGrayscaleIcon from '../icon/home-grayscale'
 // =
 
 // - opts.filesListView: boolean (default false). If true, will use com/files-list for archives
+// - opts.selectedPath: array of beaker-virtual-fs objects. The currently selected node(s)
 export default function render (root, opts = {}) {
-  return rFilesColumnsView(root, [], opts)
+  opts.selectedPath = opts.selectedPath || []
+  return rFilesColumnsView(root, opts)
 }
 
-function rFilesColumnsView (root, selectedPath, opts) {
+function rFilesColumnsView (root, opts) {
   if (!root) {
     return yo`<div class="files-columns-view"></div>`
   }
@@ -31,9 +33,9 @@ function rFilesColumnsView (root, selectedPath, opts) {
 
   return yo`
     <div class="files-columns-view ${root.isEmpty ? 'empty' : ''}">
-      ${rBreadcrumbs(root, selectedPath)}
-      ${rColumn(root, root, selectedPath, 0, opts)}
-      ${selectedPath.map((node, i) => rColumn(root, node, selectedPath, i+1, opts))}
+      ${rBreadcrumbs(root, opts.selectedPath)}
+      ${rColumn(root, root, 0, opts)}
+      ${opts.selectedPath.map((node, i) => rColumn(root, node, i+1, opts))}
     </div>
   `
 }
@@ -41,8 +43,8 @@ function rFilesColumnsView (root, selectedPath, opts) {
 // rendering
 // =
 
-function redraw (root, selectedPath, opts = {}) {
-  yo.update(document.querySelector('.files-columns-view'), rFilesColumnsView(root, selectedPath, opts))
+function redraw (root, opts = {}) {
+  yo.update(document.querySelector('.files-columns-view'), rFilesColumnsView(root, opts))
 }
 
 function rIcon (node, grayscale=false) {
@@ -83,7 +85,7 @@ function rBreadcrumb (node) {
   `
 }
 
-function rColumn (root, node, selectedPath, depth, opts = {}) {
+function rColumn (root, node, depth, opts = {}) {
   if (opts.filesListView && node.type === 'archive') {
     return renderFilesList(node, opts)
   }
@@ -94,19 +96,19 @@ function rColumn (root, node, selectedPath, depth, opts = {}) {
 
   return yo`
     <div class="column ${depth === 0 ? 'first' : ''}">
-      ${node.children.map(childNode => rNode(root, childNode, selectedPath, depth, opts))}
+      ${node.children.map(childNode => rNode(root, childNode, depth, opts))}
     </div>
   `
 }
 
-function rNode (root, node, selectedPath, depth, opts) {
-  const isHighlighted = selectedPath.reduce((agg, activeNode) => agg || activeNode === node, false)
-  const isSelected = isHighlighted && selectedPath.length - 1 === depth
+function rNode (root, node, depth, opts) {
+  const isHighlighted = opts.selectedPath.reduce((agg, activeNode) => agg || activeNode === node, false)
+  const isSelected = isHighlighted && opts.selectedPath.length - 1 === depth
   return yo`
     <div
       class="item ${node.type} ${isHighlighted ? 'highlighted' : ''} ${isSelected ? 'selected' : ''}"
       title=${node.name}
-      onclick=${e => onClickNode(e, root, node, selectedPath, depth, opts)}
+      onclick=${e => onClickNode(e, root, node, depth, opts)}
       ondblclick=${e => onDblClickNode(e, node)}>
       ${rIcon(node, !depth)}
       <div class="name">${node.name}</div>
@@ -118,14 +120,19 @@ function rNode (root, node, selectedPath, depth, opts) {
 // event handlers
 // =
 
-async function onClickNode (e, root, node, selectedPath, depth, opts = {}) {
+async function onClickNode (e, root, node, depth, opts = {}) {
   // update state
-  selectedPath.length = depth // truncate all nodes with equal or greater depth
-  selectedPath.push(node) // add (or readd) this node
+  opts.selectedPath.length = depth // truncate all nodes with equal or greater depth
+  opts.selectedPath.push(node) // add (or readd) this node
   await node.readData()
 
+  // emit an update
+  if (opts.onSelection) {
+    opts.onSelection(opts.selectedPath)
+  }
+
   // render
-  redraw(root, selectedPath, opts)
+  redraw(root, opts)
 
   // scroll to the rightmost point
   const container = document.querySelector('.files-columns-view')
