@@ -1,4 +1,4 @@
-import {app, dialog, autoUpdater, BrowserWindow, webContents, ipcMain, shell} from 'electron'
+import {app, dialog, autoUpdater, BrowserWindow, webContents, ipcMain, shell, Menu} from 'electron'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
@@ -86,6 +86,7 @@ export function setup () {
     removeAsDefaultProtocolClient,
 
     showOpenDialog,
+    showContextMenu,
     openUrl: url => { openUrl(url) }, // dont return anything
     openFolder,
     doWebcontentsCmd,
@@ -301,6 +302,34 @@ function showOpenDialog (opts = {}) {
       `)
       resolve(filenames)
     })
+  })
+}
+
+function showContextMenu (menuDefinition) {
+  return new Promise(resolve => {
+    // add a click item to all menu items
+    addClickHandler(menuDefinition)
+    function addClickHandler (items) {
+      items.forEach(item => {
+        if (item.type === 'submenu' && Array.isArray(item.submenu)) {
+          addClickHandler(item.submenu)
+        } else if (item.type !== 'separator' && item.id) {
+          item.click = clickHandler
+        }
+      })
+    }
+
+    // track the selection
+    var selection
+    function clickHandler (item) {
+      selection = item.id
+    }
+
+    // show the menu
+    var win = BrowserWindow.fromWebContents(this.sender.hostWebContents)
+    var menu = Menu.buildFromTemplate(menuDefinition)
+    menu.popup(win)
+    resolve(selection)
   })
 }
 

@@ -20,6 +20,7 @@ export default {
 
   setStartPageBackgroundImage: 'promise',
 
+  showContextMenu: 'promise',
   showOpenDialog: 'promise',
   openUrl: 'promise',
   openFolder: 'promise',

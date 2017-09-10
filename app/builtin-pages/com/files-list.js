@@ -3,6 +3,7 @@
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import {niceDate} from '../../lib/time'
+import {writeToClipboard} from '../../lib/fg/event-handlers'
 import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder-color'
 import renderFilesListHeader from './files-list-header'
@@ -25,7 +26,11 @@ function rFilesList (root, selectedNode, opts) {
 
   return yo`
     <div class="files-list-view">
-      <div class="files-list ${root.isEmpty ? 'empty' : ''}">
+      <div
+        class="files-list ${root.isEmpty ? 'empty' : ''}"
+        onclick=${e => onClickNode(e, root, null, selectedNode, 0, opts)}
+        oncontextmenu=${e => onContextMenu(e, root, null, selectedNode, 0, opts)}
+      >
         ${renderFilesListHeader(root)}
         ${rChildren(root, root.children, selectedNode, 0, opts)}
       </div>
@@ -78,6 +83,7 @@ function rDirectory (root, node, selectedNode, depth, opts) {
         class="item folder ${isSelected ? 'selected' : ''}"
         title=${node.name}
         onclick=${e => onClickNode(e, root, node, selectedNode, depth, opts)}
+        oncontextmenu=${e => onContextMenu(e, root, node, selectedNode, depth, opts)}
         ondblclick=${e => onDblClickNode(e, node)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
         <div
@@ -104,6 +110,7 @@ function rFile (root, node, selectedNode, depth, opts) {
       class="item file ${isSelected ? 'selected' : ''}"
       title=${node.name}
       onclick=${e => onClickNode(e, root, node, selectedNode, depth, opts)}
+      oncontextmenu=${e => onContextMenu(e, root, node, selectedNode, depth, opts)}
       ondblclick=${e => onDblClickNode(e, node)}
       style=${'padding-left: ' + padding + 'px'}>
       <div class="name">
@@ -119,9 +126,11 @@ function rFile (root, node, selectedNode, depth, opts) {
 // event handlers
 // =
 
-async function onClickNode (e, root, node, selectedNode, depth, opts = {}) {
-  e.preventDefault()
-  e.stopPropagation()
+async function onClickNode (e, root, node, selectedNode, depth, opts) {
+  if (e) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   // update state
   selectedNode = node
@@ -130,9 +139,62 @@ async function onClickNode (e, root, node, selectedNode, depth, opts = {}) {
   redraw(root, selectedNode, opts)
 
   // read data if needed, and redraw
-  if (node.type === 'file') {
+  if (node && node.type === 'file') {
     await node.readData()
     redraw(root, selectedNode, opts)
+  }
+}
+
+async function onContextMenu (e, root, node, selectedNode, depth, opts) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  // select first
+  await onClickNode(null, root, node, selectedNode, depth, opts)
+  // wait a frame to let rendering occur (I know, I'm a hack)
+  await new Promise(resolve => setTimeout(resolve, 33))
+
+  // now run the menu
+  var action
+  if (node && node.type === 'file') {
+    action = await beakerBrowser.showContextMenu([
+      {label: 'Open file', id: 'open'},
+      {label: 'Copy URL', id: 'copy-url'},
+      {label: 'Copy path', id: 'copy-path'},
+      {type: 'separator'},
+      {label: 'Rename', id: 'rename-file'},
+      {label: 'Delete file', id: 'delete-file'}
+    ])
+  } else if (node && node.type === 'folder') {
+    action = await beakerBrowser.showContextMenu([
+      {label: 'Open folder', id: 'open'},
+      {label: 'Copy URL', id: 'copy-url'},
+      {label: 'Copy path', id: 'copy-path'},
+      {type: 'separator'},
+      {label: `Add folder to "${node.name}"`, id: 'add-folder'},
+      {label: `Import files to "${node.name}"`, id: 'import'},
+      {label: 'Rename', id: 'rename-folder'},
+      {label: 'Delete folder', id: 'delete-folder'}
+    ])
+  } else {
+    action = await beakerBrowser.showContextMenu([
+      {label: 'Open archive', id: 'open'},
+      {label: 'Copy URL', id: 'copy-url'},
+      {type: 'separator'},
+      {label: 'Add folder', id: 'add-folder'},
+      {label: 'Import files', id: 'import'}
+    ])
+  }
+
+  // now run the action
+  console.log(action)
+  node = node || root
+  switch (action) {
+    case 'open': return window.open(node.url)
+    case 'copy-url': return writeToClipboard(node.url)
+    case 'copy-path': return writeToClipboard(node._path || '/')
+    case null: return
+    default: alert('Todo, sorry!') // TODO
   }
 }
 
