@@ -23,6 +23,7 @@
 
     &.home {
       flex: 0 0 13.5px;
+      width: 13.5px;
       height: 13.5px;
     }
 
@@ -68,11 +69,15 @@
     font-size: 11.75px;
 
     .breadcrumb {
-      &:extend(.flex);
-      flex-wrap: nowrap;
-      flex: 1;
-      align-items: center;
       margin-right: 6px;
+      height: 25px;
+      line-height: 25px;
+      vertical-align: middle;
+      margin-top: -1px;
+
+      * {
+        display: inline-block;
+      }
 
       &:not(:last-of-type):after {
         display: inline-block;
@@ -86,6 +91,9 @@
 
       .icon {
         margin-right: 5px;
+        margin-top: -2px;
+        line-height: 25px;
+        vertical-align: middle;
       }
     }
   }
