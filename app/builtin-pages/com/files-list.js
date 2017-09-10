@@ -78,6 +78,7 @@ function rDirectory (root, node, selectedNode, depth, opts) {
         class="item folder ${isSelected ? 'selected' : ''}"
         title=${node.name}
         onclick=${e => onClickNode(e, root, node, selectedNode, depth, opts)}
+        ondblclick=${e => onDblClickNode(e, node)}
         style=${'padding-left: ' + directoryPadding + 'px'}>
         <div
           class="caret"
@@ -103,6 +104,7 @@ function rFile (root, node, selectedNode, depth, opts) {
       class="item file ${isSelected ? 'selected' : ''}"
       title=${node.name}
       onclick=${e => onClickNode(e, root, node, selectedNode, depth, opts)}
+      ondblclick=${e => onDblClickNode(e, node)}
       style=${'padding-left: ' + padding + 'px'}>
       <div class="name">
         ${renderFileOIcon()}
@@ -131,6 +133,16 @@ async function onClickNode (e, root, node, selectedNode, depth, opts = {}) {
   if (node.type === 'file') {
     await node.readData()
     redraw(root, selectedNode, opts)
+  }
+}
+
+function onDblClickNode (e, node) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  // open in a new window
+  if (node.url) {
+    window.open(node.url)
   }
 }
 

@@ -104,7 +104,8 @@ function rNode (root, node, selectedPath, depth, opts) {
     <div
       class="item ${node.type} ${isHighlighted ? 'highlighted' : ''} ${isSelected ? 'selected' : ''}"
       title=${node.name}
-      onclick=${e => onClickNode(e, root, node, selectedPath, depth, opts)}>
+      onclick=${e => onClickNode(e, root, node, selectedPath, depth, opts)}
+      ondblclick=${e => onDblClickNode(e, node)}>
       ${rIcon(node)}
       <div class="name">${node.name}</div>
       ${node.isContainer ? yo`<span class="caret right">▶</span>` : ''}
@@ -127,4 +128,14 @@ async function onClickNode (e, root, node, selectedPath, depth, opts = {}) {
   // scroll to the rightmost point
   const container = document.querySelector('.files-columns-view')
   container.scrollLeft = container.scrollWidth
+}
+
+function onDblClickNode (e, node) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  // open in a new window
+  if (node.url) {
+    window.open(node.url)
+  }
 }
