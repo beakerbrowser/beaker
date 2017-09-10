@@ -12,6 +12,7 @@ import renderBoxIcon from '../icon/box'
 import renderPhotosIcon from '../icon/photos'
 import renderVideosIcon from '../icon/videos'
 import renderHomeIcon from '../icon/home'
+import renderHomeGrayscaleIcon from '../icon/home-grayscale'
 
 // exported api
 // =
@@ -44,12 +45,12 @@ function redraw (root, selectedPath, opts = {}) {
   yo.update(document.querySelector('.files-columns-view'), rFilesColumnsView(root, selectedPath, opts))
 }
 
-function rIcon (node) {
+function rIcon (node, grayscale=false) {
   let icon = ''
   switch (node.constructor.name) {
     case 'FSVirtualFolder_User':
       // TODO handle user profile vs just a profile
-      icon = renderHomeIcon()
+      icon = grayscale ? renderHomeGrayscaleIcon() : renderHomeIcon()
       break
     case 'FSVirtualFolder_Network':
       icon = renderGlobeIcon()
@@ -107,7 +108,7 @@ function rNode (root, node, selectedPath, depth, opts) {
       title=${node.name}
       onclick=${e => onClickNode(e, root, node, selectedPath, depth, opts)}
       ondblclick=${e => onDblClickNode(e, node)}>
-      ${rIcon(node)}
+      ${rIcon(node, !depth)}
       <div class="name">${node.name}</div>
       ${node.isContainer ? yo`<span class="caret right">▶</span>` : ''}
     </div>

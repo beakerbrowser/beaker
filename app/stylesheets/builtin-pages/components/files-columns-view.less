@@ -111,6 +111,24 @@
       flex: 0 0 150px;
       background: rgb(253, 254, 254);
 
+      .icon {
+        flex: 0 0 15px;
+        width: 15px;
+        height: 15px;
+
+        &.globe {
+
+          .earth {
+            fill: fadeout(#fff, 10%);
+          }
+
+          #water {
+            fill: #777;
+          }
+        }
+
+      }
+
       .item {
         height: 24px;
 
@@ -123,6 +141,7 @@
           background: linear-gradient(to right, rgba(232, 237, 237, .6), rgba(233, 234, 235, .5));
           color: inherit;
           font-weight: 400;
+          -webkit-font-smoothing: initial;
         }
       }
     }
