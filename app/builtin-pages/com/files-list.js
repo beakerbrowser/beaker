@@ -6,7 +6,6 @@ import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder-color'
-import renderFilesListHeader from './files-list-header'
 import renderFilesListSidebar from './files-list-sidebar'
 
 // exported api
@@ -31,7 +30,6 @@ function rFilesList (root, selectedNode, opts) {
         onclick=${e => onClickNode(e, root, null, selectedNode, 0, opts)}
         oncontextmenu=${e => onContextMenu(e, root, null, selectedNode, 0, opts)}
       >
-        ${renderFilesListHeader(root)}
         ${rChildren(root, root.children, selectedNode, 0, opts)}
       </div>
       ${renderFilesListSidebar(selectedNode || root)}

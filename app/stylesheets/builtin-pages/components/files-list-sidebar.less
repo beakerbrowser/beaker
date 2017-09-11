@@ -2,6 +2,68 @@
   flex: 0 0 400px;
   width: 400px;
   overflow-y: auto;
+  border-right: 1px solid #eee;
+
+  .archive-info {
+    padding: 10px;
+    background: #fafafa;
+    border-bottom: 1px solid #eee;
+
+    .header {
+      &:extend(.flex);
+    }
+
+    .main {
+      margin-left: 29px; // width of .archive-icon + its margin-right
+    }
+
+    h1,
+    .archive-icon {
+      display: inline-block;
+    }
+
+    h1 {
+      margin: 0;
+      padding: 0;
+      font-size: .825rem;
+      font-weight: 500;
+    }
+
+    .archive-icon {
+      position: relative;
+      margin-right: 7px;
+
+      .icon {
+        width: 22px !important;
+        height: 22px !important;
+      }
+
+      &:after {
+        display: block;
+        content: '';
+        position: absolute;
+        right: -2px;
+        bottom: 6px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: @red;
+      }
+
+      &.networked {
+
+        &:after {
+          background: @green;
+        }
+      }
+    }
+
+    .desc {
+      margin: 0;
+      font-size: 11.75px;
+      color: @color-text--muted;
+    }
+  }
 
   .preview {
     text-align: center;

@@ -10,6 +10,8 @@ import renderFilePreview from './file-preview'
 
 export default function render (node) {
   const isEditingInfo = false // TODO
+  const archiveInfo = node._archiveInfo
+  if (!archiveInfo) return yo`<div></div>`
 
   // render preview
   let preview
@@ -22,8 +24,23 @@ export default function render (node) {
     preview = yo`<div class="icon-wrapper">${renderFolderIcon()}</div>`
   }
 
+  console.log(node)
+
   return yo`
     <div class="files-list-sidebar">
+      <div class="archive-info">
+        <div class="header">
+          <span class="archive-icon ${archiveInfo.userSettings.networked ? 'networked' : ''}">
+            ${renderFolderIcon()}
+          </span>
+          <h1>${archiveInfo.title || 'Untitled'}</h1>
+        </div>
+
+        <div class="main">
+          <p class="desc">${archiveInfo.description || yo`<em>No description</em>`}</p>
+        </div>
+      </div>
+
       <div class="preview">
         ${preview}
       </div>
