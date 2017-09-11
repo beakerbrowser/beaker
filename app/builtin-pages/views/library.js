@@ -68,10 +68,19 @@ async function onContextMenu (e) {
   e.stopPropagation()
 
   const action = await beakerBrowser.showContextMenu([
-    {label: 'New files archive', id: 'new'}
+    {type: 'submenu', label: 'New...', submenu: [
+      {label: 'Application', id: 'new-application'},
+      {label: 'Code module', id: 'new-module'},
+      {label: 'Dataset', id: 'new-dataset'},
+      {label: 'Documents folder', id: 'new-document'},
+      {label: 'Music folder', id: 'new-music'},
+      {label: 'Photos folder', id: 'new-photo'},
+      {label: 'Videos folder', id: 'new-video'},
+      {label: 'Website', id: 'new-website'}
+    ]}
   ])
-  if (action === 'new') {
-    var archive = await DatArchive.create({prompt: true})
+  if (action && action.startsWith('new')) {
+    var archive = await DatArchive.create({prompt: true, type: action.slice('new-'.length)})
     window.location.pathname = archive.url.slice('dat://'.length)
   }
 }
