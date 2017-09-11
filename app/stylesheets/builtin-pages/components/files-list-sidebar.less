@@ -1,4 +1,8 @@
 .files-list-sidebar {
+  flex: 0 0 400px;
+  width: 400px;
+  overflow-y: auto;
+
   .preview {
     text-align: center;
     padding: 15px;
@@ -18,16 +22,19 @@
     video,
     audio {
       width: 100%;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
+      border-radius: 2px;
     }
 
     .text {
+      font-family: Consolas, Monaco, 'Lucida Console', monospace;
       padding: 2px 5px;
       text-align: left;
       white-space: pre;
-      font-size: 0.6rem;
+      font-size: 0.75rem;
       max-height: 70vh;
       overflow: hidden;
+      overflow-y: auto;
     }
   }
 
