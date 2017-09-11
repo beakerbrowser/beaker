@@ -9,6 +9,7 @@
   background: #fff;
   height: 100vh;
   overflow-x: auto;
+  padding-left: 150px; // width of first column
   padding-bottom: 25px; // height of breadcrumbs
 
   * {
@@ -59,7 +60,7 @@
     &:extend(.flex);
     align-items: center;
     position: fixed;
-    left: 40px;
+    left: 190px; // width of builtin pages sidebar + width of first column
     bottom: 0;
     width: 100%;
     height: 25px;
@@ -108,7 +109,9 @@
 
     // the main column
     &.first {
-      flex: 0 0 150px;
+      position: fixed;
+      left: 40px; // width of builtin pages sidebar
+      width: 150px;
       background: rgb(253, 254, 254);
 
       .item {
