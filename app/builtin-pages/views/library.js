@@ -21,9 +21,14 @@ var fsRoot = new FSVirtualRoot()
 
 setup()
 async function setup () {
+  // load and render
   await fsRoot.readData()
   await readSelectedPathFromURL()
   update()
+
+  // scroll to the rightmost point
+  const container = document.querySelector('.files-columns-view')
+  container.scrollLeft = container.scrollWidth
 }
 
 // rendering
