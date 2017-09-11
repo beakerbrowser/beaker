@@ -11,6 +11,8 @@ import renderFilePreview from './file-preview'
 export default function render (node) {
   const isEditingInfo = false // TODO
   const archiveInfo = node._archiveInfo
+  const networked = archiveInfo.userSettings.networked
+
   if (!archiveInfo) return yo`<div></div>`
 
   // render preview
@@ -24,13 +26,12 @@ export default function render (node) {
     preview = yo`<div class="icon-wrapper">${renderFolderIcon()}</div>`
   }
 
-  console.log(node)
 
   return yo`
     <div class="files-list-sidebar">
       <div class="archive-info">
         <div class="header">
-          <span class="archive-icon ${archiveInfo.userSettings.networked ? 'networked' : ''}">
+          <span title="${networked ? 'Stop' : 'Start'} hosting this archive" class="archive-icon ${networked ? 'networked' : ''}">
             ${renderFolderIcon()}
           </span>
           <h1>${archiveInfo.title || 'Untitled'}</h1>
