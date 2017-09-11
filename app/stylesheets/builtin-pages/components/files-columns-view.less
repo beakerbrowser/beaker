@@ -12,48 +12,18 @@
   padding-left: 150px; // width of first column
   padding-bottom: 25px; // height of breadcrumbs
 
-  * {
-    -webkit-user-select: none;
+  .icon {
+
+    // shared folder styles for both columns and file listing
+    &.folder {
+      width: 16px !important;
+      height: 14px !important;
+      flex: 0 0 16px !important;
+    }
   }
 
-  .icon {
-    width: 14.5px;
-    height: 14.5px;
-    margin-right: 7px;
-    flex: 0 0 14.5px;
-
-    &.home {
-      flex: 0 0 13.5px;
-      width: 13.5px;
-      height: 13.5px;
-    }
-
-    &.box {
-      width: 20px;
-      height: 20px;
-      flex: 0 0 20px;
-    }
-
-    &.trash {
-      width: 11px;
-      height: 11px;
-      flex: 0 0 11px;
-    }
-
-    &.file-o {
-      background: none;
-
-      * {
-        stroke: #ddd;
-        fill: #fff;
-      }
-    }
-
-    &.folder {
-      width: 16px;
-      height: 14px;
-      flex: 0 0 16px;
-    }
+  * {
+    -webkit-user-select: none;
   }
 
   .breadcrumbs {
@@ -109,6 +79,13 @@
     background: #fff;
     padding: 5px 0;
 
+    .icon {
+      width: 14.5px;
+      height: 14.5px;
+      margin-right: 7px;
+      flex: 0 0 14.5px;
+    }
+
     // the main column
     &.first {
       position: fixed;
@@ -130,25 +107,6 @@
             color: @color-text;
           }
         }
-      }
-
-      .icon {
-        flex: 0 0 15px;
-        width: 15px;
-        height: 15px;
-        margin-right: 4px;
-
-        &.globe {
-
-          .earth {
-            fill: fadeout(#fff, 5%);
-          }
-
-          #water {
-            fill: #777;
-          }
-        }
-
       }
 
       .item {
