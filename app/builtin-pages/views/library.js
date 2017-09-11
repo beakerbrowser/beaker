@@ -21,9 +21,14 @@ var fsRoot = new FSVirtualRoot()
 
 setup()
 async function setup () {
+  // load and render
   await fsRoot.readData()
   await readSelectedPathFromURL()
   update()
+
+  // scroll to the rightmost point
+  const container = document.querySelector('.files-columns-view')
+  container.scrollLeft = container.scrollWidth
 }
 
 // rendering
@@ -65,8 +70,9 @@ async function onContextMenu (e) {
   const action = await beakerBrowser.showContextMenu([
     {label: 'New files archive', id: 'new'}
   ])
-  if (action) {
-    alert('TODO')
+  if (action === 'new') {
+    var archive = await DatArchive.create({prompt: true})
+    window.location.pathname = archive.url.slice('dat://'.length)
   }
 }
 
