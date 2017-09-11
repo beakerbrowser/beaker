@@ -2,6 +2,7 @@
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
+import {FSVirtualFolderWithTypes} from 'beaker-virtual-fs'
 import renderFilesList from './files-list'
 import {niceDate} from '../../lib/time'
 import renderFileOIcon from '../icon/file-o'
@@ -139,6 +140,12 @@ async function onClickNode (e, root, node, depth, opts = {}) {
   opts.selectedPath.length = depth // truncate all nodes with equal or greater depth
   opts.selectedPath.push(node) // add (or readd) this node
   await node.readData()
+  if (node instanceof FSVirtualFolderWithTypes) {
+    // autoselect the 'all' type
+    let all = node.children[0]
+    opts.selectedPath.push(all)
+    await all.readData()
+  }
 
   // emit an update
   if (opts.onSelection) {
