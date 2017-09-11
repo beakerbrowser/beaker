@@ -175,18 +175,27 @@ export default class DatArchive extends EventTarget {
   }
 
   // TODO copy-disabled
-  /* async copy(path, dstPath) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    return dat.copy(url, dstPath)
-  } */
+  /*async copy(path, dstPath) {
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      url = joinPath(url, path)
+      return dat.copy(url, dstPath)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }*/
 
-  // TODO rename-disabled
-  /* async rename(path, dstPath) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    return dat.rename(url, dstPath)
-  } */
+  async rename(path, dstPath) {
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      url = joinPath(url, path)
+      return dat.rename(url, dstPath)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
 
   async download (path = '/', opts = {}) {
     var errStack = (new Error()).stack

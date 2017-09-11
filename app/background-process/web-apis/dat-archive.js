@@ -236,19 +236,19 @@ export default {
     })
   }, */
 
-  // TODO rename-disabled
-  /* async rename(url, dstPath) {
+  async rename(url, dstPath) {
     return timer(to(), async (checkin) => {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
       if (checkin('renaming file')) return
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
+      await assertValidFilePath(dstPath)
       await assertUnprotectedFilePath(filepath, this.sender)
       await assertUnprotectedFilePath(dstPath, this.sender)
       return pda.rename(archive, filepath, dstPath)
     })
-  }, */
+  },
 
   async download (url, opts = {}) {
     return timer(to(opts), async (checkin) => {

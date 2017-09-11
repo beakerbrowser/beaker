@@ -137,15 +137,15 @@ test('archive.readdir', async t => {
 test('archive.readFile', async t => {
   // read utf8
   var helloTxt = await readFile(testStaticDatURL, 'hello.txt', {})
-  t.deepEqual(helloTxt.value, 'hello')
+  t.deepEqual(helloTxt.value, 'hello world')
 
   // read utf8 2
   var helloTxt2 = await readFile(testStaticDatURL, '/subdir/hello.txt', 'utf8')
-  t.deepEqual(helloTxt2.value, 'hi')
+  t.deepEqual(helloTxt2.value, 'hello world')
 
   // read utf8 when spaces are in the name
   var helloTxt2 = await readFile(testStaticDatURL, '/subdir/space in the name.txt', 'utf8')
-  t.deepEqual(helloTxt2.value, 'hi')
+  t.deepEqual(helloTxt2.value, 'hello world')
 
   // read hex
   var beakerPngHex = await readFile(testStaticDatURL, 'beaker.png', 'hex')
@@ -932,8 +932,18 @@ test('versioned reads and writes', async t => {
   )
 })*/
 
-// TODO rename-disabled
-/*test('archive.rename', async t => {
+test('archive.rename', async t => {
+  // TEMP write files (this should be removed when copy-disabled is removed)
+  await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.writeFile('/hello2.txt', 'hello world')
+      .then(() => archive.writeFile('/subdir/hello2.txt', 'hello world'))
+      .then(() => archive.mkdir('/subdir2'))
+      .then(() => archive.writeFile('/subdir2/hello.txt', 'hello world'))
+      .then(() => archive.writeFile('/subdir2/hello2.txt', 'hello world'))
+      .then(done, done)
+  }, createdDatURL)
+
   // file 1
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -967,10 +977,10 @@ test('versioned reads and writes', async t => {
     (await readFile(createdDatURL, '/subdir-two/hello.txt')).value
   )
   await t.deepEqual(
-    (await readFile(createdDatURL, '/subdir/hello-two.txt')).value,
+    (await readFile(createdDatURL, '/subdir/hello2.txt')).value,
     (await readFile(createdDatURL, '/subdir-two/hello-two.txt')).value
   )
-})*/
+})
 
 // TODO copy-disabled
 /*test('archive.copy doesnt allow writes that exceed the quota', async t => {
@@ -989,8 +999,7 @@ test('versioned reads and writes', async t => {
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })*/
 
-// TODO rename-disabled
-/*test('archive.rename protects the manifest', async t => {
+test('archive.rename protects the manifest', async t => {
   // rename the manifest to something else
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -1004,9 +1013,9 @@ test('versioned reads and writes', async t => {
     archive.rename('hello.txt', 'dat.json').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
-})*/
+})
 
-// TODO rename-disabled
+// TODO copy-disabled
 /*test('archive.copy protects the manifest', async t => {
   // copy over the manifest
   var res = await app.client.executeAsync((url, done) => {
@@ -1245,9 +1254,9 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // test files
   var res = await readFile(archiveURL, 'hello.txt')
-  t.deepEqual(res.value, 'hello')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'subdir/hello.txt')
-  t.deepEqual(res.value, 'hi')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'beaker.png', 'base64')
   t.deepEqual(res.value, beakerPng.toString('base64'))
 
@@ -1269,9 +1278,9 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // test files
   var res = await readFile(archiveURL, 'test-static-dat/hello.txt')
-  t.deepEqual(res.value, 'hello')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'test-static-dat/subdir/hello.txt')
-  t.deepEqual(res.value, 'hi')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'test-static-dat/beaker.png', 'base64')
   t.deepEqual(res.value, beakerPng.toString('base64'))
 
@@ -1341,8 +1350,8 @@ test('DatArchive.exportToFilesystem', async t => {
   t.deepEqual(res.value.addedFiles.length, 4)
 
   // test files
-  t.deepEqual(fs.readFileSync(path.join(testDirPath, 'hello.txt'), 'utf8'), 'hello')
-  t.deepEqual(fs.readFileSync(path.join(testDirPath, 'subdir/hello.txt'), 'utf8'), 'hi')
+  t.deepEqual(fs.readFileSync(path.join(testDirPath, 'hello.txt'), 'utf8'), 'hello world')
+  t.deepEqual(fs.readFileSync(path.join(testDirPath, 'subdir/hello.txt'), 'utf8'), 'hello world')
   t.deepEqual(fs.readFileSync(path.join(testDirPath, 'beaker.png'), 'base64'), beakerPng.toString('base64'))
 
   // ignores file as specified
@@ -1382,9 +1391,9 @@ test('DatArchive.exportToArchive', async t => {
 
   // test files
   var res = await readFile(archiveURL, 'hello.txt')
-  t.deepEqual(res.value, 'hello')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'subdir/hello.txt')
-  t.deepEqual(res.value, 'hi')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'beaker.png', 'base64')
   t.deepEqual(res.value, beakerPng.toString('base64'))
 
