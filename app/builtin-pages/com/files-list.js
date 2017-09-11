@@ -152,36 +152,47 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
   await new Promise(resolve => setTimeout(resolve, 33))
 
   // now run the menu
-  var action
+  var menu
+  const visible = (node || root).isEditable
   if (node && node.type === 'file') {
-    action = await beakerBrowser.showContextMenu([
-      {label: 'Open file', id: 'open'},
+    menu = [
+      {label: 'Open URL', id: 'open'},
       {label: 'Copy URL', id: 'copy-url'},
-      {label: 'Copy path', id: 'copy-path'},
-      {type: 'separator'},
-      {label: 'Rename', id: 'rename-file'},
-      {label: 'Delete file', id: 'delete-file'}
-    ])
+      {type: 'separator', visible},
+      {label: 'Rename', id: 'rename-file', visible},
+      {label: 'Delete file', id: 'delete-file', visible}
+    ]
   } else if (node && node.type === 'folder') {
-    action = await beakerBrowser.showContextMenu([
-      {label: 'Open folder', id: 'open'},
+    menu = [
+      {label: 'Open URL', id: 'open'},
       {label: 'Copy URL', id: 'copy-url'},
-      {label: 'Copy path', id: 'copy-path'},
-      {type: 'separator'},
-      {label: `Add folder to "${node.name}"`, id: 'add-folder'},
-      {label: `Import files to "${node.name}"`, id: 'import'},
-      {label: 'Rename', id: 'rename-folder'},
-      {label: 'Delete folder', id: 'delete-folder'}
-    ])
+      {type: 'separator', visible},
+      {label: `New folder in "${node.name}"`, id: 'new-folder', visible},
+      {label: `Import files to "${node.name}"`, id: 'import', visible},
+      {label: 'Rename', id: 'rename-folder', visible},
+      {label: 'Delete folder', id: 'delete-folder', visible}
+    ]
   } else {
-    action = await beakerBrowser.showContextMenu([
-      {label: 'Open archive', id: 'open'},
+    menu = [
+      {label: 'Open URL', id: 'open'},
       {label: 'Copy URL', id: 'copy-url'},
-      {type: 'separator'},
-      {label: 'Add folder', id: 'add-folder'},
-      {label: 'Import files', id: 'import'}
-    ])
+      {type: 'separator', visible},
+      {label: 'New folder', id: 'new-folder', visible},
+      {label: 'Import files', id: 'import', visible}
+    ]
   }
+  menu.push({type: 'separator'})
+  menu.push({type: 'submenu', label: 'New...', submenu: [
+    {label: 'Application', id: 'new-application'},
+    {label: 'Code module', id: 'new-module'},
+    {label: 'Dataset', id: 'new-dataset'},
+    {label: 'Documents folder', id: 'new-document'},
+    {label: 'Music folder', id: 'new-music'},
+    {label: 'Photos folder', id: 'new-photo'},
+    {label: 'Videos folder', id: 'new-video'},
+    {label: 'Website', id: 'new-website'}
+  ]})
+  const action = await beakerBrowser.showContextMenu(menu)
 
   // now run the action
   console.log(action)
@@ -189,9 +200,14 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
   switch (action) {
     case 'open': return window.open(node.url)
     case 'copy-url': return writeToClipboard(node.url)
-    case 'copy-path': return writeToClipboard(node._path || '/')
     case null: return
-    default: alert('Todo, sorry!') // TODO
+    default:
+      if (action && action.startsWith('new')) {
+        let archive = await DatArchive.create({prompt: true, type: action.slice('new-'.length)})
+        window.location.pathname = archive.url.slice('dat://'.length)
+      } else {
+        alert('Todo, sorry!') // TODO
+      }
   }
 }
 
