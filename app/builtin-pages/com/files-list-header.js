@@ -76,5 +76,5 @@ function onFork () {
 }
 
 function onToggleSaved () {
-  // TODO 
+  // TODO
 }
