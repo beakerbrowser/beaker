@@ -88,6 +88,7 @@ function rDirectory (root, node, selectedNode, depth, opts) {
         style=${'padding-left: ' + directoryPadding + 'px'}>
         <div
           class="caret"
+          ondblclick=${e => e.stopPropagation()}
           onclick=${e => onClickDirectoryCaret(e, root, node, selectedNode, opts)}
           style="left: ${caretPosition}px; ${node.isExpanded ? 'transform: rotate(90deg);' : ''}"
         >▶︎</div>
