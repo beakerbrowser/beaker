@@ -31,7 +31,10 @@ async function setup () {
 
 function update () {
   yo.update(document.querySelector('.library-wrapper'), yo`
-    <div class="library-wrapper builtin-wrapper">
+    <div
+      class="library-wrapper builtin-wrapper"
+      oncontextmenu=${onContextMenu}
+    >
       ${renderSidebar('library')}
       <div class="builtin-main">
         ${renderFiles(fsRoot, {filesListView: true, selectedPath, onSelection})}
@@ -52,6 +55,18 @@ function onSelection (path) {
     window.history.replaceState({}, null, node._archiveInfo.key)
   } else {
     window.history.replaceState({}, null, '/')
+  }
+}
+
+async function onContextMenu (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  const action = await beakerBrowser.showContextMenu([
+    {label: 'New files archive', id: 'new'}
+  ])
+  if (action) {
+    alert('TODO')
   }
 }
 
