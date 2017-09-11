@@ -1,4 +1,4 @@
-import {app, dialog, autoUpdater, BrowserWindow, webContents, ipcMain, shell, Menu} from 'electron'
+import {app, dialog, autoUpdater, BrowserWindow, webContents, ipcMain, shell, Menu, screen} from 'electron'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
@@ -307,6 +307,8 @@ function showOpenDialog (opts = {}) {
 
 function showContextMenu (menuDefinition) {
   return new Promise(resolve => {
+    var cursorPos = screen.getCursorScreenPoint()
+
     // add a click item to all menu items
     addClickHandler(menuDefinition)
     function addClickHandler (items) {
@@ -315,6 +317,18 @@ function showContextMenu (menuDefinition) {
           addClickHandler(item.submenu)
         } else if (item.type !== 'separator' && item.id) {
           item.click = clickHandler
+        }
+      })
+    }
+
+    // add 'inspect element' in development
+    if (process.env.NODE_ENV === 'develop' || process.env.NODE_ENV === 'test') {
+      menuDefinition.push({type: 'separator'})
+      menuDefinition.push({
+        label: 'Inspect Element',
+        click: () => {
+          this.sender.inspectElement(cursorPos.x, cursorPos.y)
+          if (this.sender.isDevToolsOpened()) { this.sender.devToolsWebContents.focus() }
         }
       })
     }
