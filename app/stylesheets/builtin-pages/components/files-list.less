@@ -35,71 +35,43 @@
     align-items: center;
     position: relative;
     padding: 0 15px 0 50px;
-    height: 24px;
+    height: 22px;
+    font-size: 11.75px;
+
+    .icon {
+      margin-right: 4px;
+    }
+
+    &.file {
+
+      .icon {
+        height: 15px;
+        width: auto;
+      }
+    }
 
     .caret {
       position: absolute;
-      font-size: 10px;
+      font-size: 9px;
       color: #bbb;
       display: inline-block;
       cursor: pointer;
     }
 
-    .icon {
-      position: relative;
-      top: 1px;
-      width: 15px;
-      height: 15px;
-      margin-right: 2px;
-
-      &.file-o {
-        background: none;
-
-        * {
-          stroke: #ddd;
-          fill: #fff;
-        }
-      }
-
-      &.folder {
-        top: 3px;
-        width: 16px;
-        height: 14px;
-      }
-    }
-
     .name {
       &:extend(.overflow-ellipsis);
       max-width: 75%;
-      color: rgba(0,0,0,.9);
-    }
-
-    .size, .updated {
-      color: @color-text;
-      font-size: .73rem;
-      color: rgba(0,0,0,.5);
-      font-weight: 500;
-    }
-
-    .size {
-      margin: 0 @margin-icon;
-    }
-
-    .updated {
-      flex: 0 0 75px;
-      margin-left: auto; // right align the .updated element
-      text-align: right;
     }
 
     &.selected {
-      background: #008dfd;
+      background: mix(@blue, @teal);
+      color: #fff;
       -webkit-font-smoothing: antialiased;
+      font-weight: 500;
 
-      .name {
+      .caret {
         color: #fff;
-      }
-      .size, .updated {
-        color: rgba(255,255,255, 0.75);
+        font-weight: 900;
       }
     }
   }
