@@ -147,7 +147,10 @@ async function onClickNode (e, root, node, depth, opts = {}) {
 
   // render
   redraw(root, opts)
+  scrollRight()
+}
 
+function scrollRight () {
   // scroll to the rightmost point
   const container = document.querySelector('.files-columns-view')
   container.scrollLeft = container.scrollWidth
