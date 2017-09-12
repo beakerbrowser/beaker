@@ -18,12 +18,12 @@ export default function render (node) {
 
   // render preview
   let preview
-  if (node.type === 'file') {
+  if (!node.constructor.name !== 'FSArchive' && node.type === 'file') {
     preview = renderFilePreview(node)
     if (!preview) {
       preview = yo`<div class="icon-wrapper">${renderFileOIcon()}</div>`
     }
-  } else {
+  } else if (node.constructor.name !== 'FSArchive') {
     preview = yo`<div class="icon-wrapper">${renderFolderIcon()}</div>`
   }
 
