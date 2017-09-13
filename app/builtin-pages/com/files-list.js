@@ -7,6 +7,7 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder-color'
 import renderFilesListSidebar from './files-list-sidebar'
+import {DAT_VALID_PATH_REGEX} from '../../lib/const'
 
 // exported api
 // =
@@ -283,7 +284,11 @@ async function onKeyupRename (e, root, node, opts) {
     redraw(root, node, opts)
   }
   if (e.code === 'Enter') {
-    node.isRenaming = false
+    // validate the name
+    if (!DAT_VALID_PATH_REGEX.test(node.renameValue) || node.renameValue.includes('/')) {
+      return
+    }
+
     // do rename
     await node.rename(node.renameValue)
     // reload the tree
