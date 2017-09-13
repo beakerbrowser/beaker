@@ -47,7 +47,7 @@ body {
 .btn:disabled {
   cursor: default;
   color: #999999;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   box-shadow: none;
 }
 .btn.disabled .spinner,
