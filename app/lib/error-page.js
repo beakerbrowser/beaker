@@ -129,8 +129,10 @@ li:last-child {
   color: #777;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-top: 30px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
 }
 `
 
