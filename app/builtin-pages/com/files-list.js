@@ -184,7 +184,7 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
 
   // now run the menu
   var menu
-  const enabled = (node || root).isEditable
+  const enabled = (node || root).isEditable && (node || root)._path !== '/dat.json'
   if (node && node.type === 'file') {
     menu = [
       {label: 'Open URL', id: 'open'},
@@ -288,7 +288,14 @@ async function onKeyupRename (e, root, node, opts) {
     if (!DAT_VALID_PATH_REGEX.test(node.renameValue) || node.renameValue.includes('/')) {
       return
     }
-
+    // protect the manifest
+    if (node._path === '/dat.json') {
+      return
+    }
+    let newpath = node._path.split('/').slice(0, -1).join('/') + '/' + node.renameValue
+    if (newpath === '/dat.json') {
+      return
+    }
     // do rename
     await node.rename(node.renameValue)
     // reload the tree
