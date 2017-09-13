@@ -85,6 +85,10 @@ export function getServerInfo () {
 
 async function datServer (req, res) {
   var cb = once((code, status, errorPageInfo) => {
+    if (errorPageInfo) {
+      errorPageInfo.validatedURL = queryParams.url
+      errorPageInfo.errorCode = code
+    }
     res.writeHead(code, status, {
       'Content-Type': 'text/html',
       'Content-Security-Policy': "default-src 'unsafe-inline' beaker:;",
@@ -106,7 +110,12 @@ async function datServer (req, res) {
   // validate request
   var urlp = parseDatUrl(queryParams.url, true)
   if (!urlp.host) {
-    return cb(404, 'Archive Not Found')
+    return cb(
+      404, 'Archive Not Found',
+      { title: 'Archive Not Found',
+        errorDescription: 'Invalid URL',
+        errorInfo: `${urlp} is an invalid dat:// URL`
+      })
   }
   if (req.method !== 'GET') {
     return cb(405, 'Method Not Supported')
@@ -136,7 +145,10 @@ async function datServer (req, res) {
     if (aborted) return
   } catch (err) {
     cleanup()
-    return cb(404, 'No DNS record found for ' + urlp.host)
+    return cb(404, 'No DNS record found',
+      { errorDescription: 'No DNS record found',
+        errorInfo: `No DNS record found for dat://${urlp.host}`
+      })
   }
 
   // setup a timeout
@@ -281,7 +293,11 @@ async function datServer (req, res) {
 
     if (!entry) {
       cleanup()
-      return cb(404, 'File Not Found')
+      return cb(404, 'File Not Found',
+        { errorDescription:  'File Not Found',
+          errorInfo: `Beaker could not find the file ${urlp.path}`,
+          title: 'File Not Found'
+        })
     }
   }
 

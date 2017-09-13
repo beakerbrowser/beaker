@@ -160,7 +160,13 @@ export default function (e) {
         info = '<p>Your computer is not connected to the internet.</p><p>Try:</p><ul><li>Resetting your Wi-Fi connection<li>Checking your router and modem.</li></ul>'
         break
       case -105:
+        icon = 'fa-frown-o'
         info = `<p>Couldn’t resolve the DNS address for <strong>${origin}</strong></p>`
+        break
+      case 404:
+        icon = 'fa-frown-o'
+        title = e.title || 'Page Not Found'
+        info = `<p>${e.errorInfo}</p>`
         break
       case -501:
         title = 'Your connection is not secure'
