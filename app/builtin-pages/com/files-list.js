@@ -243,6 +243,13 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
       }
       return
     }
+    case 'delete':
+      if (confirm(`Are you sure you want to delete "${node.name}"?`)) {
+        await node.delete()
+        await refreshAllNodes(root, opts) // reload the tree
+        redraw(root, null, opts) // redraw with no selected node
+      }
+      return
     case null: return
     default:
       if (action && action.startsWith('new')) {
