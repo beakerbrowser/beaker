@@ -2,6 +2,7 @@
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
+import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import renderFileOIcon from '../icon/file-o'
@@ -134,7 +135,12 @@ function rFile (root, node, selectedNode, depth, opts) {
 async function selectNode (root, newNode, selectedNode, opts) {
   // reset old node
   if (selectedNode) {
-    selectedNode.isRenaming = false
+    if (selectedNode instanceof FSArchiveFolder_BeingCreated) {
+      // if this was a new folder, reload the tree to remove that temp node
+      await refreshAllNodes(root, opts)
+    } else {
+      selectedNode.isRenaming = false
+    }
   }
 
   // update state
@@ -250,6 +256,25 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
         redraw(root, null, opts) // redraw with no selected node
       }
       return
+    case 'new-folder':
+    {
+      // create a new virtual node
+      let parentNode = node || root
+      let parentPath = parentNode._path || '/'
+      let newFolderNode = new FSArchiveFolder_BeingCreated(root._archiveInfo, root._archive, parentPath)
+      parentNode._files.push(newFolderNode)
+
+      // put it into rename mode
+      newFolderNode.renameValue = 'New folder'      
+      newFolderNode.isRenaming = true
+      selectNode(root, newFolderNode, selectedNode, opts)
+      let input = document.querySelector('.files-list-view input')
+      if (input) {
+        input.focus()
+        input.select()
+      }
+      return
+    }
     case null: return
     default:
       if (action && action.startsWith('new')) {
@@ -286,10 +311,6 @@ async function onClickDirectoryCaret (e, root, node, selectedNode, opts) {
 async function onKeyupRename (e, root, node, opts) {
   node.renameValue = e.target.value
 
-  if (e.code === 'Escape') {
-    node.isRenaming = false
-    redraw(root, node, opts)
-  }
   if (e.code === 'Enter') {
     // validate the name
     if (!DAT_VALID_PATH_REGEX.test(node.renameValue) || node.renameValue.includes('/')) {
@@ -299,7 +320,7 @@ async function onKeyupRename (e, root, node, opts) {
     if (node._path === '/dat.json') {
       return
     }
-    let newpath = node._path.split('/').slice(0, -1).join('/') + '/' + node.renameValue
+    let newpath = (node._path ? node._path.split('/').slice(0, -1).join('/') : '') + '/' + node.renameValue
     if (newpath === '/dat.json') {
       return
     }
@@ -309,5 +330,14 @@ async function onKeyupRename (e, root, node, opts) {
     await refreshAllNodes(root, opts)
     // redraw with no selected node 
     redraw(root, null, opts)    
+  }
+  if (e.code === 'Escape') {
+    if (node instanceof FSArchiveFolder_BeingCreated) {
+      // if this was a new folder, reload the tree to remove that temp node
+      await refreshAllNodes(root, opts)
+    } else {
+      node.isRenaming = false
+    }
+    redraw(root, node, opts)
   }
 }
