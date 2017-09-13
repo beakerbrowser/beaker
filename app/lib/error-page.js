@@ -90,6 +90,7 @@ a.link {
 div.error-page-content {
   max-width: 450px;
   margin: auto;
+  transform: translateX(-20px);
   margin-top: 30vh;
   color: #777;
   font-size: 14px;
