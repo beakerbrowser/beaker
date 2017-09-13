@@ -275,6 +275,25 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
       }
       return
     }
+    case 'import':
+    {
+      let files = await beakerBrowser.showOpenDialog({
+        title: 'Import files to this archive',
+        buttonLabel: 'Import',
+        properties: ['openFile', 'openDirectory', 'multiSelections']
+      })
+      if (files) {
+        await Promise.all(files.map(src => DatArchive.importFromFilesystem({
+          src,
+          dst: node.url,
+          ignore: ['dat.json'],
+          inplaceImport: false
+        })))
+        await refreshAllNodes(root, opts) // reload the tree
+        redraw(root, null, opts) // redraw with no selected node
+      }
+      return
+    }
     case null: return
     default:
       if (action && action.startsWith('new')) {
