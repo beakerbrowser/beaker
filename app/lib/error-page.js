@@ -116,9 +116,6 @@ h1 {
 .icon {
   float: right;
 }
-.icon.warning {
-  color: #e60b00;
-}
 li {
   margin-bottom: 0.5em;
 }
