@@ -357,7 +357,7 @@ function render (id, page) {
       </div>
 
       <div class="toolbar-input-group${isLocationHighlighted ? ' input-focused' : ''}${autocompleteResults ? ' autocomplete' : ''}">
-        ${siteInfoNavbarBtn.render()}
+        ${addrValue && !isAddrElFocused ? siteInfoNavbarBtn.render() : ''}
         ${locationPrettyView}
         ${locationInput}
         ${inpageFinder}
