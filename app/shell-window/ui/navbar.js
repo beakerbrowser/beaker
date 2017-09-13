@@ -362,10 +362,10 @@ function render (id, page) {
         ${locationInput}
         ${inpageFinder}
         ${zoomBtn}
-        ${rehostMenuNavbarBtn.render()}
-        ${bookmarkMenuNavbarBtn.render()}
-        ${datBtns}
-        ${pageMenuNavbarBtn.render()}
+        ${!isLocationHighlighted ? rehostMenuNavbarBtn.render() : ''}
+        ${!isLocationHighlighted ? bookmarkMenuNavbarBtn.render() : ''}
+        ${!isLocationHighlighted ? datBtns : ''}
+        ${!isLocationHighlighted ? pageMenuNavbarBtn.render() : ''}
       </div>
       <div class="toolbar-group">
         ${browserMenuNavbarBtn.render()}
@@ -637,6 +637,7 @@ function onBlurLocation (e) {
     page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
     page.navbarEl.querySelector('.toolbar-input-group').classList.remove('input-focused')
     isLocationHighlighted = false
+    update()
   }
 }
 
