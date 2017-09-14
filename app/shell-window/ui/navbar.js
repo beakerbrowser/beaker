@@ -54,6 +54,9 @@ export function setup () {
   rehostMenuNavbarBtn = new RehostMenuNavbarBtn()
   pageMenuNavbarBtn = new PageMenuNavbarBtn()
   siteInfoNavbarBtn = new SiteInfoNavbarBtn()
+
+  // add some global listeners
+  window.addEventListener('keydown', onGlobalKeydown)
 }
 
 export function createEl (id) {
@@ -716,12 +719,6 @@ function onInputFind (e) {
 }
 
 function onKeydownFind (e) {
-  // on escape
-  if (e.keyCode == KEYCODE_ESC) {
-    let page = getEventPage(e)
-    if (page) { hideInpageFind(page) }
-  }
-
   // on enter
   if (e.keyCode == KEYCODE_ENTER) {
     let str = e.target.value
@@ -731,5 +728,13 @@ function onKeydownFind (e) {
       if (str) page.findInPageAsync(str, { findNext: true, forward: !backwards })
       else page.stopFindInPageAsync('clearSelection')
     }
+  }
+}
+
+function onGlobalKeydown (e) {
+  // on escape, hide the in page finder
+  if (e.keyCode == KEYCODE_ESC) {
+    let page = pages.getActive()
+    if (page) { hideInpageFind(page) }
   }
 }
