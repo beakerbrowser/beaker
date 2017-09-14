@@ -185,7 +185,7 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
 
   // select first
   await onClickNode(null, root, node, selectedNode, depth, opts)
-  // wait a frame to let rendering occur (I know, I'm a hack)
+  // HACK wait a frame to let rendering occur -prf
   await new Promise(resolve => setTimeout(resolve, 33))
 
   // now run the menu
@@ -299,9 +299,8 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
       if (action && action.startsWith('new')) {
         let archive = await DatArchive.create({prompt: true, type: action.slice('new-'.length)})
         window.location.pathname = archive.url.slice('dat://'.length)
-      } else {
-        alert('Todo, sorry!') // TODO
       }
+      return
   }
 }
 

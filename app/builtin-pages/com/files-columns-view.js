@@ -2,8 +2,9 @@
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import {FSVirtualFolderWithTypes} from 'beaker-virtual-fs'
+import {FSArchive, FSVirtualFolderWithTypes} from 'beaker-virtual-fs'
 import renderFilesList from './files-list'
+import {writeToClipboard} from '../../lib/fg/event-handlers'
 import {niceDate} from '../../lib/time'
 import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder-color'
@@ -57,6 +58,7 @@ function redraw (root, opts = {}) {
 
 function rIcon (node, grayscale=false) {
   let icon = ''
+  if (!node) return ''
   switch (node.constructor.name) {
     case 'FSVirtualFolder_User':
       const isUserProfile = userProfile._origin === node._profile._origin
@@ -92,6 +94,7 @@ function rBreadcrumbs (root, selectedPath) {
 }
 
 function rBreadcrumb (node) {
+  if (!node) return ''
   return yo`
     <div class="breadcrumb">
       ${rIcon(node)}
@@ -101,6 +104,10 @@ function rBreadcrumb (node) {
 }
 
 function rColumn (root, node, depth, opts = {}) {
+  if (!node) {
+    return ''
+  }
+
   if (opts.filesListView && node.type === 'archive') {
     return renderFilesList(node, opts)
   }
@@ -119,12 +126,14 @@ function rColumn (root, node, depth, opts = {}) {
 function rNode (root, node, depth, opts) {
   const isHighlighted = opts.selectedPath.reduce((agg, activeNode) => agg || activeNode === node, false)
   const isSelected = isHighlighted && opts.selectedPath.length - 1 === depth
+  if (node.isHidden) return ''
   return yo`
     <div
       class="item ${node.type} ${isHighlighted ? 'highlighted' : ''} ${isSelected ? 'selected' : ''}"
       title=${node.name}
       onclick=${e => onClickNode(e, root, node, depth, opts)}
-      ondblclick=${e => onDblClickNode(e, node)}>
+      ondblclick=${e => onDblClickNode(e, node)}
+      oncontextmenu=${e => onContextMenu(e, root, node, depth, opts)}>
       ${rIcon(node, !depth)}
       <div class="name">${node.name}</div>
       ${node.isContainer ? yo`<span class="caret right">▶</span>` : ''}
@@ -132,10 +141,25 @@ function rNode (root, node, depth, opts) {
   `
 }
 
+// helpers
+// =
+
+function scrollRight () {
+  // scroll to the rightmost point
+  const container = document.querySelector('.files-columns-view')
+  container.scrollLeft = container.scrollWidth
+}
+
+async function unselectNode (root, opts) {
+  if (opts.selectedPath.length > 0) {
+    opts.selectedPath.length = opts.selectedPath.length - 1
+  }
+}
+
 // event handlers
 // =
 
-async function onClickNode (e, root, node, depth, opts = {}) {
+async function onClickNode (e, root, node, depth, opts) {
   // update state
   opts.selectedPath.length = depth // truncate all nodes with equal or greater depth
   opts.selectedPath.push(node) // add (or readd) this node
@@ -157,10 +181,59 @@ async function onClickNode (e, root, node, depth, opts = {}) {
   scrollRight()
 }
 
-function scrollRight () {
-  // scroll to the rightmost point
-  const container = document.querySelector('.files-columns-view')
-  container.scrollLeft = container.scrollWidth
+async function onContextMenu (e, root, node, depth, opts) {
+  if (!(node instanceof FSArchive)) {
+    return // only give a custom menu for an archive
+  }
+
+  e.preventDefault()
+  e.stopPropagation()
+
+  // select first
+  await onClickNode(null, root, node, depth, opts)
+  // HACK wait a frame or two to let rendering occur -prf
+  await new Promise(resolve => setTimeout(resolve, 75))
+
+  // now run the menu
+  const action = await beakerBrowser.showContextMenu([
+    {label: 'Open URL', id: 'open'},
+    {label: 'Copy URL', id: 'copy-url'},
+    {type: 'separator'},
+    {label: `Delete "${node.name}"`, id: 'delete'},
+    {type: 'separator'},
+    {type: 'submenu', label: 'New...', submenu: [
+      {label: 'Application', id: 'new-application'},
+      {label: 'Code module', id: 'new-module'},
+      {label: 'Dataset', id: 'new-dataset'},
+      {label: 'Documents folder', id: 'new-document'},
+      {label: 'Music folder', id: 'new-music'},
+      {label: 'Photos folder', id: 'new-photo'},
+      {label: 'Videos folder', id: 'new-video'},
+      {label: 'Website', id: 'new-website'}
+    ]}
+  ])
+
+  // now run the action
+  node = node || root
+  switch (action) {
+    case 'open': return window.open(node.url)
+    case 'copy-url': return writeToClipboard(node.url)
+    case 'delete':
+      if (confirm(`Are you sure you want to delete "${node.name}"?`)) {
+        await node.delete()
+        node.isHidden = true // quick hack to get this archive out of the view
+        await unselectNode(root, opts)
+        redraw(root, opts)
+      }
+      return
+    case null: return
+    default:
+      if (action && action.startsWith('new')) {
+        let archive = await DatArchive.create({prompt: true, type: action.slice('new-'.length)})
+        window.location.pathname = archive.url.slice('dat://'.length)
+      }
+      return
+  }
 }
 
 function onDblClickNode (e, node) {
