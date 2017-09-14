@@ -11,6 +11,7 @@ import renderFilePreview from './file-preview'
 
 export default function render (node) {
   const isEditingInfo = false // TODO
+  const isArchive = node.constructor.name === 'FSArchive'
   const archiveInfo = node._archiveInfo
   const networked = archiveInfo.userSettings.networked
 
@@ -18,13 +19,11 @@ export default function render (node) {
 
   // render preview
   let preview
-  if (!node.constructor.name !== 'FSArchive' && node.type === 'file') {
+  if (node.type === 'file') {
     preview = renderFilePreview(node)
     if (!preview) {
       preview = yo`<div class="icon-wrapper">${renderFileOIcon()}</div>`
     }
-  } else if (node.constructor.name !== 'FSArchive') {
-    preview = yo`<div class="icon-wrapper">${renderFolderIcon()}</div>`
   }
 
   return yo`
@@ -41,12 +40,13 @@ export default function render (node) {
           <p class="desc">${archiveInfo.description || yo`<em>No description</em>`}</p>
         </div>
       </div>
-
-      <div class="preview">
-        ${preview}
-      </div>
+      ${preview ? yo`
+        <div class="preview">
+          ${preview}
+        </div>
+      ` : ''}
       <div class="metadata">
-        <div class="name">${node.name}</div>
+        ${!isArchive ? yo`<div class="name">${node.name}</div>` : ''}
         <table>
           ${node.size ? yo`<tr><td class="label">Size</td><td>${prettyBytes(node.size)}</td></tr>` : ''}
           ${node.mtime ? yo`<tr><td class="label">Updated</td><td>${niceDate(+(node.mtime || 0))}</td></tr>` : ''}
