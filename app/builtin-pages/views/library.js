@@ -6,10 +6,7 @@ import renderSidebar from '../com/sidebar'
 import {
   FSVirtualRoot,
   FSVirtualFolder_User,
-  FSVirtualFolder_Network,
-  FSVirtualFolder_Rehosting,
-  FSVirtualFolder_Saved,
-  FSVirtualFolder_Other
+  FSVirtualFolder_Network
 } from 'beaker-virtual-fs'
 import renderFiles from '../com/files-columns-view'
 
@@ -90,7 +87,6 @@ async function onContextMenu (e) {
 
 async function readSelectedPathFromURL () {
   try {
-    var n = 0
     var key = window.location.pathname.slice(1)
     if (!key) {
       // default to home
@@ -104,17 +100,12 @@ async function readSelectedPathFromURL () {
     var info = await archive.getInfo()
 
     // start with provenance
-    if (info.isOwner) {
+    if (info.isOwner && info.userSettings.isSaved) {
       selectedPath.push(fsRoot.children.find(node => node instanceof FSVirtualFolder_User))
-      await selectedPath[n].readData()
-      n++
+      await selectedPath[0].readData()
     } else {
-      selectedPath.push(fsRoot.children.find(node => node instanceof FSVirtualFolder_Network))
-      await selectedPath[n].readData()
-      n++
-
       // check if it's === to or authored by a profile in our network list
-      let userNode = selectedPath[n - 1].children.find(node => (
+      let userNode = fsRoot.children.find(node => (
         node._profile && (
           node._profile._origin === info.url ||
           (info.author && node._profile._origin === info.author.url)
@@ -122,38 +113,27 @@ async function readSelectedPathFromURL () {
       ))
       if (userNode) {
         selectedPath.push(userNode)
-        await selectedPath[n].readData()
-        n++
-      } else if (info.userSettings.isSaved) {
-        if (info.userSettings.networked) {
-          selectedPath.push(selectedPath[n - 1].children.find(node => node instanceof FSVirtualFolder_Rehosting))
-        } else {
-          selectedPath.push(selectedPath[n - 1].children.find(node => node instanceof FSVirtualFolder_Saved))          
-        }
-        await selectedPath[n].readData()
-        n++
+        await selectedPath[0].readData()
       } else {
-        // use 'Other' and add this archive if it does not exist
-        selectedPath.push(selectedPath[n - 1].children.find(node => node instanceof FSVirtualFolder_Other))
-        await selectedPath[n].readData()
-        selectedPath[n].addArchive(info)
-        n++
+        // use 'Network' and add this archive if it does not exist
+        selectedPath.push(fsRoot.children.find(node => node instanceof FSVirtualFolder_Network))
+        await selectedPath[0].readData()
+        selectedPath[0].addArchive(info)
       }
     }
 
     // next, choose type
     var type = findStandardType(info.type)
     if (type) {
-      selectedPath.push(selectedPath[n - 1].children.find(node => node._type === type))
+      selectedPath.push(selectedPath[0].children.find(node => node._type === type))
     } else {
-      selectedPath.push(selectedPath[n - 1].children[0])
+      selectedPath.push(selectedPath[0].children[0])
     }
-    await selectedPath[n].readData()
-    n++
+    await selectedPath[1].readData()
 
     // now select the archive
-    selectedPath.push(selectedPath[n - 1].children.find(node => node._archiveInfo.key === key))
-    await selectedPath[n].readData()
+    selectedPath.push(selectedPath[1].children.find(node => node._archiveInfo.key === key))
+    await selectedPath[2].readData()
   } catch (e) {
     // ignore, but log just in case something is buggy
     console.debug(e)
