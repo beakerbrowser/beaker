@@ -320,24 +320,71 @@
       position: absolute;
       font-size: 11.5px;
       color: gray;
-      right: 100px;
-      top: 7px;
+      right: 82px;
+      top: 6px;
       -webkit-font-smoothing: antialiased;
     }
 
     .nav-find-btns {
       display: flex;
 
+      .close-btn {
+        background: none;
+        padding: 0;
+        margin-top: -1.5px;
+        margin-right: -5px;
+        cursor: pointer;
+
+        .icon {
+          width: 8px;
+          height: 8px;
+          cursor: pointer;
+
+          * {
+            stroke: gray;
+            stroke-width: 12px;
+          }
+        }
+      }
+
       .btn {
         color: gray;
         height: 22px;
+        padding: 0;
         border-radius: 0;
-        border-left: 0;
-        line-height: 20px;
+        border: 1px solid rgb(217, 217, 217);
+        border-left: 0 !important;
 
-        &:last-child {
-          border-top-right-radius: 2px;
-          border-bottom-right-radius: 2px;
+        &:disabled {
+          cursor: default !important;
+          color: gray !important;
+
+          i {
+            cursor: default;
+          }
+
+          &:hover {
+            background: inherit;
+          }
+        }
+
+        &:focus {
+          box-shadow: none;
+        }
+
+        &.last {
+          border-radius: 0 2px 2px 0;
+        }
+
+        i {
+          height: 20px;
+          line-height: 20px;
+
+          &.fa-angle-up,
+          &.fa-angle-down {
+            font-size: 16px;
+            -webkit-text-stroke: .5px gray;
+          }
         }
       }
     }
