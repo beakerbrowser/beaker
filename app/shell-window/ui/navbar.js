@@ -212,8 +212,8 @@ function render (id, page) {
               </span>`
             : ''}
           <div class="nav-find-btns">
-            <a class="btn" onclick=${e => onClickFindNext(e, true)}><i class="fa fa-chevron-down"></i></a>
             <a class="btn" onclick=${e => onClickFindNext(e, false)}><i class="fa fa-chevron-up"></i></a>
+            <a class="btn" onclick=${e => onClickFindNext(e, true)}><i class="fa fa-chevron-down"></i></a>
             <a class="btn" onclick=${e => hideInpageFind(page)}><i class="fa fa-times"></i></a>
           </div>
         </div>
