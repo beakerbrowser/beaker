@@ -291,9 +291,10 @@
 
   .nav-find-wrapper {
     position: absolute;
+    display: flex;
     top: 73px;
     right: 40px;
-    width: 250px;
+    width: 300px;
     z-index: 1000;
     padding: 4px 7px 7px 7px;
     background: @background-shell-window;
@@ -307,6 +308,8 @@
       font-size: 11.5px;
       border: 1px solid rgba(0,0,0,.15);
       background: #fff;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
 
       &:focus {
         border: 1px solid fadeout(@color-link, 20%);
@@ -318,9 +321,26 @@
       position: absolute;
       font-size: 11.5px;
       color: gray;
-      right: 14px;
+      right: 100px;
       top: 7px;
       -webkit-font-smoothing: antialiased;
+    }
+
+    .nav-find-btns {
+      display: flex;
+
+      .btn {
+        color: gray;
+        height: 22px;
+        border-radius: 0;
+        border-left: 0;
+        line-height: 20px;
+
+        &:last-child {
+          border-top-right-radius: 2px;
+          border-bottom-right-radius: 2px;
+        }
+      }
     }
   }
 

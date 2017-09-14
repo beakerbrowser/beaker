@@ -11,6 +11,7 @@ import {RehostMenuNavbarBtn} from './navbar/rehost-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
 import {SiteInfoNavbarBtn} from './navbar/site-info'
+import {findParent} from '../../lib/fg/event-handlers'
 import {pluralize} from '../../lib/strings'
 import renderNavArrowIcon from './icon/nav-arrow'
 import renderRefreshIcon from './icon/refresh'
@@ -210,6 +211,11 @@ function render (id, page) {
                 ${page.inpageFindInfo.matches}
               </span>`
             : ''}
+          <div class="nav-find-btns">
+            <a class="btn" onclick=${e => onClickFindNext(e, true)}><i class="fa fa-chevron-down"></i></a>
+            <a class="btn" onclick=${e => onClickFindNext(e, false)}><i class="fa fa-chevron-up"></i></a>
+            <a class="btn" onclick=${e => hideInpageFind(page)}><i class="fa fa-times"></i></a>
+          </div>
         </div>
       `
     : ''
@@ -715,6 +721,16 @@ function onInputFind (e) {
   if (page) {
     if (str) page.findInPageAsync(str)
     else page.stopFindInPageAsync('clearSelection')
+  }
+}
+
+function onClickFindNext (e, forward) {
+  var page = pages.getActive()
+  if (page) {
+    var wrapperEl = findParent(e.target, 'nav-find-wrapper')
+    var inputEl = wrapperEl.querySelector('input')
+    var str = inputEl.value
+    page.findInPageAsync(str, { findNext: true, forward })
   }
 }
 
