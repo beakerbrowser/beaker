@@ -212,9 +212,9 @@ function render (id, page) {
               </span>`
             : ''}
           <div class="nav-find-btns">
-            <a class="btn" onclick=${e => onClickFindNext(e, false)}><i class="fa fa-chevron-up"></i></a>
-            <a class="btn" onclick=${e => onClickFindNext(e, true)}><i class="fa fa-chevron-down"></i></a>
-            <a class="btn" onclick=${e => hideInpageFind(page)}><i class="fa fa-times"></i></a>
+            <button disabled=${!findValue} class="btn" onclick=${e => onClickFindNext(e, false)}><i class="fa fa-angle-up"></i></button>
+            <button disabled=${!findValue} class="btn last" onclick=${e => onClickFindNext(e, true)}><i class="fa fa-angle-down"></i></button>
+            <button class="close-btn" onclick=${e => hideInpageFind(page)}>${renderCloseIcon()}</button>
           </div>
         </div>
       `
