@@ -363,9 +363,9 @@ function render (id, page) {
         ${inpageFinder}
         ${zoomBtn}
         ${!isLocationHighlighted ? rehostMenuNavbarBtn.render() : ''}
-        ${!isLocationHighlighted ? bookmarkMenuNavbarBtn.render() : ''}
         ${!isLocationHighlighted ? datBtns : ''}
         ${!isLocationHighlighted ? pageMenuNavbarBtn.render() : ''}
+        ${!isLocationHighlighted ? bookmarkMenuNavbarBtn.render() : ''}
       </div>
       <div class="toolbar-group">
         ${browserMenuNavbarBtn.render()}

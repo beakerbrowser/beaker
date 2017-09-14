@@ -73,7 +73,7 @@ export class PageMenuNavbarBtn {
     return yo`
       <div class="toolbar-dropdown-menu page-dropdown-menu">
         <button class="toolbar-btn toolbar-dropdown-menu-btn ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
-          <span class="fa fa-caret-down"></span>
+          <span class="fa fa-ellipsis-h"></span>
         </button>
         ${dropdownEl}
       </div>`
