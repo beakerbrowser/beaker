@@ -203,7 +203,7 @@ function render (id, page) {
             oninput=${onInputFind}
             onkeydown=${onKeydownFind}
             value=${findValue} />
-          ${page.inpageFindInfo
+          ${findValue
             ? yo`
               <span class="nav-find-info">
                 ${page.inpageFindInfo.activeMatchOrdinal}
@@ -721,6 +721,7 @@ function onInputFind (e) {
   if (page) {
     if (str) page.findInPageAsync(str)
     else page.stopFindInPageAsync('clearSelection')
+    update()
   }
 }
 
