@@ -16,15 +16,19 @@ body {
 .btn {
   display: inline-block;
   cursor: pointer;
-  color: #5c5c5c;
+  color: #777;
   border-radius: 2px;
   background: #fafafa;
-  border: 1px solid #d9d9d9;
+  border: 1px solid #ddd;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   height: 25px;
-  line-height: 25px;
+  line-height: 2;
   padding: 0 8px;
+  letter-spacing: .2px;
+  border-radius: 4px;
+  height: 26px;
+  font-weight: 400;
 }
 .btn * {
   cursor: pointer;
@@ -43,7 +47,7 @@ body {
 .btn:disabled {
   cursor: default;
   color: #999999;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   box-shadow: none;
 }
 .btn.disabled .spinner,
@@ -68,14 +72,30 @@ a.link {
   color: blue;
   text-decoration: underline;
 }
+.icon-wrapper {
+  vertical-align: top;
+  width: 70px;
+  font-size: 50px;
+  display: inline-block;
+  color: #555;
+
+  i {
+    margin-top: -3px;
+  }
+}
+.error-wrapper {
+  display: inline-block;
+  width: 80%;
+}
 div.error-page-content {
-  max-width: 550px;
+  max-width: 450px;
   margin: auto;
+  transform: translateX(-20px);
   margin-top: 30vh;
+  color: #777;
+  font-size: 14px;
 }
 div.error-page-content .description {
-  font-size: 14px;
-  color: #707070;
 
   p {
     margin: 20px 0;
@@ -92,14 +112,9 @@ h1 {
   color: #333;
   font-weight: 400;
   font-size: 22px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #d9d9d9;
 }
 .icon {
   float: right;
-}
-.icon.warning {
-  color: #e60b00;
 }
 li {
   margin-bottom: 0.5em;
@@ -107,12 +122,22 @@ li {
 li:last-child {
   margin: 0;
 }
+.footer {
+  font-size: 14px;
+  color: #777;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 30px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+}
 `
 
 export default function (e) {
   var title = 'This site can’t be reached'
   var info = ''
-  var icon = 'fa-info-circle'
+  var icon = 'fa-exclamation-circle'
   var button = '<a class="btn" href="javascript:window.location.reload()">Try again</a>'
   var errorDescription
   var moreHelp = ''
@@ -135,12 +160,18 @@ export default function (e) {
         info = '<p>Your computer is not connected to the internet.</p><p>Try:</p><ul><li>Resetting your Wi-Fi connection<li>Checking your router and modem.</li></ul>'
         break
       case -105:
+        icon = 'fa-frown-o'
         info = `<p>Couldn’t resolve the DNS address for <strong>${origin}</strong></p>`
+        break
+      case 404:
+        icon = 'fa-frown-o'
+        title = e.title || 'Page Not Found'
+        info = `<p>${e.errorInfo}</p>`
         break
       case -501:
         title = 'Your connection is not secure'
         info = `<p>Beaker cannot establish a secure connection to the server for <strong>${origin}</strong>.</p>`
-        icon = 'fa-warning warning'
+        icon = 'fa-close warning'
         button = '<a class="btn" href="javascript:window.history.back()">Go back</a>'
         break
       case 'dat-timeout':
@@ -170,13 +201,19 @@ export default function (e) {
         <style>${errorPageCSS}</style>
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div class="error-page-content">
-          <h1>${title} <i class="icon fa ${icon}"></i></h1>
-          <div class="description">
-            ${info}
-            ${moreHelp}
-            <p>${errorDescription}</p>
+          <div class="icon-wrapper"><i class="fa ${icon}"></i></div>
+
+          <div class="error-wrapper">
+            <h1>${title}</h1>
+            <div class="description">
+              ${info}
+              ${moreHelp}
+            </div>
+            <div class="footer">
+              ${errorDescription}
+              ${button}
+            </div>
           </div>
-          ${button}
         </div>
       </body>
     </html>`.replace(/\n/g, '')

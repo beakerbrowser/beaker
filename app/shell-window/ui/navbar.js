@@ -357,15 +357,15 @@ function render (id, page) {
       </div>
 
       <div class="toolbar-input-group${isLocationHighlighted ? ' input-focused' : ''}${autocompleteResults ? ' autocomplete' : ''}">
-        ${siteInfoNavbarBtn.render()}
+        ${!(isLoading || isLocationHighlighted) ? siteInfoNavbarBtn.render() : ''}
         ${locationPrettyView}
         ${locationInput}
         ${inpageFinder}
         ${zoomBtn}
-        ${rehostMenuNavbarBtn.render()}
-        ${bookmarkMenuNavbarBtn.render()}
-        ${datBtns}
-        ${pageMenuNavbarBtn.render()}
+        ${!isLocationHighlighted ? rehostMenuNavbarBtn.render() : ''}
+        ${!isLocationHighlighted ? datBtns : ''}
+        ${!isLocationHighlighted ? pageMenuNavbarBtn.render() : ''}
+        ${!isLocationHighlighted ? bookmarkMenuNavbarBtn.render() : ''}
       </div>
       <div class="toolbar-group">
         ${browserMenuNavbarBtn.render()}
@@ -637,6 +637,7 @@ function onBlurLocation (e) {
     page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
     page.navbarEl.querySelector('.toolbar-input-group').classList.remove('input-focused')
     isLocationHighlighted = false
+    update()
   }
 }
 

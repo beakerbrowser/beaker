@@ -42,7 +42,7 @@ function rFilesColumnsView (root, opts) {
 
   return yo`
     <div class="files-columns-view ${root.isEmpty ? 'empty' : ''}">
-      ${rBreadcrumbs(root, opts.selectedPath)}
+      ${rBreadcrumbs(root, opts.selectedPath, opts)}
       ${rColumn(root, root, 0, opts)}
       ${opts.selectedPath.map((node, i) => rColumn(root, node, i+1, opts))}
     </div>
@@ -89,14 +89,14 @@ function rIcon (node, grayscale=false) {
   return icon
 }
 
-function rBreadcrumbs (root, selectedPath) {
-  return yo`<div class="breadcrumbs">${selectedPath.map(rBreadcrumb)}</div>`
+function rBreadcrumbs (root, selectedPath, opts = {}) {
+  return yo`<div class="breadcrumbs">${selectedPath.map((node, i) => rBreadcrumb(root, node, i, opts))}</div>`
 }
 
-function rBreadcrumb (node) {
+function rBreadcrumb (root, node, depth, opts) {
   if (!node) return ''
   return yo`
-    <div class="breadcrumb">
+    <div class="breadcrumb" ondblclick=${e => onClickNode(e, root, node, depth, opts)}>
       ${rIcon(node)}
       ${node.name}
     </div>
