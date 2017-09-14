@@ -203,7 +203,7 @@ function render (id, page) {
             oninput=${onInputFind}
             onkeydown=${onKeydownFind}
             value=${findValue} />
-          ${page.inpageFindInfo
+          ${findValue && page.inpageFindInfo
             ? yo`
               <span class="nav-find-info">
                 ${page.inpageFindInfo.activeMatchOrdinal}
@@ -212,9 +212,9 @@ function render (id, page) {
               </span>`
             : ''}
           <div class="nav-find-btns">
-            <a class="btn" onclick=${e => onClickFindNext(e, true)}><i class="fa fa-chevron-down"></i></a>
-            <a class="btn" onclick=${e => onClickFindNext(e, false)}><i class="fa fa-chevron-up"></i></a>
-            <a class="btn" onclick=${e => hideInpageFind(page)}><i class="fa fa-times"></i></a>
+            <button disabled=${!findValue} class="btn" onclick=${e => onClickFindNext(e, false)}><i class="fa fa-angle-up"></i></button>
+            <button disabled=${!findValue} class="btn last" onclick=${e => onClickFindNext(e, true)}><i class="fa fa-angle-down"></i></button>
+            <button class="close-btn" onclick=${e => hideInpageFind(page)}>${renderCloseIcon()}</button>
           </div>
         </div>
       `
@@ -721,6 +721,7 @@ function onInputFind (e) {
   if (page) {
     if (str) page.findInPageAsync(str)
     else page.stopFindInPageAsync('clearSelection')
+    update()
   }
 }
 
@@ -730,7 +731,7 @@ function onClickFindNext (e, forward) {
     var wrapperEl = findParent(e.target, 'nav-find-wrapper')
     var inputEl = wrapperEl.querySelector('input')
     var str = inputEl.value
-    page.findInPageAsync(str, { findNext: true, forward })
+    if (str) page.findInPageAsync(str, { findNext: true, forward })
   }
 }
 
