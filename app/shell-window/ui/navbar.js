@@ -731,7 +731,7 @@ function onClickFindNext (e, forward) {
     var wrapperEl = findParent(e.target, 'nav-find-wrapper')
     var inputEl = wrapperEl.querySelector('input')
     var str = inputEl.value
-    page.findInPageAsync(str, { findNext: true, forward })
+    if (str) page.findInPageAsync(str, { findNext: true, forward })
   }
 }
 
