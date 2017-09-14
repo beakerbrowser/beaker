@@ -203,7 +203,7 @@ function render (id, page) {
             oninput=${onInputFind}
             onkeydown=${onKeydownFind}
             value=${findValue} />
-          ${findValue
+          ${findValue && page.inpageFindInfo
             ? yo`
               <span class="nav-find-info">
                 ${page.inpageFindInfo.activeMatchOrdinal}
