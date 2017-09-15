@@ -2,6 +2,7 @@
 
 const yo = require('yo-yo')
 import {getHostname} from '../../lib/strings'
+import * as toast from '../com/toast'
 import * as editBookmarkPopup from '../com/edit-bookmark-popup'
 import renderSidebar from '../com/sidebar'
 import renderCloseIcon from '../icon/close'
@@ -234,19 +235,27 @@ function renderRowGrid (row, i) {
 function renderActions (row, i) {
   const isOwner = row.private || row._origin === userProfile._origin
 
-  if (!isOwner) return ''
-  return yo`
-    <div class="actions bookmark__actions">
-      <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
-        ${renderPencilIcon()}
+  if (isOwner) {
+    return yo`
+      <div class="actions bookmark__actions">
+        <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
+          ${renderPencilIcon()}
+        </div>
+        <div class="action" onclick=${onClickDelete(i)} title="Delete bookmark">
+          ${renderTrashIcon()}
+        </div>
+        <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)}>
+          ${renderPinIcon()}
+        </div>
       </div>
-      <div class="action" onclick=${onClickDelete(i)} title="Delete bookmark">
-        ${renderTrashIcon()}
+    `
+  } else {
+    return yo`
+      <div class="actions">
+        <div class="action add" onclick=${() => onClickCopyToBookmarks(i)} title="Add to your bookmarks"><span class="icon add">+</span></div>
       </div>
-      <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)}>
-        ${renderPinIcon()}
-      </div>
-    </div>`
+    `
+  }
 }
 
 function renderBookmarksListToPage () {
@@ -436,6 +445,13 @@ async function onTogglePinned (i) {
   b.pinned = !b.pinned
   await beaker.bookmarks.setBookmarkPinned(b.href, b.pinned)
   renderToPage()
+}
+
+async function onClickCopyToBookmarks (i) {
+  var b = bookmarks[i]
+  await beaker.bookmarks.bookmarkPrivate(b.href, b)
+
+  toast.create(`${b.href} copied to your Bookmarks`)
 }
 
 function onClickEdit (i) {
