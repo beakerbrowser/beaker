@@ -50,6 +50,24 @@ export class BookmarkMenuNavbarBtn {
                 <textarea class="bookmark-notes" name="notes" onkeyup=${e => this.onChangeNotes(e)}>${this.values.notes}</textarea>
               </div>
 
+              <div class="input-group privacy">
+                <label>Privacy:</label>
+
+                <div class="privacy-wrapper">
+                  <input onclick=${e => this.onChangeVisibility(e, 'private')} type="radio" id="privacy-private" name="privacy" value="private" checked=${this.values.private}/>
+                  <label class="btn" for="privacy-private">
+                    <i class="fa fa-lock"></i>
+                    Private
+                  </label>
+
+                  <input onclick=${e => this.onChangeVisibility(e, 'public')} type="radio" id="privacy-public" name="privacy" value="public" checked=${!this.values.private}/>
+                  <label class="btn" for="privacy-public">
+                    <i class="fa fa-globe"></i>
+                    Public
+                  </label>
+                </div>
+              </div>
+
               <div class="input-group pinned">
                 <label>
                   <input onchange=${(e) => this.onChangePinned(e)} checked=${this.values.pinned || false} type="checkbox" name="pinned" value="pinned">
@@ -60,40 +78,6 @@ export class BookmarkMenuNavbarBtn {
               <div class="buttons">
                 <button type="button" class="btn remove" onclick=${e => this.onClickRemoveBookmark(e)}>
                   Remove
-                </button>
-
-
-                <button onclick=${e => this.onTogglePrivacyDropdown()} type="button" class="toggleable btn options-dropdown">
-                  <i class="fa fa-caret-down"></i>
-                  <i class="fa fa-${this.values.private ? 'lock' : 'globe'}"></i>
-
-                  <div class="options-dropdown-items ${this.isPrivacyDropdownOpen ? 'open' : ''}">
-                    <div onclick=${e => this.onChangeVisibility(e, 'private')} class="options-dropdown-item ${this.values.private ? 'selected' : ''}">
-                      <div class="heading">
-                        <div>
-                          <i class="fa fa-lock"></i>
-                          Private
-                        </div>
-
-                        <i class="fa fa-check"></i>
-                      </div>
-
-                      <div class="info">Save privately</div>
-                    </div>
-
-                    <div onclick=${e => this.onChangeVisibility(e, 'public')} class="options-dropdown-item ${!this.values.private ? 'selected' : ''}">
-                      <div class="heading">
-                        <div>
-                          <i class="fa fa-globe"></i>
-                          Public
-                        </div>
-
-                        <i class="fa fa-check"></i>
-                      </div>
-
-                      <div class="info">Share with followers</div>
-                    </div>
-                  </div>
                 </button>
 
                 <button class="btn primary" type="submit" disabled=${!this.doesNeedSave}>
