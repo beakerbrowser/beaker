@@ -33,7 +33,7 @@ window.history.replaceState = _wr('replaceState')
 setup()
 async function setup () {
   currentUserProfile = await beaker.profiles.getCurrentProfile()
-  // await loadViewedProfile()
+  await loadViewedProfile()
 
   // render
   render()
@@ -57,9 +57,6 @@ async function parseURLKey () {
 }
 
 async function loadViewedProfile () {
-  // reset state
-  tmpAvatar = undefined
-
   try {
     // load the profile
     var selectedProfileKey = await parseURLKey()
@@ -69,7 +66,7 @@ async function loadViewedProfile () {
     if (!(viewedProfile && viewedProfile._origin)) {
       viewedProfile = currentUserProfile
       viewedProfile.isCurrentUserFollowing = false
-      history.pushState({}, null, 'beaker://profile/' + viewedProfile._origin.slice('dat://'.length))
+      history.pushState({}, null, 'beaker://timeline/' + viewedProfile._origin.slice('dat://'.length))
     } else {
       viewedProfile.isCurrentUserFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, viewedProfile._origin)
     }
@@ -156,7 +153,14 @@ async function onToggleFollowing (e, user) {
 // =
 
 function render () {
-  yo.update(document.querySelector('.timeline-wrapper'), yo`<p>timeline</p>`)
+  yo.update(document.querySelector('.timeline-wrapper'), yo`
+    <div class="builtin-wrapper timeline-wrapper">
+      ${renderSidebar()}
+      <div class="builtin-main">
+        ${renderView()}
+      </div>
+    </div>
+  `)
 }
 
 function renderView () {
@@ -164,32 +168,17 @@ function renderView () {
     case 'following':
       return renderFollowing()
     default:
-      return ''
+      return renderFollowing()
+      // return renderFeed()
   }
 }
 
 function renderFollowing () {
   return yo`
-    <div class="following-view">
-      <h2>Following</h2>
-
-      ${viewedProfile.follows.length === 0 ?
-        yo`<div class="empty">${viewedProfile.name} is not following anybody.</div>` :
-        ''}
-      <div class="following-list">
-        ${viewedProfile.follows.map(f => {
-          const name = f.name || 'Anonymous'
-          return yo`
-            <a class="following-card" href="beaker://profile/${f.url.slice('dat://'.length)}" title=${name}>
-              ${imgWithFallbacks(`${f.url}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
-              <span class="title">${name}</span>
-              ${f.isCurrentUser ? yo`<div class="you-label">You</div>` :
-                f.isCurrentUserFollowing ?
-                  yo`<button onclick=${(e) => onToggleFollowing(e, f)} class="follow-btn following primary btn">✓</button>` :
-                  yo`<button onclick=${(e) => onToggleFollowing(e, f)} class="follow-btn btn">+</button>`}
-            </a>
-          `
-        })}
+    <div class="view following">
+      <div class="view-header">
+        <h2>Followed by ${viewedProfile.name}:</h2>
+        <span class="nav-link">Back</span>
       </div>
     </div>
   `

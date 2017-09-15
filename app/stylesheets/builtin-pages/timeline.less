@@ -1,0 +1,42 @@
+@import "../components/link";
+@import "../components/inputs";
+
+@import "./components/feed-item";
+@import "./components/profile-preview";
+
+.timeline-wrapper {
+
+  .builtin-main {
+    margin: 0;
+  }
+
+  .view {
+    width: 350px;
+    height: 100vh;
+    border-right: 1px solid #ddd;
+    background: #fff;
+  }
+
+  .view-header {
+    &:extend(.flex);
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+    height: 40px;
+    padding: 0 10px;
+    background: indigo;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 500;
+    font-size: .85rem;
+
+    h2 {
+      color: #fff;
+      text-transform: none;
+      font-size: .85rem;
+      font-weight: 500;
+      margin: 0;
+      letter-spacing: 0;
+    }
+  }
+}
