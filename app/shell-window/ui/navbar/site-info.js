@@ -38,7 +38,9 @@ export class SiteInfoNavbarBtn {
       if (isHttps && !gotInsecureResponse && !this.siteLoadError) {
         protocolCls = 'secure'
         iconEl = renderPadlockIcon()
-      } else if (this.protocolInfo.scheme === 'http:' || (isHttps && gotInsecureResponse)) {
+      } else if (this.protocolInfo.scheme === 'http:') {
+        iconEl = yo`<i class="fa fa-info-circle"></i>`
+      } else if (isHttps && gotInsecureResponse) {
         iconEl = yo`<i class="fa fa-exclamation-circle"></i>`
       } else if (this.protocolInfo.scheme === 'dat:') {
         protocolCls = 'p2p'
