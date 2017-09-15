@@ -25,9 +25,9 @@ export default function render (activePage) {
         ${renderHistoryIcon()}
         <span class="tooltip">History</span>
       </a>
-      <a class="sidebar-link avatar ${activePage === 'profile' ? 'active' : ''}" href="beaker://profile">
+      <a class="sidebar-link profile ${activePage === 'profile' ? 'active' : ''}" href="beaker://profile">
         ${renderAvatarIcon()}
-        <span class="tooltip avatar">Your profile</span>
+        <span class="tooltip profile">Your profile</span>
       </a>
       <a class="sidebar-link settings ${activePage === 'settings' ? 'active' : ''}" href="beaker://settings">
         ${renderGearIcon()}
