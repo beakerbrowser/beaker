@@ -1,0 +1,19 @@
+.feed-item {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+
+  .avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  &.profile {
+    &:extend(.flex);
+    align-items: center;
+    position: relative;
+
+    .follow-btn {
+      margin-left: auto;
+    }
+  }
+}

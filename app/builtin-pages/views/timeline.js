@@ -3,6 +3,7 @@ const co = require('co')
 import renderSidebar from '../com/sidebar'
 import renderPencilIcon from '../icon/pencil'
 import imgWithFallbacks from '../com/img-with-fallbacks'
+import {pluralize} from '../../lib/strings'
 
 // globals
 // =
@@ -10,6 +11,7 @@ import imgWithFallbacks from '../com/img-with-fallbacks'
 var currentUserProfile
 var viewedProfile
 var currentView
+var previewingProfile
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -130,8 +132,10 @@ function onUpdateTmpAvatar (e) {
   }
 }
 
-function onToggleEditingProfile () {
-  currentView = currentView === 'editing' ? '' : 'editing'
+async function onHoverAvatar (profile) {
+  // get the full profile
+  previewingProfile = await beaker.profiles.getProfile(profile.url)
+  previewingProfile.friends = await beaker.profiles.listFriends(profile.url)
   render()
 }
 
@@ -180,6 +184,72 @@ function renderFollowing () {
         <h2>Followed by ${viewedProfile.name}:</h2>
         <span class="nav-link">Back</span>
       </div>
+
+      ${viewedProfile.follows.length === 0
+        ? yo`
+          <div class="view-content empty">
+            ${viewedProfile.name} is not following anyone
+          </div>`
+        : ''
+      }
+
+      <div class="view-content following-list">
+        ${viewedProfile.follows.map(renderProfileFeedItem)}
+      </div>
+    </div>
+  `
+}
+
+function renderProfilePreview () {
+  const profile = previewingProfile
+  return yo`
+    <div class="preview profile">
+      <div class="header">
+        ${renderAvatar(profile)}
+
+        <span class="title">${profile.name || 'Anonymous'}</span>
+
+        ${profile.isCurrentUser ? '' :
+          profile.isCurrentUserFollowing ?
+            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn following primary btn">✓</button>` :
+            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn btn">+</button>`}
+      </div>
+
+      <p class="bio">${profile.bio}</p>
+
+      ${profile.friends.length
+        ? yo`
+          <div class="friends">
+            <h3>${profile.friends.length} ${pluralize(profile.friends.length, 'follower')} you know</h3>
+            <ul>${profile.friends.map(p => renderAvatar(p))}</ul>
+          </div>`
+        : ''
+      }
+    </div>
+  `
+}
+
+function renderAvatar (profile) {
+  return imgWithFallbacks(`${profile._origin}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})
+}
+
+function renderProfileFeedItem (profile) {
+  return yo`
+    <div onclick=${() => onHoverAvatar(profile)} class="feed-item profile" href="beaker://profile/${profile.url.slice('dat://'.length)}">
+      ${imgWithFallbacks(`${profile.url}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
+
+      <span class="title">${profile.name || 'Anonymous'}</span>
+
+      ${profile.isCurrentUser ? '' :
+        profile.isCurrentUserFollowing ?
+          yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn following primary btn">✓</button>` :
+          yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn btn">+</button>`
+      }
+
+      ${previewingProfile && previewingProfile._origin === profile.url
+        ? renderProfilePreview()
+        : ''
+      }
     </div>
   `
 }
