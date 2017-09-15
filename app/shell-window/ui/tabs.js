@@ -67,7 +67,8 @@ function drawTab (page) {
       favicon = yo`<img src=${page.favicons[page.favicons.length - 1]}>`
       favicon.onerror = onFaviconError(page)
     } else if (page.getURL().startsWith('beaker:')) {
-      favicon = yo`<img src="beaker-favicon:beaker">`
+      // favicon = yo`<img src="beaker-favicon:beaker">`
+      favicon = yo`<i class="fa fa-window-maximize"></i>`
     } else {
       // (check for cached icon)
       favicon = yo`<img src="beaker-favicon:${page.getURL()}">`
