@@ -2,11 +2,14 @@ const yo = require('yo-yo')
 const co = require('co')
 import renderSidebar from '../com/sidebar'
 import renderPencilIcon from '../icon/pencil'
+import renderFilesIcon from'../icon/filesystem'
 import imgWithFallbacks from '../com/img-with-fallbacks'
 import {pluralize} from '../../lib/strings'
 
 // globals
 // =
+
+const themeColor = "#ff4e42"
 
 var currentUserProfile
 var viewedProfile
@@ -160,11 +163,38 @@ function render () {
   yo.update(document.querySelector('.timeline-wrapper'), yo`
     <div class="builtin-wrapper timeline-wrapper">
       ${renderSidebar()}
-      <div class="builtin-main">
+      <div class="builtin-main center">
+        ${renderHeader()}
         ${renderView()}
       </div>
+      <style>body{--theme-color: ${themeColor}}</style>
     </div>
   `)
+}
+
+function renderHeader () {
+  return yo`
+    <div class="header">
+      <div class="container">
+        <div class="nav-links">
+          <span class="nav-link">
+            ${renderFilesIcon()}
+            Feed
+          </span>
+        </div>
+
+        <div class="profile-links">
+          <div class="avatar-container">
+            ${renderAvatar(currentUserProfile)}
+          </div>
+
+          <button class="btn new-post">
+            New post
+          </button>
+        </div>
+      </div>
+    </div>
+  `
 }
 
 function renderView () {
