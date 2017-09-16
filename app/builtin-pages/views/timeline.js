@@ -209,7 +209,7 @@ function renderView () {
   }
 }
 
-function renderFollowing () {
+function renderFeed () {
   return yo`
     <div class="view following">
       <div class="view-header">
@@ -217,16 +217,44 @@ function renderFollowing () {
         <span class="nav-link">Back</span>
       </div>
 
-      ${viewedProfile.follows.length === 0
-        ? yo`
-          <div class="view-content empty">
-            ${viewedProfile.name} is not following anyone
-          </div>`
+      <span class="name">${profile.name || 'Anonymous'}</span>
+
+      <p class="bio">${profile.bio}</p>
+
+      <a href="" class="url">https://taravancil.com</a>
+
+      ${previewingProfile && previewingProfile._origin === profile.url
+        ? renderProfilePreview()
         : ''
       }
+    </div>
+  `
+}
 
-      <div class="view-content following-list">
-        ${viewedProfile.follows.map(renderProfileFeedItem)}
+function renderFollowing () {
+  viewedProfile.follows.map(async (f) => {
+    const fullProfile = await beaker.profiles.getProfile(f.url)
+    return Object.assign(f, fullProfile)
+  })
+
+  return yo`
+    <div class="view following">
+      <div class="sidebar-col">
+        ${renderProfileCard(viewedProfile)}
+      </div>
+
+      <div class="main-col">
+        <div class="view-content">
+          <div class="view-content-header">
+            <h2>Followed by ${viewedProfile.name}:</h2>
+            <span class="nav-link">Back</span>
+          </div>
+
+          ${viewedProfile.follows.length === 0
+            ? `${viewedProfile.name} is not following anyone`
+            : yo`<div class="following-list">${viewedProfile.follows.map(renderProfileFeedItem)}</div>`
+          }
+        </div>
       </div>
     </div>
   `
@@ -267,21 +295,24 @@ function renderAvatar (profile) {
 
 function renderProfileFeedItem (profile) {
   return yo`
-    <div onclick=${() => onHoverAvatar(profile)} class="feed-item profile" href="beaker://profile/${profile.url.slice('dat://'.length)}">
-      ${imgWithFallbacks(`${profile.url}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
+    <div class="feed-item profile" href="beaker://profile/${profile.url.slice('dat://'.length)}">
+      <div class="profile-feed-item-header">
+        ${imgWithFallbacks(`${profile.url}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
 
-      <span class="title">${profile.name || 'Anonymous'}</span>
+        ${profile.isCurrentUser ? '' :
+          profile.isCurrentUserFollowing ?
+            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn following primary btn">Following</button>` :
+            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn btn">Follow</button>`
+        }
 
-      ${profile.isCurrentUser ? '' :
-        profile.isCurrentUserFollowing ?
-          yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn following primary btn">✓</button>` :
-          yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn btn">+</button>`
-      }
+        ${previewingProfile && previewingProfile._origin === profile.url
+          ? renderProfilePreview()
+          : ''
+        }
+      </div>
 
-      ${previewingProfile && previewingProfile._origin === profile.url
-        ? renderProfilePreview()
-        : ''
-      }
+      <div class="name">${profile.name || 'Anonymous'}</div>
+      <p class="bio">${profile.bio}</p>
     </div>
   `
 }

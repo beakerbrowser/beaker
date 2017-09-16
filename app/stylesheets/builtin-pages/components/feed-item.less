@@ -1,19 +1,53 @@
 .feed-item {
-  padding: 10px;
   border-bottom: 1px solid #ddd;
+  -webkit-font-smoothing: antialiased;
 
   .avatar {
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
   }
 
   &.profile {
-    &:extend(.flex);
+    background: #fff;
+    border: 1px solid #eee;
     align-items: center;
     position: relative;
+    border-radius: 2px;
+
+    .profile-feed-item-header {
+      background: var(--theme-color);
+      height: 60px;
+      position: relative;
+      border-radius: 2px 2px 0 0;
+    }
 
     .follow-btn {
-      margin-left: auto;
+      position: absolute;
+      right: 10px;
+      top: 75px;
+    }
+
+    .avatar {
+      position: absolute;
+      left: 10px;
+      top: 25px;
+      width: 75px;
+      height: 75px;
+      border: 3px solid #fafafa;
+    }
+
+    .name {
+      margin-top: 50px;
+      padding: 0 13px;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .bio {
+      padding: 0 13px;
+      margin: 10px 0 15px 0;
+      line-height: 1.4;
+      font-size: .8rem;
     }
   }
 }

@@ -9,6 +9,35 @@
 
   .builtin-main {
     margin: auto !important;
+    max-width: 950px !important;
+    padding: 0 !important;
+  }
+
+  .btn {
+    border: 1px solid var(--theme-color);
+    padding-left: 10px;
+    padding-right: 10px;
+
+    &.follow-btn {
+      color: var(--theme-color);
+      background: transparent;
+
+      &:hover {
+        background: non;
+      }
+    }
+
+    &.follow-btn.following,
+    &.new-post {
+      background: var(--theme-color);
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+      font-weight: 600 !important;
+
+      &:hover {
+        // TODO
+      }
+    }
   }
 
   .header {
