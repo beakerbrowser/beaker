@@ -5,9 +5,6 @@ import unusedFilename from 'unused-filename'
 import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
-import rpc from 'pauls-electron-rpc'
-import manifest from '../../lib/api-manifests/internal/downloads'
-import { internalOnly } from '../../lib/bg/rpc'
 
 // globals
 // =
@@ -23,9 +20,9 @@ var downloadsEvents = new EventEmitter()
 // =
 
 export function setup () {
-  // wire up RPC
-  rpc.exportAPI('beakerDownloads', manifest, { eventsStream, getDownloads, pause, resume, cancel, remove, open, showInFolder }, internalOnly)
 }
+
+export const WEBAPI = { createEventsStream, getDownloads, pause, resume, cancel, remove, open, showInFolder }
 
 export function registerListener (win, opts = {}) {
   const listener = (e, item, webContents) => {
@@ -110,7 +107,7 @@ export function download (win, url, opts) {
 // rpc api
 // =
 
-function eventsStream () {
+function createEventsStream () {
   return emitStream(downloadsEvents)
 }
 

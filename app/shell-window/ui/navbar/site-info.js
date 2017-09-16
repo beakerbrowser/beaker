@@ -1,4 +1,4 @@
-/* globals beakerSitedata */
+/* globals beaker */
 
 import * as yo from 'yo-yo'
 import * as pages from '../../pages'
@@ -192,7 +192,7 @@ export class SiteInfoNavbarBtn {
   togglePerm (perm) {
     // update perm
     var newValue = (this.sitePerms[perm] === 1) ? 0 : 1
-    beakerSitedata.setPermission(this.protocolInfo.url, perm, newValue).then(() => {
+    beaker.sitedata.setPermission(this.protocolInfo.url, perm, newValue).then(() => {
       this.sitePerms[perm] = newValue
 
       // requires refresh?

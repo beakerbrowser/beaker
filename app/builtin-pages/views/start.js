@@ -1,4 +1,4 @@
-/* globals beaker beakerBrowser beakerSitedata DatArchive Image */
+/* globals beaker DatArchive Image */
 
 import * as yo from 'yo-yo'
 import {ArchivesList} from 'builtin-pages-lib'
@@ -25,14 +25,14 @@ update()
 setup()
 async function setup () {
   await loadBookmarks()
-  settings = await beakerBrowser.getSettings()
+  settings = await beaker.browser.getSettings()
   update()
 
   // open update info if appropriate
   if (!settings.noWelcomeTab) {
-    let latestVersion = await beakerSitedata.get('beaker://start', 'latest-version')
+    let latestVersion = await beaker.sitedata.get('beaker://start', 'latest-version')
     if (+latestVersion < LATEST_VERSION) {
-      await beakerSitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
+      await beaker.sitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
       if (!latestVersion) {
         window.open(WELCOME_URL)
       } else {

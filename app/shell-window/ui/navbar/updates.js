@@ -1,4 +1,4 @@
-/* globals beakerBrowser */
+/* globals beaker.browser */
 
 import * as yo from 'yo-yo'
 import emitStream from 'emit-stream'
@@ -8,7 +8,7 @@ export class UpdatesNavbarBtn {
     this.isUpdateAvailable = false
     this.isDropdownOpen = false
 
-    var browserEvents = emitStream(beakerBrowser.eventsStream())
+    var browserEvents = emitStream(beaker.browser.eventsStream())
     browserEvents.on('updater-state-changed', this.onUpdaterStateChange.bind(this))
   }
 
@@ -53,6 +53,6 @@ export class UpdatesNavbarBtn {
 
   onClickRestart (e) {
     e.preventDefault()
-    beakerBrowser.restartBrowser()
+    beaker.browser.restartBrowser()
   }
 }

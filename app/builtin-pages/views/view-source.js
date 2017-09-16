@@ -1,4 +1,4 @@
-/* globals Event DatArchive beakerBrowser */
+/* globals Event DatArchive beaker */
 
 import * as yo from 'yo-yo'
 import {FileTree} from 'builtin-pages-lib'
@@ -68,7 +68,7 @@ async function loadFile () {
       }
     } else {
       try {
-        fileContent = await beakerBrowser.fetchBody(filePath.slice(1))
+        fileContent = await beaker.browser.fetchBody(filePath.slice(1))
       } catch (err) {
         console.error(err)
       }

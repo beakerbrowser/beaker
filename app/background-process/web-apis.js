@@ -3,9 +3,9 @@ import rpc from 'pauls-electron-rpc'
 import {internalOnly, secureOnly} from '../lib/bg/rpc'
 
 // internal manifests
-import beakerBrowser from '../lib/api-manifests/internal/browser'
-import beakerDownloads from '../lib/api-manifests/internal/downloads'
-import beakerSitedata from '../lib/api-manifests/internal/sitedata'
+import beakerBrowserManifest from '../lib/api-manifests/internal/browser'
+import downloadsManifest from '../lib/api-manifests/internal/downloads'
+import sitedataManifest from '../lib/api-manifests/internal/sitedata'
 import profilesManifest from '../lib/api-manifests/internal/profiles'
 import archivesManifest from '../lib/api-manifests/internal/archives'
 import bookmarksManifest from '../lib/api-manifests/internal/bookmarks'
@@ -18,6 +18,9 @@ import archivesAPI from './web-apis/archives'
 import bookmarksAPI from './web-apis/bookmarks'
 import historyAPI from './web-apis/history'
 import appsAPI from './web-apis/apps'
+import {WEBAPI as sitedataAPI} from './dbs/sitedata'
+import {WEBAPI as downloadsAPI} from './ui/downloads'
+import {WEBAPI as beakerBrowserAPI} from './browser'
 
 // external manifests
 import datArchiveManifest from '../lib/api-manifests/external/dat-archive'
@@ -35,27 +38,10 @@ export function setup () {
   rpc.exportAPI('bookmarks', bookmarksManifest, bookmarksAPI, internalOnly)
   rpc.exportAPI('history', historyManifest, historyAPI, internalOnly)
   rpc.exportAPI('apps', appsManifest, appsAPI, internalOnly)
+  rpc.exportAPI('sitedata', sitedataManifest, sitedataAPI, internalOnly)
+  rpc.exportAPI('downloads', downloadsManifest, downloadsAPI, internalOnly)
+  rpc.exportAPI('beaker-browser', beakerBrowserManifest, beakerBrowserAPI, internalOnly)
 
   // external apis
   rpc.exportAPI('dat-archive', datArchiveManifest, datArchiveAPI, secureOnly)
-
-  // register a message-handler for setting up the client
-  // - see lib/fg/import-web-apis.js
-  // TODO replace this with manual exports
-  ipcMain.on('get-web-api-manifests', (event, scheme) => {
-    var protos
-
-    // hardcode the beaker: scheme, since that's purely for internal use
-    if (scheme === 'beaker:') {
-      protos = {
-        beakerBrowser,
-        beakerDownloads,
-        beakerSitedata
-      }
-      event.returnValue = protos
-      return
-    }
-
-    event.returnValue = {}
-  })
 }

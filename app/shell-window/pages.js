@@ -1,4 +1,4 @@
-/* globals beaker DatArchive beakerSitedata URL beakerBrowser */
+/* globals beaker DatArchive URL */
 
 import { ipcRenderer, remote } from 'electron'
 import EventEmitter from 'events'
@@ -236,7 +236,7 @@ export function create (opts) {
 
     // helper to load the perms
     fetchSitePerms () {
-      beakerSitedata.getPermissions(this.getURL()).then(perms => {
+      beaker.sitedata.getPermissions(this.getURL()).then(perms => {
         page.sitePerms = perms
         navbar.update(page)
       })
@@ -468,13 +468,13 @@ export function getById (id) {
 }
 
 export function loadPinnedFromDB () {
-  return beakerBrowser.getSetting('pinned-tabs').then(json => {
+  return beaker.browser.getSetting('pinned-tabs').then(json => {
     try { JSON.parse(json).forEach(url => create({ url, isPinned: true })) } catch (e) {}
   })
 }
 
 export function savePinnedToDB () {
-  return beakerBrowser.setSetting('pinned-tabs', JSON.stringify(getPinned().map(p => p.getURL())))
+  return beaker.browser.setSetting('pinned-tabs', JSON.stringify(getPinned().map(p => p.getURL())))
 }
 
 // event handlers
@@ -795,7 +795,7 @@ async function onPageFaviconUpdated (e) {
     // store favicon to db
   var res = await urlsToData(e.favicons)
     if (res) {
-      beakerSitedata.set(page.getURL(), 'favicon', res.dataUrl)
+      beaker.sitedata.set(page.getURL(), 'favicon', res.dataUrl)
     }
   }
 }

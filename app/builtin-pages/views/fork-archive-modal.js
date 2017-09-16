@@ -1,4 +1,4 @@
-/* globals beaker beakerBrowser */
+/* globals beaker */
 
 import * as yo from 'yo-yo'
 import {Archive} from 'builtin-pages-lib'
@@ -21,7 +21,7 @@ var description = ''
 window.setup = async function (opts) {
   if (!opts.url) {
     // ditch out
-    return beakerBrowser.closeModal({
+    return beaker.browser.closeModal({
       name: 'Error',
       message: '{url} is required',
       internalError: true
@@ -51,7 +51,7 @@ window.setup = async function (opts) {
   } catch (e) {
     console.error(e)
     // ditch out (for harambe)
-    return beakerBrowser.closeModal({
+    return beaker.browser.closeModal({
       name: e.name,
       message: e.message || e.toString(),
       internalError: true
@@ -64,7 +64,7 @@ window.setup = async function (opts) {
 
 window.addEventListener('keyup', e => {
   if (e.which === 27) {
-    beakerBrowser.closeModal()
+    beaker.browser.closeModal()
   }
 })
 
@@ -78,7 +78,7 @@ function onChangeDescription (e) {
 
 function onClickCancel (e) {
   e.preventDefault()
-  beakerBrowser.closeModal()
+  beaker.browser.closeModal()
 }
 
 function onClickDownload (e) {
@@ -95,9 +95,9 @@ async function onSubmit (e) {
     isProcessing = true
     render()
     var newArchive = await DatArchive.fork(archive.info.key, {title, description, type, networked})
-    beakerBrowser.closeModal(null, {url: newArchive.url})
+    beaker.browser.closeModal(null, {url: newArchive.url})
   } catch (e) {
-    beakerBrowser.closeModal({
+    beaker.browser.closeModal({
       name: e.name,
       message: e.message || e.toString(),
       internalError: true

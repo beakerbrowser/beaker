@@ -1,4 +1,4 @@
-/* globals beakerBrowser */
+/* globals beaker */
 
 import * as yo from 'yo-yo'
 
@@ -20,7 +20,7 @@ window.setup = async function (opts) {
 
 window.addEventListener('keyup', e => {
   if (e.which === 27) {
-    beakerBrowser.closeModal(null, {username: false, password: false})
+    beaker.browser.closeModal(null, {username: false, password: false})
   }
 })
 
@@ -34,12 +34,12 @@ function onChangePassword (e) {
 
 function onClickCancel (e) {
   e.preventDefault()
-  beakerBrowser.closeModal(null, {username: false, password: false})
+  beaker.browser.closeModal(null, {username: false, password: false})
 }
 
 function onSubmit (e) {
   e.preventDefault()
-  beakerBrowser.closeModal(null, {username, password})
+  beaker.browser.closeModal(null, {username, password})
 }
 
 // internal methods

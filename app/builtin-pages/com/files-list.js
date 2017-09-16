@@ -1,4 +1,4 @@
-/* globals beakerBrowser DatArchive Event */
+/* globals beaker DatArchive Event */
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
@@ -229,7 +229,7 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
     {label: 'Videos folder', id: 'new-video'},
     {label: 'Website', id: 'new-website'}
   ]})
-  const action = await beakerBrowser.showContextMenu(menu)
+  const action = await beaker.browser.showContextMenu(menu)
 
   // now run the action
   node = node || root
@@ -277,7 +277,7 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
     }
     case 'import':
     {
-      let files = await beakerBrowser.showOpenDialog({
+      let files = await beaker.browser.showOpenDialog({
         title: 'Import files to this archive',
         buttonLabel: 'Import',
         properties: ['openFile', 'openDirectory', 'multiSelections']

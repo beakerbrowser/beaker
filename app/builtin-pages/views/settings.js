@@ -1,4 +1,4 @@
-/* globals beakerBrowser Image */
+/* globals beaker Image */
 
 import ColorThief from '../../lib/fg/color-thief'
 import renderSidebar from '../com/sidebar'
@@ -38,14 +38,14 @@ co(function * () {
   render()
 
   // wire up events
-  browserEvents = emitStream(beakerBrowser.eventsStream())
+  browserEvents = emitStream(beaker.browser.eventsStream())
   browserEvents.on('updater-state-changed', onUpdaterStateChanged)
   browserEvents.on('updater-error', onUpdaterError)
 
   // fetch data
-  browserInfo = yield beakerBrowser.getInfo()
-  settings = yield beakerBrowser.getSettings()
-  defaultProtocolSettings = yield beakerBrowser.getDefaultProtocolSettings()
+  browserInfo = yield beaker.browser.getInfo()
+  settings = yield beaker.browser.getSettings()
+  defaultProtocolSettings = yield beaker.browser.getDefaultProtocolSettings()
 
   render()
 })
@@ -111,7 +111,7 @@ function renderProtocolSettings () {
   function register (protocol) {
     return () => {
       // update and optimistically render
-      beakerBrowser.setAsDefaultProtocolClient(protocol)
+      beaker.browser.setAsDefaultProtocolClient(protocol)
       defaultProtocolSettings[protocol] = true
       render()
     }
@@ -239,17 +239,17 @@ function onUpdateActiveSection (e) {
 
 function onClickCheckUpdates () {
   // trigger check
-  beakerBrowser.checkForUpdates()
+  beaker.browser.checkForUpdates()
 }
 
 function onToggleAutoUpdate () {
   settings.auto_update_enabled = isAutoUpdateEnabled() ? 0 : 1
   render()
-  beakerBrowser.setSetting('auto_update_enabled', settings.auto_update_enabled)
+  beaker.browser.setSetting('auto_update_enabled', settings.auto_update_enabled)
 }
 
 function onClickRestart () {
-  beakerBrowser.restartBrowser()
+  beaker.browser.restartBrowser()
 }
 
 function onUpdaterStateChanged (state) {
@@ -263,7 +263,7 @@ function onUpdaterStateChanged (state) {
 function onUpdateStartPageTheme (e) {
   var theme = e.target.value
   settings.start_page_background_image = theme
-  beakerBrowser.setSetting('start_page_background_image', theme)
+  beaker.browser.setSetting('start_page_background_image', theme)
   render()
 }
 
@@ -273,7 +273,7 @@ async function onUpdateStartPageBackgroundImage (srcPath) {
 
   // write the image to start_background_image
   var appendDir = isUpload ? false : true
-  await beakerBrowser.setStartPageBackgroundImage(srcPath, appendDir)
+  await beaker.browser.setStartPageBackgroundImage(srcPath, appendDir)
 
   // TODO: we might not need this. disabling for now -tbv
   // is the image light or dark?
@@ -281,7 +281,7 @@ async function onUpdateStartPageBackgroundImage (srcPath) {
   // if (true) await setStartPageTheme()
   // else {
   //   settings.start_page_background_image = ''
-  //   await beakerBrowser.setSetting('start_page_background_image', '')
+  //   await beaker.browser.setSetting('start_page_background_image', '')
   // }
   render()
 }
@@ -322,7 +322,7 @@ function setStartPageTheme () {
       var brightness = totalBrightness / palette.length
 
       var theme = brightness < 150 ? 'dark' : 'light'
-      beakerBrowser.setSetting('start_page_background_image', theme)
+      beaker.browser.setSetting('start_page_background_image', theme)
       settings.start_page_background_image = theme
       resolve()
     }
