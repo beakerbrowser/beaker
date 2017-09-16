@@ -8,14 +8,16 @@ import archivesManifest from '../api-manifests/internal/archives'
 import bookmarksManifest from '../api-manifests/internal/bookmarks'
 import historyManifest from '../api-manifests/internal/history'
 import profilesManifest from '../api-manifests/internal/profiles'
+import appsManifest from '../api-manifests/internal/apps'
 
 var beaker = {}
 if (window.location.protocol === 'beaker:') {
-  var opts = {timeout: false, errors}
+  const opts = {timeout: false, errors}
   const archivesRPC = rpc.importAPI('archives', archivesManifest, opts)
   const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
   const historyRPC = rpc.importAPI('history', historyManifest, opts)
   const profilesRPC = rpc.importAPI('profiles', profilesManifest, opts)
+  const appsRPC = rpc.importAPI('apps', appsManifest, opts)
 
   // beaker.archives
   beaker.archives = new EventTarget()
@@ -35,7 +37,7 @@ if (window.location.protocol === 'beaker:') {
   bindEventStream(archivesRPC.createEventStream(), beaker.archives)
 
   // beaker.bookmarks
-  beaker.bookmarks = new EventTarget()
+  beaker.bookmarks = {}
   beaker.bookmarks.getBookmark = bookmarksRPC.getBookmark
   beaker.bookmarks.isBookmarked = bookmarksRPC.isBookmarked
   beaker.bookmarks.bookmarkPublic = bookmarksRPC.bookmarkPublic
@@ -47,10 +49,9 @@ if (window.location.protocol === 'beaker:') {
   beaker.bookmarks.unbookmarkPrivate = bookmarksRPC.unbookmarkPrivate
   beaker.bookmarks.listPrivateBookmarks = bookmarksRPC.listPrivateBookmarks
   beaker.bookmarks.listBookmarkTags = bookmarksRPC.listBookmarkTags
-  // bindEventStream(bookmarksRPC.createEventStream(), beaker.bookmarks) TODO
 
   // beaker.history
-  beaker.history = new EventTarget()
+  beaker.history = {}
   beaker.history.addVisit = historyRPC.addVisit
   beaker.history.getVisitHistory = historyRPC.getVisitHistory
   beaker.history.getMostVisited = historyRPC.getMostVisited
@@ -58,7 +59,6 @@ if (window.location.protocol === 'beaker:') {
   beaker.history.removeVisit = historyRPC.removeVisit
   beaker.history.removeAllVisits = historyRPC.removeAllVisits
   beaker.history.removeVisitsAfter = historyRPC.removeVisitsAfter
-  // bindEventStream(historyRPC.createEventStream(), beaker.history) TODO
 
   // beaker.profiles
   beaker.profiles = {}
@@ -80,7 +80,13 @@ if (window.location.protocol === 'beaker:') {
   beaker.profiles.countFriends = profilesRPC.countFriends
   beaker.profiles.isFollowing = profilesRPC.isFollowing
   beaker.profiles.isFriendsWith = profilesRPC.isFriendsWith
-  // bindEventStream(profilesRPC.createEventStream(), beaker.profiles) TODO
+
+  // beaker.apps
+  beaker.apps = {}
+  beaker.apps.get = appsRPC.get
+  beaker.apps.list = appsRPC.list
+  beaker.apps.bind = appsRPC.bind
+  beaker.apps.unbind = appsRPC.unbind
 }
 
 export default beaker

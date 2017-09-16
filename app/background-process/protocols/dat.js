@@ -39,9 +39,9 @@ const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 
 // content security policies
 const DAT_CSP = `
-default-src dat: https: wss: data: blob:;
-script-src dat: https: 'unsafe-eval' 'unsafe-inline' data: blob:;
-style-src dat: https: 'unsafe-inline' data: blob:;
+default-src 'self' dat: https: wss: data: blob:;
+script-src 'self' dat: https: 'unsafe-eval' 'unsafe-inline' data: blob:;
+style-src 'self' dat: https: 'unsafe-inline' data: blob:;
 object-src 'none';
 `.replace(/\n/g, ' ')
 
