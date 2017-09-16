@@ -103,46 +103,97 @@
       line-height: 45px;
       vertical-align: middle;
     }
-
-    .btn.new-post {
-      background: var(--theme-color);
-      color: #fff;
-      -webkit-font-smoothing: antialiased;
-      font-weight: 500;
-      border-radius: 40px;
-      border: 0;
-      padding-left: 10px;
-      padding-right: 10px;
-    }
   }
 
   .view {
-    width: 350px;
+    &:extend(.flex);
+    flex-wrap: nowrap;
+    width: 100%;
+    max-width: 950px;
     height: 100vh;
-    margin-top: 65px !important;
-    background: #fff;
+    margin-top: 85px !important;
+
+    .sidebar-col {
+      flex-basis: 30%;
+      margin-right: 20px;
+    }
+
+    .main-col {
+      flex-basis: 70%;
+    }
   }
 
-  .view-header {
+  .view-content {
+    height: 100%;
+  }
+
+  .view-content-header {
     &:extend(.flex);
     justify-content: space-between;
     align-items: center;
     flex-wrap: nowrap;
+    width: 100%;
     height: 40px;
-    padding: 0 10px;
-    background: indigo;
-    color: #fff;
-    -webkit-font-smoothing: antialiased;
-    font-weight: 500;
     font-size: .85rem;
+    border-bottom: 1px solid #ddd;
+    color: rgba(0,0,0,.5);
+    font-weight: 300;
+    margin-bottom: 15px;
 
     h2 {
-      color: #fff;
+      color: rgba(0,0,0,.5);
       text-transform: none;
       font-size: .85rem;
-      font-weight: 500;
+      font-weight: 400;
       margin: 0;
       letter-spacing: 0;
+    }
+  }
+
+  // following view
+
+  .view.following {
+
+    .following-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 15px;
+    }
+  }
+
+  .profile-card {
+    position: stick/foly;
+    // background: #fff;
+    // border: 1px solid #eee;
+    // padding: 10px;
+    -webkit-font-smoothing: antialiased;
+
+    .avatar {
+      width: 60px;
+      height: 60px;
+      margin-right: 5px;
+    }
+
+    .profile-card-header {
+
+    }
+
+    .name {
+      font-size: 1rem;
+      font-weight: 500;
+      vertical-align: top;
+    }
+
+    .bio {
+      // margin-top: 0;
+      // margin-left: 60px;
+      // color: rgba(0,0,0,.75);
+      line-height: 1.4;
+      font-size: .8rem;
+    }
+
+    .url {
+      color: var(--theme-color);
     }
   }
 }

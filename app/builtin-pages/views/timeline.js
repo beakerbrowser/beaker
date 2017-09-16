@@ -211,10 +211,21 @@ function renderView () {
 
 function renderFeed () {
   return yo`
-    <div class="view following">
-      <div class="view-header">
-        <h2>Followed by ${viewedProfile.name}:</h2>
-        <span class="nav-link">Back</span>
+    <p>The feed</p>
+  `
+}
+
+function renderProfileCard (profile) {
+  return yo`
+    <div class="profile-card" href="beaker://profile/${profile._url.slice('dat://'.length)}">
+      <div class="profile-card-header">
+        ${imgWithFallbacks(`${profile._origin}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
+
+        ${!profile.isCurrentUser ? '' :
+          profile.isCurrentUserFollowing ?
+            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn following primary btn">Following</button>` :
+            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn btn">Follow</button>`
+        }
       </div>
 
       <span class="name">${profile.name || 'Anonymous'}</span>
@@ -266,7 +277,9 @@ function renderProfilePreview () {
     <div class="preview profile">
       <div class="header">
         ${renderAvatar(profile)}
+      </div>
 
+      <div class="info">
         <span class="title">${profile.name || 'Anonymous'}</span>
 
         ${profile.isCurrentUser ? '' :
