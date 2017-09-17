@@ -608,14 +608,27 @@ function onDidStopLoading (e) {
         .then(key => (new DatArchive(key)).getInfo())
         .then(info => {
           page.siteInfo = info
-          console.log('site info', info)
           navbar.update(page)
+          console.log('site info', info)
 
           // fallback the tab title to the site title, if needed
           if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
             page.title = info.title
             events.emit('page-title-updated', page)
           }
+        })
+    }
+    if (protocol === 'app:') {
+      beaker.apps.get(0, hostname)
+        .then(async (binding) => {
+          page.protocolInfo.binding = binding
+          console.log('app scheme binding', binding)
+          if (!binding || !binding.url.startsWith('dat://')) {
+            return
+          }
+          page.siteInfo = await (new DatArchive(binding.url)).getInfo()
+          navbar.update(page)
+          console.log('site info', page.siteInfo)          
         })
     }
     if (protocol !== 'beaker:') {

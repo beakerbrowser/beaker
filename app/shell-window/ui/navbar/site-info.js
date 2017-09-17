@@ -5,7 +5,7 @@ import * as pages from '../../pages'
 import renderPadlockIcon from '../icon/padlock'
 import { findParent } from '../../../lib/fg/event-handlers'
 import PERMS from '../../../lib/perms'
-import { ucfirst, getPermId, getPermParam } from '../../../lib/strings'
+import { ucfirst, getPermId, getPermParam, shortenHash } from '../../../lib/strings'
 
 export class SiteInfoNavbarBtn {
   constructor () {
@@ -45,6 +45,9 @@ export class SiteInfoNavbarBtn {
       } else if (this.protocolInfo.scheme === 'dat:') {
         protocolCls = 'p2p'
         iconEl = yo`<i class="fa fa-share-alt"></i>`
+      } else if (this.protocolInfo.scheme === 'app:') {
+        protocolCls = 'app'
+        iconEl = yo`<i class="fa fa-window-maximize"></i>`
       } else if (this.protocolInfo.scheme === 'beaker:') {
         protocolCls = 'beaker'
         iconEl = ''
@@ -67,7 +70,7 @@ export class SiteInfoNavbarBtn {
     // pull details
     var protocolDesc = ''
     if (this.protocolInfo) {
-      if (['https:'].includes(this.protocolInfo.scheme)) {
+      if (this.protocolInfo.scheme === 'https:') {
         protocolDesc = 'Your connection to this site is secure.'
       } else if (this.protocolInfo.scheme === 'http:') {
         protocolDesc = yo`
@@ -81,11 +84,21 @@ export class SiteInfoNavbarBtn {
             </small>
           </div>
         `
-      } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
+      } else if (this.protocolInfo.scheme === 'dat:') {
         protocolDesc = yo`<span>
           This site was downloaded from a secure peer-to-peer network.
           <a onclick=${e => this.learnMore()}>Learn More</a>
         </span>`
+      } else if (this.protocolInfo.scheme === 'app:') {
+        if (this.protocolInfo.binding) {
+          let url = this.protocolInfo.binding.url
+          let link = url.startsWith('dat://')
+            ? yo`<a href="${url}" onclick=${this.openLink.bind(this)}>${shortenHash(url)}</a>`
+            : url.slice('file://'.length)
+          protocolDesc = yo`<span>
+            This site is installed on your computer from ${link}
+          </span>`
+        }
       }
     }
 
@@ -202,6 +215,12 @@ export class SiteInfoNavbarBtn {
       // rerender
       this.updateActives()
     })
+  }
+
+  openLink (e) {
+    e.preventDefault()    
+    pages.setActive(pages.create(e.target.getAttribute('href')))
+    this.closeDropdown()
   }
 
   viewSiteFiles (subpage) {
