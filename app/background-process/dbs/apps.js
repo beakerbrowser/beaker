@@ -8,7 +8,7 @@ export function get (profileId, name) {
 }
 
 export function list (profileId) {
-  return db.all(`SELECT url, name, updatedAt, createdAt FROM apps WHERE profileId = ?`, [profileId])
+  return db.all(`SELECT url, name, updatedAt, createdAt FROM apps WHERE profileId = ? ORDER BY name`, [profileId])
 }
 
 export function bind (profileId, name, url) {

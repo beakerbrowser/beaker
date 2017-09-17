@@ -131,3 +131,43 @@ ul.settings-section {
 .bg-image {
   border-radius:  2px;
 }
+
+.settings-section.applications {
+  a {
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .create-app { 
+    margin: 2px 1px;
+    font-size: 0.7rem;
+  }
+
+  table {
+    background: #fff;
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+
+    td {
+      border: 1px solid #ddd;
+
+      &.current-value {
+        a {
+          color: gray;
+        }
+      }
+      &.date {
+        width: 92px;
+      }
+      &.edit-ctrl {
+        width: 55px;
+      }
+      &.remove-ctrl {
+        width: 77px;
+      }
+    }
+  }
+}

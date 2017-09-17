@@ -7,52 +7,36 @@ import {PermissionsError, InvalidURLError} from 'beaker-error-constants'
 // =
 
 export default {
-  async get(name) {
+  async get (profileId, name) {
     assertBeakerOnly(this.sender)
-    return appsDb.get(0, name)
+    return appsDb.get(profileId, name)
   },
 
-  async list() {
+  async list (profileId) {
     assertBeakerOnly(this.sender)
-    return appsDb.list(0)
+    return appsDb.list(profileId)
   },
 
-  async bind(name, url) {
+  async bind (profileId, name, url) {
     assertBeakerOnly(this.sender)
-    var key = toKey(url)
-    return appsDb.bind(0, name, `dat://${key}`)
+    assertValidBinding(url)
+    return appsDb.bind(profileId, name, url)
   },
 
-  async remove(name) {
+  async unbind (profileId, name) {
     assertBeakerOnly(this.sender)
-    return appsDb.unbind(0, name)
+    return appsDb.unbind(profileId, name)
   }
 }
 
-// temporary helper to make sure the call is made by a beaker: page
 function assertBeakerOnly (sender) {
   if (!sender.getURL().startsWith('beaker:')) {
     throw new PermissionsError()
   }
 }
 
-// helper to convert the given URL to a dat key
-function toKey (url) {
-  if (DAT_HASH_REGEX.test(url)) {
-    // simple case: given the key
-    return url
-  } 
-  
-  var urlp = parseURL(url)
-
-  // validate
-  if (urlp.protocol !== 'dat:') {
-    throw new InvalidURLError('URL must be a dat: scheme')
+function assertValidBinding (url) {
+  if (!url || typeof url !== 'string' || (!url.startsWith('dat://') && !url.startsWith('file:///'))) {
+    throw new InvalidURLError('URL must be dat: or file:///')
   }
-  if (!DAT_HASH_REGEX.test(urlp.host)) {
-    // TODO- support dns lookup?
-    throw new InvalidURLError('Hostname is not a valid hash')
-  }
-
-  return urlp.host
 }
