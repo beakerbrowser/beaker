@@ -16,9 +16,7 @@ export default {
   async getPost (href) {
     assertString(href, 'Parameter one must be a URL')
     href = normalizeUrl(href, NORMALIZE_OPTS)
-    var archive = await getProfileArchive(0)
-    var post = await getAPI().getPost(archive, href)
-    if (post) return post
+    return getAPI().getPost(href)
   },
 
   // list posts
@@ -54,13 +52,15 @@ export default {
   },
 
   // vote a post
-  // data.subjectType: string
-  async vote (subject, vote, data) {
+  // - vote: number, -1 or 0 or 1
+  // - subjectType: string, eg 'post'
+  // - subject: url of the subject
+  async vote (vote, subjectType, subject) {
     var archive = await getProfileArchive(0)
-    assertString(subject, 'Parameter one must be a URL')
-    assert(!!vote && typeof vote === 'number', 'Parameter two must be a number')
-    data.vote = vote
-    return getAPI().vote(archive, data)
+    assert(typeof vote === 'number', 'Parameter 1 must be -1, 0, or 1 (vote value)')
+    assertString(subjectType, 'Parameter 2 must be a string (subject type, such as "post")')
+    assertString(subject, 'Parameter 3 must be a URL (the subject of the vote)')
+    return getAPI().vote(archive, {vote, subjectType, subject})
   }
 }
 
