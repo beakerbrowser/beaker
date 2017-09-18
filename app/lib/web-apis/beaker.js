@@ -35,7 +35,11 @@ beaker.archives.getPublishRecord = archivesRPC.getPublishRecord
 beaker.archives.clearFileCache = archivesRPC.clearFileCache
 beaker.archives.clearDnsCache = archivesRPC.clearDnsCache
 beaker.archives.createDebugStream = () => fromEventStream(archivesRPC.createDebugStream())
-bindEventStream(archivesRPC.createEventStream(), beaker.archives)
+try {
+  bindEventStream(archivesRPC.createEventStream(), beaker.archives)
+} catch (e) {
+  // permissions error
+}
 
 // beaker.bookmarks
 beaker.bookmarks = {}
