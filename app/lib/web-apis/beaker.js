@@ -8,6 +8,7 @@ import archivesManifest from '../api-manifests/internal/archives'
 import bookmarksManifest from '../api-manifests/internal/bookmarks'
 import historyManifest from '../api-manifests/internal/history'
 import profilesManifest from '../api-manifests/internal/profiles'
+import timelineManifest from '../api-manifests/internal/timeline'
 import downloadsManifest from '../api-manifests/internal/downloads'
 import appsManifest from '../api-manifests/internal/apps'
 import sitedataManifest from '../api-manifests/internal/sitedata'
@@ -19,6 +20,7 @@ const archivesRPC = rpc.importAPI('archives', archivesManifest, opts)
 const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
 const historyRPC = rpc.importAPI('history', historyManifest, opts)
 const profilesRPC = rpc.importAPI('profiles', profilesManifest, opts)
+const timelineRPC = rpc.importAPI('timeline', timelineManifest, opts)
 
 // beaker.archives
 beaker.archives = new EventTarget()
@@ -85,6 +87,14 @@ beaker.profiles.listFriends = profilesRPC.listFriends
 beaker.profiles.countFriends = profilesRPC.countFriends
 beaker.profiles.isFollowing = profilesRPC.isFollowing
 beaker.profiles.isFriendsWith = profilesRPC.isFriendsWith
+
+// beaker.timeline
+beaker.timeline = {}
+beaker.timeline.getPost = timelineRPC.getPost
+beaker.timeline.listPosts = timelineRPC.listPosts
+beaker.timeline.countPosts = timelineRPC.countPosts
+beaker.timeline.post = timelineRPC.post
+beaker.timeline.vote = timelineRPC.vote
 
 // internal only
 if (window.location.protocol === 'beaker:') {

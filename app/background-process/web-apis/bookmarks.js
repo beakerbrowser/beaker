@@ -61,6 +61,7 @@ export default {
     assertString(href, 'Parameter one must be a URL')
     href = normalizeUrl(href, NORMALIZE_OPTS)
     var archive = await getProfileArchive(0)
+
     await getAPI().unbookmark(archive, href)
   },
 

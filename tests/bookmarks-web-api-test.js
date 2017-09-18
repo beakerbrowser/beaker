@@ -13,7 +13,7 @@ const NUM_DEFAULT_BOOKMARKS = 10
 const app = new Application({
   path: electron,
   args: ['../app'],
-  env: { 
+  env: {
     NODE_ENV: 'test',
     beaker_no_welcome_tab: 1,
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-')
@@ -180,7 +180,7 @@ test('current user bookmarks', async t => {
   var res = await app.client.executeAsync((done) => {
     window.beaker.bookmarks.getBookmark('dat://beakerbrowser.com/').then(done,done)
   })
-  t.deepEqual(bookmarkSubset(res.value), 
+  t.deepEqual(bookmarkSubset(res.value),
     { href: 'dat://beakerbrowser.com',
       id: 'dat!beakerbrowser.com',
       notes: 'Foo',
