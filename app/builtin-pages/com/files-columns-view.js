@@ -1,4 +1,4 @@
-/* globals beakerBrowser DatArchive Event */
+/* globals beaker DatArchive Event */
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
@@ -195,7 +195,7 @@ async function onContextMenu (e, root, node, depth, opts) {
   await new Promise(resolve => setTimeout(resolve, 75))
 
   // now run the menu
-  const action = await beakerBrowser.showContextMenu([
+  const action = await beaker.browser.showContextMenu([
     {label: 'Open URL', id: 'open'},
     {label: 'Copy URL', id: 'copy-url'},
     {type: 'separator'},

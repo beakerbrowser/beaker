@@ -1,9 +1,8 @@
-/* globals beakerBrowser beakerDownloads DatArchive */
+/* globals beaker DatArchive */
 
 import os from 'os'
 import * as yo from 'yo-yo'
 import {ipcRenderer} from 'electron'
-import emitStream from 'emit-stream'
 import prettyBytes from 'pretty-bytes'
 import { showInpageFind } from '../navbar'
 import { ucfirst } from '../../../lib/strings'
@@ -31,22 +30,22 @@ export class BrowserMenuNavbarBtn {
     this.shouldPersistDownloadsIndicator = false
 
     // fetch current downloads
-    beakerDownloads.getDownloads().then(ds => {
+    beaker.downloads.getDownloads().then(ds => {
       this.downloads = ds
       this.updateActives()
     })
 
-    beakerBrowser.getInfo().then(info => {
+    beaker.browser.getInfo().then(info => {
       this.browserInfo = info
       this.updateActives()
     })
 
     // wire up events
-    var dlEvents = emitStream(beakerDownloads.eventsStream())
-    dlEvents.on('new-download', this.onNewDownload.bind(this))
-    dlEvents.on('sum-progress', this.onSumProgress.bind(this))
-    dlEvents.on('updated', this.onUpdate.bind(this))
-    dlEvents.on('done', this.onDone.bind(this))
+    var dlEvents = beaker.downloads.createEventsStream()
+    dlEvents.addEventListener('new-download', this.onNewDownload.bind(this))
+    dlEvents.addEventListener('sum-progress', this.onSumProgress.bind(this))
+    dlEvents.addEventListener('updated', this.onUpdate.bind(this))
+    dlEvents.addEventListener('done', this.onDone.bind(this))
     window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
   }
 
@@ -201,7 +200,7 @@ export class BrowserMenuNavbarBtn {
   }
 
   async onOpenFile () {
-    var files = await beakerBrowser.showOpenDialog({
+    var files = await beaker.browser.showOpenDialog({
        title: 'Open file...',
        properties: ['openFile', 'createDirectory']
     })
@@ -291,6 +290,6 @@ export class BrowserMenuNavbarBtn {
   }
 
   onClickRestart () {
-    beakerBrowser.restartBrowser()
+    beaker.browser.restartBrowser()
   }
 }

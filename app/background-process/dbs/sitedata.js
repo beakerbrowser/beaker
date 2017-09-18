@@ -2,11 +2,8 @@ import {app} from 'electron'
 import sqlite3 from 'sqlite3'
 import path from 'path'
 import url from 'url'
-import rpc from 'pauls-electron-rpc'
-import manifest from '../../lib/api-manifests/internal/sitedata'
 import { cbPromise } from '../../lib/functions'
 import { setupSqliteDB } from '../../lib/bg/db'
-import { internalOnly } from '../../lib/bg/rpc'
 import datDns from '../networks/dat/dns'
 
 // globals
@@ -23,10 +20,9 @@ export function setup () {
   var dbPath = path.join(app.getPath('userData'), 'SiteData')
   db = new sqlite3.Database(dbPath)
   setupPromise = setupSqliteDB(db, migrations, '[SITEDATA]')
-
-  // wire up RPC
-  rpc.exportAPI('beakerSitedata', manifest, { get, set, getPermissions, getPermission, setPermission, clearPermission, clearPermissionAllOrigins }, internalOnly)
 }
+
+export const WEBAPI = { get, set, getPermissions, getPermission, setPermission, clearPermission, clearPermissionAllOrigins }
 
 export async function set (url, key, value) {
   await setupPromise

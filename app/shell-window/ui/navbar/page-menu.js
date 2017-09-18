@@ -1,4 +1,4 @@
-/* globals beaker DatArchive beakerBrowser */
+/* globals beaker DatArchive beaker.browser */
 
 import * as yo from 'yo-yo'
 import {findParent} from '../../../lib/fg/event-handlers'
@@ -145,6 +145,6 @@ export class PageMenuNavbarBtn {
     if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
       return
     }
-    beakerBrowser.downloadURL(`dat://${page.siteInfo.key}/?download_as=zip`)
+    beaker.browser.downloadURL(`dat://${page.siteInfo.key}/?download_as=zip`)
   }
 }

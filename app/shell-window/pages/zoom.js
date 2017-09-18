@@ -1,4 +1,4 @@
-/* globals beakerSitedata */
+/* globals beaker */
 
 import {getAll as getAllPages} from '../pages'
 import * as navbar from '../ui/navbar'
@@ -9,7 +9,7 @@ export function setZoomFromSitedata (page, origin) {
   // load zoom from sitedata
   origin = origin || page.getURLOrigin()
   if (!origin) { return }
-  beakerSitedata.get(origin, 'zoom').then(v => {
+  beaker.sitedata.get(origin, 'zoom').then(v => {
     if (typeof v != 'undefined') {
       page.zoom = +v
       navbar.update(page)
@@ -31,7 +31,7 @@ export function setZoom (page, z) {
   // persist to sitedata
   var origin = page.getURLOrigin()
   if (!origin) { return }
-  beakerSitedata.set(origin, 'zoom', page.zoom)
+  beaker.sitedata.set(origin, 'zoom', page.zoom)
 
   // update all pages at the origin
   getAllPages().forEach(p => {

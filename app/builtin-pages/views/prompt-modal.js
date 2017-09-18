@@ -1,4 +1,4 @@
-/* globals messageDiv promptInput mainForm cancelBtn beakerBrowser */
+/* globals messageDiv promptInput mainForm cancelBtn beaker */
 
 // exported api
 // =
@@ -13,7 +13,7 @@ window.setup = async function (opts) {
     promptInput.value = '' + opts.default
   }
   mainForm.addEventListener('submit', onSubmit)
-  cancelBtn.addEventListener('click', e => beakerBrowser.closeModal())
+  cancelBtn.addEventListener('click', e => beaker.browser.closeModal())
 }
 
 // event handlers
@@ -21,11 +21,11 @@ window.setup = async function (opts) {
 
 window.addEventListener('keyup', e => {
   if (e.which === 27) {
-    beakerBrowser.closeModal()
+    beaker.browser.closeModal()
   }
 })
 
 function onSubmit (e) {
   e.preventDefault()
-  beakerBrowser.closeModal(null, {value: promptInput.value})
+  beaker.browser.closeModal(null, {value: promptInput.value})
 }

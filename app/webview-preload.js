@@ -1,5 +1,4 @@
 import { webFrame } from 'electron'
-import importWebAPIs from './lib/fg/import-web-apis' // TODO remove
 import DatArchive from './lib/web-apis/dat-archive'
 import beaker from './lib/web-apis/beaker'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
@@ -17,10 +16,10 @@ setupRedirectHackfix()
  - CORS Enabled
 */
 webFrame.registerURLSchemeAsPrivileged('dat', { bypassCSP: false })
+webFrame.registerURLSchemeAsPrivileged('app', { bypassCSP: false })
 
 // setup APIs
-importWebAPIs()
-if (['beaker:', 'dat:', 'https:'].includes(window.location.protocol) ||
+if (['beaker:', 'dat:', 'https:', 'app:'].includes(window.location.protocol) ||
     (window.location.protocol === 'http:' && window.location.hostname === 'localhost')) {
   window.DatArchive = DatArchive
 }

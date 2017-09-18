@@ -1,4 +1,4 @@
-/* globals Event beaker DatArchive history beakerBrowser confirm */
+/* globals Event beaker DatArchive history confirm */
 
 import * as yo from 'yo-yo'
 import {STANDARD_ARCHIVE_TYPES} from '../../lib/const'
@@ -64,7 +64,7 @@ async function onContextMenu (e) {
   e.preventDefault()
   e.stopPropagation()
 
-  const action = await beakerBrowser.showContextMenu([
+  const action = await beaker.browser.showContextMenu([
     {type: 'submenu', label: 'New...', submenu: [
       {label: 'Application', id: 'new-application'},
       {label: 'Code module', id: 'new-module'},

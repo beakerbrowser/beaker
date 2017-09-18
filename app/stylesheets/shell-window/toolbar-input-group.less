@@ -177,16 +177,16 @@
       &.fa-exclamation-circle {
         color: shade(@red, 20%) !important;
       }
-
-      &.fa-info-circle {
-        color: #777 !important;
-      }
     }
 
     i {
       margin-left: 10px;
       margin-right: 0;
       padding-right: 10px;
+
+      &.fa-window-maximize {
+        padding-right: 8px;
+      }
     }
 
     button {
@@ -234,15 +234,15 @@
     }
 
     &.insecure {
-      color: @color-text--muted;
+      button {
+        color: #555;
+      }
 
       .title {
         color: mix(@color-text, @red, 20%);
       }
 
       i {
-        color: @color-text--light;
-
         &.https-error {
           color: mix(@color-text, @red, 20%);
         }
@@ -261,6 +261,12 @@
 
       .details-summary {
         color: #3c943c;
+      }
+    }
+
+    &.app {
+      button {
+        color: #555;
       }
     }
   }

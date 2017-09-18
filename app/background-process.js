@@ -27,6 +27,7 @@ import * as bookmarksDb from './background-process/dbs/bookmarks'
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 import * as datProtocol from './background-process/protocols/dat'
+import * as appProtocol from './background-process/protocols/app'
 
 import * as profiles from './background-process/injests/profiles'
 
@@ -45,7 +46,7 @@ process.on('unhandledRejection', (reason, p) => {
 })
 
 // configure the protocols
-protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
+protocol.registerStandardSchemes(['dat', 'beaker', 'app'], { secure: true })
 
 app.on('ready', async function () {
   // databases
@@ -71,9 +72,10 @@ app.on('ready', async function () {
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
   datProtocol.setup()
+  appProtocol.setup()
 
   // configure chromium's permissions for the protocols
-  protocol.registerServiceWorkerSchemes(['dat'])
+  protocol.registerServiceWorkerSchemes(['dat', 'app'])
 
   // web APIs
   webAPIs.setup()

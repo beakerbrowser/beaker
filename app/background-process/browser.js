@@ -3,13 +3,10 @@ import os from 'os'
 import path from 'path'
 import fs from 'fs'
 import jetpack from 'fs-jetpack'
-import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 var debug = require('debug')('beaker')
-import manifest from '../lib/api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
-import {internalOnly} from '../lib/bg/rpc'
 import {open as openUrl} from './open-url'
 import {showModal, closeModal} from './ui/modals'
 import {setIsReadyToQuit} from './ui/windows'
@@ -62,38 +59,6 @@ export function setup () {
   // fetch user setup status
   userSetupStatusLookupPromise = settingsDb.get('user-setup-status')
 
-  // wire up RPC
-  rpc.exportAPI('beakerBrowser', manifest, {
-    eventsStream,
-    getInfo,
-    checkForUpdates,
-    restartBrowser,
-
-    getSetting,
-    getSettings,
-    setSetting,
-
-    getUserSetupStatus,
-    setUserSetupStatus,
-
-    fetchBody,
-    downloadURL,
-
-    setStartPageBackgroundImage,
-
-    getDefaultProtocolSettings,
-    setAsDefaultProtocolClient,
-    removeAsDefaultProtocolClient,
-
-    showOpenDialog,
-    showContextMenu,
-    openUrl: url => { openUrl(url) }, // dont return anything
-    openFolder,
-    doWebcontentsCmd,
-
-    closeModal
-  }, internalOnly)
-
   // wire up events
   app.on('web-contents-created', onWebContentsCreated)
 
@@ -109,6 +74,37 @@ export function setup () {
       e.returnValue = false
     }
   })
+}
+
+export const WEBAPI = {
+  createEventsStream,
+  getInfo,
+  checkForUpdates,
+  restartBrowser,
+
+  getSetting,
+  getSettings,
+  setSetting,
+
+  getUserSetupStatus,
+  setUserSetupStatus,
+
+  fetchBody,
+  downloadURL,
+
+  setStartPageBackgroundImage,
+
+  getDefaultProtocolSettings,
+  setAsDefaultProtocolClient,
+  removeAsDefaultProtocolClient,
+
+  showOpenDialog,
+  showContextMenu,
+  openUrl: url => { openUrl(url) }, // dont return anything
+  openFolder,
+  doWebcontentsCmd,
+
+  closeModal
 }
 
 export function fetchBody (url) {
@@ -279,7 +275,7 @@ export function setUserSetupStatus (status) {
 // rpc methods
 // =
 
-function eventsStream () {
+function createEventsStream () {
   return emitStream(browserEvents)
 }
 
@@ -362,7 +358,7 @@ async function doWebcontentsCmd (method, wcId, ...args) {
 
 function setUpdaterState (state) {
   updaterState = state
-  browserEvents.emit('updater-state-changed', state)
+  browserEvents.emit('updater-state-changed', {state})
 }
 
 function getAutoUpdaterFeedURL () {
@@ -398,7 +394,7 @@ function onUpdateError (e) {
   debug('[AUTO-UPDATE] error', e.toString())
   setUpdaterState(UPDATER_STATUS_IDLE)
   updaterError = e.toString()
-  browserEvents.emit('updater-error', e.toString())
+  browserEvents.emit('updater-error', {message: e.toString()})
 }
 
 function onWebContentsCreated (e, webContents) {

@@ -1,11 +1,12 @@
-/* globals beakerBrowser Image */
+/* globals beaker Image */
 
+import yo from 'yo-yo'
 import ColorThief from '../../lib/fg/color-thief'
+import {shortenHash} from '../../lib/strings'
+import {niceDate} from '../../lib/time'
 import renderSidebar from '../com/sidebar'
+import {create as createEditAppPopup} from '../com/edit-app-popup'
 
-const yo = require('yo-yo')
-const co = require('co')
-const emitStream = require('emit-stream')
 const colorThief = new ColorThief()
 
 // globals
@@ -15,6 +16,7 @@ var settings
 var browserInfo
 var browserEvents
 var defaultProtocolSettings
+var applications
 var activeSection = ''
 
 // TODO(bgimg) disabled for now -prf
@@ -34,26 +36,28 @@ var activeSection = ''
 // main
 // =
 
-co(function * () {
-  render()
+setup()
+async function setup () {
+  renderToPage()
 
   // wire up events
-  browserEvents = emitStream(beakerBrowser.eventsStream())
-  browserEvents.on('updater-state-changed', onUpdaterStateChanged)
-  browserEvents.on('updater-error', onUpdaterError)
+  browserEvents = beaker.browser.createEventsStream()
+  browserEvents.addEventListener('updater-state-changed', onUpdaterStateChanged)
+  browserEvents.addEventListener('updater-error', onUpdaterError)
 
   // fetch data
-  browserInfo = yield beakerBrowser.getInfo()
-  settings = yield beakerBrowser.getSettings()
-  defaultProtocolSettings = yield beakerBrowser.getDefaultProtocolSettings()
+  browserInfo = await beaker.browser.getInfo()
+  settings = await beaker.browser.getSettings()
+  defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
+  applications = await beaker.apps.list(0)
 
-  render()
-})
+  renderToPage()
+}
 
 // rendering
 // =
 
-function render () {
+function renderToPage () {
   // only render if this page is active
   if (!browserInfo) {
     yo.update(document.querySelector('.settings-wrapper'), yo`<div class="pane" id="el-content">
@@ -71,7 +75,7 @@ function render () {
       <div>
         <div class="builtin-sidebar">
           <h1>Settings</h1>
-          <p class="builtin-blurb">Manage Beaker's appearance and preferences.</p>
+          <p class="builtin-blurb">Manage Beaker${"'"}s appearance and preferences.</p>
 
           <div class="section">
             <div class="nav-item ${activeSection === 'auto-updater' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="auto-updater">
@@ -79,6 +83,9 @@ function render () {
             </div>
             <div class="nav-item ${activeSection === 'protocol-settings' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="protocol-settings">
               Protocol settings
+            </div>
+            <div class="nav-item ${activeSection === 'applications' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="applications">
+              Applications
             </div>
             <div class="nav-item ${activeSection === 'info' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="info">
               Information & Help
@@ -92,6 +99,9 @@ function render () {
 
           <h2 id="protocol-settings" class="ll-heading">Protocol settings</h2>
           ${renderProtocolSettings()}
+
+          <h2 id="applications" class="ll-heading">Applications</h2>
+          ${renderApplications()}
 
           <h2 id="info" class="ll-heading">Beaker information</h2>
           <ul class="settings-section">
@@ -111,9 +121,9 @@ function renderProtocolSettings () {
   function register (protocol) {
     return () => {
       // update and optimistically render
-      beakerBrowser.setAsDefaultProtocolClient(protocol)
+      beaker.browser.setAsDefaultProtocolClient(protocol)
       defaultProtocolSettings[protocol] = true
-      render()
+      renderToPage()
     }
   }
   var registered = Object.keys(defaultProtocolSettings).filter(k => defaultProtocolSettings[k])
@@ -132,6 +142,25 @@ function renderProtocolSettings () {
           </a>
         </div>`)}
       </div>`
+}
+
+function renderApplications () {
+  return yo`<div class="settings-section applications">
+      <table>
+        ${applications.map(app => yo`
+          <tr>
+            <td><a href=${'app://' + app.name} target="_blank">${app.name}</a></td>
+            <td class="current-value"><a href=${app.url} target="_blank">${app.url}</a></td>
+            <td class="date">${niceDate(app.updatedAt)}</td>
+            <td class="edit-ctrl"><a href="#" onclick=${e => onClickEditApp(e, app)}>edit</a></td>
+            <td class="remove-ctrl"><a href="#" onclick=${e => onClickRemoveApp(e, app)}>remove</a></td>
+          </tr>
+        `)}
+      </table>
+      <div class="create-app">
+        <a href="#" onclick=${onClickEditApp}>+ New app</a>
+      </div>
+    </div>`
 }
 
 function renderAutoUpdater () {
@@ -239,17 +268,17 @@ function onUpdateActiveSection (e) {
 
 function onClickCheckUpdates () {
   // trigger check
-  beakerBrowser.checkForUpdates()
+  beaker.browser.checkForUpdates()
 }
 
 function onToggleAutoUpdate () {
   settings.auto_update_enabled = isAutoUpdateEnabled() ? 0 : 1
-  render()
-  beakerBrowser.setSetting('auto_update_enabled', settings.auto_update_enabled)
+  renderToPage()
+  beaker.browser.setSetting('auto_update_enabled', settings.auto_update_enabled)
 }
 
 function onClickRestart () {
-  beakerBrowser.restartBrowser()
+  beaker.browser.restartBrowser()
 }
 
 function onUpdaterStateChanged (state) {
@@ -257,14 +286,36 @@ function onUpdaterStateChanged (state) {
   // render new state
   browserInfo.updater.state = state
   browserInfo.updater.error = false
-  render()
+  renderToPage()
+}
+
+async function onClickEditApp (e, app) {
+  e.preventDefault()
+  var newApp = await createEditAppPopup(app)
+  if (app && app.name !== newApp.name) {
+    await beaker.apps.unbind(0, app.name)
+  }
+  await beaker.apps.bind(0, newApp.name, newApp.url)
+  applications = await beaker.apps.list(0)
+  renderToPage()
+}
+
+async function onClickRemoveApp (e, app) {
+  e.preventDefault()
+  if (!confirm(`Remove the "${app.name}" application?`)) {
+    return
+  }
+
+  await beaker.apps.unbind(0, app.name)
+  applications = await beaker.apps.list(0)
+  renderToPage()
 }
 
 function onUpdateStartPageTheme (e) {
   var theme = e.target.value
   settings.start_page_background_image = theme
-  beakerBrowser.setSetting('start_page_background_image', theme)
-  render()
+  beaker.browser.setSetting('start_page_background_image', theme)
+  renderToPage()
 }
 
 async function onUpdateStartPageBackgroundImage (srcPath) {
@@ -273,7 +324,7 @@ async function onUpdateStartPageBackgroundImage (srcPath) {
 
   // write the image to start_background_image
   var appendDir = isUpload ? false : true
-  await beakerBrowser.setStartPageBackgroundImage(srcPath, appendDir)
+  await beaker.browser.setStartPageBackgroundImage(srcPath, appendDir)
 
   // TODO: we might not need this. disabling for now -tbv
   // is the image light or dark?
@@ -281,16 +332,16 @@ async function onUpdateStartPageBackgroundImage (srcPath) {
   // if (true) await setStartPageTheme()
   // else {
   //   settings.start_page_background_image = ''
-  //   await beakerBrowser.setSetting('start_page_background_image', '')
+  //   await beaker.browser.setSetting('start_page_background_image', '')
   // }
-  render()
+  renderToPage()
 }
 
 function onUpdaterError (err) {
   if (!browserInfo) { return }
   // render new state
   browserInfo.updater.error = err
-  render()
+  renderToPage()
 }
 
 // internal methods
@@ -322,7 +373,7 @@ function setStartPageTheme () {
       var brightness = totalBrightness / palette.length
 
       var theme = brightness < 150 ? 'dark' : 'light'
-      beakerBrowser.setSetting('start_page_background_image', theme)
+      beaker.browser.setSetting('start_page_background_image', theme)
       settings.start_page_background_image = theme
       resolve()
     }
