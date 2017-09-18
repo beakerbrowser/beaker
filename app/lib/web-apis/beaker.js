@@ -119,7 +119,7 @@ if (window.location.protocol === 'beaker:') {
 
   // beaker.browser
   beaker.browser = {}
-  beaker.browser.eventsStream = () => fromEventStream(beakerBrowserRPC.eventsStream())
+  beaker.browser.createEventsStream = () => fromEventStream(beakerBrowserRPC.createEventsStream())
   beaker.browser.getInfo = beakerBrowserRPC.getInfo
   beaker.browser.checkForUpdates = beakerBrowserRPC.checkForUpdates
   beaker.browser.restartBrowser = beakerBrowserRPC.restartBrowser

@@ -77,7 +77,7 @@ export function setup () {
 }
 
 export const WEBAPI = {
-  eventsStream,
+  createEventsStream,
   getInfo,
   checkForUpdates,
   restartBrowser,
@@ -275,7 +275,7 @@ export function setUserSetupStatus (status) {
 // rpc methods
 // =
 
-function eventsStream () {
+function createEventsStream () {
   return emitStream(browserEvents)
 }
 
@@ -358,7 +358,7 @@ async function doWebcontentsCmd (method, wcId, ...args) {
 
 function setUpdaterState (state) {
   updaterState = state
-  browserEvents.emit('updater-state-changed', state)
+  browserEvents.emit('updater-state-changed', {state})
 }
 
 function getAutoUpdaterFeedURL () {
@@ -394,7 +394,7 @@ function onUpdateError (e) {
   debug('[AUTO-UPDATE] error', e.toString())
   setUpdaterState(UPDATER_STATUS_IDLE)
   updaterError = e.toString()
-  browserEvents.emit('updater-error', e.toString())
+  browserEvents.emit('updater-error', {message: e.toString()})
 }
 
 function onWebContentsCreated (e, webContents) {

@@ -1,15 +1,14 @@
 /* globals beaker.browser */
 
 import * as yo from 'yo-yo'
-import emitStream from 'emit-stream'
 
 export class UpdatesNavbarBtn {
   constructor () {
     this.isUpdateAvailable = false
     this.isDropdownOpen = false
 
-    var browserEvents = emitStream(beaker.browser.eventsStream())
-    browserEvents.on('updater-state-changed', this.onUpdaterStateChange.bind(this))
+    var browserEvents = beaker.browser.createEventsStream()
+    browserEvents.addEventListener('updater-state-changed', this.onUpdaterStateChange.bind(this))
   }
 
   render () {

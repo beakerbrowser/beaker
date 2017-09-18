@@ -1,5 +1,5 @@
 export default {
-  eventsStream: 'readable',
+  createEventsStream: 'readable',
   getInfo: 'promise',
   checkForUpdates: 'promise',
   restartBrowser: 'sync',

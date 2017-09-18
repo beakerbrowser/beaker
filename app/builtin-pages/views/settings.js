@@ -41,7 +41,7 @@ async function setup () {
   renderToPage()
 
   // wire up events
-  browserEvents = beaker.browser.eventsStream()
+  browserEvents = beaker.browser.createEventsStream()
   browserEvents.addEventListener('updater-state-changed', onUpdaterStateChanged)
   browserEvents.addEventListener('updater-error', onUpdaterError)
 
