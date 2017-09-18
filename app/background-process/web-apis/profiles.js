@@ -5,7 +5,7 @@ import {getProfileRecord, getAPI} from '../injests/profiles'
 // =
 
 export default {
-  
+
   // profiles
   // =
 
@@ -150,7 +150,7 @@ export default {
       getAPI().addArchive(archiveA),
       getAPI().addArchive(archiveB)
     ])
-    return getAPI().isFriendsWith(archiveA, archiveB)    
+    return getAPI().isFriendsWith(archiveA, archiveB)
   }
 }
 
