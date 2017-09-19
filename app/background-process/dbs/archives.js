@@ -107,10 +107,19 @@ export async function query (profileId, query) {
       autoUpload: archive.autoUpload != 0
     }
 
+    // user settings
     delete archive.isSaved
     delete archive.networked
     delete archive.autoDownload
     delete archive.autoUpload
+
+    // old attrs
+    delete archive.createdByTitle
+    delete archive.createdByUrl
+    delete archive.forkOf
+    delete archive.metaSize
+    delete archive.stagingSize
+    delete archive.stagingSizeLessIgnored
   })
   return archives
 }
@@ -256,6 +265,15 @@ export async function getMeta (key) {
   // massage some values
   meta.isOwner = !!meta.isOwner
   meta.type = meta.type ? meta.type.split(',') : []
+
+  // removeold attrs
+  delete meta.createdByTitle
+  delete meta.createdByUrl
+  delete meta.forkOf
+  delete meta.metaSize
+  delete meta.stagingSize
+  delete meta.stagingSizeLessIgnored
+
   return meta
 }
 
