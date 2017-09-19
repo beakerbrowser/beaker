@@ -254,17 +254,8 @@ function render (id, page) {
   var datBtns = ''
 
   if (isViewingDat) {
-    let numPeers = page.siteInfo ? page.siteInfo.peers : 0
-    var isLiveReloading = page.isLiveReloading()
-
-    datBtns = [
-      yo`
-        <button class="nav-peers-btn" onclick=${onClickPeercount}>
-          <i class="fa fa-share-alt"></i>
-          ${numPeers}
-        </button>`
-    ]
-    if (isLiveReloading) {
+    datBtns = []
+    if (page.isLiveReloading()) {
       datBtns.unshift(
         yo`<span class="live-reload-indicator" title="Live reloading active">
             <i class="fa fa-bolt"></i>
@@ -595,10 +586,6 @@ function onClickCancel (e) {
   if (page) {
     page.stopAsync()
   }
-}
-
-function onClickPeercount (e) {
-  // TODO anything?
 }
 
 function onClickGotoDatVersion (e) {
