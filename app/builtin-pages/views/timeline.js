@@ -104,6 +104,7 @@ function onChangePostDraft (e) {
 async function onSubmitPost (e) {
   e.preventDefault()
   await beaker.timeline.post({text: postDraftText})
+  postDraftText = ''
   render()
 }
 
