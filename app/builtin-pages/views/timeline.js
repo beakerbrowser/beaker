@@ -253,7 +253,6 @@ function renderFollowing () {
         <div class="view-content">
           <div class="view-content-header">
             <h2>Followed by ${viewedProfile.name}:</h2>
-            <span class="nav-link">Back</span>
           </div>
 
           ${viewedProfile.follows.length === 0
