@@ -15,6 +15,7 @@ var currentUserProfile
 var viewedProfile
 var currentView
 var previewingProfile
+var postDraftText = ''
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -95,6 +96,16 @@ async function loadViewedProfile () {
 
 // events
 // =
+
+function onChangePostDraft (e) {
+  postDraftText = e.target.value
+}
+
+async function onSubmitPost (e) {
+  e.preventDefault()
+  await beaker.timeline.post({text: postDraftText})
+  render()
+}
 
 async function onUpdateViewFilter (filter) {
   // reset data
@@ -204,14 +215,28 @@ function renderView () {
     case 'following':
       return renderFollowing()
     default:
-      return renderFollowing()
-      // return renderFeed()
+      // return renderFollowing()
+      return renderFeed()
   }
 }
 
 function renderFeed () {
   return yo`
-    <p>The feed</p>
+    <div class="view following">
+      <div class="sidebar-col">
+        ${renderProfileCard(currentUserProfile)}
+      </div>
+
+      <div class="main-col">
+        <div class="view-content">
+          <form onsubmit=${onSubmitPost}>
+            <textarea onkeyup=${onChangePostDraft}>${postDraftText}</textarea>
+            <button class="btn" type="submit">Submit post</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
   `
 }
 
