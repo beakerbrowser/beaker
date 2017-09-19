@@ -254,9 +254,11 @@ export async function getMeta (key) {
   var meta = await db.get(`
     SELECT
         archives_meta.*,
-        GROUP_CONCAT(archives_meta_type.type) AS type
+        GROUP_CONCAT(archives_meta_type.type) AS type,
+        GROUP_CONCAT(apps.name) as installedNames
       FROM archives_meta
-      LEFT JOIN archives_meta_type ON archives_meta_type.key = archives_meta.key      
+      LEFT JOIN archives_meta_type ON archives_meta_type.key = archives_meta.key
+      LEFT JOIN apps ON apps.url = ('dat://' || archives_meta.key)
       WHERE archives_meta.key = ?
       GROUP BY archives_meta.key
   `, [key])
@@ -265,6 +267,7 @@ export async function getMeta (key) {
   // massage some values
   meta.isOwner = !!meta.isOwner
   meta.type = meta.type ? meta.type.split(',') : []
+  meta.installedNames = meta.installedNames ? meta.installedNames.split(',') : []
 
   // removeold attrs
   delete meta.createdByTitle

@@ -262,6 +262,17 @@ function render (id, page) {
           </span>`
       )
     }
+    if (page.siteInfo && page.siteInfo.type.includes('app') && page.siteInfo.installedNames.length === 0) {
+      datBtns.unshift(
+        yo`<button
+          class="callout install-callout"
+          title="Install this application"
+          onclick=${onClickInstallApp}
+        >
+          <span class="fa fa-download"></span> Install Application
+        </button>`
+      )
+    }
   } else if (siteHasDatAlternative) {
     datBtns = [
       yo`<button
@@ -362,8 +373,8 @@ function render (id, page) {
         ${locationInput}
         ${inpageFinder}
         ${zoomBtn}
-        ${!isLocationHighlighted ? rehostMenuNavbarBtn.render() : ''}
         ${!isLocationHighlighted ? datBtns : ''}
+        ${!isLocationHighlighted ? rehostMenuNavbarBtn.render() : ''}
         ${!isLocationHighlighted ? pageMenuNavbarBtn.render() : ''}
         ${!isLocationHighlighted ? bookmarkMenuNavbarBtn.render() : ''}
       </div>
@@ -585,6 +596,18 @@ function onClickCancel (e) {
   var page = getEventPage(e)
   if (page) {
     page.stopAsync()
+  }
+}
+
+function onClickInstallApp (e) {
+  const page = getEventPage(e)
+  if (!page || !page.siteInfo) return
+
+  const url = `beaker://install/${page.siteInfo.key}`
+  if (e.metaKey || e.ctrlKey) { // popup
+    pages.setActive(pages.create(url))
+  } else {
+    page.loadURL(url) // goto
   }
 }
 
