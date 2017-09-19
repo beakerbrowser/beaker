@@ -7,9 +7,35 @@
 .timeline-wrapper {
   background: #f7f7f7;
 
+  .name {
+    font-size: .9rem;
+    font-weight: 500;
+    color: @color-text;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .bio {
+    line-height: 1.35;
+    font-size: .775rem;
+  }
+
+  a {
+    color: var(--theme-color);
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
   .builtin-main {
     margin: auto !important;
-    max-width: 950px !important;
+    max-width: 1100px !important;
     padding: 0 !important;
   }
 
