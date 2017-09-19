@@ -220,12 +220,7 @@ function renderProfileCard (profile) {
     <div class="profile-card" href="beaker://profile/${profile._url.slice('dat://'.length)}">
       <div class="profile-card-header">
         ${imgWithFallbacks(`${profile._origin}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
-
-        ${!profile.isCurrentUser ? '' :
-          profile.isCurrentUserFollowing ?
-            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn following primary btn">Following</button>` :
-            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn btn">Follow</button>`
-        }
+        ${!profile.isCurrentUser ? '' : renderFollowButton(profile)}
       </div>
 
       <span class="name">${profile.name || 'Anonymous'}</span>
@@ -281,11 +276,7 @@ function renderProfilePreview () {
 
       <div class="info">
         <span class="title">${profile.name || 'Anonymous'}</span>
-
-        ${profile.isCurrentUser ? '' :
-          profile.isCurrentUserFollowing ?
-            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn following primary btn">✓</button>` :
-            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn btn">+</button>`}
+        ${profile.isCurrentUser ? '' : renderFollowButton(profile)}
       </div>
 
       <p class="bio">${profile.bio}</p>
@@ -358,7 +349,7 @@ function renderProfile () {
 
       <p class="bio">${viewedProfile.bio}</p>
 
-      ${isUserProfile ? '' : renderFollowButton()}
+      ${isUserProfile ? '' : renderFollowButton(viewedProfile)}
     </div>
   `
 }
@@ -385,16 +376,17 @@ function renderProfileEditor () {
 
         <div class="actions">
           <button type="button" class="btn" onclick=${onToggleEditingProfile}>Cancel</button>
-          <button type="submit" class="btn primary">Save</button>
+          <button type="submit" class="btn">Save</button>
         </div>
       </form>
     </div>
   `
 }
 
-function renderFollowButton () {
+function renderFollowButton (profile) {
+  var cls = profile.isCurrentUserFollowing ? 'following' : ''
   return yo`
-    <button class="follow-btn btn primary" onclick=${(e) => onToggleFollowing(e, viewedProfile)}>
-      ${viewedProfile.isCurrentUserFollowing ? 'Following ✓' : 'Follow +'}
+    <button class="follow-btn btn ${cls}" onclick=${(e) => onToggleFollowing(e, viewedProfile)}>
+      ${profile.isCurrentUserFollowing ? 'Following' : 'Follow'}
     </button>`
 }
