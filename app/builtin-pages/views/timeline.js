@@ -190,16 +190,6 @@ function renderHeader () {
             Feed
           </span>
         </div>
-
-        <div class="profile-links">
-          <div class="avatar-container">
-            ${renderAvatar(currentUserProfile)}
-          </div>
-
-          <button class="btn new-post">
-            New post
-          </button>
-        </div>
       </div>
     </div>
   `
