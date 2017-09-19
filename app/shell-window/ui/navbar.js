@@ -629,9 +629,13 @@ function onBlurLocation (e) {
   setTimeout(clearAutocomplete, 150)
   var page = getEventPage(e)
   if (page) {
-    page.navbarEl.querySelector('.nav-location-pretty').classList.remove('hidden')
-    page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
-    page.navbarEl.querySelector('.toolbar-input-group').classList.remove('input-focused')
+    try {
+      page.navbarEl.querySelector('.nav-location-pretty').classList.remove('hidden')
+      page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
+      page.navbarEl.querySelector('.toolbar-input-group').classList.remove('input-focused')
+    } catch (e) {
+      // ignore
+    }
     isLocationHighlighted = false
     update()
   }
