@@ -49,6 +49,7 @@ async function setup () {
 
 async function parseURLKey () {
   var path = window.location.pathname
+
   if (path === '/' || !path) return false
   try {
     // extract key from url
@@ -100,6 +101,11 @@ async function onUpdateViewFilter (filter) {
 
   // update view
   currentView = filter || ''
+  render()
+}
+
+async function onClickProfile (profile) {
+  viewedProfile = profile
   render()
 }
 
@@ -312,11 +318,11 @@ function renderProfileFeedItem (profile) {
       <div class="profile-feed-item-header">
         ${imgWithFallbacks(`${profile.url}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
 
-        ${profile.isCurrentUser ? '' :
-          profile.isCurrentUserFollowing ?
-            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn following primary btn">Following</button>` :
-            yo`<button onclick=${(e) => onToggleFollowing(e, profile)} class="follow-btn btn">Follow</button>`
-        }
+        <div>
+          <div class="name" onclick=${e => onClickProfile(profile)}>${profile.name || 'Anonymous'}</div>
+          <a href="" class="url">pfrazee.github.io</a>
+          ${profile.isCurrentUser ? '' : renderFollowButton(profile)}
+        </div>
 
         ${previewingProfile && previewingProfile._origin === profile.url
           ? renderProfilePreview()
@@ -324,7 +330,6 @@ function renderProfileFeedItem (profile) {
         }
       </div>
 
-      <div class="name">${profile.name || 'Anonymous'}</div>
       <p class="bio">${profile.bio}</p>
     </div>
   `
