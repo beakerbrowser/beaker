@@ -13,9 +13,10 @@ const themeColor = "#ff4e42"
 
 var currentUserProfile
 var viewedProfile
-var currentView
+var currentView = 'following'
 var previewingProfile
 var postDraftText = ''
+var posts = []
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -40,6 +41,7 @@ setup()
 async function setup () {
   currentUserProfile = await beaker.profiles.getCurrentProfile()
   await loadViewedProfile()
+  await loadFeedPosts()
 
   // render
   render()
@@ -61,6 +63,18 @@ async function parseURLKey () {
     console.error('Failed to parse URL', e)
     throw new Error('Invalid dat URL')
   }
+}
+
+async function loadFeedPosts () {
+  var query = {
+    fetchAuthor: true,
+    countVotes: true,
+    reverse: true
+  }
+  if (viewedProfile) {
+    query = Object.assign(query, {author: viewedProfile._origin})
+  }
+  posts = await beaker.timeline.listPosts(query)
 }
 
 async function loadViewedProfile () {
@@ -109,15 +123,15 @@ async function onSubmitPost (e) {
 }
 
 async function onUpdateViewFilter (filter) {
-  // reset data
-
   // update view
   currentView = filter || ''
   render()
 }
 
 async function onClickProfile (profile) {
+  currentView = 'feed'
   viewedProfile = profile
+  await loadFeedPosts()
   render()
 }
 
@@ -213,10 +227,11 @@ function renderHeader () {
 
 function renderView () {
   switch (currentView) {
+    case 'feed':
+      return renderFeed()
     case 'following':
       return renderFollowing()
     default:
-      // return renderFollowing()
       return renderFeed()
   }
 }
@@ -225,19 +240,45 @@ function renderFeed () {
   return yo`
     <div class="view following">
       <div class="sidebar-col">
-        ${renderProfileCard(currentUserProfile)}
+        ${renderProfileCard(viewedProfile)}
       </div>
 
       <div class="main-col">
         <div class="view-content">
-          <form onsubmit=${onSubmitPost}>
-            <textarea onkeyup=${onChangePostDraft}>${postDraftText}</textarea>
-            <button class="btn" type="submit">Submit post</button>
-          </form>
+          ${currentUserProfile._origin === viewedProfile._origin ? yo`
+            <form onsubmit=${onSubmitPost}>
+              <textarea onkeyup=${onChangePostDraft}>${postDraftText}</textarea>
+              <button class="btn" type="submit">Submit post</button>
+            </form>`
+          : ''}
         </div>
+
+        ${renderTimeline()}
       </div>
     </div>
+  `
+}
 
+function renderTimeline () {
+  console.log(posts)
+  return yo`
+    <div class="feed">
+      ${!posts.length ? 'No posts' : ''}
+      ${posts.map(renderPost)}
+    </div>
+  `
+}
+
+function renderPost (p) {
+  return yo`
+    <div class="feed-item post">
+      <div class="post-header">
+        ${renderAvatar(p.author)}
+        <span onclick=${e => onClickProfile(p.author)} class="name">${p.author.name}</span>
+      </div>
+      <p class="text">${p.text}</p>
+      <span class="votes">${p.votes.value}</span>
+    </div>
   `
 }
 
