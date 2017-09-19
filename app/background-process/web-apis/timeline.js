@@ -44,6 +44,7 @@ export default {
   },
 
   // create a post
+  // - data.text: string
   // - data.threadParent: url of post replying to
   // - data.threadRoot: url of topmost ancestor
   async post (data={}) {
