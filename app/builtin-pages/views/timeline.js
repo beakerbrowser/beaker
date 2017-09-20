@@ -90,7 +90,10 @@ async function loadViewedProfile () {
     if (selectedProfileKey) {
       viewedProfile = await beaker.profiles.getProfile(`dat://${selectedProfileKey}`)
       viewedProfile.isCurrentUserFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, viewedProfile._origin)
-      viewedProfile.isCurrentUser = false
+      viewedProfile.isCurrentUser = viewedProfile._origin === currentUserProfile._origin
+
+      const friends = await beaker.profiles.listFriends(viewedProfile._origin)
+      viewedProfile.friends = friends.filter(f => f._origin !== currentUserProfile._origin)
     }
     render()
 
@@ -258,6 +261,7 @@ function renderFeed () {
     <div class="view feed">
       <div class="sidebar-col">
         ${renderProfileCard(viewedProfile || currentUserProfile)}
+        ${renderFriendsList(viewedProfile || currentUserProfile)}
       </div>
 
       <div class="main-col">
@@ -490,6 +494,16 @@ function renderFollowButton (profile) {
     <button class="follow-btn btn ${cls}" onclick=${(e) => onToggleFollowing(e, viewedProfile)}>
       ${profile.isCurrentUserFollowing ? 'Following' : 'Follow'}
     </button>`
+}
+
+function renderFriendsList (profile) {
+  if (profile.isCurrentUser) return ''
+  return yo`
+    <div class="friends-list">
+      ${profile.friends.length ? `${profile.friends.length} ${pluralize(profile.friends.length, 'follower')} you know` : ''}
+      ${profile.friends.map(renderAvatar)}
+    </div>
+  `
 }
 
 // helpers
