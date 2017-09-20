@@ -45,6 +45,7 @@ window.history.replaceState = _wr('replaceState')
 setup()
 async function setup () {
   currentUserProfile = await beaker.profiles.getCurrentProfile()
+  currentUserProfile.isCurrentUser = true
   await loadViewedProfile()
   await loadFeedPosts()
 
