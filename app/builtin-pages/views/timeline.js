@@ -113,6 +113,13 @@ async function loadViewedProfile () {
 // events
 // =
 
+async function onClickHome () {
+  viewedProfile = null
+  history.pushState({}, null, 'beaker://timeline/')
+  await loadFeedPosts()
+  onUpdateViewFilter('feed')
+}
+
 function onChangePostDraft (e) {
   postDraftText = e.target.value
   render()
@@ -231,7 +238,7 @@ function renderHeader () {
     <div class="header">
       <div class="container">
         <div class="nav-links">
-          <span class="nav-link">
+          <span onclick=${onClickHome} class="nav-link">
             ${renderFilesIcon()}
             Feed
           </span>
