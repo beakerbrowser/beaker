@@ -79,6 +79,19 @@
       &:hover {
         background: @background-button--gray;
       }
+
+      &.install-callout {
+        background: linear-gradient(to bottom, #94a2f1, #5467d2 8%, #5467d2 92%, #3b4db1);
+        color: #edefff;
+        margin: 2px 4px;
+        border: 1px solid #5467d2;
+        -webkit-font-smoothing: antialiased;
+        font-weight: 500;
+
+        &:hover {
+          background: #3b4db1;
+        }
+      }
     }
 
     // navbar btn styles
@@ -101,10 +114,6 @@
       i {
         font-size: 14px;
         margin-right: 3px;
-      }
-
-      &:hover {
-        background: none;
       }
     }
 

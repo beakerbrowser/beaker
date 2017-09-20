@@ -254,21 +254,23 @@ function render (id, page) {
   var datBtns = ''
 
   if (isViewingDat) {
-    let numPeers = page.siteInfo ? page.siteInfo.peers : 0
-    var isLiveReloading = page.isLiveReloading()
-
-    datBtns = [
-      yo`
-        <button class="nav-peers-btn" onclick=${onClickPeercount}>
-          <i class="fa fa-share-alt"></i>
-          ${numPeers}
-        </button>`
-    ]
-    if (isLiveReloading) {
+    datBtns = []
+    if (page.isLiveReloading()) {
       datBtns.unshift(
         yo`<span class="live-reload-indicator" title="Live reloading active">
             <i class="fa fa-bolt"></i>
           </span>`
+      )
+    }
+    if (page.siteInfo && page.siteInfo.type.includes('app') && page.siteInfo.installedNames.length === 0) {
+      datBtns.unshift(
+        yo`<button
+          class="callout install-callout"
+          title="Install this application"
+          onclick=${onClickInstallApp}
+        >
+          <span class="fa fa-download"></span> Install Application
+        </button>`
       )
     }
   } else if (siteHasDatAlternative) {
@@ -371,8 +373,8 @@ function render (id, page) {
         ${locationInput}
         ${inpageFinder}
         ${zoomBtn}
-        ${!isLocationHighlighted ? rehostMenuNavbarBtn.render() : ''}
         ${!isLocationHighlighted ? datBtns : ''}
+        ${!isLocationHighlighted ? rehostMenuNavbarBtn.render() : ''}
         ${!isLocationHighlighted ? pageMenuNavbarBtn.render() : ''}
         ${!isLocationHighlighted ? bookmarkMenuNavbarBtn.render() : ''}
       </div>
@@ -597,8 +599,16 @@ function onClickCancel (e) {
   }
 }
 
-function onClickPeercount (e) {
-  // TODO anything?
+function onClickInstallApp (e) {
+  const page = getEventPage(e)
+  if (!page || !page.siteInfo) return
+
+  const url = `beaker://install/${page.siteInfo.key}`
+  if (e.metaKey || e.ctrlKey) { // popup
+    pages.setActive(pages.create(url))
+  } else {
+    page.loadURL(url) // goto
+  }
 }
 
 function onClickGotoDatVersion (e) {
@@ -642,9 +652,13 @@ function onBlurLocation (e) {
   setTimeout(clearAutocomplete, 150)
   var page = getEventPage(e)
   if (page) {
-    page.navbarEl.querySelector('.nav-location-pretty').classList.remove('hidden')
-    page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
-    page.navbarEl.querySelector('.toolbar-input-group').classList.remove('input-focused')
+    try {
+      page.navbarEl.querySelector('.nav-location-pretty').classList.remove('hidden')
+      page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
+      page.navbarEl.querySelector('.toolbar-input-group').classList.remove('input-focused')
+    } catch (e) {
+      // ignore
+    }
     isLocationHighlighted = false
     update()
   }

@@ -49,6 +49,7 @@ export class RehostMenuNavbarBtn {
     else currentSetting = ONEDAY
 
     // configure rendering params
+    const numPeers = page.siteInfo.peers
     const sliderState = typeof this.sliderState === 'undefined'
       ? currentSetting
       : this.sliderState
@@ -109,13 +110,11 @@ export class RehostMenuNavbarBtn {
       `
     }
 
-    // rehost toggle state
-    var bookmarkBtnClass = 'nav-rehost-btn' + ((page && !!page.rehost) ? ' active' : '')
-
     // render btn
     return yo`<div class="rehost-navbar-menu">
-      <button class="cloud-upload ${bookmarkBtnClass}" title="Rehost this page" onclick=${e => this.onClickRehost(e)}>
-        <span class="fa fa-cloud-upload"></span>
+      <button class="nav-peers-btn" onclick=${e => this.onClickRehost(e)}>
+        <i class="fa fa-share-alt"></i>
+        ${numPeers}
       </button>
       ${dropdownEl}
     </div>`
