@@ -343,6 +343,7 @@ function renderProfileCard (profile) {
 }
 
 function renderFollowing () {
+  // TODO: shame shame don't do this in a renderer -tbv
   viewedProfile.follows.map(async (f) => {
     const fullProfile = await beaker.profiles.getProfile(f.url)
     return Object.assign(f, fullProfile)
