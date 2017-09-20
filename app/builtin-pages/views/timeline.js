@@ -245,19 +245,14 @@ function renderView () {
 
 function renderFeed () {
   return yo`
-    <div class="view following">
+    <div class="view feed">
       <div class="sidebar-col">
-        ${renderProfileCard(viewedProfile)}
+        ${renderProfileCard(viewedProfile || currentUserProfile)}
       </div>
 
       <div class="main-col">
         <div class="view-content">
-          ${currentUserProfile._origin === viewedProfile._origin ? yo`
-            <form onsubmit=${onSubmitPost}>
-              <textarea onkeyup=${onChangePostDraft}>${postDraftText}</textarea>
-              <button class="btn" type="submit">Submit post</button>
-            </form>`
-          : ''}
+          ${!viewedProfile ? renderNewPostForm() : ''}
         </div>
 
         ${renderTimeline()}
