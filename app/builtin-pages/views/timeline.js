@@ -9,7 +9,10 @@ import {pluralize} from '../../lib/strings'
 // globals
 // =
 
-const themeColor = "#ff4e42"
+const themeColor = {h: 4, s: 100, l: 65, a: 1}
+const themeColorBorder = Object.assign({}, themeColor, {l: 85})
+const themeColorBoxShadow = Object.assign({}, themeColor, {l: 88})
+const themeColorFaded = Object.assign({}, themeColor, {l: 95})
 
 var currentUserProfile
 var viewedProfile
@@ -200,7 +203,10 @@ function render () {
         ${renderHeader()}
         ${renderView()}
       </div>
-      <style>body{--theme-color: ${themeColor}}</style>
+      <style>body{--theme-color: ${toCSSColor(themeColor)}}</style>
+      <style>body{--theme-color-faded: ${toCSSColor(themeColorFaded)}}</style>
+      <style>body{--theme-color-box-shadow: ${toCSSColor(themeColorBoxShadow)}}</style>
+      <style>body{--theme-color-border: ${toCSSColor(themeColorBorder)}}</style>
     </div>
   `)
 }
@@ -454,4 +460,12 @@ function renderFollowButton (profile) {
     <button class="follow-btn btn ${cls}" onclick=${(e) => onToggleFollowing(e, viewedProfile)}>
       ${profile.isCurrentUserFollowing ? 'Following' : 'Follow'}
     </button>`
+}
+
+// helpers
+// =
+
+function toCSSColor (hslaObj) {
+  const {h, s, l, a} = hslaObj
+  return `hsla(${h}, ${s}%, ${l}%, ${a})`
 }
