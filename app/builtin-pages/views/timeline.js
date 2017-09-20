@@ -276,7 +276,6 @@ function renderFeed () {
 }
 
 function renderTimeline () {
-  console.log(posts)
   return yo`
     <div class="feed">
       ${!posts.length ? 'No posts' : ''}
@@ -326,7 +325,7 @@ function renderProfileCard (profile) {
     <div class="profile-card" href="beaker://profile/${profile._url.slice('dat://'.length)}">
       <div class="profile-card-header">
         ${imgWithFallbacks(`${profile._origin}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
-        ${viewedProfile && !viewedProfile.isCurrentUser ? renderFollowButton(profile) : ''}
+        ${renderFollowButton(profile)}
       </div>
 
       <span class="name">${profile.name || 'Anonymous'}</span>
@@ -411,7 +410,7 @@ function renderProfileFeedItem (profile) {
         <div>
           <div class="name" onclick=${e => onClickProfile(profile)}>${profile.name || 'Anonymous'}</div>
           <a href="" class="url">pfrazee.github.io</a>
-          ${profile.isCurrentUser ? '' : renderFollowButton(profile)}
+          ${renderFollowButton(profile)}
         </div>
 
         ${previewingProfile && previewingProfile._origin === profile.url
@@ -489,6 +488,7 @@ function renderProfileEditor () {
 }
 
 function renderFollowButton (profile) {
+  if (profile.isCurrentUser) return ''
   var cls = profile.isCurrentUserFollowing ? 'following' : ''
   return yo`
     <button class="follow-btn btn ${cls}" onclick=${(e) => onToggleFollowing(e, viewedProfile)}>
