@@ -101,6 +101,8 @@ async function loadViewedProfile () {
     await Promise.all(viewedProfile.follows.map(async (f) => {
       f.isCurrentUser = f.url === currentUserProfile._origin
       f.isCurrentUserFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, f.url)
+      const fullProfile = await beaker.profiles.getProfile(f.url)
+      return Object.assign(f, fullProfile)
     }))
     render()
   } catch (e) {
@@ -350,12 +352,6 @@ function renderProfileCard (profile) {
 }
 
 function renderFollowing () {
-  // TODO: shame shame don't do this in a renderer -tbv
-  viewedProfile.follows.map(async (f) => {
-    const fullProfile = await beaker.profiles.getProfile(f.url)
-    return Object.assign(f, fullProfile)
-  })
-
   return yo`
     <div class="view following">
       <div class="sidebar-col">
