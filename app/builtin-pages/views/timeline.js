@@ -385,14 +385,7 @@ function renderProfilePreview () {
 
       <p class="bio">${profile.bio}</p>
 
-      ${profile.friends.length
-        ? yo`
-          <div class="friends">
-            <h3>${profile.friends.length} ${pluralize(profile.friends.length, 'follower')} you know</h3>
-            <ul>${profile.friends.map(p => renderAvatar(p))}</ul>
-          </div>`
-        : ''
-      }
+      ${renderFriendsList(profile)}
     </div>
   `
 }
