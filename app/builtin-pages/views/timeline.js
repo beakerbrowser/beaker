@@ -260,6 +260,8 @@ function renderView () {
       return renderFeed()
     case 'following':
       return renderFollowing()
+    case 'friends':
+      return renderFriends()
     default:
       return renderFeed()
   }
@@ -367,6 +369,33 @@ function renderFollowing () {
           ${viewedProfile.follows.length === 0
             ? `${viewedProfile.name} is not following anyone`
             : yo`<div class="following-list">${viewedProfile.follows.map(renderProfileFeedItem)}</div>`
+          }
+        </div>
+      </div>
+    </div>
+  `
+}
+
+function renderFriends () {
+  return yo`
+    <div class="view friends">
+      <div class="sidebar-col">
+        ${renderProfileCard(viewedProfile)}
+      </div>
+
+      <div class="main-col">
+        <div class="view-content">
+          <div class="view-content-header">
+            <h2>Followers you know:</h2>
+          </div>
+
+          ${!viewedProfile.friends
+            ? ''
+            : yo`
+              <div class="following-list">
+                ${viewedProfile.friends.map(renderProfileFeedItem)}
+              </div>
+            `
           }
         </div>
       </div>
