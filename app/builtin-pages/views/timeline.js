@@ -321,7 +321,7 @@ function renderProfileCard (profile) {
     <div class="profile-card" href="beaker://profile/${profile._url.slice('dat://'.length)}">
       <div class="profile-card-header">
         ${imgWithFallbacks(`${profile._origin}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
-        ${profile.isCurrentUser ? '' : renderFollowButton(profile)}
+        ${viewedProfile && !viewedProfile.isCurrentUser ? renderFollowButton(profile) : ''}
       </div>
 
       <span class="name">${profile.name || 'Anonymous'}</span>
