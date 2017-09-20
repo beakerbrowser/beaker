@@ -54,13 +54,13 @@ export default {
 
   // vote a post
   // - vote: number, -1 or 0 or 1
-  // - subjectType: string, eg 'post'
   // - subject: url of the subject
-  async vote (vote, subjectType, subject) {
+  // - subjectType: string, eg 'post'
+  async vote (vote, subject, subjectType) {
     var archive = await getProfileArchive(0)
     assert(typeof vote === 'number', 'Parameter 1 must be -1, 0, or 1 (vote value)')
-    assertString(subjectType, 'Parameter 2 must be a string (subject type, such as "post")')
-    assertString(subject, 'Parameter 3 must be a URL (the subject of the vote)')
+    assertString(subject, 'Parameter 2 must be a URL (the subject of the vote)')
+    assertString(subjectType, 'Parameter 3 must be a string (subject type, such as "post")')
     return getAPI().vote(archive, {vote, subjectType, subject})
   }
 }
