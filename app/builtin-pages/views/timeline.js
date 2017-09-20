@@ -266,7 +266,7 @@ function renderTimeline () {
   return yo`
     <div class="feed">
       ${!posts.length ? 'No posts' : ''}
-      ${posts.map(renderPost)}
+      ${posts.map(renderPostFeedItem)}
     </div>
   `
 }
@@ -283,13 +283,22 @@ function renderNewPostForm () {
 function renderPostFeedItem (p) {
   return yo`
     <div class="feed-item post">
-      <div class="post-header">
-        ${renderAvatar(p.author)}
-        <span onclick=${e => onClickProfile(p.author)} class="name">${p.author.name}</span>
+      ${renderAvatar(p.author)}
+      <div class="post-content">
+        <div class="post-header">
+          <span onclick=${e => onClickProfile(p.author)} class="name">${p.author.name}</span>
+        </div>
+        <p class="text">${p.text}</p>
       </div>
-      <p class="text">${p.text}</p>
+
       <span class="votes">${p.votes.value}</span>
     </div>
+  `
+}
+
+function renderPostActions (p) {
+  return yo`
+    // <div class="c"
   `
 }
 
@@ -298,7 +307,7 @@ function renderProfileCard (profile) {
     <div class="profile-card" href="beaker://profile/${profile._url.slice('dat://'.length)}">
       <div class="profile-card-header">
         ${imgWithFallbacks(`${profile._origin}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
-        ${!profile.isCurrentUser ? '' : renderFollowButton(profile)}
+        ${profile.isCurrentUser ? '' : renderFollowButton(profile)}
       </div>
 
       <span class="name">${profile.name || 'Anonymous'}</span>
