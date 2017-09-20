@@ -13,7 +13,7 @@ const themeColor = "#ff4e42"
 
 var currentUserProfile
 var viewedProfile
-var currentView = 'following'
+var currentView = 'feed'
 var previewingProfile
 var postDraftText = ''
 var posts = []
@@ -83,15 +83,8 @@ async function loadViewedProfile () {
     var selectedProfileKey = await parseURLKey()
     if (selectedProfileKey) {
       viewedProfile = await beaker.profiles.getProfile(`dat://${selectedProfileKey}`)
-    }
-    if (!(viewedProfile && viewedProfile._origin)) {
-      viewedProfile = currentUserProfile
-      viewedProfile.isCurrentUserFollowing = false
-      viewedProfile.isCurrentUser = true
-      history.pushState({}, null, 'beaker://timeline/' + viewedProfile._origin.slice('dat://'.length))
-    } else {
       viewedProfile.isCurrentUserFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, viewedProfile._origin)
-      viewedProfile.isCurrentUser = currentUserProfile._origin === viewedProfile._origin
+      viewedProfile.isCurrentUser = false
     }
     render()
 
@@ -135,7 +128,7 @@ async function onUpdateViewFilter (filter) {
 }
 
 async function onClickProfile (profile) {
-  currentView = 'feed'
+  history.pushState({}, null, 'beaker://timeline/' + profile._origin.slice('dat://'.length))
   viewedProfile = profile
   await loadFeedPosts()
   render()
