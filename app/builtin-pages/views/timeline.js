@@ -20,6 +20,7 @@ var currentView = 'feed'
 var previewingProfile
 var postDraftText = ''
 var posts = []
+var isEditingPost
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -109,6 +110,7 @@ async function loadViewedProfile () {
 
 function onChangePostDraft (e) {
   postDraftText = e.target.value
+  render()
 }
 
 async function onSubmitPost (e) {
@@ -274,7 +276,16 @@ function renderTimeline () {
   `
 }
 
-function renderPost (p) {
+function renderNewPostForm () {
+  return yo`
+    <form class="new-post-form" onsubmit=${onSubmitPost}>
+      ${renderAvatar(currentUserProfile)}
+      <textarea placeholder="Write a post" style="border-color: ${toCSSColor(themeColorBorder)}; height: ${isEditingPost || postDraftText.length ? '60px' : '35px'};" onfocus=${onToggleNewPostForm} onblur=${onToggleNewPostForm} onkeyup=${onChangePostDraft}>${postDraftText}</textarea>
+      ${isEditingPost || postDraftText.length ? yo`<button disabled=${!postDraftText.length} class="btn new-post" type="submit">Submit post</button>` : ''}
+    </form>`
+}
+
+function renderPostFeedItem (p) {
   return yo`
     <div class="feed-item post">
       <div class="post-header">
