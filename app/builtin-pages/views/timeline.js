@@ -119,6 +119,12 @@ async function onSubmitPost (e) {
   e.preventDefault()
   await beaker.timeline.post({text: postDraftText})
   postDraftText = ''
+  await loadFeedPosts()
+  render()
+}
+
+function onToggleNewPostForm () {
+  isEditingPost = !isEditingPost
   render()
 }
 
