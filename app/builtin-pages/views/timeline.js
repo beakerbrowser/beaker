@@ -3,6 +3,7 @@ const co = require('co')
 import renderSidebar from '../com/sidebar'
 import renderPencilIcon from '../icon/pencil'
 import renderFilesIcon from'../icon/filesystem'
+import renderHeartIcon from '../icon/heart'
 import imgWithFallbacks from '../com/img-with-fallbacks'
 import {pluralize} from '../../lib/strings'
 
@@ -194,6 +195,14 @@ async function onToggleFollowing (e, user) {
   render()
 }
 
+async function onToggleLiked (p) {
+  const vote = p.votes.currentUsersVote ? 0 : 1
+  await beaker.timeline.vote(vote, p._url, 'post')
+  await loadFeedPosts()
+  render()
+}
+
+
 // rendering
 // =
 
@@ -291,14 +300,19 @@ function renderPostFeedItem (p) {
         <p class="text">${p.text}</p>
       </div>
 
-      <span class="votes">${p.votes.value}</span>
+      ${renderPostActions(p)}
     </div>
   `
 }
 
 function renderPostActions (p) {
   return yo`
-    // <div class="c"
+    <div class="post-actions">
+      <span onclick=${e => onToggleLiked(p)} class="vote-icon ${p.votes.currentUsersVote ? 'voted' : ''}">
+        ${renderHeartIcon()}
+      </span>
+      ${p.votes.value ? p.votes.value : ''}
+    </div>
   `
 }
 

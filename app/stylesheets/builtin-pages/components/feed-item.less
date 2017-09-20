@@ -31,6 +31,39 @@
       margin-left: 45px;
       line-height: 1;
     }
+
+    .post-actions {
+
+
+      .vote-icon {
+
+        &:not(.voted):hover {
+
+          .heart * {
+            stroke: #999;
+          }
+        }
+
+        &.voted {
+
+          .heart * {
+            fill: crimson;
+            stroke: crimson;
+          }
+        }
+
+        .heart * {
+          fill: none;
+          stroke: #ccc;
+          stroke-width: 2px;
+        }
+      }
+
+      .icon {
+        width: 14.5px;
+        height: 14.5px;
+      }
+    }
   }
 
   &.profile {
