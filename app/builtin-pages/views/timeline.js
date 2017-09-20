@@ -217,15 +217,15 @@ function renderHeader () {
   return yo`
     <div class="header">
       <div class="container">
-        <div class="avatar-container">
-          ${renderAvatar(currentUserProfile)}
-        </div>
-
         <div class="nav-links">
           <span class="nav-link">
             ${renderFilesIcon()}
             Feed
           </span>
+        </div>
+
+        <div class="avatar-container">
+          ${renderAvatar(currentUserProfile)}
         </div>
       </div>
     </div>
