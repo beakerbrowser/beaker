@@ -141,6 +141,45 @@
     }
   }
 
+  .view-header {
+    background: #fff;
+    height: 45px;
+    border-bottom: 1px solid #eee;
+    padding: 0 15px;
+
+    .nav-link {
+      display: inline-block;
+      border-bottom: 2px solid transparent;
+      font-weight: 500;
+      height: 100%;
+      width: 75px;
+      padding: 5px 10px;
+      text-align: center;
+      color: @color-text--muted;
+      cursor: pointer;
+
+      * {
+        cursor: pointer;
+      }
+
+      .label {
+        font-size: 11px;
+        display: block;
+      }
+
+      .value {
+        font-size: 16px;
+        margin-top: -4px;
+      }
+
+      &:hover,
+      &.active {
+        color: var(--theme-color);
+        border-color: var(--theme-color);
+      }
+    }
+  }
+
   .view {
     &:extend(.flex);
     flex-wrap: nowrap;

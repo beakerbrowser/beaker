@@ -267,6 +267,22 @@ function renderView () {
   }
 }
 
+function renderViewHeader (profile) {
+  return yo`
+    <div class="view-header">
+      <div onclick=${e => onUpdateViewFilter('feed')} class="nav-link ${currentView === 'feed' ? 'active' : ''}">
+        <div class="label">Posts</div>
+        <div class="value">${posts.length}</div>
+      </div>
+
+      <div onclick=${e => onUpdateViewFilter('following')} class="nav-link ${currentView === 'following' ? 'active' : ''}">
+        <div class="label">Following</div>
+        <div class="value">${profile.follows.length}</div>
+      </div>
+    </div>
+  `
+}
+
 function renderFeed () {
   return yo`
     <div class="view feed">
@@ -276,6 +292,8 @@ function renderFeed () {
       </div>
 
       <div class="main-col">
+        ${viewedProfile ? renderViewHeader(viewedProfile) : ''}
+
         <div class="view-content">
           ${!viewedProfile ? renderNewPostForm() : ''}
         </div>
@@ -361,11 +379,8 @@ function renderFollowing () {
       </div>
 
       <div class="main-col">
+        ${renderViewHeader(viewedProfile)}
         <div class="view-content">
-          <div class="view-content-header">
-            <h2>Followed by ${viewedProfile.name}:</h2>
-          </div>
-
           ${viewedProfile.follows.length === 0
             ? `${viewedProfile.name} is not following anyone`
             : yo`<div class="following-list">${viewedProfile.follows.map(renderProfileFeedItem)}</div>`
