@@ -73,8 +73,6 @@ export function render (downloadsList) {
         <div class="metadata">
           <span>${prettyBytes(d.totalBytes || 0)}</span>
           —
-          <span class="url">${getHostname(d.url)}</span>
-          —
           ${downloadTimestamp(d.id)}
           —
           ${actions}
@@ -96,7 +94,10 @@ export function render (downloadsList) {
         <img class="favicon" src="beaker-favicon:"/>
 
         <div class="info">
-          <h3 class="title">${d.name}</h3>
+          <h3>
+            <span class="title">${d.name}</span>
+            <span class="url">${getHostname(d.url)}</span>
+          </h3>
           ${metadataEl}
         </div>
       </div>`

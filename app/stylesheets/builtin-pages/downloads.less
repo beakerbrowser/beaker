@@ -3,14 +3,14 @@
 @import "../components/link";
 
 .downloads-wrapper {
-  // color: blue !important;
 
   .ll-row.download {
     justify-content: flex-start;
     align-items: center;
-    padding: 10px 15px;
+    padding: 0 15px;
     width: 600px;
-    height: 70px;
+    height: 60px;
+    overflow: hidden;
 
     .close-btn {
       position: absolute;
@@ -38,13 +38,26 @@
       line-height: 1;
       vertical-align: top;
 
-      h3.title {
-        font-size: 12.25px;
-        font-weight: 500;
+      h3 {
+        &:extend(.flex);
+        flex-wrap: nowrap;
         margin: 0;
         padding: 0;
-        line-height: 1.2;
         vertical-align: top;
+
+        .title {
+          font-weight: 500;
+          font-size: 12.25px;
+          line-height: 1.2;
+        }
+
+        .url {
+          &:extend(.overflow-ellipsis);
+          max-width: initial;
+          font-size: 11px;
+          line-height: 1.2;
+          margin-right: 0;
+        }
       }
 
       .metadata {
@@ -52,11 +65,6 @@
         align-items: center;
         margin-top: -1px;
         font-size: 11px;
-
-        .url {
-          &:extend(.overflow-ellipsis);
-          max-width: 240px;
-        }
 
         &.progress {
           justify-content: space-between;
