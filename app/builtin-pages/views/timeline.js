@@ -497,11 +497,11 @@ function renderFollowButton (profile) {
 }
 
 function renderFriendsList (profile) {
-  if (profile.isCurrentUser) return ''
+  if (profile.isCurrentUser || !profile.friends) return ''
   return yo`
-    <div class="friends-list">
+    <div class="friends-list-container">
       ${profile.friends.length ? `${profile.friends.length} ${pluralize(profile.friends.length, 'follower')} you know` : ''}
-      ${profile.friends.map(renderAvatar)}
+      <div class="friends-list">${profile.friends.map(renderAvatar)}</div>
     </div>
   `
 }
