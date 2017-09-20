@@ -50,14 +50,14 @@
     padding-left: 10px;
     padding-right: 10px;
     border-radius: 40px !important;
+    color: var(--theme-color);
+
+    &:hover {
+      background: none;
+    }
 
     &.follow-btn {
-      color: var(--theme-color);
       background: transparent;
-
-      &:hover {
-        background: none;
-      }
     }
 
     &.follow-btn.following,
@@ -69,6 +69,12 @@
 
       &:hover {
         // TODO
+      }
+
+      &:disabled {
+        background: var(--theme-color-box-shadow) !important;
+        color: fadeout(#fff, 10%) !important;
+        border: none !important;
       }
     }
   }
