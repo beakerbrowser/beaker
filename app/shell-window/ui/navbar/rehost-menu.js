@@ -32,7 +32,7 @@ export class RehostMenuNavbarBtn {
 
   render () {
     const page = pages.getActive()
-    const isViewingDat = page && page.getIntendedURL().startsWith('dat:')
+    const isViewingDat = isPageDat(page)
     if (!isViewingDat || !page.siteInfo || page.siteInfo.isOwner) {
       return ''
     }
@@ -182,4 +182,16 @@ export class RehostMenuNavbarBtn {
 
     this.updateActives()
   }
+}
+
+function isPageDat (page) {
+  if (!page) return false
+  const pi = page.protocolInfo
+  if (page.getIntendedURL().startsWith('dat:')) {
+    return true
+  }
+  if (pi && pi.scheme === 'app:' && pi.binding && pi.binding.url.startsWith('dat://')) {
+    return true
+  }
+  return false
 }
