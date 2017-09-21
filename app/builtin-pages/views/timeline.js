@@ -1,5 +1,6 @@
 const yo = require('yo-yo')
 const co = require('co')
+import moment from 'moment'
 import renderSidebar from '../com/sidebar'
 import renderPencilIcon from '../icon/pencil'
 import renderFilesIcon from'../icon/filesystem'
@@ -332,6 +333,7 @@ function renderPostFeedItem (p) {
       <div class="post-content">
         <div class="post-header">
           <span onclick=${e => onClickProfile(p.author)} class="name">${p.author.name}</span>
+          <span class="timestamp"> <span class="bullet">•</span> ${timestamp(p.createdAt)}</span>
         </div>
         <p class="text">${p.text}</p>
       </div>
@@ -560,4 +562,26 @@ function renderFriendsList (profile) {
 function toCSSColor (hslaObj) {
   const {h, s, l, a} = hslaObj
   return `hsla(${h}, ${s}%, ${l}%, ${a})`
+}
+
+function timestamp (ts, opts) {
+  const endOfToday = moment().endOf('day')
+  if (typeof ts == 'number') { ts = moment(ts) }
+
+  // TODO: lord forgive me for i have sinned -tbv
+  // here's what you get when the moment.js docs are taking too long to parse
+  // and i'm in a rush:
+  if (ts.isSame(endOfToday, 'day')) {
+    var fromNow = ts.fromNow()
+    fromNow = fromNow.substring(0, fromNow.indexOf(' ago'))
+    fromNow = fromNow.replace('an ', '1')
+    fromNow = fromNow.replace('a ', '1')
+    fromNow = fromNow.replace('hours', 'h')
+    fromNow = fromNow.replace('minutes', 'm')
+    fromNow = fromNow.replace('seconds', 's')
+    fromNow = fromNow.replace(' ', '')
+    return fromNow
+  } else {
+    return ts.format('MMM D')
+  }
 }
