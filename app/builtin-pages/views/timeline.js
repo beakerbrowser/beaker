@@ -150,7 +150,7 @@ async function onClickProfile (profile) {
   history.pushState({}, null, 'beaker://timeline/' + profile._origin.slice('dat://'.length))
   viewedProfile = profile
   await loadFeedPosts()
-  render()
+  onUpdateViewFilter('feed')
 }
 
 async function onSaveProfile (e) {
