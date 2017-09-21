@@ -578,8 +578,12 @@ function timestamp (ts, opts) {
     fromNow = fromNow.replace('an ', '1')
     fromNow = fromNow.replace('a ', '1')
     fromNow = fromNow.replace('hours', 'h')
+    fromNow = fromNow.replace('hour', 'h')
     fromNow = fromNow.replace('minutes', 'm')
+    fromNow = fromNow.replace('minute', 'm')
     fromNow = fromNow.replace('seconds', 's')
+    fromNow = fromNow.replace('second', 's')
+    fromNow = fromNow.replace('few', '')
     fromNow = fromNow.replace(' ', '')
     return fromNow
   } else {
