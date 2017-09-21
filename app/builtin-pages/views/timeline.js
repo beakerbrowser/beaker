@@ -357,11 +357,9 @@ function renderProfileCard (profile) {
         ${renderFollowButton(profile)}
       </div>
 
-      <span class="name">${profile.name || 'Anonymous'}</span>
+      <span onclick=${e => onClickProfile(profile)} class="name">${profile.name || 'Anonymous'}</span>
 
       <p class="bio">${profile.bio}</p>
-
-      <a href="" class="url">https://taravancil.com</a>
 
       ${previewingProfile && previewingProfile._origin === profile.url
         ? renderProfilePreview()
