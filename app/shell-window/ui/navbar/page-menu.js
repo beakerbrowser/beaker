@@ -52,6 +52,10 @@ export class PageMenuNavbarBtn {
                 ${openwithSublist}
               </div>
               <hr />*/}
+              <div class="list-item" onclick=${() => this.onClickInstall()}>
+                <i class="fa fa-download"></i>
+                Install as an app
+              </div>
               <div class="list-item" onclick=${() => this.onClickOpenwithLibrary()}>
                 <i class="fa fa-files-o"></i>
                 View files
@@ -119,6 +123,18 @@ export class PageMenuNavbarBtn {
       this.isOpenwithOpen = false
       this.updateActives()
     }, 300)
+  }
+
+  async onClickInstall () {
+    this.close()
+    var page = pages.getActive()
+    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
+      return
+    }
+    const res = await beaker.apps.runInstaller(0, `dat://${page.siteInfo.key}`)
+    if (res && res.name) {
+      page.loadURL(`app://${res.name}`)
+    }
   }
 
   onClickOpenwithLibrary () {
