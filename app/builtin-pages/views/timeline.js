@@ -442,17 +442,17 @@ function renderAvatar (profile) {
 
 function renderProfileFeedItem (profile) {
   return yo`
-    <div class="feed-item profile" href="beaker://profile/${profile.url.slice('dat://'.length)}">
+    <div class="feed-item profile" href="beaker://profile/${profile._origin.slice('dat://'.length)}">
       <div class="profile-feed-item-header">
-        ${imgWithFallbacks(`${profile.url}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
+        ${imgWithFallbacks(`${profile._origin}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
 
         <div>
           <div class="name" onclick=${e => onClickProfile(profile)}>${profile.name || 'Anonymous'}</div>
-          <a href="" class="url">pfrazee.github.io</a>
+          <a href="https://pfrazee.github.io" class="url">pfrazee.github.io</a>
           ${renderFollowButton(profile)}
         </div>
 
-        ${previewingProfile && previewingProfile._origin === profile.url
+        ${previewingProfile && previewingProfile._origin === profile._origin
           ? renderProfilePreview()
           : ''
         }
