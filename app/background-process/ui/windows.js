@@ -97,7 +97,8 @@ export function createShellWindow () {
   numActiveWindows++
 
   // register shortcuts
-  for (var i = 1; i <= 9; i++) { registerShortcut(win, 'CmdOrCtrl+' + i, onTabSelect(win, i - 1)) }
+  for (var i = 1; i <= 8; i++) { registerShortcut(win, 'CmdOrCtrl+' + i, onTabSelect(win, i - 1)) }
+  registerShortcut(win, 'CmdOrCtrl+9', onLastTab(win))
   registerShortcut(win, 'Ctrl+Tab', onNextTab(win))
   registerShortcut(win, 'Ctrl+Shift+Tab', onPrevTab(win))
   registerShortcut(win, 'Ctrl+PageUp', onNextTab(win))
@@ -244,6 +245,10 @@ function onClose (win) {
 
 function onTabSelect (win, tabIndex) {
   return () => win.webContents.send('command', 'set-tab', tabIndex)
+}
+
+function onLastTab (win) {
+  return () => win.webContents.send('command', 'window:last-tab')
 }
 
 function onNextTab (win) {

@@ -434,6 +434,10 @@ export function changeActiveTo (index) {
   if (index >= 0 && index < pages.length) { setActive(pages[index]) }
 }
 
+export function changeActiveToLast () {
+  setActive(pages[pages.length-1])
+}
+
 export function getActive () {
   return activePage
 }
