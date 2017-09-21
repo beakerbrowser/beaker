@@ -539,7 +539,9 @@ function renderFriendsList (profile) {
   if (profile.isCurrentUser || !profile.friends) return ''
   return yo`
     <div class="friends-list-container">
-      ${profile.friends.length ? `${profile.friends.length} ${pluralize(profile.friends.length, 'follower')} you know` : ''}
+      <span class="url" onclick=${e => onUpdateViewFilter('friends')}>
+        ${profile.friends.length ? `${profile.friends.length} ${pluralize(profile.friends.length, 'follower')} you know` : ''}
+      </span>
       <div class="friends-list">${profile.friends.map(renderAvatar)}</div>
     </div>
   `
