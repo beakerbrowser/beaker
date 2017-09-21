@@ -7,7 +7,8 @@ const SIZES = {
   'fork-archive': {width: 500, height: 390},
   'basic-auth': {width: 500, height: 320},
   'select-archive': {width: 500, height: 375},
-  prompt: {width: 500, height: 170}
+  prompt: {width: 500, height: 170},
+  install: {width: 500, height: 400}
 }
 
 // state

@@ -224,6 +224,15 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://timeline/' || requestUrl.startsWith('beaker://timeline/')) {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/timeline.html'))
   }
+  if (requestUrl === 'beaker://install-modal/main.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/install-modal.css'))
+  }
+  if (requestUrl === 'beaker://install-modal/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/install-modal.build.js'))
+  }
+  if (requestUrl === 'beaker://install-modal/' || requestUrl.startsWith('beaker://install-modal/')) {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/install-modal.html'))
+  }
   if (requestUrl === 'beaker://view-source/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/view-source.css'))
   }

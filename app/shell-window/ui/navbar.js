@@ -599,16 +599,10 @@ function onClickCancel (e) {
   }
 }
 
-function onClickInstallApp (e) {
+async function onClickInstallApp (e) {
   const page = getEventPage(e)
   if (!page || !page.siteInfo) return
-
-  const url = `beaker://install/${page.siteInfo.key}`
-  if (e.metaKey || e.ctrlKey) { // popup
-    pages.setActive(pages.create(url))
-  } else {
-    page.loadURL(url) // goto
-  }
+  await beaker.apps.runInstaller(0, `dat://${page.siteInfo.key}`)
 }
 
 function onClickGotoDatVersion (e) {

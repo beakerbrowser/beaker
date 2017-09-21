@@ -1,5 +1,7 @@
 import {parse as parseURL} from 'url'
 import * as appsDb from '../dbs/apps'
+import {showModal} from '../ui/modals'
+import {getWebContentsWindow} from '../../lib/electron'
 import {DAT_HASH_REGEX} from '../../lib/const'
 import {PermissionsError, InvalidURLError} from 'beaker-error-constants'
 
@@ -26,6 +28,12 @@ export default {
   async unbind (profileId, name) {
     assertBeakerOnly(this.sender)
     return appsDb.unbind(profileId, name)
+  },
+
+  async runInstaller (profileId, url) {
+    assertBeakerOnly(this.sender)
+    const win = getWebContentsWindow(this.sender)
+    let res = await showModal(win, 'install', {url})
   }
 }
 

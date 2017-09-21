@@ -1,0 +1,101 @@
+@import "../photon.min.less";
+@import "../base/reset.less";
+@import "../components/buttons.less";
+@import "../components/inputs.less";
+@import "../components/modal.less";
+@import "../components/segmented-progress-bar.less";
+@import "../com/spinner.less";
+
+body {
+  background: #fff;
+}
+
+ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+
+code {
+  border: 1px solid #eee;
+  background: #fafafa;
+  padding: 2px 5px;
+  margin: 0 2px;
+}
+
+.modal {
+  margin: 0;
+}
+
+.nobreak {
+  white-space: pre;
+}
+
+::-webkit-input-placeholder {
+  color: gray;
+}
+
+table.app-info {
+  margin: 0.8rem 0;
+
+  td:first-child {
+    text-align: right;
+    color: gray;
+  }
+}
+
+.install-name {
+  input {
+    padding: 0;
+    margin: 0;
+    height: auto;
+  }
+
+  label {
+    display: block;
+    margin: 0.5rem 1rem;
+    overflow: visible;
+  }
+
+  input[type="radio"] {
+    margin-right: 5px;
+  }
+
+  .custom-input {
+    margin: 0.5rem 1rem 0.5rem;
+    position: relative;
+
+    span {
+      position: absolute;
+      left: 8px;
+      top: 1px;
+      color: gray;
+    }
+
+    input {
+      padding-left: 45px;
+      width: 410px;
+    }
+  }
+
+  .muted {
+    color: gray;
+  }
+}
+
+.form-actions {
+  display: flex;
+  position: fixed;
+  bottom: 1rem;
+  left: 0;
+  padding: 0 1rem;
+  width: 100%;
+
+  .segmented-progress-bar {
+    flex: 1;
+    margin: 0 3rem;
+  }
+
+  .btn.primary {
+    width: 54px;
+  }
+}
