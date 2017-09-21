@@ -335,7 +335,8 @@ function renderPostFeedItem (p) {
           <span onclick=${e => onClickProfile(p.author)} class="name">${p.author.name}</span>
           <span class="timestamp"> <span class="bullet">•</span> ${timestamp(p.createdAt)}</span>
         </div>
-        <p class="text">${p.text}</p>
+
+        <p class="text">${p.text.replace(/[^\x00-\x7F]/g, '')}</p>
       </div>
 
       ${renderPostActions(p)}
