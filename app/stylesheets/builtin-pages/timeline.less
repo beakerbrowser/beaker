@@ -237,10 +237,20 @@
     .new-post-form {
       background: var(--theme-color-faded);
       padding: 15px;
+      height: 65px;
+
+      &.editing {
+        height: 130px;
+      }
 
       .actions {
         text-align: right;
-        margin-top: 15px;
+        margin-top: 10px;
+        display: none;
+
+        &.editing {
+          display: block;
+        }
       }
 
       textarea {

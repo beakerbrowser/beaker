@@ -314,11 +314,12 @@ function renderTimeline () {
 }
 
 function renderNewPostForm () {
+  var editingCls = (isEditingPost || postDraftText.length) ? 'editing' : ''
   return yo`
-    <form class="new-post-form" onsubmit=${onSubmitPost}>
+    <form class="new-post-form ${editingCls}" onsubmit=${onSubmitPost}>
       ${renderAvatar(currentUserProfile)}
       <textarea placeholder="Write a post" style="border-color: ${toCSSColor(themeColorBorder)}; height: ${isEditingPost || postDraftText.length ? '60px' : '35px'};" onfocus=${onToggleNewPostForm} onblur=${onToggleNewPostForm} onkeyup=${onChangePostDraft}>${postDraftText}</textarea>
-      <div class="actions">
+      <div class="actions ${editingCls}">
         ${isEditingPost || postDraftText.length ? yo`<button disabled=${!postDraftText.length} class="btn new-post" type="submit">Submit post</button>` : ''}
       </div>
     </form>`
