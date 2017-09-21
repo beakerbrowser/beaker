@@ -307,7 +307,7 @@ function renderFeed () {
 function renderTimeline () {
   return yo`
     <div class="feed">
-      ${!posts.length ? 'No posts' : ''}
+      ${!posts.length ? yo`<div class="loading-container"><div class="spinner"></div></div>` : ''}
       ${posts.map(renderPostFeedItem)}
     </div>
   `
