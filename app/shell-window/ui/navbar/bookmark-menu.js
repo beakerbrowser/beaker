@@ -162,8 +162,11 @@ export class BookmarkMenuNavbarBtn {
 
     this.updateActives()
 
-    // focus the title input
-    document.querySelectorAll('.bookmark-title').forEach(el => el.focus())
+    // select the title input
+    document.querySelectorAll('.bookmark-title').forEach(el => {
+      el.focus()
+      el.select()
+    })
   }
 
   async onSaveBookmark (e) {
