@@ -437,14 +437,18 @@ function renderProfilePreview () {
 }
 
 function renderAvatar (profile) {
-  return imgWithFallbacks(`${profile._origin}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})
+  return yo`
+    <div onclick=${e => onClickProfile(profile)} class="avatar-container">
+      ${imgWithFallbacks(`${profile._origin}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
+    </div>
+  `
 }
 
 function renderProfileFeedItem (profile) {
   return yo`
     <div class="feed-item profile" href="beaker://profile/${profile._origin.slice('dat://'.length)}">
       <div class="profile-feed-item-header">
-        ${imgWithFallbacks(`${profile._origin}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
+        ${renderAvatar(profile)}
 
         <div>
           <div class="name" onclick=${e => onClickProfile(profile)}>${profile.name || 'Anonymous'}</div>
