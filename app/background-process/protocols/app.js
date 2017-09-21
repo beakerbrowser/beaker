@@ -114,7 +114,7 @@ async function appServer (req, res) {
 
     // fail if no binding url is given
     if (!bindingUrl) {
-      return cb(404, 'Not Found', 'text/html', errorPage(`No application installed at ${makeSafe(requestUrlParsed.hostname)}`))
+      return cb(404, 'Not Found', 'text/html', () => errorPage(`No application installed at ${makeSafe(requestUrlParsed.hostname)}`))
     }
 
     // create/get the scoped fs
