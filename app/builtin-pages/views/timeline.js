@@ -13,7 +13,7 @@ import {pluralize} from '../../lib/strings'
 const themeColor = {h: 4, s: 100, l: 65, a: 1}
 const themeColorBorder = Object.assign({}, themeColor, {l: 83})
 const themeColorBoxShadow = Object.assign({}, themeColor, {l: 87})
-const themeColorFaded = Object.assign({}, themeColor, {l: 97})
+const themeColorFaded = Object.assign({}, themeColor, {l: 95})
 
 var currentUserProfile
 var viewedProfile
