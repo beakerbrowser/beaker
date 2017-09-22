@@ -262,16 +262,29 @@ function render (id, page) {
           </span>`
       )
     }
-    if (page.siteInfo && page.siteInfo.type.includes('app') && page.siteInfo.installedNames.length === 0) {
-      datBtns.unshift(
-        yo`<button
-          class="callout install-callout"
-          title="Install this application"
-          onclick=${onClickInstallApp}
-        >
-          <span class="fa fa-download"></span> Install Application
-        </button>`
-      )
+    if (page.siteInfo && page.siteInfo.type.includes('app')) {
+      if (page.siteInfo.installedNames.length === 0) {
+        datBtns.unshift(
+          yo`<button
+            class="callout install-callout"
+            title="Install this application"
+            onclick=${onClickInstallApp}
+          >
+            <span class="fa fa-download"></span> Install Application
+          </button>`
+        )
+      } else {
+        let appName = page.siteInfo.installedNames[0]
+        datBtns.unshift(
+          yo`<button
+            class="callout"
+            title="Goto the application"
+            onclick=${e => onClickGotoAppVersion(e, appName)}
+          >
+            Installed at app://${appName}
+          </button>`
+        )        
+      }
     }
   } else if (siteHasDatAlternative) {
     datBtns = [
@@ -602,7 +615,16 @@ function onClickCancel (e) {
 async function onClickInstallApp (e) {
   const page = getEventPage(e)
   if (!page || !page.siteInfo) return
-  await beaker.apps.runInstaller(0, `dat://${page.siteInfo.key}`)
+  const res = await beaker.apps.runInstaller(0, `dat://${page.siteInfo.key}`)
+  if (res && res.name) {
+    page.loadURL(`app://${res.name}`)
+  }
+}
+
+function onClickGotoAppVersion (e, appName) {
+  const page = getEventPage(e)
+  if (!page) return
+  page.loadURL(`app://${appName}`)
 }
 
 function onClickGotoDatVersion (e) {

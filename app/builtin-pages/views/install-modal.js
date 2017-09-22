@@ -31,7 +31,7 @@ const APIS = {
 }
 
 var numPages = 3
-var pages = [renderPage1, renderPage2, renderPage3]
+var pages = [renderAppInfoPage, renderPermsPage, renderInstallLocationPage]
 var currentPage = 0
 var currentNameOpt = 'default'
 var currentCustomName = ''
@@ -50,7 +50,7 @@ window.setup = async function setup (opts) {
     // configure
     if (!targetAppInfo.permissions) {
       numPages = 2
-      pages = [renderPage1, renderPage3]
+      pages = [renderAppInfoPage, renderInstallLocationPage]
     }
     if (targetAppInfo.name) {
       replacedAppInfo = await getCurrentApp()
@@ -83,8 +83,10 @@ async function onSubmit (e) {
   }
 
   try {
-    // TODO
-    beaker.browser.closeModal()
+    beaker.browser.closeModal(null, {
+      name: getCurrentName(),
+      permissions: targetAppInfo.permissions
+    })
   } catch (e) {
     beaker.browser.closeModal({
       name: e.name,
@@ -156,7 +158,7 @@ function renderToPage () {
   </main>`)
 }
 
-function renderPage1 () {
+function renderAppInfoPage () {
   return yo`
     <div>
       <table class="app-info">
@@ -168,7 +170,7 @@ function renderPage1 () {
   `
 }
 
-function renderPage2 () {
+function renderPermsPage () {
   return yo`
     <div>
       <p class="help-text">
@@ -197,7 +199,7 @@ function renderPerm (api, perms) {
   </li>`
 }
 
-function renderPage3 () {
+function renderInstallLocationPage () {
   return yo`
     <div>
       <p class="help-text">

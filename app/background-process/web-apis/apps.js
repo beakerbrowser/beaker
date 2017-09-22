@@ -32,8 +32,12 @@ export default {
 
   async runInstaller (profileId, url) {
     assertBeakerOnly(this.sender)
+    assertValidBinding(url)
     const win = getWebContentsWindow(this.sender)
-    let res = await showModal(win, 'install', {url})
+    const res = await showModal(win, 'install', {url})
+    await appsDb.bind(profileId, res.name, url)
+    // TODO permissions
+    return res
   }
 }
 
