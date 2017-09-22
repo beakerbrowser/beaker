@@ -3,9 +3,11 @@
 
 @import "./components/feed-item";
 @import "./components/profile-preview";
+@import "./components/profile-lite";
 
 .timeline-wrapper {
   background: #f3f3f3;
+
 
   .loading-container {
     background: #fff;
@@ -341,6 +343,21 @@
     .avatar {
       width: 45px;
       height: 45px;
+    }
+  }
+
+  .who-to-follow-container {
+    background: #fff;
+    padding: 10px 15px 0 15px;
+    margin-top: 20px;
+
+    h2 {
+      margin-top: 0;
+      text-transform: none;
+      color: @color-text;
+      font-weight: 500;
+      font-size: .95rem;
+      letter-spacing: 0;
     }
   }
 }

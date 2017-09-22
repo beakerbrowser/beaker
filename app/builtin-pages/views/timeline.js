@@ -23,6 +23,7 @@ var currentView = 'feed'
 var previewingProfile
 var postDraftText = ''
 var posts = []
+var whoToFollow = []
 var isEditingPost
 
 // HACK FIX
@@ -54,6 +55,10 @@ async function setup () {
   // render
   render()
 
+  // load who to follow data then re-render
+  await loadWhoToFollow()
+  render ()
+
   window.addEventListener('pushstate', loadViewedProfile)
   window.addEventListener('popstate', loadViewedProfile)
 }
@@ -71,6 +76,24 @@ async function parseURLKey () {
     console.error('Failed to parse URL', e)
     throw new Error('Invalid dat URL')
   }
+}
+
+async function loadWhoToFollow () {
+  await Promise.all(currentUserProfile.follows.map(async (f) => {
+    const fullProfile = await beaker.profiles.getProfile(f.url)
+
+    const shouldRecommend = (p) => {
+      // is it the current user?
+      console.log(currentUserProfile.follows.indexOf(p))
+      if (p.url === currentUserProfile._origin) return false
+      // is it already in the recommended list?
+      else if (whoToFollow.indexOf(p) !== -1) return false
+      // TODO: is the user already following this person?
+      // else if (await beaker.profiles.isFollowing(currentUserProfile._origin, p.url)) return false
+      return true
+    }
+    whoToFollow = whoToFollow.concat(fullProfile.follows.filter(shouldRecommend))
+  }))
 }
 
 async function loadFeedPosts () {
@@ -149,6 +172,11 @@ async function onUpdateViewFilter (filter) {
 }
 
 async function onClickProfile (profile) {
+  // load the full profile
+  if (!profile._origin) {
+    profile = await beaker.profiles.getProfile(profile.url)
+  }
+
   history.pushState({}, null, 'beaker://timeline/' + profile._origin.slice('dat://'.length))
   viewedProfile = profile
   await loadFeedPosts()
@@ -291,6 +319,7 @@ function renderFeed () {
       <div class="sidebar-col">
         ${renderProfileCard(viewedProfile || currentUserProfile)}
         ${renderFriendsList(viewedProfile || currentUserProfile)}
+        ${renderWhoToFollow()}
       </div>
 
       <div class="main-col">
@@ -392,6 +421,7 @@ function renderFollowing () {
     <div class="view following">
       <div class="sidebar-col">
         ${renderProfileCard(viewedProfile)}
+        ${renderWhoToFollow()}
       </div>
 
       <div class="main-col">
@@ -412,6 +442,7 @@ function renderFriends () {
     <div class="view friends">
       <div class="sidebar-col">
         ${renderProfileCard(viewedProfile)}
+        ${renderWhoToFollow()}
       </div>
 
       <div class="main-col">
@@ -430,6 +461,28 @@ function renderFriends () {
           }
         </div>
       </div>
+    </div>
+  `
+}
+
+function renderWhoToFollow () {
+  if (!whoToFollow.length) return ''
+  return yo`
+    <div class="who-to-follow-container">
+      <h2>Who to follow</h2>
+      <div class="who-to-follow">${whoToFollow.map(renderProfileLite)}</div>
+    </div>
+  `
+}
+
+function renderProfileLite (profile) {
+  return yo`
+    <div onclick=${e => onClickProfile(profile)} class="profile-lite">
+      ${renderAvatar(profile)}
+      <span class="content">
+        <div class="name">${profile.name}</div>
+        ${renderFollowButton(profile)}
+      </span>
     </div>
   `
 }
@@ -457,14 +510,15 @@ function renderProfilePreview () {
 function renderAvatar (profile) {
   return yo`
     <div onclick=${e => onClickProfile(profile)} class="avatar-container">
-      ${imgWithFallbacks(`${profile._origin}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
+      ${imgWithFallbacks(`${profile._origin || profile.url}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
     </div>
   `
 }
 
 function renderProfileFeedItem (profile) {
+  const url = profile._origin || profile.url
   return yo`
-    <div class="feed-item profile" href="beaker://profile/${profile._origin.slice('dat://'.length)}">
+    <div class="feed-item profile" href="beaker://profile/${url.slice('dat://'.length)}">
       <div class="profile-feed-item-header">
         ${renderAvatar(profile)}
 
