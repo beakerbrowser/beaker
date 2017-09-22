@@ -79,7 +79,8 @@ export function createShellWindow () {
   var { x, y, width, height } = ensureVisibleOnSomeDisplay(restoreState())
   var win = new BrowserWindow({
     titleBarStyle: 'hidden-inset',
-    fullscreenable: false,
+    autoHideMenuBar: true,
+    fullscreenable: true,
     x,
     y,
     width,
@@ -106,6 +107,7 @@ export function createShellWindow () {
   registerShortcut(win, 'CmdOrCtrl+Q', onQuit(win))
   registerShortcut(win, 'CmdOrCtrl+T', onNewTab(win))
   registerShortcut(win, 'CmdOrCtrl+W', onCloseTab(win))
+  registerShortcut(win, 'Esc', onEscape(win))
 
   // register event handlers
   win.on('scroll-touch-begin', sendScrollTouchBegin)
@@ -274,6 +276,10 @@ function onNewTab (win) {
 
 function onCloseTab (win) {
   return () => win.webContents.send('command', 'file:close-tab')
+}
+
+function onEscape (win) {
+  return () => win.webContents.send('window-event', 'leave-full-screen')
 }
 
 // window event handlers
