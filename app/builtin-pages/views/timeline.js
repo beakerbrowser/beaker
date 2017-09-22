@@ -5,6 +5,7 @@ import renderSidebar from '../com/sidebar'
 import renderPencilIcon from '../icon/pencil'
 import renderFilesIcon from'../icon/filesystem'
 import renderHeartIcon from '../icon/heart'
+import renderRepliesIcon from '../icon/replies'
 import imgWithFallbacks from '../com/img-with-fallbacks'
 import {pluralize} from '../../lib/strings'
 
@@ -347,10 +348,21 @@ function renderPostFeedItem (p) {
 function renderPostActions (p) {
   return yo`
     <div class="post-actions">
-      <span onclick=${e => onToggleLiked(p)} class="vote-icon ${p.votes.currentUsersVote ? 'voted' : ''}">
-        ${renderHeartIcon()}
-      </span>
-      ${p.votes.value ? p.votes.value : ''}
+      <div class="action">
+        <span class="replies-icon">
+          ${renderRepliesIcon()}
+        </span>
+      </div>
+
+      <div class="action">
+        <span onclick=${e => onToggleLiked(p)} class="vote-icon ${p.votes.currentUsersVote ? 'voted' : ''}">
+          ${renderHeartIcon()}
+        </span>
+
+        <span class="count">
+          ${p.votes.value ? p.votes.value : ''}
+        </span>
+      </div>
     </div>
   `
 }

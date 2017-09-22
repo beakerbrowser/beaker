@@ -45,27 +45,40 @@
       margin-left: 55px;
       height: 13px;
 
+      .action {
+        display: inline-block;
+        width: 55px;
+      }
+
+      .count {
+        color: @color-text--muted;
+        font-size: 11.5px;
+        font-weight: 500;
+        line-height: 1.3;
+        vertical-align: top;
+        margin-left: 5px;
+      }
+
+      .icon * {
+        stroke: #999;
+        stroke-width: 8px;
+      }
+
+      .icon:hover * {
+        stroke: #777;
+      }
+
       .vote-icon {
-
-        &:not(.voted):hover {
-
-          .heart * {
-            stroke: #999;
-          }
-        }
-
         &.voted {
 
           .heart * {
             fill: crimson;
             stroke: crimson;
           }
-        }
 
-        .heart * {
-          fill: none;
-          stroke: #ccc;
-          stroke-width: 2px;
+          &:hover {
+            stroke: crimson;
+          }
         }
       }
 
