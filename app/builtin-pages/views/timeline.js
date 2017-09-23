@@ -84,7 +84,6 @@ async function loadWhoToFollow () {
 
     const shouldRecommend = (p) => {
       // is it the current user?
-      console.log(currentUserProfile.follows.indexOf(p))
       if (p.url === currentUserProfile._origin) return false
       // is it already in the recommended list?
       else if (whoToFollow.indexOf(p) !== -1) return false
