@@ -29,6 +29,7 @@ export function setup () {
       case 'bookmark:create': return navbar.bookmarkAndOpenMenu()
       case 'window:next-tab': return pages.changeActiveBy(1)
       case 'window:prev-tab': return pages.changeActiveBy(-1)
+      case 'window:last-tab': return pages.changeActiveToLast()
       case 'set-tab': return pages.changeActiveTo(arg1)
       case 'load-pinned-tabs': return pages.loadPinnedFromDB()
       case 'perms:prompt': return permsPrompt(arg1, arg2, arg3, arg4)
