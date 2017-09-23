@@ -35,6 +35,7 @@ export default {
     assertValidBinding(url)
     const win = getWebContentsWindow(this.sender)
     const res = await showModal(win, 'install', {url})
+    await appsDb.unbindUrlFromAllNames(profileId, url)
     await appsDb.bind(profileId, res.name, url)
     // TODO permissions
     return res
