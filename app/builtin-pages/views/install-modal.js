@@ -52,14 +52,16 @@ window.setup = async function setup (opts) {
       numPages = 2
       pages = [renderAppInfoPage, renderInstallLocationPage]
     }
-  
+
     if (targetAppInfo.isInstalled && targetAppInfo.name !== targetAppInfo.info.installedNames[0]) {
       currentNameOpt = 'custom'
       currentCustomName = targetAppInfo.info.installedNames[0]
-    } else if (targetAppInfo.name) {
-      replacedAppInfo = await getCurrentApp()
-    } else {
+    } else if (!targetAppInfo.name) {
       currentNameOpt = 'custom'
+    }
+
+    if (targetAppInfo.name) {
+      replacedAppInfo = await getCurrentApp()
     }
   } catch (e) {
     console.error(e)
@@ -282,6 +284,7 @@ async function getTargetAppInfo (url) {
 async function getCurrentApp () {
   var binding = await beaker.apps.get(0, getCurrentName())
   if (!binding) return null
+  if (binding.url === targetAppInfo.url) return null
   if (binding.url.startsWith('dat://')) {
     let a = new DatArchive(binding.url)
     return a.getInfo()
