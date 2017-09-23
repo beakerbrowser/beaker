@@ -52,7 +52,11 @@ window.setup = async function setup (opts) {
       numPages = 2
       pages = [renderAppInfoPage, renderInstallLocationPage]
     }
-    if (targetAppInfo.name) {
+  
+    if (targetAppInfo.isInstalled && targetAppInfo.name !== targetAppInfo.info.installedNames[0]) {
+      currentNameOpt = 'custom'
+      currentCustomName = targetAppInfo.info.installedNames[0]
+    } else if (targetAppInfo.name) {
       replacedAppInfo = await getCurrentApp()
     } else {
       currentNameOpt = 'custom'
@@ -139,7 +143,10 @@ function renderToPage () {
     <div class="modal">
       <div class="modal-inner">
         <div class="install-modal">
-          <h1 class="title">Install ${targetAppInfo.name ? `app://${targetAppInfo.name}` : 'this app'}</h1>
+          <h1 class="title">
+            ${targetAppInfo.isInstalled ? 'Configure' : 'Install'}
+            ${getCurrentName() ? `app://${getCurrentName()}` : 'this app'}
+          </h1>
 
           ${renderPage()}
 
@@ -247,14 +254,23 @@ function getCurrentName () {
 
 async function getTargetAppInfo (url) {
   var a = new DatArchive(url)
+
+  // read manifest
   try {
     var manifest = JSON.parse(await a.readFile('/dat.json'))
   } catch (e) {
     manifest = {}
   }
   manifest.app = manifest.app || {}
+
+  // read install state
+  var info = await a.getInfo()
+  const isInstalled = info.installedNames.length > 0
+  
   return {
     url,
+    isInstalled,
+    info,
     title: toString(manifest.title),
     description: toString(manifest.description),
     author: toAuthorName(manifest.author),
