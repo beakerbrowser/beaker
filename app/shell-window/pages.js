@@ -200,6 +200,29 @@ export function create (opts) {
       return parseURL(this.getURL()).origin
     },
 
+    // helper, abstracts over app:// protocol binding
+    getViewedDatOrigin () {
+      if (this.getIntendedURL().startsWith('dat:')) {
+        return parseURL(this.getIntendedURL()).origin
+      }
+      const pi = this.protocolInfo
+      if (pi && pi.scheme === 'app:' && pi.binding && pi.binding.url.startsWith('dat://')) {
+        return parseURL(pi.binding.url).origin
+      }
+      return false
+    },
+
+    isInstalledApp () {
+      if (this.getIntendedURL().startsWith('app:')) {
+        return true
+      }
+      const si = this.siteInfo
+      if (si && si.installedNames && si.installedNames.length > 0) {
+        return true
+      }
+      return false
+    },
+
     isLiveReloading () {
       return !!page.liveReloadEvents
     },

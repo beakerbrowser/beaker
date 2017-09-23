@@ -22,7 +22,7 @@ const TIMELENS = [
   () => yo`<span>Rehost <strong>forever</strong></span>`,
 ]
 
-export class RehostMenuNavbarBtn {
+export class DatsiteMenuNavbarBtn {
   constructor () {
     this.isDropdownOpen = false
     this.sliderState = undefined
@@ -32,11 +32,47 @@ export class RehostMenuNavbarBtn {
 
   render () {
     const page = pages.getActive()
-    const isViewingDat = isPageDat(page)
-    if (!isViewingDat || !page.siteInfo || page.siteInfo.isOwner) {
+    const isViewingDat = page && !!page.getViewedDatOrigin()
+    if (!isViewingDat || !page.siteInfo) {
       return ''
     }
   
+    var dropdownEl = ''
+    if (this.isDropdownOpen) {
+      if (page.siteInfo.isOwner) {
+        dropdownEl = this.renderOwnerDropdown(page)
+      } else {
+        dropdownEl = this.renderRehostDropdown(page)
+      }
+    }
+
+    // render btn
+    return yo`<div class="rehost-navbar-menu">
+      <button class="nav-peers-btn" onclick=${e => this.onClickDropdownBtn(e)}>
+        <i class="fa fa-share-alt"></i>
+        ${page.siteInfo.peers || 0}
+      </button>
+      ${dropdownEl}
+    </div>`
+  }
+
+  renderOwnerDropdown (page) {
+    return yo`
+      <div class="dropdown datsite-menu-dropdown">
+        <div class="dropdown-items datsite-menu-dropdown-items with-triangle">
+          <div class="header">
+            <i class="fa fa-cloud-upload"></i>
+            Your site
+          </div>
+          <div>
+            <i class="fa fa-share-alt"></i> ${page.siteInfo.peers || 0} peers online
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  renderRehostDropdown (page) {
     // calculate the current state
     const isSaved = page.siteInfo.userSettings.isSaved
     const expiresAt = page.siteInfo.userSettings.expiresAt
@@ -48,8 +84,7 @@ export class RehostMenuNavbarBtn {
     else if (timeRemaining.asWeeks() > 0.5) currentSetting = ONEWEEK
     else currentSetting = ONEDAY
 
-    // configure rendering params
-    const numPeers = page.siteInfo.peers
+    // configure rendering params    
     const sliderState = typeof this.sliderState === 'undefined'
       ? currentSetting
       : this.sliderState
@@ -65,59 +100,47 @@ export class RehostMenuNavbarBtn {
     const size = (page && page.siteInfo && page.siteInfo.size) ? bytes(page.siteInfo.size, 'mb') : ''
 
     // render the dropdown if open
-    var dropdownEl = ''
-    if (this.isDropdownOpen) {
-      dropdownEl = yo`
-        <div class="dropdown rehost-menu-dropdown">
-          <div class="dropdown-items rehost-menu-dropdown-items with-triangle">
-            <div class="header">
-              <i class="fa fa-cloud-upload"></i>
-              Rehost this site
-            </div>
-            <div>
-              <input
-                type="range"
-                min="0"
-                max="4"
-                step="1"
-                list="steplist"
-                value=${sliderState}
-                onchange=${e => this.onChangeTimelen(e)}
-                oninput=${e => this.onChangeTimelen(e)} />
-              <datalist id="steplist">
-                  <option>0</option>
-                  <option>1</option>
-                  <option>2</option>
-                  <option>3</option>
-                  <option>4</option>
-              </datalist>
-            </div>
+    return yo`
+      <div class="dropdown datsite-menu-dropdown rehost-menu-dropdown">
+        <div class="dropdown-items datsite-menu-dropdown-items rehost-menu-dropdown-items with-triangle">
+          <div class="header">
+            <i class="fa fa-cloud-upload"></i>
+            Rehost this site
+          </div>
+          <div>
+            <input
+              type="range"
+              min="0"
+              max="4"
+              step="1"
+              list="steplist"
+              value=${sliderState}
+              onchange=${e => this.onChangeTimelen(e)}
+              oninput=${e => this.onChangeTimelen(e)} />
+            <datalist id="steplist">
+                <option>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+            </datalist>
+          </div>
 
-            <div class="labels">
-              <div class="policy">
-                <i class=${'fa fa-circle ' + statusClass}></i>
-                ${statusLabel}
-              </div>
-              <div class="size">
-                ${size}
-                ${this.progressMonitor.current < 100
-                  ? ProgressPieSVG(this.progressMonitor.current, {size: '10px', color1: '#ccc', color2: '#3579ff'})
-                  : ''}
-              </div>
+          <div class="labels">
+            <div class="policy">
+              <i class=${'fa fa-circle ' + statusClass}></i>
+              ${statusLabel}
+            </div>
+            <div class="size">
+              ${size}
+              ${this.progressMonitor.current < 100
+                ? ProgressPieSVG(this.progressMonitor.current, {size: '10px', color1: '#ccc', color2: '#3579ff'})
+                : ''}
             </div>
           </div>
         </div>
-      `
-    }
-
-    // render btn
-    return yo`<div class="rehost-navbar-menu">
-      <button class="nav-peers-btn" onclick=${e => this.onClickRehost(e)}>
-        <i class="fa fa-share-alt"></i>
-        ${numPeers}
-      </button>
-      ${dropdownEl}
-    </div>`
+      </div>
+    `
   }
 
   updateActives () {
@@ -139,7 +162,7 @@ export class RehostMenuNavbarBtn {
     this.close()
   }
 
-  async onClickRehost () {
+  async onClickDropdownBtn () {
     // toggle the dropdown
     if (this.isDropdownOpen) {
       this.close()
@@ -182,16 +205,4 @@ export class RehostMenuNavbarBtn {
 
     this.updateActives()
   }
-}
-
-function isPageDat (page) {
-  if (!page) return false
-  const pi = page.protocolInfo
-  if (page.getIntendedURL().startsWith('dat:')) {
-    return true
-  }
-  if (pi && pi.scheme === 'app:' && pi.binding && pi.binding.url.startsWith('dat://')) {
-    return true
-  }
-  return false
 }

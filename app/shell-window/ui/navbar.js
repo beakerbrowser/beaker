@@ -7,7 +7,7 @@ import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
 import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
-import {RehostMenuNavbarBtn} from './navbar/rehost-menu'
+import {DatsiteMenuNavbarBtn} from './navbar/datsite-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
 import {SiteInfoNavbarBtn} from './navbar/site-info'
@@ -33,7 +33,7 @@ var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
 var browserMenuNavbarBtn = null
 var bookmarkMenuNavbarBtn = null
-var rehostMenuNavbarBtn = null
+var datsiteMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
 var siteInfoNavbarBtn = null
 
@@ -52,7 +52,7 @@ export function setup () {
   updatesNavbarBtn = new UpdatesNavbarBtn()
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
-  rehostMenuNavbarBtn = new RehostMenuNavbarBtn()
+  datsiteMenuNavbarBtn = new DatsiteMenuNavbarBtn()
   pageMenuNavbarBtn = new PageMenuNavbarBtn()
   siteInfoNavbarBtn = new SiteInfoNavbarBtn()
 
@@ -155,7 +155,7 @@ export function closeMenus () {
   browserMenuNavbarBtn.updateActives()
   pageMenuNavbarBtn.close()
   bookmarkMenuNavbarBtn.close()
-  rehostMenuNavbarBtn.close()
+  datsiteMenuNavbarBtn.close()
 }
 
 // internal helpers
@@ -263,7 +263,7 @@ function render (id, page) {
       )
     }
     if (page.siteInfo && page.siteInfo.type.includes('app')) {
-      if (page.siteInfo.installedNames.length === 0) {
+      if (page.isInstalledApp() === false) {
         datBtns.unshift(
           yo`<button
             class="callout install-callout"
@@ -387,7 +387,7 @@ function render (id, page) {
         ${inpageFinder}
         ${zoomBtn}
         ${!isLocationHighlighted ? datBtns : ''}
-        ${!isLocationHighlighted ? rehostMenuNavbarBtn.render() : ''}
+        ${!isLocationHighlighted ? datsiteMenuNavbarBtn.render() : ''}
         ${!isLocationHighlighted ? pageMenuNavbarBtn.render() : ''}
         ${!isLocationHighlighted ? bookmarkMenuNavbarBtn.render() : ''}
       </div>

@@ -16,10 +16,11 @@ export class PageMenuNavbarBtn {
   }
 
   render () {
-    var page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
-      return yo`<span />`
+    const page = pages.getActive()
+    if (!page || !page.protocolInfo || ['dat:','app:'].includes(page.protocolInfo.scheme) === false) {
+      return ''
     }
+    const isInstalledApp = page.isInstalledApp()
 
     // render the dropdown if open
     var dropdownEl = ''
@@ -53,9 +54,18 @@ export class PageMenuNavbarBtn {
               </div>
               <hr />*/}
               <div class="list-item" onclick=${() => this.onClickInstall()}>
-                <i class="fa fa-download"></i>
-                Install as an app
+                <i class=${!isInstalledApp ? 'fa fa-download' : 'fa fa-wrench'}></i>
+                ${!isInstalledApp ? 'Install as an app' : 'Configure this app'}
               </div>
+              ${isInstalledApp ?
+                yo`
+                  <div class="list-item" onclick=${() => this.onClickUninstall()}>
+                    <i class="fa fa-trash-o"></i>
+                    Uninstall this app
+                  </div>
+                `
+                : ''}
+              <hr />
               <div class="list-item" onclick=${() => this.onClickOpenwithLibrary()}>
                 <i class="fa fa-files-o"></i>
                 View files
@@ -127,40 +137,51 @@ export class PageMenuNavbarBtn {
 
   async onClickInstall () {
     this.close()
-    var page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
-      return
-    }
-    const res = await beaker.apps.runInstaller(0, `dat://${page.siteInfo.key}`)
+    const page = pages.getActive()
+    const datUrl = page && page.getViewedDatOrigin()
+    if (!datUrl) return
+    const res = await beaker.apps.runInstaller(0, datUrl)
     if (res && res.name) {
       page.loadURL(`app://${res.name}`)
     }
   }
 
-  onClickOpenwithLibrary () {
+  async onClickUninstall () {
     this.close()
-    var page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
+    const page = pages.getActive()
+    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'app:') {
       return
     }
-    page.loadURL(`beaker://library/${page.siteInfo.key}`)
+    if (!confirm('Are you sure you want to uninstall this app?')) {
+      return
+    }
+    const name = page.protocolInfo.hostname
+    const res = await beaker.apps.unbind(0, name)
+    const datUrl = page.getViewedDatOrigin()
+    page.loadURL(datUrl || 'beaker://start/')
+  }
+
+  onClickOpenwithLibrary () {
+    this.close()
+    const page = pages.getActive()
+    const datUrl = page && page.getViewedDatOrigin()
+    if (!datUrl) return
+    page.loadURL(`beaker://library/${datUrl.slice('dat://'.length)}`)
   }
 
   onClickFork () {
     this.close()
-    var page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
-      return
-    }
-    DatArchive.fork(page.siteInfo.key, {prompt: true}).catch(() => {})
+    const page = pages.getActive()
+    const datUrl = page && page.getViewedDatOrigin()
+    if (!datUrl) return
+    DatArchive.fork(datUrl, {prompt: true}).catch(() => {})
   }
 
   onClickDownloadZip () {
     this.close()
-    var page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
-      return
-    }
-    beaker.browser.downloadURL(`dat://${page.siteInfo.key}/?download_as=zip`)
+    const page = pages.getActive()
+    const datUrl = page && page.getViewedDatOrigin()
+    if (!datUrl) return
+    beaker.browser.downloadURL(`${datUrl}?download_as=zip`)
   }
 }
