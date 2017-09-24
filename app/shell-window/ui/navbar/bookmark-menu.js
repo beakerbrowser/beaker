@@ -309,11 +309,6 @@ export class BookmarkMenuNavbarBtn {
     this.isPrivacyDropdownOpen = false
     this.updateActives()
   }
-
-  onTogglePrivacyDropdown () {
-    this.isPrivacyDropdownOpen = !this.isPrivacyDropdownOpen
-    this.updateActives()
-  }
 }
 
 function tagsToString (tags) {
