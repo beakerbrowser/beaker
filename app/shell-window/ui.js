@@ -43,7 +43,7 @@ export function setup (cb) {
 
 function onWindowEvent (event, type) {
   switch (type) {
-    case 'blur': return docuument.body.classList.add('window-blurred')
+    case 'blur': return document.body.classList.add('window-blurred')
     case 'focus':
       document.body.classList.remove('window-blurred')
       try { pages.getActive().webviewEl.focus() } catch (e) {}
