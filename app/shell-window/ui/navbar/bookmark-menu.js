@@ -16,7 +16,9 @@ export class BookmarkMenuNavbarBtn {
       pinned: false
     }
     this.isDropdownOpen = false
-    this.isPrivacyDropdownOpen = false
+    this.allTags = null
+    this.tagsAutocompleteResults = null
+    this.tagsAutocompleteIdx = 0
     window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
   }
 
@@ -40,9 +42,14 @@ export class BookmarkMenuNavbarBtn {
                 <input class="bookmark-title" type="text" name="title" value=${this.values.title} onkeyup=${e => this.onChangeTitle(e)}/>
               </div>
 
-              <div class="input-group">
+              <div class="input-group tags">
                 <label>Tags:</label>
-                <input type="text" name="tags" value=${this.values.tags} onkeyup=${e => this.onChangeTags(e)}/>
+                <input type="text" placeholder="Separate with spaces" name="tags" value=${this.values.tags} onkeydown=${e => this.onPreventTab(e)} onkeyup=${e => this.onChangeTags(e)} onblur=${() => this.tagsAutocompleteResults=null}/>
+                ${this.tagsAutocompleteResults ? yo`
+                  <div class="autocomplete-results">
+                    ${this.tagsAutocompleteResults.map((t, i) => yo`<div onclick=${e => this.onClickAutocompleteTag(e)} class="result ${i === this.tagsAutocompleteIdx ? 'selected' : ''}">${t}`)}
+                  </div>
+                ` : ''}
               </div>
 
               <div class="input-group">
@@ -123,10 +130,13 @@ export class BookmarkMenuNavbarBtn {
   }
 
   close () {
+    this.tagsAutocompleteResults = null
+    this.tagsQuery = null
+    this.tagsAutocompleteIdx = 0
     if (this.isDropdownOpen) {
       this.isDropdownOpen = false
-      this.updateActives()
     }
+    this.updateActives()
   }
 
   onClickAnywhere (e) {
@@ -223,9 +233,64 @@ export class BookmarkMenuNavbarBtn {
     this.updateActives()
   }
 
-  onChangeTags (e) {
+  async onChangeTags (e) {
+    var shouldRecompute = true
+    if (this.tagsAutocompleteResults) {
+      // scroll up in autocomplete results
+      if (e.keyCode === 38 && this.tagsAutocompleteIdx > 0) {
+        this.tagsAutocompleteIdx -= 1
+        shouldRecompute = false
+      }
+      // scroll down in autocomplete results
+      else if (e.keyCode === 40 && this.tagsAutocompleteIdx < this.tagsAutocompleteResults.length - 1) {
+        this.tagsAutocompleteIdx += 1
+        shouldRecompute = false
+      }
+      // on TAB, add the selected tag autocomplete result
+      else if (e.keyCode === 9) {
+        e.target.value += this.tagsAutocompleteResults[this.tagsAutocompleteIdx].slice(this.tagsQuery.length) + ' '
+        this.tagsAutocompleteResults = null
+        this.tagsAutocompleteIdx = 0
+        shouldRecompute = false
+      }
+    }
+
+    if (shouldRecompute) {
+      await this.handleTagAutocompleteResults(e.target.value)
+    }
     this.values.tags = e.target.value
     this.updateActives()
+  }
+
+  async handleTagAutocompleteResults (tagStr) {
+    // if this.allTags not set, fetch the user's bookmark tags
+    if (!this.allTags) {
+      this.allTags = await beaker.bookmarks.listBookmarkTags(0)
+    }
+
+    // split the e.target.value to get the last "tag entry"
+    const tagsArr = tagStr.split(' ')
+    this.tagsQuery = tagsArr[tagsArr.length - 1]
+    if (this.tagsQuery.length) {
+      this.tagsAutocompleteResults = this.allTags.filter(t => t.startsWith(this.tagsQuery))
+    } else {
+      // reset the autocomplete results
+      this.tagsAutocompleteResults = null
+      this.tagsAutocompleteIdx = 0
+    }
+  }
+
+  onClickAutocompleteTag (e) {
+    this.values.tags += e.target.innerText.slice(this.tagsQuery.length) + ' '
+    this.tagsAutocompleteResults = null
+    this.tagsAutocompleteIdx = 0
+    this.updateActives()
+  }
+
+  onPreventTab (e) {
+    if (this.tagsAutocompleteResults && e.keyCode === 9) {
+      e.preventDefault()
+    }
   }
 
   onChangeNotes (e) {

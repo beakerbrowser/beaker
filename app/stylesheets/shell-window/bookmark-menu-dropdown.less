@@ -68,6 +68,27 @@
       color: rgba(0,0,0,.75);
     }
 
+    &.tags {
+      position: relative;
+
+      .autocomplete-results {
+        position: absolute;
+        top: ~"calc(100% + 3px)";
+        width: ~"calc(100% - 52px)";
+        left: 52px;
+        background: #fff;
+        border: 1px solid #eee;
+
+        .result {
+          padding: 3px 10px;
+
+          &.selected {
+            background: #eee;
+          }
+        }
+      }
+    }
+
     &.privacy {
 
       .privacy-wrapper {
