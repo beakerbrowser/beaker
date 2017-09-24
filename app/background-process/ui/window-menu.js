@@ -194,11 +194,13 @@ export function buildWindowMenu (opts = {}) {
       label: 'Advanced Tools',
       submenu: [{
         label: 'Reload Shell-Window',
+        accelerator: 'CmdOrCtrl+alt+shift+R',
         click: function () {
           BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
         }
       }, {
         label: 'Toggle Shell-Window DevTools',
+        accelerator: 'CmdOrCtrl+alt+shift+I',
         click: function () {
           BrowserWindow.getFocusedWindow().toggleDevTools()
         }
