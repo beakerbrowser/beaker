@@ -44,7 +44,7 @@ export class BookmarkMenuNavbarBtn {
 
               <div class="input-group tags">
                 <label>Tags:</label>
-                <input type="text" placeholder="Separate with spaces" name="tags" value=${this.values.tags} onkeydown=${e => this.onPreventTab(e)} onkeyup=${e => this.onChangeTags(e)} onblur=${() => this.tagsAutocompleteResults=null}/>
+                <input type="text" placeholder="Separate with spaces" name="tags" onfocus=${e => this.moveCursorToEnd(e)} value=${this.values.tags} onkeydown=${e => this.onPreventTab(e)} onkeyup=${e => this.onChangeTags(e)} onblur=${() => this.tagsAutocompleteResults=null}/>
                 ${this.tagsAutocompleteResults ? yo`
                   <div class="autocomplete-results">
                     ${this.tagsAutocompleteResults.map((t, i) => yo`<div onclick=${e => this.onClickAutocompleteTag(e)} class="result ${i === this.tagsAutocompleteIdx ? 'selected' : ''}">${t}`)}
@@ -145,6 +145,10 @@ export class BookmarkMenuNavbarBtn {
     this.close()
   }
 
+  moveCursorToEnd (e) {
+    e.target.selectionStart = e.target.selectionEnd = e.target.value.length
+  }
+
   async onClickBookmark () {
     // toggle the dropdown bookmark editor
     this.isDropdownOpen = !this.isDropdownOpen
@@ -234,28 +238,24 @@ export class BookmarkMenuNavbarBtn {
   }
 
   async onChangeTags (e) {
-    var shouldRecompute = true
     if (this.tagsAutocompleteResults) {
       // scroll up in autocomplete results
       if (e.keyCode === 38 && this.tagsAutocompleteIdx > 0) {
         this.tagsAutocompleteIdx -= 1
-        shouldRecompute = false
       }
       // scroll down in autocomplete results
       else if (e.keyCode === 40 && this.tagsAutocompleteIdx < this.tagsAutocompleteResults.length - 1) {
         this.tagsAutocompleteIdx += 1
-        shouldRecompute = false
       }
       // on TAB, add the selected tag autocomplete result
       else if (e.keyCode === 9) {
         e.target.value += this.tagsAutocompleteResults[this.tagsAutocompleteIdx].slice(this.tagsQuery.length) + ' '
         this.tagsAutocompleteResults = null
         this.tagsAutocompleteIdx = 0
-        shouldRecompute = false
       }
     }
 
-    if (shouldRecompute) {
+    if (e.target.value !== this.values.tags) {
       await this.handleTagAutocompleteResults(e.target.value)
     }
     this.values.tags = e.target.value
