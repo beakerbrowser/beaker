@@ -22,7 +22,17 @@ export function setup () {
   setupPromise = setupSqliteDB(db, migrations, '[SITEDATA]')
 }
 
-export const WEBAPI = { get, set, getPermissions, getPermission, setPermission, clearPermission, clearPermissionAllOrigins }
+export const WEBAPI = {
+  get,
+  set,
+  getPermissions,
+  getPermission,
+  getAppPermissions,
+  setPermission,
+  setAppPermissions,
+  clearPermission,
+  clearPermissionAllOrigins
+}
 
 export async function set (url, key, value) {
   await setupPromise
@@ -97,6 +107,28 @@ export async function getNetworkPermissions (url) {
   })
 }
 
+export async function getAppPermissions (url) {
+  await setupPromise
+  var origin = await extractOrigin(url)
+  if (!origin) return null
+  return cbPromise(cb => {
+    db.all(`SELECT key, value FROM sitedata WHERE origin = ? AND key LIKE 'perm:app:%'`, [origin], (err, rows) => {
+      if (err) return cb(err)
+
+      // convert to app perms object
+      var appPerms = {}
+      if (rows) {
+        rows.forEach(row => {
+          let [api, perm] = row.key.split(':').slice(2)
+          if (!appPerms[api]) appPerms[api] = []
+          appPerms[api].push(perm)
+        })
+      }
+      cb(null, appPerms)
+    })
+  })
+}
+
 export function getPermission (url, key) {
   return get(url, 'perm:' + key)
 }
@@ -104,6 +136,30 @@ export function getPermission (url, key) {
 export function setPermission (url, key, value) {
   value = (!!value) ? 1 : 0
   return set(url, 'perm:' + key, value)
+}
+
+export async function setAppPermissions (url, appPerms) {
+  await setupPromise
+  var origin = await extractOrigin(url)
+  if (!origin) return null
+  appPerms = appPerms || {}
+
+  // clear all existing app perms
+  await cbPromise(cb => {
+    db.run(`
+      DELETE FROM sitedata WHERE origin = ? AND key LIKE 'perm:app:%'
+    `, [origin], cb)
+  })
+
+  // set perms given
+  for (let api in appPerms) {
+    if (!Array.isArray(appPerms[api])) {
+      continue
+    }
+    for (let perm of appPerms[api]) {
+      await set(url, `perm:app:${api}:${perm}`, 1)
+    }
+  }
 }
 
 export function clearPermission (url, key) {

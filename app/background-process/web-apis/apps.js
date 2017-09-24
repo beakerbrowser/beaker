@@ -1,5 +1,6 @@
 import {parse as parseURL} from 'url'
 import * as appsDb from '../dbs/apps'
+import * as sitedataDb from '../dbs/sitedata'
 import {showModal} from '../ui/modals'
 import {getWebContentsWindow} from '../../lib/electron'
 import {DAT_HASH_REGEX} from '../../lib/const'
@@ -27,6 +28,7 @@ export default {
 
   async unbind (profileId, name) {
     assertBeakerOnly(this.sender)
+    await sitedataDb.setAppPermissions(`app://${name}`, null) // clear old perms
     return appsDb.unbind(profileId, name)
   },
 
@@ -35,9 +37,11 @@ export default {
     assertValidBinding(url)
     const win = getWebContentsWindow(this.sender)
     const res = await showModal(win, 'install', {url})
-    await appsDb.unbindUrlFromAllNames(profileId, url)
-    await appsDb.bind(profileId, res.name, url)
-    // TODO permissions
+    if (res) {
+      await appsDb.unbindUrlFromAllNames(profileId, url)
+      await appsDb.bind(profileId, res.name, url)
+      await sitedataDb.setAppPermissions(`app://${res.name}`, res.permissions)
+    }
     return res
   }
 }

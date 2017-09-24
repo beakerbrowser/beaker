@@ -127,8 +127,10 @@ if (window.location.protocol === 'beaker:') {
   beaker.sitedata.get = sitedataRPC.get
   beaker.sitedata.set = sitedataRPC.set
   beaker.sitedata.getPermissions = sitedataRPC.getPermissions
+  beaker.sitedata.getAppPermissions = sitedataRPC.getAppPermissions
   beaker.sitedata.getPermission = sitedataRPC.getPermission
   beaker.sitedata.setPermission = sitedataRPC.setPermission
+  beaker.sitedata.setAppPermissions = sitedataRPC.setAppPermissions
   beaker.sitedata.clearPermission = sitedataRPC.clearPermission
   beaker.sitedata.clearPermissionAllOrigins = sitedataRPC.clearPermissionAllOrigins
 

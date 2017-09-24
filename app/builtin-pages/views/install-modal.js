@@ -35,6 +35,7 @@ var pages = [renderAppInfoPage, renderPermsPage, renderInstallLocationPage]
 var currentPage = 0
 var currentNameOpt = 'default'
 var currentCustomName = ''
+var currentAssignedPermissions = null
 var targetAppInfo
 var replacedAppInfo
 var viewError
@@ -47,12 +48,13 @@ window.setup = async function setup (opts) {
     // setup
     targetAppInfo = await getTargetAppInfo(opts.url)
 
-    // configure
-    if (!targetAppInfo.permissions) {
+    // configure pages
+    if (!targetAppInfo.requestedPermissions) {
       numPages = 2
       pages = [renderAppInfoPage, renderInstallLocationPage]
     }
 
+    // set current name
     if (targetAppInfo.isInstalled && targetAppInfo.name !== targetAppInfo.info.installedNames[0]) {
       currentNameOpt = 'custom'
       currentCustomName = targetAppInfo.info.installedNames[0]
@@ -60,6 +62,15 @@ window.setup = async function setup (opts) {
       currentNameOpt = 'custom'
     }
 
+    // set current permissions
+    if (targetAppInfo.isInstalled) {
+      currentAssignedPermissions = targetAppInfo.assignedPermissions
+    } else {
+      // default to giving the app everything it requested
+      currentAssignedPermissions = targetAppInfo.requestedPermissions
+    }
+
+    // load current app info
     if (targetAppInfo.name) {
       replacedAppInfo = await getCurrentApp()
     }
@@ -91,7 +102,7 @@ async function onSubmit (e) {
   try {
     beaker.browser.closeModal(null, {
       name: getCurrentName(),
-      permissions: targetAppInfo.permissions
+      permissions: currentAssignedPermissions
     })
   } catch (e) {
     beaker.browser.closeModal({
@@ -120,6 +131,17 @@ function onChangeCustomName (e) {
 
 async function onChangeName () {
   replacedAppInfo = await getCurrentApp()
+  renderToPage()
+}
+
+function onChangePerm (e, api, perm) {
+  const cap = currentAssignedPermissions
+  if (!cap[api]) cap[api] = []
+  if (e.target.checked && !cap[api].includes(perm)) {
+    cap[api].push(perm)
+  } else if (!e.target.checked && cap[api].includes(perm)) {
+    cap[api] = cap[api].filter(p => p !== perm)
+  }
   renderToPage()
 }
 
@@ -188,22 +210,33 @@ function renderPermsPage () {
 
       <div class="perms">
         <ul>
-          ${Object.keys(targetAppInfo.permissions).map(api => 
-            renderPerm(api, targetAppInfo.permissions[api])
-          )}
+          ${Object.keys(targetAppInfo.requestedPermissions).map(renderAPIPerms)}
         </ul>
       </div>
     </div>
   `
 }
 
-function renderPerm (api, perms) {
+function renderAPIPerms (api) {
   const apiInfo = APIS[api]
   if (!apiInfo) return ''
+  const requestedPerms = targetAppInfo.requestedPermissions[api]
+  const assignedPerms = currentAssignedPermissions[api]
   return yo`<li>
     <strong>${apiInfo.label}</strong>
     <ul>
-      ${perms.map(perm => yo`<li>${apiInfo.perms[perm]}</li>`)}
+      ${requestedPerms.map(perm => yo`
+        <li>
+          <label>
+            <input
+              type="checkbox"
+              checked=${!!(assignedPerms && assignedPerms.includes(perm))}
+              onchange=${e => onChangePerm(e, api, perm)}
+            />
+            ${apiInfo.perms[perm]}
+          </label>
+        </li>
+      `)}
     </ul>
   </li>`
 }
@@ -255,7 +288,7 @@ function getCurrentName () {
 }
 
 async function getTargetAppInfo (url) {
-  var a = new DatArchive(url)
+  const a = new DatArchive(url)
 
   // read manifest
   try {
@@ -266,18 +299,22 @@ async function getTargetAppInfo (url) {
   manifest.app = manifest.app || {}
 
   // read install state
-  var info = await a.getInfo()
+  const info = await a.getInfo()
   const isInstalled = info.installedNames.length > 0
+  const assignedPermissions = isInstalled
+    ? await beaker.sitedata.getAppPermissions(`app://${info.installedNames[0]}`)
+    : {}
   
   return {
     url,
-    isInstalled,
     info,
+    isInstalled,
     title: toString(manifest.title),
     description: toString(manifest.description),
     author: toAuthorName(manifest.author),
     name: toSlug(manifest.app.name),
-    permissions: toPermsObject(manifest.app.permissions)
+    requestedPermissions: toPermsObject(manifest.app.permissions),
+    assignedPermissions: assignedPermissions || {}
   }
 }
 

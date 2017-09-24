@@ -197,6 +197,7 @@ export class SiteInfoNavbarBtn {
     var desc = PERMS[permId] ? PERMS[permId].desc : ''
     if (typeof desc === 'function') desc = desc(permParam, pages, { capitalize: true })
     if (typeof desc === 'string') desc = ucfirst(desc)
+    if (!desc) return ''
     return yo`<div>
       <label class=${value ? 'checked' : ''} onclick=${e => this.togglePerm(perm)}><input type="checkbox" value="${perm}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${desc}</label>
     </div>`
