@@ -8,6 +8,7 @@ import renderHeartIcon from '../icon/heart'
 import renderRepliesIcon from '../icon/replies'
 import imgWithFallbacks from '../com/img-with-fallbacks'
 import {pluralize} from '../../lib/strings'
+import {findParent} from '../../lib/fg/event-handlers'
 
 // globals
 // =
@@ -19,12 +20,16 @@ const themeColorFaded = Object.assign({}, themeColor, {l: 95})
 
 var currentUserProfile
 var viewedProfile
+var viewedPost
 var currentView = 'feed'
 var previewingProfile
 var postDraftText = ''
+var replyDraftText = ''
 var posts = []
 var whoToFollow = []
 var isEditingPost
+var isEditingReply
+var isPopupOpen
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -61,6 +66,8 @@ async function setup () {
 
   window.addEventListener('pushstate', loadViewedProfile)
   window.addEventListener('popstate', loadViewedProfile)
+  window.addEventListener('pushstate', loadViewedPost)
+  window.addEventListener('popstate', loadViewedPost)
 }
 
 async function parseURLKey () {
@@ -76,6 +83,13 @@ async function parseURLKey () {
     console.error('Failed to parse URL', e)
     throw new Error('Invalid dat URL')
   }
+}
+
+function parseURLPostHref () {
+  var path = window.location.pathname.slice(1)
+
+  if (!path) return null
+  return `dat://${path}`
 }
 
 async function loadWhoToFollow () {
@@ -99,12 +113,25 @@ async function loadFeedPosts () {
   var query = {
     fetchAuthor: true,
     countVotes: true,
-    reverse: true
+    reverse: true,
+    fetchReplies: true
   }
   if (viewedProfile) {
     query = Object.assign(query, {author: viewedProfile._origin})
   }
   posts = await beaker.timeline.listPosts(query)
+}
+
+async function loadViewedPost () {
+  try {
+    const href = parseURLPostHref()
+    if (href) {
+      viewedPost = await beaker.timeline.getPost(href)
+    }
+    render()
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 async function loadViewedProfile () {
@@ -133,11 +160,25 @@ async function loadViewedProfile () {
     // TODO
     console.error(e)
   }
-
 }
 
 // events
 // =
+
+function onClosePopup (e) {
+  const close = () => {
+    viewedPost = null
+    window.removeEventListener('click', onClosePopup)
+    window.removeEventListener('keydown', onClosePopup)
+    render()
+  }
+
+  // ESC key pressed
+  if (e.keyCode && e.keyCode === 27) close()
+
+  // click outside of the popup content
+  if (!findParent(e.target, 'popup-inner')) close()
+}
 
 async function onClickHome () {
   viewedProfile = null
@@ -164,6 +205,37 @@ function onToggleNewPostForm () {
   render()
 }
 
+function onShowReplies (p) {
+  history.pushState({}, null, 'beaker://timeline/' + p._url.slice('dat://'.length))
+  render()
+}
+
+async function onSubmitReply (e) {
+  e.preventDefault()
+  await beaker.timeline.post({
+    text: replyDraftText,
+    threadRoot: viewedPost.threadRoot || viewedPost._url,
+    threadParent: viewedPost._url
+  })
+  replyDraftText = ''
+  isEditingReply = false
+  // reload the post
+  viewedPost = await beaker.timeline.getPost(viewedPost._url)
+  render()
+}
+
+function onToggleIsReplying () {
+  if (!replyDraftText) {
+    isEditingReply = !isEditingReply
+    render()
+  }
+}
+
+function onChangeReplyDraft (e) {
+  replyDraftText = e.target.value
+  render()
+}
+
 async function onUpdateViewFilter (filter) {
   // update view
   currentView = filter || ''
@@ -171,6 +243,8 @@ async function onUpdateViewFilter (filter) {
 }
 
 async function onClickProfile (profile) {
+  // reset viewedPost in case the click came from a popup
+  viewedPost = null
   // load the full profile
   if (!profile._origin) {
     profile = await beaker.profiles.getProfile(profile.url)
@@ -244,7 +318,6 @@ async function onToggleLiked (p) {
   render()
 }
 
-
 // rendering
 // =
 
@@ -255,6 +328,7 @@ function render () {
       <div class="builtin-main center">
         ${renderHeader()}
         ${renderView()}
+        ${renderPopup()}
       </div>
       <style>body{--theme-color: ${toCSSColor(themeColor)}}</style>
       <style>body{--theme-color-faded: ${toCSSColor(themeColorFaded)}}</style>
@@ -294,6 +368,46 @@ function renderView () {
     default:
       return renderFeed()
   }
+}
+
+function renderPopup () {
+  if (!viewedPost) return ''
+
+  window.addEventListener('click', onClosePopup)
+  window.addEventListener('keydown', onClosePopup)
+  const editingCls = isEditingReply ? 'editing' : ''
+  return yo`
+    <div class="popup-wrapper">
+      <div class="popup-inner post-popup">
+        <div class="main-post">
+          <div class="post-header">
+            ${renderAvatar(viewedPost)}
+
+            <div>
+              <div class="name" onclick=${() => onClickProfile(viewedPost.author)}>${viewedPost.author.name}</div>
+              <div class="timestamp">${timestamp(viewedPost.createdAt)}</div>
+            </div>
+
+            ${renderFollowButton(viewedPost.author)}
+          </div>
+
+          <div class="text">${viewedPost.text}</div>
+
+          ${renderPostActions(viewedPost)}
+        </div>
+
+        <form class="reply-form ${editingCls}" onsubmit=${onSubmitReply}>
+          ${renderAvatar(currentUserProfile)}
+          <textarea placeholder="Write a reply" style="border-color: ${toCSSColor(themeColorBorder)}" onfocus=${onToggleIsReplying} onblur=${onToggleIsReplying} onkeyup=${onChangeReplyDraft}>${replyDraftText}</textarea>
+          <div class="actions ${editingCls}">
+            ${isEditingReply ? yo`<button disabled=${!replyDraftText} class="btn new-reply" type="submit">Reply</button>` : ''}
+          </div>
+        </form>
+
+        ${renderReplies(viewedPost)}
+      </div>
+    </div>
+  `
 }
 
 function renderViewHeader (profile) {
@@ -373,22 +487,55 @@ function renderPostFeedItem (p) {
   `
 }
 
+function renderReplies (p) {
+  if (!(p.replies && p.replies.length)) return ''
+  return yo`
+    <div class="replies-container">
+      <div class="replies">${p.replies.map(renderReply)}</div>
+    </div>
+  `
+}
+
+function renderReply (r) {
+  return yo`
+    <div class="reply feed-item post">
+      ${renderAvatar(r.author)}
+      <div class="post-content">
+        <div class="post-header">
+          <span onclick=${e => onClickProfile(r.author)} class="name">${r.author.name}</span>
+          <span class="timestamp"> <span class="bullet">•</span> ${timestamp(r.createdAt)}</span>
+        </div>
+
+        <p class="text">${r.text.replace(/[^\x00-\x7F]/g, '')}</p>
+      </div>
+
+      ${renderPostActions(r)}
+    </div>
+  `
+}
+
 function renderPostActions (p) {
   return yo`
     <div class="post-actions">
       <div class="action">
-        <span class="replies-icon">
+        <span onclick=${e => onShowReplies(p)} class="replies-icon">
           ${renderRepliesIcon()}
         </span>
+
+        ${p.replies ? yo`
+          <span class="count">
+            ${p.replies.length}
+          </span>`
+        : '' }
       </div>
 
-      <div class="action">
+      <div class="action ${p.votes.currentUsersVote ? 'voted' : ''}">
         <span onclick=${e => onToggleLiked(p)} class="vote-icon ${p.votes.currentUsersVote ? 'voted' : ''}">
           ${renderHeartIcon()}
         </span>
 
         <span class="count">
-          ${p.votes.value ? p.votes.value : ''}
+          ${p.votes.value || ''}
         </span>
       </div>
     </div>
