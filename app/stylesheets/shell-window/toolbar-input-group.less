@@ -435,11 +435,19 @@
   box-shadow: 0 2px 7px rgba(0,0,0,.1);
 
   .result {
+    position: relative;
     padding: 0 10px 0 112px;
     display: flex;
     align-items: center;
     height: 28px;
     font-size: 14px;
+
+    .fa-star-o {
+      position: absolute;
+      left: 90px;
+      color: @color-text--muted;
+      font-size: 16px;
+    }
 
     .icon {
       margin-right: 10px;

@@ -283,7 +283,7 @@ function render (id, page) {
           >
             Installed at app://${appName}
           </button>`
-        )        
+        )
       }
     }
   } else if (siteHasDatAlternative) {
@@ -326,14 +326,16 @@ function render (id, page) {
           if (i == autocompleteCurrentSelection) { rowCls += ' selected' }
 
           // result row
-          return yo`<div class=${rowCls} data-result-index=${i}>
-            ${r.search
-              ? yo`<i class="icon icon-search"></i>`
-              : yo`<img class="icon" src=${'beaker-favicon:' + r.url}/>`
-            }
-            ${contentColumn}
-            ${titleColumn}
-          </div>`
+          return yo`
+            <div class=${rowCls} data-result-index=${i}>
+              ${r.bookmarked ? yo`<i class="fa fa-star-o"></i>` : ''}
+              ${r.search
+                ? yo`<i class="icon icon-search"></i>`
+                : yo`<img class="icon" src=${'beaker-favicon:' + r.url}/>`
+              }
+              ${contentColumn}
+              ${titleColumn}
+            </div>`
         })}
       </div>
     `
@@ -443,7 +445,7 @@ function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadErr
   `
 }
 
-function handleAutocompleteSearch (results) {
+async function handleAutocompleteSearch (results) {
   var v = autocompleteCurrentValue
   if (!v) return
 
@@ -484,7 +486,14 @@ function handleAutocompleteSearch (results) {
   else autocompleteResults = [searchResult, gotoResult]
 
   // add search results
-  if (results) { autocompleteResults = autocompleteResults.concat(results) }
+  if (results) {
+    autocompleteResults = autocompleteResults.concat(results)
+  }
+
+  await Promise.all(autocompleteResults.map(async r => {
+    var bookmarked = await beaker.bookmarks.isBookmarked(r.url)
+    Object.assign(r, {bookmarked})
+  }))
 
   // render
   update()
@@ -689,7 +698,7 @@ function onInputLocation (e) {
   if (autocompleteValue && autocompleteCurrentValue != autocompleteValue) {
     autocompleteCurrentValue = autocompleteValue // update the current value
     autocompleteCurrentSelection = 0 // reset the selection
-    beaker.history.search(value).then(handleAutocompleteSearch) // update the suggetsions
+    beaker.history.search(value).then(async function (err, res) { await handleAutocompleteSearch(err) }) // update the suggetsions
   } else if (!autocompleteValue) { clearAutocomplete() } // no value, cancel out
 
   isLocationHighlighted = true
