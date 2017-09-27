@@ -83,10 +83,6 @@
           max-width: 800px;
         }
       }
-
-      &.expanded {
-        padding: 20px;
-      }
     }
 
     .ll-row {
@@ -181,10 +177,6 @@
 
       &.grid,
       &.expanded {
-        border: 1px solid #ddd;
-        border-radius: 2px;
-        box-shadow: 0 1px 0 rgba(0,0,0,.15);
-
         .row-modifier {
           top: 22px;
           left: 28px;
@@ -206,15 +198,6 @@
           height: 20px;
         }
 
-        .header {
-          display: flex;
-
-          .url,
-          .title {
-            line-height: 1.4;
-          }
-        }
-
         .favicon,
         .info {
           display: inline-block;
@@ -225,6 +208,13 @@
           height: 32px;
           flex-basis: 32px;
           margin-right: 10px;
+        }
+
+        .header {
+          .url,
+          .title {
+            line-height: 1.4;
+          }
         }
 
         .info {
@@ -240,8 +230,6 @@
 
         .title {
           &:extend(.overflow-ellipsis);
-          font-size: 12px;
-          font-weight: 500;
         }
 
         .url {
@@ -264,11 +252,14 @@
       &.expanded {
         flex-wrap: wrap !important;
         width: 100%;
-        max-width: 600px;
         height: auto;
         min-height: 45px;
-        padding: 10px;
-        margin-bottom: 15px;
+        padding: 15px;
+
+        .row-modifier {
+          top: 28px;
+          left: 34px;
+        }
 
         .info {
           max-width: 90%;
@@ -278,14 +269,14 @@
           max-width: 100%;
         }
 
-        .tags,
         .notes {
-          margin-left: 40px !important;
+          margin-left: 46px !important;
+          flex-basis: 100%;
         }
 
-        .notes,
         .tags {
-          flex-basis: 100%;
+          margin-left: auto;
+          margin-top: 0;
         }
 
         .actions {
@@ -298,6 +289,13 @@
         max-width: 400px;
         height: auto;
         padding: 0;
+        border: 1px solid #ddd;
+        border-radius: 2px;
+        box-shadow: 0 1px 0 rgba(0,0,0,.15);
+
+        .header {
+          display: flex;
+        }
 
         .link {
           justify-content: space-between;
@@ -309,6 +307,8 @@
         .title {
           &:extend(.overflow-ellipsis);
           max-width: 160px;
+          font-size: 12px;
+          font-weight: 500;
         }
 
         .actions {

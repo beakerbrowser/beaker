@@ -182,14 +182,14 @@ function renderRowExpanded (row, i) {
           </div>
         </span>
 
-        <div class="notes ${row.notes ? '' : 'empty'}">${row.notes || ''}</div>
-
         <div class="tags ${row.tags.length ? '' : 'empty'}">
           ${row.tags.map(t => {
             const view = `tag:${t}`
             return yo`<span onclick=${(e) => {e.stopPropagation(); e.preventDefault(); onUpdateViewFilter(view);}} class="tag">${t}</span>`
           })}
         </div>
+
+        <div class="notes ${row.notes ? '' : 'empty'}">${row.notes || ''}</div>
       </a>
 
       ${renderActions(row, i)}
@@ -367,12 +367,12 @@ function renderToPage () {
                   ${renderListIcon()}
                 </span>
 
-                <span class="btn ${currentRenderingMode === 'grid' ? 'pressed' : ''}" title="Grid view" onclick=${() => onUpdateViewRendering('grid')}>
-                  ${renderGridIcon()}
-                </span>
-
                 <span class="btn ${currentRenderingMode === 'expanded' ? 'pressed' : ''}"  title="Expanded list view" onclick=${() => onUpdateViewRendering('expanded')}>
                   ${renderListExpandedIcon()}
+                </span>
+
+                <span class="btn ${currentRenderingMode === 'grid' ? 'pressed' : ''}" title="Grid view" onclick=${() => onUpdateViewRendering('grid')}>
+                  ${renderGridIcon()}
                 </span>
               </div>
             </div>
