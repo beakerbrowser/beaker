@@ -1,34 +1,10 @@
 import yo from 'yo-yo'
 import slugify from 'slugify'
 import segmentedProgressBar from '../com/segmented-progress-bar'
+import APIS from '../../lib/app-perms'
 
 // globals
 // =
-
-const APIS = {
-  bookmarks: {
-    label: 'Bookmarks',
-    perms: {
-      read: 'Read all of your bookmarks.',
-      manage: 'Manage your private bookmarks.',
-      publish: 'Manage your public bookmarks.'
-    }
-  },
-  profiles: {
-    label: 'Your Profile',
-    perms: {
-      read: 'Read your profile details and who you follow.',
-      publish: 'Edit your profile details and who you follow.'
-    }
-  },
-  timeline: {
-    label: 'Timeline',
-    perms: {
-      read: 'Read your timeline.',
-      publish: 'Publish to your timeline.'
-    }
-  }
-}
 
 var numPages = 3
 var pages = [renderAppInfoPage, renderPermsPage, renderInstallLocationPage]

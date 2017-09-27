@@ -23,7 +23,7 @@ if (['beaker:', 'dat:', 'https:', 'app:'].includes(window.location.protocol) ||
     (window.location.protocol === 'http:' && window.location.hostname === 'localhost')) {
   window.DatArchive = DatArchive
 }
-if (window.location.protocol === 'beaker:') {
+if (['beaker:', 'app:'].includes(window.location.protocol)) {
   window.beaker = beaker
 }
 setupLocationbar()

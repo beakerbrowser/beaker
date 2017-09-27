@@ -4,11 +4,12 @@ import rpc from 'pauls-electron-rpc'
 import {EventTarget, bindEventStream, fromEventStream} from './event-target'
 import errors from 'beaker-error-constants'
 
+import profilesManifest from '../api-manifests/external/profiles'
+import bookmarksManifest from '../api-manifests/external/bookmarks'
+import timelineManifest from '../api-manifests/external/timeline'
+
 import archivesManifest from '../api-manifests/internal/archives'
-import bookmarksManifest from '../api-manifests/internal/bookmarks'
 import historyManifest from '../api-manifests/internal/history'
-import profilesManifest from '../api-manifests/internal/profiles'
-import timelineManifest from '../api-manifests/internal/timeline'
 import downloadsManifest from '../api-manifests/internal/downloads'
 import appsManifest from '../api-manifests/internal/apps'
 import sitedataManifest from '../api-manifests/internal/sitedata'
@@ -16,32 +17,9 @@ import beakerBrowserManifest from '../api-manifests/internal/browser'
 
 const beaker = {}
 const opts = {timeout: false, errors}
-const archivesRPC = rpc.importAPI('archives', archivesManifest, opts)
 const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
-const historyRPC = rpc.importAPI('history', historyManifest, opts)
 const profilesRPC = rpc.importAPI('profiles', profilesManifest, opts)
 const timelineRPC = rpc.importAPI('timeline', timelineManifest, opts)
-
-// beaker.archives
-beaker.archives = new EventTarget()
-beaker.archives.status = archivesRPC.status
-beaker.archives.add = archivesRPC.add
-beaker.archives.remove = archivesRPC.remove
-beaker.archives.bulkRemove = archivesRPC.bulkRemove
-beaker.archives.list = archivesRPC.list
-beaker.archives.publish = archivesRPC.publish
-beaker.archives.unpublish = archivesRPC.unpublish
-beaker.archives.listPublished = archivesRPC.listPublished
-beaker.archives.countPublished = archivesRPC.countPublished
-beaker.archives.getPublishRecord = archivesRPC.getPublishRecord
-beaker.archives.clearFileCache = archivesRPC.clearFileCache
-beaker.archives.clearDnsCache = archivesRPC.clearDnsCache
-beaker.archives.createDebugStream = () => fromEventStream(archivesRPC.createDebugStream())
-try {
-  bindEventStream(archivesRPC.createEventStream(), beaker.archives)
-} catch (e) {
-  // permissions error
-}
 
 // beaker.bookmarks
 beaker.bookmarks = {}
@@ -56,16 +34,6 @@ beaker.bookmarks.bookmarkPrivate = bookmarksRPC.bookmarkPrivate
 beaker.bookmarks.unbookmarkPrivate = bookmarksRPC.unbookmarkPrivate
 beaker.bookmarks.listPrivateBookmarks = bookmarksRPC.listPrivateBookmarks
 beaker.bookmarks.listBookmarkTags = bookmarksRPC.listBookmarkTags
-
-// beaker.history
-beaker.history = {}
-beaker.history.addVisit = historyRPC.addVisit
-beaker.history.getVisitHistory = historyRPC.getVisitHistory
-beaker.history.getMostVisited = historyRPC.getMostVisited
-beaker.history.search = historyRPC.search
-beaker.history.removeVisit = historyRPC.removeVisit
-beaker.history.removeAllVisits = historyRPC.removeAllVisits
-beaker.history.removeVisitsAfter = historyRPC.removeVisitsAfter
 
 // beaker.profiles
 beaker.profiles = {}
@@ -98,10 +66,43 @@ beaker.timeline.vote = timelineRPC.vote
 
 // internal only
 if (window.location.protocol === 'beaker:') {
+  const historyRPC = rpc.importAPI('history', historyManifest, opts)
+  const archivesRPC = rpc.importAPI('archives', archivesManifest, opts)
   const appsRPC = rpc.importAPI('apps', appsManifest, opts)
   const downloadsRPC = rpc.importAPI('downloads', downloadsManifest, opts)
   const sitedataRPC = rpc.importAPI('sitedata', sitedataManifest, opts)
   const beakerBrowserRPC = rpc.importAPI('beaker-browser', beakerBrowserManifest, opts)
+
+  // beaker.archives
+  beaker.archives = new EventTarget()
+  beaker.archives.status = archivesRPC.status
+  beaker.archives.add = archivesRPC.add
+  beaker.archives.remove = archivesRPC.remove
+  beaker.archives.bulkRemove = archivesRPC.bulkRemove
+  beaker.archives.list = archivesRPC.list
+  beaker.archives.publish = archivesRPC.publish
+  beaker.archives.unpublish = archivesRPC.unpublish
+  beaker.archives.listPublished = archivesRPC.listPublished
+  beaker.archives.countPublished = archivesRPC.countPublished
+  beaker.archives.getPublishRecord = archivesRPC.getPublishRecord
+  beaker.archives.clearFileCache = archivesRPC.clearFileCache
+  beaker.archives.clearDnsCache = archivesRPC.clearDnsCache
+  beaker.archives.createDebugStream = () => fromEventStream(archivesRPC.createDebugStream())
+  try {
+    bindEventStream(archivesRPC.createEventStream(), beaker.archives)
+  } catch (e) {
+    // permissions error
+  }
+
+  // beaker.history
+  beaker.history = {}
+  beaker.history.addVisit = historyRPC.addVisit
+  beaker.history.getVisitHistory = historyRPC.getVisitHistory
+  beaker.history.getMostVisited = historyRPC.getMostVisited
+  beaker.history.search = historyRPC.search
+  beaker.history.removeVisit = historyRPC.removeVisit
+  beaker.history.removeAllVisits = historyRPC.removeAllVisits
+  beaker.history.removeVisitsAfter = historyRPC.removeVisitsAfter
 
   // beaker.apps
   beaker.apps = {}

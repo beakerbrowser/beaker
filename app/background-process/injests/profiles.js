@@ -24,7 +24,7 @@ export async function setup () {
     profileArchive = await DatArchive.create({
       title: 'Anonymous',
       description: 'Beaker user profile',
-      type: ['user-profile', 'beaker-user-profile-v1']
+      type: ProfilesAPI.getArchiveType()
     })
     profileRecord.url = profileArchive.url
     await updateProfileRecord(0, profileRecord)
@@ -71,4 +71,30 @@ export function updateProfileRecord (id, values) {
 
 export function removeProfileRecord (id) {
   return db.run(`DELETE FROM profiles WHERE id = ?`, [id])
+}
+
+export async function getOrCreateArchive (type, manifest) {
+  // look up the publish record
+  var archiveRecord = await profilesApi.getPublishedArchive(profileArchive, type)
+
+  if (archiveRecord && archiveRecord.url) {
+    // make sure we can access the archive, and that it's saved
+    let archive = new DatArchive(archiveRecord.url)
+    try {
+      let info = archive.getInfo()
+      if (info.userSettings.isSaved) {
+        // we're set
+        return archive
+      }
+    } catch (e) {
+      // ignore
+    }
+    // unpublish, the record is bad
+    await profilesApi.unpublishArchive(profileArchive, archive)
+  }
+
+  // create new archive
+  let archive = await DatArchive.create(manifest)
+  await profilesApi.publishArchive(profileArchive, archive)
+  return archive
 }

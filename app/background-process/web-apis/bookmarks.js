@@ -1,7 +1,9 @@
 import assert from 'assert'
+import normalizeUrl from 'normalize-url'
+import {PermissionsError} from 'beaker-error-constants'
 import {getProfileArchive, getAPI} from '../injests/profiles'
 import * as privateBookmarksDb from '../dbs/bookmarks'
-import normalizeUrl from 'normalize-url'
+import {queryPermission} from '../ui/permissions'
 
 const NORMALIZE_OPTS = {
   stripFragment: false,
@@ -19,6 +21,7 @@ export default {
 
   // fetch bookmark data from the current user's public & private data
   async getBookmark (href) {
+    await assertPermission(this.sender, 'app:bookmarks:read')
     assertString(href, 'Parameter one must be a URL')
     href = normalizeUrl(href, NORMALIZE_OPTS)
     var archive = await getProfileArchive(0)
@@ -30,6 +33,7 @@ export default {
 
   // check if bookmark exists in the current user's public & private data
   async isBookmarked (href) {
+    await assertPermission(this.sender, 'app:bookmarks:read')
     assertString(href, 'Parameter one must be a URL')
     href = normalizeUrl(href, NORMALIZE_OPTS)
     var archive = await getProfileArchive(0)
@@ -50,6 +54,7 @@ export default {
   // bookmark publicly
   // - data.title: string
   async bookmarkPublic (href, data) {
+    await assertPermission(this.sender, 'app:bookmarks:edit-public')
     assertString(href, 'Parameter one must be a URL')
     href = normalizeUrl(href, NORMALIZE_OPTS)
     var archive = await getProfileArchive(0)
@@ -58,6 +63,7 @@ export default {
 
   // delete public bookmark
   async unbookmarkPublic (href) {
+    await assertPermission(this.sender, 'app:bookmarks:edit-public')
     assertString(href, 'Parameter one must be a URL')
     href = normalizeUrl(href, NORMALIZE_OPTS)
     var archive = await getProfileArchive(0)
@@ -73,6 +79,7 @@ export default {
   // - opts.reverse: boolean
   // - opts.fetchAuthor: boolean
   async listPublicBookmarks (opts) {
+    await assertPermission(this.sender, 'app:bookmarks:read')
     return getAPI().listBookmarks(opts)
   },
 
@@ -81,6 +88,7 @@ export default {
 
   // pin a bookmark (public or private)
   async setBookmarkPinned (href, pinned) {
+    await assertPermission(this.sender, 'app:bookmarks:edit-private')
     assertString(href, 'Parameter one must be a URL')
     href = normalizeUrl(href, NORMALIZE_OPTS)
     var archive = await getProfileArchive(0)
@@ -94,6 +102,7 @@ export default {
 
   // list pinned bookmarks (public and private)
   async listPinnedBookmarks () {
+    await assertPermission(this.sender, 'app:bookmarks:read')
     // TEMP merge bookmarks from private DB
     var archive = await getProfileArchive(0)
     var bookmarks = await getAPI().listPinnedBookmarks(archive)
@@ -108,6 +117,7 @@ export default {
   // bookmark privately
   // - data.title: string
   async bookmarkPrivate (href, data = {}) {
+    await assertPermission(this.sender, 'app:bookmarks:edit-private')
     assertString(href, 'Parameter one must be a URL')
     href = normalizeUrl(href, NORMALIZE_OPTS)
     await privateBookmarksDb.bookmark(0, href, data)
@@ -115,6 +125,7 @@ export default {
 
   // delete private bookmark
   async unbookmarkPrivate (href) {
+    await assertPermission(this.sender, 'app:bookmarks:edit-private')
     assertString(href, 'Parameter one must be a URL')
     href = normalizeUrl(href, NORMALIZE_OPTS)
     await privateBookmarksDb.unbookmark(0, href)
@@ -122,6 +133,7 @@ export default {
 
   // list private bookmarks
   async listPrivateBookmarks (opts) {
+    await assertPermission(this.sender, 'app:bookmarks:read')
     return privateBookmarksDb.listBookmarks(0, opts)
   },
 
@@ -129,12 +141,21 @@ export default {
   // =
 
   async listBookmarkTags () {
+    await assertPermission(this.sender, 'app:bookmarks:read')
     var [privateTags, publicTags] = await Promise.all([
       privateBookmarksDb.listBookmarkTags(0),
       getAPI().listBookmarkTags(),
     ])
     return Array.from(new Set(privateTags.concat(publicTags)))
   }
+}
+
+async function assertPermission (sender, perm) {
+  if (sender.getURL().startsWith('beaker:')) {
+    return true
+  }
+  if (await queryPermission(perm, sender)) return true
+  throw new PermissionsError()
 }
 
 function assertArchive (v, msg) {
