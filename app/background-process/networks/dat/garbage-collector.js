@@ -12,7 +12,7 @@ export function setup () {
   schedule(DAT_GC_FIRST_COLLECT_WAIT)
 }
 
-export async function collect ({olderThan, biggerThan} = {}) {
+export async function collect ({olderThan} = {}) {
   var startTime = Date.now()
 
   // first unsave expired archives
@@ -23,7 +23,7 @@ export async function collect ({olderThan, biggerThan} = {}) {
   }
 
   // now GC old archives
-  var unusedArchives = await archivesDb.listGarbageCollectableArchives({olderThan, biggerThan})
+  var unusedArchives = await archivesDb.listGarbageCollectableArchives({olderThan})
   debug('GC cleaning out %d unused archives', unusedArchives.length)
   for (let i = 0; i < unusedArchives.length; i++) {
     await archivesDb.deleteArchive(unusedArchives[i].key)
