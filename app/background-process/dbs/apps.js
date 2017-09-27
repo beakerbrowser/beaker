@@ -11,12 +11,17 @@ export function list (profileId) {
   return db.all(`SELECT url, name, updatedAt, createdAt FROM apps WHERE profileId = ? ORDER BY name`, [profileId])
 }
 
-export function bind (profileId, name, url) {
-  return db.run(`
+export async function bind (profileId, name, url) {
+  await db.run(`
     INSERT OR REPLACE
       INTO apps (profileId, name, url, updatedAt)
       VALUES (?, ?, ?, ?)
   `, [profileId, name, url, Date.now()])
+  await db.run(`
+    INSERT
+      INTO apps_log (profileId, name, url)
+      VALUES (?, ?, ?)
+  `, [profileId, name, url])
 }
 
 export function unbind (profileId, name) {
