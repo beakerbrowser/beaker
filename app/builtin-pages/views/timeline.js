@@ -114,12 +114,19 @@ async function loadFeedPosts () {
     fetchAuthor: true,
     countVotes: true,
     reverse: true,
+    rootPostsOnly: false,
     fetchReplies: true
   }
   if (viewedProfile) {
     query = Object.assign(query, {author: viewedProfile._origin})
   }
   posts = await beaker.timeline.listPosts(query)
+  posts = await Promise.all(posts.map(async p => {
+    if (p.threadParent) {
+      p.threadParent = await beaker.timeline.getPost(p.threadParent)
+    }
+    return p
+  }))
 }
 
 async function loadViewedPost () {
@@ -475,8 +482,17 @@ function renderPostFeedItem (p) {
       ${renderAvatar(p.author)}
       <div class="post-content">
         <div class="post-header">
-          <span onclick=${e => onClickProfile(p.author)} class="name">${p.author.name}</span>
-          <span class="timestamp"> <span class="bullet">•</span> ${timestamp(p.createdAt)}</span>
+          <div>
+            <span onclick=${e => onClickProfile(p.author)} class="name">${p.author.name}</span>
+            <span class="timestamp"> <span class="bullet">•</span> ${timestamp(p.createdAt)}</span>
+          </div>
+
+          ${p.threadParent ? yo`
+            <div class="reply-info" onclick=${() => onShowReplies(p.threadParent)}>
+              Replying to
+              <span class="url" >${p.threadParent.author.name}</span>
+            </div>`
+          : ''}
         </div>
 
         <p class="text">${p.text.replace(/[^\x00-\x7F]/g, '')}</p>
