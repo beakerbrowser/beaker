@@ -10,7 +10,7 @@
   "dependencies": {
     "await-lock": "^1.1.2",
     "beaker-error-constants": "^1.2.0",
-    "beaker-profiles-api": "^2.4.0",
+    "beaker-profiles-api": "^2.4.2",
     "beaker-virtual-fs": "git://github.com/beakerbrowser/beaker-virtual-fs.git#474e61e45d5ffcb2af4e5b04b80392d3ae5ea592",
     "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib.git#1fb16ec7a0d9e3efd0777ad5c05672fb815dca6c",
     "bytes": "^2.5.0",
@@ -38,7 +38,7 @@
     "hyperdrive-staging-area": "^2.4.0",
     "hyperdrive-to-zip-stream": "^2.0.0",
     "identify-filetype": "^1.0.0",
-    "injestdb": "^2.2.3",
+    "ingestdb": "^2.2.4",
     "listen-random-port": "^1.0.0",
     "lodash": "^4.17.2",
     "lodash.groupby": "^4.6.0",
