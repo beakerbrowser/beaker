@@ -73,6 +73,10 @@ Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=Yu
     - [App Scheme](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
 - [**Tutorials**](https://beakerbrowser.com/docs/tutorials/)
 
+## Contributing
+
+Interested in contributing? See the list of [issues with the help wanted label](https://github.com/beakerbrowser/beaker/labels/help%20wanted) to get started.
+
 ## Env Vars
 
 - `DEBUG`: which log systems to output? A comma-separated string. Can be `beaker`, `dat`, `bittorrent-dht`, `dns-discovery`, `hypercore-protocol`. Specify `*` for all.
