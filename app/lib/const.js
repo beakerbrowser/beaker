@@ -26,10 +26,10 @@ export const STANDARD_ARCHIVE_TYPES = [
   'application',
   'module',
   'dataset',
-  'document',
+  'documents',
   'music',
-  'photo',
+  'photos',
   'user-profile',
-  'video',
+  'videos',
   'website'
 ]

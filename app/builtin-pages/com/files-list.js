@@ -219,14 +219,14 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
     ]
   }
   menu.push({type: 'separator'})
-  menu.push({type: 'submenu', label: 'New...', submenu: [
+  menu.push({type: 'submenu', label: 'New archive...', submenu: [
     {label: 'Application', id: 'new-application'},
     {label: 'Code module', id: 'new-module'},
     {label: 'Dataset', id: 'new-dataset'},
-    {label: 'Documents folder', id: 'new-document'},
-    {label: 'Music folder', id: 'new-music'},
-    {label: 'Photos folder', id: 'new-photo'},
-    {label: 'Videos folder', id: 'new-video'},
+    {label: 'Documents', id: 'new-documents'},
+    {label: 'Music', id: 'new-music'},
+    {label: 'Photos', id: 'new-photos'},
+    {label: 'Videos', id: 'new-videos'},
     {label: 'Website', id: 'new-website'}
   ]})
   const action = await beaker.browser.showContextMenu(menu)
