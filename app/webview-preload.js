@@ -1,5 +1,6 @@
 import { webFrame } from 'electron'
 import DatArchive from './lib/web-apis/dat-archive'
+import UserSession from './lib/web-apis/user-session'
 import beaker from './lib/web-apis/beaker'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
 import { setup as setupPrompt } from './webview-preload/prompt'
@@ -23,7 +24,8 @@ if (['beaker:', 'dat:', 'https:', 'app:'].includes(window.location.protocol) ||
     (window.location.protocol === 'http:' && window.location.hostname === 'localhost')) {
   window.DatArchive = DatArchive
 }
-if (['beaker:', 'app:'].includes(window.location.protocol)) {
+if (['beaker:', 'dat:', 'app:'].includes(window.location.protocol)) {
+  window.UserSession = UserSession
   window.beaker = beaker
 }
 setupLocationbar()
