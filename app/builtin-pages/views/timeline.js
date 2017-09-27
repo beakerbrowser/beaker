@@ -249,7 +249,9 @@ async function onUpdateViewFilter (filter) {
   render()
 }
 
-async function onClickProfile (profile) {
+async function onClickProfile (e, profile) {
+  e.stopPropagation()
+
   // reset viewedPost in case the click came from a popup
   viewedPost = null
   // load the full profile
@@ -318,7 +320,9 @@ async function onToggleFollowing (e, user) {
   render()
 }
 
-async function onToggleLiked (p) {
+async function onToggleLiked (e, p) {
+  e.stopPropagation()
+
   const vote = p.votes.currentUsersVote ? 0 : 1
   await beaker.timeline.vote(vote, p._url, 'post')
   await loadFeedPosts()
@@ -391,7 +395,7 @@ function renderPopup () {
             ${renderAvatar(viewedPost)}
 
             <div>
-              <div class="name" onclick=${() => onClickProfile(viewedPost.author)}>${viewedPost.author.name}</div>
+              <div class="name" onclick=${e => onClickProfile(e, viewedPost.author)}>${viewedPost.author.name}</div>
               <div class="timestamp">${timestamp(viewedPost.createdAt)}</div>
             </div>
 
@@ -477,14 +481,18 @@ function renderNewPostForm () {
 }
 
 function renderPostFeedItem (p) {
+  console.log(p)
   return yo`
-    <div class="feed-item post">
+    <div class="feed-item post" onclick=${() => onShowReplies(p)}>
       ${renderAvatar(p.author)}
       <div class="post-content">
         <div class="post-header">
           <div>
-            <span onclick=${e => onClickProfile(p.author)} class="name">${p.author.name}</span>
-            <span class="timestamp"> <span class="bullet">•</span> ${timestamp(p.createdAt)}</span>
+            <span onclick=${e => onClickProfile(e, p.author)} class="name">${p.author.name}</span>
+            <span class="timestamp">
+              <span class="bullet">•</span>
+              <span class="value">${timestamp(p.createdAt)}</span>
+            </span>
           </div>
 
           ${p.threadParent ? yo`
@@ -518,8 +526,11 @@ function renderReply (r) {
       ${renderAvatar(r.author)}
       <div class="post-content">
         <div class="post-header">
-          <span onclick=${e => onClickProfile(r.author)} class="name">${r.author.name}</span>
-          <span class="timestamp"> <span class="bullet">•</span> ${timestamp(r.createdAt)}</span>
+          <span onclick=${e => onClickProfile(e, r.author)} class="name">${r.author.name}</span>
+          <span class="timestamp">
+            <span class="bullet">•</span>
+            <span class="value">${timestamp(r.createdAt)}</span>
+          </span>
         </div>
 
         <p class="text">${r.text.replace(/[^\x00-\x7F]/g, '')}</p>
@@ -546,7 +557,7 @@ function renderPostActions (p) {
       </div>
 
       <div class="action ${p.votes.currentUsersVote ? 'voted' : ''}">
-        <span onclick=${e => onToggleLiked(p)} class="vote-icon ${p.votes.currentUsersVote ? 'voted' : ''}">
+        <span onclick=${e => onToggleLiked(e, p)} class="vote-icon ${p.votes.currentUsersVote ? 'voted' : ''}">
           ${renderHeartIcon()}
         </span>
 
@@ -566,7 +577,7 @@ function renderProfileCard (profile) {
         ${renderFollowButton(profile)}
       </div>
 
-      <span onclick=${e => onClickProfile(profile)} class="name">${profile.name || 'Anonymous'}</span>
+      <span onclick=${e => onClickProfile(e, profile)} class="name">${profile.name || 'Anonymous'}</span>
 
       <p class="bio">${profile.bio}</p>
 
@@ -639,7 +650,7 @@ function renderWhoToFollow () {
 
 function renderProfileLite (profile) {
   return yo`
-    <div onclick=${e => onClickProfile(profile)} class="profile-lite">
+    <div onclick=${e => onClickProfile(e, profile)} class="profile-lite">
       ${renderAvatar(profile)}
       <span class="content">
         <div class="name">${profile.name}</div>
@@ -671,7 +682,7 @@ function renderProfilePreview () {
 
 function renderAvatar (profile) {
   return yo`
-    <div onclick=${e => onClickProfile(profile)} class="avatar-container">
+    <div onclick=${e => onClickProfile(e, profile)} class="avatar-container">
       ${imgWithFallbacks(`${profile._origin || profile.url}/avatar`, ['png', 'jpg', 'jpeg', 'gif'], {cls: 'avatar'})}
     </div>
   `
@@ -685,7 +696,7 @@ function renderProfileFeedItem (profile) {
         ${renderAvatar(profile)}
 
         <div>
-          <div class="name" onclick=${e => onClickProfile(profile)}>${profile.name || 'Anonymous'}</div>
+          <div class="name" onclick=${e => onClickProfile(e, profile)}>${profile.name || 'Anonymous'}</div>
           <a href="https://pfrazee.github.io" class="url">pfrazee.github.io</a>
           ${renderFollowButton(profile)}
         </div>
