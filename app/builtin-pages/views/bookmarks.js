@@ -21,7 +21,7 @@ import renderListExpandedIcon from '../icon/list-expanded'
 //
 
 var query = '' // current search query
-var currentView = 'all'
+var currentView = 'mine'
 var currentRenderingMode
 var currentSort
 var bookmarks = []
