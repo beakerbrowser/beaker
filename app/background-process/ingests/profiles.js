@@ -30,8 +30,8 @@ export async function setup () {
     await updateProfileRecord(0, profileRecord)
   }
 
-  // open injest database
-  var dbPath = path.join(app.getPath('userData'), 'Profiles-Injest')
+  // open ingest database
+  var dbPath = path.join(app.getPath('userData'), 'Profiles-Ingest')
   profilesApi = await ProfilesAPI.open(dbPath, profileArchive, {DatArchive})
 }
 

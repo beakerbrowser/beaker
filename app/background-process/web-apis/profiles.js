@@ -1,6 +1,6 @@
 import assert from 'assert'
 import {PermissionsError} from 'beaker-error-constants'
-import {getProfileRecord, getAPI} from '../injests/profiles'
+import {getProfileRecord, getAPI} from '../ingests/profiles'
 import {queryPermission} from '../ui/permissions'
 
 // exported api

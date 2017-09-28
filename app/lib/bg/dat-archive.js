@@ -1,5 +1,5 @@
 // this is a backend version of the DatArchive API
-// it was originally created so that we can use injestdb in the backend
+// it was originally created so that we can use ingestdb in the backend
 
 import dat from '../../background-process/web-apis/dat-archive'
 import {fromAsyncEventStream} from '../web-apis/event-target'
