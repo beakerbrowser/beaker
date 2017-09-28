@@ -265,7 +265,7 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
       parentNode._files.push(newFolderNode)
 
       // put it into rename mode
-      newFolderNode.renameValue = 'New folder'      
+      newFolderNode.renameValue = 'New folder'
       newFolderNode.isRenaming = true
       selectNode(root, newFolderNode, selectedNode, opts)
       let input = document.querySelector('.files-list-view input')
@@ -346,8 +346,8 @@ async function onKeyupRename (e, root, node, opts) {
     await node.rename(node.renameValue)
     // reload the tree
     await refreshAllNodes(root, opts)
-    // redraw with no selected node 
-    redraw(root, null, opts)    
+    // redraw with no selected node
+    redraw(root, null, opts)
   }
   if (e.code === 'Escape') {
     if (node instanceof FSArchiveFolder_BeingCreated) {

@@ -8,13 +8,6 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 import {niceDate} from '../../lib/time'
 import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder-color'
-import renderGlobeIcon from '../icon/globe'
-import renderTrashIcon from '../icon/trash-grayscale'
-import renderBoxIcon from '../icon/box'
-import renderPhotosIcon from '../icon/photos'
-import renderVideosIcon from '../icon/videos'
-import renderHomeIcon from '../icon/home'
-import renderHomeGrayscaleIcon from '../icon/home-grayscale'
 
 var userProfile
 
@@ -127,6 +120,7 @@ function rNode (root, node, depth, opts) {
   const isHighlighted = opts.selectedPath.reduce((agg, activeNode) => agg || activeNode === node, false)
   const isSelected = isHighlighted && opts.selectedPath.length - 1 === depth
   if (node.isHidden) return ''
+
   return yo`
     <div
       class="item ${node.type} ${isHighlighted ? 'highlighted' : ''} ${isSelected ? 'selected' : ''}"
@@ -137,6 +131,8 @@ function rNode (root, node, depth, opts) {
       ${rIcon(node, !depth)}
       <div class="name">${node.name}</div>
       ${node.isContainer ? yo`<span class="caret right">▶</span>` : ''}
+      ${node.size ? yo`<div class="size">${prettyBytes(node.size)}</div>` : ''}
+      ${node.mtime ? yo`<div class="updated">${niceDate(+node.mtime)}</div>` : ''}
     </div>
   `
 }
