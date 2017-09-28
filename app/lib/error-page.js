@@ -143,7 +143,7 @@ export default function (e) {
   var moreHelp = ''
 
   if (typeof e === 'object') {
-    errorDescription = e.errorDescription
+    errorDescription = e.errorDescription || ''
     // remove trailing slash
     var origin = e.validatedURL.slice(0, e.validatedURL.length - 1)
 
