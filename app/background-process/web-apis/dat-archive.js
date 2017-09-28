@@ -7,7 +7,7 @@ import concat from 'concat-stream'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
-import {getProfileRecord} from '../injests/profiles'
+import {getProfileRecord, getAPI as getProfilesAPI} from '../ingests/profiles'
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {getWebContentsWindow} from '../../lib/electron'
@@ -61,7 +61,8 @@ export default {
       newArchiveUrl = res.url
     } else {
       // no modal
-      newArchiveUrl = await datLibrary.createNewArchive({title, description, type}, {networked})
+      let author = await getAuthor()
+      newArchiveUrl = await datLibrary.createNewArchive({title, description, type, author}, {networked})
     }
 
     // grant write permissions to the creating app
@@ -94,7 +95,8 @@ export default {
       newArchiveUrl = res.url
     } else {
       // no modal
-      newArchiveUrl = await datLibrary.forkArchive(url, {title, description, type}, {networked})
+      let author = await getAuthor()
+      newArchiveUrl = await datLibrary.forkArchive(url, {title, description, type, author}, {networked})
     }
 
     // grant write permissions to the creating app
@@ -529,6 +531,16 @@ async function assertValidPath (fileOrFolderPath) {
 //     throw new UserDeniedError('Application must be focused to spawn a prompt')
 //   }
 // }
+
+async function getAuthor () {
+  var profileRecord = await getProfileRecord(0)
+  if (!profileRecord || !profileRecord.url) return undefined
+  var profile = await getProfilesAPI().getProfile(profileRecord.url)
+  return {
+    url: profileRecord.url,
+    name: profile && profile.name ? profile.name : undefined
+  }
+}
 
 async function parseUrlParts (url) {
   var archiveKey, filepath, version

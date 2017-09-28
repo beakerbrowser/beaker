@@ -1,6 +1,6 @@
 import assert from 'assert'
 import {PermissionsError} from 'beaker-error-constants'
-import {getProfileRecord, getAPI} from '../injests/profiles'
+import {getProfileRecord, getAPI} from '../ingests/profiles'
 import {queryPermission} from '../ui/permissions'
 
 // exported api
@@ -12,7 +12,7 @@ export default {
   // =
 
   // get the current user's archive
-  async getCurrentArchive () {
+  async getCurrentUserArchive () {
     await assertPermission(this.sender, 'app:profiles:read')
     var profileRecord = await getProfileRecord(0)
     return profileRecord.url
@@ -26,7 +26,7 @@ export default {
   // - .avatar: string, the path of the avatar image
   // - .follows[n].url: string, the url of the followed user archive
   // - .follows[n].name: string, the name of the followed user
-  async getCurrentProfile () {
+  async getCurrentUserProfile () {
     await assertPermission(this.sender, 'app:profiles:read')
     var profileRecord = await getProfileRecord(0)
     var profile = await getAPI().getProfile(profileRecord.url)
@@ -41,7 +41,7 @@ export default {
   // - .avatar: string, the path of the avatar image
   // - .follows[n].url: string, the url of the followed user archive
   // - .follows[n].name: string, the name of the followed user
-  async getProfile (archive) {
+  async getUserProfile (archive) {
     await assertPermission(this.sender, 'app:profiles:read')
     assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     await getAPI().addArchive(archive)
@@ -52,28 +52,17 @@ export default {
   // update the current user's profile
   // - data.name: string
   // - data.bio: string
-  async setCurrentProfile (data) {
+  async setCurrentUserProfile (data) {
     await assertPermission(this.sender, 'app:profiles:edit-profile')
     assertObject(data, 'Parameter one must be an object')
     var profileRecord = await getProfileRecord(0)
     await getAPI().setProfile(profileRecord.url, data)
   },
 
-  // update the given user's profile
-  // - data.name: string
-  // - data.bio: string
-  async setProfile (archive, data) {
-    await assertPermission(this.sender, 'app:profiles:edit-profile')
-    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
-    assertObject(data, 'Parameter two must be an object')
-    await getAPI().addArchive(archive)
-    await getAPI().setProfile(archive, data)
-  },
-
   // write a new avatar image to the current user's profile
   // - imgData: ArrayBuffer|string, the image content. If a string, assumed encoding is 'base64'.
   // - imgExtension: string, the file-extension of the data. Eg 'png' 'jpg' 'gif'
-  async setCurrentAvatar (imgData, imgExtension) {
+  async setCurrentUserAvatar (imgData, imgExtension) {
     await assertPermission(this.sender, 'app:profiles:edit-profile')
     assertBuffer(imgData, 'Parameter one must be an ArrayBuffer or base64-encoded string')
     assertString(imgExtension, 'Parameter two must be a string')
@@ -82,42 +71,23 @@ export default {
     await getAPI().setAvatar(profileRecord.url, imgData, imgExtension)
   },
 
-  // write a new avatar image to the given user's profile
-  // - imgData: ArrayBuffer|string, the image content. If a string, assumed encoding is 'base64'.
-  // - imgExtension: string, the file-extension of the data. Eg 'png' 'jpg' 'gif'
-  async setAvatar (archive, imgData, imgExtension) {
-    await assertPermission(this.sender, 'app:profiles:edit-profile')
-    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
-    assertBuffer(imgData, 'Parameter two must be an ArrayBuffer or base64-encoded string')
-    assertString(imgExtension, 'Parameter three must be a string')
-    imgData = typeof imgData === 'string' ? new Buffer(imgData, 'base64') : imgData
-    await getAPI().addArchive(archive)
-    await getAPI().setAvatar(archive, imgData, imgExtension)
-  },
-
   // social relationships
   // =
 
-  async follow (archive, targetUser, targetUserName) {
+  async follow (targetUser, targetUserName) {
     await assertPermission(this.sender, 'app:profiles:edit-social')
-    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
-    assertArchive(targetUser, 'Parameter two must be an archive object, or the URL of an archive')
-    await Promise.all([
-      getAPI().addArchive(archive),
-      getAPI().addArchive(targetUser)
-    ])
-    await getAPI().follow(archive, targetUser, targetUserName)
+    assertArchive(targetUser, 'Parameter one must be an archive object, or the URL of an archive')
+    var profileRecord = await getProfileRecord(0)
+    await getAPI().addArchive(targetUser)
+    await getAPI().follow(profileRecord.url, targetUser, targetUserName)
   },
 
-  async unfollow (archive, targetUser) {
+  async unfollow (targetUser) {
     await assertPermission(this.sender, 'app:profiles:edit-social')
-    assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
-    assertArchive(targetUser, 'Parameter two must be an archive object, or the URL of an archive')
-    await Promise.all([
-      getAPI().addArchive(archive),
-      getAPI().addArchive(targetUser)
-    ])
-    await getAPI().unfollow(archive, targetUser)
+    assertArchive(targetUser, 'Parameter one must be an archive object, or the URL of an archive')
+    var profileRecord = await getProfileRecord(0)
+    await getAPI().addArchive(targetUser)
+    await getAPI().unfollow(profileRecord.url, targetUser)
   },
 
   async listFollowers (archive) {

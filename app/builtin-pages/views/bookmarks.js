@@ -21,7 +21,7 @@ import renderListExpandedIcon from '../icon/list-expanded'
 //
 
 var query = '' // current search query
-var currentView = 'all'
+var currentView = 'mine'
 var currentRenderingMode
 var currentSort
 var bookmarks = []
@@ -40,14 +40,14 @@ renderToPage()
 setup()
 async function setup () {
   // load and render bookmarks
-  userProfile = await beaker.profiles.getCurrentProfile()
+  userProfile = await beaker.profiles.getCurrentUserProfile()
   await loadBookmarks()
   renderToPage()
 
   // now load & render tags and profiles
   tags = await beaker.bookmarks.listBookmarkTags()
   followedUserProfiles = await Promise.all(
-    userProfile.followUrls.map(u => beaker.profiles.getProfile(u))
+    userProfile.followUrls.map(u => beaker.profiles.getUserProfile(u))
   )
   renderToPage()
 }
@@ -182,14 +182,14 @@ function renderRowExpanded (row, i) {
           </div>
         </span>
 
-        <div class="notes ${row.notes ? '' : 'empty'}">${row.notes || ''}</div>
-
         <div class="tags ${row.tags.length ? '' : 'empty'}">
           ${row.tags.map(t => {
             const view = `tag:${t}`
             return yo`<span onclick=${(e) => {e.stopPropagation(); e.preventDefault(); onUpdateViewFilter(view);}} class="tag">${t}</span>`
           })}
         </div>
+
+        <div class="notes ${row.notes ? '' : 'empty'}">${row.notes || ''}</div>
       </a>
 
       ${renderActions(row, i)}
@@ -367,12 +367,12 @@ function renderToPage () {
                   ${renderListIcon()}
                 </span>
 
-                <span class="btn ${currentRenderingMode === 'grid' ? 'pressed' : ''}" title="Grid view" onclick=${() => onUpdateViewRendering('grid')}>
-                  ${renderGridIcon()}
-                </span>
-
                 <span class="btn ${currentRenderingMode === 'expanded' ? 'pressed' : ''}"  title="Expanded list view" onclick=${() => onUpdateViewRendering('expanded')}>
                   ${renderListExpandedIcon()}
+                </span>
+
+                <span class="btn ${currentRenderingMode === 'grid' ? 'pressed' : ''}" title="Grid view" onclick=${() => onUpdateViewRendering('grid')}>
+                  ${renderGridIcon()}
                 </span>
               </div>
             </div>

@@ -10,8 +10,7 @@ import * as db from './profile-data-db' // TODO rename to db
 import lock from '../../lib/lock'
 import {
   DAT_HASH_REGEX,
-  DAT_GC_EXPIRATION_AGE,
-  DAT_GC_DEFAULT_MINIMUM_SIZE
+  DAT_GC_EXPIRATION_AGE
 } from '../../lib/const'
 
 // globals
@@ -139,9 +138,8 @@ export async function listExpiredArchives () {
 }
 
 // get all archives that are ready for garbage collection
-export async function listGarbageCollectableArchives ({olderThan, biggerThan} = {}) {
+export async function listGarbageCollectableArchives ({olderThan} = {}) {
   olderThan = olderThan || DAT_GC_EXPIRATION_AGE
-  biggerThan = biggerThan || DAT_GC_DEFAULT_MINIMUM_SIZE
   return db.all(`
     SELECT archives_meta.key
       FROM archives_meta
@@ -149,8 +147,7 @@ export async function listGarbageCollectableArchives ({olderThan, biggerThan} = 
       WHERE
         (archives.isSaved != 1 OR archives.isSaved IS NULL)
         AND archives_meta.lastAccessTime < ?
-        AND archives_meta.metaSize > ?
-  `, [Date.now() - olderThan, biggerThan])
+  `, [Date.now() - olderThan])
 }
 
 // upsert the last-access time

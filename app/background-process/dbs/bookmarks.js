@@ -1,11 +1,3 @@
-/*
-LEGACY
-This will be replaced by the Profiles Injest DB
-But currently Injest doesnt have a way to do private records
-So this is used for the private bookmarks
--prf
-*/
-
 import * as db from './profile-data-db'
 import normalizeUrl from 'normalize-url'
 import lock from '../../lib/lock'

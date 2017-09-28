@@ -36,19 +36,19 @@ test('profiles', async t => {
 
   // check current archive is set
   var res = await app.client.executeAsync((done) => {
-    window.beaker.profiles.getCurrentArchive().then(done,done)
+    window.beaker.profiles.getCurrentUserArchive().then(done,done)
   })
   t.truthy(res.value.url)
 
   // check current profile is blank
   var res = await app.client.executeAsync((done) => {
-    window.beaker.profiles.getCurrentProfile().then(done,done)
+    window.beaker.profiles.getCurrentUserProfile().then(done,done)
   })
   t.deepEqual(res.value, {avatar: false, bio: '', name: ''})
 
   // set current profile
   var res = await app.client.executeAsync((done) => {
-    window.beaker.profiles.setCurrentProfile({
+    window.beaker.profiles.setCurrentUserProfile({
       name: 'Alice',
       bio: 'Cool hacker girl'
     }).then(done,done)
@@ -57,7 +57,7 @@ test('profiles', async t => {
 
   // check current profile is set
   var res = await app.client.executeAsync((done) => {
-    window.beaker.profiles.getCurrentProfile().then(done,done)
+    window.beaker.profiles.getCurrentUserProfile().then(done,done)
   })
   t.deepEqual(profileSubset(res.value), {
     avatar: null,
@@ -73,13 +73,13 @@ test('avatars', async t => {
   // set current avatar
   var bufBase64 = fs.readFileSync('../app/assets/img/logo.png', 'base64')
   var res = await app.client.executeAsync((bufBase64, done) => {
-    window.beaker.profiles.setCurrentAvatar(bufBase64, 'png').then(done,done)
+    window.beaker.profiles.setCurrentUserAvatar(bufBase64, 'png').then(done,done)
   }, bufBase64)
   t.falsy(res.value)
 
   // check avatar is set
   var res = await app.client.executeAsync((done) => {
-    window.beaker.profiles.getCurrentProfile().then(done,done)
+    window.beaker.profiles.getCurrentUserProfile().then(done,done)
   })
   t.deepEqual(profileSubset(res.value), {
     avatar: '/avatar.png',
@@ -93,7 +93,7 @@ test('avatars', async t => {
 test('following', async t => {
   // get alice's url
   var res = await app.client.executeAsync((done) => {
-    window.beaker.profiles.getCurrentArchive().then(done,done)
+    window.beaker.profiles.getCurrentUserArchive().then(done,done)
   })
   var aliceUrl = res.value.url
   t.truthy(aliceUrl.startsWith('dat://'))
@@ -110,32 +110,32 @@ test('following', async t => {
   var carlaUrl = res.value.url
   t.truthy(carlaUrl.startsWith('dat://'))
 
-  // set profiles
+  // follow
+  var res = await app.client.executeAsync((bobUrl, done) => {
+    window.beaker.profiles.follow(bobUrl, 'Robert').then(done,done)
+  }, bobUrl)
+  var res = await app.client.executeAsync((carlaUrl, done) => {
+    window.beaker.profiles.follow(carlaUrl).then(done,done)
+  }, carlaUrl)
+
+  // set profiles manually
   var res = await app.client.executeAsync((url, done) => {
-    window.beaker.profiles.setProfile(url, {
+    const a = new DatArchive(url)
+    a.writeFile('/profile.json', window.JSON.stringify({
       name: 'Bob',
       bio: 'Cool hacker guy'
-    }).then(done,done)
+    })).then(done,done)
   }, bobUrl)
   t.falsy(res.value)
-  var res = await app.client.executeAsync((url, done) => {
-    window.beaker.profiles.setProfile(url, {
+  var res = await app.client.executeAsync((url, aliceUrl, done) => {
+    const a = new DatArchive(url)
+    a.writeFile('/profile.json', window.JSON.stringify({
       name: 'Carla',
-      bio: 'Cool hacker girl'
-    }).then(done,done)
-  }, carlaUrl)
+      bio: 'Cool hacker girl',
+      follows: [{url: aliceUrl}]
+    })).then(done,done)
+  }, carlaUrl, aliceUrl)
   t.falsy(res.value)
-
-  // follow
-  var res = await app.client.executeAsync((aliceUrl, bobUrl, done) => {
-    window.beaker.profiles.follow(aliceUrl, bobUrl, 'Robert').then(done,done)
-  }, aliceUrl, bobUrl)
-  var res = await app.client.executeAsync((aliceUrl, carlaUrl, done) => {
-    window.beaker.profiles.follow(aliceUrl, carlaUrl).then(done,done)
-  }, aliceUrl, carlaUrl)
-  var res = await app.client.executeAsync((aliceUrl, carlaUrl, done) => {
-    window.beaker.profiles.follow(carlaUrl, aliceUrl).then(done,done)
-  }, aliceUrl, carlaUrl)
 
   // list followers
   var res = await app.client.executeAsync((aliceUrl, done) => {
@@ -222,9 +222,9 @@ test('following', async t => {
   t.deepEqual(res.value, true)
 
   // unfollow
-  var res = await app.client.executeAsync((aliceUrl, bobUrl, done) => {
-    window.beaker.profiles.unfollow(aliceUrl, bobUrl).then(done,done)
-  }, aliceUrl, bobUrl)
+  var res = await app.client.executeAsync((bobUrl, done) => {
+    window.beaker.profiles.unfollow(bobUrl).then(done,done)
+  }, bobUrl)
   var res = await app.client.executeAsync((aliceUrl, bobUrl, done) => {
     window.beaker.profiles.isFollowing(aliceUrl, bobUrl).then(done,done)
   }, aliceUrl, bobUrl)

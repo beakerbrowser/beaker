@@ -24,14 +24,14 @@ export async function setup () {
     profileArchive = await DatArchive.create({
       title: 'Anonymous',
       description: 'Beaker user profile',
-      type: ProfilesAPI.getArchiveType()
+      type: ['user-profile', 'beaker-user-profile', 'beaker-user-profile-v1']
     })
     profileRecord.url = profileArchive.url
     await updateProfileRecord(0, profileRecord)
   }
 
-  // open injest database
-  var dbPath = path.join(app.getPath('userData'), 'Profiles-Injest')
+  // open ingest database
+  var dbPath = path.join(app.getPath('userData'), 'Profiles-Ingest')
   profilesApi = await ProfilesAPI.open(dbPath, profileArchive, {DatArchive})
 }
 

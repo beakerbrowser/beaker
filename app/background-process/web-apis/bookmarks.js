@@ -1,7 +1,7 @@
 import assert from 'assert'
 import normalizeUrl from 'normalize-url'
 import {PermissionsError} from 'beaker-error-constants'
-import {getProfileArchive, getAPI} from '../injests/profiles'
+import {getProfileArchive, getAPI} from '../ingests/profiles'
 import * as privateBookmarksDb from '../dbs/bookmarks'
 import {queryPermission} from '../ui/permissions'
 

@@ -4,7 +4,7 @@ import pda from 'pauls-dat-api'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
-import * as profilesInjest from '../injests/profiles'
+import * as profilesIngest from '../ingests/profiles'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
@@ -82,28 +82,28 @@ export default {
   // =
 
   async publish (archiveUrl) {
-    const profileRecord = await profilesInjest.getProfileRecord(0)
+    const profileRecord = await profilesIngest.getProfileRecord(0)
     archiveUrl = typeof archiveUrl.url === 'string' ? archiveUrl.url : archiveUrl
     const archiveInfo = await datLibrary.getArchiveInfo(archiveUrl)
-    return profilesInjest.getAPI().publishArchive(profileRecord.url, archiveInfo)
+    return profilesIngest.getAPI().publishArchive(profileRecord.url, archiveInfo)
   },
 
   async unpublish (archiveUrl) {
-    const profileRecord = await profilesInjest.getProfileRecord(0)
+    const profileRecord = await profilesIngest.getProfileRecord(0)
     archiveUrl = typeof archiveUrl.url === 'string' ? archiveUrl.url : archiveUrl
-    return profilesInjest.getAPI().unpublishArchive(profileRecord.url, archiveUrl)
+    return profilesIngest.getAPI().unpublishArchive(profileRecord.url, archiveUrl)
   },
 
   async listPublished (opts) {
-    return profilesInjest.getAPI().listPublishedArchives(opts)
+    return profilesIngest.getAPI().listPublishedArchives(opts)
   },
 
   async countPublished (opts) {
-    return profilesInjest.getAPI().countPublishedArchives(opts)
+    return profilesIngest.getAPI().countPublishedArchives(opts)
   },
 
   async getPublishRecord (recordUrl) {
-    return profilesInjest.getAPI().getPublishedArchive(recordUrl)
+    return profilesIngest.getAPI().getPublishedArchive(recordUrl)
   },
 
   // internal management
@@ -136,14 +136,14 @@ async function assertSenderIsFocused (sender) {
 }
 
 async function assertArchiveOfflineable (key) {
-  var profileRecord = await profilesInjest.getProfileRecord(0)
+  var profileRecord = await profilesIngest.getProfileRecord(0)
   if ('dat://' + key === profileRecord.url) {
     throw new PermissionsError('Unable to set the user archive to offline.')
   }
 }
 
 async function assertArchiveDeletable (key) {
-  var profileRecord = await profilesInjest.getProfileRecord(0)
+  var profileRecord = await profilesIngest.getProfileRecord(0)
   if ('dat://' + key === profileRecord.url) {
     throw new PermissionsError('Unable to delete the user archive.')
   }
