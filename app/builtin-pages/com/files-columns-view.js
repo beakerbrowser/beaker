@@ -2,7 +2,7 @@
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import {FSArchive, FSVirtualFolderWithTypes} from 'beaker-virtual-fs'
+import {FSArchiveContainer, FSArchive, FSVirtualFolderWithTypes, FSVirtualFolder_Trash} from 'beaker-virtual-fs'
 import renderFilesList from './files-list'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import {niceDate} from '../../lib/time'
@@ -10,6 +10,7 @@ import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder-color'
 
 var userProfile
+var currentDragNode // currently dragged node
 
 setup()
 async function setup () {
@@ -125,14 +126,18 @@ function rNode (root, node, depth, opts) {
     <div
       class="item ${node.type} ${isHighlighted ? 'highlighted' : ''} ${isSelected ? 'selected' : ''}"
       title=${node.name}
+      draggable=${node instanceof FSArchiveContainer}
       onclick=${e => onClickNode(e, root, node, depth, opts)}
       ondblclick=${e => onDblClickNode(e, node)}
-      oncontextmenu=${e => onContextMenu(e, root, node, depth, opts)}>
+      oncontextmenu=${e => onContextMenu(e, root, node, depth, opts)}
+      ondragstart=${e => onDragStart(e, node)}
+      ondragover=${onDragOver}
+      ondragenter=${e => onDragEnter(e, node)}
+      ondragleave=${onDragLeave}
+      ondrop=${e => onDrop(e, root, node, opts)}>
       ${rIcon(node, !depth)}
       <div class="name">${node.name}</div>
       ${node.isContainer ? yo`<span class="caret right">▶</span>` : ''}
-      ${node.size ? yo`<div class="size">${prettyBytes(node.size)}</div>` : ''}
-      ${node.mtime ? yo`<div class="updated">${niceDate(+node.mtime)}</div>` : ''}
     </div>
   `
 }
@@ -154,6 +159,15 @@ async function unselectNode (root, opts) {
 
 // event handlers
 // =
+
+async function onDelete (root, node, opts) {
+  if (confirm(`Are you sure you want to delete "${node.name}"?`)) {
+    await node.delete()
+    node.isHidden = true // quick hack to get this archive out of the view
+    await unselectNode(root, opts)
+    redraw(root, opts)
+  }
+}
 
 async function onClickNode (e, root, node, depth, opts) {
   // update state
@@ -214,14 +228,7 @@ async function onContextMenu (e, root, node, depth, opts) {
   switch (action) {
     case 'open': return window.open(node.url)
     case 'copy-url': return writeToClipboard(node.url)
-    case 'delete':
-      if (confirm(`Are you sure you want to delete "${node.name}"?`)) {
-        await node.delete()
-        node.isHidden = true // quick hack to get this archive out of the view
-        await unselectNode(root, opts)
-        redraw(root, opts)
-      }
-      return
+    case 'delete': return onDelete(root, node, opts)
     case null: return
     default:
       if (action && action.startsWith('new')) {
@@ -239,5 +246,45 @@ function onDblClickNode (e, node) {
   // open in a new window
   if (node.url) {
     window.open(node.url)
+  }
+}
+
+function onDragStart (e, node) {
+  e.dataTransfer.setData('application/json', JSON.stringify({
+    url: node.url,
+    name: node.name,
+    type: node.type
+  }))
+  e.dataTransfer.setData('text/uri-list', node.url)
+  e.dataTransfer.dropEffect = 'copy'
+  currentDragNode = node
+}
+
+function onDragEnter (e, node) {
+  // droppable targets:
+  if (node instanceof FSVirtualFolder_Trash) {
+    e.target.classList.add('dragover')
+  }
+}
+
+function onDragOver (e, node) {
+  if (e.target.classList.contains('dragover')) {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    return false
+  }
+}
+
+function onDragLeave (e) {
+  e.target.classList.remove('dragover')
+}
+
+function onDrop (e, root, dropNode, opts) {
+  var dragNode = currentDragNode
+  e.target.classList.remove('dragover')
+  currentDragNode = null
+
+  if (dropNode instanceof FSVirtualFolder_Trash) {
+    return onDelete(root, dragNode, opts)
   }
 }

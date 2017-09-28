@@ -225,6 +225,14 @@
       background: #e6e6e6;
     }
 
+    &.dragover {
+      background: #ccc;
+
+      * {
+        pointer-events: none; // simple solution to make sure that dragleave only fires on the containing element
+      }
+    }
+
     &.selected {
       background: mix(@blue, @teal);
       color: #fff;
