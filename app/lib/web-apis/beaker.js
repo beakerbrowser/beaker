@@ -41,12 +41,10 @@ beaker.profiles.getCurrentArchive = async () => {
   var url = await profilesRPC.getCurrentArchive()
   return new DatArchive(url)
 }
-beaker.profiles.getCurrentProfile = profilesRPC.getCurrentProfile
-beaker.profiles.setCurrentProfile = profilesRPC.setCurrentProfile
-beaker.profiles.setCurrentAvatar = profilesRPC.setCurrentAvatar
-beaker.profiles.getProfile = profilesRPC.getProfile
-beaker.profiles.setProfile = profilesRPC.setProfile
-beaker.profiles.setAvatar = profilesRPC.setAvatar
+beaker.profiles.getCurrentUserProfile = profilesRPC.getCurrentUserProfile
+beaker.profiles.setCurrentUserProfile = profilesRPC.setCurrentUserProfile
+beaker.profiles.setCurrentUserAvatar = profilesRPC.setCurrentUserAvatar
+beaker.profiles.getUserProfile = profilesRPC.getUserProfile
 beaker.profiles.follow = profilesRPC.follow
 beaker.profiles.unfollow = profilesRPC.unfollow
 beaker.profiles.listFollowers = profilesRPC.listFollowers

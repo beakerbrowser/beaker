@@ -36,7 +36,7 @@ window.history.replaceState = _wr('replaceState')
 
 setup()
 async function setup () {
-  currentUserProfile = await beaker.profiles.getCurrentProfile()
+  currentUserProfile = await beaker.profiles.getCurrentUserProfile()
   await loadViewedProfile()
 
   // render
@@ -69,7 +69,7 @@ async function loadViewedProfile () {
     // load the profile
     var selectedProfileKey = await parseURLKey()
     if (selectedProfileKey) {
-      viewedProfile = await beaker.profiles.getProfile(`dat://${selectedProfileKey}`)
+      viewedProfile = await beaker.profiles.getUserProfile(`dat://${selectedProfileKey}`)
     }
     if (!(viewedProfile && viewedProfile._origin)) {
       viewedProfile = currentUserProfile
@@ -119,16 +119,16 @@ async function onSaveProfile (e) {
 
   var name = e.target.name.value || ''
   var bio = e.target.bio.value || ''
-  await beaker.profiles.setCurrentProfile({name, bio})
+  await beaker.profiles.setCurrentUserProfile({name, bio})
 
   // if the avatar's changed, update the profile avatar
   if (tmpAvatar) {
-    await beaker.profiles.setCurrentAvatar(tmpAvatar.imgData, tmpAvatar.imgExtension)
+    await beaker.profiles.setCurrentUserAvatar(tmpAvatar.imgData, tmpAvatar.imgExtension)
   }
 
   tmpAvatar = undefined
   currentView = ''
-  viewedProfile = await beaker.profiles.getCurrentProfile()
+  viewedProfile = await beaker.profiles.getCurrentUserProfile()
   render()
 }
 
@@ -158,10 +158,10 @@ async function onToggleFollowing (e, user) {
   e.stopPropagation()
   var userUrl = user._origin || user.url // we may be given a profile record or a follows record
   if (user.isCurrentUserFollowing) {
-    await beaker.profiles.unfollow(currentUserProfile._origin, userUrl)
+    await beaker.profiles.unfollow(userUrl)
     user.isCurrentUserFollowing = false
   } else {
-    await beaker.profiles.follow(currentUserProfile._origin, userUrl, user.name || '')
+    await beaker.profiles.follow(userUrl, user.name || '')
     user.isCurrentUserFollowing = true
   }
   render()

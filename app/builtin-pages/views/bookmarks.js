@@ -40,14 +40,14 @@ renderToPage()
 setup()
 async function setup () {
   // load and render bookmarks
-  userProfile = await beaker.profiles.getCurrentProfile()
+  userProfile = await beaker.profiles.getCurrentUserProfile()
   await loadBookmarks()
   renderToPage()
 
   // now load & render tags and profiles
   tags = await beaker.bookmarks.listBookmarkTags()
   followedUserProfiles = await Promise.all(
-    userProfile.followUrls.map(u => beaker.profiles.getProfile(u))
+    userProfile.followUrls.map(u => beaker.profiles.getUserProfile(u))
   )
   renderToPage()
 }

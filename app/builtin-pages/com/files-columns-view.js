@@ -20,7 +20,7 @@ var userProfile
 
 setup()
 async function setup () {
-  userProfile = await beaker.profiles.getCurrentProfile()
+  userProfile = await beaker.profiles.getCurrentUserProfile()
 }
 
 // exported api
