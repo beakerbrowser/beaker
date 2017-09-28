@@ -33,7 +33,7 @@ test.after.always('cleanup', async t => {
 test('publishing posts/votes and reading', async t => {
   // read the user archive url
   var res = await app.client.executeAsync((done) => {
-    window.beaker.profiles.getCurrentArchive().then(done, done)
+    window.beaker.profiles.getCurrentUserArchive().then(done, done)
   })
   const userArchiveURL = res.value.url
 
@@ -59,11 +59,11 @@ test('publishing posts/votes and reading', async t => {
 
   // add some votes
   var res = await app.client.executeAsync((post1Url, done) => {
-    window.beaker.timeline.vote(1, 'post', post1Url).then(done, done)
+    window.beaker.timeline.vote(1, post1Url, 'post').then(done, done)
   }, post1Url)
   t.truthy(res.value.startsWith('dat://'))
   var res = await app.client.executeAsync((reply1Url, done) => {
-    window.beaker.timeline.vote(-1, 'post', reply1Url).then(done, done)
+    window.beaker.timeline.vote(-1, reply1Url, 'post').then(done, done)
   }, reply1Url)
   t.truthy(res.value.startsWith('dat://'))
 
@@ -71,27 +71,33 @@ test('publishing posts/votes and reading', async t => {
   var res = await app.client.executeAsync((done) => {
     window.beaker.timeline.listPosts().then(done, done)
   })
-  t.deepEqual(res.value.length, 2)
+  t.deepEqual(res.value.length, 4)
   t.deepEqual(res.value[0].text, 'Hello, world!')
   t.deepEqual(res.value[1].text, 'Yay')
+  t.deepEqual(res.value[2].text, 'Reply 1')
+  t.deepEqual(res.value[3].text, 'Reply 2')
   var res = await app.client.executeAsync((author, done) => {
     window.beaker.timeline.listPosts({author}).then(done, done)
   }, userArchiveURL)
-  t.deepEqual(res.value.length, 2)
+  t.deepEqual(res.value.length, 4)
   t.deepEqual(res.value[0].text, 'Hello, world!')
   t.deepEqual(res.value[1].text, 'Yay')
+  t.deepEqual(res.value[2].text, 'Reply 1')
+  t.deepEqual(res.value[3].text, 'Reply 2')
   var res = await app.client.executeAsync((author, done) => {
     window.beaker.timeline.listPosts({author, reverse: true}).then(done, done)
   }, userArchiveURL)
-  t.deepEqual(res.value.length, 2)
-  t.deepEqual(res.value[0].text, 'Yay')
-  t.deepEqual(res.value[1].text, 'Hello, world!')
+  t.deepEqual(res.value.length, 4)
+  t.deepEqual(res.value[0].text, 'Reply 2')
+  t.deepEqual(res.value[1].text, 'Reply 1')
+  t.deepEqual(res.value[2].text, 'Yay')
+  t.deepEqual(res.value[3].text, 'Hello, world!')
 
   // count posts
   var res = await app.client.executeAsync((author, done) => {
     window.beaker.timeline.countPosts({author}).then(done,done)
   }, userArchiveURL)
-  t.is(res.value, 2)
+  t.is(res.value, 4)
 
   // get thread
   var res = await app.client.executeAsync((url, done) => {

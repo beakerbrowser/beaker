@@ -24,7 +24,7 @@ export async function setup () {
     profileArchive = await DatArchive.create({
       title: 'Anonymous',
       description: 'Beaker user profile',
-      type: ProfilesAPI.getArchiveType()
+      type: ['user-profile', 'beaker-user-profile', 'beaker-user-profile-v1']
     })
     profileRecord.url = profileArchive.url
     await updateProfileRecord(0, profileRecord)

@@ -534,6 +534,7 @@ async function assertValidPath (fileOrFolderPath) {
 
 async function getAuthor () {
   var profileRecord = await getProfileRecord(0)
+  if (!profileRecord || !profileRecord.url) return undefined
   var profile = await getProfilesAPI().getProfile(profileRecord.url)
   return {
     url: profileRecord.url,
