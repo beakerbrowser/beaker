@@ -134,10 +134,22 @@ async function loadViewedPost () {
     const href = parseURLPostHref()
     if (href) {
       viewedPost = await beaker.timeline.getPost(href)
+      viewedPost.parents = []
+      fetchParent(viewedPost)
     }
     render()
   } catch (e) {
     console.error(e)
+  }
+}
+
+async function fetchParent (p) {
+  if (p.threadParent) {
+    const parent = await beaker.timeline.getPost(p.threadParent)
+    viewedPost.parents.unshift(parent)
+    await fetchParent(parent)
+  } else {
+    render()
   }
 }
 
@@ -386,10 +398,19 @@ function renderPopup () {
 
   window.addEventListener('click', onClosePopup)
   window.addEventListener('keydown', onClosePopup)
+
   const editingCls = isEditingReply ? 'editing' : ''
+  const isReply = viewedPost.threadParent
   return yo`
     <div class="popup-wrapper">
       <div class="popup-inner post-popup">
+
+        ${viewedPost.parents ? yo`
+          <div class="parents">
+            ${viewedPost.parents.map(renderReply)}
+          </div>`
+        : ''}
+
         <div class="main-post">
           <div class="post-header">
             ${renderAvatar(viewedPost)}
@@ -481,7 +502,6 @@ function renderNewPostForm () {
 }
 
 function renderPostFeedItem (p) {
-  console.log(p)
   return yo`
     <div class="feed-item post" onclick=${() => onShowReplies(p)}>
       ${renderAvatar(p.author)}
@@ -522,7 +542,7 @@ function renderReplies (p) {
 
 function renderReply (r) {
   return yo`
-    <div class="reply feed-item post">
+    <div class="reply feed-item post" onclick=${() => onShowReplies(r)}>
       ${renderAvatar(r.author)}
       <div class="post-content">
         <div class="post-header">
