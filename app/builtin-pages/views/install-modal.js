@@ -206,6 +206,7 @@ function renderAPIPerms (api) {
           <label>
             <input
               type="checkbox"
+              name="${api}:${perm}"
               checked=${!!(assignedPerms && assignedPerms.includes(perm))}
               onchange=${e => onChangePerm(e, api, perm)}
             />

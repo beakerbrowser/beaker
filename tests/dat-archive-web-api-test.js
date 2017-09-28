@@ -519,7 +519,6 @@ test('DatArchive.selectArchive: select', async t => {
   await sleep(500)
   await app.client.windowByIndex(2)
   await app.client.waitUntilWindowLoaded()
-
   await app.client.waitForExist('button[type="submit"]')
 
   // click one of the archives
