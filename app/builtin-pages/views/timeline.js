@@ -523,7 +523,7 @@ function renderPostFeedItem (p) {
           : ''}
         </div>
 
-        <p class="text">${p.text.replace(/[^\x00-\x7F]/g, '')}</p>
+        <p class="text">${p.text}</p>
       </div>
 
       ${renderPostActions(p)}
@@ -553,7 +553,7 @@ function renderReply (r) {
           </span>
         </div>
 
-        <p class="text">${r.text.replace(/[^\x00-\x7F]/g, '')}</p>
+        <p class="text">${r.text}</p>
       </div>
 
       ${renderPostActions(r)}
