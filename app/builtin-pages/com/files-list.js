@@ -442,6 +442,8 @@ async function onDrop (e, root, dropNode, opts) {
     await refreshAllNodes(root, opts) // reload the tree
     redraw(root, null, opts) // redraw with no selected node
   } else if (action === 'copy') {
-    alert('todo')
+    await dragNode.copy(joinPath(dropNode._path || '/', dragNode.name))
+    await refreshAllNodes(root, opts) // reload the tree
+    redraw(root, null, opts) // redraw with no selected node
   }
 }
