@@ -514,8 +514,12 @@ function getAutocompleteSelection (i) {
   // autocorrect urls of known forms
   if (isDatHashRegex.test(url)) {
     url = 'dat://' + url
+  } else {
+    if (/https?:\/\//.test(url) === false) {
+      url = 'https://' + url
+    }
   }
-  return { url }
+  return { url, isGuessingTheScheme: true }
 }
 
 function getAutocompleteSelectionUrl (i) {
