@@ -25,6 +25,24 @@
     margin: auto;
   }
 
+  .new-posts-indicator {
+    background: #fafafa;
+    cursor: pointer;
+    padding: 10px 15px;
+    text-align: center;
+    color: var(--theme-color);
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+
+    &:hover {
+      background: #eee;
+    }
+
+    &:empty {
+      display: none;
+    }
+  }
+
   .avatar-container {
     display: inline-block;
   }
