@@ -169,12 +169,15 @@ export class PageMenuNavbarBtn {
     page.loadURL(`beaker://library/${datUrl.slice('dat://'.length)}`)
   }
 
-  onClickFork () {
+  async onClickFork () {
     this.close()
     const page = pages.getActive()
     const datUrl = page && page.getViewedDatOrigin()
     if (!datUrl) return
-    DatArchive.fork(datUrl, {prompt: true}).catch(() => {})
+    const fork = await DatArchive.fork(datUrl, {prompt: true}).catch(() => {})
+    if (fork) {
+      page.loadURL(fork.url)
+    }
   }
 
   onClickDownloadZip () {
