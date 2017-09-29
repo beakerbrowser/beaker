@@ -55,6 +55,7 @@ async function setup () {
   currentUserProfile = await beaker.profiles.getCurrentUserProfile()
   currentUserProfile.isCurrentUser = true
   await loadViewedProfile()
+  await loadViewedPost()
   await loadFeedPosts()
 
   // render
