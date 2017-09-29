@@ -74,7 +74,7 @@ async function loadViewedProfile () {
     if (!(viewedProfile && viewedProfile._origin)) {
       viewedProfile = currentUserProfile
       viewedProfile.isCurrentUserFollowing = false
-      history.pushState({}, null, 'beaker://profile/' + viewedProfile._origin.slice('dat://'.length))
+      history.replaceState({}, null, 'beaker://profile/' + viewedProfile._origin.slice('dat://'.length))
     } else {
       viewedProfile.isCurrentUserFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, viewedProfile._origin)
     }
