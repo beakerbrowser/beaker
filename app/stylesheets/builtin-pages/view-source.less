@@ -4,8 +4,6 @@
 @import "../base/typography.less";
 @import "../utils/decorators.less";
 
-@import "./components/files-list.less";
-
 * {
   box-sizing: border-box;
 }
@@ -22,69 +20,32 @@ body {
 }
 
 main {
-  display: flex;
+  height: 100%;
+  &:extend(.vertical-scroll);
 
-  .sidebar {
-    flex: 0 0 300px;
-    height: 100%;
-    &:extend(.vertical-scroll);
-    border-right: 1px solid @border-menu;
+  &.empty {
+    font-size: 20rem;
+    color: fadeout(@color-text--light, 80%);
+    margin-top: 20vh;
+    text-align: center;
+    -webkit-text-stroke-width: 5px;
+    -webkit-text-stroke-color: #fff;
   }
 
-  .sidebar-footer {
-    color: @color-text--muted;
-    padding: 5px 0;
-    font-size: 13px;
-
-    & > div {
-      margin: 5px 10px;
-    }
-    
-    a:hover {
-      text-decoration: underline;
-    }
+  img,
+  video,
+  audio {
+    max-width: 100%;
   }
 
-  .files-list {
-    border-radius: 0;
+  textarea {
+    &:extend(.code-font);
+    width: 100vw;
+    height: 100vh;
+    resize: none;
     border: 0;
-    border-bottom: 1px solid @border-menu;
-
-    .size,
-    .updated {
-      display: none;
-    }
-  }
-
-  .file-view {
-    flex: 1;
-    height: 100%;
-    &:extend(.vertical-scroll);
-
-    &.empty {
-      font-size: 20rem;
-      color: fadeout(@color-text--light, 80%);
-      margin-top: 20vh;
-      text-align: center;
-      -webkit-text-stroke-width: 5px;
-      -webkit-text-stroke-color: #fff;
-    }
-
-    img,
-    video,
-    audio {
-      max-width: 100%;
-    }
-
-    textarea {
-      &:extend(.code-font);
-      width: 100%;
-      height: 100%;
-      resize: none;
-      border: 0;
-      outline: 0;
-      font-size: 13px;
-      padding: 10px;
-    }
+    outline: 0;
+    font-size: 13px;
+    padding: 10px;
   }
 }

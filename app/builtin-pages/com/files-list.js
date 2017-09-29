@@ -47,7 +47,7 @@ function rFilesList (root, selectedNode, opts) {
           ${rChildren(root, root.children, selectedNode, 0, opts)}
         </div>
       </div>
-      ${renderFilesListSidebar(selectedNode || root)}
+      ${opts.noSidebar ? '' : renderFilesListSidebar(selectedNode || root)}
     </div>
   `
 }
