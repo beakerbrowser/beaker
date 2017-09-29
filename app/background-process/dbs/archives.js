@@ -259,7 +259,9 @@ export async function getMeta (key) {
       WHERE archives_meta.key = ?
       GROUP BY archives_meta.key
   `, [key])
-  if (!meta) return {}
+  if (!meta) {
+    return defaultMeta(key)
+  }
 
   // massage some values
   meta.isOwner = !!meta.isOwner
@@ -317,6 +319,20 @@ export async function setMeta (key, value = {}) {
 
 // internal methods
 // =
+
+function defaultMeta (key) {
+  return {
+    key,
+    title: null,
+    description: null,
+    type: [],
+    author: null,
+    mtime: 0,
+    isOwner: false,
+    lastAccessTime: 0,
+    installedNames: []
+  }
+}
 
 function flag (b) {
   return b ? 1 : 0
