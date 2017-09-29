@@ -139,6 +139,7 @@ function renderToPage () {
   }
 
   const renderPage = pages[currentPage]
+  const submitDisabled = (currentPage === numPages - 1 && !isReadyToInstall())
   yo.update(document.querySelector('main'), yo`<main>
     <div class="modal">
       <div class="modal-inner">
@@ -154,7 +155,7 @@ function renderToPage () {
             <div class="form-actions">
               <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
               ${segmentedProgressBar(currentPage, numPages)}
-              <button type="submit" class="btn primary" tabindex="5" disabled=${!isReadyToInstall()}>
+              <button type="submit" class="btn primary" tabindex="5" disabled=${submitDisabled}>
                 ${currentPage < numPages - 1 ? 'Next' : 'Finish'}
               </button>
             </div>
@@ -169,9 +170,9 @@ function renderAppInfoPage () {
   return yo`
     <div>
       <table class="app-info">
-        <tr><td>Title:</td><td>${targetAppInfo.title}</td></tr>
-        <tr><td>Description:</td><td>${targetAppInfo.description}</td></tr>
-        <tr><td>Author:</td><td>${targetAppInfo.author}</td></tr>
+        <tr><td>Title:</td><td>${targetAppInfo.title || '-'}</td></tr>
+        <tr><td>Description:</td><td>${targetAppInfo.description|| '-'}</td></tr>
+        <tr><td>Author:</td><td>${targetAppInfo.author|| '-'}</td></tr>
       </table>
     </div>
   `
