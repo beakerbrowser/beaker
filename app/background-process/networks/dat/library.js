@@ -336,7 +336,7 @@ export async function getOrLoadArchive (key, opts) {
 
 export async function updateSizeTracking (archive) {
   // fetch size
-  archive.size = await du(archivesDb.getArchiveMetaPath(archive), {disk: true})
+  archive.size = await pda.readSize(archive, '/')
 }
 
 // archive fetch/query

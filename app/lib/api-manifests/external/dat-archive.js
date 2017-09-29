@@ -12,7 +12,7 @@ export default {
   readFile: 'promise',
   writeFile: 'promise',
   unlink: 'promise',
-  // copy: 'promise', // TODO copy-disabled
+  copy: 'promise',
   rename: 'promise',
   download: 'promise',
 

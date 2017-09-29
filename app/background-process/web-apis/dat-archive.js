@@ -211,7 +211,8 @@ export default {
     if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
     await assertWritePermission(archive, this.sender)
-    await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
+    const sourceSize = Buffer.byteLength(data, opts.encoding)
+    await assertQuotaPermission(archive, senderOrigin, sourceSize)
     await assertValidFilePath(filepath)
     await assertUnprotectedFilePath(filepath, this.sender)
     return pda.writeFile(archive, filepath, data, opts)
@@ -225,8 +226,7 @@ export default {
     return pda.unlink(archive, filepath)
   },
 
-  // TODO copy-disabled
-  /* async copy(url, dstPath) {
+  async copy(url, dstPath) {
     return timer(to(), async (checkin) => {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
@@ -234,9 +234,11 @@ export default {
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
       await assertUnprotectedFilePath(dstPath, this.sender)
+      const sourceSize = await pda.readSize(archive, filepath)
+      await assertQuotaPermission(archive, senderOrigin, sourceSize)
       return pda.copy(archive, filepath, dstPath)
     })
-  }, */
+  },
 
   async rename(url, dstpath) {
     return timer(to(), async (checkin) => {
@@ -505,6 +507,9 @@ async function assertQuotaPermission (archive, senderOrigin, byteLength) {
 
   // fallback to default quota
   var bytesAllowed = userSettings.bytesAllowed || DAT_QUOTA_DEFAULT_BYTES_ALLOWED
+
+  // update the archive size
+  await datLibrary.updateSizeTracking(archive)
 
   // check the new size
   var newSize = (archive.size + byteLength)

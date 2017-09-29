@@ -174,8 +174,7 @@ export default class DatArchive extends EventTarget {
     }
   }
 
-  // TODO copy-disabled
-  /*async copy(path, dstPath) {
+  async copy(path, dstPath) {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
@@ -184,7 +183,7 @@ export default class DatArchive extends EventTarget {
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
-  }*/
+  }
 
   async rename(path, dstPath) {
     var errStack = (new Error()).stack

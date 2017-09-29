@@ -825,7 +825,7 @@ test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
   // write a too-big file
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.writeFile('/denythis.txt', 'x'.repeat(1024 * 50), 'utf8').then(done, done)
+    archive.writeFile('/denythis.txt', 'x'.repeat(1024 * 100), 'utf8').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
@@ -891,8 +891,7 @@ test('versioned reads and writes', async t => {
   await app.client.windowByIndex(1)
 })
 
-// TODO copy-disabled
-/*test('archive.copy', async t => {
+test('archive.copy', async t => {
   // file 1
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -929,20 +928,9 @@ test('versioned reads and writes', async t => {
     (await readFile(createdDatURL, '/subdir/hello2.txt')).value,
     (await readFile(createdDatURL, '/subdir2/hello2.txt')).value
   )
-})*/
+})
 
 test('archive.rename', async t => {
-  // TEMP write files (this should be removed when copy-disabled is removed)
-  await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.writeFile('/hello2.txt', 'hello world')
-      .then(() => archive.writeFile('/subdir/hello2.txt', 'hello world'))
-      .then(() => archive.mkdir('/subdir2'))
-      .then(() => archive.writeFile('/subdir2/hello.txt', 'hello world'))
-      .then(() => archive.writeFile('/subdir2/hello2.txt', 'hello world'))
-      .then(done, done)
-  }, createdDatURL)
-
   // file 1
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -981,22 +969,30 @@ test('archive.rename', async t => {
   )
 })
 
-// TODO copy-disabled
-/*test('archive.copy doesnt allow writes that exceed the quota', async t => {
+test('archive.copy doesnt allow writes that exceed the quota', async t => {
+  // create a new dat
+  var res = await app.client.executeAsync((done) => {
+    DatArchive.create({title: 'Too Big Dat'}).then(done, done)
+  })
+  t.falsy(res.value.name, 'create didnt fail')
+  var newTestDatURL = res.value.url
+
+  let listing = await readdir(newTestDatURL, '/', {stat: true, recursive: true})
+
   // write an acceptable (but big) file
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 6), 'utf8').then(done, done)
-  }, createdDatURL)
+    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 70), 'utf8').then(done, done)
+  }, newTestDatURL)
   t.falsy(res.value)
 
   // try to copy the file
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.writeFile('/bigfile.txt', '/bigfile2.txt').then(done, done)
-  }, createdDatURL)
+    archive.copy('/bigfile.txt', '/bigfile2.txt').then(done, done)
+  }, newTestDatURL)
   t.deepEqual(res.value.name, 'QuotaExceededError')
-})*/
+})
 
 test('archive.rename protects the manifest', async t => {
   // rename the manifest to something else
@@ -1014,15 +1010,14 @@ test('archive.rename protects the manifest', async t => {
   t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
 })
 
-// TODO copy-disabled
-/*test('archive.copy protects the manifest', async t => {
+test('archive.copy protects the manifest', async t => {
   // copy over the manifest
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.rename('hello.txt', 'dat.json').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
-})*/
+})
 
 test('Fail to write to unowned archives', async t => {
   // writeFile
@@ -1039,21 +1034,19 @@ test('Fail to write to unowned archives', async t => {
   }, testStaticDatURL)
   t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 
-  // TODO rename-disabled
   // rename
-  /*var res = await app.client.executeAsync((url, done) => {
+  var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.rename('hello.txt', 'denythis.txt').then(done, done)
   }, testStaticDatURL)
-  t.deepEqual(res.value.name, 'ArchiveNotWritableError')*/
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 
-  // TODO copy-disabled
   // copy
-  /*var res = await app.client.executeAsync((url, done) => {
+  var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.copy('hello.txt', 'denythis.txt').then(done, done)
   }, testStaticDatURL)
-  t.deepEqual(res.value.name, 'ArchiveNotWritableError')*/
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 })
 
 test('archive.writeFile & archive.mkdir doesnt allow writes to archives until write permission is given', async t => {
