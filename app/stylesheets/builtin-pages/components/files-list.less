@@ -12,7 +12,7 @@
     flex: 0 0 250px;
     overflow-y: auto;
     border-right: 1px solid #eee;
-    padding: 5px 0;
+    padding: 5px 1px;
 
     * {
       -webkit-user-select: none;
@@ -66,7 +66,7 @@
       }
     }
 
-    &.selected {
+    &.selected:not(.dragover) {
       background: mix(@blue, @teal);
       color: #fff;
       -webkit-font-smoothing: antialiased;
@@ -77,5 +77,15 @@
         font-weight: 900;
       }
     }
+  }
+
+  & > .droptarget {
+    height: 100%;
+  }
+
+  .dragover {
+    outline: 1px solid #819eda;
+    background: #fafafa;
+    border-radius: 2px;
   }
 }

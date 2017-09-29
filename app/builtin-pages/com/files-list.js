@@ -2,9 +2,10 @@
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
+import {join as joinPath} from 'path'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import {niceDate} from '../../lib/time'
-import {writeToClipboard} from '../../lib/fg/event-handlers'
+import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import renderFileOIcon from '../icon/file-o'
 import renderFolderIcon from '../icon/folder-color'
 import renderFilesListSidebar from './files-list-sidebar'
@@ -12,6 +13,8 @@ import {DAT_VALID_PATH_REGEX} from '../../lib/const'
 
 // exported api
 // =
+
+var currentDragNode // currently dragged node
 
 // opts:
 //  - hideDate: show the date on the files (bool)
@@ -34,7 +37,15 @@ function rFilesList (root, selectedNode, opts) {
         onclick=${e => onClickNode(e, root, null, selectedNode, 0, opts)}
         oncontextmenu=${e => onContextMenu(e, root, null, selectedNode, 0, opts)}
       >
-        ${rChildren(root, root.children, selectedNode, 0, opts)}
+        <div
+          class="droptarget"
+          ondragover=${onDragOver}
+          ondragenter=${onDragEnter}
+          ondragleave=${onDragLeave}
+          ondrop=${e => onDrop(e, root, root, opts)}
+        >
+          ${rChildren(root, root.children, selectedNode, 0, opts)}
+        </div>
       </div>
       ${renderFilesListSidebar(selectedNode || root)}
     </div>
@@ -81,14 +92,23 @@ function rDirectory (root, node, selectedNode, depth, opts) {
   }
 
   return yo`
-    <div>
+    <div
+      class="droptarget"
+      ondragover=${onDragOver}
+      ondragenter=${e => onDragEnter(e, node)}
+      ondragleave=${onDragLeave}
+      ondrop=${e => onDrop(e, root, node, opts)}
+    >
       <div
         class="item folder ${isSelected ? 'selected' : ''}"
         title=${node.name}
+        draggable="true"
         onclick=${e => onClickNode(e, root, node, selectedNode, depth, opts)}
         oncontextmenu=${e => onContextMenu(e, root, node, selectedNode, depth, opts)}
         ondblclick=${e => onDblClickNode(e, node)}
-        style=${'padding-left: ' + directoryPadding + 'px'}>
+        ondragstart=${e => onDragStart(e, root, node, opts)}
+        style=${'padding-left: ' + directoryPadding + 'px'}
+      >
         <div
           class="caret"
           ondblclick=${e => e.stopPropagation()}
@@ -115,10 +135,13 @@ function rFile (root, node, selectedNode, depth, opts) {
     <div
       class="item file ${isSelected ? 'selected' : ''}"
       title=${node.name}
+      draggable="true"
       onclick=${e => onClickNode(e, root, node, selectedNode, depth, opts)}
       oncontextmenu=${e => onContextMenu(e, root, node, selectedNode, depth, opts)}
       ondblclick=${e => onDblClickNode(e, node)}
-      style=${'padding-left: ' + padding + 'px'}>
+      ondragstart=${e => onDragStart(e, root, node, opts)}
+      style=${'padding-left: ' + padding + 'px'}
+    >
 
       <img class="icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAUJJREFUeNqkk8FKw0AQhmcmyb0HTR7A4hPUS1B8haIetPh4Ei9tUqQn6aUPIra9hRYUTKiCzbiTJpsssdXSgWFnJjsf/85ukJnhaTR6+16vW5xlwFA3yRAIERBxcdXtuvoLcxUMooj/sjiOuR+GQR0gTnXa63SmfA7T2TxfJRd7CAJwXRfOff+uH0WPdY12KTRPbEukKhdoBUYiWCyX4HkeXPj+bTgcOqp8owElgshWjpqeZZv6absNz+MxyIzuez0BXxsKSgm2TbmC0ogYPtIEzjqd3DWY2TxC1WAZALHP1ReslEPR5B4f6bgBkBlsM2b+td5QsK8ZAMuiAwF0IECuEYB3bMctgGLyjmMZE272o7mWACqk0z+PUN+XA9IkmajneZlt3u9OBfJnpmk60SW5X/V4TlTc2mN276rvRYIfAQYABXymGHKpbU8AAAAASUVORK5CYII="/>
 
@@ -357,5 +380,68 @@ async function onKeyupRename (e, root, node, opts) {
       node.isRenaming = false
     }
     redraw(root, node, opts)
+  }
+}
+
+function onDragStart (e, root, node, opts) {
+  // select node
+  selectNode(root, node, node, opts) 
+
+  // start drag
+  e.dataTransfer.setData('text/uri-list', node.url)
+  e.dataTransfer.dropEffect = 'copy'
+  currentDragNode = node
+}
+
+function onDragEnter (e) {
+  const target = findParent(e.target, 'droptarget')
+  if (!target) return
+  target.classList.add('dragover')
+}
+
+function onDragOver (e) {
+  const target = findParent(e.target, 'droptarget')
+  if (!target) return
+  target.classList.add('dragover')
+  e.preventDefault()
+  e.dataTransfer.dropEffect = 'move'
+  return false
+}
+
+function onDragLeave (e) {
+  const target = findParent(e.target, 'droptarget')
+  if (!target) return
+  target.classList.remove('dragover')
+}
+
+async function onDrop (e, root, dropNode, opts) {
+  // onto a target?
+  const target = findParent(e.target, 'droptarget')
+  if (!target) return
+
+  // end the drag
+  const dragNode = currentDragNode
+  target.classList.remove('dragover')
+  currentDragNode = null
+  e.preventDefault()
+  e.stopPropagation()
+
+  // do nothing if this is the dragged node's container
+  if (dropNode._files && dropNode._files.includes(dragNode)) {
+    return
+  }
+
+  // open a context menu asking for the action to take
+  const dropPath = dropNode.type === 'archive' ? '/' : dropNode._path
+  const action = await beaker.browser.showContextMenu([
+    {label: `Copy "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'copy'},
+    {label: `Move "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'move'}
+  ])
+  if (action === 'move') {
+    await dragNode.move(joinPath(dropNode._path || '/', dragNode.name))
+    await refreshAllNodes(root, opts) // reload the tree
+    redraw(root, null, opts) // redraw with no selected node
+  } else if (action === 'copy') {
+    alert('todo')
   }
 }
