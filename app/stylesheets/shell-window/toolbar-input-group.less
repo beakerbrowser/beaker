@@ -160,44 +160,6 @@
   .toolbar-site-info {
     height: 100%;
 
-    i,
-    .icon {
-      border-right: 1px solid #ddd;
-      display: block;
-      height: 12.25px;
-      margin: 5px 0;
-
-      &.padlock {
-
-        #top {
-          stroke: #3c943c;
-        }
-
-        #bottom {
-          fill: #3c943c;
-        }
-      }
-
-      &.fa-share-alt {
-        color: @blue;
-        font-size: 14.5px;
-      }
-
-      &.fa-exclamation-circle {
-        color: shade(@red, 20%) !important;
-      }
-    }
-
-    i {
-      margin-left: 10px;
-      margin-right: 0;
-      padding-right: 10px;
-
-      &.fa-window-maximize {
-        padding-right: 8px;
-      }
-    }
-
     button {
       display: flex;
       min-width: 0;
@@ -228,6 +190,43 @@
         border: 0;
         border-right: 1px solid #ddd;
         letter-spacing: -.2px;
+      }
+
+      i {
+        margin-left: 10px;
+        margin-right: 0;
+        padding-right: 10px;
+
+        &.fa-window-maximize {
+          padding-right: 8px;
+        }
+      }
+
+      i,
+      .icon {
+        border-right: 1px solid #ddd;
+        display: block;
+        height: 12.25px;
+
+        &.padlock {
+
+          #top {
+            stroke: #3c943c;
+          }
+
+          #bottom {
+            fill: #3c943c;
+          }
+        }
+
+        &.fa-share-alt {
+          color: @blue;
+          font-size: 14.5px;
+        }
+
+        &.fa-exclamation-circle {
+          color: shade(@red, 20%) !important;
+        }
       }
     }
 
