@@ -95,7 +95,7 @@ function rDirectory (root, node, selectedNode, depth, opts) {
     <div
       class="droptarget"
       ondragover=${onDragOver}
-      ondragenter=${e => onDragEnter(e, node)}
+      ondragenter=${e => onDragEnter(e, root, node, selectedNode, opts)}
       ondragleave=${onDragLeave}
       ondrop=${e => onDrop(e, root, node, opts)}
     >
@@ -393,10 +393,27 @@ function onDragStart (e, root, node, opts) {
   currentDragNode = node
 }
 
-function onDragEnter (e) {
+async function onDragEnter (e, root, node, selectedNode, opts) {
+  // add dragover class
   const target = findParent(e.target, 'droptarget')
   if (!target) return
   target.classList.add('dragover')
+
+  // expand on prolonged hover
+  if (!root) return
+  if (opts.expandedNodes.has(node._path)) return
+
+  // wait a moment
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  // still selected and not expanded?
+  if (!target.classList.contains('dragover')) return
+  if (opts.expandedNodes.has(node._path)) return
+
+  // expand
+  opts.expandedNodes.add(node._path)
+  await node.readData()
+  redraw(root, selectedNode, opts)
 }
 
 function onDragOver (e) {
