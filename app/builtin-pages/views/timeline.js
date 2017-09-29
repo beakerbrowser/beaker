@@ -30,6 +30,7 @@ var whoToFollow = []
 var isEditingPost
 var isEditingReply
 var isPopupOpen
+var unviewedPosts = []
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -55,6 +56,7 @@ async function setup () {
   currentUserProfile = await beaker.profiles.getCurrentUserProfile()
   currentUserProfile.isCurrentUser = true
   await loadViewedProfile()
+  await loadViewedPost()
   await loadFeedPosts()
 
   // render
@@ -68,6 +70,9 @@ async function setup () {
   window.addEventListener('popstate', loadViewedProfile)
   window.addEventListener('pushstate', loadViewedPost)
   window.addEventListener('popstate', loadViewedPost)
+
+  // fetch new posts every second
+  window.setInterval(fetchNewPosts, 1000)
 }
 
 async function parseURLKey () {
@@ -134,13 +139,42 @@ async function loadViewedPost () {
     const href = parseURLPostHref()
     if (href) {
       viewedPost = await beaker.timeline.getPost(href)
-      viewedPost.parents = []
-      fetchParent(viewedPost)
+      if (viewedPost) {
+        viewedPost.parents = []
+        fetchParent(viewedPost)
+      }
     }
     render()
   } catch (e) {
     console.error(e)
   }
+}
+
+async function fetchNewPosts () {
+  var query = {
+    limit: 1,
+    reverse: true,
+    rootPostsOnly: false
+  }
+
+  if (viewedProfile) {
+    query = Object.assign(query, {author: viewedProfile._origin})
+  }
+
+  let newestPost = await beaker.timeline.listPosts(query)
+  newestPost = newestPost[0]
+
+  if (newestPost && newestPost._url !== posts[0]._url) {
+    if ((unviewedPosts[0] && unviewedPosts[0]._url !== newestPost._url) || !unviewedPosts[0]) {
+      unviewedPosts.unshift(newestPost)
+      renderNewPostsLink()
+    }
+  }
+}
+
+async function loadNewPosts () {
+  await loadFeedPosts()
+  render()
 }
 
 async function fetchParent (p) {
@@ -189,6 +223,8 @@ function onClosePopup (e) {
     viewedPost = null
     window.removeEventListener('click', onClosePopup)
     window.removeEventListener('keydown', onClosePopup)
+    const url = viewedProfile._origin.slice('dat://'.length) || ''
+    history.pushState({}, null, 'beaker://timeline/' + url)
     render()
   }
 
@@ -405,6 +441,10 @@ function renderPopup () {
     <div class="popup-wrapper">
       <div class="popup-inner post-popup">
 
+        ${viewedPost.threadParent && !viewedPost.parents ? yo`
+          <div class="loading-container"><div class="spinner"></div></div>
+        `: ''}
+
         ${viewedPost.parents ? yo`
           <div class="parents">
             ${viewedPost.parents.map(renderReply)}
@@ -484,9 +524,19 @@ function renderTimeline () {
   return yo`
     <div class="feed">
       ${!posts.length ? yo`<div class="loading-container"><div class="spinner"></div></div>` : ''}
+      <div class="new-posts-indicator"></div>
       ${posts.map(renderPostFeedItem)}
     </div>
   `
+}
+
+function renderNewPostsLink () {
+  yo.update(
+    document.querySelector('.new-posts-indicator'),
+    yo`<div class="new-posts-indicator" onclick=${loadNewPosts}>
+      ${unviewedPosts.length} new ${pluralize(unviewedPosts.length, 'post')}
+    </div>`
+  )
 }
 
 function renderNewPostForm () {
