@@ -443,23 +443,42 @@ async function onDrop (e, root, dropNode, opts) {
   e.preventDefault()
   e.stopPropagation()
 
-  // do nothing if this is the dragged node's container
-  if (dropNode._files && dropNode._files.includes(dragNode)) {
-    return
+  // internal drag
+  if (dragNode) {
+    // do nothing if this is the dragged node's container
+    if (dropNode._files && dropNode._files.includes(dragNode)) {
+      return
+    }
+
+    // open a context menu asking for the action to take
+    const dropPath = dropNode.type === 'archive' ? '/' : dropNode._path
+    const action = await beaker.browser.showContextMenu([
+      {label: `Copy "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'copy'},
+      {label: `Move "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'move'}
+    ])
+    if (action === 'move') {
+      await dragNode.move(joinPath(dropNode._path || '/', dragNode.name))
+      await refreshAllNodes(root, opts) // reload the tree
+      redraw(root, null, opts) // redraw with no selected node
+    } else if (action === 'copy') {
+      await dragNode.copy(joinPath(dropNode._path || '/', dragNode.name))
+      await refreshAllNodes(root, opts) // reload the tree
+      redraw(root, null, opts) // redraw with no selected node
+    }
   }
 
-  // open a context menu asking for the action to take
-  const dropPath = dropNode.type === 'archive' ? '/' : dropNode._path
-  const action = await beaker.browser.showContextMenu([
-    {label: `Copy "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'copy'},
-    {label: `Move "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'move'}
-  ])
-  if (action === 'move') {
-    await dragNode.move(joinPath(dropNode._path || '/', dragNode.name))
-    await refreshAllNodes(root, opts) // reload the tree
-    redraw(root, null, opts) // redraw with no selected node
-  } else if (action === 'copy') {
-    await dragNode.copy(joinPath(dropNode._path || '/', dragNode.name))
+  // files dragged in from the OS
+  if (e.dataTransfer.files.length) {
+    console.log(e.dataTransfer.files)
+    console.log(dropNode)
+    await Promise.all(Array.from(e.dataTransfer.files).map(file => (
+      DatArchive.importFromFilesystem({
+        src: file.path,
+        dst: dropNode.url,
+        ignore: ['dat.json'],
+        inplaceImport: true
+      })
+    )))
     await refreshAllNodes(root, opts) // reload the tree
     redraw(root, null, opts) // redraw with no selected node
   }
