@@ -42,11 +42,14 @@ export function setup (cb) {
 }
 
 function onWindowEvent (event, type) {
-  if (type == 'blur') { document.body.classList.add('window-blurred') }
-  if (type == 'focus') {
-    document.body.classList.remove('window-blurred')
-    try { pages.getActive().webviewEl.focus() } catch (e) {}
+  switch (type) {
+    case 'blur': return document.body.classList.add('window-blurred')
+    case 'focus':
+      document.body.classList.remove('window-blurred')
+      try { pages.getActive().webviewEl.focus() } catch (e) {}
+      break
+    case 'enter-full-screen': return document.body.classList.add('fullscreen')
+    case 'leave-full-screen': return document.body.classList.remove('fullscreen') 
   }
-  if (type == 'enter-full-screen') { document.body.classList.add('fullscreen') }
-  if (type == 'leave-full-screen') { document.body.classList.remove('fullscreen') }
 }
+
