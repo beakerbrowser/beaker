@@ -190,6 +190,8 @@ function onClosePopup (e) {
     viewedPost = null
     window.removeEventListener('click', onClosePopup)
     window.removeEventListener('keydown', onClosePopup)
+    const url = viewedProfile._origin.slice('dat://'.length) || ''
+    history.pushState({}, null, 'beaker://timeline/' + url)
     render()
   }
 
