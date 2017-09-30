@@ -1,4 +1,4 @@
-export default {
+const APP_PERMS_DESC = {
   profiles: {
     label: 'Your Profile',
     perms: {
@@ -22,4 +22,15 @@ export default {
       vote: 'Like posts on your timeline.'
     }
   }
+}
+export default APP_PERMS_DESC
+
+// helper to get the object containing all granted perms
+// eg {profiles: ['read', 'edit-profile', 'edit-social'], ...}
+export function getFullGranted () {
+  var obj = {}
+  for (let api in APP_PERMS_DESC) {
+    obj[api] = Object.keys(APP_PERMS_DESC[api].perms)
+  }
+  return obj
 }

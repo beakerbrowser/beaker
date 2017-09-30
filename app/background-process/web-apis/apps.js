@@ -6,6 +6,7 @@ import * as sitedataDb from '../dbs/sitedata'
 import {showModal} from '../ui/modals'
 import {getWebContentsWindow} from '../../lib/electron'
 import {DAT_HASH_REGEX} from '../../lib/const'
+import {getFullGranted} from '../../lib/app-perms'
 import {PermissionsError, InvalidURLError} from 'beaker-error-constants'
 
 // exported api
@@ -25,7 +26,13 @@ export default {
   async bind (profileId, name, url) {
     assertBeakerOnly(this.sender)
     assertValidBinding(url)
-    await sitedataDb.setAppPermissions(`app://${name}`, null) // clear old perms
+
+    // TEMP
+    // any binding made manually with bind() is given full perms
+    // when permissions become session-based, this should be removed
+    // -prf
+    await sitedataDb.setAppPermissions(`app://${name}`, getFullGranted())
+
     return appsDb.bind(profileId, name, url)
   },
 
@@ -42,7 +49,7 @@ export default {
         await archivesDb.setUserSettings(0, urlp.host, {isSaved: false})
       }
     }
-    
+
     return appsDb.unbind(profileId, name)
   },
 
