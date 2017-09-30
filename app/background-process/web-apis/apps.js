@@ -23,6 +23,7 @@ export default {
   async bind (profileId, name, url) {
     assertBeakerOnly(this.sender)
     assertValidBinding(url)
+    await sitedataDb.setAppPermissions(`app://${name}`, {})
     return appsDb.bind(profileId, name, url)
   },
 
