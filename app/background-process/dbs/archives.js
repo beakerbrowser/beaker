@@ -152,10 +152,15 @@ export async function listGarbageCollectableArchives ({olderThan} = {}) {
 
 // upsert the last-access time
 export async function touch (key) {
-  var now = Date.now()
-  key = datEncoding.toStr(key)
-  await db.run(`UPDATE archives_meta SET lastAccessTime=? WHERE key=?`, [now, key])
-  await db.run(`INSERT OR IGNORE INTO archives_meta (key, lastAccessTime) VALUES (?, ?)`, [key, now])
+  var release = await lock('archives-db:meta')
+  try {
+    var now = Date.now()
+    key = datEncoding.toStr(key)
+    await db.run(`UPDATE archives_meta SET lastAccessTime=? WHERE key=?`, [now, key])
+    await db.run(`INSERT OR IGNORE INTO archives_meta (key, lastAccessTime) VALUES (?, ?)`, [key, now])
+  } finally {
+    release()
+  }
 }
 
 // get a single archive's user settings
@@ -298,13 +303,14 @@ export async function setMeta (key, value = {}) {
   isOwner = flag(isOwner)
 
   // write
-  var release = await lock('archives-db:setMeta')
+  var release = await lock('archives-db:meta')
+  var {lastAccessTime} = await getMeta(key)
   try {
     await db.run(`
       INSERT OR REPLACE INTO
-        archives_meta (key, title, description, mtime, isOwner)
-        VALUES        (?,   ?,     ?,           ?,     ?)
-    `, [key, title, description, mtime, isOwner])
+        archives_meta (key, title, description, mtime, isOwner, lastAccessTime)
+        VALUES        (?,   ?,     ?,           ?,     ?,       ?)
+    `, [key, title, description, mtime, isOwner, lastAccessTime])
     db.run(`DELETE FROM archives_meta_type WHERE key=?`, key)
     if (type) {
       await Promise.all(type.map(t => (
