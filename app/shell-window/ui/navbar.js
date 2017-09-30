@@ -273,18 +273,19 @@ function render (id, page) {
             <span class="fa fa-download"></span> Install Application
           </button>`
         )
-      } else {
-        let appName = page.siteInfo.installedNames[0]
-        datBtns.unshift(
-          yo`<button
-            class="callout"
-            title="Goto the application"
-            onclick=${e => onClickGotoAppVersion(e, appName)}
-          >
-            Installed at app://${appName}
-          </button>`
-        )
-      }
+      } 
+    }
+    if (page.isInstalledApp()) {
+      let appName = page.siteInfo.installedNames[0]
+      datBtns.unshift(
+        yo`<button
+          class="callout"
+          title="Goto the application"
+          onclick=${e => onClickGotoAppVersion(e, appName)}
+        >
+          Installed at app://${appName}
+        </button>`
+      )
     }
   } else if (siteHasDatAlternative) {
     datBtns = [

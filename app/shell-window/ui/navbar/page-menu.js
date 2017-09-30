@@ -21,6 +21,8 @@ export class PageMenuNavbarBtn {
       return ''
     }
     const isInstalledApp = page.isInstalledApp()
+    const isDat = !!page.getViewedDatOrigin()
+    const isAppScheme = page.protocolInfo.scheme === 'app:'
 
     // render the dropdown if open
     var dropdownEl = ''
@@ -53,31 +55,42 @@ export class PageMenuNavbarBtn {
                 ${openwithSublist}
               </div>
               <hr />*/}
-              <div class="list-item" onclick=${() => this.onClickInstall()}>
-                <i class=${!isInstalledApp ? 'fa fa-download' : 'fa fa-wrench'}></i>
-                ${!isInstalledApp ? 'Install as an app' : 'Configure this app'}
-              </div>
-              ${isInstalledApp ?
-                yo`
-                  <div class="list-item" onclick=${() => this.onClickUninstall()}>
-                    <i class="fa fa-trash-o"></i>
-                    Uninstall this app
-                  </div>
-                `
-                : ''}
-              <hr />
-              <div class="list-item" onclick=${() => this.onClickOpenwithLibrary()}>
-                <i class="fa fa-files-o"></i>
-                View files
-              </div>
-              <div class="list-item" onclick=${() => this.onClickFork()}>
-                <i class="fa fa-code-fork"></i>
-                Fork this site
-              </div>
-              <div class="list-item" onclick=${() => this.onClickDownloadZip()}>
-                <i class="fa fa-file-archive-o"></i>
-                Download as .zip
-              </div>
+              ${isAppScheme ? yo`<div>
+                <div class="list-item" onclick=${() => isDat ? this.onClickInstall() : this.onClickEditSettings()}>
+                  <i class="fa fa-wrench"></i>
+                  Configure this app
+                </div>
+                ${isInstalledApp ?
+                  yo`
+                    <div class="list-item" onclick=${() => this.onClickUninstall()}>
+                      <i class="fa fa-trash-o"></i>
+                      Uninstall this app
+                    </div>
+                  `
+                  : ''}
+              </div>` : ''}
+              ${isAppScheme && isDat ? yo`<hr />` : ''}
+              ${isDat ? yo`<div>
+                <div class="list-item" onclick=${() => this.onClickOpenwithLibrary()}>
+                  <i class="fa fa-files-o"></i>
+                  View files
+                </div>
+                <div class="list-item" onclick=${() => this.onClickFork()}>
+                  <i class="fa fa-code-fork"></i>
+                  Fork this site
+                </div>
+                <div class="list-item" onclick=${() => this.onClickDownloadZip()}>
+                  <i class="fa fa-file-archive-o"></i>
+                  Download as .zip
+                </div>
+              </div>` : ''}
+              ${isDat && !isInstalledApp ? yo`<div>
+                <hr />
+                <div class="list-item" onclick=${() => this.onClickInstall()}>
+                  <i class="fa fa-download"></i>
+                  Install as an app
+                </div>
+              </div>` : ''}
             </div>
           </div>
         </div>`
@@ -144,6 +157,11 @@ export class PageMenuNavbarBtn {
     if (res && res.name) {
       page.loadURL(`app://${res.name}`)
     }
+  }
+
+  async onClickEditSettings () {
+    this.close()
+    pages.setActive(pages.create('beaker://settings'))
   }
 
   async onClickUninstall () {
