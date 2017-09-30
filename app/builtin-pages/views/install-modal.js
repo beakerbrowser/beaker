@@ -1,5 +1,6 @@
 import yo from 'yo-yo'
 import slugify from 'slugify'
+import bytes from 'bytes'
 import segmentedProgressBar from '../com/segmented-progress-bar'
 import APIS from '../../lib/app-perms'
 
@@ -173,6 +174,7 @@ function renderAppInfoPage () {
         <tr><td>Title:</td><td>${targetAppInfo.title || '-'}</td></tr>
         <tr><td>Description:</td><td>${targetAppInfo.description|| '-'}</td></tr>
         <tr><td>Author:</td><td>${targetAppInfo.author|| '-'}</td></tr>
+        <tr><td>Size:</td><td>${targetAppInfo.size|| '-'}</td></tr>
       </table>
     </div>
   `
@@ -290,6 +292,7 @@ async function getTargetAppInfo (url) {
     title: toString(manifest.title),
     description: toString(manifest.description),
     author: toAuthorName(manifest.author),
+    size: toByteSize(info.size),
     name: toSlug(manifest.app.name),
     requestedPermissions: toPermsObject(manifest.app.permissions),
     assignedPermissions: assignedPermissions || {}
@@ -309,6 +312,13 @@ async function getCurrentApp () {
 
 function toString (v) {
   return v && typeof v === 'string' ? v : false
+}
+
+function toByteSize (v) {
+  if (typeof v === 'number' && v >= 0) {
+    return bytes(v)
+  }
+  return ''
 }
 
 function toSlug (v) {
