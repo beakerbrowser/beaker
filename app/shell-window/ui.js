@@ -49,7 +49,8 @@ function onWindowEvent (event, type) {
       try { pages.getActive().webviewEl.focus() } catch (e) {}
       break
     case 'enter-full-screen': return document.body.classList.add('fullscreen')
-    case 'leave-full-screen': return document.body.classList.remove('fullscreen') 
+    case 'leave-full-screen': return document.body.classList.remove('fullscreen')
+    case 'leave-page-full-screen': pages.leavePageFullScreen()
   }
 }
 

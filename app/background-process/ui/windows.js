@@ -81,6 +81,7 @@ export function createShellWindow () {
     titleBarStyle: 'hidden-inset',
     autoHideMenuBar: true,
     fullscreenable: true,
+    fullscreenWindowTitle: true,
     x,
     y,
     width,
@@ -286,7 +287,7 @@ function onCloseTab (win) {
 }
 
 function onEscape (win) {
-  return () => win.webContents.send('window-event', 'leave-full-screen')
+  return () => win.webContents.send('window-event', 'leave-page-full-screen')
 }
 
 // window event handlers

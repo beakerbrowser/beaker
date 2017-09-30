@@ -9,6 +9,7 @@ import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as promptbar from './ui/promptbar'
 import * as statusBar from './ui/statusbar'
+import * as toast from './ui/toast.js'
 import {urlsToData} from '../lib/fg/img'
 import {throttle} from '../lib/functions'
 import errorPage from '../lib/error-page'
@@ -315,6 +316,8 @@ export function create (opts) {
   page.webviewEl.addEventListener('page-title-updated', onPageTitleUpdated)
   page.webviewEl.addEventListener('update-target-url', onUpdateTargetUrl)
   page.webviewEl.addEventListener('found-in-page', onFoundInPage)
+  page.webviewEl.addEventListener('enter-html-full-screen',onEnterHtmlFullScreen)
+  page.webviewEl.addEventListener('leave-html-full-screen',onLeaveHtmlFullScreen)
   page.webviewEl.addEventListener('close', onClose)
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
@@ -377,6 +380,7 @@ export function reopenLastRemoved () {
 }
 
 export function setActive (page) {
+  leavePageFullScreen()
   if (activePage) {
     hide(activePage)
     activePage.isActive = false
@@ -502,6 +506,17 @@ export function loadPinnedFromDB () {
 
 export function savePinnedToDB () {
   return beaker.browser.setSetting('pinned-tabs', JSON.stringify(getPinned().map(p => p.getURL())))
+}
+
+export function leavePageFullScreen () {
+  // go through each active page and tell it to leave fullscreen mode (if it's active)
+  if (document.body.classList.contains('page-fullscreen')) {
+    pages.forEach(p => {
+      if (p.isWebviewReady) {
+        p.webviewEl.getWebContents().send('exit-full-screen-hackfix')
+      }
+    })
+  }
 }
 
 // event handlers
@@ -848,6 +863,15 @@ function onFoundInPage (e) {
   var page = getByWebview(e.target)
   page.inpageFindInfo = e.result
   navbar.update(page)
+}
+
+function onEnterHtmlFullScreen (e) {
+  document.body.classList.add('page-fullscreen')
+  toast.create('Press ESC to exit fullscreen', 10e3) // show for 10 seconds
+}
+
+function onLeaveHtmlFullScreen (e) {
+  document.body.classList.remove('page-fullscreen')
 }
 
 function onClose (e) {
