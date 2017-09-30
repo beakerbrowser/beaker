@@ -87,6 +87,7 @@ test('install flow', async t => {
 
   // fetch & test the res
   await app.client.windowByIndex(0)
+  await app.client.pause(100)
   await app.client.waitUntil(() => app.client.execute(() => { return window.res !== 'running...' }), 5e3)
   var res = await app.client.execute(() => { return window.res })
   t.deepEqual(res.value, {
