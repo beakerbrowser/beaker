@@ -79,7 +79,6 @@ export class DatsiteMenuNavbarBtn {
       ? yo`<span>Rehosting (${timeRemaining.humanize()} remaining)</span>`
       : TIMELENS[sliderState]()
     const size = (page && page.siteInfo && page.siteInfo.size) ? bytes(page.siteInfo.size, 'mb') : ''
-    console.log(page.siteInfo)
 
     // render the dropdown if open
     return yo`
