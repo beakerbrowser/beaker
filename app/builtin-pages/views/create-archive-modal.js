@@ -111,7 +111,7 @@ function render () {
             <input autofocus name="title" tabindex="2" value=${title || ''} placeholder="Title" onchange=${onChangeTitle} />
 
             <label for="desc">Description</label>
-            <input name="desc" tabindex="3" placeholder="Description (optional)" onchange=${onChangeDescription} value=${description || ''} />
+            <textarea name="desc" tabindex="3" placeholder="Description (optional)" onchange=${onChangeDescription}>${description || ''}></textarea>
 
             <div class="form-actions">
               <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
