@@ -57,7 +57,8 @@ export class DatsiteMenuNavbarBtn {
     // calculate the current state
     const isSaved = page.siteInfo.userSettings.isSaved
     const expiresAt = page.siteInfo.userSettings.expiresAt
-    const timeRemaining = (expiresAt && expiresAt > Date.now()) ? moment.duration(expiresAt - Date.now()) : null
+    const now = Date.now()
+    const timeRemaining = (isSaved && expiresAt && expiresAt > now) ? moment.duration(expiresAt - now) : null
     var currentSetting
     if (!isSaved) currentSetting = NOT
     else if (!expiresAt) currentSetting = FOREVER
