@@ -1,4 +1,4 @@
-/* globals beaker */
+/* globals beaker localStorage */
 
 const yo = require('yo-yo')
 import {getHostname} from '../../lib/strings'
@@ -116,7 +116,6 @@ function sortBookmarks () {
 // rendering
 // =
 
-
 function renderRow (row, i) {
   if (row.isHidden) {
     return ''
@@ -137,7 +136,7 @@ function renderRowCompact (row, i) {
   return yo`
     <li class="ll-row bookmarks__row compact ${row.private ? 'private' : 'public'} ${isOwner ? 'is-owner' : ''}" data-row=${i}>
       <a class="link bookmark__link" href=${row.href} title=${row.title} />
-        ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : '' }
+        ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : ''}
         <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
         <span class="title bookmark__title">
           ${row.title.startsWith('dat://')
@@ -166,7 +165,7 @@ function renderRowExpanded (row, i) {
   return yo`
     <li class="ll-row bookmarks__row expanded" data-row=${i}>
       <a class="link bookmark__link" href=${row.href} title=${row.title} />
-        ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : '' }
+        ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : ''}
 
         <span class="header">
           <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
@@ -185,7 +184,7 @@ function renderRowExpanded (row, i) {
         <div class="tags ${row.tags.length ? '' : 'empty'}">
           ${row.tags.map(t => {
             const view = `tag:${t}`
-            return yo`<span onclick=${(e) => {e.stopPropagation(); e.preventDefault(); onUpdateViewFilter(view);}} class="tag">${t}</span>`
+            return yo`<span onclick=${(e) => { e.stopPropagation(); e.preventDefault(); onUpdateViewFilter(view) }} class="tag">${t}</span>`
           })}
         </div>
 
@@ -202,7 +201,7 @@ function renderRowGrid (row, i) {
   return yo`
     <li class="ll-row bookmarks__row grid" data-row=${i}>
       <a class="link bookmark__link" href=${row.href} title=${row.title} />
-        ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : '' }
+        ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : ''}
 
         <span class="header">
           <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
@@ -223,7 +222,7 @@ function renderRowGrid (row, i) {
         <div class="tags ${row.tags.length ? '' : 'empty'}">
           ${row.tags.map(t => {
             const view = `tag:${t}`
-            return yo`<span onclick=${(e) => {e.stopPropagation(); e.preventDefault(); onUpdateViewFilter(view);}} class="tag">${t}</span>`
+            return yo`<span onclick=${(e) => { e.stopPropagation(); e.preventDefault(); onUpdateViewFilter(view) }} class="tag">${t}</span>`
           })}
         </div>
       </a>
@@ -517,15 +516,4 @@ function onClickDelete (i) {
     }
     renderToPage()
   }
-}
-
-// internal helpers
-// =
-
-function findUsernameFor (origin) {
-  if (!followedUserProfiles) return ''
-  if (origin === userProfile._origin) return 'You'
-  var p = followedUserProfiles.find(p => p._origin === origin)
-  if (p) return p.name
-  return ''
 }

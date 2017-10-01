@@ -1,3 +1,5 @@
+/* globals beaker DatArchive */
+
 import yo from 'yo-yo'
 import slugify from 'slugify'
 import bytes from 'bytes'
@@ -284,7 +286,7 @@ async function getTargetAppInfo (url) {
   const assignedPermissions = isInstalled
     ? await beaker.sitedata.getAppPermissions(`app://${info.installedNames[0]}`)
     : {}
-  
+
   return {
     url,
     info,

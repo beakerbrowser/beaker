@@ -1,4 +1,4 @@
-/* globals Event DatArchive beaker */
+/* globals DatArchive beaker */
 
 import * as yo from 'yo-yo'
 import mime from 'mime'
@@ -6,7 +6,6 @@ import mime from 'mime'
 // globals
 // =
 
-var archive
 var filePath = ''
 var fileContent = false
 
@@ -60,7 +59,7 @@ async function setup () {
         filePath = target.path
       } catch (err) {
         console.error(err)
-        fileContent = e.toString()
+        fileContent = err.toString()
       }
     }
   }

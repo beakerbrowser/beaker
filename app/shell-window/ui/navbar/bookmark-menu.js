@@ -1,4 +1,4 @@
-/* globals beaker.browser */
+/* globals beaker */
 
 import * as yo from 'yo-yo'
 import {findParent} from '../../../lib/fg/event-handlers'
@@ -44,7 +44,7 @@ export class BookmarkMenuNavbarBtn {
 
               <div class="input-group tags">
                 <label>Tags:</label>
-                <input type="text" placeholder="Separate with spaces" name="tags" onfocus=${e => this.moveCursorToEnd(e)} value=${this.values.tags} onkeydown=${e => this.onPreventTab(e)} onkeyup=${e => this.onChangeTags(e)} onblur=${() => this.tagsAutocompleteResults=null}/>
+                <input type="text" placeholder="Separate with spaces" name="tags" onfocus=${e => this.moveCursorToEnd(e)} value=${this.values.tags} onkeydown=${e => this.onPreventTab(e)} onkeyup=${e => this.onChangeTags(e)} onblur=${() => { this.tagsAutocompleteResults=null }}/>
                 ${this.tagsAutocompleteResults ? yo`
                   <div class="autocomplete-results">
                     ${this.tagsAutocompleteResults.map((t, i) => yo`<div onclick=${e => this.onClickAutocompleteTag(e)} class="result ${i === this.tagsAutocompleteIdx ? 'selected' : ''}">${t}`)}

@@ -3,9 +3,7 @@
 import os from 'os'
 import * as yo from 'yo-yo'
 import {ipcRenderer} from 'electron'
-import prettyBytes from 'pretty-bytes'
 import { showInpageFind } from '../navbar'
-import { ucfirst } from '../../../lib/strings'
 import { findParent } from '../../../lib/fg/event-handlers'
 import * as pages from '../../pages'
 
@@ -52,15 +50,12 @@ export class BrowserMenuNavbarBtn {
   render () {
     // show active, then inactive, with a limit of 5 items
     var progressingDownloads = this.downloads.filter(d => d.state == 'progressing').reverse()
-    var activeDownloads = (progressingDownloads.concat(this.downloads.filter(d => d.state != 'progressing').reverse())).slice(0, 5)
 
     // render the progress bar if downloading anything
     var progressEl = ''
     if (progressingDownloads.length > 0 && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
       progressEl = yo`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
     }
-
-    var downloadsIndicator = ''
 
     // auto-updater
     var autoUpdaterEl = ''
@@ -129,7 +124,7 @@ export class BrowserMenuNavbarBtn {
                 <span class="label">Beaker Filesystem</span>
               </div>
 
-              <div class="menu-item downloads" style=${progressEl ? "height: 41px" : ''} onclick=${e => this.onClickDownloads(e)}>
+              <div class="menu-item downloads" style=${progressEl ? 'height: 41px' : ''} onclick=${e => this.onClickDownloads(e)}>
                 <i class="fa fa-download"></i>
                 <span class="label">Downloads</span>
                 ${this.shouldPersistDownloadsIndicator ? yo`<i class="fa fa-circle"></i>` : ''}

@@ -1,4 +1,4 @@
-/* globals Event beaker DatArchive history confirm */
+/* globals beaker DatArchive */
 
 import * as yo from 'yo-yo'
 import {STANDARD_ARCHIVE_TYPES} from '../../lib/const'
@@ -65,16 +65,20 @@ async function onContextMenu (e) {
   e.stopPropagation()
 
   const action = await beaker.browser.showContextMenu([
-    {type: 'submenu', label: 'New archive...', submenu: [
-      {label: 'Application', id: 'new-application'},
-      {label: 'Code module', id: 'new-module'},
-      {label: 'Dataset', id: 'new-dataset'},
-      {label: 'Documents', id: 'new-documents'},
-      {label: 'Music', id: 'new-music'},
-      {label: 'Photos', id: 'new-photos'},
-      {label: 'Videos', id: 'new-videos'},
-      {label: 'Website', id: 'new-website'}
-    ]}
+    {
+      type: 'submenu',
+      label: 'New archive...',
+      submenu: [
+        {label: 'Application', id: 'new-application'},
+        {label: 'Code module', id: 'new-module'},
+        {label: 'Dataset', id: 'new-dataset'},
+        {label: 'Documents', id: 'new-documents'},
+        {label: 'Music', id: 'new-music'},
+        {label: 'Photos', id: 'new-photos'},
+        {label: 'Videos', id: 'new-videos'},
+        {label: 'Website', id: 'new-website'}
+      ]
+    }
   ])
   if (action && action.startsWith('new')) {
     var archive = await DatArchive.create({prompt: true, type: action.slice('new-'.length)})

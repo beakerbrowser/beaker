@@ -53,4 +53,3 @@ function onWindowEvent (event, type) {
     case 'leave-page-full-screen': pages.leavePageFullScreen()
   }
 }
-

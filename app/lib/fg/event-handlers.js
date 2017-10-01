@@ -1,3 +1,5 @@
+/* globals Event */
+
 import * as yo from 'yo-yo'
 
 export function pushUrl (e) {

@@ -12,7 +12,6 @@ import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
 import {SiteInfoNavbarBtn} from './navbar/site-info'
 import {findParent} from '../../lib/fg/event-handlers'
-import {pluralize} from '../../lib/strings'
 import renderNavArrowIcon from './icon/nav-arrow'
 import renderRefreshIcon from './icon/refresh'
 import renderCloseIcon from './icon/close'
@@ -78,7 +77,6 @@ export function focusLocation (page) {
   var el = page.navbarEl.querySelector('.nav-location-input')
 
   // the container el which has :focus styles applied
-  var containerEl = page.navbarEl.querySelector('.toolbar-input-group')
   el.classList.remove('hidden')
   el.focus()
   isLocationHighlighted = true
@@ -273,7 +271,7 @@ function render (id, page) {
             <span class="fa fa-download"></span> Install Application
           </button>`
         )
-      } 
+      }
     }
     if (page.isInstalledApp()) {
       let appName = page.siteInfo.installedNames[0]

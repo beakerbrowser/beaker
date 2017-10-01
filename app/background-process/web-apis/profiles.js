@@ -67,7 +67,7 @@ export default {
     assertBuffer(imgData, 'Parameter one must be an ArrayBuffer or base64-encoded string')
     assertString(imgExtension, 'Parameter two must be a string')
     var profileRecord = await getProfileRecord(0)
-    imgData = typeof imgData === 'string' ? new Buffer(imgData, 'base64') : imgData
+    imgData = typeof imgData === 'string' ? Buffer.from(imgData, 'base64') : imgData
     await getAPI().setAvatar(profileRecord.url, imgData, imgExtension)
   },
 
@@ -172,7 +172,7 @@ function assertObject (v, msg) {
 function assertBuffer (v, msg) {
   if (v && typeof v === 'string') {
     try {
-      v = new Buffer(v, 'base64')
+      v = Buffer.from(v, 'base64')
     } catch (e) {
       throw new Error(msg)
     }

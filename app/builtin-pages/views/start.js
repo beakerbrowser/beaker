@@ -1,15 +1,9 @@
-/* globals beaker DatArchive Image */
+/* globals beaker */
 
 import * as yo from 'yo-yo'
-import {ArchivesList} from 'builtin-pages-lib'
-import ColorThief from '../../lib/fg/color-thief'
-import {findParent} from '../../lib/fg/event-handlers'
-import {pluralize} from '../../lib/strings'
 import renderSidebar from '../com/sidebar'
 import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
 import renderCloseIcon from '../icon/close'
-
-const colorThief = new ColorThief()
 
 const LATEST_VERSION = 7005 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const WELCOME_URL = 'https://beakerbrowser.com/docs/using-beaker/'
@@ -38,7 +32,6 @@ async function setup () {
       } else {
         window.open(RELEASE_NOTES_URL)
       }
-      return
     }
   }
 }
@@ -118,25 +111,4 @@ function renderPinnedBookmark (bookmark) {
 
 async function loadBookmarks () {
   pinnedBookmarks = (await beaker.bookmarks.listPinnedBookmarks()) || []
-}
-
-function attachDominantColor (bookmark) {
-  return new Promise(resolve => {
-    var img = new Image()
-    img.setAttribute('crossOrigin', 'anonymous')
-    img.onload = e => {
-      var c = colorThief.getColor(img, 10)
-      // c[0] = (c[0] / 4) | 0 + 192
-      // c[1] = (c[1] / 4) | 0 + 192
-      // c[2] = (c[2] / 4) | 0 + 192
-      bookmark.dominantColor = c
-      resolve()
-    }
-    img.onerror = resolve
-    img.src = 'beaker-favicon:' + bookmark.href
-  })
-}
-
-function niceName (archiveInfo) {
-  return (archiveInfo.title || '').trim() || 'Untitled'
 }

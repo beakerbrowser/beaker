@@ -1,6 +1,4 @@
 import yo from 'yo-yo'
-import * as toast from './toast'
-import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 const CANVAS_SIZE = 256
 
@@ -25,7 +23,6 @@ var minzoom
 var img
 var imgWidth
 var imgHeight
-
 
 // exported api
 // =

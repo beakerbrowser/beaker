@@ -1,4 +1,4 @@
-/* globals beaker DatArchive beaker.browser */
+/* globals beaker DatArchive confirm */
 
 import * as yo from 'yo-yo'
 import {findParent} from '../../../lib/fg/event-handlers'
@@ -17,7 +17,7 @@ export class PageMenuNavbarBtn {
 
   render () {
     const page = pages.getActive()
-    if (!page || !page.protocolInfo || ['dat:','app:'].includes(page.protocolInfo.scheme) === false) {
+    if (!page || !page.protocolInfo || ['dat:', 'app:'].includes(page.protocolInfo.scheme) === false) {
       return ''
     }
     const isInstalledApp = page.isInstalledApp()
@@ -27,7 +27,7 @@ export class PageMenuNavbarBtn {
     // render the dropdown if open
     var dropdownEl = ''
     if (this.isDropdownOpen) {
-      var openwithSublist
+      /*var openwithSublist TODO restore if/when needed
       if (this.isOpenwithOpen) {
         openwithSublist = yo`
           <div class="dropdown-items sublist">
@@ -38,7 +38,7 @@ export class PageMenuNavbarBtn {
             </div>
           </div>
         `
-      }
+      } */
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle">
@@ -54,7 +54,7 @@ export class PageMenuNavbarBtn {
                 <i class="fa fa-caret-right"></i>
                 ${openwithSublist}
               </div>
-              <hr />*/}
+              <hr /> */}
               ${isAppScheme ? yo`<div>
                 <div class="list-item" onclick=${() => isDat ? this.onClickInstall() : this.onClickEditSettings()}>
                   <i class="fa fa-wrench"></i>
@@ -174,7 +174,7 @@ export class PageMenuNavbarBtn {
       return
     }
     const name = page.protocolInfo.hostname
-    const res = await beaker.apps.unbind(0, name)
+    await beaker.apps.unbind(0, name)
     const datUrl = page.getViewedDatOrigin()
     page.loadURL(datUrl || 'beaker://start/')
   }

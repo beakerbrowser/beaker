@@ -106,7 +106,7 @@ export default {
   },
 
   async unlinkArchive (url) {
-    var {archive, filepath} = await lookupArchive(url)
+    var {archive} = await lookupArchive(url)
     await assertDeleteArchivePermission(archive, this.sender)
     await assertArchiveDeletable(archive)
     await archivesDb.setUserSettings(0, archive.key, {isSaved: false})
@@ -149,7 +149,7 @@ export default {
   },
 
   async configure (url, settings, opts) {
-    var {archive, filepath, version} = await lookupArchive(url, opts)
+    var {archive, version} = await lookupArchive(url, opts)
     if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
     if (!settings || typeof settings !== 'object') throw new Error('Invalid argument')
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
@@ -163,14 +163,14 @@ export default {
       if (settings.networked === false) {
         await assertArchiveOfflineable(archive)
       }
-      await archivesDb.setUserSettings(0, archive.key, {networked: settings.networked})      
+      await archivesDb.setUserSettings(0, archive.key, {networked: settings.networked})
     }
   },
 
   async history (url, opts = {}) {
     var reverse = opts.reverse === true
     var {start, end} = opts
-    var {archive, version} = await lookupArchive(url, opts)
+    var {archive} = await lookupArchive(url, opts)
 
     // if reversing the output, modify start/end
     start = start || 0
@@ -226,7 +226,7 @@ export default {
     return pda.unlink(archive, filepath)
   },
 
-  async copy(url, dstPath) {
+  async copy (url, dstPath) {
     return timer(to(), async (checkin) => {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
@@ -240,12 +240,11 @@ export default {
     })
   },
 
-  async rename(url, dstpath) {
+  async rename (url, dstpath) {
     return timer(to(), async (checkin) => {
       checkin('searching for archive')
       var {archive, filepath} = await lookupArchive(url)
       if (checkin('renaming file')) return
-      var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
       await assertValidFilePath(dstpath)
       await assertUnprotectedFilePath(filepath, this.sender)
@@ -486,7 +485,7 @@ async function assertArchiveOfflineable (archive) {
   var profileRecord = await getProfileRecord(0)
   if ('dat://' + archive.key.toString('hex') === profileRecord.url) {
     throw new PermissionsError('Unable to set the user archive to offline.')
-  }  
+  }
 }
 
 async function assertArchiveDeletable (archive) {

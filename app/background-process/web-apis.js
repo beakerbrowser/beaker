@@ -1,4 +1,3 @@
-import {ipcMain} from 'electron'
 import rpc from 'pauls-electron-rpc'
 import {internalOnly, secureOnly} from '../lib/bg/rpc'
 

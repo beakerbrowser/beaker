@@ -1,5 +1,6 @@
-const yo = require('yo-yo')
-const co = require('co')
+/* globals beaker FileReader DatArchive Event history */
+
+import yo from 'yo-yo'
 import renderSidebar from '../com/sidebar'
 import * as cropPopup from '../com/crop-popup'
 import renderPencilIcon from '../icon/pencil'
@@ -10,7 +11,6 @@ import imgWithFallbacks from '../com/img-with-fallbacks'
 
 var currentUserProfile
 var viewedProfile
-var isEditingProfile
 var tmpAvatar
 var currentView
 var bookmarks
@@ -62,7 +62,6 @@ async function parseURLKey () {
 
 async function loadViewedProfile () {
   // reset state
-  isEditingProfile = false
   tmpAvatar = undefined
 
   try {
@@ -90,7 +89,6 @@ async function loadViewedProfile () {
     // TODO
     console.error(e)
   }
-
 }
 
 async function loadBookmarks () {

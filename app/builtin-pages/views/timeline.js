@@ -1,9 +1,10 @@
-const yo = require('yo-yo')
-const co = require('co')
+/* globals beaker DatArchive Event history FileReader */
+
+import yo from 'yo-yo'
 import moment from 'moment'
 import renderSidebar from '../com/sidebar'
-import renderPencilIcon from '../icon/pencil'
-import renderFilesIcon from'../icon/filesystem'
+import * as cropPopup from '../com/crop-popup'
+import renderFilesIcon from '../icon/filesystem'
 import renderHeartIcon from '../icon/heart'
 import renderRepliesIcon from '../icon/replies'
 import imgWithFallbacks from '../com/img-with-fallbacks'
@@ -29,8 +30,8 @@ var posts = []
 var whoToFollow = []
 var isEditingPost
 var isEditingReply
-var isPopupOpen
 var unviewedPosts = []
+var tmpAvatar
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -64,7 +65,7 @@ async function setup () {
 
   // load who to follow data then re-render
   await loadWhoToFollow()
-  render ()
+  render()
 
   window.addEventListener('pushstate', loadViewedProfile)
   window.addEventListener('popstate', loadViewedProfile)
@@ -436,7 +437,6 @@ function renderPopup () {
   window.addEventListener('keydown', onClosePopup)
 
   const editingCls = isEditingReply ? 'editing' : ''
-  const isReply = viewedPost.threadParent
   return yo`
     <div class="popup-wrapper">
       <div class="popup-inner post-popup">
@@ -623,7 +623,7 @@ function renderPostActions (p) {
           <span class="count">
             ${p.replies.length}
           </span>`
-        : '' }
+        : ''}
       </div>
 
       <div class="action ${p.votes.currentUsersVote ? 'voted' : ''}">

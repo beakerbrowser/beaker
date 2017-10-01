@@ -1,7 +1,7 @@
 import * as yo from 'yo-yo'
 import renderDotsIcon from '../icon/three-dots'
 import renderTrashIcon from '../icon/trash'
-import toggleable, {closeAllToggleables} from '../com/toggleable'
+import toggleable from '../com/toggleable'
 
 // exported api
 // =
@@ -11,21 +11,17 @@ export default function render (root) {
   if (!archiveInfo) return yo`<div></div>`
 
   // set up icons and labels for save/unsave buttons
-  var toggleSaveIcon, toggleSaveText
+  var toggleSaveText
   if (archiveInfo.isOwner) {
     if (archiveInfo.userSettings.isSaved) {
-      toggleSaveIcon = '' // 'fa-trash'
       toggleSaveText = 'Delete'
     } else {
-      toggleSaveIcon = '' // 'fa-floppy-o'
       toggleSaveText = 'Restore'
     }
   } else {
     if (archiveInfo.userSettings.isSaved) {
-      toggleSaveIcon = '' // fa-times-circle'
       toggleSaveText = 'Remove from library'
     } else {
-      toggleSaveIcon = '' // fa-plus'
       toggleSaveText = 'Add to library'
     }
   }
@@ -62,7 +58,6 @@ export default function render (root) {
     </div>
   `
 }
-
 
 // event handlers
 // =

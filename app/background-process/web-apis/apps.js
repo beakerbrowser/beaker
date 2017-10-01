@@ -1,4 +1,3 @@
-import {parse as parseURL} from 'url'
 import parseDatUrl from 'parse-dat-url'
 import * as archivesDb from '../dbs/archives'
 import * as appsDb from '../dbs/apps'

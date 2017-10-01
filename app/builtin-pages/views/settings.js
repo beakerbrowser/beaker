@@ -1,13 +1,9 @@
-/* globals beaker Image */
+/* globals beaker confirm */
 
 import yo from 'yo-yo'
-import ColorThief from '../../lib/fg/color-thief'
-import {shortenHash} from '../../lib/strings'
 import {niceDate} from '../../lib/time'
 import renderSidebar from '../com/sidebar'
 import {create as createEditAppPopup} from '../com/edit-app-popup'
-
-const colorThief = new ColorThief()
 
 // globals
 // =
@@ -311,7 +307,7 @@ async function onClickRemoveApp (e, app) {
   renderToPage()
 }
 
-function onUpdateStartPageTheme (e) {
+/*function onUpdateStartPageTheme (e) {
   var theme = e.target.value
   settings.start_page_background_image = theme
   beaker.browser.setSetting('start_page_background_image', theme)
@@ -335,7 +331,7 @@ async function onUpdateStartPageBackgroundImage (srcPath) {
   //   await beaker.browser.setSetting('start_page_background_image', '')
   // }
   renderToPage()
-}
+}*/
 
 function onUpdaterError (err) {
   if (!browserInfo) { return }
@@ -351,7 +347,7 @@ function isAutoUpdateEnabled () {
   return +settings.auto_update_enabled === 1
 }
 
-function setStartPageTheme () {
+/*function setStartPageTheme () {
   function getBrightness (r, g, b) {
     return Math.sqrt(
       0.241 * Math.pow(r, 2) +
@@ -380,4 +376,4 @@ function setStartPageTheme () {
     img.onerror = resolve
     img.src = 'beaker://start/background-image'
   })
-}
+}*/

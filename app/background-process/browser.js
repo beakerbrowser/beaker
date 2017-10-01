@@ -2,7 +2,6 @@ import {app, dialog, autoUpdater, BrowserWindow, webContents, ipcMain, shell, Me
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
-import jetpack from 'fs-jetpack'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 var debug = require('debug')('beaker')

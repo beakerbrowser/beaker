@@ -29,5 +29,5 @@ export function unbind (profileId, name) {
 }
 
 export function unbindUrlFromAllNames (profileId, url) {
-  return db.run(`DELETE FROM apps WHERE profileId = ? AND url = ?`, [profileId, url])  
+  return db.run(`DELETE FROM apps WHERE profileId = ? AND url = ?`, [profileId, url])
 }

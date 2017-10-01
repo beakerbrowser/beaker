@@ -1,4 +1,4 @@
-/* globals beaker.browser */
+/* globals beaker */
 
 /*
 The webview has a set of sync method calls to the main process

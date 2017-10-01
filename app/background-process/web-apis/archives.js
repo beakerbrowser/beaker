@@ -1,27 +1,16 @@
-import {BrowserWindow} from 'electron'
 import {parse as parseURL} from 'url'
-import pda from 'pauls-dat-api'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 import * as profilesIngest from '../ingests/profiles'
-import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
-import {showModal} from '../ui/modals'
-import {timer} from '../../lib/time'
+import {DAT_HASH_REGEX} from '../../lib/const'
 import {
-  ArchiveNotWritableError,
   InvalidURLError,
-  InvalidPathError,
-  UserDeniedError
+  PermissionsError
 } from 'beaker-error-constants'
 
 // exported api
 // =
-
-const to = (opts) =>
-  (opts && typeof opts.timeout !== 'undefined')
-    ? opts.timeout
-    : DEFAULT_DAT_API_TIMEOUT
 
 export default {
 
@@ -46,7 +35,7 @@ export default {
 
     // pull metadata
     var archive = await datLibrary.getOrLoadArchive(key)
-    var meta = await datLibrary.pullLatestArchiveMeta(archive)
+    await datLibrary.pullLatestArchiveMeta(archive)
 
     // update settings
     return archivesDb.setUserSettings(0, key, {isSaved: true, expiresAt: opts.expiresAt})
@@ -126,19 +115,6 @@ export default {
 
   createDebugStream () {
     return datLibrary.createDebugStream()
-  }
-}
-
-async function assertSenderIsFocused (sender) {
-  if (!sender.isFocused()) {
-    throw new UserDeniedError('Application must be focused to spawn a prompt')
-  }
-}
-
-async function assertArchiveOfflineable (key) {
-  var profileRecord = await profilesIngest.getProfileRecord(0)
-  if ('dat://' + key === profileRecord.url) {
-    throw new PermissionsError('Unable to set the user archive to offline.')
   }
 }
 

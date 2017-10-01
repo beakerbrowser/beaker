@@ -149,7 +149,7 @@ function renderRow (row, i) {
     <div class="ll-row">
       <a class="link" href=${row.url} title=${row.title}>
         <img class="favicon" src=${'beaker-favicon:' + row.url}/>
-        <span class="title">${row.title.replace(/[^\x00-\x7F]/g, "")}</span>
+        <span class="title">${row.title.replace(/[^\x00-\x7F]/g, '')}</span>
         <span class="url">${getHostname(row.url)}</span>
       </a>
       <div class="actions">
@@ -158,13 +158,6 @@ function renderRow (row, i) {
         </div>
       </div>
     </div>`
-}
-
-function renderHistoryListing () {
-  yo.update(document.querySelector('.links-list.history'), yo`
-    <div class="links-list history">
-      ${renderRows()}
-    </div>`)
 }
 
 function render () {

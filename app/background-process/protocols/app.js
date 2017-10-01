@@ -78,7 +78,7 @@ export function setup () {
 
   // create the internal app HTTP server
   var server = http.createServer(appServer)
-  listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => serverPort = port)
+  listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => { serverPort = port })
 }
 
 // internal methods
@@ -101,7 +101,6 @@ async function appServer (req, res) {
   })
 
   try {
-
     // read the parameters
     const {requestUrl, bindingUrl, nonce} = url.parse(req.url, true).query
     const requestUrlParsed = url.parse(requestUrl)
@@ -130,7 +129,7 @@ async function appServer (req, res) {
     if (!stat) {
       return cb(404, 'Not Found')
     }
-    
+
     // check for an index.html
     if (stat.isDirectory) {
       let requestPathname2 = path.join(requestPathname, 'index.html')
@@ -201,7 +200,6 @@ async function appServer (req, res) {
     fileReadStream.once('error', err => {
       if (!headersSent) cb(500, 'Failed to read file')
     })
-
   } catch (e) {
     cb(500, e.toString())
   }
@@ -231,7 +229,6 @@ const styles = `<style>
 async function renderDirectoryListingPage (scopedFS, dirPath, names) {
   // stat each file
   var entries = await Promise.all(names.map(async (name) => {
-    var entry
     var entryPath = path.join(dirPath, name)
     var entry = await new Promise(resolve => scopedFS.stat(entryPath, (err, st) => resolve(st)))
     if (entry) {
