@@ -21,16 +21,9 @@ export class SiteInfoNavbarBtn {
 
   render () {
     // pull details
-    var icon = ''
     var iconEl = ''
-    var protocolLabel = ''
     var protocolCls = 'insecure'
     var gotInsecureResponse = this.siteLoadError && this.siteLoadError.isInsecureResponse
-
-    if (this.siteLoadError) {
-      icon = 'exclamation-circle'
-      protocolLabel = ''
-    }
 
     if (this.protocolInfo) {
       var isHttps = ['https:'].includes(this.protocolInfo.scheme)
@@ -219,7 +212,7 @@ export class SiteInfoNavbarBtn {
   }
 
   openLink (e) {
-    e.preventDefault()    
+    e.preventDefault()
     pages.setActive(pages.create(e.target.getAttribute('href')))
     this.closeDropdown()
   }

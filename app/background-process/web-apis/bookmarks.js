@@ -144,7 +144,7 @@ export default {
     await assertPermission(this.sender, 'app:bookmarks:read')
     var [privateTags, publicTags] = await Promise.all([
       privateBookmarksDb.listBookmarkTags(0),
-      getAPI().listBookmarkTags(),
+      getAPI().listBookmarkTags()
     ])
     return Array.from(new Set(privateTags.concat(publicTags)))
   }
@@ -156,10 +156,6 @@ async function assertPermission (sender, perm) {
   }
   if (await queryPermission(perm, sender)) return true
   throw new PermissionsError()
-}
-
-function assertArchive (v, msg) {
-  assert(!!v && (typeof v === 'string' || typeof v.url === 'string'), msg)
 }
 
 function assertString (v, msg) {

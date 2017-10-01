@@ -1,4 +1,4 @@
-/* globals beaker.browser */
+/* globals beaker DatArchive */
 
 import * as yo from 'yo-yo'
 import bytes from 'bytes'
@@ -8,7 +8,6 @@ import {pluralize} from '../../../lib/strings'
 import ArchiveProgressMonitor from '../../../lib/fg/archive-progress-monitor'
 import ProgressPieSVG from '../../../lib/fg/progress-pie-svg'
 import * as pages from '../../pages'
-import * as navbar from '../navbar'
 
 const NOT = 0
 const ONEDAY = 1
@@ -20,7 +19,7 @@ const TIMELENS = [
   () => yo`<span>1 day</span>`,
   () => yo`<span>1 week</span>`,
   () => yo`<span>1 month</span>`,
-  () => yo`<span>Forever</span>`,
+  () => yo`<span>Forever</span>`
 ]
 
 export class DatsiteMenuNavbarBtn {

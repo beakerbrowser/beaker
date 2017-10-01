@@ -10,7 +10,6 @@ import renderFilePreview from './file-preview'
 // =
 
 export default function render (node) {
-  const isEditingInfo = false // TODO
   const isArchive = node.constructor.name === 'FSArchive'
   const archiveInfo = node._archiveInfo
   const networked = archiveInfo.userSettings.networked
@@ -92,17 +91,6 @@ function rIcon (node) {
       icon = renderFolderIcon()
   }
   return icon
-}
-
-// event handlers
-// =
-
-function onClickEdit () {
-  // TODO
-}
-
-function onSaveSettings () {
-  // TODO
 }
 
 // helpers

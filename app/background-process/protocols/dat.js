@@ -15,7 +15,6 @@ import slugify from 'slugify'
 import {ProtocolSetupError} from 'beaker-error-constants'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
-import * as sitedataDb from '../dbs/sitedata'
 import directoryListingPage from '../networks/dat/directory-listing-page'
 import errorPage from '../../lib/error-page'
 import * as mime from '../../lib/mime'
@@ -296,10 +295,12 @@ async function datServer (req, res) {
     if (!entry) {
       cleanup()
       return cb(404, 'File Not Found',
-        { errorDescription:  'File Not Found',
+        {
+          errorDescription: 'File Not Found',
           errorInfo: `Beaker could not find the file ${urlp.path}`,
           title: 'File Not Found'
-        })
+        }
+      )
     }
   }
 

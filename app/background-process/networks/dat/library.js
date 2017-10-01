@@ -1,4 +1,3 @@
-import {app} from 'electron'
 import crypto from 'crypto'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
@@ -6,7 +5,6 @@ import datEncoding from 'dat-encoding'
 import pify from 'pify'
 import pda from 'pauls-dat-api'
 import signatures from 'sodium-signatures'
-import slugify from 'slugify'
 var debug = require('debug')('dat')
 import * as siteData from '../../dbs/sitedata'
 import {throttle, debounce} from '../../../lib/functions'
@@ -22,10 +20,7 @@ import swarmDefaults from 'datland-swarm-defaults'
 import discoverySwarm from 'discovery-swarm'
 
 // file modules
-import path from 'path'
 import mkdirp from 'mkdirp'
-import jetpack from 'fs-jetpack'
-const du = pify(require('du'))
 
 // constants
 // =
@@ -176,7 +171,6 @@ export async function forkArchive (srcArchiveUrl, manifest = {}, settings = fals
   // fetch old archive meta
   var srcManifest = await pda.readManifest(srcArchive).catch(_ => {})
   srcManifest = srcManifest || {}
-
 
   // override any manifest data
   var dstManifest = {

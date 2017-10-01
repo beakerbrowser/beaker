@@ -28,7 +28,7 @@ export async function collect ({olderThan} = {}) {
   for (let i = 0; i < unusedArchives.length; i++) {
     await archivesDb.deleteArchive(unusedArchives[i].key)
   }
-  
+
   debug('GC completed in %d ms', Date.now() - startTime)
   schedule(DAT_GC_REGULAR_COLLECT_WAIT)
 }

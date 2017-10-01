@@ -1,13 +1,9 @@
-/* globals beaker DatArchive Event */
+/* globals beaker DatArchive confirm */
 
 import yo from 'yo-yo'
-import prettyBytes from 'pretty-bytes'
 import {FSArchiveContainer, FSArchive, FSVirtualFolderWithTypes, FSVirtualFolder_Trash} from 'beaker-virtual-fs'
 import renderFilesList from './files-list'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
-import {niceDate} from '../../lib/time'
-import renderFileOIcon from '../icon/file-o'
-import renderFolderIcon from '../icon/folder-color'
 
 var userProfile
 var currentDragNode // currently dragged node
@@ -211,16 +207,20 @@ async function onContextMenu (e, root, node, depth, opts) {
     {type: 'separator'},
     {label: `Delete "${node.name}"`, id: 'delete'},
     {type: 'separator'},
-    {type: 'submenu', label: 'New archive...', submenu: [
-      {label: 'Application', id: 'new-application'},
-      {label: 'Code module', id: 'new-module'},
-      {label: 'Dataset', id: 'new-dataset'},
-      {label: 'Documents', id: 'new-documents'},
-      {label: 'Music', id: 'new-music'},
-      {label: 'Photos', id: 'new-photos'},
-      {label: 'Videos', id: 'new-videos'},
-      {label: 'Website', id: 'new-website'}
-    ]}
+    {
+      type: 'submenu',
+      label: 'New archive...',
+      submenu: [
+        {label: 'Application', id: 'new-application'},
+        {label: 'Code module', id: 'new-module'},
+        {label: 'Dataset', id: 'new-dataset'},
+        {label: 'Documents', id: 'new-documents'},
+        {label: 'Music', id: 'new-music'},
+        {label: 'Photos', id: 'new-photos'},
+        {label: 'Videos', id: 'new-videos'},
+        {label: 'Website', id: 'new-website'}
+      ]
+    }
   ])
 
   // now run the action
@@ -235,7 +235,6 @@ async function onContextMenu (e, root, node, depth, opts) {
         let archive = await DatArchive.create({prompt: true, type: action.slice('new-'.length)})
         window.location.pathname = archive.url.slice('dat://'.length)
       }
-      return
   }
 }
 

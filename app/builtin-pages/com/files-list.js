@@ -1,13 +1,9 @@
-/* globals beaker DatArchive Event */
+/* globals beaker DatArchive confirm */
 
 import yo from 'yo-yo'
-import prettyBytes from 'pretty-bytes'
 import {join as joinPath} from 'path'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
-import {niceDate} from '../../lib/time'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
-import renderFileOIcon from '../icon/file-o'
-import renderFolderIcon from '../icon/folder-color'
 import renderFilesListSidebar from './files-list-sidebar'
 import {DAT_VALID_PATH_REGEX} from '../../lib/const'
 
@@ -242,16 +238,20 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
     ]
   }
   menu.push({type: 'separator'})
-  menu.push({type: 'submenu', label: 'New archive...', submenu: [
-    {label: 'Application', id: 'new-application'},
-    {label: 'Code module', id: 'new-module'},
-    {label: 'Dataset', id: 'new-dataset'},
-    {label: 'Documents', id: 'new-documents'},
-    {label: 'Music', id: 'new-music'},
-    {label: 'Photos', id: 'new-photos'},
-    {label: 'Videos', id: 'new-videos'},
-    {label: 'Website', id: 'new-website'}
-  ]})
+  menu.push({
+    type: 'submenu',
+    label: 'New archive...',
+    submenu: [
+      {label: 'Application', id: 'new-application'},
+      {label: 'Code module', id: 'new-module'},
+      {label: 'Dataset', id: 'new-dataset'},
+      {label: 'Documents', id: 'new-documents'},
+      {label: 'Music', id: 'new-music'},
+      {label: 'Photos', id: 'new-photos'},
+      {label: 'Videos', id: 'new-videos'},
+      {label: 'Website', id: 'new-website'}
+    ]
+  })
   const action = await beaker.browser.showContextMenu(menu)
 
   // now run the action
@@ -323,7 +323,6 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
         let archive = await DatArchive.create({prompt: true, type: action.slice('new-'.length)})
         window.location.pathname = archive.url.slice('dat://'.length)
       }
-      return
   }
 }
 
@@ -385,7 +384,7 @@ async function onKeyupRename (e, root, node, opts) {
 
 function onDragStart (e, root, node, opts) {
   // select node
-  selectNode(root, node, node, opts) 
+  selectNode(root, node, node, opts)
 
   // start drag
   e.dataTransfer.setData('text/uri-list', node.url)

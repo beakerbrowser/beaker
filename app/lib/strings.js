@@ -1,3 +1,7 @@
+/* globals window */
+
+const URL = typeof window === 'undefined' ? require('url').URL : window.URL
+
 export function getPermId (permissionToken) {
   return permissionToken.split(':')[0]
 }

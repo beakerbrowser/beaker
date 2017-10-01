@@ -125,7 +125,6 @@ export async function query (profileId, query) {
 
 // get all archives that should be unsaved
 export async function listExpiredArchives () {
-  var now = Date.now()
   return db.all(`
     SELECT archives.key
       FROM archives

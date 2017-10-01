@@ -1,8 +1,7 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import { ucfirst } from '../../lib/strings'
+import { ucfirst, getHostname } from '../../lib/strings'
 import { downloadTimestamp } from '../../lib/time'
-import { getHostname } from '../../lib/strings'
 import renderCloseIcon from '../icon/close'
 
 // exported api
@@ -61,7 +60,7 @@ export function render (downloadsList) {
         `
 
         actions = [
-          yo`<span class="link show" onclick=${e => {e.stopPropagation(); downloadsList.showDownload(d)}}>Show in Finder</span>`,
+          yo`<span class="link show" onclick=${e => { e.stopPropagation(); downloadsList.showDownload(d) }}>Show in Finder</span>`
         ]
       } else {
         actions = [

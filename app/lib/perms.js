@@ -1,4 +1,4 @@
-/* globals beaker */
+/* globals DatArchive */
 
 import prettyHash from 'pretty-hash'
 

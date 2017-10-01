@@ -316,8 +316,8 @@ export function create (opts) {
   page.webviewEl.addEventListener('page-title-updated', onPageTitleUpdated)
   page.webviewEl.addEventListener('update-target-url', onUpdateTargetUrl)
   page.webviewEl.addEventListener('found-in-page', onFoundInPage)
-  page.webviewEl.addEventListener('enter-html-full-screen',onEnterHtmlFullScreen)
-  page.webviewEl.addEventListener('leave-html-full-screen',onLeaveHtmlFullScreen)
+  page.webviewEl.addEventListener('enter-html-full-screen', onEnterHtmlFullScreen)
+  page.webviewEl.addEventListener('leave-html-full-screen', onLeaveHtmlFullScreen)
   page.webviewEl.addEventListener('close', onClose)
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
@@ -670,7 +670,7 @@ function onDidStopLoading (e) {
           }
           page.siteInfo = await (new DatArchive(binding.url)).getInfo()
           navbar.update(page)
-          console.log('site info', page.siteInfo)          
+          console.log('site info', page.siteInfo)
         })
     }
     if (protocol !== 'beaker:') {

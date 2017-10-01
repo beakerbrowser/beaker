@@ -101,7 +101,6 @@ function onClickWrapper (e) {
 function onSubmit (e) {
   e.preventDefault()
 
-  var isPrivate = e.target.private.checked
   resolve({
     href: e.target.href.value,
     title: e.target.title.value,

@@ -1,4 +1,4 @@
-/* globals beaker.browser */
+/* globals beaker */
 
 import * as yo from 'yo-yo'
 

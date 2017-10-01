@@ -21,7 +21,7 @@ export default class ArchiveProgressMonitor extends EventEmitter {
 
   async fetchAllStats () {
     // list all files
-    var entries = await this.archive.readdir('/', {recursive: true, stat: true}) 
+    var entries = await this.archive.readdir('/', {recursive: true, stat: true})
 
     // count blocks
     this.downloaded = 0
@@ -48,15 +48,15 @@ export default class ArchiveProgressMonitor extends EventEmitter {
     }
   }
 
-  get current() {
+  get current () {
     return Math.min(Math.round(this.downloaded / this.blocks * 100), 100)
   }
 
-  get isComplete() {
+  get isComplete () {
     return this.downloaded >= this.blocks
   }
 
-  onDownload(e) {
+  onDownload (e) {
     // we dont need perfect precision --
     // rather than check if the block is one of ours, assume it is
     // we'll refetch the full stats every 10s to correct inaccuracies
