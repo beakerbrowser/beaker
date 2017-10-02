@@ -113,7 +113,7 @@
 
       &:hover,
       &:active {
-        background: rgba(0,0,0,0.075);
+        background: #bbb;
       }
     }
 
@@ -161,6 +161,11 @@
 
       .chrome-tab-close {
         display: block;
+        background: #e2e2e2; // tab :hover background tab
+
+        &:hover {
+          background: #ccc;
+        }
 
         &:before {
           opacity: 1;
@@ -194,6 +199,14 @@
 
       .chrome-tab-close {
         display: block;
+        background: @background-tab--current;
+      }
+
+      &:hover {
+
+        .chrome-tab-close:hover {
+          background: #ddd;
+        }
       }
     }
   }
