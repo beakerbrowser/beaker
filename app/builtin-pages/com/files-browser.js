@@ -1,4 +1,5 @@
 import yo from 'yo-yo'
+import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import renderNavSidebar from './files-browser/nav-sidebar'
 import renderFilesTreeView from './files-browser/files-tree-view'
 import renderPreviewSidebar from './files-browser/preview-sidebar'
@@ -48,8 +49,16 @@ export default class FilesBrowser {
 
   // state management api
 
-  async reloadTree (node) {
-    node = node || this.root
+  async reloadTree (node = undefined) {
+    // if node is not given, then this is a root call
+    // run for the sources, and for the current source
+    if (!node) {
+      await this.reloadTree(this.root)
+      await this.reloadTree(this.currentSource)
+      return 
+    }
+
+    // recursively read data of the currently-expanded tree
     await node.readData()
     if (node.hasChildren) {
       const children = node.children
@@ -97,18 +106,12 @@ export default class FilesBrowser {
     return this.selectedNodes.has(node)
   }
 
-  async select (node) {
-    // TODO
-    // reset old node
-    // if (selectedNode) {
-    //   if (selectedNode instanceof FSArchiveFolder_BeingCreated) {
-    //     // if this was a new folder, reload the tree to remove that temp node
-    //     await refreshAllNodes(root, state)
-    //   } else {
-    //     selectedNode.isRenaming = false
-    //   }
-    // }
+  async selectOne (node) {
+    await this.unselectAll()
+    await this.select(node)
+  }
 
+  async select (node) {
     this.selectedNodes.add(node)
 
     // read data if needed
@@ -119,13 +122,22 @@ export default class FilesBrowser {
     this.rerender()
   }
 
-  unselect (node) {
+  async unselect (node) {
+    // reset node state
+    if (node instanceof FSArchiveFolder_BeingCreated) {
+      // if this was a new folder, reload the tree to remove that temp node
+      await this.reloadTree()
+    } else {
+      node.isRenaming = false
+    }
+
+    // remove from set
     this.selectedNodes.delete(node)
   }
 
-  unselectAll () {
+  async unselectAll () {
     for (let node of this.selectedNodes) {
-      this.selectedNodes.delete(node)
+      await this.unselect(node)
     }
   }
 

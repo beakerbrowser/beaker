@@ -24,6 +24,7 @@ async function setup () {
   // await readSelectedPathFromURL() TODO
   update()
   await filesBrowser.setCurrentSource(fsRoot._children[0])
+  window.filesBrowser = filesBrowser
 }
 
 // rendering

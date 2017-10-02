@@ -19,7 +19,7 @@ export default function render (filesBrowser, root) {
       <div
         class="droptarget"
         ondragover=${onDragOver}
-        ondragenter=${onDragEnter}
+        ondragenter=${e => onDragEnter(e, filesBrowser, root)}
         ondragleave=${onDragLeave}
         ondrop=${e => onDrop(e, filesBrowser, root)}
       >
@@ -127,6 +127,21 @@ function rFile (filesBrowser, node, depth) {
   `
 }
 
+// helpers
+// =
+
+async function enterRenameMode (filesBrowser, node) {
+  await filesBrowser.selectOne(node) // select the node
+  node.isRenaming = true
+  node.renameValue = node.name
+  filesBrowser.rerender()
+  let input = filesBrowser.lastRenderedElement.querySelector('input')
+  if (input) {
+    input.focus()
+    input.select()
+  }
+}
+
 // event handlers
 // =
 
@@ -134,10 +149,14 @@ async function onClickNode (e, filesBrowser, node) {
   if (e) {
     e.preventDefault()
     e.stopPropagation()
+
+    // dont do anything if this was a click on an input field (renaming)
+    if (e.target.tagName === 'INPUT') {
+      return
+    }
   }
   // TODO multi selection
-  filesBrowser.unselectAll()
-  filesBrowser.select(node)
+  await filesBrowser.selectOne(node)
 }
 
 async function onContextMenu (e, filesBrowser, node) {
@@ -200,18 +219,7 @@ async function onContextMenu (e, filesBrowser, node) {
   switch (action) {
     case 'open': return window.open(node.url)
     case 'copy-url': return writeToClipboard(node.url)
-    case 'rename':
-    {
-      node.isRenaming = true
-      node.renameValue = node.name
-      onClickNode(null, filesBrowser, node) // select the node (triggers a redraw)
-      let input = document.querySelector('.files-list-view input')
-      if (input) {
-        input.focus()
-        input.select()
-      }
-      return
-    }
+    case 'rename': return enterRenameMode(filesBrowser, node)
     case 'delete':
       if (confirm(`Are you sure you want to delete "${node.name}"?`)) {
         await node.delete()
@@ -228,15 +236,7 @@ async function onContextMenu (e, filesBrowser, node) {
       node._files.push(newFolderNode)
 
       // put it into rename mode
-      newFolderNode.renameValue = 'New folder'
-      newFolderNode.isRenaming = true
-      filesBrowser.unselectAll()
-      filesBrowser.select(newFolderNode)
-      let input = document.querySelector('.files-list-view input')
-      if (input) {
-        input.focus()
-        input.select()
-      }
+      enterRenameMode(filesBrowser, newFolderNode)
       return
     }
     case 'import':
@@ -324,8 +324,7 @@ async function onKeyupRename (e, filesBrowser, node) {
 
 function onDragStart (e, filesBrowser, node) {
   // select node
-  filesBrowser.unselectAll()
-  filesBrowser.select(node)
+  filesBrowser.selectOne(node)
 
   // start drag
   e.dataTransfer.setData('text/uri-list', node.url)
