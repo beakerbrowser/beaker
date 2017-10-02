@@ -106,10 +106,31 @@
         .type,
         .updated,
         .size {
+          position: relative;
           -webkit-font-smoothing: auto;
           border-right: 1px solid #ddd;
           padding: 0 7px;
           color: #777;
+
+          &:after {
+            font-size: 17px;
+            position: absolute;
+            right: 5px;
+            top: -5px;
+          }
+
+          &.asc:after {
+            content: '\025B4'; // &utrif;
+          }
+
+          &.desc:after {
+            content: '\025BE'; // &dtrif;
+          }
+        }
+
+        .size:after {
+          right: auto;
+          left: 5px;
         }
 
         .type {

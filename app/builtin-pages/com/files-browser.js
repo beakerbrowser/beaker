@@ -12,6 +12,10 @@ export default class FilesBrowser {
     this.lastRenderedElement = null // element last rendered
     this.root = root
     this.currentSource = this.root._children[0]
+    this.currentSort = [
+      localStorage.currentSortColumn || 'name',
+      localStorage.currentSortDir || 'desc'
+    ]
     this.expandedNodes = new Set() // set of nodes
     this.selectedNodes = new Set() // set of nodes
     this.currentDragNode = null
@@ -83,7 +87,34 @@ export default class FilesBrowser {
   async setCurrentSource (node) {
     this.currentSource = node
     await this.currentSource.readData()
+    this.resortTree()
     this.rerender()
+  }
+
+  // sorting api
+
+  toggleSort (column) {
+    // update the current setting
+    var [sortColumn, sortDir] = this.currentSort
+    if (column === sortColumn) {
+      sortDir = sortDir === 'asc' ? 'desc' : 'asc'
+    } else {
+      sortColumn = column
+      sortDir = 'desc'
+    }
+    this.currentSort = [sortColumn, sortDir]
+    this.resortTree()
+
+    // save to local storage
+    localStorage.currentSortColumn = sortColumn
+    localStorage.currentSortDir = sortDir
+
+    // rerender
+    this.rerender()
+  }
+
+  resortTree () {
+    this.currentSource.sort(...this.currentSort)
   }
 
   // expand api
@@ -92,8 +123,10 @@ export default class FilesBrowser {
     return this.expandedNodes.has(node)
   }
 
-  expand (node) {
+  async expand (node) {
     this.expandedNodes.add(node)
+    await node.readData()
+    this.resortTree()
   }
 
   collapse (node) {

@@ -19,10 +19,10 @@ export default function render (filesBrowser, root) {
       oncontextmenu=${e => onContextMenu(e, filesBrowser, root)}
     >
       <div class="item headers">
-        <div class="name">Name</div>
-        <div class="updated">Last Updated</div>
-        <div class="size">Size</div>
-        <div class="type">Type</div>
+        ${rColumnHeader(filesBrowser, 'name', 'Name')}
+        ${rColumnHeader(filesBrowser, 'updated', 'Last Updated')}
+        ${rColumnHeader(filesBrowser, 'size', 'Size')}
+        ${rColumnHeader(filesBrowser, 'type', 'Type')}
       </div>
       <div class="body">
         <div
@@ -41,6 +41,16 @@ export default function render (filesBrowser, root) {
 
 // rendering
 // =
+
+function rColumnHeader (filesBrowser, id, label) {
+  var [sortColumn, sortDir] = filesBrowser.currentSort
+  return yo`
+    <div
+      class="${id} ${sortColumn === id ? sortDir : ''}"
+      onclick=${e => filesBrowser.toggleSort(id)}
+    >${label}</div>
+  `
+}
 
 function rChildren (filesBrowser, children, depth = 0) {
   if (children.length === 0 && depth === 0) {
@@ -105,7 +115,7 @@ function rContainer (filesBrowser, node, depth) {
           : yo`<div class="name">${node.name}</div>`}
         <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
         <div class="size">${node.size ? prettyBytes(node.size) : '--'}</div>
-        <div class="type">${containerType(node)}</div>
+        <div class="type">${node.type}</div>
       </div>
       ${children}
     </div>
@@ -160,16 +170,6 @@ function niceMtime (ts) {
     return 'Today, ' + ts.format('h:mma')
   }
   return ts.format('ll, h:mma')
-}
-
-function containerType (node) {
-  if (node.type === 'archive') {
-    let type = node._archiveInfo && node._archiveInfo.type
-    if (!type || !type.length) return 'archive'
-    type = type.filter(f => STANDARD_ARCHIVE_TYPES.includes(f))
-    return type[0] || 'archive'
-  }
-  return node.type
 }
 
 // event handlers
@@ -311,10 +311,9 @@ async function onClickDirectoryCaret (e, filesBrowser, node) {
   e.preventDefault()
   e.stopPropagation()
   if (filesBrowser.isExpanded(node)) {
-    filesBrowser.collapse(node)
+    await filesBrowser.collapse(node)
   } else {
-    filesBrowser.expand(node)
-    await node.readData()
+    await filesBrowser.expand(node)
   }
   filesBrowser.rerender()
 }
@@ -379,8 +378,7 @@ async function onDragEnter (e, filesBrowser, node) {
   if (filesBrowser.isExpanded(node)) return
 
   // expand
-  filesBrowser.expand(node)
-  await node.readData()
+  await filesBrowser.expand(node)
   filesBrowser.rerender()
 }
 
@@ -419,7 +417,7 @@ async function onDrop (e, filesBrowser, dropNode) {
     }
 
     // open a context menu asking for the action to take
-    const dropPath = dropNode.type === 'archive' ? '/' : dropNode._path
+    const dropPath = dropNode._path ? dropNode._path : '/'
     const action = await beaker.browser.showContextMenu([
       {label: `Copy "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'copy'},
       {label: `Move "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'move'}
