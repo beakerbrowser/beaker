@@ -18,14 +18,22 @@ export default function render (filesBrowser, root) {
       onclick=${e => onClickNode(e, filesBrowser, root)}
       oncontextmenu=${e => onContextMenu(e, filesBrowser, root)}
     >
-      <div
-        class="droptarget"
-        ondragover=${onDragOver}
-        ondragenter=${e => onDragEnter(e, filesBrowser, root)}
-        ondragleave=${onDragLeave}
-        ondrop=${e => onDrop(e, filesBrowser, root)}
-      >
-        ${rChildren(filesBrowser, root.children)}
+      <div class="item headers">
+        <div class="name">Name</div>
+        <div class="updated">Last Updated</div>
+        <div class="size">Size</div>
+        <div class="type">Type</div>
+      </div>
+      <div class="body">
+        <div
+          class="droptarget"
+          ondragover=${onDragOver}
+          ondragenter=${e => onDragEnter(e, filesBrowser, root)}
+          ondragleave=${onDragLeave}
+          ondrop=${e => onDrop(e, filesBrowser, root)}
+        >
+          ${rChildren(filesBrowser, root.children)}
+        </div>
       </div>
     </div>
   `
