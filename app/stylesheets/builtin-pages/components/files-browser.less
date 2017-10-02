@@ -1,0 +1,12 @@
+@import "../../base/spacing";
+@import "../../utils/flex";
+@import "../../components/link";
+
+.files-browser {
+  &:extend(.flex);
+  flex-wrap: nowrap;
+}
+
+@import "./files-browser/files-tree-view";
+@import "./files-browser/nav-sidebar";
+@import "./files-browser/preview-sidebar";

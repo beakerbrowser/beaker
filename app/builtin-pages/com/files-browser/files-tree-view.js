@@ -3,47 +3,28 @@
 import yo from 'yo-yo'
 import {join as joinPath} from 'path'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
-import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
-import renderFilesListSidebar from './files-list-sidebar'
-import {DAT_VALID_PATH_REGEX} from '../../lib/const'
+import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
+import {DAT_VALID_PATH_REGEX} from '../../../lib/const'
 
 // exported api
 // =
 
-var currentDragNode // currently dragged node
-
-// opts:
-//  - hideDate: show the date on the files (bool)
-//  - baseUrl: override the base URL of file links (string)
-//  - expandedNodes: paths of nodes that should be expanded (Set of strings)
-export default function render (root, opts = {}) {
-  opts.expandedNodes = opts.expandedNodes || new Set()
-  return rFilesList(root, null, opts)
-}
-
-function rFilesList (root, selectedNode, opts) {
-  if (!root) {
-    return yo`<div class="files-list-view"></div>`
-  }
-
+export default function render (filesBrowser, root) {
   return yo`
-    <div class="files-list-view">
+    <div
+      class="files-tree-view ${root.isEmpty ? 'empty' : ''}"
+      onclick=${e => onClickNode(e, filesBrowser, root)}
+      oncontextmenu=${e => onContextMenu(e, filesBrowser, root)}
+    >
       <div
-        class="files-list ${root.isEmpty ? 'empty' : ''}"
-        onclick=${e => onClickNode(e, root, null, selectedNode, 0, opts)}
-        oncontextmenu=${e => onContextMenu(e, root, null, selectedNode, 0, opts)}
+        class="droptarget"
+        ondragover=${onDragOver}
+        ondragenter=${onDragEnter}
+        ondragleave=${onDragLeave}
+        ondrop=${e => onDrop(e, filesBrowser, root)}
       >
-        <div
-          class="droptarget"
-          ondragover=${onDragOver}
-          ondragenter=${onDragEnter}
-          ondragleave=${onDragLeave}
-          ondrop=${e => onDrop(e, root, root, opts)}
-        >
-          ${rChildren(root, root.children, selectedNode, 0, opts)}
-        </div>
+        ${rChildren(filesBrowser, root.children)}
       </div>
-      ${opts.noSidebar ? '' : renderFilesListSidebar(selectedNode || root)}
     </div>
   `
 }
@@ -51,71 +32,69 @@ function rFilesList (root, selectedNode, opts) {
 // rendering
 // =
 
-function redraw (root, selectedNode, opts = {}) {
-  yo.update(document.querySelector('.files-list-view'), rFilesList(root, selectedNode, opts))
-}
 
-function rChildren (root, children, selectedNode, depth, opts = {}) {
+function rChildren (filesBrowser, children, depth = 0) {
   if (children.length === 0 && depth === 0) {
     return yo`
       <div class="item empty"><em>No files</em></div>
     `
   }
 
-  return children.map(childNode => rNode(root, childNode, selectedNode, depth, opts))
+  return children.map(childNode => rNode(filesBrowser, childNode, depth))
 }
 
-function rNode (root, node, selectedNode, depth, opts) {
+function rNode (filesBrowser, node, depth) {
   if (node.isContainer) {
-    return rDirectory(root, node, selectedNode, depth, opts)
+    return rDirectory(filesBrowser, node, depth)
   } else {
-    return rFile(root, node, selectedNode, depth, opts)
+    return rFile(filesBrowser, node, depth)
   }
 }
 
-function rDirectory (root, node, selectedNode, depth, opts) {
-  const isSelected = node === selectedNode
+function rDirectory (filesBrowser, node, depth) {
+  const isSelected = filesBrowser.isSelected(node)
+  const isExpanded = filesBrowser.isExpanded(node)
   let children = ''
   const directoryPadding = 20 + (depth * 20)
   const caretPosition = directoryPadding - 15
 
-  const isExpanded = opts.expandedNodes.has(node._path)
   if (isExpanded) {
     children = yo`
       <div class="subtree">
-        ${rChildren(root, node.children, selectedNode, depth + 1, opts)}
-      </div>`
+        ${rChildren(filesBrowser, node.children, depth + 1)}
+      </div>
+    `
   }
 
   return yo`
     <div
       class="droptarget"
       ondragover=${onDragOver}
-      ondragenter=${e => onDragEnter(e, root, node, selectedNode, opts)}
+      ondragenter=${e => onDragEnter(e, filesBrowser, node)}
       ondragleave=${onDragLeave}
-      ondrop=${e => onDrop(e, root, node, opts)}
+      ondrop=${e => onDrop(e, filesBrowser, node)}
     >
       <div
         class="item folder ${isSelected ? 'selected' : ''}"
         title=${node.name}
         draggable="true"
-        onclick=${e => onClickNode(e, root, node, selectedNode, depth, opts)}
-        oncontextmenu=${e => onContextMenu(e, root, node, selectedNode, depth, opts)}
-        ondblclick=${e => onDblClickNode(e, node)}
-        ondragstart=${e => onDragStart(e, root, node, opts)}
+        onclick=${e => onClickNode(e, filesBrowser, node)}
+        oncontextmenu=${e => onContextMenu(e, filesBrowser, node)}
+        ondblclick=${e => onDblClickNode(e, filesBrowser, node)}
+        ondragstart=${e => onDragStart(e, filesBrowser, node)}
         style=${'padding-left: ' + directoryPadding + 'px'}
       >
         <div
           class="caret"
           ondblclick=${e => e.stopPropagation()}
-          onclick=${e => onClickDirectoryCaret(e, root, node, selectedNode, opts)}
+          onclick=${e => onClickDirectoryCaret(e, filesBrowser, node)}
           style="left: ${caretPosition}px; ${isExpanded ? 'transform: rotate(90deg);' : ''}"
         >▶︎</div>
 
         <img class="icon folder" src="beaker://assets/icon/folder-color.png"/>
 
         ${node.isRenaming
-          ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, root, node, opts)} /></div>`
+          ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
           : yo`<div class="name">${node.name}</div>`}
       </div>
       ${children}
@@ -123,8 +102,8 @@ function rDirectory (root, node, selectedNode, depth, opts) {
   `
 }
 
-function rFile (root, node, selectedNode, depth, opts) {
-  const isSelected = node === selectedNode
+function rFile (filesBrowser, node, depth) {
+  const isSelected = filesBrowser.isSelected(node)
   const padding = 20 + (depth * 20)
 
   return yo`
@@ -132,84 +111,47 @@ function rFile (root, node, selectedNode, depth, opts) {
       class="item file ${isSelected ? 'selected' : ''}"
       title=${node.name}
       draggable="true"
-      onclick=${e => onClickNode(e, root, node, selectedNode, depth, opts)}
-      oncontextmenu=${e => onContextMenu(e, root, node, selectedNode, depth, opts)}
-      ondblclick=${e => onDblClickNode(e, node)}
-      ondragstart=${e => onDragStart(e, root, node, opts)}
+      onclick=${e => onClickNode(e, filesBrowser, node)}
+      oncontextmenu=${e => onContextMenu(e, filesBrowser, node)}
+      ondblclick=${e => onDblClickNode(e, filesBrowser, node)}
+      ondragstart=${e => onDragStart(e, filesBrowser, node)}
       style=${'padding-left: ' + padding + 'px'}
     >
 
       <img class="icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAUJJREFUeNqkk8FKw0AQhmcmyb0HTR7A4hPUS1B8haIetPh4Ei9tUqQn6aUPIra9hRYUTKiCzbiTJpsssdXSgWFnJjsf/85ukJnhaTR6+16vW5xlwFA3yRAIERBxcdXtuvoLcxUMooj/sjiOuR+GQR0gTnXa63SmfA7T2TxfJRd7CAJwXRfOff+uH0WPdY12KTRPbEukKhdoBUYiWCyX4HkeXPj+bTgcOqp8owElgshWjpqeZZv6absNz+MxyIzuez0BXxsKSgm2TbmC0ogYPtIEzjqd3DWY2TxC1WAZALHP1ReslEPR5B4f6bgBkBlsM2b+td5QsK8ZAMuiAwF0IECuEYB3bMctgGLyjmMZE272o7mWACqk0z+PUN+XA9IkmajneZlt3u9OBfJnpmk60SW5X/V4TlTc2mN276rvRYIfAQYABXymGHKpbU8AAAAASUVORK5CYII="/>
 
       ${node.isRenaming
-        ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, root, node, opts)} /></div>`
+        ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
         : yo`<div class="name">${node.name}</div>`}
     </div>
   `
 }
 
-// helpers
-// =
-
-async function selectNode (root, newNode, selectedNode, opts) {
-  // reset old node
-  if (selectedNode) {
-    if (selectedNode instanceof FSArchiveFolder_BeingCreated) {
-      // if this was a new folder, reload the tree to remove that temp node
-      await refreshAllNodes(root, opts)
-    } else {
-      selectedNode.isRenaming = false
-    }
-  }
-
-  // update state
-  selectedNode = newNode
-
-  // render
-  redraw(root, selectedNode, opts)
-
-  // read data if needed, and redraw
-  if (selectedNode && selectedNode.type === 'file') {
-    await selectedNode.readData()
-    redraw(root, selectedNode, opts)
-  }
-}
-
-async function refreshAllNodes (node, opts) {
-  await node.readData()
-  if (node.hasChildren) {
-    const children = node.children
-    for (var k in children) {
-      if (opts.expandedNodes.has(children[k]._path)) {
-        await refreshAllNodes(children[k], opts)
-      }
-    }
-  }
-}
-
 // event handlers
 // =
 
-async function onClickNode (e, root, node, selectedNode, depth, opts) {
+async function onClickNode (e, filesBrowser, node) {
   if (e) {
     e.preventDefault()
     e.stopPropagation()
   }
-  selectNode(root, node, selectedNode, opts)
+  // TODO multi selection
+  filesBrowser.unselectAll()
+  filesBrowser.select(node)
 }
 
-async function onContextMenu (e, root, node, selectedNode, depth, opts) {
+async function onContextMenu (e, filesBrowser, node) {
   e.preventDefault()
   e.stopPropagation()
 
   // select first
-  await onClickNode(null, root, node, selectedNode, depth, opts)
+  await onClickNode(null, filesBrowser, node)
   // HACK wait a frame to let rendering occur -prf
   await new Promise(resolve => setTimeout(resolve, 33))
 
   // now run the menu
   var menu
-  const enabled = (node || root).isEditable && (node || root)._path !== '/dat.json'
+  const enabled = node.isEditable && node._path !== '/dat.json'
   if (node && node.type === 'file') {
     menu = [
       {label: 'Open URL', id: 'open'},
@@ -255,7 +197,6 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
   const action = await beaker.browser.showContextMenu(menu)
 
   // now run the action
-  node = node || root
   switch (action) {
     case 'open': return window.open(node.url)
     case 'copy-url': return writeToClipboard(node.url)
@@ -263,8 +204,7 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
     {
       node.isRenaming = true
       node.renameValue = node.name
-      if (selectedNode !== node) selectNode(root, node, selectedNode, opts)
-      else redraw(root, selectedNode, opts)
+      onClickNode(null, filesBrowser, node) // select the node (triggers a redraw)
       let input = document.querySelector('.files-list-view input')
       if (input) {
         input.focus()
@@ -275,22 +215,23 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
     case 'delete':
       if (confirm(`Are you sure you want to delete "${node.name}"?`)) {
         await node.delete()
-        await refreshAllNodes(root, opts) // reload the tree
-        redraw(root, null, opts) // redraw with no selected node
+        await filesBrowser.reloadTree()
+        filesBrowser.unselectAll()
+        filesBrowser.rerender()
       }
       return
     case 'new-folder':
     {
       // create a new virtual node
-      let parentNode = node || root
-      let parentPath = parentNode._path || '/'
-      let newFolderNode = new FSArchiveFolder_BeingCreated(root._archiveInfo, root._archive, parentPath)
-      parentNode._files.push(newFolderNode)
+      let parentPath = node._path || '/'
+      let newFolderNode = new FSArchiveFolder_BeingCreated(node._archiveInfo, node._archive, parentPath)
+      node._files.push(newFolderNode)
 
       // put it into rename mode
       newFolderNode.renameValue = 'New folder'
       newFolderNode.isRenaming = true
-      selectNode(root, newFolderNode, selectedNode, opts)
+      filesBrowser.unselectAll()
+      filesBrowser.select(newFolderNode)
       let input = document.querySelector('.files-list-view input')
       if (input) {
         input.focus()
@@ -312,8 +253,8 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
           ignore: ['dat.json'],
           inplaceImport: false
         })))
-        await refreshAllNodes(root, opts) // reload the tree
-        redraw(root, null, opts) // redraw with no selected node
+        await filesBrowser.reloadTree()
+        filesBrowser.rerender()
       }
       return
     }
@@ -326,7 +267,7 @@ async function onContextMenu (e, root, node, selectedNode, depth, opts) {
   }
 }
 
-function onDblClickNode (e, node) {
+function onDblClickNode (e, filesBrowser, node) {
   e.preventDefault()
   e.stopPropagation()
 
@@ -336,19 +277,19 @@ function onDblClickNode (e, node) {
   }
 }
 
-async function onClickDirectoryCaret (e, root, node, selectedNode, opts) {
+async function onClickDirectoryCaret (e, filesBrowser, node) {
   e.preventDefault()
   e.stopPropagation()
-  if (opts.expandedNodes.has(node._path)) {
-    opts.expandedNodes.delete(node._path)
+  if (filesBrowser.isExpanded(node)) {
+    filesBrowser.collapse(node)
   } else {
-    opts.expandedNodes.add(node._path)
+    filesBrowser.expand(node)
     await node.readData()
   }
-  redraw(root, selectedNode, opts)
+  filesBrowser.rerender()
 }
 
-async function onKeyupRename (e, root, node, opts) {
+async function onKeyupRename (e, filesBrowser, node) {
   node.renameValue = e.target.value
 
   if (e.code === 'Enter') {
@@ -366,53 +307,52 @@ async function onKeyupRename (e, root, node, opts) {
     }
     // do rename
     await node.rename(node.renameValue)
-    // reload the tree
-    await refreshAllNodes(root, opts)
-    // redraw with no selected node
-    redraw(root, null, opts)
+    await filesBrowser.reloadTree()
+    filesBrowser.unselectAll()
+    filesBrowser.rerender()
   }
   if (e.code === 'Escape') {
     if (node instanceof FSArchiveFolder_BeingCreated) {
       // if this was a new folder, reload the tree to remove that temp node
-      await refreshAllNodes(root, opts)
+      await filesBrowser.reloadTree()
     } else {
       node.isRenaming = false
     }
-    redraw(root, node, opts)
+    filesBrowser.rerender()
   }
 }
 
-function onDragStart (e, root, node, opts) {
+function onDragStart (e, filesBrowser, node) {
   // select node
-  selectNode(root, node, node, opts)
+  filesBrowser.unselectAll()
+  filesBrowser.select(node)
 
   // start drag
   e.dataTransfer.setData('text/uri-list', node.url)
   e.dataTransfer.dropEffect = 'copy'
-  currentDragNode = node
+  filesBrowser.setCurrentlyDraggedNode(node)
 }
 
-async function onDragEnter (e, root, node, selectedNode, opts) {
+async function onDragEnter (e, filesBrowser, node) {
   // add dragover class
   const target = findParent(e.target, 'droptarget')
   if (!target) return
   target.classList.add('dragover')
 
   // expand on prolonged hover
-  if (!root) return
-  if (opts.expandedNodes.has(node._path)) return
+  if (filesBrowser.isExpanded(node)) return
 
   // wait a moment
   await new Promise(resolve => setTimeout(resolve, 500))
 
   // still selected and not expanded?
   if (!target.classList.contains('dragover')) return
-  if (opts.expandedNodes.has(node._path)) return
+  if (filesBrowser.isExpanded(node)) return
 
   // expand
-  opts.expandedNodes.add(node._path)
+  filesBrowser.expand(node)
   await node.readData()
-  redraw(root, selectedNode, opts)
+  filesBrowser.rerender()
 }
 
 function onDragOver (e) {
@@ -430,15 +370,15 @@ function onDragLeave (e) {
   target.classList.remove('dragover')
 }
 
-async function onDrop (e, root, dropNode, opts) {
+async function onDrop (e, filesBrowser, dropNode) {
   // onto a target?
   const target = findParent(e.target, 'droptarget')
   if (!target) return
 
   // end the drag
-  const dragNode = currentDragNode
+  const dragNode = filesBrowser.getCurrentlyDraggedNode()
+  filesBrowser.setCurrentlyDraggedNode(null)
   target.classList.remove('dragover')
-  currentDragNode = null
   e.preventDefault()
   e.stopPropagation()
 
@@ -457,19 +397,17 @@ async function onDrop (e, root, dropNode, opts) {
     ])
     if (action === 'move') {
       await dragNode.move(joinPath(dropNode._path || '/', dragNode.name))
-      await refreshAllNodes(root, opts) // reload the tree
-      redraw(root, null, opts) // redraw with no selected node
+      await filesBrowser.reloadTree()
+      filesBrowser.rerender()
     } else if (action === 'copy') {
       await dragNode.copy(joinPath(dropNode._path || '/', dragNode.name))
-      await refreshAllNodes(root, opts) // reload the tree
-      redraw(root, null, opts) // redraw with no selected node
+      await filesBrowser.reloadTree()
+      filesBrowser.rerender()
     }
   }
 
   // files dragged in from the OS
   if (e.dataTransfer.files.length) {
-    console.log(e.dataTransfer.files)
-    console.log(dropNode)
     await Promise.all(Array.from(e.dataTransfer.files).map(file => (
       DatArchive.importFromFilesystem({
         src: file.path,
@@ -478,7 +416,7 @@ async function onDrop (e, root, dropNode, opts) {
         inplaceImport: true
       })
     )))
-    await refreshAllNodes(root, opts) // reload the tree
-    redraw(root, null, opts) // redraw with no selected node
+    await filesBrowser.reloadTree()
+    filesBrowser.rerender()
   }
 }

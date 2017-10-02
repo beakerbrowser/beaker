@@ -1,31 +1,29 @@
 /* globals beaker DatArchive */
 
 import * as yo from 'yo-yo'
-import {STANDARD_ARCHIVE_TYPES} from '../../lib/const'
 import renderSidebar from '../com/sidebar'
 import {
   FSVirtualRoot,
   FSVirtualFolder_User,
   FSVirtualFolder_Network
 } from 'beaker-virtual-fs'
-import renderFiles from '../com/files-columns-view'
+import FilesBrowser from '../com/files-browser'
 
 // globals
 // =
 
 var selectedPath = []
 var fsRoot = new FSVirtualRoot()
+var filesBrowser
 
 setup()
 async function setup () {
   // load and render
   await fsRoot.readData()
-  await readSelectedPathFromURL()
+  filesBrowser = new FilesBrowser(fsRoot)
+  // await readSelectedPathFromURL() TODO
   update()
-
-  // scroll to the rightmost point
-  const container = document.querySelector('.files-columns-view')
-  container.scrollLeft = container.scrollWidth
+  await filesBrowser.setCurrentSource(fsRoot._children[0])
 }
 
 // rendering
@@ -39,7 +37,7 @@ function update () {
     >
       ${renderSidebar('library')}
       <div class="builtin-main">
-        ${renderFiles(fsRoot, {filesListView: true, selectedPath, onSelection})}
+        ${filesBrowser.render()}
       </div>
     </div>
   `)
@@ -47,18 +45,6 @@ function update () {
 
 // event handlers
 // =
-
-function onSelection (path) {
-  selectedPath = path
-  var node = path[path.length - 1]
-
-  // update the url
-  if (node && node.type === 'archive') {
-    window.history.replaceState({}, null, node._archiveInfo.key)
-  } else {
-    window.history.replaceState({}, null, '/')
-  }
-}
 
 async function onContextMenu (e) {
   e.preventDefault()
@@ -126,26 +112,11 @@ async function readSelectedPathFromURL () {
       }
     }
 
-    // next, choose type
-    var type = findStandardType(info.type)
-    if (type) {
-      selectedPath.push(selectedPath[0].children.find(node => node._type === type))
-    } else {
-      selectedPath.push(selectedPath[0].children[0])
-    }
-    await selectedPath[1].readData()
-
     // now select the archive
-    selectedPath.push(selectedPath[1].children.find(node => node._archiveInfo.key === key))
-    await selectedPath[2].readData()
+    selectedPath.push(selectedPath[0].children.find(node => node._archiveInfo.key === key))
+    await selectedPath[1].readData()
   } catch (e) {
     // ignore, but log just in case something is buggy
     console.debug(e)
   }
-}
-
-function findStandardType (type) {
-  if (!type || !type.length) return false
-  type = type.filter(f => STANDARD_ARCHIVE_TYPES.includes(f))
-  return type[0]
 }

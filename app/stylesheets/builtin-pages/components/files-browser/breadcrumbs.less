@@ -1,0 +1,46 @@
+.files-browser {
+  .breadcrumbs {
+    &:extend(.flex);
+    align-items: center;
+    position: fixed;
+    left: 190px; // width of builtin pages sidebar + width of first column
+    bottom: 0;
+    width: 100%;
+    height: 25px;
+    padding: 0 10px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    font-size: 11.25px;
+
+    .breadcrumb {
+      margin-right: 6px;
+      height: 25px;
+      line-height: 25px;
+      vertical-align: middle;
+      margin-top: -1px;
+
+      * {
+        display: inline-block;
+      }
+
+      &:not(:last-of-type):after {
+        display: inline-block;
+        content: '>';
+        line-height: 25px;
+        vertical-align: middle;
+        margin-left: 5px;
+        margin-top: -2.75px;
+        font-weight: 700;
+        font-size: 9px;
+        color: @color-text--muted;
+      }
+
+      .icon {
+        margin-right: 2px;
+        margin-top: -2.3px;
+        line-height: 25px;
+        vertical-align: middle;
+      }
+    }
+  }
+}

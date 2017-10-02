@@ -1,40 +1,12 @@
-/* globals beaker DatArchive confirm */
-
 import yo from 'yo-yo'
-import {FSArchiveContainer, FSArchive, FSVirtualFolderWithTypes, FSVirtualFolder_Trash} from 'beaker-virtual-fs'
-import renderFilesList from './files-list'
-import {writeToClipboard} from '../../lib/fg/event-handlers'
-
-var userProfile
-var currentDragNode // currently dragged node
-
-setup()
-async function setup () {
-  userProfile = await beaker.profiles.getCurrentUserProfile()
-}
 
 // exported api
 // =
 
-// - opts.filesListView: boolean (default false). If true, will use com/files-list for archives
-// - opts.selectedPath: array of beaker-virtual-fs objects. The currently selected node(s)
-export default function render (root, opts = {}) {
-  opts.selectedPath = opts.selectedPath || []
-  return rFilesColumnsView(root, opts)
-}
-
-function rFilesColumnsView (root, opts) {
-  if (!root) {
-    return yo`<div class="files-columns-view"></div>`
-  }
-
-  console.log(root)
-
+export default function render (filesBrowser, root) {
   return yo`
-    <div class="files-columns-view ${root.isEmpty ? 'empty' : ''}">
-      ${rBreadcrumbs(root, opts.selectedPath, opts)}
-      ${rColumn(root, root, 0, opts)}
-      ${opts.selectedPath.map((node, i) => rColumn(root, node, i+1, opts))}
+    <div class="nav-sidebar">
+      ${root.children.map(childNode => rNode(filesBrowser, childNode))}
     </div>
   `
 }
@@ -42,16 +14,27 @@ function rFilesColumnsView (root, opts) {
 // rendering
 // =
 
-function redraw (root, opts = {}) {
-  yo.update(document.querySelector('.files-columns-view'), rFilesColumnsView(root, opts))
+function rNode (filesBrowser, node) {
+  const isSelected = filesBrowser.isCurrentSource(node)
+
+  return yo`
+    <div
+      class="item ${isSelected ? 'selected' : ''}"
+      title=${node.name}
+      onclick=${e => onClickNode(e, filesBrowser, node)}
+    >
+      ${rIcon(node)}
+      <div class="name">${node.name}</div>
+    </div>
+  `
 }
 
-function rIcon (node, grayscale=false) {
+function rIcon (node) {
   let icon = ''
   if (!node) return ''
   switch (node.constructor.name) {
     case 'FSVirtualFolder_User':
-      const isUserProfile = userProfile._origin === node._profile._origin
+      const isUserProfile = true // TODO userProfile._origin === node._profile._origin
       if (isUserProfile) icon = yo`<img class="icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAnlJREFUeNqMU11okmEUfl5/prX1Y4xFVLAYjKg1spouGkm521SkCwdRjGL9YEXQlRdBBV0WRauL3Q1i3rQk10VMGYsMYYNBsItdWI0NnBpNnZ9++v31vq8iEw06cPjOd85zfr5zno9omgZCCFpJyA8NKuB5AzLxLjyFct6nI/LH66PX3CzOcnX4hwRHoVlOuGHpv4TgFWhiRfO5XFZUJNW1HWeod7uHEFHBK+eywL7+YQyNhcBmixQcEMMuqJ5fkNXGnvW3chnuXpsTqQ2g86QT5++GIQrrXB0PZtFlG8Knq91Q9O1oOQEtgLnpKA7anbDfCkLcWsO5p2keiz0SYfd/QEzxQpm53HoCNvb+gYuw3phAIbuBkpDF8spvqhmUCpsQcimcGptEp+0Cxj10uTUhbJMvPfRx4Az8bxfwc3WRXkUPo9EIc5ueg8SKAkmSoKkqjnSfxvjtASC5iPshjfBP+JNHpMsTGM7l16FoBGvv72BzKQ5d7boq7WexDuKw9zUYxmAPID3pjdR38GQON1/5iomtfBrssql4HM7AFPSm3byAUs4j+mwEh7w6MIxaKfKcx9uW+EMpl+giiwDdskTJU8knsTw9woPHvc+5r7rsIhiW5TRcQVXKdFSZqkLJAshCEm27qhMwm/lYDAxDsU1nVBS5qkTmYEnIwGTew2PM5kVVGfoarrmArOBo71lopB1RGtfENMw7q6RhtkR9x3oG6dkEzMjfmwswzs5/m6U72MGmhEHOoKPDVAVRm/m+xD/TTiWObSpQLBbmF2IJB9EZsdr3EC+W9HW2cHyfA/LXFcoFiWKF+QYi1X7nHqp78X9CeYsEy/0rwABJ0zkOe1qN3QAAAABJRU5ErkJggg=="/>`//renderHomeIcon()
       else icon = yo`<img class="icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RUFENTA4NDE1OUJGMTFFMkEzQkFCMTAyRDM1NkMxNjIiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RUFENTA4NDI1OUJGMTFFMkEzQkFCMTAyRDM1NkMxNjIiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFQUQ1MDgzRjU5QkYxMUUyQTNCQUIxMDJEMzU2QzE2MiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFQUQ1MDg0MDU5QkYxMUUyQTNCQUIxMDJEMzU2QzE2MiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pq2oyIAAAAHySURBVHjalFPLahRBFD1d1Y/M00li0EQRER8EjBuDoKDgajZGBD9ixpUxy7g2S81GjEt/QCQRBqI/oCEE3A0Y0NFxNJloj9NJd6eru3OrMCH2tDBeaC51H6fuPX1Ki+MYmqbhsI1OLz0Lw6i6n+NcW2jN3753uEbmpGlJAGpeODc2VLl7fRwDugFXBKi9+4gPn348b81PVZMAOhJGN1fKk+fxZrUJ2wlQyhu4cek01tZbFUpXk/UsGTB1DsvQse0JWKamfC5rIkaMNOuZQC6zG0W0Nwejg9xOhOnNqRP4QqDr+jiSN8E4Q5F8u+sSsNYfANxOrd5o0+6WZB+lnIVGywZ27Fp/AIG70ty0cWw4S+MzjAxm8IXOEO5KXwAbL6pP179tKcp0XUMQRtjobKt4XwBj04tn5Z+QxDHGFYueH2D0/uK1NIADIZ14sFQmDbw6OpgfuHDqOEZKRfx0djFEJG7av1FvfEf7l+Nyzu40n0wt/6XEkzOvH1mGMXtl4gyGiwV4QQDfF4j+jGiSLjKWga1OF2v1z3B2vLmvj289PFghiuLZ8tWLKGQzcLwAgaDxSQe61AJ9IopVvJDL4ObkuKrvERLTdTARkvr+qRmlBE789CiRM4aXb9+rB7K/WyoAcaVeJ2M9JF7Gfxr1rUq/J8AA147Pxm0xNC0AAAAASUVORK5CYII="/>`
       break
@@ -79,211 +62,9 @@ function rIcon (node, grayscale=false) {
   return icon
 }
 
-function rBreadcrumbs (root, selectedPath, opts = {}) {
-  return yo`<div class="breadcrumbs">${selectedPath.map((node, i) => rBreadcrumb(root, node, i, opts))}</div>`
-}
-
-function rBreadcrumb (root, node, depth, opts) {
-  if (!node) return ''
-  return yo`
-    <div class="breadcrumb" ondblclick=${e => onClickNode(e, root, node, depth, opts)}>
-      ${rIcon(node)}
-      ${node.name}
-    </div>
-  `
-}
-
-function rColumn (root, node, depth, opts = {}) {
-  if (!node) {
-    return ''
-  }
-
-  if (opts.filesListView && node.type === 'archive') {
-    return renderFilesList(node, opts)
-  }
-
-  if (node.isEmpty) {
-    return yo`<div class="column"></div>`
-  }
-
-  return yo`
-    <div class="column ${depth === 0 ? 'first' : ''}">
-      ${node.children.map(childNode => rNode(root, childNode, depth, opts))}
-    </div>
-  `
-}
-
-function rNode (root, node, depth, opts) {
-  const isHighlighted = opts.selectedPath.reduce((agg, activeNode) => agg || activeNode === node, false)
-  const isSelected = isHighlighted && opts.selectedPath.length - 1 === depth
-  if (node.isHidden) return ''
-
-  return yo`
-    <div
-      class="item ${node.type} ${isHighlighted ? 'highlighted' : ''} ${isSelected ? 'selected' : ''}"
-      title=${node.name}
-      draggable=${node instanceof FSArchiveContainer}
-      onclick=${e => onClickNode(e, root, node, depth, opts)}
-      ondblclick=${e => onDblClickNode(e, node)}
-      oncontextmenu=${e => onContextMenu(e, root, node, depth, opts)}
-      ondragstart=${e => onDragStart(e, node)}
-      ondragover=${onDragOver}
-      ondragenter=${e => onDragEnter(e, node)}
-      ondragleave=${onDragLeave}
-      ondrop=${e => onDrop(e, root, node, opts)}>
-      ${rIcon(node, !depth)}
-      <div class="name">${node.name}</div>
-      ${node.isContainer ? yo`<span class="caret right">▶</span>` : ''}
-    </div>
-  `
-}
-
-// helpers
-// =
-
-function scrollRight () {
-  // scroll to the rightmost point
-  const container = document.querySelector('.files-columns-view')
-  container.scrollLeft = container.scrollWidth
-}
-
-async function unselectNode (root, opts) {
-  if (opts.selectedPath.length > 0) {
-    opts.selectedPath.length = opts.selectedPath.length - 1
-  }
-}
-
 // event handlers
 // =
 
-async function onDelete (root, node, opts) {
-  if (confirm(`Are you sure you want to delete "${node.name}"?`)) {
-    await node.delete()
-    node.isHidden = true // quick hack to get this archive out of the view
-    await unselectNode(root, opts)
-    redraw(root, opts)
-  }
-}
-
-async function onClickNode (e, root, node, depth, opts) {
-  // update state
-  opts.selectedPath.length = depth // truncate all nodes with equal or greater depth
-  opts.selectedPath.push(node) // add (or readd) this node
-  await node.readData()
-  if (node instanceof FSVirtualFolderWithTypes) {
-    // autoselect the 'all' type
-    let all = node.children[0]
-    opts.selectedPath.push(all)
-    await all.readData()
-  }
-
-  // emit an update
-  if (opts.onSelection) {
-    opts.onSelection(opts.selectedPath)
-  }
-
-  // render
-  redraw(root, opts)
-  scrollRight()
-}
-
-async function onContextMenu (e, root, node, depth, opts) {
-  if (!(node instanceof FSArchive)) {
-    return // only give a custom menu for an archive
-  }
-
-  e.preventDefault()
-  e.stopPropagation()
-
-  // select first
-  await onClickNode(null, root, node, depth, opts)
-  // HACK wait a frame or two to let rendering occur -prf
-  await new Promise(resolve => setTimeout(resolve, 75))
-
-  // now run the menu
-  const action = await beaker.browser.showContextMenu([
-    {label: 'Open URL', id: 'open'},
-    {label: 'Copy URL', id: 'copy-url'},
-    {type: 'separator'},
-    {label: `Delete "${node.name}"`, id: 'delete'},
-    {type: 'separator'},
-    {
-      type: 'submenu',
-      label: 'New archive...',
-      submenu: [
-        {label: 'Application', id: 'new-application'},
-        {label: 'Code module', id: 'new-module'},
-        {label: 'Dataset', id: 'new-dataset'},
-        {label: 'Documents', id: 'new-documents'},
-        {label: 'Music', id: 'new-music'},
-        {label: 'Photos', id: 'new-photos'},
-        {label: 'Videos', id: 'new-videos'},
-        {label: 'Website', id: 'new-website'}
-      ]
-    }
-  ])
-
-  // now run the action
-  node = node || root
-  switch (action) {
-    case 'open': return window.open(node.url)
-    case 'copy-url': return writeToClipboard(node.url)
-    case 'delete': return onDelete(root, node, opts)
-    case null: return
-    default:
-      if (action && action.startsWith('new')) {
-        let archive = await DatArchive.create({prompt: true, type: action.slice('new-'.length)})
-        window.location.pathname = archive.url.slice('dat://'.length)
-      }
-  }
-}
-
-function onDblClickNode (e, node) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  // open in a new window
-  if (node.url) {
-    window.open(node.url)
-  }
-}
-
-function onDragStart (e, node) {
-  e.dataTransfer.setData('application/json', JSON.stringify({
-    url: node.url,
-    name: node.name,
-    type: node.type
-  }))
-  e.dataTransfer.setData('text/uri-list', node.url)
-  e.dataTransfer.dropEffect = 'copy'
-  currentDragNode = node
-}
-
-function onDragEnter (e, node) {
-  // droppable targets:
-  if (node instanceof FSVirtualFolder_Trash) {
-    e.target.classList.add('dragover')
-  }
-}
-
-function onDragOver (e, node) {
-  if (e.target.classList.contains('dragover')) {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    return false
-  }
-}
-
-function onDragLeave (e) {
-  e.target.classList.remove('dragover')
-}
-
-function onDrop (e, root, dropNode, opts) {
-  var dragNode = currentDragNode
-  e.target.classList.remove('dragover')
-  currentDragNode = null
-
-  if (dropNode instanceof FSVirtualFolder_Trash) {
-    return onDelete(root, dragNode, opts)
-  }
+function onClickNode (e, filesBrowser, node) {
+  filesBrowser.setCurrentSource(node)
 }

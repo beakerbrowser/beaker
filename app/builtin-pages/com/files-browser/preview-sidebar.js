@@ -1,18 +1,20 @@
 import * as yo from 'yo-yo'
-import {STANDARD_ARCHIVE_TYPES} from '../../lib/const'
-import renderFolderIcon from '../icon/folder-color'
-import renderFileOIcon from '../icon/file-o'
-import {niceDate} from '../../lib/time'
+import {STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
+import renderFolderIcon from '../../icon/folder-color'
+import renderFileOIcon from '../../icon/file-o'
+import {niceDate} from '../../../lib/time'
 import prettyBytes from 'pretty-bytes'
-import renderFilePreview from './file-preview'
+import renderFilePreview from '../file-preview'
 
 // exported api
 // =
 
 export default function render (node) {
+  if (!node) return yo`<div></div>`
+
   const isArchive = node.constructor.name === 'FSArchive'
   const archiveInfo = node._archiveInfo
-  const networked = archiveInfo.userSettings.networked
+  const networked = archiveInfo && archiveInfo.userSettings.networked
 
   if (!archiveInfo) return yo`<div></div>`
 
@@ -26,7 +28,7 @@ export default function render (node) {
   }
 
   return yo`
-    <div class="files-list-sidebar">
+    <div class="preview-sidebar">
       <div class="archive-info">
         <div class="header">
           <span title="${networked ? 'Stop' : 'Start'} hosting this archive" class="archive-icon ${networked ? 'networked' : ''}">
