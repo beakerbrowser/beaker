@@ -1,10 +1,12 @@
 /* globals beaker DatArchive confirm */
 
 import yo from 'yo-yo'
+import moment from 'moment'
+import prettyBytes from 'pretty-bytes'
 import {join as joinPath} from 'path'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
-import {DAT_VALID_PATH_REGEX} from '../../../lib/const'
+import {DAT_VALID_PATH_REGEX, STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
 
 // exported api
 // =
@@ -32,7 +34,6 @@ export default function render (filesBrowser, root) {
 // rendering
 // =
 
-
 function rChildren (filesBrowser, children, depth = 0) {
   if (children.length === 0 && depth === 0) {
     return yo`
@@ -45,13 +46,13 @@ function rChildren (filesBrowser, children, depth = 0) {
 
 function rNode (filesBrowser, node, depth) {
   if (node.isContainer) {
-    return rDirectory(filesBrowser, node, depth)
+    return rContainer(filesBrowser, node, depth)
   } else {
     return rFile(filesBrowser, node, depth)
   }
 }
 
-function rDirectory (filesBrowser, node, depth) {
+function rContainer (filesBrowser, node, depth) {
   const isSelected = filesBrowser.isSelected(node)
   const isExpanded = filesBrowser.isExpanded(node)
   let children = ''
@@ -90,12 +91,13 @@ function rDirectory (filesBrowser, node, depth) {
           onclick=${e => onClickDirectoryCaret(e, filesBrowser, node)}
           style="left: ${caretPosition}px; ${isExpanded ? 'transform: rotate(90deg);' : ''}"
         >▶︎</div>
-
         <img class="icon folder" src="beaker://assets/icon/folder-color.png"/>
-
         ${node.isRenaming
           ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
           : yo`<div class="name">${node.name}</div>`}
+        <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
+        <div class="size">${node.size ? prettyBytes(node.size) : '--'}</div>
+        <div class="type">${containerType(node)}</div>
       </div>
       ${children}
     </div>
@@ -117,12 +119,13 @@ function rFile (filesBrowser, node, depth) {
       ondragstart=${e => onDragStart(e, filesBrowser, node)}
       style=${'padding-left: ' + padding + 'px'}
     >
-
       <img class="icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAUJJREFUeNqkk8FKw0AQhmcmyb0HTR7A4hPUS1B8haIetPh4Ei9tUqQn6aUPIra9hRYUTKiCzbiTJpsssdXSgWFnJjsf/85ukJnhaTR6+16vW5xlwFA3yRAIERBxcdXtuvoLcxUMooj/sjiOuR+GQR0gTnXa63SmfA7T2TxfJRd7CAJwXRfOff+uH0WPdY12KTRPbEukKhdoBUYiWCyX4HkeXPj+bTgcOqp8owElgshWjpqeZZv6absNz+MxyIzuez0BXxsKSgm2TbmC0ogYPtIEzjqd3DWY2TxC1WAZALHP1ReslEPR5B4f6bgBkBlsM2b+td5QsK8ZAMuiAwF0IECuEYB3bMctgGLyjmMZE272o7mWACqk0z+PUN+XA9IkmajneZlt3u9OBfJnpmk60SW5X/V4TlTc2mN276rvRYIfAQYABXymGHKpbU8AAAAASUVORK5CYII="/>
-
       ${node.isRenaming
         ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
         : yo`<div class="name">${node.name}</div>`}
+      <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
+      <div class="size">${typeof node.size === 'number' ? prettyBytes(node.size) : '--'}</div>
+      <div class="type">${node.type}</div>
     </div>
   `
 }
@@ -140,6 +143,25 @@ async function enterRenameMode (filesBrowser, node) {
     input.focus()
     input.select()
   }
+}
+
+const today = moment()
+function niceMtime (ts) {
+  ts = moment(ts)
+  if (ts.isSame(today, 'day')) {
+    return 'Today, ' + ts.format('h:mma')
+  }
+  return ts.format('ll, h:mma')
+}
+
+function containerType (node) {
+  if (node.type === 'archive') {
+    let type = node._archiveInfo && node._archiveInfo.type
+    if (!type || !type.length) return 'archive'
+    type = type.filter(f => STANDARD_ARCHIVE_TYPES.includes(f))
+    return type[0] || 'archive'
+  }
+  return node.type
 }
 
 // event handlers

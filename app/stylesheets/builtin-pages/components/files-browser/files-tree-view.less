@@ -49,10 +49,32 @@
 
       .name {
         &:extend(.overflow-ellipsis);
+        flex: 1;
 
         input {
           height: auto;
         }
+      }
+
+      .updated,
+      .size,
+      .type {
+        color: #666;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .updated {
+        flex: 0 0 130px;
+      }
+
+      .size {
+        flex: 0 0 100px;
+        text-align: right;
+      }
+
+      .type {
+        flex: 0 0 80px;      
+        padding-left: 1rem;
       }
 
       &.selected:not(.dragover) {
@@ -64,6 +86,12 @@
         .caret {
           color: #fff;
           font-weight: 900;
+        }
+
+        .updated,
+        .size,
+        .type {
+          color: rgba(255, 255, 255, 0.75);
         }
       }
     }

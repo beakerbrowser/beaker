@@ -10,13 +10,11 @@ import renderFilePreview from '../file-preview'
 // =
 
 export default function render (node) {
-  if (!node) return yo`<div></div>`
-
-  const isArchive = node.constructor.name === 'FSArchive'
-  const archiveInfo = node._archiveInfo
+  const isArchive = node && node.constructor.name === 'FSArchive'
+  const archiveInfo = node && node._archiveInfo
   const networked = archiveInfo && archiveInfo.userSettings.networked
 
-  if (!archiveInfo) return yo`<div></div>`
+  if (!archiveInfo) return yo`<div class="preview-sidebar"></div>`
 
   // render preview
   let preview
