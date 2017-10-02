@@ -5,6 +5,7 @@ import moment from 'moment'
 import prettyBytes from 'pretty-bytes'
 import {join as joinPath} from 'path'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
+import rIcon from './node-icon'
 import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
 import {DAT_VALID_PATH_REGEX, STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
 
@@ -18,7 +19,7 @@ export default function render (filesBrowser, root) {
       onclick=${e => onClickNode(e, filesBrowser, root)}
       oncontextmenu=${e => onContextMenu(e, filesBrowser, root)}
     >
-      <div class="item headers">
+      <div class="item header">
         ${rColumnHeader(filesBrowser, 'name', 'Name')}
         ${rColumnHeader(filesBrowser, 'updated', 'Last Updated')}
         ${rColumnHeader(filesBrowser, 'size', 'Size')}
@@ -35,6 +36,9 @@ export default function render (filesBrowser, root) {
           ${rChildren(filesBrowser, root.children)}
         </div>
       </div>
+      <div class="footer">
+        ${rFooter(filesBrowser)}
+      </div>
     </div>
   `
 }
@@ -49,6 +53,20 @@ function rColumnHeader (filesBrowser, id, label) {
       class="${id} ${sortColumn === id ? sortDir : ''}"
       onclick=${e => filesBrowser.toggleSort(id)}
     >${label}</div>
+  `
+}
+
+function rFooter (filesBrowser) {
+  return yo`<div class="breadcrumbs">${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}</div>`
+}
+
+function rBreadcrumb (filesBrowser, node) {
+  if (!node) return ''
+  return yo`
+    <div class="breadcrumb" ondblclick=${e => onDblClickNode(e, filesBrowser, node)}>
+      ${rIcon(node, {noArchiveTypes: true})}
+      ${node.name}
+    </div>
   `
 }
 
@@ -262,7 +280,7 @@ async function onContextMenu (e, filesBrowser, node) {
     {
       // create a new virtual node
       let parentPath = node._path || '/'
-      let newFolderNode = new FSArchiveFolder_BeingCreated(node._archiveInfo, node._archive, parentPath)
+      let newFolderNode = new FSArchiveFolder_BeingCreated(node, node._archiveInfo, node._archive, parentPath)
       node._files.push(newFolderNode)
 
       // put it into rename mode
@@ -302,7 +320,9 @@ function onDblClickNode (e, filesBrowser, node) {
   e.stopPropagation()
 
   // open in a new window
-  if (node.url) {
+  if (node.isContainer) {
+    filesBrowser.setCurrentSource(node)
+  } else if (node.url) {
     window.open(node.url)
   }
 }

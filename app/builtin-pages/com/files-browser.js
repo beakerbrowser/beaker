@@ -1,5 +1,6 @@
 import yo from 'yo-yo'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
+import parseDatURL from 'parse-dat-url'
 import renderNavSidebar from './files-browser/nav-sidebar'
 import renderFilesTreeView from './files-browser/files-tree-view'
 import renderPreviewSidebar from './files-browser/preview-sidebar'
@@ -46,12 +47,12 @@ export default class FilesBrowser {
       <div class="files-browser">
         ${renderNavSidebar(this, this.root)}
         ${this.getCurrentSource() ? renderFilesTreeView(this, this.getCurrentSource()) : null}
-        ${renderPreviewSidebar(Array.from(this.selectedNodes.values())[0])}
+        ${renderPreviewSidebar(this)}
       </div>
     `
   }
 
-  // state management api
+  // node-tree management api
 
   async reloadTree (node = undefined) {
     // if node is not given, then this is a root call
@@ -84,7 +85,20 @@ export default class FilesBrowser {
     return this.currentSource
   }
 
+  // helper for breadcrumbs
+  // turns the current source into a path of nodes
+  getCurrentSourcePath () {
+    var path = []
+    var node = this.currentSource
+    while (node && node !== this.root) {
+      path.unshift(node)
+      node = node.parent
+    }
+    return path
+  }
+
   async setCurrentSource (node) {
+    await this.unselectAll()
     this.currentSource = node
     await this.currentSource.readData()
     this.resortTree()

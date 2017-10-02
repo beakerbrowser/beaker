@@ -10,7 +10,7 @@
 
     .body {
       overflow-y: auto;
-      height: ~"calc(100vh - 22px)";
+      height: ~"calc(100vh - 47px)";
       padding: 0 1px;
     }
 
@@ -98,7 +98,8 @@
         }
       }
 
-      &.headers {
+      &.header {
+        height: 22px;
         background: #fafafa;
         border-bottom: 1px solid #ddd;
 
@@ -137,6 +138,10 @@
           border: 0;
         }
       }
+    }
+
+    .footer {
+      height: 25px;
     }
 
     & > .droptarget {
