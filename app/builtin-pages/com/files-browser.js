@@ -20,6 +20,7 @@ export default class FilesBrowser {
     this.expandedNodes = new Set() // set of nodes
     this.selectedNodes = new Set() // set of nodes
     this.currentDragNode = null
+    this.onSetCurrentSource = () => {} // v simple events solution
   }
 
   // method to render at a place in the page
@@ -101,6 +102,7 @@ export default class FilesBrowser {
     await this.unselectAll()
     this.currentSource = node
     await this.currentSource.readData()
+    this.onSetCurrentSource(node)
     this.resortTree()
     this.rerender()
   }

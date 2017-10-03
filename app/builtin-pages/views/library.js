@@ -12,7 +12,6 @@ import FilesBrowser from '../com/files-browser'
 // globals
 // =
 
-var selectedPath = []
 var fsRoot = new FSVirtualRoot()
 var filesBrowser
 
@@ -21,10 +20,9 @@ async function setup () {
   // load and render
   await fsRoot.readData()
   filesBrowser = new FilesBrowser(fsRoot)
-  // await readSelectedPathFromURL() TODO
+  filesBrowser.onSetCurrentSource = onSetCurrentSource
+  await readSelectedPathFromURL()
   update()
-  await filesBrowser.setCurrentSource(fsRoot._children[0])
-  window.filesBrowser = filesBrowser
 }
 
 // rendering
@@ -46,6 +44,17 @@ function update () {
 
 // event handlers
 // =
+
+function onSetCurrentSource (node) {
+  let path = ''
+  if (node._archiveInfo) {
+    path += node._archiveInfo.key
+    if (node._path) {
+      path += node._path
+    }
+  }
+  window.history.replaceState('', {}, `beaker://library/${path}`)
+}
 
 async function onContextMenu (e) {
   e.preventDefault()
@@ -78,11 +87,12 @@ async function onContextMenu (e) {
 
 async function readSelectedPathFromURL () {
   try {
-    var key = window.location.pathname.slice(1)
+    var node
+    var [key, ...pathParts] = window.location.pathname.slice(1).split('/')
     if (!key) {
-      // default to home
-      selectedPath.push(fsRoot.children.find(node => node instanceof FSVirtualFolder_User))
-      await selectedPath[0].readData()
+      // default to user's home
+      node = fsRoot.children.find(node => node instanceof FSVirtualFolder_User)
+      await filesBrowser.setCurrentSource(node)
       return
     }
 
@@ -92,8 +102,8 @@ async function readSelectedPathFromURL () {
 
     // start with provenance
     if (info.isOwner && info.userSettings.isSaved) {
-      selectedPath.push(fsRoot.children.find(node => node instanceof FSVirtualFolder_User))
-      await selectedPath[0].readData()
+      node = fsRoot.children.find(node => node instanceof FSVirtualFolder_User)
+      await node.readData()
     } else {
       // check if it's === to or authored by a profile in our network list
       let userNode = fsRoot.children.find(node => (
@@ -103,19 +113,28 @@ async function readSelectedPathFromURL () {
         )
       ))
       if (userNode) {
-        selectedPath.push(userNode)
-        await selectedPath[0].readData()
+        node = userNode
+        await node.readData()
       } else {
         // use 'Network' and add this archive if it does not exist
-        selectedPath.push(fsRoot.children.find(node => node instanceof FSVirtualFolder_Network))
-        await selectedPath[0].readData()
-        selectedPath[0].addArchive(info)
+        node = fsRoot.children.find(node => node instanceof FSVirtualFolder_Network)
+        await node.readData()
+        node.addArchive(info)
       }
     }
 
     // now select the archive
-    selectedPath.push(selectedPath[0].children.find(node => node._archiveInfo.key === key))
-    await selectedPath[1].readData()
+    node = node.children.find(node => node._archiveInfo.key === key)
+    await node.readData()
+
+    // now select the folders
+    let pathPart
+    while ((pathPart = pathParts.shift())) {
+      node = node.children.find(node => node.name === pathPart)
+      await node.readData()
+    }  
+    
+    await filesBrowser.setCurrentSource(node)
   } catch (e) {
     // ignore, but log just in case something is buggy
     console.debug(e)
