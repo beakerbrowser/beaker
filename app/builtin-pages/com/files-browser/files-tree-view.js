@@ -246,6 +246,7 @@ async function onContextMenu (e, filesBrowser, node) {
       {type: 'separator'},
       {label: 'New folder', id: 'new-folder', enabled},
       {label: 'Import files', id: 'import', enabled},
+      {label: 'Export files', id: 'export'},
       {label: 'Delete archive', id: 'delete'},
       {type: 'separator'}
     ]
@@ -309,6 +310,7 @@ async function onContextMenu (e, filesBrowser, node) {
       }
       return
     }
+    case 'export': return beaker.browser.downloadURL(`${node.url}?download_as=zip`)
     case null: return
     default:
       if (action && action.startsWith('new')) {
