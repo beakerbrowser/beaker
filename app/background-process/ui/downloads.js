@@ -39,8 +39,10 @@ export function registerListener (win, opts = {}) {
     item.name = path.basename(filePath)
     if (item.name.split('.').length < 2) {
       const ext = `.${mime.extension(item.getMimeType())}`
-      item.name += ext
-      filePath += ext
+      if (ext !== '.bin') {
+        item.name += ext
+        filePath += ext
+      }
     }
     item.setSavePath(filePath)
     item.isHandled = true
