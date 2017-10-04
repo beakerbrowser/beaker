@@ -29,7 +29,7 @@ var imgHeight
 
 export function render () {
   return yo`
-    <div id="crop-popup" class="popup-wrapper" onclick=${onClickWrapper}>
+    <div id="crop-popup" class="popup-wrapper">
       <div class="popup-inner">
         <div class="head">
           <div class="title">Crop your photo</div>
@@ -45,7 +45,10 @@ export function render () {
             ></canvas>
             <input type="range" value="0" min="0" max="100" onchange=${onResize} oninput=${onResize} />
           </div>
-          <div class="btns"><button class="btn primary" onclick=${onDone}>Done</button></div>
+          <div class="btns">
+            <button class="btn" onclick=${destroy}>Cancel</button>
+            <button class="btn primary" onclick=${onDone}>Done</button>
+          </div>
         </div>
       </div>
     </div>
@@ -100,8 +103,8 @@ function updateCanvas () {
   ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
   ctx.save()
 
-    ctx.scale(zoom, zoom)
     ctx.translate(ox, oy)
+    ctx.scale(zoom, zoom)
     ctx.drawImage(img, 0, 0, img.width, img.height)
 
   ctx.restore()
@@ -124,8 +127,7 @@ function onCanvasMouseUp (e) {
 function onCanvasMouseMove (e) {
   e.preventDefault()
   if (dragging) {
-    ox = Math.max(Math.min(ox + e.clientX - mx, 0), -imgWidth * zoom + CANVAS_SIZE)
-    oy = Math.max(Math.min(oy + e.clientY - my, 0), -imgHeight * zoom + CANVAS_SIZE)
+    [ox, oy] = clampCoords(ox + e.clientX - mx, oy + e.clientY - my)
     mx = e.clientX
     my = e.clientY
     updateCanvas()
@@ -133,8 +135,21 @@ function onCanvasMouseMove (e) {
 }
 
 function onResize (e) {
+  // update the zoom
+  var oldZoom = zoom
   zoom = minzoom + (e.target.value / 100)
+
+  // adjust the coords to keep the current position
+  ;[ox, oy] = clampCoords(ox / oldZoom * zoom, oy / oldZoom * zoom)
+
   updateCanvas()
+}
+
+function clampCoords (x, y) {
+  return [
+    Math.max(Math.min(x, 0), -imgWidth * zoom + CANVAS_SIZE),
+    Math.max(Math.min(y, 0), -imgHeight * zoom + CANVAS_SIZE)
+  ]
 }
 
 // event handlers
@@ -156,12 +171,6 @@ function onKeyUp (e) {
   e.stopPropagation()
 
   if (e.keyCode === 27) {
-    destroy()
-  }
-}
-
-function onClickWrapper (e) {
-  if (e.target.id === 'crop-popup') {
     destroy()
   }
 }
