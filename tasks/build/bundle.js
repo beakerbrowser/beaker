@@ -40,7 +40,7 @@ module.exports = function (src, dest, opts) {
 
     if (opts && opts.browserify) {
       // Browserify the code
-      var b = browserify(intoStream(result.code), { basedir: opts.basedir });
+      var b = browserify(intoStream(result.code), { basedir: opts.basedir, builtins: opts.builtins });
       b.exclude('electron');
       if (opts.excludeNodeModules) {
         nodeBuiltInModules.forEach(function (module) { b.exclude(module); });
