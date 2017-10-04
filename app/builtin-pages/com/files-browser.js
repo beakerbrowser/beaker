@@ -190,6 +190,37 @@ export default class FilesBrowser {
     }
   }
 
+  async selectDirection (dir) {
+    var firstSelectedNode = Array.from(this.selectedNodes.values())[0]
+    if (!firstSelectedNode) {
+      // nothing is selected, so just select the first item
+      return this.select(this.getCurrentSource().children[0])
+    }
+    if (dir === 'up' || dir === 'down') {
+      let index = firstSelectedNode.parent.children.indexOf(firstSelectedNode)
+      index += dir === 'up' ? -1 : 1
+      index = Math.max(Math.min(index, firstSelectedNode.parent.children.length - 1), 0)
+      await this.unselectAll()
+      return this.select(firstSelectedNode.parent.children[index])
+    }
+    if (dir === 'left') {
+      if (firstSelectedNode.parent !== this.getCurrentSource()) {
+        await this.unselectAll()
+        await this.collapse(firstSelectedNode.parent)
+        return this.select(firstSelectedNode.parent)
+      }
+    }
+    if (dir === 'right') {
+      if (firstSelectedNode.isContainer) {
+        await this.expand(firstSelectedNode)
+        await this.unselectAll()
+        if (firstSelectedNode.children[0]) {
+          return this.select(firstSelectedNode.children[0])
+        }
+      }
+    }
+  }
+
   // drag/drop api
 
   getCurrentlyDraggedNode () {

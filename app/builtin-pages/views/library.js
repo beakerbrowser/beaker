@@ -23,6 +23,9 @@ async function setup () {
   filesBrowser.onSetCurrentSource = onSetCurrentSource
   await readSelectedPathFromURL()
   update()
+
+  // wire up events
+  window.addEventListener('keyup', onKeyUp)
 }
 
 // rendering
@@ -44,6 +47,12 @@ function update () {
 
 // event handlers
 // =
+
+function onKeyUp (e) {
+  if (e.code.startsWith('Arrow')) {
+    filesBrowser.selectDirection(e.code.slice('Arrow'.length).toLowerCase())
+  }
+}
 
 function onSetCurrentSource (node) {
   let path = ''
