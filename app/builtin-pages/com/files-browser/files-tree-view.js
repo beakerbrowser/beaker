@@ -4,7 +4,7 @@ import yo from 'yo-yo'
 import moment from 'moment'
 import prettyBytes from 'pretty-bytes'
 import {join as joinPath} from 'path'
-import {FSArchive, FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
+import {FSArchive, FSArchiveFolder, FSArchiveFile, FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import rIcon from './node-icon'
 import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
 import {DAT_VALID_PATH_REGEX, STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
@@ -217,17 +217,18 @@ async function onContextMenu (e, filesBrowser, node) {
   await new Promise(resolve => setTimeout(resolve, 66))
 
   // now run the menu
-  var menu
+  var menu = []
   const enabled = node.isEditable && node._path !== '/dat.json'
-  if (node && node.type === 'file') {
+  if (node instanceof FSArchiveFile) {
     menu = [
       {label: 'Open URL', id: 'open'},
       {label: 'Copy URL', id: 'copy-url'},
       {type: 'separator'},
       {label: 'Rename', id: 'rename', enabled},
-      {label: 'Delete file', id: 'delete', enabled}
+      {label: 'Delete file', id: 'delete', enabled},
+      {type: 'separator'}
     ]
-  } else if (node && node.type === 'folder') {
+  } else if (node instanceof FSArchiveFolder) {
     menu = [
       {label: 'Open URL', id: 'open'},
       {label: 'Copy URL', id: 'copy-url'},
@@ -235,19 +236,20 @@ async function onContextMenu (e, filesBrowser, node) {
       {label: `New folder in "${node.name}"`, id: 'new-folder', enabled},
       {label: `Import files to "${node.name}"`, id: 'import', enabled},
       {label: 'Rename', id: 'rename', enabled},
-      {label: 'Delete folder', id: 'delete', enabled}
+      {label: 'Delete folder', id: 'delete', enabled},
+      {type: 'separator'}
     ]
-  } else {
+  } else if (node instanceof FSArchive) {
     menu = [
       {label: 'Open URL', id: 'open'},
       {label: 'Copy URL', id: 'copy-url'},
       {type: 'separator'},
       {label: 'New folder', id: 'new-folder', enabled},
       {label: 'Import files', id: 'import', enabled},
-      {label: 'Delete archive', id: 'delete'}
+      {label: 'Delete archive', id: 'delete'},
+      {type: 'separator'}
     ]
   }
-  menu.push({type: 'separator'})
   menu.push({
     type: 'submenu',
     label: 'New archive...',
