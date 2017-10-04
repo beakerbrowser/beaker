@@ -79,7 +79,16 @@
     &.active {
 
       * {
-        // stroke: var(--icon-color-active);
+        stroke: var(--icon-color-active);
+      }
+      &:after {
+        content: '';
+        position: absolute;
+        right: -5px;
+        top: -10px;
+        height: 36px;
+        width: 3px;
+        background: rgba(33, 150, 243, 0.82);
       }
     }
 
