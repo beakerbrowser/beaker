@@ -384,7 +384,7 @@ async function onToggleLiked (e, p) {
 function render () {
   yo.update(document.querySelector('.timeline-wrapper'), yo`
     <div class="builtin-wrapper timeline-wrapper">
-      ${renderSidebar()}
+      ${renderSidebar('timeline')}
       <div class="builtin-main center">
         ${renderHeader()}
         ${renderView()}
