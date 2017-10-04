@@ -213,8 +213,8 @@ async function onContextMenu (e, filesBrowser, node) {
 
   // select first
   await onClickNode(null, filesBrowser, node)
-  // HACK wait a frame to let rendering occur -prf
-  await new Promise(resolve => setTimeout(resolve, 33))
+  // HACK wait a frame or two to let rendering occur -prf
+  await new Promise(resolve => setTimeout(resolve, 66))
 
   // now run the menu
   var menu
@@ -243,7 +243,8 @@ async function onContextMenu (e, filesBrowser, node) {
       {label: 'Copy URL', id: 'copy-url'},
       {type: 'separator'},
       {label: 'New folder', id: 'new-folder', enabled},
-      {label: 'Import files', id: 'import', enabled}
+      {label: 'Import files', id: 'import', enabled},
+      {label: 'Delete archive', id: 'delete'}
     ]
   }
   menu.push({type: 'separator'})
