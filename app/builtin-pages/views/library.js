@@ -25,7 +25,7 @@ async function setup () {
   update()
 
   // wire up events
-  window.addEventListener('keyup', onKeyUp)
+  window.addEventListener('keydown', onKeyDown)
 }
 
 // rendering
@@ -48,8 +48,9 @@ function update () {
 // event handlers
 // =
 
-function onKeyUp (e) {
+function onKeyDown (e) {
   if (e.code.startsWith('Arrow')) {
+    e.preventDefault()
     filesBrowser.selectDirection(e.code.slice('Arrow'.length).toLowerCase())
   }
 }
