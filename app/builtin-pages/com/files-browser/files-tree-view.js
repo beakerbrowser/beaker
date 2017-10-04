@@ -4,7 +4,7 @@ import yo from 'yo-yo'
 import moment from 'moment'
 import prettyBytes from 'pretty-bytes'
 import {join as joinPath} from 'path'
-import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
+import {FSArchive, FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import rIcon from './node-icon'
 import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
 import {DAT_VALID_PATH_REGEX, STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
@@ -433,7 +433,7 @@ async function onDrop (e, filesBrowser, dropNode) {
   // internal drag
   if (dragNode) {
     // do nothing if this is the dragged node's container
-    if (dropNode._files && dropNode._files.includes(dragNode)) {
+    if (dragNode === dropNode || (dropNode._files && dropNode._files.includes(dragNode))) {
       return
     }
 
@@ -441,14 +441,14 @@ async function onDrop (e, filesBrowser, dropNode) {
     const dropPath = dropNode._path ? dropNode._path : '/'
     const action = await beaker.browser.showContextMenu([
       {label: `Copy "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'copy'},
-      {label: `Move "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'move'}
-    ])
+      (dragNode instanceof FSArchive) ? null : {label: `Move "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'move'}
+    ].filter(Boolean))
     if (action === 'move') {
-      await dragNode.move(joinPath(dropNode._path || '/', dragNode.name))
+      await dragNode.move(joinPath(dropNode._path || '/', dragNode.name), dropNode._archiveInfo.key)
       await filesBrowser.reloadTree()
       filesBrowser.rerender()
     } else if (action === 'copy') {
-      await dragNode.copy(joinPath(dropNode._path || '/', dragNode.name))
+      await dragNode.copy(joinPath(dropNode._path || '/', dragNode.name), dropNode._archiveInfo.key)
       await filesBrowser.reloadTree()
       filesBrowser.rerender()
     }
