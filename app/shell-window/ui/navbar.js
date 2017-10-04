@@ -514,7 +514,7 @@ function getAutocompleteSelection (i) {
   if (isDatHashRegex.test(url)) {
     url = 'dat://' + url
   } else {
-    if (/https?:\/\//.test(url) === false) {
+    if (/:\/\//.test(url) === false) {
       url = 'https://' + url
     }
   }
