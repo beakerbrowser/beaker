@@ -98,11 +98,13 @@ export default class FilesBrowser {
     return path
   }
 
-  async setCurrentSource (node) {
+  async setCurrentSource (node, {suppressEvent} = {}) {
     await this.unselectAll()
     this.currentSource = node
     await this.currentSource.readData()
-    this.onSetCurrentSource(node)
+    if (!suppressEvent) {
+      this.onSetCurrentSource(node)
+    }
     this.resortTree()
     this.rerender()
   }

@@ -26,6 +26,7 @@ async function setup () {
 
   // wire up events
   window.addEventListener('keydown', onKeyDown)
+  window.addEventListener('popstate', onPopState)
 }
 
 // rendering
@@ -55,6 +56,10 @@ function onKeyDown (e) {
   }
 }
 
+function onPopState (e) {
+  readSelectedPathFromURL()
+}
+
 function onSetCurrentSource (node) {
   let path = ''
   if (node._archiveInfo) {
@@ -63,7 +68,7 @@ function onSetCurrentSource (node) {
       path += node._path
     }
   }
-  window.history.replaceState('', {}, `beaker://library/${path}`)
+  window.history.pushState('', {}, `beaker://library/${path}`)
 }
 
 async function onContextMenu (e) {
@@ -102,7 +107,7 @@ async function readSelectedPathFromURL () {
     if (!key) {
       // default to user's home
       node = fsRoot.children.find(node => node instanceof FSVirtualFolder_User)
-      await filesBrowser.setCurrentSource(node)
+      await filesBrowser.setCurrentSource(node, {suppressEvent: true})
       return
     }
 
@@ -144,7 +149,7 @@ async function readSelectedPathFromURL () {
       await node.readData()
     }  
     
-    await filesBrowser.setCurrentSource(node)
+    await filesBrowser.setCurrentSource(node, {suppressEvent: true})
   } catch (e) {
     // ignore, but log just in case something is buggy
     console.debug(e)
