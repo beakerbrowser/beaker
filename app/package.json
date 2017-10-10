@@ -11,7 +11,7 @@
     "await-lock": "^1.1.2",
     "beaker-error-constants": "^1.2.0",
     "beaker-profiles-api": "^2.4.2",
-    "beaker-virtual-fs": "git://github.com/beakerbrowser/beaker-virtual-fs.git#b319fe9e99323fc70ca04c73cbd0859c3f203bfa",
+    "beaker-virtual-fs": "git://github.com/beakerbrowser/beaker-virtual-fs.git#688daea044b5be2222018cadeec6f70b250e1e15",
     "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib.git#1fb16ec7a0d9e3efd0777ad5c05672fb815dca6c",
     "bytes": "^2.5.0",
     "choo": "^5.6.2",
