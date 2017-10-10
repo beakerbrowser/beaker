@@ -1,16 +1,16 @@
 import yo from 'yo-yo'
 
-function render (message) {
+function render (message, type = '') {
   return yo`
     <div id="toast-wrapper" class="toast-wrapper">
-      <p class="toast">${message}</p>
+      <p class="toast ${type}">${message}</p>
     </div>
   `
 }
 
-export function create (message) {
+export function create (message, type = '') {
   // render toast
-  var toast = render(message)
+  var toast = render(message, type)
   document.body.appendChild(toast)
   setTimeout(destroy, 1500)
 }
