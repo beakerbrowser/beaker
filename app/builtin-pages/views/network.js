@@ -144,8 +144,7 @@ function renderArchive (archive) {
             </span>`
           : yo`
             <span>
-              Start seeding
-              <span class="plus">+</span>
+              Seed files ⇧
             </span>`
         }
       </button>
