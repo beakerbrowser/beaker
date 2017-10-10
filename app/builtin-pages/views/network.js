@@ -9,6 +9,8 @@ import {pluralize} from '../../lib/strings'
 // globals
 // =
 let archives = []
+let totalBytesHosting = 0
+let totalArchivesHosting = 0
 
 // main
 // =
@@ -23,6 +25,11 @@ async function setup () {
 async function fetchArchives () {
   archives = await beaker.archives.list({isSaved: true})
   archives = archives.filter(a => a.userSettings.networked)
+
+  totalArchivesHosting = archives.length
+  totalBytesHosting = archives.reduce((sum, a) => {
+    return sum + a.size
+  }, 0)
 }
 
 // events
@@ -38,6 +45,14 @@ async function onNetworkChanged ({details}) {
 
 async function onToggleHosting (archive) {
   var isNetworked = !archive.userSettings.networked
+
+  if (isNetworked) {
+    totalArchivesHosting += 1
+    totalBytesHosting += archive.size
+  } else {
+    totalArchivesHosting -= 1
+    totalBytesHosting -= archive.size
+  }
 
   // don't unsave the archive if user is owner
   if (archive.isOwner) {
@@ -82,6 +97,11 @@ function render () {
         </div>
 
         <div class="builtin-main">
+          <div class="builtin-header fixed">
+            Seeding ${totalArchivesHosting} ${pluralize(totalArchivesHosting, 'archive')}
+            —
+            ${prettyBytes(totalBytesHosting)}
+          </div>
           <div class="view">${renderArchives()}</div>
         </div>
       </div>
