@@ -104,11 +104,12 @@ function renderArchive (archive) {
         <div>
           <a href=${archive.url} class="title">
             ${archive.title || yo`<em>Untitled</em>`}
+            <span class="circle ${archive.userSettings.networked ? 'green' : 'red'}"></span>
           </a>
 
           <div class="metadata">
             ${archive.peers} ${pluralize(archive.peers, 'peer')}
-            •
+            <span class="bullet">•</span>
             ${prettyBytes(archive.size)}
           </div>
         </div>

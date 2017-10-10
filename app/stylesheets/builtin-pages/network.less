@@ -40,12 +40,30 @@
     }
 
     .title {
+      &:extend(.flex);
+      align-items: center;
       color: @color-text;
       text-decoration: none;
 
       &:hover {
         text-decoration: underline;
         cursor: pointer;
+      }
+
+      .circle {
+        display: inline-block;
+        border-radius: 50%;
+        width: 6px;
+        height: 6px;
+        margin-left: 4px;
+
+        &.red {
+          background: @red;
+        }
+
+        &.green {
+          background: @green;
+        }
       }
     }
 
