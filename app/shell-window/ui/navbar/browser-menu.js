@@ -124,6 +124,11 @@ export class BrowserMenuNavbarBtn {
                 <span class="label">Beaker Filesystem</span>
               </div>
 
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://network')}>
+                <i class="fa fa-share-alt"></i>
+                <span class="label">Network Activity</span>
+              </div>
+
               <div class="menu-item downloads" style=${progressEl ? 'height: 41px' : ''} onclick=${e => this.onClickDownloads(e)}>
                 <i class="fa fa-download"></i>
                 <span class="label">Downloads</span>
