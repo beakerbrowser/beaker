@@ -4,8 +4,18 @@
 
 .network-wrapper {
 
+  .builtin-sidebar {
+
+    p {
+      padding: 0 20px 20px 20px;
+      margin-top: 0;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+  }
+
   .builtin-main {
-    max-width: 650px;
+    max-width: 600px;
     background: #fcfcfc;
 
     h2:first-of-type {
@@ -22,7 +32,8 @@
   li.archive {
     &:extend(.flex);
     align-items: center;
-    width: 650px;
+    justify-content: space-between;
+    width: 600px;
     max-width: 100%;
     background: #fff;
     padding: 10px 15px;
@@ -30,10 +41,20 @@
     border-bottom: 1px solid #ddd;
     border-right: 1px solid #ddd;
 
+    .favicon,
+    .info {
+      display: inline-block;
+    }
+
+    .info {
+      vertical-align: top;
+      padding-top: 2px
+    }
+
     .favicon {
       width: 32px;
       height: 32px;
-      margin-right: 8px;
+      margin-right: 5px;
     }
 
     .header {
@@ -76,20 +97,34 @@
       color: rgba(0,0,0, .55);
       line-height: 1;
     }
+  }
 
-    .hosting-btn {
-      margin-left: auto;
-      font-size: inherit;
+  .hosting-btn {
+    margin-left: auto;
+    font-size: inherit;
+
+    .square {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 1px;
+      background: #aaa;
+      margin-left: 2px;
+    }
+  }
+
+  .btn {
+    line-height: 24px;
+    vertical-align: middle;
+
+    .icon.trash {
+      width: auto;
+      height: 13px;
       line-height: 24px;
       vertical-align: middle;
 
-      .square {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 1px;
-        background: #aaa;
-        margin-left: 2px;
+      * {
+        stroke: @color-text--muted;
       }
     }
   }

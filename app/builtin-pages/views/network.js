@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import renderSidebar from '../com/sidebar'
 import * as toast from '../com/toast'
+import renderTrashIcon from '../icon/trash'
 import {pluralize} from '../../lib/strings'
 
 // globals
@@ -11,6 +12,7 @@ import {pluralize} from '../../lib/strings'
 let archives = []
 let totalBytesHosting = 0
 let totalArchivesHosting = 0
+let currentFilter = 'seeding'
 
 // main
 // =
@@ -24,7 +26,12 @@ async function setup () {
 
 async function fetchArchives () {
   archives = await beaker.archives.list({isSaved: true})
-  archives = archives.filter(a => a.userSettings.networked)
+
+  if (currentFilter === 'seeding') {
+    archives = archives.filter(a => a.userSettings.networked)
+  } else if (currentFilter === 'offline') {
+    archives = archives.filter(a => !a.userSettings.networked)
+  }
 
   totalArchivesHosting = archives.length
   totalBytesHosting = archives.reduce((sum, a) => {
@@ -36,26 +43,31 @@ async function fetchArchives () {
 // =
 
 async function onNetworkChanged ({details}) {
-  // console.log(details)
   var archive = archives.find(a => details.url === a.url)
   if (archive) archive.peers = details.peerCount
-  if (archive) console.log(archive.title, archive.peers)
+  render()
+}
+
+async function onUpdateFilter (e) {
+  currentFilter = e.target.dataset.filter
+  console.log(currentFilter)
+  await fetchArchives()
   render()
 }
 
 async function onToggleHosting (archive) {
   var isNetworked = !archive.userSettings.networked
 
-  if (isNetworked) {
+  if (isNetworked && currentFilter === 'seeding') {
     totalArchivesHosting += 1
     totalBytesHosting += archive.size
-  } else {
+  } else if (currentFilter === 'seeding') {
     totalArchivesHosting -= 1
     totalBytesHosting -= archive.size
   }
 
   // don't unsave the archive if user is owner
-  if (archive.isOwner) {
+  if (archive.isOwner && archive.userSettings.isSaved) {
     var tmpArchive = new DatArchive(archive.url)
 
     try {
@@ -84,6 +96,14 @@ async function onToggleHosting (archive) {
   render()
 }
 
+async function onUnsaveArchive (archive) {
+  await beaker.archives.remove(archive.key)
+  archive.userSettings.isSaved = false
+  totalArchivesHosting -= 1
+  totalBytesHosting -= archive.size
+  render()
+}
+
 // rendering
 // =
 
@@ -94,19 +114,47 @@ function render () {
       <div>
         <div class="builtin-sidebar">
           <h1>Network Activity</h1>
+
+          <p>Review and manage your network activity.</p>
+
+          <div class="section">
+            <div onclick=${onUpdateFilter} data-filter="seeding" class="nav-item ${currentFilter === 'seeding' ? 'active' : ''}">
+              Currently seeding
+            </div>
+
+            <div onclick=${onUpdateFilter} data-filter="offline" class="nav-item ${currentFilter === 'offline' ? 'active' : ''}">
+              Offline
+            </div>
+          </div>
         </div>
 
         <div class="builtin-main">
-          <div class="builtin-header fixed">
-            Seeding ${totalArchivesHosting} ${pluralize(totalArchivesHosting, 'archive')}
-            —
-            ${prettyBytes(totalBytesHosting)}
-          </div>
+          ${renderHeader()}
           <div class="view">${renderArchives()}</div>
         </div>
       </div>
     </div>
   </div>`)
+}
+
+function renderHeader () {
+  if (currentFilter === 'seeding') {
+    return yo`
+      <div class="builtin-header fixed">
+        ${totalArchivesHosting} ${pluralize(totalArchivesHosting, 'archive')}
+        —
+        ${prettyBytes(totalBytesHosting)}
+      </div>
+    `
+  } else {
+    return yo`
+      <div class="builtin-header fixed">
+        ${totalArchivesHosting} ${pluralize(totalArchivesHosting, 'archive')}
+        —
+        ${prettyBytes(totalBytesHosting)}
+      </div>
+    `
+  }
 }
 
 function renderArchives () {
@@ -118,10 +166,10 @@ function renderArchives () {
 function renderArchive (archive) {
   return yo`
     <li class="archive">
-      <div class="header">
+      <div>
         <img class="favicon" src="beaker-favicon:${archive.url}" />
 
-        <div>
+        <span class="info">
           <a href=${archive.url} class="title">
             ${archive.title || yo`<em>Untitled</em>`}
             <span class="circle ${archive.userSettings.networked ? 'green' : 'red'}"></span>
@@ -132,22 +180,29 @@ function renderArchive (archive) {
             <span class="bullet">•</span>
             ${prettyBytes(archive.size)}
           </div>
-        </div>
+        </span>
       </div>
 
-      <button class="btn hosting-btn" onclick=${e => onToggleHosting(archive)}>
-        ${archive.userSettings.networked
-          ? yo`
-            <span>
-              Stop seeding
-              <span class="square"></span>
-            </span>`
-          : yo`
-            <span>
-              Seed files ⇧
-            </span>`
-        }
-      </button>
+      <div>
+      ${archive.userSettings.isSaved && !archive.userSettings.networked ? yo`
+        <button title="Delete these files from your device" class="btn" onclick=${e => onUnsaveArchive(archive)}>
+          ${renderTrashIcon()}
+        </button>` : ''}
+
+        <button class="btn hosting-btn" onclick=${e => onToggleHosting(archive)}>
+          ${archive.userSettings.networked
+            ? yo`
+              <span>
+                Stop seeding
+                <span class="square"></span>
+              </span>`
+            : yo`
+              <span>
+                Seed files ⇧
+              </span>`
+          }
+        </button>
+      </div>
     </li>
   `
 }
