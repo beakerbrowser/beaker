@@ -3,6 +3,7 @@
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import renderSidebar from '../com/sidebar'
+import * as toast from '../com/toast'
 import {pluralize} from '../../lib/strings'
 
 // globals
@@ -41,7 +42,13 @@ async function onToggleHosting (archive) {
   // don't unsave the archive if user is owner
   if (archive.isOwner) {
     var tmpArchive = new DatArchive(archive.url)
-    await tmpArchive.configure({networked: isNetworked})
+
+    try {
+      await tmpArchive.configure({networked: isNetworked})
+    } catch (e) {
+      toast.create('You cannot manage the network status of your user profile', '')
+      return
+    }
   }
 
   // unsave if not owner and update the peer count
