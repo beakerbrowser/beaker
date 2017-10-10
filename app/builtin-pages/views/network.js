@@ -135,8 +135,6 @@ function renderArchive (archive) {
         </div>
       </div>
 
-      <p class="desc">${archive.description || yo`<em>No description</em>`}</p>
-
       <button class="btn hosting-btn" onclick=${e => onToggleHosting(archive)}>
         ${archive.userSettings.networked
           ? yo`
