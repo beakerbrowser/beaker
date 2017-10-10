@@ -12,7 +12,7 @@ export function create (message, type = '') {
   // render toast
   var toast = render(message, type)
   document.body.appendChild(toast)
-  setTimeout(destroy, 1500)
+  setTimeout(destroy, 2200)
 }
 
 function destroy () {
