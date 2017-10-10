@@ -200,6 +200,12 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://history/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/history.build.js'))
   }
+  if (requestUrl === 'beaker://network/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/network.html'))
+  }
+  if (requestUrl === 'beaker://network/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/network.build.js'))
+  }
   if (requestUrl === 'beaker://downloads/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/downloads.html'))
   }

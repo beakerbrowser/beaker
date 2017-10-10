@@ -1,0 +1,85 @@
+@import "../base/colors";
+@import "../base/spacing";
+@import "../utils/flex";
+
+.network-wrapper {
+
+  .builtin-main {
+    max-width: 650px;
+    background: #fcfcfc;
+
+    h2:first-of-type {
+      margin-top: 0;
+    }
+  }
+
+  ul.archives {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  li.archive {
+    position: relative;
+    background: #fff;
+    padding: 10px 15px;
+    font-size: .75rem;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+
+    .favicon {
+      width: 32px;
+      height: 32px;
+      margin-right: 8px;
+    }
+
+    .header {
+      &:extend(.flex);
+      align-items: center;
+      height: 32px;
+    }
+
+    .title {
+      color: @color-text;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    }
+
+    .desc {
+      margin-bottom: 0;
+      margin-left: 39px; // width of favicon + its margin
+    }
+
+    .metadata {
+      color: rgba(0,0,0, .55);
+    }
+
+    .hosting-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: inherit;
+      line-height: 24px;
+      vertical-align: middle;
+
+      .square {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 1px;
+        background: #aaa;
+        margin-left: 2px;
+      }
+
+      .plus {
+        font-weight: 700;
+        font-size: 14px;
+        margin-left: 2px;
+      }
+    }
+  }
+}
