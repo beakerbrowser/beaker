@@ -121,7 +121,7 @@ async function onToggleHosting (archive) {
     try {
       await tmpArchive.configure({networked: isNetworked})
     } catch (e) {
-      toast.create('You cannot manage the network status of your user profile', 'error')
+      toast.create('Something went wrong')
       return
     }
   }
