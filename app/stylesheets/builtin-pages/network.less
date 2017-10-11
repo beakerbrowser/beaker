@@ -75,27 +75,88 @@
         text-decoration: underline;
         cursor: pointer;
       }
-
-      .circle {
-        display: inline-block;
-        border-radius: 50%;
-        width: 6px;
-        height: 6px;
-        margin-left: 4px;
-
-        &.red {
-          background: darken(@red, 5%);
-        }
-
-        &.green {
-          background: darken(@green, 10%);
-        }
-      }
     }
 
     .metadata {
       color: rgba(0,0,0, .55);
       line-height: 1;
+
+      .gear-btn {
+        position: relative;
+      }
+
+      .seeding-menu {
+        position: absolute;
+        z-index: 3;
+        left: -125px;
+        top: 25px;
+        background: #fff;
+        border: 1px solid #dadada;
+        border-radius: 4px;
+        box-shadow: 0 1px 25px rgba(0,0,0,.225);
+        padding: 15px;
+        width: 250px;
+        color: @color-text;
+
+        input {
+          width: 100%;
+        }
+
+        .circle {
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          margin-right: 3px;
+
+          &.red {
+            background: darken(@red, 5%);
+          }
+
+          &.yellow {
+            background: @yellow;
+          }
+
+          &.green {
+            background: darken(@green, 10%);
+          }
+        }
+
+        label {
+          font-weight: 500;
+          margin-bottom: 5px;
+        }
+
+        &:before {
+          content: '';
+          position: absolute;
+          top: -8px;
+          left: 122px;
+          width: 12px;
+          height: 12px;
+          z-index: 3;
+          width: 0;
+          height: 0;
+          border-left: 8px solid transparent;
+          border-right: 8px solid transparent;
+          border-bottom: 8px solid #fff;
+        }
+      }
+
+      .icon.gear {
+        width: 13.5px;
+        height: 13.5px;
+        margin-bottom: -2.5px;
+        margin-left: -1.5px;
+        cursor: pointer;
+
+        * {
+          fill: rgba(0,0,0,.45);
+        }
+
+        &:hover * {
+          fill: rgba(0,0,0,.75);
+        }
+      }
     }
   }
 
