@@ -38,7 +38,9 @@ export default {
     await datLibrary.pullLatestArchiveMeta(archive)
 
     // update settings
-    return archivesDb.setUserSettings(0, key, {isSaved: true, expiresAt: opts.expiresAt})
+    opts.isSaved = true
+    return archivesDb.setUserSettings(0, key, opts)
+    beaker.archives.add(key)
   },
 
   async remove (url) {
