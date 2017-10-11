@@ -25,12 +25,10 @@ async function setup () {
 }
 
 async function fetchArchives () {
-  archives = await beaker.archives.list({isSaved: true})
-
   if (currentFilter === 'seeding') {
-    archives = archives.filter(a => a.userSettings.networked)
+    archives = await beaker.archives.list({isSaved: true, isNetworked: true})
   } else if (currentFilter === 'offline') {
-    archives = archives.filter(a => !a.userSettings.networked)
+    archives = await beaker.archives.list({isSaved: true, isNetworked: false})
   }
 
   totalArchivesHosting = archives.length
