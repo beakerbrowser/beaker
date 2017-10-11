@@ -340,7 +340,7 @@ function renderArchive (archive) {
         </span>
       </div>
 
-      <div>
+      <div class="buttons">
       ${archive.userSettings.isSaved && !archive.userSettings.networked ? yo`
         <button title="Delete these files from your device" class="btn" onclick=${e => onUnsaveArchive(archive)}>
           ${renderTrashIcon()}
