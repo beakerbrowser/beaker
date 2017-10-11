@@ -163,7 +163,7 @@ export default {
       if (settings.networked === false) {
         await assertArchiveOfflineable(archive)
       }
-      await archivesDb.setUserSettings(0, archive.key, {networked: settings.networked})
+      await archivesDb.setUserSettings(0, archive.key, {networked: settings.networked, expiresAt: 0})
     }
   },
 
