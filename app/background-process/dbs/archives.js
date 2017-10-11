@@ -86,7 +86,8 @@ export async function query (profileId, query) {
         archives.isSaved,
         archives.networked,
         archives.autoDownload,
-        archives.autoUpload
+        archives.autoUpload,
+        archives.expiresAt
       FROM archives_meta
       LEFT JOIN archives ON archives.key = archives_meta.key
       LEFT JOIN archives_meta_type ON archives_meta_type.key = archives_meta.key
@@ -103,7 +104,8 @@ export async function query (profileId, query) {
       isSaved: archive.isSaved != 0,
       networked: archive.networked != 0,
       autoDownload: archive.autoDownload != 0,
-      autoUpload: archive.autoUpload != 0
+      autoUpload: archive.autoUpload != 0,
+      expiresAt: archive.expiresAt
     }
 
     // user settings
@@ -111,6 +113,7 @@ export async function query (profileId, query) {
     delete archive.networked
     delete archive.autoDownload
     delete archive.autoUpload
+    delete archive.expiresAt
 
     // old attrs
     delete archive.createdByTitle
