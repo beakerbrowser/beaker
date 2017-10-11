@@ -63,12 +63,41 @@
       height: 32px;
     }
 
+    .status {
+      color: rgba(0,0,0, .55);
+      font-style: italic;
+    }
+
+    .status,
+    .title {
+      display: inline-block;
+      line-height: 1;
+      vertical-align: top;
+    }
+
+    .circle {
+      display: inline-block;
+      border-radius: 50%;
+      width: 6px;
+      height: 6px;
+      margin-left: 1px;
+      margin-top: -2px;
+      vertical-align: middle;
+
+      &.red {
+        background: darken(@red, 5%);
+      }
+
+      &.green {
+        background: darken(@green, 10%);
+      }
+    }
+
     .title {
       &:extend(.flex);
       align-items: center;
       color: @color-text;
       text-decoration: none;
-      line-height: 1;
       margin-bottom: 5px;
 
       &:hover {
