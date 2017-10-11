@@ -74,9 +74,8 @@ async function onNetworkChanged ({details}) {
 
 async function onUpdateFilter (e) {
   currentFilter = e.target.dataset.filter
-  currentlyConfiguringKey = null
   await fetchArchives()
-  render()
+  destroySeedingMenu()
 }
 
 async function onChangeSeedingConfiguration (e) {
@@ -169,7 +168,8 @@ function onKeyUp (e) {
 }
 
 function destroySeedingMenu () {
-  currentlyConfiguringKey = null
+  currentlyConfiguringKey = undefined
+  sliderState = undefined
   document.body.removeEventListener('keyup', onKeyUp)
   document.body.removeEventListener('click', onClick)
   render()
