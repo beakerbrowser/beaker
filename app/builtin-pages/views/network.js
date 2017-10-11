@@ -30,12 +30,14 @@ let totalBytesHosting = 0
 let totalArchivesHosting = 0
 let currentFilter = 'seeding'
 let currentlyConfiguringKey
+let currentUserProfile
 
 // main
 // =
 
 setup()
 async function setup () {
+  currentUserProfile = await beaker.profiles.getCurrentUserProfile()
   await fetchArchives()
   beaker.archives.addEventListener('network-changed', onNetworkChanged)
   render()
@@ -323,12 +325,17 @@ function renderArchive (archive) {
             ${archive.peers} ${pluralize(archive.peers, 'peer')}
             <span class="bullet">•</span>
             ${prettyBytes(archive.size)}
-            <span class="bullet">•</span>
-            ${expiresAtStr}
-            <span class="gear-btn" onclick=${e => onClickSettings(archive)}>
-              ${renderGearIcon()}
-              ${renderSeedingMenu(archive)}
-            </span>
+
+            ${archive.url !== currentUserProfile._origin ? yo`
+              <span>
+                <span class="bullet">•</span>
+                ${expiresAtStr}
+                <span class="gear-btn" onclick=${e => onClickSettings(archive)}>
+                  ${renderGearIcon()}
+                  ${renderSeedingMenu(archive)}
+                </span>
+              </span>`
+            : ''}
           </div>
         </span>
       </div>
@@ -339,19 +346,20 @@ function renderArchive (archive) {
           ${renderTrashIcon()}
         </button>` : ''}
 
-        <button class="btn hosting-btn" onclick=${e => onToggleHosting(archive)}>
-          ${archive.userSettings.networked
-            ? yo`
-              <span>
-                Stop seeding
-                <span class="square"></span>
-              </span>`
-            : yo`
-              <span>
-                Seed files ⇧
-              </span>`
-          }
-        </button>
+        ${archive.url !== currentUserProfile._origin ? yo`
+          <button class="btn hosting-btn" onclick=${e => onToggleHosting(archive)}>
+            ${archive.userSettings.networked
+              ? yo`
+                <span>
+                  Stop seeding
+                  <span class="square"></span>
+                </span>`
+              : yo`
+                <span>
+                  Seed files ⇧
+                </span>`
+            }
+          </button>` : ''}
       </div>
     </li>
   `
