@@ -134,8 +134,15 @@ export class DatsiteMenuNavbarBtn {
               </div>
             </div>
           </div>` : ''}
-      </div>
-    `
+
+          <div class="network-url">
+            <a onclick=${e => this.onOpenPage('beaker://network')}>
+              <i class="fa fa-gear"></i>
+              Manage all network activity
+            </a>
+          </div>
+        </div>
+      `
   }
 
   updateActives () {
@@ -199,5 +206,10 @@ export class DatsiteMenuNavbarBtn {
     page.siteInfo = await (new DatArchive(page.siteInfo.key)).getInfo()
 
     this.updateActives()
+  }
+
+  onOpenPage (href) {
+    this.isDropdownOpen = false
+    pages.setActive(pages.create(href))
   }
 }

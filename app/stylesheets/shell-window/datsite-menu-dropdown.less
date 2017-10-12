@@ -4,7 +4,6 @@
 }
 
 .datsite-menu-dropdown-items {
-  padding: 15px;
   color: @color-text;
   width: 290px;
   font-size: .775rem;
@@ -20,6 +19,13 @@
   .header {
     font-size: 12px;
     font-weight: 500;
+  }
+
+  .header,
+  .rehosting-controls {
+    margin: 0 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
   }
 
   .header-info {
@@ -46,10 +52,19 @@
     font-weight: 300;
   }
 
-  .rehosting-controls {
-    border-top: 1px solid #eee;
-    padding-top: 10px;
-    margin-top: 10px;
+  .network-url {
+    background: #f5f5f5;
+    padding: 10px;
+
+    i {
+      color: @color-text--muted;
+      margin-right: 3px;
+    }
+
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
   }
 
   .labels {
