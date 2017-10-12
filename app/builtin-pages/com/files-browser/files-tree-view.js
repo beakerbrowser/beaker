@@ -91,6 +91,8 @@ function rNode (filesBrowser, node, depth) {
 function rContainer (filesBrowser, node, depth) {
   const isSelected = filesBrowser.isSelected(node)
   const isExpanded = filesBrowser.isExpanded(node)
+  const isNetworked = node._archiveInfo.userSettings.networked
+  const isArchive = node && node.constructor.name === 'FSArchive'
   let children = ''
   const directoryPadding = 20 + (depth * 20)
   const caretPosition = directoryPadding - 15
@@ -130,7 +132,14 @@ function rContainer (filesBrowser, node, depth) {
         <img class="icon folder" src="beaker://assets/icon/folder-color.png"/>
         ${node.isRenaming
           ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
-          : yo`<div class="name">${node.name}</div>`}
+          : yo`
+            <div class="name">
+              ${node.name}
+              ${isArchive ? yo`
+                <i title="You are${isNetworked ? '' : ' not'} seeding these files" class="seeding-status ${isNetworked ? 'seeding' : ''}"></i>
+                ` : ''
+              }
+            </div>`}
         <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
         <div class="size">${node.size ? prettyBytes(node.size) : '--'}</div>
         <div class="type">${node.type}</div>
