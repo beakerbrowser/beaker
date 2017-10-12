@@ -43,13 +43,15 @@ export class DatsiteMenuNavbarBtn {
     }
 
     // render btn
-    return yo`<div class="rehost-navbar-menu">
-      <button class="nav-peers-btn" onclick=${e => this.onClickDropdownBtn(e)}>
-        <i class="fa fa-share-alt"></i>
-        ${page.siteInfo.peers || 0}
-      </button>
-      ${dropdownEl}
-    </div>`
+    return yo`
+      <div class="rehost-navbar-menu">
+        <button class="nav-peers-btn" onclick=${e => this.onClickDropdownBtn(e)}>
+          <i class="fa fa-share-alt"></i>
+          ${page.siteInfo.peers || 0}
+        </button>
+        ${dropdownEl}
+      </div>
+    `
   }
 
   renderRehostDropdown (page) {
@@ -76,7 +78,7 @@ export class DatsiteMenuNavbarBtn {
           'green' :
           'yellow'))
     const statusLabel = timeRemaining && typeof this.sliderState === 'undefined'
-      ? yo`<span>Rehosting (${timeRemaining.humanize()} remaining)</span>`
+      ? yo`<span>Seeding (${timeRemaining.humanize()} remaining)</span>`
       : TIMELENS[sliderState]()
     const size = (page && page.siteInfo && page.siteInfo.size) ? bytes(page.siteInfo.size, 'mb') : ''
 
@@ -91,14 +93,14 @@ export class DatsiteMenuNavbarBtn {
             </div>
 
             <div class="peer-count">
-              ${page.siteInfo.peers || '0'} ${pluralize(page.siteInfo.peers, 'peer')} hosting these files
+              ${page.siteInfo.peers || '0'} ${pluralize(page.siteInfo.peers, 'peer')} seeding these files
             </div>
           </div>
 
           ${!page.siteInfo.isOwner ? yo`
             <div class="rehosting-controls">
               <div>
-                <label for="rehost-period">Rehost these files</label>
+                <label for="rehost-period">Seed these files</label>
                 <input
                   name="rehost-period"
                   type="range"
