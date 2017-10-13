@@ -1,5 +1,5 @@
 import { app, BrowserWindow, screen, ipcMain, webContents, Menu, Tray } from 'electron'
-import { register as registerShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
+import { register as registerShortcut, unregister as unregisterShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import os from 'os'
 import jetpack from 'fs-jetpack'
 import path from 'path'
@@ -111,15 +111,20 @@ export function createShellWindow () {
   registerShortcut(win, 'CmdOrCtrl+Q', onQuit(win))
   registerShortcut(win, 'CmdOrCtrl+T', onNewTab(win))
   registerShortcut(win, 'CmdOrCtrl+W', onCloseTab(win))
-  registerShortcut(win, 'Esc', onEscape(win))
 
   // register event handlers
   win.on('scroll-touch-begin', sendScrollTouchBegin)
   win.on('scroll-touch-end', sendToWebContents('scroll-touch-end'))
   win.on('focus', sendToWebContents('focus'))
   win.on('blur', sendToWebContents('blur'))
-  win.on('enter-full-screen', sendToWebContents('enter-full-screen'))
-  win.on('leave-full-screen', sendToWebContents('leave-full-screen'))
+  win.on('enter-full-screen', () => {
+    registerShortcut(win, 'Esc', onEscape(win))
+    sendToWebContents('enter-full-screen')
+  })
+  win.on('leave-full-screen', () => {
+    unregisterShortcut(win, 'Esc')
+    sendToWebContents('leave-full-screen')
+  })
   win.on('close', onClose(win))
 
   return win
