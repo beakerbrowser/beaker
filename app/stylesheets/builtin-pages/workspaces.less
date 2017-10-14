@@ -3,21 +3,107 @@
 @import "../base/typography";
 
 @import "../components/buttons.less";
-@import "../com/markdown.less";
 @import "./components/toast";
 
 .workspaces-wrapper {
+  color: @color-text;
 
-  .builtin-main {
-    margin: 0;
-  }
+  .header {
+    position: fixed;
+    width: 100%;
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 2px 20px rgba(0,0,0,.05);
+    font-size: .95rem;
 
-  .builtin-main > .empty {
-    font-size: 20rem;
-    text-align: center;
-    color: fadeout(@color-text--light, 80%);
-    margin-top: 17vh;
-    -webkit-text-stroke-width: 10px;
-    -webkit-text-stroke-color: #fff;
+    .top {
+      padding: 10px 15px;
+    }
+
+    .bottom {
+      padding: 0 15px;
+    }
+
+    .title {
+      color: @color-text--muted;
+      margin-right: 5px;
+    }
+
+    .local-path {
+      color: rgba(0,0,0,.35);
+    }
+
+    .origin {
+      display: block;
+    }
+
+    .title,
+    .local-path {
+      &:extend(.code-font);
+      cursor: pointer;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .tabs {
+      font-size: .85rem;
+
+      .tab {
+        display: inline-block;
+        border-bottom: 3px solid transparent;
+        width: 100px;
+        text-align: center;
+        padding: 5px 0;
+        cursor: pointer;
+        color: rgba(0,0,0,.55);
+        margin-right: 5px;
+        vertical-align: bottom;
+
+        .icon {
+          font-style: normal;
+
+          &.revisions {
+            &:extend(.code-font);
+            color: rgba(0,0,0,.4);
+          }
+
+          &.gear {
+            width: 14px;
+            height: 14px;
+            margin-bottom: -2.5px;
+
+            * {
+              fill: rgba(0,0,0,.3);
+            }
+          }
+        }
+
+        &:hover {
+          border-color: #ddd;
+        }
+
+        &.active {
+          border-color: @blue;
+          color: rgba(0,0,0,.85);
+
+          .icon {
+
+            &.revisions {
+              color: rgba(0,0,0,.7);
+            }
+
+            &.gear * {
+              fill: rgba(0,0,0,.65);
+            }
+          }
+        }
+      }
+    }
+
+    .buttons {
+      margin: 15px 0;
+    }
   }
 }
