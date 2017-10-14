@@ -142,6 +142,9 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages.css'))
   }
+  if (requestUrl === 'beaker://assets/workspaces.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/workspaces.css'))
+  }
   if (requestUrl === 'beaker://assets/icon/photos.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/icon/photos.png'))
   }
@@ -205,6 +208,12 @@ async function beakerServer (req, res) {
   }
   if (requestUrl === 'beaker://network/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/network.build.js'))
+  }
+  if (requestUrl === 'beaker://workspaces/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/workspaces.html'))
+  }
+  if (requestUrl === 'beaker://workspaces/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/workspaces.build.js'))
   }
   if (requestUrl === 'beaker://downloads/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/downloads.html'))

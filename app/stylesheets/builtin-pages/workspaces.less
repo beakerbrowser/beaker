@@ -1,0 +1,23 @@
+@import "../photon.min.less";
+
+@import "../base/typography";
+
+@import "../components/buttons.less";
+@import "../com/markdown.less";
+@import "./components/toast";
+
+.workspaces-wrapper {
+
+  .builtin-main {
+    margin: 0;
+  }
+
+  .builtin-main > .empty {
+    font-size: 20rem;
+    text-align: center;
+    color: fadeout(@color-text--light, 80%);
+    margin-top: 17vh;
+    -webkit-text-stroke-width: 10px;
+    -webkit-text-stroke-color: #fff;
+  }
+}
