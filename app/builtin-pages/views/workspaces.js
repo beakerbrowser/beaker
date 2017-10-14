@@ -22,6 +22,14 @@ async function setup () {
 // events
 // =
 
+function onPublishChanges () {
+  // TODO
+}
+
+function onRevertChanges () {
+  // TODO
+}
+
 function onOpenInFinder () {
   // TODO
 }
@@ -85,6 +93,8 @@ function renderTabs () {
 function renderActions () {
   return yo`
     <div class="actions">
+      <button onclick=${onRevertChanges} class="btn">Revert changes</button>
+      <button onclick=${onPublishChanges} class="btn success">Publish changes</button>
     </div>
   `
 }

@@ -20,6 +20,8 @@
     }
 
     .bottom {
+      &:extend(.flex);
+      justify-content: space-between;
       padding: 0 15px;
     }
 
@@ -102,8 +104,14 @@
       }
     }
 
-    .buttons {
-      margin: 15px 0;
+    .actions {
+
+      .btn {
+
+        &:not(:last-child) {
+          margin-right: 5px;
+        }
+      }
     }
   }
 }
