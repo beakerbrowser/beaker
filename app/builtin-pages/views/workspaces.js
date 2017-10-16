@@ -1,6 +1,7 @@
 /* globals beaker */
 
 import yo from 'yo-yo'
+import {pluralize} from '../../lib/strings'
 import renderGearIcon from '../icon/gear-small'
 
 // main
@@ -14,7 +15,7 @@ async function setup () {
     title: 'blog',
     origin: 'dat://cca6eb69a3ad6104ca31b9fee7832d74068db16ef2169eaaab5b48096e128342/',
     localPath: '/Users/tara/src/taravancil.com',
-    revisions: []
+    revisions: {additions: [0, 1], deletions: [0, 1, 2], modifications: []}
   }
   render()
 }
@@ -57,15 +58,19 @@ function renderHeader () {
   return yo`
     <div class="header">
       <div class="top">
-        <a href="workspaces://${workspaceInfo.title}" class="title">
-          workspaces://${workspaceInfo.title}
-        </a>
-        <span onclick=${onOpenInFinder} class="local-path">${workspaceInfo.localPath}</span>
+        <div>
+          <a href="workspaces://${workspaceInfo.title}" class="title">
+            workspaces://${workspaceInfo.title}
+          </a>
+          <span onclick=${onOpenInFinder} class="local-path">${workspaceInfo.localPath}</span>
+        </div>
+
+        ${renderActions()}
       </div>
 
       <div class="bottom">
         ${renderTabs()}
-        ${renderActions()}
+        ${renderMetadata()}
       </div>
     </div>
   `
