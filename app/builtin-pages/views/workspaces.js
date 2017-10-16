@@ -12,7 +12,9 @@ let activeTab = 'revisions'
 setup()
 async function setup () {
   workspaceInfo = {
-    title: 'blog',
+    namespace: 'blog',
+    title: 'My blog',
+    description: 'The source for my blog',
     origin: 'dat://cca6eb69a3ad6104ca31b9fee7832d74068db16ef2169eaaab5b48096e128342/',
     localPath: '/Users/tara/src/taravancil.com',
     revisions: {additions: [0, 1], deletions: [0, 1, 2], modifications: []}
@@ -46,21 +48,19 @@ function onChangeTab (tab) {
 function render () {
   yo.update(document.querySelector('.workspaces-wrapper'), yo`
     <div class="workspaces-wrapper builtin-wrapper">
-      <div class="builtin-main">
-        ${renderHeader()}
-        ${renderView()}
-      </div>
+      ${renderHeader()}
+      ${renderView()}
     </div>
   `)
 }
 
 function renderHeader () {
   return yo`
-    <div class="header">
+    <div class="builtin-header header">
       <div class="top">
         <div>
-          <a href="workspaces://${workspaceInfo.title}" class="title">
-            workspaces://${workspaceInfo.title}
+          <a href="workspaces://${workspaceInfo.namespace}" class="namespace">
+            workspaces://${workspaceInfo.namespace}
           </a>
           <span onclick=${onOpenInFinder} class="local-path">${workspaceInfo.localPath}</span>
         </div>
@@ -150,8 +150,34 @@ function renderWizardsView () {
 
 function renderSettingsView () {
   return yo`
-    <div class="view">
-      TODO
+    <div class="view settings">
+      <h2>Settings</h2>
+
+      <p>
+        <label for="title">Title</label>
+        <input autofocus name="title" value=${workspaceInfo.title}/>
+      </p>
+
+      <p>
+        <label for="desc">Description</label>
+        <textarea name="desc">${workspaceInfo.description}</textarea>
+      </p>
+
+      <p>
+        <label for="namespace">Local URL</label>
+        <div class="namespace-input-container">
+          <span class="protocol">workspaces://</span>
+          <input name="namespace" value=${workspaceInfo.namespace}/>
+          ${false ? yo`
+            <span class="error">This URL is being used by another workspace</span>
+          ` : ''}
+        </div>
+      </p>
+
+      <p>
+        <label for="title">Folder</label>
+        <input name="title" type="file" directory value=${workspaceInfo.localPath}/>
+      </p>
     </div>
   `
 }
