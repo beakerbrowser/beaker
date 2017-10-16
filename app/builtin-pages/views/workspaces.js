@@ -48,7 +48,7 @@ function render () {
     <div class="workspaces-wrapper builtin-wrapper">
       <div class="builtin-main">
         ${renderHeader()}
-        <div class="view"></div>
+        ${renderView()}
       </div>
     </div>
   `)
@@ -100,6 +100,58 @@ function renderActions () {
     <div class="actions">
       <button onclick=${onRevertChanges} class="btn">Revert changes</button>
       <button onclick=${onPublishChanges} class="btn success">Publish changes</button>
+    </div>
+  `
+}
+
+function renderMetadata () {
+  const revisions = workspaceInfo.revisions
+  const totalChangesCount = revisions.additions.length + revisions.modifications.length + revisions.deletions.length
+
+  return yo`
+    <div class="metadata">
+      ${totalChangesCount ? yo`
+        <span class="changes-count">
+          ${totalChangesCount} unpublished ${pluralize(totalChangesCount, 'change')}
+        </span>
+      ` : ''}
+    </div>
+  `
+}
+
+function renderView () {
+  switch (activeTab) {
+    case 'revisions':
+      return renderRevisionsView()
+    case 'wizards':
+      return renderWizardsView()
+    case 'settings':
+      return renderSettingsView()
+    default:
+      return yo`<div class="view">Loading...</div>`
+  }
+}
+
+function renderRevisionsView () {
+  return yo`
+    <div class="view">
+      TODO
+    </div>
+  `
+}
+
+function renderWizardsView () {
+  return yo`
+    <div class="view">
+      TODO
+    </div>
+  `
+}
+
+function renderSettingsView () {
+  return yo`
+    <div class="view">
+      TODO
     </div>
   `
 }

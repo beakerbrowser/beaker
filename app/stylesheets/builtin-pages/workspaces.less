@@ -1,5 +1,6 @@
 @import "../photon.min.less";
 
+@import "../base/reset";
 @import "../base/typography";
 
 @import "../components/buttons.less";
@@ -10,19 +11,28 @@
 
   .header {
     position: fixed;
+    z-index: 3;
     width: 100%;
+    height: 80px;
+    background: #fff;
     border-bottom: 1px solid #eee;
     box-shadow: 0 2px 20px rgba(0,0,0,.05);
     font-size: .95rem;
+
+    .top,
+    .bottom {
+      &:extend(.flex);
+      justify-content: space-between;
+      height: 40px;
+    }
 
     .top {
       padding: 10px 15px;
     }
 
     .bottom {
-      &:extend(.flex);
-      justify-content: space-between;
       padding: 0 15px;
+      align-items: flex-end;
     }
 
     .title {
@@ -57,7 +67,7 @@
         border-bottom: 3px solid transparent;
         width: 100px;
         text-align: center;
-        padding: 5px 0;
+        padding: 7px 0;
         cursor: pointer;
         color: rgba(0,0,0,.55);
         margin-right: 5px;
@@ -113,5 +123,20 @@
         }
       }
     }
+
+    .metadata {
+      padding: 10px 0;
+      font-size: .85rem;
+      color: rgba(0,0,0,.45);
+      font-style: italic;
+    }
+  }
+
+  .view {
+    width: 100vh;
+    height: 100vh;
+    padding: 20px;
+    padding-top: 100px;
+    background: #fafafa;
   }
 }
