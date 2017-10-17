@@ -10,80 +10,114 @@ body {
   background: #fff;
 }
 
-ul {
-  padding-left: 1.25rem;
-  padding-bottom: 0.5rem;
+label {
+  font-weight: 400;
 }
 
 code {
-  border: 1px solid #eee;
-  background: #fafafa;
-  padding: 2px 5px;
-  margin: 0 2px;
+  font-family: Consolas, 'Lucida Console', Monaco, Menlo, monospace;
+}
+
+.title {
+  font-weight: 500;
+}
+
+h2 {
+  font-weight: 500;
+  font-size: .8rem;
+  width: 100%;
+  border-bottom: 1px solid #eee;
+}
+
+.header {
+  &:extend(.flex);
+  flex-wrap: nowrap;
+  align-items: center;
+  font-size: .9rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+
+  .favicon {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+  }
+
+  h1.title {
+    font-size: .85rem;
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .metadata {
+    font-size: .75rem;
+    color: rgba(0,0,0,.6);
+  }
+}
+
+ul {
+  margin-bottom: 10px;
+
+  li.perm {
+    margin-left: 15px;
+  }
 }
 
 .modal {
   margin: 0;
 }
 
-.nobreak {
-  white-space: pre;
-}
-
-::-webkit-input-placeholder {
-  color: gray;
-}
-
-table.app-info {
-  margin: 0.8rem 0;
-
-  td:first-child {
-    text-align: right;
-    color: gray;
-    width: 130px;
-  }
-}
-
 .perms {
+
   input {
-    height: auto;
     margin: 0;
     position: relative;
     top: -1px;
+    height: auto;
+  }
+
+  strong {
+    font-weight: 500;
   }
 }
 
 .install-name {
-  input {
-    padding: 0;
-    margin: 0;
-    height: auto;
+
+  p {
+    margin-bottom: 0;
   }
 
   label {
     display: block;
-    margin: 0.5rem 1rem;
-    overflow: visible;
   }
 
-  input[type="radio"] {
+  input[type="checkbox"] {
     margin-right: 5px;
+    height: auto;
   }
 
   .custom-input {
-    margin: 0.5rem 1rem 0.5rem;
+    margin-left: 20px;
     position: relative;
 
-    span {
+    .prefix {
+      height: 100%;
       position: absolute;
-      left: 8px;
+      left: 1px;
       top: 1px;
-      color: gray;
+      padding: 0 7px;
+      background: #eee;
+      border-right: 1px solid #d9d9d9;
+      border-radius: 4px 0 0 4px;
+      height: ~"calc(100% - 2px)";
+      line-height: 26px;
     }
 
     input {
-      padding-left: 45px;
-      width: 410px;
+      width: 100%;
+      line-height: 30px;
+      padding-left: 55px;
     }
   }
 

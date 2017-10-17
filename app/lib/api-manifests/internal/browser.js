@@ -18,6 +18,8 @@ export default {
   fetchBody: 'promise',
   downloadURL: 'promise',
 
+  setBrowserWindowSize: 'promise',
+
   setStartPageBackgroundImage: 'promise',
 
   showContextMenu: 'promise',

@@ -10,9 +10,9 @@ import APIS from '../../lib/app-perms'
 // =
 
 var numPages = 3
-var pages = [renderAppInfoPage, renderPermsPage, renderInstallLocationPage]
+var pages = [renderAppInfoPage, renderLocationPage, renderPermsPage]
 var currentPage = 0
-var currentNameOpt = 'default'
+var usingCustomName = false
 var currentCustomName = ''
 var currentAssignedPermissions = null
 var targetAppInfo
@@ -30,15 +30,15 @@ window.setup = async function setup (opts) {
     // configure pages
     if (!targetAppInfo.requestedPermissions) {
       numPages = 2
-      pages = [renderAppInfoPage, renderInstallLocationPage]
+      pages = [renderAppInfoPage, renderLocationPage]
     }
 
     // set current name
     if (targetAppInfo.isInstalled && targetAppInfo.name !== targetAppInfo.info.installedNames[0]) {
-      currentNameOpt = 'custom'
+      usingCustomName = true
       currentCustomName = targetAppInfo.info.installedNames[0]
     } else if (!targetAppInfo.name) {
-      currentNameOpt = 'custom'
+      usingCustomName = false
     }
 
     // set current permissions
@@ -93,11 +93,11 @@ async function onSubmit (e) {
 }
 
 function onChangeInstallNameOpt (e) {
-  currentNameOpt = e.target.value
+  usingCustomName = e.target.checked
   renderToPage()
   onChangeName()
 
-  if (currentNameOpt === 'custom') {
+  if (usingCustomName) {
     document.querySelector('.custom-input input').focus()
   }
 }
@@ -143,52 +143,95 @@ function renderToPage () {
 
   const renderPage = pages[currentPage]
   const submitDisabled = (currentPage === numPages - 1 && !isReadyToInstall())
-  yo.update(document.querySelector('main'), yo`<main>
-    <div class="modal">
-      <div class="modal-inner">
-        <div class="install-modal">
-          <h1 class="title">
-            ${targetAppInfo.isInstalled ? 'Configure' : 'Install'}
-            ${getCurrentName() ? `app://${getCurrentName()}` : 'this app'}
-          </h1>
+  yo.update(document.querySelector('main'), yo`
+    <main>
+      <div class="modal">
+        <div class="modal-inner">
+          <div class="install-modal">
+            <div class="header">
+              <img class="favicon" src="beaker-favicon:${targetAppInfo.url}"/>
 
-          ${renderPage()}
+              <div>
+                <h1 class="title">
+                  ${targetAppInfo.title || 'Untitled'}
+                </h1>
 
-          <form onsubmit=${onSubmit}>
-            <div class="form-actions">
-              <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-              ${segmentedProgressBar(currentPage, numPages)}
-              <button type="submit" class="btn primary" tabindex="5" disabled=${submitDisabled}>
-                ${currentPage < numPages - 1 ? 'Next' : 'Finish'}
-              </button>
+                <div class="metadata">
+                  <span class="author">by ${targetAppInfo.author || 'Anonymous'}</span>
+                   -
+                  <span class="size">${targetAppInfo.size || ''}</span>
+                </div>
+              </div>
             </div>
-          </form>
+
+            ${renderPage()}
+
+            <form onsubmit=${onSubmit}>
+              <div class="form-actions">
+                <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+                ${segmentedProgressBar(currentPage, numPages)}
+                <button type="submit" class="btn ${currentPage < numPages - 1 ? 'primary' : 'success'}" tabindex="5" disabled=${submitDisabled}>
+                  ${currentPage < numPages - 1 ? 'Next' : 'Finish'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
-  </main>`)
+    </main>`)
 }
 
 function renderAppInfoPage () {
   return yo`
     <div>
-      <table class="app-info">
-        <tr><td>Title:</td><td>${targetAppInfo.title || '-'}</td></tr>
-        <tr><td>Description:</td><td>${targetAppInfo.description|| '-'}</td></tr>
-        <tr><td>Author:</td><td>${targetAppInfo.author|| '-'}</td></tr>
-        <tr><td>Size:</td><td>${targetAppInfo.size|| '-'}</td></tr>
-      </table>
+      <p>${targetAppInfo.description || yo`<em>No description</em>`}</p>
+    </div>
+  `
+}
+
+function renderLocationPage () {
+  return yo`
+    <div>
+      <div class="install-name">
+        ${targetAppInfo.name ? yo`
+          <div>
+            <p>
+              This app wants to be installed at <code>app://${targetAppInfo.name}</code>.
+            </p>
+
+            <label>
+              <input type="checkbox" name="install-name-opt" onchange=${onChangeInstallNameOpt} checked=${usingCustomName} />
+                Install at custom location
+            </label>
+
+            ${usingCustomName ? yo`
+              <div class="custom-input">
+                <span class="prefix">app://</span>
+                <input type="text" placeholder="news, photos, etc." onchange=${onChangeCustomName} value=${currentCustomName} />
+              </div>`
+            : ''}
+          </div>`
+        : ''}
+      </div>
+
+      ${replacedAppInfo ?
+        yo`<p class="footnote">
+          This will replace the current application at <code>app://${getCurrentName()}</code>
+          ${replacedAppInfo.title
+            ? yo`<span>called <span class="nobreak">"${replacedAppInfo.title}"</span></span>`
+            : yo`<span>(${replacedAppInfo.url})</span>`}
+        </p>`
+      : ''}
     </div>
   `
 }
 
 function renderPermsPage () {
+  let modalHeight = 125
+  modalHeight += Object.keys(targetAppInfo.requestedPermissions).length * 85
+  beaker.browser.setBrowserWindowSize(500, modalHeight)
   return yo`
     <div>
-      <p class="help-text">
-        Are these permissions ok?
-      </p>
-
       <div class="perms">
         <ul>
           ${Object.keys(targetAppInfo.requestedPermissions).map(renderAPIPerms)}
@@ -203,55 +246,24 @@ function renderAPIPerms (api) {
   if (!apiInfo) return ''
   const requestedPerms = targetAppInfo.requestedPermissions[api]
   const assignedPerms = currentAssignedPermissions[api]
-  return yo`<li>
-    <strong>${apiInfo.label}</strong>
-    <ul>
-      ${requestedPerms.map(perm => yo`
-        <li>
-          <label>
-            <input
-              type="checkbox"
-              name="${api}:${perm}"
-              checked=${!!(assignedPerms && assignedPerms.includes(perm))}
-              onchange=${e => onChangePerm(e, api, perm)}
-            />
-            ${apiInfo.perms[perm]}
-          </label>
-        </li>
-      `)}
-    </ul>
-  </li>`
-}
-
-function renderInstallLocationPage () {
   return yo`
-    <div>
-      <p class="help-text">
-        Where would you like to install?
-      </p>
-
-      <div class="install-name">
-        ${targetAppInfo.name ?
-          yo`<label><input type="radio" name="install-name-opt" value="default" onchange=${onChangeInstallNameOpt} checked=${currentNameOpt === 'default'} /> Install at <code>app://${targetAppInfo.name}</code> <span class="muted">(default)</span></label>`
-          : ''}
-        <label><input type="radio" name="install-name-opt" value="custom" onchange=${onChangeInstallNameOpt} checked=${currentNameOpt === 'custom'} /> Install at custom location</label>
-        ${currentNameOpt === 'custom' ?
-          yo`<div class="custom-input">
-            <span>app://</span>
-            <input type="text" placeholder="news, my-pics-app, etc." onchange=${onChangeCustomName} value=${currentCustomName} />
-          </div>`
-          : ''}
-      </div>
-
-      ${replacedAppInfo ?
-        yo`<p class="footnote">
-          This will replace the current application at <code>app://${getCurrentName()}</code>
-          ${replacedAppInfo.title
-            ? yo`<span>called <span class="nobreak">"${replacedAppInfo.title}"</span></span>`
-            : yo`<span>(${replacedAppInfo.url})</span>`}
-        </p>`
-      : ''}
-    </div>
+    <li>
+      <strong>${apiInfo.label}</strong>
+      <ul>
+        ${requestedPerms.map(perm => yo`
+          <li class="perm">
+            <label>
+              <input
+                type="checkbox"
+                name="${api}:${perm}"
+                checked=${!!(assignedPerms && assignedPerms.includes(perm))}
+                onchange=${e => onChangePerm(e, api, perm)}/>
+              ${apiInfo.perms[perm]}
+            </label>
+          </li>
+        `)}
+      </ul>
+    </li>
   `
 }
 
