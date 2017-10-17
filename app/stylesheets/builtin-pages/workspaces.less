@@ -68,30 +68,20 @@
       .tab {
         display: inline-block;
         border-bottom: 3px solid transparent;
-        width: 100px;
+        width: 115px;
         text-align: center;
         padding: 7px 0;
         cursor: pointer;
-        color: rgba(0,0,0,.55);
+        color: rgba(0,0,0,.65);
         margin-right: 5px;
         vertical-align: bottom;
 
-        .icon {
-          font-style: normal;
+        i {
+          color: rgba(0,0,0,.45);
+          margin-right: 3px;
 
-          &.revisions {
-            &:extend(.code-font);
-            color: rgba(0,0,0,.4);
-          }
-
-          &.gear {
-            width: 14px;
-            height: 14px;
-            margin-bottom: -2.5px;
-
-            * {
-              fill: rgba(0,0,0,.3);
-            }
+          &.fa-code {
+            -webkit-text-stroke: .1px;
           }
         }
 
@@ -101,17 +91,10 @@
 
         &.active {
           border-color: @blue;
-          color: rgba(0,0,0,.85);
+          color: @color-text;
 
-          .icon {
-
-            &.revisions {
-              color: rgba(0,0,0,.7);
-            }
-
-            &.gear * {
-              fill: rgba(0,0,0,.65);
-            }
+          i {
+            color: rgba(0,0,0,.8);
           }
         }
       }
@@ -123,6 +106,10 @@
 
         &:not(:last-child) {
           margin-right: 5px;
+        }
+
+        i {
+          margin-left: 2px;
         }
       }
     }
@@ -136,7 +123,6 @@
   }
 
   .view {
-    width: 100vh;
     height: 100vh;
     padding: 20px;
     padding-top: 100px;
@@ -144,6 +130,102 @@
     h2 {
       font-size: 1rem;
       font-weight: 500;
+    }
+
+    &.revisions {
+      padding: 0;
+      padding-top: 80px;
+
+      .revisions-sidebar,
+      .revisions-content {
+        display: inline-block;
+        vertical-align: top;
+      }
+
+      .revisions-sidebar {
+        width: 300px;
+        border-right: 1px solid #eee;
+        height: 100%;
+
+        em {
+          display: block;
+          padding: 20px;
+          color: @color-text--muted;
+        }
+      }
+
+      .revisions-header {
+        &:extend(.flex);
+        justify-content: space-between;
+        margin-top: 20px;
+        padding: 5px 10px;
+        align-items: center;
+
+        .count {
+          background: #ddd;
+          color: @color-text--muted;
+          color: rgba(0,0,0,.5);
+          font-size: .7rem;
+          border-radius: 40px;
+          padding: 0 8px;
+        }
+
+        &.additions {
+          background: fadeout(@green, 97%);
+          border-bottom: 1px solid fadeout(mix(@green, #ddd, 10%), 50%);
+          border-top: 1px solid fadeout(mix(@green, #ddd, 10%), 50%);
+          color: mix(@green, @color-text, 15%);
+
+          .count {
+            background: mix(@green, #ddd, 15%);
+            // background: fadeout(@green, 75%);
+          }
+        }
+
+        &.modifications {
+          background: fadeout(@yellow, 95%);
+          border-bottom: 1px solid fadeout(mix(@yellow, #ddd, 10%), 50%);
+          border-top: 1px solid fadeout(mix(@yellow, #ddd, 10%), 50%);
+          color: mix(@yellow, @color-text, 15%);
+
+          .count {
+            background: mix(@yellow, #ddd, 15%);
+          }
+        }
+
+        &.deletions {
+          background: fadeout(@red, 97%);
+          border-bottom: 1px solid fadeout(mix(@red, #ddd, 10%), 50%);
+          border-top: 1px solid fadeout(mix(@red, #ddd, 10%), 50%);
+          color: mix(@red, @color-text, 15%);
+
+          .count {
+            background: mix(@red, #ddd, 15%);
+          }
+        }
+      }
+
+      .revisions-list {
+        width: 100%;
+
+        li {
+          padding: 5px 10px;
+          background: #fff;
+          cursor: pointer;
+          border-bottom: 1px solid #eee;
+
+          &:hover {
+            background: #fcfcfc;
+          }
+        }
+      }
+
+      h3 {
+        font-weight: 400;
+        font-size: inherit;
+        text-transform: uppercase;
+        font-size: .75rem;
+      }
     }
 
     &.settings {

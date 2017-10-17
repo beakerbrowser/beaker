@@ -140,9 +140,57 @@ function renderView () {
 }
 
 function renderRevisionsView () {
+  const {additions, modifications, deletions} = workspaceInfo.revisions
+
   return yo`
-    <div class="view">
-      TODO
+    <div class="view revisions">
+      <div class="revisions-sidebar">
+        ${additions.length ? yo`
+          <div>
+            <div class="revisions-header additions">
+              <h3>Additions</h3>
+              <span class="count">${additions.length}</span>
+            </div>
+
+            <ul class="revisions-list">
+              ${additions.map(a => yo`<li>${a}</li>`)}
+            </ul>
+          </div>
+        ` : ''}
+
+        ${modifications.length ? yo`
+          <div>
+            <div class="revisions-header modifications">
+              <h3>Modifications</h3>
+              <span class="count">${modifications.length}</span>
+            </div>
+
+            <ul class="revisions-list">
+              ${modifications.map(m => yo`<li>${m}</li>`)}
+            </ul>
+          </div>
+        ` : ''}
+
+        ${deletions.length ? yo`
+          <div>
+            <div class="revisions-header deletions">
+              <h3>Deletions</h3>
+              <span class="count">${deletions.length}</span>
+            </div>
+
+            <ul class="revisions-list">
+              ${deletions.map(d => yo`<li>${d}</li>`)}
+            </ul>
+          </div>
+        ` : ''}
+        ${!(additions.length || modifications.length || deletions.length)
+          ? yo`<em>No revisions</em>`
+          : ''}
+      </div>
+
+      <div class="revisions-content">
+        TODO
+      </div>
     </div>
   `
 }
