@@ -62,8 +62,12 @@ window.setup = async function setup (opts) {
     viewError = e
   }
 
-  // render
-  renderToPage()
+  try {
+    // render
+    renderToPage()
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 // events
