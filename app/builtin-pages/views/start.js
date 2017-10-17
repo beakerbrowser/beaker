@@ -8,9 +8,9 @@ import {pluralize} from '../../lib/strings'
 
 const colorThief = new ColorThief()
 
-const LATEST_VERSION = 7005 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
+const LATEST_VERSION = 7006 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const WELCOME_URL = 'https://beakerbrowser.com/docs/using-beaker/'
-const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-5/?updated=true'
+const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-6/?updated=true'
 
 // globals
 // =
