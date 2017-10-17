@@ -50,7 +50,7 @@ window.setup = async function setup (opts) {
       currentAssignedPermissions = targetAppInfo.assignedPermissions
     } else {
       // default to giving the app everything it requested
-      currentAssignedPermissions = targetAppInfo.requestedPermissions
+      currentAssignedPermissions = Object.assign({}, targetAppInfo.requestedPermissions)
     }
 
     // load current app info
