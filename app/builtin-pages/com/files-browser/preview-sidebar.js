@@ -31,7 +31,7 @@ export default function render (filesBrowser) {
     <div class="preview-sidebar">
       <div class="archive-info">
         <div class="header">
-          <span title="${networked ? 'Stop' : 'Start'} hosting this archive" class="archive-icon ${networked ? 'networked' : ''}">
+          <span title="${networked ? 'Stop' : 'Start'} seeding this archive" class="archive-icon ${networked ? 'networked' : ''}">
             ${rIcon(node)}
           </span>
           <h1>${archiveInfo.title || 'Untitled'}</h1>
