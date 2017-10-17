@@ -105,5 +105,13 @@
     "type": "opencollective",
     "url": "https://opencollective.com/beaker",
     "logo": "https://opencollective.com/opencollective/logo.txt"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/beakerbrowser/beaker"
+  },
+  "bugs": {
+    "url": "https://github.com/beakerbrowser/beaker/issues"
+  },
+  "homepage": "https://beakerbrowser.com/"
 }
