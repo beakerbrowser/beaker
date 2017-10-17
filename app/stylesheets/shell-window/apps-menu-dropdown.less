@@ -1,26 +1,33 @@
 .apps-dropdown-menu {
 
+  .toolbar-btn {
+    margin-right: 3px !important;
+  }
+
   .dropdown-items {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-gap: 15px;
     padding: 10px;
-    width: 126px;
+    width: 186px;
 
-    .app-container {
-      width: 42px;
-      height: 42px;
-      text-align: center;
-      padding-top: 5px;
-      border-radius: 4px;
+    .apps-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-gap: 15px;
 
-      .favicon {
-        width: 32px;
-        height: 32px;
-      }
+      .app-container {
+        width: 42px;
+        height: 42px;
+        text-align: center;
+        padding-top: 5px;
+        border-radius: 4px;
 
-      &:hover {
-        background: rgba(0,0,0,.05);
+        .favicon {
+          width: 32px;
+          height: 32px;
+        }
+
+        &:hover {
+          background: rgba(0,0,0,.05);
+        }
       }
     }
   }

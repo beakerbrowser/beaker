@@ -13,7 +13,6 @@ export class AppsMenuNavbarBtn {
 
     beaker.apps.list(0).then(apps => {
       this.apps = apps
-      console.log(this.apps)
       this.updateActives()
     })
 
@@ -28,7 +27,15 @@ export class AppsMenuNavbarBtn {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle">
-            apps!
+            ${!this.apps.length ? yo`<em>No apps installed</em>` : ''}
+
+            <div class="apps-grid">
+              ${this.apps.map(app => yo`
+                <div class="app-container" title="app://${app.name}" onclick=${e => this.onOpenPage(e, `app://${app.name}`)}>
+                  <img class="favicon" src="beaker-favicon:${app.url}"/>
+                </div>
+              `)}
+            </div>
           </div>
         </div>`
     }
