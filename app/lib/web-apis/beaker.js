@@ -109,6 +109,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.apps.bind = appsRPC.bind
   beaker.apps.unbind = appsRPC.unbind
   beaker.apps.runInstaller = appsRPC.runInstaller
+  beaker.apps.createEventsStream = () => fromEventStream(appsRPC.createEventsStream())
 
   // beaker.downloads
   beaker.downloads = {}
