@@ -1,0 +1,27 @@
+.apps-dropdown-menu {
+
+  .dropdown-items {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 15px;
+    padding: 10px;
+    width: 126px;
+
+    .app-container {
+      width: 42px;
+      height: 42px;
+      text-align: center;
+      padding-top: 5px;
+      border-radius: 4px;
+
+      .favicon {
+        width: 32px;
+        height: 32px;
+      }
+
+      &:hover {
+        background: rgba(0,0,0,.05);
+      }
+    }
+  }
+}

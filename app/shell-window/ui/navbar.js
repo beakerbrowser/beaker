@@ -7,6 +7,7 @@ import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
 import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
+import {AppsMenuNavbarBtn} from './navbar/apps-menu'
 import {DatsiteMenuNavbarBtn} from './navbar/datsite-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
@@ -32,6 +33,7 @@ var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
 var browserMenuNavbarBtn = null
 var bookmarkMenuNavbarBtn = null
+var appsMenuNavbarBtn = null
 var datsiteMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
 var siteInfoNavbarBtn = null
@@ -49,6 +51,7 @@ var autocompleteResults = null // if set to an array, will render dropdown
 export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
+  appsMenuNavbarBtn = new AppsMenuNavbarBtn()
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   datsiteMenuNavbarBtn = new DatsiteMenuNavbarBtn()
@@ -151,6 +154,7 @@ export function bookmarkAndOpenMenu () {
 export function closeMenus () {
   browserMenuNavbarBtn.isDropdownOpen = false
   browserMenuNavbarBtn.updateActives()
+  appsMenuNavbarBtn.close()
   pageMenuNavbarBtn.close()
   bookmarkMenuNavbarBtn.close()
   datsiteMenuNavbarBtn.close()
@@ -278,9 +282,8 @@ function render (id, page) {
       datBtns.unshift(
         yo`<button
           class="callout"
-          title="Goto the application"
-          onclick=${e => onClickGotoAppVersion(e, appName)}
-        >
+          title="Go to app://${appName}"
+          onclick=${e => onClickGotoAppVersion(e, appName)}>
           Installed at app://${appName}
         </button>`
       )
@@ -393,6 +396,7 @@ function render (id, page) {
         ${!isLocationHighlighted ? bookmarkMenuNavbarBtn.render() : ''}
       </div>
       <div class="toolbar-group">
+        ${appsMenuNavbarBtn.render()}
         ${browserMenuNavbarBtn.render()}
         ${updatesNavbarBtn.render()}
       </div>
@@ -490,7 +494,10 @@ async function handleAutocompleteSearch (results) {
   }
 
   await Promise.all(autocompleteResults.map(async r => {
-    var bookmarked = await beaker.bookmarks.isBookmarked(r.url)
+    let bookmarked = false
+    try {
+      bookmarked = await beaker.bookmarks.isBookmarked(r.url)
+    } catch (_) {}
     Object.assign(r, {bookmarked})
   }))
 
