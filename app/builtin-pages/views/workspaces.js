@@ -17,7 +17,11 @@ async function setup () {
     description: 'The source for my blog',
     origin: 'dat://cca6eb69a3ad6104ca31b9fee7832d74068db16ef2169eaaab5b48096e128342/',
     localPath: '/Users/tara/src/taravancil.com',
-    revisions: {additions: [0, 1], deletions: [0, 1, 2], modifications: []}
+    revisions: {
+      additions: ['test.txt', 'index.html'],
+      deletions: ['/images/cat.png'],
+      modifications: ['/test', '/app/index.js', '/app/butt.js']
+    }
   }
   render()
 }
