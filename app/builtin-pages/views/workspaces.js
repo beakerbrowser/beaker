@@ -84,15 +84,15 @@ function renderTabs () {
   return yo`
     <div class="tabs">
       <div onclick=${e => onChangeTab('revisions')} class="tab ${activeTab === 'revisions' ? 'active' : ''}">
-        <span class="icon revisions">${'</>'}</i>
+        <i class="fa fa-code"></i>
         Revisions
       </div>
       <div onclick=${e => onChangeTab('wizards')} class="tab ${activeTab === 'wizards' ? 'active' : ''}">
-        <i></i>
+        <i class="fa fa-cube"></i>
         Wizards
       </div>
       <div onclick=${e => onChangeTab('settings')} class="tab ${activeTab === 'settings' ? 'active' : ''}">
-        ${renderGearIcon()}
+        <i class="fa fa-cogs"></i>
         Settings
       </div>
     </div>
@@ -102,8 +102,11 @@ function renderTabs () {
 function renderActions () {
   return yo`
     <div class="actions">
-      <button onclick=${onRevertChanges} class="btn">Revert changes</button>
-      <button onclick=${onPublishChanges} class="btn success">Publish changes</button>
+      <button onclick=${onRevertChanges} class="btn">
+        Revert
+        <i class="fa fa-undo"></i>
+      </button>
+      <button onclick=${onPublishChanges} class="btn success">Publish</button>
     </div>
   `
 }
