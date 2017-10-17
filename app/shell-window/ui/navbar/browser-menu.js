@@ -125,7 +125,7 @@ export class BrowserMenuNavbarBtn {
               </div>
 
               <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://network')}>
-                <i class="fa fa-share-alt"></i>
+                <i class="fa fa-signal"></i>
                 <span class="label">Network Activity</span>
               </div>
 
