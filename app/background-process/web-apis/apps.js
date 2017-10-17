@@ -2,16 +2,26 @@ import parseDatUrl from 'parse-dat-url'
 import * as archivesDb from '../dbs/archives'
 import * as appsDb from '../dbs/apps'
 import * as sitedataDb from '../dbs/sitedata'
+import emitStream from 'emit-stream'
+import EventEmitter from 'events'
 import {showModal} from '../ui/modals'
 import {getWebContentsWindow} from '../../lib/electron'
 import {DAT_HASH_REGEX} from '../../lib/const'
 import {getFullGranted} from '../../lib/app-perms'
 import {PermissionsError, InvalidURLError} from 'beaker-error-constants'
 
+
+// events emitted to rpc clients
+const appsEvents = new EventEmitter()
+
 // exported api
 // =
 
 export default {
+  createEventsStream () {
+    return emitStream(appsEvents)
+  },
+
   async get (profileId, name) {
     assertBeakerOnly(this.sender)
     return appsDb.get(profileId, name)
@@ -49,7 +59,9 @@ export default {
       }
     }
 
-    return appsDb.unbind(profileId, name)
+    await appsDb.unbind(profileId, name)
+    appsEvents.emit('apps-binding-changed')
+    return
   },
 
   async runInstaller (profileId, url) {
@@ -69,6 +81,7 @@ export default {
         await archivesDb.setUserSettings(0, urlp.host, {isSaved: true})
       }
     }
+    appsEvents.emit('apps-binding-changed')
     return res
   }
 }

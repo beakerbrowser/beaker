@@ -24,6 +24,8 @@ export class AppsMenuNavbarBtn {
 
     // wire up events
     window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
+    var appsEvents = beaker.apps.createEventsStream()
+    appsEvents.addEventListener('apps-binding-changed', this.onAppBindingChanged.bind(this))
   }
 
   render () {
@@ -107,5 +109,14 @@ export class AppsMenuNavbarBtn {
     beaker.browser.setSetting('apps_launcher_view', view)
     this.currentView = view
     this.updateActives()
+  }
+
+  onAppBindingChanged () {
+    console.log('apps binding changed')
+
+    beaker.apps.list(0).then(apps => {
+      this.apps = apps
+      this.updateActives()
+    })
   }
 }

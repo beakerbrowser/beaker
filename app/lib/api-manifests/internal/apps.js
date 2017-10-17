@@ -3,5 +3,6 @@ export default {
   list: 'promise',
   bind: 'promise',
   unbind: 'promise',
-  runInstaller: 'promise'
+  runInstaller: 'promise',
+  createEventsStream: 'readable'
 }
