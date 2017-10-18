@@ -44,15 +44,20 @@ export default function (reqId, webContentsId, permission, opts = {}) {
   promptbar.add(page, {
     type: 'permission:' + permission,
     render: ({ rerender, onClose }) => {
-      return yo`<div>
-        <span class="icon icon-${permIcon || 'help-circled'}"></span>
-        This site would like to ${permDesc}.
-        <span class="promptbar-btns">
-          <button class="btn primary prompt-accept" onclick=${() => { respond(true); onClose() }}>Allow</button>
-          <button class="btn prompt-reject" onclick=${() => { respond(false); onClose() }}>Don't Allow</button>
-        </span>
-        <a class="promptbar-close icon icon-cancel-squared" onclick=${() => { respond(false); onClose() }}></a>
-      </div>`
+      return yo`
+        <div>
+          <p>This site wants to:</p>
+          <p class="perm">
+            <i class="fa fa-${permIcon}"></i>
+            ${permDesc}
+          </p>
+
+          <div class="promptbar-btns">
+            <button class="btn prompt-reject" onclick=${() => { respond(false); onClose() }}>Block</button>
+            <button class="btn primary prompt-accept" onclick=${() => { respond(true); onClose() }}>Allow</button>
+          </div>
+        </div>
+      `
     },
     onForceClose: () => {
       respond(false)

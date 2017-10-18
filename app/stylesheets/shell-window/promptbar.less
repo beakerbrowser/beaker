@@ -1,31 +1,52 @@
 #promptbars {
   position: fixed;
+  width: 290px;
   z-index: 20;
-  top: 75px;
-  left: 0;
-  width: 100%;
+  top: 72px;
+  left: 70px;
 }
 
 .promptbar {
+  &:extend(.dropdown-shadow);
   position: relative;
-  background: #fff;
-  padding: 15px 45px 15px 15px;
-  border-bottom: 1px solid #bbb;
-  font-size: 14px;
-  box-shadow: 0 2px 2px rgba(0,0,0,.15);
-  
+  padding: 15px;
+  background: #fafafa;
+  border: 1px solid #dadada;
+  border-radius: 4px;
+
   &:before {
-    // the arrow
     content: '';
     position: absolute;
-    top: -7px;
-    left: 121px;
-    width: 10px;
-    height: 10px;
-    background: #fff;
-    transform: rotateZ(45deg);
-    border-top: 1px solid #bbb;
-    border-left: 1px solid #bbb;
+    top: -8px;
+    left: 43px;
+    width: 12px;
+    height: 12px;
+    z-index: 3;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #fff;
+  }
+
+  p {
+    margin-top: 0;
+    font-weight: 500;
+    font-size: 12.5px;
+
+    &.perm {
+      font-weight: 400;
+
+      &::first-letter {
+        text-transform: uppercase;
+      }
+
+      i {
+        margin-right: 3px;
+        color: #777;
+        font-size: 13px;
+      }
+    }
   }
 
   a {
@@ -36,32 +57,10 @@
   }
 
   .promptbar-btns {
+    text-align: right;
+
     button {
       margin-left: 5px;
     }
-  }
-
-  .promptbar-close {
-    position: absolute;
-    font-size: 16px;
-    right: 15px;
-    top: 14px;
-    width: 26px;
-    text-align: center;
-    color: #666;
-
-    &:hover { 
-      background: #eee;
-      border-radius: 3px;
-    }
-  }
-
-  // custom icon styles
-  .icon-folder {
-    color: #eee;
-    -webkit-text-stroke: 1px gray;
-    font-size: 20px;
-    line-height: 14px;
-    margin-right: 5px;
   }
 }
