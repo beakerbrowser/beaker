@@ -103,9 +103,16 @@ export class SiteInfoNavbarBtn {
       }
     }
     if (this.siteInfo && this.siteInfo.requiresRefresh) {
-      permsEls.push(yo`<div>
-        <a><label class="checked" onclick=${this.onClickRefresh.bind(this)}><span class="icon icon-ccw"></span> Refresh to apply changes.</label></a>
-      </div>`)
+      permsEls.push(
+        yo`
+          <div class="perm"><a>
+            <label class="checked" onclick=${this.onClickRefresh.bind(this)}>
+              <i class="fa fa-undo fa-flip-horizontal"></i>
+              Refresh to apply changes.
+            </label>
+          </a></div>
+        `
+      )
     }
 
     // dropdown
@@ -120,6 +127,8 @@ export class SiteInfoNavbarBtn {
               ${protocolDesc}
             </p>
           </div>
+
+          ${permsEls.length ? yo`<h2 class="perms-heading">Permissions</h2>` : ''}
           <div class="perms">${permsEls}</div>
         </div>
       </div>`
@@ -191,9 +200,14 @@ export class SiteInfoNavbarBtn {
     if (typeof desc === 'function') desc = desc(permParam, pages, { capitalize: true })
     if (typeof desc === 'string') desc = ucfirst(desc)
     if (!desc) return ''
-    return yo`<div>
-      <label class=${value ? 'checked' : ''} onclick=${e => this.togglePerm(perm)}><input type="checkbox" value="${perm}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${desc}</label>
-    </div>`
+    return yo`
+      <div class="perm">
+        <label class=${value ? 'checked' : ''} onclick=${e => this.togglePerm(perm)}>
+          <i class="fa fa-${icon}"></i>
+          ${desc}
+          <input type="checkbox" value="${perm}" ${value ? 'checked' : ''} />
+        </label>
+      </div>`
   }
 
   togglePerm (perm) {
