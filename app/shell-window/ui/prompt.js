@@ -4,7 +4,7 @@ import * as pages from '../pages'
 // globals
 // =
 
-var promptBarsDiv = document.getElementById('promptbars')
+var promptsDiv = document.getElementById('prompts')
 
 // exported functions
 // =
@@ -15,14 +15,14 @@ export function setup () {
 export function createEl (id) {
   // render
   var el = render(id, null)
-  promptBarsDiv.appendChild(el)
+  promptsDiv.appendChild(el)
   return el
 }
 
 export function destroyEl (id) {
-  var el = document.querySelector(`#promptbars [data-id="${id}"]`)
+  var el = document.querySelector(`#prompts [data-id="${id}"]`)
   if (el) {
-    promptBarsDiv.removeChild(el)
+    promptsDiv.removeChild(el)
   }
 }
 
@@ -79,7 +79,7 @@ export function update (page) {
   if (!page.webviewEl) return
 
   // render
-  yo.update(page.promptbarEl, render(page.id, page))
+  yo.update(page.promptEl, render(page.id, page))
 }
 
 // internal methods
@@ -90,7 +90,7 @@ function render (id, page) {
 
   return yo`<div data-id=${id} class=${page.isActive ? '' : 'hidden'}>
     ${page.prompts.map(prompt => {
-      return yo`<div class="promptbar">
+      return yo`<div class="prompt">
         ${prompt.render({
           rerender: () => update(page),
           onClose: () => remove(page, prompt)

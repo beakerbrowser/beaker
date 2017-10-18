@@ -7,7 +7,7 @@ import fs from 'fs'
 import parseDatURL from 'parse-dat-url'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
-import * as promptbar from './ui/promptbar'
+import * as prompt from './ui/prompt'
 import * as statusBar from './ui/statusbar'
 import * as toast from './ui/toast.js'
 import {urlsToData} from '../lib/fg/img'
@@ -89,7 +89,7 @@ export function create (opts) {
     wcID: null, // the id of the webcontents
     webviewEl: createWebviewEl(id, url),
     navbarEl: navbar.createEl(id),
-    promptbarEl: promptbar.createEl(id),
+    promptEl: prompt.createEl(id),
 
     // page state
     _url: url, // what is the actual current URL?
@@ -355,7 +355,7 @@ export async function remove (page) {
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)
   navbar.destroyEl(page.id)
-  promptbar.destroyEl(page.id)
+  prompt.destroyEl(page.id)
 
   // persist pins w/o this one, if that was
   if (page.isPinned) { savePinnedToDB() }
@@ -392,7 +392,7 @@ export function setActive (page) {
   statusBar.setIsLoading(page.isLoading())
   navbar.closeMenus()
   navbar.update()
-  promptbar.update()
+  prompt.update()
   events.emit('set-active', page)
   ipcRenderer.send('shell-window:set-current-location', page.getIntendedURL())
 
@@ -602,7 +602,7 @@ function onLoadCommit (e) {
     // stop autocompleting
     navbar.clearAutocomplete()
     // close any prompts
-    promptbar.forceRemoveAll(page)
+    prompt.forceRemoveAll(page)
     // set title in tabs
     page.title = e.target.getTitle() // NOTE sync operation
     navbar.update(page)
@@ -938,14 +938,14 @@ export function onIPCMessage (e) {
 function show (page) {
   page.webviewEl.classList.remove('hidden')
   page.navbarEl.classList.remove('hidden')
-  page.promptbarEl.classList.remove('hidden')
+  page.promptEl.classList.remove('hidden')
   events.emit('show', page)
 }
 
 function hide (page) {
   page.webviewEl.classList.add('hidden')
   page.navbarEl.classList.add('hidden')
-  page.promptbarEl.classList.add('hidden')
+  page.promptEl.classList.add('hidden')
   events.emit('hide', page)
 }
 
