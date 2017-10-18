@@ -39,7 +39,7 @@ export default {
   },
   network: {
     desc: param => {
-      if (param === '*') return 'access the network freely'
+      if (param === '*') return 'Access the network freely'
       return 'contact ' + param
     },
     icon: 'cloud',
@@ -49,8 +49,8 @@ export default {
   },
   createDat: {
     desc: (param, pages, opts = {}) => {
-      if (opts.title) return `create a new Dat archive, "${opts.title}"`
-      return 'create a new Dat archive'
+      if (opts.title) return `Create a new Dat archive, "${opts.title}"`
+      return 'Create a new Dat archive'
     },
     icon: 'folder',
     persist: false,
@@ -59,8 +59,8 @@ export default {
   },
   createMoreArchives: {
     desc: (param, pages, {numArchives} = {}) => {
-      if (numArchives) return `create a new Dat archive (${numArchives} created already)`
-      return 'create a new Dat archive'
+      if (numArchives) return `Create a new Dat archive (${numArchives} created already)`
+      return 'Create a new Dat archive'
     },
     icon: 'folder',
     persist: false,
@@ -93,50 +93,50 @@ export default {
     requiresRefresh: false
   },
   media: {
-    desc: 'use your camera and microphone',
-    icon: 'mic',
+    desc: 'Use your camera and microphone',
+    icon: 'video-camera',
     persist: true,
     alwaysDisallow: false,
     requiresRefresh: false
   },
   geolocation: {
-    desc: 'know your location',
-    icon: '',
+    desc: 'Know your location',
+    icon: 'map-marker',
     persist: false,
     alwaysDisallow: true, // NOTE geolocation is disabled, right now
     requiresRefresh: false
   },
   notifications: {
-    desc: 'create desktop notifications',
-    icon: 'comment',
+    desc: 'Create desktop notifications',
+    icon: 'bell',
     persist: true,
     alwaysDisallow: false,
     requiresRefresh: false
   },
   midiSysex: {
-    desc: 'access your MIDI devices',
-    icon: 'sound',
+    desc: 'Access your MIDI devices',
+    icon: 'headphones',
     persist: false,
     alwaysDisallow: false,
     requiresRefresh: false
   },
   pointerLock: {
-    desc: 'lock your cursor',
-    icon: 'mouse',
+    desc: 'Lock your cursor',
+    icon: 'mouse-pointer',
     persist: false,
     alwaysDisallow: false,
     requiresRefresh: false
   },
   fullscreen: {
-    desc: 'go fullscreen',
-    icon: 'resize-full',
+    desc: 'Go fullscreen',
+    icon: 'arrows-alt',
     persist: true,
     alwaysAllow: true,
     requiresRefresh: false
   },
   openExternal: {
-    desc: 'open this URL in another program: ',
-    icon: '',
+    desc: 'Open this URL in another program: ',
+    icon: 'external-link',
     persist: false,
     alwaysDisallow: false,
     requiresRefresh: false
