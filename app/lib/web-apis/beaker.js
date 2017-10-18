@@ -12,6 +12,7 @@ import archivesManifest from '../api-manifests/internal/archives'
 import historyManifest from '../api-manifests/internal/history'
 import downloadsManifest from '../api-manifests/internal/downloads'
 import appsManifest from '../api-manifests/internal/apps'
+import workspacesManifest from '../api-manifests/internal/workspaces'
 import sitedataManifest from '../api-manifests/internal/sitedata'
 import beakerBrowserManifest from '../api-manifests/internal/browser'
 
@@ -67,6 +68,7 @@ if (window.location.protocol === 'beaker:') {
   const historyRPC = rpc.importAPI('history', historyManifest, opts)
   const archivesRPC = rpc.importAPI('archives', archivesManifest, opts)
   const appsRPC = rpc.importAPI('apps', appsManifest, opts)
+  const workspacesRPC = rpc.importAPI('workspaces', workspacesManifest, opts)
   const downloadsRPC = rpc.importAPI('downloads', downloadsManifest, opts)
   const sitedataRPC = rpc.importAPI('sitedata', sitedataManifest, opts)
   const beakerBrowserRPC = rpc.importAPI('beaker-browser', beakerBrowserManifest, opts)
@@ -110,6 +112,17 @@ if (window.location.protocol === 'beaker:') {
   beaker.apps.unbind = appsRPC.unbind
   beaker.apps.runInstaller = appsRPC.runInstaller
   beaker.apps.createEventsStream = () => fromEventStream(appsRPC.createEventsStream())
+
+  // beaker.workspaces
+  beaker.workspaces = {}
+  beaker.workspaces.list = workspacesRPC.list
+  beaker.workspaces.get = workspacesRPC.get
+  beaker.workspaces.set = workspacesRPC.set
+  beaker.workspaces.remove = workspacesRPC.remove
+  beaker.workspaces.listChangedFiles = workspacesRPC.listChangedFiles
+  beaker.workspaces.diff = workspacesRPC.diff
+  beaker.workspaces.publish = workspacesRPC.publish
+  beaker.workspaces.revert = workspacesRPC.revert
 
   // beaker.downloads
   beaker.downloads = {}

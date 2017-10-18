@@ -20,6 +20,9 @@ export const DAT_GC_EXPIRATION_AGE = ms('7d') // how old do archives need to be 
 export const DAT_GC_FIRST_COLLECT_WAIT = ms('30s') // how long after process start to do first collect?
 export const DAT_GC_REGULAR_COLLECT_WAIT = ms('15m') // how long between GCs to collect?
 
+// workspace settings
+export const WORKSPACE_VALID_NAME_REGEX = /^[a-z][a-z0-9-]*$/i
+
 // archive metadata
 export const STANDARD_ARCHIVE_TYPES = [
   'application',
