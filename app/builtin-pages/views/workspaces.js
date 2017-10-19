@@ -35,7 +35,7 @@ async function setup () {
   allWorkspaces = await beaker.workspaces.list(0)
   // add extra metadata to the workspaces
   await Promise.all(allWorkspaces.map(async (w) => {
-    const revisions = await beaker.workspaces.listChangedFiles(0, w.name).length
+    const revisions = await beaker.workspaces.listChangedFiles(0, w.name, {shallow: true}).length
     w.numRevisions = revisions ? revisions.length : 0
     return w
   }))
@@ -51,7 +51,7 @@ async function loadCurrentWorkspace () {
   currentWorkspaceName = parseURLWorkspaceName()
   if (currentWorkspaceName) {
     workspaceInfo = await beaker.workspaces.get(0, currentWorkspaceName)
-    workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(0, currentWorkspaceName)
+    workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(0, currentWorkspaceName, {shallow: true, compareContent: true})
   } else {
     workspaceInfo = null
   }
