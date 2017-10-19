@@ -12,6 +12,24 @@
   width: 100%;
   background: #fcfcfc;
 
+  &.not-found {
+    &:extend(.code-font);
+    text-align: center;
+    width: 100%;
+    padding-top: 100px;
+    font-size: 20px;
+    color: @color-text--muted;
+
+    a {
+      font-size: 14px;
+      color: @blue;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
   .header {
     position: fixed;
     z-index: 3;

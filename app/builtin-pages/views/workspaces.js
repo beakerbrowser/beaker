@@ -6,24 +6,57 @@ import renderGearIcon from '../icon/gear-small'
 
 // main
 // =
+let allWorkspaces = []
+let currentWorkspaceName
 let workspaceInfo
 let activeTab = 'revisions'
 
+// HACK FIX
+// the good folk of whatwg didnt think to include an event for pushState(), so let's add one
+// -prf
+var _wr = function (type) {
+  var orig = window.history[type]
+  return function () {
+    var rv = orig.apply(this, arguments)
+    var e = new Event(type.toLowerCase())
+    e.arguments = arguments
+    window.dispatchEvent(e)
+    return rv
+  }
+}
+window.history.pushState = _wr('pushState')
+window.history.replaceState = _wr('replaceState')
+
 setup()
 async function setup () {
-  workspaceInfo = {
-    namespace: 'blog',
-    title: 'My blog',
-    description: 'The source for my blog',
-    origin: 'dat://cca6eb69a3ad6104ca31b9fee7832d74068db16ef2169eaaab5b48096e128342/',
-    localPath: '/Users/tara/src/taravancil.com',
-    revisions: {
-      additions: ['test.txt', 'index.html'],
-      deletions: ['/images/cat.png'],
-      modifications: ['/test', '/app/index.js', '/app/butt.js']
-    }
+  allWorkspaces = await beaker.workspaces.list(0)
+  currentWorkspaceName = parseURLWorkspaceName()
+
+  if (currentWorkspaceName) {
+    workspaceInfo = await beaker.workspaces.get(0, currentWorkspaceName)
   }
+
+  // workspaceInfo = {
+  //   namespace: 'blog',
+  //   title: 'My blog',
+  //   description: 'The source for my blog',
+  //   origin: 'dat://cca6eb69a3ad6104ca31b9fee7832d74068db16ef2169eaaab5b48096e128342/',
+  //   localPath: '/Users/tara/src/taravancil.com',
+  //   revisions: {
+  //     additions: ['test.txt', 'index.html'],
+  //     deletions: ['/images/cat.png'],
+  //     modifications: ['/test', '/app/index.js', '/app/butt.js']
+  //   }
+  // }
+
+  // window.addEventListener('pushstate', loadViewedProfile)
+  // window.addEventListener('popstate', loadViewedProfile)
+
   render()
+}
+
+function parseURLWorkspaceName () {
+  return window.location.pathname.replace(/\//g, '')
 }
 
 // events
@@ -50,12 +83,26 @@ function onChangeTab (tab) {
 // =
 
 function render () {
-  yo.update(document.querySelector('.workspaces-wrapper'), yo`
-    <div class="workspaces-wrapper builtin-wrapper">
-      ${renderHeader()}
-      ${renderView()}
-    </div>
-  `)
+  if (currentWorkspaceName.length && !workspaceInfo) {
+    yo.update(document.querySelector('.workspaces-wrapper'), yo`
+      <div class="workspaces-wrapper not-found">
+        workspace://${currentWorkspaceName} does not exist
+
+        <div class="links">
+          <a href="beaker://workspaces">« Back to all workspaces</a>
+        </div>
+      </div>
+    `)
+  } else if (!workspaceInfo) {
+    // TODO render the listing of workspaces
+  } else {
+    yo.update(document.querySelector('.workspaces-wrapper'), yo`
+      <div class="workspaces-wrapper builtin-wrapper">
+        ${renderHeader()}
+        ${renderView()}
+      </div>
+    `)
+  }
 }
 
 function renderHeader () {
