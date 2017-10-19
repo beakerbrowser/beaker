@@ -163,7 +163,8 @@
       align-items: flex-end;
     }
 
-    .namespace{
+    .name {
+      &:extend(.code-font);
       margin-right: 5px;
     }
 
@@ -254,6 +255,9 @@
     h2 {
       font-size: 1rem;
       font-weight: 500;
+      text-transform: none;
+      color: inherit;
+      margin-top: 0;
     }
 
     &.revisions {
@@ -369,7 +373,7 @@
         margin-bottom: 5px;
       }
 
-      .namespace-input-container {
+      .name-input-container {
         &:extend(.code-font);
         position: relative;
         height: 30px;

@@ -50,6 +50,7 @@ async function loadCurrentWorkspace () {
   currentWorkspaceName = parseURLWorkspaceName()
   if (currentWorkspaceName) {
     workspaceInfo = await beaker.workspaces.get(0, currentWorkspaceName)
+    workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(0, currentWorkspaceName)
   } else {
     workspaceInfo = null
   }
@@ -188,11 +189,11 @@ function render404 () {
 
 function renderHeader () {
   return yo`
-    <div class="builtin-header header">
+    <div class="header">
       <div class="top">
         <div>
-          <a href="workspaces://${workspaceInfo.namespace}" class="namespace">
-            workspaces://${workspaceInfo.namespace}
+          <a href="workspace://${workspaceInfo.name}" class="name">
+            workspace://${workspaceInfo.name}
           </a>
           <span onclick=${onOpenInFinder} class="local-path">${workspaceInfo.localPath}</span>
         </div>
@@ -240,14 +241,11 @@ function renderActions () {
 }
 
 function renderMetadata () {
-  const revisions = workspaceInfo.revisions
-  const totalChangesCount = revisions.additions.length + revisions.modifications.length + revisions.deletions.length
-
   return yo`
     <div class="metadata">
-      ${totalChangesCount ? yo`
+      ${workspaceInfo.revisions.length ? yo`
         <span class="changes-count">
-          ${totalChangesCount} unpublished ${pluralize(totalChangesCount, 'change')}
+          ${workspaceInfo.revisions.length} unpublished ${pluralize(workspaceInfo.revisions.length, 'change')}
         </span>
       ` : ''}
     </div>
@@ -268,7 +266,9 @@ function renderView () {
 }
 
 function renderRevisionsView () {
-  const {additions, modifications, deletions} = workspaceInfo.revisions
+  const additions = workspaceInfo.revisions.filter(r => r.change === 'add')
+  const modifications = workspaceInfo.revisions.filter(r => r.change === 'mod')
+  const deletions = workspaceInfo.revisions.filter(r => r.change === 'del')
 
   return yo`
     <div class="view revisions">
@@ -281,7 +281,7 @@ function renderRevisionsView () {
             </div>
 
             <ul class="revisions-list">
-              ${additions.map(a => yo`<li>${a}</li>`)}
+              ${additions.map(a => yo`<li>${a.path}</li>`)}
             </ul>
           </div>
         ` : ''}
@@ -294,7 +294,7 @@ function renderRevisionsView () {
             </div>
 
             <ul class="revisions-list">
-              ${modifications.map(m => yo`<li>${m}</li>`)}
+              ${modifications.map(m => yo`<li>${m.path}</li>`)}
             </ul>
           </div>
         ` : ''}
@@ -307,7 +307,7 @@ function renderRevisionsView () {
             </div>
 
             <ul class="revisions-list">
-              ${deletions.map(d => yo`<li>${d}</li>`)}
+              ${deletions.map(d => yo`<li>${d.path}</li>`)}
             </ul>
           </div>
         ` : ''}
@@ -347,10 +347,10 @@ function renderSettingsView () {
       </p>
 
       <p>
-        <label for="namespace">Local URL</label>
-        <div class="namespace-input-container">
+        <label for="name">Local URL</label>
+        <div class="name-input-container">
           <span class="protocol">workspaces://</span>
-          <input name="namespace" value=${workspaceInfo.namespace}/>
+          <input name="name" value=${workspaceInfo.name}/>
           ${false ? yo`
             <span class="error">This URL is being used by another workspace</span>
           ` : ''}
