@@ -38,7 +38,7 @@ async function setup () {
     w.numRevisions = revisions ? revisions.length : 0
     return w
   }))
-  loadCurrentWorkspace()
+  await loadCurrentWorkspace()
 
   // workspaceInfo = {
   //   namespace: 'blog',
