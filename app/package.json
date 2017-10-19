@@ -21,6 +21,7 @@
     "dat-encoding": "^4.0.2",
     "datland-swarm-defaults": "^1.0.2",
     "debug": "git://github.com/beakerbrowser/debug.git#8d79a96e2c5f79527d7580960be3da9ae246ed8e",
+    "diff": "^3.4.0",
     "diff-file-tree": "^2.1.1",
     "discovery-channel": "^5.4.5",
     "discovery-swarm": "^4.4.2",

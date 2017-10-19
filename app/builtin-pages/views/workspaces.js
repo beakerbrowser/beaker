@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import {pluralize} from '../../lib/strings'
 import * as createWorkspacePopup from '../com/create-workspace-popup'
 import renderSidebar from '../com/sidebar'
+import renderDiff from '../com/diff'
 import renderGearIcon from '../icon/gear-small'
 
 // main
@@ -97,8 +98,8 @@ function onChangeTab (tab) {
 }
 
 async function onClickChangedNode (node) {
-  // TODO: waiting for this to be implemented -tbv
-  // diff = await beaker.workspaces.diff(0, currentWorkspaceName, node.path)
+  diff = await beaker.workspaces.diff(0, currentWorkspaceName, node.path)
+  console.log(diff)
   render()
 }
 
@@ -303,7 +304,7 @@ function renderRevisionsView () {
             </div>
 
             <ul class="revisions-list">
-              ${modifications.map(m => yo`<li>${m.path}</li>`)}
+              ${modifications.map(m => yo`<li onclick=${() => onClickChangedNode(m)}>${m.path}</li>`)}
             </ul>
           </div>
         ` : ''}
@@ -316,7 +317,7 @@ function renderRevisionsView () {
             </div>
 
             <ul class="revisions-list">
-              ${deletions.map(d => yo`<li>${d.path}</li>`)}
+              ${deletions.map(d => yo`<li onclick=${() => onClickChangedNode(d)}>${d.path}</li>`)}
             </ul>
           </div>
         ` : ''}
@@ -326,7 +327,7 @@ function renderRevisionsView () {
       </div>
 
       <div class="revisions-content">
-        TODO
+        ${diff ? renderDiff(diff) : ''}
       </div>
     </div>
   `

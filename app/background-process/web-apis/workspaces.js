@@ -1,7 +1,9 @@
 import * as dft from 'diff-file-tree'
+import * as diff from 'diff'
 import * as workspacesDb from '../dbs/workspaces'
-import {DAT_HASH_REGEX, WORKSPACE_VALID_NAME_REGEX} from '../../lib/const'
 import * as datLibrary from '../networks/dat/library'
+import * as scopedFSes from '../../lib/bg/scoped-fses'
+import {DAT_HASH_REGEX, WORKSPACE_VALID_NAME_REGEX} from '../../lib/const'
 
 // exported api
 // =
@@ -47,8 +49,22 @@ export default {
 
   async diff (profileId, name, path) {
     assertValidName(name)
-    // TODO
-    throw new Error('TODO')
+
+    // fetch workspace
+    const ws = await workspacesDb.get(profileId, name)
+    if (!ws) throw new Error(`No workspace found at ${name}`)
+    if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
+    if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
+
+    // get the scoped fs and archive
+    const scopedFS = scopedFSes.get(ws.localFilesPath)
+    const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
+
+    // read the file in both sources
+    const [newFile, oldFile] = await Promise.all([readFile(scopedFS, path), readFile(archive, path)])
+
+    // return the diff
+    return diff.diffLines(oldFile, newFile)
   },
 
   async publish (profileId, name, opts={}) {
@@ -104,4 +120,13 @@ function assertValidName (name) {
 
 function assertSafeFilesPath (localFilesPath) {
   // TODO check where it is, and then check that it exists
+}
+
+// helper to read a file via promise and return an empty string on fail
+async function readFile (fs, path) {
+  return new Promise(resolve => {
+    fs.readFile(path, {encoding: 'utf8'}, (err, data) => {
+      resolve(data || '')
+    })
+  })
 }

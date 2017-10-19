@@ -3,15 +3,10 @@ import url from 'url'
 import parseRange from 'range-parser'
 import once from 'once'
 import fs from 'fs'
-import ScopedFS from 'scoped-fs'
 import errorPage from '../error-page'
 import {pluralize, makeSafe} from '../strings'
 import * as mime from '../mime'
-
-// globals
-// =
-
-var scopedFSes = {} // map of scoped filesystems, kept in memory to reduce allocations
+import * as scopedFSes from './scoped-fses'
 
 // exported api
 // =
@@ -51,10 +46,7 @@ export function create ({CSP, requestNonce}) {
       }
 
       // create/get the scoped fs
-      var scopedFS = scopedFSes[rootPath]
-      if (!scopedFS) {
-        scopedFS = scopedFSes[rootPath] = new ScopedFS(rootPath)
-      }
+      const scopedFS = scopedFSes.get(rootPath)
 
       // do a lookup
       let requestPathname = decodeURIComponent(requestUrlParsed.pathname)
