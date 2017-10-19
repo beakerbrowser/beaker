@@ -40,21 +40,9 @@ async function setup () {
   }))
   await loadCurrentWorkspace()
 
-  // workspaceInfo = {
-  //   namespace: 'blog',
-  //   title: 'My blog',
-  //   description: 'The source for my blog',
-  //   origin: 'dat://cca6eb69a3ad6104ca31b9fee7832d74068db16ef2169eaaab5b48096e128342/',
-  //   localPath: '/Users/tara/src/taravancil.com',
-  //   revisions: {
-  //     additions: ['test.txt', 'index.html'],
-  //     deletions: ['/images/cat.png'],
-  //     modifications: ['/test', '/app/index.js', '/app/butt.js']
-  //   }
-  // }
-
   window.addEventListener('pushstate', loadCurrentWorkspace)
   window.addEventListener('popstate', loadCurrentWorkspace)
+
   render()
 }
 
