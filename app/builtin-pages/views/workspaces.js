@@ -83,26 +83,34 @@ function onChangeTab (tab) {
 // =
 
 function render () {
-  if (currentWorkspaceName.length && !workspaceInfo) {
-    yo.update(document.querySelector('.workspaces-wrapper'), yo`
-      <div class="workspaces-wrapper not-found">
-        workspace://${currentWorkspaceName} does not exist
+  if (currentWorkspaceName.length && !workspaceInfo) render404()
+  else if (!workspaceInfo) renderWorkspacesListing()
+  else renderWorkspace()
+}
 
-        <div class="links">
-          <a href="beaker://workspaces">« Back to all workspaces</a>
-        </div>
+function renderWorkspacesListing () {
+  // TODO
+}
+
+function renderWorkspace () {
+  yo.update(document.querySelector('.workspaces-wrapper'), yo`
+    <div class="workspaces-wrapper builtin-wrapper">
+      ${renderHeader()}
+      ${renderView()}
+    </div>
+  `)
+}
+
+function render404 () {
+  yo.update(document.querySelector('.workspaces-wrapper'), yo`
+    <div class="workspaces-wrapper not-found">
+      workspace://${currentWorkspaceName} does not exist
+
+      <div class="links">
+        <a href="beaker://workspaces">« Back to all workspaces</a>
       </div>
-    `)
-  } else if (!workspaceInfo) {
-    // TODO render the listing of workspaces
-  } else {
-    yo.update(document.querySelector('.workspaces-wrapper'), yo`
-      <div class="workspaces-wrapper builtin-wrapper">
-        ${renderHeader()}
-        ${renderView()}
-      </div>
-    `)
-  }
+    </div>
+  `)
 }
 
 function renderHeader () {
