@@ -2,6 +2,7 @@
 
 import yo from 'yo-yo'
 import {pluralize} from '../../lib/strings'
+import renderSidebar from '../com/sidebar'
 import renderGearIcon from '../icon/gear-small'
 
 // main
@@ -62,6 +63,10 @@ function parseURLWorkspaceName () {
 // events
 // =
 
+function onCreateWorkspace () {
+  // TODO
+}
+
 function onPublishChanges () {
   // TODO
 }
@@ -89,12 +94,38 @@ function render () {
 }
 
 function renderWorkspacesListing () {
-  // TODO
+  yo.update(document.querySelector('.workspaces-wrapper'), yo`
+    <div class="builtin-wrapper workspaces-wrapper listing">
+      ${renderSidebar('')}
+      <div>
+        <div class="builtin-sidebar">
+          <h1>Workspaces</h1>
+
+          <p>Manage your workspaces</p>
+        </div>
+
+        <div class="builtin-main">
+          <div class="builtin-header fixed">
+            <span class="workspace-count">
+              ${allWorkspaces.length} ${pluralize(allWorkspaces.length, 'workspace')}
+            </span>
+
+            <div class="actions">
+              <button class="btn" onclick=${onCreateWorkspace} >
+                New workspace
+                <i class="fa fa-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `)
 }
 
 function renderWorkspace () {
   yo.update(document.querySelector('.workspaces-wrapper'), yo`
-    <div class="workspaces-wrapper builtin-wrapper">
+    <div class="workspaces-wrapper builtin-wrapper workspace">
       ${renderHeader()}
       ${renderView()}
     </div>

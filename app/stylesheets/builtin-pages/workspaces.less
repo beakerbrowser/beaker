@@ -7,28 +7,47 @@
 @import "./components/toast";
 @import "../components/inputs";
 
+.sidebar {
+  background: #111
+}
+
+.builtin-sidebar {
+
+  p {
+    padding: 20px;
+    padding-top: 0;
+  }
+}
+
 .workspaces-wrapper {
   color: @color-text;
   width: 100%;
   background: #fcfcfc;
 
-  &.not-found {
-    &:extend(.code-font);
-    text-align: center;
-    width: 100%;
-    padding-top: 100px;
-    font-size: 20px;
-    color: @color-text--muted;
+  &:not(.listing) {
+    padding-left: 0;
+  }
+}
 
-    a {
-      font-size: 14px;
-      color: @blue;
+.workspaces-wrapper.not-found {
+  &:extend(.code-font);
+  text-align: center;
+  width: 100%;
+  padding-top: 100px;
+  font-size: 20px;
+  color: @color-text--muted;
 
-      &:hover {
-        text-decoration: underline;
-      }
+  a {
+    font-size: 14px;
+    color: @blue;
+
+    &:hover {
+      text-decoration: underline;
     }
   }
+}
+
+.workspaces-wrapper.workspace {
 
   .header {
     position: fixed;
