@@ -53,9 +53,18 @@ async function setup () {
   //   }
   // }
 
-  // window.addEventListener('pushstate', loadViewedProfile)
-  // window.addEventListener('popstate', loadViewedProfile)
+  window.addEventListener('pushstate', loadCurrentWorkspace)
+  window.addEventListener('popstate', loadCurrentWorkspace)
+  render()
+}
 
+async function loadCurrentWorkspace () {
+  currentWorkspaceName = parseURLWorkspaceName()
+  if (currentWorkspaceName) {
+    workspaceInfo = await beaker.workspaces.get(0, currentWorkspaceName)
+  } else {
+    workspaceInfo = null
+  }
   render()
 }
 
