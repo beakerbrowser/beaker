@@ -126,10 +126,6 @@ function renderWorkspacesListing () {
 
         <div class="builtin-main">
           <div class="builtin-header fixed">
-            <span class="workspace-count">
-              ${allWorkspaces.length} ${pluralize(allWorkspaces.length, 'workspace')}
-            </span>
-
             <div class="actions">
               <button class="btn" onclick=${onCreateWorkspace} >
                 New workspace
