@@ -22,11 +22,11 @@ webFrame.registerURLSchemeAsPrivileged('dat', { bypassCSP: false })
 webFrame.registerURLSchemeAsPrivileged('app', { bypassCSP: false })
 
 // setup APIs
-if (['beaker:', 'dat:', 'https:', 'app:'].includes(window.location.protocol) ||
+if (['beaker:', 'dat:', 'https:', 'app:', 'workspace:'].includes(window.location.protocol) ||
     (window.location.protocol === 'http:' && window.location.hostname === 'localhost')) {
   window.DatArchive = DatArchive
 }
-if (['beaker:', 'dat:', 'app:'].includes(window.location.protocol)) {
+if (['beaker:', 'dat:', 'app:', 'workspace:'].includes(window.location.protocol)) {
   window.UserSession = UserSession
   window.beaker = beaker
 }

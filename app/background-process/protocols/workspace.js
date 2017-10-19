@@ -4,8 +4,7 @@ import querystring from 'querystring'
 import http from 'http'
 import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
-import {getServerInfo as getDatServerInfo} from './dat'
-import * as appsDb from '../dbs/apps'
+import * as workspacesDb from '../dbs/workspaces'
 import * as scopedFsServer from '../../lib/bg/scoped-fs-server'
 
 // globals
@@ -30,45 +29,30 @@ export function setup () {
   requestNonce = '' + crypto.randomBytes(4).readUInt32LE(0)
 
   // setup the protocol handler
-  protocol.registerHttpProtocol('app',
+  protocol.registerHttpProtocol('workspace',
     async function (request, cb) {
-      // look up the app
-      var args
+      // look up the workspace
       var urlp = url.parse(request.url)
-      var appBinding = await appsDb.get(0, urlp.hostname)
-      if (appBinding && appBinding.url.startsWith('dat://')) {
-        // route to the dat server
-        args = getDatServerInfo()
-        args.url = appBinding.url + urlp.path
-        args.qs = querystring.stringify({
-          url: args.url,
-          nonce: args.requestNonce
-        })
-      } else {
-        // route to the app server
-        args = {
-          qs: querystring.stringify({
-            requestUrl: request.url,
-            rootPath: appBinding ? appBinding.url.slice('file://'.length) : '',
-            nonce: requestNonce
-          }),
-          serverPort
-        }
-      }
+      var wsEntry = await workspacesDb.get(0, urlp.hostname)
 
       // send requests to the protocol server
+      const qs = querystring.stringify({
+        requestUrl: request.url,
+        rootPath: wsEntry ? wsEntry.localFilesPath : '',
+        nonce: requestNonce
+      })
       cb({
         method: request.method,
-        url: `http://localhost:${args.serverPort}/?${args.qs}`
+        url: `http://localhost:${serverPort}/?${qs}`
       })
     }, err => {
       if (err) {
-        throw new Error('Failed to create protocol: app. ' + err)
+        throw new Error('Failed to create protocol: workspace. ' + err)
       }
     }
   )
 
-  // create the internal app HTTP server
+  // create the internal workspace HTTP server
   var server = http.createServer(scopedFsServer.create({CSP, requestNonce}))
   listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => { serverPort = port })
 }
