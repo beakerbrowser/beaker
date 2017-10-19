@@ -2,6 +2,7 @@
 
 import yo from 'yo-yo'
 import {pluralize} from '../../lib/strings'
+import * as createWorkspacePopup from '../com/create-workspace-popup'
 import renderSidebar from '../com/sidebar'
 import renderGearIcon from '../icon/gear-small'
 
