@@ -1,9 +1,27 @@
+import {app} from 'electron'
 import * as dft from 'diff-file-tree'
 import * as diff from 'diff'
+import fs from 'fs'
+import path from 'path'
 import * as workspacesDb from '../dbs/workspaces'
 import * as datLibrary from '../networks/dat/library'
 import * as scopedFSes from '../../lib/bg/scoped-fses'
 import {DAT_HASH_REGEX, WORKSPACE_VALID_NAME_REGEX} from '../../lib/const'
+import {
+  NotAFolderError,
+  ProtectedFileNotWritableError,
+  PermissionsError
+} from 'beaker-error-constants'
+
+const DISALLOWED_SAVE_PATH_NAMES = [
+  'home',
+  'desktop',
+  'documents',
+  'downloads',
+  'music',
+  'pictures',
+  'videos'
+]
 
 // exported api
 // =
@@ -21,7 +39,7 @@ export default {
   async set (profileId, name, newData = {}) {
     assertValidName(name)
     if (newData.name) assertValidName(newData.name)
-    if (newData.localFilesPath) assertSafeFilesPath(newData.localFilesPath)
+    if (newData.localFilesPath) await assertSafeFilesPath(newData.localFilesPath)
     return workspacesDb.set(profileId, name, newData)
   },
 
@@ -47,7 +65,7 @@ export default {
     return dft.diff(ws.localFilesPath, {fs: archive}, opts)
   },
 
-  async diff (profileId, name, path) {
+  async diff (profileId, name, filepath) {
     assertValidName(name)
 
     // fetch workspace
@@ -61,7 +79,7 @@ export default {
     const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
 
     // read the file in both sources
-    const [newFile, oldFile] = await Promise.all([readFile(scopedFS, path), readFile(archive, path)])
+    const [newFile, oldFile] = await Promise.all([readFile(scopedFS, filepath), readFile(archive, filepath)])
 
     // return the diff
     return diff.diffLines(oldFile, newFile)
@@ -118,14 +136,32 @@ function assertValidName (name) {
   }
 }
 
-function assertSafeFilesPath (localFilesPath) {
-  // TODO check where it is, and then check that it exists
+async function assertSafeFilesPath (localFilesPath) {
+  // stat the file
+  const stat = await new Promise(resolve => {
+    fs.stat(localFilesPath, (err, st) => resolve(st))
+  })
+  if (!stat) {
+    throw new NotAFolderError('Invalid target folder: not found')
+  }
+  if (!stat.isDirectory()) {
+    throw new NotAFolderError('Invalid target folder: not a folder')
+  }
+
+  // check whether this is an OS path
+  for (let i = 0; i < DISALLOWED_SAVE_PATH_NAMES.length; i++) {
+    let disallowedSavePathName = DISALLOWED_SAVE_PATH_NAMES[i]
+    let disallowedSavePath = app.getPath(disallowedSavePathName)
+    if (path.normalize(localFilesPath) === path.normalize(disallowedSavePath)) {
+      throw new ProtectedFileNotWritableError(`This is the OS ${disallowedSavePathName} folder, which is protected. Please pick another folder or subfolder.`)
+    }
+  }
 }
 
 // helper to read a file via promise and return an empty string on fail
-async function readFile (fs, path) {
+async function readFile (fs, filepath) {
   return new Promise(resolve => {
-    fs.readFile(path, {encoding: 'utf8'}, (err, data) => {
+    fs.readFile(filepath, {encoding: 'utf8'}, (err, data) => {
       resolve(data || '')
     })
   })
