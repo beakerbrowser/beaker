@@ -76,12 +76,14 @@ function onOpenWorkspace (name) {
   history.pushState({}, null, 'beaker://workspaces/' + name)
 }
 
-function onPublishChanges () {
-  // TODO
+async function onPublishChanges () {
+  await beaker.workspaces.publish(0, currentWorkspaceName)
+  loadCurrentWorkspace()
 }
 
-function onRevertChanges () {
-  // TODO
+async function onRevertChanges () {
+  await beaker.workspaces.revert(0, currentWorkspaceName)
+  loadCurrentWorkspace()
 }
 
 function onOpenInFinder () {
