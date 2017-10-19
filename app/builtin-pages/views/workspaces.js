@@ -32,11 +32,13 @@ window.history.replaceState = _wr('replaceState')
 setup()
 async function setup () {
   allWorkspaces = await beaker.workspaces.list(0)
-  currentWorkspaceName = parseURLWorkspaceName()
-
-  if (currentWorkspaceName) {
-    workspaceInfo = await beaker.workspaces.get(0, currentWorkspaceName)
-  }
+  // add extra metadata to the workspaces
+  await Promise.all(allWorkspaces.map(async (w) => {
+    const revisions = await beaker.workspaces.listChangedFiles(0, w.name).length
+    w.numRevisions = revisions ? revisions.length : 0
+    return w
+  }))
+  loadCurrentWorkspace()
 
   // workspaceInfo = {
   //   namespace: 'blog',
