@@ -75,8 +75,16 @@ function parseURLWorkspaceName () {
 // events
 // =
 
-function onCreateWorkspace () {
-  // TODO
+async function onCreateWorkspace () {
+  const {name, url, path} = await createWorkspacePopup.create()
+  await beaker.workspaces.set(0, name, {localFilesPath: path, publishTargetUrl: url})
+  // TODO: we should tell the user if a workspace name is already in use, so
+  // they don't accidentally overwrite an existing workspace -tbv
+}
+
+function onOpenWorkspace (name) {
+  currentWorkspaceName = name
+  history.pushState({}, null, 'beaker://workspaces/' + name)
 }
 
 function onPublishChanges () {
@@ -129,10 +137,46 @@ function renderWorkspacesListing () {
               </button>
             </div>
           </div>
+
+          <div>
+            <ul class="workspaces">
+              ${allWorkspaces.map(renderWorkspaceListItem)}
+            </ul>
+          </div>
         </div>
       </div>
     </div>
   `)
+}
+
+function renderWorkspaceListItem (workspace) {
+  return yo`
+    <li class="workspace">
+      <div>
+        <img class="favicon" src="beaker-favicon:${workspace.publishTargetUrl}" />
+        <span class="info">
+          <a class="title" href="workspace://${workspace.name}">
+            <code>workspace://${workspace.name}</code>
+          </a>
+
+          <div class="metadata">
+            ${workspace.numRevisions} ${pluralize(workspace.numRevisions, 'unpublished change')}
+            <span class="bullet">•</span>
+            <code class="path" onclick=${onOpenInFinder}>${workspace.localFilesPath}</code>
+          </div>
+        </span>
+      </div>
+
+      <div class="buttons">
+        <button class="btn" onclick=${e => onOpenWorkspace(workspace.name)}>
+          Open workspace
+        </button>
+        <a title="Preview changes" href="workspace://${workspace.name}" class="btn">
+          <i class="fa fa-external-link"></i>
+        </a>
+      </div>
+    </li>
+  `
 }
 
 function renderWorkspace () {
