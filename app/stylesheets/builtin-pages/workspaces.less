@@ -115,12 +115,15 @@
 }
 
 .workspaces-wrapper.not-found {
-  &:extend(.code-font);
   text-align: center;
   width: 100%;
   padding-top: 100px;
   font-size: 20px;
   color: @color-text--muted;
+
+  .name {
+    &:extend(.code-font);
+  }
 
   .links > * {
     font-size: 14px;

@@ -187,10 +187,12 @@ function renderWorkspace () {
 function render404 () {
   yo.update(document.querySelector('.workspaces-wrapper'), yo`
     <div class="workspaces-wrapper not-found">
-      workspace://${currentWorkspaceName} does not exist
+      <span class="name">workspace://${currentWorkspaceName}</span> does not exist
 
       <div class="links">
-        <a href="beaker://workspaces">« Back to all workspaces</a>
+        <span onclick=${() => history.pushState({}, null, 'beaker://workspaces')}>
+          « Back to all workspaces
+        </span>
       </div>
     </div>
   `)
