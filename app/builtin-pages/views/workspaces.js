@@ -11,6 +11,7 @@ import renderGearIcon from '../icon/gear-small'
 let allWorkspaces = []
 let currentWorkspaceName
 let workspaceInfo
+let diff
 let activeTab = 'revisions'
 
 // HACK FIX
@@ -92,6 +93,12 @@ function onOpenInFinder () {
 
 function onChangeTab (tab) {
   activeTab = tab
+  render()
+}
+
+async function onClickChangedNode (node) {
+  // TODO: waiting for this to be implemented -tbv
+  // diff = await beaker.workspaces.diff(0, currentWorkspaceName, node.path)
   render()
 }
 
@@ -283,7 +290,7 @@ function renderRevisionsView () {
             </div>
 
             <ul class="revisions-list">
-              ${additions.map(a => yo`<li>${a.path}</li>`)}
+              ${additions.map(a => yo`<li onclick=${() => onClickChangedNode(a)}>${a.path}</li>`)}
             </ul>
           </div>
         ` : ''}
