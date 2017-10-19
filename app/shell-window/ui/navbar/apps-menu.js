@@ -37,7 +37,7 @@ export class AppsMenuNavbarBtn {
           <div class="dropdown-items with-triangle">
             ${!this.apps.length ? yo`<em>No apps installed</em>` : ''}
 
-            ${this.currentView === 'grid' ? yo`
+            ${this.currentView === 'grid' && this.apps.length ? yo`
               <div class="apps-grid">
                 ${this.apps.map(app => yo`
                   <div class="app-container" title="app://${app.name}" onclick=${e => this.onOpenPage(e, `app://${app.name}`)}>
@@ -47,7 +47,7 @@ export class AppsMenuNavbarBtn {
               </div>
             ` : ''}
 
-            ${this.currentView === 'list' ? yo`
+            ${this.currentView === 'list' && this.apps.length ? yo`
               <ul class="apps-list">
                 ${this.apps.map(app => yo`
                   <li onclick=${e => this.onOpenPage(e, `app://${app.name}`)} class="app-container">
