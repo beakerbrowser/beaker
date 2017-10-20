@@ -2,6 +2,7 @@
 
 import yo from 'yo-yo'
 import {pluralize} from '../../lib/strings'
+import {pushUrl} from '../../lib/fg/event-handlers'
 import * as createWorkspacePopup from '../com/create-workspace-popup'
 import renderSidebar from '../com/sidebar'
 import renderDiff from '../com/diff'
@@ -71,11 +72,6 @@ async function onCreateWorkspace () {
   await beaker.workspaces.set(0, name, {localFilesPath: path, publishTargetUrl: url})
   // TODO: we should tell the user if a workspace name is already in use, so
   // they don't accidentally overwrite an existing workspace -tbv
-}
-
-function onOpenWorkspace (name) {
-  currentWorkspaceName = name
-  history.pushState({}, null, 'beaker://workspaces/' + name)
 }
 
 async function onPublishChanges () {
@@ -163,9 +159,9 @@ function renderWorkspaceListItem (workspace) {
       </div>
 
       <div class="buttons">
-        <button class="btn" onclick=${e => onOpenWorkspace(workspace.name)}>
+        <a class="btn" href=${'beaker://workspaces/' + workspace.name} onclick=${pushUrl}>
           Open workspace
-        </button>
+        </a>
         <a title="Preview changes" href="workspace://${workspace.name}" class="btn">
           <i class="fa fa-external-link"></i>
         </a>
