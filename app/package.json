@@ -8,6 +8,7 @@
   "copyright": "© 2017, Paul Frazee",
   "main": "background-process.build.js",
   "dependencies": {
+    "anymatch": "^1.3.2",
     "await-lock": "^1.1.2",
     "beaker-error-constants": "^1.2.0",
     "beaker-profiles-api": "^2.4.2",

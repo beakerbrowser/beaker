@@ -1,6 +1,7 @@
 import {app} from 'electron'
 import * as dft from 'diff-file-tree'
 import * as diff from 'diff'
+import anymatch from 'anymatch'
 import fs from 'fs'
 import path from 'path'
 import * as workspacesDb from '../dbs/workspaces'
@@ -58,11 +59,16 @@ export default {
     if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
     if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
 
-    // fetch archive
+    // get the scoped fs and archive
+    const scopedFS = scopedFSes.get(ws.localFilesPath)
     const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
 
+    // read ignore rules
+    const ignoreRules = await readDatIgnore(scopedFS)
+    opts.filter = (filepath) => anymatch(ignoreRules, filepath)
+
     // run diff
-    return dft.diff(ws.localFilesPath, {fs: archive}, opts)
+    return dft.diff({fs: scopedFS}, {fs: archive}, opts)
   },
 
   async diff (profileId, name, filepath) {
@@ -95,12 +101,17 @@ export default {
     if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
     if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
 
-    // fetch archive
+    // get the scoped fs and archive
+    const scopedFS = scopedFSes.get(ws.localFilesPath)
     const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
 
+    // read ignore rules
+    const ignoreRules = await readDatIgnore(scopedFS)
+    opts.filter = (filepath) => anymatch(ignoreRules, filepath)
+
     // run and apply diff
-    var diff = await dft.diff(ws.localFilesPath, {fs: archive}, opts)
-    return dft.applyRight(ws.localFilesPath, {fs: archive}, diff)
+    var diff = await dft.diff({fs: scopedFS}, {fs: archive}, opts)
+    return dft.applyRight({fs: scopedFS}, {fs: archive}, diff)
   },
 
   async revert (profileId, name, opts={}) {
@@ -113,12 +124,17 @@ export default {
     if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
     if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
 
-    // fetch archive
+    // get the scoped fs and archive
+    const scopedFS = scopedFSes.get(ws.localFilesPath)
     const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
 
+    // read ignore rules
+    const ignoreRules = await readDatIgnore(scopedFS)
+    opts.filter = (filepath) => anymatch(ignoreRules, filepath)
+
     // run and apply diff
-    var diff = await dft.diff(ws.localFilesPath, {fs: archive}, opts)
-    return dft.applyLeft(ws.localFilesPath, {fs: archive}, diff)
+    var diff = await dft.diff({fs: scopedFS}, {fs: archive}, opts)
+    return dft.applyLeft({fs: scopedFS}, {fs: archive}, diff)
   }
 }
 
@@ -134,6 +150,19 @@ function assertValidName (name) {
   if (!WORKSPACE_VALID_NAME_REGEX.test(name)) {
     throw new Error(`Invalid workspace name (${name})`)
   }
+}
+
+async function readDatIgnore (fs) {
+  var rulesRaw = await readFile(fs, '.datignore')
+  return rulesRaw.split('\n')
+    .filter(Boolean)
+    .map(rule => {
+      if (!rule.startsWith('/')) {
+        rule = '**/' + rule
+      }
+      return rule
+    })
+    .concat(['/.git', '/.dat'])
 }
 
 async function assertSafeFilesPath (localFilesPath) {
