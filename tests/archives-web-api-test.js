@@ -3,7 +3,6 @@ import {Application} from 'spectron'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
-import tempy from 'tempy'
 import electron from '../node_modules/electron'
 
 import * as browserdriver from './lib/browser-driver'

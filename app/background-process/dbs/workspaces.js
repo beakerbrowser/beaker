@@ -36,7 +36,7 @@ export async function set (profileId, name, newData = {}) {
 
     // delete old if required
     if (name !== data.name) {
-      await remove(profileId, name)
+      await db.run(`DELETE FROM workspaces WHERE profileId = ? AND name = ?`, [profileId, name])
     }
   } finally {
     release()

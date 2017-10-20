@@ -11,7 +11,8 @@ import {DAT_HASH_REGEX, WORKSPACE_VALID_NAME_REGEX} from '../../lib/const'
 import {
   NotAFolderError,
   ProtectedFileNotWritableError,
-  PermissionsError
+  PermissionsError,
+  InvalidURLError
 } from 'beaker-error-constants'
 
 const DISALLOWED_SAVE_PATH_NAMES = [
@@ -37,18 +38,36 @@ export default {
     return workspacesDb.get(profileId, name)
   },
 
+  // create or update a workspace
+  // - profileId: number, the id of the browsing profile
+  // - name: string, the name of the workspace
+  // - newData attributes:
+  //   - name: string?
+  //   - localFilesPath: string?
+  //   - publishTargetUrl: string?
   async set (profileId, name, newData = {}) {
     assertValidName(name)
     if (newData.name) assertValidName(newData.name)
     if (newData.localFilesPath) await assertSafeFilesPath(newData.localFilesPath)
+    if (newData.publishTargetUrl) await assertDatUrl(newData.publishTargetUrl)
     return workspacesDb.set(profileId, name, newData)
   },
 
+  // remove a workspace
+  // - profileId: number, the id of the browsing profile
+  // - name: string, the name of the workspace
   async remove (profileId, name) {
     assertValidName(name)
     return workspacesDb.remove(profileId, name)
   },
 
+  // list the files that have changed
+  // - profileId: number, the id of the browsing profile
+  // - name: string, the name of the workspace
+  // - opts
+  //   - shallow: bool, dont descend into changed folders (default true)
+  //   - compareContent: bool, compare the actual content (default true)
+  //   - paths: Array<string>, a whitelist of files to compare
   async listChangedFiles (profileId, name, opts={}) {
     assertValidName(name)
     opts = massageDiffOpts(opts)
@@ -75,6 +94,10 @@ export default {
     return dft.diff({fs: scopedFS}, {fs: archive}, opts)
   },
 
+  // diff a file in a workspace
+  // - profileId: number, the id of the browsing profile
+  // - name: string, the name of the workspace
+  // - filepath: string, the path of the file in the workspace
   async diff (profileId, name, filepath) {
     assertValidName(name)
 
@@ -95,6 +118,13 @@ export default {
     return diff.diffLines(oldFile, newFile)
   },
 
+  // publish the files that have changed
+  // - profileId: number, the id of the browsing profile
+  // - name: string, the name of the workspace
+  // - opts
+  //   - shallow: bool, dont descend into changed folders (default true)
+  //   - compareContent: bool, compare the actual content (default true)
+  //   - paths: Array<string>, a whitelist of files to compare
   async publish (profileId, name, opts={}) {
     assertValidName(name)
     opts = massageDiffOpts(opts)
@@ -119,9 +149,16 @@ export default {
 
     // run and apply diff
     var diff = await dft.diff({fs: scopedFS}, {fs: archive}, opts)
-    return dft.applyRight({fs: scopedFS}, {fs: archive}, diff)
+    await dft.applyRight({fs: scopedFS}, {fs: archive}, diff)
   },
 
+  // revert the files that have changed
+  // - profileId: number, the id of the browsing profile
+  // - name: string, the name of the workspace
+  // - opts
+  //   - shallow: bool, dont descend into changed folders (default true)
+  //   - compareContent: bool, compare the actual content (default true)
+  //   - paths: Array<string>, a whitelist of files to compare
   async revert (profileId, name, opts={}) {
     assertValidName(name)
     opts = massageDiffOpts(opts)
@@ -146,14 +183,14 @@ export default {
 
     // run and apply diff
     var diff = await dft.diff({fs: scopedFS}, {fs: archive}, opts)
-    return dft.applyLeft({fs: scopedFS}, {fs: archive}, diff)
+    await dft.applyLeft({fs: scopedFS}, {fs: archive}, diff)
   }
 }
 
 function massageDiffOpts (opts) {
   return {
-    compareContent: !!opts.compareContent,
-    shallow: !!opts.shallow,
+    compareContent: typeof opts.compareContent === 'boolean' ? opts.compareContent : true,
+    shallow: typeof opts.shallow === 'boolean' ? opts.shallow : true,
     paths: Array.isArray(opts.paths) ? opts.paths.filter(v => typeof v === 'string') : false
   }
 }
@@ -196,6 +233,12 @@ async function assertSafeFilesPath (localFilesPath) {
     if (path.normalize(localFilesPath) === path.normalize(disallowedSavePath)) {
       throw new ProtectedFileNotWritableError(`This is the OS ${disallowedSavePathName} folder, which is protected. Please pick another folder or subfolder.`)
     }
+  }
+}
+
+function assertDatUrl (url) {
+  if (typeof url !== 'string' || !url.startsWith('dat://')) {
+    throw new InvalidURLError('Invalid publishTargetUrl - must be a dat:// url.')
   }
 }
 
