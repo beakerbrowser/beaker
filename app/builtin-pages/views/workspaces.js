@@ -75,12 +75,16 @@ async function onCreateWorkspace () {
 }
 
 async function onPublishChanges () {
-  await beaker.workspaces.publish(0, currentWorkspaceName)
+  const paths = workspaceInfo.revisions.filter(rev => !rev.unchecked).map(rev => rev.path)
+  if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
+  await beaker.workspaces.publish(0, currentWorkspaceName, {paths})
   loadCurrentWorkspace()
 }
 
 async function onRevertChanges () {
-  await beaker.workspaces.revert(0, currentWorkspaceName)
+  const paths = workspaceInfo.revisions.filter(rev => !rev.unchecked).map(rev => rev.path)
+  if (!confirm(`Revert ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
+  await beaker.workspaces.revert(0, currentWorkspaceName, {paths})
   loadCurrentWorkspace()
 }
 
@@ -90,6 +94,12 @@ function onOpenInFinder () {
 
 function onChangeTab (tab) {
   activeTab = tab
+  render()
+}
+
+function onToggleChangedNodeUnchecked (e, node) {
+  e.stopPropagation()
+  node.unchecked = !node.unchecked
   render()
 }
 
@@ -247,11 +257,13 @@ function renderActions () {
 }
 
 function renderMetadata () {
+  const numCheckedRevisions = workspaceInfo.revisions.filter(r => !r.unchecked).length
   return yo`
     <div class="metadata">
       ${workspaceInfo.revisions.length ? yo`
         <span class="changes-count">
           ${workspaceInfo.revisions.length} unpublished ${pluralize(workspaceInfo.revisions.length, 'change')}
+          ${numCheckedRevisions !== workspaceInfo.revisions.length ? `(${numCheckedRevisions} selected)` : ''}
         </span>
       ` : ''}
     </div>
@@ -276,6 +288,17 @@ function renderRevisionsView () {
   const modifications = workspaceInfo.revisions.filter(r => r.change === 'mod')
   const deletions = workspaceInfo.revisions.filter(r => r.change === 'del')
 
+  const renderRev = node => (
+    yo`<li onclick=${() => onClickChangedNode(node)}>
+      ${node.path}
+      <input
+        type="checkbox"
+        checked=${!node.unchecked}
+        onclick=${e => onToggleChangedNodeUnchecked(e, node)}
+      />
+    </li>`
+  )
+
   return yo`
     <div class="view revisions">
       <div class="revisions-sidebar">
@@ -287,7 +310,7 @@ function renderRevisionsView () {
             </div>
 
             <ul class="revisions-list">
-              ${additions.map(a => yo`<li onclick=${() => onClickChangedNode(a)}>${a.path}</li>`)}
+              ${additions.map(renderRev)}
             </ul>
           </div>
         ` : ''}
@@ -300,7 +323,7 @@ function renderRevisionsView () {
             </div>
 
             <ul class="revisions-list">
-              ${modifications.map(m => yo`<li onclick=${() => onClickChangedNode(m)}>${m.path}</li>`)}
+              ${modifications.map(renderRev)}
             </ul>
           </div>
         ` : ''}
@@ -313,7 +336,7 @@ function renderRevisionsView () {
             </div>
 
             <ul class="revisions-list">
-              ${deletions.map(d => yo`<li onclick=${() => onClickChangedNode(d)}>${d.path}</li>`)}
+              ${deletions.map(renderRev)}
             </ul>
           </div>
         ` : ''}
