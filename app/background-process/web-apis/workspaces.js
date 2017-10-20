@@ -63,9 +63,13 @@ export default {
     const scopedFS = scopedFSes.get(ws.localFilesPath)
     const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
 
-    // read ignore rules
-    const ignoreRules = await readDatIgnore(scopedFS)
-    opts.filter = (filepath) => anymatch(ignoreRules, filepath)
+    // build ignore rules
+    if (opts.paths) {
+      opts.filter = (filepath) => !anymatch(opts.paths, filepath)
+    } else {
+      const ignoreRules = await readDatIgnore(scopedFS)
+      opts.filter = (filepath) => anymatch(ignoreRules, filepath)
+    }
 
     // run diff
     return dft.diff({fs: scopedFS}, {fs: archive}, opts)
@@ -105,9 +109,13 @@ export default {
     const scopedFS = scopedFSes.get(ws.localFilesPath)
     const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
 
-    // read ignore rules
-    const ignoreRules = await readDatIgnore(scopedFS)
-    opts.filter = (filepath) => anymatch(ignoreRules, filepath)
+    // build ignore rules
+    if (opts.paths) {
+      opts.filter = (filepath) => !anymatch(opts.paths, filepath)
+    } else {
+      const ignoreRules = await readDatIgnore(scopedFS)
+      opts.filter = (filepath) => anymatch(ignoreRules, filepath)
+    }
 
     // run and apply diff
     var diff = await dft.diff({fs: scopedFS}, {fs: archive}, opts)
@@ -128,9 +136,13 @@ export default {
     const scopedFS = scopedFSes.get(ws.localFilesPath)
     const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
 
-    // read ignore rules
-    const ignoreRules = await readDatIgnore(scopedFS)
-    opts.filter = (filepath) => anymatch(ignoreRules, filepath)
+    // build ignore rules
+    if (opts.paths) {
+      opts.filter = (filepath) => !anymatch(opts.paths, filepath)
+    } else {
+      const ignoreRules = await readDatIgnore(scopedFS)
+      opts.filter = (filepath) => anymatch(ignoreRules, filepath)
+    }
 
     // run and apply diff
     var diff = await dft.diff({fs: scopedFS}, {fs: archive}, opts)
@@ -139,10 +151,10 @@ export default {
 }
 
 function massageDiffOpts (opts) {
-  // TODO filtering
   return {
     compareContent: !!opts.compareContent,
-    shallow: !!opts.shallow
+    shallow: !!opts.shallow,
+    paths: Array.isArray(opts.paths) ? opts.paths.filter(v => typeof v === 'string') : false
   }
 }
 
