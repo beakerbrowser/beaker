@@ -244,7 +244,7 @@ function onClose (win) {
     // save state
     // NOTE this is called by .on('close')
     // if quitting multiple windows at once, the final saved state is unpredictable
-    if (!win.isMinimized() && !win.isMaximized()) {
+    if (!win.isMinimized() && !win.isFullScreen()) {
       var state = getCurrentPosition(win)
       userDataDir.write(stateStoreFile, state, { atomic: true })
     }
