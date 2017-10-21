@@ -142,7 +142,12 @@ function restoreState () {
 }
 
 function defaultState () {
-  var bounds = screen.getPrimaryDisplay().bounds
+  // HACK
+  // for some reason, electron.screen comes back null sometimes
+  // not sure why, shouldn't be happening
+  // check for existence for now, see #690
+  // -prf
+  var bounds = screen ? screen.getPrimaryDisplay().bounds : {width: 800, height: 600}
   var width = Math.max(800, Math.min(1800, bounds.width - 50))
   var height = Math.max(600, Math.min(1200, bounds.height - 50))
   return Object.assign({}, {
@@ -154,7 +159,12 @@ function defaultState () {
 }
 
 function ensureVisibleOnSomeDisplay (windowState) {
-  var visible = screen.getAllDisplays().some(display => windowWithinBounds(windowState, display.bounds))
+  // HACK
+  // for some reason, electron.screen comes back null sometimes
+  // not sure why, shouldn't be happening
+  // check for existence for now, see #690
+  // -prf
+  var visible = screen && screen.getAllDisplays().some(display => windowWithinBounds(windowState, display.bounds))
   if (!visible) {
     // Window is partially or fully not visible now.
     // Reset it to safe defaults.
