@@ -32,7 +32,7 @@
     "function-queue": "0.0.12",
     "hypercore": "^6.6.6",
     "hypercore-protocol": "^6.3.1",
-    "hyperdrive": "^9.4.8",
+    "hyperdrive": "^9.9.2",
     "hyperdrive-staging-area": "^2.4.0",
     "hyperdrive-to-zip-stream": "^2.0.0",
     "identify-filetype": "^1.0.0",
@@ -60,7 +60,7 @@
     "sqlite3": "^3.1.4",
     "through2": "^2.0.1",
     "unused-filename": "^0.1.0",
-    "utp-native": "^1.5.4",
+    "utp-native": "^1.6.0",
     "yo-yo": "^1.4.0",
     "zerr": "^1.0.4"
   },
