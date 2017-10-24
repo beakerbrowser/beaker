@@ -31,7 +31,7 @@
   "build": {
     "appId": "com.pfrazee.beaker-browser",
     "category": "public.app-category.productivity",
-    "copyright": "© 2016, Paul Frazee",
+    "copyright": "© 2017, Blue Link Labs",
     "npmRebuild": false,
     "asar": false,
     "protocols": [

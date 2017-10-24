@@ -5,7 +5,7 @@
   "homepage": "https://beakerbrowser.com/",
   "version": "0.7.6",
   "author": "Paul Frazee <pfrazee@gmail.com>",
-  "copyright": "© 2017, Paul Frazee",
+  "copyright": "© 2017, Blue Link Labs",
   "main": "background-process.build.js",
   "dependencies": {
     "await-lock": "^1.1.2",
