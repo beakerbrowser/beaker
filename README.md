@@ -22,7 +22,7 @@ Beaker is a new browser that combines the flexibility of the desktop with the co
  - You control your data
  - You can duplicate, modify, and share websites
  - You can use apps while offline
- - You can go back in time and see previous verions of your content
+ - You can go back in time and see previous versions of your content
 
 ### Features
 
