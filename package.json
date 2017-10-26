@@ -12,7 +12,7 @@
     "eslint-plugin-node": "^5.1.0",
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
-    "fs-jetpack": "^0.9.0",
+    "fs-jetpack": "^1.2.0",
     "gulp": "^3.9.0",
     "gulp-batch": "^1.0.5",
     "gulp-less": "^3.0.3",
@@ -93,10 +93,11 @@
   "scripts": {
     "postinstall": "cd app && npm install",
     "build": "gulp build",
-    "burnthemall": "rm -Rf ./node_modules ./app/node_modules; npm i; npm run rebuild",
+    "burnthemall": "node ./tasks/burnthemall.js",
     "lint": "eslint --ignore-pattern 'color-thief.js' --ignore-pattern 'app/node_modules' --ignore-pattern '*.build.js' app",
-    "rebuild": "(cd app && npm rebuild --runtime=electron --target=1.7.4 --disturl=https://atom.io/download/atom-shell --build-from-source); gulp build",
-    "release": "build -m -p never",
+    "rebuild": "gulp rebuild",
+    "release-mac": "build -m -p never",
+    "release-win": "build -w -p never",
     "start": "gulp start",
     "start-logging": "DEBUG=*,-bittorrent-dht $(node -e \"console.log(require('electron'))\") -r trace ./app",
     "watch": "gulp start-watch"
