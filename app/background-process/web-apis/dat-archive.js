@@ -294,7 +294,6 @@ export default {
       dstArchive: archive.stagingFS,
       dstPath: filepath,
       ignore: opts.ignore,
-      dryRun: opts.dryRun,
       inplaceImport: opts.inplaceImport !== false
     })
   },
