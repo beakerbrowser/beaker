@@ -1,0 +1,61 @@
+#win32-titlebar {
+  position: fixed;
+  z-index: 10000;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 36px;
+  display: flex;
+  -webkit-app-region: no-drag;
+
+  .win32-titlebar-btn {
+    flex: 1;
+    text-align: center;
+    transition: background 0.25s, color 0.25s;
+
+    &:hover {
+      background: rgba(0, 0, 0, .1);
+    }
+  }
+
+  .win32-titlebar-minimize {
+    &:after {
+      content: '';
+      display: block;
+      position: relative;
+      border-top: 1px solid gray;
+      width: 15px;
+      height: 1px;
+      left: 16px;
+      top: 18px;
+    }
+  }
+
+  .win32-titlebar-maximize {
+    &:after {
+      content: '';
+      display: block;
+      position: relative;
+      border: 1px solid gray;
+      width: 15px;
+      height: 13px;
+      left: 16px;
+      top: 11px;
+    }
+  }
+
+  .win32-titlebar-close {
+    &:hover {
+      background: rgba(255, 0, 0, 1);
+      color: #fff;
+    }
+
+    &:after {
+      content: '\00d7';
+      font-size: 29px;
+      font-weight: 100;
+      font-family: -webkit-body;
+      line-height: 36px;
+    }
+  }
+}

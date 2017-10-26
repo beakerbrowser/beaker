@@ -124,8 +124,9 @@ function repositionTabs (e) {
   // - we need to distributed the space among unpinned tabs
   var numUnpinnedTabs = 0
   var availableWidth = window.innerWidth
-  // correct for traffic lights on darwin
+  // correct for traffic lights
   if (window.process.platform == 'darwin' && !document.body.classList.contains('fullscreen')) { availableWidth -= 80 }
+  if (window.process.platform == 'win32') { availableWidth -= 200 }
   // correct for new-tab btn
   availableWidth -= (MIN_TAB_WIDTH + TAB_SPACING)
   // count the unpinned-tabs, and correct for the spacing and pinned-tabs

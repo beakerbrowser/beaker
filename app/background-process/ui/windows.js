@@ -6,6 +6,8 @@ import * as downloads from './downloads'
 import * as permissions from './permissions'
 var debug = require('debug')('beaker')
 
+const IS_WIN = process.platform == 'win32'
+
 // globals
 // =
 var userDataDir
@@ -37,6 +39,8 @@ export function createShellWindow () {
   var win = new BrowserWindow({
     titleBarStyle: 'hidden-inset',
     fullscreenable: false,
+    autoHideMenuBar: true,
+    frame: !IS_WIN,
     x,
     y,
     width,
