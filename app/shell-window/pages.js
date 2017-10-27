@@ -495,7 +495,7 @@ function onDomReady (e) {
     if (!page.wcID) {
       page.wcID = e.target.getWebContents().id // NOTE: this is a sync op
     }
-    if (!navbar.isLocationFocused(page)) {
+    if (!navbar.isLocationFocused(page) && page.isActive) {
       page.webviewEl.shadowRoot.querySelector('object').focus()
     }
   }
