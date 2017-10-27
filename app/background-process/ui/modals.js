@@ -29,6 +29,7 @@ export function showModal (parentWindow, modalName, opts = {}) {
     width: SIZES[modalName].width,
     height: SIZES[modalName].height,
     parent: parentWindow,
+    autoHideMenuBar: true,
     modal: true,
     show: false,
     webPreferences: {
