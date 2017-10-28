@@ -82,36 +82,41 @@ Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=Yu
 
 ## Building from source
 
-Requires node 6.2.1.
-In linux (possibly also OSX) you need libtool, m4, automake, make, and g++.
+Requires node 6 or higher. On Windows, you may need to use npm version 4, due to a bug in npm 5.
 
-```
-sudo apt-get install libtool m4 automake make g++
+In Linux (and in some cases OSX) you need libtool, m4, and automake:
+
+```bash
+sudo apt-get install libtool m4 make g++  # debian/ubuntu
+sudo dnf install libtool m4 make gcc-c++  # fedora
 ```
 
-In Fedora:
+In Windows, you'll need to install [Python 2.7](https://www.python.org/downloads/release/python-2711/), Visual Studio 2015 or 2017, and [Git](https://git-scm.com/download/win). (You might try [windows-build-tools](https://www.npmjs.com/package/windows-build-tools).) Then run:
 
-```
-sudo dnf install libtool m4 make gcc-c++
+```powershell
+npm config set python c:/python27
+npm config set msvs_version 2015
+npm install -g node-gyp
+npm install -g gulp
 ```
 
 To build:
 
-```
+```bash
 git clone https://github.com/beakerbrowser/beaker.git
 cd beaker
 npm install
-npm run rebuild #see https://github.com/electron/electron/issues/5851
+npm run rebuild # see https://github.com/electron/electron/issues/5851
 npm start
 ```
 
 If you pull latest from the repo and get weird module errors, do:
 
-```
+```bash
 npm run burnthemall
 ```
 
-This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-mad-king-game-of-thrones.jpg), who will torch your node_modules, and do the full install/rebuild process for you.
+This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-mad-king-game-of-thrones.jpg), who will torch your `node_modules/`, and do the full install/rebuild process for you.
 `npm start` should work afterwards.
 
 If you're doing development, `npm run watch` to have assets build automatically.
