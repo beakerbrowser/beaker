@@ -50,6 +50,9 @@
     },
     "mac": {
       "category": "public.app-category.productivity"
+    },
+    "publish": {
+      "provider": "github"
     }
   },
   "scripts": {

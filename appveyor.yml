@@ -22,4 +22,5 @@ build_script:
 test: off
 
 artifacts:
-  - path: 'dist\*'
+  - path: 'dist\*.exe'
+  - path: 'dist\latest.yml'
