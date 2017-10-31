@@ -1,0 +1,19 @@
+platform:
+  - x64
+
+cache:
+  - node_modules
+  - '%USERPROFILE%\.electron'
+
+init:
+  - git config --global core.autocrlf input
+
+install:
+  - ps: Install-Product node 8 x64
+  - yarn
+  - yarn run rebuild
+
+build_script:
+  - yarn run release
+
+test: off
