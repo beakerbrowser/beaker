@@ -123,6 +123,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.workspaces.diff = workspacesRPC.diff
   beaker.workspaces.publish = workspacesRPC.publish
   beaker.workspaces.revert = workspacesRPC.revert
+  beaker.workspaces.openFolder = workspacesRPC.openFolder
 
   // beaker.downloads
   beaker.downloads = {}

@@ -6,5 +6,6 @@ export default {
   listChangedFiles: 'promise',
   diff: 'promise',
   publish: 'promise',
-  revert: 'promise'
+  revert: 'promise',
+  openFolder: 'promise'
 }

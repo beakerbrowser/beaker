@@ -1,4 +1,4 @@
-import {app} from 'electron'
+import {app, shell} from 'electron'
 import * as dft from 'diff-file-tree'
 import * as diff from 'diff'
 import anymatch from 'anymatch'
@@ -184,6 +184,13 @@ export default {
     // run and apply diff
     var diff = await dft.diff({fs: scopedFS}, {fs: archive}, opts)
     await dft.applyLeft({fs: scopedFS}, {fs: archive}, diff)
+  },
+
+  openFolder (path) {
+    return new Promise((resolve, reject) => {
+      shell.openItem(path)
+      resolve()
+    })
   }
 }
 

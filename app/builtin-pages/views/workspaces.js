@@ -88,8 +88,8 @@ async function onRevertChanges () {
   loadCurrentWorkspace()
 }
 
-function onOpenInFinder () {
-  // TODO
+function onOpenFolder (path) {
+  beaker.workspaces.openFolder(path)
 }
 
 function onChangeTab (tab) {
@@ -163,7 +163,9 @@ function renderWorkspaceListItem (workspace) {
           <div class="metadata">
             ${workspace.numRevisions} ${pluralize(workspace.numRevisions, 'unpublished change')}
             <span class="bullet">•</span>
-            <code class="path" onclick=${onOpenInFinder}>${workspace.localFilesPath}</code>
+            <code class="path" onclick=${e => onOpenFolder(workspace.localFilesPath)}>
+              ${workspace.localFilesPath}
+            </code>
           </div>
         </span>
       </div>
@@ -208,10 +210,10 @@ function renderHeader () {
     <div class="header">
       <div class="top">
         <div>
-          <a href="workspace://${workspaceInfo.name}" class="name">
-            workspace://${workspaceInfo.name}
-          </a>
-          <span onclick=${onOpenInFinder} class="local-path">${workspaceInfo.localPath}</span>
+          <a href="workspace://${workspaceInfo.name}" class="name">workspace://${workspaceInfo.name}</a>
+          <span onclick=${e => onOpenFolder(workspaceInfo.localFilesPath)} class="local-path">
+            ${workspaceInfo.localFilesPath}
+          </span>
         </div>
 
         ${renderActions()}
