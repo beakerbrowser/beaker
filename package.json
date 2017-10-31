@@ -2,11 +2,9 @@
   "bin": "./tasks/start-cli.js",
   "name": "beakerbrowser",
   "devDependencies": {
-    "asar": "^0.11.0",
     "browserify": "^13.0.1",
-    "chai": "^3.5.0",
     "electron": "1.7.4",
-    "electron-builder": "~10.4.1",
+    "electron-builder": "~19.43.0",
     "eslint": "^4.2.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-node": "^5.1.0",
@@ -30,7 +28,6 @@
   },
   "build": {
     "appId": "com.pfrazee.beaker-browser",
-    "category": "public.app-category.productivity",
     "copyright": "© 2017, Blue Link Labs",
     "npmRebuild": false,
     "asar": false,
@@ -49,6 +46,9 @@
         ]
       }
     ],
+    "linux": {
+      "category": "Network"
+    },
     "dmg": {
       "contents": [
         {
@@ -66,25 +66,25 @@
         {
           "x": 50,
           "y": 400,
-          "type": "position",
+          "type": "file",
           "path": ".background"
         },
         {
           "x": 150,
           "y": 400,
-          "type": "position",
+          "type": "file",
           "path": ".DS_Store"
         },
         {
           "x": 250,
           "y": 400,
-          "type": "position",
+          "type": "file",
           "path": ".Trashes"
         },
         {
           "x": 350,
           "y": 400,
-          "type": "position",
+          "type": "file",
           "path": ".VolumeIcon.icns"
         }
       ]
@@ -96,8 +96,7 @@
     "burnthemall": "node ./tasks/burnthemall.js",
     "lint": "eslint --ignore-pattern 'color-thief.js' --ignore-pattern 'app/node_modules' --ignore-pattern '*.build.js' app",
     "rebuild": "gulp rebuild",
-    "release-mac": "build -m -p never",
-    "release-win": "build -w -p never",
+    "release": "npm run build && build -p never",
     "start": "gulp start",
     "start-logging": "DEBUG=*,-bittorrent-dht $(node -e \"console.log(require('electron'))\") -r trace ./app",
     "watch": "gulp start-watch"
