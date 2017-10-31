@@ -1,6 +1,7 @@
 import { app, BrowserWindow, screen, ipcMain, webContents } from 'electron'
 import { register as registerShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import jetpack from 'fs-jetpack'
+import * as keybindings from './keybindings'
 import path from 'path'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
@@ -26,6 +27,14 @@ export function setup () {
     // if this is the first window opened (since app start or since all windows closing)
     if (numActiveWindows === 1) {
       e.sender.webContents.send('command', 'load-pinned-tabs')
+    }
+  })
+
+  app.on('web-contents-created', (e, wc) => {
+    // if this is a webview's web contents, attach the keybinding protections
+    if (!!wc.hostWebContents) {
+      const parentWindow = BrowserWindow.fromWebContents(wc.hostWebContents)
+      wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
     }
   })
 
@@ -63,10 +72,6 @@ export function createShellWindow () {
   registerShortcut(win, 'Ctrl+Shift+Tab', onPrevTab(win))
   registerShortcut(win, 'CmdOrCtrl+[', onGoBack(win))
   registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
-  registerShortcut(win, 'CmdOrCtrl+N', onNewWindow(win))
-  registerShortcut(win, 'CmdOrCtrl+Q', onQuit(win))
-  registerShortcut(win, 'CmdOrCtrl+T', onNewTab(win))
-  registerShortcut(win, 'CmdOrCtrl+W', onCloseTab(win))
 
   // register event handlers
   win.on('scroll-touch-begin', sendScrollTouchBegin)
@@ -218,22 +223,6 @@ function onGoBack (win) {
 
 function onGoForward (win) {
   return () => win.webContents.send('command', 'history:forward')
-}
-
-function onNewWindow (win) {
-  return () => createShellWindow()
-}
-
-function onQuit (win) {
-  return () => app.quit()
-}
-
-function onNewTab (win) {
-  return () => win.webContents.send('command', 'file:new-tab')
-}
-
-function onCloseTab (win) {
-  return () => win.webContents.send('command', 'file:close-tab')
 }
 
 // window event handlers
