@@ -1,10 +1,76 @@
 .diff {
-  white-space: pre;
+  &:extend(.code-font);
+  position: relative;
+  width: 100%;
+  font-size: 11.5px;
+  white-space: normal;
+  margin: 0;
+
+  .linenos {
+    position: absolute;
+    left: 15px;
+    padding: 2px 0;
+    color: rgba(0,0,0,.35);
+
+    .lineno {
+      line-height: 20px;
+      padding: 0;
+      margin: 0;
+    }
+  }
+
+  .linenos2 {
+    left: 55px;
+  }
+
+  > div {
+    position: relative;
+    padding: 2px 100px;
+    margin: 0;
+    line-height: 20px;
+    white-space: pre;
+
+    &:after,
+    &:before {
+      display: block;
+      position: absolute;
+      top: 0;
+    }
+
+    &:before {
+      left: 0;
+      width: 80px;
+      height: 100%;
+      content: ' ';
+    }
+
+    &:after {
+      top: 0;
+      left: 85px;
+    }
+  }
 
   .add {
-    background: green;
+    background: fadeout(@green, 88%);
+
+    &:before {
+      background: fadeout(@green, 85%);
+    }
+
+    &:after {
+      content: '+';
+    }
   }
+
   .del {
-    background: red;
+    background: fadeout(@red, 91%);
+
+    &:before {
+      background: fadeout(@red, 88%);
+    }
+
+    &:after {
+      content: '-';
+    }
   }
 }
