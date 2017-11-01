@@ -265,18 +265,33 @@
     }
 
     &.revisions {
+      &:extend(.flex);
+      flex-wrap: nowrap;
       padding: 0;
       padding-top: 80px;
+      width: 100vw;
 
-      .revisions-sidebar,
       .revisions-content {
-        display: inline-block;
-        vertical-align: top;
+        flex: 1;
+      }
+
+      .revisions-content-header {
+        &:extend(.code-font);
+        height: 31px;
+        line-height: 31px;
+        padding: 0 15px;
+        color: rgba(0,0,0,.7);
+        border-bottom: 1px solid #ddd;
+
+        i {
+          margin-right: 5px;
+          color: rgba(0,0,0,.5);
+        }
       }
 
       .revisions-sidebar {
         width: 300px;
-        border-right: 1px solid #eee;
+        border-right: 1px solid #ddd;
         height: 100%;
 
         em {
@@ -288,51 +303,48 @@
 
       .revisions-header {
         &:extend(.flex);
-        justify-content: space-between;
-        margin-top: 20px;
-        padding: 5px 10px;
+        margin-top: 30px;
+        padding: 2px 10px;
         align-items: center;
+        background: #f7f7f7;
+        color: @color-text--muted;
+        font-size: 11px;
+        border-top: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
 
         .count {
           background: #ddd;
-          color: @color-text--muted;
-          color: rgba(0,0,0,.5);
-          font-size: .7rem;
+          color: rgba(0,0,0,.85);
+          font-weight: 500;
+          font-size: 10px;
           border-radius: 40px;
-          padding: 0 8px;
+          padding: 0 6px;
+          margin-left: 5px;
+          height: 15px;
+          line-height: 15px;
         }
 
         &.additions {
-          background: fadeout(@green, 97%);
-          border-bottom: 1px solid fadeout(mix(@green, #ddd, 10%), 50%);
-          border-top: 1px solid fadeout(mix(@green, #ddd, 10%), 50%);
-          color: mix(@green, @color-text, 15%);
 
           .count {
-            background: mix(@green, #ddd, 15%);
-            // background: fadeout(@green, 75%);
+            // background: shade(@green, 5%);
+            // background: fadeout(darken(@green, 20%), 20%);
           }
         }
 
         &.modifications {
-          background: fadeout(@yellow, 95%);
-          border-bottom: 1px solid fadeout(mix(@yellow, #ddd, 10%), 50%);
-          border-top: 1px solid fadeout(mix(@yellow, #ddd, 10%), 50%);
-          color: mix(@yellow, @color-text, 15%);
 
           .count {
-            background: mix(@yellow, #ddd, 15%);
+            // background: shade(@yellow, 10%);
+            // background: fadeout(darken(@yellow, 10%), 40%);
           }
         }
 
         &.deletions {
-          background: fadeout(@red, 97%);
-          border-bottom: 1px solid fadeout(mix(@red, #ddd, 10%), 50%);
-          border-top: 1px solid fadeout(mix(@red, #ddd, 10%), 50%);
-          color: mix(@red, @color-text, 15%);
 
           .count {
-            background: mix(@red, #ddd, 15%);
+            // background: shade(@red, 20%);
+            // background: fadeout(darken(@red, 25%), 30%);
           }
         }
       }
@@ -341,24 +353,35 @@
         width: 100%;
 
         li {
-          padding: 5px 10px;
+          &:extend(.flex);
+          align-items: center;
+          justify-content: space-between;
+          width: 299px;
+          height: 30px;
+          padding: 0 10px;
           background: #fff;
           cursor: pointer;
           border-bottom: 1px solid #eee;
 
-          &:hover {
-            background: #fcfcfc;
+          .path {
+            &:extend(.overflow-ellipsis);
+            max-width: 255px;
+            color: rgba(0,0,0,.7);
           }
 
-          input {
-            float: right;
-            height: auto;
+
+          &:hover {
+            background: #fcfcfc;
+
+            input[type="checkbox"] {
+              opacity: 1;
+            }
           }
         }
       }
 
       h3 {
-        font-weight: 400;
+        font-weight: 500;
         font-size: inherit;
         text-transform: uppercase;
       }
