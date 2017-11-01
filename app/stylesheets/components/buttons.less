@@ -11,7 +11,6 @@
   background: transparent;
   border: 1px solid @border-button;
   font-size: 12px;
-  font-weight: 500;
   height: 25px;
   line-height: 2;
   padding: 0 9px;
@@ -67,6 +66,9 @@
     color: @color-button--disabled !important;
     border: 1px solid #ddd !important;
     box-shadow: none !important;
+    font-weight: 400 !important;
+    -webkit-font-smoothing: initial !important;
+
     .spinner {
       color: #aaa !important;
     }
@@ -83,7 +85,7 @@
 .btn.success, .btn.primary {
   // antialiasing is only applied to light-colored text on a dark background
   -webkit-font-smoothing: antialiased;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .btn.success {
