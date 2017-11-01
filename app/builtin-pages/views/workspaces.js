@@ -7,6 +7,7 @@ import * as createWorkspacePopup from '../com/create-workspace-popup'
 import renderSidebar from '../com/sidebar'
 import renderDiff from '../com/diff'
 import renderGearIcon from '../icon/gear-small'
+import * as toast from '../com/toast'
 
 // main
 // =
@@ -124,6 +125,7 @@ async function onChangeWorkspaceDirectory (e) {
   const path = e.target.files[0].path
   workspaceInfo.localFilesPath = path
   await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath: path})
+  toast.create(`Workspace directory updated to ${path}`)
   render()
 }
 
