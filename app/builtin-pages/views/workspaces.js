@@ -84,7 +84,12 @@ async function onCreateWorkspace () {
 }
 
 async function onPublishChanges () {
-  const paths = workspaceInfo.revisions.filter(rev => !rev.unchecked).map(rev => rev.path)
+  let changes = workspaceInfo.revisions
+  if (numCheckedRevisions) {
+    changes = changes.filter(rev => !!rev.checked)
+  }
+  const paths = changes.map(rev => rev.path)
+
   if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
   await beaker.workspaces.publish(0, currentWorkspaceName, {paths})
   diff = ''
@@ -93,7 +98,12 @@ async function onPublishChanges () {
 }
 
 async function onRevertChanges () {
-  const paths = workspaceInfo.revisions.filter(rev => !rev.unchecked).map(rev => rev.path)
+  let changes = workspaceInfo.revisions
+  if (numCheckedRevisions) {
+    changes = changes.filter(rev => !!rev.checked)
+  }
+  const paths = changes.map(rev => rev.path)
+
   if (!confirm(`Revert ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
   await beaker.workspaces.revert(0, currentWorkspaceName, {paths})
   diff = ''
@@ -270,23 +280,24 @@ function renderTabs () {
 function renderActions () {
   return yo`
     <div class="actions">
-      <button onclick=${onRevertChanges} class="btn">
-        Revert
+      <button onclick=${onRevertChanges} class="btn" disabled=${!(workspaceInfo && workspaceInfo.revisions.length)}>
+        Revert${numCheckedRevisions ? ' selected' : ''}
         <i class="fa fa-undo"></i>
       </button>
-      <button onclick=${onPublishChanges} class="btn success">Publish</button>
+      <button onclick=${onPublishChanges} class="btn success" disabled=${!(workspaceInfo && workspaceInfo.revisions.length)}>
+        Publish${numCheckedRevisions ? ' selected' : ''}
+      </button>
     </div>
   `
 }
 
 function renderMetadata () {
-  const numCheckedRevisions = workspaceInfo.revisions.filter(r => !r.unchecked).length
   return yo`
     <div class="metadata">
       ${workspaceInfo.revisions.length ? yo`
         <span class="changes-count">
           ${workspaceInfo.revisions.length} unpublished ${pluralize(workspaceInfo.revisions.length, 'change')}
-          ${numCheckedRevisions !== workspaceInfo.revisions.length ? `(${numCheckedRevisions} selected)` : ''}
+          ${numCheckedRevisions ? `(${numCheckedRevisions} selected)` : ''}
         </span>
       ` : ''}
     </div>
@@ -312,12 +323,12 @@ function renderRevisionsView () {
   const deletions = workspaceInfo.revisions.filter(r => r.change === 'del')
 
   const renderRev = node => (
-    yo`<li onclick=${() => onClickChangedNode(node)}>
-      ${node.path}
+    yo`<li onclick=${() => onClickChangedNode(node)} title=${node.path}>
+      <code class="path">${node.path}</code>
       <input
         type="checkbox"
-        checked=${!node.unchecked}
-        onclick=${e => onToggleChangedNodeUnchecked(e, node)}
+        checked=${!!node.checked}
+        onclick=${e => onToggleChangedNodeChecked(e, node)}
       />
     </li>`
   )
