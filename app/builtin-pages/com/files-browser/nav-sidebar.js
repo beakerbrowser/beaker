@@ -3,6 +3,13 @@ import yo from 'yo-yo'
 // exported api
 // =
 
+let currentUserProfile
+
+setup()
+async function setup () {
+  currentUserProfile = await beaker.profiles.getCurrentUserProfile()
+}
+
 export default function render (filesBrowser, root) {
   return yo`
     <div class="nav-sidebar">
