@@ -147,8 +147,8 @@ async function readSelectedPathFromURL () {
     while ((pathPart = pathParts.shift())) {
       node = node.children.find(node => node.name === pathPart)
       await node.readData()
-    }  
-    
+    }
+
     await filesBrowser.setCurrentSource(node, {suppressEvent: true})
   } catch (e) {
     // ignore, but log just in case something is buggy

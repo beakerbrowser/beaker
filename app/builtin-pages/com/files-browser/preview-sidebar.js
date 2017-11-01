@@ -23,7 +23,7 @@ export default function render (filesBrowser) {
   if (node.type === 'file') {
     preview = renderFilePreview(node)
     if (!preview) {
-      preview = yo`<div class="icon-wrapper">${renderFileOIcon()}</div>`
+      preview = yo`<div class="icon-wrapper"><i class="fa fa-file-text-o"></i></div>`
     }
   }
 

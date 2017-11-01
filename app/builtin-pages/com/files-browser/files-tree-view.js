@@ -129,7 +129,7 @@ function rContainer (filesBrowser, node, depth) {
           onclick=${e => onClickDirectoryCaret(e, filesBrowser, node)}
           style="left: ${caretPosition}px; ${isExpanded ? 'transform: rotate(90deg);' : ''}"
         >▶︎</div>
-        <img class="icon folder" src="beaker://assets/icon/folder-color.png"/>
+        <i class="fa fa-folder${isExpanded ? '-open' : ''}-o"></i>
         ${node.isRenaming
           ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
           : yo`
@@ -164,7 +164,7 @@ function rFile (filesBrowser, node, depth) {
       ondragstart=${e => onDragStart(e, filesBrowser, node)}
       style=${'padding-left: ' + padding + 'px'}
     >
-      <img class="icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAUJJREFUeNqkk8FKw0AQhmcmyb0HTR7A4hPUS1B8haIetPh4Ei9tUqQn6aUPIra9hRYUTKiCzbiTJpsssdXSgWFnJjsf/85ukJnhaTR6+16vW5xlwFA3yRAIERBxcdXtuvoLcxUMooj/sjiOuR+GQR0gTnXa63SmfA7T2TxfJRd7CAJwXRfOff+uH0WPdY12KTRPbEukKhdoBUYiWCyX4HkeXPj+bTgcOqp8owElgshWjpqeZZv6absNz+MxyIzuez0BXxsKSgm2TbmC0ogYPtIEzjqd3DWY2TxC1WAZALHP1ReslEPR5B4f6bgBkBlsM2b+td5QsK8ZAMuiAwF0IECuEYB3bMctgGLyjmMZE272o7mWACqk0z+PUN+XA9IkmajneZlt3u9OBfJnpmk60SW5X/V4TlTc2mN276rvRYIfAQYABXymGHKpbU8AAAAASUVORK5CYII="/>
+      <i class="fa fa-file-text-o"></i>
       ${node.isRenaming
         ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
         : yo`<div class="name">${node.name}</div>`}
