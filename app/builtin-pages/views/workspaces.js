@@ -59,6 +59,13 @@ async function loadCurrentWorkspace () {
   } else {
     workspaceInfo = null
   }
+
+  // set the current diff node to the first revision
+  if (workspaceInfo && workspaceInfo.revisions.length) {
+    const firstRev = workspaceInfo.revisions[0]
+    currentDiffNode = firstRev
+    diff = await beaker.workspaces.diff(0, currentWorkspaceName, firstRev.path)
+  }
   render()
 }
 
