@@ -61,7 +61,7 @@ export default class FilesBrowser {
     if (!node) {
       await this.reloadTree(this.root)
       await this.reloadTree(this.currentSource)
-      return 
+      return
     }
 
     // recursively read data of the currently-expanded tree
