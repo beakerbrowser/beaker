@@ -380,6 +380,13 @@ function renderRevisionsView () {
       </div>
 
       <div class="revisions-content">
+        ${currentDiffNode ? yo`
+          <div class="revisions-content-header">
+            <i class="fa fa-file-text-o"></i>
+            <span class="path">${currentDiffNode.path}</span>
+          </div>
+        ` : ''}
+
         ${diff ? renderDiff(diff) : ''}
       </div>
     </div>
