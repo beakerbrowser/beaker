@@ -16,7 +16,7 @@ export default function render (filesBrowser) {
   const archiveInfo = node && node._archiveInfo
   const networked = archiveInfo && archiveInfo.userSettings.networked
 
-  if (!archiveInfo) return yo`<div class="preview-sidebar"></div>`
+  if (!archiveInfo) return ''
 
   // render preview
   let preview
