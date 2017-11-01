@@ -142,6 +142,8 @@ async function loadViewedPost () {
       viewedPost = await beaker.timeline.getPost(href)
       if (viewedPost) {
         viewedPost.parents = []
+        viewedPost.author.isCurrentUserFollowing = await beaker.profiles.isFollowing(currentUserProfile._origin, viewedPost.author._origin)
+        viewedPost.author.isCurrentUser = viewedPost.author._origin === currentUserProfile._origin
         fetchParent(viewedPost)
       }
     }
