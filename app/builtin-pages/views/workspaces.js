@@ -14,6 +14,8 @@ let allWorkspaces = []
 let currentWorkspaceName
 let workspaceInfo
 let diff
+let currentDiffNode
+let numCheckedRevisions
 let activeTab = 'revisions'
 
 // HACK FIX
@@ -78,6 +80,8 @@ async function onPublishChanges () {
   const paths = workspaceInfo.revisions.filter(rev => !rev.unchecked).map(rev => rev.path)
   if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
   await beaker.workspaces.publish(0, currentWorkspaceName, {paths})
+  diff = ''
+  currentDiffNode = null
   loadCurrentWorkspace()
 }
 
@@ -85,6 +89,8 @@ async function onRevertChanges () {
   const paths = workspaceInfo.revisions.filter(rev => !rev.unchecked).map(rev => rev.path)
   if (!confirm(`Revert ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
   await beaker.workspaces.revert(0, currentWorkspaceName, {paths})
+  diff = ''
+  currentDiffNode = null
   loadCurrentWorkspace()
 }
 
@@ -97,15 +103,23 @@ function onChangeTab (tab) {
   render()
 }
 
-function onToggleChangedNodeUnchecked (e, node) {
+async function onChangeWorkspaceDirectory (e) {
+  const path = e.target.files[0].path
+  workspaceInfo.localFilesPath = path
+  await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath: path})
+  render()
+}
+
+function onToggleChangedNodeChecked (e, node) {
   e.stopPropagation()
-  node.unchecked = !node.unchecked
+  node.checked = !node.checked
+  numCheckedRevisions = workspaceInfo.revisions.filter(r => !!r.checked).length
   render()
 }
 
 async function onClickChangedNode (node) {
+  currentDiffNode = node
   diff = await beaker.workspaces.diff(0, currentWorkspaceName, node.path)
-  console.log(diff)
   render()
 }
 
