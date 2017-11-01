@@ -34,7 +34,11 @@ export default function render (filesBrowser) {
           <span title="${networked ? 'Stop' : 'Start'} seeding this archive" class="archive-icon ${networked ? 'networked' : ''}">
             ${rIcon(node)}
           </span>
-          <h1>${archiveInfo.title || 'Untitled'}</h1>
+          <h1>
+            <a href=${archiveInfo.url}>
+              ${archiveInfo.title || 'Untitled'}
+            </a>
+          </h1>
         </div>
 
         <div class="main">
