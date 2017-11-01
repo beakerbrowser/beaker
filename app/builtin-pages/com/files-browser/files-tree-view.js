@@ -143,7 +143,7 @@ function rContainer (filesBrowser, node, depth) {
 
 function rFile (filesBrowser, node, depth) {
   const isSelected = filesBrowser.isSelected(node)
-  const padding = 10 + (depth * 20)
+  const padding = 20 + (depth * 20)
 
   return yo`
     <div
