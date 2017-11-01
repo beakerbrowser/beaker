@@ -24,6 +24,10 @@ body {
     .left {
       flex: 1;
     }
+
+    .btn.cancel {
+      margin-right: 5px;
+    }
   }
 
   h1.title {
@@ -32,98 +36,114 @@ body {
 }
 
 .archive-picker {
-  height: 250px;
   overflow: hidden;
+  margin-bottom: 15px;
 
   .filter-container {
     position: relative;
+    margin: 20px 0;
+    overflow: visible;
+    height: 40px;
 
     i {
       position: absolute;
-      left: 1rem;
-      top: 10px;
-      color: @color-text--muted;
+      left: 15px;
+      top: 13px;
+      color: @color-text--light;
+      z-index: 3;
     }
   }
 
   .filter {
+    position: absolute;
+    left: 0;
+    top: 0;
     border: 0;
     margin: 0;
-    height: 100%;
-    padding: .5rem 1rem .5rem 2.15rem;
-    border: 1px solid @border-menu;
+    height: 40px;
+    padding: 0 35px;
     border-radius: 0;
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 
     &:focus {
-//      outline: none;
+      background: #fff;
+      border: 1.5px solid fadeout(@blue, 20%);
+      box-shadow: none;
     }
   }
 }
 
 .archives-list {
-  height: 205px;
+  height: 350px;
   overflow-y: auto;
-  border: 1px solid @border-menu;
-  border-top: 0;
-  -webkit-font-smoothing: antialiased;
+  border: 1px solid #ddd;
 
   .archive {
+    &:extend(.flex);
+    align-items: center;
+    justify-content: space-between;
     position: relative;
-    padding: 0.6rem 0.7rem;
-    border-bottom: 1px solid @background-menu;
-
-    &:last-child {
-      border-bottom: 0;
-    }
+    padding: 5px 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
 
     &.readonly {
+
       .info {
-        max-width: 345px;
+        max-width: 340px;
       }
     }
 
     .readonly {
-      position: absolute;
       font-size: 9.5px;
       padding: 0 5px;
       border: 1px solid @border-menu;
       border-radius: 2px;
-      top: .75rem;
-      right: 1rem;
       text-transform: uppercase;
       color: @color-text--muted;
     }
 
     &:hover {
-      background: @background-message;
+      background: #f7f7f7;
     }
 
     &.selected {
-      background: @blue;
-      color: #fff;
-
-      .path {
-        color: tint(@blue, 70%);
-      }
+      background: #f7f7f7;
 
       .readonly {
-        border-color: tint(@blue, 70%);
-        color: tint(@blue, 70%);
+        display: none;
+      }
+
+      i.fa-check-circle {
+        display: block;
+        color: shade(@green, 15%);
+        font-size: 16px;
       }
     }
   }
 
+  i.fa-check-circle {
+    display: none;
+  }
+
   .info {
-    &:extend(.overflow-ellipsis);
-    max-width: 405px;
-  }
+    &:extend(.flex);
+    align-items: baseline;
 
-  .title {
-    font-weight: 500;
-  }
+    .title {
+      &:extend(.overflow-ellipsis);
+      display: inline-block;
+      max-width: 280px;
+    }
 
-  .path {
-    color: @color-text--midlight;
+    .hash {
+      color: @color-text--light;
+      color: rgba(0,0,0,.55);
+      font-size: 12px;
+      margin-left: 5px;
+    }
   }
 }
 

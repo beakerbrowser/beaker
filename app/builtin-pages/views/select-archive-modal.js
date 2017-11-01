@@ -1,6 +1,7 @@
 /* globals beaker DatArchive */
 
 import * as yo from 'yo-yo'
+import {shortenHash} from '../../lib/strings'
 
 var currentFilter = ''
 var selectedArchiveKey = ''
@@ -75,6 +76,9 @@ function onChangeSelectedArchive (e) {
 function onUpdateActiveView (e) {
   currentView = e.target.dataset.content
   render()
+
+  if (currentView === 'newArchive') beaker.browser.setBrowserWindowSize(550, 270)
+  else beaker.browser.setBrowserWindowSize(550, 540)
 }
 
 async function onSubmit (e) {
@@ -185,7 +189,11 @@ function renderArchivePicker () {
 }
 
 function renderArchivesList () {
-  var filtered = archives.filter(a => (a.title && a.title.toLowerCase().includes(currentFilter)) || (a.description && a.description.toLowerCase().includes(currentFilter)))
+  if (currentFilter) {
+    var filtered = archives.filter(a => a.title && a.title.toLowerCase().includes(currentFilter))
+  } else {
+    filtered = archives
+  }
 
   return yo`<ul class="archives-list">${filtered.map(renderArchive)}</ul>`
 }
@@ -198,8 +206,11 @@ function renderArchive (archive) {
         <span class="title" title="${archive.title} ${archive.isOwner ? '' : '(Read-only)'}">
           ${archive.title || 'Untitled'}
         </span>
+
+        <code class="hash">${shortenHash(archive.url)}</code>
       </div>
-      ${archive.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
+      <i class="fa fa-check-circle"></i>
+      ${!archive.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
     </li>
   `
 }
