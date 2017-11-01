@@ -219,7 +219,7 @@ async function onContextMenu (e, filesBrowser, node) {
 
   // now run the menu
   var menu = []
-  const enabled = node.isEditable && node._path !== '/dat.json'
+  const enabled = node.isEditable && node._archiveInfo.userSettings.isSaved && node._path !== '/dat.json'
   if (node instanceof FSArchiveFile) {
     menu = [
       {label: 'Open URL', id: 'open'},
