@@ -10,10 +10,29 @@ async function setup () {
   currentUserProfile = await beaker.profiles.getCurrentUserProfile()
 }
 
+// events
+// =
+
+async function onCreateArchive () {
+  const archive = await DatArchive.create({prompt: true})
+  window.location.pathname = archive.url.slice('dat://'.length)
+}
+
 export default function render (filesBrowser, root) {
   return yo`
     <div class="nav-sidebar">
-      ${root.children.map(childNode => rNode(filesBrowser, childNode))}
+      <div class="section">
+        <h2>Favorites</h2>
+        ${root.children.map(childNode => rNode(filesBrowser, childNode))}
+      </div>
+
+      <div class="section new">
+        <h2>Tools</h2>
+        <div class="item new" onclick=${onCreateArchive}>
+          Create new
+          <i class="fa fa-plus-square-o"></i>
+        </div>
+      </div>
     </div>
   `
 }
