@@ -94,7 +94,7 @@ function rContainer (filesBrowser, node, depth) {
   const isNetworked = node._archiveInfo.userSettings.networked
   const isArchive = node && node.constructor.name === 'FSArchive'
   let children = ''
-  const directoryPadding = 20 + (depth * 20)
+  const directoryPadding = 10 + (depth * 20)
   const caretPosition = directoryPadding - 15
 
   if (isExpanded) {
@@ -151,7 +151,7 @@ function rContainer (filesBrowser, node, depth) {
 
 function rFile (filesBrowser, node, depth) {
   const isSelected = filesBrowser.isSelected(node)
-  const padding = 20 + (depth * 20)
+  const padding = 10 + (depth * 20)
 
   return yo`
     <div
