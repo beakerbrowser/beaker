@@ -406,18 +406,12 @@ function renderSettingsView () {
     <div class="view settings">
       <h2>Settings</h2>
 
-      <p>
-        <label for="title">Title</label>
-        <input autofocus name="title" value=${workspaceInfo.title}/>
-      </p>
-
-      <p>
-        <label for="desc">Description</label>
-        <textarea name="desc">${workspaceInfo.description}</textarea>
-      </p>
-
-      <p>
+      <div class="input-group">
         <label for="name">Local URL</label>
+        <p>
+          The shortcut for previewing your workspace
+        </p>
+
         <div class="name-input-container">
           <span class="protocol">workspaces://</span>
           <input name="name" value=${workspaceInfo.name}/>
@@ -425,12 +419,19 @@ function renderSettingsView () {
             <span class="error">This URL is being used by another workspace</span>
           ` : ''}
         </div>
-      </p>
+      </div>
 
-      <p>
-        <label for="title">Folder</label>
-        <input name="title" type="file" directory value=${workspaceInfo.localPath}/>
-      </p>
+      <div>
+        <label>Directory</label>
+        <p>
+          The directory on your computer that contains your workspace's files
+        </p>
+
+        <label for="path" class="btn" data-path=${workspaceInfo.localFilesPath}>
+          Select directory
+        </label>
+        <input id="path" name="path" type="file" webkitdirectory onchange=${onChangeWorkspaceDirectory}>
+      </div>
     </div>
   `
 }

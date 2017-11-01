@@ -362,11 +362,36 @@
         font-weight: 400;
         font-size: inherit;
         text-transform: uppercase;
-        font-size: .75rem;
+      }
+
+      input[type="checkbox"] {
+        opacity: 0;
+        transition: opacity .05s ease;
+        font-size: 20px;
+        margin-top: -1.5px;
+
+        &[checked] {
+          opacity: 1;
+        }
       }
     }
 
     &.settings {
+
+      h2 {
+        margin-bottom: 20px;
+      }
+
+      > div {
+        margin-bottom: 20px;
+      }
+
+      p {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: rgba(0,0,0,.6);
+        font-style: italic;
+      }
 
       input,
       textarea {
@@ -379,8 +404,35 @@
       }
 
       label {
+        cursor: default;
         display: block;
         margin-bottom: 5px;
+
+        + .path {
+          height: 26px;
+          line-height: 26px;
+          vertical-align: top;
+          margin-left: 3px;
+        }
+
+        &[for="path"] {
+          position: relative;
+          display: inline-block;
+          overflow: visible;
+
+          &:after {
+            &:extend(.code-font);
+            position: absolute;
+            left: ~"calc(100% + 10px)";
+            content: attr(data-path);
+            font-size: 13px;
+            color: inherit;
+          }
+        }
+      }
+
+      input[type="file"] {
+        display: none;
       }
 
       .name-input-container {
@@ -403,7 +455,7 @@
           top: 1px;
           background: #f7f7f7;
           height: 28px;
-          line-height: 28px;
+          line-height: 29px;
           vertical-align: middle;
           padding: 0 8px;
           z-index: 3;
