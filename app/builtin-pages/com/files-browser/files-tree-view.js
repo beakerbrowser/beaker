@@ -247,7 +247,7 @@ async function onContextMenu (e, filesBrowser, node) {
       {type: 'separator'},
       {label: 'New folder', id: 'new-folder', enabled},
       {label: 'Import files', id: 'import', enabled},
-      {label: 'Export files', id: 'export'},
+      {label: 'Export as .zip', id: 'export'},
       {label: 'Delete archive', id: 'delete'},
       {type: 'separator'}
     ]
