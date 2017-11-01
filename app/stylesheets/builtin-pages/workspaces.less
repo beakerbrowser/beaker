@@ -458,9 +458,8 @@
       }
 
       .name-input-container {
-        &:extend(.code-font);
         position: relative;
-        height: 30px;
+        height: 28px;
 
         .protocol,
         .error
@@ -469,10 +468,12 @@
         }
 
         input {
+          &:extend(.code-font);
           padding-left: 120px;
         }
 
         .protocol {
+          &:extend(.code-font);
           left: 1px;
           top: 1px;
           background: #f7f7f7;
