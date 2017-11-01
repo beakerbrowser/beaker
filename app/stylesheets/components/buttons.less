@@ -125,20 +125,25 @@
 }
 
 .btn-group {
-  display: inline-block;
+  &:extend(.flex);
+
   .btn {
     margin: 0 !important;
     border-radius: 0;
     border-right-width: 0;
   }
+
   & > :first-child {
-    border-top-left-radius: 2px;
-    border-bottom-left-radius: 2px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    margin-right: 0;
   }
+
   & > :last-child {
-    border-top-right-radius: 2px;
-    border-bottom-right-radius: 2px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
     border-right-width: 1px;
+    margin-left: 0;
   }
 }
 
