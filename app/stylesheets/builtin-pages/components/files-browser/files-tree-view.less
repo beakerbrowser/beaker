@@ -12,6 +12,8 @@
       overflow-y: auto;
       height: ~"calc(100vh - 47px)";
       padding: 0 1px;
+      flex: 1;
+      max-width: 900px;
     }
 
     .item {
@@ -65,7 +67,6 @@
       .name {
         &:extend(.overflow-ellipsis);
         flex: 1;
-        max-width: 320px;
 
         input {
           height: auto;
@@ -115,6 +116,7 @@
         height: 22px;
         background: #fafafa;
         border-bottom: 1px solid #ddd;
+        max-width: 900px;
 
         .name,
         .type,
