@@ -18,6 +18,17 @@ input, textarea {
     }
   }
 
+  &[type="file"] {
+    padding: 0;
+    border: 0;
+    line-height: 1;
+
+    &:focus {
+      border: 0;
+      box-shadow: none;
+    }
+  }
+
   &.roomy {
     padding: 7px 9px;
   }
