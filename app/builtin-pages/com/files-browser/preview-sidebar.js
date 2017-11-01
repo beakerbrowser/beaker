@@ -5,6 +5,29 @@ import prettyBytes from 'pretty-bytes'
 import rIcon from './node-icon'
 import renderFilePreview from '../file-preview'
 
+// events
+// =
+
+async function onImportFiles (filesBrowser) {
+  const node = Array.from(filesBrowser.selectedNodes.values())[0]
+  const url = node ? node.url : window.location.pathname.slice(1)
+  let files = await beaker.browser.showOpenDialog({
+    title: 'Import files to this archive',
+    buttonLabel: 'Import',
+    properties: ['openFile', 'openDirectory', 'multiSelections']
+  })
+  if (files) {
+    await Promise.all(files.map(src => DatArchive.importFromFilesystem({
+      src,
+      dst: url,
+      ignore: ['dat.json'],
+      inplaceImport: false
+    })))
+    await filesBrowser.reloadTree()
+    filesBrowser.rerender()
+  }
+}
+
 // exported api
 // =
 
@@ -36,6 +59,19 @@ export default function render (filesBrowser) {
               ${archiveInfo.title || 'Untitled'}
             </a>
           </h1>
+
+          <div class="actions">
+            <div class="btn-group">
+              <button class="btn" onclick=${e => onImportFiles(filesBrowser)}>
+                Import files
+                <i class="fa fa-plus"></i>
+              </button>
+
+              <button class="btn">
+                <i class="fa fa-ellipsis-v"></i>
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="main">

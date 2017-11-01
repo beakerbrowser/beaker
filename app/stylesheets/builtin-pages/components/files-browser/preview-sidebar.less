@@ -12,10 +12,20 @@
 
       .header {
         &:extend(.flex);
-      }
+        justify-content: space-between;
+        align-items: center;
 
-      .main {
-        margin-left: 29px; // width of .archive-icon + its margin-right
+        .actions {
+
+          i.fa-ellipsis-v {
+            font-size: .95rem;
+          }
+
+          i.fa-plus {
+            font-size: .675rem;
+            margin-left: 2px;
+          }
+        }
       }
 
       h1,
