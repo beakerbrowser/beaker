@@ -13,6 +13,7 @@ import * as toast from '../com/toast'
 // =
 let allWorkspaces = []
 let currentWorkspaceName
+let tmpWorkspaceName
 let workspaceInfo
 let diff
 let currentDiffNode
@@ -54,6 +55,7 @@ async function setup () {
 
 async function loadCurrentWorkspace () {
   currentWorkspaceName = parseURLWorkspaceName()
+  tmpWorkspaceName = currentWorkspaceName
   if (currentWorkspaceName) {
     workspaceInfo = await beaker.workspaces.get(0, currentWorkspaceName)
     if (workspaceInfo) workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(0, currentWorkspaceName, {shallow: true, compareContent: true})
@@ -119,6 +121,17 @@ function onOpenFolder (path) {
 function onChangeTab (tab) {
   activeTab = tab
   render()
+}
+
+function onChangeWorkspaceName (e) {
+  tmpWorkspaceName = e.target.value
+  render()
+}
+
+async function onSaveWorkspaceName () {
+  await beaker.workspaces.set(0, workspaceInfo.name, {name: tmpWorkspaceName})
+  toast.create(`Workspace name updated to ${tmpWorkspaceName}`)
+  history.pushState({}, null, `beaker://workspaces/${tmpWorkspaceName}`)
 }
 
 async function onChangeWorkspaceDirectory (e) {
@@ -416,10 +429,14 @@ function renderSettingsView () {
 
         <div class="name-input-container">
           <span class="protocol">workspaces://</span>
-          <input name="name" value=${workspaceInfo.name}/>
-          ${false ? yo`
-            <span class="error">This URL is being used by another workspace</span>
-          ` : ''}
+          <input onkeyup=${onChangeWorkspaceName} name="name" value=${tmpWorkspaceName}/>
+
+          ${tmpWorkspaceName !== workspaceInfo.name ? yo`
+            <button class="btn primary" onclick=${onSaveWorkspaceName}>
+              Save
+              <i class="fa fa-check"></i>
+            </button>`
+          : ''}
         </div>
       </div>
 
