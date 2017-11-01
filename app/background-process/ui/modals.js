@@ -3,10 +3,10 @@ import {ModalActiveError} from 'beaker-error-constants'
 import path from 'path'
 
 const SIZES = {
-  'create-archive': {width: 500, height: 345},
-  'fork-archive': {width: 500, height: 430},
+  'create-archive': {width: 500, height: 330},
+  'fork-archive': {width: 500, height: 410},
   'basic-auth': {width: 500, height: 320},
-  'select-archive': {width: 500, height: 375},
+  'select-archive': {width: 550, height: 540},
   prompt: {width: 500, height: 170},
   install: {width: 500, height: 250}
 }
