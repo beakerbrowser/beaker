@@ -23,6 +23,12 @@
   margin: 80px auto 0;
   overflow: hidden;
 
+  .error {
+    color: darken(@red, 17%) !important;
+    margin: 10px 0 !important;
+    font-style: italic;
+  }
+
   .head {
     position: relative;
     background: #fafafa;
@@ -55,7 +61,7 @@
 
   label {
     margin-bottom: 3px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: fadeout(@color-text, 10%);
   }
 
@@ -75,6 +81,7 @@
     padding-top: 10px;
     border-top: 1px solid #eee;
 
+    .success,
     .primary {
       margin-left: auto;
     }

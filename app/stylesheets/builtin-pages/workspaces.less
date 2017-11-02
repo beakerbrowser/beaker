@@ -12,6 +12,95 @@
   z-index: 0;
 }
 
+label {
+  width: initial !important;
+
+  + .path {
+    height: 26px;
+    line-height: 26px;
+    vertical-align: top;
+    margin-left: 3px;
+  }
+
+  &[for="path"] {
+    position: relative;
+    display: inline-block;
+    overflow: visible;
+    margin-top: 0 !important;
+
+    &:after {
+      &:extend(.code-font);
+      position: absolute;
+      left: ~"calc(100% + 10px)";
+      content: attr(data-path);
+      font-size: 13px;
+      color: inherit;
+    }
+  }
+}
+
+#create-workspace-popup {
+
+  .btn.url {
+    position: relative;
+    overflow: visible;
+
+    &:after {
+      &:extend(.code-font);
+      position: absolute;
+      left: ~"calc(100% + 10px)";
+      top: 0;
+      content: attr(data-url);
+      font-size: 13px;
+      color: inherit;
+    }
+  }
+
+  label:not(:first-child) {
+    margin-top: 20px;
+  }
+
+  p {
+    font-style: italic;
+    color: @color-text--muted;
+    margin-top: 5px;
+  }
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.name-input-container {
+  position: relative;
+  height: 28px;
+
+  .protocol,
+  .error
+  input {
+    position: absolute;
+  }
+
+  input {
+    &:extend(.code-font);
+    padding-left: 120px;
+  }
+
+  .protocol {
+    &:extend(.code-font);
+    left: 1px;
+    top: 1px;
+    background: #f7f7f7;
+    height: 28px;
+    line-height: 29px;
+    vertical-align: middle;
+    padding: 0 8px;
+    z-index: 3;
+    border-radius: 4px 0 0 4px;
+    border-right: 1px solid #d9d9d9;
+  }
+}
+
 .sidebar {
   background: #111
 }
@@ -429,67 +518,6 @@
         cursor: default;
         display: block;
         margin-bottom: 5px;
-
-        + .path {
-          height: 26px;
-          line-height: 26px;
-          vertical-align: top;
-          margin-left: 3px;
-        }
-
-        &[for="path"] {
-          position: relative;
-          display: inline-block;
-          overflow: visible;
-
-          &:after {
-            &:extend(.code-font);
-            position: absolute;
-            left: ~"calc(100% + 10px)";
-            content: attr(data-path);
-            font-size: 13px;
-            color: inherit;
-          }
-        }
-      }
-
-      input[type="file"] {
-        display: none;
-      }
-
-      .name-input-container {
-        position: relative;
-        height: 28px;
-
-        .protocol,
-        .error
-        input {
-          position: absolute;
-        }
-
-        input {
-          &:extend(.code-font);
-          padding-left: 120px;
-        }
-
-        .protocol {
-          &:extend(.code-font);
-          left: 1px;
-          top: 1px;
-          background: #f7f7f7;
-          height: 28px;
-          line-height: 29px;
-          vertical-align: middle;
-          padding: 0 8px;
-          z-index: 3;
-          border-radius: 4px 0 0 4px;
-          border-right: 1px solid #d9d9d9;
-        }
-
-        .error {
-          &:extend(.system-font);
-          color: darken(@red, 20%);
-        }
       }
     }
   }
