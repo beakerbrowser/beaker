@@ -30,7 +30,6 @@
     "appId": "com.pfrazee.beaker-browser",
     "copyright": "© 2017, Blue Link Labs",
     "npmRebuild": false,
-    "asar": false,
     "protocols": [
       {
         "name": "URL",
@@ -49,45 +48,8 @@
     "linux": {
       "category": "Network"
     },
-    "dmg": {
-      "contents": [
-        {
-          "x": 410,
-          "y": 220,
-          "type": "link",
-          "path": "/Applications"
-        },
-        {
-          "x": 130,
-          "y": 220,
-          "type": "file",
-          "path": "dist/mac/Beaker Browser.app"
-        },
-        {
-          "x": 50,
-          "y": 400,
-          "type": "file",
-          "path": ".background"
-        },
-        {
-          "x": 150,
-          "y": 400,
-          "type": "file",
-          "path": ".DS_Store"
-        },
-        {
-          "x": 250,
-          "y": 400,
-          "type": "file",
-          "path": ".Trashes"
-        },
-        {
-          "x": 350,
-          "y": 400,
-          "type": "file",
-          "path": ".VolumeIcon.icns"
-        }
-      ]
+    "mac": {
+      "category": "public.app-category.productivity"
     }
   },
   "scripts": {
