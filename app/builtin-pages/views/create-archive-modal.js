@@ -114,7 +114,7 @@ function render () {
             <textarea name="desc" tabindex="3" placeholder="Description (optional)" onchange=${onChangeDescription}>${description || ''}></textarea>
 
             <div class="form-actions">
-              <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+              <button type="button" onclick=${onClickCancel} class="btn" tabindex="4">Cancel</button>
               <button type="submit" class="btn ${isEditing ? ' primary' : ' success'}" tabindex="5">
                 ${isEditing ? 'Save' : 'Create site'}
               </button>
