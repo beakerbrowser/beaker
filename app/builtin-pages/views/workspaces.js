@@ -354,7 +354,7 @@ function renderRevisionsView () {
 
   const renderRev = node => (
     yo`<li onclick=${() => onClickChangedNode(node)} title=${node.path}>
-      <code class="path">${node.path}</code>
+      <code class="path">${node.type === 'file' ? node.path.slice(1) : node.path}</code>
       <input
         type="checkbox"
         checked=${!!node.checked}
@@ -413,7 +413,9 @@ function renderRevisionsView () {
         ${currentDiffNode ? yo`
           <div class="revisions-content-header">
             <i class="fa fa-file-text-o"></i>
-            <span class="path">${currentDiffNode.path}</span>
+            <code class="path">
+              ${currentDiffNode.type === 'file' ? currentDiffNode.path.slice(1) : currentDiffNode.path}
+            </code>
           </div>
         ` : ''}
 
