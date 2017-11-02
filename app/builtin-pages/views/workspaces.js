@@ -126,7 +126,12 @@ async function onDeleteWorkspace (name) {
   await beaker.workspaces.remove(0, name)
   allWorkspaces = await beaker.workspaces.list(0)
   currentWorkspaceName = ''
-  workspaceInfo = null
+
+  // if deleting from the workspace view, go back to beaker://workspaces
+  if (workspaceInfo) {
+    history.pushState({}, null, 'beaker://workspaces/')
+    workspaceInfo = null
+  }
   render()
 }
 
