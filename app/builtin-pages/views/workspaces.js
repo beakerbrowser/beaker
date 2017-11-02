@@ -16,6 +16,8 @@ let currentWorkspaceName
 let tmpWorkspaceName
 let workspaceInfo
 let diff
+let diffAdditions = 0
+let diffDeletions = 0
 let currentDiffNode
 let numCheckedRevisions
 let activeTab = 'revisions'
@@ -67,9 +69,32 @@ async function loadCurrentWorkspace () {
   if (workspaceInfo && workspaceInfo.revisions.length) {
     const firstRev = workspaceInfo.revisions[0]
     currentDiffNode = firstRev
-    diff = await beaker.workspaces.diff(0, currentWorkspaceName, firstRev.path)
+    await loadCurrentDiff(firstRev)
   }
   render()
+}
+
+async function loadCurrentDiff (revision) {
+  if (!revision) {
+    diff = ''
+    currentDiffNode = null
+    diffAdditions = 0
+    diffDeletions = 0
+    return
+  }
+
+  // fetch the diff
+  diff = await beaker.workspaces.diff(0, currentWorkspaceName, revision.path)
+
+  diffDeletions = diff.reduce((sum, el) => {
+    if (el.removed) return sum + el.count
+    return sum
+  }, 0)
+
+  diffAdditions = diff.reduce((sum, el) => {
+    if (el.added) return sum + el.count
+    return sum
+  }, 0)
 }
 
 function parseURLWorkspaceName () {
@@ -105,8 +130,7 @@ async function onPublishChanges () {
 
   if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
   await beaker.workspaces.publish(0, currentWorkspaceName, {paths})
-  diff = ''
-  currentDiffNode = null
+  await loadCurrentDiff(null)
   loadCurrentWorkspace()
 }
 
@@ -119,8 +143,7 @@ async function onRevertChanges () {
 
   if (!confirm(`Revert ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
   await beaker.workspaces.revert(0, currentWorkspaceName, {paths})
-  diff = ''
-  currentDiffNode = null
+  await loadCurrentDiff(null)
   loadCurrentWorkspace()
 }
 
@@ -161,7 +184,7 @@ function onToggleChangedNodeChecked (e, node) {
 
 async function onClickChangedNode (node) {
   currentDiffNode = node
-  diff = await beaker.workspaces.diff(0, currentWorkspaceName, node.path)
+  await loadCurrentDiff(node)
   render()
 }
 
@@ -412,10 +435,16 @@ function renderRevisionsView () {
       <div class="revisions-content">
         ${currentDiffNode ? yo`
           <div class="revisions-content-header">
-            <i class="fa fa-file-text-o"></i>
-            <code class="path">
-              ${currentDiffNode.type === 'file' ? currentDiffNode.path.slice(1) : currentDiffNode.path}
-            </code>
+            <div>
+              <i class="fa fa-file-text-o"></i>
+              <code class="path">
+                ${currentDiffNode.type === 'file' ? currentDiffNode.path.slice(1) : currentDiffNode.path}
+              </code>
+            </div>
+
+            <div class="changes-count-container">
+              <span class="additions-count">${diffAdditions ? `+${diffAdditions}` : ''}</span>
+              <span class="deletions-count">${diffDeletions ? `-${diffDeletions}` : ''}</span>
           </div>
         ` : ''}
 
