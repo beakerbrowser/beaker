@@ -82,6 +82,8 @@ function parseURLWorkspaceName () {
 async function onCreateWorkspace () {
   const {name, url, path} = await createWorkspacePopup.create()
   await beaker.workspaces.set(0, name, {localFilesPath: path, publishTargetUrl: url})
+  allWorkspaces = await beaker.workspaces.list(0)
+  history.pushState({}, null, `beaker://workspaces/${name}`)
   // TODO: we should tell the user if a workspace name is already in use, so
   // they don't accidentally overwrite an existing workspace -tbv
 }
