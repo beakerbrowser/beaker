@@ -517,7 +517,20 @@ function renderSettingsView () {
         <label for="path" class="btn" data-path=${workspaceInfo.localFilesPath}>
           Select directory
         </label>
-        <input id="path" name="path" type="file" webkitdirectory onchange=${onChangeWorkspaceDirectory}>
+        <input id="path" name="path" type="file" webkitdirectory onchange=${onChangeWorkspaceDirectory}/>
+      </div>
+
+      <div>
+        <label>Delete workspace</label>
+
+        <p>
+          Deleting this workspace will <strong>not</strong> delete the files at <code>${workspaceInfo.localFilesPath}</code>
+        </p>
+
+        <button class="btn cancel" onclick=${() => onDeleteWorkspace(workspaceInfo.name)}>
+          Delete workspace
+          <i class="fa fa-trash"></i>
+        </button>
       </div>
     </div>
   `
