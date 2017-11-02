@@ -14,7 +14,6 @@ import * as settingsDb from './dbs/settings'
 import {internalOnly} from '../lib/bg/rpc'
 import {open as openUrl} from './open-url'
 import {showModal, closeModal} from './ui/modals'
-const beakerPackageJson = require('./package.json')
 
 // constants
 // =
@@ -162,7 +161,6 @@ export function removeAsDefaultProtocolClient (protocol) {
 export function getInfo () {
   return Promise.resolve({
     version: app.getVersion(),
-    channel: beakerPackageJson.channel,
     electronVersion: process.versions.electron,
     chromiumVersion: process.versions.chrome,
     nodeVersion: process.versions.node,
@@ -178,7 +176,7 @@ export function getInfo () {
   })
 }
 
-export function checkForUpdates () {
+export function checkForUpdates (opts = {}) {
   // dont overlap
   if (updaterState != UPDATER_STATUS_IDLE) { return }
 
@@ -186,6 +184,10 @@ export function checkForUpdates () {
   debug('[AUTO-UPDATE] Checking for a new version.')
   updaterError = false
   setUpdaterState(UPDATER_STATUS_CHECKING)
+  if (opts.prerelease) {
+    debug('[AUTO-UPDATE] Jumping to pre-releases.')
+    autoUpdater.allowPrerelease = true
+  }
   autoUpdater.checkForUpdates()
 
   // just return a resolve; results will be emitted
@@ -371,10 +373,10 @@ function setUpdaterState (state) {
 
 function getAutoUpdaterFeedSettings () {
   return {
-    provider: 'bintray',
-    package: beakerPackageJson.channel || 'stable',
+    provider: 'github',
     repo: 'beaker',
-    owner: 'beaker-browser',
+    owner: 'beakerbrowser',
+    vPrefixedTagName: false
   }
 }
 
@@ -394,6 +396,7 @@ function scheduledAutoUpdate () {
 
 function onUpdateAvailable () {
   debug('[AUTO-UPDATE] New version available. Downloading...')
+  autoUpdater.downloadUpdate()
   setUpdaterState(UPDATER_STATUS_DOWNLOADING)
 }
 
