@@ -1,6 +1,5 @@
 import yo from 'yo-yo'
 import closeIcon from '../icon/close'
-import * as toast from './toast'
 
 // globals
 // =
