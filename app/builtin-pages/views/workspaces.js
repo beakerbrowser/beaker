@@ -106,11 +106,16 @@ function parseURLWorkspaceName () {
 
 async function onCreateWorkspace () {
   const {name, url, path} = await createWorkspacePopup.create()
+
+  // check if there's an existing workspace
+  const existingWorkspace = await beaker.workspaces.get(0, name)
+  if (existingWorkspace && !confirm(`There's an existing workspace at workspace://${name}. Do you want to continue?`)) {
+    return
+  }
+
   await beaker.workspaces.set(0, name, {localFilesPath: path, publishTargetUrl: url})
   allWorkspaces = await beaker.workspaces.list(0)
   history.pushState({}, null, `beaker://workspaces/${name}`)
-  // TODO: we should tell the user if a workspace name is already in use, so
-  // they don't accidentally overwrite an existing workspace -tbv
 }
 
 async function onRemoveWorkspace (name) {
@@ -166,6 +171,12 @@ function onChangeWorkspaceName (e) {
 }
 
 async function onSaveWorkspaceName () {
+  // check if there's an existing workspace
+  const existingWorkspace = await beaker.workspaces.get(0, tmpWorkspaceName)
+  if (existingWorkspace && !confirm(`There's an existing workspace at workspace://${tmpWorkspaceName}. Do you want to continue?`)) {
+    return
+  }
+
   await beaker.workspaces.set(0, workspaceInfo.name, {name: tmpWorkspaceName})
   toast.create(`Workspace name updated to ${tmpWorkspaceName}`)
   history.pushState({}, null, `beaker://workspaces/${tmpWorkspaceName}`)
