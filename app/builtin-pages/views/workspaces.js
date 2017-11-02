@@ -503,7 +503,6 @@ function renderSettingsView () {
           ${tmpWorkspaceName !== workspaceInfo.name ? yo`
             <button class="btn primary" onclick=${onSaveWorkspaceName}>
               Save
-              <i class="fa fa-check"></i>
             </button>`
           : ''}
         </div>
