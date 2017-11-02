@@ -380,6 +380,26 @@ input[type="file"] {
 
       .revisions-content {
         flex: 1;
+
+        .empty {
+          margin: auto;
+          margin-top: 30%;
+          max-width: 300px;
+          text-align: center;
+          color: rgba(0,0,0,.55);
+
+          .path {
+            cursor: pointer;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+
+          i {
+            font-size: 34px;
+          }
+        }
       }
 
       .revisions-content-header {

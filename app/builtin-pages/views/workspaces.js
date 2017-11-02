@@ -471,7 +471,17 @@ function renderRevisionsView () {
           </div>
         ` : ''}
 
-        ${diff ? renderDiff(diff) : ''}
+        ${diff ? renderDiff(diff) : yo`
+          <div class="empty">
+            <i class="fa fa-magic"></i>
+            <p>
+              Get started by making changes to the files in
+              <code class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+                ${workspaceInfo.localFilesPath}
+              </code>
+            </p>
+          </div>`
+        }
       </div>
     </div>
   `
