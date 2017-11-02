@@ -138,7 +138,7 @@ function renderNewArchiveForm () {
           </button>
         </div>
         <div class="right">
-          <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+          <button type="button" onclick=${onClickCancel} class="btn" tabindex="4">Cancel</button>
           <button type="submit" class="btn primary" tabindex="5">
             Create
           </button>
