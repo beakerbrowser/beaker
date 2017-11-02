@@ -114,6 +114,10 @@ async function onCreateWorkspace () {
 }
 
 async function onRemoveWorkspace (name) {
+  if (!confirm(`Remove workspace://${name}?`)) {
+    return
+  }
+
   await beaker.workspaces.remove(0, name)
   allWorkspaces = await beaker.workspaces.list(0)
   currentWorkspaceName = ''
