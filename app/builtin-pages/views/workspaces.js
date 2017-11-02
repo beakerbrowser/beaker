@@ -146,6 +146,7 @@ async function onPublishChanges () {
   if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
   await beaker.workspaces.publish(0, currentWorkspaceName, {paths})
   await loadCurrentDiff(null)
+  numCheckedRevisions = 0
   loadCurrentWorkspace()
 }
 
@@ -159,6 +160,7 @@ async function onRevertChanges () {
   if (!confirm(`Revert ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
   await beaker.workspaces.revert(0, currentWorkspaceName, {paths})
   await loadCurrentDiff(null)
+  numCheckedRevisions = 0
   loadCurrentWorkspace()
 }
 
