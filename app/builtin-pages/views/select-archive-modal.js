@@ -210,7 +210,7 @@ function renderArchive (archive) {
         <code class="hash">${shortenHash(archive.url)}</code>
       </div>
       <i class="fa fa-check-circle"></i>
-      ${!archive.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
+      ${archive.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
     </li>
   `
 }
