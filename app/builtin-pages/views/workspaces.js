@@ -118,8 +118,8 @@ async function onCreateWorkspace () {
   history.pushState({}, null, `beaker://workspaces/${name}`)
 }
 
-async function onRemoveWorkspace (name) {
-  if (!confirm(`Remove workspace://${name}?`)) {
+async function onDeleteWorkspace (name) {
+  if (!confirm(`Delete workspace://${name}?`)) {
     return
   }
 
@@ -265,7 +265,7 @@ function renderWorkspaceListItem (workspace) {
       </div>
 
       <div class="buttons">
-        <button class="btn transparent remove-workspace" title="Remove this workspace" onclick=${e => onRemoveWorkspace(workspace.name)}>
+        <button class="btn transparent remove-workspace" title="Delete this workspace" onclick=${e => onDeleteWorkspace(workspace.name)}>
           <i class="fa fa-trash-o"></i>
         </button>
 
