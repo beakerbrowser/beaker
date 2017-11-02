@@ -18,6 +18,10 @@ import {showModal, closeModal} from './ui/modals'
 // constants
 // =
 
+const IS_FROM_SOURCE = (process.defaultApp || /node_modules[\\/]electron[\\/]/.test(process.execPath))
+const IS_LINUX = !(/^win/.test(process.platform)) && process.platform !== 'darwin'
+const isBrowserUpdatesSupported = !(IS_LINUX || IS_FROM_SOURCE) // linux is temporarily not supported
+
 // how long between scheduled auto updates?
 const SCHEDULED_AUTO_UPDATE_DELAY = 24 * 60 * 60 * 1e3 // once a day
 
@@ -49,16 +53,18 @@ var browserEvents = new EventEmitter()
 
 export function setup () {
   // setup auto-updater
-  try {
-    autoUpdater.setFeedURL(getAutoUpdaterFeedSettings())
-    autoUpdater.on('update-available', onUpdateAvailable)
-    autoUpdater.on('update-not-available', onUpdateNotAvailable)
-    autoUpdater.on('update-downloaded', onUpdateDownloaded)
-    autoUpdater.on('error', onUpdateError)
-  } catch (e) {
-    debug('[AUTO-UPDATE] error', e.toString())
+  if (isBrowserUpdatesSupported) {
+    try {
+      autoUpdater.setFeedURL(getAutoUpdaterFeedSettings())
+      autoUpdater.on('update-available', onUpdateAvailable)
+      autoUpdater.on('update-not-available', onUpdateNotAvailable)
+      autoUpdater.on('update-downloaded', onUpdateDownloaded)
+      autoUpdater.on('error', onUpdateError)
+    } catch (e) {
+      debug('[AUTO-UPDATE] error', e.toString())
+    }
+    setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
   }
-  setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
 
   // fetch user setup status
   userSetupStatusLookupPromise = settingsDb.get('user-setup-status')
@@ -166,7 +172,7 @@ export function getInfo () {
     nodeVersion: process.versions.node,
     platform: os.platform(),
     updater: {
-      isBrowserUpdatesSupported: true,
+      isBrowserUpdatesSupported,
       error: updaterError,
       state: updaterState
     },
@@ -413,8 +419,8 @@ function onUpdateDownloaded () {
 function onUpdateError (e) {
   debug('[AUTO-UPDATE] error', e.toString())
   setUpdaterState(UPDATER_STATUS_IDLE)
-  updaterError = e.toString()
-  browserEvents.emit('updater-error', e.toString())
+  updaterError = (e.toString() || '').split('\n')[0]
+  browserEvents.emit('updater-error', updaterError)
 }
 
 function onWebContentsCreated (e, webContents) {
