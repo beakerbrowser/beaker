@@ -10,7 +10,7 @@ gulp.task('postbuild', async () => {
   const cwd = jetpack.cwd('dist')
   const names = await cwd.listAsync()
   await Promise.all(names.map(name => {
-    if (name.startsWith('Beaker Browser')) {
+    if (name.startsWith('Beaker Browser') && (name.endsWith('.dmg') || name.endsWith('-mac.zip'))) {
       const newName = 'beaker-browser' + name.slice('Beaker Browser'.length)
       return cwd.move(name, newName)
     }
