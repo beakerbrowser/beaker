@@ -142,11 +142,29 @@ input[type="file"] {
     border-bottom: 1px solid #ddd;
     border-right: 1px solid #ddd;
 
+    &:hover {
+
+      .btn.remove-workspace {
+        opacity: 1;
+
+        &:hover {
+          background: rgba(0,0,0,.04);
+        }
+      }
+    }
+
     > div {
       height: 32px;
 
       &.buttons {
         line-height: 32px;
+      }
+
+      .btn.remove-workspace {
+        opacity: 0;
+        border: 0;
+        color: shade(@red, 20%);
+        transition: .2s ease opacity;
       }
     }
 

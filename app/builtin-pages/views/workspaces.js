@@ -88,6 +88,14 @@ async function onCreateWorkspace () {
   // they don't accidentally overwrite an existing workspace -tbv
 }
 
+async function onRemoveWorkspace (name) {
+  await beaker.workspaces.remove(0, name)
+  allWorkspaces = await beaker.workspaces.list(0)
+  currentWorkspaceName = ''
+  workspaceInfo = null
+  render()
+}
+
 async function onPublishChanges () {
   let changes = workspaceInfo.revisions
   if (numCheckedRevisions) {
@@ -219,9 +227,14 @@ function renderWorkspaceListItem (workspace) {
       </div>
 
       <div class="buttons">
+        <button class="btn transparent remove-workspace" title="Remove this workspace" onclick=${e => onRemoveWorkspace(workspace.name)}>
+          <i class="fa fa-trash-o"></i>
+        </button>
+
         <a class="btn" href=${'beaker://workspaces/' + workspace.name} onclick=${pushUrl}>
           Open workspace
         </a>
+
         <a title="Preview changes" href="workspace://${workspace.name}" class="btn">
           <i class="fa fa-external-link"></i>
         </a>

@@ -85,10 +85,24 @@
   }
 }
 
-.btn.success, .btn.primary {
+.btn.success,
+.btn.cancel,
+.btn.primary {
   // antialiasing is only applied to light-colored text on a dark background
   -webkit-font-smoothing: antialiased;
   font-weight: 700;
+}
+
+.btn.cancel {
+  color: #fff;
+  background: shade(@red, 17%);
+  border-color: shade(@red, 17%);
+
+  &.pressed,
+  &:hover {
+    background: shade(@red, 22%);
+    border-color: shade(@red, 22%);
+  }
 }
 
 .btn.success {
