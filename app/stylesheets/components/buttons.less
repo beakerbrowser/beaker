@@ -4,7 +4,7 @@
 
 .btn {
   display: inline-block;
-  cursor: pointer;
+  cursor: pointer !important;
   color: @color-button;
   border-radius: 2px;
   background: @background-button;
@@ -64,7 +64,7 @@
 
   &.disabled,
   &:disabled {
-    cursor: default;
+    cursor: default !important;
     background: @background-button--disabled !important;
     color: @color-button--disabled !important;
     border: 1px solid #ddd !important;
