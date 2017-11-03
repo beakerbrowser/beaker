@@ -8,24 +8,27 @@ var timeout = 0
 
 const isWindows = (process.platform === "win32")
 
-async function main () {
+function main () {
   var projectDir = process.cwd()
   var appDir = path.join(projectDir, 'app')
-  await rmNodeModules(projectDir)
-  await rmNodeModules(appDir)
-  await rmPackageLock(projectDir)
-  await rmPackageLock(appDir)
-  await run('npm install', {shell: true})
-  await run('npm run rebuild', {shell: true})
+  rmNodeModules(projectDir)
+  rmNodeModules(appDir)
+  rmPackageLock(projectDir)
+  rmPackageLock(appDir)
+  run('npm install', {shell: true}, function () {
+    run('npm run rebuild', {shell: true}, function () {
+      process.exit(0)
+    })
+  })
 }
 
-async function rmNodeModules (dir) {
+function rmNodeModules (dir) {
   dir = path.join(dir, 'node_modules')
   console.log('rm -rf', dir)
   rimrafSync(dir)
 }
 
-async function rmPackageLock (dir) {
+function rmPackageLock (dir) {
   const file = path.join(dir, 'package-lock.json')
   console.log('rm', file)
   rimrafSync(file)

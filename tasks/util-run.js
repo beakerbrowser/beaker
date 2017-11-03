@@ -1,12 +1,11 @@
 const childProcess = require('child_process')
-module.exports = async function (cmd, opts = {}) {
+module.exports = function (cmd, opts = {}, cb) {
   console.log(cmd)
+  cb = cb || function(){}
   cmd = cmd.split(' ')
   opts.stdio = 'inherit'
   opts.env = process.env
-  return new Promise(resolve => {
-    childProcess.spawn(cmd[0], cmd.slice(1), opts)
-      .on('error', console.log)
-      .on('close', resolve)
-  })
+  childProcess.spawn(cmd[0], cmd.slice(1), opts)
+    .on('error', console.log)
+    .on('close', cb)
 }
