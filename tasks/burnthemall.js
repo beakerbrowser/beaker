@@ -1,12 +1,12 @@
 // this script cant depend on any modules except what's bundled with node
-const path = require('path')
-const fs = require('fs')
-const run = require('./util-run')
-const _0666 = parseInt('666', 8)
+var path = require('path')
+var fs = require('fs')
+var run = require('./util-run')
+var _0666 = parseInt('666', 8)
 // for EMFILE handling
 var timeout = 0
 
-const isWindows = (process.platform === "win32")
+var isWindows = (process.platform === "win32")
 
 function main () {
   var projectDir = process.cwd()
@@ -29,7 +29,7 @@ function rmNodeModules (dir) {
 }
 
 function rmPackageLock (dir) {
-  const file = path.join(dir, 'package-lock.json')
+  var file = path.join(dir, 'package-lock.json')
   console.log('rm', file)
   rimrafSync(file)
 }
