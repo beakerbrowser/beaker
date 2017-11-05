@@ -154,15 +154,17 @@ export default function registerContextMenu () {
       if (!props.linkURL && props.mediaType === 'none' && !hasText) {
         menuItems.push({
           label: 'Back',
-          click: () => webContents.executeJavaScript(`history.back()`)
+          enabled: webContents.canGoBack(),
+          click: () => webContents.goBack()
         })
         menuItems.push({
           label: 'Forward',
-          click: () => webContents.executeJavaScript(`history.forward()`)
+          enabled: webContents.canGoForward(),
+          click: () => webContents.goForward()
         })
         menuItems.push({
           label: 'Reload',
-          click: () => webContents.executeJavaScript(`location.reload()`)
+          click: () => webContents.reload()
         })
         menuItems.push({ type: 'separator' })
       }
