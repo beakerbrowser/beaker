@@ -10,6 +10,7 @@ import { app, protocol } from 'electron'
 
 import * as beakerBrowser from './background-process/browser'
 import * as webAPIs from './background-process/web-apis'
+import * as adblocker from './background-process/adblocker'
 
 import * as windows from './background-process/ui/windows'
 import * as windowMenu from './background-process/ui/window-menu'
@@ -60,6 +61,7 @@ app.on('ready', async function () {
 
   // base
   beakerBrowser.setup()
+  adblocker.setup()
 
   // ui
   windowMenu.setup()
