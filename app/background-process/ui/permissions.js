@@ -1,4 +1,5 @@
 import { ipcMain, session, BrowserWindow } from 'electron'
+import { initialize, isAd } from 'is-ad'
 import * as siteData from '../dbs/sitedata'
 import PERMS from '../../lib/perms'
 import { getPermId } from '../../lib/strings'
@@ -13,6 +14,21 @@ var activeRequests = []
 // =
 
 export function setup () {
+  // block ads
+  initialize() // is-ad
+
+  const beakerUrls =  /^(beaker|blob)/
+  session.defaultSession.webRequest.onBeforeRequest(['*://*./*'], (details, callback) => {
+    const shouldBeBlocked = !details.url.match(beakerUrls) && isAd(details.url)
+
+    if (shouldBeBlocked) {
+      console.log('ADBLOCKER', details)
+      callback({cancel: true})
+    } else {
+      callback({cancel: false})
+    }
+  })
+
   // wire up handlers
   session.defaultSession.setPermissionRequestHandler(onPermissionRequestHandler)
   ipcMain.on('permission-response', onPermissionResponseHandler)
