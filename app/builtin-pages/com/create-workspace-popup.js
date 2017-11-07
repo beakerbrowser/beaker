@@ -1,10 +1,15 @@
 import yo from 'yo-yo'
+import slugify from 'slugify'
 import closeIcon from '../icon/close'
 
 // globals
 // =
 let directory = ''
 let targetURL = ''
+let localURL = ''
+let title = ''
+let description = ''
+let currentStep = 0
 
 var resolve
 var reject
@@ -14,8 +19,7 @@ var reject
 
 function onChangeWorkspaceDirectory (e) {
   directory = e.target.files[0].path
-  document.querySelector('#create-workspace-popup .error').innerText = ''
-  document.querySelector('[data-path]').dataset.path = directory
+  update()
 }
 
 async function onSelectDat (e) {
@@ -25,64 +29,132 @@ async function onSelectDat (e) {
     filters: {isOwner: true}
   })
   if (archive) {
+    const info = await archive.getInfo()
+
     targetURL = archive.url
-    document.querySelector('#create-workspace-popup .error').innerText = ''
-    document.querySelector('[data-url]').dataset.url = archive.url
+    title = info.title
+    description = info.description
+    localURL = localURL.length ? localURL : slugify(title).toLowerCase()
+    update()
   }
+}
+
+function onInputTitle (e) {
+  title = e.target.value
+  update()
+}
+
+function onInputDescription (e) {
+  description = e.target.value
+  update()
+}
+
+function onInputName (e) {
+  localURL = slugify(e.target.value).toLowerCase()
+  update()
+}
+
+function onClickNext () {
+  currentStep += 1
+  update()
+}
+
+function onClickBack() {
+  currentStep -= 1
+  update()
 }
 
 // exported api
 // =
 
 export function render () {
-  return yo`
-    <div id="create-workspace-popup" class="popup-wrapper" onclick=${onClickWrapper}>
-      <form class="popup-inner" onsubmit=${onSubmit}>
-        <div class="head">
-          <span class="title">Create a new workspace</span>
+  switch (currentStep) {
+    case 0:
+      return yo`
+        <div id="create-workspace-popup" class="popup-wrapper" onclick=${onClickWrapper}>
+          <form class="popup-inner" onsubmit=${onSubmit}>
+            <div class="head">
+              <span class="title">Create a new workspace</span>
 
-          <span title="Cancel" onclick=${destroy} class="close-btn square">
-            ${closeIcon()}
-          </span>
-        </div>
-
-        <div class="body">
-          <div>
-            <label for="name">Local URL</label>
-            <p>
-              The shortcut for previewing your workspace
-            </p>
-            <div class="name-input-container">
-              <span class="protocol">workspaces://</span>
-              <input required type="text" name="name"/>
+              <span title="Cancel" onclick=${destroy} class="close-btn square">
+                ${closeIcon()}
+              </span>
             </div>
 
-            <label for="url">Target URL</label>
-            <p>
-              The Dat archive that your changes will be published at
-            </p>
-            <button type="button" class="btn url" onclick=${onSelectDat} data-url=${targetURL}>
-              Browse your archives
-            </button>
+            <div class="body">
+              <div>
+                <label for="title">Title</label>
+                <input type="text" name="title" onkeyup=${onInputTitle} value=${title || ''}/>
 
-            <label>Directory</label>
-            <p>The directory on your computer that contains your workspace's files</p>
-            <label for="path" class="btn" data-path=${directory}>
-              Select directory
-            </label>
-            <input id="path" name="path" type="file" webkitdirectory onchange=${onChangeWorkspaceDirectory}/>
+                <label for="name">Local URL</label>
+                <p>
+                  The shortcut for previewing your workspace
+                </p>
+                <div class="name-input-container">
+                  <span class="protocol">workspaces://</span>
+                  <input required type="text" name="name" onkeyup=${onInputName} value=${localURL || ''}/>
+                </div>
 
-            <p class="error"></p>
-          </div>
+                <label for="description">Description</label>
+                <textarea name="description" onkeyup=${onInputDescription}>${description || ''}</textarea>
 
-          <div class="actions">
-            <button type="button" class="btn" onclick=${destroy}>Cancel</button>
-            <button type="submit" class="btn success">Create workspace</button>
-          </div>
+                <span class="separator">or</span>
+                <input type="hidden" name="url" value=${targetURL || ''}/>
+                <button type="button" class="btn" onclick=${onSelectDat}>
+                  Select an existing Dat archive
+                </button>
+              </div>
+
+              <div class="actions">
+                <button type="button" class="btn" onclick=${destroy}>Cancel</button>
+                <button disabled=${!localURL.length} type="button" class="btn primary" onclick=${onClickNext}>
+                  Next
+                  <i class="fa fa-caret-right"></i>
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
-      </form>
-    </div>
-  `
+      `
+    case 1:
+      return yo`
+        <div id="create-workspace-popup" class="popup-wrapper" onclick=${onClickWrapper}>
+          <form class="popup-inner" onsubmit=${onSubmit}>
+            <div class="head">
+              <span class="title">Create a new workspace</span>
+
+              <span title="Cancel" onclick=${destroy} class="close-btn square">
+                ${closeIcon()}
+              </span>
+            </div>
+
+            <div class="body">
+              <div>
+                <label>Directory</label>
+                <p>The directory on your computer that contains your workspace's files</p>
+                <label for="path" class="btn" data-path=${directory}>
+                  Select directory
+                </label>
+                <input id="path" name="path" type="file" webkitdirectory onchange=${onChangeWorkspaceDirectory}/>
+              </div>
+
+              <div class="actions">
+                <button type="button" class="btn" onclick=${onClickBack}>
+                  <i class="fa fa-caret-left"></i>
+                  Back
+                </button>
+                <button disabled=${!(directory && localURL)} type="submit" class="btn success">Create workspace</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      `
+  }
+}
+
+function update () {
+  const popup = render()
+  yo.update(document.getElementById('create-workspace-popup'), popup)
 }
 
 export function create () {
@@ -107,8 +179,14 @@ export function destroy () {
   var popup = document.getElementById('create-workspace-popup')
   document.body.removeChild(popup)
   document.removeEventListener('keyup', onKeyUp)
+
+  title = ''
+  description = ''
   directory = ''
   targetURL = ''
+  localURL = ''
+  currentStep = 0
+
   reject()
 }
 
@@ -130,18 +208,19 @@ function onClickWrapper (e) {
   }
 }
 
-function onSubmit (e) {
+async function onSubmit (e) {
   e.preventDefault()
+
+  // create a new archive if an existing one wasn't selected
   if (!targetURL) {
-    document.querySelector('#create-workspace-popup .error').innerText = 'Please choose a target Dat archive'
-  } else if (!directory) {
-    document.querySelector('#create-workspace-popup .error').innerText = 'Please choose a directory'
-  } else {
-    resolve({
-      name: e.target.name.value,
-      url: targetURL,
-      path: e.target.path.files[0].path
-    })
-    destroy()
+    const archive = await DatArchive.create({title: title || '', description: description || ''})
+    targetURL = archive.url
   }
+
+  resolve({
+    name: localURL,
+    url: targetURL,
+    path: directory
+  })
+  destroy()
 }
