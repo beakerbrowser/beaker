@@ -62,9 +62,17 @@ function rFolder (archiveInfo, opts) {
       <span class="files-list-actions">
         ${archiveInfo.isOwner && archiveInfo.localPathExists
           ? yo`
-            <a onclick=${e => onImportFiles(e, archiveInfo)} href="#">
+            <a onclick=${e => onImportFiles(e, archiveInfo, opts.includeFolderImport)} href="#">
               <i class="fa fa-plus"></i>
               Add files
+            </a>
+          ` : ''
+        }
+        ${archiveInfo.isOwner && archiveInfo.localPathExists && opts.includeFolderImport
+          ? yo`
+            <a onclick=${e => onImportFolder(e, archiveInfo)} href="#">
+              <i class="fa fa-plus"></i>
+              Add folder
             </a>
           ` : ''
         }
@@ -186,11 +194,28 @@ function onCopyFolder (e, archiveInfo) {
   }
 }
 
-async function onImportFiles (e, archiveInfo) {
+async function onImportFiles (e, archiveInfo, filesOnly) {
   var files = await beakerBrowser.showOpenDialog({
     title: 'Import files to this archive',
     buttonLabel: 'Import',
-    properties: ['openFile', 'openDirectory', 'multiSelections', 'createDirectory']
+    properties: ['openFile', filesOnly ? false : 'openDirectory', 'multiSelections', 'createDirectory'].filter(Boolean)
+  })
+  if (files) {
+    files.forEach(src => DatArchive.importFromFilesystem({
+      src,
+      dst: archiveInfo.url,
+      ignore: ['dat.json'],
+      inplaceImport: true
+    }))
+    window.dispatchEvent(new Event('files-added'))
+  }
+}
+
+async function onImportFolder (e, archiveInfo) {
+  var files = await beakerBrowser.showOpenDialog({
+    title: 'Import a folder to this archive',
+    buttonLabel: 'Import',
+    properties: ['openDirectory', 'createDirectory']
   })
   if (files) {
     files.forEach(src => DatArchive.importFromFilesystem({

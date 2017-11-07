@@ -33,6 +33,7 @@ window.history.replaceState = _wr('replaceState')
 // globals
 // =
 
+var browserInfo
 var userProfileUrl
 var archivesList
 var trashList = []
@@ -53,6 +54,7 @@ const reloadDiffThrottled = throttle(reloadDiff, 500)
 setup()
 async function setup () {
   // load archives
+  browserInfo = await beakerBrowser.getInfo()
   archivesList = new ArchivesList({listenNetwork: true})
   await archivesList.setup({isSaved: true})
   userProfileUrl = (await beaker.profiles.get(0)).url
@@ -528,7 +530,7 @@ function rFiles (archiveInfo) {
   return yo`
     <div class="published-files">
       ${rStagingNotification(archiveInfo)}
-      ${renderFiles(archiveInfo)}
+      ${renderFiles(archiveInfo, {includeFolderImport: isLinux()})}
     </div>
   `
 }
@@ -961,4 +963,8 @@ function niceName (archiveInfo) {
 
 function niceDesc (archiveInfo) {
   return (archiveInfo.description || '').trim() || yo`<em>No description</em>`
+}
+
+function isLinux () {
+  return browserInfo.platform === 'linux'
 }
