@@ -12,16 +12,12 @@
 
     // HACK
     // to address https://github.com/electron/electron/issues/8505
-    // the default way of hiding content will be by z-index
-    // but can then switch to visibility: hidden after the initial render
+    // we have to use z-index to hide content
+    // not at all ideal for performance
     z-index: 10;
     &.hidden {
       display: flex; // the default display type
       z-index: 9;
-    }
-    &.can-hide.hidden {
-      display: flex; // the default display type
-      visibility: hidden;
     }
   }
 }

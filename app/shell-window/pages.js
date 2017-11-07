@@ -173,10 +173,6 @@ export function create (opts) {
       page.isReceivingAssets = false
       page.siteInfoOverride = null
 
-      // HACK to fix electron#8505
-      // dont allow visibility: hidden until set active
-      page.webviewEl.classList.remove('can-hide')
-
       // set and go
       page.loadingURL = url
       page.isGuessingTheURLScheme = opts && opts.isGuessingTheScheme
@@ -188,13 +184,9 @@ export function create (opts) {
       }
     },
 
-    // HACK wrap reload so we can remove can-hide class
     reload () {
-      // HACK to fix electron#8505
-      // dont allow visibility: hidden until set active
-      page.webviewEl.classList.remove('can-hide')
-      setTimeout(() => page.reloadAsync(), 100)
-      // ^ needs a delay or it doesnt take effect in time, SMH at this code though
+      // TODO do we need this wrapper?
+      page.reloadAsync()
     },
 
     getURLOrigin () {
@@ -395,10 +387,6 @@ export function setActive (page) {
   prompt.update()
   events.emit('set-active', page)
   ipcRenderer.send('shell-window:set-current-location', page.getIntendedURL())
-
-  // HACK to fix electron#8505
-  // can now allow visibility: hidden
-  page.webviewEl.classList.add('can-hide')
 }
 
 export function togglePinned (page) {
