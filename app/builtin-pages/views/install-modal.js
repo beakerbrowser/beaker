@@ -176,7 +176,7 @@ function renderToPage () {
 
             <form onsubmit=${onSubmit}>
               <div class="form-actions">
-                <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+                <button type="button" onclick=${onClickCancel} class="btn" tabindex="4">Cancel</button>
                 ${segmentedProgressBar(currentPage, numPages)}
                 <button type="submit" class="btn ${currentPage < numPages - 1 ? 'primary' : 'success'}" tabindex="5" disabled=${submitDisabled}>
                   ${currentPage < numPages - 1 ? 'Next' : 'Finish'}

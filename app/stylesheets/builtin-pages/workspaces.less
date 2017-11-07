@@ -39,34 +39,6 @@ label {
   }
 }
 
-#create-workspace-popup {
-
-  .btn.url {
-    position: relative;
-    overflow: visible;
-
-    &:after {
-      &:extend(.code-font);
-      position: absolute;
-      left: ~"calc(100% + 10px)";
-      top: 0;
-      content: attr(data-url);
-      font-size: 13px;
-      color: inherit;
-    }
-  }
-
-  label:not(:first-child) {
-    margin-top: 25px;
-  }
-
-  p {
-    font-style: italic;
-    color: @color-text--muted;
-    margin-top: 5px;
-  }
-}
-
 input[type="file"] {
   display: none;
 }

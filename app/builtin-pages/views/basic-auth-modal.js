@@ -64,7 +64,7 @@ function render () {
             <input name="password" type="password" tabindex="3" value=${password || ''}  placeholder="Password" onchange=${onChangePassword} />
 
             <div class="form-actions">
-              <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+              <button type="button" onclick=${onClickCancel} class="btn" tabindex="4">Cancel</button>
               <button type="submit" class="btn primary" tabindex="5">Log In</button>
             </div>
           </form>

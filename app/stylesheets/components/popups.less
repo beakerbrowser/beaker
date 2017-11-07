@@ -38,7 +38,7 @@
 
     .close-btn {
       position: absolute;
-      top: 8px;
+      top: 10px;
       right: 12px;
     }
   }
@@ -151,3 +151,52 @@
     }
   }
 }
+
+#create-workspace-popup {
+
+  .btn.url {
+    position: relative;
+    overflow: visible;
+
+    &:after {
+      &:extend(.code-font);
+      position: absolute;
+      left: ~"calc(100% + 10px)";
+      top: 0;
+      content: attr(data-url);
+      font-size: 13px;
+      color: inherit;
+    }
+  }
+
+  label:not(:first-child) {
+    margin-top: 25px;
+  }
+
+  p {
+    font-style: italic;
+    color: @color-text--muted;
+    margin-top: 5px;
+  }
+
+  .separator {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    grid-gap: 15px;
+    align-items: center;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 12px;
+    color: @color-text--muted;
+    margin: 20px 0;
+
+    &:before,
+    &:after {
+      content: '';
+      height: 1px;
+      background: #ddd;
+    }
+  }
+}
+
