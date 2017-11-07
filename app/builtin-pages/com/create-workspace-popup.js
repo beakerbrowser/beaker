@@ -180,6 +180,8 @@ export function destroy () {
   document.body.removeChild(popup)
   document.removeEventListener('keyup', onKeyUp)
 
+  title = ''
+  description = ''
   directory = ''
   targetURL = ''
   localURL = ''
