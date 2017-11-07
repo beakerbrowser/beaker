@@ -100,7 +100,7 @@ export function render () {
 
                 <span class="separator">or</span>
                 <input type="hidden" name="url" value=${targetURL || ''}/>
-                <button class="btn" onclick=${onSelectDat}>
+                <button type="button" class="btn" onclick=${onSelectDat}>
                   Select an existing Dat archive
                 </button>
               </div>
