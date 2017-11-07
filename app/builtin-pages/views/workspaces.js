@@ -399,14 +399,16 @@ function renderRevisionsView () {
   const deletions = workspaceInfo.revisions.filter(r => r.change === 'del')
 
   const renderRev = node => (
-    yo`<li onclick=${() => onClickChangedNode(node)} title=${node.path}>
-      <code class="path">${node.type === 'file' ? node.path.slice(1) : node.path}</code>
-      <input
-        type="checkbox"
-        checked=${!!node.checked}
-        onclick=${e => onToggleChangedNodeChecked(e, node)}
-      />
-    </li>`
+    yo`
+      <li class="${node.path === currentDiffNode.path ? 'selected' : ''}" onclick=${() => onClickChangedNode(node)} title=${node.path}>
+        <code class="path">${node.type === 'file' ? node.path.slice(1) : node.path}</code>
+        <input
+          type="checkbox"
+          checked=${!!node.checked}
+          onclick=${e => onToggleChangedNodeChecked(e, node)}
+        />
+      </li>
+    `
   )
 
   return yo`
