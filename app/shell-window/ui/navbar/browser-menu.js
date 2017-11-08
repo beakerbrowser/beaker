@@ -250,6 +250,7 @@ export class BrowserMenuNavbarBtn {
 
   onClickBtn (e) {
     this.isDropdownOpen = !this.isDropdownOpen
+    this.submenu = ''
     this.updateActives()
   }
 
@@ -258,6 +259,7 @@ export class BrowserMenuNavbarBtn {
     if (parent) return // abort - this was a click on us!
     if (this.isDropdownOpen) {
       this.isDropdownOpen = false
+      this.submenu = ''
       this.updateActives()
     }
   }
@@ -316,6 +318,7 @@ export class BrowserMenuNavbarBtn {
   async onCreateSite (e) {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
+    this.submenu = ''
     this.updateActives()
 
     var archive = await DatArchive.create({prompt: true})
