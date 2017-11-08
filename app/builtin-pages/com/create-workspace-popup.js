@@ -109,7 +109,7 @@ export function render () {
                 <button type="button" class="btn" onclick=${destroy}>Cancel</button>
                 <button disabled=${!localURL.length} type="button" class="btn primary" onclick=${onClickNext}>
                   Next
-                  <i class="fa fa-caret-right"></i>
+                  <i class="fa fa-angle-right"></i>
                 </button>
               </div>
             </div>
@@ -140,7 +140,7 @@ export function render () {
 
               <div class="actions">
                 <button type="button" class="btn" onclick=${onClickBack}>
-                  <i class="fa fa-caret-left"></i>
+                  <i class="fa fa-angle-left"></i>
                   Back
                 </button>
                 <button disabled=${!(directory && localURL)} type="submit" class="btn success">Create workspace</button>
