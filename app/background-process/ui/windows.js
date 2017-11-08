@@ -117,13 +117,13 @@ export function createShellWindow () {
   win.on('scroll-touch-end', sendToWebContents('scroll-touch-end'))
   win.on('focus', sendToWebContents('focus'))
   win.on('blur', sendToWebContents('blur'))
-  win.on('enter-full-screen', () => {
+  win.on('enter-full-screen', e => {
     registerShortcut(win, 'Esc', onEscape(win))
-    sendToWebContents('enter-full-screen')
+    sendToWebContents('enter-full-screen')(e)
   })
-  win.on('leave-full-screen', () => {
+  win.on('leave-full-screen', e => {
     unregisterShortcut(win, 'Esc')
-    sendToWebContents('leave-full-screen')
+    sendToWebContents('leave-full-screen')(e)
   })
   win.on('close', onClose(win))
 
