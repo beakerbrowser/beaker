@@ -22,6 +22,7 @@ export class BrowserMenuNavbarBtn {
       openFile: cmdOrCtrlChar + 'O'
     }
 
+    this.submenu
     this.downloads = []
     this.sumProgress = null // null means no active downloads
     this.isDropdownOpen = false
@@ -72,7 +73,39 @@ export class BrowserMenuNavbarBtn {
 
     // render the dropdown if open
     var dropdownEl = ''
-    if (this.isDropdownOpen) {
+    if (this.isDropdownOpen && this.submenu === 'create-new') {
+      dropdownEl = yo`
+        <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
+          <div class="dropdown-items submenu with-triangle">
+            <div class="header">
+              <button class="btn transparent" onclick=${e => this.onShowSubmenu('')} title="Go back">
+                <i class="fa fa-angle-left"></i>
+              </button>
+              <h2>Create New</h2>
+            </div>
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onCreateSite()}>
+                <i class="fa fa-sitemap"></i>
+                <span class="label">Website</span>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onCreateSite()}>
+                <i class="fa fa-puzzle-piece"></i>
+                <span class="label">App</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="menu-item">
+                <i class="fa fa-upload"></i>
+                <span class="label">Import Files</span>
+              </div>
+            </div>
+          </div>
+        </div>`
+
+    } else if (this.isDropdownOpen) {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle">
@@ -101,9 +134,10 @@ export class BrowserMenuNavbarBtn {
             </div>
 
             <div class="section">
-              <div class="menu-item" onclick=${e => this.onCreateSite(e)}>
+              <div class="menu-item" onclick=${e => this.onShowSubmenu('create-new')}>
                 <i class="fa fa-plus-square-o"></i>
-                <span class="label">Create New Site</span>
+                <span class="label">Create New</span>
+                <i class="more fa fa-angle-right"></i>
               </div>
             </div>
 
@@ -189,6 +223,11 @@ export class BrowserMenuNavbarBtn {
         {transform: 'scale(1.0)', color: 'inherit'}
       ], { duration: 300 })
     )
+  }
+
+  onShowSubmenu(submenu) {
+    this.submenu = submenu
+    this.updateActives()
   }
 
   onOpenNewWindow () {

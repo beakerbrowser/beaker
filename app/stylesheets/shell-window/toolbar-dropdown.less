@@ -97,6 +97,46 @@
 
 .browser-dropdown-menu {
 
+  .submenu {
+
+    .header {
+      position: relative;
+      border-bottom: 1px solid #eee;
+      width: 100%;
+      height: 35px;
+      line-height: 35px;
+      text-align: center;
+
+      h2 {
+        font-size: 12.5px;
+      }
+
+      .btn {
+        position: absolute;
+        left: 4px;
+        top: 4px;
+        width: 27px;
+        height: 27px;
+        border: 0;
+
+        i {
+          font-size: 18px;
+          color: @color-text;
+          line-height: 27px;
+        }
+
+        &:focus {
+          border: 0;
+          box-shadow: none;
+        }
+
+        &:hover {
+          background: #eee;
+        }
+      }
+    }
+  }
+
   .section {
     border-bottom: 1px solid #eee;
     padding: 5px 0;
@@ -119,6 +159,7 @@
       background: #DCEDC8;
       border-top: 1px solid #c5e1a5;
       border-bottom: 1px solid #c5e1a5;
+      color: #000;
 
       i {
         color: #7CB342;
@@ -142,6 +183,12 @@
       width: 22px;
       font-size: 16px;
       padding-right: 3px;
+
+      &.more {
+        margin-left: auto;
+        padding-right: 0;
+        text-align: right;
+      }
 
       // this icon is noticeably bigger than the others for some reason
       &.fa-file-o {
@@ -181,9 +228,13 @@
       }
     }
 
+    .more,
     .shortcut {
       color: #777;
       margin-left: auto;
+    }
+
+    .shortcut {
       font-size: 12px;
       -webkit-font-smoothing: antialiased;
     }
