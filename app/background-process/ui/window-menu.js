@@ -154,6 +154,13 @@ var viewMenu = {
     }
   },
   {
+    label: 'Toggle Javascript Console',
+    accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+J' : 'Shift+CmdOrCtrl+J',
+    click: function (item, win) {
+      if (win) win.webContents.send('command', 'view:toggle-javascript-console')
+    }
+  },
+  {
     label: 'Toggle Sidebar',
     accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+B' : 'Shift+CmdOrCtrl+B',
     click: function (item, win) {

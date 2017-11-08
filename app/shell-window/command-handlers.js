@@ -24,6 +24,7 @@ export function setup () {
       case 'view:zoom-out': return zoom.zoomOut(page)
       case 'view:zoom-reset': return zoom.zoomReset(page)
       case 'view:toggle-dev-tools': return page.toggleDevTools()
+      case 'view:toggle-javascript-console': return page.toggleDevTools(true)
       case 'view:open-sidebar': return sidebar.open()
       case 'view:toggle-sidebar': return sidebar.toggle()
       case 'history:back': return page.goBackAsync()
