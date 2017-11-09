@@ -205,6 +205,16 @@ function onClickPin (page) {
   return () => pages.togglePinned(page)
 }
 
+function onToggleMuted (page) {
+  return () => {
+    if (page.webviewEl) {
+      const wc = page.webviewEl.getWebContents()
+      const isMuted = wc.isAudioMuted()
+      wc.setAudioMuted(!isMuted)
+    }
+  }
+}
+
 function onClickTab (page) {
   return e => {
     if (e.which !== 2) {
@@ -252,11 +262,16 @@ function onClickReopenClosedTab () {
 function onContextMenuTab (page) {
   return e => {
     const { Menu } = remote
+    var isMuted = false
+    if (page.webviewEl) {
+      isMuted = page.webviewEl.getWebContents().isAudioMuted()
+    }
     var menu = Menu.buildFromTemplate([
       { label: 'New Tab', click: onClickNew },
       { type: 'separator' },
       { label: 'Duplicate', click: onClickDuplicate(page) },
       { label: (page.isPinned) ? 'Unpin Tab' : 'Pin Tab', click: onClickPin(page) },
+      { label: (isMuted) ? 'Unmute Tab' : 'Mute Tab', click: onToggleMuted(page) },
       { type: 'separator' },
       { label: 'Close Tab', click: onClickTabClose(page) },
       { label: 'Close Other Tabs', click: onClickCloseOtherTabs(page) },
