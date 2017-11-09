@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, ipcMain, webContents } from 'electron'
+import { app, BrowserWindow, ipcMain, webContents } from 'electron'
 import { register as registerShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import jetpack from 'fs-jetpack'
 import * as keybindings from './keybindings'
@@ -156,6 +156,7 @@ function defaultState () {
   // not sure why, shouldn't be happening
   // check for existence for now, see #690
   // -prf
+  const screen = getScreenAPI()
   var bounds = screen ? screen.getPrimaryDisplay().bounds : {width: 800, height: 600}
   var width = Math.max(800, Math.min(1800, bounds.width - 50))
   var height = Math.max(600, Math.min(1200, bounds.height - 50))
@@ -173,6 +174,7 @@ function ensureVisibleOnSomeDisplay (windowState) {
   // not sure why, shouldn't be happening
   // check for existence for now, see #690
   // -prf
+  const screen = getScreenAPI()
   var visible = screen && screen.getAllDisplays().some(display => windowWithinBounds(windowState, display.bounds))
   if (!visible) {
     // Window is partially or fully not visible now.
@@ -234,6 +236,8 @@ function sendToWebContents (event) {
 
 function sendScrollTouchBegin (e) {
   // get the cursor x/y within the window
+  const screen = getScreenAPI()
+  if (!screen) return
   var cursorPos = screen.getCursorScreenPoint()
   var winPos = e.sender.getBounds()
   cursorPos.x -= winPos.x; cursorPos.y -= winPos.y
@@ -241,4 +245,11 @@ function sendScrollTouchBegin (e) {
     cursorX: cursorPos.x,
     cursorY: cursorPos.y
   })
+}
+
+// helpers
+// =
+
+function getScreenAPI () {
+  return require('electron').screen
 }
