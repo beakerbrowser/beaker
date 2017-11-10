@@ -15,7 +15,7 @@
     "choo": "^5.6.2",
     "co": "^4.6.0",
     "concat-stream": "^1.5.2",
-    "dat-dns": "^1.3.2",
+    "dat-dns": "^2.0.0",
     "dat-encoding": "^4.0.2",
     "datland-swarm-defaults": "^1.0.2",
     "debug": "git://github.com/beakerbrowser/debug.git#8d79a96e2c5f79527d7580960be3da9ae246ed8e",
