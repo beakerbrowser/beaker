@@ -1,7 +1,6 @@
 /* globals beaker DatArchive */
 
 import * as yo from 'yo-yo'
-import renderSidebar from '../com/sidebar'
 import {
   FSVirtualRoot,
   FSVirtualFolder_User,
@@ -38,7 +37,6 @@ function update () {
       class="library-wrapper builtin-wrapper"
       oncontextmenu=${onContextMenu}
     >
-      ${renderSidebar('library')}
       <div class="builtin-main">
         ${filesBrowser.render()}
       </div>

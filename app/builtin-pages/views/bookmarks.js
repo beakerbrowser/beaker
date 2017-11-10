@@ -4,7 +4,6 @@ const yo = require('yo-yo')
 import {getHostname} from '../../lib/strings'
 import * as toast from '../com/toast'
 import * as editBookmarkPopup from '../com/edit-bookmark-popup'
-import renderSidebar from '../com/sidebar'
 import renderCloseIcon from '../icon/close'
 import renderGlobeIcon from '../icon/globe'
 import renderHistoryIcon from '../icon/history'
@@ -280,7 +279,6 @@ function renderToPage () {
     document.querySelector('.bookmarks-wrapper'),
     yo`
       <div class="bookmarks-wrapper builtin-wrapper">
-        ${renderSidebar('bookmarks')}
         <div>
           <div class="builtin-sidebar">
             <h1>Bookmarks</h1>

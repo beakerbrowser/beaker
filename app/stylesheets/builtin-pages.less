@@ -22,21 +22,9 @@
 @import "./builtin-pages/profile";
 @import "./builtin-pages/network";
 @import "./builtin-pages/components/links-list";
-@import "./builtin-pages/components/sidebar";
 @import "./builtin-pages/components/close-btn";
 @import "./builtin-pages/components/avatar";
 @import "./builtin-pages/components/post-popup";
-
-.window:before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: #111111;
-  width: 40px;
-  z-index: 1;
-}
 
 .window-content.builtin {
   &:extend(.system-font);
@@ -46,7 +34,6 @@
 .builtin-wrapper {
   &:extend(.flex);
   width: 100%;
-  padding-left: 40px;
 
   em.empty {
     display: block;
@@ -166,7 +153,7 @@
     position: fixed;
     z-index: 3;
     width: 100%;
-    max-width: ~"calc(100% - 340px)";
+    max-width: ~"calc(100% - 300px)";
     height: 50px;
     padding: 0 10px;
     border-bottom: 1px solid rgb(210, 210, 213);

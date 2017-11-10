@@ -3,7 +3,6 @@
 import yo from 'yo-yo'
 import moment from 'moment'
 import prettyBytes from 'pretty-bytes'
-import renderSidebar from '../com/sidebar'
 import * as toast from '../com/toast'
 import renderTrashIcon from '../icon/trash'
 import renderGearIcon from '../icon/gear-small'
@@ -181,7 +180,6 @@ function destroySeedingMenu () {
 function render () {
   yo.update(document.querySelector('.network-wrapper'), yo`
     <div class="network-wrapper builtin-wrapper">
-      ${renderSidebar('network')}
       <div>
         <div class="builtin-sidebar">
           <h1>Network Activity</h1>

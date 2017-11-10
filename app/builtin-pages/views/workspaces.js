@@ -4,7 +4,6 @@ import yo from 'yo-yo'
 import {pluralize} from '../../lib/strings'
 import {pushUrl} from '../../lib/fg/event-handlers'
 import * as createWorkspacePopup from '../com/create-workspace-popup'
-import renderSidebar from '../com/sidebar'
 import renderDiff from '../com/diff'
 import renderGearIcon from '../icon/gear-small'
 import * as toast from '../com/toast'
@@ -223,7 +222,6 @@ function render () {
 function renderWorkspacesListing () {
   yo.update(document.querySelector('.workspaces-wrapper'), yo`
     <div class="builtin-wrapper workspaces-wrapper listing">
-      ${renderSidebar('')}
       <div>
         <div class="builtin-sidebar">
           <h1>Workspaces</h1>

@@ -1,7 +1,6 @@
 /* globals beaker FileReader DatArchive Event history */
 
 import yo from 'yo-yo'
-import renderSidebar from '../com/sidebar'
 import * as cropPopup from '../com/crop-popup'
 import renderPencilIcon from '../icon/pencil'
 import imgWithFallbacks from '../com/img-with-fallbacks'
@@ -175,7 +174,6 @@ function render () {
 
   yo.update(document.querySelector('.profile-wrapper'), yo`
     <div class="profile-wrapper builtin-wrapper">
-      ${renderSidebar('profile')}
       <div>
         <div class="builtin-sidebar">
           ${renderProfile()}

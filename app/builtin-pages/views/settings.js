@@ -2,7 +2,6 @@
 
 import yo from 'yo-yo'
 import {niceDate} from '../../lib/time'
-import renderSidebar from '../com/sidebar'
 import {create as createEditAppPopup} from '../com/edit-app-popup'
 
 // globals
@@ -57,16 +56,13 @@ function renderToPage () {
   // only render if this page is active
   if (!browserInfo) {
     yo.update(document.querySelector('.settings-wrapper'), yo`<div class="pane" id="el-content">
-      <div class="settings-wrapper builtin-wrapper">
-        ${renderSidebar('settings')}
-      </div>
+      <div class="settings-wrapper builtin-wrapper"></div>
     </div>`)
     return
   }
 
   yo.update(document.querySelector('.settings-wrapper'), yo`<div class="pane" id="el-content">
     <div class="settings-wrapper builtin-wrapper">
-      ${renderSidebar('settings')}
 
       <div>
         <div class="builtin-sidebar">

@@ -3,7 +3,6 @@
 const yo = require('yo-yo')
 const moment = require('moment')
 import {getHostname} from '../../lib/strings'
-import renderSidebar from '../com/sidebar'
 import renderTrashIcon from '../icon/trash'
 import renderCloseIcon from '../icon/close'
 
@@ -165,7 +164,6 @@ function render () {
     document.querySelector('.history-wrapper'),
     yo`
       <div class="history-wrapper builtin-wrapper">
-        ${renderSidebar('history')}
         <div>
           <div class="builtin-sidebar">
             <h1>History</h1>

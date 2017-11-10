@@ -1,7 +1,6 @@
 /* globals beaker */
 
 import * as yo from 'yo-yo'
-import renderSidebar from '../com/sidebar'
 import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
 import renderCloseIcon from '../icon/close'
 
@@ -70,7 +69,6 @@ function update () {
 
   yo.update(document.querySelector('.window-content.start'), yo`
     <div class="window-content builtin start ${''/*TODO(bgimg) theme*/}">
-      ${renderSidebar('start')}
       <div class="builtin-wrapper start-wrapper">
         <div class="builtin-main center">
           ${renderPinnedBookmarks()}

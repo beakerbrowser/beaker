@@ -2,7 +2,6 @@
 
 import yo from 'yo-yo'
 import moment from 'moment'
-import renderSidebar from '../com/sidebar'
 import * as cropPopup from '../com/crop-popup'
 import renderFilesIcon from '../icon/filesystem'
 import renderHeartIcon from '../icon/heart'
@@ -386,7 +385,6 @@ async function onToggleLiked (e, p) {
 function render () {
   yo.update(document.querySelector('.timeline-wrapper'), yo`
     <div class="builtin-wrapper timeline-wrapper">
-      ${renderSidebar('timeline')}
       <div class="builtin-main center">
         ${renderHeader()}
         ${renderView()}
