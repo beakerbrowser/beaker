@@ -6,6 +6,7 @@ import fs from 'fs'
 import path from 'path'
 import * as workspacesDb from '../dbs/workspaces'
 import * as datLibrary from '../networks/dat/library'
+import {timer} from '../../lib/time'
 import * as scopedFSes from '../../lib/bg/scoped-fses'
 import {DAT_HASH_REGEX, WORKSPACE_VALID_NAME_REGEX} from '../../lib/const'
 import {
@@ -79,8 +80,12 @@ export default {
     if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
 
     // get the scoped fs and archive
-    const scopedFS = scopedFSes.get(ws.localFilesPath)
-    const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
+    var scopedFS, archive
+    await timer(3e3, async (checkin) => { // put a max 3s timeout on loading the dat
+      checkin('searching for dat')
+      scopedFS = scopedFSes.get(ws.localFilesPath)
+      archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
+    })
 
     // build ignore rules
     if (opts.paths) {
@@ -108,8 +113,12 @@ export default {
     if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
 
     // get the scoped fs and archive
-    const scopedFS = scopedFSes.get(ws.localFilesPath)
-    const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
+    var scopedFS, archive
+    await timer(3e3, async (checkin) => { // put a max 3s timeout on loading the dat
+      checkin('searching for dat')
+      scopedFS = scopedFSes.get(ws.localFilesPath)
+      archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
+    })
 
     // read the file in both sources
     const [newFile, oldFile] = await Promise.all([readFile(scopedFS, filepath), readFile(archive, filepath)])
@@ -136,8 +145,12 @@ export default {
     if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
 
     // get the scoped fs and archive
-    const scopedFS = scopedFSes.get(ws.localFilesPath)
-    const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
+    var scopedFS, archive
+    await timer(3e3, async (checkin) => { // put a max 3s timeout on loading the dat
+      checkin('searching for dat')
+      scopedFS = scopedFSes.get(ws.localFilesPath)
+      archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
+    })
 
     // build ignore rules
     if (opts.paths) {
@@ -170,8 +183,12 @@ export default {
     if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
 
     // get the scoped fs and archive
-    const scopedFS = scopedFSes.get(ws.localFilesPath)
-    const archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
+    var scopedFS, archive
+    await timer(3e3, async (checkin) => { // put a max 3s timeout on loading the dat
+      checkin('searching for dat')
+      scopedFS = scopedFSes.get(ws.localFilesPath)
+      archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
+    })
 
     // build ignore rules
     if (opts.paths) {
