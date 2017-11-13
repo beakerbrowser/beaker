@@ -235,10 +235,8 @@ function renderWorkspacesListing () {
             </div>
           </div>
 
-          <div>
-            <ul class="workspaces">
-              ${allWorkspaces.map(renderWorkspaceListItem)}
-            </ul>
+          <div class="workspaces">
+            ${allWorkspaces.map(renderWorkspaceListItem)}
           </div>
         </div>
       </div>
@@ -248,16 +246,14 @@ function renderWorkspacesListing () {
 
 function renderWorkspaceListItem (workspace) {
   return yo`
-    <li class="workspace">
+    <a class="workspace" href="beaker://workspaces/${workspace.name}" onclick=${pushUrl}>
       <div>
         <img class="favicon" src="beaker-favicon:${workspace.publishTargetUrl}" />
         <span class="info">
-          <a class="title" href="workspace://${workspace.name}">
-            <code>workspace://${workspace.name}</code>
-          </a>
+          <span class="title"><code>workspace://${workspace.name}</code></span>
 
           <div class="metadata">
-            <code class="path" onclick=${e => onOpenFolder(workspace.localFilesPath)}>
+            <code class="path" onclick=${e => {e.stopPropagation(); e.preventDefault(); onOpenFolder(workspace.localFilesPath);}}>
               ${workspace.localFilesPath}
             </code>
           </div>
@@ -265,19 +261,16 @@ function renderWorkspaceListItem (workspace) {
       </div>
 
       <div class="buttons">
-        <button class="btn transparent remove-workspace" title="Delete this workspace" onclick=${e => onDeleteWorkspace(workspace.name)}>
+        <button class="btn transparent remove-workspace" title="Delete this workspace" onclick=${e => {e.preventDefault(); e.stopPropagation(); onDeleteWorkspace(workspace.name);}}>
           <i class="fa fa-trash-o"></i>
         </button>
 
-        <a class="btn" href=${'beaker://workspaces/' + workspace.name} onclick=${pushUrl}>
-          Open workspace
-        </a>
-
-        <a title="Preview changes" href="workspace://${workspace.name}" class="btn">
+        <a title="Preview changes" onclick=${e => {e.stopPropagation()}} href="workspace://${workspace.name}" class="btn">
+          Preview changes
           <i class="fa fa-external-link"></i>
         </a>
       </div>
-    </li>
+    </a>
   `
 }
 
@@ -545,7 +538,7 @@ function renderSettingsView () {
           Deleting this workspace will <strong>not</strong> delete the files at <code>${workspaceInfo.localFilesPath}</code>
         </p>
 
-        <button class="btn cancel" onclick=${() => onDeleteWorkspace(workspaceInfo.name)}>
+        <button class="btn cancel" onclick=${e => {e.stopPropagation(); onDeleteWorkspace(workspaceInfo.name);}}>
           Delete workspace
           <i class="fa fa-trash"></i>
         </button>

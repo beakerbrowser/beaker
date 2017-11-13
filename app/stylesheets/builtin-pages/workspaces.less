@@ -93,13 +93,14 @@ input[type="file"] {
 
 .workspaces-wrapper.listing {
 
-  ul.workspaces {
-    padding: 0;
+  .workspaces {
     margin: 0;
+    padding: 0;
+    padding-top: 50px;
     list-style: none;
   }
 
-  li.workspace {
+  .workspace {
     &:extend(.flex);
     width: 650px;
     align-items: center;
@@ -111,12 +112,13 @@ input[type="file"] {
     border-right: 1px solid #ddd;
 
     &:hover {
+      background: #f5f5f5;
 
       .btn.remove-workspace {
         opacity: 1;
 
         &:hover {
-          background: rgba(0,0,0,.04);
+          background: rgba(0,0,0,.075);
         }
       }
     }
@@ -126,6 +128,10 @@ input[type="file"] {
 
       &.buttons {
         line-height: 32px;
+
+        .btn i {
+          margin-left: 3px;
+        }
       }
 
       .btn.remove-workspace {
@@ -167,15 +173,6 @@ input[type="file"] {
       line-height: 1;
       vertical-align: top;
       font-size: .8rem;
-      cursor: pointer;
-
-      code {
-        cursor: pointer;
-      }
-
-      &:hover {
-        text-decoration: underline;
-      }
     }
 
     .metadata {
