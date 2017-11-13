@@ -8,6 +8,7 @@ import jetpack from 'fs-jetpack'
 import electron from '../node_modules/electron'
 
 import * as browserdriver from './lib/browser-driver'
+import {createDat} from './lib/dat-helpers'
 var createdDatUrl
 var createdFilePath = tempy.directory()
 
@@ -246,6 +247,36 @@ test('set() doesnt allow bad values', async t => {
     window.beaker.workspaces.set(0, 'test-ws', {localFilesPath: path}).then(done, done)
   }, os.homedir())
   t.deepEqual(res.value.name, 'ProtectedFileNotWritableError')
+})
+
+test('set() doesnt allow dats which are unowned or deleted', async t => {
+  await app.client.windowByIndex(0)
+
+  // create an unowned dat
+  var unownedDat = await createDat()
+  var unownedDatUrl = 'dat://' + unownedDat.archive.key.toString('hex')
+
+  // try to create a workspace with the unowned dat
+  var res = await app.client.executeAsync((url, path, done) => {
+    window.beaker.workspaces.set(0, 'unowned-ws', {publishTargetUrl: url, localFilesPath: path}).then(done, done)
+  }, unownedDatUrl, createdFilePath)
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
+
+  // create a deleted dat
+  var res = await app.client.executeAsync((done) => {
+    DatArchive.create({ title: 'The Title', description: 'The Description', type: 'website' }).then(done,done)
+  })
+  var deletedDatUrl = res.value.url
+  t.truthy(deletedDatUrl.startsWith('dat://'))
+  var res = await app.client.executeAsync((url, done) => {
+    window.beaker.archives.remove(url, {noPrompt: true}).then(done,done)
+  }, deletedDatUrl)
+
+  // try to create a workspace with the deleted dat
+  var res = await app.client.executeAsync((url, path, done) => {
+    window.beaker.workspaces.set(0, 'deleted-ws', {publishTargetUrl: url, localFilesPath: path}).then(done, done)
+  }, deletedDatUrl, createdFilePath)
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 })
 
 test('set() can rename a workspace', async t => {

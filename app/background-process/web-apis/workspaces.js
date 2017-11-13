@@ -4,6 +4,7 @@ import * as diff from 'diff'
 import anymatch from 'anymatch'
 import fs from 'fs'
 import path from 'path'
+import * as archivesDb from '../dbs/archives'
 import * as workspacesDb from '../dbs/workspaces'
 import * as datLibrary from '../networks/dat/library'
 import {timer} from '../../lib/time'
@@ -13,7 +14,8 @@ import {
   NotAFolderError,
   ProtectedFileNotWritableError,
   PermissionsError,
-  InvalidURLError
+  InvalidURLError,
+  ArchiveNotWritableError
 } from 'beaker-error-constants'
 
 const DISALLOWED_SAVE_PATH_NAMES = [
@@ -50,7 +52,10 @@ export default {
     assertValidName(name)
     if (newData.name) assertValidName(newData.name)
     if (newData.localFilesPath) await assertSafeFilesPath(newData.localFilesPath)
-    if (newData.publishTargetUrl) await assertDatUrl(newData.publishTargetUrl)
+    if (newData.publishTargetUrl) {
+      await assertDatUrl(newData.publishTargetUrl)
+      await assertDatIsSavedAndOwned(newData.publishTargetUrl)
+    }
     return workspacesDb.set(profileId, name, newData)
   },
 
@@ -78,6 +83,7 @@ export default {
     if (!ws) throw new Error(`No workspace found at ${name}`)
     if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
     if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
+    await assertDatIsSavedAndOwned(ws.publishTargetUrl)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -111,6 +117,7 @@ export default {
     if (!ws) throw new Error(`No workspace found at ${name}`)
     if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
     if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
+    await assertDatIsSavedAndOwned(ws.publishTargetUrl)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -143,6 +150,7 @@ export default {
     if (!ws) throw new Error(`No workspace found at ${name}`)
     if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
     if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
+    await assertDatIsSavedAndOwned(ws.publishTargetUrl)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -181,6 +189,7 @@ export default {
     if (!ws) throw new Error(`No workspace found at ${name}`)
     if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
     if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
+    await assertDatIsSavedAndOwned(ws.publishTargetUrl)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -223,6 +232,16 @@ function assertValidName (name) {
   if (!WORKSPACE_VALID_NAME_REGEX.test(name)) {
     throw new Error(`Invalid workspace name (${name})`)
   }
+}
+
+async function assertDatIsSavedAndOwned (url) {
+  const key = datLibrary.fromURLToKey(url)
+  const [meta, userSettings] = await Promise.all([
+    archivesDb.getMeta(key),
+    archivesDb.getUserSettings(0, key)
+  ])
+  if (!meta || !meta.isOwner) throw new ArchiveNotWritableError('You can\'t edit a dat you don\'t own.')
+  if (!userSettings || !userSettings.isSaved) throw new ArchiveNotWritableError('The workspace\'s dat has been deleted.')
 }
 
 async function readDatIgnore (fs) {
