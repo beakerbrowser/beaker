@@ -49,6 +49,9 @@ async function setup () {
 }
 
 async function loadCurrentWorkspace () {
+  // reset state
+  activeTab = 'revisions'
+
   currentWorkspaceName = parseURLWorkspaceName()
   tmpWorkspaceName = currentWorkspaceName
   if (currentWorkspaceName) {
