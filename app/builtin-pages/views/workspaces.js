@@ -40,13 +40,6 @@ window.history.replaceState = _wr('replaceState')
 setup()
 async function setup () {
   allWorkspaces = await beaker.workspaces.list(0)
-
-  // add extra metadata to the workspaces
-  await Promise.all(allWorkspaces.map(async (w) => {
-    const revisions = await beaker.workspaces.listChangedFiles(0, w.name, {shallow: true})
-    w.numRevisions = revisions ? revisions.length : 0
-    return w
-  }))
   await loadCurrentWorkspace()
 
   window.addEventListener('pushstate', loadCurrentWorkspace)
@@ -261,8 +254,6 @@ function renderWorkspaceListItem (workspace) {
           </a>
 
           <div class="metadata">
-            ${workspace.numRevisions} ${pluralize(workspace.numRevisions, 'unpublished change')}
-            <span class="bullet">•</span>
             <code class="path" onclick=${e => onOpenFolder(workspace.localFilesPath)}>
               ${workspace.localFilesPath}
             </code>
