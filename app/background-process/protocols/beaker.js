@@ -20,6 +20,7 @@ const BEAKER_CSP = `
   script-src 'self' beaker:;
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
+  child-src 'self' workspace:;
 `.replace(/\n/g, '')
 
 // globals

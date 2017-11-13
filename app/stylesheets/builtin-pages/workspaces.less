@@ -551,5 +551,16 @@ input[type="file"] {
         }
       }
     }
+
+    &.preview {
+      padding: 0;
+      padding-top: 80px;
+
+      iframe {
+        width: 100vw;
+        height: ~"calc(100vh - 80px)";
+        border: 0;
+      }
+    }
   }
 }

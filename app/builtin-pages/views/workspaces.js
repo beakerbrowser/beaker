@@ -338,6 +338,10 @@ function renderTabs () {
         <i class="fa fa-cogs"></i>
         Settings
       </div>
+      <div onclick=${e => onChangeTab('preview')} class="tab ${activeTab === 'preview' ? 'active' : ''}">
+        <i class="fa fa-eye"></i>
+        Preview
+      </div>
     </div>
   `
 }
@@ -377,9 +381,19 @@ function renderView () {
       return renderWizardsView()
     case 'settings':
       return renderSettingsView()
+    case 'preview':
+      return renderPreviewView()
     default:
       return yo`<div class="view">Loading...</div>`
   }
+}
+
+function renderPreviewView () {
+  return yo`
+    <div class="view preview">
+      <iframe src="workspace://${workspaceInfo.name}"></iframe>
+    </div>
+  `
 }
 
 function renderRevisionsView () {
