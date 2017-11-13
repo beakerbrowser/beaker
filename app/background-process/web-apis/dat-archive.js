@@ -1,8 +1,6 @@
-import {dialog} from 'electron'
 import path from 'path'
 import parseDatURL from 'parse-dat-url'
 import pda from 'pauls-dat-api'
-import jetpack from 'fs-jetpack'
 import concat from 'concat-stream'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
@@ -11,6 +9,7 @@ import {getProfileRecord, getAPI as getProfilesAPI} from '../ingests/profiles'
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {getWebContentsWindow} from '../../lib/electron'
+import {checkFolderIsEmpty} from '../../lib/bg/fs'
 import {getPermissions} from '../dbs/sitedata'
 import {queryPermission, grantPermission, requestPermission} from '../ui/permissions'
 import {
@@ -321,26 +320,9 @@ export default {
 
   async exportToFilesystem (opts) {
     assertTmpBeakerOnly(this.sender)
-
-    // check if there are files in the destination path
-    var dst = opts.dst
-    try {
-      var files = await jetpack.listAsync(dst)
-      if (files && files.length > 0) {
-        // ask the user if they're sure
-        var res = await new Promise(resolve => {
-          dialog.showMessageBox({
-            type: 'question',
-            message: 'This folder is not empty. Some files may be overwritten. Continue export?',
-            buttons: ['Yes', 'No, cancel']
-          }, resolve)
-        })
-        if (res != 0) {
-          return false
-        }
-      }
-    } catch (e) {
-      // no files
+    
+    if (await checkFolderIsEmpty(opts.dst) === false) {
+      return
     }
 
     var {archive, filepath} = await lookupArchive(opts.src, opts)

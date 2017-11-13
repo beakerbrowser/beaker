@@ -9,6 +9,7 @@ import * as workspacesDb from '../dbs/workspaces'
 import * as datLibrary from '../networks/dat/library'
 import {timer} from '../../lib/time'
 import * as scopedFSes from '../../lib/bg/scoped-fses'
+import {checkFolderIsEmpty} from '../../lib/bg/fs'
 import {DAT_HASH_REGEX, WORKSPACE_VALID_NAME_REGEX} from '../../lib/const'
 import {
   NotAFolderError,
@@ -67,6 +68,44 @@ export default {
     return workspacesDb.remove(profileId, name)
   },
 
+  // initialize a target folder with the dat files and (optionally) a template
+  // - profileId: number, the id of the browsing profile
+  // - name: string, the name of the workspace
+  // - opts
+  //   - template: string, 'website' or 'app' or falsy
+  async setupFolder (profileId, name, opts={}) {
+    // fetch workspace
+    const ws = await workspacesDb.get(profileId, name)
+    await validateWorkspaceRecord(ws)
+
+    // get the scoped fs and archive
+    var scopedFS, archive
+    await timer(3e3, async (checkin) => { // put a max 3s timeout on loading the dat
+      checkin('searching for dat')
+      scopedFS = scopedFSes.get(ws.localFilesPath)
+      archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
+    })
+
+    // check that the target folder is empty
+    if (await checkFolderIsEmpty(ws.localFilesPath) === false) {
+      return false
+    }
+
+    // revert from the archive
+    var diff = await dft.diff({fs: archive}, {fs: scopedFS})
+    await dft.applyRight({fs: archive}, {fs: scopedFS}, diff)
+
+    // apply the template
+    if (opts.template === 'app' || opts.template === 'website') {
+      let templatePath = path.join(__dirname, 'assets', 'templates', opts.template)
+      diff = await dft.diff(templatePath, {fs: scopedFS})
+      diff = diff.filter(d => d.change !== 'del') // add or modify only
+      await dft.applyRight(templatePath, {fs: scopedFS}, diff)
+    }
+
+    return true
+  },
+
   // list the files that have changed
   // - profileId: number, the id of the browsing profile
   // - name: string, the name of the workspace
@@ -80,10 +119,7 @@ export default {
 
     // fetch workspace
     const ws = await workspacesDb.get(profileId, name)
-    if (!ws) throw new Error(`No workspace found at ${name}`)
-    if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
-    if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
-    await assertDatIsSavedAndOwned(ws.publishTargetUrl)
+    await validateWorkspaceRecord(ws)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -114,10 +150,7 @@ export default {
 
     // fetch workspace
     const ws = await workspacesDb.get(profileId, name)
-    if (!ws) throw new Error(`No workspace found at ${name}`)
-    if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
-    if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
-    await assertDatIsSavedAndOwned(ws.publishTargetUrl)
+    await validateWorkspaceRecord(ws)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -147,10 +180,7 @@ export default {
 
     // fetch workspace
     const ws = await workspacesDb.get(profileId, name)
-    if (!ws) throw new Error(`No workspace found at ${name}`)
-    if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
-    if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
-    await assertDatIsSavedAndOwned(ws.publishTargetUrl)
+    await validateWorkspaceRecord(ws)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -186,10 +216,7 @@ export default {
 
     // fetch workspace
     const ws = await workspacesDb.get(profileId, name)
-    if (!ws) throw new Error(`No workspace found at ${name}`)
-    if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
-    if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
-    await assertDatIsSavedAndOwned(ws.publishTargetUrl)
+    await validateWorkspaceRecord(ws)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -226,6 +253,13 @@ function massageDiffOpts (opts) {
     shallow: typeof opts.shallow === 'boolean' ? opts.shallow : true,
     paths: Array.isArray(opts.paths) ? opts.paths.filter(v => typeof v === 'string') : false
   }
+}
+
+async function validateWorkspaceRecord (ws) {
+  if (!ws) throw new Error(`No workspace found at ${name}`)
+  if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
+  if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
+  await assertDatIsSavedAndOwned(ws.publishTargetUrl)
 }
 
 function assertValidName (name) {

@@ -3,6 +3,7 @@ export default {
   get: 'promise',
   set: 'promise',
   remove: 'promise',
+  setupFolder: 'promise',
   listChangedFiles: 'promise',
   diff: 'promise',
   publish: 'promise',

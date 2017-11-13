@@ -66,23 +66,27 @@ test('set & get workspaces', async t => {
     createdAt: 'number',
     updatedAt: 'number'
   })
+})
 
-  // revert in order to pull the dat.json
+test('initialize a workspace folder', async t => {
+  // setup
   var res = await app.client.executeAsync((done) => {
-    window.beaker.workspaces.revert(0, 'test-ws').then(done, done)
+    window.beaker.workspaces.setupFolder(0, 'test-ws', {template: 'website'}).then(done, done)
   })
-  t.falsy(res.value)
+  t.truthy(res.value)
+
+  // check the files are set
+  const dir = jetpack.cwd(createdFilePath)
+  t.truthy(await dir.existsAsync('dat.json'))
+  t.truthy(await dir.existsAsync('index.html'))
 })
 
 test('view a workspace', async t => {
-  // write an index.html
-  await jetpack.write(createdFilePath + '/index.html', '<h1 id="loaded">workspace</h1>\n<p>foo</p>\n<p>bar</p>')
-
   // open workspace
   await app.client.windowByIndex(0)
   await browserdriver.navigateTo(app, 'workspace://test-ws')
   await app.client.windowByIndex(1)
-  await app.client.waitForExist('h1#loaded', 10e3)
+  await app.client.waitForExist('h1', 10e3)
 })
 
 test('diff and publish changes (additions)', async t => {
@@ -92,13 +96,19 @@ test('diff and publish changes (additions)', async t => {
   var res = await app.client.executeAsync(done => {
     window.beaker.workspaces.listChangedFiles(0, 'test-ws').then(done, done)
   })
-  t.deepEqual(res.value, [{change: 'add', path: '/index.html', type: 'file'}])
+  t.deepEqual(res.value, [
+    {change: 'add',path: '/.datignore',type: 'file'},
+    {change: 'add',path: '/index.html',type: 'file'},
+    {change: 'add',path: '/styles.css',type: 'file'}
+  ])
 
   // get file diff
   var res = await app.client.executeAsync(done => {
     window.beaker.workspaces.diff(0, 'test-ws', '/index.html').then(done, done)
   })
-  t.deepEqual(res.value, [{added: true, count: 3, value: '<h1 id="loaded">workspace</h1>\n<p>foo</p>\n<p>bar</p>'}])
+  t.deepEqual(res.value[0].added, true)
+  t.deepEqual(typeof res.value[0].count, 'number')
+  t.deepEqual(typeof res.value[0].value, 'string')
 
   // publish
   var res = await app.client.executeAsync(done => {
@@ -134,13 +144,13 @@ test('diff and publish changes (additions and modifications)', async t => {
   var res = await app.client.executeAsync(done => {
     window.beaker.workspaces.diff(0, 'test-ws', '/index.html').then(done, done)
   })
-  t.deepEqual(res.value, [
-    { count: 1, value: '<h1 id="loaded">workspace</h1>\n' },
-    { count: 1, removed: true, value: '<p>foo</p>\n' },
-    { added: true, count: 1, value: '<p>fuzz</p>\n' },
-    { count: 1, value: '<p>bar</p>' }
-  ])
-
+  t.deepEqual(res.value[0].removed, true)
+  t.deepEqual(typeof res.value[0].count, 'number')
+  t.deepEqual(typeof res.value[0].value, 'string')
+  t.deepEqual(res.value[1].added, true)
+  t.deepEqual(typeof res.value[1].count, 'number')
+  t.deepEqual(typeof res.value[1].value, 'string')
+  
   // publish
   var res = await app.client.executeAsync(done => {
     window.beaker.workspaces.publish(0, 'test-ws').then(done, done)
