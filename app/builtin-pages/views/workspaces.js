@@ -356,7 +356,7 @@ function renderMetadata () {
     <div class="metadata">
       ${workspaceInfo.revisions.length ? yo`
         <span class="changes-count">
-          ${workspaceInfo.revisions.length} unpublished ${pluralize(workspaceInfo.revisions.length, 'change')}
+          ${workspaceInfo.revisions.length} unpublished ${pluralize(workspaceInfo.revisions.length, 'revision')}
           ${numCheckedRevisions ? `(${numCheckedRevisions} selected)` : ''}
         </span>
       ` : ''}
