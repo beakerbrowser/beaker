@@ -307,14 +307,9 @@ function renderHeader () {
             ${workspaceInfo.localFilesPath}
           </span>
         </div>
-
-        ${renderActions()}
       </div>
 
-      <div class="bottom">
-        ${renderTabs()}
-        ${renderMetadata()}
-      </div>
+      <div class="bottom">${renderTabs()}</div>
     </div>
   `
 }
@@ -413,6 +408,8 @@ function renderRevisionsView () {
   return yo`
     <div class="view revisions">
       <div class="revisions-sidebar">
+        ${renderMetadata()}
+
         ${additions.length ? yo`
           <div>
             <div class="revisions-header additions">
@@ -454,6 +451,8 @@ function renderRevisionsView () {
         ${!(additions.length || modifications.length || deletions.length)
           ? yo`<em>No revisions</em>`
           : ''}
+
+        ${renderActions()}
       </div>
 
       <div class="revisions-content">

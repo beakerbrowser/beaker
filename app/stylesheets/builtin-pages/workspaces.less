@@ -300,27 +300,6 @@ input[type="file"] {
         }
       }
     }
-
-    .actions {
-
-      .btn {
-
-        &:not(:last-child) {
-          margin-right: 5px;
-        }
-
-        i {
-          margin-left: 2px;
-        }
-      }
-    }
-
-    .metadata {
-      padding: 10px 0;
-      font-size: .85rem;
-      color: rgba(0,0,0,.45);
-      font-style: italic;
-    }
   }
 
   .view {
@@ -398,9 +377,37 @@ input[type="file"] {
       }
 
       .revisions-sidebar {
-        width: 250px;
+        position: relative;
         border-right: 1px solid #ddd;
         height: 100%;
+
+        .metadata {
+          padding: 10px;
+          font-size: .85rem;
+          color: rgba(0,0,0,.5);
+          font-style: italic;
+        }
+
+        .actions {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          padding: 10px;
+          text-align: right;
+          border-top: 1px solid #ddd;
+
+          .btn {
+
+            &:not(:last-child) {
+              margin-right: 5px;
+            }
+
+            i {
+              margin-left: 2px;
+            }
+          }
+        }
 
         em {
           display: block;
@@ -411,7 +418,7 @@ input[type="file"] {
 
       .revisions-header {
         &:extend(.flex);
-        margin-top: 30px;
+        justify-content: space-between;
         padding: 2px 10px;
         align-items: center;
         background: #f7f7f7;
@@ -419,6 +426,10 @@ input[type="file"] {
         font-size: 11px;
         border-top: 1px solid #ddd;
         border-bottom: 1px solid #ddd;
+
+        &:not(:first-of-type) {
+          margin-top: 30px;
+        }
 
         .count {
           background: #ddd;
