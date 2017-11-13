@@ -5,6 +5,7 @@ import datEncoding from 'dat-encoding'
 import pify from 'pify'
 import pda from 'pauls-dat-api'
 import signatures from 'sodium-signatures'
+import parseDatURL from 'parse-dat-url'
 var debug = require('debug')('dat')
 import * as siteData from '../../dbs/sitedata'
 import {throttle, debounce} from '../../../lib/functions'
@@ -443,21 +444,33 @@ export function leaveSwarm (key) {
   archive.isSwarming = false
 }
 
-// internal methods
+// helpers
 // =
 
-function fromURLToKey (url) {
+export function fromURLToKey (url) {
   if (Buffer.isBuffer(url)) {
     return url
   }
-  if (url.startsWith('dat://')) {
-    var match = DAT_URL_REGEX.exec(url)
-    if (match) return match[1]
+  if (DAT_HASH_REGEX.test(url)) {
+    // simple case: given the key
+    return url
   }
-  return url
+
+  var urlp = parseDatURL(url)
+
+  // validate
+  if (urlp.protocol !== 'dat:') {
+    throw new InvalidURLError('URL must be a dat: scheme')
+  }
+  if (!DAT_HASH_REGEX.test(urlp.host)) {
+    // TODO- support dns lookup?
+    throw new InvalidURLError('Hostname is not a valid hash')
+  }
+
+  return urlp.host
 }
 
-function fromKeyToURL (key) {
+export function fromKeyToURL (key) {
   if (typeof key !== 'string') {
     key = datEncoding.toStr(key)
   }
@@ -466,6 +479,9 @@ function fromKeyToURL (key) {
   }
   return key
 }
+
+// internal methods
+// =
 
 function configureAutoDownload (archive, userSettings) {
   if (archive.writable) {

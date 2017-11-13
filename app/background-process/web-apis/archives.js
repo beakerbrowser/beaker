@@ -1,4 +1,3 @@
-import {parse as parseURL} from 'url'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
@@ -31,7 +30,7 @@ export default {
   // =
 
   async add (url, opts = {}) {
-    var key = toKey(url)
+    var key = datLibrary.fromURLToKey(url)
 
     // pull metadata
     var archive = await datLibrary.getOrLoadArchive(key)
@@ -44,7 +43,7 @@ export default {
   },
 
   async remove (url) {
-    var key = toKey(url)
+    var key = datLibrary.fromURLToKey(url)
     await assertArchiveDeletable(key)
     return archivesDb.setUserSettings(0, key, {isSaved: false})
   },
@@ -58,7 +57,7 @@ export default {
     }
 
     for (var i = 0; i < urls.length; i++) {
-      let key = toKey(urls[i])
+      let key = datLibrary.fromURLToKey(urls[i])
       await assertArchiveDeletable(key)
       results.push(await archivesDb.setUserSettings(0, key, {isSaved: false}))
     }
@@ -101,7 +100,7 @@ export default {
   // =
 
   async clearFileCache (url) {
-    return datLibrary.clearFileCache(toKey(url))
+    return datLibrary.clearFileCache(datLibrary.fromURLToKey(url))
   },
 
   clearDnsCache () {
@@ -125,25 +124,4 @@ async function assertArchiveDeletable (key) {
   if ('dat://' + key === profileRecord.url) {
     throw new PermissionsError('Unable to delete the user archive.')
   }
-}
-
-// helper to convert the given URL to a dat key
-function toKey (url) {
-  if (DAT_HASH_REGEX.test(url)) {
-    // simple case: given the key
-    return url
-  }
-
-  var urlp = parseURL(url)
-
-  // validate
-  if (urlp.protocol !== 'dat:') {
-    throw new InvalidURLError('URL must be a dat: scheme')
-  }
-  if (!DAT_HASH_REGEX.test(urlp.host)) {
-    // TODO- support dns lookup?
-    throw new InvalidURLError('Hostname is not a valid hash')
-  }
-
-  return urlp.host
 }
