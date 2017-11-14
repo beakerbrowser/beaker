@@ -31,6 +31,7 @@ function convertAcceleratorToBinding (accel) {
   accel.split('+').forEach(part => {
     switch (part) {
       case 'Command':
+      case 'Cmd':
       case 'CmdOrCtrl':
       case 'Ctrl':
         binding.cmdOrCtrl = true

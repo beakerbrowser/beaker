@@ -172,7 +172,7 @@ var viewMenu = {
 var showHistoryAccelerator = 'Ctrl+h'
 
 if (process.platform === 'darwin') {
-  showHistoryAccelerator = 'Cmd+y'
+  showHistoryAccelerator = 'Command+y'
 }
 
 var historyMenu = {
