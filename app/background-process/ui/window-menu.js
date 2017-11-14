@@ -214,11 +214,6 @@ var windowMenu = {
       role: 'minimize'
     },
     {
-      label: 'Close',
-      accelerator: 'CmdOrCtrl+W',
-      role: 'close'
-    },
-    {
       label: 'Next Tab',
       accelerator: 'CmdOrCtrl+}',
       click: function (item, win) {
