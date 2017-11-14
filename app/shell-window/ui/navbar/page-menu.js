@@ -158,13 +158,16 @@ export class PageMenuNavbarBtn {
     page.loadURL(`beaker://library/${page.siteInfo.key}`)
   }
 
-  onClickFork () {
+  async onClickFork () {
     this.close()
     var page = pages.getActive()
     if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
       return
     }
-    DatArchive.fork(page.siteInfo.key).catch(() => {})
+    var newDat = await DatArchive.fork(page.siteInfo.key)
+    if (newDat) {
+      page.loadURL(newDat.url)
+    }
   }
 
   onClickDownloadZip () {
