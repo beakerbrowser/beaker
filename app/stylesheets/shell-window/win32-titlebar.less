@@ -1,11 +1,11 @@
 #win32-titlebar {
+  display: none;
   position: fixed;
   z-index: 10000;
   top: 0;
   right: 0;
   width: 150px;
   height: 36px;
-  display: flex;
   -webkit-app-region: no-drag;
 
   .win32-titlebar-btn {
@@ -58,4 +58,7 @@
       line-height: 36px;
     }
   }
+}
+body.win32 #win32-titlebar {
+  display: flex;
 }
