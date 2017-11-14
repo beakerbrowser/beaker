@@ -30,6 +30,7 @@ var fileMenu = {
       accelerator: 'CmdOrCtrl+T',
       click: function (item, win) {
         if (win) win.webContents.send('command', 'file:new-tab')
+        else createShellWindow()
       }
     },
     {
