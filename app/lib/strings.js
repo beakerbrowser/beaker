@@ -19,7 +19,7 @@ const NOUNS = [
   'goat',
   'llama',
   'door',
-  'chair',
+  'chair'
 ]
 
 export function getPermId (permissionToken) {
