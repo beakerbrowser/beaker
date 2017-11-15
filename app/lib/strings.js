@@ -1,26 +1,6 @@
 /* globals window */
 
 const URL = typeof window === 'undefined' ? require('url').URL : window.URL
-const ADJECTIVES = [
-  'giggly',
-  'silly',
-  'chunky',
-  'round',
-  'smiley',
-  'soft',
-  'mischievous',
-  'loud'
-]
-const NOUNS = [
-  'monkey',
-  'snail',
-  'chipmunk',
-  'cupcake',
-  'goat',
-  'llama',
-  'door',
-  'chair'
-]
 
 export function getPermId (permissionToken) {
   return permissionToken.split(':')[0]
@@ -70,10 +50,4 @@ export function getHostname (str) {
   } catch (e) {
     return str
   }
-}
-
-export function getRandomURL () {
-  const adjective = ADJECTIVES[Math.floor(Math.random() * (ADJECTIVES.length - 1))]
-  const noun = NOUNS[Math.floor(Math.random() * (NOUNS.length - 1))]
-  return `${adjective}-${noun}`
 }
