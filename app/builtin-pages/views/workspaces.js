@@ -80,7 +80,16 @@ async function loadCurrentDiff (revision) {
   }
 
   // fetch the diff
-  diff = await beaker.workspaces.diff(0, currentWorkspaceName, revision.path)
+  try {
+    diff = await beaker.workspaces.diff(0, currentWorkspaceName, revision.path)
+  } catch (e) {
+    if (e.invalidEncoding) {
+      // TODO- handle encoding error
+      diff = []
+    } else {
+      // TODO- handle unexpected errors
+    }
+  }
 
   diffDeletions = diff.reduce((sum, el) => {
     if (el.removed) return sum + el.count

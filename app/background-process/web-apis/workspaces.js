@@ -8,6 +8,7 @@ import * as archivesDb from '../dbs/archives'
 import * as workspacesDb from '../dbs/workspaces'
 import * as datLibrary from '../networks/dat/library'
 import {timer} from '../../lib/time'
+import {isFileNameBinary, isFileContentBinary} from '../../lib/mime'
 import * as scopedFSes from '../../lib/bg/scoped-fses'
 import {checkFolderIsEmpty} from '../../lib/bg/fs'
 import {DAT_HASH_REGEX, WORKSPACE_VALID_NAME_REGEX} from '../../lib/const'
@@ -16,7 +17,8 @@ import {
   ProtectedFileNotWritableError,
   PermissionsError,
   InvalidURLError,
-  ArchiveNotWritableError
+  ArchiveNotWritableError,
+  InvalidEncodingError
 } from 'beaker-error-constants'
 
 const DISALLOWED_SAVE_PATH_NAMES = [
@@ -148,6 +150,12 @@ export default {
   async diff (profileId, name, filepath) {
     assertValidName(name)
 
+    // check the filename to see if it's binary
+    var isBinary = isFileNameBinary(filepath)
+    if (isBinary === true) {
+      throw new InvalidEncodingError('Cannot diff a binary file')
+    }
+
     // fetch workspace
     const ws = await workspacesDb.get(profileId, name)
     await validateWorkspaceRecord(ws)
@@ -159,6 +167,19 @@ export default {
       scopedFS = scopedFSes.get(ws.localFilesPath)
       archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
     })
+
+    // if we're not sure about whether it's binary, run a check on the files' buffers
+    if (isBinary !== false) {
+      let st
+      st = await stat(scopedFS, filepath)
+      if (st && st.isFile() && await isFileContentBinary(scopedFS, filepath)) {
+        throw new InvalidEncodingError('Cannot diff a binary file')
+      }
+      st = await stat(archive, filepath)
+      if (st && st.isFile() && await isFileContentBinary(archive, filepath)) {
+        throw new InvalidEncodingError('Cannot diff a binary file')
+      }
+    }
 
     // read the file in both sources
     const [newFile, oldFile] = await Promise.all([readFile(scopedFS, filepath), readFile(archive, filepath)])
@@ -317,6 +338,15 @@ function assertDatUrl (url) {
   if (typeof url !== 'string' || !url.startsWith('dat://')) {
     throw new InvalidURLError('Invalid publishTargetUrl - must be a dat:// url.')
   }
+}
+
+// helper to read a file via promise and return a null on fail
+async function stat (fs, filepath) {
+  return new Promise(resolve => {
+    fs.stat(filepath, (err, data) => {
+      resolve(data || null)
+    })
+  })
 }
 
 // helper to read a file via promise and return an empty string on fail

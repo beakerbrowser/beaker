@@ -240,6 +240,40 @@ test('diff and selective publish and revert', async t => {
   t.deepEqual(res.value, [])
 })
 
+test('diff() doesnt try to diff binary files', async t => {
+  await app.client.windowByIndex(0)
+
+  // write binary file in the local folder
+  await jetpack.write(createdFilePath + '/binary.weirdext', Buffer.from([0, 1, 2, 3, 4]))
+
+  // doesnt do a file diff (added file)
+  var res = await app.client.executeAsync(done => {
+    window.beaker.workspaces.diff(0, 'test-ws', '/binary.weirdext').then(done, done)
+  })
+  t.deepEqual(res.value.invalidEncoding, true)
+
+  // publish
+  var res = await app.client.executeAsync(done => {
+    window.beaker.workspaces.publish(0, 'test-ws').then(done, done)
+  })
+  t.falsy(res.value)
+
+  // remove binary file in the local folder
+  await jetpack.remove(createdFilePath + '/binary.weirdext')
+
+  // doesnt do a file diff (removed file)
+  var res = await app.client.executeAsync(done => {
+    window.beaker.workspaces.diff(0, 'test-ws', '/binary.weirdext').then(done, done)
+  })
+  t.deepEqual(res.value.invalidEncoding, true)
+
+  // publish
+  var res = await app.client.executeAsync(done => {
+    window.beaker.workspaces.publish(0, 'test-ws').then(done, done)
+  })
+  t.falsy(res.value)
+})
+
 test('set() doesnt allow bad values', async t => {
   await app.client.windowByIndex(0)
 
