@@ -266,11 +266,17 @@ export function create (opts) {
       }).catch(err => console.log('Name does not have a Dat alternative', name))
     },
 
-    async toggleDevTools () {
+    async toggleDevTools (jsConsole) {
       if (await this.isDevToolsOpenedAsync()) {
-        this.closeDevToolsAsync()
+        await this.closeDevToolsAsync()
       } else {
-        this.openDevToolsAsync()
+        await this.openDevToolsAsync()
+        if (jsConsole) {
+          page.webviewEl.getWebContents().once('devtools-opened', () => {
+            const dtwc = page.webviewEl.getWebContents().devToolsWebContents
+            if (dtwc) dtwc.executeJavaScript('DevToolsAPI.showPanel("console")')
+          })
+        }
       }
     }
   }
@@ -517,7 +523,7 @@ function onDomReady (e) {
     if (!page.wcID) {
       page.wcID = e.target.getWebContents().id // NOTE: this is a sync op
     }
-    if (!navbar.isLocationFocused(page)) {
+    if (!navbar.isLocationFocused(page) && page.isActive) {
       page.webviewEl.shadowRoot.querySelector('object').focus()
     }
   }

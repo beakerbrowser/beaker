@@ -313,7 +313,6 @@ export default {
       dstArchive: archive,
       dstPath: filepath,
       ignore: opts.ignore,
-      dryRun: opts.dryRun,
       inplaceImport: opts.inplaceImport !== false
     })
   },

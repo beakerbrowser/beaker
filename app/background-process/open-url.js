@@ -17,6 +17,7 @@ export function open (url) {
   if (isLoaded && win) {
     // send command now
     win.webContents.send('command', 'file:new-tab', url)
+    win.show()
   } else {
     // queue for later
     queue.push(url)

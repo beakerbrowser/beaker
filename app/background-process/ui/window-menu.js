@@ -73,6 +73,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+T',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'file:new-tab')
+          else createShellWindow()
         }
       },
       {
@@ -231,6 +232,13 @@ export function buildWindowMenu (opts = {}) {
       }
     },
     {
+      label: 'Toggle Javascript Console',
+      accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+J' : 'Shift+CmdOrCtrl+J',
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'view:toggle-javascript-console')
+      }
+    },
+    {
       label: `Toggle Live Reloading${isDat ? '' : ' (Dat Only)'}`,
       enabled: !!isDat,
       click: function (item, win) {
@@ -289,11 +297,6 @@ export function buildWindowMenu (opts = {}) {
         label: 'Minimize',
         accelerator: 'CmdOrCtrl+M',
         role: 'minimize'
-      },
-      {
-        label: 'Close',
-        accelerator: 'CmdOrCtrl+W',
-        role: 'close'
       },
       {
         label: 'Next Tab',

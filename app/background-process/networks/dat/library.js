@@ -306,6 +306,9 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
       archive.pullLatestArchiveMeta({updateMTime: true})
     }
   })
+  archive.on('error', error => {
+    log(archive.key.toString('hex'), `Error emitted. Archive version: ${archive.version}. Writable: ${archive.writable}. Meta length: ${archive.metadata.length}. Content length: ${archive.content && archive.content.length}. Error: ${error.toString()}`)
+  })
 
   // now store in main archives listing, as loaded
   archives[datEncoding.toStr(archive.key)] = archive

@@ -2,6 +2,7 @@ import { webFrame, ipcRenderer } from 'electron'
 import * as tabs from './ui/tabs'
 import * as navbar from './ui/navbar'
 import * as statusbar from './ui/statusbar'
+import * as win32Titlebar from './ui/win32-titlebar'
 import * as pages from './pages'
 import * as commandHandlers from './command-handlers'
 import * as swipeHandlers from './swipe-handlers'
@@ -9,6 +10,9 @@ import * as swipeHandlers from './swipe-handlers'
 export function setup (cb) {
   if (window.process.platform == 'darwin') {
     document.body.classList.add('darwin')
+  }
+  if (window.process.platform == 'win32') {
+    document.body.classList.add('win32')
   }
 
   // wire up event handlers
@@ -34,6 +38,9 @@ export function setup (cb) {
   tabs.setup()
   navbar.setup()
   statusbar.setup()
+  if (window.process.platform == 'win32') {
+    win32Titlebar.setup()
+  }
   commandHandlers.setup()
   swipeHandlers.setup()
   pages.setup()

@@ -178,6 +178,9 @@ function renderAutoUpdater () {
           }
           ${renderAutoUpdateCheckbox()}
         </span>
+        <span class="prereleases">
+          [ Advanced: <a href="#" onclick=${onClickCheckPrereleases}>Check for prereleases</a> ]
+        </span>
       </div>`
 
     case 'checking':
@@ -261,6 +264,11 @@ function onUpdateActiveSection (e) {
 function onClickCheckUpdates () {
   // trigger check
   beaker.browser.checkForUpdates()
+}
+
+function onClickCheckPrereleases (e) {
+  e.preventDefault()
+  beakerBrowser.checkForUpdates({prerelease: true})
 }
 
 function onToggleAutoUpdate () {

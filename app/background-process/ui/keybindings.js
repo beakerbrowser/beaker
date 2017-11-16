@@ -1,0 +1,75 @@
+/*
+The webviews that run untrusted content, by default, will handle all key press events.
+The webview handlers take precedence over the browser keybindings (which are done in the window-menu).
+To avoid that, we listen to the window webContents' 'before-input-event' and handle the commands manually.
+*/
+
+import _flattenDeep from 'lodash.flattendeep'
+import {buildWindowMenu} from './window-menu'
+
+const KEYBINDINGS = extractKeybindings(buildWindowMenu())
+
+// recurse the window menu and extract all 'accelerator' values
+function extractKeybindings (menuNode) {
+  if (menuNode.accelerator && menuNode.click) {
+    return {
+      binding: convertAcceleratorToBinding(menuNode.accelerator),
+      cmd: menuNode.click
+    }
+  } else if (menuNode.submenu) {
+    return menuNode.submenu.map(extractKeybindings).filter(Boolean)
+  } else if (Array.isArray(menuNode)) {
+    return _flattenDeep(menuNode.map(extractKeybindings).filter(Boolean))
+  }
+  return null
+}
+
+// convert accelerator values into objects that are easy to match against input events
+// eg 'CmdOrCtrl+Shift+T' -> {cmdOrCtrl: true, shift: true, key: 't'}
+function convertAcceleratorToBinding (accel) {
+  var binding = {}
+  accel.split('+').forEach(part => {
+    switch (part) {
+      case 'Command':
+      case 'Cmd':
+      case 'CmdOrCtrl':
+      case 'Ctrl':
+        binding.cmdOrCtrl = true
+        break
+      case 'Alt':
+        binding.alt = true
+        break
+      case 'Shift':
+        binding.shift = true
+        break
+      default:
+        binding.key = part.toLowerCase()
+    }
+  })
+  return binding
+}
+
+// event handler, manually run any events that match our keybindings
+export function createBeforeInputEventHandler (win) {
+  return (e, input) => {
+    const key = input.key === 'Dead' ? 'i' : input.key // not... really sure what 'Dead' is about -prf
+    for (var kb of KEYBINDINGS) {
+      if (key === kb.binding.key) {
+        if (kb.binding.cmdOrCtrl && !(input.ctrl || input.meta)) {
+          continue
+        }
+        if (kb.binding.shift && !input.shift) {
+          continue
+        }
+        if (kb.binding.alt && !input.alt) {
+          continue
+        }
+
+        // match, run
+        e.preventDefault()
+        kb.cmd(null, win)
+        return
+      }
+    }
+  }
+}

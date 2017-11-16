@@ -102,6 +102,7 @@ test('view a workspace', async t => {
   await browserdriver.navigateTo(app, 'workspace://test-ws')
   await app.client.windowByIndex(1)
   await app.client.waitForExist('h1', 10e3)
+  t.pass()
 })
 
 test('diff and publish changes (additions)', async t => {

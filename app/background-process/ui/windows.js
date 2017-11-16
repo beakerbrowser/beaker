@@ -2,10 +2,13 @@ import { app, BrowserWindow, screen, ipcMain, webContents, Menu, Tray } from 'el
 import { register as registerShortcut, unregister as unregisterShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import os from 'os'
 import jetpack from 'fs-jetpack'
+import * as keybindings from './keybindings'
 import path from 'path'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
+
+const IS_WIN = process.platform == 'win32'
 
 // globals
 // =
@@ -60,6 +63,13 @@ export function setup () {
       BrowserWindow.getAllWindows().forEach(w => w.close())
     }
   })
+  app.on('web-contents-created', (e, wc) => {
+    // if this is a webview's web contents, attach the keybinding protections
+    if (!!wc.hostWebContents) {
+      const parentWindow = BrowserWindow.fromWebContents(wc.hostWebContents)
+      wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
+    }
+  })
 
   // create first shell window
   return createShellWindow()
@@ -82,6 +92,7 @@ export function createShellWindow () {
     autoHideMenuBar: true,
     fullscreenable: true,
     fullscreenWindowTitle: true,
+    frame: !IS_WIN,
     x,
     y,
     width,
@@ -107,10 +118,6 @@ export function createShellWindow () {
   registerShortcut(win, 'Ctrl+PageDown', onNextTab(win))
   registerShortcut(win, 'CmdOrCtrl+[', onGoBack(win))
   registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
-  registerShortcut(win, 'CmdOrCtrl+N', onNewWindow(win))
-  registerShortcut(win, 'CmdOrCtrl+Q', onQuit(win))
-  registerShortcut(win, 'CmdOrCtrl+T', onNewTab(win))
-  registerShortcut(win, 'CmdOrCtrl+W', onCloseTab(win))
 
   // register event handlers
   win.on('scroll-touch-begin', sendScrollTouchBegin)
@@ -207,7 +214,13 @@ function restoreState () {
 }
 
 function defaultState () {
-  var bounds = screen.getPrimaryDisplay().bounds
+  // HACK
+  // for some reason, electron.screen comes back null sometimes
+  // not sure why, shouldn't be happening
+  // check for existence for now, see #690
+  // -prf
+  const screen = getScreenAPI()
+  var bounds = screen ? screen.getPrimaryDisplay().bounds : {width: 800, height: 600}
   var width = Math.max(800, Math.min(1800, bounds.width - 50))
   var height = Math.max(600, Math.min(1200, bounds.height - 50))
   return Object.assign({}, {
@@ -219,7 +232,13 @@ function defaultState () {
 }
 
 function ensureVisibleOnSomeDisplay (windowState) {
-  var visible = screen.getAllDisplays().some(display => windowWithinBounds(windowState, display.bounds))
+  // HACK
+  // for some reason, electron.screen comes back null sometimes
+  // not sure why, shouldn't be happening
+  // check for existence for now, see #690
+  // -prf
+  const screen = getScreenAPI()
+  var visible = screen && screen.getAllDisplays().some(display => windowWithinBounds(windowState, display.bounds))
   if (!visible) {
     // Window is partially or fully not visible now.
     // Reset it to safe defaults.
@@ -275,22 +294,6 @@ function onGoForward (win) {
   return () => win.webContents.send('command', 'history:forward')
 }
 
-function onNewWindow (win) {
-  return () => createShellWindow()
-}
-
-function onQuit (win) {
-  return () => app.quit()
-}
-
-function onNewTab (win) {
-  return () => win.webContents.send('command', 'file:new-tab')
-}
-
-function onCloseTab (win) {
-  return () => win.webContents.send('command', 'file:close-tab')
-}
-
 function onEscape (win) {
   return () => win.webContents.send('window-event', 'leave-page-full-screen')
 }
@@ -304,6 +307,8 @@ function sendToWebContents (event) {
 
 function sendScrollTouchBegin (e) {
   // get the cursor x/y within the window
+  const screen = getScreenAPI()
+  if (!screen) return
   var cursorPos = screen.getCursorScreenPoint()
   var winPos = e.sender.getBounds()
   cursorPos.x -= winPos.x; cursorPos.y -= winPos.y
@@ -311,4 +316,11 @@ function sendScrollTouchBegin (e) {
     cursorX: cursorPos.x,
     cursorY: cursorPos.y
   })
+}
+
+// helpers
+// =
+
+function getScreenAPI () {
+  return require('electron').screen
 }

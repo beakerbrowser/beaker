@@ -151,6 +151,24 @@ export default function registerContextMenu () {
         menuItems.push({ type: 'separator' })
       }
 
+      if (!props.linkURL && props.mediaType === 'none' && !hasText) {
+        menuItems.push({
+          label: 'Back',
+          enabled: webContents.canGoBack(),
+          click: () => webContents.goBack()
+        })
+        menuItems.push({
+          label: 'Forward',
+          enabled: webContents.canGoForward(),
+          click: () => webContents.goForward()
+        })
+        menuItems.push({
+          label: 'Reload',
+          click: () => webContents.reload()
+        })
+        menuItems.push({ type: 'separator' })
+      }
+
       // view source
       if (!props.pageURL.startsWith('beaker://')) {
         var viewSourceURL = props.pageURL

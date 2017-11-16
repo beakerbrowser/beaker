@@ -4,9 +4,9 @@ import * as yo from 'yo-yo'
 import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
 import renderCloseIcon from '../icon/close'
 
-const LATEST_VERSION = 7005 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
+const LATEST_VERSION = 7009 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const WELCOME_URL = 'https://beakerbrowser.com/docs/using-beaker/'
-const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-5/?updated=true'
+const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-9/?updated=true'
 
 // globals
 // =

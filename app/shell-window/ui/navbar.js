@@ -360,6 +360,7 @@ function render (id, page) {
     <input
       type="text"
       class="nav-location-input ${(!isAddrElFocused) ? ' hidden' : ''}"
+      oncontextmenu=${onContextMenu}
       onfocus=${onFocusLocation}
       onblur=${onBlurLocation}
       onkeydown=${onKeydownLocation}
@@ -803,4 +804,14 @@ function onGlobalKeydown (e) {
     let page = pages.getActive()
     if (page) { hideInpageFind(page) }
   }
+}
+
+function onContextMenu (e) {
+  const { Menu } = remote
+  const menu = [
+    { label: 'Cut', role: 'cut' },
+    { label: 'Copy', role: 'copy' },
+    { label: 'Paste', role: 'paste' }
+  ]
+  Menu.buildFromTemplate(menu).popup()
 }

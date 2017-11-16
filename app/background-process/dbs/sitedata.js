@@ -34,9 +34,9 @@ export const WEBAPI = {
   clearPermissionAllOrigins
 }
 
-export async function set (url, key, value) {
+export async function set (url, key, value, opts) {
   await setupPromise
-  var origin = await extractOrigin(url)
+  var origin = opts && opts.dontExtractOrigin ? url : await extractOrigin(url)
   if (!origin) return null
   return cbPromise(cb => {
     db.run(`
@@ -58,9 +58,9 @@ export async function clear (url, key) {
   })
 }
 
-export async function get (url, key) {
+export async function get (url, key, opts) {
   await setupPromise
-  var origin = await extractOrigin(url)
+  var origin = opts && opts.dontExtractOrigin ? url : await extractOrigin(url)
   if (!origin) return null
   return cbPromise(cb => {
     db.get(`SELECT value FROM sitedata WHERE origin = ? AND key = ?`, [origin, key], (err, res) => {

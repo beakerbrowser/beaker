@@ -11,6 +11,7 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 ## Binaries
 
 ### [OSX 64-bit .dmg](https://download.beakerbrowser.net/download/latest/osx)
+### [Windows 64-bit .exe](https://download.beakerbrowser.net/download/latest/windows_64)
 
 ## About
 
@@ -22,7 +23,7 @@ Beaker is a new browser that combines the flexibility of the desktop with the co
  - You control your data
  - You can duplicate, modify, and share websites
  - You can use apps while offline
- - You can go back in time and see previous verions of your content
+ - You can go back in time and see previous versions of your content
 
 ### Features
 
@@ -65,12 +66,11 @@ Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=Yu
     - [Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
     - [Dat DNS](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery)
   - Proposed
+    - [App Scheme](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
     - [Installable Web Applications](https://github.com/beakerbrowser/beaker/wiki/Installable-Web-Applications)
     - [Intents](https://github.com/beakerbrowser/beaker/wiki/Intent-Scheme) a URI scheme for composing interactions between apps
     - [Service Discovery](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol)
     - [WebTerm](https://github.com/beakerbrowser/beaker/wiki/WebTerm) a bashlike terminal for Web
-  - Dead
-    - [App Scheme](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
 - [**Tutorials**](https://beakerbrowser.com/docs/tutorials/)
 
 ## Contributing
@@ -86,36 +86,41 @@ Interested in contributing? See the list of [issues with the help wanted label](
 
 ## Building from source
 
-Requires node 6.2.1.
-In linux (possibly also OSX) you need libtool, m4, automake, make, and g++.
+Requires node 6 or higher. On Windows, you may need to use npm version 4, due to a bug in npm 5.
 
-```
-sudo apt-get install libtool m4 automake make g++
+In Linux (and in some cases OSX) you need libtool, m4, and automake:
+
+```bash
+sudo apt-get install libtool m4 make g++  # debian/ubuntu
+sudo dnf install libtool m4 make gcc-c++  # fedora
 ```
 
-In Fedora:
+In Windows, you'll need to install [Python 2.7](https://www.python.org/downloads/release/python-2711/), Visual Studio 2015 or 2017, and [Git](https://git-scm.com/download/win). (You might try [windows-build-tools](https://www.npmjs.com/package/windows-build-tools).) Then run:
 
-```
-sudo dnf install libtool m4 make gcc-c++
+```powershell
+npm config set python c:/python27
+npm config set msvs_version 2015
+npm install -g node-gyp
+npm install -g gulp
 ```
 
 To build:
 
-```
+```bash
 git clone https://github.com/beakerbrowser/beaker.git
 cd beaker
 npm install
-npm run rebuild #see https://github.com/electron/electron/issues/5851
+npm run rebuild # see https://github.com/electron/electron/issues/5851
 npm start
 ```
 
 If you pull latest from the repo and get weird module errors, do:
 
-```
+```bash
 npm run burnthemall
 ```
 
-This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-mad-king-game-of-thrones.jpg), who will torch your node_modules, and do the full install/rebuild process for you.
+This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-mad-king-game-of-thrones.jpg), who will torch your `node_modules/`, and do the full install/rebuild process for you.
 `npm start` should work afterwards.
 
 If you're doing development, `npm run watch` to have assets build automatically.
