@@ -180,7 +180,6 @@ function onChangeTab (tab) {
 
 function onChangeWorkspaceName (e) {
   tmpWorkspaceName = e.target.value
-  render()
 }
 
 async function onSaveWorkspaceName () {
