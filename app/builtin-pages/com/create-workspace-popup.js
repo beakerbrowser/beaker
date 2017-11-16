@@ -1,3 +1,6 @@
+// NOTE: this is not currently in use, but keeping it around just in case
+// -tbv
+
 import yo from 'yo-yo'
 import slugify from 'slugify'
 import closeIcon from '../icon/close'

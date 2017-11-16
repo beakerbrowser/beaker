@@ -240,12 +240,26 @@ function renderWorkspacesListing () {
 
         <div class="builtin-main">
           <div class="builtin-header fixed">
-            <div class="actions">
-              <button class="btn" onclick=${onCreateWorkspace} >
-                New workspace
+            ${toggleable(yo`
+            <div class="dropdown toggleable-container" data-toggle-id="archive-dropdown-menu">
+              <button class="btn toggleable">
+                New
                 <i class="fa fa-plus"></i>
               </button>
+
+              <div class="dropdown-items" onclick=${onCreateWorkspace}>
+                <div class="dropdown-item">
+                  <i class="fa fa-code"></i>
+                  Website
+                </div>
+
+                <div class="dropdown-item" onclick=${() => onCreateWorkspace('app')}>
+                  <i class="fa fa-cube"></i>
+                  App
+                </div>
+              </div>
             </div>
+          `)}
           </div>
 
           <div class="workspaces">
