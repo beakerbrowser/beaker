@@ -28,6 +28,10 @@
   },
   "build": {
     "appId": "com.pfrazee.beaker-browser",
+    "asar": true,
+    "asarUnpack": [
+      "./node_modules/sodium-native/**"
+    ],
     "copyright": "© 2017, Blue Link Labs",
     "npmRebuild": false,
     "protocols": [
