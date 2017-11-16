@@ -109,9 +109,19 @@ function onCopy (str, successMessage = 'Copied to clipboard') {
   toast.create(successMessage)
 }
 
-  await beaker.workspaces.set(0, name, {localFilesPath: path, publishTargetUrl: url})
+async function onCreateWorkspace (type) {
+  // create a new workspace
+  const wsInfo = await beaker.workspaces.create(0) // TODO: type
   allWorkspaces = await beaker.workspaces.list(0)
-  history.pushState({}, null, `beaker://workspaces/${name}`)
+
+  // add a loading indicator
+  activeTab = ''
+  render()
+
+  setTimeout(() => {
+    activeTab = 'revisions'
+    history.pushState({}, null, `beaker://workspaces/${wsInfo.name}`)
+  }, 500)
 }
 
 async function onDeleteWorkspace (name) {
@@ -449,7 +459,13 @@ function renderView () {
     case 'preview':
       return renderPreviewView()
     default:
-      return yo`<div class="view">Loading...</div>`
+      return yo`
+        <div id="loading-wrapper">
+          <div class="loading">
+            <div class="spinner"></div>
+            Loading...
+          </div>
+        </div>`
   }
 }
 
