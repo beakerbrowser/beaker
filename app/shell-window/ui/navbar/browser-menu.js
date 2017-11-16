@@ -2,6 +2,7 @@
 
 import os from 'os'
 import * as yo from 'yo-yo'
+import moment from 'moment'
 import {ipcRenderer} from 'electron'
 import { showInpageFind } from '../navbar'
 import { findParent } from '../../../lib/fg/event-handlers'
@@ -85,7 +86,7 @@ export class BrowserMenuNavbarBtn {
             </div>
 
             <div class="section">
-              <div class="menu-item" onclick=${e => this.onCreateSite(e, )}>
+              <div class="menu-item" onclick=${e => this.onCreateSite(e)}>
                 <i class="fa fa-sitemap"></i>
                 <span class="label">Website</span>
               </div>
@@ -97,9 +98,9 @@ export class BrowserMenuNavbarBtn {
             </div>
 
             <div class="section">
-              <div class="menu-item">
+              <div class="menu-item" onclick=${e => this.onShareFiles(e)}>
                 <i class="fa fa-upload"></i>
-                <span class="label">Import Files</span>
+                <span class="label">Share Files</span>
               </div>
             </div>
           </div>
@@ -317,13 +318,41 @@ export class BrowserMenuNavbarBtn {
 
   async onCreateSite (e, type) {
     // close dropdown
-    this.isDropdownOpen = !this.isDropdownOpen
+    this.isDropdownOpen = false
     this.submenu = ''
     this.updateActives()
 
     // create a new workspace
-    var wsInfo = await beaker.workspaces.create(0) // TODO: type
+    const wsInfo = await beaker.workspaces.create(0) // TODO: type
     pages.setActive(pages.create('beaker://workspaces/' + wsInfo.name))
+  }
+
+  async onShareFiles (e) {
+    // close dropdown
+    this.isDropdownOpen = false
+    this.submenu = ''
+    this.updateActives()
+
+    // ask user for files
+    const browserInfo = await beaker.browser.getInfo()
+    const filesOnly = browserInfo.platform === 'linux'
+    const files = await beaker.browser.showOpenDialog({
+      title: 'Select files to share',
+      buttonLabel: 'Share files',
+      properties: ['openFile', filesOnly ? false : 'openDirectory', 'multiSelections'].filter(Boolean)
+    })
+    if (!files || !files.length) return
+
+    // create the dat and import the files
+    const archive = await DatArchive.create({
+      title: `Shared files (${moment().format("M/DD/YYYY h:mm:ssa")})`,
+      description: `Files shared with Beaker`,
+      prompt: false
+    })
+    await Promise.all(files.map(src => DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: false})))
+
+    // open the new archive in the library
+    pages.setActive(pages.create('beaker://library/' + archive.url.slice('dat://'.length)))
   }
 
   onOpenPage (e, url) {
