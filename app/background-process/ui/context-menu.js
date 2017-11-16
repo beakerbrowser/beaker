@@ -196,7 +196,7 @@ export default function registerContextMenu () {
             if (res) {
               win.webContents.send('command', 'file:new-tab', res)
             }
-          } 
+          }
         })
       }
 
