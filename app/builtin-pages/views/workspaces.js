@@ -304,7 +304,7 @@ function renderWorkspaceListItem (workspace) {
         </button>
 
         <a title="Preview changes" onclick=${e => {e.stopPropagation()}} href="workspace://${workspace.name}" class="btn">
-          Preview changes
+          <span>Preview changes</span>
           <i class="fa fa-external-link"></i>
         </a>
       </div>
