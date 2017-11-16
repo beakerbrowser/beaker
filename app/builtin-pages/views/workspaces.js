@@ -183,6 +183,9 @@ function onChangeWorkspaceName (e) {
 }
 
 async function onSaveWorkspaceName () {
+  // bail if the workspace name wasn't updated
+  if (workspaceInfo.name === tmpWorkspaceName) return
+
   // check if there's an existing workspace
   const existingWorkspace = await beaker.workspaces.get(0, tmpWorkspaceName)
   if (existingWorkspace && !confirm(`There's an existing workspace at workspace://${tmpWorkspaceName}. Do you want to continue?`)) {
