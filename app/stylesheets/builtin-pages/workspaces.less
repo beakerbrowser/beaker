@@ -409,18 +409,16 @@ input[type="file"] {
     }
 
     &.revisions {
-      &:extend(.flex);
-      flex-wrap: nowrap;
       padding: 0;
-      padding-top: 80px;
+      padding-top: 85px;
       width: 100vw;
 
       .revisions-content {
-        flex: 1;
+        margin-left: 300px; // width of .revisions-sidebar
 
         .empty {
           margin: auto;
-          margin-top: 30%;
+          margin-top: 25%;
           max-width: 300px;
           text-align: center;
           color: rgba(0,0,0,.55);
@@ -470,9 +468,13 @@ input[type="file"] {
       }
 
       .revisions-sidebar {
-        position: relative;
+        position: fixed;
+        left: 0;
+        z-index: 1;
+        width: 300px;
+        height: ~"calc(100% - 85px)";
+        background: #fff;
         border-right: 1px solid #ddd;
-        height: 100%;
 
         .metadata {
           padding: 10px;
@@ -489,6 +491,7 @@ input[type="file"] {
           padding: 10px;
           text-align: right;
           border-top: 1px solid #ddd;
+          background: #fff;
 
           .btn {
 
@@ -519,10 +522,6 @@ input[type="file"] {
         font-size: 11px;
         border-top: 1px solid #ddd;
         border-bottom: 1px solid #ddd;
-
-        &:not(:first-of-type) {
-          margin-top: 30px;
-        }
 
         .count {
           background: #ddd;
@@ -563,6 +562,7 @@ input[type="file"] {
 
       .revisions-list {
         width: 100%;
+        margin-bottom: 30px;
 
         li {
           &:extend(.flex);
