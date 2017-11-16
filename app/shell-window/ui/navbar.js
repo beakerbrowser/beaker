@@ -1,6 +1,6 @@
 /* globals URL beaker */
 
-import { remote } from 'electron'
+import { remote, clipboard } from 'electron'
 import * as pages from '../pages'
 import * as sidebar from './sidebar'
 import * as zoom from '../pages/zoom'
@@ -380,6 +380,7 @@ function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadErr
       class="nav-location-pretty${(isHidden) ? ' hidden' : ''}"
       onclick=${onFocusLocation}
       onmousedown=${onFocusLocation}
+      oncontextmenu=${onContextMenu}
     >
       ${valueRendered}
     </div>
@@ -714,7 +715,17 @@ function onContextMenu (e) {
   const menu = [
     { label: 'Cut', role: 'cut' },
     { label: 'Copy', role: 'copy' },
-    { label: 'Paste', role: 'paste' }
+    { label: 'Paste', role: 'paste' },
+    { label: 'Paste and Go',
+      click () {
+        var page = pages.getActive()
+        var newUrl = clipboard.readText()
+        page.navbarEl.querySelector('.nav-location-input').value = newUrl
+        updateLocation(page)
+        page.loadURL(newUrl)
+        page.navbarEl.querySelector('.nav-location-input').blur()
+      }
+    }
   ]
   Menu.buildFromTemplate(menu).popup()
 }
