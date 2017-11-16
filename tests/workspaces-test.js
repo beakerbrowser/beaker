@@ -36,7 +36,22 @@ test.after.always('cleanup', async t => {
   await app.stop()
 })
 
-test('set & get workspaces', async t => {
+test('set & get workspaces (using create)', async t => {
+  await app.client.windowByIndex(0)
+
+  var res = await app.client.executeAsync((done) => {
+    window.beaker.workspaces.create(0).then(done, done)
+  })
+  for (let k in res.value) {
+    res.value[k] = res.value[k] ? typeof res.value[k] : res.value[k]
+  }
+  t.deepEqual(res.value, {
+    name: 'string',
+    publishTargetUrl: 'string'
+  })
+})
+
+test('set & get workspaces (manually)', async t => {
   await app.client.windowByIndex(0)
 
   // create a dat

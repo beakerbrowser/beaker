@@ -56,7 +56,11 @@ async function loadCurrentWorkspace () {
   tmpWorkspaceName = currentWorkspaceName
   if (currentWorkspaceName) {
     workspaceInfo = await beaker.workspaces.get(0, currentWorkspaceName)
-    if (workspaceInfo) workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(0, currentWorkspaceName, {shallow: true, compareContent: true})
+    if (workspaceInfo && workspaceInfo.localFilesPath) {
+      workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(0, currentWorkspaceName, {shallow: true, compareContent: true})
+    } else {
+      workspaceInfo.revisions = []
+    }
   } else {
     workspaceInfo = null
   }

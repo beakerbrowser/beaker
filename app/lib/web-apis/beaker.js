@@ -118,8 +118,9 @@ if (window.location.protocol === 'beaker:') {
   beaker.workspaces.list = workspacesRPC.list
   beaker.workspaces.get = workspacesRPC.get
   beaker.workspaces.set = workspacesRPC.set
-  beaker.workspaces.remove = workspacesRPC.remove
+  beaker.workspaces.create = workspacesRPC.create
   beaker.workspaces.setupFolder = workspacesRPC.setupFolder
+  beaker.workspaces.remove = workspacesRPC.remove
   beaker.workspaces.listChangedFiles = workspacesRPC.listChangedFiles
   beaker.workspaces.diff = workspacesRPC.diff
   beaker.workspaces.publish = workspacesRPC.publish

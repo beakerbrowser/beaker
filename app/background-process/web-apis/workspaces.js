@@ -8,6 +8,7 @@ import * as archivesDb from '../dbs/archives'
 import * as workspacesDb from '../dbs/workspaces'
 import * as datLibrary from '../networks/dat/library'
 import {timer} from '../../lib/time'
+import {getRandomName} from '../../lib/dict'
 import {isFileNameBinary, isFileContentBinary} from '../../lib/mime'
 import * as scopedFSes from '../../lib/bg/scoped-fses'
 import {checkFolderIsEmpty} from '../../lib/bg/fs'
@@ -36,10 +37,12 @@ const DISALLOWED_SAVE_PATH_NAMES = [
 
 export default {
   async list (profileId) {
+    assertValidProfileId(profileId)
     return workspacesDb.list(profileId)
   },
 
   async get (profileId, name) {
+    assertValidProfileId(profileId)
     assertValidName(name)
     return workspacesDb.get(profileId, name)
   },
@@ -47,38 +50,52 @@ export default {
   // create or update a workspace
   // - profileId: number, the id of the browsing profile
   // - name: string, the name of the workspace
-  // - newData attributes:
+  // - opts
   //   - name: string?
   //   - localFilesPath: string?
   //   - publishTargetUrl: string?
-  async set (profileId, name, newData = {}) {
+  async set (profileId, name, opts = {}) {
+    assertValidProfileId(profileId)
     assertValidName(name)
-    if (newData.name) assertValidName(newData.name)
-    if (newData.localFilesPath) await assertSafeFilesPath(newData.localFilesPath)
-    if (newData.publishTargetUrl) {
-      await assertDatUrl(newData.publishTargetUrl)
-      await assertDatIsSavedAndOwned(newData.publishTargetUrl)
+    if (opts.name) assertValidName(opts.name)
+    if (opts.localFilesPath) await assertSafeFilesPath(opts.localFilesPath)
+    if (opts.publishTargetUrl) {
+      await assertDatUrl(opts.publishTargetUrl)
+      await assertDatIsSavedAndOwned(opts.publishTargetUrl)
     }
-    return workspacesDb.set(profileId, name, newData)
+    return workspacesDb.set(profileId, name, opts)
   },
 
-  // remove a workspace
+  // create a new workspace
   // - profileId: number, the id of the browsing profile
-  // - name: string, the name of the workspace
-  async remove (profileId, name) {
-    assertValidName(name)
-    return workspacesDb.remove(profileId, name)
+  // - opts
+  //   - name: string?, the name of the workspace. If none is given, will auto-generate a name.
+  //   - localFilesPath: string?, the path of the local workspace.
+  //   - publishTargetUrl: string?, the url of the target dat. If none is given, will create a new dat.
+  async create (profileId, opts={}) {
+    assertValidProfileId(profileId)
+    opts.name = opts.name || getRandomName()
+    assertValidName(opts.name)
+    if (opts.localFilesPath) await assertSafeFilesPath(opts.localFilesPath)
+    if (!opts.publishTargetUrl) {
+      opts.publishTargetUrl = await datLibrary.createNewArchive({title: opts.name})
+    }
+    await assertDatUrl(opts.publishTargetUrl)
+    await assertDatIsSavedAndOwned(opts.publishTargetUrl)
+    await workspacesDb.set(profileId, opts.name, opts)
+    return opts
   },
 
   // initialize a target folder with the dat files and (optionally) a template
   // - profileId: number, the id of the browsing profile
   // - name: string, the name of the workspace
   // - opts
-  //   - template: string, 'website' or 'app' or falsy
+  //   - template: string?, 'website' or 'app' or falsy
   async setupFolder (profileId, name, opts={}) {
+    assertValidProfileId(profileId)
     // fetch workspace
     const ws = await workspacesDb.get(profileId, name)
-    await validateWorkspaceRecord(ws)
+    await validateWorkspaceRecord(name, ws)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -108,6 +125,15 @@ export default {
     return true
   },
 
+  // remove a workspace
+  // - profileId: number, the id of the browsing profile
+  // - name: string, the name of the workspace
+  async remove (profileId, name) {
+    assertValidProfileId(profileId)
+    assertValidName(name)
+    return workspacesDb.remove(profileId, name)
+  },
+
   // list the files that have changed
   // - profileId: number, the id of the browsing profile
   // - name: string, the name of the workspace
@@ -116,12 +142,13 @@ export default {
   //   - compareContent: bool, compare the actual content (default true)
   //   - paths: Array<string>, a whitelist of files to compare
   async listChangedFiles (profileId, name, opts={}) {
+    assertValidProfileId(profileId)
     assertValidName(name)
     opts = massageDiffOpts(opts)
 
     // fetch workspace
     const ws = await workspacesDb.get(profileId, name)
-    await validateWorkspaceRecord(ws)
+    await validateWorkspaceRecord(name, ws)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -148,6 +175,7 @@ export default {
   // - name: string, the name of the workspace
   // - filepath: string, the path of the file in the workspace
   async diff (profileId, name, filepath) {
+    assertValidProfileId(profileId)
     assertValidName(name)
 
     // check the filename to see if it's binary
@@ -158,7 +186,7 @@ export default {
 
     // fetch workspace
     const ws = await workspacesDb.get(profileId, name)
-    await validateWorkspaceRecord(ws)
+    await validateWorkspaceRecord(name, ws)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -196,12 +224,13 @@ export default {
   //   - compareContent: bool, compare the actual content (default true)
   //   - paths: Array<string>, a whitelist of files to compare
   async publish (profileId, name, opts={}) {
+    assertValidProfileId(profileId)
     assertValidName(name)
     opts = massageDiffOpts(opts)
 
     // fetch workspace
     const ws = await workspacesDb.get(profileId, name)
-    await validateWorkspaceRecord(ws)
+    await validateWorkspaceRecord(name, ws)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -232,12 +261,13 @@ export default {
   //   - compareContent: bool, compare the actual content (default true)
   //   - paths: Array<string>, a whitelist of files to compare
   async revert (profileId, name, opts={}) {
+    assertValidProfileId(profileId)
     assertValidName(name)
     opts = massageDiffOpts(opts)
 
     // fetch workspace
     const ws = await workspacesDb.get(profileId, name)
-    await validateWorkspaceRecord(ws)
+    await validateWorkspaceRecord(name, ws)
 
     // get the scoped fs and archive
     var scopedFS, archive
@@ -276,11 +306,17 @@ function massageDiffOpts (opts) {
   }
 }
 
-async function validateWorkspaceRecord (ws) {
+async function validateWorkspaceRecord (name, ws) {
   if (!ws) throw new Error(`No workspace found at ${name}`)
   if (!ws.localFilesPath) throw new Error(`No files path set for ${name}`)
   if (!ws.publishTargetUrl) throw new Error(`No target site set for ${name}`)
   await assertDatIsSavedAndOwned(ws.publishTargetUrl)
+}
+
+function assertValidProfileId (profileId) {
+  if (typeof profileId !== 'number') {
+    throw new Error('Must provide a valid profile id')
+  }
 }
 
 function assertValidName (name) {

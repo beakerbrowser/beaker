@@ -85,12 +85,12 @@ export class BrowserMenuNavbarBtn {
             </div>
 
             <div class="section">
-              <div class="menu-item" onclick=${e => this.onCreateSite()}>
+              <div class="menu-item" onclick=${e => this.onCreateSite(e, )}>
                 <i class="fa fa-sitemap"></i>
                 <span class="label">Website</span>
               </div>
 
-              <div class="menu-item" onclick=${e => this.onCreateSite()}>
+              <div class="menu-item" onclick=${e => this.onCreateSite(e, 'app')}>
                 <i class="fa fa-puzzle-piece"></i>
                 <span class="label">App</span>
               </div>
@@ -315,14 +315,15 @@ export class BrowserMenuNavbarBtn {
     this.updateActives()
   }
 
-  async onCreateSite (e) {
+  async onCreateSite (e, type) {
     // close dropdown
     this.isDropdownOpen = !this.isDropdownOpen
     this.submenu = ''
     this.updateActives()
 
-    var archive = await DatArchive.create({prompt: true})
-    pages.getActive().loadURL('beaker://library/' + archive.url.slice('dat://'.length))
+    // create a new workspace
+    var wsInfo = await beaker.workspaces.create(0) // TODO: type
+    pages.setActive(pages.create('beaker://workspaces/' + wsInfo.name))
   }
 
   onOpenPage (e, url) {
