@@ -40,6 +40,27 @@ input, textarea {
   }
 }
 
+// inline text input
+input.inline {
+  height: auto;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  cursor: text;
+  padding: 3px 5px;
+  line-height: 1;
+
+  &:focus,
+  &:hover {
+    border: 1px solid #ccc;
+    box-shadow: none;
+  }
+
+  &:focus {
+    background: #fff;
+  }
+}
+
 // custom file picker
 .input-file-picker {
   display: flex;

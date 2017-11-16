@@ -2,8 +2,8 @@
 
 import yo from 'yo-yo'
 import {pluralize} from '../../lib/strings'
-import {pushUrl} from '../../lib/fg/event-handlers'
-import * as createWorkspacePopup from '../com/create-workspace-popup'
+import {pushUrl, writeToClipboard} from '../../lib/fg/event-handlers'
+import toggleable from '../com/toggleable'
 import renderDiff from '../com/diff'
 import renderGearIcon from '../icon/gear-small'
 import * as toast from '../com/toast'
@@ -113,14 +113,10 @@ function parseURLWorkspaceName () {
 // events
 // =
 
-async function onCreateWorkspace () {
-  const {name, url, path} = await createWorkspacePopup.create()
-
-  // check if there's an existing workspace
-  const existingWorkspace = await beaker.workspaces.get(0, name)
-  if (existingWorkspace && !confirm(`There's an existing workspace at workspace://${name}. Do you want to continue?`)) {
-    return
-  }
+function onCopy (str, successMessage = 'Copied to clipboard') {
+  writeToClipboard(str)
+  toast.create(successMessage)
+}
 
   await beaker.workspaces.set(0, name, {localFilesPath: path, publishTargetUrl: url})
   allWorkspaces = await beaker.workspaces.list(0)
@@ -275,7 +271,7 @@ function renderWorkspaceListItem (workspace) {
   return yo`
     <a class="workspace" href="beaker://workspaces/${workspace.name}" onclick=${pushUrl}>
       <div>
-        <img class="favicon" src="beaker-favicon:${workspace.publishTargetUrl}" />
+        <img class="favicon" src="beaker-favicon:workspace://${workspace.name}"/>
         <span class="info">
           <span class="title"><code>workspace://${workspace.name}</code></span>
 
@@ -328,11 +324,71 @@ function renderHeader () {
   return yo`
     <div class="header">
       <div class="top">
-        <div>
-          <a href="workspace://${workspaceInfo.name}" class="name">workspace://${workspaceInfo.name}</a>
-          <span onclick=${e => onOpenFolder(workspaceInfo.localFilesPath)} class="local-path">
-            ${workspaceInfo.localFilesPath}
-          </span>
+        <div class="dropdown">
+          ${toggleable(yo`
+            <div class="dropdown toggleable-container">
+              <div class="menu-toggle-btn toggleable">
+                <img class="favicon" src="beaker-favicon:workspace://${workspaceInfo.name}"/>
+                <span class="name">workspace://${workspaceInfo.name}</span>
+                <i class="fa fa-chevron-down"></i>
+              </div>
+
+              <div class="menu dropdown-items with-triangle left">
+                <div class="menu-header">
+                  <img class="favicon" src="beaker-favicon:workspace://${workspaceInfo.name}"/>
+                  <input type="text" class="inline name" value=${tmpWorkspaceName} onkeyup=${onChangeWorkspaceName} onblur=${onSaveWorkspaceName}/>
+                </div>
+
+                <div class="menu-links">
+                  <div class="link-container">
+                    <i class="fa fa-eye-slash"></i>
+
+                    <a class="url" href="workspace://${workspaceInfo.name}">
+                      workspace://${workspaceInfo.name}
+                    </a>
+
+                    <button class="btn copy-btn outline tooltip-container" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`, 'URL copied to clipboard')}>
+                      Copy
+                      <div class="tooltip">Local preview URL</div>
+                    </button>
+                  </div>
+
+                  <div class="link-container">
+                    <i class="fa fa-link"></i>
+
+                    <a class="url" href=${workspaceInfo.publishTargetUrl}>
+                      ${workspaceInfo.publishTargetUrl}
+                    </a>
+
+                    <button class="btn copy-btn tooltip-container" onclick=${() => onCopy(workspaceInfo.publishTargetUrl, 'URL copied to clipboard')}>
+                      Copy
+                      <div class="tooltip">Live version URL</div>
+                    </button>
+                  </div>
+
+                  <div class="link-container">
+                    <i class="fa fa-folder-o"></i>
+
+                    <span class="url" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+                      ${workspaceInfo.localFilesPath}
+                    </span>
+
+                    <button class="btn copy-btn outline tooltip-container" onclick=${() => onCopy(workspaceInfo.localFilesPath, 'Path copied to clipboard')}>
+                      Copy
+                      <div class="tooltip">Local directory</div>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="actions">
+                  <button class="btn success full-width" onclick=${onCreateWorkspace}>
+                    Start new project
+                    <i class="fa fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `)}
         </div>
       </div>
 
