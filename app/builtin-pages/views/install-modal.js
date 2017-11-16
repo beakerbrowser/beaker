@@ -4,14 +4,11 @@ import yo from 'yo-yo'
 import slugify from 'slugify'
 import bytes from 'bytes'
 import segmentedProgressBar from '../com/segmented-progress-bar'
+import {getRandomName} from '../../lib/dict'
 import APIS from '../../lib/app-perms'
 
 // globals
 // =
-
-// for giving names to un-named apps
-const ADJECTIVES = ['giggly', 'silly', 'chunky', 'round', 'smiley', 'soft']
-const NOUNS = ['monkey', 'snail', 'chipmunk', 'cupcake', 'goat', 'llama']
 
 var numPages = 3
 var pages = [renderAppInfoPage, renderLocationPage, renderPermsPage]
@@ -287,10 +284,8 @@ function getCurrentName () {
     if (targetAppInfo.name) {
       return targetAppInfo.name
     } else {
-      const adjective = ADJECTIVES[Math.floor(Math.random() * (ADJECTIVES.length - 1))]
-      const noun = NOUNS[Math.floor(Math.random() * (NOUNS.length - 1))]
-      targetAppInfo.name = `${adjective}-${noun}`
-      return `${adjective}-${noun}`
+      targetAppInfo.name = getRandomName()
+      return targetAppInfo.name
     }
   }
   return currentCustomName
