@@ -405,6 +405,11 @@ function renderHeader () {
             </div>
           `)}
         </div>
+
+        <a disabled=${!(workspaceInfo.localFilesPath && workspaceInfo.publishTargetUrl)} target="_blank" href="workspace://${workspaceInfo.name}" class="btn">
+          Open preview
+          <i class="fa fa-external-link"></i>
+        </a>
       </div>
 
       <div class="bottom">${renderTabs()}</div>
