@@ -115,6 +115,9 @@ async function onCreateWorkspace (type) {
   allWorkspaces = await beaker.workspaces.list(0)
 
   // add a loading indicator
+  // NOTE: No perceptible "loading" actually happens here. I added the loading indicator
+  // because otherwise it's difficult to notice that a new project was created
+  // -tbv
   activeTab = ''
   render()
 
