@@ -356,7 +356,7 @@ function renderHeader () {
 
                 <div class="menu-links">
                   <div class="link-container">
-                    <i class="fa fa-eye-slash"></i>
+                    <i class="fa fa-eye"></i>
 
                     <a class="url" href="workspace://${workspaceInfo.name}">
                       workspace://${workspaceInfo.name}
