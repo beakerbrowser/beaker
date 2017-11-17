@@ -430,17 +430,15 @@ function renderTabs () {
         Revisions
         ${workspaceInfo.revisions.length ? yo`<span class="revisions-indicator"></span>` : ''}
       </div>
-      <div onclick=${e => onChangeTab('wizards')} class="tab ${activeTab === 'wizards' ? 'active' : ''}">
-        <i class="fa fa-cube"></i>
-        Wizards
-      </div>
-      <div onclick=${e => onChangeTab('settings')} class="tab ${activeTab === 'settings' ? 'active' : ''}">
-        <i class="fa fa-cogs"></i>
-        Settings
-      </div>
+
       <div onclick=${e => onChangeTab('preview')} class="tab ${activeTab === 'preview' ? 'active' : ''}">
         <i class="fa fa-eye"></i>
         Preview
+      </div>
+
+      <div onclick=${e => onChangeTab('configure')} class="tab ${activeTab === 'configure' ? 'active' : ''}">
+        <i class="fa fa-cogs"></i>
+        Configure
       </div>
     </div>
   `
@@ -477,9 +475,7 @@ function renderView () {
   switch (activeTab) {
     case 'revisions':
       return renderRevisionsView()
-    case 'wizards':
-      return renderWizardsView()
-    case 'settings':
+    case 'configure':
       return renderSettingsView()
     case 'preview':
       return renderPreviewView()
@@ -495,6 +491,14 @@ function renderView () {
 }
 
 function renderPreviewView () {
+  if (!(workspaceInfo.publishTargetUrl && workspaceInfo.localFilesPath)) {
+    return yo`
+      <div class="view preview">
+        Finish configuring this project before previewing your progress.
+      </div>
+    `
+  }
+
   return yo`
     <div class="view preview">
       <iframe src="workspace://${workspaceInfo.name}"></iframe>
@@ -598,14 +602,6 @@ function renderRevisionsView () {
           </div>`
         }
       </div>
-    </div>
-  `
-}
-
-function renderWizardsView () {
-  return yo`
-    <div class="view">
-      TODO
     </div>
   `
 }
