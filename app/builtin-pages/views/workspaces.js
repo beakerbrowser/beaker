@@ -303,10 +303,12 @@ function renderWorkspaceListItem (workspace) {
           <i class="fa fa-trash-o"></i>
         </button>
 
-        <a title="Preview changes" onclick=${e => {e.stopPropagation()}} href="workspace://${workspace.name}" class="btn">
-          <span>Preview changes</span>
-          <i class="fa fa-external-link"></i>
-        </a>
+        ${workspace.localFilesPath ? yo`
+          <a target="_blank" title="Preview changes" onclick=${e => {e.stopPropagation()}} href="workspace://${workspace.name}" class="btn">
+            <span>Live preview</span>
+            <i class="fa fa-external-link"></i>
+          </a>
+        ` : ''}
       </div>
     </a>
   `
