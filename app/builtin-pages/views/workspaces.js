@@ -643,9 +643,11 @@ function renderSettingsView () {
       <div>
         <label>Delete workspace</label>
 
-        <p>
-          Deleting this workspace will <strong>not</strong> delete the files at <code>${workspaceInfo.localFilesPath}</code>
-        </p>
+        ${workspaceInfo.localFilesPath ? yo`
+          <p>
+            Deleting this workspace will <strong>not</strong> delete the files at <code>${workspaceInfo.localFilesPath}</code>
+          </p>
+        ` : ''}
 
         <button class="btn cancel" onclick=${e => {e.stopPropagation(); onDeleteWorkspace(workspaceInfo.name);}}>
           Delete workspace
