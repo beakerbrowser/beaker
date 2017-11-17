@@ -423,6 +423,7 @@ function renderTabs () {
       <div onclick=${e => onChangeTab('revisions')} class="tab ${activeTab === 'revisions' ? 'active' : ''}">
         <i class="fa fa-code"></i>
         Revisions
+        ${workspaceInfo.revisions.length ? yo`<span class="revisions-indicator"></span>` : ''}
       </div>
       <div onclick=${e => onChangeTab('wizards')} class="tab ${activeTab === 'wizards' ? 'active' : ''}">
         <i class="fa fa-cube"></i>
