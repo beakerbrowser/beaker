@@ -120,6 +120,7 @@ export class BrowserMenuNavbarBtn {
               </div>
 
               <div class="menu-item" onclick=${e => this.onOpenNewTab()}>
+
                 <i class="fa fa-file-o"></i>
                 <span class="label">New Tab</span>
                 <span class="shortcut">${this.accelerators.newTab}</span>
@@ -135,6 +136,11 @@ export class BrowserMenuNavbarBtn {
             </div>
 
             <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://workspaces')}>
+                <i class="fa fa-pencil-square-o"></i>
+                <span class="label">Your Projects</span>
+              </div>
+
               <div class="menu-item" onclick=${e => this.onShowSubmenu('create-new')}>
                 <i class="fa fa-plus-square-o"></i>
                 <span class="label">Create New</span>
