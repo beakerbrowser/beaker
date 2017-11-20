@@ -271,7 +271,13 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
   mkdirp.sync(metaPath)
 
   // create the archive instance
-  var archive = hyperdrive(metaPath, key, {sparse: true, secretKey})
+  var archive = hyperdrive(metaPath, key, {
+    sparse: true,
+    secretKey,
+    metadataStorageCacheSize: 0,
+    contentStorageCacheSize: 0,
+    treeCacheSize: 0
+  })
   archive.replicationStreams = [] // list of all active replication streams
   archive.peerHistory = [] // samples of the peer count
   Object.defineProperty(archive, 'stagingFS', {
