@@ -3,11 +3,10 @@
 
 .toast-wrapper {
   position: fixed;
-  top: @padding-component;
+  top: 0;
   width: 100%;
   z-index: 10;
-
-  transition: opacity .4s ease;
+  transition: opacity .1s ease;
 
   &.hidden {
     opacity: 0;
@@ -15,22 +14,24 @@
 }
 
 .toast {
-  position: relative;
-  max-width: 450px;
+  position: absolute;
+  right: 10px;
+  top: 0;
+  width: 325px;
   text-align: center;
-  margin: auto;
   color: #fff;
   -webkit-font-smoothing: antialiased;
   background: @blue;
   font-weight: 600;
-  padding: 5px 10px;
+  padding: 10px 15px 10px 35px;
   box-shadow: 0px 2px 2px rgba(0,0,0,.25);
   border-radius: 40px;
+  border-radius: 4px;
 
   &:before {
     position: absolute;
     left: 10px;
-    top: 3px;
+    top: 8px;
     display: block;
     content: '✓';
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
