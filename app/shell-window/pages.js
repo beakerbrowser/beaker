@@ -716,7 +716,7 @@ function onDidStopLoading (e) {
     page.webviewEl.insertCSS(
       // set the default background to white.
       // on some devices, if no bg is set, the buffer doesnt get cleared
-      `body {
+      `html {
         background: #fff;
       }` +
 
