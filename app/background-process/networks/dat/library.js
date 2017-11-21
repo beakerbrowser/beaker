@@ -590,7 +590,9 @@ function configureAutoDownload (archive, userSettings) {
     // setup the autodownload
     archive._autodownloader = {
       undownloadAll: () => {
-        archive.content._selections.forEach(range => archive.content.undownload(range))
+        if (archive.content) {
+          archive.content._selections.forEach(range => archive.content.undownload(range))
+        }
       },
       onUpdate: throttle(() => {
         // cancel ALL previous, then prioritize ALL current
