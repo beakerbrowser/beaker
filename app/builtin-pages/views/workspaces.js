@@ -19,7 +19,7 @@ let diffAdditions = 0
 let diffDeletions = 0
 let currentDiffNode
 let numCheckedRevisions
-let activeTab = 'revisions'
+let activeView = 'revisions'
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -50,7 +50,7 @@ async function setup () {
 
 async function loadCurrentWorkspace () {
   // reset state
-  activeTab = 'revisions'
+  activeView = 'revisions'
 
   currentWorkspaceName = parseURLWorkspaceName()
   tmpWorkspaceName = currentWorkspaceName
@@ -124,11 +124,11 @@ async function onCreateWorkspace (type) {
   // NOTE: No perceptible "loading" actually happens here. I added the loading indicator
   // because otherwise it's difficult to notice that a new project was created
   // -tbv
-  activeTab = ''
+  activeView = ''
   render()
 
   setTimeout(() => {
-    activeTab = 'revisions'
+    activeView = 'revisions'
     history.pushState({}, null, `beaker://workspaces/${wsInfo.name}`)
   }, 500)
 }
@@ -182,8 +182,8 @@ function onOpenFolder (path) {
   beaker.workspaces.openFolder(path)
 }
 
-function onChangeTab (tab) {
-  activeTab = tab
+function onChangeView (view) {
+  activeView = view
   render()
 }
 
@@ -362,6 +362,7 @@ function renderHeader () {
               <div class="menu dropdown-items with-triangle left">
                 <div class="menu-header">
                   <img class="favicon" src="beaker-favicon:workspace://${workspaceInfo.name}"/>
+
                   <input type="text" class="inline name" value=${tmpWorkspaceName} onkeyup=${onChangeWorkspaceName} onblur=${onSaveWorkspaceName}/>
                 </div>
 
@@ -431,18 +432,18 @@ function renderHeader () {
 function renderTabs () {
   return yo`
     <div class="tabs">
-      <div onclick=${e => onChangeTab('revisions')} class="tab ${activeTab === 'revisions' ? 'active' : ''}">
+      <div onclick=${e => onChangeView('revisions')} class="tab ${activeView === 'revisions' ? 'active' : ''}">
         <i class="fa fa-code"></i>
         Revisions
         ${workspaceInfo.revisions.length ? yo`<span class="revisions-indicator"></span>` : ''}
       </div>
 
-      <div onclick=${e => onChangeTab('preview')} class="tab ${activeTab === 'preview' ? 'active' : ''}">
+      <div onclick=${e => onChangeView('preview')} class="tab ${activeView === 'preview' ? 'active' : ''}">
         <i class="fa fa-eye"></i>
         Preview
       </div>
 
-      <div onclick=${e => onChangeTab('configure')} class="tab ${activeTab === 'configure' ? 'active' : ''}">
+      <div onclick=${e => onChangeView('configure')} class="tab ${activeView === 'configure' ? 'active' : ''}">
         <i class="fa fa-cogs"></i>
         Configure
       </div>
@@ -478,7 +479,7 @@ function renderMetadata () {
 }
 
 function renderView () {
-  switch (activeTab) {
+  switch (activeView) {
     case 'revisions':
       return renderRevisionsView()
     case 'configure':
