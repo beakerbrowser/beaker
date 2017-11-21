@@ -65,6 +65,15 @@ var fileMenu = {
     },
     { type: 'separator' },
     {
+      label: 'Save Page As...',
+      accelerator: 'CmdOrCtrl+S',
+      click: async (item, win) => {
+        const url = await win.webContents.executeJavaScript(`pages.getActive().getIntendedURL()`)
+        win.webContents.downloadURL(url, true)
+      }
+    },
+    { type: 'separator' },
+    {
       label: 'Close Window',
       accelerator: 'CmdOrCtrl+Shift+W',
       click: function (item, win) {

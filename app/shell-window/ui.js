@@ -31,6 +31,9 @@ export function setup (cb) {
   webFrame.setVisualZoomLevelLimits(1, 1)
   webFrame.setLayoutZoomLevelLimits(0, 0)
 
+  // attach some window globals
+  window.pages = pages
+
   // setup subsystems
   tabs.setup()
   navbar.setup()
