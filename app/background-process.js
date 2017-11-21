@@ -36,6 +36,9 @@ if (process.env.beaker_user_data_path) {
   console.log('userData:', process.env.beaker_user_data_path)
   app.setPath('userData', process.env.beaker_user_data_path)
 }
+if (process.env.beaker_open_url) {
+  openURL.open(process.env.beaker_open_url)
+}
 
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)

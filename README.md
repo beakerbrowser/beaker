@@ -76,6 +76,7 @@ Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=Yu
 ## Env Vars
 
 - `DEBUG`: which log systems to output? A comma-separated string. Can be `beaker`, `dat`, `bittorrent-dht`, `dns-discovery`, `hypercore-protocol`. Specify `*` for all.
+- `beaker_open_url`: open the given URL on load.
 - `beaker_user_data_path`: override the user-data path, therefore changing where data is read/written. Useful for testing. For default value see `userData` in the [electron docs](https://electron.atom.io/docs/api/app/#appgetpathname).
 - `beaker_sites_path`: override the default path for saving sites. Useful for testing. Default value is `$HOME/Sites` where `$HOME` is the users home directory.
 - `beaker_dat_quota_default_bytes_allowed`: override the default max-quota for bytes allowed to be written by a dat site. Useful for testing. Default value is `'500mb'`. This can be a Number or a String. Check [bytes.parse](https://github.com/visionmedia/bytes.js/tree/a4b9af2bf289175f12b3538eb172f2489844b1ec#bytesparsestringnumber-value-numbernull) for supported units and abbreviations.
