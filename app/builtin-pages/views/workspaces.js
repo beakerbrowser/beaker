@@ -84,17 +84,23 @@ async function loadCurrentDiff (revision) {
   }
 
   // fetch the diff
-  diff = await beaker.workspaces.diff(0, currentWorkspaceName, revision.path)
+  try {
+    diff = await beaker.workspaces.diff(0, currentWorkspaceName, revision.path)
 
-  diffDeletions = diff.reduce((sum, el) => {
-    if (el.removed) return sum + el.count
-    return sum
-  }, 0)
+    diffDeletions = diff.reduce((sum, el) => {
+      if (el.removed) return sum + el.count
+      return sum
+    }, 0)
 
-  diffAdditions = diff.reduce((sum, el) => {
-    if (el.added) return sum + el.count
-    return sum
-  }, 0)
+    diffAdditions = diff.reduce((sum, el) => {
+      if (el.added) return sum + el.count
+      return sum
+    }, 0)
+  } catch (e) {
+    if (e.invalidEncoding) {
+      diff = {invalidEncoding: true}
+    }
+  }
 }
 
 function parseURLWorkspaceName () {
@@ -513,7 +519,7 @@ function renderRevisionsView () {
 
   const renderRev = node => (
     yo`
-      <li class="${node.path === currentDiffNode.path ? 'selected' : ''}" onclick=${() => onClickChangedNode(node)} title=${node.path}>
+      <li class="${currentDiffNode && node.path === currentDiffNode.path ? 'selected' : ''}" onclick=${() => onClickChangedNode(node)} title=${node.path}>
         <code class="path">${node.type === 'file' ? node.path.slice(1) : node.path}</code>
         <input
           type="checkbox"
@@ -587,23 +593,30 @@ function renderRevisionsView () {
             <div class="changes-count-container">
               <span class="additions-count">${diffAdditions ? `+${diffAdditions}` : ''}</span>
               <span class="deletions-count">${diffDeletions ? `-${diffDeletions}` : ''}</span>
-          </div>
-        ` : ''}
+          </div>` : ''}
 
-        ${diff ? renderDiff(diff) : yo`
-          <div class="empty">
-            <i class="fa fa-magic"></i>
-            <p>
-              Get started by making changes to the files in
-              <code class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-                ${workspaceInfo.localFilesPath}
-              </code>
-            </p>
-          </div>`
-        }
+        ${renderRevisionsContent()}
       </div>
     </div>
   `
+}
+
+function renderRevisionsContent () {
+  if (!currentDiffNode) {
+    return renderHelp()
+  } else if (diff && diff.invalidEncoding) {
+    return yo`
+      <div class="binary-diff-placeholder">
+        <code>
+          1010100111001100
+          1110100101110100
+          1001010100010111
+        </code>
+      </div>
+    `
+  } else if(diff) {
+    return renderDiff(diff)
+  }
 }
 
 function renderSettingsView () {
