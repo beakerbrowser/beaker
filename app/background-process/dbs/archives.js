@@ -99,10 +99,10 @@ export async function query (profileId, query) {
 
 // get all archives that are ready for garbage collection
 export async function listExpiredArchives ({olderThan, biggerThan} = {}) {
-  olderThan = olderThan || DAT_GC_EXPIRATION_AGE
-  biggerThan = biggerThan || DAT_GC_DEFAULT_MINIMUM_SIZE
+  olderThan = typeof olderThan === 'number' ? olderThan : DAT_GC_EXPIRATION_AGE
+  biggerThan = typeof biggerThan === 'number' ? biggerThan : DAT_GC_DEFAULT_MINIMUM_SIZE
   return db.all(`
-    SELECT archives_meta.key
+    SELECT archives_meta.key, archives_meta.metaSize, archives_meta.stagingSize
       FROM archives_meta
       LEFT JOIN archives ON archives_meta.key = archives.key
       WHERE

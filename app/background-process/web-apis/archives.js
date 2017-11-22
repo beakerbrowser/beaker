@@ -3,6 +3,7 @@ import {parse as parseURL} from 'url'
 import pda from 'pauls-dat-api'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
+import * as datGC from '../networks/dat/garbage-collector'
 import * as archivesDb from '../dbs/archives'
 import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
 import {showModal} from '../ui/modals'
@@ -195,6 +196,10 @@ export default {
 
   async clearFileCache (url) {
     return datLibrary.clearFileCache(toKey(url))
+  },
+
+  async clearGarbage () {
+    return datGC.collect({olderThan: 0, biggerThan: 0})
   },
 
   clearDnsCache () {

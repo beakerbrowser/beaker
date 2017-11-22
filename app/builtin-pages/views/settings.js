@@ -1,10 +1,12 @@
 /* globals beakerBrowser Image */
 
 import ColorThief from '../../lib/fg/color-thief'
+import * as toast from '../com/toast'
 
 const yo = require('yo-yo')
 const co = require('co')
 const emitStream = require('emit-stream')
+const bytes = require('bytes')
 const colorThief = new ColorThief()
 
 // globals
@@ -51,6 +53,9 @@ function render () {
 
       <h2 class="ll-heading">Start page settings</h2>
       ${renderStartPageSettings()}
+
+      <h2 class="ll-heading">Cache</h2>
+      ${renderCacheSettings()}
 
       <h2 class="ll-heading">Beaker information</h2>
       <ul class="settings-section">
@@ -184,6 +189,14 @@ function renderStartPageSettings () {
   `
 }
 
+function renderCacheSettings () {
+  return yo`
+    <div class="settings-section">
+      <button class="btn" onclick=${onClearDatCache}>Clear Dat cache</button>
+    </div>
+  `
+}
+
 function renderHelp () {
   return yo`
     <ul class="settings-section help">
@@ -214,6 +227,12 @@ function onToggleAutoUpdate () {
 
 function onClickRestart () {
   beakerBrowser.restartBrowser()
+}
+
+async function onClearDatCache () {
+  const results = await beaker.archives.clearGarbage()
+  console.log('done!', results)
+  toast.create(`Dat cache cleared. (${bytes(results.totalBytes)} freed from ${results.totalArchives} archives.)`)
 }
 
 function onUpdaterStateChanged (state) {

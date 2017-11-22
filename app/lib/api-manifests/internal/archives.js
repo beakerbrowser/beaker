@@ -10,6 +10,7 @@ export default {
   list: 'promise',
   get: 'promise',
   clearFileCache: 'promise',
+  clearGarbage: 'promise',
   clearDnsCache: 'promise',
   createEventStream: 'readable',
   createDebugStream: 'readable'
