@@ -68,7 +68,7 @@ function rFolder (archiveInfo, opts) {
             </a>
           ` : ''
         }
-        ${archiveInfo.isOwner && archiveInfo.localPathExists && opts.includeFolderImport
+        ${archiveInfo.isOwner && archiveInfo.localPathExists
           ? yo`
             <a onclick=${e => onImportFolder(e, archiveInfo)} href="#">
               <i class="fa fa-plus"></i>
@@ -222,7 +222,7 @@ async function onImportFolder (e, archiveInfo) {
       src,
       dst: archiveInfo.url,
       ignore: ['dat.json'],
-      inplaceImport: true
+      inplaceImport: false
     }))
     window.dispatchEvent(new Event('files-added'))
   }
