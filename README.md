@@ -10,8 +10,7 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 ## Binaries
 
-### [OSX 64-bit .dmg](https://download.beakerbrowser.net/download/latest/osx)
-### [Windows 64-bit .exe](https://download.beakerbrowser.net/download/latest/windows_64)
+### Visit the [Releases Page](https://github.com/beakerbrowser/beaker/releases) to find the installer you need.
 
 ## About
 
