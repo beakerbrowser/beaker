@@ -1,6 +1,7 @@
 import {app} from 'electron'
 import debug from 'debug'
 import fs from 'fs'
+import concat from 'concat-stream'
 import {join as joinPath} from 'path'
 import {format} from 'util'
 
@@ -28,4 +29,10 @@ export default function setup () {
 
 export function getLogFilePath () {
   return logFilePath
+}
+
+export function getLogFileContent (start, end) {
+  start = start || 0
+  end = end || 10e5
+  return new Promise(resolve => fs.createReadStream(logFilePath, {start, end}).pipe(concat({encoding: 'string'}, resolve)))
 }
