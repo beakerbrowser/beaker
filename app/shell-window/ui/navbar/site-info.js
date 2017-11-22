@@ -7,44 +7,42 @@ import PERMS from '../../../lib/perms'
 import { ucfirst, getPermId, getPermParam } from '../../../lib/strings'
 
 export class SiteInfoNavbarBtn {
-  constructor () {
+  constructor (page) {
     this.isDropdownOpen = false
-    this.siteInfo = false
-    this.sitePerms = false
-    this.siteInfoOverride = false
-    this.protocolInfo = false
-    this.siteLoadError = false
+    this.page = page
     window.addEventListener('click', e => this.onClickAnywhere(e)) // close dropdown on click outside
     pages.on('set-active', e => this.closeDropdown()) // close dropdown on tab change
   }
 
   render () {
     // pull details
+    var protocolInfo = this.page.protocolInfo
+    var siteLoadError = this.page.siteLoadError
     var icon = ''
     var protocolLabel = ''
     var protocolCls = 'insecure'
-    var gotInsecureResponse = this.siteLoadError && this.siteLoadError.isInsecureResponse
+    var gotInsecureResponse = siteLoadError && siteLoadError.isInsecureResponse
 
-    if (this.siteLoadError) {
+    if (siteLoadError) {
       icon = 'exclamation-circle'
       protocolLabel = ''
     }
 
-    if (this.protocolInfo) {
-      var isHttps = ['https:'].includes(this.protocolInfo.scheme)
+    if (protocolInfo) {
+      var isHttps = ['https:'].includes(protocolInfo.scheme)
 
-      if (isHttps && !gotInsecureResponse && !this.siteLoadError) {
+      if (isHttps && !gotInsecureResponse && !siteLoadError) {
         icon = 'lock'
         protocolLabel = 'Secure'
         protocolCls = 'secure'
-      } else if (this.protocolInfo.scheme === 'http:' || (isHttps && gotInsecureResponse)) {
+      } else if (protocolInfo.scheme === 'http:' || (isHttps && gotInsecureResponse)) {
         icon = 'exclamation-circle https-error'
         protocolLabel = 'Not secure'
-      } else if (this.protocolInfo.scheme === 'dat:') {
+      } else if (protocolInfo.scheme === 'dat:') {
         icon = 'share-alt'
         protocolLabel = 'Secure P2P'
         protocolCls = 'p2p'
-      } else if (this.protocolInfo.scheme === 'beaker:') {
+      } else if (protocolInfo.scheme === 'beaker:') {
         protocolCls = 'beaker'
         icon = ''
       }
@@ -63,13 +61,16 @@ export class SiteInfoNavbarBtn {
     if (!this.isDropdownOpen) {
       return ''
     }
+    var protocolInfo = this.page.protocolInfo
+    var siteInfo = this.page.siteInfo
+    var sitePerms = this.page.sitePerms
 
     // pull details
     var protocolDesc = ''
-    if (this.protocolInfo) {
-      if (['https:'].includes(this.protocolInfo.scheme)) {
+    if (protocolInfo) {
+      if (['https:'].includes(protocolInfo.scheme)) {
         protocolDesc = 'Your connection to this site is secure.'
-      } else if (this.protocolInfo.scheme === 'http:') {
+      } else if (protocolInfo.scheme === 'http:') {
         protocolDesc = yo`
           <div>
             <p>
@@ -81,7 +82,7 @@ export class SiteInfoNavbarBtn {
             </small>
           </div>
         `
-      } else if (['dat:'].indexOf(this.protocolInfo.scheme) != -1) {
+      } else if (['dat:'].indexOf(protocolInfo.scheme) != -1) {
         protocolDesc = yo`<span>
           This site was downloaded from a secure peer-to-peer network.
           <a onclick=${e => this.learnMore()}>Learn More</a>
@@ -91,12 +92,12 @@ export class SiteInfoNavbarBtn {
 
     // site permissions
     var permsEls = []
-    if (this.sitePerms) {
-      for (var k in this.sitePerms) {
-        permsEls.push(this.renderPerm(k, this.sitePerms[k]))
+    if (sitePerms) {
+      for (var k in sitePerms) {
+        permsEls.push(this.renderPerm(k, sitePerms[k]))
       }
     }
-    if (this.siteInfo && this.siteInfo.requiresRefresh) {
+    if (siteInfo && siteInfo.requiresRefresh) {
       permsEls.push(yo`<div>
         <a><label class="checked" onclick=${this.onClickRefresh.bind(this)}><span class="icon icon-ccw"></span> Refresh to apply changes.</label></a>
       </div>`)
@@ -121,22 +122,22 @@ export class SiteInfoNavbarBtn {
 
   getTitle () {
     var title = ''
-    if (this.siteInfoOverride && this.siteInfoOverride.title) {
-      title = this.siteInfoOverride.title
-    } else if (this.siteInfo && this.siteInfo.title) {
-      title = this.siteInfo.title
-    } else if (this.protocolInfo && this.protocolInfo.scheme === 'dat:') {
+    if (this.page.siteInfoOverride && this.page.siteInfoOverride.title) {
+      title = this.page.siteInfoOverride.title
+    } else if (this.page.siteInfo && this.page.siteInfo.title) {
+      title = this.page.siteInfo.title
+    } else if (this.page.protocolInfo && this.page.protocolInfo.scheme === 'dat:') {
       title = 'Untitled'
     }
     return title
   }
 
   getUrl () {
-    return (this.protocolInfo) ? this.protocolInfo.url : ''
+    return (this.page.protocolInfo) ? this.page.protocolInfo.url : ''
   }
 
   getHostname () {
-    return (this.protocolInfo) ? this.protocolInfo.hostname : ''
+    return (this.page.protocolInfo) ? this.page.protocolInfo.hostname : ''
   }
 
   updateActives () {
@@ -156,7 +157,7 @@ export class SiteInfoNavbarBtn {
   }
 
   onClickRefresh () {
-    pages.getActive().reload()
+    this.page.reload()
     this.closeDropdown()
   }
 
@@ -191,13 +192,13 @@ export class SiteInfoNavbarBtn {
 
   togglePerm (perm) {
     // update perm
-    var newValue = (this.sitePerms[perm] === 1) ? 0 : 1
-    beakerSitedata.setPermission(this.protocolInfo.url, perm, newValue).then(() => {
-      this.sitePerms[perm] = newValue
+    var newValue = (this.page.sitePerms[perm] === 1) ? 0 : 1
+    beakerSitedata.setPermission(this.page.protocolInfo.url, perm, newValue).then(() => {
+      this.page.sitePerms[perm] = newValue
 
       // requires refresh?
       const permId = getPermId(perm)
-      this.siteInfo.requiresRefresh = (PERMS[permId] && PERMS[permId].requiresRefresh)
+      this.page.siteInfo.requiresRefresh = (PERMS[permId] && PERMS[permId].requiresRefresh)
 
       // rerender
       this.updateActives()
@@ -205,7 +206,7 @@ export class SiteInfoNavbarBtn {
   }
 
   viewSiteFiles (subpage) {
-    const { hostname } = this.protocolInfo
+    const { hostname } = this.page.protocolInfo
     pages.setActive(pages.create('beaker://library/' + hostname + '#' + subpage))
     this.closeDropdown()
   }

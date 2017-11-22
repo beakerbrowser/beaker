@@ -10,7 +10,6 @@ import { UpdatesNavbarBtn } from './navbar/updates'
 import { BrowserMenuNavbarBtn } from './navbar/browser-menu'
 import { PageMenuNavbarBtn } from './navbar/page-menu'
 import { DatSidebarBtn } from './navbar/dat-sidebar'
-import { SiteInfoNavbarBtn } from './navbar/site-info'
 import {pluralize} from '../../lib/strings'
 
 const KEYCODE_DOWN = 40
@@ -30,7 +29,6 @@ var updatesNavbarBtn = null
 var datSidebarBtn = null
 var browserMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
-var siteInfoNavbarBtn = null
 
 // autocomplete data
 var autocompleteCurrentValue = null
@@ -46,7 +44,6 @@ export function setup () {
   datSidebarBtn = new DatSidebarBtn()
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
   pageMenuNavbarBtn = new PageMenuNavbarBtn()
-  siteInfoNavbarBtn = new SiteInfoNavbarBtn()
 }
 
 export function createEl (id) {
@@ -285,13 +282,6 @@ function render (id, page) {
   var addrValue = addrEl ? addrEl.value : ''
   var isAddrElFocused = addrEl && addrEl.matches(':focus')
 
-  // setup menus
-  siteInfoNavbarBtn.protocolInfo = (page && page.protocolInfo)
-  siteInfoNavbarBtn.siteInfo = (page && page.siteInfo)
-  siteInfoNavbarBtn.sitePerms = (page && page.sitePerms)
-  siteInfoNavbarBtn.siteInfoOverride = (page && page.siteInfoOverride)
-  siteInfoNavbarBtn.siteLoadError = (page && page.siteLoadError)
-
   // the main URL input
   var locationInput = yo`
     <input
@@ -321,7 +311,7 @@ function render (id, page) {
         ${reloadBtn}
       </div>
       <div class="toolbar-input-group">
-        ${siteInfoNavbarBtn.render()}
+        ${page ? page.siteInfoNavbarBtn.render() : ''}
         ${locationPrettyView}
         ${locationInput}
         ${inpageFinder}
