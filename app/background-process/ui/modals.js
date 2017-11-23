@@ -46,7 +46,7 @@ export function showModal (parentWindow, modalName, opts = {}) {
   })
 
   // register behaviors
-  modalWindow.on('close', () => closeModal)
+  modalWindow.on('close', closeModal)
 
   // create and return the end-state promise
   modalWindow.promise = new Promise((resolve, reject) => {
