@@ -277,7 +277,9 @@ async function datServer (req, res) {
     debug('Entry not found:', urlp.path)
 
     // check for a fallback page
-    await tryStat(manifest.fallback_page)
+    if (manifest) {
+      await tryStat(manifest.fallback_page)
+    }
 
     if (!entry) {
       cleanup()
