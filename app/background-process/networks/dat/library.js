@@ -276,7 +276,7 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
     secretKey,
     metadataStorageCacheSize: 0,
     contentStorageCacheSize: 0,
-    treeCacheSize: 0
+    treeCacheSize: 2048
   })
   archive.replicationStreams = [] // list of all active replication streams
   archive.peerHistory = [] // samples of the peer count
