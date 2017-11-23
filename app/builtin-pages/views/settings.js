@@ -231,7 +231,7 @@ function onClickRestart () {
 
 async function onClearDatCache () {
   const results = await beaker.archives.clearGarbage()
-  console.log('done!', results)
+  console.debug('Dat garbage cleared', results)
   toast.create(`Dat cache cleared. (${bytes(results.totalBytes)} freed from ${results.totalArchives} archives.)`)
 }
 

@@ -351,6 +351,11 @@ export async function getOrLoadArchive (key, opts) {
   return loadArchive(key, opts)
 }
 
+export function isArchiveLoaded (key) {
+  key = fromURLToKey(key)
+  return key in archives
+}
+
 export async function updateSizeTracking (archive) {
   // read the datignore
   var filter

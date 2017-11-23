@@ -1,4 +1,5 @@
 import * as archivesDb from '../../dbs/archives'
+import {isArchiveLoaded} from './library'
 import {
   DAT_GC_FIRST_COLLECT_WAIT,
   DAT_GC_REGULAR_COLLECT_WAIT
@@ -26,10 +27,16 @@ export async function collect ({olderThan, biggerThan} = {}) {
 
   // run the GC
   var totalBytes = 0
+  var skippedArchives = 0
   var startTime = Date.now()
   var expiredArchives = await archivesDb.listExpiredArchives({olderThan, biggerThan})
   debug('GC cleaning out %d expired archives', expiredArchives.length)
   for (let i = 0; i < expiredArchives.length; i++) {
+    if (isArchiveLoaded(expiredArchives[i].key)) {
+      // dont GC archives that are in memory (and thus in use)
+      skippedArchives++
+      continue
+    }
     totalBytes += expiredArchives[i].metaSize
     totalBytes += expiredArchives[i].stagingSize
     await archivesDb.deleteArchive(expiredArchives[i].key)
@@ -40,7 +47,7 @@ export async function collect ({olderThan, biggerThan} = {}) {
   schedule(DAT_GC_REGULAR_COLLECT_WAIT)
 
   // return stats
-  return {totalBytes, totalArchives: expiredArchives.length}
+  return {totalBytes, totalArchives: expiredArchives.length, skippedArchives}
 }
 
 // helpers
