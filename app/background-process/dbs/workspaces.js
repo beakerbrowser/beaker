@@ -10,6 +10,10 @@ export function get (profileId, name) {
   return db.get(`SELECT * FROM workspaces WHERE profileId = ? AND name = ?`, [profileId, name])
 }
 
+export function getByPublishTargetUrl (profileId, url) {
+  return db.get(`SELECT * FROM workspaces WHERE profileId = ? AND publishTargetUrl = ?`, [profileId, url])
+}
+
 export function list (profileId) {
   return db.all(`SELECT * FROM workspaces WHERE profileId = ? ORDER BY name`, [profileId])
 }

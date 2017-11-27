@@ -81,6 +81,21 @@ test('set & get workspaces (manually)', async t => {
     createdAt: 'number',
     updatedAt: 'number'
   })
+
+  // get by publish target url
+  var res = await app.client.executeAsync((url, done) => {
+    window.beaker.workspaces.get(0, url).then(done, done)
+  }, createdDatUrl)
+  res.value.createdAt = typeof res.value.createdAt
+  res.value.updatedAt = typeof res.value.updatedAt
+  t.deepEqual(res.value, {
+    profileId: 0,
+    name: 'test-ws',
+    localFilesPath: createdFilePath,
+    publishTargetUrl: createdDatUrl,
+    createdAt: 'number',
+    updatedAt: 'number'
+  })
 })
 
 test('initialize a workspace folder', async t => {

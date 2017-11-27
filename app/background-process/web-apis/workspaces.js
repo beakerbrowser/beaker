@@ -43,8 +43,13 @@ export default {
 
   async get (profileId, name) {
     assertValidProfileId(profileId)
-    assertValidName(name)
-    return workspacesDb.get(profileId, name)
+    if (typeof name === 'string' && name.startsWith('dat://')) {
+      assertDatUrl(name)
+      return workspacesDb.getByPublishTargetUrl(profileId, name)
+    } else {
+      assertValidName(name)
+      return workspacesDb.get(profileId, name)
+    }
   },
 
   // create or update a workspace
