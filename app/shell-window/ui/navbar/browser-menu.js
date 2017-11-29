@@ -136,19 +136,6 @@ export class BrowserMenuNavbarBtn {
             </div>
 
             <div class="section">
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://workspaces')}>
-                <i class="fa fa-pencil-square-o"></i>
-                <span class="label">Your Projects</span>
-              </div>
-
-              <div class="menu-item" onclick=${e => this.onShowSubmenu('create-new')}>
-                <i class="fa fa-plus-square-o"></i>
-                <span class="label">Create New</span>
-                <i class="more fa fa-angle-right"></i>
-              </div>
-            </div>
-
-            <div class="section">
               <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
                 <i class="fa fa-star-o"></i>
                 <span class="label">Bookmarks</span>
@@ -160,9 +147,23 @@ export class BrowserMenuNavbarBtn {
                 <span class="shortcut">${this.accelerators.history}</span>
               </div>
 
+              <div class="menu-item downloads" style=${progressEl ? 'height: 41px' : ''} onclick=${e => this.onClickDownloads(e)}>
+                <i class="fa fa-download"></i>
+                <span class="label">Downloads</span>
+                ${this.shouldPersistDownloadsIndicator ? yo`<i class="fa fa-circle"></i>` : ''}
+                ${progressEl}
+              </div>
+            </div>
+
+            <div class="section">
               <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
+                <i class="fa fa-book"></i>
+                <span class="label">Library</span>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://filesystem')}>
                 <i class="fa fa-code"></i>
-                <span class="label">Beaker Filesystem</span>
+                <span class="label">Filesystem</span>
               </div>
 
               <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://network')}>
@@ -170,11 +171,18 @@ export class BrowserMenuNavbarBtn {
                 <span class="label">Network Activity</span>
               </div>
 
-              <div class="menu-item downloads" style=${progressEl ? 'height: 41px' : ''} onclick=${e => this.onClickDownloads(e)}>
-                <i class="fa fa-download"></i>
-                <span class="label">Downloads</span>
-                ${this.shouldPersistDownloadsIndicator ? yo`<i class="fa fa-circle"></i>` : ''}
-                ${progressEl}
+            </div>
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://workspaces')}>
+                <i class="fa fa-pencil-square-o"></i>
+                <span class="label">Your Projects</span>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onShowSubmenu('create-new')}>
+                <i class="fa fa-plus-square-o"></i>
+                <span class="label">Create New</span>
+                <i class="more fa fa-angle-right"></i>
               </div>
             </div>
 
