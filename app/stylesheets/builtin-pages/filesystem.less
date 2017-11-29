@@ -5,10 +5,22 @@
 @import "../components/popups.less";
 @import "./components/files-browser.less";
 
-.filesystem-wrapper {
+.window-content.builtin.filesystem {
+  position: initial;
+  padding: 0;
+}
+
+.builtin-wrapper.filesystem-wrapper {
+  background: none;
+  max-width: initial;
+  max-height: initial;
 
   .builtin-main {
+    max-width: initial;
+    max-height: initial;
     margin: 0;
+    width: 100vw;
+    background: #fff;
   }
 
   .builtin-main > .empty {

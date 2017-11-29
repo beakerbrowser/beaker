@@ -1,7 +1,9 @@
 .files-browser {
+
   .files-tree-view {
     flex: 1;
     max-width: 800px;
+    margin-left: 150px;
     border-right: 1px solid #ddd;
     background: #fff;
 
@@ -96,6 +98,7 @@
 
       &.selected:not(.dragover) {
         background: mix(@blue, @teal);
+        background: tint(@blue, 15%);
         color: #fff;
         -webkit-font-smoothing: antialiased;
         font-weight: 600;
