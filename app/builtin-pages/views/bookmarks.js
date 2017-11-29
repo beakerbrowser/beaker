@@ -120,20 +120,18 @@ function renderRow (row, i) {
     return ''
   } else if (currentRenderingMode === 'grid') {
     return renderRowGrid(row, i)
-  } else if (currentRenderingMode === 'expanded') {
-    return renderRowExpanded(row, i)
-  } else if (currentRenderingMode === 'compact') {
-    return renderRowCompact(row, i)
+  } else if (currentRenderingMode === 'list') {
+    return renderRowList(row, i)
   } else {
     return ''
   }
 }
 
-function renderRowCompact (row, i) {
+function renderRowList (row, i) {
   const isOwner = row.private || row._origin === userProfile._origin
 
   return yo`
-    <li class="ll-row bookmarks__row compact ${row.private ? 'private' : 'public'} ${isOwner ? 'is-owner' : ''}" data-row=${i}>
+    <li class="ll-row bookmarks__row list ${row.private ? 'private' : 'public'} ${isOwner ? 'is-owner' : ''}" data-row=${i}>
       <a class="link bookmark__link" href=${row.href} title=${row.title} />
         ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : ''}
         <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
