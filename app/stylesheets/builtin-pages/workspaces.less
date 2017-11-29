@@ -32,33 +32,23 @@
 
 label {
   width: initial !important;
-
-  + .path {
-    height: 26px;
-    line-height: 26px;
-    vertical-align: top;
-    margin-left: 3px;
-  }
-
-  &[for="path"] {
-    position: relative;
-    display: inline-block;
-    overflow: visible;
-    margin-top: 0 !important;
-
-    &:after {
-      &:extend(.code-font);
-      position: absolute;
-      left: ~"calc(100% + 10px)";
-      content: attr(data-path);
-      font-size: 13px;
-      color: inherit;
-    }
-  }
 }
 
-input[type="file"] {
-  display: none;
+.btn.path {
+  position: relative;
+  display: inline-block;
+  overflow: visible;
+  margin-top: 0 !important;
+
+  &:after {
+    &:extend(.code-font);
+    position: absolute;
+    left: ~"calc(100% + 10px)";
+    top: 0;
+    content: attr(data-path);
+    font-size: 13px;
+    color: inherit;
+  }
 }
 
 .name-input-container {
@@ -85,7 +75,7 @@ input[type="file"] {
     line-height: 29px;
     vertical-align: middle;
     padding: 0 8px;
-    z-index: 3;
+    z-index: 1;
     border-radius: 4px 0 0 4px;
     border-right: 1px solid #d9d9d9;
   }
@@ -377,6 +367,7 @@ input[type="file"] {
               border-bottom: 1px solid #ddd;
             }
 
+            .choose-directory,
             code:hover,
             a {
               cursor: pointer;

@@ -203,10 +203,21 @@ async function onSaveWorkspaceName () {
 }
 
 async function onChangeWorkspaceDirectory (e) {
-  const path = e.target.files[0].path
-  workspaceInfo.localFilesPath = path
-  await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath: path})
-  toast.create(`Workspace directory updated to ${path}`)
+  const directory = await beaker.browser.showOpenDialog({
+    title: 'Select a folder',
+    buttonLabel: 'Select folder',
+    properties: ['openDirectory']
+  })
+
+  if (directory) {
+    const path = directory[0]
+    workspaceInfo.localFilesPath = path
+    await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath: path})
+    toast.create(`Workspace directory updated to ${path}`)
+    render()
+  }
+
+  await loadCurrentDiff()
   render()
 }
 
@@ -295,16 +306,19 @@ function renderWorkspacesListing () {
 
 function renderWorkspaceListItem (workspace) {
   return yo`
-    <a class="workspace" href="beaker://workspaces/${workspace.name}" onclick=${pushUrl}>
+    <a class="row thick workspace" href="beaker://workspaces/${workspace.name}" onclick=${pushUrl}>
       <div>
         <img class="favicon" src="beaker-favicon:workspace://${workspace.name}"/>
+
         <span class="info">
-          <span class="title"><code>workspace://${workspace.name}</code></span>
+          <div>
+            <span class="title">workspace://${workspace.name}</span>
+          </div>
 
           <div class="metadata">
-            <code class="path" onclick=${e => {e.stopPropagation(); e.preventDefault(); onOpenFolder(workspace.localFilesPath);}}>
+            <span class="path" onclick=${e => {e.stopPropagation(); e.preventDefault(); onOpenFolder(workspace.localFilesPath);}}>
               ${workspace.localFilesPath}
-            </code>
+            </span>
           </div>
         </span>
       </div>
@@ -399,7 +413,7 @@ function renderHeader () {
                     <i class="fa fa-folder-o"></i>
 
                     <span class="url" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-                      ${workspaceInfo.localFilesPath || yo`<em>Configure local directory</em>`}
+                      ${workspaceInfo.localFilesPath || yo`<em onclick=${onChangeWorkspaceDirectory}>Configure local directory</em>`}
                     </span>
 
                     ${workspaceInfo.localFilesPath ? yo`
@@ -512,7 +526,7 @@ function renderOverview() {
               ${workspaceInfo.localFilesPath}
             </code>
           </p>`
-        : yo`<p>Get started by <span>choosing a directory for your project.</p>`}
+        : yo`<p>Get started by <span class="choose-directory" onclick=${onChangeWorkspaceDirectory}>choosing a directory for your project.</p>`}
       </div>
 
       <div class="tip preview">
@@ -668,7 +682,7 @@ function renderSettingsView () {
 
         <div class="name-input-container">
           <span class="protocol">workspaces://</span>
-          <input onkeyup=${onChangeWorkspaceName} name="name" value=${tmpWorkspaceName}/>
+          <input onkeyup=${onChangeWorkspaceName} name="name" onblur=${onSaveWorkspaceName} value=${tmpWorkspaceName}/>
 
           ${tmpWorkspaceName !== workspaceInfo.name ? yo`
             <button class="btn primary" onclick=${onSaveWorkspaceName}>
@@ -681,13 +695,12 @@ function renderSettingsView () {
       <div>
         <label>Directory</label>
         <p>
-          The directory on your computer that contains your workspace's files
+          The directory on your computer that contains your project's files
         </p>
 
-        <label for="path" class="btn" data-path=${workspaceInfo.localFilesPath}>
-          Select directory
-        </label>
-        <input id="path" name="path" type="file" webkitdirectory onchange=${onChangeWorkspaceDirectory}/>
+        <button class="btn path" onclick=${onChangeWorkspaceDirectory} data-path=${workspaceInfo.localFilesPath || ''}>
+          Select ${workspaceInfo.localFilesPath ? 'new' : ''} directory
+        </button>
       </div>
 
       <div>
