@@ -19,7 +19,7 @@ let diffAdditions = 0
 let diffDeletions = 0
 let currentDiffNode
 let numCheckedRevisions
-let activeView
+let activeView = 'revisions'
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -49,9 +49,6 @@ async function setup () {
 }
 
 async function loadCurrentWorkspace () {
-  // reset state
-  activeView = 'revisions'
-
   currentWorkspaceName = parseURLWorkspaceName()
   tmpWorkspaceName = currentWorkspaceName
   if (currentWorkspaceName) {
