@@ -19,7 +19,7 @@ let diffAdditions = 0
 let diffDeletions = 0
 let currentDiffNode
 let numCheckedRevisions
-let activeView = 'revisions'
+let activeView
 
 // HACK FIX
 // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
@@ -65,12 +65,6 @@ async function loadCurrentWorkspace () {
     workspaceInfo = null
   }
 
-  // set the current diff node to the first revision
-  if (workspaceInfo && workspaceInfo.revisions.length) {
-    const firstRev = workspaceInfo.revisions[0]
-    currentDiffNode = firstRev
-    await loadCurrentDiff(firstRev)
-  }
   render()
 }
 
@@ -120,17 +114,22 @@ async function onCreateWorkspace (type) {
   const wsInfo = await beaker.workspaces.create(0) // TODO: type
   allWorkspaces = await beaker.workspaces.list(0)
 
-  // add a loading indicator
-  // NOTE: No perceptible "loading" actually happens here. I added the loading indicator
-  // because otherwise it's difficult to notice that a new project was created
-  // -tbv
-  activeView = ''
-  render()
+  if (workspaceInfo) {
+    // add a loading indicator if creating from an existing workspace
+    // NOTE: No perceptible "loading" actually happens here. I added the loading indicator
+    // because otherwise it's difficult to notice that a new project was created
+    // -tbv
+    activeView = ''
+    render()
 
-  setTimeout(() => {
+    setTimeout(() => {
+      activeView = 'revisions'
+      history.pushState({}, null, `beaker://workspaces/${wsInfo.name}`)
+    }, 500)
+  } else {
     activeView = 'revisions'
     history.pushState({}, null, `beaker://workspaces/${wsInfo.name}`)
-  }, 500)
+  }
 }
 
 async function onDeleteWorkspace (name) {
@@ -255,8 +254,8 @@ function renderWorkspacesListing () {
                 <i class="fa fa-plus"></i>
               </button>
 
-              <div class="dropdown-items left" onclick=${onCreateWorkspace}>
-                <div class="dropdown-item">
+              <div class="dropdown-items left">
+                <div class="dropdown-item" onclick=${onCreateWorkspace}>
                   <div class="label">
                     <i class="fa fa-code"></i>
                     Website
@@ -389,7 +388,7 @@ function renderHeader () {
 
                     <button class="btn copy-btn tooltip-container" onclick=${() => onCopy(workspaceInfo.publishTargetUrl, 'URL copied to clipboard')}>
                       Copy
-                      <div class="tooltip">Live version URL</div>
+                      <div class="tooltip">Live URL</div>
                     </button>
                   </div>
 
@@ -397,13 +396,15 @@ function renderHeader () {
                     <i class="fa fa-folder-o"></i>
 
                     <span class="url" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-                      ${workspaceInfo.localFilesPath}
+                      ${workspaceInfo.localFilesPath || yo`<em>Configure local directory</em>`}
                     </span>
 
-                    <button class="btn copy-btn outline tooltip-container" onclick=${() => onCopy(workspaceInfo.localFilesPath, 'Path copied to clipboard')}>
-                      Copy
-                      <div class="tooltip">Local directory</div>
-                    </button>
+                    ${workspaceInfo.localFilesPath ? yo`
+                      <button class="btn copy-btn outline tooltip-container" onclick=${() => onCopy(workspaceInfo.localFilesPath, 'Path copied to clipboard')}>
+                        Copy
+                        <div class="tooltip">Local directory</div>
+                      </button>`
+                    : ''}
                   </div>
                 </div>
 
@@ -443,9 +444,9 @@ function renderTabs () {
         Preview
       </div>
 
-      <div onclick=${e => onChangeView('configure')} class="tab ${activeView === 'configure' ? 'active' : ''}">
+      <div onclick=${e => onChangeView('settings')} class="tab ${activeView === 'settings' ? 'active' : ''}">
         <i class="fa fa-cogs"></i>
-        Configure
+        Settings
       </div>
     </div>
   `
@@ -482,7 +483,7 @@ function renderView () {
   switch (activeView) {
     case 'revisions':
       return renderRevisionsView()
-    case 'configure':
+    case 'settings':
       return renderSettingsView()
     case 'preview':
       return renderPreviewView()
@@ -495,6 +496,37 @@ function renderView () {
           </div>
         </div>`
   }
+}
+
+function renderOverview() {
+  return yo`
+    <div class="overview">
+      <div class="tip local-files-path">
+        <i class="fa fa-lightbulb-o"></i>
+        ${workspaceInfo.localFilesPath ? yo`
+          <p>Get started by editing your project's files in
+            <code onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+              ${workspaceInfo.localFilesPath}
+            </code>
+          </p>`
+        : yo`<p>Get started by <span>choosing a directory for your project.</p>`}
+      </div>
+
+      <div class="tip preview">
+        <i class="fa fa-eye"></i>
+        <p>
+          Preview your project at <code><a href="workspace://${workspaceInfo.name}">workspace://${workspaceInfo.name}</a></code>
+        </p>
+      </div>
+
+      <div class="tip target-url">
+        <i class="fa fa-link"></i>
+          <p>
+            View your published changes at<br><code><a href="${workspaceInfo.publishTargetUrl}">${workspaceInfo.publishTargetUrl}</a></code>
+          </p>
+      </div>
+    </div>
+  `
 }
 
 function renderPreviewView () {
@@ -603,9 +635,7 @@ function renderRevisionsView () {
 }
 
 function renderRevisionsContent () {
-  if (!currentDiffNode) {
-    return renderHelp()
-  } else if (diff && diff.invalidEncoding) {
+  if (diff && diff.invalidEncoding) {
     return yo`
       <div class="binary-diff-placeholder">
         <code>
@@ -615,8 +645,10 @@ function renderRevisionsContent () {
         </code>
       </div>
     `
-  } else if(diff) {
+  } else if (diff) {
     return renderDiff(diff)
+  } else {
+    return renderOverview()
   }
 }
 

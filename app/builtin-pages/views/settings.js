@@ -12,7 +12,7 @@ var browserInfo
 var browserEvents
 var defaultProtocolSettings
 var applications
-var activeSection = ''
+var activeView = 'auto-updater'
 
 // TODO(bgimg) disabled for now -prf
 // var bgImages = [
@@ -55,58 +55,71 @@ async function setup () {
 function renderToPage () {
   // only render if this page is active
   if (!browserInfo) {
-    yo.update(document.querySelector('.settings-wrapper'), yo`<div class="pane" id="el-content">
-      <div class="settings-wrapper builtin-wrapper"></div>
-    </div>`)
+    yo.update(document.querySelector('.settings-wrapper'), yo`
+      <div class="settings-wrapper builtin-wrapper" id="el-content">
+        <div class="settings-wrapper builtin-wrapper"></div>
+      </div>`
+    )
     return
   }
 
-  yo.update(document.querySelector('.settings-wrapper'), yo`<div class="pane" id="el-content">
-    <div class="settings-wrapper builtin-wrapper">
+  yo.update(document.querySelector('.settings-wrapper'), yo`
+    <div id="el-content" class="settings-wrapper builtin-wrapper">
+      <div class="builtin-sidebar">
+        <h1>Settings</h1>
 
-      <div>
-        <div class="builtin-sidebar">
-          <h1>Settings</h1>
-          <p class="builtin-blurb">Manage Beaker${"'"}s appearance and preferences.</p>
-
-          <div class="section">
-            <div class="nav-item ${activeSection === 'auto-updater' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="auto-updater">
-              Auto-updater
-            </div>
-            <div class="nav-item ${activeSection === 'protocol-settings' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="protocol-settings">
-              Protocol settings
-            </div>
-            <div class="nav-item ${activeSection === 'applications' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="applications">
-              Applications
-            </div>
-            <div class="nav-item ${activeSection === 'info' ? 'active' : ''}" onclick=${onUpdateActiveSection} data-section="info">
-              Information & Help
-            </div>
-          </div>
+        <div class="nav-item ${activeView === 'auto-updater' ? 'active' : ''}" onclick=${() => onUpdateView('auto-updater')}>
+          Auto-updater
         </div>
 
-        <div class="builtin-main">
-          <h2 id="auto-updater" class="ll-heading">Auto-updater</h2>
-          ${renderAutoUpdater()}
+        <div class="nav-item ${activeView === 'protocol' ? 'active' : ''}" onclick=${() => onUpdateView('protocol')}>
+          Protocol settings
+        </div>
 
-          <h2 id="protocol-settings" class="ll-heading">Protocol settings</h2>
-          ${renderProtocolSettings()}
+        <div class="nav-item ${activeView === 'applications' ? 'active' : ''}" onclick=${() => onUpdateView('applications')}>
+          Applications
+        </div>
 
-          <h2 id="applications" class="ll-heading">Applications</h2>
-          ${renderApplications()}
-
-          <h2 id="info" class="ll-heading">Beaker information</h2>
-          <ul class="settings-section">
-            <li>Version: ${browserInfo.version} Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</li>
-            <li>User data: ${browserInfo.paths.userData}</li>
-          </ul>
-
-          <h2 class="ll-heading">Help</h2>
-          ${renderHelp()}
+        <div class="nav-item ${activeView === 'information' ? 'active' : ''}" onclick=${() => onUpdateView('information')}>
+          Information & Help
         </div>
       </div>
+
+      <div class="builtin-main">${renderView()}</div>
+    </div>`
+  )
+}
+
+function renderView () {
+  switch (activeView) {
+    case 'auto-updater':
+      return renderAutoUpdater()
+    case 'protocol':
+      return renderProtocolSettings()
+    case 'applications':
+      return renderApplications()
+    case 'information':
+      return renderInformation()
+  }
+}
+
+function renderInformation () {
+  return yo`
+    <div class="view">
+      <h2>About Beaker</h2>
+      <ul>
+        <li>Version: ${browserInfo.version} Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</li>
+        <li>User data: ${browserInfo.paths.userData}</li>
+      </ul>
+
+      <h2>Get help</h2>
+      <ul>
+        <li><a href="https://beakerbrowser.com/docs/using-beaker">Take a tour of Beaker</a></li>
+        <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
+        <li><a href="https://github.com/beakerbrowser/beaker/issues">Report an issue</a></li>
+      </ul>
     </div>
-  </div>`)
+  `
 }
 
 function renderProtocolSettings () {
@@ -121,7 +134,8 @@ function renderProtocolSettings () {
   var registered = Object.keys(defaultProtocolSettings).filter(k => defaultProtocolSettings[k])
   var unregistered = Object.keys(defaultProtocolSettings).filter(k => !defaultProtocolSettings[k])
 
-  return yo`<div class="settings-section protocols">
+  return yo`
+    <div class="view protocols">
       ${registered.length
         ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
         : ''}
@@ -137,7 +151,8 @@ function renderProtocolSettings () {
 }
 
 function renderApplications () {
-  return yo`<div class="settings-section applications">
+  return yo`
+    <div class="view applications">
       <table>
         ${applications.map(app => yo`
           <tr>
@@ -157,10 +172,11 @@ function renderApplications () {
 
 function renderAutoUpdater () {
   if (!browserInfo.updater.isBrowserUpdatesSupported) {
-    return yo`<div class="settings-section">
-      <div>Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
-      You will need to build new versions of Beaker from source.</div>
-    </div>`
+    return yo`
+      <div class="view">
+        <div>Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
+        You will need to build new versions of Beaker from source.</div>
+      </div>`
   }
 
   switch (browserInfo.updater.state) {
@@ -184,7 +200,8 @@ function renderAutoUpdater () {
       </div>`
 
     case 'checking':
-      return yo`<div class="settings-section">
+      return yo`
+      <div class="settings-section">
         <button class="btn" disabled>Checking for updates</button>
         <span class="version-info">
           <div class="spinner"></div>
@@ -194,14 +211,15 @@ function renderAutoUpdater () {
       </div>`
 
     case 'downloading':
-      return yo`<div class="settings-section">
-        <button class="btn" disabled>Updating</button>
-        <span class="version-info">
-          <div class="spinner"></div>
-          Downloading the latest version of Beaker...
-          ${renderAutoUpdateCheckbox()}
-        </span>
-      </div>`
+      return yo`
+        <div class="view">
+          <button class="btn" disabled>Updating</button>
+          <span class="version-info">
+            <div class="spinner"></div>
+            Downloading the latest version of Beaker...
+            ${renderAutoUpdateCheckbox()}
+          </span>
+        </div>`
 
     case 'downloaded':
       return yo`<div class="settings-section">
@@ -240,18 +258,14 @@ function renderAutoUpdateCheckbox () {
 //   `
 // }
 
-function renderHelp () {
-  return yo`
-    <ul class="settings-section help">
-      <li><a href="https://beakerbrowser.com/docs/using-beaker">Take a tour of Beaker</a></li>
-      <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
-      <li><a href="https://github.com/beakerbrowser/beaker/issues">Report an issue</a></li>
-    </ul>
-  `
-}
 
 // event handlers
 // =
+
+function onUpdateView (view) {
+  activeView = view
+  renderToPage()
+}
 
 function onUpdateActiveSection (e) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'))

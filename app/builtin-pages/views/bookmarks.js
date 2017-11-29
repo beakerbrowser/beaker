@@ -147,7 +147,7 @@ function renderRowList (row, i) {
         ${isOwner && !row.private ? yo`
           <span>
             <span class="separator">•</span>
-            ${renderGlobeIcon()}
+            <i class="fa fa-globe"></i>
           </span>`
           : ''}
       </a>
@@ -268,7 +268,7 @@ function renderBookmarksListToPage () {
 }
 
 function renderToPage () {
-  var searchPlaceholder = 'Search bookmarks'
+  var searchPlaceholder = 'Search'
   if (currentView === 'pinned' || currentView === 'public' || currentView === 'private') {
     searchPlaceholder = `Search ${currentView} bookmarks`
   }
@@ -277,104 +277,98 @@ function renderToPage () {
     document.querySelector('.bookmarks-wrapper'),
     yo`
       <div class="bookmarks-wrapper builtin-wrapper">
-        <div>
-          <div class="builtin-sidebar">
-            <h1>Bookmarks</h1>
+        <div class="builtin-sidebar">
+          <h1>Bookmarks</h1>
 
-            <div class="section">
-              <div class="nav-item ${currentView === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('all')}>
-                ${renderStarFillIcon()}
-                All bookmarks
-              </div>
-            </div>
-
-            <div class="section">
-              <h2>Your bookmarks</h2>
-              <div class="nav-item ${currentView === 'mine' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('mine')}>
-                ${renderStarFillIcon()}
-                Your bookmarks
-              </div>
-              <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
-                ${renderPinIcon()}
-                Pinned
-              </div>
-              <div class="nav-item ${currentView === 'public' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('public')}>
-                ${renderGlobeIcon()}
-                Shared by you
-              </div>
-              <div class="nav-item ${currentView === 'private' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('private')}>
-                ${renderPadlockIcon()}
-                Private
-              </div>
-            </div>
-
-            <div class="section">
-              <h2>Friends</h2>
-
-              ${followedUserProfiles
-                ? followedUserProfiles.length
-                  ? followedUserProfiles.map(p => {
-                    return yo`
-                      <div class="friend nav-item ${currentView === p._origin ? 'active' : ''}" onclick=${() => onUpdateViewFilter(p._origin)}>
-                        <img src=${p.avatar ? p._origin + p.avatar : ''} />
-                        <span class="name">${p.name || 'Anonymous'}</span>
-                      </div>
-                    `
-                  })
-                  : yo`<div class="nav-item"><em>Not following anybody.</em></div>`
-                : yo`<div class="nav-item"><em>Loading...</em></div>`}
-            </div>
-
-            <div class="section">
-              <h2>Tags</h2>
-
-              <div class="nav-link-cloud">
-                ${tags.map(t => {
-                  const view = `tag:${t}`
-                  const cls = currentView === view ? 'active' : undefined
-                  return yo`<a class=${cls} onclick=${() => onUpdateViewFilter(view)}>${t}</a>`
-                })}
-              </div>
+          <div class="section">
+            <div class="nav-item ${currentView === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('all')}>
+              ${renderStarFillIcon()}
+              All bookmarks
             </div>
           </div>
 
-          <div class="builtin-main">
-            <div class="builtin-header fixed">
-              <div class="search-container">
-                <input required autofocus onkeyup=${onQueryBookmarks} placeholder=${searchPlaceholder} type="text" class="search"/>
-                <span onclick=${onClearQuery} class="close-btn">
-                  ${renderCloseIcon()}
-                </span>
-              </div>
+          <div class="section">
+            <h2>Your bookmarks</h2>
+            <div class="nav-item ${currentView === 'mine' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('mine')}>
+              ${renderStarFillIcon()}
+              Your bookmarks
+            </div>
+            <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
+              ${renderPinIcon()}
+              Pinned
+            </div>
+            <div class="nav-item ${currentView === 'public' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('public')}>
+              ${renderGlobeIcon()}
+              Shared by you
+            </div>
+            <div class="nav-item ${currentView === 'private' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('private')}>
+              ${renderPadlockIcon()}
+              Private
+            </div>
+          </div>
 
-              <div class="sort-controls btn-bar">
-                <span class="btn ${currentSort === 'alpha' ? 'pressed' : ''}" title="Sort by name" onclick=${() => onUpdateSort('alpha')}>
-                  ${renderListIcon()}
-                </span>
+          <div class="section">
+            <h2>Friends</h2>
 
-                <span class="btn ${currentSort === 'recent' ? 'pressed' : ''}" title="Sort by latest" onclick=${() => onUpdateSort('recent')}>
-                  ${renderHistoryIcon()}
-                </span>
-              </div>
+            ${followedUserProfiles
+              ? followedUserProfiles.length
+                ? followedUserProfiles.map(p => {
+                  return yo`
+                    <div class="friend nav-item ${currentView === p._origin ? 'active' : ''}" onclick=${() => onUpdateViewFilter(p._origin)}>
+                      <img src=${p.avatar ? p._origin + p.avatar : ''} />
+                      <span class="name">${p.name || 'Anonymous'}</span>
+                    </div>
+                  `
+                })
+                : yo`<div class="nav-item"><em>Not following anybody.</em></div>`
+              : yo`<div class="nav-item"><em>Loading...</em></div>`}
+          </div>
 
-              <div class="view-controls btn-bar">
-                <span class="btn ${currentRenderingMode === 'compact' ? 'pressed' : ''}" title="List view" onclick=${() => onUpdateViewRendering('compact')}>
-                  ${renderListIcon()}
-                </span>
+          <div class="section">
+            <h2>Tags</h2>
 
-                <span class="btn ${currentRenderingMode === 'expanded' ? 'pressed' : ''}"  title="Expanded list view" onclick=${() => onUpdateViewRendering('expanded')}>
-                  ${renderListExpandedIcon()}
-                </span>
+            <div class="nav-link-cloud">
+              ${tags.map(t => {
+                const view = `tag:${t}`
+                const cls = currentView === view ? 'active' : undefined
+                return yo`<a class=${cls} onclick=${() => onUpdateViewFilter(view)}>${t}</a>`
+              })}
+            </div>
+          </div>
+        </div>
 
-                <span class="btn ${currentRenderingMode === 'grid' ? 'pressed' : ''}" title="Grid view" onclick=${() => onUpdateViewRendering('grid')}>
-                  ${renderGridIcon()}
-                </span>
-              </div>
+        <div class="builtin-main">
+          <div class="builtin-header fixed">
+            <div class="search-container">
+              <input required autofocus onkeyup=${onQueryBookmarks} placeholder=${searchPlaceholder} type="text" class="search"/>
+              <span onclick=${onClearQuery} class="close-btn">
+                ${renderCloseIcon()}
+              </span>
+              <i class="fa fa-search"></i>
             </div>
 
-            ${renderBookmarks()}
+            <div class="sort-controls btn-bar">
+              <label for="sort">Sort by</label>
+              <select name="sort" onchange=${(e) => {onUpdateSort(e.target.value)}}>
+                <option value="recent" selected="${currentSort === 'recent' ? 'selected' : ''}">Recently bookmarked</option>
+                <option value="alpha" selected="${currentSort === 'alpha' ? 'selected' : ''}">Alphabetical (A-Z)</option>
+              </select>
+            </div>
+
+            <div class="view-controls btn-bar">
+              <span class="view-option ${currentRenderingMode === 'list' ? 'pressed' : ''}" title="List view" onclick=${() => onUpdateViewRendering('list')}>
+                <i class="fa fa-list-ul"></i>
+              </span>
+
+              <span class="view-option ${currentRenderingMode === 'grid' ? 'pressed' : ''}" title="Grid view" onclick=${() => onUpdateViewRendering('grid')}>
+                <i class="fa fa-th"></i>
+              </span>
+            </div>
           </div>
-        </div>`)
+
+          ${renderBookmarks()}
+        </div>
+      `)
 }
 
 function renderBookmarks () {

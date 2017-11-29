@@ -16,6 +16,7 @@
 @import "./builtin-pages/bookmarks";
 @import "./builtin-pages/history";
 @import "./builtin-pages/library";
+@import "./builtin-pages/library2";
 @import "./builtin-pages/timeline";
 @import "./builtin-pages/downloads";
 @import "./builtin-pages/settings";
@@ -28,12 +29,19 @@
 
 .window-content.builtin {
   &:extend(.system-font);
-  background: #fcfcfc;
+  position: relative;
+  background: #f0f0f0;
+  padding: 40px;
 }
 
 .builtin-wrapper {
-  &:extend(.flex);
   width: 100%;
+  max-width: 1400px;
+  max-height: ~"calc(100vh - 80px)";
+  margin: 0 auto;
+  border-radius: 2px;
+  border: 1px solid #ddd;
+  background: #fff;
 
   em.empty {
     display: block;
@@ -51,17 +59,15 @@
   }
 
   h2 {
-    font-weight: 400;
+    font-weight: 500;
     font-size: .725rem;
     text-transform: uppercase;
-    margin: 20px 0 5px 0;
-    color: rgba(0,0,0,.7);
-    letter-spacing: .4px;
-  }
+    margin: 0 0 10px 0;
+    letter-spacing: .25px;
 
-  .links-list {
-    max-width: 875px; // TODO
-    margin-bottom: 20px;
+    &:not(:first-of-type) {
+      margin-top: 40px;
+    }
   }
 
   .ll-row {
@@ -71,7 +77,6 @@
     align-items: center;
     padding: 0 15px;
     background: #fff;
-    border-right: 1px solid rgb(230, 230, 230);
     border-bottom: 1px solid rgb(230, 230, 230);
 
     .link {
@@ -119,6 +124,13 @@
     height: 30px;
     margin-bottom: 10px;
 
+    i.fa-search {
+      position: absolute;
+      left: 10px;
+      top: 8.75px;
+      color: rgba(0,0,0,.5);
+    }
+
     .close-btn,
     .search {
       position: absolute;
@@ -129,10 +141,11 @@
       top: 7px;
     }
 
-    .search {
+    input.search {
       width: 100%;
       height: 100%;
       padding: 0 10px;
+      padding-left: 27px;
 
       &:invalid + .close-btn {
         opacity: 0;
@@ -143,19 +156,19 @@
 
 .builtin-header {
   padding: 15px;
-  background: @background-builtin-page;
+  background: #fff;
 
   &.fixed {
     &:extend(.flex);
     flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
-    position: fixed;
+    position: sticky;
+    top: 0;
     z-index: 3;
     width: 100%;
-    max-width: ~"calc(100% - 300px)";
     height: 50px;
-    padding: 0 10px;
+    padding: 0 15px;
     border-bottom: 1px solid rgb(210, 210, 213);
     box-shadow: 0 2px 0 rgba(0,0,0,.025);
 
@@ -164,18 +177,72 @@
     }
 
     + div {
-      padding-top: 50px;
+      // padding-top: 50px;
     }
   }
+
+  label {
+    color: @color-text--muted;
+    margin-right: 10px;
+    margin-bottom: 0;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 26px;
+  }
+
+  select {
+    height: 26px;
+    font-size: 11.5px;
+  }
+
+  .view-controls {
+
+    .view-option {
+      margin-left: 10px;
+      cursor: pointer;
+
+      &:hover {
+
+        i {
+          color: rgba(0,0,0,0.45);
+        }
+      }
+
+      i {
+        color: rgba(0,0,0,.2);
+        font-size: 14px;
+        cursor: pointer;
+
+        &.fa-th {
+          -webkit-text-stroke: .75px #fff;
+        }
+      }
+
+      &.pressed {
+
+        i {
+          color: rgba(0,0,0,.85);
+        }
+      }
+    }
+  }
+}
+
+.builtin-main,
+.builtin-sidebar {
+  display: inline-block !important;
 }
 
 .builtin-sidebar {
   position: fixed;
   width: 300px;
   height: 100%;
+  max-height: ~"calc(100vh - 82px)";
+  overflow: auto;
   background: @background-builtin-page;
+  background: #fff;
   padding: 10px 0;
-  border-right: 1px solid rgb(210, 210, 213);
+  border-right: 1px solid #ddd;
   display: inline-block;
 
   .builtin-blurb {
@@ -223,6 +290,8 @@
     padding: 0 20px;
     margin-bottom: 1px;
     color: fadeout(@color-text, 10%);
+    border-left: 2.5px solid transparent;
+    cursor: pointer;
 
     .icon {
       width: 18px;
@@ -294,12 +363,13 @@
     }
 
     &:hover {
-      background: rgb(233, 233, 236);
+      background: #f7f7f7;
+      border-color: #ccc;
     }
 
     &.active {
-      background: rgb(225, 237, 250); // TODO decide if this is color we will use -tbv
       font-weight: 500;
+      border-color: @blue;
 
       .icon {
 
@@ -387,9 +457,13 @@
 }
 
 .builtin-main {
-  width: 100%;
+  position: relative;
+  width: ~"calc(100% - 300px)";
+  max-height: ~"calc(100vh - 82px)";
   margin-left: 300px;
   margin-bottom: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
 
   &.center {
     margin: 75px auto;
@@ -397,5 +471,23 @@
     width: 100%;
     height: auto;
     max-width: 750px;
+  }
+
+  .view {
+    padding: 30px;
+    max-width: 700px;
+
+    a {
+      color: @blue;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    ul {
+      list-style: disc;
+      margin-left: 20px;
+    }
   }
 }

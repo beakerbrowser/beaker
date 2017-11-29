@@ -17,6 +17,19 @@
   z-index: 0;
 }
 
+.window-content.workspaces {
+  padding: 0;
+}
+
+.builtin-wrapper.workspaces-wrapper.workspace {
+  height: 100vh;
+  max-height: initial;
+  position: initial;
+  overflow: hidden;
+  max-width: initial;
+  border: 0;
+}
+
 label {
   width: initial !important;
 
@@ -223,6 +236,7 @@ input[type="file"] {
   .header {
     position: fixed;
     z-index: 3;
+    top: 0;
     width: 100%;
     height: 85px;
     background: #f9f9f9;
@@ -296,10 +310,6 @@ input[type="file"] {
         align-items: center;
         padding: 5px 15px;
 
-        &:not(:last-child) {
-          // border-bottom: 1px solid #ddd;
-        }
-
         > i {
           color: rgba(0,0,0,.5);
           margin-right: 10px;
@@ -318,7 +328,6 @@ input[type="file"] {
         .url {
           &:extend(.overflow-ellipsis);
           max-width: 200px;
-          color: @color-text--muted;
           cursor: pointer;
 
           &:hover {
@@ -425,6 +434,42 @@ input[type="file"] {
 
       .revisions-content {
         margin-left: 300px; // width of .revisions-sidebar
+
+        .overview {
+          max-width: 600px;
+          margin: auto;
+          margin-top: 15%;
+          border: 1px solid #ddd;
+
+          .tip {
+            &:extend(.flex);
+            align-items: center;
+            width: 100%;
+            padding: 10px 15px;
+
+            &:not(:last-of-type) {
+              border-bottom: 1px solid #ddd;
+            }
+
+            code:hover,
+            a {
+              cursor: pointer;
+              text-decoration: underline;
+            }
+
+            i {
+              width: 30px;
+              color: rgba(0,0,0,.75);
+              font-size: 20px;
+              margin-right: 10px;
+            }
+
+            p {
+              display: inline-block;
+              margin: 0;
+            }
+          }
+        }
 
         .binary-diff-placeholder {
           text-align: center;
@@ -674,17 +719,21 @@ input[type="file"] {
         }
       }
     }
+  }
 
-    &.preview {
-      padding: 0;
-      padding-top: 85px;
+  .view.preview {
+    padding: 0;
+    padding-top: 85px;
 
-      iframe {
-        width: 100vw;
-        height: ~"calc(100vh - 85px)";
-        border: 0;
-      }
+    iframe {
+      width: 100vw;
+      height: ~"calc(100vh - 85px)";
+      border: 0;
     }
+  }
+
+  .view.help {
+
   }
 
   #loading-wrapper {

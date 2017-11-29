@@ -161,54 +161,54 @@ function renderRow (row, i) {
 
 function render () {
   yo.update(
-    document.querySelector('.history-wrapper'),
-    yo`
+    document.querySelector('.history-wrapper'), yo`
       <div class="history-wrapper builtin-wrapper">
-        <div>
-          <div class="builtin-sidebar">
-            <h1>History</h1>
-            <div class="section">
-              <div onclick=${onUpdatePeriodFilter} data-period="all" class="nav-item ${currentPeriodFilter === 'all' ? 'active' : ''}">
-                All history
-              </div>
-              <div onclick=${onUpdatePeriodFilter} data-period="today" class="nav-item ${currentPeriodFilter === 'today' ? 'active' : ''}">
-                Today
-              </div>
-              <div onclick=${onUpdatePeriodFilter} data-period="yesterday" class="nav-item ${currentPeriodFilter === 'yesterday' ? 'active' : ''}">
-                Yesterday
-              </div>
+        <div class="builtin-sidebar">
+          <h1>History</h1>
+          <div class="section">
+            <div onclick=${onUpdatePeriodFilter} data-period="all" class="nav-item ${currentPeriodFilter === 'all' ? 'active' : ''}">
+              All history
             </div>
-          </div>
-
-          <div class="builtin-main">
-            <div class="builtin-header fixed">
-              <div class="search-container">
-                <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your browsing history" type="text" class="search"/>
-                <span onclick=${onClearQuery} class="close-btn">
-                  ${renderCloseIcon()}
-                </span>
-              </div>
-
-              <div>
-                <div class="btn" onclick=${onClickDeleteBulk.bind(window)}>
-                  Clear history
-                </div>
-
-                <select id="delete-period">
-                  <option value="day" selected>from today</option>
-                  <option value="week">from this week</option>
-                  <option value="month">from this month</option>
-                  <option value="all">from all time</option>
-                </select>
-              </div>
+            <div onclick=${onUpdatePeriodFilter} data-period="today" class="nav-item ${currentPeriodFilter === 'today' ? 'active' : ''}">
+              Today
             </div>
-
-            <div class="links-list history">
-              ${renderRows()}
+            <div onclick=${onUpdatePeriodFilter} data-period="yesterday" class="nav-item ${currentPeriodFilter === 'yesterday' ? 'active' : ''}">
+              Yesterday
             </div>
           </div>
         </div>
-      </div>`)
+
+        <div class="builtin-main">
+          <div class="builtin-header fixed">
+            <div class="search-container">
+              <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your browsing history" type="text" class="search"/>
+              <span onclick=${onClearQuery} class="close-btn">
+                ${renderCloseIcon()}
+              </span>
+              <i class="fa fa-search"></i>
+            </div>
+
+            <div>
+              <div class="btn" onclick=${onClickDeleteBulk.bind(window)}>
+                Clear history
+              </div>
+
+              <select id="delete-period">
+                <option value="day" selected>from today</option>
+                <option value="week">from this week</option>
+                <option value="month">from this month</option>
+                <option value="all">from all time</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <div class="links-list history">${renderRows()}</div>
+          </div>
+        </div>
+      </div>
+    `
+  )
 }
 
 // event handlers
