@@ -222,6 +222,15 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://downloads/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/downloads.build.js'))
   }
+  if (requestUrl === 'beaker://filesystem/main.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/filesystem.css'))
+  }
+  if (requestUrl === 'beaker://filesystem/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/filesystem.build.js'))
+  }
+  if (requestUrl === 'beaker://filesystem/' || requestUrl.startsWith('beaker://filesystem/')) {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/filesystem.html'))
+  }
   if (requestUrl === 'beaker://library/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/library.css'))
   }
@@ -230,15 +239,6 @@ async function beakerServer (req, res) {
   }
   if (requestUrl === 'beaker://library/' || requestUrl.startsWith('beaker://library/')) {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/library.html'))
-  }
-  if (requestUrl === 'beaker://library2/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/library2.css'))
-  }
-  if (requestUrl === 'beaker://library2/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/library2.build.js'))
-  }
-  if (requestUrl === 'beaker://library2/' || requestUrl.startsWith('beaker://library2/')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/library2.html'))
   }
   if (requestUrl === 'beaker://timeline/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/timeline.css'))

@@ -1,155 +1,362 @@
-/* globals beaker DatArchive */
+/* globals DatArchive beaker */
 
-import * as yo from 'yo-yo'
-import {
-  FSVirtualRoot,
-  FSVirtualFolder_User,
-  FSVirtualFolder_Network
-} from 'beaker-virtual-fs'
-import FilesBrowser from '../com/files-browser'
+import yo from 'yo-yo'
+import prettyBytes from 'pretty-bytes'
+import {pluralize, shortenHash} from '../../lib/strings'
+import {writeToClipboard} from '../../lib/fg/event-handlers'
+import * as toast from '../com/toast'
+import toggleable from '../com/toggleable'
+import renderCloseIcon from '../icon/close'
 
 // globals
 // =
 
-var fsRoot = new FSVirtualRoot()
-var filesBrowser
+// archives, cached in memory
+let archives = []
+let query = ''
+let currentView = 'all'
+let currentSort = 'recent'
+
+// main
+// =
 
 setup()
 async function setup () {
-  // load and render
-  await fsRoot.readData()
-  filesBrowser = new FilesBrowser(fsRoot)
-  filesBrowser.onSetCurrentSource = onSetCurrentSource
-  await readSelectedPathFromURL()
-  update()
+  await loadArchives()
+  render()
+}
 
-  // wire up events
-  window.addEventListener('keydown', onKeyDown)
-  window.addEventListener('popstate', onPopState)
+// data
+// =
+
+async function loadArchives () {
+  // read data
+  switch (currentView) {
+    case 'seeding':
+      archives = await beaker.archives.list({
+        isNetworked: true
+      })
+      break
+    case 'offline':
+      archives = await beaker.archives.list({
+        isSaved: true,
+        isNetworked: false
+      })
+      break
+    case 'trash':
+      archives = await beaker.archives.list({
+        isSaved: false
+      })
+      break
+    default:
+      archives = await beaker.archives.list({
+        isSaved: true,
+        search: query ? query : false
+      })
+      break
+  }
+
+  // apply search query
+  filterArchives()
+
+  // attach extra data to each archive
+  // archives = await Promise.all(archives.map(async a => {
+  //   const workspace = await beaker.workspaces.get(0, a.url)
+  //   if (workspace) a.workspaceName = workspace.name
+  //   return a
+  // }))
+
+  // apply sort
+  sortArchives()
+}
+
+function filterArchives () {
+  if (query && query.length) {
+    archives = archives.filter(a => {
+      if (a.title && a.title.toLowerCase().includes(query)) {
+        return a
+      }
+      else if (a.description && a.description.toLowerCase().includes(query)) {
+        return a
+      }
+    })
+  }
+}
+
+function sortArchives () {
+  if (currentSort === 'recent') {
+    archives = archives.sort((a, b) => b.createdAt - a.createdAt)
+  } else if (currentSort === 'alpha') {
+    archives = archives.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+  }
 }
 
 // rendering
 // =
 
-function update () {
-  yo.update(document.querySelector('.library-wrapper'), yo`
-    <div
-      class="library-wrapper builtin-wrapper"
-      oncontextmenu=${onContextMenu}
-    >
-      <div class="builtin-main">
-        ${filesBrowser.render()}
+function renderRows () {
+  if (!archives.length) return yo`<em class="empty">No archives</em>`
+  return yo`<div>${archives.map(renderRow)}</div>`
+}
+
+function renderRow (row, i) {
+  const isSeeding = row.userSettings && row.userSettings.networked
+  const isSaved = row.userSettings && row.userSettings.isSaved
+  const isOwner = row.isOwner
+
+  return yo`
+    <div class="row archive">
+      <div>
+        <img class="favicon" src="beaker-favicon:${row.url}" />
+
+        <span class="info">
+          <div>
+            <a href=${row.url} class="title">
+              ${row.title || yo`<em>Untitled</em>`}
+            </a>
+
+            <span class="status tooltip-container">
+              <span class="circle ${isSeeding ? 'green' : 'red'}"></span>
+              <span class="tooltip">${isSeeding ? 'Seeding' : 'Not seeding'} files</span>
+            </a>
+
+            ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
+          </div>
+
+          <div class="metadata">
+            ${row.peers} ${pluralize(row.peers, 'peer')}
+            <span class="bullet">•</span>
+            ${prettyBytes(row.size)}
+            <span class="bullet">•</span>
+            <a href=${row.url} class="url">${shortenHash(row.url)}</a>
+          </div>
+        </span>
+      </div>
+
+      <div class="buttons">
+        ${isSaved ? yo`
+          <button class="btn transparent remove-archive" title="Delete archive" onclick=${e => {e.preventDefault(); e.stopPropagation(); onDeleteArchive(row.url, row.title || null);}}>
+            <i class="fa fa-trash-o"></i>
+          </button>`
+        : ''}
+
+        <button title="Copy URL" class="btn copy-url" onclick=${() => onCopy(row.url)}>
+          <i class="fa fa-clipboard"></i>
+        </button>
+
+        ${isSaved ? yo`
+          <button title="Edit" class="btn" onclick=${() => onClickEdit(row)}>
+            <span>${isOwner ? 'Edit' : 'Fork & Edit'}</span>
+            <i class="fa fa-pencil"></i>
+          </button>`
+        : yo`
+          <button title="Restore" class="btn" onclick=${() => onClickRestore(row)}>
+            Restore
+            <i class="fa fa-undo"></i>
+          </button>`
+        }
+
+        ${toggleable(yo`
+          <div class="dropdown toggleable-container">
+            <button class="btn transparent toggleable">
+              <i class="fa fa-ellipsis-v"></i>
+            </button>
+
+            <div class="dropdown-items with-triangle right">
+              <a href="beaker://library/${row.url}" target="_blank" class="dropdown-item">
+                <i class="fa fa-file-code-o"></i>
+                View files
+              </a>
+
+              <div class="dropdown-item" onclick=${() => onClickFork(row.url)}>
+                <i class="fa fa-code-fork"></i>
+                Fork
+              </div>
+
+              <div class="dropdown-item" onclick=${() => onToggleSeeding(row)}>
+                <i class="fa fa-${isSeeding ? 'stop' : 'upload'}"></i>
+                ${isSeeding ? 'Stop' : 'Start'} seeding files
+              </div>
+
+              <div class="dropdown-item" onclick=${() => onClickDownloadZip(row.url)}>
+                <i class="fa fa-file-archive-o"></i>
+                Download as .zip
+              </div>
+            </div>
+          </div>
+        `)}
       </div>
     </div>
-  `)
+  `
 }
 
-// event handlers
+function render () {
+  yo.update(
+    document.querySelector('.library-wrapper'), yo`
+      <div class="library-wrapper builtin-wrapper">
+        <div class="builtin-sidebar">
+          <h1>Library</h1>
+          <div class="section">
+            <div onclick=${() => onUpdateView('all')} class="nav-item ${currentView === 'all' ? 'active' : ''}">
+              All
+            </div>
+
+            <div onclick=${() => onUpdateView('seeding')} class="nav-item ${currentView === 'seeding' ? 'active' : ''}">
+              Currently seeding
+            </div>
+
+            <div onclick=${() => onUpdateView('offline')} class="nav-item ${currentView === 'offline' ? 'active' : ''}">
+              Offline
+            </div>
+
+            <div onclick=${() => onUpdateView('trash')} class="nav-item ${currentView === 'trash' ? 'active' : ''}">
+              Trash
+            </div>
+          </div>
+        </div>
+
+        <div class="builtin-main">
+          <div class="builtin-header fixed">
+            <div class="search-container">
+              <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search" type="text" class="search"/>
+              <span onclick=${onClearQuery} class="close-btn">
+                ${renderCloseIcon()}
+              </span>
+              <i class="fa fa-search"></i>
+            </div>
+
+          </div>
+
+          ${renderRows()}
+        </div>
+      </div>
+    `
+  )
+}
+
+// events
 // =
 
-function onKeyDown (e) {
-  if (e.code.startsWith('Arrow')) {
-    e.preventDefault()
-    filesBrowser.selectDirection(e.code.slice('Arrow'.length).toLowerCase())
-  }
+function onCopy (str, successMessage = 'URL copied to clipboard') {
+  writeToClipboard(str)
+  toast.create(successMessage)
 }
 
-function onPopState (e) {
-  readSelectedPathFromURL()
-}
-
-function onSetCurrentSource (node) {
-  let path = ''
-  if (node._archiveInfo) {
-    path += node._archiveInfo.key
-    if (node._path) {
-      path += node._path
+async function onDeleteArchive (url, title) {
+  const nickname = title ? `"${title}"` : url
+  if (confirm(`Delete ${nickname} from your Library?`)) {
+    try {
+      await beaker.archives.remove(url)
+      await loadArchives()
+      render()
+    } catch (_) {
+      toast.create(`Could not remove ${nickname} from your Library`, 'error')
     }
   }
-  window.history.pushState('', {}, `beaker://library/${path}`)
 }
 
-async function onContextMenu (e) {
-  e.preventDefault()
-  e.stopPropagation()
+async function onToggleSeeding (archive) {
+  const newNetworkedStatus = !archive.userSettings.networked
 
-  const action = await beaker.browser.showContextMenu([
-    {
-      type: 'submenu',
-      label: 'New archive...',
-      submenu: [
-        {label: 'Application', id: 'new-application'},
-        {label: 'Code module', id: 'new-module'},
-        {label: 'Dataset', id: 'new-dataset'},
-        {label: 'Documents', id: 'new-documents'},
-        {label: 'Music', id: 'new-music'},
-        {label: 'Photos', id: 'new-photos'},
-        {label: 'Videos', id: 'new-videos'},
-        {label: 'Website', id: 'new-website'}
-      ]
-    }
-  ])
-  if (action && action.startsWith('new')) {
-    var archive = await DatArchive.create({prompt: true, type: action.slice('new-'.length)})
-    window.location.pathname = archive.url.slice('dat://'.length)
-  }
-}
+  const isSaved = archive.userSettings && archive.userSettings.isSaved
+  const isOwner = archive.isOwner
 
-// helpers
-// =
+  // don't unsave the archive if user is owner
+  if (isOwner && isSaved) {
+    var tmpArchive = new DatArchive(archive.url)
 
-async function readSelectedPathFromURL () {
-  try {
-    var node
-    var [key, ...pathParts] = window.location.pathname.slice(1).split('/')
-    if (!key) {
-      // default to user's home
-      node = fsRoot.children.find(node => node instanceof FSVirtualFolder_User)
-      await filesBrowser.setCurrentSource(node, {suppressEvent: true})
+    try {
+      await tmpArchive.configure({networked: newNetworkedStatus})
+    } catch (e) {
+      toast.create('Something went wrong', 'error')
       return
     }
-
-    // try to find a path to the given archive
-    var archive = new DatArchive(key)
-    var info = await archive.getInfo()
-
-    // start with provenance
-    if (info.isOwner && info.userSettings.isSaved) {
-      node = fsRoot.children.find(node => node instanceof FSVirtualFolder_User)
-      await node.readData()
+  } else {
+    // unsave if not owner and update the peer count
+    if (isSaved) {
+      await beaker.archives.remove(archive.url)
+      archive.userSettings.isSaved = false
     } else {
-      // check if it's === to or authored by a profile in our network list
-      let userNode = fsRoot.children.find(node => (
-        node._profile && (
-          node._profile._origin === info.url ||
-          (info.author && node._profile._origin === info.author.url)
-        )
-      ))
-      if (userNode) {
-        node = userNode
-        await node.readData()
-      } else {
-        // use 'Network' and add this archive if it does not exist
-        node = fsRoot.children.find(node => node instanceof FSVirtualFolder_Network)
-        await node.readData()
-        node.addArchive(info)
-      }
+      await beaker.archives.add(archive.url)
+      archive.userSettings.isSaved = true
     }
+  }
 
-    // now select the archive
-    node = node.children.find(node => node._archiveInfo.key === key)
-    await node.readData()
+  // update the local archive data and re-render
+  archive.userSettings.networked = newNetworkedStatus
+  render()
+}
 
-    // now select the folders
-    let pathPart
-    while ((pathPart = pathParts.shift())) {
-      node = node.children.find(node => node.name === pathPart)
-      await node.readData()
-    }
+async function onClickFork (url) {
+  const fork = await DatArchive.fork(url, {prompt: true}).catch(() => {})
+  window.location = fork.url
+}
 
-    await filesBrowser.setCurrentSource(node, {suppressEvent: true})
-  } catch (e) {
-    // ignore, but log just in case something is buggy
-    console.debug(e)
+async function onClickEdit (archive) {
+  let editableUrl = archive.url
+
+  // if user is not the archive's owner, create an editable version
+  if (!archive.isOwner) {
+    const fork = await DatArchive.fork(archive.url, {prompt: false}).catch(() => {})
+    editableUrl = fork.url
+  }
+
+  // fetch the workspace info
+  let workspace = await beaker.workspaces.get(0, editableUrl)
+
+  // if the archive doesn't already have a workspace attached to it, create one
+  if (!workspace) {
+    workspace = await beaker.workspaces.create(0, {publishTargetUrl: editableUrl})
+  }
+
+  window.location = `beaker://workspaces/${workspace.name}`
+}
+
+async function onClickRestore (archive) {
+  await beaker.archives.add(archive.url, {isSaved: true})
+  archive.userSettings.isSaved = true
+  render()
+}
+
+function onClickDownloadZip (url) {
+  beaker.browser.downloadURL(`${url}?download_as=zip`)
+}
+
+async function onUpdateSearchQuery (e) {
+  var newQuery = e.target.value.toLowerCase()
+  if (newQuery !== query) {
+    query = newQuery
+    await loadArchives()
+    render()
+  }
+}
+
+async function onClearQuery () {
+  document.querySelector('input.search').value = ''
+  query = ''
+  await loadArchives()
+  render()
+}
+
+async function onUpdateView (view) {
+  // reset the search query
+  query = ''
+  document.querySelector('input.search').value = ''
+
+  currentView = view
+  await loadArchives()
+  render()
+
+  // focus the search input
+  document.querySelector('input.search').focus()
+}
+
+function onScrollContent (e) {
+  if (isAtEnd) { return }
+
+  var el = e.target
+  if (el.offsetHeight + el.scrollTop + BEGIN_LOAD_OFFSET >= el.scrollHeight) {
+    // hit bottom
+    fetchMore(renderAndAppendRows)
   }
 }
