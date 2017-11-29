@@ -255,8 +255,6 @@ function renderWorkspacesListing () {
       <div>
         <div class="builtin-sidebar">
           <h1>Workspaces</h1>
-
-          <p>Manage your workspaces</p>
         </div>
 
         <div class="builtin-main">
