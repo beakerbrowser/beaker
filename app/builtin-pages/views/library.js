@@ -105,7 +105,7 @@ function renderRow (row, i) {
   const isOwner = row.isOwner
 
   return yo`
-    <div class="row archive">
+    <div class="row thick archive">
       <div>
         <img class="favicon" src="beaker-favicon:${row.url}" />
 

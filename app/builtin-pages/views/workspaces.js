@@ -230,9 +230,15 @@ async function onClickChangedNode (node) {
 // =
 
 function render () {
-  if (currentWorkspaceName.length && !workspaceInfo) render404()
-  else if (!workspaceInfo) renderWorkspacesListing()
-  else renderWorkspace()
+  if (currentWorkspaceName.length && !workspaceInfo) {
+    render404()
+  } else if (!workspaceInfo) {
+    renderWorkspacesListing()
+    document.querySelector('.window-content').classList.remove('workspace')
+  } else {
+    renderWorkspace()
+    document.querySelector('.window-content').classList.add('workspace')
+  }
 }
 
 function renderWorkspacesListing () {
