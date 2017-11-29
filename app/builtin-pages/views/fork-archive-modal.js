@@ -149,7 +149,7 @@ function render () {
 
             ${progressEl}
             <div class="form-actions">
-              <button type="button" class="btn cancel" onclick=${onClickCancel} tabindex="4" disabled=${isProcessing}>Cancel</button>
+              <button type="button" class="btn" onclick=${onClickCancel} tabindex="4" disabled=${isProcessing}>Cancel</button>
               <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="5" disabled=${isProcessing}>
                 ${isProcessing
                   ? yo`<span><span class="spinner"></span> Forking...</span>`
