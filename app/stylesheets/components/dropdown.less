@@ -8,8 +8,6 @@
     cursor: pointer;
   }
 
-  z-index: 3000;
-
   &.open {
 
     .toggleable {
@@ -40,6 +38,7 @@
   width: 270px;
   position: absolute;
   right: 0px;
+  z-index: 3000;
   background: #fafafa;
   border: 1px solid #dadada;
   border-radius: 4px;
@@ -70,7 +69,9 @@
 }
 
 .dropdown-item {
-  padding: 10px 15px;
+  display: block;
+  width: 100%;
+  padding: 5px 15px;
   border-bottom: 1px solid #eee;
   cursor: pointer;
 
@@ -103,5 +104,13 @@
     color: rgba(0,0,0,.55);
     margin: 0;
     margin-left: 17px;
+  }
+
+  &:first-of-type {
+    border-radius: 2px 2px 0 0;
+  }
+
+  &:last-of-type {
+    border-radius: 0 0 2px 2px;
   }
 }
