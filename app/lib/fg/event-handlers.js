@@ -36,3 +36,8 @@ export function writeToClipboard (str) {
   document.execCommand('copy')
   document.body.removeChild(textarea)
 }
+
+export function adjustWindowHeight (sel) {
+  var el = sel ? document.querySelector(sel) : document.body
+  beakerBrowser.setWindowDimensions({height: el.getClientRects()[0].height})
+}
