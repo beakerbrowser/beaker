@@ -1,6 +1,8 @@
 @import "../base/spacing";
 @import "../base/colors";
 
+@import "./components/tooltip";
+
 .bookmarks-wrapper {
 
   .builtin-header {
@@ -100,6 +102,7 @@
           transition: color .1s ease;
 
           &:hover {
+            background: none;
             color: #555;
           }
         }

@@ -388,9 +388,8 @@ function renderHeader () {
                       workspace://${workspaceInfo.name}
                     </a>
 
-                    <button class="btn copy-btn outline tooltip-container" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`, 'URL copied to clipboard')}>
+                    <button class="btn copy-btn outline tooltip-container" data-tooltip="Local preview URL" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`, 'URL copied to clipboard')}>
                       Copy
-                      <div class="tooltip">Local preview URL</div>
                     </button>
                   </div>
 
@@ -401,9 +400,8 @@ function renderHeader () {
                       ${workspaceInfo.publishTargetUrl}
                     </a>
 
-                    <button class="btn copy-btn tooltip-container" onclick=${() => onCopy(workspaceInfo.publishTargetUrl, 'URL copied to clipboard')}>
+                    <button class="btn copy-btn tooltip-container" data-tooltip="Live URL" onclick=${() => onCopy(workspaceInfo.publishTargetUrl, 'URL copied to clipboard')}>
                       Copy
-                      <div class="tooltip">Live URL</div>
                     </button>
                   </div>
 
@@ -415,9 +413,8 @@ function renderHeader () {
                     </span>
 
                     ${workspaceInfo.localFilesPath ? yo`
-                      <button class="btn copy-btn outline tooltip-container" onclick=${() => onCopy(workspaceInfo.localFilesPath, 'Path copied to clipboard')}>
+                      <button class="btn copy-btn outline tooltip-container" data-tooltip="Local directory" onclick=${() => onCopy(workspaceInfo.localFilesPath, 'Path copied to clipboard')}>
                         Copy
-                        <div class="tooltip">Local directory</div>
                       </button>`
                     : ''}
                   </div>

@@ -248,7 +248,9 @@ function renderActions (row, i) {
   } else {
     return yo`
       <div class="actions">
-        <div class="action add" onclick=${() => onClickCopyToBookmarks(i)} title="Add to your bookmarks"><span class="icon add">+</span></div>
+        <button class="btn transparent action add tooltip-container" data-tooltip="Add to your bookmarks" onclick=${() => onClickCopyToBookmarks(i)}>
+          <i class="fa fa-plus"></i>
+        </button>
       </div>
     `
   }

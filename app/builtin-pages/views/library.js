@@ -115,9 +115,8 @@ function renderRow (row, i) {
               ${row.title || yo`<em>Untitled</em>`}
             </a>
 
-            <span class="status tooltip-container">
+            <span class="status tooltip-container" data-tooltip="${isSeeding ? 'Seeding' : 'Not seeding'} files">
               <span class="circle ${isSeeding ? 'green' : 'red'}"></span>
-              <span class="tooltip">${isSeeding ? 'Seeding' : 'Not seeding'} files</span>
             </a>
 
             ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}

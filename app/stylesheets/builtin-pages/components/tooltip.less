@@ -3,36 +3,40 @@
 
   &:hover {
 
-    .tooltip {
+    &:before,
+    &:after {
       display: block;
+      z-index: 3;
     }
   }
-}
 
-.tooltip {
-  position: absolute;
-  top: 25px;
-  left: 50%;
-  transform: translate(-50%, 0);
-  z-index: 3000;
-  display: none;
-  background: fadeout(#111, 5%);
-  font-size: .7rem;
-  border-radius: 4px;
-  padding: 7px 10px;
-  color: rgba(255,255,255,.925);
-  text-transform: none;
-  text-align: center;
-  font-weight: 300;
-  white-space: pre;
-  line-height: 1;
+  &:before {
+    display: none;
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    z-index: 3000;
+    transform: translate(-50%, 0);
+    content: attr(data-tooltip);
+    background: fadeout(#111, 5%);
+    font-size: .7rem;
+    border: 0;
+    border-radius: 4px;
+    padding: 7px 10px;
+    color: rgba(255,255,255,.925);
+    text-transform: none;
+    text-align: center;
+    font-weight: 300;
+    white-space: pre;
+    line-height: 1;
+  }
 
   &:after {
-    display: block;
-    content: '';
+    display: none;
     position: absolute;
     left: ~"calc(50% - 6px)";
-    top: -6px;
+    top: 25px;
+    content: '';
     width: 0;
     height: 0;
     border-left:  6px solid transparent;
