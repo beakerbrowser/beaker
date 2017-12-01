@@ -100,7 +100,7 @@ async function onUpdateSearchQuery (q) {
     // fetch library archives
     // filter by title, URL
     let libraryResults = await beaker.archives.list({isNetworked: true})
-    libraryResults = libraryResults.filter(a => (a.url.includes(query) || (a.title && a.title.toLowerCase().includes(query)))).slice(0, 4)
+    libraryResults = libraryResults.filter(a => (a.url.includes(query) || (a.title && a.title.toLowerCase().includes(query)))).slice(0, 3)
     libraryResults = libraryResults.map(a => {
       return {
         title: a.title,
@@ -127,7 +127,7 @@ async function onUpdateSearchQuery (q) {
 
     // fetch history
     let historyResults = await beaker.history.search(query)
-    historyResults = historyResults.slice(0, 7)
+    historyResults = historyResults.slice(0, 6)
     historyResults = historyResults.map(r => {
       return {
         title: r.title,
