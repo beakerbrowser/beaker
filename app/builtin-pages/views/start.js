@@ -1,6 +1,7 @@
 /* globals beaker */
 
 import * as yo from 'yo-yo'
+import {findParent} from '../../lib/fg/event-handlers'
 import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
 
 const LATEST_VERSION = 7009 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
@@ -10,8 +11,12 @@ const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-9/?updated=tru
 // globals
 // =
 
-var pinnedBookmarks = []
-var settings
+let pinnedBookmarks = []
+let searchResults = []
+let query = ''
+let activeSearchResult = 0
+let isSearchFocused = false
+let settings
 
 update()
 setup()
@@ -36,6 +41,114 @@ async function setup () {
 
 // events
 // =
+
+function onFocusSearch () {
+  isSearchFocused = true
+  update()
+}
+
+function onBlurSearch (e) {
+  // if blur happened because of click event inside of .search-container, abort
+  if (findParent(e.target, 'search-container')) {
+    return
+  }
+
+  isSearchFocused = false
+  update()
+}
+
+function onClickSubmitActiveSearch () {
+  if (!query || !searchResults) return
+  window.location = searchResults[activeSearchResult].targetUrl
+}
+
+function onInputSearch (e) {
+  // enter
+  if (e.keyCode === 13) {
+    // ENTER
+    window.location = searchResults[activeSearchResult].targetUrl
+  } else if (e.keyCode === 40) {
+    // DOWN
+    activeSearchResult += 1
+
+    // make sure we don't go out of bounds
+    if (activeSearchResult > searchResults.length - 1) {
+      activeSearchResult = searchResults.length - 1
+    }
+    update()
+  } else if (e.keyCode === 38) {
+    // UP
+    activeSearchResult -= 1
+
+    // make sure we don't go out of bounds
+    if (activeSearchResult < 0) {
+      activeSearchResult = 0
+    }
+    update()
+  } else {
+    onUpdateSearchQuery(e.target.value)
+  }
+}
+
+async function onUpdateSearchQuery (q) {
+  searchResults = []
+  query = q.length ? q.toLowerCase() : ''
+
+  if (query.length) {
+    // fetch library archives
+    // filter by title, URL
+    let libraryResults = await beaker.archives.list({isNetworked: true})
+    libraryResults = libraryResults.filter(a => (a.url.includes(query) || (a.title && a.title.toLowerCase().includes(query)))).slice(0, 4)
+    libraryResults = libraryResults.map(a => {
+      return {
+        title: a.title,
+        faviconUrl: a.url,
+        targetUrl: a.url,
+        label: 'Saved to Library'
+      }
+    })
+    searchResults = searchResults.concat(libraryResults)
+
+    // fetch workspaces
+    // filter by name
+    let workspaceResults = await beaker.workspaces.list(0)
+    workspaceResults = workspaceResults.filter(w => w.name.toLowerCase().includes(query)).slice(0, 2)
+    workspaceResults = workspaceResults.map(w => {
+      return {
+        title: `workspace://${w.name}`,
+        faviconUrl: `workspace://${w.name}`,
+        targetUrl: `beaker://workspaces/${w.name}`,
+        label: w.localFilesPath || 'In your workspaces'
+      }
+    })
+    searchResults = searchResults.concat(workspaceResults)
+
+    // fetch history
+    let historyResults = await beaker.history.search(query)
+    historyResults = historyResults.slice(0, 7)
+    historyResults = historyResults.map(r => {
+      return {
+        title: r.title,
+        faviconUrl: r.url,
+        targetUrl: r.url,
+        label: r.url
+      }
+    })
+    searchResults = searchResults.concat(historyResults)
+
+    // add a DuckDuckGo search to the results
+    const ddgRes = {
+      title: query,
+      targetUrl: `https://duckduckgo.com?q=${query}`,
+      icon: 'fa fa-search',
+      label: 'Search DuckDuckGo',
+      class: 'ddg'
+    }
+    searchResults.push(ddgRes)
+  }
+
+  update()
+}
 
 async function onUnpinBookmark (e) {
   e.preventDefault()
@@ -70,11 +183,16 @@ function update () {
     <div class="window-content builtin start ${''/*TODO(bgimg) theme*/}">
       <div class="builtin-wrapper start-wrapper">
         <div class="search-container">
-          <input type="text" autofocus class="search" placeholder="Search the Web, your Library, bookmarks, and more"/>
+          <input type="text" autofocus onfocus=${onFocusSearch} onblur=${onBlurSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
           <i class="fa fa-search"></i>
-          <button class="btn primary search-btn" title="Submit search query">
+
+          <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
             <i class="fa fa-arrow-right"></i>
           </button>
+
+          ${query.length && isSearchFocused ? yo`
+            <div class="search-results">${searchResults.map(renderSearchResult)}</div>`
+          : ''}
         </div>
 
         ${renderPinnedBookmarks()}
@@ -83,6 +201,21 @@ function update () {
       </div>
     </div>
   `)
+}
+
+function renderSearchResult (res, i) {
+  return yo`
+    <a href=${res.targetUrl} class="search-result ${i === activeSearchResult ? 'active' : ''} ${res.class}">
+      ${res.faviconUrl
+        ? yo`<img class="icon favicon" src="beaker-favicon:${res.faviconUrl}"/>`
+        : yo`<i class="icon ${res.icon}"></i>`
+      }
+
+      <span class="title">${res.title}</span>
+
+      ${res.label ? yo`<span class="label">— ${res.label || ''}</span>` : ''}
+    </a>
+  `
 }
 
 function renderDock () {
@@ -130,6 +263,11 @@ function renderPinnedBookmark (bookmark) {
 
 // helpers
 // =
+
+function delay (cb, param) {
+  window.clearTimeout(cb)
+  setTimeout(cb, 200, param)
+}
 
 async function loadBookmarks () {
   pinnedBookmarks = (await beaker.bookmarks.listPinnedBookmarks()) || []
