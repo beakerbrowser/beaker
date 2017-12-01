@@ -2,7 +2,6 @@
 
 import * as yo from 'yo-yo'
 import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
-import renderCloseIcon from '../icon/close'
 
 const LATEST_VERSION = 7009 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const WELCOME_URL = 'https://beakerbrowser.com/docs/using-beaker/'
@@ -70,36 +69,61 @@ function update () {
   yo.update(document.querySelector('.window-content.start'), yo`
     <div class="window-content builtin start ${''/*TODO(bgimg) theme*/}">
       <div class="builtin-wrapper start-wrapper">
-        <div class="builtin-main center">
-          ${renderPinnedBookmarks()}
+        <div class="search-container">
+          <input type="text" autofocus class="search" placeholder="Search the Web, your Library, bookmarks, and more"/>
+          <i class="fa fa-search"></i>
+          <button class="btn primary search-btn" title="Submit search query">
+            <i class="fa fa-arrow-right"></i>
+          </button>
         </div>
+
+        ${renderPinnedBookmarks()}
+
+        ${renderDock()}
       </div>
     </div>
   `)
 }
 
+function renderDock () {
+  return yo`
+    <div class="dock-wrapper">
+      <div class="dock">
+        <h2 class="dock-item"><a href="beaker://network">Network Settings</a></h2>
+        <h2 class="dock-item"><a href="beaker://history">History</a></h2>
+        <h2 class="dock-item"><a href="beaker://bookmarks" >Bookmarks</a></h2>
+        <h2 class="dock-item"><a href="beaker://library">Library</a></h2>
+      </div>
+    </div>
+  `
+}
+
 function renderPinnedBookmarks () {
   return yo`
-    <div class="pinned-bookmarks">
-      ${pinnedBookmarks.map(renderPinnedBookmark)}
-      <a class="add-bookmark-btn" onclick=${onClickAddBookmark}>+</a>
+    <div class="pinned-bookmarks-container">
+      ${pinnedBookmarks.length ? yo`
+        <h2>
+          <span>Pinned bookmarks</span>
+          <button class="btn transparent tooltip-container add-pinned-btn" data-tooltip="Add pinned bookmark" onclick=${onClickAddBookmark}>
+            <i class="fa fa-plus"></i>
+          </button>
+        </h2>`
+      : ''}
+
+      <div class="pinned-bookmarks">
+        ${pinnedBookmarks.map(renderPinnedBookmark)}
+      </div>
     </div>
   `
 }
 
 function renderPinnedBookmark (bookmark) {
-  var { href, title } = bookmark
+  const {href, title} = bookmark
+
   return yo`
     <a class="pinned-bookmark" href=${href}>
-      <div class="favicon-container">
-        <img src=${'beaker-favicon:' + href} class="favicon"/>
-      </div>
-      <div class="info">
-        <div class="title">${title}</div>
-      </div>
-      <button class="close-btn nofocus" data-href=${href} title="Unpin this bookmark" onclick=${onUnpinBookmark}>
-        ${renderCloseIcon()}
-      </button>
+      <img src=${'beaker-favicon:' + href} class="favicon"/>
+      <div class="title">${title}</div>
     </a>
   `
 }

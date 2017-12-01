@@ -10,7 +10,24 @@
 <body>
   <div class="window">
     <div class="window-content builtin start">
-      <div class="start-wrapper"></div>
+      <div class="start-wrapper">
+        <div class="search-container">
+          <input type="text" autofocus class="search" placeholder="Search the Web, your Library, bookmarks, and more"/>
+          <i class="fa fa-search"></i>
+          <button class="btn primary search-btn" title="Submit search query">
+            <i class="fa fa-long-arrow-right"></i>
+          </button>
+        </div>
+
+        <div class="dock-wrapper">
+          <div class="dock">
+            <h2 class="dock-item"><a href="beaker://network">Network Settings</a></h2>
+            <h2 class="dock-item"><a href="beaker://history">History</a></h2>
+            <h2 class="dock-item"><a href="beaker://bookmarks" >Bookmarks</a></h2>
+            <h2 class="dock-item"><a href="beaker://library">Library</a></h2>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <script src="beaker://start/main.js"></script>
