@@ -268,7 +268,7 @@ function renderPinnedBookmark (bookmark) {
 
 function delay (cb, param) {
   window.clearTimeout(cb)
-  setTimeout(cb, 200, param)
+  setTimeout(cb, 75, param)
 }
 
 async function loadBookmarks () {
