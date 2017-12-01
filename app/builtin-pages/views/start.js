@@ -45,16 +45,18 @@ async function setup () {
 function onFocusSearch () {
   isSearchFocused = true
   update()
+
+  window.addEventListener('click', onClickWhileSearchFocused)
 }
 
-function onBlurSearch (e) {
-  // if blur happened because of click event inside of .search-container, abort
-  if (findParent(e.target, 'search-container')) {
+function onClickWhileSearchFocused (e) {
+  if (findParent(e.target, 'search-results') || findParent(e.target, 'search')) {
     return
+  } else {
+    isSearchFocused = false
+    window.removeEventListener('click', onClickWhileSearchFocused)
+    update()
   }
-
-  isSearchFocused = false
-  update()
 }
 
 function onClickSubmitActiveSearch () {
@@ -183,7 +185,7 @@ function update () {
     <div class="window-content builtin start ${''/*TODO(bgimg) theme*/}">
       <div class="builtin-wrapper start-wrapper">
         <div class="search-container">
-          <input type="text" autofocus onfocus=${onFocusSearch} onblur=${onBlurSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
+          <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
           <i class="fa fa-search"></i>
 
           <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
