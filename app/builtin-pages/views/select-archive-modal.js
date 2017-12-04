@@ -77,9 +77,6 @@ function onChangeSelectedArchive (e) {
 function onUpdateActiveView (e) {
   currentView = e.target.dataset.content
   render()
-
-  if (currentView === 'newArchive') beaker.browser.setBrowserWindowSize(550, 270)
-  else beaker.browser.setBrowserWindowSize(550, 540)
 }
 
 async function onSubmit (e) {

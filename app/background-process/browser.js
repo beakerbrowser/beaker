@@ -101,8 +101,6 @@ export const WEBAPI = {
 
   setStartPageBackgroundImage,
 
-  setBrowserWindowSize,
-
   getDefaultProtocolSettings,
   setAsDefaultProtocolClient,
   removeAsDefaultProtocolClient,
@@ -159,14 +157,6 @@ export function setStartPageBackgroundImage (srcPath, appendCurrentDir) {
       fs.unlink(destPath, () => resolve())
     }
   })
-}
-
-export function setBrowserWindowSize (width, height) {
-  try {
-    BrowserWindow.fromWebContents(this.sender).setSize(width, height, true)
-  } catch (e) {
-
-  }
 }
 
 export function getDefaultProtocolSettings () {

@@ -19,8 +19,6 @@ export default {
   downloadURL: 'promise',
   setWindowDimensions: 'promise',
 
-  setBrowserWindowSize: 'promise',
-
   setStartPageBackgroundImage: 'promise',
 
   showContextMenu: 'promise',

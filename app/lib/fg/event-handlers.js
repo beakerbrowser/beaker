@@ -59,5 +59,5 @@ export function polyfillHistoryEvents () {
 
 export function adjustWindowHeight (sel) {
   var el = sel ? document.querySelector(sel) : document.body
-  beakerBrowser.setWindowDimensions({height: el.getClientRects()[0].height})
+  beaker.browser.setWindowDimensions({height: el.getClientRects()[0].height})
 }

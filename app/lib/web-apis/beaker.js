@@ -167,7 +167,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.browser.removeAsDefaultProtocolClient = beakerBrowserRPC.removeAsDefaultProtocolClient
   beaker.browser.fetchBody = beakerBrowserRPC.fetchBody
   beaker.browser.downloadURL = beakerBrowserRPC.downloadURL
-  beaker.browser.setBrowserWindowSize = beakerBrowserRPC.setBrowserWindowSize
+  beaker.browser.setWindowDimensions = beakerBrowserRPC.setWindowDimensions
   beaker.browser.setStartPageBackgroundImage = beakerBrowserRPC.setStartPageBackgroundImage
   beaker.browser.showContextMenu = beakerBrowserRPC.showContextMenu
   beaker.browser.showOpenDialog = beakerBrowserRPC.showOpenDialog
