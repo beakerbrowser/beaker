@@ -17,6 +17,7 @@ export default {
 
   // internal management
   clearFileCache: 'promise',
+  clearGarbage: 'promise',
   clearDnsCache: 'promise',
 
   // events

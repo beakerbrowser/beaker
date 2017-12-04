@@ -56,3 +56,8 @@ export function polyfillHistoryEvents () {
   window.history.pushState = _wr('pushState')
   window.history.replaceState = _wr('replaceState')
 }
+
+export function adjustWindowHeight (sel) {
+  var el = sel ? document.querySelector(sel) : document.body
+  beakerBrowser.setWindowDimensions({height: el.getClientRects()[0].height})
+}

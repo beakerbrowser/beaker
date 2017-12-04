@@ -8,7 +8,7 @@ import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
 import errorPage from '../../lib/error-page'
 import {archivesDebugPage, datDnsCachePage, datDnsCacheJS} from '../networks/dat/debugging'
-import {getLogFilePath} from '../debug-logger'
+import {getLogFileContent} from '../debug-logger'
 
 // constants
 // =
@@ -79,24 +79,33 @@ async function beakerServer (req, res) {
       res.end(errorPage(code + ' ' + status))
     }
   })
-  var queryParams = url.parse(req.url, true).query
-  var requestUrl = queryParams.url
+
+  var requestUrl
+  var queryParams
+  {
+    let parsed = url.parse(req.url, true).query
+    requestUrl = parsed.url
+
+    // check the nonce
+    // (only want this process to access the server)
+    if (parsed.nonce !== requestNonce) {
+      return cb(403, 'Forbidden')
+    }
+  }
   {
     // strip off the hash
     let i = requestUrl.indexOf('#')
     if (i !== -1) requestUrl = requestUrl.slice(0, i)
   }
   {
+    // get the query params
+    queryParams = url.parse(requestUrl, true).query
+
     // strip off the query
     let i = requestUrl.indexOf('?')
     if (i !== -1) requestUrl = requestUrl.slice(0, i)
   }
 
-  // check the nonce
-  // (only want this process to access the server)
-  if (queryParams.nonce !== requestNonce) {
-    return cb(403, 'Forbidden')
-  }
 
   // browser ui
   if (requestUrl === 'beaker://shell-window/') {
@@ -340,8 +349,25 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://dat-dns-cache/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', datDnsCacheJS)
   }
-  if (requestUrl === 'beaker://debug-log/') {
-    return cb(200, 'OK', 'text/plain', getLogFilePath())
+  if (requestUrl.startsWith('beaker://debug-log/')) {
+    const PAGE_SIZE = 1e6
+    res.writeHead(200, 'OK', {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Content-Security-Policy': BEAKER_CSP,
+      'Access-Control-Allow-Origin': '*'
+    })
+    var start = queryParams.start ? (+queryParams.start) : 0
+    let content = await getLogFileContent(start, start + PAGE_SIZE)
+    var pagination = ''
+    if (content.length === PAGE_SIZE + 1 || start !== 0) {
+      pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
+    }
+    res.end(`
+      ${pagination}
+      <pre>${content}</pre>
+      ${pagination}
+    `)
+    return
   }
 
   return cb(404, 'Not Found')

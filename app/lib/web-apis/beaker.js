@@ -86,6 +86,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.countPublished = archivesRPC.countPublished
   beaker.archives.getPublishRecord = archivesRPC.getPublishRecord
   beaker.archives.clearFileCache = archivesRPC.clearFileCache
+  beaker.archives.clearGarbage = archivesRPC.clearGarbage
   beaker.archives.clearDnsCache = archivesRPC.clearDnsCache
   beaker.archives.createDebugStream = () => fromEventStream(archivesRPC.createDebugStream())
   try {

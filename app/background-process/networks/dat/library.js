@@ -258,7 +258,13 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
   mkdirp.sync(metaPath)
 
   // create the archive instance
-  var archive = hyperdrive(metaPath, key, {sparse: true, secretKey})
+  var archive = hyperdrive(metaPath, key, {
+    sparse: true,
+    secretKey,
+    metadataStorageCacheSize: 0,
+    contentStorageCacheSize: 0,
+    treeCacheSize: 2048
+  })
   archive.replicationStreams = [] // list of all active replication streams
   archive.peerHistory = [] // samples of the peer count
 
@@ -330,6 +336,11 @@ export async function getOrLoadArchive (key, opts) {
     return archive
   }
   return loadArchive(key, opts)
+}
+
+export function isArchiveLoaded (key) {
+  key = fromURLToKey(key)
+  return key in archives
 }
 
 export async function updateSizeTracking (archive) {
@@ -499,7 +510,9 @@ function configureAutoDownload (archive, userSettings) {
     // setup the autodownload
     archive._autodownloader = {
       undownloadAll: () => {
-        archive.content._selections.forEach(range => archive.content.undownload(range))
+        if (archive.content) {
+          archive.content._selections.forEach(range => archive.content.undownload(range))
+        }
       },
       onUpdate: throttle(() => {
         // cancel ALL previous, then prioritize ALL current

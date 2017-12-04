@@ -17,6 +17,7 @@ export default {
 
   fetchBody: 'promise',
   downloadURL: 'promise',
+  setWindowDimensions: 'promise',
 
   setBrowserWindowSize: 'promise',
 

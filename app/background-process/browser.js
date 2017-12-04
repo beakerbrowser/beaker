@@ -97,6 +97,7 @@ export const WEBAPI = {
 
   fetchBody,
   downloadURL,
+  setWindowDimensions,
 
   setStartPageBackgroundImage,
 
@@ -130,6 +131,16 @@ export function fetchBody (url) {
 
 export async function downloadURL (url) {
   this.sender.downloadURL(url)
+}
+
+export async function setWindowDimensions ({width, height} = {}) {
+  var wc = this.sender
+  while (wc.hostWebContents) wc = wc.hostWebContents
+  var win = BrowserWindow.fromWebContents(wc)
+  var [currentWidth, currentHeight] = win.getSize()
+  width = width || currentWidth
+  height = height || currentHeight
+  win.setSize(width, height)
 }
 
 export function setStartPageBackgroundImage (srcPath, appendCurrentDir) {

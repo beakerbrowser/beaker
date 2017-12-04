@@ -10,6 +10,7 @@ import * as navbar from './ui/navbar'
 import * as prompt from './ui/prompt'
 import * as statusBar from './ui/statusbar'
 import * as toast from './ui/toast.js'
+import { SiteInfoNavbarBtn } from './ui/navbar/site-info'
 import {urlsToData} from '../lib/fg/img'
 import {throttle} from '../lib/functions'
 import errorPage from '../lib/error-page'
@@ -90,6 +91,7 @@ export function create (opts) {
     webviewEl: createWebviewEl(id, url),
     navbarEl: navbar.createEl(id),
     promptEl: prompt.createEl(id),
+    siteInfoNavbarBtn: null, // set after object is created
 
     // page state
     _url: url, // what is the actual current URL?
@@ -280,6 +282,7 @@ export function create (opts) {
       }
     }
   }
+  page.siteInfoNavbarBtn = new SiteInfoNavbarBtn(page)
 
   if (opts.isPinned) {
     pages.splice(indexOfLastPinnedTab(), 0, page)

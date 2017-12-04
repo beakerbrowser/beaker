@@ -2,6 +2,7 @@
 
 import * as yo from 'yo-yo'
 import {shortenHash} from '../../lib/strings'
+import {adjustWindowHeight} from '../../lib/fg/event-handlers'
 
 var currentFilter = ''
 var selectedArchiveKey = ''
@@ -112,6 +113,7 @@ function render () {
       </div>
     </div>
   </main>`)
+  adjustWindowHeight('main')
 }
 
 function renderActiveViewContent () {

@@ -11,7 +11,6 @@ import {AppsMenuNavbarBtn} from './navbar/apps-menu'
 import {DatsiteMenuNavbarBtn} from './navbar/datsite-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
-import {SiteInfoNavbarBtn} from './navbar/site-info'
 import {findParent} from '../../lib/fg/event-handlers'
 import renderNavArrowIcon from './icon/nav-arrow'
 import renderRefreshIcon from './icon/refresh'
@@ -36,7 +35,6 @@ var bookmarkMenuNavbarBtn = null
 var appsMenuNavbarBtn = null
 var datsiteMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
-var siteInfoNavbarBtn = null
 
 var isLocationHighlighted = false
 
@@ -56,7 +54,6 @@ export function setup () {
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   datsiteMenuNavbarBtn = new DatsiteMenuNavbarBtn()
   pageMenuNavbarBtn = new PageMenuNavbarBtn()
-  siteInfoNavbarBtn = new SiteInfoNavbarBtn()
 
   // add some global listeners
   window.addEventListener('keydown', onGlobalKeydown)
@@ -348,13 +345,6 @@ function render (id, page) {
   var addrValue = addrEl ? addrEl.value : ''
   var isAddrElFocused = addrEl && addrEl.matches(':focus')
 
-  // setup menus
-  siteInfoNavbarBtn.protocolInfo = (page && page.protocolInfo)
-  siteInfoNavbarBtn.siteInfo = (page && page.siteInfo)
-  siteInfoNavbarBtn.sitePerms = (page && page.sitePerms)
-  siteInfoNavbarBtn.siteInfoOverride = (page && page.siteInfoOverride)
-  siteInfoNavbarBtn.siteLoadError = (page && page.siteLoadError)
-
   // the main URL input
   var locationInput = yo`
     <input
@@ -386,7 +376,7 @@ function render (id, page) {
       </div>
 
       <div class="toolbar-input-group${isLocationHighlighted ? ' input-focused' : ''}${autocompleteResults ? ' autocomplete' : ''}">
-        ${!(isLoading || isLocationHighlighted) ? siteInfoNavbarBtn.render() : ''}
+        ${page && !(isLoading || isLocationHighlighted) ? page.siteInfoNavbarBtn.render() : ''}
         ${locationPrettyView}
         ${locationInput}
         ${inpageFinder}

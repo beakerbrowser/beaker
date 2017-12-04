@@ -2,6 +2,7 @@
 
 import * as yo from 'yo-yo'
 import {Archive} from 'builtin-pages-lib'
+import {adjustWindowHeight} from '../../lib/fg/event-handlers'
 
 // state
 var isEditing = false
@@ -124,6 +125,7 @@ function render () {
       </div>
     </div>
   </main>`)
+  adjustWindowHeight('main')
 }
 
 function renderArchiveTitle () {
