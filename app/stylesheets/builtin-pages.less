@@ -84,6 +84,31 @@
       height: 32px;
     }
 
+    .status,
+    .title {
+      display: inline-block;
+      line-height: 1;
+      vertical-align: top;
+    }
+
+    .circle {
+      display: inline-block;
+      border-radius: 50%;
+      width: 6px;
+      height: 6px;
+      margin-left: 1px;
+      margin-top: -2px;
+      vertical-align: middle;
+
+      &.red {
+        background: darken(@red, 5%);
+      }
+
+      &.green {
+        background: darken(@green, 10%);
+      }
+    }
+
     .buttons {
       &:extend(.flex);
 

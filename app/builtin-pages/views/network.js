@@ -199,7 +199,7 @@ function render () {
 
         <div class="builtin-main">
           ${renderHeader()}
-          <div class="view">${renderArchives()}</div>
+          <div>${renderArchives()}</div>
         </div>
       </div>
     </div>
@@ -306,7 +306,7 @@ function renderArchive (archive) {
   else expiresAtStr = '(1 day remaining)'
 
   return yo`
-    <li class="archive">
+    <li class="row thick archive">
       <div>
         <img class="favicon" src="beaker-favicon:${archive.url}" />
 
