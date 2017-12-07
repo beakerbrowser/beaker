@@ -94,6 +94,7 @@ function onInputSearch (e) {
 
 async function onUpdateSearchQuery (q) {
   searchResults = []
+  activeSearchResult = 0
   query = q.length ? q.toLowerCase() : ''
 
   if (query.length) {
