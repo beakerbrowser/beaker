@@ -184,7 +184,7 @@ function render () {
         <div class="builtin-sidebar">
           <h1>Network Activity</h1>
 
-          <p>Review and manage your network activity.</p>
+          <p>Review and manage your network activity</p>
 
           <div class="section">
             <div onclick=${onUpdateFilter} data-filter="seeding" class="nav-item ${currentFilter === 'seeding' ? 'active' : ''}">
