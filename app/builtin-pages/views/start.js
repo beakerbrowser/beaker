@@ -184,7 +184,7 @@ function update () {
   yo.update(document.querySelector('.window-content.start'), yo`
     <div class="window-content builtin start ${''/*TODO(bgimg) theme*/}">
       <div class="builtin-wrapper start-wrapper">
-        <div class="search-container">
+        <div class="autocomplete-container search-container">
           <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
           <i class="fa fa-search"></i>
 
@@ -193,7 +193,7 @@ function update () {
           </button>
 
           ${query.length && isSearchFocused ? yo`
-            <div class="search-results">${searchResults.map(renderSearchResult)}</div>`
+            <div class="search-results autocomplete-results">${searchResults.map(renderSearchResult)}</div>`
           : ''}
         </div>
 
@@ -207,7 +207,7 @@ function update () {
 
 function renderSearchResult (res, i) {
   return yo`
-    <a href=${res.targetUrl} class="search-result ${i === activeSearchResult ? 'active' : ''} ${res.class}">
+    <a href=${res.targetUrl} class="autocomplete-result search-result ${i === activeSearchResult ? 'active' : ''} ${res.class}">
       ${res.faviconUrl
         ? yo`<img class="icon favicon" src="beaker-favicon:${res.faviconUrl}"/>`
         : yo`<i class="icon ${res.icon}"></i>`
