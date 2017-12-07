@@ -240,7 +240,7 @@ function renderActions (row, i) {
         <div class="action" onclick=${onClickDelete(i)} title="Delete bookmark">
           ${renderTrashIcon()}
         </div>
-        <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)}>
+        <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)} title="${row.pinned ? 'Unpin from' : 'Pin to'} start page">
           ${renderPinIcon()}
         </div>
       </div>
