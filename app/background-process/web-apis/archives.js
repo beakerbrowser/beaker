@@ -1,5 +1,6 @@
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
+import * as datGC from '../networks/dat/garbage-collector'
 import * as archivesDb from '../dbs/archives'
 import * as profilesIngest from '../ingests/profiles'
 import {DAT_HASH_REGEX} from '../../lib/const'
@@ -101,6 +102,10 @@ export default {
 
   async clearFileCache (url) {
     return datLibrary.clearFileCache(datLibrary.fromURLToKey(url))
+  },
+
+  async clearGarbage () {
+    return datGC.collect({olderThan: 0, biggerThan: 0})
   },
 
   clearDnsCache () {

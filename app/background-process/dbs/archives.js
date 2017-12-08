@@ -141,7 +141,7 @@ export async function listExpiredArchives () {
 
 // get all archives that are ready for garbage collection
 export async function listGarbageCollectableArchives ({olderThan} = {}) {
-  olderThan = olderThan || DAT_GC_EXPIRATION_AGE
+  olderThan = typeof olderThan === 'number' ? olderThan : DAT_GC_EXPIRATION_AGE
   return db.all(`
     SELECT archives_meta.key
       FROM archives_meta

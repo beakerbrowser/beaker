@@ -282,7 +282,7 @@ function onClickCheckUpdates () {
 
 function onClickCheckPrereleases (e) {
   e.preventDefault()
-  beakerBrowser.checkForUpdates({prerelease: true})
+  beaker.browser.checkForUpdates({prerelease: true})
 }
 
 function onToggleAutoUpdate () {

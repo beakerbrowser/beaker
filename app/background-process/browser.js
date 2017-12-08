@@ -97,10 +97,9 @@ export const WEBAPI = {
 
   fetchBody,
   downloadURL,
+  setWindowDimensions,
 
   setStartPageBackgroundImage,
-
-  setBrowserWindowSize,
 
   getDefaultProtocolSettings,
   setAsDefaultProtocolClient,
@@ -132,6 +131,16 @@ export async function downloadURL (url) {
   this.sender.downloadURL(url)
 }
 
+export async function setWindowDimensions ({width, height} = {}) {
+  var wc = this.sender
+  while (wc.hostWebContents) wc = wc.hostWebContents
+  var win = BrowserWindow.fromWebContents(wc)
+  var [currentWidth, currentHeight] = win.getSize()
+  width = width || currentWidth
+  height = height || currentHeight
+  win.setSize(width, height)
+}
+
 export function setStartPageBackgroundImage (srcPath, appendCurrentDir) {
   if (appendCurrentDir) {
     srcPath = path.join(__dirname, `/${srcPath}`)
@@ -148,14 +157,6 @@ export function setStartPageBackgroundImage (srcPath, appendCurrentDir) {
       fs.unlink(destPath, () => resolve())
     }
   })
-}
-
-export function setBrowserWindowSize (width, height) {
-  try {
-    BrowserWindow.fromWebContents(this.sender).setSize(width, height, true)
-  } catch (e) {
-
-  }
 }
 
 export function getDefaultProtocolSettings () {

@@ -234,7 +234,7 @@ function renderLocationPage () {
 function renderPermsPage () {
   let modalHeight = 125
   modalHeight += Object.keys(targetAppInfo.requestedPermissions).length * 85
-  beaker.browser.setBrowserWindowSize(500, modalHeight)
+  beaker.browser.setWindowDimensions({height: modalHeight})
   return yo`
     <div>
       <div class="perms">

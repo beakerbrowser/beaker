@@ -2,6 +2,7 @@
 
 import * as yo from 'yo-yo'
 import {shortenHash} from '../../lib/strings'
+import {adjustWindowHeight} from '../../lib/fg/event-handlers'
 
 var currentFilter = ''
 var selectedArchiveKey = ''
@@ -76,9 +77,6 @@ function onChangeSelectedArchive (e) {
 function onUpdateActiveView (e) {
   currentView = e.target.dataset.content
   render()
-
-  if (currentView === 'newArchive') beaker.browser.setBrowserWindowSize(550, 270)
-  else beaker.browser.setBrowserWindowSize(550, 540)
 }
 
 async function onSubmit (e) {
@@ -112,6 +110,7 @@ function render () {
       </div>
     </div>
   </main>`)
+  adjustWindowHeight('main')
 }
 
 function renderActiveViewContent () {

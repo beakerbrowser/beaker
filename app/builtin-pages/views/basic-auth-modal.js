@@ -1,6 +1,7 @@
 /* globals beaker */
 
 import * as yo from 'yo-yo'
+import {adjustWindowHeight} from '../../lib/fg/event-handlers'
 
 // state
 var username = ''
@@ -72,4 +73,5 @@ function render () {
       </div>
     </div>
   </main>`)
+  adjustWindowHeight('main')
 }

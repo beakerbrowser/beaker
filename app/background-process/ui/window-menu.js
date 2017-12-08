@@ -106,6 +106,14 @@ export function buildWindowMenu (opts = {}) {
           if (win) win.webContents.send('command', 'file:open-location')
         }
       },
+      {
+        label: 'Save Page As...',
+        accelerator: 'CmdOrCtrl+S',
+        click: async (item, win) => {
+          const url = await win.webContents.executeJavaScript(`pages.getActive().getIntendedURL()`)
+          win.webContents.downloadURL(url, true)
+        }
+      },
       { type: 'separator' },
       {
         label: 'Close Window',

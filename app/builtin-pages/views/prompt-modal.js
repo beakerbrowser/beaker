@@ -1,5 +1,7 @@
 /* globals messageDiv promptInput mainForm cancelBtn beaker */
 
+import {adjustWindowHeight} from '../../lib/fg/event-handlers'
+
 // exported api
 // =
 
@@ -12,6 +14,7 @@ window.setup = async function (opts) {
   if (opts.default) {
     promptInput.value = '' + opts.default
   }
+  adjustWindowHeight('html')
   mainForm.addEventListener('submit', onSubmit)
   cancelBtn.addEventListener('click', e => beaker.browser.closeModal())
 }

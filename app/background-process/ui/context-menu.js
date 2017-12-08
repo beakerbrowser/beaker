@@ -167,6 +167,13 @@ export default function registerContextMenu () {
           click: () => webContents.reload()
         })
         menuItems.push({ type: 'separator' })
+        if (!props.pageURL.startsWith('beaker://')) {
+          menuItems.push({
+            label: 'Save Page As...',
+            click: () => webContents.downloadURL(props.pageURL, true)
+          })
+          menuItems.push({ type: 'separator' })
+        }
       }
 
       // view source
