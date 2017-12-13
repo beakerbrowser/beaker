@@ -223,7 +223,6 @@ async function datProtocol (request, respond) {
 
   // handle not found
   if (!entry) {
-    statusCode = 404
     debug('Entry not found:', urlp.path)
 
     // check for a fallback page
