@@ -208,7 +208,7 @@ async function datProtocol (request, respond) {
   }
 
   // handle folder
-  if ((!entry && isFolder) || (entry && entry.isDirectory())) {
+  if (entry && entry.isDirectory()) {
     cleanup()
     return respond({
       statusCode: 200,
