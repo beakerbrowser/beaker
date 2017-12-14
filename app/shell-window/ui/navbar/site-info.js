@@ -225,12 +225,6 @@ export class SiteInfoNavbarBtn {
     this.closeDropdown()
   }
 
-  viewSiteFiles (subpage) {
-    const { hostname } = this.page.protocolInfo
-    pages.setActive(pages.create('beaker://library/' + hostname + '#' + subpage))
-    this.closeDropdown()
-  }
-
   learnMore () {
     pages.setActive(pages.create('https://github.com/beakerbrowser/beaker/wiki/Is-Dat-%22Secure-P2P%3F%22'))
   }

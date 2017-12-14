@@ -32,7 +32,7 @@ export class PageMenuNavbarBtn {
         openwithSublist = yo`
           <div class="dropdown-items sublist">
             <div class="list">
-              <div class="list-item" onclick=${() => this.onClickOpenwithLibrary()}>
+              <div class="list-item" onclick=${() => this.onClickViewFiles()}>
                 Library
               </div>
             </div>
@@ -71,7 +71,7 @@ export class PageMenuNavbarBtn {
               </div>` : ''}
               ${isAppScheme && isDat ? yo`<hr />` : ''}
               ${isDat ? yo`<div>
-                <div class="list-item" onclick=${() => this.onClickOpenwithLibrary()}>
+                <div class="list-item" onclick=${() => this.onClickViewFiles()}>
                   <i class="fa fa-files-o"></i>
                   View files
                 </div>
@@ -179,11 +179,11 @@ export class PageMenuNavbarBtn {
     page.loadURL(datUrl || 'beaker://start/')
   }
 
-  onClickOpenwithLibrary () {
+  onClickViewFiles () {
     this.close()
     const page = pages.getActive()
     if (!page || !page.getViewedDatOrigin()) return
-    page.loadURL(`beaker://library/${page.siteInfo.key}`)
+    page.loadURL(`beaker://filesystem/${page.siteInfo.key}`)
   }
 
   async onClickFork () {
