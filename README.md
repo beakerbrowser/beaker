@@ -84,7 +84,7 @@ Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=Yu
 
 Requires node 6 or higher. On Windows, you may need to use npm version 4, due to a bug in npm 5.
 
-In Linux (and in some cases OSX) you need libtool, m4, and automake:
+In Linux (and in some cases macOS) you need libtool, m4, and automake:
 
 ```bash
 sudo apt-get install libtool m4 make g++  # debian/ubuntu
@@ -141,7 +141,7 @@ npm test
 
 ### tmux
 
-Launching from tmux is known to cause issues with GUI apps in MacOS. On Beaker, it may cause the application to hang during startup.
+Launching from tmux is known to cause issues with GUI apps in macOS. On Beaker, it may cause the application to hang during startup.
 
 ## Contributors
 
