@@ -34,6 +34,7 @@ var pageMenuNavbarBtn = null
 var autocompleteCurrentValue = null
 var autocompleteCurrentSelection = 0
 var autocompleteResults = null // if set to an array, will render dropdown
+var autocompleteSuggestion = null
 
 // exported functions
 // =
@@ -408,9 +409,10 @@ function handleAutocompleteSearch (results) {
 
   // set the top results accordingly
   var gotoResult = { url: vWithProtocol, title: 'Go to ' + v, isGuessingTheScheme }
+  var duckduckgoTitle = 'DuckDuckGo Search'
   var searchResult = {
     search: v,
-    title: 'DuckDuckGo Search',
+    title: duckduckgoTitle,
     url: 'https://duckduckgo.com/?q=' + v.split(' ').join('+')
   }
   if (isProbablyUrl) autocompleteResults = [gotoResult, searchResult]
@@ -418,6 +420,20 @@ function handleAutocompleteSearch (results) {
 
   // add search results
   if (results) { autocompleteResults = autocompleteResults.concat(results) }
+
+  autocompleteCurrentSelection = autocompleteResults.findIndex(result => {
+    return (
+      result.url.replace(/^.*?:\/\/(?:www\.)?/, '').startsWith(v) &&
+      result.title !== duckduckgoTitle &&
+      result.num_visits
+    )
+  })
+  if (autocompleteCurrentSelection !== -1) {
+    // auto-fill the URL with suggestion if we have one
+    var selectionUrl = getAutocompleteSelectionUrl(autocompleteCurrentSelection)
+    var re = new RegExp('^.*?' + v)
+    autocompleteSuggestion = selectionUrl.replace(re, '')
+  }
 
   // render
   update()
