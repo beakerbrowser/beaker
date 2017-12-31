@@ -18,6 +18,8 @@ const KEYCODE_ESC = 27
 const KEYCODE_ENTER = 13
 const KEYCODE_N = 78
 const KEYCODE_P = 80
+const KEYCODE_BACKSPACE = 8
+const KEYCODE_DELETE = 46
 
 const isDatHashRegex = /^[a-z0-9]{64}/i
 
@@ -29,11 +31,13 @@ var updatesNavbarBtn = null
 var datSidebarBtn = null
 var browserMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
+var lastKeyDown = null
 
 // autocomplete data
 var autocompleteCurrentValue = null
 var autocompleteCurrentSelection = 0
 var autocompleteResults = null // if set to an array, will render dropdown
+var autocompleteSuggestion = null
 
 // exported functions
 // =
@@ -408,9 +412,10 @@ function handleAutocompleteSearch (results) {
 
   // set the top results accordingly
   var gotoResult = { url: vWithProtocol, title: 'Go to ' + v, isGuessingTheScheme }
+  var duckduckgoTitle = 'DuckDuckGo Search'
   var searchResult = {
     search: v,
-    title: 'DuckDuckGo Search',
+    title: duckduckgoTitle,
     url: 'https://duckduckgo.com/?q=' + v.split(' ').join('+')
   }
   if (isProbablyUrl) autocompleteResults = [gotoResult, searchResult]
@@ -418,6 +423,35 @@ function handleAutocompleteSearch (results) {
 
   // add search results
   if (results) { autocompleteResults = autocompleteResults.concat(results) }
+
+  // find the first autocomplete result that:
+  // (a) starts with the input value, ignoring (protocol)://(www.)
+  // (b) is not the DuckDuckGo search, and
+  // (c) has been visited before
+  var foundIndex = autocompleteResults.findIndex(result => {
+    return (
+      result.url.replace(/^.*?:\/\/(?:www\.)?/, '').startsWith(v) &&
+      result.title !== duckduckgoTitle &&
+      result.num_visits
+    )
+  })
+
+  // if we didn't find an autocomplete result that fit the requirements, reset suggestion and selection
+  // also run reset when backspace or delete are pressed
+  if (lastKeyDown === KEYCODE_BACKSPACE || lastKeyDown === KEYCODE_DELETE || foundIndex === -1) {
+    autocompleteSuggestion = ''
+    autocompleteCurrentSelection = 0
+  } else {
+    // if we did find one, set the current selection to the found index
+    autocompleteCurrentSelection = foundIndex
+  }
+
+  if (autocompleteCurrentSelection !== 0) {
+    // auto-fill the URL with suggestion if we have one
+    var selectionUrl = getAutocompleteSelectionUrl(autocompleteCurrentSelection)
+    var re = new RegExp('^.*?' + v)
+    autocompleteSuggestion = selectionUrl.replace(re, '')
+  }
 
   // render
   update()
@@ -614,14 +648,28 @@ function onInputLocation (e) {
   // run autocomplete
   // TODO debounce
   var autocompleteValue = value.trim()
-  if (autocompleteValue && autocompleteCurrentValue != autocompleteValue) {
+  if (autocompleteValue) {
     autocompleteCurrentValue = autocompleteValue // update the current value
     autocompleteCurrentSelection = 0 // reset the selection
-    beaker.history.search(value).then(handleAutocompleteSearch) // update the suggetsions
+    // update the suggestions
+    beaker.history.search(value)
+      .then(handleAutocompleteSearch)
+      .then(() => {
+        if (autocompleteCurrentSelection !== -1 && autocompleteSuggestion) {
+          // find the length of the current value
+          var startingIndex = e.target.value.length
+          // add the autocomplete suggestion
+          e.target.value += autocompleteSuggestion
+          // select the autocomplete suggestion
+          e.target.setSelectionRange(startingIndex, e.target.value.length)
+        }
+      })
   } else if (!autocompleteValue) { clearAutocomplete() } // no value, cancel out
 }
 
 function onKeydownLocation (e) {
+  lastKeyDown = e.keyCode
+
   // on enter
   if (e.keyCode == KEYCODE_ENTER) {
     e.preventDefault()
