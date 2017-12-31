@@ -4,7 +4,6 @@ import querystring from 'querystring'
 import http from 'http'
 import crypto from 'crypto'
 import listenRandomPort from 'listen-random-port'
-import {getServerInfo as getDatServerInfo} from './dat'
 import * as appsDb from '../dbs/apps'
 import * as scopedFsServer from '../../lib/bg/scoped-fs-server'
 
@@ -38,7 +37,7 @@ export function setup () {
       var appBinding = await appsDb.get(0, urlp.hostname)
       if (appBinding && appBinding.url.startsWith('dat://')) {
         // route to the dat server
-        args = getDatServerInfo()
+        args = null //getDatServerInfo() TODO removeme
         args.url = appBinding.url + urlp.path
         args.qs = querystring.stringify({
           url: args.url,
