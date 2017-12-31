@@ -1,3 +1,7 @@
+/*
+TODO(apps) this API is currently not in use, but will be rebuilt for use in a future iteration -prf
+*/
+
 import parseDatUrl from 'parse-dat-url'
 import * as archivesDb from '../dbs/archives'
 import * as appsDb from '../dbs/apps'

@@ -200,21 +200,20 @@ export function create (opts) {
       if (this.getIntendedURL().startsWith('dat:')) {
         return parseURL(this.getIntendedURL()).origin
       }
-      const pi = this.protocolInfo
-      if (pi && pi.scheme === 'app:' && pi.binding && pi.binding.url.startsWith('dat://')) {
-        return parseURL(pi.binding.url).origin
-      }
+      // TODO app scheme was removed, do we still need this? workspace scheme? -prf
+      // const pi = this.protocolInfo
+      // if (pi && pi.scheme === 'app:' && pi.binding && pi.binding.url.startsWith('dat://')) {
+      //   return parseURL(pi.binding.url).origin
+      // }
       return false
     },
 
     isInstalledApp () {
-      if (this.getIntendedURL().startsWith('app:')) {
-        return true
-      }
-      const si = this.siteInfo
-      if (si && si.installedNames && si.installedNames.length > 0) {
-        return true
-      }
+      // TODO(apps) restore when we bring back apps -prf
+      // const si = this.siteInfo
+      // if (si && si.installedNames && si.installedNames.length > 0) {
+      //   return true
+      // }
       return false
     },
 
@@ -655,19 +654,6 @@ function onDidStopLoading (e) {
             page.title = info.title
             events.emit('page-title-updated', page)
           }
-        })
-    }
-    if (protocol === 'app:') {
-      beaker.apps.get(0, hostname)
-        .then(async (binding) => {
-          page.protocolInfo.binding = binding
-          console.log('app scheme binding', binding)
-          if (!binding || !binding.url.startsWith('dat://')) {
-            return
-          }
-          page.siteInfo = await (new DatArchive(binding.url)).getInfo()
-          navbar.update(page)
-          console.log('site info', page.siteInfo)
         })
     }
     if (protocol !== 'beaker:') {

@@ -17,12 +17,11 @@ export class PageMenuNavbarBtn {
 
   render () {
     const page = pages.getActive()
-    if (!page || !page.protocolInfo || ['dat:', 'app:'].includes(page.protocolInfo.scheme) === false) {
+    if (!page || !page.protocolInfo || ['dat:'].includes(page.protocolInfo.scheme) === false) {
       return ''
     }
     const isInstalledApp = page.isInstalledApp()
     const isDat = !!page.getViewedDatOrigin()
-    const isAppScheme = page.protocolInfo.scheme === 'app:'
 
     // render the dropdown if open
     var dropdownEl = ''
@@ -55,7 +54,8 @@ export class PageMenuNavbarBtn {
                 ${openwithSublist}
               </div>
               <hr /> */}
-              ${isAppScheme ? yo`<div>
+              ${'' // TODO(apps) restore when we bring back apps -prf
+              /*isAppScheme ? yo`<div>
                 <div class="list-item" onclick=${() => isDat ? this.onClickInstall() : this.onClickEditSettings()}>
                   <i class="fa fa-wrench"></i>
                   Configure this app
@@ -69,7 +69,7 @@ export class PageMenuNavbarBtn {
                   `
                   : ''}
               </div>` : ''}
-              ${isAppScheme && isDat ? yo`<hr />` : ''}
+              ${isAppScheme && isDat ? yo`<hr />` : ''*/}
               ${isDat ? yo`<div>
                 <div class="list-item" onclick=${() => this.onClickViewFiles()}>
                   <i class="fa fa-files-o"></i>
@@ -84,13 +84,14 @@ export class PageMenuNavbarBtn {
                   Download as .zip
                 </div>
               </div>` : ''}
-              ${isDat && !isInstalledApp ? yo`<div>
+              ${'' // TODO(apps) restore when we bring back apps -prf
+              /*isDat && !isInstalledApp ? yo`<div>
                 <hr />
                 <div class="list-item" onclick=${() => this.onClickInstall()}>
                   <i class="fa fa-download"></i>
                   Install as an app
                 </div>
-              </div>` : ''}
+              </div>` : ''*/}
             </div>
           </div>
         </div>`
@@ -148,36 +149,38 @@ export class PageMenuNavbarBtn {
     }, 300)
   }
 
-  async onClickInstall () {
-    this.close()
-    const page = pages.getActive()
-    const datUrl = page && page.getViewedDatOrigin()
-    if (!datUrl) return
-    const res = await beaker.apps.runInstaller(0, datUrl)
-    if (res && res.name) {
-      page.loadURL(`app://${res.name}`)
-    }
-  }
+  // TODO(apps) restore when we bring back apps -prf
+  // async onClickInstall () {
+  //   this.close()
+  //   const page = pages.getActive()
+  //   const datUrl = page && page.getViewedDatOrigin()
+  //   if (!datUrl) return
+  //   const res = await beaker.apps.runInstaller(0, datUrl)
+  //   if (res && res.name) {
+  //     page.loadURL(`app://${res.name}`)
+  //   }
+  // }
 
   async onClickEditSettings () {
     this.close()
     pages.setActive(pages.create('beaker://settings'))
   }
 
-  async onClickUninstall () {
-    this.close()
-    const page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'app:') {
-      return
-    }
-    if (!confirm('Are you sure you want to uninstall this app?')) {
-      return
-    }
-    const name = page.protocolInfo.hostname
-    await beaker.apps.unbind(0, name)
-    const datUrl = page.getViewedDatOrigin()
-    page.loadURL(datUrl || 'beaker://start/')
-  }
+  // TODO(apps) restore when we bring back apps -prf
+  // async onClickUninstall () {
+  //   this.close()
+  //   const page = pages.getActive()
+  //   if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'app:') {
+  //     return
+  //   }
+  //   if (!confirm('Are you sure you want to uninstall this app?')) {
+  //     return
+  //   }
+  //   const name = page.protocolInfo.hostname
+  //   await beaker.apps.unbind(0, name)
+  //   const datUrl = page.getViewedDatOrigin()
+  //   page.loadURL(datUrl || 'beaker://start/')
+  // }
 
   onClickViewFiles () {
     this.close()

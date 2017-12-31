@@ -7,7 +7,7 @@ import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
 import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
-import {AppsMenuNavbarBtn} from './navbar/apps-menu'
+// import {AppsMenuNavbarBtn} from './navbar/apps-menu' TODO(apps) restore when we bring back apps -prf
 import {DatsiteMenuNavbarBtn} from './navbar/datsite-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
@@ -34,7 +34,7 @@ var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
 var browserMenuNavbarBtn = null
 var bookmarkMenuNavbarBtn = null
-var appsMenuNavbarBtn = null
+// var appsMenuNavbarBtn = null TODO(apps) restore when we bring back apps -prf
 var datsiteMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
 var lastKeyDown = null
@@ -53,7 +53,7 @@ var autocompleteSuggestion = null
 export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
-  appsMenuNavbarBtn = new AppsMenuNavbarBtn()
+  // appsMenuNavbarBtn = new AppsMenuNavbarBtn() TODO(apps) restore when we bring back apps -prf
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   datsiteMenuNavbarBtn = new DatsiteMenuNavbarBtn()
@@ -155,7 +155,7 @@ export function bookmarkAndOpenMenu () {
 export function closeMenus () {
   browserMenuNavbarBtn.isDropdownOpen = false
   browserMenuNavbarBtn.updateActives()
-  appsMenuNavbarBtn.close()
+  // appsMenuNavbarBtn.close() TODO(apps) restore when we bring back apps -prf
   pageMenuNavbarBtn.close()
   bookmarkMenuNavbarBtn.close()
   datsiteMenuNavbarBtn.close()
@@ -265,30 +265,20 @@ function render (id, page) {
           </span>`
       )
     }
-    if (page.siteInfo && page.siteInfo.type.includes('app')) {
-      if (page.isInstalledApp() === false) {
-        datBtns.unshift(
-          yo`<button
-            class="callout install-callout"
-            title="Install this application"
-            onclick=${onClickInstallApp}
-          >
-            <span class="fa fa-download"></span> Install Application
-          </button>`
-        )
-      }
-    }
-    if (page.isInstalledApp()) {
-      let appName = page.siteInfo.installedNames[0]
-      datBtns.unshift(
-        yo`<button
-          class="callout"
-          title="Go to app://${appName}"
-          onclick=${e => onClickGotoAppVersion(e, appName)}>
-          Installed at app://${appName}
-        </button>`
-      )
-    }
+    // TODO(apps) restore when we bring back apps -prf
+    // if (page.siteInfo && page.siteInfo.type.includes('app')) {
+    //   if (page.isInstalledApp() === false) {
+    //     datBtns.unshift(
+    //       yo`<button
+    //         class="callout install-callout"
+    //         title="Install this application"
+    //         onclick=${onClickInstallApp}
+    //       >
+    //         <span class="fa fa-download"></span> Install Application
+    //       </button>`
+    //     )
+    //   }
+    // }
   } else if (siteHasDatAlternative) {
     datBtns = [
       yo`<button
@@ -391,7 +381,7 @@ function render (id, page) {
         ${!isLocationHighlighted ? bookmarkMenuNavbarBtn.render() : ''}
       </div>
       <div class="toolbar-group">
-        ${appsMenuNavbarBtn.render()}
+        ${''/*appsMenuNavbarBtn.render() TODO(apps) restore when we bring back apps -prf*/}
         ${browserMenuNavbarBtn.render()}
         ${updatesNavbarBtn.render()}
       </div>
@@ -656,20 +646,15 @@ function onClickCancel (e) {
   }
 }
 
-async function onClickInstallApp (e) {
-  const page = getEventPage(e)
-  if (!page || !page.siteInfo) return
-  const res = await beaker.apps.runInstaller(0, `dat://${page.siteInfo.key}`)
-  if (res && res.name) {
-    page.loadURL(`app://${res.name}`)
-  }
-}
-
-function onClickGotoAppVersion (e, appName) {
-  const page = getEventPage(e)
-  if (!page) return
-  page.loadURL(`app://${appName}`)
-}
+// TODO(apps) restore when we bring back apps -prf
+// async function onClickInstallApp (e) {
+//   const page = getEventPage(e)
+//   if (!page || !page.siteInfo) return
+//   const res = await beaker.apps.runInstaller(0, `dat://${page.siteInfo.key}`)
+//   if (res && res.name) {
+//     page.loadURL(`app://${res.name}`)
+//   }
+// }
 
 function onClickGotoDatVersion (e) {
   const page = getEventPage(e)

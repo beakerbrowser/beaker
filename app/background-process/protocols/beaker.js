@@ -16,7 +16,7 @@ import {getLogFileContent} from '../debug-logger'
 // content security policies
 const BEAKER_CSP = `
   default-src 'self' beaker:;
-  img-src beaker-favicon: beaker: data: dat: app: workspace: http: https;
+  img-src beaker-favicon: beaker: data: dat: workspace: http: https;
   script-src 'self' beaker:;
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
