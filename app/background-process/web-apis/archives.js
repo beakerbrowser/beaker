@@ -2,7 +2,7 @@ import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as datGC from '../networks/dat/garbage-collector'
 import * as archivesDb from '../dbs/archives'
-import * as profilesIngest from '../ingests/profiles'
+// import * as profilesIngest from '../ingests/profiles' TODO(profiles) disabled -prf
 import {DAT_HASH_REGEX} from '../../lib/const'
 import {
   InvalidURLError,
@@ -73,28 +73,38 @@ export default {
   // =
 
   async publish (archiveUrl) {
-    const profileRecord = await profilesIngest.getProfileRecord(0)
-    archiveUrl = typeof archiveUrl.url === 'string' ? archiveUrl.url : archiveUrl
-    const archiveInfo = await datLibrary.getArchiveInfo(archiveUrl)
-    return profilesIngest.getAPI().publishArchive(profileRecord.url, archiveInfo)
+    throw new Error('Published archives are temporarily disabled')
+    // TODO(profiles) disabled -prf
+    // const profileRecord = await profilesIngest.getProfileRecord(0)
+    // archiveUrl = typeof archiveUrl.url === 'string' ? archiveUrl.url : archiveUrl
+    // const archiveInfo = await datLibrary.getArchiveInfo(archiveUrl)
+    // return profilesIngest.getAPI().publishArchive(profileRecord.url, archiveInfo)
   },
 
   async unpublish (archiveUrl) {
-    const profileRecord = await profilesIngest.getProfileRecord(0)
-    archiveUrl = typeof archiveUrl.url === 'string' ? archiveUrl.url : archiveUrl
-    return profilesIngest.getAPI().unpublishArchive(profileRecord.url, archiveUrl)
+    throw new Error('Published archives are temporarily disabled')
+    // TODO(profiles) disabled -prf
+    // const profileRecord = await profilesIngest.getProfileRecord(0)
+    // archiveUrl = typeof archiveUrl.url === 'string' ? archiveUrl.url : archiveUrl
+    // return profilesIngest.getAPI().unpublishArchive(profileRecord.url, archiveUrl)
   },
 
   async listPublished (opts) {
-    return profilesIngest.getAPI().listPublishedArchives(opts)
+    throw new Error('Published archives are temporarily disabled')
+    // TODO(profiles) disabled -prf
+    // return profilesIngest.getAPI().listPublishedArchives(opts)
   },
 
   async countPublished (opts) {
-    return profilesIngest.getAPI().countPublishedArchives(opts)
+    throw new Error('Published archives are temporarily disabled')
+    // TODO(profiles) disabled -prf
+    // return profilesIngest.getAPI().countPublishedArchives(opts)
   },
 
   async getPublishRecord (recordUrl) {
-    return profilesIngest.getAPI().getPublishedArchive(recordUrl)
+    throw new Error('Published archives are temporarily disabled')
+    // TODO(profiles) disabled -prf
+    // return profilesIngest.getAPI().getPublishedArchive(recordUrl)
   },
 
   // internal management
@@ -125,8 +135,9 @@ export default {
 }
 
 async function assertArchiveDeletable (key) {
-  var profileRecord = await profilesIngest.getProfileRecord(0)
-  if ('dat://' + key === profileRecord.url) {
-    throw new PermissionsError('Unable to delete the user archive.')
-  }
+  // TODO(profiles) disabled -prf
+  // var profileRecord = await profilesIngest.getProfileRecord(0)
+  // if ('dat://' + key === profileRecord.url) {
+  //   throw new PermissionsError('Unable to delete the user archive.')
+  // }
 }

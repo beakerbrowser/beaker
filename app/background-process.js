@@ -30,7 +30,7 @@ import * as beakerFaviconProtocol from './background-process/protocols/beaker-fa
 import * as datProtocol from './background-process/protocols/dat'
 import * as workspaceProtocol from './background-process/protocols/workspace'
 
-import * as profilesIngest from './background-process/ingests/profiles'
+// import * as profilesIngest from './background-process/ingests/profiles' TODO(profiles) disabled -prf
 
 import * as openURL from './background-process/open-url'
 
@@ -86,7 +86,7 @@ app.on('ready', async function () {
   webAPIs.setup()
 
   // ingests
-  await profilesIngest.setup()
+  // await profilesIngest.setup() TODO(profiles) disabled -prf
 
   // listen OSX open-url event
   openURL.setup()

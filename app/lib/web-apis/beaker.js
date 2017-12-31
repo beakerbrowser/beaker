@@ -6,7 +6,6 @@ import errors from 'beaker-error-constants'
 
 import profilesManifest from '../api-manifests/external/profiles'
 import bookmarksManifest from '../api-manifests/external/bookmarks'
-import timelineManifest from '../api-manifests/external/timeline'
 
 import archivesManifest from '../api-manifests/internal/archives'
 import historyManifest from '../api-manifests/internal/history'
@@ -20,7 +19,6 @@ const beaker = {}
 const opts = {timeout: false, errors}
 const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
 const profilesRPC = rpc.importAPI('profiles', profilesManifest, opts)
-const timelineRPC = rpc.importAPI('timeline', timelineManifest, opts)
 
 // beaker.bookmarks
 beaker.bookmarks = {}
@@ -54,14 +52,6 @@ beaker.profiles.listFriends = profilesRPC.listFriends
 beaker.profiles.countFriends = profilesRPC.countFriends
 beaker.profiles.isFollowing = profilesRPC.isFollowing
 beaker.profiles.isFriendsWith = profilesRPC.isFriendsWith
-
-// beaker.timeline
-beaker.timeline = {}
-beaker.timeline.getPost = timelineRPC.getPost
-beaker.timeline.listPosts = timelineRPC.listPosts
-beaker.timeline.countPosts = timelineRPC.countPosts
-beaker.timeline.post = timelineRPC.post
-beaker.timeline.vote = timelineRPC.vote
 
 // internal only
 if (window.location.protocol === 'beaker:') {

@@ -57,6 +57,7 @@ export class BookmarkMenuNavbarBtn {
                 <textarea class="bookmark-notes" name="notes" onkeyup=${e => this.onChangeNotes(e)}>${this.values.notes}</textarea>
               </div>
 
+              ${''/*TODO(profiles) disabled -prf
               <div class="input-group privacy">
                 <label>Privacy:</label>
 
@@ -73,7 +74,7 @@ export class BookmarkMenuNavbarBtn {
                     Public
                   </label>
                 </div>
-              </div>
+              </div>*/}
 
               <div class="input-group pinned">
                 <label>

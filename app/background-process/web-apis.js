@@ -24,14 +24,12 @@ import datArchiveManifest from '../lib/api-manifests/external/dat-archive'
 import userSessionManifest from '../lib/api-manifests/external/user-session'
 import bookmarksManifest from '../lib/api-manifests/external/bookmarks'
 import profilesManifest from '../lib/api-manifests/external/profiles'
-import timelineManifest from '../lib/api-manifests/external/timeline'
 
 // external apis
 import datArchiveAPI from './web-apis/dat-archive'
 import userSessionAPI from './web-apis/user-session'
 import bookmarksAPI from './web-apis/bookmarks'
 import profilesAPI from './web-apis/profiles'
-import timelineAPI from './web-apis/timeline'
 
 // exported api
 // =
@@ -51,5 +49,4 @@ export function setup () {
   rpc.exportAPI('user-session', userSessionManifest, userSessionAPI, secureOnly)
   rpc.exportAPI('bookmarks', bookmarksManifest, bookmarksAPI, secureOnly)
   rpc.exportAPI('profiles', profilesManifest, profilesAPI, secureOnly)
-  rpc.exportAPI('timeline', timelineManifest, timelineAPI, secureOnly)
 }
