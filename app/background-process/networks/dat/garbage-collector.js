@@ -41,14 +41,14 @@ export async function collect ({olderThan} = {}) {
   var unusedArchives = await archivesDb.listGarbageCollectableArchives({olderThan})
   debug('GC cleaning out %d unused archives', unusedArchives.length)
   for (let i = 0; i < unusedArchives.length; i++) {
-    if (isArchiveLoaded(expiredArchives[i].key)) {
+    if (isArchiveLoaded(unusedArchives[i].key)) {
       // dont GC archives that are in memory (and thus in use)
       skippedArchives++
       continue
     }
-    totalBytes += expiredArchives[i].metaSize
-    totalBytes += expiredArchives[i].stagingSize
-    await archivesDb.deleteArchive(expiredArchives[i].key)
+    totalBytes += unusedArchives[i].metaSize
+    totalBytes += unusedArchives[i].stagingSize
+    await archivesDb.deleteArchive(unusedArchives[i].key)
   }
 
   debug('GC completed in %d ms', Date.now() - startTime)
@@ -57,7 +57,7 @@ export async function collect ({olderThan} = {}) {
   schedule(DAT_GC_REGULAR_COLLECT_WAIT)
 
   // return stats
-  return {totalBytes, totalArchives: expiredArchives.length, skippedArchives}
+  return {totalBytes, totalArchives: unusedArchives.length - skippedArchives, skippedArchives}
 }
 
 // helpers

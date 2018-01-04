@@ -1,4 +1,4 @@
-const SECURE_ORIGIN_REGEX = /^(beaker:|app:|workspace:|dat:|https:|http:\/\/localhost(\/|:))/i
+const SECURE_ORIGIN_REGEX = /^(beaker:|workspace:|dat:|https:|http:\/\/localhost(\/|:))/i
 
 export function internalOnly (event, methodName, args) {
   return (event && event.sender && event.sender.getURL().startsWith('beaker:'))

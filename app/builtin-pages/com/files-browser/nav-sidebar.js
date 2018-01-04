@@ -3,11 +3,11 @@ import yo from 'yo-yo'
 // exported api
 // =
 
-let currentUserProfile
+// let currentUserProfile TODO(profiles) disabled -prf
 
 setup()
 async function setup () {
-  currentUserProfile = await beaker.profiles.getCurrentUserProfile()
+  // currentUserProfile = await beaker.profiles.getCurrentUserProfile() TODO(profiles) disabled -prf
 }
 
 // events
@@ -60,7 +60,7 @@ function rIcon (node) {
   if (!node) return ''
   switch (node.constructor.name) {
     case 'FSVirtualFolder_User':
-      const isUserProfile = currentUserProfile._origin === node._profile._origin
+      const isUserProfile = false // currentUserProfile._origin === node._profile._origin TODO(profiles) disabled -prf
       if (isUserProfile) {
         icon = yo`<i class="fa fa-home"></i>`
       } else {

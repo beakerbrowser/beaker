@@ -14,13 +14,6 @@ const APP_PERMS_DESC = {
       'edit-private': 'Manage your private bookmarks',
       'edit-public': 'Manage your public bookmarks'
     }
-  },
-  timeline: {
-    label: 'Timeline',
-    perms: {
-      post: 'Share posts on your timeline',
-      vote: 'Like posts on your timeline'
-    }
   }
 }
 export default APP_PERMS_DESC

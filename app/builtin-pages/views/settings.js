@@ -2,7 +2,7 @@
 
 import yo from 'yo-yo'
 import {niceDate} from '../../lib/time'
-import {create as createEditAppPopup} from '../com/edit-app-popup'
+// import {create as createEditAppPopup} from '../com/edit-app-popup' TODO(apps) restore when we bring back apps -prf
 
 // globals
 // =
@@ -11,7 +11,6 @@ var settings
 var browserInfo
 var browserEvents
 var defaultProtocolSettings
-var applications
 var activeView = 'auto-updater'
 
 // TODO(bgimg) disabled for now -prf
@@ -44,7 +43,7 @@ async function setup () {
   browserInfo = await beaker.browser.getInfo()
   settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
-  applications = await beaker.apps.list(0)
+  // applications = await beaker.apps.list(0) TODO(apps) restore when we bring back apps -prf
 
   renderToPage()
 }
@@ -76,10 +75,6 @@ function renderToPage () {
           Protocol settings
         </div>
 
-        <div class="nav-item ${activeView === 'applications' ? 'active' : ''}" onclick=${() => onUpdateView('applications')}>
-          Applications
-        </div>
-
         <div class="nav-item ${activeView === 'information' ? 'active' : ''}" onclick=${() => onUpdateView('information')}>
           Information & Help
         </div>
@@ -96,8 +91,6 @@ function renderView () {
       return renderAutoUpdater()
     case 'protocol':
       return renderProtocolSettings()
-    case 'applications':
-      return renderApplications()
     case 'information':
       return renderInformation()
   }
@@ -150,25 +143,26 @@ function renderProtocolSettings () {
       </div>`
 }
 
-function renderApplications () {
-  return yo`
-    <div class="view applications">
-      <table>
-        ${applications.map(app => yo`
-          <tr>
-            <td><a href=${'app://' + app.name} target="_blank">${app.name}</a></td>
-            <td class="current-value"><a href=${app.url} target="_blank">${app.url}</a></td>
-            <td class="date">${niceDate(app.updatedAt)}</td>
-            <td class="edit-ctrl"><a href="#" onclick=${e => onClickEditApp(e, app)}>edit</a></td>
-            <td class="remove-ctrl"><a href="#" onclick=${e => onClickRemoveApp(e, app)}>remove</a></td>
-          </tr>
-        `)}
-      </table>
-      <div class="create-app">
-        <a href="#" onclick=${onClickEditApp}>+ New app</a>
-      </div>
-    </div>`
-}
+// TODO(apps) restore when we bring back apps -prf
+// function renderApplications () {
+//   return yo`
+//     <div class="view applications">
+//       <table>
+//         ${applications.map(app => yo`
+//           <tr>
+//             <td><a href=${'app://' + app.name} target="_blank">${app.name}</a></td>
+//             <td class="current-value"><a href=${app.url} target="_blank">${app.url}</a></td>
+//             <td class="date">${niceDate(app.updatedAt)}</td>
+//             <td class="edit-ctrl"><a href="#" onclick=${e => onClickEditApp(e, app)}>edit</a></td>
+//             <td class="remove-ctrl"><a href="#" onclick=${e => onClickRemoveApp(e, app)}>remove</a></td>
+//           </tr>
+//         `)}
+//       </table>
+//       <div class="create-app">
+//         <a href="#" onclick=${onClickEditApp}>+ New app</a>
+//       </div>
+//     </div>`
+// }
 
 function renderAutoUpdater () {
   if (!browserInfo.updater.isBrowserUpdatesSupported) {
@@ -303,27 +297,29 @@ function onUpdaterStateChanged (state) {
   renderToPage()
 }
 
-async function onClickEditApp (e, app) {
-  e.preventDefault()
-  var newApp = await createEditAppPopup(app)
-  if (app && app.name !== newApp.name) {
-    await beaker.apps.unbind(0, app.name)
-  }
-  await beaker.apps.bind(0, newApp.name, newApp.url)
-  applications = await beaker.apps.list(0)
-  renderToPage()
-}
+// TODO(apps) restore when we bring back apps -prf
+// async function onClickEditApp (e, app) {
+//   e.preventDefault()
+//   var newApp = await createEditAppPopup(app)
+//   if (app && app.name !== newApp.name) {
+//     await beaker.apps.unbind(0, app.name)
+//   }
+//   await beaker.apps.bind(0, newApp.name, newApp.url)
+//   applications = await beaker.apps.list(0)
+//   renderToPage()
+// }
 
-async function onClickRemoveApp (e, app) {
-  e.preventDefault()
-  if (!confirm(`Remove the "${app.name}" application?`)) {
-    return
-  }
+// TODO(apps) restore when we bring back apps -prf
+// async function onClickRemoveApp (e, app) {
+//   e.preventDefault()
+//   if (!confirm(`Remove the "${app.name}" application?`)) {
+//     return
+//   }
 
-  await beaker.apps.unbind(0, app.name)
-  applications = await beaker.apps.list(0)
-  renderToPage()
-}
+//   await beaker.apps.unbind(0, app.name)
+//   applications = await beaker.apps.list(0)
+//   renderToPage()
+// }
 
 /*function onUpdateStartPageTheme (e) {
   var theme = e.target.value

@@ -20,13 +20,13 @@ import renderListExpandedIcon from '../icon/list-expanded'
 //
 
 var query = '' // current search query
-var currentView = 'mine'
+var currentView = 'all'
 var currentRenderingMode
 var currentSort
 var bookmarks = []
 var tags = []
-var userProfile = null
-var followedUserProfiles = null
+var userProfile = {_origin: null} // null TODO(profiles) disabled -prf
+// var followedUserProfiles = null TODO(profiles) disabled -prf
 
 // read current view config
 currentRenderingMode = localStorage.currentRenderingMode || 'expanded'
@@ -39,15 +39,16 @@ renderToPage()
 setup()
 async function setup () {
   // load and render bookmarks
-  userProfile = await beaker.profiles.getCurrentUserProfile()
+  // userProfile = await beaker.profiles.getCurrentUserProfile() TODO(profiles) disabled -prf
   await loadBookmarks()
   renderToPage()
 
   // now load & render tags and profiles
   tags = await beaker.bookmarks.listBookmarkTags()
-  followedUserProfiles = await Promise.all(
-    userProfile.followUrls.map(u => beaker.profiles.getUserProfile(u))
-  )
+  // TODO(profiles) disabled -prf
+  // followedUserProfiles = await Promise.all(
+  //   userProfile.followUrls.map(u => beaker.profiles.getUserProfile(u))
+  // )
   renderToPage()
 }
 
@@ -57,14 +58,17 @@ async function loadBookmarks () {
     case 'pinned':
       bookmarks = await beaker.bookmarks.listPinnedBookmarks()
       break
+
     case 'public':
       bookmarks = await beaker.bookmarks.listPublicBookmarks({
         author: userProfile._origin
       })
       break
+
     case 'private':
       bookmarks = await beaker.bookmarks.listPrivateBookmarks()
       break
+
     case 'mine':
       {
         let publicBookmarks = await beaker.bookmarks.listPublicBookmarks({
@@ -74,6 +78,7 @@ async function loadBookmarks () {
         bookmarks = publicBookmarks.concat(privateBookmarks)
       }
       break
+
     case 'all':
       {
         let publicBookmarks = await beaker.bookmarks.listPublicBookmarks()
@@ -81,6 +86,7 @@ async function loadBookmarks () {
         bookmarks = publicBookmarks.concat(privateBookmarks)
       }
       break
+
     case 'search':
       {
         let publicBookmarks = await beaker.bookmarks.listPublicBookmarks()
@@ -128,7 +134,7 @@ function renderRow (row, i) {
 }
 
 function renderRowList (row, i) {
-  const isOwner = row.private || row._origin === userProfile._origin
+  const isOwner = row.private /*|| row._origin === userProfile._origin TODO(profiles) disabled -prf */
 
   return yo`
     <li class="ll-row bookmarks__row list ${row.private ? 'private' : 'public'} ${isOwner ? 'is-owner' : ''}" data-row=${i}>
@@ -157,7 +163,7 @@ function renderRowList (row, i) {
 }
 
 function renderRowExpanded (row, i) {
-  const isOwner = row.private || row._origin === userProfile._origin
+  const isOwner = row.private /*|| row._origin === userProfile._origin TODO(profiles) disabled -prf */
 
   return yo`
     <li class="ll-row bookmarks__row expanded" data-row=${i}>
@@ -193,7 +199,7 @@ function renderRowExpanded (row, i) {
 }
 
 function renderRowGrid (row, i) {
-  const isOwner = row.private || row._origin === userProfile._origin
+  const isOwner = row.private /*|| row._origin === userProfile._origin TODO(profiles) disabled -prf */
 
   return yo`
     <li class="ll-row bookmarks__row grid" data-row=${i}>
@@ -229,7 +235,7 @@ function renderRowGrid (row, i) {
 }
 
 function renderActions (row, i) {
-  const isOwner = row.private || row._origin === userProfile._origin
+  const isOwner = row.private /*|| row._origin === userProfile._origin TODO(profiles) disabled -prf */
 
   if (isOwner) {
     return yo`
@@ -287,8 +293,15 @@ function renderToPage () {
               ${renderStarFillIcon()}
               All bookmarks
             </div>
+
+            ${''/* TODO(profiles) put pinned menu item here until profiles are stored -prf */}
+            <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
+              ${renderPinIcon()}
+              Pinned
+            </div>
           </div>
 
+          ${''/* TODO(profiles) disabled -prf
           <div class="section">
             <h2>Your bookmarks</h2>
             <div class="nav-item ${currentView === 'mine' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('mine')}>
@@ -324,7 +337,7 @@ function renderToPage () {
                 })
                 : yo`<div class="nav-item"><em>Not following anybody.</em></div>`
               : yo`<div class="nav-item"><em>Loading...</em></div>`}
-          </div>
+          </div>*/}
 
           <div class="section">
             <h2>Tags</h2>

@@ -1,3 +1,8 @@
+/*
+TODO(apps) this API is currently not in use, but will be rebuilt for use in a future iteration -prf
+*/
+
+
 import * as db from './profile-data-db'
 
 // exported api

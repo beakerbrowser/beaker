@@ -365,8 +365,8 @@ export class BrowserMenuNavbarBtn {
     })
     await Promise.all(files.map(src => DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: false})))
 
-    // open the new archive in the library
-    pages.setActive(pages.create('beaker://library/' + archive.url.slice('dat://'.length)))
+    // open the new archive in the filesystem
+    pages.setActive(pages.create('beaker://filesystem/' + archive.url.slice('dat://'.length)))
   }
 
   onOpenPage (e, url) {

@@ -7,7 +7,7 @@ import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
 import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
-import {AppsMenuNavbarBtn} from './navbar/apps-menu'
+// import {AppsMenuNavbarBtn} from './navbar/apps-menu' TODO(apps) restore when we bring back apps -prf
 import {DatsiteMenuNavbarBtn} from './navbar/datsite-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
@@ -22,6 +22,8 @@ const KEYCODE_ESC = 27
 const KEYCODE_ENTER = 13
 const KEYCODE_N = 78
 const KEYCODE_P = 80
+const KEYCODE_BACKSPACE = 8
+const KEYCODE_DELETE = 46
 
 const isDatHashRegex = /^[a-z0-9]{64}/i
 
@@ -32,9 +34,10 @@ var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
 var browserMenuNavbarBtn = null
 var bookmarkMenuNavbarBtn = null
-var appsMenuNavbarBtn = null
+// var appsMenuNavbarBtn = null TODO(apps) restore when we bring back apps -prf
 var datsiteMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
+var lastKeyDown = null
 
 var isLocationHighlighted = false
 
@@ -42,6 +45,7 @@ var isLocationHighlighted = false
 var autocompleteCurrentValue = null
 var autocompleteCurrentSelection = 0
 var autocompleteResults = null // if set to an array, will render dropdown
+var autocompleteSuggestion = null
 
 // exported functions
 // =
@@ -49,7 +53,7 @@ var autocompleteResults = null // if set to an array, will render dropdown
 export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
-  appsMenuNavbarBtn = new AppsMenuNavbarBtn()
+  // appsMenuNavbarBtn = new AppsMenuNavbarBtn() TODO(apps) restore when we bring back apps -prf
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   datsiteMenuNavbarBtn = new DatsiteMenuNavbarBtn()
@@ -151,7 +155,7 @@ export function bookmarkAndOpenMenu () {
 export function closeMenus () {
   browserMenuNavbarBtn.isDropdownOpen = false
   browserMenuNavbarBtn.updateActives()
-  appsMenuNavbarBtn.close()
+  // appsMenuNavbarBtn.close() TODO(apps) restore when we bring back apps -prf
   pageMenuNavbarBtn.close()
   bookmarkMenuNavbarBtn.close()
   datsiteMenuNavbarBtn.close()
@@ -261,30 +265,20 @@ function render (id, page) {
           </span>`
       )
     }
-    if (page.siteInfo && page.siteInfo.type.includes('app')) {
-      if (page.isInstalledApp() === false) {
-        datBtns.unshift(
-          yo`<button
-            class="callout install-callout"
-            title="Install this application"
-            onclick=${onClickInstallApp}
-          >
-            <span class="fa fa-download"></span> Install Application
-          </button>`
-        )
-      }
-    }
-    if (page.isInstalledApp()) {
-      let appName = page.siteInfo.installedNames[0]
-      datBtns.unshift(
-        yo`<button
-          class="callout"
-          title="Go to app://${appName}"
-          onclick=${e => onClickGotoAppVersion(e, appName)}>
-          Installed at app://${appName}
-        </button>`
-      )
-    }
+    // TODO(apps) restore when we bring back apps -prf
+    // if (page.siteInfo && page.siteInfo.type.includes('app')) {
+    //   if (page.isInstalledApp() === false) {
+    //     datBtns.unshift(
+    //       yo`<button
+    //         class="callout install-callout"
+    //         title="Install this application"
+    //         onclick=${onClickInstallApp}
+    //       >
+    //         <span class="fa fa-download"></span> Install Application
+    //       </button>`
+    //     )
+    //   }
+    // }
   } else if (siteHasDatAlternative) {
     datBtns = [
       yo`<button
@@ -387,7 +381,7 @@ function render (id, page) {
         ${!isLocationHighlighted ? bookmarkMenuNavbarBtn.render() : ''}
       </div>
       <div class="toolbar-group">
-        ${appsMenuNavbarBtn.render()}
+        ${''/*appsMenuNavbarBtn.render() TODO(apps) restore when we bring back apps -prf*/}
         ${browserMenuNavbarBtn.render()}
         ${updatesNavbarBtn.render()}
       </div>
@@ -471,9 +465,10 @@ async function handleAutocompleteSearch (results) {
 
   // set the top results accordingly
   var gotoResult = { url: vWithProtocol, title: 'Go to ' + v, isGuessingTheScheme }
+  var duckduckgoTitle = 'DuckDuckGo Search'
   var searchResult = {
     search: v,
-    title: 'DuckDuckGo Search',
+    title: duckduckgoTitle,
     url: 'https://duckduckgo.com/?q=' + v.split(' ').join('+')
   }
   if (isProbablyUrl) autocompleteResults = [gotoResult, searchResult]
@@ -491,6 +486,35 @@ async function handleAutocompleteSearch (results) {
     } catch (_) {}
     Object.assign(r, {bookmarked})
   }))
+
+  // find the first autocomplete result that:
+  // (a) starts with the input value, ignoring (protocol)://(www.)
+  // (b) is not the DuckDuckGo search, and
+  // (c) has been visited before
+  var foundIndex = autocompleteResults.findIndex(result => {
+    return (
+      result.url.replace(/^.*?:\/\/(?:www\.)?/, '').startsWith(v) &&
+      result.title !== duckduckgoTitle &&
+      result.num_visits
+    )
+  })
+
+  // if we didn't find an autocomplete result that fit the requirements, reset suggestion and selection
+  // also run reset when backspace or delete are pressed
+  if (lastKeyDown === KEYCODE_BACKSPACE || lastKeyDown === KEYCODE_DELETE || foundIndex === -1) {
+    autocompleteSuggestion = ''
+    autocompleteCurrentSelection = 0
+  } else {
+    // if we did find one, set the current selection to the found index
+    autocompleteCurrentSelection = foundIndex
+  }
+
+  if (autocompleteCurrentSelection !== 0) {
+    // auto-fill the URL with suggestion if we have one
+    var selectionUrl = getAutocompleteSelectionUrl(autocompleteCurrentSelection)
+    var re = new RegExp('^.*?' + v)
+    autocompleteSuggestion = selectionUrl.replace(re, '')
+  }
 
   // render
   update()
@@ -622,20 +646,15 @@ function onClickCancel (e) {
   }
 }
 
-async function onClickInstallApp (e) {
-  const page = getEventPage(e)
-  if (!page || !page.siteInfo) return
-  const res = await beaker.apps.runInstaller(0, `dat://${page.siteInfo.key}`)
-  if (res && res.name) {
-    page.loadURL(`app://${res.name}`)
-  }
-}
-
-function onClickGotoAppVersion (e, appName) {
-  const page = getEventPage(e)
-  if (!page) return
-  page.loadURL(`app://${appName}`)
-}
+// TODO(apps) restore when we bring back apps -prf
+// async function onClickInstallApp (e) {
+//   const page = getEventPage(e)
+//   if (!page || !page.siteInfo) return
+//   const res = await beaker.apps.runInstaller(0, `dat://${page.siteInfo.key}`)
+//   if (res && res.name) {
+//     page.loadURL(`app://${res.name}`)
+//   }
+// }
 
 function onClickGotoDatVersion (e) {
   const page = getEventPage(e)
@@ -696,16 +715,30 @@ function onInputLocation (e) {
   // run autocomplete
   // TODO debounce
   var autocompleteValue = value.trim()
-  if (autocompleteValue && autocompleteCurrentValue != autocompleteValue) {
+  if (autocompleteValue) {
     autocompleteCurrentValue = autocompleteValue // update the current value
     autocompleteCurrentSelection = 0 // reset the selection
-    beaker.history.search(value).then(async function (err, res) { await handleAutocompleteSearch(err) }) // update the suggetsions
+    // update the suggestions
+    beaker.history.search(value)
+      .then(handleAutocompleteSearch)
+      .then(() => {
+        if (autocompleteCurrentSelection !== -1 && autocompleteSuggestion) {
+          // find the length of the current value
+          var startingIndex = e.target.value.length
+          // add the autocomplete suggestion
+          e.target.value += autocompleteSuggestion
+          // select the autocomplete suggestion
+          e.target.setSelectionRange(startingIndex, e.target.value.length)
+        }
+      })
   } else if (!autocompleteValue) { clearAutocomplete() } // no value, cancel out
 
   isLocationHighlighted = true
 }
 
 function onKeydownLocation (e) {
+  lastKeyDown = e.keyCode
+
   // on enter
   if (e.keyCode == KEYCODE_ENTER) {
     e.preventDefault()

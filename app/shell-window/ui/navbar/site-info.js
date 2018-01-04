@@ -34,9 +34,6 @@ export class SiteInfoNavbarBtn {
       } else if (this.page.protocolInfo.scheme === 'dat:') {
         protocolCls = 'p2p'
         iconEl = yo`<i class="fa fa-share-alt"></i>`
-      } else if (this.page.protocolInfo.scheme === 'app:') {
-        protocolCls = 'app'
-        iconEl = yo`<i class="fa fa-window-maximize"></i>`
       } else if (this.page.protocolInfo.scheme === 'beaker:') {
         protocolCls = 'beaker'
         iconEl = ''
@@ -77,16 +74,6 @@ export class SiteInfoNavbarBtn {
           This site was downloaded from a secure peer-to-peer network.
           <a onclick=${e => this.learnMore()}>Learn More</a>
         </span>`
-      } else if (this.page.protocolInfo.scheme === 'app:') {
-        if (this.page.protocolInfo.binding) {
-          let url = this.page.protocolInfo.binding.url
-          let link = url.startsWith('dat://')
-            ? yo`<a href="${url}" onclick=${this.openLink.bind(this)}>${shortenHash(url)}</a>`
-            : url.slice('file://'.length)
-          protocolDesc = yo`<span>
-            This site is installed on your computer from ${link}
-          </span>`
-        }
       }
     }
 
@@ -222,12 +209,6 @@ export class SiteInfoNavbarBtn {
   openLink (e) {
     e.preventDefault()
     pages.setActive(pages.create(e.target.getAttribute('href')))
-    this.closeDropdown()
-  }
-
-  viewSiteFiles (subpage) {
-    const { hostname } = this.page.protocolInfo
-    pages.setActive(pages.create('beaker://library/' + hostname + '#' + subpage))
     this.closeDropdown()
   }
 

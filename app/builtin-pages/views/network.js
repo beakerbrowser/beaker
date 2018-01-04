@@ -17,7 +17,7 @@ const ONEWEEK = 2
 const ONEMONTH = 3
 const FOREVER = 4
 const TIMELENS = [
-  () => yo`<span>Never</span>`,
+  () => yo`<span>While visiting</span>`,
   () => yo`<span>1 day</span>`,
   () => yo`<span>1 week</span>`,
   () => yo`<span>1 month</span>`,
@@ -29,14 +29,14 @@ let totalBytesHosting = 0
 let totalArchivesHosting = 0
 let currentFilter = 'seeding'
 let currentlyConfiguringKey
-let currentUserProfile
+// let currentUserProfile TODO(profiles) disabled -prf
 
 // main
 // =
 
 setup()
 async function setup () {
-  currentUserProfile = await beaker.profiles.getCurrentUserProfile()
+  // currentUserProfile = await beaker.profiles.getCurrentUserProfile() TODO(profiles) disabled -prf
   await fetchArchives()
   beaker.archives.addEventListener('network-changed', onNetworkChanged)
   render()
@@ -324,7 +324,7 @@ function renderArchive (archive) {
             <span class="bullet">•</span>
             ${prettyBytes(archive.size)}
 
-            ${archive.url !== currentUserProfile._origin ? yo`
+            ${/* archive.url !== currentUserProfile._origin TODO(profiles) disabled -prf */ true ? yo`
               <span>
                 <span class="bullet">•</span>
                 ${expiresAtStr}
@@ -344,7 +344,7 @@ function renderArchive (archive) {
           ${renderTrashIcon()}
         </button>` : ''}
 
-        ${archive.url !== currentUserProfile._origin ? yo`
+        ${/* archive.url !== currentUserProfile._origin TODO(profiles) disabled -prf */ true ? yo`
           <button class="btn hosting-btn" onclick=${e => onToggleHosting(archive)}>
             ${archive.userSettings.networked
               ? yo`

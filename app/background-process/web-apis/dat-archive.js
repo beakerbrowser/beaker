@@ -5,7 +5,7 @@ import concat from 'concat-stream'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
-import {getProfileRecord, getAPI as getProfilesAPI} from '../ingests/profiles'
+// import {getProfileRecord, getAPI as getProfilesAPI} from '../ingests/profiles' TODO(profiles) disabled -prf
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {getWebContentsWindow} from '../../lib/electron'
@@ -463,17 +463,19 @@ async function assertDeleteArchivePermission (archive, sender) {
 }
 
 async function assertArchiveOfflineable (archive) {
-  var profileRecord = await getProfileRecord(0)
-  if ('dat://' + archive.key.toString('hex') === profileRecord.url) {
-    throw new PermissionsError('Unable to set the user archive to offline.')
-  }
+  // TODO(profiles) disabled -prf
+  // var profileRecord = await getProfileRecord(0)
+  // if ('dat://' + archive.key.toString('hex') === profileRecord.url) {
+  //   throw new PermissionsError('Unable to set the user archive to offline.')
+  // }
 }
 
 async function assertArchiveDeletable (archive) {
-  var profileRecord = await getProfileRecord(0)
-  if ('dat://' + archive.key.toString('hex') === profileRecord.url) {
-    throw new PermissionsError('Unable to delete the user archive.')
-  }
+  // TODO(profiles) disabled -prf
+  // var profileRecord = await getProfileRecord(0)
+  // if ('dat://' + archive.key.toString('hex') === profileRecord.url) {
+  //   throw new PermissionsError('Unable to delete the user archive.')
+  // }
 }
 
 async function assertQuotaPermission (archive, senderOrigin, byteLength) {
@@ -518,13 +520,15 @@ async function assertValidPath (fileOrFolderPath) {
 // }
 
 async function getAuthor () {
-  var profileRecord = await getProfileRecord(0)
-  if (!profileRecord || !profileRecord.url) return undefined
-  var profile = await getProfilesAPI().getProfile(profileRecord.url)
-  return {
-    url: profileRecord.url,
-    name: profile && profile.name ? profile.name : undefined
-  }
+  return undefined
+  // TODO(profiles) disabled -prf
+  // var profileRecord = await getProfileRecord(0)
+  // if (!profileRecord || !profileRecord.url) return undefined
+  // var profile = await getProfilesAPI().getProfile(profileRecord.url)
+  // return {
+  //   url: profileRecord.url,
+  //   name: profile && profile.name ? profile.name : undefined
+  // }
 }
 
 async function parseUrlParts (url) {
