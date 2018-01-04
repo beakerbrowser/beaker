@@ -8,7 +8,11 @@
     outline: none;
     position: absolute;
     transform: translateX(0); // put the webview in another compositing layer, to reduce layout render times
-    background: #f0f0f0; // so that something is painted during load
+    background: #fff; // so that something is painted during load
+
+    &.builtin {
+      background: #f0f0f0;
+    }
 
     // HACK
     // to address https://github.com/electron/electron/issues/8505
@@ -25,4 +29,3 @@
 body.page-fullscreen #webviews {
   height: 100%;
 }
-

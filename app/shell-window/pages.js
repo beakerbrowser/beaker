@@ -617,6 +617,12 @@ function onDidStartLoading (e) {
     if (page.isActive) {
       statusBar.setIsLoading(true)
     }
+    const url = page.loadingURL || page.url
+    if (url.startsWith('beaker://')) {
+      page.webviewEl.classList.add('builtin')
+    } else {
+      page.webviewEl.classList.remove('builtin')
+    }
   }
 }
 
