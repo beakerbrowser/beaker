@@ -26,7 +26,7 @@ var lastRenderedDate
 
 render()
 fillPage()
-document.body.querySelector('.window-content').addEventListener('scroll', onScrollContent)
+document.body.querySelector('.builtin-main').addEventListener('scroll', onScrollContent)
 
 // data
 // =
@@ -41,7 +41,7 @@ function fetchMore (cb) {
 
 // load history until the scroll bar is visible, or no more history is found
 function fillPage () {
-  var container = document.body.querySelector('.window-content')
+  var container = document.body.querySelector('.builtin-main')
   visits.length = 0 // reset
   isAtEnd = false
   nextBatch()
