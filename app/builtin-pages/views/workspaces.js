@@ -707,7 +707,7 @@ function renderSettingsView () {
           </p>
         ` : ''}
 
-        <button class="btn cancel" onclick=${e => {e.stopPropagation(); onDeleteWorkspace(workspaceInfo.name);}}>
+        <button class="btn warning" onclick=${e => {e.stopPropagation(); onDeleteWorkspace(workspaceInfo.name);}}>
           Delete workspace
           <i class="fa fa-trash"></i>
         </button>

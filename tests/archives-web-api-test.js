@@ -109,18 +109,18 @@ test('library.list', async t => {
     window.beaker.archives.list().then(done,done)
   })
   var items = res.value
-  t.deepEqual(items.length, 3)
+  t.deepEqual(items.length, 2)
   t.deepEqual(items[0].userSettings.isSaved, true)
   t.deepEqual(items[1].userSettings.isSaved, true)
   t.deepEqual(items[0].userSettings.autoDownload, true)
   t.deepEqual(items[1].userSettings.autoDownload, true)
-  t.deepEqual(items.filter(i => i.isOwner).length, 2)
+  t.deepEqual(items.filter(i => i.isOwner).length, 1)
 
   // list owned
   var res = await app.client.executeAsync((done) => {
     window.beaker.archives.list({ isOwner: true }).then(done,done)
   })
-  t.deepEqual(res.value.length, 2)
+  t.deepEqual(res.value.length, 1)
 
   // list unowned
   var res = await app.client.executeAsync((done) => {
@@ -144,87 +144,88 @@ test('library.list', async t => {
 
 })
 
-test('publishing', async t => {
-  // publish by url
-  var res = await app.client.executeAsync((url, done) => {
-    window.beaker.archives.publish(url).then(done,done)
-  }, createdDatURL)
-  var recordUrl = res.value
-  t.truthy(recordUrl.startsWith('dat://'))
-  var res = await app.client.executeAsync((recordUrl, done) => {
-    window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
-  }, recordUrl)
-  var cmp = {
-    _origin: res.value._origin,
-    _url: res.value._url,
-    createdAt: res.value.createdAt,
-    description: 'Is temporary',
-    id: res.value.id,
-    receivedAt: res.value.receivedAt,
-    title: 'Test Archive',
-    type: [ 'foo', 'bar' ],
-    url: createdDatURL,
-    votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 }
-  }
-  t.deepEqual(res.value, cmp)
+// TODO(profiles) disabled -prf
+// test('publishing', async t => {
+//   // publish by url
+//   var res = await app.client.executeAsync((url, done) => {
+//     window.beaker.archives.publish(url).then(done,done)
+//   }, createdDatURL)
+//   var recordUrl = res.value
+//   t.truthy(recordUrl.startsWith('dat://'))
+//   var res = await app.client.executeAsync((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   }, recordUrl)
+//   var cmp = {
+//     _origin: res.value._origin,
+//     _url: res.value._url,
+//     createdAt: res.value.createdAt,
+//     description: 'Is temporary',
+//     id: res.value.id,
+//     receivedAt: res.value.receivedAt,
+//     title: 'Test Archive',
+//     type: [ 'foo', 'bar' ],
+//     url: createdDatURL,
+//     votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 }
+//   }
+//   t.deepEqual(res.value, cmp)
 
-  // list
-  var res = await app.client.executeAsync((done) => {
-    window.beaker.archives.listPublished({fetchAuthor: true, countVotes: true}).then(done,done)
-  })
-  t.deepEqual(res.value, [
-    { _origin: res.value[0]._origin,
-    _url: res.value[0]._url,
-    createdAt: res.value[0].createdAt,
-    description: 'Is temporary',
-    id: res.value[0].id,
-    receivedAt: res.value[0].receivedAt,
-    title: 'Test Archive',
-    type: [ 'foo', 'bar' ],
-    url: createdDatURL,
-    votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 } }
-  ])
+//   // list
+//   var res = await app.client.executeAsync((done) => {
+//     window.beaker.archives.listPublished({fetchAuthor: true, countVotes: true}).then(done,done)
+//   })
+//   t.deepEqual(res.value, [
+//     { _origin: res.value[0]._origin,
+//     _url: res.value[0]._url,
+//     createdAt: res.value[0].createdAt,
+//     description: 'Is temporary',
+//     id: res.value[0].id,
+//     receivedAt: res.value[0].receivedAt,
+//     title: 'Test Archive',
+//     type: [ 'foo', 'bar' ],
+//     url: createdDatURL,
+//     votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 } }
+//   ])
 
-  // unpublish by url
-  await app.client.executeAsync((url, done) => {
-    window.beaker.archives.unpublish(url).then(done,done)
-  }, createdDatURL)
-  var res = await app.client.executeAsync((recordUrl, done) => {
-    window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
-  }, recordUrl)
-  t.falsy(res.value)
+//   // unpublish by url
+//   await app.client.executeAsync((url, done) => {
+//     window.beaker.archives.unpublish(url).then(done,done)
+//   }, createdDatURL)
+//   var res = await app.client.executeAsync((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   }, recordUrl)
+//   t.falsy(res.value)
 
-  // publish/unpublish by archive
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    window.beaker.archives.publish(archive).then(done,done)
-  }, createdDatURL)
-  var recordUrl = res.value
-  t.truthy(recordUrl.startsWith('dat://'))
-  var res = await app.client.executeAsync((recordUrl, done) => {
-    window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
-  }, recordUrl)
-  t.deepEqual(res.value, {
-    _origin: res.value._origin,
-    _url: res.value._url,
-    createdAt: res.value.createdAt,
-    description: 'Is temporary',
-    id: res.value.id,
-    receivedAt: res.value.receivedAt,
-    title: 'Test Archive',
-    type: [ 'foo', 'bar' ],
-    url: createdDatURL,
-    votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 }
-  })
-  await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    window.beaker.archives.unpublish(archive).then(done,done)
-  }, createdDatURL)
-  var res = await app.client.executeAsync((recordUrl, done) => {
-    window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
-  }, recordUrl)
-  t.falsy(res.value)
-})
+//   // publish/unpublish by archive
+//   var res = await app.client.executeAsync((url, done) => {
+//     var archive = new DatArchive(url)
+//     window.beaker.archives.publish(archive).then(done,done)
+//   }, createdDatURL)
+//   var recordUrl = res.value
+//   t.truthy(recordUrl.startsWith('dat://'))
+//   var res = await app.client.executeAsync((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   }, recordUrl)
+//   t.deepEqual(res.value, {
+//     _origin: res.value._origin,
+//     _url: res.value._url,
+//     createdAt: res.value.createdAt,
+//     description: 'Is temporary',
+//     id: res.value.id,
+//     receivedAt: res.value.receivedAt,
+//     title: 'Test Archive',
+//     type: [ 'foo', 'bar' ],
+//     url: createdDatURL,
+//     votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 }
+//   })
+//   await app.client.executeAsync((url, done) => {
+//     var archive = new DatArchive(url)
+//     window.beaker.archives.unpublish(archive).then(done,done)
+//   }, createdDatURL)
+//   var res = await app.client.executeAsync((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   }, recordUrl)
+//   t.falsy(res.value)
+// })
 
 test('library "updated" event', async t => {
   // register event listener
