@@ -354,9 +354,9 @@ function renderToPage () {
 
             <div class="sort-controls btn-bar">
               <label for="sort">Sort by</label>
-              <select name="sort" onchange=${(e) => {onUpdateSort(e.target.value)}}>
-                <option value="recent" selected="${currentSort === 'recent' ? 'selected' : ''}">Recently bookmarked</option>
-                <option value="alpha" selected="${currentSort === 'alpha' ? 'selected' : ''}">Alphabetical (A-Z)</option>
+              <select name="sort" onchange=${(e) => onUpdateSort(e.target.value)}>
+                <option value="recent" selected=${currentSort === 'recent'}>Recently bookmarked</option>
+                <option value="alpha" selected=${currentSort === 'alpha'}>Alphabetical (A-Z)</option>
               </select>
             </div>
 
