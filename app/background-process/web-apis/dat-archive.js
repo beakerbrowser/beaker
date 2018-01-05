@@ -45,6 +45,11 @@ export default {
     // check the quota for permission
     await assertCreateArchivePermission(this.sender)
 
+    // only allow type and networked to be set by beaker, for now
+    if (!this.sender.getURL().startsWith('beaker:')) {
+      type = networked = undefined
+    }
+
     if (prompt) {
       // initiate the modal
       let win = getWebContentsWindow(this.sender)
@@ -75,6 +80,11 @@ export default {
 
     // check the quota for permission
     await assertCreateArchivePermission(this.sender)
+
+    // only allow type and networked to be set by beaker, for now
+    if (!this.sender.getURL().startsWith('beaker:')) {
+      type = networked = undefined
+    }
 
     if (prompt) {
       // initiate the modal
@@ -154,6 +164,13 @@ export default {
     var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
     await assertWritePermission(archive, this.sender)
     await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(JSON.stringify(settings), opts.encoding))
+
+    // only allow type and networked to be set by beaker, for now
+    if (!this.sender.getURL().startsWith('beaker:')) {
+      delete settings.type
+      delete settings.networked
+    }
+
     if ('title' in settings || 'description' in settings || 'type' in settings) {
       await pda.updateManifest(archive, settings)
       await datLibrary.pullLatestArchiveMeta(archive)
