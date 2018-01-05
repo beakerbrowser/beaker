@@ -106,6 +106,13 @@
             color: #555;
           }
         }
+
+        &.pin {
+
+          &.pinned {
+            color: @blue;
+          }
+        }
       }
 
       .avatar {
@@ -138,22 +145,6 @@
 
         .url {
           margin: 0;
-        }
-
-        .icon {
-
-          &.globe {
-            width: 12px;
-            height: 12px;
-
-            #water {
-              fill: rgba(0,0,0,.3);
-            }
-
-            #earth {
-              fill: fadeout(#fff, 15%);
-            }
-          }
         }
 
         .row-modifier {
@@ -339,10 +330,6 @@
       .separator,
       .fa-globe {
         color: rgba(0,0,0,.4);
-      }
-
-      .icon .pin {
-        margin-right: -1px;
       }
 
       .tags {

@@ -5,16 +5,8 @@ import {getHostname} from '../../lib/strings'
 import * as toast from '../com/toast'
 import * as editBookmarkPopup from '../com/edit-bookmark-popup'
 import renderCloseIcon from '../icon/close'
-import renderGlobeIcon from '../icon/globe'
-import renderHistoryIcon from '../icon/history'
-import renderPinIcon from '../icon/pin'
-import renderPadlockIcon from '../icon/padlock'
-import renderStarFillIcon from '../icon/star-fill'
 import renderTrashIcon from '../icon/trash'
 import renderPencilIcon from '../icon/pencil'
-import renderGridIcon from '../icon/grid'
-import renderListIcon from '../icon/list'
-import renderListExpandedIcon from '../icon/list-expanded'
 
 // globals
 //
@@ -245,7 +237,7 @@ function renderActions (row, i) {
           ${renderTrashIcon()}
         </div>
         <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)} title="${row.pinned ? 'Unpin from' : 'Pin to'} start page">
-          ${renderPinIcon()}
+          <i class="fa fa-thumb-tack icon"></i>
         </div>
       </div>
     `
@@ -288,13 +280,13 @@ function renderToPage () {
 
           <div class="section">
             <div class="nav-item ${currentView === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('all')}>
-              ${renderStarFillIcon()}
+              <i class="fa fa-star icon"></i>
               All bookmarks
             </div>
 
             ${''/* TODO(profiles) put pinned menu item here until profiles are stored -prf */}
             <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
-              ${renderPinIcon()}
+              <i class="fa fa-thumb-tack icon"></i>
               Pinned
             </div>
           </div>
@@ -303,19 +295,19 @@ function renderToPage () {
           <div class="section">
             <h2>Your bookmarks</h2>
             <div class="nav-item ${currentView === 'mine' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('mine')}>
-              ${renderStarFillIcon()}
+              <i class="fa fa-star icon"></i>
               Your bookmarks
             </div>
             <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
-              ${renderPinIcon()}
+              <i class="fa fa-thumb-tack icon"></i>
               Pinned
             </div>
             <div class="nav-item ${currentView === 'public' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('public')}>
-              ${renderGlobeIcon()}
+              <i class="fa fa-globe icon"></i>
               Shared by you
             </div>
             <div class="nav-item ${currentView === 'private' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('private')}>
-              ${renderPadlockIcon()}
+              <i class="fa fa-lock icon"></i>
               Private
             </div>
           </div>
