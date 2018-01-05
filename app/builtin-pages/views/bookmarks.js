@@ -29,7 +29,7 @@ var userProfile = {_origin: null} // null TODO(profiles) disabled -prf
 // var followedUserProfiles = null TODO(profiles) disabled -prf
 
 // read current view config
-currentRenderingMode = localStorage.currentRenderingMode || 'expanded'
+currentRenderingMode = localStorage.currentRenderingMode || 'list'
 currentSort = localStorage.currentSort || 'recent'
 
 // main
@@ -126,10 +126,8 @@ function renderRow (row, i) {
     return ''
   } else if (currentRenderingMode === 'grid') {
     return renderRowGrid(row, i)
-  } else if (currentRenderingMode === 'list') {
+  } else /*if (currentRenderingMode === 'list')*/ {
     return renderRowList(row, i)
-  } else {
-    return ''
   }
 }
 
