@@ -425,9 +425,11 @@
     cursor: pointer;
 
     .icon {
-      width: 18px;
-      height: 18px;
-      margin-right: 5px;
+      width: 15px;
+      margin-right: 10px;
+      font-size: 15px;
+      color: rgba(0,0,0, .25);
+      text-align: center;
 
       &.history {
         width: 15px;
@@ -481,11 +483,6 @@
         stroke: rgba(0,0,0,.25);
       }
 
-      &.pin *,
-      &.star-fill * {
-        fill: rgba(0,0,0,.25);
-      }
-
       &.pin {
         width: 11px;
         margin-left: 3.25px;
@@ -496,39 +493,18 @@
     &:hover {
       background: #f7f7f7;
       border-color: #ccc;
+
+      .icon {
+        color: inherit;
+      }
     }
 
     &.active {
-      font-weight: 500;
       border-color: @blue;
+      font-weight: 500;
 
       .icon {
-
-        &.star-fill,
-        &.pin {
-         * {
-            fill: fadeout(@color-text, 25%);
-            stroke: fadeout(@color-text, 25%);
-          }
-        }
-
-        &.globe {
-
-          #water {
-            fill: fadeout(@color-text, 25%);
-          }
-        }
-
-        &.padlock {
-
-          #top {
-            stroke: fadeout(@color-text, 25%);
-          }
-
-          #bottom {
-            fill: fadeout(@color-text, 25%);
-          }
-        }
+        color: @blue;
       }
     }
 
