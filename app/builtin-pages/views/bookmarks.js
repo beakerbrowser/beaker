@@ -470,15 +470,15 @@ function onClickEdit (i) {
         }
       }
 
-      // delete old bookmark if privacy changed
-      else if (bOriginal.private && !b.private) {
-        await beaker.bookmarks.unbookmarkPrivate(b.href)
-      } else if (!bOriginal.private && b.private) {
-        await beaker.bookmarks.unbookmarkPublic(b.href)
-      }
+      // delete old bookmark if privacy changed TODO(profiles) disabled -prf
+      // else if (bOriginal.private && !b.private) {
+      //   await beaker.bookmarks.unbookmarkPrivate(b.href)
+      // } else if (!bOriginal.private && b.private) {
+      //   await beaker.bookmarks.unbookmarkPublic(b.href)
+      // }
 
       // set the bookmark
-      if (b.private) {
+      if (b.private || true /* TODO(profiles) private only -prf */) {
         await beaker.bookmarks.bookmarkPrivate(b.href, b)
       } else {
         beaker.bookmarks.bookmarkPublic(b.href, b)

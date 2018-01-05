@@ -37,8 +37,9 @@ export function render (href, {title='', tags='', notes='', isPrivate=true, pinn
             <textarea name="notes">${notes}</textarea>
           </div>
 
+          ${'' /* TODO(profiles) disabled -prf
           <label for="private">Private</label>
-          <input type="checkbox" checked=${isPrivate} name="private"/>
+          <input type="checkbox" checked=${isPrivate} name="private"/>*/}
 
           <label for="private">Pin to start page</label>
           <input type="checkbox" checked=${pinned} name="pinned"/>
@@ -106,7 +107,7 @@ function onSubmit (e) {
     title: e.target.title.value,
     tags: e.target.tags.value.split(' ').filter(Boolean),
     notes: e.target.notes.value,
-    private: e.target.private.checked,
+    // private: e.target.private.checked, TODO(profiles) disabled -prf
     pinned: e.target.pinned.checked
   })
   destroy()
