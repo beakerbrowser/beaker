@@ -203,7 +203,7 @@ test('archive.stat', async t => {
 test('DatArchive.create prompt=false', async t => {
   // create
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({ title: 'The Title', description: 'The Description', type: 'website' }).then(done,done)
+    DatArchive.create({ title: 'The Title', description: 'The Description' }).then(done,done)
   })
   var datUrl = res.value.url
   t.truthy(datUrl.startsWith('dat://'))
@@ -222,7 +222,6 @@ test('DatArchive.create prompt=false', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
-  t.deepEqual(manifest.type, ['website'])
 
   // check the settings
   await app.client.windowByIndex(0)
@@ -239,7 +238,7 @@ test('DatArchive.create prompt=true rejection', async t => {
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.create({ title: 'The Title', description: 'The Description', type: 'website', prompt: true }).then(
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -264,7 +263,7 @@ test('DatArchive.create prompt=true', async t => {
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.create({ title: 'The Title', description: 'The Description', type: 'website', prompt: true }).then(
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -299,7 +298,6 @@ test('DatArchive.create prompt=true', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
-  t.deepEqual(manifest.type, ['website'])
 
   // check the settings
   await app.client.windowByIndex(0)
@@ -314,7 +312,7 @@ test('DatArchive.create prompt=true', async t => {
 test('DatArchive.fork prompt=false', async t => {
   // start the prompt
   var res = await app.client.executeAsync((url, done) => {
-    DatArchive.fork(url, { description: 'The Description 2', type: 'webshite' }).then(done, done)
+    DatArchive.fork(url, { description: 'The Description 2' }).then(done, done)
   }, createdDatURL)
   var forkedDatURL = res.value.url
   t.truthy(forkedDatURL.startsWith('dat://'))
@@ -332,7 +330,6 @@ test('DatArchive.fork prompt=false', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description 2')
-  t.deepEqual(manifest.type, ['webshite'])
 })
 
 test('DatArchive.fork prompt=true', async t => {
@@ -340,7 +337,7 @@ test('DatArchive.fork prompt=true', async t => {
   await app.client.execute((url) => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.fork(url, { description: 'The Description 2', type: 'webshite', prompt: true }).then(
+    DatArchive.fork(url, { description: 'The Description 2', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -374,7 +371,6 @@ test('DatArchive.fork prompt=true', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description 2')
-  t.deepEqual(manifest.type, ['webshite'])
 })
 
 test('DatArchive.unlink', async t => {
@@ -544,7 +540,6 @@ test('archive.configure', async t => {
     archive.configure({
       title: 'The Changed Title',
       description: 'The Changed Description',
-      type: ['foo', 'bar']
     }).then(done, done)
   }, createdDatURL)
   t.falsy(res.value)
@@ -556,11 +551,14 @@ test('archive.configure', async t => {
   }, createdDatURL)
   t.deepEqual(res.value.title, 'The Changed Title')
   t.deepEqual(res.value.description, 'The Changed Description')
-  t.deepEqual(res.value.type, ['foo', 'bar'])
+  t.deepEqual(res.value.type, [])
 })
 
 
 test('offline archives', async t => {
+  // must use a beaker:// app
+  await app.client.windowByIndex(0)
+
   // create a dat (prompt=false)
   var res = await app.client.executeAsync((done) => {
     DatArchive.create({ networked: false }).then(done,done)
@@ -570,12 +568,10 @@ test('offline archives', async t => {
   var datKey = datUrl.slice('dat://'.length)
 
   // check the settings
-  await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
     var archive = new DatArchive(key)
     archive.getInfo().then(done, err => done({ err }))
   }, datKey)
-  await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.networked, false)
 
   // change the settings
@@ -586,12 +582,10 @@ test('offline archives', async t => {
   t.falsy(res.value)
 
   // check the settings
-  await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
     var archive = new DatArchive(key)
     archive.getInfo().then(done, err => done({ err }))
   }, datKey)
-  await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.networked, true)
 
   // create a dat (prompt=true)
@@ -611,7 +605,7 @@ test('offline archives', async t => {
   await app.client.waitUntilWindowLoaded()
   await app.client.waitForExist('button[type="submit"]')
   await app.client.click('button[type="submit"]')
-  await app.client.windowByIndex(1)
+  await app.client.windowByIndex(0)
 
   // fetch & test the res
   await app.client.pause(500)
@@ -622,12 +616,10 @@ test('offline archives', async t => {
   var datKey2 = datUrl2.slice('dat://'.length)
 
   // check the settings
-  await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
     var archive = new DatArchive(key)
     archive.getInfo().then(done, err => done({ err }))
   }, datKey2)
-  await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.networked, false)
 
   // fork a dat (prompt=false)
@@ -639,12 +631,10 @@ test('offline archives', async t => {
   var datKey3 = datUrl3.slice('dat://'.length)
 
   // check the settings
-  await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
     var archive = new DatArchive(key)
     archive.getInfo().then(done, err => done({ err }))
   }, datKey3)
-  await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.networked, false)
 
   // fork a dat (prompt=true)
@@ -664,7 +654,7 @@ test('offline archives', async t => {
   await app.client.waitUntilWindowLoaded()
   await app.client.waitForExist('button[type="submit"]')
   await app.client.click('button[type="submit"]')
-  await app.client.windowByIndex(1)
+  await app.client.windowByIndex(0)
 
   // fetch & test the res
   await app.client.pause(500)
@@ -675,13 +665,14 @@ test('offline archives', async t => {
   var datKey4 = datUrl4.slice('dat://'.length)
 
   // check the settings
-  await app.client.windowByIndex(0)
   var details = await app.client.executeAsync((key, done) => {
     var archive = new DatArchive(key)
     archive.getInfo().then(done, err => done({ err }))
   }, datKey4)
-  await app.client.windowByIndex(1)
   t.deepEqual(details.value.userSettings.networked, false)
+
+  // go back to the page
+  await app.client.windowByIndex(1)
 })
 
 test('archive.writeFile', async t => {
@@ -1165,7 +1156,6 @@ test('archive.getInfo', async t => {
   var info = res.value
   t.deepEqual(info.title, 'The Changed Title')
   t.deepEqual(info.description, 'The Changed Description')
-  t.deepEqual(info.type, ['foo', 'bar'])
 })
 
 test('archive.download', async t => {
@@ -1426,7 +1416,39 @@ test('archive.createFileActivityStream', async t => {
   t.deepEqual(res.value, ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt'])
 })
 
-test('archive.createNetworkActivityStream', async t => {
+test('archive.writeFile does allow self-modification', async t => {
+  // navigate to the created dat
+  // (we have to be really sleepy about this to not hang the navigation)
+  await sleep(500)
+  var tabIndex = await browserdriver.newTab(app)
+  await sleep(500)
+  await browserdriver.navigateTo(app, createdDatURL)
+  await sleep(500)
+  await app.client.windowByIndex(tabIndex)
+  await app.client.waitForExist('.entry') // an element on the directory listing page
+
+  // fail a self-write
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.writeFile('/allowthis.txt', 'hello world', 'utf8').then(done, done)
+  }, createdDatURL)
+  t.falsy(res.value)
+})
+
+test('DatArchive can resolve and read dats with shortnames', async t => {
+  // do this in the shell so we dont have to ask permission
+  // await app.client.windowByIndex(0)
+
+  var res = await app.client.executeAsync((done) => {
+    var archive = new DatArchive('dat://beakerbrowser.com/')
+    archive.readdir('/').then(done, done)
+  })
+  t.truthy(Array.isArray(res.value))
+  
+  // await app.client.windowByIndex(1)
+})
+
+test.skip('archive.createNetworkActivityStream', async t => {
   // do this in the shell so we dont have to ask permission
   await app.client.windowByIndex(0)
 
@@ -1480,38 +1502,6 @@ test('archive.createNetworkActivityStream', async t => {
   // t.truthy(res.value.content.down > 0)
   // t.deepEqual(res.value.metadata.all, true)
   // t.deepEqual(res.value.content.all, true)
-})
-
-test('archive.writeFile does allow self-modification', async t => {
-  // navigate to the created dat
-  // (we have to be really sleepy about this to not hang the navigation)
-  await sleep(500)
-  var tabIndex = await browserdriver.newTab(app)
-  await sleep(500)
-  await browserdriver.navigateTo(app, createdDatURL)
-  await sleep(500)
-  await app.client.windowByIndex(tabIndex)
-  await app.client.waitForExist('.entry') // an element on the directory listing page
-
-  // fail a self-write
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.writeFile('/allowthis.txt', 'hello world', 'utf8').then(done, done)
-  }, createdDatURL)
-  t.falsy(res.value)
-})
-
-test('DatArchive can resolve and read dats with shortnames', async t => {
-  // do this in the shell so we dont have to ask permission
-  await app.client.windowByIndex(0)
-
-  var res = await app.client.executeAsync((done) => {
-    var archive = new DatArchive('dat://beakerbrowser.com/')
-    archive.readdir('/').then(done, done)
-  })
-  t.truthy(Array.isArray(res.value))
-  
-  await app.client.windowByIndex(1)
 })
 
 function sleep (time) {

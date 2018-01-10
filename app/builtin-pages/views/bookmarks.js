@@ -21,7 +21,7 @@ var userProfile = {_origin: null} // null TODO(profiles) disabled -prf
 // var followedUserProfiles = null TODO(profiles) disabled -prf
 
 // read current view config
-currentRenderingMode = localStorage.currentRenderingMode || 'expanded'
+currentRenderingMode = localStorage.currentRenderingMode || 'list'
 currentSort = localStorage.currentSort || 'recent'
 
 // main
@@ -118,10 +118,8 @@ function renderRow (row, i) {
     return ''
   } else if (currentRenderingMode === 'grid') {
     return renderRowGrid(row, i)
-  } else if (currentRenderingMode === 'list') {
+  } else /*if (currentRenderingMode === 'list')*/ {
     return renderRowList(row, i)
-  } else {
-    return ''
   }
 }
 
@@ -356,9 +354,9 @@ function renderToPage () {
 
             <div class="sort-controls btn-bar">
               <label for="sort">Sort by</label>
-              <select name="sort" onchange=${(e) => {onUpdateSort(e.target.value)}}>
-                <option value="recent" selected="${currentSort === 'recent' ? 'selected' : ''}">Recently bookmarked</option>
-                <option value="alpha" selected="${currentSort === 'alpha' ? 'selected' : ''}">Alphabetical (A-Z)</option>
+              <select name="sort" onchange=${(e) => onUpdateSort(e.target.value)}>
+                <option value="recent" selected=${currentSort === 'recent'}>Recently bookmarked</option>
+                <option value="alpha" selected=${currentSort === 'alpha'}>Alphabetical (A-Z)</option>
               </select>
             </div>
 
@@ -472,15 +470,15 @@ function onClickEdit (i) {
         }
       }
 
-      // delete old bookmark if privacy changed
-      else if (bOriginal.private && !b.private) {
-        await beaker.bookmarks.unbookmarkPrivate(b.href)
-      } else if (!bOriginal.private && b.private) {
-        await beaker.bookmarks.unbookmarkPublic(b.href)
-      }
+      // delete old bookmark if privacy changed TODO(profiles) disabled -prf
+      // else if (bOriginal.private && !b.private) {
+      //   await beaker.bookmarks.unbookmarkPrivate(b.href)
+      // } else if (!bOriginal.private && b.private) {
+      //   await beaker.bookmarks.unbookmarkPublic(b.href)
+      // }
 
       // set the bookmark
-      if (b.private) {
+      if (b.private || true /* TODO(profiles) private only -prf */) {
         await beaker.bookmarks.bookmarkPrivate(b.href, b)
       } else {
         beaker.bookmarks.bookmarkPublic(b.href, b)
