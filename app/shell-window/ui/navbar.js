@@ -45,7 +45,6 @@ var isLocationHighlighted = false
 var autocompleteCurrentValue = null
 var autocompleteCurrentSelection = 0
 var autocompleteResults = null // if set to an array, will render dropdown
-var autocompleteSuggestion = null
 
 // exported functions
 // =
@@ -479,14 +478,6 @@ async function handleAutocompleteSearch (results) {
     autocompleteResults = autocompleteResults.concat(results)
   }
 
-  await Promise.all(autocompleteResults.map(async r => {
-    let bookmarked = false
-    try {
-      bookmarked = await beaker.bookmarks.isBookmarked(r.url)
-    } catch (_) {}
-    Object.assign(r, {bookmarked})
-  }))
-
   // find the first autocomplete result that:
   // (a) starts with the input value, ignoring (protocol)://(www.)
   // (b) is not the DuckDuckGo search, and
@@ -502,19 +493,20 @@ async function handleAutocompleteSearch (results) {
   // if we didn't find an autocomplete result that fit the requirements, reset suggestion and selection
   // also run reset when backspace or delete are pressed
   if (lastKeyDown === KEYCODE_BACKSPACE || lastKeyDown === KEYCODE_DELETE || foundIndex === -1) {
-    autocompleteSuggestion = ''
     autocompleteCurrentSelection = 0
   } else {
     // if we did find one, set the current selection to the found index
     autocompleteCurrentSelection = foundIndex
   }
 
-  if (autocompleteCurrentSelection !== 0) {
-    // auto-fill the URL with suggestion if we have one
-    var selectionUrl = getAutocompleteSelectionUrl(autocompleteCurrentSelection)
-    var re = new RegExp('^.*?' + v)
-    autocompleteSuggestion = selectionUrl.replace(re, '')
-  }
+  // read bookmark state
+  await Promise.all(autocompleteResults.map(async r => {
+    let bookmarked = false
+    try {
+      bookmarked = await beaker.bookmarks.isBookmarked(r.url)
+    } catch (_) {}
+    Object.assign(r, {bookmarked})
+  }))
 
   // render
   update()
@@ -721,16 +713,6 @@ function onInputLocation (e) {
     // update the suggestions
     beaker.history.search(value)
       .then(handleAutocompleteSearch)
-      .then(() => {
-        if (autocompleteCurrentSelection !== -1 && autocompleteSuggestion) {
-          // find the length of the current value
-          var startingIndex = e.target.value.length
-          // add the autocomplete suggestion
-          e.target.value += autocompleteSuggestion
-          // select the autocomplete suggestion
-          e.target.setSelectionRange(startingIndex, e.target.value.length)
-        }
-      })
   } else if (!autocompleteValue) { clearAutocomplete() } // no value, cancel out
 
   isLocationHighlighted = true
