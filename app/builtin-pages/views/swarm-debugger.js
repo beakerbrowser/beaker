@@ -10,7 +10,13 @@ var peers = []
 
 setup()
 async function setup () {
-  archiveKey = await parseURL()
+  try {
+    archiveKey = await parseURL()
+  } catch (e) {
+    renderUsage(e.message)
+    return
+  }
+
   render()
   updatePeers()
 
@@ -76,6 +82,15 @@ function updatePeers () {
   })}
       ${peers.length === 0 ? yo`<p>No peers are currently connected for this archive.</p>` : ''}
     </div>
+  `)
+}
+
+function renderUsage (err) {
+  yo.update(document.querySelector('main'), yo`
+    <main>
+      <h1>${err}</h1>
+      <h2>A valid dat URL is required in the URL path.</h2>
+    </main>
   `)
 }
 
