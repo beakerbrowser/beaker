@@ -111,7 +111,7 @@ function renderRows () {
     var oldLastDate = lastRenderedDate
     lastRenderedDate = moment(row.ts).endOf('day')
     if (!lastRenderedDate.isSame(oldLastDate, 'day')) {
-      rowEls.push(yo`<h2>${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</h2>`)
+      rowEls.push(yo`<div class="ll-sticky-heading">${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</div>`)
     }
 
     // render row
@@ -135,7 +135,7 @@ function renderAndAppendRows (v) {
     var oldLastDate = lastRenderedDate
     lastRenderedDate = moment(row.ts).endOf('day')
     if (!lastRenderedDate.isSame(oldLastDate, 'day')) {
-      parentEl.appendChild(yo`<h2>${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</h2>`)
+      parentEl.appendChild(yo`<div class="ll-sticky-heading">${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</div>`)
     }
 
     // render row
