@@ -33,3 +33,80 @@
     }
   }
 }
+
+// beaker://library/{datHash} view
+.library-wrapper.library-view {
+
+  .container {
+    max-width: 900px;
+    margin: auto;
+  }
+
+  .builtin-header {
+    display: block;
+    height: auto;
+    padding: 0;
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+
+    .info-container {
+      &:extend(.flex);
+      padding: 20px 25px;
+      font-size: .85rem;
+
+      .favicon {
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+      }
+
+      .title {
+        margin-right: 5px;
+        font-weight: 500;
+        font-size: 1rem;
+        line-height: 20px;
+        vertical-align: top;
+      }
+
+      .url {
+        color: @color-text--muted;
+        color: @blue;
+      }
+
+      .url,
+      .title {
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .description {
+        display: inline-block;
+        margin: 5px 5px 5px 0;
+      }
+    }
+
+    .actions {
+      margin-left: auto;
+    }
+
+    .tabs {
+      padding: 0 20px;
+
+      .tab {
+        border-top: 3px solid transparent;
+        border-bottom: 0;
+
+        &.active {
+          border-color: @blue;
+          border-left: 1px solid #ddd;
+          border-right: 1px solid #ddd;
+          border-radius: 2px 2px 0;
+          background: #fff;
+          box-shadow: 0 3px 0 #fff;
+        }
+      }
+    }
+  }
+}
