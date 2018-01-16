@@ -56,7 +56,7 @@ export function setup () {
 }
 
 async function datProtocol (request, respond) {
-  repond = once(respond)
+  respond = once(respond)
   var respondError = (code, status, errorPageInfo) => {
     if (errorPageInfo) {
       errorPageInfo.validatedURL = request.url
