@@ -12,7 +12,7 @@ import {shortenHash} from '../../lib/strings'
 var activeView = 'files'
 var archive
 var archiveInfo
-var archiveFs
+var archiveFsRoot
 var filesBrowser
 var error
 
@@ -22,13 +22,17 @@ var error
 setup()
 async function setup () {
   // try {
+    // load data
     let url = window.location.pathname.slice(1)
     archive = new DatArchive(url)
     archiveInfo = await archive.getInfo()
-    archiveFs = new FSArchive(null, archiveInfo)
-    await archiveFs.readData()
-    filesBrowser = new FilesBrowser(archiveFs)
-    filesBrowser.onSetCurrentSource = console.log
+    archiveFsRoot = new FSArchive(null, archiveInfo)
+    filesBrowser = new FilesBrowser(archiveFsRoot)
+    filesBrowser.onSetCurrentSource = onSetCurrentSource
+    await readSelectedPathFromURL()
+
+    // wire up events
+    window.addEventListener('popstate', onPopState)
   // } catch (e) {
   //   error = e
   // }
@@ -116,4 +120,43 @@ function renderActions () {
 function onChangeView (view) {
   activeView = view
   render()
+}
+
+function onSetCurrentSource (node) {
+  let path = archive.url
+  if (node._path) {
+    path += node._path
+  }
+  window.history.pushState('', {}, `beaker://library/${path}`)
+}
+
+function onPopState (e) {
+  readSelectedPathFromURL()
+}
+
+// helpers
+// =
+
+async function readSelectedPathFromURL () {
+  try {
+    var node
+    var urlp = new URL(window.location.pathname.slice(1))
+    var pathParts = urlp.pathname.split('/').filter(Boolean)
+
+    // select the archive
+    node = archiveFsRoot
+    await node.readData()
+
+    // now select the folders
+    let pathPart
+    while ((pathPart = pathParts.shift())) {
+      node = node.children.find(node => node.name === pathPart)
+      await node.readData()
+    }
+    
+    await filesBrowser.setCurrentSource(node, {suppressEvent: true})
+  } catch (e) {
+    // ignore, but log just in case something is buggy
+    console.debug(e)
+  }
 }

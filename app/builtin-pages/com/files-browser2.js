@@ -1,8 +1,7 @@
 import yo from 'yo-yo'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import parseDatURL from 'parse-dat-url'
-import renderFilesTreeView from './files-browser/files-tree-view'
-import renderPreviewSidebar from './files-browser/preview-sidebar'
+import renderFilesFlatView from './files-browser/files-flat-view'
 
 // exported api
 // =
@@ -12,11 +11,7 @@ export default class FilesBrowser {
     this.lastRenderedElement = null // element last rendered
     this.root = root
     this.currentSource = root
-    this.currentSort = [
-      localStorage.currentSortColumn || 'name',
-      localStorage.currentSortDir || 'desc'
-    ]
-    this.expandedNodes = new Set() // set of nodes
+    this.currentSort = ['name', 'desc']
     this.selectedNodes = new Set() // set of nodes
     this.currentDragNode = null
     this.onSetCurrentSource = () => {} // v simple events solution
@@ -45,8 +40,7 @@ export default class FilesBrowser {
 
     return yo`
       <div class="files-browser">
-        ${this.getCurrentSource() ? renderFilesTreeView(this, this.getCurrentSource()) : null}
-        ${renderPreviewSidebar(this)}
+        ${this.getCurrentSource() ? renderFilesFlatView(this, this.getCurrentSource()) : null}
       </div>
     `
   }
@@ -110,23 +104,7 @@ export default class FilesBrowser {
   // sorting api
 
   toggleSort (column) {
-    // update the current setting
-    var [sortColumn, sortDir] = this.currentSort
-    if (column === sortColumn) {
-      sortDir = sortDir === 'asc' ? 'desc' : 'asc'
-    } else {
-      sortColumn = column
-      sortDir = 'desc'
-    }
-    this.currentSort = [sortColumn, sortDir]
-    this.resortTree()
-
-    // save to local storage
-    localStorage.currentSortColumn = sortColumn
-    localStorage.currentSortDir = sortDir
-
-    // rerender
-    this.rerender()
+    // noop
   }
 
   resortTree () {
@@ -136,17 +114,15 @@ export default class FilesBrowser {
   // expand api
 
   isExpanded (node) {
-    return this.expandedNodes.has(node)
+    return false
   }
 
   async expand (node) {
-    this.expandedNodes.add(node)
-    await node.readData()
-    this.resortTree()
+    // noop
   }
 
   collapse (node) {
-    this.expandedNodes.delete(node)
+    // noop
   }
 
   // selection api
@@ -162,12 +138,6 @@ export default class FilesBrowser {
 
   async select (node) {
     this.selectedNodes.add(node)
-
-    // read data if needed
-    if (node.type === 'file') {
-      await node.readData()
-    }
-
     this.rerender()
   }
 
@@ -191,34 +161,7 @@ export default class FilesBrowser {
   }
 
   async selectDirection (dir) {
-    var firstSelectedNode = Array.from(this.selectedNodes.values())[0]
-    if (!firstSelectedNode) {
-      // nothing is selected, so just select the first item
-      return this.select(this.getCurrentSource().children[0])
-    }
-    if (dir === 'up' || dir === 'down') {
-      let index = firstSelectedNode.parent.children.indexOf(firstSelectedNode)
-      index += dir === 'up' ? -1 : 1
-      index = Math.max(Math.min(index, firstSelectedNode.parent.children.length - 1), 0)
-      await this.unselectAll()
-      return this.select(firstSelectedNode.parent.children[index])
-    }
-    if (dir === 'left') {
-      if (firstSelectedNode.parent !== this.getCurrentSource()) {
-        await this.unselectAll()
-        await this.collapse(firstSelectedNode.parent)
-        return this.select(firstSelectedNode.parent)
-      }
-    }
-    if (dir === 'right') {
-      if (firstSelectedNode.isContainer) {
-        await this.expand(firstSelectedNode)
-        await this.unselectAll()
-        if (firstSelectedNode.children[0]) {
-          return this.select(firstSelectedNode.children[0])
-        }
-      }
-    }
+    // noop
   }
 
   // drag/drop api
