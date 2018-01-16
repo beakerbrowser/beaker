@@ -31,7 +31,7 @@ async function setup () {
   //   error = e
   // }
 
-  renderToPage()
+  render()
 }
 
 // rendering
