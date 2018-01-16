@@ -37,7 +37,7 @@ async function setup () {
 // rendering
 // =
 
-function renderToPage () {
+function render () {
   yo.update(
     document.querySelector('.library-wrapper'), yo`
       <div class="library-wrapper builtin-wrapper">
