@@ -56,7 +56,8 @@ export function setup () {
 }
 
 async function datProtocol (request, respond) {
-  var respondError = once((code, status, errorPageInfo) => {
+  repond = once(respond)
+  var respondError = (code, status, errorPageInfo) => {
     if (errorPageInfo) {
       errorPageInfo.validatedURL = request.url
       errorPageInfo.errorCode = code
@@ -70,7 +71,7 @@ async function datProtocol (request, respond) {
       },
       data: intoStream(errorPage(errorPageInfo || (code + ' ' + status)))
     })
-  })
+  }
   var fileReadStream
   var headersSent = false
   var archive
