@@ -26,9 +26,19 @@ export function showModal (parentWindow, modalName, opts = {}) {
 
   // create the modal window
   parentWindow = parentWindow || BrowserWindow.getFocusedWindow()
+  let x, y, width, height
+  width = SIZES[modalName].width
+  height = SIZES[modalName].height
+  if (parentWindow) {
+    let b = parentWindow.getBounds()
+    x = (b.x + (b.width / 2) - (width/2))
+    y = b.y + 40
+  }
   modalWindow = new BrowserWindow({
-    width: SIZES[modalName].width,
-    height: SIZES[modalName].height,
+    x,
+    y,
+    width,
+    height,
     parent: parentWindow,
     autoHideMenuBar: true,
     modal: true,
