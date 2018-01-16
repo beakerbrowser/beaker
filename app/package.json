@@ -47,7 +47,6 @@
     "into-stream": "^3.1.0",
     "is-ad": "^0.1.0",
     "listen-random-port": "^1.0.0",
-    "lodash": "^4.17.2",
     "lodash.flattendeep": "^4.4.0",
     "lodash.get": "^4.4.2",
     "lodash.groupby": "^4.6.0",
