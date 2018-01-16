@@ -111,7 +111,7 @@ function renderRow (row, i) {
 
         <span class="info">
           <div>
-            <a href=${row.url} class="title">
+            <a href=${'beaker://library/' + row.url} class="title">
               ${row.title || yo`<em>Untitled</em>`}
             </a>
 
