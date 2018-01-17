@@ -1,6 +1,9 @@
 .files-browser {
 
   .files-tree-view {
+    width: 100%;
+    border-top: 1px solid #eee;
+    // border-radius: 2px;
 
     * {
       -webkit-user-select: none;
@@ -9,61 +12,50 @@
     .item {
       &:extend(.flex);
       flex-wrap: nowrap;
-      white-space: pre;
       align-items: center;
-      position: relative;
-      padding: 0 5px;
-      height: 23px;
-      font-size: 12px;
+      padding: 0 10px;
+      height: 34px;
+      border-bottom: 1px solid #eee;
 
-      .fa,
-      .icon {
-        margin-right: 4px;
-        margin-left: 4px;
-        font-size: 14px;
+      &:hover {
+        background: #fafafa;
       }
 
-      .fa-file-text-o {
-        font-size: 12.5px;
+      .fa {
+        color: fadeout(shade(@blue, 35%), 35%);
+        color: fadeout(@color-text--muted, 15%);
+        width: 20px;
         margin-right: 5px;
-      }
+        text-align: center;
 
-
-      &.file {
-
-        .icon {
-          height: 15px;
-          width: auto;
+        &.fa-folder {
+          font-size: 15.5px;
+          color: fadeout(shade(@blue, 35%), 45%);
+          color: fadeout(@color-text--muted, 45%);
         }
       }
 
-      &.folder {
-
-        .icon {
-          width: 16.5px;
-          height: 14px;
-          margin: 0 5px;
-        }
+      .name-container {
+        flex: 1;
       }
 
       .name {
         &:extend(.overflow-ellipsis);
-        flex: 1;
+        cursor: pointer;
 
-        input {
-          height: auto;
+        &:hover {
+          text-decoration: underline;
         }
       }
 
       .updated,
-      .size,
-      .type {
-        color: rgba(0,0,0,.5);
-        padding: 0 0.5rem;
+      .size {
+        color: #999;
+        padding: 0 5px;
       }
 
       .updated {
-        flex: 0 0 150px;
+        flex: 0 0 170px;
       }
 
       .size {
@@ -76,17 +68,16 @@
       }
 
       &.selected:not(.dragover) {
-        background: mix(@blue, @teal);
-        background: tint(@blue, 15%);
-        color: #fff;
-        -webkit-font-smoothing: antialiased;
-        font-weight: 600;
+        // background: tint(@blue, 15%);
+        // color: #fff;
+        // -webkit-font-smoothing: antialiased;
+        // font-weight: 600;
 
         .updated,
         .size,
         .type {
-          color: #fff;
-          font-weight: 500;
+          // color: #fff;
+          // font-weight: 500;
         }
       }
     }

@@ -38,8 +38,14 @@
 .library-wrapper.library-view {
 
   .container {
-    max-width: 900px;
+    max-width: 800px;
     margin: auto;
+  }
+
+  .view {
+    max-width: 100%;
+    padding: 25px 0;
+    font-size: .85rem;
   }
 
   .builtin-header {
@@ -51,7 +57,7 @@
 
     .info-container {
       &:extend(.flex);
-      padding: 20px 25px;
+      padding: 20px 0;
       font-size: .85rem;
 
       .favicon {
@@ -66,15 +72,6 @@
         font-size: 1rem;
         line-height: 20px;
         vertical-align: top;
-      }
-
-      .url {
-        color: @color-text--muted;
-        color: @blue;
-      }
-
-      .url,
-      .title {
 
         &:hover {
           text-decoration: underline;
@@ -92,7 +89,6 @@
     }
 
     .tabs {
-      padding: 0 20px;
 
       .tab {
         border-top: 3px solid transparent;

@@ -19,6 +19,7 @@ export default function render (filesBrowser, root) {
       onclick=${e => onClickNode(e, filesBrowser, root)}
       oncontextmenu=${e => onContextMenu(e, filesBrowser, root)}
     >
+      ${rBreadcrumbs(filesBrowser)}
       <div class="body">
         <div
           class="droptarget"
@@ -30,9 +31,6 @@ export default function render (filesBrowser, root) {
           ${rChildren(filesBrowser, root.children)}
         </div>
       </div>
-      <div class="footer">
-        ${rFooter(filesBrowser)}
-      </div>
     </div>
   `
 }
@@ -40,15 +38,26 @@ export default function render (filesBrowser, root) {
 // rendering
 // =
 
-function rFooter (filesBrowser) {
-  return yo`<div class="breadcrumbs">${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}</div>`
+function rBreadcrumbs (filesBrowser) {
+  let path = filesBrowser.getCurrentSourcePath()
+  let parentNode = (path.length >= 2) ? path[path.length - 2] : filesBrowser.root
+
+  if (path.length < 1) return ''
+  return yo`
+    <div class="breadcrumbs">
+      <div class="breadcrumb ascend" onclick=${e => onClickNodeName(e, filesBrowser, parentNode)}>
+        ..
+      </div>
+
+      ${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}
+    </div>
+  `
 }
 
 function rBreadcrumb (filesBrowser, node) {
   if (!node) return ''
   return yo`
-    <div class="breadcrumb" ondblclick=${e => onDblClickNode(e, filesBrowser, node)}>
-      ${rIcon(node, {noArchiveTypes: true})}
+    <div class="breadcrumb" onclick=${e => onClickNodeName(e, filesBrowser, node)}>
       ${node.name}
     </div>
   `
@@ -76,7 +85,6 @@ function rContainer (filesBrowser, node, depth) {
   const isSelected = filesBrowser.isSelected(node)
   const isArchive = node && node.constructor.name === 'FSArchive'
   let children = ''
-  const directoryPadding = 10 + (depth * 20)
 
   return yo`
     <div
@@ -92,14 +100,12 @@ function rContainer (filesBrowser, node, depth) {
         draggable="true"
         onclick=${e => onClickNode(e, filesBrowser, node)}
         oncontextmenu=${e => onContextMenu(e, filesBrowser, node)}
-        ondblclick=${e => onDblClickNode(e, filesBrowser, node)}
         ondragstart=${e => onDragStart(e, filesBrowser, node)}
-        style=${'padding-left: ' + directoryPadding + 'px'}
       >
-        <i class="fa fa-folder-o"></i>
+        <i class="fa fa-folder"></i>
         ${node.isRenaming
-          ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
-          : yo`<div class="name">${node.name}</div>`}
+          ? yo`<div class="name" ><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
+          : yo`<div class="name-container"><div class="name" onclick=${e => onClickNodeName(e, filesBrowser, node)}>${node.name}</div></div>`}
         <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
         <div class="size">${node.size ? prettyBytes(node.size) : '--'}</div>
       </div>
@@ -110,7 +116,6 @@ function rContainer (filesBrowser, node, depth) {
 
 function rFile (filesBrowser, node, depth) {
   const isSelected = filesBrowser.isSelected(node)
-  const padding = 10 + (depth * 20)
 
   return yo`
     <div
@@ -119,14 +124,12 @@ function rFile (filesBrowser, node, depth) {
       draggable="true"
       onclick=${e => onClickNode(e, filesBrowser, node)}
       oncontextmenu=${e => onContextMenu(e, filesBrowser, node)}
-      ondblclick=${e => onDblClickNode(e, filesBrowser, node)}
       ondragstart=${e => onDragStart(e, filesBrowser, node)}
-      style=${'padding-left: ' + padding + 'px'}
     >
       <i class="fa fa-file-text-o"></i>
       ${node.isRenaming
         ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
-        : yo`<div class="name">${node.name}</div>`}
+        : yo`<div class="name-container"><div class="name" onclick=${e => onClickNodeName(e, filesBrowser, node)}>${node.name}</div></div>`}
       <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
       <div class="size">${typeof node.size === 'number' ? prettyBytes(node.size) : '--'}</div>
     </div>
@@ -159,6 +162,13 @@ function niceMtime (ts) {
 
 // event handlers
 // =
+
+function onClickNodeName (e, filesBrowser, node) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  filesBrowser.setCurrentSource(node)
+}
 
 async function onClickNode (e, filesBrowser, node) {
   if (e) {
