@@ -204,8 +204,14 @@ async function datProtocol (request, respond) {
   if (!isFolder) {
     await tryStat(filepath)
     if (entry && entry.isDirectory()) {
-      filepath = filepath + '/'
-      isFolder = true
+      cleanup()
+      return respond({
+        statusCode: 303,
+        headers: {
+          Location: `dat://${urlp.host}${urlp.pathname || ''}/${urlp.search || ''}`
+        },
+        data: intoStream('')
+      })
     }
   }
   entry = false
