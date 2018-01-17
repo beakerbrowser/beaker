@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, ipcMain, webContents, Menu, Tray } from 'electron'
+import { app, BrowserWindow, ipcMain, webContents, Menu, Tray } from 'electron'
 import { register as registerShortcut, unregister as unregisterShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import os from 'os'
 import jetpack from 'fs-jetpack'
@@ -8,7 +8,7 @@ import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
 
-const IS_WIN = process.platform == 'win32'
+const IS_WIN = process.platform === 'win32'
 
 // globals
 // =
@@ -53,8 +53,16 @@ export function setup () {
   })
 
   // set up app events
-  app.on('activate', () => ensureOneWindowExists())
-  app.on('open-url', (e, url) => openURL.open(url))
+  app.on('activate', () => {
+    // wait for ready (not waiting can trigger errors)
+    if (app.isReady()) ensureOneWindowExists()
+    else app.on('ready', ensureOneWindowExists)
+  })
+  app.on('open-url', (e, url) => {
+    // wait for ready (not waiting can trigger errors)
+    if (app.isReady()) openURL.open(url)
+    else app.on('ready', () => openURL.open(url))
+  })
   ipcMain.on('new-window', createShellWindow)
   app.on('before-quit', e => {
     if (!isReadyToQuit) {
@@ -65,7 +73,7 @@ export function setup () {
   })
   app.on('web-contents-created', (e, wc) => {
     // if this is a webview's web contents, attach the keybinding protections
-    if (!!wc.hostWebContents) {
+    if (wc.hostWebContents) {
       const parentWindow = BrowserWindow.fromWebContents(wc.hostWebContents)
       wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
     }
