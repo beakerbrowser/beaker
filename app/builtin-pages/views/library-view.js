@@ -48,19 +48,47 @@ function render () {
     document.querySelector('.library-wrapper'), yo`
       <div class="library-wrapper library-view builtin-wrapper">
         <div class="builtin-main" style="margin-left: 0; width: 100%">
-          <div class="builtin-header fixed">
+          <div class="builtin-header">
             <div class="container">
               ${renderInfo()}
               ${renderTabs()}
             </div>
           </div>
 
+          <div class="container">${renderView()}</div>
+
           ${error ? error.toString() : ''}
-          ${filesBrowser ? filesBrowser.render() : ''}
         </div>
       </div>
     `
   )
+}
+
+function renderView () {
+  switch (activeView) {
+    case 'files':
+      return renderFilesView()
+    case 'settings':
+      return renderSettingsView()
+    default:
+      return yo`<div class="view">Loading...</div>`
+  }
+}
+
+function renderFilesView () {
+  return yo`
+    <div class="view files">
+      ${filesBrowser ? filesBrowser.render() : ''}
+    </div>
+  `
+}
+
+function renderSettingsView () {
+  return yo`
+    <div class="settings view">
+      <h2>Settings</h2>
+    </div>
+  `
 }
 
 function renderInfo () {
@@ -76,10 +104,6 @@ function renderInfo () {
           <p class="description">
             ${_get(archiveInfo, 'description', yo`<em>No description</em>`)}
           </p>
-
-          <a href=${archiveInfo.url} class="url">
-            ${shortenHash(archiveInfo.url)}
-          </a>
         </div>
       </div>
 
@@ -153,7 +177,7 @@ async function readSelectedPathFromURL () {
       node = node.children.find(node => node.name === pathPart)
       await node.readData()
     }
-    
+
     await filesBrowser.setCurrentSource(node, {suppressEvent: true})
   } catch (e) {
     // ignore, but log just in case something is buggy

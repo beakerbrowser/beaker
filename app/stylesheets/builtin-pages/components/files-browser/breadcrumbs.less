@@ -1,23 +1,28 @@
 .files-browser {
+
   .breadcrumbs {
     &:extend(.flex);
     align-items: center;
-    position: fixed;
-    left: 151px; // width of first column
-    bottom: 0;
-    width: 100%;
-    height: 25px;
-    padding: 0 10px;
-    background: #fff;
-    border-top: 1px solid #ddd;
-    font-size: 11.25px;
+    height: 34px;
+    padding: 0 15px;
+    border-bottom: 1px solid #eee;
+
+    &:hover {
+      background: #fafafa;
+    }
 
     .breadcrumb {
-      margin-right: 6px;
-      height: 25px;
-      line-height: 25px;
-      vertical-align: middle;
-      margin-top: -1px;
+      color: @blue;
+      cursor: pointer;
+
+      &.ascend {
+        font-weight: 900;
+        letter-spacing: 1px;
+      }
+
+      &:hover {
+        text-decoration: underline;
+      }
 
       * {
         display: inline-block;
@@ -25,23 +30,10 @@
 
       &:not(:last-of-type):after {
         display: inline-block;
-        content: '>';
-        line-height: 25px;
-        vertical-align: middle;
-        margin-left: 2px;
-        margin-top: -2.75px;
-        font-weight: 700;
-        font-size: 9px;
-        color: @color-text--muted;
-      }
-
-      .icon {
-        margin-right: 2px;
-        margin-top: -2.3px;
-        line-height: 25px;
-        vertical-align: middle;
-        width: 15px;
-        height: 15px;
+        content: '/';
+        margin: 0 5px;
+        color: #999;
+        font-weight: 600;
       }
     }
   }
