@@ -1,22 +1,9 @@
 .files-browser {
 
   .files-tree-view {
-    flex: 1;
-    max-width: 800px;
-    margin-left: 150px;
-    border-right: 1px solid #ddd;
-    background: #fff;
 
     * {
       -webkit-user-select: none;
-    }
-
-    .body {
-      overflow-y: auto;
-      height: ~"calc(100vh - 47px)";
-      padding: 0 1px;
-      flex: 1;
-      max-width: 800px;
     }
 
     .item {
@@ -59,14 +46,6 @@
         }
       }
 
-      .caret {
-        psition: absolute;
-        font-size: 9px;
-        color: #bbb;
-        display: inline-block;
-        cursor: pointer;
-      }
-
       .name {
         &:extend(.overflow-ellipsis);
         flex: 1;
@@ -103,11 +82,6 @@
         -webkit-font-smoothing: antialiased;
         font-weight: 600;
 
-        .caret {
-          color: #fff;
-          font-weight: 900;
-        }
-
         .updated,
         .size,
         .type {
@@ -115,54 +89,6 @@
           font-weight: 500;
         }
       }
-
-      &.header {
-        height: 22px;
-        background: #fafafa;
-        border-bottom: 1px solid #ddd;
-        max-width: 800px;
-
-        .name,
-        .type,
-        .updated,
-        .size {
-          position: relative;
-          -webkit-font-smoothing: auto;
-          border-right: 1px solid #ddd;
-          padding: 0 7px;
-          color: #777;
-
-          &:after {
-            font-size: 17px;
-            position: absolute;
-            right: 5px;
-            top: -5px;
-          }
-
-          &.asc:after {
-            content: '\025B4'; // &utrif;
-            font-size: 18px;
-          }
-
-          &.desc:after {
-            content: '\025BE'; // &dtrif;
-            font-size: 18px;
-          }
-        }
-
-        .size:after {
-          right: auto;
-          left: 5px;
-        }
-
-        .type {
-          border: 0;
-        }
-      }
-    }
-
-    .footer {
-      height: 25px;
     }
 
     & > .droptarget {
