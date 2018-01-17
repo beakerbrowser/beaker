@@ -391,7 +391,7 @@ function render (id, page) {
 
 function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadError) {
   var valueRendered = value
-  if (/^(dat|http|https):/.test(value)) {
+  if (/^(dat|http|https):\/\//.test(value)) {
     try {
       var { protocol, host, pathname, search, hash } = new URL(value)
       var hostVersion
