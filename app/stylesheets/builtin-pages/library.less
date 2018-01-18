@@ -60,18 +60,10 @@
       padding: 20px 0;
       font-size: .85rem;
 
-      .favicon {
-        width: 20px;
-        height: 20px;
-        margin-right: 5px;
-      }
-
       .title {
-        margin-right: 5px;
+        font-size: 1.2rem;
         font-weight: 500;
-        font-size: 1rem;
-        line-height: 20px;
-        vertical-align: top;
+        margin-right: 5px;
 
         &:hover {
           text-decoration: underline;
@@ -79,13 +71,29 @@
       }
 
       .description {
-        display: inline-block;
-        margin: 5px 5px 5px 0;
+        margin: 0 5px 5px 0;
       }
     }
 
     .actions {
       margin-left: auto;
+    }
+
+    .metadata {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      color: #999;
+      font-weight: 300;
+
+      > div {
+        display: inline-block;
+        margin-right: 20px;
+      }
+
+      .btn {
+        border: 1px solid
+      }
     }
 
     .tabs {

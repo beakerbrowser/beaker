@@ -7,17 +7,12 @@
     padding: 0 15px;
     border-bottom: 1px solid #eee;
 
-    &:hover {
-      background: #fafafa;
-    }
-
     .breadcrumb {
       color: @blue;
       cursor: pointer;
 
-      &.ascend {
-        font-weight: 900;
-        letter-spacing: 1px;
+      &:last-of-type {
+        color: @color-text;
       }
 
       &:hover {
@@ -28,12 +23,29 @@
         display: inline-block;
       }
 
+      &.root:after,
       &:not(:last-of-type):after {
         display: inline-block;
         content: '/';
         margin: 0 5px;
         color: #999;
         font-weight: 600;
+      }
+    }
+
+    &.ascend {
+
+      .breadcrumb {
+        width: 100%;
+        height: 100%;
+        font-weight: 900;
+        letter-spacing: 1px;
+        color: @blue;
+        line-height: 30px;
+      }
+
+      &:hover {
+        background: #fafafa;
       }
     }
   }

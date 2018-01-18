@@ -4,9 +4,11 @@ import yo from 'yo-yo'
 import moment from 'moment'
 import prettyBytes from 'pretty-bytes'
 import {join as joinPath} from 'path'
+import _get from 'lodash.get'
 import {FSArchive, FSArchiveFolder, FSArchiveFile, FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
-import rIcon from './node-icon'
 import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
+import renderFilePreview from '../file-preview'
+import {shortenHash} from '../../../lib/strings'
 import {DAT_VALID_PATH_REGEX, STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
 
 // exported api
@@ -41,17 +43,38 @@ export default function render (filesBrowser, root) {
 function rBreadcrumbs (filesBrowser) {
   let path = filesBrowser.getCurrentSourcePath()
   let parentNode = (path.length >= 2) ? path[path.length - 2] : filesBrowser.root
+  const shortenedHash = shortenHash(filesBrowser.root._archiveInfo.url)
 
-  if (path.length < 1) return ''
+  // if (path.length < 1) return ''
   return yo`
-    <div class="breadcrumbs">
-      <div class="breadcrumb ascend" onclick=${e => onClickNodeName(e, filesBrowser, parentNode)}>
-        ..
+    <div>
+      <div class="breadcrumbs">
+        <div class="breadcrumb root" onclick=${e => onClickNodeName(e, filesBrowser, filesBrowser.root)}>
+          ${_get(filesBrowser.root._archiveInfo, 'title', 'Untitled')}
+        </div>
+
+        ${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}
       </div>
 
-      ${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}
+      ${path.length >= 1 ? yo`
+        <div class="breadcrumbs ascend">
+          <div class="breadcrumb" onclick=${e => onClickNodeName(e, filesBrowser, parentNode)}>
+            ..
+          </div>
+        </div>`
+      : ''}
     </div>
   `
+}
+
+function rFilePreview (node) {
+  console.log(node)
+  let preview
+  if (node.type === 'file') {
+    return renderFilePreview(node)
+  }
+
+  return 'not a file'
 }
 
 function rBreadcrumb (filesBrowser, node) {
@@ -64,16 +87,18 @@ function rBreadcrumb (filesBrowser, node) {
 }
 
 function rChildren (filesBrowser, children, depth = 0) {
-  if (children.length === 0 && depth === 0) {
-    return yo`
-      <div class="item empty"><em>No files</em></div>
-    `
-  }
+  // if (children.length === 0 && depth === 0) {
+    // return yo`
+      // <div class="item empty"><em>No files</em></div>
+    // `
+  // }
 
   return children.map(childNode => rNode(filesBrowser, childNode, depth))
 }
 
 function rNode (filesBrowser, node, depth) {
+  node.readData()
+  console.log(rFilePreview(node))
   if (node.isContainer) {
     return rContainer(filesBrowser, node, depth)
   } else {
