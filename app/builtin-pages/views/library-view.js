@@ -135,15 +135,17 @@ function renderMetadata () {
   return yo`
     <div class="metadata">
       <div>${prettyBytes(archiveInfo.size)}</div>
-      ―
+
+      <span class="separator">―</span>
+
       <div>${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</div>
-      ―
+
+      <span class="separator">―</span>
+
       <div class="url-info">
-        <a href=${archiveInfo.url}>${shortenHash(archiveInfo.url)}</a>
-        <button class="btn transparent small" onclick=${onCopyUrl}>
-          <i class="fa fa-link"></i>
-          Copy
-        </button>
+        <a href=${archiveInfo.url} class="url">
+          ${shortenHash(archiveInfo.url)}
+        </a>
       </div>
     </div>
   `
