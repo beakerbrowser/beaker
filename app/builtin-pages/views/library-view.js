@@ -1,7 +1,6 @@
 /* globals DatArchive beaker */
 
 import yo from 'yo-yo'
-import _get from 'lodash.get'
 import prettyBytes from 'pretty-bytes'
 import {FSArchive} from 'beaker-virtual-fs'
 import FilesBrowser from '../com/files-browser2'
@@ -99,11 +98,11 @@ function renderInfo () {
     <div class="info-container">
       <div class="info">
         <a href=${archiveInfo.url} class="title">
-          ${_get(archiveInfo, 'title', 'Untitled')}
+          ${archiveInfo.title || 'Untitled'}
         </a>
 
         <p class="description">
-          ${_get(archiveInfo, 'description', yo`<em>No description</em>`)}
+          ${archiveInfo.description || yo`<em>No description</em>`}
         </p>
       </div>
 
