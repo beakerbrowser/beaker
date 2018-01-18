@@ -98,21 +98,31 @@
         text-decoration: underline;
       }
     }
+  }
 
-    .tabs {
+  .tabs {
+    font-size: .85rem;
 
-      .tab {
-        border-top: 3px solid transparent;
-        border-bottom: 0;
+    .tab {
+      display: inline-block;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      min-width: 85px;
+      text-align: center;
+      padding: 7px 0;
+      cursor: pointer;
+      color: @color-text--muted;
+      margin-right: 5px;
+      vertical-align: bottom;
 
-        &.active {
-          border-color: @blue;
-          border-left: 1px solid #ddd;
-          border-right: 1px solid #ddd;
-          border-radius: 2px 2px 0;
-          background: #fff;
-          box-shadow: 0 3px 0 #fff;
-        }
+      &:hover {
+        border-color: #ccc;
+      }
+
+      &.active {
+        border-color: @color-text;
+        color: @color-text;
+        font-weight: 500;
       }
     }
   }
