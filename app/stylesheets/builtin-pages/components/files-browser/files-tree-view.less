@@ -16,9 +16,27 @@
       padding: 0 10px;
       height: 34px;
       border-bottom: 1px solid #eee;
+      cursor: pointer;
+
+      * {
+        cursor: pointer;
+      }
 
       &:hover {
         background: #fafafa;
+      }
+
+      &.empty {
+        cursor: default;
+        color: @color-text--muted;
+
+        * {
+          cursor: default;
+        }
+
+        &:hover {
+          background: #fff;
+        }
       }
 
       .fa {
@@ -41,7 +59,6 @@
 
       .name {
         &:extend(.overflow-ellipsis);
-        cursor: pointer;
 
         &:hover {
           text-decoration: underline;

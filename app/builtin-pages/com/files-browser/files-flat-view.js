@@ -49,7 +49,7 @@ function rBreadcrumbs (filesBrowser) {
   return yo`
     <div>
       <div class="breadcrumbs">
-        <div class="breadcrumb root" onclick=${e => onClickNodeName(e, filesBrowser, filesBrowser.root)}>
+        <div class="breadcrumb root" onclick=${e => onClickNode(e, filesBrowser, filesBrowser.root)}>
           ${_get(filesBrowser.root._archiveInfo, 'title', 'Untitled')}
         </div>
 
@@ -58,7 +58,7 @@ function rBreadcrumbs (filesBrowser) {
 
       ${path.length >= 1 ? yo`
         <div class="breadcrumbs ascend">
-          <div class="breadcrumb" onclick=${e => onClickNodeName(e, filesBrowser, parentNode)}>
+          <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, parentNode)}>
             ..
           </div>
         </div>`
@@ -80,25 +80,23 @@ function rFilePreview (node) {
 function rBreadcrumb (filesBrowser, node) {
   if (!node) return ''
   return yo`
-    <div class="breadcrumb" onclick=${e => onClickNodeName(e, filesBrowser, node)}>
+    <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, node)}>
       ${node.name}
     </div>
   `
 }
 
 function rChildren (filesBrowser, children, depth = 0) {
-  // if (children.length === 0 && depth === 0) {
-    // return yo`
-      // <div class="item empty"><em>No files</em></div>
-    // `
-  // }
+  if (children.length === 0 && depth === 0) {
+    return yo`
+      <div class="item empty"><em>No files</em></div>
+    `
+  }
 
   return children.map(childNode => rNode(filesBrowser, childNode, depth))
 }
 
 function rNode (filesBrowser, node, depth) {
-  node.readData()
-  console.log(rFilePreview(node))
   if (node.isContainer) {
     return rContainer(filesBrowser, node, depth)
   } else {
@@ -130,7 +128,7 @@ function rContainer (filesBrowser, node, depth) {
         <i class="fa fa-folder"></i>
         ${node.isRenaming
           ? yo`<div class="name" ><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
-          : yo`<div class="name-container"><div class="name" onclick=${e => onClickNodeName(e, filesBrowser, node)}>${node.name}</div></div>`}
+          : yo`<div class="name-container"><div class="name">${node.name}</div></div>`}
         <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
         <div class="size">${node.size ? prettyBytes(node.size) : '--'}</div>
       </div>
@@ -154,7 +152,7 @@ function rFile (filesBrowser, node, depth) {
       <i class="fa fa-file-text-o"></i>
       ${node.isRenaming
         ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
-        : yo`<div class="name-container"><div class="name" onclick=${e => onClickNodeName(e, filesBrowser, node)}>${node.name}</div></div>`}
+        : yo`<div class="name-container"><div class="name">${node.name}</div></div>`}
       <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
       <div class="size">${typeof node.size === 'number' ? prettyBytes(node.size) : '--'}</div>
     </div>
@@ -188,25 +186,11 @@ function niceMtime (ts) {
 // event handlers
 // =
 
-function onClickNodeName (e, filesBrowser, node) {
+function onClickNode (e, filesBrowser, node) {
   e.preventDefault()
   e.stopPropagation()
 
   filesBrowser.setCurrentSource(node)
-}
-
-async function onClickNode (e, filesBrowser, node) {
-  if (e) {
-    e.preventDefault()
-    e.stopPropagation()
-
-    // dont do anything if this was a click on an input field (renaming)
-    if (e.target.tagName === 'INPUT') {
-      return
-    }
-  }
-  // TODO multi selection
-  await filesBrowser.selectOne(node)
 }
 
 async function onContextMenu (e, filesBrowser, node) {
