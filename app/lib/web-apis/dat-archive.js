@@ -163,34 +163,34 @@ export default class DatArchive extends EventTarget {
     }
   }
 
-  async unlink (path) {
+  async unlink (path, opts = {}) {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
       url = joinPath(url, path)
-      return await dat.unlink(url)
+      return await dat.unlink(url, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
   }
 
-  async copy (path, dstPath) {
+  async copy (path, dstPath, opts = {}) {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
       url = joinPath(url, path)
-      return dat.copy(url, dstPath)
+      return dat.copy(url, dstPath, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
   }
 
-  async rename (path, dstPath) {
+  async rename (path, dstPath, opts = {}) {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
       url = joinPath(url, path)
-      return dat.rename(url, dstPath)
+      return dat.rename(url, dstPath, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -222,12 +222,12 @@ export default class DatArchive extends EventTarget {
     }
   }
 
-  async mkdir (path) {
+  async mkdir (path, opts = {}) {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
       url = joinPath(url, path)
-      return await dat.mkdir(url)
+      return await dat.mkdir(url, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
