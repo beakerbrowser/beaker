@@ -33,6 +33,8 @@ async function setup () {
     filesBrowser.onSetCurrentSource = onSetCurrentSource
     await readSelectedPathFromURL()
 
+    document.title = `Library - ${archiveInfo.title || 'Untitled'}`
+
     // wire up events
     window.addEventListener('popstate', onPopState)
   // } catch (e) {
