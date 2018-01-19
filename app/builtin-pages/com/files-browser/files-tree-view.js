@@ -57,7 +57,11 @@ function rColumnHeader (filesBrowser, id, label) {
 }
 
 function rFooter (filesBrowser) {
-  return yo`<div class="breadcrumbs">${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}</div>`
+  return yo`
+    <div class="breadcrumbs">
+      ${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}
+    </div>
+  `
 }
 
 function rBreadcrumb (filesBrowser, node) {

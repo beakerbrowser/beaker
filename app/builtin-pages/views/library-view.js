@@ -1,10 +1,12 @@
 /* globals DatArchive beaker */
 
 import yo from 'yo-yo'
-import _get from 'lodash.get'
+import prettyBytes from 'pretty-bytes'
 import {FSArchive} from 'beaker-virtual-fs'
 import FilesBrowser from '../com/files-browser2'
-import {shortenHash} from '../../lib/strings'
+import * as toast from '../com/toast'
+import {pluralize, shortenHash} from '../../lib/strings'
+import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 // globals
 // =
@@ -30,6 +32,8 @@ async function setup () {
     filesBrowser = new FilesBrowser(archiveFsRoot)
     filesBrowser.onSetCurrentSource = onSetCurrentSource
     await readSelectedPathFromURL()
+
+    document.title = `Library - ${archiveInfo.title || 'Untitled'}`
 
     // wire up events
     window.addEventListener('popstate', onPopState)
@@ -95,19 +99,18 @@ function renderInfo () {
   return yo`
     <div class="info-container">
       <div class="info">
-        <img src="beaker-favicon:${archiveInfo.url}" class="favicon"/>
         <a href=${archiveInfo.url} class="title">
-          ${_get(archiveInfo, 'title', 'Untitled')}
+          ${archiveInfo.title || 'Untitled'}
         </a>
 
-        <div>
-          <p class="description">
-            ${_get(archiveInfo, 'description', yo`<em>No description</em>`)}
-          </p>
-        </div>
+        <p class="description">
+          ${archiveInfo.description || yo`<em>No description</em>`}
+        </p>
       </div>
 
       ${renderActions()}
+
+      ${renderMetadata()}
     </div>
   `
 }
@@ -126,6 +129,27 @@ function renderTabs () {
       </div>
     </div>
   `
+}
+
+function renderMetadata () {
+  return yo`
+    <div class="metadata">
+      <div>${prettyBytes(archiveInfo.size)}</div>
+
+      <span class="separator">―</span>
+
+      <div>${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</div>
+
+      <span class="separator">―</span>
+
+      <div class="url-info">
+        <a href=${archiveInfo.url} class="url">
+          ${shortenHash(archiveInfo.url)}
+        </a>
+      </div>
+    </div>
+  `
+
 }
 
 function renderActions () {
@@ -152,6 +176,13 @@ function onSetCurrentSource (node) {
     path += node._path
   }
   window.history.pushState('', {}, `beaker://library/${path}`)
+}
+
+function onCopyUrl () {
+  if (archiveInfo) {
+    writeToClipboard(archiveInfo.url)
+    toast.create('URL copied to clipboard')
+  }
 }
 
 function onPopState (e) {
