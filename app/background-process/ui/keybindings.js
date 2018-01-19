@@ -29,17 +29,17 @@ function extractKeybindings (menuNode) {
 function convertAcceleratorToBinding (accel) {
   var binding = {}
   accel.split('+').forEach(part => {
-    switch (part) {
-      case 'Command':
-      case 'Cmd':
-      case 'CmdOrCtrl':
-      case 'Ctrl':
+    switch (part.toLowerCase()) {
+      case 'command':
+      case 'cmd':
+      case 'cmdorctrl':
+      case 'ctrl':
         binding.cmdOrCtrl = true
         break
-      case 'Alt':
+      case 'alt':
         binding.alt = true
         break
-      case 'Shift':
+      case 'shift':
         binding.shift = true
         break
       default:
