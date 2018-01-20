@@ -1,6 +1,7 @@
 /* globals beaker confirm */
 
 import yo from 'yo-yo'
+import * as toast from '../com/toast'
 import {niceDate} from '../../lib/time'
 // import {create as createEditAppPopup} from '../com/edit-app-popup' TODO(apps) restore when we bring back apps -prf
 
@@ -11,7 +12,7 @@ var settings
 var browserInfo
 var browserEvents
 var defaultProtocolSettings
-var activeView = 'auto-updater'
+var activeView = 'workspace-path'
 
 // TODO(bgimg) disabled for now -prf
 // var bgImages = [
@@ -66,6 +67,9 @@ function renderToPage () {
     <div id="el-content" class="settings-wrapper builtin-wrapper">
       <div class="builtin-sidebar">
         <h1>Settings</h1>
+        <div class="nav-item ${activeView === 'workspace-path' ? 'active' : ''}" onclick=${() => onUpdateView('workspace-path')}>
+          Workspace directory
+        </div>
 
         <div class="nav-item ${activeView === 'auto-updater' ? 'active' : ''}" onclick=${() => onUpdateView('auto-updater')}>
           Auto-updater
@@ -87,6 +91,8 @@ function renderToPage () {
 
 function renderView () {
   switch (activeView) {
+    case 'workspace-path':
+      return renderWorkspacePathSettings()
     case 'auto-updater':
       return renderAutoUpdater()
     case 'protocol':
@@ -94,6 +100,26 @@ function renderView () {
     case 'information':
       return renderInformation()
   }
+}
+
+function renderWorkspacePathSettings () {
+  return yo`
+    <div class="view">
+      <h2>Default workspace directory</h2>
+
+      <p>
+        The default directory where your projects will be saved.
+      </p>
+
+      <p>
+        <button class="btn" onclick=${onUpdateDefaultWorkspaceDirectory}>
+          Choose directory
+        </button>
+
+        <code>${settings.workspace_default_path}</code>
+      </p>
+    </div>
+  `
 }
 
 function renderInformation () {
@@ -129,6 +155,7 @@ function renderProtocolSettings () {
 
   return yo`
     <div class="view protocols">
+      <h2>Default browser settings</h2>
       ${registered.length
         ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
         : ''}
@@ -168,6 +195,7 @@ function renderAutoUpdater () {
   if (!browserInfo.updater.isBrowserUpdatesSupported) {
     return yo`
       <div class="view">
+        <h2>Auto updater</h2>
         <div>Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
         You will need to build new versions of Beaker from source.</div>
       </div>`
@@ -269,6 +297,7 @@ function onUpdateActiveSection (e) {
   document.querySelector(`#${activeSection}`).scrollIntoView()
 }
 
+
 function onClickCheckUpdates () {
   // trigger check
   beaker.browser.checkForUpdates()
@@ -283,6 +312,22 @@ function onToggleAutoUpdate () {
   settings.auto_update_enabled = isAutoUpdateEnabled() ? 0 : 1
   renderToPage()
   beaker.browser.setSetting('auto_update_enabled', settings.auto_update_enabled)
+}
+
+async function onUpdateDefaultWorkspaceDirectory () {
+  let path = await beaker.browser.showOpenDialog({
+    title: 'Select a folder',
+    buttonLabel: 'Select folder',
+    properties: ['openDirectory']
+  })
+
+  if (path) {
+    path = path[0]
+    settings.workspace_default_path = path
+    beaker.browser.setSetting('workspace_default_path', settings.workspace_default_path)
+    renderToPage()
+    toast.create('Workspace directory updated')
+  }
 }
 
 function onClickRestart () {
