@@ -91,3 +91,13 @@ app.on('ready', async function () {
   // listen OSX open-url event
   openURL.setup()
 })
+
+// only run one instance
+const isSecondInstance = app.makeSingleInstance((commandLine, workingDirectory) => {
+  // focus/create a window
+  windows.ensureOneWindowExists()
+  windows.getActiveWindow().focus()
+})
+if (isSecondInstance) {
+  app.exit()
+}

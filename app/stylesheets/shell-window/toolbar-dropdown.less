@@ -353,7 +353,9 @@
   .perms {
     background: #fafafa;
     border-radius: 0 0 4px 4px;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: ~"calc(100vh - 300px)";
 
     i {
       color: #777;
@@ -366,10 +368,17 @@
 
     label {
       &:extend(.flex);
+      flex-wrap: nowrap;
       align-items: center;
       padding: 8px 15px;
       margin: 0;
       font-weight: 400;
+
+      span {
+        max-width: 230px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
 
     input {
