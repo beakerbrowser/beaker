@@ -287,7 +287,6 @@ function renderTabs () {
   return yo`
     <div class="tabs">
       <div onclick=${e => onChangeView('files')} class="tab ${activeView === 'files' ? 'active' : ''}">
-        <i class="fa fa-code"></i>
         Files
       </div>
 
@@ -308,8 +307,7 @@ function renderTabs () {
       </div>
 
       <div onclick=${e => onChangeView('settings')} class="tab ${activeView === 'settings' ? 'active' : ''}">
-        <i class="fa fa-cogs"></i>
-        Settings
+        Details
       </div>
     </div>
   `
