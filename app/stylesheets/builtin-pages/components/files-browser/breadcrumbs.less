@@ -27,13 +27,18 @@
       &:not(:last-of-type):after {
         display: inline-block;
         content: '/';
-        margin: 0 5px;
-        color: #999;
-        font-weight: 600;
+        color: @color-text;
+        margin: 0 7px 0 5px;
+        font-weight: 300;
       }
     }
 
     &.ascend {
+      font-size: .85rem;
+      padding: 0 15px;
+      margin-bottom: 0;
+      border-bottom: 1px solid #ddd;
+      border-top: 1px solid #ddd;
 
       .breadcrumb {
         width: 100%;

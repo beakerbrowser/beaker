@@ -14,23 +14,28 @@ import {DAT_VALID_PATH_REGEX, STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
 // exported api
 // =
 
-export default function render (filesBrowser, root) {
+export default function render (filesBrowser, currentSource) {
   return yo`
     <div
-      class="files-tree-view ${root.isEmpty ? 'empty' : ''}"
-      onclick=${e => onClickNode(e, filesBrowser, root)}
-      oncontextmenu=${e => onContextMenu(e, filesBrowser, root)}
+      class="files-tree-view ${currentSource.isEmpty ? 'empty' : ''}"
+      onclick=${e => onClickNode(e, filesBrowser, currentSource)}
+      oncontextmenu=${e => onContextMenu(e, filesBrowser, currentSource)}
     >
-      ${rBreadcrumbs(filesBrowser)}
+
+      ${rBreadcrumbs(filesBrowser, currentSource)}
+
       <div class="body">
         <div
           class="droptarget"
           ondragover=${onDragOver}
-          ondragenter=${e => onDragEnter(e, filesBrowser, root)}
+          ondragenter=${e => onDragEnter(e, filesBrowser, currentSource)}
           ondragleave=${onDragLeave}
-          ondrop=${e => onDrop(e, filesBrowser, root)}
+          ondrop=${e => onDrop(e, filesBrowser, currentSource)}
         >
-          ${rChildren(filesBrowser, root.children)}
+          ${currentSource.type === 'file'
+            ? rFilePreview(currentSource)
+            : rChildren(filesBrowser, currentSource.children)
+          }
         </div>
       </div>
     </div>
@@ -40,12 +45,12 @@ export default function render (filesBrowser, root) {
 // rendering
 // =
 
-function rBreadcrumbs (filesBrowser) {
+function rBreadcrumbs (filesBrowser, currentSource) {
   let path = filesBrowser.getCurrentSourcePath()
   let parentNode = (path.length >= 2) ? path[path.length - 2] : filesBrowser.root
   const shortenedHash = shortenHash(filesBrowser.root._archiveInfo.url)
 
-  // if (path.length < 1) return ''
+  if (path.length < 1) return ''
   return yo`
     <div>
       <div class="breadcrumbs">
@@ -56,25 +61,25 @@ function rBreadcrumbs (filesBrowser) {
         ${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}
       </div>
 
-      ${path.length >= 1 ? yo`
-        <div class="breadcrumbs ascend">
-          <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, parentNode)}>
-            ..
-          </div>
-        </div>`
-      : ''}
+      ${currentSource.type === 'file'
+        ? ''
+        : yo`
+          <div class="breadcrumbs ascend">
+            <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, parentNode)}>
+              ..
+            </div>
+          </div>`
+      }
     </div>
   `
 }
 
 function rFilePreview (node) {
-  console.log(node)
-  let preview
-  if (node.type === 'file') {
-    return renderFilePreview(node)
-  }
-
-  return 'not a file'
+  return yo`
+    <div class="file-preview">
+      ${renderFilePreview(node)}
+    </div>
+  `
 }
 
 function rBreadcrumb (filesBrowser, node) {

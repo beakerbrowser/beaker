@@ -170,11 +170,22 @@ function onChangeView (view) {
   render()
 }
 
-function onSetCurrentSource (node) {
+function onChangeMode (mode) {
+  activeMode = mode
+  render()
+}
+
+async function onSetCurrentSource (node) {
   let path = archive.url
   if (node._path) {
     path += node._path
   }
+
+  // if it's a file, load the preview
+  if (node.type === 'file') {
+    await node.readData()
+  }
+
   window.history.pushState('', {}, `beaker://library/${path}`)
 }
 
