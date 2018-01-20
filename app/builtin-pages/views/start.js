@@ -26,7 +26,7 @@ async function setup () {
   update()
 
   // open update info if appropriate
-  if (!settings.noWelcomeTab) {
+  if (!settings.no_welcome_tab) {
     let latestVersion = await beaker.sitedata.get('beaker://start', 'latest-version')
     if (+latestVersion < LATEST_VERSION) {
       await beaker.sitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
