@@ -9,6 +9,7 @@
 @import "./components/tooltip.less";
 @import "./components/files-browser.less";
 @import "./components/badge";
+@import "./components/diff";
 
 .library-wrapper {
 
@@ -46,6 +47,92 @@
     max-width: 100%;
     padding: 25px 0;
     font-size: .85rem;
+  }
+
+  .view.revisions {
+    &:extend(.flex);
+    flex-wrap: nowrap;
+    padding: 0;
+    margin: 25px 0;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+
+    .revisions-sidebar {
+      flex: 0 0 200px;
+      border-right: 1px solid #ddd;
+    }
+
+    .revisions-list {
+      list-style: none;
+      margin-left: 0;
+
+      li {
+        &:extend(.flex);
+        align-items: center;
+        padding: 3px 10px;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+        font-size: .8rem;
+
+        input[type="checkbox"] {
+          height: auto;
+          margin: 0;
+          margin-left: auto;
+          opacity: 0;
+        }
+
+        &:hover {
+          background: #fafafa;
+
+          input[type="checkbox"] {
+            opacity: 1;
+          }
+        }
+
+        &.selected {
+          background: #fafafa;
+          font-weight: 500;
+        }
+      }
+    }
+
+    .revisions-content {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .revisions-content-header {
+      &:extend(.flex);
+      align-items: center;
+      height: 30px;
+      padding: 0 10px;
+      border-bottom: 1px solid #ddd;
+      font-size: .8rem;
+
+      i {
+        margin-right: 10px;
+      }
+
+      .path {
+        color: rgba(0,0,0,.9);
+        font-weight: 500;
+      }
+
+      .changes-count-container {
+        margin-left: auto;
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: .1px;
+
+        .additions-count {
+          color: shade(@green, 20%);
+        }
+
+        .deletions-count {
+          color: shade(@red, 20%);
+        }
+      }
+    }
   }
 
   .builtin-header {
@@ -176,5 +263,6 @@
     margin: 15px 0;
     padding: 15px;
     border: 1px solid #ddd;
+    font-size: 12.5px;
   }
 }

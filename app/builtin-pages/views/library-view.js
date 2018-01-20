@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import {FSArchive} from 'beaker-virtual-fs'
 import FilesBrowser from '../com/files-browser2'
+import renderDiff from '../com/diff'
 import * as toast from '../com/toast'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
@@ -61,6 +62,11 @@ async function setup () {
   } else {
     workspaceInfo.revisions = []
   }
+  if (workspaceInfo.revisions.length) {
+    currentDiffNode = workspaceInfo.revisions[0]
+    await loadCurrentDiff(currentDiffNode)
+  }
+
   render()
 }
 
@@ -75,7 +81,7 @@ async function loadCurrentDiff (revision) {
 
   // fetch the diff
   try {
-    diff = await beaker.workspaces.diff(0, currentWorkspaceName, revision.path)
+    diff = await beaker.workspaces.diff(0, workspaceInfo.name, revision.path)
 
     diffDeletions = diff.reduce((sum, el) => {
       if (el.removed) return sum + el.count
@@ -163,7 +169,7 @@ function renderRevisionsView () {
   const renderRev = node => (
     yo`
       <li class="${currentDiffNode && node.path === currentDiffNode.path ? 'selected' : ''}" onclick=${() => onClickChangedNode(node)} title=${node.path}>
-        <code class="path">${node.type === 'file' ? node.path.slice(1) : node.path}</code>
+        <span class="path">${node.type === 'file' ? node.path.slice(1) : node.path}</span>
         <input
           type="checkbox"
           checked=${!!node.checked}
@@ -176,67 +182,30 @@ function renderRevisionsView () {
   return yo`
     <div class="view revisions">
       <div class="revisions-sidebar">
-        ${renderMetadata()}
-
-        ${additions.length ? yo`
-          <div>
-            <div class="revisions-header additions">
-              <h3>Additions</h3>
-              <span class="count">${additions.length}</span>
-            </div>
-
-            <ul class="revisions-list">
-              ${additions.map(renderRev)}
-            </ul>
-          </div>
-        ` : ''}
-
-        ${modifications.length ? yo`
-          <div>
-            <div class="revisions-header modifications">
-              <h3>Modifications</h3>
-              <span class="count">${modifications.length}</span>
-            </div>
-
-            <ul class="revisions-list">
-              ${modifications.map(renderRev)}
-            </ul>
-          </div>
-        ` : ''}
-
-        ${deletions.length ? yo`
-          <div>
-            <div class="revisions-header deletions">
-              <h3>Deletions</h3>
-              <span class="count">${deletions.length}</span>
-            </div>
-
-            <ul class="revisions-list">
-              ${deletions.map(renderRev)}
-            </ul>
-          </div>
-        ` : ''}
-        ${!(additions.length || modifications.length || deletions.length)
-          ? yo`<em>No revisions</em>`
-          : ''}
-
-        ${renderActions()}
+        <ul class="revisions-list">
+          ${additions.map(renderRev)}
+          ${modifications.map(renderRev)}
+          ${deletions.map(renderRev)}
+        </ul>
       </div>
 
       <div class="revisions-content">
-        ${currentDiffNode ? yo`
-          <div class="revisions-content-header">
-            <div>
+        ${currentDiffNode
+          ? yo`
+            <div class="revisions-content-header">
               <i class="fa fa-file-text-o"></i>
-              <code class="path">
-                ${currentDiffNode.type === 'file' ? currentDiffNode.path.slice(1) : currentDiffNode.path}
-              </code>
-            </div>
 
-            <div class="changes-count-container">
-              <span class="additions-count">${diffAdditions ? `+${diffAdditions}` : ''}</span>
-              <span class="deletions-count">${diffDeletions ? `-${diffDeletions}` : ''}</span>
-          </div>` : ''}
+              <span class="path">
+                ${currentDiffNode.type === 'file' ? currentDiffNode.path.slice(1) : currentDiffNode.path}
+              </span>
+
+              <div class="changes-count-container">
+                <span class="additions-count">${diffAdditions ? `+${diffAdditions}` : ''}</span>
+                <span class="deletions-count">${diffDeletions ? `-${diffDeletions}` : ''}</span>
+              </div>
+            </div>`
+            : ''
+        }
 
         ${renderRevisionsContent()}
       </div>
@@ -395,6 +364,12 @@ function onChangeView (view) {
 
 function onChangeMode (mode) {
   activeMode = mode
+  render()
+}
+
+async function onClickChangedNode (node) {
+  currentDiffNode = node
+  await loadCurrentDiff(node)
   render()
 }
 
