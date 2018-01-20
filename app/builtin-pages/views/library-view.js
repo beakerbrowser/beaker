@@ -267,7 +267,7 @@ function renderInfo () {
   return yo`
     <div class="info-container">
       <div class="info">
-        <a href=${archiveInfo.url} class="title">
+        <a href=${archiveInfo.url} class="title" target="_blank">
           ${archiveInfo.title || 'Untitled'}
         </a>
 
