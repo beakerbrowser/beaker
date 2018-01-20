@@ -68,6 +68,33 @@
     background: #fafafa;
     border-bottom: 1px solid #ddd;
 
+    .container {
+      position: relative;
+    }
+
+    .mode-toggle {
+      position: absolute;
+      right: 0;
+      bottom: 15px;
+
+      .mode {
+        font-size: .7rem;
+        line-height: 18px;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        color: @color-text--muted;
+
+        &:focus {
+          outline: 0;
+          box-shadow: none;
+        }
+
+        &.active {
+          &:extend(.btn.primary);
+        }
+      }
+    }
+
     .info-container {
       &:extend(.flex);
       padding: 20px 0;
@@ -136,6 +163,17 @@
         border-color: @color-text;
         color: @color-text;
         font-weight: 500;
+      }
+
+      .revisions-indicator {
+        display: inline-block;
+        background: @blue;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        margin-left: 2px;
+        vertical-align: top;
+        margin-top: 6.5px;
       }
     }
   }
