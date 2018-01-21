@@ -244,10 +244,6 @@ function renderRevisionsView () {
     `
   }
 
-  const additions = workspaceInfo.revisions.filter(r => r.change === 'add')
-  const modifications = workspaceInfo.revisions.filter(r => r.change === 'mod')
-  const deletions = workspaceInfo.revisions.filter(r => r.change === 'del')
-
   const renderRev = node => (
     yo`
       <li class="${currentDiffNode && node.path === currentDiffNode.path ? 'selected' : ''}" onclick=${() => onClickChangedNode(node)} title=${node.path}>
@@ -265,9 +261,7 @@ function renderRevisionsView () {
     <div class="view revisions">
       <div class="revisions-sidebar">
         <ul class="revisions-list">
-          ${additions.map(renderRev)}
-          ${modifications.map(renderRev)}
-          ${deletions.map(renderRev)}
+          ${workspaceInfo.revisions.map(renderRev)}
         </ul>
       </div>
 
