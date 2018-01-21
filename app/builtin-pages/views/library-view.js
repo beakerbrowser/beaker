@@ -58,19 +58,23 @@ async function setup () {
   // }
 
   // fetch workspace info for this archive
-  workspaceInfo = await beaker.workspaces.get(0, archiveInfo.url)
-  if (workspaceInfo && workspaceInfo.localFilesPath) {
-    workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(
-      0,
-      workspaceInfo.name,
-      {shallow: true, compareContent: true}
-    )
-  } else {
-    workspaceInfo.revisions = []
-  }
-  if (workspaceInfo.revisions.length) {
-    currentDiffNode = workspaceInfo.revisions[0]
-    await loadCurrentDiff(currentDiffNode)
+  workspaceInfo = await beaker.workspaces.get(0, archive.info.url)
+  if (workspaceInfo) {
+    if (workspaceInfo.localFilesPath) {
+      workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(
+        0,
+        workspaceInfo.name,
+        {shallow: true, compareContent: true}
+      )
+    } else {
+      workspaceInfo.revisions = []
+    }
+
+    // set the default diff node
+    if (workspaceInfo.revisions.length) {
+      currentDiffNode = workspaceInfo.revisions[0]
+      await loadCurrentDiff(currentDiffNode)
+    }
   }
 
   render()
