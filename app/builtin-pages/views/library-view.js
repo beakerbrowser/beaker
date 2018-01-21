@@ -3,8 +3,10 @@
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import {FSArchive} from 'beaker-virtual-fs'
+import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import FilesBrowser from '../com/files-browser2'
 import renderDiff from '../com/diff'
+import renderGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
@@ -15,7 +17,6 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 var activeView = 'files'
 var activeMode = 'live'
 var archive
-var archiveInfo
 var archiveFsRoot
 var filesBrowser
 
@@ -36,14 +37,19 @@ async function setup () {
   // try {
     // load data
     let url = window.location.pathname.slice(1)
-    archive = new DatArchive(url)
-    archiveInfo = await archive.getInfo()
-    archiveFsRoot = new FSArchive(null, archiveInfo)
+    archive = new LibraryDatArchive(url)
+
+    // set up download progress
+    await archive.setup()
+    await archive.startMonitoringDownloadProgress()
+    archive.progress.addEventListener('changed', render)
+
+    archiveFsRoot = new FSArchive(null, archive.info)
     filesBrowser = new FilesBrowser(archiveFsRoot)
     filesBrowser.onSetCurrentSource = onSetCurrentSource
     await readSelectedPathFromURL()
 
-    document.title = `Library - ${archiveInfo.title || 'Untitled'}`
+    document.title = `Library - ${archive.info.title || 'Untitled'}`
 
     // wire up events
     window.addEventListener('popstate', onPopState)
@@ -132,6 +138,8 @@ function renderView () {
       return renderSettingsView()
     case 'revisions':
       return renderRevisionsView()
+    case 'network':
+      return renderNetworkView()
     default:
       return yo`<div class="view">Loading...</div>`
   }
@@ -149,6 +157,76 @@ function renderSettingsView () {
   return yo`
     <div class="settings view">
       <h2>Settings</h2>
+    </div>
+  `
+}
+
+function renderNetworkView () {
+  let progressLabel = ''
+  let progressCls = ''
+  let seedingIcon = ''
+  let seedingLabel = ''
+
+  const {networked, isSaved, expiresAt} = archive.info.userSettings
+  const {progress} = archive
+  const progressPercentage = `${progress.current}%`
+  let downloadedBytes = (archive.info.size / progress.blocks) * progress.downloaded
+
+  if (progress.isComplete) {
+    progressLabel = 'All files downloaded'
+  } else if (progress.isDownloading) {
+    progressLabel = 'Downloading files'
+    progressCls = 'active'
+  } else {
+    progressLabel = 'Download paused'
+  }
+
+  if (isSaved && networked) {
+    seedingIcon = 'pause'
+    seedingLabel = 'Stop seeding these files'
+    progressLabel += ', seeding files'
+    progressCls += ' green'
+  } else {
+    seedingIcon = 'arrow-up'
+    seedingLabel = 'Seed these files'
+  }
+
+  return yo`
+    <div class="view network">
+      <div class="section">
+        <h2>Download status</h2>
+
+        <progress value=${progress.current} max="100">
+          ${progress.current}
+        </progress>
+
+        <div class="download-status">
+          <button class="btn transparent tooltip-container" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
+            <i class="fa fa-${seedingIcon}"></i>
+          </button>
+
+          <div class="progress-ui ${progressCls}">
+            <div style="width: ${progressPercentage}" class="completed">
+              ${progressPercentage}
+            </div>
+
+            <div class="label">${progressLabel}</div>
+          </div>
+
+          <div class="blocks">
+            ${progress.isComplete
+              ? yo`<span class="downloaded">${prettyBytes(downloadedBytes)}</span>`
+              : ''
+            }
+            <span>${prettyBytes(archive.info.size)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Network activity (${archive.info.peers} ${pluralize(archive.info.peers, 'peer')})</h2>
+        <div>${renderGraph(archive.info)}</div>
+      </div>
     </div>
   `
 }
@@ -204,7 +282,7 @@ function renderRevisionsView () {
                 <span class="deletions-count">${diffDeletions ? `-${diffDeletions}` : ''}</span>
               </div>
             </div>`
-            : ''
+          : ''
         }
 
         ${renderRevisionsContent()}
@@ -236,12 +314,12 @@ function renderInfo () {
   return yo`
     <div class="info-container">
       <div class="info">
-        <a href=${archiveInfo.url} class="title" target="_blank">
-          ${archiveInfo.title || 'Untitled'}
+        <a href=${archive.info.url} class="title" target="_blank">
+          ${archive.info.title || 'Untitled'}
         </a>
 
         <p class="description">
-          ${archiveInfo.description || yo`<em>No description</em>`}
+          ${archive.info.description || yo`<em>No description</em>`}
         </p>
       </div>
 
@@ -298,8 +376,8 @@ function renderModeToggle () {
 }
 
 function renderMetadata () {
-  let url = archiveInfo.url
-  let urlLabel = shortenHash(archiveInfo.url)
+  let url = archive.info.url
+  let urlLabel = shortenHash(archive.info.url)
 
   if (activeMode === 'preview' && workspaceInfo) {
     url = `workspace://${workspaceInfo.name}`
@@ -308,11 +386,11 @@ function renderMetadata () {
 
   return yo`
     <div class="metadata">
-      <div>${prettyBytes(archiveInfo.size)}</div>
+      <div>${prettyBytes(archive.info.size)}</div>
 
       <span class="separator">―</span>
 
-      <div>${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</div>
+      <div>${archive.info.peers} ${pluralize(archive.info.peers, 'peer')}</div>
 
       <span class="separator">―</span>
 
@@ -338,7 +416,7 @@ function renderActions () {
 function renderEditButton () {
   if (workspaceInfo && workspaceInfo.localFilesPath) return ''
 
-  if (archiveInfo.isOwner) {
+  if (archive.info.isOwner) {
     return yo`
       <button class="btn" onclick=${onEdit}>
         <i class="fa fa-pencil"></i>
@@ -388,10 +466,35 @@ async function onSetCurrentSource (node) {
 }
 
 function onCopyUrl () {
-  if (archiveInfo) {
-    writeToClipboard(archiveInfo.url)
+  if (archive.info) {
+    writeToClipboard(archive.info.url)
     toast.create('URL copied to clipboard')
   }
+}
+
+async function onToggleSeeding () {
+  const {isOwner} = archive.info
+  const {networked, isSaved} = archive.info.userSettings
+  const newNetworkedStatus = !networked
+
+  if (isOwner) {
+    try {
+      await archive.configure({networked: newNetworkedStatus})
+      archive.info.userSettings.networked = newNetworkedStatus
+    } catch (e) {
+      toast.create('Something went wrong', 'error')
+      return
+    }
+  } else {
+    if (isSaved) {
+      await beaker.archives.remove(archive.url)
+      archive.info.userSettings.isSaved = false
+    } else {
+      await beaker.archives.add(archive.url)
+      archive.info.userSettings.isSaved = true
+    }
+  }
+  render()
 }
 
 function onEdit () {

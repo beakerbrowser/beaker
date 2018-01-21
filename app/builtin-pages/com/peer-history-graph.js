@@ -4,7 +4,7 @@ const MINMAX = 5
 const EDGE_PADDING = 5
 const LEGEND_WIDTH = 25
 const TIME_SPAN = 1e3 * 60 * 60 // past hour
-const WIDTH = 611
+const WIDTH = 800
 const HEIGHT = 100
 
 // globals
@@ -86,14 +86,16 @@ export default function render (archiveInfo) {
       <line
         x1=${x} y1=${y}
         x2=${data[i].x} y2=${y}
-        stroke="#006fe8"
+        stroke-width="2"
+        stroke="#2864dc"
       >
     `)
     graphLines.push(yo`
       <line
         x1=${data[i].x} y1=${y}
         x2=${data[i].x} y2=${data[i].y}
-        stroke="#006fe8"
+        stroke-width="2"
+        stroke="#2864dc"
       >
     `)
     x = data[i].x
@@ -110,12 +112,12 @@ export default function render (archiveInfo) {
 
     // draw the value
     mouseElems.push(yo`
-      <text x=${mouseX + 3} y=${15} fill="#666">${mouseValue}</text>
+      <text style="padding-left: 5px;" x=${mouseX + 3} y=${15} fill="#666">${mouseValue} peers</text>
     `)
 
     // draw a line at the mouse
     mouseElems.push(yo`
-      <line x1=${mouseX} y1=${0} x2=${mouseX} y2=${HEIGHT} stroke="#999" />
+      <line x1=${mouseX} y1=${0} x2=${mouseX} y2=${HEIGHT} stroke-width="1" stroke="#000" />
     `)
   }
 
@@ -131,7 +133,7 @@ export default function render (archiveInfo) {
       <!-- legend -->
       <text x=${WIDTH - LEGEND_WIDTH + 5} y=${HEIGHT - 5} fill="#666">0</text>
       <text x=${WIDTH - LEGEND_WIDTH + 5} y=${15} fill="#666">${max}</text>
-      <text x=${0} y=${15} fill="#808080">1hr</text>
+      <text x=${0} y=${15} fill="808080">1hr ago</text>
 
       <!-- graph -->
       ${graphLines}
