@@ -33,16 +33,12 @@
   &:extend(.system-font);
   position: relative;
   background: #f0f0f0;
-  // padding: 40px;
 }
 
 .builtin-wrapper {
   width: 100%;
   max-width: 1400px;
-  // max-height: ~"calc(100vh - 80px)";
   margin: 0 auto;
-  // border-radius: 2px;
-  // border: 1px solid #ddd;
   background: #fff;
 
   em.empty {
@@ -368,7 +364,6 @@
   position: fixed;
   width: 300px;
   height: 100%;
-  max-height: ~"calc(100vh - 82px)";
   overflow: auto;
   background: @background-builtin-page;
   background: #fff;
@@ -419,7 +414,7 @@
     align-items: center;
     height: 28px;
     padding: 0 20px;
-    margin-bottom: 1px;
+    margin: 0 0 1px 1px;
     color: fadeout(@color-text, 10%);
     border-left: 2.5px solid transparent;
     cursor: pointer;
@@ -564,12 +559,8 @@
 }
 
 .builtin-main {
-  // position: relative;
-  // width: ~"calc(100% - 300px)";
-  // max-height: ~"calc(100vh - 82px)";
-  // margin-left: 300px;
-  // margin-bottom: 20px;
-  // overflow-y: auto;
+  width: ~"calc(100% - 300px)";
+  margin-left: 300px;
   height: 100%;
   overflow-x: hidden;
 
