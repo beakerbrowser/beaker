@@ -29,7 +29,8 @@ import mkdirp from 'mkdirp'
 import {
   DAT_HASH_REGEX,
   DAT_URL_REGEX,
-  DAT_SWARM_PORT
+  DAT_SWARM_PORT,
+  DAT_PRESERVED_FIELDS_ON_FORK
 } from '../../../lib/const'
 import {InvalidURLError} from 'beaker-error-constants'
 
@@ -180,6 +181,11 @@ export async function forkArchive (srcArchiveUrl, manifest = {}, settings = fals
     type: (manifest.type) ? manifest.type : srcManifest.type,
     author: manifest.author
   }
+  DAT_PRESERVED_FIELDS_ON_FORK.forEach(field => {
+    if (srcManifest[field]) {
+      dstManifest[field] = srcManifest[field]
+    }
+  })
 
   // create the new archive
   var dstArchiveUrl = await createNewArchive(dstManifest, settings)
