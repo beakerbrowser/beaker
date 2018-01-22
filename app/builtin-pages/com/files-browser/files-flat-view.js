@@ -25,13 +25,7 @@ export default function render (filesBrowser, currentSource) {
       ${rBreadcrumbs(filesBrowser, currentSource)}
 
       <div class="body">
-        <div
-          class="droptarget"
-          ondragover=${onDragOver}
-          ondragenter=${e => onDragEnter(e, filesBrowser, currentSource)}
-          ondragleave=${onDragLeave}
-          ondrop=${e => onDrop(e, filesBrowser, currentSource)}
-        >
+        <div>
           ${currentSource.type === 'file'
             ? rFilePreview(currentSource)
             : rChildren(filesBrowser, currentSource.children)
@@ -110,25 +104,16 @@ function rNode (filesBrowser, node, depth) {
 }
 
 function rContainer (filesBrowser, node, depth) {
-  const isSelected = filesBrowser.isSelected(node)
   const isArchive = node && node.constructor.name === 'FSArchive'
   let children = ''
 
   return yo`
-    <div
-      class="droptarget"
-      ondragover=${onDragOver}
-      ondragenter=${e => onDragEnter(e, filesBrowser, node)}
-      ondragleave=${onDragLeave}
-      ondrop=${e => onDrop(e, filesBrowser, node)}
-    >
+    <div>
       <div
-        class="item folder ${isSelected ? 'selected' : ''}"
+        class="item folder"
         title=${node.name}
-        draggable="true"
         onclick=${e => onClickNode(e, filesBrowser, node)}
         oncontextmenu=${e => onContextMenu(e, filesBrowser, node)}
-        ondragstart=${e => onDragStart(e, filesBrowser, node)}
       >
         <i class="fa fa-folder"></i>
         ${node.isRenaming
@@ -143,16 +128,12 @@ function rContainer (filesBrowser, node, depth) {
 }
 
 function rFile (filesBrowser, node, depth) {
-  const isSelected = filesBrowser.isSelected(node)
-
   return yo`
     <div
-      class="item file ${isSelected ? 'selected' : ''}"
+      class="item file"
       title=${node.name}
-      draggable="true"
       onclick=${e => onClickNode(e, filesBrowser, node)}
       oncontextmenu=${e => onContextMenu(e, filesBrowser, node)}
-      ondragstart=${e => onDragStart(e, filesBrowser, node)}
     >
       <i class="fa fa-file-text-o"></i>
       ${node.isRenaming
@@ -352,103 +333,6 @@ async function onKeyupRename (e, filesBrowser, node) {
     } else {
       node.isRenaming = false
     }
-    filesBrowser.rerender()
-  }
-}
-
-function onDragStart (e, filesBrowser, node) {
-  // select node
-  filesBrowser.selectOne(node)
-
-  // start drag
-  e.dataTransfer.setData('text/uri-list', node.url)
-  e.dataTransfer.dropEffect = 'copy'
-  filesBrowser.setCurrentlyDraggedNode(node)
-}
-
-async function onDragEnter (e, filesBrowser, node) {
-  // add dragover class
-  const target = findParent(e.target, 'droptarget')
-  if (!target) return
-  target.classList.add('dragover')
-
-  // expand on prolonged hover
-  if (filesBrowser.isExpanded(node)) return
-
-  // wait a moment
-  await new Promise(resolve => setTimeout(resolve, 500))
-
-  // still selected and not expanded?
-  if (!target.classList.contains('dragover')) return
-  if (filesBrowser.isExpanded(node)) return
-
-  // expand
-  await filesBrowser.expand(node)
-  filesBrowser.rerender()
-}
-
-function onDragOver (e) {
-  const target = findParent(e.target, 'droptarget')
-  if (!target) return
-  target.classList.add('dragover')
-  e.preventDefault()
-  e.dataTransfer.dropEffect = 'move'
-  return false
-}
-
-function onDragLeave (e) {
-  const target = findParent(e.target, 'droptarget')
-  if (!target) return
-  target.classList.remove('dragover')
-}
-
-async function onDrop (e, filesBrowser, dropNode) {
-  // onto a target?
-  const target = findParent(e.target, 'droptarget')
-  if (!target) return
-
-  // end the drag
-  const dragNode = filesBrowser.getCurrentlyDraggedNode()
-  filesBrowser.setCurrentlyDraggedNode(null)
-  target.classList.remove('dragover')
-  e.preventDefault()
-  e.stopPropagation()
-
-  // internal drag
-  if (dragNode) {
-    // do nothing if this is the dragged node's container
-    if (dragNode === dropNode || (dropNode._files && dropNode._files.includes(dragNode))) {
-      return
-    }
-
-    // open a context menu asking for the action to take
-    const dropPath = dropNode._path ? dropNode._path : '/'
-    const action = await beaker.browser.showContextMenu([
-      {label: `Copy "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'copy'},
-      (dragNode instanceof FSArchive) ? null : {label: `Move "${dragNode.name}" to "${dropPath || dropNode.name}"`, id: 'move'}
-    ].filter(Boolean))
-    if (action === 'move') {
-      await dragNode.move(joinPath(dropNode._path || '/', dragNode.name), dropNode._archiveInfo.key)
-      await filesBrowser.reloadTree()
-      filesBrowser.rerender()
-    } else if (action === 'copy') {
-      await dragNode.copy(joinPath(dropNode._path || '/', dragNode.name), dropNode._archiveInfo.key)
-      await filesBrowser.reloadTree()
-      filesBrowser.rerender()
-    }
-  }
-
-  // files dragged in from the OS
-  if (e.dataTransfer.files.length) {
-    await Promise.all(Array.from(e.dataTransfer.files).map(file => (
-      DatArchive.importFromFilesystem({
-        src: file.path,
-        dst: dropNode.url,
-        ignore: ['dat.json'],
-        inplaceImport: true
-      })
-    )))
-    await filesBrowser.reloadTree()
     filesBrowser.rerender()
   }
 }
