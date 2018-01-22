@@ -200,6 +200,27 @@ test('archive.stat', async t => {
   var entry = await stat(fakeUrl, 'hello.txt', { timeout: 500 })
   t.deepEqual(entry.value.name, 'TimeoutError')
 })
+
+test('dat:// HEAD and GET', async t => {
+  // GET
+  var res = await app.client.executeAsync((url, done) => {
+    window.fetch(url).then(res => {
+      return res.text().then(data => ({data, headers: Array.from(res.headers.entries())}))
+    }).then(done, done)
+  }, testStaticDatURL + 'hello.txt')
+  t.deepEqual(res.value.data, 'hello world')
+  t.deepEqual((res.value.headers.filter(h => h[0] === 'content-type'))[0][1], 'text/plain; charset=utf8')
+
+  // HEAD
+  var res = await app.client.executeAsync((url, done) => {
+    window.fetch(url, {method: 'HEAD'}).then(res => {
+      return res.text().then(data => ({data, headers: Array.from(res.headers.entries())}))
+    }).then(done, done)
+  }, testStaticDatURL + 'hello.txt')
+  t.deepEqual(res.value.data, '')
+  t.deepEqual((res.value.headers.filter(h => h[0] === 'content-type'))[0][1], 'text/plain; charset=utf8')
+})
+
 test('DatArchive.create prompt=false', async t => {
   // create
   var res = await app.client.executeAsync((done) => {
