@@ -75,13 +75,13 @@ function rFilePreview (node) {
   }
 
   return yo`
-    <div class="file-preview ${node.preview ? 'text' : 'media'}">
+    <div class="file-preview-container">
       <div class="file-preview-header">
         ${numLines
-          ? yo`<span>${numLines} ${pluralize(numLines, 'line')}</span>`
+          ? yo`<code class="file-info">${numLines} ${pluralize(numLines, 'line')}</code>`
           : ''
         }
-        <span>${prettyBytes(node.size)}</span>
+        <code class="file-info">${prettyBytes(node.size)}</code>
 
         <div class="actions">
           <a href=${node.url} target="_blank" title="Open file">
@@ -90,7 +90,9 @@ function rFilePreview (node) {
         </div>
       </div>
 
-      ${renderFilePreview(node)}
+      <div class="file-preview ${node.preview ? 'text' : 'media'}">
+        ${renderFilePreview(node)}
+      </div>
     </div>
   `
 }

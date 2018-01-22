@@ -311,8 +311,7 @@
     margin-left: 0;
   }
 
-  .file-preview {
-    &:extend(.code-font);
+  .file-preview-container {
     border: 1px solid #ddd;
     font-size: 12.5px;
 
@@ -324,13 +323,12 @@
       background: #fafafa;
       border-bottom: 1px solid #ddd;
 
-      > * {
+      .file-info {
         margin-right: 10px
       }
 
       .actions {
         margin-left: auto;
-        margin-right: 0;
 
         a {
           display: inline-block;
@@ -352,35 +350,36 @@
       }
     }
 
-    &.text {
+    .file-preview {
 
-      .text {
+      &.text {
+        &:extend(.code-font);
         padding: 15px;
         white-space: pre-line;
       }
-    }
 
-    &.media {
-      text-align: center;
-      background: #ddd;
-      padding: 30px 0;
+      &.media {
+        text-align: center;
+        background: #ddd;
+        padding: 30px 0;
 
-      img {
-        border: 1px solid #fff;
-        background-color: #fff;
-        background-size: 10px 10px;
-        background-position: 0 0, 5px 5px;
-        background-image:
-          linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd),
-          linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd);
-      }
+        img {
+          border: 1px solid #fff;
+          background-color: #fff;
+          background-size: 10px 10px;
+          background-position: 0 0, 5px 5px;
+          background-image:
+            linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd),
+            linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd);
+        }
 
-      video,
-      img,
-      audio {
-        max-width: 550px;
-        margin: auto;
-        height: auto;
+        video,
+        img,
+        audio {
+          max-width: 550px;
+          margin: auto;
+          height: auto;
+        }
       }
     }
   }
