@@ -205,10 +205,6 @@ function renderNetworkView () {
         </progress>
 
         <div class="download-status">
-          <button class="btn transparent tooltip-container" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
-            <i class="fa fa-${seedingIcon}"></i>
-          </button>
-
           <div class="progress-ui ${progressCls}">
             <div style="width: ${progressPercentage}" class="completed">
               ${progressPercentage}
@@ -217,19 +213,10 @@ function renderNetworkView () {
             <div class="label">${progressLabel}</div>
           </div>
 
-          <div class="blocks">
-            ${progress.isComplete
-              ? yo`<span class="downloaded">${prettyBytes(downloadedBytes)}</span>`
-              : ''
-            }
-            <span>${prettyBytes(archive.info.size)}</span>
-          </div>
+          <button class="btn transparent tooltip-container" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
+            <i class="fa fa-${seedingIcon}"></i>
+          </button>
         </div>
-      </div>
-
-      <div class="section">
-        <h2>Network activity (${archive.info.peers} ${pluralize(archive.info.peers, 'peer')})</h2>
-        <div>${renderGraph(archive.info)}</div>
       </div>
     </div>
   `
