@@ -7,16 +7,25 @@
     &:after {
       display: block;
       z-index: 3;
+      transition: transform .05s ease;
+      transition-delay: .2s;
+    }
+
+    &:after {
+      transform: scaleY(1)
+    }
+
+    &:before {
+      transform: scaleY(1) translate(-50%, 0);
     }
   }
 
   &:before {
-    display: none;
+    transform: scaleY(0) translate(-50%, 0);
     position: absolute;
-    top: 30px;
+    top: 33px;
     left: 50%;
     z-index: 3000;
-    transform: translate(-50%, 0);
     content: attr(data-tooltip);
     background: fadeout(#111, 5%);
     font-size: .7rem;
@@ -32,10 +41,10 @@
   }
 
   &:after {
-    display: none;
+    transform: scaleY(0);
     position: absolute;
     left: ~"calc(50% - 6px)";
-    top: 25px;
+    top: 28px;
     content: '';
     width: 0;
     height: 0;

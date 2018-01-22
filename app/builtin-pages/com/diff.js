@@ -41,12 +41,10 @@ export default function render (diff) {
   const lineEls2 = newLinenos.map(l => yo`<div class="lineno">${l}</div>`)
 
   return yo`
-    <div>
-      <pre class="diff">
-        <div class="linenos">${lineEls}</div>
-        <div class="linenos linenos2">${lineEls2}</div>
-        ${diff.map(d => yo`<div class=${d.removed ? 'del' : d.added ? 'add' : ''}>${d.value}</div>`)}
-      </pre>
-    </div>
+    <pre class="diff">
+      <div class="linenos">${lineEls}</div>
+      <div class="linenos linenos2">${lineEls2}</div>
+      ${diff.map(d => yo`<div class=${d.removed ? 'del' : d.added ? 'add' : ''}>${d.value}</div>`)}
+    </pre>
   `
 }

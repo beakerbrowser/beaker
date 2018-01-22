@@ -495,13 +495,13 @@ export function getById (id) {
 }
 
 export function loadPinnedFromDB () {
-  return beaker.browser.getSetting('pinned-tabs').then(json => {
+  return beaker.browser.getSetting('pinned_tabs').then(json => {
     try { JSON.parse(json).forEach(url => create({ url, isPinned: true })) } catch (e) {}
   })
 }
 
 export function savePinnedToDB () {
-  return beaker.browser.setSetting('pinned-tabs', JSON.stringify(getPinned().map(p => p.getURL())))
+  return beaker.browser.setSetting('pinned_tabs', JSON.stringify(getPinned().map(p => p.getURL())))
 }
 
 export function leavePageFullScreen () {
