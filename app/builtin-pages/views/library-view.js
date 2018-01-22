@@ -389,6 +389,14 @@ function renderMetadata () {
 function renderActions () {
   return yo`
     <div class="actions">
+      ${workspaceInfo && workspaceInfo.localFilesPath
+        ? yo`
+          <span class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+            ${workspaceInfo.localFilesPath}
+          </span>`
+        : ''
+      }
+
       ${renderEditButton()}
 
       <button class="btn">
@@ -399,22 +407,30 @@ function renderActions () {
 }
 
 function renderEditButton () {
-  if (workspaceInfo && workspaceInfo.localFilesPath) return ''
-
   if (archive.info.isOwner) {
+    if (workspaceInfo && workspaceInfo.localFilesPath) {
+      return yo`
+        <button class="btn" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+          <i class="fa fa-pencil"></i>
+          Edit
+        </button>
+      `
+    } else {
+      return yo`
+        <button class="btn" onclick=${onEdit}>
+          <i class="fa fa-pencil"></i>
+          Edit
+        </button>
+      `
+    }
+  } else {
     return yo`
-      <button class="btn" onclick=${onEdit}>
+      <button class="btn" onclick=${onForkAndEdit}>
         <i class="fa fa-pencil"></i>
-        Edit
+        Fork & Edit
       </button>
     `
   }
-  return yo`
-    <button class="btn" onclick=${onForkAndEdit}>
-      <i class="fa fa-pencil"></i>
-      Fork & Edit
-    </button>
-  `
 }
 
 // events
@@ -437,17 +453,26 @@ async function onClickChangedNode (node) {
 }
 
 async function onSetCurrentSource (node) {
+  // if (!node) {
+  //   window.history.pushState('', {}, `beaker://library/${archive.url}`)
+  //   return
+  // }
+
   let path = archive.url
   if (node._path) {
     path += node._path
   }
 
   // if it's a file, load the preview
-  if (node.type === 'file') {
+  if (node && node.type === 'file') {
     await node.readData()
   }
 
   window.history.pushState('', {}, `beaker://library/${path}`)
+}
+
+function onOpenFolder (path) {
+  beaker.workspaces.openFolder(path)
 }
 
 function onCopyUrl () {
