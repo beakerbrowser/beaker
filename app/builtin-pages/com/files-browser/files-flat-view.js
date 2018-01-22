@@ -44,18 +44,17 @@ function rBreadcrumbs (filesBrowser, currentSource) {
   let parentNode = (path.length >= 2) ? path[path.length - 2] : filesBrowser.root
   const shortenedHash = shortenHash(filesBrowser.root._archiveInfo.url)
 
-  if (path.length < 1) return ''
   return yo`
     <div>
       <div class="breadcrumbs">
         <div class="breadcrumb root" onclick=${e => onClickNode(e, filesBrowser, filesBrowser.root)}>
-          ${_get(filesBrowser.root._archiveInfo, 'title', 'Untitled')}
+          ${filesBrowser.root._archiveInfo.title || 'Untitled'}
         </div>
 
         ${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}
       </div>
 
-      ${currentSource.type === 'file'
+      ${currentSource.type === 'file' || path.length < 1
         ? ''
         : yo`
           <div class="breadcrumbs ascend">
