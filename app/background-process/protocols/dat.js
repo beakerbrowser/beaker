@@ -85,7 +85,7 @@ async function datProtocol (request, respond) {
       errorInfo: `${request.url} is an invalid dat:// URL`
     })
   }
-  if (request.method !== 'GET') {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
     return respondError(405, 'Method Not Supported')
   }
 
@@ -163,19 +163,30 @@ async function datProtocol (request, respond) {
     }
     zipname = zipname || 'archive'
 
-    // serve the zip
-    var zs = toZipStream(archive)
-    zs.on('error', err => console.log('Error while producing .zip file', err))
-    return respond({
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/zip',
-        'Content-Disposition': `attachment; filename="${zipname}.zip"`,
-        'Content-Security-Policy': DAT_CSP,
-        'Access-Control-Allow-Origin': '*'
-      },
-      data: zs
-    })
+    let headers = {
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${zipname}.zip"`,
+      'Content-Security-Policy': DAT_CSP,
+      'Access-Control-Allow-Origin': '*'
+    }
+
+    if (request.method === 'HEAD') {
+      // serve the headers
+      return respond({
+        statusCode: 204,
+        headers,
+        data: intoStream('')
+      })
+    } else {
+      // serve the zip
+      var zs = toZipStream(archive)
+      zs.on('error', err => console.log('Error while producing .zip file', err))
+      return respond({
+        statusCode: 200,
+        headers,
+        data: zs
+      })
+    }
   }
 
   // lookup entry
@@ -228,15 +239,20 @@ async function datProtocol (request, respond) {
   // handle folder
   if (entry && entry.isDirectory()) {
     cleanup()
-    return respond({
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/html',
-        'Content-Security-Policy': DAT_CSP,
-        'Access-Control-Allow-Origin': '*'
-      },
-      data: intoStream(await directoryListingPage(archiveFS, filepath, manifest && manifest.web_root))
-    })
+    let headers = {
+      'Content-Type': 'text/html',
+      'Content-Security-Policy': DAT_CSP,
+      'Access-Control-Allow-Origin': '*'
+    }
+    if (request.method === 'HEAD') {
+      return respond({statusCode: 204, headers, data: intoStream('')})
+    } else {
+      return respond({
+        statusCode: 200,
+        headers,
+        data: intoStream(await directoryListingPage(archiveFS, filepath, manifest && manifest.web_root))
+      })
+    }
   }
 
   // handle not found
@@ -310,11 +326,13 @@ async function datProtocol (request, respond) {
         'Cache-Control': 'public, max-age: 60'
         // ETag
       })
-      respond({
-        statusCode,
-        headers,
-        data: dataStream
-      })
+
+      if (request.method === 'HEAD') {
+        dataStream.destroy() // stop reading data
+        respond({statusCode: 204, headers, data: intoStream('')})
+      } else {
+        respond({statusCode, headers, data: dataStream})
+      }
     }))
 
   // handle empty files
