@@ -8,7 +8,7 @@ import _get from 'lodash.get'
 import {FSArchive, FSArchiveFolder, FSArchiveFile, FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
-import {shortenHash} from '../../../lib/strings'
+import {shortenHash, pluralize} from '../../../lib/strings'
 import {DAT_VALID_PATH_REGEX, STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
 
 // exported api
@@ -69,8 +69,27 @@ function rBreadcrumbs (filesBrowser, currentSource) {
 }
 
 function rFilePreview (node) {
+  let numLines
+  if (node.preview) {
+    numLines = node.preview.split('\n').length
+  }
+
   return yo`
-    <div class="file-preview">
+    <div class="file-preview ${node.preview ? 'text' : 'media'}">
+      <div class="file-preview-header">
+        ${numLines
+          ? yo`<span>${numLines} ${pluralize(numLines, 'line')}</span>`
+          : ''
+        }
+        <span>${prettyBytes(node.size)}</span>
+
+        <div class="actions">
+          <a href=${node.url} target="_blank" title="Open file">
+            <i class="fa fa-external-link"></i>
+          </a>
+        </div>
+      </div>
+
       ${renderFilePreview(node)}
     </div>
   `
