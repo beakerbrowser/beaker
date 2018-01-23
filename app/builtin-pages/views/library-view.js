@@ -439,7 +439,7 @@ async function onChangeView (e, view) {
 
   if (view === 'files') {
     // setup files view
-    await archiveFsRoot.readData()
+    await archiveFsRoot.readData({maxPreviewLength: 1e5})
     await filesBrowser.setCurrentSource(archiveFsRoot, {suppressEvent: true})
   }
 
@@ -465,7 +465,7 @@ async function onSetCurrentSource (node) {
 
   // if it's a file, load the preview
   if (node && node.type === 'file') {
-    await node.readData()
+    await node.readData({maxPreviewLength: 1e5})
   }
 
   window.history.pushState('', {}, `beaker://library/${path}`)
@@ -566,13 +566,13 @@ async function readViewStateFromUrl () {
 
     // select the archive
     node = archiveFsRoot
-    await node.readData()
+    await node.readData({maxPreviewLength: 1e5})
 
     // now select the folders
     let pathPart
     while ((pathPart = pathParts.shift())) {
       node = node.children.find(node => node.name === pathPart)
-      await node.readData()
+      await node.readData({maxPreviewLength: 1e5})
     }
 
     await filesBrowser.setCurrentSource(node, {suppressEvent: true})

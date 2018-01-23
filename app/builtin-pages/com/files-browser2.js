@@ -51,7 +51,7 @@ export default class FilesBrowser {
     }
 
     // recursively read data of the currently-expanded tree
-    await node.readData()
+    await node.readData({maxPreviewLength: 1e5})
     if (node.hasChildren) {
       const children = node.children
       for (var k in children) {
@@ -87,7 +87,7 @@ export default class FilesBrowser {
   async setCurrentSource (node, {suppressEvent} = {}) {
     await this.unselectAll()
     this.currentSource = node
-    await this.currentSource.readData()
+    await this.currentSource.readData({maxPreviewLength: 1e5})
     if (!suppressEvent) {
       this.onSetCurrentSource(node)
     }
