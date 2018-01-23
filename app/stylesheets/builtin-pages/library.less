@@ -367,7 +367,9 @@
       &.text {
         &:extend(.code-font);
         padding: 15px;
-        white-space: pre-line;
+        .text {
+          white-space: pre-wrap;
+        }
       }
 
       &.media {

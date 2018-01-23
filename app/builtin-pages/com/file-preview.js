@@ -7,6 +7,11 @@ import mime from 'mime'
 export default function render (fileNode) {
   // check preview content first
   if (fileNode.preview) {
+    if (typeof window.hljs !== 'undefined') {
+      let el = yo`<div class="text"></div>`
+      el.innerHTML = hljs.highlightAuto(fileNode.preview).value
+      return el
+    }
     return yo`<div class="text">${fileNode.preview}</div>`
   }
 
