@@ -48,7 +48,7 @@ async function setup () {
     archiveFsRoot = new FSArchive(null, archive.info)
     filesBrowser = new FilesBrowser(archiveFsRoot)
     filesBrowser.onSetCurrentSource = onSetCurrentSource
-    await readSelectedPathFromURL()
+    await readViewStateFromUrl()
 
     // set up download progress
     await archive.startMonitoringDownloadProgress()
@@ -534,7 +534,7 @@ async function onEdit () {
 }
 
 function onPopState (e) {
-  readSelectedPathFromURL()
+  readViewStateFromUrl()
 }
 
 // helpers
@@ -544,7 +544,7 @@ function onPopState (e) {
 // it mimics some of the behaviors of the click functions
 //   (eg onChangeView and the files-browser onClickNode)
 // but it works entirely by reading the current url
-async function readSelectedPathFromURL () {
+async function readViewStateFromUrl () {
 
   // active view
   let oldView = activeView
