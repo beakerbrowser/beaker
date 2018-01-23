@@ -96,7 +96,7 @@ function sortArchives () {
 
 function renderRows () {
   if (!archives.length) return yo`<em class="empty">No archives</em>`
-  return yo`<div>${archives.map(renderRow)}</div>`
+  return archives.map(renderRow)
 }
 
 function renderRow (row, i) {
@@ -226,7 +226,13 @@ function render () {
 
           </div>
 
-          ${renderRows()}
+          <div>
+            <div class="ll-sticky-heading">Stuffs</div>
+            ${renderRows().slice(0, 5)}
+
+            <div class="ll-sticky-heading">More stuffs</div>
+            ${renderRows()}
+          </div>
         </div>
       </div>
     `
