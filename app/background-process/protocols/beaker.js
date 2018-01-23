@@ -117,6 +117,12 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://shell-window/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/shell-window.css'))
   }
+  if (requestUrl === 'beaker://assets/syntax-highlight.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'assets/js/syntax-highlight.js'))
+  }
+  if (requestUrl === 'beaker://assets/syntax-highlight.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/css/syntax-highlight.css'))
+  }
   if (requestUrl === 'beaker://assets/icons.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/icons.css'))
   }
