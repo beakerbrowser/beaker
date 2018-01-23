@@ -83,7 +83,7 @@ async function onSubmit (e) {
   e.preventDefault()
   if (!selectedArchiveKey) {
     try {
-      var newArchive = await DatArchive.create({title, description})
+      var newArchive = await DatArchive.create({title, description, prompt: false})
       beaker.browser.closeModal(null, {url: newArchive.url})
     } catch (e) {
       beaker.browser.closeModal({

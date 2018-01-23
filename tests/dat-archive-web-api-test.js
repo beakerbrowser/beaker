@@ -16,7 +16,6 @@ const app = new Application({
     NODE_ENV: 'test',
     beaker_no_welcome_tab: 1,
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
-    beaker_dat_quota_default_archives_allowed: 100,
     beaker_dat_quota_default_bytes_allowed: '90kb'
   }
 })
@@ -222,10 +221,27 @@ test('dat:// HEAD and GET', async t => {
 })
 
 test('DatArchive.create prompt=false', async t => {
-  // create
-  var res = await app.client.executeAsync((done) => {
-    DatArchive.create({ title: 'The Title', description: 'The Description' }).then(done,done)
+  // start the permission prompt
+  await app.client.execute(() => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
   })
+
+  // accept the permission prompt
+  await sleep(500)
+  await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-accept')
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
   var datUrl = res.value.url
   t.truthy(datUrl.startsWith('dat://'))
   var datKey = datUrl.slice('dat://'.length)
@@ -331,10 +347,27 @@ test('DatArchive.create prompt=true', async t => {
 })
 
 test('DatArchive.fork prompt=false', async t => {
-  // start the prompt
-  var res = await app.client.executeAsync((url, done) => {
-    DatArchive.fork(url, { description: 'The Description 2' }).then(done, done)
+  // start the permission prompt
+  await app.client.execute((url) => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.fork(url, { description: 'The Description 2', prompt: false }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
   }, createdDatURL)
+
+  // accept the permission prompt
+  await sleep(500)
+  await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-accept')
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
   var forkedDatURL = res.value.url
   t.truthy(forkedDatURL.startsWith('dat://'))
 
@@ -398,12 +431,14 @@ test('DatArchive.unlink', async t => {
 
   // create a dat
 
+  await app.client.windowByIndex(0)
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({ title: 'The Title', description: 'The Description' }).then(done,done)
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false }).then(done,done)
   })
   var datUrl = res.value.url
   t.truthy(datUrl.startsWith('dat://'))
   var datKey = datUrl.slice('dat://'.length)
+  await app.client.windowByIndex(1)
 
   // start the prompt
   await app.client.execute(url => {
@@ -582,7 +617,7 @@ test('offline archives', async t => {
 
   // create a dat (prompt=false)
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({ networked: false }).then(done,done)
+    DatArchive.create({ networked: false, prompt: false }).then(done,done)
   })
   var datUrl = res.value.url
   t.truthy(datUrl.startsWith('dat://'))
@@ -645,7 +680,7 @@ test('offline archives', async t => {
 
   // fork a dat (prompt=false)
   var res = await app.client.executeAsync((url, done) => {
-    DatArchive.fork(url, { networked: false }).then(done,done)
+    DatArchive.fork(url, { networked: false, prompt: false }).then(done,done)
   }, datUrl)
   var datUrl3 = res.value.url
   t.truthy(datUrl3.startsWith('dat://'))
@@ -846,7 +881,7 @@ test('versioned reads and writes', async t => {
   // create a fresh dat
   await app.client.windowByIndex(0)
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({title: 'Another Test Dat'}).then(done, done)
+    DatArchive.create({title: 'Another Test Dat', prompt: false}).then(done, done)
   })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
@@ -982,10 +1017,27 @@ test('archive.rename', async t => {
 })
 
 test('archive.copy doesnt allow writes that exceed the quota', async t => {
-  // create a new dat
-  var res = await app.client.executeAsync((done) => {
-    DatArchive.create({title: 'Too Big Dat'}).then(done, done)
+  // start the permission prompt
+  await app.client.execute(() => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.create({title: 'Too Big Dat', prompt: false}).then(
+      res => window.res = res,
+      err => window.res = err
+    )
   })
+
+  // accept the permission prompt
+  await sleep(500)
+  await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-accept')
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
 
@@ -1068,7 +1120,7 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
 
   await app.client.windowByIndex(0)
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({title: 'Another Test Dat'}).then(done, done)
+    DatArchive.create({title: 'Another Test Dat', prompt: false}).then(done, done)
   })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
@@ -1244,7 +1296,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1268,7 +1320,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1292,7 +1344,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1358,7 +1410,7 @@ test('DatArchive.exportToArchive', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1381,7 +1433,7 @@ test('DatArchive.exportToArchive', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1406,7 +1458,7 @@ test('archive.createFileActivityStream', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)

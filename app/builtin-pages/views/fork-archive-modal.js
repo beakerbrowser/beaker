@@ -95,7 +95,7 @@ async function onSubmit (e) {
   try {
     isProcessing = true
     render()
-    var newArchive = await DatArchive.fork(archive.info.key, {title, description, type, networked})
+    var newArchive = await DatArchive.fork(archive.info.key, {title, description, type, networked, prompt: false})
     beaker.browser.closeModal(null, {url: newArchive.url})
   } catch (e) {
     beaker.browser.closeModal({

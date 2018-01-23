@@ -16,7 +16,6 @@ import {
   DAT_MANIFEST_FILENAME,
   DAT_HASH_REGEX,
   DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
-  DAT_QUOTA_DEFAULT_ARCHIVES_ALLOWED,
   DAT_VALID_PATH_REGEX,
   DEFAULT_DAT_API_TIMEOUT
 } from '../../lib/const'
@@ -42,15 +41,12 @@ export default {
   async createArchive ({title, description, type, networked, prompt} = {}) {
     var newArchiveUrl
 
-    // check the quota for permission
-    await assertCreateArchivePermission(this.sender)
-
     // only allow type and networked to be set by beaker, for now
     if (!this.sender.getURL().startsWith('beaker:')) {
       type = networked = undefined
     }
 
-    if (prompt) {
+    if (prompt !== false) {
       // initiate the modal
       let win = getWebContentsWindow(this.sender)
       // DISABLED
@@ -64,7 +60,10 @@ export default {
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {
-      // no modal
+      // no modal, ask for permission
+      await assertCreateArchivePermission(this.sender)
+
+      // create
       let author = await getAuthor()
       newArchiveUrl = await datLibrary.createNewArchive({title, description, type, author}, {networked})
     }
@@ -78,15 +77,12 @@ export default {
   async forkArchive (url, {title, description, type, networked, prompt} = {}) {
     var newArchiveUrl
 
-    // check the quota for permission
-    await assertCreateArchivePermission(this.sender)
-
     // only allow type and networked to be set by beaker, for now
     if (!this.sender.getURL().startsWith('beaker:')) {
       type = networked = undefined
     }
 
-    if (prompt) {
+    if (prompt !== false) {
       // initiate the modal
       let win = getWebContentsWindow(this.sender)
       // DISABLED
@@ -103,7 +99,10 @@ export default {
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {
-      // no modal
+      // no modal, ask for permission
+      await assertCreateArchivePermission(this.sender)
+
+      // create
       let author = await getAuthor()
       newArchiveUrl = await datLibrary.forkArchive(url, {title, description, type, author}, {networked})
     }
@@ -483,18 +482,10 @@ async function assertCreateArchivePermission (sender) {
     return true
   }
 
-  // count the modifyDat perms
-  var perms = await getPermissions(sender.getURL())
-  var numArchives = Object.keys(perms).filter(name => (
-    name.startsWith('modifyDat:') && perms[name]
-  )).length
-
-  // allow if not too many
-  if (numArchives >= DAT_QUOTA_DEFAULT_ARCHIVES_ALLOWED) {
-    let allowed = await requestPermission('createMoreArchives', sender, {numArchives})
-    if (!allowed) {
-      throw new QuotaExceededError('This site cannot create any more archives. Delete some existing archives to create new ones.')
-    }
+  // ask the user
+  let allowed = await requestPermission('createDat', sender)
+  if (!allowed) {
+    throw new UserDeniedError()
   }
 }
 

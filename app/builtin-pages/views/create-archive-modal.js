@@ -74,7 +74,7 @@ async function onSubmit (e) {
       await a.configure({title, description, type, networked})
       beaker.browser.closeModal(null, true)
     } else {
-      var newArchive = await DatArchive.create({title, description, type, networked})
+      var newArchive = await DatArchive.create({title, description, type, networked, prompt: false})
       beaker.browser.closeModal(null, {url: newArchive.url})
     }
   } catch (e) {

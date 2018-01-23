@@ -49,24 +49,13 @@ export default {
   },
   createDat: {
     desc: (param, pages, opts = {}) => {
-      if (opts.title) return `Create a new Dat archive, "${opts.title}"`
+      if (opts && opts.title) return `Create a new Dat archive, "${opts.title}"`
       return 'Create a new Dat archive'
     },
     icon: 'folder',
     persist: false,
     alwaysDisallow: false,
     requiresRefresh: false
-  },
-  createMoreArchives: {
-    desc: (param, pages, {numArchives} = {}) => {
-      if (numArchives) return `Create a new Dat archive (${numArchives} created already)`
-      return 'Create a new Dat archive'
-    },
-    icon: 'folder',
-    persist: false,
-    alwaysDisallow: false,
-    requiresRefresh: false,
-    alwaysAsk: true
   },
   modifyDat: {
     desc: (param, pages, opts = {}) => {
