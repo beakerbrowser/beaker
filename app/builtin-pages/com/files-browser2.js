@@ -8,7 +8,6 @@ import renderFilesFlatView from './files-browser/files-flat-view'
 
 export default class FilesBrowser {
   constructor (root) {
-    this.lastRenderedElement = null // element last rendered
     this.root = root
     this.currentSource = root
     this.currentSort = ['name', 'desc']
@@ -20,20 +19,6 @@ export default class FilesBrowser {
   // method to render at a place in the page
   // eg yo`<div>${myFilesBrowser.render()}</div>`
   render () {
-    this.lastRenderedElement = this._render()
-    return this.lastRenderedElement
-  }
-
-  // method to re-render in place
-  // eg myFilesBrowser.rerender()
-  rerender () {
-    if (this.lastRenderedElement) {
-      yo.update(this.lastRenderedElement, this._render())
-    }
-  }
-
-  // internal method to produce HTML
-  _render () {
     if (!this.root) {
       return yo`<div class="files-browser"></div>`
     }
@@ -43,6 +28,15 @@ export default class FilesBrowser {
         ${this.getCurrentSource() ? renderFilesFlatView(this, this.getCurrentSource()) : null}
       </div>
     `
+  }
+
+  // method to re-render in place
+  // eg myFilesBrowser.rerender()
+  rerender () {
+    let el = document.querySelector('.files-browser')
+    if (el) {
+      yo.update(el, this.render())
+    }
   }
 
   // node-tree management api

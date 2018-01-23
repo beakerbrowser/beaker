@@ -36,47 +36,48 @@ var error
 
 setup()
 async function setup () {
-  // try {
+  try {
     // load data
     let url = window.location.pathname.slice(1)
     archive = new LibraryDatArchive(url)
-
-    // set up download progress
     await archive.setup()
-    await archive.startMonitoringDownloadProgress()
-    archive.progress.addEventListener('changed', render)
 
+    document.title = `Library - ${archive.info.title || 'Untitled'}`
+
+    // construct files browser
     archiveFsRoot = new FSArchive(null, archive.info)
     filesBrowser = new FilesBrowser(archiveFsRoot)
     filesBrowser.onSetCurrentSource = onSetCurrentSource
     await readSelectedPathFromURL()
 
-    document.title = `Library - ${archive.info.title || 'Untitled'}`
+    // set up download progress
+    await archive.startMonitoringDownloadProgress()
+
+    // fetch workspace info for this archive
+    workspaceInfo = await beaker.workspaces.get(0, archive.info.url)
+    if (workspaceInfo) {
+      if (workspaceInfo.localFilesPath) {
+        workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(
+          0,
+          workspaceInfo.name,
+          {shallow: true, compareContent: true}
+        )
+      } else {
+        workspaceInfo.revisions = []
+      }
+
+      // set the default diff node
+      if (workspaceInfo.revisions.length) {
+        currentDiffNode = workspaceInfo.revisions[0]
+        await loadCurrentDiff(currentDiffNode)
+      }
+    }
 
     // wire up events
     window.addEventListener('popstate', onPopState)
-  // } catch (e) {
-  //   error = e
-  // }
-
-  // fetch workspace info for this archive
-  workspaceInfo = await beaker.workspaces.get(0, archive.info.url)
-  if (workspaceInfo) {
-    if (workspaceInfo.localFilesPath) {
-      workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(
-        0,
-        workspaceInfo.name,
-        {shallow: true, compareContent: true}
-      )
-    } else {
-      workspaceInfo.revisions = []
-    }
-
-    // set the default diff node
-    if (workspaceInfo.revisions.length) {
-      currentDiffNode = workspaceInfo.revisions[0]
-      await loadCurrentDiff(currentDiffNode)
-    }
+    archive.progress.addEventListener('changed', render)
+  } catch (e) {
+    error = e
   }
 
   render()
@@ -316,31 +317,32 @@ function renderInfo () {
 }
 
 function renderTabs () {
+  let baseUrl = `beaker://library/${archive.url}`
   return yo`
     <div class="tabs">
-      <div onclick=${e => onChangeView('files')} class="tab ${activeView === 'files' ? 'active' : ''}">
+      <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="tab ${activeView === 'files' ? 'active' : ''}">
         Files
-      </div>
+      </a>
 
       ${workspaceInfo
         ? yo`
-          <div onclick=${e => onChangeView('revisions')} class="tab ${activeView === 'revisions' ? 'active' : ''}">
+          <a href=${baseUrl + '#revisions'} onclick=${e => onChangeView(e, 'revisions')} class="tab ${activeView === 'revisions' ? 'active' : ''}">
             Revisions
             ${workspaceInfo.revisions && workspaceInfo.revisions.length
               ? yo`<span class="revisions-indicator"></span>`
               : ''
             }
-          </div>`
+          </a>`
         : ''
       }
 
-      <div onclick=${e => onChangeView('network')} class="tab ${activeView === 'network' ? 'active' : ''}">
+      <a href=${baseUrl + '#network'} onclick=${e => onChangeView(e, 'network')} class="tab ${activeView === 'network' ? 'active' : ''}">
         Network
-      </div>
+      </a>
 
-      <div onclick=${e => onChangeView('settings')} class="tab ${activeView === 'settings' ? 'active' : ''}">
+      <a href=${baseUrl + '#settings'} onclick=${e => onChangeView(e, 'settings')} class="tab ${activeView === 'settings' ? 'active' : ''}">
         Details
-      </div>
+      </a>
     </div>
   `
 }
@@ -427,8 +429,20 @@ function renderEditButton () {
 // events
 // =
 
-function onChangeView (view) {
+async function onChangeView (e, view) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  // update state
   activeView = view
+  window.history.pushState('', {}, e.currentTarget.getAttribute('href'))
+
+  if (view === 'files') {
+    // setup files view
+    await archiveFsRoot.readData()
+    await filesBrowser.setCurrentSource(archiveFsRoot, {suppressEvent: true})
+  }
+
   render()
 }
 
@@ -444,11 +458,6 @@ async function onClickChangedNode (node) {
 }
 
 async function onSetCurrentSource (node) {
-  // if (!node) {
-  //   window.history.pushState('', {}, `beaker://library/${archive.url}`)
-  //   return
-  // }
-
   let path = archive.url
   if (node._path) {
     path += node._path
@@ -531,7 +540,25 @@ function onPopState (e) {
 // helpers
 // =
 
+// this method is only called on initial load and on the back button
+// it mimics some of the behaviors of the click functions
+//   (eg onChangeView and the files-browser onClickNode)
+// but it works entirely by reading the current url
 async function readSelectedPathFromURL () {
+
+  // active view
+  let oldView = activeView
+  let hash = window.location.hash
+  if (hash.startsWith('#')) hash = hash.slice(1)
+  if (hash) {
+    activeView = hash
+  } else {
+    activeView = 'files'
+  }
+  if (oldView !== activeView) {
+    render()
+  }
+
   try {
     var node
     var urlp = new URL(window.location.pathname.slice(1))
