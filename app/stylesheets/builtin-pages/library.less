@@ -290,9 +290,11 @@
       text-align: center;
       padding: 7px 15px;
       cursor: pointer;
-      color: @color-text--muted;
+      color: rgba(0,0,0,.55);
       margin-right: 5px;
       vertical-align: bottom;
+      font-weight: 500;
+      letter-spacing: .15px;
 
       &:hover {
         border-color: #ccc;
@@ -301,7 +303,6 @@
       &.active {
         border-color: @color-text;
         color: @color-text;
-        font-weight: 500;
       }
 
       .revisions-indicator {
@@ -348,7 +349,7 @@
           color: @color-text;
           cursor: pointer;
           height: 35px;
-          line-height: 37px;
+          line-height: 35px;
 
           * {
             cursor: pointer;
