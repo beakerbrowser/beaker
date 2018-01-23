@@ -282,11 +282,9 @@ function renderRevisionsContent () {
   if (diff && diff.invalidEncoding) {
     return yo`
       <div class="binary-diff-placeholder">
-        <code>
-          1010100111001100
-          1110100101110100
-          1001010100010111
-        </code>
+        <code>1010100111001100
+1110100101110100
+1001010100010111</code>
       </div>
     `
   } else if (diff) {
