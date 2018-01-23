@@ -53,6 +53,17 @@
     padding: 12px;
   }
 
+  p {
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
   textarea,
   label,
   input {
@@ -78,13 +89,19 @@
 
   .actions {
     display: flex;
+    justify-content: flex-end;
+    align-items: center;
     margin-top: 15px;
     padding-top: 10px;
     border-top: 1px solid #eee;
 
+    .link {
+      margin-right: auto;
+    }
+
     .success,
     .primary {
-      margin-left: auto;
+      margin-left: 5px;
     }
   }
 }

@@ -2,12 +2,14 @@
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
+import slugify from 'slugify'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import FilesBrowser from '../com/files-browser2'
 import renderDiff from '../com/diff'
 import renderGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
+import * as workspacePopup from '../com/library-workspace-popup'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 
@@ -407,27 +409,18 @@ function renderActions () {
 }
 
 function renderEditButton () {
-  if (archive.info.isOwner) {
-    if (workspaceInfo && workspaceInfo.localFilesPath) {
-      return yo`
-        <button class="btn" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-          <i class="fa fa-pencil"></i>
-          Edit
-        </button>
-      `
-    } else {
-      return yo`
-        <button class="btn" onclick=${onEdit}>
-          <i class="fa fa-pencil"></i>
-          Edit
-        </button>
-      `
-    }
+  if (workspaceInfo && workspaceInfo.localFilesPath) {
+    return yo`
+      <button class="btn" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+        <i class="fa fa-pencil"></i>
+        Edit
+      </button>
+    `
   } else {
     return yo`
-      <button class="btn" onclick=${onForkAndEdit}>
+      <button class="btn" onclick=${onEdit}>
         <i class="fa fa-pencil"></i>
-        Fork & Edit
+        ${!archive.info.isOwner ? 'Fork & ' : ''}Edit
       </button>
     `
   }
@@ -507,17 +500,30 @@ async function onToggleSeeding () {
   render()
 }
 
-function onEdit () {
-  // TODO
-}
+async function onEdit () {
+  let publishTargetUrl = archive.url
 
-function onForkAndEdit () {
-  // TODO
-}
+  // fork first if not the owner
+  if (!archive.info.isOwner) {
+    const a = await DatArchive.fork(archive.url, {prompt: false})
+    publishTargetUrl = a.url
+  }
 
-async function onCreateWorkspace () {
-  workspaceInfo = await beaker.workspaces.create(0)
-  render()
+  // slugify archive name
+  const path = slugify(archive.info.title || 'untitled').toLowerCase()
+
+  try {
+    const localFilesPath = await workspacePopup.create(path)
+    await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
+
+    window.history.pushState('', {}, `beaker://library/${publishTargetUrl}`)
+    await setup()
+    onOpenFolder(localFilesPath)
+    render()
+  } catch (e) {
+    // ignore
+    console.log(e)
+  }
 }
 
 function onPopState (e) {
