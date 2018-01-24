@@ -1,0 +1,27 @@
+.tag {
+  display: inline-block;
+  margin-right: 7px;
+  text-decoration: none;
+  white-space: pre;
+  cursor: pointer;
+  border-radius: 2px;
+
+  &:hover:not(.active) {
+    text-decoration: underline;
+  }
+
+  &.active {
+    background: @color-text;
+    color: #fff;
+  }
+}
+
+.tag-cloud {
+
+  .tag {
+    margin: 0 4px 3px 0;
+    padding: 3px;
+    line-height: 1;
+    font-size: 12.5px;
+  }
+}

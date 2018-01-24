@@ -37,6 +37,7 @@ async function setup () {
 
   // now load & render tags and profiles
   tags = await beaker.bookmarks.listBookmarkTags()
+  tags = tags.sort()
   // TODO(profiles) disabled -prf
   // followedUserProfiles = await Promise.all(
   //   userProfile.followUrls.map(u => beaker.profiles.getUserProfile(u))
@@ -332,11 +333,11 @@ function renderToPage () {
           <div class="section">
             <h2>Tags</h2>
 
-            <div class="nav-link-cloud">
+            <div class="tag-cloud">
               ${tags.map(t => {
                 const view = `tag:${t}`
-                const cls = currentView === view ? 'active' : undefined
-                return yo`<a class=${cls} onclick=${() => onUpdateViewFilter(view)}>${t}</a>`
+                const cls = currentView === view ? 'active' : ''
+                return yo`<a class="tag ${cls}" onclick=${() => onUpdateViewFilter(view)}>${t}</a>`
               })}
             </div>
           </div>
