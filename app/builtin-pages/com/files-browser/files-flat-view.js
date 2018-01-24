@@ -19,7 +19,6 @@ export default function render (filesBrowser, currentSource) {
     <div
       class="files-tree-view ${currentSource.isEmpty ? 'empty' : ''}"
       onclick=${e => onClickNode(e, filesBrowser, currentSource)}
-      oncontextmenu=${e => onContextMenu(e, filesBrowser, currentSource)}
     >
 
       ${rBreadcrumbs(filesBrowser, currentSource)}
@@ -133,7 +132,6 @@ function rContainer (filesBrowser, node, depth) {
         class="item folder"
         title=${node.name}
         onclick=${e => onClickNode(e, filesBrowser, node)}
-        oncontextmenu=${e => onContextMenu(e, filesBrowser, node)}
       >
         <i class="fa fa-folder"></i>
         ${node.isRenaming
@@ -153,7 +151,6 @@ function rFile (filesBrowser, node, depth) {
       class="item file"
       title=${node.name}
       onclick=${e => onClickNode(e, filesBrowser, node)}
-      oncontextmenu=${e => onContextMenu(e, filesBrowser, node)}
     >
       <i class="fa fa-file-text-o"></i>
       ${node.isRenaming
@@ -197,119 +194,6 @@ function onClickNode (e, filesBrowser, node) {
   e.stopPropagation()
 
   filesBrowser.setCurrentSource(node)
-}
-
-async function onContextMenu (e, filesBrowser, node) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  // select first
-  await onClickNode(null, filesBrowser, node)
-  // HACK wait a frame or two to let rendering occur -prf
-  await new Promise(resolve => setTimeout(resolve, 66))
-
-  // now run the menu
-  var menu = []
-  const enabled = node.isEditable && node._archiveInfo.userSettings.isSaved && node._path !== '/dat.json'
-  if (node instanceof FSArchiveFile) {
-    menu = [
-      {label: 'Open URL', id: 'open'},
-      {label: 'Copy URL', id: 'copy-url'},
-      {type: 'separator'},
-      {label: 'Rename', id: 'rename', enabled},
-      {label: 'Delete file', id: 'delete', enabled},
-      {type: 'separator'}
-    ]
-  } else if (node instanceof FSArchiveFolder) {
-    menu = [
-      {label: 'Open URL', id: 'open'},
-      {label: 'Copy URL', id: 'copy-url'},
-      {type: 'separator'},
-      {label: `New folder in "${node.name}"`, id: 'new-folder', enabled},
-      {label: `Import files to "${node.name}"`, id: 'import', enabled},
-      {label: 'Rename', id: 'rename', enabled},
-      {label: 'Delete folder', id: 'delete', enabled},
-      {type: 'separator'}
-    ]
-  } else if (node instanceof FSArchive) {
-    menu = [
-      {label: 'Open URL', id: 'open'},
-      {label: 'Copy URL', id: 'copy-url'},
-      {type: 'separator'},
-      {label: 'New folder', id: 'new-folder', enabled},
-      {label: 'Import files', id: 'import', enabled},
-      {label: 'Export as .zip', id: 'export'},
-      {label: 'Delete archive', id: 'delete'},
-      {type: 'separator'}
-    ]
-  }
-  menu.push({
-    type: 'submenu',
-    label: 'New archive...',
-    submenu: [
-      {label: 'Application', id: 'new-application'},
-      {label: 'Code module', id: 'new-module'},
-      {label: 'Dataset', id: 'new-dataset'},
-      {label: 'Documents', id: 'new-documents'},
-      {label: 'Music', id: 'new-music'},
-      {label: 'Photos', id: 'new-photos'},
-      {label: 'Videos', id: 'new-videos'},
-      {label: 'Website', id: 'new-website'}
-    ]
-  })
-  const action = await beaker.browser.showContextMenu(menu)
-
-  // now run the action
-  switch (action) {
-    case 'open': return window.open(node.url)
-    case 'copy-url': return writeToClipboard(node.url)
-    case 'rename': return enterRenameMode(filesBrowser, node)
-    case 'delete':
-      if (confirm(`Are you sure you want to delete "${node.name}"?`)) {
-        await node.delete()
-        await filesBrowser.reloadTree()
-        filesBrowser.unselectAll()
-        filesBrowser.rerender()
-      }
-      return
-    case 'new-folder':
-    {
-      // create a new virtual node
-      let parentPath = node._path || '/'
-      let newFolderNode = new FSArchiveFolder_BeingCreated(node, node._archiveInfo, node._archive, parentPath)
-      node._files.push(newFolderNode)
-
-      // put it into rename mode
-      enterRenameMode(filesBrowser, newFolderNode)
-      return
-    }
-    case 'import':
-    {
-      let files = await beaker.browser.showOpenDialog({
-        title: 'Import files to this archive',
-        buttonLabel: 'Import',
-        properties: ['openFile', 'openDirectory', 'multiSelections']
-      })
-      if (files) {
-        await Promise.all(files.map(src => DatArchive.importFromFilesystem({
-          src,
-          dst: node.url,
-          ignore: ['dat.json'],
-          inplaceImport: false
-        })))
-        await filesBrowser.reloadTree()
-        filesBrowser.rerender()
-      }
-      return
-    }
-    case 'export': return beaker.browser.downloadURL(`${node.url}?download_as=zip`)
-    case null: return
-    default:
-      if (action && action.startsWith('new')) {
-        let archive = await DatArchive.create({prompt: true, type: action.slice('new-'.length)})
-        window.location.pathname = archive.url.slice('dat://'.length)
-      }
-  }
 }
 
 function onDblClickNode (e, filesBrowser, node) {
