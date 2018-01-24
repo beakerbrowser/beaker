@@ -134,9 +134,7 @@ function rContainer (filesBrowser, node, depth) {
         onclick=${e => onClickNode(e, filesBrowser, node)}
       >
         <i class="fa fa-folder"></i>
-        ${node.isRenaming
-          ? yo`<div class="name" ><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
-          : yo`<div class="name-container"><div class="name">${node.name}</div></div>`}
+        <div class="name-container"><div class="name">${node.name}</div></div>
         <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
         <div class="size">${node.size ? prettyBytes(node.size) : '--'}</div>
       </div>
@@ -153,9 +151,7 @@ function rFile (filesBrowser, node, depth) {
       onclick=${e => onClickNode(e, filesBrowser, node)}
     >
       <i class="fa fa-file-text-o"></i>
-      ${node.isRenaming
-        ? yo`<div class="name"><input value=${node.renameValue} onkeyup=${e => onKeyupRename(e, filesBrowser, node)} /></div>`
-        : yo`<div class="name-container"><div class="name">${node.name}</div></div>`}
+      <div class="name-container"><div class="name">${node.name}</div></div>
       <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
       <div class="size">${typeof node.size === 'number' ? prettyBytes(node.size) : '--'}</div>
     </div>
@@ -164,18 +160,6 @@ function rFile (filesBrowser, node, depth) {
 
 // helpers
 // =
-
-async function enterRenameMode (filesBrowser, node) {
-  await filesBrowser.selectOne(node) // select the node
-  node.isRenaming = true
-  node.renameValue = node.name
-  filesBrowser.rerender()
-  let input = filesBrowser.lastRenderedElement.querySelector('input')
-  if (input) {
-    input.focus()
-    input.select()
-  }
-}
 
 const today = moment()
 function niceMtime (ts) {
@@ -194,49 +178,4 @@ function onClickNode (e, filesBrowser, node) {
   e.stopPropagation()
 
   filesBrowser.setCurrentSource(node)
-}
-
-function onDblClickNode (e, filesBrowser, node) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  // open in a new window
-  if (node.isContainer) {
-    filesBrowser.setCurrentSource(node)
-  } else if (node.url) {
-    window.open(node.url)
-  }
-}
-
-async function onKeyupRename (e, filesBrowser, node) {
-  node.renameValue = e.target.value
-
-  if (e.code === 'Enter') {
-    // validate the name
-    if (!DAT_VALID_PATH_REGEX.test(node.renameValue) || node.renameValue.includes('/')) {
-      return
-    }
-    // protect the manifest
-    if (node._path === '/dat.json') {
-      return
-    }
-    let newpath = (node._path ? node._path.split('/').slice(0, -1).join('/') : '') + '/' + node.renameValue
-    if (newpath === '/dat.json') {
-      return
-    }
-    // do rename
-    await node.rename(node.renameValue)
-    await filesBrowser.reloadTree()
-    filesBrowser.unselectAll()
-    filesBrowser.rerender()
-  }
-  if (e.code === 'Escape') {
-    if (node instanceof FSArchiveFolder_BeingCreated) {
-      // if this was a new folder, reload the tree to remove that temp node
-      await filesBrowser.reloadTree()
-    } else {
-      node.isRenaming = false
-    }
-    filesBrowser.rerender()
-  }
 }
