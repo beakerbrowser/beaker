@@ -17,7 +17,6 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 // =
 
 var activeView = 'files'
-var activeMode = 'live'
 var archive
 var archiveFsRoot
 var filesBrowser
@@ -124,7 +123,6 @@ function render () {
             <div class="container">
               ${renderInfo()}
               ${renderTabs()}
-              ${renderModeToggle()}
             </div>
           </div>
 
@@ -378,30 +376,7 @@ function renderTabs () {
   `
 }
 
-function renderModeToggle () {
-  if (!workspaceInfo) return ''
-
-  return yo`
-    <div class="btn-group mode-toggle">
-      <button onclick=${() => onChangeMode('preview')} class="btn small mode ${activeMode === 'preview' ? 'active' : ''}">
-        Preview
-      </button>
-      <button onclick=${() => onChangeMode('live')} class="btn small mode ${activeMode === 'live' ? 'active' : ''}">
-        Live
-      </button>
-    </div>
-  `
-}
-
 function renderMetadata () {
-  let url = archive.info.url
-  let urlLabel = shortenHash(archive.info.url)
-
-  if (activeMode === 'preview' && workspaceInfo) {
-    url = `workspace://${workspaceInfo.name}`
-    urlLabel =  url
-  }
-
   return yo`
     <div class="metadata">
       <div>${prettyBytes(archive.info.size)}</div>
@@ -413,7 +388,7 @@ function renderMetadata () {
       <span class="separator">―</span>
 
       <div class="url-info">
-        <a href=${url} class="url" target="_blank">${urlLabel}</a>
+        <a href=${archive.info.url} class="url" target="_blank">${shortenHash(archive.info.url)}</a>
         <button class="btn plain tooltip-container" data-tooltip="Copy URL" onclick=${onCopyUrl}>
           <i class="fa fa-clipboard"></i>
         </button>
@@ -477,11 +452,6 @@ async function onChangeView (e, view) {
     await filesBrowser.setCurrentSource(archiveFsRoot, {suppressEvent: true})
   }
 
-  render()
-}
-
-function onChangeMode (mode) {
-  activeMode = mode
   render()
 }
 
