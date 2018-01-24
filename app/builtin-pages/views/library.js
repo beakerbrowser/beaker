@@ -104,32 +104,18 @@ function renderRow (row, i) {
   const isOwner = row.isOwner
 
   return yo`
-    <div class="row thick archive">
-      <div>
-        <img class="favicon" src="beaker-favicon:${row.url}" />
+    <a href="beaker://library/${row.url}" class="ll-row archive">
+      <img class="favicon" src="beaker-favicon:${row.url}" />
 
-        <span class="info">
-          <div>
-            <a href=${'beaker://library/' + row.url} class="title">
-              ${row.title || yo`<em>Untitled</em>`}
-            </a>
+      <span class="title">
+        ${row.title || yo`<em>Untitled</em>`}
+      </span>
 
-            <span class="status tooltip-container" data-tooltip="${isSeeding ? 'Seeding' : 'Not seeding'} files">
-              <span class="circle ${isSeeding ? 'green' : 'red'}"></span>
-            </a>
+      <a href=${row.url} class="url">
+        ${shortenHash(row.url)}
+      </a>
 
-            ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
-          </div>
-
-          <div class="metadata">
-            ${row.peers} ${pluralize(row.peers, 'peer')}
-            <span class="bullet">•</span>
-            ${prettyBytes(row.size)}
-            <span class="bullet">•</span>
-            <a href=${row.url} class="url">${shortenHash(row.url)}</a>
-          </div>
-        </span>
-      </div>
+      ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
 
       <div class="buttons">
         ${isSaved ? yo`

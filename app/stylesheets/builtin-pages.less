@@ -198,11 +198,16 @@
   .ll-row {
     &:extend(.flex);
     align-items: center;
+    justify-content: flex-start;
     position: relative;
     align-items: center;
     padding: 0 15px;
     background: #fff;
     border-bottom: 1px solid rgb(230, 230, 230);
+
+    .buttons {
+      margin-left: auto;
+    }
 
     .link {
       &:extend(.flex);
@@ -223,14 +228,16 @@
       max-width: 650px;
       display: inline-block;
       margin-right: 5px;
+      color: @color-text;
     }
 
     .url {
       &:extend(.overflow-ellipsis);
       max-width: 200px;
       margin-right: 20px;
-      color: #aaa;
+      color: #999;
       font-size: 12px;
+      font-weight: 300;
     }
 
     .actions {
