@@ -37,12 +37,6 @@ async function loadArchives () {
         isNetworked: true
       })
       break
-    case 'offline':
-      archives = await beaker.archives.list({
-        isSaved: true,
-        isNetworked: false
-      })
-      break
     case 'trash':
       archives = await beaker.archives.list({
         isSaved: false
@@ -198,14 +192,6 @@ function render () {
           <div class="section">
             <div onclick=${() => onUpdateView('all')} class="nav-item ${currentView === 'all' ? 'active' : ''}">
               All
-            </div>
-
-            <div onclick=${() => onUpdateView('seeding')} class="nav-item ${currentView === 'seeding' ? 'active' : ''}">
-              Currently seeding
-            </div>
-
-            <div onclick=${() => onUpdateView('offline')} class="nav-item ${currentView === 'offline' ? 'active' : ''}">
-              Offline
             </div>
 
             <div onclick=${() => onUpdateView('trash')} class="nav-item ${currentView === 'trash' ? 'active' : ''}">
