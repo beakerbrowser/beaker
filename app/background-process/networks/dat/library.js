@@ -278,6 +278,10 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
     contentStorageCacheSize: 0,
     treeCacheSize: 2048
   })
+  archive.on('error', err => {
+    console.error('Error in archive', key.toString('hex'), err)
+    debug('Error in archive', key.toString('hex'), err)
+  })
   archive.replicationStreams = [] // list of all active replication streams
   archive.peerHistory = [] // samples of the peer count
   Object.defineProperty(archive, 'stagingFS', {

@@ -33,7 +33,7 @@
     "function-queue": "0.0.12",
     "hypercore": "^6.6.6",
     "hypercore-protocol": "^6.3.1",
-    "hyperdrive": "^9.9.2",
+    "hyperdrive": "^9.12.2",
     "hyperdrive-staging-area": "^2.4.0",
     "hyperdrive-to-zip-stream": "^2.0.0",
     "identify-filetype": "^1.0.0",
