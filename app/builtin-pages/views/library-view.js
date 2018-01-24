@@ -414,6 +414,9 @@ function renderMetadata () {
 
       <div class="url-info">
         <a href=${url} class="url" target="_blank">${urlLabel}</a>
+        <button class="btn plain tooltip-container" data-tooltip="Copy URL" onclick=${onCopyUrl}>
+          <i class="fa fa-clipboard"></i>
+        </button>
       </div>
     </div>
   `

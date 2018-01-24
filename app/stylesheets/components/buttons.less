@@ -25,6 +25,22 @@
     line-height: 20px;
   }
 
+  &.plain {
+    background: none;
+    border: none;
+    color: #999;
+    padding: 0 3px;
+
+    &:hover {
+      color: @color-text;
+      background: none;
+    }
+
+    &:focus {
+      box-shadow: none;
+    }
+  }
+
   i {
     vertical-align: middle;
 
