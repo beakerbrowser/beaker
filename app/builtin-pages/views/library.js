@@ -118,28 +118,6 @@ function renderRow (row, i) {
       ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
 
       <div class="buttons">
-        ${isSaved ? yo`
-          <button class="btn transparent remove-archive" title="Delete archive" onclick=${e => {e.preventDefault(); e.stopPropagation(); onDeleteArchive(row.url, row.title || null);}}>
-            <i class="fa fa-trash-o"></i>
-          </button>`
-        : ''}
-
-        <button title="Copy URL" class="btn copy-url" onclick=${() => onCopy(row.url)}>
-          <i class="fa fa-clipboard"></i>
-        </button>
-
-        ${isSaved ? yo`
-          <button title="Edit" class="btn" onclick=${() => onClickEdit(row)}>
-            <span>${isOwner ? 'Edit' : 'Fork & Edit'}</span>
-            <i class="fa fa-pencil"></i>
-          </button>`
-        : yo`
-          <button title="Restore" class="btn" onclick=${() => onClickRestore(row)}>
-            Restore
-            <i class="fa fa-undo"></i>
-          </button>`
-        }
-
         ${toggleable(yo`
           <div class="dropdown toggleable-container">
             <button class="btn transparent toggleable">
@@ -147,24 +125,14 @@ function renderRow (row, i) {
             </button>
 
             <div class="dropdown-items with-triangle right">
-              <a href="beaker://library/${row.url}" target="_blank" class="dropdown-item">
-                <i class="fa fa-file-code-o"></i>
-                View files
-              </a>
+              <div class="dropdown-item" onclick=${() => {e.stopPropagation(); onCopy(row.url); }}>
+                <i class="fa fa-link"></i>
+                Copy URL
+              </div>
 
               <div class="dropdown-item" onclick=${() => onClickFork(row.url)}>
                 <i class="fa fa-code-fork"></i>
                 Fork
-              </div>
-
-              <div class="dropdown-item" onclick=${() => onToggleSeeding(row)}>
-                <i class="fa fa-${isSeeding ? 'stop' : 'upload'}"></i>
-                ${isSeeding ? 'Stop' : 'Start'} seeding files
-              </div>
-
-              <div class="dropdown-item" onclick=${() => onClickDownloadZip(row.url)}>
-                <i class="fa fa-file-archive-o"></i>
-                Download as .zip
               </div>
             </div>
           </div>
