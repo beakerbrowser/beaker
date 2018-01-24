@@ -40,6 +40,11 @@
   .container {
     max-width: 800px;
     margin: auto;
+    padding: 0 10px;
+
+    @media(min-width: 800px) {
+      padding: 0;
+    }
   }
 
   .view {
@@ -49,6 +54,18 @@
 
     .section {
       margin-bottom: 40px;
+    }
+  }
+
+  .view.preview {
+    padding: 0;
+    width: 100%;
+    height: ~"calc(100% - 170px)";
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
     }
   }
 

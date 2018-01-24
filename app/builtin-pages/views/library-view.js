@@ -128,7 +128,7 @@ function render () {
             </div>
           </div>
 
-          <div class="container">${renderView()}</div>
+          ${renderView()}
 
           ${error ? error.toString() : ''}
         </div>
@@ -147,6 +147,8 @@ function renderView () {
       return renderRevisionsView()
     case 'network':
       return renderNetworkView()
+    case 'preview':
+      return renderPreviewView()
     default:
       return yo`<div class="view">Loading...</div>`
   }
@@ -154,16 +156,31 @@ function renderView () {
 
 function renderFilesView () {
   return yo`
-    <div class="view files">
-      ${filesBrowser ? filesBrowser.render() : ''}
+    <div class="container">
+      <div class="view files">
+        ${filesBrowser ? filesBrowser.render() : ''}
+      </div>
     </div>
   `
 }
 
 function renderSettingsView () {
   return yo`
-    <div class="settings view">
-      <h2>Settings</h2>
+    <div class="container">
+      <div class="settings view">
+        <h2>Settings</h2>
+      </div>
+    </div>
+  `
+}
+
+function renderPreviewView () {
+  return yo`
+    <div class="view preview">
+      ${workspaceInfo && workspaceInfo.localFilesPath
+        ? yo`<iframe src="workspace://${workspaceInfo.name}"/>`
+        : 'Set up your workspace first'
+      }
     </div>
   `
 }
@@ -199,26 +216,28 @@ function renderNetworkView () {
   }
 
   return yo`
-    <div class="view network">
-      <div class="section">
-        <h2>Download status</h2>
+    <div class="container">
+      <div class="view network">
+        <div class="section">
+          <h2>Download status</h2>
 
-        <progress value=${progress.current} max="100">
-          ${progress.current}
-        </progress>
+          <progress value=${progress.current} max="100">
+            ${progress.current}
+          </progress>
 
-        <div class="download-status">
-          <div class="progress-ui ${progressCls}">
-            <div style="width: ${progressPercentage}" class="completed">
-              ${progressPercentage}
+          <div class="download-status">
+            <div class="progress-ui ${progressCls}">
+              <div style="width: ${progressPercentage}" class="completed">
+                ${progressPercentage}
+              </div>
+
+              <div class="label">${progressLabel}</div>
             </div>
 
-            <div class="label">${progressLabel}</div>
+            <button class="btn transparent tooltip-container" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
+              <i class="fa fa-${seedingIcon}"></i>
+            </button>
           </div>
-
-          <button class="btn transparent tooltip-container" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
-            <i class="fa fa-${seedingIcon}"></i>
-          </button>
         </div>
       </div>
     </div>
@@ -228,8 +247,10 @@ function renderNetworkView () {
 function renderRevisionsView () {
   if (!workspaceInfo.revisions.length) {
     return yo`
-      <div class="view">
-        <em>No unpublished revisions</em>
+      <div class="container">
+        <div class="view">
+          <em>No unpublished revisions</em>
+        </div>
       </div>
     `
   }
@@ -248,32 +269,34 @@ function renderRevisionsView () {
   )
 
   return yo`
-    <div class="view revisions">
-      <div class="revisions-sidebar">
-        <ul class="revisions-list">
-          ${workspaceInfo.revisions.map(renderRev)}
-        </ul>
-      </div>
+    <div class="container">
+      <div class="view revisions">
+        <div class="revisions-sidebar">
+          <ul class="revisions-list">
+            ${workspaceInfo.revisions.map(renderRev)}
+          </ul>
+        </div>
 
-      <div class="revisions-content">
-        ${currentDiffNode
-          ? yo`
-            <div class="revisions-content-header">
-              <i class="fa fa-file-text-o"></i>
+        <div class="revisions-content">
+          ${currentDiffNode
+            ? yo`
+              <div class="revisions-content-header">
+                <i class="fa fa-file-text-o"></i>
 
-              <span class="path">
-                ${currentDiffNode.type === 'file' ? currentDiffNode.path.slice(1) : currentDiffNode.path}
-              </span>
+                <span class="path">
+                  ${currentDiffNode.type === 'file' ? currentDiffNode.path.slice(1) : currentDiffNode.path}
+                </span>
 
-              <div class="changes-count-container">
-                <span class="additions-count">${diffAdditions ? `+${diffAdditions}` : ''}</span>
-                <span class="deletions-count">${diffDeletions ? `-${diffDeletions}` : ''}</span>
-              </div>
-            </div>`
-          : ''
-        }
+                <div class="changes-count-container">
+                  <span class="additions-count">${diffAdditions ? `+${diffAdditions}` : ''}</span>
+                  <span class="deletions-count">${diffDeletions ? `-${diffDeletions}` : ''}</span>
+                </div>
+              </div>`
+            : ''
+          }
 
-        ${renderRevisionsContent()}
+          ${renderRevisionsContent()}
+        </div>
       </div>
     </div>
   `
@@ -332,6 +355,14 @@ function renderTabs () {
               ? yo`<span class="revisions-indicator"></span>`
               : ''
             }
+          </a>`
+        : ''
+      }
+
+      ${workspaceInfo && workspaceInfo.localFilesPath
+        ? yo`
+          <a href=${baseUrl + '#preview'} onclick=${e => onChangeView(e, 'preview')} class="tab ${activeView === 'preview' ? 'active' : ''}">
+            Preview
           </a>`
         : ''
       }
