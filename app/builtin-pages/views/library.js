@@ -258,8 +258,6 @@ async function onClickEdit (archive) {
   if (!workspace) {
     workspace = await beaker.workspaces.create(0, {publishTargetUrl: editableUrl})
   }
-
-  window.location = `beaker://workspaces/${workspace.name}`
 }
 
 async function onClickRestore (archive) {

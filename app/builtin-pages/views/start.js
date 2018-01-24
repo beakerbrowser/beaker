@@ -112,20 +112,6 @@ async function onUpdateSearchQuery (q) {
     })
     searchResults = searchResults.concat(libraryResults)
 
-    // fetch workspaces
-    // filter by name
-    let workspaceResults = await beaker.workspaces.list(0)
-    workspaceResults = workspaceResults.filter(w => w.name.toLowerCase().includes(query)).slice(0, 2)
-    workspaceResults = workspaceResults.map(w => {
-      return {
-        title: `workspace://${w.name}`,
-        faviconUrl: `workspace://${w.name}`,
-        targetUrl: `beaker://workspaces/${w.name}`,
-        label: w.localFilesPath || 'In your workspaces'
-      }
-    })
-    searchResults = searchResults.concat(workspaceResults)
-
     // fetch history
     let historyResults = await beaker.history.search(query)
     historyResults = historyResults.slice(0, 6)
