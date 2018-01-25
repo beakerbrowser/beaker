@@ -10,6 +10,7 @@ import renderGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
 import * as workspacePopup from '../com/library-workspace-popup'
 import {pluralize, shortenHash} from '../../lib/strings'
+import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 // globals
@@ -21,11 +22,18 @@ var archiveFsRoot
 var filesBrowser
 
 var workspaceInfo
-let diff
-let diffAdditions = 0
-let diffDeletions = 0
-let currentDiffNode
-let numCheckedRevisions
+var diff
+var diffAdditions = 0
+var diffDeletions = 0
+var currentDiffNode
+var numCheckedRevisions
+
+// current values being edited in settings
+// false means not editing
+var settingsEditValues = {
+  title: false,
+  description: false
+}
 
 var error
 
@@ -74,6 +82,7 @@ async function setup () {
     // wire up events
     window.addEventListener('popstate', onPopState)
     archive.progress.addEventListener('changed', render)
+    document.body.addEventListener('click', onClickOutsideSettingsEditInput)
   } catch (e) {
     error = e
   }
@@ -168,10 +177,24 @@ function renderFilesView () {
 }
 
 function renderSettingsView () {
+
+  var titleEl = settingsEditValues.title !== false
+    ? yo`<td><input id="edit-title" onkeyup=${e => onKeyupSettingsEdit(e, 'title')} value=${settingsEditValues.title} type="text"/></td>`
+    : yo`<td>${getSafeTitle()} <i onclick=${e => onClickSettingsEdit(e, 'title')} class="fa fa-pencil"></i></td>`
+  var descEl = settingsEditValues.description !== false
+    ? yo`<td><input id="edit-description" onkeyup=${e => onKeyupSettingsEdit(e, 'description')} value=${settingsEditValues.description} type="text"/></td>`
+    : yo`<td>${getSafeDesc()} <i onclick=${e => onClickSettingsEdit(e, 'description')} class="fa fa-pencil"></i></td>`
+
   return yo`
     <div class="container">
       <div class="settings view">
-        <h2>Settings</h2>
+        <table>
+          <tr><td class="label">Title</td>${titleEl}</tr>
+          <tr><td class="label">Description</td>${descEl}</tr>
+          <tr><td class="label">Size</td><td>${prettyBytes(archive.info.size)}</td></tr>
+          <tr><td class="label">Last Updated</td><td>${archive.info.mtime ? niceDate(archive.info.mtime) : ''}</td></tr>
+          <tr><td class="label">Editable</td><td>${archive.info.isOwner ? 'Yes' : 'No'}</td></tr>
+        </table>
       </div>
     </div>
   `
@@ -248,7 +271,7 @@ function renderNetworkView () {
 }
 
 function renderRevisionsView () {
-  if (!workspaceInfo.revisions.length) {
+  if (!workspaceInfo || !workspaceInfo.revisions.length) {
     return yo`
       <div class="container">
         <div class="view">
@@ -331,11 +354,11 @@ function renderInfo () {
         </a>
 
         <a href=${archive.info.url} class="title" target="_blank">
-          ${archive.info.title || 'Untitled'}
+          ${getSafeTitle()}
         </a>
 
         <p class="description">
-          ${archive.info.description || yo`<em>No description</em>`}
+          ${getSafeDesc()}
         </p>
       </div>
 
@@ -545,6 +568,55 @@ async function onEdit () {
   render()
 }
 
+function onClickOutsideSettingsEditInput (e) {
+  if (e.target.tagName === 'INPUT') return
+
+  // stop editing settings
+  for (var k in settingsEditValues) {
+    settingsEditValues[k] = false
+  }
+  render()
+}
+
+async function onKeyupSettingsEdit (e, attr) {
+  if (e.keyCode == 13) {
+    // enter-key
+    await archive.configure({[attr]: settingsEditValues[attr]})
+    Object.assign(archive.info, {[attr]: settingsEditValues[attr]})
+    settingsEditValues[attr] = false
+    render()
+  } else if (e.keyCode == 27) {
+    // escape-key
+    settingsEditValues[attr] = false
+    render()
+  } else {
+    settingsEditValues[attr] = e.target.value
+  }
+}
+
+function onClickSettingsEdit (e, attr) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  // stop editing other settings
+  for (var k in settingsEditValues) {
+    settingsEditValues[k] = false
+  }
+
+  // update state
+  settingsEditValues[attr] = archive.info[attr]
+  render()
+
+  // focus the element
+  try {
+    let el = document.querySelector(`#edit-${attr}`)
+    el.focus()
+    el.select()
+  } catch (e) {
+    console.debug('Failed to focus the edit element', e)
+  }
+}
+
 function onPopState (e) {
   readViewStateFromUrl()
 }
@@ -592,4 +664,12 @@ async function readViewStateFromUrl () {
     // ignore, but log just in case something is buggy
     console.debug(e)
   }
+}
+
+function getSafeTitle () {
+  return (archive.info.title || '').trim() || 'Untitled'
+}
+
+function getSafeDesc () {
+  return (archive.info.description || '').trim() || yo`<em>No description</em>`
 }
