@@ -44,7 +44,19 @@ export default function render (diff) {
     <pre class="diff">
       <div class="linenos">${lineEls}</div>
       <div class="linenos linenos2">${lineEls2}</div>
-      ${diff.map(d => yo`<div class=${d.removed ? 'del' : d.added ? 'add' : ''}>${d.value}</div>`)}
+      ${diff.map(d => yo`<div class=${d.removed ? 'del' : d.added ? 'add' : ''}>${d.value}</div>`).map(highlight)}
     </pre>
   `
+}
+
+// internal methods
+// =
+
+// helper to apply syntax highlighting
+function highlight (diffEl) {
+  if (typeof window.hljs !== 'undefined') {
+    let res = hljs.highlightAuto(diffEl.textContent)
+    if (res) diffEl.innerHTML = res.value
+  }
+  return diffEl
 }
