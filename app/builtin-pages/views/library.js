@@ -125,6 +125,15 @@ function renderRow (row, i) {
       ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
 
       <div class="buttons">
+        ${!row.userSettings.isSaved
+          ? yo`
+            <button class="btn small restore" onclick=${e => onRestore(e, row)}>
+              <i class="fa fa-undo"></i>
+              <span>Restore</span>
+            </button>`
+          : ''
+        }
+
         <input type="checkbox" checked=${!!row.checked} onclick=${(e) => onToggleChecked(e, row)}/>
 
         ${toggleable(yo`
@@ -282,9 +291,12 @@ async function onRestoreSelected () {
   render()
 }
 
-async function onRestore (archive) {
+async function onRestore (e, archive) {
+  e.stopPropagation()
+  e.preventDefault()
+
   await beaker.archives.add(archive.url, {isSaved: true})
-  archive.userSettings.isSaved = true
+  await loadArchives()
   render()
 }
 
