@@ -2,7 +2,6 @@
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import slugify from 'slugify'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import FilesBrowser from '../com/files-browser2'
@@ -524,21 +523,20 @@ async function onEdit () {
     publishTargetUrl = a.url
   }
 
-  // slugify archive name
-  const path = slugify(archive.info.title || 'untitled').toLowerCase()
+  // get an available path for a directory
+  const basePath = await beaker.browser.getSetting('workspace_default_path')
+  const defaultPath = await beaker.browser.getDefaultLocalPath(basePath, archive.info.title)
 
-  try {
-    const localFilesPath = await workspacePopup.create(path)
-    await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
+  // open the create workspace popup
+  const localFilesPath = await workspacePopup.create(defaultPath)
 
-    window.history.pushState('', {}, `beaker://library/${publishTargetUrl}`)
-    await setup()
-    onOpenFolder(localFilesPath)
-    render()
-  } catch (e) {
-    // ignore
-    console.log(e)
-  }
+  workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
+  await beaker.workspaces.setupFolder(0, workspaceInfo.name)
+
+  window.history.pushState('', {}, `beaker://library/${publishTargetUrl}`)
+  await setup()
+  onOpenFolder(localFilesPath)
+  render()
 }
 
 function onPopState (e) {

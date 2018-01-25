@@ -3,12 +3,18 @@ import {autoUpdater} from 'electron-updater'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
+import slugify from 'slugify'
+import jetpack from 'fs-jetpack'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 var debug = require('debug')('beaker')
 import * as settingsDb from './dbs/settings'
 import {open as openUrl} from './open-url'
 import {showModal, closeModal} from './ui/modals'
+import {setIsReadyToQuit} from './ui/windows'
+import {
+  INVALID_SAVE_FOLDER_CHAR_REGEX
+} from '../lib/const'
 
 // constants
 // =
@@ -109,6 +115,7 @@ export const WEBAPI = {
   openUrl: url => { openUrl(url) }, // dont return anything
   openFolder,
   doWebcontentsCmd,
+  getDefaultLocalPath,
 
   closeModal
 }
@@ -317,6 +324,25 @@ function showContextMenu (menuDefinition) {
 
 function openFolder (folderPath) {
   shell.openExternal('file://' + folderPath)
+}
+
+async function getDefaultLocalPath (dir, title) {
+  // massage the title
+  title = typeof title === 'string' ? title : ''
+  title = title.replace(INVALID_SAVE_FOLDER_CHAR_REGEX, '')
+  if (!title.trim()) {
+    title = 'Untitled'
+  }
+  title = slugify(title).toLowerCase()
+
+  // find an available variant of title
+  let tryNum = 1
+  let titleVariant = title
+  while (await jetpack.existsAsync(path.join(dir, titleVariant))) {
+    titleVariant = `${title}-${++tryNum}`
+  }
+  const localPath = path.join(dir, titleVariant)
+  return localPath
 }
 
 async function doWebcontentsCmd (method, wcId, ...args) {

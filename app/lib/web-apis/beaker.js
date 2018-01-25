@@ -163,6 +163,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.browser.showOpenDialog = beakerBrowserRPC.showOpenDialog
   beaker.browser.openUrl = beakerBrowserRPC.openUrl
   beaker.browser.openFolder = beakerBrowserRPC.openFolder
+  beaker.browser.getDefaultLocalPath = beakerBrowserRPC.getDefaultLocalPath
   beaker.browser.doWebcontentsCmd = beakerBrowserRPC.doWebcontentsCmd
   beaker.browser.closeModal = beakerBrowserRPC.closeModal
 }

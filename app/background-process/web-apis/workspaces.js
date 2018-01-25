@@ -4,6 +4,7 @@ import * as diff from 'diff'
 import anymatch from 'anymatch'
 import fs from 'fs'
 import path from 'path'
+import mkdirp from 'mkdirp'
 import * as archivesDb from '../dbs/archives'
 import * as workspacesDb from '../dbs/workspaces'
 import * as datLibrary from '../networks/dat/library'
@@ -19,7 +20,8 @@ import {
   PermissionsError,
   InvalidURLError,
   ArchiveNotWritableError,
-  InvalidEncodingError
+  InvalidEncodingError,
+  DestDirectoryNotEmpty
 } from 'beaker-error-constants'
 
 const DISALLOWED_SAVE_PATH_NAMES = [
@@ -354,17 +356,6 @@ async function readDatIgnore (fs) {
 }
 
 async function assertSafeFilesPath (localFilesPath) {
-  // stat the file
-  const stat = await new Promise(resolve => {
-    fs.stat(localFilesPath, (err, st) => resolve(st))
-  })
-  if (!stat) {
-    throw new NotAFolderError('Invalid target folder: not found')
-  }
-  if (!stat.isDirectory()) {
-    throw new NotAFolderError('Invalid target folder: not a folder')
-  }
-
   // check whether this is an OS path
   for (let i = 0; i < DISALLOWED_SAVE_PATH_NAMES.length; i++) {
     let disallowedSavePathName = DISALLOWED_SAVE_PATH_NAMES[i]
@@ -372,6 +363,29 @@ async function assertSafeFilesPath (localFilesPath) {
     if (path.normalize(localFilesPath) === path.normalize(disallowedSavePath)) {
       throw new ProtectedFileNotWritableError(`This is the OS ${disallowedSavePathName} folder, which is protected. Please pick another folder or subfolder.`)
     }
+  }
+
+  // stat the file
+  const stat = await new Promise(resolve => {
+    fs.stat(localFilesPath, (err, st) => resolve(st))
+  })
+  if (stat) {
+    if (!stat.isDirectory()) {
+      throw new NotAFolderError('Invalid target folder: not a folder')
+    }
+  } else {
+    // create the target folder
+    await new Promise((resolve, reject) => {
+      mkdirp(localFilesPath, err => {
+        if (err) reject(err)
+        else resolve()
+      })
+    })
+  }
+
+  // check that the target folder is empty
+  if (await checkFolderIsEmpty(localFilesPath) === false) {
+    throw new DestDirectoryNotEmpty('Target folder must be empty')
   }
 }
 

@@ -8,19 +8,13 @@ import closeIcon from '../icon/close'
 var resolve
 var reject
 
-let defaultPath
 let localFilesPath
-
-setup()
-async function setup () {
-  defaultPath = await beaker.browser.getSetting('workspace_default_path')
-}
 
 // exported api
 // =
 
-export function render (slugifiedName) {
-  const path = localFilesPath ? localFilesPath : `${defaultPath}/${slugifiedName}`
+export function render (defaultPath) {
+  const path = localFilesPath ? localFilesPath : defaultPath
 
   return yo`
     <div id="library-workspace-popup" class="popup-wrapper" onclick=${onClickWrapper}>
@@ -65,9 +59,9 @@ function update () {
   yo.update(document.getElementById('library-workspace-popup'), render())
 }
 
-export function create (slugifiedName) {
+export function create (defaultPath) {
   // render interface
-  var popup = render(slugifiedName)
+  var popup = render(defaultPath)
   document.body.appendChild(popup)
   document.addEventListener('keyup', onKeyUp)
 

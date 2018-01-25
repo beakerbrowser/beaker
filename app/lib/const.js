@@ -8,6 +8,8 @@ export const DAT_URL_REGEX = /^(?:dat:\/\/)?([0-9a-f]{64})/i
 // url file paths
 export const DAT_VALID_PATH_REGEX = /^[a-z0-9\-._~!$&'()*+,;=:@/\s]+$/i
 
+export const INVALID_SAVE_FOLDER_CHAR_REGEX = /[^0-9a-zA-Z-_ ]/g
+
 // dat settings
 export const DAT_SWARM_PORT = 3282
 export const DAT_MANIFEST_FILENAME = 'dat.json'

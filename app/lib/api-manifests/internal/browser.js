@@ -25,6 +25,7 @@ export default {
   showOpenDialog: 'promise',
   openUrl: 'promise',
   openFolder: 'promise',
+  getDefaultLocalPath: 'promise',
   doWebcontentsCmd: 'promise',
 
   closeModal: 'sync'
