@@ -15,7 +15,7 @@ import renderCloseIcon from '../icon/close'
 let archives = []
 let query = ''
 let currentView = 'all'
-let currentSort = 'recent'
+let currentSort = 'alpha'
 
 // main
 // =
@@ -88,14 +88,20 @@ function sortArchives () {
 // rendering
 // =
 
-function renderRows (sort = '') {
-  if (!archives.length) return yo`<em class="empty">No archives</em>`
+function renderRows (sort = '', max = undefined) {
+  let a = Array.from(archives)
 
   if (sort === 'recent') {
-    return archives.sort((a, b) => b.lastLibraryAccessTime - a.lastLibraryAccessTime).map(renderRow)
-  } else {
-    return archives.map(renderRow)
+    a = a.filter(a => a.lastLibraryAccessTime > 0)
+    a.sort((a, b) => b.lastLibraryAccessTime - a.lastLibraryAccessTime)
   }
+
+  if (max) {
+    a = a.slice(0, max)
+  }
+
+  if (!a.length) return yo`<em class="empty">No archives</em>`
+  return a.map(renderRow)
 }
 
 function renderRow (row, i) {
@@ -173,7 +179,7 @@ function render () {
 
           <div>
             <div class="ll-sticky-heading">Recent</div>
-            ${renderRows('recent').slice(0, 10)}
+            ${renderRows('recent', 10)}
 
             <div class="ll-sticky-heading">More stuffs</div>
             ${renderRows()}

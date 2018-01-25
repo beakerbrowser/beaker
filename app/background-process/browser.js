@@ -11,7 +11,6 @@ var debug = require('debug')('beaker')
 import * as settingsDb from './dbs/settings'
 import {open as openUrl} from './open-url'
 import {showModal, closeModal} from './ui/modals'
-import {setIsReadyToQuit} from './ui/windows'
 import {
   INVALID_SAVE_FOLDER_CHAR_REGEX
 } from '../lib/const'

@@ -309,13 +309,13 @@ export async function setMeta (key, value = {}) {
 
   // write
   var release = await lock('archives-db:meta')
-  var {lastAccessTime} = await getMeta(key)
+  var {lastAccessTime, lastLibraryAccessTime} = await getMeta(key)
   try {
     await db.run(`
       INSERT OR REPLACE INTO
-        archives_meta (key, title, description, mtime, isOwner, lastAccessTime)
-        VALUES        (?,   ?,     ?,           ?,     ?,       ?)
-    `, [key, title, description, mtime, isOwner, lastAccessTime])
+        archives_meta (key, title, description, mtime, isOwner, lastAccessTime, lastLibraryAccessTime)
+        VALUES        (?,   ?,     ?,           ?,     ?,       ?,              ?)
+    `, [key, title, description, mtime, isOwner, lastAccessTime, lastLibraryAccessTime])
     db.run(`DELETE FROM archives_meta_type WHERE key=?`, key)
     if (type) {
       await Promise.all(type.map(t => (
