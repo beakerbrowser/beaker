@@ -110,6 +110,10 @@ export default {
   // internal management
   // =
 
+  async touch (key, timeVar) {
+    return archivesDb.touch(key, timeVar)
+  },
+
   async clearFileCache (url) {
     return datLibrary.clearFileCache(datLibrary.fromURLToKey(url))
   },

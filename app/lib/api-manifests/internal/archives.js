@@ -16,6 +16,7 @@ export default {
   getPublishRecord: 'promise',
 
   // internal management
+  touch: 'promise',
   clearFileCache: 'promise',
   clearGarbage: 'promise',
   clearDnsCache: 'promise',
