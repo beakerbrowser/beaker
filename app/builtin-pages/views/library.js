@@ -205,38 +205,6 @@ async function onDeleteArchive (url, title) {
   }
 }
 
-async function onToggleSeeding (archive) {
-  const newNetworkedStatus = !archive.userSettings.networked
-
-  const isSaved = archive.userSettings && archive.userSettings.isSaved
-  const isOwner = archive.isOwner
-
-  // don't unsave the archive if user is owner
-  if (isOwner && isSaved) {
-    var tmpArchive = new DatArchive(archive.url)
-
-    try {
-      await tmpArchive.configure({networked: newNetworkedStatus})
-    } catch (e) {
-      toast.create('Something went wrong', 'error')
-      return
-    }
-  } else {
-    // unsave if not owner and update the peer count
-    if (isSaved) {
-      await beaker.archives.remove(archive.url)
-      archive.userSettings.isSaved = false
-    } else {
-      await beaker.archives.add(archive.url)
-      archive.userSettings.isSaved = true
-    }
-  }
-
-  // update the local archive data and re-render
-  archive.userSettings.networked = newNetworkedStatus
-  render()
-}
-
 async function onClickFork (url) {
   const fork = await DatArchive.fork(url, {prompt: true}).catch(() => {})
   window.location = fork.url
