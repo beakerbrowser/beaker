@@ -153,13 +153,16 @@ export async function listGarbageCollectableArchives ({olderThan} = {}) {
 }
 
 // upsert the last-access time
-export async function touch (key) {
+export async function touch (key, timeVar = 'lastAccessTime') {
   var release = await lock('archives-db:meta')
   try {
+    if (timeVar !== 'lastAccessTime' && timeVar !== 'lastLibraryAccessTime') {
+      timeVar = 'lastAccessTime'
+    }
     var now = Date.now()
     key = datEncoding.toStr(key)
-    await db.run(`UPDATE archives_meta SET lastAccessTime=? WHERE key=?`, [now, key])
-    await db.run(`INSERT OR IGNORE INTO archives_meta (key, lastAccessTime) VALUES (?, ?)`, [key, now])
+    await db.run(`UPDATE archives_meta SET ${timeVar}=? WHERE key=?`, [now, key])
+    await db.run(`INSERT OR IGNORE INTO archives_meta (key, ${timeVar}) VALUES (?, ?)`, [key, now])
   } finally {
     release()
   }

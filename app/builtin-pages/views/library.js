@@ -92,7 +92,7 @@ function renderRows (sort = '') {
   if (!archives.length) return yo`<em class="empty">No archives</em>`
 
   if (sort === 'recent') {
-    return archives.sort((a, b) => b.mtime - a.mtime).map(renderRow)
+    return archives.sort((a, b) => b.lastLibraryAccessTime - a.lastLibraryAccessTime).map(renderRow)
   } else {
     return archives.map(renderRow)
   }

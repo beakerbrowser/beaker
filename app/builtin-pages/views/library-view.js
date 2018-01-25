@@ -80,6 +80,12 @@ async function setup () {
   }
 
   render()
+
+  // update last library access time
+  beaker.archives.touch(
+    archive.url.slice('dat://'.length),
+    'lastLibraryAccessTime'
+  ).catch(console.error)
 }
 
 async function loadCurrentDiff (revision) {

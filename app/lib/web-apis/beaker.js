@@ -75,6 +75,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.listPublished = archivesRPC.listPublished
   beaker.archives.countPublished = archivesRPC.countPublished
   beaker.archives.getPublishRecord = archivesRPC.getPublishRecord
+  beaker.archives.touch = archivesRPC.touch
   beaker.archives.clearFileCache = archivesRPC.clearFileCache
   beaker.archives.clearGarbage = archivesRPC.clearGarbage
   beaker.archives.clearDnsCache = archivesRPC.clearDnsCache
