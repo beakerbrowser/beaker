@@ -86,21 +86,14 @@ export class BrowserMenuNavbarBtn {
             </div>
 
             <div class="section">
-              <div class="menu-item" onclick=${e => this.onCreateSite(e)}>
+              <div class="menu-item" onclick=${e => this.onCreateSite(e, 'website')}>
                 <i class="fa fa-sitemap"></i>
                 <span class="label">Website</span>
               </div>
 
-              <div class="menu-item" onclick=${e => this.onCreateSite(e, 'app')}>
-                <i class="fa fa-puzzle-piece"></i>
-                <span class="label">App</span>
-              </div>
-            </div>
-
-            <div class="section">
-              <div class="menu-item" onclick=${e => this.onShareFiles(e)}>
-                <i class="fa fa-upload"></i>
-                <span class="label">Share Files</span>
+              <div class="menu-item" onclick=${e => this.onCreateSite(e)}>
+                <i class="fa fa-clone"></i>
+                <span class="label">Empty project</span>
               </div>
             </div>
           </div>
@@ -136,6 +129,11 @@ export class BrowserMenuNavbarBtn {
             </div>
 
             <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
+                <i class="fa fa-book"></i>
+                <span class="label">Library</span>
+              </div>
+
               <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
                 <i class="fa fa-star-o"></i>
                 <span class="label">Bookmarks</span>
@@ -156,28 +154,15 @@ export class BrowserMenuNavbarBtn {
             </div>
 
             <div class="section">
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
-                <i class="fa fa-book"></i>
-                <span class="label">Library</span>
-              </div>
-
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://filesystem')}>
-                <i class="fa fa-code"></i>
-                <span class="label">Filesystem</span>
-              </div>
-
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://network')}>
-                <i class="fa fa-signal"></i>
-                <span class="label">Network Activity</span>
-              </div>
-
-            </div>
-
-            <div class="section">
               <div class="menu-item" onclick=${e => this.onShowSubmenu('create-new')}>
                 <i class="fa fa-plus-square-o"></i>
                 <span class="label">Create New</span>
                 <i class="more fa fa-angle-right"></i>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onShareFiles(e)}>
+                <i class="fa fa-upload"></i>
+                <span class="label">Share Files</span>
               </div>
             </div>
 
@@ -339,7 +324,6 @@ export class BrowserMenuNavbarBtn {
   async onShareFiles (e) {
     // close dropdown
     this.isDropdownOpen = false
-    this.submenu = ''
     this.updateActives()
 
     // ask user for files
@@ -358,10 +342,11 @@ export class BrowserMenuNavbarBtn {
       description: `Files shared with Beaker`,
       prompt: false
     })
+    console.log(files)
     await Promise.all(files.map(src => DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: false})))
 
     // open the new archive in the filesystem
-    pages.setActive(pages.create('beaker://filesystem/' + archive.url.slice('dat://'.length)))
+    pages.setActive(pages.create('beaker://library/' + archive.url.slice('dat://'.length)))
   }
 
   onOpenPage (e, url) {
