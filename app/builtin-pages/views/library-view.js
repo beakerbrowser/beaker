@@ -476,7 +476,7 @@ async function onSetCurrentSource (node) {
 }
 
 function onOpenFolder (path) {
-  beaker.workspaces.openFolder(path)
+  beaker.browser.openFolder(path)
 }
 
 function onCopyUrl () {
