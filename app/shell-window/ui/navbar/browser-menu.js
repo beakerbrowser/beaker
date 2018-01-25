@@ -342,7 +342,6 @@ export class BrowserMenuNavbarBtn {
       description: `Files shared with Beaker`,
       prompt: false
     })
-    console.log(files)
     await Promise.all(files.map(src => DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: false})))
 
     // open the new archive in the filesystem
