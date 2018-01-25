@@ -13,6 +13,7 @@ import renderCloseIcon from '../icon/close'
 
 // archives, cached in memory
 let archives = []
+let selectedArchives = []
 let query = ''
 let currentView = 'all'
 let currentSort = 'alpha'
@@ -110,7 +111,7 @@ function renderRow (row, i) {
   const isOwner = row.isOwner
 
   return yo`
-    <a href="beaker://library/${row.url}" class="ll-row archive">
+    <a href="beaker://library/${row.url}" class="ll-row archive ${row.checked ? 'selected' : ''}">
       <img class="favicon" src="beaker-favicon:${row.url}" />
 
       <span class="title">
@@ -124,6 +125,8 @@ function renderRow (row, i) {
       ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
 
       <div class="buttons">
+        <input type="checkbox" checked=${!!row.checked} onclick=${(e) => onToggleChecked(e, row)}/>
+
         ${toggleable(yo`
           <div class="dropdown toggleable-container">
             <button class="btn transparent toggleable">
@@ -175,6 +178,19 @@ function render () {
               <i class="fa fa-search"></i>
             </div>
 
+            ${selectedArchives && selectedArchives.length
+              ? yo`
+                <div>
+                  <button class="btn transparent" onclick=${onDeselectAll}>
+                    Deselect all
+                  </button>
+
+                  <button class="btn warning" onclick=${onDeleteSelected}>
+                    Remove selected
+                  </button>
+                </div>`
+              : ''
+            }
           </div>
 
           <div>
@@ -193,12 +209,44 @@ function render () {
 // events
 // =
 
+function onToggleChecked (e, row) {
+  e.stopPropagation()
+  row.checked = !row.checked
+  selectedArchives = archives.filter(a => !!a.checked)
+  render()
+}
+
+function onDeselectAll () {
+  selectedArchives.forEach(a => a.checked = false)
+  selectedArchives = []
+  render()
+}
+
 function onCopy (str, successMessage = 'URL copied to clipboard') {
   writeToClipboard(str)
   toast.create(successMessage)
 }
 
-async function onDeleteArchive (url, title) {
+async function onDeleteSelected () {
+  if (!confirm(`Remove ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} from your Library?`)) {
+    return
+  }
+
+  selectedArchives.forEach(async a => {
+    a.checked = false
+    try {
+      await beaker.archives.remove(a.url)
+    } catch (e) {
+      toast.create(`Could not remove ${a.title || a.url} from your Library`, 'error')
+    }
+  })
+  selectedArchives = []
+
+  await loadArchives()
+  render()
+}
+
+async function onDelete (url, title) {
   const nickname = title ? `"${title}"` : url
   if (confirm(`Delete ${nickname} from your Library?`)) {
     try {
@@ -209,6 +257,7 @@ async function onDeleteArchive (url, title) {
       toast.create(`Could not remove ${nickname} from your Library`, 'error')
     }
   }
+  render()
 }
 
 async function onClickFork (url) {
