@@ -1,4 +1,5 @@
 import yo from 'yo-yo'
+import {pluralize} from '../../lib/strings'
 
 const MINMAX = 5
 const EDGE_PADDING = 5
@@ -6,6 +7,14 @@ const LEGEND_WIDTH = 25
 const TIME_SPAN = 1e3 * 60 * 60 // past hour
 const WIDTH = 800
 const HEIGHT = 100
+
+function scaleX (x) {
+  return (x * (WIDTH - LEGEND_WIDTH))|0
+}
+
+function scaleY (y) {
+  return (y * (HEIGHT - EDGE_PADDING * 2) + EDGE_PADDING)|0
+}
 
 // globals
 // =
@@ -72,8 +81,8 @@ export default function render (archiveInfo) {
   if (!max) max = data[0].y
   max = Math.max(max, MINMAX)
   data.forEach(pt => {
-    pt.x = (pt.x * (WIDTH - LEGEND_WIDTH))
-    pt.y = (1 - pt.y / max) * (HEIGHT - EDGE_PADDING * 2) + EDGE_PADDING
+    pt.x = scaleX(pt.x)
+    pt.y = scaleY(1 - pt.y / max)
   })
 
   // graph lines
@@ -105,20 +114,22 @@ export default function render (archiveInfo) {
   // mouse info
   var mouseElems = []
   if (mouseX) {
-    // draw a background to the value
-    mouseElems.push(yo`
-      <rect x=${mouseX} y=${0} width=${20} height=${20} fill="#fff" />
-    `)
-
     // draw the value
     mouseElems.push(yo`
-      <text style="padding-left: 5px;" x=${mouseX + 3} y=${15} fill="#666">${mouseValue} peers</text>
+      <text style="padding-left: 5px;" x=${mouseX + 3} y=${18} fill="#666">${mouseValue} ${pluralize(mouseValue, 'peer')}</text>
     `)
 
     // draw a line at the mouse
     mouseElems.push(yo`
       <line x1=${mouseX} y1=${0} x2=${mouseX} y2=${HEIGHT} stroke-width="1" stroke="#000" />
     `)
+  }
+
+  function vguideLine (x) {
+    return yo`<line x1=${scaleX(x)} y1=${scaleY(0)} x2=${scaleX(x)} y2=${scaleY(1)} stroke-width="1" stroke="#ddd" />`
+  }
+  function hguideLine (y) {
+    return yo`<line x1=${0} y1=${scaleY(y)} x2=${scaleX(1)} y2=${scaleY(y)} stroke-width="1" stroke="#aaa" />`
   }
 
   return yo`
@@ -133,7 +144,10 @@ export default function render (archiveInfo) {
       <!-- legend -->
       <text x=${WIDTH - LEGEND_WIDTH + 5} y=${HEIGHT - 5} fill="#666">0</text>
       <text x=${WIDTH - LEGEND_WIDTH + 5} y=${15} fill="#666">${max}</text>
-      <text x=${0} y=${15} fill="808080">1hr ago</text>
+
+      <!-- guidelines -->
+      ${vguideLine(0)} ${vguideLine(0.25)} ${vguideLine(0.5)} ${vguideLine(0.75)} ${vguideLine(1)}
+      ${hguideLine(0)} ${hguideLine(0.2)} ${hguideLine(0.4)} ${hguideLine(0.6)} ${hguideLine(0.8)} ${hguideLine(1)}
 
       <!-- graph -->
       ${graphLines}

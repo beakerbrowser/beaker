@@ -6,7 +6,7 @@ import {FSArchive} from 'beaker-virtual-fs'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import FilesBrowser from '../com/files-browser2'
 import renderDiff from '../com/diff'
-import renderGraph from '../com/peer-history-graph'
+import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
 import * as workspacePopup from '../com/library-workspace-popup'
 import {pluralize, shortenHash} from '../../lib/strings'
@@ -16,7 +16,7 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 // globals
 // =
 
-var activeView = 'files'
+var activeView // will default to 'files'
 var archive
 var archiveFsRoot
 var filesBrowser
@@ -54,7 +54,6 @@ async function setup () {
     archiveFsRoot = new FSArchive(null, archive.info)
     filesBrowser = new FilesBrowser(archiveFsRoot)
     filesBrowser.onSetCurrentSource = onSetCurrentSource
-    await readViewStateFromUrl()
 
     // set up download progress
     await archive.startMonitoringDownloadProgress()
@@ -79,15 +78,17 @@ async function setup () {
       }
     }
 
+    // load state and render
+    await readViewStateFromUrl()
+
     // wire up events
     window.addEventListener('popstate', onPopState)
     archive.progress.addEventListener('changed', render)
     document.body.addEventListener('click', onClickOutsideSettingsEditInput)
+    beaker.archives.addEventListener('network-changed', onNetworkChanged)
   } catch (e) {
     error = e
   }
-
-  render()
 
   // update last library access time
   beaker.archives.touch(
@@ -284,6 +285,12 @@ function renderNetworkView () {
               <i class="fa fa-${seedingIcon}"></i>
             </button>
           </div>
+        </div>
+
+        <div class="section">
+          <h2>Network activity (last hour)</h2>
+
+          ${renderPeerHistoryGraph(archive.info)}
         </div>
       </div>
     </div>
@@ -637,6 +644,21 @@ function onClickSettingsEdit (e, attr) {
   }
 }
 
+function onNetworkChanged (e) {
+  if (e.details.url === archive.url) {
+    var now = Date.now()
+    archive.info.peers = e.details.peerCount
+    var lastHistory = archive.info.peerHistory.slice(-1)[0]
+    if (lastHistory && (now - lastHistory.ts) < 10e3) {
+      // if the last datapoint was < 10s ago, just update it
+      lastHistory.peers = e.details.peerCount
+    } else {
+      archive.info.peerHistory.push({ts: now, peers: e.details.peerCount})
+    }
+    render()
+  }
+}
+
 function onPopState (e) {
   readViewStateFromUrl()
 }
@@ -683,6 +705,14 @@ async function readViewStateFromUrl () {
   } catch (e) {
     // ignore, but log just in case something is buggy
     console.debug(e)
+  }
+}
+
+// helper to rerender the peer history graph
+function updateGraph () {
+  if (activeView === 'network') {
+    var el = document.querySelector(`#history-${archive.key}`)
+    yo.update(el, renderPeerHistoryGraph(archive.info))
   }
 }
 
