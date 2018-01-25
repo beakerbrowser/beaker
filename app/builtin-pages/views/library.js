@@ -101,7 +101,7 @@ function renderRows (sort = '', max = undefined) {
     a = a.slice(0, max)
   }
 
-  if (!a.length) return yo`<em class="empty">No archives</em>`
+  if (!a.length) return sort ? null : yo`<em class="empty">No archives</em>`
   return a.map(renderRow)
 }
 
@@ -152,6 +152,7 @@ function renderRow (row, i) {
 }
 
 function render () {
+  let recentArchives = renderRows('recent', 10)
   yo.update(
     document.querySelector('.library-wrapper'), yo`
       <div class="library-wrapper builtin-wrapper">
@@ -194,8 +195,10 @@ function render () {
           </div>
 
           <div>
-            <div class="ll-sticky-heading">Recent</div>
-            ${renderRows('recent', 10)}
+            ${recentArchives ? [
+              yo`<div class="ll-sticky-heading">Recent</div>`,
+              recentArchives
+            ] : ''}
 
             <div class="ll-sticky-heading">More stuffs</div>
             ${renderRows()}
