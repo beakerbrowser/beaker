@@ -177,13 +177,25 @@ function renderFilesView () {
 }
 
 function renderSettingsView () {
-
   var titleEl = settingsEditValues.title !== false
     ? yo`<td><input id="edit-title" onkeyup=${e => onKeyupSettingsEdit(e, 'title')} value=${settingsEditValues.title} type="text"/></td>`
-    : yo`<td>${getSafeTitle()} <i onclick=${e => onClickSettingsEdit(e, 'title')} class="fa fa-pencil"></i></td>`
+    : yo`
+      <td>
+        ${getSafeTitle()}
+        <button class="btn plain" onclick=${e => onClickSettingsEdit(e, 'title')}>
+          <i class="fa fa-pencil"></i>
+        </button>
+      </td>`
+
   var descEl = settingsEditValues.description !== false
     ? yo`<td><input id="edit-description" onkeyup=${e => onKeyupSettingsEdit(e, 'description')} value=${settingsEditValues.description} type="text"/></td>`
-    : yo`<td>${getSafeDesc()} <i onclick=${e => onClickSettingsEdit(e, 'description')} class="fa fa-pencil"></i></td>`
+    : yo`
+      <td>
+        ${getSafeDesc()}
+        <button class="btn plain" onclick=${e => onClickSettingsEdit(e, 'description')}>
+          <i class="fa fa-pencil"></i>
+        </button>
+      </td>`
 
   return yo`
     <div class="container">
