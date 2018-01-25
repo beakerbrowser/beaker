@@ -316,9 +316,11 @@ export class BrowserMenuNavbarBtn {
     this.submenu = ''
     this.updateActives()
 
-    // create a new workspace
-    const wsInfo = await beaker.workspaces.create(0) // TODO: type
-    pages.setActive(pages.create('beaker://workspaces/' + wsInfo.name))
+    let title = `My ${type || 'project'}`
+
+    // create a new archive
+    const archive = await DatArchive.create({title, prompt: false})
+    pages.setActive(pages.create('beaker://library/' + archive.url))
   }
 
   async onShareFiles (e) {
