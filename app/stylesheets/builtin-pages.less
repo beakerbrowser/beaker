@@ -207,7 +207,18 @@
     border-bottom: 1px solid rgb(230, 230, 230);
 
     .buttons {
+      &:extend(.flex);
       margin-left: auto;
+
+      input[type="checkbox"] {
+        margin: 0 5px 0 0;
+        opacity: 0;
+        font-size: 1rem;
+
+        &:checked {
+          opacity: 1;
+        }
+      }
     }
 
     .link {
@@ -221,6 +232,18 @@
 
       .actions {
         background: rgb(249, 249, 249);
+      }
+
+      input[type="checkbox"] {
+        opacity: 1;
+      }
+    }
+
+    &.selected {
+      background: fadeout(@blue, 94%);
+
+      &:hover {
+        background: fadeout(@blue, 94%);
       }
     }
 
