@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, webContents, Menu, Tray } from 'electron'
+import { app, BrowserWindow, ipcMain, webContents } from 'electron'
 import { register as registerShortcut, unregister as unregisterShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import os from 'os'
 import jetpack from 'fs-jetpack'
@@ -15,14 +15,6 @@ const IS_WIN = process.platform === 'win32'
 var userDataDir
 var stateStoreFile = 'shell-window-state.json'
 var numActiveWindows = 0
-var tray = null
-var isReadyToQuit = false
-
-// dont do explicit quits in test mode or linux
-// (electron + linux cant reliably do tray icons)
-if (os.platform() !== 'darwin' || process.env.NODE_ENV === 'test') {
-  isReadyToQuit = true
-}
 
 // exported methods
 // =
@@ -30,19 +22,6 @@ if (os.platform() !== 'darwin' || process.env.NODE_ENV === 'test') {
 export function setup () {
   // config
   userDataDir = jetpack.cwd(app.getPath('userData'))
-
-  // setup tray
-  tray = new Tray(path.join(__dirname, './assets/img/logo-favicon.png'))
-  const contextMenu = Menu.buildFromTemplate([
-    {label: 'New Tab', click: openTab()},
-    {type: 'separator'},
-    {label: 'Library...', click: openTab('beaker://library/')},
-    {label: 'Preferences...', click: openTab('beaker://settings/')},
-    {type: 'separator'},
-    {label: 'Quit Beaker', click: explicitQuit}
-  ])
-  tray.setToolTip('Actively sharing on the p2p network.')
-  tray.setContextMenu(contextMenu)
 
   // load pinned tabs
   ipcMain.once('shell-window-ready', e => {
@@ -64,13 +43,6 @@ export function setup () {
     else app.on('ready', () => openURL.open(url))
   })
   ipcMain.on('new-window', createShellWindow)
-  app.on('before-quit', e => {
-    if (!isReadyToQuit) {
-      e.preventDefault()
-      // do close all windows
-      BrowserWindow.getAllWindows().forEach(w => w.close())
-    }
-  })
   app.on('web-contents-created', (e, wc) => {
     // if this is a webview's web contents, attach the keybinding protections
     if (wc.hostWebContents) {
@@ -81,15 +53,6 @@ export function setup () {
 
   // create first shell window
   return createShellWindow()
-}
-
-export function setIsReadyToQuit (v) {
-  isReadyToQuit = v
-}
-
-export function explicitQuit () {
-  isReadyToQuit = true
-  app.quit()
 }
 
 export function createShellWindow () {

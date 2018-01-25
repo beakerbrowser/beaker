@@ -12,7 +12,7 @@ export function setup () {
   ipcMain.on('shell-window:set-current-location', (e, url) => {
     // check if this is the currently focused window
     const fwin = BrowserWindow.getFocusedWindow()
-    if (!fwin || e.sender !== fwin.webContents) {
+    if (!url || !fwin || e.sender !== fwin.webContents) {
       return
     }
 
