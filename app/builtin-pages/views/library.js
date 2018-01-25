@@ -125,6 +125,18 @@ function renderRow (row, i) {
       ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
 
       <div class="buttons">
+        ${row.userSettings.isSaved
+          ? yo`
+            <button class="btn small transparent trash" onclick=${e => onDelete(e, row)} title="Move to Trash">
+              <i class="fa fa-trash-o"></i>
+            </button>`
+          : yo`
+            <button class="btn small restore" onclick=${e => onRestore(e, row)}>
+              <i class="fa fa-undo"></i>
+              <span>Restore</span>
+            </button>`
+        }
+
         <input type="checkbox" checked=${!!row.checked} onclick=${(e) => onToggleChecked(e, row)}/>
 
         ${toggleable(yo`
@@ -186,9 +198,16 @@ function render () {
                     Deselect all
                   </button>
 
-                  <button class="btn warning" onclick=${onDeleteSelected}>
-                    Remove selected
-                  </button>
+                  ${currentView === 'trash'
+                    ? yo`
+                      <button class="btn" onclick=${onRestoreSelected}>
+                        Restore selected
+                      </button>`
+                    : yo`
+                      <button class="btn warning" onclick=${onDeleteSelected}>
+                        Remove selected
+                      </button>`
+                  }
                 </div>`
               : ''
             }
@@ -235,25 +254,28 @@ async function onDeleteSelected () {
     return
   }
 
-  selectedArchives.forEach(async a => {
+  await Promise.all(selectedArchives.map(async a => {
     a.checked = false
     try {
       await beaker.archives.remove(a.url)
     } catch (e) {
       toast.create(`Could not remove ${a.title || a.url} from your Library`, 'error')
     }
-  })
+  }))
   selectedArchives = []
 
   await loadArchives()
   render()
 }
 
-async function onDelete (url, title) {
-  const nickname = title ? `"${title}"` : url
+async function onDelete (e, archive) {
+  e.stopPropagation()
+  e.preventDefault()
+
+  const nickname = archive.title || archive.url
   if (confirm(`Delete ${nickname} from your Library?`)) {
     try {
-      await beaker.archives.remove(url)
+      await beaker.archives.remove(archive.url)
       await loadArchives()
       render()
     } catch (_) {
@@ -263,14 +285,24 @@ async function onDelete (url, title) {
   render()
 }
 
-async function onClickFork (url) {
-  const fork = await DatArchive.fork(url, {prompt: true}).catch(() => {})
-  window.location = fork.url
+async function onRestoreSelected () {
+  await Promise.all(selectedArchives.map(async a => {
+    a.checked = false
+    a.userSettings.isSaved = true
+    await beaker.archives.add(a.url, {isSaved: true})
+  }))
+
+  selectedArchives = []
+  await loadArchives()
+  render()
 }
 
-async function onClickRestore (archive) {
+async function onRestore (e, archive) {
+  e.stopPropagation()
+  e.preventDefault()
+
   await beaker.archives.add(archive.url, {isSaved: true})
-  archive.userSettings.isSaved = true
+  await loadArchives()
   render()
 }
 

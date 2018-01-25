@@ -22,7 +22,12 @@
 
   &.small {
     height: 20px;
-    line-height: 20px;
+    line-height: 18px;
+
+    * {
+      vertical-align: top;
+      line-height: 18px;
+    }
   }
 
   &.plain {
@@ -50,13 +55,13 @@
     }
 
     &:last-child {
-      margin-left: 3px;
+      margin-left: 2px;
       margin-right: 0;
     }
 
     &:first-child {
       margin-left: 0;
-      margin-right: 3px;
+      margin-right: 2px;
     }
 
     &:first-child:last-child {
@@ -136,13 +141,13 @@
 
 .btn.warning {
   color: #fff;
-  background: shade(@red, 17%);
-  border-color: shade(@red, 17%);
+  background: shade(@red, 20%);
+  border-color: shade(@red, 20%);
 
   &.pressed,
   &:hover {
-    background: shade(@red, 22%);
-    border-color: shade(@red, 22%);
+    background: shade(@red, 23%);
+    border-color: shade(@red, 23%);
   }
 }
 
