@@ -321,6 +321,10 @@ function renderInfo () {
   return yo`
     <div class="info-container">
       <div class="info">
+        <a href="beaker://library" class="back-link">
+          <i class="fa fa-angle-double-left"></i>
+        </a>
+
         <a href=${archive.info.url} class="title" target="_blank">
           ${archive.info.title || 'Untitled'}
         </a>

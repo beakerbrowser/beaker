@@ -216,33 +216,28 @@
       position: relative;
     }
 
-    .mode-toggle {
-      position: absolute;
-      right: 0;
-      bottom: 15px;
+    .info-container {
+      position: relative;
+      &:extend(.flex);
+      padding: 10px 0 20px 0;
+      font-size: .85rem;
 
-      .mode {
-        font-size: .7rem;
-        line-height: 18px;
-        letter-spacing: .4px;
-        text-transform: uppercase;
-        color: @color-text--muted;
+      .back-link {
+        position: absolute;
+        left: -20px;
+        top: 9px;
+        font-size: 1.2rem;
+        color: rgba(0,0,0,.2);
+        cursor: pointer;
 
-        &:focus {
-          outline: 0;
-          box-shadow: none;
+        * {
+          cursor: pointer;
         }
 
-        &.active {
-          &:extend(.btn.primary);
+        &:hover {
+          color: @color-text;
         }
       }
-    }
-
-    .info-container {
-      &:extend(.flex);
-      padding: 20px 0;
-      font-size: .85rem;
 
       .title {
         font-size: 1.2rem;
