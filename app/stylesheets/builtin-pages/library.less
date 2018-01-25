@@ -21,6 +21,7 @@
         text-decoration: underline;
       }
 
+      .btn.trash,
       .btn.restore {
         opacity: 1;
       }
@@ -32,6 +33,14 @@
 
     .buttons {
 
+      .trash {
+
+        i {
+          color: shade(@red, 15%);
+        }
+      }
+
+      .trash,
       .restore {
         margin-right: 5px;
         opacity: 0;

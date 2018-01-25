@@ -125,13 +125,16 @@ function renderRow (row, i) {
       ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
 
       <div class="buttons">
-        ${!row.userSettings.isSaved
+        ${row.userSettings.isSaved
           ? yo`
+            <button class="btn small transparent trash" onclick=${e => onDelete(e, row)} title="Move to Trash">
+              <i class="fa fa-trash-o"></i>
+            </button>`
+          : yo`
             <button class="btn small restore" onclick=${e => onRestore(e, row)}>
               <i class="fa fa-undo"></i>
               <span>Restore</span>
             </button>`
-          : ''
         }
 
         <input type="checkbox" checked=${!!row.checked} onclick=${(e) => onToggleChecked(e, row)}/>
@@ -265,11 +268,14 @@ async function onDeleteSelected () {
   render()
 }
 
-async function onDelete (url, title) {
-  const nickname = title ? `"${title}"` : url
+async function onDelete (e, archive) {
+  e.stopPropagation()
+  e.preventDefault()
+
+  const nickname = archive.title || archive.url
   if (confirm(`Delete ${nickname} from your Library?`)) {
     try {
-      await beaker.archives.remove(url)
+      await beaker.archives.remove(archive.url)
       await loadArchives()
       render()
     } catch (_) {
