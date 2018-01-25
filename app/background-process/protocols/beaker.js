@@ -3,9 +3,7 @@ import path from 'path'
 import url from 'url'
 import once from 'once'
 import fs from 'fs'
-import http from 'http'
-import crypto from 'crypto'
-import listenRandomPort from 'listen-random-port'
+import intoStream from 'into-stream'
 import errorPage from '../../lib/error-page'
 import {archivesDebugPage, datDnsCachePage, datDnsCacheJS} from '../networks/dat/debugging'
 import {getLogFileContent} from '../debug-logger'
@@ -23,75 +21,38 @@ const BEAKER_CSP = `
   child-src 'self' workspace:;
 `.replace(/\n/g, '')
 
-// globals
-// =
-
-var serverPort // port assigned to us
-var requestNonce // used to limit access to the server from the outside
 
 // exported api
 // =
 
 export function setup () {
-  // generate a secret nonce
-  requestNonce = '' + crypto.randomBytes(4).readUInt32LE(0)
-
   // setup the protocol handler
-  protocol.registerHttpProtocol('beaker',
-    (request, cb) => {
-      // send requests to the protocol server
-      cb({
-        method: request.method,
-        url: `http://localhost:${serverPort}/?url=${encodeURIComponent(request.url)}&nonce=${requestNonce}`
-      })
-    }, err => {
-      if (err) {
-        throw new Error('Failed to create protocol: beaker. ' + err)
-      }
-    }
-  )
-
-  // create the internal beaker HTTP server
-  var server = http.createServer(beakerServer)
-  listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => { serverPort = port })
+  protocol.registerStreamProtocol('beaker', beakerProtocol, err => {
+    if (err) throw new Error('Failed to create protocol: beaker. ' + err)
+  })
 }
 
 // internal methods
 // =
 
-async function beakerServer (req, res) {
-  var cb = once((code, status, contentType, path) => {
-    res.writeHead(code, status, {
+async function beakerProtocol (request, respond) {
+  var cb = once((statusCode, status, contentType, path) => {
+    const headers = {
       'Content-Type': (contentType || 'text/html; charset=utf-8'),
       'Content-Security-Policy': BEAKER_CSP,
       'Access-Control-Allow-Origin': '*'
-    })
+    }
     if (typeof path === 'string') {
-      var rs = fs.createReadStream(path)
-      rs.pipe(res)
-      rs.on('error', err => {
-        res.writeHead(404)
-        res.end(' ') // need to put some content on the wire for some reason
-      })
+      respond({statusCode, headers, data: fs.createReadStream(path)})
     } else if (typeof path === 'function') {
-      res.end(path())
+      respond({statusCode, headers, data: intoStream(path())})
     } else {
-      res.end(errorPage(code + ' ' + status))
+      respond({statusCode, headers, data: intoStream(errorPage(code + ' ' + status))})
     }
   })
 
-  var requestUrl
+  var requestUrl = request.url
   var queryParams
-  {
-    let parsed = url.parse(req.url, true).query
-    requestUrl = parsed.url
-
-    // check the nonce
-    // (only want this process to access the server)
-    if (parsed.nonce !== requestNonce) {
-      return cb(403, 'Forbidden')
-    }
-  }
   {
     // strip off the hash
     let i = requestUrl.indexOf('#')
@@ -345,23 +306,25 @@ async function beakerServer (req, res) {
   }
   if (requestUrl.startsWith('beaker://debug-log/')) {
     const PAGE_SIZE = 1e6
-    res.writeHead(200, 'OK', {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Content-Security-Policy': BEAKER_CSP,
-      'Access-Control-Allow-Origin': '*'
-    })
     var start = queryParams.start ? (+queryParams.start) : 0
     let content = await getLogFileContent(start, start + PAGE_SIZE)
     var pagination = ''
     if (content.length === PAGE_SIZE + 1 || start !== 0) {
       pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
     }
-    res.end(`
-      ${pagination}
-      <pre>${content}</pre>
-      ${pagination}
-    `)
-    return
+    return respond({
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Security-Policy': BEAKER_CSP,
+        'Access-Control-Allow-Origin': '*'
+      },
+      data: intoStream(`
+        ${pagination}
+        <pre>${content}</pre>
+        ${pagination}
+      `)
+    })
   }
 
   return cb(404, 'Not Found')
