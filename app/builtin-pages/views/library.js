@@ -210,32 +210,10 @@ async function onClickFork (url) {
   window.location = fork.url
 }
 
-async function onClickEdit (archive) {
-  let editableUrl = archive.url
-
-  // if user is not the archive's owner, create an editable version
-  if (!archive.isOwner) {
-    const fork = await DatArchive.fork(archive.url, {prompt: false}).catch(() => {})
-    editableUrl = fork.url
-  }
-
-  // fetch the workspace info
-  let workspace = await beaker.workspaces.get(0, editableUrl)
-
-  // if the archive doesn't already have a workspace attached to it, create one
-  if (!workspace) {
-    workspace = await beaker.workspaces.create(0, {publishTargetUrl: editableUrl})
-  }
-}
-
 async function onClickRestore (archive) {
   await beaker.archives.add(archive.url, {isSaved: true})
   archive.userSettings.isSaved = true
   render()
-}
-
-function onClickDownloadZip (url) {
-  beaker.browser.downloadURL(`${url}?download_as=zip`)
 }
 
 async function onUpdateSearchQuery (e) {
