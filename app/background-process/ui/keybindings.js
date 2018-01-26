@@ -9,9 +9,9 @@ import {buildWindowMenu} from './window-menu'
 
 const KEYBINDINGS = extractKeybindings(buildWindowMenu())
 
-// recurse the window menu and extract all 'accelerator' values
+// recurse the window menu and extract all 'accelerator' values with reserved=true
 function extractKeybindings (menuNode) {
-  if (menuNode.accelerator && menuNode.click) {
+  if (menuNode.accelerator && menuNode.click && menuNode.reserved) {
     return {
       binding: convertAcceleratorToBinding(menuNode.accelerator),
       cmd: menuNode.click
