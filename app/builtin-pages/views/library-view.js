@@ -61,7 +61,7 @@ async function setup () {
 
     // fetch workspace info for this archive
     workspaceInfo = await beaker.workspaces.get(0, archive.info.url)
-    loadWorkspaceRevisions()
+    await loadWorkspaceRevisions()
 
     // load state and render
     await readViewStateFromUrl()
@@ -673,12 +673,19 @@ function onClickSettingsEdit (e, attr) {
 }
 
 async function onFilesChanged () {
+  // update files
   const currentNode = filesBrowser.getCurrentSource()
   try {
     await currentNode.readData()
     filesBrowser.rerender()
   } catch (e) {
     console.debug('Failed to rerender files on change, likely because the present node was deleted', e)
+  }
+
+  // update revisions
+  await loadWorkspaceRevisions()
+  if (activeView === 'revisions') {
+    render()
   }
 }
 
