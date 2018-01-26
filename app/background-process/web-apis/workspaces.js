@@ -66,9 +66,10 @@ export default {
   async set (profileId, name, opts = {}) {
     assertValidProfileId(profileId)
     assertValidName(name)
-    if (opts.name) assertValidName(opts.name)
-    if (opts.localFilesPath) await assertSafeFilesPath(opts.localFilesPath)
-    if (opts.publishTargetUrl) {
+    if (typeof opts.localFilesPath !== 'undefined') {
+      await assertSafeFilesPath(opts.localFilesPath)
+    }
+    if (typeof opts.publishTargetUrl !== 'undefined') {
       await assertDatUrl(opts.publishTargetUrl)
       await assertDatIsSavedAndOwned(opts.publishTargetUrl)
     }
@@ -78,19 +79,17 @@ export default {
   // create a new workspace
   // - profileId: number, the id of the browsing profile
   // - opts
+  //   - publishTargetUrl: string, the url of the target dat. If none is given, will create a new dat.
   //   - name: string?, the name of the workspace. If none is given, will auto-generate a name.
   //   - localFilesPath: string?, the path of the local workspace.
-  //   - publishTargetUrl: string?, the url of the target dat. If none is given, will create a new dat.
   async create (profileId, opts={}) {
     assertValidProfileId(profileId)
-    opts.name = opts.name || getRandomName()
-    assertValidName(opts.name)
-    if (opts.localFilesPath) await assertSafeFilesPath(opts.localFilesPath)
-    if (!opts.publishTargetUrl) {
-      opts.publishTargetUrl = await datLibrary.createNewArchive({title: opts.name})
-    }
     await assertDatUrl(opts.publishTargetUrl)
     await assertDatIsSavedAndOwned(opts.publishTargetUrl)
+    await assertDatHasNoWorkspace(profileId, opts.publishTargetUrl)
+    opts.name = opts.name || getRandomName()
+    assertValidName(opts.name)
+    await assertSafeFilesPath(opts.localFilesPath)
     await workspacesDb.set(profileId, opts.name, opts)
     return opts
   },
@@ -102,6 +101,7 @@ export default {
   //   - template: string?, 'website' or 'app' or falsy
   async setupFolder (profileId, name, opts={}) {
     assertValidProfileId(profileId)
+
     // fetch workspace
     const ws = await workspacesDb.get(profileId, name)
     await validateWorkspaceRecord(name, ws)
@@ -370,6 +370,11 @@ async function assertDatIsSavedAndOwned (url) {
   ])
   if (!meta || !meta.isOwner) throw new ArchiveNotWritableError('You can\'t edit a dat you don\'t own.')
   if (!userSettings || !userSettings.isSaved) throw new ArchiveNotWritableError('The workspace\'s dat has been deleted.')
+}
+
+async function assertDatHasNoWorkspace (profileId, url) {
+  const ws = await workspacesDb.getByPublishTargetUrl(profileId, url)
+  if (ws) throw new Error('A workspace already exists for this dat')
 }
 
 async function readDatIgnore (fs) {
