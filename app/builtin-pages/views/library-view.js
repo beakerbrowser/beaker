@@ -613,7 +613,13 @@ async function onEdit () {
   // open the create workspace popup
   const localFilesPath = await workspacePopup.create(defaultPath)
 
-  workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
+  if (!workspaceInfo) {
+    workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
+  } else {
+    // set the localFilesPath
+    await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath})
+  }
+
   await beaker.workspaces.setupFolder(0, workspaceInfo.name)
   setupWorkspaceListeners()
 
