@@ -5,6 +5,8 @@ import anymatch from 'anymatch'
 import fs from 'fs'
 import path from 'path'
 import mkdirp from 'mkdirp'
+import emitStream from 'emit-stream'
+import {EventEmitter} from 'events'
 import * as archivesDb from '../dbs/archives'
 import * as workspacesDb from '../dbs/workspaces'
 import * as datLibrary from '../networks/dat/library'
@@ -221,6 +223,34 @@ export default {
 
     // return the diff
     return diff.diffLines(oldFile, newFile)
+  },
+
+  // create a stream to watch for changes in the scoped FS
+  // - profileId: number, the id of the browsing profile
+  // - name: string, the name of the workspace
+  async createFileActivityStream (profileId, name) {
+    assertValidProfileId(profileId)
+    assertValidName(name)
+
+    // fetch workspace
+    const ws = await workspacesDb.get(profileId, name)
+    await validateWorkspaceRecord(name, ws)
+    const scopedFS = scopedFSes.get(ws.localFilesPath)
+
+    // create new emitter and stream
+    const emitter = new EventEmitter()
+    const stream = emitStream(emitter)
+
+    // start watching
+    const stopwatch = scopedFS.watch('/', path => {
+      emitter.emit('changed', {path})
+    })
+    stream.on('close', () => {
+      try { stopwatch() }
+      catch (e) { /* ignore - this can happen if the workspace's path was invalid */ }
+    })
+
+    return stream
   },
 
   // publish the files that have changed

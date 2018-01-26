@@ -61,23 +61,7 @@ async function setup () {
 
     // fetch workspace info for this archive
     workspaceInfo = await beaker.workspaces.get(0, archive.info.url)
-    if (workspaceInfo) {
-      if (workspaceInfo.localFilesPath) {
-        workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(
-          0,
-          workspaceInfo.name,
-          {shallow: true, compareContent: true}
-        )
-      } else {
-        workspaceInfo.revisions = []
-      }
-
-      // set the default diff node
-      if (workspaceInfo.revisions.length) {
-        currentDiffNode = workspaceInfo.revisions[0]
-        await loadCurrentDiff(currentDiffNode)
-      }
-    }
+    loadWorkspaceRevisions()
 
     // load state and render
     await readViewStateFromUrl()
@@ -87,6 +71,7 @@ async function setup () {
     archive.progress.addEventListener('changed', render)
     document.body.addEventListener('click', onClickOutsideSettingsEditInput)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
+    setupWorkspaceListeners()
 
     let onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
     var fileActStream = archive.createFileActivityStream()
@@ -101,6 +86,42 @@ async function setup () {
     archive.url.slice('dat://'.length),
     'lastLibraryAccessTime'
   ).catch(console.error)
+}
+
+function setupWorkspaceListeners () {
+  if (workspaceInfo) {
+    var fileActStream = beaker.workspaces.createFileActivityStream(0, workspaceInfo.name)
+    let onWorkspaceChangedThrottled = throttle(onWorkspaceChanged, 1e3)
+    fileActStream.addEventListener('changed', onWorkspaceChangedThrottled)
+  }
+}
+
+async function loadWorkspaceRevisions () {
+  if (!workspaceInfo) return
+
+  // load up the revision list
+  if (workspaceInfo.localFilesPath) {
+    workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(
+      0,
+      workspaceInfo.name,
+      {shallow: true, compareContent: true}
+    )
+  } else {
+    workspaceInfo.revisions = []
+  }
+
+  // unset diff node if removed from revisions
+  if (currentDiffNode) {
+    if (!workspaceInfo.revisions.find(r => r.path === currentDiffNode.path)) {
+      currentDiffNode = null
+    }
+  }
+
+  // set the default diff node
+  if (!currentDiffNode && workspaceInfo.revisions.length) {
+    currentDiffNode = workspaceInfo.revisions[0]
+  }
+  await loadCurrentDiff(currentDiffNode)
 }
 
 async function loadCurrentDiff (revision) {
@@ -594,6 +615,7 @@ async function onEdit () {
 
   workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
   await beaker.workspaces.setupFolder(0, workspaceInfo.name)
+  setupWorkspaceListeners()
 
   window.history.pushState('', {}, `beaker://library/${publishTargetUrl}`)
   await setup()
@@ -658,6 +680,11 @@ async function onFilesChanged () {
   } catch (e) {
     console.debug('Failed to rerender files on change, likely because the present node was deleted', e)
   }
+}
+
+async function onWorkspaceChanged () {
+  await loadWorkspaceRevisions()
+  render()
 }
 
 function onNetworkChanged (e) {
