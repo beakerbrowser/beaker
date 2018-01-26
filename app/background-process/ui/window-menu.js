@@ -61,7 +61,7 @@ export function buildWindowMenu (opts = {}) {
       { label: 'Hide Others', accelerator: 'Command+Alt+H', role: 'hideothers' },
       { label: 'Show All', role: 'unhide' },
       { type: 'separator' },
-      { label: 'Quit', accelerator: 'Command+Q', click () { app.quit() } }
+      { label: 'Quit', accelerator: 'Command+Q', click () { app.quit() }, reserved: true }
     ]
   }
 
@@ -74,19 +74,22 @@ export function buildWindowMenu (opts = {}) {
         click: function (item, win) {
           if (win) win.webContents.send('command', 'file:new-tab')
           else createShellWindow()
-        }
+        },
+        reserved: true
       },
       {
         label: 'New Window',
         accelerator: 'CmdOrCtrl+N',
-        click: function () { createShellWindow() }
+        click: function () { createShellWindow() },
+        reserved: true
       },
       {
         label: 'Reopen Closed Tab',
         accelerator: 'CmdOrCtrl+Shift+T',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'file:reopen-closed-tab')
-        }
+        },
+        reserved: true
       },
       {
         label: 'Open File',
@@ -120,14 +123,16 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+Shift+W',
         click: function (item, win) {
           if (win) win.close()
-        }
+        },
+        reserved: true
       },
       {
         label: 'Close Tab',
         accelerator: 'CmdOrCtrl+W',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'file:close-tab')
-        }
+        },
+        reserved: true
       }
     ]
   }
@@ -135,12 +140,12 @@ export function buildWindowMenu (opts = {}) {
   var editMenu = {
     label: 'Edit',
     submenu: [
-      { label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:' },
-      { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:' },
+      { label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:', reserved: true },
+      { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:', reserved: true },
       { type: 'separator' },
-      { label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:' },
-      { label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:' },
-      { label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:' },
+      { label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:', reserved: true },
+      { label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:', reserved: true },
+      { label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:', reserved: true },
       { label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' },
       {
         label: 'Find in Page',
@@ -159,7 +164,8 @@ export function buildWindowMenu (opts = {}) {
       accelerator: 'CmdOrCtrl+R',
       click: function (item, win) {
         if (win) win.webContents.send('command', 'view:reload')
-      }
+      },
+      reserved: true
     },
     {
       label: 'Hard Reload (Clear Cache)',
@@ -173,7 +179,8 @@ export function buildWindowMenu (opts = {}) {
         datDns.flushCache()
 
         if (win) win.webContents.send('command', 'view:hard-reload')
-      }
+      },
+      reserved: true
     },
     { type: 'separator' },
     {
@@ -237,14 +244,16 @@ export function buildWindowMenu (opts = {}) {
       accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
       click: function (item, win) {
         if (win) win.webContents.send('command', 'view:toggle-dev-tools')
-      }
+      },
+      reserved: true
     },
     {
       label: 'Toggle Javascript Console',
       accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+J' : 'Shift+CmdOrCtrl+J',
       click: function (item, win) {
         if (win) win.webContents.send('command', 'view:toggle-javascript-console')
-      }
+      },
+      reserved: true
     },
     {
       label: `Toggle Live Reloading${isDat ? '' : ' (Dat Only)'}`,
