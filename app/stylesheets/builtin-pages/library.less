@@ -233,14 +233,22 @@
 
       .label {
         font-weight: 300;
-        width: 120px;
-        color: gray;
+        width: 110px;
+        color: @color-text--muted;
+        padding-left: 0;
       }
 
       input {
         height: 21px;
+        border-radius: 0;
         margin-left: -8px; // keeps the text from changing position from the non-input form
         width: 100%;
+        max-width: 400px;
+
+        &:focus {
+          border: 1px solid #ddd;
+          box-shadow: none;
+        }
       }
 
       .btn {
