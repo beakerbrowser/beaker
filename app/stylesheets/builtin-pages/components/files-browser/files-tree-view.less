@@ -1,6 +1,16 @@
 .files-browser {
   border-bottom: 1px solid #ddd;
 
+  .files-browser-header {
+    &:extend(.flex);
+    align-items: center;
+    margin-bottom: 10px;
+
+    .actions {
+      margin-left: auto;
+    }
+  }
+
   .files-tree-view {
     width: 100%;
 
@@ -16,6 +26,21 @@
       padding: 0 2px;
       border-top: 1px solid #ddd;
       cursor: pointer;
+
+      &.ascend {
+        font-size: .85rem;
+        padding: 0 10px;
+        margin-bottom: 0;
+        border-top: 1px solid #ddd;
+        color: @blue;
+        font-weight: 900;
+        letter-spacing: 1px;
+        line-height: 30px;
+
+        &:hover {
+          background: #fafafa;
+        }
+      }
 
       * {
         cursor: pointer;

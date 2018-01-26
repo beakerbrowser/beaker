@@ -21,7 +21,7 @@ export default function render (filesBrowser, currentSource) {
       onclick=${e => onClickNode(e, filesBrowser, currentSource)}
     >
 
-      ${rBreadcrumbs(filesBrowser, currentSource)}
+      ${rHeader(filesBrowser, currentSource)}
 
       <div class="body">
         <div>
@@ -38,32 +38,37 @@ export default function render (filesBrowser, currentSource) {
 // rendering
 // =
 
-function rBreadcrumbs (filesBrowser, currentSource) {
-  let path = filesBrowser.getCurrentSourcePath()
-  let parentNode = (path.length >= 2) ? path[path.length - 2] : filesBrowser.root
-  const shortenedHash = shortenHash(filesBrowser.root._archiveInfo.url)
-
+function rHeader (filesBrowser, currentSource) {
   return yo`
-    <div>
-      <div class="breadcrumbs">
-        <div class="breadcrumb root" onclick=${e => onClickNode(e, filesBrowser, filesBrowser.root)}>
-          ${filesBrowser.root._archiveInfo.title || 'Untitled'}
-        </div>
-
-        ${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}
-      </div>
-
-      ${currentSource.type === 'file' || path.length < 1
-        ? ''
-        : yo`
-          <div class="breadcrumbs ascend">
-            <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, parentNode)}>
-              ..
-            </div>
-          </div>`
-      }
+    <div class="files-browser-header">
+      ${rBreadcrumbs(filesBrowser, currentSource)}
+      ${rActions(filesBrowser, currentSource)}
     </div>
   `
+}
+
+function rActions (filesBrowser, currentSource) {
+  if (currentSource.type === 'file') return ''
+
+  return yo`
+    <div class="actions">
+      <button onclick=${onAddFiles} class="btn">
+        <i class="fa fa-upload"></i>
+        <span>Add files</span>
+      </button>
+    </div>
+  `
+}
+
+function rBreadcrumbs (filesBrowser, currentSource) {
+  return yo`
+    <div class="breadcrumbs">
+      <div class="breadcrumb root" onclick=${e => onClickNode(e, filesBrowser, filesBrowser.root)}>
+        ${filesBrowser.root._archiveInfo.title || 'Untitled'}
+      </div>
+
+      ${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}
+    </div>`
 }
 
 function rFilePreview (node) {
@@ -105,13 +110,30 @@ function rBreadcrumb (filesBrowser, node) {
 }
 
 function rChildren (filesBrowser, children, depth = 0) {
+  const path = filesBrowser.getCurrentSourcePath()
+  const parentNode = (path.length >= 2) ? path[path.length - 2] : filesBrowser.root
+
   if (children.length === 0 && depth === 0) {
     return yo`
       <div class="item empty"><em>No files</em></div>
     `
   }
 
-  return children.map(childNode => rNode(filesBrowser, childNode, depth))
+  return yo`
+    <div>
+      ${path.length < 1
+        ? ''
+        : yo`
+          <div class="item ascend" onclick=${e => onClickNode(e, filesBrowser, parentNode)}>
+            ..
+          </div>`
+      }
+
+      ${children.length === 0 && depth === 0
+        ? yo`<div class="item empty"><em>No files</em></div>`
+        : children.map(childNode => rNode(filesBrowser, childNode, depth))
+      }
+    </div>`
 }
 
 function rNode (filesBrowser, node, depth) {
@@ -178,4 +200,8 @@ function onClickNode (e, filesBrowser, node) {
   e.stopPropagation()
 
   filesBrowser.setCurrentSource(node)
+}
+
+function onAddFiles () {
+  // TODO
 }
