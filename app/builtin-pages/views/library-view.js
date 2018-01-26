@@ -10,6 +10,7 @@ import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
 import * as workspacePopup from '../com/library-workspace-popup'
 import {pluralize, shortenHash} from '../../lib/strings'
+import {throttle} from '../../lib/functions'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 
@@ -86,6 +87,11 @@ async function setup () {
     archive.progress.addEventListener('changed', render)
     document.body.addEventListener('click', onClickOutsideSettingsEditInput)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
+
+    let onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
+    var fileActStream = archive.createFileActivityStream()
+    fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
+    fileActStream.addEventListener('changed', onFilesChangedThrottled)
   } catch (e) {
     error = e
   }
@@ -641,6 +647,16 @@ function onClickSettingsEdit (e, attr) {
     el.select()
   } catch (e) {
     console.debug('Failed to focus the edit element', e)
+  }
+}
+
+async function onFilesChanged () {
+  const currentNode = filesBrowser.getCurrentSource()
+  try {
+    await currentNode.readData()
+    filesBrowser.rerender()
+  } catch (e) {
+    console.debug('Failed to rerender files on change, likely because the present node was deleted', e)
   }
 }
 
