@@ -112,12 +112,6 @@ function rChildren (filesBrowser, children, depth = 0) {
   const path = filesBrowser.getCurrentSourcePath()
   const parentNode = (path.length >= 2) ? path[path.length - 2] : filesBrowser.root
 
-  if (children.length === 0 && depth === 0) {
-    return yo`
-      <div class="item empty"><em>No files</em></div>
-    `
-  }
-
   return yo`
     <div>
       ${path.length < 1
