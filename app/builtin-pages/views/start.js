@@ -211,7 +211,7 @@ function renderDock () {
   return yo`
     <div class="dock-wrapper">
       <div class="dock">
-        <h2 class="dock-item"><a href="beaker://network">Network Settings</a></h2>
+        <h2 class="dock-item"><a href="beaker://settings">Settings</a></h2>
         <h2 class="dock-item"><a href="beaker://history">History</a></h2>
         <h2 class="dock-item"><a href="beaker://bookmarks" >Bookmarks</a></h2>
         <h2 class="dock-item"><a href="beaker://library">Library</a></h2>
