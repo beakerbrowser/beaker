@@ -53,8 +53,7 @@ function rActions (filesBrowser, currentSource) {
   return yo`
     <div class="actions">
       <button onclick=${onAddFiles} class="btn">
-        <i class="fa fa-upload"></i>
-        <span>Add files</span>
+        Add files
       </button>
     </div>
   `
