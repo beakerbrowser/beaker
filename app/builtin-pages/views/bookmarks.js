@@ -277,7 +277,7 @@ function renderToPage () {
     yo`
       <div class="bookmarks-wrapper builtin-wrapper">
         <div class="builtin-sidebar">
-          <h1>Bookmarks</h1>
+          <h1 class="title-heading">Bookmarks</h1>
 
           <div class="section">
             <div class="nav-item ${currentView === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('all')}>
@@ -294,7 +294,7 @@ function renderToPage () {
 
           ${''/* TODO(profiles) disabled -prf
           <div class="section">
-            <h2>Your bookmarks</h2>
+            <h2 class="subtitle-heading">Your bookmarks</h2>
             <div class="nav-item ${currentView === 'mine' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('mine')}>
               <i class="fa fa-star icon"></i>
               Your bookmarks
@@ -314,7 +314,7 @@ function renderToPage () {
           </div>
 
           <div class="section">
-            <h2>Friends</h2>
+            <h2 class="subtitle-heading">Friends</h2>
 
             ${followedUserProfiles
               ? followedUserProfiles.length
@@ -331,7 +331,7 @@ function renderToPage () {
           </div>*/}
 
           <div class="section">
-            <h2>Tags</h2>
+            <h2 class="subtitle-heading">Tags</h2>
 
             <div class="tag-cloud">
               ${tags.map(t => {

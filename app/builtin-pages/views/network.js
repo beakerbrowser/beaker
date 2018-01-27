@@ -182,7 +182,7 @@ function render () {
     <div class="network-wrapper builtin-wrapper">
       <div>
         <div class="builtin-sidebar">
-          <h1>Network Activity</h1>
+          <h1 class="title-heading">Network Activity</h1>
 
           <p>Review and manage your network activity</p>
 

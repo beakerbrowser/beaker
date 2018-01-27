@@ -164,7 +164,7 @@ function render () {
     document.querySelector('.history-wrapper'), yo`
       <div class="history-wrapper builtin-wrapper">
         <div class="builtin-sidebar">
-          <h1>History</h1>
+          <h1 class="title-heading">History</h1>
           <div class="section">
             <div onclick=${onUpdatePeriodFilter} data-period="all" class="nav-item ${currentPeriodFilter === 'all' ? 'active' : ''}">
               All history

@@ -66,7 +66,7 @@ function renderToPage () {
   yo.update(document.querySelector('.settings-wrapper'), yo`
     <div id="el-content" class="settings-wrapper builtin-wrapper">
       <div class="builtin-sidebar">
-        <h1>Settings</h1>
+        <h1 class="title-heading">Settings</h1>
         <div class="nav-item ${activeView === 'workspace-path' ? 'active' : ''}" onclick=${() => onUpdateView('workspace-path')}>
           Workspace directory
         </div>
@@ -105,7 +105,7 @@ function renderView () {
 function renderWorkspacePathSettings () {
   return yo`
     <div class="view">
-      <h2>Default workspace directory</h2>
+      <h2 class="subtitle-heading">Default workspace directory</h2>
 
       <p>
         The default directory where your projects will be saved.
@@ -125,13 +125,13 @@ function renderWorkspacePathSettings () {
 function renderInformation () {
   return yo`
     <div class="view">
-      <h2>About Beaker</h2>
+      <h2 class="subtitle-heading">About Beaker</h2>
       <ul>
         <li>Version: ${browserInfo.version} Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</li>
         <li>User data: ${browserInfo.paths.userData}</li>
       </ul>
 
-      <h2>Get help</h2>
+      <h2 class="subtitle-heading">Get help</h2>
       <ul>
         <li><a href="https://beakerbrowser.com/docs/using-beaker">Take a tour of Beaker</a></li>
         <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
@@ -155,7 +155,7 @@ function renderProtocolSettings () {
 
   return yo`
     <div class="view protocols">
-      <h2>Default browser settings</h2>
+      <h2 class="subtitle-heading">Default browser settings</h2>
       ${registered.length
         ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
         : ''}
@@ -195,7 +195,7 @@ function renderAutoUpdater () {
   if (!browserInfo.updater.isBrowserUpdatesSupported) {
     return yo`
       <div class="view">
-        <h2>Auto updater</h2>
+        <h2 class="subtitle-heading">Auto updater</h2>
         <div>Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
         You will need to build new versions of Beaker from source.</div>
       </div>`

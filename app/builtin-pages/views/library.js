@@ -169,7 +169,7 @@ function render () {
     document.querySelector('.library-wrapper'), yo`
       <div class="library-wrapper builtin-wrapper">
         <div class="builtin-sidebar">
-          <h1>Library</h1>
+          <h1 class="title-heading">Library</h1>
           <div class="section">
             <div onclick=${() => onUpdateView('all')} class="nav-item ${currentView === 'all' ? 'active' : ''}">
               All

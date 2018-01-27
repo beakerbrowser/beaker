@@ -187,7 +187,7 @@ function render () {
             : ''}
 
           <div class="section">
-            <h2>${isUserProfile ? 'Your' : `${viewedProfile.name}${"'"}s`} profile</h2>
+            <h2 class="subtitle-heading">${isUserProfile ? 'Your' : `${viewedProfile.name}${"'"}s`} profile</h2>
             <div class="nav-item ${currentView === 'bookmarks' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('bookmarks')}>
               Bookmarks
             </div>

@@ -224,7 +224,7 @@ function renderPinnedBookmarks () {
   return yo`
     <div class="pinned-bookmarks-container">
       ${pinnedBookmarks.length ? yo`
-        <h2>
+        <h2 class="subtitle-heading">
           <span>Pinned bookmarks</span>
           <button class="btn transparent tooltip-container add-pinned-btn" data-tooltip="Add pinned bookmark" onclick=${onClickAddBookmark}>
             <i class="fa fa-plus"></i>

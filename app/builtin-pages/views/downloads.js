@@ -29,7 +29,7 @@ function render () {
     <div class="downloads-wrapper builtin-wrapper">
       <div>
         <div class="builtin-sidebar">
-          <h1>Downloads</h1>
+          <h1 class="title-heading">Downloads</h1>
         </div>
 
         <div class="builtin-main">

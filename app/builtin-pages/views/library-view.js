@@ -13,6 +13,7 @@ import {pluralize, shortenHash} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
+import createMd from '../../lib/fg/markdown'
 
 // globals
 // =
@@ -29,6 +30,9 @@ var diffDeletions = 0
 var currentDiffNode
 var numCheckedRevisions
 
+var markdownRenderer = createMd()
+var readmeElement
+
 // current values being edited in settings
 // false means not editing
 var settingsEditValues = {
@@ -41,7 +45,7 @@ var error
 // HACK
 // Linux is not capable of importing folders and files in the same dialog
 // unless we create our own import dialog (FFS!) we just need to change
-// behavior based on which platform we're on. This flag does that.
+// behavior based on which platform we're on. This flag tracks that.
 // -prf
 window.OS_CAN_IMPORT_FOLDERS_AND_FILES = true
 
@@ -93,8 +97,8 @@ async function setup () {
     render()
   }
 
-  // update last library access time
   if (archive) {
+    // update last library access time
     beaker.archives.touch(
       archive.url.slice('dat://'.length),
       'lastLibraryAccessTime'
@@ -167,6 +171,44 @@ async function loadCurrentDiff (revision) {
   }
 }
 
+async function loadReadme () {
+  readmeElement = null
+
+  const node = filesBrowser.getCurrentSource()
+  if (node && node.hasChildren) {
+    // try to find the readme.md file
+    const readmeMdNode = node.children.find(n => (n._name || '').toLowerCase() === 'readme.md')
+    if (readmeMdNode) {
+      // render the element
+      const readmeMd = await archive.readFile(readmeMdNode._path, 'utf8')
+      readmeElement = yo`<div class="readme markdown"></div>`
+      readmeElement.innerHTML = markdownRenderer.render(readmeMd)
+    } else {
+      // try to find the readme file
+      const readmeNode = node.children.find(n => (n._name || '').toLowerCase() === 'readme')
+      if (readmeNode) {
+        // render the element
+        const readme = await archive.readFile(readmeNode._path, 'utf8')
+        readmeElement = yo`<div class="readme plaintext">${readme}</div>`
+      }
+    }
+
+    // apply syntax highlighting
+    if (readmeElement && window.hljs) {
+      Array.from(readmeElement.querySelectorAll('code'), codeEl => {
+        let cls = codeEl.className
+        if (!cls.startsWith('language-')) return
+        let lang = cls.slice('language-'.length)
+
+        let res = hljs.highlight(lang, codeEl.textContent)
+        if (res) codeEl.innerHTML = res.value
+      })
+    }
+  }
+
+  render()
+}
+
 // rendering
 // =
 
@@ -213,6 +255,7 @@ function renderFilesView () {
     <div class="container">
       <div class="view files">
         ${filesBrowser ? filesBrowser.render() : ''}
+        ${readmeElement ? readmeElement : ''}
       </div>
     </div>
   `
@@ -571,6 +614,7 @@ async function onSetCurrentSource (node) {
   if (node && node.type === 'file') {
     await node.readData({maxPreviewLength: 1e5})
   }
+  loadReadme()
 
   window.history.pushState('', {}, `beaker://library/${path}`)
 }
@@ -702,6 +746,9 @@ async function onFilesChanged () {
     console.debug('Failed to rerender files on change, likely because the present node was deleted', e)
   }
 
+  // update readme
+  loadReadme()
+
   // update revisions
   await loadWorkspaceRevisions()
   if (activeView === 'revisions') {
@@ -772,6 +819,7 @@ async function readViewStateFromUrl () {
     }
 
     await filesBrowser.setCurrentSource(node, {suppressEvent: true})
+    loadReadme()
   } catch (e) {
     // ignore, but log just in case something is buggy
     console.debug(e)
