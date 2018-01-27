@@ -118,9 +118,9 @@ function renderRow (row, i) {
         ${row.title || yo`<em>Untitled</em>`}
       </span>
 
-      <a href=${row.url} class="url">
+      <span class="url">
         ${shortenHash(row.url)}
-      </a>
+      </span>
 
       ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
 
