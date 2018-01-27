@@ -6,6 +6,7 @@ import prettyBytes from 'pretty-bytes'
 import {join as joinPath} from 'path'
 import _get from 'lodash.get'
 import {FSArchive, FSArchiveFolder, FSArchiveFile, FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
+import toggleable from '../toggleable'
 import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
 import {shortenHash, pluralize} from '../../../lib/strings'
@@ -52,9 +53,31 @@ function rActions (filesBrowser, currentSource) {
 
   return yo`
     <div class="actions">
-      <button onclick=${onAddFiles} class="btn">
-        Add files
-      </button>
+      ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
+        ? yo`
+          <button onclick=${e => onAddFiles(e, currentSource, false)} class="btn">
+            Add files
+          </button>`
+        : toggleable(yo`
+          <div class="dropdown toggleable-container">
+            <button class="btn toggleable">
+              Add files
+            </button>
+
+            <div class="dropdown-items right">
+              <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
+                <i class="fa fa-files-o"></i>
+                Choose files
+              </div>
+
+              <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
+                <i class="fa fa-folder-open-o"></i>
+                Choose folder
+              </div>
+            </div>
+          </div>
+        `)
+      }
     </div>
   `
 }
@@ -204,6 +227,34 @@ function onClickNode (e, filesBrowser, node) {
   filesBrowser.setCurrentSource(node)
 }
 
-function onAddFiles () {
-  // TODO
+async function onAddFiles (e, node, filesOnly) {
+  var files = await beaker.browser.showOpenDialog({
+    title: 'Add files to this archive',
+    buttonLabel: 'Add',
+    properties: ['openFile', filesOnly ? false : 'openDirectory', 'multiSelections', 'createDirectory'].filter(Boolean)
+  })
+  if (files) {
+    files.forEach(src => DatArchive.importFromFilesystem({
+      src,
+      dst: node.url,
+      ignore: ['dat.json'],
+      inplaceImport: false
+    }))
+  }
+}
+
+async function onAddFolder (e, node) {
+  var files = await beaker.browser.showOpenDialog({
+    title: 'Add a folder to this archive',
+    buttonLabel: 'Add',
+    properties: ['openDirectory', 'createDirectory']
+  })
+  if (files) {
+    files.forEach(src => DatArchive.importFromFilesystem({
+      src,
+      dst: node.url,
+      ignore: ['dat.json'],
+      inplaceImport: false
+    }))
+  }
 }

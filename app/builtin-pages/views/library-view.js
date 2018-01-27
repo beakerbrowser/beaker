@@ -38,12 +38,23 @@ var settingsEditValues = {
 
 var error
 
+// HACK
+// Linux is not capable of importing folders and files in the same dialog
+// unless we create our own import dialog (FFS!) we just need to change
+// behavior based on which platform we're on. This flag does that.
+// -prf
+window.OS_CAN_IMPORT_FOLDERS_AND_FILES = true
+
 // main
 // =
 
 setup()
 async function setup () {
   try {
+    // load platform info
+    let browserInfo = await beaker.browser.getInfo()
+    window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform !== 'linux'
+
     // load data
     let url = window.location.pathname.slice(1)
     archive = new LibraryDatArchive(url)
@@ -79,13 +90,16 @@ async function setup () {
     fileActStream.addEventListener('changed', onFilesChangedThrottled)
   } catch (e) {
     error = e
+    render()
   }
 
   // update last library access time
-  beaker.archives.touch(
-    archive.url.slice('dat://'.length),
-    'lastLibraryAccessTime'
-  ).catch(console.error)
+  if (archive) {
+    beaker.archives.touch(
+      archive.url.slice('dat://'.length),
+      'lastLibraryAccessTime'
+    ).catch(console.error)
+  }
 }
 
 function setupWorkspaceListeners () {
