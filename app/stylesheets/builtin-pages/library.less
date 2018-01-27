@@ -428,10 +428,32 @@
     }
 
     .file-preview {
+      position: relative;
+
+      .linenos {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 35px;
+        height: 100%;
+        padding: 0;
+        padding-top: 6px;
+        text-align: center;
+        color: rgba(0,0,0,.45);
+
+        .lineno {
+          line-height: 20px;
+          padding: 0;
+          margin: 0;
+        }
+      }
 
       &.text {
         &:extend(.code-font);
-        padding: 15px;
+        padding: 5px 15px;
+        padding-left: 45px;
+
+
         .text {
           white-space: pre-wrap;
         }

@@ -72,8 +72,14 @@ function rBreadcrumbs (filesBrowser, currentSource) {
 
 function rFilePreview (node) {
   let numLines
+  let lineNumbers = []
+
   if (node.preview) {
     numLines = node.preview.split('\n').length
+
+    for (let i = 1; i <= numLines; i++) {
+      lineNumbers.push(yo`<div class="lineno">${i}</div>`)
+    }
   }
 
   return yo`
@@ -93,6 +99,9 @@ function rFilePreview (node) {
       </div>
 
       <div class="file-preview ${node.preview ? 'text' : 'media'}">
+        <div class="linenos">
+          ${lineNumbers}
+        </div>
         ${renderFilePreview(node)}
       </div>
     </div>
