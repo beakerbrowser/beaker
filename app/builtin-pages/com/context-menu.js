@@ -12,6 +12,22 @@ var items // the current dropdown items
 // exported api
 // =
 
+// create a new context menu
+// - returns a promise that will resolve to undefined when the menu goes away
+// - example usage:
+/*
+create({
+  // where to put the menu
+  x: e.clientX,
+  y: e.clientY,
+
+  // menu items
+  items: [
+    // icon from font-awesome
+    {icon: 'link', label: 'Copy link', click: () => writeToClipboard('...')}
+  ]
+}
+*/
 export function create (opts) {
   // destroy any existing
   destroy()
