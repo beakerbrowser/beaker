@@ -1,4 +1,6 @@
 .dat-network-activity {
+  margin: 0 -30px;
+
   .heading {
     &:extend(.flex);
     align-items: center;
@@ -11,7 +13,8 @@
       flex: 1;
     }
     .peers,
-    .size {
+    .size,
+    .mtime {
       width: 100px;
     }
     .buttons {
@@ -27,13 +30,15 @@
   .archive {
     &:extend(.flex);
     align-items: center;
-    background: #fff;
     padding: 10px 15px;
     border-bottom: 1px solid #ddd;
 
     > * {
       height: 16px;
       line-height: 16px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .favicon {
@@ -44,10 +49,12 @@
     .title {
       flex: 1;
       color: @color-text;
+      padding-right: 5px;
     }
 
     .peers,
-    .size {
+    .size,
+    .mtime {
       color: rgba(0,0,0,0.5);
       width: 100px;
     }
@@ -55,6 +62,7 @@
     .buttons {
       &:extend(.flex);
       width: 110px;
+      overflow: visible;
 
       .btn {
         margin-left: 5px;
@@ -76,17 +84,9 @@
       }
     }
 
-    &:hover {
-
-      .btn.copy-url,
-      .btn.remove-workspace,
-      .btn.remove-archive {
-        opacity: 1;
-
-        &:hover {
-          background: rgba(0,0,0,0.075);
-        }
-      }
+    &:hover,
+    &.highlighted {
+      background: #eee;
     }
   }
 }

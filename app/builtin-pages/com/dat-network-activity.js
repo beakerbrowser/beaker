@@ -7,7 +7,8 @@ import * as toast from './toast'
 import renderTrashIcon from '../icon/trash'
 import renderGearIcon from '../icon/gear-small'
 import {pluralize} from '../../lib/strings'
-import {findParent} from '../../lib/fg/event-handlers'
+import {niceDate} from '../../lib/time'
+import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
 
 // globals
 // =
@@ -71,7 +72,7 @@ export default class DatNetworkActivity {
   render () {
     if (!this.archives) {
       this.fetchArchives() // trigger load
-      return yo`<div class="dat-network-activity">Loading...</div>`
+      return yo`<div class="dat-network-activity"></div>`
     }
 
     return yo`
@@ -81,6 +82,7 @@ export default class DatNetworkActivity {
             ${this.renderHeading('title', 'Title')}
             ${this.renderHeading('peers', 'Peers')}
             ${this.renderHeading('size', 'Size')}
+            ${this.renderHeading('mtime', 'Last updated')}
             <div class="buttons"></div>
           </div>
           ${this.archives.map(a => this.renderArchive(a))}
@@ -136,6 +138,10 @@ export default class DatNetworkActivity {
 
         <div class="size">
           ${prettyBytes(archive.size)}
+        </div>
+
+        <div class="mtime">
+          ${archive.mtime ? niceDate(archive.mtime) : ''}
         </div>
 
         ${''/*
@@ -362,12 +368,9 @@ export default class DatNetworkActivity {
     this.archives.sort((a, b) => {
       var v
       switch (this.currentSort[0]) {
-        case 'peers':
-          v = a.peers - b.peers
-          break
-        case 'size':
-          v = a.size - b.size
-          break
+        case 'peers': v = a.peers - b.peers; break
+        case 'size':  v = a.size - b.size; break
+        case 'mtime': v = a.mtime - b.mtime; break
         case 'title':
         default:
           v = b.title.localeCompare(a.title)

@@ -74,7 +74,7 @@ function renderToPage () {
         </div>
 
         <div class="nav-item ${activeView === 'dat-network-activity' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network-activity')}>
-          Dat Network Activity
+          Dat network activity
         </div>
 
         <div class="nav-item ${activeView === 'auto-updater' ? 'active' : ''}" onclick=${() => onUpdateView('auto-updater')}>
@@ -132,7 +132,7 @@ function renderWorkspacePathSettings () {
 
 function renderDatNetworkActivity () {
   return yo`
-    <div class="view">
+    <div class="view fullwidth">
       <h2 class="subtitle-heading">Dat Network Activity</h2>
 
       ${datNetworkActivity.render()}
