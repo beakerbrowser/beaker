@@ -7,21 +7,23 @@
     &:after {
       display: block;
       z-index: 3;
-      transition: transform .05s ease;
+      transition: opacity .01s ease;
       transition-delay: .2s;
     }
 
     &:after {
-      transform: scaleY(1)
+      opacity: 1;
     }
 
     &:before {
-      transform: scaleY(1) translate(-50%, 0);
+      transform: translate(-50%, 0);
+      opacity: 1;
     }
   }
 
   &:before {
-    transform: scaleY(0) translate(-50%, 0);
+    opacity: 0;
+    transform: translate(-50%, 0);
     position: absolute;
     top: 33px;
     left: 50%;
@@ -41,7 +43,7 @@
   }
 
   &:after {
-    transform: scaleY(0);
+    opacity: 0;
     position: absolute;
     left: ~"calc(50% - 6px)";
     top: 28px;
