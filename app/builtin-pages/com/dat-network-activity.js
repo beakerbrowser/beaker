@@ -8,6 +8,7 @@ import * as contextMenu from './context-menu'
 import renderTrashIcon from '../icon/trash'
 import renderGearIcon from '../icon/gear-small'
 import {pluralize} from '../../lib/strings'
+import {throttle} from '../../lib/functions'
 import {niceDate} from '../../lib/time'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
 
@@ -41,7 +42,7 @@ export default class DatNetworkActivity {
     this.currentlyConfiguringKey = undefined
     this.currentlyHighlightedKey = undefined
 
-    // beaker.archives.addEventListener('network-changed', this.onNetworkChanged.bind(this))
+    beaker.archives.addEventListener('network-changed', throttle(this.onNetworkChanged.bind(this), 1e3))
   }
 
   // loading
@@ -144,7 +145,7 @@ export default class DatNetworkActivity {
         </div>
 
         <div class="mtime">
-          ${archive.mtime ? niceDate(archive.mtime) : ''}
+          ${mtimeCache(archive)}
         </div>
 
         ${''/*
@@ -291,9 +292,15 @@ export default class DatNetworkActivity {
   }
 
   async onNetworkChanged ({details}) {
+    if (!this.archives) return
     var archive = this.archives.find(a => details.url === a.url)
-    if (archive) archive.peers = details.peerCount
-    this.rerender()
+    if (archive) {
+      archive.peers = details.peerCount
+      if (this.currentSort[0] === 'peers') {
+        this.sortArchives()
+      }
+      this.rerender()
+    }
   }
 
   async onUpdateFilter (e) {
@@ -416,4 +423,14 @@ export default class DatNetworkActivity {
     document.body.removeEventListener('click', onClick)
     render()
   }
+}
+
+// helper to avoid running date math too much
+function mtimeCache (archive) {
+  if (!archive.mtime) return ''
+  if (!archive.mtimeNice || archive.mtime !== archive.mtimeCached) {
+    archive.mtimeNice = niceDate(archive.mtime)
+    archive.mtimeCached = archive.mtime
+  }
+  return archive.mtimeNice
 }
