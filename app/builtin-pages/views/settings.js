@@ -3,6 +3,7 @@
 import yo from 'yo-yo'
 import * as toast from '../com/toast'
 import {niceDate} from '../../lib/time'
+import DatNetworkActivity from '../com/dat-network-activity'
 // import {create as createEditAppPopup} from '../com/edit-app-popup' TODO(apps) restore when we bring back apps -prf
 
 // globals
@@ -13,6 +14,7 @@ var browserInfo
 var browserEvents
 var defaultProtocolSettings
 var activeView = 'workspace-path'
+var datNetworkActivity = new DatNetworkActivity()
 
 // TODO(bgimg) disabled for now -prf
 // var bgImages = [
@@ -71,6 +73,10 @@ function renderToPage () {
           Workspace directory
         </div>
 
+        <div class="nav-item ${activeView === 'dat-network-activity' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network-activity')}>
+          Dat Network Activity
+        </div>
+
         <div class="nav-item ${activeView === 'auto-updater' ? 'active' : ''}" onclick=${() => onUpdateView('auto-updater')}>
           Auto-updater
         </div>
@@ -93,6 +99,8 @@ function renderView () {
   switch (activeView) {
     case 'workspace-path':
       return renderWorkspacePathSettings()
+    case 'dat-network-activity':
+      return renderDatNetworkActivity()
     case 'auto-updater':
       return renderAutoUpdater()
     case 'protocol':
@@ -118,6 +126,16 @@ function renderWorkspacePathSettings () {
 
         <code>${settings.workspace_default_path}</code>
       </p>
+    </div>
+  `
+}
+
+function renderDatNetworkActivity () {
+  return yo`
+    <div class="view">
+      <h2 class="subtitle-heading">Dat Network Activity</h2>
+
+      ${datNetworkActivity.render()}
     </div>
   `
 }
