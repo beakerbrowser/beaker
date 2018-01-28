@@ -435,7 +435,11 @@ function renderRevisionsView () {
           }
 
           <div class="actions">
-            <button class="ignore-btn btn plain tooltip-container" data-tooltip="Add to .datignore">
+            <button
+              class="ignore-btn btn plain tooltip-container"
+              data-tooltip="Add to .datignore"
+              onclick=${e => onAddToDatIgnore(e, rev)}
+              >
               <i class="fa fa-eye-slash"></i>
             </button>
 
@@ -646,6 +650,31 @@ async function onChangeView (e, view) {
   }
 
   render()
+}
+
+async function onAddToDatIgnore (e, node) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  // trim leading slash
+  let matchPattern = node.path.slice(1)
+
+  if (node.type === 'dir') {
+    // ignore all files/and directories within the directory
+    matchPattern += '/**'
+  }
+
+  let datignore = ''
+  try {
+    await archive.stat('.datignore')
+
+    // read .datignore
+    datignore = await archive.readFile('.datignore', 'utf8') + `\n${matchPattern}`
+  } catch (_) {
+    datignore = matchPattern
+  }
+
+  await archive.writeFile('.datignore', datignore)
 }
 
 function onExpandAllRevisions () {
