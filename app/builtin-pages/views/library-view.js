@@ -347,7 +347,7 @@ function renderNetworkView () {
     <div class="container">
       <div class="view network">
         <div class="section">
-          <h2>Download status</h2>
+          <h2 class="subtitle-heading">Download status</h2>
 
           <progress value=${progress.current} max="100">
             ${progress.current}
@@ -369,7 +369,7 @@ function renderNetworkView () {
         </div>
 
         <div class="section">
-          <h2>Network activity (last hour)</h2>
+          <h2 class="subtitle-heading">Network activity (last hour)</h2>
 
           ${renderPeerHistoryGraph(archive.info)}
         </div>
