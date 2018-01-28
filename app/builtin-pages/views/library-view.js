@@ -444,7 +444,8 @@ function renderRevisionsView () {
                 onclick=${(e) => e.stopPropagation()}
                 href="workspace://${workspaceInfo.name}${rev.path}"
                 target="_blank"
-                class="btn">
+                class="btn tooltip-container"
+                data-tooltip="View file">
                 View
               </a>
 
