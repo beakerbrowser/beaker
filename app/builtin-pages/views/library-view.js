@@ -453,11 +453,11 @@ function renderRevisionsView () {
                 View
               </a>
 
-              <button class="btn tooltip-container" data-tooltip="Revert">
+              <button class="btn tooltip-container" data-tooltip="Revert" onclick=${e => onRevertRevision(e, rev)}>
                 <i class="fa fa-undo"></i>
               </button>
 
-              <button class="btn tooltip-container" data-tooltip="Publish">
+              <button class="btn tooltip-container" data-tooltip="Publish" onclick=${e => onPublishRevision(e, rev)}>
                 <i class="fa fa-check"></i>
               </button>
             </div>
@@ -480,23 +480,23 @@ function renderRevisionsView () {
     <div class="container">
       <div class="view revisions">
         <div class="revisions-header">
-          <div>
-            Showing
-            <span class="revisions-summary">
-              ${revisions.length} ${pluralize(revisions.length, 'changed file')}
-            </span>
-          </div>
+          <button class="btn plain">
+            <span>Jump to...</span>
+            <i class="fa fa-caret-down"></i>
+          </button>
 
-          <div>Jump to...<i class="fa fa-caret-down"></i></div>
+          <button class="btn plain" onclick=${onExpandAllRevisions}>
+            <i class="fa fa-expand"></i>
+            Expand all
+          </button>
 
           <div class="actions">
-            <button class="btn plain" onclick=${onExpandAllRevisions}>
-              <i class="fa fa-expand"></i>
-              Expand all
+            <button class="btn" onclick=${e => onRevertAllRevisions(e)}>
+              Revert all
             </button>
 
-            <button class="btn success publish" onclick=${onPublish}>
-              Publish all revisions
+            <button class="btn success publish" onclick=${e => onPublishAllRevisions(e)}>
+              Publish all
             </button>
           </div>
         </div>
@@ -705,20 +705,43 @@ async function onToggleRevisionCollapsed (rev) {
   render()
 }
 
-async function onPublish (rev) {
-  if (rev) {
-    // TODO Publish the specified revision
-  } else {
-    // publish all of the revisions
-    const paths = workspaceInfo.revisions.map(rev => rev.path)
+async function onPublishRevision (e, rev) {
+  e.stopPropagation()
+  e.preventDefault()
 
-    if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}`)) return
-    await beaker.workspaces.publish(0, workspaceInfo.name, {paths})
-
-    // TODO reload the revisions tab
-  }
+  if (!rev) return
+  if (!confirm(`Publish ${rev.path.slice(1)}?`)) return
+  await beaker.workspaces.publish(0, workspaceInfo.name, {paths: [rev.path]})
 }
 
+async function onPublishAllRevisions (e) {
+  e.stopPropagation()
+  e.preventDefault()
+
+  const paths = workspaceInfo.revisions.map(rev => rev.path)
+
+  if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
+  await beaker.workspaces.publish(0, workspaceInfo.name, {paths})
+}
+
+async function onRevertRevision (e, rev) {
+  e.stopPropagation()
+  e.preventDefault()
+
+  if (!rev) return
+  if (!confirm(`Revert changes to ${rev.path.slice(1)}?`)) return
+  await beaker.workspaces.revert(0, workspaceInfo.name, {paths: [rev.path]})
+}
+
+async function onRevertAllRevisions (e) {
+  e.stopPropagation()
+  e.preventDefault()
+
+  const paths = workspaceInfo.revisions.map(rev => rev.path)
+
+  if (!confirm(`Revert ${paths.length} ${pluralize(paths.length, 'unpublished change')}?`)) return
+  await beaker.workspaces.revert(0, workspaceInfo.name, {paths})
+}
 
 async function onSetCurrentSource (node) {
   let path = archive.url
