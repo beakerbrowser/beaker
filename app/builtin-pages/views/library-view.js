@@ -24,11 +24,6 @@ var archiveFsRoot
 var filesBrowser
 
 var workspaceInfo
-var diff
-var diffAdditions = 0
-var diffDeletions = 0
-var currentDiffNode
-var numCheckedRevisions
 
 var markdownRenderer = createMd()
 var readmeElement
@@ -128,45 +123,48 @@ async function loadWorkspaceRevisions () {
     workspaceInfo.revisions = []
   }
 
+  // count the number of additions, deletions, and modifications
+  // TODO i don't know if this is necessary
+  workspaceInfo.additions = workspaceInfo.revisions.filter(r => r.change === 'add')
+  workspaceInfo.modifications = workspaceInfo.revisions.filter(r => r.change === 'mod')
+  workspaceInfo.deletions = workspaceInfo.revisions.filter(r => r.change === 'del')
+
+  // TODO
   // unset diff node if removed from revisions
-  if (currentDiffNode) {
-    if (!workspaceInfo.revisions.find(r => r.path === currentDiffNode.path)) {
-      currentDiffNode = null
-    }
-  }
+  // if (currentDiffNode) {
+  //   if (!workspaceInfo.revisions.find(r => r.path === currentDiffNode.path)) {
+  //     currentDiffNode = null
+  //   }
+  // }
 
   // set the default diff node
-  if (!currentDiffNode && workspaceInfo.revisions.length) {
-    currentDiffNode = workspaceInfo.revisions[0]
+  if (workspaceInfo.revisions.length) {
+    // load the diff for the first revision
+    await loadDiff(workspaceInfo.revisions[0])
+    workspaceInfo.revisions[0].isOpen = true
   }
-  await loadCurrentDiff(currentDiffNode)
 }
 
-async function loadCurrentDiff (revision) {
-  if (!revision) {
-    diff = ''
-    currentDiffNode = null
-    diffAdditions = 0
-    diffDeletions = 0
-    return
-  }
+async function loadDiff (revision) {
+  if (!revision) return
 
   // fetch the diff
   try {
-    diff = await beaker.workspaces.diff(0, workspaceInfo.name, revision.path)
+    console.log('fetching the diff')
+    revision.diff = await beaker.workspaces.diff(0, workspaceInfo.name, revision.path)
 
-    diffDeletions = diff.reduce((sum, el) => {
+    revision.diffDeletions = revision.diff.reduce((sum, el) => {
       if (el.removed) return sum + el.count
       return sum
     }, 0)
 
-    diffAdditions = diff.reduce((sum, el) => {
+    revision.diffAdditions = revision.diff.reduce((sum, el) => {
       if (el.added) return sum + el.count
       return sum
     }, 0)
   } catch (e) {
     if (e.invalidEncoding) {
-      diff = {invalidEncoding: true}
+      revision.diff = {invalidEncoding: true}
     }
   }
 }
@@ -392,69 +390,112 @@ function renderRevisionsView () {
     `
   }
 
-  const renderRev = node => (
+  const renderRevisionContent = rev => {
+    let el = ''
+
+    if (!rev.isOpen) {
+      return ''
+    } else if (rev.diff && rev.diff.invalidEncoding) {
+      el = yo`
+        <div class="binary-diff-placeholder">
+<code>1010100111001100
+1110100101110100
+1001010100010111</code>
+          </div>`
+    } else if (rev.diff) {
+      el = renderDiff(rev.diff)
+    } else {
+      el = 'Loading diff...'
+    }
+
+    return yo`<div class="revision-content">${el}</div>`
+  }
+
+  console.log(workspaceInfo.revisions[workspaceInfo.revisions.length - 1])
+
+  const renderRevision = rev => (
     yo`
-      <li class="${currentDiffNode && node.path === currentDiffNode.path ? 'selected' : ''}" onclick=${() => onClickChangedNode(node)} title=${node.path}>
-        <span class="path">${node.type === 'file' ? node.path.slice(1) : node.path}</span>
-        <input
-          type="checkbox"
-          checked=${!!node.checked}
-          onclick=${e => onToggleChangedNodeChecked(e, node)}
-        />
+      <li class="revision" onclick=${() => onToggleRevisionCollapsed(rev)}>
+        <div class="revision-header ${rev.isOpen ? '' : 'collapsed'}">
+          <div class="revision-type ${rev.change}"></div>
+
+          <code class="path">
+            ${rev.type === 'file' ? rev.path.slice(1) : rev.path}
+          </code>
+
+          ${rev.diffAdditions
+            ? yo`<div class="changes-count additions">+${rev.diffAdditions}</div>`
+            : ''
+          }
+
+          ${rev.diffDeletions
+            ? yo`<div class="changes-count deletions">-${rev.diffDeletions}</div>`
+            : ''
+          }
+
+          <div class="actions">
+            <button class="ignore-btn btn plain tooltip-container" data-tooltip="Add to .datignore">
+              <i class="fa fa-eye-slash"></i>
+            </button>
+
+            <div class="btn-group">
+              <a
+                onclick=${(e) => e.stopPropagation()}
+                href="workspace://${workspaceInfo.name}${rev.path}"
+                target="_blank"
+                class="btn">
+                View
+              </a>
+
+              <button class="btn tooltip-container" data-tooltip="Revert">
+                <i class="fa fa-undo"></i>
+              </button>
+
+              <button class="btn tooltip-container" data-tooltip="Publish">
+                <i class="fa fa-check"></i>
+              </button>
+            </div>
+
+            <div class="btn plain">
+              <i class="fa fa-chevron-${rev.isOpen ? 'down' : 'up'}"></i>
+            </div>
+          </div>
+        </div>
+
+        ${renderRevisionContent(rev)}
       </li>
     `
   )
 
+  const revisions = workspaceInfo.revisions
+  const {additions, modifications, deletions} = workspaceInfo
+
   return yo`
     <div class="container">
       <div class="view revisions">
-        <div class="revisions-sidebar">
-          <ul class="revisions-list">
-            ${workspaceInfo.revisions.map(renderRev)}
-          </ul>
+        <div class="revisions-header">
+          <div>
+            Showing
+            <span class="revisions-summary">
+              ${revisions.length} ${pluralize(revisions.length, 'changed file')}
+            </span>
+          </div>
+
+          <div>Jump to...<i class="fa fa-caret-down"></i></div>
+
+          <button class="btn success publish" onclick=${onPublish}>
+            Publish all revisions
+          </button>
         </div>
 
-        <div class="revisions-content">
-          ${currentDiffNode
-            ? yo`
-              <div class="revisions-content-header">
-                <i class="fa fa-file-text-o"></i>
-
-                <span class="path">
-                  ${currentDiffNode.type === 'file' ? currentDiffNode.path.slice(1) : currentDiffNode.path}
-                </span>
-
-                <div class="changes-count-container">
-                  <span class="additions-count">${diffAdditions ? `+${diffAdditions}` : ''}</span>
-                  <span class="deletions-count">${diffDeletions ? `-${diffDeletions}` : ''}</span>
-                </div>
-              </div>`
-            : ''
-          }
-
-          ${renderRevisionsContent()}
-        </div>
+        ${revisions.length
+          ? yo`<ul class="revisions-list">${revisions.map(renderRevision)}</ul>`
+          : ''
+        }
       </div>
     </div>
   `
 }
-
-function renderRevisionsContent () {
-  if (diff && diff.invalidEncoding) {
-    return yo`
-      <div class="binary-diff-placeholder">
-        <code>1010100111001100
-1110100101110100
-1001010100010111</code>
-      </div>
-    `
-  } else if (diff) {
-    return renderDiff(diff)
-  } else {
-    return 'butt'
-  }
-}
-
 
 function renderInfo () {
   return yo`
@@ -598,11 +639,35 @@ async function onChangeView (e, view) {
   render()
 }
 
-async function onClickChangedNode (node) {
-  currentDiffNode = node
-  await loadCurrentDiff(node)
+async function onToggleRevisionCollapsed (rev) {
+  rev.isOpen = !rev.isOpen
+
+  // fetch the diff it hasn't been loaded yet
+  if (!rev.diff) {
+    // render loading state
+    rev.isLoadingDiff = true
+    render()
+
+    await loadDiff(rev)
+  }
+
   render()
 }
+
+async function onPublish (rev) {
+  if (rev) {
+    // TODO Publish the specified revision
+  } else {
+    // publish all of the revisions
+    const paths = workspaceInfo.revisions.map(rev => rev.path)
+
+    if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}`)) return
+    await beaker.workspaces.publish(0, workspaceInfo.name, {paths})
+
+    // TODO reload the revisions tab
+  }
+}
+
 
 async function onSetCurrentSource (node) {
   let path = archive.url
