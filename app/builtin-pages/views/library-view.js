@@ -150,7 +150,6 @@ async function loadDiff (revision) {
 
   // fetch the diff
   try {
-    console.log('fetching the diff')
     revision.diff = await beaker.workspaces.diff(0, workspaceInfo.name, revision.path)
 
     revision.diffDeletions = revision.diff.reduce((sum, el) => {
@@ -405,13 +404,15 @@ function renderRevisionsView () {
     } else if (rev.diff) {
       el = renderDiff(rev.diff)
     } else {
-      el = 'Loading diff...'
+      el = yo`
+        <div class="loading">
+          <p>Loading diff...</p>
+          <div class="spinner"></div>
+        </div>`
     }
 
     return yo`<div class="revision-content">${el}</div>`
   }
-
-  console.log(workspaceInfo.revisions[workspaceInfo.revisions.length - 1])
 
   const renderRevision = rev => (
     yo`
