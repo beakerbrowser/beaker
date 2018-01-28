@@ -32,12 +32,15 @@
   &.plain {
     background: none;
     border: none;
-    color: #999;
-    padding: 0 3px;
+    color: @color-text--muted;
 
     &:hover {
       color: @color-text;
       background: none;
+    }
+
+    &.accent:hover {
+      color: @blue;
     }
 
     &:focus {

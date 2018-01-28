@@ -485,9 +485,16 @@ function renderRevisionsView () {
 
           <div>Jump to...<i class="fa fa-caret-down"></i></div>
 
-          <button class="btn success publish" onclick=${onPublish}>
-            Publish all revisions
-          </button>
+          <div class="actions">
+            <button class="btn plain" onclick=${onExpandAllRevisions}>
+              <i class="fa fa-expand"></i>
+              Expand all
+            </button>
+
+            <button class="btn success publish" onclick=${onPublish}>
+              Publish all revisions
+            </button>
+          </div>
         </div>
 
         ${revisions.length
@@ -639,6 +646,19 @@ async function onChangeView (e, view) {
   }
 
   render()
+}
+
+function onExpandAllRevisions () {
+  workspaceInfo.revisions.forEach(rev => {
+    rev.isOpen = true
+    rev.isLoadingDiff = true
+  })
+  render()
+
+  workspaceInfo.revisions.forEach(async rev => {
+    await loadDiff(rev)
+    render()
+  })
 }
 
 async function onToggleRevisionCollapsed (rev) {
