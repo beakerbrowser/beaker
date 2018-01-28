@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import moment from 'moment'
 import prettyBytes from 'pretty-bytes'
 import * as toast from './toast'
+import * as contextMenu from './context-menu'
 import renderTrashIcon from '../icon/trash'
 import renderGearIcon from '../icon/gear-small'
 import {pluralize} from '../../lib/strings'
@@ -36,8 +37,9 @@ export default class DatNetworkActivity {
     this.totalBytesHosting = 0
     this.totalArchivesHosting = 0
     this.currentFilter = 'seeding'
-    this.currentlyConfiguringKey = undefined
     this.currentSort = ['title', -1]
+    this.currentlyConfiguringKey = undefined
+    this.currentlyHighlightedKey = undefined
 
     // beaker.archives.addEventListener('network-changed', this.onNetworkChanged.bind(this))
   }
@@ -117,6 +119,7 @@ export default class DatNetworkActivity {
     const expiresAt = archive.userSettings.expiresAt
     const now = Date.now()
     const timeRemaining = (expiresAt && expiresAt > now) ? moment.duration(expiresAt - now) : null
+    const highlightedCls = this.currentlyHighlightedKey === archive.key ? 'highlighted' : ''
 
     let expiresAtStr
     if (!expiresAt) expiresAtStr = ''
@@ -125,10 +128,10 @@ export default class DatNetworkActivity {
     else expiresAtStr = '(1 day remaining)'
 
     return yo`
-      <div class="archive">
+      <div class="archive ${highlightedCls}" oncontextmenu=${e => this.onContextmenuArchive(e, archive)}>
         <img class="favicon" src="beaker-favicon:${archive.url}" />
 
-        <a href=${archive.url} class="title">
+        <a href=${archive.url} class="title" title=${archive.title}>
           ${archive.title || yo`<em>Untitled</em>`}
         </a>
 
@@ -251,6 +254,33 @@ export default class DatNetworkActivity {
     }
     this.sortArchives()
     this.rerender()
+  }
+
+  async onContextmenuArchive (e, archive) {
+    e.preventDefault()
+
+    this.currentlyHighlightedKey = archive.key
+    this.rerender()
+
+    const items = [
+      {icon: 'link', label: 'Copy URL', click: () => this.onCopyURL(archive) },
+      {icon: 'folder-open-o', label: 'Open in library', click: () => this.onOpenInLibrary(archive) },
+      {icon: 'stop', label: 'Stop syncing', click: () => {}},
+      {icon: 'trash', label: 'Delete', click: () => {}},
+    ]
+    await contextMenu.create({x: e.clientX, y: e.clientY, items})
+
+    this.currentlyHighlightedKey = undefined
+    this.rerender()
+  }
+
+  onCopyURL (archive) {
+    writeToClipboard(archive.url)
+    toast.create('URL copied to clipboard')
+  }
+
+  onOpenInLibrary (archive) {
+    window.open('beaker://library/' + archive.url)
   }
 
   async onClickSettings (archive) {
