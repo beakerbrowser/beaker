@@ -172,7 +172,7 @@ export default {
 
     // build ignore rules
     if (opts.paths) {
-      opts.filter = (filepath) => !anymatch(opts.paths, filepath)
+      opts.filter = makeDiffFilterByPaths(opts.paths)
     } else {
       const ignoreRules = await readDatIgnore(scopedFS)
       opts.filter = (filepath) => anymatch(ignoreRules, filepath)
@@ -286,13 +286,14 @@ export default {
 
     // build ignore rules
     if (opts.paths) {
-      opts.filter = (filepath) => !anymatch(opts.paths, filepath)
+      opts.filter = makeDiffFilterByPaths(opts.paths)
     } else {
       const ignoreRules = await readDatIgnore(scopedFS)
       opts.filter = (filepath) => anymatch(ignoreRules, filepath)
     }
 
     // run and apply diff
+    opts.shallow = false // can't do shallow
     var diff = await dft.diff({fs: scopedFS}, {fs: archive}, opts)
     await dft.applyRight({fs: scopedFS}, {fs: archive}, diff)
   },
@@ -323,13 +324,14 @@ export default {
 
     // build ignore rules
     if (opts.paths) {
-      opts.filter = (filepath) => !anymatch(opts.paths, filepath)
+      opts.filter = makeDiffFilterByPaths(opts.paths)
     } else {
       const ignoreRules = await readDatIgnore(scopedFS)
       opts.filter = (filepath) => anymatch(ignoreRules, filepath)
     }
 
     // run and apply diff
+    opts.shallow = false // can't do shallow
     var diff = await dft.diff({fs: scopedFS}, {fs: archive}, opts)
     await dft.applyLeft({fs: scopedFS}, {fs: archive}, diff)
   },
@@ -395,6 +397,28 @@ async function readDatIgnore (fs) {
       return rule
     })
     .concat(['/.git', '/.dat'])
+}
+
+function makeDiffFilterByPaths (targetPaths) {
+  return (filepath) => {
+    for (let i = 0; i < targetPaths.length; i++) {
+      let targetPath = targetPaths[i]
+
+      if (targetPath.endsWith('/')) {
+        // a directory
+        if (filepath === targetPath.slice(0, -1)) return false // the directory itself
+        if (filepath.startsWith(targetPath)) return false // a file within the directory
+      } else {
+        // a file
+        if (filepath === targetPath) return false
+      }
+      if (targetPath.startsWith(filepath) && targetPath.charAt(filepath.length) === '/') {
+        return false // a parent folder
+      }
+
+    }
+    return true
+  }
 }
 
 async function assertSafeFilesPath (localFilesPath) {
