@@ -402,6 +402,15 @@ function renderRevisionsView () {
 1110100101110100
 1001010100010111</code>
           </div>`
+    } else if (rev.type === 'dir') {
+      const path = `${workspaceInfo.localFilesPath}${rev.path}`
+      el = yo`
+        <div class="folder">
+          <p>
+            <code class="path" onclick=${() => onOpenFolder(path)}>${path}</code>
+          </p>
+          <i class="fa fa-folder-open-o"></i>
+        </div>`
     } else if (rev.diff) {
       el = renderDiff(rev.diff)
     } else {
