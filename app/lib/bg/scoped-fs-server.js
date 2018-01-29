@@ -3,6 +3,7 @@ import url from 'url'
 import parseRange from 'range-parser'
 import once from 'once'
 import fs from 'fs'
+import intoStream from 'into-stream'
 import errorPage from '../error-page'
 import {pluralize, makeSafe} from '../strings'
 import * as mime from '../mime'
@@ -11,123 +12,117 @@ import * as scopedFSes from './scoped-fses'
 // exported api
 // =
 
-export function create ({CSP, requestNonce}) {
+export async function serve (request, respond, {CSP, scopedFSPath}) {
+  // response helper
+  const cb = once((statusCode, status, contentType, filepath) => {
+    const headers = {
+      'Content-Type': (contentType || 'text/html; charset=utf-8'),
+      'Content-Security-Policy': CSP
+    }
+    if (typeof filepath === 'string') {
+      respond({statusCode, headers, data: fs.createReadStream(filepath)})
+    } else if (typeof filepath === 'function') {
+      respond({statusCode, headers, data: intoStream(filepath())})
+    } else {
+      respond({statusCode, headers, data: intoStream(errorPage(statusCode + ' ' + status))})
+    }
+  })
 
-  return async function (req, res) {
-    // response helper
-    var cb = once((code, status, contentType, filepath) => {
-      res.writeHead(code, status, {
-        'Content-Type': (contentType || 'text/html'),
-        'Content-Security-Policy': CSP
+  try {
+    // read the parameters
+    const requestUrl = request.url
+    const requestUrlParsed = url.parse(requestUrl)
+
+    // fail if no binding url is given
+    if (!scopedFSPath) {
+      return cb(404, 'Not Found', 'text/html', () => errorPage(`No workspace found at ${makeSafe(requestUrlParsed.hostname)}`))
+    }
+
+    // create/get the scoped fs
+    const scopedFS = scopedFSes.get(scopedFSPath)
+
+    // do a lookup
+    let requestPathname = decodeURIComponent(requestUrlParsed.pathname)
+    let stat = await new Promise(resolve => scopedFS.stat(requestPathname, (err, st) => resolve(st)))
+    if (!stat) {
+      return cb(404, 'Not Found')
+    }
+
+    // check for an index.html
+    if (stat.isDirectory()) {
+      let requestPathname2 = path.join(requestPathname, 'index.html')
+      let stat2 = await new Promise(resolve => scopedFS.stat(requestPathname2, (err, st) => resolve(st)))
+      if (stat2) {
+        requestPathname = requestPathname2
+        stat = stat2
+      }
+    }
+
+    // directory listing
+    if (stat.isDirectory()) {
+      let listing = await new Promise(resolve => scopedFS.readdir(requestPathname, (err, ls) => resolve(ls)))
+      listing = listing || []
+      let html = await renderDirectoryListingPage(scopedFS, requestPathname, listing)
+      return respond({
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'text/html',
+          'Content-Security-Policy': CSP
+        },
+        data: intoStream(html)
       })
-      if (typeof filepath === 'string') {
-        fs.createReadStream(filepath).pipe(res)
-      } else if (typeof filepath === 'function') {
-        res.end(filepath())
-      } else {
-        res.end(errorPage(code + ' ' + status))
+    }
+
+    // handle range
+    let statusCode = 200
+    let headers = {}
+    let headersSent = false
+    let range = request.headers.range && parseRange(stat.size, request.headers.range)
+    headers['Accept-Ranges'] = 'bytes'
+    if (range && range.type === 'bytes') {
+      range = range[0] // only handle first range given
+      statusCode = 206
+      headers['Content-Range'] = 'bytes ' + range.start + '-' + range.end + '/' + stat.size
+      headers['Content-Length'] = range.end - range.start + 1
+    } else {
+      if (stat.size) {
+        headers['Content-Length'] = stat.size
+      }
+    }
+
+    // fetch the entry and stream the response
+    let fileReadStream = scopedFS.createReadStream(requestPathname, range)
+    var dataStream = fileReadStream
+      .pipe(mime.identifyStream(requestPathname, mimeType => {
+        // send headers, now that we can identify the data
+        headersSent = true
+        Object.assign(headers, {
+          'Content-Type': mimeType,
+          'Content-Security-Policy': CSP,
+          'Cache-Control': 'public, max-age: 60'
+        })
+        respond({statusCode, headers, data: dataStream})
+      }))
+
+    // handle empty files
+    fileReadStream.once('end', () => {
+      if (!headersSent) {
+        respond({
+          statusCode: 200,
+          headers: {
+            'Content-Security-Policy': CSP
+          },
+          data: intoStream('')
+        })
       }
     })
 
-    try {
-      // read the parameters
-      const {requestUrl, rootPath, nonce} = url.parse(req.url, true).query
-      const requestUrlParsed = url.parse(requestUrl)
-
-      // check the nonce
-      // (only want this process to access the server)
-      if (nonce != requestNonce) {
-        return cb(403, 'Forbidden')
-      }
-
-      // fail if no binding url is given
-      if (!rootPath) {
-        return cb(404, 'Not Found', 'text/html', () => errorPage(`Nothing is installed at ${makeSafe(requestUrlParsed.hostname)}`))
-      }
-
-      // create/get the scoped fs
-      const scopedFS = scopedFSes.get(rootPath)
-
-      // do a lookup
-      let requestPathname = decodeURIComponent(requestUrlParsed.pathname)
-      let stat = await new Promise(resolve => scopedFS.stat(requestPathname, (err, st) => resolve(st)))
-      if (!stat) {
-        return cb(404, 'Not Found')
-      }
-
-      // check for an index.html
-      if (stat.isDirectory) {
-        let requestPathname2 = path.join(requestPathname, 'index.html')
-        let stat2 = await new Promise(resolve => scopedFS.stat(requestPathname2, (err, st) => resolve(st)))
-        if (stat2) {
-          requestPathname = requestPathname2
-          stat = stat2
-        }
-      }
-
-      // directory listing
-      if (stat.isDirectory()) {
-        let listing = await new Promise(resolve => scopedFS.readdir(requestPathname, (err, ls) => resolve(ls)))
-        listing = listing || []
-        let html = await renderDirectoryListingPage(scopedFS, requestPathname, listing)
-        res.writeHead(200, 'OK', {
-          'Content-Type': 'text/html',
-          'Content-Security-Policy': CSP
-        })
-        return res.end(html)
-      }
-
-      // handle range
-      let headersSent = false
-      let statusCode = 200
-      let range = req.headers.range && parseRange(stat.size, req.headers.range)
-      res.setHeader('Accept-Ranges', 'bytes')
-      if (range && range.type === 'bytes') {
-        range = range[0] // only handle first range given
-        statusCode = 206
-        res.setHeader('Content-Range', 'bytes ' + range.start + '-' + range.end + '/' + stat.size)
-        res.setHeader('Content-Length', range.end - range.start + 1)
-      } else {
-        if (stat.size) {
-          res.setHeader('Content-Length', stat.size)
-        }
-      }
-
-      // fetch the entry and stream the response
-      let fileReadStream = scopedFS.createReadStream(requestPathname, range)
-      fileReadStream
-        .pipe(mime.identifyStream(requestPathname, mimeType => {
-          // send headers, now that we can identify the data
-          headersSent = true
-          let headers = {
-            'Content-Type': mimeType,
-            'Content-Security-Policy': CSP,
-            'Cache-Control': 'public, max-age: 60'
-          }
-          res.writeHead(statusCode, 'OK', headers)
-        }))
-        .pipe(res)
-
-      // handle empty files
-      fileReadStream.once('end', () => {
-        if (!headersSent) {
-          res.writeHead(200, 'OK', {'Content-Security-Policy': CSP})
-          res.end('\n')
-          // TODO
-          // for some reason, sending an empty end is not closing the request
-          // this may be an issue in beaker's interpretation of the page-load ?
-          // but Im solving it here for now, with a '\n'
-          // -prf
-        }
-      })
-
-      // handle read-stream errors
-      fileReadStream.once('error', err => {
-        if (!headersSent) cb(500, 'Failed to read file')
-      })
-    } catch (e) {
-      cb(500, e.toString())
-    }
+    // handle read-stream errors
+    fileReadStream.once('error', err => {
+      if (!headersSent) cb(500, 'Failed to read file')
+    })
+  } catch (e) {
+    cb(500, e.toString())
   }
 }
 
@@ -186,7 +181,7 @@ async function renderDirectoryListingPage (scopedFS, dirPath, names) {
     totalFiles++
     var url = entry.path
     if (url.startsWith('/')) url = url.slice(1) // strip leading slash
-    url = encodeURIComponent(makeSafe(url)) // make safe
+    url = encodeURI(makeSafe(url)) // make safe
     url = '/' + url // readd leading slash
     if (entry.isDirectory() && !url.endsWith('/')) url += '/' // all dirs should have a trailing slash
     var type = entry.isDirectory() ? 'directory' : 'file'
