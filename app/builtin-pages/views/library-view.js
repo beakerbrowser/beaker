@@ -363,7 +363,7 @@ function renderNetworkView () {
               <div class="label">${progressLabel}</div>
             </div>
 
-            <button class="btn transparent tooltip-container" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
+            <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
               <i class="fa fa-${seedingIcon}"></i>
             </button>
           </div>
@@ -437,7 +437,7 @@ function renderRevisionsView () {
 
           <div class="actions">
             <button
-              class="ignore-btn btn plain tooltip-container"
+              class="ignore-btn btn plain"
               data-tooltip="Add to .datignore"
               onclick=${e => onAddToDatIgnore(e, rev)}
               >
@@ -449,16 +449,16 @@ function renderRevisionsView () {
                 onclick=${(e) => e.stopPropagation()}
                 href="workspace://${workspaceInfo.name}${rev.path}"
                 target="_blank"
-                class="btn tooltip-container"
+                class="btn"
                 data-tooltip="View file">
                 View
               </a>
 
-              <button class="btn tooltip-container" data-tooltip="Revert" onclick=${e => onRevertRevision(e, rev)}>
+              <button class="btn" data-tooltip="Revert" onclick=${e => onRevertRevision(e, rev)}>
                 <i class="fa fa-undo"></i>
               </button>
 
-              <button class="btn tooltip-container" data-tooltip="Publish" onclick=${e => onPublishRevision(e, rev)}>
+              <button class="btn" data-tooltip="Publish" onclick=${e => onPublishRevision(e, rev)}>
                 <i class="fa fa-check"></i>
               </button>
             </div>
@@ -587,7 +587,7 @@ function renderMetadata () {
 
       <div class="url-info">
         <a href=${archive.info.url} class="url" target="_blank">${shortenHash(archive.info.url)}</a>
-        <button class="btn plain tooltip-container" data-tooltip="Copy URL" onclick=${onCopyUrl}>
+        <button class="btn plain" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${onCopyUrl}>
           <i class="fa fa-clipboard"></i>
         </button>
       </div>
