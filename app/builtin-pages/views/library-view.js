@@ -36,6 +36,7 @@ var settingsEditValues = {
 }
 
 var error
+var copySuccess = false
 
 // HACK
 // Linux is not capable of importing folders and files in the same dialog
@@ -765,7 +766,13 @@ function onOpenFolder (path) {
 function onCopyUrl () {
   if (archive.info) {
     writeToClipboard(archive.info.url)
-    toast.create('URL copied to clipboard')
+    copySuccess = true
+    render()
+
+    window.setTimeout(() => {
+      copySuccess = false
+      render()
+    }, 2000)
   }
 }
 
