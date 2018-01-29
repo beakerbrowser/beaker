@@ -23,7 +23,8 @@ import {
   InvalidURLError,
   ArchiveNotWritableError,
   InvalidEncodingError,
-  DestDirectoryNotEmpty
+  DestDirectoryNotEmpty,
+  SourceTooLargeError
 } from 'beaker-error-constants'
 
 const DISALLOWED_SAVE_PATH_NAMES = [
@@ -35,6 +36,8 @@ const DISALLOWED_SAVE_PATH_NAMES = [
   'pictures',
   'videos'
 ]
+
+const MAX_DIFF_SIZE = 1e5
 
 // exported api
 // =
@@ -205,17 +208,21 @@ export default {
       archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
     })
 
-    // if we're not sure about whether it's binary, run a check on the files' buffers
-    if (isBinary !== false) {
-      let st
-      st = await stat(scopedFS, filepath)
-      if (st && st.isFile() && await isFileContentBinary(scopedFS, filepath)) {
-        throw new InvalidEncodingError('Cannot diff a binary file')
-      }
-      st = await stat(archive, filepath)
-      if (st && st.isFile() && await isFileContentBinary(archive, filepath)) {
-        throw new InvalidEncodingError('Cannot diff a binary file')
-      }
+    // make sure we can handle the buffers involved
+    let st
+    st = await stat(scopedFS, filepath)
+    if (isBinary !== false && st && st.isFile() && await isFileContentBinary(scopedFS, filepath)) {
+      throw new InvalidEncodingError('Cannot diff a binary file')
+    }
+    if (st && st.isFile() && st.size > MAX_DIFF_SIZE) {
+      throw new SourceTooLargeError()
+    }
+    st = await stat(archive, filepath)
+    if (isBinary !== false && st && st.isFile() && await isFileContentBinary(archive, filepath)) {
+      throw new InvalidEncodingError('Cannot diff a binary file')
+    }
+    if (st && st.isFile() && st.size > MAX_DIFF_SIZE) {
+      throw new SourceTooLargeError()
     }
 
     // read the file in both sources

@@ -163,8 +163,12 @@ async function loadDiff (revision) {
       return sum
     }, 0)
   } catch (e) {
+    console.error('Error running diff', e)
     if (e.invalidEncoding) {
       revision.diff = {invalidEncoding: true}
+    }
+    if (e.sourceTooLarge) {
+      revision.diff = {sourceTooLarge: true}
     }
   }
 }
@@ -411,6 +415,8 @@ function renderRevisionsView () {
           </p>
           <i class="fa fa-folder-open-o"></i>
         </div>`
+    } else if (rev.diff && rev.diff.sourceTooLarge) {
+      el = yo`<div>Source too large error</div>` // TODO
     } else if (rev.diff) {
       el = renderDiff(rev.diff)
     } else {
