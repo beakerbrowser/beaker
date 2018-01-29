@@ -410,10 +410,11 @@ function renderRevisionsView () {
       const path = `${workspaceInfo.localFilesPath}${rev.path}`
       el = yo`
         <div class="folder">
-          <p>
-            <code class="path" onclick=${() => onOpenFolder(path)}>${path}</code>
-          </p>
           <i class="fa fa-folder-open-o"></i>
+          <span class="action path" onclick=${() => onOpenFolder(path)}>
+            Open folder
+          </span>
+          <p><code>${path}</code></p>
         </div>`
     } else if (rev.diff && rev.diff.sourceTooLarge) {
       el = yo`
