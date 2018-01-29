@@ -416,7 +416,11 @@ function renderRevisionsView () {
           <i class="fa fa-folder-open-o"></i>
         </div>`
     } else if (rev.diff && rev.diff.sourceTooLarge) {
-      el = yo`<div>Source too large error</div>` // TODO
+      el = yo`
+        <div class="source-too-large">
+          <a href="workspace://${workspaceInfo.name}${rev.path}" class="action">View file</a>
+          <p>This diff is too large to display.</p>
+        </div>`
     } else if (rev.diff) {
       el = renderDiff(rev.diff)
     } else {

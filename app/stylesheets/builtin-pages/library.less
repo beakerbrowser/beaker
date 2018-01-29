@@ -218,14 +218,27 @@
           }
         }
 
+        .source-too-large,
         .folder,
         .loading {
           text-align: center;
           padding: 20px 0;
 
           p {
-            color: rgba(0,0,0,.5);
+            color: rgba(0,0,0,.65);
             margin-top: 0;
+            font-size: 12.5px;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+
+          .action {
+            display: block;
+            color: @blue;
+            font-size: 1rem;
+            cursor: pointer;
           }
         }
 
