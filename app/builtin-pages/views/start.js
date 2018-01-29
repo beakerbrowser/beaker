@@ -211,10 +211,21 @@ function renderDock () {
   return yo`
     <div class="dock-wrapper">
       <div class="dock">
-        <h2 class="dock-item"><a href="beaker://settings">Settings</a></h2>
-        <h2 class="dock-item"><a href="beaker://history">History</a></h2>
-        <h2 class="dock-item"><a href="beaker://bookmarks" >Bookmarks</a></h2>
-        <h2 class="dock-item"><a href="beaker://library">Library</a></h2>
+        <a class="dock-item subtitle-heading" href="beaker://settings">
+          Settings
+        </a>
+
+        <a class="dock-item subtitle-heading" href="beaker://history">
+          History
+        </a>
+
+        <a class="dock-item subtitle-heading" href="beaker://bookmarks">
+          Bookmarks
+        </a>
+
+        <a class="dock-item subtitle-heading" href="beaker://library">
+          Library
+        </a>
       </div>
     </div>
   `
@@ -226,7 +237,7 @@ function renderPinnedBookmarks () {
       ${pinnedBookmarks.length ? yo`
         <h2 class="subtitle-heading">
           <span>Pinned bookmarks</span>
-          <button class="btn transparent tooltip-container add-pinned-btn" data-tooltip="Add pinned bookmark" onclick=${onClickAddBookmark}>
+          <button class="btn transparent add-pinned-btn" data-tooltip="Add pinned bookmark" onclick=${onClickAddBookmark}>
             <i class="fa fa-plus"></i>
           </button>
         </h2>`
