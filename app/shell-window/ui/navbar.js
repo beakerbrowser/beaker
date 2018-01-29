@@ -253,17 +253,17 @@ function render (id, page) {
   }
 
   // dat buttons
-  var datBtns = ''
+  var datBtns = []
+
+  if (page && page.isLiveReloading()) {
+    datBtns.unshift(
+      yo`<span class="live-reload-indicator" title="Live reloading active">
+          <i class="fa fa-bolt"></i>
+        </span>`
+    )
+  }
 
   if (isViewingDat) {
-    datBtns = []
-    if (page.isLiveReloading()) {
-      datBtns.unshift(
-        yo`<span class="live-reload-indicator" title="Live reloading active">
-            <i class="fa fa-bolt"></i>
-          </span>`
-      )
-    }
     // TODO(apps) restore when we bring back apps -prf
     // if (page.siteInfo && page.siteInfo.type.includes('app')) {
     //   if (page.isInstalledApp() === false) {
@@ -279,7 +279,7 @@ function render (id, page) {
     //   }
     // }
   } else if (siteHasDatAlternative) {
-    datBtns = [
+    datBtns.push(
       yo`<button
         class="callout"
         title="Go to Dat Version of this Site"
@@ -287,7 +287,7 @@ function render (id, page) {
       >
         <span class="fa fa-share-alt"></span> P2P version available
       </button>`
-    ]
+    )
   }
 
   // autocomplete dropdown

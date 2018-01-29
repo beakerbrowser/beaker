@@ -233,6 +233,9 @@ export function create (opts) {
         page.liveReloadEvents.addEventListener(event, () => {
           page.triggerLiveReload()
         })
+      } else if (page.protocolInfo && page.protocolInfo.scheme === 'workspace:') {
+        page.liveReloadEvents = beaker.workspaces.createFileActivityStream(0, page.protocolInfo.hostname)
+        page.liveReloadEvents.addEventListener('changed', page.triggerLiveReload.bind(page))
       }
       navbar.update(page)
     },

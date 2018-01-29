@@ -44,6 +44,7 @@ export function setApplicationMenu (opts = {}) {
 
 export function buildWindowMenu (opts = {}) {
   const isDat = opts.url && opts.url.startsWith('dat://')
+  const isWorkspace = opts.url && opts.url.startsWith('workspace://')
 
   var darwinMenu = {
     label: 'Beaker',
@@ -257,7 +258,7 @@ export function buildWindowMenu (opts = {}) {
     },
     {
       label: `Toggle Live Reloading${isDat ? '' : ' (Dat Only)'}`,
-      enabled: !!isDat,
+      enabled: !!isDat || !!isWorkspace,
       click: function (item, win) {
         if (win) win.webContents.send('command', 'view:toggle-live-reloading')
       }
@@ -386,11 +387,11 @@ export function buildWindowMenu (opts = {}) {
 // internal helpers
 // =
 
-var lastURLWasDat = false
+var lastURLProtocol = false
 function requiresRebuild (url) {
-  const urlIsDat = url && url.startsWith('dat://')
-  // check if this is a change from dat->* or from *->dat
-  const b = (lastURLWasDat !== urlIsDat)
-  lastURLWasDat = urlIsDat
+  const urlProtocol = url ? url.split(':')[0] : false
+  // check if this is a change of protocol
+  const b = (lastURLProtocol !== urlProtocol)
+  lastURLProtocol = urlProtocol
   return b
 }
