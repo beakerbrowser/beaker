@@ -108,6 +108,10 @@ function rFilePreview (node) {
   return yo`
     <div class="file-preview-container">
       <div class="file-preview-header">
+        <code class="path">${node.name}</code>
+
+        <span class="separator">|</span>
+
         ${numLines
           ? yo`<code class="file-info">${numLines} ${pluralize(numLines, 'line')}</code>`
           : ''
