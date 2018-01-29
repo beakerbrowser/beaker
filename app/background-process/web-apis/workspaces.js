@@ -341,6 +341,39 @@ export default {
       shell.openItem(path)
       resolve()
     })
+  },
+
+  // add the given line to the .datignore in the workspace
+  // - profileId: number, the id of the browsing profile
+  // - name: string, the name of the workspace
+  // - line: string, the line to add
+  async addToDatignore (profileId, name, line) {
+    assertValidProfileId(profileId)
+    assertValidName(name)
+    if (!line || typeof line !== 'string') {
+      throw new Error('Must provide a pattern to add to the .datignore')
+    }
+
+    // fetch workspace
+    const ws = await workspacesDb.get(profileId, name)
+    await validateWorkspaceRecord(name, ws)
+    const scopedFS = scopedFSes.get(ws.localFilesPath)
+
+    // read & update rules
+    let datignore = ''
+    try {
+      datignore = await new Promise(r =>
+        scopedFS.readFile('.datignore', 'utf8', (err, v) => r(v))
+      )
+      datignore = (datignore || '').split('\n')
+      datignore.push(line)
+      datignore = datignore.filter(Boolean).join('\n') + '\n'
+    } catch (e) {
+      datignore = line + '\n'
+    }
+
+    // write new file
+    await new Promise(r => scopedFS.writeFile('.datignore', datignore, r))
   }
 }
 

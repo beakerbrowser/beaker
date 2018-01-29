@@ -119,6 +119,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.workspaces.publish = workspacesRPC.publish
   beaker.workspaces.revert = workspacesRPC.revert
   beaker.workspaces.openFolder = workspacesRPC.openFolder
+  beaker.workspaces.addToDatignore = workspacesRPC.addToDatignore
 
   // beaker.downloads
   beaker.downloads = {}

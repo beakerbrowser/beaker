@@ -10,5 +10,6 @@ export default {
   createFileActivityStream: 'readable',
   publish: 'promise',
   revert: 'promise',
-  openFolder: 'promise'
+  openFolder: 'promise',
+  addToDatignore: 'promise'
 }
