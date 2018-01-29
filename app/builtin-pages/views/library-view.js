@@ -137,13 +137,6 @@ async function loadWorkspaceRevisions () {
   //     currentDiffNode = null
   //   }
   // }
-
-  // set the default diff node
-  if (workspaceInfo.revisions.length) {
-    // load the diff for the first revision
-    await loadDiff(workspaceInfo.revisions[0])
-    workspaceInfo.revisions[0].isOpen = true
-  }
 }
 
 async function loadDiff (revision) {
