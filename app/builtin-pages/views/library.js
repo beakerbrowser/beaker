@@ -327,6 +327,9 @@ async function onUpdateView (view) {
   query = ''
   document.querySelector('input.search').value = ''
 
+  // reset selectedArchives
+  selectedArchives = []
+
   currentView = view
   await loadArchives()
   render()
