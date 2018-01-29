@@ -86,6 +86,124 @@
     }
   }
 
+  .revision-header,
+  .file-preview-header {
+    &:extend(.flex);
+    align-items: center;
+    height: 40px;
+    border-radius: 4px 4px 0 0;
+    border: 1px solid #ddd;
+    padding: 0 10px;
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .file-preview-container {
+    border-bottom: 0;
+    font-size: 12.5px;
+
+    .file-preview-header {
+      &:extend(.flex);
+      align-items: center;
+      height: 40px;
+      border-radius: 4px 4px 0 0;
+      border: 1px solid #ddd;
+      padding: 0 10px;
+      background: #fafafa;
+      border-bottom: 1px solid #ddd;
+
+      .separator {
+        color: rgba(0,0,0,.25);
+        padding: 0 10px;
+      }
+
+      .file-info {
+        margin-right: 10px
+      }
+
+      .actions {
+        margin-left: auto;
+
+        a {
+          display: inline-block;
+          font-size: 14px;
+          color: @color-text--muted;
+          color: @color-text;
+          cursor: pointer;
+          height: 35px;
+          line-height: 35px;
+
+          * {
+            cursor: pointer;
+          }
+
+          &:hover {
+            color: @blue;
+          }
+        }
+      }
+    }
+
+    .file-preview {
+      position: relative;
+      border: 1px solid #ddd;
+      border-top: 0;
+      border-radius: 0 0 2px 2px;
+
+      .linenos {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 35px;
+        height: 100%;
+        padding: 0;
+        padding-top: 6px;
+        text-align: center;
+        color: rgba(0,0,0,.45);
+
+        .lineno {
+          line-height: 20px;
+          padding: 0;
+          margin: 0;
+        }
+      }
+
+      &.text {
+        &:extend(.code-font);
+        padding: 5px 15px;
+        padding-left: 45px;
+
+        .text {
+          white-space: pre-wrap;
+        }
+      }
+
+      &.media {
+        text-align: center;
+        background: #ddd;
+        padding: 30px 0;
+
+        img {
+          border: 1px solid #fff;
+          background-color: #fff;
+          background-size: 10px 10px;
+          background-position: 0 0, 5px 5px;
+          background-image:
+            linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd),
+            linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd);
+        }
+
+        video,
+        img,
+        audio {
+          max-width: 550px;
+          margin: auto;
+          height: auto;
+        }
+      }
+    }
+  }
+
   .view.revisions {
 
     .revisions-header {
@@ -116,14 +234,7 @@
       margin-bottom: 15px;
 
       .revision-header {
-        &:extend(.flex);
-        align-items: center;
-        height: 40px;
-        background: #fafafa;
-        padding: 0 10px;
-        border: 1px solid #ddd;
         cursor: pointer;
-        border-radius: 4px 4px 0 0;
 
         &.collapsed {
           border-radius: 4px;
@@ -446,104 +557,6 @@
   .builtin-main {
     width: 100%;
     margin-left: 0;
-  }
-
-  .file-preview-container {
-    border: 1px solid #ddd;
-    border-bottom: 0;
-    font-size: 12.5px;
-
-    .file-preview-header {
-      &:extend(.flex);
-      align-items: center;
-      height: 35px;
-      padding: 0 10px;
-      background: #fafafa;
-      border-bottom: 1px solid #ddd;
-
-      .file-info {
-        margin-right: 10px
-      }
-
-      .actions {
-        margin-left: auto;
-
-        a {
-          display: inline-block;
-          font-size: 14px;
-          color: @color-text--muted;
-          color: @color-text;
-          cursor: pointer;
-          height: 35px;
-          line-height: 35px;
-
-          * {
-            cursor: pointer;
-          }
-
-          &:hover {
-            color: @blue;
-          }
-        }
-      }
-    }
-
-    .file-preview {
-      position: relative;
-
-      .linenos {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 35px;
-        height: 100%;
-        padding: 0;
-        padding-top: 6px;
-        text-align: center;
-        color: rgba(0,0,0,.45);
-
-        .lineno {
-          line-height: 20px;
-          padding: 0;
-          margin: 0;
-        }
-      }
-
-      &.text {
-        &:extend(.code-font);
-        padding: 5px 15px;
-        padding-left: 45px;
-
-
-        .text {
-          white-space: pre-wrap;
-        }
-      }
-
-      &.media {
-        text-align: center;
-        background: #ddd;
-        padding: 30px 0;
-
-        img {
-          border: 1px solid #fff;
-          background-color: #fff;
-          background-size: 10px 10px;
-          background-position: 0 0, 5px 5px;
-          background-image:
-            linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd),
-            linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd);
-        }
-
-        video,
-        img,
-        audio {
-          max-width: 550px;
-          margin: auto;
-          height: auto;
-        }
-      }
-    }
   }
 
   .readme {
