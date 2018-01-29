@@ -490,11 +490,6 @@ function renderRevisionsView () {
     <div class="container">
       <div class="view revisions">
         <div class="revisions-header">
-          <button class="btn plain">
-            <span>Jump to...</span>
-            <i class="fa fa-caret-down"></i>
-          </button>
-
           <button class="btn plain" onclick=${onExpandAllRevisions}>
             <i class="fa fa-expand"></i>
             Expand all
