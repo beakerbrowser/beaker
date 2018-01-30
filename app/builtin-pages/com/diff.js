@@ -3,7 +3,9 @@ import yo from 'yo-yo'
 // exported api
 // =
 
-export default function render (diff) {
+export default function render (diff, path = '') {
+  let pathExt = path.split('.').pop()
+  
   let origIdx = 1
   let newIdx = 1
 
@@ -44,7 +46,7 @@ export default function render (diff) {
     <pre class="diff">
       <div class="linenos">${lineEls}</div>
       <div class="linenos linenos2">${lineEls2}</div>
-      ${diff.map(d => yo`<div class=${d.removed ? 'del' : d.added ? 'add' : ''}>${d.value}</div>`).map(highlight)}
+      ${diff.map(d => yo`<div class=${d.removed ? 'del' : d.added ? 'add' : ''}>${d.value}</div>`).map(el => highlight(el, pathExt))}
     </pre>
   `
 }
@@ -53,9 +55,9 @@ export default function render (diff) {
 // =
 
 // helper to apply syntax highlighting
-function highlight (diffEl) {
+function highlight (diffEl, pathExt) {
   if (typeof window.hljs !== 'undefined') {
-    let res = hljs.highlightAuto(diffEl.textContent)
+    let res = hljs.highlightAuto(diffEl.textContent, pathExt ? [pathExt] : undefined)
     if (res) diffEl.innerHTML = res.value
   }
   return diffEl

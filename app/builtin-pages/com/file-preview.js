@@ -8,8 +8,9 @@ export default function render (fileNode) {
   // check preview content first
   if (fileNode.preview) {
     if (typeof window.hljs !== 'undefined') {
+      let fileExt = (fileNode.name || '').split('.').pop()
       let el = yo`<div class="text"></div>`
-      el.innerHTML = hljs.highlightAuto(fileNode.preview).value
+      el.innerHTML = hljs.highlightAuto(fileNode.preview, fileExt ? [fileExt] : undefined).value
       return el
     }
     return yo`<div class="text">${fileNode.preview}</div>`

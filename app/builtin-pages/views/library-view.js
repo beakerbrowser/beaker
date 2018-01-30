@@ -416,7 +416,7 @@ function renderRevisionsView () {
           <p>This diff is too large to display.</p>
         </div>`
     } else if (rev.diff) {
-      el = renderDiff(rev.diff)
+      el = renderDiff(rev.diff, rev.path)
     } else {
       el = yo`
         <div class="loading">
