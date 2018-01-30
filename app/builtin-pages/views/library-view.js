@@ -501,12 +501,42 @@ function renderRevisionsView () {
     <div class="container">
       <div class="view revisions">
         <div class="revisions-header">
-          <button class="btn plain" onclick=${onExpandAllRevisions}>
-            <i class="fa fa-expand"></i>
-            Expand all
-          </button>
+          <span>Showing</span>
+
+          ${additions.length
+            ? yo`
+              <span class="change-count">
+                ${additions.length} ${pluralize(additions.length, 'addition')}
+              </span>`
+            : ''
+          }
+
+          ${additions.length && modifications.length ? ' , ' : ''}
+
+          ${modifications.length
+            ? yo`
+              <span class="change-count">
+                ${modifications.length} ${pluralize(modifications.length, 'modification')}
+              </span>`
+            : ''
+          }
+
+          ${modifications.length && deletions.length ? ' , ' : ''}
+
+          ${deletions.length
+            ? yo`
+              <span class="change-count">
+                ${deletions.length} ${pluralize(deletions.length, 'deletion')}
+              </span>`
+            : ''
+          }
 
           <div class="actions">
+            <button class="btn plain" onclick=${onExpandAllRevisions}>
+              <i class="fa fa-expand"></i>
+              Expand all
+            </button>
+
             <button class="btn" onclick=${e => onRevertAllRevisions(e)}>
               Revert all
             </button>
@@ -622,6 +652,25 @@ function renderActions () {
       }
 
       ${renderEditButton()}
+
+      ${toggleable(yo`
+        <button class="dropdown toggleable-container">
+          <div class="dropdown-items with-triangle right">
+            ${!archive.info.isOwner
+              ? yo`<div class="dropdown-item" onclick=${onFork}>
+                <i class="fa fa-code-fork"></i>
+                  Fork
+                </div>`
+              : ''
+            }
+
+            <div class="dropdown-item" onclick=${() => onFork(row.url)}>
+              <i class="fa fa-download"></i>
+              Download files
+            </div>
+          </div>
+        </button>
+      `)}
 
       <button class="btn">
         <i class="fa fa-ellipsis-v"></i>
