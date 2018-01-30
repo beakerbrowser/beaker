@@ -14,6 +14,9 @@ export function setup () {
         pages.setActive(page)
         navbar.focusLocation(page)
         return
+      case 'file:new-background-tab':
+        pages.create(arg1)
+        return
       case 'file:open-location': return navbar.focusLocation(page)
       case 'file:close-tab': return pages.remove(page)
       case 'file:reopen-closed-tab': return pages.reopenLastRemoved()

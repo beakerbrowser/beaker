@@ -103,6 +103,7 @@ export default function registerContextMenu () {
       // links
       if (props.linkURL && props.mediaType === 'none') {
         menuItems.push({ label: 'Open Link in New Tab', click: (item, win) => win.webContents.send('command', 'file:new-tab', props.linkURL) })
+        menuItems.push({ label: 'Open Link in Background Tab', click: (item, win) => win.webContents.send('command', 'file:new-background-tab', props.linkURL) })
         menuItems.push({ label: 'Copy Link Address', click: () => clipboard.writeText(props.linkURL) })
         menuItems.push({ type: 'separator' })
       }
