@@ -415,6 +415,13 @@ function renderRevisionsView () {
           <a href="workspace://${workspaceInfo.name}${rev.path}" class="action">View file</a>
           <p>This diff is too large to display.</p>
         </div>`
+    } else if (!(rev.diffAdditions || rev.diffDeletions)) {
+      el = yo`
+        <div class="empty">
+          <i class="fa fa-code"></i>
+          <p>Empty file</p>
+        </div>
+      `
     } else if (rev.diff) {
       el = renderDiff(rev.diff, rev.path)
     } else {
