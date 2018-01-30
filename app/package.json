@@ -50,6 +50,7 @@
     "lodash.flattendeep": "^4.4.0",
     "lodash.get": "^4.4.2",
     "lodash.groupby": "^4.6.0",
+    "lodash.pick": "^4.4.0",
     "mime": "^1.4.0",
     "mkdirp": "^0.5.1",
     "moment": "^2.15.2",

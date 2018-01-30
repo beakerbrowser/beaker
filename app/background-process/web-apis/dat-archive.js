@@ -2,14 +2,17 @@ import path from 'path'
 import parseDatURL from 'parse-dat-url'
 import pda from 'pauls-dat-api'
 import concat from 'concat-stream'
+import pick from 'lodash.pick'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
+import * as workspacesDb from '../dbs/workspaces'
 // import {getProfileRecord, getAPI as getProfilesAPI} from '../ingests/profiles' TODO(profiles) disabled -prf
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {getWebContentsWindow} from '../../lib/electron'
 import {checkFolderIsEmpty} from '../../lib/bg/fs'
+import * as scopedFSes from '../../lib/bg/scoped-fses'
 import {getPermissions} from '../dbs/sitedata'
 import {queryPermission, grantPermission, requestPermission} from '../ui/permissions'
 import {
@@ -179,7 +182,9 @@ export default {
       }
 
       if ('title' in settings || 'description' in settings || 'type' in settings) {
-        await pda.updateManifest(archive, settings)
+        let manifestUpdates = pick(settings, ['title', 'description', 'type'])
+        await pda.updateManifest(archive, manifestUpdates)
+        updateWorkspaceManifest(archive, manifestUpdates)
         await datLibrary.pullLatestArchiveMeta(archive)
       }
       if ('networked' in settings) {
@@ -670,6 +675,15 @@ async function lookupUrlDatKey (url) {
 
 function massageHistoryObj ({name, version, type}) {
   return {path: name, version, type}
+}
+
+async function updateWorkspaceManifest (archive, manifestUpdates) {
+  const ws = await workspacesDb.getByPublishTargetUrl(0, 'dat://' + archive.key.toString('hex'))
+  if (!ws || !ws.localFilesPath) return
+  const scopedFS = scopedFSes.get(ws.localFilesPath)
+  if (!scopedFS) return
+  scopedFS.writable = true // get PDA to work with the scoped fs (PDA expects an archive)
+  await pda.updateManifest(scopedFS, manifestUpdates)
 }
 
 function noop () {}
