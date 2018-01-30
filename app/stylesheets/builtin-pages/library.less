@@ -210,12 +210,11 @@
       &:extend(.flex);
       flex-wrap: nowrap;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
 
-      .revisions-summary {
-        font-weight: 500;
-        color: @blue;
-        margin-right: 15px;
+      .change-count {
+        font-weight: 600;
+        padding-left: 4px;
       }
 
       .actions {
@@ -231,7 +230,7 @@
     .revision {
       border-bottom: 0;
       list-style: none;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
 
       .revision-header {
         cursor: pointer;
@@ -311,15 +310,7 @@
         border-top: 0;
         border-radius: 0 0 2px 2px;
 
-        .folder {
-
-          .fa {
-            font-size: 48px;
-            color: rgba(0,0,0,.15);
-            margin-bottom: 10px;
-          }
-        }
-
+        .empty,
         .source-too-large,
         .folder,
         .loading {
@@ -334,6 +325,12 @@
             &:last-child {
               margin-bottom: 0;
             }
+          }
+
+          .fa {
+            font-size: 48px;
+            color: rgba(0,0,0,.15);
+            margin-bottom: 10px;
           }
 
           .action {
