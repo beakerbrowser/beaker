@@ -8,11 +8,11 @@ function render (message, type = '') {
   `
 }
 
-export function create (message, type = '') {
+export function create (message, type = '', time = 1500) {
   // render toast
   var toast = render(message, type)
   document.body.appendChild(toast)
-  setTimeout(destroy, 1500)
+  setTimeout(destroy, time)
 }
 
 function destroy () {

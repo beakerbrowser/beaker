@@ -15,6 +15,7 @@ import {throttle} from '../../lib/functions'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
+import {IS_GIT_URL_REGEX} from '../../lib/const'
 
 // globals
 // =
@@ -33,7 +34,8 @@ var readmeElement
 // false means not editing
 var settingsEditValues = {
   title: false,
-  description: false
+  description: false,
+  repository: false
 }
 
 var error
@@ -260,42 +262,51 @@ function renderFilesView () {
 function renderSettingsView () {
   const isOwner = archive.info.isOwner
 
-  var titleEl = isOwner && settingsEditValues.title !== false
-    ? yo`<td><input id="edit-title" onkeyup=${e => onKeyupSettingsEdit(e, 'title')} value=${settingsEditValues.title} type="text"/></td>`
-    : yo`
-      <td>
-        ${getSafeTitle()}
-        ${isOwner
-          ? yo`
-            <button class="btn plain" onclick=${e => onClickSettingsEdit(e, 'title')}>
-              <i class="fa fa-pencil"></i>
-            </button>`
-          : ''}
-      </td>`
+  function renderEditable (key, value) {
+    return isOwner && settingsEditValues[key] !== false
+      ? yo`
+        <td>
+          <input
+            id="edit-${key}"
+            onkeyup=${e => onKeyupSettingsEdit(e, key)}
+            value=${settingsEditValues[key] || ''}
+            type="text" />
+        </td>`
+      : yo`
+        <td>
+          ${value}
+          ${isOwner
+            ? yo`
+              <button class="btn plain" onclick=${e => onClickSettingsEdit(e, key)}>
+                <i class="fa fa-pencil"></i>
+              </button>`
+            : ''}
+        </td>`
+  }
 
-  var descEl = isOwner && settingsEditValues.description !== false
-    ? yo`<td><input id="edit-description" onkeyup=${e => onKeyupSettingsEdit(e, 'description')} value=${settingsEditValues.description} type="text"/></td>`
-    : yo`
-      <td>
-        ${getSafeDesc()}
-        ${isOwner
-          ? yo`
-            <button class="btn plain" onclick=${e => onClickSettingsEdit(e, 'description')}>
-              <i class="fa fa-pencil"></i>
-            </button>`
-          : ''}
-      </td>`
-
+  let wsPath = workspaceInfo && workspaceInfo.localFilesPath
+  if (wsPath && wsPath.indexOf(' ') !== -1) wsPath = `"${wsPath}"`
   return yo`
     <div class="container">
       <div class="settings view">
         <table>
-          <tr><td class="label">Title</td>${titleEl}</tr>
-          <tr><td class="label">Description</td>${descEl}</tr>
+          <tr><td class="label">Title</td>${renderEditable('title', getSafeTitle())}</tr>
+          <tr><td class="label">Description</td>${renderEditable('description', getSafeDesc())}</tr>
+          <tr><td class="label">Repository</td>${renderEditable('repository', renderRepositoryLink())}</tr>
           <tr><td class="label">Size</td><td>${prettyBytes(archive.info.size)}</td></tr>
           <tr><td class="label">Last Updated</td><td>${archive.info.mtime ? niceDate(archive.info.mtime) : ''}</td></tr>
           <tr><td class="label">Editable</td><td>${archive.info.isOwner ? 'Yes' : 'No'}</td></tr>
         </table>
+
+        ${''/* TODO archive.info.repository && wsPath
+          ? yo`<div class="git-setup-commands">
+            <h3>Setup the git repo in your workspace</h3>
+<pre><code>cd ${wsPath}
+git init
+git remote add origin ${archive.info.repository}
+git fetch
+git reset origin/master</code></pre>
+          ` : ''*/}
       </div>
     </div>
   `
@@ -717,6 +728,17 @@ function renderEditButton () {
   }
 }
 
+function renderRepositoryLink () {
+  if (!archive.info.manifest.repository) return ''
+  let url = archive.info.manifest.repository
+  if (url.startsWith('git@')) {
+    // a GitHub ssh url, do a little transforming
+    url = url.replace(':', '/')
+    url = 'https://' + url.slice('git@'.length)
+  }
+  return yo`<a href=${url} target="_blank">${archive.info.manifest.repository}</a>`
+}
+
 // events
 // =
 
@@ -950,8 +972,20 @@ function onClickOutsideSettingsEditInput (e) {
 async function onKeyupSettingsEdit (e, attr) {
   if (e.keyCode == 13) {
     // enter-key
-    await archive.configure({[attr]: settingsEditValues[attr]})
-    Object.assign(archive.info, {[attr]: settingsEditValues[attr]})
+    let value = settingsEditValues[attr]
+
+    // validate
+    if (attr === 'repository' && value && !IS_GIT_URL_REGEX.test(value)) {
+      toast.create('Repository must be a valid Git URL.', 'error', 3e3)
+      e.target.classList.add('error')
+      return
+    }
+
+    // assign
+    await archive.configure({[attr]: value})
+    Object.assign(archive.info, {[attr]: value})
+    Object.assign(archive.info.manifest, {[attr]: value})
+    document.title = `Library - ${archive.info.title || 'Untitled'}`
     settingsEditValues[attr] = false
     render()
   } else if (e.keyCode == 27) {
@@ -973,7 +1007,7 @@ function onClickSettingsEdit (e, attr) {
   }
 
   // update state
-  settingsEditValues[attr] = archive.info[attr]
+  settingsEditValues[attr] = archive.info.manifest[attr]
   render()
 
   // focus the element

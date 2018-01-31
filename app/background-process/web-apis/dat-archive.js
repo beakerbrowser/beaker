@@ -175,14 +175,15 @@ export default {
 
       checkin('updating archive')
 
-      // only allow type and networked to be set by beaker, for now
+      // only allow special attrs be set by beaker, for now
       if (!this.sender.getURL().startsWith('beaker:')) {
         delete settings.type
         delete settings.networked
+        delete settings.repository
       }
 
-      if ('title' in settings || 'description' in settings || 'type' in settings) {
-        let manifestUpdates = pick(settings, ['title', 'description', 'type'])
+      let manifestUpdates = pick(settings, ['title', 'description', 'type', 'repository'])
+      if (Object.keys(manifestUpdates).length) {
         await pda.updateManifest(archive, manifestUpdates)
         updateWorkspaceManifest(archive, manifestUpdates)
         await datLibrary.pullLatestArchiveMeta(archive)

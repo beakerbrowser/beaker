@@ -421,8 +421,27 @@
       }
 
       .btn {
+        position: relative;
+        top: -2px;
         height: 19px;
         line-height: 1;
+        padding: 0 3px;
+      }
+
+      input.error {
+        border-color: @border-message--error;
+      }
+    }
+
+    .git-setup-commands {
+      pre {
+        &:extend(.code-font);
+        padding: 10px;
+        font-size: 13px;
+        line-height: 1.42857143;
+        color: #333;
+        background-color: #f5f5f5;
+        border-radius: 4px;
       }
     }
   }

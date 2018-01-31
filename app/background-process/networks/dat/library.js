@@ -115,7 +115,7 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
       archivesDb.getMeta(key),
       updateSizeTracking(archive)
     ])
-    manifest = manifest || {}
+    manifest = archive.manifest = manifest || {}
     var {title, description, type} = manifest
     var isOwner = archive.writable
     var size = archive.size || 0
@@ -393,6 +393,7 @@ export async function getArchiveInfo (key) {
   ])
   meta.key = key
   meta.url = `dat://${key}`
+  meta.manifest = archive.manifest
   meta.version = archive.version
   meta.size = archive.size
   meta.userSettings = {
