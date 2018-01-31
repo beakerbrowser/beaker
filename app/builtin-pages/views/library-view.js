@@ -6,6 +6,7 @@ import {FSArchive} from 'beaker-virtual-fs'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import FilesBrowser from '../com/files-browser2'
 import renderDiff from '../com/diff'
+import toggleable from '../com/toggleable'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
 import * as workspacePopup from '../com/library-workspace-popup'
@@ -654,27 +655,46 @@ function renderActions () {
       ${renderEditButton()}
 
       ${toggleable(yo`
-        <button class="dropdown toggleable-container">
+        <div class="dropdown toggleable-container">
+          <button class="btn toggleable">
+            <i class="fa fa-ellipsis-v"></i>
+          </button>
+
           <div class="dropdown-items with-triangle right">
-            ${!archive.info.isOwner
-              ? yo`<div class="dropdown-item" onclick=${onFork}>
-                <i class="fa fa-code-fork"></i>
-                  Fork
+            <div class="dropdown-item" onclick=${onFork}>
+              <i class="fa fa-code-fork"></i>
+              Fork
+            </div>
+
+            ${workspaceInfo
+              ? yo`
+                <div class="dropdown-item">
+                  <i class="fa fa-folder-open-o"></i>
+                  ${workspaceInfo.localFilesPath ? 'Change' : 'Set'} local path
                 </div>`
               : ''
             }
 
-            <div class="dropdown-item" onclick=${() => onFork(row.url)}>
-              <i class="fa fa-download"></i>
-              Download files
+            <div class="dropdown-item" onclick=${onDownloadZip}>
+              <i class="fa fa-file-archive-o"></i>
+              Download as .zip
             </div>
-          </div>
-        </button>
-      `)}
 
-      <button class="btn">
-        <i class="fa fa-ellipsis-v"></i>
-      </button>
+            ${archive.info.userSettings.isSaved
+              ? yo`
+                <div class="dropdown-item" onclick=${onDelete}>
+                  <i class="fa fa-trash-o"></i>
+                  Move to Trash
+                </div>`
+              : yo`
+                <div class="dropdown-item" onclick=${onSave}>
+                  <i class="fa fa-download"></i>
+                  Save to your Library
+                </div>`
+            }
+          </div>
+        </div>
+      `)}
     </div>
   `
 }
@@ -699,6 +719,35 @@ function renderEditButton () {
 
 // events
 // =
+
+async function onFork () {
+  const fork = await DatArchive.fork(archive.url, {prompt: true}).catch(() => {})
+  window.location = `beaker://library/${fork.url}`
+}
+
+async function onDelete () {
+  const nickname = archive.info.title || archive.url
+  if (confirm(`Move ${nickname} to Trash?`)) {
+    try {
+      await beaker.archives.remove(archive.url)
+      archive.info.userSettings.isSaved = false
+    } catch (_) {
+      toast.create(`Could not move ${nickname} to Trash`, 'error')
+    }
+  }
+  render()
+}
+
+async function onSave () {
+  const nickname = archive.info.title || archive.url
+  try {
+    await beaker.archives.add(archive.url)
+    archive.info.userSettings.isSaved = true
+  } catch (_) {
+    toast.create(`Could not save ${nickname} to your Library`, 'error')
+  }
+  render()
+}
 
 async function onChangeView (e, view) {
   e.preventDefault()
@@ -810,9 +859,17 @@ function onOpenFolder (path) {
   beaker.browser.openFolder(path)
 }
 
-function onCopyUrl () {
+function onDownloadZip () {
+  beaker.browser.downloadURL(`${archive.url}?download_as=zip`)
+}
+
+function onChangeWorkspaceDirectory () {
+
+}
+
+function onCopy (str) {
   if (archive.info) {
-    writeToClipboard(archive.info.url)
+    writeToClipboard(str)
     copySuccess = true
     render()
 
