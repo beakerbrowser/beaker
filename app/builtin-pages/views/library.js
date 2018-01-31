@@ -273,13 +273,13 @@ async function onDelete (e, archive) {
   e.preventDefault()
 
   const nickname = archive.title || archive.url
-  if (confirm(`Delete ${nickname} from your Library?`)) {
+  if (confirm(`Move ${nickname} to Trash?`)) {
     try {
       await beaker.archives.remove(archive.url)
       await loadArchives()
       render()
     } catch (_) {
-      toast.create(`Could not remove ${nickname} from your Library`, 'error')
+      toast.create(`Could not move ${nickname} to Trash`, 'error')
     }
   }
   render()

@@ -632,8 +632,8 @@ function renderMetadata () {
       <span class="separator">―</span>
 
       <div class="url-info">
-        <a href=${archive.info.url} class="url" target="_blank">${shortenHash(archive.info.url)}</a>
-        <button class="btn plain" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${onCopyUrl}>
+        <a href=${archive.info.url} class="url" target="_blank">${shortenHash(archive.url)}</a>
+        <button class="btn plain" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url)}>
           <i class="fa fa-clipboard"></i>
         </button>
       </div>
