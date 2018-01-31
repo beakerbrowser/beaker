@@ -759,9 +759,7 @@ async function onPublishRevision (e, rev) {
 
   if (!rev) return
   if (!confirm(`Publish ${rev.path.slice(1)}?`)) return
-
-  let paths = (rev.type === 'dir') ? [rev.path + '/'] : [rev.path] // add a trailing slash to identify folders
-  await beaker.workspaces.publish(0, workspaceInfo.name, {paths: paths})
+  await beaker.workspaces.publish(0, workspaceInfo.name, {paths: [rev.path]})
 }
 
 async function onPublishAllRevisions (e) {
@@ -780,9 +778,7 @@ async function onRevertRevision (e, rev) {
 
   if (!rev) return
   if (!confirm(`Revert changes to ${rev.path.slice(1)}?`)) return
-
-  let paths = (rev.type === 'dir') ? [rev.path + '/'] : [rev.path] // add a trailing slash to identify folders
-  await beaker.workspaces.revert(0, workspaceInfo.name, {paths})
+  await beaker.workspaces.revert(0, workspaceInfo.name, {paths: [rev.path]})
 }
 
 async function onRevertAllRevisions (e) {
