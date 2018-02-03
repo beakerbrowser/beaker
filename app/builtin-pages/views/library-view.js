@@ -262,7 +262,7 @@ function renderFilesView () {
 function renderSettingsView () {
   const isOwner = archive.info.isOwner
 
-  function renderEditable (key, value) {
+  function renderEditable (key, value, placeholder='') {
     return isOwner && settingsEditValues[key] !== false
       ? yo`
         <td>
@@ -274,7 +274,7 @@ function renderSettingsView () {
         </td>`
       : yo`
         <td>
-          ${value}
+          ${value.length ? value : yo`<em>${placeholder}</em>`}
           ${isOwner
             ? yo`
               <button class="btn plain" onclick=${e => onClickSettingsEdit(e, key)}>
