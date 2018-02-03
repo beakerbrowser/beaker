@@ -290,12 +290,35 @@ function renderSettingsView () {
     <div class="container">
       <div class="settings view">
         <table>
-          <tr><td class="label">Title</td>${renderEditable('title', getSafeTitle())}</tr>
-          <tr><td class="label">Description</td>${renderEditable('description', getSafeDesc())}</tr>
-          <tr><td class="label">Repository</td>${renderEditable('repository', renderRepositoryLink())}</tr>
-          <tr><td class="label">Size</td><td>${prettyBytes(archive.info.size)}</td></tr>
-          <tr><td class="label">Last Updated</td><td>${archive.info.mtime ? niceDate(archive.info.mtime) : ''}</td></tr>
-          <tr><td class="label">Editable</td><td>${archive.info.isOwner ? 'Yes' : 'No'}</td></tr>
+          <tr>
+            <td class="label">Title</td>
+            ${renderEditable('title', getSafeTitle())}
+          </tr>
+
+          <tr>
+            <td class="label">Description</td>
+            ${renderEditable('description', getSafeDesc())}
+          </tr>
+
+          <tr>
+            <td class="label">Repository</td>
+            ${renderEditable('repository', renderRepositoryLink(), 'Add a Git repository')}
+          </tr>
+
+          <tr>
+            <td class="label">Size</td>
+            <td>${prettyBytes(archive.info.size)}</td>
+          </tr>
+
+          <tr>
+            <td class="label">Last Updated</td>
+            <td>${archive.info.mtime ? niceDate(archive.info.mtime) : ''}</td>
+          </tr>
+
+          <tr>
+            <td class="label">Editable</td>
+            <td>${archive.info.isOwner ? 'Yes' : 'No'}</td>
+          </tr>
         </table>
 
         ${''/* TODO archive.info.repository && wsPath
