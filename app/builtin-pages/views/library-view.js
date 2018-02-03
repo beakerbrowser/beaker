@@ -380,31 +380,48 @@ function renderNetworkView () {
     <div class="container">
       <div class="view network">
         <div class="section">
-          <h2 class="subtitle-heading">Download status</h2>
+          <div class="module">
+            <h2 class="module-heading">Download status</h2>
 
-          <progress value=${progress.current} max="100">
-            ${progress.current}
-          </progress>
+            <div class="module-content">
+              <progress value=${progress.current} max="100">
+                ${progress.current}
+              </progress>
 
-          <div class="download-status">
-            <div class="progress-ui ${progressCls}">
-              <div style="width: ${progressPercentage}" class="completed">
-                ${progressPercentage}
+              <div class="download-status">
+                <div class="progress-ui ${progressCls}">
+                  <div style="width: ${progressPercentage}" class="completed">
+                    ${progressPercentage}
+                  </div>
+                </div>
+
+                <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
+                  <i class="fa fa-${seedingIcon}"></i>
+                </button>
               </div>
-
-              <div class="label">${progressLabel}</div>
             </div>
 
-            <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
-              <i class="fa fa-${seedingIcon}"></i>
-            </button>
+            <div class="module-footer two">
+              <div>${progressLabel}</div>
+              <div>${prettyBytes(archive.info.size)}</div>
+            </div>
           </div>
         </div>
 
         <div class="section">
-          <h2 class="subtitle-heading">Network activity (last hour)</h2>
+          <div class="module">
+            <h2 class="module-heading">Network activity (last hour)</h2>
 
-          ${renderPeerHistoryGraph(archive.info)}
+            <div class="module-content">
+              ${renderPeerHistoryGraph(archive.info)}
+            </div>
+
+            <div class="module-footer">
+              <div>
+                ${archive.info.peers} ${pluralize(archive.info.peers, 'active peer')}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

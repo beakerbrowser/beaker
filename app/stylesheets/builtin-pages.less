@@ -601,4 +601,44 @@
       max-width: none;
     }
   }
+
+  .module {
+
+    .module-heading {
+      background: #fafafa;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px 4px 0 0;
+      font-size: .9rem;
+      font-weight: 500;
+    }
+
+    .module-content {
+      padding: 20px 15px;
+      border-left: 1px solid #ddd;
+      border-right: 1px solid #ddd;
+    }
+
+    .module-footer {
+      &:extend(.flex);
+      border: 1px solid #ddd;
+      border-radius: 0 0 4px 4px;
+
+      > div {
+        flex-basis: 100%;
+        text-align: center;
+        font-weight: 500;
+        padding: 10px;
+        font-size: .85rem;
+
+        &:not(:last-child) {
+          border-right: 1px solid #ddd;
+        }
+      }
+
+      &.two > div {
+        flex-basis: 50%;
+      }
+    }
+  }
 }
