@@ -414,9 +414,11 @@ function renderNetworkView () {
       <div class="view network">
         <div class="section">
           <div class="module">
-            <h2 class="module-heading">Download status</h2>
+            <h2 class="module-heading">Network overview</h2>
 
             <div class="module-content">
+              <h3 class="subtitle-heading">Download status</h3>
+
               <progress value=${progress.current} max="100">
                 ${progress.current}
               </progress>
@@ -426,36 +428,39 @@ function renderNetworkView () {
                   <div style="width: ${progressPercentage}" class="completed">
                     ${progressPercentage}
                   </div>
+                  <div class="label">${progressLabel}</div>
                 </div>
 
                 <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
                   <i class="fa fa-${seedingIcon}"></i>
                 </button>
               </div>
-            </div>
 
-            <div class="module-footer two">
-              <div>${progressLabel}</div>
-              <div>${prettyBytes(archive.info.size)}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="module">
-            <h2 class="module-heading">Network activity (last hour)</h2>
-
-            <div class="module-content">
+              <h3 class="subtitle-heading">Network activity (last hour)</h3>
               ${renderPeerHistoryGraph(archive.info)}
             </div>
 
-            <div class="module-footer">
+            <div class="module-footer two">
               <div>
-                ${archive.info.peers} ${pluralize(archive.info.peers, 'active peer')}
+                ${downloadedBytes !== archive.info.size
+                  ? yo`
+                    <div class="value">
+                      ${prettyBytes(downloadedBytes)} / ${prettyBytes(archive.info.size)}
+                    </div>`
+                  : yo`
+                    <div class="value">
+                      ${prettyBytes(downloadedBytes)}
+                    </div>`
+                }
+                <div class="label">saved to your device</div>
+              </div>
+
+              <div>
+                <div class="value">${archive.info.peers}</div>
+                <div class="label">${pluralize(archive.info.peers, 'active peer')}</div>
               </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
   `
