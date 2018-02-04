@@ -5,7 +5,7 @@ const MINMAX = 5
 const EDGE_PADDING = 5
 const LEGEND_WIDTH = 25
 const TIME_SPAN = 1e3 * 60 * 60 // past hour
-const WIDTH = 800
+const WIDTH = 780
 const HEIGHT = 100
 
 function scaleX (x) {
