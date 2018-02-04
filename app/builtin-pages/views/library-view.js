@@ -555,14 +555,18 @@ function renderRevisionsView () {
             </button>
 
             <div class="btn-group">
-              <a
-                onclick=${(e) => e.stopPropagation()}
-                href="workspace://${workspaceInfo.name}${rev.path}"
-                target="_blank"
-                class="btn"
-                data-tooltip="View file">
-                View
-              </a>
+              ${rev.change === 'del'
+                ? ''
+                : yo`
+                  <a
+                    onclick=${(e) => e.stopPropagation()}
+                    href="workspace://${workspaceInfo.name}${rev.path}"
+                    target="_blank"
+                    class="btn"
+                    data-tooltip="View file">
+                    View
+                  </a>`
+              }
 
               <button class="btn" data-tooltip="Revert" onclick=${e => onRevertRevision(e, rev)}>
                 <i class="fa fa-undo"></i>
