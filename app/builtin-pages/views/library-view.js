@@ -297,12 +297,7 @@ function renderSettingsView () {
 
           <tr>
             <td class="label">Description</td>
-            ${renderEditable('description', getSafeDesc())}
-          </tr>
-
-          <tr>
-            <td class="label">Repository</td>
-            ${renderEditable('repository', renderRepositoryLink(), 'Add a Git repository')}
+            ${renderEditable('description', getSafeDesc(), 'Set description')}
           </tr>
 
           <tr>
@@ -313,6 +308,44 @@ function renderSettingsView () {
           <tr>
             <td class="label">Last Updated</td>
             <td>${archive.info.mtime ? niceDate(archive.info.mtime) : ''}</td>
+          </tr>
+
+          <tr>
+            <td class="label">URL</td>
+            <td>
+              <a href=${archive.url} target="_blank">${archive.url}</a>
+            </td>
+          </tr>
+
+          ${workspaceInfo
+            ? yo`
+              <tr>
+                <td class="label">Preview URL</td>
+                <td>
+                  <a href="workspace://${workspaceInfo.name}" target="_blank">
+                    workspace://${workspaceInfo.name}
+                  </a>
+                </td>
+              </tr>`
+            : ''
+          }
+
+          ${workspaceInfo && workspaceInfo.localFilesPath
+            ? yo`
+              <tr>
+                <td class="label">Local path</td>
+                <td>
+                  <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+                    ${workspaceInfo.localFilesPath}
+                  </span>
+                </td>
+              </tr>`
+            : ''
+          }
+
+          <tr>
+            <td class="label">Repository</td>
+            ${renderEditable('repository', renderRepositoryLink(), 'Set Git repository')}
           </tr>
 
           <tr>
