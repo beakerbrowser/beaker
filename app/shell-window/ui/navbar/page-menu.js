@@ -186,7 +186,7 @@ export class PageMenuNavbarBtn {
     this.close()
     const page = pages.getActive()
     if (!page || !page.getViewedDatOrigin()) return
-    page.loadURL(`beaker://filesystem/${page.siteInfo.key}`)
+    page.loadURL(`beaker://library/dat://${page.siteInfo.key}`)
   }
 
   async onClickFork () {
