@@ -625,6 +625,11 @@ function renderRevisionsView () {
             : ''
           }
 
+          <a href="workspace://${workspaceInfo.name}" class="btn preview-btn">
+            <span>Live preview</span>
+            <i class="fa fa-external-link"></i>
+          </a>
+
           <div class="actions">
             <button class="btn plain" onclick=${onExpandAllRevisions}>
               <i class="fa fa-expand"></i>
