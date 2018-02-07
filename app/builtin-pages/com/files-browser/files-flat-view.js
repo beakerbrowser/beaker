@@ -231,6 +231,10 @@ function onClickNode (e, filesBrowser, node) {
   filesBrowser.setCurrentSource(node)
 }
 
+async function emitAddFile (src, dst) {
+  document.body.dispatchEvent(new CustomEvent('custom-add-file', {detail: {src, dst}}))
+}
+
 async function onAddFiles (e, node, filesOnly) {
   var files = await beaker.browser.showOpenDialog({
     title: 'Add files to this archive',
@@ -238,12 +242,7 @@ async function onAddFiles (e, node, filesOnly) {
     properties: ['openFile', filesOnly ? false : 'openDirectory', 'multiSelections', 'createDirectory'].filter(Boolean)
   })
   if (files) {
-    files.forEach(src => DatArchive.importFromFilesystem({
-      src,
-      dst: node.url,
-      ignore: ['dat.json'],
-      inplaceImport: false
-    }))
+    files.forEach(src => emitAddFile(src, node.url))
   }
 }
 
@@ -254,11 +253,6 @@ async function onAddFolder (e, node) {
     properties: ['openDirectory', 'createDirectory']
   })
   if (files) {
-    files.forEach(src => DatArchive.importFromFilesystem({
-      src,
-      dst: node.url,
-      ignore: ['dat.json'],
-      inplaceImport: false
-    }))
+    files.forEach(src => emitAddFile(src, node.url))
   }
 }
