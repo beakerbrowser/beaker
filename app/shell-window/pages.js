@@ -70,6 +70,21 @@ export function setup () {
       }
     })
   })
+
+  events.on('update', e => {
+    ipcRenderer.send('shell-window:pages-updated', takeSnapshot())
+  })
+}
+
+export function initializeFromSnapshot(snapshot) {
+  console.log('[ipc][command] initialize', snapshot)
+  for (let url of snapshot) create(url);
+}
+
+function takeSnapshot() {
+  return getAll()
+    .filter((p) => !p.isPinned)
+    .map((p) => p.getIntendedURL())
 }
 
 export function create (opts) {
@@ -300,7 +315,6 @@ export function create (opts) {
   webviewsDiv.appendChild(page.webviewEl)
 
   // emit
-  events.emit('update')
   events.emit('add', page)
 
   // register events
@@ -334,7 +348,10 @@ export function create (opts) {
   page.webviewEl.addEventListener('page-favicon-updated', rebroadcastEvent)
 
   // make active if none others are
-  if (!activePage) { setActive(page) }
+  if (!activePage) {
+    events.emit('first-page', page)
+    setActive(page)
+  }
 
   return page
 }
@@ -411,6 +428,7 @@ export function togglePinned (page) {
   // update page state
   page.isPinned = !page.isPinned
   events.emit('pin-updated', page)
+  events.emit('update', page)
 
   // persist
   savePinnedToDB()
@@ -440,6 +458,8 @@ export function reorderTab (page, offset) {
   // ok, do the swap
   pages[srcIndex] = swapPage
   pages[dstIndex] = page
+
+  events.emit('update')
   return true
 }
 
@@ -793,6 +813,7 @@ function onDidFinishLoad (e) {
     page.favicons = null
     navbar.update(page)
     navbar.updateLocation(page)
+    events.emit('update')
   }
 }
 

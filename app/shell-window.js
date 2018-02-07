@@ -6,5 +6,5 @@ import beaker from './lib/web-apis/beaker'
 window.DatArchive = DatArchive
 window.beaker = beaker
 setupUI(() => {
-  ipcRenderer.send('shell-window-ready')
+  ipcRenderer.send('shell-window:ready')
 })
