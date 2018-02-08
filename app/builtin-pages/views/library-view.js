@@ -281,9 +281,9 @@ function renderFooter () {
             : ''
           }
 
-          ${workspaceInfo && !workspaceInfo.localFilesPath
+          ${archive.info.isOwner && (!workspaceInfo || !workspaceInfo.localFilesPath)
             ? yo`
-              <em class="path" onclick=${onChangeWorkspaceDirectory}>
+              <em class="path" onclick=${onEdit}>
                 Set local files directory
               </em>`
             : ''
