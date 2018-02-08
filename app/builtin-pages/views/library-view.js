@@ -300,9 +300,7 @@ function renderFooter () {
 
         <div class="btn-group">
           ${renderEditButton()}
-          <button class="btn primary nofocus">
-            <i class="fa fa-caret-up"></i>
-          </button>
+          ${renderMenu()}
         </div>
       </div>
     </footer>
@@ -748,50 +746,47 @@ function renderTabs () {
 }
 
 function renderMenu () {
-  return yo`
-      ${toggleable(yo`
-        <div class="dropdown toggleable-container">
-          <button class="btn toggleable">
-            <i class="fa fa-ellipsis-v"></i>
-          </button>
+  return toggleable(yo`
+    <div class="dropdown toggleable-container">
+      <button class="btn primary nofocus toggleable">
+        <i class="fa fa-caret-up"></i>
+      </button>
 
-          <div class="dropdown-items with-triangle right">
-            <div class="dropdown-item" onclick=${onFork}>
-              <i class="fa fa-code-fork"></i>
-              Fork
-            </div>
-
-            ${workspaceInfo
-              ? yo`
-                <div class="dropdown-item">
-                  <i class="fa fa-folder-open-o"></i>
-                  ${workspaceInfo.localFilesPath ? 'Change' : 'Set'} local path
-                </div>`
-              : ''
-            }
-
-            <div class="dropdown-item" onclick=${onDownloadZip}>
-              <i class="fa fa-file-archive-o"></i>
-              Download as .zip
-            </div>
-
-            ${archive.info.userSettings.isSaved
-              ? yo`
-                <div class="dropdown-item" onclick=${onDelete}>
-                  <i class="fa fa-trash-o"></i>
-                  Move to Trash
-                </div>`
-              : yo`
-                <div class="dropdown-item" onclick=${onSave}>
-                  <i class="fa fa-download"></i>
-                  Save to your Library
-                </div>`
-            }
-          </div>
+      <div class="dropdown-items top right subtle-shadow">
+        <div class="dropdown-item" onclick=${onFork}>
+          <i class="fa fa-code-fork"></i>
+          Fork
         </div>
-      `)}
+
+        ${workspaceInfo
+          ? yo`
+            <div class="dropdown-item">
+              <i class="fa fa-folder-open-o"></i>
+              ${workspaceInfo.localFilesPath ? 'Change' : 'Set'} local path
+            </div>`
+          : ''
+        }
+
+        <div class="dropdown-item" onclick=${onDownloadZip}>
+          <i class="fa fa-file-archive-o"></i>
+          Download as .zip
+        </div>
+
+        ${archive.info.userSettings.isSaved
+          ? yo`
+            <div class="dropdown-item" onclick=${onDelete}>
+              <i class="fa fa-trash-o"></i>
+              Move to Trash
+            </div>`
+          : yo`
+            <div class="dropdown-item" onclick=${onSave}>
+              <i class="fa fa-download"></i>
+              Save to your Library
+            </div>`
+        }
+      </div>
     </div>
-  `
+  `)
 }
 
 function renderEditButton () {

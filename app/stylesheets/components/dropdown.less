@@ -43,9 +43,17 @@
   border: 1px solid #dadada;
   border-radius: 4px;
 
+  &.subtle-shadow {
+    &:extend(.dropdown-shadow-subtle);
+  }
+
   &.left {
     right: initial;
     left: 0;
+  }
+
+  &.top {
+    bottom: ~"calc(100% + 5px)";
   }
 
   &.with-triangle:before {
@@ -92,7 +100,7 @@
   }
 
   i {
-    color: rgba(0,0,0,.45);
+    color: rgba(0,0,0,.65);
     width: 20px;
   }
 
