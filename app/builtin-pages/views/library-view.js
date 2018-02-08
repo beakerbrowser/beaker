@@ -922,7 +922,14 @@ async function onPublishAllRevisions (e) {
   const paths = workspaceInfo.revisions.map(rev => rev.path)
 
   if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
-  await beaker.workspaces.publish(0, workspaceInfo.name, {paths})
+  try {
+    await beaker.workspaces.publish(0, workspaceInfo.name, {paths})
+    activeView = 'files'
+    render()
+    toast.create('Changes published.', 'success')
+  } catch (e) {
+    toast.create('Could not publish changes. Something went wrong.', 'error')
+  }
 }
 
 async function onRevertRevision (e, rev) {
