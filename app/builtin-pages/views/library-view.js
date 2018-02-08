@@ -686,7 +686,7 @@ function renderRevisionsView () {
             : ''
           }
 
-          <a href="workspace://${workspaceInfo.name}" class="btn preview-btn">
+          <a href="workspace://${workspaceInfo.name}" target="_blank" class="btn preview-btn">
             <span>Live preview</span>
             <i class="fa fa-external-link"></i>
           </a>
