@@ -13,7 +13,9 @@ export class BookmarkMenuNavbarBtn {
       notes: '',
       tags: '',
       private: false,
-      pinned: false
+      pinned: false,
+      seeding: true,
+      saved: true
     }
     this.isDropdownOpen = false
     this.allTags = null
@@ -24,6 +26,7 @@ export class BookmarkMenuNavbarBtn {
 
   render () {
     var page = pages.getActive()
+    const url = page ? page.getIntendedURL() : ''
 
     // render the dropdown if open
     var dropdownEl = ''
@@ -76,16 +79,39 @@ export class BookmarkMenuNavbarBtn {
                 </div>
               </div>*/}
 
-              <div class="input-group pinned">
-                <label>
+              <div>
+                <h3>Other options</h3>
+
+                <label class="toggle">
                   <input onchange=${(e) => this.onChangePinned(e)} checked=${this.values.pinned || false} type="checkbox" name="pinned" value="pinned">
-                  Pin to start page
+                  <div class="switch"></div>
+                  <span class="text">Add to start page</span>
                 </label>
+
+                ${url.startsWith('dat://') && !page.siteInfo.isOwner
+                  ? yo`
+                    <label class="toggle">
+                      <input onchange=${(e) => this.onChangeSeeding(e)} checked=${this.values.seeding || false} type="checkbox" name="seeding" value="seeding">
+                      <div class="switch"></div>
+                      <span class="text">Help seed files</span>
+                    </label>`
+                  : ''
+                }
+
+                ${url.startsWith('dat://') && !page.siteInfo.isOwner
+                  ? yo`
+                    <label class="toggle">
+                      <input onchange=${(e) => this.onChangeSaved(e)} checked=${this.values.saved || false} type="checkbox" name="saved" value="saved">
+                      <div class="switch"></div>
+                      <span class="text">Save for offline</span>
+                    </label>`
+                  : ''
+                }
               </div>
 
               <div class="buttons">
                 <button type="button" class="btn remove" onclick=${e => this.onClickRemoveBookmark(e)}>
-                  Remove
+                  Remove bookmark
                 </button>
 
                 <button class="btn primary" type="submit" disabled=${!this.doesNeedSave}>
@@ -126,7 +152,9 @@ export class BookmarkMenuNavbarBtn {
       tagsToString(b.tags) !== this.values.tags ||
       b.notes !== this.values.notes ||
       b.private !== this.values.private ||
-      b.pinned !== this.values.pinned
+      b.pinned !== this.values.pinned ||
+      b.saved !== this.values.seeding ||
+      b.seeding !== this.values.saved
     )
   }
 
@@ -173,6 +201,8 @@ export class BookmarkMenuNavbarBtn {
       this.values.tags = tagsToString(page.bookmark.tags)
       this.values.notes = page.bookmark.notes
       this.values.pinned = page.bookmark.pinned
+      this.values.saved = page.siteInfo.userSettings.isSaved
+      this.values.seeding = this.values.saved && page.siteInfo.userSettings.networked
     }
 
     this.updateActives()
@@ -213,6 +243,9 @@ export class BookmarkMenuNavbarBtn {
 
     // set the pinned status of the bookmark
     await beaker.bookmarks.setBookmarkPinned(b.href, this.values.pinned)
+
+    // TODO
+    // set seeding/saved value
 
     page.bookmark = await beaker.bookmarks.getBookmark(b.href)
     navbar.update()
@@ -301,6 +334,16 @@ export class BookmarkMenuNavbarBtn {
 
   onChangePinned (e) {
     this.values.pinned = e.target.checked
+    this.updateActives()
+  }
+
+  onChangeSeeding (e) {
+    this.values.seeding = e.target.checked
+    this.updateActives()
+  }
+
+  onChangeSaved (e) {
+    this.values.saved = e.target.checked
     this.updateActives()
   }
 

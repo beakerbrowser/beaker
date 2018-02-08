@@ -6,8 +6,16 @@
 .bookmark-menu-dropdown-items {
   padding: 15px;
   color: @color-text;
-  width: 330px;
-  font-size: .775rem;
+  width: 300px;
+  font-size: .725rem;
+
+  h3 {
+    font-size: .625rem;
+    text-transform: uppercase;
+    letter-spacing: .2px;
+    color: rgba(0,0,0,.5);
+    margin-bottom: 10px;
+  }
 
   &.dropdown-items.with-triangle:before {
     right: 16px;
@@ -43,7 +51,6 @@
     label {
       display: inline-block;
       width: 45px;
-      font-size: .7rem;
       margin-right: 7px;
       margin-bottom: 0;
       text-align: right;
@@ -133,30 +140,14 @@
         }
       }
     }
-
-    &.pinned {
-      color: rgba(0,0,0,.7);
-      width: 100%;
-      text-align: right;
-
-      input {
-        margin-top: -1px;
-        margin-right: 5px;
-        vertical-align: middle;
-        width: auto;
-      }
-
-      label {
-        width: auto;
-      }
-    }
   }
 
   .buttons {
     &:extend(.flex);
     justify-content: flex-end;
     padding-top: 10px;
-    border-top: 1px solid rgba(0,0,0,.1);
+    margin-top: 15px;
+    border-top: 1px solid #ddd;
     text-align: right;
 
     .btn {
@@ -165,10 +156,6 @@
       &.remove {
         margin-right: auto;
         margin-left: 0;
-      }
-
-      &.primary {
-        font-weight: 500 !important;
       }
     }
   }
