@@ -2,16 +2,18 @@
 
   .breadcrumbs {
     &:extend(.flex);
-    align-items: center;
-    height: 34px;
-    font-size: 1rem;
+    align-items: flex-end;
+    height: 28px;
 
     .breadcrumb {
       color: @blue;
       cursor: pointer;
 
       &:last-of-type {
+        &:extend(.overflow-ellipsis);
+        max-width: 200px;
         color: @color-text;
+        font-weight: 500;
       }
 
       &:hover {
