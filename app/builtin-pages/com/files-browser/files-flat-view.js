@@ -138,7 +138,7 @@ function rFilePreview (node) {
 function rBreadcrumb (filesBrowser, node) {
   if (!node) return ''
   return yo`
-    <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, node)}>
+    <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, node)} title=${node.name}>
       ${node.name}
     </div>
   `
