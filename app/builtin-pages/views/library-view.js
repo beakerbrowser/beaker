@@ -216,20 +216,39 @@ function render () {
     document.querySelector('.library-wrapper'), yo`
       <div class="library-wrapper library-view builtin-wrapper">
         <div class="builtin-main" style="margin-left: 0; width: 100%">
-          <div class="builtin-header">
-            <div class="container">
-              ${renderInfo()}
-              ${renderTabs()}
-            </div>
-          </div>
-
+          ${renderHeader()}
           ${renderView()}
-
           ${error ? error.toString() : ''}
+          ${renderFooter()}
         </div>
       </div>
     `
   )
+}
+
+function renderHeader () {
+  return yo`
+    <div class="builtin-header">
+      <div class="container">
+        <a href="beaker://library" class="back-link">
+          <i class="fa fa-angle-double-left"></i>
+        </a>
+
+        <a href=${archive.url} class="title" target="_blank">
+          ${getSafeTitle()}
+        </a>
+
+        <a href=${archive.url} class="url" target="_blank">
+          ${shortenHash(archive.url)}
+        </a>
+
+        <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url)}>
+          <i class="fa fa-link"></i>
+        </button>
+
+        ${renderTabs()}
+      </div>
+    </div>`
 }
 
 function renderView () {
@@ -247,6 +266,47 @@ function renderView () {
     default:
       return yo`<div class="view">Loading...</div>`
   }
+}
+
+function renderFooter () {
+  return yo`
+    <footer>
+      <div class="container">
+        <div class="workspace-info">
+          ${workspaceInfo && workspaceInfo.localFilesPath
+            ? yo`
+              <span class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+                ${workspaceInfo.localFilesPath}
+              </span>`
+            : ''
+          }
+
+          ${workspaceInfo && !workspaceInfo.localFilesPath
+            ? yo`
+              <em class="path" onclick=${onChangeWorkspaceDirectory}>
+                Set local files directory
+              </em>`
+            : ''
+          }
+
+          ${!archive.info.isOwner ? yo`<em>Read-only</em>` : ''}
+        </div>
+
+        <div class="metadata">
+          <span>${archive.info.peers} ${pluralize(archive.info.peers, 'peer')}</span>
+          <span class="separator">―</span>
+          <span>${prettyBytes(archive.info.size)}</span>
+        </div>
+
+        <div class="btn-group">
+          ${renderEditButton()}
+          <button class="btn primary nofocus">
+            <i class="fa fa-caret-up"></i>
+          </button>
+        </div>
+      </div>
+    </footer>
+  `
 }
 
 function renderFilesView () {
@@ -801,15 +861,13 @@ function renderActions () {
 function renderEditButton () {
   if (workspaceInfo && workspaceInfo.localFilesPath) {
     return yo`
-      <button class="btn" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-        <i class="fa fa-pencil"></i>
+      <button class="btn primary nofocus" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
         Edit
       </button>
     `
   } else {
     return yo`
-      <button class="btn" onclick=${onEdit}>
-        <i class="fa fa-pencil"></i>
+      <button class="btn primary nofocus" onclick=${onEdit}>
         ${!archive.info.isOwner ? 'Fork & ' : ''}Edit
       </button>
     `

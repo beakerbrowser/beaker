@@ -66,7 +66,7 @@
 
   .view {
     max-width: 100%;
-    padding: 25px 0;
+    padding: 75px 0;
     font-size: .85rem;
 
     .section {
@@ -75,7 +75,7 @@
   }
 
   .view.preview {
-    padding: 0;
+    padding: 50px 0;
     width: 100%;
     height: ~"calc(100% - 160px)";
 
@@ -157,6 +157,7 @@
       border: 1px solid #ddd;
       border-top: 0;
       border-radius: 0 0 2px 2px;
+      background: #fff;
 
       .linenos {
         position: absolute;
@@ -470,131 +471,146 @@
   }
 
   .builtin-header {
+    position: fixed;
+    left: 0;
+    top: 0;
     display: block;
+    width: 100%;
     height: auto;
     padding: 0;
-    background: #fafafa;
+    background: #fff;
     border-bottom: 1px solid #ddd;
+    font-size: .875rem;
+    height: 50px;
 
     .container {
-      position: relative;
-    }
-
-    .dropdown {
-      display: inline-block;
-    }
-
-    .dropdown-items {
-      width: 200px;
-      top: ~"calc(100% + 5px)";
-      right: -8px;
-    }
-
-    .info-container {
-      position: relative;
       &:extend(.flex);
-      padding: 10px 0 20px 0;
-      font-size: .85rem;
+      height: 100%;
+      align-items: center;
+      position: relative;
+    }
 
-      .back-link {
-        position: absolute;
-        left: -25px;
-        top: 3px;
-        padding: 7px;
-        font-size: 1.2rem;
-        color: rgba(0,0,0,.2);
+    .back-link {
+      position: absolute;
+      left: -30px;
+      top: 10px;
+      width: 27px;
+      text-align: center;
+      font-size: 1.2rem;
+      color: rgba(0,0,0,.2);
+      cursor: pointer;
+      border-radius: 4px;
+
+      * {
         cursor: pointer;
-
-        * {
-          cursor: pointer;
-        }
-
-        &:hover {
-          color: @color-text;
-        }
       }
 
-      .title {
-        font-size: 1.2rem;
-        font-weight: 500;
-        margin-right: 5px;
-
-        &:hover {
-          text-decoration: underline;
-        }
-      }
-
-      .description {
-        margin: 0 5px 5px 0;
+      &:hover {
+        color: @color-text;
+        background: #eee;
       }
     }
 
-    .actions {
+    .title {
+      font-weight: 500;
+    }
+
+    .title,
+    .url {
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .url,
+    .btn {
+      color: rgba(0,0,0,.5);
+    }
+
+    .url {
+      margin: 0 8px;
+    }
+
+    .btn {
+      margin-left: 0;
+
+      &:hover {
+        color: @color-text;
+      }
+    }
+
+    .tabs {
       margin-left: auto;
+    }
+  }
 
-      .path {
-        margin-right: 5px;
-        color: #999;
-        font-weight: 300;
-        cursor: pointer;
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    border-top: 1px solid #ddd;
+    height: 50px;
+    font-size: .875rem;
+    background: #fff;
 
-        &:hover {
-          text-decoration: underline;
-        }
+    .container {
+      &:extend(.flex);
+      align-items: center;
+      justify-content: space-between;
+      max-width: 800px;
+      width: 100%;
+      height: 100%;
+      margin: auto;
+    }
+
+    .workspace-info {
+      margin-right: auto;
+    }
+
+    .path {
+      color: rgba(0,0,0,.85);
+      cursor: pointer;
+
+      &:hover {
+        color: @blue;
+        text-decoration: underline;
       }
     }
 
     .metadata {
-      display: block;
-      width: 100%;
-      margin-top: 10px;
-      color: #999;
-      font-weight: 300;
+      color: rgba(0,0,0,.85);
+      margin-right: 15px;
+    }
 
-      > div {
-        display: inline-block;
-      }
-
-      .separator {
-        margin: 0 5px;
-      }
-
-      .url:hover {
-        text-decoration: underline;
-      }
-
-      .url-info {
-
-        .btn {
-          padding: 0 2px;
-        }
-      }
+    .btn {
+      font-size: .875rem;
     }
   }
 
   .tabs {
-    font-size: .85rem;
+    position: absolute;
+    bottom: -1px;
+    right: 0;
 
     .tab {
       display: inline-block;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
-      min-width: 85px;
       text-align: center;
-      padding: 7px 15px;
+      padding: 0 15px;
+      padding-bottom: 11px;
       cursor: pointer;
-      color: #777;
-      margin-right: 5px;
-      vertical-align: bottom;
+      color: @color-text;
+      margin-left: 5px;
       letter-spacing: .15px;
-
-      &:hover {
-        border-color: #ccc;
-      }
+      border-bottom: 2px solid transparent;
 
       &.active {
         border-color: @color-text;
-        color: @color-text;
+      }
+
+      &:hover:not(.active) {
+        border-color: #ccc;
       }
 
       .revisions-indicator {
