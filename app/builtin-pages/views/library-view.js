@@ -912,14 +912,17 @@ async function onPublishRevision (e, rev) {
 
   if (!rev) return
   if (!confirm(`Publish ${rev.path.slice(1)}?`)) return
-  await beaker.workspaces.publish(0, workspaceInfo.name, {paths: [rev.path]})
+  let paths = (rev.type === 'dir') ? [rev.path + '/'] : [rev.path] // add a trailing slash to identify folders
+  await beaker.workspaces.publish(0, workspaceInfo.name, {paths})
 }
 
 async function onPublishAllRevisions (e) {
   e.stopPropagation()
   e.preventDefault()
 
-  const paths = workspaceInfo.revisions.map(rev => rev.path)
+  const paths = workspaceInfo.revisions.map(rev => (
+    (rev.type === 'dir') ? (rev.path + '/') : rev.path // add a trailing slash to identify folders
+  ))
 
   if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
   try {
@@ -938,7 +941,8 @@ async function onRevertRevision (e, rev) {
 
   if (!rev) return
   if (!confirm(`Revert changes to ${rev.path.slice(1)}?`)) return
-  await beaker.workspaces.revert(0, workspaceInfo.name, {paths: [rev.path]})
+  let paths = (rev.type === 'dir') ? [rev.path + '/'] : [rev.path] // add a trailing slash to identify folders
+  await beaker.workspaces.revert(0, workspaceInfo.name, {paths})
 }
 
 async function onRevertAllRevisions (e) {
