@@ -84,6 +84,7 @@ async function setup () {
     window.addEventListener('popstate', onPopState)
     archive.progress.addEventListener('changed', render)
     document.body.addEventListener('click', onClickOutsideSettingsEditInput)
+    document.body.addEventListener('custom-add-file', onAddFile)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
     setupWorkspaceListeners()
 
@@ -1054,6 +1055,14 @@ function onClickOutsideSettingsEditInput (e) {
     settingsEditValues[k] = false
   }
   render()
+}
+
+async function onAddFile (e) {
+  const {src, dst} = e.detail
+  const res = await DatArchive.importFromFilesystem({src, dst, ignore: ['dat.json'], inplaceImport: false})
+  if (workspaceInfo && workspaceInfo.name) {
+    await beaker.workspaces.revert(0, workspaceInfo.name, {paths: res.addedFiles})
+  }
 }
 
 async function onKeyupSettingsEdit (e, attr) {
