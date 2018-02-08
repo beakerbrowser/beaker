@@ -269,28 +269,30 @@ function renderView () {
 }
 
 function renderFooter () {
+  let secondaryAction = ''
+  if (workspaceInfo && workspaceInfo.localFilesPath) {
+    secondaryAction = yo`
+      <span class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+        ${workspaceInfo.localFilesPath}
+      </span>`
+  } else if (!archive.info.userSettings.isSaved) {
+    secondaryAction = yo`
+      <button class="btn" onclick=${onSave}>
+        Save ${archive.info.title || ''} to your Library
+      </button>`
+  } else if (archive.info.isOwner && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
+    secondaryAction = yo`
+      <em class="path" onclick=${onEdit}>
+        Set local files directory
+      </em>`
+  } else {
+    secondaryAction = yo`<em>Read-only</em>`
+  }
+
   return yo`
     <footer>
       <div class="container">
-        <div class="workspace-info">
-          ${workspaceInfo && workspaceInfo.localFilesPath
-            ? yo`
-              <span class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-                ${workspaceInfo.localFilesPath}
-              </span>`
-            : ''
-          }
-
-          ${archive.info.isOwner && (!workspaceInfo || !workspaceInfo.localFilesPath)
-            ? yo`
-              <em class="path" onclick=${onEdit}>
-                Set local files directory
-              </em>`
-            : ''
-          }
-
-          ${!archive.info.isOwner ? yo`<em>Read-only</em>` : ''}
-        </div>
+        <div class="workspace-info">${secondaryAction}</div>
 
         <div class="metadata">
           <span>${archive.info.peers} ${pluralize(archive.info.peers, 'peer')}</span>
@@ -842,6 +844,7 @@ async function onSave () {
   try {
     await beaker.archives.add(archive.url)
     archive.info.userSettings.isSaved = true
+    toast.create(`Saved ${nickname} to your Library`, 'success')
   } catch (_) {
     toast.create(`Could not save ${nickname} to your Library`, 'error')
   }
