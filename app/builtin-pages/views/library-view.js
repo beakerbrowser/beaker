@@ -716,30 +716,6 @@ function renderRevisionsView () {
   `
 }
 
-function renderInfo () {
-  return yo`
-    <div class="info-container">
-      <div class="info">
-        <a href="beaker://library" class="back-link">
-          <i class="fa fa-angle-double-left"></i>
-        </a>
-
-        <a href=${archive.info.url} class="title" target="_blank">
-          ${getSafeTitle()}
-        </a>
-
-        <p class="description">
-          ${getSafeDesc()}
-        </p>
-      </div>
-
-      ${renderActions()}
-
-      ${renderMetadata()}
-    </div>
-  `
-}
-
 function renderTabs () {
   let baseUrl = `beaker://library/${archive.url}`
   return yo`
@@ -760,59 +736,19 @@ function renderTabs () {
         : ''
       }
 
-      ${workspaceInfo && workspaceInfo.localFilesPath
-        ? yo`
-          <a href=${baseUrl + '#preview'} onclick=${e => onChangeView(e, 'preview')} class="tab ${activeView === 'preview' ? 'active' : ''}">
-            Preview
-          </a>`
-        : ''
-      }
-
       <a href=${baseUrl + '#network'} onclick=${e => onChangeView(e, 'network')} class="tab ${activeView === 'network' ? 'active' : ''}">
         Network
       </a>
 
       <a href=${baseUrl + '#settings'} onclick=${e => onChangeView(e, 'settings')} class="tab ${activeView === 'settings' ? 'active' : ''}">
-        Details
+        Info
       </a>
     </div>
   `
 }
 
-function renderMetadata () {
+function renderMenu () {
   return yo`
-    <div class="metadata">
-      <div>${prettyBytes(archive.info.size)}</div>
-
-      <span class="separator">―</span>
-
-      <div>${archive.info.peers} ${pluralize(archive.info.peers, 'peer')}</div>
-
-      <span class="separator">―</span>
-
-      <div class="url-info">
-        <a href=${archive.info.url} class="url" target="_blank">${shortenHash(archive.url)}</a>
-        <button class="btn plain" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url)}>
-          <i class="fa fa-clipboard"></i>
-        </button>
-      </div>
-    </div>
-  `
-}
-
-function renderActions () {
-  return yo`
-    <div class="actions">
-      ${workspaceInfo && workspaceInfo.localFilesPath
-        ? yo`
-          <span class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-            ${workspaceInfo.localFilesPath}
-          </span>`
-        : ''
-      }
-
-      ${renderEditButton()}
-
       ${toggleable(yo`
         <div class="dropdown toggleable-container">
           <button class="btn toggleable">
