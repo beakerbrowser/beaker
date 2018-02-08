@@ -123,7 +123,7 @@ export default class DatNetworkActivity {
     const highlightedCls = this.currentlyHighlightedKey === archive.key ? 'highlighted' : ''
 
     let expiresAtStr
-    if (!expiresAt) expiresAtStr = ''
+    if (!timeRemaining) expiresAtStr = ''
     else if (timeRemaining.asMonths() > 0.5) expiresAtStr = '(1 month remaining)'
     else if (timeRemaining.asWeeks() > 0.5) expiresAtStr = '(1 week remaining)'
     else expiresAtStr = '(1 day remaining)'
