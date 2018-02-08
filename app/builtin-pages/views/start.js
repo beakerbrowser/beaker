@@ -3,6 +3,7 @@
 import * as yo from 'yo-yo'
 import {findParent} from '../../lib/fg/event-handlers'
 import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
+import renderHelpTip from '../com/help-tip'
 
 const LATEST_VERSION = 7010 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const WELCOME_URL = 'https://beakerbrowser.com/docs/using-beaker/'
@@ -171,6 +172,8 @@ function update () {
   yo.update(document.querySelector('.window-content.start'), yo`
     <div class="window-content builtin start ${''/*TODO(bgimg) theme*/}">
       <div class="builtin-wrapper start-wrapper">
+        ${renderHelpTip()}
+
         <div class="autocomplete-container search-container">
           <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
           <i class="fa fa-search"></i>

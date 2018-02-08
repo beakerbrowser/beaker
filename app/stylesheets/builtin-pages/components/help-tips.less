@@ -1,0 +1,23 @@
+.help-tip {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  padding: 10px 30px;
+  background: #fff;
+  border-radius: 3px;
+  color: @color-text;
+
+  a:not(.btn) {
+    &:extend(.link);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .help-tip-ctrl {
+    margin-left: 10px;
+  }
+}
