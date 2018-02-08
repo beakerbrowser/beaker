@@ -4,20 +4,18 @@
 
 .btn {
   display: inline-block;
-  cursor: pointer !important;
-  color: @color-button;
-  border-radius: 2px;
-  background: @background-button;
-  border: 1px solid @border-button;
-  font-size: 12.25px;
-  line-height: 26px;
-  padding: 0 9px;
-  letter-spacing: .25px;
-
-  // TODO: need to test this thoroughly
-  border-radius: 4px;
   height: 28px;
+  padding: 0 10px;
+  background: rgba(0,0,0,.06);
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: @color-text;
+  font-size: 12.75px;
+  line-height: 26px;
+  letter-spacing: .25px;
   font-weight: 400;
+  cursor: pointer !important;
+  margin-left: 10px;
 
   &.small {
     height: 20px;
@@ -33,6 +31,7 @@
     background: none;
     border: none;
     color: @color-text--muted;
+    padding: 0;
 
     &:hover {
       color: @color-text;
@@ -106,16 +105,17 @@
 
   &:hover {
     text-decoration: none;
-    background: @background-button--active;
+    background: rgba(0,0,0,.1);
   }
 
   &[disabled="disabled"],
   &.disabled,
   &:disabled {
     cursor: default !important;
-    background: @background-button--disabled !important;
+    background: #eee!important;
     color: @color-button--disabled !important;
-    border: 1px solid #ddd !important;
+    color: rgba(0,0,0,.4) !important;
+    border: 1px solid #eee !important;
     box-shadow: none !important;
     font-weight: 400 !important;
     -webkit-font-smoothing: initial !important;
@@ -131,14 +131,6 @@
     top: 1px;
     color: inherit;
   }
-}
-
-.btn.success,
-.btn.warning,
-.btn.primary {
-  // antialiasing is only applied to light-colored text on a dark background
-  -webkit-font-smoothing: antialiased;
-  font-weight: 700;
 }
 
 .btn.warning {
@@ -183,7 +175,7 @@
   transition: background .1s ease;
 
   &:hover {
-    background: shade(@blue, 5%);
+    background: shade(@blue, 15%);
   }
 }
 
@@ -197,14 +189,14 @@
   }
 
   & > :first-child {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
     margin-right: 0;
   }
 
   & > :last-child {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
     border-right-width: 1px;
     margin-left: 0;
   }
@@ -323,7 +315,6 @@ button {
 
   &.nofocus:focus {
     outline: 0;
-    border: 0;
     box-shadow: none;
   }
 }
