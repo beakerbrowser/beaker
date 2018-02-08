@@ -86,7 +86,7 @@ function rBreadcrumbs (filesBrowser, currentSource) {
   return yo`
     <div class="breadcrumbs">
       <div class="breadcrumb root" onclick=${e => onClickNode(e, filesBrowser, filesBrowser.root)}>
-        ${filesBrowser.root._archiveInfo.title || 'Untitled'}
+        .
       </div>
 
       ${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}
