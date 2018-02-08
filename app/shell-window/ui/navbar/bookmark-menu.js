@@ -201,8 +201,8 @@ export class BookmarkMenuNavbarBtn {
       this.values.tags = tagsToString(page.bookmark.tags)
       this.values.notes = page.bookmark.notes
       this.values.pinned = page.bookmark.pinned
-      this.values.saved = page.siteInfo.userSettings.isSaved
-      this.values.seeding = this.values.saved && page.siteInfo.userSettings.networked
+      this.values.saved = page.siteInfo && page.siteInfo.userSettings.isSaved
+      this.values.seeding = this.values.saved && page.siteInfo && page.siteInfo.userSettings.networked
     }
 
     this.updateActives()
