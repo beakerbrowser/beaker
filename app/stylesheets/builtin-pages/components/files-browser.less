@@ -2,6 +2,7 @@
 @import "../../utils/flex";
 @import "../../components/link";
 @import "./files-browser/breadcrumbs";
+@import "./archive-history";
 
 .files-browser {
   &:extend(.flex);
@@ -27,9 +28,23 @@
 
     .actions {
       margin-left: auto;
+      display: flex;
+
+      & > * {
+        margin-left: 5px;
+      }
 
       .dropdown-items {
         width: 160px;
+      }
+      
+      .archive-history-dropdown {
+        .dropdown-items {
+          width: 400px;
+          max-height: ~"calc(100vh - 200px)";
+          overflow-x: hidden;
+          overflow-y: auto;
+        }
       }
     }
   }

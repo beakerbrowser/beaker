@@ -1,3 +1,4 @@
+import * as yo from 'yo-yo'
 import { findParent } from '../../lib/fg/event-handlers'
 
 // globals
@@ -14,13 +15,16 @@ var toggleState = {}
 // include data-toggle-on="event", where `event` sets what triggers toggle (default click)
 // include data-toggle-id if you want to keep the toggle state across renderings
 
-export default function toggleable (el) {
+// if you want to render on open, include a .toggleable-open-container el and pass in a render func as the second argument
+
+export default function toggleable (el, optRenderOpenContent = null) {
   var id = el.dataset.toggleId
 
   el.classList.add('toggleable-container')
   // restore toggle state
   if (id && toggleState[id]) {
     el.classList.add('open')
+    renderOpenContent()
   }
 
   Array.from(el.querySelectorAll('.toggleable')).forEach(el2 => {
@@ -40,6 +44,7 @@ export default function toggleable (el) {
     closeAllToggleables()
     if (newState) {
       el.classList.add('open')
+      renderOpenContent()
     }
     if (id) {
       // persist state
@@ -50,6 +55,7 @@ export default function toggleable (el) {
     e.preventDefault()
     e.stopPropagation()
     el.classList.add('open')
+    renderOpenContent()
     if (id) {
       // persist state
       toggleState[id] = true
@@ -62,6 +68,15 @@ export default function toggleable (el) {
     if (id) {
       // persist state
       toggleState[id] = false
+    }
+  }
+  function renderOpenContent () {
+    if (optRenderOpenContent) {
+      var container = el.querySelector('.toggleable-open-container')
+      if (container) {
+        container.innerHTML = ''
+        container.appendChild(optRenderOpenContent())
+      }
     }
   }
   return el

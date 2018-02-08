@@ -1,0 +1,21 @@
+.archive-history {
+  padding: 10px;
+
+  .archive-history-item a {
+    &:extend(.code-font);
+    color: @color-text !important;
+    display: block;
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+      background: #eee;
+      border-radius: 3px;
+    }
+
+    & > * {
+      margin-right: 5px;
+    }
+  }
+}

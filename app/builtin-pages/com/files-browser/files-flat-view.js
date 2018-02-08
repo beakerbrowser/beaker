@@ -7,6 +7,7 @@ import {join as joinPath} from 'path'
 import _get from 'lodash.get'
 import {FSArchive, FSArchiveFolder, FSArchiveFile, FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import toggleable from '../toggleable'
+import renderArchiveHistory from '../archive-history'
 import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
 import {shortenHash, pluralize} from '../../../lib/strings'
@@ -17,14 +18,14 @@ import {DAT_VALID_PATH_REGEX, STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
 
 export default function render (filesBrowser, currentSource) {
   return yo`
-    <div
-      class="files-tree-view ${currentSource.isEmpty ? 'empty' : ''}"
-      onclick=${e => onClickNode(e, filesBrowser, currentSource)}
-    >
+    <div class="files-tree-view ${currentSource.isEmpty ? 'empty' : ''}">
 
       ${rHeader(filesBrowser, currentSource)}
 
-      <div class="body">
+      <div
+        class="body" 
+        onclick=${e => onClickNode(e, filesBrowser, currentSource)}
+      >
         <div>
           ${currentSource.type === 'file'
             ? rFilePreview(currentSource)
@@ -49,34 +50,44 @@ function rHeader (filesBrowser, currentSource) {
 }
 
 function rActions (filesBrowser, currentSource) {
-  if (currentSource.type === 'file') return ''
-
+  const renderOpenHistory = () => renderArchiveHistory(filesBrowser.root._archive)
   return yo`
     <div class="actions">
-      ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
-        ? yo`
-          <button onclick=${e => onAddFiles(e, currentSource, false)} class="btn">
-            Add files
-          </button>`
-        : toggleable(yo`
-          <div class="dropdown toggleable-container">
-            <button class="btn toggleable">
+      ${toggleable(yo`
+        <div class="dropdown toggleable-container archive-history-dropdown">
+          <button class="btn toggleable">
+            History
+          </button>
+
+          <div class="dropdown-items right toggleable-open-container"></div>
+        </div>
+      `, renderOpenHistory)}
+      ${(currentSource.type === 'file')
+        ? ''
+        : window.OS_CAN_IMPORT_FOLDERS_AND_FILES
+          ? yo`
+            <button onclick=${e => onAddFiles(e, currentSource, false)} class="btn">
               Add files
-            </button>
+            </button>`
+          : toggleable(yo`
+            <div class="dropdown toggleable-container">
+              <button class="btn toggleable">
+                Add files
+              </button>
 
-            <div class="dropdown-items right">
-              <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
-                <i class="fa fa-files-o"></i>
-                Choose files
-              </div>
+              <div class="dropdown-items right">
+                <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
+                  <i class="fa fa-files-o"></i>
+                  Choose files
+                </div>
 
-              <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
-                <i class="fa fa-folder-open-o"></i>
-                Choose folder
+                <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
+                  <i class="fa fa-folder-open-o"></i>
+                  Choose folder
+                </div>
               </div>
             </div>
-          </div>
-        `)
+          `)
       }
     </div>
   `

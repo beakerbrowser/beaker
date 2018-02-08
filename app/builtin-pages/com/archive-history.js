@@ -1,43 +1,32 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import { niceDate } from '../../lib/time'
 
-export function archiveHistory (archive) {
-  var rowEls = []
+// exported api
+// =
+
+export default function render (archive) {
+  var el = yo`<div class="archive-history loading">Loading...</div>`
 
   // lazy-load history
-  if (archive.history.length === 0) {
-    archive.fetchHistory()
+  if (archive) {
+    archive.history()
+      .then(history => {
+        // render
+        var rowEls = history.map(c => {
+          return yo`
+            <div class="archive-history-item">
+              <a href="${archive.url}+${c.version}${c.path}" title=${c.path} target="_blank"><span>${c.version}</span><i class="fa fa-${c.type === 'put' ? 'plus' : 'minus'}-square"></i><span>${c.path}</span></a>
+            </div>`
+        })
+        yo.update(el, yo`<div class="archive-history">${rowEls}</div>`)
+      })
+      .catch(err => {
+        console.error('Error loading history', err)
+        yo.update(el, yo`<div class="archive-history">${err.toString()}</div>`)
+      }
+    )
   }
 
-  archive.history.forEach(c => {
-    var row
-    var mtime = c.mtime ? niceDate(c.mtime) : ''
-    switch (c.type) {
-      case 'file':
-        row = yo`
-          <li class="history-item">
-            <i class="favicon fa fa-plus-square"></i>
-            <span class="title">${c.name}</span>
-            <span class="updated" title=${mtime}>${mtime}</span>
-            <span class="progress">${prettyBytes(c.length || 0)}</span>
-          </li>`
-        break
-      case 'directory':
-        row = yo`
-          <li class="history-item">
-            <i class="fa fa-plus-square"></i>
-            <span class="title">${c.name || ''}</span>
-            <span class="updated" title=${mtime}>${mtime}</span>
-            <span class="progress"></span>
-          </li>`
-        break
-    }
-    rowEls.push(row)
-  })
-
-  return yo`
-    <ul class="archive-history">
-      ${rowEls}
-    </ul>`
+  return el
 }
+
