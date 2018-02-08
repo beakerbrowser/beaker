@@ -6,6 +6,32 @@
 .files-browser {
   &:extend(.flex);
   flex-wrap: nowrap;
+
+  .body {
+    border: 1px solid #ddd;
+    border-radius: 2px;
+  }
+
+  .files-tree-view.empty {
+
+    .body {
+      border: 0;
+    }
+  }
+
+  .files-browser-header {
+    &:extend(.flex);
+    align-items: center;
+    margin-bottom: 10px;
+
+    .actions {
+      margin-left: auto;
+
+      .dropdown-items {
+        width: 160px;
+      }
+    }
+  }
 }
 
 @import "./files-browser/files-tree-view";
