@@ -335,7 +335,7 @@ function renderSettingsView () {
         </td>`
       : yo`
         <td>
-          ${value.length ? value : yo`<em>${placeholder}</em>`}
+          ${value.length ? value : yo`<em>${isOwner ? placeholder : '--'}</em>`}
           ${isOwner
             ? yo`
               <button class="btn plain" onclick=${e => onClickSettingsEdit(e, key)}>
