@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, webContents } from 'electron'
+import { app, BrowserWindow, ipcMain, webContents, dialog } from 'electron'
+import EventEmitter from 'events';
 import { register as registerShortcut, unregister as unregisterShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
 import os from 'os'
 import jetpack from 'fs-jetpack'
@@ -17,6 +18,9 @@ var userDataDir
 var stateStoreFile = 'shell-window-state.json'
 var numActiveWindows = 0;
 let firstWindow = null;
+let sessionWatcher = null;
+const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ?
+                    './assets/img/logo.ico' : './assets/img/logo.png');
 
 let windowSetState;
 
@@ -45,7 +49,7 @@ export function setup () {
   ipcMain.on('new-window', createShellWindow)
 
   app.on('before-quit', async e => {
-    WindowStateWatcher.stopRecording()
+    sessionWatcher.stopRecording()
   })
 
   app.on('web-contents-created', (e, wc) => {
@@ -64,8 +68,13 @@ export function setup () {
     }
   })
 
-  windowSetState = restoreWindowSetState()
-  restoreWindowSet(windowSetState)
+  sessionWatcher = new SessionWatcher();
+
+  if (true /* previous session crashed */ && userWantsToRestoreSession()) {
+    restoreBrowsingSession()
+  } else {
+    createShellWindow()
+  }
 }
 
 export function createShellWindow (windowState) {
@@ -88,11 +97,11 @@ export function createShellWindow (windowState) {
       allowRunningInsecureContent: false,
       nativeWindowOpen: true
     },
-    icon: path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
+    icon: ICON_PATH
   })
   downloads.registerListener(win)
   win.loadURL('beaker://shell-window')
-  new WindowStateWatcher(win, state)
+  sessionWatcher.watchWindow(win, state)
 
   function handlePagesReady({ sender }) {
     if (sender === win.webContents) {
@@ -108,7 +117,7 @@ export function createShellWindow (windowState) {
   }
 
   ipcMain.on('shell-window:pages-ready', handlePagesReady)
-  win.webContents.on('close', () => {
+  win.on('closed', () => {
     ipcMain.removeListener('shell-window:pages-ready', handlePagesReady)
   })
 
@@ -135,7 +144,7 @@ export function createShellWindow (windowState) {
     unregisterShortcut(win, 'Esc')
     sendToWebContents('leave-full-screen')(e)
   })
-  win.on('close', onClose(win))
+  win.on('closed', onClosed(win))
 
   return win
 }
@@ -205,6 +214,23 @@ function windowWithinBounds (windowState, bounds) {
     windowState.y + windowState.height <= bounds.y + bounds.height
 }
 
+function userWantsToRestoreSession () {
+  let answer = dialog.showMessageBox({
+    type: "question",
+    message: "Sorry! It Looks Like Beaker Crashed",
+    detail: "Would you like to restore your previous browsing session?",
+    buttons: [ "Restore Session", "Cancel" ],
+    defaultId: 0,
+    icon: ICON_PATH
+  })
+  return answer === 0
+}
+
+function restoreBrowsingSession() {
+  windowSetState = restoreWindowSetState()
+  restoreWindowSet(windowSetState)
+}
+
 function restoreWindowSetState() {
   var restoredState = {}
   try {
@@ -256,7 +282,6 @@ function defaultPageState () {
   return [ 'beaker://start' ]
 }
 
-
 function ensureVisibleOnSomeDisplay (windowState) {
   // HACK
   // for some reason, electron.screen comes back null sometimes
@@ -276,7 +301,7 @@ function ensureVisibleOnSomeDisplay (windowState) {
 // shortcut event handlers
 // =
 
-function onClose (win) {
+function onClosed (win) {
   return e => {
     numActiveWindows--
 
@@ -343,75 +368,97 @@ function getScreenAPI () {
   return require('electron').screen
 }
 
-class WindowStateWatcher {
-  static writeSnapshot () {
-    let { filePath, snapshot } = WindowStateWatcher;
-    userDataDir.write(filePath, snapshot, { atomic: true })
-    console.log('snapshot:', snapshot)
+const SNAPSHOT_PATH = 'shell-window-state.json';
+
+class SessionWatcher {
+  static get emptySnapshot() {
+    return {
+      windows: [],
+      // We set this to false by default and clean this up when the session
+      // exits. If we ever open up a snapshot and this isn't cleaned up assume
+      // there was a crash
+      clean_exit: false
+    }
   }
 
-  static stopRecording  () { WindowStateWatcher.recording = false }
-  static startRecording () { WindowStateWatcher.recording = true  }
+  constructor () {
+    this.snapshot = SessionWatcher.emptySnapshot
+    this.recording = true
+  }
 
-  // TODO: Make sure we aren't leaking references here
-  constructor(win, state) {
-    this.handleClose = this.handleClose.bind(this)
+  startRecording() { this.recording = true }
+  stopRecording() { this.recording = false }
+
+  watchWindow(win, initialState) {
+    let state = initialState
+    this.snapshot.windows.push(state)
+    let watcher = new WindowWatcher(win, initialState)
+
+    watcher.on('change', (nextState) => {
+      if (this.recording) {
+        let { windows } = this.snapshot
+        let i = windows.indexOf(state);
+        state = windows[i] = nextState;
+        this.writeSnapshot();
+      }
+    })
+
+    watcher.on('remove', () => {
+      if (this.recording) {
+        let { windows } = this.snapshot
+        let i = windows.indexOf(state);
+        this.snapshot.windows = windows.splice(1, i);
+        this.writeSnapshot();
+      }
+      watcher.removeAllListeners();
+    })
+  }
+
+  writeSnapshot () {
+    userDataDir.write(SNAPSHOT_PATH, this.snapshot, { atomic: true })
+    console.log('[watchers] write:', this.snapshot)
+  }
+}
+
+class WindowWatcher extends EventEmitter {
+  constructor(win, initialState) {
+    super();
+    this.handleClosed = this.handleClosed.bind(this)
     this.handlePagesUpdated = this.handlePagesUpdated.bind(this)
-    this.updatePosition = this.updatePosition.bind(this)
+    this.handlePositionChange = this.handlePositionChange.bind(this)
 
-    this.window = win
-    this.index = WindowStateWatcher.snapshot.windows.push(state) - 1
-    WindowStateWatcher.writeSnapshot()
-    win.on('close', this.handleClose)
-    win.on('resize', debounce(this.updatePosition, 1000))
-    win.on('moved', this.updatePosition)
+    // right now this class trusts that the initial state is correctly formed by this point
+    this.snapshot = initialState;
+    this.winId = win.id;
+    win.on('closed', this.handleClosed)
+    win.on('resize', debounce(this.handlePositionChange, 1000))
+    win.on('moved', this.handlePositionChange)
     ipcMain.on('shell-window:pages-updated', this.handlePagesUpdated)
+  }
+
+  getWindow () {
+    return BrowserWindow.fromId(this.winId)
   }
 
   /*==========*\
   *  Handlers  *
   \*==========*/
 
-  handleClose() {
-    this.remove()
+  handleClosed() {
     ipcMain.removeListener('shell-window:pages-updated', this.handlePagesUpdated)
+    this.emit('remove')
   }
 
   handlePagesUpdated({ sender }, pages) {
-    if (sender === this.window.webContents) {
-      this.updatePages(pages)
+    if (sender === this.getWindow().webContents) {
+      this.snapshot.pages = (pages && pages.length) ? pages : defaultPageState()
+      console.log('[watchers] pages:', this.snapshot.pages)
+      this.emit('change', this.snapshot)
     }
   }
 
-  /*==================*\
-  *  Snapshot Updates  *
-  \*==================*/
-
-  updatePages(pages) {
-    if (WindowStateWatcher.recording) {
-      console.log('updatePages:', pages)
-      let state = WindowStateWatcher.snapshot.windows[this.index]
-      state.pages = (pages && pages.length) ? pages : defaultPageState()
-      WindowStateWatcher.writeSnapshot()
-    }
-  }
-
-  updatePosition() {
-    if (WindowStateWatcher.recording) {
-      let state = WindowStateWatcher.snapshot.windows[this.index]
-      Object.assign(state, getCurrentPosition(this.window))
-      WindowStateWatcher.writeSnapshot()
-    }
-  }
-
-  remove() {
-    if (WindowStateWatcher.recording) {
-      WindowStateWatcher.snapshot.windows.splice(1, this.index)
-      WindowStateWatcher.writeSnapshot()
-    }
+  handlePositionChange() {
+    Object.assign(this.snapshot, getCurrentPosition(this.getWindow()))
+    this.emit('change', this.snapshot)
   }
 }
-
-WindowStateWatcher.recording = true;
-WindowStateWatcher.snapshot = { windows: [] };
-WindowStateWatcher.filePath = 'shell-window-state.json';
