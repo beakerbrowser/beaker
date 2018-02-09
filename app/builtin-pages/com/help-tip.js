@@ -31,7 +31,7 @@ export default function render () {
     <span class="help-tip-ctrl">
       <a class="btn success" href="#">Learn more</a>
       ${''/*<a class="btn" href="#" onclick=${onClickNextTip}><span class="fa fa-caret-right"></span></a>*/}
-      <a class="btn" href="#" onclick=${onClickDismiss}><span class="fa fa-times"></span></a>
+      <a class="btn plain" href="#" onclick=${onClickDismiss}><span class="fa fa-times"></span></a>
     </span>
   </div>`
 }
