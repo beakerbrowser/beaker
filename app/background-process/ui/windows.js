@@ -14,15 +14,13 @@ const IS_WIN = process.platform === 'win32'
 
 // globals
 // =
-var userDataDir
-var stateStoreFile = 'shell-window-state.json'
-var numActiveWindows = 0;
+let userDataDir
+let numActiveWindows = 0;
 let firstWindow = null;
 let sessionWatcher = null;
+const BROWSING_SESSION_PATH = './shell-window-state.json'
 const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ?
                     './assets/img/logo.ico' : './assets/img/logo.png');
-
-let windowSetState;
 
 // exported methods
 // =
@@ -49,6 +47,7 @@ export function setup () {
   ipcMain.on('new-window', createShellWindow)
 
   app.on('before-quit', async e => {
+    sessionWatcher.exit()
     sessionWatcher.stopRecording()
   })
 
@@ -68,10 +67,14 @@ export function setup () {
     }
   })
 
+  let previousSessionState = getPreviousBrowsingSession()
   sessionWatcher = new SessionWatcher();
 
-  if (true /* previous session crashed */ && userWantsToRestoreSession()) {
-    restoreBrowsingSession()
+  // Intentionally crash the browser to test session restoration
+  // setTimeout(process.crash, 15000)
+
+  if (!previousSessionState.clean_exit && userWantsToRestoreSession()) {
+    restoreBrowsingSession(previousSessionState)
   } else {
     createShellWindow()
   }
@@ -226,24 +229,8 @@ function userWantsToRestoreSession () {
   return answer === 0
 }
 
-function restoreBrowsingSession() {
-  windowSetState = restoreWindowSetState()
-  restoreWindowSet(windowSetState)
-}
-
-function restoreWindowSetState() {
-  var restoredState = {}
-  try {
-    restoredState = userDataDir.read(stateStoreFile, 'json')
-  } catch (err) {
-    // For some reason json can't be read (might be corrupted).
-    // No worries, we have defaults.
-  }
-  return Object.assign({}, defaultWindowSetState(), restoredState)
-}
-
-function restoreWindowSet(windowSetState) {
-  let { windows } = windowSetState;
+function restoreBrowsingSession(previousSessionState) {
+  let { windows } = previousSessionState;
   if (windows.length) {
     for (let windowState of windows) {
       if (windowState) createShellWindow(windowState)
@@ -253,9 +240,21 @@ function restoreWindowSet(windowSetState) {
   }
 }
 
-function defaultWindowSetState() {
+function getPreviousBrowsingSession() {
+  var restoredState = {}
+  try {
+    restoredState = userDataDir.read(BROWSING_SESSION_PATH, 'json')
+  } catch (err) {
+    // For some reason json can't be read (might be corrupted).
+    // No worries, we have defaults.
+  }
+  return Object.assign({}, defaultBrowsingSessionState(), restoredState)
+}
+
+function defaultBrowsingSessionState() {
   return {
-    windows: [ defaultWindowState() ]
+    windows: [ defaultWindowState() ],
+    clean_exit: false
   }
 }
 
@@ -412,6 +411,11 @@ class SessionWatcher {
       }
       watcher.removeAllListeners();
     })
+  }
+
+  exit () {
+    this.snapshot.clean_exit = true;
+    this.writeSnapshot();
   }
 
   writeSnapshot () {
