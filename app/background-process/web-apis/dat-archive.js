@@ -680,7 +680,7 @@ function massageHistoryObj ({name, version, type}) {
 
 async function updateWorkspaceManifest (archive, manifestUpdates) {
   const ws = await workspacesDb.getByPublishTargetUrl(0, 'dat://' + archive.key.toString('hex'))
-  if (!ws || !ws.localFilesPath) return
+  if (!ws || ws.localFilesPathIsMissing) return
   const scopedFS = scopedFSes.get(ws.localFilesPath)
   if (!scopedFS) return
   scopedFS.writable = true // get PDA to work with the scoped fs (PDA expects an archive)

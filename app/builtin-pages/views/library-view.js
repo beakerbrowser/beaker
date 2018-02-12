@@ -118,7 +118,7 @@ async function loadWorkspaceRevisions () {
   if (!workspaceInfo) return
 
   // load up the revision list
-  if (workspaceInfo.localFilesPath) {
+  if (!workspaceInfo.localFilesPathIsMissing) {
     workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(
       0,
       workspaceInfo.name,
@@ -218,7 +218,6 @@ function render () {
         <div class="builtin-main" style="margin-left: 0; width: 100%">
           ${renderHeader()}
           ${renderView()}
-          ${error ? error.toString() : ''}
           ${renderFooter()}
         </div>
       </div>
@@ -252,6 +251,10 @@ function renderHeader () {
 }
 
 function renderView () {
+  if (error) {
+    return renderErrorView()
+  }
+
   switch (activeView) {
     case 'files':
       return renderFilesView()
@@ -274,6 +277,11 @@ function renderFooter () {
     secondaryAction = yo`
       <span class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
         ${workspaceInfo.localFilesPath}
+      </span>`
+  } else if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
+    secondaryAction = yo`
+      <span class="path error" onclick=${onEdit}>
+        Folder not found (${workspaceInfo.missingLocalFilesPath})
       </span>`
   } else if (!archive.info.userSettings.isSaved) {
     secondaryAction = yo`
@@ -306,6 +314,18 @@ function renderFooter () {
         </div>
       </div>
     </footer>
+  `
+}
+
+function renderErrorView () {
+  return yo`
+    <div class="container">
+      <div class="view error">
+        <div class="message error">
+          ${error ? error.toString() : ''}
+        </div>
+      </div>
+    </div>
   `
 }
 
