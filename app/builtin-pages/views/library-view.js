@@ -38,7 +38,7 @@ var settingsEditValues = {
   repository: false
 }
 
-var error
+var toplevelError
 var copySuccess = false
 
 // HACK
@@ -93,7 +93,7 @@ async function setup () {
     fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
     fileActStream.addEventListener('changed', onFilesChangedThrottled)
   } catch (e) {
-    error = e
+    toplevelError = e
     render()
   }
 
@@ -251,7 +251,7 @@ function renderHeader () {
 }
 
 function renderView () {
-  if (error) {
+  if (toplevelError) {
     return renderErrorView()
   }
 
@@ -322,7 +322,7 @@ function renderErrorView () {
     <div class="container">
       <div class="view error">
         <div class="message error">
-          ${error ? error.toString() : ''}
+          ${toplevelError ? toplevelError.toString() : ''}
         </div>
       </div>
     </div>
@@ -1052,14 +1052,29 @@ async function onEdit () {
   const basePath = await beaker.browser.getSetting('workspace_default_path')
   const defaultPath = await beaker.browser.getDefaultLocalPath(basePath, archive.info.title)
 
-  // open the create workspace popup
-  const localFilesPath = await workspacePopup.create(defaultPath)
+  // enter a loop
+  while (true) {
+    // open the create workspace popup
+    const localFilesPath = await workspacePopup.create(defaultPath)
 
-  if (!workspaceInfo) {
-    workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
-  } else {
-    // set the localFilesPath
-    await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath})
+    try {
+      if (!workspaceInfo) {
+        workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
+      } else {
+        // set the localFilesPath
+        await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath})
+      }
+    } catch (e) {
+      if (e.name === 'DestDirectoryNotEmpty') {
+        alert('Folder not empty. Please choose an empty directory.')
+        continue // show the popup again
+      } else {
+        toplevelError = e
+        render()
+        return // failure, stop trying
+      }
+    }
+    break // success, break the loop
   }
 
   await beaker.workspaces.setupFolder(0, workspaceInfo.name)

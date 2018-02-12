@@ -36,7 +36,6 @@ const DISALLOWED_SAVE_PATH_NAMES = [
   'pictures',
   'videos'
 ]
-
 const MAX_DIFF_SIZE = 1e5
 
 // exported api
@@ -137,11 +136,6 @@ export default {
       scopedFS = scopedFSes.get(ws.localFilesPath)
       archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
     })
-
-    // check that the target folder is empty
-    if (await checkFolderIsEmpty(ws.localFilesPath) === false) {
-      return false
-    }
 
     // revert from the archive
     var diff = await dft.diff({fs: archive}, {fs: scopedFS})
@@ -504,7 +498,7 @@ async function assertSafeFilesPath (localFilesPath) {
   }
 
   // check that the target folder is empty
-  if (await checkFolderIsEmpty(localFilesPath) === false) {
+  if (await checkFolderIsEmpty(localFilesPath, {noPrompt: true}) === false) {
     throw new DestDirectoryNotEmpty('Target folder must be empty')
   }
 }
