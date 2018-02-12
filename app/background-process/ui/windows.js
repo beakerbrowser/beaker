@@ -64,14 +64,11 @@ export function setup () {
   let previousSessionState = getPreviousBrowsingSession()
   sessionWatcher = new SessionWatcher(userDataDir)
 
-  if (!previousSessionState.clean_exit && userWantsToRestoreSession()) {
+  if (!previousSessionState.cleanExit && userWantsToRestoreSession()) {
     restoreBrowsingSession(previousSessionState)
   } else {
     createShellWindow()
   }
-
-  // DEBUG
-  // setTimeout(process.crash, 15000)
 }
 
 export function createShellWindow (windowState) {

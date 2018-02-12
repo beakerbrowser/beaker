@@ -15,7 +15,7 @@ export default class SessionWatcher {
       // We set this to false by default and clean this up when the session
       // exits. If we ever open up a snapshot and this isn't cleaned up assume
       // there was a crash
-      clean_exit: false
+      cleanExit: false
     }
   }
 
@@ -54,7 +54,7 @@ export default class SessionWatcher {
   }
 
   exit () {
-    this.snapshot.clean_exit = true
+    this.snapshot.cleanExit = true
     this.writeSnapshot()
   }
 
