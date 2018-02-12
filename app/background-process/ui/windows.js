@@ -67,7 +67,8 @@ export function setup () {
   if (!previousSessionState.cleanExit && userWantsToRestoreSession()) {
     restoreBrowsingSession(previousSessionState)
   } else {
-    createShellWindow()
+    // use the last session's window position
+    createShellWindow(previousSessionState.windows[0])
   }
 }
 
