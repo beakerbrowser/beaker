@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain, webContents } from 'electron'
-import { register as registerShortcut, unregister as unregisterShortcut, unregisterAll as unregisterAllShortcuts } from 'electron-localshortcut'
-import os from 'os'
+import {app, BrowserWindow, ipcMain, webContents, dialog} from 'electron'
+import {register as registerShortcut, unregister as unregisterShortcut, unregisterAll as unregisterAllShortcuts} from 'electron-localshortcut'
+import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
+import SessionWatcher from './session-watcher'
 import jetpack from 'fs-jetpack'
 import * as keybindings from './keybindings'
 import path from 'path'
@@ -12,9 +13,12 @@ const IS_WIN = process.platform === 'win32'
 
 // globals
 // =
-var userDataDir
-var stateStoreFile = 'shell-window-state.json'
-var numActiveWindows = 0
+let userDataDir
+let numActiveWindows = 0
+let firstWindow = null
+let sessionWatcher = null
+const BROWSING_SESSION_PATH = './shell-window-state.json'
+const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
 
 // exported methods
 // =
@@ -22,14 +26,6 @@ var numActiveWindows = 0
 export function setup () {
   // config
   userDataDir = jetpack.cwd(app.getPath('userData'))
-
-  // load pinned tabs
-  ipcMain.once('shell-window-ready', e => {
-    // if this is the first window opened (since app start or since all windows closing)
-    if (numActiveWindows === 1) {
-      e.sender.webContents.send('command', 'load-pinned-tabs')
-    }
-  })
 
   // set up app events
   app.on('activate', () => {
@@ -43,6 +39,12 @@ export function setup () {
     else app.on('ready', () => openURL.open(url))
   })
   ipcMain.on('new-window', createShellWindow)
+
+  app.on('before-quit', async e => {
+    sessionWatcher.exit()
+    sessionWatcher.stopRecording()
+  })
+
   app.on('web-contents-created', (e, wc) => {
     // if this is a webview's web contents, attach the keybinding protections
     if (wc.hostWebContents) {
@@ -51,13 +53,28 @@ export function setup () {
     }
   })
 
-  // create first shell window
-  return createShellWindow()
+  ipcMain.on('shell-window:ready', ({ sender }) => {
+    if (sender.id === firstWindow) {
+      // if this is the first window opened (since app start or since all windows closing)
+      sender.send('command', 'load-pinned-tabs')
+      BrowserWindow.fromId(sender.id).focus()
+    }
+  })
+
+  let previousSessionState = getPreviousBrowsingSession()
+  sessionWatcher = new SessionWatcher(userDataDir)
+
+  if (!previousSessionState.cleanExit && userWantsToRestoreSession()) {
+    restoreBrowsingSession(previousSessionState)
+  } else {
+    createShellWindow()
+  }
 }
 
-export function createShellWindow () {
+export function createShellWindow (windowState) {
   // create window
-  var { x, y, width, height } = ensureVisibleOnSomeDisplay(restoreState())
+  let state = ensureVisibleOnSomeDisplay(Object.assign({}, defaultWindowState(), windowState))
+  var { x, y, width, height } = state
   var win = new BrowserWindow({
     titleBarStyle: 'hidden-inset',
     autoHideMenuBar: true,
@@ -74,11 +91,28 @@ export function createShellWindow () {
       allowRunningInsecureContent: false,
       nativeWindowOpen: true
     },
-    icon: path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
+    icon: ICON_PATH
   })
   downloads.registerListener(win)
   win.loadURL('beaker://shell-window')
+  sessionWatcher.watchWindow(win, state)
+
+  function handlePagesReady ({ sender }) {
+    if (sender === win.webContents) {
+      win.webContents.send('command', 'initialize', state.pages)
+    }
+  }
+
   numActiveWindows++
+
+  if (numActiveWindows === 1) {
+    firstWindow = win.webContents.id
+  }
+
+  ipcMain.on('shell-window:pages-ready', handlePagesReady)
+  win.on('closed', () => {
+    ipcMain.removeListener('shell-window:pages-ready', handlePagesReady)
+  })
 
   // register shortcuts
   for (var i = 1; i <= 8; i++) { registerShortcut(win, 'CmdOrCtrl+' + i, onTabSelect(win, i - 1)) }
@@ -103,7 +137,7 @@ export function createShellWindow () {
     unregisterShortcut(win, 'Esc')
     sendToWebContents('leave-full-screen')(e)
   })
-  win.on('close', onClose(win))
+  win.on('closed', onClosed(win))
 
   return win
 }
@@ -144,7 +178,7 @@ function openTab (location) {
     if (BrowserWindow.getAllWindows().length === 0) {
       let win = createShellWindow()
       if (location) {
-        ipcMain.once('shell-window-ready', () => {
+        ipcMain.once('shell-window:ready', () => {
           win.webContents.send('command', 'file:new-tab', location)
         })
       }
@@ -155,17 +189,6 @@ function openTab (location) {
   }
 }
 
-function getCurrentPosition (win) {
-  var position = win.getPosition()
-  var size = win.getSize()
-  return {
-    x: position[0],
-    y: position[1],
-    width: size[0],
-    height: size[1]
-  }
-}
-
 function windowWithinBounds (windowState, bounds) {
   return windowState.x >= bounds.x &&
     windowState.y >= bounds.y &&
@@ -173,33 +196,38 @@ function windowWithinBounds (windowState, bounds) {
     windowState.y + windowState.height <= bounds.y + bounds.height
 }
 
-function restoreState () {
+function userWantsToRestoreSession () {
+  let answer = dialog.showMessageBox({
+    type: 'question',
+    message: 'Sorry! It Looks Like Beaker Crashed',
+    detail: 'Would you like to restore your previous browsing session?',
+    buttons: [ 'Restore Session', 'Cancel' ],
+    defaultId: 0,
+    icon: ICON_PATH
+  })
+  return answer === 0
+}
+
+function restoreBrowsingSession (previousSessionState) {
+  let { windows } = previousSessionState
+  if (windows.length) {
+    for (let windowState of windows) {
+      if (windowState) createShellWindow(windowState)
+    }
+  } else {
+    createShellWindow()
+  }
+}
+
+function getPreviousBrowsingSession () {
   var restoredState = {}
   try {
-    restoredState = userDataDir.read(stateStoreFile, 'json')
+    restoredState = userDataDir.read(BROWSING_SESSION_PATH, 'json')
   } catch (err) {
     // For some reason json can't be read (might be corrupted).
     // No worries, we have defaults.
   }
-  return Object.assign({}, defaultState(), restoredState)
-}
-
-function defaultState () {
-  // HACK
-  // for some reason, electron.screen comes back null sometimes
-  // not sure why, shouldn't be happening
-  // check for existence for now, see #690
-  // -prf
-  const screen = getScreenAPI()
-  var bounds = screen ? screen.getPrimaryDisplay().bounds : {width: 800, height: 600}
-  var width = Math.max(800, Math.min(1800, bounds.width - 50))
-  var height = Math.max(600, Math.min(1200, bounds.height - 50))
-  return Object.assign({}, {
-    x: (bounds.width - width) / 2,
-    y: (bounds.height - height) / 2,
-    width,
-    height
-  })
+  return Object.assign({}, defaultBrowsingSessionState(), restoredState)
 }
 
 function ensureVisibleOnSomeDisplay (windowState) {
@@ -213,7 +241,7 @@ function ensureVisibleOnSomeDisplay (windowState) {
   if (!visible) {
     // Window is partially or fully not visible now.
     // Reset it to safe defaults.
-    return defaultState(windowState)
+    return defaultWindowState(windowState)
   }
   return windowState
 }
@@ -221,7 +249,7 @@ function ensureVisibleOnSomeDisplay (windowState) {
 // shortcut event handlers
 // =
 
-function onClose (win) {
+function onClosed (win) {
   return e => {
     numActiveWindows--
 
@@ -230,14 +258,6 @@ function onClose (win) {
 
     // unregister shortcuts
     unregisterAllShortcuts(win)
-
-    // save state
-    // NOTE this is called by .on('close')
-    // if quitting multiple windows at once, the final saved state is unpredictable
-    if (!win.isMinimized() && !win.isFullScreen()) {
-      var state = getCurrentPosition(win)
-      userDataDir.write(stateStoreFile, state, { atomic: true })
-    }
   }
 }
 
@@ -295,3 +315,4 @@ function sendScrollTouchBegin (e) {
 function getScreenAPI () {
   return require('electron').screen
 }
+

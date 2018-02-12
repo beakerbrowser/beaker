@@ -70,13 +70,27 @@ export function setup () {
       }
     })
   })
+
+  events.on('update', e => {
+    ipcRenderer.send('shell-window:pages-updated', takeSnapshot())
+  })
+}
+
+export function initializeFromSnapshot (snapshot) {
+  for (let url of snapshot) create(url)
+}
+
+function takeSnapshot () {
+  return getAll()
+    .filter((p) => !p.isPinned)
+    .map((p) => p.getIntendedURL())
 }
 
 export function create (opts) {
   var url
-  if (opts && typeof opts == 'object') {
+  if (opts && typeof opts === 'object') {
     url = opts.url
-  } else if (typeof opts == 'string') {
+  } else if (typeof opts === 'string') {
     url = opts
     opts = {}
   } else { opts = {} }
@@ -300,7 +314,6 @@ export function create (opts) {
   webviewsDiv.appendChild(page.webviewEl)
 
   // emit
-  events.emit('update')
   events.emit('add', page)
 
   // register events
@@ -334,7 +347,10 @@ export function create (opts) {
   page.webviewEl.addEventListener('page-favicon-updated', rebroadcastEvent)
 
   // make active if none others are
-  if (!activePage) { setActive(page) }
+  if (!activePage) {
+    events.emit('first-page', page)
+    setActive(page)
+  }
 
   return page
 }
@@ -411,6 +427,7 @@ export function togglePinned (page) {
   // update page state
   page.isPinned = !page.isPinned
   events.emit('pin-updated', page)
+  events.emit('update', page)
 
   // persist
   savePinnedToDB()
@@ -440,6 +457,8 @@ export function reorderTab (page, offset) {
   // ok, do the swap
   pages[srcIndex] = swapPage
   pages[dstIndex] = page
+
+  events.emit('update')
   return true
 }
 
@@ -461,7 +480,7 @@ export function changeActiveTo (index) {
 }
 
 export function changeActiveToLast () {
-  setActive(pages[pages.length-1])
+  setActive(pages[pages.length - 1])
 }
 
 export function getActive () {
@@ -793,6 +812,7 @@ function onDidFinishLoad (e) {
     page.favicons = null
     navbar.update(page)
     navbar.updateLocation(page)
+    events.emit('update')
   }
 }
 
@@ -840,7 +860,7 @@ async function onPageFaviconUpdated (e) {
     events.emit('page-favicon-updated', getByWebview(e.target))
 
     // store favicon to db
-  var res = await urlsToData(e.favicons)
+    var res = await urlsToData(e.favicons)
     if (res) {
       beaker.sitedata.set(page.getURL(), 'favicon', res.dataUrl)
     }

@@ -44,9 +44,10 @@ export function setup (cb) {
   commandHandlers.setup()
   swipeHandlers.setup()
   pages.setup()
-  pages.setActive(pages.create(pages.FIRST_TAB_URL))
-  cb()
+  ipcRenderer.send('shell-window:pages-ready')
+  pages.on('first-page', cb)
 }
+
 
 function onWindowEvent (event, type) {
   switch (type) {
