@@ -8,6 +8,7 @@ export function setup () {
   ipcRenderer.on('command', function (event, type, arg1, arg2, arg3, arg4) {
     var page = pages.getActive()
     switch (type) {
+      case 'initialize': return pages.initializeFromSnapshot(arg1)
       case 'file:new-tab':
         page = pages.create(arg1)
         pages.setActive(page)
