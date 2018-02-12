@@ -68,7 +68,8 @@ export function setup () {
     restoreBrowsingSession(previousSessionState)
   } else {
     // use the last session's window position
-    createShellWindow(previousSessionState.windows[0])
+    let {x, y, width, height} = previousSessionState.windows[0]
+    createShellWindow({x, y, width, height})
   }
 }
 
