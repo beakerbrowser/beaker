@@ -355,11 +355,11 @@ function renderSettingsView () {
         </td>`
       : yo`
         <td>
-          ${value.length ? value : (isOwner ? '' : yo`<em>--</em>`)}
+          ${value ? value : (isOwner ? '' : yo`<em>--</em>`)}
           ${isOwner
             ? yo`
               <button class="btn plain" onclick=${e => onClickSettingsEdit(e, key)}>
-                ${value.length ? '' : yo`<em>${placeholder}</em>`}
+                ${value ? '' : yo`<em>${placeholder}</em>`}
                 <i class="fa fa-pencil"></i>
               </button>`
             : ''}

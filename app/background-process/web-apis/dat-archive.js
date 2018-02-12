@@ -17,6 +17,7 @@ import {getPermissions} from '../dbs/sitedata'
 import {queryPermission, grantPermission, requestPermission} from '../ui/permissions'
 import {
   DAT_MANIFEST_FILENAME,
+  DAT_CONFIGURABLE_FIELDS,
   DAT_HASH_REGEX,
   DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
   DAT_VALID_PATH_REGEX,
@@ -170,7 +171,7 @@ export default {
       pause() // dont count against timeout, there may be user prompts
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
-      await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(JSON.stringify(settings), opts.encoding))
+      await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(JSON.stringify(settings), 'utf8'))
       resume()
 
       checkin('updating archive')
@@ -179,10 +180,9 @@ export default {
       if (!this.sender.getURL().startsWith('beaker:')) {
         delete settings.type
         delete settings.networked
-        delete settings.repository
       }
 
-      let manifestUpdates = pick(settings, ['title', 'description', 'type', 'repository'])
+      let manifestUpdates = pick(settings, DAT_CONFIGURABLE_FIELDS)
       if (Object.keys(manifestUpdates).length) {
         await pda.updateManifest(archive, manifestUpdates)
         updateWorkspaceManifest(archive, manifestUpdates)
