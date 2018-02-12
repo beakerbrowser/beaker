@@ -1,0 +1,29 @@
+export function defaultBrowsingSessionState () {
+  return {
+    windows: [ defaultWindowState() ],
+    clean_exit: false
+  }
+}
+
+export function defaultWindowState () {
+  // HACK
+  // for some reason, electron.screen comes back null sometimes
+  // not sure why, shouldn't be happening
+  // check for existence for now, see #690
+  // -prf
+  const screen = require('electron').screen
+  var bounds = screen ? screen.getPrimaryDisplay().bounds : {width: 800, height: 600}
+  var width = Math.max(800, Math.min(1800, bounds.width - 50))
+  var height = Math.max(600, Math.min(1200, bounds.height - 50))
+  return {
+    x: (bounds.width - width) / 2,
+    y: (bounds.height - height) / 2,
+    width,
+    height,
+    pages: defaultPageState()
+  }
+}
+
+export function defaultPageState () {
+  return [ 'beaker://start' ]
+}

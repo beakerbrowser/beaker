@@ -76,12 +76,11 @@ export function setup () {
   })
 }
 
-export function initializeFromSnapshot(snapshot) {
-  console.log('[ipc][command] initialize', snapshot)
-  for (let url of snapshot) create(url);
+export function initializeFromSnapshot (snapshot) {
+  for (let url of snapshot) create(url)
 }
 
-function takeSnapshot() {
+function takeSnapshot () {
   return getAll()
     .filter((p) => !p.isPinned)
     .map((p) => p.getIntendedURL())
@@ -89,9 +88,9 @@ function takeSnapshot() {
 
 export function create (opts) {
   var url
-  if (opts && typeof opts == 'object') {
+  if (opts && typeof opts === 'object') {
     url = opts.url
-  } else if (typeof opts == 'string') {
+  } else if (typeof opts === 'string') {
     url = opts
     opts = {}
   } else { opts = {} }
@@ -481,7 +480,7 @@ export function changeActiveTo (index) {
 }
 
 export function changeActiveToLast () {
-  setActive(pages[pages.length-1])
+  setActive(pages[pages.length - 1])
 }
 
 export function getActive () {
@@ -861,7 +860,7 @@ async function onPageFaviconUpdated (e) {
     events.emit('page-favicon-updated', getByWebview(e.target))
 
     // store favicon to db
-  var res = await urlsToData(e.favicons)
+    var res = await urlsToData(e.favicons)
     if (res) {
       beaker.sitedata.set(page.getURL(), 'favicon', res.dataUrl)
     }

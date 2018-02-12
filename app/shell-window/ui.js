@@ -53,7 +53,6 @@ function onWindowEvent (event, type) {
   switch (type) {
     case 'blur': return document.body.classList.add('window-blurred')
     case 'focus':
-      console.log('[ipc] window-event (focus)')
       document.body.classList.remove('window-blurred')
       try { pages.getActive().webviewEl.focus() } catch (e) {}
       break
