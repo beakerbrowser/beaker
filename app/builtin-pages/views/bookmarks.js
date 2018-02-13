@@ -143,42 +143,6 @@ function renderRow (row, i) {
     </li>`
 }
 
-function renderRowExpanded (row, i) {
-  const isOwner = row.private /*|| row._origin === userProfile._origin TODO(profiles) disabled -prf */
-
-  return yo`
-    <li class="ll-row bookmarks__row expanded" data-row=${i}>
-      <a class="link bookmark__link" href=${row.href} title=${row.title} />
-        ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : ''}
-
-        <span class="header">
-          <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
-
-          <div class="info">
-            <span class="title bookmark__title">
-              ${row.title.startsWith('dat://')
-                ? yo`<em>Untitled</em>`
-                : yo`${row.title}`
-              }
-            </span>
-            <span class="url bookmark__url">${getHostname(row.href)}</span>
-          </div>
-        </span>
-
-        <div class="tags ${row.tags.length ? '' : 'empty'}">
-          ${row.tags.map(t => {
-            const view = `tag:${t}`
-            return yo`<span onclick=${(e) => { e.stopPropagation(); e.preventDefault(); onUpdateViewFilter(view) }} class="tag">${t}</span>`
-          })}
-        </div>
-
-        <div class="notes ${row.notes ? '' : 'empty'}">${row.notes || ''}</div>
-      </a>
-
-      ${renderActions(row, i)}
-    </li>`
-}
-
 function renderActions (row, i) {
   const isOwner = row.private /*|| row._origin === userProfile._origin TODO(profiles) disabled -prf */
 
