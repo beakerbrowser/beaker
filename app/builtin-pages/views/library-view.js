@@ -240,7 +240,11 @@ function renderHeader () {
           <i class="fa fa-angle-double-left"></i>
         </a>
 
-        <img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" class="favicon" onclick=${onClickFavicon}/>
+        <img
+          src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}"
+          class="favicon ${archive.info.isOwner ? 'editable' : ''}"
+          onclick=${onClickFavicon}
+          title="Change favicon" />
 
         <a href=${archive.url} class="title" target="_blank">
           ${getSafeTitle()}
