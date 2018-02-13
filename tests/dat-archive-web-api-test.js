@@ -31,6 +31,7 @@ test.before(async t => {
   await app.start()
   await app.client.waitUntilWindowLoaded(20e3)
 
+
   // share the test static dat
   testStaticDat = await shareDat(__dirname + '/scaffold/test-static-dat')
   testStaticDatURL = 'dat://' + testStaticDat.archive.key.toString('hex') + '/'
@@ -38,6 +39,7 @@ test.before(async t => {
   // share the test runner dat
   testRunnerDat = await shareDat(__dirname + '/scaffold/test-runner-dat')
   testRunnerDatURL = 'dat://' + testRunnerDat.archive.key.toString('hex') + '/'
+
 
   // save the test-runner dat to the library
   var res = await app.client.executeAsync((url, done) => {
@@ -218,6 +220,22 @@ test('dat:// HEAD and GET', async t => {
   }, testStaticDatURL + 'hello.txt')
   t.deepEqual(res.value.data, '')
   t.deepEqual((res.value.headers.filter(h => h[0] === 'content-type'))[0][1], 'text/plain; charset=utf8')
+})
+
+test('DatArchive.load', async t => {
+  // good url
+
+  var res = await app.client.executeAsync((url, done) => {
+    DatArchive.load(url).then(a => a.url).then(done, done)
+  }, testStaticDatURL)
+  t.deepEqual(res.value, testStaticDatURL.slice(0, -1))
+
+  // bad url
+
+  var res = await app.client.executeAsync((url, done) => {
+    DatArchive.load(url).then(a => a.url, e => e.name).then(done, done)
+  }, 'dat://badurl')
+  t.deepEqual(res.value, 'Error')
 })
 
 test('DatArchive.create prompt=false', async t => {
