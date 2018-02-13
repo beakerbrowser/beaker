@@ -75,13 +75,19 @@ function onChangeSelectedArchive (e) {
   render()
 }
 
+function onDblClickArchive (e) {
+  e.preventDefault()
+  selectedArchiveKey = e.currentTarget.dataset.key
+  onSubmit()
+}
+
 function onUpdateActiveView (e) {
   currentView = e.target.dataset.content
   render()
 }
 
 async function onSubmit (e) {
-  e.preventDefault()
+  if (e) e.preventDefault()
   if (!selectedArchiveKey) {
     try {
       var newArchive = await DatArchive.create({title, description, prompt: false})
@@ -201,7 +207,12 @@ function renderArchivesList () {
 function renderArchive (archive) {
   var isSelected = selectedArchiveKey === archive.key
   return yo`
-    <li class="archive ${isSelected ? 'selected' : ''}" onclick=${onChangeSelectedArchive} data-key=${archive.key}>
+    <li
+      class="archive ${isSelected ? 'selected' : ''}"
+      onclick=${onChangeSelectedArchive}
+      ondblclick=${onDblClickArchive}
+      data-key=${archive.key}
+    >
       <div class="info">
         <img class="favicon" src="beaker-favicon:${archive.url}" />
 
