@@ -40,6 +40,7 @@ var settingsEditValues = {
 
 var toplevelError
 var copySuccess = false
+var workspaceFileActStream
 
 // HACK
 // Linux is not capable of importing folders and files in the same dialog
@@ -107,10 +108,14 @@ async function setup () {
 }
 
 function setupWorkspaceListeners () {
+  if (workspaceFileActStream) {
+    workspaceFileActStream.close()
+  }
+
   if (workspaceInfo) {
-    var fileActStream = beaker.workspaces.createFileActivityStream(0, workspaceInfo.name)
+    workspaceFileActStream = beaker.workspaces.createFileActivityStream(0, workspaceInfo.name)
     let onWorkspaceChangedThrottled = throttle(onWorkspaceChanged, 1e3)
-    fileActStream.addEventListener('changed', onWorkspaceChangedThrottled)
+    workspaceFileActStream.addEventListener('changed', onWorkspaceChangedThrottled)
   }
 }
 
@@ -280,7 +285,7 @@ function renderFooter () {
       </span>`
   } else if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
     secondaryAction = yo`
-      <span class="path error" onclick=${onEdit}>
+      <span class="path error" onclick=${onChangeWorkspaceDirectory}>
         Folder not found (${workspaceInfo.missingLocalFilesPath})
       </span>`
   } else if (!archive.info.userSettings.isSaved) {
@@ -290,7 +295,7 @@ function renderFooter () {
       </button>`
   } else if (archive.info.isOwner && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
     secondaryAction = yo`
-      <em class="path" onclick=${onEdit}>
+      <em class="path" onclick=${onChangeWorkspaceDirectory}>
         Set local files directory
       </em>`
   } else {
@@ -783,7 +788,7 @@ function renderMenu () {
 
         ${workspaceInfo
           ? yo`
-            <div class="dropdown-item">
+            <div class="dropdown-item" onclick=${onChangeWorkspaceDirectory}>
               <i class="fa fa-folder-open-o"></i>
               ${workspaceInfo.localFilesPath ? 'Change' : 'Set'} local path
             </div>`
@@ -821,7 +826,7 @@ function renderEditButton () {
     `
   } else {
     return yo`
-      <button class="btn primary nofocus" onclick=${onEdit}>
+      <button class="btn primary nofocus" onclick=${onChangeWorkspaceDirectory}>
         ${!archive.info.isOwner ? 'Fork & ' : ''}Edit
       </button>
     `
@@ -997,10 +1002,6 @@ function onDownloadZip () {
   beaker.browser.downloadURL(`${archive.url}?download_as=zip`)
 }
 
-function onChangeWorkspaceDirectory () {
-
-}
-
 function onCopy (str) {
   if (archive.info) {
     writeToClipboard(str)
@@ -1039,7 +1040,7 @@ async function onToggleSeeding () {
   render()
 }
 
-async function onEdit () {
+async function onChangeWorkspaceDirectory () {
   let publishTargetUrl = archive.url
 
   // fork first if not the owner
@@ -1053,9 +1054,10 @@ async function onEdit () {
   const defaultPath = await beaker.browser.getDefaultLocalPath(basePath, archive.info.title)
 
   // enter a loop
+  let localFilesPath
   while (true) {
     // open the create workspace popup
-    const localFilesPath = await workspacePopup.create(defaultPath)
+    localFilesPath = await workspacePopup.create(defaultPath)
 
     try {
       if (!workspaceInfo) {
