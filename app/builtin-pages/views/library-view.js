@@ -238,6 +238,8 @@ function renderHeader () {
           <i class="fa fa-angle-double-left"></i>
         </a>
 
+        <img src="beaker-favicon:${archive.url}" class="favicon"/>
+
         <a href=${archive.url} class="title" target="_blank">
           ${getSafeTitle()}
         </a>
