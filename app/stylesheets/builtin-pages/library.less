@@ -12,7 +12,6 @@
 @import "./components/diff";
 
 .builtin-wrapper.library-wrapper {
-  background: #fff;
 
   .ll-row.archive {
 
@@ -48,7 +47,47 @@
       width: 185px;
       right: -8px;
     }
+  }
 
+  .recent-archives {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-gap: 15px;
+    width: 100%;
+    margin-bottom: 25px;
+  }
+
+  .ll-row.recent {
+    display: block;
+    width: 128px;
+    height: auto;
+    padding: 10px 7px;
+    background: #fff;
+    text-align: center;
+    transition: box-shadow .05s ease;
+    border: 1px solid rgb(230, 230, 230);
+
+    * {
+      cursor: pointer;
+    }
+
+    &:hover {
+      box-shadow: 0 0 0 3px rgb(230, 230, 230);
+    }
+
+    .favicon {
+      display: block;
+      width: 32px;
+      height: 32px;
+      margin: 10px auto;
+    }
+
+    .title {
+      &:extend(.overflow-ellipsis);
+      max-width: 115px;
+      margin: 0;
+      text-align: center;
+    }
   }
 }
 
@@ -453,7 +492,7 @@
         height: 18px;
         line-height: 1;
         font-size: 13.6px;
-        
+
         .fa {
           position: relative;
           top: -2px;
@@ -519,6 +558,12 @@
         color: @color-text;
         background: #eee;
       }
+    }
+
+    .favicon {
+      width: 20px;
+      height: 20px;
+      margin-right: 7px;
     }
 
     .title {

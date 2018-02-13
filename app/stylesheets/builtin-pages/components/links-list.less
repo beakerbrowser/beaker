@@ -53,16 +53,14 @@
 
 .ll-sticky-heading {
   position: sticky;
-  top: 42px;
   z-index: 1;
-  padding: 10px 10px 0;
+  padding-bottom: 10px;
   margin: 0;
-  border-bottom: 1px solid rgb(230, 230, 230);
-  text-transform: none;
+  text-transform: uppercase;
   letter-spacing: 0;
-  font-size: .725rem;
+  font-size: .675rem;
   background: #fafafa;
-  color: rgba(0,0,0,.6);
+  color: rgba(0,0,0,.75);
   font-weight: 400;
 }
 
@@ -113,55 +111,29 @@
         opacity: 1;
 
         .icon {
-
-          * {
-            fill: @color-link;
-          }
+          color: @blue;
         }
       }
     }
 
     .icon {
-      width: 12px;
-      height: 12px;
-      margin-left: 10px;
-
-      * {
-        stroke: rgba(0,0,0,.35);
-        stroke-opacity: 1;
-        fill-opacity: 1;
-      }
+      font-size: 15px;
+      text-align: center;
+      margin-left: 12px;
+      color: #aaa;
 
       &:hover {
-
-        * {
-          stroke: rgba(0,0,0,.75);
-        }
+        color: @color-text;
       }
 
-      &:not(:last-child) {
-        margin-right: 7px;
+      &.fa-star {
+        color: @yellow;
+        -webkit-text-stroke: 1px shade(@yellow, 3%);
       }
 
       &.pin {
         width: 10px;
         margin-right: -1px;
-
-        * {
-          fill: rgba(0,0,0,.35);
-        }
-      }
-
-      &.pencil {
-        margin-bottom: 1px;
-      }
-
-      &.trash {
-        margin-bottom: 2px;
-
-        &:hover * {
-          stroke: darken(@red, 15%);
-        }
       }
     }
   }

@@ -4,9 +4,9 @@ const yo = require('yo-yo')
 import {getHostname} from '../../lib/strings'
 import * as toast from '../com/toast'
 import * as editBookmarkPopup from '../com/edit-bookmark-popup'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
+import toggleable from '../com/toggleable'
 import renderCloseIcon from '../icon/close'
-import renderTrashIcon from '../icon/trash'
-import renderPencilIcon from '../icon/pencil'
 
 // globals
 //
@@ -232,10 +232,10 @@ function renderActions (row, i) {
     return yo`
       <div class="actions bookmark__actions">
         <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
-          ${renderPencilIcon()}
+          <i class="fa fa-pencil icon"></i>
         </div>
-        <div class="action" onclick=${onClickDelete(i)} title="Delete bookmark">
-          ${renderTrashIcon()}
+        <div class="action" onclick=${onClickDelete(i)} title="Unbookmark">
+          <i class="fa fa-star icon"></i>
         </div>
         <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)} title="${row.pinned ? 'Unpin from' : 'Pin to'} start page">
           <i class="fa fa-thumb-tack icon"></i>
@@ -266,119 +266,143 @@ function renderBookmarksListToPage () {
     `)
 }
 
-function renderToPage () {
-  var searchPlaceholder = 'Search'
+function renderHeader () {
+  var searchPlaceholder = 'Search your bookmarks'
   if (currentView === 'pinned' || currentView === 'public' || currentView === 'private') {
     searchPlaceholder = `Search ${currentView} bookmarks`
   }
 
+  return yo`
+    <div class="builtin-header fixed">
+      ${renderBuiltinPagesNav('Bookmarks')}
+
+      <div class="search-container">
+        <input required autofocus onkeyup=${onQueryBookmarks} placeholder=${searchPlaceholder} type="text" class="search"/>
+        <span onclick=${onClearQuery} class="close-btn">
+          ${renderCloseIcon()}
+        </span>
+        <i class="fa fa-search"></i>
+
+        <div class="filter-btn">
+          ${toggleable(yo`
+            <div class="dropdown toggleable-container">
+              <button class="btn transparent toggleable">
+                <i class="fa fa-filter"></i>
+              </button>
+
+              <div class="dropdown-items filters with-triangle compact subtle-shadow right">
+                <div class="section">
+                  <div class="section-header">Sort by:</div>
+
+                  <div onclick=${(e) => onUpdateSort('alpha')} class="dropdown-item ${currentSort === 'alpha' ? 'active' : ''}">
+                    <i class="fa fa-check"></i>
+                    <span class="description">Alphabetical</span>
+                  </div>
+
+                  <div onclick=${(e) => onUpdateSort('recent')} class="dropdown-item ${currentSort === 'recent' ? 'active' : ''}">
+                    <i></i>
+                    <span class="description">Recently bookmarked</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `)}
+        </div>
+      </div>
+    </div>`
+}
+
+function renderSidebar () {
+  return yo`
+    <div class="builtin-sidebar">
+      <div class="section">
+        <div class="nav-item ${currentView === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('all')}>
+          <i class="fa fa-angle-right"></i>
+          All bookmarks
+        </div>
+
+        ${''/* TODO(profiles) put pinned menu item here until profiles are stored -prf */}
+        <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
+          <i class="fa fa-angle-right"></i>
+          Pinned bookmarks
+        </div>
+      </div>
+
+      ${''/* TODO(profiles) disabled -prf
+      <div class="section">
+        <h2 class="subtitle-heading">Your bookmarks</h2>
+        <div class="nav-item ${currentView === 'mine' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('mine')}>
+          <i class="fa fa-star icon"></i>
+          Your bookmarks
+        </div>
+        <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
+          <i class="fa fa-thumb-tack icon"></i>
+          Pinned
+        </div>
+        <div class="nav-item ${currentView === 'public' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('public')}>
+          <i class="fa fa-globe icon"></i>
+          Shared by you
+        </div>
+        <div class="nav-item ${currentView === 'private' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('private')}>
+          <i class="fa fa-lock icon"></i>
+          Private
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="subtitle-heading">Friends</h2>
+
+        ${followedUserProfiles
+          ? followedUserProfiles.length
+            ? followedUserProfiles.map(p => {
+              return yo`
+                <div class="friend nav-item ${currentView === p._origin ? 'active' : ''}" onclick=${() => onUpdateViewFilter(p._origin)}>
+                  <img src=${p.avatar ? p._origin + p.avatar : ''} />
+                  <span class="name">${p.name || 'Anonymous'}</span>
+                </div>
+              `
+            })
+            : yo`<div class="nav-item"><em>Not following anybody.</em></div>`
+          : yo`<div class="nav-item"><em>Loading...</em></div>`}
+      </div>*/}
+
+      <div class="section">
+        <h2 class="subtitle-heading">Tags</h2>
+
+        <div class="tag-cloud">
+          ${tags.map(t => {
+            const view = `tag:${t}`
+            const cls = currentView === view ? 'active' : ''
+            return yo`<a class="tag ${cls}" onclick=${() => onUpdateViewFilter(view)}>${t}</a>`
+          })}
+        </div>
+      </div>
+    </div>`
+}
+
+function renderToPage () {
   yo.update(
     document.querySelector('.bookmarks-wrapper'),
     yo`
       <div class="bookmarks-wrapper builtin-wrapper">
-        <div class="builtin-sidebar">
-          <h1 class="title-heading">Bookmarks</h1>
-
-          <div class="section">
-            <div class="nav-item ${currentView === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('all')}>
-              <i class="fa fa-star icon"></i>
-              All bookmarks
-            </div>
-
-            ${''/* TODO(profiles) put pinned menu item here until profiles are stored -prf */}
-            <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
-              <i class="fa fa-thumb-tack icon"></i>
-              Pinned
-            </div>
-          </div>
-
-          ${''/* TODO(profiles) disabled -prf
-          <div class="section">
-            <h2 class="subtitle-heading">Your bookmarks</h2>
-            <div class="nav-item ${currentView === 'mine' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('mine')}>
-              <i class="fa fa-star icon"></i>
-              Your bookmarks
-            </div>
-            <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>
-              <i class="fa fa-thumb-tack icon"></i>
-              Pinned
-            </div>
-            <div class="nav-item ${currentView === 'public' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('public')}>
-              <i class="fa fa-globe icon"></i>
-              Shared by you
-            </div>
-            <div class="nav-item ${currentView === 'private' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('private')}>
-              <i class="fa fa-lock icon"></i>
-              Private
-            </div>
-          </div>
-
-          <div class="section">
-            <h2 class="subtitle-heading">Friends</h2>
-
-            ${followedUserProfiles
-              ? followedUserProfiles.length
-                ? followedUserProfiles.map(p => {
-                  return yo`
-                    <div class="friend nav-item ${currentView === p._origin ? 'active' : ''}" onclick=${() => onUpdateViewFilter(p._origin)}>
-                      <img src=${p.avatar ? p._origin + p.avatar : ''} />
-                      <span class="name">${p.name || 'Anonymous'}</span>
-                    </div>
-                  `
-                })
-                : yo`<div class="nav-item"><em>Not following anybody.</em></div>`
-              : yo`<div class="nav-item"><em>Loading...</em></div>`}
-          </div>*/}
-
-          <div class="section">
-            <h2 class="subtitle-heading">Tags</h2>
-
-            <div class="tag-cloud">
-              ${tags.map(t => {
-                const view = `tag:${t}`
-                const cls = currentView === view ? 'active' : ''
-                return yo`<a class="tag ${cls}" onclick=${() => onUpdateViewFilter(view)}>${t}</a>`
-              })}
-            </div>
-          </div>
-        </div>
+        ${renderHeader()}
 
         <div class="builtin-main">
-          <div class="builtin-header fixed">
-            <div class="search-container">
-              <input required autofocus onkeyup=${onQueryBookmarks} placeholder=${searchPlaceholder} type="text" class="search"/>
-              <span onclick=${onClearQuery} class="close-btn">
-                ${renderCloseIcon()}
-              </span>
-              <i class="fa fa-search"></i>
-            </div>
-
-            <div class="sort-controls btn-bar">
-              <label for="sort">Sort by</label>
-              <select name="sort" onchange=${(e) => onUpdateSort(e.target.value)}>
-                <option value="recent" selected=${currentSort === 'recent'}>Recently bookmarked</option>
-                <option value="alpha" selected=${currentSort === 'alpha'}>Alphabetical (A-Z)</option>
-              </select>
-            </div>
-
-            <div class="view-controls btn-bar">
-              <span class="view-option ${currentRenderingMode === 'list' ? 'pressed' : ''}" title="List view" onclick=${() => onUpdateViewRendering('list')}>
-                <i class="fa fa-list-ul"></i>
-              </span>
-
-              <span class="view-option ${currentRenderingMode === 'grid' ? 'pressed' : ''}" title="Grid view" onclick=${() => onUpdateViewRendering('grid')}>
-                <i class="fa fa-th"></i>
-              </span>
-            </div>
-          </div>
-
+          ${renderSidebar()}
           ${renderBookmarks()}
         </div>
       `)
 }
 
 function renderBookmarks () {
-  var helpEl = bookmarks.length ? '' : yo`<em class="empty">No results</em>`
+  var helpEl = ''
+
+  if (!bookmarks.length && query) {
+    helpEl = yo`<em class="empty">No results</em>`
+  } else if (!bookmarks.length) {
+    helpEl = yo`<div class="empty">Loading...</div>`
+  }
+
   return yo`
     <div>
       <div class="links-list bookmarks ${currentRenderingMode}">
@@ -403,6 +427,7 @@ async function onUpdateViewFilter (filter) {
 function onUpdateSort (sort) {
   currentSort = sort
   localStorage.currentSort = sort
+  console.log(currentSort)
   sortBookmarks()
   renderToPage()
 }

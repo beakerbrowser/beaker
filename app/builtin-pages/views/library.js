@@ -5,6 +5,7 @@ import prettyBytes from 'pretty-bytes'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import toggleable from '../com/toggleable'
 import renderCloseIcon from '../icon/close'
 
@@ -15,7 +16,7 @@ import renderCloseIcon from '../icon/close'
 let archives = []
 let selectedArchives = []
 let query = ''
-let currentView = 'all'
+let currentView = 'your archives'
 let currentSort = 'alpha'
 
 // main
@@ -33,6 +34,12 @@ async function setup () {
 async function loadArchives () {
   // read data
   switch (currentView) {
+    case 'your archives':
+      archives = await beaker.archives.list({
+        isOwner: true,
+        search: query ? query : false
+      })
+      break
     case 'seeding':
       archives = await beaker.archives.list({
         isNetworked: true
@@ -131,13 +138,11 @@ function renderRow (row, i) {
               <i class="fa fa-trash-o"></i>
             </button>`
           : yo`
-            <button class="btn small restore" onclick=${e => onRestore(e, row)}>
+            <button class="btn restore" onclick=${e => onRestore(e, row)}>
               <i class="fa fa-undo"></i>
               <span>Restore</span>
             </button>`
         }
-
-        <input type="checkbox" checked=${!!row.checked} onclick=${(e) => onToggleChecked(e, row)}/>
 
         ${toggleable(yo`
           <div class="dropdown toggleable-container">
@@ -159,73 +164,193 @@ function renderRow (row, i) {
           </div>
         `)}
       </div>
+
+      <label class="checkbox">
+        <input type="checkbox" checked=${!!row.checked} onclick=${(e) => onToggleChecked(e, row)}/>
+        <i class="fa fa-check-circle"></i>
+      </label>
+    </div>
+  `
+}
+
+function renderRecentArchives (sort = '', max = undefined) {
+  let a = Array.from(archives)
+
+  if (sort === 'recent') {
+    a = a.filter(a => a.lastLibraryAccessTime > 0)
+    a.sort((a, b) => b.lastLibraryAccessTime - a.lastLibraryAccessTime)
+  }
+
+  if (max) {
+    a = a.slice(0, max)
+  }
+
+  if (!a.length) return ''
+  return a.map(renderRecent)
+}
+
+function renderRecent (a) {
+  const isSeeding = a.userSettings && a.userSettings.networked
+  const isSaved = a.userSettings && a.userSettings.isSaved
+  const isOwner = a.isOwner
+
+  return yo`
+    <a href="beaker://library/${a.url}" class="ll-row archive recent">
+      <div class="title">
+        ${a.title || yo`<em>Untitled</em>`}
+      </div>
+
+      <img class="favicon" src="beaker-favicon:${a.url}" />
+
+      <span class="url">
+        ${shortenHash(a.url)}
+      </span>
     </div>
   `
 }
 
 function render () {
-  let recentArchives = renderRows('recent', 10)
+  let recentArchives = renderRecentArchives('recent', 10, 'recent')
+
   yo.update(
     document.querySelector('.library-wrapper'), yo`
-      <div class="library-wrapper builtin-wrapper">
-        <div class="builtin-sidebar">
-          <h1 class="title-heading">Library</h1>
-          <div class="section">
-            <div onclick=${() => onUpdateView('all')} class="nav-item ${currentView === 'all' ? 'active' : ''}">
-              All
-            </div>
-
-            <div onclick=${() => onUpdateView('trash')} class="nav-item ${currentView === 'trash' ? 'active' : ''}">
-              Trash
-            </div>
-          </div>
-        </div>
+      <div class="library-wrapper library builtin-wrapper">
+        ${renderHeader()}
 
         <div class="builtin-main">
-          <div class="builtin-header fixed">
-            <div class="search-container">
-              <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search" type="text" class="search"/>
-              <span onclick=${onClearQuery} class="close-btn">
-                ${renderCloseIcon()}
-              </span>
-              <i class="fa fa-search"></i>
-            </div>
-
-            ${selectedArchives && selectedArchives.length
-              ? yo`
-                <div>
-                  <button class="btn transparent" onclick=${onDeselectAll}>
-                    Deselect all
-                  </button>
-
-                  ${currentView === 'trash'
-                    ? yo`
-                      <button class="btn" onclick=${onRestoreSelected}>
-                        Restore selected
-                      </button>`
-                    : yo`
-                      <button class="btn warning" onclick=${onDeleteSelected}>
-                        Remove selected
-                      </button>`
-                  }
-                </div>`
-              : ''
-            }
-          </div>
+          ${renderSidebar()}
 
           <div>
-            ${recentArchives ? [
-              yo`<div class="ll-sticky-heading">Recent</div>`,
-              recentArchives
+            ${recentArchives && currentView !== 'trash' ? [
+              yo`<div class="subtitle-heading">Recent</div>`,
+              yo`<div class="recent-archives">${recentArchives}</div>`
             ] : ''}
 
-            <div class="ll-sticky-heading">More stuffs</div>
+            <div class="subtitle-heading">${currentView}</div>
             ${renderRows()}
+
+            <p class="builtin-hint">
+              Your Library contains websites and archives you've created,
+              along with websites that you're seeding.
+              <i class="fa fa-question-circle-o"></i>
+            </p>
           </div>
         </div>
       </div>
     `
   )
+}
+
+function renderSidebar () {
+  return yo`
+    <div class="builtin-sidebar">
+      <div class="section nav">
+        <div onclick=${() => onUpdateView('all')} class="nav-item ${currentView === 'all' ? 'active' : ''}">
+          <i class="fa fa-angle-right"></i>
+          All
+        </div>
+
+        <div onclick=${() => onUpdateView('your archives')} class="nav-item ${currentView === 'your archives' ? 'active' : ''}">
+          <i class="fa fa-angle-right"></i>
+          Your archives
+        </div>
+
+        <div class="nav-item">
+          <i class="fa fa-angle-right"></i>
+          Currently seeding
+        </div>
+
+        <div onclick=${() => onUpdateView('trash')} class="nav-item ${currentView === 'trash' ? 'active' : ''}">
+          <i class="fa fa-angle-right"></i>
+          Trash
+        </div>
+      </div>
+    </div>`
+}
+
+function renderHeader () {
+  return yo`
+    <div class="builtin-header fixed">
+      ${renderBuiltinPagesNav('Library')}
+
+      ${selectedArchives && selectedArchives.length
+        ? yo`
+          <div class="actions">
+            <button class="btn transparent" onclick=${onDeselectAll}>
+              Deselect all
+            </button>
+
+            ${currentView === 'trash'
+              ? yo`
+                <button class="btn" onclick=${onRestoreSelected}>
+                  Restore selected
+                </button>`
+              : yo`
+                <button class="btn warning" onclick=${onDeleteSelected}>
+                  Remove selected
+                </button>`
+            }
+          </div>`
+        : yo`
+          <div class="search-container">
+            <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your Library" type="text" class="search"/>
+            <span onclick=${onClearQuery} class="close-btn">
+              ${renderCloseIcon()}
+            </span>
+            <i class="fa fa-search"></i>
+
+            <div class="filter-btn">
+              ${toggleable(yo`
+                <div class="dropdown toggleable-container">
+                  <button class="btn transparent toggleable">
+                    <i class="fa fa-filter"></i>
+                  </button>
+
+                  <div class="dropdown-items filters with-triangle compact subtle-shadow right">
+                    <div class="section">
+                      <div class="section-header">Sort by:</div>
+
+                      <div class="dropdown-item active">
+                        <i class="fa fa-check"></i>
+                        <span class="description">Alphabetical</span>
+                      </div>
+
+                      <div class="dropdown-item">
+                        <i></i>
+                        <span class="description">Recently accessed</span>
+                      </div>
+
+                      <div class="dropdown-item">
+                        <i></i>
+                        <span class="description">Recently updated</span>
+                      </div>
+                    </div>
+
+                    <div class="section">
+                      <div class="section-header">Filters:</div>
+
+                      <div class="dropdown-item active">
+                        <i class="fa fa-check-square"></i>
+                        <span class="description">Currently seeding</span>
+                      </div>
+
+                      <div class="dropdown-item">
+                        <i class="fa fa-square-o"></i>
+                        <span class="description">Editable</span>
+                      </div>
+
+                      <div class="dropdown-item">
+                        <i class="fa fa-square-o"></i>
+                        <span class="description">Saved for offline</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `)}
+            </div>
+          </div>`
+      }
+    </div>`
 }
 
 // events

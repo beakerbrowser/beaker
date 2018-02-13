@@ -30,7 +30,10 @@
     background: none;
     border: none;
     color: @color-text--muted;
-    padding: 0;
+
+    &:not(.toggleable) {
+      padding: 0;
+    }
 
     &:hover {
       color: @color-text;
@@ -82,6 +85,10 @@
 
   &.full-width {
     width: 100%;
+  }
+
+  &.center {
+    text-align: center;
   }
 
   &.thick {

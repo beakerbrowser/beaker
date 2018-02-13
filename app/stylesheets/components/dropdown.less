@@ -43,6 +43,31 @@
   border: 1px solid #dadada;
   border-radius: 4px;
 
+  .section {
+    border-bottom: 1px solid #eee;
+    padding: 5px 0;
+  }
+
+  .section-header {
+    padding: 2px 10px;
+  }
+
+  &.compact {
+
+    .dropdown-item {
+      padding: 2px 15px;
+      border-bottom: 0;
+    }
+
+    .description {
+      margin-left: 0;
+    }
+
+    i {
+      width: 15px;
+    }
+  }
+
   &.subtle-shadow {
     &:extend(.dropdown-shadow-subtle);
   }
@@ -83,6 +108,19 @@
   border-bottom: 1px solid #eee;
   cursor: pointer;
 
+  .fa-check-square {
+    color: @blue;
+  }
+
+  .fa-check-square,
+  .fa-square-o {
+    font-size: 14px;
+  }
+
+  .fa-check {
+    font-size: 11.5px;
+  }
+
   * {
     cursor: pointer;
   }
@@ -90,18 +128,19 @@
   &:hover {
     background: #eee;
 
-    i {
+    i:not(.fa-check-square) {
       color: @color-text;
     }
 
     .description {
-      color: rgba(0,0,0,.7);
+      color: @color-text;
     }
   }
 
   i {
-    color: rgba(0,0,0,.65);
+    display: inline-block;
     width: 20px;
+    color: rgba(0,0,0,.65);
   }
 
   .label {
@@ -109,7 +148,7 @@
   }
 
   .description {
-    color: rgba(0,0,0,.55);
+    color: rgba(0,0,0,.8);
     margin: 0;
     margin-left: 17px;
   }
