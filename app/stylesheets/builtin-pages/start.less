@@ -101,21 +101,23 @@
   }
 
   .dock {
-    padding: 15px;
+    padding: 30px 15px;
 
     .dock-item {
       display: inline-block;
       width: auto;
       cursor: pointer;
       margin-bottom: 0;
-      padding: 15px 5px;
+      padding: 3px 7px;
 
       &:not(:last-child) {
-        margin-right: 30px;
+        margin-right: 25px;
       }
 
       &:hover {
-        color: rgba(0,0,0,.85);
+        color: @color-text;
+        background: rgba(0,0,0,.05);
+        border-radius: 4px;
       }
     }
   }
