@@ -209,7 +209,9 @@ function renderArchive (archive) {
           ${archive.title || 'Untitled'}
         </span>
 
-        <code class="hash">${shortenHash(archive.url)}</code>
+        ${archive.isOwner ? '' : yo`<span class="readonly">read-only</span>`}
+
+        <span class="hash">${shortenHash(archive.url)}</span>
       </div>
     </li>
   `

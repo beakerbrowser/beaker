@@ -106,12 +106,22 @@ body {
       .title {
         &:extend(.overflow-ellipsis);
         display: inline-block;
-        max-width: 280px;
+        width: 275px;
+      }
+
+      .readonly {
+        font-size: 9.5px;
+        padding: 0 5px;
+        border: 1px solid @border-menu;
+        border-radius: 2px;
+        text-transform: uppercase;
+        color: @color-text--muted;
       }
 
       .hash {
         color: rgba(0,0,0,.55);
         margin-left: auto;
+        width: 100px;
       }
     }
 
@@ -123,8 +133,10 @@ body {
       background: @blue;
       color: #fff;
 
-      .info .hash {
-        color: rgba(255,255,255,.65);
+      .info .hash,
+      .info .readonly {
+        color: rgba(255,255,255,.9);
+        font-weight: 100;
       }
     }
   }
