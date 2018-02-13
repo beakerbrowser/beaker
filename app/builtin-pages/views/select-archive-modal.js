@@ -2,7 +2,8 @@
 
 import * as yo from 'yo-yo'
 import {shortenHash} from '../../lib/strings'
-import {adjustWindowHeight} from '../../lib/fg/event-handlers'
+import {adjustWindowHeight, writeToClipboard} from '../../lib/fg/event-handlers'
+import * as contextMenu from '../com/context-menu'
 
 var currentFilter = ''
 var selectedArchiveKey = ''
@@ -79,6 +80,16 @@ function onDblClickArchive (e) {
   e.preventDefault()
   selectedArchiveKey = e.currentTarget.dataset.key
   onSubmit()
+}
+
+async function onContextmenuArchive (e) {
+  e.preventDefault()
+  const key = e.currentTarget.dataset.key
+
+  const items = [
+    {icon: 'link', label: 'Copy URL', click: () => writeToClipboard(`dat://${key}`) }
+  ]
+  await contextMenu.create({x: e.clientX, y: e.clientY, items})
 }
 
 function onUpdateActiveView (e) {
@@ -211,6 +222,7 @@ function renderArchive (archive) {
       class="archive ${isSelected ? 'selected' : ''}"
       onclick=${onChangeSelectedArchive}
       ondblclick=${onDblClickArchive}
+      oncontextmenu=${onContextmenuArchive}
       data-key=${archive.key}
     >
       <div class="info">
