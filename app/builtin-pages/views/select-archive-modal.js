@@ -26,6 +26,7 @@ window.setup = async function (opts) {
       isSaved: true,
       isOwner: (opts.filters && opts.filters.isOwner)
     })
+    archives.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
 
     render()
   } catch (e) {
@@ -138,7 +139,7 @@ function renderNewArchiveForm () {
         </div>
         <div class="right">
           <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-          <button type="submit" class="btn primary" tabindex="5">
+          <button type="submit" class="btn" tabindex="5">
             Create
           </button>
         </div>
@@ -162,7 +163,7 @@ function renderSelectArchiveForm () {
         </div>
         <div class="right">
           <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-          <button disabled=${isFormDisabled ? 'disabled' : 'false'} type="submit" class="btn primary" tabindex="5">
+          <button disabled=${isFormDisabled ? 'disabled' : 'false'} type="submit" class="btn" tabindex="5">
             ${buttonLabel}
           </button>
         </div>
@@ -200,16 +201,16 @@ function renderArchivesList () {
 function renderArchive (archive) {
   var isSelected = selectedArchiveKey === archive.key
   return yo`
-    <li class="archive ${isSelected ? 'selected' : ''} ${archive.isOwner ? '' : 'readonly'}" onclick=${onChangeSelectedArchive} data-key=${archive.key}>
+    <li class="archive ${isSelected ? 'selected' : ''}" onclick=${onChangeSelectedArchive} data-key=${archive.key}>
       <div class="info">
+        <img class="favicon" src="beaker-favicon:${archive.url}" />
+
         <span class="title" title="${archive.title} ${archive.isOwner ? '' : '(Read-only)'}">
           ${archive.title || 'Untitled'}
         </span>
 
         <code class="hash">${shortenHash(archive.url)}</code>
       </div>
-      <i class="fa fa-check-circle"></i>
-      ${archive.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
     </li>
   `
 }
