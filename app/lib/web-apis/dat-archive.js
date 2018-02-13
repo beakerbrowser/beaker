@@ -5,6 +5,7 @@ import datArchiveManifest from '../api-manifests/external/dat-archive'
 import {EventTarget, fromEventStream} from './event-target'
 import Stat from './stat'
 
+const LOAD_PROMISE = Symbol('LOAD_PROMISE')
 const URL_PROMISE = Symbol('URL_PROMISE')
 
 // create the dat rpc api
@@ -33,7 +34,11 @@ export default class DatArchive extends EventTarget {
     url = 'dat://' + urlParsed.hostname
 
     // load into the 'active' (in-memory) cache
-    dat.loadArchive(url)
+    const loadPromise = dat.loadArchive(url)
+    Object.defineProperty(this, LOAD_PROMISE, {
+      enumerable: false,
+      value: loadPromise
+    })
 
     // resolve the URL (DNS)
     const urlPromise = DatArchive.resolveName(url).then(url => {
@@ -52,6 +57,14 @@ export default class DatArchive extends EventTarget {
       enumerable: true,
       value: url
     })
+  }
+
+  static load (url) {
+    var errStack = (new Error()).stack
+    const a = new DatArchive(url)
+    return Promise.all([a[LOAD_PROMISE], a[URL_PROMISE]])
+      .then(() => a)
+      .catch(e => throwWithFixedStack(e, errStack))
   }
 
   static create (opts = {}) {

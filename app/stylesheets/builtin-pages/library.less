@@ -632,6 +632,14 @@
         color: @blue;
         text-decoration: underline;
       }
+
+      &.error {
+        color: shade(@red, 10%);
+
+        &:hover {
+          color: shade(@red, 30%);
+        }
+      }
     }
 
     .dropdown.open .btn.primary {

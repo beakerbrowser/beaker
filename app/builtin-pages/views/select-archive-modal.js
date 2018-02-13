@@ -2,7 +2,8 @@
 
 import * as yo from 'yo-yo'
 import {shortenHash} from '../../lib/strings'
-import {adjustWindowHeight} from '../../lib/fg/event-handlers'
+import {adjustWindowHeight, writeToClipboard} from '../../lib/fg/event-handlers'
+import * as contextMenu from '../com/context-menu'
 
 var currentFilter = ''
 var selectedArchiveKey = ''
@@ -26,6 +27,7 @@ window.setup = async function (opts) {
       isSaved: true,
       isOwner: (opts.filters && opts.filters.isOwner)
     })
+    archives.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
 
     render()
   } catch (e) {
@@ -74,13 +76,29 @@ function onChangeSelectedArchive (e) {
   render()
 }
 
+function onDblClickArchive (e) {
+  e.preventDefault()
+  selectedArchiveKey = e.currentTarget.dataset.key
+  onSubmit()
+}
+
+async function onContextmenuArchive (e) {
+  e.preventDefault()
+  const key = e.currentTarget.dataset.key
+
+  const items = [
+    {icon: 'link', label: 'Copy URL', click: () => writeToClipboard(`dat://${key}`) }
+  ]
+  await contextMenu.create({x: e.clientX, y: e.clientY, items})
+}
+
 function onUpdateActiveView (e) {
   currentView = e.target.dataset.content
   render()
 }
 
 async function onSubmit (e) {
-  e.preventDefault()
+  if (e) e.preventDefault()
   if (!selectedArchiveKey) {
     try {
       var newArchive = await DatArchive.create({title, description, prompt: false})
@@ -138,7 +156,7 @@ function renderNewArchiveForm () {
         </div>
         <div class="right">
           <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-          <button type="submit" class="btn primary" tabindex="5">
+          <button type="submit" class="btn" tabindex="5">
             Create
           </button>
         </div>
@@ -162,7 +180,7 @@ function renderSelectArchiveForm () {
         </div>
         <div class="right">
           <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-          <button disabled=${isFormDisabled ? 'disabled' : 'false'} type="submit" class="btn primary" tabindex="5">
+          <button disabled=${isFormDisabled ? 'disabled' : 'false'} type="submit" class="btn" tabindex="5">
             ${buttonLabel}
           </button>
         </div>
@@ -200,16 +218,24 @@ function renderArchivesList () {
 function renderArchive (archive) {
   var isSelected = selectedArchiveKey === archive.key
   return yo`
-    <li class="archive ${isSelected ? 'selected' : ''} ${archive.isOwner ? '' : 'readonly'}" onclick=${onChangeSelectedArchive} data-key=${archive.key}>
+    <li
+      class="archive ${isSelected ? 'selected' : ''}"
+      onclick=${onChangeSelectedArchive}
+      ondblclick=${onDblClickArchive}
+      oncontextmenu=${onContextmenuArchive}
+      data-key=${archive.key}
+    >
       <div class="info">
+        <img class="favicon" src="beaker-favicon:${archive.url}" />
+
         <span class="title" title="${archive.title} ${archive.isOwner ? '' : '(Read-only)'}">
           ${archive.title || 'Untitled'}
         </span>
 
-        <code class="hash">${shortenHash(archive.url)}</code>
+        ${archive.isOwner ? '' : yo`<span class="readonly">read-only</span>`}
+
+        <span class="hash">${shortenHash(archive.url)}</span>
       </div>
-      <i class="fa fa-check-circle"></i>
-      ${archive.isOwner ? '' : yo`<span class="readonly">Read-only</span>`}
     </li>
   `
 }

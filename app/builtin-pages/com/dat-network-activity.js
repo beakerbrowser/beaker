@@ -410,7 +410,7 @@ export default class DatNetworkActivity {
         case 'mtime': v = a.mtime - b.mtime; break
         case 'title':
         default:
-          v = b.title.localeCompare(a.title)
+          v = (b.title || '').localeCompare(a.title || '')
       }
       return v * this.currentSort[1]
     })

@@ -38,8 +38,9 @@ var settingsEditValues = {
   repository: false
 }
 
-var error
+var toplevelError
 var copySuccess = false
+var workspaceFileActStream
 
 // HACK
 // Linux is not capable of importing folders and files in the same dialog
@@ -93,7 +94,7 @@ async function setup () {
     fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
     fileActStream.addEventListener('changed', onFilesChangedThrottled)
   } catch (e) {
-    error = e
+    toplevelError = e
     render()
   }
 
@@ -107,10 +108,14 @@ async function setup () {
 }
 
 function setupWorkspaceListeners () {
+  if (workspaceFileActStream) {
+    workspaceFileActStream.close()
+  }
+
   if (workspaceInfo) {
-    var fileActStream = beaker.workspaces.createFileActivityStream(0, workspaceInfo.name)
+    workspaceFileActStream = beaker.workspaces.createFileActivityStream(0, workspaceInfo.name)
     let onWorkspaceChangedThrottled = throttle(onWorkspaceChanged, 1e3)
-    fileActStream.addEventListener('changed', onWorkspaceChangedThrottled)
+    workspaceFileActStream.addEventListener('changed', onWorkspaceChangedThrottled)
   }
 }
 
@@ -118,7 +123,7 @@ async function loadWorkspaceRevisions () {
   if (!workspaceInfo) return
 
   // load up the revision list
-  if (workspaceInfo.localFilesPath) {
+  if (!workspaceInfo.localFilesPathIsMissing) {
     workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(
       0,
       workspaceInfo.name,
@@ -218,7 +223,6 @@ function render () {
         <div class="builtin-main" style="margin-left: 0; width: 100%">
           ${renderHeader()}
           ${renderView()}
-          ${error ? error.toString() : ''}
           ${renderFooter()}
         </div>
       </div>
@@ -252,6 +256,10 @@ function renderHeader () {
 }
 
 function renderView () {
+  if (toplevelError) {
+    return renderErrorView()
+  }
+
   switch (activeView) {
     case 'files':
       return renderFilesView()
@@ -275,6 +283,11 @@ function renderFooter () {
       <span class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
         ${workspaceInfo.localFilesPath}
       </span>`
+  } else if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
+    secondaryAction = yo`
+      <span class="path error" onclick=${onChangeWorkspaceDirectory}>
+        Folder not found (${workspaceInfo.missingLocalFilesPath})
+      </span>`
   } else if (!archive.info.userSettings.isSaved) {
     secondaryAction = yo`
       <button class="btn" onclick=${onSave}>
@@ -282,7 +295,7 @@ function renderFooter () {
       </button>`
   } else if (archive.info.isOwner && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
     secondaryAction = yo`
-      <em class="path" onclick=${onEdit}>
+      <em class="path" onclick=${onChangeWorkspaceDirectory}>
         Set local files directory
       </em>`
   } else {
@@ -306,6 +319,18 @@ function renderFooter () {
         </div>
       </div>
     </footer>
+  `
+}
+
+function renderErrorView () {
+  return yo`
+    <div class="container">
+      <div class="view error">
+        <div class="message error">
+          ${toplevelError ? toplevelError.toString() : ''}
+        </div>
+      </div>
+    </div>
   `
 }
 
@@ -335,11 +360,11 @@ function renderSettingsView () {
         </td>`
       : yo`
         <td>
-          ${value.length ? value : (isOwner ? '' : yo`<em>--</em>`)}
+          ${value ? value : (isOwner ? '' : yo`<em>--</em>`)}
           ${isOwner
             ? yo`
               <button class="btn plain" onclick=${e => onClickSettingsEdit(e, key)}>
-                ${value.length ? '' : yo`<em>${placeholder}</em>`}
+                ${value ? '' : yo`<em>${placeholder}</em>`}
                 <i class="fa fa-pencil"></i>
               </button>`
             : ''}
@@ -763,7 +788,7 @@ function renderMenu () {
 
         ${workspaceInfo
           ? yo`
-            <div class="dropdown-item">
+            <div class="dropdown-item" onclick=${onChangeWorkspaceDirectory}>
               <i class="fa fa-folder-open-o"></i>
               ${workspaceInfo.localFilesPath ? 'Change' : 'Set'} local path
             </div>`
@@ -801,7 +826,7 @@ function renderEditButton () {
     `
   } else {
     return yo`
-      <button class="btn primary nofocus" onclick=${onEdit}>
+      <button class="btn primary nofocus" onclick=${onChangeWorkspaceDirectory}>
         ${!archive.info.isOwner ? 'Fork & ' : ''}Edit
       </button>
     `
@@ -977,10 +1002,6 @@ function onDownloadZip () {
   beaker.browser.downloadURL(`${archive.url}?download_as=zip`)
 }
 
-function onChangeWorkspaceDirectory () {
-
-}
-
 function onCopy (str) {
   if (archive.info) {
     writeToClipboard(str)
@@ -1019,7 +1040,7 @@ async function onToggleSeeding () {
   render()
 }
 
-async function onEdit () {
+async function onChangeWorkspaceDirectory () {
   let publishTargetUrl = archive.url
 
   // fork first if not the owner
@@ -1032,14 +1053,30 @@ async function onEdit () {
   const basePath = await beaker.browser.getSetting('workspace_default_path')
   const defaultPath = await beaker.browser.getDefaultLocalPath(basePath, archive.info.title)
 
-  // open the create workspace popup
-  const localFilesPath = await workspacePopup.create(defaultPath)
+  // enter a loop
+  let localFilesPath
+  while (true) {
+    // open the create workspace popup
+    localFilesPath = await workspacePopup.create(defaultPath)
 
-  if (!workspaceInfo) {
-    workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
-  } else {
-    // set the localFilesPath
-    await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath})
+    try {
+      if (!workspaceInfo) {
+        workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
+      } else {
+        // set the localFilesPath
+        await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath})
+      }
+    } catch (e) {
+      if (e.name === 'DestDirectoryNotEmpty') {
+        alert('Folder not empty. Please choose an empty directory.')
+        continue // show the popup again
+      } else {
+        toplevelError = e
+        render()
+        return // failure, stop trying
+      }
+    }
+    break // success, break the loop
   }
 
   await beaker.workspaces.setupFolder(0, workspaceInfo.name)

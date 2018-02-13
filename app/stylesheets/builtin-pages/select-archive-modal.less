@@ -3,6 +3,8 @@
 @import "../components/buttons.less";
 @import "../components/inputs.less";
 @import "../components/modal.less";
+@import "../components/dropdown";
+@import "../components/context-menu";
 @import "../utils/decorators";
 
 body {
@@ -85,64 +87,59 @@ body {
     align-items: center;
     justify-content: space-between;
     position: relative;
-    padding: 5px 10px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 10px;
 
-    &.readonly {
-
-      .info {
-        max-width: 340px;
-      }
+    &:nth-child(even) {
+      background: #f7f7f7;
     }
 
-    .readonly {
-      font-size: 9.5px;
-      padding: 0 5px;
-      border: 1px solid @border-menu;
-      border-radius: 2px;
-      text-transform: uppercase;
-      color: @color-text--muted;
+    .info {
+      &:extend(.flex);
+      width: 100%;
+      align-items: center;
+
+      .favicon {
+        width: 16px;
+        height: 16px;
+        margin-right: 5px;
+      }
+
+      .title {
+        &:extend(.overflow-ellipsis);
+        display: inline-block;
+        width: 275px;
+      }
+
+      .readonly {
+        font-size: 9.5px;
+        padding: 0 5px;
+        border: 1px solid @border-menu;
+        border-radius: 2px;
+        text-transform: uppercase;
+        color: @color-text--muted;
+      }
+
+      .hash {
+        color: rgba(0,0,0,.55);
+        margin-left: auto;
+        width: 100px;
+      }
     }
 
     &:hover {
-      background: #f7f7f7;
+      background: #f0f0f0;
     }
 
     &.selected {
-      background: #f7f7f7;
+      background: @blue;
+      color: #fff;
 
-      .readonly {
-        display: none;
+      .info .hash,
+      .info .readonly {
+        color: rgba(255,255,255,.9);
+        font-weight: 100;
       }
-
-      i.fa-check-circle {
-        display: block;
-        color: shade(@green, 15%);
-        font-size: 16px;
-      }
-    }
-  }
-
-  i.fa-check-circle {
-    display: none;
-  }
-
-  .info {
-    &:extend(.flex);
-    align-items: baseline;
-
-    .title {
-      &:extend(.overflow-ellipsis);
-      display: inline-block;
-      max-width: 280px;
-    }
-
-    .hash {
-      color: @color-text--light;
-      color: rgba(0,0,0,.55);
-      font-size: 12px;
-      margin-left: 5px;
     }
   }
 }

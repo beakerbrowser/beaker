@@ -36,7 +36,6 @@ const DISALLOWED_SAVE_PATH_NAMES = [
   'pictures',
   'videos'
 ]
-
 const MAX_DIFF_SIZE = 1e5
 
 // exported api
@@ -49,14 +48,35 @@ export default {
   },
 
   async get (profileId, name) {
+    var ws
     assertValidProfileId(profileId)
+
+    // get the record
     if (typeof name === 'string' && name.startsWith('dat://')) {
       assertDatUrl(name)
-      return workspacesDb.getByPublishTargetUrl(profileId, name)
+      ws = await workspacesDb.getByPublishTargetUrl(profileId, name)
     } else {
       assertValidName(name)
-      return workspacesDb.get(profileId, name)
+      ws = await workspacesDb.get(profileId, name)
     }
+
+    // check that the files path is valid
+    if (ws) {
+      if (ws.localFilesPath) {
+        const stat = await new Promise(resolve => {
+          fs.stat(ws.localFilesPath, (err, st) => resolve(st))
+        })
+        if (!stat || !stat.isDirectory()) {
+          ws.localFilesPathIsMissing = true
+          ws.missingLocalFilesPath = ws.localFilesPath // store on other attr
+          ws.localFilesPath = undefined // unset to avoid accidents
+        }
+      } else {
+        ws.localFilesPathIsMissing = true
+      }
+    }
+
+    return ws
   },
 
   // create or update a workspace
@@ -116,11 +136,6 @@ export default {
       scopedFS = scopedFSes.get(ws.localFilesPath)
       archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
     })
-
-    // check that the target folder is empty
-    if (await checkFolderIsEmpty(ws.localFilesPath) === false) {
-      return false
-    }
 
     // revert from the archive
     var diff = await dft.diff({fs: archive}, {fs: scopedFS})
@@ -483,7 +498,7 @@ async function assertSafeFilesPath (localFilesPath) {
   }
 
   // check that the target folder is empty
-  if (await checkFolderIsEmpty(localFilesPath) === false) {
+  if (await checkFolderIsEmpty(localFilesPath, {noPrompt: true}) === false) {
     throw new DestDirectoryNotEmpty('Target folder must be empty')
   }
 }
