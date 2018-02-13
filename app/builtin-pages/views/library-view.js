@@ -41,6 +41,7 @@ var settingsEditValues = {
 
 var toplevelError
 var copySuccess = false
+var faviconCacheBuster
 var workspaceFileActStream
 
 // HACK
@@ -239,7 +240,7 @@ function renderHeader () {
           <i class="fa fa-angle-double-left"></i>
         </a>
 
-        <img src="beaker-favicon:${archive.url}" class="favicon" onclick=${onClickFavicon}/>
+        <img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" class="favicon" onclick=${onClickFavicon}/>
 
         <a href=${archive.url} class="title" target="_blank">
           ${getSafeTitle()}
@@ -916,6 +917,8 @@ function onClickFavicon (e) {
       if (workspaceInfo && workspaceInfo.name) {
         await beaker.workspaces.revert(0, workspaceInfo.name, {paths: ['/favicon.png']})
       }
+      faviconCacheBuster = Date.now()
+      render()
     }
   })
 }

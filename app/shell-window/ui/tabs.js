@@ -71,7 +71,7 @@ function drawTab (page) {
       favicon = yo`<i class="fa fa-window-maximize"></i>`
     } else {
       // (check for cached icon)
-      favicon = yo`<img src="beaker-favicon:${page.getURL()}">`
+      favicon = yo`<img src="beaker-favicon:${page.getURL()}?cache=${Date.now()}">`
     }
   }
 
