@@ -113,14 +113,8 @@ function sortBookmarks () {
 // =
 
 function renderRow (row, i) {
-  if (row.isHidden) {
-    return ''
-  } else {
-    return renderRowList(row, i)
-  }
-}
+  if (row.isHidden) return ''
 
-function renderRowList (row, i) {
   const isOwner = row.private /*|| row._origin === userProfile._origin TODO(profiles) disabled -prf */
 
   return yo`
