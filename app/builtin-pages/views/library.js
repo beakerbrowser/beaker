@@ -37,6 +37,7 @@ async function loadArchives () {
     case 'your archives':
       archives = await beaker.archives.list({
         isOwner: true,
+        isSaved: true,
         search: query ? query : false
       })
       break
