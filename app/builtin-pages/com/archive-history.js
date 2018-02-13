@@ -1,5 +1,4 @@
 import * as yo from 'yo-yo'
-import prettyBytes from 'pretty-bytes'
 
 // exported api
 // =

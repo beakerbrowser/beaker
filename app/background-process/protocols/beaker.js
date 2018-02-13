@@ -114,6 +114,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/logo')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
   }
+  if (requestUrl.startsWith('beaker://assets/favicons/')) {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/favicons', requestUrl.slice('beaker://assets/favicons/'.length)))
+  }
 
   // builtin pages
   if (requestUrl === 'beaker://assets/builtin-pages.css') {

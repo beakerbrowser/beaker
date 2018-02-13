@@ -10,6 +10,7 @@ import toggleable from '../com/toggleable'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
 import * as workspacePopup from '../com/library-workspace-popup'
+import * as faviconPicker from '../com/favicon-picker'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
 import {niceDate} from '../../lib/time'
@@ -238,7 +239,7 @@ function renderHeader () {
           <i class="fa fa-angle-double-left"></i>
         </a>
 
-        <img src="beaker-favicon:${archive.url}" class="favicon"/>
+        <img src="beaker-favicon:${archive.url}" class="favicon" onclick=${onClickFavicon}/>
 
         <a href=${archive.url} class="title" target="_blank">
           ${getSafeTitle()}
@@ -894,6 +895,29 @@ async function onChangeView (e, view) {
   }
 
   render()
+}
+
+function onClickFavicon (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  if (!archive.info.isOwner) {
+    return
+  }
+
+  let rect = e.currentTarget.getClientRects()[0]
+
+  faviconPicker.create({
+    x: rect.left,
+    y: rect.bottom,
+    async onSelect (imageData) {
+      // write file to the dat then restore to the workspace
+      await archive.writeFile('/favicon.png', imageData)
+      if (workspaceInfo && workspaceInfo.name) {
+        await beaker.workspaces.revert(0, workspaceInfo.name, {paths: ['/favicon.png']})
+      }
+    }
+  })
 }
 
 async function onAddToDatIgnore (e, node) {

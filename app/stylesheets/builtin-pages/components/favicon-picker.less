@@ -1,0 +1,100 @@
+.favicon-picker {
+
+  .favicon-picker-header {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+
+    .filter {
+      padding: 5px 0 5px 5px;
+
+      input {
+        padding: 0 10px;
+        width: 359px;
+      }
+    }
+
+    .ctrls {
+      padding: 10px 15px;
+      margin-left: auto;
+
+      .btn {
+        font-size: 11px;
+        color: gray;
+        border-color: #ccc;
+
+        &.pressed {
+          color: #444;
+        }
+      }
+    }
+  }
+
+  .favicon-picker-body {
+    width: 490px;
+
+    .text {
+      padding: 10px;
+    }
+  }
+
+  .favicon-picker-footer {
+    display: flex;
+    padding: 10px 15px;
+    border-top: 1px solid #ddd;
+    align-items: center;
+
+    .label {
+      color: #555;
+      font-weight: bold;
+    }
+    .ctrls {
+      margin-left: auto;
+    }
+  }
+
+  .favicon-picker-icons {
+    display: grid;
+    padding: 10px;
+    grid-gap: 6px;
+    grid-template-columns: repeat(10, 1fr);
+    max-height: 300px;
+    overflow-y: auto;
+
+    .icon {
+      width: 40px;
+      height: 40px;
+      padding: 4px;
+      border-radius: 3px;
+      text-align: center;
+      cursor: pointer;
+
+      img {
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+      }
+
+      &:hover {
+        background: #eaeaea;
+      }
+
+      &.selected {
+        background: @blue;
+      }
+    }
+
+    &.small {
+      grid-template-columns: repeat(14, 1fr);
+
+      .icon {
+        width: 24px;
+        height: 24px;
+
+        img {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+}

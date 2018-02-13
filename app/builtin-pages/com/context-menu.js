@@ -26,6 +26,15 @@ create({
     // icon from font-awesome
     {icon: 'link', label: 'Copy link', click: () => writeToClipboard('...')}
   ]
+
+  // instead of items, can give render()
+  render ({x, y}) {
+    return yo`
+      <div class="context-menu dropdown" style="left: ${x}px; top: ${y}px">
+        <img src="smile.png" onclick=${contextMenu.destroy} />
+      </div>
+    `
+  }
 }
 */
 export function create (opts) {
@@ -38,7 +47,7 @@ export function create (opts) {
   items = opts.items
 
   // render interface
-  const el = render()
+  const el = opts.render ? opts.render() : render()
   document.body.appendChild(el)
   document.addEventListener('keyup', onKeyUp)
   document.addEventListener('click', onClickAnywhere)

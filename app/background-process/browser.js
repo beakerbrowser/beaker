@@ -95,27 +95,26 @@ export const WEBAPI = {
   getSetting,
   getSettings,
   setSetting,
-
   getUserSetupStatus,
   setUserSetupStatus,
-
-  fetchBody,
-  downloadURL,
-  setWindowDimensions,
-
+  getDefaultLocalPath,
   setStartPageBackgroundImage,
-
   getDefaultProtocolSettings,
   setAsDefaultProtocolClient,
   removeAsDefaultProtocolClient,
 
+  fetchBody,
+  downloadURL,
+
+  listBuiltinFavicons,
+  getBuiltinFavicon,
+
+  setWindowDimensions,
   showOpenDialog,
   showContextMenu,
   openUrl: url => { openUrl(url) }, // dont return anything
   openFolder,
   doWebcontentsCmd,
-  getDefaultLocalPath,
-
   closeModal
 }
 
@@ -134,6 +133,28 @@ export function fetchBody (url) {
 
 export async function downloadURL (url) {
   this.sender.downloadURL(url)
+}
+
+export async function listBuiltinFavicons ({filter, offset, limit} = {}) {
+  if (filter) {
+    filter = new RegExp(filter, 'i')
+  }
+
+  // list files in assets/favicons and filter on the name
+  var dir = jetpack.cwd(__dirname).cwd('assets/favicons')
+  var items = (await dir.listAsync())
+    .filter(filename => {
+      if (filter && !filter.test(filename)) {
+        return false
+      }
+      return filename.endsWith('.png')
+    })
+  return items.slice(offset || 0, limit || Number.POSITIVE_INFINITY)
+}
+
+export async function getBuiltinFavicon (name) {
+  var dir = jetpack.cwd(__dirname).cwd('assets/favicons')
+  return dir.readAsync(name, 'buffer')
 }
 
 export async function setWindowDimensions ({width, height} = {}) {
