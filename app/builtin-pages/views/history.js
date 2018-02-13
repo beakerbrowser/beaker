@@ -3,7 +3,7 @@
 const yo = require('yo-yo')
 const moment = require('moment')
 import {getHostname} from '../../lib/strings'
-import renderTrashIcon from '../icon/trash'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import renderCloseIcon from '../icon/close'
 
 // globals
@@ -111,7 +111,7 @@ function renderRows () {
     var oldLastDate = lastRenderedDate
     lastRenderedDate = moment(row.ts).endOf('day')
     if (!lastRenderedDate.isSame(oldLastDate, 'day')) {
-      rowEls.push(yo`<div class="ll-sticky-heading">${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</div>`)
+      rowEls.push(yo`<div class="subtitle-heading ll-sticky-heading">${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</div>`)
     }
 
     // render row
@@ -119,8 +119,10 @@ function renderRows () {
   })
 
   // empty state
-  if (rowEls.length == 0) {
+  if (rowEls.length == 0 && query) {
     rowEls.push(yo`<em class="empty">No results</em>`)
+  } else if (rowEls.length == 0) {
+    rowEls.push(yo`<div class="empty">Loading...</div>`)
   }
 
   return rowEls
@@ -135,7 +137,7 @@ function renderAndAppendRows (v) {
     var oldLastDate = lastRenderedDate
     lastRenderedDate = moment(row.ts).endOf('day')
     if (!lastRenderedDate.isSame(oldLastDate, 'day')) {
-      parentEl.appendChild(yo`<div class="ll-sticky-heading">${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</div>`)
+      parentEl.appendChild(yo`<div class="subtitle-heading ll-sticky-heading">${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</div>`)
     }
 
     // render row
@@ -153,8 +155,36 @@ function renderRow (row, i) {
       </a>
       <div class="actions">
         <div class="action" onclick=${onClickDelete.bind(window, i)} title="Remove from history">
-          ${renderTrashIcon()}
+          <i class="fa fa-trash-o icon"></i>
         </div>
+      </div>
+    </div>`
+}
+
+function renderHeader () {
+  return yo`
+    <div class="builtin-header fixed">
+      ${renderBuiltinPagesNav('History')}
+
+      <div class="search-container">
+        <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your browsing history" type="text" class="search"/>
+        <span onclick=${onClearQuery} class="close-btn">
+          ${renderCloseIcon()}
+        </span>
+        <i class="fa fa-search"></i>
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick=${onClickDeleteBulk.bind(window)}>
+          Clear history
+        </button>
+
+        <select id="delete-period">
+          <option value="day" selected>from today</option>
+          <option value="week">from this week</option>
+          <option value="month">from this month</option>
+          <option value="all">from all time</option>
+        </select>
       </div>
     </div>`
 }
@@ -163,42 +193,25 @@ function render () {
   yo.update(
     document.querySelector('.history-wrapper'), yo`
       <div class="history-wrapper builtin-wrapper">
-        <div class="builtin-sidebar">
-          <h1 class="title-heading">History</h1>
-          <div class="section">
-            <div onclick=${onUpdatePeriodFilter} data-period="all" class="nav-item ${currentPeriodFilter === 'all' ? 'active' : ''}">
-              All history
-            </div>
-            <div onclick=${onUpdatePeriodFilter} data-period="today" class="nav-item ${currentPeriodFilter === 'today' ? 'active' : ''}">
-              Today
-            </div>
-            <div onclick=${onUpdatePeriodFilter} data-period="yesterday" class="nav-item ${currentPeriodFilter === 'yesterday' ? 'active' : ''}">
-              Yesterday
-            </div>
-          </div>
-        </div>
+        ${renderHeader()}
 
         <div class="builtin-main">
-          <div class="builtin-header fixed">
-            <div class="search-container">
-              <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your browsing history" type="text" class="search"/>
-              <span onclick=${onClearQuery} class="close-btn">
-                ${renderCloseIcon()}
-              </span>
-              <i class="fa fa-search"></i>
-            </div>
-
-            <div>
-              <div class="btn" onclick=${onClickDeleteBulk.bind(window)}>
-                Clear history
+          <div class="builtin-sidebar">
+            <div class="section">
+              <div onclick=${onUpdatePeriodFilter} data-period="all" class="nav-item ${currentPeriodFilter === 'all' ? 'active' : ''}">
+                <i class="fa fa-angle-right"></i>
+                All history
               </div>
 
-              <select id="delete-period">
-                <option value="day" selected>from today</option>
-                <option value="week">from this week</option>
-                <option value="month">from this month</option>
-                <option value="all">from all time</option>
-              </select>
+              <div onclick=${onUpdatePeriodFilter} data-period="today" class="nav-item ${currentPeriodFilter === 'today' ? 'active' : ''}">
+                <i class="fa fa-angle-right"></i>
+                Today
+              </div>
+
+              <div onclick=${onUpdatePeriodFilter} data-period="yesterday" class="nav-item ${currentPeriodFilter === 'yesterday' ? 'active' : ''}">
+                <i class="fa fa-angle-right"></i>
+                Yesterday
+              </div>
             </div>
           </div>
 
