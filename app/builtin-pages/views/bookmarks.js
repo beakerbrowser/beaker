@@ -13,7 +13,6 @@ import renderCloseIcon from '../icon/close'
 
 var query = '' // current search query
 var currentView = 'all'
-var currentRenderingMode
 var currentSort
 var bookmarks = []
 var tags = []
@@ -21,7 +20,6 @@ var userProfile = {_origin: null} // null TODO(profiles) disabled -prf
 // var followedUserProfiles = null TODO(profiles) disabled -prf
 
 // read current view config
-currentRenderingMode = localStorage.currentRenderingMode || 'list'
 currentSort = localStorage.currentSort || 'recent'
 
 // main
@@ -117,9 +115,7 @@ function sortBookmarks () {
 function renderRow (row, i) {
   if (row.isHidden) {
     return ''
-  } else if (currentRenderingMode === 'grid') {
-    return renderRowGrid(row, i)
-  } else /*if (currentRenderingMode === 'list')*/ {
+  } else {
     return renderRowList(row, i)
   }
 }
@@ -189,42 +185,6 @@ function renderRowExpanded (row, i) {
     </li>`
 }
 
-function renderRowGrid (row, i) {
-  const isOwner = row.private /*|| row._origin === userProfile._origin TODO(profiles) disabled -prf */
-
-  return yo`
-    <li class="ll-row bookmarks__row grid" data-row=${i}>
-      <a class="link bookmark__link" href=${row.href} title=${row.title} />
-        ${!isOwner ? yo`<a class="avatar-container row-modifier" href=${row._origin}><img class="avatar" src="${row._origin}/avatar.png"/></a>` : ''}
-
-        <span class="header">
-          <img class="favicon bookmark__favicon" src=${'beaker-favicon:' + row.href} />
-
-          <div class="info">
-            <span class="title bookmark__title">
-              ${row.title.startsWith('dat://')
-                ? yo`<em>Untitled</em>`
-                : yo`${row.title}`
-              }
-            </span>
-            <span class="url bookmark__url">${getHostname(row.href)}</span>
-          </div>
-        </span>
-
-        <div class="notes ${row.notes ? '' : 'empty'}">${row.notes || ''}</div>
-
-        <div class="tags ${row.tags.length ? '' : 'empty'}">
-          ${row.tags.map(t => {
-            const view = `tag:${t}`
-            return yo`<span onclick=${(e) => { e.stopPropagation(); e.preventDefault(); onUpdateViewFilter(view) }} class="tag">${t}</span>`
-          })}
-        </div>
-      </a>
-
-      ${renderActions(row, i)}
-    </li>`
-}
-
 function renderActions (row, i) {
   const isOwner = row.private /*|| row._origin === userProfile._origin TODO(profiles) disabled -prf */
 
@@ -257,7 +217,7 @@ function renderBookmarksListToPage () {
   yo.update(
     document.querySelector('.links-list.bookmarks'),
     yo`
-      <div class="links-list bookmarks ${currentRenderingMode}">
+      <div class="links-list bookmarks">
         ${bookmarks.length
           ? bookmarks.map(renderRow)
           : yo`<em class="empty">No bookmarks</em>`
@@ -405,7 +365,7 @@ function renderBookmarks () {
 
   return yo`
     <div>
-      <div class="links-list bookmarks ${currentRenderingMode}">
+      <div class="links-list bookmarks">
         ${bookmarks.map(renderRow)}
         ${helpEl}
       </div>
@@ -429,12 +389,6 @@ function onUpdateSort (sort) {
   localStorage.currentSort = sort
   console.log(currentSort)
   sortBookmarks()
-  renderToPage()
-}
-
-function onUpdateViewRendering (mode) {
-  currentRenderingMode = mode
-  localStorage.currentRenderingMode = mode
   renderToPage()
 }
 
