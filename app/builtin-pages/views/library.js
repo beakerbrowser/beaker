@@ -44,7 +44,9 @@ async function loadArchives () {
       break
     case 'seeding':
       archives = await beaker.archives.list({
-        isNetworked: true
+        isOwner: false,
+        isSaved: true,
+        search: query ? query : false
       })
       break
     case 'trash':
@@ -265,7 +267,7 @@ function renderSidebar () {
           Your archives
         </div>
 
-        <div class="nav-item">
+        <div onclick=${() => onUpdateView('seeding')} class="nav-item ${currentView === 'seeding' ? 'active' : ''}">
           <i class="fa fa-angle-right"></i>
           Currently seeding
         </div>
