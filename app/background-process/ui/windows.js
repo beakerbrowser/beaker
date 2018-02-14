@@ -74,6 +74,8 @@ export function createShellWindow () {
   registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
 
   // register event handlers
+  win.on('browser-backward', onGoBack(win))
+  win.on('browser-forward', onGoForward(win))
   win.on('scroll-touch-begin', sendScrollTouchBegin)
   win.on('scroll-touch-end', sendToWebContents('scroll-touch-end'))
   win.on('focus', sendToWebContents('focus'))
