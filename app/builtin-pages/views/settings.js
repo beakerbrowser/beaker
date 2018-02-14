@@ -120,6 +120,7 @@ function renderGeneral () {
   return yo`
     <div class="view">
       ${renderWorkspacePathSettings()}
+      ${renderOnStartupSettings()}
       ${renderAutoUpdater()}
       ${renderProtocolSettings()}
     </div>
@@ -141,6 +142,29 @@ function renderWorkspacePathSettings () {
           Choose directory
         </button>
       </p>
+    </div>
+  `
+}
+
+function renderOnStartupSettings () {
+  return yo`
+    <div class="section on-startup">
+      <h2 id="on-startup" class="subtitle-heading">On Startup</h2>
+
+      <p>When Beaker starts what do you want to see?</p>
+
+      <div class="radio-group">
+        <input type="radio" id="customStartPage1" name="custom-start-page"
+               value="blank"
+               checked=${settings.custom_start_page === "blank"}
+               onchange=${onCustomStartPageChange} />
+        <label for="customStartPage1">Show a blank page</label>
+        <input type="radio" id="customStartPage2" name="custom-start-page"
+               value="previous"
+               checked=${settings.custom_start_page === "previous"}
+               onchange=${onCustomStartPageChange} />
+        <label for="customStartPage2">Show my previously opened tabs</label>
+      </div>
     </div>
   `
 }
@@ -330,6 +354,11 @@ function renderAutoUpdateCheckbox () {
 function onUpdateView (view) {
   activeView = view
   renderToPage()
+}
+
+function onCustomStartPageChange (e) {
+  settings.custom_start_page = e.target.value
+  beaker.browser.setSetting('custom_start_page', settings.custom_start_page)
 }
 
 function onClickCheckUpdates () {

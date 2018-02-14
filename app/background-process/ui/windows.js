@@ -8,6 +8,7 @@ import path from 'path'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
+import * as settingsDb from '../dbs/settings'
 
 const IS_WIN = process.platform === 'win32'
 
@@ -23,7 +24,7 @@ const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './asset
 // exported methods
 // =
 
-export function setup () {
+export async function setup () {
   // config
   userDataDir = jetpack.cwd(app.getPath('userData'))
 
@@ -63,8 +64,9 @@ export function setup () {
 
   let previousSessionState = getPreviousBrowsingSession()
   sessionWatcher = new SessionWatcher(userDataDir)
+  let customStartPage = await settingsDb.get('custom_start_page')
 
-  if (!previousSessionState.cleanExit && userWantsToRestoreSession()) {
+  if (customStartPage === 'previous' || !previousSessionState.cleanExit && userWantsToRestoreSession()) {
     restoreBrowsingSession(previousSessionState)
   } else {
     // use the last session's window position
