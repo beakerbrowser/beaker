@@ -644,10 +644,14 @@
       }
 
       &.error {
-        color: shade(@red, 10%);
+
+        .btn {
+          margin-left: 5px;
+        }
 
         &:hover {
-          color: shade(@red, 30%);
+          color: initial;
+          text-decoration: none;
         }
       }
     }

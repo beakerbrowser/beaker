@@ -293,8 +293,14 @@ function renderFooter () {
       </span>`
   } else if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
     secondaryAction = yo`
-      <span class="path error" onclick=${onChangeWorkspaceDirectory}>
-        Folder not found (${workspaceInfo.missingLocalFilesPath})
+      <span class="path error">
+        <em>
+          Directory not found (${workspaceInfo.missingLocalFilesPath})
+        </em>
+
+        <button class="btn" onclick=${onChangeWorkspaceDirectory}>
+          Choose new directory
+        </button>
       </span>`
   } else if (!archive.info.userSettings.isSaved) {
     secondaryAction = yo`
