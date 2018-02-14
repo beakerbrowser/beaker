@@ -74,6 +74,8 @@ export function createShellWindow () {
   registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
 
   // register event handlers
+  win.on('browser-backward', onGoBack(win))
+  win.on('browser-forward', onGoForward(win))
   win.on('scroll-touch-begin', sendScrollTouchBegin)
   win.on('scroll-touch-end', sendToWebContents('scroll-touch-end'))
   win.on('focus', sendToWebContents('focus'))
@@ -81,6 +83,7 @@ export function createShellWindow () {
   win.on('enter-full-screen', sendToWebContents('enter-full-screen'))
   win.on('leave-full-screen', sendToWebContents('leave-full-screen'))
   win.on('close', onClose(win))
+  win.on('app-command', (e, cmd) => {onAppCommand(win, e, cmd)})
 
   return win
 }
@@ -225,6 +228,21 @@ function onGoBack (win) {
 
 function onGoForward (win) {
   return () => win.webContents.send('command', 'history:forward')
+}
+
+function onAppCommand(win, e, cmd) {
+  // handles App Command events (Windows)
+  // see https://electronjs.org/docs/all#event-app-command-windows
+  switch (cmd) {
+    case 'browser-backward':
+      win.webContents.send('command', 'history:back')
+      break
+    case 'browser-forward':
+      win.webContents.send('command', 'history:forward')
+      break
+    default:
+      break
+  }
 }
 
 // window event handlers
