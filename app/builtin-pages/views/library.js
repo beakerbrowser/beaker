@@ -65,13 +65,6 @@ async function loadArchives () {
   // apply search query
   filterArchives()
 
-  // attach extra data to each archive
-  // archives = await Promise.all(archives.map(async a => {
-  //   const workspace = await beaker.workspaces.get(0, a.url)
-  //   if (workspace) a.workspaceName = workspace.name
-  //   return a
-  // }))
-
   // apply sort
   sortArchives()
 }
@@ -90,8 +83,10 @@ function filterArchives () {
 }
 
 function sortArchives () {
-  if (currentSort === 'recent') {
-    archives = archives.sort((a, b) => b.createdAt - a.createdAt)
+  if (currentSort === 'recently-accessed') {
+    archives = archives.sort((a, b) => b.lastLibraryAccessTime - a.lastLibraryAccessTime)
+  } else if (currentSort === 'recently-updated') {
+    archives = archives.sort((a, b) => b.mtime - a.mtime)
   } else if (currentSort === 'alpha') {
     archives = archives.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
   }
@@ -322,38 +317,28 @@ function renderHeader () {
                     <div class="section">
                       <div class="section-header">Sort by:</div>
 
-                      <div class="dropdown-item active">
-                        <i class="fa fa-check"></i>
+                      <div
+                        class="dropdown-item ${currentSort === 'alpha' ? 'active' : ''}"
+                        onclick=${() => onUpdateSort('alpha')}
+                      >
+                        ${currentSort === 'alpha' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                         <span class="description">Alphabetical</span>
                       </div>
 
-                      <div class="dropdown-item">
-                        <i></i>
+                      <div
+                        class="dropdown-item ${currentSort === 'recently-accessed' ? 'active' : ''}"
+                        onclick=${() => onUpdateSort('recently-accessed')}
+                      >
+                        ${currentSort === 'recently-accessed' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                         <span class="description">Recently accessed</span>
                       </div>
 
-                      <div class="dropdown-item">
-                        <i></i>
+                      <div
+                        class="dropdown-item ${currentSort === 'recently-updated' ? 'active' : ''}"
+                        onclick=${() => onUpdateSort('recently-updated')}
+                      >
+                        ${currentSort === 'recently-updated' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                         <span class="description">Recently updated</span>
-                      </div>
-                    </div>
-
-                    <div class="section">
-                      <div class="section-header">Filters:</div>
-
-                      <div class="dropdown-item active">
-                        <i class="fa fa-check-square"></i>
-                        <span class="description">Currently seeding</span>
-                      </div>
-
-                      <div class="dropdown-item">
-                        <i class="fa fa-square-o"></i>
-                        <span class="description">Editable</span>
-                      </div>
-
-                      <div class="dropdown-item">
-                        <i class="fa fa-square-o"></i>
-                        <span class="description">Saved for offline</span>
                       </div>
                     </div>
                   </div>
@@ -488,6 +473,12 @@ async function onClearQuery () {
   document.querySelector('input.search').value = ''
   query = ''
   await loadArchives()
+  render()
+}
+
+function onUpdateSort (sort) {
+  currentSort = sort
+  sortArchives()
   render()
 }
 

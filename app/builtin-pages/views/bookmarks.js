@@ -213,12 +213,12 @@ function renderHeader () {
                   <div class="section-header">Sort by:</div>
 
                   <div onclick=${(e) => onUpdateSort('alpha')} class="dropdown-item ${currentSort === 'alpha' ? 'active' : ''}">
-                    <i class="fa fa-check"></i>
+                    ${currentSort === 'alpha' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                     <span class="description">Alphabetical</span>
                   </div>
 
                   <div onclick=${(e) => onUpdateSort('recent')} class="dropdown-item ${currentSort === 'recent' ? 'active' : ''}">
-                    <i></i>
+                    ${currentSort === 'recent' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                     <span class="description">Recently bookmarked</span>
                   </div>
                 </div>
