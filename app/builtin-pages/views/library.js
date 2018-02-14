@@ -7,6 +7,7 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import toggleable from '../com/toggleable'
+import * as contextMenu from '../com/context-menu'
 import renderCloseIcon from '../icon/close'
 
 // globals
@@ -119,7 +120,11 @@ function renderRow (row, i) {
   const isOwner = row.isOwner
 
   return yo`
-    <a href="beaker://library/${row.url}" class="ll-row archive ${row.checked ? 'selected' : ''}">
+    <a
+      href="beaker://library/${row.url}"
+      class="ll-row archive ${row.checked ? 'selected' : ''}"
+      oncontextmenu=${e => onArchiveContextMenu(e, row, false)}
+    >
       <img class="favicon" src="beaker-favicon:${row.url}" />
 
       <span class="title">
@@ -196,7 +201,11 @@ function renderRecent (a) {
   const isOwner = a.isOwner
 
   return yo`
-    <a href="beaker://library/${a.url}" class="ll-row archive recent">
+    <a
+      href="beaker://library/${a.url}"
+      class="ll-row archive recent"
+      oncontextmenu=${e => onArchiveContextMenu(e, a, true)}
+    >
       <div class="title">
         ${a.title || yo`<em>Untitled</em>`}
       </div>
@@ -395,8 +404,10 @@ async function onDeleteSelected () {
 }
 
 async function onDelete (e, archive) {
-  e.stopPropagation()
-  e.preventDefault()
+  if (e) {
+    e.stopPropagation()
+    e.preventDefault()
+  }
 
   const nickname = archive.title || archive.url
   if (confirm(`Move ${nickname} to Trash?`)) {
@@ -424,11 +435,41 @@ async function onRestoreSelected () {
 }
 
 async function onRestore (e, archive) {
-  e.stopPropagation()
-  e.preventDefault()
+  if (e) {
+    e.stopPropagation()
+    e.preventDefault()
+  }
 
   await beaker.archives.add(archive.url, {isSaved: true})
   await loadArchives()
+  render()
+}
+
+function onArchiveContextMenu (e, archive, isRecent) {
+  e.preventDefault()
+  let items = [
+    {icon: 'external-link', label: 'Open site in new tab', click: () => window.open(archive.url) },
+    {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url) },
+    {icon: 'code-fork', label: 'Fork', click: () => onClickFork(archive.url) }
+  ]
+  if (archive.userSettings.isSaved) {
+    items.push({icon: 'trash', label: 'Delete', click: () => onDelete(null, archive)})
+  } else {
+    items.push({icon: 'undo', label: 'Restore from trash', click: () => onRestore(null, archive)})
+  }
+  if (isRecent) {
+    items.push({icon: 'times', label: 'Remove from recent', click: () => removeFromRecent(archive)})
+  }
+  contextMenu.create({x: e.clientX, y: e.clientY, items})
+}
+
+async function removeFromRecent (archive) {
+  await beaker.archives.touch(
+    archive.url.slice('dat://'.length),
+    'lastLibraryAccessTime',
+    0 // set to zero
+  )
+  archive.lastLibraryAccessTime = 0
   render()
 }
 

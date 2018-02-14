@@ -110,8 +110,8 @@ export default {
   // internal management
   // =
 
-  async touch (key, timeVar) {
-    return archivesDb.touch(key, timeVar)
+  async touch (key, timeVar, value) {
+    return archivesDb.touch(key, timeVar, value)
   },
 
   async clearFileCache (url) {
