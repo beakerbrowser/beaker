@@ -228,7 +228,7 @@ function render () {
           ${renderSidebar()}
 
           <div>
-            ${recentArchives && currentView !== 'trash' ? [
+            ${recentArchives && !query && currentView !== 'trash' ? [
               yo`<div class="subtitle-heading">Recent</div>`,
               yo`<div class="recent-archives">${recentArchives}</div>`
             ] : ''}
