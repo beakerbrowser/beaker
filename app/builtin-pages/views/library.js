@@ -137,7 +137,7 @@ function renderRow (row, i) {
       <div class="buttons">
         ${row.userSettings.isSaved
           ? yo`
-            <button class="btn small transparent trash" onclick=${e => onDelete(e, row)} title="Move to Trash">
+            <button class="btn plain trash" onclick=${e => onDelete(e, row)} title="Move to Trash">
               <i class="fa fa-trash-o"></i>
             </button>`
           : yo`
@@ -149,7 +149,7 @@ function renderRow (row, i) {
 
         ${toggleable(yo`
           <div class="dropdown toggleable-container">
-            <button class="btn transparent toggleable">
+            <button class="btn plain toggleable">
               <i class="fa fa-ellipsis-v"></i>
             </button>
 
@@ -294,7 +294,7 @@ function renderHeader () {
                 </button>`
               : yo`
                 <button class="btn warning" onclick=${onDeleteSelected}>
-                  Remove selected
+                  Move to Trash
                 </button>`
             }
           </div>`
@@ -372,7 +372,7 @@ function onCopy (str, successMessage = 'URL copied to clipboard') {
 }
 
 async function onDeleteSelected () {
-  if (!confirm(`Remove ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} from your Library?`)) {
+  if (!confirm(`Move ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} to Trash?`)) {
     return
   }
 
@@ -381,7 +381,7 @@ async function onDeleteSelected () {
     try {
       await beaker.archives.remove(a.url)
     } catch (e) {
-      toast.create(`Could not remove ${a.title || a.url} from your Library`, 'error')
+      toast.create(`Could not move ${a.title || a.url} to Trash`, 'error')
     }
   }))
   selectedArchives = []

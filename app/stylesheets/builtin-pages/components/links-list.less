@@ -98,6 +98,7 @@
     color: @color-text--light;
   }
 
+  .buttons,
   .actions {
 
     .action {
@@ -113,7 +114,17 @@
       }
     }
 
-    .icon {
+    .btn.trash {
+
+      &:hover {
+
+        .fa-trash-o {
+          color: shade(@red, 15%);
+        }
+      }
+    }
+
+    i {
       font-size: 14.25px;
       text-align: center;
       margin-left: 12px;
@@ -134,10 +145,7 @@
       }
 
       &.fa-trash-o {
-
-        &:hover {
-          color: shade(@red, 10%);
-        }
+        color: shade(@red, 10%);
       }
     }
   }
