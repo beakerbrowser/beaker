@@ -107,7 +107,7 @@ function renderRows (sort = '', max = undefined) {
     a = a.slice(0, max)
   }
 
-  if (!a.length) return sort ? null : yo`<em class="empty">No archives</em>`
+  if (!a.length) return sort ? null : yo`<em class="empty">No ${query ? 'results' : 'archives'}</em>`
   return a.map(renderRow)
 }
 
