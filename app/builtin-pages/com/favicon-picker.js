@@ -10,7 +10,6 @@ var loadError
 var onSelect
 
 var filter
-var showSmall = false
 
 // exported api
 // =
@@ -75,12 +74,6 @@ function render () {
         <div class="filter">
           <input type="text" placeholder="Filter" onkeyup=${onChangeFilter} />
         </div>
-        <div class="ctrls">
-          <div class="btn-group">
-            <a class="btn small ${showSmall ? 'pressed' : ''}" onclick=${() => onShowSmall(true)}>16px</a>
-            <a class="btn small ${showSmall ? '' : 'pressed'}" onclick=${() => onShowSmall(false)}>32px</a>
-          </div>
-        </div>
       </div>
       <div class="favicon-picker-body">${renderBody()}</div>
       <div class="favicon-picker-footer">
@@ -100,17 +93,28 @@ function renderBody () {
   if (loadError) {
     return yo`<div class="text">${loadError.toString()}</div>`
   }
+  var builtinFaviconsGroups = toGroups(builtinFaviconsList.filter(applyFilter))
   return yo`
-    <div class="favicon-picker-icons ${showSmall ? 'small' : ''}">
-      ${builtinFaviconsList.filter(applyFilter).map(name => {
-        return yo`
-          <div
-            class="icon ${selectedFavicon === name ? 'selected' : ''}"
-            onclick=${() => onClickIcon(name)}
-          >
-            <img src="beaker://assets/favicons/${name}" />
-          </div>
-        `
+    <div>
+      ${builtinFaviconsGroups.map(group => {
+        if (!group.icons.length) return ''
+        return [
+          yo`<div class="favicon-picker-heading">${group.label}</div>`,
+          yo`
+            <div class="favicon-picker-icons">
+              ${group.icons.map(name => {
+                return yo`
+                  <div
+                    class="icon ${selectedFavicon === name ? 'selected' : ''}"
+                    onclick=${() => onClickIcon(name)}
+                  >
+                    <img src="beaker://assets/favicons/${name}" />
+                  </div>
+                `
+              })}
+            </div>
+          `
+        ]
       })}
     </div>
   `
@@ -121,16 +125,21 @@ function applyFilter (name) {
   return filter.test(name)
 }
 
+function toGroups (list) {
+  var groups = {}
+  list.forEach(name => {
+    let [groupId] = name.split('-')
+    groups[groupId] = groups[groupId] || {label: groupId, icons: []}
+    groups[groupId].icons.push(name)
+  })
+  return Object.values(groups)
+}
+
 // event handlers
 // =
 
 function onClickIcon (v) {
   selectedFavicon = v
-  rerender()
-}
-
-function onShowSmall (v) {
-  showSmall = v
   rerender()
 }
 

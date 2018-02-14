@@ -5,32 +5,19 @@
     border-bottom: 1px solid #ddd;
 
     .filter {
-      padding: 5px 0 5px 5px;
+      padding: 5px;
 
       input {
         padding: 0 10px;
-        width: 359px;
-      }
-    }
-
-    .ctrls {
-      padding: 10px 15px;
-      margin-left: auto;
-
-      .btn {
-        font-size: 11px;
-        color: gray;
-        border-color: #ccc;
-
-        &.pressed {
-          color: #444;
-        }
+        width: 480px;
       }
     }
   }
 
   .favicon-picker-body {
     width: 490px;
+    max-height: 300px;
+    overflow-y: auto;
 
     .text {
       padding: 10px;
@@ -52,25 +39,33 @@
     }
   }
 
+  .favicon-picker-heading {
+    border-bottom: 1px dotted #ccc;
+    margin: 0 10px;
+    font-size: 10px;
+
+    &:first-child {
+      margin-top: 10px;
+    }
+  }
+
   .favicon-picker-icons {
     display: grid;
     padding: 10px;
     grid-gap: 6px;
-    grid-template-columns: repeat(10, 1fr);
-    max-height: 300px;
-    overflow-y: auto;
+    grid-template-columns: repeat(14, 1fr);
 
     .icon {
-      width: 40px;
-      height: 40px;
+      width: 24px;
+      height: 24px;
       padding: 4px;
       border-radius: 3px;
       text-align: center;
       cursor: pointer;
 
       img {
-        width: 32px;
-        height: 32px;
+        width: 16px;
+        height: 16px;
         cursor: pointer;
       }
 
@@ -80,20 +75,6 @@
 
       &.selected {
         background: @blue;
-      }
-    }
-
-    &.small {
-      grid-template-columns: repeat(14, 1fr);
-
-      .icon {
-        width: 24px;
-        height: 24px;
-
-        img {
-          width: 16px;
-          height: 16px;
-        }
       }
     }
   }
