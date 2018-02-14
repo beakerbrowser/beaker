@@ -23,7 +23,7 @@ export default function render (filesBrowser, currentSource) {
       ${rHeader(filesBrowser, currentSource)}
 
       <div
-        class="body" 
+        class="body"
         onclick=${e => onClickNode(e, filesBrowser, currentSource)}
       >
         <div>
@@ -44,9 +44,15 @@ function rHeader (filesBrowser, currentSource) {
   return yo`
     <div class="files-browser-header">
       ${rBreadcrumbs(filesBrowser, currentSource)}
+      ${rVersion()}
       ${rActions(filesBrowser, currentSource)}
     </div>
   `
+}
+
+function rVersion () {
+  // TODO
+  return yo`<code class="version-badge badge green">v42</code>`
 }
 
 function rActions (filesBrowser, currentSource) {
@@ -56,7 +62,7 @@ function rActions (filesBrowser, currentSource) {
       ${toggleable(yo`
         <div class="dropdown toggleable-container archive-history-dropdown">
           <button class="btn toggleable">
-            History
+            <i class="fa fa-archive"></i>
           </button>
 
           <div class="dropdown-items right toggleable-open-container"></div>

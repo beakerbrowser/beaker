@@ -5,7 +5,7 @@ import * as yo from 'yo-yo'
 
 export default function render (archive) {
   var el = yo`<div class="archive-history loading">
-    <div class="archive-history-header">Change history</div>
+    <div class="archive-history-header">Version history</div>
     <div class="archive-history-body">Loading...</div>
   </div>`
 
@@ -14,15 +14,24 @@ export default function render (archive) {
     archive.history()
       .then(history => {
         // render
-        var rowEls = history.map(c => {
+        var rowEls = history.reverse().map(c => {
           return yo`
-            <div class="archive-history-item">
-              <a href="${archive.url}+${c.version}${c.path}" title=${c.path} target="_blank"><span class="version">${c.version}</span><i class="fa fa-${c.type === 'put' ? 'plus-square' : 'trash'}"></i><span>${c.path}</span></a>
+            <div onclick=${() => window.history.pushState('', {}, `beaker://library/${archive.url}+${c.version}`)} class="archive-history-item" title="View version ${c.version}" href="beaker://library/${archive.url}+${c.version}">
+              ${c.type === 'put' ? 'Updated' : 'Deleted'}
+
+              <div class="path">
+                <a href="${archive.url}+${c.version}${c.path}" target="_blank">
+                  ${c.path.slice(1)}
+                </a>
+              </div>
+
+              <code class="version badge green">v${c.version}</code>
             </div>`
         })
+
         yo.update(el, yo`
           <div class="archive-history">
-            <div class="archive-history-header">Change history</div>
+            <div class="archive-history-header">Version history</div>
             <div class="archive-history-body">${rowEls}</div>
           </div>`
         )
@@ -41,4 +50,3 @@ export default function render (archive) {
 
   return el
 }
-
