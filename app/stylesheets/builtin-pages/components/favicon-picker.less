@@ -1,7 +1,7 @@
 .favicon-picker {
 
   .favicon-picker-header {
-    display: flex;
+    &:extend(.flex);
     border-bottom: 1px solid #ddd;
 
     .filter {
@@ -9,7 +9,7 @@
 
       input {
         padding: 0 10px;
-        width: 480px;
+        width: 350px;
       }
     }
   }
@@ -25,15 +25,15 @@
   }
 
   .favicon-picker-footer {
-    display: flex;
+    &:extend(.flex);
+    align-items: center;
     padding: 10px 15px;
     border-top: 1px solid #ddd;
-    align-items: center;
 
     .label {
-      color: #555;
-      font-weight: 500;
+      color: @color-text--muted;
     }
+
     .ctrls {
       margin-left: auto;
     }
@@ -59,7 +59,7 @@
       width: 24px;
       height: 24px;
       padding: 4px;
-      border-radius: 3px;
+      border-radius: 2px;
       text-align: center;
       cursor: pointer;
 
@@ -74,7 +74,7 @@
       }
 
       &.selected {
-        background: @blue;
+        background: tint(mix(@teal, @blue, 65%), 50%);
       }
     }
   }

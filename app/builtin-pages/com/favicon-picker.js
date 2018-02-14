@@ -72,14 +72,14 @@ function render () {
     <div class="dropdown-items left favicon-picker">
       <div class="favicon-picker-header">
         <div class="filter">
-          <input type="text" placeholder="Filter" onkeyup=${onChangeFilter} />
+          <input type="text" placeholder="Search favicons" onkeyup=${onChangeFilter} />
         </div>
       </div>
       <div class="favicon-picker-body">${renderBody()}</div>
       <div class="favicon-picker-footer">
-        <div class="label">Select new favicon</div>
+        <em class="label">Select a favicon</em>
         <div class="ctrls">
-          <a class="btn ${selectedFavicon ? '' : 'disabled'} primary" onclick=${onClickSelect}>Select</a>
+          <a class="btn ${selectedFavicon ? '' : 'disabled'} success" onclick=${onClickSelect}>Save</a>
         </div>
       </div>
     </div>
