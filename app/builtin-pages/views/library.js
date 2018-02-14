@@ -233,7 +233,10 @@ function render () {
               yo`<div class="recent-archives">${recentArchives}</div>`
             ] : ''}
 
-            <div class="subtitle-heading">${currentView}</div>
+            <div class="subtitle-heading">
+              ${query ? yo`<span>"${query}" in </span>` : ''} ${currentView}
+            </div>
+
             ${renderRows()}
 
             <p class="builtin-hint">
