@@ -74,7 +74,7 @@ export default class DatNetworkActivity {
   render () {
     if (!this.archives) {
       this.fetchArchives() // trigger load
-      return yo`<div class="dat-network-activity"></div>`
+      return yo`<div class="dat-network-activity">Loading...</div>`
     }
 
     return yo`
