@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
+import parseDatURL from 'parse-dat-url'
 import FilesBrowser from '../com/files-browser2'
 import renderDiff from '../com/diff'
 import toggleable from '../com/toggleable'
@@ -69,7 +70,7 @@ async function setup () {
     document.title = `Library - ${archive.info.title || 'Untitled'}`
 
     // construct files browser
-    archiveFsRoot = new FSArchive(null, archive.info)
+    archiveFsRoot = new FSArchive(null, archive, archive.info)
     filesBrowser = new FilesBrowser(archiveFsRoot)
     filesBrowser.onSetCurrentSource = onSetCurrentSource
 
@@ -1264,7 +1265,7 @@ async function readViewStateFromUrl () {
 
   try {
     var node
-    var urlp = new URL(window.location.pathname.slice(1))
+    var urlp = parseDatURL(window.location.pathname.slice(1))
     var pathParts = urlp.pathname.split('/').filter(Boolean)
 
     // select the archive

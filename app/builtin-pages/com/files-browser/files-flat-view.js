@@ -6,6 +6,7 @@ import prettyBytes from 'pretty-bytes'
 import {join as joinPath} from 'path'
 import _get from 'lodash.get'
 import {FSArchive, FSArchiveFolder, FSArchiveFile, FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
+import parseDatURL from 'parse-dat-url'
 import toggleable from '../toggleable'
 import renderArchiveHistory from '../archive-history'
 import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
@@ -44,15 +45,26 @@ function rHeader (filesBrowser, currentSource) {
   return yo`
     <div class="files-browser-header">
       ${rBreadcrumbs(filesBrowser, currentSource)}
-      ${rVersion()}
+      ${rVersion(filesBrowser, currentSource)}
       ${rActions(filesBrowser, currentSource)}
     </div>
   `
 }
 
-function rVersion () {
-  // TODO
-  return yo`<div class="version-badge badge green">v42</div>`
+function rVersion (filesBrowser, currentSource) {
+  let archive = filesBrowser.root._archive
+  if (!archive) return ''
+  let vi = archive.url.indexOf('+')
+  if (vi === -1) {
+    // showing latest
+    return ''
+  }
+  let urlUnversioned = archive.url.slice(0, vi)
+  let version = archive.url.slice(vi + 1)
+  return [
+    yo`<div class="version-badge badge green">v${version}</div>`,
+    yo`<a class="goto-latest" href=${`beaker://library/${urlUnversioned}`}>Goto latest</a>`
+  ]
 }
 
 function rActions (filesBrowser, currentSource) {

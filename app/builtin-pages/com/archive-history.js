@@ -11,12 +11,23 @@ export default function render (archive) {
 
   // lazy-load history
   if (archive) {
+    // strip the version
+    let vi = archive.url.indexOf('+')
+    if (vi !== -1) {
+      archive = new DatArchive(archive.url.slice(0, vi))
+    }
+
     archive.history()
       .then(history => {
         // render
         var rowEls = history.reverse().map(c => {
           return yo`
-            <div onclick=${() => window.history.pushState('', {}, `beaker://library/${archive.url}+${c.version}`)} class="archive-history-item" title="View version ${c.version}" href="beaker://library/${archive.url}+${c.version}">
+            <div
+              onclick=${() => window.location = `beaker://library/${archive.url}+${c.version}`}
+              class="archive-history-item"
+              title="View version ${c.version}"
+              href="beaker://library/${archive.url}+${c.version}"
+            >
               ${c.type === 'put' ? 'Updated' : 'Deleted'}
 
               <div class="path">
