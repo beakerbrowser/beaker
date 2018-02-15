@@ -5,7 +5,6 @@ import moment from 'moment'
 import prettyBytes from 'pretty-bytes'
 import * as toast from './toast'
 import * as contextMenu from './context-menu'
-import renderTrashIcon from '../icon/trash'
 import renderGearIcon from '../icon/gear-small'
 import {pluralize} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
@@ -129,7 +128,7 @@ export default class DatNetworkActivity {
     else expiresAtStr = '(1 day remaining)'
 
     return yo`
-      <div class="archive ${highlightedCls}" oncontextmenu=${e => this.onContextmenuArchive(e, archive)}>
+      <div class="ll-row archive ${highlightedCls}" oncontextmenu=${e => this.onContextmenuArchive(e, archive)}>
         <img class="favicon" src="beaker-favicon:${archive.url}" />
 
         <a href=${archive.url} class="title" title=${archive.title}>
@@ -159,22 +158,15 @@ export default class DatNetworkActivity {
         <div class="buttons">
           ${archive.userSettings.isSaved && !archive.userSettings.networked
             ? yo`
-              <button title="Delete these files from your device" class="btn small" onclick=${e => this.onUnsaveArchive(archive)}>
-                ${renderTrashIcon()}
+              <button title="Delete these files from your device" class="btn" onclick=${e => this.onUnsaveArchive(archive)}>
+                <i class="fa fa-trash-o"></i>
               </button>`
             : ''}
 
-          <button class="btn small hosting-btn" onclick=${e => this.onToggleHosting(archive)}>
+          <button class="btn hosting-btn" onclick=${e => this.onToggleHosting(archive)}>
             ${archive.userSettings.networked
-              ? yo`
-                <span>
-                  Stop syncing
-                  <span class="square"></span>
-                </span>`
-              : yo`
-                <span>
-                  Sync files ⇧
-                </span>`
+              ? 'Stop seeding'
+              : yo`<i class="fa fa-upload"></i>`
             }
           </button>
         </div>
@@ -265,9 +257,8 @@ export default class DatNetworkActivity {
 
     const items = [
       {icon: 'link', label: 'Copy URL', click: () => this.onCopyURL(archive) },
-      {icon: 'folder-open-o', label: 'Open in library', click: () => this.onOpenInLibrary(archive) },
-      {icon: 'stop', label: 'Stop syncing', click: () => {}},
-      {icon: 'trash', label: 'Delete', click: () => {}},
+      {icon: 'folder-open-o', label: 'Open in Library', click: () => this.onOpenInLibrary(archive) },
+      {icon: 'stop', label: 'Stop seeding files', click: () => {}},
     ]
     await contextMenu.create({x: e.clientX, y: e.clientY, items})
 
@@ -304,7 +295,7 @@ export default class DatNetworkActivity {
   }
 
   async onUpdateFilter (e) {
-    currentFilter = e.target.dataset.filter
+    this.currentFilter = e.target.dataset.filter
     await fetchArchives()
     destroySeedingMenu()
   }
@@ -336,12 +327,12 @@ export default class DatNetworkActivity {
   async onToggleHosting (archive) {
     var isNetworked = !archive.userSettings.networked
 
-    if (isNetworked && currentFilter === 'seeding') {
-      totalArchivesHosting += 1
-      totalBytesHosting += archive.size
-    } else if (currentFilter === 'seeding') {
-      totalArchivesHosting -= 1
-      totalBytesHosting -= archive.size
+    if (isNetworked && this.currentFilter === 'seeding') {
+      // totalArchivesHosting += 1
+      // totalBytesHosting += archive.size
+    } else if (this.currentFilter === 'seeding') {
+      // totalArchivesHosting -= 1
+      // tntalBytesHosting -= archive.size
     }
 
     // don't unsave the archive if user is owner
@@ -351,7 +342,7 @@ export default class DatNetworkActivity {
       try {
         await tmpArchive.configure({networked: isNetworked})
       } catch (e) {
-        toast.create('Something went wrong')
+        toast.create('Something went wrong', 'error')
         return
       }
     }
@@ -371,13 +362,13 @@ export default class DatNetworkActivity {
 
     // update the local archives data and re-render
     archive.userSettings.networked = isNetworked
-    render()
+    this.rerender()
   }
 
   async onUnsaveArchive (archive) {
     await beaker.archives.remove(archive.key)
     archive.userSettings.isSaved = false
-    totalArchivesHosting -= 1
+    // totalArchivesHosting -= 1
     totalBytesHosting -= archive.size
     render()
   }

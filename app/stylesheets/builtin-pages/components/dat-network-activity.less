@@ -1,22 +1,23 @@
 .dat-network-activity {
-  margin: 0 -30px;
+  margin: 0 -15px;
 
   .heading {
     &:extend(.flex);
     align-items: center;
     padding: 6px 15px;
-    border-bottom: 1px solid #ddd;
     color: @color-text;
     font-size: 11px;
 
     .title {
       flex: 1;
     }
+
     .peers,
     .size,
     .mtime {
       width: 100px;
     }
+
     .buttons {
       width: 110px;
     }
@@ -27,35 +28,19 @@
     }
   }
 
-  .archive {
-    &:extend(.flex);
-    align-items: center;
-    padding: 10px 15px;
-    border-bottom: 1px solid #ddd;
-
-    > * {
-      height: 16px;
-      line-height: 16px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .favicon {
-      display: inline-block;
-      margin-right: 5px;
-    }
+  .ll-row.archive {
+    border-right: 0;
+    border-left: 0;
 
     .title {
-      flex: 1;
-      color: @color-text;
-      padding-right: 5px;
+      width: 228px;
     }
 
     .peers,
     .size,
     .mtime {
       color: rgba(0,0,0,0.5);
+      flex: 100px;
       width: 100px;
     }
 
@@ -63,6 +48,7 @@
       &:extend(.flex);
       width: 110px;
       overflow: visible;
+      opacity: 1;
 
       .btn {
         margin-left: 5px;
@@ -82,11 +68,6 @@
           color: shade(@red, 20%);
         }
       }
-    }
-
-    &:hover,
-    &.highlighted {
-      background: #eee;
     }
   }
 }
