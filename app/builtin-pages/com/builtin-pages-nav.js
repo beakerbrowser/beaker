@@ -1,11 +1,32 @@
 import yo from 'yo-yo'
 import toggleable from './toggleable'
 
+function getIcon (page) {
+  switch (page) {
+    case 'Library':
+      return yo`<i class="fa fa-book"></i>`
+    case 'Bookmarks':
+      return yo`<i class="fa fa-star"></i>`
+    case 'History':
+      return yo`<i class="fa fa-clock-o"></i>`
+    case 'Downloads':
+      return yo`<i class="fa fa-download"></i>`
+    case 'Settings':
+      return yo`<i class="fa fa-gear"></i>`
+    default:
+      return ''
+  }
+}
+
 export default function render (currentPage = '') {
   return toggleable(yo`
     <div class="dropdown toggleable-container builtin-pages-nav">
       <button class="btn transparent toggleable">
-        <h1>${currentPage}</h1>
+        <h1>
+          ${getIcon(currentPage)}
+          ${currentPage}
+        </h1>
+
         <i class="fa fa-caret-down"></i>
       </button>
 
@@ -13,7 +34,7 @@ export default function render (currentPage = '') {
         ${currentPage !== 'Library'
           ? yo`
             <a href="beaker://library" class="dropdown-item">
-              <i class="fa fa-code"></i>
+              <i class="fa fa-book"></i>
               <span>Library</span>
             </a>`
           : ''
