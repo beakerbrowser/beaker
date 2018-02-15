@@ -329,7 +329,6 @@ function renderAutoUpdateCheckbox () {
 
 function onUpdateView (view) {
   activeView = view
-  location.hash = view
   renderToPage()
 }
 
