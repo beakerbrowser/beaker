@@ -52,7 +52,7 @@ function rHeader (filesBrowser, currentSource) {
 
 function rVersion () {
   // TODO
-  return yo`<code class="version-badge badge green">v42</code>`
+  return yo`<div class="version-badge badge green">v42</div>`
 }
 
 function rActions (filesBrowser, currentSource) {
@@ -61,7 +61,7 @@ function rActions (filesBrowser, currentSource) {
     <div class="actions">
       ${toggleable(yo`
         <div class="dropdown toggleable-container archive-history-dropdown">
-          <button class="btn toggleable">
+          <button class="btn plain toggleable">
             <i class="fa fa-archive"></i>
           </button>
 
