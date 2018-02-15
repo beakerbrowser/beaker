@@ -3,6 +3,7 @@
 const yo = require('yo-yo')
 const moment = require('moment')
 import {getHostname} from '../../lib/strings'
+import {debounce} from '../../lib/functions'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import renderCloseIcon from '../icon/close'
 
@@ -13,6 +14,7 @@ import renderCloseIcon from '../icon/close'
 const BEGIN_LOAD_OFFSET = 500
 // how many to load in a batch?
 const BATCH_SIZE = 20
+const onUpdateSearchQueryDebounced = debounce(onUpdateSearchQuery, 500)
 
 // visits, cached in memory
 var visits = []
@@ -26,7 +28,7 @@ var lastRenderedDate
 
 render()
 fillPage()
-document.body.querySelector('.builtin-main').addEventListener('scroll', onScrollContent)
+document.body.querySelector('.window-content').addEventListener('scroll', onScrollContent)
 
 // data
 // =
@@ -41,9 +43,11 @@ function fetchMore (cb) {
 
 // load history until the scroll bar is visible, or no more history is found
 function fillPage () {
-  var container = document.body.querySelector('.builtin-main')
+  var container = document.body.querySelector('.window-content')
+  var spinner = document.body.querySelector('.search-container .spinner')
   visits.length = 0 // reset
   isAtEnd = false
+  spinner.classList.remove('hidden')
   nextBatch()
 
   function nextBatch () {
@@ -53,6 +57,7 @@ function fillPage () {
       // has scroll bar, or at end?
       if (container.scrollHeight > container.clientHeight || isAtEnd) {
         // done
+        spinner.classList.add('hidden')
       } else {
         nextBatch()
       }
@@ -167,7 +172,8 @@ function renderHeader () {
       ${renderBuiltinPagesNav('History')}
 
       <div class="search-container">
-        <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your browsing history" type="text" class="search"/>
+        <input required autofocus onkeyup=${onUpdateSearchQueryDebounced} placeholder="Search your browsing history" type="text" class="search"/>
+        <div class="spinner hidden"></div>
         <span onclick=${onClearQuery} class="close-btn">
           ${renderCloseIcon()}
         </span>
@@ -229,7 +235,9 @@ function render () {
 
 function onUpdateSearchQuery (e) {
   var newQuery = e.target.value.toLowerCase()
+    console.log('searching', newQuery)
   if (newQuery !== query) {
+    console.log('go')
     query = newQuery
     fillPage()
   }

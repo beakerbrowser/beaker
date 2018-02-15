@@ -193,6 +193,7 @@
       width: 200px;
     }
 
+    .spinner,
     .close-btn,
     .search {
       position: absolute;
@@ -203,6 +204,15 @@
       left: 10px;
       top: 8.75px;
       color: rgba(0,0,0,.5);
+    }
+
+    .spinner {
+      left: 8px;
+      top: 8px;
+
+      &.hidden {
+        display: none;
+      }
     }
 
     .close-btn {
