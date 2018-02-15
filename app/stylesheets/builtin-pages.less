@@ -272,7 +272,7 @@
   &.fixed {
     &:extend(.flex);
     flex-wrap: nowrap;
-    position: sticky;
+    position: fixed;
     top: 0;
     z-index: 3;
     width: 100%;
@@ -299,9 +299,10 @@
 }
 
 .builtin-sidebar {
-  position: absolute;
-  right: ~"calc(100% + 25px)";
-  width: 175px;
+  position: fixed;
+  top: 75px;
+  left: 30px;
+  width: 225px;
   overflow: auto;
 
   .section {
@@ -406,11 +407,14 @@
 }
 
 .builtin-main {
-  position: relative;
   width: 100%;
   max-width: 700px;
-  padding: 25px 0;
+  padding: 75px 0;
   height: 100%;
+
+  > div:not(.builtin-sidebar) {
+    margin-bottom: 25px;
+  }
 
   .view {
     padding: 15px;
