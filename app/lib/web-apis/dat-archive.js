@@ -31,7 +31,7 @@ export default class DatArchive extends EventTarget {
     if (!urlParsed || urlParsed.protocol !== 'dat:') {
       throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
     }
-    url = 'dat://' + urlParsed.hostname
+    url = 'dat://' + urlParsed.hostname + (urlParsed.version ? `+${urlParsed.version}` : '')
 
     // load into the 'active' (in-memory) cache
     const loadPromise = dat.loadArchive(url)
