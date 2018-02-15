@@ -56,7 +56,7 @@
 
   .subtitle-heading {
     font-weight: 400;
-    font-size: .675rem;
+    font-size: .7rem;
     text-transform: uppercase;
     padding-bottom: 5px;
     letter-spacing: .15px;
@@ -107,6 +107,7 @@
     .buttons {
       &:extend(.flex);
       align-items: center;
+      justify-content: flex-end;
       margin-left: auto;
       opacity: 0;
     }
@@ -288,7 +289,7 @@
   overflow: auto;
 
   .section {
-    margin-bottom: 20px;
+    margin-bottom: 40px;
 
     > div {
       padding: 0 20px;
@@ -396,8 +397,16 @@
   height: 100%;
 
   .view {
-    padding: 30px;
-    max-width: 700px;
+    padding: 15px;
+    background: #fff;
+
+    p {
+      margin-top: 0;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
 
     a {
       color: @blue;

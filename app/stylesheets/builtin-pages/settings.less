@@ -5,16 +5,11 @@
 @import "./components/toast";
 
 .settings-wrapper {
-}
 
-.settings-section {
-  margin-bottom: 40px;
+  div.section {
 
-  a {
-    &:extend(.link);
-
-    &:hover {
-      &:extend(.link:hover);
+    &:not(:last-child) {
+      margin-bottom: 30px;
     }
   }
 
@@ -31,7 +26,11 @@
   }
 
   .prereleases {
-    margin-left: 1rem;
+    margin-left: 10px;
+  }
+
+  .buttons .btn .fa-upload {
+    color: @color-text;
   }
 
   &.start-page {
@@ -131,12 +130,6 @@ ul.settings-section {
 }
 
 .settings-section.applications {
-  a {
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
 
   .create-app {
     margin: 2px 1px;

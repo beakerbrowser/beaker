@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import * as toast from '../com/toast'
 import {niceDate} from '../../lib/time'
 import DatNetworkActivity from '../com/dat-network-activity'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 // import {create as createEditAppPopup} from '../com/edit-app-popup' TODO(apps) restore when we bring back apps -prf
 
 // globals
@@ -13,7 +14,7 @@ var settings
 var browserInfo
 var browserEvents
 var defaultProtocolSettings
-var activeView = 'workspace-path'
+var activeView = 'general'
 var datNetworkActivity = new DatNetworkActivity()
 
 // TODO(bgimg) disabled for now -prf
@@ -67,64 +68,78 @@ function renderToPage () {
 
   yo.update(document.querySelector('.settings-wrapper'), yo`
     <div id="el-content" class="settings-wrapper builtin-wrapper">
-      <div class="builtin-sidebar">
-        <h1 class="title-heading">Settings</h1>
-        <div class="nav-item ${activeView === 'workspace-path' ? 'active' : ''}" onclick=${() => onUpdateView('workspace-path')}>
-          Workspace directory
-        </div>
+      ${renderHeader()}
 
-        <div class="nav-item ${activeView === 'dat-network-activity' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network-activity')}>
-          Dat network activity
-        </div>
-
-        <div class="nav-item ${activeView === 'auto-updater' ? 'active' : ''}" onclick=${() => onUpdateView('auto-updater')}>
-          Auto-updater
-        </div>
-
-        <div class="nav-item ${activeView === 'protocol' ? 'active' : ''}" onclick=${() => onUpdateView('protocol')}>
-          Protocol settings
-        </div>
-
-        <div class="nav-item ${activeView === 'information' ? 'active' : ''}" onclick=${() => onUpdateView('information')}>
-          Information & Help
-        </div>
+      <div class="builtin-main">
+        ${renderSidebar()}
+        ${renderView()}
       </div>
-
-      <div class="builtin-main">${renderView()}</div>
     </div>`
   )
 }
 
+function renderHeader () {
+  return yo`
+    <div class="builtin-header fixed">
+      ${renderBuiltinPagesNav('Settings')}
+    </div>`
+}
+
+function renderSidebar () {
+  return yo`
+    <div class="builtin-sidebar">
+      <div class="nav-item ${activeView === 'general' ? 'active' : ''}" onclick=${() => onUpdateView('general')}>
+        <i class="fa fa-angle-right"></i>
+        General
+      </div>
+
+      <div class="nav-item ${activeView === 'dat-network-activity' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network-activity')}>
+        <i class="fa fa-angle-right"></i>
+        Dat network activity
+      </div>
+
+      <div class="nav-item ${activeView === 'information' ? 'active' : ''}" onclick=${() => onUpdateView('information')}>
+        <i class="fa fa-angle-right"></i>
+        Information & Help
+      </div>
+    </div>`
+}
+
 function renderView () {
   switch (activeView) {
-    case 'workspace-path':
-      return renderWorkspacePathSettings()
+    case 'general':
+      return renderGeneral()
     case 'dat-network-activity':
       return renderDatNetworkActivity()
-    case 'auto-updater':
-      return renderAutoUpdater()
-    case 'protocol':
-      return renderProtocolSettings()
     case 'information':
       return renderInformation()
   }
 }
 
-function renderWorkspacePathSettings () {
+function renderGeneral () {
   return yo`
     <div class="view">
-      <h2 class="subtitle-heading">Default workspace directory</h2>
+      ${renderWorkspacePathSettings()}
+      ${renderAutoUpdater()}
+      ${renderProtocolSettings()}
+    </div>
+  `
+}
+
+function renderWorkspacePathSettings () {
+  return yo`
+    <div class="section">
+      <h2 id="workspace-path" class="subtitle-heading">Default workspace directory</h2>
 
       <p>
-        The default directory where your projects will be saved.
+        Choose the default directory where your projects will be saved.
       </p>
 
       <p>
-        <button class="btn" onclick=${onUpdateDefaultWorkspaceDirectory}>
+        <code>${settings.workspace_default_path}</code>
+        <button class="btn small" onclick=${onUpdateDefaultWorkspaceDirectory}>
           Choose directory
         </button>
-
-        <code>${settings.workspace_default_path}</code>
       </p>
     </div>
   `
@@ -132,10 +147,11 @@ function renderWorkspacePathSettings () {
 
 function renderDatNetworkActivity () {
   return yo`
-    <div class="view fullwidth">
-      <h2 class="subtitle-heading">Dat Network Activity</h2>
-
-      ${datNetworkActivity.render()}
+    <div class="view">
+      <div class="section">
+        <h2 id="dat-network-activity" class="subtitle-heading">Dat Network Activity</h2>
+        ${datNetworkActivity.render()}
+      </div>
     </div>
   `
 }
@@ -143,18 +159,20 @@ function renderDatNetworkActivity () {
 function renderInformation () {
   return yo`
     <div class="view">
-      <h2 class="subtitle-heading">About Beaker</h2>
-      <ul>
-        <li>Version: ${browserInfo.version} Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</li>
-        <li>User data: ${browserInfo.paths.userData}</li>
-      </ul>
+      <div class="section">
+        <h2 id="information" class="subtitle-heading">About Beaker</h2>
+        <ul>
+          <li>Version: ${browserInfo.version} Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</li>
+          <li>User data: ${browserInfo.paths.userData}</li>
+        </ul>
 
-      <h2 class="subtitle-heading">Get help</h2>
-      <ul>
-        <li><a href="https://beakerbrowser.com/docs/using-beaker">Take a tour of Beaker</a></li>
-        <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
-        <li><a href="https://github.com/beakerbrowser/beaker/issues">Report an issue</a></li>
-      </ul>
+        <h2 class="subtitle-heading">Get help</h2>
+        <ul>
+          <li><a href="https://beakerbrowser.com/docs/using-beaker">Take a tour of Beaker</a></li>
+          <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
+          <li><a href="https://github.com/beakerbrowser/beaker/issues">Report an issue</a></li>
+        </ul>
+      </div>
     </div>
   `
 }
@@ -172,19 +190,19 @@ function renderProtocolSettings () {
   var unregistered = Object.keys(defaultProtocolSettings).filter(k => !defaultProtocolSettings[k])
 
   return yo`
-    <div class="view protocols">
-      <h2 class="subtitle-heading">Default browser settings</h2>
+    <div class="section">
+      <h2 id="protocol" class="subtitle-heading">Default browser settings</h2>
       ${registered.length
-        ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
+        ? yo`<p>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</p>`
         : ''}
       ${unregistered.map(proto => yo`
-        <div>
+        <p>
           <strong>${proto}</strong>
           <a onclick=${register(proto)}>
             Make default
             <i class="fa fa-share"></i>
           </a>
-        </div>`)}
+        </p>`)}
       </div>`
 }
 
@@ -212,10 +230,17 @@ function renderProtocolSettings () {
 function renderAutoUpdater () {
   if (!browserInfo.updater.isBrowserUpdatesSupported) {
     return yo`
-      <div class="view">
-        <h2 class="subtitle-heading">Auto updater</h2>
-        <div>Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
-        You will need to build new versions of Beaker from source.</div>
+      <div class="section">
+        <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
+
+        <p>
+          Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
+        </p>
+
+        <p>
+          To get the most recent version of Beaker, you'll need to <a href="https://github.com/beakerbrowser/beaker">
+          build Beaker from source</a>.
+        </p>
       </div>`
   }
 
@@ -304,17 +329,9 @@ function renderAutoUpdateCheckbox () {
 
 function onUpdateView (view) {
   activeView = view
+  location.hash = view
   renderToPage()
 }
-
-function onUpdateActiveSection (e) {
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'))
-  e.target.classList.add('active')
-
-  activeSection = e.target.dataset.section
-  document.querySelector(`#${activeSection}`).scrollIntoView()
-}
-
 
 function onClickCheckUpdates () {
   // trigger check
