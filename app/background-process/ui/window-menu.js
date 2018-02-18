@@ -1,10 +1,21 @@
 import { app, BrowserWindow, dialog } from 'electron'
 import { createShellWindow } from './windows'
 import datDns from '../networks/dat/dns'
+import aboutWindow from 'electron-about-window'
+import path from 'path'
 
 var darwinMenu = {
   label: 'Beaker',
   submenu: [
+    {
+      label: 'About Beaker Browser',
+      click () {
+        aboutWindow({
+          icon_path: path.join(__dirname, 'icon256.png')
+        })
+      }
+    },
+    { type: 'separator' },
     {
       label: 'Preferences',
       click (item, win) {
