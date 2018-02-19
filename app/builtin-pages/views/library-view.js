@@ -1164,7 +1164,8 @@ async function onKeyupSettingsEdit (e, attr) {
     }
 
     // assign
-    await archive.configure({[attr]: value})
+    let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
+    await archive2.configure({[attr]: value})
     Object.assign(archive.info, {[attr]: value})
     Object.assign(archive.info.manifest, {[attr]: value})
     document.title = `Library - ${archive.info.title || 'Untitled'}`
