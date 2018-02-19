@@ -5,6 +5,7 @@ import prettyBytes from 'pretty-bytes'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import parseDatURL from 'parse-dat-url'
+import _get from 'lodash.get'
 import FilesBrowser from '../com/files-browser2'
 import renderDiff from '../com/diff'
 import toggleable from '../com/toggleable'
@@ -243,7 +244,7 @@ function renderHeader () {
 
         <img
           src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}"
-          class="favicon ${archive.info.isOwner ? 'editable' : ''}"
+          class="favicon ${_get(archive, 'info.isOwner') ? 'editable' : ''}"
           onclick=${onClickFavicon}
           title="Change favicon" />
 
@@ -303,12 +304,12 @@ function renderFooter () {
           Choose new directory
         </button>
       </span>`
-  } else if (!archive.info.userSettings.isSaved) {
+  } else if (!_get(archive, 'info.userSettings.isSaved')) {
     secondaryAction = yo`
       <button class="btn" onclick=${onSave}>
-        Save ${archive.info.title || ''} to your Library
+        Save ${_get(archive, 'info.title', '')} to your Library
       </button>`
-  } else if (archive.info.isOwner && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
+  } else if (_get(archive, 'info.isOwner') && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
     secondaryAction = yo`
       <em class="path" onclick=${onChangeWorkspaceDirectory}>
         Set local files directory
@@ -323,9 +324,9 @@ function renderFooter () {
         <div class="workspace-info">${secondaryAction}</div>
 
         <div class="metadata">
-          <span>${archive.info.peers} ${pluralize(archive.info.peers, 'peer')}</span>
+          <span>${_get(archive, 'info.peers', 0)} ${pluralize(_get(archive, 'info.peers', 0), 'peer')}</span>
           <span class="separator">―</span>
-          <span>${prettyBytes(archive.info.size)}</span>
+          <span>${prettyBytes(_get(archive, 'info.size', 0))}</span>
         </div>
 
         <div class="btn-group">
@@ -815,7 +816,7 @@ function renderMenu () {
           Download as .zip
         </div>
 
-        ${archive.info.userSettings.isSaved
+        ${_get(archive, 'info.userSettings.isSaved')
           ? yo`
             <div class="dropdown-item" onclick=${onDelete}>
               <i class="fa fa-trash-o"></i>
@@ -842,7 +843,7 @@ function renderEditButton () {
   } else {
     return yo`
       <button class="btn primary nofocus" onclick=${onChangeWorkspaceDirectory}>
-        ${!archive.info.isOwner ? 'Fork & ' : ''}Edit
+        ${(!_get(archive, 'info.isOwner')) ? 'Fork & ' : ''}Edit
       </button>
     `
   }
@@ -1296,9 +1297,9 @@ function updateGraph () {
 }
 
 function getSafeTitle () {
-  return (archive.info.title || '').trim() || 'Untitled'
+  return _get(archive, 'info.title', '').trim() || 'Untitled'
 }
 
 function getSafeDesc () {
-  return (archive.info.description || '').trim() || yo`<em>No description</em>`
+  return _get(archive, 'info.description', '').trim() || yo`<em>No description</em>`
 }
