@@ -5,7 +5,11 @@ import mime from 'mime'
 // =
 
 export default function render (fileNode) {
-  // check preview content first
+  // check if loading first
+  if (fileNode.isLoadingPreview) {
+    return yo`<div class="loading">Loading...</div>`
+  }
+  // check preview content
   if (fileNode.preview) {
     if (typeof window.hljs !== 'undefined') {
       let fileExt = (fileNode.name || '').split('.').pop()

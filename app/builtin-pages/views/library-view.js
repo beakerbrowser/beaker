@@ -1028,17 +1028,14 @@ async function onRevertAllRevisions (e) {
 }
 
 async function onSetCurrentSource (node) {
+  // try to load the readme
+  loadReadme()
+
+  // update the URL & history
   let path = archive.url
   if (node._path) {
     path += node._path
   }
-
-  // if it's a file, load the preview
-  if (node && node.type === 'file') {
-    await node.readData({maxPreviewLength: 1e5})
-  }
-  loadReadme()
-
   window.history.pushState('', {}, `beaker://library/${path}`)
 }
 
@@ -1284,7 +1281,11 @@ async function readViewStateFromUrl () {
     let pathPart
     while ((pathPart = pathParts.shift())) {
       node = node.children.find(node => node.name === pathPart)
-      await node.readData({maxPreviewLength: 1e5})
+      if (node.type !== 'file') {
+        // dont read for files, just folders
+        // (that way we dont get stalled loading the preview)
+        await node.readData()
+      }
     }
 
     await filesBrowser.setCurrentSource(node, {suppressEvent: true})

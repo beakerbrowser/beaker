@@ -87,12 +87,33 @@ export default class FilesBrowser {
   async setCurrentSource (node, {suppressEvent} = {}) {
     await this.unselectAll()
     this.currentSource = node
-    await this.currentSource.readData({maxPreviewLength: 1e5})
-    if (!suppressEvent) {
-      this.onSetCurrentSource(node)
+
+    // special handling for files
+    if (node.type === 'file') {
+      // emit and render, to allow 'loading...' to show
+      if (!suppressEvent) {
+        this.onSetCurrentSource(node)
+      }
+      let to = setTimeout(() => { // only show if it's taking time to load
+        node.isLoadingPreview = true
+        this.rerender()
+      }, 500)
+      // then load
+      await this.currentSource.readData({maxPreviewLength: 1e5})
+      clearTimeout(to)
+      // then render again
+      node.isLoadingPreview = false
+      this.rerender()
+    } else {
+      // load
+      await this.currentSource.readData()
+      if (!suppressEvent) {
+        this.onSetCurrentSource(node)
+      }
+      this.resortTree()
+      // then render
+      this.rerender()
     }
-    this.resortTree()
-    this.rerender()
   }
 
   // sorting api
