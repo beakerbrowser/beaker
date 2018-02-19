@@ -406,6 +406,27 @@
   }
 }
 
+.builtin-loading {
+  margin: auto; // center vertically and horizontally
+  font-size: 26px;
+  color: #555;
+
+  // offset a little bit, the actual center feels off
+  padding: 0 100px 100px 0;
+
+  .spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    vertical-align: baseline;
+
+    // adjust positioning
+    position: relative;
+    top: 3px;
+    left: -3px;
+  }
+}
+
 .builtin-main {
   width: 100%;
   max-width: 700px;
