@@ -63,7 +63,7 @@ function rVersion (filesBrowser, currentSource) {
   let version = archive.url.slice(vi + 1)
   return [
     yo`<div class="version-badge badge green">v${version}</div>`,
-    yo`<a class="goto-latest" href=${`beaker://library/${urlUnversioned}`}>Goto latest</a>`
+    yo`<a class="jump-to-latest" href=${`beaker://library/${urlUnversioned}`}>Jump to latest</a>`
   ]
 }
 
