@@ -288,34 +288,46 @@ function renderView () {
 
 function renderFooter () {
   let secondaryAction = ''
-  if (workspaceInfo && workspaceInfo.localFilesPath) {
-    secondaryAction = yo`
-      <span class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-        ${workspaceInfo.localFilesPath}
-      </span>`
-  } else if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
-    secondaryAction = yo`
-      <span class="path error">
-        <em>
-          Directory not found (${workspaceInfo.missingLocalFilesPath})
-        </em>
+  let primaryAction = ''
+  if (archive && archive.info) {
+    primaryAction = yo`
+      <div class="btn-group">
+        ${renderEditButton()}
+        ${renderMenu()}
+      </div>`
 
-        <button class="btn" onclick=${onChangeWorkspaceDirectory}>
-          Choose new directory
-        </button>
-      </span>`
-  } else if (!_get(archive, 'info.userSettings.isSaved')) {
-    secondaryAction = yo`
-      <button class="btn" onclick=${onSave}>
-        Save ${_get(archive, 'info.title', '')} to your Library
-      </button>`
-  } else if (_get(archive, 'info.isOwner') && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
-    secondaryAction = yo`
-      <em class="path" onclick=${onChangeWorkspaceDirectory}>
-        Set local files directory
-      </em>`
+    // pick secondary action based on current state
+    if (workspaceInfo && workspaceInfo.localFilesPath) {
+      secondaryAction = yo`
+        <span class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+          ${workspaceInfo.localFilesPath}
+        </span>`
+    } else if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
+      secondaryAction = yo`
+        <span class="path error">
+          <em>
+            Directory not found (${workspaceInfo.missingLocalFilesPath})
+          </em>
+
+          <button class="btn" onclick=${onChangeWorkspaceDirectory}>
+            Choose new directory
+          </button>
+        </span>`
+    } else if (!_get(archive, 'info.userSettings.isSaved')) {
+      secondaryAction = yo`
+        <button class="btn" onclick=${onSave}>
+          Save ${_get(archive, 'info.title', '')} to your Library
+        </button>`
+    } else if (_get(archive, 'info.isOwner') && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
+      secondaryAction = yo`
+        <em class="path" onclick=${onChangeWorkspaceDirectory}>
+          Set local files directory
+        </em>`
+    } else {
+      secondaryAction = yo`<em>Read-only</em>`
+    }
   } else {
-    secondaryAction = yo`<em>Read-only</em>`
+    secondaryAction = yo`<em>Archive not found</em>`
   }
 
   return yo`
@@ -329,10 +341,7 @@ function renderFooter () {
           <span>${prettyBytes(_get(archive, 'info.size', 0))}</span>
         </div>
 
-        <div class="btn-group">
-          ${renderEditButton()}
-          ${renderMenu()}
-        </div>
+        ${primaryAction}
       </div>
     </footer>
   `
