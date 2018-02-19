@@ -10,6 +10,65 @@ We welcome any type of contribution, not only code. You can help with
 - **Code**: take a look at the [open issues](https://github.com/beakerbrowser/beaker/issues). Even if you can't write code, commenting on them, showing that you care about a given issue matters. It helps us triage them.
 - **Money**: we welcome financial contributions in full transparency on our [open collective](https://opencollective.com/beaker).
 
+Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=YuE9OO-ZDYo) and take a look at [the build notes](./build-notes.md).
+
+## Building from source
+
+Requires node 6 or higher. On Windows, you may need to use npm version 4, due to a bug in npm 5.
+
+In Linux (and in some cases macOS) you need libtool, m4, and automake:
+
+```bash
+sudo apt-get install libtool m4 make g++  # debian/ubuntu
+sudo dnf install libtool m4 make gcc-c++  # fedora
+```
+
+In Windows, you'll need to install [Python 2.7](https://www.python.org/downloads/release/python-2711/), Visual Studio 2015 or 2017, and [Git](https://git-scm.com/download/win). (You might try [windows-build-tools](https://www.npmjs.com/package/windows-build-tools).) Then run:
+
+```powershell
+npm config set python c:/python27
+npm config set msvs_version 2015
+npm install -g node-gyp
+npm install -g gulp
+```
+
+To build:
+
+```bash
+git clone https://github.com/beakerbrowser/beaker.git
+cd beaker
+npm install
+npm run rebuild # see https://github.com/electron/electron/issues/5851
+npm start
+```
+
+If you pull latest from the repo and get weird module errors, do:
+
+```bash
+npm run burnthemall
+```
+
+This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-mad-king-game-of-thrones.jpg), who will torch your `node_modules/`, and do the full install/rebuild process for you.
+`npm start` should work afterwards.
+
+If you're doing development, `npm run watch` to have assets build automatically.
+
+## Running the tests
+
+Tests use their own package.json:
+
+```
+cd tests
+npm install
+```
+
+To run:
+
+```
+cd tests
+npm test
+```
+
 ## Submitting code
 
 Any code change should be submitted as a pull request. The description should explain what the code does and give steps to execute it. The pull request should also contain tests, if applicable. For example, a PR that changes a part of the Beaker UI will likely not need tests, but a PR that updates Beaker's networking stack would.

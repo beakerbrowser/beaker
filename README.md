@@ -8,80 +8,33 @@ Beaker is an experimental peer-to-peer Web browser. It adds new APIs for buildin
 
 Please feel free to open usability issues. Join us at #beakerbrowser on Freenode.
 
-## Binaries
+## Table of Contents
 
-### Visit the [Releases Page](https://github.com/beakerbrowser/beaker/releases) to find the installer you need.
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-## About
 
-Beaker is a new browser that combines the flexibility of the desktop with the connectivity of the Web.
+- [Installing](#installing)
+  - [Binaries](#binaries)
+  - [Building from source](#building-from-source)
+- [Documentation](#documentation)
+  - [Env Vars](#env-vars)
+- [Known issues](#known-issues)
+  - [tmux](#tmux)
+- [Contributors](#contributors)
+  - [Backers](#backers)
+  - [Sponsors](#sponsors)
+- [License](#license)
 
-### Why Beaker?
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
- - You can share files privately
- - You control your data
- - You can duplicate, modify, and share websites
- - You can use apps while offline
- - You can go back in time and see previous versions of your content
+## Installing
 
-### Features
+### Binaries
 
- - Host sites from the browser
- - Save sites for offline use
- - Share files secretly between devices
- - Versioned URLs for historic lookup
- - New Web APIs
- - Live reloading
- - Native markdown (.md) rendering
+**Visit the [Releases Page](https://github.com/beakerbrowser/beaker/releases) to find the installer you need.**
 
-With Beaker, we're combining the flexibility of the desktop with the connectivity of the Web.
-
-#### New Web APIs
-
-An example of the [Dat Files API](https://beakerbrowser.com/docs/apis/dat.html):
-
-```js
-var archive = await DatArchive.create({
-  title: 'My Site',
-  description: 'My peer-to-peer website'
-})
-await archive.writeFile('/hello.txt', 'hello')
-await archive.commit()
-
-console.log(archive.url)
-// => dat://da2ce4..dc/
-```
-
-## Documentation
-
-Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=YuE9OO-ZDYo) and take a look at [the build notes](./build-notes.md).
-
-- **Web APIs**
-  - [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
-  - [Permissions](https://beakerbrowser.com/docs/apis/permissions.html)
-  - [Dat.json site manifest](https://beakerbrowser.com/docs/apis/manifest.html)
-- **Specs**
-  - Implemented
-    - [Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
-    - [Dat DNS](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery)
-  - Proposed
-    - [App Scheme](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
-    - [Installable Web Applications](https://github.com/beakerbrowser/beaker/wiki/Installable-Web-Applications)
-    - [Intents](https://github.com/beakerbrowser/beaker/wiki/Intent-Scheme) a URI scheme for composing interactions between apps
-    - [Service Discovery](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol)
-    - [WebTerm](https://github.com/beakerbrowser/beaker/wiki/WebTerm) a bashlike terminal for Web
-- [**Tutorials**](https://beakerbrowser.com/docs/tutorials/)
-
-## Env Vars
-
-- `DEBUG`: which log systems to output? A comma-separated string. Can be `beaker`, `dat`, `bittorrent-dht`, `dns-discovery`, `hypercore-protocol`. Specify `*` for all.
-- `beaker_open_url`: open the given URL on load.
-- `beaker_user_data_path`: override the user-data path, therefore changing where data is read/written. Useful for testing. For default value see `userData` in the [electron docs](https://electron.atom.io/docs/api/app/#appgetpathname).
-- `beaker_sites_path`: override the default path for saving sites. Useful for testing. Default value is `$HOME/Sites` where `$HOME` is the users home directory.
-- `beaker_dat_quota_default_bytes_allowed`: override the default max-quota for bytes allowed to be written by a dat site. Useful for testing. Default value is `'500mb'`. This can be a Number or a String. Check [bytes.parse](https://github.com/visionmedia/bytes.js/tree/a4b9af2bf289175f12b3538eb172f2489844b1ec#bytesparsestringnumber-value-numbernull) for supported units and abbreviations.
-- `NODE_ENV`: set to `test` to disable Beaker's close-to-tray feature
-
-## Building from source
+### Building from source
 
 Requires node 6 or higher. On Windows, you may need to use npm version 4, due to a bug in npm 5.
 
@@ -122,21 +75,35 @@ This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-ma
 
 If you're doing development, `npm run watch` to have assets build automatically.
 
-## Running the tests
+## Documentation
 
-Tests use their own package.json:
+Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=YuE9OO-ZDYo) and take a look at [the build notes](./build-notes.md).
 
-```
-cd tests
-npm install
-```
+- **Web APIs**
+  - [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
+  - [Permissions](https://beakerbrowser.com/docs/apis/permissions.html)
+  - [Dat.json site manifest](https://beakerbrowser.com/docs/apis/manifest.html)
+- **Specs**
+  - Implemented
+    - [Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
+    - [Dat DNS](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery)
+  - Proposed
+    - [App Scheme](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
+    - [Installable Web Applications](https://github.com/beakerbrowser/beaker/wiki/Installable-Web-Applications)
+    - [Intents](https://github.com/beakerbrowser/beaker/wiki/Intent-Scheme) a URI scheme for composing interactions between apps
+    - [Service Discovery](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol)
+    - [WebTerm](https://github.com/beakerbrowser/beaker/wiki/WebTerm) a bashlike terminal for Web
+- [**Tutorials**](https://beakerbrowser.com/docs/tutorials/)
 
-To run:
+### Env Vars
 
-```
-cd tests
-npm test
-```
+- `DEBUG`: which log systems to output? A comma-separated string. Can be `beaker`, `dat`, `bittorrent-dht`, `dns-discovery`, `hypercore-protocol`. Specify `*` for all.
+- `beaker_open_url`: open the given URL on load.
+- `beaker_user_data_path`: override the user-data path, therefore changing where data is read/written. Useful for testing. For default value see `userData` in the [electron docs](https://electron.atom.io/docs/api/app/#appgetpathname).
+- `beaker_sites_path`: override the default path for saving sites. Useful for testing. Default value is `$HOME/Sites` where `$HOME` is the users home directory.
+- `beaker_dat_quota_default_bytes_allowed`: override the default max-quota for bytes allowed to be written by a dat site. Useful for testing. Default value is `'500mb'`. This can be a Number or a String. Check [bytes.parse](https://github.com/visionmedia/bytes.js/tree/a4b9af2bf289175f12b3538eb172f2489844b1ec#bytesparsestringnumber-value-numbernull) for supported units and abbreviations.
+- `NODE_ENV`: set to `test` to disable Beaker's close-to-tray feature
+
 
 ## Known issues
 
@@ -149,16 +116,13 @@ Launching from tmux is known to cause issues with GUI apps in macOS. On Beaker, 
 This project exists thanks to all the people who contribute. [[Contribute]](CONTRIBUTING.md).
 [![](https://opencollective.com/beaker/contributors.svg?width=890)](https://github.com/beakerbrowser/beaker/graphs/contributors)
 
-
-
-## Backers
+### Backers
 
 Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/beaker#backer)]
 
 <a href="https://opencollective.com/beaker#backers" target="_blank"><img src="https://opencollective.com/beaker/backers.svg?width=890"></a>
 
-
-## Sponsors
+### Sponsors
 
 Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/beaker#sponsor)]
 
