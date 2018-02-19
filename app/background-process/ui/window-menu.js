@@ -7,6 +7,7 @@ var darwinMenu = {
   submenu: [
     {
       label: 'Preferences',
+      accelerator: 'Command+,',
       click (item, win) {
         if (win) win.webContents.send('command', 'file:new-tab', 'beaker://settings')
       }
