@@ -910,7 +910,7 @@ async function onChangeView (e, view) {
   activeView = view
   window.history.pushState('', {}, e.currentTarget.getAttribute('href'))
 
-  if (view === 'files') {
+  if (view === 'files' && archiveFsRoot) {
     // setup files view
     await archiveFsRoot.readData({maxPreviewLength: 1e5})
     await filesBrowser.setCurrentSource(archiveFsRoot, {suppressEvent: true})
