@@ -316,7 +316,7 @@ function renderFooter () {
     } else if (!_get(archive, 'info.userSettings.isSaved')) {
       secondaryAction = yo`
         <button class="btn" onclick=${onSave}>
-          Save ${_get(archive, 'info.title', '')} to your Library
+          Save to your Library
         </button>`
     } else if (_get(archive, 'info.isOwner') && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
       secondaryAction = yo`
