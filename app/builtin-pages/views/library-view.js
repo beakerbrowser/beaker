@@ -326,8 +326,6 @@ function renderFooter () {
     } else {
       secondaryAction = yo`<em>Read-only</em>`
     }
-  } else {
-    secondaryAction = yo`<em>Archive not found</em>`
   }
 
   return yo`
@@ -1316,7 +1314,10 @@ function getSafeDesc () {
 function createToplevelError (err) {
   switch (err.name) {
     case 'TimeoutError':
-      return yo`<div><strong>Archive not found.</strong> Check your connection, and make sure the archive is currently being seeded.`
+      return yo`
+        <div>
+          <strong>Archive not found.</strong> Check your connection, and make sure the archive is currently being seeded.
+        </div>`
     default:
       return err.toString()
   }

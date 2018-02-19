@@ -5,13 +5,16 @@
   justify-content: flex-start;
   align-items: center;
   font-size: 13.5px;
-  border: 1px solid;
-  padding: 10px;
-  margin: 1rem 0;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+
+  strong {
+    font-weight: 600;
+  }
 
   > i {
-    font-size: 1.3rem;
-    padding-right: @margin-icon;
+    font-size: 16px;
+    margin-right: 10px;
   }
 
   .btn {
@@ -99,7 +102,6 @@
   &.error {
     background: @background-message--error;
     color: @color-message--error;
-    border-color: @border-message--error;
 
     i {
      color: @color-message--error;
@@ -118,10 +120,6 @@
         background: @background-message--error;
       }
     }
-  }
-
-  i {
-    margin-right: @margin-icon;
   }
 
   a:not(.btn) {
