@@ -98,7 +98,7 @@ async function setup () {
     fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
     fileActStream.addEventListener('changed', onFilesChangedThrottled)
   } catch (e) {
-    toplevelError = e
+    toplevelError = createToplevelError(e)
     render()
   }
 
@@ -343,7 +343,7 @@ function renderErrorView () {
     <div class="container">
       <div class="view error">
         <div class="message error">
-          ${toplevelError ? toplevelError.toString() : ''}
+          <i class="fa fa-exclamation-triangle"></i> ${toplevelError || 'Unknown error'}
         </div>
       </div>
     </div>
@@ -1112,7 +1112,7 @@ async function onChangeWorkspaceDirectory () {
         alert('Folder not empty. Please choose an empty directory.')
         continue // show the popup again
       } else {
-        toplevelError = e
+        toplevelError = createToplevelError(e)
         render()
         return // failure, stop trying
       }
@@ -1303,3 +1303,13 @@ function getSafeTitle () {
 function getSafeDesc () {
   return _get(archive, 'info.description', '').trim() || yo`<em>No description</em>`
 }
+
+function createToplevelError (err) {
+  switch (err.name) {
+    case 'TimeoutError':
+      return yo`<div><strong>Archive not found.</strong> Check your connection, and make sure the archive is currently being seeded.`
+    default:
+      return err.toString()
+  }
+}
+
