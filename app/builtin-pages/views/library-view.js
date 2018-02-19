@@ -1316,7 +1316,12 @@ function createToplevelError (err) {
     case 'TimeoutError':
       return yo`
         <div>
-          <strong>Archive not found.</strong> Check your connection, and make sure the archive is currently being seeded.
+          <strong>Archive not found.</strong> Check your connection and make sure the archive is currently being seeded.
+        </div>`
+    case 'InvalidDomainName':
+      return yo`
+        <div>
+          <strong>Archive not found.</strong> Could not find an archive at '${archive.url.slice('dat://'.length)}'.
         </div>`
     default:
       return err.toString()
