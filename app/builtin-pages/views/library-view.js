@@ -877,8 +877,8 @@ function renderMenu () {
 
       <div class="dropdown-items top right subtle-shadow">
         <div class="dropdown-item" onclick=${onFork}>
-          <i class="fa fa-code-fork"></i>
-          Fork
+          <i class="fa fa-clone"></i>
+          Make a copy
         </div>
 
         ${workspaceInfo
