@@ -17,11 +17,13 @@ import {DAT_VALID_PATH_REGEX, STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
 // exported api
 // =
 
-export default function render (filesBrowser, currentSource) {
+export default function render (filesBrowser, currentSource, header = null) {
   return yo`
     <div class="files-tree-view ${currentSource.isEmpty ? 'empty' : ''}">
 
       ${rHeader(filesBrowser, currentSource)}
+
+      ${header || ''}
 
       <div
         class="body"

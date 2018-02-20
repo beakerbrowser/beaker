@@ -18,14 +18,14 @@ export default class FilesBrowser {
 
   // method to render at a place in the page
   // eg yo`<div>${myFilesBrowser.render()}</div>`
-  render () {
+  render (header = null) {
     if (!this.root) {
       return yo`<div class="files-browser"></div>`
     }
 
     return yo`
       <div class="files-browser">
-        ${this.getCurrentSource() ? renderFilesFlatView(this, this.getCurrentSource()) : null}
+        ${this.getCurrentSource() ? renderFilesFlatView(this, this.getCurrentSource(), header) : null}
       </div>
     `
   }
