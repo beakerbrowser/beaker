@@ -382,9 +382,56 @@ function renderFilesView () {
   return yo`
     <div class="container">
       <div class="view files">
-        ${filesBrowser ? filesBrowser.render() : ''}
+        ${renderSetupInfo()}
+        ${filesBrowser ? filesBrowser.render(renderRevisionsOverview()) : ''}
         ${readmeElement ? readmeElement : ''}
       </div>
+    </div>
+  `
+}
+
+function renderRevisionsOverview () {
+  if (!workspaceInfo || !workspaceInfo.revisions.length) return ''
+
+  return yo`
+    <div class="revisions-overview">
+      <span class="label">
+        ${workspaceInfo.revisions.length} ${pluralize(workspaceInfo.revisions.length, 'unpublished revision')}
+      </span>
+
+      <div class="buttons">
+        <a href="workspace://${workspaceInfo.name}" class="btn plain" target="_blank">
+          <i class="fa fa-external-link"></i>
+          <span>Live preview</span>
+        </a>
+
+        <button class="btn plain" onclick=${e => onChangeView(e, 'revisions')}>
+          <i class="fa fa-code"></i>
+          <span>Review changes</span>
+        </button>
+      </div>
+    </div>
+  `
+}
+
+function renderSetupInfo () {
+  if (workspaceInfo) return ''
+
+  return yo`
+    <div class="setup-info">
+      <p>
+        <i class="fa fa-magic"></i>
+      </p>
+
+      <p>
+        Get started by setting up the local directory.
+      </p>
+
+      <p>
+        <button class="btn primary center">
+          Set up
+        </button>
+      </p>
     </div>
   `
 }
@@ -660,7 +707,7 @@ function renderRevisionsView () {
     yo`
       <li class="revision" onclick=${() => onToggleRevisionCollapsed(rev)}>
         <div class="revision-header ${rev.isOpen ? '' : 'collapsed'}">
-          <div class="revision-type ${rev.change}"></div>
+          ${renderRevisionType(rev)}
 
           <code class="path">
             ${rev.type === 'file' ? rev.path.slice(1) : rev.path}
@@ -784,6 +831,10 @@ function renderRevisionsView () {
       </div>
     </div>
   `
+}
+
+function renderRevisionType (rev) {
+  return yo`<div class="revision-type ${rev.change}"></div>`
 }
 
 function renderTabs () {

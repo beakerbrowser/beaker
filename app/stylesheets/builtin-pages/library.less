@@ -203,6 +203,20 @@
     }
   }
 
+  .setup-info {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+    margin-bottom: 30px;
+    text-align: center;
+    color: rgba(0,0,0,.7);
+
+    i {
+      font-size: 48px;
+      color: #ddd;
+    }
+  }
+
   .view {
     max-width: 100%;
     padding: 0;
@@ -235,6 +249,25 @@
     padding: 0 10px;
     background: #fafafa;
     border-bottom: 1px solid #ddd;
+
+    .revision-type {
+      width: 8px;
+      height: 8px;
+      margin-right: 7px;
+      margin-top: -.25px;
+
+      &.add {
+        background: shade(@green, 15%);
+      }
+
+      &.mod {
+        background: shade(@yellow, 10%);
+      }
+
+      &.del {
+        background: shade(@red, 20%);
+      }
+    }
 
     .path {
       &:extend(.overflow-ellipsis);
@@ -358,6 +391,28 @@
     }
   }
 
+  .view.files {
+
+    .revisions-overview {
+      &:extend(.flex);
+      align-items: center;
+      padding: 3px 10px;
+      color: @color-text--muted;
+      background: #fafafa;
+      border-radius: 2px 2px 0 0;
+      border: 1px solid #ddd;
+      border-bottom: 0;
+
+      .buttons {
+        margin-left: auto;
+      }
+
+      .btn:hover {
+        color: @blue;
+      }
+    }
+  }
+
   .view.revisions {
 
     .revisions-header {
@@ -407,25 +462,6 @@
 
           .ignore-btn {
             visibility: visible;
-          }
-        }
-
-        .revision-type {
-          width: 8px;
-          height: 8px;
-          margin-right: 7px;
-          margin-top: -.25px;
-
-          &.add {
-            background: shade(@green, 15%);
-          }
-
-          &.mod {
-            background: shade(@yellow, 10%);
-          }
-
-          &.del {
-            background: shade(@red, 20%);
           }
         }
 
@@ -647,7 +683,6 @@
       cursor: pointer;
 
       &:hover {
-        color: @blue;
         text-decoration: underline;
       }
 
