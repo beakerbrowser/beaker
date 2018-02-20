@@ -500,6 +500,22 @@ function renderSettingsView () {
           </tr>
 
           <tr>
+            <td class="label">Favicon</td>
+            <td>
+              ${_get(archive, 'info.isOwner')
+                ? yo`
+                  <div class="favicon-container editable" onclick=${onClickFavicon}>
+                    <img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
+                  </div>`
+                : yo`
+                  <div class="favicon-container">
+                    <img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
+                  </div>`
+              }
+            </td>
+          </tr>
+
+          <tr>
             <td class="label">Size</td>
             <td>${prettyBytes(archive.info.size)}</td>
           </tr>

@@ -649,6 +649,29 @@
       }
     }
 
+    .favicon-container {
+      width: 22px;
+      height: 21px;
+      padding: 2px 3px;
+      margin-right: 3px;
+      border-radius: 4px;
+
+      &.editable {
+        cursor: pointer;
+        * {
+          cursor: pointer;
+        }
+        &:hover {
+          background: #eee;
+        }
+      }
+
+      img {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
     .git-setup-commands {
 
       pre {
