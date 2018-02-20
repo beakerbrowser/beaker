@@ -89,6 +89,19 @@
 .builtin-wrapper.library-view {
   background: #fff;
 
+  .view-wrapper {
+    width: 100%;
+    height: ~"calc(100vh - 100px)";
+    margin-top: 50px;
+    padding: 30px 0;
+    overflow-y: auto;
+  }
+
+  .builtin-main {
+    max-width: 100%;
+    padding: 0;
+  }
+
   .container {
     max-width: 800px;
     margin: auto;
@@ -192,7 +205,7 @@
 
   .view {
     max-width: 100%;
-    padding: 75px 0;
+    padding: 0;
     font-size: .85rem;
 
     .section {

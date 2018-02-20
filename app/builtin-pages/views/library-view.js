@@ -243,7 +243,11 @@ function render () {
       <div class="library-wrapper library-view builtin-wrapper">
         <div class="builtin-main" style="margin-left: 0; width: 100%">
           ${renderHeader()}
-          ${renderView()}
+
+          <div class="view-wrapper">
+            ${renderView()}
+          </div>
+
           ${renderFooter()}
         </div>
       </div>
