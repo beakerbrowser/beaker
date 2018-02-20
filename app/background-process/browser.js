@@ -288,7 +288,8 @@ function showOpenDialog (opts = {}) {
       title: opts.title,
       buttonLabel: opts.buttonLabel,
       filters: opts.filters,
-      properties: opts.properties
+      properties: opts.properties,
+      defaultPath: opts.defaultPath
     }, filenames => {
       // return focus back to the the webview
       wc.executeJavaScript(`

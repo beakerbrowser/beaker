@@ -12,6 +12,7 @@ import toggleable from '../com/toggleable'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
 import * as workspacePopup from '../com/library-workspace-popup'
+import * as copydatPopup from '../com/library-copydat-popup'
 import * as faviconPicker from '../com/favicon-picker'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
@@ -913,7 +914,7 @@ function renderMenu () {
       </button>
 
       <div class="dropdown-items top right subtle-shadow">
-        <div class="dropdown-item" onclick=${onFork}>
+        <div class="dropdown-item" onclick=${onMakeCopy}>
           <i class="fa fa-clone"></i>
           Make a copy
         </div>
@@ -956,12 +957,16 @@ function renderEditButton () {
         Edit
       </button>
     `
-  } else {
+  } else if (_get(archive, 'info.isOwner')) {
     return yo`
       <button class="btn primary nofocus" onclick=${onChangeWorkspaceDirectory}>
-        ${(!_get(archive, 'info.isOwner')) ? 'Make an editable copy' : 'Edit'}
-      </button>
-    `
+        Edit
+      </button>`
+  } else {
+    return yo`
+      <button class="btn primary nofocus" onclick=${onMakeCopy}>
+        Make an editable copy
+      </button>`
   }
 }
 
@@ -979,8 +984,10 @@ function renderRepositoryLink () {
 // events
 // =
 
-async function onFork () {
-  const fork = await DatArchive.fork(archive.url, {prompt: true}).catch(() => {})
+async function onMakeCopy () {
+  await copydatPopup.create({archive})
+  return
+  const fork = await DatArchive.fork(archive.url, {prompt: false}).catch(() => {})
   window.location = `beaker://library/${fork.url}`
 }
 
@@ -1196,45 +1203,32 @@ async function onToggleSeeding () {
 }
 
 async function onChangeWorkspaceDirectory () {
+  if (!archive.info.isOwner) return
   let publishTargetUrl = archive.url
 
-  // fork first if not the owner
-  // if (!archive.info.isOwner) {
-  //   const a = await DatArchive.fork(archive.url, {prompt: false})
-  //   publishTargetUrl = a.url
-  // }
-
   // get an available path for a directory
-  const basePath = await beaker.browser.getSetting('workspace_default_path')
-  const defaultPath = await beaker.browser.getDefaultLocalPath(basePath, archive.info.title)
+  let defaultPath
+  if (workspaceInfo.localFilesPath) {
+    defaultPath = workspaceInfo.localFilesPath
+  } else {
+    let basePath = await beaker.browser.getSetting('workspace_default_path')
+    defaultPath = await beaker.browser.getDefaultLocalPath(basePath, archive.info.title)
+  }
 
   // enter a loop
   let localFilesPath
-  let info
   while (true) {
-    const forkInfo = archive.info.isOwner ? {} : {isFork: true, archive}
-
     // open the create workspace popup
-    info = await workspacePopup.create({
+    let res = await workspacePopup.create({
       defaultPath,
-      title: archive.info.title,
-      forkInfo
+      title: archive.info.title
     })
-    localFilesPath = info.localFilesPath
+    localFilesPath = res.localFilesPath
 
     try {
-      if (!archive.info.isOwner)  {
-        const a = await DatArchive.fork(archive.url, {prompt: false})
-
-        // listen to archive download progress
-        await archive.startMonitoringDownloadProgress()
-        archive.progress.addEventListener('changed', render)
-
-        publishTargetUrl = a.url
-      } else if (!workspaceInfo) {
+      if (!workspaceInfo) {
         workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
       } else {
-        // set the localFilesPath
         await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath})
       }
     } catch (e) {
