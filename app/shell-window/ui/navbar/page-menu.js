@@ -40,8 +40,6 @@ export class PageMenuNavbarBtn {
       } */
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
-          <div class="dropdown-items with-triangle">
-            <div class="list">
               ${'' /* TODO restore if/when needed
               <div
                 class="list-item"
@@ -70,30 +68,36 @@ export class PageMenuNavbarBtn {
                   : ''}
               </div>` : ''}
               ${isAppScheme && isDat ? yo`<hr />` : ''*/}
-              ${isDat ? yo`<div>
-                <div class="list-item" onclick=${() => this.onClickViewFiles()}>
-                  <i class="fa fa-files-o"></i>
-                  View files
-                </div>
-                <div class="list-item" onclick=${() => this.onClickFork()}>
-                  <i class="fa fa-code-fork"></i>
-                  Fork this site
-                </div>
-                <div class="list-item" onclick=${() => this.onClickDownloadZip()}>
-                  <i class="fa fa-file-archive-o"></i>
-                  Download as .zip
-                </div>
-              </div>` : ''}
-              ${'' // TODO(apps) restore when we bring back apps -prf
-              /*isDat && !isInstalledApp ? yo`<div>
-                <hr />
-                <div class="list-item" onclick=${() => this.onClickInstall()}>
-                  <i class="fa fa-download"></i>
-                  Install as an app
-                </div>
-              </div>` : ''*/}
-            </div>
-          </div>
+
+            ${isDat
+              ? yo`
+                <div class="dropdown-items compact with-triangle">
+                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
+                    <i class="fa fa-clone"></i>
+                    Make editable copy
+                  </div>
+
+                  <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
+                    <i class="fa fa-code"></i>
+                    View files
+                  </div>
+
+                  <div class="dropdown-item" onclick=${() => this.onClickDownloadZip()}>
+                    <i class="fa fa-file-archive-o"></i>
+                    Download as .zip
+                  </div>
+                </div>`
+              : ''
+            }
+
+            ${'' // TODO(apps) restore when we bring back apps -prf
+            /*isDat && !isInstalledApp ? yo`<div>
+              <hr />
+              <div class="list-item" onclick=${() => this.onClickInstall()}>
+                <i class="fa fa-download"></i>
+                Install as an app
+              </div>
+            </div>` : ''*/}
         </div>`
     }
 
