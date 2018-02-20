@@ -181,6 +181,8 @@ async function loadDiff (revision) {
 
 async function loadReadme () {
   readmeElement = null
+  let readmeContent = null
+  let readmeHeader = null
 
   const node = filesBrowser.getCurrentSource()
   if (node && node.hasChildren) {
@@ -189,21 +191,29 @@ async function loadReadme () {
     if (readmeMdNode) {
       // render the element
       const readmeMd = await archive.readFile(readmeMdNode._path, 'utf8')
-      readmeElement = yo`<div class="readme markdown"></div>`
-      readmeElement.innerHTML = markdownRenderer.render(readmeMd)
+      readmeContent = yo`<div class="readme markdown"></div>`
+      readmeContent.innerHTML = markdownRenderer.render(readmeMd)
+      readmeHeader = yo`
+        <div class="file-preview-header">
+          <code class="path">${readmeMdNode.name}</code>
+        </div>`
     } else {
       // try to find the readme file
       const readmeNode = node.children.find(n => (n._name || '').toLowerCase() === 'readme')
       if (readmeNode) {
         // render the element
         const readme = await archive.readFile(readmeNode._path, 'utf8')
-        readmeElement = yo`<div class="readme plaintext">${readme}</div>`
+        readmeContent = yo`<div class="readme plaintext">${readme}</div>`
+        readmeHeader = yo`
+          <div class="file-preview-header">
+            <code class="path">${readmeNode.name}</code>
+          </div>`
       }
     }
 
     // apply syntax highlighting
-    if (readmeElement && window.hljs) {
-      Array.from(readmeElement.querySelectorAll('code'), codeEl => {
+    if (readmeContent && window.hljs) {
+      Array.from(readmeContent.querySelectorAll('code'), codeEl => {
         let cls = codeEl.className
         if (!cls.startsWith('language-')) return
         let lang = cls.slice('language-'.length)
@@ -212,6 +222,13 @@ async function loadReadme () {
         if (res) codeEl.innerHTML = res.value
       })
     }
+
+    // set up readme fileheader
+    readmeElement = yo`
+      <div class="file-preview-container readme">
+        ${readmeHeader}
+        ${readmeContent}
+      </div>`
   }
 
   render()
