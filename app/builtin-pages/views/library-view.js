@@ -850,7 +850,7 @@ function renderEditButton () {
   } else {
     return yo`
       <button class="btn primary nofocus" onclick=${onChangeWorkspaceDirectory}>
-        ${(!_get(archive, 'info.isOwner')) ? 'Fork & ' : ''}Edit
+        ${(!_get(archive, 'info.isOwner')) ? 'Make an editable copy' : 'Edit'}
       </button>
     `
   }
@@ -1089,10 +1089,10 @@ async function onChangeWorkspaceDirectory () {
   let publishTargetUrl = archive.url
 
   // fork first if not the owner
-  if (!archive.info.isOwner) {
-    const a = await DatArchive.fork(archive.url, {prompt: false})
-    publishTargetUrl = a.url
-  }
+  // if (!archive.info.isOwner) {
+  //   const a = await DatArchive.fork(archive.url, {prompt: false})
+  //   publishTargetUrl = a.url
+  // }
 
   // get an available path for a directory
   const basePath = await beaker.browser.getSetting('workspace_default_path')
@@ -1100,12 +1100,28 @@ async function onChangeWorkspaceDirectory () {
 
   // enter a loop
   let localFilesPath
+  let info
   while (true) {
+    const forkInfo = archive.info.isOwner ? {} : {isFork: true, archive}
+
     // open the create workspace popup
-    localFilesPath = await workspacePopup.create(defaultPath)
+    info = await workspacePopup.create({
+      defaultPath,
+      title: archive.info.title,
+      forkInfo
+    })
+    localFilesPath = info.localFilesPath
 
     try {
-      if (!workspaceInfo) {
+      if (!archive.info.isOwner)  {
+        const a = await DatArchive.fork(archive.url, {prompt: false})
+
+        // listen to archive download progress
+        await archive.startMonitoringDownloadProgress()
+        archive.progress.addEventListener('changed', render)
+
+        publishTargetUrl = a.url
+      } else if (!workspaceInfo) {
         workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
       } else {
         // set the localFilesPath

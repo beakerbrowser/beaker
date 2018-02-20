@@ -711,31 +711,118 @@
     }
   }
 
-  .builtin-main {
-    max-width: 800px;
-  }
+  .file-preview-container.readme {
+    &:extend(.flex);
+    flex-wrap: wrap;
+    margin-top: 20px;
 
-  .readme {
-    margin: 2rem 0;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    padding: 1rem 2rem;
-    border-radius: 5px;
+    .file-preview-header,
+    .readme {
+      width: 100%;
+    }
+
+    .readme {
+      border: 1px solid #ddd;
+      border-top: 0;
+      border-radius: 0 0 2px 2px;
+      padding: 15px 25px;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .readme.markdown {
+
+      h1,
+      h2,
+      h3 {
+        margin: 15px 0;
+        font-weight: 600;
+      }
+
+      h1,
+      h2 {
+        border-bottom: 1px solid #eee;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      h3 {
+        font-size: 20px;
+      }
+
+      ul,
+      ol {
+        margin-bottom: 15px;
+      }
+
+      pre,
+      code {
+        &:extend(.code-font);
+        font-size: 13.5px;
+        background: #f0f0f0;
+        border-radius: 2px;
+      }
+
+      pre {
+        padding: 15px;
+        border: 0;
+      }
+
+      code {
+        padding: 3px 5px;
+      }
+    }
 
     &.plaintext {
+      &:extend(.code-font);
       white-space: pre-wrap;
-      font-family: monospace;
-      padding: 2rem;
-      color: #000;
-      background: #eee;
+    }
+  }
+}
+
+#library-workspace-popup {
+
+  .popup-inner {
+    overflow: initial;
+  }
+
+  .download-status {
+    &:extend(.flex);
+    align-items: center;
+    flex-wrap: nowrap;
+    margin: 20px 0 35px 0;
+
+    i.fa-check {
+      margin-left: 5px;
+      color: shade(@green, 13%);
+    }
+  }
+
+  .path-container {
+    &:extend(.flex);
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 28px;
+    border: 1px solid #ddd;
+    border-radius: 4px 2px 2px 4px;
+
+    .btn {
+      border: 0;
+      border-left: 1px solid #ddd;
+      height: 26px;
     }
 
-    pre {
-      border: 0;
-      color: #333;
-    }
-    code {
-      color: #333;
+    .path {
+      height: 100%;
+      line-height: 28px;
+      padding: 0 7px;
     }
   }
 }

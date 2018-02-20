@@ -51,6 +51,10 @@
 
   .body {
     padding: 12px;
+
+    > div:not(:first-child) {
+      margin-top: 20px;
+    }
   }
 
   p {
@@ -73,7 +77,6 @@
 
   label {
     margin-bottom: 3px;
-    font-size: 0.8rem;
     color: fadeout(@color-text, 10%);
   }
 
