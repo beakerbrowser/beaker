@@ -28,7 +28,6 @@ export default function render (filesBrowser, currentSource, header = null) {
       <div
         class="body"
         onclick=${e => onClickNode(e, filesBrowser, currentSource)}
-      >
         <div>
           ${currentSource.type === 'file'
             ? rFilePreview(currentSource)
