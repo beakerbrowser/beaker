@@ -43,6 +43,7 @@ var settingsEditValues = {
 
 var toplevelError
 var copySuccess = false
+var isFaviconSet = true
 var faviconCacheBuster
 var workspaceFileActStream
 
@@ -81,6 +82,15 @@ async function setup () {
     // fetch workspace info for this archive
     workspaceInfo = await beaker.workspaces.get(0, archive.info.url)
     await loadWorkspaceRevisions()
+
+    // check if the favicon is set
+    if (_get(archive, 'info.isOwner')) {
+      let favicon = await beaker.sitedata.get(archive.url, 'favicon')
+      if (!favicon) favicon = await (archive.stat('/favicon.png').catch(() => null))
+      if (!favicon) {
+        isFaviconSet = false
+      }
+    }
 
     // load state and render
     await readViewStateFromUrl()
@@ -263,11 +273,22 @@ function renderHeader () {
           <i class="fa fa-angle-double-left"></i>
         </a>
 
-        <img
-          src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}"
-          class="favicon ${_get(archive, 'info.isOwner') ? 'editable' : ''}"
-          onclick=${onClickFavicon}
-          title="Change favicon" />
+        ${_get(archive, 'info.isOwner')
+          ? yo`
+            <div
+              class="favicon-container editable tooltip-container ${isFaviconSet ? '' : 'unset'}"
+              data-tooltip=${isFaviconSet ? 'Change favicon' : 'Set a favicon'}
+              onclick=${onClickFavicon}
+            >
+              ${isFaviconSet
+                ? yo`<img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />`
+                : yo`<i class="fa fa-plus"></i>`}
+            </div>`
+          : yo`
+            <div class="favicon-container">
+              <img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
+            </div>`
+        }
 
         <a href=${archive.url} class="title" target="_blank">
           ${getSafeTitle()}
@@ -1009,6 +1030,7 @@ function onClickFavicon (e) {
         await beaker.workspaces.revert(0, workspaceInfo.name, {paths: ['/favicon.png']})
       }
       faviconCacheBuster = Date.now()
+      isFaviconSet = true
       render()
     }
   })

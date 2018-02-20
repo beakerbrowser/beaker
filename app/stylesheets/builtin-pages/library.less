@@ -153,19 +153,40 @@
       }
     }
 
-    .favicon {
-      width: 30px;
-      height: 30px;
+    .favicon-container {
+      width: 26px;
+      height: 26px;
       padding: 5px;
       margin-right: 3px;
+      border-radius: 4px;
+
+      &.unset {
+        margin-right: 7px;
+        border: 1px dashed #999;
+        padding: 4px;
+      }
 
       &.editable {
         cursor: pointer;
-        border-radius: 4px;
-
+        * {
+          cursor: pointer;
+        }
         &:hover {
           background: #eee;
         }
+      }
+
+      i {
+        color: #aaa;
+        position: relative;
+        left: 4px;
+        top: -4px;
+        font-size: 10px;
+      }
+
+      img {
+        width: 16px;
+        height: 16px;
       }
     }
 
