@@ -78,8 +78,8 @@ export class PageMenuNavbarBtn {
                   </div>
 
                   <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
-                    <i class="fa fa-code"></i>
-                    View files
+                    <i class="fa fa-book"></i>
+                    Open in Library
                   </div>
 
                   <div class="dropdown-item" onclick=${() => this.onClickDownloadZip()}>
