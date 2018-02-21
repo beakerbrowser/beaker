@@ -118,7 +118,7 @@ function render () {
       ${archive.progress.current > 0
         ? yo`<progress value=${archive.progress.current} max="100"></progress>`
         : ''}
-      Some files have not been downloaded, and will be missing from your fork.
+      Some files have not been downloaded, and will be missing from your copy.
     </div>`
     if (!isComplete) {
       downloadBtn = yo`<button type="button" class="btn ${isDownloading ? 'disabled' : 'success'}" onclick=${onClickDownload}>
@@ -126,20 +126,20 @@ function render () {
       </button>`
     }
   } else {
-    progressEl = yo`<div class="fork-dat-progress">Ready to fork.</div>`
+    progressEl = yo`<div class="fork-dat-progress">Ready to copy.</div>`
   }
 
-  var helpText = `Create a copy of ${renderArchiveTitle()} and save it to your library.`
+  var helpText = ''
   if (isSelfFork) {
-    helpText = 'This archive wants to create a copy of itself.'
+    helpText = yo`<p class="help-text">This archive wants to create a copy of itself.</p>`
   }
 
   yo.update(document.querySelector('main'), yo`<main>
     <div class="modal">
       <div class="modal-inner">
         <div class="fork-dat-modal">
-          <h1 class="title">Fork ${renderArchiveTitle('archive')}</h1>
-          <p class="help-text">${helpText}</p>
+          <h1 class="title">Make a copy of ${renderArchiveTitle('archive')}</h1>
+          ${helpText}
 
           <form onsubmit=${onSubmit}>
             <label for="title">Title</label>
@@ -153,8 +153,8 @@ function render () {
               <button type="button" class="btn cancel" onclick=${onClickCancel} tabindex="4" disabled=${isProcessing}>Cancel</button>
               <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="5" disabled=${isProcessing}>
                 ${isProcessing
-                  ? yo`<span><span class="spinner"></span> Forking...</span>`
-                  : `Create fork ${!isComplete ? ' anyway' : ''}`}
+                  ? yo`<span><span class="spinner"></span> Copying...</span>`
+                  : `Create copy ${!isComplete ? ' anyway' : ''}`}
               </button>
               ${downloadBtn}
             </div>
