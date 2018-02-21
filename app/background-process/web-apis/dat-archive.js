@@ -42,12 +42,12 @@ const to = (opts) =>
     : DEFAULT_DAT_API_TIMEOUT
 
 export default {
-  async createArchive ({title, description, type, networked, prompt} = {}) {
+  async createArchive ({title, description, type, networked, template, prompt} = {}) {
     var newArchiveUrl
 
-    // only allow type and networked to be set by beaker, for now
+    // only allow type, networked, and template to be set by beaker, for now
     if (!this.sender.getURL().startsWith('beaker:')) {
-      type = networked = undefined
+      type = networked = template = undefined
     }
 
     if (prompt !== false) {
@@ -71,9 +71,25 @@ export default {
       let author = await getAuthor()
       newArchiveUrl = await datLibrary.createNewArchive({title, description, type, author}, {networked})
     }
+    let newArchiveKey = await lookupUrlDatKey(newArchiveUrl)
+
+    // apply the template
+    if (template) {
+      try {
+        let archive = datLibrary.getArchive(newArchiveKey)
+        let templatePath = path.join(__dirname, 'assets', 'templates', template)
+        await pda.exportFilesystemToArchive({
+          srcPath: templatePath,
+          dstArchive: archive,
+          dstPath: '/',
+          inplaceImport: true
+        })
+      } catch (e) {
+        console.error('Failed to import template', e)
+      }
+    }
 
     // grant write permissions to the creating app
-    let newArchiveKey = await lookupUrlDatKey(newArchiveUrl)
     grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
     return newArchiveUrl
   },

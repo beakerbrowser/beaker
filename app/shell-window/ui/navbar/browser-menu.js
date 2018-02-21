@@ -310,16 +310,16 @@ export class BrowserMenuNavbarBtn {
     this.updateActives()
   }
 
-  async onCreateSite (e, type) {
+  async onCreateSite (e, template) {
     // close dropdown
     this.isDropdownOpen = false
     this.submenu = ''
     this.updateActives()
 
-    let title = `My ${type || 'project'}`
+    let title = `My ${template || 'project'}`
 
     // create a new archive
-    const archive = await DatArchive.create({title, prompt: false})
+    const archive = await DatArchive.create({title, template, prompt: false})
     pages.setActive(pages.create('beaker://library/' + archive.url))
   }
 

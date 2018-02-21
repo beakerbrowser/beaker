@@ -141,14 +141,6 @@ export default {
     var diff = await dft.diff({fs: archive}, {fs: scopedFS})
     await dft.applyRight({fs: archive}, {fs: scopedFS}, diff)
 
-    // apply the template
-    if (opts.template === 'app' || opts.template === 'website') {
-      let templatePath = path.join(__dirname, 'assets', 'templates', opts.template)
-      diff = await dft.diff(templatePath, {fs: scopedFS})
-      diff = diff.filter(d => d.change !== 'del') // add or modify only
-      await dft.applyRight(templatePath, {fs: scopedFS}, diff)
-    }
-
     return true
   },
 
