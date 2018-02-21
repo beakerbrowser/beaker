@@ -13,6 +13,7 @@ import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
 import * as workspacePopup from '../com/library-workspace-popup'
 import * as copydatPopup from '../com/library-copydat-popup'
+import * as contextInput from '../com/context-input'
 import * as faviconPicker from '../com/favicon-picker'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
@@ -267,6 +268,7 @@ function render () {
 }
 
 function renderHeader () {
+  const isOwner = _get(archive, 'info.isOwner')
   return yo`
     <div class="builtin-header">
       <div class="container">
@@ -274,7 +276,7 @@ function renderHeader () {
           <i class="fa fa-angle-double-left"></i>
         </a>
 
-        ${_get(archive, 'info.isOwner')
+        ${isOwner
           ? yo`
             <div
               class="favicon-container editable tooltip-container ${isFaviconSet ? '' : 'unset'}"
@@ -291,9 +293,18 @@ function renderHeader () {
             </div>`
         }
 
-        <a href=${archive.url} class="title" target="_blank">
-          ${getSafeTitle()}
-        </a>
+        ${isOwner
+          ? yo`
+            <div class="tooltip-container" data-tooltip="Change title">
+              <a class="title" onclick=${onClickChangeHeaderTitle} href="#">
+                ${getSafeTitle()}
+              </a>
+            </div>`
+          : yo`
+            <a href=${archive.url} class="title" target="_blank">
+              ${getSafeTitle()}
+            </a>`
+        }
 
         <a href=${archive.url} class="url" target="_blank">
           ${shortenHash(archive.url)}
@@ -1032,6 +1043,32 @@ async function onChangeView (e, view) {
   render()
 }
 
+async function onClickChangeHeaderTitle (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  // take the tooltip off the link while this is active
+  let anchorContainer = e.target.parentNode
+  let tooltip = anchorContainer.dataset.tooltip
+  delete anchorContainer.dataset.tooltip
+
+  // get new value
+  let rect = e.currentTarget.getClientRects()[0]
+  let res = await contextInput.create({
+    x: rect.left - 18,
+    y: rect.bottom + 8,
+    label: 'Title',
+    value: archive.info.title,
+    action: 'Save'
+  })
+  if (res) {
+    await setManifestValue('title', res)
+  }
+
+  // restore tooltip
+  anchorContainer.dataset.tooltip = tooltip
+}
+
 function onClickFavicon (e) {
   e.preventDefault()
   e.stopPropagation()
@@ -1283,11 +1320,7 @@ async function onKeyupSettingsEdit (e, attr) {
     }
 
     // assign
-    let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
-    await archive2.configure({[attr]: value})
-    Object.assign(archive.info, {[attr]: value})
-    Object.assign(archive.info.manifest, {[attr]: value})
-    document.title = `Library - ${archive.info.title || 'Untitled'}`
+    await setManifestValue(attr, value)
     settingsEditValues[attr] = false
     render()
   } else if (e.keyCode == 27) {
@@ -1414,6 +1447,14 @@ async function readViewStateFromUrl () {
     // ignore, but log just in case something is buggy
     console.debug(e)
   }
+}
+
+async function setManifestValue (attr, value) {
+  let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
+  await archive2.configure({[attr]: value})
+  Object.assign(archive.info, {[attr]: value})
+  Object.assign(archive.info.manifest, {[attr]: value})
+  document.title = `Library - ${archive.info.title || 'Untitled'}`
 }
 
 // helper to rerender the peer history graph

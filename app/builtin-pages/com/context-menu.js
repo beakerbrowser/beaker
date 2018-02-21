@@ -58,13 +58,13 @@ export function create (opts) {
   })
 }
 
-export function destroy () {
+export function destroy (value) {
   const el = document.querySelector('.context-menu')
   if (el) {
     document.body.removeChild(el)
     document.removeEventListener('keyup', onKeyUp)
     document.removeEventListener('click', onClickAnywhere)
-    resolve()
+    resolve(value)
   }
 }
 
