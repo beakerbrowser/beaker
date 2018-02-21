@@ -17,7 +17,7 @@ import renderCloseIcon from '../icon/close'
 let archives = []
 let selectedArchives = []
 let query = ''
-let currentView = 'your archives'
+let currentView = 'all'
 let currentSort = 'alpha'
 
 // main
