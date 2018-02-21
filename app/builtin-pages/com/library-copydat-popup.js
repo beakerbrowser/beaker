@@ -1,4 +1,5 @@
 import yo from 'yo-yo'
+import prettyBytes from 'pretty-bytes'
 import {findParent} from '../../lib/fg/event-handlers'
 import closeIcon from '../icon/close'
 
@@ -10,6 +11,7 @@ let reject
 
 let isDownloadingFiles
 let title
+let newTitle
 let archive
 
 // exported api
@@ -17,12 +19,15 @@ let archive
 
 export function create (opts = {}) {
   archive = opts.archive
-  title = archive.info.title || 'Untitled'
+  title = archive.info.title
+  newTitle = archive.info.title ? (archive.info.title + ' (copy)') : ''
 
   // render interface
   var popup = render()
   document.body.appendChild(popup)
   document.addEventListener('keyup', onKeyUp)
+  archive.progress.addEventListener('changed', update)
+  popup.querySelector('input').focus()
 
   // return promise
   return new Promise((_resolve, _reject) => {
@@ -35,6 +40,7 @@ export function destroy () {
   var popup = document.getElementById('library-copydat-popup')
   document.body.removeChild(popup)
   document.removeEventListener('keyup', onKeyUp)
+  archive.progress.removeEventListener('changed', update)
   reject()
 }
 
@@ -51,7 +57,7 @@ function render () {
       <form class="popup-inner" onsubmit=${onSubmit}>
         <div class="head">
           <span class="title">
-            Make a copy of ${title}
+            Make a copy ${title ? ('of ' + title) : ''} (${prettyBytes(archive.info.size)})
           </span>
 
           <span title="Cancel" onclick=${destroy} class="close-btn square">
@@ -60,35 +66,46 @@ function render () {
         </div>
 
         <div class="body">
-          <div class="download-status">
-            <div class="progress-ui small ${archive.progress.isComplete ? 'green' : 'blue'}">
-              <div style="width: ${archive.progress.current}%" class="completed">
-              </div>
-
-              ${archive.progress.isComplete
-                ? yo`<div class="label">All files downloaded</div>`
-                : ''
-              }
-            </div>
+          <div>
+            <label for="title">Title</label>
+            <input type="text" name="title" value=${newTitle} onkeyup=${onKeyupTitle} />
           </div>
 
+          ${(archive.info.isOwner || archive.progress.isComplete)
+              ? ''
+              : yo`
+                <div class="downloader">
+                  <div class="download-status">
+                    <div class="progress-ui small ${archive.progress.isComplete ? 'green' : 'blue'} ${isDownloadingFiles ? 'active' : ''}">
+                      <div style="width: ${archive.progress.current}%" class="completed"></div>
+                    </div>
+                  </div>
+
+                  <div class="download-desc">
+                    ${archive.progress.isComplete
+                      ? 'Ready to copy.'
+                      : 'Some files have not been downloaded and will be missing from your copy.'
+                    }
+                  </div>
+                </div>`}
+
           <div class="actions">
-            <button type="button" class="btn" onclick=${destroy}>Cancel</button>
             ${!archive.progress.isComplete
-              ? yo`
-                <button type="button" class="button" onclick=${onClickDownloadFiles}>
+              ? [
+                yo`<button type="submit" class="btn">
+                  Create incomplete copy
+                </button>`,
+                yo`<button type="button" class="btn success" ${isDownloadingFiles ? 'disabled' : ''} onclick=${onClickDownloadFiles}>
                   ${isDownloadingFiles
-                    ? 'Downloading files...'
+                    ? [yo`<div class="spinner"></div>`, ' Downloading files...']
                     : 'Finish downloading files'
                   }
                 </button>`
-              : ''
+              ] : [
+                yo`<button type="button" class="btn" onclick=${destroy}>Cancel</button>`,
+                yo`<button type="submit" class="btn success">Create copy</button>`
+              ]
             }
-
-            <button type="submit" class="btn success">
-              Go
-              <i class="fa fa-angle-double-right"></i>
-            </button>
           </div>
         </div>
       </form>
@@ -99,11 +116,7 @@ function render () {
 // event handlers
 // =
 
-async function onClickDownloadFiles (archive) {
-  // listen to archive download progress
-  await archive.startMonitoringDownloadProgress()
-  archive.progress.addEventListener('changed', update)
-
+async function onClickDownloadFiles () {
   // render downloading state
   isDownloadingFiles = true
   update()
@@ -123,6 +136,10 @@ function onKeyUp (e) {
   }
 }
 
+function onKeyupTitle (e) {
+  newTitle = e.target.value
+}
+
 function onClickWrapper (e) {
   if (e.target.id === 'library-copydat-popup') {
     destroy()
@@ -131,6 +148,6 @@ function onClickWrapper (e) {
 
 function onSubmit (e) {
   e.preventDefault()
-  resolve(e.target.path.value)
+  resolve({title: e.target.title.value})
   destroy()
 }

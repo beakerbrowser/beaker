@@ -985,9 +985,8 @@ function renderRepositoryLink () {
 // =
 
 async function onMakeCopy () {
-  await copydatPopup.create({archive})
-  return
-  const fork = await DatArchive.fork(archive.url, {prompt: false}).catch(() => {})
+  let {title} = await copydatPopup.create({archive})
+  const fork = await DatArchive.fork(archive.url, {title, prompt: false}).catch(() => {})
   window.location = `beaker://library/${fork.url}`
 }
 
