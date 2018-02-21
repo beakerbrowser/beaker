@@ -203,21 +203,27 @@ function renderRecent (a) {
       class="ll-row archive recent"
       oncontextmenu=${e => onArchiveContextMenu(e, a, true)}
     >
-      <div class="title">
-        ${a.title || yo`<em>Untitled</em>`}
-      </div>
-
       <img class="favicon" src="beaker-favicon:${a.url}" />
 
-      <span class="url">
-        ${shortenHash(a.url)}
-      </span>
+      <div class="info">
+        <div class="title">
+          ${a.title || yo`<em>Untitled</em>`}
+        </div>
+
+        <span class="url">
+          ${shortenHash(a.url)}
+        </span>
+
+        <button class="btn plain">
+          <i class="fa fa-ellipsis-v"></i>
+        </button>
+      </div>
     </div>
   `
 }
 
 function render () {
-  let recentArchives = renderRecentArchives('recent', 10, 'recent')
+  let recentArchives = renderRecentArchives('recent', 8, 'recent')
 
   yo.update(
     document.querySelector('.library-wrapper'), yo`

@@ -46,17 +46,18 @@
 
   .recent-archives {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-gap: 15px;
     width: 100%;
     margin-bottom: 25px;
   }
 
   .ll-row.recent {
-    display: block;
-    width: 128px;
+    &:extend(.flex);
+    justify-content: space-between;
+    width: auto;
     height: auto;
-    padding: 10px 7px;
+    padding: 0;
     background: #fff;
     text-align: center;
     transition: box-shadow .05s ease;
@@ -67,21 +68,53 @@
     }
 
     &:hover {
-      box-shadow: 0 0 0 3px rgb(230, 230, 230);
+      border-color: fadeout(@blue, 20%);
+      border-color: #ccc;
+      background: fadeout(@blue, 99%);
+
+      .btn {
+        opacity: 1;
+      }
     }
 
     .favicon {
       display: block;
-      width: 24px;
-      height: 24px;
-      margin: 10px auto;
+      flex-basis: 32px;
+      width: 32px;
+      height: 32px;
+      margin: 30px auto;
+    }
+
+    .info {
+      position: relative;
+      border-top: 1px solid rgb(230, 230, 230);
+      text-align: left;
+      background: #fff;
+      padding: 5px 10px;
+      width: 100%;
+    }
+
+    .btn {
+      position: absolute;
+      right: 7px;
+      top: 2px;
+      opacity: 0;
+      font-size: 15px;
     }
 
     .title {
       &:extend(.overflow-ellipsis);
-      max-width: 115px;
+      max-width: 132px;
       margin: 0;
-      text-align: center;
+    }
+
+    .url {
+      font-size: .75rem;
+    }
+
+    .url,
+    .title {
+      vertical-align: top;
     }
   }
 }
