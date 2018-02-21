@@ -79,7 +79,7 @@ function render () {
       <div class="favicon-picker-footer">
         <em class="label">Select a favicon</em>
         <div class="ctrls">
-          <a class="btn ${selectedFavicon ? '' : 'disabled'} success" onclick=${onClickSelect}>Save</a>
+          <a disabled="${selectedFavicon ? 'false' : 'true'}" class="btn ${selectedFavicon ? '' : 'disabled'} primary" onclick=${onClickSelect}>Save</a>
         </div>
       </div>
     </div>
