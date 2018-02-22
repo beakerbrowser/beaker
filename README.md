@@ -1,6 +1,7 @@
 Beaker Browser
 ======
 [![Backers on Open Collective](https://opencollective.com/beaker/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/beaker/sponsors/badge.svg)](#sponsors)
+[![Help Contribute to Open Source](https://www.codetriage.com/beakerbrowser/beaker/badges/users.svg)](https://www.codetriage.com/beakerbrowser/beaker)
 
 ![logo.png](build/icons/256x256.png)
 
