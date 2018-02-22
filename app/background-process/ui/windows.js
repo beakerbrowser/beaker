@@ -201,7 +201,7 @@ function windowWithinBounds (windowState, bounds) {
 function userWantsToRestoreSession () {
   let answer = dialog.showMessageBox({
     type: 'question',
-    message: 'Sorry! It Looks Like Beaker Crashed',
+    message: 'Sorry! It looks like Beaker crashed',
     detail: 'Would you like to restore your previous browsing session?',
     buttons: [ 'Restore Session', 'Cancel' ],
     defaultId: 0,
