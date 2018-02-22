@@ -7,6 +7,9 @@ import {join as joinPath} from 'path'
 import _get from 'lodash.get'
 import {FSArchive, FSArchiveFolder, FSArchiveFile, FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import parseDatURL from 'parse-dat-url'
+import * as contextMenu from '../context-menu'
+import * as contextInput from '../context-input'
+import * as toast from '../toast'
 import toggleable from '../toggleable'
 import renderArchiveHistory from '../archive-history'
 import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
@@ -213,6 +216,7 @@ function rContainer (filesBrowser, node, depth) {
         class="item folder"
         title=${node.name}
         onclick=${e => onClickNode(e, filesBrowser, node)}
+        oncontextmenu=${e => onContextmenuNode(e, filesBrowser, node)}
       >
         <i class="fa fa-folder"></i>
         <div class="name-container"><div class="name">${node.name}</div></div>
@@ -230,6 +234,7 @@ function rFile (filesBrowser, node, depth) {
       class="item file"
       title=${node.name}
       onclick=${e => onClickNode(e, filesBrowser, node)}
+      oncontextmenu=${e => onContextmenuNode(e, filesBrowser, node)}
     >
       <i class="fa fa-file-text-o"></i>
       <div class="name-container"><div class="name">${node.name}</div></div>
@@ -261,8 +266,58 @@ function onClickNode (e, filesBrowser, node) {
   filesBrowser.setCurrentSource(node)
 }
 
-async function emitAddFile (src, dst) {
+function onContextmenuNode (e, filesBrowser, node) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  contextMenu.create({
+    x: e.clientX,
+    y: e.clientY,
+    items: [
+      {icon: 'external-link', label: `Open ${node.isContainer ? 'folder' : 'file'} in new tab`, click: () => window.open(node.url)},
+      {icon: 'link', label: 'Copy URL', click: () => {
+        writeToClipboard(node.url)
+        toast.create('URL copied to clipboard')
+      }},
+      {icon: 'i-cursor', label: 'Rename', click: async () => {
+        let newName = await contextInput.create({
+          x: e.clientX,
+          y: e.clientY,
+          label: 'Name',
+          value: node.name,
+          action: 'Rename',
+          postRender () {
+            const i = node.name.lastIndexOf('.')
+            if (i !== 0 && i !== -1) {
+              // select up to the file-extension
+              const input = document.querySelector('.context-input input')
+              input.setSelectionRange(0, node.name.lastIndexOf('.'))
+            }
+          }
+        })
+        if (newName) {
+          emitRenameFile(node._path, newName)
+        }
+      }},
+      {icon: 'trash', label: 'Delete', click: () => {
+        if (confirm(`Are you sure you want to delete ${node.name}?`)) {
+          emitDeleteFile(node._path, node.isContainer)
+        }
+      }}
+    ]
+  })
+}
+
+function emitAddFile (src, dst) {
   document.body.dispatchEvent(new CustomEvent('custom-add-file', {detail: {src, dst}}))
+}
+
+function emitRenameFile (path, newName) {
+  document.body.dispatchEvent(new CustomEvent('custom-rename-file', {detail: {path, newName}}))
+}
+
+function emitDeleteFile (path, isFolder) {
+  document.body.dispatchEvent(new CustomEvent('custom-delete-file', {detail: {path, isFolder}}))
 }
 
 async function onAddFiles (e, node, filesOnly) {

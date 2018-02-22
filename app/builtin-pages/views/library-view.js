@@ -102,6 +102,8 @@ async function setup () {
     archive.progress.addEventListener('changed', render)
     document.body.addEventListener('click', onClickOutsideSettingsEditInput)
     document.body.addEventListener('custom-add-file', onAddFile)
+    document.body.addEventListener('custom-rename-file', onRenameFile)
+    document.body.addEventListener('custom-delete-file', onDeleteFile)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
     setupWorkspaceListeners()
 
@@ -1057,6 +1059,7 @@ async function onClickChangeHeaderTitle (e) {
   let res = await contextInput.create({
     x: rect.left - 18,
     y: rect.bottom + 8,
+    withTriangle: true,
     label: 'Title',
     value: archive.info.title,
     action: 'Save'
@@ -1244,7 +1247,7 @@ async function onChangeWorkspaceDirectory () {
 
   // get an available path for a directory
   let defaultPath
-  if (workspaceInfo.localFilesPath) {
+  if (workspaceInfo && workspaceInfo.localFilesPath) {
     defaultPath = workspaceInfo.localFilesPath
   } else {
     let basePath = await beaker.browser.getSetting('workspace_default_path')
@@ -1304,6 +1307,34 @@ async function onAddFile (e) {
   const res = await DatArchive.importFromFilesystem({src, dst, ignore: ['dat.json'], inplaceImport: false})
   if (workspaceInfo && workspaceInfo.name) {
     await beaker.workspaces.revert(0, workspaceInfo.name, {paths: res.addedFiles})
+  }
+}
+
+async function onRenameFile (e) {
+  try {
+    const {path, newName} = e.detail
+    const to = setTimeout(() => toast.create('Renaming...'), 500) // if it takes a while, toast
+    const newPath = path.split('/').slice(0, -1).concat(newName).join('/')
+    await archive.rename(path, newPath)
+    clearTimeout(to)
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+  }
+}
+
+async function onDeleteFile (e) {
+  try {
+    const {path, isFolder} = e.detail
+    const to = setTimeout(() => toast.create('Deleting...'), 500) // if it takes a while, toast
+    if (isFolder) {
+      await archive.rmdir(path, {recursive: true})
+    } else {
+      await archive.unlink(path)
+    }
+    clearTimeout(to)
+    toast.create(`Deleted ${path}`)
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
   }
 }
 

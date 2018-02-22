@@ -4,34 +4,49 @@ import * as contextMenu from './context-menu'
 // exported api
 // =
 
-// create a new favicon picker
-// - returns a promise that will resolve to undefined when the menu goes away
+// create a new context input
+// - returns a promise that will resolve to the given value
 // - uses the context menu code
 // - example usage:
 /*
 create({
-  // where to put the picker
+  // where to put the input
   x: e.clientX,
   y: e.clientY,
 
-  // method called with selection
-  onSelect (imageData) {
-    // write imageData to favicon.png
+  // input placeholder
+  label: 'My input',
+
+  // default value
+  value: 'Foo',
+
+  // button label
+  action: 'Go!',
+
+  // use triangle
+  withTriangle: true,
+
+  // post-render trigger
+  postRender () {
+    // do stuff
   }
 }
 */
 export function create (opts) {
-  const {x, y, label, value, action} = opts
+  let {x, y, label, value, action, withTriangle, postRender} = opts
+  value = value || ''
+  label = label || ''
+  action = action || 'Submit'
 
   // create context menu
   const p = contextMenu.create({
     render () {
       return yo`
         <div class="context-menu context-input dropdown" style="left: ${x}px; top: ${y}px">
-          <div class="dropdown-items with-triangle left">
+          <div class="dropdown-items ${withTriangle ? 'with-triangle' : ''} left">
             <form onsubmit=${onSubmit}>
               <input type="text" placeholder=${label} name="in" value=${value} />
-              <button type="submit" class="btn primary">${action || 'Submit'}</button>
+              <button type="submit" class="btn primary">${action}</button>
             </form>
           </div>
         </div>
@@ -41,6 +56,7 @@ export function create (opts) {
 
   // focus on the input
   document.querySelector('.context-input input').select()
+  if (postRender) postRender()
 
   return p
 }
