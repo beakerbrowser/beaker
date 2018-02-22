@@ -116,13 +116,14 @@ function rActions (filesBrowser, currentSource) {
 }
 
 function rBreadcrumbs (filesBrowser, currentSource) {
+  const path = filesBrowser.getCurrentSourcePath()
   return yo`
     <div class="breadcrumbs">
       <div class="breadcrumb root" onclick=${e => onClickNode(e, filesBrowser, filesBrowser.root)}>
-        .
+        ${path.length ? yo`<i class="fa fa-level-up fa-flip-horizontal"></i>` : '.'}
       </div>
 
-      ${filesBrowser.getCurrentSourcePath().map(node => rBreadcrumb(filesBrowser, node))}
+      ${path.map(node => rBreadcrumb(filesBrowser, node))}
     </div>`
 }
 
