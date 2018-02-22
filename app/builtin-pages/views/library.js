@@ -214,7 +214,10 @@ function renderRecent (a) {
           ${shortenHash(a.url)}
         </span>
 
-        <button class="btn plain">
+        <button
+          class="btn plain"
+          onclick=${e => onArchiveContextMenu(e, a, true)}
+        >
           <i class="fa fa-ellipsis-v"></i>
         </button>
       </div>
@@ -443,6 +446,7 @@ async function onRestore (e, archive) {
 
 function onArchiveContextMenu (e, archive, isRecent) {
   e.preventDefault()
+  e.stopPropagation()
   let items = [
     {icon: 'external-link', label: 'Open site in new tab', click: () => window.open(archive.url) },
     {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url) },
