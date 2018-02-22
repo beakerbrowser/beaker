@@ -43,6 +43,14 @@ select {
     border: 1px solid fadeout(@color-link, 20%);
     box-shadow: 0 0 0 2px fadeout(@color-link, 80%);
   }
+
+  &.error {
+    border: 1px solid fadeout(shade(@red, 18%), 25%);
+
+    &:focus {
+      box-shadow: 0 0 0 2px fadeout(shade(@red, 20%), 85%);
+    }
+  }
 }
 
 // inline text input
