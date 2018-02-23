@@ -457,7 +457,7 @@ function renderReadmeHint () {
           Add
         </button>
 
-        <a class="learn-more-link" href="https://en.wikipedia.org/wiki/README" target="_blank">What's a README?</a>
+        <a class="learn-more-link" href="https://en.wikipedia.org/wiki/README" target="_blank">What${"'"}s a README?</a>
       </div>
     </div>`
 }
@@ -490,7 +490,7 @@ function renderRevisionsOverview () {
 function renderSetupChecklist () {
   const hasTitle = _get(archive, 'info.title').trim()
   const hasWorkspaceDirectory = workspaceInfo && workspaceInfo.localFilesPath
-  const hasFavicon = false // TODO
+  const hasFavicon = isFaviconSet
 
   if (hasTitle && hasWorkspaceDirectory && hasFavicon) return ''
 
@@ -528,7 +528,7 @@ function renderSetupChecklist () {
           </h3>
 
           <p class="description">
-            Choose an image to use as this project's favicon.
+            Choose an image to use as this project${"'"}s favicon.
           </p>
 
           <div class="actions">
@@ -537,7 +537,7 @@ function renderSetupChecklist () {
             </button>
 
             <a class="learn-more-link" href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/The_head_metadata_in_HTML#Adding_custom_icons_to_your_site" target="_blank">
-              What's a favicon?
+              What${"'"}s a favicon?
             </a>
           </div>
         </div>
@@ -653,7 +653,7 @@ function renderSettingsView () {
                     Change favicon
                   </button>
                   <a class="learn-more-link" href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/The_head_metadata_in_HTML#Adding_custom_icons_to_your_site" target="_blank">
-                    What's a favicon?
+                    What${"'"}s a favicon?
                   </a>
                 </p>`
               : yo`<img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}"/>`
@@ -676,7 +676,7 @@ function renderSettingsView () {
                   ${workspaceInfo.localFilesPath
                     ? yo`
                       <p>
-                        This project's files are saved on your computer at
+                        This project${"'"}s files are saved on your computer at
                         <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
                           ${workspaceInfo.localFilesPath}
                         </span>
@@ -754,7 +754,7 @@ function renderSettingsView () {
                     <p>
                       Find the source code for this project at <a href=${archive.info.repository}>${archive.info.repository}</a>.
                     </p>`
-                  : yo`<em class="empty">This project's author has not set a Git repository.</em>`
+                  : yo`<em class="empty">This project${"'"}s author has not set a Git repository.</em>`
                 }
               `
             }
@@ -868,7 +868,7 @@ function renderNetworkView () {
             <div class="hint">
               <p>
                 <i class="fa fa-heart-o"></i>
-                <strong>Give back!</strong> Seed this project's files to help keep them online.
+                <strong>Give back!</strong> Seed this project${"'"}s files to help keep them online.
               </p>
 
               <button class="btn" onclick=${onToggleSeeding}>
@@ -885,7 +885,7 @@ function renderNetworkView () {
             <div class="hint">
               <p>
                 <i class="fa fa-signal"></i>
-                <strong>Keep your files online.</strong> Share this project's URL with friends, or with a public peer service like <a href="https://hashbase.io">Hashbase</a>.
+                <strong>Keep your files online.</strong> Share this project${"'"}s URL with friends, or with a public peer service like <a href="https://hashbase.io">Hashbase</a>.
               </p>
 
               <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
