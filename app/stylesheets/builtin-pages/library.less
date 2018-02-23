@@ -195,31 +195,33 @@
       width: 26px;
       height: 26px;
       padding: 5px;
-      margin-right: 3px;
       border-radius: 4px;
 
       &.unset {
-        margin-right: 7px;
-        border: 1px dashed #999;
-        padding: 4px;
+        border: 1px dashed @color-text--muted;
+        padding: 0;
+        text-align: center;
       }
 
       &.editable {
         cursor: pointer;
+
         * {
           cursor: pointer;
         }
+
         &:hover {
           background: #eee;
         }
       }
 
       i {
-        color: #aaa;
+        height: 26px;
+        line-height: 26px;
+        vertical-align: middle;
+        color: rgba(0,0,0,.4);
         position: relative;
-        left: 4px;
-        top: -4px;
-        font-size: 10px;
+        font-size: 11px;
       }
 
       img {
