@@ -825,55 +825,88 @@ function renderNetworkView () {
   return yo`
     <div class="container">
       <div class="view network">
-        <div class="section">
-          <div class="module">
-            <h2 class="module-heading">Network overview</h2>
+        <div class="module">
+          <h2 class="module-heading">Network overview</h2>
 
-            <div class="module-content">
-              <h3 class="subtitle-heading">Download status</h3>
+          <div class="module-content">
+            <h3 class="subtitle-heading">Download status</h3>
 
-              <progress value=${progress.current} max="100">
-                ${progress.current}
-              </progress>
+            <progress value=${progress.current} max="100">
+              ${progress.current}
+            </progress>
 
-              <div class="download-status">
-                <div class="progress-ui ${progressCls}">
-                  <div style="width: ${progressPercentage}" class="completed">
-                    ${progressPercentage}
-                  </div>
-                  <div class="label">${progressLabel}</div>
+            <div class="download-status">
+              <div class="progress-ui ${progressCls}">
+                <div style="width: ${progressPercentage}" class="completed">
+                  ${progressPercentage}
                 </div>
-
-                <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
-                  <i class="fa fa-${seedingIcon}"></i>
-                </button>
+                <div class="label">${progressLabel}</div>
               </div>
 
-              <h3 class="subtitle-heading">Network activity (last hour)</h3>
-              ${renderPeerHistoryGraph(archive.info)}
+              <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
+                <i class="fa fa-${seedingIcon}"></i>
+              </button>
             </div>
 
-            <div class="module-footer two">
-              <div>
-                ${downloadedBytes !== archive.info.size
-                  ? yo`
-                    <div class="value">
-                      ${prettyBytes(downloadedBytes)} / ${prettyBytes(archive.info.size)}
-                    </div>`
-                  : yo`
-                    <div class="value">
-                      ${prettyBytes(downloadedBytes)}
-                    </div>`
-                }
-                <div class="label">saved to your device</div>
-              </div>
+            <h3 class="subtitle-heading">Network activity (last hour)</h3>
+            ${renderPeerHistoryGraph(archive.info)}
+          </div>
 
-              <div>
-                <div class="value">${archive.info.peers}</div>
-                <div class="label">${pluralize(archive.info.peers, 'active peer')}</div>
-              </div>
+          <div class="module-footer two">
+            <div>
+              ${downloadedBytes !== archive.info.size
+                ? yo`
+                  <div class="value">
+                    ${prettyBytes(downloadedBytes)} / ${prettyBytes(archive.info.size)}
+                  </div>`
+                : yo`
+                  <div class="value">
+                    ${prettyBytes(downloadedBytes)}
+                  </div>`
+              }
+              <div class="label">saved to your device</div>
+            </div>
+
+            <div>
+              <div class="value">${archive.info.peers}</div>
+              <div class="label">${pluralize(archive.info.peers, 'active peer')}</div>
             </div>
           </div>
+        </div>
+
+        ${!archive.info.isOwner && !(archive.info.userSettings.networked && archive.info.userSettings.isSaved)
+          ? yo`
+            <div class="hint">
+              <p>
+                <i class="fa fa-heart-o"></i>
+                <strong>Give back!</strong> Seed this project's files to help keep them online.
+              </p>
+
+              <button class="btn" onclick=${onToggleSeeding}>
+                Seed files
+              </button>
+
+              <a href="" target="_blank" class="learn-more-link">Learn more</a>
+            </div>`
+          : ''
+        }
+
+        ${archive.info.isOwner
+          ? yo`
+            <div class="hint">
+              <p>
+                <i class="fa fa-signal"></i>
+                <strong>Keep your files online.</strong> Share this project's URL with friends, or with a public peer service like <a href="https://hashbase.io">Hashbase</a>.
+              </p>
+
+              <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
+                Copy URL
+              </button>
+
+              <a href="" target="_blank" class="learn-more-link">Learn more</a>
+            </div>`
+          : ''
+        }
       </div>
     </div>
   `
