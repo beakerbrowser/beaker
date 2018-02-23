@@ -378,10 +378,7 @@ function renderFooter () {
           Save to your Library
         </button>`
     } else if (_get(archive, 'info.isOwner') && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
-      secondaryAction = yo`
-        <em class="path" onclick=${onChangeWorkspaceDirectory}>
-          Set local files directory
-        </em>`
+      secondaryAction = ''
     } else {
       secondaryAction = yo`<em>Read-only</em>`
     }
@@ -390,13 +387,13 @@ function renderFooter () {
   return yo`
     <footer>
       <div class="container">
-        <div class="workspace-info">${secondaryAction}</div>
-
         <div class="metadata">
-          <span>${_get(archive, 'info.peers', 0)} ${pluralize(_get(archive, 'info.peers', 0), 'peer')}</span>
-          <span class="separator">―</span>
           <span>${prettyBytes(_get(archive, 'info.size', 0))}</span>
+          <span class="separator">―</span>
+          <span>${_get(archive, 'info.peers', 0)} ${pluralize(_get(archive, 'info.peers', 0), 'peer')}</span>
         </div>
+
+        <div class="workspace-info">${secondaryAction}</div>
 
         ${primaryAction}
       </div>
@@ -1113,8 +1110,8 @@ function renderMenu () {
         ${workspaceInfo
           ? yo`
             <div class="dropdown-item" onclick=${onChangeWorkspaceDirectory}>
-              <i class="fa fa-folder-open-o"></i>
-              ${workspaceInfo.localFilesPath ? 'Change' : 'Set'} local path
+              <i class="fa fa-folder-o"></i>
+              ${workspaceInfo.localFilesPath ? 'Change' : 'Set'} workspace directory
             </div>`
           : ''
         }
@@ -1145,13 +1142,13 @@ function renderEditButton () {
   if (workspaceInfo && workspaceInfo.localFilesPath) {
     return yo`
       <button class="btn primary nofocus" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-        Edit
+        Open folder
       </button>
     `
   } else if (_get(archive, 'info.isOwner')) {
     return yo`
       <button class="btn primary nofocus" onclick=${onChangeWorkspaceDirectory}>
-        Edit
+        Open folder
       </button>`
   } else {
     return yo`
