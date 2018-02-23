@@ -59,7 +59,7 @@
     "normalize-url": "^1.9.1",
     "once": "^1.4.0",
     "parse-dat-url": "^3.0.1",
-    "pauls-dat-api": "^5.2.0",
+    "pauls-dat-api": "^6.0.0",
     "pauls-electron-rpc": "^4.1.2",
     "pify": "^2.3.0",
     "pretty-bytes": "^3.0.1",

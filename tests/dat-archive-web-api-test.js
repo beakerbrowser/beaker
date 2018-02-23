@@ -235,7 +235,7 @@ test('DatArchive.load', async t => {
   var res = await app.client.executeAsync((url, done) => {
     DatArchive.load(url).then(a => a.url, e => e.name).then(done, done)
   }, 'dat://badurl')
-  t.deepEqual(res.value, 'Error')
+  t.deepEqual(res.value, 'InvalidDomainName')
 })
 
 test('DatArchive.create prompt=false', async t => {
