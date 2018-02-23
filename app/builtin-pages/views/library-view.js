@@ -1129,7 +1129,7 @@ function renderMenu () {
 
         ${_get(archive, 'info.userSettings.isSaved')
           ? yo`
-            <div class="dropdown-item" onclick=${onDelete}>
+            <div class="dropdown-item" onclick=${onMoveToTrash}>
               <i class="fa fa-trash-o"></i>
               Move to Trash
             </div>`
@@ -1184,7 +1184,7 @@ async function onMakeCopy () {
   window.location = `beaker://library/${fork.url}`
 }
 
-async function onDelete () {
+async function onMoveToTrash () {
   const nickname = archive.info.title || archive.url
   if (confirm(`Move ${nickname} to Trash?`)) {
     try {
