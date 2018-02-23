@@ -150,6 +150,12 @@ async function loadWorkspaceRevisions () {
     workspaceInfo.revisions = []
   }
 
+  // load and expand the first three revisions
+  await Promise.all(workspaceInfo.revisions.slice(0, 3).map(async rev => {
+    await loadDiff(rev)
+    rev.isOpen = true
+  }))
+
   // count the number of additions, deletions, and modifications
   // TODO i don't know if this is necessary
   workspaceInfo.additions = workspaceInfo.revisions.filter(r => r.change === 'add')
@@ -884,7 +890,7 @@ function renderRevisionsView () {
   const renderRevisionContent = rev => {
     let el = ''
 
-    if (rev.isCollapsed) {
+    if (!rev.isOpen) {
       return ''
     } else if (rev.diff && rev.diff.invalidEncoding) {
       el = yo`
@@ -932,7 +938,7 @@ function renderRevisionsView () {
   const renderRevision = rev => (
     yo`
       <li class="revision" onclick=${() => onToggleRevisionCollapsed(rev)}>
-        <div class="revision-header ${rev.isCollapsed ? 'collapsed' : ''}">
+        <div class="revision-header ${rev.isOpen ? '' : 'collapsed'}">
           ${renderRevisionType(rev)}
 
           <code class="path">
@@ -982,7 +988,7 @@ function renderRevisionsView () {
             </div>
 
             <div class="btn plain">
-              <i class="fa fa-chevron-${rev.isCollapsed ? 'up' : 'down'}"></i>
+              <i class="fa fa-chevron-${rev.isOpen ? 'down' : 'up'}"></i>
             </div>
           </div>
         </div>
@@ -1283,7 +1289,7 @@ async function onAddToDatIgnore (e, node) {
 
 function onExpandAllRevisions () {
   workspaceInfo.revisions.forEach(rev => {
-    rev.isCollapsed = false
+    rev.isOpen = true
     rev.isLoadingDiff = true
   })
   render()
@@ -1295,7 +1301,7 @@ function onExpandAllRevisions () {
 }
 
 async function onToggleRevisionCollapsed (rev) {
-  rev.isCollapsed = !rev.isCollapsed
+  rev.isOpen = !rev.isOpen
 
   // fetch the diff it hasn't been loaded yet
   if (!rev.diff) {
