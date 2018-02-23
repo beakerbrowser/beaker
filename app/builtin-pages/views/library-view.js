@@ -468,7 +468,7 @@ function renderRevisionsOverview () {
   return yo`
     <div class="revisions-overview">
       ${workspaceInfo.revisions.slice(0, 4).map(renderRevisionType)}
-      <span class="label">
+      <span class="label" onclick=${e => onChangeView(e, 'revisions')}>
         ${workspaceInfo.revisions.length} ${pluralize(workspaceInfo.revisions.length, 'unpublished revision')}
       </span>
 
