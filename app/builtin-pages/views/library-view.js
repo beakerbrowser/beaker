@@ -237,11 +237,15 @@ async function loadReadme () {
     }
 
     // set up readme fileheader
-    readmeElement = yo`
-      <div class="file-preview-container readme">
-        ${readmeHeader}
-        ${readmeContent}
-      </div>`
+    if (readmeContent) {
+      readmeElement = yo`
+        <div class="file-preview-container readme">
+          ${readmeHeader}
+          ${readmeContent}
+        </div>`
+    } else if (!(readmeContent || node.parent)) {
+      readmeElement = renderReadmeHint()
+    }
   }
 
   render()
