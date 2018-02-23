@@ -160,8 +160,8 @@ function renderRow (row, i) {
               </div>
 
               <div class="dropdown-item" onclick=${() => onClickFork(row.url)}>
-                <i class="fa fa-code-fork"></i>
-                Fork
+                <i class="fa fa-clone"></i>
+                Make a copy
               </div>
             </div>
           </div>
@@ -450,7 +450,8 @@ function onArchiveContextMenu (e, archive, isRecent) {
   let items = [
     {icon: 'external-link', label: 'Open site in new tab', click: () => window.open(archive.url) },
     {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url) },
-    {icon: 'code-fork', label: 'Fork', click: () => onClickFork(archive.url) }
+    {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url) },
+    {icon: 'clone', label: 'Make a copy', click: () => onClickFork(archive.url) }
   ]
   if (archive.userSettings.isSaved) {
     items.push({icon: 'trash', label: 'Delete', click: () => onDelete(null, archive)})
