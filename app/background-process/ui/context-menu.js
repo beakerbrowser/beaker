@@ -225,7 +225,7 @@ export default function registerContextMenu () {
 
       // show menu
       var menu = Menu.buildFromTemplate(menuItems)
-      menu.popup(targetWindow, {async: true})
+      menu.popup({window: targetWindow})
     })
   })
 }
