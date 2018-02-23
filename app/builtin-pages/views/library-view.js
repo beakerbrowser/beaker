@@ -100,7 +100,6 @@ async function setup () {
     // wire up events
     window.addEventListener('popstate', onPopState)
     archive.progress.addEventListener('changed', render)
-    document.body.addEventListener('click', onClickOutsideSettingsEditInput)
     document.body.addEventListener('custom-add-file', onAddFile)
     document.body.addEventListener('custom-rename-file', onRenameFile)
     document.body.addEventListener('custom-delete-file', onDeleteFile)
@@ -449,52 +448,114 @@ function renderRevisionsOverview () {
   `
 }
 
-function renderSetupInfo () {
-  if (workspaceInfo) return ''
-
+function renderSetupChecklist () {
   return yo`
     <div class="setup-info">
-      <p>
+      <h2 class="lined-heading">
         <i class="fa fa-magic"></i>
-      </p>
+        Getting started
+      </h2>
 
-      <p>
-        Get started by setting up the local directory.
-      </p>
+      <div class="setup-checklist">
+        <div class="checklist-item">
+          <i class="fa fa-check"></i>
 
-      <p>
-        <button class="btn primary center">
-          Set up
-        </button>
-      </p>
+          <h3 class="label">
+            <i class="fa fa-code"></i>
+            Set workspace directory
+          </h3>
+
+          <p class="description">
+            Choose where to save this project's files.
+          </p>
+
+          <button class="btn" onclick=${onChangeWorkspaceDirectory}>
+            Set directory
+          </button>
+        </div>
+
+        <div class="checklist-item">
+          <h3 class="label">
+            <i class="fa fa-font"></i>
+            Set a title
+          </h3>
+
+          <p class="description">
+            Add a title to this project to help others find
+          </p>
+
+          <div class="actions">
+            <button class="btn">
+              Import files
+            </button>
+          </div>
+        </div>
+
+        <div class="checklist-item">
+          <i class="fa fa-check"></i>
+
+          <h3 class="label">
+            <i class="fa fa-file-image-o"></i>
+            Add favicon
+          </h3>
+
+          <p class="description">
+            Choose an image to use as this project's favicon.
+          </p>
+
+          <div class="actions">
+            <button class="btn">
+              Pick a favicon
+            </button>
+
+            <a class="learn-more-link" href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/The_head_metadata_in_HTML#Adding_custom_icons_to_your_site" target="_blank">
+              What's a favicon?
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   `
 }
 
 function renderSettingsView () {
-  const isOwner = archive.info.isOwner
+  const title = archive.info.title || ''
+  const editedTitle = settingsEditValues['title']
+  const isEditingTitle = editedTitle && title !== editedTitle
+
+  const description = archive.info.description || ''
+  const editedDescription = settingsEditValues['description']
+  const isEditingDescription = editedDescription && description !== editedDescription
+
+  const gitRepository = archive.info.repository
+  const editedGitRepository = settingsEditValues['repository']
+  const isEditingGitRepository = editedGitRepository && gitRepository !== editedGitRepository
+
+  const isOwner = _get(archive, 'info.isOwner')
 
   function renderEditable (key, value, placeholder='') {
+    const isOwner = _get(archive, 'info.isOwner')
     return isOwner && settingsEditValues[key] !== false
       ? yo`
-        <td>
+        <p>
           <input
             id="edit-${key}"
             onkeyup=${e => onKeyupSettingsEdit(e, key)}
             value=${settingsEditValues[key] || ''}
             type="text" />
-        </td>`
+          <button class="btn success">Save</button>
+        </p>`
       : yo`
-        <td>
+        <span>
           ${value ? value : (isOwner ? '' : yo`<em>--</em>`)}
           ${isOwner
             ? yo`
-              <button class="btn plain" onclick=${e => onClickSettingsEdit(e, key)}>
+              <button class="btn" onclick=${e => onClickSettingsEdit(e, key)}>
                 ${value ? '' : yo`<em>${placeholder}</em>`}
                 <i class="fa fa-pencil"></i>
               </button>`
             : ''}
-        </td>`
+        </span>`
   }
 
   let wsPath = workspaceInfo && workspaceInfo.localFilesPath
@@ -502,86 +563,163 @@ function renderSettingsView () {
   return yo`
     <div class="container">
       <div class="settings view">
-        <table>
-          <tr>
-            <td class="label">Title</td>
-            ${renderEditable('title', getSafeTitle())}
-          </tr>
 
-          <tr>
-            <td class="label">Description</td>
-            ${renderEditable('description', getSafeDesc(), 'Set description')}
-          </tr>
+        <div class="module">
+          <h2 class="module-heading">
+            <i class="fa fa-info-circle"></i>
+            General
+          </h2>
 
-          <tr>
-            <td class="label">Favicon</td>
-            <td>
-              ${_get(archive, 'info.isOwner')
-                ? yo`
-                  <div class="favicon-container editable" onclick=${onClickFavicon}>
-                    <img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
-                  </div>`
-                : yo`
-                  <div class="favicon-container">
-                    <img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
-                  </div>`
-              }
-            </td>
-          </tr>
+          <div class="module-content bordered">
 
-          <tr>
-            <td class="label">Size</td>
-            <td>${prettyBytes(archive.info.size)}</td>
-          </tr>
+            <h3>Title</h3>
+            ${isOwner
+              ? yo`
+                <form class="input-group">
+                  <input type="text" name="title" value=${editedTitle || title} onkeyup=${e => onKeyupSettingsEdit(e, 'title')} placeholder="Set title">
+                  <button disabled="${!isEditingTitle}" class="btn">
+                    Save
+                  </button>
+                </form>`
+              : yo`<p>${getSafeTitle()}</p>`
+            }
 
-          <tr>
-            <td class="label">Last Updated</td>
-            <td>${archive.info.mtime ? niceDate(archive.info.mtime) : ''}</td>
-          </tr>
+            <h3>Description</h3>
+            ${isOwner
+              ? yo`
+                <form class="input-group">
+                  <input type="text" name="description" value=${editedDescription || description} onkeyup=${e => onKeyupSettingsEdit(e, 'description')} placeholder="Set description"/>
+                  <button disabled="${!isEditingDescription}" class="btn">
+                    Save
+                  </button>
+                </form>`
+              : yo`<p>${getSafeDesc()}</p>`
+            }
 
-          <tr>
-            <td class="label">URL</td>
-            <td>
-              <a href=${archive.url} target="_blank">${archive.url}</a>
-            </td>
-          </tr>
+            <h3>Favicon</h3>
 
-          ${workspaceInfo
-            ? yo`
-              <tr>
-                <td class="label">Preview URL</td>
-                <td>
-                  <a href="workspace://${workspaceInfo.name}" target="_blank">
-                    workspace://${workspaceInfo.name}
+            ${isOwner
+              ? yo`
+                <p class="input-group">
+                  <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}"/>
+                  <button class="btn" onclick=${onClickFavicon}>
+                    Change favicon
+                  </button>
+                  <a class="learn-more-link" href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/The_head_metadata_in_HTML#Adding_custom_icons_to_your_site" target="_blank">
+                    What's a favicon?
                   </a>
-                </td>
-              </tr>`
-            : ''
-          }
+                </p>`
+              : yo`<img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}"/>`
+            }
+          </div>
+        </div>
 
-          ${workspaceInfo && workspaceInfo.localFilesPath
-            ? yo`
-              <tr>
-                <td class="label">Local path</td>
-                <td>
-                  <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-                    ${workspaceInfo.localFilesPath}
-                  </span>
-                </td>
-              </tr>`
-            : ''
-          }
+        ${isOwner && workspaceInfo
+          ? yo`
+            <div class="module">
+              <h2 class="module-heading">
+                <i class="fa fa-code"></i>
+                Workspace settings
+              </h2>
 
-          <tr>
-            <td class="label">Repository</td>
-            ${renderEditable('repository', renderRepositoryLink(), 'Set Git repository')}
-          </tr>
+              <div class="module-content bordered">
+                <div>
+                  <h3>Workspace directory</h3>
 
-          <tr>
-            <td class="label">Editable</td>
-            <td>${archive.info.isOwner ? 'Yes' : 'No'}</td>
-          </tr>
-        </table>
+                  ${workspaceInfo.localFilesPath
+                    ? yo`
+                      <p>
+                        This project's files are saved on your computer at
+                        <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>${workspaceInfo.localFilesPath}</span>.
+                        <button class="btn tooltip-container" data-tooltip="Copy path" onclick=${() => onCopy(workspaceInfo.localFilesPath)}>
+                          <i class="fa fa-clipboard"></i>
+                        </button>
+                      </p>`
+                    : yo`
+                      <p>
+                        Choose the directory where the files for this project will be saved.
+                      </p>`
+                  }
+
+                  <form class="input-group">
+                    <input type="text" value=${workspaceInfo.localFilesPath || ''} placeholder="Set workspace directory"/>
+                    <button class="btn">
+                      ${workspaceInfo.localFilesPath ? 'Change' : 'Set'} workspace directory
+                    </button>
+                  </form>
+
+                  <h3>Local preview URL</h3>
+
+                  <p>
+                    Preview unpublished changes at
+                    <a href="workspace://${workspaceInfo.name}">workspace://${workspaceInfo.name}</a>.
+                    <a href="workspace://${workspaceInfo.name}" class="btn tooltip-container" data-tooltip="Open in new tab" target="_blank">
+                      <i class="fa fa-external-link"></i>
+                    </a>
+                    <button class="btn tooltip-container" data-tooltip="Copy URL" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`)}>
+                      <i class="fa fa-clipboard"></i>
+                    </button>
+                  </p>
+
+
+                  <h3>Published URL</h3>
+
+                  <p>
+                    Published changes are shared on network at
+                    <a href=${archive.url} target="_blank">${shortenHash(archive.url)}</a>.
+                    <a href=${archive.url} class="btn tooltip-container" data-tooltip="Open in new tab" target="_blank">
+                      <i class="fa fa-external-link"></i>
+                    </a>
+                    <button class="btn tooltip-container" data-tooltip="Copy URL" onclick=${() => onCopy(archive.url)}>
+                      <i class="fa fa-clipboard"></i>
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>`
+          : ''
+        }
+
+        <div class="module">
+          <h2 class="module-heading">
+            <i class="fa fa-git"></i>
+            Git integration
+          </h2>
+
+          <div class="module-content bordered">
+            ${_get(archive, 'info.isOwner')
+              ? yo`
+                <div>
+                  <p>
+                    Set a <a href="https://git-scm.com/">Git</a> repository so people can find
+                    and contribute to the source code for this project.
+                  </p>
+
+                  <form class="input-group">
+                    <input type="text" name="repository" value=${editedGitRepository || gitRepository || ''} placeholder="Example: https://github.com/beakerbrowser/beaker.git"/>
+                    <button class="btn" disabled=${!isEditingGitRepository}>
+                      Save
+                    </button>
+                  </form>
+                </div>`
+              : yo`
+                ${archive.info.repository
+                  ? yo`
+                    <p>
+                      Find the source code for this project at <a href=${archive.info.repository}>${archive.info.repository}</a>.
+                    </p>`
+                  : yo`<em class="empty">This project's author has not set a Git repository.</em>`
+                }
+              `
+            }
+          </div>
+
+          <p class="hint">
+            <i class="fa fa-question-circle-o"></i>
+            New to Git? Check out <a href="https://try.github.io/levels/1/challenges/1">this tutorial</a> to
+            learn about Git and version control.
+          </p>
+        </div>
 
         ${''/* TODO archive.info.repository && wsPath
           ? yo`<div class="git-setup-commands">
@@ -1292,16 +1430,6 @@ async function onChangeWorkspaceDirectory () {
   render()
 }
 
-function onClickOutsideSettingsEditInput (e) {
-  if (e.target.tagName === 'INPUT') return
-
-  // stop editing settings
-  for (var k in settingsEditValues) {
-    settingsEditValues[k] = false
-  }
-  render()
-}
-
 async function onAddFile (e) {
   const {src, dst} = e.detail
   const res = await DatArchive.importFromFilesystem({src, dst, ignore: ['dat.json'], inplaceImport: false})
@@ -1338,51 +1466,25 @@ async function onDeleteFile (e) {
   }
 }
 
-async function onKeyupSettingsEdit (e, attr) {
+async function onKeyupSettingsEdit (e, name) {
   if (e.keyCode == 13) {
     // enter-key
-    let value = settingsEditValues[attr]
+    let value = settingsEditValues[name]
 
     // validate
-    if (attr === 'repository' && value && !IS_GIT_URL_REGEX.test(value)) {
+    if (name === 'repository' && value && !IS_GIT_URL_REGEX.test(value)) {
       toast.create('Repository must be a valid Git URL.', 'error', 3e3)
       e.target.classList.add('error')
       return
     }
 
     // assign
-    await setManifestValue(attr, value)
-    settingsEditValues[attr] = false
-    render()
-  } else if (e.keyCode == 27) {
-    // escape-key
-    settingsEditValues[attr] = false
+    await setManifestValue(name, value)
+    settingsEditValues[name] = false
     render()
   } else {
-    settingsEditValues[attr] = e.target.value
-  }
-}
-
-function onClickSettingsEdit (e, attr) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  // stop editing other settings
-  for (var k in settingsEditValues) {
-    settingsEditValues[k] = false
-  }
-
-  // update state
-  settingsEditValues[attr] = archive.info.manifest[attr]
-  render()
-
-  // focus the element
-  try {
-    let el = document.querySelector(`#edit-${attr}`)
-    el.focus()
-    el.select()
-  } catch (e) {
-    console.debug('Failed to focus the edit element', e)
+    settingsEditValues[name] = e.target.value
+    render()
   }
 }
 
@@ -1520,4 +1622,3 @@ function createToplevelError (err) {
       return err.toString()
   }
 }
-
