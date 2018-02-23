@@ -232,10 +232,27 @@
 
     .title {
       font-weight: 500;
+      margin: 0 5px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      &.editable {
+        cursor: text;
+        border: 1px solid transparent;
+        padding: 0 3px;
+        margin: 0 2px;
+
+        &:hover {
+          border-color: #ddd;
+          text-decoration: none;
+        }
+      }
     }
 
-    .title,
     .url {
+      margin-right: 5px;
 
       &:hover {
         text-decoration: underline;
@@ -245,10 +262,6 @@
     .url,
     .btn {
       color: rgba(0,0,0,.5);
-    }
-
-    .url {
-      margin: 0 8px;
     }
 
     .btn {

@@ -307,9 +307,9 @@ function renderHeader () {
         ${isOwner
           ? yo`
             <div class="tooltip-container" data-tooltip="Change title">
-              <a class="title" onclick=${onClickChangeHeaderTitle} href="#">
+              <button class="title editable nofocus" onclick=${onClickChangeHeaderTitle}>
                 ${getSafeTitle()}
-              </a>
+              </button>
             </div>`
           : yo`
             <a href=${archive.url} class="title" target="_blank">
