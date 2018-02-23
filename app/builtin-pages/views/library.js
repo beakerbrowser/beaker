@@ -448,13 +448,12 @@ function onArchiveContextMenu (e, archive, isRecent) {
   e.preventDefault()
   e.stopPropagation()
   let items = [
-    {icon: 'external-link', label: 'Open site in new tab', click: () => window.open(archive.url) },
     {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url) },
     {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url) },
     {icon: 'clone', label: 'Make a copy', click: () => onClickFork(archive.url) }
   ]
   if (archive.userSettings.isSaved) {
-    items.push({icon: 'trash', label: 'Delete', click: () => onDelete(null, archive)})
+    items.push({icon: 'trash', label: 'Move to Trash', click: () => onDelete(null, archive)})
   } else {
     items.push({icon: 'undo', label: 'Restore from trash', click: () => onRestore(null, archive)})
   }
