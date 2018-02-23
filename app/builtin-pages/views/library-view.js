@@ -1184,6 +1184,17 @@ async function onMakeCopy () {
   window.location = `beaker://library/${fork.url}`
 }
 
+async function addReadme () {
+   const readme = `# ${archive.info.title || 'Untitled'}\n\n${archive.info.description || ''}`
+  // write file to the dat then restore to the workspace
+  await archive.writeFile('/README.md', readme)
+  if (workspaceInfo && workspaceInfo.name) {
+    await beaker.workspaces.revert(0, workspaceInfo.name, {paths: ['/README.md']})
+  }
+  await loadReadme()
+  render()
+}
+
 async function onMoveToTrash () {
   const nickname = archive.info.title || archive.url
   if (confirm(`Move ${nickname} to Trash?`)) {
