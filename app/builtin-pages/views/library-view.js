@@ -485,6 +485,12 @@ function renderRevisionsOverview () {
 }
 
 function renderSetupChecklist () {
+  const hasTitle = _get(archive, 'info.title').trim()
+  const hasWorkspaceDirectory = workspaceInfo && workspaceInfo.localFilesPath
+  const hasFavicon = false // TODO
+
+  if (hasTitle && hasWorkspaceDirectory && hasFavicon) return ''
+
   return yo`
     <div class="setup-info">
       <h2 class="lined-heading">
@@ -494,11 +500,10 @@ function renderSetupChecklist () {
 
       <div class="setup-checklist">
         <div class="checklist-item">
-          <i class="fa fa-check"></i>
-
           <h3 class="label">
             <i class="fa fa-code"></i>
             Set workspace directory
+            ${hasWorkspaceDirectory ? yo`<i class="fa fa-check-circle"></i>` : ''}
           </h3>
 
           <p class="description">
@@ -514,6 +519,7 @@ function renderSetupChecklist () {
           <h3 class="label">
             <i class="fa fa-font"></i>
             Set a title
+            ${hasTitle ? yo`<i class="fa fa-check-circle"></i>` : ''}
           </h3>
 
           <p class="description">
@@ -522,17 +528,16 @@ function renderSetupChecklist () {
 
           <div class="actions">
             <button class="btn">
-              Import files
+              Set title
             </button>
           </div>
         </div>
 
         <div class="checklist-item">
-          <i class="fa fa-check"></i>
-
           <h3 class="label">
             <i class="fa fa-file-image-o"></i>
             Add favicon
+            ${hasFavicon ? yo`<i class="fa fa-check-circle"></i>` : ''}
           </h3>
 
           <p class="description">

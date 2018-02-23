@@ -260,15 +260,51 @@
 
   .setup-info {
     width: 100%;
-    max-width: 400px;
     margin: auto;
-    margin-bottom: 30px;
-    text-align: center;
-    color: rgba(0,0,0,.7);
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #eee;
 
-    i {
-      font-size: 48px;
-      color: #ddd;
+    .setup-checklist {
+      display: grid;
+      grid-gap: 30px;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .checklist-item {
+      &:extend(.flex);
+
+      i.fa-check-circle {
+        font-size: 15px;
+        margin-left: 2px;
+        color: shade(@green, 15%);
+      }
+
+      .label {
+        margin-bottom: 10px;
+        font-weight: 400;
+        font-size: inherit;
+
+        i {
+          margin-right: 2px;
+        }
+      }
+
+      .description {
+        color: rgba(0,0,0,.65);
+      }
+
+      .actions {
+        margin-top: auto;
+
+        a {
+          font-size: .75rem;
+        }
+
+        .btn {
+          margin-right: 5px;
+        }
+      }
     }
   }
 

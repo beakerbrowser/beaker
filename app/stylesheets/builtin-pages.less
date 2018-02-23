@@ -66,6 +66,35 @@
     }
   }
 
+  .lined-heading {
+    &:extend(.flex);
+    align-items: center;
+    font-size: 1.15rem;
+    margin-bottom: 25px;
+    font-weight: 400;
+
+    i {
+      margin-right: 7px;
+    }
+
+    &:before {
+      margin-right: 10px;
+    }
+
+    &:after {
+      margin-left: 10px;
+    }
+
+    &:before,
+    &:after {
+      display: block;
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #eee;
+    }
+  }
+
   .ll-row {
     &:extend(.flex);
     align-items: center;
