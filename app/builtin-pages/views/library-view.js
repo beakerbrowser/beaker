@@ -1384,6 +1384,7 @@ async function onPublishAllRevisions (e) {
   try {
     await beaker.workspaces.publish(0, workspaceInfo.name, {paths})
     activeView = 'files'
+    window.history.pushState('', {}, `beaker://library/${path}#files`)
     render()
     toast.create('Changes published.', 'success')
   } catch (e) {
