@@ -288,77 +288,95 @@ function renderSidebar () {
 }
 
 function renderHeader () {
+  let actions = ''
+  let searchContainer = ''
+
+  if (selectedArchives && selectedArchives.length) {
+    actions = yo`
+      <div class="actions">
+        <button class="btn transparent" onclick=${onDeselectAll}>
+          Deselect all
+        </button>
+
+        ${currentView === 'trash'
+          ? yo`
+            <button class="btn" onclick=${onRestoreSelected}>
+              Restore selected
+            </button>`
+          : yo`
+            <button class="btn warning" onclick=${onDeleteSelected}>
+              Move to Trash
+            </button>`
+        }
+      </div>`
+
+      searchContainer = ''
+  } else {
+    actions = yo`
+      <div class="actions">
+        <button class="btn primary">
+          <span>New</span>
+          <i class="fa fa-plus"></i>
+        </button>
+      </div>`
+
+    searchContainer = yo`
+      <div class="search-container">
+        <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your Library" type="text" class="search"/>
+
+        <span onclick=${onClearQuery} class="close-btn">
+          ${renderCloseIcon()}
+        </span>
+
+        <i class="fa fa-search"></i>
+
+        <div class="filter-btn">
+          ${toggleable(yo`
+            <div class="dropdown toggleable-container">
+              <button class="btn transparent toggleable">
+                <i class="fa fa-filter"></i>
+              </button>
+
+              <div class="dropdown-items filters with-triangle compact subtle-shadow right">
+                <div class="section">
+                  <div class="section-header">Sort by:</div>
+
+                  <div
+                    class="dropdown-item ${currentSort === 'alpha' ? 'active' : ''}"
+                    onclick=${() => onUpdateSort('alpha')}
+                  >
+                    ${currentSort === 'alpha' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    <span class="description">Alphabetical</span>
+                  </div>
+
+                  <div
+                    class="dropdown-item ${currentSort === 'recently-accessed' ? 'active' : ''}"
+                    onclick=${() => onUpdateSort('recently-accessed')}
+                  >
+                    ${currentSort === 'recently-accessed' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    <span class="description">Recently accessed</span>
+                  </div>
+
+                  <div
+                    class="dropdown-item ${currentSort === 'recently-updated' ? 'active' : ''}"
+                    onclick=${() => onUpdateSort('recently-updated')}
+                  >
+                    ${currentSort === 'recently-updated' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    <span class="description">Recently updated</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `)}
+        </div>
+      </div>`
+  }
+
   return yo`
     <div class="builtin-header fixed">
       ${renderBuiltinPagesNav('Library')}
-
-      ${selectedArchives && selectedArchives.length
-        ? yo`
-          <div class="actions">
-            <button class="btn transparent" onclick=${onDeselectAll}>
-              Deselect all
-            </button>
-
-            ${currentView === 'trash'
-              ? yo`
-                <button class="btn" onclick=${onRestoreSelected}>
-                  Restore selected
-                </button>`
-              : yo`
-                <button class="btn warning" onclick=${onDeleteSelected}>
-                  Move to Trash
-                </button>`
-            }
-          </div>`
-        : yo`
-          <div class="search-container">
-            <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your Library" type="text" class="search"/>
-            <span onclick=${onClearQuery} class="close-btn">
-              ${renderCloseIcon()}
-            </span>
-            <i class="fa fa-search"></i>
-
-            <div class="filter-btn">
-              ${toggleable(yo`
-                <div class="dropdown toggleable-container">
-                  <button class="btn transparent toggleable">
-                    <i class="fa fa-filter"></i>
-                  </button>
-
-                  <div class="dropdown-items filters with-triangle compact subtle-shadow right">
-                    <div class="section">
-                      <div class="section-header">Sort by:</div>
-
-                      <div
-                        class="dropdown-item ${currentSort === 'alpha' ? 'active' : ''}"
-                        onclick=${() => onUpdateSort('alpha')}
-                      >
-                        ${currentSort === 'alpha' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                        <span class="description">Alphabetical</span>
-                      </div>
-
-                      <div
-                        class="dropdown-item ${currentSort === 'recently-accessed' ? 'active' : ''}"
-                        onclick=${() => onUpdateSort('recently-accessed')}
-                      >
-                        ${currentSort === 'recently-accessed' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                        <span class="description">Recently accessed</span>
-                      </div>
-
-                      <div
-                        class="dropdown-item ${currentSort === 'recently-updated' ? 'active' : ''}"
-                        onclick=${() => onUpdateSort('recently-updated')}
-                      >
-                        ${currentSort === 'recently-updated' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                        <span class="description">Recently updated</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              `)}
-            </div>
-          </div>`
-      }
+      ${searchContainer}
+      ${actions}
     </div>`
 }
 
