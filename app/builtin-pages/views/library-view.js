@@ -1504,6 +1504,7 @@ async function onDeleteFile (e) {
     }
     clearTimeout(to)
     toast.create(`Deleted ${path}`)
+    render()
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }
