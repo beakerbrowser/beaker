@@ -716,13 +716,13 @@ function renderSettingsView () {
                 }
               `
             }
-          </div>
 
-          <p class="hint">
-            <i class="fa fa-question-circle-o"></i>
-            New to Git? Check out <a href="https://try.github.io/levels/1/challenges/1">this tutorial</a> to
-            learn about Git and version control.
-          </p>
+            <p class="hint">
+              <i class="fa fa-question-circle-o"></i>
+              New to Git? Check out <a href="https://try.github.io/levels/1/challenges/1">this tutorial</a> to
+              learn about Git and version control.
+            </p>
+          </div>
         </div>
 
         ${''/* TODO archive.info.repository && wsPath
