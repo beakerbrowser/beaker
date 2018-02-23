@@ -882,7 +882,7 @@ function renderRevisionsView () {
   const renderRevisionContent = rev => {
     let el = ''
 
-    if (!rev.isOpen) {
+    if (rev.isCollapsed) {
       return ''
     } else if (rev.diff && rev.diff.invalidEncoding) {
       el = yo`
@@ -930,7 +930,7 @@ function renderRevisionsView () {
   const renderRevision = rev => (
     yo`
       <li class="revision" onclick=${() => onToggleRevisionCollapsed(rev)}>
-        <div class="revision-header ${rev.isOpen ? '' : 'collapsed'}">
+        <div class="revision-header ${rev.isCollapsed ? 'collapsed' : ''}">
           ${renderRevisionType(rev)}
 
           <code class="path">
@@ -980,7 +980,7 @@ function renderRevisionsView () {
             </div>
 
             <div class="btn plain">
-              <i class="fa fa-chevron-${rev.isOpen ? 'down' : 'up'}"></i>
+              <i class="fa fa-chevron-${rev.isCollapsed ? 'up' : 'down'}"></i>
             </div>
           </div>
         </div>
@@ -1281,7 +1281,7 @@ async function onAddToDatIgnore (e, node) {
 
 function onExpandAllRevisions () {
   workspaceInfo.revisions.forEach(rev => {
-    rev.isOpen = true
+    rev.isCollapsed = false
     rev.isLoadingDiff = true
   })
   render()
@@ -1293,7 +1293,7 @@ function onExpandAllRevisions () {
 }
 
 async function onToggleRevisionCollapsed (rev) {
-  rev.isOpen = !rev.isOpen
+  rev.isCollapsed = !rev.isCollapsed
 
   // fetch the diff it hasn't been loaded yet
   if (!rev.diff) {
