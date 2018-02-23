@@ -504,25 +504,6 @@ function renderSetupChecklist () {
       <div class="setup-checklist">
         <div class="checklist-item">
           <h3 class="label">
-            <i class="fa fa-code"></i>
-            ${hasWorkspaceDirectory ? 'Workspace' : 'Set workspace'} directory
-            ${hasWorkspaceDirectory ? yo`<i class="fa fa-check-circle"></i>` : ''}
-          </h3>
-
-          <p class="description">
-            ${hasWorkspaceDirectory
-              ? `These files are saved at ${workspaceInfo.localFilesPath}.`
-              : 'Choose where to save this project\'s files.'
-            }
-          </p>
-
-          <button class="btn" onclick=${onChangeWorkspaceDirectory}>
-            ${hasWorkspaceDirectory ? 'Change' : 'Set'} directory
-          </button>
-        </div>
-
-        <div class="checklist-item">
-          <h3 class="label">
             <i class="fa fa-font"></i>
             Set a title
             ${hasTitle ? yo`<i class="fa fa-check-circle"></i>` : ''}
@@ -542,7 +523,7 @@ function renderSetupChecklist () {
         <div class="checklist-item">
           <h3 class="label">
             <i class="fa fa-file-image-o"></i>
-            Add favicon
+            Add a favicon
             ${hasFavicon ? yo`<i class="fa fa-check-circle"></i>` : ''}
           </h3>
 
@@ -559,6 +540,25 @@ function renderSetupChecklist () {
               What's a favicon?
             </a>
           </div>
+        </div>
+
+        <div class="checklist-item">
+          <h3 class="label">
+            <i class="fa fa-code"></i>
+            ${hasWorkspaceDirectory ? 'Workspace' : 'Set workspace'} directory
+            ${hasWorkspaceDirectory ? yo`<i class="fa fa-check-circle"></i>` : ''}
+          </h3>
+
+          <p class="description">
+            ${hasWorkspaceDirectory
+              ? `These files are saved at ${workspaceInfo.localFilesPath}.`
+              : 'Choose where to save this project\'s files.'
+            }
+          </p>
+
+          <button class="btn" onclick=${onChangeWorkspaceDirectory}>
+            ${hasWorkspaceDirectory ? 'Change' : 'Set'} directory
+          </button>
         </div>
       </div>
     </div>
