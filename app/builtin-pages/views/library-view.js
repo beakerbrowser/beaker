@@ -321,7 +321,7 @@ function renderHeader () {
           ${shortenHash(archive.url)}
         </a>
 
-        <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url)}>
+        <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url, '', true)}>
           <i class="fa fa-link"></i>
         </button>
 
@@ -678,7 +678,7 @@ function renderSettingsView () {
                           ${workspaceInfo.localFilesPath}
                         </span>
 
-                        <button class="btn plain tooltip-container" data-tooltip="Copy path" onclick=${() => onCopy(workspaceInfo.localFilesPath)}>
+                        <button class="btn plain tooltip-container" data-tooltip="Copy path" onclick=${() => onCopy(workspaceInfo.localFilesPath, 'Path copied to clipboard')}>
                           <i class="fa fa-clipboard"></i>
                         </button>
                       </p>`
@@ -701,7 +701,7 @@ function renderSettingsView () {
                     Preview unpublished changes at
                     <a href="workspace://${workspaceInfo.name}">workspace://${workspaceInfo.name}</a>
 
-                    <button class="btn plain tooltip-container" data-tooltip="Copy URL" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`)}>
+                    <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`, '',  true)}>
                       <i class="fa fa-clipboard"></i>
                     </button>
                   </p>
@@ -713,7 +713,7 @@ function renderSettingsView () {
                     Published changes are shared on network at
                     <a href=${archive.url} target="_blank">${shortenHash(archive.url)}</a>
 
-                    <button class="btn plain tooltip-container" data-tooltip="Copy URL" onclick=${() => onCopy(archive.url)}>
+                    <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url, '', true)}>
                       <i class="fa fa-clipboard"></i>
                     </button>
                   </p>
@@ -1395,16 +1395,20 @@ function onDownloadZip () {
   beaker.browser.downloadURL(`${archive.url}?download_as=zip`)
 }
 
-function onCopy (str) {
+function onCopy (str, successMessage = 'Copied to clipboard', tooltip = false) {
   if (archive.info) {
     writeToClipboard(str)
     copySuccess = true
     render()
 
+    if (!tooltip) {
+      toast.create(successMessage)
+    }
+
     window.setTimeout(() => {
       copySuccess = false
       render()
-    }, 2000)
+    }, 1300)
   }
 }
 
