@@ -47,9 +47,7 @@
   height: 100vh;
   background: #f7f7f7;
 
-  em.empty {
-    display: block;
-    padding: 15px;
+  > em.empty {
     color: rgba(0,0,0,.7);
   }
 
@@ -329,7 +327,7 @@
 .builtin-sidebar {
   position: fixed;
   top: 75px;
-  left: 30px;
+  left: 15px;
   width: 225px;
   overflow: auto;
 
@@ -514,8 +512,8 @@
       }
 
       .empty {
-        // color: rgba(0,0,0,.75);
         color: @color-text--muted;
+        padding: 0;
       }
 
       input {
