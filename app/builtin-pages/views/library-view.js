@@ -285,7 +285,7 @@ function renderHeader () {
           ? yo`
             <div
               class="favicon-container editable tooltip-container ${isFaviconSet ? '' : 'unset'}"
-              data-tooltip=${isFaviconSet ? 'Change favicon' : 'Set a favicon'}
+              data-tooltip=${isFaviconSet ? 'Change favicon' : 'Set favicon'}
               onclick=${onClickFavicon}
             >
               ${isFaviconSet
