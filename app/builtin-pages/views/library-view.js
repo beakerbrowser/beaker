@@ -420,12 +420,43 @@ function renderFilesView () {
   return yo`
     <div class="container">
       <div class="view files">
-        ${renderSetupInfo()}
+        ${archive.info.isOwner ? renderSetupChecklist() : ''}
         ${filesBrowser ? filesBrowser.render(renderRevisionsOverview()) : ''}
-        ${readmeElement ? readmeElement : ''}
+        ${readmeElement || ''}
+        ${!archive.info.isOwner ? renderMakeCopyHint() : ''}
       </div>
     </div>
   `
+}
+
+function renderMakeCopyHint () {
+  return yo`
+    <div class="hint">
+      <p>
+        <i class="fa fa-lightbulb-o"></i>
+        Want to edit these files? <button class="link" onclick=${onMakeCopy}>Make a copy!</button>
+      </p>
+    </div>`
+}
+
+function renderReadmeHint () {
+  if (!archive.info.isOwner) return ''
+
+  return yo`
+    <div class="hint">
+      <p>
+        <i class="fa fa-book"></i>
+        Add a README to help others learn about this project.
+      </p>
+
+      <div>
+        <button class="btn" onclick=${addReadme}>
+          Add
+        </button>
+
+        <a class="learn-more-link" href="https://en.wikipedia.org/wiki/README" target="_blank">What's a README?</a>
+      </div>
+    </div>`
 }
 
 function renderRevisionsOverview () {
@@ -433,20 +464,21 @@ function renderRevisionsOverview () {
 
   return yo`
     <div class="revisions-overview">
+      ${workspaceInfo.revisions.slice(0, 4).map(renderRevisionType)}
       <span class="label">
         ${workspaceInfo.revisions.length} ${pluralize(workspaceInfo.revisions.length, 'unpublished revision')}
       </span>
 
       <div class="buttons">
-        <a href="workspace://${workspaceInfo.name}" class="btn plain" target="_blank">
-          <i class="fa fa-external-link"></i>
-          <span>Live preview</span>
-        </a>
-
         <button class="btn plain" onclick=${e => onChangeView(e, 'revisions')}>
           <i class="fa fa-code"></i>
           <span>Review changes</span>
         </button>
+
+        <a href="workspace://${workspaceInfo.name}" class="btn plain" target="_blank">
+          <i class="fa fa-external-link"></i>
+          <span>Live preview</span>
+        </a>
       </div>
     </div>
   `
