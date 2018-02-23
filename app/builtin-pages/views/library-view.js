@@ -781,17 +781,6 @@ git reset origin/master</code></pre>
   `
 }
 
-function renderPreviewView () {
-  return yo`
-    <div class="view preview">
-      ${workspaceInfo && workspaceInfo.localFilesPath
-        ? yo`<iframe src="workspace://${workspaceInfo.name}"/>`
-        : 'Set up your workspace first'
-      }
-    </div>
-  `
-}
-
 function renderNetworkView () {
   let progressLabel = ''
   let progressCls = ''
