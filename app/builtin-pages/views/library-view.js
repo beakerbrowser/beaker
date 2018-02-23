@@ -666,8 +666,11 @@ function renderSettingsView () {
                     ? yo`
                       <p>
                         This project's files are saved on your computer at
-                        <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>${workspaceInfo.localFilesPath}</span>.
-                        <button class="btn tooltip-container" data-tooltip="Copy path" onclick=${() => onCopy(workspaceInfo.localFilesPath)}>
+                        <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+                          ${workspaceInfo.localFilesPath}
+                        </span>
+
+                        <button class="btn plain tooltip-container" data-tooltip="Copy path" onclick=${() => onCopy(workspaceInfo.localFilesPath)}>
                           <i class="fa fa-clipboard"></i>
                         </button>
                       </p>`
@@ -688,11 +691,9 @@ function renderSettingsView () {
 
                   <p>
                     Preview unpublished changes at
-                    <a href="workspace://${workspaceInfo.name}">workspace://${workspaceInfo.name}</a>.
-                    <a href="workspace://${workspaceInfo.name}" class="btn tooltip-container" data-tooltip="Open in new tab" target="_blank">
-                      <i class="fa fa-external-link"></i>
-                    </a>
-                    <button class="btn tooltip-container" data-tooltip="Copy URL" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`)}>
+                    <a href="workspace://${workspaceInfo.name}">workspace://${workspaceInfo.name}</a>
+
+                    <button class="btn plain tooltip-container" data-tooltip="Copy URL" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`)}>
                       <i class="fa fa-clipboard"></i>
                     </button>
                   </p>
@@ -702,11 +703,9 @@ function renderSettingsView () {
 
                   <p>
                     Published changes are shared on network at
-                    <a href=${archive.url} target="_blank">${shortenHash(archive.url)}</a>.
-                    <a href=${archive.url} class="btn tooltip-container" data-tooltip="Open in new tab" target="_blank">
-                      <i class="fa fa-external-link"></i>
-                    </a>
-                    <button class="btn tooltip-container" data-tooltip="Copy URL" onclick=${() => onCopy(archive.url)}>
+                    <a href=${archive.url} target="_blank">${shortenHash(archive.url)}</a>
+
+                    <button class="btn plain tooltip-container" data-tooltip="Copy URL" onclick=${() => onCopy(archive.url)}>
                       <i class="fa fa-clipboard"></i>
                     </button>
                   </p>
