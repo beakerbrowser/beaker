@@ -540,7 +540,7 @@ function renderSetupChecklist () {
           </p>
 
           <div class="actions">
-            <button class="btn">
+            <button class="btn" onclick=${onClickFavicon}>
               Pick a favicon
             </button>
 
