@@ -7,6 +7,8 @@ import {findParent} from '../../lib/fg/event-handlers'
 var resolve
 
 var x, y // where the menu goes
+var right // align edge to right instead of left
+var withTriangle
 var items // the current dropdown items
 
 // exported api
@@ -20,6 +22,12 @@ create({
   // where to put the menu
   x: e.clientX,
   y: e.clientY,
+
+  // align edge to right instead of left
+  right: true,
+
+  // use triangle
+  withTriangle: true,
 
   // menu items
   items: [
@@ -44,6 +52,8 @@ export function create (opts) {
   // extract attrs
   x = opts.x
   y = opts.y
+  right = opts.right || false
+  withTriangle = opts.withTriangle || false
   items = opts.items
 
   // render interface
@@ -75,7 +85,7 @@ export function destroy (value) {
 function render () {
   return yo`
     <div class="context-menu dropdown" style="left: ${x}px; top: ${y}px">
-      <div class="dropdown-items left">
+      <div class="dropdown-items ${right ? 'right' : 'left'} ${withTriangle ? 'with-triangle' : ''}">
         ${items.map(item => {
           if (item === '-') {
             return yo`<hr />`

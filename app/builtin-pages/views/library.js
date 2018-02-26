@@ -115,12 +115,13 @@ function renderRow (row, i) {
   const isSeeding = row.userSettings && row.userSettings.networked
   const isSaved = row.userSettings && row.userSettings.isSaved
   const isOwner = row.isOwner
+  const isMenuOpen = row.menuIsOpenIn === 'row'
 
   return yo`
     <a
       href="beaker://library/${row.url}"
-      class="ll-row archive ${row.checked ? 'selected' : ''}"
-      oncontextmenu=${e => onArchiveContextMenu(e, row, false)}
+      class="ll-row archive ${row.checked ? 'selected' : ''} ${isMenuOpen ? 'menu-open' : ''}"
+      oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
       <img class="favicon" src="beaker-favicon:${row.url}" />
 
@@ -147,25 +148,9 @@ function renderRow (row, i) {
             </button>`
         }
 
-        ${toggleable(yo`
-          <div class="dropdown toggleable-container">
-            <button class="btn plain toggleable">
-              <i class="fa fa-ellipsis-v"></i>
-            </button>
-
-            <div class="dropdown-items with-triangle right">
-              <div class="dropdown-item" onclick=${() => {e.stopPropagation(); onCopy(row.url); }}>
-                <i class="fa fa-link"></i>
-                Copy URL
-              </div>
-
-              <div class="dropdown-item" onclick=${() => onClickFork(row.url)}>
-                <i class="fa fa-clone"></i>
-                Make a copy
-              </div>
-            </div>
-          </div>
-        `)}
+        <button class="btn plain toggleable ${isMenuOpen ? 'pressed' : ''}" onclick=${e => onArchivePopupMenu(e, row, {xOffset: 7})}>
+          <i class="fa fa-ellipsis-v"></i>
+        </button>
       </div>
 
       <label class="checkbox">
@@ -196,12 +181,13 @@ function renderRecent (a) {
   const isSeeding = a.userSettings && a.userSettings.networked
   const isSaved = a.userSettings && a.userSettings.isSaved
   const isOwner = a.isOwner
+  const isMenuOpen = a.menuIsOpenIn === 'recent'
 
   return yo`
     <a
       href="beaker://library/${a.url}"
-      class="ll-row archive recent"
-      oncontextmenu=${e => onArchiveContextMenu(e, a, true)}
+      class="ll-row archive recent ${isMenuOpen ? 'menu-open' : ''}"
+      oncontextmenu=${e => onArchivePopupMenu(e, a, {isContext: true, isRecent: true})}
     >
       <img class="favicon" src="beaker-favicon:${a.url}" />
 
@@ -220,8 +206,8 @@ function renderRecent (a) {
         </span>
 
         <button
-          class="btn plain"
-          onclick=${e => onArchiveContextMenu(e, a, true)}
+          class="btn plain ${isMenuOpen ? 'pressed' : ''}"
+          onclick=${e => onArchivePopupMenu(e, a, {isRecent: true, xOffset: 12})}
         >
           <i class="fa fa-ellipsis-v"></i>
         </button>
@@ -467,9 +453,31 @@ async function onRestore (e, archive) {
   render()
 }
 
-function onArchiveContextMenu (e, archive, isRecent) {
+async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = {}) {
+  xOffset = xOffset || 0
   e.preventDefault()
   e.stopPropagation()
+  let x, y
+
+  if (isContext) {
+    // position off the mouse
+    x = e.clientX
+    y = e.clientY
+  } else {
+    // position off the element
+    let rect = e.currentTarget.getClientRects()[0]
+    x = rect.right
+    y = rect.bottom
+  }
+  x += xOffset
+
+  if (!isContext) {
+    // set the menu open (to keep button pressed while menu is open)
+    archive.menuIsOpenIn = (isRecent) ? 'recent' : 'row'
+    render()
+  }
+
+  // construct and show popup
   let items = [
     {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url) },
     {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url) },
@@ -483,7 +491,13 @@ function onArchiveContextMenu (e, archive, isRecent) {
   } else {
     items.push({icon: 'undo', label: 'Restore from trash', click: () => onRestore(null, archive)})
   }
-  contextMenu.create({x: e.clientX, y: e.clientY, items})
+  await contextMenu.create({x, y, items, right: !isContext, withTriangle: !isContext})
+
+  if (!isContext) {
+    // set the menu closed
+    archive.menuIsOpenIn = false
+    render()
+  }
 }
 
 async function removeFromRecent (archive) {

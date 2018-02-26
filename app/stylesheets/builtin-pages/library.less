@@ -17,8 +17,11 @@
 
   .ll-row.archive {
 
+    &.menu-open,
     &:hover {
 
+      .buttons,
+      .btn,
       .btn.trash,
       .btn.restore {
         opacity: 1;
@@ -35,6 +38,11 @@
       .restore {
         margin-right: 5px;
         opacity: 0;
+      }
+
+      .btn.plain:hover i,
+      .pressed i {
+        color: #333;
       }
     }
 
@@ -112,10 +120,13 @@
 
     .btn {
       position: absolute;
-      right: 7px;
-      top: 2px;
+      right: 5px;
+      top: 6px;
       opacity: 0;
       font-size: 15px;
+      padding: 0 5px;
+      line-height: 1;
+      height: 22px;
     }
 
     .title {
