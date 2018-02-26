@@ -188,12 +188,12 @@ async function loadDiff (revision) {
       return sum
     }, 0)
   } catch (e) {
-    console.error('Error running diff', e)
     if (e.invalidEncoding) {
       revision.diff = {invalidEncoding: true}
-    }
-    if (e.sourceTooLarge) {
+    } else if (e.sourceTooLarge) {
       revision.diff = {sourceTooLarge: true}
+    } else {
+      console.error('Error running diff', e)
     }
   }
 }
@@ -244,8 +244,9 @@ async function loadReadme () {
 
     // set up readme fileheader
     if (readmeContent) {
+      const id = `readme-${Date.now()}` // use an id to help yoyo figure out element ==
       readmeElement = yo`
-        <div class="file-preview-container readme">
+        <div id=${id} class="file-preview-container readme">
           ${readmeHeader}
           ${readmeContent}
         </div>`
@@ -1257,6 +1258,7 @@ async function onChangeView (e, view) {
     // setup files view
     await archiveFsRoot.readData({maxPreviewLength: 1e5})
     await filesBrowser.setCurrentSource(archiveFsRoot, {suppressEvent: true})
+    await loadReadme()
   }
 
   render()
