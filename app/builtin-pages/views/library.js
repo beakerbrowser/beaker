@@ -411,6 +411,16 @@ async function onDeleteSelected () {
   render()
 }
 
+async function onMakeCopy (e, archive) {
+  if (e) {
+    e.stopPropagation()
+    e.preventDefault()
+  }
+
+  const fork = await DatArchive.fork(archive.url, {prompt: true}).catch(() => {})
+  window.location = `beaker://library/${fork.url}`
+}
+
 async function onDelete (e, archive) {
   if (e) {
     e.stopPropagation()
@@ -481,7 +491,7 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
   let items = [
     {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url) },
     {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url) },
-    {icon: 'clone', label: 'Make a copy', click: () => onClickFork(archive.url) }
+    {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive) }
   ]
   if (isRecent) {
     items.push({icon: 'times', label: 'Remove from recent', click: () => removeFromRecent(archive)})
