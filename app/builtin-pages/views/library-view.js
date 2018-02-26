@@ -885,11 +885,21 @@ function renderNetworkView () {
 }
 
 function renderRevisionsView () {
-  if (!workspaceInfo || !workspaceInfo.revisions.length) {
+  if (!(workspaceInfo && workspaceInfo.localFilesPath)) return '' // TODO
+
+  if (!workspaceInfo.revisions.length) {
     return yo`
       <div class="container">
-        <div class="view">
-          <em>No unpublished revisions</em>
+        <div class="view revisions empty">
+          <i class="fa fa-check"></i>
+
+          <div class="label">All changes published</div>
+
+          <p>
+            The files in <span onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)} class="link">${workspaceInfo.localFilesPath}</span>
+            have been published to
+            <a href=${archive.url} target="_blank">${shortenHash(archive.url)}</a>.
+          </p>
         </div>
       </div>
     `
