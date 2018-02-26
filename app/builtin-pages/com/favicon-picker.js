@@ -93,29 +93,17 @@ function renderBody () {
   if (loadError) {
     return yo`<div class="text">${loadError.toString()}</div>`
   }
-  var builtinFaviconsGroups = toGroups(builtinFaviconsList.filter(applyFilter))
+  var iconNames = builtinFaviconsList.filter(applyFilter)
   return yo`
-    <div>
-      ${builtinFaviconsGroups.map(group => {
-        if (!group.icons.length) return ''
-        return [
-          yo`<div class="favicon-picker-heading">${group.label}</div>`,
-          yo`
-            <div class="favicon-picker-icons">
-              ${group.icons.map(name => {
-                return yo`
-                  <div
-                    class="icon ${selectedFavicon === name ? 'selected' : ''}"
-                    onclick=${() => onClickIcon(name)}
-                  >
-                    <img src="beaker://assets/favicons/${name}" />
-                  </div>
-                `
-              })}
-            </div>
-          `
-        ]
-      })}
+    <div class="favicon-picker-icons">
+      ${iconNames.map(name => yo`
+        <div
+          class="icon ${selectedFavicon === name ? 'selected' : ''}"
+          onclick=${() => onClickIcon(name)}
+        >
+          <img src="beaker://assets/favicons/${name}" />
+        </div>
+      `)}
     </div>
   `
 }
@@ -123,16 +111,6 @@ function renderBody () {
 function applyFilter (name) {
   if (!filter) return true
   return filter.test(name)
-}
-
-function toGroups (list) {
-  var groups = {}
-  list.forEach(name => {
-    let [groupId] = name.split('-')
-    groups[groupId] = groups[groupId] || {label: groupId, icons: []}
-    groups[groupId].icons.push(name)
-  })
-  return Object.values(groups)
 }
 
 // event handlers
