@@ -505,7 +505,7 @@ function renderRevisionsOverview () {
 
         <a href="workspace://${workspaceInfo.name}" class="btn plain" target="_blank">
           <i class="fa fa-external-link"></i>
-          <span>Live preview</span>
+          <span>Local preview</span>
         </a>
       </div>
     </div>
@@ -1086,7 +1086,7 @@ function renderRevisionsView () {
           }
 
           <a href="workspace://${workspaceInfo.name}" target="_blank" class="btn preview-btn">
-            <span>Live preview</span>
+            <span>Local preview</span>
             <i class="fa fa-external-link"></i>
           </a>
 
