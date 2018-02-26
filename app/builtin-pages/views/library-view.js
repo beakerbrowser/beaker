@@ -18,7 +18,7 @@ import * as faviconPicker from '../com/favicon-picker'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
 import {niceDate} from '../../lib/time'
-import {writeToClipboard} from '../../lib/fg/event-handlers'
+import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
 import {IS_GIT_URL_REGEX} from '../../lib/const'
 
@@ -103,6 +103,7 @@ async function setup () {
 
     // wire up events
     window.addEventListener('popstate', onPopState)
+    document.body.addEventListener('click', onClickAnywhere)
     archive.progress.addEventListener('changed', render)
     document.body.addEventListener('custom-add-file', onAddFile)
     document.body.addEventListener('custom-rename-file', onRenameFile)
@@ -1270,24 +1271,10 @@ async function onClickChangeHeaderTitle (e) {
   e.preventDefault()
   e.stopPropagation()
 
+  // start the inline edit flow
   headerEditValues.title = archive.info.title
   render()
   document.querySelector('input.title').select()
-
-  // // get new value
-  // let rect = e.currentTarget.getClientRects()[0]
-  // let res = await contextInput.create({
-  //   x: rect.left - 18,
-  //   y: rect.bottom + 8,
-  //   withTriangle: true,
-  //   label: 'Title',
-  //   value: archive.info.title,
-  //   action: 'Save'
-  // })
-  // if (res) {
-  //   await setManifestValue('title', res)
-  //   render()
-  // }
 }
 
 function onClickFavicon (e) {
@@ -1627,6 +1614,16 @@ function onNetworkChanged (e) {
       archive.info.peerHistory.push({ts: now, peers: e.details.peerCount})
     }
     render()
+  }
+}
+
+function onClickAnywhere (e) {
+  // abort header title inline edit
+  if (headerEditValues.title !== false) {
+    if (!findParent(e.target, 'title')) { // not a click in the input
+      headerEditValues.title = false
+      render()
+    }
   }
 }
 
