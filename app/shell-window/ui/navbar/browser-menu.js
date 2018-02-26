@@ -316,10 +316,8 @@ export class BrowserMenuNavbarBtn {
     this.submenu = ''
     this.updateActives()
 
-    let title = `My ${template || 'project'}`
-
     // create a new archive
-    const archive = await DatArchive.create({title, template, prompt: false})
+    const archive = await DatArchive.create({template, prompt: false})
     pages.setActive(pages.create('beaker://library/' + archive.url))
   }
 
