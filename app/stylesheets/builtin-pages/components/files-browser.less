@@ -14,16 +14,11 @@
   }
 
   .files-tree-view.empty {
-
-    .body {
-      border: 0;
-    }
   }
 
   .files-browser-header {
     &:extend(.flex);
     align-items: center;
-    margin-bottom: 10px;
 
     .version-badge {
       &:extend(.code-font);
@@ -38,6 +33,7 @@
 
     .actions {
       margin-left: auto;
+      margin-bottom: 10px;
       display: flex;
 
       & > * {
@@ -46,6 +42,43 @@
 
       .dropdown-items {
         width: 160px;
+      }
+    }
+  }
+
+  .revisions-overview {
+    &:extend(.flex);
+    align-items: center;
+    width: 100%;
+    padding: 3px 10px;
+    background: #fafafa;
+    border-radius: 2px 2px 0 0;
+    border: 1px solid #ddd;
+    border-bottom: 0;
+
+    .label {
+      margin-left: 5px;
+
+      &:hover {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    }
+
+    .revision-type {
+      margin-right: 2px;
+    }
+
+    .buttons {
+      margin-left: auto;
+    }
+
+    .btn.plain {
+      color: @color-text;
+      margin-left: 7px;
+
+      &:hover {
+        color: @blue;
       }
     }
   }

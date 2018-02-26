@@ -86,6 +86,7 @@ async function setup () {
 
     // fetch workspace info for this archive
     workspaceInfo = await beaker.workspaces.get(0, archive.info.url)
+    filesBrowser.setWorkspaceInfo(workspaceInfo)
     await loadWorkspaceRevisions()
 
     // check if the favicon is set
@@ -106,6 +107,7 @@ async function setup () {
     document.body.addEventListener('custom-add-file', onAddFile)
     document.body.addEventListener('custom-rename-file', onRenameFile)
     document.body.addEventListener('custom-delete-file', onDeleteFile)
+    document.body.addEventListener('custom-set-view', onChangeView)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
     setupWorkspaceListeners()
 
@@ -449,7 +451,7 @@ function renderFilesView () {
     <div class="container">
       <div class="view files">
         ${archive.info.isOwner ? renderSetupChecklist() : ''}
-        ${filesBrowser ? filesBrowser.render(renderRevisionsOverview()) : ''}
+        ${filesBrowser ? filesBrowser.render() : ''}
         ${readmeElement || ''}
         ${!archive.info.isOwner ? renderMakeCopyHint() : ''}
       </div>
@@ -485,31 +487,6 @@ function renderReadmeHint () {
         <a class="learn-more-link" href="https://en.wikipedia.org/wiki/README" target="_blank">What${"'"}s a README?</a>
       </div>
     </div>`
-}
-
-function renderRevisionsOverview () {
-  if (!workspaceInfo || !workspaceInfo.revisions.length) return ''
-
-  return yo`
-    <div class="revisions-overview">
-      ${workspaceInfo.revisions.slice(0, 4).map(renderRevisionType)}
-      <span class="label" onclick=${e => onChangeView(e, 'revisions')}>
-        ${workspaceInfo.revisions.length} ${pluralize(workspaceInfo.revisions.length, 'unpublished revision')}
-      </span>
-
-      <div class="buttons">
-        <button class="btn plain" onclick=${e => onChangeView(e, 'revisions')}>
-          <i class="fa fa-code"></i>
-          <span>Review changes</span>
-        </button>
-
-        <a href="workspace://${workspaceInfo.name}" class="btn plain" target="_blank">
-          <i class="fa fa-external-link"></i>
-          <span>Local preview</span>
-        </a>
-      </div>
-    </div>
-  `
 }
 
 function renderSetupChecklist () {
@@ -989,7 +966,7 @@ function renderRevisionsView () {
     yo`
       <li class="revision" onclick=${() => onToggleRevisionCollapsed(rev)}>
         <div class="revision-header ${rev.isOpen ? '' : 'collapsed'}">
-          ${renderRevisionType(rev)}
+          <div class="revision-type ${rev.change}"></div>
 
           <code class="path">
             ${rev.type === 'file' ? rev.path.slice(1) : rev.path}
@@ -1113,10 +1090,6 @@ function renderRevisionsView () {
       </div>
     </div>
   `
-}
-
-function renderRevisionType (rev) {
-  return yo`<div class="revision-type ${rev.change}"></div>`
 }
 
 function renderTabs () {
@@ -1275,10 +1248,15 @@ async function onChangeView (e, view) {
   e.stopPropagation()
 
   // update state
-  activeView = view
-  window.history.pushState('', {}, e.currentTarget.getAttribute('href'))
+  if (!view) {
+    activeView = e.detail.view
+    window.history.pushState('', {}, e.detail.href)
+  } else {
+    activeView = view
+    window.history.pushState('', {}, e.currentTarget.getAttribute('href'))
+  }
 
-  if (view === 'files' && archiveFsRoot) {
+  if (activeView === 'files' && archiveFsRoot) {
     // setup files view
     await archiveFsRoot.readData({maxPreviewLength: 1e5})
     await filesBrowser.setCurrentSource(archiveFsRoot, {suppressEvent: true})
@@ -1512,6 +1490,7 @@ async function onChangeWorkspaceDirectory () {
     try {
       if (!workspaceInfo) {
         workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
+        filesBrowser.setWorkspaceInfo(workspaceInfo)
       } else {
         await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath})
       }

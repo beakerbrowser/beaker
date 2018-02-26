@@ -7,25 +7,26 @@ import renderFilesFlatView from './files-browser/files-flat-view'
 // =
 
 export default class FilesBrowser {
-  constructor (root) {
+  constructor (root, workspaceInfo) {
     this.root = root
     this.currentSource = root
     this.currentSort = ['name', 'desc']
     this.selectedNodes = new Set() // set of nodes
     this.currentDragNode = null
+    this.workspaceInfo = workspaceInfo
     this.onSetCurrentSource = () => {} // v simple events solution
   }
 
   // method to render at a place in the page
   // eg yo`<div>${myFilesBrowser.render()}</div>`
-  render (header = null) {
+  render () {
     if (!this.root) {
       return yo`<div class="files-browser"></div>`
     }
 
     return yo`
       <div class="files-browser">
-        ${this.getCurrentSource() ? renderFilesFlatView(this, this.getCurrentSource(), header) : null}
+        ${this.getCurrentSource() ? renderFilesFlatView(this, this.getCurrentSource(), this.workspaceInfo) : null}
       </div>
     `
   }
@@ -114,6 +115,10 @@ export default class FilesBrowser {
       // then render
       this.rerender()
     }
+  }
+
+  setWorkspaceInfo (wi) {
+    this.workspaceInfo = wi
   }
 
   // sorting api

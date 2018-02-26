@@ -327,7 +327,6 @@
     .revision-type {
       width: 8px;
       height: 8px;
-      margin-right: 7px;
       margin-top: -.25px;
 
       &.add {
@@ -354,6 +353,10 @@
     padding: 0 10px;
     background: #fafafa;
     border-bottom: 1px solid #ddd;
+
+    .revision-type {
+      margin-right: 7px;
+    }
 
     .path {
       &:extend(.overflow-ellipsis);
@@ -479,41 +482,6 @@
 
   .view.files {
 
-    .revisions-overview {
-      &:extend(.flex);
-      align-items: center;
-      padding: 3px 10px;
-      background: #fafafa;
-      border-radius: 2px 2px 0 0;
-      border: 1px solid #ddd;
-      border-bottom: 0;
-
-      .label {
-        margin-left: 5px;
-
-        &:hover {
-          text-decoration: underline;
-          cursor: pointer;
-        }
-      }
-
-      .revision-type {
-        margin-right: 2px;
-      }
-
-      .buttons {
-        margin-left: auto;
-      }
-
-      .btn.plain {
-        color: @color-text;
-        margin-left: 7px;
-
-        &:hover {
-          color: @blue;
-        }
-      }
-    }
   }
 
   .view.revisions {

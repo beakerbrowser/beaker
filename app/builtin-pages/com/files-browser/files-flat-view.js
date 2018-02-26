@@ -20,13 +20,11 @@ import {DAT_VALID_PATH_REGEX, STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
 // exported api
 // =
 
-export default function render (filesBrowser, currentSource, header = null) {
+export default function render (filesBrowser, currentSource, workspaceInfo) {
   return yo`
     <div class="files-tree-view ${currentSource.isEmpty ? 'empty' : ''}">
 
-      ${rHeader(filesBrowser, currentSource)}
-
-      ${header || ''}
+      ${rHeader(filesBrowser, currentSource, workspaceInfo)}
 
       <div
         class="body"
@@ -45,12 +43,13 @@ export default function render (filesBrowser, currentSource, header = null) {
 // rendering
 // =
 
-function rHeader (filesBrowser, currentSource) {
+function rHeader (filesBrowser, currentSource, workspaceInfo) {
   return yo`
     <div class="files-browser-header">
       ${rBreadcrumbs(filesBrowser, currentSource)}
-      ${rVersion(filesBrowser, currentSource)}
       ${rActions(filesBrowser, currentSource)}
+      ${renderRevisionsOverview(workspaceInfo)}
+      ${rVersion(filesBrowser, currentSource)}
     </div>
   `
 }
@@ -69,6 +68,40 @@ function rVersion (filesBrowser, currentSource) {
     yo`<div class="version-badge badge green">v${version}</div>`,
     yo`<a class="jump-to-latest" href=${`beaker://library/${urlUnversioned}`}>Jump to latest</a>`
   ]
+}
+
+function renderRevisionsOverview (workspaceInfo) {
+  if (!workspaceInfo) return ''
+
+  const renderRevisionType = rev => yo`<div class="revision-type ${rev.change}"></div>`
+
+  return yo`
+    <div class="revisions-overview">
+      ${workspaceInfo.revisions.slice(0, 4).map(renderRevisionType)}
+      <span class="label" onclick=${() => emitSetView('revisions')}>
+        ${workspaceInfo.revisions && workspaceInfo.revisions.length
+          ? `${workspaceInfo.revisions.length} ${pluralize(workspaceInfo.revisions.length, 'unpublished revision')}`
+          : yo`<em>No unpublished revisions</em>`
+        }
+      </span>
+
+      <div class="buttons">
+        ${workspaceInfo.revisions && workspaceInfo.revisions.length
+          ? yo`
+            <button class="btn plain" onclick=${() => emitSetView('revisions')}>
+              <i class="fa fa-code"></i>
+              <span>Review changes</span>
+            </button>`
+          : ''
+        }
+
+        <a href="workspace://${workspaceInfo.name}" class="btn plain" target="_blank">
+          <i class="fa fa-external-link"></i>
+          <span>Local preview</span>
+        </a>
+      </div>
+    </div>
+  `
 }
 
 function rActions (filesBrowser, currentSource) {
@@ -319,6 +352,10 @@ function emitRenameFile (path, newName) {
 
 function emitDeleteFile (path, isFolder) {
   document.body.dispatchEvent(new CustomEvent('custom-delete-file', {detail: {path, isFolder}}))
+}
+
+function emitSetView (view) {
+  document.body.dispatchEvent(new CustomEvent('custom-set-view', {detail: {view, href: view}}))
 }
 
 async function onAddFiles (e, node, filesOnly) {
