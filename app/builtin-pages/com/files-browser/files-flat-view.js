@@ -84,9 +84,8 @@ function rActions (filesBrowser, currentSource) {
           <div class="dropdown-items right toggleable-open-container"></div>
         </div>
       `, renderOpenHistory)}
-      ${(currentSource.type === 'file')
-        ? ''
-        : window.OS_CAN_IMPORT_FOLDERS_AND_FILES
+      ${(currentSource.isEditable && currentSource.type !== 'file')
+        ? window.OS_CAN_IMPORT_FOLDERS_AND_FILES
           ? yo`
             <button onclick=${e => onAddFiles(e, currentSource, false)} class="btn">
               Add files
@@ -110,6 +109,7 @@ function rActions (filesBrowser, currentSource) {
               </div>
             </div>
           `)
+        : ''
       }
     </div>
   `
