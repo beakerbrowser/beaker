@@ -577,36 +577,11 @@ function renderSettingsView () {
   const editedDescription = settingsEditValues['description']
   const isEditingDescription = editedDescription && description !== editedDescription
 
-  const gitRepository = archive.info.repository
+  const gitRepository = archive.info.manifest.repository
   const editedGitRepository = settingsEditValues['repository']
   const isEditingGitRepository = editedGitRepository && gitRepository !== editedGitRepository
 
   const isOwner = _get(archive, 'info.isOwner')
-
-  function renderEditable (key, value, placeholder='') {
-    const isOwner = _get(archive, 'info.isOwner')
-    return isOwner && settingsEditValues[key] !== false
-      ? yo`
-        <p>
-          <input
-            id="edit-${key}"
-            onkeyup=${e => onKeyupSettingsEdit(e, key)}
-            value=${settingsEditValues[key] || ''}
-            type="text" />
-          <button class="btn success">Save</button>
-        </p>`
-      : yo`
-        <span>
-          ${value ? value : (isOwner ? '' : yo`<em>--</em>`)}
-          ${isOwner
-            ? yo`
-              <button class="btn" onclick=${e => onClickSettingsEdit(e, key)}>
-                ${value ? '' : yo`<em>${placeholder}</em>`}
-                <i class="fa fa-pencil"></i>
-              </button>`
-            : ''}
-        </span>`
-  }
 
   let wsPath = workspaceInfo && workspaceInfo.localFilesPath
   if (wsPath && wsPath.indexOf(' ') !== -1) wsPath = `"${wsPath}"`
@@ -627,7 +602,7 @@ function renderSettingsView () {
               ? yo`
                 <form class="input-group">
                   <input type="text" name="title" value=${editedTitle || title} onkeyup=${e => onKeyupSettingsEdit(e, 'title')} placeholder="Set title">
-                  <button disabled="${!isEditingTitle}" class="btn">
+                  <button disabled="${!isEditingTitle}" class="btn" onclick=${e => onSaveSettingsEdit(e, 'title')}>
                     Save
                   </button>
                 </form>`
@@ -639,7 +614,7 @@ function renderSettingsView () {
               ? yo`
                 <form class="input-group">
                   <input type="text" name="description" value=${editedDescription || description} onkeyup=${e => onKeyupSettingsEdit(e, 'description')} placeholder="Set description"/>
-                  <button disabled="${!isEditingDescription}" class="btn">
+                  <button disabled="${!isEditingDescription}" class="btn" onclick=${e => onSaveSettingsEdit(e, 'description')}>
                     Save
                   </button>
                 </form>`
@@ -745,8 +720,13 @@ function renderSettingsView () {
                   </p>
 
                   <form class="input-group">
-                    <input type="text" name="repository" value=${editedGitRepository || gitRepository || ''} placeholder="Example: https://github.com/beakerbrowser/beaker.git"/>
-                    <button class="btn" disabled=${!isEditingGitRepository}>
+                    <input
+                      type="text"
+                      name="repository"
+                      value=${editedGitRepository || gitRepository || ''}
+                      placeholder="Example: https://github.com/beakerbrowser/beaker.git"
+                      onkeyup=${e => onKeyupSettingsEdit(e, 'repository')} />
+                    <button class="btn" disabled=${!isEditingGitRepository} onclick=${e => onSaveSettingsEdit(e, 'repository')}>
                       Save
                     </button>
                   </form>
@@ -1556,26 +1536,31 @@ async function onKeyupHeaderEdit (e, name) {
   }
 }
 
-async function onKeyupSettingsEdit (e, name) {
-  if (e.keyCode == 13) {
-    // enter-key
-    let value = settingsEditValues[name]
+function onKeyupSettingsEdit (e, name) {
+  settingsEditValues[name] = e.target.value
+  render()
+}
 
-    // validate
-    if (name === 'repository' && value && !IS_GIT_URL_REGEX.test(value)) {
-      toast.create('Repository must be a valid Git URL.', 'error', 3e3)
-      e.target.classList.add('error')
-      return
-    }
+async function onSaveSettingsEdit (e, name) {
+  e.preventDefault()
+  e.stopPropagation()
 
-    // assign
-    await setManifestValue(name, value)
-    settingsEditValues[name] = false
-    render()
-  } else {
-    settingsEditValues[name] = e.target.value
-    render()
+  // validate
+  let value = e.target.form.querySelector('input').value
+  if (name === 'repository' && value && !IS_GIT_URL_REGEX.test(value)) {
+    toast.create('Repository must be a valid Git URL.', 'error', 3e3)
+    return
   }
+
+  // update
+  await setManifestValue(name, value)
+  toast.create('Saved')
+  settingsEditValues[name] = false
+  render()
+
+  // blur the input
+  try { document.querySelector('input:focus').blur() }
+  catch (e) { /* no input focused */ }
 }
 
 async function onFilesChanged () {
@@ -1683,6 +1668,7 @@ async function readViewStateFromUrl () {
 }
 
 async function setManifestValue (attr, value) {
+  value = value || ''
   let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
   await archive2.configure({[attr]: value})
   Object.assign(archive.info, {[attr]: value})
