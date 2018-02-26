@@ -1283,7 +1283,8 @@ function onClickFavicon (e) {
     y: rect.bottom,
     async onSelect (imageData) {
       // write file to the dat then restore to the workspace
-      await archive.writeFile('/favicon.png', imageData)
+      let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
+      await archive2.writeFile('/favicon.png', imageData)
       if (workspaceInfo && workspaceInfo.name) {
         await beaker.workspaces.revert(0, workspaceInfo.name, {paths: ['/favicon.png']})
       }
