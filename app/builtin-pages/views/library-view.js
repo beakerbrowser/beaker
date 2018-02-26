@@ -42,6 +42,9 @@ var settingsEditValues = {
   description: false,
   repository: false
 }
+var headerEditValues = {
+  title: false
+}
 
 var toplevelError
 var copySuccess = false
@@ -306,12 +309,14 @@ function renderHeader () {
         }
 
         ${isOwner
-          ? yo`
-            <div class="tooltip-container" data-tooltip="Change title">
-              <button class="title editable nofocus" onclick=${onClickChangeHeaderTitle}>
-                ${getSafeTitle()}
-              </button>
-            </div>`
+          ? (headerEditValues.title !== false)
+            ? yo`<input class="title" value=${headerEditValues.title} onkeyup=${e => onKeyupHeaderEdit(e, 'title')} />`
+            : yo`
+              <div class="tooltip-container" data-tooltip="Change title">
+                <button class="title editable nofocus" onclick=${onClickChangeHeaderTitle}>
+                  ${getSafeTitle()}
+                </button>
+              </div>`
           : yo`
             <a href=${archive.url} class="title" target="_blank">
               ${getSafeTitle()}
@@ -1268,27 +1273,24 @@ async function onClickChangeHeaderTitle (e) {
   e.preventDefault()
   e.stopPropagation()
 
-  // take the tooltip off the link while this is active
-  let anchorContainer = e.target.parentNode
-  let tooltip = anchorContainer.dataset.tooltip
-  delete anchorContainer.dataset.tooltip
+  headerEditValues.title = archive.info.title
+  render()
+  document.querySelector('input.title').select()
 
-  // get new value
-  let rect = e.currentTarget.getClientRects()[0]
-  let res = await contextInput.create({
-    x: rect.left - 18,
-    y: rect.bottom + 8,
-    withTriangle: true,
-    label: 'Title',
-    value: archive.info.title,
-    action: 'Save'
-  })
-  if (res) {
-    await setManifestValue('title', res)
-  }
-
-  // restore tooltip
-  anchorContainer.dataset.tooltip = tooltip
+  // // get new value
+  // let rect = e.currentTarget.getClientRects()[0]
+  // let res = await contextInput.create({
+  //   x: rect.left - 18,
+  //   y: rect.bottom + 8,
+  //   withTriangle: true,
+  //   label: 'Title',
+  //   value: archive.info.title,
+  //   action: 'Save'
+  // })
+  // if (res) {
+  //   await setManifestValue('title', res)
+  //   render()
+  // }
 }
 
 function onClickFavicon (e) {
@@ -1550,6 +1552,21 @@ async function onDeleteFile (e) {
     render()
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
+  }
+}
+
+async function onKeyupHeaderEdit (e, name) {
+  if (e.keyCode == 13) {
+    // enter-key
+    await setManifestValue(name, headerEditValues[name])
+  } 
+
+  if (e.keyCode == 13 || e.keyCode == 27) {
+    // enter or escape key
+    headerEditValues[name] = false
+    render()
+  } else {
+    headerEditValues[name] = e.target.value
   }
 }
 
