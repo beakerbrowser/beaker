@@ -1094,7 +1094,8 @@ function renderRevisionsView () {
 }
 
 function renderTabs () {
-  let baseUrl = `beaker://library/${archive.url}`
+  const isOwner = _get(archive, 'info.isOwner')
+  const baseUrl = `beaker://library/${archive.url}`
   return yo`
     <div class="tabs">
       <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="tab ${activeView === 'files' ? 'active' : ''}">
@@ -1118,7 +1119,7 @@ function renderTabs () {
       </a>
 
       <a href=${baseUrl + '#settings'} onclick=${e => onChangeView(e, 'settings')} class="tab ${activeView === 'settings' ? 'active' : ''}">
-        Info
+        ${isOwner ? 'Settings' : 'Info'}
       </a>
     </div>
   `
