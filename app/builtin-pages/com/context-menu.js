@@ -29,6 +29,9 @@ create({
   // use triangle
   withTriangle: true,
 
+  // parent element to append to
+  parent: document.body,
+
   // menu items
   items: [
     // icon from font-awesome
@@ -55,10 +58,11 @@ export function create (opts) {
   right = opts.right || false
   withTriangle = opts.withTriangle || false
   items = opts.items
+  parent = opts.parent || document.body
 
   // render interface
   const el = opts.render ? opts.render() : render()
-  document.body.appendChild(el)
+  parent.appendChild(el)
   document.addEventListener('keyup', onKeyUp)
   document.addEventListener('click', onClickAnywhere)
 
@@ -71,7 +75,7 @@ export function create (opts) {
 export function destroy (value) {
   const el = document.querySelector('.context-menu')
   if (el) {
-    document.body.removeChild(el)
+    el.parentNode.removeChild(el)
     document.removeEventListener('keyup', onKeyUp)
     document.removeEventListener('click', onClickAnywhere)
     resolve(value)

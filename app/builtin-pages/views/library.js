@@ -467,17 +467,20 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
   xOffset = xOffset || 0
   e.preventDefault()
   e.stopPropagation()
-  let x, y
+  let x, y, parent
 
   if (isContext) {
     // position off the mouse
     x = e.clientX
     y = e.clientY
   } else {
+    // append to the scrolling container so that the menu stays in the right position
+    parent = document.querySelector('.window-content')
+
     // position off the element
     let rect = e.currentTarget.getClientRects()[0]
     x = rect.right
-    y = rect.bottom
+    y = getTop(e.currentTarget) + e.currentTarget.offsetHeight
   }
   x += xOffset
 
@@ -501,7 +504,7 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
   } else {
     items.push({icon: 'undo', label: 'Restore from trash', click: () => onRestore(null, archive)})
   }
-  await contextMenu.create({x, y, items, right: !isContext, withTriangle: !isContext})
+  await contextMenu.create({x, y, items, parent, right: !isContext, withTriangle: !isContext})
 
   if (!isContext) {
     // set the menu closed
@@ -566,4 +569,13 @@ function onScrollContent (e) {
     // hit bottom
     fetchMore(renderAndAppendRows)
   }
+}
+
+// helper gets the offsetTop relative to the document
+function getTop (el) {
+  let top = 0
+  do {
+    top += el.offsetTop
+  } while ((el = el.offsetParent))
+  return top
 }
