@@ -475,13 +475,13 @@ function onArchiveContextMenu (e, archive, isRecent) {
     {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url) },
     {icon: 'clone', label: 'Make a copy', click: () => onClickFork(archive.url) }
   ]
+  if (isRecent) {
+    items.push({icon: 'times', label: 'Remove from recent', click: () => removeFromRecent(archive)})
+  }
   if (archive.userSettings.isSaved) {
     items.push({icon: 'trash', label: 'Move to Trash', click: () => onDelete(null, archive)})
   } else {
     items.push({icon: 'undo', label: 'Restore from trash', click: () => onRestore(null, archive)})
-  }
-  if (isRecent) {
-    items.push({icon: 'times', label: 'Remove from recent', click: () => removeFromRecent(archive)})
   }
   contextMenu.create({x: e.clientX, y: e.clientY, items})
 }
