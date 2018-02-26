@@ -517,7 +517,7 @@ function renderSetupChecklist () {
           </p>
 
           <div class="actions">
-            <button class="btn">
+            <button class="btn" onclick=${onClickChangeHeaderTitle}>
               Set title
             </button>
           </div>
