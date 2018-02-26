@@ -125,7 +125,15 @@ function renderRows () {
 
   // empty state
   if (rowEls.length == 0 && query) {
-    rowEls.push(yo`<em class="empty">No results</em>`)
+    rowEls.push(
+      yo`
+        <div class="view empty">
+          <i class="fa fa-search"></i>
+          <p>
+            No results for "${query}"
+          </p>
+        </div>`
+    )
   } else if (rowEls.length == 0) {
     rowEls.push(yo`<div class="empty">Loading...</div>`)
   }

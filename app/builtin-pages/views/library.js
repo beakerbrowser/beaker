@@ -107,7 +107,19 @@ function renderRows (sort = '', max = undefined) {
     a = a.slice(0, max)
   }
 
-  if (!a.length) return sort ? null : yo`<em class="empty">No ${query ? 'results' : 'archives'}</em>`
+  if (!a.length) return sort
+    ? null
+    : yo`
+      <div class="view empty">
+        <i class="fa fa-search"></i>
+
+        <p>
+          ${query
+            ? `No results for "${query}"`
+            : `No archives in ${currentView}`
+          }
+        </p>
+      </div>`
   return a.map(renderRow)
 }
 
@@ -239,11 +251,15 @@ function render () {
 
             ${renderRows()}
 
-            <p class="builtin-hint">
-              Your Library contains websites and archives you've created,
-              along with websites that you're seeding.
-              <i class="fa fa-question-circle-o"></i>
-            </p>
+            ${!query
+              ? yo`
+                <p class="builtin-hint">
+                  Your Library contains websites and archives you've created,
+                  along with websites that you're seeding.
+                  <i class="fa fa-question-circle-o"></i>
+                </p>`
+              : ''
+            }
           </div>
         </div>
       </div>

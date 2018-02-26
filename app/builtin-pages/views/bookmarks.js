@@ -12,6 +12,7 @@ import renderCloseIcon from '../icon/close'
 //
 
 var query = '' // current search query
+var resultsCount = 0
 var currentView = 'all'
 var currentSort
 var bookmarks = []
@@ -172,13 +173,25 @@ function renderActions (row, i) {
 }
 
 function renderBookmarksListToPage () {
+  var helpEl = ''
+
+  if (query && !resultsCount) {
+    helpEl = yo`
+      <div class="view empty">
+        <i class="fa fa-search"></i>
+        <p>
+          No results for "${query}"
+        </p>
+      </div>`
+  }
+
   yo.update(
     document.querySelector('.links-list.bookmarks'),
     yo`
       <div class="links-list bookmarks">
-        ${bookmarks.length
+        ${bookmarks.length && resultsCount
           ? bookmarks.map(renderRow)
-          : yo`<em class="empty">No bookmarks</em>`
+          : helpEl
         }
       </div>
     `)
@@ -315,8 +328,14 @@ function renderToPage () {
 function renderBookmarks () {
   var helpEl = ''
 
-  if (!bookmarks.length && query) {
-    helpEl = yo`<em class="empty">No results</em>`
+  if (query && !resultsCount) {
+    helpEl = yo`
+      <div class="view empty">
+        <i class="fa fa-search"></i>
+        <p>
+          No results for "${query}"
+        </p>
+      </div>`
   } else if (!bookmarks.length) {
     helpEl = yo`<div class="empty">Loading...</div>`
   }
@@ -353,6 +372,7 @@ function onUpdateSort (sort) {
 async function onClearQuery () {
   document.querySelector('input.search').value = ''
   query = ''
+  resultsCount = 0
   currentView = 'all'
   await loadBookmarks()
   renderToPage()
@@ -360,6 +380,7 @@ async function onClearQuery () {
 
 async function onQueryBookmarks (e) {
   query = e.target.value.toLowerCase()
+  resultsCount = 0
   if (!query) return onClearQuery()
   if (currentView !== 'search') {
     currentView = 'search'
@@ -368,6 +389,7 @@ async function onQueryBookmarks (e) {
   }
   bookmarks.forEach(b => {
     b.isHidden = !(b.title.toLowerCase().includes(query) || b.href.toLowerCase().includes(query))
+    if (!b.isHidden) resultsCount += 1
   })
   renderBookmarksListToPage()
 }
