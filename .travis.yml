@@ -17,11 +17,6 @@ cache:
     - tests/node_modules
     - $HOME/.cache/electron
 
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      sudo apt-get -qq update && sudo apt-get install -y dbus-x11;
-    fi
-
 install:
   - npm install
   - npm run rebuild
