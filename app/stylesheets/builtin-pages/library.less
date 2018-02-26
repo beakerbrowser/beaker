@@ -55,6 +55,7 @@
   .ll-row.recent {
     &:extend(.flex);
     justify-content: space-between;
+    position: relative;
     width: auto;
     height: auto;
     padding: 0;
@@ -67,13 +68,20 @@
       cursor: pointer;
     }
 
+    .badge.read-only {
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      cursor: default;
+      background: #f0f0f0;
+    }
+
     &:hover {
-      border-color: fadeout(@blue, 20%);
-      border-color: #ccc;
-      background: fadeout(@blue, 99%);
+      border-color: #dadada;
+      background: #f0f0f0;
 
       .info {
-        border-color: #ccc;
+        border-color: #dadada;
       }
 
       .btn {

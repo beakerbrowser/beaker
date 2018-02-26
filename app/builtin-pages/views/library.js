@@ -205,6 +205,11 @@ function renderRecent (a) {
     >
       <img class="favicon" src="beaker-favicon:${a.url}" />
 
+      ${!isOwner
+        ? yo`<span class="badge read-only" title="Read-only"><i class="fa fa-eye"></i></span>`
+        : ''
+      }
+
       <div class="info">
         <div class="title">
           ${a.title || yo`<em>Untitled</em>`}
