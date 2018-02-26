@@ -369,10 +369,29 @@ function renderFooter () {
 
     // pick secondary action based on current state
     if (workspaceInfo && workspaceInfo.localFilesPath) {
-      secondaryAction = yo`
-        <span class="path" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-          ${workspaceInfo.localFilesPath}
-        </span>`
+      secondaryAction = toggleable(yo`
+        <div class="dropdown toggleable-container">
+          <button class="btn transparent nofocus toggleable">
+            ${workspaceInfo.localFilesPath}
+          </button>
+
+          <div class="dropdown-items workspace-info top right subtle-shadow">
+            <div class="dropdown-item" onclick=${onChangeWorkspaceDirectory}>
+              <i class="fa fa-pencil"></i>
+              <span class="label">Change workspace directory</span>
+            </div>
+
+            <div class="dropdown-item" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+              <i class="fa fa-folder-o"></i>
+              <span class="label">Open ${workspaceInfo.localFilesPath}</span>
+            </div>
+
+            <div class="dropdown-item" onclick=${() => onCopy(workspaceInfo.localFilesPath, 'Path copied to clipboard')}>
+              <i class="fa fa-clipboard"></i>
+              <span class="label">Copy path</span>
+            </div>
+          </div>
+        </div>`)
     } else if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
       secondaryAction = yo`
         <span class="path error">
@@ -1559,7 +1578,7 @@ async function onKeyupHeaderEdit (e, name) {
   if (e.keyCode == 13) {
     // enter-key
     await setManifestValue(name, headerEditValues[name])
-  } 
+  }
 
   if (e.keyCode == 13 || e.keyCode == 27) {
     // enter or escape key
