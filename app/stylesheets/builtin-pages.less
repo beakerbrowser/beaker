@@ -321,103 +321,108 @@
 
 .builtin-main,
 .builtin-sidebar {
-  display: inline-block !important;
+  display: block;
+
+  @media (min-width: 1050px) {
+    display: inline-block !important;
+  }
 }
 
 .builtin-sidebar {
-  position: fixed;
-  top: 75px;
-  left: 15px;
-  width: 225px;
-  overflow: auto;
 
-  .section {
-    margin-bottom: 40px;
+  .nav-item {
+    display: inline-block;
+    padding: 0 8px;
+    color: fadeout(@color-text, 10%);
+    cursor: pointer;
+    border-radius: 2px;
+    display: inline-block;
+    margin-bottom: 20px;
 
-    > div {
-      padding: 0 20px;
+    .fa {
+      display: none;
     }
 
-    h2 {
-      padding: 1px 20px;
+    &.active {
+      background: @blue;
+      color: #fff;
+    }
 
-      &.clickable {
-        cursor: pointer;
-      }
+    &:hover:not(.active) {
+      color: @blue;
+    }
 
-      .icon {
-        width: 9px;
-        height: 9px;
-        margin-left: 3px;
+    @media (min-width: 1050px) {
+      display: flex;
+      align-items: center;
+      position: relative;
+      height: 25px;
+      padding: 7px 0;
+      margin-bottom: 0;
 
-        * {
-          fill: rgba(0,0,0,.25);
-          transition: fill .1s ease;
-        }
+      .fa {
+        display: none;
+        width: 12px;
+        margin-left: -12px;
       }
 
       &:hover {
 
-        .icon * {
-          fill: rgba(0,0,0,.5);
+        .icon {
+          color: inherit;
+        }
+      }
+
+      &.active {
+        color: @blue;
+        font-weight: 500;
+        background: none;
+
+        .fa {
+          display: block;
         }
       }
     }
   }
 
-  .nav-item {
-    &:extend(.flex);
-    align-items: center;
-    position: relative;
-    height: 25px;
-    padding: 7px 0;
-    color: fadeout(@color-text, 10%);
-    cursor: pointer;
+  @media (min-width: 1050px) {
+    position: fixed;
+    top: 75px;
+    left: 15px;
+    width: 225px;
+    overflow: auto;
 
-    .fa {
-      display: none;
-      width: 12px;
-      margin-left: -12px;
-    }
+    .section {
+      margin-bottom: 40px;
 
-    &:hover {
-      color: @blue;
-
-      .icon {
-        color: inherit;
-      }
-    }
-
-    &.active {
-      color: @blue;
-      font-weight: 500;
-
-      .fa {
-        display: block;
-      }
-    }
-
-    &.friend {
-
-      img {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        margin-right: 5px;
-      }
-    }
-
-    &.disabled {
-      color: @color-text--midlight;
-
-      &:hover {
-        background: transparent;
+      > div {
+        padding: 0 20px;
       }
 
-      .coming-soon {
-        display: inline-block;
-        font-style: italic;
-        margin-left: 0.5rem;
+      h2 {
+        padding: 1px 20px;
+
+        &.clickable {
+          cursor: pointer;
+        }
+
+        .icon {
+          width: 9px;
+          height: 9px;
+          margin-left: 3px;
+
+          * {
+            fill: rgba(0,0,0,.25);
+            transition: fill .1s ease;
+          }
+        }
+
+        &:hover {
+
+          .icon * {
+            fill: rgba(0,0,0,.5);
+          }
+        }
       }
     }
   }
@@ -435,8 +440,12 @@
 .builtin-main {
   width: 100%;
   max-width: 700px;
-  padding: 75px 0;
+  padding: 75px 5px;
   height: 100%;
+
+  @media (min-width: 725px) {
+    padding: 75px 0;
+  }
 
   > div:not(.builtin-sidebar) {
     margin-bottom: 25px;
