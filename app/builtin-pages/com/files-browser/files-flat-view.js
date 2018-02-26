@@ -47,9 +47,9 @@ function rHeader (filesBrowser, currentSource, workspaceInfo) {
   return yo`
     <div class="files-browser-header">
       ${rBreadcrumbs(filesBrowser, currentSource)}
+      ${rVersion(filesBrowser, currentSource)}
       ${rActions(filesBrowser, currentSource)}
       ${renderRevisionsOverview(workspaceInfo)}
-      ${rVersion(filesBrowser, currentSource)}
     </div>
   `
 }
