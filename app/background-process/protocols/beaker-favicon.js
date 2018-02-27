@@ -8,7 +8,10 @@ import { protocol } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import pda from 'pauls-dat-api'
+import {parse as parseUrl} from 'url'
 import * as sitedata from '../dbs/sitedata'
+import * as workspacesDb from '../dbs/workspaces'
+import * as scopedFSes from '../../lib/bg/scoped-fses'
 import * as datLibrary from '../networks/dat/library'
 import datDns from '../networks/dat/dns'
 
@@ -39,19 +42,24 @@ export function setup () {
       // ignore
     }
 
-    // if a dat, see if there's a favicon.png (only if the dat is loaded)
-    if (url.startsWith('dat://')) {
-      url = await datDns.resolveName(url)
-      try {
-        // try to fetch the png
-        let archive = datLibrary.getArchive(url)
-        let data = await pda.readFile(archive, '/favicon.png', 'binary')
-        if (data) {
-          return cb({mimeType: 'image/png', data})
-        }
-      } catch (e) {
-        // ignore
+    // if a dat or a workspace, see if there's a favicon.png 
+    try {
+      let data
+      if (url.startsWith('dat://')) {
+        url = await datDns.resolveName(url)
+        let archive = datLibrary.getArchive(url) // (only try if the dat is loaded)
+        data = await pda.readFile(archive, '/favicon.png', 'binary')
+      } else if (url.startsWith('workspace://')) {
+        let urlp = parseUrl(url)
+        let wsEntry = await workspacesDb.get(0, urlp.hostname)
+        let scopedFS = scopedFSes.get(wsEntry.localFilesPath)
+        data = await pda.readFile(scopedFS, '/favicon.png', 'binary')
       }
+      if (data) {
+        return cb({mimeType: 'image/png', data})
+      }
+    } catch (e) {
+      // ignore
     }
 
     cb({ mimeType: 'image/png', data: defaultFaviconBuffer })
