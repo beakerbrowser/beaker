@@ -9,6 +9,7 @@ import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
 // import {AppsMenuNavbarBtn} from './navbar/apps-menu' TODO(apps) restore when we bring back apps -prf
 import {DatsiteMenuNavbarBtn} from './navbar/datsite-menu'
+import {WorkspacesiteMenuNavbarBtn} from './navbar/workspacesite-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
 import {findParent} from '../../lib/fg/event-handlers'
@@ -36,6 +37,7 @@ var browserMenuNavbarBtn = null
 var bookmarkMenuNavbarBtn = null
 // var appsMenuNavbarBtn = null TODO(apps) restore when we bring back apps -prf
 var datsiteMenuNavbarBtn = null
+var workspacesiteMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
 var lastKeyDown = null
 
@@ -56,6 +58,7 @@ export function setup () {
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   datsiteMenuNavbarBtn = new DatsiteMenuNavbarBtn()
+  workspacesiteMenuNavbarBtn = new WorkspacesiteMenuNavbarBtn()
   pageMenuNavbarBtn = new PageMenuNavbarBtn()
 
   // add some global listeners
@@ -158,6 +161,7 @@ export function closeMenus () {
   pageMenuNavbarBtn.close()
   bookmarkMenuNavbarBtn.close()
   datsiteMenuNavbarBtn.close()
+  workspacesiteMenuNavbarBtn.close()
 }
 
 // internal helpers
@@ -374,10 +378,13 @@ function render (id, page) {
         ${locationInput}
         ${inpageFinder}
         ${zoomBtn}
-        ${!isLocationHighlighted ? datBtns : ''}
-        ${!isLocationHighlighted ? datsiteMenuNavbarBtn.render() : ''}
-        ${!isLocationHighlighted ? pageMenuNavbarBtn.render() : ''}
-        ${!isLocationHighlighted ? bookmarkMenuNavbarBtn.render() : ''}
+        ${!isLocationHighlighted ? [
+          datBtns,
+          datsiteMenuNavbarBtn.render(),
+          workspacesiteMenuNavbarBtn.render(),
+          pageMenuNavbarBtn.render(),
+          bookmarkMenuNavbarBtn.render()
+        ] : ''}
       </div>
       <div class="toolbar-group">
         ${''/*appsMenuNavbarBtn.render() TODO(apps) restore when we bring back apps -prf*/}
@@ -391,7 +398,7 @@ function render (id, page) {
 
 function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadError) {
   var valueRendered = value
-  if (/^(dat|http|https):\/\//.test(value)) {
+  if (/^(dat|http|https|workspace):\/\//.test(value)) {
     try {
       var { protocol, host, pathname, search, hash } = new URL(value)
       var hostVersion

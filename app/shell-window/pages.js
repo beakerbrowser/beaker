@@ -684,6 +684,13 @@ function onDidStopLoading (e) {
           }
         })
     }
+    if (protocol === 'workspace:') {
+      beaker.workspaces.get(0, hostname)
+        .then(info => {
+          page.siteInfo = info
+          console.log(info)
+        })
+    }
     if (protocol !== 'beaker:') {
       page.fetchSitePerms()
     }

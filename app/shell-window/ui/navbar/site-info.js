@@ -34,6 +34,8 @@ export class SiteInfoNavbarBtn {
       } else if (this.page.protocolInfo.scheme === 'dat:') {
         protocolCls = 'p2p'
         iconEl = yo`<i class="fa fa-share-alt"></i>`
+      } else if (this.page.protocolInfo.scheme === 'workspace:') {
+        iconEl = yo`<i class="fa fa-folder-open-o"></i>`
       } else if (this.page.protocolInfo.scheme === 'beaker:') {
         protocolCls = 'beaker'
         iconEl = ''
@@ -74,6 +76,10 @@ export class SiteInfoNavbarBtn {
           This site was downloaded from a secure peer-to-peer network.
           <a onclick=${e => this.learnMore()}>Learn More</a>
         </span>`
+      } else if (this.page.protocolInfo.scheme === 'workspace:') {
+        protocolDesc = yo`<div>
+          This site is a local workspace on your computer.
+        </div>`
       }
     }
 
