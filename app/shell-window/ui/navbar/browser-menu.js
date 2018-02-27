@@ -318,7 +318,7 @@ export class BrowserMenuNavbarBtn {
 
     // create a new archive
     const archive = await DatArchive.create({template, prompt: false})
-    pages.setActive(pages.create('beaker://library/' + archive.url))
+    pages.setActive(pages.create('beaker://library/' + archive.url + '?new'))
   }
 
   async onShareFiles (e) {

@@ -500,6 +500,7 @@ function renderSetupChecklist () {
   const hasWorkspaceDirectory = workspaceInfo && workspaceInfo.localFilesPath
   const hasFavicon = isFaviconSet
 
+  if ((new URL(window.location)).searchParams.has('new') === false) return ''
   if (hasTitle && hasWorkspaceDirectory && hasFavicon) return ''
 
   return yo`
@@ -1222,7 +1223,7 @@ function renderRepositoryLink () {
 async function onMakeCopy () {
   let {title} = await copydatPopup.create({archive})
   const fork = await DatArchive.fork(archive.url, {title, prompt: false}).catch(() => {})
-  window.location = `beaker://library/${fork.url}`
+  window.location = `beaker://library/${fork.url}?new`
 }
 
 async function addReadme () {

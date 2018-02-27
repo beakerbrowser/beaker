@@ -200,7 +200,7 @@ export class PageMenuNavbarBtn {
     if (!datUrl) return
     const fork = await DatArchive.fork(datUrl, {prompt: true}).catch(() => {})
     if (fork) {
-      page.loadURL(fork.url)
+      page.loadURL(`beaker://library/${fork.url}?new`)
     }
   }
 
