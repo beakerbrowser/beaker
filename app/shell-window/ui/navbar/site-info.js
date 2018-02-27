@@ -15,36 +15,37 @@ export class SiteInfoNavbarBtn {
     pages.on('set-active', e => this.closeDropdown()) // close dropdown on tab change
   }
 
-  render () {    
+  render () {
     // pull details
     var iconEl = ''
     var protocolCls = 'insecure'
-    var gotInsecureResponse = this.page.siteLoadError && this.page.siteLoadError.isInsecureResponse
+    const gotInsecureResponse = this.page.siteLoadError && this.page.siteLoadError.isInsecureResponse
+    const isLoading = this.page.isLoading()
 
-    if (this.page.protocolInfo) {
-      var isHttps = ['https:'].includes(this.page.protocolInfo.scheme)
-
+    const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : this.page.protocolInfo.scheme
+    if (scheme) {
+      const isHttps = scheme === 'https:'
       if (isHttps && !gotInsecureResponse && !this.page.siteLoadError) {
         protocolCls = 'secure'
         iconEl = renderPadlockIcon()
-      } else if (this.page.protocolInfo.scheme === 'http:') {
+      } else if (scheme === 'http:') {
         iconEl = yo`<i class="fa fa-info-circle"></i>`
       } else if (isHttps && gotInsecureResponse) {
         iconEl = yo`<i class="fa fa-exclamation-circle"></i>`
-      } else if (this.page.protocolInfo.scheme === 'dat:') {
+      } else if (scheme === 'dat:') {
         protocolCls = 'p2p'
         iconEl = yo`<i class="fa fa-share-alt"></i>`
-      } else if (this.page.protocolInfo.scheme === 'workspace:') {
+      } else if (scheme === 'workspace:') {
         iconEl = yo`<i class="fa fa-folder-open-o"></i>`
-      } else if (this.page.protocolInfo.scheme === 'beaker:') {
+      } else if (scheme === 'beaker:') {
         protocolCls = 'beaker'
         iconEl = ''
       }
     }
 
     return yo`
-      <div class="toolbar-site-info ${protocolCls}">
-        <button onclick=${e => this.toggleDropdown(e)}>${iconEl}</button>
+      <div class="toolbar-site-info ${protocolCls}" id="${this.elId}">
+        <button onclick=${isLoading ? undefined : e => this.toggleDropdown(e)}>${iconEl}</button>
         ${this.renderDropdown()}
       </div>
     `
@@ -141,13 +142,12 @@ export class SiteInfoNavbarBtn {
     return (this.page.protocolInfo) ? this.page.protocolInfo.hostname : ''
   }
 
+  get elId () {
+    return 'toolbar-site-info-' + this.page.id
+  }
+
   updateActives () {
-    // FIXME
-    // calling `this.render` for all active site-infos is definitely wrong
-    // there is state captured in `this` that is specific to each instance
-    // ...this entire thing is kind of bad
-    // -prf
-    Array.from(document.querySelectorAll('.toolbar-site-info')).forEach(el => yo.update(el, this.render()))
+    yo.update(document.getElementById(this.elId), this.render())
   }
 
   onClickAnywhere (e) {

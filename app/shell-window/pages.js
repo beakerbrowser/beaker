@@ -409,9 +409,11 @@ export function setActive (page) {
   page.isActive = 1
   page.webviewEl.focus()
   statusBar.setIsLoading(page.isLoading())
+
   navbar.closeMenus()
   navbar.update()
   prompt.update()
+  
   events.emit('set-active', page)
   ipcRenderer.send('shell-window:set-current-location', page.getIntendedURL())
 }
