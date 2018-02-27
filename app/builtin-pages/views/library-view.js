@@ -514,7 +514,7 @@ function renderSetupChecklist () {
           <h3 class="label">
             <i class="fa fa-font"></i>
             Set a title
-            ${hasTitle ? yo`<i class="fa fa-check-circle"></i>` : ''}
+            ${hasTitle ? yo`<i class="fa fa-check"></i>` : ''}
           </h3>
 
           <p class="description">
@@ -532,7 +532,7 @@ function renderSetupChecklist () {
           <h3 class="label">
             <i class="fa fa-file-image-o"></i>
             Add a favicon
-            ${hasFavicon ? yo`<i class="fa fa-check-circle"></i>` : ''}
+            ${hasFavicon ? yo`<i class="fa fa-check"></i>` : ''}
           </h3>
 
           <p class="description">
@@ -554,7 +554,7 @@ function renderSetupChecklist () {
           <h3 class="label">
             <i class="fa fa-code"></i>
             ${hasWorkspaceDirectory ? 'Workspace' : 'Set workspace'} directory
-            ${hasWorkspaceDirectory ? yo`<i class="fa fa-check-circle"></i>` : ''}
+            ${hasWorkspaceDirectory ? yo`<i class="fa fa-check"></i>` : ''}
           </h3>
 
           <p class="description">
