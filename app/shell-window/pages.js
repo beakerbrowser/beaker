@@ -23,7 +23,7 @@ const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
 const ERR_INSECURE_RESPONSE = -501
 
-const TRIGGER_LIVE_RELOAD_DEBOUNCE = 1e3 // throttle live-reload triggers by this amount
+const TRIGGER_LIVE_RELOAD_DEBOUNCE = 3e3 // throttle live-reload triggers by this amount
 
 export const FIRST_TAB_URL = 'beaker://start'
 export const DEFAULT_URL = 'beaker://start'

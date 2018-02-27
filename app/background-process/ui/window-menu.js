@@ -257,7 +257,7 @@ export function buildWindowMenu (opts = {}) {
       reserved: true
     },
     {
-      label: `Toggle Live Reloading${isDat ? '' : ' (Dat Only)'}`,
+      label: 'Toggle Live Reloading',
       enabled: !!isDat || !!isWorkspace,
       click: function (item, win) {
         if (win) win.webContents.send('command', 'view:toggle-live-reloading')
