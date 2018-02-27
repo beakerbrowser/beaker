@@ -63,6 +63,15 @@
         text-decoration: underline;
         cursor: pointer;
       }
+
+      &.empty {
+        color: @color-text--muted;
+
+        &:hover {
+          text-decoration: none;
+          cursor: default;
+        }
+      }
     }
 
     .revision-type {
