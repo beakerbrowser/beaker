@@ -42,6 +42,7 @@ async function setup () {
   browserEvents = beaker.browser.createEventsStream()
   browserEvents.addEventListener('updater-state-changed', onUpdaterStateChanged)
   browserEvents.addEventListener('updater-error', onUpdaterError)
+  window.addEventListener('popstate', onPopState)
 
   // fetch data
   browserInfo = await beaker.browser.getInfo()
@@ -49,7 +50,8 @@ async function setup () {
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
   // applications = await beaker.apps.list(0) TODO(apps) restore when we bring back apps -prf
 
-  renderToPage()
+  // set the view and render
+  setViewFromHash()
 }
 
 // rendering
@@ -238,7 +240,7 @@ function renderAutoUpdater () {
         </p>
 
         <p>
-          To get the most recent version of Beaker, you'll need to <a href="https://github.com/beakerbrowser/beaker">
+          To get the most recent version of Beaker, you${"'"}ll need to <a href="https://github.com/beakerbrowser/beaker">
           build Beaker from source</a>.
         </p>
       </div>`
@@ -329,6 +331,7 @@ function renderAutoUpdateCheckbox () {
 
 function onUpdateView (view) {
   activeView = view
+  window.location.hash = view
   renderToPage()
 }
 
@@ -433,8 +436,17 @@ function onUpdaterError (err) {
   renderToPage()
 }
 
+function onPopState (e) {
+  setViewFromHash()
+}
+
 // internal methods
 // =
+
+function setViewFromHash () {
+  let hash = window.location.hash
+  onUpdateView((hash && hash !== '#') ? hash.slice(1) : 'general')
+}
 
 function isAutoUpdateEnabled () {
   return +settings.auto_update_enabled === 1
