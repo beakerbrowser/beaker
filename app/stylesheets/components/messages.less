@@ -6,7 +6,8 @@
   align-items: center;
   font-size: 13.5px;
   padding: 10px 15px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  border-radius: 2px;
 
   strong {
     font-weight: 600;
@@ -18,7 +19,7 @@
   }
 
   .btn {
-    background: #fff;
+    background: transparent;
     margin-left: auto; // message buttons are always pulled to the right
   }
 
@@ -85,7 +86,7 @@
     }
 
     .btn {
-      border-color: @border-message--info;
+      border-color: @color-message--info;
       color: @color-message--info;
 
       &:focus,
@@ -108,7 +109,7 @@
     }
 
     .btn {
-      border-color: @border-message--error;
+      border-color: @color-message--error;
       color: @color-message--error;
 
       &:focus,
@@ -117,7 +118,7 @@
       }
 
       &:hover {
-        background: @background-message--error;
+        background: shade(@background-message--error, 3%);
       }
     }
   }

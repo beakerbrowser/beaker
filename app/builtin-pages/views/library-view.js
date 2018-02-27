@@ -412,10 +412,17 @@ function renderFooter () {
           </button>
         </span>`
     } else if (!_get(archive, 'info.userSettings.isSaved')) {
-      secondaryAction = yo`
-        <button class="btn" onclick=${onSave}>
-          Save to your Library
-        </button>`
+      if (_get(archive, 'info.isOwner')) {
+        secondaryAction = yo`
+          <button class="btn" onclick=${onSave}>
+            Restore from Trash
+          </button>`
+      } else {
+        secondaryAction = yo`
+          <button class="btn" onclick=${onSave}>
+            Save to Library
+          </button>`
+      }
     } else if (_get(archive, 'info.isOwner') && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
       secondaryAction = ''
     } else {
@@ -456,6 +463,17 @@ function renderFilesView () {
   return yo`
     <div class="container">
       <div class="view files">
+        ${archive.info.isOwner && !archive.info.userSettings.isSaved
+          ? yo`
+            <div class="message error">
+              <span>
+                ${archive.info.title ? archive.info.title : 'This archive'} is
+                in your Trash.
+              </span>
+              <button class="btn" onclick=${onSave}>Restore from Trash</button>
+            </div>`
+          : ''
+        }
         ${archive.info.isOwner ? renderSetupChecklist() : ''}
         ${filesBrowser ? filesBrowser.render() : ''}
         ${readmeElement || ''}
@@ -1175,11 +1193,7 @@ function renderMenu () {
               <i class="fa fa-trash-o"></i>
               Move to Trash
             </div>`
-          : yo`
-            <div class="dropdown-item" onclick=${onSave}>
-              <i class="fa fa-download"></i>
-              Save to your Library
-            </div>`
+          : ''
         }
       </div>
     </div>
