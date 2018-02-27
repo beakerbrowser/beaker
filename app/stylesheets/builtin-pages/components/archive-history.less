@@ -19,6 +19,10 @@
     overflow-y: auto;
   }
 
+  &.loading .archive-history-body {
+    padding: 10px;
+  }
+
   .archive-history-item {
     &:extend(.flex);
     align-items: center;
@@ -29,7 +33,7 @@
 
     .version {
       &:extend(.code-font);
-      width: 32px;
+      min-width: 32px;
       margin-left: auto;
       text-transform: lowercase;
     }
