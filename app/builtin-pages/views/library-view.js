@@ -419,8 +419,9 @@ function renderFooter () {
           </button>`
       } else {
         secondaryAction = yo`
-          <button class="btn" onclick=${onSave}>
-            Save to Library
+          <button class="btn success" onclick=${onSave}>
+            <i class="fa fa-download"></i>
+            <span>Save to Library</span>
           </button>`
       }
     } else if (_get(archive, 'info.isOwner') && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
