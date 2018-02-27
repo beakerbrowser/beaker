@@ -42,6 +42,11 @@ var settingsEditValues = {
   description: false,
   repository: false
 }
+var settingsSuccess = {
+  title: false,
+  description: false,
+  repository: false
+}
 var headerEditValues = {
   title: false
 }
@@ -509,7 +514,7 @@ function renderSetupChecklist () {
           <h3 class="label">
             <i class="fa fa-font"></i>
             Set a title
-            ${hasTitle ? yo`<i class="fa fa-check-circle"></i>` : ''}
+            ${hasTitle ? yo`<i class="fa fa-check"></i>` : ''}
           </h3>
 
           <p class="description">
@@ -527,7 +532,7 @@ function renderSetupChecklist () {
           <h3 class="label">
             <i class="fa fa-file-image-o"></i>
             Add a favicon
-            ${hasFavicon ? yo`<i class="fa fa-check-circle"></i>` : ''}
+            ${hasFavicon ? yo`<i class="fa fa-check"></i>` : ''}
           </h3>
 
           <p class="description">
@@ -549,7 +554,7 @@ function renderSetupChecklist () {
           <h3 class="label">
             <i class="fa fa-code"></i>
             ${hasWorkspaceDirectory ? 'Workspace' : 'Set workspace'} directory
-            ${hasWorkspaceDirectory ? yo`<i class="fa fa-check-circle"></i>` : ''}
+            ${hasWorkspaceDirectory ? yo`<i class="fa fa-check"></i>` : ''}
           </h3>
 
           <p class="description">
@@ -605,6 +610,13 @@ function renderSettingsView () {
                   <button disabled="${!isEditingTitle}" class="btn" onclick=${e => onSaveSettingsEdit(e, 'title')}>
                     Save
                   </button>
+                  ${settingsSuccess['title']
+                    ? yo`
+                      <span class="success-message">
+                        <i class="fa fa-check"></i>
+                      </span>`
+                    : ''
+                  }
                 </form>`
               : yo`<p>${getSafeTitle()}</p>`
             }
@@ -617,6 +629,13 @@ function renderSettingsView () {
                   <button disabled="${!isEditingDescription}" class="btn" onclick=${e => onSaveSettingsEdit(e, 'description')}>
                     Save
                   </button>
+                  ${settingsSuccess['description']
+                    ? yo`
+                      <span class="success-message">
+                        <i class="fa fa-check"></i>
+                      </span>`
+                    : ''
+                  }
                 </form>`
               : yo`<p>${getSafeDesc()}</p>`
             }
@@ -729,6 +748,13 @@ function renderSettingsView () {
                     <button class="btn" disabled=${!isEditingGitRepository} onclick=${e => onSaveSettingsEdit(e, 'repository')}>
                       Save
                     </button>
+                    ${settingsSuccess['repository']
+                      ? yo`
+                        <span class="success-message">
+                          <i class="fa fa-check"></i>
+                        </span>`
+                      : ''
+                    }
                   </form>
                 </div>`
               : yo`
@@ -1565,9 +1591,13 @@ async function onSaveSettingsEdit (e, name) {
 
   // update
   await setManifestValue(name, value)
-  toast.create('Saved')
+  settingsSuccess[name] = true
   settingsEditValues[name] = false
-  render()
+
+  setTimeout(() => {
+    settingsSuccess[name] = false
+    render()
+  }, 4000)
 
   // blur the input
   try { document.querySelector('input:focus').blur() }

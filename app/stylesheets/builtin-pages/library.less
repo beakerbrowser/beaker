@@ -317,10 +317,11 @@
     .checklist-item {
       &:extend(.flex);
 
-      i.fa-check-circle {
+      i.fa-check {
         font-size: 15px;
         margin-left: 2px;
-        color: shade(@green, 15%);
+        color: shade(@green, 17%);
+        -webkit-text-stroke: .35px #fff;
       }
 
       .label {
@@ -720,6 +721,15 @@
         color: #333;
         background-color: #f5f5f5;
         border-radius: 4px;
+      }
+    }
+
+    .success-message {
+      margin-left: 5px;
+
+      i.fa-check {
+        color: shade(@green, 15%);
+        -webkit-text-stroke: .3px #fff;
       }
     }
   }

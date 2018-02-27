@@ -229,7 +229,10 @@ function renderRecent (a) {
 }
 
 function render () {
-  let recentArchives = renderRecentArchives('recent', 8, 'recent')
+  let recentArchives
+  if (!query && (currentView === 'all' || currentView === 'your archives')) {
+    recentArchives = renderRecentArchives('recent', 8, 'recent')
+  }
 
   yo.update(
     document.querySelector('.library-wrapper'), yo`
@@ -240,7 +243,7 @@ function render () {
           ${renderSidebar()}
 
           <div>
-            ${recentArchives && !query && currentView !== 'trash' ? [
+            ${recentArchives ? [
               yo`<div class="subtitle-heading">Recent</div>`,
               yo`<div class="recent-archives">${recentArchives}</div>`
             ] : ''}
