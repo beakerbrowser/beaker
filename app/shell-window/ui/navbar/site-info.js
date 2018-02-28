@@ -73,14 +73,16 @@ export class SiteInfoNavbarBtn {
           </div>
         `
       } else if (this.page.protocolInfo.scheme === 'dat:') {
-        protocolDesc = yo`<span>
-          This site was downloaded from a secure peer-to-peer network.
-          <a onclick=${e => this.learnMore()}>Learn More</a>
-        </span>`
+        protocolDesc = yo`
+          <div>
+            This site was downloaded from a secure peer-to-peer network.
+            <a onclick=${e => this.learnMore()}>Learn More</a>
+          </div>`
       } else if (this.page.protocolInfo.scheme === 'workspace:') {
-        protocolDesc = yo`<div>
-          This site is a local workspace on your computer.
-        </div>`
+        protocolDesc = yo`
+          <div>
+            This site is a local preview of a workspace directory on your computer.
+          </div>`
       }
     }
 
