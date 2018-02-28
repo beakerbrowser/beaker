@@ -27,7 +27,7 @@ export default function render (filesBrowser, currentSource, workspaceInfo) {
       ${rHeader(filesBrowser, currentSource, workspaceInfo)}
 
       <div
-        class="body"
+        class="body ${currentSource.type === 'file' ? 'file' : ''}"
         onclick=${e => onClickNode(e, filesBrowser, currentSource)}>
         ${currentSource.type === 'file'
           ? rFilePreview(currentSource)
@@ -47,7 +47,7 @@ function rHeader (filesBrowser, currentSource, workspaceInfo) {
       ${rBreadcrumbs(filesBrowser, currentSource)}
       ${rVersion(filesBrowser, currentSource)}
       ${rActions(filesBrowser, currentSource)}
-      ${renderRevisionsOverview(workspaceInfo)}
+      ${currentSource.type === 'file' ? '' : renderRevisionsOverview(workspaceInfo)}
     </div>
   `
 }

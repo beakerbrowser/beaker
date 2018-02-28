@@ -11,6 +11,10 @@
   .body {
     border: 1px solid #ddd;
     border-radius: 2px;
+
+    &.file {
+      border: 0;
+    }
   }
 
   .files-tree-view.empty {
@@ -50,9 +54,10 @@
     &:extend(.flex);
     align-items: center;
     width: 100%;
-    padding: 3px 10px;
+    height: 40px;
+    padding: 0 10px;
     background: #fafafa;
-    border-radius: 2px 2px 0 0;
+    border-radius: 4px 4px 0 0;
     border: 1px solid #ddd;
     border-bottom: 0;
 
