@@ -721,7 +721,7 @@ function renderSettingsView () {
 
                   <p>
                     Preview unpublished changes at
-                    <a href="workspace://${workspaceInfo.name}">workspace://${workspaceInfo.name}</a>
+                    <a href="workspace://${workspaceInfo.name}" target="_blank">workspace://${workspaceInfo.name}</a>
 
                     <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`, '',  true)}>
                       <i class="fa fa-clipboard"></i>
@@ -756,7 +756,7 @@ function renderSettingsView () {
               ? yo`
                 <div>
                   <p>
-                    Set a <a href="https://git-scm.com/">Git</a> repository so people can find
+                    Set a <a href="https://git-scm.com/" target="_blank">Git</a> repository so people can find
                     and contribute to the source code for this project.
                   </p>
 
@@ -783,7 +783,7 @@ function renderSettingsView () {
                 ${archive.info.repository
                   ? yo`
                     <p>
-                      Find the source code for this project at <a href=${archive.info.repository}>${archive.info.repository}</a>.
+                      Find the source code for this project at <a href=${archive.info.repository} target="_blank">${archive.info.repository}</a>.
                     </p>`
                   : yo`<em class="empty">This project${"'"}s author has not set a Git repository.</em>`
                 }
@@ -792,7 +792,7 @@ function renderSettingsView () {
 
             <p class="hint">
               <i class="fa fa-question-circle-o"></i>
-              New to Git? Check out <a href="https://try.github.io/levels/1/challenges/1">this tutorial</a> to
+              New to Git? Check out <a href="https://try.github.io/levels/1/challenges/1" target="_blank">this tutorial</a> to
               learn about Git and version control.
             </p>
           </div>
@@ -916,7 +916,7 @@ function renderNetworkView () {
             <div class="hint">
               <p>
                 <i class="fa fa-signal"></i>
-                <strong>Keep your files online.</strong> Share this project${"'"}s URL with friends, or with a public peer service like <a href="https://hashbase.io">Hashbase</a>.
+                <strong>Keep your files online.</strong> Share this project${"'"}s URL with friends, or with a public peer service like <a href="https://hashbase.io" target="_blank">Hashbase</a>.
               </p>
 
               <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
@@ -978,7 +978,7 @@ function renderRevisionsView () {
     } else if (rev.diff && rev.diff.sourceTooLarge) {
       el = yo`
         <div class="source-too-large">
-          <a href="workspace://${workspaceInfo.name}${rev.path}" class="action">View file</a>
+          <a href="workspace://${workspaceInfo.name}${rev.path}" class="action" target="_blank">View file</a>
           <p>This diff is too large to display.</p>
         </div>`
     } else if (!(rev.diffAdditions || rev.diffDeletions)) {
