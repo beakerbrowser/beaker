@@ -15,7 +15,7 @@ const IS_WORKSPACE = Symbol()
 const dat = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, errors })
 const wsfs = rpc.importAPI('workspace-fs', workspaceFsManifest, { timeout: false, errors })
 
-export default class DatArchive extends EventTarget {
+class DatArchive extends EventTarget {
   constructor (url) {
     super()
     var errStack = (new Error()).stack
@@ -274,33 +274,6 @@ export default class DatArchive extends EventTarget {
     }
   }
 
-  static async importFromFilesystem (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      return await dat.importFromFilesystem(opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
-  }
-
-  static async exportToFilesystem (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      return await dat.exportToFilesystem(opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
-  }
-
-  static async exportToArchive (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      return await dat.exportToArchive(opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
-  }
-
   static async resolveName (name) {
     var errStack = (new Error()).stack
     try {
@@ -321,6 +294,42 @@ export default class DatArchive extends EventTarget {
       .catch(e => throwWithFixedStack(e, errStack))
   }
 }
+
+// add internal methods
+if (window.location.protocol === 'beaker:') {
+  DatArchive.importFromFilesystem = async function (opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      return await dat.importFromFilesystem(opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
+
+  DatArchive.exportToFilesystem = async function (opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      return await dat.exportToFilesystem(opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
+
+  DatArchive.exportToArchive = async function (opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      return await dat.exportToArchive(opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
+}
+
+export default DatArchive
+
+
+// internal methods
+// =
 
 function setHidden (t, attr, value) {
   Object.defineProperty(t, attr, {enumerable: false, value})
