@@ -1606,6 +1606,7 @@ async function onRenameFile (e) {
     const to = setTimeout(() => toast.create('Renaming...'), 500) // if it takes a while, toast
     const newPath = path.split('/').slice(0, -1).concat(newName).join('/')
     await archive.rename(path, newPath)
+    await beaker.workspaces.revert(0, workspaceInfo.name, {paths: [path, newPath]})
     clearTimeout(to)
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
@@ -1616,11 +1617,14 @@ async function onDeleteFile (e) {
   try {
     const {path, isFolder} = e.detail
     const to = setTimeout(() => toast.create('Deleting...'), 500) // if it takes a while, toast
+
     if (isFolder) {
       await archive.rmdir(path, {recursive: true})
     } else {
       await archive.unlink(path)
     }
+    await beaker.workspaces.revert(0, workspaceInfo.name, {paths: [path]})
+
     clearTimeout(to)
     toast.create(`Deleted ${path}`)
     render()
