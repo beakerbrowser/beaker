@@ -25,8 +25,12 @@ export class WorkspacesiteMenuNavbarBtn {
     // render btn
     return yo`
       <div class="toolbar-dropdown-menu workspace-dropdown-menu page-dropdown-menu">
-        <button class="toolbar-btn toolbar-dropdown-menu-btn ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
-          <span class="fa fa-ellipsis-h"></span>
+        <button class="btn lime nofocus ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
+          <span>
+            ${page.siteInfo && page.siteInfo.localFilesPath ? page.siteInfo.localFilesPath : ''}
+          </span>
+
+          <span class="fa fa-caret-down"></span>
         </button>
         ${dropdownEl}
       </div>
@@ -39,13 +43,18 @@ export class WorkspacesiteMenuNavbarBtn {
       <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
         <div class="dropdown-items compact with-triangle">
           <div class="dropdown-item" onclick=${() => this.onClickViewSite()}>
-            <i class="fa fa-clone"></i>
-            View published site
+            <i class="fa fa-external-link"></i>
+            View live version
           </div>
 
           <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
             <i class="fa fa-book"></i>
             Open in Library
+          </div>
+
+          <div class="dropdown-item" onclick=${() => this.onClickOpenWorkspaceDirectory()}>
+            <i class="fa fa-folder-o"></i>
+            Open workspace directory
           </div>
         </div>
       </div>`
@@ -78,6 +87,12 @@ export class WorkspacesiteMenuNavbarBtn {
     const page = pages.getActive()
     if (!page || page.protocolInfo.scheme !== 'workspace:') return
     page.loadURL(page.siteInfo.publishTargetUrl)
+  }
+
+  onClickOpenWorkspaceDirectory () {
+    this.close()
+    const page = pages.getActive()
+    // TODO
   }
 
   onClickViewFiles () {

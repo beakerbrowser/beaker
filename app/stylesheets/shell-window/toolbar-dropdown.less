@@ -108,6 +108,27 @@
   }
 }
 
+.workspace-dropdown-menu {
+  margin-top: 4px;
+
+  .btn {
+    height: 20px;
+    line-height: 20px;
+    font-size: 12.5px;
+    padding: 0 6px;
+
+    &.pressed {
+      background: shade(@lime, 10%);
+      border-color: shade(@lime, 10%);
+      box-shadow: inset 0px 0 2px fadeout(shade(@lime, 13%), 50%);
+    }
+  }
+
+  .dropdown-items {
+    width: 225px;
+  }
+}
+
 .toolbar-updates {
   display: inline-block;
   position: relative;

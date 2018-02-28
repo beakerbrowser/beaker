@@ -185,6 +185,16 @@
   }
 }
 
+&.lime {
+  background: @lime;
+  color: shade(@lime, 55%);
+  border: 1px solid @lime;
+
+  &:hover {
+    background: shade(@lime, 8%);
+  }
+}
+
 .btn-group {
   &:extend(.flex);
 

@@ -4,13 +4,22 @@
   justify-content: space-around;
   padding: 0 5px;
   margin-left: 5px;
-  background: #eee;
+  background: #eaeaea;
   color: @color-text--muted;
   border-radius: 2px;
   height: 16px;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .2px;
+  line-height: 16px;
+  font-size: 12px;
+
+  &:hover {
+    text-decoration: none;
+  }
+
+  &.read-only {
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: .2px;
+  }
 
   &.green {
     background: shade(@green, 15%);
@@ -19,6 +28,11 @@
 
   &.blue {
     background: @blue;
+    color: #fff;
+  }
+
+  &.warning {
+    background: shade(@red, 18%);
     color: #fff;
   }
 }
