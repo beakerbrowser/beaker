@@ -92,7 +92,7 @@ async function setup () {
     // fetch workspace info for this archive
     try {
       workspaceInfo = await beaker.workspaces.get(0, archive.info.url)
-      workspaceInfo.revisions = []
+      if (workspaceInfo) workspaceInfo.revisions = []
       filesBrowser.setWorkspaceInfo(workspaceInfo)
       await loadWorkspaceRevisions()
     } catch (e) {
@@ -327,7 +327,7 @@ function renderHeader () {
 
         ${isOwner
           ? (headerEditValues.title !== false)
-            ? yo`<input class="title" value=${headerEditValues.title} onkeyup=${e => onKeyupHeaderEdit(e, 'title')} />`
+            ? yo`<input class="title" value=${headerEditValues.title} onkeyup=${e => onKeyupHeaderEdit(e, 'title')} placeholder="Title" />`
             : yo`
               <div class="tooltip-container" data-tooltip="Change title">
                 <button class="title editable nofocus" onclick=${onClickChangeHeaderTitle}>
@@ -605,15 +605,15 @@ function renderSetupChecklist () {
 function renderSettingsView () {
   const title = archive.info.title || ''
   const editedTitle = settingsEditValues['title']
-  const isEditingTitle = editedTitle && title !== editedTitle
+  const isEditingTitle = editedTitle !== false && title !== editedTitle
 
   const description = archive.info.description || ''
   const editedDescription = settingsEditValues['description']
-  const isEditingDescription = editedDescription && description !== editedDescription
+  const isEditingDescription = editedDescription !== false && description !== editedDescription
 
-  const gitRepository = archive.info.manifest.repository
+  const gitRepository = archive.info.manifest.repository || ''
   const editedGitRepository = settingsEditValues['repository']
-  const isEditingGitRepository = editedGitRepository && gitRepository !== editedGitRepository
+  const isEditingGitRepository = editedGitRepository !== false && gitRepository !== editedGitRepository
 
   const isOwner = _get(archive, 'info.isOwner')
 
@@ -691,7 +691,7 @@ function renderSettingsView () {
             ${isOwner
               ? yo`
                 <form class="input-group">
-                  <input type="text" name="title" value=${editedTitle || title} onkeyup=${e => onKeyupSettingsEdit(e, 'title')} placeholder="Set title">
+                  <input type="text" name="title" value=${isEditingTitle ? editedTitle : title} onkeyup=${e => onKeyupSettingsEdit(e, 'title')} placeholder="Set title">
                   <button disabled="${!isEditingTitle}" class="btn" onclick=${e => onSaveSettingsEdit(e, 'title')}>
                     Save
                   </button>
@@ -710,7 +710,7 @@ function renderSettingsView () {
             ${isOwner
               ? yo`
                 <form class="input-group">
-                  <input type="text" name="description" value=${editedDescription || description} onkeyup=${e => onKeyupSettingsEdit(e, 'description')} placeholder="Set description"/>
+                  <input type="text" name="description" value=${isEditingDescription ? editedDescription : description} onkeyup=${e => onKeyupSettingsEdit(e, 'description')} placeholder="Set description"/>
                   <button disabled="${!isEditingDescription}" class="btn" onclick=${e => onSaveSettingsEdit(e, 'description')}>
                     Save
                   </button>
@@ -807,7 +807,7 @@ function renderSettingsView () {
                       <input
                         type="text"
                         name="repository"
-                        value=${editedGitRepository || gitRepository || ''}
+                        value=${isEditingGitRepository ? editedGitRepository : gitRepository}
                         placeholder="Example: https://github.com/beakerbrowser/beaker.git"
                         onkeyup=${e => onKeyupSettingsEdit(e, 'repository')} />
                       <button class="btn" disabled=${!isEditingGitRepository} onclick=${e => onSaveSettingsEdit(e, 'repository')}>
@@ -1664,6 +1664,7 @@ async function onSaveSettingsEdit (e, name) {
   await setManifestValue(name, value)
   settingsSuccess[name] = true
   settingsEditValues[name] = false
+  render()
 
   setTimeout(() => {
     settingsSuccess[name] = false
@@ -1781,12 +1782,16 @@ async function readViewStateFromUrl () {
 }
 
 async function setManifestValue (attr, value) {
-  value = value || ''
-  let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
-  await archive2.configure({[attr]: value})
-  Object.assign(archive.info, {[attr]: value})
-  Object.assign(archive.info.manifest, {[attr]: value})
-  document.title = `Library - ${archive.info.title || 'Untitled'}`
+  try {
+    value = value || ''
+    let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
+    await archive2.configure({[attr]: value})
+    Object.assign(archive.info, {[attr]: value})
+    Object.assign(archive.info.manifest, {[attr]: value})
+    document.title = `Library - ${archive.info.title || 'Untitled'}`
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+  }
 }
 
 // helper to rerender the peer history graph
