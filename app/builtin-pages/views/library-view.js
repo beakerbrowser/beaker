@@ -1394,13 +1394,15 @@ async function onPublishAllRevisions (e) {
   if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
   try {
     await beaker.workspaces.publish(0, workspaceInfo.name, {paths})
-    activeView = 'files'
-    window.history.pushState('', {}, `beaker://library/${path}#files`)
-    render()
     toast.create('Changes published.', 'success')
   } catch (e) {
+    console.error(e)
     toast.create('Could not publish changes. Something went wrong.', 'error')
+    return
   }
+  activeView = 'files'
+  window.history.pushState('', {}, `beaker://library/${archive.url}#files`)
+  render()
 }
 
 async function onRevertRevision (e, rev) {
