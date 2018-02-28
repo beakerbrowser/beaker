@@ -677,7 +677,7 @@ function onDidStopLoading (e) {
         .then(info => {
           page.siteInfo = info
           navbar.update(page)
-          console.log('site info', info)
+          console.log('dat site info', info)
 
           // fallback the tab title to the site title, if needed
           if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
@@ -690,7 +690,8 @@ function onDidStopLoading (e) {
       beaker.workspaces.get(0, hostname)
         .then(info => {
           page.siteInfo = info
-          console.log(info)
+          navbar.update(page)
+          console.log('workspace site info', info)
         })
     }
     if (protocol !== 'beaker:') {
