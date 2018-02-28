@@ -270,8 +270,6 @@ async function loadReadme () {
           ${readmeHeader}
           ${readmeContent}
         </div>`
-    } else if (!(readmeContent || node.parent)) {
-      readmeElement = renderReadmeHint()
     }
   }
 
@@ -486,7 +484,7 @@ function renderFilesView () {
         }
         ${archive.info.isOwner ? renderSetupChecklist() : ''}
         ${filesBrowser ? filesBrowser.render() : ''}
-        ${readmeElement || ''}
+        ${readmeElement ? readmeElement : renderReadmeHint()}
         ${!archive.info.isOwner ? renderMakeCopyHint() : ''}
       </div>
     </div>
@@ -505,6 +503,7 @@ function renderMakeCopyHint () {
 
 function renderReadmeHint () {
   if (!archive.info.isOwner) return ''
+  if (filesBrowser.getCurrentSource().parent) return '' // only at root
 
   return yo`
     <div class="hint">
