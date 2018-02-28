@@ -92,7 +92,8 @@ export class WorkspacesiteMenuNavbarBtn {
   onClickOpenWorkspaceDirectory () {
     this.close()
     const page = pages.getActive()
-    // TODO
+    if (!page || page.protocolInfo.scheme !== 'workspace:') return
+    beaker.browser.openFolder(page.siteInfo.localFilesPath)
   }
 
   onClickViewFiles () {
