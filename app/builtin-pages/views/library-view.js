@@ -29,7 +29,6 @@ var activeView // will default to 'files'
 var archive
 var archiveFsRoot
 var filesBrowser
-
 var workspaceInfo
 
 var markdownRenderer = createMd()
@@ -868,6 +867,13 @@ function renderNetworkView () {
               </button>
             </div>
 
+            <h3 class="subtitle-heading">Peers</h3>
+            <ul>
+              ${_get(archive, 'info.peerInfo', []).map(peer => {
+                return yo`<li>${peer.host}:${peer.port}</li>`
+              })}
+            </ul>
+
             <h3 class="subtitle-heading">Network activity (last hour)</h3>
             ${renderPeerHistoryGraph(archive.info)}
           </div>
@@ -1652,6 +1658,7 @@ async function onWorkspaceChanged () {
 function onNetworkChanged (e) {
   if (e.details.url === archive.url) {
     var now = Date.now()
+    archive.info.peerInfo = e.details.peers
     archive.info.peers = e.details.peerCount
     var lastHistory = archive.info.peerHistory.slice(-1)[0]
     if (lastHistory && (now - lastHistory.ts) < 10e3) {
