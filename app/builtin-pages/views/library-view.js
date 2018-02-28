@@ -54,6 +54,7 @@ var headerEditValues = {
 var toplevelError
 var copySuccess = false
 var isFaviconSet = true
+var isGettingStartedDismissed = false
 var faviconCacheBuster
 var workspaceFileActStream
 
@@ -95,6 +96,7 @@ async function setup () {
     await loadWorkspaceRevisions()
 
     // check if the favicon is set
+    isGettingStartedDismissed = (localStorage[archive.info.key + '-gsd'] === '1')
     if (_get(archive, 'info.isOwner')) {
       let favicon = await beaker.sitedata.get(archive.url, 'favicon')
       if (!favicon) favicon = await (archive.stat('/favicon.png').catch(() => null))
@@ -519,7 +521,7 @@ function renderSetupChecklist () {
   const hasWorkspaceDirectory = workspaceInfo && workspaceInfo.localFilesPath
   const hasFavicon = isFaviconSet
 
-  if ((new URL(window.location)).searchParams.has('new') === false) return ''
+  if (isGettingStartedDismissed) return ''
   if (hasTitle && hasWorkspaceDirectory && hasFavicon) return ''
 
   return yo`
@@ -1238,7 +1240,7 @@ function renderRepositoryLink () {
 async function onMakeCopy () {
   let {title} = await copydatPopup.create({archive})
   const fork = await DatArchive.fork(archive.url, {title, prompt: false}).catch(() => {})
-  window.location = `beaker://library/${fork.url}?new`
+  window.location = `beaker://library/${fork.url}`
 }
 
 async function addReadme () {

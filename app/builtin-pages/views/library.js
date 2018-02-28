@@ -437,7 +437,7 @@ async function onMakeCopy (e, archive) {
   }
 
   const fork = await DatArchive.fork(archive.url, {prompt: true}).catch(() => {})
-  window.location = `beaker://library/${fork.url}?new`
+  window.location = `beaker://library/${fork.url}`
 }
 
 async function onDelete (e, archive) {
