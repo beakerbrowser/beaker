@@ -90,9 +90,17 @@ async function setup () {
     await archive.startMonitoringDownloadProgress()
 
     // fetch workspace info for this archive
-    workspaceInfo = await beaker.workspaces.get(0, archive.info.url)
-    filesBrowser.setWorkspaceInfo(workspaceInfo)
-    await loadWorkspaceRevisions()
+    try {
+      workspaceInfo = await beaker.workspaces.get(0, archive.info.url)
+      workspaceInfo.revisions = []
+      filesBrowser.setWorkspaceInfo(workspaceInfo)
+      await loadWorkspaceRevisions()
+    } catch (e) {
+      // suppress ArchiveNotWritableError, that is emitted if the dat is deleted
+      if (e.name !== 'ArchiveNotWritableError') {
+        throw e
+      }
+    }
 
     // check if the favicon is set
     isGettingStartedDismissed = (localStorage[archive.info.key + '-gsd'] === '1')
@@ -618,7 +626,7 @@ function renderSettingsView () {
     wsDirectoryHeading = yo`<h3 class="no-margin">Workspace directory</h3>`
     wsDirectoryDescription = yo`
       <p>
-        This project's files are saved on your computer at
+        This project${"'"}s files are saved on your computer at
         <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
           ${workspaceInfo.localFilesPath}
         </span>
@@ -644,7 +652,7 @@ function renderSettingsView () {
     wsDirectoryDescription = yo`
       <p>
         <em>
-          This project's workspace directory was deleted or moved. (${workspaceInfo.missingLocalFilesPath})
+          This project${"'"}s workspace directory was deleted or moved. (${workspaceInfo.missingLocalFilesPath})
         </em>
 
         <form>
@@ -657,7 +665,7 @@ function renderSettingsView () {
     wsDirectoryHeading = yo`<h3 class="no-margin">Set up workspace directory</h3>`
     wsDirectoryDescription = yo`
       <p>
-        Choose the directory where this project's files will be saved.
+        Choose the directory where this project${"'"}s files will be saved.
 
         <form>
           <button type="button" class="btn" onclick=${onChangeWorkspaceDirectory}>
