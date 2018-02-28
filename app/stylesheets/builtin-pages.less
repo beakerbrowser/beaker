@@ -569,14 +569,19 @@
         width: 370px;
       }
 
+      form {
+        margin-top: 5px;
+      }
+
       h2:not(.subtitle-heading),
       h3:not(.subtitle-heading) {
         font-size: inherit;
         font-weight: 500;
         margin-bottom: 0;
+        margin-top: 25px;
 
-        &:not(:first-child) {
-          margin-top: 25px;
+        &.no-margin {
+          margin: 0;
         }
       }
 

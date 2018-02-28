@@ -611,6 +611,62 @@ function renderSettingsView () {
 
   let wsPath = workspaceInfo && workspaceInfo.localFilesPath
   if (wsPath && wsPath.indexOf(' ') !== -1) wsPath = `"${wsPath}"`
+
+  let wsDirectoryHeading = ''
+  let wsDirectoryDescription = ''
+  if (workspaceInfo && workspaceInfo.localFilesPath) {
+    wsDirectoryHeading = yo`<h3 class="no-margin">Workspace directory</h3>`
+    wsDirectoryDescription = yo`
+      <p>
+        This project's files are saved on your computer at
+        <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+          ${workspaceInfo.localFilesPath}
+        </span>
+
+        <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(workspaceInfo.localFilesPath, '',  true)}>
+          <i class="fa fa-clipboard"></i>
+        </button>
+
+        <form class="input-group">
+          <input disabled type="text" value=${workspaceInfo.localFilesPath} placeholder="Change workspace directory"/>
+          <button type="button" class="btn" onclick=${onChangeWorkspaceDirectory}>
+            Change workspace directory
+          </button>
+        </form>
+      </p>`
+  } else if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
+    wsDirectoryHeading = yo`
+      <h3 class="no-margin">
+        Workspace directory
+        <i class="fa fa-exclamation-circle"></i>
+      </h3>`
+
+    wsDirectoryDescription = yo`
+      <p>
+        <em>
+          This project's workspace directory was deleted or moved. (${workspaceInfo.missingLocalFilesPath})
+        </em>
+
+        <form>
+          <button type="button" class="btn" onclick=${onChangeWorkspaceDirectory}>
+            Choose new directory
+          </button>
+        </form>
+      </p>`
+  } else {
+    wsDirectoryHeading = yo`<h3 class="no-margin">Set up workspace directory</h3>`
+    wsDirectoryDescription = yo`
+      <p>
+        Choose the directory where this project's files will be saved.
+
+        <form>
+          <button type="button" class="btn" onclick=${onChangeWorkspaceDirectory}>
+            Set workspace directory
+          </button>
+        </form>
+      </p>`
+  }
+
   return yo`
     <div class="container">
       <div class="settings view">
@@ -623,7 +679,7 @@ function renderSettingsView () {
 
           <div class="module-content bordered">
 
-            <h3>Title</h3>
+            <h3 class="no-margin">Title</h3>
             ${isOwner
               ? yo`
                 <form class="input-group">
@@ -679,7 +735,7 @@ function renderSettingsView () {
           </div>
         </div>
 
-        ${isOwner && workspaceInfo
+        ${isOwner
           ? yo`
             <div class="module">
               <h2 class="module-heading">
@@ -689,55 +745,36 @@ function renderSettingsView () {
 
               <div class="module-content bordered">
                 <div>
-                  <h3>Workspace directory</h3>
+                  ${wsDirectoryHeading}
+                  ${wsDirectoryDescription}
 
-                  ${workspaceInfo.localFilesPath
+                  ${workspaceInfo
                     ? yo`
-                      <p>
-                        This project${"'"}s files are saved on your computer at
-                        <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-                          ${workspaceInfo.localFilesPath}
-                        </span>
+                      <div>
+                        <h3>Local preview URL</h3>
 
-                        <button class="btn plain tooltip-container" data-tooltip="Copy path" onclick=${() => onCopy(workspaceInfo.localFilesPath, 'Path copied to clipboard')}>
-                          <i class="fa fa-clipboard"></i>
-                        </button>
-                      </p>`
-                    : yo`
-                      <p>
-                        Choose the directory where the files for this project will be saved.
-                      </p>`
+                        <p>
+                          Preview unpublished changes at
+                          <a href="workspace://${workspaceInfo.name}">workspace://${workspaceInfo.name}</a>
+
+                          <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`, '',  true)}>
+                            <i class="fa fa-clipboard"></i>
+                          </button>
+                        </p>
+
+                        <h3>Published URL</h3>
+
+                        <p>
+                          Published changes are shared on network at
+                          <a href=${archive.url} target="_blank">${shortenHash(archive.url)}</a>
+
+                          <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url, '', true)}>
+                            <i class="fa fa-clipboard"></i>
+                          </button>
+                        </p>
+                      </div>`
+                    : ''
                   }
-
-                  <form class="input-group">
-                    <input type="text" value=${workspaceInfo.localFilesPath || ''} placeholder="Set workspace directory"/>
-                    <button class="btn">
-                      ${workspaceInfo.localFilesPath ? 'Change' : 'Set'} workspace directory
-                    </button>
-                  </form>
-
-                  <h3>Local preview URL</h3>
-
-                  <p>
-                    Preview unpublished changes at
-                    <a href="workspace://${workspaceInfo.name}" target="_blank">workspace://${workspaceInfo.name}</a>
-
-                    <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`, '',  true)}>
-                      <i class="fa fa-clipboard"></i>
-                    </button>
-                  </p>
-
-
-                  <h3>Published URL</h3>
-
-                  <p>
-                    Published changes are shared on network at
-                    <a href=${archive.url} target="_blank">${shortenHash(archive.url)}</a>
-
-                    <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url, '', true)}>
-                      <i class="fa fa-clipboard"></i>
-                    </button>
-                  </p>
                 </div>
               </div>
             </div>`
@@ -757,26 +794,26 @@ function renderSettingsView () {
                   <p>
                     Set a <a href="https://git-scm.com/" target="_blank">Git</a> repository so people can find
                     and contribute to the source code for this project.
-                  </p>
 
-                  <form class="input-group">
-                    <input
-                      type="text"
-                      name="repository"
-                      value=${editedGitRepository || gitRepository || ''}
-                      placeholder="Example: https://github.com/beakerbrowser/beaker.git"
-                      onkeyup=${e => onKeyupSettingsEdit(e, 'repository')} />
-                    <button class="btn" disabled=${!isEditingGitRepository} onclick=${e => onSaveSettingsEdit(e, 'repository')}>
-                      Save
-                    </button>
-                    ${settingsSuccess['repository']
-                      ? yo`
-                        <span class="success-message">
-                          <i class="fa fa-check"></i>
-                        </span>`
-                      : ''
-                    }
-                  </form>
+                    <form class="input-group">
+                      <input
+                        type="text"
+                        name="repository"
+                        value=${editedGitRepository || gitRepository || ''}
+                        placeholder="Example: https://github.com/beakerbrowser/beaker.git"
+                        onkeyup=${e => onKeyupSettingsEdit(e, 'repository')} />
+                      <button class="btn" disabled=${!isEditingGitRepository} onclick=${e => onSaveSettingsEdit(e, 'repository')}>
+                        Save
+                      </button>
+                      ${settingsSuccess['repository']
+                        ? yo`
+                          <span class="success-message">
+                            <i class="fa fa-check"></i>
+                          </span>`
+                        : ''
+                      }
+                    </form>
+                  </p>
                 </div>`
               : yo`
                 ${archive.info.repository
