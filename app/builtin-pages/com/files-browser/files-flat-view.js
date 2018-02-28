@@ -247,7 +247,7 @@ function rContainer (filesBrowser, node, depth) {
     >
       <i class="fa fa-folder"></i>
       <div class="name-container"><div class="name">${node.name}</div></div>
-      <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
+      <div class="updated">${niceMtime(node.mtime)}</div>
       <div class="size">${node.size ? prettyBytes(node.size) : '--'}</div>
     </div>`,
     children
@@ -264,7 +264,7 @@ function rFile (filesBrowser, node, depth) {
     >
       <i class="fa fa-file-text-o"></i>
       <div class="name-container"><div class="name">${node.name}</div></div>
-      <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
+      <div class="updated">${niceMtime(node.mtime)}</div>
       <div class="size">${typeof node.size === 'number' ? prettyBytes(node.size) : '--'}</div>
     </div>
   `
@@ -275,6 +275,7 @@ function rFile (filesBrowser, node, depth) {
 
 const today = moment()
 function niceMtime (ts) {
+  if ((+ts) === 0) return ''
   ts = moment(ts)
   if (ts.isSame(today, 'day')) {
     return 'Today, ' + ts.format('h:mma')
