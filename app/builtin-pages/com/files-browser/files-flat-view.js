@@ -29,12 +29,10 @@ export default function render (filesBrowser, currentSource, workspaceInfo) {
       <div
         class="body"
         onclick=${e => onClickNode(e, filesBrowser, currentSource)}>
-        <div>
-          ${currentSource.type === 'file'
-            ? rFilePreview(currentSource)
-            : rChildren(filesBrowser, currentSource.children)
-          }
-        </div>
+        ${currentSource.type === 'file'
+          ? rFilePreview(currentSource)
+          : rChildren(filesBrowser, currentSource.children)
+        }
       </div>
     </div>
   `
@@ -215,21 +213,17 @@ function rChildren (filesBrowser, children, depth = 0) {
   const path = filesBrowser.getCurrentSourcePath()
   const parentNode = (path.length >= 2) ? path[path.length - 2] : filesBrowser.root
 
-  return yo`
-    <div>
-      ${path.length < 1
-        ? ''
-        : yo`
-          <div class="item ascend" onclick=${e => onClickNode(e, filesBrowser, parentNode)}>
-            ..
-          </div>`
-      }
-
-      ${children.length === 0 && depth === 0
-        ? yo`<div class="item empty"><em>No files</em></div>`
-        : children.map(childNode => rNode(filesBrowser, childNode, depth))
-      }
-    </div>`
+  return [
+    ((path.length < 1)
+      ? ''
+      : yo`
+        <div class="item ascend" onclick=${e => onClickNode(e, filesBrowser, parentNode)}>
+          ..
+        </div>`),
+    ((children.length === 0 && depth === 0)
+      ? yo`<div class="item empty"><em>No files</em></div>`
+      : children.map(childNode => rNode(filesBrowser, childNode, depth)))
+  ]
 }
 
 function rNode (filesBrowser, node, depth) {
@@ -244,22 +238,20 @@ function rContainer (filesBrowser, node, depth) {
   const isArchive = node && node.constructor.name === 'FSArchive'
   let children = ''
 
-  return yo`
-    <div>
-      <div
-        class="item folder"
-        title=${node.name}
-        onclick=${e => onClickNode(e, filesBrowser, node)}
-        oncontextmenu=${e => onContextmenuNode(e, filesBrowser, node)}
-      >
-        <i class="fa fa-folder"></i>
-        <div class="name-container"><div class="name">${node.name}</div></div>
-        <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
-        <div class="size">${node.size ? prettyBytes(node.size) : '--'}</div>
-      </div>
-      ${children}
-    </div>
-  `
+  return [
+    yo`<div
+      class="item folder"
+      title=${node.name}
+      onclick=${e => onClickNode(e, filesBrowser, node)}
+      oncontextmenu=${e => onContextmenuNode(e, filesBrowser, node)}
+    >
+      <i class="fa fa-folder"></i>
+      <div class="name-container"><div class="name">${node.name}</div></div>
+      <div class="updated">${node.mtime ? niceMtime(node.mtime) : ''}</div>
+      <div class="size">${node.size ? prettyBytes(node.size) : '--'}</div>
+    </div>`,
+    children
+  ]
 }
 
 function rFile (filesBrowser, node, depth) {
