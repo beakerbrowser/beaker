@@ -130,6 +130,8 @@ export class SiteInfoNavbarBtn {
       title = this.page.siteInfo.title
     } else if (this.page.protocolInfo && this.page.protocolInfo.scheme === 'dat:') {
       title = 'Untitled'
+    } else if (this.page.protocolInfo && this.page.protocolInfo.scheme === 'workspace:') {
+      title = 'workspace://' + this.page.protocolInfo.hostname
     }
     return title
   }
