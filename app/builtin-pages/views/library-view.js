@@ -535,6 +535,9 @@ function renderSetupChecklist () {
       <h2 class="lined-heading">
         <i class="fa fa-magic"></i>
         Getting started
+        <a class="lined-heading-action" href="#" title="Dismiss" onclick=${onDismissGettingStarted} data-tooltip="Dismiss">
+          <i class="fa fa-times"></i>
+        </a>
       </h2>
 
       <div class="setup-checklist">
@@ -1360,6 +1363,20 @@ async function onClickChangeHeaderTitle (e) {
   headerEditValues.title = archive.info.title
   render()
   document.querySelector('input.title').select()
+}
+
+function onDismissGettingStarted (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  // start hide animation
+  document.querySelector('.setup-info').classList.add('hide-animation')
+
+  setTimeout(() => {
+    localStorage[archive.info.key + '-gsd'] = '1'
+    isGettingStartedDismissed = true
+    render()
+  }, 450)
 }
 
 function onClickFavicon (e) {

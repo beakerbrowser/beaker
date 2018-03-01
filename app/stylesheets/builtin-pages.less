@@ -66,6 +66,7 @@
 
   .lined-heading {
     &:extend(.flex);
+    position: relative;
     align-items: center;
     font-size: 1.15rem;
     margin-bottom: 25px;
@@ -90,6 +91,22 @@
       flex: 1;
       height: 1px;
       background: #eee;
+    }
+
+    .lined-heading-action {
+      position: absolute;
+      right: 0;
+      background: #fff;
+      padding-left: 10px;
+      color: @color-text--muted !important;
+
+      * {
+        cursor: pointer;
+      }
+
+      &:hover {
+        color: @color-text !important;
+      }
     }
   }
 

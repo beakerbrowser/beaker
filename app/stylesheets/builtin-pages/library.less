@@ -309,6 +309,17 @@
     padding-bottom: 25px;
     border-bottom: 1px solid #eee;
 
+    // hide animation
+    height: 200px;
+    opacity: 1;
+    transition: height 0.5s, opacity 0.5s, margin 0.5s, padding 0.5s;
+    &.hide-animation {
+      height: 0;
+      opacity: 0;
+      padding: 0;
+      margin: 0;
+    }
+
     .setup-checklist {
       display: grid;
       grid-gap: 30px;
