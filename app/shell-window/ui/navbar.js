@@ -170,6 +170,7 @@ export function closeMenus () {
 function render (id, page) {
   const isLoading = page && page.isLoading()
   const isViewingDat = page && page.getURL().startsWith('dat:')
+  const isViewingWorkspace = page && page.getURL().startsWith('workspace:')
   const siteHasDatAlternative = page && page.siteHasDatAlternative
   const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
   const siteLoadError = page && page.siteLoadError
@@ -256,16 +257,20 @@ function render (id, page) {
       </button>`
   }
 
+  // live reload btn
+  const isLiveReloading = page && page.isLiveReloading()
+  const liveReloadBtn = (isViewingDat || isViewingWorkspace)
+    ? yo`
+      <button
+        class="live-reload-btn ${isLiveReloading ? 'active' : ''}"
+        title="Toggle live reloading"
+        onclick=${() => page.toggleLiveReloading()}>
+        <i class="fa fa-bolt"></i>
+      </span>`
+    : ''
+
   // dat buttons
   var datBtns = []
-
-  if (page && page.isLiveReloading()) {
-    datBtns.unshift(
-      yo`<span class="live-reload-indicator" title="Live reloading active">
-          <i class="fa fa-bolt"></i>
-        </span>`
-    )
-  }
 
   if (isViewingDat) {
     // TODO(apps) restore when we bring back apps -prf
@@ -383,6 +388,7 @@ function render (id, page) {
           datsiteMenuNavbarBtn.render(),
           workspacesiteMenuNavbarBtn.render(),
           pageMenuNavbarBtn.render(),
+          liveReloadBtn,
           bookmarkMenuNavbarBtn.render()
         ] : ''}
       </div>

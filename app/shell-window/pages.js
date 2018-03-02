@@ -240,7 +240,7 @@ export function create (opts) {
       if (page.liveReloadEvents) {
         page.liveReloadEvents.close()
         page.liveReloadEvents = false
-      } else if (page.siteInfo) {
+      } else if (page.protocolInfo && page.protocolInfo.scheme === 'dat:' && page.siteInfo) {
         var archive = new DatArchive(page.siteInfo.key)
         page.liveReloadEvents = archive.createFileActivityStream()
         let event = (page.siteInfo.isOwner) ? 'changed' : 'invalidated'
@@ -251,6 +251,7 @@ export function create (opts) {
         page.liveReloadEvents = beaker.workspaces.createFileActivityStream(0, page.protocolInfo.hostname)
         page.liveReloadEvents.addEventListener('changed', page.triggerLiveReload.bind(page))
       }
+      toast.create(`Live reloading ${(page.liveReloadEvents) ? 'started' : 'stopped'}`, 1e3)
       navbar.update(page)
     },
 

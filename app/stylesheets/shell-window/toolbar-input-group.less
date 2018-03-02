@@ -146,15 +146,23 @@
         color: gray;
       }
     }
-  }
 
-  .live-reload-indicator {
-    margin: 0 10px 0 2px;
-    color: gold;
-    -webkit-text-stroke: 1px #e6a734;
-    font-size: 15px;
-    position: relative;
-    top: -1px;
+    &.live-reload-btn {
+      color: transparent;
+      -webkit-text-stroke: 1px #777;
+      font-size: 15px;
+
+      .fa {
+        position: relative;
+        top: -1px;
+      }
+
+      &.active .fa {
+        color: gold;
+        -webkit-text-stroke: 1px #e6a734;
+        text-shadow: 0 0 10px gold;
+      }
+    }
   }
 
   .toolbar-site-info {
