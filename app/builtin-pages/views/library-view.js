@@ -305,6 +305,8 @@ function renderHeader () {
         <a href="beaker://library" class="back-link">
           <i class="fa fa-angle-double-left"></i>
         </a>
+        
+        ${renderTabs()}
 
         ${isOwner
           ? yo`
@@ -345,8 +347,6 @@ function renderHeader () {
         <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url, '', true)}>
           <i class="fa fa-link"></i>
         </button>
-
-        ${renderTabs()}
       </div>
     </div>`
 }
