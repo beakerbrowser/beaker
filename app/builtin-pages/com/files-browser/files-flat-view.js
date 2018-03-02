@@ -71,20 +71,23 @@ function rVersion (filesBrowser, currentSource) {
 function renderRevisionsOverview (workspaceInfo) {
   if (!workspaceInfo) return ''
 
+  const hasRevisions = (workspaceInfo.revisions && workspaceInfo.revisions.length)
   const renderRevisionType = rev => yo`<div class="revision-type ${rev.change}"></div>`
 
   return yo`
     <div class="revisions-overview">
       ${workspaceInfo.revisions.slice(0, 4).map(renderRevisionType)}
-      <span class="label ${!workspaceInfo.revisions || !workspaceInfo.revisions.length ? 'empty' : ''}" onclick=${() => emitSetView('revisions')}>
-        ${workspaceInfo.revisions && workspaceInfo.revisions.length
+      <span
+        class="label ${!hasRevisions ? 'empty' : ''}"
+        onclick=${() => hasRevisions ? emitSetView('revisions') : undefined}>
+        ${hasRevisions
           ? `${workspaceInfo.revisions.length} ${pluralize(workspaceInfo.revisions.length, 'unpublished revision')}`
           : yo`<em>No unpublished revisions</em>`
         }
       </span>
 
       <div class="buttons">
-        ${workspaceInfo.revisions && workspaceInfo.revisions.length
+        ${hasRevisions
           ? yo`
             <button class="btn plain" onclick=${() => emitSetView('revisions')}>
               <i class="fa fa-code"></i>
