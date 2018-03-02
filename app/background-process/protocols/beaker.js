@@ -47,7 +47,7 @@ async function beakerProtocol (request, respond) {
     } else if (typeof path === 'function') {
       respond({statusCode, headers, data: intoStream(path())})
     } else {
-      respond({statusCode, headers, data: intoStream(errorPage(code + ' ' + status))})
+      respond({statusCode, headers, data: intoStream(errorPage(statusCode + ' ' + status))})
     }
   })
 
