@@ -541,6 +541,9 @@
     }
 
     .module-heading {
+      &:extend(.flex);
+      align-items: center;
+      justify-content: space-between;
       background: #fafafa;
       padding: 7px 10px;
       border: 1px solid #ddd;
@@ -603,6 +606,42 @@
       .hint {
         padding-top: 10px;
         border-top: 1px dashed #ddd;
+      }
+    }
+
+    table {
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      font-size: 12.5px;
+      margin-bottom: 5px;
+
+      tr {
+        display:block;
+        width: 100%;
+        padding: 3px 10px;
+
+        &:nth-child(2n+1) {
+          background: #f7f7f7;
+        }
+
+        &:not(:last-child) {
+          border-bottom: 1px solid #eee;
+        }
+
+        &:first-child {
+          border-bottom: 1px solid #ddd;
+        }
+      }
+
+      td {
+        padding: 0;
+      }
+
+      th {
+        display: block;
+        width: 100%;
+        font-weight: 600;
+        padding: 0;
       }
     }
 

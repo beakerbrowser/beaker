@@ -54,6 +54,7 @@ var toplevelError
 var copySuccess = false
 var isFaviconSet = true
 var isGettingStartedDismissed = false
+var arePeersCollapsed = true
 var faviconCacheBuster
 var workspaceFileActStream
 
@@ -305,7 +306,7 @@ function renderHeader () {
         <a href="beaker://library" class="back-link">
           <i class="fa fa-angle-double-left"></i>
         </a>
-        
+
         ${renderTabs()}
 
         ${isOwner
@@ -683,8 +684,10 @@ function renderSettingsView () {
 
         <div class="module">
           <h2 class="module-heading">
-            <i class="fa fa-info-circle"></i>
-            General
+            <span>
+              <i class="fa fa-info-circle"></i>
+              General
+            </span>
           </h2>
 
           <div class="module-content bordered">
@@ -749,8 +752,10 @@ function renderSettingsView () {
           ? yo`
             <div class="module">
               <h2 class="module-heading">
-                <i class="fa fa-code"></i>
-                Workspace settings
+                <span>
+                  <i class="fa fa-code"></i>
+                  Workspace settings
+                </span>
               </h2>
 
               <div class="module-content bordered">
@@ -793,8 +798,10 @@ function renderSettingsView () {
 
         <div class="module">
           <h2 class="module-heading">
-            <i class="fa fa-git"></i>
-            Git integration
+            <span>
+              <i class="fa fa-git"></i>
+              Git integration
+            </span>
           </h2>
 
           <div class="module-content bordered">
@@ -915,11 +922,41 @@ function renderNetworkView () {
             </div>
 
             <h3 class="subtitle-heading">Peers</h3>
-            <ul>
-              ${_get(archive, 'info.peerInfo', []).map(peer => {
-                return yo`<li>${peer.host}:${peer.port}</li>`
-              })}
-            </ul>
+            ${!_get(archive, 'info.peers')
+              ? yo`<em>No active peers</em>`
+              : yo`
+                <table>
+                  <tr>
+                    <th>
+                      IP address
+                      <i class="fa fa-question-circle-o"></i>
+                    </th>
+                  </tr>
+
+                  ${_get(archive, 'info.peerInfo', []).slice(0, peersLimit).map(peer => {
+                    return yo`
+                      <tr class="ip-address">
+                        <td>
+                          ${peer.host}:${peer.port}
+                        </td>
+                      </tr>`
+                  })}
+                </table>`
+            }
+
+            ${Number(archive.info.peers) > 6
+              ? yo`
+                <span class="link" onclick=${onTogglePeersCollapsed}>
+                  ${arePeersCollapsed  ? 'Show all' : 'Show fewer'} peers
+                  <i class="fa fa-angle-${arePeersCollapsed ? 'down' : 'up'}"></i>
+                </span>`
+              : ''
+            }
+
+            <p class="hint">
+              <i class="fa fa-share-alt"></i>
+              Peers help keep this project online by seeding its files.
+            </p>
 
             <h3 class="subtitle-heading">Network activity (last hour)</h3>
             ${renderPeerHistoryGraph(archive.info)}
@@ -1289,6 +1326,11 @@ function renderRepositoryLink () {
 
 // events
 // =
+
+function onTogglePeersCollapsed () {
+  arePeersCollapsed = !arePeersCollapsed
+  render()
+}
 
 async function onMakeCopy () {
   let {title} = await copydatPopup.create({archive})
