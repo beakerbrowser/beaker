@@ -147,7 +147,7 @@ export async function listBuiltinFavicons ({filter, offset, limit} = {}) {
       if (filter && !filter.test(filename)) {
         return false
       }
-      return filename.endsWith('.png')
+      return filename.endsWith('.ico')
     })
   return items.slice(offset || 0, limit || Number.POSITIVE_INFINITY)
 }

@@ -3,7 +3,9 @@ import path from 'path'
 import url from 'url'
 import once from 'once'
 import fs from 'fs'
+import jetpack from 'fs-jetpack'
 import intoStream from 'into-stream'
+import ICO from 'icojs'
 import errorPage from '../../lib/error-page'
 import {archivesDebugPage, datDnsCachePage, datDnsCacheJS} from '../networks/dat/debugging'
 import {getLogFileContent} from '../debug-logger'
@@ -50,6 +52,22 @@ async function beakerProtocol (request, respond) {
       respond({statusCode, headers, data: intoStream(errorPage(statusCode + ' ' + status))})
     }
   })
+  async function serveICO (path, size = 16) {
+    // read the file
+    const data = await jetpack.readAsync(path, 'buffer')
+
+    // parse the ICO to get the 16x16
+    const images = await ICO.parse(data, 'image/png')
+    let image = images[0]
+    for (let i=1; i < images.length; i++) {
+      if (Math.abs(images[i].width - size) < Math.abs(image.width - size)) {
+        image = images[i]
+      }
+    }
+
+    // serve
+    cb(200, 'OK', 'image/png', () => Buffer.from(image.buffer))
+  }
 
   var requestUrl = request.url
   var queryParams
@@ -115,7 +133,7 @@ async function beakerProtocol (request, respond) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
   }
   if (requestUrl.startsWith('beaker://assets/favicons/')) {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/favicons', requestUrl.slice('beaker://assets/favicons/'.length)))
+    return serveICO(path.join(__dirname, 'assets/favicons', requestUrl.slice('beaker://assets/favicons/'.length)))
   }
 
   // builtin pages

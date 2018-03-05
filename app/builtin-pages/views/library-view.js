@@ -1395,9 +1395,9 @@ function onClickFavicon (e) {
     async onSelect (imageData) {
       // write file to the dat then restore to the workspace
       let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
-      await archive2.writeFile('/favicon.png', imageData)
+      await archive2.writeFile('/favicon.ico', imageData)
       if (workspaceInfo && workspaceInfo.name) {
-        await beaker.workspaces.revert(0, workspaceInfo.name, {paths: ['/favicon.png']})
+        await beaker.workspaces.revert(0, workspaceInfo.name, {paths: ['/favicon.ico']})
       }
       faviconCacheBuster = Date.now()
       isFaviconSet = true

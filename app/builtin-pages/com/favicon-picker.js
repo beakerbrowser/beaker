@@ -26,7 +26,7 @@ create({
 
   // method called with selection
   onSelect (imageData) {
-    // write imageData to favicon.png
+    // write imageData to favicon.ico
   }
 }
 */
