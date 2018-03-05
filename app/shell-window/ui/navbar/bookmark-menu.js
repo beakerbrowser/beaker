@@ -85,7 +85,7 @@ export class BookmarkMenuNavbarBtn {
                 <label class="toggle">
                   <input onchange=${(e) => this.onChangePinned(e)} checked=${this.values.pinned || false} type="checkbox" name="pinned" value="pinned">
                   <div class="switch"></div>
-                  <span class="text">Add to start page</span>
+                  <span class="text">Pin to start page</span>
                 </label>
 
                 ${url.startsWith('dat://') && !page.siteInfo.isOwner
