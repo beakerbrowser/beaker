@@ -6,6 +6,7 @@ import {FSArchive} from 'beaker-virtual-fs'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import parseDatURL from 'parse-dat-url'
 import _get from 'lodash.get'
+import dragDrop from 'drag-drop'
 import FilesBrowser from '../com/files-browser2'
 import renderDiff from '../com/diff'
 import toggleable from '../com/toggleable'
@@ -70,6 +71,9 @@ window.OS_CAN_IMPORT_FOLDERS_AND_FILES = true
 
 setup()
 async function setup () {
+  // setup dragdrop
+  dragDrop(document.body, onDropFiles)
+
   try {
     // load platform info
     let browserInfo = await beaker.browser.getInfo()
@@ -1550,6 +1554,17 @@ async function onSetCurrentSource (node) {
     path += node._path
   }
   window.history.pushState('', {}, `beaker://library/${path}`)
+}
+
+function onDropFiles (files) {
+  if (!archive.info.isOwner) {
+    return
+  }
+  const dst = filesBrowser.getCurrentSource().url
+  files.forEach(f => {
+    const src = f.path
+    onAddFile({detail: {src, dst}})
+  })
 }
 
 function onOpenFolder (path) {
