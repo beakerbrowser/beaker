@@ -117,17 +117,21 @@
   &[disabled="disabled"],
   &.disabled,
   &:disabled {
-    cursor: default !important;
-    background: #fafafa !important;
-    color: @color-button--disabled !important;
+    &:extend(.btn.nofocus);
+    cursor: default;
+    background: #fafafa;
     color: rgba(0,0,0,.4) !important;
-    border: 1px solid #eee !important;
-    box-shadow: none !important;
+    border: 1px solid #eee;
     font-weight: 400 !important;
     -webkit-font-smoothing: initial !important;
 
     .spinner {
       color: #aaa !important;
+    }
+
+    &:hover {
+      cursor: default;
+      background: #fafafa;
     }
   }
 
