@@ -684,8 +684,10 @@ function renderSettingsView () {
 
         <div class="module">
           <h2 class="module-heading">
-            <i class="fa fa-info-circle"></i>
-            General
+            <span>
+              <i class="fa fa-info-circle"></i>
+              General
+            </span>
           </h2>
 
           <div class="module-content bordered">
@@ -750,8 +752,10 @@ function renderSettingsView () {
           ? yo`
             <div class="module">
               <h2 class="module-heading">
-                <i class="fa fa-code"></i>
-                Workspace settings
+                <span>
+                  <i class="fa fa-code"></i>
+                  Workspace settings
+                </span>
               </h2>
 
               <div class="module-content bordered">
@@ -794,8 +798,10 @@ function renderSettingsView () {
 
         <div class="module">
           <h2 class="module-heading">
-            <i class="fa fa-git"></i>
-            Git integration
+            <span>
+              <i class="fa fa-git"></i>
+              Git integration
+            </span>
           </h2>
 
           <div class="module-content bordered">
