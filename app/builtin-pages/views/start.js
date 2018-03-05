@@ -199,7 +199,7 @@ function renderSearchResult (res, i) {
   return yo`
     <a href=${res.targetUrl} class="autocomplete-result search-result ${i === activeSearchResult ? 'active' : ''} ${res.class}">
       ${res.faviconUrl
-        ? yo`<img class="icon favicon" src="beaker-favicon:${res.faviconUrl}"/>`
+        ? yo`<img class="icon favicon" src="beaker-favicon:32,${res.faviconUrl}"/>`
         : yo`<i class="icon ${res.icon}"></i>`
       }
 
@@ -258,7 +258,7 @@ function renderPinnedBookmark (bookmark) {
 
   return yo`
     <a class="pinned-bookmark" href=${href}>
-      <img src=${'beaker-favicon:' + href} class="favicon"/>
+      <img src=${'beaker-favicon:32,' + href} class="favicon"/>
       <div class="title">${title}</div>
     </a>
   `

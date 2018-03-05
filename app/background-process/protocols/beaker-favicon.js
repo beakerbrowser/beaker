@@ -8,6 +8,7 @@ import { protocol } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import pda from 'pauls-dat-api'
+import ICO from 'icojs'
 import {parse as parseUrl} from 'url'
 import * as sitedata from '../dbs/sitedata'
 import * as workspacesDb from '../dbs/workspaces'
@@ -25,7 +26,8 @@ export function setup () {
 
   // register favicon protocol
   protocol.registerBufferProtocol('beaker-favicon', async (request, cb) => {
-    var url = request.url.slice('beaker-favicon:'.length)
+    // parse the URL
+    let {url, faviconSize} = parseBeakerFaviconURL(request.url)
 
     try {
       // look up in db
@@ -42,21 +44,43 @@ export function setup () {
       // ignore
     }
 
-    // if a dat or a workspace, see if there's a favicon.png 
+    // if a dat or a workspace, see if there's a favicon.ico or .png 
     try {
-      let data
+      let data, fs
+      // pick the filesystem
       if (url.startsWith('dat://')) {
         url = await datDns.resolveName(url)
-        let archive = datLibrary.getArchive(url) // (only try if the dat is loaded)
-        data = await pda.readFile(archive, '/favicon.png', 'binary')
+        fs = datLibrary.getArchive(url) // (only try if the dat is loaded)
       } else if (url.startsWith('workspace://')) {
         let urlp = parseUrl(url)
         let wsEntry = await workspacesDb.get(0, urlp.hostname)
-        let scopedFS = scopedFSes.get(wsEntry.localFilesPath)
-        data = await pda.readFile(scopedFS, '/favicon.png', 'binary')
+        fs = scopedFSes.get(wsEntry.localFilesPath)
       }
-      if (data) {
-        return cb({mimeType: 'image/png', data})
+      if (fs) {
+        // try .ico
+        try {
+          data = await pda.readFile(fs, '/favicon.ico', 'binary')
+          if (data) {
+            // select the best-fitting size
+            let images = await ICO.parse(data, 'image/png')
+            let image = images[0]
+            for (let i=1; i < images.length; i++) {
+              if (Math.abs(images[i].width - faviconSize) < Math.abs(image.width - faviconSize)) {
+                image = images[i]
+              }
+            }
+            return cb({mimeType: 'image/png', data: Buffer.from(image.buffer)})
+          }
+        } catch (e) {
+          // .ico failed, igore
+          data = null
+        }
+
+        // try .png
+        data = await pda.readFile(fs, '/favicon.png', 'binary')
+        if (data) {
+          return cb({mimeType: 'image/png', data})
+        }
       }
     } catch (e) {
       // ignore
@@ -66,4 +90,13 @@ export function setup () {
   }, e => {
     if (e) { console.error('Failed to register beaker-favicon protocol', e) }
   })
+}
+
+const BEAKER_FAVICON_URL_RE = /^beaker-favicon:(\d*),?(.*)/
+function parseBeakerFaviconURL (str) {
+  const match = BEAKER_FAVICON_URL_RE.exec(str)
+  return {
+    faviconSize: (+match[1]) || 16,
+    url: match[2]
+  }
 }

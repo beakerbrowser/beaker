@@ -201,7 +201,7 @@ function renderRecent (a) {
       class="ll-row archive recent ${isMenuOpen ? 'menu-open' : ''}"
       oncontextmenu=${e => onArchivePopupMenu(e, a, {isContext: true, isRecent: true})}
     >
-      <img class="favicon" src="beaker-favicon:${a.url}" />
+      <img class="favicon" src="beaker-favicon:32,${a.url}" />
 
       ${!isOwner
         ? yo`<span class="badge read-only" title="Read-only"><i class="fa fa-eye"></i></span>`
