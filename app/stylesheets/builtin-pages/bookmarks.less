@@ -4,7 +4,29 @@
 @import "./components/tooltip";
 @import "./components/tag";
 
-.bookmarks-wrapper {
+.builtin-wrapper.bookmarks-wrapper {
+
+  .search-container {
+
+    > .tag {
+      position: absolute;
+      right: 10px;
+      top: 7px;
+    }
+
+    .dropdown-items.filters {
+      width: 255px;
+
+      .tag-cloud {
+        padding: 0 10px;
+      }
+
+      input.underline {
+        margin: 5px 10px;
+        width: 235px;
+      }
+    }
+  }
 
   .builtin-sidebar {
 
@@ -24,6 +46,19 @@
 
       .row-modifier {
         position: absolute;
+      }
+
+      .title {
+        max-width: 300px;
+      }
+
+      .url {
+        margin-right: 5px;
+      }
+
+      .tags {
+        &:extend(.overflow-ellipsis);
+        max-width: 150px;
       }
 
       .action {

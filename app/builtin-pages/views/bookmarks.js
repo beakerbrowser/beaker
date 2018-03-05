@@ -17,6 +17,8 @@ var currentView = 'all'
 var currentSort
 var bookmarks = []
 var tags = []
+var filteredTags = []
+var tagsQuery = ''
 var userProfile = {_origin: null} // null TODO(profiles) disabled -prf
 // var followedUserProfiles = null TODO(profiles) disabled -prf
 
@@ -37,6 +39,7 @@ async function setup () {
   // now load & render tags and profiles
   tags = await beaker.bookmarks.listBookmarkTags()
   tags = tags.sort()
+  filteredTags = tags
   // TODO(profiles) disabled -prf
   // followedUserProfiles = await Promise.all(
   //   userProfile.followUrls.map(u => beaker.profiles.getUserProfile(u))
@@ -132,6 +135,16 @@ function renderRow (row, i) {
 
         <span class="url bookmark__url">${getHostname(row.href)}</span>
 
+        ${!currentView.startsWith('tag:')
+          ? row.tags.map(tag => {
+            return yo`
+              <span class="tag" onclick=${e => {e.preventDefault(); e.stopPropagation(); onUpdateViewFilter(`tag:${tag}`)}}>
+                ${tag}
+              </span>`
+            })
+          : ''
+        }
+
         ${isOwner && !row.private ? yo`
           <span>
             <span class="separator">•</span>
@@ -209,10 +222,23 @@ function renderHeader () {
 
       <div class="search-container">
         <input required autofocus onkeyup=${onQueryBookmarks} placeholder=${searchPlaceholder} type="text" class="search"/>
+
         <span onclick=${onClearQuery} class="close-btn">
           ${renderCloseIcon()}
         </span>
+
         <i class="fa fa-search"></i>
+
+        ${currentView.startsWith('tag:')
+          ? yo`
+            <span class="tag active nohover">
+              ${currentView.slice('tag:'.length)}
+              <span class="remove-btn" onclick=${() => onUpdateViewFilter('')}>
+                <i class="fa fa-times"></i>
+              </span>
+            </span>`
+          : ''
+        }
 
         <div class="filter-btn">
           ${toggleable(yo`
@@ -235,12 +261,44 @@ function renderHeader () {
                     <span class="description">Recently bookmarked</span>
                   </div>
                 </div>
+
+                <div class="section">
+                  <div class="section-header">Filter by tag:</div>
+
+                  <input autofocus type="text" class="underline nofocus" onkeyup=${onQueryTags} placeholder="Search tags"/>
+
+                  <div class="tag-cloud">
+                    ${filteredTags.map(tag => {
+                      const view = `tag:${tag}`
+                      const cls = currentView === view ? 'active' : ''
+                      return yo`
+                        <button title="Filter by ${tag} tag" class="tag ${cls} nofocus" onclick=${() => onUpdateViewFilter(view)}>
+                          ${tag}
+                        </button>`
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           `)}
         </div>
       </div>
     </div>`
+}
+
+function renderTagCloud () {
+  yo.update(document.querySelector('.tag-cloud'), yo`
+    <div class="tag-cloud">
+      ${filteredTags.map(tag => {
+        const view = `tag:${tag}`
+        const cls = currentView === view ? 'active' : ''
+        return yo`
+          <button title="Filter by ${tag} tag" class="tag ${cls} onfocus" onclick=${() => onUpdateViewFilter(view)}>
+            ${tag}
+          </button>`
+      })}
+    </div>`
+  )
 }
 
 function renderSidebar () {
@@ -296,18 +354,6 @@ function renderSidebar () {
             : yo`<div class="nav-item"><em>Not following anybody.</em></div>`
           : yo`<div class="nav-item"><em>Loading...</em></div>`}
       </div>*/}
-
-      <div class="section">
-        <h2 class="subtitle-heading">Tags</h2>
-
-        <div class="tag-cloud">
-          ${tags.map(t => {
-            const view = `tag:${t}`
-            const cls = currentView === view ? 'active' : ''
-            return yo`<a class="tag ${cls}" onclick=${() => onUpdateViewFilter(view)}>${t}</a>`
-          })}
-        </div>
-      </div>
     </div>`
 }
 
@@ -320,6 +366,12 @@ function renderToPage () {
 
         <div class="builtin-main">
           ${renderSidebar()}
+
+          ${currentView.startsWith('tag:')
+            ? yo`<h2 class="subtitle-heading">${currentView}</h2>`
+            : ''
+          }
+
           ${renderBookmarks()}
         </div>
       `)
@@ -392,6 +444,12 @@ async function onQueryBookmarks (e) {
     if (!b.isHidden) resultsCount += 1
   })
   renderBookmarksListToPage()
+}
+
+async function onQueryTags (e) {
+  tagsQuery = e.target.value.toLowerCase()
+  filteredTags = tags.filter(tag => tag.toLowerCase().includes(tagsQuery))
+  renderTagCloud()
 }
 
 async function onTogglePinned (i) {

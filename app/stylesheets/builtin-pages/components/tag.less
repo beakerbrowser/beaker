@@ -1,27 +1,70 @@
 .tag {
   display: inline-block;
-  margin-right: 7px;
+  margin-left: 3px;
+  padding: 0 8px;
+  border-radius: 40px;
+  background: #e4e4e4;
+  color: rgba(0,0,0,.8);
+  font-size: 11.75px;
   text-decoration: none;
-  white-space: pre;
   cursor: pointer;
 
-  &:hover:not(.active) {
-    text-decoration: underline;
+  .remove-btn {
+    margin-left: 5px;
+    cursor: pointer;
+
+    i {
+      cursor: pointer;
+      -webkit-text-stroke: .75px #e4e4e4;
+    }
+  }
+
+  &:hover {
+    background: #ddd;
+
+    .remove-btn i {
+      -webkit-text-stroke: .75px #ddd;
+    }
+  }
+
+  &.nohover:hover {
+    background: #e4e4e4;
+
+    .remove-btn i {
+      -webkit-text-stroke: .75px #e4e4e4;
+    }
   }
 
   &.active {
-    background: @color-text;
+    background: @blue;
     color: #fff;
+    font-weight: 700;
+    -webkit-font-smoothing: antialiased;
+
+    .remove-btn i {
+      -webkit-text-stroke: .75px @blue;
+    }
+
+    &.nohover:hover {
+      background: @blue;
+
+      .remove-btn i {
+        -webkit-text-stroke: .75px @blue;
+      }
+    }
   }
 }
 
 .tag-cloud {
-  margin-top: 10px;
+  overflow-y: scroll;
+  max-height: 300px;
 
   .tag {
-    margin: 0 3px 3px 0;
-    padding: 3px;
-    line-height: 1;
-    font-size: 12.5px;
+    margin: 0 4px 4px 0;
+  }
+
+  &::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
   }
 }
