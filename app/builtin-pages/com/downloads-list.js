@@ -10,43 +10,47 @@ import renderCloseIcon from '../icon/close'
 export function render (downloadsList) {
   var downloadEls = downloadsList.downloads.map(d => {
     var metadataEl = ''
+    var progressEl = ''
 
     if (d.state == 'progressing') {
       var status = (d.isPaused) ? 'Paused' : (prettyBytes(d.downloadSpeed || 0) + '/s')
       var controls = ''
+      var cls = 'progressing'
 
-      var cancelBtn = yo`<i title="Cancel download" class="fa fa-stop" onclick=${e => downloadsList.cancelDownload(d)}></i>`
+      var cancelBtn = yo`
+        <button data-tooltip="Cancel download" onclick=${() => downloadsList.cancelDownload(d)} class="btn small tooltip-container">
+          <i title="Cancel download" class="fa fa-stop"></i>
+        </button>`
+
+      const progressPercentage = `${Math.floor((d.receivedBytes / d.totalBytes) * 100)}%`
+      progressEl = yo`
+        <div class="progress-ui blue small">
+          <div style="width: ${progressPercentage}" class="completed"></div>
+        </div>`
 
       if (d.isPaused) {
         controls = yo`
-          <span class="controls">
+          <div class="btn-group buttons controls">
             ${cancelBtn}
-            <i title="Resume download" class="fa fa-play" onclick=${e => downloadsList.resumeDownload(d)}></i>
+            <button data-tooltip="Resume download" class="btn small tooltip-container" onclick=${() => downloadsList.resumeDownload(d)}>
+              <i class="fa fa-play"></i>
+            </button>
           </span>`
       } else {
         controls = yo`
-          <span class="controls">
+          <div class="buttons controls btn-group">
             ${cancelBtn}
-            <i title="Pause download" class="fa fa-pause" onclick=${e => downloadsList.pauseDownload(d)}></i>
-          </span>
+            <button data-tooltip="Pause download" class="btn small tooltip-container" onclick=${() => downloadsList.pauseDownload(d)}>
+              <i class="fa fa-pause"></i>
+            </button>
+          </div>
         `
       }
 
       metadataEl = yo`
-        <div class="metadata progress">
-          <div class="progress">
-            <div class="progressbar">
-              <progress value=${d.receivedBytes} max=${d.totalBytes}></progress>
-            </div>
-          </div>
-
-          <div>
-            <span class="status">
-              ${prettyBytes(d.receivedBytes || 0)} / ${prettyBytes(d.totalBytes || 0)}
-              (${status})
-            </span>
-            ${controls}
-          </div>
+        <div class="metadata">
+          ${prettyBytes(d.receivedBytes || 0)} / ${prettyBytes(d.totalBytes || 0)}
+          (${status})
         </div>
       `
     } else if (d.state === 'completed') {
@@ -54,13 +58,16 @@ export function render (downloadsList) {
       var actions
       if (!d.fileNotFound) {
         var removeBtn = yo`
-          <span onclick=${e => downloadsList.removeDownload(d)} class="close-btn">
-            ${renderCloseIcon()}
-          </span>
+          <button data-tooltip="Remove from downloads" onclick=${e => downloadsList.removeDownload(d)} class="btn plain trash tooltip-container">
+            <i class="fa fa-times"></i>
+          </button>
         `
 
         actions = [
-          yo`<span class="link show" onclick=${e => { e.stopPropagation(); downloadsList.showDownload(d) }}>Show in Finder</span>`
+          yo`
+            <span class="link show" onclick=${e => { e.stopPropagation(); downloadsList.showDownload(d) }}>
+              Show in Finder
+            </span>`
         ]
       } else {
         actions = [
@@ -87,24 +94,25 @@ export function render (downloadsList) {
 
     // render download
     return yo`
-      <div class="ll-row download" ondblclick=${(e) => downloadsList.openDownload(d)}>
-        ${removeBtn}
-
-        <img class="favicon" src="beaker-favicon:"/>
-
-        <div class="info">
-          <h3>
-            <span class="title">${d.name}</span>
-            <span class="url">${getHostname(d.url)}</span>
-          </h3>
-          ${metadataEl}
-        </div>
+      <div class="ll-row download ${cls}" ondblclick=${(e) => downloadsList.openDownload(d)}>
+        <span class="title">${d.name}</span>
+        <span class="url">${getHostname(d.url)}</span>
+        ${progressEl}
+        ${controls}
+        ${metadataEl}
+        <div class="buttons controls">${removeBtn}</div>
       </div>`
   }).reverse()
 
   // empty state
   if (downloadEls.length === 0) {
-    downloadEls = yo`<em class="empty">No downloads</em>`
+    downloadEls =
+      yo`
+        <div class="view empty">
+          <p>
+            No downloads
+          </p>
+        </div>`
   }
 
   return yo`<div class="links-list">${downloadEls}</div>`

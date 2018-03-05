@@ -1,6 +1,7 @@
 const yo = require('yo-yo')
 const co = require('co')
 const {DownloadsList} = require('builtin-pages-lib')
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import {render as renderDownloadsList} from '../com/downloads-list'
 
 // globals
@@ -24,17 +25,21 @@ co(function * () {
 // rendering
 // =
 
+function renderHeader () {
+  return yo`
+    <div class="builtin-header fixed">
+      ${renderBuiltinPagesNav('Downloads')}
+    </div>`
+}
+
+
 function render () {
   yo.update(document.querySelector('.downloads-wrapper'), yo`
     <div class="downloads-wrapper builtin-wrapper">
-      <div>
-        <div class="builtin-sidebar">
-          <h1 class="title-heading">Downloads</h1>
-        </div>
+      ${renderHeader()}
 
-        <div class="builtin-main">
-          ${renderDownloadsList(downloadsList)}
-        </div>
+      <div class="builtin-main">
+        ${renderDownloadsList(downloadsList)}
       </div>
     </div>
   </div>`)

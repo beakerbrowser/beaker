@@ -2,130 +2,79 @@
 @import "../utils/flex";
 @import "../components/link";
 
-.downloads-wrapper {
+.builtin-wrapper.builtin-wrapper.downloads-wrapper {
+
+  .builtin-main {
+    max-width: 900px;
+  }
 
   .ll-row.download {
-    justify-content: flex-start;
-    align-items: center;
-    padding: 0 15px;
-    width: 600px;
-    height: 60px;
-    overflow: hidden;
 
-    .close-btn {
-      position: absolute;
-      top: 5px;
-      right: 10px;
+    .title {
+      max-width: 375px;
+    }
+
+    .metadata {
+      &:extend(.flex);
+      align-items: center;
+
+      > *:not(:first-child) {
+        margin-left: 5px;
+      }
+
+      > * {
+        margin-right: 3px;
+      }
+    }
+
+    .buttons.controls {
+      opacity: 1;
+    }
+
+    .link {
+      color: @blue;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .btn.trash {
       opacity: 0;
+
+      &:hover {
+        color: shade(@red, 17%);
+      }
     }
 
     &:hover {
 
-      .close-btn {
+      .btn.trash {
         opacity: 1;
       }
     }
+  }
 
-    img {
-      width: auto;
-      height: 35px;
-      margin-right: 10px;
+  .ll-row.download.progressing {
+    height: auto;
+    padding: 8px 15px;
+
+    .url,
+    .title {
+      margin-bottom: 10px;
     }
 
-    .info {
-      flex: 1;
-      height: 35px;
-      line-height: 1;
-      vertical-align: top;
-
-      h3 {
-        &:extend(.flex);
-        flex-wrap: nowrap;
-        margin: 0;
-        padding: 0;
-        vertical-align: top;
-
-        .title {
-          font-weight: 500;
-          font-size: 12.25px;
-          line-height: 1.2;
-        }
-
-        .url {
-          &:extend(.overflow-ellipsis);
-          max-width: initial;
-          font-size: 11px;
-          line-height: 1.2;
-          margin-right: 0;
-        }
-      }
-
-      .metadata {
-        &:extend(.flex);
-        align-items: center;
-        margin-top: -1px;
-        font-size: 11px;
-
-        &.progress {
-          justify-content: space-between;
-        }
-
-        span:not(:first-child) {
-          margin-left: 5px;
-        }
-
-        span {
-          margin-right: 3px;
-        }
-      }
-
-      .progressbar {
-        display: inline-block;
-
-        progress {
-          width: 350px;
-          flex: 1;
-        }
-      }
-
-      // pause, resume, close buttons
-      .controls {
-        vertical-align: top;
-
-        .fa {
-          color: rgba(0,0,0,.25);
-
-          &:not(:last-of-type) {
-            margin-right: 5px;
-          }
-
-          &:hover {
-            color: rgba(0,0,0,.4);
-          }
-        }
-
-        .fa-pause,
-        .fa-stop {
-          font-size: 10px;
-        }
-      }
+    .progress-ui {
+      width: 65%;
+      margin-right: 5px;
     }
 
-    .link {
-      &:extend(.link);
-      font-weight: 400;
-
-      &:hover {
-        &:extend(.link:hover);
-      }
-
-      &.show {
-        // margin-left: auto !important;
-      }
+    .controls {
+      margin-left: 0;
     }
 
-    .actions {
-      opacity: 1;
+    .metadata {
       margin-left: auto;
     }
   }
