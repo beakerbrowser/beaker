@@ -88,7 +88,9 @@ async function setup () {
     filesBrowser.onSetCurrentSource = onSetCurrentSource
 
     // set up download progress
-    await archive.startMonitoringDownloadProgress()
+    if (!_get(archive, 'info.isOwner')) {
+      await archive.startMonitoringDownloadProgress()
+    }
 
     // fetch workspace info for this archive
     try {
@@ -871,6 +873,7 @@ function renderNetworkView () {
   let progressCls = ''
   let seedingIcon = ''
   let seedingLabel = ''
+  let peersLimit = 10
 
   const {networked, isSaved, expiresAt} = archive.info.userSettings
   const {progress} = archive

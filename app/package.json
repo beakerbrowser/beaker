@@ -14,7 +14,7 @@
     "beaker-profiles-api": "^2.4.2",
     "beaker-virtual-fs": "git://github.com/beakerbrowser/beaker-virtual-fs.git#d27824f0730354a87d36d9d40926607b1ec6328a",
     "binary-extensions": "^1.10.0",
-    "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib.git#1b76db716726c5a3b28b2ac9c9e29143c4919b0a",
+    "builtin-pages-lib": "git://github.com/beakerbrowser/builtin-pages-lib.git#e6c36086fb85d14325b4db5196f1aa1b68cf9e90",
     "bytes": "^2.5.0",
     "choo": "^5.6.2",
     "co": "^4.6.0",
