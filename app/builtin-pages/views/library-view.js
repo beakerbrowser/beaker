@@ -132,6 +132,7 @@ async function setup () {
     fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
     fileActStream.addEventListener('changed', onFilesChangedThrottled)
   } catch (e) {
+    console.error('Load error', e)
     toplevelError = createToplevelError(e)
     render()
   }
