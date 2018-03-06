@@ -5,7 +5,6 @@ import * as toast from '../com/toast'
 import {niceDate} from '../../lib/time'
 import DatNetworkActivity from '../com/dat-network-activity'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
-// import {create as createEditAppPopup} from '../com/edit-app-popup' TODO(apps) restore when we bring back apps -prf
 
 // globals
 // =
@@ -16,20 +15,6 @@ var browserEvents
 var defaultProtocolSettings
 var activeView = 'general'
 var datNetworkActivity = new DatNetworkActivity()
-
-// TODO(bgimg) disabled for now -prf
-// var bgImages = [
-//   {path: '1.jpg', thumbnailPath: '1-thumbnail.jpg',},
-//   {path: '2.jpg', thumbnailPath: '2-thumbnail.jpg', selected: true},
-//   {path: '3.jpg', thumbnailPath: '3-thumbnail.jpg'},
-//   {path: '4.jpg', thumbnailPath: '4-thumbnail.jpg'},
-//   {path: '5.jpg', thumbnailPath: '5-thumbnail.jpg'},
-//   {path: '6.jpg', thumbnailPath: '6-thumbnail.jpg'},
-//   {path: '7.jpg', thumbnailPath: '7-thumbnail.jpg'},
-//   {path: '8.jpg', thumbnailPath: '8-thumbnail.jpg'},
-//   {path: '9.jpg', thumbnailPath: '9-thumbnail.jpg'},
-//   {path: '10.jpg', thumbnailPath: '10-thumbnail.jpg'},
-//   {path: '11.jpg', thumbnailPath: '11-thumbnail.jpg'}]
 
 // main
 // =
@@ -167,7 +152,8 @@ function renderInformation () {
           <li>Version: ${browserInfo.version} Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</li>
           <li>User data: ${browserInfo.paths.userData}</li>
         </ul>
-
+      </div>
+      <div class="section">
         <h2 class="subtitle-heading">Get help</h2>
         <ul>
           <li><a href="https://beakerbrowser.com/docs/using-beaker">Take a tour of Beaker</a></li>
@@ -208,36 +194,15 @@ function renderProtocolSettings () {
       </div>`
 }
 
-// TODO(apps) restore when we bring back apps -prf
-// function renderApplications () {
-//   return yo`
-//     <div class="view applications">
-//       <table>
-//         ${applications.map(app => yo`
-//           <tr>
-//             <td><a href=${'app://' + app.name} target="_blank">${app.name}</a></td>
-//             <td class="current-value"><a href=${app.url} target="_blank">${app.url}</a></td>
-//             <td class="date">${niceDate(app.updatedAt)}</td>
-//             <td class="edit-ctrl"><a href="#" onclick=${e => onClickEditApp(e, app)}>edit</a></td>
-//             <td class="remove-ctrl"><a href="#" onclick=${e => onClickRemoveApp(e, app)}>remove</a></td>
-//           </tr>
-//         `)}
-//       </table>
-//       <div class="create-app">
-//         <a href="#" onclick=${onClickEditApp}>+ New app</a>
-//       </div>
-//     </div>`
-// }
-
 function renderAutoUpdater () {
   if (!browserInfo.updater.isBrowserUpdatesSupported) {
     return yo`
       <div class="section">
         <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
 
-        <p>
+        <div class="message info">
           Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
-        </p>
+        </div>
 
         <p>
           To get the most recent version of Beaker, you${"'"}ll need to <a href="https://github.com/beakerbrowser/beaker">
@@ -249,53 +214,70 @@ function renderAutoUpdater () {
   switch (browserInfo.updater.state) {
     default:
     case 'idle':
-      return yo`<div class="settings-section">
-        <button class="btn btn-default" onclick=${onClickCheckUpdates}>Check for updates</button>
-        <span class="version-info">
-          ${browserInfo.updater.error
-            ? yo`<span><span class="icon icon-cancel"></span> ${browserInfo.updater.error}</span>`
-            : yo`<span>
-              <span class="icon icon-check"></span>
-              <strong>Beaker v${browserInfo.version}</strong> is up-to-date
-            </span>`
-          }
+      return yo`
+      <div class="section">
+        <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
+
+        ${browserInfo.updater.error
+          ? yo`<div class="message error"><i class="fa fa-exclamation-triangle"></i> ${browserInfo.updater.error}</div>`
+          : ''}
+
+        <div class="auto-updater">
+          <button class="btn btn-default" onclick=${onClickCheckUpdates}>Check for updates</button>
+          <span>
+            <span class="fa fa-check"></span>
+            <strong>Beaker v${browserInfo.version}</strong> is up-to-date
+          </span>
           ${renderAutoUpdateCheckbox()}
-        </span>
-        <span class="prereleases">
+        </div>
+        <div class="prereleases">
           [ Advanced: <a href="#" onclick=${onClickCheckPrereleases}>Check for prereleases</a> ]
-        </span>
+        </div>
       </div>`
 
     case 'checking':
       return yo`
-      <div class="settings-section">
-        <button class="btn" disabled>Checking for updates</button>
-        <span class="version-info">
-          <div class="spinner"></div>
-          Checking for updates to Beaker...
+      <div class="section">
+        <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
+        
+        <div class="auto-updater">
+          <button class="btn" disabled>Checking for updates</button>
+          <span class="version-info">
+            <div class="spinner"></div>
+            Checking for updates to Beaker...
+          </span>
           ${renderAutoUpdateCheckbox()}
-        </span>
+        </div>
       </div>`
 
     case 'downloading':
       return yo`
-        <div class="view">
+      <div class="section">
+        <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
+        
+        <div class="auto-updater">
           <button class="btn" disabled>Updating</button>
           <span class="version-info">
             <div class="spinner"></div>
             Downloading the latest version of Beaker...
-            ${renderAutoUpdateCheckbox()}
           </span>
-        </div>`
+          ${renderAutoUpdateCheckbox()}
+        </div>
+      </div>`
 
     case 'downloaded':
-      return yo`<div class="settings-section">
-        <button class="btn" onclick=${onClickRestart}>Restart now</button>
-        <span class="version-info">
-          <span class="icon icon-up-circled"></span>
-          <strong>New version available.</strong> Restart Beaker to install.
+      return yo`
+      <div class="section">
+        <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
+        
+        <div class="auto-updater">
+          <button class="btn" onclick=${onClickRestart}>Restart now</button>
+          <span class="version-info">
+            <i class="fa fa-arrow-circle-o-up"></i>
+            <strong>New version available.</strong> Restart Beaker to install.
+          </span>
           ${renderAutoUpdateCheckbox()}
-        </span>
+        </div>
       </div>`
   }
 }
@@ -305,26 +287,6 @@ function renderAutoUpdateCheckbox () {
     <input type="checkbox" checked=${isAutoUpdateEnabled()} onclick=${onToggleAutoUpdate} /> Check for updates automatically
   </label>`
 }
-
-// TODO(bgimg) disabled for now -prf
-// function renderStartPageSettings () {
-//   return yo`
-//   <div class="settings-section start-page">
-//     <div class="bg-images">
-//       <div width="90" height="60" class="bg-image-container add">
-//         <input onchange=${onUpdateStartPageBackgroundImage} name="start-background-image" type="file" accept="image/*"/>
-//         +
-//       </div>
-//       ${bgImages.map(img => {
-//         return yo`
-//           <div onclick=${() => onUpdateStartPageBackgroundImage(`assets/img/start/${img.path}`)} class="bg-image-container ${img.selected ? 'selected' : ''}">
-//             <img class="bg-image" width="90" height="60" src="beaker://start/background-image-default/${img.thumbnailPath}"/>
-//           </div>`
-//       })}
-//     </div>
-//   `
-// }
-
 
 // event handlers
 // =
@@ -379,56 +341,6 @@ function onUpdaterStateChanged (state) {
   renderToPage()
 }
 
-// TODO(apps) restore when we bring back apps -prf
-// async function onClickEditApp (e, app) {
-//   e.preventDefault()
-//   var newApp = await createEditAppPopup(app)
-//   if (app && app.name !== newApp.name) {
-//     await beaker.apps.unbind(0, app.name)
-//   }
-//   await beaker.apps.bind(0, newApp.name, newApp.url)
-//   applications = await beaker.apps.list(0)
-//   renderToPage()
-// }
-
-// TODO(apps) restore when we bring back apps -prf
-// async function onClickRemoveApp (e, app) {
-//   e.preventDefault()
-//   if (!confirm(`Remove the "${app.name}" application?`)) {
-//     return
-//   }
-
-//   await beaker.apps.unbind(0, app.name)
-//   applications = await beaker.apps.list(0)
-//   renderToPage()
-// }
-
-/*function onUpdateStartPageTheme (e) {
-  var theme = e.target.value
-  settings.start_page_background_image = theme
-  beaker.browser.setSetting('start_page_background_image', theme)
-  renderToPage()
-}
-
-async function onUpdateStartPageBackgroundImage (srcPath) {
-  var isUpload = this && this.files
-  if (isUpload) srcPath = this.files[0].path
-
-  // write the image to start_background_image
-  var appendDir = isUpload ? false : true
-  await beaker.browser.setStartPageBackgroundImage(srcPath, appendDir)
-
-  // TODO: we might not need this. disabling for now -tbv
-  // is the image light or dark?
-  // if (isUpload) await setStartPageTheme()
-  // if (true) await setStartPageTheme()
-  // else {
-  //   settings.start_page_background_image = ''
-  //   await beaker.browser.setSetting('start_page_background_image', '')
-  // }
-  renderToPage()
-}*/
-
 function onUpdaterError (err) {
   if (!browserInfo) { return }
   // render new state
@@ -451,34 +363,3 @@ function setViewFromHash () {
 function isAutoUpdateEnabled () {
   return +settings.auto_update_enabled === 1
 }
-
-/*function setStartPageTheme () {
-  function getBrightness (r, g, b) {
-    return Math.sqrt(
-      0.241 * Math.pow(r, 2) +
-      0.691 * Math.pow(g, 2) +
-      0.068 * Math.pow(b, 2))
-  }
-
-  return new Promise(resolve => {
-    var img = new Image()
-    img.setAttribute('crossOrigin', 'anonymous')
-    img.onload = e => {
-      var palette = colorThief.getPalette(img, 10)
-      var totalBrightness = 0
-
-      palette.forEach(color => {
-        totalBrightness += getBrightness(...color)
-      })
-
-      var brightness = totalBrightness / palette.length
-
-      var theme = brightness < 150 ? 'dark' : 'light'
-      beaker.browser.setSetting('start_page_background_image', theme)
-      settings.start_page_background_image = theme
-      resolve()
-    }
-    img.onerror = resolve
-    img.src = 'beaker://start/background-image'
-  })
-}*/
