@@ -370,8 +370,8 @@ function renderView () {
       return renderFilesView()
     case 'settings':
       return renderSettingsView()
-    case 'revisions':
-      return renderRevisionsView()
+    case 'workspace':
+      return renderWorkspaceView()
     case 'network':
       return renderNetworkView()
     case 'preview':
@@ -1031,7 +1031,7 @@ function renderNetworkView () {
   `
 }
 
-function renderRevisionsView () {
+function renderWorkspaceView () {
   if (!(workspaceInfo && workspaceInfo.localFilesPath)) return '' // TODO
 
   if (!workspaceInfo.revisions.length) {
@@ -1241,8 +1241,8 @@ function renderTabs () {
 
       ${workspaceInfo
         ? yo`
-          <a href=${baseUrl + '#revisions'} onclick=${e => onChangeView(e, 'revisions')} class="tab ${activeView === 'revisions' ? 'active' : ''}">
-            Revisions
+          <a href=${baseUrl + '#workspace'} onclick=${e => onChangeView(e, 'workspace')} class="tab ${activeView === 'workspace' ? 'active' : ''}">
+            Workspace
             ${workspaceInfo.revisions && workspaceInfo.revisions.length
               ? yo`<span class="revisions-indicator"></span>`
               : ''
@@ -1773,7 +1773,7 @@ async function onFilesChanged () {
 
   // update revisions
   await loadWorkspaceRevisions()
-  if (activeView === 'revisions') {
+  if (activeView === 'workspace') {
     render()
   }
 }
