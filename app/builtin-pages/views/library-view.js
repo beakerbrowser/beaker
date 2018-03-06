@@ -113,6 +113,7 @@ async function setup () {
     isGettingStartedDismissed = (localStorage[archive.info.key + '-gsd'] === '1')
     if (_get(archive, 'info.isOwner')) {
       let favicon = await beaker.sitedata.get(archive.url, 'favicon')
+      if (!favicon) favicon = await (archive.stat('/favicon.ico').catch(() => null))
       if (!favicon) favicon = await (archive.stat('/favicon.png').catch(() => null))
       if (!favicon) {
         isFaviconSet = false
