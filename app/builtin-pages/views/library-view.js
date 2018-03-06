@@ -922,24 +922,28 @@ function renderNetworkView () {
           <h2 class="module-heading">Network overview</h2>
 
           <div class="module-content">
-            <h3 class="subtitle-heading">Download status</h3>
+            ${archive.info.isOwner
+              ? ''
+              : yo`<div>
+                <h3 class="subtitle-heading">Download status</h3>
 
-            <progress value=${progress.current} max="100">
-              ${progress.current}
-            </progress>
+                <progress value=${progress.current} max="100">
+                  ${progress.current}
+                </progress>
 
-            <div class="download-status">
-              <div class="progress-ui ${progressCls}">
-                <div style="width: ${progressPercentage}" class="completed">
-                  ${progressPercentage}
+                <div class="download-status">
+                  <div class="progress-ui ${progressCls}">
+                    <div style="width: ${progressPercentage}" class="completed">
+                      ${progressPercentage}
+                    </div>
+                    <div class="label">${progressLabel}</div>
+                  </div>
+
+                  <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
+                    <i class="fa fa-${seedingIcon}"></i>
+                  </button>
                 </div>
-                <div class="label">${progressLabel}</div>
-              </div>
-
-              <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
-                <i class="fa fa-${seedingIcon}"></i>
-              </button>
-            </div>
+              </div>`}
 
             <h3 class="subtitle-heading">Peers</h3>
             ${!_get(archive, 'info.peers')
