@@ -435,15 +435,19 @@ function renderFooter () {
           </button>`
       } else {
         secondaryAction = yo`
-          <button class="btn success" onclick=${onSave}>
-            <i class="fa fa-download"></i>
-            <span>Save to Library</span>
+          <button class="btn success" onclick=${onToggleSeeding}>
+            <i class="fa fa-arrow-up"></i>
+            <span>Seed these files</span>
           </button>`
       }
     } else if (_get(archive, 'info.isOwner') && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
       secondaryAction = ''
     } else {
-      secondaryAction = yo`<em>Read-only</em>`
+      secondaryAction = yo`
+        <button class="btn" onclick=${onToggleSeeding}>
+          <i class="fa fa-pause"></i>
+          <span>Stop seeding</span>
+        </button>`
     }
   }
 
@@ -456,8 +460,12 @@ function renderFooter () {
           <span>${_get(archive, 'info.peers', 0)} ${pluralize(_get(archive, 'info.peers', 0), 'peer')}</span>
         </div>
 
-        <div class="workspace-info">${secondaryAction}</div>
-
+        <div class="secondary-action">
+          ${_get(archive, 'info.isOwner') ? '' : yo`<em>Read-only</em>`}
+        </div>
+        <div class="secondary-action">
+          ${secondaryAction}
+        </div>
         ${primaryAction}
       </div>
     </footer>
@@ -488,17 +496,6 @@ function renderFilesView () {
                 is in your Trash.
               </span>
               <button class="btn" onclick=${onSave}>Restore from Trash</button>
-            </div>`
-          : ''
-        }
-        ${!archive.info.isOwner && !archive.info.userSettings.isSaved
-          ? yo`
-            <div class="message success">
-              <span>
-                ${archive.info.title ? archive.info.title : 'This archive'}
-                is not saved to your Library.
-              </span>
-              <button class="btn" onclick=${onSave}>Save to Library</button>
             </div>`
           : ''
         }
@@ -886,8 +883,10 @@ git reset origin/master</code></pre>
 
 function renderNetworkView () {
   let progressLabel = ''
-  let clearCacheBtn = ''
   let progressCls = ''
+  let seedingIcon = ''
+  let seedingLabel = ''
+  let clearCacheBtn = ''
   let peersLimit = 10
 
   const {isSaved, expiresAt} = archive.info.userSettings
@@ -910,6 +909,13 @@ function renderNetworkView () {
 
   if (!archive.info.isOwner) {
     clearCacheBtn = yo`<span> | <button class="link" onclick=${onDeleteDownloadedFiles}>Clear downloaded files</button></span>`
+    if (isSaved) {
+      seedingIcon = 'pause'
+      seedingLabel = 'Stop seeding these files'
+    } else {
+      seedingIcon = 'arrow-up'
+      seedingLabel = 'Seed these files'
+    }
   }
 
   return yo`
@@ -935,6 +941,12 @@ function renderNetworkView () {
                     </div>
                     <div class="label">${progressLabel}${clearCacheBtn}</div>
                   </div>
+
+                  ${!archive.info.isOwner ? yo`
+                    <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
+                      <i class="fa fa-${seedingIcon}"></i>
+                    </button>
+                  ` : ''}
                 </div>
               </div>`}
 
@@ -1009,7 +1021,7 @@ function renderNetworkView () {
                 <strong>Give back!</strong> Seed this project${"'"}s files to help keep them online.
               </p>
 
-              <button class="btn" onclick=${onSave}>
+              <button class="btn" onclick=${onToggleSeeding}>
                 Seed files
               </button>
 
@@ -1300,13 +1312,11 @@ function renderMenu () {
           Download as .zip
         </div>
 
-        ${_get(archive, 'info.userSettings.isSaved')
+        ${_get(archive, 'info.isOwner') && _get(archive, 'info.userSettings.isSaved')
           ? yo`
             <div class="dropdown-item" onclick=${onMoveToTrash}>
               <i class="fa fa-trash-o"></i>
-              ${_get(archive, 'info.isOwner')
-                ? 'Move to Trash'
-                : 'Remove from Library'}
+              Move to Trash
             </div>`
           : ''
         }
@@ -1377,7 +1387,8 @@ async function onMoveToTrash () {
     try {
       await beaker.archives.remove(archive.url)
       archive.info.userSettings.isSaved = false
-    } catch (_) {
+    } catch (e) {
+      console.error(e)
       toast.create(`Could not move ${nickname} to Trash`, 'error')
     }
   }
@@ -1390,8 +1401,28 @@ async function onSave () {
     await beaker.archives.add(archive.url)
     archive.info.userSettings.isSaved = true
     toast.create(`Saved ${nickname} to your Library`, 'success')
-  } catch (_) {
+  } catch (e) {
+    console.error(e)
     toast.create(`Could not save ${nickname} to your Library`, 'error')
+  }
+  render()
+}
+
+async function onToggleSeeding () {
+  const nickname = archive.info.title || archive.url
+  try {
+    if (archive.info.userSettings.isSaved) {
+      await beaker.archives.remove(archive.url)
+      archive.info.userSettings.isSaved = false
+      toast.create(`Stopped seeding ${nickname}`, 'success')
+    } else {
+      await beaker.archives.add(archive.url)
+      archive.info.userSettings.isSaved = true
+      toast.create(`Seeding ${nickname}`, 'success')
+    }
+  } catch (e) {
+    console.error(e)
+    toast.create(`Could not update ${nickname}`, 'error')
   }
   render()
 }
