@@ -887,11 +887,9 @@ git reset origin/master</code></pre>
 function renderNetworkView () {
   let progressLabel = ''
   let progressCls = ''
-  let seedingIcon = ''
-  let seedingLabel = ''
   let peersLimit = 10
 
-  const {networked, isSaved, expiresAt} = archive.info.userSettings
+  const {isSaved, expiresAt} = archive.info.userSettings
   const {progress} = archive
   const progressPercentage = `${progress.current}%`
   let downloadedBytes = (archive.info.size / progress.blocks) * progress.downloaded
@@ -905,14 +903,9 @@ function renderNetworkView () {
     progressLabel = 'Download paused'
   }
 
-  if (isSaved && networked) {
-    seedingIcon = 'pause'
-    seedingLabel = 'Stop seeding these files'
+  if (isSaved) {
     progressLabel += ', seeding files'
     progressCls += ' green'
-  } else {
-    seedingIcon = 'arrow-up'
-    seedingLabel = 'Seed these files'
   }
 
   return yo`
@@ -938,10 +931,6 @@ function renderNetworkView () {
                     </div>
                     <div class="label">${progressLabel}</div>
                   </div>
-
-                  <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
-                    <i class="fa fa-${seedingIcon}"></i>
-                  </button>
                 </div>
               </div>`}
 
@@ -1008,7 +997,7 @@ function renderNetworkView () {
           </div>
         </div>
 
-        ${!archive.info.isOwner && !(archive.info.userSettings.networked && archive.info.userSettings.isSaved)
+        ${!archive.info.isOwner && !isSaved
           ? yo`
             <div class="hint">
               <p>
@@ -1016,7 +1005,7 @@ function renderNetworkView () {
                 <strong>Give back!</strong> Seed this project${"'"}s files to help keep them online.
               </p>
 
-              <button class="btn" onclick=${onToggleSeeding}>
+              <button class="btn" onclick=${onSave}>
                 Seed files
               </button>
 
@@ -1611,31 +1600,6 @@ function onCopy (str, successMessage = 'Copied to clipboard', tooltip = false) {
       render()
     }, 1300)
   }
-}
-
-async function onToggleSeeding () {
-  const {isOwner} = archive.info
-  const {networked, isSaved} = archive.info.userSettings
-  const newNetworkedStatus = !networked
-
-  if (isOwner) {
-    try {
-      await archive.configure({networked: newNetworkedStatus})
-      archive.info.userSettings.networked = newNetworkedStatus
-    } catch (e) {
-      toast.create('Something went wrong', 'error')
-      return
-    }
-  } else {
-    if (isSaved) {
-      await beaker.archives.remove(archive.url)
-      archive.info.userSettings.isSaved = false
-    } else {
-      await beaker.archives.add(archive.url)
-      archive.info.userSettings.isSaved = true
-    }
-  }
-  render()
 }
 
 async function onChangeWorkspaceDirectory () {
