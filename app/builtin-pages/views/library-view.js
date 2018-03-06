@@ -1315,7 +1315,7 @@ function renderEditButton () {
   } else if (_get(archive, 'info.isOwner')) {
     return yo`
       <button class="btn primary nofocus" onclick=${onChangeWorkspaceDirectory}>
-        Open folder
+        Set workspace directory
       </button>`
   } else {
     return yo`
