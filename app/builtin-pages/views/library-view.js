@@ -1307,7 +1307,9 @@ function renderMenu () {
           ? yo`
             <div class="dropdown-item" onclick=${onMoveToTrash}>
               <i class="fa fa-trash-o"></i>
-              Move to Trash
+              ${_get(archive, 'info.isOwner')
+                ? 'Move to Trash'
+                : 'Remove from Library'}
             </div>`
           : ''
         }
