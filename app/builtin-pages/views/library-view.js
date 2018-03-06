@@ -1270,10 +1270,13 @@ function renderMenu () {
       </button>
 
       <div class="dropdown-items top right subtle-shadow">
-        <div class="dropdown-item" onclick=${onMakeCopy}>
-          <i class="fa fa-clone"></i>
-          Make a copy
-        </div>
+        ${_get(archive, 'info.isOwner')
+          ? yo`
+            <div class="dropdown-item" onclick=${onMakeCopy}>
+              <i class="fa fa-clone"></i>
+              Make a copy
+            </div>`
+          : ''}
 
         ${workspaceInfo
           ? yo`
