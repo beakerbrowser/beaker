@@ -396,18 +396,18 @@ function renderFooter () {
       secondaryAction = toggleable(yo`
         <div class="dropdown toggleable-container">
           <button class="btn transparent nofocus toggleable">
-            ${workspaceInfo.localFilesPath}
+            ${workspaceInfo.localFilesPath} <i class="fa fa-caret-up"></i>
           </button>
 
           <div class="dropdown-items workspace-info top right subtle-shadow">
-            <div class="dropdown-item" onclick=${onChangeWorkspaceDirectory}>
-              <i class="fa fa-pencil"></i>
-              <span class="label">Change workspace directory</span>
-            </div>
-
             <div class="dropdown-item" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
               <i class="fa fa-folder-o"></i>
               <span class="label">Open ${workspaceInfo.localFilesPath}</span>
+            </div>
+
+            <div class="dropdown-item" onclick=${onChangeWorkspaceDirectory}>
+              <i class="fa fa-pencil"></i>
+              <span class="label">Change workspace directory</span>
             </div>
 
             <div class="dropdown-item" onclick=${() => onCopy(workspaceInfo.localFilesPath, 'Path copied to clipboard')}>
