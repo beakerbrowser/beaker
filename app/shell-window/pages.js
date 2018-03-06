@@ -686,7 +686,7 @@ function onDidStopLoading (e) {
       // set the default background to white.
       // on some devices, if no bg is set, the buffer doesnt get cleared
       `body {
-        background: #fff;
+        background: rgba(0,0,0,0.0);
       }` +
 
       // style file listings
