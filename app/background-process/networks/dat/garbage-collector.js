@@ -46,9 +46,7 @@ export async function collect ({olderThan} = {}) {
       skippedArchives++
       continue
     }
-    totalBytes += unusedArchives[i].metaSize
-    totalBytes += unusedArchives[i].stagingSize
-    await archivesDb.deleteArchive(unusedArchives[i].key)
+    totalBytes += await archivesDb.deleteArchive(unusedArchives[i].key)
   }
 
   debug('GC completed in %d ms', Date.now() - startTime)

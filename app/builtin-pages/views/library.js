@@ -1,7 +1,7 @@
 /* globals DatArchive beaker */
 
 import yo from 'yo-yo'
-import prettyBytes from 'pretty-bytes'
+import bytes from 'bytes'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
@@ -250,6 +250,9 @@ function render () {
 
             <div class="subtitle-heading">
               ${query ? yo`<span>"${query}" in </span>` : ''} ${currentView}
+              ${currentView === 'trash'
+                ? yo`<button class="link" onclick=${onClearDatTrash}>clear</button>`
+                : ''}
             </div>
 
             ${renderRows()}
@@ -561,6 +564,14 @@ async function onClearQuery () {
 function onUpdateSort (sort) {
   currentSort = sort
   sortArchives()
+  render()
+}
+
+async function onClearDatTrash () {
+  const results = await beaker.archives.clearGarbage()
+  console.debug('Dat trash cleared', results)
+  toast.create(`Dat trash cleared. (${bytes(results.totalBytes)} freed from ${results.totalArchives} archives.)`, '', 5e3)
+  await loadArchives()
   render()
 }
 

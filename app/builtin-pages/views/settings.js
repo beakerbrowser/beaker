@@ -1,6 +1,7 @@
 /* globals beaker confirm */
 
 import yo from 'yo-yo'
+import bytes from 'bytes'
 import * as toast from '../com/toast'
 import {niceDate} from '../../lib/time'
 import DatNetworkActivity from '../com/dat-network-activity'
@@ -109,6 +110,7 @@ function renderGeneral () {
       ${renderWorkspacePathSettings()}
       ${renderAutoUpdater()}
       ${renderProtocolSettings()}
+      ${renderDatTools()}
     </div>
   `
 }
@@ -288,6 +290,17 @@ function renderAutoUpdateCheckbox () {
   </label>`
 }
 
+function renderDatTools () {
+  return yo`
+    <div class="section">
+      <h2 id="dat-tools" class="subtitle-heading">Dat archives</h2>
+      
+      <button class="btn" onclick=${onClearDatTrash}>Clear trash</button>
+    </div>
+  `
+
+}
+
 // event handlers
 // =
 
@@ -331,6 +344,12 @@ async function onUpdateDefaultWorkspaceDirectory () {
 
 function onClickRestart () {
   beaker.browser.restartBrowser()
+}
+
+async function onClearDatTrash () {
+  const results = await beaker.archives.clearGarbage()
+  console.debug('Dat trash cleared', results)
+  toast.create(`Dat trash cleared. (${bytes(results.totalBytes)} freed from ${results.totalArchives} archives.)`, '', 5e3)
 }
 
 function onUpdaterStateChanged (state) {

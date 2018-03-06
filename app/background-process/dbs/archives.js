@@ -36,12 +36,15 @@ export function getArchiveMetaPath (archiveOrKey) {
 
 // delete all db entries and files for an archive
 export async function deleteArchive (key) {
+  const path = getArchiveMetaPath(key)
+  const info = await jetpack.inspectTreeAsync(path)
   await Promise.all([
     db.run(`DELETE FROM archives WHERE key=?`, key),
     db.run(`DELETE FROM archives_meta WHERE key=?`, key),
     db.run(`DELETE FROM archives_meta_type WHERE key=?`, key),
-    jetpack.removeAsync(getArchiveMetaPath(key))
+    jetpack.removeAsync(path)
   ])
+  return info.size
 }
 
 export const on = events.on.bind(events)
