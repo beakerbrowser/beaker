@@ -484,10 +484,21 @@ function renderFilesView () {
           ? yo`
             <div class="message error">
               <span>
-                ${archive.info.title ? archive.info.title : 'This archive'} is
-                in your Trash.
+                ${archive.info.title ? archive.info.title : 'This archive'}
+                is in your Trash.
               </span>
               <button class="btn" onclick=${onSave}>Restore from Trash</button>
+            </div>`
+          : ''
+        }
+        ${!archive.info.isOwner && !archive.info.userSettings.isSaved
+          ? yo`
+            <div class="message success">
+              <span>
+                ${archive.info.title ? archive.info.title : 'This archive'}
+                is not saved to your Library.
+              </span>
+              <button class="btn" onclick=${onSave}>Save to Library</button>
             </div>`
           : ''
         }
