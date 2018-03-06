@@ -70,10 +70,13 @@ export async function query (profileId, query) {
   if (query.isNetworked === true) WHERE.push('archives.networked = 1')
   if (query.isNetworked === false) WHERE.push('archives.networked = 0')
   if ('isSaved' in query) {
-    WHERE.push('archives.profileId = ?')
-    values.push(profileId)
-    if (query.isSaved) WHERE.push('archives.isSaved = 1')
-    if (!query.isSaved) WHERE.push('archives.isSaved = 0')
+    if (query.isSaved) {
+      WHERE.push('archives.profileId = ?')
+      values.push(profileId)
+      WHERE.push('archives.isSaved = 1')
+    } else {
+      WHERE.push('archives.isSaved = 0 OR archives.isSaved IS NULL')
+    }
   }
   if ('type' in query) {
     WHERE.push('archives_meta_type.type = ?')

@@ -365,6 +365,11 @@ export async function queryArchives (query) {
   // run the query
   var archiveInfos = await archivesDb.query(0, query)
 
+  // if isSaved=false, only give archives that are in memory
+  if (query && query.isSaved === false) {
+    archiveInfos = archiveInfos.filter(archiveInfo => isArchiveLoaded(archiveInfo.key))
+  }
+
   // attach some live data
   archiveInfos.forEach(archiveInfo => {
     var archive = getArchive(archiveInfo.key)

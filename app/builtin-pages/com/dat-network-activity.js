@@ -26,17 +26,19 @@ const TIMELENS = [
   () => yo`<span>1 month</span>`,
   () => yo`<span>Forever</span>`
 ]
+var idCounter = 0
 
 // exports
 // =
 
 export default class DatNetworkActivity {
-  constructor () {
+  constructor (filter = 'owned') {
+    this.id = (++idCounter)
     this.slideState = undefined
     this.archives = undefined
     this.totalBytesHosting = 0
     this.totalArchivesHosting = 0
-    this.currentFilter = 'seeding'
+    this.currentFilter = filter
     this.currentSort = ['title', -1]
     this.currentlyConfiguringKey = undefined
     this.currentlyHighlightedKey = undefined
@@ -48,15 +50,16 @@ export default class DatNetworkActivity {
   // =
 
   async fetchArchives () {
-    this.archives = await beaker.archives.list()
+    if (this.currentFilter === 'seeding') {
+      this.archives = await beaker.archives.list({isSaved: true, isOwner: false})
+    } else if (this.currentFilter === 'owned') {
+      this.archives = await beaker.archives.list({isSaved: true, isOwner: true})
+    } else if (this.currentFilter === 'cache') {
+      this.archives = await beaker.archives.list({isSaved: false})
+    } else {
+      this.archives = await beaker.archives.list()
+    }
     this.sortArchives()
-
-    // TODO filters?
-    // if (this.currentFilter === 'seeding') {
-    //   this.archives = await beaker.archives.list({isSaved: true, isNetworked: true})
-    // } else if (this.currentFilter === 'offline') {
-    //   this.archives = await beaker.archives.list({isSaved: true, isNetworked: false})
-    // }
 
     this.totalArchivesHosting = this.archives.length
     this.totalBytesHosting = this.archives.reduce((sum, a) => {
@@ -74,12 +77,24 @@ export default class DatNetworkActivity {
   render () {
     if (!this.archives) {
       this.fetchArchives() // trigger load
-      return yo`<div class="dat-network-activity">Loading...</div>`
+      return yo`<div id=${'dat-network-activity-'+this.id} class="dat-network-activity loading">Loading...</div>`
     }
 
+    const f = (id, label) => yo`
+      <button
+        class="plain ${this.currentFilter === id ? 'active' : ''}"
+        onclick=${e => this.onClickFilter(id)}>
+        ${label}
+      </button>`
+
     return yo`
-      <div class="dat-network-activity">
+      <div id=${'dat-network-activity-'+this.id} class="dat-network-activity">
         <div class="archives">
+          <div class="filters">
+            ${f('owned', 'Your archives')}
+            ${f('seeding', 'Seeding')}
+            ${f('cache', 'In memory')}
+          </div>
           <div class="heading">
             ${this.renderHeading('title', 'Title')}
             ${this.renderHeading('peers', 'Peers')}
@@ -96,7 +111,7 @@ export default class DatNetworkActivity {
   // method to re-render in place
   // eg myFilesBrowser.rerender()
   rerender () {
-    let el = document.querySelector('.dat-network-activity')
+    let el = document.querySelector('#dat-network-activity-'+this.id)
     if (el) yo.update(el, this.render())
   }
 
@@ -264,6 +279,11 @@ export default class DatNetworkActivity {
 
     this.currentlyHighlightedKey = undefined
     this.rerender()
+  }
+
+  onClickFilter (filter) {
+    this.currentFilter = filter
+    this.fetchArchives()
   }
 
   onCopyURL (archive) {
