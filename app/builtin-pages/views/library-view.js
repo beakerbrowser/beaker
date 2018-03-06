@@ -886,6 +886,7 @@ git reset origin/master</code></pre>
 
 function renderNetworkView () {
   let progressLabel = ''
+  let clearCacheBtn = ''
   let progressCls = ''
   let peersLimit = 10
 
@@ -894,18 +895,21 @@ function renderNetworkView () {
   const progressPercentage = `${progress.current}%`
   let downloadedBytes = (archive.info.size / progress.blocks) * progress.downloaded
 
-  if (progress.isComplete) {
+  if (isSaved) {
+    if (progress.isComplete) {
+      progressLabel = 'Seeding files'
+    } else {
+      progressLabel = 'Downloading and seeding files'
+    }
+    progressCls = 'active green'
+  } else if (progress.isComplete) {
     progressLabel = 'All files downloaded'
-  } else if (progress.isDownloading) {
-    progressLabel = 'Downloading files'
-    progressCls = 'active'
   } else {
-    progressLabel = 'Download paused'
+    progressLabel = 'Idle'
   }
 
-  if (isSaved) {
-    progressLabel += ', seeding files'
-    progressCls += ' green'
+  if (!archive.info.isOwner) {
+    clearCacheBtn = yo`<span> | <button class="link" onclick=${onDeleteDownloadedFiles}>Clear downloaded files</button></span>`
   }
 
   return yo`
@@ -929,7 +933,7 @@ function renderNetworkView () {
                     <div style="width: ${progressPercentage}" class="completed">
                       ${progressPercentage}
                     </div>
-                    <div class="label">${progressLabel}</div>
+                    <div class="label">${progressLabel}${clearCacheBtn}</div>
                   </div>
                 </div>
               </div>`}
@@ -1583,6 +1587,16 @@ function onOpenFolder (path) {
 
 function onDownloadZip () {
   beaker.browser.downloadURL(`${archive.url}?download_as=zip`)
+}
+
+async function onDeleteDownloadedFiles () {
+  if (!confirm('Delete downloaded files? You will be able to redownload them from the network.')) {
+    return false
+  }
+  await beaker.archives.clearFileCache(archive.key)
+  toast.create('All downloaded files have been deleted.')
+  await archive.progress.fetchAllStats()
+  render()
 }
 
 function onCopy (str, successMessage = 'Copied to clipboard', tooltip = false) {
