@@ -45,6 +45,18 @@
     margin-left: 5px;
   }
 
+  .on-startup {
+    .radio-group {
+      display: grid;
+      grid-template-columns: auto auto;
+      align-items: end;
+      justify-content: start;
+      grid-gap: 0 5px;
+      margin-left: @padding-component--tight;
+      input[type="radio"] { margin-top: 0; }
+    }
+  }
+
   &.help {
 
     a {
@@ -56,4 +68,3 @@
 ul.settings-section {
   margin-left: @padding-component--tight;
 }
-

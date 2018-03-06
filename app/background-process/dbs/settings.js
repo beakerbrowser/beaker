@@ -12,6 +12,7 @@ var setupPromise
 
 const DEFAULT_SETTINGS = {
   auto_update_enabled: 1,
+  custom_start_page: 'blank',
   start_page_background_image: '',
   workspace_default_path: path.join(app.getPath('home'), 'Sites')
 }
