@@ -187,7 +187,7 @@ function rFilePreview (node) {
         <code class="file-info">${prettyBytes(node.size)}</code>
 
         <div class="actions">
-          <a href=${node.url} target="_blank" title="Open file">
+          <a href=${node.url} target="_blank" class="tooltip-container" data-tooltip="Open file">
             <i class="fa fa-external-link"></i>
           </a>
         </div>
