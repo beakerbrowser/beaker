@@ -107,11 +107,10 @@ function renderView () {
 function renderGeneral () {
   return yo`
     <div class="view">
-      ${renderWorkspacePathSettings()}
-      ${renderOnStartupSettings()}
       ${renderAutoUpdater()}
+      ${renderWorkspacePathSettings()}
       ${renderProtocolSettings()}
-      ${renderDatTools()}
+      ${renderOnStartupSettings()}
     </div>
   `
 }
