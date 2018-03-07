@@ -102,16 +102,16 @@
     .lined-heading-action {
       position: absolute;
       right: 0;
+      top: 0;
+      padding: 0 10px;
       background: #fff;
-      padding-left: 10px;
-      color: @color-text--muted !important;
 
-      * {
-        cursor: pointer;
-      }
+      .fa {
+        font-size: 18px;
 
-      &:hover {
-        color: @color-text !important;
+        &.fa-times {
+          -webkit-text-stroke: 2px #fff;
+        }
       }
     }
   }
