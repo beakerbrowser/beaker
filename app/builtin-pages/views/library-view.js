@@ -769,7 +769,7 @@ function renderSettingsView () {
             ${isOwner
               ? yo`
                 <p class="input-group">
-                  <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}"/>
+                  <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}"/>
                   <button class="btn" onclick=${onClickFavicon}>
                     Change favicon
                   </button>
@@ -777,7 +777,7 @@ function renderSettingsView () {
                     What${"'"}s a favicon?
                   </a>
                 </p>`
-              : yo`<img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}"/>`
+              : yo`<img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}"/>`
             }
           </div>
         </div>
