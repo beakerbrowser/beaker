@@ -67,7 +67,7 @@ function render () {
             </p>
 
             <div class="path-container">
-              <input class="path" name="path" value=${path} />
+              <input class="path nofocus" name="path" value=${path} />
 
               <button onclick=${onSelectDirectory} class="btn nofocus tooltip-container" data-tooltip="Choose different directory">
                 <i class="fa fa-pencil"></i>
@@ -77,9 +77,8 @@ function render () {
 
           <div class="actions">
             <button type="button" class="btn" onclick=${destroy}>Cancel</button>
-            <button type="submit" class="btn success">
-              Go
-              <i class="fa fa-angle-double-right"></i>
+            <button type="submit" class="btn primary">
+              Set directory
             </button>
           </div>
         </div>
