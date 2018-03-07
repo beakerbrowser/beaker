@@ -371,12 +371,6 @@ function onClickRestart () {
   beaker.browser.restartBrowser()
 }
 
-async function onClearDatTrash () {
-  const results = await beaker.archives.clearGarbage()
-  console.debug('Dat trash cleared', results)
-  toast.create(`Dat trash cleared. (${bytes(results.totalBytes)} freed from ${results.totalArchives} archives.)`, '', 5e3)
-}
-
 function onUpdaterStateChanged (state) {
   if (!browserInfo) { return }
   // render new state
