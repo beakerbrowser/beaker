@@ -471,20 +471,39 @@ async function onDelete (e, archive) {
     e.preventDefault()
   }
 
-  const nickname = archive.title || archive.url
+  const nickname = archive.title || 'Untitled'
   const msg = archive.isOwner
     ? `Move ${nickname} to Trash?`
     : `Stop seeding ${nickname}?`
   if (confirm(msg)) {
     try {
       await beaker.archives.remove(archive.url)
-      await loadArchives()
-      render()
-    } catch (_) {
+    } catch (e) {
+      console.error(e)
       toast.create(`Could not move ${nickname} to Trash`, 'error')
     }
   }
+  await loadArchives()
   render()
+}
+
+async function onDeletePermanently (e, archive) {
+  if (e) {
+    e.stopPropagation()
+    e.preventDefault()
+  }
+
+  const nickname = archive.title || 'Untitled'
+  if (confirm(`Delete ${nickname} permanently?`)) {
+    try {
+      await beaker.archives.delete(archive.url)
+    } catch (e) {
+      console.error(e)
+      toast.create(`Could not delete ${nickname}`, 'error')
+    }
+  }
+  await loadArchives()
+  render()  
 }
 
 async function onRestoreSelected () {
@@ -550,6 +569,7 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})
   } else {
     items.push({icon: 'undo', label: 'Restore from trash', click: () => onRestore(null, archive)})
+    items.push({icon: 'times-circle', label: 'Delete permanently', click: () => onDeletePermanently(null, archive)})
   }
   await contextMenu.create({x, y, items, parent, right: !isContext, withTriangle: !isContext})
 

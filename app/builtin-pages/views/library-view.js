@@ -1307,6 +1307,8 @@ function renderTabs () {
 }
 
 function renderMenu () {
+  const isOwner = _get(archive, 'info.isOwner')
+  const isSaved = _get(archive, 'info.userSettings.isSaved')
   return toggleable(yo`
     <div class="dropdown toggleable-container">
       <button class="btn primary nofocus toggleable">
@@ -1314,7 +1316,7 @@ function renderMenu () {
       </button>
 
       <div class="dropdown-items top right subtle-shadow">
-        ${_get(archive, 'info.isOwner')
+        ${isOwner
           ? yo`
             <div class="dropdown-item" onclick=${onMakeCopy}>
               <i class="fa fa-clone"></i>
@@ -1322,7 +1324,7 @@ function renderMenu () {
             </div>`
           : ''}
 
-        ${workspaceInfo
+        ${workspaceInfo && isSaved
           ? yo`
             <div class="dropdown-item" onclick=${onChangeWorkspaceDirectory}>
               <i class="fa fa-folder-o"></i>
@@ -1336,13 +1338,26 @@ function renderMenu () {
           Download as .zip
         </div>
 
-        ${_get(archive, 'info.isOwner') && _get(archive, 'info.userSettings.isSaved')
-          ? yo`
-            <div class="dropdown-item" onclick=${onMoveToTrash}>
-              <i class="fa fa-trash-o"></i>
-              Move to Trash
-            </div>`
-          : ''
+        ${isOwner 
+          ? (isSaved
+            ? yo`
+              <div class="dropdown-item" onclick=${onMoveToTrash}>
+                <i class="fa fa-trash-o"></i>
+                Move to Trash
+              </div>`
+            : [
+              yo`
+                <div class="dropdown-item" onclick=${onSave}>
+                  <i class="fa fa-undo"></i>
+                  Restore from Trash
+                </div>`,
+              yo`
+                <div class="dropdown-item" onclick=${onDeletePermanently}>
+                  <i class="fa fa-times-circle"></i>
+                  Delete permanently
+                </div>`
+            ]
+          ) : ''
         }
       </div>
     </div>
@@ -1406,7 +1421,7 @@ async function addReadme () {
 }
 
 async function onMoveToTrash () {
-  const nickname = archive.info.title || archive.url
+  const nickname = getSafeTitle()
   if (confirm(`Move ${nickname} to Trash?`)) {
     try {
       await beaker.archives.remove(archive.url)
@@ -1419,8 +1434,21 @@ async function onMoveToTrash () {
   render()
 }
 
+async function onDeletePermanently () {
+  const nickname = getSafeTitle()
+  if (confirm(`Delete ${nickname} permanently?`)) {
+    try {
+      await beaker.archives.delete(archive.url)
+      window.location = 'beaker://library'
+    } catch (e) {
+      console.error(e)
+      toast.create(`Could not delete ${nickname}`, 'error')
+    }
+  }
+}
+
 async function onSave () {
-  const nickname = archive.info.title || archive.url
+  const nickname = getSafeTitle()
   try {
     await beaker.archives.add(archive.url)
     archive.info.userSettings.isSaved = true
@@ -1433,7 +1461,7 @@ async function onSave () {
 }
 
 async function onToggleSeeding () {
-  const nickname = archive.info.title || archive.url
+  const nickname = getSafeTitle()
   try {
     if (archive.info.userSettings.isSaved) {
       await beaker.archives.remove(archive.url)
