@@ -6,6 +6,7 @@ export default {
   add: 'promise',
   remove: 'promise',
   bulkRemove: 'promise',
+  delete: 'promise',
   list: 'promise',
 
   // publishing

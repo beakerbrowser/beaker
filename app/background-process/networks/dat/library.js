@@ -348,6 +348,30 @@ export async function getOrLoadArchive (key, opts) {
   return loadArchive(key, opts)
 }
 
+export async function unloadArchive (key) {
+  key = fromURLToKey(key)
+  const archive = archives[key]
+  if (!archive) {
+    return
+  }
+
+  // shutdown archive
+  leaveSwarm(key)
+  stopAutodownload(archive)
+  if (archive.fileActStream) {
+    archive.fileActStream.end()
+    archive.fileActStream = null
+  }
+  await new Promise((resolve, reject) => {
+    archive.close(err => {
+      if (err) reject(err)
+      else resolve()
+    })
+  })
+  delete archivesByDKey[datEncoding.toStr(archive.discoveryKey)]
+  delete archives[key]
+}
+
 export function isArchiveLoaded (key) {
   key = fromURLToKey(key)
   return key in archives

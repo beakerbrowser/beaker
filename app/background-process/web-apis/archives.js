@@ -65,6 +65,15 @@ export default {
     return results
   },
 
+  async delete (url) {
+    const key = datLibrary.fromURLToKey(url)
+    await assertArchiveDeletable(key)
+    await archivesDb.setUserSettings(0, key, {isSaved: false})
+    const bytes = await archivesDb.deleteArchive(key)
+    await datLibrary.unloadArchive(key)
+    return {bytes}
+  },
+
   async list (query = {}) {
     return datLibrary.queryArchives(query)
   },
