@@ -14,7 +14,7 @@ const STEPS = [
     title: 'Welcome to Beaker!',
     subtitle: 'Configure your preferences',
     description: 'Beaker is a new type of browser for exploring and building the peer-to-peer Web.',
-    content: yo`
+    content: () => yo`
       <p>
         <label class="toggle">
           <input checked type="checkbox" onchange=${onToggleDefaultBrowser} />
@@ -39,7 +39,7 @@ const STEPS = [
     title: 'Build and host websites',
     subtitle: 'Configure your workspace settings',
     description: 'With Beaker, you can create and host websites from your computer. No server required!',
-    content: yo`
+    content: () => yo`
       <div>
         <p>
           The default directory where your websites will be saved:
@@ -59,7 +59,7 @@ const STEPS = [
     title: 'Get started',
     subtitle: 'Start exploring the peer-to-peer Web',
     description: '',
-    content: yo`
+    content: () => yo`
       <p>
         <a href="#todo" class="module">
           <img src="beaker://assets/img/onboarding/create-website.svg"/>
@@ -101,7 +101,7 @@ const STEPS = [
             </h3>
 
             <p>
-              Explore Beaker's documentation and tutorials
+              Explore Beaker${"'"}s documentation and tutorials
             </p>
           </span>
         </a>
@@ -190,7 +190,7 @@ function renderBody () {
         : ''
       }
 
-      ${step.content}
+      ${step.content()}
     </div>`
 }
 
@@ -291,10 +291,6 @@ async function onSelectDirectory (e) {
   //   update()
   // }
 }
-
-// TODO
-// why does the last pane's content not show after you click
-// previous/next a few times?
 
 // TODO
 // it would be cool to have the height of the popup transition when you change
