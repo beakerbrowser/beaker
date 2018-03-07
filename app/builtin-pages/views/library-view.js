@@ -1420,11 +1420,9 @@ async function onToggleSeeding () {
     if (archive.info.userSettings.isSaved) {
       await beaker.archives.remove(archive.url)
       archive.info.userSettings.isSaved = false
-      toast.create(`Stopped seeding ${nickname}`, 'success')
     } else {
       await beaker.archives.add(archive.url)
       archive.info.userSettings.isSaved = true
-      toast.create(`Seeding ${nickname}`, 'success')
     }
   } catch (e) {
     console.error(e)
