@@ -1,5 +1,5 @@
 import * as archivesDb from '../../dbs/archives'
-import {isArchiveLoaded} from './library'
+import {unloadArchive} from './library'
 import {
   DAT_GC_FIRST_COLLECT_WAIT,
   DAT_GC_REGULAR_COLLECT_WAIT
@@ -33,19 +33,17 @@ export async function collect ({olderThan} = {}) {
   // first unsave expired archives
   var expiredArchives = await archivesDb.listExpiredArchives()
   debug('GC unsaving %d expired archives', expiredArchives.length)
+  var promises = []
   for (let i = 0; i < expiredArchives.length; i++) {
-    await archivesDb.setUserSettings(0, expiredArchives[i].key, {isSaved: false})
+    promises.push(archivesDb.setUserSettings(0, expiredArchives[i].key, {isSaved: false}))
   }
+  await Promise.all(promises)
 
   // now GC old archives
   var unusedArchives = await archivesDb.listGarbageCollectableArchives({olderThan})
   debug('GC cleaning out %d unused archives', unusedArchives.length)
   for (let i = 0; i < unusedArchives.length; i++) {
-    if (isArchiveLoaded(unusedArchives[i].key)) {
-      // dont GC archives that are in memory (and thus in use)
-      skippedArchives++
-      continue
-    }
+    await unloadArchive(unusedArchives[i].key)
     totalBytes += await archivesDb.deleteArchive(unusedArchives[i].key)
   }
 

@@ -69,8 +69,8 @@ export default {
     const key = datLibrary.fromURLToKey(url)
     await assertArchiveDeletable(key)
     await archivesDb.setUserSettings(0, key, {isSaved: false})
-    const bytes = await archivesDb.deleteArchive(key)
     await datLibrary.unloadArchive(key)
+    const bytes = await archivesDb.deleteArchive(key)
     return {bytes}
   },
 
