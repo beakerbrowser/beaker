@@ -7,7 +7,9 @@ import datEncoding from 'dat-encoding'
 import jetpack from 'fs-jetpack'
 import {InvalidArchiveKeyError} from 'beaker-error-constants'
 import * as db from './profile-data-db' // TODO rename to db
+import * as workspacesDb from './workspaces'
 import lock from '../../lib/lock'
+import {getRandomName} from '../../lib/dict'
 import {
   DAT_HASH_REGEX,
   DAT_GC_EXPIRATION_AGE
@@ -26,6 +28,9 @@ export function setup () {
   // make sure the folders exist
   datPath = path.join(app.getPath('userData'), 'Dat')
   mkdirp.sync(path.join(datPath, 'Archives'))
+
+  // get the db in a good state
+  runMigrations()
 }
 
 // get the path to an archive's files
@@ -359,4 +364,29 @@ export function extractOrigin (originURL) {
   var urlp = url.parse(originURL)
   if (!urlp || !urlp.host || !urlp.protocol) return
   return (urlp.protocol + (urlp.slashes ? '//' : '') + urlp.host)
+}
+
+async function runMigrations () {
+  // convert any old localPaths into workspaces
+  var archives = await db.all(`
+    SELECT
+        archives.*
+      FROM archives
+      WHERE
+        archives.isSaved = 1 AND
+        archives.localPath IS NOT NULL
+  `)
+  if (archives.length) {
+    for (let i = 0; i < archives.length; i++) {
+      let url = 'dat://' + archives[i].key
+      let ws = await workspacesDb.getByPublishTargetUrl(0, url)
+      if (ws) continue // all set
+      let wsName = getRandomName()
+      await workspacesDb.set(0, wsName, {
+        publishTargetUrl: url,
+        localFilesPath: archives[i].localPath
+      })
+    }
+    await db.run(`UPDATE archives SET localPath = NULL`)
+  }
 }
