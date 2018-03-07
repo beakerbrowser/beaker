@@ -100,7 +100,6 @@ export default class DatNetworkActivity {
             ${this.renderHeading('peers', 'Peers')}
             ${this.renderHeading('size', 'Size')}
             ${this.renderHeading('mtime', 'Last updated')}
-            <div class="buttons"></div>
           </div>
           ${this.archives.map(a => this.renderArchive(a))}
         </div>
@@ -151,7 +150,9 @@ export default class DatNetworkActivity {
         </a>
 
         <div class="peers">
-          ${archive.peers} ${pluralize(archive.peers, 'peer')}
+          ${archive.userSettings.networked
+            ? `${archive.peers} ${pluralize(archive.peers, 'peer')}`
+            : yo`<span><i class="fa fa-plug"></i> Offline</span>`}
         </div>
 
         <div class="size">
@@ -169,22 +170,6 @@ export default class DatNetworkActivity {
             ${this.renderSeedingMenu(archive)}
           </span>
         </div>*/}
-
-        <div class="buttons">
-          ${archive.userSettings.isSaved && !archive.userSettings.networked
-            ? yo`
-              <button title="Delete these files from your device" class="btn" onclick=${e => this.onUnsaveArchive(archive)}>
-                <i class="fa fa-trash-o"></i>
-              </button>`
-            : ''}
-
-          <button class="btn hosting-btn" onclick=${e => this.onToggleHosting(archive)}>
-            ${archive.userSettings.networked
-              ? 'Stop seeding'
-              : yo`<i class="fa fa-upload"></i>`
-            }
-          </button>
-        </div>
       </div>
     `
   }
@@ -272,8 +257,11 @@ export default class DatNetworkActivity {
 
     const items = [
       {icon: 'link', label: 'Copy URL', click: () => this.onCopyURL(archive) },
-      {icon: 'folder-open-o', label: 'Open in Library', click: () => this.onOpenInLibrary(archive) },
-      {icon: 'stop', label: 'Stop seeding files', click: () => {}},
+      {icon: 'book', label: 'Open in Library', click: () => this.onOpenInLibrary(archive) },
+      archive.userSettings.networked
+        ? {icon: 'plug', label: 'Disconnect from the swarm', click: () => this.onToggleNetworked(archive) }
+        : {icon: 'exchange', label: 'Connect to the swarm', click: () => this.onToggleNetworked(archive) },
+      {icon: 'times-circle', label: 'Purge archive and files', click: () => this.onDeleteFiles(archive) }
     ]
     await contextMenu.create({x: e.clientX, y: e.clientY, items})
 
@@ -293,6 +281,31 @@ export default class DatNetworkActivity {
 
   onOpenInLibrary (archive) {
     window.open('beaker://library/' + archive.url)
+  }
+
+  async onToggleNetworked (archive) {
+    try {
+      const networked = !archive.userSettings.networked
+      await (new DatArchive(archive.key)).configure({networked})
+      archive.userSettings.networked = networked
+      this.rerender()
+    } catch (e) {
+      console.error(e)
+      toast.create('Something went wrong', 'error')
+      return
+    }
+  }
+
+  async onDeleteFiles (archive) {
+    try {
+      const res = await beaker.archives.delete(archive.key)
+      toast.create(`Files deleted (${prettyBytes(res.bytes)} freed)`, '', 5e3)
+      this.fetchArchives()
+    } catch (e) {
+      console.error(e)
+      toast.create('Something went wrong', 'error')
+      return
+    }
   }
 
   async onClickSettings (archive) {
@@ -344,58 +357,8 @@ export default class DatNetworkActivity {
     render()
   }
 
-  async onToggleHosting (archive) {
-    var isNetworked = !archive.userSettings.networked
-
-    if (isNetworked && this.currentFilter === 'seeding') {
-      // totalArchivesHosting += 1
-      // totalBytesHosting += archive.size
-    } else if (this.currentFilter === 'seeding') {
-      // totalArchivesHosting -= 1
-      // tntalBytesHosting -= archive.size
-    }
-
-    // don't unsave the archive if user is owner
-    if (archive.isOwner && archive.userSettings.isSaved) {
-      var tmpArchive = new DatArchive(archive.url)
-
-      try {
-        await tmpArchive.configure({networked: isNetworked})
-      } catch (e) {
-        toast.create('Something went wrong', 'error')
-        return
-      }
-    }
-
-    else {
-      // unsave if not owner and update the peer count
-      if (archive.userSettings.isSaved) {
-        await beaker.archives.remove(archive.key)
-        archive.userSettings.isSaved = false
-        archive.peers -= 1
-      } else {
-        await beaker.archives.add(archive.key)
-        archive.userSettings.isSaved = true
-        archive.peers += 1
-      }
-    }
-
-    // update the local archives data and re-render
-    archive.userSettings.networked = isNetworked
-    this.rerender()
-  }
-
-  async onUnsaveArchive (archive) {
-    await beaker.archives.remove(archive.key)
-    archive.userSettings.isSaved = false
-    // totalArchivesHosting -= 1
-    totalBytesHosting -= archive.size
-    render()
-  }
-
   onClick (e) {
     if (!findParent(e.target, 'gear-btn')) {
-      console.log('destroy')
       destroySeedingMenu()
     }
   }

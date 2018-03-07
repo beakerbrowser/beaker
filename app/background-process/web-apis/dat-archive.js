@@ -184,6 +184,18 @@ export default {
       if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
       if (!settings || typeof settings !== 'object') throw new Error('Invalid argument')
 
+      // handle 'networked' specially
+      // also, only allow beaker to set 'networked' for now
+      if (this.sender.getURL().startsWith('beaker:') && ('networked' in settings)) {
+        if (settings.networked === false) {
+          await assertArchiveOfflineable(archive)
+        }
+        await archivesDb.setUserSettings(0, archive.key, {networked: settings.networked, expiresAt: 0})
+        if (Object.keys(settings).length === 1) {
+          return
+        }
+      }
+
       pause() // dont count against timeout, there may be user prompts
       var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
@@ -192,23 +204,11 @@ export default {
 
       checkin('updating archive')
 
-      // only allow special attrs be set by beaker, for now
-      if (!this.sender.getURL().startsWith('beaker:')) {
-        delete settings.type
-        delete settings.networked
-      }
-
       let manifestUpdates = pick(settings, DAT_CONFIGURABLE_FIELDS)
       if (Object.keys(manifestUpdates).length) {
         await pda.updateManifest(archive, manifestUpdates)
         updateWorkspaceManifest(archive, manifestUpdates)
         await datLibrary.pullLatestArchiveMeta(archive)
-      }
-      if ('networked' in settings) {
-        if (settings.networked === false) {
-          await assertArchiveOfflineable(archive)
-        }
-        await archivesDb.setUserSettings(0, archive.key, {networked: settings.networked, expiresAt: 0})
       }
     })
   },
