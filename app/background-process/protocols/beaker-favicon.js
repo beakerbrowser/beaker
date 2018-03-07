@@ -102,8 +102,13 @@ export function setup () {
 const BEAKER_FAVICON_URL_RE = /^beaker-favicon:(\d*),?(.*)/
 function parseBeakerFaviconURL (str) {
   const match = BEAKER_FAVICON_URL_RE.exec(str)
-  return {
+  let res = {
     faviconSize: (+match[1]) || 16,
     url: match[2]
   }
+  // special case: in beaker://library, use the dat being viewed
+  if (res.url.startsWith('beaker://library/dat://')) {
+    res.url = res.url.slice('beaker://library/'.length)
+  }
+  return res
 }

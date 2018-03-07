@@ -68,7 +68,7 @@ function drawTab (page) {
       favicon.onerror = onFaviconError(page)
     } else if (page.getURL().startsWith('beaker:')) {
       // favicon = yo`<img src="beaker-favicon:beaker">`
-      favicon = yo`<i class="fa fa-window-maximize"></i>`
+      favicon = getBuiltinPageIcon(page.getURL())
     } else {
       // (check for cached icon)
       favicon = yo`<img src="beaker-favicon:${page.getURL()}?cache=${Date.now()}">`
@@ -463,4 +463,27 @@ function getNiceTitle (page) {
   } catch (e) {
     return title
   }
+}
+
+function getBuiltinPageIcon (url) {
+  if (url.startsWith('beaker://library/dat://')) {
+    // use the protocol, it will try to load the favicon of the dat
+    return yo`<img src="beaker-favicon:${url}?cache=${Date.now()}">`
+  }
+  if (url.startsWith('beaker://library/')) {
+    return yo`<i class="fa fa-book"></i>`
+  }
+  if (url.startsWith('beaker://bookmarks/')) {
+    return yo`<i class="fa fa-star"></i>`
+  }
+  if (url.startsWith('beaker://history/')) {
+    return yo`<i class="fa fa-clock-o"></i>`
+  }
+  if (url.startsWith('beaker://downloads/')) {
+    return yo`<i class="fa fa-download-o"></i>`
+  }
+  if (url.startsWith('beaker://settings/')) {
+    return yo`<i class="fa fa-gear"></i>`
+  }
+  return yo`<i class="fa fa-window-maximize"></i>`
 }
