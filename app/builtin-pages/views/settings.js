@@ -126,7 +126,7 @@ function renderWorkspacePathSettings () {
 
       <p>
         <code>${settings.workspace_default_path}</code>
-        <button class="btn small" onclick=${onUpdateDefaultWorkspaceDirectory}>
+        <button class="btn" onclick=${onUpdateDefaultWorkspaceDirectory}>
           Choose directory
         </button>
       </p>
