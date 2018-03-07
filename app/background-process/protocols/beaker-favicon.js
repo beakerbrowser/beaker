@@ -4,7 +4,7 @@
  * Helper protocol to serve site favicons from the sitedata db.
  **/
 
-import { protocol } from 'electron'
+import {protocol, screen} from 'electron'
 import fs from 'fs'
 import path from 'path'
 import pda from 'pauls-dat-api'
@@ -24,10 +24,17 @@ export function setup () {
     if (buf) { defaultFaviconBuffer = buf }
   })
 
+  // detect if is retina
+  let display = screen.getPrimaryDisplay()
+  const isRetina = display.scaleFactor >= 2
+
   // register favicon protocol
   protocol.registerBufferProtocol('beaker-favicon', async (request, cb) => {
     // parse the URL
     let {url, faviconSize} = parseBeakerFaviconURL(request.url)
+    if (isRetina) {
+      faviconSize *= 2
+    }
 
     try {
       // look up in db
