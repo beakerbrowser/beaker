@@ -3,9 +3,9 @@ import * as yo from 'yo-yo'
 // globals
 // =
 
-var currentStep = 0
-var isHintHidden = true
-var defaultProtocolSettings
+let currentStep = 0
+let isHintHidden = true
+let defaultProtocolSettings
 let resolve
 let reject
 
@@ -17,13 +17,13 @@ const STEPS = [
     content: () => yo`
       <p>
         <label class="toggle">
-          <input checked type="checkbox" onchange=${onToggleDefaultBrowser} />
+          <input checked=${defaultProtocolSettings.dat} type="checkbox" onchange=${onToggleDefaultBrowser} />
           <div class="switch"></div>
           <span class="text">
             Set Beaker as the default browser for dat:// URLs
           </span>
 
-          <button type="button" class="btn hint-btn plain link" onclick=${e => onShowHint(e)}>
+          <button type="button" class="btn hint-btn plain link" onclick=${onShowHint}>
             <i class="fa fa-question-circle-o"></i>
           </button>
         </label>
@@ -34,6 +34,13 @@ const STEPS = [
         </div>
       </p>`,
     color: 'blue',
+    onLeave: async () => {
+      if (defaultProtocolSettings.dat) {
+        await beaker.browser.setAsDefaultProtocolClient('dat')
+      } else {
+        await beaker.browser.removeAsDefaultProtocolClient('dat')        
+      }
+    }
   },
   {
     title: 'Build and host websites',
@@ -113,8 +120,9 @@ const STEPS = [
 // exported api
 // =
 
-export function create (opts = {}) {
+export async function create (opts = {}) {
   // localFilesPath = opts.defaultPath || ''
+  defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
 
   // render interface
   var popup = render()
@@ -136,7 +144,14 @@ export function destroy () {
   reject()
 }
 
-export function render () {
+// internal methods
+// =
+
+function update () {
+  yo.update(document.getElementById('onboarding-popup'), render())
+}
+
+function render () {
   const step = STEPS[currentStep]
 
   return yo`
@@ -148,9 +163,6 @@ export function render () {
       </div>
     </div>`
 }
-
-// = internal methods
-//
 
 function renderHead () {
   const step = STEPS[currentStep]
@@ -193,14 +205,6 @@ function renderBody () {
 
       ${step.content()}
     </div>`
-}
-
-// async function setup () {
-  // defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
-// }
-
-function update () {
-  yo.update(document.getElementById('onboarding-popup'), render())
 }
 
 function renderFooter () {
@@ -255,24 +259,30 @@ function onClickPrevious () {
   update()
 }
 
-function onClickNext () {
+async function onClickNext () {
+  // run any effects
+  if (STEPS[currentStep].onLeave) {
+    await STEPS[currentStep].onLeave()
+  }
+
+  // go to next step
   currentStep = currentStep + 1
   isHintHidden = true
   update()
 }
 
 function onShowHint (e) {
-  // TODO
-  // this doesn't actually work because of the yo elements being in a global
-  // i assume
   e.stopPropagation()
   e.preventDefault()
-  isHintHidden = false
+  isHintHidden = !isHintHidden
+  // TODO because the popup is now fixed height, the hint is causing layout issues
   update()
 }
 
-function onToggleDefaultBrowser () {
-  // TODO
+function onToggleDefaultBrowser (e) {
+  e.preventDefault()
+  defaultProtocolSettings.dat = !defaultProtocolSettings.dat
+  update()
 }
 
 async function onSelectDirectory (e) {
