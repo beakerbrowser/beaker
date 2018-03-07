@@ -570,7 +570,7 @@ function onUpdateSort (sort) {
 async function onClearDatTrash () {
   const results = await beaker.archives.clearGarbage()
   console.debug('Dat trash cleared', results)
-  toast.create(`Dat trash cleared. (${bytes(results.totalBytes)} freed from ${results.totalArchives} archives.)`, '', 5e3)
+  toast.create(`Trash emptied (${bytes(results.totalBytes)} freed from ${results.totalArchives} archives)`, '', 5e3)
   await loadArchives()
   render()
 }
