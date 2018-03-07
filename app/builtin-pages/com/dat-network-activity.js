@@ -53,7 +53,7 @@ export default class DatNetworkActivity {
     if (this.currentFilter === 'seeding') {
       this.archives = await beaker.archives.list({isSaved: true, isOwner: false})
     } else if (this.currentFilter === 'owned') {
-      this.archives = await beaker.archives.list({isSaved: true, isOwner: true})
+      this.archives = await beaker.archives.list({isOwner: true})
     } else if (this.currentFilter === 'cache') {
       this.archives = await beaker.archives.list({isSaved: false})
     } else {
@@ -134,6 +134,7 @@ export default class DatNetworkActivity {
     const now = Date.now()
     const timeRemaining = (expiresAt && expiresAt > now) ? moment.duration(expiresAt - now) : null
     const highlightedCls = this.currentlyHighlightedKey === archive.key ? 'highlighted' : ''
+    const inTrash = archive.isOwner && !archive.userSettings.isSaved
 
     let expiresAtStr
     if (!timeRemaining) expiresAtStr = ''
@@ -147,6 +148,7 @@ export default class DatNetworkActivity {
 
         <a href=${archive.url} class="title" title=${archive.title}>
           ${archive.title || yo`<em>Untitled</em>`}
+          ${inTrash ? yo`<i class="fa fa-trash-o" title="In the trash"></i>` : ''}
         </a>
 
         <div class="peers">
