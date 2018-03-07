@@ -84,6 +84,12 @@ async function setup () {
     archive = new LibraryDatArchive(url)
     await archive.setup()
 
+    // go to raw key if we have a shortname
+    if (archive.info.url !== archive.url) {
+      window.location = 'beaker://library/' + archive.info.url
+      return
+    }
+
     document.title = `Library - ${archive.info.title || 'Untitled'}`
 
     // construct files browser
