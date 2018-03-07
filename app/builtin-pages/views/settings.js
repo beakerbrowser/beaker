@@ -271,7 +271,7 @@ function renderAutoUpdater () {
       return yo`
       <div class="section">
         <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
-        
+
         <div class="auto-updater">
           <button class="btn" disabled>Checking for updates</button>
           <span class="version-info">
@@ -286,7 +286,7 @@ function renderAutoUpdater () {
       return yo`
       <div class="section">
         <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
-        
+
         <div class="auto-updater">
           <button class="btn" disabled>Updating</button>
           <span class="version-info">
@@ -301,7 +301,7 @@ function renderAutoUpdater () {
       return yo`
       <div class="section">
         <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
-        
+
         <div class="auto-updater">
           <button class="btn" onclick=${onClickRestart}>Restart now</button>
           <span class="version-info">
@@ -318,17 +318,6 @@ function renderAutoUpdateCheckbox () {
   return yo`<label>
     <input type="checkbox" checked=${isAutoUpdateEnabled()} onclick=${onToggleAutoUpdate} /> Check for updates automatically
   </label>`
-}
-
-function renderDatTools () {
-  return yo`
-    <div class="section">
-      <h2 id="dat-tools" class="subtitle-heading">Dat archives</h2>
-      
-      <button class="btn" onclick=${onClearDatTrash}>Clear trash</button>
-    </div>
-  `
-
 }
 
 // event handlers
