@@ -5,6 +5,7 @@ import * as yo from 'yo-yo'
 
 let currentStep = 0
 let isHintHidden = true
+let settings
 let defaultProtocolSettings
 let resolve
 let reject
@@ -53,7 +54,7 @@ const STEPS = [
         </p>
 
         <p class="path-container">
-          <input disabled class="path nofocus" name="path" value="/Users/tara/src/butt" />
+          <input class="path nofocus" name="path" value=${settings.workspace_default_path} onkeyup=${onKeyupDirectory} />
 
           <button class="btn primary nofocus" onclick=${onSelectDirectory}>
             Choose different directory
@@ -61,6 +62,9 @@ const STEPS = [
         </p>
       </div>`,
     color: 'pink',
+    onLeave: async () => {
+      await beaker.browser.setSetting('workspace_default_path', settings.workspace_default_path)
+    }
   },
   {
     title: 'Get started',
@@ -121,7 +125,7 @@ const STEPS = [
 // =
 
 export async function create (opts = {}) {
-  // localFilesPath = opts.defaultPath || ''
+  settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
 
   // render interface
@@ -137,6 +141,11 @@ export async function create (opts = {}) {
 }
 
 export function destroy () {
+  // run any effects
+  if (STEPS[currentStep].onLeave) {
+    STEPS[currentStep].onLeave()
+  }
+
   localStorage.hasDismissedOnboarding = true
   var popup = document.getElementById('onboarding-popup')
   document.body.removeChild(popup)
@@ -275,7 +284,6 @@ function onShowHint (e) {
   e.stopPropagation()
   e.preventDefault()
   isHintHidden = !isHintHidden
-  // TODO because the popup is now fixed height, the hint is causing layout issues
   update()
 }
 
@@ -285,6 +293,10 @@ function onToggleDefaultBrowser (e) {
   update()
 }
 
+function onKeyupDirectory (e) {
+  settings.workspace_default_path = e.target.value
+}
+
 async function onSelectDirectory (e) {
   e.preventDefault()
   e.stopPropagation()
@@ -292,13 +304,11 @@ async function onSelectDirectory (e) {
   let path = await beaker.browser.showOpenDialog({
     title: 'Select a folder',
     buttonLabel: 'Select folder',
-    properties: ['openDirectory', 'createDirectory']
-    // defaultPath: localFilesPath TODO
+    properties: ['openDirectory', 'createDirectory'],
+    defaultPath: settings.workspace_default_path
   })
-
-  // TODO
-  // if (path) {
-  //   localFilesPath = path[0]
-  //   update()
-  // }
+  if (path) {
+    settings.workspace_default_path = path[0]
+    update()
+  }
 }
