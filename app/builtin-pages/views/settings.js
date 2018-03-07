@@ -198,33 +198,38 @@ function renderInformation () {
 }
 
 function renderProtocolSettings () {
-  function register (protocol) {
-    return () => {
-      // update and optimistically render
+
+  function toggleRegistered (protocol) {
+    // update and optimistically render
+    defaultProtocolSettings[protocol] = !defaultProtocolSettings[protocol]
+
+    if (defaultProtocolSettings[protocol]) {
       beaker.browser.setAsDefaultProtocolClient(protocol)
-      defaultProtocolSettings[protocol] = true
-      renderToPage()
+    } else {
+      beaker.browser.removeAsDefaultProtocolClient(protocol)
     }
+    renderToPage()
   }
-  var registered = Object.keys(defaultProtocolSettings).filter(k => defaultProtocolSettings[k])
-  var unregistered = Object.keys(defaultProtocolSettings).filter(k => !defaultProtocolSettings[k])
 
   return yo`
-    <div class="section">
+    <div class="section default-browser">
       <h2 id="protocol" class="subtitle-heading">Default browser settings</h2>
 
-      ${registered.length
-        ? yo`<p>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</p>`
-        : ''}
-      ${unregistered.map(proto => yo`
-        <p>
-          <strong>${proto}</strong>
-          <a onclick=${register(proto)}>
-            Make default
-            <i class="fa fa-share"></i>
-          </a>
-        </p>`)}
-      </div>`
+      <p>
+        Set Beaker as the default browser for:
+      </p>
+
+      ${Object.keys(defaultProtocolSettings).map(proto => yo`
+        <label class="toggle">
+          <input checked=${defaultProtocolSettings[proto] ? 'true' : 'false'} type="checkbox" onchange=${() => toggleRegistered(proto)} />
+
+          <div class="switch"></div>
+          <span class="text">
+            ${proto}://
+          </span>
+        </label>`
+      )}
+    </div>`
 }
 
 function renderAutoUpdater () {
