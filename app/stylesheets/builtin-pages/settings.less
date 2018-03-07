@@ -4,18 +4,29 @@
 @import "../components/context-menu";
 @import "./components/toast";
 
-.settings-wrapper {
+.builtin-wrapper.settings-wrapper {
 
   .builtin-main .view {
-    border: 1px solid #ddd;
     padding: 0;
+    border: 1px solid #e6e6e6;
+  }
+
+  .subtitle-heading {
+    margin-bottom: 10px;
   }
 
   .section {
-    padding: 15px;
+    padding: 20px 0;
+    margin: 0 15px;
+    border-top: 1px solid #eee;
 
-    &:not(:last-child) {
-      border-bottom: 1px solid #ddd;
+    &:first-of-type {
+      border-top: 0;
+      padding-top: 15px;
+    }
+
+    &:last-of-type {
+      padding-bottom: 15px;
     }
   }
 
