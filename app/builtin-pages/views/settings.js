@@ -137,21 +137,28 @@ function renderWorkspacePathSettings () {
 function renderOnStartupSettings () {
   return yo`
     <div class="section on-startup">
-      <h2 id="on-startup" class="subtitle-heading">On Startup</h2>
+      <h2 id="on-startup" class="subtitle-heading">Startup settings</h2>
 
-      <p>When Beaker starts what do you want to see?</p>
+      <p>
+        Open on startup:
+      </p>
 
       <div class="radio-group">
         <input type="radio" id="customStartPage1" name="custom-start-page"
                value="blank"
                checked=${settings.custom_start_page === "blank"}
                onchange=${onCustomStartPageChange} />
-        <label for="customStartPage1">Show a new tab</label>
+        <label for="customStartPage1">
+          New tab
+        </label>
+
         <input type="radio" id="customStartPage2" name="custom-start-page"
                value="previous"
                checked=${settings.custom_start_page === "previous"}
                onchange=${onCustomStartPageChange} />
-        <label for="customStartPage2">Show my previously opened tabs</label>
+        <label for="customStartPage2">
+          Previously opened tabs
+        </label>
       </div>
     </div>
   `
