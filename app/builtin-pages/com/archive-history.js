@@ -52,7 +52,10 @@ export default function render (archive) {
         yo.update(el, yo`
           <div class="archive-history">
             <div class="archive-history-header">Change history</div>
-            <div class="archive-history-body">${err.toString()}</div>
+            <div class="archive-history-body error">
+              <i class="fa fa-frown-o"></i>
+              ${err.toString()}
+            </div>
           </div>`
         )
       }
