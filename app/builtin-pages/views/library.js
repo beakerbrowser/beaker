@@ -151,7 +151,7 @@ function renderRow (row, i) {
       <div class="buttons">
         ${row.userSettings.isSaved
           ? yo`
-            <button class="btn plain trash" onclick=${e => onDelete(e, row)} title="Move to Trash">
+            <button class="btn plain trash" onclick=${e => onDelete(e, row)} title=${removeFromLibraryLabel(row)}>
               <i class="fa fa-trash-o"></i>
             </button>`
           : yo`
@@ -329,7 +329,7 @@ function renderHeader () {
             </button>`
           : yo`
             <button class="btn warning" onclick=${onDeleteSelected}>
-              Move to Trash
+              ${currentView === 'seeding' ? 'Stop seeding' : 'Move to Trash'}
             </button>`
         }
       </div>`
@@ -404,6 +404,14 @@ function renderHeader () {
     </div>`
 }
 
+function removeFromLibraryLabel (archive) {
+  return (archive.isOwner) ? 'Move to trash' : 'Stop seeding'
+}
+
+function removeFromLibraryIcon (archive) {
+  return (archive.isOwner) ? 'trash' : 'pause'
+}
+
 // events
 // =
 
@@ -426,7 +434,10 @@ function onCopy (str, successMessage = 'URL copied to clipboard') {
 }
 
 async function onDeleteSelected () {
-  if (!confirm(`Move ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} to Trash?`)) {
+  const msg = currentView === 'seeding'
+    ? `Stop seeding ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')}?`
+    : `Move ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} to Trash?`
+  if (!confirm(msg)) {
     return
   }
 
@@ -461,7 +472,10 @@ async function onDelete (e, archive) {
   }
 
   const nickname = archive.title || archive.url
-  if (confirm(`Move ${nickname} to Trash?`)) {
+  const msg = archive.isOwner
+    ? `Move ${nickname} to Trash?`
+    : `Stop seeding ${nickname}?`
+  if (confirm(msg)) {
     try {
       await beaker.archives.remove(archive.url)
       await loadArchives()
@@ -533,7 +547,7 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
     items.push({icon: 'times', label: 'Remove from recent', click: () => removeFromRecent(archive)})
   }
   if (archive.userSettings.isSaved) {
-    items.push({icon: 'trash', label: 'Move to Trash', click: () => onDelete(null, archive)})
+    items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})
   } else {
     items.push({icon: 'undo', label: 'Restore from trash', click: () => onRestore(null, archive)})
   }
