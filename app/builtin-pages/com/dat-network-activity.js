@@ -298,6 +298,9 @@ export default class DatNetworkActivity {
 
   async onDeleteFiles (archive) {
     try {
+      if (!confirm('This will delete this archive. Are you sure?')) {
+        return
+      }
       const res = await beaker.archives.delete(archive.key)
       toast.create(`Files deleted (${prettyBytes(res.bytes)} freed)`, '', 5e3)
       this.fetchArchives()
