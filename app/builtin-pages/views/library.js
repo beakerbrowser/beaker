@@ -251,7 +251,10 @@ function render () {
             <div class="subtitle-heading">
               ${query ? yo`<span>"${query}" in </span>` : ''} ${currentView}
               ${currentView === 'trash'
-                ? yo`<button class="link" onclick=${onClearDatTrash}>clear</button>`
+                ? yo`
+                  <button class="link" onclick=${onClearDatTrash}>
+                    Empty Trash
+                  </button>`
                 : ''}
             </div>
 
