@@ -51,6 +51,12 @@ select {
       box-shadow: 0 0 0 2px fadeout(shade(@red, 20%), 85%);
     }
   }
+
+  &.nofocus:focus {
+    outline: 0;
+    box-shadow: none;
+    border: initial;
+  }
 }
 
 // inline text input
@@ -72,6 +78,17 @@ input.inline {
   &:focus {
     background: #fff;
   }
+}
+
+input.underline {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: text;
+  line-height: 1;
 }
 
 // custom file picker
