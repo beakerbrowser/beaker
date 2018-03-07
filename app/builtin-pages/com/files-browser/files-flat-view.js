@@ -26,9 +26,7 @@ export default function render (filesBrowser, currentSource, workspaceInfo) {
 
       ${rHeader(filesBrowser, currentSource, workspaceInfo)}
 
-      <div
-        class="body ${currentSource.type === 'file' ? 'file' : ''}"
-        onclick=${e => onClickNode(e, filesBrowser, currentSource)}>
+      <div class="body ${currentSource.type === 'file' ? 'file' : ''}">
         ${currentSource.type === 'file'
           ? rFilePreview(currentSource)
           : rChildren(filesBrowser, currentSource.children)
