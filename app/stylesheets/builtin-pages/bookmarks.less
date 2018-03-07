@@ -61,25 +61,28 @@
         max-width: 150px;
       }
 
-      .action {
+      .btn.action {
+        margin-left: 5px;
 
-        &.add {
-          font-size: 17px;
-          font-weight: 600;
-          margin-right: -1.5px;
-          color: #bbb;
-          transition: color .1s ease;
+        .fa {
+          margin-left: 0;
+        }
 
-          &:hover {
-            background: none;
-            color: #555;
+        &.bookmark {
+
+          .fa-star:hover {
+            color: #fff;
+            -webkit-text-stroke: 1px #aaa;
           }
         }
 
         &.pin {
 
           &.pinned {
-            color: @blue;
+
+            .fa {
+              color: @blue;
+            }
           }
         }
       }

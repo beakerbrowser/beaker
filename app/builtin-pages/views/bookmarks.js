@@ -163,15 +163,17 @@ function renderActions (row, i) {
   if (isOwner) {
     return yo`
       <div class="actions bookmark__actions">
-        <div class="action" onclick=${onClickEdit(i)} title="Edit bookmark">
+        <button class="btn plain action tooltip-container" onclick=${onClickEdit(i)} data-tooltip="Edit bookmark">
           <i class="fa fa-pencil icon"></i>
-        </div>
-        <div class="action" onclick=${onClickDelete(i)} title="Unbookmark">
+        </button>
+
+        <button class="btn plain action bookmark tooltip-container" onclick=${onClickDelete(i)} data-tooltip="Unbookmark">
           <i class="fa fa-star icon"></i>
-        </div>
-        <div class="action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)} title="${row.pinned ? 'Unpin from' : 'Pin to'} start page">
+        </button>
+
+        <button class="btn plain action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)} data-tooltip="${row.pinned ? 'Unpin from' : 'Pin to'} start page">
           <i class="fa fa-thumb-tack icon"></i>
-        </div>
+        </button>
       </div>
     `
   } else {
