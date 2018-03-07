@@ -909,7 +909,12 @@ function renderNetworkView () {
   }
 
   if (!archive.info.isOwner) {
-    clearCacheBtn = yo`<span> | <button class="link" onclick=${onDeleteDownloadedFiles}>Clear downloaded files</button></span>`
+    clearCacheBtn = yo`
+      <span>
+        |
+        <button class="link" onclick=${onDeleteDownloadedFiles}>
+        Delete downloaded files
+      </span>`
     if (isSaved) {
       seedingIcon = 'pause'
       seedingLabel = 'Stop seeding these files'
