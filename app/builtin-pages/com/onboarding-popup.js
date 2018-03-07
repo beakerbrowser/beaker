@@ -139,7 +139,7 @@ export function render () {
   const step = STEPS[currentStep]
 
   return yo`
-    <div id="onboarding-popup" class="popup-wrapper ${step.color}" onclick=${onClickWrapper}>
+    <div id="onboarding-popup" class="popup-wrapper ${step.color} step-${currentStep}" onclick=${onClickWrapper}>
       <div class="popup-inner">
         ${renderHead()}
         ${renderBody()}
@@ -291,7 +291,3 @@ async function onSelectDirectory (e) {
   //   update()
   // }
 }
-
-// TODO
-// it would be cool to have the height of the popup transition when you change
-// panes but i gave up on that
