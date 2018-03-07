@@ -51,6 +51,7 @@ async function loadArchives () {
       break
     case 'trash':
       archives = await beaker.archives.list({
+        isOwner: true,
         isSaved: false
       })
       break
