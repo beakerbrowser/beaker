@@ -910,7 +910,9 @@ function renderNetworkView () {
   const {isSaved, expiresAt} = archive.info.userSettings
   const {progress} = archive
   const progressPercentage = `${progress.current}%`
-  let downloadedBytes = (archive.info.size / progress.blocks) * progress.downloaded
+  let downloadedBytes = _get(archive, 'info.isOwner')
+    ? archive.info.size
+    : (archive.info.size / progress.blocks) * progress.downloaded
 
   if (isSaved) {
     if (progress.isComplete) {
@@ -949,7 +951,7 @@ function renderNetworkView () {
           <h2 class="module-heading">Network overview</h2>
 
           <div class="module-content">
-            ${archive.info.isOwner
+            ${_get(archive, 'info.isOwner')
               ? ''
               : yo`<div>
                 <h3 class="subtitle-heading">Download status</h3>
@@ -997,7 +999,7 @@ function renderNetworkView () {
                 </table>`
             }
 
-            ${Number(archive.info.peers) > 6
+            ${Number(_get(archive, 'info.peers')) > peersLimit
               ? yo`
                 <span class="link" onclick=${onTogglePeersCollapsed}>
                   ${arePeersCollapsed  ? 'Show all' : 'Show fewer'} peers
