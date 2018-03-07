@@ -256,6 +256,13 @@ function render () {
                     Empty Trash
                   </button>`
                 : ''}
+
+              ${currentView === 'seeding'
+                ? yo`
+                  <a href="beaker://settings#dat-network-activity" class="link">
+                    Manage network activity
+                  </a>`
+                : ''}
             </div>
 
             ${renderRows()}
