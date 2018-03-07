@@ -502,10 +502,29 @@ function renderFilesView () {
         ${archive.info.isOwner ? renderSetupChecklist() : ''}
         ${filesBrowser ? filesBrowser.render() : ''}
         ${readmeElement ? readmeElement : renderReadmeHint()}
+        ${readmeElement && workspaceInfo && workspaceInfo.localFilesPath
+          ? renderWorkspaceHint()
+          : ''
+        }
         ${!archive.info.isOwner ? renderMakeCopyHint() : ''}
       </div>
     </div>
   `
+}
+
+function renderWorkspaceHint () {
+  return yo`
+    <div class="hint">
+      <p>
+        <i class="fa fa-code"></i>
+        Changes to the files in
+        <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+          ${workspaceInfo.localFilesPath}
+        </span>
+        will show up in the <span class="link" onclick=${e => onChangeView(e, 'workspace')}>Revisions</span>
+        tab.
+      </p>
+    </div>`
 }
 
 function renderMakeCopyHint () {
@@ -697,7 +716,6 @@ function renderSettingsView () {
   return yo`
     <div class="container">
       <div class="settings view">
-
         <div class="module">
           <h2 class="module-heading">
             <span>
