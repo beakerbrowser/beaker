@@ -571,9 +571,9 @@ function renderSetupChecklist () {
       <h2 class="lined-heading">
         <i class="fa fa-magic"></i>
         Getting started
-        <a class="lined-heading-action" href="#" title="Dismiss" onclick=${onDismissGettingStarted} data-tooltip="Dismiss">
+        <button class="btn plain lined-heading-action" title="Dismiss" onclick=${onDismissGettingStarted} data-tooltip="Dismiss">
           <i class="fa fa-times"></i>
-        </a>
+        </button>
       </h2>
 
       <div class="setup-checklist">
