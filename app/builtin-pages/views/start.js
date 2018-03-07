@@ -19,8 +19,7 @@ var query = ''
 var activeSearchResult = 0
 var isSearchFocused = false
 var settings
-var isFirstRender = true
-// TODO only show onboarding popup if not first render
+var hasDismissedOnboarding = localStorage.hasDismissedOnboarding ? true : false
 
 update()
 setup()
@@ -30,7 +29,7 @@ async function setup () {
   update()
 
   // open onboarding popup if this is the first render
-  if (isFirstRender) onboardingPopup.create()
+  if (!hasDismissedOnboarding) onboardingPopup.create()
 
   // open update info if appropriate
   if (!settings.no_welcome_tab) {

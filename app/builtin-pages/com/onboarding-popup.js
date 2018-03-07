@@ -129,6 +129,7 @@ export function create (opts = {}) {
 }
 
 export function destroy () {
+  localStorage.hasDismissedOnboarding = true
   var popup = document.getElementById('onboarding-popup')
   document.body.removeChild(popup)
   document.removeEventListener('keyup', onKeyUp)
