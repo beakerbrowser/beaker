@@ -4,6 +4,7 @@ import * as yo from 'yo-yo'
 import {findParent} from '../../lib/fg/event-handlers'
 import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
 import renderHelpTip from '../com/help-tip'
+import * as onboardingPopup from '../com/onboarding-popup'
 
 const LATEST_VERSION = 7010 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const WELCOME_URL = 'https://beakerbrowser.com/docs/using-beaker/'
@@ -12,12 +13,14 @@ const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-10/?updated=tr
 // globals
 // =
 
-let pinnedBookmarks = []
-let searchResults = []
-let query = ''
-let activeSearchResult = 0
-let isSearchFocused = false
-let settings
+var pinnedBookmarks = []
+var searchResults = []
+var query = ''
+var activeSearchResult = 0
+var isSearchFocused = false
+var settings
+var isFirstRender = true
+// TODO only show onboarding popup if not first render
 
 update()
 setup()
@@ -25,6 +28,9 @@ async function setup () {
   await loadBookmarks()
   settings = await beaker.browser.getSettings()
   update()
+
+  // open onboarding popup if this is the first render
+  if (isFirstRender) onboardingPopup.create()
 
   // open update info if appropriate
   if (!settings.no_welcome_tab) {
@@ -42,6 +48,10 @@ async function setup () {
 
 // events
 // =
+
+async function onClickHelpButton () {
+  await onboardingPopup.create()
+}
 
 function onFocusSearch () {
   isSearchFocused = true
@@ -190,9 +200,18 @@ function update () {
         ${renderPinnedBookmarks()}
 
         ${renderDock()}
+
+        ${renderHelpButton()}
       </div>
     </div>
   `)
+}
+
+function renderHelpButton () {
+  return yo`
+    <button class="btn plain help" onclick=${onClickHelpButton}>
+      <i class="fa fa-question-circle-o"></i>
+    </button>`
 }
 
 function renderSearchResult (res, i) {

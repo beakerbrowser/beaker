@@ -8,6 +8,7 @@
 @import "../components/messages";
 @import "./components/links-list";
 @import "./components/help-tips";
+@import "./components/onboarding-popup";
 
 .window-content.start {
   overflow: auto;
@@ -20,9 +21,21 @@
 }
 
 .builtin-wrapper.start-wrapper {
+  position: relative;
   display: block;
   width: 100%;
   background: #f0f0f0;
+
+  .btn.help {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 15px;
+
+    &:hover {
+      color: @blue;
+    }
+  }
 
   .subtitle-heading {
     display: inline-flex;

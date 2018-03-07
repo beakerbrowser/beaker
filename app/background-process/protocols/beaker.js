@@ -140,6 +140,10 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages.css'))
   }
+  if (requestUrl.startsWith('beaker://assets/img/onboarding/')) {
+    var imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
+  }
   if (requestUrl === 'beaker://assets/icon/photos.png') {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/icon/photos.png'))
   }
