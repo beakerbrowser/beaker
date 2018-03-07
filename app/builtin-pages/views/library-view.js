@@ -897,10 +897,11 @@ function renderNetworkView () {
   if (isSaved) {
     if (progress.isComplete) {
       progressLabel = 'Seeding files'
+      progressCls = 'green'
     } else {
       progressLabel = 'Downloading and seeding files'
+      progessCls = 'green active'
     }
-    progressCls = 'active green'
   } else if (progress.isComplete) {
     progressLabel = 'All files downloaded'
   } else {
