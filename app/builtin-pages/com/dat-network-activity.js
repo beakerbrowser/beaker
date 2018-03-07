@@ -93,7 +93,7 @@ export default class DatNetworkActivity {
           <div class="filters">
             ${f('owned', 'Your archives')}
             ${f('seeding', 'Seeding')}
-            ${f('cache', 'In memory')}
+            ${f('cache', 'Cache')}
           </div>
           <div class="heading">
             ${this.renderHeading('title', 'Title')}
