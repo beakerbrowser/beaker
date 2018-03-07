@@ -140,7 +140,7 @@ function renderOnStartupSettings () {
       <h2 id="on-startup" class="subtitle-heading">Startup settings</h2>
 
       <p>
-        Open on startup:
+        When Beaker starts
       </p>
 
       <div class="radio-group">
@@ -149,7 +149,7 @@ function renderOnStartupSettings () {
                checked=${settings.custom_start_page === "blank"}
                onchange=${onCustomStartPageChange} />
         <label for="customStartPage1">
-          New tab
+          Show a new tab
         </label>
 
         <input type="radio" id="customStartPage2" name="custom-start-page"
@@ -157,7 +157,7 @@ function renderOnStartupSettings () {
                checked=${settings.custom_start_page === "previous"}
                onchange=${onCustomStartPageChange} />
         <label for="customStartPage2">
-          Previously opened tabs
+          Show tabs from your last session
         </label>
       </div>
     </div>
@@ -212,6 +212,7 @@ function renderProtocolSettings () {
   return yo`
     <div class="section">
       <h2 id="protocol" class="subtitle-heading">Default browser settings</h2>
+
       ${registered.length
         ? yo`<p>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</p>`
         : ''}
