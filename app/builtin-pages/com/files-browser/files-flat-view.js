@@ -154,7 +154,7 @@ function rBreadcrumbs (filesBrowser, currentSource) {
   return yo`
     <div class="breadcrumbs">
       <div class="breadcrumb root" onclick=${e => onClickNode(e, filesBrowser, filesBrowser.root)}>
-        ${path.length ? yo`<i class="fa fa-folder-open"></i>` : '.'}
+        .
       </div>
 
       ${path.map(node => rBreadcrumb(filesBrowser, node))}
