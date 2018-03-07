@@ -69,14 +69,24 @@
   }
 
   .on-startup {
+
     .radio-group {
       display: grid;
       grid-template-columns: auto auto;
-      align-items: end;
+      align-items: center;
       justify-content: start;
-      grid-gap: 0 5px;
-      margin-left: @padding-component--tight;
-      input[type="radio"] { margin-top: 0; }
+      grid-gap: 0 10px;
+      margin-left: 0;
+
+      input[type="radio"] {
+        margin: 0;
+        height: 25px;
+      }
+    }
+
+    label {
+      font-weight: 400;
+      margin-bottom: 0;
     }
   }
 
