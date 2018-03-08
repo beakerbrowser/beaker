@@ -149,8 +149,13 @@
 
     &.live-reload-btn {
       color: transparent;
-      -webkit-text-stroke: 1px #777;
-      font-size: 15px;
+      -webkit-text-stroke: 1px #bbb;
+      font-size: 17px;
+      transition: all .07s ease;
+
+      &:hover {
+        -webkit-text-stroke: 1px #aaa;
+      }
 
       .fa {
         position: relative;
@@ -158,9 +163,8 @@
       }
 
       &.active .fa {
-        color: gold;
-        -webkit-text-stroke: 1px #e6a734;
-        text-shadow: 0 0 10px gold;
+        color: shade(yellow, 5%);
+        -webkit-text-stroke: 1px rgba(0,0,0,.15);
       }
     }
   }
