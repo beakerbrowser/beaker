@@ -32,9 +32,6 @@ export function render (href, {title='', tags='', notes='', isPrivate=true, pinn
 
             <label for="tags">Tags</label>
             <input type="text" name="tags" value=${tags}/>
-
-            <label for="notes">Notes</label>
-            <textarea name="notes">${notes}</textarea>
           </div>
 
           ${'' /* TODO(profiles) disabled -prf
@@ -106,7 +103,6 @@ function onSubmit (e) {
     href: e.target.href.value,
     title: e.target.title.value,
     tags: e.target.tags.value.split(' ').filter(Boolean),
-    notes: e.target.notes.value,
     // private: e.target.private.checked, TODO(profiles) disabled -prf
     pinned: e.target.pinned.checked
   })
