@@ -6,7 +6,7 @@ function getIcon (page) {
     case 'Library':
       return yo`<i class="fa fa-book"></i>`
     case 'Bookmarks':
-      return yo`<i class="fa fa-star"></i>`
+      return yo`<i class="fa fa-star-o"></i>`
     case 'History':
       return yo`<i class="fa fa-clock-o"></i>`
     case 'Downloads':
@@ -43,7 +43,7 @@ export default function render (currentPage = '') {
         ${currentPage !== 'Bookmarks'
           ? yo`
             <a href="beaker://bookmarks" class="dropdown-item">
-              <i class="fa fa-star"></i>
+              <i class="fa fa-star-o"></i>
               <span>Bookmarks</span>
             </a>`
           : ''
