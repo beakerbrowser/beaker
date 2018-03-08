@@ -136,7 +136,7 @@ export class DatsiteMenuNavbarBtn {
           </div>` : ''}
 
           <div class="network-url">
-            <a onclick=${e => this.onOpenPage('beaker://network')}>
+            <a onclick=${e => this.onOpenPage('beaker://settings#dat-network-activity')}>
               <i class="fa fa-gear"></i>
               Manage all network activity
             </a>
