@@ -88,17 +88,7 @@ export class BookmarkMenuNavbarBtn {
                     <label class="toggle">
                       <input onchange=${(e) => this.onChangeSeeding(e)} checked=${this.values.seeding || false} type="checkbox" name="seeding" value="seeding">
                       <div class="switch"></div>
-                      <span class="text">Help seed files</span>
-                    </label>`
-                  : ''
-                }
-
-                ${url.startsWith('dat://') && !page.siteInfo.isOwner
-                  ? yo`
-                    <label class="toggle">
-                      <input onchange=${(e) => this.onChangeSaved(e)} checked=${this.values.saved || false} type="checkbox" name="saved" value="saved">
-                      <div class="switch"></div>
-                      <span class="text">Save for offline</span>
+                      <span class="text">Help seed these files</span>
                     </label>`
                   : ''
                 }
