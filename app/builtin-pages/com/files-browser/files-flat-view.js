@@ -87,7 +87,7 @@ function renderRevisionsOverview (workspaceInfo) {
       <div class="buttons">
         ${hasRevisions
           ? yo`
-            <button class="btn plain" onclick=${() => emitSetView('revisions')}>
+            <button class="btn plain" onclick=${() => emitSetView('workspace')}>
               <i class="fa fa-code"></i>
               <span>Review changes</span>
             </button>`
