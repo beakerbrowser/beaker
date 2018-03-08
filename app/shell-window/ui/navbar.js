@@ -174,6 +174,7 @@ function render (id, page) {
   const siteHasDatAlternative = page && page.siteHasDatAlternative
   const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
   const siteLoadError = page && page.siteLoadError
+  const isOwner = page && page.siteInfo && page.siteInfo.isOwner
 
   // back/forward should be disabled if its not possible go back/forward
   var backDisabled = (page && page.canGoBack()) ? '' : 'disabled'
@@ -259,7 +260,7 @@ function render (id, page) {
 
   // live reload btn
   const isLiveReloading = page && page.isLiveReloading()
-  const liveReloadBtn = (isViewingDat || isViewingWorkspace)
+  const liveReloadBtn = (isOwner && (isViewingDat || isViewingWorkspace))
     ? yo`
       <button
         class="live-reload-btn ${isLiveReloading ? 'active' : ''}"
