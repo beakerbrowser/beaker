@@ -385,11 +385,11 @@ function render (id, page) {
         ${inpageFinder}
         ${zoomBtn}
         ${!isLocationHighlighted ? [
+          liveReloadBtn,
           datBtns,
           datsiteMenuNavbarBtn.render(),
           workspacesiteMenuNavbarBtn.render(),
           pageMenuNavbarBtn.render(),
-          liveReloadBtn,
           bookmarkMenuNavbarBtn.render()
         ] : ''}
       </div>
