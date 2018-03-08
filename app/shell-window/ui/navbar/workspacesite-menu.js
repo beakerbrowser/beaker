@@ -53,7 +53,7 @@ export class WorkspacesiteMenuNavbarBtn {
           </div>
 
           <div class="dropdown-item" onclick=${() => this.onClickOpenWorkspaceDirectory()}>
-            <i class="fa fa-folder-o"></i>
+            <i class="fa fa-folder-open-o"></i>
             Open workspace directory
           </div>
         </div>
