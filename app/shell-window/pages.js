@@ -251,7 +251,7 @@ export function create (opts) {
         page.liveReloadEvents = beaker.workspaces.createFileActivityStream(0, page.protocolInfo.hostname)
         page.liveReloadEvents.addEventListener('changed', page.triggerLiveReload.bind(page))
       }
-      toast.create(`Live reloading ${(page.liveReloadEvents) ? 'started' : 'stopped'}`, 1e3)
+      toast.create(`Live reloading ${(page.liveReloadEvents) ? 'on' : 'off'}`, 1e3)
       navbar.update(page)
     },
 
