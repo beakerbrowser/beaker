@@ -298,6 +298,23 @@ function render () {
   yo.update(
     document.querySelector('.library-wrapper'), yo`
       <div class="library-wrapper library-view builtin-wrapper">
+        <div class="drag-hint">
+          <div class="icons">
+            <i class="fa fa-file-video-o"></i>
+            <i class="fa fa-file-image-o"></i>
+            <i class="fa fa-file-code-o"></i>
+            <i class="fa fa-file-text-o"></i>
+            <i class="fa fa-file-archive-o"></i>
+          </div>
+
+          <h1>Drop to add files</h1>
+
+          <p>
+            Dropped files will be published directly to
+            <a href=${archive.url}>${shortenHash(archive.url)}</a>
+          </p>
+        </div>
+
         <div class="builtin-main" style="margin-left: 0; width: 100%">
           ${renderHeader()}
 
