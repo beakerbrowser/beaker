@@ -260,7 +260,7 @@ function render (id, page) {
 
   // live reload btn
   const isLiveReloading = page && page.isLiveReloading()
-  const liveReloadBtn = (isOwner && (isViewingDat || isViewingWorkspace))
+  const liveReloadBtn = (isViewingWorkspace || (isOwner && isViewingDat))
     ? yo`
       <button
         class="live-reload-btn ${isLiveReloading ? 'active' : ''}"

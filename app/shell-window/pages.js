@@ -414,7 +414,7 @@ export function setActive (page) {
   navbar.closeMenus()
   navbar.update()
   prompt.update()
-  
+
   events.emit('set-active', page)
   ipcRenderer.send('shell-window:set-current-location', page.getIntendedURL())
 }
