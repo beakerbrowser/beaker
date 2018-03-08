@@ -38,8 +38,11 @@ export function render (href, {title='', tags='', notes='', isPrivate=true, pinn
           <label for="private">Private</label>
           <input type="checkbox" checked=${isPrivate} name="private"/>*/}
 
-          <label for="private">Pin to start page</label>
-          <input type="checkbox" checked=${pinned} name="pinned"/>
+          <label class="toggle">
+            <input checked=${pinned} type="checkbox" name="pinned" value="pinned">
+            <div class="switch"></div>
+            <span class="text">Pin to start page</span>
+          </label>
 
           <div class="actions">
             <button type="button" class="btn" onclick=${destroy} tabindex="2">Cancel</button>
