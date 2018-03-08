@@ -204,6 +204,10 @@ function renderBookmarksListToPage () {
     document.querySelector('.links-list.bookmarks'),
     yo`
       <div class="links-list bookmarks">
+        ${query
+          ? yo`<h2 class="subtitle-heading">"${query}" in Bookmarks</h2>`
+          : yo`<h2 class="subtitle-heading">${currentView}</h2>`
+        }
         ${bookmarks.length && resultsCount
           ? bookmarks.map(renderRow)
           : helpEl
@@ -369,7 +373,7 @@ function renderToPage () {
         <div class="builtin-main">
           ${renderSidebar()}
 
-          ${currentView.startsWith('tag:')
+          ${currentView.startsWith('tag:') || currentView.startsWith('pinned')
             ? yo`<h2 class="subtitle-heading">${currentView}</h2>`
             : ''
           }
