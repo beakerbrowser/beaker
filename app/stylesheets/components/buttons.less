@@ -190,12 +190,13 @@
 }
 
 &.lime {
-  background: @lime;
+  background: shade(@lime, 5%);
   color: shade(@lime, 55%);
-  border: 1px solid @lime;
+  border: 1px solid shade(@lime, 5%);
 
   &:hover {
-    background: shade(@lime, 8%);
+    background: shade(@lime, 12%);
+    border: 1px solid shade(@lime, 12%);
   }
 }
 
