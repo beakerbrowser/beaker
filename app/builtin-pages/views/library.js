@@ -405,7 +405,7 @@ function renderHeader () {
 }
 
 function removeFromLibraryLabel (archive) {
-  return (archive.isOwner) ? 'Move to trash' : 'Stop seeding'
+  return (archive.isOwner) ? 'Move to Trash' : 'Stop seeding'
 }
 
 function removeFromLibraryIcon (archive) {
@@ -503,7 +503,7 @@ async function onDeletePermanently (e, archive) {
     }
   }
   await loadArchives()
-  render()  
+  render()
 }
 
 async function onRestoreSelected () {
