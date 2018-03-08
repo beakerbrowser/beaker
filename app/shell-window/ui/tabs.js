@@ -474,13 +474,13 @@ function getBuiltinPageIcon (url) {
     return yo`<i class="fa fa-book"></i>`
   }
   if (url.startsWith('beaker://bookmarks/')) {
-    return yo`<i class="fa fa-star"></i>`
+    return yo`<i class="fa fa-star-o"></i>`
   }
   if (url.startsWith('beaker://history/')) {
     return yo`<i class="fa fa-clock-o"></i>`
   }
   if (url.startsWith('beaker://downloads/')) {
-    return yo`<i class="fa fa-download-o"></i>`
+    return yo`<i class="fa fa-download"></i>`
   }
   if (url.startsWith('beaker://settings/')) {
     return yo`<i class="fa fa-gear"></i>`
