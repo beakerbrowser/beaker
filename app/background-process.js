@@ -54,10 +54,10 @@ protocol.registerStandardSchemes(['dat', 'beaker', 'workspace'], { secure: true 
 
 app.on('ready', async function () {
   // databases
+  profileDataDb.setup()
   archives.setup()
   settings.setup()
   sitedata.setup()
-  profileDataDb.setup()
   // TEMP can probably remove this in 2018 or so -prf
   bookmarksDb.fixOldBookmarks()
 
