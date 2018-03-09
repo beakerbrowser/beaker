@@ -1,5 +1,7 @@
 import * as yo from 'yo-yo'
 
+const FETCH_COUNT = 200
+
 // exported api
 // =
 
@@ -17,10 +19,17 @@ export default function render (archive) {
       archive = new DatArchive(archive.url.slice(0, vi))
     }
 
-    archive.history()
-      .then(history => {
+    let history = []
+    fetchMore()
+    async function fetchMore() {
+      try {
+        // fetch
+        let start = history.length
+        let h = await archive.history({start, end: start + FETCH_COUNT, reverse: true})
+        history = history.concat(h)
+
         // render
-        var rowEls = history.reverse().map(c => {
+        var rowEls = history.map(c => {
           return yo`
             <div
               onclick=${() => window.location = `beaker://library/${archive.url}+${c.version}`}
@@ -43,11 +52,18 @@ export default function render (archive) {
         yo.update(el, yo`
           <div class="archive-history">
             <div class="archive-history-header">Version history</div>
-            <div class="archive-history-body">${rowEls}</div>
+            <div class="archive-history-body">
+              ${rowEls}
+              ${(history[history.length - 1].version === 1)
+                ? ''
+                : yo`
+                  <div class="archive-history-item" onclick=${fetchMore}>
+                    <button class="link">Load more</button>
+                  </div>`}
+            </div>
           </div>`
         )
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('Error loading history', err)
         yo.update(el, yo`
           <div class="archive-history">
@@ -59,7 +75,7 @@ export default function render (archive) {
           </div>`
         )
       }
-    )
+    }
   }
 
   return el
