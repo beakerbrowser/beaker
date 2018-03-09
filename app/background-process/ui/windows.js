@@ -102,7 +102,7 @@ export function createShellWindow (windowState) {
   sessionWatcher.watchWindow(win, state)
 
   function handlePagesReady ({ sender }) {
-    if (sender === win.webContents) {
+    if (win && !win.isDestroyed() && sender === win.webContents) {
       win.webContents.send('command', 'initialize', state.pages)
     }
   }
