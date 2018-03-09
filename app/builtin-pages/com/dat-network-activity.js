@@ -90,6 +90,7 @@ export default class DatNetworkActivity {
     return yo`
       <div id=${'dat-network-activity-'+this.id} class="dat-network-activity">
         <div class="archives">
+          <button class="link clear-cache" onclick=${() => this.onClearCache()}>Clear cache</button>
           <div class="filters">
             ${f('owned', 'Your archives')}
             ${f('seeding', 'Seeding')}
@@ -332,10 +333,11 @@ export default class DatNetworkActivity {
     }
   }
 
-  async onUpdateFilter (e) {
-    this.currentFilter = e.target.dataset.filter
-    await fetchArchives()
-    destroySeedingMenu()
+  async onClearCache () {
+    const results = await beaker.archives.clearGarbage({isOwner: false})
+    console.debug('Dat cache cleared', results)
+    toast.create(`Cache cleared (${prettyBytes(results.totalBytes)} freed from ${results.totalArchives} archives)`, '', 5e3)
+    this.fetchArchives()
   }
 
   async onChangeSeedingConfiguration (e) {
