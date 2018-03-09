@@ -127,8 +127,8 @@ export default {
     return datLibrary.clearFileCache(datLibrary.fromURLToKey(url))
   },
 
-  async clearGarbage () {
-    return datGC.collect({olderThan: 0, biggerThan: 0})
+  async clearGarbage ({isOwner} = {}) {
+    return datGC.collect({olderThan: 0, biggerThan: 0, isOwner})
   },
 
   clearDnsCache () {

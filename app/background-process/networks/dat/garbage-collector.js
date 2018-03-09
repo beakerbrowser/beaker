@@ -18,7 +18,7 @@ export function setup () {
   schedule(DAT_GC_FIRST_COLLECT_WAIT)
 }
 
-export async function collect ({olderThan} = {}) {
+export async function collect ({olderThan, isOwner} = {}) {
   // clear any scheduled GC
   if (nextGCTimeout) {
     clearTimeout(nextGCTimeout)
@@ -40,7 +40,7 @@ export async function collect ({olderThan} = {}) {
   await Promise.all(promises)
 
   // now GC old archives
-  var unusedArchives = await archivesDb.listGarbageCollectableArchives({olderThan})
+  var unusedArchives = await archivesDb.listGarbageCollectableArchives({olderThan, isOwner})
   debug('GC cleaning out %d unused archives', unusedArchives.length)
   for (let i = 0; i < unusedArchives.length; i++) {
     await unloadArchive(unusedArchives[i].key)

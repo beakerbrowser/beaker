@@ -617,7 +617,7 @@ function onUpdateSort (sort) {
 }
 
 async function onClearDatTrash () {
-  const results = await beaker.archives.clearGarbage()
+  const results = await beaker.archives.clearGarbage({isOwner: true})
   console.debug('Dat trash cleared', results)
   toast.create(`Trash emptied (${bytes(results.totalBytes)} freed from ${results.totalArchives} archives)`, '', 5e3)
   await loadArchives()
