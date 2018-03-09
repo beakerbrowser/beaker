@@ -243,9 +243,7 @@ function render () {
 
 function onUpdateSearchQuery (e) {
   var newQuery = e.target.value.toLowerCase()
-    console.log('searching', newQuery)
   if (newQuery !== query) {
-    console.log('go')
     query = newQuery
     fillPage()
   }
