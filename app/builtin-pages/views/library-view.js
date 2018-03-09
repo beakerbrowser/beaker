@@ -85,7 +85,8 @@ async function setup () {
     await archive.setup()
 
     // go to raw key if we have a shortname
-    if (archive.info.url !== archive.url) {
+    // (archive.info.url is always the raw url, while archive.url will reflect the given url)
+    if (archive.url.startsWith(archive.info.url) === false) {
       window.location = 'beaker://library/' + archive.info.url
       return
     }
