@@ -33,7 +33,7 @@ test.before(async t => {
 
   // create a owned archive
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({title: 'Test Archive', description: 'Is temporary', type: ['foo', 'bar']}).then(done,done)
+    DatArchive.create({title: 'Test Archive', description: 'Is temporary', type: ['foo', 'bar'], prompt: false}).then(done,done)
   })
   createdDatURL = res.value.url
   createdDatKey = createdDatURL.slice('dat://'.length)
