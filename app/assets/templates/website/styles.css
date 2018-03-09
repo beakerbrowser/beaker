@@ -1,7 +1,9 @@
-body {
-  margin: 1rem 2rem;
-}
+/*
+ * Want to change this website's styes? Learn more about CSS:
+ * https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS
+ */
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+body {
+  padding: 0 20px;
+  background: aliceblue;
 }
