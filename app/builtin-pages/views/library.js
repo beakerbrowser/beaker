@@ -566,6 +566,9 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
     {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url) },
     {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive) }
   ]
+  if (isRecent) {
+    items.push({icon: 'times', label: 'Remove from recent', click: () => removeFromRecent(archive)})
+  }
   if (archive.userSettings.isSaved) {
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})
   } else {
@@ -579,6 +582,16 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
     archive.menuIsOpenIn = false
     render()
   }
+}
+
+async function removeFromRecent (archive) {
+  await beaker.archives.touch(
+    archive.url.slice('dat://'.length),
+    'lastLibraryAccessTime',
+    0 // set to zero
+  )
+  archive.lastLibraryAccessTime = 0
+  render()
 }
 
 async function onUpdateSearchQuery (e) {
