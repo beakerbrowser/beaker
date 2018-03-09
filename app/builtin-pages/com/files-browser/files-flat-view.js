@@ -304,7 +304,7 @@ function onContextmenuNode (e, filesBrowser, node) {
     items: [
       {icon: 'external-link', label: `Open ${node.isContainer ? 'folder' : 'file'} in new tab`, click: () => window.open(node.url)},
       {icon: 'link', label: 'Copy URL', click: () => {
-        writeToClipboard(node.url)
+        writeToClipboard(encodeURI(node.url))
         toast.create('URL copied to clipboard')
       }},
       {icon: 'i-cursor', label: 'Rename', click: async () => {

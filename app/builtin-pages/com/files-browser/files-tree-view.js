@@ -275,7 +275,7 @@ async function onContextMenu (e, filesBrowser, node) {
   // now run the action
   switch (action) {
     case 'open': return window.open(node.url)
-    case 'copy-url': return writeToClipboard(node.url)
+    case 'copy-url': return writeToClipboard(encodeURI(node.url))
     case 'rename': return enterRenameMode(filesBrowser, node)
     case 'delete':
       if (confirm(`Are you sure you want to delete "${node.name}"?`)) {

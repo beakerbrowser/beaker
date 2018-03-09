@@ -278,7 +278,7 @@ export default class DatNetworkActivity {
   }
 
   onCopyURL (archive) {
-    writeToClipboard(archive.url)
+    writeToClipboard(encodeURI(archive.url))
     toast.create('URL copied to clipboard')
   }
 
