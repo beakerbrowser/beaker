@@ -24,7 +24,7 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'Settings')
   db = new sqlite3.Database(dbPath)
-  setupPromise = setupSqliteDB(db, migrations, '[SETTINGS]')
+  setupPromise = setupSqliteDB(db, {migrations}, '[SETTINGS]')
 }
 
 export function set (key, value) {

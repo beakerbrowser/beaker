@@ -19,7 +19,7 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'SiteData')
   db = new sqlite3.Database(dbPath)
-  setupPromise = setupSqliteDB(db, migrations, '[SITEDATA]')
+  setupPromise = setupSqliteDB(db, {migrations}, '[SITEDATA]')
 }
 
 export const WEBAPI = {

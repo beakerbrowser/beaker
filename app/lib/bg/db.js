@@ -47,14 +47,14 @@ export function makeSqliteTransactor (setupPromise) {
 }
 
 // runs needed migrations, returns a promise
-export function setupSqliteDB (db, migrations, logTag) {
+export function setupSqliteDB (db, {setup, migrations}, logTag) {
   return new Promise((resolve, reject) => {
     // run migrations
     db.get('PRAGMA user_version;', (err, res) => {
       if (err) return reject(err)
 
       var version = (res && res.user_version) ? +res.user_version : 0
-      var neededMigrations = migrations.slice(version)
+      var neededMigrations = (version === 0 && setup) ? [setup] : migrations.slice(version)
       if (neededMigrations.length == 0) { return resolve() }
 
       debug(logTag, 'Database at version', version, '; Running', neededMigrations.length, 'migrations')
