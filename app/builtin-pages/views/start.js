@@ -7,7 +7,6 @@ import renderHelpTip from '../com/help-tip'
 import * as onboardingPopup from '../com/onboarding-popup'
 
 const LATEST_VERSION = 7010 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
-const WELCOME_URL = 'https://beakerbrowser.com/docs/using-beaker/'
 const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-10/?updated=true'
 
 // globals
@@ -34,13 +33,9 @@ async function setup () {
   // open update info if appropriate
   if (!settings.no_welcome_tab) {
     let latestVersion = await beaker.sitedata.get('beaker://start', 'latest-version')
-    if (+latestVersion < LATEST_VERSION) {
+    if (+latestVersion && +latestVersion < LATEST_VERSION) {
       await beaker.sitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
-      if (!latestVersion) {
-        window.open(WELCOME_URL)
-      } else {
-        window.open(RELEASE_NOTES_URL)
-      }
+      window.open(RELEASE_NOTES_URL)
     }
   }
 }
