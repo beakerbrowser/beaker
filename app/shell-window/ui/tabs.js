@@ -477,7 +477,7 @@ function getBuiltinPageIcon (url) {
     return yo`<i class="fa fa-star-o"></i>`
   }
   if (url.startsWith('beaker://history/')) {
-    return yo`<i class="fa fa-clock-o"></i>`
+    return yo`<i class="fa fa-history"></i>`
   }
   if (url.startsWith('beaker://downloads/')) {
     return yo`<i class="fa fa-download"></i>`

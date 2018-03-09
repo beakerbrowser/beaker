@@ -8,7 +8,7 @@ function getIcon (page) {
     case 'Bookmarks':
       return yo`<i class="fa fa-star-o"></i>`
     case 'History':
-      return yo`<i class="fa fa-clock-o"></i>`
+      return yo`<i class="fa fa-history"></i>`
     case 'Downloads':
       return yo`<i class="fa fa-download"></i>`
     case 'Settings':
@@ -52,7 +52,7 @@ export default function render (currentPage = '') {
         ${currentPage !== 'History'
           ? yo`
             <a href="beaker://history" class="dropdown-item">
-              <i class="fa fa-clock-o"></i>
+              <i class="fa fa-history"></i>
               <span>History</span>
             </a>`
           : ''
