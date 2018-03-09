@@ -526,7 +526,7 @@ function renderFilesView () {
         ${archive.info.isOwner ? renderSetupChecklist() : ''}
         ${filesBrowser ? filesBrowser.render() : ''}
         ${readmeElement ? readmeElement : renderReadmeHint()}
-        ${readmeElement && workspaceInfo && workspaceInfo.localFilesPath
+        ${workspaceInfo && workspaceInfo.localFilesPath
           ? renderWorkspaceHint()
           : ''
         }
