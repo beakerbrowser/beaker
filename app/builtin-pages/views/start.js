@@ -23,9 +23,7 @@ var hasDismissedOnboarding = localStorage.hasDismissedOnboarding ? true : false
 update()
 setup()
 async function setup () {
-  await loadBookmarks()
   settings = await beaker.browser.getSettings()
-  update()
 
   // open onboarding popup if this is the first render
   if (!hasDismissedOnboarding) onboardingPopup.create()
@@ -38,6 +36,9 @@ async function setup () {
       window.open(RELEASE_NOTES_URL)
     }
   }
+  
+  await loadBookmarks()
+  update()
 }
 
 // events
