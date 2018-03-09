@@ -39,13 +39,21 @@ test.after.always('cleanup', async t => {
 test('set & get workspaces (using create)', async t => {
   await app.client.windowByIndex(0)
 
+  // create a dat
   var res = await app.client.executeAsync((done) => {
-    window.beaker.workspaces.create(0).then(done, done)
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false }).then(done,done)
   })
+  let url = res.value.url
+  t.truthy(url.startsWith('dat://'))
+
+  var res = await app.client.executeAsync((url, path, done) => {
+    window.beaker.workspaces.create(0, {publishTargetUrl: url, localFilesPath: path}).then(done, done)
+  }, url, tempy.directory())
   for (let k in res.value) {
     res.value[k] = res.value[k] ? typeof res.value[k] : res.value[k]
   }
   t.deepEqual(res.value, {
+    localFilesPath: 'string',
     name: 'string',
     publishTargetUrl: 'string'
   })
@@ -56,7 +64,7 @@ test('set & get workspaces (manually)', async t => {
 
   // create a dat
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({ title: 'The Title', description: 'The Description', type: 'website' }).then(done,done)
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false }).then(done,done)
   })
   createdDatUrl = res.value.url
   t.truthy(createdDatUrl.startsWith('dat://'))
@@ -101,14 +109,13 @@ test('set & get workspaces (manually)', async t => {
 test('initialize a workspace folder', async t => {
   // setup
   var res = await app.client.executeAsync((done) => {
-    window.beaker.workspaces.setupFolder(0, 'test-ws', {template: 'website'}).then(done, done)
+    window.beaker.workspaces.setupFolder(0, 'test-ws').then(done, done)
   })
   t.truthy(res.value)
 
   // check the files are set
   const dir = jetpack.cwd(createdFilePath)
   t.truthy(await dir.existsAsync('dat.json'))
-  t.truthy(await dir.existsAsync('index.html'))
 })
 
 test('view a workspace', async t => {
@@ -116,21 +123,22 @@ test('view a workspace', async t => {
   await app.client.windowByIndex(0)
   await browserdriver.navigateTo(app, 'workspace://test-ws')
   await app.client.windowByIndex(1)
-  await app.client.waitForExist('h1', 10e3)
+  await app.client.waitForExist('.entry.file', 10e3)
   t.pass()
 })
 
 test('diff and publish changes (additions)', async t => {
   await app.client.windowByIndex(0)
 
+  // write file
+  await jetpack.write(createdFilePath + '/index.html', '<h1 id="loaded">workspace</h1>\n<p>foo</p>\n<p>bar</p>')
+
   // list changed files
   var res = await app.client.executeAsync(done => {
     window.beaker.workspaces.listChangedFiles(0, 'test-ws').then(done, done)
   })
   t.deepEqual(res.value, [
-    {change: 'add',path: '/.datignore',type: 'file'},
-    {change: 'add',path: '/index.html',type: 'file'},
-    {change: 'add',path: '/styles.css',type: 'file'}
+    {change: 'add',path: '/index.html',type: 'file'}
   ])
 
   // get file diff
@@ -175,12 +183,12 @@ test('diff and publish changes (additions and modifications)', async t => {
   var res = await app.client.executeAsync(done => {
     window.beaker.workspaces.diff(0, 'test-ws', '/index.html').then(done, done)
   })
-  t.deepEqual(res.value[0].removed, true)
-  t.deepEqual(typeof res.value[0].count, 'number')
-  t.deepEqual(typeof res.value[0].value, 'string')
-  t.deepEqual(res.value[1].added, true)
-  t.deepEqual(typeof res.value[1].count, 'number')
-  t.deepEqual(typeof res.value[1].value, 'string')
+  t.deepEqual(res.value, [
+    { count: 1, value: '<h1 id="loaded">workspace</h1>\n' },
+    { count: 1, removed: true, value: '<p>foo</p>\n' },
+    { added: true, count: 1, value: '<p>fuzz</p>\n' },
+    { count: 1, value: '<p>bar</p>' }
+  ])
   
   // publish
   var res = await app.client.executeAsync(done => {
@@ -313,9 +321,9 @@ test('set() doesnt allow bad values', async t => {
   })
   t.deepEqual(res.value.name, 'InvalidURLError')
 
-  var res = await app.client.executeAsync(done => {
-    window.beaker.workspaces.set(0, 'test-ws', {localFilesPath: '/asdf'}).then(done, done)
-  })
+  var res = await app.client.executeAsync((path, done) => {
+    window.beaker.workspaces.set(0, 'test-ws', {localFilesPath: path}).then(done, done)
+  }, createdFilePath + '/index.html')
   t.deepEqual(res.value.name, 'NotAFolderError')
 
   var res = await app.client.executeAsync((path, done) => {
@@ -334,12 +342,12 @@ test('set() doesnt allow dats which are unowned or deleted', async t => {
   // try to create a workspace with the unowned dat
   var res = await app.client.executeAsync((url, path, done) => {
     window.beaker.workspaces.set(0, 'unowned-ws', {publishTargetUrl: url, localFilesPath: path}).then(done, done)
-  }, unownedDatUrl, createdFilePath)
+  }, unownedDatUrl, tempy.directory())
   t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 
   // create a deleted dat
   var res = await app.client.executeAsync((done) => {
-    DatArchive.create({ title: 'The Title', description: 'The Description', type: 'website' }).then(done,done)
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false }).then(done,done)
   })
   var deletedDatUrl = res.value.url
   t.truthy(deletedDatUrl.startsWith('dat://'))
@@ -350,7 +358,7 @@ test('set() doesnt allow dats which are unowned or deleted', async t => {
   // try to create a workspace with the deleted dat
   var res = await app.client.executeAsync((url, path, done) => {
     window.beaker.workspaces.set(0, 'deleted-ws', {publishTargetUrl: url, localFilesPath: path}).then(done, done)
-  }, deletedDatUrl, createdFilePath)
+  }, deletedDatUrl, tempy.directory())
   t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 })
 

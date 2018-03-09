@@ -116,11 +116,9 @@ export default {
     return opts
   },
 
-  // initialize a target folder with the dat files and (optionally) a template
+  // initialize a target folder with the dat files
   // - profileId: number, the id of the browsing profile
   // - name: string, the name of the workspace
-  // - opts
-  //   - template: string?, 'website' or 'app' or falsy
   async setupFolder (profileId, name, opts={}) {
     assertValidProfileId(profileId)
 
