@@ -1,5 +1,6 @@
 import parseDatURL from 'parse-dat-url'
 import * as db from './profile-data-db'
+import {getRandomName} from '../../lib/dict'
 import lock from '../../lib/lock'
 import {DAT_HASH_REGEX} from '../../lib/const'
 
@@ -12,6 +13,18 @@ export function get (profileId, name) {
 
 export function getByPublishTargetUrl (profileId, url) {
   return db.get(`SELECT * FROM workspaces WHERE profileId = ? AND publishTargetUrl = ?`, [profileId, url])
+}
+
+export async function getUnusedName () {
+  for (let j = 0; j < 2; j++) {
+    for (let i = 0; i < 1000; i++) {
+      let name = getRandomName()
+      if (j === 1) name += '-' + ((Math.random() * 1000)|0) // we're getting desperate
+      let res = await db.get(`SELECT * FROM workspaces WHERE name = ?`, [name])
+      if (!res) return name
+    }
+  }
+  throw new Error('Failed to find an unused random name... that really doesnt seem like it should possible but here we are')
 }
 
 export function list (profileId) {

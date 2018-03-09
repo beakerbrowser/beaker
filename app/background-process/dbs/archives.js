@@ -9,7 +9,6 @@ import {InvalidArchiveKeyError} from 'beaker-error-constants'
 import * as db from './profile-data-db' // TODO rename to db
 import * as workspacesDb from './workspaces'
 import lock from '../../lib/lock'
-import {getRandomName} from '../../lib/dict'
 import {
   DAT_HASH_REGEX,
   DAT_GC_EXPIRATION_AGE
@@ -381,7 +380,7 @@ async function runMigrations () {
       let url = 'dat://' + archives[i].key
       let ws = await workspacesDb.getByPublishTargetUrl(0, url)
       if (ws) continue // all set
-      let wsName = getRandomName()
+      let wsName = await workspacesDb.getUnusedName()
       await workspacesDb.set(0, wsName, {
         publishTargetUrl: url,
         localFilesPath: archives[i].localPath

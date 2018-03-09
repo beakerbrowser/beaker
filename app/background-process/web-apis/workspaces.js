@@ -11,7 +11,6 @@ import * as archivesDb from '../dbs/archives'
 import * as workspacesDb from '../dbs/workspaces'
 import * as datLibrary from '../networks/dat/library'
 import {timer} from '../../lib/time'
-import {getRandomName} from '../../lib/dict'
 import {isFileNameBinary, isFileContentBinary} from '../../lib/mime'
 import * as scopedFSes from '../../lib/bg/scoped-fses'
 import {checkFolderIsEmpty} from '../../lib/bg/fs'
@@ -110,7 +109,7 @@ export default {
     await assertDatUrl(opts.publishTargetUrl)
     await assertDatIsSavedAndOwned(opts.publishTargetUrl)
     await assertDatHasNoWorkspace(profileId, opts.publishTargetUrl)
-    opts.name = opts.name || getRandomName()
+    opts.name = opts.name || await workspacesDb.getUnusedName()
     assertValidName(opts.name)
     await assertSafeFilesPath(opts.localFilesPath)
     await workspacesDb.set(profileId, opts.name, opts)
