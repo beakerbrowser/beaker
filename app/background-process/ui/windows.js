@@ -48,7 +48,7 @@ export async function setup () {
     // if this is a webview's web contents, attach the keybinding protections
     if (wc.hostWebContents) {
       const parentWindow = BrowserWindow.fromWebContents(wc.hostWebContents)
-      // wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
+      wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
     }
   })
 
