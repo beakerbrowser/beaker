@@ -149,7 +149,7 @@ export default class DatNetworkActivity {
 
         <a href=${archive.url} class="title" title=${archive.title}>
           ${archive.title || yo`<em>Untitled</em>`}
-          ${inTrash ? yo`<i class="fa fa-trash-o" title="In the trash"></i>` : ''}
+          ${inTrash ? yo`<span class="badge">In Trash</span>` : ''}
         </a>
 
         <div class="peers">
