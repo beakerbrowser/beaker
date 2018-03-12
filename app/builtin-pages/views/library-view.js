@@ -545,7 +545,7 @@ function renderWorkspaceHint () {
         <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
           ${workspaceInfo.localFilesPath}
         </span>
-        will show up in the <span class="link" onclick=${e => onChangeView(e, 'workspace')}>Revisions</span>
+        will show up in the <span class="link" onclick=${e => onChangeView(e, 'workspace')}>Workspace</span>
         tab.
       </p>
     </div>`
