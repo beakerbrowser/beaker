@@ -379,6 +379,7 @@ async function runMigrations () {
   `)
   if (archives.length) {
     for (let i = 0; i < archives.length; i++) {
+      if (!archives[i].localPath) continue
       let url = 'dat://' + archives[i].key
       let ws = await workspacesDb.getByPublishTargetUrl(0, url)
       if (ws) continue // all set
