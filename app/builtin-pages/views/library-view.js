@@ -444,12 +444,12 @@ function renderFooter () {
       secondaryAction = yo`
         <span class="path error">
           <em>
-            Directory not found (${workspaceInfo.missingLocalFilesPath})
+            Directory not found
+            ${workspaceInfo.missingLocalFilesPath
+              ? `(${workspaceInfo.missingLocalFilesPath})`
+              : ''
+            }
           </em>
-
-          <button class="btn" onclick=${onChangeWorkspaceDirectory}>
-            Choose new directory
-          </button>
         </span>`
     } else if (!_get(archive, 'info.userSettings.isSaved')) {
       if (_get(archive, 'info.isOwner')) {
@@ -512,6 +512,20 @@ function renderFilesView () {
   return yo`
     <div class="container">
       <div class="view files">
+        ${workspaceInfo && workspaceInfo.localFilesPathIsMissing
+          ? yo`
+            <div class="message info">
+              <span>
+                This archive's workspace directory
+                ${workspaceInfo.missingLocalFilesPath ? `(${workspaceInfo.missingLocalFilesPath})` : ''}
+                was moved or deleted.
+              </span>
+
+              <button class="btn" onclick=${onChangeWorkspaceDirectory}>Choose new directory</button>
+            </div>`
+          : ''
+        }
+
         ${archive.info.isOwner && !archive.info.userSettings.isSaved
           ? yo`
             <div class="message error">
@@ -992,13 +1006,16 @@ function renderNetworkView () {
                     <div class="label">${progressLabel}${clearCacheBtn}</div>
                   </div>
 
-                  ${!archive.info.isOwner ? yo`
-                    <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
-                      <i class="fa fa-${seedingIcon}"></i>
-                    </button>
-                  ` : ''}
+                  ${!archive.info.isOwner
+                    ? yo`
+                      <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
+                        <i class="fa fa-${seedingIcon}"></i>
+                      </button>`
+                    : ''
+                  }
                 </div>
-              </div>`}
+              </div>`
+            }
 
             <h3 class="subtitle-heading">Peers</h3>
             ${!_get(archive, 'info.peers')
@@ -1102,7 +1119,22 @@ function renderNetworkView () {
 }
 
 function renderWorkspaceView () {
-  if (!(workspaceInfo && workspaceInfo.localFilesPath)) return '' // TODO
+  if (!workspaceInfo) return ''
+
+  if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
+    return yo`
+      <div class="container">
+        <div class="view revisions empty">
+          <div class="label">Workspace directory moved or deleted</div>
+
+          <p>
+            This project's workspace directory ${workspaceInfo.missingLocalFilesPath ? `(${workspaceInfo.missingLocalFilesPath})` : ''} was deleted
+            or moved. <button class="link" onclick=${onChangeWorkspaceDirectory}>Choose a new workspace directory</button>
+          </p>
+        </div>
+      </div>
+    `
+  }
 
   if (!workspaceInfo.revisions.length) {
     return yo`
@@ -1364,7 +1396,7 @@ function renderMenu () {
           Download as .zip
         </div>
 
-        ${isOwner 
+        ${isOwner
           ? (isSaved
             ? yo`
               <div class="dropdown-item" onclick=${onMoveToTrash}>
