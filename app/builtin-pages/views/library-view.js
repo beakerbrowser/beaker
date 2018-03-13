@@ -868,7 +868,7 @@ function renderSettingsView () {
           : ''
         }
 
-        <div class="module">
+        <div class="module coming-soon">
           <h2 class="module-heading">
             <span>
               <i class="fa fa-git"></i>

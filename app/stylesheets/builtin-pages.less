@@ -682,6 +682,38 @@
         flex-basis: 50%;
       }
     }
+
+    &.coming-soon {
+      position: relative;
+
+      &:before,
+      &:after {
+        &:extend(.flex);
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        left: 0;
+        top: 0;
+        content: '';
+        width: 100%;
+        height: 100%;
+      }
+
+      &:before {
+        background: fadeout(#fff, 45%);
+      }
+
+      &:after {
+        content: 'Coming soon';
+        text-transform: uppercase;
+        color: @color-text--muted;
+        font-size: 1.3rem;
+        letter-spacing: 1px;
+        font-weight: 300;
+        transform: rotate(-15deg);
+        text-shadow: 0 0 25px #fff;
+      }
+    }
   }
 }
 
