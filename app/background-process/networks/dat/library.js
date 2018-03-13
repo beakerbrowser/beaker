@@ -13,6 +13,7 @@ import {throttle, debounce} from '../../../lib/functions'
 // dat modules
 import * as archivesDb from '../../dbs/archives'
 import * as datGC from './garbage-collector'
+import {getDNSMessageDiscoveryKey, renderDNSTraffic} from './logging-utils'
 import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
 
@@ -85,6 +86,29 @@ export function setup () {
     stream: createReplicationStream
   }))
   archiveSwarm.once('error', () => archiveSwarm.listen(0))
+  archiveSwarm.once('listening', () => {
+    archiveSwarm._discovery.dns.on('traffic', (type, details) => {
+      let archive = archivesByDKey[getDNSMessageDiscoveryKey(archivesByDKey, details.message)]
+      if (archive) {
+        log(datEncoding.toStr(archive.key), {
+          event: 'traffic',
+          trafficType: type,
+          messageId: details.message.id,
+          message: renderDNSTraffic(details.message),
+          peer: details.peer ? `${details.peer.address || details.peer.host}:${details.peer.port}` : undefined
+        })
+      }
+    })
+    archiveSwarm._discovery.dns.on('peer', (discoveryKey, peer) => {
+      let archive = archivesByDKey[discoveryKey]
+      if (archive) {
+        log(datEncoding.toStr(archive.key), {
+          event: 'peer-found',
+          peer: `${peer.address || peer.host}:${peer.port}`
+        })
+      }
+    })
+  })
   archiveSwarm.listen(DAT_SWARM_PORT)
 
   // load and configure all saved archives
@@ -324,7 +348,10 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
     }
   })
   archive.on('error', error => {
-    log(archive.key.toString('hex'), `Error emitted. Archive version: ${archive.version}. Writable: ${archive.writable}. Meta length: ${archive.metadata.length}. Content length: ${archive.content && archive.content.length}. Error: ${error.toString()}`)
+    log(archive.key.toString('hex'), {
+      event: 'error',
+      message: error.toString()
+    })
   })
 
   // now store in main archives listing, as loaded
@@ -481,7 +508,10 @@ export function joinSwarm (key, opts) {
   if (!archive || archive.isSwarming) return
   archiveSwarm.join(archive.discoveryKey)
   var keyStr = datEncoding.toStr(archive.key)
-  log(keyStr, `Swarming archive, discovery key: ${datEncoding.toStr(archive.discoveryKey)}`)
+  log(keyStr, {
+    event: 'swarming',
+    discoveryKey: datEncoding.toStr(archive.discoveryKey)
+  })
   archive.isSwarming = true
 }
 
@@ -491,7 +521,10 @@ export function leaveSwarm (key) {
   if (!archive || !archive.isSwarming) return
 
   var keyStr = datEncoding.toStr(archive.key)
-  log(keyStr, `Unswarming archive (disconnected ${archive.metadata.peers.length} peers)`)
+  log(keyStr, {
+    event: 'unswarming',
+    message: `Disconnected ${archive.metadata.peers.length} peers`
+  })
 
   archive.replicationStreams.forEach(stream => stream.destroy()) // stop all active replications
   archive.replicationStreams.length = 0
@@ -580,6 +613,7 @@ var connIdCounter = 0 // for debugging
 function createReplicationStream (info) {
   // create the protocol stream
   var connId = ++connIdCounter
+  var streamKeys = [] // list of keys replicated over the stream
   var start = Date.now()
   var stream = hypercoreProtocol({
     id: networkId,
@@ -612,7 +646,15 @@ function createReplicationStream (info) {
 
     // do some logging
     var keyStr = datEncoding.toStr(archive.key)
-    log(keyStr, `new connection id=${connId} dkey=${chan} type=${info.type} host=${info.host}:${info.port}`)
+    streamKeys.push(keyStr)
+    log(keyStr, {
+      event: 'replicating',
+      discoveryKey: chan,
+      peer: `${info.host}:${info.port}`,
+      connectionId: connId,
+      connectionType: info.type,
+      ts: Date.now() - start
+    })
 
     // create the replication stream
     archive.replicate({stream, live: true})
@@ -632,13 +674,32 @@ function createReplicationStream (info) {
 
   // debugging
   stream.once('handshake', () => {
-    log(false, `got handshake (${Date.now() - start}ms) id=${connId} type=${info.type} host=${info.host}:${info.port}`)
+    log(streamKeys, {
+      event: 'connection-handshake',
+      peer: `${info.host}:${info.port}`,
+      connectionId: connId,
+      connectionType: info.type,
+      ts: Date.now() - start
+    })
   })
   stream.on('error', err => {
-    log(false, `error (${Date.now() - start}ms) id=${connId} type=${info.type} host=${info.host}:${info.port} error=${err.toString()}`)
+    log(streamKeys, {
+      event: 'connection-error',
+      peer: `${info.host}:${info.port}`,
+      connectionId: connId,
+      connectionType: info.type,
+      ts: Date.now() - start,
+      message: err.toString()
+    })
   })
   stream.on('close', () => {
-    log(false, `closing connection (${Date.now() - start}ms) id=${connId} type=${info.type} host=${info.host}:${info.port}`)
+    log(streamKeys, {
+      event: 'connection-close',
+      peer: `${info.host}:${info.port}`,
+      connectionId: connId,
+      connectionType: info.type,
+      ts: Date.now() - start
+    })
   })
   return stream
 }
@@ -677,10 +738,10 @@ function onNetworkChanged (archive) {
   })
 }
 
-function log (...args) {
-  // pull out the key
-  var key = args[0]
-  args = args.slice(1)
-  debug(...args, `key=${key}`)
-  debugEvents.emit(key || 'all', {args})
+function log (key, data) {
+  var keys = Array.isArray(key) ? key : [key]
+  debug(Object.keys(data).reduce((str, key) => str + `${key}=${data[key]} `, '') + `key=${keys.join(',')}`)
+  keys.forEach(k => debugEvents.emit(k, data))
 }
+
+
