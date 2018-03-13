@@ -83,7 +83,7 @@ export class BookmarkMenuNavbarBtn {
                   <span class="text">Pin to start page</span>
                 </label>
 
-                ${url.startsWith('dat://') && !page.siteInfo.isOwner
+                ${url.startsWith('dat://') && page.siteInfo && !page.siteInfo.isOwner
                   ? yo`
                     <label class="toggle">
                       <input onchange=${(e) => this.onChangeSeeding(e)} checked=${this.values.seeding || false} type="checkbox" name="seeding" value="seeding">
