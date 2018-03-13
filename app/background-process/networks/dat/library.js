@@ -81,6 +81,7 @@ export function setup () {
     hash: false,
     utp: true,
     tcp: true,
+    dht: false,
     stream: createReplicationStream
   }))
   archiveSwarm.once('error', () => archiveSwarm.listen(0))
