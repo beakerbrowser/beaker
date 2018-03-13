@@ -2,17 +2,30 @@
 
 import * as yo from 'yo-yo'
 
+const COLUMN_SETS = {
+  discovery: ['event', 'peer', 'trafficType', 'messageId', 'message'],
+  connections: ['event', 'peer', 'connectionId', 'connectionType', 'ts', 'discoveryKey', 'message']
+}
+const EVENT_SETS = {
+  discovery: ['peer-found', 'traffic'],
+  connections: ['swarming', 'unswarming', 'connection-handshake', 'replicating', 'connection-error', 'connection-close']
+}
+
 // globals
 // =
 
 var archiveKey = ''
 var peers = []
+var logEntries = []
+var activeView
+var activeColumns
+var activeEvents
 
 setup()
 async function setup () {
   archiveKey = await parseURL()
+  setView('connections')
   render()
-  updatePeers()
 
   var archive = new DatArchive(archiveKey)
   var info = await archive.getInfo()
@@ -27,8 +40,13 @@ async function setup () {
     }
   })
   var debugEvents = beaker.archives.createDebugStream()
-  debugEvents.addEventListener('all', onLog)
   debugEvents.addEventListener(archiveKey, onLog)
+}
+
+function setView (view) {
+  activeView = view
+  activeColumns = COLUMN_SETS[view]
+  activeEvents = EVENT_SETS[view]
 }
 
 async function parseURL () {
@@ -50,35 +68,93 @@ async function parseURL () {
   }
 }
 
+function shouldRender (logEntry) {
+  return activeEvents.includes(logEntry.event)
+}
+
 // rendering
 // =
 
 function render () {
   yo.update(document.querySelector('main'), yo`
     <main>
-      <div class="columns">
-        <div class="column">
-          <h1><i class="fa fa-bug"></i> Swarm debugger</h1>
-          <h2>Peers</h2>
-          <div class="peers"></div>
-        </div>
-        <div class="column log"></div>
-      </div>
+      <h1><i class="fa fa-bug"></i> Swarm debugger</h1>
+      <nav>
+        ${renderNavItem('connections', 'Connection log')}
+        ${renderNavItem('discovery', 'Discovery log')}
+        ${renderNavItem('stats', 'Stats')}
+      </nav>
+      ${activeView === 'stats'
+        ? yo`
+          <div class="view">
+            <section>
+              <h3>Peers</h3>
+              ${renderPeers()}
+            </section>
+          </div>`
+        : yo`
+          <div class="view">
+            <table class="log">
+              <thead>${renderActiveColumns()}</thead>
+              <tbody class="log-entries">${renderLog()}</tbody>
+            </table>
+          </div>`}
     </main>
   `)
 }
 
-function updatePeers () {
-  yo.update(document.querySelector('.peers'), yo`
-    <div class="peers">
-      ${peers.map(peer => {
-    return yo`<div>${peer.host}:${peer.port}</div>`
-  })}
-      ${peers.length === 0 ? yo`<p>No peers are currently connected for this archive.</p>` : ''}
-    </div>
-  `)
+function renderNavItem (view, label) {
+  return yo`
+    <a
+      class=${view === activeView ? 'active' : ''}
+      onclick=${() => {setView(view); render()}}>
+      ${label}
+    </a>`
 }
 
-function onLog ({args}) {
-  document.querySelector('.log').appendChild(yo`<div>${args.join('')}</div>`)
+function renderActiveColumns () {
+  return yo`
+    <tr>
+      ${activeColumns.map(key => yo`<td>${key}</td>`)}
+    </tr>`
+}
+
+function renderLogEntry (data) {
+  return yo`
+    <tr>
+      ${activeColumns.map(key => yo`<td>${formatLogValue(key, data[key])}</td>`)}
+    </tr>`
+}
+
+function renderLog () {
+  return logEntries.filter(shouldRender).map(renderLogEntry)
+}
+
+function renderPeers () {
+  return yo`
+    <div class="peers">
+      ${peers.map(peer => yo`<div>${peer.host}:${peer.port}</div>`)}
+      ${peers.length === 0 ? yo`<p>No peers are currently connected for this archive.</p>` : ''}
+    </div>`
+}
+
+function updatePeers () {
+  if (activeView === 'peers') {
+    yo.update(document.querySelector('.peers'), renderPeers())
+  }
+}
+
+function onLog (data) {
+  console.debug(data)
+  logEntries.push(data)
+  if (shouldRender(data)) {
+    document.querySelector('.log-entries').appendChild(renderLogEntry(data))
+  }
+}
+
+function formatLogValue (key, value) {
+  if (key === 'ts') {
+    return value + 'ms'
+  }
+  return value
 }

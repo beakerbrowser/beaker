@@ -19,39 +19,83 @@ body {
   font-size: 14px;
 }
 
-main {
-  
-  .columns {
-    display: flex;
-    height: 100%;
+h1 {
+  padding: 0.3rem;
+  background: @background-message;
+}
+
+nav {
+  border-bottom: 1px solid #ccc;
+  background: @background-message;
+  padding: 0.2rem 0.4rem 0;
+
+  a {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    cursor: pointer;
+
+    &:hover {
+      background: #ddd;
+    }
   }
 
-  .column {
-    flex: 1;
+  a.active {
+    background: #fff;
+    border-color: #ccc;
+    position: relative;
+
+    &:after {
+      content: '';
+      display: block;
+      position: absolute;
+      background: #fff;
+      left: 0;
+      width: 100%;
+      bottom: -1px;
+      height: 1px;
+    }
+  }
+}
+
+main {
+
+  .view {
+    overflow-y: scroll;
+    height: 86vh;
+  }
+  
+  .log {
+    padding: 0.5rem;
+    width: 100%;
+
+    thead {
+      font-weight: bold;
+    }
+  }
+
+  section {
+    display: inline-block;
+    width: 300px;
     padding: 1rem;
   }
 
-  .log {
-    .code-font;
-    background: @background-message;
+  .peers {
+    height: 200px;
     overflow: auto;
-    padding-top: 0.5rem;
+    border: 1px solid #ccc;
   }
 
   .peers > div {
-    border: 1px solid #ccc;
-    padding: 1rem;
-    margin: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+    padding: 0.5rem;
     font-family: Consolas, 'Lucida Console', Monaco, monospace;
-    box-shadow: 0 2px 2px rgba(0,0,0,.05);
-    border-radius: 2px;
   }
+}
 
-  .log > div {
-    text-indent: -15px;
-    padding-left: 15px;
-    border-bottom: 1px solid #ddd;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-  }
+td {
+  padding-right: 10px;
 }
