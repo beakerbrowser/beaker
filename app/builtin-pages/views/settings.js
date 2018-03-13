@@ -254,37 +254,68 @@ function renderAutoUpdater () {
     case 'idle':
       return yo`
       <div class="section">
-        <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
+        <h2 id="auto-updater" class="subtitle-heading">
+          Auto updater
+        </h2>
 
         ${browserInfo.updater.error
-          ? yo`<div class="message error"><i class="fa fa-exclamation-triangle"></i> ${browserInfo.updater.error}</div>`
-          : ''}
+          ? yo`
+            <div class="message error">
+              <i class="fa fa-exclamation-triangle"></i>
+              ${browserInfo.updater.error}
+            </div>`
+          : ''
+        }
 
         <div class="auto-updater">
-          <button class="btn btn-default" onclick=${onClickCheckUpdates}>Check for updates</button>
-          <span>
-            <span class="fa fa-check"></span>
-            <strong>Beaker v${browserInfo.version}</strong> is up-to-date
-          </span>
-          ${renderAutoUpdateCheckbox()}
-        </div>
-        <div class="prereleases">
-          [ Advanced: <a href="#" onclick=${onClickCheckPrereleases}>Check for prereleases</a> ]
+          <p>
+            <button class="btn btn-default" onclick=${onClickCheckUpdates}>Check for updates</button>
+
+            <span class="up-to-date">
+              <span class="fa fa-check"></span>
+              Beaker v${browserInfo.version} is up-to-date
+            </span>
+          </p>
+
+          <p>
+            ${renderAutoUpdateCheckbox()}
+          </p>
+
+          <div class="prereleases">
+            <h3>Advanced</h3>
+            <button class="btn" onclick=${onClickCheckPrereleases}>
+              Check for beta releases
+            </button>
+          </div>
         </div>
       </div>`
 
     case 'checking':
       return yo`
       <div class="section">
-        <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
+        <h2 id="auto-updater" class="subtitle-heading">
+          Auto updater
+        </h2>
 
         <div class="auto-updater">
-          <button class="btn" disabled>Checking for updates</button>
-          <span class="version-info">
-            <div class="spinner"></div>
-            Checking for updates to Beaker...
-          </span>
-          ${renderAutoUpdateCheckbox()}
+          <p>
+            <button class="btn" disabled>Checking for updates</button>
+            <span class="version-info">
+              <div class="spinner"></div>
+              Checking for updates...
+            </span>
+          </p>
+
+          <p>
+            ${renderAutoUpdateCheckbox()}
+          </p>
+
+          <div class="prereleases">
+            <h3>Advanced</h3>
+            <button class="btn" onclick=${onClickCheckPrereleases}>
+              Check for beta releases
+            </button>
+          </div>
         </div>
       </div>`
 
