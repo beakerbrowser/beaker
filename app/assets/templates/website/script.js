@@ -24,6 +24,7 @@ button.addEventListener('click', changeBackgroundColor)
 
 document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('url').innerText = window.location
+  document.getElementById('library-url').href = `beaker://library/${window.location}`
 })
 
 function changeBackgroundColor () {
