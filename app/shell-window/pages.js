@@ -737,6 +737,21 @@ function onDidStopLoading (e) {
         main code { font-size: 1.3em; background: #fafafa; }
         main pre { background: #fafafa; padding: 1em }
       `)
+      page.webviewEl.insertCSS(`
+        .markdown { font-size: 14px; width: 100%; max-width: 700px; line-height: 22.5px; }
+        .markdown a { color: #2864dc; text-decoration: none; }
+        .markdown a:hover { text-decoration: underline; }
+        .markdown a.anchor-link { color: #ddd; }
+        .markdown h1, .markdown h2, .markdown  h3 { margin: 15px 0; font-weight: 600; }
+        .markdown h1, .markdown h2 { border-bottom: 1px solid #eee; }
+        .markdown h1 { font-size: 30px; line-height: 45px; }
+        .markdown h2 { font-size: 24px; }
+        .markdown h3 { font-size: 20px; }
+        .markdown ul, .markdown ol { margin-bottom: 15px; }
+        .markdown pre, .markdown code { font-family: Consolas, 'Lucida Console', Monaco, monospace; font-size: 13.5px; background: #f0f0f0; border-radius: 2px; }
+        .markdown pre { padding: 15px; border: 0; overflow-x: auto; }
+        .markdown code { padding: 3px 5px; }
+      `)
       if (!cachedMarkdownRendererScript) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
       }

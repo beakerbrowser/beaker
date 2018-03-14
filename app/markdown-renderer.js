@@ -10,7 +10,7 @@ if (!document.querySelector('main')) {
   // show formatted el
   var unformattedEl = document.querySelector('body > pre')
   var formattedEl = document.createElement('main')
-  formattedEl.innerHTML = `<nav></nav><div>${md.render(unformattedEl.textContent)}</div>`
+  formattedEl.innerHTML = `<nav></nav><div class="markdown">${md.render(unformattedEl.textContent)}</div>`
   document.body.appendChild(formattedEl)
 
   // give ui to switch
