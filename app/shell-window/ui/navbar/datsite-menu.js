@@ -89,7 +89,12 @@ export class DatsiteMenuNavbarBtn {
           <div class="header">
             <div class="header-info">
               <img class="favicon" src="beaker-favicon: ${page.getURL()}"/>
-              <h1 class="page-title">${page.siteInfo.title}</h1>
+              <h1 class="page-title">
+                ${page.siteInfo.title && page.siteInfo.title.length
+                  ? page.siteInfo.title
+                  : yo`<em>Untitled</em>`
+                }
+              </h1>
             </div>
 
             <div class="peer-count">
