@@ -1205,8 +1205,8 @@ function renderWorkspaceView () {
 
   const renderRevision = rev => (
     yo`
-      <li class="revision" onclick=${() => onToggleRevisionCollapsed(rev)}>
-        <div class="revision-header ${rev.isOpen ? '' : 'collapsed'}">
+      <li class="revision">
+        <div class="revision-header ${rev.isOpen ? '' : 'collapsed'}" onclick=${() => onToggleRevisionCollapsed(rev)}>
           <div class="revision-type ${rev.change}"></div>
 
           <code class="path">
