@@ -894,15 +894,14 @@ body.drag {
   }
 
   .tabs {
-    position: absolute;
-    bottom: -1px;
-    left: 0;
+    height: 100%;
+    margin-bottom: -1px;
 
     .tab {
-      display: inline-block;
-      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      height: 100%;
       padding: 0 15px;
-      padding-bottom: 11px;
       cursor: pointer;
       color: @color-text;
       margin-right: 5px;
@@ -923,9 +922,8 @@ body.drag {
         width: 7px;
         height: 7px;
         border-radius: 50%;
-        margin-left: 2px;
-        vertical-align: top;
-        margin-top: 6.75px;
+        margin-left: 5px;
+        margin-top: 2px;
       }
     }
   }
