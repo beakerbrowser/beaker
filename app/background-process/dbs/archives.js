@@ -79,7 +79,7 @@ export async function query (profileId, query) {
       values.push(profileId)
       WHERE.push('archives.isSaved = 1')
     } else {
-      WHERE.push('archives.isSaved = 0 OR archives.isSaved IS NULL')
+      WHERE.push('(archives.isSaved = 0 OR archives.isSaved IS NULL)')
     }
   }
   if ('type' in query) {
