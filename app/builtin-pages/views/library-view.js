@@ -629,7 +629,7 @@ function renderSetupChecklist () {
 
           <div class="actions">
             <button class="btn" onclick=${onClickChangeHeaderTitle}>
-              Set title
+              ${hasTitle ? 'Change' : 'Set'} title
             </button>
           </div>
         </div>
