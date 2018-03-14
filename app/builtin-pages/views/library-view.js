@@ -1516,6 +1516,9 @@ async function onSave () {
     console.error(e)
     toast.create(`Could not save ${nickname} to your Library`, 'error')
   }
+  if (archive.info.isOwner) {
+    await loadWorkspaceRevisions() // fetch any updates
+  }
   render()
 }
 
