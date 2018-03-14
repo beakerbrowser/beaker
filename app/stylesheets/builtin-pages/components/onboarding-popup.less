@@ -10,9 +10,7 @@
   }
 
   .head {
-    position: relative;
-    z-index: 0;
-    padding: 35px;
+    padding: 30px;
     color: #fff;
     -webkit-font-smoothing: antialiased;
     text-align: center;
@@ -22,7 +20,7 @@
       font-size: 28px;
       position: absolute;
       right: 5px;
-      top:  2px;
+      top: 2px;
       color: fadeout(#fff, 45%);
       transition: color .1s ease;
 
@@ -45,78 +43,25 @@
     .subtitle {
       font-size: .85rem;
     }
-
-    .icon {
-      position: absolute;
-      font-size: 70px;
-      color: rgba(0,0,0,.075);
-      z-index: 0;
-
-      &.fa-file {
-        font-size: 55px;
-        left: 15px;
-        bottom: 15px;
-      }
-
-      &.fa-cubes{
-        right: 5px;
-        bottom: -20px;
-        font-size: 80px;
-      }
-
-      &.fa-align-left {
-        left: 15px;
-        bottom: 15px;
-      }
-
-      &.fa-i-cursor {
-        font-size: 32px;
-        left: 75px;
-        bottom: 15px;
-      }
-
-      &.fa-font {
-        font-size: 30px;
-        right: 50px;
-        bottom: 10px;
-      }
-
-      &.fa-window-maximize {
-        font-size: 90px;
-        right: 15px;
-        bottom: -10px;
-        -webkit-text-stroke: 3px transparent;
-      }
-
-      &.fa-link {
-        font-size: 52px;
-        right: 10px;
-        bottom: 15px;
-      }
-
-      &.fa-sitemap {
-        font-size: 90px;
-        // left: 25px;
-        // top: 25px;
-      }
-    }
   }
 
   .body {
     transition: all .5s;
     position: relative;
     z-index: 1;
-    padding: 20px 30px 0 30px;
+    padding: 25px 20px 0 20px;
     background: #fff;
     font-size: .85rem;
     text-align: center;
-    color: rgba(0,0,0,.75);
-
 
     .description {
+      font-weight: 500;
       margin: auto;
-      margin-bottom: 25px;
       text-align: center;
+    }
+
+    img.icon {
+      margin: 10px 0;
     }
 
     .toggle {
@@ -134,11 +79,12 @@
     }
 
     .onboarding-hint {
-      width: 370px;
+      width: 400px;
+      margin: auto;
       margin-top: 5px;
       padding-top: 3px;
       text-align: center;
-      font-size: 11.5px;
+      font-size: .7rem;
       border-top: 1px dotted;
 
       &.hidden {
@@ -158,11 +104,11 @@
         cursor: pointer;
       }
 
-      &:first-of-type {
+      &:first-child {
         padding-top: 0;
       }
 
-      &:last-of-type {
+      &:last-child {
         padding-bottom: 0;
         border-bottom: 0;
       }
@@ -332,44 +278,6 @@
       &:hover {
         border-color: #c72b59;
         background: fadeout(#c72b59, 95%);
-      }
-    }
-  }
-
-  &.orange {
-
-    .head {
-      background: linear-gradient(.075turn, fadeout(#db5c37, 20%), #db5c37);
-
-      .close-btn {
-        -webkit-text-stroke: 4.5px fadeout(#db5c37, 10%);
-      }
-    }
-
-    .body {
-
-      .link,
-      .description {
-        color: #db5c37;
-      }
-    }
-
-    .btn.primary {
-      background: #db5c37;
-      border-color: #db5c37;
-    }
-
-    .toggle input:checked + .switch:before {
-      background: #db5c37;
-    }
-
-    .footer .btn {
-      color: #db5c37;
-      border-color: #db5c37;
-
-      &:hover {
-        border-color: #db5c37;
-        background: fadeout(#db5c37, 95%);
       }
     }
   }

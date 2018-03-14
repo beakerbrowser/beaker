@@ -14,47 +14,52 @@ const STEPS = [
   {
     title: 'Welcome to Beaker!',
     subtitle: 'Configure your preferences',
-    description: 'Beaker is a new type of browser for exploring and building the peer-to-peer Web.',
+    description: 'Beaker is browser for exploring and building the peer-to-peer Web.',
     content: () => yo`
-      <p>
-        <label class="toggle">
-          <input checked=${defaultProtocolSettings.dat} type="checkbox" onchange=${onToggleDefaultBrowser} />
-          <div class="switch"></div>
-          <span class="text">
-            Set Beaker as the default browser for dat:// URLs
-          </span>
+      <div>
+        <img class="icon" src="beaker://assets/img/onboarding/p2p-connection.svg" />
 
-          <button type="button" class="btn hint-btn plain link" onclick=${onShowHint}>
-            <i class="fa fa-question-circle-o"></i>
-          </button>
-        </label>
+        <p>
+          <label class="toggle">
+            <input checked=${defaultProtocolSettings.dat} type="checkbox" onchange=${onToggleDefaultBrowser} />
+            <div class="switch"></div>
+            <span class="text">
+              Set Beaker as the default browser for dat:// URLs
+            </span>
 
+            <button type="button" class="btn hint-btn plain link" onclick=${onShowHint}>
+              <i class="fa fa-question-circle-o"></i>
+            </button>
+          </label>
 
-        <div class="onboarding-hint ${isHintHidden ? 'hidden' : ''}">
-          dat:// is the peer-to-peer protocol protocol that Beaker uses to host websites
-        </div>
-      </p>`,
+          <div class="onboarding-hint ${isHintHidden ? 'hidden' : ''}">
+            dat:// is a peer-to-peer protocol that Beaker uses to host websites
+          </div>
+        </p>
+      </div>`,
     color: 'blue',
     onLeave: async () => {
       if (defaultProtocolSettings.dat) {
         await beaker.browser.setAsDefaultProtocolClient('dat')
       } else {
-        await beaker.browser.removeAsDefaultProtocolClient('dat')        
+        await beaker.browser.removeAsDefaultProtocolClient('dat')
       }
     }
   },
   {
-    title: 'Build and host websites',
-    subtitle: 'Configure your workspace settings',
-    description: 'With Beaker, you can create and host websites from your computer. No server required!',
+    title: 'Create and host websites',
+    subtitle: 'Configure workspace settings',
+    description: 'Create and host websites from your computer. No server required!',
     content: () => yo`
       <div>
+        <img class="icon" src="beaker://assets/img/onboarding/create-and-host-websites.svg"/>
+
         <p>
           The default directory where your websites will be saved:
         </p>
 
         <p class="path-container">
-          <input class="path nofocus" name="path" value=${settings.workspace_default_path} onkeyup=${onKeyupDirectory} />
+          <input disabled="true" class="path nofocus" name="path" value=${settings.workspace_default_path} onkeyup=${onKeyupDirectory} />
 
           <button class="btn primary nofocus" onclick=${onSelectDirectory}>
             Choose different directory
@@ -72,7 +77,7 @@ const STEPS = [
     description: '',
     content: () => yo`
       <p>
-        <a href="#todo" class="module">
+        <div class="module" onclick=${onCreateWebsite}>
           <img src="beaker://assets/img/onboarding/create-website.svg"/>
 
           <span>
@@ -82,12 +87,12 @@ const STEPS = [
             </h3>
 
             <p>
-              Create your first peer-to-peer website using one of our templates.
+              Create your first peer-to-peer website using a basic template.
             </p>
           </span>
-        </a>
+        </div>
 
-        <a href="#todo" class="module">
+        <a href="dat://taravancil.com/explore-the-p2p-web.md" class="module" target="_blank">
           <img src="beaker://assets/img/onboarding/community.svg"/>
 
           <span>
@@ -102,7 +107,7 @@ const STEPS = [
           </span>
         </a>
 
-        <a href="#todo" class="module">
+        <a href="dat://beakerbrowser.com/docs" class="module" target="_blank">
           <img src="beaker://assets/img/onboarding/documentation.svg"/>
 
           <span>
@@ -112,7 +117,7 @@ const STEPS = [
             </h3>
 
             <p>
-              Explore Beaker${"'"}s documentation and tutorials
+              Explore Beaker${"'"}s documentation and tutorials.
             </p>
           </span>
         </a>
@@ -120,6 +125,15 @@ const STEPS = [
     color: 'green',
   }
 ]
+
+// internal
+// =
+
+async function onCreateWebsite () {
+  // create a new archive
+  const archive = await DatArchive.create({template: 'website', prompt: false})
+  window.location = 'beaker://library/' + archive.url
+}
 
 // exported api
 // =
@@ -181,13 +195,6 @@ function renderHead () {
       <button class="btn close-btn plain" onclick=${destroy}>
         <i class="fa fa-times"></i>
       </button>
-
-      <i class="icon fa fa-link"></i>
-      <i class="icon fa fa-file"></i>
-      <i class="icon fa fa-font"></i>
-      <i class="icon fa fa-i-cursor"></i>
-      <i class="icon fa fa-cubes"></i>
-      <i class="icon fa fa-align-left"></i>
 
       <h1 class="title">
         ${step.title}
