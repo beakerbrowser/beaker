@@ -77,7 +77,7 @@ function renderRevisionsOverview (workspaceInfo) {
       ${workspaceInfo.revisions.slice(0, 4).map(renderRevisionType)}
       <span
         class="label ${!hasRevisions ? 'empty' : ''}"
-        onclick=${() => hasRevisions ? emitSetView('revisions') : undefined}>
+        onclick=${() => hasRevisions ? emitSetView('workspace') : undefined}>
         ${hasRevisions
           ? `${workspaceInfo.revisions.length} ${pluralize(workspaceInfo.revisions.length, 'unpublished revision')}`
           : yo`<em>No unpublished revisions</em>`
