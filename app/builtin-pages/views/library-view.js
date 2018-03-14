@@ -517,7 +517,7 @@ function renderFilesView () {
           ? yo`
             <div class="message info">
               <span>
-                This archive's workspace directory
+                This archive${"'"}s workspace directory
                 ${workspaceInfo.missingLocalFilesPath ? `(${workspaceInfo.missingLocalFilesPath})` : ''}
                 was moved or deleted.
               </span>
@@ -1129,7 +1129,7 @@ function renderWorkspaceView () {
           <div class="label">Workspace directory moved or deleted</div>
 
           <p>
-            This project's workspace directory ${workspaceInfo.missingLocalFilesPath ? `(${workspaceInfo.missingLocalFilesPath})` : ''} was deleted
+            This project${"'"}s workspace directory ${workspaceInfo.missingLocalFilesPath ? `(${workspaceInfo.missingLocalFilesPath})` : ''} was deleted
             or moved. <button class="link" onclick=${onChangeWorkspaceDirectory}>Choose a new workspace directory</button>
           </p>
         </div>
@@ -1675,6 +1675,7 @@ async function onPublishAllRevisions (e) {
   }
   activeView = 'files'
   window.history.pushState('', {}, `beaker://library/${archive.url}#files`)
+  clearRevisions()
   render()
 }
 
@@ -1696,6 +1697,7 @@ async function onRevertAllRevisions (e) {
 
   if (!confirm(`Revert ${paths.length} ${pluralize(paths.length, 'unpublished change')}?`)) return
   await beaker.workspaces.revert(0, workspaceInfo.name, {paths})
+  clearRevisions()
 }
 
 async function onSetCurrentSource (node) {
@@ -1919,6 +1921,10 @@ async function onFilesChanged () {
 async function onWorkspaceChanged () {
   await loadWorkspaceRevisions()
   render()
+}
+
+function clearRevisions() {
+  workspaceInfo.revisions = []
 }
 
 function onNetworkChanged (e) {
