@@ -1,25 +1,27 @@
 import Txt from 'dns-txt'
 const txt = Txt()
 
+export function findFullDiscoveryKey (archivesByDKey, key) {
+  // HACK
+  // if the key is short, try to find the full thing in our list
+  // (this shouldnt be needed once discovery stops truncating keys)
+  // -prf
+  if (key && key.length === 40) {
+    let dKeys = Object.keys(archivesByDKey)
+    for (let i = 0; i < dKeys.length; i++) {
+      if (dKeys[i].startsWith(key)) {
+        return dKeys[i]
+      }
+    }
+  }
+  return key
+}
+
 export function getDNSMessageDiscoveryKey (archivesByDKey, msg) {
   var key
   function check (obj) {
     if (!key && obj.name.endsWith('.dat.local')) {
-      key = obj.name.slice(0, -10)
-
-      // HACK
-      // if the key is short, try to find the full thing in our list
-      // (this shouldnt be needed once discovery stops truncating keys)
-      // -prf
-      if (key.length === 40) {
-        let dKeys = Object.keys(archivesByDKey)
-        for (let i = 0; i < dKeys.length; i++) {
-          if (dKeys[i].startsWith(key)) {
-            key = dKeys[i]
-            break
-          }
-        }
-      }
+      key = findFullDiscoveryKey(archivesByDKey, obj.name.slice(0, -10))
     }
   }
   if (msg.questions) msg.questions.forEach(check)

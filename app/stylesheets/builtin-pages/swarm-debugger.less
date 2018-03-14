@@ -22,12 +22,14 @@ body {
 h1 {
   padding: 0.3rem;
   background: @background-message;
+  height: 40px;
 }
 
 nav {
   border-bottom: 1px solid #ccc;
   background: @background-message;
   padding: 0.2rem 0.4rem 0;
+  height: 28px;
 
   a {
     display: inline-block;
@@ -65,7 +67,7 @@ main {
 
   .view {
     overflow-y: scroll;
-    height: 86vh;
+    height: ~"calc(100vh - 68px)";
   }
   
   .log {
