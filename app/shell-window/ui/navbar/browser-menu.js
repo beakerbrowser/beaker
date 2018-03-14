@@ -191,6 +191,11 @@ export class BrowserMenuNavbarBtn {
                 <i class="fa fa-flag-o"></i>
                 <span class="label">Report an Issue</span>
               </div>
+
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://opencollective.com/beaker')}>
+                <i class="fa fa-heart-o"></i>
+                <span class="label">Support Beaker</span>
+              </div>
             </div>
           </div>
         </div>`
