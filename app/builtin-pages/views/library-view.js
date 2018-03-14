@@ -346,11 +346,12 @@ function renderHeader () {
             <div
               class="favicon-container editable tooltip-container ${isFaviconSet ? '' : 'unset'}"
               data-tooltip=${isFaviconSet ? 'Change favicon' : 'Set favicon'}
-              onclick=${onClickFavicon}
-            >
+              onclick=${onClickFavicon}>
+
               ${isFaviconSet
                 ? yo`<img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />`
-                : yo`<i class="fa fa-plus"></i>`}
+                : yo`<i class="fa fa-plus"></i>`
+              }
             </div>`
           : yo`
             <div class="favicon-container">
