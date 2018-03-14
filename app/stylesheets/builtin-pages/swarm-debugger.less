@@ -2,6 +2,8 @@
 @import "../base/colors.less";
 @import "../base/spacing.less";
 @import "../base/typography.less";
+@import "../components/inputs.less";
+@import "../components/buttons.less";
 @import "../utils/decorators.less";
 
 * {
@@ -23,6 +25,16 @@ h1 {
   padding: 0.3rem;
   background: @background-message;
   height: 40px;
+}
+
+#filter {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  input {
+    width: 400px;
+  }
 }
 
 nav {
@@ -76,6 +88,18 @@ main {
 
     thead {
       font-weight: bold;
+    }
+
+    tr:hover {
+      background: #eee;
+    }
+
+    td {
+      cursor: pointer;
+
+      &:hover {
+        background: #ddd;
+      }
     }
   }
 

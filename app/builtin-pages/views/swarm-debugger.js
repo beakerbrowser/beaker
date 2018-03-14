@@ -20,6 +20,8 @@ var logEntries = []
 var activeView
 var activeColumns
 var activeEvents
+var filterStr = ''
+var filter = false
 
 setup()
 async function setup () {
@@ -44,6 +46,8 @@ async function setup () {
 }
 
 function setView (view) {
+  filter = false
+  filterStr = ''
   activeView = view
   activeColumns = COLUMN_SETS[view]
   activeEvents = EVENT_SETS[view]
@@ -69,7 +73,19 @@ async function parseURL () {
 }
 
 function shouldRender (logEntry) {
-  return activeEvents.includes(logEntry.event)
+  // event filter
+  if (!activeEvents.includes(logEntry.event)) {
+    return false
+  }
+  // user filter
+  if (filter) {
+    for (let k in filter) {
+      if (logEntry[k] != filter[k]) {
+        return false
+      }
+    }
+  }
+  return true
 }
 
 // rendering
@@ -79,6 +95,12 @@ function render () {
   yo.update(document.querySelector('main'), yo`
     <main>
       <h1><i class="fa fa-bug"></i> Swarm debugger</h1>
+      <div id="filter">
+        ${filter
+          ? yo`<button class="btn" onclick=${onClearFilter}>Clear</button>`
+          : ''}
+        <input type="text" placeholder="Filter" onchange=${onChangeFilter} value=${filterStr} />
+      </div>
       <nav>
         ${renderNavItem('connections', 'Connection log')}
         ${renderNavItem('discovery', 'Discovery log')}
@@ -96,7 +118,7 @@ function render () {
           <div class="view">
             <table class="log">
               <thead>${renderActiveColumns()}</thead>
-              <tbody class="log-entries">${renderLog()}</tbody>
+              <tbody class="log-entries" onclick=${onClickLogEntry}>${renderLog()}</tbody>
             </table>
           </div>`}
     </main>
@@ -142,6 +164,48 @@ function updatePeers () {
   if (activeView === 'peers') {
     yo.update(document.querySelector('.peers'), renderPeers())
   }
+}
+
+function onChangeFilter (e) {
+  filter = {}
+  filterStr = e.target.value
+
+  // parse the filter string
+  let matches
+  let re = /([\S]+)=([\S]+)/g
+  while ((matches = re.exec(filterStr))) {
+    filter[matches[1]] = matches[2]
+  }
+  console.log('Applying filter', filter)
+
+  // disable filter if no values
+  if (Object.keys(filter).length === 0) {
+    filter = false
+  }
+  render()
+}
+
+function onClearFilter () {
+  filter = false
+  filterStr = ''
+  render()
+}
+
+function onClickLogEntry (e) {
+  let el = e.target
+  if (el.tagName !== 'TD') return
+
+  let columnIndex = Array.from(el.parentNode.childNodes).indexOf(el) - 1
+  if (columnIndex < 0 || columnIndex >= activeColumns) return
+
+  let key = activeColumns[columnIndex]
+  let value = (''+el.innerText).trim()
+
+  filter = filter || {}
+  filter[key] = value
+  filterStr = Object.keys(filter).map(k => `${k}=${filter[k]}`).join(' ')
+
+  render()
 }
 
 function onLog (data) {
