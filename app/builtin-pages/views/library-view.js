@@ -624,7 +624,7 @@ function renderSetupChecklist () {
           </h3>
 
           <p class="description">
-            Add a title to this project to help others find
+            Give your project a title to help people find it.
           </p>
 
           <div class="actions">
