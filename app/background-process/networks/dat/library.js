@@ -13,7 +13,7 @@ import {throttle, debounce} from '../../../lib/functions'
 // dat modules
 import * as archivesDb from '../../dbs/archives'
 import * as datGC from './garbage-collector'
-import {getDNSMessageDiscoveryKey, renderDNSTraffic} from './logging-utils'
+import {findFullDiscoveryKey, getDNSMessageDiscoveryKey, renderDNSTraffic} from './logging-utils'
 import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
 
@@ -100,7 +100,7 @@ export function setup () {
       }
     })
     archiveSwarm._discovery.dns.on('peer', (discoveryKey, peer) => {
-      let archive = archivesByDKey[discoveryKey]
+      let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, discoveryKey)]
       if (archive) {
         log(datEncoding.toStr(archive.key), {
           event: 'peer-found',
@@ -417,9 +417,8 @@ export async function queryArchives (query) {
   // run the query
   var archiveInfos = await archivesDb.query(0, query)
 
-  // if isSaved=false, only give archives that are in memory
-  if (query && query.isSaved === false) {
-    archiveInfos = archiveInfos.filter(archiveInfo => isArchiveLoaded(archiveInfo.key))
+  if (query && ('inMemory' in query)) {
+    archiveInfos = archiveInfos.filter(archiveInfo => isArchiveLoaded(archiveInfo.key) === query.inMemory)
   }
 
   // attach some live data

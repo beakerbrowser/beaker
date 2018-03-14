@@ -55,7 +55,7 @@ export default class DatNetworkActivity {
     } else if (this.currentFilter === 'owned') {
       this.archives = await beaker.archives.list({isOwner: true})
     } else if (this.currentFilter === 'cache') {
-      this.archives = await beaker.archives.list({isSaved: false})
+      this.archives = await beaker.archives.list({isSaved: false, inMemory: true})
     } else {
       this.archives = await beaker.archives.list()
     }

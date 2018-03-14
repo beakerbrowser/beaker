@@ -2,6 +2,8 @@
 @import "../base/colors.less";
 @import "../base/spacing.less";
 @import "../base/typography.less";
+@import "../components/inputs.less";
+@import "../components/buttons.less";
 @import "../utils/decorators.less";
 
 * {
@@ -22,12 +24,24 @@ body {
 h1 {
   padding: 0.3rem;
   background: @background-message;
+  height: 40px;
+}
+
+#filter {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  input {
+    width: 400px;
+  }
 }
 
 nav {
   border-bottom: 1px solid #ccc;
   background: @background-message;
   padding: 0.2rem 0.4rem 0;
+  height: 28px;
 
   a {
     display: inline-block;
@@ -65,7 +79,7 @@ main {
 
   .view {
     overflow-y: scroll;
-    height: 86vh;
+    height: ~"calc(100vh - 68px)";
   }
   
   .log {
@@ -74,6 +88,18 @@ main {
 
     thead {
       font-weight: bold;
+    }
+
+    tr:hover {
+      background: #eee;
+    }
+
+    td {
+      cursor: pointer;
+
+      &:hover {
+        background: #ddd;
+      }
     }
   }
 
