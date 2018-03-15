@@ -638,37 +638,39 @@ function createReplicationStream (info) {
       return
     }
 
-    // ditch if we already have this stream
-    if (archive.replicationStreams.indexOf(stream) !== -1) {
-      return
-    }
-
-    // do some logging
-    var keyStr = datEncoding.toStr(archive.key)
-    streamKeys.push(keyStr)
-    log(keyStr, {
-      event: 'replicating',
-      discoveryKey: chan,
-      peer: `${info.host}:${info.port}`,
-      connectionId: connId,
-      connectionType: info.type,
-      ts: Date.now() - start
-    })
-
     // create the replication stream
     archive.replicate({stream, live: true})
-    archive.replicationStreams.push(stream)
-    onNetworkChanged(archive)
-    function onend () {
-      var rs = archive.replicationStreams
-      var i = rs.indexOf(stream)
-      if (i !== -1) {
-        rs.splice(i, 1)
-      }
+    if (stream.destroyed) return // in case the stream was destroyed during setup
+
+    // track the stream
+    if (archive.replicationStreams.indexOf(stream) === -1) {
+      var keyStr = datEncoding.toStr(archive.key)
+      streamKeys.push(keyStr)
+      archive.replicationStreams.push(stream)
       onNetworkChanged(archive)
+      function onend () {
+        archive.replicationStreams = archive.replicationStreams.filter(s => (s !== stream))
+        onNetworkChanged(archive)
+      }
+      stream.once('error', onend)
+      stream.once('close', onend)
+
+      // HACK
+      // we get zombie entries in archive.replicationStreams sometimes
+      // cant figure out why
+      // watch for them, log them, and remove them
+      let zi = setInterval(() => {
+        if (stream.destroyed) {
+          clearInterval(zi)
+          if (archive.replicationStreams.indexOf(stream) === -1) {
+            return // we're good
+          }
+          let oldLen = archive.replicationStreams.length
+          archive.replicationStreams = archive.replicationStreams.filter(s => (s !== stream))
+          console.error('Cleared out %d zombie instances of replication streams for %s', archive.replicationStreams.length - oldLen, keyStr)
+        }
+      }, 15e3)
     }
-    stream.once('error', onend)
-    stream.once('close', onend)
   }
 
   // debugging
