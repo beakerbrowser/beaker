@@ -13,7 +13,6 @@ import * as datLibrary from '../networks/dat/library'
 import {timer} from '../../lib/time'
 import {isFileNameBinary, isFileContentBinary} from '../../lib/mime'
 import * as scopedFSes from '../../lib/bg/scoped-fses'
-import {checkFolderIsEmpty} from '../../lib/bg/fs'
 import {DAT_HASH_REGEX, WORKSPACE_VALID_NAME_REGEX} from '../../lib/const'
 import {
   NotAFolderError,
@@ -134,8 +133,9 @@ export default {
       archive = await datLibrary.getOrLoadArchive(ws.publishTargetUrl)
     })
 
-    // revert from the archive
+    // do an 'add-only' apply from the archive
     var diff = await dft.diff({fs: archive}, {fs: scopedFS})
+    diff = diff.filter(d => d.change == 'add')
     await dft.applyRight({fs: archive}, {fs: scopedFS}, diff)
 
     return true
@@ -484,11 +484,6 @@ async function assertSafeFilesPath (localFilesPath) {
         else resolve()
       })
     })
-  }
-
-  // check that the target folder is empty
-  if (await checkFolderIsEmpty(localFilesPath, {noPrompt: true}) === false) {
-    throw new DestDirectoryNotEmpty('Target folder must be empty')
   }
 }
 
