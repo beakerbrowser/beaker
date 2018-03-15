@@ -36,7 +36,7 @@ async function setup () {
       window.open(RELEASE_NOTES_URL)
     }
   }
-  
+
   await loadBookmarks()
   update()
 }
@@ -178,7 +178,6 @@ function update () {
     <div class="window-content builtin start ${''/*TODO(bgimg) theme*/}">
       <div class="builtin-wrapper start-wrapper">
         ${renderHelpTip()}
-
         <div class="autocomplete-container search-container">
           <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
           <i class="fa fa-search"></i>
@@ -193,6 +192,13 @@ function update () {
         </div>
 
         ${renderPinnedBookmarks()}
+
+        <div class="beta-info">
+          <i class="fa fa-bolt"></i>
+          You're using a beta version of Beaker.
+          <a href="https://www.surveymonkey.com/r/NK9LGQ3">Share feedback</a> or
+          <a href="https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=issue_template_0.8_beta.md">Report an issue</a>.
+        </div>
 
         ${renderDock()}
 
