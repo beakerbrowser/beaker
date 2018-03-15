@@ -1057,6 +1057,11 @@ function renderNetworkView () {
 
             <h3 class="subtitle-heading">Network activity (last hour)</h3>
             ${renderPeerHistoryGraph(archive.info)}
+
+            <h3 class="subtitle-heading">Advanced</h3>
+            <a href="beaker://swarm-debugger/${archive.key}">
+              Open network debugger
+            </a>
           </div>
 
           <div class="module-footer two">

@@ -86,7 +86,7 @@ a.link {
   width: 80%;
 }
 div.error-page-content {
-  max-width: 450px;
+  max-width: 650px;
   margin: auto;
   transform: translateX(-20px);
   margin-top: 30vh;
@@ -172,17 +172,24 @@ export default function (e) {
         icon = 'fa-close warning'
         button = '<a class="btn" href="javascript:window.history.back()">Go back</a>'
         break
-      case 'dat-timeout':
+      case 504:
         title = 'Timed out'
         info = `<p>It took too long to find this ${e.resource} on the peer-to-peer network.</p>`
         errorDescription = `Beaker will keep searching. Wait a few moments and try again.`
         moreHelp = `
-          <p><strong>Troubleshooting</strong></p>
+          <p>
+            Troubleshooting:
+          </p>
+
           <ul>
             <li>There may not be any peers hosting this ${e.resource} right now.<br /><a class="link" href="beaker://swarm-debugger/${e.validatedURL.slice('dat://'.length)}">Try the swarm debugger</a>.</li>
             <li>Your firewall may be blocking peer-to-peer traffic.<br /><a class="link" href="https://beakerbrowser.com/docs/using-beaker/troubleshooting.html" target="_blank">How to configure your firewall.</a></li>
             <li>If you think this is a bug, copy the <a class="link" href="beaker://debug-log/" target="_blank">debug log</a> and <a class="link" href="https://github.com/beakerbrowser/beaker/issues" target="_blank">file an issue</a>.</li>
           </ul>
+
+          <p>
+            <a class="link" href="beaker://swarm-debugger">View the network debugger</a>
+          </p>
         `
         break
     }
