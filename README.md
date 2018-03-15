@@ -10,7 +10,7 @@ Please feel free to open usability issues. Join us at #beakerbrowser on Freenode
 
 ### Sponsors
 
-Sponsors support this project by contributing $100 a month or more. [[Become a sponsor](https://opencollective.com/beaker#sponsor)]
+Sponsors support this project by contributing $100 a month or more. [Become a sponsor](https://opencollective.com/beaker#sponsor)
 
 <a href="https://opencollective.com/beaker/sponsor/0/website" target="_blank"><img src="https://opencollective.com/beaker/sponsor/0/avatar.svg"></a>
 <a href="https://opencollective.com/beaker/sponsor/1/website" target="_blank"><img src="https://opencollective.com/beaker/sponsor/1/avatar.svg"></a>
@@ -25,7 +25,7 @@ Sponsors support this project by contributing $100 a month or more. [[Become a s
 
 ### Backers
 
-Backers support this project by contributing $2 to $99 a month. [[Become a backer](https://opencollective.com/beaker#backer)]
+Backers support this project by contributing $2 to $99 a month. [Become a backer](https://opencollective.com/beaker#backer)
 
 <a href="https://opencollective.com/beaker#backers" target="_blank"><img src="https://opencollective.com/beaker/backers.svg?width=890"></a>
 
