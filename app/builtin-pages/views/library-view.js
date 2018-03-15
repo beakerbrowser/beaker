@@ -1098,7 +1098,7 @@ function renderNetworkView () {
                 Seed files
               </button>
 
-              <a href="" target="_blank" class="learn-more-link">Learn more</a>
+              <a href="#todo" target="_blank" class="learn-more-link">Learn more</a>
             </div>`
           : ''
         }
@@ -1115,7 +1115,7 @@ function renderNetworkView () {
                 Copy URL
               </button>
 
-              <a href="" target="_blank" class="learn-more-link">Learn more</a>
+              <a href="#todo" target="_blank" class="learn-more-link">Learn more</a>
             </div>`
           : ''
         }
