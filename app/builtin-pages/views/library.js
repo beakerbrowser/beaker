@@ -683,7 +683,10 @@ async function onUpdateSearchQuery (e) {
 }
 
 async function onClearQuery () {
-  document.querySelector('input.search').value = ''
+  try {
+    document.querySelector('input.search').value = ''
+  } catch (_) {}
+
   query = ''
   await loadArchives()
   render()
@@ -706,7 +709,9 @@ async function onClearDatTrash () {
 async function onUpdateView (view) {
   // reset the search query
   query = ''
-  document.querySelector('input.search').value = ''
+  try {
+    document.querySelector('input.search').value = ''
+  } catch (_) {}
 
   // reset selectedArchives
   selectedArchives = []
