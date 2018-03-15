@@ -106,15 +106,13 @@ CREATE TABLE workspaces (
 INSERT INTO profiles (id) VALUES (0);
 
 -- default bookmarks
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Homepage', 'https://beakerbrowser.com', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Twitter', 'https://twitter.com/beakerbrowser', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Mailing List', 'https://groups.google.com/forum/#!forum/beaker-browser', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Report an Issue', 'https://github.com/beakerbrowser/beaker/issues', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Hashbase.io', 'https://hashbase.io', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Pastedat', 'dat://pastedat-taravancil.hashbase.io', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Dat RSS Reader', 'dat://rss-reader-pfrazee.hashbase.io', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'WYSIWYWiki', 'dat://wysiwywiki-pfrazee.hashbase.io', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Paul Frazee', 'dat://pfrazee.hashbase.io', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Tara Vancil', 'dat://taravancil.com', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Home', 'dat://beakerbrowser.com', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Dat Project', 'dat://datproject.org', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, '@BeakerBrowser', 'https://twitter.com/beakerbrowser', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Hashbase', 'https://hashbase.io', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Documentation', 'dat://beakerbrowser.com/docs', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Report an issue', 'https://github.com/beakerbrowser/beaker/issues', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Explore the p2p Web', 'dat://taravancil.com/explore-the-p2p-web.md', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Support Beaker', 'https://opencollective.com/beaker', 1);
 
 PRAGMA user_version = 14;

@@ -58,9 +58,8 @@ CREATE UNIQUE INDEX visits_stats_url ON visit_stats (url);
 INSERT INTO profiles (id) VALUES (0);
 
 -- default bookmarks
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Homepage', 'https://beakerbrowser.com', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Twitter', 'https://twitter.com/beakerbrowser', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Mailing List', 'https://groups.google.com/forum/#!forum/beaker-browser', 1);
-INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Report an Issue', 'https://github.com/beakerbrowser/beaker/issues', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Beaker Home', 'dat://beakerbrowser.com', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, '@BeakerBrowser', 'https://twitter.com/beakerbrowser', 1);
+INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Report an issue', 'https://github.com/beakerbrowser/beaker/issues', 1);
 
 PRAGMA user_version = 1;

@@ -65,7 +65,8 @@ migrations = [
   migration('profile-data.v11.sql'),
   migration('profile-data.v12.sql'),
   migration('profile-data.v13.sql'),
-  migration('profile-data.v14.sql')
+  migration('profile-data.v14.sql'),
+  migration('profile-data.v15.sql')
 ]
 function migration (file) {
   return cb => db.exec(fs.readFileSync(path.join(__dirname, 'background-process', 'dbs', 'schemas', file), 'utf8'), cb)
