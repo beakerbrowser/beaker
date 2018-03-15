@@ -352,6 +352,7 @@ export class BrowserMenuNavbarBtn {
       localFilesPath: folder[0]
     })
     await beaker.workspaces.setupFolder(0, wi.name)
+    await beaker.workspaces.publish(0, wi.name)
     pages.setActive(pages.create('beaker://library/' + archive.url))
   }
 

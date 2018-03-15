@@ -526,6 +526,7 @@ async function onCreateSiteFromFolder () {
     localFilesPath: folder[0]
   })
   await beaker.workspaces.setupFolder(0, wi.name)
+  await beaker.workspaces.publish(0, wi.name)
   window.location += archive.url
 }
 
