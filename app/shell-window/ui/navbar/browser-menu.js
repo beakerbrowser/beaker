@@ -86,14 +86,19 @@ export class BrowserMenuNavbarBtn {
             </div>
 
             <div class="section">
+              <div class="menu-item" onclick=${e => this.onCreateSite(e)}>
+                <i class="fa fa-clone"></i>
+                <span class="label">Empty project</span>
+              </div>
+
               <div class="menu-item" onclick=${e => this.onCreateSite(e, 'website')}>
                 <i class="fa fa-sitemap"></i>
                 <span class="label">Website</span>
               </div>
 
-              <div class="menu-item" onclick=${e => this.onCreateSite(e)}>
-                <i class="fa fa-clone"></i>
-                <span class="label">Empty project</span>
+              <div class="menu-item">
+                <i class="fa fa-folder-o"></i>
+                <span class="label">From folder</span>
               </div>
             </div>
           </div>

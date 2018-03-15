@@ -373,6 +373,17 @@ function renderHeader () {
                 </p>
               </div>
 
+              <div class="dropdown-item">
+                <div class="label">
+                  <i class="fa fa-folder-o"></i>
+                  Import folder
+                </div>
+
+                <p class="description">
+                  Create a new project from a folder on your computer
+                </p>
+              </div>
+
               <div class="dropdown-item" onclick=${onShareFiles}>
                 <div class="label">
                   <i class="fa fa-upload"></i>
@@ -380,7 +391,7 @@ function renderHeader () {
                 </div>
 
                 <p class="description">
-                  Upload and share files
+                  Choose individual files and folders to share
                 </p>
               </div>
             </div>
