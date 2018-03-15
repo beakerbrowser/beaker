@@ -2,6 +2,7 @@
 
 import yo from 'yo-yo'
 import bytes from 'bytes'
+import moment from 'moment'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
@@ -342,10 +343,49 @@ function renderHeader () {
   } else {
     actions = yo`
       <div class="actions">
-        <button class="btn primary">
-          <span>New</span>
-          <i class="fa fa-plus"></i>
-        </button>
+        ${toggleable(yo`
+          <div class="dropdown toggleable-container">
+            <button class="btn primary toggleable">
+              <span>New</span>
+              <i class="fa fa-plus"></i>
+            </button>
+
+            <div class="dropdown-items create-new filters subtle-shadow right">
+              <div class="dropdown-item" onclick=${() => onCreateSite()}>
+                <div class="label">
+                  <i class="fa fa-square-o"></i>
+                  Empty project
+                </div>
+
+                <p class="description">
+                  Create a new project
+                </p>
+              </div>
+
+              <div class="dropdown-item" onclick=${() => onCreateSite('website')}>
+                <div class="label">
+                  <i class="fa fa-code"></i>
+                  Website
+                </div>
+
+                <p class="description">
+                  Create a new website from a basic template
+                </p>
+              </div>
+
+              <div class="dropdown-item" onclick=${onShareFiles}>
+                <div class="label">
+                  <i class="fa fa-upload"></i>
+                  Share files
+                </div>
+
+                <p class="description">
+                  Upload and share files
+                </p>
+              </div>
+            </div>
+          </div>
+        `)}
       </div>`
 
     searchContainer = yo`
@@ -457,6 +497,34 @@ async function onDeleteSelected () {
 
   await loadArchives()
   render()
+}
+
+async function onShareFiles () {
+  // ask user for files
+  const browserInfo = await beaker.browser.getInfo()
+  const filesOnly = browserInfo.platform === 'linux'
+  const files = await beaker.browser.showOpenDialog({
+    title: 'Select files to share',
+    buttonLabel: 'Share files',
+    properties: ['openFile', filesOnly ? false : 'openDirectory', 'multiSelections'].filter(Boolean)
+  })
+  if (!files || !files.length) return
+
+  // create the dat and import the files
+  const archive = await DatArchive.create({
+    title: `Shared files (${moment().format("M/DD/YYYY h:mm:ssa")})`,
+    description: `Files shared with Beaker`,
+    prompt: false
+  })
+  await Promise.all(files.map(src => DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: false})))
+
+  window.location += archive.url
+}
+
+async function onCreateSite (template) {
+  // create a new archive
+  const archive = await DatArchive.create({template, prompt: false})
+  window.location += archive.url
 }
 
 async function onMakeCopy (e, archive) {
