@@ -116,7 +116,13 @@ function renderRows () {
     var oldLastDate = lastRenderedDate
     lastRenderedDate = moment(row.ts).endOf('day')
     if (!lastRenderedDate.isSame(oldLastDate, 'day')) {
-      rowEls.push(yo`<div class="subtitle-heading ll-sticky-heading">${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</div>`)
+      rowEls.push(
+        yo`
+          <div class="subtitle-heading ll-sticky-heading">
+            ${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}
+            ${renderClearHistoryButton()}
+          </div>`
+      )
     }
 
     // render row
@@ -141,6 +147,22 @@ function renderRows () {
   return rowEls
 }
 
+function renderClearHistoryButton () {
+  return yo`
+    <div>
+      <button class="link" onclick=${onClickDeleteBulk.bind(window)}>
+        Clear history
+      </button>
+
+      <select id="delete-period">
+        <option value="day" selected>from today</option>
+        <option value="week">from this week</option>
+        <option value="month">from this month</option>
+        <option value="all">from all time</option>
+      </select>
+    </div>`
+}
+
 function renderAndAppendRows (v) {
   if (!v || v.length === 0) return
   var parentEl = document.querySelector('.links-list.history')
@@ -150,7 +172,13 @@ function renderAndAppendRows (v) {
     var oldLastDate = lastRenderedDate
     lastRenderedDate = moment(row.ts).endOf('day')
     if (!lastRenderedDate.isSame(oldLastDate, 'day')) {
-      parentEl.appendChild(yo`<div class="subtitle-heading ll-sticky-heading">${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}</div>`)
+      parentEl.appendChild(
+        yo`
+          <div class="subtitle-heading ll-sticky-heading">
+            ${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}
+            ${renderClearHistoryButton()}
+          </div>`
+      )
     }
 
     // render row
@@ -186,19 +214,6 @@ function renderHeader () {
           ${renderCloseIcon()}
         </span>
         <i class="fa fa-search"></i>
-      </div>
-
-      <div class="actions">
-        <button class="btn" onclick=${onClickDeleteBulk.bind(window)}>
-          Clear history
-        </button>
-
-        <select id="delete-period">
-          <option value="day" selected>from today</option>
-          <option value="week">from this week</option>
-          <option value="month">from this month</option>
-          <option value="all">from all time</option>
-        </select>
       </div>
     </div>`
 }
