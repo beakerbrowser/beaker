@@ -1,7 +1,11 @@
 import Txt from 'dns-txt'
+import datEncoding from 'dat-encoding'
 const txt = Txt()
 
+var connIdCounter = 0
+
 export function findFullDiscoveryKey (archivesByDKey, key) {
+  key = Buffer.isBuffer(key) ? key.toString('hex') : key
   // HACK
   // if the key is short, try to find the full thing in our list
   // (this shouldnt be needed once discovery stops truncating keys)
@@ -32,6 +36,130 @@ export function getDNSMessageDiscoveryKey (archivesByDKey, msg) {
 
 function has (str, v) {
   return str.indexOf(v) !== -1
+}
+
+export function addArchiveSwarmLogging ({archivesByDKey, log, archiveSwarm}) {
+  archiveSwarm.on('listening', () => {
+    archiveSwarm._discovery.dns.on('traffic', (type, details) => {
+      let archive = archivesByDKey[getDNSMessageDiscoveryKey(archivesByDKey, details.message)]
+      if (!archive) return
+      log(datEncoding.toStr(archive.key), {
+        event: 'traffic',
+        trafficType: type,
+        messageId: details.message.id,
+        message: renderDNSTraffic(details.message),
+        peer: details.peer ? `${details.peer.address || details.peer.host}:${details.peer.port}` : undefined
+      })
+    })
+  })
+  archiveSwarm.on('peer', (peer) => {
+    let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, peer.channel)]
+    if (!archive) return
+    log(datEncoding.toStr(archive.key), {
+      event: 'peer-found',
+      peer: `${peer.address || peer.host}:${peer.port}`
+    })
+  })
+  archiveSwarm.on('peer-banned', (peer, details) => {
+    let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, peer.channel)]
+    if (!archive) return
+    log(datEncoding.toStr(archive.key), {
+      event: 'peer-banned',
+      peer: `${peer.address || peer.host}:${peer.port}`,
+      message: peerBannedReason(details.reason)
+    })
+  })
+  archiveSwarm.on('peer-rejected', (peer, details) => {
+    let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, peer.channel)]
+    if (!archive) return
+    log(datEncoding.toStr(archive.key), {
+      event: 'peer-rejected',
+      peer: `${peer.address || peer.host}:${peer.port}`,
+      message: peerRejectedReason(details.reason)
+    })
+  })
+  archiveSwarm.on('drop', (peer) => {
+    let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, peer.channel)]
+    if (!archive) return
+    log(datEncoding.toStr(archive.key), {
+      event: 'peer-dropped',
+      peer: `${peer.address || peer.host}:${peer.port}`,
+      message: 'Too many failed connection attempts'
+    })
+  })
+  archiveSwarm.on('connecting', (peer) => {
+    let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, peer.channel)]
+    if (!archive) return
+    log(datEncoding.toStr(archive.key), {
+      event: 'connecting',
+      peer: `${peer.address || peer.host}:${peer.port}`
+    })
+  })
+  archiveSwarm.on('connect-failed', (peer, details) => {
+    let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, peer.channel)]
+    if (!archive) return
+    log(datEncoding.toStr(archive.key), {
+      event: 'connect-failed',
+      peer: `${peer.address || peer.host}:${peer.port}`,
+      message: connectFailedMessage(details)
+    })
+  })
+  archiveSwarm.on('handshaking', (conn, peer) => {
+    let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, peer.channel)]
+    if (!archive) return
+    log(datEncoding.toStr(archive.key), {
+      event: 'handshaking',
+      peer: `${peer.address || peer.host}:${peer.port}`,
+      connectionId: conn._debugId,
+      connectionType: peer.type,
+      ts: 0
+    })
+  })
+  archiveSwarm.on('handshake-timeout', (conn, peer) => {
+    let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, peer.channel)]
+    if (!archive) return
+    log(datEncoding.toStr(archive.key), {
+      event: 'handshake-timeout',
+      peer: `${peer.address || peer.host}:${peer.port}`,
+      connectionId: conn._debugId,
+      connectionType: peer.type,
+      ts: Date.now() - conn._debugStartTime
+    })
+  })
+  archiveSwarm.on('connection', (conn, peer) => {
+    let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, peer.channel)]
+    if (!archive) return
+    log(datEncoding.toStr(archive.key), {
+      event: 'connection-established',
+      peer: `${peer.address || peer.host}:${peer.port}`,
+      connectionId: conn._debugId,
+      connectionType: peer.type,
+      ts: Date.now() - conn._debugStartTime,
+      message: 'Starting replication'
+    })
+  })
+  archiveSwarm.on('redundant-connection', (conn, peer) => {
+    let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, peer.channel)]
+    if (!archive) return
+    log(datEncoding.toStr(archive.key), {
+      event: 'redundant-connection',
+      peer: `${peer.address || peer.host}:${peer.port}`,
+      connectionId: conn._debugId,
+      connectionType: peer.type,
+      ts: Date.now() - conn._debugStartTime
+    })
+  })
+  archiveSwarm.on('connection-closed', (conn, peer) => {
+    let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, peer.channel)]
+    if (!archive) return
+    log(datEncoding.toStr(archive.key), {
+      event: 'connection-closed',
+      peer: `${peer.address || peer.host}:${peer.port}`,
+      connectionId: conn._debugId,
+      connectionType: peer.type,
+      ts: Date.now() - conn._debugStartTime
+    })
+  })
 }
 
 export function renderDNSTraffic ({questions, answers, additionals}) {
@@ -84,4 +212,25 @@ export function renderDNSTraffic ({questions, answers, additionals}) {
     })
   }
   return messageParts.join(', ')
+}
+
+function connectFailedMessage (details) {
+  if (details.timedout) return 'Timed out'
+}
+
+function peerBannedReason (reason) {
+  switch (reason) {
+    case 'detected-self': return 'Detected that the peer is this process'
+    case 'application': return 'Peer was removed by the application'
+  }
+  return ''
+}
+
+function peerRejectedReason (reason) {
+  switch (reason) {
+    case 'whitelist': return 'Peer was not on the whitelist'
+    case 'banned': return 'Peer is on the ban list'
+    case 'duplicate': return 'Peer was a duplicate (already being handled)'
+  }
+  return ''
 }

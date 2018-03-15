@@ -6,6 +6,10 @@ import pify from 'pify'
 import pda from 'pauls-dat-api'
 import signatures from 'sodium-signatures'
 import parseDatURL from 'parse-dat-url'
+import through from 'through2'
+import split from 'split2'
+import concat from 'concat-stream'
+import CircularAppendFile from 'circular-append-file'
 var debug = require('debug')('dat')
 import * as siteData from '../../dbs/sitedata'
 import {throttle, debounce} from '../../../lib/functions'
@@ -13,7 +17,7 @@ import {throttle, debounce} from '../../../lib/functions'
 // dat modules
 import * as archivesDb from '../../dbs/archives'
 import * as datGC from './garbage-collector'
-import {findFullDiscoveryKey, getDNSMessageDiscoveryKey, renderDNSTraffic} from './logging-utils'
+import {addArchiveSwarmLogging} from './logging-utils'
 import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
 
@@ -44,12 +48,15 @@ var archivesByDKey = {} // same, but discoveryKey -> archive
 var archiveLoadPromises = {} // key -> promise
 var archivesEvents = new EventEmitter()
 var debugEvents = new EventEmitter()
+var debugLogFile
 var archiveSwarm
 
 // exported API
 // =
 
-export function setup () {
+export function setup ({logfilePath}) {
+  debugLogFile = CircularAppendFile(logfilePath, {maxSize: 1024 /* 1kb */ * 1024 /* 1mb */ * 10 /* 10mb */ })
+
   // wire up event handlers
   archivesDb.on('update:archive-user-settings', async (key, settings) => {
     // emit event
@@ -85,30 +92,8 @@ export function setup () {
     dht: false,
     stream: createReplicationStream
   }))
+  addArchiveSwarmLogging({archivesByDKey, log, archiveSwarm})
   archiveSwarm.once('error', () => archiveSwarm.listen(0))
-  archiveSwarm.once('listening', () => {
-    archiveSwarm._discovery.dns.on('traffic', (type, details) => {
-      let archive = archivesByDKey[getDNSMessageDiscoveryKey(archivesByDKey, details.message)]
-      if (archive) {
-        log(datEncoding.toStr(archive.key), {
-          event: 'traffic',
-          trafficType: type,
-          messageId: details.message.id,
-          message: renderDNSTraffic(details.message),
-          peer: details.peer ? `${details.peer.address || details.peer.host}:${details.peer.port}` : undefined
-        })
-      }
-    })
-    archiveSwarm._discovery.dns.on('peer', (discoveryKey, peer) => {
-      let archive = archivesByDKey[findFullDiscoveryKey(archivesByDKey, discoveryKey)]
-      if (archive) {
-        log(datEncoding.toStr(archive.key), {
-          event: 'peer-found',
-          peer: `${peer.address || peer.host}:${peer.port}`
-        })
-      }
-    })
-  })
   archiveSwarm.listen(DAT_SWARM_PORT)
 
   // load and configure all saved archives
@@ -120,6 +105,22 @@ export function setup () {
 
 export function createEventStream () {
   return emitStream(archivesEvents)
+}
+
+export function getDebugLog (key) {
+  return new Promise((resolve, reject) => {
+    let rs = debugLogFile.createReadStream()
+    rs
+      .pipe(split())
+      .pipe(through({encoding: 'utf8', decodeStrings: false}, (data, _, cb) => {
+        if (data && data.startsWith(key)) {
+          return cb(null, data.slice(key.length) + '\n')
+        }
+        cb()
+      }))
+      .pipe(concat({encoding: 'string'}, resolve))
+    rs.on('error', reject)
+  })
 }
 
 export function createDebugStream () {
@@ -608,12 +609,9 @@ function stopAutodownload (archive) {
   }
 }
 
-var connIdCounter = 0 // for debugging
 function createReplicationStream (info) {
   // create the protocol stream
-  var connId = ++connIdCounter
-  var streamKeys = [] // list of keys replicated over the stream
-  var start = Date.now()
+  var streamKeys = [] // list of keys replicated over the streamd
   var stream = hypercoreProtocol({
     id: networkId,
     live: true,
@@ -667,39 +665,19 @@ function createReplicationStream (info) {
           }
           let oldLen = archive.replicationStreams.length
           archive.replicationStreams = archive.replicationStreams.filter(s => (s !== stream))
-          console.error('Cleared out %d zombie instances of replication streams for %s', archive.replicationStreams.length - oldLen, keyStr)
+          console.error('Cleared out %d zombie instances of replication streams for %s', oldLen - archive.replicationStreams.length, keyStr)
         }
       }, 15e3)
     }
   }
 
   // debugging
-  stream.once('handshake', () => {
-    log(streamKeys, {
-      event: 'connection-handshake',
-      peer: `${info.host}:${info.port}`,
-      connectionId: connId,
-      connectionType: info.type,
-      ts: Date.now() - start
-    })
-  })
   stream.on('error', err => {
     log(streamKeys, {
       event: 'connection-error',
       peer: `${info.host}:${info.port}`,
-      connectionId: connId,
       connectionType: info.type,
-      ts: Date.now() - start,
       message: err.toString()
-    })
-  })
-  stream.on('close', () => {
-    log(streamKeys, {
-      event: 'connection-close',
-      peer: `${info.host}:${info.port}`,
-      connectionId: connId,
-      connectionType: info.type,
-      ts: Date.now() - start
     })
   })
   return stream
@@ -743,6 +721,9 @@ function log (key, data) {
   var keys = Array.isArray(key) ? key : [key]
   debug(Object.keys(data).reduce((str, key) => str + `${key}=${data[key]} `, '') + `key=${keys.join(',')}`)
   keys.forEach(k => debugEvents.emit(k, data))
+  if (keys[0]) {
+    debugLogFile.append(keys[0] + JSON.stringify(data) + '\n')
+  }
 }
 
 

@@ -261,6 +261,7 @@ export default class DatNetworkActivity {
     const items = [
       {icon: 'link', label: 'Copy URL', click: () => this.onCopyURL(archive) },
       {icon: 'book', label: 'Open in Library', click: () => this.onOpenInLibrary(archive) },
+      {icon: 'bug', label: 'Network debugger', click: () => this.onOpenInSwarmDebugger(archive) },
       archive.userSettings.networked
         ? {icon: 'plug', label: 'Disconnect from the swarm', click: () => this.onToggleNetworked(archive) }
         : {icon: 'exchange', label: 'Connect to the swarm', click: () => this.onToggleNetworked(archive) },
@@ -284,6 +285,10 @@ export default class DatNetworkActivity {
 
   onOpenInLibrary (archive) {
     window.open('beaker://library/' + archive.url)
+  }
+
+  onOpenInSwarmDebugger (archive) {
+    window.open('beaker://swarm-debugger/' + archive.url)    
   }
 
   async onToggleNetworked (archive) {

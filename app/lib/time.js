@@ -1,6 +1,10 @@
 import moment from 'moment'
 import {TimeoutError} from 'beaker-error-constants'
 
+moment.updateLocale('en', {
+  relativeTime : {s: 'seconds'}
+})
+
 export function niceDate (ts, opts) {
   const endOfToday = moment().endOf('day')
   if (typeof ts == 'number' || ts instanceof Date) { ts = moment(ts) }

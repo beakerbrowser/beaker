@@ -80,6 +80,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.clearFileCache = archivesRPC.clearFileCache
   beaker.archives.clearGarbage = archivesRPC.clearGarbage
   beaker.archives.clearDnsCache = archivesRPC.clearDnsCache
+  beaker.archives.getDebugLog = archivesRPC.getDebugLog
   beaker.archives.createDebugStream = () => fromEventStream(archivesRPC.createDebugStream())
   try {
     bindEventStream(archivesRPC.createEventStream(), beaker.archives)

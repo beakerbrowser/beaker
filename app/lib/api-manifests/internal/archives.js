@@ -24,5 +24,6 @@ export default {
 
   // events
   createEventStream: 'readable',
+  getDebugLog: 'promise',
   createDebugStream: 'readable'
 }
