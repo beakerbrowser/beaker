@@ -19,6 +19,7 @@ var activeSearchResult = 0
 var isSearchFocused = false
 var settings
 var hasDismissedOnboarding = localStorage.hasDismissedOnboarding ? true : false
+var hasDismissedBetaInfo = localStorage.hasDismissedBetaInfo ? true : false
 
 update()
 setup()
@@ -193,12 +194,23 @@ function update () {
 
         ${renderPinnedBookmarks()}
 
-        <div class="beta-info">
-          <i class="fa fa-bolt"></i>
-          You're using a beta version of Beaker.
-          <a href="https://www.surveymonkey.com/r/NK9LGQ3">Share feedback</a> or
-          <a href="https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=issue_template_0.8_beta.md">Report an issue</a>.
-        </div>
+        ${!localStorage.hasDismissedBetaInfo
+          ? yo`
+            <div class="beta-info">
+              <i class="fa fa-bolt"></i>
+              <p>
+                You're using a beta version of Beaker.
+                <a href="https://www.surveymonkey.com/r/NK9LGQ3">Share feedback</a>
+                or
+                <a href="https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=issue_template_0.8_beta.md">Report an issue</a>.
+              </p>
+
+              <button class="btn plain" onclick=${() => {localStorage.hasDismissedBetaInfo = true; update();}}>
+                <i class="fa fa-times"></i>
+              </button>
+            </div>`
+          : ''
+        }
 
         ${renderDock()}
 

@@ -27,7 +27,9 @@
   background: #f0f0f0;
 
   .beta-info {
-    max-width: 550px;
+    &:extend(.flex);
+    align-items: center;
+    max-width: 600px;
     margin: auto;
     margin-top: 70px;
     background: shade(cyan, 12%);
@@ -37,13 +39,22 @@
     border-radius: 2px;
     padding: 10px 15px;
 
-    i {
+    > i {
       margin-right: 10px;
       font-size: 16px;
     }
 
+    p {
+      margin: 0;
+    }
+
     a {
       text-decoration: underline;
+    }
+
+    .btn {
+      color: inherit;
+      margin-left: auto;
     }
   }
 
