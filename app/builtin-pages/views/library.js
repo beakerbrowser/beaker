@@ -353,7 +353,7 @@ function renderHeader () {
             <div class="dropdown-items create-new filters subtle-shadow right">
               <div class="dropdown-item" onclick=${() => onCreateSite()}>
                 <div class="label">
-                  <i class="fa fa-square-o"></i>
+                  <i class="fa fa-clone"></i>
                   Empty project
                 </div>
 
