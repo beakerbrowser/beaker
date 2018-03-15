@@ -182,14 +182,10 @@ export default function (e) {
           </p>
 
           <ul>
-            <li>There may not be any peers hosting this ${e.resource} right now.<br /><a class="link" href="beaker://swarm-debugger/${e.validatedURL.slice('dat://'.length)}">Try the swarm debugger</a>.</li>
             <li>Your firewall may be blocking peer-to-peer traffic.<br /><a class="link" href="https://beakerbrowser.com/docs/using-beaker/troubleshooting.html" target="_blank">How to configure your firewall.</a></li>
+            <li>There may not be any peers hosting this ${e.resource} right now.<br /><a class="link" href="beaker://swarm-debugger/${e.validatedURL.slice('dat://'.length)}">Open the network debugger</a>.</li>
             <li>If you think this is a bug, copy the <a class="link" href="beaker://debug-log/" target="_blank">debug log</a> and <a class="link" href="https://github.com/beakerbrowser/beaker/issues" target="_blank">file an issue</a>.</li>
           </ul>
-
-          <p>
-            <a class="link" href="beaker://swarm-debugger">View the network debugger</a>
-          </p>
         `
         break
     }
