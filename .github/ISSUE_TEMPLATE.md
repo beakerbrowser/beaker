@@ -1,2 +1,2 @@
 Operation System:
-Beaker Version:
+Beaker version:
