@@ -196,7 +196,7 @@ function renderRow (row, i) {
       </a>
       <div class="actions">
         <div class="action" onclick=${onClickDelete.bind(window, i)} title="Remove from history">
-          <i class="fa fa-trash-o icon"></i>
+          <i class="fa fa-times icon"></i>
         </div>
       </div>
     </div>`
