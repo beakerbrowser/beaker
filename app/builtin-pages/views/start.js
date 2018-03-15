@@ -30,13 +30,13 @@ async function setup () {
   if (!hasDismissedOnboarding) onboardingPopup.create()
 
   // open update info if appropriate
-  if (!settings.no_welcome_tab) {
-    let latestVersion = await beaker.sitedata.get('beaker://start', 'latest-version')
-    if (+latestVersion && +latestVersion < LATEST_VERSION) {
-      await beaker.sitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
-      window.open(RELEASE_NOTES_URL)
-    }
-  }
+  // if (!settings.no_welcome_tab) {
+  //   let latestVersion = await beaker.sitedata.get('beaker://start', 'latest-version')
+  //   if (+latestVersion && +latestVersion < LATEST_VERSION) {
+  //     await beaker.sitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
+  //     window.open(RELEASE_NOTES_URL)
+  //   }
+  // }
 
   await loadBookmarks()
   update()
