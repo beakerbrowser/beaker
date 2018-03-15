@@ -58,7 +58,8 @@ export async function setup () {
     if (sender.id === firstWindow) {
       // if this is the first window opened (since app start or since all windows closing)
       sender.send('command', 'load-pinned-tabs')
-      BrowserWindow.fromId(sender.id).focus()
+      try { BrowserWindow.fromId(sender.id).focus() }
+      catch (e) {}
     }
   })
 
