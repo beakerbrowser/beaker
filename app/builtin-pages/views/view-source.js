@@ -23,6 +23,7 @@ async function setup () {
       let {archive, path} = target
       try {
         // run automated fallback rules (eg, if a directory look for index.html)
+        let isDirectory
         let st
         let tryStat = async (testPath) => {
           if (st) return
@@ -40,14 +41,21 @@ async function setup () {
         if (!st && !path.endsWith('/')) {
           await tryStat(path + '.html')
         } else if (st.isDirectory()) {
+          isDirectory = true
           st = null
           await tryStat(path + 'index.html')
           await tryStat(path + 'index.md')
         }
 
-        // read the file
-        fileContent = await archive.readFile(path, 'utf8')
-        filePath = path
+        // files listing
+        if (!st && isDirectory) {
+          // show the contents
+          fileContent = (await archive.readdir(path)).join('\n')
+        } else {
+          // read the file
+          fileContent = await archive.readFile(path, 'utf8')
+          filePath = path
+        }
       } catch (e) {
         console.error(e)
         fileContent = e.toString()

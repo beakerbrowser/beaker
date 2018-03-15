@@ -488,27 +488,6 @@ async function handleAutocompleteSearch (results) {
     autocompleteResults = autocompleteResults.concat(results)
   }
 
-  // find the first autocomplete result that:
-  // (a) starts with the input value, ignoring (protocol)://(www.)
-  // (b) is not the DuckDuckGo search, and
-  // (c) has been visited before
-  var foundIndex = autocompleteResults.findIndex(result => {
-    return (
-      result.url.replace(/^.*?:\/\/(?:www\.)?/, '').startsWith(v) &&
-      result.title !== duckduckgoTitle &&
-      result.num_visits
-    )
-  })
-
-  // if we didn't find an autocomplete result that fit the requirements, reset suggestion and selection
-  // also run reset when backspace or delete are pressed
-  if (lastKeyDown === KEYCODE_BACKSPACE || lastKeyDown === KEYCODE_DELETE || foundIndex === -1) {
-    autocompleteCurrentSelection = 0
-  } else {
-    // if we did find one, set the current selection to the found index
-    autocompleteCurrentSelection = foundIndex
-  }
-
   // read bookmark state
   await Promise.all(autocompleteResults.map(async r => {
     let bookmarked = false
