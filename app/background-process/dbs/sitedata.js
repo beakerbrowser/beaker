@@ -2,11 +2,8 @@ import {app} from 'electron'
 import sqlite3 from 'sqlite3'
 import path from 'path'
 import url from 'url'
-import rpc from 'pauls-electron-rpc'
-import manifest from '../../lib/api-manifests/internal/sitedata'
 import { cbPromise } from '../../lib/functions'
 import { setupSqliteDB } from '../../lib/bg/db'
-import { internalOnly } from '../../lib/bg/rpc'
 import datDns from '../networks/dat/dns'
 
 // globals
@@ -22,10 +19,19 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'SiteData')
   db = new sqlite3.Database(dbPath)
-  setupPromise = setupSqliteDB(db, migrations, '[SITEDATA]')
+  setupPromise = setupSqliteDB(db, {migrations}, '[SITEDATA]')
+}
 
-  // wire up RPC
-  rpc.exportAPI('beakerSitedata', manifest, { get, set, getPermissions, getPermission, setPermission }, internalOnly)
+export const WEBAPI = {
+  get,
+  set,
+  getPermissions,
+  getPermission,
+  getAppPermissions,
+  setPermission,
+  setAppPermissions,
+  clearPermission,
+  clearPermissionAllOrigins
 }
 
 export async function set (url, key, value, opts) {
@@ -38,6 +44,17 @@ export async function set (url, key, value, opts) {
         INTO sitedata (origin, key, value)
         VALUES (?, ?, ?)
     `, [origin, key, value], cb)
+  })
+}
+
+export async function clear (url, key) {
+  await setupPromise
+  var origin = await extractOrigin(url)
+  if (!origin) return null
+  return cbPromise(cb => {
+    db.run(`
+      DELETE FROM sitedata WHERE origin = ? AND key = ?
+    `, [origin, key], cb)
   })
 }
 
@@ -90,13 +107,73 @@ export async function getNetworkPermissions (url) {
   })
 }
 
+export async function getAppPermissions (url) {
+  await setupPromise
+  var origin = await extractOrigin(url)
+  if (!origin) return null
+  return cbPromise(cb => {
+    db.all(`SELECT key, value FROM sitedata WHERE origin = ? AND key LIKE 'perm:app:%'`, [origin], (err, rows) => {
+      if (err) return cb(err)
+
+      // convert to app perms object
+      var appPerms = {}
+      if (rows) {
+        rows.forEach(row => {
+          let [api, perm] = row.key.split(':').slice(2)
+          if (!appPerms[api]) appPerms[api] = []
+          appPerms[api].push(perm)
+        })
+      }
+      cb(null, appPerms)
+    })
+  })
+}
+
 export function getPermission (url, key) {
   return get(url, 'perm:' + key)
 }
 
 export function setPermission (url, key, value) {
-  value = !!value
+  value = value ? 1 : 0
   return set(url, 'perm:' + key, value)
+}
+
+export async function setAppPermissions (url, appPerms) {
+  await setupPromise
+  var origin = await extractOrigin(url)
+  if (!origin) return null
+  appPerms = appPerms || {}
+
+  // clear all existing app perms
+  await cbPromise(cb => {
+    db.run(`
+      DELETE FROM sitedata WHERE origin = ? AND key LIKE 'perm:app:%'
+    `, [origin], cb)
+  })
+
+  // set perms given
+  for (let api in appPerms) {
+    if (!Array.isArray(appPerms[api])) {
+      continue
+    }
+    for (let perm of appPerms[api]) {
+      await set(url, `perm:app:${api}:${perm}`, 1)
+    }
+  }
+}
+
+export function clearPermission (url, key) {
+  return clear(url, 'perm:' + key)
+}
+
+export async function clearPermissionAllOrigins (key) {
+  await setupPromise
+  key = 'perm:' + key
+  return cbPromise(cb => {
+    db.run(`
+      DELETE FROM sitedata WHERE key = ?
+    `, [key], cb)
+  })
 }
 
 export async function query (values) {

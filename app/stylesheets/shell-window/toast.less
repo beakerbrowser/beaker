@@ -1,0 +1,31 @@
+@import "../base/colors.less";
+@import "../base/spacing.less";
+
+#toasts {
+}
+
+.toast {
+  position: absolute;
+  z-index: 20000;
+  left: 50%;
+  top: 80px;
+  transform: translateX(-50%);
+  display: inline-block;
+  color: #fff;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  background: rgba(0,0,0,.65);
+  padding: 5px 10px;
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+  transition: opacity .4s ease;
+
+  &.invisible {
+    opacity: 0;
+  }
+}
+
+.page-fullscreen .toast {
+  top: 40px;
+  font-size: 1.2rem;
+}

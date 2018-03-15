@@ -1,9 +1,9 @@
-import {protocol} from 'electron'
+import {app, protocol} from 'electron'
 import {join as joinPaths} from 'path'
 import parseDatUrl from 'parse-dat-url'
 import parseRange from 'range-parser'
 import once from 'once'
-var debug = require('debug')('datserve')
+const debug = require('debug')('dat-serve')
 import pda from 'pauls-dat-api'
 import intoStream from 'into-stream'
 import toZipStream from 'hyperdrive-to-zip-stream'
@@ -12,7 +12,7 @@ import slugify from 'slugify'
 import {ProtocolSetupError} from 'beaker-error-constants'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
-// import * as sitedataDb from '../dbs/sitedata'
+
 import directoryListingPage from '../networks/dat/directory-listing-page'
 import errorPage from '../../lib/error-page'
 import * as mime from '../../lib/mime'
@@ -36,9 +36,9 @@ const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 
 // content security policies
 const DAT_CSP = `
-default-src dat: https: wss: data: blob:;
-script-src dat: https: 'unsafe-eval' 'unsafe-inline' data: blob:;
-style-src dat: https: 'unsafe-inline' data: blob:;
+default-src 'self' dat: https: wss: data: blob:;
+script-src 'self' dat: https: 'unsafe-eval' 'unsafe-inline' data: blob:;
+style-src 'self' dat: https: 'unsafe-inline' data: blob:;
 object-src 'none';
 `.replace(/\n/g, ' ')
 
@@ -47,7 +47,7 @@ object-src 'none';
 
 export function setup () {
   // setup the network & db
-  datLibrary.setup()
+  datLibrary.setup({logfilePath: joinPaths(app.getPath('userData'), 'dat.log')})
 
   // setup the protocol handler
   protocol.registerStreamProtocol('dat', datProtocol, err => {
@@ -56,7 +56,12 @@ export function setup () {
 }
 
 async function datProtocol (request, respond) {
-  var respondError = once((code, status, errorPageInfo) => {
+  respond = once(respond)
+  var respondError = (code, status, errorPageInfo) => {
+    if (errorPageInfo) {
+      errorPageInfo.validatedURL = request.url
+      errorPageInfo.errorCode = code
+    }
     respond({
       statusCode: code,
       headers: {
@@ -66,7 +71,7 @@ async function datProtocol (request, respond) {
       },
       data: intoStream(errorPage(errorPageInfo || (code + ' ' + status)))
     })
-  })
+  }
   var fileReadStream
   var headersSent = false
   var archive
@@ -74,9 +79,13 @@ async function datProtocol (request, respond) {
   // validate request
   var urlp = parseDatUrl(request.url, true)
   if (!urlp.host) {
-    return respondError(404, 'Archive Not Found')
+    return respondError(404, 'Archive Not Found', {
+      title: 'Archive Not Found',
+      errorDescription: 'Invalid URL',
+      errorInfo: `${request.url} is an invalid dat:// URL`
+    })
   }
-  if (request.method !== 'GET') {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
     return respondError(405, 'Method Not Supported')
   }
 
@@ -85,7 +94,10 @@ async function datProtocol (request, respond) {
   try {
     var archiveKey = await datDns.resolveName(urlp.host, {ignoreCachedMiss: true})
   } catch (err) {
-    return respondError(404, 'No DNS record found for ' + urlp.host)
+    return respondError(404, 'No DNS record found for ' + urlp.host, {
+      errorDescription: 'No DNS record found',
+      errorInfo: `No DNS record found for dat://${urlp.host}`
+    })
   }
 
   // setup a timeout
@@ -124,7 +136,7 @@ async function datProtocol (request, respond) {
   var isFolder = filepath.endsWith('/')
 
   // checkout version if needed
-  var archiveFS = archive.stagingFS
+  var archiveFS = archive
   if (urlp.version) {
     let seq = +urlp.version
     if (seq <= 0) {
@@ -151,19 +163,30 @@ async function datProtocol (request, respond) {
     }
     zipname = zipname || 'archive'
 
-    // serve the zip
-    var zs = toZipStream(archive)
-    zs.on('error', err => console.log('Error while producing .zip file', err))
-    return respond({
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/zip',
-        'Content-Disposition': `attachment; filename="${zipname}.zip"`,
-        'Content-Security-Policy': DAT_CSP,
-        'Access-Control-Allow-Origin': '*'
-      },
-      data: zs
-    })
+    let headers = {
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${zipname}.zip"`,
+      'Content-Security-Policy': DAT_CSP,
+      'Access-Control-Allow-Origin': '*'
+    }
+
+    if (request.method === 'HEAD') {
+      // serve the headers
+      return respond({
+        statusCode: 204,
+        headers,
+        data: intoStream('')
+      })
+    } else {
+      // serve the zip
+      var zs = toZipStream(archive)
+      zs.on('error', err => console.log('Error while producing .zip file', err))
+      return respond({
+        statusCode: 200,
+        headers,
+        data: zs
+      })
+    }
   }
 
   // lookup entry
@@ -192,8 +215,14 @@ async function datProtocol (request, respond) {
   if (!isFolder) {
     await tryStat(filepath)
     if (entry && entry.isDirectory()) {
-      filepath = filepath + '/'
-      isFolder = true
+      cleanup()
+      return respond({
+        statusCode: 303,
+        headers: {
+          Location: `dat://${urlp.host}${urlp.pathname || ''}/${urlp.search || ''}`
+        },
+        data: intoStream('')
+      })
     }
   }
   entry = false
@@ -210,15 +239,20 @@ async function datProtocol (request, respond) {
   // handle folder
   if (entry && entry.isDirectory()) {
     cleanup()
-    return respond({
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/html',
-        'Content-Security-Policy': DAT_CSP,
-        'Access-Control-Allow-Origin': '*'
-      },
-      data: intoStream(await directoryListingPage(archiveFS, filepath, manifest && manifest.web_root))
-    })
+    let headers = {
+      'Content-Type': 'text/html',
+      'Content-Security-Policy': DAT_CSP,
+      'Access-Control-Allow-Origin': '*'
+    }
+    if (request.method === 'HEAD') {
+      return respond({statusCode: 204, headers, data: intoStream('')})
+    } else {
+      return respond({
+        statusCode: 200,
+        headers,
+        data: intoStream(await directoryListingPage(archiveFS, filepath, manifest && manifest.web_root))
+      })
+    }
   }
 
   // handle not found
@@ -226,13 +260,17 @@ async function datProtocol (request, respond) {
     debug('Entry not found:', urlp.path)
 
     // check for a fallback page
-    if (manifest) {
+    if (manifest && manifest.fallback_page) {
       await tryStat(manifest.fallback_page)
     }
 
     if (!entry) {
       cleanup()
-      return respondError(404, 'File Not Found')
+      return respondError(404, 'File Not Found', {
+        errorDescription: 'File Not Found',
+        errorInfo: `Beaker could not find the file ${urlp.path}`,
+        title: 'File Not Found'
+      })
     }
   }
 
@@ -288,11 +326,13 @@ async function datProtocol (request, respond) {
         'Cache-Control': 'public, max-age: 60'
         // ETag
       })
-      respond({
-        statusCode,
-        headers,
-        data: dataStream
-      })
+
+      if (request.method === 'HEAD') {
+        dataStream.destroy() // stop reading data
+        respond({statusCode: 204, headers, data: intoStream('')})
+      } else {
+        respond({statusCode, headers, data: dataStream})
+      }
     }))
 
   // handle empty files

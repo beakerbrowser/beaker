@@ -5,13 +5,13 @@ To avoid that, we listen to the window webContents' 'before-input-event' and han
 */
 
 import _flattenDeep from 'lodash.flattendeep'
-import buildWindowMenu from './window-menu'
+import {buildWindowMenu} from './window-menu'
 
 const KEYBINDINGS = extractKeybindings(buildWindowMenu())
 
-// recurse the window menu and extract all 'accelerator' values
+// recurse the window menu and extract all 'accelerator' values with reserved=true
 function extractKeybindings (menuNode) {
-  if (menuNode.accelerator && menuNode.click) {
+  if (menuNode.accelerator && menuNode.click && menuNode.reserved) {
     return {
       binding: convertAcceleratorToBinding(menuNode.accelerator),
       cmd: menuNode.click
@@ -29,17 +29,17 @@ function extractKeybindings (menuNode) {
 function convertAcceleratorToBinding (accel) {
   var binding = {}
   accel.split('+').forEach(part => {
-    switch (part) {
-      case 'Command':
-      case 'Cmd':
-      case 'CmdOrCtrl':
-      case 'Ctrl':
+    switch (part.toLowerCase()) {
+      case 'command':
+      case 'cmd':
+      case 'cmdorctrl':
+      case 'ctrl':
         binding.cmdOrCtrl = true
         break
-      case 'Alt':
+      case 'alt':
         binding.alt = true
         break
-      case 'Shift':
+      case 'shift':
         binding.shift = true
         break
       default:

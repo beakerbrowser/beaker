@@ -2,13 +2,13 @@ import { ipcRenderer } from 'electron'
 import * as pages from './pages'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
-import * as sidebar from './ui/sidebar'
 import permsPrompt from './ui/prompts/permission'
 
 export function setup () {
   ipcRenderer.on('command', function (event, type, arg1, arg2, arg3, arg4) {
     var page = pages.getActive()
     switch (type) {
+      case 'initialize': return pages.initializeFromSnapshot(arg1)
       case 'file:new-tab':
         page = pages.create(arg1)
         pages.setActive(page)
@@ -25,12 +25,13 @@ export function setup () {
       case 'view:zoom-reset': return zoom.zoomReset(page)
       case 'view:toggle-dev-tools': return page.toggleDevTools()
       case 'view:toggle-javascript-console': return page.toggleDevTools(true)
-      case 'view:open-sidebar': return sidebar.open()
-      case 'view:toggle-sidebar': return sidebar.toggle()
+      case 'view:toggle-live-reloading': return page.toggleLiveReloading()
       case 'history:back': return page.goBackAsync()
       case 'history:forward': return page.goForwardAsync()
+      case 'bookmark:create': return navbar.bookmarkAndOpenMenu()
       case 'window:next-tab': return pages.changeActiveBy(1)
       case 'window:prev-tab': return pages.changeActiveBy(-1)
+      case 'window:last-tab': return pages.changeActiveToLast()
       case 'set-tab': return pages.changeActiveTo(arg1)
       case 'load-pinned-tabs': return pages.loadPinnedFromDB()
       case 'perms:prompt': return permsPrompt(arg1, arg2, arg3, arg4)

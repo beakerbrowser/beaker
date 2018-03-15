@@ -1,3 +1,7 @@
+/* globals window */
+
+const URL = typeof window === 'undefined' ? require('url').URL : window.URL
+
 export function getPermId (permissionToken) {
   return permissionToken.split(':')[0]
 }
@@ -34,4 +38,16 @@ export function shortenHash (str, n = 6) {
 
 export function makeSafe (str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '')
+}
+
+export function getHostname (str) {
+  try {
+    const u = new URL(str)
+    if (u.protocol === 'dat:' && u.hostname.length === 64) {
+      return 'dat://' + shortenHash(u.hostname)
+    }
+    return u.hostname
+  } catch (e) {
+    return str
+  }
 }

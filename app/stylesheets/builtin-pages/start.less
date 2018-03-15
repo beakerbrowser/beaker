@@ -1,5 +1,3 @@
-@import "../photon.min.less";
-
 @import "../base/reset.less";
 @import "../base/colors";
 @import "../base/spacing";
@@ -9,18 +7,166 @@
 @import "../components/link";
 @import "../components/messages";
 @import "./components/links-list";
+@import "./components/help-tips";
+@import "./components/onboarding-popup";
 
-html {
+.window-content.start {
   overflow: auto;
   height: 100vh;
-  background-image: url("beaker://start/background-image");
-  background-size: cover;
-  background-position: center;
-}
-body {
-  height: auto;
+  padding: 0;
+  position: initial;
+  // background-image: url("beaker://start/background-image");
+  // background-size: cover;
+  // background-position: center;
 }
 
+.builtin-wrapper.start-wrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+  background: #f0f0f0;
+
+  .beta-info {
+    &:extend(.flex);
+    align-items: center;
+    max-width: 600px;
+    margin: auto;
+    margin-top: 70px;
+    background: #8257cf;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 600;
+    border-radius: 2px;
+    padding: 7px 15px;
+
+    > i {
+      margin-right: 10px;
+      font-size: 16px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    a {
+      text-decoration: underline;
+    }
+
+    .btn {
+      color: inherit;
+      margin-left: auto;
+    }
+  }
+
+  .btn.help {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 15px;
+
+    &:hover {
+      color: @blue;
+    }
+  }
+
+  .subtitle-heading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    text-align: center;
+
+    .btn {
+      color: rgba(0,0,0,.5);
+    }
+  }
+
+  .search-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 100px auto 70px auto;
+    padding: 15px;
+
+    input.search {
+      width: ~"calc(100% - 50px)";
+      height: 40px;
+      padding-left: 47px;
+      border-radius: 0;
+      border-radius: 4px 0 0 4px;
+      border-right: 0;
+
+      &:focus {
+        box-shadow: none;
+      }
+    }
+
+    i.fa-search {
+      font-size: 16px;
+      left: 17px;
+      top: 11px;
+      color: rgba(0,0,0,0.4);
+    }
+
+    .btn.search-btn {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 50px;
+      height: 40px;
+      border-radius: 0 4px 4px 0;
+      font-size: 20px;
+      line-height: 16px;
+
+      i.fa-arrow-right {
+        -webkit-text-stroke: 2.25px @blue;
+      }
+    }
+
+    .search-results {
+      top: 41px;
+    }
+
+    .search-result {
+
+      .icon {
+        &.fa-search {
+          position: initial;
+        }
+      }
+    }
+  }
+
+  .dock-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    background: #f0f0f0;
+  }
+
+  .dock {
+    padding: 30px 15px;
+
+    .dock-item {
+      display: inline-block;
+      width: auto;
+      cursor: pointer;
+      margin-bottom: 0;
+      padding: 3px 7px;
+
+      &:not(:last-child) {
+        margin-right: 25px;
+      }
+
+      &:hover {
+        color: @color-text;
+        background: rgba(0,0,0,.075);
+        border-radius: 2px;
+      }
+    }
+  }
+}
 
 .beaker-welcome {
   width: 410px;
@@ -61,354 +207,124 @@ body {
   }
 }
 
-main {
-  width: 670px;
-  margin: 0 auto;
+.pinned-bookmarks-container {
+  width: 460px;
+  margin: auto;
 
-  // styles for if background image set
-  &.light,
-  &.dark {
-
-    .bookmarks-container {
-      padding: 5px 20px;
-      width: 710px;
-      border-radius: 3px;
-
-    }
-
-    .bookmark.ll-row {
-      border-radius: 2px;
-
-      &:hover {
-        background: fadeout(#fff, 75%);
-      }
-    }
+  @media (min-width: 640px) {
+    width: 580px;
   }
 
-  // light theme
-  &.light {
-
-    .pinned-bookmark .title {
-      font-weight: bold;
-     }
-
-    .shelf.closed {
-      background: fadeout(#fff, 50%);
-    }
-
-    .bookmarks-container {
-      background: fadeout(#fff, 50%);
-    }
+  @media (min-width: 740px) {
+    width: 700px;
   }
 
-  // dark theme
-  &.dark {
-
-    .bookmarks-container, .shelf.closed {
-      background: fadeout(#000, 40%);
-    }
-
-    .shelf.closed {
-      border: 1px solid fadeout(#fff, 80%);
-      color: #fff;
-      overflow:hidden;
-
-      &:hover {
-        background: fadeout(#000, 60%);
-      }
-    }
-
-    header,
-    .add-pin-toggle,
-    .pinned-bookmark .title,
-    .bookmark .link,
-    .bookmark.ll-row .url {
-      color: #fff;
-      -webkit-font-smoothing: antialiased;
-      font-weight: bold;
-    }
-  }
-}
-
-header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  &:extend(.flex);
-  flex-wrap: nowrap;
-  padding: @padding-component--tight @padding-component;
-  font-size: 14px;
-
-  a {
-    cursor: pointer;
-
-    &:hover {
-      &:extend(.link:hover);
-    }
-
-    i {
-      cursor: pointer;
-    }
+  @media (min-width: 900px) {
+    width: 830px;
   }
 
-  .actions {
-
-    a {
-      margin-right: @padding-component--tight;
-    }
-
-    i {
-      margin-right: @margin-icon;
-    }
+  @media (min-width: 1100px) {
+    width: 950px;
   }
-
-  .profile {
-
-    .network {
-    }
-
-    i {
-      margin: 0 @margin-icon;
-    }
-  }
-}
-
-.bookmarks-container {
-  margin-top: 150px;
 }
 
 .pinned-bookmarks {
-  &:extend(.flex);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-gap: 20px;
   width: 100%;
+
+  @media (min-width: 640px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  }
+
+  @media (min-width: 740px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  }
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  }
+
+  @media (min-width: 1100px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  }
+
+  .add-pinned-btn {
+
+    .tooltip {
+      top: 25px;
+    }
+  }
 }
 
 .pinned-bookmark {
+  width: 100px;
+  height: 100px;
+  background: #fff;
   text-align: center;
-  width: 118px;
-  height: 95px;
-  margin: 0 0 @padding-component @padding-component;
+  font-size: .8rem;
+  transition: box-shadow .05s ease;
 
-  &:nth-of-type(5n+1) {
-    margin-left: 0;
+  * {
+    cursor: pointer;
   }
 
-  &:not(.nolink) {
-    * {
-      cursor: pointer;
-    }
+  &:hover {
+    box-shadow: 0 0 0 3px #ddd;
 
-    &:hover {
-      &:extend(.link:hover);
-    }
-  }
-
-  .title {
-    &:extend(.overflow-ellipsis);
-    height: 25px;
-    line-height: 25px;
-    vertical-align: middle;
-    color: fadeout(@color-text, 5%);
-    padding: 0 5px;
-    font-size: 11px;
-  }
-
-  .favicon-container {
-    position: relative;
-    height: 70px;
-    border-radius: 2px;
-
-    .unpin {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: #fff;
-      cursor: pointer;
-      border: 1px solid @border-menu;
-      width: 22px;
-      height: 20px;
-      line-height: 18px;
-      border-radius: 2px;
-
-      &:hover {
-        background: @background-highlight-grayed;
-      }
-
-      * {
-        cursor: pointer;
-      }
+    button.close-btn {
+      opacity: 1;
     }
   }
 
   .favicon {
     width: 32px;
-    margin-top: 20px;
-  }
-}
-
-.bookmarks-list {
-  margin: 0;
-  padding: 0;
-}
-
-.bookmarks-container .bookmark {
-  padding: 2px;
-  height: auto;
-  white-space: nowrap;
-
-  * {
-    vertical-align: middle;
-    cursor: pointer;
-  }
-
-  .btn.pin {
-    margin-right: 10px;
-
-    i {
-      margin-right: 2px;
-    }
-  }
-
-  .favicon {
-    height: 15px;
-    width: 15px;
-    margin-right: @margin-icon;
-  }
-
-  .link {
-    flex: 1;
-    color: @color-text;
-
-    &:hover {
-      text-decoration: none;
-
-      .title {
-        text-decoration: underline;
-      }
-    }
-  }
-}
-
-.add-pin-toggle {
-  cursor: pointer;
-
-  &:hover {
-    &:extend(.link:hover);
-  }
-
-  i {
-    margin-right: @margin-icon;
-  }
-}
-
-.shelf {
-  position: fixed;
-  right: 0;
-  z-index: 10;
-  overflow-y: auto;
-
-  &.closed {
-    top: 50px;
-    height: 50px;
-    width: 50px;
-    color: @color-button;
-    background: @background-button--gray;
-    text-align: center;
-    line-height: 50px;
-    font-size: 20px;
-    cursor: pointer;
-
-    i {
-      cursor: pointer;
-    }
-
-    &:hover {
-      background: @background-button--gray--hover;
-    }
-  }
-
-  &.open {
-    top: 0;
-    height: 100vh;
-    width: 300px;
-    background: #fff;
-    border-left: 1px solid @border-button;
-  }
-
-  .section-header {
-    position: relative;
-    padding: 10px 0.7rem 3px;
-
-    h3 {
-      font-size: 12px;
-      text-transform: uppercase;
-      font-weight: 600;
-    }
-  }
-
-  hr {
-    margin: 0;
-  }
-
-  .list-item {
-    &:extend(.flex);
     height: 32px;
-    padding: 5px 0.7rem;
-
-    &:hover {
-      background: @background-menu;
-    }
-
-    .title {
-      display: block;
-      max-width: 250px;
-      &:extend(.overflow-ellipsis);
-      cursor: pointer;
-
-      * {
-        cursor: pointer;
-      }
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
+    margin-top: 25px;
   }
 
-  .bookmark-link {
+  .title {
     &:extend(.overflow-ellipsis);
+    max-width: 80px;
+    margin: auto;
+    margin-top: 10px;
+    color: fadeout(@color-text, 10%);
+    font-size: .675rem;
 
-    .favicon {
-      margin-right: 8px;
+    /*
+    TODO(bgimg) restore with background images -prf
+    color: #fff;
+    text-shadow: 0 0 4px fadeout(black, 50%);
+    -webkit-font-smoothing: antialiased;
+    font-weight: 600;
+    */
+  }
+}
+
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+
+  &__info {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+
+    a {
+      color: #31708f;
+      text-decoration: underline;
     }
   }
-}
 
-.shelf .archives-list {
-  .no-archives {
-    padding: 5px .7rem;
-    margin: 0;
-  }
-
-  .archive {
-    .peers {
-      color: @color-text--light;
-      margin-left: auto;
-    }
+  &__release-notes {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
   }
 }
 
-.shelf .bookmarks-list {
-  list-style: none;
-
-  .no-bookmarks {
-    padding: 5px .7rem;
-    margin: 0;
-  }
-
-  .favicon {
-    margin-right: @margin-icon;
-    height: 16px;
-    margin-top: 2px;
-  }
-}

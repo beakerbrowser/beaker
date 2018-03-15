@@ -2,16 +2,15 @@
 @import "../base/typography";
 @import "../base/colors";
 
-
 #toolbar {
   &:extend(.system-font);
-  height: 75px;
-  background: #e5e5e5;
+  height: 74px;
+  background: #e8e8e8;
 
   .toolbar-group {
     padding: 0 4px;
     display: flex;
-    height: 28px;
+    height: 29px;
   }
 }
 
@@ -20,6 +19,14 @@ body.darwin .chrome-tabs-shell {
   // draggable region for OSX and windows
   display: block;
   -webkit-app-region: drag;
+}
+
+body.page-fullscreen #toolbar {
+  display: none;
+}
+
+body.fullscreen #toolbar {
+  background: #e0e0e0;
 }
 
 .download-started-animation {
@@ -57,3 +64,4 @@ body.darwin .chrome-tabs-shell {
     }
   }
 }
+

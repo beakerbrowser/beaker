@@ -49,12 +49,49 @@ export async function addVisit (profileId, {url, title}) {
   }
 }
 
-export async function getVisitHistory (profileId, { offset, limit }) {
+export async function getVisitHistory (profileId, {search, offset, limit, before, after}) {
   var release = await lock('history-db')
   try {
-    offset = offset || 0
-    limit = limit || 50
-    return await db.all('SELECT * FROM visits WHERE profileId = ? ORDER BY ts DESC LIMIT ? OFFSET ?', [profileId, limit, offset])
+    const params = [
+      profileId,
+      limit || 50,
+      offset || 0
+    ]
+    if (search) {
+      // prep search terms
+      params.push(
+        search
+          .toLowerCase() // all lowercase. (uppercase is interpretted as a directive by sqlite.)
+          .replace(/[:^*]/g, '') + // strip symbols that sqlite interprets.
+          '*' // allow partial matches
+      )
+      return await db.all(`
+        SELECT visits.*
+          FROM visit_fts
+            LEFT JOIN visits ON visits.url = visit_fts.url
+          WHERE visits.profileId = ?1 AND visit_fts MATCH ?4
+          ORDER BY visits.ts DESC
+          LIMIT ?2 OFFSET ?3
+      `, params)
+    }
+    let timeWhere = ''
+    if (before && after) {
+      timeWhere += 'AND ts <= ?4 AND ts >= ?5'
+      params.push(before)
+      params.push(after)
+    } else if (before) {
+      timeWhere += 'AND ts <= ?4'
+      params.push(before)
+    } else if (after) {
+      timeWhere += 'AND ts >= ?4'
+      params.push(after)
+    }
+    return await db.all(`
+      SELECT * FROM visits
+        WHERE profileId = ?1 ${timeWhere}
+        ORDER BY ts DESC
+        LIMIT ?2 OFFSET ?3
+    `, params)
   } finally {
     release()
   }

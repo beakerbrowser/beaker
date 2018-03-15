@@ -1,13 +1,11 @@
-/* globals beakerBrowser Image */
+/* globals beaker confirm */
 
-import ColorThief from '../../lib/fg/color-thief'
+import yo from 'yo-yo'
+import bytes from 'bytes'
 import * as toast from '../com/toast'
-
-const yo = require('yo-yo')
-const co = require('co')
-const emitStream = require('emit-stream')
-const bytes = require('bytes')
-const colorThief = new ColorThief()
+import {niceDate} from '../../lib/time'
+import DatNetworkActivity from '../com/dat-network-activity'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
 // =
@@ -16,142 +14,339 @@ var settings
 var browserInfo
 var browserEvents
 var defaultProtocolSettings
+var activeView = 'general'
+var datNetworkActivity = new DatNetworkActivity()
 
 // main
 // =
 
-co(function * () {
+setup()
+async function setup () {
+  renderToPage()
+
   // wire up events
-  browserEvents = emitStream(beakerBrowser.eventsStream())
-  browserEvents.on('updater-state-changed', onUpdaterStateChanged)
-  browserEvents.on('updater-error', onUpdaterError)
+  browserEvents = beaker.browser.createEventsStream()
+  browserEvents.addEventListener('updater-state-changed', onUpdaterStateChanged)
+  browserEvents.addEventListener('updater-error', onUpdaterError)
+  window.addEventListener('popstate', onPopState)
 
   // fetch data
-  browserInfo = yield beakerBrowser.getInfo()
-  settings = yield beakerBrowser.getSettings()
-  defaultProtocolSettings = yield beakerBrowser.getDefaultProtocolSettings()
+  browserInfo = await beaker.browser.getInfo()
+  settings = await beaker.browser.getSettings()
+  defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
+  // applications = await beaker.apps.list(0) TODO(apps) restore when we bring back apps -prf
 
-  // render
-  render()
-})
+  // set the view and render
+  setViewFromHash()
+}
 
 // rendering
 // =
 
-function render () {
+function renderToPage () {
   // only render if this page is active
-  if (!browserInfo) { return }
+  if (!browserInfo) {
+    yo.update(document.querySelector('.settings-wrapper'), yo`
+      <div class="settings-wrapper builtin-wrapper" id="el-content">
+        <div class="settings-wrapper builtin-wrapper"></div>
+      </div>`
+    )
+    return
+  }
 
-  yo.update(document.querySelector('#el-content'), yo`<div class="pane" id="el-content">
-    <div class="settings">
-      <h1>Settings</h1>
-      <h2 class="ll-heading">Auto-updater</h2>
+  yo.update(document.querySelector('.settings-wrapper'), yo`
+    <div id="el-content" class="settings-wrapper builtin-wrapper">
+      ${renderHeader()}
+
+      <div class="builtin-main">
+        ${renderSidebar()}
+        ${renderView()}
+      </div>
+    </div>`
+  )
+}
+
+function renderHeader () {
+  return yo`
+    <div class="builtin-header fixed">
+      ${renderBuiltinPagesNav('Settings')}
+    </div>`
+}
+
+function renderSidebar () {
+  return yo`
+    <div class="builtin-sidebar">
+      <div class="nav-item ${activeView === 'general' ? 'active' : ''}" onclick=${() => onUpdateView('general')}>
+        <i class="fa fa-angle-right"></i>
+        General
+      </div>
+
+      <div class="nav-item ${activeView === 'dat-network-activity' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network-activity')}>
+        <i class="fa fa-angle-right"></i>
+        Dat network activity
+      </div>
+
+      <div class="nav-item ${activeView === 'information' ? 'active' : ''}" onclick=${() => onUpdateView('information')}>
+        <i class="fa fa-angle-right"></i>
+        Information & Help
+      </div>
+    </div>`
+}
+
+function renderView () {
+  switch (activeView) {
+    case 'general':
+      return renderGeneral()
+    case 'dat-network-activity':
+      return renderDatNetworkActivity()
+    case 'information':
+      return renderInformation()
+  }
+}
+
+function renderGeneral () {
+  return yo`
+    <div class="view">
       ${renderAutoUpdater()}
-
-      <h2 class="ll-heading">Protocol settings</h2>
+      ${renderWorkspacePathSettings()}
       ${renderProtocolSettings()}
-
-      <h2 class="ll-heading">Start page settings</h2>
-      ${renderStartPageSettings()}
-
-      <h2 class="ll-heading">Cache</h2>
-      ${renderCacheSettings()}
-
-      <h2 class="ll-heading">Beaker information</h2>
-      <ul class="settings-section">
-        <li>Version: ${browserInfo.version} <small>Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</small></li>
-        <li>User data: ${browserInfo.paths.userData}</li>
-      </ul>
-
-      <h2 class="ll-heading">Help</h2>
-      ${renderHelp()}
+      ${renderOnStartupSettings()}
     </div>
-  </div>`)
+  `
+}
+
+function renderWorkspacePathSettings () {
+  return yo`
+    <div class="section">
+      <h2 id="workspace-path" class="subtitle-heading">Default workspace directory</h2>
+
+      <p>
+        Choose the default directory where your projects will be saved.
+      </p>
+
+      <p>
+        <code>${settings.workspace_default_path}</code>
+        <button class="btn" onclick=${onUpdateDefaultWorkspaceDirectory}>
+          Choose directory
+        </button>
+      </p>
+    </div>
+  `
+}
+
+function renderOnStartupSettings () {
+  return yo`
+    <div class="section on-startup">
+      <h2 id="on-startup" class="subtitle-heading">Startup settings</h2>
+
+      <p>
+        When Beaker starts
+      </p>
+
+      <div class="radio-group">
+        <input type="radio" id="customStartPage1" name="custom-start-page"
+               value="blank"
+               checked=${settings.custom_start_page === "blank"}
+               onchange=${onCustomStartPageChange} />
+        <label for="customStartPage1">
+          Show a new tab
+        </label>
+
+        <input type="radio" id="customStartPage2" name="custom-start-page"
+               value="previous"
+               checked=${settings.custom_start_page === "previous"}
+               onchange=${onCustomStartPageChange} />
+        <label for="customStartPage2">
+          Show tabs from your last session
+        </label>
+      </div>
+    </div>
+  `
+}
+
+function renderDatNetworkActivity () {
+  return yo`
+    <div class="view">
+      <div class="section">
+        <h2 id="dat-network-activity" class="subtitle-heading">Dat Network Activity</h2>
+        ${datNetworkActivity.render()}
+      </div>
+    </div>
+  `
+}
+
+function renderInformation () {
+  return yo`
+    <div class="view">
+      <div class="section">
+        <h2 id="information" class="subtitle-heading">About Beaker</h2>
+        <ul>
+          <li>Version: ${browserInfo.version} Electron: ${browserInfo.electronVersion} - Chromium: ${browserInfo.chromiumVersion} - Node: ${browserInfo.nodeVersion}</li>
+          <li>User data: ${browserInfo.paths.userData}</li>
+        </ul>
+      </div>
+      <div class="section">
+        <h2 class="subtitle-heading">Get help</h2>
+        <ul>
+          <li><a href="https://beakerbrowser.com/docs/using-beaker">Take a tour of Beaker</a></li>
+          <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
+          <li><a href="https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=ISSUE_TEMPLATE_0.8_BETA.md">Report an issue</a></li>
+        </ul>
+      </div>
+    </div>
+  `
 }
 
 function renderProtocolSettings () {
-  function register (protocol) {
-    return () => {
-      // update and optimistically render
-      beakerBrowser.setAsDefaultProtocolClient(protocol)
-      defaultProtocolSettings[protocol] = true
-      render()
-    }
-  }
-  var registered = Object.keys(defaultProtocolSettings).filter(k => defaultProtocolSettings[k])
-  var unregistered = Object.keys(defaultProtocolSettings).filter(k => !defaultProtocolSettings[k])
 
-  return yo`<div class="settings-section protocols">
-      ${registered.length
-        ? yo`<div>Beaker is the default browser for <strong>${registered.join(', ')}</strong>.</div>`
-        : ''}
-      ${unregistered.map(proto => yo`
-        <div>
-          <strong>${proto}</strong>
-          <a onclick=${register(proto)}>
-            Make default
-            <i class="fa fa-share"></i>
-          </a>
-        </div>`)}
-      </div>`
+  function toggleRegistered (protocol) {
+    // update and optimistically render
+    defaultProtocolSettings[protocol] = !defaultProtocolSettings[protocol]
+
+    if (defaultProtocolSettings[protocol]) {
+      beaker.browser.setAsDefaultProtocolClient(protocol)
+    } else {
+      beaker.browser.removeAsDefaultProtocolClient(protocol)
+    }
+    renderToPage()
+  }
+
+  return yo`
+    <div class="section default-browser">
+      <h2 id="protocol" class="subtitle-heading">Default browser settings</h2>
+
+      <p>
+        Set Beaker as the default browser for:
+      </p>
+
+      ${Object.keys(defaultProtocolSettings).map(proto => yo`
+        <label class="toggle">
+          <input checked=${defaultProtocolSettings[proto] ? 'true' : 'false'} type="checkbox" onchange=${() => toggleRegistered(proto)} />
+
+          <div class="switch"></div>
+          <span class="text">
+            ${proto}://
+          </span>
+        </label>`
+      )}
+    </div>`
 }
 
 function renderAutoUpdater () {
   if (!browserInfo.updater.isBrowserUpdatesSupported) {
-    return yo`<div class="settings-section">
-      <div>Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
-      You will need to build new versions of Beaker from source.</div>
-    </div>`
+    return yo`
+      <div class="section">
+        <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
+
+        <div class="message info">
+          Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
+        </div>
+
+        <p>
+          To get the most recent version of Beaker, you${"'"}ll need to <a href="https://github.com/beakerbrowser/beaker">
+          build Beaker from source</a>.
+        </p>
+      </div>`
   }
 
   switch (browserInfo.updater.state) {
     default:
     case 'idle':
-      return yo`<div class="settings-section">
-        <button class="btn btn-default" onclick=${onClickCheckUpdates}>Check for updates</button>
-        <span class="version-info">
-          ${browserInfo.updater.error
-            ? yo`<span><span class="icon icon-cancel"></span> ${browserInfo.updater.error}</span>`
-            : yo`<span>
-              <span class="icon icon-check"></span>
-              <strong>Beaker v${browserInfo.version}</strong> is up-to-date
-            </span>`
-          }
-          ${renderAutoUpdateCheckbox()}
-        </span>
-        <span class="prereleases">
-          [ Advanced: <a href="#" onclick=${onClickCheckPrereleases}>Check for prereleases</a> ]
-        </span>
+      return yo`
+      <div class="section">
+        <h2 id="auto-updater" class="subtitle-heading">
+          Auto updater
+        </h2>
+
+        ${browserInfo.updater.error
+          ? yo`
+            <div class="message error">
+              <i class="fa fa-exclamation-triangle"></i>
+              ${browserInfo.updater.error}
+            </div>`
+          : ''
+        }
+
+        <div class="auto-updater">
+          <p>
+            <button class="btn btn-default" onclick=${onClickCheckUpdates}>Check for updates</button>
+
+            <span class="up-to-date">
+              <span class="fa fa-check"></span>
+              Beaker v${browserInfo.version} is up-to-date
+            </span>
+          </p>
+
+          <p>
+            ${renderAutoUpdateCheckbox()}
+          </p>
+
+          <div class="prereleases">
+            <h3>Advanced</h3>
+            <button class="btn" onclick=${onClickCheckPrereleases}>
+              Check for beta releases
+            </button>
+          </div>
+        </div>
       </div>`
 
     case 'checking':
-      return yo`<div class="settings-section">
-        <button class="btn" disabled>Checking for updates</button>
-        <span class="version-info">
-          <div class="spinner"></div>
-          Checking for updates to Beaker...
-          ${renderAutoUpdateCheckbox()}
-        </span>
+      return yo`
+      <div class="section">
+        <h2 id="auto-updater" class="subtitle-heading">
+          Auto updater
+        </h2>
+
+        <div class="auto-updater">
+          <p>
+            <button class="btn" disabled>Checking for updates</button>
+            <span class="version-info">
+              <div class="spinner"></div>
+              Checking for updates...
+            </span>
+          </p>
+
+          <p>
+            ${renderAutoUpdateCheckbox()}
+          </p>
+
+          <div class="prereleases">
+            <h3>Advanced</h3>
+            <button class="btn" onclick=${onClickCheckPrereleases}>
+              Check for beta releases
+            </button>
+          </div>
+        </div>
       </div>`
 
     case 'downloading':
-      return yo`<div class="settings-section">
-        <button class="btn" disabled>Updating</button>
-        <span class="version-info">
-          <div class="spinner"></div>
-          Downloading the latest version of Beaker...
+      return yo`
+      <div class="section">
+        <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
+
+        <div class="auto-updater">
+          <button class="btn" disabled>Updating</button>
+          <span class="version-info">
+            <div class="spinner"></div>
+            Downloading the latest version of Beaker...
+          </span>
           ${renderAutoUpdateCheckbox()}
-        </span>
+        </div>
       </div>`
 
     case 'downloaded':
-      return yo`<div class="settings-section">
-        <button class="btn" onclick=${onClickRestart}>Restart now</button>
-        <span class="version-info">
-          <span class="icon icon-up-circled"></span>
-          <strong>New version available.</strong> Restart Beaker to install.
+      return yo`
+      <div class="section">
+        <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
+
+        <div class="auto-updater">
+          <button class="btn" onclick=${onClickRestart}>Restart now</button>
+          <span class="version-info">
+            <i class="fa fa-arrow-circle-o-up"></i>
+            <strong>New version available.</strong> Restart Beaker to install.
+          </span>
           ${renderAutoUpdateCheckbox()}
-        </span>
+        </div>
       </div>`
   }
 }
@@ -162,77 +357,54 @@ function renderAutoUpdateCheckbox () {
   </label>`
 }
 
-function renderStartPageSettings () {
-  return yo`
-  <div class="settings-section start-page">
-    <label for="start-background-image">
-      Upload a background image for beaker://start
-      <input onchange=${onUpdateStartPageBackgroundImage} name="start-background-image" type="file" accept="image/*"/>
-    </label>
-    ${settings.start_page_background_image
-      ? yo`
-        <div>
-          <button class="btn transparent" onclick=${onUpdateStartPageBackgroundImage}>
-            <i class="fa fa-close"></i>
-            Remove
-          </button>
-          <img class="bg-preview" src=${'beaker://start/background-image?cache-buster=' + Date.now()} />
-          <label for="start-page-theme">
-            Start page theme
-            <input type="radio" value="light" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === 'light'}/>Light
-            <input type="radio" value="dark" onclick=${onUpdateStartPageTheme} checked=${settings.start_page_background_image === 'dark'}/>Dark
-          </label>
-        </div>`
-      : ''
-    }
-    </div>
-  `
-}
-
-function renderCacheSettings () {
-  return yo`
-    <div class="settings-section">
-      <button class="btn" onclick=${onClearDatCache}>Clear Dat cache</button>
-    </div>
-  `
-}
-
-function renderHelp () {
-  return yo`
-    <ul class="settings-section help">
-      <li><a href="https://beakerbrowser.com/docs/using-beaker">Take a tour of Beaker</a></li>
-      <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
-      <li><a href="https://github.com/beakerbrowser/beaker/issues">Report an issue</a></li>
-    </ul>
-  `
-}
-
 // event handlers
 // =
 
+function onUpdateView (view) {
+  activeView = view
+  window.location.hash = view
+  renderToPage()
+}
+
+function onCustomStartPageChange (e) {
+  settings.custom_start_page = e.target.value
+  beaker.browser.setSetting('custom_start_page', settings.custom_start_page)
+}
+
 function onClickCheckUpdates () {
-  beakerBrowser.checkForUpdates()
+  // trigger check
+  beaker.browser.checkForUpdates()
 }
 
 function onClickCheckPrereleases (e) {
   e.preventDefault()
-  beakerBrowser.checkForUpdates({prerelease: true})
+  beaker.browser.checkForUpdates({prerelease: true})
 }
 
 function onToggleAutoUpdate () {
   settings.auto_update_enabled = isAutoUpdateEnabled() ? 0 : 1
-  render()
-  beakerBrowser.setSetting('auto_update_enabled', settings.auto_update_enabled)
+  renderToPage()
+  beaker.browser.setSetting('auto_update_enabled', settings.auto_update_enabled)
+}
+
+async function onUpdateDefaultWorkspaceDirectory () {
+  let path = await beaker.browser.showOpenDialog({
+    title: 'Select a folder',
+    buttonLabel: 'Select folder',
+    properties: ['openDirectory']
+  })
+
+  if (path) {
+    path = path[0]
+    settings.workspace_default_path = path
+    beaker.browser.setSetting('workspace_default_path', settings.workspace_default_path)
+    renderToPage()
+    toast.create('Workspace directory updated')
+  }
 }
 
 function onClickRestart () {
-  beakerBrowser.restartBrowser()
-}
-
-async function onClearDatCache () {
-  const results = await beaker.archives.clearGarbage()
-  console.debug('Dat garbage cleared', results)
-  toast.create(`Dat cache cleared. (${bytes(results.totalBytes)} freed from ${results.totalArchives} archives.)`)
+  beaker.browser.restartBrowser()
 }
 
 function onUpdaterStateChanged (state) {
@@ -240,73 +412,28 @@ function onUpdaterStateChanged (state) {
   // render new state
   browserInfo.updater.state = state
   browserInfo.updater.error = false
-  render()
-}
-
-function onUpdateStartPageTheme (e) {
-  var theme = e.target.value
-  settings.start_page_background_image = theme
-  beakerBrowser.setSetting('start_page_background_image', theme)
-  render()
-}
-
-async function onUpdateStartPageBackgroundImage () {
-  var srcPath = ''
-  if (this.files) srcPath = this.files[0].path
-
-  // write the image to start_background_image
-  await beakerBrowser.setStartPageBackgroundImage(srcPath)
-
-  // is the image light or dark?
-  if (this.files) await setStartPageTheme()
-  else {
-    settings.start_page_background_image = ''
-    await beakerBrowser.setSetting('start_page_background_image', '')
-  }
-  render()
+  renderToPage()
 }
 
 function onUpdaterError (err) {
   if (!browserInfo) { return }
   // render new state
   browserInfo.updater.error = err
-  render()
+  renderToPage()
+}
+
+function onPopState (e) {
+  setViewFromHash()
 }
 
 // internal methods
 // =
 
-function isAutoUpdateEnabled () {
-  return +settings.auto_update_enabled === 1
+function setViewFromHash () {
+  let hash = window.location.hash
+  onUpdateView((hash && hash !== '#') ? hash.slice(1) : 'general')
 }
 
-function setStartPageTheme () {
-  function getBrightness (r, g, b) {
-    return Math.sqrt(
-      0.241 * Math.pow(r, 2) +
-      0.691 * Math.pow(g, 2) +
-      0.068 * Math.pow(b, 2))
-  }
-
-  return new Promise(resolve => {
-    var img = new Image()
-    img.setAttribute('crossOrigin', 'anonymous')
-    img.onload = e => {
-      var palette = colorThief.getPalette(img, 10)
-      var totalBrightness = 0
-
-      palette.forEach(color => {
-        totalBrightness += getBrightness(...color)
-      })
-
-      var brightness = totalBrightness / palette.length
-
-      var theme = brightness < 150 ? 'dark' : 'light'
-      beakerBrowser.setSetting('start_page_background_image', theme)
-      settings.start_page_background_image = theme
-      resolve()
-    }
-    img.onerror = resolve
-    img.src = 'beaker://start/background-image'
-  })
+function isAutoUpdateEnabled () {
+  return +settings.auto_update_enabled === 1
 }

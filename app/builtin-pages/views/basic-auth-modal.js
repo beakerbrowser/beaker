@@ -1,4 +1,4 @@
-/* globals beakerBrowser */
+/* globals beaker */
 
 import * as yo from 'yo-yo'
 import {adjustWindowHeight} from '../../lib/fg/event-handlers'
@@ -21,7 +21,7 @@ window.setup = async function (opts) {
 
 window.addEventListener('keyup', e => {
   if (e.which === 27) {
-    beakerBrowser.closeModal(null, {username: false, password: false})
+    beaker.browser.closeModal(null, {username: false, password: false})
   }
 })
 
@@ -35,12 +35,12 @@ function onChangePassword (e) {
 
 function onClickCancel (e) {
   e.preventDefault()
-  beakerBrowser.closeModal(null, {username: false, password: false})
+  beaker.browser.closeModal(null, {username: false, password: false})
 }
 
 function onSubmit (e) {
   e.preventDefault()
-  beakerBrowser.closeModal(null, {username, password})
+  beaker.browser.closeModal(null, {username, password})
 }
 
 // internal methods
@@ -65,7 +65,7 @@ function render () {
             <input name="password" type="password" tabindex="3" value=${password || ''}  placeholder="Password" onchange=${onChangePassword} />
 
             <div class="form-actions">
-              <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+              <button type="button" onclick=${onClickCancel} class="btn" tabindex="4">Cancel</button>
               <button type="submit" class="btn primary" tabindex="5">Log In</button>
             </div>
           </form>

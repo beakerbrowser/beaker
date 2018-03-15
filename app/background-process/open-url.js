@@ -5,7 +5,7 @@ var queue = []
 var isLoaded = false
 
 export function setup () {
-  ipcMain.on('shell-window-ready', function (e) {
+  ipcMain.on('shell-window:ready', function (e) {
     queue.forEach(url => e.sender.send('command', 'file:new-tab', url))
     queue.length = 0
     isLoaded = true

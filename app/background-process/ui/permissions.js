@@ -1,5 +1,4 @@
 import { ipcMain, session, BrowserWindow } from 'electron'
-var debug = require('debug')('beaker')
 import * as siteData from '../dbs/sitedata'
 import PERMS from '../../lib/perms'
 import { getPermId } from '../../lib/strings'
@@ -40,7 +39,7 @@ export function revokePermission (permission, webContents) {
   // update the DB
   const PERM = PERMS[getPermId(permission)]
   if (PERM && PERM.persist) {
-    siteData.setPermission(siteURL, permission, 0)
+    siteData.clearPermission(siteURL, permission)
   }
   return Promise.resolve()
 }
@@ -53,7 +52,6 @@ export function denyAllRequests (win) {
   // remove all requests in the window, denying as we go
   activeRequests = activeRequests.filter(req => {
     if (req.win === win) {
-      debug('Denying outstanding permission-request for closing window, req #' + req.id + ' for ' + req.permission)
       req.cb(false)
       return false
     }
@@ -79,14 +77,17 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
   if (PERM && PERM.alwaysDisallow) return cb(false)
 
   // check the sitedatadb
-  siteData.getPermission(url, permission).catch(err => false).then(res => {
-    if (res === 1) {
-      return cb(true)
-    }
+  siteData.getPermission(url, permission).catch(err => undefined).then(res => {
+    if (res === 1) return cb(true)
+    if (res === 0) return cb(false)
 
     // if we're already tracking this kind of permission request, then bundle them
     var req = activeRequests.find(req => req.win === win && req.permission === permission)
     if (req) {
+      if (PERM.alwaysAsk) {
+        // deny now
+        return cb(false)
+      }
       var oldCb = req.cb
       req.cb = decision => { oldCb(decision); cb(decision) }
     } else {
@@ -100,10 +101,22 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
   })
 }
 
-function onPermissionResponseHandler (e, reqId, decision) {
+async function onPermissionResponseHandler (e, reqId, decision) {
   // lookup the cb
   var req = activeRequests.find(req => req.id == reqId)
   if (!req) { return console.error('Warning: failed to find permission request for response #' + reqId) }
+
+  // persist decisions
+  const PERM = PERMS[getPermId(req.permission)]
+  if (PERM && PERM.persist) {
+    if (PERM.persist === 'allow' && !decision) {
+      // only persist allows
+      await siteData.clearPermission(req.url, req.permission)
+    } else {
+      // persist all decisions
+      await siteData.setPermission(req.url, req.permission, decision)
+    }
+  }
 
   // untrack
   activeRequests.splice(activeRequests.indexOf(req), 1)
@@ -111,12 +124,6 @@ function onPermissionResponseHandler (e, reqId, decision) {
   // hand down the decision
   var cb = req.cb
   cb(decision)
-
-  // persist approvals
-  const PERM = PERMS[getPermId(req.permission)]
-  if (decision && PERM && PERM.persist) {
-    siteData.setPermission(req.url, req.permission, 1)
-  }
 }
 
 function getContainingWindow (webContents) {

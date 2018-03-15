@@ -1,20 +1,19 @@
 export default {
+  loadArchive: 'promise',
   createArchive: 'promise',
   forkArchive: 'promise',
-  loadArchive: 'promise',
+  unlinkArchive: 'promise',
 
   getInfo: 'promise',
-  diff: 'promise',
-  commit: 'promise',
-  revert: 'promise',
+  configure: 'promise',
   history: 'promise',
 
   stat: 'promise',
   readFile: 'promise',
   writeFile: 'promise',
   unlink: 'promise',
-  // copy: 'promise', // TODO copy-disabled
-  // rename: 'promise', // TODO rename-disabled
+  copy: 'promise',
+  rename: 'promise',
   download: 'promise',
 
   readdir: 'promise',

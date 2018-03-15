@@ -1,15 +1,15 @@
-/* globals beaker DatArchive beakerSitedata URL beakerBrowser */
+/* globals beaker DatArchive URL */
 
-import { remote } from 'electron'
+import { ipcRenderer, remote } from 'electron'
 import EventEmitter from 'events'
 import path from 'path'
 import fs from 'fs'
 import parseDatURL from 'parse-dat-url'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
-import * as sidebar from './ui/sidebar'
-import * as promptbar from './ui/promptbar'
+import * as prompt from './ui/prompt'
 import * as statusBar from './ui/statusbar'
+import * as toast from './ui/toast.js'
 import { SiteInfoNavbarBtn } from './ui/navbar/site-info'
 import {urlsToData} from '../lib/fg/img'
 import {throttle} from '../lib/functions'
@@ -23,7 +23,7 @@ const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
 const ERR_INSECURE_RESPONSE = -501
 
-const TRIGGER_LIVE_RELOAD_DEBOUNCE = 1e3 // throttle live-reload triggers by this amount
+const TRIGGER_LIVE_RELOAD_DEBOUNCE = 3e3 // throttle live-reload triggers by this amount
 
 export const FIRST_TAB_URL = 'beaker://start'
 export const DEFAULT_URL = 'beaker://start'
@@ -70,13 +70,27 @@ export function setup () {
       }
     })
   })
+
+  events.on('update', e => {
+    ipcRenderer.send('shell-window:pages-updated', takeSnapshot())
+  })
+}
+
+export function initializeFromSnapshot (snapshot) {
+  for (let url of snapshot) create(url)
+}
+
+function takeSnapshot () {
+  return getAll()
+    .filter((p) => !p.isPinned)
+    .map((p) => p.getIntendedURL())
 }
 
 export function create (opts) {
   var url
-  if (opts && typeof opts == 'object') {
+  if (opts && typeof opts === 'object') {
     url = opts.url
-  } else if (typeof opts == 'string') {
+  } else if (typeof opts === 'string') {
     url = opts
     opts = {}
   } else { opts = {} }
@@ -90,11 +104,16 @@ export function create (opts) {
     wcID: null, // the id of the webcontents
     webviewEl: createWebviewEl(id, url),
     navbarEl: navbar.createEl(id),
-    promptbarEl: promptbar.createEl(id),
+    promptEl: prompt.createEl(id),
     siteInfoNavbarBtn: null, // set after object is created
 
     // page state
-    url, // what is the actual current URL?
+    _url: url, // what is the actual current URL?
+    get url () { return this._url },
+    set url (v) {
+      this._url = v
+      ipcRenderer.send('shell-window:set-current-location', v) // inform main process
+    },
     loadingURL: url, // what URL is being loaded, if any?
     title: '', // what is the current pages title?
     isGuessingTheURLScheme: false, // did beaker guess at the url scheme? if so, a bad load may deserve a second try
@@ -103,6 +122,7 @@ export function create (opts) {
     isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
+    inpageFindInfo: null, // any info available on the inpage find {activeMatchOrdinal, matches}
     liveReloadEvents: false, // live-reload event stream
     zoom: 0, // what's the current zoom level?
 
@@ -169,10 +189,6 @@ export function create (opts) {
       page.isReceivingAssets = false
       page.siteInfoOverride = null
 
-      // HACK to fix electron#8505
-      // dont allow visibility: hidden until set active
-      page.webviewEl.classList.remove('can-hide')
-
       // set and go
       page.loadingURL = url
       page.isGuessingTheURLScheme = opts && opts.isGuessingTheScheme
@@ -184,31 +200,35 @@ export function create (opts) {
       }
     },
 
-    // HACK wrap reload so we can remove can-hide class
     reload () {
-      // HACK to fix electron#8505
-      // dont allow visibility: hidden until set active
-      page.webviewEl.classList.remove('can-hide')
-      setTimeout(() => page.reloadAsync(), 100)
-      // ^ needs a delay or it doesnt take effect in time, SMH at this code though
-    },
-
-    // add/remove bookmark
-    toggleBookmark () {
-      // update state
-      if (page.bookmark) {
-        beaker.bookmarks.remove(page.bookmark.url)
-        page.bookmark = null
-      } else if (page.isActive) {
-        page.bookmark = { url: page.getIntendedURL(), title: page.getTitle() }
-        beaker.bookmarks.add(page.bookmark.url, page.bookmark.title)
-      }
-      // update nav
-      navbar.update(page)
+      // TODO do we need this wrapper?
+      page.reloadAsync()
     },
 
     getURLOrigin () {
       return parseURL(this.getURL()).origin
+    },
+
+    // helper, abstracts over app:// protocol binding
+    getViewedDatOrigin () {
+      if (this.getIntendedURL().startsWith('dat:')) {
+        return parseURL(this.getIntendedURL()).origin
+      }
+      // TODO app scheme was removed, do we still need this? workspace scheme? -prf
+      // const pi = this.protocolInfo
+      // if (pi && pi.scheme === 'app:' && pi.binding && pi.binding.url.startsWith('dat://')) {
+      //   return parseURL(pi.binding.url).origin
+      // }
+      return false
+    },
+
+    isInstalledApp () {
+      // TODO(apps) restore when we bring back apps -prf
+      // const si = this.siteInfo
+      // if (si && si.installedNames && si.installedNames.length > 0) {
+      //   return true
+      // }
+      return false
     },
 
     isLiveReloading () {
@@ -220,14 +240,18 @@ export function create (opts) {
       if (page.liveReloadEvents) {
         page.liveReloadEvents.close()
         page.liveReloadEvents = false
-      } else if (page.siteInfo) {
+      } else if (page.protocolInfo && page.protocolInfo.scheme === 'dat:' && page.siteInfo) {
         var archive = new DatArchive(page.siteInfo.key)
         page.liveReloadEvents = archive.createFileActivityStream()
         let event = (page.siteInfo.isOwner) ? 'changed' : 'invalidated'
         page.liveReloadEvents.addEventListener(event, () => {
           page.triggerLiveReload()
         })
+      } else if (page.protocolInfo && page.protocolInfo.scheme === 'workspace:') {
+        page.liveReloadEvents = beaker.workspaces.createFileActivityStream(0, page.protocolInfo.hostname)
+        page.liveReloadEvents.addEventListener('changed', page.triggerLiveReload.bind(page))
       }
+      toast.create(`Live reloading ${(page.liveReloadEvents) ? 'on' : 'off'}`, 1e3)
       navbar.update(page)
     },
 
@@ -247,7 +271,7 @@ export function create (opts) {
 
     // helper to load the perms
     fetchSitePerms () {
-      beakerSitedata.getPermissions(this.getURL()).then(perms => {
+      beaker.sitedata.getPermissions(this.getURL()).then(perms => {
         page.sitePerms = perms
         navbar.update(page)
       })
@@ -291,7 +315,6 @@ export function create (opts) {
   webviewsDiv.appendChild(page.webviewEl)
 
   // emit
-  events.emit('update')
   events.emit('add', page)
 
   // register events
@@ -309,6 +332,9 @@ export function create (opts) {
   page.webviewEl.addEventListener('page-favicon-updated', onPageFaviconUpdated)
   page.webviewEl.addEventListener('page-title-updated', onPageTitleUpdated)
   page.webviewEl.addEventListener('update-target-url', onUpdateTargetUrl)
+  page.webviewEl.addEventListener('found-in-page', onFoundInPage)
+  page.webviewEl.addEventListener('enter-html-full-screen', onEnterHtmlFullScreen)
+  page.webviewEl.addEventListener('leave-html-full-screen', onLeaveHtmlFullScreen)
   page.webviewEl.addEventListener('close', onClose)
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
@@ -322,7 +348,10 @@ export function create (opts) {
   page.webviewEl.addEventListener('page-favicon-updated', rebroadcastEvent)
 
   // make active if none others are
-  if (!activePage) { setActive(page) }
+  if (!activePage) {
+    events.emit('first-page', page)
+    setActive(page)
+  }
 
   return page
 }
@@ -342,12 +371,11 @@ export async function remove (page) {
   }
 
   // remove
-  sidebar.onPageClose(page)
   page.stopLiveReloading()
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)
   navbar.destroyEl(page.id)
-  promptbar.destroyEl(page.id)
+  prompt.destroyEl(page.id)
 
   // persist pins w/o this one, if that was
   if (page.isPinned) { savePinnedToDB() }
@@ -372,6 +400,7 @@ export function reopenLastRemoved () {
 }
 
 export function setActive (page) {
+  leavePageFullScreen()
   if (activePage) {
     hide(activePage)
     activePage.isActive = false
@@ -381,14 +410,13 @@ export function setActive (page) {
   page.isActive = 1
   page.webviewEl.focus()
   statusBar.setIsLoading(page.isLoading())
-  sidebar.onPageSetActive(page)
-  navbar.update()
-  promptbar.update()
-  events.emit('set-active', page)
 
-  // HACK to fix electron#8505
-  // can now allow visibility: hidden
-  page.webviewEl.classList.add('can-hide')
+  navbar.closeMenus()
+  navbar.update()
+  prompt.update()
+
+  events.emit('set-active', page)
+  ipcRenderer.send('shell-window:set-current-location', page.getIntendedURL())
 }
 
 export function togglePinned (page) {
@@ -402,6 +430,7 @@ export function togglePinned (page) {
   // update page state
   page.isPinned = !page.isPinned
   events.emit('pin-updated', page)
+  events.emit('update', page)
 
   // persist
   savePinnedToDB()
@@ -431,6 +460,8 @@ export function reorderTab (page, offset) {
   // ok, do the swap
   pages[srcIndex] = swapPage
   pages[dstIndex] = page
+
+  events.emit('update')
   return true
 }
 
@@ -449,6 +480,10 @@ export function changeActiveBy (offset) {
 
 export function changeActiveTo (index) {
   if (index >= 0 && index < pages.length) { setActive(pages[index]) }
+}
+
+export function changeActiveToLast () {
+  setActive(pages[pages.length - 1])
 }
 
 export function getActive () {
@@ -485,13 +520,24 @@ export function getById (id) {
 }
 
 export function loadPinnedFromDB () {
-  return beakerBrowser.getSetting('pinned-tabs').then(json => {
+  return beaker.browser.getSetting('pinned_tabs').then(json => {
     try { JSON.parse(json).forEach(url => create({ url, isPinned: true })) } catch (e) {}
   })
 }
 
 export function savePinnedToDB () {
-  return beakerBrowser.setSetting('pinned-tabs', JSON.stringify(getPinned().map(p => p.getURL())))
+  return beaker.browser.setSetting('pinned_tabs', JSON.stringify(getPinned().map(p => p.getURL())))
+}
+
+export function leavePageFullScreen () {
+  // go through each active page and tell it to leave fullscreen mode (if it's active)
+  if (document.body.classList.contains('page-fullscreen')) {
+    pages.forEach(p => {
+      if (p.isWebviewReady) {
+        p.webviewEl.getWebContents().send('exit-full-screen-hackfix')
+      }
+    })
+  }
 }
 
 // event handlers
@@ -569,7 +615,7 @@ function onLoadCommit (e) {
       page.stopLiveReloading()
     }
     // check if this page bookmarked
-    beaker.bookmarks.get(e.url).then(bookmark => {
+    beaker.bookmarks.getBookmark(e.url).then(bookmark => {
       page.bookmark = bookmark
       navbar.update(page)
     })
@@ -577,7 +623,7 @@ function onLoadCommit (e) {
     // stop autocompleting
     navbar.clearAutocomplete()
     // close any prompts
-    promptbar.forceRemoveAll(page)
+    prompt.forceRemoveAll(page)
     // set title in tabs
     page.title = e.target.getTitle() // NOTE sync operation
     navbar.update(page)
@@ -595,6 +641,12 @@ function onDidStartLoading (e) {
     if (page.isActive) {
       statusBar.setIsLoading(true)
     }
+    const url = page.loadingURL || page.url
+    if (url.startsWith('beaker://')) {
+      page.webviewEl.classList.add('builtin')
+    } else {
+      page.webviewEl.classList.remove('builtin')
+    }
   }
 }
 
@@ -608,7 +660,6 @@ function onDidStopLoading (e) {
     var url = page.url
 
     // update history and UI
-    sidebar.onPageChangeLocation(page)
     updateHistory(page)
 
     // fetch protocol and page info
@@ -623,18 +674,26 @@ function onDidStopLoading (e) {
     if (protocol === 'dat:') {
       DatArchive.resolveName(hostname)
         .catch(err => hostname) // try the hostname as-is, might be a hash
-        .then(key => {
-          beaker.archives.get(key).then(info => {
-            page.siteInfo = info
-            navbar.update(page)
+        .then(key => (new DatArchive(key)).getInfo())
+        .then(info => {
+          page.siteInfo = info
+          navbar.update(page)
+          console.log('dat site info', info)
 
-            // fallback the tab title to the site title, if needed
-            if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
-              page.title = info.title
-              events.emit('page-title-updated', page)
-            }
-          })
-      })
+          // fallback the tab title to the site title, if needed
+          if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
+            page.title = info.title
+            events.emit('page-title-updated', page)
+          }
+        })
+    }
+    if (protocol === 'workspace:') {
+      beaker.workspaces.get(0, hostname)
+        .then(info => {
+          page.siteInfo = info
+          navbar.update(page)
+          console.log('workspace site info', info)
+        })
     }
     if (protocol !== 'beaker:') {
       page.fetchSitePerms()
@@ -649,9 +708,15 @@ function onDidStopLoading (e) {
       statusBar.setIsLoading(false)
     }
 
+    // fallback content type
+    let contentType = page.contentType
+    if (!contentType && page.getURL().endsWith('.md')) {
+      contentType = 'text/markdown'
+    }
+
     // markdown rendering
     // inject the renderer script if the page is markdown
-    if (page.contentType.startsWith('text/markdown') || page.contentType.startsWith('text/x-markdown')) {
+    if (contentType && (contentType.startsWith('text/markdown') || contentType.startsWith('text/x-markdown'))) {
       // hide the unformatted text and provide some basic styles
       page.webviewEl.insertCSS(`
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }
@@ -672,6 +737,21 @@ function onDidStopLoading (e) {
         main code { font-size: 1.3em; background: #fafafa; }
         main pre { background: #fafafa; padding: 1em }
       `)
+      page.webviewEl.insertCSS(`
+        .markdown { font-size: 14px; width: 100%; max-width: 700px; line-height: 22.5px; }
+        .markdown a { color: #2864dc; text-decoration: none; }
+        .markdown a:hover { text-decoration: underline; }
+        .markdown a.anchor-link { color: #ddd; }
+        .markdown h1, .markdown h2, .markdown  h3 { margin: 15px 0; font-weight: 600; }
+        .markdown h1, .markdown h2 { border-bottom: 1px solid #eee; line-height: 45px; }
+        .markdown h1 { font-size: 30px; }
+        .markdown h2 { font-size: 24px; }
+        .markdown h3 { font-size: 20px; }
+        .markdown ul, .markdown ol { margin-bottom: 15px; }
+        .markdown pre, .markdown code { font-family: Consolas, 'Lucida Console', Monaco, monospace; font-size: 13.5px; background: #f0f0f0; border-radius: 2px; }
+        .markdown pre { padding: 15px; border: 0; overflow-x: auto; }
+        .markdown code { padding: 3px 5px; }
+      `)
       if (!cachedMarkdownRendererScript) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
       }
@@ -685,7 +765,7 @@ function onDidStopLoading (e) {
     page.webviewEl.insertCSS(
       // set the default background to white.
       // on some devices, if no bg is set, the buffer doesnt get cleared
-      `body {
+      `html {
         background: #fff;
       }` +
 
@@ -764,7 +844,7 @@ function onDidFinishLoad (e) {
     page.favicons = null
     navbar.update(page)
     navbar.updateLocation(page)
-    sidebar.onPageChangeLocation(page)
+    events.emit('update')
   }
 }
 
@@ -812,15 +892,30 @@ async function onPageFaviconUpdated (e) {
     events.emit('page-favicon-updated', getByWebview(e.target))
 
     // store favicon to db
-    var res = await urlsToData(e.favicons, 64, 64)
+    var res = await urlsToData(e.favicons)
     if (res) {
-      beakerSitedata.set(page.getURL(), 'favicon', res.dataUrl)
+      beaker.sitedata.set(page.getURL(), 'favicon', res.dataUrl)
     }
   }
 }
 
 function onUpdateTargetUrl ({ url }) {
   statusBar.set(url)
+}
+
+function onFoundInPage (e) {
+  var page = getByWebview(e.target)
+  page.inpageFindInfo = e.result
+  navbar.update(page)
+}
+
+function onEnterHtmlFullScreen (e) {
+  document.body.classList.add('page-fullscreen')
+  toast.create('Press ESC to exit fullscreen', 10e3) // show for 10 seconds
+}
+
+function onLeaveHtmlFullScreen (e) {
+  document.body.classList.remove('page-fullscreen')
 }
 
 function onClose (e) {
@@ -887,14 +982,14 @@ export function onIPCMessage (e) {
 function show (page) {
   page.webviewEl.classList.remove('hidden')
   page.navbarEl.classList.remove('hidden')
-  page.promptbarEl.classList.remove('hidden')
+  page.promptEl.classList.remove('hidden')
   events.emit('show', page)
 }
 
 function hide (page) {
   page.webviewEl.classList.add('hidden')
   page.navbarEl.classList.add('hidden')
-  page.promptbarEl.classList.add('hidden')
+  page.promptEl.classList.add('hidden')
   events.emit('hide', page)
 }
 
@@ -902,7 +997,8 @@ export function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
   el.setAttribute('preload', 'file://' + path.join(APP_PATH, 'webview-preload.build.js'))
-  el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,contentIsolation')
+  el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,contentIsolation,defaultEncoding=utf-8')
+  // TODO add scrollBounce^ after https://github.com/electron/electron/issues/9233 is fixed
   // TODO re-enable nativeWindowOpen when https://github.com/electron/electron/issues/9558 lands
   el.setAttribute('src', url || DEFAULT_URL)
   return el

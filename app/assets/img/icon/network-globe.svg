@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96px" height="96px" viewBox="0 0 96 96" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 46 (44423) - http://www.bohemiancoding.com/sketch -->
+    <title>network-globe</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="network-globe" transform="translate(2.000000, 2.000000)">
+            <circle id="oval-border" stroke="#246FDE" stroke-width="4" fill="#246FDE" cx="46" cy="46" r="46"></circle>
+            <g id="lines" transform="translate(6.000000, 6.000000)" stroke="#FFFFFF" stroke-width="6">
+                <path d="M10,65.4023438 C19.9166667,59.8007812 29.8333333,57 39.75,57 C49.6666667,57 59.5833333,59.8007812 69.5,65.4023438" id="Line-5-Copy" stroke-linecap="square"></path>
+                <path d="M10,25.0023193 C19.9166667,19.4007568 29.8333333,16.5999756 39.75,16.5999756 C49.6666667,16.5999756 59.5833333,19.4007568 69.5,25.0023193" id="Line-5-Copy-3" stroke-linecap="square" transform="translate(39.750000, 20.801147) scale(1, -1) translate(-39.750000, -20.801147) "></path>
+                <path d="M4.5,42 L76,42" id="Line-5-Copy-2" stroke-linecap="square"></path>
+                <path d="M41,1.5 L41,78.5" id="Line-6" stroke-linecap="square"></path>
+                <ellipse id="Oval-10" cx="40" cy="39.5" rx="20" ry="39.5"></ellipse>
+                <circle id="oval" cx="40" cy="40" r="40"></circle>
+            </g>
+        </g>
+    </g>
+</svg>

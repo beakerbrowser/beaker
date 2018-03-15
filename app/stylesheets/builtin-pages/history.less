@@ -1,27 +1,18 @@
 @import "../components/link";
 @import "../base/spacing";
 
-.window-content.history {
+.builtin-wrapper.history-wrapper {
 
-  button.clear {
-    &:extend(.link);
-    margin-right: 5px;
+  .ll-row:not(:last-of-type) {
+    border-bottom: 1px solid #e6e6e6;
+    border-top: 0;
   }
 
-  h2.ll-heading {
-    font-size: 13px; // same size as rest of body
-    border-bottom: 1px solid @border-menu;
-  }
+  .search-container {
+    max-width: ~"calc(100% - 240px)";
 
-  .history.links-list {
-    //margin-top: @padding-component--tight;
-  }
-
-  .ll-row {
-    max-width: 600px;
-  }
-
-  .ll-help {
-    margin-top: @padding-component--tight;
+    @media (min-width: 965px) {
+      max-width: 700px;
+    }
   }
 }

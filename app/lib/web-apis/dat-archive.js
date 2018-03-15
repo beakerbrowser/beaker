@@ -2,15 +2,20 @@ import rpc from 'pauls-electron-rpc'
 import errors from 'beaker-error-constants'
 import parseDatURL from 'parse-dat-url'
 import datArchiveManifest from '../api-manifests/external/dat-archive'
+import workspaceFsManifest from '../api-manifests/external/workspace-fs'
 import {EventTarget, fromEventStream} from './event-target'
 import Stat from './stat'
 
+const LOAD_PROMISE = Symbol('LOAD_PROMISE')
 const URL_PROMISE = Symbol('URL_PROMISE')
+const API = Symbol()
+const IS_WORKSPACE = Symbol()
 
-// create the dat rpc api
+// create the rpc apis
 const dat = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, errors })
+const wsfs = rpc.importAPI('workspace-fs', workspaceFsManifest, { timeout: false, errors })
 
-export default class DatArchive extends EventTarget {
+class DatArchive extends EventTarget {
   constructor (url) {
     super()
     var errStack = (new Error()).stack
@@ -27,31 +32,48 @@ export default class DatArchive extends EventTarget {
 
     // parse the URL
     const urlParsed = parseDatURL(url)
-    if (!urlParsed || urlParsed.protocol !== 'dat:') {
+    if (!urlParsed || (urlParsed.protocol !== 'dat:' && urlParsed.protocol !== 'workspace:')) {
       throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
     }
-    url = 'dat://' + urlParsed.hostname
+    setHidden(this, IS_WORKSPACE, (urlParsed.protocol === 'workspace:'))
+    if (this[IS_WORKSPACE]) {
+      url = 'workspace://' + urlParsed.hostname
+    } else {
+      url = 'dat://' + urlParsed.hostname + (urlParsed.version ? `+${urlParsed.version}` : '')
+    }
+
+    // select the API
+    setHidden(this, API, (this[IS_WORKSPACE]) ? wsfs : dat)
 
     // load into the 'active' (in-memory) cache
-    dat.loadArchive(url)
+    setHidden(this, LOAD_PROMISE, ((this[IS_WORKSPACE]) ? true : dat.loadArchive(url)))
 
     // resolve the URL (DNS)
-    const urlPromise = DatArchive.resolveName(url).then(url => {
-      if (urlParsed.version) {
-        url += `+${urlParsed.version}`
-      }
-      return 'dat://' + url
-    })
-    Object.defineProperty(this, URL_PROMISE, {
-      enumerable: false,
-      value: urlPromise
-    })
+    if (this[IS_WORKSPACE]) {
+      setHidden(this, URL_PROMISE, url)
+    } else {
+      const urlPromise = DatArchive.resolveName(url).then(url => {
+        if (urlParsed.version) {
+          url += `+${urlParsed.version}`
+        }
+        return 'dat://' + url
+      })
+      setHidden(this, URL_PROMISE, urlPromise)
+    }
 
     // define this.url as a frozen getter
     Object.defineProperty(this, 'url', {
       enumerable: true,
       value: url
     })
+  }
+
+  static load (url) {
+    var errStack = (new Error()).stack
+    const a = new DatArchive(url)
+    return Promise.all([a[LOAD_PROMISE], a[URL_PROMISE]])
+      .then(() => a)
+      .catch(e => throwWithFixedStack(e, errStack))
   }
 
   static create (opts = {}) {
@@ -72,51 +94,59 @@ export default class DatArchive extends EventTarget {
       .catch(e => throwWithFixedStack(e, errStack))
   }
 
+  static unlink (url) {
+    var errStack = (new Error()).stack
+    url = (typeof url.url === 'string') ? url.url : url
+    if (!isDatURL(url)) {
+      throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
+    }
+    return dat.unlinkArchive(url)
+      .catch(e => throwWithFixedStack(e, errStack))
+  }
+
   async getInfo (opts = {}) {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await dat.getInfo(url, opts)
+      return await this[API].getInfo(url, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
+
+  async configure (info, opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      return await this[API].configure(url, info, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
   }
 
   async diff (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      var url = await this[URL_PROMISE]
-      return await dat.diff(url, opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
+    // noop
+    console.warn('The DatArchive diff() API has been deprecated.')
+    return []
   }
 
   async commit (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      var url = await this[URL_PROMISE]
-      return await dat.commit(url, opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
+    // noop
+    console.warn('The DatArchive commit() API has been deprecated.')
+    return []
   }
 
   async revert (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      var url = await this[URL_PROMISE]
-      return await dat.revert(url, opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
+    // noop
+    console.warn('The DatArchive revert() API has been deprecated.')
+    return []
   }
 
   async history (opts = {}) {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await dat.history(url, opts)
+      return await this[API].history(url, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -126,8 +156,7 @@ export default class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      url = joinPath(url, path)
-      return new Stat(await dat.stat(url, opts))
+      return new Stat(await this[API].stat(url, path, opts))
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -137,8 +166,7 @@ export default class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      url = joinPath(url, path)
-      return await dat.readFile(url, opts)
+      return await this[API].readFile(url, path, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -148,44 +176,47 @@ export default class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      url = joinPath(url, path)
-      return await dat.writeFile(url, data, opts)
+      return await this[API].writeFile(url, path, data, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
   }
 
-  async unlink (path) {
+  async unlink (path, opts = {}) {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      url = joinPath(url, path)
-      return await dat.unlink(url)
+      return await this[API].unlink(url, path, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
   }
 
-  // TODO copy-disabled
-  /* async copy(path, dstPath) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    return dat.copy(url, dstPath)
-  } */
+  async copy (path, dstPath, opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      return this[API].copy(url, path, dstPath, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
 
-  // TODO rename-disabled
-  /* async rename(path, dstPath) {
-    var url = await this[URL_PROMISE]
-    url = joinPath(url, path)
-    return dat.rename(url, dstPath)
-  } */
+  async rename (path, dstPath, opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      var url = await this[URL_PROMISE]
+      return this[API].rename(url, path, dstPath, opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
 
   async download (path = '/', opts = {}) {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      url = joinPath(url, path)
-      return await dat.download(url, opts)
+      return await this[API].download(url, path, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -195,8 +226,7 @@ export default class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      url = joinPath(url, path)
-      var names = await dat.readdir(url, opts)
+      var names = await this[API].readdir(url, path, opts)
       if (opts.stat) {
         names.forEach(name => { name.stat = new Stat(name.stat) })
       }
@@ -206,12 +236,11 @@ export default class DatArchive extends EventTarget {
     }
   }
 
-  async mkdir (path) {
+  async mkdir (path, opts = {}) {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      url = joinPath(url, path)
-      return await dat.mkdir(url)
+      return await this[API].mkdir(url, path, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -221,8 +250,7 @@ export default class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      url = joinPath(url, path)
-      return await dat.rmdir(url, opts)
+      return await this[API].rmdir(url, path, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -231,7 +259,7 @@ export default class DatArchive extends EventTarget {
   createFileActivityStream (pathSpec = null) {
     var errStack = (new Error()).stack
     try {
-      return fromEventStream(dat.createFileActivityStream(this.url, pathSpec))
+      return fromEventStream(this[API].createFileActivityStream(this.url, pathSpec))
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -240,34 +268,7 @@ export default class DatArchive extends EventTarget {
   createNetworkActivityStream () {
     var errStack = (new Error()).stack
     try {
-      return fromEventStream(dat.createNetworkActivityStream(this.url))
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
-  }
-
-  static async importFromFilesystem (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      return await dat.importFromFilesystem(opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
-  }
-
-  static async exportToFilesystem (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      return await dat.exportToFilesystem(opts)
-    } catch (e) {
-      throwWithFixedStack(e, errStack)
-    }
-  }
-
-  static async exportToArchive (opts = {}) {
-    var errStack = (new Error()).stack
-    try {
-      return await dat.exportToArchive(opts)
+      return fromEventStream(this[API].createNetworkActivityStream(this.url))
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -294,14 +295,49 @@ export default class DatArchive extends EventTarget {
   }
 }
 
+// add internal methods
+if (window.location.protocol === 'beaker:') {
+  DatArchive.importFromFilesystem = async function (opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      return await dat.importFromFilesystem(opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
+
+  DatArchive.exportToFilesystem = async function (opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      return await dat.exportToFilesystem(opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
+
+  DatArchive.exportToArchive = async function (opts = {}) {
+    var errStack = (new Error()).stack
+    try {
+      return await dat.exportToArchive(opts)
+    } catch (e) {
+      throwWithFixedStack(e, errStack)
+    }
+  }
+}
+
+export default DatArchive
+
+
+// internal methods
+// =
+
+function setHidden (t, attr, value) {
+  Object.defineProperty(t, attr, {enumerable: false, value})
+}
+
 function isDatURL (url) {
   var urlp = parseDatURL(url)
   return urlp && urlp.protocol === 'dat:'
-}
-
-function joinPath (url, path) {
-  if (path.charAt(0) === '/') return url + path
-  return url + '/' + path
 }
 
 function throwWithFixedStack (e, errStack) {

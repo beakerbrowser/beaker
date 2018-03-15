@@ -3,7 +3,6 @@ import {Application} from 'spectron'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
-import tempy from 'tempy'
 import electron from '../node_modules/electron'
 
 import * as browserdriver from './lib/browser-driver'
@@ -13,6 +12,7 @@ const app = new Application({
   path: electron,
   args: ['../app'],
   env: {
+    NODE_ENV: 'test',
     beaker_no_welcome_tab: 1,
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
     beaker_dat_quota_default_bytes_allowed: 1024 * 10 // 10kb
@@ -33,7 +33,7 @@ test.before(async t => {
 
   // create a owned archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({title: 'Test Archive', description: 'Is temporary', type: ['foo', 'bar'], prompt: false}).then(done,done)
   })
   createdDatURL = res.value.url
   createdDatKey = createdDatURL.slice('dat://'.length)
@@ -127,40 +127,105 @@ test('library.list', async t => {
     window.beaker.archives.list({ isOwner: false }).then(done,done)
   })
   t.deepEqual(res.value.length, 1)
+
+  // list by type
+  var res = await app.client.executeAsync((done) => {
+    window.beaker.archives.list({ type: 'foo' }).then(done,done)
+  })
+  t.deepEqual(res.value.length, 1)
+  var res = await app.client.executeAsync((done) => {
+    window.beaker.archives.list({ type: 'bar' }).then(done,done)
+  })
+  t.deepEqual(res.value.length, 1)
+  var res = await app.client.executeAsync((done) => {
+    window.beaker.archives.list({ type: 'baz' }).then(done,done)
+  })
+  t.deepEqual(res.value.length, 0)
+
 })
 
-test('library.get', async t => {
-  // add the owned and remove the unowned dat
-  var res = await app.client.executeAsync((url, done) => {
-    window.beaker.archives.add(url).then(done,done)
-  }, createdDatURL)
-  t.deepEqual(res.value.isSaved, true)
-  var res = await app.client.executeAsync((url, done) => {
-    window.beaker.archives.remove(url, {noPrompt: true}).then(done,done)
-  }, testStaticDatURL)
+// TODO(profiles) disabled -prf
+// test('publishing', async t => {
+//   // publish by url
+//   var res = await app.client.executeAsync((url, done) => {
+//     window.beaker.archives.publish(url).then(done,done)
+//   }, createdDatURL)
+//   var recordUrl = res.value
+//   t.truthy(recordUrl.startsWith('dat://'))
+//   var res = await app.client.executeAsync((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   }, recordUrl)
+//   var cmp = {
+//     _origin: res.value._origin,
+//     _url: res.value._url,
+//     createdAt: res.value.createdAt,
+//     description: 'Is temporary',
+//     id: res.value.id,
+//     receivedAt: res.value.receivedAt,
+//     title: 'Test Archive',
+//     type: [ 'foo', 'bar' ],
+//     url: createdDatURL,
+//     votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 }
+//   }
+//   t.deepEqual(res.value, cmp)
 
-  // get owned by url
-  var res = await app.client.executeAsync((url, done) => {
-    window.beaker.archives.get(url).then(done,done)
-  }, createdDatURL)
-  t.deepEqual(res.value.isOwner, true)
-  t.deepEqual(res.value.userSettings.isSaved, true)
+//   // list
+//   var res = await app.client.executeAsync((done) => {
+//     window.beaker.archives.listPublished({fetchAuthor: true, countVotes: true}).then(done,done)
+//   })
+//   t.deepEqual(res.value, [
+//     { _origin: res.value[0]._origin,
+//     _url: res.value[0]._url,
+//     createdAt: res.value[0].createdAt,
+//     description: 'Is temporary',
+//     id: res.value[0].id,
+//     receivedAt: res.value[0].receivedAt,
+//     title: 'Test Archive',
+//     type: [ 'foo', 'bar' ],
+//     url: createdDatURL,
+//     votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 } }
+//   ])
 
-  // get owned by key
-  var res = await app.client.executeAsync((key, done) => {
-    window.beaker.archives.get(key).then(done,done)
-  }, createdDatKey)
-  t.deepEqual(res.value.isOwner, true)
-  t.deepEqual(res.value.userSettings.isSaved, true)
+//   // unpublish by url
+//   await app.client.executeAsync((url, done) => {
+//     window.beaker.archives.unpublish(url).then(done,done)
+//   }, createdDatURL)
+//   var res = await app.client.executeAsync((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   }, recordUrl)
+//   t.falsy(res.value)
 
-  // get unowned by url
-  var res = await app.client.executeAsync((url, done) => {
-    window.beaker.archives.get(url).then(done,done)
-  }, testStaticDatURL)
-  t.deepEqual(res.value.isOwner, false)
-  t.deepEqual(res.value.userSettings.isSaved, false)
-  t.deepEqual(res.value.userSettings.autoDownload, true)
-})
+//   // publish/unpublish by archive
+//   var res = await app.client.executeAsync((url, done) => {
+//     var archive = new DatArchive(url)
+//     window.beaker.archives.publish(archive).then(done,done)
+//   }, createdDatURL)
+//   var recordUrl = res.value
+//   t.truthy(recordUrl.startsWith('dat://'))
+//   var res = await app.client.executeAsync((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   }, recordUrl)
+//   t.deepEqual(res.value, {
+//     _origin: res.value._origin,
+//     _url: res.value._url,
+//     createdAt: res.value.createdAt,
+//     description: 'Is temporary',
+//     id: res.value.id,
+//     receivedAt: res.value.receivedAt,
+//     title: 'Test Archive',
+//     type: [ 'foo', 'bar' ],
+//     url: createdDatURL,
+//     votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 }
+//   })
+//   await app.client.executeAsync((url, done) => {
+//     var archive = new DatArchive(url)
+//     window.beaker.archives.unpublish(archive).then(done,done)
+//   }, createdDatURL)
+//   var res = await app.client.executeAsync((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   }, recordUrl)
+//   t.falsy(res.value)
+// })
 
 test('library "updated" event', async t => {
   // register event listener
@@ -173,7 +238,7 @@ test('library "updated" event', async t => {
 
   // update manifest
   var res = await app.client.executeAsync((url, done) => {
-    beaker.archives.update(url, { title: 'The New Title' }).then(done, done)
+    (new DatArchive(url)).configure({ title: 'The New Title' }).then(done, done)
   }, createdDatURL)
 
   // check result

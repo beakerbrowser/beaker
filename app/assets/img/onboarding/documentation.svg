@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="77px" height="69px" viewBox="0 0 77 69" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 47.1 (45422) - http://www.bohemiancoding.com/sketch -->
+    <title>documentation</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <polyline id="path-1" points="51.9999936 60.0000022 25.0000064 69.0351541 25 9.03515625 25 9.03515625 52 0"></polyline>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="documentation">
+            <path d="M1.2500001,9.93499324 L1.25000625,67.2987286 L25.7499937,59.1001651 L25.7499998,1.73642562 L1.2500001,9.93499324 Z" id="Rectangle-4" stroke="#111111" stroke-width="2.5"></path>
+            <g id="Rectangle-4-Copy" transform="translate(38.500000, 34.517577) scale(-1, 1) translate(-38.500000, -34.517577) ">
+                <use fill-opacity="0.3" fill="#50AB54" fill-rule="evenodd" xlink:href="#path-1"></use>
+                <path stroke="#111111" stroke-width="2.5" d="M50.7499937,59.1001651 L50.7499998,1.73642562 L26.2500001,9.93499324 L26.2500063,67.2987286 L50.7499937,59.1001651 Z"></path>
+            </g>
+            <path d="M51.2500001,9.93499324 L51.2500063,67.2987286 L75.7499937,59.1001651 L75.7499998,1.73642562 L51.2500001,9.93499324 Z" id="Rectangle-4-Copy-2" stroke="#111111" stroke-width="2.5"></path>
+            <path d="M56,41 L68.7279221,53.7279221" id="Line-2" stroke="#111111" stroke-width="2.5" stroke-linecap="round"></path>
+            <circle id="Oval-4" stroke="#111111" stroke-width="2.5" fill="#D2D8F9" cx="49" cy="33" r="11"></circle>
+        </g>
+    </g>
+</svg>

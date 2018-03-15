@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 import * as yo from 'yo-yo'
-import * as promptbar from '../promptbar'
+import * as prompt from '../prompt'
 import * as pages from '../../pages'
 import PERMS from '../../../lib/perms'
 import { getPermId, getPermParam } from '../../../lib/strings'
@@ -41,18 +41,23 @@ export default function (reqId, webContentsId, permission, opts = {}) {
   }
 
   // create the prompt
-  promptbar.add(page, {
+  prompt.add(page, {
     type: 'permission:' + permission,
     render: ({ rerender, onClose }) => {
-      return yo`<div>
-        <span class="icon icon-${permIcon || 'help-circled'}"></span>
-        This site would like to ${permDesc}.
-        <span class="promptbar-btns">
-          <button class="btn primary prompt-accept" onclick=${() => { respond(true); onClose() }}>Allow</button>
-          <button class="btn prompt-reject" onclick=${() => { respond(false); onClose() }}>Don't Allow</button>
-        </span>
-        <a class="promptbar-close icon icon-cancel-squared" onclick=${() => { respond(false); onClose() }}></a>
-      </div>`
+      return yo`
+        <div>
+          <p>This site wants to:</p>
+          <p class="perm">
+            <i class="fa fa-${permIcon}"></i>
+            ${permDesc}
+          </p>
+
+          <div class="prompt-btns">
+            <button class="btn prompt-reject" onclick=${() => { respond(false); onClose() }}>Block</button>
+            <button class="btn primary prompt-accept" onclick=${() => { respond(true); onClose() }}>Allow</button>
+          </div>
+        </div>
+      `
     },
     onForceClose: () => {
       respond(false)

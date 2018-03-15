@@ -6,6 +6,12 @@
 
 .toolbar-dropdown-menu-btn {
   position: relative;
+  margin-left: 5px;
+
+  .fa-rocket,
+  .fa-bars {
+    display: block;
+  }
 
   progress {
     position: absolute;
@@ -20,10 +26,17 @@
 }
 
 .toolbar-dropdown {
+  padding-top: 10px;
+  margin-right: -4px;
+  z-index: 1000;
+
+  .dropdown-items.compact {
+    padding: 5px 0;
+  }
 
   h2 {
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 500;
     margin: 0;
   }
 
@@ -31,39 +44,6 @@
     // TODO: remove this once we pull out photonkit -tbv
     margin: 0;
     border-bottom: 1px solid @border-menu;
-  }
-
-  .footer {
-    display: flex;
-    border-top: 1px solid @border-menu;
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
-
-    i {
-      margin-right: 5px;
-      width: 15px;
-      text-align: center;
-    }
-
-    a {
-      padding: @padding-component--tight @padding-component;
-      cursor: pointer;
-      background: @background-menu;
-      border-bottom-left-radius: 2px;
-      border-bottom-right-radius: 2px;
-
-      &:hover span {
-        cursor: pointer;
-        text-decoration: underline;
-      }
-
-      &:first-child {
-        padding-right: 0;
-      }
-      &:last-child {
-        flex: 1;
-      }
-    }
   }
 
   .list {
@@ -86,6 +66,7 @@
     i {
       width: 20px;
       text-align: center;
+      color: @color-text--muted;
     }
 
     .fa-share,
@@ -104,15 +85,6 @@
     }
   }
 
-  .sublist {
-    left: -180px;
-    top: -5px;
-
-    .list-item {
-      padding: 3px 15px;
-    }
-  }
-
   .grid {
     padding: @padding-component @padding-component @padding-component--tight @padding-component;
     &:extend(.flex);
@@ -125,81 +97,36 @@
       flex-basis: 33%
     }
   }
-
-  .grid-item {
-    flex-basis: 33%;
-    height: 60px;
-    text-align: center;
-    line-height: 12px;
-    font-size: 11px;
-    padding: 5px;
-    border-radius: 2px;
-    border: 1px solid transparent;
-    margin-bottom: 5px;
-
-    i {
-      cursor: default;
-      width: 100%;
-      font-size: 25px;
-      margin-bottom: @margin-icon;
-    }
-
-    &:hover {
-      background: @background-menu;
-      border: 1px solid @border-menu;
-    }
-
-    &.disabled {
-      color: @color-text--light;
-      background: transparent;
-      border: 1px solid transparent;
-    }
-  }
-
-  .downloads {
-    padding: @padding-component--tight @padding-component;
-    font-size: 11px;
-
-    a {
-      &:extend(.link);
-    }
-
-    a:hover {
-      &:extend(.link:hover);
-    }
-  }
-
-  .downloads-list {
-    margin: @padding-component--tight 0;
-  }
-
-  .download-item {
-    width: 100%;
-    margin-bottom: @padding-component--tight;
-
-    .status progress {
-      width: 50px;
-      position: relative;
-      top: 3px;
-    }
-  }
-
-  .download-item-ctrls a {
-    margin-right: 3px;
-  }
-}
-
-.browser-dropdown-menu {
-  .dropdown-items {
-    border-radius: 4px;
-    width: 275px;
-  }
 }
 
 .page-dropdown-menu {
+  height: 100%;
+
   .dropdown-items {
     width: 180px;
     font-size: 13px;
+  }
+}
+
+.workspace-dropdown-menu {
+  margin-top: 4px;
+  margin-right: 4px;
+
+  .btn {
+    height: 20px;
+    line-height: 20px;
+    font-size: 12.5px;
+    padding: 0 6px;
+
+    &.pressed {
+      background: shade(@lime, 10%);
+      border-color: shade(@lime, 10%);
+      box-shadow: inset 0px 0 2px fadeout(shade(@lime, 13%), 50%);
+    }
+  }
+
+  .dropdown-items {
+    width: 225px;
   }
 }
 
@@ -235,10 +162,7 @@
 }
 
 .toolbar-site-info-dropdown {
-  position: absolute;
-  left: -80px;
-  top: 30px;
-  width: 400px;
+  font-size: 12.5px;
 
   a {
     &:extend(.link);
@@ -250,7 +174,7 @@
 
   .dropdown-items {
     width: 300px;
-    left: 65px;
+    left: -2px;
 
     &::before {
       left: 25px;
@@ -258,17 +182,16 @@
   }
 
   .details {
-    padding: @padding-component 15px;
-    font-size: .85rem;
+    padding: 15px;
 
     small {
-      font-size: .75rem;
+      font-size: 12px;
       color: @color-text--muted;
     }
   }
 
   .details-title {
-    font-weight: bold;
+    font-weight: 500;
   }
 
   .details-desc {
@@ -276,32 +199,50 @@
     line-height: 1.3;
   }
 
-  .perms {
-    font-size: 13px;
-    background: #fafafa;
+  .perms-heading {
+    font-size: 11px;
+    font-weight: 500;
+    color: @color-text--muted;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    margin: 5px 0 5px 15px;
+  }
 
-    div {
+  .perms {
+    background: #fafafa;
+    border-radius: 0 0 4px 4px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: ~"calc(100vh - 300px)";
+
+    i {
+      color: #777;
+      margin-right: 7px;
+    }
+
+    .perm {
       border-top: 1px solid #eee;
     }
 
     label {
-      display: block;
-      padding: 10px;
+      &:extend(.flex);
+      flex-wrap: nowrap;
+      align-items: center;
+      padding: 8px 15px;
       margin: 0;
-      &.checked {
-        background: #fff;
+      font-weight: 400;
+
+      span {
+        max-width: 230px;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
 
     input {
-      margin-right: 4px;
-    }
-
-    .icon {
-      width: 15px;
-      text-align: center;
-      display: inline-block;
-      margin-right: 2px;
+      height: auto;
+      margin: 0;
+      margin-left: auto;
     }
   }
 }

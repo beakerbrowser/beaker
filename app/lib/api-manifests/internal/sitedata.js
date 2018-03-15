@@ -3,5 +3,9 @@ export default {
   set: 'promise',
   getPermissions: 'promise',
   getPermission: 'promise',
-  setPermission: 'promise'
+  getAppPermissions: 'promise',
+  setPermission: 'promise',
+  setAppPermissions: 'promise',
+  clearPermission: 'promise',
+  clearPermissionAllOrigins: 'promise'
 }

@@ -1,0 +1,71 @@
+.favicon-picker {
+
+  .favicon-picker-header {
+    &:extend(.flex);
+    border-bottom: 1px solid #ddd;
+
+    .filter {
+      padding: 5px;
+
+      input {
+        padding: 0 10px;
+        width: 350px;
+      }
+    }
+  }
+
+  .favicon-picker-body {
+    width: 400px;
+    max-height: 185px;
+    overflow-y: auto;
+
+    .text {
+      padding: 10px;
+    }
+  }
+
+  .favicon-picker-footer {
+    &:extend(.flex);
+    align-items: center;
+    padding: 10px 15px;
+    border-top: 1px solid #ddd;
+
+    .label {
+      color: @color-text--muted;
+    }
+
+    .ctrls {
+      margin-left: auto;
+    }
+  }
+
+  .favicon-picker-icons {
+    display: grid;
+    padding: 10px;
+    grid-gap: 6px;
+    grid-template-columns: repeat(12, 1fr);
+
+    .icon {
+      width: 24px;
+      height: 24px;
+      padding: 4px;
+      border-radius: 2px;
+      text-align: center;
+      cursor: pointer;
+
+      img {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+
+      &:hover {
+        background: #eaeaea;
+      }
+
+      &.selected {
+        background: tint(mix(@teal, @blue, 65%), 50%);
+      }
+    }
+  }
+}

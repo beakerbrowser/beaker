@@ -1,4 +1,4 @@
-/* globals beaker */
+/* globals DatArchive */
 
 import prettyHash from 'pretty-hash'
 
@@ -22,7 +22,7 @@ function lazyDatTitleElement (archiveKey, title) {
   // no title, we need to look it up. render now, then update
   var el = yo`<span>${prettyHash(archiveKey)}</span>`
   el.id = 'lazy-' + archiveKey
-  beaker.archives.get(archiveKey).then(details => {
+  ;(new DatArchive(archiveKey)).getInfo().then(details => {
     datTitleMap[archiveKey] = details.title // cache
     el.textContent = details.title // render
   })
@@ -39,7 +39,7 @@ export default {
   },
   network: {
     desc: param => {
-      if (param === '*') return 'access the network freely'
+      if (param === '*') return 'Access the network freely'
       return 'contact ' + param
     },
     icon: 'cloud',
@@ -49,8 +49,8 @@ export default {
   },
   createDat: {
     desc: (param, pages, opts = {}) => {
-      if (opts.title) return `create a new Dat archive, "${opts.title}"`
-      return 'create a new Dat archive'
+      if (opts && opts.title) return `Create a new Dat archive, "${opts.title}"`
+      return 'Create a new Dat archive'
     },
     icon: 'folder',
     persist: false,
@@ -65,7 +65,7 @@ export default {
       return yo`<span>${firstWord} files to <a onclick=${viewArchive}>${title}</a></span>`
     },
     icon: 'folder',
-    persist: true,
+    persist: 'allow', // dont persist 'deny'
     alwaysDisallow: false,
     requiresRefresh: false
   },
@@ -82,50 +82,50 @@ export default {
     requiresRefresh: false
   },
   media: {
-    desc: 'use your camera and microphone',
-    icon: 'mic',
+    desc: 'Use your camera and microphone',
+    icon: 'video-camera',
     persist: true,
     alwaysDisallow: false,
     requiresRefresh: false
   },
   geolocation: {
-    desc: 'know your location',
-    icon: '',
+    desc: 'Know your location',
+    icon: 'map-marker',
     persist: false,
     alwaysDisallow: true, // NOTE geolocation is disabled, right now
     requiresRefresh: false
   },
   notifications: {
-    desc: 'create desktop notifications',
-    icon: 'comment',
+    desc: 'Create desktop notifications',
+    icon: 'bell',
     persist: true,
     alwaysDisallow: false,
     requiresRefresh: false
   },
   midiSysex: {
-    desc: 'access your MIDI devices',
-    icon: 'sound',
+    desc: 'Access your MIDI devices',
+    icon: 'headphones',
     persist: false,
     alwaysDisallow: false,
     requiresRefresh: false
   },
   pointerLock: {
-    desc: 'lock your cursor',
-    icon: 'mouse',
+    desc: 'Lock your cursor',
+    icon: 'mouse-pointer',
     persist: false,
     alwaysDisallow: false,
     requiresRefresh: false
   },
   fullscreen: {
-    desc: 'go fullscreen',
-    icon: 'resize-full',
+    desc: 'Go fullscreen',
+    icon: 'arrows-alt',
     persist: true,
     alwaysAllow: true,
     requiresRefresh: false
   },
   openExternal: {
-    desc: 'open this URL in another program: ',
-    icon: '',
+    desc: 'Open this URL in another program: ',
+    icon: 'external-link',
     persist: false,
     alwaysDisallow: false,
     requiresRefresh: false

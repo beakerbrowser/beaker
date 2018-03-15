@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="66px" height="65px" viewBox="0 0 66 65" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 47.1 (45422) - http://www.bohemiancoding.com/sketch -->
+    <title>help</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="26" y="0" width="14" height="24" rx="1"></rect>
+        <rect id="path-2" x="47" y="21" width="14" height="24" rx="1"></rect>
+        <rect id="path-3" x="5" y="21" width="14" height="24" rx="1"></rect>
+        <rect id="path-4" x="26" y="41" width="14" height="24" rx="1"></rect>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="help">
+            <circle id="Oval-3" stroke="#111111" stroke-width="2" cx="33" cy="33" r="30"></circle>
+            <g id="Rectangle-3">
+                <use fill="#3F51B5" fill-rule="evenodd" xlink:href="#path-1"></use>
+                <rect stroke="#111111" stroke-width="2" x="27" y="1" width="12" height="22" rx="1"></rect>
+            </g>
+            <g id="Rectangle-3-Copy-12" transform="translate(54.000000, 33.000000) rotate(90.000000) translate(-54.000000, -33.000000) ">
+                <use fill="#50AB54" fill-rule="evenodd" xlink:href="#path-2"></use>
+                <rect stroke="#111111" stroke-width="2" x="48" y="22" width="12" height="22" rx="1"></rect>
+            </g>
+            <g id="Rectangle-3-Copy-13" transform="translate(12.000000, 33.000000) rotate(90.000000) translate(-12.000000, -33.000000) ">
+                <use fill="#50AB54" fill-rule="evenodd" xlink:href="#path-3"></use>
+                <rect stroke="#111111" stroke-width="2" x="6" y="22" width="12" height="22" rx="1"></rect>
+            </g>
+            <g id="Rectangle-3-Copy-11">
+                <use fill="#3F51B5" fill-rule="evenodd" xlink:href="#path-4"></use>
+                <rect stroke="#111111" stroke-width="2" x="27" y="42" width="12" height="22" rx="1"></rect>
+            </g>
+            <circle id="Oval-3-Copy" stroke="#111111" stroke-width="2" fill="#FFFFFF" cx="33.5" cy="33.5" r="13.5"></circle>
+        </g>
+    </g>
+</svg>

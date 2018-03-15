@@ -1,0 +1,145 @@
+@import "../photon.min.less";
+@import "../base/reset.less";
+@import "../components/buttons.less";
+@import "../components/inputs.less";
+@import "../components/modal.less";
+@import "../components/segmented-progress-bar.less";
+@import "../com/spinner.less";
+
+body {
+  background: #fff;
+}
+
+label {
+  font-weight: 400;
+}
+
+code {
+  font-family: Consolas, 'Lucida Console', Monaco, Menlo, monospace;
+}
+
+.title {
+  font-weight: 500;
+}
+
+h2 {
+  font-weight: 500;
+  font-size: .8rem;
+  width: 100%;
+  border-bottom: 1px solid #eee;
+}
+
+.header {
+  &:extend(.flex);
+  flex-wrap: nowrap;
+  align-items: center;
+  font-size: .9rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+
+  .favicon {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+  }
+
+  h1.title {
+    font-size: .85rem;
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .metadata {
+    font-size: .75rem;
+    color: rgba(0,0,0,.6);
+  }
+}
+
+ul {
+  margin-bottom: 10px;
+
+  li.perm {
+    margin-left: 15px;
+  }
+}
+
+.modal {
+  margin: 0;
+}
+
+.perms {
+
+  input {
+    margin: 0;
+    position: relative;
+    top: -1px;
+    height: auto;
+  }
+
+  strong {
+    font-weight: 500;
+  }
+}
+
+.install-name {
+
+  p {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+  }
+
+  input[type="checkbox"] {
+    margin-right: 5px;
+    height: auto;
+  }
+
+  .custom-input {
+    margin-left: 20px;
+    position: relative;
+
+    .prefix {
+      height: 100%;
+      position: absolute;
+      left: 1px;
+      top: 1px;
+      padding: 0 7px;
+      background: #eee;
+      border-right: 1px solid #d9d9d9;
+      border-radius: 4px 0 0 4px;
+      height: ~"calc(100% - 2px)";
+      line-height: 26px;
+    }
+
+    input {
+      width: 100%;
+      line-height: 30px;
+      padding-left: 55px;
+    }
+  }
+
+  .muted {
+    color: gray;
+  }
+}
+
+.form-actions {
+  display: flex;
+  position: fixed;
+  bottom: 1rem;
+  left: 0;
+  padding: 0 1rem;
+  width: 100%;
+
+  .segmented-progress-bar {
+    flex: 1;
+    margin: 0 3rem;
+  }
+
+  .btn.primary {
+    width: 54px;
+  }
+}

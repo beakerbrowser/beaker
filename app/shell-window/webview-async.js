@@ -1,4 +1,4 @@
-/* globals beakerBrowser */
+/* globals beaker */
 
 /*
 The webview has a set of sync method calls to the main process
@@ -68,7 +68,7 @@ export default function addAsyncAlternatives (page) {
   methods.forEach(method => {
     page[method + 'Async'] = async (...args) => {
       if (!page.isWebviewReady) return false
-      return beakerBrowser.doWebcontentsCmd(method, page.wcID, ...args)
+      return beaker.browser.doWebcontentsCmd(method, page.wcID, ...args)
     }
   })
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="69px" height="52px" viewBox="0 0 69 52" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 47.1 (45422) - http://www.bohemiancoding.com/sketch -->
+    <title>community</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M10,16 L19,16 L19,16 C24.5228475,16 29,20.4771525 29,26 L29,42 L29,42 C29,43.1045695 28.1045695,44 27,44 L3,44 L3,44 C1.34314575,44 2.41027941e-15,42.6568542 0,41 L0,26 L-1.77635684e-15,26 C-2.45271059e-15,20.4771525 4.4771525,16 10,16 Z" id="path-1"></path>
+        <path d="M50,16 L59,16 L59,16 C64.5228475,16 69,20.4771525 69,26 L69,41 L69,41 C69,42.6568542 67.6568542,44 66,44 L42,44 L42,44 C40.8954305,44 40,43.1045695 40,42 L40,26 L40,26 C40,20.4771525 44.4771525,16 50,16 Z" id="path-2"></path>
+        <path d="M29,22 L39,22 L39,22 C44.5228475,22 49,26.4771525 49,32 L49,47 L49,47 C49,48.6568542 47.6568542,50 46,50 L22,50 L22,50 C20.3431458,50 19,48.6568542 19,47 L19,32 L19,32 C19,26.4771525 23.4771525,22 29,22 Z" id="path-3"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="community" transform="translate(0.000000, 2.000000)">
+            <circle id="Oval-5" stroke="#111111" stroke-width="2.5" cx="14.5" cy="6.5" r="6.5"></circle>
+            <g id="Rectangle-6">
+                <use fill="#3F51B5" fill-rule="evenodd" xlink:href="#path-1"></use>
+                <path stroke="#111111" stroke-width="2.5" d="M10,17.25 C5.16750844,17.25 1.25,21.1675084 1.25,26 L1.25,41 C1.25,41.9664983 2.03350169,42.75 3,42.75 L27,42.75 C27.4142136,42.75 27.75,42.4142136 27.75,42 L27.75,26 C27.75,21.1675084 23.8324916,17.25 19,17.25 L10,17.25 Z"></path>
+            </g>
+            <circle id="Oval-5-Copy-2" stroke="#111111" stroke-width="2.5" cx="54.5" cy="6.5" r="6.5"></circle>
+            <g id="Rectangle-6-Copy-2">
+                <use fill="#3F51B5" fill-rule="evenodd" xlink:href="#path-2"></use>
+                <path stroke="#111111" stroke-width="2.5" d="M50,17.25 C45.1675084,17.25 41.25,21.1675084 41.25,26 L41.25,42 C41.25,42.4142136 41.5857864,42.75 42,42.75 L66,42.75 C66.9664983,42.75 67.75,41.9664983 67.75,41 L67.75,26 C67.75,21.1675084 63.8324916,17.25 59,17.25 L50,17.25 Z"></path>
+            </g>
+            <circle id="Oval-5-Copy" stroke="#111111" stroke-width="2.5" fill="#FFFFFF" cx="34.5" cy="12.5" r="6.5"></circle>
+            <g id="Rectangle-6-Copy">
+                <use fill="#50AB54" fill-rule="evenodd" xlink:href="#path-3"></use>
+                <path stroke="#111111" stroke-width="2.5" d="M29,23.25 C24.1675084,23.25 20.25,27.1675084 20.25,32 L20.25,47 C20.25,47.9664983 21.0335017,48.75 22,48.75 L46,48.75 C46.9664983,48.75 47.75,47.9664983 47.75,47 L47.75,32 C47.75,27.1675084 43.8324916,23.25 39,23.25 L29,23.25 Z"></path>
+            </g>
+        </g>
+    </g>
+</svg>

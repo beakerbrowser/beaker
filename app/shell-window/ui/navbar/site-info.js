@@ -1,10 +1,11 @@
-/* globals beakerSitedata */
+/* globals beaker */
 
 import * as yo from 'yo-yo'
 import * as pages from '../../pages'
+import renderPadlockIcon from '../icon/padlock'
 import { findParent } from '../../../lib/fg/event-handlers'
 import PERMS from '../../../lib/perms'
-import { ucfirst, getPermId, getPermParam } from '../../../lib/strings'
+import { ucfirst, getPermId, getPermParam, shortenHash } from '../../../lib/strings'
 
 export class SiteInfoNavbarBtn {
   constructor (page) {
@@ -16,97 +17,99 @@ export class SiteInfoNavbarBtn {
 
   render () {
     // pull details
-    var protocolInfo = this.page.protocolInfo
-    var siteLoadError = this.page.siteLoadError
-    var icon = ''
-    var protocolLabel = ''
+    var iconEl = ''
     var protocolCls = 'insecure'
-    var gotInsecureResponse = siteLoadError && siteLoadError.isInsecureResponse
+    const gotInsecureResponse = this.page.siteLoadError && this.page.siteLoadError.isInsecureResponse
+    const isLoading = this.page.isLoading()
 
-    if (siteLoadError) {
-      icon = 'exclamation-circle'
-      protocolLabel = ''
-    }
-
-    if (protocolInfo) {
-      var isHttps = ['https:'].includes(protocolInfo.scheme)
-
-      if (isHttps && !gotInsecureResponse && !siteLoadError) {
-        icon = 'lock'
-        protocolLabel = 'Secure'
+    const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : this.page.protocolInfo.scheme
+    if (scheme) {
+      const isHttps = scheme === 'https:'
+      if (isHttps && !gotInsecureResponse && !this.page.siteLoadError) {
         protocolCls = 'secure'
-      } else if (protocolInfo.scheme === 'http:' || (isHttps && gotInsecureResponse)) {
-        icon = 'exclamation-circle https-error'
-        protocolLabel = 'Not secure'
-      } else if (protocolInfo.scheme === 'dat:') {
-        icon = 'share-alt'
-        protocolLabel = 'Secure P2P'
+        iconEl = renderPadlockIcon()
+      } else if (scheme === 'http:') {
+        iconEl = yo`<i class="fa fa-info-circle"></i>`
+      } else if (isHttps && gotInsecureResponse) {
+        iconEl = yo`<i class="fa fa-exclamation-circle"></i>`
+      } else if (scheme === 'dat:') {
         protocolCls = 'p2p'
-      } else if (protocolInfo.scheme === 'beaker:') {
+        iconEl = yo`<i class="fa fa-share-alt"></i>`
+      } else if (scheme === 'workspace:') {
+        iconEl = yo`<i class="fa fa-folder-open-o"></i>`
+      } else if (scheme === 'beaker:') {
         protocolCls = 'beaker'
-        icon = ''
+        iconEl = ''
       }
     }
 
-    // render btn
-    var iconEl = (icon) ? yo`<i class="fa fa-${icon}"></i>` : ''
-    var titleEl = (protocolLabel) ? yo`<span class="title">${protocolLabel}</span>` : ''
-    return yo`<div class="toolbar-site-info ${protocolCls}">
-      <button onclick=${e => this.toggleDropdown(e)}>${iconEl} ${titleEl}</button>
-      ${this.renderDropdown()}
-    </div>`
+    return yo`
+      <div class="toolbar-site-info ${protocolCls}" id="${this.elId}">
+        <button onclick=${isLoading ? undefined : e => this.toggleDropdown(e)}>${iconEl}</button>
+        ${this.renderDropdown()}
+      </div>
+    `
   }
 
   renderDropdown () {
     if (!this.isDropdownOpen) {
       return ''
     }
-    var protocolInfo = this.page.protocolInfo
-    var siteInfo = this.page.siteInfo
-    var sitePerms = this.page.sitePerms
 
     // pull details
     var protocolDesc = ''
-    if (protocolInfo) {
-      if (['https:'].includes(protocolInfo.scheme)) {
+    if (this.page.protocolInfo) {
+      if (this.page.protocolInfo.scheme === 'https:') {
         protocolDesc = 'Your connection to this site is secure.'
-      } else if (protocolInfo.scheme === 'http:') {
+      } else if (this.page.protocolInfo.scheme === 'http:') {
         protocolDesc = yo`
           <div>
             <p>
               Your connection to this site is not secure.
             </p>
-
             <small>
               You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
             </small>
           </div>
         `
-      } else if (['dat:'].indexOf(protocolInfo.scheme) != -1) {
-        protocolDesc = yo`<span>
-          This site was downloaded from a secure peer-to-peer network.
-          <a onclick=${e => this.learnMore()}>Learn More</a>
-        </span>`
+      } else if (this.page.protocolInfo.scheme === 'dat:') {
+        protocolDesc = yo`
+          <div>
+            This site was downloaded from a secure peer-to-peer network.
+            <a onclick=${e => this.learnMore()}>Learn More</a>
+          </div>`
+      } else if (this.page.protocolInfo.scheme === 'workspace:') {
+        protocolDesc = yo`
+          <div>
+            This site is a local preview of a workspace directory on your computer.
+          </div>`
       }
     }
 
     // site permissions
     var permsEls = []
-    if (sitePerms) {
-      for (var k in sitePerms) {
-        permsEls.push(this.renderPerm(k, sitePerms[k]))
+    if (this.page.sitePerms) {
+      for (var k in this.page.sitePerms) {
+        permsEls.push(this.renderPerm(k, this.page.sitePerms[k]))
       }
     }
-    if (siteInfo && siteInfo.requiresRefresh) {
-      permsEls.push(yo`<div>
-        <a><label class="checked" onclick=${this.onClickRefresh.bind(this)}><span class="icon icon-ccw"></span> Refresh to apply changes.</label></a>
-      </div>`)
+    if (this.page.siteInfo && this.page.siteInfo.requiresRefresh) {
+      permsEls.push(
+        yo`
+          <div class="perm"><a>
+            <label class="checked" onclick=${this.onClickRefresh.bind(this)}>
+              <i class="fa fa-undo fa-flip-horizontal"></i>
+              Refresh to apply changes.
+            </label>
+          </a></div>
+        `
+      )
     }
 
     // dropdown
     return yo`
       <div class="dropdown toolbar-dropdown toolbar-site-info-dropdown">
-        <div class="dropdown-items visible with-triangle left">
+        <div class="dropdown-items with-triangle left">
           <div class="details">
             <div class="details-title">
               ${this.getTitle() || this.getHostname() || this.getUrl()}
@@ -115,6 +118,7 @@ export class SiteInfoNavbarBtn {
               ${protocolDesc}
             </p>
           </div>
+          ${permsEls.length ? yo`<h2 class="perms-heading">Permissions</h2>` : ''}
           <div class="perms">${permsEls}</div>
         </div>
       </div>`
@@ -128,6 +132,8 @@ export class SiteInfoNavbarBtn {
       title = this.page.siteInfo.title
     } else if (this.page.protocolInfo && this.page.protocolInfo.scheme === 'dat:') {
       title = 'Untitled'
+    } else if (this.page.protocolInfo && this.page.protocolInfo.scheme === 'workspace:') {
+      title = 'workspace://' + this.page.protocolInfo.hostname
     }
     return title
   }
@@ -140,13 +146,12 @@ export class SiteInfoNavbarBtn {
     return (this.page.protocolInfo) ? this.page.protocolInfo.hostname : ''
   }
 
+  get elId () {
+    return 'toolbar-site-info-' + this.page.id
+  }
+
   updateActives () {
-    // FIXME
-    // calling `this.render` for all active site-infos is definitely wrong
-    // there is state captured in `this` that is specific to each instance
-    // ...this entire thing is kind of bad
-    // -prf
-    Array.from(document.querySelectorAll('.toolbar-site-info')).forEach(el => yo.update(el, this.render()))
+    yo.update(document.getElementById(this.elId), this.render())
   }
 
   onClickAnywhere (e) {
@@ -185,15 +190,21 @@ export class SiteInfoNavbarBtn {
     var desc = PERMS[permId] ? PERMS[permId].desc : ''
     if (typeof desc === 'function') desc = desc(permParam, pages, { capitalize: true })
     if (typeof desc === 'string') desc = ucfirst(desc)
-    return yo`<div>
-      <label class=${value ? 'checked' : ''} onclick=${e => this.togglePerm(perm)}><input type="checkbox" value="${perm}" ${value ? 'checked' : ''} /> <span class="icon icon-${icon}"></span> ${desc}</label>
-    </div>`
+    if (!desc) return ''
+    return yo`
+      <div class="perm">
+        <label class=${value ? 'checked' : ''} onclick=${e => this.togglePerm(perm)}>
+          <i class="fa fa-${icon}"></i>
+          ${desc}
+          <input type="checkbox" value="${perm}" ${value ? 'checked' : ''} />
+        </label>
+      </div>`
   }
 
   togglePerm (perm) {
     // update perm
     var newValue = (this.page.sitePerms[perm] === 1) ? 0 : 1
-    beakerSitedata.setPermission(this.page.protocolInfo.url, perm, newValue).then(() => {
+    beaker.sitedata.setPermission(this.page.protocolInfo.url, perm, newValue).then(() => {
       this.page.sitePerms[perm] = newValue
 
       // requires refresh?
@@ -205,9 +216,9 @@ export class SiteInfoNavbarBtn {
     })
   }
 
-  viewSiteFiles (subpage) {
-    const { hostname } = this.page.protocolInfo
-    pages.setActive(pages.create('beaker://library/' + hostname + '#' + subpage))
+  openLink (e) {
+    e.preventDefault()
+    pages.setActive(pages.create(e.target.getAttribute('href')))
     this.closeDropdown()
   }
 

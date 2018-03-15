@@ -1,9 +1,10 @@
-/* globals beakerDownloads DatArchive */
+/* globals beaker DatArchive */
 
+import os from 'os'
 import * as yo from 'yo-yo'
-import emitStream from 'emit-stream'
-import prettyBytes from 'pretty-bytes'
-import { ucfirst } from '../../../lib/strings'
+import moment from 'moment'
+import {ipcRenderer} from 'electron'
+import { showInpageFind } from '../navbar'
 import { findParent } from '../../../lib/fg/event-handlers'
 import * as pages from '../../pages'
 
@@ -12,141 +13,189 @@ import * as pages from '../../pages'
 
 export class BrowserMenuNavbarBtn {
   constructor () {
+    const isDarwin = os.platform() === 'darwin'
+    const cmdOrCtrlChar = isDarwin ? '⌘' : '^'
+    this.accelerators = {
+      newWindow: cmdOrCtrlChar + 'N',
+      newTab: cmdOrCtrlChar + 'T',
+      findInPage: cmdOrCtrlChar + 'F',
+      history: cmdOrCtrlChar + 'Y',
+      openFile: cmdOrCtrlChar + 'O'
+    }
+
+    this.submenu
     this.downloads = []
     this.sumProgress = null // null means no active downloads
     this.isDropdownOpen = false
-    this.shouldPersistProgressBar = false
+    this.shouldPersistDownloadsIndicator = false
 
-    // fetch current
-    beakerDownloads.getDownloads().then(ds => {
+    // fetch current downloads
+    beaker.downloads.getDownloads().then(ds => {
       this.downloads = ds
       this.updateActives()
     })
 
+    beaker.browser.getInfo().then(info => {
+      this.browserInfo = info
+      this.updateActives()
+    })
+
     // wire up events
-    var dlEvents = emitStream(beakerDownloads.eventsStream())
-    dlEvents.on('new-download', this.onNewDownload.bind(this))
-    dlEvents.on('sum-progress', this.onSumProgress.bind(this))
-    dlEvents.on('updated', this.onUpdate.bind(this))
-    dlEvents.on('done', this.onDone.bind(this))
+    var dlEvents = beaker.downloads.createEventsStream()
+    dlEvents.addEventListener('new-download', this.onNewDownload.bind(this))
+    dlEvents.addEventListener('sum-progress', this.onSumProgress.bind(this))
+    dlEvents.addEventListener('updated', this.onUpdate.bind(this))
+    dlEvents.addEventListener('done', this.onDone.bind(this))
     window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
   }
 
   render () {
     // show active, then inactive, with a limit of 5 items
     var progressingDownloads = this.downloads.filter(d => d.state == 'progressing').reverse()
-    var activeDownloads = (progressingDownloads.concat(this.downloads.filter(d => d.state != 'progressing').reverse())).slice(0, 5)
 
     // render the progress bar if downloading anything
     var progressEl = ''
-
-    if ((progressingDownloads.length > 0 || this.shouldPersistProgressBar) && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
+    if (progressingDownloads.length > 0 && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
       progressEl = yo`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
+    }
+
+    // auto-updater
+    var autoUpdaterEl = ''
+    if (this.browserInfo && this.browserInfo.updater.isBrowserUpdatesSupported && this.browserInfo.updater.state === 'downloaded') {
+      autoUpdaterEl = yo`
+        <div class="section auto-updater">
+          <div class="menu-item auto-updater" onclick=${e => this.onClickRestart()}>
+            <i class="fa fa-arrow-circle-up"></i>
+            <span class="label">Restart to update Beaker</span>
+          </div>
+        </div>
+      `
     }
 
     // render the dropdown if open
     var dropdownEl = ''
-    if (this.isDropdownOpen) {
-      let downloadEls = activeDownloads.map(d => {
-        // status
-        var status = d.state === 'completed' ? '' : d.state
-        if (status == 'progressing') {
-          status = prettyBytes(d.receivedBytes) + ' / ' + prettyBytes(d.totalBytes)
-          if (d.isPaused) { status += ', Paused' }
-        } else { status = ucfirst(status) }
-
-        // ctrls
-        var ctrlsEl
-        if (d.state == 'completed') {
-          // actions
-          if (!d.fileNotFound) {
-            ctrlsEl = yo`
-              <li class="download-item-ctrls complete">
-                <a onclick=${e => this.onOpen(e, d)}>Open file</a>
-                <a onclick=${e => this.onShow(e, d)}>Show in folder</a>
-              </li>`
-          } else {
-            ctrlsEl = yo`
-              <li class="download-item-ctrls not-found">
-                File not found (moved or deleted)
-              </li>`
-          }
-        } else if (d.state == 'progressing') {
-          ctrlsEl = yo`
-            <li class="download-item-ctrls paused">
-              ${d.isPaused
-                ? yo`<a onclick=${e => this.onResume(e, d)}>Resume</a>`
-                : yo`<a onclick=${e => this.onPause(e, d)}>Pause</a>`}
-              <a onclick=${e => this.onCancel(e, d)}>Cancel</a>
-            </li>`
-        }
-
-        // render download
-        return yo`
-          <li class="download-item">
-            <div class="name">${d.name}</div>
-            <div class="status">
-              ${d.state == 'progressing'
-                ? yo`<progress value=${d.receivedBytes} max=${d.totalBytes}></progress>`
-                : ''}
-              ${status}
-            </div>
-            ${ctrlsEl}
-          </li>`
-      })
+    if (this.isDropdownOpen && this.submenu === 'create-new') {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
-          <div class="dropdown-items with-triangle visible">
-            <div class="grid default">
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
-                <i class="fa fa-history"></i>
-                History
+          <div class="dropdown-items submenu with-triangle">
+            <div class="header">
+              <button class="btn transparent" onclick=${e => this.onShowSubmenu('')} title="Go back">
+                <i class="fa fa-angle-left"></i>
+              </button>
+              <h2>Create New</h2>
+            </div>
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onCreateSite(e, 'website')}>
+                <i class="fa fa-sitemap"></i>
+                <span class="label">Website</span>
               </div>
 
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
-                <i class="fa fa-list"></i>
-                Library
+              <div class="menu-item" onclick=${e => this.onCreateSite(e)}>
+                <i class="fa fa-clone"></i>
+                <span class="label">Empty project</span>
+              </div>
+            </div>
+          </div>
+        </div>`
+
+    } else if (this.isDropdownOpen) {
+      dropdownEl = yo`
+        <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
+          <div class="dropdown-items with-triangle">
+            ${autoUpdaterEl}
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenNewWindow()}>
+                <i class="fa fa-window-maximize"></i>
+                <span class="label">New Window</span>
+                <span class="shortcut">${this.accelerators.newWindow}</span>
               </div>
 
-              <div class="grid-item" onclick=${e => this.onCreateSite(e)}>
-                <i class="fa fa-pencil"></i>
-                New site
-              </div>
+              <div class="menu-item" onclick=${e => this.onOpenNewTab()}>
 
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://downloads')}>
-                <i class="fa fa-download"></i>
-                Downloads
-              </div>
-
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
-                <i class="fa fa-star"></i>
-                Bookmarks
-              </div>
-
-              <div class="grid-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
-                <i class="fa fa-gear"></i>
-                Settings
+                <i class="fa fa-file-o"></i>
+                <span class="label">New Tab</span>
+                <span class="shortcut">${this.accelerators.newTab}</span>
               </div>
             </div>
 
-            ${downloadEls.length ? yo`
-              <div>
-                <hr>
-                <div class="downloads">
-                  <h2>Downloads</h2>
-                  <ul class="downloads-list">${downloadEls}</ul>
-                </div>
-              </div>` : ''}
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onFindInPage(e)}>
+                <i class="fa fa-search"></i>
+                <span class="label">Find in Page</span>
+                <span class="shortcut">${this.accelerators.findInPage}</span>
+              </div>
+            </div>
 
-            <div class="footer">
-              <a onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
-                <i class="fa fa-info-circle"></i>
-                <span>Report an issue</span>
-              </a>
-              <a onclick=${e => this.onOpenPage(e, 'https://beakerbrowser.com/docs')}>
-                <i class="fa fa-question"></i>
-                <span>Help</span>
-              </a>
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
+                <i class="fa fa-book"></i>
+                <span class="label">Library</span>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
+                <i class="fa fa-star-o"></i>
+                <span class="label">Bookmarks</span>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
+                <i class="fa fa-history"></i>
+                <span class="label">History</span>
+                <span class="shortcut">${this.accelerators.history}</span>
+              </div>
+
+              <div class="menu-item downloads" style=${progressEl ? 'height: 41px' : ''} onclick=${e => this.onClickDownloads(e)}>
+                <i class="fa fa-download"></i>
+                <span class="label">Downloads</span>
+                ${this.shouldPersistDownloadsIndicator ? yo`<i class="fa fa-circle"></i>` : ''}
+                ${progressEl}
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onShowSubmenu('create-new')}>
+                <i class="fa fa-plus-square-o"></i>
+                <span class="label">Create New</span>
+                <i class="more fa fa-angle-right"></i>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onShareFiles(e)}>
+                <i class="fa fa-upload"></i>
+                <span class="label">Share Files</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
+                <i class="fa fa-gear"></i>
+                <span class="label">Settings</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenFile()}>
+                <i></i>
+                <span class="label">Open File...</span>
+                <span class="shortcut">${this.accelerators.openFile}</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'dat://beakerbrowser.com/docs/')}>
+                <i class="fa fa-question-circle-o"></i>
+                <span class="label">Help</span>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=ISSUE_TEMPLATE_0.8_BETA.md')}>
+                <i class="fa fa-flag-o"></i>
+                <span class="label">Report an Issue</span>
+              </div>
+
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://opencollective.com/beaker')}>
+                <i class="fa fa-heart-o"></i>
+                <span class="label">Support Beaker</span>
+              </div>
             </div>
           </div>
         </div>`
@@ -157,7 +206,6 @@ export class BrowserMenuNavbarBtn {
       <div class="toolbar-dropdown-menu browser-dropdown-menu">
         <button class="toolbar-btn toolbar-dropdown-menu-btn ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
           <span class="fa fa-bars"></span>
-          ${progressEl}
         </button>
         ${dropdownEl}
       </div>`
@@ -177,9 +225,32 @@ export class BrowserMenuNavbarBtn {
     )
   }
 
+  onShowSubmenu(submenu) {
+    this.submenu = submenu
+    this.updateActives()
+  }
+
+  onOpenNewWindow () {
+    ipcRenderer.send('new-window')
+  }
+
+  onOpenNewTab () {
+    pages.setActive(pages.create('beaker://start'))
+  }
+
+  async onOpenFile () {
+    var files = await beaker.browser.showOpenDialog({
+       title: 'Open file...',
+       properties: ['openFile', 'createDirectory']
+    })
+    if (files && files[0]) {
+      pages.setActive(pages.create('file://' + files[0]))
+    }
+  }
+
   onClickBtn (e) {
     this.isDropdownOpen = !this.isDropdownOpen
-    this.shouldPersistProgressBar = false // stop persisting if we were, the user clicked
+    this.submenu = ''
     this.updateActives()
   }
 
@@ -188,8 +259,14 @@ export class BrowserMenuNavbarBtn {
     if (parent) return // abort - this was a click on us!
     if (this.isDropdownOpen) {
       this.isDropdownOpen = false
+      this.submenu = ''
       this.updateActives()
     }
+  }
+
+  onClickDownloads (e) {
+    this.shouldPersistDownloadsIndicator = false
+    this.onOpenPage(e, 'beaker://downloads')
   }
 
   onNewDownload () {
@@ -216,47 +293,19 @@ export class BrowserMenuNavbarBtn {
   }
 
   onDone (download) {
-    this.shouldPersistProgressBar = true // keep progress bar up so the user notices
+    this.shouldPersistDownloadsIndicator = true
     this.doAnimation()
     this.onUpdate(download)
   }
 
-  onPause (e, download) {
+  onFindInPage (e) {
     e.preventDefault()
     e.stopPropagation()
-    beakerDownloads.pause(download.id)
-  }
 
-  onResume (e, download) {
-    e.preventDefault()
-    e.stopPropagation()
-    beakerDownloads.resume(download.id)
-  }
+    // close dropdown
+    this.isDropdownOpen = false
 
-  onCancel (e, download) {
-    e.preventDefault()
-    e.stopPropagation()
-    beakerDownloads.cancel(download.id)
-  }
-
-  onShow (e, download) {
-    e.preventDefault()
-    e.stopPropagation()
-    beakerDownloads.showInFolder(download.id)
-      .catch(err => {
-        download.fileNotFound = true
-        this.updateActives()
-      })
-  }
-
-  onOpen (e, download) {
-    e.preventDefault()
-    e.stopPropagation()
-    beakerDownloads.open(download.id)
-      .catch(err => {
-        download.fileNotFound = true
-        this.updateActives()
-      })
+    showInpageFind(pages.getActive())
   }
 
   onClearDownloads (e) {
@@ -266,18 +315,51 @@ export class BrowserMenuNavbarBtn {
     this.updateActives()
   }
 
-  async onCreateSite (e) {
+  async onCreateSite (e, template) {
     // close dropdown
-    this.isDropdownOpen = !this.isDropdownOpen
+    this.isDropdownOpen = false
+    this.submenu = ''
     this.updateActives()
 
-    var archive = await DatArchive.create()
-    pages.getActive().loadURL('beaker://library/' + archive.url.slice('dat://'.length))
+    // create a new archive
+    const archive = await DatArchive.create({template, prompt: false})
+    pages.setActive(pages.create('beaker://library/' + archive.url))
+  }
+
+  async onShareFiles (e) {
+    // close dropdown
+    this.isDropdownOpen = false
+    this.updateActives()
+
+    // ask user for files
+    const browserInfo = await beaker.browser.getInfo()
+    const filesOnly = browserInfo.platform === 'linux'
+    const files = await beaker.browser.showOpenDialog({
+      title: 'Select files to share',
+      buttonLabel: 'Share files',
+      properties: ['openFile', filesOnly ? false : 'openDirectory', 'multiSelections'].filter(Boolean)
+    })
+    if (!files || !files.length) return
+
+    // create the dat and import the files
+    const archive = await DatArchive.create({
+      title: `Shared files (${moment().format("M/DD/YYYY h:mm:ssa")})`,
+      description: `Files shared with Beaker`,
+      prompt: false
+    })
+    await Promise.all(files.map(src => DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: false})))
+
+    // open the new archive in the filesystem
+    pages.setActive(pages.create('beaker://library/' + archive.url.slice('dat://'.length)))
   }
 
   onOpenPage (e, url) {
     pages.setActive(pages.create(url))
     this.isDropdownOpen = false
     this.updateActives()
+  }
+
+  onClickRestart () {
+    beaker.browser.restartBrowser()
   }
 }

@@ -1,0 +1,22 @@
+.preview.profile {
+  position: absolute;
+  right: -375px;
+  top: -5px;
+  width: 350px;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 0 rgba(0,0,0,.15);
+
+  &:before {
+    position: absolute;
+    left: -8px;
+    display: block;
+    content: '';
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid #fff;
+  }
+}

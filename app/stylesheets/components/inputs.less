@@ -1,12 +1,94 @@
+textarea {
+  line-height: 1.4;
+}
+
 input, textarea {
-  padding: 3px 5px;
-  border-radius: 2px;
-  color: @color-text--muted;
+  height: 30px;
+  padding: 0 7px;
+  border-radius: 4px;
+  color: fadeout(@color-text, 5%);
   border: 1px solid @border-menu;
+
+  &[type="checkbox"],
+  &[type="radio"],
+  &[type="range"] {
+
+    &:focus {
+      box-shadow: none;
+    }
+  }
+
+  &[type="file"] {
+    padding: 0;
+    border: 0;
+    line-height: 1;
+
+    &:focus {
+      border: 0;
+      box-shadow: none;
+    }
+  }
 
   &.roomy {
     padding: 7px 9px;
   }
+}
+
+input,
+textarea,
+select {
+
+  &:focus {
+    outline: 0;
+    border: 1px solid fadeout(@color-link, 20%);
+    box-shadow: 0 0 0 2px fadeout(@color-link, 80%);
+  }
+
+  &.error {
+    border: 1px solid fadeout(shade(@red, 18%), 25%);
+
+    &:focus {
+      box-shadow: 0 0 0 2px fadeout(shade(@red, 20%), 85%);
+    }
+  }
+
+  &.nofocus:focus {
+    outline: 0;
+    box-shadow: none;
+    border: initial;
+  }
+}
+
+// inline text input
+input.inline {
+  height: auto;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  cursor: text;
+  padding: 3px 5px;
+  line-height: 1;
+
+  &:focus,
+  &:hover {
+    border: 1px solid #ccc;
+    box-shadow: none;
+  }
+
+  &:focus {
+    background: #fff;
+  }
+}
+
+input.underline {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: text;
+  line-height: 1;
 }
 
 // custom file picker
@@ -21,5 +103,79 @@ input, textarea {
   span {
     flex: 1;
     padding-left: 3px;
+  }
+}
+
+::-webkit-input-placeholder {
+  color: rgba(0,0,0,.5);
+  font-size: .8rem;
+}
+
+label {
+  font-weight: 500;
+}
+
+.toggle {
+  &:extend(.flex);
+  align-items: center;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  cursor: pointer;
+
+  * {
+    cursor: pointer;
+  }
+
+  input {
+    display: none;
+  }
+
+  .text {
+    font-weight: 400;
+  }
+
+  .switch {
+    display: inline-block;
+    position: relative;
+    width: 32px;
+    height: 17px;
+
+    &:before,
+    &:after {
+      position: absolute;
+      display: block;
+      content: '';
+    }
+
+    // the switch background
+    &:before {
+      width: 100%;
+      height: 100%;
+      border-radius: 40px;
+      background: #dadada;
+    }
+
+    // the switch
+    &:after {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      left: 3px;
+      top: 3px;
+      background: #fafafa;
+      transition: transform .15s ease;
+    }
+  }
+
+  input:checked {
+
+    + .switch:before {
+      background: shade(@green, 15%);
+    }
+
+    + .switch:after {
+      transform: translateX(15px);
+    }
   }
 }

@@ -1,3 +1,4 @@
+import {InvalidDomainName} from 'beaker-error-constants'
 import * as sitedataDb from '../../dbs/sitedata'
 import {DAT_HASH_REGEX} from '../../../lib/const'
 
@@ -6,6 +7,15 @@ const datDns = require('dat-dns')({
   persistentCache: {read, write}
 })
 export default datDns
+
+// wrap resolveName() with a better error
+const resolveName = datDns.resolveName
+datDns.resolveName = function () {
+  return resolveName.apply(datDns, arguments)
+    .catch(err => {
+      throw new InvalidDomainName()
+    })
+}
 
 // persistent cache methods
 const sitedataDbOpts = {dontExtractOrigin: true}

@@ -1,17 +1,29 @@
 export default {
+  // system state
   status: 'promise',
-  create: 'promise',
-  fork: 'promise',
+
+  // local cache management and querying
   add: 'promise',
   remove: 'promise',
   bulkRemove: 'promise',
-  restore: 'promise',
-  update: 'promise',
+  delete: 'promise',
   list: 'promise',
-  get: 'promise',
+
+  // publishing
+  publish: 'promise',
+  unpublish: 'promise',
+  listPublished: 'promise',
+  countPublished: 'promise',
+  getPublishRecord: 'promise',
+
+  // internal management
+  touch: 'promise',
   clearFileCache: 'promise',
   clearGarbage: 'promise',
   clearDnsCache: 'promise',
+
+  // events
   createEventStream: 'readable',
+  getDebugLog: 'promise',
   createDebugStream: 'readable'
 }

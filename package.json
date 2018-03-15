@@ -3,11 +3,11 @@
   "name": "beakerbrowser",
   "devDependencies": {
     "browserify": "^13.0.1",
-    "electron": "1.8.2-beta.4",
+    "electron": "1.8.3",
     "electron-builder": "~19.43.0",
-    "eslint": "^4.2.0",
+    "eslint": "^4.5.0",
     "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-node": "^5.1.0",
+    "eslint-plugin-node": "^5.1.1",
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
     "fs-jetpack": "^1.2.0",
@@ -74,5 +74,13 @@
     "type": "opencollective",
     "url": "https://opencollective.com/beaker",
     "logo": "https://opencollective.com/opencollective/logo.txt"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/beakerbrowser/beaker"
+  },
+  "bugs": {
+    "url": "https://github.com/beakerbrowser/beaker/issues"
+  },
+  "homepage": "https://beakerbrowser.com/"
 }

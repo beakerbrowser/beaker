@@ -1,13 +1,11 @@
 import path from 'path'
 import fs from 'fs'
 import { app, dialog, shell } from 'electron'
+import mime from 'mime'
 import unusedFilename from 'unused-filename'
 import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
-import rpc from 'pauls-electron-rpc'
-import manifest from '../../lib/api-manifests/internal/downloads'
-import { internalOnly } from '../../lib/bg/rpc'
 
 // globals
 // =
@@ -23,9 +21,9 @@ var downloadsEvents = new EventEmitter()
 // =
 
 export function setup () {
-  // wire up RPC
-  rpc.exportAPI('beakerDownloads', manifest, { eventsStream, getDownloads, pause, resume, cancel, remove, open, showInFolder }, internalOnly)
 }
+
+export const WEBAPI = { createEventsStream, getDownloads, pause, resume, cancel, remove, open, showInFolder }
 
 export function registerListener (win, opts = {}) {
   const listener = (e, item, webContents) => {
@@ -34,19 +32,23 @@ export function registerListener (win, opts = {}) {
     if (item.isHandled) { return }
 
     // build a path to an unused name in the downloads folder
-    const filePath = opts.saveAs ? opts.saveAs : unusedFilename.sync(path.join(app.getPath('downloads'), item.getFilename()))
+    let filePath = opts.saveAs ? opts.saveAs : unusedFilename.sync(path.join(app.getPath('downloads'), item.getFilename()))
 
     // track as an active download
     item.id = ('' + Date.now()) + ('' + Math.random()) // pretty sure this is collision proof but replace if not -prf
     item.name = path.basename(filePath)
+    if (item.name.split('.').length < 2) {
+      const ext = `.${mime.extension(item.getMimeType())}`
+      if (ext !== '.bin') {
+        item.name += ext
+        filePath += ext
+      }
+    }
     item.setSavePath(filePath)
     item.isHandled = true
     item.downloadSpeed = speedometer()
     downloads.push(item)
     downloadsEvents.emit('new-download', toJSON(item))
-
-    // TODO: use mime type checking for file extension when no extension can be inferred
-    // item.getMimeType()
 
     // update dock-icon progress bar
     var lastBytes = 0
@@ -110,7 +112,7 @@ export function download (win, url, opts) {
 // rpc api
 // =
 
-function eventsStream () {
+function createEventsStream () {
   return emitStream(downloadsEvents)
 }
 

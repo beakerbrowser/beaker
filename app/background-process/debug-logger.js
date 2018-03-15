@@ -15,7 +15,7 @@ export default function setup () {
 
   logFilePath = joinPath(app.getPath('userData'), 'debug.log')
   console.log('Logfile:', logFilePath)
-  debug.enable('dat,dns-discovery,discovery-channel,discovery-swarm,beaker')
+  debug.enable('dat,datgc,dat-dns,dat-serve,dns-discovery,discovery-channel,discovery-swarm,beaker,beaker-sqlite')
   debug.overrideUseColors()
 
   logFileWriteStream = fs.createWriteStream(logFilePath)

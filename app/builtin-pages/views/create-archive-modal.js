@@ -1,4 +1,4 @@
-/* globals beaker beakerBrowser */
+/* globals beaker DatArchive */
 
 import * as yo from 'yo-yo'
 import {Archive} from 'builtin-pages-lib'
@@ -7,6 +7,8 @@ import {adjustWindowHeight} from '../../lib/fg/event-handlers'
 // state
 var isEditing = false
 var archive
+var type
+var networked = true
 
 // form variables
 var title = ''
@@ -28,11 +30,13 @@ window.setup = async function (opts) {
     var archiveInfo = archive ? archive.info : {userSettings: {}}
     title = opts.title || archiveInfo.title || ''
     description = opts.description || archiveInfo.description || ''
+    type = opts.type
+    networked = ('networked' in opts) ? opts.networked : true
     render()
   } catch (e) {
     console.error(e)
     // ditch out
-    return beakerBrowser.closeModal({
+    return beaker.browser.closeModal({
       name: e.name,
       message: e.message || e.toString(),
       internalError: true
@@ -45,7 +49,7 @@ window.setup = async function (opts) {
 
 window.addEventListener('keyup', e => {
   if (e.which === 27) {
-    beakerBrowser.closeModal()
+    beaker.browser.closeModal()
   }
 })
 
@@ -59,21 +63,22 @@ function onChangeDescription (e) {
 
 function onClickCancel (e) {
   e.preventDefault()
-  beakerBrowser.closeModal()
+  beaker.browser.closeModal()
 }
 
 async function onSubmit (e) {
   e.preventDefault()
   try {
     if (isEditing) {
-      await beaker.archives.update(archive.url, {title, description})
-      beakerBrowser.closeModal(null, true)
+      let a = new DatArchive(archive.url)
+      await a.configure({title, description, type, networked})
+      beaker.browser.closeModal(null, true)
     } else {
-      var newArchive = await beaker.archives.create({title, description})
-      beakerBrowser.closeModal(null, {url: newArchive.url})
+      var newArchive = await DatArchive.create({title, description, type, networked, prompt: false})
+      beaker.browser.closeModal(null, {url: newArchive.url})
     }
   } catch (e) {
-    beakerBrowser.closeModal({
+    beaker.browser.closeModal({
       name: e.name,
       message: e.message || e.toString(),
       internalError: true
@@ -107,7 +112,7 @@ function render () {
             <input autofocus name="title" tabindex="2" value=${title || ''} placeholder="Title" onchange=${onChangeTitle} />
 
             <label for="desc">Description</label>
-            <textarea name="desc" tabindex="3" placeholder="Description (optional)" onchange=${onChangeDescription}>${description || ''}</textarea>
+            <textarea name="desc" tabindex="3" placeholder="Description (optional)" onchange=${onChangeDescription}>${description || ''}></textarea>
 
             <div class="form-actions">
               <button type="button" onclick=${onClickCancel} class="btn cancel" tabindex="4">Cancel</button>

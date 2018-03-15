@@ -1,0 +1,103 @@
+.datsite-menu-dropdown {
+  padding-top: 10px;
+  margin-right: -10px;
+}
+
+.datsite-menu-dropdown-items {
+  color: @color-text;
+  width: 290px;
+  font-size: .775rem;
+
+  &.dropdown-items.with-triangle:before {
+    right: 16px;
+  }
+
+  .btn {
+    &:extend(.btn);
+  }
+
+  .header {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .header,
+  .rehosting-controls {
+    margin: 0 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .header-info {
+    &:extend(.flex);
+    align-items: flex-start;
+    line-height: 16px;
+    margin-bottom: 2px;
+  }
+
+  h1.page-title {
+    font-size: .825rem;
+  }
+
+  .favicon {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+  }
+
+  .peer-count {
+    color: @color-text--muted;
+    margin-left: 21px; // width of favicon plus its right margin
+    font-size: .725rem;
+    font-weight: 300;
+  }
+
+  .network-url {
+    background: #f5f5f5;
+    padding: 10px;
+
+    i {
+      color: @color-text--muted;
+      margin-right: 3px;
+    }
+
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+
+  .labels {
+    &:extend(.flex);
+    align-items: center;
+
+    .policy {
+      flex: 1;
+    }
+  }
+
+  label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 5px;
+  }
+
+  input[type=range] {
+    width: 100%;
+  }
+
+  .fa-circle {
+    margin-right: 3px;
+    font-size: 12px;
+
+    &.green {
+      color: @green;
+    }
+    &.yellow {
+      color: @yellow;
+    }
+    &.red {
+      color: @red;
+    }
+  }
+}

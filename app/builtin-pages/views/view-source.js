@@ -1,79 +1,69 @@
-/* globals Event DatArchive beakerBrowser */
+/* globals DatArchive beaker */
 
 import * as yo from 'yo-yo'
-import {FileTree} from 'builtin-pages-lib'
 import mime from 'mime'
-import renderFiles from '../com/files-list'
-
-// HACK FIX
-// the good folk of whatwg didnt think to include an event for pushState(), so let's add one
-// -prf
-var _wr = function (type) {
-  var orig = window.history[type]
-  return function () {
-    var rv = orig.apply(this, arguments)
-    var e = new Event(type.toLowerCase())
-    e.arguments = arguments
-    window.dispatchEvent(e)
-    return rv
-  }
-}
-window.history.pushState = _wr('pushState')
-window.history.replaceState = _wr('replaceState')
 
 // globals
 // =
 
-var archiveKey = ''
-var fileTree = ''
-var archive
 var filePath = ''
-var fileContent = ''
-var pathInfo
+var fileContent = false
 
 setup()
 async function setup () {
   update()
 
-  pathInfo = await parseURL()
-  if (pathInfo.type === 'dat') {
-    filePath = pathInfo.path
-    archiveKey = pathInfo.key
-    archive = new DatArchive(archiveKey)
-    fileTree = new FileTree(archive, {onDemand: true})
-    await fileTree.setup().catch(err => null)
+  var target = await parseURL()
+  var mimetype = mime.lookup(target.path)
+  if (/^(video|audio|image)/.test(mimetype)) {
+    fileContent = true
+    filePath = target.orig
   } else {
-    filePath = pathInfo.path
-  }
-  update()
-  await loadFile()
-
-  window.addEventListener('pushstate', loadFile)
-  window.addEventListener('popstate', loadFile)
-}
-
-async function loadFile () {
-  fileContent = ''
-
-  pathInfo = await parseURL()
-  filePath = pathInfo.path
-
-  var mimetype = mime.lookup(filePath)
-  if (/^(video|audio|image)/.test(mimetype) == false) {
-    if (pathInfo.type === 'dat') {
+    if (target.type === 'dat') {
+      let {archive, path} = target
       try {
-        fileContent = await archive.readFile(filePath, 'utf8')
+        // run automated fallback rules (eg, if a directory look for index.html)
+        let st
+        let tryStat = async (testPath) => {
+          if (st) return
+          try {
+            console.log('trying', testPath)
+            st = await archive.stat(testPath)
+            // success, keep this path
+            path = testPath
+            console.log('it worked!', st.isDirectory())
+          } catch (e) {
+            // failure, ignore
+          }
+        }
+        await tryStat(path)
+        if (!st && !path.endsWith('/')) {
+          await tryStat(path + '.html')
+        } else if (st.isDirectory()) {
+          st = null
+          await tryStat(path + 'index.html')
+          await tryStat(path + 'index.md')
+        }
+
+        // read the file
+        fileContent = await archive.readFile(path, 'utf8')
+        filePath = path
       } catch (e) {
-        console.warn(e)
+        console.error(e)
+        fileContent = e.toString()
       }
     } else {
       try {
-        fileContent = await beakerBrowser.fetchBody(filePath.slice(1))
+        // just use the beaker helper to get the raw content
+        fileContent = await beaker.browser.fetchBody(target.path.slice(1))
+        filePath = target.path
       } catch (err) {
         console.error(err)
+        fileContent = err.toString()
       }
     }
   }
+
   update()
 }
 
@@ -84,7 +74,7 @@ async function parseURL () {
   }
 
   if (path.startsWith('/http')) {
-    return {type: 'http', path: window.location.pathname}
+    return {type: 'http', path: window.location.pathname, orig: path.slice(1)}
   }
 
   try {
@@ -92,10 +82,7 @@ async function parseURL () {
     var parts = /^\/([^/]+)(.*)/.exec(path)
     var key = parts[1]
     path = parts[2]
-    if (/[0-9a-f]{64}/i.test(key) == false) {
-      key = await DatArchive.resolveName(key)
-    }
-    return {type: 'dat', key, path}
+    return {type: 'dat', archive: new DatArchive(key), path, orig: 'dat://' + window.location.pathname.slice(1)}
   } catch (e) {
     console.error('Failed to parse URL', e)
     throw new Error('Invalid dat URL')
@@ -106,53 +93,20 @@ async function parseURL () {
 // =
 
 function update () {
-  if (pathInfo && pathInfo.type === 'dat') {
-    if (!archive) {
-      yo.update(document.querySelector('main'), yo`<main>Loading...</main>`)
-    } else {
-      yo.update(document.querySelector('main'), yo`
-        <main>
-          <div class="sidebar">
-            <div onclick=${onClickFilesList}>
-              ${renderFiles({url: archive.url, fileTree})}
-            </div>
-            <div class="sidebar-footer">
-              <div><a href="beaker://library/${archiveKey}">View in Library</a></div>
-              <div><a href="dat://${archiveKey}">View site</a></div>
-            </div>
-          </div>
-          ${renderFile()}
-        </main>
-      `)
-    }
+  if (!fileContent) {
+    yo.update(document.querySelector('main'), yo`<main>Loading...</main>`)
   } else {
-    if (!fileContent) {
-      yo.update(document.querySelector('main'), yo`<main>Loading...</main>`)
-    } else {
-      yo.update(document.querySelector('main'), yo`
-        <main>
-          ${renderFile()}
-        </main>
-      `)
-    }
+    yo.update(document.querySelector('main'), yo`
+      <main>
+        ${renderFile()}
+      </main>
+    `)
   }
 }
 
 function renderFile () {
   var url = filePath
   var mimetype = mime.lookup(filePath)
-
-  if (pathInfo.type === 'dat') {
-    url = archive.url + filePath
-
-    if (!archive) {
-      return yo`
-        <div class="file-view empty">
-          <i class="fa fa-code"></i>
-        </div>
-      `
-    }
-  }
 
   url += '?cache-buster=' + Date.now()
 
@@ -186,20 +140,5 @@ function renderFile () {
         <textarea readonly>${fileContent}</textarea>
       </div>
     `
-  }
-}
-
-// event handlers
-// =
-
-function onClickFilesList (e) {
-  e.preventDefault()
-  var node = e.target
-  if (node.tagName !== 'A') {
-    node = node.querySelector('a')
-  }
-  var href = node && node.getAttribute('href')
-  if (href && href.startsWith('dat://')) {
-    window.history.pushState(null, '', 'beaker://view-source/' + href.slice('dat://'.length))
   }
 }

@@ -1,8 +1,8 @@
 import { webFrame, ipcRenderer } from 'electron'
 import * as tabs from './ui/tabs'
 import * as navbar from './ui/navbar'
+import * as statusbar from './ui/statusbar'
 import * as win32Titlebar from './ui/win32-titlebar'
-import * as sidebar from './ui/sidebar'
 import * as pages from './pages'
 import * as commandHandlers from './command-handlers'
 import * as swipeHandlers from './swipe-handlers'
@@ -37,23 +37,27 @@ export function setup (cb) {
   // setup subsystems
   tabs.setup()
   navbar.setup()
+  statusbar.setup()
   if (window.process.platform == 'win32') {
     win32Titlebar.setup()
   }
-  sidebar.setup()
   commandHandlers.setup()
   swipeHandlers.setup()
   pages.setup()
-  pages.setActive(pages.create(pages.FIRST_TAB_URL))
-  cb()
+  ipcRenderer.send('shell-window:pages-ready')
+  pages.on('first-page', cb)
 }
 
+
 function onWindowEvent (event, type) {
-  if (type == 'blur') { document.body.classList.add('window-blurred') }
-  if (type == 'focus') {
-    document.body.classList.remove('window-blurred')
-    try { pages.getActive().webviewEl.focus() } catch (e) {}
+  switch (type) {
+    case 'blur': return document.body.classList.add('window-blurred')
+    case 'focus':
+      document.body.classList.remove('window-blurred')
+      try { pages.getActive().webviewEl.focus() } catch (e) {}
+      break
+    case 'enter-full-screen': return document.body.classList.add('fullscreen')
+    case 'leave-full-screen': return document.body.classList.remove('fullscreen')
+    case 'leave-page-full-screen': pages.leavePageFullScreen()
   }
-  if (type == 'enter-full-screen') { document.body.classList.add('fullscreen') }
-  if (type == 'leave-full-screen') { document.body.classList.remove('fullscreen') }
 }

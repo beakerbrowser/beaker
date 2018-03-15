@@ -1,30 +1,22 @@
-import {BrowserWindow} from 'electron'
-import {parse as parseURL} from 'url'
-import pda from 'pauls-dat-api'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as datGC from '../networks/dat/garbage-collector'
 import * as archivesDb from '../dbs/archives'
-import {DAT_HASH_REGEX, DEFAULT_DAT_API_TIMEOUT} from '../../lib/const'
-import {showModal} from '../ui/modals'
-import {validateLocalPath, showDeleteArchivePrompt} from '../browser'
-import {timer} from '../../lib/time'
+// import * as profilesIngest from '../ingests/profiles' TODO(profiles) disabled -prf
+import {DAT_HASH_REGEX} from '../../lib/const'
 import {
-  ArchiveNotWritableError,
   InvalidURLError,
-  InvalidPathError,
-  UserDeniedError
+  PermissionsError
 } from 'beaker-error-constants'
 
 // exported api
 // =
 
-const to = (opts) =>
-  (opts && typeof opts.timeout !== 'undefined')
-    ? opts.timeout
-    : DEFAULT_DAT_API_TIMEOUT
-
 export default {
+
+  // system state
+  // =
+
   async status () {
     var status = {archives: 0, peers: 0}
     var archives = datLibrary.getActiveArchives()
@@ -35,106 +27,29 @@ export default {
     return status
   },
 
-  async create ({title, description} = {}) {
-    return datLibrary.createNewArchive({title, description})
-  },
+  // local cache management and querying
+  // =
 
-  async fork (url, {title, description} = {}) {
-    return datLibrary.forkArchive(url, {title, description})
-  },
-
-  async update (url, manifestInfo, userSettings) {
-    var key = toKey(url)
-    var archive = await datLibrary.getOrLoadArchive(key)
-
-    // no info provided: open modal
-    if (!manifestInfo && !userSettings) {
-      if (!archive.writable) {
-        throw new ArchiveNotWritableError()
-      }
-      // show the update-info the modal
-      let win = BrowserWindow.fromWebContents(this.sender)
-      await assertSenderIsFocused(this.sender)
-      return showModal(win, 'create-archive', {url})
-    }
-
-    // validate path
-    if (userSettings && userSettings.localPath && !validateLocalPath(userSettings.localPath).valid) {
-      throw new InvalidPathError('Cannot save the site to that folder')
-    }
-
-    // update manifest file
-    if (manifestInfo) {
-      var archiveInfo = await archivesDb.getMeta(key)
-      var {title, description} = manifestInfo
-      title = typeof title !== 'undefined' ? title : archiveInfo.title
-      description = typeof description !== 'undefined' ? description : archiveInfo.description
-      if (title !== archiveInfo.title || description !== archiveInfo.description) {
-        await Promise.all([
-          pda.updateManifest(archive, {title, description}),
-          pda.updateManifest(archive.staging, {title, description})
-        ])
-        datLibrary.pullLatestArchiveMeta(archive)
-      }
-    }
-
-    // update settings
-    if (userSettings) {
-      var oldLocalPath = archive.staging ? archive.staging.path : false
-      userSettings = await archivesDb.setUserSettings(0, key, userSettings)
-      await datLibrary.configureStaging(archive, userSettings)
-      if (userSettings.localPath && userSettings.localPath !== oldLocalPath) {
-        datLibrary.deleteOldStagingFolder(oldLocalPath)
-      }
-    }
-  },
-
-  async add (url) {
-    var key = toKey(url)
+  async add (url, opts = {}) {
+    var key = datLibrary.fromURLToKey(url)
 
     // pull metadata
     var archive = await datLibrary.getOrLoadArchive(key)
-    var meta = await datLibrary.pullLatestArchiveMeta(archive)
-
-    // select a default local path, if needed
-    var localPath
-    if (archive.writable) {
-      try {
-        let userSettings = await archivesDb.getUserSettings(0, key)
-        localPath = userSettings.localPath
-      } catch (e) {}
-      localPath = localPath || await datLibrary.selectDefaultLocalPath(meta.title)
-    }
+    await datLibrary.pullLatestArchiveMeta(archive)
 
     // update settings
-    return archivesDb.setUserSettings(0, key, {isSaved: true, localPath})
+    opts.isSaved = true
+    return archivesDb.setUserSettings(0, key, opts)
+    beaker.archives.add(key)
   },
 
-  async remove (url, {noPrompt} = {}) {
-    var key = toKey(url)
-
-    // check with the user if they're the owner
-    var meta = await archivesDb.getMeta(key)
-    if (meta.isOwner && !noPrompt) {
-      var settings = await archivesDb.getUserSettings(0, key)
-      var {shouldDelete, preserveStagingFolder} = await showDeleteArchivePrompt(meta.title || key, settings.localPath)
-      if (!shouldDelete) {
-        return settings
-      }
-    }
-
-    // delete
-    settings = await archivesDb.setUserSettings(0, key, {isSaved: false})
-    if (settings.localPath && !preserveStagingFolder) {
-      datLibrary.deleteOldStagingFolder(settings.localPath, {alwaysDelete: true})
-    }
-    return settings
+  async remove (url) {
+    var key = datLibrary.fromURLToKey(url)
+    await assertArchiveDeletable(key)
+    return archivesDb.setUserSettings(0, key, {isSaved: false})
   },
 
   async bulkRemove (urls) {
-    var bulkShouldDelete = false
-    var preserveStagingFolder = false
-    // if user chooses yes-to-all, then preserveStagingFolder will be the last given value
     var results = []
 
     // sanity check
@@ -143,71 +58,92 @@ export default {
     }
 
     for (var i = 0; i < urls.length; i++) {
-      let key = toKey(urls[i])
-
-      if (!bulkShouldDelete) {
-        // check with the user if they're the owner
-        let meta = await archivesDb.getMeta(key)
-        if (meta.isOwner) {
-          let settings = await archivesDb.getUserSettings(0, key)
-          let res = await showDeleteArchivePrompt(meta.title || key, settings.localPath, {bulk: true})
-          preserveStagingFolder = res.preserveStagingFolder
-
-          if (res.bulkYesToAll) {
-            // 'yes to all' chosen
-            bulkShouldDelete = true
-          } else if (!res.shouldDelete) {
-            // 'no' chosen
-            results.push(settings) // give settings unchanged
-            continue
-          }
-        }
-      }
-
-      // delete
-      let settings = await archivesDb.setUserSettings(0, key, {isSaved: false})
-      if (settings.localPath && !preserveStagingFolder) {
-        datLibrary.deleteOldStagingFolder(settings.localPath, {alwaysDelete: true})
-      }
-      results.push(settings)
+      let key = datLibrary.fromURLToKey(urls[i])
+      await assertArchiveDeletable(key)
+      results.push(await archivesDb.setUserSettings(0, key, {isSaved: false}))
     }
     return results
   },
 
-  async restore (url) {
-    var key = toKey(url)
-    var settings = await archivesDb.getUserSettings(0, key)
-    if (settings.localPath) {
-      await datLibrary.restoreStagingFolder(key, settings.localPath)
-      return true
-    }
-    return false
+  async delete (url) {
+    const key = datLibrary.fromURLToKey(url)
+    await assertArchiveDeletable(key)
+    await archivesDb.setUserSettings(0, key, {isSaved: false})
+    await datLibrary.unloadArchive(key)
+    const bytes = await archivesDb.deleteArchive(key)
+    return {bytes}
   },
 
   async list (query = {}) {
     return datLibrary.queryArchives(query)
   },
 
-  async get (url, opts) {
-    return timer(to(opts), async (checkin) => {
-      return datLibrary.getArchiveInfo(toKey(url))
-    })
+  // publishing
+  // =
+
+  async publish (archiveUrl) {
+    throw new Error('Published archives are temporarily disabled')
+    // TODO(profiles) disabled -prf
+    // const profileRecord = await profilesIngest.getProfileRecord(0)
+    // archiveUrl = typeof archiveUrl.url === 'string' ? archiveUrl.url : archiveUrl
+    // const archiveInfo = await datLibrary.getArchiveInfo(archiveUrl)
+    // return profilesIngest.getAPI().publishArchive(profileRecord.url, archiveInfo)
+  },
+
+  async unpublish (archiveUrl) {
+    throw new Error('Published archives are temporarily disabled')
+    // TODO(profiles) disabled -prf
+    // const profileRecord = await profilesIngest.getProfileRecord(0)
+    // archiveUrl = typeof archiveUrl.url === 'string' ? archiveUrl.url : archiveUrl
+    // return profilesIngest.getAPI().unpublishArchive(profileRecord.url, archiveUrl)
+  },
+
+  async listPublished (opts) {
+    throw new Error('Published archives are temporarily disabled')
+    // TODO(profiles) disabled -prf
+    // return profilesIngest.getAPI().listPublishedArchives(opts)
+  },
+
+  async countPublished (opts) {
+    throw new Error('Published archives are temporarily disabled')
+    // TODO(profiles) disabled -prf
+    // return profilesIngest.getAPI().countPublishedArchives(opts)
+  },
+
+  async getPublishRecord (recordUrl) {
+    throw new Error('Published archives are temporarily disabled')
+    // TODO(profiles) disabled -prf
+    // return profilesIngest.getAPI().getPublishedArchive(recordUrl)
+  },
+
+  // internal management
+  // =
+
+  async touch (key, timeVar, value) {
+    return archivesDb.touch(key, timeVar, value)
   },
 
   async clearFileCache (url) {
-    return datLibrary.clearFileCache(toKey(url))
+    return datLibrary.clearFileCache(datLibrary.fromURLToKey(url))
   },
 
-  async clearGarbage () {
-    return datGC.collect({olderThan: 0, biggerThan: 0})
+  async clearGarbage ({isOwner} = {}) {
+    return datGC.collect({olderThan: 0, biggerThan: 0, isOwner})
   },
 
   clearDnsCache () {
     datDns.flushCache()
   },
 
+  // events
+  // =
+
   createEventStream () {
     return datLibrary.createEventStream()
+  },
+
+  getDebugLog (key) {
+    return datLibrary.getDebugLog(key)
   },
 
   createDebugStream () {
@@ -215,29 +151,10 @@ export default {
   }
 }
 
-async function assertSenderIsFocused (sender) {
-  if (!sender.isFocused()) {
-    throw new UserDeniedError('Application must be focused to spawn a prompt')
-  }
-}
-
-// helper to convert the given URL to a dat key
-function toKey (url) {
-  if (DAT_HASH_REGEX.test(url)) {
-    // simple case: given the key
-    return url
-  }
-
-  var urlp = parseURL(url)
-
-  // validate
-  if (urlp.protocol !== 'dat:') {
-    throw new InvalidURLError('URL must be a dat: scheme')
-  }
-  if (!DAT_HASH_REGEX.test(urlp.host)) {
-    // TODO- support dns lookup?
-    throw new InvalidURLError('Hostname is not a valid hash')
-  }
-
-  return urlp.host
+async function assertArchiveDeletable (key) {
+  // TODO(profiles) disabled -prf
+  // var profileRecord = await profilesIngest.getProfileRecord(0)
+  // if ('dat://' + key === profileRecord.url) {
+  //   throw new PermissionsError('Unable to delete the user archive.')
+  // }
 }

@@ -3,9 +3,9 @@ import path from 'path'
 import url from 'url'
 import once from 'once'
 import fs from 'fs'
-import http from 'http'
-import crypto from 'crypto'
-import listenRandomPort from 'listen-random-port'
+import jetpack from 'fs-jetpack'
+import intoStream from 'into-stream'
+import ICO from 'icojs'
 import errorPage from '../../lib/error-page'
 import {archivesDebugPage, datDnsCachePage, datDnsCacheJS} from '../networks/dat/debugging'
 import {getLogFileContent} from '../debug-logger'
@@ -16,81 +16,61 @@ import {getLogFileContent} from '../debug-logger'
 // content security policies
 const BEAKER_CSP = `
   default-src 'self' beaker:;
-  img-src beaker-favicon: beaker: data: dat: http: https;
+  img-src beaker-favicon: beaker: data: dat: workspace: http: https;
   script-src 'self' beaker:;
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
+  child-src 'self' workspace:;
 `.replace(/\n/g, '')
 
-// globals
-// =
-
-var serverPort // port assigned to us
-var requestNonce // used to limit access to the server from the outside
 
 // exported api
 // =
 
 export function setup () {
-  // generate a secret nonce
-  requestNonce = '' + crypto.randomBytes(4).readUInt32LE(0)
-
   // setup the protocol handler
-  protocol.registerHttpProtocol('beaker',
-    (request, cb) => {
-      // send requests to the protocol server
-      cb({
-        method: request.method,
-        url: `http://localhost:${serverPort}/?url=${encodeURIComponent(request.url)}&nonce=${requestNonce}`
-      })
-    }, err => {
-      if (err) {
-        throw new Error('Failed to create protocol: beaker. ' + err)
-      }
-    }
-  )
-
-  // create the internal beaker HTTP server
-  var server = http.createServer(beakerServer)
-  listenRandomPort(server, { host: '127.0.0.1' }, (err, port) => { serverPort = port })
+  protocol.registerStreamProtocol('beaker', beakerProtocol, err => {
+    if (err) throw new Error('Failed to create protocol: beaker. ' + err)
+  })
 }
 
 // internal methods
 // =
 
-async function beakerServer (req, res) {
-  var cb = once((code, status, contentType, path) => {
-    res.writeHead(code, status, {
+async function beakerProtocol (request, respond) {
+  var cb = once((statusCode, status, contentType, path) => {
+    const headers = {
       'Content-Type': (contentType || 'text/html; charset=utf-8'),
       'Content-Security-Policy': BEAKER_CSP,
       'Access-Control-Allow-Origin': '*'
-    })
+    }
     if (typeof path === 'string') {
-      var rs = fs.createReadStream(path)
-      rs.pipe(res)
-      rs.on('error', err => {
-        res.writeHead(404)
-        res.end(' ') // need to put some content on the wire for some reason
-      })
+      respond({statusCode, headers, data: fs.createReadStream(path)})
     } else if (typeof path === 'function') {
-      res.end(path())
+      respond({statusCode, headers, data: intoStream(path())})
     } else {
-      res.end(errorPage(code + ' ' + status))
+      respond({statusCode, headers, data: intoStream(errorPage(statusCode + ' ' + status))})
     }
   })
+  async function serveICO (path, size = 16) {
+    // read the file
+    const data = await jetpack.readAsync(path, 'buffer')
 
-  var requestUrl
-  var queryParams
-  {
-    let parsed = url.parse(req.url, true).query
-    requestUrl = parsed.url
-
-    // check the nonce
-    // (only want this process to access the server)
-    if (parsed.nonce !== requestNonce) {
-      return cb(403, 'Forbidden')
+    // parse the ICO to get the 16x16
+    const images = await ICO.parse(data, 'image/png')
+    let image = images[0]
+    for (let i=1; i < images.length; i++) {
+      if (Math.abs(images[i].width - size) < Math.abs(image.width - size)) {
+        image = images[i]
+      }
     }
+
+    // serve
+    cb(200, 'OK', 'image/png', () => Buffer.from(image.buffer))
   }
+
+  var requestUrl = request.url
+  var queryParams
   {
     // strip off the hash
     let i = requestUrl.indexOf('#')
@@ -115,6 +95,12 @@ async function beakerServer (req, res) {
   }
   if (requestUrl === 'beaker://shell-window/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/shell-window.css'))
+  }
+  if (requestUrl === 'beaker://assets/syntax-highlight.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'assets/js/syntax-highlight.js'))
+  }
+  if (requestUrl === 'beaker://assets/syntax-highlight.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/css/syntax-highlight.css'))
   }
   if (requestUrl === 'beaker://assets/icons.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/icons.css'))
@@ -146,13 +132,48 @@ async function beakerServer (req, res) {
   if (requestUrl.startsWith('beaker://assets/logo')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
   }
+  if (requestUrl.startsWith('beaker://assets/favicons/')) {
+    return serveICO(path.join(__dirname, 'assets/favicons', requestUrl.slice('beaker://assets/favicons/'.length)))
+  }
 
   // builtin pages
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages.css'))
   }
+  if (requestUrl.startsWith('beaker://assets/img/onboarding/')) {
+    var imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
+  }
+  if (requestUrl === 'beaker://assets/icon/photos.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/icon/photos.png'))
+  }
+  if (requestUrl === 'beaker://assets/icon/avatar.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/avatar.svg'))
+  }
+  if (requestUrl === 'beaker://assets/icon/folder-color.png') {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/icon/folder-color.png'))
+  }
+  if (requestUrl === 'beaker://assets/icon/grid.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/grid.svg'))
+  }
+  if (requestUrl === 'beaker://assets/icon/star.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/star.svg'))
+  }
+  if (requestUrl === 'beaker://assets/icon/filesystem.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/filesystem.svg'))
+  }
+  if (requestUrl === 'beaker://assets/icon/history.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/history.svg'))
+  }
+  if (requestUrl === 'beaker://assets/icon/gear.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/gear.svg'))
+  }
   if (requestUrl === 'beaker://start/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/start.html'))
+  }
+  if (requestUrl.startsWith('beaker://start/background-image-default')) {
+    var imgPath = requestUrl.slice('beaker://start/background-image-default'.length)
+    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/start${imgPath}`))
   }
   if (requestUrl === 'beaker://start/background-image') {
     return cb(200, 'OK', 'image/png', path.join(app.getPath('userData'), 'start-background-image'))
@@ -162,6 +183,12 @@ async function beakerServer (req, res) {
   }
   if (requestUrl === 'beaker://start/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/start.build.js'))
+  }
+  if (requestUrl === 'beaker://profile/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/profile.build.js'))
+  }
+  if (requestUrl === 'beaker://profile/' || requestUrl.startsWith('beaker://profile/')) {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/profile.html'))
   }
   if (requestUrl === 'beaker://bookmarks/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/bookmarks.html'))
@@ -181,14 +208,38 @@ async function beakerServer (req, res) {
   if (requestUrl === 'beaker://downloads/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/downloads.build.js'))
   }
+  if (requestUrl === 'beaker://filesystem/main.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/filesystem.css'))
+  }
+  if (requestUrl === 'beaker://filesystem/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/filesystem.build.js'))
+  }
+  if (requestUrl === 'beaker://filesystem/' || requestUrl.startsWith('beaker://filesystem/')) {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/filesystem.html'))
+  }
   if (requestUrl === 'beaker://library/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/library.css'))
   }
   if (requestUrl === 'beaker://library/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/library.build.js'))
   }
-  if (requestUrl === 'beaker://library/' || requestUrl.startsWith('beaker://library/')) {
+  if (requestUrl === 'beaker://library/view.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/library-view.build.js'))
+  }
+  if (requestUrl === 'beaker://library/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/library.html'))
+  }
+  if (requestUrl.startsWith('beaker://library/')) {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/library-view.html'))
+  }
+  if (requestUrl === 'beaker://install-modal/main.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/install-modal.css'))
+  }
+  if (requestUrl === 'beaker://install-modal/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/install-modal.build.js'))
+  }
+  if (requestUrl === 'beaker://install-modal/' || requestUrl.startsWith('beaker://install-modal/')) {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/install-modal.html'))
   }
   if (requestUrl === 'beaker://view-source/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/view-source.css'))
@@ -213,15 +264,6 @@ async function beakerServer (req, res) {
   }
   if (requestUrl === 'beaker://settings/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/settings.build.js'))
-  }
-  if (requestUrl === 'beaker://dat-sidebar/main.js') {
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, 'builtin-pages/build/dat-sidebar.build.js'))
-  }
-  if (requestUrl === 'beaker://dat-sidebar/main.css') {
-    return cb(200, 'OK', 'text/css', path.join(__dirname, 'stylesheets/builtin-pages/dat-sidebar.css'))
-  }
-  if (requestUrl === 'beaker://dat-sidebar/' || requestUrl.startsWith('beaker://dat-sidebar/')) {
-    return cb(200, 'OK', 'text/html', path.join(__dirname, 'builtin-pages/dat-sidebar.html'))
   }
 
   // modals
@@ -283,23 +325,25 @@ async function beakerServer (req, res) {
   }
   if (requestUrl.startsWith('beaker://debug-log/')) {
     const PAGE_SIZE = 1e6
-    res.writeHead(200, 'OK', {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Content-Security-Policy': BEAKER_CSP,
-      'Access-Control-Allow-Origin': '*'
-    })
     var start = queryParams.start ? (+queryParams.start) : 0
     let content = await getLogFileContent(start, start + PAGE_SIZE)
     var pagination = ''
     if (content.length === PAGE_SIZE + 1 || start !== 0) {
       pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
     }
-    res.end(`
-      ${pagination}
-      <pre>${content}</pre>
-      ${pagination}
-    `)
-    return
+    return respond({
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Security-Policy': BEAKER_CSP,
+        'Access-Control-Allow-Origin': '*'
+      },
+      data: intoStream(`
+        ${pagination}
+        <pre>${content}</pre>
+        ${pagination}
+      `)
+    })
   }
 
   return cb(404, 'Not Found')

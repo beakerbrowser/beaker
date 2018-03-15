@@ -10,6 +10,13 @@ var db
 var migrations
 var setupPromise
 
+const DEFAULT_SETTINGS = {
+  auto_update_enabled: 1,
+  custom_start_page: 'blank',
+  start_page_background_image: '',
+  workspace_default_path: path.join(app.getPath('home'), 'Sites')
+}
+
 // exported methods
 // =
 
@@ -17,7 +24,7 @@ export function setup () {
   // open database
   var dbPath = path.join(app.getPath('userData'), 'Settings')
   db = new sqlite3.Database(dbPath)
-  setupPromise = setupSqliteDB(db, migrations, '[SETTINGS]')
+  setupPromise = setupSqliteDB(db, {migrations}, '[SETTINGS]')
 }
 
 export function set (key, value) {
@@ -32,13 +39,14 @@ export function set (key, value) {
 
 export function get (key) {
   // env variables
-  if (key === 'noWelcomeTab') {
+  if (key === 'no_welcome_tab') {
     return (process.env.beaker_no_welcome_tab == 1)
   }
   // stored values
   return setupPromise.then(v => cbPromise(cb => {
     db.get(`SELECT value FROM settings WHERE key = ?`, [key], (err, row) => {
       if (row) { row = row.value }
+      if (typeof row === 'undefined') { row = DEFAULT_SETTINGS[key] }
       cb(err, row)
     })
   }))
@@ -51,7 +59,8 @@ export function getAll () {
 
       var obj = {}
       rows.forEach(row => { obj[row.key] = row.value })
-      obj.noWelcomeTab = (process.env.beaker_no_welcome_tab == 1)
+      obj = Object.assign({}, DEFAULT_SETTINGS, obj)
+      obj.no_welcome_tab = (process.env.beaker_no_welcome_tab == 1)
       cb(null, obj)
     })
   }))

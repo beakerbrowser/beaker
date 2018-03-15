@@ -1,0 +1,241 @@
+@import "../base/spacing";
+@import "../base/colors";
+
+.profile-wrapper {
+
+  .builtin-main {
+
+    h2 {
+      margin: 25px;
+      margin-bottom: 10px;
+    }
+  }
+
+  .edit-link {
+    &:extend(.flex);
+    align-items: center;
+    justify-content: flex-end;
+    position: absolute;
+    padding: 15px;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    color: rgba(0,0,0,.7);
+    cursor: pointer;
+    transition: color .1s ease;
+
+    .icon {
+      width: 13px;
+      height: 13px;
+      margin-left: 5px;
+
+      * {
+        transition: stroke .1s ease;
+        stroke: rgba(0,0,0,.7);
+      }
+    }
+
+    &:hover {
+      color: @color-text;
+
+      .icon * {
+        stroke: @color-text;
+      }
+    }
+  }
+
+  .profile-view {
+    padding: 0 15px 15px 15px;
+    border-bottom: 1px solid rgba(0,0,0,.1);
+
+    > *:last-child {
+      margin-bottom: 0;
+    }
+
+    .header {
+      &:extend(.flex);
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+
+    .name {
+      font-size: .95rem;
+    }
+
+    .bio {
+      color: rgba(0,0,0,.7);
+    }
+
+    .follow-btn {
+      margin-top: 5px;
+      width: 100%;
+      height: 28px !important; // bump up button height, it looks weird at the normal 26px when full width
+    }
+  }
+
+  form.edit-profile {
+    max-width: 365px;
+    margin: 25px;
+
+    input,
+    textarea,
+    label {
+      display: block;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    textarea {
+      height: 70px;
+      padding-top: 3px;
+    }
+
+    .actions {
+      &:extend(.flex);
+      justify-content: flex-end;
+
+      button {
+        margin-left: 5px;
+      }
+    }
+
+    .avatar-container {
+      margin-bottom: 15px;
+    }
+  }
+
+  .avatar-container {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    border-radius: 2px;
+    overflow: hidden;
+    cursor: pointer;
+    border-radius: 50%;
+
+    &:hover {
+
+      .avatar.empty {
+        // background: rgba(0,0,0,.125);
+      }
+    }
+  }
+
+  .avatar-input {
+    width: 200%;
+    height: 100%;
+    padding-left: 50px; // push the "Choose files" button out of view
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    background: fadeout(#fff, 70%);
+    transition: opacity .1s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  .avatar {
+    width: 100%;
+    height: 100%;
+    transition: background .1s ease;
+
+    &.empty {
+      background: rgba(0,0,0,.075);
+      color: #fff;
+      font-size: 36px;
+      text-align: center;
+      line-height: 35px;
+      padding: 0;
+    }
+  }
+
+  img.avatar.empty {
+    opacity: 0;
+  }
+
+  .following-view {
+    .empty {
+      font-style: italic;
+      padding: 15px 50px;
+    }
+  }
+
+  .following-list {
+    margin: 0 25px 10px 25px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 15px;
+    width: 516px;
+  }
+
+  .following-card {
+    &:extend(.flex);
+    color: #555;
+    text-decoration: none;
+    align-items: center;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 2px;
+    box-shadow: 0 1px 0 rgba(0,0,0,.2);
+    width: 250px;
+
+    cursor: pointer;
+    * {
+      cursor: pointer;
+    }
+
+    .avatar {
+      margin-right: 10px;
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+    }
+
+    .you-label {
+      padding-right: 5px;
+      margin-left: auto;
+      color: @color-text--light;
+    }
+
+    .follow-btn {
+      padding: 0;
+      margin-left: auto;
+      width: 22px !important;
+      height: 22px !important;
+      line-height: 22px;
+      vertical-align: middle;
+      text-align: center;
+      font-size: 1rem;
+      line-height: 1.15;
+
+      &.following {
+        font-size: 0.85rem;
+        line-height: 1.1;
+      }
+    }
+  }
+
+  .ll-row {
+
+    &:first-of-type {
+      border-top: 1px solid rgb(230, 230, 230);
+    }
+
+    height: 45px !important;
+
+    .avatar {
+      border-radius: 50%;
+      width: 27px;
+      height: 27px;
+    }
+  }
+}

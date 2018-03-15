@@ -1,18 +1,23 @@
-import {dialog} from 'electron'
 import path from 'path'
 import parseDatURL from 'parse-dat-url'
 import pda from 'pauls-dat-api'
-import jetpack from 'fs-jetpack'
 import concat from 'concat-stream'
+import pick from 'lodash.pick'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
+import * as workspacesDb from '../dbs/workspaces'
+// import {getProfileRecord, getAPI as getProfilesAPI} from '../ingests/profiles' TODO(profiles) disabled -prf
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {getWebContentsWindow} from '../../lib/electron'
+import {checkFolderIsEmpty} from '../../lib/bg/fs'
+import * as scopedFSes from '../../lib/bg/scoped-fses'
+import {getPermissions} from '../dbs/sitedata'
 import {queryPermission, grantPermission, requestPermission} from '../ui/permissions'
 import {
   DAT_MANIFEST_FILENAME,
+  DAT_CONFIGURABLE_FIELDS,
   DAT_HASH_REGEX,
   DAT_QUOTA_DEFAULT_BYTES_ALLOWED,
   DAT_VALID_PATH_REGEX,
@@ -37,45 +42,102 @@ const to = (opts) =>
     : DEFAULT_DAT_API_TIMEOUT
 
 export default {
-  async createArchive ({title, description} = {}) {
-    // initiate the modal
-    var win = getWebContentsWindow(this.sender)
-    // DISABLED
-    // this mechanism is a bit too temperamental
-    // are we sure it's the best policy anyway?
-    // -prf
-    // await assertSenderIsFocused(this.sender)
+  async createArchive ({title, description, type, networked, template, prompt} = {}) {
+    var newArchiveUrl
 
-    // run the creation modal
-    var res = await showModal(win, 'create-archive', {title, description})
-    if (!res || !res.url) throw new UserDeniedError()
+    // only allow type, networked, and template to be set by beaker, for now
+    if (!this.sender.getURL().startsWith('beaker:')) {
+      type = networked = template = undefined
+    }
+
+    if (prompt !== false) {
+      // initiate the modal
+      let win = getWebContentsWindow(this.sender)
+      // DISABLED
+      // this mechanism is a bit too temperamental
+      // are we sure it's the best policy anyway?
+      // -prf
+      // await assertSenderIsFocused(this.sender)
+
+      // run the creation modal
+      let res = await showModal(win, 'create-archive', {title, description, type, networked})
+      if (!res || !res.url) throw new UserDeniedError()
+      newArchiveUrl = res.url
+    } else {
+      // no modal, ask for permission
+      await assertCreateArchivePermission(this.sender)
+
+      // create
+      let author = await getAuthor()
+      newArchiveUrl = await datLibrary.createNewArchive({title, description, type, author}, {networked})
+    }
+    let newArchiveKey = await lookupUrlDatKey(newArchiveUrl)
+
+    // apply the template
+    if (template) {
+      try {
+        let archive = datLibrary.getArchive(newArchiveKey)
+        let templatePath = path.join(__dirname, 'assets', 'templates', template)
+        await pda.exportFilesystemToArchive({
+          srcPath: templatePath,
+          dstArchive: archive,
+          dstPath: '/',
+          inplaceImport: true
+        })
+      } catch (e) {
+        console.error('Failed to import template', e)
+      }
+    }
 
     // grant write permissions to the creating app
-    var newArchiveKey = await lookupUrlDatKey(res.url)
     grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
-    return res.url
+    return newArchiveUrl
   },
 
-  async forkArchive (url, {title, description} = {}) {
-    // initiate the modal
-    var win = getWebContentsWindow(this.sender)
-    // DISABLED
-    // this mechanism is a bit too temperamental
-    // are we sure it's the best policy anyway?
-    // -prf
-    // await assertSenderIsFocused(this.sender)
+  async forkArchive (url, {title, description, type, networked, prompt} = {}) {
+    var newArchiveUrl
 
-    // run the fork modal
-    var key1 = await lookupUrlDatKey(url)
-    var key2 = await lookupUrlDatKey(this.sender.getURL())
-    var isSelfFork = key1 === key2
-    var res = await showModal(win, 'fork-archive', {url, title, description, isSelfFork})
-    if (!res || !res.url) throw new UserDeniedError()
+    // only allow type and networked to be set by beaker, for now
+    if (!this.sender.getURL().startsWith('beaker:')) {
+      type = networked = undefined
+    }
+
+    if (prompt !== false) {
+      // initiate the modal
+      let win = getWebContentsWindow(this.sender)
+      // DISABLED
+      // this mechanism is a bit too temperamental
+      // are we sure it's the best policy anyway?
+      // -prf
+      // await assertSenderIsFocused(this.sender)
+
+      // run the fork modal
+      let key1 = await lookupUrlDatKey(url)
+      let key2 = await lookupUrlDatKey(this.sender.getURL())
+      let isSelfFork = key1 === key2
+      let res = await showModal(win, 'fork-archive', {url, title, description, type, networked, isSelfFork})
+      if (!res || !res.url) throw new UserDeniedError()
+      newArchiveUrl = res.url
+    } else {
+      // no modal, ask for permission
+      await assertCreateArchivePermission(this.sender)
+
+      // create
+      let author = await getAuthor()
+      newArchiveUrl = await datLibrary.forkArchive(url, {title, description, type, author}, {networked})
+    }
 
     // grant write permissions to the creating app
-    var newArchiveKey = await lookupUrlDatKey(res.url)
+    let newArchiveKey = await lookupUrlDatKey(newArchiveUrl)
     grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
-    return res.url
+    return newArchiveUrl
+  },
+
+  async unlinkArchive (url) {
+    var {archive} = await lookupArchive(url)
+    await assertDeleteArchivePermission(archive, this.sender)
+    await assertArchiveDeletable(archive)
+    await archivesDb.setUserSettings(0, archive.key, {isSaved: false})
   },
 
   async loadArchive (url) {
@@ -98,186 +160,262 @@ export default {
         key: info.key,
         url: info.url,
         isOwner: info.isOwner,
+        networked: info.userSettings.networked,
 
         // state
         version: info.version,
         peers: info.peers,
         mtime: info.mtime,
-        metaSize: info.metaSize,
-        stagingSize: info.stagingSize,
+        size: info.size,
 
         // manifest
         title: info.title,
-        description: info.description
+        description: info.description,
+        type: info.type
       }
     })
   },
 
-  async diff (url, opts = {}) {
-    var {archive, version} = await lookupArchive(url, opts)
-    if (version) return [] // TODO
-    if (!archive.staging) return []
-    return pda.diff(archive.staging, {shallow: opts.shallow, compareContent: true})
-  },
+  async configure (url, settings, opts) {
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('looking up archive')
 
-  async commit (url, opts = {}) {
-    var {archive, version} = await lookupArchive(url, opts)
-    if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    if (!archive.staging) return []
-    await assertWritePermission(archive, this.sender)
-    var res = await pda.commit(archive.staging, {compareContent: true})
-    await datLibrary.updateSizeTracking(archive)
-    return res
-  },
+      var {archive, version} = await lookupArchive(url, opts)
+      if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
+      if (!settings || typeof settings !== 'object') throw new Error('Invalid argument')
 
-  async revert (url, opts = {}) {
-    var {archive, version} = await lookupArchive(url, opts)
-    if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    if (!archive.staging) return []
-    await assertWritePermission(archive, this.sender)
-    var res = await pda.revert(archive.staging)
-    await datLibrary.updateSizeTracking(archive)
-    return res
+      // handle 'networked' specially
+      // also, only allow beaker to set 'networked' for now
+      if (this.sender.getURL().startsWith('beaker:') && ('networked' in settings)) {
+        if (settings.networked === false) {
+          await assertArchiveOfflineable(archive)
+        }
+        await archivesDb.setUserSettings(0, archive.key, {networked: settings.networked, expiresAt: 0})
+        if (Object.keys(settings).length === 1) {
+          return
+        }
+      }
+
+      pause() // dont count against timeout, there may be user prompts
+      var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+      await assertWritePermission(archive, this.sender)
+      await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(JSON.stringify(settings), 'utf8'))
+      resume()
+
+      checkin('updating archive')
+
+      let manifestUpdates = pick(settings, DAT_CONFIGURABLE_FIELDS)
+      if (Object.keys(manifestUpdates).length) {
+        await pda.updateManifest(archive, manifestUpdates)
+        updateWorkspaceManifest(archive, manifestUpdates)
+        await datLibrary.pullLatestArchiveMeta(archive)
+      }
+    })
   },
 
   async history (url, opts = {}) {
-    var reverse = opts.reverse === true
-    var {start, end} = opts
-    var {archive, version} = await lookupArchive(url, opts)
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('looking up archive')
 
-    // if reversing the output, modify start/end
-    start = start || 0
-    end = end || archive.metadata.length
-    if (reverse) {
-      // swap values
-      let t = start
-      start = end
-      end = t
-      // start from the end
-      start = archive.metadata.length - start
-      end = archive.metadata.length - end
-    }
+      var reverse = opts.reverse === true
+      var {start, end} = opts
+      var {archive} = await lookupArchive(url, opts)
 
-    return new Promise((resolve, reject) => {
-      // .stagingFS doesnt provide history()
-      // and .checkoutFS falls back to .stagingFS
-      // so we need to manually select checkoutFS or archive
-      var ctx = ((version) ? archive.checkoutFS : archive)
-      var stream = ctx.history({live: false, start, end})
-      stream.pipe(concat({encoding: 'object'}, values => {
-        values = values.map(massageHistoryObj)
-        if (reverse) values.reverse()
-        resolve(values)
-      }))
-      stream.on('error', reject)
+      checkin('reading history')
+
+      // if reversing the output, modify start/end
+      start = start || 0
+      end = end || archive.metadata.length
+      if (reverse) {
+        // swap values
+        let t = start
+        start = end
+        end = t
+        // start from the end
+        start = archive.metadata.length - start
+        end = archive.metadata.length - end
+      }
+
+      return new Promise((resolve, reject) => {
+        var stream = archive.checkoutFS.history({live: false, start, end})
+        stream.pipe(concat({encoding: 'object'}, values => {
+          values = values.map(massageHistoryObj)
+          if (reverse) values.reverse()
+          resolve(values)
+        }))
+        stream.on('error', reject)
+      })
     })
   },
 
-  async stat (url, opts = {}) {
-    var {archive, filepath} = await lookupArchive(url, opts)
-    return pda.stat(archive.checkoutFS, filepath)
+  async stat (url, filepath, opts = {}) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('looking up archive')
+      const {archive} = await lookupArchive(url, opts)
+      checkin('stating file')
+      return pda.stat(archive.checkoutFS, filepath)
+    })
   },
 
-  async readFile (url, opts = {}) {
-    var {archive, filepath} = await lookupArchive(url, opts)
-    return pda.readFile(archive.checkoutFS, filepath, opts)
+  async readFile (url, filepath, opts = {}) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('looking up archive')
+      const {archive} = await lookupArchive(url, opts)
+      checkin('reading file')
+      return pda.readFile(archive.checkoutFS, filepath, opts)
+    })
   },
 
-  async writeFile (url, data, opts = {}) {
-    var {archive, filepath, version} = await lookupArchive(url, opts)
-    if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-    await assertWritePermission(archive, this.sender)
-    await assertQuotaPermission(archive, senderOrigin, Buffer.byteLength(data, opts.encoding))
-    await assertValidFilePath(filepath)
-    await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.writeFile(archive.stagingFS, filepath, data, opts)
-  },
+  async writeFile (url, filepath, data, opts = {}) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('looking up archive')
+      const {archive, version} = await lookupArchive(url, opts)
+      if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
-  async unlink (url) {
-    var {archive, filepath, version} = await lookupArchive(url)
-    if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    await assertWritePermission(archive, this.sender)
-    await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.unlink(archive.stagingFS, filepath)
-  },
-
-  // TODO copy-disabled
-  /* async copy(url, dstPath) {
-    return timer(to(), async (checkin) => {
-      checkin('searching for archive')
-      var {archive, filepath} = await lookupArchive(url)
-      if (checkin('copying file')) return
-      var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+      pause() // dont count against timeout, there may be user prompts
+      const senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
       await assertWritePermission(archive, this.sender)
-      await assertUnprotectedFilePath(dstPath, this.sender)
-      return pda.copy(archive.stagingFS, filepath, dstPath)
-    })
-  }, */
+      const sourceSize = Buffer.byteLength(data, opts.encoding)
+      await assertQuotaPermission(archive, senderOrigin, sourceSize)
+      assertValidFilePath(filepath)
+      assertUnprotectedFilePath(filepath, this.sender)
+      resume()
 
-  // TODO rename-disabled
-  /* async rename(url, dstPath) {
-    return timer(to(), async (checkin) => {
-      checkin('searching for archive')
-      var {archive, filepath} = await lookupArchive(url)
-      if (checkin('renaming file')) return
-      var senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+      checkin('writing file')
+      return pda.writeFile(archive, filepath, data, opts)
+    })
+  },
+
+  async unlink (url, filepath, opts = {}) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('looking up archive')
+      const {archive, version} = await lookupArchive(url)
+      if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
+
+      pause() // dont count against timeout, there may be user prompts
       await assertWritePermission(archive, this.sender)
-      await assertUnprotectedFilePath(filepath, this.sender)
-      await assertUnprotectedFilePath(dstPath, this.sender)
-      return pda.rename(archive.stagingFS, filepath, dstPath)
-    })
-  }, */
+      assertUnprotectedFilePath(filepath, this.sender)
+      resume()
 
-  async download (url, opts = {}) {
-    return timer(to(opts), async (checkin) => {
-      var {archive, filepath, version} = await lookupArchive(url, false)
+      checkin('deleting file')
+      return pda.unlink(archive, filepath)
+    })
+  },
+
+  async copy (url, filepath, dstpath, opts = {}) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('searching for archive')
+      const {archive} = await lookupArchive(url)
+
+      pause() // dont count against timeout, there may be user prompts
+      const senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
+      await assertWritePermission(archive, this.sender)
+      assertUnprotectedFilePath(dstpath, this.sender)
+      const sourceSize = await pda.readSize(archive, filepath)
+      await assertQuotaPermission(archive, senderOrigin, sourceSize)
+      resume()
+
+      checkin('copying file')
+      return pda.copy(archive, filepath, dstpath)
+    })
+  },
+
+  async rename (url, filepath, dstpath, opts = {}) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('searching for archive')
+      const {archive} = await lookupArchive(url)
+
+      pause() // dont count against timeout, there may be user prompts
+      await assertWritePermission(archive, this.sender)
+      assertValidFilePath(dstpath)
+      assertUnprotectedFilePath(filepath, this.sender)
+      assertUnprotectedFilePath(dstpath, this.sender)
+      resume()
+
+      checkin('renaming file')
+      return pda.rename(archive, filepath, dstpath)
+    })
+  },
+
+  async download (url, filepath, opts = {}) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('searching for archive')
+      const {archive, version} = await lookupArchive(url)
       if (version) throw new Error('Not yet supported: can\'t download() old versions yet. Sorry!') // TODO
       if (archive.writable) {
         return // no need to download
       }
+
+      checkin('downloading file')
       return pda.download(archive, filepath)
     })
   },
 
-  async readdir (url, opts = {}) {
-    var {archive, filepath} = await lookupArchive(url, opts)
-    var names = await pda.readdir(archive.checkoutFS, filepath, opts)
-    if (opts.stat) {
-      for (let i = 0; i < names.length; i++) {
-        names[i] = {
-          name: names[i],
-          stat: await pda.stat(archive.checkoutFS, path.join(filepath, names[i]))
+  async readdir (url, filepath, opts = {}) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('searching for archive')
+      const {archive} = await lookupArchive(url, opts)
+
+      checkin('reading directory')
+      var names = await pda.readdir(archive.checkoutFS, filepath, opts)
+      if (opts.stat) {
+        for (let i = 0; i < names.length; i++) {
+          names[i] = {
+            name: names[i],
+            stat: await pda.stat(archive.checkoutFS, path.join(filepath, names[i]))
+          }
         }
       }
-    }
-    return names
+      return names
+    })
   },
 
-  async mkdir (url) {
-    var {archive, filepath, version} = await lookupArchive(url)
-    if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    await assertWritePermission(archive, this.sender)
-    await assertValidPath(filepath)
-    await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.mkdir(archive.stagingFS, filepath)
+  async mkdir (url, filepath, opts) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('searching for archive')
+      const {archive, version} = await lookupArchive(url)
+      if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
+
+      pause() // dont count against timeout, there may be user prompts
+      await assertWritePermission(archive, this.sender)
+      await assertValidPath(filepath)
+      assertUnprotectedFilePath(filepath, this.sender)
+      resume()
+
+      checkin('making directory')
+      return pda.mkdir(archive, filepath)
+    })
   },
 
-  async rmdir (url, opts = {}) {
-    var {archive, filepath, version} = await lookupArchive(url, opts)
-    if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    await assertWritePermission(archive, this.sender)
-    await assertUnprotectedFilePath(filepath, this.sender)
-    return pda.rmdir(archive.stagingFS, filepath, opts)
+  async rmdir (url, filepath, opts = {}) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('searching for archive')
+      const {archive, version} = await lookupArchive(url, opts)
+      if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
+
+      pause() // dont count against timeout, there may be user prompts
+      await assertWritePermission(archive, this.sender)
+      assertUnprotectedFilePath(filepath, this.sender)
+      resume()
+
+      checkin('removing directory')
+      return pda.rmdir(archive, filepath, opts)
+    })
   },
 
   async createFileActivityStream (url, pathPattern) {
     var {archive} = await lookupArchive(url)
-    if (archive.staging) {
-      return pda.createFileActivityStream(archive, archive.stagingFS, pathPattern)
-    } else {
-      return pda.createFileActivityStream(archive, pathPattern)
-    }
+    return pda.createFileActivityStream(archive, pathPattern)
   },
 
   async createNetworkActivityStream (url) {
@@ -291,7 +429,7 @@ export default {
     if (version) throw new ArchiveNotWritableError('Cannot modify a historic version')
     return pda.exportFilesystemToArchive({
       srcPath: opts.src,
-      dstArchive: archive.stagingFS,
+      dstArchive: archive,
       dstPath: filepath,
       ignore: opts.ignore,
       inplaceImport: opts.inplaceImport !== false
@@ -301,25 +439,8 @@ export default {
   async exportToFilesystem (opts) {
     assertTmpBeakerOnly(this.sender)
 
-    // check if there are files in the destination path
-    var dst = opts.dst
-    try {
-      var files = await jetpack.listAsync(dst)
-      if (files && files.length > 0) {
-        // ask the user if they're sure
-        var res = await new Promise(resolve => {
-          dialog.showMessageBox({
-            type: 'question',
-            message: 'This folder is not empty. Some files may be overwritten. Continue export?',
-            buttons: ['Yes', 'No, cancel']
-          }, resolve)
-        })
-        if (res != 0) {
-          return false
-        }
-      }
-    } catch (e) {
-      // no files
+    if (await checkFolderIsEmpty(opts.dst) === false) {
+      return
     }
 
     var {archive, filepath} = await lookupArchive(opts.src, opts)
@@ -341,7 +462,7 @@ export default {
     return pda.exportArchiveToArchive({
       srcArchive: src.archive.checkoutFS,
       srcPath: src.filepath,
-      dstArchive: dst.archive.stagingFS,
+      dstArchive: dst.archive,
       dstPath: dst.filepath,
       ignore: opts.ignore,
       skipUndownloadedFiles: opts.skipUndownloadedFiles !== false
@@ -387,13 +508,32 @@ function assertTmpBeakerOnly (sender) {
   }
 }
 
+async function assertCreateArchivePermission (sender) {
+  // beaker: always allowed
+  if (sender.getURL().startsWith('beaker:')) {
+    return true
+  }
+
+  // ask the user
+  let allowed = await requestPermission('createDat', sender)
+  if (!allowed) {
+    throw new UserDeniedError()
+  }
+}
+
 async function assertWritePermission (archive, sender) {
   var archiveKey = archive.key.toString('hex')
+  var details = await datLibrary.getArchiveInfo(archiveKey)
   const perm = ('modifyDat:' + archiveKey)
 
   // ensure we have the archive's private key
   if (!archive.writable) {
     throw new ArchiveNotWritableError()
+  }
+
+  // ensure we havent deleted the archive
+  if (!details.userSettings.isSaved) {
+    throw new ArchiveNotWritableError('This archive has been deleted. Restore it to continue making changes.')
   }
 
   // beaker: always allowed
@@ -412,10 +552,41 @@ async function assertWritePermission (archive, sender) {
   if (allowed) return true
 
   // ask the user
-  var details = await datLibrary.getArchiveInfo(archiveKey)
   allowed = await requestPermission(perm, sender, { title: details.title })
   if (!allowed) throw new UserDeniedError()
   return true
+}
+
+async function assertDeleteArchivePermission (archive, sender) {
+  var archiveKey = archive.key.toString('hex')
+  const perm = ('deleteDat:' + archiveKey)
+
+  // beaker: always allowed
+  if (sender.getURL().startsWith('beaker:')) {
+    return true
+  }
+
+  // ask the user
+  var details = await datLibrary.getArchiveInfo(archiveKey)
+  var allowed = await requestPermission(perm, sender, { title: details.title })
+  if (!allowed) throw new UserDeniedError()
+  return true
+}
+
+async function assertArchiveOfflineable (archive) {
+  // TODO(profiles) disabled -prf
+  // var profileRecord = await getProfileRecord(0)
+  // if ('dat://' + archive.key.toString('hex') === profileRecord.url) {
+  //   throw new PermissionsError('Unable to set the user archive to offline.')
+  // }
+}
+
+async function assertArchiveDeletable (archive) {
+  // TODO(profiles) disabled -prf
+  // var profileRecord = await getProfileRecord(0)
+  // if ('dat://' + archive.key.toString('hex') === profileRecord.url) {
+  //   throw new PermissionsError('Unable to delete the user archive.')
+  // }
 }
 
 async function assertQuotaPermission (archive, senderOrigin, byteLength) {
@@ -430,21 +601,24 @@ async function assertQuotaPermission (archive, senderOrigin, byteLength) {
   // fallback to default quota
   var bytesAllowed = userSettings.bytesAllowed || DAT_QUOTA_DEFAULT_BYTES_ALLOWED
 
+  // update the archive size
+  await datLibrary.updateSizeTracking(archive)
+
   // check the new size
-  var newSize = (archive.metaSize + archive.stagingSize + byteLength)
+  var newSize = (archive.size + byteLength)
   if (newSize > bytesAllowed) {
     throw new QuotaExceededError()
   }
 }
 
-async function assertValidFilePath (filepath) {
+function assertValidFilePath (filepath) {
   if (filepath.slice(-1) === '/') {
     throw new InvalidPathError('Files can not have a trailing slash')
   }
-  await assertValidPath(filepath)
+  assertValidPath(filepath)
 }
 
-async function assertValidPath (fileOrFolderPath) {
+function assertValidPath (fileOrFolderPath) {
   if (!DAT_VALID_PATH_REGEX.test(fileOrFolderPath)) {
     throw new InvalidPathError('Path contains invalid characters')
   }
@@ -455,6 +629,18 @@ async function assertValidPath (fileOrFolderPath) {
 //     throw new UserDeniedError('Application must be focused to spawn a prompt')
 //   }
 // }
+
+async function getAuthor () {
+  return undefined
+  // TODO(profiles) disabled -prf
+  // var profileRecord = await getProfileRecord(0)
+  // if (!profileRecord || !profileRecord.url) return undefined
+  // var profile = await getProfilesAPI().getProfile(profileRecord.url)
+  // return {
+  //   url: profileRecord.url,
+  //   name: profile && profile.name ? profile.name : undefined
+  // }
+}
 
 async function parseUrlParts (url) {
   var archiveKey, filepath, version
@@ -474,10 +660,18 @@ async function parseUrlParts (url) {
     }
 
     archiveKey = urlp.host
-    filepath = decodeURIComponent(urlp.pathname || '')
+    filepath = decodeURIComponent(urlp.pathname || '') || '/'
     version = urlp.version
   }
   return {archiveKey, filepath, version}
+}
+
+function normalizeFilepath (str) {
+  str = decodeURIComponent(str)
+  if (str.charAt(0) !== '/') {
+    str = '/' + str
+  }
+  return str
 }
 
 // helper to handle the URL argument that's given to most args
@@ -486,31 +680,19 @@ async function parseUrlParts (url) {
 // - sets archive.checkoutFS to what's requested by version
 // - throws if the filepath is invalid
 async function lookupArchive (url, opts = {}) {
-  async function lookupArchiveInner (checkin) {
-    checkin('searching for archive')
+  // lookup the archive
+  var {archiveKey, filepath, version} = await parseUrlParts(url)
+  var archive = datLibrary.getArchive(archiveKey)
+  if (!archive) archive = await datLibrary.loadArchive(archiveKey)
 
-    // lookup the archive
-    var {archiveKey, filepath, version} = await parseUrlParts(url)
-    var archive = datLibrary.getArchive(archiveKey)
-    if (!archive) archive = await datLibrary.loadArchive(archiveKey)
-
-    // set checkoutFS according to the version requested
-    if (version) {
-      checkin('checking out a previous version from history')
-      archive.checkoutFS = archive.checkout(+version)
-    } else {
-      archive.checkoutFS = archive.stagingFS
-    }
-
-    return {archive, filepath, version}
-  }
-  if (opts === false) {
-    // dont use timeout
-    return lookupArchiveInner(noop)
+  // set checkoutFS according to the version requested
+  if (version) {
+    archive.checkoutFS = archive.checkout(+version)
   } else {
-    // use timeout
-    return timer(to(opts), lookupArchiveInner)
+    archive.checkoutFS = archive
   }
+
+  return {archive, filepath, version}
 }
 
 async function lookupUrlDatKey (url) {
@@ -530,4 +712,11 @@ function massageHistoryObj ({name, version, type}) {
   return {path: name, version, type}
 }
 
-function noop () {}
+async function updateWorkspaceManifest (archive, manifestUpdates) {
+  const ws = await workspacesDb.getByPublishTargetUrl(0, 'dat://' + archive.key.toString('hex'))
+  if (!ws || ws.localFilesPathIsMissing) return
+  const scopedFS = scopedFSes.get(ws.localFilesPath)
+  if (!scopedFS) return
+  scopedFS.writable = true // get PDA to work with the scoped fs (PDA expects an archive)
+  await pda.updateManifest(scopedFS, manifestUpdates)
+}

@@ -1,86 +1,118 @@
 import * as yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import { ucfirst } from '../../lib/strings'
+import { ucfirst, getHostname } from '../../lib/strings'
+import { downloadTimestamp } from '../../lib/time'
+import renderCloseIcon from '../icon/close'
 
 // exported api
 // =
 
 export function render (downloadsList) {
   var downloadEls = downloadsList.downloads.map(d => {
-    var actions
-    var status = ''
-    var progress = ''
-    var size = ''
-    var canShow = false
-    var canCancel = false
-    if (d.state === 'progressing') {
-      // progress
-      status = (d.isPaused) ? 'Paused' : (prettyBytes(d.downloadSpeed || 0) + '/s')
+    var metadataEl = ''
+    var progressEl = ''
 
-      progress = yo`
-        <div class="progress">
-          <div class="progressbar">
-            <progress value=${d.receivedBytes} max=${d.totalBytes}></progress>
-          </div>
-          <span>${prettyBytes(d.receivedBytes || 0)} / ${prettyBytes(d.totalBytes || 0)}</span>
+    if (d.state == 'progressing') {
+      var status = (d.isPaused) ? 'Paused' : (prettyBytes(d.downloadSpeed || 0) + '/s')
+      var controls = ''
+      var cls = 'progressing'
+
+      var cancelBtn = yo`
+        <button data-tooltip="Cancel download" onclick=${() => downloadsList.cancelDownload(d)} class="btn small tooltip-container">
+          <i title="Cancel download" class="fa fa-stop"></i>
+        </button>`
+
+      const progressPercentage = `${Math.floor((d.receivedBytes / d.totalBytes) * 100)}%`
+      progressEl = yo`
+        <div class="progress-ui blue small">
+          <div style="width: ${progressPercentage}" class="completed"></div>
         </div>`
 
-      // actions
-      canCancel = true
       if (d.isPaused) {
-        actions = yo`<a onclick=${e => downloadsList.resumeDownload(d)}>Resume</a>`
+        controls = yo`
+          <div class="btn-group buttons controls">
+            ${cancelBtn}
+            <button data-tooltip="Resume download" class="btn small tooltip-container" onclick=${() => downloadsList.resumeDownload(d)}>
+              <i class="fa fa-play"></i>
+            </button>
+          </span>`
       } else {
-        actions = yo`
-          <a onclick=${e => downloadsList.pauseDownload(d)}>
-            <i class="fa fa-pause"></i>
-            Pause
-          </a>`
+        controls = yo`
+          <div class="buttons controls btn-group">
+            ${cancelBtn}
+            <button data-tooltip="Pause download" class="btn small tooltip-container" onclick=${() => downloadsList.pauseDownload(d)}>
+              <i class="fa fa-pause"></i>
+            </button>
+          </div>
+        `
       }
+
+      metadataEl = yo`
+        <div class="metadata">
+          ${prettyBytes(d.receivedBytes || 0)} / ${prettyBytes(d.totalBytes || 0)}
+          (${status})
+        </div>
+      `
     } else if (d.state === 'completed') {
-      size = yo`<span>${prettyBytes(d.totalBytes || 0)}</span>`
-
       // actions
+      var actions
       if (!d.fileNotFound) {
-        canShow = true
-
-        var removeBtn = yo`<a onclick=${e => downloadsList.removeDownload(d)}>Remove Download</a>`
-
-        if (canCancel) {
-          removeBtn = ''// yo`<a onclick=${e => downloadsList.cancelDownload(d)}>Cancel Download</a>`
-        }
+        var removeBtn = yo`
+          <button data-tooltip="Remove from downloads" onclick=${e => downloadsList.removeDownload(d)} class="btn plain trash tooltip-container">
+            <i class="fa fa-times"></i>
+          </button>
+        `
 
         actions = [
-          yo`<a onclick=${e => downloadsList.openDownload(d)}>Open</a>`,
-          yo`<a onclick=${e => downloadsList.showDownload(d)}>Show in Finder</a>`,
-          removeBtn
+          yo`
+            <span class="link show" onclick=${e => { e.stopPropagation(); downloadsList.showDownload(d) }}>
+              Show in Finder
+            </span>`
         ]
       } else {
-        // TODO
-        // action = yo`<div>File not found (moved or deleted)</div>`
+        actions = [
+          yo`<span>File not found (moved or deleted)</span>`
+        ]
       }
+
+      metadataEl = yo`
+        <div class="metadata">
+          <span>${prettyBytes(d.totalBytes || 0)}</span>
+          —
+          ${downloadTimestamp(d.id)}
+          —
+          ${actions}
+        </div>
+      `
     } else {
-      status = ucfirst(d.state)
+      metadataEl = yo`
+        <div class="metadata">
+          <span class="status">${ucfirst(d.state)}</span>
+        </div>
+      `
     }
 
     // render download
     return yo`
-      <div class="ll-row download">
-        <div class="link">
-          <img class="favicon" src=${'beaker-favicon:' + d.url} />
-          ${canShow
-            ? yo`<a class="title" onclick=${e => downloadsList.openDownload(d)} title=${d.name}>${d.name}</a>`
-            : yo`<span class="title" title=${d.name}>${d.name}</a>`}
-        </div>
-        <div class="status">${status}</div>
-        ${progress}
-        ${size}
-        <div class="actions">${actions}</div>
+      <div class="ll-row download ${cls}" ondblclick=${(e) => downloadsList.openDownload(d)}>
+        <span class="title">${d.name}</span>
+        <span class="url">${getHostname(d.url)}</span>
+        ${progressEl}
+        ${controls}
+        ${metadataEl}
+        <div class="buttons controls">${removeBtn}</div>
       </div>`
   }).reverse()
 
   // empty state
   if (downloadEls.length === 0) {
-    downloadEls = yo`<div class="ll-empty">No downloads.</div>`
+    downloadEls =
+      yo`
+        <div class="view empty">
+          <p>
+            No downloads
+          </p>
+        </div>`
   }
 
   return yo`<div class="links-list">${downloadEls}</div>`

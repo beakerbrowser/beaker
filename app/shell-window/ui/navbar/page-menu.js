@@ -1,4 +1,4 @@
-/* globals beaker DatArchive beakerBrowser */
+/* globals beaker DatArchive confirm */
 
 import * as yo from 'yo-yo'
 import {findParent} from '../../../lib/fg/event-handlers'
@@ -16,45 +16,31 @@ export class PageMenuNavbarBtn {
   }
 
   render () {
-    var page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
-      return yo`<span />`
+    const page = pages.getActive()
+    if (!page || !page.protocolInfo || ['dat:'].includes(page.protocolInfo.scheme) === false) {
+      return ''
     }
-    const isSaved = page.siteInfo && page.siteInfo.userSettings && page.siteInfo.userSettings.isSaved
+    const isInstalledApp = page.isInstalledApp()
+    const isDat = !!page.getViewedDatOrigin()
 
     // render the dropdown if open
     var dropdownEl = ''
     if (this.isDropdownOpen) {
-      var openwithSublist
+      /*var openwithSublist TODO restore if/when needed
       if (this.isOpenwithOpen) {
         openwithSublist = yo`
           <div class="dropdown-items sublist">
             <div class="list">
-              <div class="list-item" onclick=${() => this.onClickOpenwithLibrary()}>
+              <div class="list-item" onclick=${() => this.onClickViewFiles()}>
                 Library
               </div>
             </div>
           </div>
         `
-      }
+      } */
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
-          <div class="dropdown-items with-triangle visible">
-            <div class="list">
-              ${isSaved
-                ? yo`
-                    <div class="list-item" onclick=${() => this.onClickRemove()}>
-                      <i class="fa fa-trash"></i>
-                      Remove from Library
-                    </div>
-                  `
-                : yo`
-                    <div class="list-item" onclick=${() => this.onClickAdd()}>
-                      <i class="fa fa-plus"></i>
-                      Add to Library
-                    </div>
-                  `}
-              <hr />
+              ${'' /* TODO restore if/when needed
               <div
                 class="list-item"
                 onmouseenter=${() => this.onMouseEnterOpenwith()}
@@ -65,17 +51,58 @@ export class PageMenuNavbarBtn {
                 <i class="fa fa-caret-right"></i>
                 ${openwithSublist}
               </div>
+              <hr /> */}
+              ${'' // TODO(apps) restore when we bring back apps -prf
+              /*isAppScheme ? yo`<div>
+                <div class="list-item" onclick=${() => isDat ? this.onClickInstall() : this.onClickEditSettings()}>
+                  <i class="fa fa-wrench"></i>
+                  Configure this app
+                </div>
+                ${isInstalledApp ?
+                  yo`
+                    <div class="list-item" onclick=${() => this.onClickUninstall()}>
+                      <i class="fa fa-trash-o"></i>
+                      Uninstall this app
+                    </div>
+                  `
+                  : ''}
+              </div>` : ''}
+              ${isAppScheme && isDat ? yo`<hr />` : ''*/}
+
+            ${isDat
+              ? yo`
+                <div class="dropdown-items compact with-triangle">
+                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
+                    <i class="fa fa-clone"></i>
+                    Make editable copy
+                  </div>
+
+                  <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
+                    <i class="fa fa-book"></i>
+                    Open in Library
+                  </div>
+
+                  <div class="dropdown-item" onclick=${() => this.onClickNetworkDebugger()}>
+                    <i class="fa fa-bug"></i>
+                    Network debugger
+                  </div>
+
+                  <div class="dropdown-item" onclick=${() => this.onClickDownloadZip()}>
+                    <i class="fa fa-file-archive-o"></i>
+                    Download as .zip
+                  </div>
+                </div>`
+              : ''
+            }
+
+            ${'' // TODO(apps) restore when we bring back apps -prf
+            /*isDat && !isInstalledApp ? yo`<div>
               <hr />
-              <div class="list-item" onclick=${() => this.onClickFork()}>
-                <i class="fa fa-code-fork"></i>
-                Fork this site
+              <div class="list-item" onclick=${() => this.onClickInstall()}>
+                <i class="fa fa-download"></i>
+                Install as an app
               </div>
-              <div class="list-item" onclick=${() => this.onClickDownloadZip()}>
-                <i class="fa fa-file-archive-o"></i>
-                Download as .zip
-              </div>
-            </div>
-          </div>
+            </div>` : ''*/}
         </div>`
     }
 
@@ -83,7 +110,7 @@ export class PageMenuNavbarBtn {
     return yo`
       <div class="toolbar-dropdown-menu page-dropdown-menu">
         <button class="toolbar-btn toolbar-dropdown-menu-btn ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
-          <span class="fa fa-caret-down"></span>
+          <span class="fa fa-ellipsis-h"></span>
         </button>
         ${dropdownEl}
       </div>`
@@ -115,24 +142,6 @@ export class PageMenuNavbarBtn {
     this.close()
   }
 
-  async onClickAdd () {
-    this.close()
-    var page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
-      return
-    }
-    page.siteInfo.userSettings = await beaker.archives.add(page.siteInfo.key)
-  }
-
-  async onClickRemove () {
-    this.close()
-    var page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
-      return
-    }
-    page.siteInfo.userSettings = await beaker.archives.remove(page.siteInfo.key)
-  }
-
   onMouseEnterOpenwith () {
     if (this.openwithMouseLeaveTimer) {
       clearTimeout(this.openwithMouseLeaveTimer)
@@ -149,33 +158,69 @@ export class PageMenuNavbarBtn {
     }, 300)
   }
 
-  onClickOpenwithLibrary () {
+  // TODO(apps) restore when we bring back apps -prf
+  // async onClickInstall () {
+  //   this.close()
+  //   const page = pages.getActive()
+  //   const datUrl = page && page.getViewedDatOrigin()
+  //   if (!datUrl) return
+  //   const res = await beaker.apps.runInstaller(0, datUrl)
+  //   if (res && res.name) {
+  //     page.loadURL(`app://${res.name}`)
+  //   }
+  // }
+
+  async onClickEditSettings () {
     this.close()
-    var page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
-      return
-    }
-    page.loadURL(`beaker://library/${page.siteInfo.key}`)
+    pages.setActive(pages.create('beaker://settings'))
+  }
+
+  // TODO(apps) restore when we bring back apps -prf
+  // async onClickUninstall () {
+  //   this.close()
+  //   const page = pages.getActive()
+  //   if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'app:') {
+  //     return
+  //   }
+  //   if (!confirm('Are you sure you want to uninstall this app?')) {
+  //     return
+  //   }
+  //   const name = page.protocolInfo.hostname
+  //   await beaker.apps.unbind(0, name)
+  //   const datUrl = page.getViewedDatOrigin()
+  //   page.loadURL(datUrl || 'beaker://start/')
+  // }
+
+  onClickViewFiles () {
+    this.close()
+    const page = pages.getActive()
+    if (!page || !page.getViewedDatOrigin()) return
+    page.loadURL(`beaker://library/dat://${page.siteInfo.key}`)
+  }
+
+  onClickNetworkDebugger () {
+    this.close()
+    const page = pages.getActive()
+    if (!page || !page.getViewedDatOrigin()) return
+    page.loadURL(`beaker://swarm-debugger/dat://${page.siteInfo.key}`)    
   }
 
   async onClickFork () {
     this.close()
-    var page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
-      return
-    }
-    var newDat = await DatArchive.fork(page.siteInfo.key)
-    if (newDat) {
-      page.loadURL(newDat.url)
+    const page = pages.getActive()
+    const datUrl = page && page.getViewedDatOrigin()
+    if (!datUrl) return
+    const fork = await DatArchive.fork(datUrl, {prompt: true}).catch(() => {})
+    if (fork) {
+      page.loadURL(`beaker://library/${fork.url}`)
     }
   }
 
   onClickDownloadZip () {
     this.close()
-    var page = pages.getActive()
-    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:') {
-      return
-    }
-    beakerBrowser.downloadURL(`dat://${page.siteInfo.key}/?download_as=zip`)
+    const page = pages.getActive()
+    const datUrl = page && page.getViewedDatOrigin()
+    if (!datUrl) return
+    beaker.browser.downloadURL(`${datUrl}?download_as=zip`)
   }
 }

@@ -2,15 +2,20 @@
 
 import { remote } from 'electron'
 import * as pages from '../pages'
-import * as sidebar from './sidebar'
 import * as zoom from '../pages/zoom'
 import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
-import { UpdatesNavbarBtn } from './navbar/updates'
-import { BrowserMenuNavbarBtn } from './navbar/browser-menu'
-import { PageMenuNavbarBtn } from './navbar/page-menu'
-import { DatSidebarBtn } from './navbar/dat-sidebar'
-import {pluralize} from '../../lib/strings'
+import {UpdatesNavbarBtn} from './navbar/updates'
+import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
+// import {AppsMenuNavbarBtn} from './navbar/apps-menu' TODO(apps) restore when we bring back apps -prf
+import {DatsiteMenuNavbarBtn} from './navbar/datsite-menu'
+import {WorkspacesiteMenuNavbarBtn} from './navbar/workspacesite-menu'
+import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
+import {PageMenuNavbarBtn} from './navbar/page-menu'
+import {findParent} from '../../lib/fg/event-handlers'
+import renderNavArrowIcon from './icon/nav-arrow'
+import renderRefreshIcon from './icon/refresh'
+import renderCloseIcon from './icon/close'
 
 const KEYCODE_DOWN = 40
 const KEYCODE_UP = 38
@@ -26,9 +31,14 @@ const isDatHashRegex = /^[a-z0-9]{64}/i
 
 var toolbarNavDiv = document.getElementById('toolbar-nav')
 var updatesNavbarBtn = null
-var datSidebarBtn = null
 var browserMenuNavbarBtn = null
+var bookmarkMenuNavbarBtn = null
+// var appsMenuNavbarBtn = null TODO(apps) restore when we bring back apps -prf
+var datsiteMenuNavbarBtn = null
+var workspacesiteMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
+
+var isLocationHighlighted = false
 
 // autocomplete data
 var autocompleteCurrentValue = null
@@ -41,9 +51,15 @@ var autocompleteResults = null // if set to an array, will render dropdown
 export function setup () {
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
-  datSidebarBtn = new DatSidebarBtn()
+  // appsMenuNavbarBtn = new AppsMenuNavbarBtn() TODO(apps) restore when we bring back apps -prf
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
+  bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
+  datsiteMenuNavbarBtn = new DatsiteMenuNavbarBtn()
+  workspacesiteMenuNavbarBtn = new WorkspacesiteMenuNavbarBtn()
   pageMenuNavbarBtn = new PageMenuNavbarBtn()
+
+  // add some global listeners
+  window.addEventListener('keydown', onGlobalKeydown)
 }
 
 export function createEl (id) {
@@ -62,8 +78,11 @@ export function destroyEl (id) {
 
 export function focusLocation (page) {
   var el = page.navbarEl.querySelector('.nav-location-input')
+
+  // the container el which has :focus styles applied
   el.classList.remove('hidden')
   el.focus()
+  isLocationHighlighted = true
   el.select()
 }
 
@@ -79,6 +98,7 @@ export function isLocationFocused (page) {
 export function showInpageFind (page) {
   // show control and highlight text
   page.isInpageFinding = true
+  page.inpageFindInfo = null
   update(page)
   var el = page.navbarEl.querySelector('.nav-find-input')
   el.focus()
@@ -89,6 +109,7 @@ export function hideInpageFind (page) {
   if (page.isInpageFinding) {
     page.stopFindInPageAsync('clearSelection')
     page.isInpageFinding = false
+    page.inpageFindInfo = null
     update(page)
   }
 }
@@ -126,10 +147,18 @@ export function updateLocation (page) {
   }
 }
 
+export function bookmarkAndOpenMenu () {
+  bookmarkMenuNavbarBtn.onClickBookmark()
+}
+
 export function closeMenus () {
   browserMenuNavbarBtn.isDropdownOpen = false
   browserMenuNavbarBtn.updateActives()
+  // appsMenuNavbarBtn.close() TODO(apps) restore when we bring back apps -prf
   pageMenuNavbarBtn.close()
+  bookmarkMenuNavbarBtn.close()
+  datsiteMenuNavbarBtn.close()
+  workspacesiteMenuNavbarBtn.close()
 }
 
 // internal helpers
@@ -138,9 +167,11 @@ export function closeMenus () {
 function render (id, page) {
   const isLoading = page && page.isLoading()
   const isViewingDat = page && page.getURL().startsWith('dat:')
+  const isViewingWorkspace = page && page.getURL().startsWith('workspace:')
   const siteHasDatAlternative = page && page.siteHasDatAlternative
   const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
   const siteLoadError = page && page.siteLoadError
+  const isOwner = page && page.siteInfo && page.siteInfo.isOwner
 
   // back/forward should be disabled if its not possible go back/forward
   var backDisabled = (page && page.canGoBack()) ? '' : 'disabled'
@@ -150,11 +181,11 @@ function render (id, page) {
   var reloadBtn = (isLoading)
     ? yo`
         <button class="toolbar-btn nav-cancel-btn" onclick=${onClickCancel}>
-          <span class="fa fa-times"></span>
+          ${renderCloseIcon()}
         </button>`
     : yo`
         <button class="toolbar-btn nav-reload-btn" onclick=${onClickReload} title="Reload this page">
-          <span class="fa fa-refresh"></span>
+          ${renderRefreshIcon()}
         </button>`
 
   // `page` is null on initial render
@@ -168,17 +199,31 @@ function render (id, page) {
 
   // inpage finder ctrl
   var inpageFinder = (page && page.isInpageFinding)
-    ? yo`<input
+    ? yo`
+        <div class="nav-find-wrapper">
+          <input
             type="text"
-            class="nav-find-input"
+            class="nav-find-input nav-location-input"
             placeholder="Find in page..."
             oninput=${onInputFind}
             onkeydown=${onKeydownFind}
-            value=${findValue} />`
+            value=${findValue} />
+          ${findValue && page.inpageFindInfo
+            ? yo`
+              <span class="nav-find-info">
+                ${page.inpageFindInfo.activeMatchOrdinal}
+                of
+                ${page.inpageFindInfo.matches}
+              </span>`
+            : ''}
+          <div class="nav-find-btns">
+            <button disabled=${!findValue} class="btn" onclick=${e => onClickFindNext(e, false)}><i class="fa fa-angle-up"></i></button>
+            <button disabled=${!findValue} class="btn last" onclick=${e => onClickFindNext(e, true)}><i class="fa fa-angle-down"></i></button>
+            <button class="close-btn" onclick=${e => hideInpageFind(page)}>${renderCloseIcon()}</button>
+          </div>
+        </div>
+      `
     : ''
-
-  // bookmark toggle state
-  var bookmarkBtnClass = 'nav-bookmark-btn' + ((page && !!page.bookmark) ? ' active' : '')
 
   // zoom btn should only show if zoom is not the default setting
   var zoomBtn = ''
@@ -210,24 +255,38 @@ function render (id, page) {
       </button>`
   }
 
+  // live reload btn
+  const isLiveReloading = page && page.isLiveReloading()
+  const liveReloadBtn = (isViewingWorkspace || (isOwner && isViewingDat))
+    ? yo`
+      <button
+        class="live-reload-btn ${isLiveReloading ? 'active' : ''}"
+        title="Toggle live reloading"
+        onclick=${() => page.toggleLiveReloading()}>
+        <i class="fa fa-bolt"></i>
+      </span>`
+    : ''
+
   // dat buttons
-  var datBtns = ''
+  var datBtns = []
 
   if (isViewingDat) {
-    let numPeers = page.siteInfo ? page.siteInfo.peers : 0
-    var isLiveReloading = page.isLiveReloading()
-
-    datBtns = [
-      yo`
-        <button class="nav-peers-btn" onclick=${onClickPeercount}>
-          <i class="fa fa-share-alt"></i> ${numPeers} ${pluralize(numPeers, 'peer')}
-        </button>`,
-      yo`<button class="nav-live-reload-btn ${isLiveReloading ? 'active' : ''}" title="Turn ${isLiveReloading ? 'off' : 'on'} live reloading" onclick=${onClickLiveReload}>
-          <i class="fa fa-bolt"></i>
-        </button>`
-    ]
+    // TODO(apps) restore when we bring back apps -prf
+    // if (page.siteInfo && page.siteInfo.type.includes('app')) {
+    //   if (page.isInstalledApp() === false) {
+    //     datBtns.unshift(
+    //       yo`<button
+    //         class="callout install-callout"
+    //         title="Install this application"
+    //         onclick=${onClickInstallApp}
+    //       >
+    //         <span class="fa fa-download"></span> Install Application
+    //       </button>`
+    //     )
+    //   }
+    // }
   } else if (siteHasDatAlternative) {
-    datBtns = [
+    datBtns.push(
       yo`<button
         class="callout"
         title="Go to Dat Version of this Site"
@@ -235,7 +294,7 @@ function render (id, page) {
       >
         <span class="fa fa-share-alt"></span> P2P version available
       </button>`
-    ]
+    )
   }
 
   // autocomplete dropdown
@@ -245,7 +304,6 @@ function render (id, page) {
       <div class="autocomplete-dropdown" onclick=${onClickAutocompleteDropdown}>
         ${autocompleteResults.map((r, i) => {
           // content
-          var iconCls = 'icon icon-' + ((r.search) ? 'search' : 'window')
           var contentColumn
           if (r.search) { contentColumn = yo`<span class="result-search">${r.search}</span>` } else {
             contentColumn = yo`<span class="result-url"></span>`
@@ -267,11 +325,16 @@ function render (id, page) {
           if (i == autocompleteCurrentSelection) { rowCls += ' selected' }
 
           // result row
-          return yo`<div class=${rowCls} data-result-index=${i}>
-            <span class=${iconCls}></span>
-            ${contentColumn}
-            ${titleColumn}
-          </div>`
+          return yo`
+            <div class=${rowCls} data-result-index=${i}>
+              ${r.bookmarked ? yo`<i class="fa fa-star-o"></i>` : ''}
+              ${r.search
+                ? yo`<i class="icon icon-search"></i>`
+                : yo`<img class="icon" src=${'beaker-favicon:' + r.url}/>`
+              }
+              ${contentColumn}
+              ${titleColumn}
+            </div>`
         })}
       </div>
     `
@@ -302,39 +365,44 @@ function render (id, page) {
   return yo`
     <div data-id=${id} class="toolbar-actions${toolbarHidden}">
       <div class="toolbar-group">
-        <button class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-          <span class="fa fa-arrow-left"></span>
+        <button style="transform: scaleX(-1);" class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
+          ${renderNavArrowIcon()}
         </button>
+
         <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-          <span class="fa fa-arrow-right"></span>
+          ${renderNavArrowIcon()}
         </button>
         ${reloadBtn}
       </div>
-      <div class="toolbar-input-group">
-        ${page ? page.siteInfoNavbarBtn.render() : ''}
+
+      <div class="toolbar-input-group${isLocationHighlighted ? ' input-focused' : ''}${autocompleteResults ? ' autocomplete' : ''}">
+        ${page && (!isLocationHighlighted) ? page.siteInfoNavbarBtn.render() : ''}
         ${locationPrettyView}
         ${locationInput}
         ${inpageFinder}
         ${zoomBtn}
-        ${datBtns}
-        <button class=${bookmarkBtnClass} onclick=${onClickBookmark} title="Bookmark this page">
-          <span class=${(page && !!page.bookmark) ? 'fa fa-star' : 'fa fa-star-o'}></span>
-        </button>
-        ${pageMenuNavbarBtn.render()}
-        ${autocompleteDropdown}
+        ${!isLocationHighlighted ? [
+          liveReloadBtn,
+          datBtns,
+          datsiteMenuNavbarBtn.render(),
+          workspacesiteMenuNavbarBtn.render(),
+          pageMenuNavbarBtn.render(),
+          bookmarkMenuNavbarBtn.render()
+        ] : ''}
       </div>
       <div class="toolbar-group">
-        ${datSidebarBtn.render(addrValue)}
+        ${''/*appsMenuNavbarBtn.render() TODO(apps) restore when we bring back apps -prf*/}
         ${browserMenuNavbarBtn.render()}
         ${updatesNavbarBtn.render()}
       </div>
+      ${autocompleteDropdown}
     </div>
   </div>`
 }
 
 function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadError) {
   var valueRendered = value
-  if (/^(dat|http|https):/.test(value)) {
+  if (/^(dat|http|https|workspace):\/\//.test(value)) {
     try {
       var { protocol, host, pathname, search, hash } = new URL(value)
       var hostVersion
@@ -369,14 +437,13 @@ function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadErr
     <div
       class="nav-location-pretty${(isHidden) ? ' hidden' : ''}"
       onclick=${onFocusLocation}
-      onmousedown=${onFocusLocation}
-    >
+      onmousedown=${onFocusLocation}>
       ${valueRendered}
     </div>
   `
 }
 
-function handleAutocompleteSearch (results) {
+async function handleAutocompleteSearch (results) {
   var v = autocompleteCurrentValue
   if (!v) return
 
@@ -417,7 +484,39 @@ function handleAutocompleteSearch (results) {
   else autocompleteResults = [searchResult, gotoResult]
 
   // add search results
-  if (results) { autocompleteResults = autocompleteResults.concat(results) }
+  if (results) {
+    autocompleteResults = autocompleteResults.concat(results)
+  }
+
+  // find the first autocomplete result that:
+  // (a) starts with the input value, ignoring (protocol)://(www.)
+  // (b) is not the DuckDuckGo search, and
+  // (c) has been visited before
+  var foundIndex = autocompleteResults.findIndex(result => {
+    return (
+      result.url.replace(/^.*?:\/\/(?:www\.)?/, '').startsWith(v) &&
+      result.title !== duckduckgoTitle &&
+      result.num_visits
+    )
+  })
+
+  // if we didn't find an autocomplete result that fit the requirements, reset suggestion and selection
+  // also run reset when backspace or delete are pressed
+  if (lastKeyDown === KEYCODE_BACKSPACE || lastKeyDown === KEYCODE_DELETE || foundIndex === -1) {
+    autocompleteCurrentSelection = 0
+  } else {
+    // if we did find one, set the current selection to the found index
+    autocompleteCurrentSelection = foundIndex
+  }
+
+  // read bookmark state
+  await Promise.all(autocompleteResults.map(async r => {
+    let bookmarked = false
+    try {
+      bookmarked = await beaker.bookmarks.isBookmarked(r.url)
+    } catch (_) {}
+    Object.assign(r, {bookmarked})
+  }))
 
   // render
   update()
@@ -438,8 +537,12 @@ function getAutocompleteSelection (i) {
   // autocorrect urls of known forms
   if (isDatHashRegex.test(url)) {
     url = 'dat://' + url
+  } else {
+    if (/:\/\//.test(url) === false) {
+      url = 'https://' + url
+    }
   }
-  return { url }
+  return { url, isGuessingTheScheme: true }
 }
 
 function getAutocompleteSelectionUrl (i) {
@@ -545,23 +648,15 @@ function onClickCancel (e) {
   }
 }
 
-function onClickBookmark (e) {
-  var page = getEventPage(e)
-  if (page) {
-    page.toggleBookmark()
-  }
-}
-
-function onClickPeercount (e) {
-  sidebar.toggle()
-}
-
-function onClickLiveReload (e) {
-  var page = getEventPage(e)
-  if (!page || !page.siteInfo) return
-  page.toggleLiveReloading()
-  update()
-}
+// TODO(apps) restore when we bring back apps -prf
+// async function onClickInstallApp (e) {
+//   const page = getEventPage(e)
+//   if (!page || !page.siteInfo) return
+//   const res = await beaker.apps.runInstaller(0, `dat://${page.siteInfo.key}`)
+//   if (res && res.name) {
+//     page.loadURL(`app://${res.name}`)
+//   }
+// }
 
 function onClickGotoDatVersion (e) {
   const page = getEventPage(e)
@@ -590,6 +685,7 @@ function onFocusLocation (e) {
   if (page) {
     page.navbarEl.querySelector('.nav-location-pretty').classList.add('hidden')
     page.navbarEl.querySelector('.nav-location-input').classList.remove('hidden')
+    page.navbarEl.querySelector('.toolbar-input-group').classList.add('input-focused')
     // wait till next tick to avoid events messing with each other
     setTimeout(() => page.navbarEl.querySelector('.nav-location-input').select(), 0)
   }
@@ -603,8 +699,15 @@ function onBlurLocation (e) {
   setTimeout(clearAutocomplete, 150)
   var page = getEventPage(e)
   if (page) {
-    page.navbarEl.querySelector('.nav-location-pretty').classList.remove('hidden')
-    page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
+    try {
+      page.navbarEl.querySelector('.nav-location-pretty').classList.remove('hidden')
+      page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
+      page.navbarEl.querySelector('.toolbar-input-group').classList.remove('input-focused')
+    } catch (e) {
+      // ignore
+    }
+    isLocationHighlighted = false
+    update()
   }
 }
 
@@ -617,8 +720,12 @@ function onInputLocation (e) {
   if (autocompleteValue && autocompleteCurrentValue != autocompleteValue) {
     autocompleteCurrentValue = autocompleteValue // update the current value
     autocompleteCurrentSelection = 0 // reset the selection
-    beaker.history.search(value).then(handleAutocompleteSearch) // update the suggetsions
+    // update the suggestions
+    beaker.history.search(value)
+      .then(handleAutocompleteSearch)
   } else if (!autocompleteValue) { clearAutocomplete() } // no value, cancel out
+
+  isLocationHighlighted = true
 }
 
 function onKeydownLocation (e) {
@@ -677,16 +784,21 @@ function onInputFind (e) {
   if (page) {
     if (str) page.findInPageAsync(str)
     else page.stopFindInPageAsync('clearSelection')
+    update()
+  }
+}
+
+function onClickFindNext (e, forward) {
+  var page = pages.getActive()
+  if (page) {
+    var wrapperEl = findParent(e.target, 'nav-find-wrapper')
+    var inputEl = wrapperEl.querySelector('input')
+    var str = inputEl.value
+    if (str) page.findInPageAsync(str, { findNext: true, forward })
   }
 }
 
 function onKeydownFind (e) {
-  // on escape
-  if (e.keyCode == KEYCODE_ESC) {
-    let page = getEventPage(e)
-    if (page) { hideInpageFind(page) }
-  }
-
   // on enter
   if (e.keyCode == KEYCODE_ENTER) {
     let str = e.target.value
@@ -696,6 +808,14 @@ function onKeydownFind (e) {
       if (str) page.findInPageAsync(str, { findNext: true, forward: !backwards })
       else page.stopFindInPageAsync('clearSelection')
     }
+  }
+}
+
+function onGlobalKeydown (e) {
+  // on escape, hide the in page finder
+  if (e.keyCode == KEYCODE_ESC) {
+    let page = pages.getActive()
+    if (page) { hideInpageFind(page) }
   }
 }
 

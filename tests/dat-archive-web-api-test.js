@@ -13,9 +13,9 @@ const app = new Application({
   path: electron,
   args: ['../app'],
   env: {
+    NODE_ENV: 'test',
     beaker_no_welcome_tab: 1,
     beaker_user_data_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
-    beaker_sites_path: fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-'),
     beaker_dat_quota_default_bytes_allowed: '90kb'
   }
 })
@@ -31,6 +31,7 @@ test.before(async t => {
   await app.start()
   await app.client.waitUntilWindowLoaded(20e3)
 
+
   // share the test static dat
   testStaticDat = await shareDat(__dirname + '/scaffold/test-static-dat')
   testStaticDatURL = 'dat://' + testStaticDat.archive.key.toString('hex') + '/'
@@ -38,6 +39,7 @@ test.before(async t => {
   // share the test runner dat
   testRunnerDat = await shareDat(__dirname + '/scaffold/test-runner-dat')
   testRunnerDatURL = 'dat://' + testRunnerDat.archive.key.toString('hex') + '/'
+
 
   // save the test-runner dat to the library
   var res = await app.client.executeAsync((url, done) => {
@@ -94,12 +96,6 @@ async function writeFile (url, path, content, opts) {
     archive.writeFile(path, content, opts).then(done, done)
   }, url, path, content, opts)
 }
-async function commit (url) {
-  return app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, url)
-}
 
 // tests
 //
@@ -142,15 +138,15 @@ test('archive.readdir', async t => {
 test('archive.readFile', async t => {
   // read utf8
   var helloTxt = await readFile(testStaticDatURL, 'hello.txt', {})
-  t.deepEqual(helloTxt.value, 'hello')
+  t.deepEqual(helloTxt.value, 'hello world')
 
   // read utf8 2
   var helloTxt2 = await readFile(testStaticDatURL, '/subdir/hello.txt', 'utf8')
-  t.deepEqual(helloTxt2.value, 'hi')
+  t.deepEqual(helloTxt2.value, 'hello world')
 
   // read utf8 when spaces are in the name
   var helloTxt2 = await readFile(testStaticDatURL, '/subdir/space in the name.txt', 'utf8')
-  t.deepEqual(helloTxt2.value, 'hi')
+  t.deepEqual(helloTxt2.value, 'hello world')
 
   // read hex
   var beakerPngHex = await readFile(testStaticDatURL, 'beaker.png', 'hex')
@@ -206,12 +202,98 @@ test('archive.stat', async t => {
   t.deepEqual(entry.value.name, 'TimeoutError')
 })
 
-test('DatArchive.create rejection', async t => {
+test('dat:// HEAD and GET', async t => {
+  // GET
+  var res = await app.client.executeAsync((url, done) => {
+    window.fetch(url).then(res => {
+      return res.text().then(data => ({data, headers: Array.from(res.headers.entries())}))
+    }).then(done, done)
+  }, testStaticDatURL + 'hello.txt')
+  t.deepEqual(res.value.data, 'hello world')
+  t.deepEqual((res.value.headers.filter(h => h[0] === 'content-type'))[0][1], 'text/plain; charset=utf8')
+
+  // HEAD
+  var res = await app.client.executeAsync((url, done) => {
+    window.fetch(url, {method: 'HEAD'}).then(res => {
+      return res.text().then(data => ({data, headers: Array.from(res.headers.entries())}))
+    }).then(done, done)
+  }, testStaticDatURL + 'hello.txt')
+  t.deepEqual(res.value.data, '')
+  t.deepEqual((res.value.headers.filter(h => h[0] === 'content-type'))[0][1], 'text/plain; charset=utf8')
+})
+
+test('DatArchive.load', async t => {
+  // good url
+
+  var res = await app.client.executeAsync((url, done) => {
+    DatArchive.load(url).then(a => a.url).then(done, done)
+  }, testStaticDatURL)
+  t.deepEqual(res.value, testStaticDatURL.slice(0, -1))
+
+  // bad url
+
+  var res = await app.client.executeAsync((url, done) => {
+    DatArchive.load(url).then(a => a.url, e => e.name).then(done, done)
+  }, 'dat://badurl')
+  t.deepEqual(res.value, 'InvalidDomainName')
+})
+
+test('DatArchive.create prompt=false', async t => {
+  // start the permission prompt
+  await app.client.execute(() => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  })
+
+  // accept the permission prompt
+  await sleep(500)
+  await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-accept')
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
+  var datUrl = res.value.url
+  t.truthy(datUrl.startsWith('dat://'))
+  var datKey = datUrl.slice('dat://'.length)
+
+  // check the dat.json
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.readFile('dat.json').then(done, done)
+  }, datUrl)
+  var manifest
+  try {
+    var manifest = JSON.parse(res.value)
+  } catch (e) {
+    console.log('unexpected error parsing manifest', res.value)
+  }
+  t.deepEqual(manifest.title, 'The Title')
+  t.deepEqual(manifest.description, 'The Description')
+
+  // check the settings
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.isSaved, true)
+})
+
+test('DatArchive.create prompt=true rejection', async t => {
   // start the prompt
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.create({ title: 'The Title', description: 'The Description' }).then(
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -231,12 +313,12 @@ test('DatArchive.create rejection', async t => {
   t.deepEqual(res.value.name, 'UserDeniedError')
 })
 
-test('DatArchive.create', async t => {
+test('DatArchive.create prompt=true', async t => {
   // start the prompt
   await app.client.execute(() => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.create({ title: 'The Title', description: 'The Description' }).then(
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -282,12 +364,52 @@ test('DatArchive.create', async t => {
   t.deepEqual(details.value.userSettings.isSaved, true)
 })
 
-test('DatArchive.fork', async t => {
+test('DatArchive.fork prompt=false', async t => {
+  // start the permission prompt
+  await app.client.execute((url) => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.fork(url, { description: 'The Description 2', prompt: false }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, createdDatURL)
+
+  // accept the permission prompt
+  await sleep(500)
+  await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-accept')
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
+  var forkedDatURL = res.value.url
+  t.truthy(forkedDatURL.startsWith('dat://'))
+
+  // check the dat.json
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.readFile('dat.json').then(done, done)
+  }, forkedDatURL)
+  var manifest
+  try {
+    var manifest = JSON.parse(res.value)
+  } catch (e) {
+    console.log('unexpected error parsing manifest', res.value)
+  }
+  t.deepEqual(manifest.title, 'The Title')
+  t.deepEqual(manifest.description, 'The Description 2')
+})
+
+test('DatArchive.fork prompt=true', async t => {
   // start the prompt
   await app.client.execute((url) => {
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.fork(url, { description: 'The Description 2' }).then(
+    DatArchive.fork(url, { description: 'The Description 2', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -321,6 +443,53 @@ test('DatArchive.fork', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description 2')
+})
+
+test('DatArchive.unlink', async t => {
+
+  // create a dat
+
+  await app.client.windowByIndex(0)
+  var res = await app.client.executeAsync((done) => {
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false }).then(done,done)
+  })
+  var datUrl = res.value.url
+  t.truthy(datUrl.startsWith('dat://'))
+  var datKey = datUrl.slice('dat://'.length)
+  await app.client.windowByIndex(1)
+
+  // start the prompt
+  await app.client.execute(url => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.unlink(url).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, datUrl)
+
+  // accept the prompt
+  await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-accept')
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  var res = await app.client.execute(() => { return window.res })
+  t.falsy(res.value)
+
+  // check the settings
+  await app.client.windowByIndex(0)
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey)
+  await app.client.windowByIndex(1)
+  t.deepEqual(details.value.userSettings.isSaved, false)
+
+  // dont allow writes
+  var res = await writeFile(datUrl, '/foo.txt', 'bar', 'utf8')
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 })
 
 test('DatArchive.selectArchive rejection', async t => {
@@ -420,7 +589,6 @@ test('DatArchive.selectArchive: select', async t => {
   await sleep(500)
   await app.client.windowByIndex(2)
   await app.client.waitUntilWindowLoaded()
-
   await app.client.waitForExist('button[type="submit"]')
 
   // click one of the archives
@@ -439,9 +607,151 @@ test('DatArchive.selectArchive: select', async t => {
   t.is(res.value, testRunnerDatURL.slice(0, -1))
 })
 
+test('archive.configure', async t => {
+  // write the manifest
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.configure({
+      title: 'The Changed Title',
+      description: 'The Changed Description',
+    }).then(done, done)
+  }, createdDatURL)
+  t.falsy(res.value)
+
+  // read it back
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.getInfo().then(done, done)
+  }, createdDatURL)
+  t.deepEqual(res.value.title, 'The Changed Title')
+  t.deepEqual(res.value.description, 'The Changed Description')
+  t.deepEqual(res.value.type, [])
+})
+
+
+test('offline archives', async t => {
+  // must use a beaker:// app
+  await app.client.windowByIndex(0)
+
+  // create a dat (prompt=false)
+  var res = await app.client.executeAsync((done) => {
+    DatArchive.create({ networked: false, prompt: false }).then(done,done)
+  })
+  var datUrl = res.value.url
+  t.truthy(datUrl.startsWith('dat://'))
+  var datKey = datUrl.slice('dat://'.length)
+
+  // check the settings
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey)
+  t.deepEqual(details.value.userSettings.networked, false)
+
+  // change the settings
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.configure({networked: true}).then(done, done)
+  }, datUrl)
+  t.falsy(res.value)
+
+  // check the settings
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey)
+  t.deepEqual(details.value.userSettings.networked, true)
+
+  // create a dat (prompt=true)
+  // start the prompt
+  await app.client.execute(() => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.create({ networked: false, prompt: true }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  })
+
+  // accept the prompt
+  await sleep(500)
+  await app.client.windowByIndex(2)
+  await app.client.waitUntilWindowLoaded()
+  await app.client.waitForExist('button[type="submit"]')
+  await app.client.click('button[type="submit"]')
+  await app.client.windowByIndex(0)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
+  var datUrl2 = res.value.url
+  t.truthy(datUrl2.startsWith('dat://'))
+  var datKey2 = datUrl2.slice('dat://'.length)
+
+  // check the settings
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey2)
+  t.deepEqual(details.value.userSettings.networked, false)
+
+  // fork a dat (prompt=false)
+  var res = await app.client.executeAsync((url, done) => {
+    DatArchive.fork(url, { networked: false, prompt: false }).then(done,done)
+  }, datUrl)
+  var datUrl3 = res.value.url
+  t.truthy(datUrl3.startsWith('dat://'))
+  var datKey3 = datUrl3.slice('dat://'.length)
+
+  // check the settings
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey3)
+  t.deepEqual(details.value.userSettings.networked, false)
+
+  // fork a dat (prompt=true)
+  // start the prompt
+  await app.client.execute((url) => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.fork(url, { networked: false, prompt: true }).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  }, datUrl)
+
+  // accept the prompt
+  await sleep(500)
+  await app.client.windowByIndex(2)
+  await app.client.waitUntilWindowLoaded()
+  await app.client.waitForExist('button[type="submit"]')
+  await app.client.click('button[type="submit"]')
+  await app.client.windowByIndex(0)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
+  var datUrl4 = res.value.url
+  t.truthy(datUrl4.startsWith('dat://'))
+  var datKey4 = datUrl4.slice('dat://'.length)
+
+  // check the settings
+  var details = await app.client.executeAsync((key, done) => {
+    var archive = new DatArchive(key)
+    archive.getInfo().then(done, err => done({ err }))
+  }, datKey4)
+  t.deepEqual(details.value.userSettings.networked, false)
+
+  // go back to the page
+  await app.client.windowByIndex(1)
+})
+
 test('archive.writeFile', async t => {
   async function dotest (filename, content, encoding) {
-    // write to the top-level
+    // write the file
     var res = await app.client.executeAsync((url, filename, content, encoding, done) => {
       if (content.data) content = new Uint8Array(content.data) // spectron fucks up our data, unfuck it
       var archive = new DatArchive(url)
@@ -450,21 +760,6 @@ test('archive.writeFile', async t => {
     t.falsy(res.value)
 
     // read it back
-    var res = await readFile(createdDatURL, filename, encoding)
-    if (encoding === 'binary') {
-      t.truthy(content.equals(Buffer.from(res.value)))
-    } else {
-      t.deepEqual(res.value, content)
-    }
-
-    // commit the file
-    var res = await app.client.executeAsync((url, done) => {
-      var archive = new DatArchive(url)
-      archive.commit().then(done, done)
-    }, createdDatURL)
-    t.truthy(Array.isArray(res.value))
-
-    // read it back again
     var res = await readFile(createdDatURL, filename, encoding)
     if (encoding === 'binary') {
       t.truthy(content.equals(Buffer.from(res.value)))
@@ -532,17 +827,6 @@ test('archive.mkdir', async t => {
   // read it back
   var res = await stat(createdDatURL, 'subdir', {})
   t.deepEqual(res.value.isDirectory, true)
-
-  // commit
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, createdDatURL)
-  t.truthy(Array.isArray(res.value))
-
-  // read it back again
-  var res = await stat(createdDatURL, 'subdir', {})
-  t.deepEqual(res.value.isDirectory, true)
 })
 
 test('archive.writeFile writes to subdirectories', async t => {
@@ -554,20 +838,6 @@ test('archive.writeFile writes to subdirectories', async t => {
   t.falsy(res.value)
 
   // read it back
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.readFile('subdir/hello.txt', 'utf8').then(done, done)
-  }, createdDatURL)
-  t.deepEqual(res.value, 'hello world')
-
-  // commit
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, createdDatURL)
-  t.truthy(Array.isArray(res.value))
-
-  // read it back again
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.readFile('subdir/hello.txt', 'utf8').then(done, done)
@@ -620,7 +890,7 @@ test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
   // write a too-big file
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.writeFile('/denythis.txt', 'x'.repeat(1024 * 25), 'utf8').then(done, done)
+    archive.writeFile('/denythis.txt', 'x'.repeat(1024 * 100), 'utf8').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'QuotaExceededError')
 })
@@ -629,19 +899,16 @@ test('versioned reads and writes', async t => {
   // create a fresh dat
   await app.client.windowByIndex(0)
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({title: 'Another Test Dat'}).then(done, done)
+    DatArchive.create({title: 'Another Test Dat', prompt: false}).then(done, done)
   })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
 
   // do some writes
   await writeFile(newTestDatURL, '/one.txt', 'a', 'utf8')
-  await commit(newTestDatURL)
   await writeFile(newTestDatURL, '/two.txt', 'b', 'utf8')
-  await commit(newTestDatURL)
   await sleep(1e3) // have to make sure 1s passes for the change to be detected
   await writeFile(newTestDatURL, '/one.txt', 'c', 'utf8')
-  await commit(newTestDatURL)
 
   // check history
   var history = await app.client.executeAsync((url, done) => {
@@ -685,70 +952,11 @@ test('versioned reads and writes', async t => {
     archive.rmdir('/there-is-no-dir-but-it-doesnt-matter').then(done, done)
   }, newTestDatURL + '+1'))
   t.deepEqual(res.value.name, 'ArchiveNotWritableError')
-  // commit
-  var res = await (app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, newTestDatURL + '+1'))
-  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
-  // revert
-  var res = await (app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.revert().then(done, done)
-  }, newTestDatURL + '+1'))
-  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 
   await app.client.windowByIndex(1)
 })
 
-test('archive.commit does allow you to exceed the quota, but subsequent writes will fail', async t => {
-  // create a fresh dat
-  await app.client.windowByIndex(0)
-  var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({title: 'Another Test Dat'}).then(done, done)
-  })
-  t.falsy(res.value.name, 'create didnt fail')
-  var newTestDatURL = res.value.url
-  await app.client.windowByIndex(1)
-
-  // write an acceptable (but big) file
-  await app.client.execute(url => {
-    // put the result on the window, for checking later
-    window.res = null
-    var archive = new DatArchive(url)
-    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 25), 'utf8').then(
-      res => window.res = res,
-      err => window.res = err
-    )
-  }, newTestDatURL)
-
-  // accept the prompt
-  await app.client.windowByIndex(0)
-  await app.client.waitForExist('.prompt-accept')
-  await app.client.click('.prompt-accept')
-  await app.client.windowByIndex(1)
-
-  // fetch & check the res
-  var res = await app.client.execute(() => { return window.res })
-  t.falsy(res.value, 'write file accepted')
-
-  // commit the file
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, newTestDatURL)
-  t.deepEqual(Array.isArray(res.value), true)
-
-  // write a very small file
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.writeFile('/denythis.txt', 'x', 'utf8').then(done, done)
-  }, newTestDatURL)
-  t.deepEqual(res.value.name, 'QuotaExceededError')
-})
-
-// TODO copy-disabled
-/*test('archive.copy', async t => {
+test('archive.copy', async t => {
   // file 1
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -785,17 +993,9 @@ test('archive.commit does allow you to exceed the quota, but subsequent writes w
     (await readFile(createdDatURL, '/subdir/hello2.txt')).value,
     (await readFile(createdDatURL, '/subdir2/hello2.txt')).value
   )
+})
 
-  // commit
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, createdDatURL)
-  t.truthy(Array.isArray(res.value))
-})*/
-
-// TODO rename-disabled
-/*test('archive.rename', async t => {
+test('archive.rename', async t => {
   // file 1
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -829,37 +1029,54 @@ test('archive.commit does allow you to exceed the quota, but subsequent writes w
     (await readFile(createdDatURL, '/subdir-two/hello.txt')).value
   )
   await t.deepEqual(
-    (await readFile(createdDatURL, '/subdir/hello-two.txt')).value,
+    (await readFile(createdDatURL, '/subdir/hello2.txt')).value,
     (await readFile(createdDatURL, '/subdir-two/hello-two.txt')).value
   )
+})
 
-  // commit
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.commit().then(done, done)
-  }, createdDatURL)
-  t.truthy(Array.isArray(res.value))
-})*/
+test('archive.copy doesnt allow writes that exceed the quota', async t => {
+  // start the permission prompt
+  await app.client.execute(() => {
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.create({title: 'Too Big Dat', prompt: false}).then(
+      res => window.res = res,
+      err => window.res = err
+    )
+  })
 
-// TODO copy-disabled
-/*test('archive.copy doesnt allow writes that exceed the quota', async t => {
+  // accept the permission prompt
+  await sleep(500)
+  await app.client.windowByIndex(0)
+  await app.client.waitForExist('.prompt-accept')
+  await app.client.click('.prompt-accept')
+  await app.client.windowByIndex(1)
+
+  // fetch & test the res
+  await app.client.pause(500)
+  await app.client.waitUntil(() => app.client.execute(() => { return window.res != null }), 5e3)
+  var res = await app.client.execute(() => { return window.res })
+  t.falsy(res.value.name, 'create didnt fail')
+  var newTestDatURL = res.value.url
+
+  let listing = await readdir(newTestDatURL, '/', {stat: true, recursive: true})
+
   // write an acceptable (but big) file
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 6), 'utf8').then(done, done)
-  }, createdDatURL)
+    archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 70), 'utf8').then(done, done)
+  }, newTestDatURL)
   t.falsy(res.value)
 
   // try to copy the file
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
-    archive.writeFile('/bigfile.txt', '/bigfile2.txt').then(done, done)
-  }, createdDatURL)
+    archive.copy('/bigfile.txt', '/bigfile2.txt').then(done, done)
+  }, newTestDatURL)
   t.deepEqual(res.value.name, 'QuotaExceededError')
-})*/
+})
 
-// TODO rename-disabled
-/*test('archive.rename protects the manifest', async t => {
+test('archive.rename protects the manifest', async t => {
   // rename the manifest to something else
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
@@ -873,17 +1090,16 @@ test('archive.commit does allow you to exceed the quota, but subsequent writes w
     archive.rename('hello.txt', 'dat.json').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
-})*/
+})
 
-// TODO rename-disabled
-/*test('archive.copy protects the manifest', async t => {
+test('archive.copy protects the manifest', async t => {
   // copy over the manifest
   var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.rename('hello.txt', 'dat.json').then(done, done)
   }, createdDatURL)
   t.deepEqual(res.value.name, 'EntryAlreadyExistsError')
-})*/
+})
 
 test('Fail to write to unowned archives', async t => {
   // writeFile
@@ -900,21 +1116,19 @@ test('Fail to write to unowned archives', async t => {
   }, testStaticDatURL)
   t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 
-  // TODO rename-disabled
   // rename
-  /*var res = await app.client.executeAsync((url, done) => {
+  var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.rename('hello.txt', 'denythis.txt').then(done, done)
   }, testStaticDatURL)
-  t.deepEqual(res.value.name, 'ArchiveNotWritableError')*/
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 
-  // TODO copy-disabled
   // copy
-  /*var res = await app.client.executeAsync((url, done) => {
+  var res = await app.client.executeAsync((url, done) => {
     var archive = new DatArchive(url)
     archive.copy('hello.txt', 'denythis.txt').then(done, done)
   }, testStaticDatURL)
-  t.deepEqual(res.value.name, 'ArchiveNotWritableError')*/
+  t.deepEqual(res.value.name, 'ArchiveNotWritableError')
 })
 
 test('archive.writeFile & archive.mkdir doesnt allow writes to archives until write permission is given', async t => {
@@ -924,7 +1138,7 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
 
   await app.client.windowByIndex(0)
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({title: 'Another Test Dat'}).then(done, done)
+    DatArchive.create({title: 'Another Test Dat', prompt: false}).then(done, done)
   })
   t.falsy(res.value.name, 'create didnt fail')
   var newTestDatURL = res.value.url
@@ -1031,8 +1245,8 @@ test('archive.getInfo', async t => {
     archive.getInfo().then(done, done)
   }, createdDatURL)
   var info = res.value
-  t.deepEqual(info.title, 'The Title')
-  t.deepEqual(info.description, 'The Description')
+  t.deepEqual(info.title, 'The Changed Title')
+  t.deepEqual(info.description, 'The Changed Description')
 })
 
 test('archive.download', async t => {
@@ -1100,7 +1314,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1113,9 +1327,9 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // test files
   var res = await readFile(archiveURL, 'hello.txt')
-  t.deepEqual(res.value, 'hello')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'subdir/hello.txt')
-  t.deepEqual(res.value, 'hi')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'beaker.png', 'base64')
   t.deepEqual(res.value, beakerPng.toString('base64'))
 
@@ -1124,7 +1338,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1137,9 +1351,9 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // test files
   var res = await readFile(archiveURL, 'test-static-dat/hello.txt')
-  t.deepEqual(res.value, 'hello')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'test-static-dat/subdir/hello.txt')
-  t.deepEqual(res.value, 'hi')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'test-static-dat/beaker.png', 'base64')
   t.deepEqual(res.value, beakerPng.toString('base64'))
 
@@ -1148,7 +1362,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1185,8 +1399,8 @@ test('DatArchive.exportToFilesystem', async t => {
   t.deepEqual(res.value.addedFiles.length, 4)
 
   // test files
-  t.deepEqual(fs.readFileSync(path.join(testDirPath, 'hello.txt'), 'utf8'), 'hello')
-  t.deepEqual(fs.readFileSync(path.join(testDirPath, 'subdir/hello.txt'), 'utf8'), 'hi')
+  t.deepEqual(fs.readFileSync(path.join(testDirPath, 'hello.txt'), 'utf8'), 'hello world')
+  t.deepEqual(fs.readFileSync(path.join(testDirPath, 'subdir/hello.txt'), 'utf8'), 'hello world')
   t.deepEqual(fs.readFileSync(path.join(testDirPath, 'beaker.png'), 'base64'), beakerPng.toString('base64'))
 
   // ignores file as specified
@@ -1214,7 +1428,7 @@ test('DatArchive.exportToArchive', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1226,9 +1440,9 @@ test('DatArchive.exportToArchive', async t => {
 
   // test files
   var res = await readFile(archiveURL, 'hello.txt')
-  t.deepEqual(res.value, 'hello')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'subdir/hello.txt')
-  t.deepEqual(res.value, 'hi')
+  t.deepEqual(res.value, 'hello world')
   var res = await readFile(archiveURL, 'beaker.png', 'base64')
   t.deepEqual(res.value, beakerPng.toString('base64'))
 
@@ -1237,7 +1451,7 @@ test('DatArchive.exportToArchive', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1262,7 +1476,7 @@ test('archive.createFileActivityStream', async t => {
 
   // create a new archive
   var res = await app.client.executeAsync((done) => {
-    beaker.archives.create({}).then(done,done)
+    DatArchive.create({prompt: false}).then(done,done)
   })
   var archiveURL = res.value.url
   t.truthy(archiveURL)
@@ -1285,10 +1499,7 @@ test('archive.createFileActivityStream', async t => {
   await writeFile(archiveURL, '/a.txt', 'two', 'utf8')
   await writeFile(archiveURL, '/b.txt', 'two', 'utf8')
   await writeFile(archiveURL, '/c.txt', 'one', 'utf8')
-  var res = await app.client.executeAsync((url, done) => {
-    var a = new DatArchive(url)
-    a.commit().then(done, done)
-  }, archiveURL)
+  var res = await app.client.execute(() => { return window.res })
   t.truthy(Array.isArray(res.value))
 
   await app.client.waitUntil(() => app.client.execute(() => { return window.res.length == 6 }), 5e3)
@@ -1296,7 +1507,39 @@ test('archive.createFileActivityStream', async t => {
   t.deepEqual(res.value, ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt'])
 })
 
-test('archive.createNetworkActivityStream', async t => {
+test('archive.writeFile does allow self-modification', async t => {
+  // navigate to the created dat
+  // (we have to be really sleepy about this to not hang the navigation)
+  await sleep(500)
+  var tabIndex = await browserdriver.newTab(app)
+  await sleep(500)
+  await browserdriver.navigateTo(app, createdDatURL)
+  await sleep(500)
+  await app.client.windowByIndex(tabIndex)
+  await app.client.waitForExist('.entry') // an element on the directory listing page
+
+  // fail a self-write
+  var res = await app.client.executeAsync((url, done) => {
+    var archive = new DatArchive(url)
+    archive.writeFile('/allowthis.txt', 'hello world', 'utf8').then(done, done)
+  }, createdDatURL)
+  t.falsy(res.value)
+})
+
+test('DatArchive can resolve and read dats with shortnames', async t => {
+  // do this in the shell so we dont have to ask permission
+  // await app.client.windowByIndex(0)
+
+  var res = await app.client.executeAsync((done) => {
+    var archive = new DatArchive('dat://beakerbrowser.com/')
+    archive.readdir('/').then(done, done)
+  })
+  t.truthy(Array.isArray(res.value))
+  
+  // await app.client.windowByIndex(1)
+})
+
+test.skip('archive.createNetworkActivityStream', async t => {
   // do this in the shell so we dont have to ask permission
   await app.client.windowByIndex(0)
 
@@ -1350,39 +1593,6 @@ test('archive.createNetworkActivityStream', async t => {
   // t.truthy(res.value.content.down > 0)
   // t.deepEqual(res.value.metadata.all, true)
   // t.deepEqual(res.value.content.all, true)
-})
-
-test('archive.writeFile does allow self-modification', async t => {
-  // navigate to the created dat
-  // (we have to be really sleepy about this to not hang the navigation)
-  await sleep(500)
-  var tabIndex = await browserdriver.newTab(app)
-  await sleep(500)
-  await browserdriver.navigateTo(app, createdDatURL)
-  await sleep(500)
-  await app.client.windowByIndex(tabIndex)
-  await app.client.waitForExist('.entry') // an element on the directory listing page
-
-  // fail a self-write
-  var res = await app.client.executeAsync((url, done) => {
-    var archive = new DatArchive(url)
-    archive.writeFile('/allowthis.txt', 'hello world', 'utf8').then(done, done)
-  }, createdDatURL)
-  t.falsy(res.value)
-})
-
-test('DatArchive can resolve and read dats with shortnames', async t => {
-  // do this in the shell so we dont have to ask permission
-  await app.client.windowByIndex(0)
-
-  var res = await app.client.executeAsync((done) => {
-    var archive = new DatArchive('dat://beakerbrowser.com/')
-    archive.readdir('/').then(done, done)
-  })
-  console.log(res.value)
-  t.truthy(Array.isArray(res.value))
-  
-  await app.client.windowByIndex(1)
 })
 
 function sleep (time) {

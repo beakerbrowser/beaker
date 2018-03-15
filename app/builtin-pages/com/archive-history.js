@@ -1,43 +1,82 @@
 import * as yo from 'yo-yo'
-import prettyBytes from 'pretty-bytes'
-import { niceDate } from '../../lib/time'
 
-export function archiveHistory (archive) {
-  var rowEls = []
+const FETCH_COUNT = 200
+
+// exported api
+// =
+
+export default function render (archive) {
+  var el = yo`<div class="archive-history loading">
+    <div class="archive-history-header">Version history</div>
+    <div class="archive-history-body">Loading...</div>
+  </div>`
 
   // lazy-load history
-  if (archive.history.length === 0) {
-    archive.fetchHistory()
+  if (archive) {
+    // strip the version
+    let vi = archive.url.indexOf('+')
+    if (vi !== -1) {
+      archive = new DatArchive(archive.url.slice(0, vi))
+    }
+
+    let history = []
+    fetchMore()
+    async function fetchMore() {
+      try {
+        // fetch
+        let start = history.length
+        let h = await archive.history({start, end: start + FETCH_COUNT, reverse: true})
+        history = history.concat(h)
+
+        // render
+        var rowEls = history.map(c => {
+          return yo`
+            <div
+              onclick=${() => window.location = `beaker://library/${archive.url}+${c.version}`}
+              class="archive-history-item"
+              title="View version ${c.version}"
+              href="beaker://library/${archive.url}+${c.version}"
+            >
+              ${c.type === 'put' ? 'Updated' : 'Deleted'}
+
+              <div class="path">
+                <a href="${archive.url}+${c.version}${c.path}" target="_blank">
+                  ${c.path.slice(1)}
+                </a>
+              </div>
+
+              <div class="version badge green">v${c.version}</div>
+            </div>`
+        })
+
+        yo.update(el, yo`
+          <div class="archive-history">
+            <div class="archive-history-header">Version history</div>
+            <div class="archive-history-body">
+              ${rowEls}
+              ${(history[history.length - 1].version === 1)
+                ? ''
+                : yo`
+                  <div class="archive-history-item" onclick=${fetchMore}>
+                    <button class="link">Load more</button>
+                  </div>`}
+            </div>
+          </div>`
+        )
+      } catch (err) {
+        console.error('Error loading history', err)
+        yo.update(el, yo`
+          <div class="archive-history">
+            <div class="archive-history-header">Change history</div>
+            <div class="archive-history-body error">
+              <i class="fa fa-frown-o"></i>
+              ${err.toString()}
+            </div>
+          </div>`
+        )
+      }
+    }
   }
 
-  archive.history.forEach(c => {
-    var row
-    var mtime = c.mtime ? niceDate(c.mtime) : ''
-    switch (c.type) {
-      case 'file':
-        row = yo`
-          <li class="history-item">
-            <i class="favicon fa fa-plus-square"></i>
-            <span class="title">${c.name}</span>
-            <span class="updated" title=${mtime}>${mtime}</span>
-            <span class="progress">${prettyBytes(c.length || 0)}</span>
-          </li>`
-        break
-      case 'directory':
-        row = yo`
-          <li class="history-item">
-            <i class="fa fa-plus-square"></i>
-            <span class="title">${c.name || ''}</span>
-            <span class="updated" title=${mtime}>${mtime}</span>
-            <span class="progress"></span>
-          </li>`
-        break
-    }
-    rowEls.push(row)
-  })
-
-  return yo`
-    <ul class="archive-history">
-      ${rowEls}
-    </ul>`
+  return el
 }

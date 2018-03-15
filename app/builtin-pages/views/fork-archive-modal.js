@@ -1,4 +1,4 @@
-/* globals beaker beakerBrowser */
+/* globals beaker DatArchive */
 
 import * as yo from 'yo-yo'
 import {Archive} from 'builtin-pages-lib'
@@ -9,6 +9,8 @@ var archive
 var isDownloading = false
 var isSelfFork = false
 var isProcessing = false
+var type
+var networked = true
 
 // form variables
 var title = ''
@@ -20,7 +22,7 @@ var description = ''
 window.setup = async function (opts) {
   if (!opts.url) {
     // ditch out
-    return beakerBrowser.closeModal({
+    return beaker.browser.closeModal({
       name: 'Error',
       message: '{url} is required',
       internalError: true
@@ -41,6 +43,8 @@ window.setup = async function (opts) {
     var archiveInfo = archive ? archive.info : {}
     title = opts.title || archiveInfo.title || ''
     description = opts.description || archiveInfo.description || ''
+    type = opts.type
+    networked = ('networked' in opts) ? opts.networked : true
     render()
 
     // select and focus title input
@@ -48,7 +52,7 @@ window.setup = async function (opts) {
   } catch (e) {
     console.error(e)
     // ditch out (for harambe)
-    return beakerBrowser.closeModal({
+    return beaker.browser.closeModal({
       name: e.name,
       message: e.message || e.toString(),
       internalError: true
@@ -61,7 +65,7 @@ window.setup = async function (opts) {
 
 window.addEventListener('keyup', e => {
   if (e.which === 27) {
-    beakerBrowser.closeModal()
+    beaker.browser.closeModal()
   }
 })
 
@@ -75,7 +79,7 @@ function onChangeDescription (e) {
 
 function onClickCancel (e) {
   e.preventDefault()
-  beakerBrowser.closeModal()
+  beaker.browser.closeModal()
 }
 
 function onClickDownload (e) {
@@ -91,10 +95,10 @@ async function onSubmit (e) {
   try {
     isProcessing = true
     render()
-    var newArchive = await beaker.archives.fork(archive.info.key, {title, description})
-    beakerBrowser.closeModal(null, {url: newArchive.url})
+    var newArchive = await DatArchive.fork(archive.info.key, {title, description, type, networked, prompt: false})
+    beaker.browser.closeModal(null, {url: newArchive.url})
   } catch (e) {
-    beakerBrowser.closeModal({
+    beaker.browser.closeModal({
       name: e.name,
       message: e.message || e.toString(),
       internalError: true
@@ -114,7 +118,7 @@ function render () {
       ${archive.progress.current > 0
         ? yo`<progress value=${archive.progress.current} max="100"></progress>`
         : ''}
-      Some files have not been downloaded, and will be missing from your fork.
+      Some files have not been downloaded, and will be missing from your copy.
     </div>`
     if (!isComplete) {
       downloadBtn = yo`<button type="button" class="btn ${isDownloading ? 'disabled' : 'success'}" onclick=${onClickDownload}>
@@ -122,35 +126,35 @@ function render () {
       </button>`
     }
   } else {
-    progressEl = yo`<div class="fork-dat-progress">Ready to fork.</div>`
+    progressEl = yo`<div class="fork-dat-progress">Ready to copy.</div>`
   }
 
-  var helpText = `Create a copy of ${renderArchiveTitle()} and save it to your library.`
+  var helpText = ''
   if (isSelfFork) {
-    helpText = 'This archive wants to create a copy of itself.'
+    helpText = yo`<p class="help-text">This archive wants to create a copy of itself.</p>`
   }
 
   yo.update(document.querySelector('main'), yo`<main>
     <div class="modal">
       <div class="modal-inner">
         <div class="fork-dat-modal">
-          <h1 class="title">Fork ${renderArchiveTitle('archive')}</h1>
-          <p class="help-text">${helpText}</p>
+          <h1 class="title">Make a copy of ${renderArchiveTitle('archive')}</h1>
+          ${helpText}
 
           <form onsubmit=${onSubmit}>
             <label for="title">Title</label>
             <input name="title" tabindex="2" value=${title} placeholder="Title" onchange=${onChangeTitle} />
 
             <label for="desc">Description</label>
-            <input name="desc" tabindex="3" value=${description} placeholder="Description (optional)" onchange=${onChangeDescription} />
+            <textarea name="desc" tabindex="3" value=${description} placeholder="Description (optional)" onchange=${onChangeDescription}></textarea>
 
             ${progressEl}
             <div class="form-actions">
               <button type="button" class="btn cancel" onclick=${onClickCancel} tabindex="4" disabled=${isProcessing}>Cancel</button>
               <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="5" disabled=${isProcessing}>
                 ${isProcessing
-                  ? yo`<span><span class="spinner"></span> Forking...</span>`
-                  : `Create fork ${!isComplete ? ' anyway' : ''}`}
+                  ? yo`<span><span class="spinner"></span> Copying...</span>`
+                  : `Create copy ${!isComplete ? ' anyway' : ''}`}
               </button>
               ${downloadBtn}
             </div>

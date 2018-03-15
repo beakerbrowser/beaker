@@ -1,19 +1,19 @@
-import {app, dialog, BrowserWindow, webContents, ipcMain, shell} from 'electron'
+import {app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen} from 'electron'
 import {autoUpdater} from 'electron-updater'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
+import slugify from 'slugify'
 import jetpack from 'fs-jetpack'
-import rpc from 'pauls-electron-rpc'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
-import {DISALLOWED_SAVE_PATH_NAMES} from '../lib/const'
 var debug = require('debug')('beaker')
-import manifest from '../lib/api-manifests/internal/browser'
 import * as settingsDb from './dbs/settings'
-import {internalOnly} from '../lib/bg/rpc'
 import {open as openUrl} from './open-url'
 import {showModal, closeModal} from './ui/modals'
+import {
+  INVALID_SAVE_FOLDER_CHAR_REGEX
+} from '../lib/const'
 
 // constants
 // =
@@ -69,39 +69,6 @@ export function setup () {
   // fetch user setup status
   userSetupStatusLookupPromise = settingsDb.get('user-setup-status')
 
-  // wire up RPC
-  rpc.exportAPI('beakerBrowser', manifest, {
-    eventsStream,
-    getInfo,
-    checkForUpdates,
-    restartBrowser,
-
-    getSetting,
-    getSettings,
-    setSetting,
-
-    getUserSetupStatus,
-    setUserSetupStatus,
-
-    fetchBody,
-    downloadURL,
-    setWindowDimensions,
-
-    setStartPageBackgroundImage,
-
-    getDefaultProtocolSettings,
-    setAsDefaultProtocolClient,
-    removeAsDefaultProtocolClient,
-
-    showOpenDialog,
-    showLocalPathDialog,
-    openUrl: url => { openUrl(url) }, // dont return anything
-    openFolder,
-    doWebcontentsCmd,
-
-    closeModal
-  }, internalOnly)
-
   // wire up events
   app.on('web-contents-created', onWebContentsCreated)
 
@@ -117,6 +84,38 @@ export function setup () {
       e.returnValue = false
     }
   })
+}
+
+export const WEBAPI = {
+  createEventsStream,
+  getInfo,
+  checkForUpdates,
+  restartBrowser,
+
+  getSetting,
+  getSettings,
+  setSetting,
+  getUserSetupStatus,
+  setUserSetupStatus,
+  getDefaultLocalPath,
+  setStartPageBackgroundImage,
+  getDefaultProtocolSettings,
+  setAsDefaultProtocolClient,
+  removeAsDefaultProtocolClient,
+
+  fetchBody,
+  downloadURL,
+
+  listBuiltinFavicons,
+  getBuiltinFavicon,
+
+  setWindowDimensions,
+  showOpenDialog,
+  showContextMenu,
+  openUrl: url => { openUrl(url) }, // dont return anything
+  openFolder,
+  doWebcontentsCmd,
+  closeModal
 }
 
 export function fetchBody (url) {
@@ -136,6 +135,28 @@ export async function downloadURL (url) {
   this.sender.downloadURL(url)
 }
 
+export async function listBuiltinFavicons ({filter, offset, limit} = {}) {
+  if (filter) {
+    filter = new RegExp(filter, 'i')
+  }
+
+  // list files in assets/favicons and filter on the name
+  var dir = jetpack.cwd(__dirname).cwd('assets/favicons')
+  var items = (await dir.listAsync())
+    .filter(filename => {
+      if (filter && !filter.test(filename)) {
+        return false
+      }
+      return filename.endsWith('.ico')
+    })
+  return items.slice(offset || 0, limit || Number.POSITIVE_INFINITY)
+}
+
+export async function getBuiltinFavicon (name) {
+  var dir = jetpack.cwd(__dirname).cwd('assets/favicons')
+  return dir.readAsync(name, 'buffer')
+}
+
 export async function setWindowDimensions ({width, height} = {}) {
   var wc = this.sender
   while (wc.hostWebContents) wc = wc.hostWebContents
@@ -146,7 +167,11 @@ export async function setWindowDimensions ({width, height} = {}) {
   win.setSize(width, height)
 }
 
-export function setStartPageBackgroundImage (srcPath) {
+export function setStartPageBackgroundImage (srcPath, appendCurrentDir) {
+  if (appendCurrentDir) {
+    srcPath = path.join(__dirname, `/${srcPath}`)
+  }
+
   var destPath = path.join(app.getPath('userData'), 'start-background-image')
 
   return new Promise((resolve) => {
@@ -249,7 +274,7 @@ export function setUserSetupStatus (status) {
 // rpc methods
 // =
 
-function eventsStream () {
+function createEventsStream () {
   return emitStream(browserEvents)
 }
 
@@ -263,7 +288,8 @@ function showOpenDialog (opts = {}) {
       title: opts.title,
       buttonLabel: opts.buttonLabel,
       filters: opts.filters,
-      properties: opts.properties
+      properties: opts.properties,
+      defaultPath: opts.defaultPath
     }, filenames => {
       // return focus back to the the webview
       wc.executeJavaScript(`
@@ -275,103 +301,69 @@ function showOpenDialog (opts = {}) {
   })
 }
 
-export function validateLocalPath (localPath) {
-  for (let i = 0; i < DISALLOWED_SAVE_PATH_NAMES.length; i++) {
-    let disallowedSavePathName = DISALLOWED_SAVE_PATH_NAMES[i]
-    let disallowedSavePath = app.getPath(disallowedSavePathName)
-    if (path.normalize(localPath) === path.normalize(disallowedSavePath)) {
-      return {valid: false, name: disallowedSavePathName}
-    }
-  }
-  return {valid: true}
-}
-
-export async function showLocalPathDialog ({folderName, defaultPath, warnIfNotEmpty} = {}) {
-  while (true) {
-    // prompt for destination
-    var localPath = await new Promise((resolve) => {
-      dialog.showOpenDialog({
-        defaultPath,
-        title: (folderName)
-          ? 'Choose where to put the site folder'
-          : 'Choose the site folder',
-        buttonLabel: 'Save',
-        properties: ['openDirectory', 'createDirectory']
-      }, filenames => {
-        resolve(filenames && filenames[0])
-      })
-    })
-    if (!localPath) {
-      return
-    }
-
-    // make sure it's a valid destination
-    let validation = validateLocalPath(localPath)
-    if (!validation.valid) {
-      await new Promise(resolve => {
-        dialog.showMessageBox({
-          type: 'error',
-          message: 'This folder is protected. Please pick another folder or subfolder.',
-          detail:
-            `This is the OS ${validation.name} folder. ` +
-          `We${"'"}re not comfortable letting you use an important folder, ` +
-          `because Beaker has tools and APIs that can delete files. ` +
-          `Instead, you should pick a child folder, or some other location entirely.`,
-          buttons: ['OK']
-        }, resolve)
-      })
-      continue
-    }
-
-    // check if the target is empty
-    if (warnIfNotEmpty) {
-      try {
-        var files = await jetpack.listAsync(localPath)
-        if (files && files.length > 0) {
-          // ask the user if they're sure
-          var res = await new Promise(resolve => {
-            dialog.showMessageBox({
-              type: 'question',
-              message: 'This folder is not empty. Files that are not a part of this site will be deleted or overwritten. Save to this folder?',
-              buttons: ['Yes', 'Cancel']
-            }, resolve)
-          })
-          if (res != 0) {
-            continue
-          }
-        }
-      } catch (e) {
-        // no files
-      }
-    }
-
-    return localPath
-  }
-}
-
-export async function showDeleteArchivePrompt (sitename, oldpath, {bulk} = {}) {
+function showContextMenu (menuDefinition) {
   return new Promise(resolve => {
-    dialog.showMessageBox({
-      type: 'question',
-      message: `Delete '${sitename}'?`,
-      detail: 'Deleting this site will remove it from your library and delete the keys. You may undo this action for a short period.',
-      checkboxLabel: oldpath ? `Delete the files at ${oldpath}` : undefined,
-      checkboxChecked: true,
-      buttons: bulk
-        ? ['Yes to all', 'Yes', 'No']
-        : ['Yes', 'No']
-    }, (choice, checkboxChecked) => {
-      resolve({
-        shouldDelete: (bulk && choice != 2) || (!bulk && choice == 0),
-        bulkYesToAll: bulk && choice == 0,
-        preserveStagingFolder: !checkboxChecked
+    var cursorPos = screen.getCursorScreenPoint()
+
+    // add a click item to all menu items
+    addClickHandler(menuDefinition)
+    function addClickHandler (items) {
+      items.forEach(item => {
+        if (item.type === 'submenu' && Array.isArray(item.submenu)) {
+          addClickHandler(item.submenu)
+        } else if (item.type !== 'separator' && item.id) {
+          item.click = clickHandler
+        }
       })
-    })
+    }
+
+    // add 'inspect element' in development
+    if (process.env.NODE_ENV === 'develop' || process.env.NODE_ENV === 'test') {
+      menuDefinition.push({type: 'separator'})
+      menuDefinition.push({
+        label: 'Inspect Element',
+        click: () => {
+          this.sender.inspectElement(cursorPos.x, cursorPos.y)
+          if (this.sender.isDevToolsOpened()) { this.sender.devToolsWebContents.focus() }
+        }
+      })
+    }
+
+    // track the selection
+    var selection
+    function clickHandler (item) {
+      selection = item.id
+    }
+
+    // show the menu
+    var win = BrowserWindow.fromWebContents(this.sender.hostWebContents)
+    var menu = Menu.buildFromTemplate(menuDefinition)
+    menu.popup(win)
+    resolve(selection)
   })
 }
 
 function openFolder (folderPath) {
   shell.openExternal('file://' + folderPath)
+}
+
+async function getDefaultLocalPath (dir, title) {
+  // massage the title
+  title = typeof title === 'string' ? title : ''
+  title = title.replace(INVALID_SAVE_FOLDER_CHAR_REGEX, '')
+  if (!title.trim()) {
+    title = 'Untitled'
+  }
+  title = slugify(title).toLowerCase()
+
+  // find an available variant of title
+  let tryNum = 1
+  let titleVariant = title
+  while (await jetpack.existsAsync(path.join(dir, titleVariant))) {
+    titleVariant = `${title}-${++tryNum}`
+  }
+  const localPath = path.join(dir, titleVariant)
+  return localPath
 }
 
 async function doWebcontentsCmd (method, wcId, ...args) {
@@ -385,7 +377,7 @@ async function doWebcontentsCmd (method, wcId, ...args) {
 
 function setUpdaterState (state) {
   updaterState = state
-  browserEvents.emit('updater-state-changed', state)
+  browserEvents.emit('updater-state-changed', {state})
 }
 
 function getAutoUpdaterFeedSettings () {

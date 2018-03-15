@@ -1,0 +1,35 @@
+.profile-lite {
+  &:extend(.flex);
+  padding: 10px 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #eee;
+  }
+
+  .content {
+    &:extend(.flex);
+    justify-content: space-between;
+    flex: 1;
+  }
+
+  .avatar {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+  }
+
+  .avatar-container {
+    height: 30px;
+  }
+
+  .name {
+    &:extend(.overflow-ellipsis);
+    max-width: 145px;
+    font-size: .8rem !important;
+  }
+
+  .name,
+  .btn {
+    display: inline-block;
+  }
+}

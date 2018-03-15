@@ -2,7 +2,7 @@
   display: flex;
   background: @background-shell-window;
   border-bottom: 1px solid @border-shell-window;
-  padding: 5px 4px 4px 2px;
+  padding: 5px 4px 3px 2px;
   margin: 0;
 
   &.hidden {
@@ -13,17 +13,29 @@
     background: none;
     border: 0;
     margin: 0;
-    padding: 4px 5px;
+    padding: 0;
     font-size: 17px;
     line-height: 1.1;
     color: @color-toolbar-btn;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 25px;
     border-radius: 2px;
     border: 1px solid transparent;
 
-    .fa {
+    .icon {
+      max-width: 100%;
       cursor: pointer;
+
+      * {
+        stroke: #666;
+        stroke-width: 1.75;
+      }
+    }
+
+    #triangle {
+      stroke-width: .5px !important;
+      stroke: #666;
+      fill: #666;
     }
 
     &.raised {
@@ -42,7 +54,15 @@
     }
 
     &:disabled {
-      color: @color-toolbar-btn--disabled;
+      cursor: default;
+
+      .icon {
+        cursor: default;
+
+        * {
+          stroke: #ccc !important;
+        }
+      }
     }
 
     &:focus {
@@ -63,18 +83,10 @@
     }
 
     &.nav-back-btn, &.nav-forward-btn {
-      -webkit-text-stroke: 1.6px @background-shell-window;
+      stroke: #333;
 
       &:hover:not(:disabled) {
         -webkit-text-stroke: 1.6px @background-toolbar-btn--hover;
-      }
-    }
-
-    &.nav-reload-btn {
-      -webkit-text-stroke: .7px @background-shell-window;
-
-      &:hover:not(:disabled) {
-        -webkit-text-stroke: .7px @background-toolbar-btn--hover;
       }
     }
 
@@ -83,38 +95,43 @@
     &.nav-forward-btn,
     &.nav-reload-btn,
     &.nav-cancel-btn {
-      padding: 2px 5px 5px;
+      padding: 0;
       margin: 0 2px;
       font-size: 18px;
       line-height: 17px;
+
+      .icon {
+        height: 100%;
+
+        &.close {
+          height: 50%;
+
+          * {
+            stroke-width: 8px;
+          }
+        }
+      }
 
       .fa {
         position: relative;
         top: 1px;
       }
-
-      .fa-refresh {
-        top: 2px;
-      }
     }
+
     .fa-code-fork {
       font-weight: bold;
-    }
-
-    &.dat-sidebar {
-      margin-right: 3px;
     }
   }
 
   .page-dropdown-menu button.toolbar-btn {
-    height: 23px;
-    width: 25px;
-    border: 1px solid #ccc;
-    margin-top: 2px;
-    margin-right: 2px;
-    padding-top: 2px;
-    margin-left: 5px;
-    background: linear-gradient(to bottom, #fafafa 30%, #f0f0f0);
+    color: @color-text--muted;
+    margin-left: 0;
     font-size: 15px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+
+    button {
+      padding-left: 0;
+    }
   }
 }

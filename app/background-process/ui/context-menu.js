@@ -190,31 +190,15 @@ export default function registerContextMenu () {
         })
       }
 
-      // fork
-      if (isDat) {
-        menuItems.push({
-          label: 'Fork this site',
-          click: async (item, win) => {
-            var res = await win.webContents.executeJavaScript(`
-              DatArchive.fork("${props.pageURL}")
-                .then(archive => archive.url)
-                .catch(() => false)
-            `)
-            if (res) {
-              win.webContents.send('command', 'file:new-tab', res)
-            }
-          } 
-        })
-      }
-
       // inspector
       if (isDat) {
-        menuItems.push({
-          label: 'Inspect Site Files',
-          click: (item, win) => {
-            win.webContents.send('command', 'view:open-sidebar')
-          }
-        })
+        // TODO restore with open in filesystem?
+        // menuItems.push({
+        //   label: 'Inspect Site Files',
+        //   click: (item, win) => {
+        //     win.webContents.send('command', 'view:open-sidebar')
+        //   }
+        // })
       }
       menuItems.push({
         label: 'Inspect Element',

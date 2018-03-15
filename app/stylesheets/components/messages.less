@@ -5,17 +5,21 @@
   justify-content: flex-start;
   align-items: center;
   font-size: 13.5px;
-  border: 1px solid;
-  padding: 10px;
-  margin: 1rem 0;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border-radius: 2px;
+
+  strong {
+    font-weight: 600;
+  }
 
   > i {
-    font-size: 1.3rem;
-    padding-right: @margin-icon;
+    font-size: 16px;
+    margin-right: 10px;
   }
 
   .btn {
-    background: #fff;
+    background: transparent;
     margin-left: auto; // message buttons are always pulled to the right
   }
 
@@ -82,7 +86,7 @@
     }
 
     .btn {
-      border-color: @border-message--info;
+      border-color: @color-message--info;
       color: @color-message--info;
 
       &:focus,
@@ -99,14 +103,13 @@
   &.error {
     background: @background-message--error;
     color: @color-message--error;
-    border-color: @border-message--error;
 
     i {
      color: @color-message--error;
     }
 
     .btn {
-      border-color: @border-message--error;
+      border-color: @color-message--error;
       color: @color-message--error;
 
       &:focus,
@@ -115,13 +118,9 @@
       }
 
       &:hover {
-        background: @background-message--error;
+        background: shade(@background-message--error, 3%);
       }
     }
-  }
-
-  i {
-    margin-right: @margin-icon;
   }
 
   a:not(.btn) {

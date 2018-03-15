@@ -6,13 +6,14 @@ import setupDebugLogger from './background-process/debug-logger'
 // It doesn't have any windows which you can see on screen, but we can open
 // window from here.
 
-import { app, Menu, protocol } from 'electron'
+import { app, protocol } from 'electron'
 
 import * as beakerBrowser from './background-process/browser'
 import * as webAPIs from './background-process/web-apis'
+import * as adblocker from './background-process/adblocker'
 
 import * as windows from './background-process/ui/windows'
-import buildWindowMenu from './background-process/ui/window-menu'
+import * as windowMenu from './background-process/ui/window-menu'
 import registerContextMenu from './background-process/ui/context-menu'
 import * as downloads from './background-process/ui/downloads'
 import * as permissions from './background-process/ui/permissions'
@@ -22,10 +23,14 @@ import * as archives from './background-process/dbs/archives'
 import * as settings from './background-process/dbs/settings'
 import * as sitedata from './background-process/dbs/sitedata'
 import * as profileDataDb from './background-process/dbs/profile-data-db'
+import * as bookmarksDb from './background-process/dbs/bookmarks'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
 import * as datProtocol from './background-process/protocols/dat'
+import * as workspaceProtocol from './background-process/protocols/workspace'
+
+// import * as profilesIngest from './background-process/ingests/profiles' TODO(profiles) disabled -prf
 
 import * as openURL from './background-process/open-url'
 
@@ -45,20 +50,23 @@ process.on('unhandledRejection', (reason, p) => {
 })
 
 // configure the protocols
-protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
+protocol.registerStandardSchemes(['dat', 'beaker', 'workspace'], { secure: true })
 
-app.on('ready', function () {
+app.on('ready', async function () {
   // databases
+  profileDataDb.setup()
   archives.setup()
   settings.setup()
   sitedata.setup()
-  profileDataDb.setup()
+  // TEMP can probably remove this in 2018 or so -prf
+  bookmarksDb.fixOldBookmarks()
 
   // base
   beakerBrowser.setup()
+  adblocker.setup()
 
   // ui
-  Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu()))
+  windowMenu.setup()
   registerContextMenu()
   windows.setup()
   downloads.setup()
@@ -69,20 +77,27 @@ app.on('ready', function () {
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
   datProtocol.setup()
+  workspaceProtocol.setup()
 
   // configure chromium's permissions for the protocols
-  protocol.registerServiceWorkerSchemes(['dat'])
+  protocol.registerServiceWorkerSchemes(['dat', 'workspace'])
 
   // web APIs
   webAPIs.setup()
+
+  // ingests
+  // await profilesIngest.setup() TODO(profiles) disabled -prf
 
   // listen OSX open-url event
   openURL.setup()
 })
 
-app.on('activate', () => windows.ensureOneWindowExists())
-app.on('open-url', (e, url) => openURL.open(url))
-
-app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') { app.quit() }
+// only run one instance
+const isSecondInstance = app.makeSingleInstance((commandLine, workingDirectory) => {
+  // focus/create a window
+  windows.ensureOneWindowExists()
+  windows.getActiveWindow().focus()
 })
+if (isSecondInstance) {
+  app.exit()
+}

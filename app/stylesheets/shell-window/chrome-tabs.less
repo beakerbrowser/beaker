@@ -20,12 +20,11 @@
 
   .chrome-tab {
     position: absolute;
-    top: 0px;
-    height: 36px;
+    top: 6px;
+    height: 30px;
     width: 40px;
     z-index: 1;
     -webkit-app-region: no-drag;
-    //transition: .1s transform;
     border-bottom: 1px solid @border-shell-window;
 
     .chrome-tab-bg {
@@ -33,24 +32,41 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 35px;
-      border-left: 1px solid @border-shell-window;
+      height: 18px;
+      margin: 6px 0;
       border-right: 1px solid @border-shell-window;
+      border-radius: 3px 3px 0 0;
+      transition: .1s background ease;
     }
 
     .chrome-tab-favicon {
       width: 16px;
       height: 23px;
       text-align: center;
-      background-size: 16px;
       position: absolute;
       left: 10px;
-      top: 10px;
+      top: 8px;
       z-index: 3;
 
       img {
         width: 16px;
         height: 16px;
+      }
+
+      .fa-gear,
+      .fa-download,
+      .fa-book,
+      .fa-star-o,
+      .fa-history,
+      .fa-bug,
+      .fa-window-maximize {
+        font-size: 14px;
+        margin-top: 2px;
+      }
+
+      .fa-window-maximize {
+        -webkit-text-stroke: .85px #f7f7f7;
+        margin-right: 5px;
       }
     }
 
@@ -69,7 +85,7 @@
     .chrome-tab-title {
       position: relative;
       color: @color-tab;
-      padding: 12px 21px 5px 30px;
+      padding: 9px 27px 5px 30px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -80,30 +96,34 @@
     }
 
     .chrome-tab-close {
+      display: none;
       position: absolute;
       right: 8px;
-      top: 11px;
-      width: 15px;
-      height: 15px;
+      top: 7px;
+      width: 16px;
+      height: 16px;
       z-index: 2;
-      border-radius: 50%;
+      border-radius: 2px;
       text-align: center;
+      color: #333;
 
       &:before {
         display: block;
         content: "\00D7";
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 200;
+        opacity: 0;
+        line-height: .71;
       }
 
       &:hover:before,
       &:active:before {
-        color: #fff;
+        opacity: 1;
       }
 
       &:hover,
       &:active {
-        background: @background-close-tab--active;
+        background: #bbb;
       }
     }
 
@@ -111,36 +131,55 @@
 
       .chrome-tab-bg {
         border: none;
-        background: none;
+        background: none !important;
+      }
+
+      .plus {
+        display: block;
+        font-size: 19px;
+        font-weight: 300;
+        color: #888;
+        margin: 4px 7px;
+        width: 22px;
+        height: 21px;
+        text-align: center;
+        line-height: 100%;
+        border-radius: 2px;
       }
 
       &:hover {
 
-        .chrome-tab-bg {
-          background: @background-tab--hover;
+        .chrome-tab-close:before {
+          opacity: 1;
         }
-      }
 
-      .chrome-tab-favicon {
-        top: 11px;
-        padding: 0 5px;
-      }
-
-      .fa {
-        font-size: 10px;
-        line-height: 17px;
-        color: #555; // TODO: -tbv
+        .plus {
+          background: rgba(0,0,0,.05);
+          color: #888;
+        }
       }
     }
 
     &:hover {
+
       .chrome-tab-bg {
-        background: @background-tab--hover;
-        //transition: .5s background ease;
+        height: 28px;
+        background: #e2e2e2;
+        margin: 0;
+        border-right: 0;
       }
 
       .chrome-tab-close {
         display: block;
+        background: #e2e2e2; // tab :hover background tab
+
+        &:hover {
+          background: #ccc;
+        }
+
+        &:before {
+          opacity: 1;
+        }
       }
     }
 
@@ -152,9 +191,32 @@
       border: 0;
       //transition: none !important;
 
+      .chrome-tab-favicon {
+        top: 8px;
+      }
+
+      .chrome-tab-title {
+        padding-top: 9px;
+      }
+
       .chrome-tab-bg {
-        height: 36px;
+        height: 30px;
+        margin: 0;
         background: @background-tab--current;
+        border: 1px solid @border-shell-window;
+        border-bottom: 0;
+      }
+
+      .chrome-tab-close {
+        display: block;
+        background: @background-tab--current;
+      }
+
+      &:hover {
+
+        .chrome-tab-close:hover {
+          background: #ddd;
+        }
       }
     }
   }
@@ -170,6 +232,15 @@
   .chrome-tab-current {
     .chrome-tab-bg {
       background: @background-tab--current;
+    }
+  }
+}
+
+// tab styles for when beaker is in fullscreen
+.fullscreen {
+  .chrome-tab:hover:not(.chrome-tab-current) {
+    .chrome-tab-bg {
+      background: #dadada;
     }
   }
 }

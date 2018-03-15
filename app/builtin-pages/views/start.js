@@ -1,291 +1,309 @@
-/* globals beaker beakerBrowser beakerSitedata DatArchive Image */
+/* globals beaker */
 
 import * as yo from 'yo-yo'
-import {ArchivesList} from 'builtin-pages-lib'
-import ColorThief from '../../lib/fg/color-thief'
 import {findParent} from '../../lib/fg/event-handlers'
-import {pluralize} from '../../lib/strings'
-
-const colorThief = new ColorThief()
+import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
+import renderHelpTip from '../com/help-tip'
+import * as onboardingPopup from '../com/onboarding-popup'
 
 const LATEST_VERSION = 7011 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
-const WELCOME_URL = 'https://beakerbrowser.com/docs/using-beaker/'
-const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-11/?updated=true'
+const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-10/?updated=true'
 
 // globals
 // =
 
-var isManagingBookmarks = false
-var isShelfOpen = false
-var userProfile
-var archivesStatus
-var bookmarks, pinnedBookmarks
-var archivesList
+var pinnedBookmarks = []
+var searchResults = []
+var query = ''
+var activeSearchResult = 0
+var isSearchFocused = false
 var settings
+var hasDismissedOnboarding = localStorage.hasDismissedOnboarding ? true : false
+var hasDismissedBetaInfo = localStorage.hasDismissedBetaInfo ? true : false
 
+update()
 setup()
 async function setup () {
-  await loadBookmarks()
-  archivesStatus = await beaker.archives.status()
-  userProfile = await beaker.profiles.get(0)
-  try {
-    userProfile.title = (await beaker.archives.get(userProfile.url, {timeout: 500})).title
-  } catch (e) {
-    userProfile.title = 'Your profile'
-  }
-  settings = await beakerBrowser.getSettings()
-  update()
+  settings = await beaker.browser.getSettings()
+
+  // open onboarding popup if this is the first render
+  if (!hasDismissedOnboarding) onboardingPopup.create()
 
   // open update info if appropriate
-  if (!settings.noWelcomeTab) {
-    let latestVersion = await beakerSitedata.get('beaker://start', 'latest-version')
-    if (+latestVersion < LATEST_VERSION) {
-      await beakerSitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
-      if (!latestVersion) {
-        window.open(WELCOME_URL)
-      } else {
-        window.open(RELEASE_NOTES_URL)
-      }
-      return
+  if (!settings.no_welcome_tab) {
+    let latestVersion = await beaker.sitedata.get('beaker://start', 'latest-version')
+    if (+latestVersion && +latestVersion < LATEST_VERSION) {
+      await beaker.sitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
+      window.open(RELEASE_NOTES_URL)
     }
   }
 
-  // subscribe to network changes
-  beaker.archives.addEventListener('network-changed', ({details}) => {
-    archivesStatus.peers = details.totalPeerCount
-    yo.update(document.querySelector('a.network'), renderNetworkLink())
-  })
+  await loadBookmarks()
+  update()
+}
 
-  // load archives list after render (its not pressing)
-  archivesList = new ArchivesList({listenNetwork: true})
-  await archivesList.setup({isSaved: true})
-  archivesList.archives.sort((a, b) => {
-    if (a.url === userProfile.url) return -1
-    if (b.url === userProfile.url) return 1
-    return niceName(a).localeCompare(niceName(b))
-  })
+// events
+// =
+
+async function onClickHelpButton () {
+  await onboardingPopup.create()
+}
+
+function onFocusSearch () {
+  isSearchFocused = true
+  update()
+
+  window.addEventListener('click', onClickWhileSearchFocused)
+}
+
+function onClickWhileSearchFocused (e) {
+  if (findParent(e.target, 'search-results') || findParent(e.target, 'search')) {
+    return
+  } else {
+    isSearchFocused = false
+    window.removeEventListener('click', onClickWhileSearchFocused)
+    update()
+  }
+}
+
+function onClickSubmitActiveSearch () {
+  if (!query || !searchResults) return
+  window.location = searchResults[activeSearchResult].targetUrl
+}
+
+function onInputSearch (e) {
+  // enter
+  if (e.keyCode === 13) {
+    // ENTER
+    window.location = searchResults[activeSearchResult].targetUrl
+  } else if (e.keyCode === 40) {
+    // DOWN
+    activeSearchResult += 1
+
+    // make sure we don't go out of bounds
+    if (activeSearchResult > searchResults.length - 1) {
+      activeSearchResult = searchResults.length - 1
+    }
+    update()
+  } else if (e.keyCode === 38) {
+    // UP
+    activeSearchResult -= 1
+
+    // make sure we don't go out of bounds
+    if (activeSearchResult < 0) {
+      activeSearchResult = 0
+    }
+    update()
+  } else {
+    onUpdateSearchQuery(e.target.value)
+  }
+}
+
+async function onUpdateSearchQuery (q) {
+  searchResults = []
+  activeSearchResult = 0
+  query = q.length ? q.toLowerCase() : ''
+
+  if (query.length) {
+    // fetch library archives
+    // filter by title, URL
+    let libraryResults = await beaker.archives.list({isNetworked: true})
+    libraryResults = libraryResults.filter(a => (a.url.includes(query) || (a.title && a.title.toLowerCase().includes(query)))).slice(0, 3)
+    libraryResults = libraryResults.map(a => {
+      return {
+        title: a.title,
+        faviconUrl: a.url,
+        targetUrl: a.url,
+        label: 'Saved to Library'
+      }
+    })
+    searchResults = searchResults.concat(libraryResults)
+
+    // fetch history
+    let historyResults = await beaker.history.search(query)
+    historyResults = historyResults.slice(0, 6)
+    historyResults = historyResults.map(r => {
+      return {
+        title: r.title,
+        faviconUrl: r.url,
+        targetUrl: r.url,
+        label: r.url
+      }
+    })
+    searchResults = searchResults.concat(historyResults)
+
+    // add a DuckDuckGo search to the results
+    const ddgRes = {
+      title: query,
+      targetUrl: `https://duckduckgo.com?q=${query}`,
+      icon: 'fa fa-search',
+      label: 'Search DuckDuckGo',
+      class: 'ddg'
+    }
+    searchResults.push(ddgRes)
+  }
+
+  update()
+}
+
+async function onUnpinBookmark (e) {
+  e.preventDefault()
+  await beaker.bookmarks.setBookmarkPinned(e.currentTarget.dataset.href, false)
+  await loadBookmarks()
+  update()
+}
+
+async function onClickAddBookmark (e) {
+  try {
+    var b = await addPinnedBookmarkPopup.create()
+    if (!(await beaker.bookmarks.isBookmarked(b.url))) {
+      await beaker.bookmarks.bookmarkPrivate(b.url, {title: b.title})
+    }
+    await beaker.bookmarks.setBookmarkPinned(b.url, true)
+    await loadBookmarks()
+    update()
+  } catch (e) {
+    // ignore
+    console.log(e)
+  }
 }
 
 // rendering
 // =
 
 function update () {
-  var theme = settings.start_page_background_image
+  // TODO(bgimg) restore when background images are restored -prf
+  // var theme = settings.start_page_background_image
 
-  yo.update(document.querySelector('main'), yo`
-    <main class="${theme}">
-      <header>
-        <div class="actions">
-          <a onclick=${createSite}><i class="fa fa-pencil"></i> New site</a>
+  yo.update(document.querySelector('.window-content.start'), yo`
+    <div class="window-content builtin start ${''/*TODO(bgimg) theme*/}">
+      <div class="builtin-wrapper start-wrapper">
+        ${renderHelpTip()}
+        <div class="autocomplete-container search-container">
+          <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
+          <i class="fa fa-search"></i>
+
+          <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
+            <i class="fa fa-arrow-right"></i>
+          </button>
+
+          ${query.length && isSearchFocused ? yo`
+            <div class="search-results autocomplete-results">${searchResults.map(renderSearchResult)}</div>`
+          : ''}
         </div>
-        <div style="flex: 1"></div>
-        ${renderProfileCard()}
-      </header>
-      ${renderShelf()}
-      ${renderPinnedBookmarks()}
-    </main>
+
+        ${renderPinnedBookmarks()}
+
+        ${!localStorage.hasDismissedBetaInfo
+          ? yo`
+            <div class="beta-info">
+              <i class="fa fa-bolt"></i>
+              <p>
+                You're using a beta version of Beaker.
+                <a href="https://www.surveymonkey.com/r/NK9LGQ3">Share feedback</a>
+                or
+                <a href="https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=issue_template_0.8_beta.md">Report an issue</a>.
+              </p>
+
+              <button class="btn plain" onclick=${() => {localStorage.hasDismissedBetaInfo = true; update();}}>
+                <i class="fa fa-times"></i>
+              </button>
+            </div>`
+          : ''
+        }
+
+        ${renderDock()}
+
+        ${renderHelpButton()}
+      </div>
+    </div>
   `)
 }
 
-function renderProfileCard () {
+function renderHelpButton () {
   return yo`
-    <div class="profile">
-      ${renderNetworkLink()}
-      ${''/* DISABLED <a href=${userProfile.url}>${userProfile.title} <i class="fa fa-user-circle-o"></i></a> */}
-    </div>
-  `
+    <button class="btn plain help" onclick=${onClickHelpButton}>
+      <i class="fa fa-question-circle-o"></i>
+    </button>`
 }
 
-function renderNetworkLink () {
+function renderSearchResult (res, i) {
   return yo`
-    <a class="network" href="beaker://library">
-      <i class="fa fa-share-alt"></i> ${archivesStatus.peers} ${pluralize(archivesStatus.peers, 'peer')}
+    <a href=${res.targetUrl} class="autocomplete-result search-result ${i === activeSearchResult ? 'active' : ''} ${res.class}">
+      ${res.faviconUrl
+        ? yo`<img class="icon favicon" src="beaker-favicon:32,${res.faviconUrl}"/>`
+        : yo`<i class="icon ${res.icon}"></i>`
+      }
+
+      <span class="title">${res.title}</span>
+
+      ${res.label ? yo`<span class="label">— ${res.label || ''}</span>` : ''}
     </a>
   `
 }
 
-function renderShelf () {
-  if (!isShelfOpen) {
-    return yo`
-      <div class="shelf closed" onclick=${toggleShelf}>
-        <i class="fa fa-angle-left"></i>
-      </div>
-    `
-  }
-
+function renderDock () {
   return yo`
-    <div class="shelf open" onmouseout=${onMouseOutShelf}>
-      <div class="section-header">
-        <h3><a href="beaker://library">Your library</a></h3>
-      </div>
-      <div class="archives-list">
-        ${archivesList.archives.length
-          ? archivesList.archives.map(archiveInfo => {
-            return yo`
-              <a class="archive list-item" href=${`beaker://library/${archiveInfo.key}`}>
-                <span class="title">${niceName(archiveInfo)}</span>
-                <span class="peers">${archiveInfo.peers} ${pluralize(archiveInfo.peers, 'peer')}</span>
-              </a>`
-            })
-          : yo`<p class="no-archives">No archives in your library</p>`}
-      </div>
+    <div class="dock-wrapper">
+      <div class="dock">
+        <a class="dock-item subtitle-heading" href="beaker://settings">
+          Settings
+        </a>
 
-      <hr />
+        <a class="dock-item subtitle-heading" href="beaker://history">
+          History
+        </a>
 
-      <div class="section-header">
-        <h3><a href="beaker://bookmarks">Your bookmarks</a></h3>
-      </div>
+        <a class="dock-item subtitle-heading" href="beaker://bookmarks">
+          Bookmarks
+        </a>
 
-      <div class="bookmarks-list">
-        ${bookmarks.length
-          ? bookmarks.map(row => {
-            return yo`
-              <a href=${row.url} class="bookmark list-item">
-                <img class="favicon" src=${'beaker-favicon:' + row.url} />
-                <span href=${row.url} class="bookmark-link" title=${row.title} />
-                  <span class="title">${row.title}</span>
-                </span>
-              </a>`
-          })
-          : yo`<p class="no-bookmarks">No bookmarks</p>`
-        }
+        <a class="dock-item subtitle-heading" href="beaker://library">
+          Library
+        </a>
       </div>
     </div>
   `
 }
 
 function renderPinnedBookmarks () {
-  var icon = isManagingBookmarks ? 'caret-down' : 'wrench'
-
   return yo`
-    <div class="bookmarks-container">
-      <p>
-        <a class="add-pin-toggle" onclick=${toggleAddPin}>
-          <i class="fa fa-${icon}"></i>
-          ${isManagingBookmarks ? 'Close' : 'Manage bookmarks'}
-        </a>
-      </p>
+    <div class="pinned-bookmarks-container">
+      ${pinnedBookmarks.length ? yo`
+        <h2 class="subtitle-heading">
+          <span>Pinned bookmarks</span>
+          <button class="btn transparent add-pinned-btn" data-tooltip="Add pinned bookmark" onclick=${onClickAddBookmark}>
+            <i class="fa fa-plus"></i>
+          </button>
+        </h2>`
+      : ''}
+
       <div class="pinned-bookmarks">
         ${pinnedBookmarks.map(renderPinnedBookmark)}
       </div>
-      ${renderBookmarks()}
-    </div>
-  `
-}
-
-function renderBookmarks () {
-  if (!isManagingBookmarks) {
-    return ''
-  }
-
-  const isNotPinned = row => !row.pinned
-
-  const renderRow = row =>
-    yo`
-      <li class="bookmark ll-row">
-        <a class="btn pin" onclick=${e => pinBookmark(e, row)}>
-          <i class="fa fa-thumb-tack"></i> Pin
-        </a>
-        <a href=${row.url} class="link" title=${row.title} />
-          <img class="favicon" src=${'beaker-favicon:' + row.url} />
-          <span class="title">${row.title}</span>
-          <span class="url">${row.url}</span>
-        </a>
-      </li>`
-
-  const unpinnedBookmarks = bookmarks.filter(isNotPinned)
-  return yo`
-    <div class="bookmarks">
-      ${unpinnedBookmarks.length ? unpinnedBookmarks.map(renderRow) : 'All bookmarks are pinned'}
     </div>
   `
 }
 
 function renderPinnedBookmark (bookmark) {
-  var { url, title } = bookmark
-  var [r, g, b] = bookmark.dominantColor || [255, 255, 255]
+  const {href, title} = bookmark
+
   return yo`
-    <a class="pinned-bookmark ${isManagingBookmarks ? 'nolink' : ''}" href=${isManagingBookmarks ? '' : url}>
-      <div class="favicon-container" style="background: rgb(${r}, ${g}, ${b})">
-        ${isManagingBookmarks ? yo`<a class="unpin" onclick=${e => unpinBookmark(e, bookmark)}><i class="fa fa-times"></i></a>` : ''}
-        <img src=${'beaker-favicon:' + url} class="favicon"/>
-      </div>
+    <a class="pinned-bookmark" href=${href}>
+      <img src=${'beaker-favicon:32,' + href} class="favicon"/>
       <div class="title">${title}</div>
     </a>
   `
 }
 
-// event handlers
-// =
-
-function toggleShelf () {
-  isShelfOpen = !isShelfOpen
-  update()
-}
-
-async function createSite () {
-  var archive = await DatArchive.create()
-  window.location = 'beaker://library/' + archive.url.slice('dat://'.length)
-}
-
-function onMouseOutShelf (e) {
-  if (!findParent(e.relatedTarget, 'shelf')) {
-    isShelfOpen = false
-    update()
-  }
-}
-
-function toggleAddPin (url, title) {
-  isManagingBookmarks = !isManagingBookmarks
-  update()
-}
-
-async function pinBookmark (e, {url}) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  await beaker.bookmarks.togglePinned(url, true)
-  await loadBookmarks()
-  update()
-}
-
-async function unpinBookmark (e, {url}) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  await beaker.bookmarks.togglePinned(url, false)
-  await loadBookmarks()
-  update()
-}
-
 // helpers
 // =
 
+function delay (cb, param) {
+  window.clearTimeout(cb)
+  setTimeout(cb, 75, param)
+}
+
 async function loadBookmarks () {
-  bookmarks = (await beaker.bookmarks.list()) || []
-  pinnedBookmarks = (await beaker.bookmarks.list({pinned: true})) || []
-
-  // load dominant colors of each pinned bookmark
-  await Promise.all(pinnedBookmarks.map(attachDominantColor))
-}
-
-function attachDominantColor (bookmark) {
-  return new Promise(resolve => {
-    var img = new Image()
-    img.setAttribute('crossOrigin', 'anonymous')
-    img.onload = e => {
-      var c = colorThief.getColor(img, 10)
-      c[0] = (c[0] / 4) | 0 + 192
-      c[1] = (c[1] / 4) | 0 + 192
-      c[2] = (c[2] / 4) | 0 + 192
-      bookmark.dominantColor = c
-      resolve()
-    }
-    img.onerror = resolve
-    img.src = 'beaker-favicon:' + bookmark.url
-  })
-}
-
-function niceName (archiveInfo) {
-  return (archiveInfo.title || '').trim() || 'Untitled'
+  pinnedBookmarks = (await beaker.bookmarks.listPinnedBookmarks()) || []
 }

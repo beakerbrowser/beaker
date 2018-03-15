@@ -1,0 +1,67 @@
+#prompts {
+  position: fixed;
+  width: 290px;
+  z-index: 20;
+  top: 72px;
+  left: 70px;
+}
+
+.prompt {
+  &:extend(.dropdown-shadow);
+  position: absolute;
+  width: 100%;
+  padding: 15px;
+  background: #fff;
+  border: 1px solid #dadada;
+  border-radius: 4px;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 43px;
+    width: 12px;
+    height: 12px;
+    z-index: 3;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #fff;
+  }
+
+  p {
+    margin-top: 0;
+    font-weight: 500;
+    font-size: 12.5px;
+
+    &.perm {
+      font-weight: 400;
+
+      &::first-letter {
+        text-transform: uppercase;
+      }
+
+      i {
+        margin-right: 3px;
+        color: #777;
+        font-size: 13px;
+      }
+    }
+  }
+
+  a {
+    &:extend(.link);
+    &:hover {
+      &:extend(.link:hover);
+    }
+  }
+
+  .prompt-btns {
+    text-align: right;
+
+    button {
+      margin-left: 5px;
+    }
+  }
+}
