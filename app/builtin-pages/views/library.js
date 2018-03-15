@@ -373,7 +373,7 @@ function renderHeader () {
                 </p>
               </div>
 
-              <div class="dropdown-item">
+              <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
                 <div class="label">
                   <i class="fa fa-folder-o"></i>
                   Import folder
@@ -508,6 +508,25 @@ async function onDeleteSelected () {
 
   await loadArchives()
   render()
+}
+
+async function onCreateSiteFromFolder () {
+  // ask user for folder
+  const folder = await beaker.browser.showOpenDialog({
+    title: 'Select folder',
+    buttonLabel: 'Use folder',
+    properties: ['openDirectory']
+  })
+  if (!folder || !folder.length) return
+
+  // create a new archive
+  const archive = await DatArchive.create({prompt: false})
+  const wi = await beaker.workspaces.create(0, {
+    publishTargetUrl: archive.url,
+    localFilesPath: folder[0]
+  })
+  await beaker.workspaces.setupFolder(0, wi.name)
+  window.location += archive.url
 }
 
 async function onShareFiles () {

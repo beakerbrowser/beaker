@@ -135,7 +135,7 @@ export default {
 
     // do an 'add-only' apply from the archive
     var diff = await dft.diff({fs: archive}, {fs: scopedFS})
-    diff = diff.filter(d => d.change == 'add')
+    diff = diff.filter(d => d.change === 'add')
     await dft.applyRight({fs: archive}, {fs: scopedFS}, diff)
 
     return true

@@ -96,7 +96,7 @@ export class BrowserMenuNavbarBtn {
                 <span class="label">Website</span>
               </div>
 
-              <div class="menu-item">
+              <div class="menu-item" onclick=${e => this.onCreateSiteFromFolder(e)}>
                 <i class="fa fa-folder-o"></i>
                 <span class="label">From folder</span>
               </div>
@@ -328,6 +328,30 @@ export class BrowserMenuNavbarBtn {
 
     // create a new archive
     const archive = await DatArchive.create({template, prompt: false})
+    pages.setActive(pages.create('beaker://library/' + archive.url))
+  }
+
+  async onCreateSiteFromFolder (e) {
+    // close dropdown
+    this.isDropdownOpen = false
+    this.submenu = ''
+    this.updateActives()
+
+    // ask user for folder
+    const folder = await beaker.browser.showOpenDialog({
+      title: 'Select folder',
+      buttonLabel: 'Use folder',
+      properties: ['openDirectory']
+    })
+    if (!folder || !folder.length) return
+
+    // create a new archive
+    const archive = await DatArchive.create({prompt: false})
+    const wi = await beaker.workspaces.create(0, {
+      publishTargetUrl: archive.url,
+      localFilesPath: folder[0]
+    })
+    await beaker.workspaces.setupFolder(0, wi.name)
     pages.setActive(pages.create('beaker://library/' + archive.url))
   }
 
