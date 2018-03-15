@@ -14,7 +14,7 @@ const STEPS = [
   {
     title: 'Welcome to Beaker!',
     subtitle: 'Configure your preferences',
-    description: 'Beaker is browser for exploring and building the peer-to-peer Web.',
+    description: 'Beaker is a browser for exploring and building the peer-to-peer Web.',
     content: () => yo`
       <div>
         <img class="icon" src="beaker://assets/img/onboarding/p2p-connection.svg" />
