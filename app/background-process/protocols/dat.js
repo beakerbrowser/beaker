@@ -1,4 +1,4 @@
-import {protocol} from 'electron'
+import {app, protocol} from 'electron'
 import {join as joinPaths} from 'path'
 import parseDatUrl from 'parse-dat-url'
 import parseRange from 'range-parser'
@@ -47,7 +47,7 @@ object-src 'none';
 
 export function setup () {
   // setup the network & db
-  datLibrary.setup()
+  datLibrary.setup({logfilePath: joinPaths(app.getPath('userData'), 'dat.log')})
 
   // setup the protocol handler
   protocol.registerStreamProtocol('dat', datProtocol, err => {

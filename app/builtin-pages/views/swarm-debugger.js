@@ -4,11 +4,11 @@ import * as yo from 'yo-yo'
 
 const COLUMN_SETS = {
   discovery: ['event', 'peer', 'trafficType', 'messageId', 'message'],
-  connections: ['event', 'peer', 'connectionId', 'connectionType', 'ts', 'discoveryKey', 'message']
+  connections: ['event', 'peer', 'connectionId', 'connectionType', 'ts', 'message']
 }
 const EVENT_SETS = {
-  discovery: ['peer-found', 'traffic'],
-  connections: ['swarming', 'unswarming', 'connection-handshake', 'replicating', 'connection-error', 'connection-close']
+  discovery: ['traffic', 'peer-found', 'peer-rejected', 'peer-dropped', 'peer-banned'],
+  connections: ['connecting', 'connect-timeout', 'connect-failed', 'handshaking', 'handshake-timeout', 'connection-established', 'replicating', 'connection-error', 'connection-closed', 'redundant-connection']
 }
 
 // globals
@@ -43,6 +43,8 @@ async function setup () {
   })
   var debugEvents = beaker.archives.createDebugStream()
   debugEvents.addEventListener(archiveKey, onLog)
+  logEntries = (await beaker.archives.getDebugLog(archiveKey)).split('\n').map(parseJSON).filter(Boolean)
+  render()
 }
 
 function setView (view) {
@@ -60,7 +62,13 @@ async function parseURL () {
   }
   try {
     // extract key from url
-    var parts = /^\/([^/]+)/.exec(path)
+    if (path.startsWith('/')) {
+      path = path.slice(1)
+    }
+    if (path.startsWith('dat://')) {
+      path = path.slice('dat://'.length)
+    }
+    var parts = /^([^/]+)/.exec(path)
     var key = parts[1]
     if (/[0-9a-f]{64}/i.test(key) == false) {
       key = await DatArchive.resolveName(key)
@@ -217,8 +225,17 @@ function onLog (data) {
 }
 
 function formatLogValue (key, value) {
-  if (key === 'ts') {
-    return value + 'ms'
+  if (key === 'ts' && typeof value !== 'undefined') {
+    return (+value) + 'ms'
   }
   return value
+}
+
+function parseJSON (str) {
+  try {
+    if (!str) return
+    return JSON.parse(str)
+  } catch (e) {
+    console.log(e)
+  }
 }

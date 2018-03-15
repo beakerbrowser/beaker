@@ -82,6 +82,11 @@ export class PageMenuNavbarBtn {
                     Open in Library
                   </div>
 
+                  <div class="dropdown-item" onclick=${() => this.onClickNetworkDebugger()}>
+                    <i class="fa fa-bug"></i>
+                    Network debugger
+                  </div>
+
                   <div class="dropdown-item" onclick=${() => this.onClickDownloadZip()}>
                     <i class="fa fa-file-archive-o"></i>
                     Download as .zip
@@ -191,6 +196,13 @@ export class PageMenuNavbarBtn {
     const page = pages.getActive()
     if (!page || !page.getViewedDatOrigin()) return
     page.loadURL(`beaker://library/dat://${page.siteInfo.key}`)
+  }
+
+  onClickNetworkDebugger () {
+    this.close()
+    const page = pages.getActive()
+    if (!page || !page.getViewedDatOrigin()) return
+    page.loadURL(`beaker://swarm-debugger/dat://${page.siteInfo.key}`)    
   }
 
   async onClickFork () {

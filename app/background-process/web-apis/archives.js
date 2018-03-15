@@ -142,6 +142,10 @@ export default {
     return datLibrary.createEventStream()
   },
 
+  getDebugLog (key) {
+    return datLibrary.getDebugLog(key)
+  },
+
   createDebugStream () {
     return datLibrary.createDebugStream()
   }
