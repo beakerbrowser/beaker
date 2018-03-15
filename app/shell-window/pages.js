@@ -743,8 +743,8 @@ function onDidStopLoading (e) {
         .markdown a:hover { text-decoration: underline; }
         .markdown a.anchor-link { color: #ddd; }
         .markdown h1, .markdown h2, .markdown  h3 { margin: 15px 0; font-weight: 600; }
-        .markdown h1, .markdown h2 { border-bottom: 1px solid #eee; }
-        .markdown h1 { font-size: 30px; line-height: 45px; }
+        .markdown h1, .markdown h2 { border-bottom: 1px solid #eee; line-height: 45px; }
+        .markdown h1 { font-size: 30px; }
         .markdown h2 { font-size: 24px; }
         .markdown h3 { font-size: 20px; }
         .markdown ul, .markdown ol { margin-bottom: 15px; }
