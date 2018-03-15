@@ -738,7 +738,7 @@ function onDidStopLoading (e) {
         main pre { background: #fafafa; padding: 1em }
       `)
       page.webviewEl.insertCSS(`
-        .markdown { font-size: 14px; width: 100%; max-width: 700px; line-height: 22.5px; }
+        .markdown { font-size: 14px; width: 100%; max-width: 750px; line-height: 22.5px; }
         .markdown a { color: #2864dc; text-decoration: none; }
         .markdown a:hover { text-decoration: underline; }
         .markdown a.anchor-link { color: #ddd; }
