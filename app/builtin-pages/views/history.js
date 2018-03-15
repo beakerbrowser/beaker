@@ -148,6 +148,8 @@ function renderRows () {
 }
 
 function renderClearHistoryButton () {
+  if (query && query.length) return ''
+
   return yo`
     <div>
       <button class="link" onclick=${onClickDeleteBulk.bind(window)}>
