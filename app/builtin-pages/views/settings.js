@@ -362,7 +362,12 @@ function renderAutoUpdateCheckbox () {
 
 function onUpdateView (view) {
   activeView = view
-  window.location.hash = view
+  let hash = window.location.hash
+  if (hash.length > 1 && !hash.endsWith(view)) {
+    window.history.pushState('', {}, '#' + view)
+  } else {
+    window.history.replaceState('', {}, '#' + view)
+  }
   renderToPage()
 }
 
