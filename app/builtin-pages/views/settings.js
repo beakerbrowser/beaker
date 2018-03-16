@@ -413,6 +413,7 @@ function onClickRestart () {
 }
 
 function onUpdaterStateChanged (state) {
+  console.debug('onUpdaterStateChanged', state)
   if (!browserInfo) { return }
   // render new state
   browserInfo.updater.state = state
@@ -421,6 +422,7 @@ function onUpdaterStateChanged (state) {
 }
 
 function onUpdaterError (err) {
+  console.debug('onUpdaterError', err)
   if (!browserInfo) { return }
   // render new state
   browserInfo.updater.error = err
