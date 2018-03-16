@@ -80,7 +80,7 @@ async function setup () {
     window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform !== 'linux'
 
     // load data
-    let url = window.location.pathname.slice(1)
+    let url = await parseLibraryUrl()
     archive = new LibraryDatArchive(url)
     await archive.setup()
 
@@ -296,38 +296,51 @@ async function loadReadme () {
 // =
 
 function render () {
-  yo.update(
-    document.querySelector('.library-wrapper'), yo`
-      <div class="library-wrapper library-view builtin-wrapper">
-        <div class="drag-hint">
-          <div class="icons">
-            <i class="fa fa-file-video-o"></i>
-            <i class="fa fa-file-image-o"></i>
-            <i class="fa fa-file-code-o"></i>
-            <i class="fa fa-file-text-o"></i>
-            <i class="fa fa-file-archive-o"></i>
+  if (!archive) {
+    yo.update(
+      document.querySelector('.library-wrapper'), yo`
+        <div class="library-wrapper library-view builtin-wrapper">
+          <div class="builtin-main" style="margin-left: 0; width: 100%">
+            <div class="view-wrapper">
+              ${renderView()}
+            </div>
+          </div>
+        </div>`
+      )
+  } else {
+    yo.update(
+      document.querySelector('.library-wrapper'), yo`
+        <div class="library-wrapper library-view builtin-wrapper">
+          <div class="drag-hint">
+            <div class="icons">
+              <i class="fa fa-file-video-o"></i>
+              <i class="fa fa-file-image-o"></i>
+              <i class="fa fa-file-code-o"></i>
+              <i class="fa fa-file-text-o"></i>
+              <i class="fa fa-file-archive-o"></i>
+            </div>
+
+            <h1>Drop to add files</h1>
+
+            <p>
+              Dropped files will be published directly to
+              <a href=${archive.url}>${shortenHash(archive.url)}</a>
+            </p>
           </div>
 
-          <h1>Drop to add files</h1>
+          <div class="builtin-main" style="margin-left: 0; width: 100%">
+            ${renderHeader()}
 
-          <p>
-            Dropped files will be published directly to
-            <a href=${archive.url}>${shortenHash(archive.url)}</a>
-          </p>
-        </div>
+            <div class="view-wrapper">
+              ${renderView()}
+            </div>
 
-        <div class="builtin-main" style="margin-left: 0; width: 100%">
-          ${renderHeader()}
-
-          <div class="view-wrapper">
-            ${renderView()}
+            ${renderFooter()}
           </div>
-
-          ${renderFooter()}
         </div>
-      </div>
-    `
-  )
+      `
+    )
+  }
 }
 
 function renderHeader () {
@@ -1989,7 +2002,8 @@ async function readViewStateFromUrl () {
 
   try {
     var node
-    var urlp = parseDatURL(window.location.pathname.slice(1))
+    var datUrl = await parseLibraryUrl()
+    var urlp = parseDatURL(datUrl)
     var pathParts = urlp.pathname.split('/').filter(Boolean)
 
     // select the archive
@@ -2042,6 +2056,25 @@ function getSafeTitle () {
 
 function getSafeDesc () {
   return _get(archive, 'info.description', '').trim() || yo`<em>No description</em>`
+}
+
+async function parseLibraryUrl () {
+  var url
+  if (window.location.pathname.slice(1).startsWith('workspace:')) {
+    const wsName = window.location.pathname.slice('/workspace://'.length).split('/')[0]
+
+    const wsInfo = await beaker.workspaces.get(0, wsName)
+    if (wsInfo) {
+      url = wsInfo.publishTargetUrl
+      window.location.pathname = url + window.location.pathname.slice(`/workspace://${wsInfo.name}`.length)
+    } else {
+      toplevelError = createToplevelError('Invalid workspace name')
+      render()
+    }
+  } else {
+    url = window.location.pathname.slice(1)
+  }
+  return url
 }
 
 function createToplevelError (err) {
