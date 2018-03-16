@@ -40,12 +40,14 @@ var readmeElement
 var settingsEditValues = {
   title: false,
   description: false,
-  repository: false
+  repository: false,
+  workspaceName: false
 }
 var settingsSuccess = {
   title: false,
   description: false,
-  repository: false
+  repository: false,
+  workspaceName: false
 }
 var headerEditValues = {
   title: false
@@ -693,6 +695,8 @@ function renderSetupChecklist () {
 }
 
 function renderSettingsView () {
+  const isOwner = _get(archive, 'info.isOwner')
+
   const title = archive.info.title || ''
   const editedTitle = settingsEditValues['title']
   const isEditingTitle = editedTitle !== false && title !== editedTitle
@@ -705,7 +709,9 @@ function renderSettingsView () {
   const editedGitRepository = settingsEditValues['repository']
   const isEditingGitRepository = editedGitRepository !== false && gitRepository !== editedGitRepository
 
-  const isOwner = _get(archive, 'info.isOwner')
+  const wsName = workspaceInfo ? workspaceInfo.name : ''
+  const editedWorkspaceName = settingsEditValues['workspaceName']
+  const isEditingWorkspaceName = editedWorkspaceName !== false && wsName !== editedWorkspaceName
 
   let wsPath = workspaceInfo && workspaceInfo.localFilesPath
   if (wsPath && wsPath.indexOf(' ') !== -1) wsPath = `"${wsPath}"`
@@ -861,6 +867,20 @@ function renderSettingsView () {
                           <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`, '',  true)}>
                             <i class="fa fa-clipboard"></i>
                           </button>
+
+                          <form class="input-group">
+                            <input type="text" name="workspaceName" value=${isEditingWorkspaceName ? editedWorkspaceName : wsName} onkeyup=${e => onKeyupSettingsEdit(e, 'workspaceName')} placeholder="Change workspace name"/>
+                            <button disabled="${!isEditingWorkspaceName}" class="btn" onclick=${e => onSaveWorkspaceName(e)}>
+                              Save
+                            </button>
+                            ${settingsSuccess['workspaceName']
+                              ? yo`
+                                <span class="success-message">
+                                  <i class="fa fa-check"></i>
+                                </span>`
+                              : ''
+                            }
+                          </form>
                         </p>
 
                         <h3>Published URL</h3>
@@ -1890,6 +1910,34 @@ async function onKeyupHeaderEdit (e, name) {
 function onKeyupSettingsEdit (e, name) {
   settingsEditValues[name] = e.target.value
   render()
+}
+
+async function onSaveWorkspaceName (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  let newName = e.target.form.querySelector('input').value
+  try {
+    await beaker.workspaces.set(
+      0,
+      workspaceInfo.name,
+      { name: newName,
+        localFilesPath: workspaceInfo.localFilesPath,
+        publishTargetUrl: workspaceInfo.publishTargetUrl
+      }
+    )
+    settingsEditValues['workspaceName'] = false
+    settingsSuccess['workspaceName'] = true
+    workspaceInfo.name = newName
+    render()
+
+    setTimeout(() => {
+      settingsSuccess['workspaceName'] = false
+      render()
+    }, 4000)
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 async function onSaveSettingsEdit (e, name) {
