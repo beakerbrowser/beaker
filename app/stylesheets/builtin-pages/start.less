@@ -25,23 +25,29 @@
   display: block;
   width: 100%;
   background: #f0f0f0;
+  padding:30px;
 
   .beta-info {
     &:extend(.flex);
     align-items: center;
     max-width: 600px;
     margin: auto;
-    margin-top: 70px;
     background: #8257cf;
     color: #fff;
     -webkit-font-smoothing: antialiased;
     font-weight: 600;
     border-radius: 2px;
     padding: 7px 15px;
+    position: relative;
+    padding-left:35px;
+    padding-right: 30px;
 
     > i {
       margin-right: 10px;
       font-size: 16px;
+      position:absolute;
+      top:10px;
+      left:15px;
     }
 
     p {
@@ -55,6 +61,9 @@
     .btn {
       color: inherit;
       margin-left: auto;
+      position: absolute;
+      top: 3px;
+      right: 10px;
     }
   }
 
@@ -210,6 +219,8 @@
 .pinned-bookmarks-container {
   width: 460px;
   margin: auto;
+  margin-bottom:45px;
+  max-width:600px;
 
   @media (min-width: 640px) {
     width: 580px;
