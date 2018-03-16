@@ -180,7 +180,7 @@ function update () {
       <div class="builtin-wrapper start-wrapper">
         ${renderHelpTip()}
         <div class="autocomplete-container search-container">
-          <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
+          <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, Bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
           <i class="fa fa-search"></i>
 
           <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
