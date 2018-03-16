@@ -87,7 +87,7 @@ async function parseURL () {
 
 function shouldRender (logEntry) {
   // event filter
-  if (!activeEvents.includes(logEntry.event)) {
+  if (!activeEvents || !activeEvents.includes(logEntry.event)) {
     return false
   }
   // user filter
