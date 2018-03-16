@@ -425,7 +425,7 @@ function onUpdaterError (err) {
   console.debug('onUpdaterError', err)
   if (!browserInfo) { return }
   // render new state
-  browserInfo.updater.error = err
+  browserInfo.updater.error = err.message
   renderToPage()
 }
 

@@ -420,9 +420,10 @@ function onUpdateDownloaded () {
 }
 
 function onUpdateError (e) {
-  debug('[AUTO-UPDATE] error', e.toString())
+  console.error(e)
+  debug('[AUTO-UPDATE] error', e.toString(), e)
   setUpdaterState(UPDATER_STATUS_IDLE)
-  updaterError = (e.toString() || '').split('\n')[0]
+  updaterError = {message: (e.toString() || '').split('\n')[0]}
   browserEvents.emit('updater-error', updaterError)
 }
 
