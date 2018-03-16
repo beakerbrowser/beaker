@@ -39,7 +39,7 @@ export async function setup () {
     if (app.isReady()) openURL.open(url)
     else app.on('ready', () => openURL.open(url))
   })
-  ipcMain.on('new-window', createShellWindow)
+  ipcMain.on('new-window', () => createShellWindow())
 
   app.on('before-quit', async e => {
     sessionWatcher.exit()
