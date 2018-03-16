@@ -412,11 +412,11 @@ function onClickRestart () {
   beaker.browser.restartBrowser()
 }
 
-function onUpdaterStateChanged (state) {
-  console.debug('onUpdaterStateChanged', state)
+function onUpdaterStateChanged (e) {
+  console.debug('onUpdaterStateChanged', e)
   if (!browserInfo) { return }
   // render new state
-  browserInfo.updater.state = state
+  browserInfo.updater.state = e.state
   browserInfo.updater.error = false
   renderToPage()
 }
@@ -425,7 +425,7 @@ function onUpdaterError (err) {
   console.debug('onUpdaterError', err)
   if (!browserInfo) { return }
   // render new state
-  browserInfo.updater.error = err
+  browserInfo.updater.error = err.message
   renderToPage()
 }
 
