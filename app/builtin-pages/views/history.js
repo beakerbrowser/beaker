@@ -130,18 +130,22 @@ function renderRows () {
   })
 
   // empty state
-  if (rowEls.length == 0 && query) {
-    rowEls.push(
-      yo`
-        <div class="view empty">
-          <i class="fa fa-search"></i>
-          <p>
-            No results for "${query}"
-          </p>
-        </div>`
-    )
-  } else if (rowEls.length == 0) {
-    rowEls.push(yo`<div class="empty">Loading...</div>`)
+  if (rowEls.length === 0) {
+    if (isFetching) {
+      rowEls.push(yo`<div class="empty">Loading...</div>`)
+    } else if (query) {
+      rowEls.push(
+        yo`
+          <div class="view empty">
+            <i class="fa fa-search"></i>
+            <p>
+              No results for "${query}"
+            </p>
+          </div>`
+      )
+    } else {
+      rowEls.push(yo`<div class="empty">No history... yet!</div>`)
+    }
   }
 
   return rowEls
