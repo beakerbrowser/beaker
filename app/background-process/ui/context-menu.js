@@ -154,7 +154,8 @@ export default function registerContextMenu () {
       // web search
       if(hasText){
         var searchPreviewStr = props.selectionText.substr(0,30) // Trim search preview to keep it reasonably sized
-        searchPreviewStr = searchPreviewStr.replace(/\s/gi, ' ');
+        searchPreviewStr = searchPreviewStr.replace(/\s/gi, ' ') // Replace whitespace chars with space
+        searchPreviewStr = searchPreviewStr.replace(/[\u061c\u200E\u200f\u202A-\u202E]+/g, '') // Remove directional text control chars
         if (searchPreviewStr.length < props.selectionText.length){ // Add ellipsis if search preview was trimmed
           searchPreviewStr += '...\"'
         } else {
