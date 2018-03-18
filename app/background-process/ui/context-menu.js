@@ -151,6 +151,18 @@ export default function registerContextMenu () {
         menuItems.push({ type: 'separator' })
       }
 
+      // web search 
+      if(hasText){
+        var searchPreviewStr = props.selectionText.substr(0,30) // Trim search preview to keep it reasonably sized
+        if (searchPreviewStr.length < props.selectionText.length){ // Add ellipsis if search preview was trimmed
+          searchPreviewStr += '...\"'
+        } else {
+          searchPreviewStr += '\"'
+        }
+        menuItems.push({ label: 'Search DuckDuckGo for \"' + searchPreviewStr, click: (item, win) => win.webContents.send('command', 'file:new-tab', 'https://duckduckgo.com/?q='+props.selectionText) })
+        menuItems.push({ type: 'separator' })
+      }
+
       if (!props.linkURL && props.mediaType === 'none' && !hasText) {
         menuItems.push({
           label: 'Back',
