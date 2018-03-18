@@ -151,9 +151,10 @@ export default function registerContextMenu () {
         menuItems.push({ type: 'separator' })
       }
 
-      // web search 
+      // web search
       if(hasText){
         var searchPreviewStr = props.selectionText.substr(0,30) // Trim search preview to keep it reasonably sized
+        searchPreviewStr = searchPreviewStr.replace(/\s/gi, ' ');
         if (searchPreviewStr.length < props.selectionText.length){ // Add ellipsis if search preview was trimmed
           searchPreviewStr += '...\"'
         } else {
