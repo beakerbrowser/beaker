@@ -40,6 +40,9 @@ export async function setup () {
     else app.on('ready', () => openURL.open(url))
   })
   ipcMain.on('new-window', () => createShellWindow())
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit()
+  })
 
   app.on('before-quit', async e => {
     sessionWatcher.exit()
