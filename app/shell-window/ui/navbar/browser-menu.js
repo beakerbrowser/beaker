@@ -19,7 +19,7 @@ export class BrowserMenuNavbarBtn {
       newWindow: cmdOrCtrlChar + 'N',
       newTab: cmdOrCtrlChar + 'T',
       findInPage: cmdOrCtrlChar + 'F',
-      history: cmdOrCtrlChar + 'Y',
+      history: cmdOrCtrlChar + (isDarwin ? 'Y' : 'H'),
       openFile: cmdOrCtrlChar + 'O'
     }
 
