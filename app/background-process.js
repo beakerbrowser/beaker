@@ -52,6 +52,14 @@ process.on('unhandledRejection', (reason, p) => {
 // configure the protocols
 protocol.registerStandardSchemes(['dat', 'beaker', 'workspace'], { secure: true })
 
+// handle OS event to open URLs
+app.on('open-url', (e, url) => {
+  e.preventDefault() // we are handling it
+  // wait for ready (not waiting can trigger errors)
+  if (app.isReady()) openURL.open(url)
+  else app.on('ready', () => openURL.open(url))
+})
+
 app.on('ready', async function () {
   // databases
   profileDataDb.setup()
@@ -87,9 +95,6 @@ app.on('ready', async function () {
 
   // ingests
   // await profilesIngest.setup() TODO(profiles) disabled -prf
-
-  // listen OSX open-url event
-  openURL.setup()
 })
 
 // only run one instance

@@ -34,11 +34,6 @@ export async function setup () {
     if (app.isReady()) ensureOneWindowExists()
     else app.on('ready', ensureOneWindowExists)
   })
-  app.on('open-url', (e, url) => {
-    // wait for ready (not waiting can trigger errors)
-    if (app.isReady()) openURL.open(url)
-    else app.on('ready', () => openURL.open(url))
-  })
   ipcMain.on('new-window', () => createShellWindow())
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()

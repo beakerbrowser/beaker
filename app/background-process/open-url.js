@@ -3,8 +3,11 @@ import {ipcMain} from 'electron'
 import * as windows from './ui/windows'
 var queue = []
 var isLoaded = false
+var isSetup = false
 
-export function setup () {
+function setup () {
+  if (isSetup) return
+  isSetup = true
   ipcMain.on('shell-window:ready', function (e) {
     queue.forEach(url => e.sender.send('command', 'file:new-tab', url))
     queue.length = 0
@@ -13,6 +16,7 @@ export function setup () {
 }
 
 export function open (url) {
+  setup()
   var win = windows.getActiveWindow()
   if (isLoaded && win) {
     // send command now
