@@ -632,25 +632,26 @@ function createReplicationStream (info) {
     if (!archive || !archive.isSwarming) {
       return
     }
+    if (archive.replicationStreams.indexOf(stream) !== -1) {
+      return // already replicating
+    }
 
     // create the replication stream
     archive.replicate({stream, live: true})
     if (stream.destroyed) return // in case the stream was destroyed during setup
 
     // track the stream
-    if (archive.replicationStreams.indexOf(stream) === -1) {
-      var keyStr = datEncoding.toStr(archive.key)
-      streamKeys.push(keyStr)
-      archive.replicationStreams.push(stream)
+    var keyStr = datEncoding.toStr(archive.key)
+    streamKeys.push(keyStr)
+    archive.replicationStreams.push(stream)
+    onNetworkChanged(archive)
+    function onend () {
+      archive.replicationStreams = archive.replicationStreams.filter(s => (s !== stream))
       onNetworkChanged(archive)
-      function onend () {
-        archive.replicationStreams = archive.replicationStreams.filter(s => (s !== stream))
-        onNetworkChanged(archive)
-      }
-      stream.once('error', onend)
-      stream.once('end', onend)
-      stream.once('close', onend)
     }
+    stream.once('error', onend)
+    stream.once('end', onend)
+    stream.once('close', onend)
   }
 
   // debugging
@@ -702,7 +703,7 @@ function onNetworkChanged (archive) {
 function getArchivePeerInfos (archive) {
   // old way, more accurate?
   // archive.replicationStreams.map(s => ({host: s.peerInfo.host, port: s.peerInfo.port}))
-  
+
   return archive.metadata.peers.map(peer => peer.stream.stream.peerInfo).filter(Boolean)
 }
 
