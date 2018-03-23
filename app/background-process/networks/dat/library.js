@@ -651,23 +651,8 @@ function createReplicationStream (info) {
         onNetworkChanged(archive)
       }
       stream.once('error', onend)
+      stream.once('end', onend)
       stream.once('close', onend)
-
-      // HACK
-      // we get zombie entries in archive.replicationStreams sometimes
-      // cant figure out why
-      // watch for them, log them, and remove them
-      let zi = setInterval(() => {
-        if (stream.destroyed) {
-          clearInterval(zi)
-          if (archive.replicationStreams.indexOf(stream) === -1) {
-            return // we're good
-          }
-          let oldLen = archive.replicationStreams.length
-          archive.replicationStreams = archive.replicationStreams.filter(s => (s !== stream))
-          console.error('Cleared out %d zombie instances of replication streams for %s', oldLen - archive.replicationStreams.length, keyStr)
-        }
-      }, 15e3)
     }
   }
 
