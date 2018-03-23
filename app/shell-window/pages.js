@@ -401,10 +401,12 @@ export function reopenLastRemoved () {
 
 export function setActive (page) {
   leavePageFullScreen()
+  statusBar.set(false)
   if (activePage) {
     hide(activePage)
     activePage.isActive = false
   }
+
   activePage = page
   show(page)
   page.isActive = 1
