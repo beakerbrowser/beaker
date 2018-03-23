@@ -461,10 +461,7 @@ export async function getArchiveInfo (key) {
     expiresAt: userSettings.expiresAt
   }
   meta.peers = archive.metadata.peers.length
-  meta.peerInfo = archive.replicationStreams.map(s => ({
-    host: s.peerInfo.host,
-    port: s.peerInfo.port
-  }))
+  meta.peerInfo = getArchivePeerInfos(archive)
   meta.peerHistory = archive.peerHistory
 
   return meta
@@ -695,11 +692,18 @@ function onNetworkChanged (archive) {
   archivesEvents.emit('network-changed', {
     details: {
       url: `dat://${datEncoding.toStr(archive.key)}`,
-      peers: archive.replicationStreams.map(s => ({host: s.peerInfo.host, port: s.peerInfo.port})),
+      peers: getArchivePeerInfos(archive),
       peerCount: archive.metadata.peers.length,
       totalPeerCount
     }
   })
+}
+
+function getArchivePeerInfos (archive) {
+  // old way, more accurate?
+  // archive.replicationStreams.map(s => ({host: s.peerInfo.host, port: s.peerInfo.port}))
+  
+  return archive.metadata.peers.map(peer => peer.stream.stream.peerInfo).filter(Boolean)
 }
 
 function log (key, data) {
