@@ -301,6 +301,8 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
     console.error('Error in archive', key.toString('hex'), err)
     debug('Error in archive', key.toString('hex'), err)
   })
+  archive.metadata.on('peer-add', () => onNetworkChanged(archive))
+  archive.metadata.on('peer-remove', () => onNetworkChanged(archive))
   archive.replicationStreams = [] // list of all active replication streams
   archive.peerHistory = [] // samples of the peer count
 
@@ -644,10 +646,8 @@ function createReplicationStream (info) {
     var keyStr = datEncoding.toStr(archive.key)
     streamKeys.push(keyStr)
     archive.replicationStreams.push(stream)
-    onNetworkChanged(archive)
     function onend () {
       archive.replicationStreams = archive.replicationStreams.filter(s => (s !== stream))
-      onNetworkChanged(archive)
     }
     stream.once('error', onend)
     stream.once('end', onend)
