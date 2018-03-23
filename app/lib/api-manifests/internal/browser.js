@@ -21,6 +21,7 @@ export default {
   fetchBody: 'promise',
   downloadURL: 'promise',
 
+  setDevToolsWebContents: 'promise',
   setWindowDimensions: 'promise',
   showOpenDialog: 'promise',
   showContextMenu: 'promise',

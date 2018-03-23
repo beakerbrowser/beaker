@@ -109,6 +109,7 @@ export const WEBAPI = {
   listBuiltinFavicons,
   getBuiltinFavicon,
 
+  setDevToolsWebContents,
   setWindowDimensions,
   showOpenDialog,
   showContextMenu,
@@ -155,6 +156,13 @@ export async function listBuiltinFavicons ({filter, offset, limit} = {}) {
 export async function getBuiltinFavicon (name) {
   var dir = jetpack.cwd(__dirname).cwd('assets/favicons')
   return dir.readAsync(name, 'buffer')
+}
+
+export async function setDevToolsWebContents (targetWCId, devtoolsWCId) {
+  var targetWC = webContents.fromId(targetWCId)
+  var devtoolsWC = webContents.fromId(devtoolsWCId)
+  console.log('setDevToolsWebContents', targetWCId, !!targetWC, devtoolsWCId, !!devtoolsWC)
+  targetWC.setDevToolsWebContents(devtoolsWC)
 }
 
 export async function setWindowDimensions ({width, height} = {}) {

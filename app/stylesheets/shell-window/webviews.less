@@ -2,7 +2,48 @@
   height: ~"calc(100vh - 74px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
   position: relative;
 
-  webview {
+  .page-container {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+
+    // HACK
+    // to address https://github.com/electron/electron/issues/8505
+    // we have to use z-index to hide content
+    // not at all ideal for performance
+    z-index: 10;
+    &.hidden {
+      display: flex; // the default display type
+      z-index: 9;
+    }
+
+    webview {
+      width: 100%;
+      outline: none;
+      position: absolute;
+      transform: translateX(0); // put the webview in another compositing layer, to reduce layout render times
+      background: #fff; // so that something is painted during load
+
+      &.builtin {
+        background: #f0f0f0;
+      }
+
+      &.page-full {
+        height: 100%;
+      }
+
+      &.page-devtools-open {
+        height: 70%;
+      }
+
+      &.devtools {
+        bottom: 0;
+        height: 30%;
+      }
+    }
+  }
+
+  /*webview {
     height: 100%;
     width: 100%;
     outline: none;
@@ -23,7 +64,7 @@
       display: flex; // the default display type
       z-index: 9;
     }
-  }
+  }*/
 }
 
 body.page-fullscreen #webviews {

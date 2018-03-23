@@ -5,6 +5,7 @@ import EventEmitter from 'events'
 import path from 'path'
 import fs from 'fs'
 import parseDatURL from 'parse-dat-url'
+import * as yo from 'yo-yo'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as prompt from './ui/prompt'
@@ -102,7 +103,9 @@ export function create (opts) {
   var page = {
     id: id,
     wcID: null, // the id of the webcontents
+    containerEl: yo`<div class="page-container"></div>`,
     webviewEl: createWebviewEl(id, url),
+    devtoolsEl: null,
     navbarEl: navbar.createEl(id),
     promptEl: prompt.createEl(id),
     siteInfoNavbarBtn: null, // set after object is created
@@ -286,9 +289,19 @@ export function create (opts) {
     },
 
     async toggleDevTools (jsConsole) {
+      // prepare devtools webview
+      console.log('prepping')
+      await page.prepareDevToolsEl()
+      page.webviewEl.classList.remove('page-full', 'page-devtools-open')
+      console.log('opening')
+
       if (await this.isDevToolsOpenedAsync()) {
+        // close
+        page.webviewEl.classList.add('page-full')
         await this.closeDevToolsAsync()
       } else {
+        // open
+        page.webviewEl.classList.add('page-devtools-open')
         await this.openDevToolsAsync()
         if (jsConsole) {
           page.webviewEl.getWebContents().once('devtools-opened', () => {
@@ -296,6 +309,20 @@ export function create (opts) {
             if (dtwc) dtwc.executeJavaScript('DevToolsAPI.showPanel("console")')
           })
         }
+      }
+    },
+
+    async prepareDevToolsEl () {
+      if (!page.devtoolsEl) {
+        console.log('a')
+        page.devtoolsEl = createDevtoolsWebviewEl()
+        console.log('b')
+        page.containerEl.appendChild(page.devtoolsEl)
+        console.log('c')
+        await new Promise(resolve => page.devtoolsEl.addEventListener('did-attach', resolve))
+        console.log('d')
+        await beaker.browser.setDevToolsWebContents(page.wcID, page.devtoolsEl.getWebContents().id)
+        console.log('finished prep')
       }
     }
   }
@@ -312,7 +339,8 @@ export function create (opts) {
 
   // add but leave hidden
   hide(page)
-  webviewsDiv.appendChild(page.webviewEl)
+  page.containerEl.appendChild(page.webviewEl)
+  webviewsDiv.appendChild(page.containerEl)
 
   // emit
   events.emit('add', page)
@@ -373,7 +401,7 @@ export async function remove (page) {
   // remove
   page.stopLiveReloading()
   pages.splice(i, 1)
-  webviewsDiv.removeChild(page.webviewEl)
+  webviewsDiv.removeChild(page.containerEl)
   navbar.destroyEl(page.id)
   prompt.destroyEl(page.id)
 
@@ -548,13 +576,19 @@ export function leavePageFullScreen () {
 function onDomReady (e) {
   var page = getByWebview(e.target)
   if (page) {
+    console.log(1)
     page.isWebviewReady = true
     if (!page.wcID) {
       page.wcID = e.target.getWebContents().id // NOTE: this is a sync op
     }
+    console.log(2)
     if (!navbar.isLocationFocused(page) && page.isActive) {
       page.webviewEl.shadowRoot.querySelector('object').focus()
     }
+    console.log(3)
+
+    // DEBUG
+    page.toggleDevTools()
   }
 }
 
@@ -982,14 +1016,14 @@ export function onIPCMessage (e) {
 // =
 
 function show (page) {
-  page.webviewEl.classList.remove('hidden')
+  page.containerEl.classList.remove('hidden')
   page.navbarEl.classList.remove('hidden')
   page.promptEl.classList.remove('hidden')
   events.emit('show', page)
 }
 
 function hide (page) {
-  page.webviewEl.classList.add('hidden')
+  page.containerEl.classList.add('hidden')
   page.navbarEl.classList.add('hidden')
   page.promptEl.classList.add('hidden')
   events.emit('hide', page)
@@ -998,11 +1032,19 @@ function hide (page) {
 export function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
+  el.classList.add('page-full')
   el.setAttribute('preload', 'file://' + path.join(APP_PATH, 'webview-preload.build.js'))
   el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,contentIsolation,defaultEncoding=utf-8')
   // TODO add scrollBounce^ after https://github.com/electron/electron/issues/9233 is fixed
   // TODO re-enable nativeWindowOpen when https://github.com/electron/electron/issues/9558 lands
   el.setAttribute('src', url || DEFAULT_URL)
+  return el
+}
+
+export function createDevtoolsWebviewEl () {
+  var el = document.createElement('webview')
+  el.classList.add('devtools')
+  el.setAttribute('webpreferences', 'contentIsolation,defaultEncoding=utf-8')
   return el
 }
 

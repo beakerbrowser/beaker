@@ -166,6 +166,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.browser.downloadURL = beakerBrowserRPC.downloadURL
   beaker.browser.listBuiltinFavicons = beakerBrowserRPC.listBuiltinFavicons
   beaker.browser.getBuiltinFavicon = beakerBrowserRPC.getBuiltinFavicon
+  beaker.browser.setDevToolsWebContents = beakerBrowserRPC.setDevToolsWebContents
   beaker.browser.setWindowDimensions = beakerBrowserRPC.setWindowDimensions
   beaker.browser.showOpenDialog = beakerBrowserRPC.showOpenDialog
   beaker.browser.showContextMenu = beakerBrowserRPC.showContextMenu
