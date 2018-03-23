@@ -23,6 +23,8 @@ import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
 import {IS_GIT_URL_REGEX} from '../../lib/const'
 
+const DEFAULT_PEERS_LIMIT = 10
+
 // globals
 // =
 
@@ -977,7 +979,7 @@ function renderNetworkView () {
   let seedingIcon = ''
   let seedingLabel = ''
   let clearCacheBtn = ''
-  let peersLimit = 10
+  let peersLimit = arePeersCollapsed ? DEFAULT_PEERS_LIMIT : Infinity
 
   const {isSaved, expiresAt} = archive.info.userSettings
   const {progress} = archive
@@ -1074,7 +1076,7 @@ function renderNetworkView () {
                 </table>`
             }
 
-            ${Number(_get(archive, 'info.peers')) > peersLimit
+            ${Number(_get(archive, 'info.peers')) > DEFAULT_PEERS_LIMIT
               ? yo`
                 <span class="link" onclick=${onTogglePeersCollapsed}>
                   ${arePeersCollapsed  ? 'Show all' : 'Show fewer'} peers
