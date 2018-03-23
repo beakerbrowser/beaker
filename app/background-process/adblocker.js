@@ -1,14 +1,14 @@
 import { session } from 'electron'
-import { initialize, isAd } from 'is-ad'
+import { initialize, containsAds } from 'contains-ads'
 
 // exported API
 
 export function setup () {
-  initialize() // is-ad
+  initialize() // contains-ads
 
   const beakerUrls =  /^(beaker|blob)/
   session.defaultSession.webRequest.onBeforeRequest(['*://*./*'], (details, callback) => {
-    const shouldBeBlocked = !details.url.match(beakerUrls) && isAd(details.url)
+    const shouldBeBlocked = !details.url.match(beakerUrls) && containsAds(details.url)
 
     if (shouldBeBlocked) {
       callback({cancel: true})
