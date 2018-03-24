@@ -1,16 +1,17 @@
 import yo from 'yo-yo'
 
-function render (message, type = '') {
+function render (message, type = '', button = null) {
+  const onButtonClick = button ? (e) => {destroy(); button.click(e)} : undefined
   return yo`
     <div id="toast-wrapper" class="toast-wrapper">
-      <p class="toast ${type}">${message}</p>
+      <p class="toast ${type}">${message} ${button ? yo`<a class="toast-btn" onclick=${onButtonClick}>${button.label}</a>` : ''}</p>
     </div>
   `
 }
 
-export function create (message, type = '', time = 1500) {
+export function create (message, type = '', time = 1500, button = null) {
   // render toast
-  var toast = render(message, type)
+  var toast = render(message, type, button)
   document.body.appendChild(toast)
   setTimeout(destroy, time)
 }
