@@ -1470,7 +1470,7 @@ test('DatArchive.exportToArchive', async t => {
   t.deepEqual(res.value, beakerPng.toString('base64'))
 })
 
-test('archive.createFileActivityStream', async t => {
+test('archive.watch', async t => {
   // do this in the shell so we dont have to ask permission
   await app.client.windowByIndex(0)
 
@@ -1485,7 +1485,7 @@ test('archive.createFileActivityStream', async t => {
   app.client.execute(url => {
     window.res = []
     var archive = new DatArchive(url)
-    var events = archive.createFileActivityStream()
+    var events = archive.watch()
     events.addEventListener('changed', function ({path}) {
       window.res.push(path)
     })

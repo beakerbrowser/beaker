@@ -344,7 +344,7 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
 
   // wire up events
   archive.pullLatestArchiveMeta = debounce(opts => pullLatestArchiveMeta(archive, opts), 1e3)
-  archive.fileActStream = pda.createFileActivityStream(archive)
+  archive.fileActStream = pda.watch(archive)
   archive.fileActStream.on('data', ([event]) => {
     if (event === 'changed') {
       archive.pullLatestArchiveMeta({updateMTime: true})

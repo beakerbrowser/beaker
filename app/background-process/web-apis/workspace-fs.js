@@ -152,9 +152,9 @@ export default {
     return pda.rmdir(wsfs, filepath, opts)
   },
 
-  async createFileActivityStream (workspaceUrl, pathPattern) {
+  async watch (workspaceUrl, pathPattern) {
     const wsfs = await lookupWorkspace(this.sender, workspaceUrl)
-    return pda.createFileActivityStream(wsfs, pathPattern)
+    return pda.watch(wsfs, pathPattern)
   },
 
   async createNetworkActivityStream (workspaceUrl) {

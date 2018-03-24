@@ -242,13 +242,13 @@ export function create (opts) {
         page.liveReloadEvents = false
       } else if (page.protocolInfo && page.protocolInfo.scheme === 'dat:' && page.siteInfo) {
         var archive = new DatArchive(page.siteInfo.key)
-        page.liveReloadEvents = archive.createFileActivityStream()
+        page.liveReloadEvents = archive.watch()
         let event = (page.siteInfo.isOwner) ? 'changed' : 'invalidated'
         page.liveReloadEvents.addEventListener(event, () => {
           page.triggerLiveReload()
         })
       } else if (page.protocolInfo && page.protocolInfo.scheme === 'workspace:') {
-        page.liveReloadEvents = beaker.workspaces.createFileActivityStream(0, page.protocolInfo.hostname)
+        page.liveReloadEvents = beaker.workspaces.watch(0, page.protocolInfo.hostname)
         page.liveReloadEvents.addEventListener('changed', page.triggerLiveReload.bind(page))
       }
       toast.create(`Live reloading ${(page.liveReloadEvents) ? 'on' : 'off'}`, 1e3)

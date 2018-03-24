@@ -117,7 +117,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.workspaces.remove = workspacesRPC.remove
   beaker.workspaces.listChangedFiles = workspacesRPC.listChangedFiles
   beaker.workspaces.diff = workspacesRPC.diff
-  beaker.workspaces.createFileActivityStream = (profileId, name) => fromEventStream(workspacesRPC.createFileActivityStream(profileId, name))
+  beaker.workspaces.watch = (profileId, name) => fromEventStream(workspacesRPC.watch(profileId, name))
   beaker.workspaces.publish = workspacesRPC.publish
   beaker.workspaces.revert = workspacesRPC.revert
   beaker.workspaces.openFolder = workspacesRPC.openFolder

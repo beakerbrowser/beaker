@@ -7,7 +7,7 @@ export default {
   remove: 'promise',
   listChangedFiles: 'promise',
   diff: 'promise',
-  createFileActivityStream: 'readable',
+  watch: 'readable',
   publish: 'promise',
   revert: 'promise',
   openFolder: 'promise',

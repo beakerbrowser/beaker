@@ -413,9 +413,9 @@ export default {
     })
   },
 
-  async createFileActivityStream (url, pathPattern) {
+  async watch (url, pathPattern) {
     var {archive} = await lookupArchive(url)
-    return pda.createFileActivityStream(archive, pathPattern)
+    return pda.watch(archive, pathPattern)
   },
 
   async createNetworkActivityStream (url) {

@@ -239,7 +239,7 @@ export default {
   // create a stream to watch for changes in the scoped FS
   // - profileId: number, the id of the browsing profile
   // - name: string, the name of the workspace
-  async createFileActivityStream (profileId, name) {
+  async watch (profileId, name) {
     assertValidProfileId(profileId)
     assertValidName(name)
 

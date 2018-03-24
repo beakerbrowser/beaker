@@ -146,7 +146,7 @@ async function setup () {
     setupWorkspaceListeners()
 
     let onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
-    var fileActStream = archive.createFileActivityStream()
+    var fileActStream = archive.watch()
     fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
     fileActStream.addEventListener('changed', onFilesChangedThrottled)
   } catch (e) {
@@ -170,7 +170,7 @@ function setupWorkspaceListeners () {
   }
 
   if (workspaceInfo) {
-    workspaceFileActStream = beaker.workspaces.createFileActivityStream(0, workspaceInfo.name)
+    workspaceFileActStream = beaker.workspaces.watch(0, workspaceInfo.name)
     let onWorkspaceChangedThrottled = throttle(onWorkspaceChanged, 1e3)
     workspaceFileActStream.addEventListener('changed', onWorkspaceChangedThrottled)
   }

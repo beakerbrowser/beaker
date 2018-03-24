@@ -137,8 +137,8 @@ export default class DatArchive {
     return datCtx.rmdir(url, opts)
   }
 
-  createFileActivityStream (pathSpec = null) {
-    return fromAsyncEventStream(datCtx.createFileActivityStream(this.url, pathSpec))
+  watch (pathSpec = null) {
+    return fromAsyncEventStream(datCtx.watch(this.url, pathSpec))
   }
 
   createNetworkActivityStream () {

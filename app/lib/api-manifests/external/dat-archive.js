@@ -20,7 +20,7 @@ export default {
   mkdir: 'promise',
   rmdir: 'promise',
 
-  createFileActivityStream: 'readable',
+  watch: 'readable',
   createNetworkActivityStream: 'readable',
 
   importFromFilesystem: 'promise',

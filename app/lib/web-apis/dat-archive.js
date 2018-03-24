@@ -257,9 +257,14 @@ class DatArchive extends EventTarget {
   }
 
   createFileActivityStream (pathSpec = null) {
+    console.warn('The DatArchive createFileActivityStream() API has been deprecated, use watch() instead.')
+    return this.watch(pathSpec)
+  }
+
+  watch (pathSpec = null) {
     var errStack = (new Error()).stack
     try {
-      return fromEventStream(this[API].createFileActivityStream(this.url, pathSpec))
+      return fromEventStream(this[API].watch(this.url, pathSpec))
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
