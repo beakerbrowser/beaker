@@ -3,8 +3,12 @@
 import * as yo from 'yo-yo'
 import {findParent} from '../../lib/fg/event-handlers'
 import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
+import * as editBookmarkPopup from '../com/edit-bookmark-popup'
 import renderHelpTip from '../com/help-tip'
 import * as onboardingPopup from '../com/onboarding-popup'
+import * as contextMenu from '../com/context-menu'
+import * as toast from '../com/toast'
+import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 const LATEST_VERSION = 7011 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-10/?updated=true'
@@ -146,13 +150,6 @@ async function onUpdateSearchQuery (q) {
   update()
 }
 
-async function onUnpinBookmark (e) {
-  e.preventDefault()
-  await beaker.bookmarks.setBookmarkPinned(e.currentTarget.dataset.href, false)
-  await loadBookmarks()
-  update()
-}
-
 async function onClickAddBookmark (e) {
   try {
     var b = await addPinnedBookmarkPopup.create()
@@ -166,6 +163,55 @@ async function onClickAddBookmark (e) {
     // ignore
     console.log(e)
   }
+}
+
+async function onClickEditBookmark (bOriginal) {
+  try {
+    // render popup
+    var b = await editBookmarkPopup.create(bOriginal.href, bOriginal)
+
+    // delete old bookmark if url changed
+    if (bOriginal.href !== b.href) {
+      await beaker.bookmarks.unbookmarkPrivate(bOriginal.href)
+    }
+
+    // set the bookmark
+    await beaker.bookmarks.bookmarkPrivate(b.href, b)
+    await beaker.bookmarks.setBookmarkPinned(b.href, b.pinned)
+
+    await loadBookmarks()
+    update()
+  } catch (e) {
+    // ignore
+    console.log(e)
+  }
+}
+
+async function onClickDeleteBookmark (bookmark) {
+  await beaker.bookmarks.unbookmarkPrivate(bookmark.href)
+  await loadBookmarks()
+  update()
+
+  async function undo () {
+    await beaker.bookmarks.bookmarkPrivate(bookmark.href, bookmark)
+    await beaker.bookmarks.setBookmarkPinned(bookmark.href, bookmark.pinned)
+    await loadBookmarks()
+    update()
+  }
+
+  toast.create('Bookmark deleted', '', 75000, {label: 'Undo', click: undo})
+}
+
+async function onContextmenuPinnedBookmark (e, bookmark) {
+  e.preventDefault()
+  var url = e.currentTarget.getAttribute('href')
+  const items = [
+    {icon: 'external-link', label: 'Open Link in New Tab', click: () => window.open(url) },
+    {icon: 'link', label: 'Copy Link Address', click: () => writeToClipboard(url) },
+    {icon: 'pencil', label: 'Edit', click: () => onClickEditBookmark(bookmark) },
+    {icon: 'trash', label: 'Delete', click: () => onClickDeleteBookmark(bookmark) }
+  ]
+  await contextMenu.create({x: e.clientX, y: e.clientY, items})
 }
 
 // rendering
@@ -199,7 +245,7 @@ function update () {
             <div class="beta-info">
               <i class="fa fa-bolt"></i>
               <p>
-                You're using a beta version of Beaker.
+                You${"'"}re using a beta version of Beaker.
                 <a href="https://www.surveymonkey.com/r/NK9LGQ3">Share feedback</a>
                 or
                 <a href="https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=issue_template_0.8_beta.md">Report an issue</a>.
@@ -289,7 +335,7 @@ function renderPinnedBookmark (bookmark) {
   const {href, title} = bookmark
 
   return yo`
-    <a class="pinned-bookmark" href=${href}>
+    <a class="pinned-bookmark" href=${href} oncontextmenu=${e => onContextmenuPinnedBookmark(e, bookmark)}>
       <img src=${'beaker-favicon:32,' + href} class="favicon"/>
       <div class="title">${title}</div>
     </a>
