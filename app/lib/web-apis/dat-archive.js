@@ -3,13 +3,14 @@ import errors from 'beaker-error-constants'
 import parseDatURL from 'parse-dat-url'
 import datArchiveManifest from '../api-manifests/external/dat-archive'
 import workspaceFsManifest from '../api-manifests/external/workspace-fs'
-import {EventTarget, fromEventStream} from './event-target'
+import {EventTarget, Event, fromEventStream} from './event-target'
 import Stat from './stat'
 
 const LOAD_PROMISE = Symbol('LOAD_PROMISE')
 const URL_PROMISE = Symbol('URL_PROMISE')
 const API = Symbol()
 const IS_WORKSPACE = Symbol()
+const NETWORK_ACT_STREAM = Symbol()
 
 // create the rpc apis
 const dat = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, errors })
@@ -102,6 +103,14 @@ class DatArchive extends EventTarget {
     }
     return dat.unlinkArchive(url)
       .catch(e => throwWithFixedStack(e, errStack))
+  }
+
+  // override to create the activity stream if needed
+  addEventListener (type, callback) {
+    if (type === 'network-changed' || type === 'download' || type === 'upload' || type === 'sync') {
+      createNetworkActStream(this)
+    }
+    super.addEventListener(type, callback)
   }
 
   async getInfo (opts = {}) {
@@ -271,6 +280,7 @@ class DatArchive extends EventTarget {
   }
 
   createNetworkActivityStream () {
+    console.warn('The DatArchive createNetworkActivityStream() API has been deprecated, use addEventListener() instead.')
     var errStack = (new Error()).stack
     try {
       return fromEventStream(this[API].createNetworkActivityStream(this.url))
@@ -349,4 +359,13 @@ function throwWithFixedStack (e, errStack) {
   e = e || new Error()
   e.stack = e.stack.split('\n')[0] + '\n' + errStack.split('\n').slice(2).join('\n')
   throw e
+}
+
+function createNetworkActStream (archive) {
+  if (archive[NETWORK_ACT_STREAM]) return
+  var s = archive[NETWORK_ACT_STREAM] = fromEventStream(archive[API].createNetworkActivityStream(archive.url))
+  s.addEventListener('network-changed', detail => archive.dispatchEvent(new Event('network-changed', {target: archive, detail: {peers: detail.connections}})))
+  s.addEventListener('download', detail => archive.dispatchEvent(new Event('download', {target: archive, detail: {feed: detail.feed, block: detail.block, bytes: detail.bytes}})))
+  s.addEventListener('upload', detail => archive.dispatchEvent(new Event('upload', {target: archive, detail: {feed: detail.feed, block: detail.block, bytes: detail.bytes}})))
+  s.addEventListener('sync', detail => archive.dispatchEvent(new Event('sync', {target: archive, detail: {feed: detail.feed}})))
 }

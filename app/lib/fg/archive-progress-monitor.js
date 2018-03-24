@@ -11,9 +11,9 @@ export default class ArchiveProgressMonitor extends EventEmitter {
   constructor (archive) {
     super()
     this.archive = archive
-    this.networkActivity = null
     this.downloaded = 0
     this.blocks = 0
+    this.onDownload = this.onDownload.bind(this)
 
     // create a throttled 'change' emiter
     this.emitChanged = throttle(() => this.emit('changed'), EMIT_CHANGED_WAIT)
@@ -34,18 +34,14 @@ export default class ArchiveProgressMonitor extends EventEmitter {
 
   startListening () {
     // start watching network activity
-    this.networkActivity = this.archive.createNetworkActivityStream()
-    this.networkActivity.addEventListener('download', this.onDownload.bind(this))
+    this.archive.addEventListener('download', this.onDownload)
     this.interval = setInterval(() => this.fetchAllStats(), 10e3) // refetch stats every 10s
     return this.fetchAllStats()
   }
 
   stopListening () {
     clearInterval(this.interval)
-    this.listeners = {}
-    if (this.networkActivity) {
-      this.networkActivity.close()
-    }
+    this.archive.removeEventListener('download', this.onDownload)
   }
 
   get current () {

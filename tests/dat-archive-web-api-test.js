@@ -1539,7 +1539,7 @@ test('DatArchive can resolve and read dats with shortnames', async t => {
   // await app.client.windowByIndex(1)
 })
 
-test.skip('archive.createNetworkActivityStream', async t => {
+test.skip('network events', async t => {
   // do this in the shell so we dont have to ask permission
   await app.client.windowByIndex(0)
 
@@ -1561,14 +1561,13 @@ test.skip('archive.createNetworkActivityStream', async t => {
       }
     }
     var archive = new DatArchive(url)
-    var events = archive.createNetworkActivityStream()
-    events.addEventListener('network-changed', () => {
+    archive.addEventListener('network-changed', () => {
       window.res.gotPeer = true
     })
-    events.addEventListener('download', ({feed}) => {
+    archive.addEventListener('download', ({feed}) => {
       window.res[feed].down++
     })
-    events.addEventListener('sync', ({feed}) => {
+    archive.addEventListener('sync', ({feed}) => {
       window.res[feed].all = true
     })
   }, testStaticDat2URL)
