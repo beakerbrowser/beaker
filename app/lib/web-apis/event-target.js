@@ -1,22 +1,24 @@
 // this emulates the implementation of event-targets by browsers
 
+const LISTENERS = Symbol()
+
 export class EventTarget {
   constructor () {
-    this.listeners = {}
+    this[LISTENERS] = {}
   }
 
   addEventListener (type, callback) {
-    if (!(type in this.listeners)) {
-      this.listeners[type] = []
+    if (!(type in this[LISTENERS])) {
+      this[LISTENERS][type] = []
     }
-    this.listeners[type].push(callback)
+    this[LISTENERS][type].push(callback)
   }
 
   removeEventListener (type, callback) {
-    if (!(type in this.listeners)) {
+    if (!(type in this[LISTENERS])) {
       return
     }
-    var stack = this.listeners[type]
+    var stack = this[LISTENERS][type]
     var i = stack.findIndex(cb => cb === callback)
     if (i !== -1) {
       stack.splice(i, 1)
@@ -24,12 +26,37 @@ export class EventTarget {
   }
 
   dispatchEvent (event) {
-    if (!(event.type in this.listeners)) {
+    if (!(event.type in this[LISTENERS])) {
       return
     }
     event.target = this
-    var stack = this.listeners[event.type]
+    var stack = this[LISTENERS][event.type]
     stack.forEach(cb => cb.call(this, event))
+  }
+}
+
+export class Event {
+  constructor (type, opts) {
+    this.type = type
+    for (var k in opts) {
+      this[k] = opts[k]
+    }
+    Object.defineProperty(this, 'bubbles', {value: false})
+    Object.defineProperty(this, 'cancelBubble', {value: false})
+    Object.defineProperty(this, 'cancelable', {value: false})
+    Object.defineProperty(this, 'composed', {value: false})
+    Object.defineProperty(this, 'currentTarget', {value: this.target})
+    Object.defineProperty(this, 'deepPath', {value: []}) 
+    Object.defineProperty(this, 'defaultPrevented', {value: false})
+    Object.defineProperty(this, 'eventPhase', {value: 2}) // Event.AT_TARGET
+    Object.defineProperty(this, 'timeStamp', {value: Date.now()})
+    Object.defineProperty(this, 'isTrusted', {value: true})
+    Object.defineProperty(this, 'createEvent', {value: () => undefined})
+    Object.defineProperty(this, 'composedPath', {value: () => []})
+    Object.defineProperty(this, 'initEvent', {value: () => undefined})
+    Object.defineProperty(this, 'preventDefault', {value: () => undefined})
+    Object.defineProperty(this, 'stopImmediatePropagation', {value: () => undefined})
+    Object.defineProperty(this, 'stopPropagation', {value: () => undefined})
   }
 }
 
