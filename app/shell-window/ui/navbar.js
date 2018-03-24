@@ -25,6 +25,7 @@ const KEYCODE_ESC = 27
 const KEYCODE_ENTER = 13
 const KEYCODE_N = 78
 const KEYCODE_P = 80
+const KEYCODE_TAB = 9
 
 const isDatHashRegex = /^[a-z0-9]{64}/i
 const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
@@ -837,8 +838,8 @@ function onKeydownLocation (e) {
   }
 
   // on keycode navigations
-  var up = (e.keyCode == KEYCODE_UP || (e.ctrlKey && e.keyCode == KEYCODE_P))
-  var down = (e.keyCode == KEYCODE_DOWN || (e.ctrlKey && e.keyCode == KEYCODE_N))
+  var up = (e.keyCode == KEYCODE_UP || (e.ctrlKey && e.keyCode == KEYCODE_P) || (e.shiftKey && e.keyCode == KEYCODE_TAB))
+  var down = (e.keyCode == KEYCODE_DOWN || (e.ctrlKey && e.keyCode == KEYCODE_N) || (!e.shiftKey && e.keyCode == KEYCODE_TAB))
   if (autocompleteResults && (up || down)) {
     e.preventDefault()
     if (up && autocompleteCurrentSelection > 0) { autocompleteCurrentSelection-- }
