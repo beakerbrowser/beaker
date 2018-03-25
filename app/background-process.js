@@ -98,11 +98,24 @@ app.on('ready', async function () {
 })
 
 // only run one instance
-const isSecondInstance = app.makeSingleInstance((commandLine, workingDirectory) => {
+const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
+  handleArgv(argv)
+
   // focus/create a window
   windows.ensureOneWindowExists()
   windows.getActiveWindow().focus()
 })
 if (isSecondInstance) {
   app.exit()
+} else {
+  handleArgv(process.argv)
+}
+function handleArgv (argv) {
+  if (process.platform !== 'darwin') {
+    // look for URLs, windows & linux use argv instead of open-url
+    let url = argv.find(v => v.indexOf('://') !== -1)
+    if (url) {
+      openURL.open(url)
+    }
+  }
 }
