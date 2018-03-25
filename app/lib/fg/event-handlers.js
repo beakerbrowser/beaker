@@ -59,5 +59,10 @@ export function polyfillHistoryEvents () {
 
 export function adjustWindowHeight (sel) {
   var el = sel ? document.querySelector(sel) : document.body
-  beaker.browser.setWindowDimensions({height: el.getClientRects()[0].height})
+  var height = el.getClientRects()[0].height
+  if (window.process.platform !== 'darwin') {
+    // windows and linux need added height for their title bars
+    height += 39
+  }
+  beaker.browser.setWindowDimensions({height})
 }
