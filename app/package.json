@@ -63,6 +63,7 @@
     "parse-dat-url": "^3.0.1",
     "pauls-dat-api": "^7.0.0",
     "pauls-electron-rpc": "^4.1.2",
+    "pauls-word-boundary": "^1.0.0",
     "pify": "^2.3.0",
     "pretty-bytes": "^3.0.1",
     "pretty-hash": "^1.0.0",

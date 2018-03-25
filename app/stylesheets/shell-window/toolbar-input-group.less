@@ -297,13 +297,21 @@
 
   .nav-location-pretty {
     &:extend(.overflow-ellipsis);
-    height: 100%;
+    position: absolute;
     line-height: 25px;
     color: #000;
+    background: #fff;
     flex: 1;
-    padding: 0 8px;
+    margin: 0 8px;
     cursor: text;
     letter-spacing: -.2px;
+    pointer-events: none;
+
+    // safe defaults, overridden at render:
+    top: 42px; 
+    left: 138px;
+    width: 500px; 
+    height: 25px;
 
     .protocol {
       color: @color-text--light;

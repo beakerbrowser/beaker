@@ -13,6 +13,7 @@ import {WorkspacesiteMenuNavbarBtn} from './navbar/workspacesite-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
 import {findParent} from '../../lib/fg/event-handlers'
+import {findWordBoundary} from 'pauls-word-boundary'
 import renderNavArrowIcon from './icon/nav-arrow'
 import renderRefreshIcon from './icon/refresh'
 import renderCloseIcon from './icon/close'
@@ -66,6 +67,7 @@ export function createEl (id) {
   // render
   var el = render(id, null)
   toolbarNavDiv.appendChild(el)
+  updatePrettyLocationPositioning(el)
   return el
 }
 
@@ -78,11 +80,7 @@ export function destroyEl (id) {
 
 export function focusLocation (page) {
   var el = page.navbarEl.querySelector('.nav-location-input')
-
-  // the container el which has :focus styles applied
-  el.classList.remove('hidden')
   el.focus()
-  isLocationHighlighted = true
   el.select()
 }
 
@@ -130,6 +128,7 @@ export function update (page) {
 
   // render
   yo.update(page.navbarEl, render(page.id, page))
+  updatePrettyLocationPositioning(page.navbarEl)
 }
 
 export function updateLocation (page) {
@@ -349,8 +348,11 @@ function render (id, page) {
   var locationInput = yo`
     <input
       type="text"
-      class="nav-location-input ${(!isAddrElFocused) ? ' hidden' : ''}"
+      class="nav-location-input"
       oncontextmenu=${onContextMenu}
+      onmousedown=${onMousedownLocation}
+      onmouseup=${onMouseupLocation}
+      ondblclick=${onDblclickLocation}
       onfocus=${onFocusLocation}
       onblur=${onBlurLocation}
       onkeydown=${onKeydownLocation}
@@ -434,13 +436,20 @@ function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadErr
   }
 
   return yo`
-    <div
-      class="nav-location-pretty${(isHidden) ? ' hidden' : ''}"
-      onclick=${onFocusLocation}
-      onmousedown=${onFocusLocation}>
+    <div class="nav-location-pretty${(isHidden) ? ' hidden' : ''}">
       ${valueRendered}
-    </div>
-  `
+    </div>`
+}
+
+function updatePrettyLocationPositioning (container) {
+  var location = container.querySelector('.nav-location-input')
+  var pretty = container.querySelector('.nav-location-pretty')
+  var rect = location.getClientRects()[0]
+  if (!rect) return
+  pretty.style.left = rect.x + 'px'
+  pretty.style.top = rect.y + 'px'
+  pretty.style.width = rect.width + 'px'
+  pretty.style.height = rect.height + 'px'
 }
 
 async function handleAutocompleteSearch (results) {
@@ -660,18 +669,53 @@ function onClickZoom (e) {
   menu.popup(remote.getCurrentWindow())
 }
 
+// code to detect if the user is clicking, doubleclicking, or dragging the location before its focused
+// if a click, select all; if a doubleclick, select word under cursor; if a drag, do default behavior
+var lastMousedownLocationTs
+var lastMouseupLocationTs
+var mouseupClickIndex
+function onMousedownLocation (e) {
+  if (!e.currentTarget.matches(':focus')) {
+    lastMousedownLocationTs = Date.now()
+  }
+}
+function onMouseupLocation (e) {
+  if (Date.now() - lastMousedownLocationTs <= 300) {
+    // was a fast click (probably not a drag) so select all
+    let inputEl = e.currentTarget
+    mouseupClickIndex = inputEl.selectionStart
+    inputEl.select()
+
+    // setup double-click override
+    lastMousedownLocationTs = 0
+    lastMouseupLocationTs = Date.now()
+  }
+}
+function onDblclickLocation (e) {
+  if (Date.now() - lastMouseupLocationTs <= 300) {
+    e.preventDefault()
+
+    // select the text under the cursor
+    // (we have to do this manually because we previously selected all on mouseup, which f's that default behavior up)
+    let inputEl = e.currentTarget
+    let {start, end} = findWordBoundary(inputEl.value, mouseupClickIndex)
+    inputEl.setSelectionRange(start, end)
+    lastMouseupLocationTs = 0
+  }
+}
+
 function onFocusLocation (e) {
   var page = getEventPage(e)
   if (page) {
     page.navbarEl.querySelector('.nav-location-pretty').classList.add('hidden')
-    page.navbarEl.querySelector('.nav-location-input').classList.remove('hidden')
     page.navbarEl.querySelector('.toolbar-input-group').classList.add('input-focused')
-    // wait till next tick to avoid events messing with each other
-    setTimeout(() => page.navbarEl.querySelector('.nav-location-input').select(), 0)
   }
 }
 
 function onBlurLocation (e) {
+  // clear the selection range so that the next focusing doesnt carry it over
+  window.getSelection().empty()
+
   // HACK
   // blur gets called right before the click event for onClickAutocompleteDropdown
   // so, wait a bit before clearing the autocomplete, so the click has a chance to fire
@@ -681,7 +725,6 @@ function onBlurLocation (e) {
   if (page) {
     try {
       page.navbarEl.querySelector('.nav-location-pretty').classList.remove('hidden')
-      page.navbarEl.querySelector('.nav-location-input').classList.add('hidden')
       page.navbarEl.querySelector('.toolbar-input-group').classList.remove('input-focused')
     } catch (e) {
       // ignore
