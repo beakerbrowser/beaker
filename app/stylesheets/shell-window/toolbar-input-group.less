@@ -23,26 +23,6 @@
     box-shadow: 0 0 0 1px fadeout(@color-link, 80%);
   }
 
-  input.nav-location-input {
-    // override the default input styles
-    box-shadow: none;
-    max-height: 100%;
-    color: @color-text;
-    flex: 1;
-    padding: 0 8px;
-    padding-bottom: 1px;
-    border-radius: 3px;
-    border: 0;
-    background: transparent;
-    cursor: text;
-    letter-spacing: -.2px;
-
-    &:focus {
-      outline: 0;
-      background: #fff;
-    }
-  }
-
   button:not(.btn) {
     background: none;
     font-size: 16px;
@@ -295,9 +275,38 @@
     }
   }
 
+  .nav-location-container {
+    flex: 1;
+    position: relative;
+  }
+
+  input.nav-location-input {
+    // override the default input styles
+    box-shadow: none;
+    width: 100%;
+    height: 25px;
+    color: @color-text;
+    padding: 0 8px;
+    padding-bottom: 1px;
+    border-radius: 3px;
+    border: 0;
+    background: transparent;
+    cursor: text;
+    letter-spacing: -.2px;
+
+    &:focus {
+      outline: 0;
+      background: #fff;
+    }
+  }
+
   .nav-location-pretty {
     &:extend(.overflow-ellipsis);
     position: absolute;
+    top: 0; 
+    left: 0;
+    width: ~"calc(100% - 16px)"; // -16 to counter the padding on the input
+    height: 25px;
     line-height: 25px;
     color: #000;
     background: #fff;
@@ -306,12 +315,6 @@
     cursor: text;
     letter-spacing: -.2px;
     pointer-events: none;
-
-    // safe defaults, overridden at render:
-    top: 42px; 
-    left: 138px;
-    width: 500px; 
-    height: 25px;
 
     .protocol {
       color: @color-text--light;

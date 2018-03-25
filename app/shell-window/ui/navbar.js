@@ -67,7 +67,6 @@ export function createEl (id) {
   // render
   var el = render(id, null)
   toolbarNavDiv.appendChild(el)
-  updatePrettyLocationPositioning(el)
   return el
 }
 
@@ -128,7 +127,6 @@ export function update (page) {
 
   // render
   yo.update(page.navbarEl, render(page.id, page))
-  updatePrettyLocationPositioning(page.navbarEl)
 }
 
 export function updateLocation (page) {
@@ -379,8 +377,10 @@ function render (id, page) {
 
       <div class="toolbar-input-group${isLocationHighlighted ? ' input-focused' : ''}${autocompleteResults ? ' autocomplete' : ''}">
         ${page && (!isLocationHighlighted) ? page.siteInfoNavbarBtn.render() : ''}
-        ${locationPrettyView}
-        ${locationInput}
+        <div class="nav-location-container">
+          ${locationPrettyView}
+          ${locationInput}
+        </div>
         ${inpageFinder}
         ${zoomBtn}
         ${!isLocationHighlighted ? [
@@ -439,17 +439,6 @@ function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadErr
     <div class="nav-location-pretty${(isHidden) ? ' hidden' : ''}">
       ${valueRendered}
     </div>`
-}
-
-function updatePrettyLocationPositioning (container) {
-  var location = container.querySelector('.nav-location-input')
-  var pretty = container.querySelector('.nav-location-pretty')
-  var rect = location.getClientRects()[0]
-  if (!rect) return
-  pretty.style.left = rect.x + 'px'
-  pretty.style.top = rect.y + 'px'
-  pretty.style.width = rect.width + 'px'
-  pretty.style.height = rect.height + 'px'
 }
 
 async function handleAutocompleteSearch (results) {
