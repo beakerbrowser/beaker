@@ -450,6 +450,38 @@ async function handleAutocompleteSearch (results) {
   var searchTerms = v.replace(/[:^*-./]/g, ' ').split(' ').filter(Boolean)
   results.forEach(r => decorateResultMatches(searchTerms, r))
 
+  // figure out what we're looking at
+  var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(v)
+
+  // set the top results accordingly
+  var gotoResult = { url: vWithProtocol, title: 'Go to ' + v, isGuessingTheScheme }
+  var searchResult = {
+    search: v,
+    title: 'DuckDuckGo Search',
+    url: vSearch
+  }
+  if (isProbablyUrl) autocompleteResults = [gotoResult, searchResult]
+  else autocompleteResults = [searchResult, gotoResult]
+
+  // add search results
+  if (results) {
+    autocompleteResults = autocompleteResults.concat(results)
+  }
+
+  // read bookmark state
+  await Promise.all(autocompleteResults.map(async r => {
+    let bookmarked = false
+    try {
+      bookmarked = await beaker.bookmarks.isBookmarked(r.url)
+    } catch (_) {}
+    Object.assign(r, {bookmarked})
+  }))
+
+  // render
+  update()
+}
+
+function examineLocationInput (v) {
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (
     /\.[A-z]/.test(v) ||
@@ -471,33 +503,8 @@ async function handleAutocompleteSearch (results) {
       isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
     }
   }
-
-  // set the top results accordingly
-  var gotoResult = { url: vWithProtocol, title: 'Go to ' + v, isGuessingTheScheme }
-  var searchResult = {
-    search: v,
-    title: 'DuckDuckGo Search',
-    url: 'https://duckduckgo.com/?q=' + v.split(' ').join('+')
-  }
-  if (isProbablyUrl) autocompleteResults = [gotoResult, searchResult]
-  else autocompleteResults = [searchResult, gotoResult]
-
-  // add search results
-  if (results) {
-    autocompleteResults = autocompleteResults.concat(results)
-  }
-
-  // read bookmark state
-  await Promise.all(autocompleteResults.map(async r => {
-    let bookmarked = false
-    try {
-      bookmarked = await beaker.bookmarks.isBookmarked(r.url)
-    } catch (_) {}
-    Object.assign(r, {bookmarked})
-  }))
-
-  // render
-  update()
+  var vSearch = 'https://duckduckgo.com/?q=' + v.split(' ').join('+')
+  return {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme}
 }
 
 function getAutocompleteSelection (i) {
@@ -832,11 +839,22 @@ function onGlobalKeydown (e) {
 }
 
 function onContextMenu (e) {
-  const { Menu } = remote
-  const menu = [
+  const { Menu, clipboard } = remote
+  var clipboardContent = clipboard.readText()
+  var clipInfo = examineLocationInput(clipboardContent)
+  var menu = Menu.buildFromTemplate([
     { label: 'Cut', role: 'cut' },
     { label: 'Copy', role: 'copy' },
-    { label: 'Paste', role: 'paste' }
-  ]
-  Menu.buildFromTemplate(menu).popup()
+    { label: 'Paste', role: 'paste' },
+    { label: `Paste and ${clipInfo.isProbablyUrl ? 'Go' : 'Search'}`, click: onPasteAndGo }
+  ])
+  menu.popup(remote.getCurrentWindow())
+
+  function onPasteAndGo () {
+    var url = clipInfo.isProbablyUrl ? clipInfo.vWithProtocol : clipInfo.vSearch
+    var page = pages.getActive()
+    page.navbarEl.querySelector('.nav-location-input').value = url
+    page.navbarEl.querySelector('.nav-location-input').blur()
+    page.loadURL(url)
+  }
 }
