@@ -5,7 +5,7 @@ var queue = []
 var isLoaded = false
 var isSetup = false
 
-function setup () {
+export function setup () {
   if (isSetup) return
   isSetup = true
   ipcMain.on('shell-window:ready', function (e) {

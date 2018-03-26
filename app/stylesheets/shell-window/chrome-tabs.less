@@ -10,6 +10,7 @@
 .chrome-tabs {
   position: relative;
   padding-left: 10px;
+  height: 36px;
 
   * {
     -webkit-user-select: none;
@@ -218,6 +219,28 @@
           background: #ddd;
         }
       }
+    }
+  }
+}
+
+// draggable region for OSX and windows
+body.win32 .chrome-tabs,
+body.darwin .chrome-tabs {
+  display: block;
+  -webkit-app-region: drag;
+}
+
+// make room for resizing on the top
+body.win32 {
+  .chrome-tabs-shell {
+    padding-top: 4px;
+  }
+
+  .chrome-tabs {
+    height: 32px;
+    
+    .chrome-tab {
+      top: 2px;
     }
   }
 }

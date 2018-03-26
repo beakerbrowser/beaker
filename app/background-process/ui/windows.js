@@ -39,6 +39,8 @@ export async function setup () {
     if (process.platform !== 'darwin') app.quit()
   })
 
+  openURL.setup()
+
   app.on('before-quit', async e => {
     sessionWatcher.exit()
     sessionWatcher.stopRecording()
