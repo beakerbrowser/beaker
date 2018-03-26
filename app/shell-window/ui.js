@@ -33,6 +33,7 @@ export function setup (cb) {
 
   // attach some window globals
   window.pages = pages
+  window.navbar = navbar
 
   // setup subsystems
   tabs.setup()

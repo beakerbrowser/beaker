@@ -1,5 +1,4 @@
 import test from 'ava'
-import {Application} from 'spectron'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
@@ -8,7 +7,7 @@ import electron from '../node_modules/electron'
 import * as browserdriver from './lib/browser-driver'
 import { shareDat } from './lib/dat-helpers'
 
-const app = new Application({
+const app = browserdriver.start({
   path: electron,
   args: ['../app'],
   env: {
@@ -23,27 +22,20 @@ var createdDatURL // url of the dat which is created by testRunnerDat, which giv
 var createdDatKey
 
 test.before(async t => {
-  // open the window
-  await app.start()
-  await app.client.waitUntilWindowLoaded()
+  await app.isReady
 
   // share the test static dat
   testStaticDat = await shareDat(__dirname + '/scaffold/test-static-dat')
   testStaticDatURL = 'dat://' + testStaticDat.archive.key.toString('hex') + '/'
 
   // create a owned archive
-  var res = await app.client.executeAsync((done) => {
-    DatArchive.create({title: 'Test Archive', description: 'Is temporary', type: ['foo', 'bar'], prompt: false}).then(done,done)
-  })
-  createdDatURL = res.value.url
+  var res = await app.executeJavascript(`
+    DatArchive.create({title: 'Test Archive', description: 'Is temporary', type: ['foo', 'bar'], prompt: false})
+  `)
+  createdDatURL = res.url
   createdDatKey = createdDatURL.slice('dat://'.length)
-
-  // open the default start page
-  await app.client.windowByIndex(1)
-  await app.client.waitForExist('body > *')
 })
 test.after.always('cleanup', async t => {
-  console.log(JSON.stringify(await app.client.getMainProcessLogs(), null, 2))
   await app.stop()
 })
 
@@ -52,7 +44,7 @@ test.after.always('cleanup', async t => {
 
 test('library.add, library.remove', async t => {
   // register event listeners
-  await app.client.execute(() => {
+  await app.executeJavascript(`
     window.stats = {
       adds: 0,
       removes: 0
@@ -63,31 +55,31 @@ test('library.add, library.remove', async t => {
     window.beaker.archives.addEventListener('removed', event => {
       window.stats.removes++
     })
-  })
+  `)
 
   // by url
-  var res = await app.client.executeAsync((url, done) => {
-    window.beaker.archives.add(url).then(done,done)
-  }, createdDatURL)
-  t.deepEqual(res.value.isSaved, true)
-  var res = await app.client.executeAsync((url, done) => {
-    window.beaker.archives.remove(url, {noPrompt: true}).then(done,done)
-  }, createdDatURL)
-  t.deepEqual(res.value.isSaved, false)
+  var res = await app.executeJavascript(`
+    window.beaker.archives.add("${createdDatURL}")
+  `)
+  t.deepEqual(res.isSaved, true)
+  var res = await app.executeJavascript(`
+    window.beaker.archives.remove("${createdDatURL}", {noPrompt: true})
+  `)
+  t.deepEqual(res.isSaved, false)
 
   // by key
-  var res = await app.client.executeAsync((key, done) => {
-    window.beaker.archives.add(key).then(done,done)
-  }, createdDatKey)
-  t.deepEqual(res.value.isSaved, true)
-  var res = await app.client.executeAsync((key, done) => {
-    window.beaker.archives.remove(key, {noPrompt: true}).then(done,done)
-  }, createdDatKey)
-  t.deepEqual(res.value.isSaved, false)
+  var res = await app.executeJavascript(`
+    window.beaker.archives.add("${createdDatKey}")
+  `)
+  t.deepEqual(res.isSaved, true)
+  var res = await app.executeJavascript(`
+    window.beaker.archives.remove("${createdDatKey}", {noPrompt: true})
+  `)
+  t.deepEqual(res.isSaved, false)
 
   // check stats
-  var stats = await app.client.execute(() => { return window.stats })
-  t.deepEqual(stats.value, {
+  var stats = await app.executeJavascript(`window.stats`)
+  t.deepEqual(stats, {
     adds: 2,
     removes: 2
   })
@@ -95,20 +87,20 @@ test('library.add, library.remove', async t => {
 
 test('library.list', async t => {
   // add the owned and unowned dats
-  var res = await app.client.executeAsync((url, done) => {
-    window.beaker.archives.add(url).then(done,done)
-  }, createdDatURL)
-  t.deepEqual(res.value.isSaved, true)
-  var res = await app.client.executeAsync((url, done) => {
-    window.beaker.archives.add(url).then(done,done)
-  }, testStaticDatURL)
-  t.deepEqual(res.value.isSaved, true)
+  var res = await app.executeJavascript(`
+    window.beaker.archives.add("${createdDatURL}")
+  `)
+  t.deepEqual(res.isSaved, true)
+  var res = await app.executeJavascript(`
+    window.beaker.archives.add("${testStaticDatURL}")
+  `)
+  t.deepEqual(res.isSaved, true)
 
   // list all
-  var res = await app.client.executeAsync((done) => {
-    window.beaker.archives.list().then(done,done)
-  })
-  var items = res.value
+  var res = await app.executeJavascript(`
+    window.beaker.archives.list()
+  `)
+  var items = res
   t.deepEqual(items.length, 2)
   t.deepEqual(items[0].userSettings.isSaved, true)
   t.deepEqual(items[1].userSettings.isSaved, true)
@@ -117,69 +109,69 @@ test('library.list', async t => {
   t.deepEqual(items.filter(i => i.isOwner).length, 1)
 
   // list owned
-  var res = await app.client.executeAsync((done) => {
-    window.beaker.archives.list({ isOwner: true }).then(done,done)
-  })
-  t.deepEqual(res.value.length, 1)
+  var res = await app.executeJavascript(`
+    window.beaker.archives.list({ isOwner: true })
+  `)
+  t.deepEqual(res.length, 1)
 
   // list unowned
-  var res = await app.client.executeAsync((done) => {
-    window.beaker.archives.list({ isOwner: false }).then(done,done)
-  })
-  t.deepEqual(res.value.length, 1)
+  var res = await app.executeJavascript(`
+    window.beaker.archives.list({ isOwner: false })
+  `)
+  t.deepEqual(res.length, 1)
 
   // list by type
-  var res = await app.client.executeAsync((done) => {
-    window.beaker.archives.list({ type: 'foo' }).then(done,done)
-  })
-  t.deepEqual(res.value.length, 1)
-  var res = await app.client.executeAsync((done) => {
-    window.beaker.archives.list({ type: 'bar' }).then(done,done)
-  })
-  t.deepEqual(res.value.length, 1)
-  var res = await app.client.executeAsync((done) => {
-    window.beaker.archives.list({ type: 'baz' }).then(done,done)
-  })
-  t.deepEqual(res.value.length, 0)
+  var res = await app.executeJavascript(`
+    window.beaker.archives.list({ type: 'foo' })
+  `)
+  t.deepEqual(res.length, 1)
+  var res = await app.executeJavascript(`
+    window.beaker.archives.list({ type: 'bar' })
+  `)
+  t.deepEqual(res.length, 1)
+  var res = await app.executeJavascript(`
+    window.beaker.archives.list({ type: 'baz' })
+  `)
+  t.deepEqual(res.length, 0)
 
 })
 
 // TODO(profiles) disabled -prf
 // test('publishing', async t => {
 //   // publish by url
-//   var res = await app.client.executeAsync((url, done) => {
-//     window.beaker.archives.publish(url).then(done,done)
+//   var res = await app.client.executeJavascript((url, done) => {
+//     window.beaker.archives.publish(url)
 //   }, createdDatURL)
-//   var recordUrl = res.value
+//   var recordUrl = res
 //   t.truthy(recordUrl.startsWith('dat://'))
-//   var res = await app.client.executeAsync((recordUrl, done) => {
-//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   var res = await app.client.executeJavascript((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl)
 //   }, recordUrl)
 //   var cmp = {
-//     _origin: res.value._origin,
-//     _url: res.value._url,
-//     createdAt: res.value.createdAt,
+//     _origin: res._origin,
+//     _url: res._url,
+//     createdAt: res.createdAt,
 //     description: 'Is temporary',
-//     id: res.value.id,
-//     receivedAt: res.value.receivedAt,
+//     id: res.id,
+//     receivedAt: res.receivedAt,
 //     title: 'Test Archive',
 //     type: [ 'foo', 'bar' ],
 //     url: createdDatURL,
 //     votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 }
 //   }
-//   t.deepEqual(res.value, cmp)
+//   t.deepEqual(res, cmp)
 
 //   // list
-//   var res = await app.client.executeAsync((done) => {
-//     window.beaker.archives.listPublished({fetchAuthor: true, countVotes: true}).then(done,done)
+//   var res = await app.client.executeJavascript((done) => {
+//     window.beaker.archives.listPublished({fetchAuthor: true, countVotes: true})
 //   })
-//   t.deepEqual(res.value, [
-//     { _origin: res.value[0]._origin,
-//     _url: res.value[0]._url,
-//     createdAt: res.value[0].createdAt,
+//   t.deepEqual(res, [
+//     { _origin: res[0]._origin,
+//     _url: res[0]._url,
+//     createdAt: res[0].createdAt,
 //     description: 'Is temporary',
-//     id: res.value[0].id,
-//     receivedAt: res.value[0].receivedAt,
+//     id: res[0].id,
+//     receivedAt: res[0].receivedAt,
 //     title: 'Test Archive',
 //     type: [ 'foo', 'bar' ],
 //     url: createdDatURL,
@@ -187,66 +179,64 @@ test('library.list', async t => {
 //   ])
 
 //   // unpublish by url
-//   await app.client.executeAsync((url, done) => {
-//     window.beaker.archives.unpublish(url).then(done,done)
+//   await app.client.executeJavascript((url, done) => {
+//     window.beaker.archives.unpublish(url)
 //   }, createdDatURL)
-//   var res = await app.client.executeAsync((recordUrl, done) => {
-//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   var res = await app.client.executeJavascript((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl)
 //   }, recordUrl)
-//   t.falsy(res.value)
+//   t.falsy(res)
 
 //   // publish/unpublish by archive
-//   var res = await app.client.executeAsync((url, done) => {
+//   var res = await app.client.executeJavascript((url, done) => {
 //     var archive = new DatArchive(url)
-//     window.beaker.archives.publish(archive).then(done,done)
+//     window.beaker.archives.publish(archive)
 //   }, createdDatURL)
-//   var recordUrl = res.value
+//   var recordUrl = res
 //   t.truthy(recordUrl.startsWith('dat://'))
-//   var res = await app.client.executeAsync((recordUrl, done) => {
-//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   var res = await app.client.executeJavascript((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl)
 //   }, recordUrl)
-//   t.deepEqual(res.value, {
-//     _origin: res.value._origin,
-//     _url: res.value._url,
-//     createdAt: res.value.createdAt,
+//   t.deepEqual(res, {
+//     _origin: res._origin,
+//     _url: res._url,
+//     createdAt: res.createdAt,
 //     description: 'Is temporary',
-//     id: res.value.id,
-//     receivedAt: res.value.receivedAt,
+//     id: res.id,
+//     receivedAt: res.receivedAt,
 //     title: 'Test Archive',
 //     type: [ 'foo', 'bar' ],
 //     url: createdDatURL,
 //     votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 }
 //   })
-//   await app.client.executeAsync((url, done) => {
+//   await app.client.executeJavascript((url, done) => {
 //     var archive = new DatArchive(url)
-//     window.beaker.archives.unpublish(archive).then(done,done)
+//     window.beaker.archives.unpublish(archive)
 //   }, createdDatURL)
-//   var res = await app.client.executeAsync((recordUrl, done) => {
-//     window.beaker.archives.getPublishRecord(recordUrl).then(done,done)
+//   var res = await app.client.executeJavascript((recordUrl, done) => {
+//     window.beaker.archives.getPublishRecord(recordUrl)
 //   }, recordUrl)
-//   t.falsy(res.value)
+//   t.falsy(res)
 // })
 
 test('library "updated" event', async t => {
   // register event listener
-  await app.client.execute(() => {
+  var res = await app.executeJavascript(`
     window.newTitle = false
     window.beaker.archives.addEventListener('updated', event => {
       window.newTitle = event.details.title
     })
-  })
+  `)
 
   // update manifest
-  var res = await app.client.executeAsync((url, done) => {
-    (new DatArchive(url)).configure({ title: 'The New Title' }).then(done, done)
-  }, createdDatURL)
+  var res = await app.executeJavascript(`
+    (new DatArchive("${createdDatURL}")).configure({ title: 'The New Title' })
+  `)
 
   // check result
-  await app.client.waitUntil(() => {
-    return app.client.execute(() => { return !!window.newTitle }).then(res => res.value)
-  }, 5e3)
-  var res = await app.client.execute(() => { return window.newTitle })
-  t.deepEqual(res.value, 'The New Title')
+  await app.waitFor(`!!window.newTitle`)
+  var res = await app.executeJavascript(`window.newTitle`)
+  t.deepEqual(res, 'The New Title')
 })
 
 

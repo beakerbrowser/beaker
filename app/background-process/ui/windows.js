@@ -64,8 +64,9 @@ export async function setup () {
   let previousSessionState = getPreviousBrowsingSession()
   sessionWatcher = new SessionWatcher(userDataDir)
   let customStartPage = await settingsDb.get('custom_start_page')
+  let isTestDriverActive = !!process.env.BEAKER_TEST_DRIVER
 
-  if (customStartPage === 'previous' || !previousSessionState.cleanExit && userWantsToRestoreSession()) {
+  if (!isTestDriverActive && (customStartPage === 'previous' || !previousSessionState.cleanExit && userWantsToRestoreSession())) {
     restoreBrowsingSession(previousSessionState)
   } else {
     // use the last session's window position

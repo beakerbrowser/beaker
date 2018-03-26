@@ -51,6 +51,10 @@ export function getAll () {
   return pages
 }
 
+export function get (index) {
+  return pages[index]
+}
+
 export function getPinned () {
   return pages.filter(p => p.isPinned)
 }

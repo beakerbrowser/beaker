@@ -32,6 +32,7 @@ import * as workspaceProtocol from './background-process/protocols/workspace'
 
 // import * as profilesIngest from './background-process/ingests/profiles' TODO(profiles) disabled -prf
 
+import * as testDriver from './background-process/test-driver'
 import * as openURL from './background-process/open-url'
 
 // read config from env vars
@@ -40,6 +41,9 @@ if (process.env.beaker_user_data_path) {
   console.log('User data path set by environment variables')
   console.log('userData:', process.env.beaker_user_data_path)
   app.setPath('userData', process.env.beaker_user_data_path)
+}
+if (process.env.BEAKER_TEST_DRIVER) {
+  testDriver.setup()
 }
 if (process.env.beaker_open_url) {
   openURL.open(process.env.beaker_open_url)
