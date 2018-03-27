@@ -340,6 +340,7 @@ export default class DatNetworkActivity {
 
   async onClearCache () {
     const results = await beaker.archives.clearGarbage({isOwner: false})
+    await beaker.archives.clearDnsCache()
     console.debug('Dat cache cleared', results)
     toast.create(`Cache cleared (${prettyBytes(results.totalBytes)} freed from ${results.totalArchives} archives)`, '', 5e3)
     this.fetchArchives()
