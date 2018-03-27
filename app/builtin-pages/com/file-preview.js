@@ -22,7 +22,7 @@ export default function render (fileNode) {
 
   // now check for media formats
   const mimetype = mime.lookup(fileNode.name)
-  const url = fileNode.url + '?cache-buster=' + Date.now()
+  const url = fileNode.url + '?cache-buster=' + Date.now() + '&disable_web_root=1'
 
   if (mimetype.startsWith('image/')) {
     return yo`<img src=${url} />`

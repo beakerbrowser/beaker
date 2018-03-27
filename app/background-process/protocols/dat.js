@@ -198,7 +198,7 @@ async function datProtocol (request, respond) {
     // abort if we've already found it
     if (entry) return
     // apply the web_root config
-    if (manifest && manifest.web_root) {
+    if (manifest && manifest.web_root && !urlp.query.disable_web_root) {
       if (path) {
         path = joinPaths(manifest.web_root, path)
       } else {
