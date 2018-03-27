@@ -34,7 +34,7 @@ var archiveFsRoot
 var filesBrowser
 var workspaceInfo
 
-var markdownRenderer = createMd()
+var markdownRenderer = createMd({hrefMassager: markdownHrefMassager})
 var readmeElement
 
 // current values being edited in settings
@@ -2106,6 +2106,19 @@ function getSafeTitle () {
 
 function getSafeDesc () {
   return _get(archive, 'info.description', '').trim() || yo`<em>No description</em>`
+}
+
+function markdownHrefMassager (href) {
+  var isRelative = href.startsWith('/') || href.startsWith('./')
+  if (!isRelative && href.indexOf(':') === -1) {
+    isRelative = true
+  }
+  if (isRelative) {
+    if (href.startsWith('./')) href = href.slice(2)
+    if (href.startsWith('/')) href = href.slice(1)
+    return `beaker://library/${archive.url}/${href}`
+  }
+  return href
 }
 
 async function parseLibraryUrl () {

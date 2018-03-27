@@ -1,6 +1,6 @@
 import Remarkable from 'remarkable'
 
-export default function create ({useHeadingAnchors} = {}) {
+export default function create ({useHeadingAnchors, hrefMassager} = {}) {
   var md = new Remarkable('full', {
     html: true, // Enable HTML tags in source
     xhtmlOut: false, // Use '/' to close single tags (<br />)
@@ -28,6 +28,15 @@ export default function create ({useHeadingAnchors} = {}) {
     md.renderer.rules.heading_close = function (tokens, idx /*, options, env */) {
       return '<a class="anchor-link" href="#' + slugify(tokens[idx - 1].content) + '">#</a></h' + tokens[idx].hLevel + '>\n'
     }
+  }
+
+  if (hrefMassager) {
+    // link modifier
+    let org = md.renderer.rules.link_open
+    md.renderer.rules.link_open = function(tokens, idx, options /* env */) {
+      tokens[idx].href = hrefMassager(tokens[idx].href)
+      return org.apply(null, arguments)
+    };
   }
 
   return md
