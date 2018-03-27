@@ -113,6 +113,13 @@ export default {
     // }
   },
 
+  // set the order of pinned bookmarks
+  async setBookmarkPinOrder (urls) {
+    await assertPermission(this.sender, 'app:bookmarks:edit-private')
+    if (!Array.isArray(urls)) throw new Error('Parameter one must be an array of URLs')
+    return privateBookmarksDb.setBookmarkPinOrder(0, urls)
+  },
+
   // list pinned bookmarks (public and private)
   async listPinnedBookmarks () {
     await assertPermission(this.sender, 'app:bookmarks:read')

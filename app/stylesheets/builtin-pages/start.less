@@ -271,7 +271,11 @@
   }
 
   &:hover {
-    box-shadow: 0 0 0 3px #ddd;
+    outline: 3px solid #ddd;
+
+    &.sortable-ghost {
+      outline: 3px dashed #ddd;
+    }
 
     button.close-btn {
       opacity: 1;

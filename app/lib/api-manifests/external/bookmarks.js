@@ -10,6 +10,7 @@ export default {
 
   // pins
   setBookmarkPinned: 'promise',
+  setBookmarkPinOrder: 'promise',
   listPinnedBookmarks: 'promise',
 
   // private

@@ -1,6 +1,7 @@
 /* globals beaker */
 
 import * as yo from 'yo-yo'
+import Sortable from 'sortablejs'
 import {findParent} from '../../lib/fg/event-handlers'
 import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
 import * as editBookmarkPopup from '../com/edit-bookmark-popup'
@@ -264,6 +265,8 @@ function update () {
       </div>
     </div>
   `)
+
+  addSorting()
 }
 
 function renderHelpButton () {
@@ -352,4 +355,22 @@ function delay (cb, param) {
 
 async function loadBookmarks () {
   pinnedBookmarks = (await beaker.bookmarks.listPinnedBookmarks()) || []
+}
+
+function addSorting () {
+  new Sortable(document.querySelector('.pinned-bookmarks'), {
+    group: 'pinned-bookmarks',
+    draggable: '.pinned-bookmark',
+    dataIdAttr: 'href',
+    forceFallback: true,
+    store: {
+      get () {
+        return pinnedBookmarks.map(b => b.href)
+      },
+      set (sortable) {
+        var order = sortable.toArray()
+        beaker.bookmarks.setBookmarkPinOrder(order)
+      }
+    }
+  })
 }

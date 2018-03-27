@@ -28,6 +28,7 @@ beaker.bookmarks.bookmarkPublic = bookmarksRPC.bookmarkPublic
 beaker.bookmarks.unbookmarkPublic = bookmarksRPC.unbookmarkPublic
 beaker.bookmarks.listPublicBookmarks = bookmarksRPC.listPublicBookmarks
 beaker.bookmarks.setBookmarkPinned = bookmarksRPC.setBookmarkPinned
+beaker.bookmarks.setBookmarkPinOrder = bookmarksRPC.setBookmarkPinOrder
 beaker.bookmarks.listPinnedBookmarks = bookmarksRPC.listPinnedBookmarks
 beaker.bookmarks.bookmarkPrivate = bookmarksRPC.bookmarkPrivate
 beaker.bookmarks.unbookmarkPrivate = bookmarksRPC.unbookmarkPrivate

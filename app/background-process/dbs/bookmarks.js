@@ -42,6 +42,13 @@ export function setBookmarkPinned (profileId, url, pinned) {
   return db.run(`UPDATE bookmarks SET pinned = ? WHERE profileId = ? AND url = ?`, [pinned ? 1 : 0, profileId, url])
 }
 
+export async function setBookmarkPinOrder (profileId, urls) {
+  var len = urls.length
+  await Promise.all(urls.map((url, i) => (
+    db.run(`UPDATE bookmarks SET pinOrder = ? WHERE profileId = ? AND url = ?`, [len - i, profileId, url])
+  )))
+}
+
 export async function getBookmark (profileId, url) {
   return toNewFormat(await db.get(`SELECT url, title, tags, notes, pinned, createdAt FROM bookmarks WHERE profileId = ? AND url = ?`, [profileId, url]))
 }
@@ -65,7 +72,7 @@ export async function listBookmarks (profileId, {tag} = {}) {
 }
 
 export async function listPinnedBookmarks (profileId) {
-  var bookmarks = await db.all(`SELECT url, title, tags, notes, pinned, createdAt FROM bookmarks WHERE profileId = ? AND pinned = 1 ORDER BY createdAt DESC`, [profileId])
+  var bookmarks = await db.all(`SELECT url, title, tags, notes, pinned, createdAt FROM bookmarks WHERE profileId = ? AND pinned = 1 ORDER BY pinOrder DESC`, [profileId])
   return bookmarks.map(toNewFormat)
 }
 

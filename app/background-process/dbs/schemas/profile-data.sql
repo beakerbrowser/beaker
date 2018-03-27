@@ -41,6 +41,7 @@ CREATE TABLE bookmarks (
   url TEXT NOT NULL,
   title TEXT,
   pinned INTEGER,
+  pinOrder INTEGER DEFAULT 0,
   createdAt INTEGER DEFAULT (strftime('%s', 'now')),
   tags TEXT,
   notes TEXT,
