@@ -88,6 +88,7 @@ export default {
     assertValidProfileId(profileId)
     assertValidName(name)
     if (typeof opts.localFilesPath !== 'undefined') {
+      opts.localFilesPath = path.normalize(opts.localFilesPath)
       await assertSafeFilesPath(opts.localFilesPath)
     }
     if (typeof opts.publishTargetUrl !== 'undefined') {
@@ -110,6 +111,7 @@ export default {
     await assertDatHasNoWorkspace(profileId, opts.publishTargetUrl)
     opts.name = opts.name || await workspacesDb.getUnusedName()
     assertValidName(opts.name)
+    opts.localFilesPath = path.normalize(opts.localFilesPath)
     await assertSafeFilesPath(opts.localFilesPath)
     await workspacesDb.set(profileId, opts.name, opts)
     return opts
@@ -193,6 +195,7 @@ export default {
   async diff (profileId, name, filepath) {
     assertValidProfileId(profileId)
     assertValidName(name)
+    filepath = path.normalize(filepath)
 
     // check the filename to see if it's binary
     var isBinary = isFileNameBinary(filepath)
@@ -340,9 +343,10 @@ export default {
     await dft.applyLeft({fs: scopedFS}, {fs: archive}, diff)
   },
 
-  openFolder (path) {
+  openFolder (folderpath) {
+    folderpath = path.normalize(folderpath)
     return new Promise((resolve, reject) => {
-      shell.openItem(path)
+      shell.openItem(folderpath)
       resolve()
     })
   },
@@ -434,14 +438,16 @@ async function readDatIgnore (fs) {
       return rule
     })
     .concat(['/.git', '/.dat'])
+    .map(path.normalize)
 }
 
 function makeDiffFilterByPaths (targetPaths) {
+  targetPaths = targetPaths.map(path.normalize)
   return (filepath) => {
     for (let i = 0; i < targetPaths.length; i++) {
       let targetPath = targetPaths[i]
 
-      if (targetPath.endsWith('/')) {
+      if (targetPath.endsWith(path.sep)) {
         // a directory
         if (filepath === targetPath.slice(0, -1)) return false // the directory itself
         if (filepath.startsWith(targetPath)) return false // a file within the directory

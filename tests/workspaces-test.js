@@ -37,7 +37,7 @@ test('set & get workspaces (using create)', async t => {
   t.truthy(url.startsWith('dat://'))
 
   var res = await app.executeJavascript(`
-    window.beaker.workspaces.create(0, {publishTargetUrl: "${url}", localFilesPath: "${tempy.directory()}"})
+    window.beaker.workspaces.create(0, {publishTargetUrl: "${url}", localFilesPath: "${escapeWindowsSlashes(tempy.directory())}"})
   `)
   for (let k in res) {
     res[k] = res[k] ? typeof res[k] : res[k]
@@ -60,7 +60,7 @@ test('set & get workspaces (manually)', async t => {
 
   // set
   var res = await app.executeJavascript(`
-    window.beaker.workspaces.set(0, 'test-ws', {publishTargetUrl: "${createdDatUrl}", localFilesPath: "${createdFilePath}"})
+    window.beaker.workspaces.set(0, 'test-ws', {publishTargetUrl: "${createdDatUrl}", localFilesPath: "${escapeWindowsSlashes(createdFilePath)}"})
   `)
   t.falsy(res)
 
@@ -117,14 +117,14 @@ test('view a workspace', async t => {
 
 test('diff and publish changes (additions)', async t => {
   // write file
-  await jetpack.write(createdFilePath + '/index.html', '<h1 id="loaded">workspace</h1>\n<p>foo</p>\n<p>bar</p>')
+  await jetpack.write(path.join(createdFilePath, 'index.html'), '<h1 id="loaded">workspace</h1>\n<p>foo</p>\n<p>bar</p>')
 
   // list changed files
   var res = await app.executeJavascript(`
     window.beaker.workspaces.listChangedFiles(0, 'test-ws')
   `)
   t.deepEqual(res, [
-    {change: 'add',path: '/index.html',type: 'file'}
+    {change: 'add',path: `${path.sep}index.html`, type: 'file'}
   ])
 
   // get file diff
@@ -151,7 +151,7 @@ test('diff and publish changes (additions)', async t => {
 test('diff and publish changes (additions and modifications)', async t => {
 
   // update index.html
-  await jetpack.write(createdFilePath + '/index.html', '<h1 id="loaded">workspace</h1>\n<p>fuzz</p>\n<p>bar</p>')
+  await jetpack.write(path.join(createdFilePath, 'index.html'), '<h1 id="loaded">workspace</h1>\n<p>fuzz</p>\n<p>bar</p>')
   // add an new.txt
   await jetpack.write(createdFilePath + '/new.txt', 'hi!')
 
@@ -160,8 +160,8 @@ test('diff and publish changes (additions and modifications)', async t => {
     window.beaker.workspaces.listChangedFiles(0, 'test-ws')
   `)
   t.deepEqual(res, [
-    {change: 'add', path: '/new.txt', type: 'file'},
-    {change: 'mod', path: '/index.html', type: 'file'}
+    {change: 'add', path: `${path.sep}new.txt`, type: 'file'},
+    {change: 'mod', path: `${path.sep}index.html`, type: 'file'}
   ])
 
   // get file diff
@@ -197,7 +197,7 @@ test('diff and revert changes (deletions)', async t => {
     window.beaker.workspaces.listChangedFiles(0, 'test-ws')
   `)
   t.deepEqual(res, [
-    {change: 'del', path: '/new.txt', type: 'file'}
+    {change: 'del', path: `${path.sep}new.txt`, type: 'file'}
   ])
 
   // get file diff
@@ -222,16 +222,16 @@ test('diff and revert changes (deletions)', async t => {
 test('diff and selective publish and revert', async t => {
 
   // remove new.txt
-  await jetpack.remove(createdFilePath + '/index.html')
-  await jetpack.remove(createdFilePath + '/new.txt')
+  await jetpack.remove(path.join(createdFilePath, 'index.html'))
+  await jetpack.remove(path.join(createdFilePath, 'new.txt'))
 
   // list changed files
   var res = await app.executeJavascript(`
     window.beaker.workspaces.listChangedFiles(0, 'test-ws')
   `)
   t.deepEqual(res, [
-    {change: 'del', path: '/index.html', type: 'file'},
-    {change: 'del', path: '/new.txt', type: 'file'}
+    {change: 'del', path: `${path.sep}index.html`, type: 'file'},
+    {change: 'del', path: `${path.sep}new.txt`, type: 'file'}
   ])
 
   // publish selective
@@ -245,7 +245,7 @@ test('diff and selective publish and revert', async t => {
     window.beaker.workspaces.listChangedFiles(0, 'test-ws')
   `)
   t.deepEqual(res, [
-    {change: 'del', path: '/index.html', type: 'file'}
+    {change: 'del', path: `${path.sep}index.html`, type: 'file'}
   ])
 
   // revert selective
@@ -315,7 +315,7 @@ test('set() doesnt allow bad values', async t => {
 
   try {
     var res = await app.executeJavascript(`
-      window.beaker.workspaces.set(0, 'test-ws', {localFilesPath: "${createdFilePath + '/index.html'}"})
+      window.beaker.workspaces.set(0, 'test-ws', {localFilesPath: "${escapeWindowsSlashes(path.join(createdFilePath, 'index.html'))}"})
     `)
     t.fail('Failed to throw')
   } catch (e) {
@@ -324,7 +324,7 @@ test('set() doesnt allow bad values', async t => {
 
   try {
     var res = await app.executeJavascript(`
-      window.beaker.workspaces.set(0, 'test-ws', {localFilesPath: "${os.homedir()}"})
+      window.beaker.workspaces.set(0, 'test-ws', {localFilesPath: "${escapeWindowsSlashes(os.homedir())}"})
     `)
     t.fail('Failed to throw')
   } catch (e) {
@@ -341,7 +341,7 @@ test('set() doesnt allow dats which are unowned or deleted', async t => {
   // try to create a workspace with the unowned dat
   try {
     var res = await app.executeJavascript(`
-      window.beaker.workspaces.set(0, 'unowned-ws', {publishTargetUrl: "${unownedDatUrl}", localFilesPath: "${tempy.directory()}"})
+      window.beaker.workspaces.set(0, 'unowned-ws', {publishTargetUrl: "${unownedDatUrl}", localFilesPath: "${escapeWindowsSlashes(tempy.directory())}"})
     `)
     t.fail('Failed to throw')
   } catch (e) {
@@ -361,7 +361,7 @@ test('set() doesnt allow dats which are unowned or deleted', async t => {
   // try to create a workspace with the deleted dat
   try {
     var res = await app.executeJavascript(`
-      window.beaker.workspaces.set(0, 'deleted-ws', {publishTargetUrl: "${deletedDatUrl}", localFilesPath: "${tempy.directory()}"})
+      window.beaker.workspaces.set(0, 'deleted-ws', {publishTargetUrl: "${deletedDatUrl}", localFilesPath: "${escapeWindowsSlashes(tempy.directory())}"})
     `)
     t.fail('Failed to throw')
   } catch (e) {
@@ -391,3 +391,14 @@ test('set() can rename a workspace', async t => {
     updatedAt: 'number'
   })
 })
+
+// because we pass paths through eval() code,
+// we need to make windows dir-separators escape properly
+// so c:\foo\bar needs to be c:\\foo\\bar
+// because without it
+// when we eval `act("${path}")`
+// it becomes act("c:\foo\bar")
+// and it should be act("c:\\foo\\bar")
+function escapeWindowsSlashes (str) {
+  return str.replace(/\\/g, '\\\\')
+}
