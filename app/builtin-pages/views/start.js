@@ -367,9 +367,10 @@ function addSorting () {
       get () {
         return pinnedBookmarks.map(b => b.href)
       },
-      set (sortable) {
+      async set (sortable) {
         var order = sortable.toArray()
-        beaker.bookmarks.setBookmarkPinOrder(order)
+        await beaker.bookmarks.setBookmarkPinOrder(order)
+        loadBookmarks()
       }
     }
   })
