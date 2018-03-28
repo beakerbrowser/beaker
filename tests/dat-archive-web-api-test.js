@@ -1343,7 +1343,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // run import
   var res = await app.executeJavascript(`
-    var src = "${__dirname + '/scaffold/test-static-dat'}"
+    var src = "${escapeWindowsSlashes(path.join(__dirname, 'scaffold', 'test-static-dat'))}"
     var dst = "${archiveURL}"
     DatArchive.importFromFilesystem({src, dst})
   `)
@@ -1369,7 +1369,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // run import
   var res = await app.executeJavascript(`
-    var src = "${__dirname + '/scaffold/test-static-dat'}"
+    var src = "${escapeWindowsSlashes(path.join(__dirname, 'scaffold', 'test-static-dat'))}"
     var dst = "${archiveURL}"
     DatArchive.importFromFilesystem({src, dst, inplaceImport: false})
   `)
@@ -1395,7 +1395,7 @@ test('DatArchive.importFromFilesystem', async t => {
 
   // run import
   var res = await app.executeJavascript(`
-    var src = "${__dirname + '/scaffold/test-static-dat'}"
+    var src = "${escapeWindowsSlashes(path.join(__dirname, 'scaffold', 'test-static-dat'))}"
     var dst = "${archiveURL + '/ignore-import'}"
     DatArchive.importFromFilesystem({src, dst, ignore: ['**/*.txt']})
   `)
@@ -1428,7 +1428,7 @@ test('DatArchive.exportToFilesystem', async t => {
   // export files
   var res = await app.executeJavascript(`
     var src = "${testStaticDatURL}"
-    var dst = "${testDirPath}"
+    var dst = "${escapeWindowsSlashes(testDirPath)}"
     DatArchive.exportToFilesystem({src, dst, skipUndownloadedFiles: false})
   `)
   t.deepEqual(res.addedFiles.length, 4)
@@ -1447,7 +1447,7 @@ test('DatArchive.exportToFilesystem', async t => {
   // export files
   var res = await app.executeJavascript(`
     var src = "${testStaticDatURL}"
-    var dst = "${testDirPath}"
+    var dst = "${escapeWindowsSlashes(testDirPath)}"
     DatArchive.exportToFilesystem({src, dst, ignore:['**/*.txt'], skipUndownloadedFiles: false})
   `)
   t.deepEqual(res.addedFiles.length, 1)
@@ -1630,4 +1630,15 @@ test.skip('network events', async t => {
 
 function sleep (time) {
   return new Promise(resolve => setTimeout(resolve, time))
+}
+
+// because we pass paths through eval() code,
+// we need to make windows dir-separators escape properly
+// so c:\foo\bar needs to be c:\\foo\\bar
+// because without it
+// when we eval `act("${path}")`
+// it becomes act("c:\foo\bar")
+// and it should be act("c:\\foo\\bar")
+function escapeWindowsSlashes (str) {
+  return str.replace(/\\/g, '\\\\')
 }
