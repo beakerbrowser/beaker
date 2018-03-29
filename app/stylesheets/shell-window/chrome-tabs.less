@@ -85,7 +85,7 @@
     .chrome-tab-title {
       position: relative;
       color: @color-tab;
-      padding: 9px 27px 5px 30px;
+      padding: 9px 11px 5px 30px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -169,6 +169,24 @@
         border-right: 0;
       }
 
+      .chrome-tab-title {
+        // do a hard clip on the text
+        text-overflow: initial;
+        width: ~"calc(100% - 27px)";
+
+        // add a gradient effect
+        &:after {
+          content: '';
+          display: block;
+          position: absolute;
+          right: 0;
+          top: 1px;
+          height: 100%;
+          width: 5px;
+          background: linear-gradient(to right, rgba(226,226,226,0), rgb(226, 226, 226));
+        }
+      }
+
       .chrome-tab-close {
         display: block;
         background: #e2e2e2; // tab :hover background tab
@@ -197,6 +215,10 @@
 
       .chrome-tab-title {
         padding-top: 9px;
+        &:after {
+          // adjust color
+          background: linear-gradient(to right, rgba(247,247,247,0), rgb(247, 247, 247));
+        }
       }
 
       .chrome-tab-bg {
@@ -209,7 +231,6 @@
       }
 
       .chrome-tab-close {
-        display: block;
         background: @background-tab--current;
       }
 
