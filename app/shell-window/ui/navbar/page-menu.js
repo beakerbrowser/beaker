@@ -195,14 +195,14 @@ export class PageMenuNavbarBtn {
     this.close()
     const page = pages.getActive()
     if (!page || !page.getViewedDatOrigin()) return
-    page.loadURL(`beaker://library/dat://${page.siteInfo.key}`)
+    pages.setActive(pages.create(`beaker://library/dat://${page.siteInfo.key}`))
   }
 
   onClickNetworkDebugger () {
     this.close()
     const page = pages.getActive()
     if (!page || !page.getViewedDatOrigin()) return
-    page.loadURL(`beaker://swarm-debugger/dat://${page.siteInfo.key}`)    
+    pages.setActive(pages.create(`beaker://swarm-debugger/dat://${page.siteInfo.key}`))
   }
 
   async onClickFork () {
