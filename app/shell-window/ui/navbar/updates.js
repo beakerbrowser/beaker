@@ -45,8 +45,8 @@ export class UpdatesNavbarBtn {
     this.updateActives()
   }
 
-  onUpdaterStateChange (state) {
-    this.isUpdateAvailable = state == 'downloaded'
+  onUpdaterStateChange (e) {
+    this.isUpdateAvailable = (e && e.state === 'downloaded')
     this.updateActives()
   }
 
