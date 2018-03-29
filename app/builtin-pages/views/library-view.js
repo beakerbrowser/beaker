@@ -81,7 +81,7 @@ async function setup () {
   try {
     // load platform info
     let browserInfo = await beaker.browser.getInfo()
-    window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform !== 'linux'
+    window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform === 'darwin'
 
     // load data
     let url = await parseLibraryUrl()
