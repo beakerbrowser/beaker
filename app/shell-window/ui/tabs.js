@@ -11,6 +11,7 @@ import {debounce} from '../../lib/functions'
 
 const MAX_TAB_WIDTH = 235 // px
 const MIN_TAB_WIDTH = 48 // px
+const SMALL_MODE_WIDTH = 67 // px
 const TAB_SPACING = -1 // px
 
 // globals
@@ -81,9 +82,10 @@ function drawTab (page) {
   if (isTabDragging) cls += ' chrome-tab-dragging'
 
   // styles
-  var {pageIndex, style} = getPageStyle(page)
+  var {pageIndex, style, smallMode} = getPageStyle(page)
   if (pageIndex === 0) cls += ' leftmost'
   if (pageIndex === pages.getAll().length - 1) cls += ' rightmost'
+  if (smallMode) cls += ' chrome-tab-small'
 
   // pinned rendering:
   if (page.isPinned) {
@@ -141,11 +143,12 @@ function repositionTabs (e) {
 
   // update tab positions
   allPages.forEach(page => getTabEl(page, tabEl => {
-    var {style, pageIndex} = getPageStyle(page)
+    var {style, pageIndex, smallMode} = getPageStyle(page)
     if (pageIndex === 0) tabEl.classList.add('leftmost')
     if (pageIndex !== 0) tabEl.classList.remove('leftmost')
     if (pageIndex === allPages.length - 1) tabEl.classList.add('rightmost')
     if (pageIndex !== allPages.length - 1) tabEl.classList.remove('rightmost')
+    tabEl.classList.toggle('chrome-tab-small', smallMode)
     tabEl.style = style
   }))
   tabsContainerEl.querySelector('.chrome-tab-add-btn').style = getPageStyle(allPages.length).style
@@ -405,7 +408,7 @@ function getPageStyle (page) {
 
   // `page` is sometimes an index and sometimes a page object (gross, I know)
   // we need both
-  var pageIndex, pageObject
+  var pageIndex, pageObject, smallMode = false
   if (typeof page === 'object') {
     pageObject = page
     pageIndex = allPages.indexOf(page)
@@ -429,9 +432,13 @@ function getPageStyle (page) {
     z-index: ${zIndex};
   `
   if (pageObject) {
-    style += ` width: ${getTabWidth(pageObject)}px;`
+    let width = getTabWidth(pageObject)
+    style += ` width: ${width}px;`
+    if (width < SMALL_MODE_WIDTH) {
+      smallMode = true
+    }
   }
-  return {pageIndex, style}
+  return {pageIndex, smallMode, style}
 }
 
 // returns 0 for no, -1 or 1 for yes (the offset)
