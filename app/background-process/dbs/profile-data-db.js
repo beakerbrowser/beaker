@@ -67,8 +67,14 @@ migrations = [
   migration('profile-data.v13.sql'),
   migration('profile-data.v14.sql'),
   migration('profile-data.v15.sql'),
-  migration('profile-data.v16.sql')
+  migration('profile-data.v16.sql', {canFail: true}) // set canFail because we made a mistake in the rollout of this update, see https://github.com/beakerbrowser/beaker/issues/934
 ]
-function migration (file) {
-  return cb => db.exec(fs.readFileSync(path.join(__dirname, 'background-process', 'dbs', 'schemas', file), 'utf8'), cb)
+function migration (file, opts = {}) {
+  return cb => {
+    if (opts.canFail) {
+      var orgCb = cb
+      cb = () => orgCb() // suppress the error
+    }
+    db.exec(fs.readFileSync(path.join(__dirname, 'background-process', 'dbs', 'schemas', file), 'utf8'), cb)
+  }
 }
