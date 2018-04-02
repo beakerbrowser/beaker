@@ -15,6 +15,7 @@ class BrowserDriver {
     this.rpcCalls = []
 
     // start child process
+    env = Object.assign({}, env, process.env)
     env.BEAKER_TEST_DRIVER = 1
     this.process = childProcess.spawn(path, args, {stdio: ['inherit', 'inherit', 'inherit', 'ipc'], env})
 
