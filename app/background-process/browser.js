@@ -7,6 +7,7 @@ import slugify from 'slugify'
 import jetpack from 'fs-jetpack'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
+const exec = require('util').promisify(require('child_process').exec)
 var debug = require('debug')('beaker')
 import * as settingsDb from './dbs/settings'
 import {open as openUrl} from './open-url'
@@ -20,6 +21,7 @@ import {
 
 const IS_FROM_SOURCE = (process.defaultApp || /node_modules[\\/]electron[\\/]/.test(process.execPath))
 const IS_LINUX = !(/^win/.test(process.platform)) && process.platform !== 'darwin'
+const DOT_DESKTOP_FILENAME = 'appimagekit-beaker-browser.desktop'
 const isBrowserUpdatesSupported = !(IS_LINUX || IS_FROM_SOURCE) // linux is temporarily not supported
 
 // how long between scheduled auto updates?
@@ -185,14 +187,39 @@ export function setStartPageBackgroundImage (srcPath, appendCurrentDir) {
   })
 }
 
-export function getDefaultProtocolSettings () {
+export async function getDefaultProtocolSettings () {
+  if (IS_LINUX) {
+    // HACK
+    // xdb-settings doesnt currently handle apps that you can't `which`
+    // we can just use xdg-mime directly instead
+    // see https://github.com/beakerbrowser/beaker/issues/915
+    // -prf
+    let [httpHandler, datHandler] = await Promise.all([
+      exec('xdg-mime query default "x-scheme-handler/http"'),
+      exec('xdg-mime query default "x-scheme-handler/dat"')
+    ])
+    return {
+      http: (httpHandler||'').trim() === DOT_DESKTOP_FILENAME,
+      dat: (datHandler||'').trim() === DOT_DESKTOP_FILENAME
+    }
+  }
+
   return Promise.resolve(['http', 'dat'].reduce((res, x) => {
     res[x] = app.isDefaultProtocolClient(x)
     return res
   }, {}))
 }
 
-export function setAsDefaultProtocolClient (protocol) {
+export async function setAsDefaultProtocolClient (protocol) {
+  if (IS_LINUX) {
+    // HACK
+    // xdb-settings doesnt currently handle apps that you can't `which`
+    // we can just use xdg-mime directly instead
+    // see https://github.com/beakerbrowser/beaker/issues/915
+    // -prf
+    await exec(`xdg-mime default ${DOT_DESKTOP_FILENAME} "x-scheme-handler/${protocol}"`)
+    return true
+  }
   return Promise.resolve(app.setAsDefaultProtocolClient(protocol))
 }
 
