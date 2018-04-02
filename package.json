@@ -4,7 +4,7 @@
   "devDependencies": {
     "browserify": "^13.0.1",
     "electron": "2.0.0-beta.5",
-    "electron-builder": "~19.43.0",
+    "electron-builder": "~20.8.0",
     "eslint": "^4.5.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-node": "^5.1.1",
@@ -32,7 +32,7 @@
     "asarUnpack": [
       "./node_modules/sodium-native/**"
     ],
-    "copyright": "© 2017, Blue Link Labs",
+    "copyright": "© 2018, Blue Link Labs",
     "npmRebuild": false,
     "protocols": [
       {
@@ -49,8 +49,16 @@
         ]
       }
     ],
-    "linux": {
-      "category": "Network"
+    "appImage": {
+      "category": "Network",
+      "desktop": {
+        "Name": "Beaker Browser",
+        "GenericName": "Web Browser",
+        "Type": "Application",
+        "Terminal": false,
+        "MimeType": "text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/dat;video/webm;application/x-xpinstall;",
+        "Categories": "GNOME;GTK;Network;WebBrowser;"
+      }
     },
     "mac": {
       "category": "public.app-category.productivity"
