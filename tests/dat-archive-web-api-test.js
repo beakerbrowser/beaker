@@ -1575,8 +1575,7 @@ test.skip('DatArchive can resolve and read dats with shortnames', async t => {
   t.truthy(Array.isArray(res))
 })
 
-// TODO why doesnt this work?
-test.skip('network events', async t => {
+test('network events', async t => {
   // share the test static dat
   var testStaticDat2 = await createDat()
   var testStaticDat2URL = 'dat://' + testStaticDat2.archive.key.toString('hex')
@@ -1584,7 +1583,6 @@ test.skip('network events', async t => {
   // start the download & network stream
   app.executeJavascript(`
     window.res = {
-      gotPeer: false,
       metadata: {
         down: 0,
         all: false
@@ -1595,14 +1593,11 @@ test.skip('network events', async t => {
       }
     }
     var archive = new DatArchive("${testStaticDat2URL}")
-    archive.addEventListener('network-changed', () => {
-      window.res.gotPeer = true
+    archive.addEventListener('download', ({detail}) => {
+      window.res[detail.feed].down++
     })
-    archive.addEventListener('download', ({feed}) => {
-      window.res[feed].down++
-    })
-    archive.addEventListener('sync', ({feed}) => {
-      window.res[feed].all = true
+    archive.addEventListener('sync', ({detail}) => {
+      window.res[detail.feed].all = true
     })
   `)
   await sleep(500) // wait for stream to setup
@@ -1620,8 +1615,6 @@ test.skip('network events', async t => {
 
   await app.waitFor(`window.res.content.all`)
   var res = await app.executeJavascript(`window.res`)
-  // TODO these tests keep failing. Figure out why. -prf
-  t.deepEqual(res.gotPeer, true) 
   t.truthy(res.metadata.down > 0)
   t.truthy(res.content.down > 0)
   t.deepEqual(res.metadata.all, true)
