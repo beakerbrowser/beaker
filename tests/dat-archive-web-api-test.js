@@ -1593,11 +1593,11 @@ test('network events', async t => {
       }
     }
     var archive = new DatArchive("${testStaticDat2URL}")
-    archive.addEventListener('download', ({detail}) => {
-      window.res[detail.feed].down++
+    archive.addEventListener('download', ({feed}) => {
+      window.res[feed].down++
     })
-    archive.addEventListener('sync', ({detail}) => {
-      window.res[detail.feed].all = true
+    archive.addEventListener('sync', ({feed}) => {
+      window.res[feed].all = true
     })
   `)
   await sleep(500) // wait for stream to setup

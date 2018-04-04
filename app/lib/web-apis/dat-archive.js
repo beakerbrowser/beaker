@@ -364,8 +364,8 @@ function throwWithFixedStack (e, errStack) {
 function createNetworkActStream (archive) {
   if (archive[NETWORK_ACT_STREAM]) return
   var s = archive[NETWORK_ACT_STREAM] = fromEventStream(archive[API].createNetworkActivityStream(archive.url))
-  s.addEventListener('network-changed', detail => archive.dispatchEvent(new Event('network-changed', {target: archive, detail: {peers: detail.connections}})))
-  s.addEventListener('download', detail => archive.dispatchEvent(new Event('download', {target: archive, detail: {feed: detail.feed, block: detail.block, bytes: detail.bytes}})))
-  s.addEventListener('upload', detail => archive.dispatchEvent(new Event('upload', {target: archive, detail: {feed: detail.feed, block: detail.block, bytes: detail.bytes}})))
-  s.addEventListener('sync', detail => archive.dispatchEvent(new Event('sync', {target: archive, detail: {feed: detail.feed}})))
+  s.addEventListener('network-changed', detail => archive.dispatchEvent(new Event('network-changed', {target: archive, peers: detail.connections})))
+  s.addEventListener('download', detail => archive.dispatchEvent(new Event('download', {target: archive, feed: detail.feed, block: detail.block, bytes: detail.bytes})))
+  s.addEventListener('upload', detail => archive.dispatchEvent(new Event('upload', {target: archive, feed: detail.feed, block: detail.block, bytes: detail.bytes})))
+  s.addEventListener('sync', detail => archive.dispatchEvent(new Event('sync', {target: archive, feed: detail.feed})))
 }
