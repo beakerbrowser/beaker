@@ -4,39 +4,23 @@ import rpc from 'pauls-electron-rpc'
 import {EventTarget, bindEventStream, fromEventStream} from './event-target'
 import errors from 'beaker-error-constants'
 
-import profilesManifest from '../api-manifests/external/profiles'
-import bookmarksManifest from '../api-manifests/external/bookmarks'
+// import profilesManifest from '../api-manifests/external/profiles'
 
 import archivesManifest from '../api-manifests/internal/archives'
+import bookmarksManifest from '../api-manifests/internal/bookmarks'
 import historyManifest from '../api-manifests/internal/history'
 import downloadsManifest from '../api-manifests/internal/downloads'
-import appsManifest from '../api-manifests/internal/apps'
+// import appsManifest from '../api-manifests/internal/apps'
 import workspacesManifest from '../api-manifests/internal/workspaces'
 import sitedataManifest from '../api-manifests/internal/sitedata'
 import beakerBrowserManifest from '../api-manifests/internal/browser'
 
 const beaker = {}
 const opts = {timeout: false, errors}
-const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
-const profilesRPC = rpc.importAPI('profiles', profilesManifest, opts)
-
-// beaker.bookmarks
-beaker.bookmarks = {}
-beaker.bookmarks.getBookmark = bookmarksRPC.getBookmark
-beaker.bookmarks.isBookmarked = bookmarksRPC.isBookmarked
-beaker.bookmarks.bookmarkPublic = bookmarksRPC.bookmarkPublic
-beaker.bookmarks.unbookmarkPublic = bookmarksRPC.unbookmarkPublic
-beaker.bookmarks.listPublicBookmarks = bookmarksRPC.listPublicBookmarks
-beaker.bookmarks.setBookmarkPinned = bookmarksRPC.setBookmarkPinned
-beaker.bookmarks.setBookmarkPinOrder = bookmarksRPC.setBookmarkPinOrder
-beaker.bookmarks.listPinnedBookmarks = bookmarksRPC.listPinnedBookmarks
-beaker.bookmarks.bookmarkPrivate = bookmarksRPC.bookmarkPrivate
-beaker.bookmarks.unbookmarkPrivate = bookmarksRPC.unbookmarkPrivate
-beaker.bookmarks.listPrivateBookmarks = bookmarksRPC.listPrivateBookmarks
-beaker.bookmarks.listBookmarkTags = bookmarksRPC.listBookmarkTags
+// const profilesRPC = rpc.importAPI('profiles', profilesManifest, opts)
 
 // beaker.profiles
-beaker.profiles = {}
+/*beaker.profiles = {}
 beaker.profiles.getCurrentUserArchive = async () => {
   var url = await profilesRPC.getCurrentUserArchive()
   return new DatArchive(url)
@@ -52,17 +36,33 @@ beaker.profiles.countFollowers = profilesRPC.countFollowers
 beaker.profiles.listFriends = profilesRPC.listFriends
 beaker.profiles.countFriends = profilesRPC.countFriends
 beaker.profiles.isFollowing = profilesRPC.isFollowing
-beaker.profiles.isFriendsWith = profilesRPC.isFriendsWith
+beaker.profiles.isFriendsWith = profilesRPC.isFriendsWith*/
 
 // internal only
 if (window.location.protocol === 'beaker:') {
   const historyRPC = rpc.importAPI('history', historyManifest, opts)
+  const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
   const archivesRPC = rpc.importAPI('archives', archivesManifest, opts)
-  const appsRPC = rpc.importAPI('apps', appsManifest, opts)
+  // const appsRPC = rpc.importAPI('apps', appsManifest, opts)
   const workspacesRPC = rpc.importAPI('workspaces', workspacesManifest, opts)
   const downloadsRPC = rpc.importAPI('downloads', downloadsManifest, opts)
   const sitedataRPC = rpc.importAPI('sitedata', sitedataManifest, opts)
   const beakerBrowserRPC = rpc.importAPI('beaker-browser', beakerBrowserManifest, opts)
+
+  // beaker.bookmarks
+  beaker.bookmarks = {}
+  beaker.bookmarks.getBookmark = bookmarksRPC.getBookmark
+  beaker.bookmarks.isBookmarked = bookmarksRPC.isBookmarked
+  beaker.bookmarks.bookmarkPublic = bookmarksRPC.bookmarkPublic
+  beaker.bookmarks.unbookmarkPublic = bookmarksRPC.unbookmarkPublic
+  beaker.bookmarks.listPublicBookmarks = bookmarksRPC.listPublicBookmarks
+  beaker.bookmarks.setBookmarkPinned = bookmarksRPC.setBookmarkPinned
+  beaker.bookmarks.setBookmarkPinOrder = bookmarksRPC.setBookmarkPinOrder
+  beaker.bookmarks.listPinnedBookmarks = bookmarksRPC.listPinnedBookmarks
+  beaker.bookmarks.bookmarkPrivate = bookmarksRPC.bookmarkPrivate
+  beaker.bookmarks.unbookmarkPrivate = bookmarksRPC.unbookmarkPrivate
+  beaker.bookmarks.listPrivateBookmarks = bookmarksRPC.listPrivateBookmarks
+  beaker.bookmarks.listBookmarkTags = bookmarksRPC.listBookmarkTags
 
   // beaker.archives
   beaker.archives = new EventTarget()
@@ -100,13 +100,13 @@ if (window.location.protocol === 'beaker:') {
   beaker.history.removeVisitsAfter = historyRPC.removeVisitsAfter
 
   // beaker.apps
-  beaker.apps = {}
+  /*beaker.apps = {}
   beaker.apps.get = appsRPC.get
   beaker.apps.list = appsRPC.list
   beaker.apps.bind = appsRPC.bind
   beaker.apps.unbind = appsRPC.unbind
   beaker.apps.runInstaller = appsRPC.runInstaller
-  beaker.apps.createEventsStream = () => fromEventStream(appsRPC.createEventsStream())
+  beaker.apps.createEventsStream = () => fromEventStream(appsRPC.createEventsStream())*/
 
   // beaker.workspaces
   beaker.workspaces = {}
