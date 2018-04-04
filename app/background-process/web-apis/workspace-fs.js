@@ -37,7 +37,7 @@ export default {
       key: null,
       url: workspaceUrl,
       isOwner: true,
-      networked: false,
+      // networked: false,
 
       // state
       version: undefined,
@@ -48,7 +48,7 @@ export default {
       // manifest
       title: info.title,
       description: info.description,
-      type: info.type
+      // type: info.type
     }
   },
 

@@ -588,7 +588,6 @@ test('archive.configure', async t => {
   `)
   t.deepEqual(res.title, 'The Changed Title')
   t.deepEqual(res.description, 'The Changed Description')
-  t.deepEqual(res.type, [])
 })
 
 test('offline archives', async t => {

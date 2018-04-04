@@ -160,7 +160,7 @@ export default {
         key: info.key,
         url: info.url,
         isOwner: info.isOwner,
-        networked: info.userSettings.networked,
+        // networked: info.userSettings.networked,
 
         // state
         version: info.version,
@@ -171,7 +171,7 @@ export default {
         // manifest
         title: info.title,
         description: info.description,
-        type: info.type
+        // type: info.type
       }
     })
   },
