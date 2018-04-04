@@ -4,15 +4,17 @@
 export default function Stat (data) {
   if (!(this instanceof Stat)) return new Stat(data)
 
+  /*
+  TODO- are the following attrs needed?
   this.dev = 0
   this.nlink = 1
   this.rdev = 0
   this.blksize = 0
   this.ino = 0
+  this.uid = data ? data.uid : 0
+  this.gid = data ? data.gid : 0*/
 
   this.mode = data ? data.mode : 0
-  this.uid = data ? data.uid : 0
-  this.gid = data ? data.gid : 0
   this.size = data ? data.size : 0
   this.offset = data ? data.offset : 0
   this.blocks = data ? data.blocks : 0
