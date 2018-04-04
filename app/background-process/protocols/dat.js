@@ -35,12 +35,7 @@ try {
 const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 
 // content security policies
-const DAT_CSP = `
-default-src 'self' dat: https: wss: data: blob:;
-script-src 'self' dat: https: 'unsafe-eval' 'unsafe-inline' data: blob:;
-style-src 'self' dat: https: 'unsafe-inline' data: blob:;
-object-src 'none';
-`.replace(/\n/g, ' ')
+const DEFAULT_DAT_CSP = `default-src 'self'`
 
 // exported api
 // =
@@ -75,6 +70,7 @@ async function datProtocol (request, respond) {
   var fileReadStream
   var headersSent = false
   var archive
+  var cspHeader = DEFAULT_DAT_CSP
 
   // validate request
   var urlp = parseDatUrl(request.url, true)
@@ -152,6 +148,11 @@ async function datProtocol (request, respond) {
   var manifest
   try { manifest = await pda.readManifest(archiveFS) } catch (e) { manifest = null }
 
+  // read manifest CSP
+  if (manifest && manifest.content_security_policy && typeof manifest.content_security_policy === 'string') {
+    cspHeader = manifest.content_security_policy
+  }
+
   // handle zip download
   if (urlp.query.download_as === 'zip') {
     cleanup()
@@ -166,7 +167,7 @@ async function datProtocol (request, respond) {
     let headers = {
       'Content-Type': 'application/zip',
       'Content-Disposition': `attachment; filename="${zipname}.zip"`,
-      'Content-Security-Policy': DAT_CSP,
+      'Content-Security-Policy': cspHeader,
       'Access-Control-Allow-Origin': '*'
     }
 
@@ -241,7 +242,7 @@ async function datProtocol (request, respond) {
     cleanup()
     let headers = {
       'Content-Type': 'text/html',
-      'Content-Security-Policy': DAT_CSP,
+      'Content-Security-Policy': cspHeader,
       'Access-Control-Allow-Origin': '*'
     }
     if (request.method === 'HEAD') {
@@ -321,7 +322,7 @@ async function datProtocol (request, respond) {
       headersSent = true
       Object.assign(headers, {
         'Content-Type': mimeType,
-        'Content-Security-Policy': DAT_CSP,
+        'Content-Security-Policy': cspHeader,
         'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'public, max-age: 60'
         // ETag
@@ -343,7 +344,7 @@ async function datProtocol (request, respond) {
       respond({
         statusCode: 200,
         headers: {
-          'Content-Security-Policy': DAT_CSP,
+          'Content-Security-Policy': cspHeader,
           'Access-Control-Allow-Origin': '*'
         },
         data: intoStream('')

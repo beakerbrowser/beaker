@@ -10,6 +10,9 @@ import * as mime from '../mime'
 import * as scopedFSes from './scoped-fses'
 import renderDirectoryListingPage from '../../background-process/networks/dat/directory-listing-page'
 
+
+const DEFAULT_CSP = `default-src 'self'`
+
 // exported api
 // =
 
@@ -33,6 +36,7 @@ export async function serve (request, respond, {CSP, scopedFSPath}) {
     // read the parameters
     const requestUrl = request.url
     const requestUrlParsed = url.parse(requestUrl)
+    var cspHeader = DEFAULT_CSP
 
     // fail if no binding url is given
     if (!scopedFSPath) {
@@ -51,6 +55,11 @@ export async function serve (request, respond, {CSP, scopedFSPath}) {
       }
     } catch (e) {
       // ignore
+    }
+
+    // read manifest CSP
+    if (manifest && manifest.content_security_policy && typeof manifest.content_security_policy === 'string') {
+      cspHeader = manifest.content_security_policy
     }
 
     // lookup entry
@@ -133,7 +142,7 @@ export async function serve (request, respond, {CSP, scopedFSPath}) {
         headersSent = true
         Object.assign(headers, {
           'Content-Type': mimeType,
-          'Content-Security-Policy': CSP,
+          'Content-Security-Policy': cspHeader,
           'Cache-Control': 'public, max-age: 60'
         })
         respond({statusCode, headers, data: dataStream})
@@ -145,7 +154,7 @@ export async function serve (request, respond, {CSP, scopedFSPath}) {
         respond({
           statusCode: 200,
           headers: {
-            'Content-Security-Policy': CSP
+            'Content-Security-Policy': cspHeader
           },
           data: intoStream('')
         })
