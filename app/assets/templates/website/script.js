@@ -1,8 +1,6 @@
 // Learn more about using JavaScript to interact with webpages:
 // https://developer.mozilla.org/en-US/docs/Web/javascript
 
-console.log('Hello from the console!')
-
 const COLORS = [
   'rebeccapurple',
   'magenta',

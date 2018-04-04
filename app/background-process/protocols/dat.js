@@ -34,9 +34,6 @@ try {
 // how long till we give up?
 const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 
-// content security policies
-const DEFAULT_DAT_CSP = `default-src 'self'`
-
 // exported api
 // =
 
@@ -70,7 +67,7 @@ async function datProtocol (request, respond) {
   var fileReadStream
   var headersSent = false
   var archive
-  var cspHeader = DEFAULT_DAT_CSP
+  var cspHeader = ''
 
   // validate request
   var urlp = parseDatUrl(request.url, true)

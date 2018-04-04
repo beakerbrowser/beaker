@@ -10,9 +10,6 @@ import * as mime from '../mime'
 import * as scopedFSes from './scoped-fses'
 import renderDirectoryListingPage from '../../background-process/networks/dat/directory-listing-page'
 
-
-const DEFAULT_CSP = `default-src 'self'`
-
 // exported api
 // =
 
@@ -36,7 +33,7 @@ export async function serve (request, respond, {CSP, scopedFSPath}) {
     // read the parameters
     const requestUrl = request.url
     const requestUrlParsed = url.parse(requestUrl)
-    var cspHeader = DEFAULT_CSP
+    var cspHeader = ''
 
     // fail if no binding url is given
     if (!scopedFSPath) {
