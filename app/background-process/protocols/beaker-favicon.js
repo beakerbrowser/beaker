@@ -58,10 +58,6 @@ export function setup () {
       if (url.startsWith('dat://')) {
         url = await datDns.resolveName(url)
         fs = datLibrary.getArchive(url) // (only try if the dat is loaded)
-      } else if (url.startsWith('workspace://')) {
-        let urlp = parseUrl(url)
-        let wsEntry = await workspacesDb.get(0, urlp.hostname)
-        fs = scopedFSes.get(wsEntry.localFilesPath)
       }
       if (fs) {
         // try .ico

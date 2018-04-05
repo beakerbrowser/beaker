@@ -2122,22 +2122,7 @@ function markdownHrefMassager (href) {
 }
 
 async function parseLibraryUrl () {
-  var url
-  if (window.location.pathname.slice(1).startsWith('workspace:')) {
-    const wsName = window.location.pathname.slice('/workspace://'.length).split('/')[0]
-
-    const wsInfo = await beaker.workspaces.get(0, wsName)
-    if (wsInfo) {
-      url = wsInfo.publishTargetUrl
-      window.location.pathname = url + window.location.pathname.slice(`/workspace://${wsInfo.name}`.length)
-    } else {
-      toplevelError = createToplevelError('Invalid workspace name')
-      render()
-    }
-  } else {
-    url = window.location.pathname.slice(1)
-  }
-  return url
+  return window.location.pathname.slice(1)
 }
 
 function createToplevelError (err) {
