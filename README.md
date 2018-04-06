@@ -137,7 +137,7 @@ This project exists thanks to all the people who contribute. [[Contribute]](CONT
 
 ## License
 
-Modified MIT License (MIT)
+MIT License (MIT)
 
 Copyright (c) 2018 Blue Link Labs
 
