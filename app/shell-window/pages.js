@@ -251,9 +251,6 @@ export function create (opts) {
         page.liveReloadEvents.addEventListener(event, () => {
           page.triggerLiveReload()
         })
-      } else if (page.protocolInfo && page.protocolInfo.scheme === 'workspace:') {
-        page.liveReloadEvents = beaker.workspaces.watch(0, page.protocolInfo.hostname)
-        page.liveReloadEvents.addEventListener('changed', page.triggerLiveReload.bind(page))
       }
       toast.create(`Live reloading ${(page.liveReloadEvents) ? 'on' : 'off'}`, 1e3)
       navbar.update(page)
@@ -691,14 +688,6 @@ function onDidStopLoading (e) {
             page.title = info.title
             events.emit('page-title-updated', page)
           }
-        })
-    }
-    if (protocol === 'workspace:') {
-      beaker.workspaces.get(0, hostname)
-        .then(info => {
-          page.siteInfo = info
-          navbar.update(page)
-          console.log('workspace site info', info)
         })
     }
     if (protocol !== 'beaker:') {

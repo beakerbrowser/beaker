@@ -7,7 +7,6 @@ import datEncoding from 'dat-encoding'
 import jetpack from 'fs-jetpack'
 import {InvalidArchiveKeyError} from 'beaker-error-constants'
 import * as db from './profile-data-db' // TODO rename to db
-import * as workspacesDb from './workspaces'
 import lock from '../../lib/lock'
 import {
   DAT_HASH_REGEX,
