@@ -93,7 +93,8 @@ export async function query (profileId, query) {
         archives.networked,
         archives.autoDownload,
         archives.autoUpload,
-        archives.expiresAt
+        archives.expiresAt,
+        archives.localSyncPath
       FROM archives_meta
       LEFT JOIN archives ON archives.key = archives_meta.key
       LEFT JOIN archives_meta_type ON archives_meta_type.key = archives_meta.key
@@ -111,7 +112,8 @@ export async function query (profileId, query) {
       networked: archive.networked != 0,
       autoDownload: archive.autoDownload != 0,
       autoUpload: archive.autoUpload != 0,
-      expiresAt: archive.expiresAt
+      expiresAt: archive.expiresAt,
+      localSyncPath: archive.localSyncPath
     }
 
     // user settings
@@ -120,6 +122,7 @@ export async function query (profileId, query) {
     delete archive.autoDownload
     delete archive.autoUpload
     delete archive.expiresAt
+    delete archive.localSyncPath
 
     // old attrs
     delete archive.createdByTitle
@@ -226,22 +229,24 @@ export async function setUserSettings (profileId, key, newValues = {}) {
         networked: ('networked' in newValues) ? newValues.networked : true,
         autoDownload: ('autoDownload' in newValues) ? newValues.autoDownload : newValues.isSaved,
         autoUpload: ('autoUpload' in newValues) ? newValues.autoUpload : newValues.isSaved,
-        expiresAt: newValues.expiresAt
+        expiresAt: newValues.expiresAt,
+        localSyncPath: ('localSyncPath' in newValues) ? newValues.localSyncPath : ''
       }
       await db.run(`
-        INSERT INTO archives (profileId, key, isSaved, networked, autoDownload, autoUpload, expiresAt) VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [profileId, key, flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload), value.expiresAt])
+        INSERT INTO archives (profileId, key, isSaved, networked, autoDownload, autoUpload, expiresAt, localSyncPath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `, [profileId, key, flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload), value.expiresAt, value.localSyncPath])
     } else {
       // update
-      var { isSaved, networked, autoDownload, autoUpload, expiresAt } = newValues
+      var { isSaved, networked, autoDownload, autoUpload, expiresAt, localSyncPath } = newValues
       if (typeof isSaved === 'boolean') value.isSaved = isSaved
       if (typeof networked === 'boolean') value.networked = networked
       if (typeof autoDownload === 'boolean') value.autoDownload = autoDownload
       if (typeof autoUpload === 'boolean') value.autoUpload = autoUpload
       if (typeof expiresAt === 'number') value.expiresAt = expiresAt
+      if (typeof localSyncPath === 'string') value.localSyncPath = localSyncPath
       await db.run(`
-        UPDATE archives SET isSaved = ?, networked = ?, autoDownload = ?, autoUpload = ?, expiresAt = ? WHERE profileId = ? AND key = ?
-      `, [flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload), value.expiresAt, profileId, key])
+        UPDATE archives SET isSaved = ?, networked = ?, autoDownload = ?, autoUpload = ?, expiresAt = ?, localSyncPath = ? WHERE profileId = ? AND key = ?
+      `, [flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload), value.expiresAt, value.localSyncPath, profileId, key])
     }
 
     events.emit('update:archive-user-settings', key, value)

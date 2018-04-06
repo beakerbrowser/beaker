@@ -389,8 +389,7 @@ async function getDefaultLocalPath (dir, title) {
   while (await jetpack.existsAsync(path.join(dir, titleVariant))) {
     titleVariant = `${title}-${++tryNum}`
   }
-  const localPath = path.join(dir, titleVariant)
-  return localPath
+  return path.join(dir, titleVariant)
 }
 
 async function doWebcontentsCmd (method, wcId, ...args) {

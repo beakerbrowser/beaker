@@ -1,4 +1,5 @@
 import path from 'path'
+import fs from 'fs'
 import parseDatURL from 'parse-dat-url'
 import pda from 'pauls-dat-api'
 import concat from 'concat-stream'
@@ -152,10 +153,24 @@ export default {
   async getInfo (url, opts = {}) {
     return timer(to(opts), async () => {
       var info = await datLibrary.getArchiveInfo(url)
+
+      // request from beaker internal sites: give all data
       if (this.sender.getURL().startsWith('beaker:')) {
+        // check that the local sync path is valid
+        if (info && info.localSyncPath) {
+          const stat = await new Promise(resolve => {
+            fs.stat(ws.localSyncPath, (err, st) => resolve(st))
+          })
+          if (!stat || !stat.isDirectory()) {
+            info.localSyncPathIsMissing = true
+            info.missingLocalSyncPath = ws.localSyncPath // store on other attr
+            info.localSyncPath = undefined // unset to avoid accidents
+          }
+        }
         return info
       }
-      // return a subset of the data
+
+      // request from userland: return a subset of the data
       return {
         key: info.key,
         url: info.url,
@@ -186,14 +201,18 @@ export default {
 
       // handle 'networked' specially
       // also, only allow beaker to set 'networked' for now
-      if (this.sender.getURL().startsWith('beaker:') && ('networked' in settings)) {
+      if (('networked' in settings) && this.sender.getURL().startsWith('beaker:')) {
         if (settings.networked === false) {
           await assertArchiveOfflineable(archive)
         }
         await archivesDb.setUserSettings(0, archive.key, {networked: settings.networked, expiresAt: 0})
-        if (Object.keys(settings).length === 1) {
-          return
-        }
+      }
+
+      // manifest updates
+      let manifestUpdates = pick(settings, DAT_CONFIGURABLE_FIELDS)
+      if (Object.keys(manifestUpdates).length === 0) {
+        // no manifest updates
+        return
       }
 
       pause() // dont count against timeout, there may be user prompts
@@ -203,13 +222,8 @@ export default {
       resume()
 
       checkin('updating archive')
-
-      let manifestUpdates = pick(settings, DAT_CONFIGURABLE_FIELDS)
-      if (Object.keys(manifestUpdates).length) {
-        await pda.updateManifest(archive, manifestUpdates)
-        updateWorkspaceManifest(archive, manifestUpdates)
-        await datLibrary.pullLatestArchiveMeta(archive)
-      }
+      await pda.updateManifest(archive, manifestUpdates)
+      await datLibrary.pullLatestArchiveMeta(archive)
     })
   },
 
@@ -712,11 +726,3 @@ function massageHistoryObj ({name, version, type}) {
   return {path: name, version, type}
 }
 
-async function updateWorkspaceManifest (archive, manifestUpdates) {
-  const ws = await workspacesDb.getByPublishTargetUrl(0, 'dat://' + archive.key.toString('hex'))
-  if (!ws || ws.localFilesPathIsMissing) return
-  const scopedFS = scopedFSes.get(ws.localFilesPath)
-  if (!scopedFS) return
-  scopedFS.writable = true // get PDA to work with the scoped fs (PDA expects an archive)
-  await pda.updateManifest(scopedFS, manifestUpdates)
-}

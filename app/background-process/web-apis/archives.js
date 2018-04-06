@@ -1,13 +1,13 @@
+import {app} from 'electron'
+import path from 'path'
+import mkdirp from 'mkdirp'
 import datDns from '../networks/dat/dns'
+import * as folderSync from '../networks/dat/folder-sync'
 import * as datLibrary from '../networks/dat/library'
 import * as datGC from '../networks/dat/garbage-collector'
 import * as archivesDb from '../dbs/archives'
+import {cbPromise} from '../../lib/functions'
 // import * as profilesIngest from '../ingests/profiles' TODO(profiles) disabled -prf
-import {DAT_HASH_REGEX} from '../../lib/const'
-import {
-  InvalidURLError,
-  PermissionsError
-} from 'beaker-error-constants'
 
 // exported api
 // =
@@ -76,6 +76,29 @@ export default {
 
   async list (query = {}) {
     return datLibrary.queryArchives(query)
+  },
+
+  // folder sync
+  // =
+
+  async setLocalSyncPath (key, localSyncPath) {
+    var key = datLibrary.fromURLToKey(key)
+    localSyncPath = path.normalize(localSyncPath)
+
+    // make sure the path is good
+    try {
+      await folderSync.assertSafePath(localSyncPath)
+    } catch (e) {
+      if (e.notFound) {
+        // just create the folder
+        await cbPromise(cb => mkdirp(localSyncPath, cb))
+      } else {
+        throw e
+      }
+    }
+
+    // update the record
+    await archivesDb.setUserSettings(0, key, {localSyncPath})
   },
 
   // publishing

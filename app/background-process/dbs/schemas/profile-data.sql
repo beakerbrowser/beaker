@@ -7,7 +7,8 @@ CREATE TABLE profiles (
 CREATE TABLE archives (
   profileId INTEGER NOT NULL,
   key TEXT NOT NULL,
-  localPath TEXT,
+  localPath TEXT, -- deprecated
+  localSyncPath TEXT,
   isSaved INTEGER,
   createdAt INTEGER DEFAULT (strftime('%s', 'now')),
   autoDownload INTEGER DEFAULT 1,
@@ -20,12 +21,12 @@ CREATE TABLE archives_meta (
   key TEXT PRIMARY KEY,
   title TEXT,
   description TEXT,
-  forkOf TEXT,
-  createdByUrl TEXT,
-  createdByTitle TEXT,
+  forkOf TEXT, -- deprecated
+  createdByUrl TEXT, -- deprecated
+  createdByTitle TEXT, -- deprecated
   mtime INTEGER,
-  metaSize INTEGER,
-  stagingSize INTEGER,
+  metaSize INTEGER, -- deprecated
+  stagingSize INTEGER, -- deprecated
   isOwner INTEGER,
   lastAccessTime INTEGER DEFAULT 0,
   lastLibraryAccessTime INTEGER DEFAULT 0
@@ -70,6 +71,7 @@ CREATE VIRTUAL TABLE visit_fts USING fts4 (url, title);
 CREATE UNIQUE INDEX visits_stats_url ON visit_stats (url);
 
 -- list of the user's installed apps
+-- deprecated
 CREATE TABLE apps (
   profileId INTEGER NOT NULL,
   name TEXT NOT NULL,
@@ -82,6 +84,7 @@ CREATE TABLE apps (
 );
 
 -- log of the user's app installations
+-- deprecated
 CREATE TABLE apps_log (
   profileId INTEGER NOT NULL,
   name TEXT NOT NULL,
@@ -116,4 +119,4 @@ INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Report an issu
 INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Explore the p2p Web', 'dat://taravancil.com/explore-the-p2p-web.md', 1);
 INSERT INTO bookmarks (profileId, title, url, pinned) VALUES (0, 'Support Beaker', 'https://opencollective.com/beaker', 1);
 
-PRAGMA user_version = 16;
+PRAGMA user_version = 17;

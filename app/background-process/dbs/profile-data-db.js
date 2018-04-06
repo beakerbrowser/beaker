@@ -67,7 +67,8 @@ migrations = [
   migration('profile-data.v13.sql'),
   migration('profile-data.v14.sql'),
   migration('profile-data.v15.sql'),
-  migration('profile-data.v16.sql', {canFail: true}) // set canFail because we made a mistake in the rollout of this update, see https://github.com/beakerbrowser/beaker/issues/934
+  migration('profile-data.v16.sql', {canFail: true}), // set canFail because we made a mistake in the rollout of this update, see https://github.com/beakerbrowser/beaker/issues/934
+  migration('profile-data.v17.sql')
 ]
 function migration (file, opts = {}) {
   return cb => {
