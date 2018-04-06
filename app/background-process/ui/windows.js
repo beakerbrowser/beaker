@@ -18,6 +18,7 @@ let userDataDir
 let numActiveWindows = 0
 let firstWindow = null
 let sessionWatcher = null
+let focusedDevtoolsHost
 const BROWSING_SESSION_PATH = './shell-window-state.json'
 const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
 
@@ -47,10 +48,20 @@ export async function setup () {
   })
 
   app.on('web-contents-created', (e, wc) => {
-    // if this is a webview's web contents, attach the keybinding protections
     if (wc.hostWebContents) {
+      // attach keybinding protections
       const parentWindow = BrowserWindow.fromWebContents(wc.hostWebContents)
       wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
+
+      // track focused devtools host
+      wc.on('devtools-focused', () => {focusedDevtoolsHost = wc})
+      wc.on('devtools-closed', unfocusDevtoolsHost)
+      wc.on('destroyed', unfocusDevtoolsHost)
+      function unfocusDevtoolsHost () {
+        if (focusedDevtoolsHost === wc) {
+          focusedDevtoolsHost = undefined
+        }
+      }
     }
   })
 
@@ -158,6 +169,14 @@ export function getActiveWindow () {
     win = BrowserWindow.getAllWindows().pop()
   }
   return win
+}
+
+export function getFocusedDevToolsHost () {
+  // check first if it's the shell window's devtools
+  let win = BrowserWindow.getAllWindows().find(w => w.webContents.isDevToolsFocused())
+  if (win) return win.webContents
+  // fallback to our manually tracked devtools host
+  return focusedDevtoolsHost
 }
 
 export async function getFocusedWebContents (win) {

@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
-import { createShellWindow } from './windows'
+import { createShellWindow, getFocusedDevToolsHost } from './windows'
 import datDns from '../networks/dat/dns'
 
 // exported APIs
@@ -132,7 +132,16 @@ export function buildWindowMenu (opts = {}) {
         label: 'Close Tab',
         accelerator: 'CmdOrCtrl+W',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'file:close-tab')
+          if (win) {
+            // a regular browser window
+            win.webContents.send('command', 'file:close-tab')
+          } else {
+            // devtools
+            let wc = getFocusedDevToolsHost()
+            if (wc) {
+              wc.closeDevTools()
+            }
+          }
         },
         reserved: true
       }
