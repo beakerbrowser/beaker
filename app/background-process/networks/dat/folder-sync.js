@@ -34,7 +34,8 @@ const DISALLOWED_SAVE_PATH_NAMES = [
 //   - compareContent: bool, compare the actual content (default true)
 //   - paths: Array<string>, a whitelist of files to compare
 //   - addOnly: bool, dont modify or remove any files (default false)
-export function syncToFolder (archive, opts = {}) {
+export function syncArchiveToFolder (archive, opts = {}) {
+  if (archive.syncFolderToArchiveTimeout) return console.log('Not running, locked')
   return sync(archive, false, opts)
 }
 
@@ -44,9 +45,35 @@ export function syncToFolder (archive, opts = {}) {
 //   - compareContent: bool, compare the actual content (default true)
 //   - paths: Array<string>, a whitelist of files to compare
 //   - addOnly: bool, dont modify or remove any files (default false)
-export function syncToArchive (archive, opts = {}) {
+export function syncFolderToArchive (archive, opts = {}) {
   if (!archive.writable) throw new ArchiveNotWritableError()
   return sync(archive, true, opts)
+}
+
+// attach/detach a watcher on the local folder and sync it to the dat
+export function configureFolderToArchiveWatcher (archive, enabled) {
+  if (!archive.localSyncPath) return // sanity check
+
+  if (!enabled && archive.stopWatchingLocalFolder) {
+    // stop watching
+    archive.stopWatchingLocalFolder()
+    archive.stopWatchingLocalFolder = null
+  }
+  else if (enabled && !archive.stopWatchingLocalFolder) {
+    // start watching
+    var scopedFS = scopedFSes.get(archive.localSyncPath)
+    archive.stopWatchingLocalFolder = scopedFS.watch('/', path => {
+      // disable sync-to-folder for 5 seconds
+      if (archive.syncFolderToArchiveTimeout) {
+        clearTimeout(archive.syncFolderToArchiveTimeout)
+      }
+      archive.syncFolderToArchiveTimeout = setTimeout(() => {
+        console.log('ok timed out')
+        syncFolderToArchive(archive, {shallow: false})
+        archive.syncFolderToArchiveTimeout = null
+      }, 1e3)
+    })
+  }
 }
 
 // list the files that differ

@@ -11,6 +11,7 @@ export default {
 
   // folder sync
   setLocalSyncPath: 'promise',
+  configureLocalSync: 'promise',
 
   // publishing
   publish: 'promise',

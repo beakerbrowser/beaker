@@ -17,7 +17,7 @@ import {throttle, debounce} from '../../../lib/functions'
 // dat modules
 import * as archivesDb from '../../dbs/archives'
 import * as datGC from './garbage-collector'
-import {syncToFolder} from './folder-sync'
+import {syncArchiveToFolder, syncFolderToArchive} from './folder-sync'
 import {addArchiveSwarmLogging} from './logging-utils'
 import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
@@ -348,12 +348,12 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
 
   // wire up events
   archive.pullLatestArchiveMeta = debounce(opts => pullLatestArchiveMeta(archive, opts), 1e3)
-  archive.syncToFolder = debounce((opts) => syncToFolder(archive, opts), 1e3)
+  archive.syncArchiveToFolder = debounce((opts) => syncArchiveToFolder(archive, opts), 1e3)
   archive.fileActStream = pda.watch(archive)
   archive.fileActStream.on('data', ([event, data]) => {
     if (event === 'changed') {
       archive.pullLatestArchiveMeta({updateMTime: true})
-      archive.syncToFolder({compareContent: false}) // no need to compare content, faster to just write
+      archive.syncArchiveToFolder({shallow: false})
     }
   })
   archive.on('error', error => {

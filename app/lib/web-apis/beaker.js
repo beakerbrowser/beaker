@@ -70,12 +70,13 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.bulkRemove = archivesRPC.bulkRemove
   beaker.archives.delete = archivesRPC.delete
   beaker.archives.list = archivesRPC.list
+  beaker.archives.setLocalSyncPath = archivesRPC.setLocalSyncPath
+  beaker.archives.configureLocalSync = archivesRPC.configureLocalSync
   beaker.archives.publish = archivesRPC.publish
   beaker.archives.unpublish = archivesRPC.unpublish
   beaker.archives.listPublished = archivesRPC.listPublished
   beaker.archives.countPublished = archivesRPC.countPublished
   beaker.archives.getPublishRecord = archivesRPC.getPublishRecord
-  beaker.archives.setLocalSyncPath = archivesRPC.setLocalSyncPath
   beaker.archives.touch = archivesRPC.touch
   beaker.archives.clearFileCache = archivesRPC.clearFileCache
   beaker.archives.clearGarbage = archivesRPC.clearGarbage

@@ -7,6 +7,7 @@ import * as datLibrary from '../networks/dat/library'
 import * as datGC from '../networks/dat/garbage-collector'
 import * as archivesDb from '../dbs/archives'
 import {cbPromise} from '../../lib/functions'
+import {timer} from '../../lib/time'
 // import * as profilesIngest from '../ingests/profiles' TODO(profiles) disabled -prf
 
 // exported api
@@ -99,6 +100,16 @@ export default {
 
     // update the record
     await archivesDb.setUserSettings(0, key, {localSyncPath})
+  },
+
+  async configureLocalSync (key, {folderToArchive}) {
+    var key = datLibrary.fromURLToKey(key)
+    var archive
+    await timer(3e3, async (checkin) => { // put a max 3s timeout on loading the dat
+      checkin('searching for dat')
+      archive = await datLibrary.getOrLoadArchive(key)
+    })
+    folderSync.configureFolderToArchiveWatcher(archive, folderToArchive)
   },
 
   // publishing
