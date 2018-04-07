@@ -218,7 +218,7 @@ export function create (opts) {
       if (this.getIntendedURL().startsWith('dat:')) {
         return parseURL(this.getIntendedURL()).origin
       }
-      // TODO app scheme was removed, do we still need this? workspace scheme? -prf
+      // TODO app scheme was removed, do we still need this? -prf
       // const pi = this.protocolInfo
       // if (pi && pi.scheme === 'app:' && pi.binding && pi.binding.url.startsWith('dat://')) {
       //   return parseURL(pi.binding.url).origin

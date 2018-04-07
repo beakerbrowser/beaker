@@ -7,7 +7,6 @@ import pick from 'lodash.pick'
 import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
-import * as workspacesDb from '../dbs/workspaces'
 // import {getProfileRecord, getAPI as getProfilesAPI} from '../ingests/profiles' TODO(profiles) disabled -prf
 import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'

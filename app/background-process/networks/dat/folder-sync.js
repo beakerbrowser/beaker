@@ -100,7 +100,7 @@ export async function diffListing (archive, opts={}) {
 }
 
 // diff an individual file
-// - filepath: string, the path of the file in the workspace
+// - filepath: string, the path of the file in the archive/folder
 export async function diffFile (archive, filepath) {
   if (!archive.localSyncPath) return // sanity check
   var scopedFS = scopedFSes.get(archive.localSyncPath)

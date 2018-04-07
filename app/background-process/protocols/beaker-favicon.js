@@ -50,7 +50,7 @@ export function setup () {
       // ignore
     }
 
-    // if a dat or a workspace, see if there's a favicon.ico or .png 
+    // if a dat, see if there's a favicon.ico or .png 
     try {
       let data, fs
       // pick the filesystem
