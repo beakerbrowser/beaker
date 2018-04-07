@@ -82,7 +82,7 @@ export default {
   // folder sync
   // =
 
-  async setLocalSyncPath (key, localSyncPath) {
+  async setLocalSyncPath (key, localSyncPath, opts = {}) {
     var key = datLibrary.fromURLToKey(key)
     localSyncPath = path.normalize(localSyncPath)
 
@@ -100,6 +100,12 @@ export default {
 
     // update the record
     await archivesDb.setUserSettings(0, key, {localSyncPath})
+
+    // sync
+    if (opts.syncFolderToArchive) {
+      var archive = await datLibrary.getOrLoadArchive(key)
+      folderSync.syncFolderToArchive(archive)
+    }
   },
 
   // publishing
