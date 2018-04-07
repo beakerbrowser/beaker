@@ -227,5 +227,14 @@ export default function registerContextMenu () {
       var menu = Menu.buildFromTemplate(menuItems)
       menu.popup({window: targetWindow})
     })
+
+    // open devtools
+    if (process.env.beaker_open_page_devtools == 1) {
+      webContents.once('dom-ready', async (e, props) => {
+        if (webContents.getURL() === process.env.beaker_open_url) {
+          webContents.openDevTools();
+        }
+      });
+    }    
   })
 }

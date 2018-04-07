@@ -81,10 +81,13 @@ export async function setup () {
 
   if (!isTestDriverActive && (customStartPage === 'previous' || !previousSessionState.cleanExit && userWantsToRestoreSession())) {
     restoreBrowsingSession(previousSessionState)
-  } else {
+  } else
+  if (previousSessionState.windows[0]) {
     // use the last session's window position
     let {x, y, width, height} = previousSessionState.windows[0]
     createShellWindow({x, y, width, height})
+  } else {
+    createShellWindow()
   }
 }
 
@@ -113,6 +116,11 @@ export function createShellWindow (windowState) {
   downloads.registerListener(win)
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
+
+  // open devtools  
+  if (process.env.beaker_open_win_devtools == 1) {
+    win.webContents.openDevTools()
+  }
 
   function handlePagesReady ({ sender }) {
     if (win && !win.isDestroyed() && sender === win.webContents) {

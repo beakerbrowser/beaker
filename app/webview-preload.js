@@ -1,5 +1,6 @@
 import { webFrame } from 'electron'
 import DatArchive from './lib/web-apis/dat-archive'
+import Docker from './lib/web-apis/docker'
 import UserSession from './lib/web-apis/user-session'
 import beaker from './lib/web-apis/beaker'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
@@ -28,6 +29,9 @@ if (['beaker:', 'dat:', 'https:', 'workspace:'].includes(window.location.protoco
 if (['beaker:', 'dat:', 'workspace:'].includes(window.location.protocol)) {
   window.UserSession = UserSession
   window.beaker = beaker
+}
+if (['dat:', 'workspace:'].includes(window.location.protocol)) {
+  window.Docker = Docker
 }
 setupLocationbar()
 setupPrompt()

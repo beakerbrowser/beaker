@@ -12,3 +12,6 @@ app/stylesheets/*.css
 app/stylesheets/builtin-pages/*.css
 package-lock.json
 app/package-lock.json
+/.installed
+/.built
+*~.compiled.bash
