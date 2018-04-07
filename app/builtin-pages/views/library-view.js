@@ -8,7 +8,6 @@ import parseDatURL from 'parse-dat-url'
 import _get from 'lodash.get'
 import dragDrop from 'drag-drop'
 import FilesBrowser from '../com/files-browser2'
-import renderDiff from '../com/diff'
 import toggleable from '../com/toggleable'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
@@ -32,7 +31,6 @@ var activeView // will default to 'files'
 var archive
 var archiveFsRoot
 var filesBrowser
-var workspaceInfo
 
 var markdownRenderer = createMd({hrefMassager: markdownHrefMassager})
 var readmeElement
@@ -42,14 +40,12 @@ var readmeElement
 var settingsEditValues = {
   title: false,
   description: false,
-  repository: false,
-  workspaceName: false
+  repository: false
 }
 var settingsSuccess = {
   title: false,
   description: false,
-  repository: false,
-  workspaceName: false
+  repository: false
 }
 var headerEditValues = {
   title: false
@@ -61,7 +57,6 @@ var isFaviconSet = true
 var isGettingStartedDismissed = false
 var arePeersCollapsed = true
 var faviconCacheBuster
-var workspaceFileActStream
 
 // HACK
 // Linux is not capable of importing folders and files in the same dialog
@@ -107,19 +102,6 @@ async function setup () {
       await archive.startMonitoringDownloadProgress()
     }
 
-    // fetch workspace info for this archive
-    try {
-      workspaceInfo = await beaker.workspaces.get(0, archive.info.url)
-      if (workspaceInfo) workspaceInfo.revisions = []
-      filesBrowser.setWorkspaceInfo(workspaceInfo)
-      await loadWorkspaceRevisions()
-    } catch (e) {
-      // suppress ArchiveNotWritableError, that is emitted if the dat is deleted
-      if (e.name !== 'ArchiveNotWritableError') {
-        throw e
-      }
-    }
-
     // check if the favicon is set
     isGettingStartedDismissed = (localStorage[archive.info.key + '-gsd'] === '1')
     if (_get(archive, 'info.isOwner')) {
@@ -143,7 +125,6 @@ async function setup () {
     document.body.addEventListener('custom-delete-file', onDeleteFile)
     document.body.addEventListener('custom-set-view', onChangeView)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
-    setupWorkspaceListeners()
 
     let onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
     var fileActStream = archive.watch()
@@ -161,80 +142,6 @@ async function setup () {
       archive.url.slice('dat://'.length),
       'lastLibraryAccessTime'
     ).catch(console.error)
-  }
-}
-
-function setupWorkspaceListeners () {
-  if (workspaceFileActStream) {
-    workspaceFileActStream.close()
-  }
-
-  if (workspaceInfo) {
-    workspaceFileActStream = beaker.workspaces.watch(0, workspaceInfo.name)
-    let onWorkspaceChangedThrottled = throttle(onWorkspaceChanged, 1e3)
-    workspaceFileActStream.addEventListener('changed', onWorkspaceChangedThrottled)
-  }
-}
-
-async function loadWorkspaceRevisions () {
-  if (!workspaceInfo) return
-
-  // load up the revision list
-  if (!workspaceInfo.localFilesPathIsMissing) {
-    workspaceInfo.revisions = await beaker.workspaces.listChangedFiles(
-      0,
-      workspaceInfo.name,
-      {shallow: true, compareContent: true}
-    )
-  } else {
-    workspaceInfo.revisions = []
-  }
-
-  // load and expand the first three revisions
-  await Promise.all(workspaceInfo.revisions.slice(0, 3).map(async rev => {
-    await loadDiff(rev)
-    rev.isOpen = true
-  }))
-
-  // count the number of additions, deletions, and modifications
-  // TODO i don't know if this is necessary
-  workspaceInfo.additions = workspaceInfo.revisions.filter(r => r.change === 'add')
-  workspaceInfo.modifications = workspaceInfo.revisions.filter(r => r.change === 'mod')
-  workspaceInfo.deletions = workspaceInfo.revisions.filter(r => r.change === 'del')
-
-  // TODO
-  // unset diff node if removed from revisions
-  // if (currentDiffNode) {
-  //   if (!workspaceInfo.revisions.find(r => r.path === currentDiffNode.path)) {
-  //     currentDiffNode = null
-  //   }
-  // }
-}
-
-async function loadDiff (revision) {
-  if (!revision) return
-
-  // fetch the diff
-  try {
-    revision.diff = await beaker.workspaces.diff(0, workspaceInfo.name, revision.path)
-
-    revision.diffDeletions = revision.diff.reduce((sum, el) => {
-      if (el.removed) return sum + el.count
-      return sum
-    }, 0)
-
-    revision.diffAdditions = revision.diff.reduce((sum, el) => {
-      if (el.added) return sum + el.count
-      return sum
-    }, 0)
-  } catch (e) {
-    if (e.invalidEncoding) {
-      revision.diff = {invalidEncoding: true}
-    } else if (e.sourceTooLarge) {
-      revision.diff = {sourceTooLarge: true}
-    } else {
-      console.error('Error running diff', e)
-    }
   }
 }
 
@@ -412,8 +319,6 @@ function renderView () {
       return renderFilesView()
     case 'settings':
       return renderSettingsView()
-    case 'workspace':
-      return renderWorkspaceView()
     case 'network':
       return renderNetworkView()
     case 'preview':
@@ -434,37 +339,38 @@ function renderFooter () {
       </div>`
 
     // pick secondary action based on current state
-    if (workspaceInfo && workspaceInfo.localFilesPath) {
+    let localSyncPath = _get(archive, 'info.userSettings.localSyncPath')
+    if (localSyncPath) {
       secondaryAction = toggleable(yo`
         <div class="dropdown toggleable-container">
           <button class="btn transparent nofocus toggleable">
-            ${workspaceInfo.localFilesPath} <i class="fa fa-caret-up"></i>
+            ${localSyncPath} <i class="fa fa-caret-up"></i>
           </button>
 
-          <div class="dropdown-items workspace-info top right subtle-shadow">
-            <div class="dropdown-item" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+          <div class="dropdown-items syncfolder-info top right subtle-shadow">
+            <div class="dropdown-item" onclick=${() => onOpenFolder(localSyncPath)}>
               <i class="fa fa-folder-o"></i>
-              <span class="label">Open ${workspaceInfo.localFilesPath}</span>
+              <span class="label">Open ${localSyncPath}</span>
             </div>
 
-            <div class="dropdown-item" onclick=${onChangeWorkspaceDirectory}>
+            <div class="dropdown-item" onclick=${onChangeSyncDirectory}>
               <i class="fa fa-pencil"></i>
-              <span class="label">Change workspace directory</span>
+              <span class="label">Change sync directory</span>
             </div>
 
-            <div class="dropdown-item" onclick=${() => onCopy(workspaceInfo.localFilesPath, 'Path copied to clipboard')}>
+            <div class="dropdown-item" onclick=${() => onCopy(localSyncPath, 'Path copied to clipboard')}>
               <i class="fa fa-clipboard"></i>
               <span class="label">Copy path</span>
             </div>
           </div>
         </div>`)
-    } else if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
+    } else if (_get(archive, 'info.localSyncPathIsMissing')) {
       secondaryAction = yo`
         <span class="path error">
           <em>
             Directory not found
-            ${workspaceInfo.missingLocalFilesPath
-              ? `(${workspaceInfo.missingLocalFilesPath})`
+            ${archive.info.missingLocalSyncPath
+              ? `(${archive.info.missingLocalSyncPath})`
               : ''
             }
           </em>
@@ -482,7 +388,7 @@ function renderFooter () {
             <span>Seed these files</span>
           </button>`
       }
-    } else if (_get(archive, 'info.isOwner') && (!workspaceInfo || !workspaceInfo.localFilesPath)) {
+    } else if (_get(archive, 'info.isOwner')) {
       secondaryAction = ''
     } else {
       secondaryAction = yo`
@@ -530,16 +436,16 @@ function renderFilesView () {
   return yo`
     <div class="container">
       <div class="view files">
-        ${workspaceInfo && workspaceInfo.localFilesPathIsMissing
+        ${_get(archive, 'info.localSyncPathIsMissing')
           ? yo`
             <div class="message info">
               <span>
-                This archive${"'"}s workspace directory
-                ${workspaceInfo.missingLocalFilesPath ? `(${workspaceInfo.missingLocalFilesPath})` : ''}
+                This archive${"'"}s sync directory
+                ${archive.info.missingLocalSyncPath ? `(${archive.info.missingLocalSyncPath})` : ''}
                 was moved or deleted.
               </span>
 
-              <button class="btn" onclick=${onChangeWorkspaceDirectory}>Choose new directory</button>
+              <button class="btn" onclick=${onChangeSyncDirectory}>Choose new directory</button>
             </div>`
           : ''
         }
@@ -558,29 +464,10 @@ function renderFilesView () {
         ${archive.info.isOwner ? renderSetupChecklist() : ''}
         ${filesBrowser ? filesBrowser.render() : ''}
         ${readmeElement ? readmeElement : renderReadmeHint()}
-        ${readmeElement && workspaceInfo && workspaceInfo.localFilesPath
-          ? renderWorkspaceHint()
-          : ''
-        }
         ${!archive.info.isOwner ? renderMakeCopyHint() : ''}
       </div>
     </div>
   `
-}
-
-function renderWorkspaceHint () {
-  return yo`
-    <div class="hint">
-      <p>
-        <i class="fa fa-code"></i>
-        Changes to the files in
-        <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-          ${workspaceInfo.localFilesPath}
-        </span>
-        will show up in the <span class="link" onclick=${e => onChangeView(e, 'workspace')}>Workspace</span>
-        tab.
-      </p>
-    </div>`
 }
 
 function renderMakeCopyHint () {
@@ -616,11 +503,11 @@ function renderReadmeHint () {
 
 function renderSetupChecklist () {
   const hasTitle = _get(archive, 'info.title').trim()
-  const hasWorkspaceDirectory = workspaceInfo && workspaceInfo.localFilesPath
+  const hasSyncDirectory = _get(archive, 'info.userSettings.localSyncPath')
   const hasFavicon = isFaviconSet
 
   if (isGettingStartedDismissed) return ''
-  if (hasTitle && hasWorkspaceDirectory && hasFavicon) return ''
+  if (hasTitle && hasSyncDirectory && hasFavicon) return ''
 
   return yo`
     <div class="setup-info">
@@ -676,19 +563,19 @@ function renderSetupChecklist () {
         <div class="checklist-item">
           <h3 class="label">
             <i class="fa fa-code"></i>
-            ${hasWorkspaceDirectory ? 'Workspace' : 'Set workspace'} directory
-            ${hasWorkspaceDirectory ? yo`<i class="fa fa-check"></i>` : ''}
+            ${hasSyncDirectory ? 'Sync' : 'Set sync'} directory
+            ${hasSyncDirectory ? yo`<i class="fa fa-check"></i>` : ''}
           </h3>
 
           <p class="description">
-            ${hasWorkspaceDirectory
-              ? `These files are saved at ${workspaceInfo.localFilesPath}.`
-              : 'Choose where to save this project\'s files.'
+            ${hasSyncDirectory
+              ? `These files are synced at ${_get(archive, 'info.userSettings.localSyncPath')}.`
+              : 'Choose where to sync this project\'s files.'
             }
           </p>
 
-          <button class="btn" onclick=${onChangeWorkspaceDirectory}>
-            ${hasWorkspaceDirectory ? 'Change' : 'Set'} directory
+          <button class="btn" onclick=${onChangeSyncDirectory}>
+            ${hasSyncDirectory ? 'Change' : 'Set'} directory
           </button>
         </div>
       </div>
@@ -711,63 +598,57 @@ function renderSettingsView () {
   const editedGitRepository = settingsEditValues['repository']
   const isEditingGitRepository = editedGitRepository !== false && gitRepository !== editedGitRepository
 
-  const wsName = workspaceInfo ? workspaceInfo.name : ''
-  const editedWorkspaceName = settingsEditValues['workspaceName']
-  const isEditingWorkspaceName = editedWorkspaceName !== false && wsName !== editedWorkspaceName
-
-  let wsPath = workspaceInfo && workspaceInfo.localFilesPath
-  if (wsPath && wsPath.indexOf(' ') !== -1) wsPath = `"${wsPath}"`
-
-  let wsDirectoryHeading = ''
-  let wsDirectoryDescription = ''
-  if (workspaceInfo && workspaceInfo.localFilesPath) {
-    wsDirectoryHeading = yo`<h3 class="no-margin">Workspace directory</h3>`
-    wsDirectoryDescription = yo`
+  let syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  let syncDirectoryHeading = ''
+  let syncDirectoryDescription = ''
+  if (syncPath) {
+    syncDirectoryHeading = yo`<h3 class="no-margin">Sync directory</h3>`
+    syncDirectoryDescription = yo`
       <p>
-        This project${"'"}s files are saved on your computer at
-        <span class="link" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
-          ${workspaceInfo.localFilesPath}
+        This project${"'"}s files are sync on your computer at
+        <span class="link" onclick=${() => onOpenFolder(syncPath)}>
+          ${syncPath}
         </span>
 
-        <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(workspaceInfo.localFilesPath, '',  true)}>
+        <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(syncPath, '',  true)}>
           <i class="fa fa-clipboard"></i>
         </button>
 
         <form class="input-group">
-          <input disabled type="text" value=${workspaceInfo.localFilesPath} placeholder="Change workspace directory"/>
-          <button type="button" class="btn" onclick=${onChangeWorkspaceDirectory}>
-            Change workspace directory
+          <input disabled type="text" value=${syncPath} placeholder="Change sync directory"/>
+          <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
+            Change sync directory
           </button>
         </form>
       </p>`
-  } else if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
-    wsDirectoryHeading = yo`
+  } else if (_get(archive, 'info.localSyncPathIsMissing')) {
+    syncDirectoryHeading = yo`
       <h3 class="no-margin">
-        Workspace directory
+        Sync directory
         <i class="fa fa-exclamation-circle"></i>
       </h3>`
 
-    wsDirectoryDescription = yo`
+    syncDirectoryDescription = yo`
       <p>
         <em>
-          This project${"'"}s workspace directory was deleted or moved. (${workspaceInfo.missingLocalFilesPath})
+          This project${"'"}s sync directory was deleted or moved. (${archive.info.missingLocalSyncPath})
         </em>
 
         <form>
-          <button type="button" class="btn" onclick=${onChangeWorkspaceDirectory}>
+          <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
             Choose new directory
           </button>
         </form>
       </p>`
   } else {
-    wsDirectoryHeading = yo`<h3 class="no-margin">Set up workspace directory</h3>`
-    wsDirectoryDescription = yo`
+    syncDirectoryHeading = yo`<h3 class="no-margin">Set up sync directory</h3>`
+    syncDirectoryDescription = yo`
       <p>
-        Choose the directory where this project${"'"}s files will be saved.
+        Choose the directory where this project${"'"}s files will be synced.
 
         <form>
-          <button type="button" class="btn" onclick=${onChangeWorkspaceDirectory}>
-            Set workspace directory
+          <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
+            Set sync directory
           </button>
         </form>
       </p>`
@@ -854,50 +735,8 @@ function renderSettingsView () {
 
               <div class="module-content bordered">
                 <div>
-                  ${wsDirectoryHeading}
-                  ${wsDirectoryDescription}
-
-                  ${workspaceInfo
-                    ? yo`
-                      <div>
-                        <h3>Local preview URL</h3>
-
-                        <p>
-                          Preview unpublished changes at
-                          <a href="workspace://${workspaceInfo.name}">workspace://${workspaceInfo.name}</a>
-
-                          <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(`workspace://${workspaceInfo.name}`, '',  true)}>
-                            <i class="fa fa-clipboard"></i>
-                          </button>
-
-                          <form class="input-group">
-                            <input type="text" name="workspaceName" value=${isEditingWorkspaceName ? editedWorkspaceName : wsName} onkeyup=${e => onKeyupSettingsEdit(e, 'workspaceName')} placeholder="Change workspace name"/>
-                            <button disabled="${!isEditingWorkspaceName}" class="btn" onclick=${e => onSaveWorkspaceName(e)}>
-                              Save
-                            </button>
-                            ${settingsSuccess['workspaceName']
-                              ? yo`
-                                <span class="success-message">
-                                  <i class="fa fa-check"></i>
-                                </span>`
-                              : ''
-                            }
-                          </form>
-                        </p>
-
-                        <h3>Published URL</h3>
-
-                        <p>
-                          Published changes are shared on network at
-                          <a href=${archive.url} target="_blank">${shortenHash(archive.url)}</a>
-
-                          <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url, '', true)}>
-                            <i class="fa fa-clipboard"></i>
-                          </button>
-                        </p>
-                      </div>`
-                    : ''
-                  }
+                  ${syncDirectoryHeading}
+                  ${syncDirectoryDescription}
                 </div>
               </div>
             </div>`
@@ -959,10 +798,10 @@ function renderSettingsView () {
           </div>
         </div>
 
-        ${''/* TODO archive.info.repository && wsPath
+        ${''/* TODO archive.info.repository && syncPath
           ? yo`<div class="git-setup-commands">
             <h3>Setup the git repo in your workspace</h3>
-<pre><code>cd ${wsPath}
+<pre><code>cd ${syncPath}
 git init
 git remote add origin ${archive.info.repository}
 git fetch
@@ -1159,220 +998,6 @@ function renderNetworkView () {
   `
 }
 
-function renderWorkspaceView () {
-  if (!workspaceInfo) return ''
-
-  if (workspaceInfo && workspaceInfo.localFilesPathIsMissing) {
-    return yo`
-      <div class="container">
-        <div class="view revisions empty">
-          <div class="label">Workspace directory moved or deleted</div>
-
-          <p>
-            This project${"'"}s workspace directory ${workspaceInfo.missingLocalFilesPath ? `(${workspaceInfo.missingLocalFilesPath})` : ''} was deleted
-            or moved. <button class="link" onclick=${onChangeWorkspaceDirectory}>Choose a new workspace directory</button>
-          </p>
-        </div>
-      </div>
-    `
-  }
-
-  if (!workspaceInfo.revisions.length) {
-    return yo`
-      <div class="container">
-        <div class="view revisions empty">
-          <i class="fa fa-check"></i>
-
-          <div class="label">All changes published</div>
-
-          <p>
-            The files in <span onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)} class="link">${workspaceInfo.localFilesPath}</span>
-            have been published to
-            <a href=${archive.url} target="_blank">${shortenHash(archive.url)}</a>.
-          </p>
-        </div>
-      </div>
-    `
-  }
-
-  const renderRevisionContent = rev => {
-    let el = ''
-
-    if (!rev.isOpen) {
-      return ''
-    } else if (rev.diff && rev.diff.invalidEncoding) {
-      el = yo`
-        <div class="binary-diff-placeholder">
-<code>1010100111001100
-1110100101110100
-1001010100010111</code>
-          </div>`
-    } else if (rev.type === 'dir') {
-      const path = `${workspaceInfo.localFilesPath}${rev.path}`
-      el = yo`
-        <div class="folder">
-          <i class="fa fa-folder-open-o"></i>
-          <span class="action path" onclick=${() => onOpenFolder(path)}>
-            Open folder
-          </span>
-          <p><code>${path}</code></p>
-        </div>`
-    } else if (rev.diff && rev.diff.sourceTooLarge) {
-      el = yo`
-        <div class="source-too-large">
-          <a href="workspace://${workspaceInfo.name}${rev.path}" class="action" target="_blank">View file</a>
-          <p>This diff is too large to display.</p>
-        </div>`
-    } else if (!(rev.diffAdditions || rev.diffDeletions)) {
-      el = yo`
-        <div class="empty">
-          <i class="fa fa-code"></i>
-          <p>Empty file</p>
-        </div>
-      `
-    } else if (rev.diff) {
-      el = renderDiff(rev.diff, rev.path)
-    } else {
-      el = yo`
-        <div class="loading">
-          <p>Loading diff...</p>
-          <div class="spinner"></div>
-        </div>`
-    }
-
-    return yo`<div class="revision-content">${el}</div>`
-  }
-
-  const renderRevision = rev => (
-    yo`
-      <li class="revision">
-        <div class="revision-header ${rev.isOpen ? '' : 'collapsed'}" onclick=${() => onToggleRevisionCollapsed(rev)}>
-          <div class="revision-type ${rev.change}"></div>
-
-          <code class="path">
-            ${rev.type === 'file' ? rev.path.slice(1) : rev.path}
-          </code>
-
-          ${rev.diffAdditions
-            ? yo`<div class="changes-count additions">+${rev.diffAdditions}</div>`
-            : ''
-          }
-
-          ${rev.diffDeletions
-            ? yo`<div class="changes-count deletions">-${rev.diffDeletions}</div>`
-            : ''
-          }
-
-          <div class="actions">
-            <button
-              class="ignore-btn btn plain"
-              data-tooltip="Add to .datignore"
-              onclick=${e => onAddToDatIgnore(e, rev)}
-              >
-              <i class="fa fa-eye-slash"></i>
-            </button>
-
-            <div class="btn-group">
-              ${rev.change === 'del'
-                ? ''
-                : yo`
-                  <a
-                    onclick=${(e) => e.stopPropagation()}
-                    href="workspace://${workspaceInfo.name}${rev.path}"
-                    target="_blank"
-                    class="btn"
-                    data-tooltip="View file">
-                    View
-                  </a>`
-              }
-
-              <button class="btn" data-tooltip="Revert" onclick=${e => onRevertRevision(e, rev)}>
-                <i class="fa fa-undo"></i>
-              </button>
-
-              <button class="btn" data-tooltip="Publish" onclick=${e => onPublishRevision(e, rev)}>
-                <i class="fa fa-check"></i>
-              </button>
-            </div>
-
-            <div class="btn plain">
-              <i class="fa fa-chevron-${rev.isOpen ? 'down' : 'up'}"></i>
-            </div>
-          </div>
-        </div>
-
-        ${renderRevisionContent(rev)}
-      </li>
-    `
-  )
-
-  const revisions = workspaceInfo.revisions
-  const {additions, modifications, deletions} = workspaceInfo
-
-  return yo`
-    <div class="container">
-      <div class="view revisions">
-        <div class="revisions-header">
-          <span>Showing</span>
-
-          ${additions.length
-            ? yo`
-              <span class="change-count">
-                ${additions.length} ${pluralize(additions.length, 'addition')}
-              </span>`
-            : ''
-          }
-
-          ${additions.length && modifications.length ? ' , ' : ''}
-
-          ${modifications.length
-            ? yo`
-              <span class="change-count">
-                ${modifications.length} ${pluralize(modifications.length, 'modification')}
-              </span>`
-            : ''
-          }
-
-          ${modifications.length && deletions.length ? ' , ' : ''}
-
-          ${deletions.length
-            ? yo`
-              <span class="change-count">
-                ${deletions.length} ${pluralize(deletions.length, 'deletion')}
-              </span>`
-            : ''
-          }
-
-          <a href="workspace://${workspaceInfo.name}" target="_blank" class="btn preview-btn">
-            <span>Local preview</span>
-            <i class="fa fa-external-link"></i>
-          </a>
-
-          <div class="actions">
-            <button class="btn plain" onclick=${onExpandAllRevisions}>
-              <i class="fa fa-expand"></i>
-              Expand all
-            </button>
-
-            <button class="btn" onclick=${e => onRevertAllRevisions(e)}>
-              Revert all
-            </button>
-
-            <button class="btn success publish" onclick=${e => onPublishAllRevisions(e)}>
-              Publish all
-            </button>
-          </div>
-        </div>
-
-        ${revisions.length
-          ? yo`<ul class="revisions-list">${revisions.map(renderRevision)}</ul>`
-          : ''
-        }
-      </div>
-    </div>
-  `
-}
-
 function renderTabs () {
   const isOwner = _get(archive, 'info.isOwner')
   const baseUrl = `beaker://library/${archive.url}`
@@ -1381,18 +1006,6 @@ function renderTabs () {
       <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="tab ${activeView === 'files' ? 'active' : ''}">
         Files
       </a>
-
-      ${workspaceInfo
-        ? yo`
-          <a href=${baseUrl + '#workspace'} onclick=${e => onChangeView(e, 'workspace')} class="tab ${activeView === 'workspace' ? 'active' : ''}">
-            Workspace
-            ${workspaceInfo.revisions && workspaceInfo.revisions.length
-              ? yo`<span class="revisions-indicator"></span>`
-              : ''
-            }
-          </a>`
-        : ''
-      }
 
       <a href=${baseUrl + '#network'} onclick=${e => onChangeView(e, 'network')} class="tab ${activeView === 'network' ? 'active' : ''}">
         Network
@@ -1408,6 +1021,7 @@ function renderTabs () {
 function renderMenu () {
   const isOwner = _get(archive, 'info.isOwner')
   const isSaved = _get(archive, 'info.userSettings.isSaved')
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   return toggleable(yo`
     <div class="dropdown toggleable-container">
       <button class="btn primary nofocus toggleable">
@@ -1423,11 +1037,11 @@ function renderMenu () {
             </div>`
           : ''}
 
-        ${workspaceInfo && isSaved
+        ${isOwner && isSaved
           ? yo`
-            <div class="dropdown-item" onclick=${onChangeWorkspaceDirectory}>
+            <div class="dropdown-item" onclick=${onChangeSyncDirectory}>
               <i class="fa fa-folder-o"></i>
-              ${workspaceInfo.localFilesPath ? 'Change' : 'Set'} workspace directory
+              ${syncPath ? 'Change' : 'Set'} sync directory
             </div>`
           : ''
         }
@@ -1464,16 +1078,16 @@ function renderMenu () {
 }
 
 function renderEditButton () {
-  if (workspaceInfo && workspaceInfo.localFilesPath) {
+  if (_get(archive, 'info.userSettings.localSyncPath')) {
     return yo`
-      <button class="btn primary nofocus" onclick=${() => onOpenFolder(workspaceInfo.localFilesPath)}>
+      <button class="btn primary nofocus" onclick=${() => onOpenFolder(_get(archive, 'info.userSettings.localSyncPath'))}>
         Open folder
       </button>
     `
   } else if (_get(archive, 'info.isOwner')) {
     return yo`
-      <button class="btn primary nofocus" onclick=${onChangeWorkspaceDirectory}>
-        Set workspace directory
+      <button class="btn primary nofocus" onclick=${onChangeSyncDirectory}>
+        Set sync directory
       </button>`
   } else {
     return yo`
@@ -1510,11 +1124,7 @@ async function onMakeCopy () {
 
 async function addReadme () {
    const readme = `# ${archive.info.title || 'Untitled'}\n\n${archive.info.description || ''}`
-  // write file to the dat then restore to the workspace
   await archive.writeFile('/README.md', readme)
-  if (workspaceInfo && workspaceInfo.name) {
-    await beaker.workspaces.revert(0, workspaceInfo.name, {paths: ['/README.md']})
-  }
   await loadReadme()
   render()
 }
@@ -1555,9 +1165,6 @@ async function onSave () {
   } catch (e) {
     console.error(e)
     toast.create(`Could not save ${nickname} to your Library`, 'error')
-  }
-  if (archive.info.isOwner) {
-    await loadWorkspaceRevisions() // fetch any updates
   }
   render()
 }
@@ -1640,107 +1247,13 @@ function onClickFavicon (e) {
     x: rect.left,
     y: rect.bottom,
     async onSelect (imageData) {
-      // write file to the dat then restore to the workspace
       let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
       await archive2.writeFile('/favicon.ico', imageData)
-      if (workspaceInfo && workspaceInfo.name) {
-        await beaker.workspaces.revert(0, workspaceInfo.name, {paths: ['/favicon.ico']})
-      }
       faviconCacheBuster = Date.now()
       isFaviconSet = true
       render()
     }
   })
-}
-
-async function onAddToDatIgnore (e, node) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  let matchPattern = node.path.slice(1) // trim leading slash
-  await beaker.workspaces.addToDatignore(0, workspaceInfo.name, matchPattern)
-}
-
-function onExpandAllRevisions () {
-  workspaceInfo.revisions.forEach(rev => {
-    rev.isOpen = true
-    rev.isLoadingDiff = true
-  })
-  render()
-
-  workspaceInfo.revisions.forEach(async rev => {
-    await loadDiff(rev)
-    render()
-  })
-}
-
-async function onToggleRevisionCollapsed (rev) {
-  rev.isOpen = !rev.isOpen
-
-  // fetch the diff it hasn't been loaded yet
-  if (!rev.diff) {
-    // render loading state
-    rev.isLoadingDiff = true
-    render()
-
-    await loadDiff(rev)
-  }
-
-  render()
-}
-
-async function onPublishRevision (e, rev) {
-  e.stopPropagation()
-  e.preventDefault()
-
-  if (!rev) return
-  if (!confirm(`Publish ${rev.path.slice(1)}?`)) return
-  let paths = (rev.type === 'dir') ? [rev.path + '/'] : [rev.path] // add a trailing slash to identify folders
-  await beaker.workspaces.publish(0, workspaceInfo.name, {paths})
-}
-
-async function onPublishAllRevisions (e) {
-  e.stopPropagation()
-  e.preventDefault()
-
-  const paths = workspaceInfo.revisions.map(rev => (
-    (rev.type === 'dir') ? (rev.path + '/') : rev.path // add a trailing slash to identify folders
-  ))
-
-  if (!confirm(`Publish ${paths.length} ${pluralize(paths.length, 'change')}?`)) return
-  try {
-    await beaker.workspaces.publish(0, workspaceInfo.name, {paths})
-    toast.create('Changes published.', 'success')
-  } catch (e) {
-    console.error(e)
-    toast.create('Could not publish changes. Something went wrong.', 'error')
-    return
-  }
-  activeView = 'files'
-  window.history.pushState('', {}, `beaker://library/${archive.url}#files`)
-  clearRevisions()
-  render()
-}
-
-async function onRevertRevision (e, rev) {
-  e.stopPropagation()
-  e.preventDefault()
-
-  if (!rev) return
-  if (!confirm(`Revert changes to ${rev.path.slice(1)}?`)) return
-  let paths = (rev.type === 'dir') ? [rev.path + '/'] : [rev.path] // add a trailing slash to identify folders
-  await beaker.workspaces.revert(0, workspaceInfo.name, {paths})
-}
-
-async function onRevertAllRevisions (e) {
-  e.stopPropagation()
-  e.preventDefault()
-
-  const paths = workspaceInfo.revisions.map(rev => rev.path)
-
-  if (!confirm(`Revert ${paths.length} ${pluralize(paths.length, 'unpublished change')}?`)) return
-  await beaker.workspaces.revert(0, workspaceInfo.name, {paths})
-  clearRevisions()
 }
 
 async function onSetCurrentSource (node) {
@@ -1801,36 +1314,28 @@ function onCopy (str, successMessage = 'Copied to clipboard', tooltip = false) {
   }
 }
 
-async function onChangeWorkspaceDirectory () {
+async function onChangeSyncDirectory () {
   if (!archive.info.isOwner) return
-  let publishTargetUrl = archive.url
 
   // get an available path for a directory
-  let defaultPath
-  if (workspaceInfo && workspaceInfo.localFilesPath) {
-    defaultPath = workspaceInfo.localFilesPath
-  } else {
+  let defaultPath = _get(archive, 'info.userSettings.localSyncPath')
+  if (!defaultPath) {
     let basePath = await beaker.browser.getSetting('workspace_default_path')
     defaultPath = await beaker.browser.getDefaultLocalPath(basePath, archive.info.title)
   }
 
   // enter a loop
-  let localFilesPath
+  let localSyncPath
   while (true) {
     // open the create workspace popup
     let res = await workspacePopup.create({
       defaultPath,
       title: archive.info.title
     })
-    localFilesPath = res.localFilesPath
+    localSyncPath = res.localFilesPath
 
     try {
-      if (!workspaceInfo) {
-        workspaceInfo = await beaker.workspaces.create(0, {localFilesPath, publishTargetUrl})
-        filesBrowser.setWorkspaceInfo(workspaceInfo)
-      } else {
-        await beaker.workspaces.set(0, workspaceInfo.name, {localFilesPath})
-      }
+      await beaker.archives.setLocalSyncPath(archive.url, localSyncPath)
     } catch (e) {
       if (e.name === 'DestDirectoryNotEmpty') {
         alert('Folder not empty. Please choose an empty directory.')
@@ -1844,10 +1349,7 @@ async function onChangeWorkspaceDirectory () {
     break // success, break the loop
   }
 
-  await beaker.workspaces.setupFolder(0, workspaceInfo.name)
-  setupWorkspaceListeners()
-
-  window.history.pushState('', {}, `beaker://library/${publishTargetUrl}`)
+  window.history.pushState('', {}, `beaker://library/${archive.url}`)
   await setup()
   onOpenFolder(localFilesPath)
   render()
@@ -1856,9 +1358,6 @@ async function onChangeWorkspaceDirectory () {
 async function onAddFile (e) {
   const {src, dst} = e.detail
   const res = await DatArchive.importFromFilesystem({src, dst, ignore: ['dat.json'], inplaceImport: false})
-  if (workspaceInfo && workspaceInfo.name) {
-    await beaker.workspaces.revert(0, workspaceInfo.name, {paths: res.addedFiles})
-  }
 }
 
 async function onRenameFile (e) {
@@ -1867,7 +1366,6 @@ async function onRenameFile (e) {
     const to = setTimeout(() => toast.create('Renaming...'), 500) // if it takes a while, toast
     const newPath = path.split('/').slice(0, -1).concat(newName).join('/')
     await archive.rename(path, newPath)
-    await beaker.workspaces.revert(0, workspaceInfo.name, {paths: [path, newPath]})
     clearTimeout(to)
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
@@ -1884,7 +1382,6 @@ async function onDeleteFile (e) {
     } else {
       await archive.unlink(path)
     }
-    await beaker.workspaces.revert(0, workspaceInfo.name, {paths: [path]})
 
     clearTimeout(to)
     toast.create(`Deleted ${path}`)
@@ -1912,34 +1409,6 @@ async function onKeyupHeaderEdit (e, name) {
 function onKeyupSettingsEdit (e, name) {
   settingsEditValues[name] = e.target.value
   render()
-}
-
-async function onSaveWorkspaceName (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  let newName = e.target.form.querySelector('input').value
-  try {
-    await beaker.workspaces.set(
-      0,
-      workspaceInfo.name,
-      { name: newName,
-        localFilesPath: workspaceInfo.localFilesPath,
-        publishTargetUrl: workspaceInfo.publishTargetUrl
-      }
-    )
-    settingsEditValues['workspaceName'] = false
-    settingsSuccess['workspaceName'] = true
-    workspaceInfo.name = newName
-    render()
-
-    setTimeout(() => {
-      settingsSuccess['workspaceName'] = false
-      render()
-    }, 4000)
-  } catch (e) {
-    console.log(e)
-  }
 }
 
 async function onSaveSettingsEdit (e, name) {
@@ -1981,21 +1450,6 @@ async function onFilesChanged () {
 
   // update readme
   loadReadme()
-
-  // update revisions
-  await loadWorkspaceRevisions()
-  if (activeView === 'workspace') {
-    render()
-  }
-}
-
-async function onWorkspaceChanged () {
-  await loadWorkspaceRevisions()
-  render()
-}
-
-function clearRevisions() {
-  workspaceInfo.revisions = []
 }
 
 function onNetworkChanged (e) {

@@ -156,14 +156,14 @@ export default {
       // request from beaker internal sites: give all data
       if (this.sender.getURL().startsWith('beaker:')) {
         // check that the local sync path is valid
-        if (info && info.localSyncPath) {
+        if (info && info.userSettings.localSyncPath) {
           const stat = await new Promise(resolve => {
-            fs.stat(ws.localSyncPath, (err, st) => resolve(st))
+            fs.stat(info.userSettings.localSyncPath, (err, st) => resolve(st))
           })
           if (!stat || !stat.isDirectory()) {
             info.localSyncPathIsMissing = true
-            info.missingLocalSyncPath = ws.localSyncPath // store on other attr
-            info.localSyncPath = undefined // unset to avoid accidents
+            info.missingLocalSyncPath = info.userSettings.localSyncPath // store on other attr
+            info.userSettings.localSyncPath = undefined // unset to avoid accidents
           }
         }
         return info
