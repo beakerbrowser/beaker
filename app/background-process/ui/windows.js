@@ -81,10 +81,12 @@ export async function setup () {
 
   if (!isTestDriverActive && (customStartPage === 'previous' || !previousSessionState.cleanExit && userWantsToRestoreSession())) {
     restoreBrowsingSession(previousSessionState)
-  } else {
+  } else if (previousSessionState.windows[0]) {
     // use the last session's window position
     let {x, y, width, height} = previousSessionState.windows[0]
     createShellWindow({x, y, width, height})
+  } else {
+    createShellWindow()
   }
 }
 
