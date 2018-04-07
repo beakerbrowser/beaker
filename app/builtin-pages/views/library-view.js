@@ -1351,7 +1351,7 @@ async function onChangeSyncDirectory () {
 
   window.history.pushState('', {}, `beaker://library/${archive.url}`)
   await setup()
-  onOpenFolder(localFilesPath)
+  onOpenFolder(localSyncPath)
   render()
 }
 
