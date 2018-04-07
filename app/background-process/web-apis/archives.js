@@ -102,16 +102,6 @@ export default {
     await archivesDb.setUserSettings(0, key, {localSyncPath})
   },
 
-  async configureLocalSync (key, {folderToArchive}) {
-    var key = datLibrary.fromURLToKey(key)
-    var archive
-    await timer(3e3, async (checkin) => { // put a max 3s timeout on loading the dat
-      checkin('searching for dat')
-      archive = await datLibrary.getOrLoadArchive(key)
-    })
-    folderSync.configureFolderToArchiveWatcher(archive, folderToArchive)
-  },
-
   // publishing
   // =
 

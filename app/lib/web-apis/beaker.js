@@ -71,7 +71,6 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.delete = archivesRPC.delete
   beaker.archives.list = archivesRPC.list
   beaker.archives.setLocalSyncPath = archivesRPC.setLocalSyncPath
-  beaker.archives.configureLocalSync = archivesRPC.configureLocalSync
   beaker.archives.publish = archivesRPC.publish
   beaker.archives.unpublish = archivesRPC.unpublish
   beaker.archives.listPublished = archivesRPC.listPublished

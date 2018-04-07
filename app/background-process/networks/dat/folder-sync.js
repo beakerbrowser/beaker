@@ -52,15 +52,16 @@ export function syncFolderToArchive (archive, opts = {}) {
 }
 
 // attach/detach a watcher on the local folder and sync it to the dat
-export function configureFolderToArchiveWatcher (archive, enabled) {
-  if (!archive.localSyncPath) return // sanity check
+export function configureFolderToArchiveWatcher (archive) {
+  console.log('configureFolderToArchiveWatcher()', archive.localSyncPath, !!archive.stopWatchingLocalFolder)
 
-  if (!enabled && archive.stopWatchingLocalFolder) {
+  if (archive.stopWatchingLocalFolder) {
     // stop watching
     archive.stopWatchingLocalFolder()
     archive.stopWatchingLocalFolder = null
   }
-  else if (enabled && !archive.stopWatchingLocalFolder) {
+ 
+  if (archive.localSyncPath) {
     // start watching
     var scopedFS = scopedFSes.get(archive.localSyncPath)
     archive.stopWatchingLocalFolder = scopedFS.watch('/', path => {

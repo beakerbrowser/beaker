@@ -17,7 +17,7 @@ import {throttle, debounce} from '../../../lib/functions'
 // dat modules
 import * as archivesDb from '../../dbs/archives'
 import * as datGC from './garbage-collector'
-import {syncArchiveToFolder, syncFolderToArchive} from './folder-sync'
+import {syncArchiveToFolder, configureFolderToArchiveWatcher} from './folder-sync'
 import {addArchiveSwarmLogging} from './logging-utils'
 import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
@@ -608,7 +608,13 @@ function configureAutoDownload (archive, userSettings) {
 }
 
 function configureLocalSync (archive, userSettings) {
+  let old = archive.localSyncPath
   archive.localSyncPath = userSettings.localSyncPath
+
+  if (archive.localSyncPath !== old) {
+    // configure the local folder watcher if a change occurred
+    configureFolderToArchiveWatcher(archive)
+  }
 }
 
 function stopAutodownload (archive) {
