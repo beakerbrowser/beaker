@@ -111,6 +111,7 @@ function renderGeneral () {
       ${renderWorkspacePathSettings()}
       ${renderProtocolSettings()}
       ${renderOnStartupSettings()}
+      ${renderDefaultDatIgnoreSettings()}
     </div>
   `
 }
@@ -160,6 +161,20 @@ function renderOnStartupSettings () {
           Show tabs from your last session
         </label>
       </div>
+    </div>
+  `
+}
+
+function renderDefaultDatIgnoreSettings () {
+  return yo`
+    <div class="section default-dat-ignore">
+      <h2 id="default-dat-ignore" class="subtitle-heading">Default .datignore</h2>
+
+      <p>
+        Specify which files should be excluded from your published sites.
+      </p>
+
+      <textarea onchange=${onChangeDefaultDatIgnore}>${settings.default_dat_ignore}</textarea>
     </div>
   `
 }
@@ -405,6 +420,15 @@ async function onUpdateDefaultWorkspaceDirectory () {
     beaker.browser.setSetting('workspace_default_path', settings.workspace_default_path)
     renderToPage()
     toast.create('Workspace directory updated')
+  }
+}
+
+async function onChangeDefaultDatIgnore (e) {
+  try {
+    await beaker.browser.setSetting('default_dat_ignore', e.target.value)
+    toast.create('Default .datignore updated')
+  } catch (e) {
+    console.error(e)
   }
 }
 

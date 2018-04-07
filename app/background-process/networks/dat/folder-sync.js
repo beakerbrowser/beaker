@@ -4,6 +4,7 @@ import * as diff from 'diff'
 import anymatch from 'anymatch'
 import fs from 'fs'
 import path from 'path'
+import * as settingsDb from '../../dbs/settings'
 import {isFileNameBinary, isFileContentBinary} from '../../../lib/mime'
 import * as scopedFSes from '../../../lib/bg/scoped-fses'
 import {
@@ -163,6 +164,9 @@ export async function assertSafePath (p) {
 // read a datignore from a fs space and turn it into anymatch rules
 export async function readDatIgnore (fs) {
   var rulesRaw = await readFile(fs, '.datignore')
+  if (!rulesRaw) {
+    rulesRaw = await settingsDb.get('default_dat_ignore')
+  }
   return rulesRaw.split('\n')
     .filter(Boolean)
     .map(rule => {
