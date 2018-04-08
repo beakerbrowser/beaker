@@ -104,7 +104,7 @@ export default {
     // sync
     if (opts.syncFolderToArchive) {
       var archive = await datLibrary.getOrLoadArchive(key)
-      folderSync.syncFolderToArchive(archive)
+      await folderSync.syncFolderToArchive(archive)
     }
   },
 

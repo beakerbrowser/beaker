@@ -17,7 +17,7 @@ import {throttle, debounce} from '../../../lib/functions'
 // dat modules
 import * as archivesDb from '../../dbs/archives'
 import * as datGC from './garbage-collector'
-import {syncArchiveToFolder, configureFolderToArchiveWatcher} from './folder-sync'
+import * as folderSync from './folder-sync'
 import {addArchiveSwarmLogging} from './logging-utils'
 import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
@@ -83,6 +83,14 @@ export function setup ({logfilePath}) {
       configureAutoDownload(archive, userSettings)
       configureLocalSync(archive, userSettings)
     }
+  })
+  folderSync.events.on('sync', (key, direction) => {
+    archivesEvents.emit('folder-sync', {
+      details: {
+        url: `dat://${datEncoding.toStr(key)}`,
+        direction
+      }
+    })
   })
 
   // setup the archive swarm
@@ -348,7 +356,7 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
 
   // wire up events
   archive.pullLatestArchiveMeta = debounce(opts => pullLatestArchiveMeta(archive, opts), 1e3)
-  archive.syncArchiveToFolder = debounce((opts) => syncArchiveToFolder(archive, opts), 1e3)
+  archive.syncArchiveToFolder = debounce((opts) => folderSync.syncArchiveToFolder(archive, opts), 1e3)
   archive.fileActStream = pda.watch(archive)
   archive.fileActStream.on('data', ([event, data]) => {
     if (event === 'changed') {
@@ -613,7 +621,7 @@ function configureLocalSync (archive, userSettings) {
 
   if (archive.localSyncPath !== old) {
     // configure the local folder watcher if a change occurred
-    configureFolderToArchiveWatcher(archive)
+    folderSync.configureFolderToArchiveWatcher(archive)
   }
 }
 

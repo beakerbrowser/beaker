@@ -4,6 +4,7 @@ import * as diff from 'diff'
 import anymatch from 'anymatch'
 import fs from 'fs'
 import path from 'path'
+import EventEmitter from 'events'
 import * as settingsDb from '../../dbs/settings'
 import {isFileNameBinary, isFileContentBinary} from '../../../lib/mime'
 import * as scopedFSes from '../../../lib/bg/scoped-fses'
@@ -28,6 +29,8 @@ const DISALLOWED_SAVE_PATH_NAMES = [
 
 // exported api
 // =
+
+export var events = new EventEmitter()
 
 // sync dat to the folder
 // - opts
@@ -213,9 +216,11 @@ async function sync (archive, toArchive, opts = {}) {
   if (toArchive) {
     console.log('syncing to archive', diff) // DEBUG
     await dft.applyLeft({fs: archive}, {fs: scopedFS}, diff)
+    events.emit('sync', archive.key, 'archive')
   } else {
     console.log('syncing to folder', diff) // DEBUG
     await dft.applyRight({fs: archive}, {fs: scopedFS}, diff)
+    events.emit('sync', archive.key, 'folder')
   }
 }
 
