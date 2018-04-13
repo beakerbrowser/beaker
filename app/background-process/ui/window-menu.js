@@ -155,6 +155,20 @@ export function buildWindowMenu (opts = {}) {
         click: function (item, win) {
           if (win) win.webContents.send('command', 'edit:find')
         }
+      },
+      {
+        label: 'Find Next',
+        accelerator: 'CmdOrCtrl+G',
+        click: function (item, win) {
+          if (win) win.webContents.send('command', 'edit:find-next')
+        }
+      },
+      {
+        label: 'Find Previous',
+        accelerator: 'Shift+CmdOrCtrl+G',
+        click: function (item, win) {
+          if (win) win.webContents.send('command', 'edit:find-previous')
+        }
       }
     ]
   }
