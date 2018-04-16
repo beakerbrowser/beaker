@@ -11,7 +11,7 @@ import FilesBrowser from '../com/files-browser2'
 import toggleable from '../com/toggleable'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
-import * as workspacePopup from '../com/library-workspace-popup'
+import * as localsyncpathPopup from '../com/library-localsyncpath-popup'
 import * as copydatPopup from '../com/library-copydat-popup'
 import * as contextInput from '../com/context-input'
 import * as faviconPicker from '../com/favicon-picker'
@@ -1324,29 +1324,20 @@ async function onChangeSyncDirectory () {
     defaultPath = await beaker.browser.getDefaultLocalPath(basePath, archive.info.title)
   }
 
-  // enter a loop
-  let localSyncPath
-  while (true) {
-    // open the create workspace popup
-    let res = await workspacePopup.create({
-      defaultPath,
-      title: archive.info.title
-    })
-    localSyncPath = res.localFilesPath
+  // open the create folder-picker popup
+  let res = await localsyncpathPopup.create({
+    defaultPath,
+    archiveKey: archive.info.key,
+    title: archive.info.title
+  })
+  let localSyncPath = res.path
 
-    try {
-      await beaker.archives.setLocalSyncPath(archive.url, localSyncPath)
-    } catch (e) {
-      if (e.name === 'DestDirectoryNotEmpty') {
-        alert('Folder not empty. Please choose an empty directory.')
-        continue // show the popup again
-      } else {
-        toplevelError = createToplevelError(e)
-        render()
-        return // failure, stop trying
-      }
-    }
-    break // success, break the loop
+  try {
+    await beaker.archives.setLocalSyncPath(archive.url, localSyncPath)
+  } catch (e) {
+    toplevelError = createToplevelError(e)
+    render()
+    return
   }
 
   window.history.pushState('', {}, `beaker://library/${archive.url}`)

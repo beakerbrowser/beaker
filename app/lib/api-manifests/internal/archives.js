@@ -10,6 +10,7 @@ export default {
   list: 'promise',
 
   // folder sync
+  validateLocalSyncPath: 'promise',
   setLocalSyncPath: 'promise',
 
   // publishing

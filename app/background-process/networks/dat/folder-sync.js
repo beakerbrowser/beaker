@@ -37,6 +37,7 @@ export var events = new EventEmitter()
 //   - shallow: bool, dont descend into changed folders (default true)
 //   - compareContent: bool, compare the actual content (default true)
 //   - paths: Array<string>, a whitelist of files to compare
+//   - localSyncPath: string, override the archive localSyncPath
 //   - addOnly: bool, dont modify or remove any files (default false)
 export function syncArchiveToFolder (archive, opts = {}) {
   if (archive.syncFolderToArchiveTimeout) return console.log('Not running, locked')
@@ -48,6 +49,7 @@ export function syncArchiveToFolder (archive, opts = {}) {
 //   - shallow: bool, dont descend into changed folders (default true)
 //   - compareContent: bool, compare the actual content (default true)
 //   - paths: Array<string>, a whitelist of files to compare
+//   - localSyncPath: string, override the archive localSyncPath
 //   - addOnly: bool, dont modify or remove any files (default false)
 export function syncFolderToArchive (archive, opts = {}) {
   if (!archive.writable) throw new ArchiveNotWritableError()
@@ -86,9 +88,11 @@ export function configureFolderToArchiveWatcher (archive) {
 //   - shallow: bool, dont descend into changed folders (default true)
 //   - compareContent: bool, compare the actual content (default true)
 //   - paths: Array<string>, a whitelist of files to compare
+//   - localSyncPath: string, override the archive localSyncPath
 export async function diffListing (archive, opts={}) {
-  if (!archive.localSyncPath) return // sanity check
-  var scopedFS = scopedFSes.get(archive.localSyncPath)
+  var localSyncPath = opts.localSyncPath || archive.localSyncPath
+  if (!localSyncPath) return // sanity check
+  var scopedFS = scopedFSes.get(localSyncPath)
   opts = massageDiffOpts(opts)
 
   // build ignore rules
@@ -192,10 +196,12 @@ export async function readDatIgnore (fs) {
 //   - shallow: bool, dont descend into changed folders (default true)
 //   - compareContent: bool, compare the actual content (default true)
 //   - paths: Array<string>, a whitelist of files to compare
+//   - localSyncPath: string, override the archive localSyncPath
 //   - addOnly: bool, dont modify or remove any files (default false)
 async function sync (archive, toArchive, opts = {}) {
-  if (!archive.localSyncPath) return // sanity check
-  var scopedFS = scopedFSes.get(archive.localSyncPath)
+  var localSyncPath = opts.localSyncPath || archive.localSyncPath
+  if (!localSyncPath) return // sanity check
+  var scopedFS = scopedFSes.get(localSyncPath)
   opts = massageDiffOpts(opts)
 
   // build ignore rules

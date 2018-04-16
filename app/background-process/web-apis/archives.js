@@ -82,9 +82,41 @@ export default {
   // folder sync
   // =
 
+  async validateLocalSyncPath (key, localSyncPath) {
+    var key = datLibrary.fromURLToKey(key)
+    localSyncPath = path.normalize(localSyncPath)
+
+    // make sure the path is good
+    try {
+      await folderSync.assertSafePath(localSyncPath)
+    } catch (e) {
+      if (e.notFound) {
+        return {doesNotExist: true}
+      }
+      throw e
+    }
+
+    // check for conflicts
+    var archive = await datLibrary.getOrLoadArchive(key)
+    var diff = await folderSync.diffListing(archive, {localSyncPath})
+    diff = diff.filter(d => d.change === 'mod' && d.path !== '/dat.json')
+    if (diff.length) {
+      return {hasConflicts: true, conflicts: diff.map(d => d.path)}
+    }
+
+    return {}
+  },
+
   async setLocalSyncPath (key, localSyncPath, opts = {}) {
     var key = datLibrary.fromURLToKey(key)
     localSyncPath = path.normalize(localSyncPath)
+
+    // load the archive
+    var archive
+    await timer(3e3, async (checkin) => { // put a max 3s timeout on loading the dat
+      checkin('searching for dat')
+      archive = await datLibrary.getOrLoadArchive(key)
+    })
 
     // make sure the path is good
     try {
@@ -101,11 +133,9 @@ export default {
     // update the record
     await archivesDb.setUserSettings(0, key, {localSyncPath})
 
-    // sync
-    if (opts.syncFolderToArchive) {
-      var archive = await datLibrary.getOrLoadArchive(key)
-      await folderSync.syncFolderToArchive(archive)
-    }
+    // merge the files
+    await folderSync.syncArchiveToFolder(archive, {localSyncPath, paths: ['/dat.json']}) // archive dat.json -> folder
+    await folderSync.syncFolderToArchive(archive, {localSyncPath, addOnly: true}) // folder -> archive (add-only)
   },
 
   // publishing
