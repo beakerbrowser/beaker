@@ -44,7 +44,7 @@ async function waitForSync (direction) {
   `)
 }
 
-test('setLocalSyncPath (no folder->archive sync)', async t => {
+test('setLocalSyncPath', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
     DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false })
@@ -54,13 +54,13 @@ test('setLocalSyncPath (no folder->archive sync)', async t => {
 
   // set
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(createdFilePath)}", {syncFolderToArchive: false})
+    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(createdFilePath)}")
   `)
   t.falsy(res)
 
   // no sync occurred
   const dir = jetpack.cwd(createdFilePath)
-  t.falsy(await dir.existsAsync('dat.json'))
+  t.truthy(await dir.existsAsync('dat.json'))
 
   // check info
   var res = await mainTab.executeJavascript(`

@@ -70,6 +70,7 @@ export function configureFolderToArchiveWatcher (archive) {
     // start watching
     var scopedFS = scopedFSes.get(archive.localSyncPath)
     archive.stopWatchingLocalFolder = scopedFS.watch('/', path => {
+      console.log('changed detected', path)
       // disable sync-to-folder for 5 seconds
       if (archive.syncFolderToArchiveTimeout) {
         clearTimeout(archive.syncFolderToArchiveTimeout)

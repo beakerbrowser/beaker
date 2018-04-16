@@ -130,11 +130,11 @@ export default {
       }
     }
 
-    // update the record
-    await archivesDb.setUserSettings(0, key, {localSyncPath})
-
     // merge the archive & the folder
     await folderSync.mergeArchiveAndFolder(archive, localSyncPath)
+
+    // update the record
+    await archivesDb.setUserSettings(0, key, {localSyncPath})
   },
 
   // publishing
