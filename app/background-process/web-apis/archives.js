@@ -133,9 +133,8 @@ export default {
     // update the record
     await archivesDb.setUserSettings(0, key, {localSyncPath})
 
-    // merge the files
-    await folderSync.syncArchiveToFolder(archive, {localSyncPath, paths: ['/dat.json']}) // archive dat.json -> folder
-    await folderSync.syncFolderToArchive(archive, {localSyncPath, addOnly: true}) // folder -> archive (add-only)
+    // merge the archive & the folder
+    await folderSync.mergeArchiveAndFolder(archive, localSyncPath)
   },
 
   // publishing

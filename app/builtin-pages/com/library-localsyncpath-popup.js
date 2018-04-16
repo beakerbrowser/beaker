@@ -77,7 +77,7 @@ function render () {
             </p>
 
             <div class="path-container">
-              <input class="path nofocus" name="path" value=${path} />
+              <input class="path nofocus" name="path" value=${path} onchange=${onChangeDirectory} />
 
               <button onclick=${onSelectDirectory} class="btn nofocus tooltip-container" data-tooltip="Choose different directory">
                 <i class="fa fa-pencil"></i>
@@ -124,6 +124,12 @@ function onClickWrapper (e) {
   if (e.target.id === 'library-localsyncpath-popup') {
     destroy()
   }
+}
+
+async function onChangeDirectory (e) {
+  localSyncPath = e.target.value
+  await checkForConflicts()
+  update()
 }
 
 async function onSelectDirectory (e) {

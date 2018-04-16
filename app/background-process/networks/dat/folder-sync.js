@@ -187,6 +187,13 @@ export async function readDatIgnore (fs) {
     .map(path.normalize)
 }
 
+// put the dat.json into the folder and then merge files, with preference to folder files
+export async function mergeArchiveAndFolder (archive, localSyncPath) {
+  await sync(archive, false, {localSyncPath, paths: ['/dat.json']}) // archive dat.json -> folder
+  await sync(archive, false, {localSyncPath, addOnly: true}) // archive -> folder (add-only)
+  await sync(archive, true, {localSyncPath}) // folder -> archive
+}
+
 // internal methods
 // =
 
@@ -212,22 +219,20 @@ async function sync (archive, toArchive, opts = {}) {
     opts.filter = (filepath) => anymatch(ignoreRules, filepath)
   }
 
+  // choose direction
+  var left = toArchive ? {fs: scopedFS} : {fs: archive}
+  var right = toArchive ? {fs: archive} : {fs: scopedFS}
+
   // run diff
-  var diff = await dft.diff({fs: archive}, {fs: scopedFS}, opts)
+  var diff = await dft.diff(left, right, opts)
   if (opts.addOnly) {
     diff = diff.filter(d => d.change === 'add')
   }
+  console.log('syncing to', toArchive ? 'archive' : 'folder', diff) // DEBUG
 
   // sync data
-  if (toArchive) {
-    console.log('syncing to archive', diff) // DEBUG
-    await dft.applyLeft({fs: archive}, {fs: scopedFS}, diff)
-    events.emit('sync', archive.key, 'archive')
-  } else {
-    console.log('syncing to folder', diff) // DEBUG
-    await dft.applyRight({fs: archive}, {fs: scopedFS}, diff)
-    events.emit('sync', archive.key, 'folder')
-  }
+  await dft.applyRight(left, right, diff)
+  events.emit('sync', archive.key, toArchive ? 'archive' : 'folder')
 }
 
 function makeDiffFilterByPaths (targetPaths) {
