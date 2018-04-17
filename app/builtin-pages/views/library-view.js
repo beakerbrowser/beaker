@@ -54,7 +54,7 @@ var headerEditValues = {
 var toplevelError
 var copySuccess = false
 var isFaviconSet = true
-var isGettingStartedDismissed = false
+var isGettingStarted = false
 var arePeersCollapsed = true
 var faviconCacheBuster
 
@@ -103,7 +103,6 @@ async function setup () {
     }
 
     // check if the favicon is set
-    isGettingStartedDismissed = (localStorage[archive.info.key + '-gsd'] === '1')
     if (_get(archive, 'info.isOwner')) {
       let favicon = await beaker.sitedata.get(archive.url, 'favicon')
       if (!favicon) favicon = await (archive.stat('/favicon.ico').catch(() => null))
@@ -502,11 +501,11 @@ function renderReadmeHint () {
 }
 
 function renderSetupChecklist () {
+  if (!isGettingStarted) return ''
+
   const hasTitle = _get(archive, 'info.title').trim()
   const hasSyncDirectory = _get(archive, 'info.userSettings.localSyncPath')
   const hasFavicon = isFaviconSet
-
-  if (isGettingStartedDismissed) return ''
   if (hasTitle && hasSyncDirectory && hasFavicon) return ''
 
   return yo`
@@ -1227,8 +1226,8 @@ function onDismissGettingStarted (e) {
   document.querySelector('.setup-info').classList.add('hide-animation')
 
   setTimeout(() => {
-    localStorage[archive.info.key + '-gsd'] = '1'
-    isGettingStartedDismissed = true
+    isGettingStarted = false
+    window.location.hash = '' // remove #setup in case the user reloads
     render()
   }, 450)
 }
@@ -1495,12 +1494,14 @@ function onPopState (e) {
 //   (eg onChangeView and the files-browser onClickNode)
 // but it works entirely by reading the current url
 async function readViewStateFromUrl () {
-
   // active view
   let oldView = activeView
   let hash = window.location.hash
   if (hash.startsWith('#')) hash = hash.slice(1)
-  if (hash) {
+  if (hash === 'setup') {
+    isGettingStarted = true
+    activeView = 'files'
+  } else if (hash) {
     activeView = hash
   } else {
     activeView = 'files'
