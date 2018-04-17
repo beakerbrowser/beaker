@@ -108,7 +108,7 @@ function renderGeneral () {
   return yo`
     <div class="view">
       ${renderAutoUpdater()}
-      ${renderWorkspacePathSettings()}
+      ${renderDefaultSyncPathSettings()}
       ${renderProtocolSettings()}
       ${renderOnStartupSettings()}
       ${renderDefaultDatIgnoreSettings()}
@@ -116,10 +116,10 @@ function renderGeneral () {
   `
 }
 
-function renderWorkspacePathSettings () {
+function renderDefaultSyncPathSettings () {
   return yo`
     <div class="section">
-      <h2 id="workspace-path" class="subtitle-heading">Default workspace directory</h2>
+      <h2 class="subtitle-heading">Default working directory</h2>
 
       <p>
         Choose the default directory where your projects will be saved.
@@ -127,7 +127,7 @@ function renderWorkspacePathSettings () {
 
       <p>
         <code>${settings.workspace_default_path}</code>
-        <button class="btn" onclick=${onUpdateDefaultWorkspaceDirectory}>
+        <button class="btn" onclick=${onUpdateWorkspaceDefaultPath}>
           Choose directory
         </button>
       </p>
@@ -407,7 +407,7 @@ function onToggleAutoUpdate () {
   beaker.browser.setSetting('auto_update_enabled', settings.auto_update_enabled)
 }
 
-async function onUpdateDefaultWorkspaceDirectory () {
+async function onUpdateWorkspaceDefaultPath () {
   let path = await beaker.browser.showOpenDialog({
     title: 'Select a folder',
     buttonLabel: 'Select folder',
@@ -419,7 +419,7 @@ async function onUpdateDefaultWorkspaceDirectory () {
     settings.workspace_default_path = path
     beaker.browser.setSetting('workspace_default_path', settings.workspace_default_path)
     renderToPage()
-    toast.create('Workspace directory updated')
+    toast.create('Default working directory updated')
   }
 }
 

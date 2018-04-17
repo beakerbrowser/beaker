@@ -48,7 +48,7 @@ const STEPS = [
   },
   {
     title: 'Create and host websites',
-    subtitle: 'Configure workspace settings',
+    subtitle: 'Configure working directory',
     description: 'Create and host websites from your computer. No server required!',
     content: () => yo`
       <div>

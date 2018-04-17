@@ -355,7 +355,7 @@ function renderFooter () {
 
             <div class="dropdown-item" onclick=${onChangeSyncDirectory}>
               <i class="fa fa-pencil"></i>
-              <span class="label">Change sync directory</span>
+              <span class="label">Change local directory</span>
             </div>
 
             <div class="dropdown-item" onclick=${() => onCopy(localSyncPath, 'Path copied to clipboard')}>
@@ -440,7 +440,7 @@ function renderFilesView () {
           ? yo`
             <div class="message info">
               <span>
-                This archive${"'"}s sync directory
+                This archive${"'"}s local directory
                 ${archive.info.missingLocalSyncPath ? `(${archive.info.missingLocalSyncPath})` : ''}
                 was moved or deleted.
               </span>
@@ -563,13 +563,13 @@ function renderSetupChecklist () {
         <div class="checklist-item">
           <h3 class="label">
             <i class="fa fa-code"></i>
-            ${hasSyncDirectory ? 'Sync' : 'Set sync'} directory
+            ${hasSyncDirectory ? 'Local' : 'Set local'} directory
             ${hasSyncDirectory ? yo`<i class="fa fa-check"></i>` : ''}
           </h3>
 
           <p class="description">
             ${hasSyncDirectory
-              ? `These files are synced at ${_get(archive, 'info.userSettings.localSyncPath')}.`
+              ? `These files are synced to ${_get(archive, 'info.userSettings.localSyncPath')}.`
               : 'Choose where to sync this project\'s files.'
             }
           </p>
@@ -599,13 +599,11 @@ function renderSettingsView () {
   const isEditingGitRepository = editedGitRepository !== false && gitRepository !== editedGitRepository
 
   let syncPath = _get(archive, 'info.userSettings.localSyncPath')
-  let syncDirectoryHeading = ''
   let syncDirectoryDescription = ''
   if (syncPath) {
-    syncDirectoryHeading = yo`<h3 class="no-margin">Sync directory</h3>`
     syncDirectoryDescription = yo`
       <p>
-        This project${"'"}s files are sync on your computer at
+        This project${"'"}s files are synced to
         <span class="link" onclick=${() => onOpenFolder(syncPath)}>
           ${syncPath}
         </span>
@@ -615,23 +613,17 @@ function renderSettingsView () {
         </button>
 
         <form class="input-group">
-          <input disabled type="text" value=${syncPath} placeholder="Change sync directory"/>
+          <input disabled type="text" value=${syncPath} placeholder="Change local directory"/>
           <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
-            Change sync directory
+            Change local directory
           </button>
         </form>
       </p>`
   } else if (_get(archive, 'info.localSyncPathIsMissing')) {
-    syncDirectoryHeading = yo`
-      <h3 class="no-margin">
-        Sync directory
-        <i class="fa fa-exclamation-circle"></i>
-      </h3>`
-
     syncDirectoryDescription = yo`
       <p>
         <em>
-          This project${"'"}s sync directory was deleted or moved. (${archive.info.missingLocalSyncPath})
+          <i class="fa fa-exclamation-circle"></i> This project${"'"}s local directory was deleted or moved. (${archive.info.missingLocalSyncPath})
         </em>
 
         <form>
@@ -641,14 +633,13 @@ function renderSettingsView () {
         </form>
       </p>`
   } else {
-    syncDirectoryHeading = yo`<h3 class="no-margin">Set up sync directory</h3>`
     syncDirectoryDescription = yo`
       <p>
-        Choose the directory where this project${"'"}s files will be synced.
+        Choose where to sync this project${"'"}s files.
 
         <form>
           <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
-            Set sync directory
+            Set local directory
           </button>
         </form>
       </p>`
@@ -728,14 +719,13 @@ function renderSettingsView () {
             <div class="module">
               <h2 class="module-heading">
                 <span>
-                  <i class="fa fa-code"></i>
-                  Workspace settings
+                  <i class="fa fa-folder-o"></i>
+                  Local directory
                 </span>
               </h2>
 
               <div class="module-content bordered">
                 <div>
-                  ${syncDirectoryHeading}
                   ${syncDirectoryDescription}
                 </div>
               </div>
@@ -1041,7 +1031,7 @@ function renderMenu () {
           ? yo`
             <div class="dropdown-item" onclick=${onChangeSyncDirectory}>
               <i class="fa fa-folder-o"></i>
-              ${syncPath ? 'Change' : 'Set'} sync directory
+              ${syncPath ? 'Change' : 'Set'} local directory
             </div>`
           : ''
         }
@@ -1087,7 +1077,7 @@ function renderEditButton () {
   } else if (_get(archive, 'info.isOwner')) {
     return yo`
       <button class="btn primary nofocus" onclick=${onChangeSyncDirectory}>
-        Set sync directory
+        Set local directory
       </button>`
   } else {
     return yo`

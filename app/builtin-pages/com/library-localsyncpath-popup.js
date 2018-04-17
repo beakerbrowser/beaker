@@ -1,5 +1,6 @@
 import yo from 'yo-yo'
 import {findParent} from '../../lib/fg/event-handlers'
+import {shortenHash} from '../../lib/strings'
 import closeIcon from '../icon/close'
 
 // globals
@@ -62,7 +63,7 @@ function render () {
       <form class="popup-inner" onsubmit=${onSubmit}>
         <div class="head">
           <span class="title">
-            Set workspace directory
+            Set local directory
           </span>
 
           <span title="Cancel" onclick=${destroy} class="close-btn square">
@@ -73,7 +74,7 @@ function render () {
         <div class="body">
           <div>
             <p>
-              The files for "${title}" will be saved at:
+              The files for "${title}" will be synced to:
             </p>
 
             <div class="path-container">
@@ -87,7 +88,7 @@ function render () {
             ${hasConflicts
               ? yo`
                 <div class="message error">
-                  Some files in the archive will be overwritten by files in this folder:
+                  Some files in dat://${shortenHash(archiveKey)} will be overwritten by files in this folder:
                   <ul>
                     ${conflicts.map(conflict => yo`<li>${conflict}</li>`)}
                   </ul>
