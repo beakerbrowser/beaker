@@ -7,7 +7,7 @@ CREATE TABLE profiles (
 CREATE TABLE archives (
   profileId INTEGER NOT NULL,
   key TEXT NOT NULL,
-  localPath TEXT,
+  localPath TEXT, -- deprecated
   isSaved INTEGER,
   createdAt INTEGER DEFAULT (strftime('%s', 'now'))
 );
@@ -16,12 +16,12 @@ CREATE TABLE archives_meta (
   key TEXT PRIMARY KEY,
   title TEXT,
   description TEXT,
-  forkOf TEXT,
-  createdByUrl TEXT,
-  createdByTitle TEXT,
+  forkOf TEXT, -- deprecated
+  createdByUrl TEXT, -- deprecated
+  createdByTitle TEXT, -- deprecated
   mtime INTEGER,
-  metaSize INTEGER,
-  stagingSize INTEGER,
+  metaSize INTEGER, -- deprecated
+  stagingSize INTEGER, -- deprecated
   isOwner INTEGER
 );
 

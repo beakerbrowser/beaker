@@ -1,5 +1,6 @@
 
 -- log of the user's app installations
+-- deprecated
 CREATE TABLE apps_log (
   profileId INTEGER NOT NULL,
   name TEXT NOT NULL,

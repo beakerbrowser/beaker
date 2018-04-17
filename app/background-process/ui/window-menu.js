@@ -44,7 +44,6 @@ export function setApplicationMenu (opts = {}) {
 
 export function buildWindowMenu (opts = {}) {
   const isDat = opts.url && opts.url.startsWith('dat://')
-  const isWorkspace = opts.url && opts.url.startsWith('workspace://')
 
   var darwinMenu = {
     label: 'Beaker',
@@ -268,7 +267,7 @@ export function buildWindowMenu (opts = {}) {
     },
     {
       label: 'Toggle Live Reloading',
-      enabled: !!isDat || !!isWorkspace,
+      enabled: !!isDat,
       click: function (item, win) {
         if (win) win.webContents.send('command', 'view:toggle-live-reloading')
       }

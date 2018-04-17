@@ -9,7 +9,7 @@ import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
 // import {AppsMenuNavbarBtn} from './navbar/apps-menu' TODO(apps) restore when we bring back apps -prf
 import {DatsiteMenuNavbarBtn} from './navbar/datsite-menu'
-import {WorkspacesiteMenuNavbarBtn} from './navbar/workspacesite-menu'
+import {SyncfolderMenuNavbarBtn} from './navbar/syncfolder-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
 import {findParent} from '../../lib/fg/event-handlers'
@@ -36,7 +36,7 @@ var browserMenuNavbarBtn = null
 var bookmarkMenuNavbarBtn = null
 // var appsMenuNavbarBtn = null TODO(apps) restore when we bring back apps -prf
 var datsiteMenuNavbarBtn = null
-var workspacesiteMenuNavbarBtn = null
+var syncfolderMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
 
 var isLocationHighlighted = false
@@ -56,7 +56,7 @@ export function setup () {
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   datsiteMenuNavbarBtn = new DatsiteMenuNavbarBtn()
-  workspacesiteMenuNavbarBtn = new WorkspacesiteMenuNavbarBtn()
+  syncfolderMenuNavbarBtn = new SyncfolderMenuNavbarBtn()
   pageMenuNavbarBtn = new PageMenuNavbarBtn()
 
   // add some global listeners
@@ -155,7 +155,7 @@ export function closeMenus () {
   pageMenuNavbarBtn.close()
   bookmarkMenuNavbarBtn.close()
   datsiteMenuNavbarBtn.close()
-  workspacesiteMenuNavbarBtn.close()
+  syncfolderMenuNavbarBtn.close()
 }
 
 // internal helpers
@@ -164,7 +164,6 @@ export function closeMenus () {
 function render (id, page) {
   const isLoading = page && page.isLoading()
   const isViewingDat = page && page.getURL().startsWith('dat:')
-  const isViewingWorkspace = page && page.getURL().startsWith('workspace:')
   const siteHasDatAlternative = page && page.siteHasDatAlternative
   const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
   const siteLoadError = page && page.siteLoadError
@@ -254,7 +253,7 @@ function render (id, page) {
 
   // live reload btn
   const isLiveReloading = page && page.isLiveReloading()
-  const liveReloadBtn = (isViewingWorkspace || (isOwner && isViewingDat) || isLiveReloading)
+  const liveReloadBtn = ((isOwner && isViewingDat) || isLiveReloading)
     ? yo`
       <button
         class="live-reload-btn ${isLiveReloading ? 'active' : ''}"
@@ -387,7 +386,7 @@ function render (id, page) {
           liveReloadBtn,
           datBtns,
           datsiteMenuNavbarBtn.render(),
-          workspacesiteMenuNavbarBtn.render(),
+          syncfolderMenuNavbarBtn.render(),
           pageMenuNavbarBtn.render(),
           bookmarkMenuNavbarBtn.render()
         ] : ''}
@@ -404,7 +403,7 @@ function render (id, page) {
 
 function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadError) {
   var valueRendered = value
-  if (/^(dat|http|https|workspace):\/\//.test(value)) {
+  if (/^(dat|http|https):\/\//.test(value)) {
     try {
       var { protocol, host, pathname, search, hash } = new URL(value)
       var hostVersion

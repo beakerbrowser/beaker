@@ -17,6 +17,7 @@ import {throttle, debounce} from '../../../lib/functions'
 // dat modules
 import * as archivesDb from '../../dbs/archives'
 import * as datGC from './garbage-collector'
+import * as folderSync from './folder-sync'
 import {addArchiveSwarmLogging} from './logging-utils'
 import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
@@ -58,28 +59,38 @@ export function setup ({logfilePath}) {
   debugLogFile = CircularAppendFile(logfilePath, {maxSize: 1024 /* 1kb */ * 1024 /* 1mb */ * 10 /* 10mb */ })
 
   // wire up event handlers
-  archivesDb.on('update:archive-user-settings', async (key, settings) => {
+  archivesDb.on('update:archive-user-settings', async (key, userSettings) => {
     // emit event
     var details = {
       url: 'dat://' + key,
-      isSaved: settings.isSaved,
-      networked: settings.networked,
-      autoDownload: settings.autoDownload,
-      autoUpload: settings.autoUpload
+      isSaved: userSettings.isSaved,
+      networked: userSettings.networked,
+      autoDownload: userSettings.autoDownload,
+      autoUpload: userSettings.autoUpload,
+      localSyncPath: userSettings.localSyncPath
     }
-    archivesEvents.emit(settings.isSaved ? 'added' : 'removed', {details})
+    archivesEvents.emit(userSettings.isSaved ? 'added' : 'removed', {details})
 
     // delete all perms for deleted archives
-    if (!settings.isSaved) {
+    if (!userSettings.isSaved) {
       siteData.clearPermissionAllOrigins('modifyDat:' + key)
     }
 
     // update the download based on these settings
     var archive = getArchive(key)
     if (archive) {
-      configureNetwork(archive, settings)
-      configureAutoDownload(archive, settings)
+      configureNetwork(archive, userSettings)
+      configureAutoDownload(archive, userSettings)
+      configureLocalSync(archive, userSettings)
     }
+  })
+  folderSync.events.on('sync', (key, direction) => {
+    archivesEvents.emit('folder-sync', {
+      details: {
+        url: `dat://${datEncoding.toStr(key)}`,
+        direction
+      }
+    })
   })
 
   // setup the archive swarm
@@ -320,9 +331,10 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
   // but not yet in the regular archives listing, because it's not fully loaded
   archivesByDKey[datEncoding.toStr(archive.discoveryKey)] = archive
 
-  // join the swarm
+  // setup the archive based on current settings
   configureNetwork(archive, userSettings)
   configureAutoDownload(archive, userSettings)
+  configureLocalSync(archive, userSettings)
 
   // await initial metadata sync if not the owner
   if (!archive.writable && !archive.metadata.length) {
@@ -344,10 +356,12 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
 
   // wire up events
   archive.pullLatestArchiveMeta = debounce(opts => pullLatestArchiveMeta(archive, opts), 1e3)
+  archive.syncArchiveToFolder = debounce((opts) => folderSync.syncArchiveToFolder(archive, opts), 1e3)
   archive.fileActStream = pda.watch(archive)
-  archive.fileActStream.on('data', ([event]) => {
+  archive.fileActStream.on('data', ([event, data]) => {
     if (event === 'changed') {
       archive.pullLatestArchiveMeta({updateMTime: true})
+      archive.syncArchiveToFolder({shallow: false})
     }
   })
   archive.on('error', error => {
@@ -460,7 +474,8 @@ export async function getArchiveInfo (key) {
     networked: userSettings.networked,
     autoDownload: userSettings.autoDownload,
     autoUpload: userSettings.autoUpload,
-    expiresAt: userSettings.expiresAt
+    expiresAt: userSettings.expiresAt,
+    localSyncPath: userSettings.localSyncPath
   }
   meta.peers = archive.metadata.peers.length
   meta.peerInfo = getArchivePeerInfos(archive)
@@ -597,6 +612,16 @@ function configureAutoDownload (archive, userSettings) {
     pda.download(archive, '/').catch(e => { /* ignore cancels */ })
   } else if (archive._autodownloader && !isAutoDownloading) {
     stopAutodownload(archive)
+  }
+}
+
+function configureLocalSync (archive, userSettings) {
+  let old = archive.localSyncPath
+  archive.localSyncPath = userSettings.localSyncPath
+
+  if (archive.localSyncPath !== old) {
+    // configure the local folder watcher if a change occurred
+    folderSync.configureFolderToArchiveWatcher(archive)
   }
 }
 

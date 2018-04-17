@@ -9,6 +9,10 @@ export default {
   delete: 'promise',
   list: 'promise',
 
+  // folder sync
+  validateLocalSyncPath: 'promise',
+  setLocalSyncPath: 'promise',
+
   // publishing
   publish: 'promise',
   unpublish: 'promise',

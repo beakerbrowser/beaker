@@ -4,7 +4,6 @@ import yo from 'yo-yo'
 import slugify from 'slugify'
 import bytes from 'bytes'
 import segmentedProgressBar from '../com/segmented-progress-bar'
-import {getRandomName} from '../../lib/dict'
 import APIS from '../../lib/app-perms'
 
 // globals
@@ -284,7 +283,7 @@ function getCurrentName () {
     if (targetAppInfo.name) {
       return targetAppInfo.name
     } else {
-      targetAppInfo.name = getRandomName()
+      targetAppInfo.name = '' //getRandomName() TODO
       return targetAppInfo.name
     }
   }

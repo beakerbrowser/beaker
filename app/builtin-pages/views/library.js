@@ -521,12 +521,7 @@ async function onCreateSiteFromFolder () {
 
   // create a new archive
   const archive = await DatArchive.create({prompt: false})
-  const wi = await beaker.workspaces.create(0, {
-    publishTargetUrl: archive.url,
-    localFilesPath: folder[0]
-  })
-  await beaker.workspaces.setupFolder(0, wi.name)
-  await beaker.workspaces.publish(0, wi.name)
+  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {syncFolderToArchive: true})
   window.location += archive.url
 }
 
@@ -555,7 +550,7 @@ async function onShareFiles () {
 async function onCreateSite (template) {
   // create a new archive
   const archive = await DatArchive.create({template, prompt: false})
-  window.location += archive.url
+  window.location += archive.url + '#setup'
 }
 
 async function onMakeCopy (e, archive) {
@@ -565,7 +560,7 @@ async function onMakeCopy (e, archive) {
   }
 
   const fork = await DatArchive.fork(archive.url, {prompt: true}).catch(() => {})
-  window.location = `beaker://library/${fork.url}`
+  window.location = `beaker://library/${fork.url}#setup`
 }
 
 async function onDelete (e, archive) {

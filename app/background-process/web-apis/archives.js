@@ -1,13 +1,14 @@
+import {app} from 'electron'
+import path from 'path'
+import mkdirp from 'mkdirp'
 import datDns from '../networks/dat/dns'
+import * as folderSync from '../networks/dat/folder-sync'
 import * as datLibrary from '../networks/dat/library'
 import * as datGC from '../networks/dat/garbage-collector'
 import * as archivesDb from '../dbs/archives'
+import {cbPromise} from '../../lib/functions'
+import {timer} from '../../lib/time'
 // import * as profilesIngest from '../ingests/profiles' TODO(profiles) disabled -prf
-import {DAT_HASH_REGEX} from '../../lib/const'
-import {
-  InvalidURLError,
-  PermissionsError
-} from 'beaker-error-constants'
 
 // exported api
 // =
@@ -76,6 +77,70 @@ export default {
 
   async list (query = {}) {
     return datLibrary.queryArchives(query)
+  },
+
+  // folder sync
+  // =
+
+  async validateLocalSyncPath (key, localSyncPath) {
+    var key = datLibrary.fromURLToKey(key)
+    localSyncPath = path.normalize(localSyncPath)
+
+    // make sure the path is good
+    try {
+      await folderSync.assertSafePath(localSyncPath)
+    } catch (e) {
+      if (e.notFound) {
+        return {doesNotExist: true}
+      }
+      throw e
+    }
+
+    // check for conflicts
+    var archive = await datLibrary.getOrLoadArchive(key)
+    var diff = await folderSync.diffListing(archive, {localSyncPath})
+    diff = diff.filter(d => d.change === 'mod' && d.path !== '/dat.json')
+    if (diff.length) {
+      return {hasConflicts: true, conflicts: diff.map(d => d.path)}
+    }
+
+    return {}
+  },
+
+  async setLocalSyncPath (key, localSyncPath, opts = {}) {
+    var key = datLibrary.fromURLToKey(key)
+    localSyncPath = localSyncPath ? path.normalize(localSyncPath) : null
+
+    // disable path
+    if (!localSyncPath) {
+      await archivesDb.setUserSettings(0, key, {localSyncPath: ''})
+      return
+    }
+
+    // load the archive
+    var archive
+    await timer(3e3, async (checkin) => { // put a max 3s timeout on loading the dat
+      checkin('searching for dat')
+      archive = await datLibrary.getOrLoadArchive(key)
+    })
+
+    // make sure the path is good
+    try {
+      await folderSync.assertSafePath(localSyncPath)
+    } catch (e) {
+      if (e.notFound) {
+        // just create the folder
+        await cbPromise(cb => mkdirp(localSyncPath, cb))
+      } else {
+        throw e
+      }
+    }
+
+    // merge the archive & the folder
+    await folderSync.mergeArchiveAndFolder(archive, localSyncPath)
+
+    // update the record
+    await archivesDb.setUserSettings(0, key, {localSyncPath})
   },
 
   // publishing

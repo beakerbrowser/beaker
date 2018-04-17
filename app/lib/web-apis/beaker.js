@@ -11,7 +11,6 @@ import bookmarksManifest from '../api-manifests/internal/bookmarks'
 import historyManifest from '../api-manifests/internal/history'
 import downloadsManifest from '../api-manifests/internal/downloads'
 // import appsManifest from '../api-manifests/internal/apps'
-import workspacesManifest from '../api-manifests/internal/workspaces'
 import sitedataManifest from '../api-manifests/internal/sitedata'
 import beakerBrowserManifest from '../api-manifests/internal/browser'
 
@@ -44,7 +43,6 @@ if (window.location.protocol === 'beaker:') {
   const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
   const archivesRPC = rpc.importAPI('archives', archivesManifest, opts)
   // const appsRPC = rpc.importAPI('apps', appsManifest, opts)
-  const workspacesRPC = rpc.importAPI('workspaces', workspacesManifest, opts)
   const downloadsRPC = rpc.importAPI('downloads', downloadsManifest, opts)
   const sitedataRPC = rpc.importAPI('sitedata', sitedataManifest, opts)
   const beakerBrowserRPC = rpc.importAPI('beaker-browser', beakerBrowserManifest, opts)
@@ -72,6 +70,8 @@ if (window.location.protocol === 'beaker:') {
   beaker.archives.bulkRemove = archivesRPC.bulkRemove
   beaker.archives.delete = archivesRPC.delete
   beaker.archives.list = archivesRPC.list
+  beaker.archives.validateLocalSyncPath = archivesRPC.validateLocalSyncPath
+  beaker.archives.setLocalSyncPath = archivesRPC.setLocalSyncPath
   beaker.archives.publish = archivesRPC.publish
   beaker.archives.unpublish = archivesRPC.unpublish
   beaker.archives.listPublished = archivesRPC.listPublished
@@ -107,22 +107,6 @@ if (window.location.protocol === 'beaker:') {
   beaker.apps.unbind = appsRPC.unbind
   beaker.apps.runInstaller = appsRPC.runInstaller
   beaker.apps.createEventsStream = () => fromEventStream(appsRPC.createEventsStream())*/
-
-  // beaker.workspaces
-  beaker.workspaces = {}
-  beaker.workspaces.list = workspacesRPC.list
-  beaker.workspaces.get = workspacesRPC.get
-  beaker.workspaces.set = workspacesRPC.set
-  beaker.workspaces.create = workspacesRPC.create
-  beaker.workspaces.setupFolder = workspacesRPC.setupFolder
-  beaker.workspaces.remove = workspacesRPC.remove
-  beaker.workspaces.listChangedFiles = workspacesRPC.listChangedFiles
-  beaker.workspaces.diff = workspacesRPC.diff
-  beaker.workspaces.watch = (profileId, name) => fromEventStream(workspacesRPC.watch(profileId, name))
-  beaker.workspaces.publish = workspacesRPC.publish
-  beaker.workspaces.revert = workspacesRPC.revert
-  beaker.workspaces.openFolder = workspacesRPC.openFolder
-  beaker.workspaces.addToDatignore = workspacesRPC.addToDatignore
 
   // beaker.downloads
   beaker.downloads = {}

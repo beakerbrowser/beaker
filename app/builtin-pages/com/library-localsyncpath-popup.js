@@ -1,5 +1,6 @@
 import yo from 'yo-yo'
 import {findParent} from '../../lib/fg/event-handlers'
+import {shortenHash} from '../../lib/strings'
 import closeIcon from '../icon/close'
 
 // globals
@@ -9,14 +10,24 @@ let resolve
 let reject
 
 let title
-let localFilesPath
+let archiveKey
+let localSyncPath
+
+let hasConflicts
+let conflicts
 
 // exported api
 // =
 
-export function create (opts = {}) {
+export async function create (opts = {}) {
   title = opts.title || 'Untitled'
-  localFilesPath = opts.defaultPath || ''
+  archiveKey = opts.archiveKey || ''
+  localSyncPath = opts.defaultPath || ''
+  hasConflicts = false
+
+  if (localSyncPath) {
+    await checkForConflicts()
+  }
 
   // render interface
   var popup = render()
@@ -31,7 +42,7 @@ export function create (opts = {}) {
 }
 
 export function destroy () {
-  var popup = document.getElementById('library-workspace-popup')
+  var popup = document.getElementById('library-localsyncpath-popup')
   document.body.removeChild(popup)
   document.removeEventListener('keyup', onKeyUp)
   reject()
@@ -41,18 +52,18 @@ export function destroy () {
 // =
 
 function update () {
-  yo.update(document.getElementById('library-workspace-popup'), render())
+  yo.update(document.getElementById('library-localsyncpath-popup'), render())
 }
 
 function render () {
-  const path = localFilesPath
+  const path = localSyncPath
 
   return yo`
-    <div id="library-workspace-popup" class="popup-wrapper" onclick=${onClickWrapper}>
+    <div id="library-localsyncpath-popup" class="popup-wrapper" onclick=${onClickWrapper}>
       <form class="popup-inner" onsubmit=${onSubmit}>
         <div class="head">
           <span class="title">
-            Set workspace directory
+            Set local directory
           </span>
 
           <span title="Cancel" onclick=${destroy} class="close-btn square">
@@ -63,16 +74,26 @@ function render () {
         <div class="body">
           <div>
             <p>
-              The files for "${title}" will be saved at:
+              The files for "${title}" will be synced to:
             </p>
 
             <div class="path-container">
-              <input class="path nofocus" name="path" value=${path} />
+              <input class="path nofocus" name="path" value=${path} onchange=${onChangeDirectory} />
 
               <button onclick=${onSelectDirectory} class="btn nofocus tooltip-container" data-tooltip="Choose different directory">
                 <i class="fa fa-pencil"></i>
               </button>
             </div>
+
+            ${hasConflicts
+              ? yo`
+                <div class="message error">
+                  Some files in dat://${shortenHash(archiveKey)} will be overwritten by files in this folder:
+                  <ul>
+                    ${conflicts.map(conflict => yo`<li>${conflict}</li>`)}
+                  </ul>
+                </div>`
+              : ''}
           </div>
 
           <div class="actions">
@@ -101,9 +122,15 @@ function onKeyUp (e) {
 }
 
 function onClickWrapper (e) {
-  if (e.target.id === 'library-workspace-popup') {
+  if (e.target.id === 'library-localsyncpath-popup') {
     destroy()
   }
+}
+
+async function onChangeDirectory (e) {
+  localSyncPath = e.target.value
+  await checkForConflicts()
+  update()
 }
 
 async function onSelectDirectory (e) {
@@ -114,17 +141,27 @@ async function onSelectDirectory (e) {
     title: 'Select a folder',
     buttonLabel: 'Select folder',
     properties: ['openDirectory', 'createDirectory'],
-    defaultPath: localFilesPath
+    defaultPath: localSyncPath
   })
 
   if (path) {
-    localFilesPath = path[0]
+    localSyncPath = path[0]
+    await checkForConflicts()
     update()
   }
 }
 
 function onSubmit (e) {
   e.preventDefault()
-  resolve({localFilesPath: e.target.path.value})
+  resolve({path: e.target.path.value})
   destroy()
+}
+
+// helpers
+// =
+
+async function checkForConflicts () {
+  let res = await beaker.archives.validateLocalSyncPath(archiveKey, localSyncPath)
+  hasConflicts = res.hasConflicts
+  conflicts = res.conflicts
 }

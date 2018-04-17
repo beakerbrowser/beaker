@@ -328,7 +328,7 @@ export class BrowserMenuNavbarBtn {
 
     // create a new archive
     const archive = await DatArchive.create({template, prompt: false})
-    pages.setActive(pages.create('beaker://library/' + archive.url))
+    pages.setActive(pages.create('beaker://library/' + archive.url + '#setup'))
   }
 
   async onCreateSiteFromFolder (e) {
@@ -347,13 +347,8 @@ export class BrowserMenuNavbarBtn {
 
     // create a new archive
     const archive = await DatArchive.create({prompt: false})
-    const wi = await beaker.workspaces.create(0, {
-      publishTargetUrl: archive.url,
-      localFilesPath: folder[0]
-    })
-    await beaker.workspaces.setupFolder(0, wi.name)
-    await beaker.workspaces.publish(0, wi.name)
-    pages.setActive(pages.create('beaker://library/' + archive.url))
+    await beaker.archives.setLocalSyncPath(archive.url, folder[0], {syncFolderToArchive: true})
+    pages.setActive(pages.create('beaker://library/' + archive.url + '#setup'))
   }
 
   async onShareFiles (e) {
@@ -379,8 +374,8 @@ export class BrowserMenuNavbarBtn {
     })
     await Promise.all(files.map(src => DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: false})))
 
-    // open the new archive in the filesystem
-    pages.setActive(pages.create('beaker://library/' + archive.url.slice('dat://'.length)))
+    // open the new archive in the library
+    pages.setActive(pages.create('beaker://library/' + archive.url.slice('dat://'.length) + '#setup'))
   }
 
   onOpenPage (e, url) {

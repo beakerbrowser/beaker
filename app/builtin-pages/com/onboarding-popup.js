@@ -48,7 +48,7 @@ const STEPS = [
   },
   {
     title: 'Create and host websites',
-    subtitle: 'Configure workspace settings',
+    subtitle: 'Configure working directory',
     description: 'Create and host websites from your computer. No server required!',
     content: () => yo`
       <div>
@@ -132,7 +132,7 @@ const STEPS = [
 async function onCreateWebsite () {
   // create a new archive
   const archive = await DatArchive.create({template: 'website', prompt: false})
-  window.location = 'beaker://library/' + archive.url
+  window.location = 'beaker://library/' + archive.url + '#setup'
 }
 
 // exported api

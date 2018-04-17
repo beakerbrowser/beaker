@@ -2,19 +2,15 @@ import rpc from 'pauls-electron-rpc'
 import errors from 'beaker-error-constants'
 import parseDatURL from 'parse-dat-url'
 import datArchiveManifest from '../api-manifests/external/dat-archive'
-import workspaceFsManifest from '../api-manifests/external/workspace-fs'
 import {EventTarget, Event, fromEventStream} from './event-target'
 import Stat from './stat'
 
 const LOAD_PROMISE = Symbol('LOAD_PROMISE')
 const URL_PROMISE = Symbol('URL_PROMISE')
-const API = Symbol()
-const IS_WORKSPACE = Symbol()
 const NETWORK_ACT_STREAM = Symbol()
 
 // create the rpc apis
-const dat = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, errors })
-const wsfs = rpc.importAPI('workspace-fs', workspaceFsManifest, { timeout: false, errors })
+const datRPC = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, errors })
 
 class DatArchive extends EventTarget {
   constructor (url) {
@@ -33,34 +29,22 @@ class DatArchive extends EventTarget {
 
     // parse the URL
     const urlParsed = parseDatURL(url)
-    if (!urlParsed || (urlParsed.protocol !== 'dat:' && urlParsed.protocol !== 'workspace:')) {
+    if (!urlParsed || (urlParsed.protocol !== 'dat:')) {
       throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
     }
-    setHidden(this, IS_WORKSPACE, (urlParsed.protocol === 'workspace:'))
-    if (this[IS_WORKSPACE]) {
-      url = 'workspace://' + urlParsed.hostname
-    } else {
-      url = 'dat://' + urlParsed.hostname + (urlParsed.version ? `+${urlParsed.version}` : '')
-    }
-
-    // select the API
-    setHidden(this, API, (this[IS_WORKSPACE]) ? wsfs : dat)
+    url = 'dat://' + urlParsed.hostname + (urlParsed.version ? `+${urlParsed.version}` : '')
 
     // load into the 'active' (in-memory) cache
-    setHidden(this, LOAD_PROMISE, ((this[IS_WORKSPACE]) ? true : dat.loadArchive(url)))
+    setHidden(this, LOAD_PROMISE, datRPC.loadArchive(url))
 
     // resolve the URL (DNS)
-    if (this[IS_WORKSPACE]) {
-      setHidden(this, URL_PROMISE, url)
-    } else {
-      const urlPromise = DatArchive.resolveName(url).then(url => {
-        if (urlParsed.version) {
-          url += `+${urlParsed.version}`
-        }
-        return 'dat://' + url
-      })
-      setHidden(this, URL_PROMISE, urlPromise)
-    }
+    const urlPromise = DatArchive.resolveName(url).then(url => {
+      if (urlParsed.version) {
+        url += `+${urlParsed.version}`
+      }
+      return 'dat://' + url
+    })
+    setHidden(this, URL_PROMISE, urlPromise)
 
     // define this.url as a frozen getter
     Object.defineProperty(this, 'url', {
@@ -79,7 +63,7 @@ class DatArchive extends EventTarget {
 
   static create (opts = {}) {
     var errStack = (new Error()).stack
-    return dat.createArchive(opts)
+    return datRPC.createArchive(opts)
       .then(newUrl => new DatArchive(newUrl))
       .catch(e => throwWithFixedStack(e, errStack))
   }
@@ -90,7 +74,7 @@ class DatArchive extends EventTarget {
     if (!isDatURL(url)) {
       throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
     }
-    return dat.forkArchive(url, opts)
+    return datRPC.forkArchive(url, opts)
       .then(newUrl => new DatArchive(newUrl))
       .catch(e => throwWithFixedStack(e, errStack))
   }
@@ -101,7 +85,7 @@ class DatArchive extends EventTarget {
     if (!isDatURL(url)) {
       throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
     }
-    return dat.unlinkArchive(url)
+    return datRPC.unlinkArchive(url)
       .catch(e => throwWithFixedStack(e, errStack))
   }
 
@@ -117,7 +101,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await this[API].getInfo(url, opts)
+      return await datRPC.getInfo(url, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -127,7 +111,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await this[API].configure(url, info, opts)
+      return await datRPC.configure(url, info, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -155,7 +139,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await this[API].history(url, opts)
+      return await datRPC.history(url, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -165,7 +149,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return new Stat(await this[API].stat(url, path, opts))
+      return new Stat(await datRPC.stat(url, path, opts))
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -175,7 +159,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await this[API].readFile(url, path, opts)
+      return await datRPC.readFile(url, path, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -185,7 +169,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await this[API].writeFile(url, path, data, opts)
+      return await datRPC.writeFile(url, path, data, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -195,7 +179,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await this[API].unlink(url, path, opts)
+      return await datRPC.unlink(url, path, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -205,7 +189,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return this[API].copy(url, path, dstPath, opts)
+      return datRPC.copy(url, path, dstPath, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -215,7 +199,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return this[API].rename(url, path, dstPath, opts)
+      return datRPC.rename(url, path, dstPath, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -225,7 +209,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await this[API].download(url, path, opts)
+      return await datRPC.download(url, path, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -235,7 +219,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      var names = await this[API].readdir(url, path, opts)
+      var names = await datRPC.readdir(url, path, opts)
       if (opts.stat) {
         names.forEach(name => { name.stat = new Stat(name.stat) })
       }
@@ -249,7 +233,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await this[API].mkdir(url, path, opts)
+      return await datRPC.mkdir(url, path, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -259,7 +243,7 @@ class DatArchive extends EventTarget {
     var errStack = (new Error()).stack
     try {
       var url = await this[URL_PROMISE]
-      return await this[API].rmdir(url, path, opts)
+      return await datRPC.rmdir(url, path, opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -273,7 +257,7 @@ class DatArchive extends EventTarget {
   watch (pathSpec = null) {
     var errStack = (new Error()).stack
     try {
-      return fromEventStream(this[API].watch(this.url, pathSpec))
+      return fromEventStream(datRPC.watch(this.url, pathSpec))
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -283,7 +267,7 @@ class DatArchive extends EventTarget {
     console.warn('The DatArchive createNetworkActivityStream() API has been deprecated, use addEventListener() instead.')
     var errStack = (new Error()).stack
     try {
-      return fromEventStream(this[API].createNetworkActivityStream(this.url))
+      return fromEventStream(datRPC.createNetworkActivityStream(this.url))
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -296,7 +280,7 @@ class DatArchive extends EventTarget {
       if (name === window.location) {
         name = window.location.toString()
       }
-      return await dat.resolveName(name)
+      return await datRPC.resolveName(name)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -304,7 +288,7 @@ class DatArchive extends EventTarget {
 
   static selectArchive (opts = {}) {
     var errStack = (new Error()).stack
-    return dat.selectArchive(opts)
+    return datRPC.selectArchive(opts)
       .then(url => new DatArchive(url))
       .catch(e => throwWithFixedStack(e, errStack))
   }
@@ -315,7 +299,7 @@ if (window.location.protocol === 'beaker:') {
   DatArchive.importFromFilesystem = async function (opts = {}) {
     var errStack = (new Error()).stack
     try {
-      return await dat.importFromFilesystem(opts)
+      return await datRPC.importFromFilesystem(opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -324,7 +308,7 @@ if (window.location.protocol === 'beaker:') {
   DatArchive.exportToFilesystem = async function (opts = {}) {
     var errStack = (new Error()).stack
     try {
-      return await dat.exportToFilesystem(opts)
+      return await datRPC.exportToFilesystem(opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }
@@ -333,7 +317,7 @@ if (window.location.protocol === 'beaker:') {
   DatArchive.exportToArchive = async function (opts = {}) {
     var errStack = (new Error()).stack
     try {
-      return await dat.exportToArchive(opts)
+      return await datRPC.exportToArchive(opts)
     } catch (e) {
       throwWithFixedStack(e, errStack)
     }

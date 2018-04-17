@@ -1,5 +1,6 @@
 
 -- list of the user's installed apps
+-- deprecated
 CREATE TABLE apps (
   profileId INTEGER NOT NULL,
   name TEXT NOT NULL,
