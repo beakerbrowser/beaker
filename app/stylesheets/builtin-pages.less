@@ -704,13 +704,17 @@
       }
 
       &:after {
+        width: 160px;
+        height: 30px;
+        left: 50%;
+        top: 50%;
         content: 'Coming soon';
         text-transform: uppercase;
         color: @color-text--muted;
         font-size: 1.3rem;
         letter-spacing: 1px;
         font-weight: 300;
-        transform: rotate(-15deg);
+        transform: translate(-50%, -50%) rotate(-15deg);
         text-shadow: 0 0 25px #fff;
       }
     }

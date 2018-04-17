@@ -109,7 +109,13 @@ export default {
 
   async setLocalSyncPath (key, localSyncPath, opts = {}) {
     var key = datLibrary.fromURLToKey(key)
-    localSyncPath = path.normalize(localSyncPath)
+    localSyncPath = localSyncPath ? path.normalize(localSyncPath) : null
+
+    // disable path
+    if (!localSyncPath) {
+      await archivesDb.setUserSettings(0, key, {localSyncPath: ''})
+      return
+    }
 
     // load the archive
     var archive

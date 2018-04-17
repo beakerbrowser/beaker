@@ -602,47 +602,59 @@ function renderSettingsView () {
   let syncDirectoryDescription = ''
   if (syncPath) {
     syncDirectoryDescription = yo`
-      <p>
-        This project${"'"}s files are synced to
-        <span class="link" onclick=${() => onOpenFolder(syncPath)}>
-          ${syncPath}
-        </span>
+      <div>
+        <p>
+          This project${"'"}s files are synced to
+          <span class="link" onclick=${() => onOpenFolder(syncPath)}>
+            ${syncPath}
+          </span>
 
-        <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(syncPath, '',  true)}>
-          <i class="fa fa-clipboard"></i>
-        </button>
-
-        <form class="input-group">
-          <input disabled type="text" value=${syncPath} placeholder="Change local directory"/>
-          <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
-            Change local directory
+          <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(syncPath, '',  true)}>
+            <i class="fa fa-clipboard"></i>
           </button>
-        </form>
-      </p>`
+
+          <form class="input-group">
+            <input disabled type="text" value=${syncPath} placeholder="Change local directory"/>
+            <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
+              Change local directory
+            </button>
+            <button type="button" class="btn" onclick=${onRemoveSyncDirectory}>
+              Stop syncing
+            </button>
+          </form>
+        </p>
+      </div>`
   } else if (_get(archive, 'info.localSyncPathIsMissing')) {
     syncDirectoryDescription = yo`
-      <p>
-        <em>
-          <i class="fa fa-exclamation-circle"></i> This project${"'"}s local directory was deleted or moved. (${archive.info.missingLocalSyncPath})
-        </em>
+      <div>
+        <p>
+          <em>
+            <i class="fa fa-exclamation-circle"></i> This project${"'"}s local directory was deleted or moved. (${archive.info.missingLocalSyncPath})
+          </em>
 
-        <form>
-          <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
-            Choose new directory
-          </button>
-        </form>
-      </p>`
+          <form>
+            <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
+              Choose new directory
+            </button>
+            <button type="button" class="btn" onclick=${onRemoveSyncDirectory}>
+              Stop syncing
+            </button>
+          </form>
+        </p>
+      </div>`
   } else {
     syncDirectoryDescription = yo`
-      <p>
-        Choose where to sync this project${"'"}s files.
+      <div>
+        <p>
+          Choose where to sync this project${"'"}s files.
 
-        <form>
-          <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
-            Set local directory
-          </button>
-        </form>
-      </p>`
+          <form>
+            <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
+              Set local directory
+            </button>
+          </form>
+        </p>
+      </div>`
   }
 
   return yo`
@@ -725,9 +737,7 @@ function renderSettingsView () {
               </h2>
 
               <div class="module-content bordered">
-                <div>
-                  ${syncDirectoryDescription}
-                </div>
+                ${syncDirectoryDescription}
               </div>
             </div>`
           : ''
@@ -1334,6 +1344,20 @@ async function onChangeSyncDirectory () {
   await setup()
   onOpenFolder(localSyncPath)
   render()
+}
+
+async function onRemoveSyncDirectory () {
+  if (!archive.info.isOwner) return
+
+  try {
+    await beaker.archives.setLocalSyncPath(archive.url, null)
+    toast.create('Stopped syncing with local folder')
+    await setup()
+  } catch (e) {
+    toplevelError = createToplevelError(e)
+    render()
+    return
+  }
 }
 
 async function onAddFile (e) {
