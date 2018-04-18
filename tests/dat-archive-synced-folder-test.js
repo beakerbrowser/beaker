@@ -58,7 +58,10 @@ test('setLocalSyncPath', async t => {
   `)
   t.falsy(res)
 
-  // no sync occurred
+  // wait for sync
+  await waitForSync('folder')
+
+  // sync occurred
   const dir = jetpack.cwd(createdFilePath)
   t.truthy(await dir.existsAsync('dat.json'))
 
@@ -233,6 +236,177 @@ test('getInfo() lets you know if the folder is missing', async t => {
   t.falsy(res.userSettings.localSyncPath)
   t.truthy(res.localSyncPathIsMissing)
   t.deepEqual(res.missingLocalSyncPath, createdFilePath)
+})
+
+test('additional sync correctness checks', async t => {
+  // create a dat
+  var res = await mainTab.executeJavascript(`
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false })
+  `)
+  createdDatUrl = res.url
+  const readArchiveFile = path => (
+    mainTab.executeJavascript(`
+      var archive = new DatArchive("${createdDatUrl}")
+      archive.readFile("${path}", 'utf8')
+    `)
+  )
+  t.truthy(createdDatUrl.startsWith('dat://'))
+
+  // write archive files
+  var res = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${createdDatUrl}")
+    Promise.all([
+      archive.writeFile('/archive-file.txt', 'archive'),
+      archive.writeFile('/conflict-file.txt', 'archive'),
+      archive.mkdir('/archive-folder').then(() => Promise.all([
+        archive.writeFile('/archive-folder/file1.txt', 'archive'),
+        archive.writeFile('/archive-folder/file2.txt', 'archive')
+      ])),
+      archive.mkdir('/conflict-folder').then(() => Promise.all([
+        archive.writeFile('/conflict-folder/file1.txt', 'archive'),
+        archive.writeFile('/conflict-folder/file2.txt', 'archive'),
+        archive.writeFile('/conflict-folder/archive-file.txt', 'archive')
+      ])),
+    ])
+  `)
+
+  // create and write local folder
+  var localFilePath = tempy.directory()
+  const dir = jetpack.cwd(localFilePath)
+  await dir.writeAsync('local-file.txt', 'local')
+  await dir.writeAsync('conflict-file.txt', 'local')
+  await dir.dirAsync('local-folder')
+  await dir.writeAsync('local-folder/file1.txt', 'local')
+  await dir.writeAsync('local-folder/file2.txt', 'local')
+  await dir.dirAsync('conflict-folder')
+  await dir.writeAsync('conflict-folder/file1.txt', 'local')
+  await dir.writeAsync('conflict-folder/file2.txt', 'local')
+  await dir.writeAsync('conflict-folder/local-file.txt', 'local')
+
+  // set
+  var syncPromise = waitForSync('archive')
+  var res = await mainTab.executeJavascript(`
+    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(localFilePath)}")
+  `)
+  t.falsy(res)
+
+  // wait for sync to occur
+  await syncPromise
+
+  // check local folder
+  t.deepEqual((await dir.listAsync()).sort(), ['dat.json', 'local-file.txt', 'conflict-file.txt', 'archive-file.txt', 'local-folder', 'conflict-folder', 'archive-folder'].sort())
+  t.deepEqual((await dir.listAsync('local-folder')).sort(), ['file1.txt', 'file2.txt'].sort())
+  t.deepEqual((await dir.listAsync('archive-folder')).sort(), ['file1.txt', 'file2.txt'].sort())
+  t.deepEqual((await dir.listAsync('conflict-folder')).sort(), ['file1.txt', 'file2.txt', 'archive-file.txt', 'local-file.txt'].sort())
+  t.deepEqual(await dir.readAsync('local-file.txt'), 'local')
+  t.deepEqual(await dir.readAsync('conflict-file.txt'), 'local')
+  t.deepEqual(await dir.readAsync('archive-file.txt'), 'archive')
+  t.deepEqual(await dir.readAsync('local-folder/file1.txt'), 'local')
+  t.deepEqual(await dir.readAsync('local-folder/file2.txt'), 'local')
+  t.deepEqual(await dir.readAsync('archive-folder/file1.txt'), 'archive')
+  t.deepEqual(await dir.readAsync('archive-folder/file2.txt'), 'archive')
+  t.deepEqual(await dir.readAsync('conflict-folder/file1.txt'), 'local')
+  t.deepEqual(await dir.readAsync('conflict-folder/file2.txt'), 'local')
+  t.deepEqual(await dir.readAsync('conflict-folder/local-file.txt'), 'local')
+  t.deepEqual(await dir.readAsync('conflict-folder/archive-file.txt'), 'archive')
+
+  // check the archive
+  var res = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${createdDatUrl}")
+    archive.readdir('/', {recursive: true})
+  `)
+  t.deepEqual(res.sort(), [
+    'dat.json',
+    'local-file.txt', 'conflict-file.txt', 'archive-file.txt',
+    'local-folder', 'local-folder/file1.txt', 'local-folder/file2.txt',
+    'conflict-folder', 'conflict-folder/file1.txt', 'conflict-folder/file2.txt', 'conflict-folder/archive-file.txt', 'conflict-folder/local-file.txt',
+    'archive-folder', 'archive-folder/file1.txt', 'archive-folder/file2.txt'
+  ].sort())
+  t.deepEqual(await readArchiveFile('local-file.txt'), 'local')
+  t.deepEqual(await readArchiveFile('conflict-file.txt'), 'local')
+  t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive')
+  t.deepEqual(await readArchiveFile('local-folder/file1.txt'), 'local')
+  t.deepEqual(await readArchiveFile('local-folder/file2.txt'), 'local')
+  t.deepEqual(await readArchiveFile('archive-folder/file1.txt'), 'archive')
+  t.deepEqual(await readArchiveFile('archive-folder/file2.txt'), 'archive')
+  t.deepEqual(await readArchiveFile('conflict-folder/file1.txt'), 'local')
+  t.deepEqual(await readArchiveFile('conflict-folder/file2.txt'), 'local')
+  t.deepEqual(await readArchiveFile('conflict-folder/local-file.txt'), 'local')
+  t.deepEqual(await readArchiveFile('conflict-folder/archive-file.txt'), 'archive')
+
+  // remove the conflict folder locally
+  await dir.removeAsync('conflict-folder')
+
+  // wait for sync to occur
+  await waitForSync('archive')
+
+  // check local folder
+  t.deepEqual((await dir.listAsync()).sort(), ['dat.json', 'local-file.txt', 'conflict-file.txt', 'archive-file.txt', 'local-folder', 'archive-folder'].sort())
+  t.deepEqual((await dir.listAsync('local-folder')).sort(), ['file1.txt', 'file2.txt'].sort())
+  t.deepEqual((await dir.listAsync('archive-folder')).sort(), ['file1.txt', 'file2.txt'].sort())
+  t.deepEqual(await dir.readAsync('local-file.txt'), 'local')
+  t.deepEqual(await dir.readAsync('conflict-file.txt'), 'local')
+  t.deepEqual(await dir.readAsync('archive-file.txt'), 'archive')
+  t.deepEqual(await dir.readAsync('local-folder/file1.txt'), 'local')
+  t.deepEqual(await dir.readAsync('local-folder/file2.txt'), 'local')
+  t.deepEqual(await dir.readAsync('archive-folder/file1.txt'), 'archive')
+  t.deepEqual(await dir.readAsync('archive-folder/file2.txt'), 'archive')
+
+  // check the archive
+  var res = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${createdDatUrl}")
+    archive.readdir('/', {recursive: true})
+  `)
+  t.deepEqual(res.sort(), [
+    'dat.json',
+    'local-file.txt', 'conflict-file.txt', 'archive-file.txt',
+    'local-folder', 'local-folder/file1.txt', 'local-folder/file2.txt',
+    'archive-folder', 'archive-folder/file1.txt', 'archive-folder/file2.txt'
+  ].sort())
+  t.deepEqual(await readArchiveFile('local-file.txt'), 'local')
+  t.deepEqual(await readArchiveFile('conflict-file.txt'), 'local')
+  t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive')
+  t.deepEqual(await readArchiveFile('local-folder/file1.txt'), 'local')
+  t.deepEqual(await readArchiveFile('local-folder/file2.txt'), 'local')
+  t.deepEqual(await readArchiveFile('archive-folder/file1.txt'), 'archive')
+  t.deepEqual(await readArchiveFile('archive-folder/file2.txt'), 'archive')
+
+  // remove the local-folder in the local
+  await dir.removeAsync('local-folder')
+  // and the archive-folder in the archive
+  var res = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${createdDatUrl}")
+    archive.rmdir('/archive-folder', {recursive: true})
+  `)
+  // the simultaneous local-folder change *SHOULD* cause the archive-folder deletion to be reverted
+
+  // wait for sync to occur
+  await waitForSync('archive')
+
+  // check local folder
+  t.deepEqual((await dir.listAsync()).sort(), ['dat.json', 'local-file.txt', 'conflict-file.txt', 'archive-file.txt', 'archive-folder'].sort())
+  t.deepEqual((await dir.listAsync('archive-folder')).sort(), ['file1.txt', 'file2.txt'].sort())
+  t.deepEqual(await dir.readAsync('local-file.txt'), 'local')
+  t.deepEqual(await dir.readAsync('conflict-file.txt'), 'local')
+  t.deepEqual(await dir.readAsync('archive-file.txt'), 'archive')
+  t.deepEqual(await dir.readAsync('archive-folder/file1.txt'), 'archive')
+  t.deepEqual(await dir.readAsync('archive-folder/file2.txt'), 'archive')
+
+  // check the archive
+  var res = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${createdDatUrl}")
+    archive.readdir('/', {recursive: true})
+  `)
+  t.deepEqual(res.sort(), [
+    'dat.json',
+    'local-file.txt', 'conflict-file.txt', 'archive-file.txt',
+    'archive-folder', 'archive-folder/file1.txt', 'archive-folder/file2.txt'
+  ].sort())
+  t.deepEqual(await readArchiveFile('local-file.txt'), 'local')
+  t.deepEqual(await readArchiveFile('conflict-file.txt'), 'local')
+  t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive')
+  t.deepEqual(await readArchiveFile('archive-folder/file1.txt'), 'archive')
+  t.deepEqual(await readArchiveFile('archive-folder/file2.txt'), 'archive')
 })
 
 // because we pass paths through eval() code,

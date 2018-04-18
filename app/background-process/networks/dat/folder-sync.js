@@ -75,9 +75,9 @@ export function configureFolderToArchiveWatcher (archive) {
       if (archive.syncFolderToArchiveTimeout) {
         clearTimeout(archive.syncFolderToArchiveTimeout)
       }
-      archive.syncFolderToArchiveTimeout = setTimeout(() => {
+      archive.syncFolderToArchiveTimeout = setTimeout(async () => {
         console.log('ok timed out')
-        syncFolderToArchive(archive, {shallow: false})
+        await syncFolderToArchive(archive, {shallow: false})
         archive.syncFolderToArchiveTimeout = null
       }, 1e3)
     })
@@ -191,8 +191,8 @@ export async function readDatIgnore (fs) {
 // put the dat.json into the folder and then merge files, with preference to folder files
 export async function mergeArchiveAndFolder (archive, localSyncPath) {
   await sync(archive, false, {localSyncPath, paths: ['/dat.json']}) // archive dat.json -> folder
-  await sync(archive, false, {localSyncPath, addOnly: true}) // archive -> folder (add-only)
-  await sync(archive, true, {localSyncPath}) // folder -> archive
+  await sync(archive, false, {localSyncPath, shallow: false, addOnly: true}) // archive -> folder (add-only)
+  await sync(archive, true, {localSyncPath, shallow: false}) // folder -> archive
 }
 
 // internal methods
