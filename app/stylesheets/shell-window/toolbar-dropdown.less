@@ -109,7 +109,6 @@
 }
 
 .syncfolder-dropdown-menu {
-  margin-top: 4px;
   margin-right: 4px;
 
   .btn {
@@ -117,12 +116,21 @@
     line-height: 20px;
     font-size: 12.5px;
     padding: 0 6px;
+    background: @lime;
+    color: rgba(0,0,0,0.5);
+    border-color: #fff;
 
+    &:hover,
     &.pressed {
-      background: shade(@lime, 10%);
-      border-color: shade(@lime, 10%);
-      box-shadow: inset 0px 0 2px fadeout(shade(@lime, 13%), 50%);
+      background: darken(@lime, 10%);
     }
+  }
+
+  .toolbar-dropdown {
+    margin: 0;
+    padding: 0;
+    top: 3px;
+    right: -8px;
   }
 
   .dropdown-items {

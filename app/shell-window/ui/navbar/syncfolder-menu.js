@@ -26,8 +26,8 @@ export class SyncfolderMenuNavbarBtn {
 
     // render btn
     return yo`
-      <div class="toolbar-dropdown-menu syncfolder-dropdown-menu page-dropdown-menu">
-        <button class="btn lime nofocus ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
+      <div class="toolbar-dropdown-menu syncfolder-dropdown-menu">
+        <button class="btn nofocus ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
           <span>
             ${localSyncPath}
           </span>

@@ -383,10 +383,10 @@ function render (id, page) {
         ${inpageFinder}
         ${zoomBtn}
         ${!isLocationHighlighted ? [
+          syncfolderMenuNavbarBtn.render(),
           liveReloadBtn,
           datBtns,
           datsiteMenuNavbarBtn.render(),
-          syncfolderMenuNavbarBtn.render(),
           pageMenuNavbarBtn.render(),
           bookmarkMenuNavbarBtn.render()
         ] : ''}
