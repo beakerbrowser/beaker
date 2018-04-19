@@ -2,8 +2,9 @@
 
 import * as yo from 'yo-yo'
 import _get from 'lodash.get'
-import {findParent} from '../../../lib/fg/event-handlers'
+import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
 import * as pages from '../../pages'
+import * as toast from '../toast'
 
 export class SyncfolderMenuNavbarBtn {
   constructor () {
@@ -48,6 +49,10 @@ export class SyncfolderMenuNavbarBtn {
             <i class="fa fa-folder-open-o"></i>
             Open folder
           </div>
+          <div class="dropdown-item" onclick=${() => this.onClickCopyPath()}>
+            <i class="fa fa-clipboard"></i>
+            <span class="label">Copy path</span>
+          </div>
         </div>
       </div>`
   }
@@ -80,5 +85,14 @@ export class SyncfolderMenuNavbarBtn {
     const localSyncPath = _get(page, 'siteInfo.userSettings.localSyncPath')
     if (!localSyncPath) return
     beaker.browser.openFolder(localSyncPath)
+  }
+
+  onClickCopyPath () {
+    this.close()
+    const page = pages.getActive()
+    const localSyncPath = _get(page, 'siteInfo.userSettings.localSyncPath')
+    if (!localSyncPath) return
+    writeToClipboard(localSyncPath)
+    toast.create('Copied to clipboard', 1e3)
   }
 }
