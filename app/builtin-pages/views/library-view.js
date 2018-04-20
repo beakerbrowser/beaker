@@ -15,6 +15,7 @@ import * as localsyncpathPopup from '../com/library-localsyncpath-popup'
 import * as copydatPopup from '../com/library-copydat-popup'
 import * as contextInput from '../com/context-input'
 import * as faviconPicker from '../com/favicon-picker'
+import renderSettingsField from '../com/settings-field'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
 import {niceDate} from '../../lib/time'
@@ -37,16 +38,6 @@ var readmeElement
 
 // current values being edited in settings
 // false means not editing
-var settingsEditValues = {
-  title: false,
-  description: false,
-  repository: false
-}
-var settingsSuccess = {
-  title: false,
-  description: false,
-  repository: false
-}
 var headerEditValues = {
   title: false
 }
@@ -586,16 +577,9 @@ function renderSettingsView () {
   const isOwner = _get(archive, 'info.isOwner')
 
   const title = archive.info.title || ''
-  const editedTitle = settingsEditValues['title']
-  const isEditingTitle = editedTitle !== false && title !== editedTitle
-
   const description = archive.info.description || ''
-  const editedDescription = settingsEditValues['description']
-  const isEditingDescription = editedDescription !== false && description !== editedDescription
-
-  const gitRepository = archive.info.manifest.repository || ''
-  const editedGitRepository = settingsEditValues['repository']
-  const isEditingGitRepository = editedGitRepository !== false && gitRepository !== editedGitRepository
+  const donateLink = archive.info.links.donate ? archive.info.links.donate[0].href : ''
+  const repository = archive.info.manifest.repository || ''
 
   let syncPath = _get(archive, 'info.userSettings.localSyncPath')
   let syncDirectoryDescription = ''
@@ -671,39 +655,13 @@ function renderSettingsView () {
 
             <h3 class="no-margin">Title</h3>
             ${isOwner
-              ? yo`
-                <form class="input-group">
-                  <input type="text" name="title" value=${isEditingTitle ? editedTitle : title} onkeyup=${e => onKeyupSettingsEdit(e, 'title')} placeholder="Set title">
-                  <button disabled="${!isEditingTitle}" class="btn" onclick=${e => onSaveSettingsEdit(e, 'title')}>
-                    Save
-                  </button>
-                  ${settingsSuccess['title']
-                    ? yo`
-                      <span class="success-message">
-                        <i class="fa fa-check"></i>
-                      </span>`
-                    : ''
-                  }
-                </form>`
+              ? renderSettingsField({key: 'title', value: title, onUpdate: setManifestValue})
               : yo`<p>${getSafeTitle()}</p>`
             }
 
             <h3>Description</h3>
             ${isOwner
-              ? yo`
-                <form class="input-group">
-                  <input type="text" name="description" value=${isEditingDescription ? editedDescription : description} onkeyup=${e => onKeyupSettingsEdit(e, 'description')} placeholder="Set description"/>
-                  <button disabled="${!isEditingDescription}" class="btn" onclick=${e => onSaveSettingsEdit(e, 'description')}>
-                    Save
-                  </button>
-                  ${settingsSuccess['description']
-                    ? yo`
-                      <span class="success-message">
-                        <i class="fa fa-check"></i>
-                      </span>`
-                    : ''
-                  }
-                </form>`
+              ? renderSettingsField({key: 'description', value: description, onUpdate: setManifestValue})
               : yo`<p>${getSafeDesc()}</p>`
             }
 
@@ -742,6 +700,35 @@ function renderSettingsView () {
           : ''
         }
 
+        <div class="module">
+          <h2 class="module-heading">
+            <span>
+              <i class="fa fa-link"></i>
+              Links
+            </span>
+          </h2>
+
+          <div class="module-content bordered">
+
+            <h3 class="no-margin">Donation page</h3>
+            ${isOwner
+              ? yo`<p>
+                  Set a donate link and Beaker will show a <span class="fa fa-usd"></span> icon in the navbar for your site.
+                  ${renderSettingsField({key: 'donateLink', value: donateLink, placeholder: "Example: https://opencollective.com/beaker", onUpdate: setManifestValue})}
+                  <small>
+                    Don${"'"}t have a donate page? Try <a href="https://www.patreon.com/" target="_blank">Patreon</a>,
+                    <a href="https://opencollective.com" target="_blank">Open Collective</a>, or
+                    <a href="https://www.paypal.me/" target="_blank">PayPal</a>.
+                  </small>
+                </p>`
+              : donateLink
+                ? yo`<p><a href=${donateLink}>${donateLink}</a></p>`
+                : yo`<p><em>No link provided.</em></p>`
+            }
+
+          </div>
+        </div>
+
         <div class="module coming-soon">
           <h2 class="module-heading">
             <span>
@@ -758,24 +745,7 @@ function renderSettingsView () {
                     Set a <a href="https://git-scm.com/" target="_blank">Git</a> repository so people can find
                     and contribute to the source code for this project.
 
-                    <form class="input-group">
-                      <input
-                        type="text"
-                        name="repository"
-                        value=${isEditingGitRepository ? editedGitRepository : gitRepository}
-                        placeholder="Example: https://github.com/beakerbrowser/beaker.git"
-                        onkeyup=${e => onKeyupSettingsEdit(e, 'repository')} />
-                      <button class="btn" disabled=${!isEditingGitRepository} onclick=${e => onSaveSettingsEdit(e, 'repository')}>
-                        Save
-                      </button>
-                      ${settingsSuccess['repository']
-                        ? yo`
-                          <span class="success-message">
-                            <i class="fa fa-check"></i>
-                          </span>`
-                        : ''
-                      }
-                    </form>
+                    ${renderSettingsField({key: 'repository', value: repository, placeholder: "Example: https://github.com/beakerbrowser/beaker.git", onUpdate: setManifestValue})}
                   </p>
                 </div>`
               : yo`
@@ -1410,38 +1380,6 @@ async function onKeyupHeaderEdit (e, name) {
   }
 }
 
-function onKeyupSettingsEdit (e, name) {
-  settingsEditValues[name] = e.target.value
-  render()
-}
-
-async function onSaveSettingsEdit (e, name) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  // validate
-  let value = e.target.form.querySelector('input').value
-  if (name === 'repository' && value && !IS_GIT_URL_REGEX.test(value)) {
-    toast.create('Repository must be a valid Git URL.', 'error', 3e3)
-    return
-  }
-
-  // update
-  await setManifestValue(name, value)
-  settingsSuccess[name] = true
-  settingsEditValues[name] = false
-  render()
-
-  setTimeout(() => {
-    settingsSuccess[name] = false
-    render()
-  }, 4000)
-
-  // blur the input
-  try { document.querySelector('input:focus').blur() }
-  catch (e) { /* no input focused */ }
-}
-
 async function onFilesChanged () {
   // update files
   const currentNode = filesBrowser.getCurrentSource()
@@ -1543,10 +1481,16 @@ async function setManifestValue (attr, value) {
   try {
     value = value || ''
     let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
-    await archive2.configure({[attr]: value})
-    Object.assign(archive.info, {[attr]: value})
-    Object.assign(archive.info.manifest, {[attr]: value})
+    if (attr === 'donateLink') {
+      archive.info.links.donate = [{href: value}]
+      await archive2.configure({links: archive.info.links})
+    } else {
+      await archive2.configure({[attr]: value})
+      Object.assign(archive.info, {[attr]: value})
+      Object.assign(archive.info.manifest, {[attr]: value})
+    }
     document.title = `Library - ${archive.info.title || 'Untitled'}`
+    render()
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }

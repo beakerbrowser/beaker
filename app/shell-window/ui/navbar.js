@@ -10,6 +10,7 @@ import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
 // import {AppsMenuNavbarBtn} from './navbar/apps-menu' TODO(apps) restore when we bring back apps -prf
 import {DatsiteMenuNavbarBtn} from './navbar/datsite-menu'
 import {SyncfolderMenuNavbarBtn} from './navbar/syncfolder-menu'
+import {DonateMenuNavbarBtn} from './navbar/donate-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
 import {findParent} from '../../lib/fg/event-handlers'
@@ -37,6 +38,7 @@ var bookmarkMenuNavbarBtn = null
 // var appsMenuNavbarBtn = null TODO(apps) restore when we bring back apps -prf
 var datsiteMenuNavbarBtn = null
 var syncfolderMenuNavbarBtn = null
+var donateMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
 
 var isLocationHighlighted = false
@@ -57,6 +59,7 @@ export function setup () {
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   datsiteMenuNavbarBtn = new DatsiteMenuNavbarBtn()
   syncfolderMenuNavbarBtn = new SyncfolderMenuNavbarBtn()
+  donateMenuNavbarBtn = new DonateMenuNavbarBtn()
   pageMenuNavbarBtn = new PageMenuNavbarBtn()
 
   // add some global listeners
@@ -156,6 +159,7 @@ export function closeMenus () {
   bookmarkMenuNavbarBtn.close()
   datsiteMenuNavbarBtn.close()
   syncfolderMenuNavbarBtn.close()
+  donateMenuNavbarBtn.close()
 }
 
 // internal helpers
@@ -261,6 +265,11 @@ function render (id, page) {
         onclick=${() => page.toggleLiveReloading()}>
         <i class="fa fa-bolt"></i>
       </span>`
+    : ''
+
+  // donate btn
+  const donateBtn = (page && page.siteInfo && page.siteInfo.links.donate)
+    ? donateMenuNavbarBtn.render()
     : ''
 
   // dat buttons
@@ -385,6 +394,7 @@ function render (id, page) {
         ${!isLocationHighlighted ? [
           syncfolderMenuNavbarBtn.render(),
           liveReloadBtn,
+          donateBtn,
           datBtns,
           datsiteMenuNavbarBtn.render(),
           pageMenuNavbarBtn.render(),
@@ -641,6 +651,13 @@ function onClickCancel (e) {
 //     page.loadURL(`app://${res.name}`)
 //   }
 // }
+
+function onClickDonate (e) {
+  const page = getEventPage(e)
+  if (!page || !page.siteInfo) return
+  if (!page.siteInfo.links.donate) return
+  pages.setActive(pages.create(page.siteInfo.links.donate[0].href))
+}
 
 function onClickGotoDatVersion (e) {
   const page = getEventPage(e)

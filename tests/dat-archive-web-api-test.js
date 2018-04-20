@@ -252,7 +252,7 @@ test('DatArchive.create prompt=false', async t => {
   mainTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false }).then(
+    DatArchive.create({ title: 'The Title', description: 'The Description', links: {foo: 'https://bar.com'}, prompt: false }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -282,6 +282,7 @@ test('DatArchive.create prompt=false', async t => {
   }
   t.deepEqual(manifest.title, 'The Title')
   t.deepEqual(manifest.description, 'The Description')
+  t.deepEqual(manifest.links, {foo: [{href: 'https://bar.com'}]})
 
   // check the settings
   var details = await app.executeJavascript(`
@@ -577,6 +578,10 @@ test('archive.configure', async t => {
     archive.configure({
       title: 'The Changed Title',
       description: 'The Changed Description',
+      links: {
+        foo: ['https://bar.com', {href: 'https://baz.com'}],
+        home: 'dat://beakerbrowser.com'
+      }
     })
   `)
   t.falsy(res)
@@ -588,6 +593,10 @@ test('archive.configure', async t => {
   `)
   t.deepEqual(res.title, 'The Changed Title')
   t.deepEqual(res.description, 'The Changed Description')
+  t.deepEqual(res.links, {
+    foo: [{href: 'https://bar.com'}, {href: 'https://baz.com'}],
+    home: [{href: 'dat://beakerbrowser.com'}]
+  })
 })
 
 test('offline archives', async t => {
