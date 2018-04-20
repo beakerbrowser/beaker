@@ -10,6 +10,7 @@ var isDownloading = false
 var isSelfFork = false
 var isProcessing = false
 var type
+var links
 var networked = true
 
 // form variables
@@ -44,6 +45,7 @@ window.setup = async function (opts) {
     title = opts.title || archiveInfo.title || ''
     description = opts.description || archiveInfo.description || ''
     type = opts.type
+    links = opts.links
     networked = ('networked' in opts) ? opts.networked : true
     render()
 
@@ -95,7 +97,7 @@ async function onSubmit (e) {
   try {
     isProcessing = true
     render()
-    var newArchive = await DatArchive.fork(archive.info.key, {title, description, type, networked, prompt: false})
+    var newArchive = await DatArchive.fork(archive.info.key, {title, description, type, networked, links, prompt: false})
     beaker.browser.closeModal(null, {url: newArchive.url})
   } catch (e) {
     beaker.browser.closeModal({

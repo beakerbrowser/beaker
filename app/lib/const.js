@@ -25,7 +25,7 @@ export const DAT_CONFIGURABLE_FIELDS = [
   'title',
   'description',
   'type',
-  'repository',
+  'links',
   'web_root',
   'fallback_page'
 ]
@@ -33,7 +33,7 @@ export const DAT_CONFIGURABLE_FIELDS = [
 export const DAT_PRESERVED_FIELDS_ON_FORK = [
   'web_root',
   'fallback_page',
-  'repository'
+  'links'
 ]
 
 // workspace settings

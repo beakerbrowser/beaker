@@ -42,7 +42,7 @@ const to = (opts) =>
     : DEFAULT_DAT_API_TIMEOUT
 
 export default {
-  async createArchive ({title, description, type, networked, template, prompt} = {}) {
+  async createArchive ({title, description, type, networked, links, template, prompt} = {}) {
     var newArchiveUrl
 
     // only allow type, networked, and template to be set by beaker, for now
@@ -60,7 +60,7 @@ export default {
       // await assertSenderIsFocused(this.sender)
 
       // run the creation modal
-      let res = await showModal(win, 'create-archive', {title, description, type, networked})
+      let res = await showModal(win, 'create-archive', {title, description, type, networked, links})
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {
@@ -69,7 +69,7 @@ export default {
 
       // create
       let author = await getAuthor()
-      newArchiveUrl = await datLibrary.createNewArchive({title, description, type, author}, {networked})
+      newArchiveUrl = await datLibrary.createNewArchive({title, description, type, author, links}, {networked})
     }
     let newArchiveKey = await lookupUrlDatKey(newArchiveUrl)
 
@@ -94,7 +94,7 @@ export default {
     return newArchiveUrl
   },
 
-  async forkArchive (url, {title, description, type, networked, prompt} = {}) {
+  async forkArchive (url, {title, description, type, networked, links, prompt} = {}) {
     var newArchiveUrl
 
     // only allow type and networked to be set by beaker, for now
@@ -115,7 +115,7 @@ export default {
       let key1 = await lookupUrlDatKey(url)
       let key2 = await lookupUrlDatKey(this.sender.getURL())
       let isSelfFork = key1 === key2
-      let res = await showModal(win, 'fork-archive', {url, title, description, type, networked, isSelfFork})
+      let res = await showModal(win, 'fork-archive', {url, title, description, type, networked, links, isSelfFork})
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {
@@ -124,7 +124,7 @@ export default {
 
       // create
       let author = await getAuthor()
-      newArchiveUrl = await datLibrary.forkArchive(url, {title, description, type, author}, {networked})
+      newArchiveUrl = await datLibrary.forkArchive(url, {title, description, type, author, links}, {networked})
     }
 
     // grant write permissions to the creating app
@@ -186,6 +186,7 @@ export default {
         title: info.title,
         description: info.description,
         // type: info.type
+        links: info.links
       }
     })
   },

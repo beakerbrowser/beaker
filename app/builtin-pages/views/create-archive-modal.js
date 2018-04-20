@@ -8,6 +8,7 @@ import {adjustWindowHeight} from '../../lib/fg/event-handlers'
 var isEditing = false
 var archive
 var type
+var links
 var networked = true
 
 // form variables
@@ -31,6 +32,7 @@ window.setup = async function (opts) {
     title = opts.title || archiveInfo.title || ''
     description = opts.description || archiveInfo.description || ''
     type = opts.type
+    links = opts.links
     networked = ('networked' in opts) ? opts.networked : true
     render()
   } catch (e) {
@@ -71,10 +73,10 @@ async function onSubmit (e) {
   try {
     if (isEditing) {
       let a = new DatArchive(archive.url)
-      await a.configure({title, description, type, networked})
+      await a.configure({title, description, type, networked, links})
       beaker.browser.closeModal(null, true)
     } else {
-      var newArchive = await DatArchive.create({title, description, type, networked, prompt: false})
+      var newArchive = await DatArchive.create({title, description, type, networked, links, prompt: false})
       beaker.browser.closeModal(null, {url: newArchive.url})
     }
   } catch (e) {
