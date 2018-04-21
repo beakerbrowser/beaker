@@ -578,7 +578,7 @@ function renderSettingsView () {
 
   const title = archive.info.title || ''
   const description = archive.info.description || ''
-  const donateLink = archive.info.links.donate ? archive.info.links.donate[0].href : ''
+  const paymentLink = archive.info.links.payment ? archive.info.links.payment[0].href : ''
   const repository = archive.info.manifest.repository || ''
 
   let syncPath = _get(archive, 'info.userSettings.localSyncPath')
@@ -714,15 +714,15 @@ function renderSettingsView () {
             ${isOwner
               ? yo`<p>
                   Set a donate link and Beaker will show a <span class="fa fa-usd"></span> icon in the navbar for your site.
-                  ${renderSettingsField({key: 'donateLink', value: donateLink, placeholder: "Example: https://opencollective.com/beaker", onUpdate: setManifestValue})}
+                  ${renderSettingsField({key: 'paymentLink', value: paymentLink, placeholder: "Example: https://opencollective.com/beaker", onUpdate: setManifestValue})}
                   <small>
                     Don${"'"}t have a donate page? Try <a href="https://www.patreon.com/" target="_blank">Patreon</a>,
                     <a href="https://opencollective.com" target="_blank">Open Collective</a>, or
                     <a href="https://www.paypal.me/" target="_blank">PayPal</a>.
                   </small>
                 </p>`
-              : donateLink
-                ? yo`<p><a href=${donateLink}>${donateLink}</a></p>`
+              : paymentLink
+                ? yo`<p><a href=${paymentLink}>${paymentLink}</a></p>`
                 : yo`<p><em>No link provided.</em></p>`
             }
 
@@ -1481,8 +1481,8 @@ async function setManifestValue (attr, value) {
   try {
     value = value || ''
     let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
-    if (attr === 'donateLink') {
-      archive.info.links.donate = [{href: value}]
+    if (attr === 'paymentLink') {
+      archive.info.links.payment = [{href: value, type: 'text/html'}]
       await archive2.configure({links: archive.info.links})
     } else {
       await archive2.configure({[attr]: value})

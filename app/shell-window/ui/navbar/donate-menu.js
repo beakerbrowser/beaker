@@ -17,7 +17,7 @@ export class DonateMenuNavbarBtn {
 
   render () {
     const page = pages.getActive()
-    if (!page.siteInfo || !page.siteInfo.links.donate) {
+    if (!page.siteInfo || !page.siteInfo.links.payment) {
       return ''
     }
 
@@ -38,6 +38,7 @@ export class DonateMenuNavbarBtn {
   }
 
   renderDropdown (page) {
+    var paymentUrl = page.siteInfo.links.payment[0].href
     // render the dropdown if open
     return yo`
       <div class="dropdown datsite-menu-dropdown donate-menu-dropdown">
@@ -59,7 +60,7 @@ export class DonateMenuNavbarBtn {
               Visit their donation page to show your appreciation!
             </div>
             <div>
-              <a href="#" class="link" onclick=${e => this.onOpenPage(page.siteInfo.links.donate[0].href)}>${page.siteInfo.links.donate[0].href}</a>
+              <a href="#" class="link" onclick=${e => this.onOpenPage(paymentUrl)}>${paymentUrl}</a>
             </div>
           </div>
         </div>

@@ -268,7 +268,7 @@ function render (id, page) {
     : ''
 
   // donate btn
-  const donateBtn = (page && page.siteInfo && page.siteInfo.links.donate)
+  const donateBtn = (page && page.siteInfo && page.siteInfo.links.payment)
     ? donateMenuNavbarBtn.render()
     : ''
 
@@ -655,8 +655,8 @@ function onClickCancel (e) {
 function onClickDonate (e) {
   const page = getEventPage(e)
   if (!page || !page.siteInfo) return
-  if (!page.siteInfo.links.donate) return
-  pages.setActive(pages.create(page.siteInfo.links.donate[0].href))
+  if (!page.siteInfo.links.payment) return
+  pages.setActive(pages.create(page.siteInfo.links.payment[0].href))
 }
 
 function onClickGotoDatVersion (e) {
