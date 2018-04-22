@@ -48,6 +48,7 @@
     "identify-filetype": "^1.0.0",
     "ingestdb": "^2.4.7",
     "into-stream": "^3.1.0",
+    "json-formatter-js": "^2.2.0",
     "listen-random-port": "^1.0.0",
     "lodash.flattendeep": "^4.4.0",
     "lodash.get": "^4.4.2",
