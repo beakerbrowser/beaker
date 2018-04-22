@@ -764,7 +764,13 @@ function onDidStopLoading (e) {
 
     // json rendering
     // inject the json render script
+    if (contentType && (contentType.startsWith('application/json') || contentType.startsWith('application/javascript'))) {
+      if (!cachedJSONRendererScript) {
+        cachedJSONRendererScript = fs.readFileSync(path.join(APP_PATH, 'json-renderer.build.js'), 'utf8')
+      }
 
+      page.webviewEl.executeJavaScript(cachedJSONRendererScript);
+    }
 
     // HACK
     // inject some corrections to the user-agent styles
