@@ -11,8 +11,7 @@ const isJSON = function (str) {
 if (!document.querySelector('main')) {
   var unformattedEl = document.querySelector('body > pre')
   if (isJSON(unformattedEl.textContent)) {
-    var formattedEl = document.createElement('main')
-    formattedEl.innerHTML = `<nav></nav><div class="json">${createJSON(unformattedEl.textContent).innerHTML}</div>`
+    var formattedEl = createJSON(unformattedEl.textContent).render()
     document.body.appendChild(formattedEl)
   }
 }
