@@ -39,6 +39,7 @@ var events = new EventEmitter()
 var webviewsDiv = document.getElementById('webviews')
 var closedURLs = []
 var cachedMarkdownRendererScript
+var cachedJSONRendererScript
 
 // exported functions
 // =
@@ -705,8 +706,15 @@ function onDidStopLoading (e) {
 
     // fallback content type
     let contentType = page.contentType
-    if (!contentType && page.getURL().endsWith('.md')) {
-      contentType = 'text/markdown'
+    if (!contentType) {
+
+      if (page.getURL().endsWith('.md')) {
+        contentType = 'text/markdown'
+      }
+
+      if (page.getURL().endsWith('.json')) {
+        contentType = 'application/json'
+      }
     }
 
     // markdown rendering
@@ -750,8 +758,13 @@ function onDidStopLoading (e) {
       if (!cachedMarkdownRendererScript) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
       }
+
       page.webviewEl.executeJavaScript(cachedMarkdownRendererScript)
     }
+
+    // json rendering
+    // inject the json render script
+
 
     // HACK
     // inject some corrections to the user-agent styles
