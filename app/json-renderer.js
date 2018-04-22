@@ -11,7 +11,11 @@ const isJSON = function (str) {
 if (!document.querySelector('main')) {
   var unformattedEl = document.querySelector('body > pre')
   if (isJSON(unformattedEl.textContent)) {
-    var formattedEl = createJSON(unformattedEl.textContent).render()
-    document.body.appendChild(formattedEl)
+    var main = document.createElement('main');
+    main.classList.add('json');
+    var formatter = createJSON(JSON.parse(unformattedEl.textContent))
+    var formattedEl = formatter.render();
+    main.appendChild(formattedEl);
+    document.body.appendChild(main)
   }
 }
