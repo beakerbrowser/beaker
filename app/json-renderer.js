@@ -12,7 +12,7 @@ if (!document.querySelector('main')) {
   var unformattedEl = document.querySelector('body > pre')
   if (isJSON(unformattedEl.textContent)) {
     var formattedEl = document.createElement('main')
-    formattedEl.innerHTML = `<nav></nav><div class="json">${createJSON(unformattedEl.textContent)}</div>`
+    formattedEl.innerHTML = `<nav></nav><div class="json">${createJSON(unformattedEl.textContent).innerHTML}</div>`
     document.body.appendChild(formattedEl)
   }
 }
