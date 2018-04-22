@@ -10,5 +10,10 @@ String.isJSON = function () {
 }
 
 if (!document.querySelector('main')) {
-
+  var unformattedEl = document.querySelector('body > pre')
+  if (unformattedEl.textContent.isJSON()) {
+    var formattedEl = document.createElement('main')
+    formattedEl.innerHTML = `<nav></nav><div class="json">${createJSON(unformattedEl.textContent)}</div>`
+    document.body.appendChild(formattedEl)
+  }
 }
