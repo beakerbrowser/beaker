@@ -765,6 +765,30 @@ function onDidStopLoading (e) {
     // json rendering
     // inject the json render script
     if (contentType && (contentType.startsWith('application/json') || contentType.startsWith('application/javascript'))) {
+      
+      page.webviewEl.insertCSS(`
+          body > pre { display: none; }
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }
+          body { background: #222f35!important; color: #607d8a!important;}
+          .json-formatter-key { color: #00fdff!important; }
+          .json-formatter-string { color: #00fa92!important; }
+          .json-formatter-null { color: #ff2f92!important; }
+          .json-formatter-boolean { color: #ff2f92!important; }
+          .json {
+            font-family: Consolas, Ubuntu, "Helvetica Neue", Ubuntu, sans-serif!important;
+            font-size: 16px!important;
+            line-height: 1.5em!important;
+            -webkit-font-smoothing: subpixel-antialiased!important;
+            font-weight: 700!important;
+          }
+          .json-formatter-dark.json-formatter-row {
+            font-family: Consolas, Ubuntu, "Helvetica Neue", Ubuntu, sans-serif!important;
+            -webkit-font-smoothing: subpixel-antialiased!important;
+            font-size: 19px!important;
+            font-weight: 700!important;
+          }
+        `)
+
       if (!cachedJSONRendererScript) {
         cachedJSONRendererScript = fs.readFileSync(path.join(APP_PATH, 'json-renderer.build.js'), 'utf8')
       }
