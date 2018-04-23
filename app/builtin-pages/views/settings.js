@@ -112,6 +112,7 @@ function renderGeneral () {
       ${renderProtocolSettings()}
       ${renderOnStartupSettings()}
       ${renderDefaultDatIgnoreSettings()}
+      ${renderAnalyticsSettings()}
     </div>
   `
 }
@@ -177,6 +178,40 @@ function renderDefaultDatIgnoreSettings () {
       <textarea onchange=${onChangeDefaultDatIgnore}>${settings.default_dat_ignore}</textarea>
     </div>
   `
+}
+
+function renderAnalyticsSettings () {
+
+  function toggle () {
+    // update and optimistically render
+    settings.analytics_enabled = (settings.analytics_enabled == 1) ? 0 : 1
+    beaker.browser.setSetting('analytics_enabled', settings.analytics_enabled)
+    renderToPage()
+  }
+
+  return yo`
+    <div class="section analytics">
+      <h2 class="subtitle-heading">Beaker Analytics</h2>
+
+      <label class="toggle">
+        <input checked=${settings.analytics_enabled == 1 ? 'true' : 'false'} type="checkbox" onchange=${toggle} />
+
+        <div class="switch"></div>
+        <span class="text">
+          Enable analytics
+        </span>
+      </label>
+
+      <div class="message primary">
+        <p>Help us know how we${"'"}re doing! Enabling analytics will send us the following information once a week:</p>
+
+        <ul>
+          <li>An anonymous ID</li>
+          <li>Your Beaker version, e.g. ${browserInfo.version}</li>
+          <li>Your operating system, e.g. Windows 10</li>
+        </ul>
+      </div>
+    </div>`
 }
 
 function renderDatNetworkActivity () {

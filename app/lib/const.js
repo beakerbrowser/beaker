@@ -1,13 +1,17 @@
 import bytes from 'bytes'
 import ms from 'ms'
 
+// file paths
+export const ANALYTICS_DATA_FILE = 'analytics-ping.json'
+export const ANALYTICS_SERVER = 'analytics.beakerbrowser.com'
+export const ANALYTICS_CHECKIN_INTERVAL = ms('1w')
+
 // 64 char hex
 export const DAT_HASH_REGEX = /^[0-9a-f]{64}$/i
 export const DAT_URL_REGEX = /^(?:dat:\/\/)?([0-9a-f]{64})/i
 
 // url file paths
 export const DAT_VALID_PATH_REGEX = /^[a-z0-9\-._~!$&'()*+,;=:@/\s]+$/i
-
 export const INVALID_SAVE_FOLDER_CHAR_REGEX = /[^0-9a-zA-Z-_ ]/g
 
 // dat settings

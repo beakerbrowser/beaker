@@ -15,7 +15,8 @@ const DEFAULT_SETTINGS = {
   custom_start_page: 'blank',
   start_page_background_image: '',
   workspace_default_path: path.join(app.getPath('home'), 'Sites'),
-  default_dat_ignore: '.git\n.dat\nnode_modules\n*.log\n.DS_Store\nThumbs.db\n'
+  default_dat_ignore: '.git\n.dat\nnode_modules\n*.log\n.DS_Store\nThumbs.db\n',
+  analytics_enabled: 0
 }
 
 // exported methods
