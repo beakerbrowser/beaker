@@ -23,11 +23,13 @@ export default {
   watch: 'readable',
   createNetworkActivityStream: 'readable',
 
+  resolveName: 'promise',
+  selectArchive: 'promise',
+
+  diff: 'promise',
+  merge: 'promise',
+
   importFromFilesystem: 'promise',
   exportToFilesystem: 'promise',
   exportToArchive: 'promise',
-
-  resolveName: 'promise',
-
-  selectArchive: 'promise'
 }

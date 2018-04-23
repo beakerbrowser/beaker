@@ -322,6 +322,22 @@ if (window.location.protocol === 'beaker:') {
       throwWithFixedStack(e, errStack)
     }
   }
+
+  DatArchive.diff = async function (srcUrl, dstUrl, opts = {}) {
+    if (srcUrl && typeof srcUrl.url === 'string') srcUrl = srcUrl.url
+    if (dstUrl && typeof dstUrl.url === 'string') dstUrl = dstUrl.url
+    var errStack = (new Error()).stack
+    return datRPC.diff(srcUrl, dstUrl, opts)
+      .catch(e => throwWithFixedStack(e, errStack))
+  }
+
+  DatArchive.merge = async function (srcUrl, dstUrl, opts = {}) {
+    if (srcUrl && typeof srcUrl.url === 'string') srcUrl = srcUrl.url
+    if (dstUrl && typeof dstUrl.url === 'string') dstUrl = dstUrl.url
+    var errStack = (new Error()).stack
+    return datRPC.merge(srcUrl, dstUrl, opts)
+      .catch(e => throwWithFixedStack(e, errStack))
+  }
 }
 
 export default DatArchive

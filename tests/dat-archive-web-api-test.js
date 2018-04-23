@@ -1524,6 +1524,322 @@ test('DatArchive.exportToArchive', async t => {
   t.deepEqual(res, beakerPng.toString('base64'))
 })
 
+test('DatArchive.diff', async t => {
+  var changes
+
+  // create a new archive
+  var res = await app.executeJavascript(`
+    DatArchive.create({prompt: false})
+  `)
+  var archiveURL = res.url
+  t.truthy(archiveURL)
+
+  // diff root against empty root, shallow=false, filter=none, ops=all
+  // =
+
+  changes = await app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}", "${archiveURL}")
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'add', path: '/beaker.png', type: 'file' },
+    { change: 'add', path: '/hello.txt', type: 'file' },
+    { change: 'add', path: '/subdir', type: 'dir' },
+    { change: 'add',
+      path: '/subdir/space in the name.txt',
+      type: 'file' },
+    { change: 'add', path: '/subdir/hello.txt', type: 'file' }
+  ].sort(sortDiff))
+
+  // also works with archive inputs
+  changes = await app.executeJavascript(`
+    var a = new DatArchive("${testStaticDatURL}")
+    var b = new DatArchive("${archiveURL}")
+    DatArchive.diff(a, b)
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'add', path: '/beaker.png', type: 'file' },
+    { change: 'add', path: '/hello.txt', type: 'file' },
+    { change: 'add', path: '/subdir', type: 'dir' },
+    { change: 'add',
+      path: '/subdir/space in the name.txt',
+      type: 'file' },
+    { change: 'add', path: '/subdir/hello.txt', type: 'file' }
+  ].sort(sortDiff))
+
+  // diff root against empty root, shallow=true, filter=none, ops=all
+  // =
+
+  changes = await app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {shallow: true})
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'add', path: '/beaker.png', type: 'file' },
+    { change: 'add', path: '/hello.txt', type: 'file' },
+    { change: 'add', path: '/subdir', type: 'dir' }
+  ].sort(sortDiff))
+
+  // diff root against empty root, shallow=false, filter=yes, ops=all
+  // =
+
+  changes = await app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {paths: ['/hello.txt', '/subdir']})
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'add', path: '/hello.txt', type: 'file' },
+    { change: 'add', path: '/subdir', type: 'dir' },
+    { change: 'add',
+      path: '/subdir/space in the name.txt',
+      type: 'file' },
+    { change: 'add', path: '/subdir/hello.txt', type: 'file' }
+  ].sort(sortDiff))
+
+  // diff root against empty root, shallow=false, filter=none, ops=del
+  // =
+
+  changes = await app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {ops: ['del']})
+  `)
+  t.deepEqual(changes, [])
+
+  // diff subdir against empty root, shallow=false, filter=none, ops=all
+  // =
+
+  changes = await app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}subdir", "${archiveURL}")
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'add', path: '/space in the name.txt', type: 'file' },
+    { change: 'add', path: '/hello.txt', type: 'file' }
+  ].sort(sortDiff))
+
+  // diff root against nonexistent empty subdir, shallow=false, filter=none, ops=all
+  // =
+
+  await t.throws(app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}", "${archiveURL}/subdir")
+  `))
+
+  // populate the target archive
+  // =
+
+  await app.executeJavascript(`
+    var a = new DatArchive("${archiveURL}")
+    Promise.all([
+      a.writeFile('/hello.txt', 'asdfasdfasdf'),
+      a.writeFile('/foo.bar', 'asdfasdf'),
+      a.mkdir('/subdir').then(() => {
+        return Promise.all([
+          a.writeFile('/subdir/hello.txt', 'aasdfasdfs'),
+          a.writeFile('/subdir/hello2.txt', 'aasdfasdfs'),
+        ])
+      }),
+      a.mkdir('/subdir2').then(() => {
+        return Promise.all([
+          a.writeFile('/subdir2/goodbye.txt', 'aasdfasdfs')
+        ])
+      })
+    ])
+  `)
+
+  // diff root against populated root, shallow=false, filter=none, ops=all
+  // =
+
+  changes = await app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}", "${archiveURL}")
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'add', path: '/beaker.png', type: 'file' },
+    { change: 'del', path: '/foo.bar', type: 'file' },
+    { change: 'mod', path: '/hello.txt', type: 'file' },
+    { change: 'del', path: '/subdir2/goodbye.txt', type: 'file' },
+    { change: 'add',
+      path: '/subdir/space in the name.txt',
+      type: 'file' },
+    { change: 'del', path: '/subdir/hello2.txt', type: 'file' },
+    { change: 'mod', path: '/subdir/hello.txt', type: 'file' },
+    { change: 'del', path: '/subdir2', type: 'dir' }
+  ].sort(sortDiff))
+
+  // diff root against populated root, shallow=true, filter=none, ops=all
+  // =
+
+  changes = await app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {shallow: true})
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'add', path: '/beaker.png', type: 'file' },
+    { change: 'del', path: '/foo.bar', type: 'file' },
+    { change: 'del', path: '/subdir2', type: 'dir' },
+    { change: 'mod', path: '/hello.txt', type: 'file' },
+    { change: 'add',
+      path: '/subdir/space in the name.txt',
+      type: 'file' },
+    { change: 'del', path: '/subdir/hello2.txt', type: 'file' },
+    { change: 'mod', path: '/subdir/hello.txt', type: 'file' }
+  ].sort(sortDiff))
+
+  // diff root against populated root, shallow=false, filter=yes, ops=all
+  // =
+
+  changes = await app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {paths: ['/hello.txt', '/subdir']})
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'mod', path: '/hello.txt', type: 'file' },
+    { change: 'add',
+      path: '/subdir/space in the name.txt',
+      type: 'file' },
+    { change: 'del', path: '/subdir/hello2.txt', type: 'file' },
+    { change: 'mod', path: '/subdir/hello.txt', type: 'file' }
+  ].sort(sortDiff))
+
+  // diff root against populated root, shallow=false, filter=none, ops=mod
+  // =
+
+  changes = await app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {ops: ['del']})
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'del', path: '/foo.bar', type: 'file' },
+    { change: 'del', path: '/subdir/hello2.txt', type: 'file' },
+    { change: 'del', path: '/subdir2/goodbye.txt', type: 'file' },
+    { change: 'del', path: '/subdir2', type: 'dir' }
+  ].sort(sortDiff))
+
+  // diff subdir against populated root, shallow=false, filter=none, ops=all
+  // =
+
+  changes = await app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}subdir", "${archiveURL}")
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'add', path: '/space in the name.txt', type: 'file' },
+    { change: 'del', path: '/foo.bar', type: 'file' },
+    { change: 'mod', path: '/hello.txt', type: 'file' },
+    { change: 'del', path: '/subdir2/goodbye.txt', type: 'file' },
+    { change: 'del', path: '/subdir/hello2.txt', type: 'file' },
+    { change: 'del', path: '/subdir/hello.txt', type: 'file' },
+    { change: 'del', path: '/subdir2', type: 'dir' },
+    { change: 'del', path: '/subdir', type: 'dir' }
+  ].sort(sortDiff))
+
+  // diff root against nonexistent populated subdir, shallow=false, filter=none, ops=all
+  // =
+
+  changes = await app.executeJavascript(`
+    DatArchive.diff("${testStaticDatURL}", "${archiveURL}/subdir")
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'add', path: '/beaker.png', type: 'file' },
+    { change: 'del', path: '/hello2.txt', type: 'file' },
+    { change: 'add', path: '/subdir', type: 'dir' },
+    { change: 'mod', path: '/hello.txt', type: 'file' },
+    { change: 'add',
+      path: '/subdir/space in the name.txt',
+      type: 'file' },
+    { change: 'add', path: '/subdir/hello.txt', type: 'file' }
+  ].sort(sortDiff))
+})
+
+test('DatArchive.merge', async t => {
+  var changes
+
+  // merge into empty
+  // =
+
+  var res = await app.executeJavascript(`
+    DatArchive.create({prompt: false})
+  `)
+  var archiveURL = res.url
+  t.truthy(archiveURL)
+
+  changes = await app.executeJavascript(`
+    DatArchive.merge("${testStaticDatURL}", "${archiveURL}")
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'add', path: '/beaker.png', type: 'file' },
+    { change: 'add', path: '/hello.txt', type: 'file' },
+    { change: 'add', path: '/subdir', type: 'dir' },
+    { change: 'add',
+      path: '/subdir/space in the name.txt',
+      type: 'file' },
+    { change: 'add', path: '/subdir/hello.txt', type: 'file' }
+  ].sort(sortDiff))
+
+  t.deepEqual((await readdir(archiveURL, '/')).sort(), [
+    'beaker.png',
+    'hello.txt',
+    'subdir',
+    'dat.json'
+  ].sort())
+  t.deepEqual((await readdir(archiveURL, '/subdir')).sort(), [
+    'space in the name.txt',
+    'hello.txt'
+  ].sort())
+
+  // merge into populated
+  // =
+
+  var res = await app.executeJavascript(`
+    DatArchive.create({prompt: false})
+  `)
+  archiveURL = res.url
+  t.truthy(archiveURL)
+
+  await app.executeJavascript(`
+    var a = new DatArchive("${archiveURL}")
+    Promise.all([
+      a.writeFile('/hello.txt', 'asdfasdfasdf'),
+      a.writeFile('/foo.bar', 'asdfasdf'),
+      a.mkdir('/subdir').then(() => {
+        return Promise.all([
+          a.writeFile('/subdir/hello.txt', 'aasdfasdfs'),
+          a.writeFile('/subdir/hello2.txt', 'aasdfasdfs'),
+        ])
+      }),
+      a.mkdir('/subdir2').then(() => {
+        return Promise.all([
+          a.writeFile('/subdir2/goodbye.txt', 'aasdfasdfs')
+        ])
+      })
+    ])
+  `)
+
+  changes = await app.executeJavascript(`
+    DatArchive.merge("${testStaticDatURL}", "${archiveURL}")
+  `)
+  t.deepEqual(changes.sort(sortDiff), [
+    { change: 'add', path: '/beaker.png', type: 'file' },
+    { change: 'del', path: '/foo.bar', type: 'file' },
+    { change: 'mod', path: '/hello.txt', type: 'file' },
+    { change: 'del', path: '/subdir2/goodbye.txt', type: 'file' },
+    { change: 'add',
+      path: '/subdir/space in the name.txt',
+      type: 'file' },
+    { change: 'del', path: '/subdir/hello2.txt', type: 'file' },
+    { change: 'mod', path: '/subdir/hello.txt', type: 'file' },
+    { change: 'del', path: '/subdir2', type: 'dir' }
+  ].sort(sortDiff))
+
+  t.deepEqual((await readdir(archiveURL, '/')).sort(), [
+    'beaker.png',
+    'hello.txt',
+    'subdir',
+    'dat.json'
+  ].sort())
+  t.deepEqual((await readdir(archiveURL, '/subdir')).sort(), [
+    'space in the name.txt',
+    'hello.txt'
+  ].sort())
+
+  // cant merge into unowned archive
+  // =
+
+  await t.throws(app.executeJavascript(`
+    DatArchive.merge("${archiveURL}", "${testStaticDatURL}")
+  `))
+})
+
 test('archive.watch', async t => {
 
   // create a new archive
@@ -1631,6 +1947,10 @@ test('network events', async t => {
 
 function sleep (time) {
   return new Promise(resolve => setTimeout(resolve, time))
+}
+
+function sortDiff (a, b) {
+  return a.path.localeCompare(b.path)
 }
 
 // because we pass paths through eval() code,

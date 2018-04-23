@@ -437,6 +437,50 @@ export default {
     return pda.createNetworkActivityStream(archive)
   },
 
+  async resolveName (name) {
+    if (DAT_HASH_REGEX.test(name)) return name
+    return datDns.resolveName(name)
+  },
+
+  async selectArchive ({title, buttonLabel, filters} = {}) {
+    // initiate the modal
+    var win = getWebContentsWindow(this.sender)
+    // DISABLED
+    // this mechanism is a bit too temperamental
+    // are we sure it's the best policy anyway?
+    // -prf
+    // await assertSenderIsFocused(this.sender)
+    var res = await showModal(win, 'select-archive', {title, buttonLabel, filters})
+    if (!res || !res.url) throw new UserDeniedError()
+    return res.url
+  },
+
+  async diff (srcUrl, dstUrl, opts) {
+    assertTmpBeakerOnly(this.sender)
+    if (!srcUrl || typeof srcUrl !== 'string') {
+      throw new InvalidURLError('The first parameter of diff() must be a dat URL')
+    }
+    if (!dstUrl || typeof dstUrl !== 'string') {
+      throw new InvalidURLError('The second parameter of diff() must be a dat URL')
+    }
+    var [src, dst] = await Promise.all([lookupArchive(srcUrl), lookupArchive(dstUrl)])
+    return pda.diff(src.archive, src.filepath, dst.archive, dst.filepath, opts)
+  },
+
+  async merge (srcUrl, dstUrl, opts) {
+    assertTmpBeakerOnly(this.sender)
+    if (!srcUrl || typeof srcUrl !== 'string') {
+      throw new InvalidURLError('The first parameter of merge() must be a dat URL')
+    }
+    if (!dstUrl || typeof dstUrl !== 'string') {
+      throw new InvalidURLError('The second parameter of merge() must be a dat URL')
+    }
+    var [src, dst] = await Promise.all([lookupArchive(srcUrl), lookupArchive(dstUrl)])
+    if (!dst.archive.writable) throw new ArchiveNotWritableError('The destination archive is not writable')
+    if (dst.version) throw new ArchiveNotWritableError('Cannot modify a historic version')
+    return pda.merge(src.archive, src.filepath, dst.archive, dst.filepath, opts)
+  },
+
   async importFromFilesystem (opts) {
     assertTmpBeakerOnly(this.sender)
     var {archive, filepath, version} = await lookupArchive(opts.dst, opts)
@@ -482,24 +526,6 @@ export default {
       skipUndownloadedFiles: opts.skipUndownloadedFiles !== false
     })
   },
-
-  async resolveName (name) {
-    if (DAT_HASH_REGEX.test(name)) return name
-    return datDns.resolveName(name)
-  },
-
-  async selectArchive ({title, buttonLabel, filters} = {}) {
-    // initiate the modal
-    var win = getWebContentsWindow(this.sender)
-    // DISABLED
-    // this mechanism is a bit too temperamental
-    // are we sure it's the best policy anyway?
-    // -prf
-    // await assertSenderIsFocused(this.sender)
-    var res = await showModal(win, 'select-archive', {title, buttonLabel, filters})
-    if (!res || !res.url) throw new UserDeniedError()
-    return res.url
-  }
 }
 
 // internal helpers
