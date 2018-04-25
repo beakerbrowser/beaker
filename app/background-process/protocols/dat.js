@@ -17,15 +17,19 @@ import directoryListingPage from '../networks/dat/directory-listing-page'
 import errorPage from '../../lib/error-page'
 import * as mime from '../../lib/mime'
 
-// HACK
-// attempt to load utp-native to make sure it's correctly built
-// discovery-swarm intentionally swallows that failure but we want
-// it to be logged
+// HACK detect whether the native builds of some key deps are working -prf
 // -prf
 try {
   require('utp-native')
 } catch (err) {
+  debug('Failed to load utp-native. Peer-to-peer connectivity may be degraded.', err.toString())
   console.error('Failed to load utp-native. Peer-to-peer connectivity may be degraded.', err)
+}
+try {
+  require('sodium-native')
+} catch (err) {
+  debug('Failed to load sodium-native. Performance may be degraded.', err.toString())
+  console.error('Failed to load sodium-native. Performance may be degraded.', err)
 }
 
 // constants
