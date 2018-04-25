@@ -6,6 +6,7 @@ import unusedFilename from 'unused-filename'
 import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
+import parseDataURL from 'data-urls'
 
 // globals
 // =
@@ -37,7 +38,7 @@ export function registerListener (win, opts = {}) {
     // track as an active download
     item.id = ('' + Date.now()) + ('' + Math.random()) // pretty sure this is collision proof but replace if not -prf
     item.name = path.basename(filePath)
-    if (item.name.split('.').length < 2) {
+    if (item.name.split('.').length < 2 && item.getMimeType()) {
       const ext = `.${mime.extension(item.getMimeType())}`
       if (ext !== '.bin') {
         item.name += ext
@@ -69,19 +70,35 @@ export function registerListener (win, opts = {}) {
     })
 
     item.on('done', (e, state) => {
-      downloadsEvents.emit('done', toJSON(item))
+      // inform users of error conditions
+      var overrides = false
+      if (state === 'interrupted') {
+        // this can sometimes happen because the link is a data: URI
+        // in that case, we can manually parse and save it
+        if (item.getURL().startsWith('data:')) {
+          let parsed = parseDataURL(item.getURL())
+          if (parsed) {
+            fs.writeFileSync(filePath, parsed.body)
+            overrides = {
+              state: 'completed',
+              receivedBytes: parsed.body.length,
+              totalBytes: parsed.body.length
+            }
+          }
+        }
+        if (!overrides) {
+          dialog.showErrorBox('Download error', `The download of ${item.getFilename()} was interrupted`)
+        }
+      }
+
+      downloadsEvents.emit('done', toJSON(item, overrides))
 
       // replace entry with a clone that captures the final state
-      downloads.splice(downloads.indexOf(item), 1, capture(item))
+      downloads.splice(downloads.indexOf(item), 1, capture(item, overrides))
 
       // reset progress bar when done
       if (isNoActiveDownloads() && !win.isDestroyed()) {
         win.setProgressBar(-1)
-      }
-
-      // inform users of error conditions
-      if (state === 'interrupted') {
-        dialog.showErrorBox('Download error', `The download of ${item.getFilename()} was interrupted`)
       }
 
       if (state === 'completed') {
@@ -89,11 +106,11 @@ export function registerListener (win, opts = {}) {
         if (process.platform === 'darwin') {
           app.dock.downloadFinished(filePath)
         }
+      }
 
-        // optional, for one-time downloads
-        if (opts.unregisterWhenDone) {
-          webContents.session.removeListener('will-download', listener)
-        }
+      // optional, for one-time downloads
+      if (opts.unregisterWhenDone) {
+        webContents.session.removeListener('will-download', listener)
       }
     })
   }
@@ -182,29 +199,29 @@ function showInFolder (id) {
 // =
 
 // reduce down to attributes
-function toJSON (item) {
+function toJSON (item, overrides) {
   return {
     id: item.id,
     name: item.name,
     url: item.getURL(),
-    state: item.getState(),
+    state: overrides ? overrides.state : item.getState(),
     isPaused: item.isPaused(),
-    receivedBytes: item.getReceivedBytes(),
-    totalBytes: item.getTotalBytes(),
+    receivedBytes: overrides ? overrides.receivedBytes : item.getReceivedBytes(),
+    totalBytes: overrides ? overrides.totalBytes : item.getTotalBytes(),
     downloadSpeed: item.downloadSpeed()
   }
 }
 
 // create a capture of the final state of an item
-function capture (item) {
+function capture (item, overrides) {
   var savePath = item.getSavePath()
   var dlspeed = item.download
-  item = toJSON(item)
+  item = toJSON(item, overrides)
   item.getURL = () => item.url
-  item.getState = () => item.state
+  item.getState = () => overrides === true ? 'completed' : item.state
   item.isPaused = () => false
-  item.getReceivedBytes = () => item.receivedBytes
-  item.getTotalBytes = () => item.totalBytes
+  item.getReceivedBytes = () => overrides ? overrides.receivedBytes : item.receivedBytes
+  item.getTotalBytes = () => overrides ? overrides.totalBytes : item.totalBytes
   item.getSavePath = () => savePath
   item.downloadSpeed = () => dlspeed
   return item
