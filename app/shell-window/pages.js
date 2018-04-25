@@ -39,6 +39,7 @@ var events = new EventEmitter()
 var webviewsDiv = document.getElementById('webviews')
 var closedURLs = []
 var cachedMarkdownRendererScript
+var cachedJSONRendererScript
 
 // exported functions
 // =
@@ -705,8 +706,15 @@ function onDidStopLoading (e) {
 
     // fallback content type
     let contentType = page.contentType
-    if (!contentType && page.getURL().endsWith('.md')) {
-      contentType = 'text/markdown'
+    if (!contentType) {
+
+      if (page.getURL().endsWith('.md')) {
+        contentType = 'text/markdown'
+      }
+
+      if (page.getURL().endsWith('.json')) {
+        contentType = 'application/json'
+      }
     }
 
     // markdown rendering
@@ -750,7 +758,46 @@ function onDidStopLoading (e) {
       if (!cachedMarkdownRendererScript) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
       }
+
       page.webviewEl.executeJavaScript(cachedMarkdownRendererScript)
+    }
+
+    // json rendering
+    // inject the json render script
+    if (contentType && (contentType.startsWith('application/json') || contentType.startsWith('application/javascript'))) {
+      
+      page.webviewEl.insertCSS(`
+        .hidden { display: none !important; }
+        .json-formatter-row {
+          font-family: Consolas, 'Lucida Console', Monaco, monospace !important;
+          line-height: 1.6 !important;
+          font-size: 13px;
+        }
+        .json-formatter-row > a > .json-formatter-preview-text {
+          transition: none !important;
+        }
+        nav { margin-bottom: 5px; }
+        nav > span {
+          cursor: pointer;
+          display: inline-block;
+          font-family: Consolas, "Lucida Console", Monaco, monospace;
+          cursor: pointer;
+          font-size: 13px;
+          background: rgb(250, 250, 250);
+          padding: 3px 5px;
+          margin-right: 5px;
+        }
+        nav > span.pressed {
+          box-shadow: inset 2px 2px 2px rgba(0,0,0,.05);
+          background: #ddd;
+        }
+      `)
+
+      if (!cachedJSONRendererScript) {
+        cachedJSONRendererScript = fs.readFileSync(path.join(APP_PATH, 'json-renderer.build.js'), 'utf8')
+      }
+
+      page.webviewEl.executeJavaScript(cachedJSONRendererScript);
     }
 
     // HACK
