@@ -15,7 +15,7 @@ const debug = require('debug')('beaker-analytics')
 // =
 
 export function setup () {
-  setTimeout(checkin, ms('30s'))
+  setTimeout(checkin, ms('3s'))
 }
 
 // internal methods
@@ -65,6 +65,7 @@ function sendPing (pingData) {
       debug('Ping failed', err)
       reject()
     })
+    req.end()
   })
 }
 
