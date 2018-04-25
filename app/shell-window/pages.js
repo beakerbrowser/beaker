@@ -767,27 +767,31 @@ function onDidStopLoading (e) {
     if (contentType && (contentType.startsWith('application/json') || contentType.startsWith('application/javascript'))) {
       
       page.webviewEl.insertCSS(`
-          body > pre { display: none; }
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }
-          body { background: #222f35!important; color: #607d8a!important;}
-          .json-formatter-key { color: #00fdff!important; }
-          .json-formatter-string { color: #00fa92!important; }
-          .json-formatter-null { color: #ff2f92!important; }
-          .json-formatter-boolean { color: #ff2f92!important; }
-          .json {
-            font-family: Consolas, Ubuntu, "Helvetica Neue", Ubuntu, sans-serif!important;
-            font-size: 16px!important;
-            line-height: 1.5em!important;
-            -webkit-font-smoothing: subpixel-antialiased!important;
-            font-weight: 700!important;
-          }
-          .json-formatter-dark.json-formatter-row {
-            font-family: Consolas, Ubuntu, "Helvetica Neue", Ubuntu, sans-serif!important;
-            -webkit-font-smoothing: subpixel-antialiased!important;
-            font-size: 19px!important;
-            font-weight: 700!important;
-          }
-        `)
+        .hidden { display: none !important; }
+        .json-formatter-row {
+          font-family: Consolas, 'Lucida Console', Monaco, monospace !important;
+          line-height: 1.6 !important;
+          font-size: 13px;
+        }
+        .json-formatter-row > a > .json-formatter-preview-text {
+          transition: none !important;
+        }
+        nav { margin-bottom: 5px; }
+        nav > span {
+          cursor: pointer;
+          display: inline-block;
+          font-family: Consolas, "Lucida Console", Monaco, monospace;
+          cursor: pointer;
+          font-size: 13px;
+          background: rgb(250, 250, 250);
+          padding: 3px 5px;
+          margin-right: 5px;
+        }
+        nav > span.pressed {
+          box-shadow: inset 2px 2px 2px rgba(0,0,0,.05);
+          background: #ddd;
+        }
+      `)
 
       if (!cachedJSONRendererScript) {
         cachedJSONRendererScript = fs.readFileSync(path.join(APP_PATH, 'json-renderer.build.js'), 'utf8')
