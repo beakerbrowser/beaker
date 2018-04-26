@@ -283,7 +283,7 @@ function getCurrentName () {
     if (targetAppInfo.name) {
       return targetAppInfo.name
     } else {
-      targetAppInfo.name = '' //getRandomName() TODO
+      targetAppInfo.name = '' // getRandomName() TODO
       return targetAppInfo.name
     }
   }

@@ -23,7 +23,6 @@ const BEAKER_CSP = `
   child-src 'self';
 `.replace(/\n/g, '')
 
-
 // exported api
 // =
 
@@ -59,7 +58,7 @@ async function beakerProtocol (request, respond) {
     // parse the ICO to get the 16x16
     const images = await ICO.parse(data, 'image/png')
     let image = images[0]
-    for (let i=1; i < images.length; i++) {
+    for (let i = 1; i < images.length; i++) {
       if (Math.abs(images[i].width - size) < Math.abs(image.width - size)) {
         image = images[i]
       }
@@ -84,7 +83,6 @@ async function beakerProtocol (request, respond) {
     let i = requestUrl.indexOf('?')
     if (i !== -1) requestUrl = requestUrl.slice(0, i)
   }
-
 
   // browser ui
   if (requestUrl === 'beaker://shell-window/') {
@@ -141,7 +139,7 @@ async function beakerProtocol (request, respond) {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages.css'))
   }
   if (requestUrl.startsWith('beaker://assets/img/onboarding/')) {
-    var imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
+    let imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
   }
   if (requestUrl === 'beaker://assets/icon/photos.png') {
@@ -172,7 +170,7 @@ async function beakerProtocol (request, respond) {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/start.html'))
   }
   if (requestUrl.startsWith('beaker://start/background-image-default')) {
-    var imgPath = requestUrl.slice('beaker://start/background-image-default'.length)
+    let imgPath = requestUrl.slice('beaker://start/background-image-default'.length)
     return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/start${imgPath}`))
   }
   if (requestUrl === 'beaker://start/background-image') {

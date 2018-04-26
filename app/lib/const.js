@@ -44,7 +44,7 @@ export const DAT_PRESERVED_FIELDS_ON_FORK = [
 export const WORKSPACE_VALID_NAME_REGEX = /^[a-z][a-z0-9-]*$/i
 
 // git-url validator
-export const IS_GIT_URL_REGEX = /(?:git|ssh|https?|git@[-\w.]+):(\/\/)?(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/;
+export const IS_GIT_URL_REGEX = /(?:git|ssh|https?|git@[-\w.]+):(\/\/)?(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/
 
 // archive metadata
 // TODO- these may not all be meaningful anymore -prf

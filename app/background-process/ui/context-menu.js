@@ -152,16 +152,16 @@ export default function registerContextMenu () {
       }
 
       // web search
-      if(hasText){
-        var searchPreviewStr = props.selectionText.substr(0,30) // Trim search preview to keep it reasonably sized
+      if (hasText) {
+        var searchPreviewStr = props.selectionText.substr(0, 30) // Trim search preview to keep it reasonably sized
         searchPreviewStr = searchPreviewStr.replace(/\s/gi, ' ') // Replace whitespace chars with space
         searchPreviewStr = searchPreviewStr.replace(/[\u061c\u200E\u200f\u202A-\u202E]+/g, '') // Remove directional text control chars
-        if (searchPreviewStr.length < props.selectionText.length){ // Add ellipsis if search preview was trimmed
+        if (searchPreviewStr.length < props.selectionText.length) { // Add ellipsis if search preview was trimmed
           searchPreviewStr += '...\"'
         } else {
           searchPreviewStr += '\"'
         }
-        var query = 'https://duckduckgo.com/?q=' + props.selectionText.substr(0,500) // Limit query to prevent too long query error from DDG
+        var query = 'https://duckduckgo.com/?q=' + props.selectionText.substr(0, 500) // Limit query to prevent too long query error from DDG
         menuItems.push({ label: 'Search DuckDuckGo for \"' + searchPreviewStr, click: (item, win) => win.webContents.send('command', 'file:new-tab', query) })
         menuItems.push({ type: 'separator' })
       }

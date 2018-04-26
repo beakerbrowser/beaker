@@ -15,7 +15,7 @@ export default {
   async getCurrentUserArchive () {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:read')
     // var profileRecord = await getProfileRecord(0)
     // return profileRecord.url
@@ -32,7 +32,7 @@ export default {
   async getCurrentUserProfile () {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:read')
     // var profileRecord = await getProfileRecord(0)
     // var profile = await getAPI().getProfile(profileRecord.url)
@@ -50,7 +50,7 @@ export default {
   async getUserProfile (archive) {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:read')
     // assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     // await getAPI().addArchive(archive)
@@ -64,7 +64,7 @@ export default {
   async setCurrentUserProfile (data) {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:edit-profile')
     // assertObject(data, 'Parameter one must be an object')
     // var profileRecord = await getProfileRecord(0)
@@ -77,7 +77,7 @@ export default {
   async setCurrentUserAvatar (imgData, imgExtension) {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:edit-profile')
     // assertBuffer(imgData, 'Parameter one must be an ArrayBuffer or base64-encoded string')
     // assertString(imgExtension, 'Parameter two must be a string')
@@ -92,7 +92,7 @@ export default {
   async follow (targetUser, targetUserName) {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:edit-social')
     // assertArchive(targetUser, 'Parameter one must be an archive object, or the URL of an archive')
     // var profileRecord = await getProfileRecord(0)
@@ -103,7 +103,7 @@ export default {
   async unfollow (targetUser) {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:edit-social')
     // assertArchive(targetUser, 'Parameter one must be an archive object, or the URL of an archive')
     // var profileRecord = await getProfileRecord(0)
@@ -114,7 +114,7 @@ export default {
   async listFollowers (archive) {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:read')
     // assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     // await getAPI().addArchive(archive)
@@ -124,7 +124,7 @@ export default {
   async countFollowers (archive) {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:read')
     // assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     // await getAPI().addArchive(archive)
@@ -134,7 +134,7 @@ export default {
   async listFriends (archive) {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:read')
     // assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     // await getAPI().addArchive(archive)
@@ -144,7 +144,7 @@ export default {
   async countFriends (archive) {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:read')
     // assertArchive(archive, 'Parameter one must be an archive object, or the URL of an archive')
     // await getAPI().addArchive(archive)
@@ -154,7 +154,7 @@ export default {
   async isFollowing (archiveA, archiveB) {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:read')
     // assertArchive(archiveA, 'Parameter one must be an archive object, or the URL of an archive')
     // assertArchive(archiveB, 'Parameter two must be an archive object, or the URL of an archive')
@@ -168,7 +168,7 @@ export default {
   async isFriendsWith (archiveA, archiveB) {
     // TODO(profiles) disabled -prf
     throw new Error('Profiles are currently disabled')
-    
+
     // await assertPermission(this.sender, 'app:profiles:read')
     // assertArchive(archiveA, 'Parameter one must be an archive object, or the URL of an archive')
     // assertArchive(archiveB, 'Parameter two must be an archive object, or the URL of an archive')

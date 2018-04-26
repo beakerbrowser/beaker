@@ -1,3 +1,5 @@
+/* globals beaker */
+
 import * as yo from 'yo-yo'
 import * as contextMenu from './context-menu'
 

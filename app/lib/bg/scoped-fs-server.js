@@ -5,7 +5,7 @@ import once from 'once'
 import fs from 'fs'
 import intoStream from 'into-stream'
 import errorPage from '../error-page'
-import {pluralize, makeSafe} from '../strings'
+import {makeSafe} from '../strings'
 import * as mime from '../mime'
 import * as scopedFSes from './scoped-fses'
 import renderDirectoryListingPage from '../../background-process/networks/dat/directory-listing-page'
@@ -45,7 +45,7 @@ export async function serve (request, respond, {CSP, scopedFSPath}) {
 
     // read the manifest (it's needed in a couple places)
     let manifest
-    try { 
+    try {
       manifest = await new Promise(resolve => scopedFS.readFile('/dat.json', 'utf8', (err, data) => resolve(data)))
       if (manifest) {
         manifest = JSON.parse(manifest)

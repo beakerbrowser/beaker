@@ -12,7 +12,7 @@ var reject
 // exported api
 // =
 
-export function render ({name='', url='', isCreating=false}) {
+export function render ({name = '', url = '', isCreating = false}) {
   return yo`
     <div id="edit-app-popup" class="popup-wrapper" onclick=${onClickWrapper}>
       <form class="popup-inner" onsubmit=${onSubmit}>

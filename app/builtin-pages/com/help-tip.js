@@ -1,3 +1,5 @@
+/* globals localStorage */
+
 import * as yo from 'yo-yo'
 import * as HELP_TIPS from '../../lib/i18n/help-tips'
 
@@ -30,7 +32,7 @@ export default function render () {
     ${el}
     <span class="help-tip-ctrl">
       <a class="btn success" href=${tip.href}>${tip.cta}</a>
-      ${''/*<a class="btn" href="#" onclick=${onClickNextTip}><span class="fa fa-caret-right"></span></a>*/}
+      ${''/* <a class="btn" href="#" onclick=${onClickNextTip}><span class="fa fa-caret-right"></span></a> */}
       <a class="btn plain" href="#" onclick=${onClickDismiss}><span class="fa fa-times"></span></a>
     </span>
   </div>`
@@ -44,10 +46,10 @@ function rerender () {
   if (el) yo.update(el, render())
 }
 
-function nextTip() {
+function nextTip () {
   var currentHelpTip = ((+localStorage.currentHelpTip) || 0) + 1
   if (currentHelpTip >= HELP_TIPS.EN.length) currentHelpTip = 0
-  localStorage.currentHelpTip = currentHelpTip  
+  localStorage.currentHelpTip = currentHelpTip
 }
 
 // events

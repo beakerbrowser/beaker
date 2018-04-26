@@ -1,4 +1,3 @@
-import * as yo from 'yo-yo'
 import { findParent } from '../../lib/fg/event-handlers'
 
 // globals

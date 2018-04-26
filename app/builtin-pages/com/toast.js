@@ -1,7 +1,7 @@
 import yo from 'yo-yo'
 
 function render (message, type = '', button = null) {
-  const onButtonClick = button ? (e) => {destroy(); button.click(e)} : undefined
+  const onButtonClick = button ? (e) => { destroy(); button.click(e) } : undefined
   return yo`
     <div id="toast-wrapper" class="toast-wrapper">
       <p class="toast ${type}">${message} ${button ? yo`<a class="toast-btn" onclick=${onButtonClick}>${button.label}</a>` : ''}</p>

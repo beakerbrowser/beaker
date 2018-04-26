@@ -103,9 +103,9 @@ function updateCanvas () {
   ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
   ctx.save()
 
-    ctx.translate(ox, oy)
-    ctx.scale(zoom, zoom)
-    ctx.drawImage(img, 0, 0, img.width, img.height)
+  ctx.translate(ox, oy)
+  ctx.scale(zoom, zoom)
+  ctx.drawImage(img, 0, 0, img.width, img.height)
 
   ctx.restore()
 }

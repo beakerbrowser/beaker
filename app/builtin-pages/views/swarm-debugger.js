@@ -142,7 +142,7 @@ function renderNavItem (view, label) {
   return yo`
     <a
       class=${view === activeView ? 'active' : ''}
-      onclick=${() => {setView(view); render()}}>
+      onclick=${() => { setView(view); render() }}>
       ${label}
     </a>`
 }
@@ -221,7 +221,7 @@ function onClickLogEntry (e) {
   if (columnIndex < 0 || columnIndex >= activeColumns) return
 
   let key = activeColumns[columnIndex]
-  let value = (''+el.innerText).trim()
+  let value = ('' + el.innerText).trim()
 
   filter = filter || {}
   filter[key] = value

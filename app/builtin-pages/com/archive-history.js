@@ -1,3 +1,5 @@
+/* globals DatArchive */
+
 import * as yo from 'yo-yo'
 
 const FETCH_COUNT = 200
@@ -21,7 +23,7 @@ export default function render (archive) {
 
     let history = []
     fetchMore()
-    async function fetchMore() {
+    async function fetchMore () {
       try {
         // fetch
         let start = history.length
@@ -29,8 +31,8 @@ export default function render (archive) {
         history = history.concat(h)
 
         // render
-        var rowEls = history.map(c => {
-          return yo`
+        var rowEls = history.map(c => (
+          yo`
             <div
               onclick=${() => window.location = `beaker://library/${archive.url}+${c.version}`}
               class="archive-history-item"
@@ -47,7 +49,7 @@ export default function render (archive) {
 
               <div class="version badge green">v${c.version}</div>
             </div>`
-        })
+        ))
 
         yo.update(el, yo`
           <div class="archive-history">

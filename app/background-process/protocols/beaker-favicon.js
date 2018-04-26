@@ -9,9 +9,7 @@ import fs from 'fs'
 import path from 'path'
 import pda from 'pauls-dat-api'
 import ICO from 'icojs'
-import {parse as parseUrl} from 'url'
 import * as sitedata from '../dbs/sitedata'
-import * as scopedFSes from '../../lib/bg/scoped-fses'
 import * as datLibrary from '../networks/dat/library'
 import datDns from '../networks/dat/dns'
 
@@ -50,7 +48,7 @@ export function setup () {
       // ignore
     }
 
-    // if a dat, see if there's a favicon.ico or .png 
+    // if a dat, see if there's a favicon.ico or .png
     try {
       let data, fs
       // pick the filesystem
@@ -66,7 +64,7 @@ export function setup () {
             // select the best-fitting size
             let images = await ICO.parse(data, 'image/png')
             let image = images[0]
-            for (let i=1; i < images.length; i++) {
+            for (let i = 1; i < images.length; i++) {
               if (Math.abs(images[i].width - faviconSize) < Math.abs(image.width - faviconSize)) {
                 image = images[i]
               }

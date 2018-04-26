@@ -15,7 +15,7 @@ export function makeTxLock () {
 // 1. waits for the setupPromise
 // 2. provides a cb handler that returns a promise
 // 3. creates a transaction lock, and wraps the cb with it
-// NOTE: 
+// NOTE:
 //   Using the transactor does mean that the DB is locked into sequential operation.
 //   This is slower, but necessary if the SQLite instance has any transactions that
 //   do async work within them; eg, SELECT then UPDATE.

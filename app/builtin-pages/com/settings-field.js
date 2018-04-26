@@ -65,6 +65,5 @@ async function onSaveSettingsEdit (e, opts) {
   }, 4000)
 
   // blur the input
-  try { document.querySelector('input:focus').blur() }
-  catch (e) { /* no input focused */ }
+  try { document.querySelector('input:focus').blur() } catch (e) { /* no input focused */ }
 }

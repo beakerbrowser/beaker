@@ -1,4 +1,4 @@
-/* globals DatArchive beaker */
+/* globals DatArchive beaker hljs confirm */
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
@@ -13,12 +13,10 @@ import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
 import * as localsyncpathPopup from '../com/library-localsyncpath-popup'
 import * as copydatPopup from '../com/library-copydat-popup'
-import * as contextInput from '../com/context-input'
 import * as faviconPicker from '../com/favicon-picker'
 import renderSettingsField from '../com/settings-field'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
-import {niceDate} from '../../lib/time'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
 import {IS_GIT_URL_REGEX} from '../../lib/const'
@@ -311,8 +309,6 @@ function renderView () {
       return renderSettingsView()
     case 'network':
       return renderNetworkView()
-    case 'preview':
-      return renderPreviewView()
     default:
       return yo`<div class="view">Loading...</div>`
   }
@@ -592,7 +588,7 @@ function renderSettingsView () {
             ${syncPath}
           </span>
 
-          <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(syncPath, '',  true)}>
+          <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(syncPath, '', true)}>
             <i class="fa fa-clipboard"></i>
           </button>
 
@@ -714,7 +710,7 @@ function renderSettingsView () {
             ${isOwner
               ? yo`<p>
                   Set a donate link and Beaker will show a <span class="fa fa-usd"></span> icon in the navbar for your site.
-                  ${renderSettingsField({key: 'paymentLink', value: paymentLink, placeholder: "Example: https://opencollective.com/beaker", onUpdate: setManifestValue})}
+                  ${renderSettingsField({key: 'paymentLink', value: paymentLink, placeholder: 'Example: https://opencollective.com/beaker', onUpdate: setManifestValue})}
                   <small>
                     Don${"'"}t have a donate page? Try <a href="https://www.patreon.com/" target="_blank">Patreon</a>,
                     <a href="https://opencollective.com" target="_blank">Open Collective</a>, or
@@ -745,7 +741,7 @@ function renderSettingsView () {
                     Set a <a href="https://git-scm.com/" target="_blank">Git</a> repository so people can find
                     and contribute to the source code for this project.
 
-                    ${renderSettingsField({key: 'repository', value: repository, placeholder: "Example: https://github.com/beakerbrowser/beaker.git", onUpdate: setManifestValue})}
+                    ${renderSettingsField({key: 'repository', value: repository, placeholder: 'Example: https://github.com/beakerbrowser/beaker.git', onUpdate: setManifestValue})}
                   </p>
                 </div>`
               : yo`
@@ -775,7 +771,7 @@ git init
 git remote add origin ${archive.info.repository}
 git fetch
 git reset origin/master</code></pre>
-          ` : ''*/}
+          ` : '' */}
       </div>
     </div>
   `
@@ -789,7 +785,7 @@ function renderNetworkView () {
   let clearCacheBtn = ''
   let peersLimit = arePeersCollapsed ? DEFAULT_PEERS_LIMIT : Infinity
 
-  const {isSaved, expiresAt} = archive.info.userSettings
+  const {isSaved} = archive.info.userSettings
   const {progress} = archive
   const progressPercentage = `${progress.current}%`
   let downloadedBytes = _get(archive, 'info.isOwner')
@@ -802,7 +798,7 @@ function renderNetworkView () {
       progressCls = 'green'
     } else {
       progressLabel = 'Downloading and seeding files'
-      progessCls = 'green active'
+      progressCls = 'green active'
     }
   } else if (progress.isComplete) {
     progressLabel = 'All files downloaded'
@@ -887,7 +883,7 @@ function renderNetworkView () {
             ${Number(_get(archive, 'info.peers')) > DEFAULT_PEERS_LIMIT
               ? yo`
                 <span class="link" onclick=${onTogglePeersCollapsed}>
-                  ${arePeersCollapsed  ? 'Show all' : 'Show fewer'} peers
+                  ${arePeersCollapsed ? 'Show all' : 'Show fewer'} peers
                   <i class="fa fa-angle-${arePeersCollapsed ? 'down' : 'up'}"></i>
                 </span>`
               : ''
@@ -1092,7 +1088,7 @@ async function onMakeCopy () {
 }
 
 async function addReadme () {
-   const readme = `# ${archive.info.title || 'Untitled'}\n\n${archive.info.description || ''}`
+  const readme = `# ${archive.info.title || 'Untitled'}\n\n${archive.info.description || ''}`
   await archive.writeFile('/README.md', readme)
   await loadReadme()
   render()
@@ -1493,14 +1489,6 @@ async function setManifestValue (attr, value) {
     render()
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
-  }
-}
-
-// helper to rerender the peer history graph
-function updateGraph () {
-  if (activeView === 'network') {
-    var el = document.querySelector(`#history-${archive.key}`)
-    yo.update(el, renderPeerHistoryGraph(archive.info))
   }
 }
 

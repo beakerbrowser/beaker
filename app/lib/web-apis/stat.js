@@ -12,7 +12,7 @@ export default function Stat (data) {
   this.blksize = 0
   this.ino = 0
   this.uid = data ? data.uid : 0
-  this.gid = data ? data.gid : 0*/
+  this.gid = data ? data.gid : 0 */
 
   this.mode = data ? data.mode : 0
   this.size = data ? data.size : 0

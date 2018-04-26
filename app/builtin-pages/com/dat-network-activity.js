@@ -1,31 +1,17 @@
-/* globals beaker */
+/* globals beaker DatArchive confirm */
 
 import yo from 'yo-yo'
-import moment from 'moment'
 import prettyBytes from 'pretty-bytes'
 import * as toast from './toast'
 import * as contextMenu from './context-menu'
-import renderGearIcon from '../icon/gear-small'
 import {pluralize} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
 import {niceDate} from '../../lib/time'
-import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
+import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 // globals
 // =
 
-const NOT = 0
-const ONEDAY = 1
-const ONEWEEK = 2
-const ONEMONTH = 3
-const FOREVER = 4
-const TIMELENS = [
-  () => yo`<span>While visiting</span>`,
-  () => yo`<span>1 day</span>`,
-  () => yo`<span>1 week</span>`,
-  () => yo`<span>1 month</span>`,
-  () => yo`<span>Forever</span>`
-]
 var idCounter = 0
 
 // exports
@@ -40,7 +26,6 @@ export default class DatNetworkActivity {
     this.totalArchivesHosting = 0
     this.currentFilter = filter
     this.currentSort = ['title', -1]
-    this.currentlyConfiguringKey = undefined
     this.currentlyHighlightedKey = undefined
 
     beaker.archives.addEventListener('network-changed', throttle(this.onNetworkChanged.bind(this), 1e3))
@@ -77,7 +62,7 @@ export default class DatNetworkActivity {
   render () {
     if (!this.archives) {
       this.fetchArchives() // trigger load
-      return yo`<div id=${'dat-network-activity-'+this.id} class="dat-network-activity loading">Loading...</div>`
+      return yo`<div id=${'dat-network-activity-' + this.id} class="dat-network-activity loading">Loading...</div>`
     }
 
     const f = (id, label) => yo`
@@ -88,7 +73,7 @@ export default class DatNetworkActivity {
       </button>`
 
     return yo`
-      <div id=${'dat-network-activity-'+this.id} class="dat-network-activity">
+      <div id=${'dat-network-activity-' + this.id} class="dat-network-activity">
         <div class="archives">
           <button class="link clear-cache" onclick=${() => this.onClearCache()}>Clear cache</button>
           <div class="filters">
@@ -111,7 +96,7 @@ export default class DatNetworkActivity {
   // method to re-render in place
   // eg myFilesBrowser.rerender()
   rerender () {
-    let el = document.querySelector('#dat-network-activity-'+this.id)
+    let el = document.querySelector('#dat-network-activity-' + this.id)
     if (el) yo.update(el, this.render())
   }
 
@@ -131,17 +116,8 @@ export default class DatNetworkActivity {
 
   renderArchive (archive) {
     // calculate how much longer the archive will be re-hosted
-    const expiresAt = archive.userSettings.expiresAt
-    const now = Date.now()
-    const timeRemaining = (expiresAt && expiresAt > now) ? moment.duration(expiresAt - now) : null
     const highlightedCls = this.currentlyHighlightedKey === archive.key ? 'highlighted' : ''
     const inTrash = archive.isOwner && !archive.userSettings.isSaved
-
-    let expiresAtStr
-    if (!timeRemaining) expiresAtStr = ''
-    else if (timeRemaining.asMonths() > 0.5) expiresAtStr = '(1 month remaining)'
-    else if (timeRemaining.asWeeks() > 0.5) expiresAtStr = '(1 week remaining)'
-    else expiresAtStr = '(1 day remaining)'
 
     return yo`
       <div class="ll-row archive ${highlightedCls}" oncontextmenu=${e => this.onContextmenuArchive(e, archive)}>
@@ -164,75 +140,6 @@ export default class DatNetworkActivity {
 
         <div class="mtime">
           ${mtimeCache(archive)}
-        </div>
-
-        ${''/*
-          ${expiresAtStr}
-          <span class="gear-btn" onclick=${e => this.onClickSettings(archive)}>
-            ${renderGearIcon()}
-            ${this.renderSeedingMenu(archive)}
-          </span>
-        </div>*/}
-      </div>
-    `
-  }
-
-  renderSeedingMenu (archive) {
-    if (archive.key !== this.currentlyConfiguringKey) return ''
-
-    // calculate the current state
-    const isNetworked = archive.userSettings.networked
-    const expiresAt = archive.userSettings.expiresAt
-    const now = Date.now()
-    const timeRemaining = (isNetworked && expiresAt && expiresAt > now) ? moment.duration(expiresAt - now) : null
-
-    var currentSetting
-    if (!isNetworked) currentSetting = NOT
-    else if (!expiresAt) currentSetting = FOREVER
-    else if (timeRemaining.asMonths() > 0.5) currentSetting = ONEMONTH
-    else if (timeRemaining.asWeeks() > 0.5) currentSetting = ONEWEEK
-    else currentSetting = ONEDAY
-
-    // configure rendering params
-    sliderState = typeof sliderState === 'undefined' ? currentSetting : sliderState
-
-    const seedingStatusClass =
-      (sliderState == NOT ?
-        'red' :
-        (sliderState == FOREVER ?
-          'green' :
-          'yellow'))
-    const seedingStatusLabel = timeRemaining && typeof sliderState === 'undefined'
-      ? yo`<span>Rehosting (${timeRemaining.humanize()} remaining)</span>`
-      : TIMELENS[sliderState]()
-    return yo`
-      <div class="seeding-menu">
-        <div>
-          <label for="rehost-period">Seed these files</label>
-          <input
-            name="rehost-period"
-            type="range"
-            min="0"
-            max="4"
-            step="1"
-            list="steplist"
-            value=${sliderState}
-            onchange=${e => onChangeSeedingConfiguration(e)}
-            oninput=${e => onChangeSeedingConfiguration(e)} />
-          <datalist id="steplist">
-            <option>0</option>
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-          </datalist>
-        </div>
-
-        <div class="labels">
-          <div class="policy">
-            <i class="circle ${seedingStatusClass}"></i>
-            ${seedingStatusLabel}
-          </div>
         </div>
       </div>
     `
@@ -259,13 +166,13 @@ export default class DatNetworkActivity {
     this.rerender()
 
     const items = [
-      {icon: 'link', label: 'Copy URL', click: () => this.onCopyURL(archive) },
-      {icon: 'book', label: 'Open in Library', click: () => this.onOpenInLibrary(archive) },
-      {icon: 'bug', label: 'Network debugger', click: () => this.onOpenInSwarmDebugger(archive) },
+      {icon: 'link', label: 'Copy URL', click: () => this.onCopyURL(archive)},
+      {icon: 'book', label: 'Open in Library', click: () => this.onOpenInLibrary(archive)},
+      {icon: 'bug', label: 'Network debugger', click: () => this.onOpenInSwarmDebugger(archive)},
       archive.userSettings.networked
-        ? {icon: 'plug', label: 'Disconnect from the swarm', click: () => this.onToggleNetworked(archive) }
-        : {icon: 'exchange', label: 'Connect to the swarm', click: () => this.onToggleNetworked(archive) },
-      {icon: 'times-circle', label: 'Purge archive and files', click: () => this.onDeleteFiles(archive) }
+        ? {icon: 'plug', label: 'Disconnect from the swarm', click: () => this.onToggleNetworked(archive)}
+        : {icon: 'exchange', label: 'Connect to the swarm', click: () => this.onToggleNetworked(archive)},
+      {icon: 'times-circle', label: 'Purge archive and files', click: () => this.onDeleteFiles(archive)}
     ]
     await contextMenu.create({x: e.clientX, y: e.clientY, items})
 
@@ -288,7 +195,7 @@ export default class DatNetworkActivity {
   }
 
   onOpenInSwarmDebugger (archive) {
-    window.open('beaker://swarm-debugger/' + archive.url)    
+    window.open('beaker://swarm-debugger/' + archive.url)
   }
 
   async onToggleNetworked (archive) {
@@ -319,13 +226,6 @@ export default class DatNetworkActivity {
     }
   }
 
-  async onClickSettings (archive) {
-    currentlyConfiguringKey = archive.key
-    render()
-    document.body.addEventListener('keyup', onKeyUp)
-    document.body.addEventListener('click', onClick)
-  }
-
   async onNetworkChanged ({details}) {
     if (!this.archives) return
     var archive = this.archives.find(a => details.url === a.url)
@@ -346,45 +246,6 @@ export default class DatNetworkActivity {
     this.fetchArchives()
   }
 
-  async onChangeSeedingConfiguration (e) {
-    sliderState = e.target.value
-    const isNetworked = sliderState == NOT ? false : true
-    let expiresAt = 0
-
-    if (sliderState == ONEDAY) expiresAt = +(moment().add(1, 'day'))
-    if (sliderState == ONEWEEK) expiresAt = +(moment().add(1, 'week'))
-    if (sliderState == ONEMONTH) expiresAt = +(moment().add(1, 'month'))
-
-    const tmpArchive = new DatArchive(currentlyConfiguringKey)
-    const tmpArchiveInfo = await tmpArchive.getInfo()
-    if (tmpArchiveInfo.isOwner) {
-      await tmpArchive.configure({networked: isNetworked})
-    } else {
-      if (isNetworked) {
-        await beaker.archives.add(currentlyConfiguringKey, {expiresAt, networked: true})
-      } else {
-        await beaker.archives.remove(currentlyConfiguringKey)
-      }
-    }
-
-    render()
-  }
-
-  onClick (e) {
-    if (!findParent(e.target, 'gear-btn')) {
-      destroySeedingMenu()
-    }
-  }
-
-  onKeyUp (e) {
-    e.preventDefault()
-    e.stopPropagation()
-
-    if (e.keyCode === 27) {
-      destroySeedingMenu()
-    }
-  }
-
   // helpers
   // =
 
@@ -393,7 +254,7 @@ export default class DatNetworkActivity {
       var v
       switch (this.currentSort[0]) {
         case 'peers': v = a.peers - b.peers; break
-        case 'size':  v = a.size - b.size; break
+        case 'size': v = a.size - b.size; break
         case 'mtime': v = a.mtime - b.mtime; break
         case 'title':
         default:
@@ -401,14 +262,6 @@ export default class DatNetworkActivity {
       }
       return v * this.currentSort[1]
     })
-  }
-
-  destroySeedingMenu () {
-    currentlyConfiguringKey = undefined
-    sliderState = undefined
-    document.body.removeEventListener('keyup', onKeyUp)
-    document.body.removeEventListener('click', onClick)
-    render()
   }
 }
 

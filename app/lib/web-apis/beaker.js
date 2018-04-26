@@ -19,7 +19,7 @@ const opts = {timeout: false, errors}
 // const profilesRPC = rpc.importAPI('profiles', profilesManifest, opts)
 
 // beaker.profiles
-/*beaker.profiles = {}
+/* beaker.profiles = {}
 beaker.profiles.getCurrentUserArchive = async () => {
   var url = await profilesRPC.getCurrentUserArchive()
   return new DatArchive(url)
@@ -35,7 +35,7 @@ beaker.profiles.countFollowers = profilesRPC.countFollowers
 beaker.profiles.listFriends = profilesRPC.listFriends
 beaker.profiles.countFriends = profilesRPC.countFriends
 beaker.profiles.isFollowing = profilesRPC.isFollowing
-beaker.profiles.isFriendsWith = profilesRPC.isFriendsWith*/
+beaker.profiles.isFriendsWith = profilesRPC.isFriendsWith */
 
 // internal only
 if (window.location.protocol === 'beaker:') {
@@ -100,13 +100,13 @@ if (window.location.protocol === 'beaker:') {
   beaker.history.removeVisitsAfter = historyRPC.removeVisitsAfter
 
   // beaker.apps
-  /*beaker.apps = {}
+  /* beaker.apps = {}
   beaker.apps.get = appsRPC.get
   beaker.apps.list = appsRPC.list
   beaker.apps.bind = appsRPC.bind
   beaker.apps.unbind = appsRPC.unbind
   beaker.apps.runInstaller = appsRPC.runInstaller
-  beaker.apps.createEventsStream = () => fromEventStream(appsRPC.createEventsStream())*/
+  beaker.apps.createEventsStream = () => fromEventStream(appsRPC.createEventsStream()) */
 
   // beaker.downloads
   beaker.downloads = {}

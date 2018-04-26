@@ -2,12 +2,12 @@ import moment from 'moment'
 import {TimeoutError} from 'beaker-error-constants'
 
 moment.updateLocale('en', {
-  relativeTime : {s: 'seconds'}
+  relativeTime: {s: 'seconds'}
 })
 
 export function niceDate (ts, opts) {
   const endOfToday = moment().endOf('day')
-  if (typeof ts == 'number' || ts instanceof Date) { ts = moment(ts) }
+  if (typeof ts === 'number' || ts instanceof Date) { ts = moment(ts) }
   if (ts.isSame(endOfToday, 'day')) {
     if (opts && opts.noTime) { return 'today' }
     return ts.fromNow()
@@ -98,4 +98,4 @@ export function timer (ms, fn) {
   })
 }
 
-function noop() {}
+function noop () {}

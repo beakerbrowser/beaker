@@ -62,7 +62,7 @@ function onClickNext () {
   update()
 }
 
-function onClickBack() {
+function onClickBack () {
   currentStep -= 1
   update()
 }

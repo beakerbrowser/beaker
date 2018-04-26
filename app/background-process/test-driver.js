@@ -14,7 +14,7 @@ export function setup () {
 
 async function onMessage ({msgId, cmd, args}) {
   var method = METHODS[cmd]
-  if (!method) method = () => new Error('Invalid method: '+cmd)
+  if (!method) method = () => new Error('Invalid method: ' + cmd)
   try {
     var resolve = await method(...args)
     process.send({msgId, resolve})

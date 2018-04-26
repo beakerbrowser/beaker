@@ -1,3 +1,5 @@
+/* globals hljs */
+
 import yo from 'yo-yo'
 
 // exported api
@@ -5,7 +7,7 @@ import yo from 'yo-yo'
 
 export default function render (diff, path = '') {
   let pathExt = path.split('.').pop()
-  
+
   let origIdx = 1
   let newIdx = 1
 
@@ -18,19 +20,19 @@ export default function render (diff, path = '') {
     if (lineDiff.added) {
       originalLinenos = originalLinenos.concat(Array(lineDiff.count).fill(' '))
 
-      for (let j = 0; j <  lineDiff.count; j++) {
+      for (let j = 0; j < lineDiff.count; j++) {
         newLinenos.push((j + newIdx).toString())
       }
       newIdx += lineDiff.count
     } else if (lineDiff.removed) {
       newLinenos = newLinenos.concat(Array(lineDiff.count).fill(' '))
 
-      for (let j = 0; j <  lineDiff.count; j++) {
+      for (let j = 0; j < lineDiff.count; j++) {
         originalLinenos.push((j + origIdx).toString())
       }
       origIdx += lineDiff.count
     } else {
-      for (let j = 0; j <  lineDiff.count; j++) {
+      for (let j = 0; j < lineDiff.count; j++) {
         originalLinenos.push((j + origIdx).toString())
         newLinenos.push((j + newIdx).toString())
       }

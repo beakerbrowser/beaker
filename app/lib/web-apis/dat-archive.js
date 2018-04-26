@@ -342,7 +342,6 @@ if (window.location.protocol === 'beaker:') {
 
 export default DatArchive
 
-
 // internal methods
 // =
 

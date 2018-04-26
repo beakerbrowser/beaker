@@ -12,7 +12,6 @@ import {showModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {getWebContentsWindow} from '../../lib/electron'
 import {checkFolderIsEmpty} from '../../lib/bg/fs'
-import * as scopedFSes from '../../lib/bg/scoped-fses'
 import {getPermissions} from '../dbs/sitedata'
 import {queryPermission, grantPermission, requestPermission} from '../ui/permissions'
 import {
@@ -525,7 +524,7 @@ export default {
       ignore: opts.ignore,
       skipUndownloadedFiles: opts.skipUndownloadedFiles !== false
     })
-  },
+  }
 }
 
 // internal helpers

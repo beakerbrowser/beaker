@@ -1,5 +1,6 @@
+/* globals beaker */
+
 import yo from 'yo-yo'
-import {findParent} from '../../lib/fg/event-handlers'
 import {shortenHash} from '../../lib/strings'
 import closeIcon from '../icon/close'
 
@@ -110,7 +111,6 @@ function render () {
 
 // event handlers
 // =
-
 
 function onKeyUp (e) {
   e.preventDefault()

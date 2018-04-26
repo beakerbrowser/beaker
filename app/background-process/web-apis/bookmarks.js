@@ -24,7 +24,7 @@ export default {
     await assertPermission(this.sender, 'app:bookmarks:read')
     assertString(href, 'Parameter one must be a URL')
     href = normalizeUrl(href, NORMALIZE_OPTS)
-    
+
     // TODO(profiles) disabled -prf
     // var archive = await getProfileArchive(0)
     // var bookmark = await getAPI().getBookmark(archive, href)
@@ -109,7 +109,7 @@ export default {
     // if (await getAPI().isBookmarked(archive, href)) {
     //   await getAPI().setBookmarkPinned(href, pinned)
     // } else {
-      await privateBookmarksDb.setBookmarkPinned(0, href, pinned)
+    await privateBookmarksDb.setBookmarkPinned(0, href, pinned)
     // }
   },
 

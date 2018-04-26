@@ -9,11 +9,11 @@ const WIDTH = 780
 const HEIGHT = 100
 
 function scaleX (x) {
-  return (x * (WIDTH - LEGEND_WIDTH))|0
+  return (x * (WIDTH - LEGEND_WIDTH)) | 0
 }
 
 function scaleY (y) {
-  return (y * (HEIGHT - EDGE_PADDING * 2) + EDGE_PADDING)|0
+  return (y * (HEIGHT - EDGE_PADDING * 2) + EDGE_PADDING) | 0
 }
 
 // globals

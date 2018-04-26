@@ -10,7 +10,7 @@ var reject
 // exported api
 // =
 
-export function render (href, {title='', tags='', notes='', isPrivate=true, pinned=false}) {
+export function render (href, {title = '', tags = '', notes = '', isPrivate = true, pinned = false}) {
   return yo`
     <div id="edit-bookmark-popup" class="popup-wrapper" onclick=${onClickWrapper}>
       <form class="popup-inner" onsubmit=${onSubmit}>
@@ -36,7 +36,7 @@ export function render (href, {title='', tags='', notes='', isPrivate=true, pinn
 
           ${'' /* TODO(profiles) disabled -prf
           <label for="private">Private</label>
-          <input type="checkbox" checked=${isPrivate} name="private"/>*/}
+          <input type="checkbox" checked=${isPrivate} name="private"/> */}
 
           <label class="toggle">
             <input checked=${pinned} type="checkbox" name="pinned" value="pinned">
@@ -55,7 +55,7 @@ export function render (href, {title='', tags='', notes='', isPrivate=true, pinn
   `
 }
 
-export function create (href, {title='', tags='', notes='', isPrivate=true, pinned=false}) {
+export function create (href, {title = '', tags = '', notes = '', isPrivate = true, pinned = false}) {
   // render interface
   var tagsStr = tags.toString().replace(',', ' ')
   var popup = render(href, {title, tags: tagsStr, notes, isPrivate, pinned})

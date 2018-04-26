@@ -286,35 +286,35 @@ async function onContextMenu (e, filesBrowser, node) {
       }
       return
     case 'new-folder':
-    {
+      {
       // create a new virtual node
-      let parentPath = node._path || '/'
-      let newFolderNode = new FSArchiveFolder_BeingCreated(node, node._archiveInfo, node._archive, parentPath)
-      node._files.push(newFolderNode)
+        let parentPath = node._path || '/'
+        let newFolderNode = new FSArchiveFolder_BeingCreated(node, node._archiveInfo, node._archive, parentPath)
+        node._files.push(newFolderNode)
 
       // put it into rename mode
-      enterRenameMode(filesBrowser, newFolderNode)
-      return
-    }
-    case 'import':
-    {
-      let files = await beaker.browser.showOpenDialog({
-        title: 'Import files to this archive',
-        buttonLabel: 'Import',
-        properties: ['openFile', 'openDirectory', 'multiSelections']
-      })
-      if (files) {
-        await Promise.all(files.map(src => DatArchive.importFromFilesystem({
-          src,
-          dst: node.url,
-          ignore: ['dat.json'],
-          inplaceImport: false
-        })))
-        await filesBrowser.reloadTree()
-        filesBrowser.rerender()
+        enterRenameMode(filesBrowser, newFolderNode)
+        return
       }
-      return
-    }
+    case 'import':
+      {
+        let files = await beaker.browser.showOpenDialog({
+          title: 'Import files to this archive',
+          buttonLabel: 'Import',
+          properties: ['openFile', 'openDirectory', 'multiSelections']
+        })
+        if (files) {
+          await Promise.all(files.map(src => DatArchive.importFromFilesystem({
+            src,
+            dst: node.url,
+            ignore: ['dat.json'],
+            inplaceImport: false
+          })))
+          await filesBrowser.reloadTree()
+          filesBrowser.rerender()
+        }
+        return
+      }
     case 'export': return beaker.browser.downloadURL(`${node.url}?download_as=zip`)
     case null: return
     default:

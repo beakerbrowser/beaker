@@ -1,3 +1,5 @@
+/* globals hljs */
+
 import * as yo from 'yo-yo'
 import mime from 'mime'
 

@@ -33,10 +33,10 @@ export default function create ({useHeadingAnchors, hrefMassager} = {}) {
   if (hrefMassager) {
     // link modifier
     let org = md.renderer.rules.link_open
-    md.renderer.rules.link_open = function(tokens, idx, options /* env */) {
+    md.renderer.rules.link_open = function (tokens, idx, options /* env */) {
       tokens[idx].href = hrefMassager(tokens[idx].href)
       return org.apply(null, arguments)
-    };
+    }
   }
 
   return md

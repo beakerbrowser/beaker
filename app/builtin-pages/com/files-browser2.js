@@ -1,6 +1,5 @@
 import yo from 'yo-yo'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
-import parseDatURL from 'parse-dat-url'
 import renderFilesFlatView from './files-browser/files-flat-view'
 
 // exported api

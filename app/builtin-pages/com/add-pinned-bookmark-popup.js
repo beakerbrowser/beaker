@@ -1,3 +1,5 @@
+/* globals beaker */
+
 import yo from 'yo-yo'
 import {findParent} from '../../lib/fg/event-handlers'
 import closeIcon from '../icon/close'
@@ -108,11 +110,6 @@ function onFocusURL () {
   }
 }
 
-function onBlurURL () {
-  isURLFocused = false
-  update()
-}
-
 function onClickURL (url, title = '') {
   tmpURL = url
 
@@ -135,7 +132,7 @@ async function onChangeURL (e) {
         title: b.title,
         faviconUrl: b.href,
         targetUrl: b.href,
-        label: b.href,
+        label: b.href
       }
     })
     autocompleteResults = autocompleteResults.concat(bookmarkResults)
@@ -165,7 +162,7 @@ async function onChangeURL (e) {
   autocompleteResults.push({
     icon: 'fa fa-link',
     title: suggestedURL,
-    targetUrl: suggestedURL,
+    targetUrl: suggestedURL
   })
   update()
 }

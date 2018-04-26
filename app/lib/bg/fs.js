@@ -11,7 +11,7 @@ export async function checkFolderIsEmpty (dst, {noPrompt} = {}) {
       var res = await new Promise(resolve => {
         dialog.showMessageBox({
           type: 'question',
-          message: prompt || 'This folder is not empty. Some files may be overwritten. Continue?',
+          message: 'This folder is not empty. Some files may be overwritten. Continue?',
           buttons: ['Yes', 'No, cancel']
         }, resolve)
       })

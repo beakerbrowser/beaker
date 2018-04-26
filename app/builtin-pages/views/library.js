@@ -1,4 +1,4 @@
-/* globals DatArchive beaker */
+/* globals DatArchive beaker confirm */
 
 import yo from 'yo-yo'
 import bytes from 'bytes'
@@ -76,8 +76,7 @@ function filterArchives () {
     archives = archives.filter(a => {
       if (a.title && a.title.toLowerCase().includes(query)) {
         return a
-      }
-      else if (a.description && a.description.toLowerCase().includes(query)) {
+      } else if (a.description && a.description.toLowerCase().includes(query)) {
         return a
       }
     })
@@ -109,7 +108,8 @@ function renderRows (sort = '', max = undefined) {
     a = a.slice(0, max)
   }
 
-  if (!a.length) return sort
+  if (!a.length) {
+    return sort
     ? null
     : yo`
       <div class="view empty">
@@ -122,12 +122,11 @@ function renderRows (sort = '', max = undefined) {
           }
         </p>
       </div>`
+  }
   return a.map(renderRow)
 }
 
 function renderRow (row, i) {
-  const isSeeding = row.userSettings && row.userSettings.networked
-  const isSaved = row.userSettings && row.userSettings.isSaved
   const isOwner = row.isOwner
   const isMenuOpen = row.menuIsOpenIn === 'row'
 
@@ -192,8 +191,6 @@ function renderRecentArchives (sort = '', max = undefined) {
 }
 
 function renderRecent (a) {
-  const isSeeding = a.userSettings && a.userSettings.networked
-  const isSaved = a.userSettings && a.userSettings.isSaved
   const isOwner = a.isOwner
   const isMenuOpen = a.menuIsOpenIn === 'recent'
 
@@ -339,7 +336,7 @@ function renderHeader () {
         }
       </div>`
 
-      searchContainer = ''
+    searchContainer = ''
   } else {
     actions = yo`
       <div class="actions">
@@ -478,7 +475,7 @@ function onToggleChecked (e, row) {
 }
 
 function onDeselectAll () {
-  selectedArchives.forEach(a => a.checked = false)
+  selectedArchives.forEach(a => { a.checked = false })
   selectedArchives = []
   render()
 }
@@ -538,7 +535,7 @@ async function onShareFiles () {
 
   // create the dat and import the files
   const archive = await DatArchive.create({
-    title: `Shared files (${moment().format("M/DD/YYYY h:mm:ssa")})`,
+    title: `Shared files (${moment().format('M/DD/YYYY h:mm:ssa')})`,
     description: `Files shared with Beaker`,
     prompt: false
   })
@@ -737,16 +734,6 @@ async function onUpdateView (view) {
 
   // focus the search input
   document.querySelector('input.search').focus()
-}
-
-function onScrollContent (e) {
-  if (isAtEnd) { return }
-
-  var el = e.target
-  if (el.offsetHeight + el.scrollTop + BEGIN_LOAD_OFFSET >= el.scrollHeight) {
-    // hit bottom
-    fetchMore(renderAndAppendRows)
-  }
 }
 
 // helper gets the offsetTop relative to the document

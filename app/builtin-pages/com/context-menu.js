@@ -58,7 +58,7 @@ export function create (opts) {
   right = opts.right || false
   withTriangle = opts.withTriangle || false
   items = opts.items
-  parent = opts.parent || document.body
+  var parent = opts.parent || document.body
 
   // render interface
   const el = opts.render ? opts.render() : render()
@@ -82,7 +82,6 @@ export function destroy (value) {
   }
 }
 
-
 // rendering
 // =
 
@@ -104,11 +103,6 @@ function render () {
       </div>
     </div>
   `
-}
-
-function rerender () {
-  const el = document.querySelector('.context-menu')
-  if (el) yo.update(el, render())
 }
 
 // event handlers

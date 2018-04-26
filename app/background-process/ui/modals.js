@@ -31,7 +31,7 @@ export function showModal (parentWindow, modalName, opts = {}) {
   height = SIZES[modalName].height
   if (parentWindow) {
     let b = parentWindow.getBounds()
-    x = (b.x + (b.width / 2) - (width/2))
+    x = (b.x + (b.width / 2) - (width / 2))
     y = b.y + 40
   }
   modalWindow = new BrowserWindow({

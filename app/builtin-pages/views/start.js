@@ -1,15 +1,14 @@
-/* globals beaker */
+/* globals beaker localStorage */
 
 import * as yo from 'yo-yo'
 import Sortable from 'sortablejs'
-import {findParent} from '../../lib/fg/event-handlers'
 import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
 import * as editBookmarkPopup from '../com/edit-bookmark-popup'
 import renderHelpTip from '../com/help-tip'
 import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
-import {writeToClipboard} from '../../lib/fg/event-handlers'
+import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
 
 const LATEST_VERSION = 7011 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-10/?updated=true'
@@ -223,7 +222,7 @@ function update () {
   // var theme = settings.start_page_background_image
 
   yo.update(document.querySelector('.window-content.start'), yo`
-    <div class="window-content builtin start ${''/*TODO(bgimg) theme*/}">
+    <div class="window-content builtin start ${''/* TODO(bgimg) theme */}">
       <div class="builtin-wrapper start-wrapper">
         ${renderHelpTip()}
         <div class="autocomplete-container search-container">
@@ -252,7 +251,7 @@ function update () {
                 <a href="https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=issue_template_0.8_beta.md">Report an issue</a>.
               </p>
 
-              <button class="btn plain" onclick=${() => {localStorage.hasDismissedBetaInfo = true; update();}}>
+              <button class="btn plain" onclick=${() => { localStorage.hasDismissedBetaInfo = true; update() }}>
                 <i class="fa fa-times"></i>
               </button>
             </div>`

@@ -1,21 +1,16 @@
-/* globals beaker DatArchive confirm */
+/* globals beaker confirm CustomEvent */
 
 import yo from 'yo-yo'
 import moment from 'moment'
 import prettyBytes from 'pretty-bytes'
-import {join as joinPath} from 'path'
-import _get from 'lodash.get'
-import {FSArchive, FSArchiveFolder, FSArchiveFile, FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
-import parseDatURL from 'parse-dat-url'
 import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
 import * as toast from '../toast'
 import toggleable from '../toggleable'
 import renderArchiveHistory from '../archive-history'
-import {writeToClipboard, findParent} from '../../../lib/fg/event-handlers'
+import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
-import {shortenHash, pluralize} from '../../../lib/strings'
-import {DAT_VALID_PATH_REGEX, STANDARD_ARCHIVE_TYPES} from '../../../lib/const'
+import {pluralize} from '../../../lib/strings'
 
 // exported api
 // =
@@ -236,7 +231,6 @@ function rNode (filesBrowser, node, depth) {
 }
 
 function rContainer (filesBrowser, node, depth) {
-  const isArchive = node && node.constructor.name === 'FSArchive'
   let children = ''
 
   return [

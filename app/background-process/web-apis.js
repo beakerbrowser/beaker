@@ -8,26 +8,26 @@ import downloadsManifest from '../lib/api-manifests/internal/downloads'
 import sitedataManifest from '../lib/api-manifests/internal/sitedata'
 import archivesManifest from '../lib/api-manifests/internal/archives'
 import historyManifest from '../lib/api-manifests/internal/history'
-import appsManifest from '../lib/api-manifests/internal/apps'
+// import appsManifest from '../lib/api-manifests/internal/apps'
 
 // internal apis
 import archivesAPI from './web-apis/archives'
 import bookmarksAPI from './web-apis/bookmarks'
 import historyAPI from './web-apis/history'
-import appsAPI from './web-apis/apps'
+// import appsAPI from './web-apis/apps'
 import {WEBAPI as sitedataAPI} from './dbs/sitedata'
 import {WEBAPI as downloadsAPI} from './ui/downloads'
 import {WEBAPI as beakerBrowserAPI} from './browser'
 
 // external manifests
 import datArchiveManifest from '../lib/api-manifests/external/dat-archive'
-import userSessionManifest from '../lib/api-manifests/external/user-session'
-import profilesManifest from '../lib/api-manifests/external/profiles'
+// import userSessionManifest from '../lib/api-manifests/external/user-session'
+// import profilesManifest from '../lib/api-manifests/external/profiles'
 
 // external apis
 import datArchiveAPI from './web-apis/dat-archive'
-import userSessionAPI from './web-apis/user-session'
-import profilesAPI from './web-apis/profiles'
+// import userSessionAPI from './web-apis/user-session'
+// import profilesAPI from './web-apis/profiles'
 
 // exported api
 // =

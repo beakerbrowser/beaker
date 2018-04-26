@@ -1,9 +1,7 @@
-/* globals beaker confirm */
+/* globals beaker */
 
 import yo from 'yo-yo'
-import bytes from 'bytes'
 import * as toast from '../com/toast'
-import {niceDate} from '../../lib/time'
 import DatNetworkActivity from '../com/dat-network-activity'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
@@ -148,7 +146,7 @@ function renderOnStartupSettings () {
       <div class="radio-group">
         <input type="radio" id="customStartPage1" name="custom-start-page"
                value="blank"
-               checked=${settings.custom_start_page === "blank"}
+               checked=${settings.custom_start_page === 'blank'}
                onchange=${onCustomStartPageChange} />
         <label for="customStartPage1">
           Show a new tab
@@ -156,7 +154,7 @@ function renderOnStartupSettings () {
 
         <input type="radio" id="customStartPage2" name="custom-start-page"
                value="previous"
-               checked=${settings.custom_start_page === "previous"}
+               checked=${settings.custom_start_page === 'previous'}
                onchange=${onCustomStartPageChange} />
         <label for="customStartPage2">
           Show tabs from your last session
@@ -181,7 +179,6 @@ function renderDefaultDatIgnoreSettings () {
 }
 
 function renderAnalyticsSettings () {
-
   function toggle () {
     // update and optimistically render
     settings.analytics_enabled = (settings.analytics_enabled == 1) ? 0 : 1
@@ -248,7 +245,6 @@ function renderInformation () {
 }
 
 function renderProtocolSettings () {
-
   function toggleRegistered (protocol) {
     // update and optimistically render
     defaultProtocolSettings[protocol] = !defaultProtocolSettings[protocol]

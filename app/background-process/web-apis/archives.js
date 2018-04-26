@@ -1,4 +1,3 @@
-import {app} from 'electron'
 import path from 'path'
 import mkdirp from 'mkdirp'
 import datDns from '../networks/dat/dns'
@@ -41,7 +40,6 @@ export default {
     // update settings
     opts.isSaved = true
     return archivesDb.setUserSettings(0, key, opts)
-    beaker.archives.add(key)
   },
 
   async remove (url) {
@@ -83,7 +81,7 @@ export default {
   // =
 
   async validateLocalSyncPath (key, localSyncPath) {
-    var key = datLibrary.fromURLToKey(key)
+    key = datLibrary.fromURLToKey(key)
     localSyncPath = path.normalize(localSyncPath)
 
     // make sure the path is good
@@ -108,7 +106,7 @@ export default {
   },
 
   async setLocalSyncPath (key, localSyncPath, opts = {}) {
-    var key = datLibrary.fromURLToKey(key)
+    key = datLibrary.fromURLToKey(key)
     localSyncPath = localSyncPath ? path.normalize(localSyncPath) : null
 
     // disable path

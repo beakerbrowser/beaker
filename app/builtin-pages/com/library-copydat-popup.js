@@ -1,6 +1,5 @@
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import {findParent} from '../../lib/fg/event-handlers'
 import closeIcon from '../icon/close'
 
 // globals

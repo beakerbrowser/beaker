@@ -1,3 +1,5 @@
+/* globals beaker DatArchive localStorage */
+
 import * as yo from 'yo-yo'
 
 // globals
@@ -122,7 +124,7 @@ const STEPS = [
           </span>
         </a>
       </p>`,
-    color: 'green',
+    color: 'green'
   }
 ]
 

@@ -151,7 +151,7 @@ export async function listExpiredArchives () {
 // get all archives that are ready for garbage collection
 export async function listGarbageCollectableArchives ({olderThan, isOwner} = {}) {
   olderThan = typeof olderThan === 'number' ? olderThan : DAT_GC_EXPIRATION_AGE
-  isOwner = typeof isOwner === 'boolean' ? `AND archives_meta.isOwner = ${isOwner?'1':'0'}` : ''
+  isOwner = typeof isOwner === 'boolean' ? `AND archives_meta.isOwner = ${isOwner ? '1' : '0'}` : ''
   return db.all(`
     SELECT archives_meta.key
       FROM archives_meta

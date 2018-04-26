@@ -32,7 +32,6 @@ function renderHeader () {
     </div>`
 }
 
-
 function render () {
   yo.update(document.querySelector('.downloads-wrapper'), yo`
     <div class="downloads-wrapper builtin-wrapper">

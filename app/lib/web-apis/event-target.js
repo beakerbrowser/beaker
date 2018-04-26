@@ -46,7 +46,7 @@ export class Event {
     Object.defineProperty(this, 'cancelable', {value: false})
     Object.defineProperty(this, 'composed', {value: false})
     Object.defineProperty(this, 'currentTarget', {value: this.target})
-    Object.defineProperty(this, 'deepPath', {value: []}) 
+    Object.defineProperty(this, 'deepPath', {value: []})
     Object.defineProperty(this, 'defaultPrevented', {value: false})
     Object.defineProperty(this, 'eventPhase', {value: 2}) // Event.AT_TARGET
     Object.defineProperty(this, 'timeStamp', {value: Date.now()})

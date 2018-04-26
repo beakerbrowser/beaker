@@ -8,7 +8,7 @@ import datDns from '../networks/dat/dns'
 export function setup () {
   setApplicationMenu()
 
-  // watch for changes to the window's 
+  // watch for changes to the window's
   ipcMain.on('shell-window:set-current-location', (e, url) => {
     // check if this is the currently focused window
     const fwin = BrowserWindow.getFocusedWindow()
@@ -177,101 +177,101 @@ export function buildWindowMenu (opts = {}) {
       },
       reserved: true
     },
-    {
-      label: 'Hard Reload (Clear Cache)',
-      accelerator: 'CmdOrCtrl+Shift+R',
-      click: function (item, win) {
+      {
+        label: 'Hard Reload (Clear Cache)',
+        accelerator: 'CmdOrCtrl+Shift+R',
+        click: function (item, win) {
         // HACK
         // this is *super* lazy but it works
         // clear all dat-dns cache on hard reload, to make sure the next
         // load is fresh
         // -prf
-        datDns.flushCache()
+          datDns.flushCache()
 
-        if (win) win.webContents.send('command', 'view:hard-reload')
+          if (win) win.webContents.send('command', 'view:hard-reload')
+        },
+        reserved: true
       },
-      reserved: true
-    },
     { type: 'separator' },
-    {
-      label: 'Zoom In',
-      accelerator: 'CmdOrCtrl+Plus',
-      click: function (item, win) {
-        if (win) win.webContents.send('command', 'view:zoom-in')
-      }
-    },
-    {
-      label: 'Zoom Out',
-      accelerator: 'CmdOrCtrl+-',
-      click: function (item, win) {
-        if (win) win.webContents.send('command', 'view:zoom-out')
-      }
-    },
-    {
-      label: 'Actual Size',
-      accelerator: 'CmdOrCtrl+0',
-      click: function (item, win) {
-        if (win) win.webContents.send('command', 'view:zoom-reset')
-      }
-    },
-    { type: 'separator' },
-    {
-      type: 'submenu',
-      label: 'Advanced Tools',
-      submenu: [{
-        label: 'Reload Shell-Window',
-        accelerator: 'CmdOrCtrl+alt+shift+R',
-        click: function () {
-          BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
-        }
-      }, {
-        label: 'Toggle Shell-Window DevTools',
-        accelerator: 'CmdOrCtrl+alt+shift+I',
-        click: function () {
-          BrowserWindow.getFocusedWindow().toggleDevTools()
-        }
-      },
-      { type: 'separator' },
       {
-        label: 'Open Archives Debug Page',
+        label: 'Zoom In',
+        accelerator: 'CmdOrCtrl+Plus',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'file:new-tab', 'beaker://internal-archives/')
+          if (win) win.webContents.send('command', 'view:zoom-in')
         }
-      }, {
-        label: 'Open Dat-DNS Cache Page',
+      },
+      {
+        label: 'Zoom Out',
+        accelerator: 'CmdOrCtrl+-',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'file:new-tab', 'beaker://dat-dns-cache/')
+          if (win) win.webContents.send('command', 'view:zoom-out')
         }
-      }, {
-        label: 'Open Debug Log Page',
+      },
+      {
+        label: 'Actual Size',
+        accelerator: 'CmdOrCtrl+0',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'file:new-tab', 'beaker://debug-log/')
+          if (win) win.webContents.send('command', 'view:zoom-reset')
+        }
+      },
+    { type: 'separator' },
+      {
+        type: 'submenu',
+        label: 'Advanced Tools',
+        submenu: [{
+          label: 'Reload Shell-Window',
+          accelerator: 'CmdOrCtrl+alt+shift+R',
+          click: function () {
+            BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
+          }
+        }, {
+          label: 'Toggle Shell-Window DevTools',
+          accelerator: 'CmdOrCtrl+alt+shift+I',
+          click: function () {
+            BrowserWindow.getFocusedWindow().toggleDevTools()
+          }
+        },
+      { type: 'separator' },
+          {
+            label: 'Open Archives Debug Page',
+            click: function (item, win) {
+              if (win) win.webContents.send('command', 'file:new-tab', 'beaker://internal-archives/')
+            }
+          }, {
+            label: 'Open Dat-DNS Cache Page',
+            click: function (item, win) {
+              if (win) win.webContents.send('command', 'file:new-tab', 'beaker://dat-dns-cache/')
+            }
+          }, {
+            label: 'Open Debug Log Page',
+            click: function (item, win) {
+              if (win) win.webContents.send('command', 'file:new-tab', 'beaker://debug-log/')
+            }
+          }]
+      },
+      {
+        label: 'Toggle DevTools',
+        accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
+        click: function (item, win) {
+          if (win) win.webContents.send('command', 'view:toggle-dev-tools')
+        },
+        reserved: true
+      },
+      {
+        label: 'Toggle Javascript Console',
+        accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+J' : 'Shift+CmdOrCtrl+J',
+        click: function (item, win) {
+          if (win) win.webContents.send('command', 'view:toggle-javascript-console')
+        },
+        reserved: true
+      },
+      {
+        label: 'Toggle Live Reloading',
+        enabled: !!isDat,
+        click: function (item, win) {
+          if (win) win.webContents.send('command', 'view:toggle-live-reloading')
         }
       }]
-    },
-    {
-      label: 'Toggle DevTools',
-      accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
-      click: function (item, win) {
-        if (win) win.webContents.send('command', 'view:toggle-dev-tools')
-      },
-      reserved: true
-    },
-    {
-      label: 'Toggle Javascript Console',
-      accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+J' : 'Shift+CmdOrCtrl+J',
-      click: function (item, win) {
-        if (win) win.webContents.send('command', 'view:toggle-javascript-console')
-      },
-      reserved: true
-    },
-    {
-      label: 'Toggle Live Reloading',
-      enabled: !!isDat,
-      click: function (item, win) {
-        if (win) win.webContents.send('command', 'view:toggle-live-reloading')
-      }
-    }]
   }
 
   var showHistoryAccelerator = 'Ctrl+h'

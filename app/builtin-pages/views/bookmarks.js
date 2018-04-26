@@ -119,7 +119,7 @@ function sortBookmarks () {
 function renderRow (row, i) {
   if (row.isHidden) return ''
 
-  const isOwner = row.private /*|| row._origin === userProfile._origin TODO(profiles) disabled -prf */
+  const isOwner = row.private /* || row._origin === userProfile._origin TODO(profiles) disabled -prf */
 
   return yo`
     <li class="ll-row bookmarks__row list ${row.private ? 'private' : 'public'} ${isOwner ? 'is-owner' : ''}" data-row=${i}>
@@ -138,10 +138,10 @@ function renderRow (row, i) {
         ${!currentView.startsWith('tag:')
           ? row.tags.map(tag => {
             return yo`
-              <span class="tag" onclick=${e => {e.preventDefault(); e.stopPropagation(); onUpdateViewFilter(`tag:${tag}`)}}>
+              <span class="tag" onclick=${e => { e.preventDefault(); e.stopPropagation(); onUpdateViewFilter(`tag:${tag}`) }}>
                 ${tag}
               </span>`
-            })
+          })
           : ''
         }
 
@@ -158,7 +158,7 @@ function renderRow (row, i) {
 }
 
 function renderActions (row, i) {
-  const isOwner = row.private /*|| row._origin === userProfile._origin TODO(profiles) disabled -prf */
+  const isOwner = row.private /* || row._origin === userProfile._origin TODO(profiles) disabled -prf */
 
   if (isOwner) {
     return yo`
@@ -359,7 +359,7 @@ function renderSidebar () {
             })
             : yo`<div class="nav-item"><em>Not following anybody.</em></div>`
           : yo`<div class="nav-item"><em>Loading...</em></div>`}
-      </div>*/}
+      </div> */}
     </div>`
 }
 

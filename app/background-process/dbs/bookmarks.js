@@ -20,7 +20,7 @@ export async function bookmark (profileId, url, {title, tags, notes}) {
     oldBookmark = oldBookmark || {}
     const pinned = oldBookmark.pinned ? 1 : 0
     title = typeof title === 'undefined' ? oldBookmark.title : title
-    tags  = typeof tags  === 'undefined' ? oldBookmark.tags  : tags
+    tags = typeof tags === 'undefined' ? oldBookmark.tags : tags
     notes = typeof notes === 'undefined' ? oldBookmark.notes : notes
 
     // update record

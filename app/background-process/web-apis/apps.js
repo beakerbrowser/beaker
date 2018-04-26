@@ -14,7 +14,6 @@ import {DAT_HASH_REGEX} from '../../lib/const'
 import {getFullGranted} from '../../lib/app-perms'
 import {PermissionsError, InvalidURLError} from 'beaker-error-constants'
 
-
 // events emitted to rpc clients
 const appsEvents = new EventEmitter()
 

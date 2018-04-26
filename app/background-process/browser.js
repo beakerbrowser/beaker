@@ -199,8 +199,8 @@ export async function getDefaultProtocolSettings () {
       exec('xdg-mime query default "x-scheme-handler/dat"')
     ])
     return {
-      http: (httpHandler||'').trim() === DOT_DESKTOP_FILENAME,
-      dat: (datHandler||'').trim() === DOT_DESKTOP_FILENAME
+      http: (httpHandler || '').trim() === DOT_DESKTOP_FILENAME,
+      dat: (datHandler || '').trim() === DOT_DESKTOP_FILENAME
     }
   }
 

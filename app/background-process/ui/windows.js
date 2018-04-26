@@ -54,7 +54,7 @@ export async function setup () {
       wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
 
       // track focused devtools host
-      wc.on('devtools-focused', () => {focusedDevtoolsHost = wc})
+      wc.on('devtools-focused', () => { focusedDevtoolsHost = wc })
       wc.on('devtools-closed', unfocusDevtoolsHost)
       wc.on('destroyed', unfocusDevtoolsHost)
       function unfocusDevtoolsHost () {
@@ -69,8 +69,7 @@ export async function setup () {
     if (sender.id === firstWindow) {
       // if this is the first window opened (since app start or since all windows closing)
       sender.send('command', 'load-pinned-tabs')
-      try { BrowserWindow.fromId(sender.id).focus() }
-      catch (e) {}
+      try { BrowserWindow.fromId(sender.id).focus() } catch (e) {}
     }
   })
 
@@ -150,7 +149,7 @@ export function createShellWindow (windowState) {
   win.on('scroll-touch-end', sendToWebContents('scroll-touch-end'))
   win.on('focus', sendToWebContents('focus'))
   win.on('blur', sendToWebContents('blur'))
-  win.on('app-command', (e, cmd) => {onAppCommand(win, e, cmd)})
+  win.on('app-command', (e, cmd) => { onAppCommand(win, e, cmd) })
   win.on('enter-full-screen', e => {
     registerShortcut(win, 'Esc', onEscape(win))
     sendToWebContents('enter-full-screen')(e)
@@ -202,22 +201,6 @@ export function ensureOneWindowExists () {
 
 // internal methods
 // =
-
-function openTab (location) {
-  return () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      let win = createShellWindow()
-      if (location) {
-        ipcMain.once('shell-window:ready', () => {
-          win.webContents.send('command', 'file:new-tab', location)
-        })
-      }
-    } else {
-      let win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
-      if (win) win.webContents.send('command', 'file:new-tab', location)
-    }
-  }
-}
 
 function windowWithinBounds (windowState, bounds) {
   return windowState.x >= bounds.x &&
@@ -315,7 +298,7 @@ function onGoForward (win) {
   return () => win.webContents.send('command', 'history:forward')
 }
 
-function onAppCommand(win, e, cmd) {
+function onAppCommand (win, e, cmd) {
   // handles App Command events (Windows)
   // see https://electronjs.org/docs/all#event-app-command-windows
   switch (cmd) {
