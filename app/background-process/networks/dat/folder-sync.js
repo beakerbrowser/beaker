@@ -70,6 +70,14 @@ export function configureFolderToArchiveWatcher (archive) {
     // start watching
     var scopedFS = scopedFSes.get(archive.localSyncPath)
     archive.stopWatchingLocalFolder = scopedFS.watch('/', path => {
+      // TODO
+      // it would be possible to make this more efficient by ignoring changes that match .datignore
+      // but you need to make sure you have the latest .datignore and reading that on every change-event isnt efficient
+      // so you either need to:
+      //  A. queue up all the changed paths, then read the datignore inside the timeout and filter, if filteredList.length === 0 then abort
+      //  B. maintain an in-memory copy of the datignore and keep it up-to-date, and then check at time of the event
+      // -prf
+
       console.log('changed detected', path)
       // disable sync-to-folder for 5 seconds
       if (archive.syncFolderToArchiveTimeout) {
