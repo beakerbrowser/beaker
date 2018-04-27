@@ -12,6 +12,7 @@ import concat from 'concat-stream'
 import CircularAppendFile from 'circular-append-file'
 var debug = require('debug')('dat')
 import * as siteData from '../../dbs/sitedata'
+import * as settingsDb from '../../dbs/settings'
 import {throttle, debounce} from '../../../lib/functions'
 
 // dat modules
@@ -186,8 +187,11 @@ export async function createNewArchive (manifest = {}, settings = false) {
   var key = datEncoding.toStr(archive.key)
   manifest.url = `dat://${key}/`
 
-  // write the manifest
-  await pda.writeManifest(archive, manifest)
+  // write the manifest and default datignore
+  await Promise.all([
+    pda.writeManifest(archive, manifest),
+    pda.writeFile(archive, '/.datignore', await settingsDb.get('default_dat_ignore'), 'utf8')
+  ])
 
   // write the user settings
   await archivesDb.setUserSettings(0, key, userSettings)
@@ -236,6 +240,13 @@ export async function forkArchive (srcArchiveUrl, manifest = {}, settings = fals
     skipUndownloadedFiles: true,
     ignore
   })
+
+  // write a .datignore if DNE
+  try {
+    await pda.stat(dstArchive, '/.datignore')
+  } catch (e) {
+    await pda.writeFile(dstArchive, '/.datignore', await settingsDb.get('default_dat_ignore'), 'utf8')
+  }
 
   return dstArchiveUrl
 }

@@ -182,6 +182,7 @@ export async function assertSafePath (p) {
 export async function readDatIgnore (fs) {
   var rulesRaw = await readFile(fs, '.datignore')
   if (!rulesRaw) {
+    // TODO remove this? we're supposed to only use .datignore but many archives wont have one at first -prf
     rulesRaw = await settingsDb.get('default_dat_ignore')
   }
   return rulesRaw.split('\n')
