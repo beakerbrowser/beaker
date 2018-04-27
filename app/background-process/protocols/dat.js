@@ -298,7 +298,8 @@ async function datProtocol (request, respond) {
 
   // handle range
   headers['Accept-Ranges'] = 'bytes'
-  var range = request.headers.range && parseRange(entry.size, request.headers.range)
+  var range = request.headers.Range || request.headers.range
+  if (range) range = parseRange(entry.size, range)
   if (range && range.type === 'bytes') {
     range = range[0] // only handle first range given
     statusCode = 206
