@@ -189,32 +189,24 @@ export default function registerContextMenu () {
           })
           menuItems.push({ type: 'separator' })
         }
-      }
-
-      // view source
-      if (!props.pageURL.startsWith('beaker://')) {
-        var viewSourceURL = props.pageURL
         if (isDat) {
-          viewSourceURL = props.pageURL.slice('dat://'.length)
+          menuItems.push({
+            label: 'View Files',
+            click: (item, win) => {
+              win.webContents.send('command', 'file:new-tab', 'beaker://library/' + props.pageURL)
+            }
+          })
+          menuItems.push({
+            label: 'Network Debugger',
+            click: (item, win) => {
+              win.webContents.send('command', 'file:new-tab', 'beaker://swarm-debugger/' + props.pageURL)
+            }
+          })
+          menuItems.push({ type: 'separator' })
         }
-        menuItems.push({
-          label: 'View Source',
-          click: (item, win) => {
-            win.webContents.send('command', 'file:new-tab', 'beaker://view-source/' + viewSourceURL)
-          }
-        })
       }
 
       // inspector
-      if (isDat) {
-        // TODO restore with open in filesystem?
-        // menuItems.push({
-        //   label: 'Inspect Site Files',
-        //   click: (item, win) => {
-        //     win.webContents.send('command', 'view:open-sidebar')
-        //   }
-        // })
-      }
       menuItems.push({
         label: 'Inspect Element',
         click: item => {
