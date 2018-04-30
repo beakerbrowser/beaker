@@ -72,14 +72,21 @@ export class PageMenuNavbarBtn {
             ${isDat
               ? yo`
                 <div class="dropdown-items compact with-triangle">
+                  <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
+                    <i class="fa fa-files-o"></i>
+                    View files
+                  </div>
+
                   <div class="dropdown-item" onclick=${() => this.onClickFork()}>
                     <i class="fa fa-clone"></i>
                     Make editable copy
                   </div>
 
-                  <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
-                    <i class="fa fa-book"></i>
-                    Open in Library
+                  <hr />
+
+                  <div class="dropdown-item" onclick=${() => this.onToggleLiveReloading()}>
+                    <i class="fa fa-bolt"></i>
+                    Toggle live reloading
                   </div>
 
                   <div class="dropdown-item" onclick=${() => this.onClickNetworkDebugger()}>
@@ -214,6 +221,12 @@ export class PageMenuNavbarBtn {
     if (fork) {
       page.loadURL(`beaker://library/${fork.url}#setup`)
     }
+  }
+
+  async onToggleLiveReloading () {
+    this.close()
+    const page = pages.getActive()
+    page.toggleLiveReloading()
   }
 
   onClickDownloadZip () {

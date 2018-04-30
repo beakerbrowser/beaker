@@ -42,7 +42,7 @@
 
   hr {
     // TODO: remove this once we pull out photonkit -tbv
-    margin: 0;
+    margin: 5px 0;
     border-bottom: 1px solid @border-menu;
   }
 
@@ -103,8 +103,15 @@
   height: 100%;
 
   .dropdown-items {
-    width: 180px;
+    width: 190px;
     font-size: 13px;
+
+    // alter the alignment of the icons
+    i {
+      text-align: center;
+      position: relative;
+      left: -4px;
+    }
   }
 }
 
