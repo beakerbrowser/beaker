@@ -13,7 +13,8 @@ export default function setup () {
     return // abort, user is capturing debug to the console
   }
 
-  logFilePath = joinPath(app.getPath('userData'), 'debug.log')
+  let folderPath = process.env.beaker_user_data_path || app.getPath('userData')
+  logFilePath = joinPath(folderPath, 'debug.log')
   console.log('Logfile:', logFilePath)
   debug.enable('dat,datgc,dat-dns,dat-serve,dns-discovery,discovery-channel,discovery-swarm,beaker,beaker-sqlite,beaker-analytics')
   debug.overrideUseColors()
