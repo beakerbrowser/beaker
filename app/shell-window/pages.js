@@ -23,7 +23,7 @@ const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
 const ERR_INSECURE_RESPONSE = -501
 
-const TRIGGER_LIVE_RELOAD_DEBOUNCE = 3e3 // throttle live-reload triggers by this amount
+const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
 export const FIRST_TAB_URL = 'beaker://start'
 export const DEFAULT_URL = 'beaker://start'
@@ -249,7 +249,7 @@ export function create (opts) {
         var archive = new DatArchive(page.siteInfo.key)
         page.liveReloadEvents = archive.watch()
         let event = (page.siteInfo.isOwner) ? 'changed' : 'invalidated'
-        page.liveReloadEvents.addEventListener(event, () => {
+        page.liveReloadEvents.addEventListener(event, (e) => {
           page.triggerLiveReload()
         })
       }
@@ -267,7 +267,7 @@ export function create (opts) {
     // reload the page due to changes in the dat
     triggerLiveReload: throttle(() => {
       page.reload()
-    }, TRIGGER_LIVE_RELOAD_DEBOUNCE),
+    }, TRIGGER_LIVE_RELOAD_DEBOUNCE, {leading: false}),
     // ^ note this is run on the front edge.
     // That means snappier reloads (no delay) but possible double reloads if multiple files change
 

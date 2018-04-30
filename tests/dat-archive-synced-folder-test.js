@@ -95,7 +95,7 @@ test('sync archive->folder on change', async t => {
   // modify the file
   var res = await mainTab.executeJavascript(`
     var archive = new DatArchive("${createdDatUrl}")
-    archive.writeFile('/archive-foo.txt', 'baz')
+    archive.writeFile('/archive-foo.txt', 'bazz')
   `)
 
   // wait for sync to occur
@@ -103,7 +103,7 @@ test('sync archive->folder on change', async t => {
   await waitForSync('archive')
 
   // modified file was synced
-  t.deepEqual(await dir.readAsync('archive-foo.txt'), 'baz')
+  t.deepEqual(await dir.readAsync('archive-foo.txt'), 'bazz')
 
   // delete the file
   var res = await mainTab.executeJavascript(`
@@ -123,7 +123,7 @@ test('sync folder->archive on change', async t => {
   const dir = jetpack.cwd(createdFilePath)
 
   // write a new file
-  await dir.writeAsync('local-foo.txt', 'bar')
+  await dir.write('local-foo.txt', 'bar')
 
   // wait for sync to occur
   await waitForSync('archive')
@@ -136,7 +136,7 @@ test('sync folder->archive on change', async t => {
   t.deepEqual(res, 'bar')
 
   // modify the file
-  await dir.writeAsync('local-foo.txt', 'baz')
+  await dir.write('local-foo.txt', 'bazz')
 
   // wait for sync to occur
   await waitForSync('archive')
@@ -146,7 +146,7 @@ test('sync folder->archive on change', async t => {
     var archive = new DatArchive("${createdDatUrl}")
     archive.readFile('/local-foo.txt')
   `)
-  t.deepEqual(res, 'baz')
+  t.deepEqual(res, 'bazz')
 
   // delete the file
   await dir.removeAsync('local-foo.txt')
@@ -170,7 +170,7 @@ test('sync folder->archive wins over archive->folder when they happen simultaneo
   const dir = jetpack.cwd(createdFilePath)
 
   // write a new file locally
-  await dir.writeAsync('local-foo.txt', 'bar')
+  await dir.write('local-foo.txt', 'bar')
 
   // write a new file on the archive
   var res = await mainTab.executeJavascript(`
@@ -273,15 +273,15 @@ test('additional sync correctness checks', async t => {
   // create and write local folder
   var localFilePath = tempy.directory()
   const dir = jetpack.cwd(localFilePath)
-  await dir.writeAsync('local-file.txt', 'local')
-  await dir.writeAsync('conflict-file.txt', 'local')
+  await dir.write('local-file.txt', 'local')
+  await dir.write('conflict-file.txt', 'local')
   await dir.dirAsync('local-folder')
-  await dir.writeAsync('local-folder/file1.txt', 'local')
-  await dir.writeAsync('local-folder/file2.txt', 'local')
+  await dir.write('local-folder/file1.txt', 'local')
+  await dir.write('local-folder/file2.txt', 'local')
   await dir.dirAsync('conflict-folder')
-  await dir.writeAsync('conflict-folder/file1.txt', 'local')
-  await dir.writeAsync('conflict-folder/file2.txt', 'local')
-  await dir.writeAsync('conflict-folder/local-file.txt', 'local')
+  await dir.write('conflict-folder/file1.txt', 'local')
+  await dir.write('conflict-folder/file2.txt', 'local')
+  await dir.write('conflict-folder/local-file.txt', 'local')
 
   // set
   var syncPromise = waitForSync('archive')
@@ -294,7 +294,7 @@ test('additional sync correctness checks', async t => {
   await syncPromise
 
   // check local folder
-  t.deepEqual((await dir.listAsync()).sort(), ['dat.json', 'local-file.txt', 'conflict-file.txt', 'archive-file.txt', 'local-folder', 'conflict-folder', 'archive-folder'].sort())
+  t.deepEqual((await dir.listAsync()).sort(), ['.datignore', 'dat.json', 'local-file.txt', 'conflict-file.txt', 'archive-file.txt', 'local-folder', 'conflict-folder', 'archive-folder'].sort())
   t.deepEqual((await dir.listAsync('local-folder')).sort(), ['file1.txt', 'file2.txt'].sort())
   t.deepEqual((await dir.listAsync('archive-folder')).sort(), ['file1.txt', 'file2.txt'].sort())
   t.deepEqual((await dir.listAsync('conflict-folder')).sort(), ['file1.txt', 'file2.txt', 'archive-file.txt', 'local-file.txt'].sort())
@@ -316,7 +316,7 @@ test('additional sync correctness checks', async t => {
     archive.readdir('/', {recursive: true})
   `)
   t.deepEqual(res.sort(), [
-    'dat.json',
+    '.datignore', 'dat.json',
     'local-file.txt', 'conflict-file.txt', 'archive-file.txt',
     'local-folder', 'local-folder/file1.txt', 'local-folder/file2.txt',
     'conflict-folder', 'conflict-folder/file1.txt', 'conflict-folder/file2.txt', 'conflict-folder/archive-file.txt', 'conflict-folder/local-file.txt',
@@ -341,7 +341,7 @@ test('additional sync correctness checks', async t => {
   await waitForSync('archive')
 
   // check local folder
-  t.deepEqual((await dir.listAsync()).sort(), ['dat.json', 'local-file.txt', 'conflict-file.txt', 'archive-file.txt', 'local-folder', 'archive-folder'].sort())
+  t.deepEqual((await dir.listAsync()).sort(), ['.datignore', 'dat.json', 'local-file.txt', 'conflict-file.txt', 'archive-file.txt', 'local-folder', 'archive-folder'].sort())
   t.deepEqual((await dir.listAsync('local-folder')).sort(), ['file1.txt', 'file2.txt'].sort())
   t.deepEqual((await dir.listAsync('archive-folder')).sort(), ['file1.txt', 'file2.txt'].sort())
   t.deepEqual(await dir.readAsync('local-file.txt'), 'local')
@@ -358,7 +358,7 @@ test('additional sync correctness checks', async t => {
     archive.readdir('/', {recursive: true})
   `)
   t.deepEqual(res.sort(), [
-    'dat.json',
+    '.datignore', 'dat.json',
     'local-file.txt', 'conflict-file.txt', 'archive-file.txt',
     'local-folder', 'local-folder/file1.txt', 'local-folder/file2.txt',
     'archive-folder', 'archive-folder/file1.txt', 'archive-folder/file2.txt'
@@ -384,7 +384,7 @@ test('additional sync correctness checks', async t => {
   await waitForSync('archive')
 
   // check local folder
-  t.deepEqual((await dir.listAsync()).sort(), ['dat.json', 'local-file.txt', 'conflict-file.txt', 'archive-file.txt', 'archive-folder'].sort())
+  t.deepEqual((await dir.listAsync()).sort(), ['.datignore', 'dat.json', 'local-file.txt', 'conflict-file.txt', 'archive-file.txt', 'archive-folder'].sort())
   t.deepEqual((await dir.listAsync('archive-folder')).sort(), ['file1.txt', 'file2.txt'].sort())
   t.deepEqual(await dir.readAsync('local-file.txt'), 'local')
   t.deepEqual(await dir.readAsync('conflict-file.txt'), 'local')
@@ -398,7 +398,7 @@ test('additional sync correctness checks', async t => {
     archive.readdir('/', {recursive: true})
   `)
   t.deepEqual(res.sort(), [
-    'dat.json',
+    '.datignore', 'dat.json',
     'local-file.txt', 'conflict-file.txt', 'archive-file.txt',
     'archive-folder', 'archive-folder/file1.txt', 'archive-folder/file2.txt'
   ].sort())
@@ -407,6 +407,52 @@ test('additional sync correctness checks', async t => {
   t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive')
   t.deepEqual(await readArchiveFile('archive-folder/file1.txt'), 'archive')
   t.deepEqual(await readArchiveFile('archive-folder/file2.txt'), 'archive')
+})
+
+test('build tool test', async t => {
+  // create a dat
+  var res = await mainTab.executeJavascript(`
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false })
+  `)
+  createdDatUrl = res.url
+  const readArchiveFile = path => (
+    mainTab.executeJavascript(`
+      var archive = new DatArchive("${createdDatUrl}")
+      archive.readFile("${path}", 'utf8')
+    `)
+  )
+  t.truthy(createdDatUrl.startsWith('dat://'))
+
+  // create local folder
+  var localFilePath = tempy.directory()
+  const dir = jetpack.cwd(localFilePath)
+
+  // add package.json
+  await dir.write('package.json', '{"scripts":{"watch-build": "cp ./foo.txt ./bar.txt"}}')
+
+  // set
+  var syncPromise = waitForSync('archive')
+  var res = await mainTab.executeJavascript(`
+    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(localFilePath)}")
+  `)
+  t.falsy(res)
+
+  // wait for sync to occur
+  await syncPromise
+
+  // trigger the build
+  await dir.write('foo.txt', 'test')
+
+  // wait for sync to occur
+  await waitForSync('archive')
+
+  // check local folder
+  t.deepEqual(await dir.readAsync('foo.txt'), 'test')
+  t.deepEqual(await dir.readAsync('bar.txt'), 'test')
+
+  // check the archive
+  t.deepEqual(await readArchiveFile('foo.txt'), 'test')
+  t.deepEqual(await readArchiveFile('bar.txt'), 'test')
 })
 
 // because we pass paths through eval() code,

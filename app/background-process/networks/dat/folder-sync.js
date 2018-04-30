@@ -1,3 +1,5 @@
+import util from 'util'
+const exec = util.promisify(require('child_process').exec)
 import {app} from 'electron'
 import * as dft from 'diff-file-tree'
 import * as diff from 'diff'
@@ -5,6 +7,7 @@ import anymatch from 'anymatch'
 import fs from 'fs'
 import path from 'path'
 import EventEmitter from 'events'
+import _get from 'lodash.get'
 import * as settingsDb from '../../dbs/settings'
 import {isFileNameBinary, isFileContentBinary} from '../../../lib/mime'
 import * as scopedFSes from '../../../lib/bg/scoped-fses'
@@ -27,6 +30,8 @@ const DISALLOWED_SAVE_PATH_NAMES = [
   'videos'
 ]
 
+const WATCH_BUILD_LOG_PATH = '/watch-build.log'
+
 // exported api
 // =
 
@@ -40,7 +45,9 @@ export var events = new EventEmitter()
 //   - localSyncPath: string, override the archive localSyncPath
 //   - addOnly: bool, dont modify or remove any files (default false)
 export function syncArchiveToFolder (archive, opts = {}) {
+  // dont run if a folder->archive sync is happening due to a detected change
   if (archive.syncFolderToArchiveTimeout) return console.log('Not running, locked')
+
   return sync(archive, false, opts)
 }
 
@@ -68,6 +75,7 @@ export function configureFolderToArchiveWatcher (archive) {
  
   if (archive.localSyncPath) {
     // start watching
+    var isSyncing = false
     var scopedFS = scopedFSes.get(archive.localSyncPath)
     archive.stopWatchingLocalFolder = scopedFS.watch('/', path => {
       // TODO
@@ -79,15 +87,25 @@ export function configureFolderToArchiveWatcher (archive) {
       // -prf
 
       console.log('changed detected', path)
-      // disable sync-to-folder for 5 seconds
+      // HACK always ignore the watch build log file -prf
+      if (path === WATCH_BUILD_LOG_PATH) return console.log('change is watch log, skipping')
+      // ignore if currently syncing
+      if (isSyncing) return console.log('already syncing, ignored')
+      // debounce the handler
       if (archive.syncFolderToArchiveTimeout) {
         clearTimeout(archive.syncFolderToArchiveTimeout)
       }
       archive.syncFolderToArchiveTimeout = setTimeout(async () => {
         console.log('ok timed out')
-        await syncFolderToArchive(archive, {shallow: false})
-        archive.syncFolderToArchiveTimeout = null
-      }, 1e3)
+        isSyncing = true
+        try {
+          await runBuild(archive)
+          await syncFolderToArchive(archive, {shallow: false})
+        } finally {
+          isSyncing = false
+          archive.syncFolderToArchiveTimeout = null
+        }
+      }, 500)
     })
   }
 }
@@ -243,6 +261,32 @@ async function sync (archive, toArchive, opts = {}) {
   // sync data
   await dft.applyRight(left, right, diff)
   events.emit('sync', archive.key, toArchive ? 'archive' : 'folder')
+}
+
+// run the build-step, if npm and the package.json are setup
+async function runBuild (archive) {
+  var localSyncPath = archive.localSyncPath
+  if (!localSyncPath) return // sanity check
+  var scopedFS = scopedFSes.get(localSyncPath)
+
+  // read the package.json
+  var packageJson
+  try { packageJson = JSON.parse(await readFile(scopedFS, '/package.json')) }
+  catch (e) { return /* abort */ }
+
+  // make sure there's a watch-build script
+  var watchBuildScript = _get(packageJson, 'scripts.watch-build')
+  if (typeof watchBuildScript !== 'string') return
+
+  // run the build script
+  var res
+  try {
+    console.log('running watch-build')
+    res = await exec('npm run watch-build', {cwd: localSyncPath})
+  } catch (e) {
+    res = e
+  }
+  await new Promise(r => scopedFS.writeFile(WATCH_BUILD_LOG_PATH, res, () => r()))
 }
 
 function makeDiffFilterByPaths (targetPaths) {
