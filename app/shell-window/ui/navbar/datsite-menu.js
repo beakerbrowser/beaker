@@ -151,7 +151,10 @@ export class DatsiteMenuNavbarBtn {
   }
 
   updateActives () {
-    Array.from(document.querySelectorAll('.rehost-navbar-menu')).forEach(el => yo.update(el, this.render()))
+    Array.from(document.querySelectorAll('.rehost-navbar-menu')).forEach(el => {
+      var newEl = this.render()
+      if (newEl) yo.update(el, newEl)
+    })
   }
 
   close () {

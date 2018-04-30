@@ -51,14 +51,22 @@ export class SyncfolderMenuNavbarBtn {
           </div>
           <div class="dropdown-item" onclick=${() => this.onClickCopyPath()}>
             <i class="fa fa-clipboard"></i>
-            <span class="label">Copy path</span>
+            Copy path
+          </div>
+          <hr />
+          <div class="dropdown-item" onclick=${() => this.onClickConfigure()}>
+            <i class="fa fa-wrench"></i>
+            Configure
           </div>
         </div>
       </div>`
   }
 
   updateActives () {
-    Array.from(document.querySelectorAll('.syncfolder-dropdown-menu')).forEach(el => yo.update(el, this.render()))
+    Array.from(document.querySelectorAll('.syncfolder-dropdown-menu')).forEach(el => {
+      var newEl = this.render()
+      if (newEl) yo.update(el, newEl)
+    })
   }
 
   onClickBtn (e) {
@@ -94,5 +102,12 @@ export class SyncfolderMenuNavbarBtn {
     if (!localSyncPath) return
     writeToClipboard(localSyncPath)
     toast.create('Copied to clipboard', 1e3)
+  }
+
+  onClickConfigure () {
+    this.close()
+    const page = pages.getActive()
+    if (!page || !page.getViewedDatOrigin()) return
+    pages.setActive(pages.create(`beaker://library/dat://${page.siteInfo.key}#settings`))
   }
 }

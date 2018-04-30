@@ -124,7 +124,10 @@ export class PageMenuNavbarBtn {
   }
 
   updateActives () {
-    Array.from(document.querySelectorAll('.page-dropdown-menu')).forEach(el => yo.update(el, this.render()))
+    Array.from(document.querySelectorAll('.page-dropdown-menu')).forEach(el => {
+      var newEl = this.render()
+      if (newEl) yo.update(el, newEl)
+    })
   }
 
   close () {
