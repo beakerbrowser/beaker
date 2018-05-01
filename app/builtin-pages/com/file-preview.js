@@ -29,9 +29,13 @@ export default function render (fileNode) {
   if (mimetype.startsWith('image/')) {
     return yo`<img src=${url} />`
   } else if (mimetype.startsWith('video/')) {
-    return yo`<video controls src=${url}></video>`
+    let el = yo`<video id="video-preview" controls src=${url}></video>`
+    el.isSameNode = (el2) => el2.id === 'video-preview'
+    return el
   } else if (mimetype.startsWith('audio/')) {
-    return yo`<audio controls src=${url}></audio>`
+    let el = yo`<audio id="audio-preview" controls src=${url}></audio>`
+    el.isSameNode = (el2) => el2.id === 'audio-preview'
+    return el
   }
 
   return null
