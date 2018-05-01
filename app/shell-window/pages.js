@@ -754,6 +754,7 @@ function onDidStopLoading (e) {
         .markdown pre, .markdown code { font-family: Consolas, 'Lucida Console', Monaco, monospace; font-size: 13.5px; background: #f0f0f0; border-radius: 2px; }
         .markdown pre { padding: 15px; border: 0; overflow-x: auto; }
         .markdown code { padding: 3px 5px; }
+        .markdown pre > code { display: block; }
       `)
       if (!cachedMarkdownRendererScript) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
