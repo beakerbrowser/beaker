@@ -141,6 +141,7 @@ export function createShellWindow (windowState) {
   registerShortcut(win, 'Ctrl+PageDown', onNextTab(win))
   registerShortcut(win, 'CmdOrCtrl+[', onGoBack(win))
   registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
+  registerShortcut(win, 'alt+d', onFocusLocation(win))
 
   // register event handlers
   win.on('browser-backward', onGoBack(win))
@@ -298,6 +299,10 @@ function onGoForward (win) {
   return () => win.webContents.send('command', 'history:forward')
 }
 
+function onFocusLocation (win) {
+  return () => win.webContents.send('command', 'file:open-location')
+}
+
 function onAppCommand (win, e, cmd) {
   // handles App Command events (Windows)
   // see https://electronjs.org/docs/all#event-app-command-windows
@@ -343,4 +348,3 @@ function sendScrollTouchBegin (e) {
 function getScreenAPI () {
   return require('electron').screen
 }
-
