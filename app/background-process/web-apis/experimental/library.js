@@ -12,6 +12,8 @@ import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
 
 const API_DOCS_URL = 'https://TODO' // TODO
 const API_PERM_ID = 'experimentalLibrary'
+const REQUEST_ADD_PERM_ID = 'experimentalLibraryRequestAdd'
+const REQUEST_REMOVE_PERM_ID = 'experimentalLibraryRequestRemove'
 const LAB_API_ID = 'library'
 
 const QUERY_FIELDS = ['inMemory', 'isSaved', 'isNetworked', 'isOwner']
@@ -28,14 +30,11 @@ const EVENT_FIELDS = {
 // exported api
 // =
 
-export default {
-
-  // local cache management and querying
-  // =
-
-  async add (url, {duration} = {}) {
-    await checkPerm(API_PERM_ID, this.sender)
+function add (isRequest) {
+  return async function (url, {duration} = {}) {
     var key = datLibrary.fromURLToKey(url)
+    if (isRequest) await checkIsntOwner(key)
+    await checkPerm(isRequest ? `${REQUEST_ADD_PERM_ID}:${key}` : API_PERM_ID, this.sender)
 
     // swarm the archive
     /* dont await */ datLibrary.getOrLoadArchive(key)
@@ -47,14 +46,26 @@ export default {
     }
     var settings = await archivesDb.setUserSettings(0, key, opts)
     return _pick(settings, USER_SETTINGS_FIELDS)
-  },
+  }
+}
 
-  async remove (url) {
-    await checkPerm(API_PERM_ID, this.sender)
+function remove (isRequest) {
+  return async function (url) {
     var key = datLibrary.fromURLToKey(url)
+    if (isRequest) await checkIsntOwner(key)
+    await checkPerm(isRequest ? `${REQUEST_REMOVE_PERM_ID}:${key}` : API_PERM_ID, this.sender)
     var settings = await archivesDb.setUserSettings(0, key, {isSaved: false})
     return _pick(settings, USER_SETTINGS_FIELDS)
-  },
+  }
+}
+
+export default {
+
+  add: add(false),
+  requestAdd: add(true),
+
+  remove: remove(false),
+  requestRemove: remove(true),
 
   async get (url) {
     await checkPerm(API_PERM_ID, this.sender)
@@ -73,9 +84,6 @@ export default {
       return a
     })
   },
-
-  // events
-  // =
 
   async createEventStream () {
     await checkPerm(API_PERM_ID, this.sender)
@@ -118,4 +126,9 @@ async function checkPerm (perm, sender) {
     return true
   }
   throw new PermissionsError()
+}
+
+async function checkIsntOwner (key) {
+  var meta = await archivesDb.getMeta(key)
+  if (meta.isOwner) throw new PermissionsError('Archive is owned by user')
 }

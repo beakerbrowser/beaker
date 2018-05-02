@@ -20,7 +20,7 @@ function lazyDatTitleElement (archiveKey, title) {
   if (archiveKey in datTitleMap) return datTitleMap[archiveKey] // pull from cache
 
   // no title, we need to look it up. render now, then update
-  var el = yo`<span>${prettyHash(archiveKey)}</span>`
+  var el = yo`<span class="link">${prettyHash(archiveKey)}</span>`
   el.id = 'lazy-' + archiveKey
   ;(new DatArchive(archiveKey)).getInfo().then(details => {
     datTitleMap[archiveKey] = details.title // cache
@@ -146,6 +146,30 @@ export default {
     desc: 'Read and modify your Library',
     icon: 'book',
     persist: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: true
+  },
+  experimentalLibraryRequestAdd: {
+    desc: (param, pages, opts = {}) => {
+      const title = lazyDatTitleElement(param)
+      const viewArchive = () => pages.setActive(pages.create('beaker://library/' + param))
+      return yo`<span>Seed <a onclick=${viewArchive}>${title}</a></span>`
+    },
+    icon: 'upload',
+    persist: false,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: true
+  },
+  experimentalLibraryRequestRemove: {
+    desc: (param, pages, opts = {}) => {
+      const title = lazyDatTitleElement(param)
+      const viewArchive = () => pages.setActive(pages.create('beaker://library/' + param))
+      return yo`<span>Stop seeding <a onclick=${viewArchive}>${title}</a></span>`
+    },
+    icon: 'times',
+    persist: false,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: true

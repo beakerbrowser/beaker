@@ -18,6 +18,8 @@ if (window.location.protocol === 'beaker:' || window.location.protocol === 'dat:
   experimental.library.remove = libraryRPC.remove
   experimental.library.get = libraryRPC.get
   experimental.library.list = libraryRPC.list
+  experimental.library.requestAdd = libraryRPC.requestAdd
+  experimental.library.requestRemove = libraryRPC.requestRemove
 }
 
 export default experimental

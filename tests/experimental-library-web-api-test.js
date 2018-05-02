@@ -8,7 +8,7 @@ import electron from '../node_modules/electron'
 
 import * as browserdriver from './lib/browser-driver'
 import {waitForSync, escapeWindowsSlashes} from './lib/test-helpers'
-import {swarmDat} from './lib/dat-helpers'
+import {swarmDat, shareDat} from './lib/dat-helpers'
 
 const app = browserdriver.start({
   path: electron,
@@ -20,6 +20,7 @@ const app = browserdriver.start({
   }
 })
 var createdDatUrl
+var outsideDatUrl
 var createdFilePath = tempy.directory()
 var mainTab
 
@@ -39,6 +40,10 @@ test.before(async t => {
   `)
   t.falsy(res)
   await onSync
+
+  // share an outside dat
+  var outsideDat = await shareDat(__dirname + '/scaffold/test-static-dat')
+  outsideDatUrl = 'dat://' + outsideDat.archive.key.toString('hex') + '/'
 
   // go to the site
   mainTab = app.getTab(0)
@@ -118,7 +123,7 @@ test('library.add, library.remove, and "added" / "removed" events', async t => {
 
   // by url
   var res = await mainTab.executeJavascript(`
-    experimental.library.remove("${createdDatUrl}", {noPrompt: true})
+    experimental.library.remove("${createdDatUrl}")
   `)
   t.deepEqual(res, {
     expiresAt: null,
@@ -134,7 +139,7 @@ test('library.add, library.remove, and "added" / "removed" events', async t => {
 
   // by key
   var res = await mainTab.executeJavascript(`
-    experimental.library.remove("${createdDatUrl.slice('dat://'.length)}", {noPrompt: true})
+    experimental.library.remove("${createdDatUrl.slice('dat://'.length)}")
   `)
   t.deepEqual(res, {
     expiresAt: null,
@@ -153,6 +158,89 @@ test('library.add, library.remove, and "added" / "removed" events', async t => {
   t.deepEqual(stats, {
     adds: [{url: createdDatUrl, isSaved: true}, {url: createdDatUrl, isSaved: true}],
     removes: [{url: createdDatUrl, isSaved: false}, {url: createdDatUrl, isSaved: false}]
+  })
+})
+
+test('library.requestAdd()', async t => {
+  // add fails on owned archives
+  try {
+    var res = await mainTab.executeJavascript(`
+      experimental.library.requestAdd("${createdDatUrl}")
+    `)
+    t.fail('Should have thrown')
+  } catch (e) {
+    t.is(e.name, 'PermissionsError')
+  }
+
+  // add works on unowned archives
+  var p = mainTab.executeJavascript(`
+    experimental.library.requestAdd("${outsideDatUrl}")
+  `)
+
+  // accept the permission prompt
+  await app.waitForElement('.prompt-accept')
+  await app.click('.prompt-accept')
+
+  // check result
+  t.deepEqual(await p, {
+    isSaved: true
+  })
+
+  // add always asks permission
+  var p = mainTab.executeJavascript(`
+    experimental.library.requestAdd("${outsideDatUrl}")
+  `)
+
+  // accept the permission prompt
+  await app.waitForElement('.prompt-accept')
+  await app.click('.prompt-accept')
+
+  // check result
+  t.deepEqual(await p, {
+    isSaved: true,
+    expiresAt: null
+  })
+})
+
+test('library.requestRemove()', async t => {
+  // remove fails on owned archives
+  try {
+    var res = await mainTab.executeJavascript(`
+      experimental.library.requestRemove("${createdDatUrl}")
+    `)
+    t.fail('Should have thrown')
+  } catch (e) {
+    t.is(e.name, 'PermissionsError')
+  }
+
+  // remove works on unowned archives
+  var p = mainTab.executeJavascript(`
+    experimental.library.requestRemove("${outsideDatUrl}")
+  `)
+
+  // accept the permission prompt
+  await app.waitForElement('.prompt-accept')
+  await app.click('.prompt-accept')
+
+  // check result
+  t.deepEqual(await p, {
+    isSaved: false,
+    expiresAt: null
+  })
+
+  // remove always asks permission
+  var p = mainTab.executeJavascript(`
+    experimental.library.requestRemove("${outsideDatUrl}")
+  `)
+
+  // accept the permission prompt
+  await app.waitForElement('.prompt-accept')
+  await app.click('.prompt-accept')
+
+  // check result
+  t.deepEqual(await p, {
+    isSaved: false,
+    expiresAt: null
   })
 })
 
