@@ -8,6 +8,7 @@ import parseDatURL from 'parse-dat-url'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as prompt from './ui/prompt'
+import * as modal from './ui/modal'
 import * as statusBar from './ui/statusbar'
 import * as toast from './ui/toast.js'
 import { SiteInfoNavbarBtn } from './ui/navbar/site-info'
@@ -109,7 +110,8 @@ export function create (opts) {
     wcID: null, // the id of the webcontents
     webviewEl: createWebviewEl(id, url),
     navbarEl: navbar.createEl(id),
-    promptEl: prompt.createEl(id),
+    promptEl: prompt.createContainer(id),
+    modalEl: modal.createContainer(id),
     siteInfoNavbarBtn: null, // set after object is created
 
     // page state
@@ -151,8 +153,9 @@ export function create (opts) {
     _canGoBack: false, // cached to avoid sync calls to the main process
     _canGoForward: false, // cached to avoid sync calls to the main process
 
-    // prompts
+    // UI elements
     prompts: [], // list of active prompts (used with perms)
+    modals: [], // list of active modals
 
     // tab state
     isPinned: opts.isPinned, // is this page pinned?
@@ -377,7 +380,8 @@ export async function remove (page) {
   pages.splice(i, 1)
   webviewsDiv.removeChild(page.webviewEl)
   navbar.destroyEl(page.id)
-  prompt.destroyEl(page.id)
+  prompt.destroyContainer(page.id)
+  modal.destroyContainer(page.id)
 
   // persist pins w/o this one, if that was
   if (page.isPinned) { savePinnedToDB() }
@@ -418,6 +422,7 @@ export function setActive (page) {
   navbar.closeMenus()
   navbar.update()
   prompt.update()
+  modal.update()
 
   events.emit('set-active', page)
   ipcRenderer.send('shell-window:set-current-location', page.getIntendedURL())
@@ -626,8 +631,9 @@ function onLoadCommit (e) {
     zoom.setZoomFromSitedata(page, parseURL(page.getIntendedURL()).origin)
     // stop autocompleting
     navbar.clearAutocomplete()
-    // close any prompts
+    // close any prompts and modals
     prompt.forceRemoveAll(page)
+    modal.forceRemoveAll(page)
     // set title in tabs
     page.title = e.target.getTitle() // NOTE sync operation
     navbar.update(page)
@@ -1026,6 +1032,7 @@ function show (page) {
   page.webviewEl.classList.remove('hidden')
   page.navbarEl.classList.remove('hidden')
   page.promptEl.classList.remove('hidden')
+  page.modalEl.classList.remove('hidden')
   events.emit('show', page)
 }
 
@@ -1033,6 +1040,7 @@ function hide (page) {
   page.webviewEl.classList.add('hidden')
   page.navbarEl.classList.add('hidden')
   page.promptEl.classList.add('hidden')
+  page.modalEl.classList.add('hidden')
   events.emit('hide', page)
 }
 

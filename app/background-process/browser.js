@@ -11,7 +11,7 @@ const exec = require('util').promisify(require('child_process').exec)
 var debug = require('debug')('beaker')
 import * as settingsDb from './dbs/settings'
 import {open as openUrl} from './open-url'
-import {showModal, closeModal} from './ui/modals'
+import {showModal, showShellModal, closeModal} from './ui/modals'
 import {
   INVALID_SAVE_FOLDER_CHAR_REGEX
 } from '../lib/const'
@@ -117,6 +117,7 @@ export const WEBAPI = {
   openUrl: url => { openUrl(url) }, // dont return anything
   openFolder,
   doWebcontentsCmd,
+  doTest,
   closeModal
 }
 
@@ -396,6 +397,12 @@ async function doWebcontentsCmd (method, wcId, ...args) {
   var wc = webContents.fromId(+wcId)
   if (!wc) throw new Error(`WebContents not found (${wcId})`)
   return wc[method](...args)
+}
+
+async function doTest (test) {
+  if (test === 'modal') {
+    return showShellModal(this.sender, 'example', {i: 5})
+  }
 }
 
 // internal methods

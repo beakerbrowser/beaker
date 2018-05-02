@@ -1,4 +1,4 @@
-import { ipcRenderer } from 'electron'
+import {ipcRenderer} from 'electron'
 import * as yo from 'yo-yo'
 import * as prompt from '../prompt'
 import * as pages from '../../pages'
@@ -41,7 +41,7 @@ export default function (reqId, webContentsId, permission, opts = {}) {
   }
 
   // create the prompt
-  prompt.add(page, {
+  let res = prompt.add(page, {
     type: 'permission:' + permission,
     render: ({ rerender, onClose }) => {
       return yo`
@@ -63,4 +63,5 @@ export default function (reqId, webContentsId, permission, opts = {}) {
       respond(false)
     }
   })
+  if (!res) respond(false)
 }

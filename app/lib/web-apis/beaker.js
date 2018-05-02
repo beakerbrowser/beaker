@@ -157,6 +157,7 @@ if (window.location.protocol === 'beaker:') {
   beaker.browser.openUrl = beakerBrowserRPC.openUrl
   beaker.browser.openFolder = beakerBrowserRPC.openFolder
   beaker.browser.doWebcontentsCmd = beakerBrowserRPC.doWebcontentsCmd
+  beaker.browser.doTest = beakerBrowserRPC.doTest
   beaker.browser.closeModal = beakerBrowserRPC.closeModal
 }
 

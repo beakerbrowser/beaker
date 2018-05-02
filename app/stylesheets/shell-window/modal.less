@@ -1,0 +1,24 @@
+@import "../base/colors.less";
+@import "../base/spacing.less";
+
+#modals {
+}
+
+.modal {
+  display: block;
+  position: absolute;
+  z-index: 19000;
+  left: 50%;
+  top: 68px;
+  transform: translateX(-50%);
+  max-width: 95%;
+  border: 1px solid #ccc;
+  border-top: 0;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.page-fullscreen .modal {
+  top: 0;
+}

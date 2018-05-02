@@ -4,26 +4,21 @@ import * as pages from '../pages'
 // globals
 // =
 
-var promptsDiv = document.getElementById('prompts')
+var promptsDiv = document.querySelector('#prompts')
 
 // exported functions
 // =
 
-export function setup () {
-}
-
-export function createEl (id) {
+export function createContainer (id) {
   // render
   var el = render(id, null)
-  promptsDiv.appendChild(el)
+  promptsDiv.append(el)
   return el
 }
 
-export function destroyEl (id) {
+export function destroyContainer (id) {
   var el = document.querySelector(`#prompts [data-id="${id}"]`)
-  if (el) {
-    promptsDiv.removeChild(el)
-  }
+  if (el) el.remove()
 }
 
 export function add (page, { type, render, duration, onForceClose }) {

@@ -14,6 +14,7 @@ import * as adblocker from './background-process/adblocker'
 import * as analytics from './background-process/analytics'
 
 import * as windows from './background-process/ui/windows'
+import * as modals from './background-process/ui/modals'
 import * as windowMenu from './background-process/ui/window-menu'
 import registerContextMenu from './background-process/ui/context-menu'
 import * as downloads from './background-process/ui/downloads'
@@ -82,6 +83,7 @@ app.on('ready', async function () {
   windowMenu.setup()
   registerContextMenu()
   windows.setup()
+  modals.setup()
   downloads.setup()
   permissions.setup()
   basicAuth.setup()

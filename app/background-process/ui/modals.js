@@ -1,4 +1,4 @@
-import {app, BrowserWindow} from 'electron'
+import {app, BrowserWindow, ipcMain} from 'electron'
 import {ModalActiveError} from 'beaker-error-constants'
 import path from 'path'
 
@@ -11,13 +11,20 @@ const SIZES = {
   install: {width: 500, height: 250}
 }
 
-// state
+// globals
 // =
 
 var modalWindow
+var reqIdCounter = 0
+var activeRequests = []
 
 // exported apis
 // =
+
+export function setup () {
+  // wire up handlers
+  ipcMain.on('modal-response', onModalResponse)
+}
 
 export function showModal (parentWindow, modalName, opts = {}) {
   if (modalWindow) {
@@ -80,4 +87,38 @@ export function closeModal (err, res) {
   // destroy
   w.close()
   return true
+}
+
+export function showShellModal (webContents, modalName, opts = {}) {
+  return new Promise((resolve, reject) => {
+    // sanity check
+    if (!webContents.hostWebContents) {
+      // abort, must be given the webContents of a page
+      console.error('Warning: showShellModal() was passed the webContents of a non page')
+      return reject('Invalid shell modal target')
+    }
+
+    // track the new request
+    var req = {id: ++reqIdCounter, resolve, reject}
+    activeRequests.push(req)
+
+    // send message to create the UI
+    webContents.hostWebContents.send('command', 'show-modal', req.id, webContents.id, modalName, opts)
+  })
+}
+
+// internal methods
+// =
+
+async function onModalResponse (e, reqId, err, res) {
+  // lookup the request
+  var req = activeRequests.find(req => req.id == reqId)
+  if (!req) { return console.error('Warning: failed to find modal request for response #' + reqId) }
+
+  // untrack
+  activeRequests.splice(activeRequests.indexOf(req), 1)
+
+  // finish
+  if (err) req.reject(new Error(err))
+  else req.resolve(res)
 }

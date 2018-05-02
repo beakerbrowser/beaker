@@ -2,6 +2,7 @@ import { ipcRenderer } from 'electron'
 import * as pages from './pages'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
+import * as modal from './ui/modal'
 import permsPrompt from './ui/prompts/permission'
 
 export function setup () {
@@ -35,6 +36,7 @@ export function setup () {
       case 'set-tab': return pages.changeActiveTo(arg1)
       case 'load-pinned-tabs': return pages.loadPinnedFromDB()
       case 'perms:prompt': return permsPrompt(arg1, arg2, arg3, arg4)
+      case 'show-modal': return modal.createFromBackgroundProcess(arg1, arg2, arg3, arg4)
     }
   })
 }

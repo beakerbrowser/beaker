@@ -27,5 +27,6 @@ export default {
   openUrl: 'promise',
   openFolder: 'promise',
   doWebcontentsCmd: 'promise',
+  doTest: 'promise',
   closeModal: 'sync'
 }
