@@ -49,6 +49,23 @@
       }
     }
   }
+    
+  .perm-experimental {
+    display: flex;
+    background: @background-message--primary;
+    color: @color-message--primary;
+    font-size: 12.5px;
+
+    // this is positioned with negative margins so that it goes up to the edges of the prompt
+    padding: 10px;
+    margin: 15px -15px -15px;
+
+    i {
+      color: @color-message--primary;
+      padding-right: 8px;
+      padding-top: 5px;
+    }
+  }
 
   a {
     &:extend(.link);

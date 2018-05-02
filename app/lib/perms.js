@@ -35,7 +35,8 @@ export default {
     icon: 'code',
     persist: true,
     alwaysDisallow: false,
-    requiresRefresh: true
+    requiresRefresh: true,
+    experimental: false
   },
   network: {
     desc: param => {
@@ -45,7 +46,8 @@ export default {
     icon: 'cloud',
     persist: true,
     alwaysDisallow: false,
-    requiresRefresh: true
+    requiresRefresh: true,
+    experimental: false
   },
   createDat: {
     desc: (param, pages, opts = {}) => {
@@ -55,7 +57,8 @@ export default {
     icon: 'folder',
     persist: false,
     alwaysDisallow: false,
-    requiresRefresh: false
+    requiresRefresh: false,
+    experimental: false
   },
   modifyDat: {
     desc: (param, pages, opts = {}) => {
@@ -67,7 +70,8 @@ export default {
     icon: 'folder',
     persist: 'allow', // dont persist 'deny'
     alwaysDisallow: false,
-    requiresRefresh: false
+    requiresRefresh: false,
+    experimental: false
   },
   deleteDat: {
     desc: (param, pages, opts = {}) => {
@@ -79,55 +83,71 @@ export default {
     icon: 'folder',
     persist: false,
     alwaysDisallow: false,
-    requiresRefresh: false
+    requiresRefresh: false,
+    experimental: false
   },
   media: {
     desc: 'Use your camera and microphone',
     icon: 'video-camera',
     persist: true,
     alwaysDisallow: false,
-    requiresRefresh: false
+    requiresRefresh: false,
+    experimental: false
   },
   geolocation: {
     desc: 'Know your location',
     icon: 'map-marker',
     persist: false,
     alwaysDisallow: true, // NOTE geolocation is disabled, right now
-    requiresRefresh: false
+    requiresRefresh: false,
+    experimental: false
   },
   notifications: {
     desc: 'Create desktop notifications',
     icon: 'bell',
     persist: true,
     alwaysDisallow: false,
-    requiresRefresh: false
+    requiresRefresh: false,
+    experimental: false
   },
   midiSysex: {
     desc: 'Access your MIDI devices',
     icon: 'headphones',
     persist: false,
     alwaysDisallow: false,
-    requiresRefresh: false
+    requiresRefresh: false,
+    experimental: false
   },
   pointerLock: {
     desc: 'Lock your cursor',
     icon: 'mouse-pointer',
     persist: false,
     alwaysDisallow: false,
-    requiresRefresh: false
+    requiresRefresh: false,
+    experimental: false
   },
   fullscreen: {
     desc: 'Go fullscreen',
     icon: 'arrows-alt',
     persist: true,
     alwaysAllow: true,
-    requiresRefresh: false
+    requiresRefresh: false,
+    experimental: false
   },
   openExternal: {
     desc: 'Open this URL in another program: ',
     icon: 'external-link',
     persist: false,
     alwaysDisallow: false,
-    requiresRefresh: false
+    requiresRefresh: false,
+    experimental: false
+  },
+  experimentalLibrary: {
+    desc: 'Read and modify your Library',
+    icon: 'book',
+    persist: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: true
   }
 }

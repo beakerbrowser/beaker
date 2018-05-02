@@ -2,6 +2,7 @@ import { webFrame } from 'electron'
 import DatArchive from './lib/web-apis/dat-archive'
 import UserSession from './lib/web-apis/user-session'
 import beaker from './lib/web-apis/beaker'
+import experimental from './lib/web-apis/experimental'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
 import { setup as setupPrompt } from './webview-preload/prompt'
 import setupRedirectHackfix from './webview-preload/redirect-hackfix'
@@ -26,8 +27,9 @@ if (['beaker:', 'dat:', 'https:'].includes(window.location.protocol) ||
   window.DatArchive = DatArchive
 }
 if (['beaker:', 'dat:'].includes(window.location.protocol)) {
-  window.UserSession = UserSession
+  // window.UserSession = UserSession
   window.beaker = beaker
+  window.experimental = experimental
 }
 setupLocationbar()
 setupPrompt()

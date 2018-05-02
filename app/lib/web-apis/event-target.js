@@ -1,6 +1,9 @@
 // this emulates the implementation of event-targets by browsers
 
 const LISTENERS = Symbol()
+const CREATE_STREAM = Symbol()
+const STREAM_EVENTS = Symbol()
+const STREAM = Symbol()
 
 export class EventTarget {
   constructor () {
@@ -32,6 +35,31 @@ export class EventTarget {
     event.target = this
     var stack = this[LISTENERS][event.type]
     stack.forEach(cb => cb.call(this, event))
+  }
+}
+
+export class EventTargetFromStream extends EventTarget {
+  constructor (createStreamFn, events) {
+    super()
+    this[CREATE_STREAM] = createStreamFn
+    this[STREAM_EVENTS] = events
+    this[STREAM] = null
+  }
+
+  addEventListener (type, callback) {
+    if (!this[STREAM]) {
+      // create the event stream
+      let s = this[STREAM] = fromEventStream(this[CREATE_STREAM]())
+      // proxy all events
+      this[STREAM_EVENTS].forEach(event => {
+        s.addEventListener(event, details => {
+          details = details || {}
+          details.target = this
+          this.dispatchEvent(new Event(event, details))
+        })
+      })
+    }
+    return super.addEventListener(type, callback)
   }
 }
 

@@ -56,6 +56,14 @@ export default function (reqId, webContentsId, permission, opts = {}) {
             <button class="btn prompt-reject" onclick=${() => { respond(false); onClose() }}>Block</button>
             <button class="btn primary prompt-accept" onclick=${() => { respond(true); onClose() }}>Allow</button>
           </div>
+
+          ${PERM.experimental
+            ? yo`
+              <div class="perm-experimental">
+                <i class="fa fa-info-circle"></i>
+                <span>This page is requesting an experimental feature. Only click 'Allow' if you trust this page.</span>
+              </div>`
+            : ''}
         </div>
       `
     },

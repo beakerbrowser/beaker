@@ -29,6 +29,13 @@ import datArchiveAPI from './web-apis/dat-archive'
 // import userSessionAPI from './web-apis/user-session'
 // import profilesAPI from './web-apis/profiles'
 
+
+// experimental manifests
+import experimentalLibraryManifest from '../lib/api-manifests/external/experimental/library'
+
+// experimental apis
+import experimentalLibraryAPI from './web-apis/experimental/library'
+
 // exported api
 // =
 
@@ -46,4 +53,7 @@ export function setup () {
   rpc.exportAPI('dat-archive', datArchiveManifest, datArchiveAPI, secureOnly)
   // rpc.exportAPI('user-session', userSessionManifest, userSessionAPI, secureOnly)
   // rpc.exportAPI('profiles', profilesManifest, profilesAPI, secureOnly)
+
+  // experimental apis
+  rpc.exportAPI('experimental-library', experimentalLibraryManifest, experimentalLibraryAPI, secureOnly)
 }

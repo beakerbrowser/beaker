@@ -7,7 +7,7 @@ import jetpack from 'fs-jetpack'
 import electron from '../node_modules/electron'
 
 import * as browserdriver from './lib/browser-driver'
-import { shareDat } from './lib/dat-helpers'
+import {waitForSync, escapeWindowsSlashes} from './lib/test-helpers'
 
 var createdDatUrl
 var createdFilePath = tempy.directory()
@@ -30,20 +30,6 @@ test.after.always('cleanup', async t => {
   await app.stop()
 })
 
-async function waitForSync (direction) {
-  await mainTab.executeJavascript(`
-    var resolve
-    function onSync ({details}) {
-      if (details.url === "${createdDatUrl}" && details.direction === "${direction}") {
-        beaker.archives.removeEventListener('folder-sync', onSync)
-        resolve()
-      }
-    }
-    beaker.archives.addEventListener('folder-sync', onSync)
-    new Promise(r => {resolve = r})
-  `)
-}
-
 test('setLocalSyncPath', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
@@ -59,7 +45,7 @@ test('setLocalSyncPath', async t => {
   t.falsy(res)
 
   // wait for sync
-  await waitForSync('folder')
+  await waitForSync(mainTab, createdDatUrl, 'folder')
 
   // sync occurred
   const dir = jetpack.cwd(createdFilePath)
@@ -83,8 +69,8 @@ test('sync archive->folder on change', async t => {
   `)
 
   // wait for sync to occur
-  await waitForSync('folder')
-  await waitForSync('archive')
+  await waitForSync(mainTab, createdDatUrl, 'folder')
+  await waitForSync(mainTab, createdDatUrl, 'archive')
 
   // new file was synced
   t.deepEqual(await dir.readAsync('archive-foo.txt'), 'bar')
@@ -99,8 +85,8 @@ test('sync archive->folder on change', async t => {
   `)
 
   // wait for sync to occur
-  await waitForSync('folder')
-  await waitForSync('archive')
+  await waitForSync(mainTab, createdDatUrl, 'folder')
+  await waitForSync(mainTab, createdDatUrl, 'archive')
 
   // modified file was synced
   t.deepEqual(await dir.readAsync('archive-foo.txt'), 'bazz')
@@ -112,8 +98,8 @@ test('sync archive->folder on change', async t => {
   `)
 
   // wait for sync to occur
-  await waitForSync('folder')
-  await waitForSync('archive')
+  await waitForSync(mainTab, createdDatUrl, 'folder')
+  await waitForSync(mainTab, createdDatUrl, 'archive')
 
   // removed file was synced
   t.falsy(await dir.existsAsync('archive-foo.txt'))
@@ -126,7 +112,7 @@ test('sync folder->archive on change', async t => {
   await dir.write('local-foo.txt', 'bar')
 
   // wait for sync to occur
-  await waitForSync('archive')
+  await waitForSync(mainTab, createdDatUrl, 'archive')
 
   // new file was synced
   var res = await mainTab.executeJavascript(`
@@ -139,7 +125,7 @@ test('sync folder->archive on change', async t => {
   await dir.write('local-foo.txt', 'bazz')
 
   // wait for sync to occur
-  await waitForSync('archive')
+  await waitForSync(mainTab, createdDatUrl, 'archive')
 
   // modified file was synced
   var res = await mainTab.executeJavascript(`
@@ -152,7 +138,7 @@ test('sync folder->archive on change', async t => {
   await dir.removeAsync('local-foo.txt')
 
   // wait for sync to occur
-  await waitForSync('archive')
+  await waitForSync(mainTab, createdDatUrl, 'archive')
 
   // removed file was synced
   try {
@@ -179,7 +165,7 @@ test('sync folder->archive wins over archive->folder when they happen simultaneo
   `)
 
   // wait for sync to occur
-  await waitForSync('archive')
+  await waitForSync(mainTab, createdDatUrl, 'archive')
 
   // folder won (check archive)
   var res = await mainTab.executeJavascript(`
@@ -284,7 +270,7 @@ test('additional sync correctness checks', async t => {
   await dir.write('conflict-folder/local-file.txt', 'local')
 
   // set
-  var syncPromise = waitForSync('archive')
+  var syncPromise = waitForSync(mainTab, createdDatUrl, 'archive')
   var res = await mainTab.executeJavascript(`
     beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(localFilePath)}")
   `)
@@ -338,7 +324,7 @@ test('additional sync correctness checks', async t => {
   await dir.removeAsync('conflict-folder')
 
   // wait for sync to occur
-  await waitForSync('archive')
+  await waitForSync(mainTab, createdDatUrl, 'archive')
 
   // check local folder
   t.deepEqual((await dir.listAsync()).sort(), ['.datignore', 'dat.json', 'local-file.txt', 'conflict-file.txt', 'archive-file.txt', 'local-folder', 'archive-folder'].sort())
@@ -381,7 +367,7 @@ test('additional sync correctness checks', async t => {
   // the simultaneous local-folder change *SHOULD* cause the archive-folder deletion to be reverted
 
   // wait for sync to occur
-  await waitForSync('archive')
+  await waitForSync(mainTab, createdDatUrl, 'archive')
 
   // check local folder
   t.deepEqual((await dir.listAsync()).sort(), ['.datignore', 'dat.json', 'local-file.txt', 'conflict-file.txt', 'archive-file.txt', 'archive-folder'].sort())
@@ -431,7 +417,7 @@ test('build tool test', async t => {
   await dir.write('package.json', '{"scripts":{"watch-build": "cp ./foo.txt ./bar.txt"}}')
 
   // set
-  var syncPromise = waitForSync('archive')
+  var syncPromise = waitForSync(mainTab, createdDatUrl, 'archive')
   var res = await mainTab.executeJavascript(`
     beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(localFilePath)}")
   `)
@@ -444,7 +430,7 @@ test('build tool test', async t => {
   await dir.write('foo.txt', 'test')
 
   // wait for sync to occur
-  await waitForSync('archive')
+  await waitForSync(mainTab, createdDatUrl, 'archive')
 
   // check local folder
   t.deepEqual(await dir.readAsync('foo.txt'), 'test')
@@ -454,14 +440,3 @@ test('build tool test', async t => {
   t.deepEqual(await readArchiveFile('foo.txt'), 'test')
   t.deepEqual(await readArchiveFile('bar.txt'), 'test')
 })
-
-// because we pass paths through eval() code,
-// we need to make windows dir-separators escape properly
-// so c:\foo\bar needs to be c:\\foo\\bar
-// because without it
-// when we eval `act("${path}")`
-// it becomes act("c:\foo\bar")
-// and it should be act("c:\\foo\\bar")
-function escapeWindowsSlashes (str) {
-  return str.replace(/\\/g, '\\\\')
-}

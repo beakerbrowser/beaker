@@ -86,7 +86,7 @@ export function setup ({logfilePath}) {
     }
   })
   folderSync.events.on('sync', (key, direction) => {
-    archivesEvents.emit('folder-sync', {
+    archivesEvents.emit('folder-synced', {
       details: {
         url: `dat://${datEncoding.toStr(key)}`,
         direction
