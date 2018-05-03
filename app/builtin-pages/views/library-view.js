@@ -107,7 +107,7 @@ async function setup () {
     // wire up events
     window.addEventListener('popstate', onPopState)
     document.body.addEventListener('click', onClickAnywhere)
-    archive.progress.addEventListener('changed', render)
+    archive.progress.addEventListener('changed', throttle(onProgressUpdate, 2e3))
     document.body.addEventListener('custom-add-file', onAddFile)
     document.body.addEventListener('custom-rename-file', onRenameFile)
     document.body.addEventListener('custom-delete-file', onDeleteFile)
@@ -1149,6 +1149,13 @@ async function onToggleSeeding () {
     toast.create(`Could not update ${nickname}`, 'error')
   }
   render()
+}
+
+function onProgressUpdate () {
+  // rerender if we're on the network page (where we show progress stats)
+  if (activeView === 'network') {
+    render()
+  }
 }
 
 async function onChangeView (e, view) {

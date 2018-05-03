@@ -27,7 +27,9 @@ export default function render (fileNode) {
   const url = fileNode.url + '?cache-buster=' + Date.now() + '&disable_web_root=1'
 
   if (mimetype.startsWith('image/')) {
-    return yo`<img src=${url} />`
+    let el = yo`<img id="img-preview" src=${url} />`
+    el.isSameNode = (el2) => el2.id === 'img-preview'
+    return el
   } else if (mimetype.startsWith('video/')) {
     let el = yo`<video id="video-preview" controls src=${url}></video>`
     el.isSameNode = (el2) => el2.id === 'video-preview'
