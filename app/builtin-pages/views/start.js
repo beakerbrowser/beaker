@@ -139,7 +139,7 @@ async function onUpdateSearchQuery (q) {
     // add a DuckDuckGo search to the results
     const ddgRes = {
       title: query,
-      targetUrl: `https://duckduckgo.com?q=${query}`,
+      targetUrl: `https://duckduckgo.com?q=${encodeURIComponent(query)}`,
       icon: 'fa fa-search',
       label: 'Search DuckDuckGo',
       class: 'ddg'
