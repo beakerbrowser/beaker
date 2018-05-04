@@ -28,7 +28,6 @@ export const DAT_GC_REGULAR_COLLECT_WAIT = ms('15m') // how long between GCs to 
 export const DAT_CONFIGURABLE_FIELDS = [
   'title',
   'description',
-  'type',
   'links',
   'web_root',
   'fallback_page'

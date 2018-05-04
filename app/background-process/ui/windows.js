@@ -53,6 +53,19 @@ export async function setup () {
       const parentWindow = BrowserWindow.fromWebContents(wc.hostWebContents)
       wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
 
+      // HACK
+      // add link-click handling to page devtools
+      // (it would be much better to update Electron to support this, rather than overriding like this)
+      // -prf
+      wc.on('devtools-opened', () => {
+        if (wc.devToolsWebContents) {
+          wc.devToolsWebContents.executeJavaScript('InspectorFrontendHost.openInNewTab = (url) => window.open(url)')
+          wc.devToolsWebContents.on('new-window', (e, url) => {
+            wc.hostWebContents.send('command', 'file:new-tab', url)
+          })
+        }
+      })
+
       // track focused devtools host
       wc.on('devtools-focused', () => { focusedDevtoolsHost = wc })
       wc.on('devtools-closed', unfocusDevtoolsHost)
