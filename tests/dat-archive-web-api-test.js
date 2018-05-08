@@ -908,19 +908,19 @@ test('versioned reads and writes', async t => {
     var archive = new DatArchive("${newTestDatURL}")
     archive.history()
   `)
-  if (history.length !== 4) {
+  if (history.length !== 5) {
     console.log('Weird history', history)
   }
-  t.deepEqual(history.length, 4)
+  t.deepEqual(history.length, 5)
 
   // read back versions
   t.deepEqual((await readdir(newTestDatURL + '+1', '/')).length, 1)
   t.deepEqual((await readdir(newTestDatURL + '+2', '/')).length, 2)
   t.deepEqual((await readdir(newTestDatURL + '+3', '/')).length, 3)
-  t.deepEqual((await readFile(newTestDatURL + '+2', '/one.txt')), 'a')
-  t.deepEqual((await readFile(newTestDatURL + '+4', '/one.txt')), 'c')
-  var statRev2 = await stat(newTestDatURL + '+2', '/one.txt')
-  var statRev4 = await stat(newTestDatURL + '+4', '/one.txt')
+  t.deepEqual((await readFile(newTestDatURL + '+3', '/one.txt')), 'a')
+  t.deepEqual((await readFile(newTestDatURL + '+5', '/one.txt')), 'c')
+  var statRev2 = await stat(newTestDatURL + '+3', '/one.txt')
+  var statRev4 = await stat(newTestDatURL + '+5', '/one.txt')
   t.truthy(statRev2.offset < statRev4.offset)
 
   // dont allow writes to old versions
@@ -1541,6 +1541,7 @@ test('DatArchive.diff', async t => {
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}")
   `)
   t.deepEqual(changes.sort(sortDiff), [
+    { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'add', path: '/hello.txt', type: 'file' },
     { change: 'add', path: '/subdir', type: 'dir' },
@@ -1557,6 +1558,7 @@ test('DatArchive.diff', async t => {
     DatArchive.diff(a, b)
   `)
   t.deepEqual(changes.sort(sortDiff), [
+    { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'add', path: '/hello.txt', type: 'file' },
     { change: 'add', path: '/subdir', type: 'dir' },
@@ -1573,6 +1575,7 @@ test('DatArchive.diff', async t => {
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {shallow: true})
   `)
   t.deepEqual(changes.sort(sortDiff), [
+    { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'add', path: '/hello.txt', type: 'file' },
     { change: 'add', path: '/subdir', type: 'dir' }
@@ -1599,7 +1602,9 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {ops: ['del']})
   `)
-  t.deepEqual(changes, [])
+  t.deepEqual(changes, [
+    { change: 'del', path: '/.datignore', type: 'file' }
+  ])
 
   // diff subdir against empty root, shallow=false, filter=none, ops=all
   // =
@@ -1608,6 +1613,7 @@ test('DatArchive.diff', async t => {
     DatArchive.diff("${testStaticDatURL}subdir", "${archiveURL}")
   `)
   t.deepEqual(changes.sort(sortDiff), [
+    { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/space in the name.txt', type: 'file' },
     { change: 'add', path: '/hello.txt', type: 'file' }
   ].sort(sortDiff))
@@ -1648,6 +1654,7 @@ test('DatArchive.diff', async t => {
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}")
   `)
   t.deepEqual(changes.sort(sortDiff), [
+    { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'del', path: '/foo.bar', type: 'file' },
     { change: 'mod', path: '/hello.txt', type: 'file' },
@@ -1667,6 +1674,7 @@ test('DatArchive.diff', async t => {
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {shallow: true})
   `)
   t.deepEqual(changes.sort(sortDiff), [
+    { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'del', path: '/foo.bar', type: 'file' },
     { change: 'del', path: '/subdir2', type: 'dir' },
@@ -1700,6 +1708,7 @@ test('DatArchive.diff', async t => {
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {ops: ['del']})
   `)
   t.deepEqual(changes.sort(sortDiff), [
+    { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'del', path: '/foo.bar', type: 'file' },
     { change: 'del', path: '/subdir/hello2.txt', type: 'file' },
     { change: 'del', path: '/subdir2/goodbye.txt', type: 'file' },
@@ -1713,6 +1722,7 @@ test('DatArchive.diff', async t => {
     DatArchive.diff("${testStaticDatURL}subdir", "${archiveURL}")
   `)
   t.deepEqual(changes.sort(sortDiff), [
+    { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/space in the name.txt', type: 'file' },
     { change: 'del', path: '/foo.bar', type: 'file' },
     { change: 'mod', path: '/hello.txt', type: 'file' },
@@ -1757,6 +1767,7 @@ test('DatArchive.merge', async t => {
     DatArchive.merge("${testStaticDatURL}", "${archiveURL}")
   `)
   t.deepEqual(changes.sort(sortDiff), [
+    { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'add', path: '/hello.txt', type: 'file' },
     { change: 'add', path: '/subdir', type: 'dir' },
@@ -1809,6 +1820,7 @@ test('DatArchive.merge', async t => {
     DatArchive.merge("${testStaticDatURL}", "${archiveURL}")
   `)
   t.deepEqual(changes.sort(sortDiff), [
+    { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'del', path: '/foo.bar', type: 'file' },
     { change: 'mod', path: '/hello.txt', type: 'file' },
