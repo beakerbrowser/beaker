@@ -185,7 +185,6 @@ export async function createNewArchive (manifest = {}, settings = false) {
   // create the archive
   var archive = await loadArchive(null, userSettings)
   var key = datEncoding.toStr(archive.key)
-  manifest.url = `dat://${key}/`
 
   // write the manifest and default datignore
   await Promise.all([
@@ -199,7 +198,7 @@ export async function createNewArchive (manifest = {}, settings = false) {
   // write the metadata
   await pullLatestArchiveMeta(archive)
 
-  return manifest.url
+  return `dat://${key}/`
 }
 
 export async function forkArchive (srcArchiveUrl, manifest = {}, settings = false) {
