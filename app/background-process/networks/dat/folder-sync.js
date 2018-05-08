@@ -8,6 +8,7 @@ import fs from 'fs'
 import path from 'path'
 import EventEmitter from 'events'
 import _get from 'lodash.get'
+import pda from 'pauls-dat-api'
 import * as settingsDb from '../../dbs/settings'
 import {isFileNameBinary, isFileContentBinary} from '../../../lib/mime'
 import * as scopedFSes from '../../../lib/bg/scoped-fses'
@@ -19,6 +20,7 @@ import {
   InvalidEncodingError,
   SourceTooLargeError
 } from 'beaker-error-constants'
+import {DAT_MANIFEST_FILENAME} from '../../../lib/const'
 
 const DISALLOWED_SAVE_PATH_NAMES = [
   'home',
@@ -215,9 +217,16 @@ export async function readDatIgnore (fs) {
     .map(path.normalize)
 }
 
-// put the dat.json into the folder and then merge files, with preference to folder files
+// merge the dat.json in the folder and then merge files, with preference to folder files
 export async function mergeArchiveAndFolder (archive, localSyncPath) {
-  await sync(archive, false, {localSyncPath, paths: ['/dat.json']}) // archive dat.json -> folder
+  const readManifest = async (fs) => {
+    try { return await pda.readManifest(fs) }
+    catch (e) { return {} }
+  }
+  var localFS = scopedFSes.get(localSyncPath)
+  var localManifest = await readManifest(localFS)
+  var archiveManifest = await readManifest(archive)
+  await pda.writeManifest(localFS, Object.assign(archiveManifest || {}, localManifest || {}))
   await sync(archive, false, {localSyncPath, shallow: false, addOnly: true}) // archive -> folder (add-only)
   await sync(archive, true, {localSyncPath, shallow: false}) // folder -> archive
 }

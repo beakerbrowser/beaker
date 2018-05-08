@@ -395,6 +395,45 @@ test('additional sync correctness checks', async t => {
   t.deepEqual(await readArchiveFile('archive-folder/file2.txt'), 'archive')
 })
 
+test('dat.json merges effectively with local sync path', async t => {
+  // create a dat
+  var res = await mainTab.executeJavascript(`
+    DatArchive.create({title: 'Dat Title', description: 'Dat Description', links: {foo: 'dat://bar.com'}, prompt: false})
+  `)
+  var datUrl = res.url
+  t.truthy(datUrl.startsWith('dat://'))
+
+  // create a folder and write a dat.json
+  var filePath = tempy.directory()
+  var dir = jetpack.cwd(filePath)
+  await dir.write('dat.json', {title: 'Local Title', description: 'Local Description', fallback_page: '/foo.html'})
+
+  // set path
+  var res = await mainTab.executeJavascript(`
+    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}")
+  `)
+  t.falsy(res)
+
+  // wait for sync
+  await waitForSync(mainTab, datUrl, 'folder')
+
+  // check local file
+  t.deepEqual(JSON.parse(await dir.read('dat.json')), {
+    title: 'Local Title',
+    description: 'Local Description',
+    links: {foo: [{href: 'dat://bar.com'}]},
+    fallback_page: '/foo.html'
+  })
+
+  // check info
+  var res = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${datUrl}")
+    archive.getInfo()
+  `)
+  t.deepEqual(res.title, 'Local Title')
+  t.deepEqual(res.description, 'Local Description')
+})
+
 test('build tool test', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
