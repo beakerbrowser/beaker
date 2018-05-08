@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import bytes from 'bytes'
 import moment from 'moment'
 import {pluralize, shortenHash} from '../../lib/strings'
+import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
@@ -135,13 +136,16 @@ function renderRow (row, i) {
 
       <span class="title">
         ${row.title || yo`<em>Untitled</em>`}
+        ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
       </span>
 
-      <span class="url">
-        ${shortenHash(row.url)}
+      <span class="date">
+        ${niceDate(row.mtime)}
       </span>
 
-      ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
+      <span class="size">
+        ${bytes(row.size)}
+      </span>
 
       <div class="buttons">
         ${row.userSettings.isSaved

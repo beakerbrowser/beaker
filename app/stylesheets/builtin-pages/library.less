@@ -87,9 +87,18 @@ body.drag {
   }
 }
 
-.builtin-wrapper.library-wrapper {
+.builtin-wrapper.library {
+
+  @media (min-width: 1050px) {
+    .builtin-main {
+      max-width: none;
+      margin: 0 100px 0 200px;
+    }
+  }
 
   .ll-row.archive {
+    height: 50px;
+    padding: 0 20px;
 
     &.menu-open,
     &:hover {
@@ -102,11 +111,38 @@ body.drag {
       }
     }
 
+    .favicon {
+      margin-right: 15px;
+    }
+
+    .title {
+      font-size: 13.5px;
+      flex: 3;
+      max-width: none;
+    }
+
+    .date,
+    .size {
+      font-weight: 300;
+      font-size: 12.5px;
+      color: @color-text--muted;
+      min-width: 100px;
+    }
+
+    .date {
+      flex: 1;
+    }
+
+    .size {
+      flex: 0.5;
+    }
+
     .url {
       margin-right: 0;
     }
 
     .buttons {
+      opacity: 1;
 
       .trash,
       .restore {
