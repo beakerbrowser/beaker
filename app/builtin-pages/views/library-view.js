@@ -1082,7 +1082,7 @@ function onTogglePeersCollapsed () {
 async function onMakeCopy () {
   let {title} = await copydatPopup.create({archive})
   const fork = await DatArchive.fork(archive.url, {title, prompt: false}).catch(() => {})
-  window.location = `beaker://library/${fork.url}`
+  window.location = `beaker://library/${fork.url}#setup`
 }
 
 async function addReadme () {
