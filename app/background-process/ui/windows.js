@@ -105,7 +105,7 @@ export async function setup () {
 export function createShellWindow (windowState) {
   // create window
   let state = ensureVisibleOnSomeDisplay(Object.assign({}, defaultWindowState(), windowState))
-  var { x, y, width, height } = state
+  var { x, y, width, height, minWidth, minHeight } = state
   var win = new BrowserWindow({
     titleBarStyle: 'hiddenInset',
     autoHideMenuBar: true,
@@ -116,6 +116,8 @@ export function createShellWindow (windowState) {
     y,
     width,
     height,
+    minWidth,
+    minHeight,
     defaultEncoding: 'UTF-8',
     webPreferences: {
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
