@@ -708,20 +708,18 @@ function renderSettingsView () {
 
             <h3 class="no-margin">Donation page</h3>
             ${isOwner
-              ? yo`<p>
-                  Set a donate link and Beaker will show a <span class="fa fa-usd"></span> icon in the navbar for your site.
-                  ${renderSettingsField({key: 'paymentLink', value: paymentLink, placeholder: 'Example: https://opencollective.com/beaker', onUpdate: setManifestValue})}
-                  <small>
-                    Don${"'"}t have a donate page? Try <a href="https://www.patreon.com/" target="_blank">Patreon</a>,
-                    <a href="https://opencollective.com" target="_blank">Open Collective</a>, or
-                    <a href="https://www.paypal.me/" target="_blank">PayPal</a>.
-                  </small>
-                </p>`
+              ? yo`
+                  <p>
+                    Enter a link to your donation page and Beaker will show
+                    a <span class="fa fa-usd"></span> icon in your page's URL bar.
+
+                    ${renderSettingsField({key: 'paymentLink', value: paymentLink, placeholder: 'Example: https://opencollective.com/beaker', onUpdate: setManifestValue})}
+                  </p>
+                `
               : paymentLink
                 ? yo`<p><a href=${paymentLink}>${paymentLink}</a></p>`
                 : yo`<p><em>No link provided.</em></p>`
             }
-
           </div>
         </div>
 
