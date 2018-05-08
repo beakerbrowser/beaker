@@ -99,11 +99,6 @@ function sortArchives () {
 function renderRows (sort = '', max = undefined) {
   let a = Array.from(archives)
 
-  if (sort === 'recent') {
-    a = a.filter(a => a.lastLibraryAccessTime > 0)
-    a.sort((a, b) => b.lastLibraryAccessTime - a.lastLibraryAccessTime)
-  }
-
   if (max) {
     a = a.slice(0, max)
   }
@@ -174,65 +169,7 @@ function renderRow (row, i) {
   `
 }
 
-function renderRecentArchives (sort = '', max = undefined) {
-  let a = Array.from(archives)
-
-  if (sort === 'recent') {
-    a = a.filter(a => a.lastLibraryAccessTime > 0)
-    a.sort((a, b) => b.lastLibraryAccessTime - a.lastLibraryAccessTime)
-  }
-
-  if (max) {
-    a = a.slice(0, max)
-  }
-
-  if (!a.length) return ''
-  return a.map(renderRecent)
-}
-
-function renderRecent (a) {
-  const isOwner = a.isOwner
-  const isMenuOpen = a.menuIsOpenIn === 'recent'
-
-  return yo`
-    <a
-      href="beaker://library/${a.url}"
-      class="ll-row archive recent ${isMenuOpen ? 'menu-open' : ''}"
-      oncontextmenu=${e => onArchivePopupMenu(e, a, {isContext: true, isRecent: true})}
-    >
-      <img class="favicon" src="beaker-favicon:32,${a.url}" />
-
-      ${!isOwner
-        ? yo`<span class="badge read-only" title="Read-only"><i class="fa fa-eye"></i></span>`
-        : ''
-      }
-
-      <div class="info">
-        <div class="title">
-          ${a.title || yo`<em>Untitled</em>`}
-        </div>
-
-        <span class="url">
-          ${shortenHash(a.url)}
-        </span>
-
-        <button
-          class="btn plain ${isMenuOpen ? 'pressed' : ''}"
-          onclick=${e => onArchivePopupMenu(e, a, {isRecent: true, xOffset: 12})}
-        >
-          <i class="fa fa-ellipsis-v"></i>
-        </button>
-      </div>
-    </div>
-  `
-}
-
 function render () {
-  let recentArchives
-  if (!query && (currentView === 'all' || currentView === 'your archives')) {
-    recentArchives = renderRecentArchives('recent', 8, 'recent')
-  }
-
   yo.update(
     document.querySelector('.library-wrapper'), yo`
       <div class="library-wrapper library builtin-wrapper">
@@ -242,11 +179,6 @@ function render () {
           ${renderSidebar()}
 
           <div>
-            ${recentArchives ? [
-              yo`<div class="subtitle-heading">Recent</div>`,
-              yo`<div class="recent-archives">${recentArchives}</div>`
-            ] : ''}
-
             <div class="subtitle-heading">
               ${query
                 ? `"${query}" in ${currentView}`
@@ -624,7 +556,7 @@ async function onRestore (e, archive) {
   render()
 }
 
-async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = {}) {
+async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
   xOffset = xOffset || 0
   e.preventDefault()
   e.stopPropagation()
@@ -647,7 +579,7 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
 
   if (!isContext) {
     // set the menu open (to keep button pressed while menu is open)
-    archive.menuIsOpenIn = (isRecent) ? 'recent' : 'row'
+    archive.menuIsOpenIn = 'row'
     render()
   }
 
@@ -657,9 +589,6 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
     {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url) },
     {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive) }
   ]
-  if (isRecent) {
-    items.push({icon: 'times', label: 'Remove from recent', click: () => removeFromRecent(archive)})
-  }
   if (archive.userSettings.isSaved) {
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})
   } else {
@@ -673,16 +602,6 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
     archive.menuIsOpenIn = false
     render()
   }
-}
-
-async function removeFromRecent (archive) {
-  await beaker.archives.touch(
-    archive.url.slice('dat://'.length),
-    'lastLibraryAccessTime',
-    0 // set to zero
-  )
-  archive.lastLibraryAccessTime = 0
-  render()
 }
 
 async function onUpdateSearchQuery (e) {
