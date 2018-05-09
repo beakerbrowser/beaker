@@ -20,7 +20,8 @@ let archives = []
 let selectedArchives = []
 let query = ''
 let currentView = 'all'
-let currentSort = 'alpha'
+let currentSort = ['alpha', -1]
+let currentDateType = 'accessed'
 
 // main
 // =
@@ -85,17 +86,36 @@ function filterArchives () {
 }
 
 function sortArchives () {
-  if (currentSort === 'recently-accessed') {
-    archives = archives.sort((a, b) => b.lastLibraryAccessTime - a.lastLibraryAccessTime)
-  } else if (currentSort === 'recently-updated') {
-    archives = archives.sort((a, b) => b.mtime - a.mtime)
-  } else if (currentSort === 'alpha') {
-    archives = archives.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
-  }
+  archives.sort((a, b) => {
+    var v
+    switch (currentSort[0]) {
+      case 'size': v = a.size - b.size; break
+      case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
+      case 'recently-updated': v = a.mtime - b.mtime; break
+      case 'alpha':
+      default:
+        v = (b.title || '').localeCompare(a.title || '')
+    }
+    return v * currentSort[1]
+  })
 }
 
 // rendering
 // =
+
+function renderColumnHeading ({label, cls, sort}) {
+  const icon = currentSort[0] === sort
+    ? currentSort[1] > 0
+      ? yo`<span class="fa fa-angle-up"></span>`
+      : yo`<span class="fa fa-angle-down"></span>`
+    : ''
+
+  return yo`
+    <div class=${cls}>
+      <a onclick=${e => onUpdateSort(sort)}>${label}</a> ${icon}
+    </div>
+  `
+}
 
 function renderRows (sort = '', max = undefined) {
   let a = Array.from(archives)
@@ -125,6 +145,7 @@ function renderRows (sort = '', max = undefined) {
 function renderRow (row, i) {
   const isOwner = row.isOwner
   const isMenuOpen = row.menuIsOpenIn === 'row'
+  const date = currentDateType === 'accessed' ? row.lastLibraryAccessTime : row.mtime
 
   return yo`
     <a
@@ -132,15 +153,14 @@ function renderRow (row, i) {
       class="ll-row archive ${row.checked ? 'selected' : ''} ${isMenuOpen ? 'menu-open' : ''}"
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
-      <img class="favicon" src="beaker-favicon:${row.url}" />
-
       <span class="title">
+        <img class="favicon" src="beaker-favicon:${row.url}" />
         ${row.title || yo`<em>Untitled</em>`}
         ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
       </span>
 
       <span class="date">
-        ${niceDate(row.mtime)}
+        ${date ? niceDate(date) : ''}
       </span>
 
       <span class="size">
@@ -182,25 +202,11 @@ function render () {
           ${renderSidebar()}
 
           <div>
-            <div class="subtitle-heading">
-              ${query
-                ? `"${query}" in ${currentView}`
-                : currentView
-              }
-
-              ${currentView === 'trash'
-                ? yo`
-                  <button class="link" onclick=${onClearDatTrash}>
-                    Empty Trash
-                  </button>`
-                : ''}
-
-              ${currentView === 'seeding'
-                ? yo`
-                  <a href="beaker://settings#dat-network-activity" class="link">
-                    Manage network activity
-                  </a>`
-                : ''}
+            <div class="ll-column-headings">
+              ${renderColumnHeading({cls: 'title', sort: 'alpha', label: 'Title'})}
+              ${renderColumnHeading({cls: 'date', sort: `recently-${currentDateType}`, label: `Last ${currentDateType}`})}
+              ${renderColumnHeading({cls: 'size', sort: 'size', label: 'Size'})}
+              <span class="buttons"></span>
             </div>
 
             ${renderRows()}
@@ -353,27 +359,35 @@ function renderHeader () {
                   <div class="section-header">Sort by:</div>
 
                   <div
-                    class="dropdown-item ${currentSort === 'alpha' ? 'active' : ''}"
+                    class="dropdown-item ${currentSort[0] === 'alpha' ? 'active' : ''}"
                     onclick=${() => onUpdateSort('alpha')}
                   >
-                    ${currentSort === 'alpha' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    ${currentSort[0] === 'alpha' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                     <span class="description">Alphabetical</span>
                   </div>
 
                   <div
-                    class="dropdown-item ${currentSort === 'recently-accessed' ? 'active' : ''}"
+                    class="dropdown-item ${currentSort[0] === 'recently-accessed' ? 'active' : ''}"
                     onclick=${() => onUpdateSort('recently-accessed')}
                   >
-                    ${currentSort === 'recently-accessed' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    ${currentSort[0] === 'recently-accessed' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                     <span class="description">Recently accessed</span>
                   </div>
 
                   <div
-                    class="dropdown-item ${currentSort === 'recently-updated' ? 'active' : ''}"
+                    class="dropdown-item ${currentSort[0] === 'recently-updated' ? 'active' : ''}"
                     onclick=${() => onUpdateSort('recently-updated')}
                   >
-                    ${currentSort === 'recently-updated' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    ${currentSort[0] === 'recently-updated' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                     <span class="description">Recently updated</span>
+                  </div>
+
+                  <div
+                    class="dropdown-item ${currentSort[0] === 'size' ? 'active' : ''}"
+                    onclick=${() => onUpdateSort('size')}
+                  >
+                    ${currentSort[0] === 'size' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    <span class="description">Archive size</span>
                   </div>
                 </div>
               </div>
@@ -627,7 +641,18 @@ async function onClearQuery () {
 }
 
 function onUpdateSort (sort) {
-  currentSort = sort
+  if (sort === 'recently-accessed') {
+    currentDateType = 'accessed'
+  } else if (sort === 'recently-updated') {
+    currentDateType = 'updated'
+  }
+
+  if (currentSort[0] === sort) {
+    currentSort[1] = currentSort[1] * -1
+  } else {
+    currentSort[0] = sort
+    currentSort[1] = -1
+  }
   sortArchives()
   render()
 }
