@@ -154,9 +154,8 @@ function renderRow (row, i) {
               <i class="fa fa-trash-o"></i>
             </button>`
           : yo`
-            <button class="btn restore" onclick=${e => onRestore(e, row)}>
+            <button class="btn plain restore" onclick=${e => onRestore(e, row)} title="Restore from trash">
               <i class="fa fa-undo"></i>
-              <span>Restore</span>
             </button>`
         }
 
