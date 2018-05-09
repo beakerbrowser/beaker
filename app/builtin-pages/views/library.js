@@ -103,6 +103,7 @@ function sortArchives () {
     var v
     switch (currentSort[0]) {
       case 'size': v = a.size - b.size; break
+      case 'peers': v = a.peers - b.peers; break
       case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
       case 'recently-updated': v = a.mtime - b.mtime; break
       case 'alpha':
@@ -176,6 +177,10 @@ function renderRow (row, i) {
         ${date ? niceDate(date) : ''}
       </span>
 
+      <span class="peers">
+        ${row.peers} peers
+      </span>
+
       <span class="size">
         ${bytes(row.size)}
       </span>
@@ -218,6 +223,7 @@ function render () {
             <div class="ll-column-headings">
               ${renderColumnHeading({cls: 'title', sort: 'alpha', label: 'Title'})}
               ${renderColumnHeading({cls: 'date', sort: `recently-${currentDateType}`, label: `Last ${currentDateType}`})}
+              ${renderColumnHeading({cls: 'peers', sort: 'peers', label: 'Peers'})}
               ${renderColumnHeading({cls: 'size', sort: 'size', label: 'Size'})}
               <span class="buttons"></span>
             </div>
@@ -401,6 +407,14 @@ function renderHeader () {
                   >
                     ${currentSort[0] === 'size' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                     <span class="description">Archive size</span>
+                  </div>
+
+                  <div
+                    class="dropdown-item ${currentSort[0] === 'peers' ? 'active' : ''}"
+                    onclick=${() => onUpdateSort('peers')}
+                  >
+                    ${currentSort[0] === 'peers' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    <span class="description">Peer count</span>
                   </div>
                 </div>
               </div>
