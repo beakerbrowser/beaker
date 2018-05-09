@@ -13,6 +13,7 @@ import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
 import * as localsyncpathPopup from '../com/library-localsyncpath-popup'
 import * as copydatPopup from '../com/library-copydat-popup'
+import renderShareDropdown from '../com/library-share-dropdown'
 import * as faviconPicker from '../com/favicon-picker'
 import renderSettingsField from '../com/settings-field'
 import {pluralize, shortenHash} from '../../lib/strings'
@@ -285,14 +286,12 @@ function renderHeader () {
               ${getSafeTitle()}
             </a>`
         }
-
+        
         <a href=${archive.url} class="url" target="_blank">
           ${shortenHash(archive.url)}
         </a>
 
-        <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url, '', true)}>
-          <i class="fa fa-link"></i>
-        </button>
+        ${renderShareDropdown(archive)}
       </div>
     </div>`
 }

@@ -12,6 +12,7 @@
 @import "./components/files-browser.less";
 @import "./components/diff";
 @import "./components/favicon-picker";
+@import "./components/library-share-dropdown";
 
 .window-content.builtin.library {
   // position relative so that popups stay in place
@@ -252,6 +253,7 @@ body.drag {
     position: fixed;
     left: 0;
     top: 0;
+    z-index: 5000;
     display: block;
     width: 100%;
     height: auto;
@@ -347,23 +349,11 @@ body.drag {
     }
 
     .url {
+      color: rgba(0,0,0,.5);
       margin-right: 5px;
 
       &:hover {
         text-decoration: underline;
-      }
-    }
-
-    .url,
-    .btn {
-      color: rgba(0,0,0,.5);
-    }
-
-    .btn {
-      margin-left: 0;
-
-      &:hover {
-        color: @color-text;
       }
     }
   }
