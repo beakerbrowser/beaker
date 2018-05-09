@@ -28,12 +28,25 @@ let currentDateType = 'accessed'
 
 setup()
 async function setup () {
+  loadSettings()
   await loadArchives()
   render()
 }
 
 // data
 // =
+
+function loadSettings () {
+  currentSort[0] = localStorage.currentSortValue || 'alpha'
+  currentSort[1] = (+localStorage.currentSortDir) || -1
+  currentDateType = localStorage.currentDateType || 'accessed'
+}
+
+function saveSettings () {
+  localStorage.currentSortValue = currentSort[0]
+  localStorage.currentSortDir = currentSort[1]
+  localStorage.currentDateType = currentDateType
+}
 
 async function loadArchives () {
   // read data
@@ -646,13 +659,13 @@ function onUpdateSort (sort) {
   } else if (sort === 'recently-updated') {
     currentDateType = 'updated'
   }
-
   if (currentSort[0] === sort) {
     currentSort[1] = currentSort[1] * -1
   } else {
     currentSort[0] = sort
     currentSort[1] = -1
   }
+  saveSettings()
   sortArchives()
   render()
 }
