@@ -58,3 +58,8 @@ export const STANDARD_ARCHIVE_TYPES = [
   'videos',
   'website'
 ]
+
+// URLs used in various places in the UI
+export const URL_HASHBASE_SIGNUP = 'https://hashbase.io/register'
+export const URL_SELF_HOSTING_GUIDE = 'https://TODO' // TODO
+export const URL_DOCS_LAB_API_LIBRARY = 'https://TODO' // TODO

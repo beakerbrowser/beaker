@@ -6,11 +6,11 @@ import * as datLibrary from '../../networks/dat/library'
 import * as archivesDb from '../../dbs/archives'
 import {requestPermission} from '../../ui/permissions'
 import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
+import {URL_DOCS_LAB_API_LIBRARY} from '../../../lib/const'
 
 // constants
 // =
 
-const API_DOCS_URL = 'https://TODO' // TODO
 const API_PERM_ID = 'experimentalLibrary'
 const REQUEST_ADD_PERM_ID = 'experimentalLibraryRequestAdd'
 const REQUEST_REMOVE_PERM_ID = 'experimentalLibraryRequestRemove'
@@ -117,7 +117,7 @@ async function checkPerm (perm, sender) {
       }
     }
     if (!isOptedIn) {
-      throw new PermissionsError(`You must include "${LAB_API_ID}" in your dat.json experimental.apis list. See ${API_DOCS_URL} for more information.`)
+      throw new PermissionsError(`You must include "${LAB_API_ID}" in your dat.json experimental.apis list. See ${URL_DOCS_LAB_API_LIBRARY} for more information.`)
     }
 
     // ask user
