@@ -8,6 +8,7 @@ import downloadsManifest from '../lib/api-manifests/internal/downloads'
 import sitedataManifest from '../lib/api-manifests/internal/sitedata'
 import archivesManifest from '../lib/api-manifests/internal/archives'
 import historyManifest from '../lib/api-manifests/internal/history'
+import servicesManifest from '../lib/api-manifests/internal/services'
 // import appsManifest from '../lib/api-manifests/internal/apps'
 
 // internal apis
@@ -18,6 +19,7 @@ import historyAPI from './web-apis/history'
 import {WEBAPI as sitedataAPI} from './dbs/sitedata'
 import {WEBAPI as downloadsAPI} from './ui/downloads'
 import {WEBAPI as beakerBrowserAPI} from './browser'
+import {WEBAPI as servicesAPI} from './dbs/services'
 
 // external manifests
 import datArchiveManifest from '../lib/api-manifests/external/dat-archive'
@@ -47,6 +49,7 @@ export function setup () {
   // rpc.exportAPI('apps', appsManifest, appsAPI, internalOnly)
   rpc.exportAPI('sitedata', sitedataManifest, sitedataAPI, internalOnly)
   rpc.exportAPI('downloads', downloadsManifest, downloadsAPI, internalOnly)
+  rpc.exportAPI('services', servicesManifest, servicesAPI, internalOnly)
   rpc.exportAPI('beaker-browser', beakerBrowserManifest, beakerBrowserAPI, internalOnly)
 
   // external apis
