@@ -203,7 +203,7 @@ export async function listServiceAccounts (hostname) {
 // =
 
 function getHostname (url) {
-  return parseURL(url).hostname || url
+  return parseURL(url).host || url
 }
 
 migrations = [
