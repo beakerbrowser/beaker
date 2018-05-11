@@ -15,11 +15,11 @@ import servicesManifest from '../lib/api-manifests/internal/services'
 import archivesAPI from './web-apis/archives'
 import bookmarksAPI from './web-apis/bookmarks'
 import historyAPI from './web-apis/history'
+import servicesAPI from './web-apis/services'
 // import appsAPI from './web-apis/apps'
 import {WEBAPI as sitedataAPI} from './dbs/sitedata'
 import {WEBAPI as downloadsAPI} from './ui/downloads'
 import {WEBAPI as beakerBrowserAPI} from './browser'
-import {WEBAPI as servicesAPI} from './dbs/services'
 
 // external manifests
 import datArchiveManifest from '../lib/api-manifests/external/dat-archive'

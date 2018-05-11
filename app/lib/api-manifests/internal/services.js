@@ -1,4 +1,12 @@
 export default {
+  fetchPSADoc: 'promise',
+  makeAPIRequest: 'promise',
+  
+  registerHashbase: 'promise',
+
+  login: 'promise',
+  logout: 'promise',
+
   addService: 'promise',
   removeService: 'promise',
   addAccount: 'promise',

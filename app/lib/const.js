@@ -63,3 +63,7 @@ export const STANDARD_ARCHIVE_TYPES = [
 export const URL_HASHBASE_SIGNUP = 'https://hashbase.io/register'
 export const URL_SELF_HOSTING_GUIDE = 'https://TODO' // TODO
 export const URL_DOCS_LAB_API_LIBRARY = 'https://TODO' // TODO
+
+// rel-types
+export const REL_ACCOUNT_API = 'https://archive.org/services/purl/purl/datprotocol/spec/pinning-service-account-api'
+export const REL_DATS_API = 'https://archive.org/services/purl/purl/datprotocol/spec/pinning-service-dats-api'

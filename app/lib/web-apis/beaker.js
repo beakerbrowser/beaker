@@ -135,6 +135,11 @@ if (window.location.protocol === 'beaker:') {
 
   // beaker.services
   beaker.services = {}
+  beaker.services.fetchPSADoc = servicesRPC.fetchPSADoc
+  beaker.services.makeAPIRequest = servicesRPC.makeAPIRequest
+  beaker.services.registerHashbase = servicesRPC.registerHashbase
+  beaker.services.login = servicesRPC.login
+  beaker.services.logout = servicesRPC.logout
   beaker.services.addService = servicesRPC.addService
   beaker.services.removeService = servicesRPC.removeService
   beaker.services.addAccount = servicesRPC.addAccount

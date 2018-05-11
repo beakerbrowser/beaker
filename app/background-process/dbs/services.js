@@ -5,6 +5,7 @@ import assert from 'assert'
 import _keyBy from 'lodash.keyby'
 import {parse as parseURL} from 'url'
 import { cbPromise } from '../../lib/functions'
+import {toHostname} from '../../lib/bg/services'
 import { setupSqliteDB } from '../../lib/bg/db'
 
 // globals
@@ -23,25 +24,10 @@ export function setup () {
   setupPromise = setupSqliteDB(db, {migrations}, '[SERVICES]')
 }
 
-export const WEBAPI = {
-  addService,
-  removeService,
-  addAccount,
-  removeAccount,
-
-  getService,
-  getAccount,
-
-  listServices,
-  listAccounts,
-  listServiceLinks,
-  listServiceAccounts
-}
-
 export async function addService (hostname, psaDoc = null) {
   await setupPromise
   assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
-  hostname = getHostname(hostname)
+  hostname = toHostname(hostname)
 
   // update service records
   await cbPromise(cb => {
@@ -61,7 +47,7 @@ export async function addService (hostname, psaDoc = null) {
   })
 
   // remove any existing links
-  await cbPromise(cb => db.run(`DELETE FROM links WHERE serviceHostname = ?`, [hostname], cb))
+  await cbPromise(cb => db.run(`DELETE FROM links WHERE hostname = ?`, [hostname], cb))
 
   // add new links
   if (psaDoc && psaDoc.links && Array.isArray(psaDoc.links)) {
@@ -80,7 +66,7 @@ export async function addService (hostname, psaDoc = null) {
       var {rel, href, title} = link
       title = typeof title === 'string' ? title : ''
       db.run(
-        `INSERT INTO links (serviceHostname, rel, href, title) VALUES (?, ?, ?, ?)`,
+        `INSERT INTO links (hostname, rel, href, title) VALUES (?, ?, ?, ?)`,
         [hostname, rel, href, title],
         cb
       )
@@ -91,7 +77,7 @@ export async function addService (hostname, psaDoc = null) {
 export async function removeService (hostname) {
   await setupPromise
   assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
-  hostname = getHostname(hostname)
+  hostname = toHostname(hostname)
   await cbPromise(cb => db.run(`DELETE FROM services WHERE hostname = ?`, [hostname], cb))
 }
 
@@ -100,21 +86,21 @@ export async function addAccount (hostname, {username, password}) {
   assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
   assert(username && typeof username === 'string', 'Username must be a string')
   assert(password && typeof password === 'string', 'Password must be a string')
-  hostname = getHostname(hostname)
+  hostname = toHostname(hostname)
 
   // delete existing account
-  await cbPromise(cb => db.run(`DELETE FROM accounts WHERE serviceHostname = ? AND username = ?`, [hostname, username], cb))
+  await cbPromise(cb => db.run(`DELETE FROM accounts WHERE hostname = ? AND username = ?`, [hostname, username], cb))
 
   // add new account
-  await cbPromise(cb => db.run(`INSERT INTO accounts (serviceHostname, username, password) VALUES (?, ?, ?)`, [hostname, username, password], cb))
+  await cbPromise(cb => db.run(`INSERT INTO accounts (hostname, username, password) VALUES (?, ?, ?)`, [hostname, username, password], cb))
 }
 
 export async function removeAccount (hostname, username) {
   await setupPromise
   assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
   assert(username && typeof username === 'string', 'Username must be a string')
-  hostname = getHostname(hostname)
-  await cbPromise(cb => db.run(`DELETE FROM accounts WHERE serviceHostname = ? AND username = ?`, [hostname, username], cb))
+  hostname = toHostname(hostname)
+  await cbPromise(cb => db.run(`DELETE FROM accounts WHERE hostname = ? AND username = ?`, [hostname, username], cb))
 }
 
 export async function getService (hostname) {
@@ -124,15 +110,15 @@ export async function getService (hostname) {
 
 export async function getAccount (hostname, username) {
   await setupPromise
-  hostname = getHostname(hostname)
-  var query = 'SELECT username, password, serviceHostname FROM accounts WHERE serviceHostname = ? AND username = ?'
+  hostname = toHostname(hostname)
+  var query = 'SELECT username, password, hostname FROM accounts WHERE hostname = ? AND username = ?'
   return cbPromise(cb => db.get(query, [hostname, username], cb))
 }
 
 export async function listServices ({hostname} = {}) {
   await setupPromise
   if (hostname) {
-    hostname = getHostname(hostname)
+    hostname = toHostname(hostname)
   }
 
   // construct query
@@ -161,23 +147,23 @@ export async function listServices ({hostname} = {}) {
   return _keyBy(services, 'hostname') // return as an object
 }
 
-export async function listAccounts ({rel} = {}) {
+export async function listAccounts ({api} = {}) {
   await setupPromise
 
   // construct query
   var join = ''
   var where = ['1=1']
   var params = []
-  if (rel) {
-    where.push('links.rel=?')
-    params.push(rel)
-    join = 'LEFT JOIN links ON links.serviceHostname = accounts.serviceHostname'
+  if (api) {
+    where.push('links.rel = ?')
+    params.push(api)
+    join = 'LEFT JOIN links ON links.hostname = accounts.hostname'
   }
   where = where.join(' AND ')
 
   // run query
   var query = `
-    SELECT accounts.username, accounts.serviceHostname
+    SELECT accounts.username, accounts.hostname
       FROM accounts
       ${join}
       WHERE ${where}
@@ -187,24 +173,20 @@ export async function listAccounts ({rel} = {}) {
 
 export async function listServiceLinks (hostname) {
   await setupPromise
-  hostname = getHostname(hostname)
-  var query = 'SELECT rel, title, href FROM links WHERE serviceHostname = ?'
+  hostname = toHostname(hostname)
+  var query = 'SELECT rel, title, href FROM links WHERE hostname = ?'
   return cbPromise(cb => db.all(query, [hostname], cb))
 }
 
 export async function listServiceAccounts (hostname) {
   await setupPromise
-  hostname = getHostname(hostname)
-  var query = 'SELECT username FROM accounts WHERE serviceHostname = ?'
+  hostname = toHostname(hostname)
+  var query = 'SELECT username FROM accounts WHERE hostname = ?'
   return cbPromise(cb => db.all(query, [hostname], cb))
 }
 
 // internal methods
 // =
-
-function getHostname (url) {
-  return parseURL(url).host || url
-}
 
 migrations = [
   // version 1
@@ -217,20 +199,20 @@ migrations = [
         createdAt INTEGER
       );
       CREATE TABLE accounts (
-        serviceHostname TEXT,
+        hostname TEXT,
         username TEXT,
         password TEXT,
         createdAt INTEGER,
 
-        FOREIGN KEY (serviceHostname) REFERENCES services (hostname) ON DELETE CASCADE
+        FOREIGN KEY (hostname) REFERENCES services (hostname) ON DELETE CASCADE
       );
       CREATE TABLE links (
-        serviceHostname TEXT,
+        hostname TEXT,
         rel TEXT,
         title TEXT,
         href TEXT,
 
-        FOREIGN KEY (serviceHostname) REFERENCES services (hostname) ON DELETE CASCADE
+        FOREIGN KEY (hostname) REFERENCES services (hostname) ON DELETE CASCADE
       );
 
       PRAGMA user_version = 1;
