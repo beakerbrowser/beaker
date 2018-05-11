@@ -1,33 +1,44 @@
 import assert from 'assert'
 import http from 'http'
 import https from 'https'
-import {parse as parseURL} from 'url'
+import {URL, parse as parseURL} from 'url'
 
 // exported api
 
-export function toHostname (url = '') {
+export function toOrigin (url = '') {
   if (!url) return url
-  if (url.indexOf('://') === -1) return url
-  return parseURL(url).host || url
+  if (url.indexOf('://') === -1) url = 'https://' + url
+  return (new URL(url)).origin
 }
 
+// opts:
+// - origin: String, the scheme+hostname+port of the target machine
+// - path: String, the url path (default '/')
+// - method: String (default 'GET')
+// - headers: Object
+// - session: String
+// returns object
+// - success: Boolean
+// - statusCode: Number
+// - headers: Object
+// - body: any
 export function request (opts, body = undefined) {
   return new Promise((resolve, reject) => {
     var reqOpts = {headers: {}}
 
     // parse URL
     var urlp
-    if (opts.hostname.indexOf('://') === -1) {
-      let [hostname, port] = opts.hostname.split(':')
-      let protocol = process.env.NODE_ENV === 'test' ? 'http:' : 'https:'
+    if (opts.origin.indexOf('://') === -1) {
+      let [hostname, port] = opts.origin.split(':')
+      let protocol = 'https:'
       if (port) port = +port
       urlp = {protocol, hostname, port}
     } else {
-      urlp = parseURL(opts.hostname)
+      urlp = parseURL(opts.origin)
     }
     reqOpts.protocol = urlp.protocol
     reqOpts.hostname = urlp.hostname
-    reqOpts.path = opts.path
+    reqOpts.path = opts.path || '/'
     if (urlp.port) {
       reqOpts.port = urlp.port
     }
@@ -67,23 +78,22 @@ export function request (opts, body = undefined) {
           } catch (e) {}
         }
 
-        // reject / resolve
-        if (res.statusCode >= 400) {
-          var err = new Error(resBody && resBody.message ? resBody.message : 'Request failed')
-          err.statusCode = res.statusCode
-          err.headers = res.headers
-          err.body = resBody
-          reject(err)
-        } else {
-          resolve({
-            statusCode: res.statusCode,
-            headers: res.headers,
-            body: resBody
-          })
-        }
+        // resolve
+        var statusCode = +res.statusCode
+        resolve({
+          success: statusCode >= 200 && statusCode < 300,
+          statusCode,
+          headers: res.headers,
+          body: resBody
+        })
       })
     })
-    req.on('error', err => reject(new Error(err.toString())))
+    req.on('error', err => resolve({
+      success: false,
+      statusCode: 0,
+      headers: {},
+      body: {message: err.toString()}
+    }))
     if (body) {
       req.write(body)
     }

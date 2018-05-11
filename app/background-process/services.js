@@ -3,8 +3,8 @@ import {join as joinPaths} from 'path'
 import _get from 'lodash.get'
 import _set from 'lodash.set'
 import * as servicesDb from './dbs/services'
-import {request, toHostname, getAPIPathname} from '../lib/bg/services'
-import {REL_ACCOUNT_API} from '../lib/const'
+import {request, toOrigin, getAPIPathname} from '../lib/bg/services'
+import {URL_HASHBASE, REL_ACCOUNT_API} from '../lib/const'
 
 // globals
 // =
@@ -15,58 +15,62 @@ var sessions = {}
 // exported api
 // =
 
-export async function fetchPSADoc (hostname, {noCache} = {}) {
-  assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
-  hostname = toHostname(hostname)
+export async function fetchPSADoc (origin, {noCache} = {}) {
+  assert(origin && typeof origin === 'string', 'Origin must be a string')
+  origin = toOrigin(origin)
 
   // check cache
-  if (!noCache && hostname in psaDocs) {
-    return psaDocs[hostname]
+  if (!noCache && origin in psaDocs) {
+    return {success: true, statusCode: 200, headers: {}, body: psaDocs[origin]}
   }
 
   // do fetch
   var psaDocResponse = await request({
-    hostname,
+    origin,
     path: '/.well-known/psa'
   })
-  if (psaDocResponse.body && typeof psaDocResponse.body == 'object') {
-    psaDocs[hostname] = psaDocResponse.body
-    return psaDocResponse.body
+  if (psaDocResponse.success && psaDocResponse.body && typeof psaDocResponse.body == 'object') {
+    let psaDoc = psaDocResponse.body
+    psaDocs[origin] = psaDoc
+    await servicesDb.addService(origin, psaDoc)
   }
-  throw new Error('Invalid PSA service description document')
+  return psaDocResponse
 }
 
-export async function makeAPIRequest ({hostname, api, username, method, path, headers, body}) {
-  assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
-  hostname = toHostname(hostname)
+export async function makeAPIRequest ({origin, api, username, method, path, headers, body}) {
+  assert(origin && typeof origin === 'string', 'Origin must be a string')
+  origin = toOrigin(origin)
 
   // get params
-  var session = username ? (await getOrCreateSession(hostname, username)) : undefined
-  var psaDoc = await fetchPSADoc(hostname)
-  var apiPath = getAPIPathname(psaDoc, api)
+  try {
+    var session = username ? (await getOrCreateSession(origin, username)) : undefined
+  } catch (e) {
+    return {success: false, statusCode: 0, headers: {}, body: {message: 'Need to log in'}}
+  }
+  var psaDocResponse = await fetchPSADoc(origin)
+  if (!psaDocResponse.success) return psaDocResponse
+  var apiPath = getAPIPathname(psaDocResponse.body, api)
   path = path ? joinPaths(apiPath, path) : apiPath
 
   // make request
-  return request({hostname, path, method, headers, session}, body)
+  return request({origin, path, method, headers, session}, body)
 }
 
 export async function registerHashbase (body) {
   return request({
-    hostname: 'hashbase.io',
+    origin: URL_HASHBASE,
     path: '/v2/accounts/register',
     method: 'POST'
   }, body)
 }
 
-export async function login (hostname, username, password) {
-  assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
-  assert(username && typeof username === 'string', 'Username must be a string')
-  assert(password && typeof password === 'string', 'Password must be a string')
-  hostname = toHostname(hostname)
+export async function login (origin, username, password) {
+  assert(origin && typeof origin === 'string', 'Origin must be a string')
+  origin = toOrigin(origin)
 
   // make the login request
   var res = await makeAPIRequest({
-    hostname,
+    origin,
     api: REL_ACCOUNT_API,
     method: 'POST',
     path: '/login',
@@ -74,21 +78,20 @@ export async function login (hostname, username, password) {
   })
 
   // store the session
-  if (res.body && res.body.sessionToken) {
-    _set(sessions, [hostname, username], res.body.sessionToken)
+  if (res.success && res.body && res.body.sessionToken) {
+    _set(sessions, [origin, username], res.body.sessionToken)
   }
 
   return res
 }
 
-export async function logout (hostname, username) {
-  assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
-  assert(username && typeof username === 'string', 'Username must be a string')
-  hostname = toHostname(hostname)
+export async function logout (origin, username) {
+  assert(origin && typeof origin === 'string', 'Origin must be a string')
+  origin = toOrigin(origin)
 
-  // make the login request
+  // make the logout request
   var res = await makeAPIRequest({
-    hostname,
+    origin,
     api: REL_ACCOUNT_API,
     username,
     method: 'POST',
@@ -96,17 +99,17 @@ export async function logout (hostname, username) {
   })
 
   // clear the session
-  _set(sessions, [hostname, username], null)
+  _set(sessions, [origin, username], null)
 
   return res
 }
 
 // TODO needed?
-// export async function getAccount (hostname, username) {
-//   assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
+// export async function getAccount (origin, username) {
+//   assert(origin && typeof origin === 'string', 'Origin must be a string')
 //   assert(username && typeof username === 'string', 'Username must be a string')
 //   return makeAPIRequest({
-//     hostname,
+//     origin,
 //     api: REL_ACCOUNT_API,
 //     username,
 //     path: '/account'
@@ -116,18 +119,18 @@ export async function logout (hostname, username) {
 // internal methods
 // =
 
-async function getOrCreateSession (hostname, username) {
+async function getOrCreateSession (origin, username) {
   // check cache
-  var session = _get(sessions, [hostname, username])
+  var session = _get(sessions, [origin, username])
   if (session) return session
 
   // lookup account credentials
-  var creds = await servicesDb.getAccount(hostname, username)
+  var creds = await servicesDb.getAccount(origin, username)
   if (!creds) {
     throw new Error('Account not found')
   }
 
   // do login
-  var res = await login(hostname, creds.username, creds.password)
+  var res = await login(origin, creds.username, creds.password)
   return res.body.sessionToken
 }

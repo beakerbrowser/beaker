@@ -79,7 +79,7 @@ test('manage services', async t => {
   `)
   t.falsy(res)
   var res = await app.executeJavascript(`
-    beaker.services.addService('https://bar.com', {
+    beaker.services.addService('http://bar.com', {
       title: 'Bar Service',
       description: 'It is bar'
     })
@@ -100,23 +100,23 @@ test('manage services', async t => {
   var res = await app.executeJavascript(`
     beaker.services.listServices()
   `)
-  massageServiceObj(res['foo.com'])
-  massageServiceObj(res['bar.com'])
-  massageServiceObj(res['baz.com'])
+  massageServiceObj(res['https://foo.com'])
+  massageServiceObj(res['http://bar.com'])
+  massageServiceObj(res['https://baz.com'])
   t.deepEqual(res, {
-    'bar.com': {
+    'http://bar.com': {
       accounts: [],
       createdAt: 'number',
       description: 'It is bar',
-      hostname: 'bar.com',
+      origin: 'http://bar.com',
       links: [],
       title: 'Bar Service'
     },
-    'baz.com': {
+    'https://baz.com': {
       accounts: [],
       createdAt: 'number',
       description: '',
-      hostname: 'baz.com',
+      origin: 'https://baz.com',
       links: [
         {href: '/href', rel: 'a', title: 'Got links'},
         {href: '/href', rel: 'b', title: 'Got links'},
@@ -124,11 +124,11 @@ test('manage services', async t => {
       ],
       title: ''
     },
-    'foo.com': {
+    'https://foo.com': {
       accounts: [],
       createdAt: 'number',
       description: 'It is foo',
-      hostname: 'foo.com',
+      origin: 'https://foo.com',
       links: [
         {
           href: '/v1/users',
@@ -154,7 +154,7 @@ test('manage services', async t => {
     accounts: [],
     createdAt: 'number',
     description: '',
-    hostname: 'baz.com',
+    origin: 'https://baz.com',
     links: [
       {href: '/href', rel: 'a', title: 'Got links'},
       {href: '/href', rel: 'b', title: 'Got links'},
@@ -182,7 +182,7 @@ test('manage services', async t => {
     accounts: [],
     createdAt: 'number',
     description: '',
-    hostname: 'baz.com',
+    origin: 'https://baz.com',
     links: [
       {href: '/href2', rel: 'c', title: 'Got links 2'},
       {href: '/href2', rel: 'd', title: 'Got links 2'},
@@ -205,15 +205,15 @@ test('manage services', async t => {
 test('manage accounts', async t => {
   // add some accounts
   var res = await app.executeJavascript(`
-    beaker.services.addAccount('foo.com', {username: 'alice', password: 'hunter2'})
+    beaker.services.addAccount('https://foo.com', 'alice', 'hunter2')
   `)
   t.falsy(res)
   var res = await app.executeJavascript(`
-    beaker.services.addAccount('foo.com', {username: 'bob', password: 'hunter2'})
+    beaker.services.addAccount('foo.com', 'bob', 'hunter2')
   `)
   t.falsy(res)
   var res = await app.executeJavascript(`
-    beaker.services.addAccount('baz.com', {username: 'alice', password: 'hunter2'})
+    beaker.services.addAccount('baz.com', 'alice', 'hunter2')
   `)
   t.falsy(res)
 
@@ -222,9 +222,9 @@ test('manage accounts', async t => {
     beaker.services.listAccounts()
   `)
   t.deepEqual(res, [
-    {hostname: 'foo.com', username: 'alice'},
-    {hostname: 'foo.com', username: 'bob'},
-    {hostname: 'baz.com', username: 'alice'}
+    {origin: 'https://foo.com', username: 'alice'},
+    {origin: 'https://foo.com', username: 'bob'},
+    {origin: 'https://baz.com', username: 'alice'}
   ])
 
   // list accounts (rel filter)
@@ -232,16 +232,16 @@ test('manage accounts', async t => {
     beaker.services.listAccounts({api: 'http://api-spec.com/clock'})
   `)
   t.deepEqual(res, [
-    {hostname: 'foo.com', username: 'alice'},
-    {hostname: 'foo.com', username: 'bob'}
+    {origin: 'https://foo.com', username: 'alice'},
+    {origin: 'https://foo.com', username: 'bob'}
   ])
 
   // get account
   var res = await app.executeJavascript(`
-    beaker.services.getAccount('foo.com', 'alice')
+    beaker.services.getAccount('https://foo.com', 'alice')
   `)
   t.deepEqual(res, {
-    hostname: 'foo.com',
+    origin: 'https://foo.com',
     username: 'alice',
     password: 'hunter2'
   })
@@ -257,7 +257,7 @@ test('manage accounts', async t => {
     ],
     createdAt: 'number',
     description: '',
-    hostname: 'baz.com',
+    origin: 'https://baz.com',
     links: [
       {href: '/href2', rel: 'c', title: 'Got links 2'},
       {href: '/href2', rel: 'd', title: 'Got links 2'},
@@ -268,14 +268,14 @@ test('manage accounts', async t => {
 
   // overwrite account
   var res = await app.executeJavascript(`
-    beaker.services.addAccount('foo.com', {username: 'alice', password: 'hunter3'})
+    beaker.services.addAccount('https://foo.com', 'alice', 'hunter3')
   `)
   t.falsy(res)
   var res = await app.executeJavascript(`
-    beaker.services.getAccount('foo.com', 'alice')
+    beaker.services.getAccount('https://foo.com', 'alice')
   `)
   t.deepEqual(res, {
-    hostname: 'foo.com',
+    origin: 'https://foo.com',
     username: 'alice',
     password: 'hunter3'
   })
@@ -294,48 +294,46 @@ test('manage accounts', async t => {
 test('fetchPSADoc', async t => {
   // test valid host
   var res = await app.executeJavascript(`
-    beaker.services.fetchPSADoc('localhost:8888')
-  `)
-  t.deepEqual(res, LOCALHOST_PSA)
-
-  // include protocol
-  var res = await app.executeJavascript(`
     beaker.services.fetchPSADoc('http://localhost:8888')
   `)
-  t.deepEqual(res, LOCALHOST_PSA)
+  t.deepEqual(res.body, LOCALHOST_PSA)
 
   // test invalid host
-  await t.throws(app.executeJavascript(`
+  var res = await app.executeJavascript(`
     beaker.services.fetchPSADoc('localhost')
-  `))
+  `)
+  t.falsy(res.success)
 })
 
 test('login / logout / makeAPIRequest', async t => {
   // test without session
-  await t.throws(app.executeJavascript(`
+  var res = await app.executeJavascript(`
     beaker.services.makeAPIRequest({
-      hostname: 'localhost:8888',
+      origin: 'http://localhost:8888',
       api: '${REL_ACCOUNT_API}',
       path: '/account'
     })
-  `))
-  await t.throws(app.executeJavascript(`
+  `)
+  t.falsy(res.success)
+  var res = await app.executeJavascript(`
     beaker.services.makeAPIRequest({
-      hostname: 'localhost:8888',
+      origin: 'http://localhost:8888',
       username: 'admin',
       api: '${REL_ACCOUNT_API}',
       path: '/account'
     })
-  `))
+  `)
+  t.falsy(res.success)
 
   // fail login
-  await t.throws(app.executeJavascript(`
-    beaker.services.login('localhost:8888', 'admin', 'wrongpassword')
-  `))
+  var res = await app.executeJavascript(`
+    beaker.services.login('http://localhost:8888', 'admin', 'wrongpassword')
+  `)
+  t.falsy(res.success)
 
   // login
   var res = await app.executeJavascript(`
-    beaker.services.login('localhost:8888', 'admin', 'hunter2')
+    beaker.services.login('http://localhost:8888', 'admin', 'hunter2')
   `)
   t.is(res.statusCode, 200)
   t.is(typeof res.body.sessionToken, 'string')
@@ -343,7 +341,7 @@ test('login / logout / makeAPIRequest', async t => {
   // get account data
   var res = await app.executeJavascript(`
     beaker.services.makeAPIRequest({
-      hostname: 'localhost:8888',
+      origin: 'http://localhost:8888',
       username: 'admin',
       api: '${REL_ACCOUNT_API}',
       path: '/account'
@@ -353,38 +351,39 @@ test('login / logout / makeAPIRequest', async t => {
 
   // logout
   var res = await app.executeJavascript(`
-    beaker.services.logout('localhost:8888', 'admin')
+    beaker.services.logout('http://localhost:8888', 'admin')
   `)
   t.is(res.statusCode, 200)
 
   // test without session
-  await t.throws(app.executeJavascript(`
+  var res = await app.executeJavascript(`
     beaker.services.makeAPIRequest({
-      hostname: 'localhost:8888',
+      origin: 'http://localhost:8888',
       username: 'admin',
       api: '${REL_ACCOUNT_API}',
       path: '/account'
     })
-  `))
+  `)
+  t.falsy(res.success)
 })
 
 test('login with stored credentials', async t => {
   // add service
   var res = await app.executeJavascript(`
-    beaker.services.addService('localhost:8888', ${JSON.stringify(LOCALHOST_PSA)})
+    beaker.services.addService('http://localhost:8888', ${JSON.stringify(LOCALHOST_PSA)})
   `)
   t.falsy(res)
 
   // add account
   var res = await app.executeJavascript(`
-    beaker.services.addAccount('localhost:8888', {username: 'admin', password: 'hunter2'})
+    beaker.services.addAccount('http://localhost:8888', 'admin', 'hunter2')
   `)
   t.falsy(res)
 
   // get account data (no prior login)
   var res = await app.executeJavascript(`
     beaker.services.makeAPIRequest({
-      hostname: 'localhost:8888',
+      origin: 'http://localhost:8888',
       username: 'admin',
       api: '${REL_ACCOUNT_API}',
       path: '/account'

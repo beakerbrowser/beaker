@@ -5,7 +5,7 @@ import assert from 'assert'
 import _keyBy from 'lodash.keyby'
 import {parse as parseURL} from 'url'
 import { cbPromise } from '../../lib/functions'
-import {toHostname} from '../../lib/bg/services'
+import {toOrigin} from '../../lib/bg/services'
 import { setupSqliteDB } from '../../lib/bg/db'
 
 // globals
@@ -24,10 +24,10 @@ export function setup () {
   setupPromise = setupSqliteDB(db, {migrations}, '[SERVICES]')
 }
 
-export async function addService (hostname, psaDoc = null) {
+export async function addService (origin, psaDoc = null) {
   await setupPromise
-  assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
-  hostname = toHostname(hostname)
+  assert(origin && typeof origin === 'string', 'Origin must be a string')
+  origin = toOrigin(origin)
 
   // update service records
   await cbPromise(cb => {
@@ -35,19 +35,19 @@ export async function addService (hostname, psaDoc = null) {
     var description = psaDoc && typeof psaDoc.description === 'string' ? psaDoc.description : ''
     var createdAt = Date.now()
     db.run(
-      `UPDATE services SET title=?, description=? WHERE hostname=?`,
-      [title, description, hostname],
+      `UPDATE services SET title=?, description=? WHERE origin=?`,
+      [title, description, origin],
       cb
     )
     db.run(
-      `INSERT OR IGNORE INTO services (hostname, title, description, createdAt) VALUES (?, ?, ?, ?)`,
-      [hostname, title, description, createdAt],
+      `INSERT OR IGNORE INTO services (origin, title, description, createdAt) VALUES (?, ?, ?, ?)`,
+      [origin, title, description, createdAt],
       cb
     )
   })
 
   // remove any existing links
-  await cbPromise(cb => db.run(`DELETE FROM links WHERE hostname = ?`, [hostname], cb))
+  await cbPromise(cb => db.run(`DELETE FROM links WHERE origin = ?`, [origin], cb))
 
   // add new links
   if (psaDoc && psaDoc.links && Array.isArray(psaDoc.links)) {
@@ -66,73 +66,73 @@ export async function addService (hostname, psaDoc = null) {
       var {rel, href, title} = link
       title = typeof title === 'string' ? title : ''
       db.run(
-        `INSERT INTO links (hostname, rel, href, title) VALUES (?, ?, ?, ?)`,
-        [hostname, rel, href, title],
+        `INSERT INTO links (origin, rel, href, title) VALUES (?, ?, ?, ?)`,
+        [origin, rel, href, title],
         cb
       )
     })))
   }
 }
 
-export async function removeService (hostname) {
+export async function removeService (origin) {
   await setupPromise
-  assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
-  hostname = toHostname(hostname)
-  await cbPromise(cb => db.run(`DELETE FROM services WHERE hostname = ?`, [hostname], cb))
+  assert(origin && typeof origin === 'string', 'Origin must be a string')
+  origin = toOrigin(origin)
+  await cbPromise(cb => db.run(`DELETE FROM services WHERE origin = ?`, [origin], cb))
 }
 
-export async function addAccount (hostname, {username, password}) {
+export async function addAccount (origin, username, password) {
   await setupPromise
-  assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
+  assert(origin && typeof origin === 'string', 'Origin must be a string')
   assert(username && typeof username === 'string', 'Username must be a string')
   assert(password && typeof password === 'string', 'Password must be a string')
-  hostname = toHostname(hostname)
+  origin = toOrigin(origin)
 
   // delete existing account
-  await cbPromise(cb => db.run(`DELETE FROM accounts WHERE hostname = ? AND username = ?`, [hostname, username], cb))
+  await cbPromise(cb => db.run(`DELETE FROM accounts WHERE origin = ? AND username = ?`, [origin, username], cb))
 
   // add new account
-  await cbPromise(cb => db.run(`INSERT INTO accounts (hostname, username, password) VALUES (?, ?, ?)`, [hostname, username, password], cb))
+  await cbPromise(cb => db.run(`INSERT INTO accounts (origin, username, password) VALUES (?, ?, ?)`, [origin, username, password], cb))
 }
 
-export async function removeAccount (hostname, username) {
+export async function removeAccount (origin, username) {
   await setupPromise
-  assert(hostname && typeof hostname === 'string', 'Hostname must be a string')
+  assert(origin && typeof origin === 'string', 'Origin must be a string')
   assert(username && typeof username === 'string', 'Username must be a string')
-  hostname = toHostname(hostname)
-  await cbPromise(cb => db.run(`DELETE FROM accounts WHERE hostname = ? AND username = ?`, [hostname, username], cb))
+  origin = toOrigin(origin)
+  await cbPromise(cb => db.run(`DELETE FROM accounts WHERE origin = ? AND username = ?`, [origin, username], cb))
 }
 
-export async function getService (hostname) {
-  var services = await listServices({hostname})
+export async function getService (origin) {
+  var services = await listServices({origin})
   return Object.values(services)[0]
 }
 
-export async function getAccount (hostname, username) {
+export async function getAccount (origin, username) {
   await setupPromise
-  hostname = toHostname(hostname)
-  var query = 'SELECT username, password, hostname FROM accounts WHERE hostname = ? AND username = ?'
-  return cbPromise(cb => db.get(query, [hostname, username], cb))
+  origin = toOrigin(origin)
+  var query = 'SELECT username, password, origin FROM accounts WHERE origin = ? AND username = ?'
+  return cbPromise(cb => db.get(query, [origin, username], cb))
 }
 
-export async function listServices ({hostname} = {}) {
+export async function listServices ({origin} = {}) {
   await setupPromise
-  if (hostname) {
-    hostname = toHostname(hostname)
+  if (origin) {
+    origin = toOrigin(origin)
   }
 
   // construct query
   var where = ['1=1']
   var params = []
-  if (hostname) {
-    where.push('hostname = ?')
-    params.push(hostname)
+  if (origin) {
+    where.push('origin = ?')
+    params.push(origin)
   }
   where = where.join(' AND ')
 
   // run query
   var query = `
-    SELECT hostname, title, description, createdAt
+    SELECT origin, title, description, createdAt
       FROM services
       WHERE ${where}
   `
@@ -140,11 +140,11 @@ export async function listServices ({hostname} = {}) {
 
   // get links on each
   await Promise.all(services.map(async (service) => {
-    service.links = await listServiceLinks(service.hostname)
-    service.accounts = await listServiceAccounts(service.hostname)
+    service.links = await listServiceLinks(service.origin)
+    service.accounts = await listServiceAccounts(service.origin)
   }))
 
-  return _keyBy(services, 'hostname') // return as an object
+  return _keyBy(services, 'origin') // return as an object
 }
 
 export async function listAccounts ({api} = {}) {
@@ -157,13 +157,13 @@ export async function listAccounts ({api} = {}) {
   if (api) {
     where.push('links.rel = ?')
     params.push(api)
-    join = 'LEFT JOIN links ON links.hostname = accounts.hostname'
+    join = 'LEFT JOIN links ON links.origin = accounts.origin'
   }
   where = where.join(' AND ')
 
   // run query
   var query = `
-    SELECT accounts.username, accounts.hostname
+    SELECT accounts.username, accounts.origin
       FROM accounts
       ${join}
       WHERE ${where}
@@ -171,18 +171,18 @@ export async function listAccounts ({api} = {}) {
   return cbPromise(cb => db.all(query, params, cb))
 }
 
-export async function listServiceLinks (hostname) {
+export async function listServiceLinks (origin) {
   await setupPromise
-  hostname = toHostname(hostname)
-  var query = 'SELECT rel, title, href FROM links WHERE hostname = ?'
-  return cbPromise(cb => db.all(query, [hostname], cb))
+  origin = toOrigin(origin)
+  var query = 'SELECT rel, title, href FROM links WHERE origin = ?'
+  return cbPromise(cb => db.all(query, [origin], cb))
 }
 
-export async function listServiceAccounts (hostname) {
+export async function listServiceAccounts (origin) {
   await setupPromise
-  hostname = toHostname(hostname)
-  var query = 'SELECT username FROM accounts WHERE hostname = ?'
-  return cbPromise(cb => db.all(query, [hostname], cb))
+  origin = toOrigin(origin)
+  var query = 'SELECT username FROM accounts WHERE origin = ?'
+  return cbPromise(cb => db.all(query, [origin], cb))
 }
 
 // internal methods
@@ -193,26 +193,26 @@ migrations = [
   function (cb) {
     db.exec(`
       CREATE TABLE services (
-        hostname TEXT PRIMARY KEY,
+        origin TEXT PRIMARY KEY,
         title TEXT,
         description TEXT,
         createdAt INTEGER
       );
       CREATE TABLE accounts (
-        hostname TEXT,
+        origin TEXT,
         username TEXT,
         password TEXT,
         createdAt INTEGER,
 
-        FOREIGN KEY (hostname) REFERENCES services (hostname) ON DELETE CASCADE
+        FOREIGN KEY (origin) REFERENCES services (origin) ON DELETE CASCADE
       );
       CREATE TABLE links (
-        hostname TEXT,
+        origin TEXT,
         rel TEXT,
         title TEXT,
         href TEXT,
 
-        FOREIGN KEY (hostname) REFERENCES services (hostname) ON DELETE CASCADE
+        FOREIGN KEY (origin) REFERENCES services (origin) ON DELETE CASCADE
       );
 
       PRAGMA user_version = 1;

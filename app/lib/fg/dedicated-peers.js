@@ -5,17 +5,18 @@ import {DAT_HASH_REGEX, REL_DATS_API} from '../const'
 // =
 
 export function listAccounts () {
-  return beaker.service.listAccounts({api: REL_DATS_API})
+  return beaker.services.listAccounts({api: REL_DATS_API})
 }
 
 export async function getAllPins (datUrl) {
   var accounts = await listAccounts()
-  return Promise.all(accounts.map(account => getPinAt(account, datUrl)))
+  var pins = await Promise.all(accounts.map(account => getPinAt(account, datUrl)))
+  return {accounts, pins}
 }
 
 export function getPinAt (account, datUrl) {
   return beaker.services.makeAPIRequest({
-    hostname: account.hostname,
+    origin: account.origin,
     username: account.username,
     api: REL_DATS_API,
     method: 'GET',
@@ -25,7 +26,7 @@ export function getPinAt (account, datUrl) {
 
 export function pinDat (account, datUrl, datName) {
   return beaker.services.makeAPIRequest({
-    hostname: account.hostname,
+    origin: account.origin,
     username: account.username,
     api: REL_DATS_API,
     method: 'POST',
@@ -39,7 +40,7 @@ export function pinDat (account, datUrl, datName) {
 
 export function unpinDat (account, datUrl) {
   return beaker.services.makeAPIRequest({
-    hostname: account.hostname,
+    origin: account.origin,
     username: account.username,
     api: REL_DATS_API,
     method: 'POST',
