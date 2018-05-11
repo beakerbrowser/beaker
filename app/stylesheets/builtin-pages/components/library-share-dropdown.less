@@ -5,6 +5,12 @@
     background: #fff;
   }
 
+  .message {
+    margin: 0;
+    flex-wrap: nowrap;
+    line-height: 1.2;
+  }
+
   .urls {
     margin-bottom: 25px;
   }
@@ -69,16 +75,18 @@
   .peer-header {
     display: flex;
     align-items: center;
-    padding: 8px;
+    padding: 0 0 4px;
     font-size: 13px;
 
-    cursor: pointer;
-    * {
-      cursor: pointer;
+    .origin {
+      font-weight: 700;
+      margin-right: 5px;
     }
 
-    &:hover {
-      color: gray;
+    .username {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .status {
@@ -87,14 +95,6 @@
 
     .fa-check {
       color: rgb(55, 193, 79);
-    }
-
-    .fa-upload {
-      padding-left: 1px;
-    }
-
-    .fa-plus {
-      padding-left: 2px;
     }
   }
 

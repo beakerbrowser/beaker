@@ -28,7 +28,7 @@ export async function fetchPSADoc (origin, {noCache} = {}) {
 
   // do fetch
   var n = ++debugRequestCounter
-  debug(`Request ${n} origin=${origin} path=${path} method=GET (PSA doc fetch)`)
+  debug(`Request ${n} origin=${origin} path=/.well-known/psa method=GET (PSA doc fetch)`)
   var res = await request({
     origin,
     path: '/.well-known/psa'
@@ -50,6 +50,7 @@ export async function makeAPIRequest ({origin, api, username, method, path, head
   try {
     var session = username ? (await getOrCreateSession(origin, username)) : undefined
   } catch (e) {
+    debug(`Session creation failed origin=${origin} session=${username} error=`, e)
     return {success: false, statusCode: 0, headers: {}, body: {message: 'Need to log in'}}
   }
   var psaDocResponse = await fetchPSADoc(origin)

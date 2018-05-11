@@ -1,5 +1,5 @@
 import {join as joinPaths} from 'path'
-import {DAT_HASH_REGEX, REL_DATS_API} from '../const'
+import {DAT_URL_REGEX, REL_DATS_API} from '../const'
 
 // exported api
 // =
@@ -11,7 +11,15 @@ export function listAccounts () {
 export async function getAllPins (datUrl) {
   var accounts = await listAccounts()
   var pins = await Promise.all(accounts.map(account => getPinAt(account, datUrl)))
-  return {accounts, pins}
+  var urls = []
+  pins.forEach((pin, i) => {
+    accounts[i].isShared = pin.success
+    if (!pin.success) return
+    accounts[i].datName = pin.body.name
+    if (!pin.body || !pin.body.additionalUrls) return
+    urls = urls.concat(pin.body.additionalUrls)
+  })
+  return {accounts, urls}
 }
 
 export function getPinAt (account, datUrl) {
@@ -21,6 +29,19 @@ export function getPinAt (account, datUrl) {
     api: REL_DATS_API,
     method: 'GET',
     path: joinPaths('item', urlToKey(datUrl))
+  })
+}
+
+export function updatePin (account, datUrl, datName) {
+  return beaker.services.makeAPIRequest({
+    origin: account.origin,
+    username: account.username,
+    api: REL_DATS_API,
+    method: 'POST',
+    path: joinPaths('item', urlToKey(datUrl)),
+    body: {
+      name: datName
+    }
   })
 }
 
@@ -55,9 +76,9 @@ export function unpinDat (account, datUrl) {
 // =
 
 function urlToKey (url) {
-  var match = (url || '').match(DAT_HASH_REGEX)
+  var match = (url || '').match(DAT_URL_REGEX)
   if (match) {
-    return match[0].toLowerCase()
+    return match[1].toLowerCase()
   }
   return url
 }
