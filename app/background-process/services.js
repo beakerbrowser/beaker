@@ -5,10 +5,12 @@ import _set from 'lodash.set'
 import * as servicesDb from './dbs/services'
 import {request, toOrigin, getAPIPathname} from '../lib/bg/services'
 import {URL_HASHBASE, REL_ACCOUNT_API} from '../lib/const'
+var debug = require('debug')('beaker-service')
 
 // globals
 // =
 
+var debugRequestCounter = 0
 var psaDocs = {}
 var sessions = {}
 
@@ -53,7 +55,11 @@ export async function makeAPIRequest ({origin, api, username, method, path, head
   path = path ? joinPaths(apiPath, path) : apiPath
 
   // make request
-  return request({origin, path, method, headers, session}, body)
+  var n = ++debugRequestCounter
+  debug(`Request ${n} origin=${origin} path=${path} method=${method} session=${username} body=`, body)
+  var res = await request({origin, path, method, headers, session}, body)
+  debug(`Response ${n} statusCode=${res.statusCode} body=`, res.body)
+  return res
 }
 
 export async function registerHashbase (body) {
