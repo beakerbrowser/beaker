@@ -27,16 +27,19 @@ export async function fetchPSADoc (origin, {noCache} = {}) {
   }
 
   // do fetch
-  var psaDocResponse = await request({
+  var n = ++debugRequestCounter
+  debug(`Request ${n} origin=${origin} path=${path} method=GET (PSA doc fetch)`)
+  var res = await request({
     origin,
     path: '/.well-known/psa'
   })
-  if (psaDocResponse.success && psaDocResponse.body && typeof psaDocResponse.body == 'object') {
-    let psaDoc = psaDocResponse.body
+  debug(`Response ${n} statusCode=${res.statusCode} body=`, res.body)
+  if (res.success && res.body && typeof res.body == 'object') {
+    let psaDoc = res.body
     psaDocs[origin] = psaDoc
     await servicesDb.addService(origin, psaDoc)
   }
-  return psaDocResponse
+  return res
 }
 
 export async function makeAPIRequest ({origin, api, username, method, path, headers, body}) {
@@ -56,18 +59,29 @@ export async function makeAPIRequest ({origin, api, username, method, path, head
 
   // make request
   var n = ++debugRequestCounter
-  debug(`Request ${n} origin=${origin} path=${path} method=${method} session=${username} body=`, body)
+  debug(`Request ${n} origin=${origin} path=${path} method=${method} session=${username}`)
   var res = await request({origin, path, method, headers, session}, body)
-  debug(`Response ${n} statusCode=${res.statusCode} body=`, res.body)
+  debug(`Response ${n} statusCode=${res.statusCode}`)
   return res
 }
 
 export async function registerHashbase (body) {
-  return request({
+  // make the request
+  var n = ++debugRequestCounter
+  debug(`Request ${n} origin=${URL_HASHBASE} path=/v2/accounts/register method=POST`)
+  var res = await request({
     origin: URL_HASHBASE,
     path: '/v2/accounts/register',
     method: 'POST'
   }, body)
+  debug(`Response ${n} statusCode=${res.statusCode}`)
+
+  // add the account on success
+  if (res.success) {
+    await servicesDb.addAccount(URL_HASHBASE, body.username, body.password)
+  }
+
+  return res
 }
 
 export async function login (origin, username, password) {

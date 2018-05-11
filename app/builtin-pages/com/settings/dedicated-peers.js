@@ -17,6 +17,7 @@ var signinFields = [
   {name: 'username', label: 'Username', value: ''},
   {name: 'password', label: 'Password', value: '', type: 'password'},
 ]
+var registeredEmail = false
 var errors = null
 
 // exported api
@@ -31,10 +32,18 @@ export default function renderDedicatedPeers (dedicatedPeerAccounts) {
     <div class="view">
       <div class="section">
         <h2 id="dedicated-peers" class="subtitle-heading">Dedicated Peers</h2>
+
+        ${registeredEmail
+          ? yo`
+            <div class="message success">
+              <i class="fa fa-smile-o"></i>
+              <p><strong>Success!</strong> Check your email (${registeredEmail}) for a confirmation link to finish your setup.</p>
+            </div>`
+          : ''}
+        
         <p>Dedicated peers keep your Dat data online, even when your computer is off.</p>
         
         ${accounts ? accounts.map(renderPeer) : ''}
-
         ${formAction
           ? renderForm()
           : yo`
@@ -74,8 +83,9 @@ function renderForm () {
 
 function renderRegisterForm () {
   return yo`
-    <form class="form-layout">
+    <form class="form-layout" onsubmit=${onSubmitRegister}>
       <div>
+        ${errors ? yo`<div class="message error">${errors.message}</div>` : ''}
         ${registerFields.map(renderInput)}
         <div class="form-actions">
           <button class="btn primary">Create your account</button>
@@ -132,6 +142,7 @@ async function loadAccounts () {
 function onChangeAddPeerAction (e, value) {
   formAction = value || e.currentTarget.value
   errors = null
+  registeredEmail = false
   updatePage()
 
   // highlight first field
@@ -144,6 +155,42 @@ function onChangeAddPeerAction (e, value) {
 
 function onChangeInput (e, field) {
   field.value = e.currentTarget.value
+}
+
+async function onSubmitRegister (e) {
+  e.preventDefault()
+
+  // attempt signin
+  errors = null
+  var res
+  var username = registerFields[0].value
+  var email = registerFields[1].value
+  var password = registerFields[2].value
+  var passwordConfirm = registerFields[3].value
+  try {
+    res = await beaker.services.registerHashbase({username, email, password, passwordConfirm})
+    if (!res.success) {
+      if (res.body && typeof res.body.message === 'string') {
+        errors = res.body
+      } else if (typeof res.body === 'string' && (res.headers['content-type'] || '').indexOf('text/plain') !== -1) {
+        errors = {message: res.body}
+      } else {
+        errors = {message: 'There were errors in your submission'}
+      }
+    }
+  } catch (e) {
+    console.error(e)
+    errors = {message: e.toString()}
+  }
+
+  // save
+  if (res && res.success) {
+    registeredEmail = email
+    // no need to add the account, `registerHashbase()` did that
+    loadAccounts()
+  } else {
+    updatePage()
+  }
 }
 
 async function onSubmitSignin (e) {
