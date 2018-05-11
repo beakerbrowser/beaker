@@ -47,6 +47,7 @@ export function request (opts, body = undefined) {
     reqOpts.method = opts.method || 'GET'
 
     // add any headers
+    reqOpts.headers['Accept'] = 'application/json'
     if (opts.headers) {
       for (var k in opts.headers) {
         reqOpts.headers[k] = opts.headers[k]
