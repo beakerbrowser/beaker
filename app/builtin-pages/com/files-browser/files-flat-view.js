@@ -76,6 +76,7 @@ function rActions (filesBrowser, currentSource) {
           <div class="dropdown-items right toggleable-open-container"></div>
         </div>
       `, renderOpenHistory)}
+      <a class="btn" href="#compare">Compare</a>
       ${(currentSource.isEditable && currentSource.type !== 'file')
         ? window.OS_CAN_IMPORT_FOLDERS_AND_FILES
           ? yo`
