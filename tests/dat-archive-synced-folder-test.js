@@ -434,7 +434,11 @@ test('dat.json merges effectively with local sync path', async t => {
   t.deepEqual(res.description, 'Local Description')
 })
 
-test('build tool test', async t => {
+// TODO
+// this has been disabled due to the security risk of running an npm script
+// see #982
+// -prf
+test.skip('build tool test', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
     DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false })

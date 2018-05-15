@@ -101,7 +101,7 @@ export function configureFolderToArchiveWatcher (archive) {
         console.log('ok timed out')
         isSyncing = true
         try {
-          await runBuild(archive)
+          // await runBuild(archive)
           await syncFolderToArchive(archive, {shallow: false})
         } finally {
           isSyncing = false
