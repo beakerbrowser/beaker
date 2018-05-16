@@ -28,6 +28,12 @@
   },
   "build": {
     "appId": "com.pfrazee.beaker-browser",
+    "files": [
+      "**/*",
+      "!node_modules/**/sodium-native/prebuilds/**/*",
+      "node_modules/**/sodium-native/prebuilds/${platform}-${arch}/libsodium.*",
+      "node_modules/**/sodium-native/prebuilds/${platform}-${arch}/node-*"
+    ],
     "asar": true,
     "asarUnpack": [
       "./node_modules/sodium-native/**"
