@@ -6,7 +6,8 @@ import setupDebugLogger from './background-process/debug-logger'
 // It doesn't have any windows which you can see on screen, but we can open
 // window from here.
 
-import { app, protocol } from 'electron'
+import {app, protocol} from 'electron'
+import {getEnvVar} from './lib/electron'
 
 import * as beakerBrowser from './background-process/browser'
 import * as webAPIs from './background-process/web-apis'
@@ -38,12 +39,12 @@ import * as openURL from './background-process/open-url'
 
 // read config from env vars
 setupDebugLogger()
-if (process.env.beaker_user_data_path) {
+if (getEnvVar('BEAKER_USER_DATA_PATH')) {
   console.log('User data path set by environment variables')
-  console.log('userData:', process.env.beaker_user_data_path)
-  app.setPath('userData', process.env.beaker_user_data_path)
+  console.log('userData:', getEnvVar('BEAKER_USER_DATA_PATH'))
+  app.setPath('userData', getEnvVar('BEAKER_USER_DATA_PATH'))
 }
-if (process.env.BEAKER_TEST_DRIVER) {
+if (getEnvVar('BEAKER_TEST_DRIVER')) {
   testDriver.setup()
 }
 

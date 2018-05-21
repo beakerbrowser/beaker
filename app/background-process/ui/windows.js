@@ -9,6 +9,7 @@ import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
 import * as settingsDb from '../dbs/settings'
+import {getEnvVar} from '../../lib/electron'
 
 const IS_WIN = process.platform === 'win32'
 
@@ -89,8 +90,8 @@ export async function setup () {
   let previousSessionState = getPreviousBrowsingSession()
   sessionWatcher = new SessionWatcher(userDataDir)
   let customStartPage = await settingsDb.get('custom_start_page')
-  let isTestDriverActive = !!process.env.BEAKER_TEST_DRIVER
-  let isOpenUrlEnvVar = !!process.env.beaker_open_url
+  let isTestDriverActive = !!getEnvVar('BEAKER_TEST_DRIVER')
+  let isOpenUrlEnvVar = !!getEnvVar('BEAKER_OPEN_URL')
 
   if (!isTestDriverActive && !isOpenUrlEnvVar && (customStartPage === 'previous' || !previousSessionState.cleanExit && userWantsToRestoreSession())) {
     // restore old window
@@ -107,7 +108,7 @@ export async function setup () {
     }
     if (isOpenUrlEnvVar) {
       // use the env var if specified
-      opts.pages = [process.env.beaker_open_url]
+      opts.pages = [getEnvVar('BEAKER_OPEN_URL')]
     }
     // create new window
     createShellWindow(opts)

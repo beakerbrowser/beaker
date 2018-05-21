@@ -15,6 +15,7 @@ import {showModal, showShellModal, closeModal} from './ui/modals'
 import {
   INVALID_SAVE_FOLDER_CHAR_REGEX
 } from '../lib/const'
+import {getEnvVar} from '../lib/electron'
 
 // constants
 // =
@@ -346,7 +347,7 @@ function showContextMenu (menuDefinition) {
     }
 
     // add 'inspect element' in development
-    if (process.env.NODE_ENV === 'develop' || process.env.NODE_ENV === 'test') {
+    if (getEnvVar('NODE_ENV') === 'develop' || getEnvVar('NODE_ENV') === 'test') {
       menuDefinition.push({type: 'separator'})
       menuDefinition.push({
         label: 'Inspect Element',

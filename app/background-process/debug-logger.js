@@ -4,16 +4,17 @@ import fs from 'fs'
 import concat from 'concat-stream'
 import {join as joinPath} from 'path'
 import {format} from 'util'
+import {getEnvVar} from '../lib/electron'
 
 var logFilePath
 var logFileWriteStream
 
 export default function setup () {
-  if (process.env.DEBUG) {
+  if (getEnvVar('DEBUG')) {
     return // abort, user is capturing debug to the console
   }
 
-  let folderPath = process.env.beaker_user_data_path || app.getPath('userData')
+  let folderPath = getEnvVar('BEAKER_USER_DATA_PATH') || app.getPath('userData')
   logFilePath = joinPath(folderPath, 'debug.log')
   console.log('Logfile:', logFilePath)
   debug.enable('dat,datgc,dat-dns,dat-serve,dns-discovery,discovery-channel,discovery-swarm,beaker,beaker-sqlite,beaker-analytics')

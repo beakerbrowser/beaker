@@ -17,7 +17,8 @@ export const INVALID_SAVE_FOLDER_CHAR_REGEX = /[^0-9a-zA-Z-_ ]/g
 // dat settings
 export const DAT_SWARM_PORT = 3282
 export const DAT_MANIFEST_FILENAME = 'dat.json'
-export const DAT_QUOTA_DEFAULT_BYTES_ALLOWED = bytes.parse(process.env.beaker_dat_quota_default_bytes_allowed || '500mb')
+let quotaEnvVar = process.env.BEAKER_DAT_QUOTA_DEFAULT_BYTES_ALLOWED || process.env.beaker_dat_quota_default_bytes_allowed
+export const DAT_QUOTA_DEFAULT_BYTES_ALLOWED = bytes.parse(quotaEnvVar || '500mb')
 export const DEFAULT_DAT_DNS_TTL = ms('1h')
 export const MAX_DAT_DNS_TTL = ms('7d')
 export const DEFAULT_DAT_API_TIMEOUT = ms('5s')

@@ -1,8 +1,9 @@
-import { app } from 'electron'
+import {app} from 'electron'
 import sqlite3 from 'sqlite3'
 import path from 'path'
-import { cbPromise } from '../../lib/functions'
-import { setupSqliteDB } from '../../lib/bg/db'
+import {cbPromise} from '../../lib/functions'
+import {setupSqliteDB} from '../../lib/bg/db'
+import {getEnvVar} from '../../lib/electron'
 
 // globals
 // =
@@ -42,7 +43,7 @@ export function set (key, value) {
 export function get (key) {
   // env variables
   if (key === 'no_welcome_tab') {
-    return (process.env.beaker_no_welcome_tab == 1)
+    return (getEnvVar('BEAKER_NO_WELCOME_TAB') == 1)
   }
   // stored values
   return setupPromise.then(v => cbPromise(cb => {
@@ -62,7 +63,7 @@ export function getAll () {
       var obj = {}
       rows.forEach(row => { obj[row.key] = row.value })
       obj = Object.assign({}, DEFAULT_SETTINGS, obj)
-      obj.no_welcome_tab = (process.env.beaker_no_welcome_tab == 1)
+      obj.no_welcome_tab = (getEnvVar('BEAKER_NO_WELCOME_TAB') == 1)
       cb(null, obj)
     })
   }))
