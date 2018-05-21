@@ -54,7 +54,11 @@ export default {
       let res
       try {
         res = await showShellModal(this.sender, 'create-archive', {title, description, type, networked, links})
-      } catch (e) {}
+      } catch (e) {
+        if (e.name !== 'Error') {
+          throw e // only rethrow if a specific error
+        }
+      }
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {
@@ -104,7 +108,11 @@ export default {
       let res
       try {
         res = await showShellModal(this.sender, 'fork-archive', {url, title, description, type, networked, links, isSelfFork})
-      } catch (e) {}
+      } catch (e) {
+        if (e.name !== 'Error') {
+          throw e // only rethrow if a specific error
+        }
+      }
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {
@@ -436,7 +444,11 @@ export default {
     var res
     try {
       res = await showShellModal(this.sender, 'select-archive', {title, buttonLabel, filters})
-    } catch (e) {}
+    } catch (e) {
+      if (e.name !== 'Error') {
+        throw e // only rethrow if a specific error
+      }
+    }
     if (!res || !res.url) throw new UserDeniedError()
     return res.url
   },

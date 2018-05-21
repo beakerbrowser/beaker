@@ -95,8 +95,13 @@ export function showShellModal (webContents, modalName, opts = {}) {
       return reject('Invalid shell modal target')
     }
 
+    // modal already active?
+    if (activeRequests.find(r => r.webContents === webContents)) {
+      return reject(new ModalActiveError())
+    }
+
     // track the new request
-    var req = {id: ++reqIdCounter, resolve, reject}
+    var req = {id: ++reqIdCounter, resolve, reject, webContents}
     activeRequests.push(req)
 
     // send message to create the UI
