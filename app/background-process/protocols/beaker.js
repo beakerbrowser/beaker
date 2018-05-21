@@ -301,15 +301,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://prompt-modal/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/prompt-modal.build.js'))
   }
-  if (requestUrl === 'beaker://select-archive-modal/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/select-archive-modal.html'))
-  }
-  if (requestUrl === 'beaker://select-archive-modal/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/select-archive-modal.css'))
-  }
-  if (requestUrl === 'beaker://select-archive-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/select-archive-modal.build.js'))
-  }
 
   // debugging
   if (requestUrl === 'beaker://internal-archives/') {

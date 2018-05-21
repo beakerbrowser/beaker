@@ -8,7 +8,7 @@ import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 // import {getProfileRecord, getAPI as getProfilesAPI} from '../ingests/profiles' TODO(profiles) disabled -prf
-import {showModal} from '../ui/modals'
+import {showModal, showShellModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {getWebContentsWindow} from '../../lib/electron'
 import {checkFolderIsEmpty} from '../../lib/bg/fs'
@@ -443,13 +443,10 @@ export default {
 
   async selectArchive ({title, buttonLabel, filters} = {}) {
     // initiate the modal
-    var win = getWebContentsWindow(this.sender)
-    // DISABLED
-    // this mechanism is a bit too temperamental
-    // are we sure it's the best policy anyway?
-    // -prf
-    // await assertSenderIsFocused(this.sender)
-    var res = await showModal(win, 'select-archive', {title, buttonLabel, filters})
+    var res
+    try {
+      res = await showShellModal(this.sender, 'select-archive', {title, buttonLabel, filters})
+    } catch (e) {}
     if (!res || !res.url) throw new UserDeniedError()
     return res.url
   },
