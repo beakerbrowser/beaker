@@ -1,7 +1,7 @@
 import {ipcRenderer} from 'electron'
 import yo from 'yo-yo'
 import * as pages from '../pages'
-import modalFns from './modals/index'
+import ModalClasses from './modals/index'
 
 // globals
 // =
@@ -28,42 +28,39 @@ export function destroyContainer (id) {
 }
 
 export async function createFromBackgroundProcess (reqId, webContentsId, modalId, opts) {
-  var cb = (err, res) => ipcRenderer.send('modal-response', reqId, err, res)
+  var cb = (err, res) => ipcRenderer.send('modal-response', reqId, err && err.message ? err.message : err, res)
 
   // look up the page
   var page = pages.getByWebContentsID(webContentsId)
   if (!page) return cb('Page not available')
 
   // lookup the modal
-  var modalFn = modalFns[modalId]
-  if (!modalFn) return cb('Modal not available')
+  var ModalClass = ModalClasses[modalId]
+  if (!ModalClass) return cb('Modal not available')
 
   // run the modal
-  try {
-    var res = await modalFn(page, opts)
-    cb(null, res)
-  } catch (err) {
-    cb(err.toString())
-  }
+  var modalInst = new (ModalClass)(opts)
+  modalInst.on('close', cb)
+  add(page, modalInst)
 }
 
-export function add (page, { render, onForceClose }) {
+export function add (page, modalInst) {
   // add the modal
-  var modal = {
-    render,
-    onForceClose
-  }
-  page.modals.push(modal)
+  page.modals.push(modalInst)
   update(page)
+
+  // wire up events
+  modalInst.on('rerender', () => update(page))
+  modalInst.on('close', () => remove(page, modalInst))
 
   return true
 }
 
-export function remove (page, modal) {
+export function remove (page, modalInst) {
   if (!page || !page.modals) { return } // page no longer exists
 
   // find and remove
-  var i = page.modals.indexOf(modal)
+  var i = page.modals.indexOf(modalInst)
   if (i !== -1) {
     page.modals.splice(i, 1)
     update(page)
@@ -74,8 +71,8 @@ export function forceRemoveAll (page) {
   if (!page || !page.modals) { return } // page no longer exists
 
   // find and remove
-  page.modals.forEach(p => {
-    if (typeof p.onForceClose == 'function') { p.onForceClose() }
+  page.modals.forEach(m => {
+    m.close(new Error('Closed'))
   })
   page.modals = []
   update(page)
@@ -97,14 +94,7 @@ function render (id, page) {
   if (!page) { return yo`<div data-id=${id} class="hidden"></div>` }
 
   return yo`<div data-id=${id} class=${page.isActive ? '' : 'hidden'}>
-    ${page.modals.map(modal => {
-      return yo`<div class="modal">
-        ${modal.render({
-          rerender: () => update(page),
-          remove: () => remove(page, modal)
-        })}
-      </div>`
-    })}
+    ${page.modals.map(modal => yo`<div class="modal">${modal.render()}</div>`)}
   </div>`
 }
 

@@ -3,10 +3,7 @@ import {ModalActiveError} from 'beaker-error-constants'
 import path from 'path'
 
 const SIZES = {
-  'create-archive': {width: 500, height: 330},
-  'fork-archive': {width: 500, height: 410},
   'basic-auth': {width: 500, height: 320},
-  'select-archive': {width: 550, height: 560},
   prompt: {width: 500, height: 170},
   install: {width: 500, height: 250}
 }
@@ -98,8 +95,13 @@ export function showShellModal (webContents, modalName, opts = {}) {
       return reject('Invalid shell modal target')
     }
 
+    // modal already active?
+    if (activeRequests.find(r => r.webContents === webContents)) {
+      return reject(new ModalActiveError())
+    }
+
     // track the new request
-    var req = {id: ++reqIdCounter, resolve, reject}
+    var req = {id: ++reqIdCounter, resolve, reject, webContents}
     activeRequests.push(req)
 
     // send message to create the UI

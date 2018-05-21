@@ -629,35 +629,6 @@ test('offline archives', async t => {
   `)
   t.deepEqual(details.userSettings.networked, true)
 
-  // create a dat (prompt=true)
-  // start the prompt
-  app.executeJavascript(`
-    // put the result on the window, for checking later
-    window.res = null
-    DatArchive.create({ networked: false, prompt: true }).then(
-      res => window.res = res,
-      err => window.res = err
-    )
-  `)
-
-  // accept the prompt
-  await app.waitForElement('button[type="submit"]')
-  await app.click('button[type="submit"]')
-
-  // fetch & test the res
-  await app.waitFor(`window.res`)
-  var res = await app.executeJavascript(`window.res`)
-  var datUrl2 = res.url
-  t.truthy(datUrl2.startsWith('dat://'))
-  var datKey2 = datUrl2.slice('dat://'.length)
-
-  // check the settings
-  var details = await app.executeJavascript(`
-    var archive = new DatArchive("${datKey2}")
-    archive.getInfo()
-  `)
-  t.deepEqual(details.userSettings.networked, false)
-
   // fork a dat (prompt=false)
   var res = await app.executeJavascript(`
     DatArchive.fork("${datUrl}", { networked: false, prompt: false })
@@ -669,35 +640,6 @@ test('offline archives', async t => {
   // check the settings
   var details = await app.executeJavascript(`
     var archive = new DatArchive("${datKey3}")
-    archive.getInfo()
-  `)
-  t.deepEqual(details.userSettings.networked, false)
-
-  // fork a dat (prompt=true)
-  // start the prompt
-  app.executeJavascript(`
-    // put the result on the window, for checking later
-    window.res = null
-    DatArchive.fork("${datUrl}", { networked: false, prompt: true }).then(
-      res => window.res = res,
-      err => window.res = err
-    )
-  `)
-
-  // accept the prompt
-  await app.waitForElement('button[type="submit"]')
-  await app.click('button[type="submit"]')
-
-  // fetch & test the res
-  await app.waitFor(`window.res`)
-  var res = await app.executeJavascript(`window.res`)
-  var datUrl4 = res.url
-  t.truthy(datUrl4.startsWith('dat://'))
-  var datKey4 = datUrl4.slice('dat://'.length)
-
-  // check the settings
-  var details = await app.executeJavascript(`
-    var archive = new DatArchive("${datKey4}")
     archive.getInfo()
   `)
   t.deepEqual(details.userSettings.networked, false)

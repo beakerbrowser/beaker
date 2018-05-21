@@ -265,24 +265,6 @@ async function beakerProtocol (request, respond) {
   }
 
   // modals
-  if (requestUrl === 'beaker://create-archive-modal/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/create-archive-modal.html'))
-  }
-  if (requestUrl === 'beaker://create-archive-modal/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/create-archive-modal.css'))
-  }
-  if (requestUrl === 'beaker://create-archive-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/create-archive-modal.build.js'))
-  }
-  if (requestUrl === 'beaker://fork-archive-modal/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/fork-archive-modal.html'))
-  }
-  if (requestUrl === 'beaker://fork-archive-modal/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/fork-archive-modal.css'))
-  }
-  if (requestUrl === 'beaker://fork-archive-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/fork-archive-modal.build.js'))
-  }
   if (requestUrl === 'beaker://basic-auth-modal/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/basic-auth-modal.html'))
   }
@@ -300,15 +282,6 @@ async function beakerProtocol (request, respond) {
   }
   if (requestUrl === 'beaker://prompt-modal/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/prompt-modal.build.js'))
-  }
-  if (requestUrl === 'beaker://select-archive-modal/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/select-archive-modal.html'))
-  }
-  if (requestUrl === 'beaker://select-archive-modal/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/select-archive-modal.css'))
-  }
-  if (requestUrl === 'beaker://select-archive-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/select-archive-modal.build.js'))
   }
 
   // debugging
