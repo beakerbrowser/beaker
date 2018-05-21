@@ -1,36 +1,31 @@
 import * as yo from 'yo-yo'
-import * as modal from '../modal'
+import {BaseModal} from './base'
 
 // exported api
 // =
 
-export default function (page, opts = {}) {
-  return new Promise((resolve, reject) => {
-    // create the modal
-    let i = opts.i ? opts.i : 0
-    modal.add(page, {
-      render: ({rerender, remove}) => {
-        function oninc () {
-          i++
-          rerender()
-        }
+export class ExampleModal extends BaseModal {
+  constructor (opts) {
+    super(opts)
+    this.i = opts.i ? opts.i : 0
+  }
 
-        return yo`
-          <div style="padding: 10px 20px 6px; width: 500px;">
-            <h3>Test Modal</h3>
-            <p>
-              Hello world! <a class="link" onclick=${oninc}>Click me (${i} clicks)</a>
-            </p>
-            <p>
-              <a class="btn primary" onclick=${() => { remove(); resolve(i) }}>OK</a>
-              <a class="btn" onclick=${() => { remove(); reject(new Error('Canceled')) }}>Cancel</a>              
-            </p>
-          </div>
-        `
-      },
-      onForceClose: () => {
-        reject(new Error('Closed'))
-      }
-    })
-  })
+  render () {
+    return yo`
+      <div style="padding: 10px 20px 6px; width: 500px;">
+        <h3>Test Modal</h3>
+        <p>
+          Hello world! <a class="link" onclick=${() => this.onIncrement()}>Click me (${this.i} clicks)</a>
+        </p>
+        <p>
+          <a class="btn primary" onclick=${() => this.close(null, this.i)}>OK</a>
+          <a class="btn" onclick=${() => this.close(new Error('Canceled'))}>Cancel</a>              
+        </p>
+      </div>`
+  }
+
+  onIncrement () {
+    this.i++
+    this.rerender()
+  }
 }
