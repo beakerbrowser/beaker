@@ -8,7 +8,7 @@ import datDns from '../networks/dat/dns'
 import * as datLibrary from '../networks/dat/library'
 import * as archivesDb from '../dbs/archives'
 // import {getProfileRecord, getAPI as getProfilesAPI} from '../ingests/profiles' TODO(profiles) disabled -prf
-import {showModal, showShellModal} from '../ui/modals'
+import {showShellModal} from '../ui/modals'
 import {timer} from '../../lib/time'
 import {getWebContentsWindow} from '../../lib/electron'
 import {checkFolderIsEmpty} from '../../lib/bg/fs'
@@ -97,19 +97,14 @@ export default {
     }
 
     if (prompt !== false) {
-      // initiate the modal
-      let win = getWebContentsWindow(this.sender)
-      // DISABLED
-      // this mechanism is a bit too temperamental
-      // are we sure it's the best policy anyway?
-      // -prf
-      // await assertSenderIsFocused(this.sender)
-
       // run the fork modal
       let key1 = await lookupUrlDatKey(url)
       let key2 = await lookupUrlDatKey(this.sender.getURL())
       let isSelfFork = key1 === key2
-      let res = await showModal(win, 'fork-archive', {url, title, description, type, networked, links, isSelfFork})
+      let res
+      try {
+        res = await showShellModal(this.sender, 'fork-archive', {url, title, description, type, networked, links, isSelfFork})
+      } catch (e) {}
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {

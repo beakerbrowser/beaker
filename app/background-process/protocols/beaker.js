@@ -265,15 +265,6 @@ async function beakerProtocol (request, respond) {
   }
 
   // modals
-  if (requestUrl === 'beaker://fork-archive-modal/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/fork-archive-modal.html'))
-  }
-  if (requestUrl === 'beaker://fork-archive-modal/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/fork-archive-modal.css'))
-  }
-  if (requestUrl === 'beaker://fork-archive-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/fork-archive-modal.build.js'))
-  }
   if (requestUrl === 'beaker://basic-auth-modal/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/basic-auth-modal.html'))
   }

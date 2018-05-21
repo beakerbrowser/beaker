@@ -3,7 +3,6 @@ import {ModalActiveError} from 'beaker-error-constants'
 import path from 'path'
 
 const SIZES = {
-  'fork-archive': {width: 500, height: 410},
   'basic-auth': {width: 500, height: 320},
   prompt: {width: 500, height: 170},
   install: {width: 500, height: 250}
