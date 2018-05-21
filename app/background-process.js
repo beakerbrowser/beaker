@@ -46,9 +46,6 @@ if (process.env.beaker_user_data_path) {
 if (process.env.BEAKER_TEST_DRIVER) {
   testDriver.setup()
 }
-if (process.env.beaker_open_url) {
-  openURL.open(process.env.beaker_open_url)
-}
 
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)

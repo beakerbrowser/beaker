@@ -90,15 +90,27 @@ export async function setup () {
   sessionWatcher = new SessionWatcher(userDataDir)
   let customStartPage = await settingsDb.get('custom_start_page')
   let isTestDriverActive = !!process.env.BEAKER_TEST_DRIVER
+  let isOpenUrlEnvVar = !!process.env.beaker_open_url
 
-  if (!isTestDriverActive && (customStartPage === 'previous' || !previousSessionState.cleanExit && userWantsToRestoreSession())) {
+  if (!isTestDriverActive && !isOpenUrlEnvVar && (customStartPage === 'previous' || !previousSessionState.cleanExit && userWantsToRestoreSession())) {
+    // restore old window
     restoreBrowsingSession(previousSessionState)
-  } else if (previousSessionState.windows[0]) {
-    // use the last session's window position
-    let {x, y, width, height} = previousSessionState.windows[0]
-    createShellWindow({x, y, width, height})
   } else {
-    createShellWindow()
+    let opts = {}
+    if (previousSessionState.windows[0]) {
+      // use the last session's window position
+      let {x, y, width, height} = previousSessionState.windows[0]
+      opts.x = x
+      opts.y = y
+      opts.width = width
+      opts.height = height
+    }
+    if (isOpenUrlEnvVar) {
+      // use the env var if specified
+      opts.pages = [process.env.beaker_open_url]
+    }
+    // create new window
+    createShellWindow(opts)
   }
 }
 
