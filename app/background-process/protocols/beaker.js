@@ -265,15 +265,6 @@ async function beakerProtocol (request, respond) {
   }
 
   // modals
-  if (requestUrl === 'beaker://create-archive-modal/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/create-archive-modal.html'))
-  }
-  if (requestUrl === 'beaker://create-archive-modal/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/create-archive-modal.css'))
-  }
-  if (requestUrl === 'beaker://create-archive-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/create-archive-modal.build.js'))
-  }
   if (requestUrl === 'beaker://fork-archive-modal/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/fork-archive-modal.html'))
   }

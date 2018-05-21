@@ -50,16 +50,11 @@ export default {
     }
 
     if (prompt !== false) {
-      // initiate the modal
-      let win = getWebContentsWindow(this.sender)
-      // DISABLED
-      // this mechanism is a bit too temperamental
-      // are we sure it's the best policy anyway?
-      // -prf
-      // await assertSenderIsFocused(this.sender)
-
       // run the creation modal
-      let res = await showModal(win, 'create-archive', {title, description, type, networked, links})
+      let res
+      try {
+        res = await showShellModal(this.sender, 'create-archive', {title, description, type, networked, links})
+      } catch (e) {}
       if (!res || !res.url) throw new UserDeniedError()
       newArchiveUrl = res.url
     } else {
