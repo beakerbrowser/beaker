@@ -1389,7 +1389,7 @@ async function onSaveFileEditorContent (e) {
     var currentNode = filesBrowser.getCurrentSource()
     await archive.writeFile(currentNode._path, fileContent, 'utf8')
     currentNode.preview = fileContent
-    toast.create('Saved', 'success')
+    toast.create('Saved')
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }

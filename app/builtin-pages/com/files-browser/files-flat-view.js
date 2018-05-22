@@ -120,8 +120,9 @@ function rBreadcrumbs (filesBrowser, currentSource) {
 }
 
 function rFilePreview (node) {
-  let numLines
-  let lineNumbers = []
+  var numLines
+  var lineNumbers = []
+  var isTextual = !!node.preview // preview is only set for text items
 
   if (node.preview) {
     numLines = node.preview.split('\n').length
@@ -145,9 +146,12 @@ function rFilePreview (node) {
         <code class="file-info">${prettyBytes(node.size)}</code>
 
         <div class="actions">
-          <a class="tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
-            <i class="fa fa-pencil"></i>
-          </a>
+          ${isTextual
+            ? yo`
+                <a class="tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
+                  <i class="fa fa-pencil"></i>
+                </a>`
+              : ''}
           <a href=${node.url} target="_blank" class="tooltip-container" data-tooltip="Open file">
             <i class="fa fa-external-link"></i>
           </a>
