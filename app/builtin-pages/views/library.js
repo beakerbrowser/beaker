@@ -65,6 +65,13 @@ async function loadArchives () {
         search: query ? query : false
       })
       break
+    case 'recent':
+      archives = await beaker.archives.list({
+        search: query ? query : false
+      })
+      // only archives that have been recently visited in the library
+      archives = archives.filter(a => !!a.lastLibraryAccessTime)
+      break
     case 'trash':
       archives = await beaker.archives.list({
         isOwner: true,
@@ -159,7 +166,9 @@ function renderRows (sort = '', max = undefined) {
 function renderRow (row, i) {
   const isOwner = row.isOwner
   const isMenuOpen = row.menuIsOpenIn === 'row'
-  const date = currentDateType === 'accessed' ? row.lastLibraryAccessTime : row.mtime
+  const date = currentDateType === 'accessed'
+    ? row.lastLibraryAccessTime
+    : row.mtime
 
   return yo`
     <a
@@ -263,6 +272,11 @@ function renderSidebar () {
         <div onclick=${() => onUpdateView('seeding')} class="nav-item ${currentView === 'seeding' ? 'active' : ''}">
           <i class="fa fa-angle-right"></i>
           Currently seeding
+        </div>
+
+        <div onclick=${() => onUpdateView('recent')} class="nav-item ${currentView === 'recent' ? 'active' : ''}">
+          <i class="fa fa-angle-right"></i>
+          Recent
         </div>
 
         <div onclick=${() => onUpdateView('trash')} class="nav-item ${currentView === 'trash' ? 'active' : ''}">
@@ -667,18 +681,18 @@ async function onClearQuery () {
   render()
 }
 
-function onUpdateSort (sort) {
+function onUpdateSort (sort, direction = undefined) {
   if (sort === 'recently-accessed') {
     currentDateType = 'accessed'
   } else if (sort === 'recently-updated') {
     currentDateType = 'updated'
   }
-  if (currentSort[0] === sort) {
-    currentSort[1] = currentSort[1] * -1
-  } else {
-    currentSort[0] = sort
-    currentSort[1] = -1
+  if (!direction) {
+    // invert the direction if none is provided and the user toggled same sort
+    direction = (currentSort[0] === sort) ? (currentSort[1] * -1) : -1
   }
+  currentSort[0] = sort
+  currentSort[1] = direction
   saveSettings()
   sortArchives()
   render()
@@ -705,6 +719,11 @@ async function onUpdateView (view) {
   currentView = view
   await loadArchives()
   render()
+
+  if (view === 'recent') {
+    // sort by recently viewed
+    onUpdateSort('recently-accessed', -1)
+  }
 
   // focus the search input
   document.querySelector('input.search').focus()
