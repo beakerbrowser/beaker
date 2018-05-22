@@ -15,6 +15,7 @@ import * as localsyncpathPopup from '../com/library-localsyncpath-popup'
 import * as copydatPopup from '../com/library-copydat-popup'
 import * as faviconPicker from '../com/favicon-picker'
 import renderSettingsField from '../com/settings-field'
+import {setup as setupAce, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
@@ -111,7 +112,12 @@ async function setup () {
     document.body.addEventListener('custom-add-file', onAddFile)
     document.body.addEventListener('custom-rename-file', onRenameFile)
     document.body.addEventListener('custom-delete-file', onDeleteFile)
+    document.body.addEventListener('custom-open-file-editor', onOpenFileEditor)
+    document.body.addEventListener('custom-close-file-editor', onCloseFileEditor)
+    document.body.addEventListener('custom-save-file-editor-content', onSaveFileEditorContent)
+    document.body.addEventListener('custom-config-file-editor', onConfigFileEditor)
     document.body.addEventListener('custom-set-view', onChangeView)
+    document.body.addEventListener('custom-render', render)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
 
     let onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
@@ -148,7 +154,7 @@ async function loadReadme () {
       readmeContent = yo`<div class="readme markdown"></div>`
       readmeContent.innerHTML = markdownRenderer.render(readmeMd)
       readmeHeader = yo`
-        <div class="file-preview-header">
+        <div class="file-view-header">
           <code class="path">${readmeMdNode.name}</code>
         </div>`
     } else {
@@ -159,7 +165,7 @@ async function loadReadme () {
         const readme = await archive.readFile(readmeNode._path, 'utf8')
         readmeContent = yo`<div class="readme plaintext">${readme}</div>`
         readmeHeader = yo`
-          <div class="file-preview-header">
+          <div class="file-view-header">
             <code class="path">${readmeNode.name}</code>
           </div>`
       }
@@ -181,7 +187,7 @@ async function loadReadme () {
     if (readmeContent) {
       const id = `readme-${Date.now()}` // use an id to help yoyo figure out element ==
       readmeElement = yo`
-        <div id=${id} class="file-preview-container readme">
+        <div id=${id} class="file-view-container readme">
           ${readmeHeader}
           ${readmeContent}
         </div>`
@@ -207,9 +213,10 @@ function render () {
         </div>`
       )
   } else {
+    var isReadOnly = !_get(archive, 'info.isOwner')
     yo.update(
       document.querySelector('.library-wrapper'), yo`
-        <div class="library-wrapper library-view builtin-wrapper">
+        <div class="library-wrapper library-view builtin-wrapper ${isReadOnly ? 'readonly' : ''}">
           <div class="drag-hint">
             <div class="icons">
               <i class="fa fa-file-video-o"></i>
@@ -1174,6 +1181,7 @@ async function onChangeView (e, view) {
     await archiveFsRoot.readData({maxPreviewLength: 1e5})
     await filesBrowser.setCurrentSource(archiveFsRoot, {suppressEvent: true})
     await loadReadme()
+    setupAce({readOnly: true})
   }
 
   render()
@@ -1229,6 +1237,9 @@ function onClickFavicon (e) {
 async function onSetCurrentSource (node) {
   // try to load the readme
   loadReadme()
+
+  // initialize ace editor (if needed)
+  setupAce({readOnly: true})
 
   // update the URL & history
   let path = archive.url
@@ -1366,6 +1377,42 @@ async function onDeleteFile (e) {
   }
 }
 
+function onOpenFileEditor (e) {
+  // update the UI
+  filesBrowser.isEditMode = true
+  render()
+
+  // set the editor to edit mode
+  configureAce({readOnly: false})
+}
+
+function onCloseFileEditor (e) {
+  // update the UI
+  filesBrowser.isEditMode = false
+  render()
+  
+  // restore the editor to non-edit mode
+  var currentNode = filesBrowser.getCurrentSource()
+  setAceValue(currentNode.preview)
+  configureAce({readOnly: true})
+}
+
+async function onSaveFileEditorContent (e) {
+  try {
+    var fileContent = getAceValue()
+    var currentNode = filesBrowser.getCurrentSource()
+    currentNode.preview = fileContent
+    await archive.writeFile(currentNode._path, fileContent, 'utf8')
+    toast.create('Saved')
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+  }
+}
+
+function onConfigFileEditor (e) {
+  configureAce(e.detail)
+}
+
 async function onKeyupHeaderEdit (e, name) {
   if (e.keyCode == 13) {
     // enter-key
@@ -1385,7 +1432,13 @@ async function onFilesChanged () {
   // update files
   const currentNode = filesBrowser.getCurrentSource()
   try {
+    currentNode.preview = undefined // have the preview reload
     await currentNode.readData()
+    console.log('changed', !filesBrowser.isEditMode, !!currentNode.preview)
+    if (!filesBrowser.isEditMode && !!currentNode.preview) {
+      console.log('setting',currentNode.preview)
+      setAceValue(currentNode.preview) // update the editor if not in edit mode
+    }
     filesBrowser.rerender()
   } catch (e) {
     console.debug('Failed to rerender files on change, likely because the present node was deleted', e)
@@ -1472,6 +1525,7 @@ async function readViewStateFromUrl () {
 
     await filesBrowser.setCurrentSource(node, {suppressEvent: true})
     loadReadme()
+    setupAce({readOnly: true}) // initialize ace editor (if needed)
   } catch (e) {
     // ignore, but log just in case something is buggy
     console.debug(e)

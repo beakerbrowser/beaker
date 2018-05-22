@@ -1,6 +1,7 @@
 import yo from 'yo-yo'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import renderFilesFlatView from './files-browser/files-flat-view'
+import {setup as setupAce} from './file-editor'
 
 // exported api
 // =
@@ -14,6 +15,7 @@ export default class FilesBrowser {
     this.currentDragNode = null
     this.workspaceInfo = workspaceInfo
     this.onSetCurrentSource = () => {} // v simple events solution
+    this.isEditMode = false
   }
 
   // method to render at a place in the page
@@ -86,6 +88,10 @@ export default class FilesBrowser {
 
   async setCurrentSource (node, {suppressEvent} = {}) {
     await this.unselectAll()
+    if (this.currentSource !== node) {
+      // leave edit mode
+      this.isEditMode = false
+    }
     this.currentSource = node
 
     // special handling for files
@@ -104,6 +110,7 @@ export default class FilesBrowser {
       // then render again
       node.isLoadingPreview = false
       this.rerender()
+      setupAce({readOnly: !this.isEditMode})
     } else {
       // load
       await this.currentSource.readData()
