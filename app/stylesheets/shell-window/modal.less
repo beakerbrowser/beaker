@@ -1,17 +1,22 @@
 @import "../base/colors.less";
 @import "../base/spacing.less";
+@import "../components/path-container.less";
 
 #modals {
 }
 
-.modal {
-  display: block;
+.modal-container {
   position: absolute;
   z-index: 19000;
   left: 50%;
   top: 68px;
-  transform: translateX(-50%);
   max-width: 95%;
+}
+
+.modal {
+  display: block;
+  position: relative;
+  left: -50%;
   padding: @padding-component;
   border: 1px solid #ccc;
   border-top: 0;

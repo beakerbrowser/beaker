@@ -23,7 +23,7 @@ export function createContainer (id) {
 }
 
 export function destroyContainer (id) {
-  var el = document.querySelector(`#modals [data-id="${id}"]`)
+  var el = document.querySelector(`#modals .modal-container[data-id="${id}"]`)
   if (el) el.remove()
 }
 
@@ -91,9 +91,9 @@ export function update (page) {
 // =
 
 function render (id, page) {
-  if (!page) { return yo`<div data-id=${id} class="hidden"></div>` }
+  if (!page) { return yo`<div data-id=${id} class="modal-container hidden"></div>` }
 
-  return yo`<div data-id=${id} class=${page.isActive ? '' : 'hidden'}>
+  return yo`<div data-id=${id} class="modal-container ${page.isActive ? '' : 'hidden'}">
     ${page.modals.map(modal => yo`<div class="modal">${modal.render()}</div>`)}
   </div>`
 }

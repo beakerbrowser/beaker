@@ -26,7 +26,7 @@ export class CreateArchiveModal extends BaseModal {
         <h1 class="title">New archive</h1>
 
         <p class="help-text">
-          Create a new archive and add it to your library.
+          Create a new archive and add it to your Library.
         </p>
 
         <form onsubmit=${e => this.onSubmit(e)}>
