@@ -45,8 +45,8 @@ export function config (opts) {
   if ('readOnly' in opts) {
     setReadOnly(editor, opts.readOnly)
   }
-  if ('softWrap' in opts) {
-    editor.session.setUseWrapMode(opts.softWrap)
+  if ('lineWrap' in opts) {
+    editor.session.setUseWrapMode(opts.lineWrap)
   }
   if ('tabWidth' in opts) {
     editor.session.setTabSize(opts.tabWidth)
@@ -54,7 +54,7 @@ export function config (opts) {
   if ('indentationMode' in opts) {
     editor.session.setUseSoftTabs(opts.indentationMode === 'spaces')
   }
-  updateConfigUI()
+  updateConfigUI(editor)
 }
 
 export function getValue () {
@@ -82,6 +82,7 @@ function setReadOnly (editor, readOnly) {
 
 function updateConfigUI (editor) {
   try {
+    document.querySelector('[name=lineWrap]').value = editor.session.getUseWrapMode() ? 'on' : 'off'
     document.querySelector('[name=indentationMode]').value = editor.session.getUseSoftTabs() ? 'spaces' : 'tabs'
     document.querySelector('[name=tabWidth]').value = editor.session.getTabSize()
   } catch (e) {

@@ -1378,23 +1378,23 @@ async function onDeleteFile (e) {
 }
 
 function onOpenFileEditor (e) {
-  // set the editor to edit mode
-  configureAce({readOnly: false})
-
   // update the UI
   filesBrowser.isEditMode = true
   render()
+
+  // set the editor to edit mode
+  configureAce({readOnly: false})
 }
 
 function onCloseFileEditor (e) {
+  // update the UI
+  filesBrowser.isEditMode = false
+  render()
+  
   // restore the editor to non-edit mode
   var currentNode = filesBrowser.getCurrentSource()
   setAceValue(currentNode.preview)
   configureAce({readOnly: true})
-
-  // update the UI
-  filesBrowser.isEditMode = false
-  render()
 }
 
 async function onSaveFileEditorContent (e) {
