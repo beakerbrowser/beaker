@@ -15,7 +15,7 @@ import * as localsyncpathPopup from '../com/library-localsyncpath-popup'
 import * as copydatPopup from '../com/library-copydat-popup'
 import * as faviconPicker from '../com/favicon-picker'
 import renderSettingsField from '../com/settings-field'
-import {setup as setupFileEditor, config as configureFileEditor, getValue as getFileEditorValue} from '../com/file-editor'
+import {setup as setupAce, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
@@ -1180,6 +1180,7 @@ async function onChangeView (e, view) {
     await archiveFsRoot.readData({maxPreviewLength: 1e5})
     await filesBrowser.setCurrentSource(archiveFsRoot, {suppressEvent: true})
     await loadReadme()
+    setupAce({readOnly: true})
   }
 
   render()
@@ -1235,6 +1236,9 @@ function onClickFavicon (e) {
 async function onSetCurrentSource (node) {
   // try to load the readme
   loadReadme()
+
+  // initialize ace editor (if needed)
+  setupAce({readOnly: true})
 
   // update the URL & history
   let path = archive.url
@@ -1373,22 +1377,31 @@ async function onDeleteFile (e) {
 }
 
 function onOpenFileEditor (e) {
+  // set the editor to edit mode
+  configureAce({readOnly: false})
+
+  // update the UI
   filesBrowser.isEditMode = true
   render()
-  setupFileEditor()
 }
 
 function onCloseFileEditor (e) {
+  // restore the editor to non-edit mode
+  var currentNode = filesBrowser.getCurrentSource()
+  setAceValue(currentNode.preview)
+  configureAce({readOnly: true})
+
+  // update the UI
   filesBrowser.isEditMode = false
   render()
 }
 
 async function onSaveFileEditorContent (e) {
   try {
-    var fileContent = getFileEditorValue()
+    var fileContent = getAceValue()
     var currentNode = filesBrowser.getCurrentSource()
-    await archive.writeFile(currentNode._path, fileContent, 'utf8')
     currentNode.preview = fileContent
+    await archive.writeFile(currentNode._path, fileContent, 'utf8')
     toast.create('Saved')
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
@@ -1396,7 +1409,7 @@ async function onSaveFileEditorContent (e) {
 }
 
 function onConfigFileEditor (e) {
-  configureFileEditor(e.detail)
+  configureAce(e.detail)
 }
 
 async function onKeyupHeaderEdit (e, name) {
@@ -1418,7 +1431,13 @@ async function onFilesChanged () {
   // update files
   const currentNode = filesBrowser.getCurrentSource()
   try {
+    currentNode.preview = undefined // have the preview reload
     await currentNode.readData()
+    console.log('changed', !filesBrowser.isEditMode, !!currentNode.preview)
+    if (!filesBrowser.isEditMode && !!currentNode.preview) {
+      console.log('setting',currentNode.preview)
+      setAceValue(currentNode.preview) // update the editor if not in edit mode
+    }
     filesBrowser.rerender()
   } catch (e) {
     console.debug('Failed to rerender files on change, likely because the present node was deleted', e)
@@ -1505,6 +1524,7 @@ async function readViewStateFromUrl () {
 
     await filesBrowser.setCurrentSource(node, {suppressEvent: true})
     loadReadme()
+    setupAce({readOnly: true}) // initialize ace editor (if needed)
   } catch (e) {
     // ignore, but log just in case something is buggy
     console.debug(e)

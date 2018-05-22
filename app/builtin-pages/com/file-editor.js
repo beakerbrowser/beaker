@@ -6,22 +6,26 @@ import * as yo from 'yo-yo'
 // =
 
 export function render (fileNode) {
-  var el = yo`<div id="file-editor" class="file-editor" data-filename=${fileNode.name}>${fileNode.preview}</div>`
+  var el = yo`<div id="ace-editor" class="ace-editor" data-filename=${fileNode.name}>${fileNode.preview}</div>`
   el.isSameNode = (other) => {
     // dont let yo (morphdom) redraw this element
-    return other && other.classList && other.classList.contains('file-editor')
+    return other && other.classList && other.classList.contains('ace-editor')
   }
 
   return el
 }
 
-export function setup () {
-  var el = document.getElementById('file-editor')
+export function setup ({readOnly} = {}) {
+  var el = document.getElementById('ace-editor')
+  if (!el) return
   var editor = ace.edit(el, {
     useWorker: false
   })
   editor.session.setTabSize(2)
   editor.session.setUseSoftTabs(true)
+  if (readOnly) {
+    setReadOnly(editor, true)
+  }
 
   // detect and set the mode
   var modelist = ace.require('ace/ext/modelist')
@@ -33,12 +37,14 @@ export function setup () {
   whitespace.detectIndentation(editor.session)
 
   // set config settings
-  document.querySelector('[name=indentationMode]').value = editor.session.getUseSoftTabs() ? 'spaces' : 'tabs'
-  document.querySelector('[name=tabWidth]').value = editor.session.getTabSize()
+  updateConfigUI(editor)
 }
 
 export function config (opts) {
-  var editor = ace.edit('file-editor')
+  var editor = ace.edit('ace-editor')
+  if ('readOnly' in opts) {
+    setReadOnly(editor, opts.readOnly)
+  }
   if ('softWrap' in opts) {
     editor.session.setUseWrapMode(opts.softWrap)
   }
@@ -48,8 +54,37 @@ export function config (opts) {
   if ('indentationMode' in opts) {
     editor.session.setUseSoftTabs(opts.indentationMode === 'spaces')
   }
+  updateConfigUI()
 }
 
 export function getValue () {
-  return ace.edit('file-editor').getValue()
+  return ace.edit('ace-editor').getValue()
+}
+
+export function setValue (v) {
+  var editor = ace.edit('ace-editor')
+  editor.setValue(v)
+  editor.selection.clearSelection() // ace selects everything for some reason, dont do that
+}
+
+// internal methods
+// =
+
+function setReadOnly (editor, readOnly) {
+  editor.setOptions({
+    readOnly: readOnly,
+    highlightActiveLine: !readOnly,
+    highlightGutterLine: !readOnly
+  })
+  // show/hide the cursor
+  editor.renderer.$cursorLayer.element.style.display = readOnly ? 'none' : ''
+}
+
+function updateConfigUI (editor) {
+  try {
+    document.querySelector('[name=indentationMode]').value = editor.session.getUseSoftTabs() ? 'spaces' : 'tabs'
+    document.querySelector('[name=tabWidth]').value = editor.session.getTabSize()
+  } catch (e) {
+    // ignore
+  }
 }

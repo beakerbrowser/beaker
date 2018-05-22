@@ -1,6 +1,7 @@
 import yo from 'yo-yo'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
 import renderFilesFlatView from './files-browser/files-flat-view'
+import {setup as setupAce} from './file-editor'
 
 // exported api
 // =
@@ -109,6 +110,7 @@ export default class FilesBrowser {
       // then render again
       node.isLoadingPreview = false
       this.rerender()
+      setupAce({readOnly: !this.isEditMode})
     } else {
       // load
       await this.currentSource.readData()

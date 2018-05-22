@@ -121,15 +121,10 @@ function rBreadcrumbs (filesBrowser, currentSource) {
 
 function rFilePreview (node) {
   var numLines
-  var lineNumbers = []
   var isTextual = !!node.preview // preview is only set for text items
 
   if (node.preview) {
     numLines = node.preview.split('\n').length
-
-    for (let i = 1; i <= numLines; i++) {
-      lineNumbers.push(yo`<div class="lineno">${i}</div>`)
-    }
   }
 
   return yo`
@@ -158,12 +153,7 @@ function rFilePreview (node) {
         </div>
       </div>
 
-      <div class="file-view ${node.preview ? 'text' : 'media'}">
-        <div class="linenos">
-          ${lineNumbers}
-        </div>
-        ${renderFilePreview(node)}
-      </div>
+      ${renderFilePreview(node)}
     </div>
   `
 }
@@ -315,17 +305,20 @@ function onClickNode (e, filesBrowser, node) {
 
 function onClickEditFile (e) {
   e.preventDefault()
+  e.stopPropagation()
   emit('custom-open-file-editor')
 }
 
 function onClickSaveEdit (e) {
   e.preventDefault()
+  e.stopPropagation()
   emit('custom-save-file-editor-content')
   emit('custom-close-file-editor')
 }
 
 function onClickCancelEdit (e) {
   e.preventDefault()
+  e.stopPropagation()
   emit('custom-close-file-editor')
 }
 
