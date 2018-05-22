@@ -213,9 +213,10 @@ function render () {
         </div>`
       )
   } else {
+    var isReadOnly = !_get(archive, 'info.isOwner')
     yo.update(
       document.querySelector('.library-wrapper'), yo`
-        <div class="library-wrapper library-view builtin-wrapper">
+        <div class="library-wrapper library-view builtin-wrapper ${isReadOnly ? 'readonly' : ''}">
           <div class="drag-hint">
             <div class="icons">
               <i class="fa fa-file-video-o"></i>

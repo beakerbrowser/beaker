@@ -541,6 +541,15 @@ body.drag {
           &:hover {
             color: @blue;
           }
+
+          &.disabled,
+          &.disabled:hover {
+            color: @color-text--light;
+            
+            * {
+              cursor: default;
+            }
+          }
         }
       }
     }
@@ -551,24 +560,6 @@ body.drag {
       border-top: 0;
       border-radius: 0 0 2px 2px;
       background: #fff;
-
-      .linenos {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 35px;
-        height: 100%;
-        padding: 0;
-        padding-top: 6px;
-        text-align: center;
-        color: rgba(0,0,0,.45);
-
-        .lineno {
-          line-height: 20px;
-          padding: 0;
-          margin: 0;
-        }
-      }
 
       &.text {
         &:extend(.code-font);
@@ -1076,4 +1067,8 @@ body.drag {
   &:hover .description {
     color: @color-text;
   }
+}
+
+.builtin-wrapper.library-view.readonly .file-view-container .ace-editor {
+  height: ~"calc(100vh - 320px)";
 }
