@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import * as toast from '../com/toast'
 import DatNetworkActivity from '../com/dat-network-activity'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
+import renderDedicatedPeers from '../com/settings/dedicated-peers'
 
 // globals
 // =
@@ -72,22 +73,18 @@ function renderHeader () {
 }
 
 function renderSidebar () {
+  const item = (id, label) => yo`
+    <div class="nav-item ${activeView === id ? 'active' : ''}" onclick=${() => onUpdateView(id)}>
+      <i class="fa fa-angle-right"></i>
+      ${label}
+    </div>`
+
   return yo`
     <div class="builtin-sidebar">
-      <div class="nav-item ${activeView === 'general' ? 'active' : ''}" onclick=${() => onUpdateView('general')}>
-        <i class="fa fa-angle-right"></i>
-        General
-      </div>
-
-      <div class="nav-item ${activeView === 'dat-network-activity' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network-activity')}>
-        <i class="fa fa-angle-right"></i>
-        Dat network activity
-      </div>
-
-      <div class="nav-item ${activeView === 'information' ? 'active' : ''}" onclick=${() => onUpdateView('information')}>
-        <i class="fa fa-angle-right"></i>
-        Information & Help
-      </div>
+      ${item('general', 'General')}
+      ${item('dedicated-peers', 'Dedicated peers')}
+      ${item('dat-network-activity', 'Dat network activity')}
+      ${item('information', 'Information & Help')}
     </div>`
 }
 
@@ -95,6 +92,8 @@ function renderView () {
   switch (activeView) {
     case 'general':
       return renderGeneral()
+    case 'dedicated-peers':
+      return renderDedicatedPeers()
     case 'dat-network-activity':
       return renderDatNetworkActivity()
     case 'information':
@@ -218,8 +217,7 @@ function renderDatNetworkActivity () {
         <h2 id="dat-network-activity" class="subtitle-heading">Dat Network Activity</h2>
         ${datNetworkActivity.render()}
       </div>
-    </div>
-  `
+    </div>`
 }
 
 function renderInformation () {

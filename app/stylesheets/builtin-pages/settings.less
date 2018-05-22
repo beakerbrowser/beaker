@@ -119,6 +119,65 @@
     }
   }
 
+  .peer {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px 10px 16px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+
+    .name {
+      font-weight: 700;
+      margin-right: 10px;
+    }
+
+    .user {
+      flex: 1;
+      color: gray;
+      font-weight: 300;
+    }
+  }
+
+  .add-peer-form {
+    .action-choice {
+      display: flex;
+
+      input {
+        height: auto;
+        margin: 0 5px;
+      }
+
+      label {
+        margin: 0 10px 0 5px;
+      }
+    }
+
+    .form-layout {
+      display: flex;
+
+      & > div:first-child {
+        flex: 0 0 300px;
+        margin-right: 20px;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 8px;
+
+      label {
+        font-weight: normal;
+      }
+    }
+
+    .form-actions {
+      text-align: right;
+      margin-top: 20px;
+    }
+  }
+
   &.help {
 
     a {

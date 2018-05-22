@@ -27,6 +27,7 @@ import * as settings from './background-process/dbs/settings'
 import * as sitedata from './background-process/dbs/sitedata'
 import * as profileDataDb from './background-process/dbs/profile-data-db'
 import * as bookmarksDb from './background-process/dbs/bookmarks'
+import * as servicesDb from './background-process/dbs/services'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
@@ -69,6 +70,7 @@ app.on('ready', async function () {
   archives.setup()
   settings.setup()
   sitedata.setup()
+  await servicesDb.setup()
   // TEMP can probably remove this in 2018 or so -prf
   bookmarksDb.fixOldBookmarks()
 

@@ -5,6 +5,7 @@
   "devDependencies": {},
   "optionalDependencies": {},
   "dependencies": {
+    "@beaker/homebase": "^1.1.4",
     "ava": "^0.23.0",
     "dat-node": "^3.0.0",
     "fs-jetpack": "^1.2.0",

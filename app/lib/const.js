@@ -59,3 +59,13 @@ export const STANDARD_ARCHIVE_TYPES = [
   'videos',
   'website'
 ]
+
+// URLs used in various places in the UI
+export const URL_HASHBASE = process.env.beaker_hashbase_hostname || 'hashbase.io'
+export const URL_DEDICATED_PEER_GUIDE = 'https://TODO' // TODO
+export const URL_SELF_HOSTING_GUIDE = 'https://TODO' // TODO
+export const URL_DOCS_LAB_API_LIBRARY = 'https://TODO' // TODO
+
+// rel-types
+export const REL_ACCOUNT_API = 'https://archive.org/services/purl/purl/datprotocol/spec/pinning-service-account-api'
+export const REL_DATS_API = 'https://archive.org/services/purl/purl/datprotocol/spec/pinning-service-dats-api'

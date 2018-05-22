@@ -12,6 +12,7 @@ import historyManifest from '../api-manifests/internal/history'
 import downloadsManifest from '../api-manifests/internal/downloads'
 // import appsManifest from '../api-manifests/internal/apps'
 import sitedataManifest from '../api-manifests/internal/sitedata'
+import servicesManifest from '../api-manifests/internal/services'
 import beakerBrowserManifest from '../api-manifests/internal/browser'
 
 const beaker = {}
@@ -45,6 +46,7 @@ if (window.location.protocol === 'beaker:') {
   // const appsRPC = rpc.importAPI('apps', appsManifest, opts)
   const downloadsRPC = rpc.importAPI('downloads', downloadsManifest, opts)
   const sitedataRPC = rpc.importAPI('sitedata', sitedataManifest, opts)
+  const servicesRPC = rpc.importAPI('services', servicesManifest, opts)
   const beakerBrowserRPC = rpc.importAPI('beaker-browser', beakerBrowserManifest, opts)
 
   // beaker.bookmarks
@@ -130,6 +132,24 @@ if (window.location.protocol === 'beaker:') {
   beaker.sitedata.setAppPermissions = sitedataRPC.setAppPermissions
   beaker.sitedata.clearPermission = sitedataRPC.clearPermission
   beaker.sitedata.clearPermissionAllOrigins = sitedataRPC.clearPermissionAllOrigins
+
+  // beaker.services
+  beaker.services = {}
+  beaker.services.fetchPSADoc = servicesRPC.fetchPSADoc
+  beaker.services.makeAPIRequest = servicesRPC.makeAPIRequest
+  beaker.services.registerHashbase = servicesRPC.registerHashbase
+  beaker.services.login = servicesRPC.login
+  beaker.services.logout = servicesRPC.logout
+  beaker.services.addService = servicesRPC.addService
+  beaker.services.removeService = servicesRPC.removeService
+  beaker.services.addAccount = servicesRPC.addAccount
+  beaker.services.removeAccount = servicesRPC.removeAccount
+  beaker.services.getService = servicesRPC.getService
+  beaker.services.getAccount = servicesRPC.getAccount
+  beaker.services.listServices = servicesRPC.listServices
+  beaker.services.listAccounts = servicesRPC.listAccounts
+  beaker.services.listServiceLinks = servicesRPC.listServiceLinks
+  beaker.services.listServiceAccounts = servicesRPC.listServiceAccounts
 
   // beaker.browser
   beaker.browser = {}

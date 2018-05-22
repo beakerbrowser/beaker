@@ -17,7 +17,7 @@ export default function setup () {
   let folderPath = getEnvVar('BEAKER_USER_DATA_PATH') || app.getPath('userData')
   logFilePath = joinPath(folderPath, 'debug.log')
   console.log('Logfile:', logFilePath)
-  debug.enable('dat,datgc,dat-dns,dat-serve,dns-discovery,discovery-channel,discovery-swarm,beaker,beaker-sqlite,beaker-analytics')
+  debug.enable('dat,datgc,dat-dns,dat-serve,dns-discovery,discovery-channel,discovery-swarm,beaker,beaker-sqlite,beaker-analytics,beaker-service')
   debug.overrideUseColors()
 
   logFileWriteStream = fs.createWriteStream(logFilePath)
