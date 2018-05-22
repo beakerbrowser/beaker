@@ -681,7 +681,7 @@ async function onClearQuery () {
   render()
 }
 
-function onUpdateSort (sort, direction = undefined) {
+function onUpdateSort (sort, direction = false, {noSave} = {}) {
   if (sort === 'recently-accessed') {
     currentDateType = 'accessed'
   } else if (sort === 'recently-updated') {
@@ -693,7 +693,9 @@ function onUpdateSort (sort, direction = undefined) {
   }
   currentSort[0] = sort
   currentSort[1] = direction
-  saveSettings()
+  if (!noSave) {
+    saveSettings()
+  }
   sortArchives()
   render()
 }
@@ -717,12 +719,13 @@ async function onUpdateView (view) {
   selectedArchives = []
 
   currentView = view
+  loadSettings() // load settings to restore from any temporary settings
   await loadArchives()
   render()
 
   if (view === 'recent') {
-    // sort by recently viewed
-    onUpdateSort('recently-accessed', -1)
+    // sort by recently viewed, dont save (temporary for this view)
+    onUpdateSort('recently-accessed', -1, {noSave: true})
   }
 
   // focus the search input
