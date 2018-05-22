@@ -451,7 +451,7 @@ body.drag {
   }
 
   .revision-header,
-  .file-preview-header {
+  .file-view-header {
     &:extend(.flex);
     align-items: center;
     height: 40px;
@@ -479,10 +479,10 @@ body.drag {
     }
   }
 
-  .file-preview-container {
+  .file-view-container {
     font-size: 12.5px;
 
-    .file-preview-header {
+    .file-view-header {
       &:extend(.flex);
       align-items: center;
       height: 40px;
@@ -500,20 +500,42 @@ body.drag {
         margin-right: 10px
       }
 
+      .editor-options {
+        select {
+          border: 1px solid #ddd;
+          background: #fff;
+          height: 24px;
+        }
+      }
+
       .actions {
         margin-left: auto;
 
         a {
           display: inline-block;
           font-size: 14px;
-          color: @color-text--muted;
           color: @color-text;
           cursor: pointer;
           height: 35px;
           line-height: 35px;
+          margin-left: 12px;
+
+          &.btn {
+            height: auto;
+            line-height: 26px;
+            font-size: 13px;
+            margin-left: 8px;
+          }
 
           * {
             cursor: pointer;
+          }
+
+          .fa-floppy-o,
+          .fa-pencil {
+            // adjust icon alignment
+            position: relative;
+            top: -1px;
           }
 
           &:hover {
@@ -523,7 +545,7 @@ body.drag {
       }
     }
 
-    .file-preview {
+    .file-view {
       position: relative;
       border: 1px solid #ddd;
       border-top: 0;
@@ -588,6 +610,18 @@ body.drag {
           width: auto;
           height: auto;
         }
+      }
+    }
+
+    .file-editor {
+      height: 70vh;
+      border: 1px solid #ddd;
+      border-top: 0;
+      border-radius: 0 0 2px 2px;
+      background: #fff;
+
+      input {
+        height: initial;
       }
     }
   }
@@ -932,12 +966,12 @@ body.drag {
     }
   }
 
-  .file-preview-container.readme {
+  .file-view-container.readme {
     &:extend(.flex);
     flex-wrap: wrap;
     margin-top: 20px;
 
-    .file-preview-header,
+    .file-view-header,
     .readme {
       width: 100%;
     }

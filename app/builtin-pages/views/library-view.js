@@ -15,6 +15,7 @@ import * as localsyncpathPopup from '../com/library-localsyncpath-popup'
 import * as copydatPopup from '../com/library-copydat-popup'
 import * as faviconPicker from '../com/favicon-picker'
 import renderSettingsField from '../com/settings-field'
+import {setup as setupFileEditor, config as configureFileEditor, getValue as getFileEditorValue} from '../com/file-editor'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {throttle} from '../../lib/functions'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
@@ -111,7 +112,12 @@ async function setup () {
     document.body.addEventListener('custom-add-file', onAddFile)
     document.body.addEventListener('custom-rename-file', onRenameFile)
     document.body.addEventListener('custom-delete-file', onDeleteFile)
+    document.body.addEventListener('custom-open-file-editor', onOpenFileEditor)
+    document.body.addEventListener('custom-close-file-editor', onCloseFileEditor)
+    document.body.addEventListener('custom-save-file-editor-content', onSaveFileEditorContent)
+    document.body.addEventListener('custom-config-file-editor', onConfigFileEditor)
     document.body.addEventListener('custom-set-view', onChangeView)
+    document.body.addEventListener('custom-render', render)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
 
     let onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
@@ -148,7 +154,7 @@ async function loadReadme () {
       readmeContent = yo`<div class="readme markdown"></div>`
       readmeContent.innerHTML = markdownRenderer.render(readmeMd)
       readmeHeader = yo`
-        <div class="file-preview-header">
+        <div class="file-view-header">
           <code class="path">${readmeMdNode.name}</code>
         </div>`
     } else {
@@ -159,7 +165,7 @@ async function loadReadme () {
         const readme = await archive.readFile(readmeNode._path, 'utf8')
         readmeContent = yo`<div class="readme plaintext">${readme}</div>`
         readmeHeader = yo`
-          <div class="file-preview-header">
+          <div class="file-view-header">
             <code class="path">${readmeNode.name}</code>
           </div>`
       }
@@ -181,7 +187,7 @@ async function loadReadme () {
     if (readmeContent) {
       const id = `readme-${Date.now()}` // use an id to help yoyo figure out element ==
       readmeElement = yo`
-        <div id=${id} class="file-preview-container readme">
+        <div id=${id} class="file-view-container readme">
           ${readmeHeader}
           ${readmeContent}
         </div>`
@@ -1364,6 +1370,33 @@ async function onDeleteFile (e) {
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }
+}
+
+function onOpenFileEditor (e) {
+  filesBrowser.isEditMode = true
+  render()
+  setupFileEditor()
+}
+
+function onCloseFileEditor (e) {
+  filesBrowser.isEditMode = false
+  render()
+}
+
+async function onSaveFileEditorContent (e) {
+  try {
+    var fileContent = getFileEditorValue()
+    var currentNode = filesBrowser.getCurrentSource()
+    await archive.writeFile(currentNode._path, fileContent, 'utf8')
+    currentNode.preview = fileContent
+    toast.create('Saved', 'success')
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+  }
+}
+
+function onConfigFileEditor (e) {
+  configureFileEditor(e.detail)
 }
 
 async function onKeyupHeaderEdit (e, name) {

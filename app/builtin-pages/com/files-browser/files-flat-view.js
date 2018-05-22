@@ -10,20 +10,23 @@ import toggleable from '../toggleable'
 import renderArchiveHistory from '../archive-history'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
+import {render as renderFileEditor} from '../file-editor'
 import {pluralize} from '../../../lib/strings'
 
 // exported api
 // =
 
-export default function render (filesBrowser, currentSource, workspaceInfo) {
+export default function render (filesBrowser, currentSource) {
   return yo`
     <div class="files-tree-view ${currentSource.isEmpty ? 'empty' : ''}">
 
-      ${rHeader(filesBrowser, currentSource, workspaceInfo)}
+      ${rHeader(filesBrowser, currentSource)}
 
       <div class="body ${currentSource.type === 'file' ? 'file' : ''}">
         ${currentSource.type === 'file'
-          ? rFilePreview(currentSource)
+          ? filesBrowser.isEditMode
+            ? rFileEditor(currentSource)
+            : rFilePreview(currentSource)
           : rChildren(filesBrowser, currentSource.children)
         }
       </div>
@@ -34,13 +37,12 @@ export default function render (filesBrowser, currentSource, workspaceInfo) {
 // rendering
 // =
 
-function rHeader (filesBrowser, currentSource, workspaceInfo) {
+function rHeader (filesBrowser, currentSource) {
   return yo`
     <div class="files-browser-header">
       ${rBreadcrumbs(filesBrowser, currentSource)}
       ${rVersion(filesBrowser, currentSource)}
       ${rActions(filesBrowser, currentSource)}
-      ${currentSource.type === 'file' ? '' : renderRevisionsOverview(workspaceInfo)}
     </div>
   `
 }
@@ -59,43 +61,6 @@ function rVersion (filesBrowser, currentSource) {
     yo`<div class="version-badge badge green">v${version}</div>`,
     yo`<a class="jump-to-latest" href=${`beaker://library/${urlUnversioned}`}>Jump to latest</a>`
   ]
-}
-
-function renderRevisionsOverview (workspaceInfo) {
-  if (!workspaceInfo) return ''
-
-  const hasRevisions = (workspaceInfo.revisions && workspaceInfo.revisions.length)
-  const renderRevisionType = rev => yo`<div class="revision-type ${rev.change}"></div>`
-
-  return yo`
-    <div class="revisions-overview">
-      ${workspaceInfo.revisions.slice(0, 4).map(renderRevisionType)}
-      <span
-        class="label ${!hasRevisions ? 'empty' : ''}"
-        onclick=${() => hasRevisions ? emitSetView('workspace') : undefined}>
-        ${hasRevisions
-          ? `${workspaceInfo.revisions.length} ${pluralize(workspaceInfo.revisions.length, 'unpublished revision')}`
-          : yo`<em>No unpublished revisions</em>`
-        }
-      </span>
-
-      <div class="buttons">
-        ${hasRevisions
-          ? yo`
-            <button class="btn plain" onclick=${() => emitSetView('workspace')}>
-              <i class="fa fa-code"></i>
-              <span>Review changes</span>
-            </button>`
-          : ''
-        }
-
-        <a href="workspace://${workspaceInfo.name}" class="btn plain" target="_blank">
-          <i class="fa fa-external-link"></i>
-          <span>Local preview</span>
-        </a>
-      </div>
-    </div>
-  `
 }
 
 function rActions (filesBrowser, currentSource) {
@@ -167,8 +132,8 @@ function rFilePreview (node) {
   }
 
   return yo`
-    <div class="file-preview-container">
-      <div class="file-preview-header">
+    <div class="file-view-container">
+      <div class="file-view-header">
         <code class="path">${node.name}</code>
 
         <span class="separator">|</span>
@@ -180,18 +145,74 @@ function rFilePreview (node) {
         <code class="file-info">${prettyBytes(node.size)}</code>
 
         <div class="actions">
+          <a class="tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
+            <i class="fa fa-pencil"></i>
+          </a>
           <a href=${node.url} target="_blank" class="tooltip-container" data-tooltip="Open file">
             <i class="fa fa-external-link"></i>
           </a>
         </div>
       </div>
 
-      <div class="file-preview ${node.preview ? 'text' : 'media'}">
+      <div class="file-view ${node.preview ? 'text' : 'media'}">
         <div class="linenos">
           ${lineNumbers}
         </div>
         ${renderFilePreview(node)}
       </div>
+    </div>
+  `
+}
+
+function rFileEditor (node) {
+  return yo`
+    <div class="file-view-container">
+      <div class="file-view-header">
+        <code class="path">${node.name}</code>
+
+        <span class="separator">|</span>
+
+        <span class="editor-options">
+          <select onchange=${onChangeIndentationMode} name="indentationMode">
+            <optgroup label="Indentation">
+              <option selected="selected" value="spaces">Spaces</option>
+              <option value="tabs">Tabs</option>
+            </optgroup>
+          </select>
+          <select onchange=${onChangeTabWidth} name="tabWidth">
+            <optgroup label="Tab width">
+              <option selected="selected" value="2">2</option>
+              <option value="4">4</option>
+              <option value="8">8</option>
+            </optgroup>
+          </select>
+        </span>
+
+        <span class="separator">|</span>
+
+        <span class="editor-options">        
+          <select onchange=${onChangeLineWrap} name="lineWrap">
+            <optgroup label="Line wrap mode">
+              <option selected="selected" value="off">No wrap</option>
+              <option value="on">Soft wrap</option>
+            </optgroup>
+          </select>
+        </span>
+
+        <div class="actions">
+          <a href="#" class="btn plain" onclick=${onClickCancelEdit}>
+            Cancel
+          </a>
+          <a href="#" class="btn" onclick=${onClickSaveEdit}>
+            <i class="fa fa-floppy-o"></i> Save
+          </a>
+          <a href=${node.url} target="_blank" class="tooltip-container" data-tooltip="Open file">
+            <i class="fa fa-external-link"></i>
+          </a>
+        </div>
+      </div>
+
+      ${renderFileEditor(node)}
     </div>
   `
 }
@@ -288,6 +309,34 @@ function onClickNode (e, filesBrowser, node) {
   filesBrowser.setCurrentSource(node)
 }
 
+function onClickEditFile (e) {
+  e.preventDefault()
+  emit('custom-open-file-editor')
+}
+
+function onClickSaveEdit (e) {
+  e.preventDefault()
+  emit('custom-save-file-editor-content')
+  emit('custom-close-file-editor')
+}
+
+function onClickCancelEdit (e) {
+  e.preventDefault()
+  emit('custom-close-file-editor')
+}
+
+function onChangeLineWrap (e) {
+  emit('custom-config-file-editor', {softWrap: e.target.value === 'on'})
+}
+
+function onChangeIndentationMode (e) {
+  emit('custom-config-file-editor', {indentationMode: e.target.value})
+}
+
+function onChangeTabWidth (e) {
+  emit('custom-config-file-editor', {tabWidth: e.target.value})  
+}
+
 function onContextmenuNode (e, filesBrowser, node) {
   e.preventDefault()
   e.stopPropagation()
@@ -330,20 +379,20 @@ function onContextmenuNode (e, filesBrowser, node) {
   })
 }
 
+function emit (name, detail = null) {
+  document.body.dispatchEvent(new CustomEvent(name, {detail}))
+}
+
 function emitAddFile (src, dst) {
-  document.body.dispatchEvent(new CustomEvent('custom-add-file', {detail: {src, dst}}))
+  emit('custom-add-file', {src, dst})
 }
 
 function emitRenameFile (path, newName) {
-  document.body.dispatchEvent(new CustomEvent('custom-rename-file', {detail: {path, newName}}))
+  emit('custom-rename-file', {path, newName})
 }
 
 function emitDeleteFile (path, isFolder) {
-  document.body.dispatchEvent(new CustomEvent('custom-delete-file', {detail: {path, isFolder}}))
-}
-
-function emitSetView (view) {
-  document.body.dispatchEvent(new CustomEvent('custom-set-view', {detail: {view, href: view}}))
+  emit('custom-delete-file', {path, isFolder})
 }
 
 async function onAddFiles (e, node, filesOnly) {

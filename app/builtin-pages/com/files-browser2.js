@@ -14,6 +14,7 @@ export default class FilesBrowser {
     this.currentDragNode = null
     this.workspaceInfo = workspaceInfo
     this.onSetCurrentSource = () => {} // v simple events solution
+    this.isEditMode = false
   }
 
   // method to render at a place in the page
@@ -86,6 +87,10 @@ export default class FilesBrowser {
 
   async setCurrentSource (node, {suppressEvent} = {}) {
     await this.unselectAll()
+    if (this.currentSource !== node) {
+      // leave edit mode
+      this.isEditMode = false
+    }
     this.currentSource = node
 
     // special handling for files
