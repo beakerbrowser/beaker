@@ -7,6 +7,7 @@ import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import parseDatURL from 'parse-dat-url'
 import _get from 'lodash.get'
 import dragDrop from 'drag-drop'
+import {join as joinPaths} from 'path'
 import FilesBrowser from '../com/files-browser2'
 import toggleable from '../com/toggleable'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
@@ -1239,6 +1240,7 @@ async function onSetCurrentSource (node) {
   loadReadme()
 
   // initialize ace editor (if needed)
+  filesBrowser.isEditMode = false
   setupAce({readOnly: true})
 
   // update the URL & history
@@ -1402,7 +1404,25 @@ async function onSaveFileEditorContent (e) {
     var fileContent = getAceValue()
     var currentNode = filesBrowser.getCurrentSource()
     currentNode.preview = fileContent
-    await archive.writeFile(currentNode._path, fileContent, 'utf8')
+
+    // write to the target filename
+    var fileName = e.detail.fileName || currentNode.name
+    var filePath = joinPaths(currentNode.parent ? currentNode.parent._path : '', fileName)
+    if (!filePath.startsWith('/')) {
+      filePath = '/' + filePath
+    }
+    console.log('writing', fileName, filePath, currentNode._path)
+    await archive.writeFile(filePath, fileContent, 'utf8')
+
+    if (filePath !== currentNode._path) {
+      // go to the new path
+      console.log('redirecting to', `beaker://library/${archive.url + filePath}`)
+      window.history.pushState('', {}, `beaker://library/${archive.url + filePath}`)
+      readViewStateFromUrl()
+
+      // delete the old file
+      await archive.unlink(currentNode._path)
+    }
     toast.create('Saved')
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
@@ -1434,9 +1454,7 @@ async function onFilesChanged () {
   try {
     currentNode.preview = undefined // have the preview reload
     await currentNode.readData()
-    console.log('changed', !filesBrowser.isEditMode, !!currentNode.preview)
     if (!filesBrowser.isEditMode && !!currentNode.preview) {
-      console.log('setting',currentNode.preview)
       setAceValue(currentNode.preview) // update the editor if not in edit mode
     }
     filesBrowser.rerender()

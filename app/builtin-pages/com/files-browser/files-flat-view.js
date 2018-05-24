@@ -8,6 +8,7 @@ import * as contextInput from '../context-input'
 import * as toast from '../toast'
 import toggleable from '../toggleable'
 import renderArchiveHistory from '../archive-history'
+import {DAT_VALID_PATH_REGEX} from '../../../lib/const'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
 import {render as renderFileEditor} from '../file-editor'
@@ -115,7 +116,22 @@ function rBreadcrumbs (filesBrowser, currentSource) {
         .
       </div>
 
-      ${path.map(node => rBreadcrumb(filesBrowser, node))}
+      ${path.map((node, i) => rBreadcrumb(filesBrowser, node, (i === path.length - 1)))}
+    </div>`
+}
+
+function rBreadcrumb (filesBrowser, node, isLast = false) {
+  if (!node) return ''
+  var isEditing = filesBrowser.isEditMode && isLast
+  if (isEditing) {
+    return yo`
+      <div class="breadcrumb">
+        <input type="text" class="editor-filename" value=${node.name} />
+      </div>`
+  }
+  return yo`
+    <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, node)} title=${node.name}>
+      ${node.name}
     </div>`
 }
 
@@ -227,15 +243,6 @@ function rFileEditor (node) {
   `
 }
 
-function rBreadcrumb (filesBrowser, node) {
-  if (!node) return ''
-  return yo`
-    <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, node)} title=${node.name}>
-      ${node.name}
-    </div>
-  `
-}
-
 function rChildren (filesBrowser, children, depth = 0) {
   const path = filesBrowser.getCurrentSourcePath()
   const parentNode = (path.length >= 2) ? path[path.length - 2] : filesBrowser.root
@@ -328,7 +335,11 @@ function onClickEditFile (e) {
 function onClickSaveEdit (e) {
   e.preventDefault()
   e.stopPropagation()
-  emit('custom-save-file-editor-content')
+  var fileName = document.querySelector('.editor-filename').value
+  if (!DAT_VALID_PATH_REGEX.test(fileName) || fileName.indexOf('/') !== -1) {
+    return toast.create('Invalid characters in the file name', 'error')
+  }
+  emit('custom-save-file-editor-content', {fileName})
   emit('custom-close-file-editor')
 }
 
