@@ -231,12 +231,14 @@ function rFileEditor (node) {
         </span>
 
         <div class="actions">
-          <a href="#" class="btn plain" onclick=${onClickCancelEdit}>
+          <button class="btn plain" onclick=${onClickCancelEdit}>
             Cancel
-          </a>
-          <a href="#" class="btn" onclick=${onClickSaveEdit}>
-            <i class="fa fa-floppy-o"></i> Save
-          </a>
+          </button>
+
+          <button class="btn success" onclick=${onClickSaveEdit}>
+            <i class="fa fa-check"></i> Save
+          </button>
+
           <a href=${node.url} target="_blank" class="tooltip-container" data-tooltip="Open file">
             <i class="fa fa-external-link"></i>
           </a>
