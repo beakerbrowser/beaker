@@ -78,30 +78,39 @@ function rActions (filesBrowser, currentSource) {
         </div>
       `, renderOpenHistory)}
       ${(currentSource.isEditable && currentSource.type !== 'file')
-        ? window.OS_CAN_IMPORT_FOLDERS_AND_FILES
-          ? yo`
-            <button onclick=${e => onAddFiles(e, currentSource, false)} class="btn">
-              Add files
-            </button>`
-          : toggleable(yo`
-            <div class="dropdown toggleable-container">
-              <button class="btn toggleable">
-                Add files
-              </button>
+        ?
+          [
+            // element one: add files
+            window.OS_CAN_IMPORT_FOLDERS_AND_FILES
+              ? yo`
+                <button onclick=${e => onAddFiles(e, currentSource, false)} class="btn">
+                  Add files
+                </button>`
+              : toggleable(yo`
+                <div class="dropdown toggleable-container">
+                  <button class="btn toggleable">
+                    Add files
+                  </button>
 
-              <div class="dropdown-items right">
-                <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
-                  <i class="fa fa-files-o"></i>
-                  Choose files
-                </div>
+                  <div class="dropdown-items right">
+                    <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
+                      <i class="fa fa-files-o"></i>
+                      Choose files
+                    </div>
 
-                <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
-                  <i class="fa fa-folder-open-o"></i>
-                  Choose folder
+                    <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
+                      <i class="fa fa-folder-open-o"></i>
+                      Choose folder
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          `)
+              `),
+            // element two: new file
+            yo`
+              <button onclick=${() => emit('custom-create-file')} class="btn">
+                Create file
+              </button>`
+          ]
         : ''
       }
     </div>
@@ -137,7 +146,7 @@ function rBreadcrumb (filesBrowser, node, isLast = false) {
 
 function rFilePreview (filesBrowser, node) {
   var numLines
-  var isTextual = !!node.preview // preview is only set for text items
+  var isTextual = typeof node.preview === 'string' // preview is only set for text items
 
   if (node.preview) {
     numLines = node.preview.split('\n').length

@@ -12,8 +12,9 @@ import FilesBrowser from '../com/files-browser2'
 import toggleable from '../com/toggleable'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
-import * as localsyncpathPopup from '../com/library-localsyncpath-popup'
-import * as copydatPopup from '../com/library-copydat-popup'
+import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
+import * as copyDatPopup from '../com/library-copydat-popup'
+import * as createFilePopup from '../com/library-createfile-popup'
 import * as faviconPicker from '../com/favicon-picker'
 import renderSettingsField from '../com/settings-field'
 import {setup as setupAce, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
@@ -110,6 +111,7 @@ async function setup () {
     window.addEventListener('popstate', onPopState)
     document.body.addEventListener('click', onClickAnywhere)
     archive.progress.addEventListener('changed', throttle(onProgressUpdate, 2e3))
+    document.body.addEventListener('custom-create-file', onCreateFile)
     document.body.addEventListener('custom-add-file', onAddFile)
     document.body.addEventListener('custom-rename-file', onRenameFile)
     document.body.addEventListener('custom-delete-file', onDeleteFile)
@@ -1088,7 +1090,7 @@ function onTogglePeersCollapsed () {
 }
 
 async function onMakeCopy () {
-  let {title} = await copydatPopup.create({archive})
+  let {title} = await copyDatPopup.create({archive})
   const fork = await DatArchive.fork(archive.url, {title, prompt: false}).catch(() => {})
   window.location = `beaker://library/${fork.url}#setup`
 }
@@ -1308,7 +1310,7 @@ async function onChangeSyncDirectory () {
   }
 
   // open the create folder-picker popup
-  let res = await localsyncpathPopup.create({
+  let res = await localSyncPathPopup.create({
     defaultPath,
     archiveKey: archive.info.key,
     title: archive.info.title
@@ -1340,6 +1342,24 @@ async function onRemoveSyncDirectory () {
     toplevelError = createToplevelError(e)
     render()
     return
+  }
+}
+
+async function onCreateFile (e) {
+  var currentNode = filesBrowser.getCurrentSource()
+  if (!currentNode.isContainer) return // must be a folder
+  var basePath = currentNode._path
+
+  // get the name of the new file
+  var filePath = await createFilePopup.create({archive, basePath})
+  if (filePath) {
+    // create new file (empty)
+    await archive.writeFile(filePath, '', 'utf8')
+    // go to the new path
+    window.history.pushState('', {}, `beaker://library/${archive.url + filePath}`)
+    await readViewStateFromUrl()
+    // enter edit mode
+    onOpenFileEditor()
   }
 }
 
@@ -1411,12 +1431,10 @@ async function onSaveFileEditorContent (e) {
     if (!filePath.startsWith('/')) {
       filePath = '/' + filePath
     }
-    console.log('writing', fileName, filePath, currentNode._path)
     await archive.writeFile(filePath, fileContent, 'utf8')
 
     if (filePath !== currentNode._path) {
       // go to the new path
-      console.log('redirecting to', `beaker://library/${archive.url + filePath}`)
       window.history.pushState('', {}, `beaker://library/${archive.url + filePath}`)
       readViewStateFromUrl()
 

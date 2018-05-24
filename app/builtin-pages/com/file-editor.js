@@ -78,6 +78,10 @@ function setReadOnly (editor, readOnly) {
   })
   // show/hide the cursor
   editor.renderer.$cursorLayer.element.style.display = readOnly ? 'none' : ''
+  // give focus
+  if (!readOnly) {
+    editor.focus()
+  }
 }
 
 function updateConfigUI (editor) {
