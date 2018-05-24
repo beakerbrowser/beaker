@@ -165,17 +165,6 @@ function rFilePreview (filesBrowser, node) {
         }
         <code class="file-info">${prettyBytes(node.size)}</code>
 
-        <span class="separator">|</span>
-
-        <span class="editor-options">
-          <select onchange=${onChangeLineWrap} name="lineWrap">
-            <optgroup label="Line wrap mode">
-              <option selected="selected" value="off">No wrap</option>
-              <option value="on">Soft wrap</option>
-            </optgroup>
-          </select>
-        </span>
-
         <div class="actions">
           ${isTextual
             ? node.isEditable
