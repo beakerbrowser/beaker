@@ -158,7 +158,7 @@ function rFilePreview (filesBrowser, node) {
 
         <span class="separator">|</span>
 
-        <span class="editor-options">        
+        <span class="editor-options">
           <select onchange=${onChangeLineWrap} name="lineWrap">
             <optgroup label="Line wrap mode">
               <option selected="selected" value="off">No wrap</option>
@@ -209,6 +209,7 @@ function rFileEditor (node) {
               <option value="tabs">Tabs</option>
             </optgroup>
           </select>
+
           <select onchange=${onChangeTabWidth} name="tabWidth">
             <optgroup label="Tab width">
               <option selected="selected" value="2">2</option>
@@ -220,7 +221,7 @@ function rFileEditor (node) {
 
         <span class="separator">|</span>
 
-        <span class="editor-options">        
+        <span class="editor-options">
           <select onchange=${onChangeLineWrap} name="lineWrap">
             <optgroup label="Line wrap mode">
               <option selected="selected" value="off">No wrap</option>
@@ -371,7 +372,7 @@ function onChangeIndentationMode (e) {
 }
 
 function onChangeTabWidth (e) {
-  emit('custom-config-file-editor', {tabWidth: e.target.value})  
+  emit('custom-config-file-editor', {tabWidth: e.target.value})
 }
 
 function onContextmenuNode (e, filesBrowser, node) {
