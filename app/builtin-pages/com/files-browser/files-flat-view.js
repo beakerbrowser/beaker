@@ -172,20 +172,20 @@ function rFilePreview (filesBrowser, node) {
             ? node.isEditable
               ? [
                   yo`
-                    <a class="tooltip-container" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, node)}>
+                    <button class="tooltip-container delete" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, node)}>
                       <i class="fa fa-trash-o"></i>
-                    </a>
+                    </button>
                   `,
                   yo`
-                    <a class="tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
+                    <button class="tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
                       <i class="fa fa-pencil"></i>
-                    </a>
+                    </button>
                   `
                 ]
               : yo`
-                  <a class="disabled tooltip-container" data-tooltip="Cannot edit file (read only)">
+                  <button class="disabled tooltip-container" data-tooltip="Cannot edit file (read only)">
                     <i class="fa fa-pencil"></i>
-                  </a>`
+                  </button>`
             : ''}
           <a href=${node.url} target="_blank" class="tooltip-container" data-tooltip="Open file">
             <i class="fa fa-external-link"></i>
