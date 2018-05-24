@@ -27,7 +27,7 @@ export default function render (filesBrowser, currentSource) {
         ${currentSource.type === 'file'
           ? filesBrowser.isEditMode
             ? rFileEditor(currentSource)
-            : rFilePreview(currentSource)
+            : rFilePreview(filesBrowser, currentSource)
           : rChildren(filesBrowser, currentSource.children)
         }
       </div>
@@ -135,7 +135,7 @@ function rBreadcrumb (filesBrowser, node, isLast = false) {
     </div>`
 }
 
-function rFilePreview (node) {
+function rFilePreview (filesBrowser, node) {
   var numLines
   var isTextual = !!node.preview // preview is only set for text items
 
@@ -170,10 +170,14 @@ function rFilePreview (node) {
         <div class="actions">
           ${isTextual
             ? node.isEditable
-              ? yo`
-                  <a class="tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
+              ? [
+                  yo`<a class="tooltip-container" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, node)}>
+                    <i class="fa fa-trash-o"></i>
+                  </a>`,
+                  yo`<a class="tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
                     <i class="fa fa-pencil"></i>
                   </a>`
+                ]
               : yo`
                   <a class="disabled tooltip-container" data-tooltip="Cannot edit file (read only)">
                     <i class="fa fa-pencil"></i>
@@ -330,6 +334,15 @@ function onClickEditFile (e) {
   e.preventDefault()
   e.stopPropagation()
   emit('custom-open-file-editor')
+}
+
+function onClickDeleteFile (e, filesBrowser, node) {
+  e.preventDefault()
+  e.stopPropagation()
+  if (confirm('Delete this file?')) {
+    filesBrowser.setCurrentSource(node.parent)
+    emitDeleteFile(node._path, false)
+  }
 }
 
 function onClickSaveEdit (e) {
