@@ -180,7 +180,7 @@ function rFilePreview (filesBrowser, node) {
                     </button>
                   `
                 ]
-              : yo`<em>Read-only</em>`
+              : ''
             : ''}
           <a href=${node.url} target="_blank" class="tooltip-container" data-tooltip="Open file">
             <i class="fa fa-external-link"></i>
