@@ -170,19 +170,19 @@ function rFilePreview (filesBrowser, node) {
             ? node.isEditable
               ? [
                   yo`
-                    <button class="tooltip-container delete" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, node)}>
+                    <button class="action btn plain tooltip-container delete" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, node)}>
                       <i class="fa fa-trash-o"></i>
                     </button>
                   `,
                   yo`
-                    <button class="tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
+                    <button class="action btn plain tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
                       <i class="fa fa-pencil"></i>
                     </button>
                   `
                 ]
               : ''
             : ''}
-          <a href=${node.url} target="_blank" class="tooltip-container" data-tooltip="Open file">
+          <a href=${node.url} target="_blank" class="action tooltip-container" data-tooltip="Open file">
             <i class="fa fa-external-link"></i>
           </a>
         </div>
@@ -230,15 +230,16 @@ function rFileEditor (node) {
         </span>
 
         <div class="actions">
-          <button class="btn plain" onclick=${onClickCancelEdit}>
+          <button class="action btn plain" onclick=${onClickCancelEdit}>
             Cancel
           </button>
 
-          <button class="btn success" onclick=${onClickSaveEdit}>
-            <i class="fa fa-check"></i> Save
+          <button class="action btn success" onclick=${onClickSaveEdit}>
+            Save
+            <i class="fa fa-check"></i>
           </button>
 
-          <a href=${node.url} target="_blank" class="tooltip-container" data-tooltip="Open file">
+          <a href=${node.url} target="_blank" class="action tooltip-container" data-tooltip="Open file">
             <i class="fa fa-external-link"></i>
           </a>
         </div>

@@ -509,46 +509,58 @@ body.drag {
       }
 
       .actions {
+        &:extend(.flex);
+        align-items: center;
+        height: 100%;
         margin-left: auto;
 
-        a {
+        .action {
           display: inline-block;
+          margin-left: 15px;
           font-size: 14px;
-          color: @color-text;
           cursor: pointer;
           height: 35px;
           line-height: 35px;
-          margin-left: 12px;
+          color: @color-text;
+
+          &:hover {
+            color: @blue;
+          }
+
+          &.delete:hover {
+            color: shade(@red, 10%);
+          }
 
           &.btn {
             height: auto;
             line-height: 26px;
-            font-size: 13px;
-            margin-left: 8px;
+            font-size: inherit;
+
+
+            &.plain {
+              height: 100%;
+              line-height: 1;
+              padding: 0;
+
+              i.fa {
+                font-size: 14px;
+              }
+            }
+
+            &.primary,
+            &.success {
+              color: #fff;
+            }
           }
 
           * {
             cursor: pointer;
           }
 
-          // adjust icon positionings
-          .fa-floppy-o,
-          .fa-pencil {
-            position: relative;
-            top: -1px;
-          }
-          .fa-pencil {
-            margin-left: 2px;
-          }
-
-          &:hover {
-            color: @blue;
-          }
-
           &.disabled,
           &.disabled:hover {
             color: @color-text--light;
-            
+
             * {
               cursor: default;
             }
