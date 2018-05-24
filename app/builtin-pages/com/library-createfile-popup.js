@@ -12,6 +12,7 @@ var reject
 
 var archive
 var basePath
+var createFolder
 var fileName = ''
 var hasConflict = false
 
@@ -21,6 +22,7 @@ var hasConflict = false
 export async function create (opts = {}) {
   archive = opts.archive
   basePath = opts.basePath || '/'
+  createFolder = opts.createFolder
   fileName = ''
 
   // render interface
@@ -56,7 +58,7 @@ function render () {
       <form class="popup-inner" onsubmit=${onSubmit}>
         <div class="head">
           <span class="title">
-            Create new file
+            Create new ${createFolder ? 'folder' : 'file'}
           </span>
 
           <span title="Cancel" onclick=${destroy} class="close-btn square">
@@ -67,13 +69,13 @@ function render () {
         <div class="body">
           <div>
             <p>
-              The new file will be added to ${basePath}
+              The new ${createFolder ? 'folder' : 'file'} will be added to ${basePath}
             </p>
 
-            <input name="filename" value=${fileName} placeholder="Filename" />
+            <input name="filename" value=${fileName} placeholder=${createFolder ? 'Folder name' : 'Filename'} />
 
             ${hasConflict
-              ? yo`<div class="message error">A file already exists with that name.</div>`
+              ? yo`<div class="message error">A file or folder already exists with that name.</div>`
               : ''}
           </div>
 

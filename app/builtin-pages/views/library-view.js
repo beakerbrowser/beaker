@@ -1346,20 +1346,28 @@ async function onRemoveSyncDirectory () {
 }
 
 async function onCreateFile (e) {
+  var {createFolder} = (e.detail || {})
   var currentNode = filesBrowser.getCurrentSource()
   if (!currentNode.isContainer) return // must be a folder
   var basePath = currentNode._path
 
   // get the name of the new file
-  var filePath = await createFilePopup.create({archive, basePath})
+  var filePath = await createFilePopup.create({archive, basePath, createFolder})
   if (filePath) {
-    // create new file (empty)
-    await archive.writeFile(filePath, '', 'utf8')
+    if (createFolder) {
+      // create new folder
+      await archive.mkdir(filePath)
+    } else {
+      // create new file (empty)
+      await archive.writeFile(filePath, '', 'utf8')
+    }
     // go to the new path
     window.history.pushState('', {}, `beaker://library/${archive.url + filePath}`)
     await readViewStateFromUrl()
-    // enter edit mode
-    onOpenFileEditor()
+    if (!createFolder) {
+      // enter edit mode
+      onOpenFileEditor()
+    }
   }
 }
 

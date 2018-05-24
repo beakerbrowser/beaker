@@ -84,12 +84,12 @@ function rActions (filesBrowser, currentSource) {
             window.OS_CAN_IMPORT_FOLDERS_AND_FILES
               ? yo`
                 <button onclick=${e => onAddFiles(e, currentSource, false)} class="btn">
-                  Add files
+                  Import
                 </button>`
               : toggleable(yo`
-                <div class="dropdown toggleable-container">
+                <div class="dropdown toggleable-container import-dropdown">
                   <button class="btn toggleable">
-                    Add files
+                    Import
                   </button>
 
                   <div class="dropdown-items right">
@@ -105,11 +105,23 @@ function rActions (filesBrowser, currentSource) {
                   </div>
                 </div>
               `),
-            // element two: new file
-            yo`
-              <button onclick=${() => emit('custom-create-file')} class="btn">
-                Create file
-              </button>`
+            // element two: more actions dropdown
+            toggleable(yo`
+              <div class="dropdown toggleable-container new-dropdown">
+                <button class="btn toggleable">
+                  New <i class="fa fa-plus"></i>
+                </button>
+
+                <div class="dropdown-items right">
+                  <div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
+                    <i class="fa fa-file-o fa-fw"></i> File
+                  </div>
+                  <div class="dropdown-item" onclick=${e => emit('custom-create-file', {createFolder: true})}>
+                    <i class="fa fa-folder-o fa-fw"></i> Folder
+                  </div>
+                </div>
+              </div>
+            `)
           ]
         : ''
       }
