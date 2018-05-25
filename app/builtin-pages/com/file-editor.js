@@ -36,6 +36,9 @@ export function setup ({readOnly} = {}) {
   var whitespace = ace.require('ace/ext/whitespace')
   whitespace.detectIndentation(editor.session)
 
+  // don't show vertical ruler
+  editor.setShowPrintMargin(false)
+
   // set config settings
   updateConfigUI(editor)
 }
