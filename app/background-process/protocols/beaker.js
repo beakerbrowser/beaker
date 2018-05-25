@@ -142,6 +142,10 @@ async function beakerProtocol (request, respond) {
     let imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
   }
+  if (requestUrl.startsWith('beaker://assets/img/templates/')) {
+    let imgPath = requestUrl.slice('beaker://assets/img/templates/'.length)
+    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/templates/${imgPath}`))
+  }
   if (requestUrl.startsWith('beaker://assets/ace/') && requestUrl.endsWith('.js')) {
     let filePath = requestUrl.slice('beaker://assets/ace/'.length)
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, `assets/js/ace-1.3.3/${filePath}`))

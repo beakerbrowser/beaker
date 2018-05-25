@@ -8,6 +8,7 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import toggleable from '../com/toggleable'
+import * as createArchivePopup from '../com/create-archive-popup'
 import * as contextMenu from '../com/context-menu'
 import renderCloseIcon from '../icon/close'
 
@@ -340,60 +341,10 @@ function renderHeader () {
   } else {
     actions = yo`
       <div class="actions">
-        ${toggleable(yo`
-          <div class="dropdown toggleable-container">
-            <button class="btn primary toggleable">
-              <span>New</span>
-              <i class="fa fa-plus"></i>
-            </button>
-
-            <div class="dropdown-items create-new filters subtle-shadow right">
-              <div class="dropdown-item" onclick=${() => onCreateSite()}>
-                <div class="label">
-                  <i class="fa fa-clone"></i>
-                  Empty project
-                </div>
-
-                <p class="description">
-                  Create a new project
-                </p>
-              </div>
-
-              <div class="dropdown-item" onclick=${() => onCreateSite('website')}>
-                <div class="label">
-                  <i class="fa fa-code"></i>
-                  Website
-                </div>
-
-                <p class="description">
-                  Create a new website from a basic template
-                </p>
-              </div>
-
-              <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
-                <div class="label">
-                  <i class="fa fa-folder-o"></i>
-                  Import folder
-                </div>
-
-                <p class="description">
-                  Create a new project from a folder on your computer
-                </p>
-              </div>
-
-              <div class="dropdown-item" onclick=${onShareFiles}>
-                <div class="label">
-                  <i class="fa fa-upload"></i>
-                  Share files
-                </div>
-
-                <p class="description">
-                  Choose individual files and folders to share
-                </p>
-              </div>
-            </div>
-          </div>
-        `)}
+        <button class="btn primary" onclick=${onNewArchive}>
+          <span>New</span>
+          <i class="fa fa-plus"></i>
+        </button>
       </div>`
 
     searchContainer = yo`
@@ -507,46 +458,18 @@ async function onDeleteSelected () {
   render()
 }
 
-async function onCreateSiteFromFolder () {
-  // ask user for folder
-  const folder = await beaker.browser.showOpenDialog({
-    title: 'Select folder',
-    buttonLabel: 'Use folder',
-    properties: ['openDirectory']
-  })
-  if (!folder || !folder.length) return
+async function onNewArchive (e) {
+  e.preventDefault()
+  e.stopPropagation()
 
-  // create a new archive
-  const archive = await DatArchive.create({prompt: false})
-  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {syncFolderToArchive: true})
-  window.location += archive.url
-}
+  // let the user choose a template or folder
+  var {template, folder} = await createArchivePopup.create()
 
-async function onShareFiles () {
-  // ask user for files
-  const browserInfo = await beaker.browser.getInfo()
-  const filesOnly = browserInfo.platform === 'linux'
-  const files = await beaker.browser.showOpenDialog({
-    title: 'Select files to share',
-    buttonLabel: 'Share files',
-    properties: ['openFile', filesOnly ? false : 'openDirectory', 'multiSelections'].filter(Boolean)
-  })
-  if (!files || !files.length) return
-
-  // create the dat and import the files
-  const archive = await DatArchive.create({
-    title: `Shared files (${moment().format('M/DD/YYYY h:mm:ssa')})`,
-    description: `Files shared with Beaker`,
-    prompt: false
-  })
-  await Promise.all(files.map(src => DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: false})))
-
-  window.location += archive.url
-}
-
-async function onCreateSite (template) {
   // create a new archive
   const archive = await DatArchive.create({template, prompt: false})
+  if (folder) {
+    await beaker.archives.setLocalSyncPath(archive.url, folder, {syncFolderToArchive: true})
+  }
   window.location += archive.url + '#setup'
 }
 

@@ -1,0 +1,44 @@
+#create-archive-popup {
+  .popup-inner {
+    width: 90vw;
+    max-width: 800px;
+  }
+
+  .templates-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-gap: 20px;
+    padding: 20px;
+    background: @background-message;
+    border-radius: 4px;
+  }
+
+  .template-item {
+    img {
+      max-width: 100%;
+      margin-bottom: 5px;
+      border: 1px solid transparent;
+    }
+
+    .label {
+      text-align: center;
+
+      span {
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    }
+
+    &.selected {
+      img {
+        border-color: @blue;
+      }
+
+      .label span {
+        background: @blue;
+        color: #fff;
+        font-weight: 300;
+      }
+    }
+  }
+}
