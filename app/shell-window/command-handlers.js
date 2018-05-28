@@ -19,6 +19,8 @@ export function setup () {
       case 'file:close-tab': return pages.remove(page)
       case 'file:reopen-closed-tab': return pages.reopenLastRemoved()
       case 'edit:find': return navbar.showInpageFind(page)
+      case 'edit:find-next': return navbar.findNext(page, true)
+      case 'edit:find-previous': return navbar.findNext(page, false)
       case 'view:reload': return page.reload()
       case 'view:hard-reload': return page.reloadIgnoringCacheAsync()
       case 'view:zoom-in': return zoom.zoomIn(page)
