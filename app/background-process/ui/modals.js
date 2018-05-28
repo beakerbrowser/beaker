@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain} from 'electron'
+import {app, BrowserWindow, ipcMain, webContents as electronWebContents} from 'electron'
 import {ModalActiveError} from 'beaker-error-constants'
 import path from 'path'
 
@@ -87,12 +87,18 @@ export function closeModal (err, res) {
 }
 
 export function showShellModal (webContents, modalName, opts = {}) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     // sanity check
     if (!webContents.hostWebContents) {
-      // abort, must be given the webContents of a page
-      console.error('Warning: showShellModal() was passed the webContents of a non page')
-      return reject('Invalid shell modal target')
+      // get the active tab's webcontents
+      try {
+        let wcID = await webContents.executeJavaScript(`pages.getActive().wcID`)
+        webContents = electronWebContents.fromId(wcID)
+        if (!webContents) throw new Error('Web Contents not found')
+      } catch (e) {
+        console.error('Warning: showShellModal() was passed the webContents of a non page, and failed to fetch the current page', e)
+        return reject('Invalid shell modal target')
+      }
     }
 
     // modal already active?
