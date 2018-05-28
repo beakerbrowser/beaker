@@ -89,9 +89,47 @@ body.drag {
   }
 }
 
-.builtin-wrapper.library-wrapper {
+.builtin-wrapper.library {
+
+  @media (min-width: 1050px) {
+    .builtin-main {
+      max-width: none;
+      margin: 0 100px 0 200px;
+    }
+  }
+
+  // column sizings
+  .ll-row.archive,
+  .ll-column-headings {
+
+    .title {
+      flex: 3;
+      max-width: none;
+    }
+
+    .peers,
+    .size {
+      min-width: 60px;
+      flex: 0.75;
+    }
+
+    .date {
+      min-width: 120px;
+      flex: 0.9;
+    }
+
+    .buttons {
+      width: 45px;
+    }
+  }
+
+  .ll-column-headings {
+    padding: 0 20px 10px;
+  }
 
   .ll-row.archive {
+    height: 50px;
+    padding: 0 20px;
 
     &.menu-open,
     &:hover {
@@ -104,121 +142,40 @@ body.drag {
       }
     }
 
+    .title {
+      font-size: 13.5px;
+
+      &.empty {
+        overflow: initial;
+      }
+    }
+
+    .url,
+    .peers,
+    .date,
+    .size {
+      font-weight: 300;
+      font-size: 12.5px;
+      color: @color-text--muted;
+    }
+
     .url {
       margin-right: 0;
     }
 
     .buttons {
+      opacity: 1;
 
       .trash,
       .restore {
-        margin-right: 5px;
+        margin-right: 4px;
         opacity: 0;
-      }
-
-      .btn.plain:hover i,
-      .pressed i {
-        color: #333;
       }
     }
 
     .dropdown-items {
       width: 185px;
       right: -8px;
-    }
-  }
-
-  .recent-archives {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-gap: 15px;
-    width: 100%;
-    margin-bottom: 25px;
-
-    @media (min-width: 670px) {
-      grid-template-columns: 1fr 1fr 1fr 1fr;
-    }
-  }
-
-  .ll-row.recent {
-    &:extend(.flex);
-    justify-content: space-between;
-    position: relative;
-    width: auto;
-    height: auto;
-    padding: 0;
-    background: #fff;
-    text-align: center;
-    transition: box-shadow .05s ease;
-    border: 1px solid rgb(230, 230, 230);
-
-    * {
-      cursor: pointer;
-    }
-
-    .badge.read-only {
-      position: absolute;
-      right: 5px;
-      top: 5px;
-      cursor: default;
-      background: #f0f0f0;
-    }
-
-    &:hover {
-      border-color: #dadada;
-      background: #f0f0f0;
-
-      .info {
-        border-color: #dadada;
-      }
-
-      .btn {
-        opacity: 1;
-      }
-    }
-
-    .favicon {
-      display: block;
-      flex-basis: 32px;
-      width: 32px;
-      height: 32px;
-      margin: 30px auto;
-    }
-
-    .info {
-      position: relative;
-      border-top: 1px solid rgb(230, 230, 230);
-      text-align: left;
-      background: #fff;
-      padding: 5px 10px;
-      width: 100%;
-    }
-
-    .btn {
-      position: absolute;
-      right: 5px;
-      top: 6px;
-      opacity: 0;
-      font-size: 15px;
-      padding: 0 5px;
-      line-height: 1;
-      height: 22px;
-    }
-
-    .title {
-      &:extend(.overflow-ellipsis);
-      display: block;
-      max-width: 132px;
-      margin: 0;
-    }
-
-    .url {
-      font-size: .75rem;
-    }
-
-    .url,
-    .title {
-      vertical-align: top;
     }
   }
 }

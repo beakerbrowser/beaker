@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import bytes from 'bytes'
 import moment from 'moment'
 import {pluralize, shortenHash} from '../../lib/strings'
+import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
@@ -20,19 +21,33 @@ let archives = []
 let selectedArchives = []
 let query = ''
 let currentView = 'all'
-let currentSort = 'alpha'
+let currentSort = ['alpha', -1]
+let currentDateType = 'accessed'
 
 // main
 // =
 
 setup()
 async function setup () {
+  loadSettings()
   await loadArchives()
   render()
 }
 
 // data
 // =
+
+function loadSettings () {
+  currentSort[0] = localStorage.currentSortValue || 'alpha'
+  currentSort[1] = (+localStorage.currentSortDir) || -1
+  currentDateType = localStorage.currentDateType || 'accessed'
+}
+
+function saveSettings () {
+  localStorage.currentSortValue = currentSort[0]
+  localStorage.currentSortDir = currentSort[1]
+  localStorage.currentDateType = currentDateType
+}
 
 async function loadArchives () {
   // read data
@@ -50,6 +65,13 @@ async function loadArchives () {
         isSaved: true,
         search: query ? query : false
       })
+      break
+    case 'recent':
+      archives = await beaker.archives.list({
+        search: query ? query : false
+      })
+      // only archives that have been recently visited in the library
+      archives = archives.filter(a => !!a.lastLibraryAccessTime)
       break
     case 'trash':
       archives = await beaker.archives.list({
@@ -85,25 +107,43 @@ function filterArchives () {
 }
 
 function sortArchives () {
-  if (currentSort === 'recently-accessed') {
-    archives = archives.sort((a, b) => b.lastLibraryAccessTime - a.lastLibraryAccessTime)
-  } else if (currentSort === 'recently-updated') {
-    archives = archives.sort((a, b) => b.mtime - a.mtime)
-  } else if (currentSort === 'alpha') {
-    archives = archives.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
-  }
+  archives.sort((a, b) => {
+    var v
+    switch (currentSort[0]) {
+      case 'size': v = a.size - b.size; break
+      case 'peers': v = a.peers - b.peers; break
+      case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
+      case 'recently-updated': v = a.mtime - b.mtime; break
+      case 'alpha':
+      default:
+        v = (b.title || '').localeCompare(a.title || '')
+    }
+    return v * currentSort[1]
+  })
 }
 
 // rendering
 // =
 
+function renderColumnHeading ({label, cls, sort}) {
+  const icon = currentSort[0] === sort
+    ? currentSort[1] > 0
+      ? yo`<span class="fa fa-angle-up"></span>`
+      : yo`<span class="fa fa-angle-down"></span>`
+    : ''
+
+  return yo`
+    <div class="column-heading ${cls}">
+      <button class="nofocus" onclick=${e => onUpdateSort(sort)}>
+        ${label}
+      </button>
+      ${icon}
+    </div>
+  `
+}
+
 function renderRows (sort = '', max = undefined) {
   let a = Array.from(archives)
-
-  if (sort === 'recent') {
-    a = a.filter(a => a.lastLibraryAccessTime > 0)
-    a.sort((a, b) => b.lastLibraryAccessTime - a.lastLibraryAccessTime)
-  }
 
   if (max) {
     a = a.slice(0, max)
@@ -130,6 +170,9 @@ function renderRows (sort = '', max = undefined) {
 function renderRow (row, i) {
   const isOwner = row.isOwner
   const isMenuOpen = row.menuIsOpenIn === 'row'
+  const date = currentDateType === 'accessed'
+    ? row.lastLibraryAccessTime
+    : row.mtime
 
   return yo`
     <a
@@ -137,17 +180,36 @@ function renderRow (row, i) {
       class="ll-row archive ${row.checked ? 'selected' : ''} ${isMenuOpen ? 'menu-open' : ''}"
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
-      <img class="favicon" src="beaker-favicon:${row.url}" />
 
       <span class="title">
-        ${row.title || yo`<em>Untitled</em>`}
+        <img class="favicon" src="beaker-favicon:${row.url}" />
+
+        ${row.title
+          ? yo`<span class="title">${row.title}</span>`
+          : yo`<span class="title empty"><em>Untitled</em></span>`
+        }
+
+        <span class="url">
+          ${shortenHash(row.url)}
+        </span>
+
+        ${!isOwner
+          ? yo`<span class="badge read-only">Read-only</span>`
+          : ''
+        }
       </span>
 
-      <span class="url">
-        ${shortenHash(row.url)}
+      <span class="peers">
+        ${row.peers ? `${row.peers} ${pluralize(row.peers, 'peer')}` : '--'}
       </span>
 
-      ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
+      <span class="date">
+        ${date ? niceDate(date) : '--'}
+      </span>
+
+      <span class="size">
+        ${bytes(row.size)}
+      </span>
 
       <div class="buttons">
         ${row.userSettings.isSaved
@@ -156,9 +218,8 @@ function renderRow (row, i) {
               <i class="fa fa-trash-o"></i>
             </button>`
           : yo`
-            <button class="btn restore" onclick=${e => onRestore(e, row)}>
+            <button class="btn plain restore" onclick=${e => onRestore(e, row)} title="Restore from trash">
               <i class="fa fa-undo"></i>
-              <span>Restore</span>
             </button>`
         }
 
@@ -175,65 +236,7 @@ function renderRow (row, i) {
   `
 }
 
-function renderRecentArchives (sort = '', max = undefined) {
-  let a = Array.from(archives)
-
-  if (sort === 'recent') {
-    a = a.filter(a => a.lastLibraryAccessTime > 0)
-    a.sort((a, b) => b.lastLibraryAccessTime - a.lastLibraryAccessTime)
-  }
-
-  if (max) {
-    a = a.slice(0, max)
-  }
-
-  if (!a.length) return ''
-  return a.map(renderRecent)
-}
-
-function renderRecent (a) {
-  const isOwner = a.isOwner
-  const isMenuOpen = a.menuIsOpenIn === 'recent'
-
-  return yo`
-    <a
-      href="beaker://library/${a.url}"
-      class="ll-row archive recent ${isMenuOpen ? 'menu-open' : ''}"
-      oncontextmenu=${e => onArchivePopupMenu(e, a, {isContext: true, isRecent: true})}
-    >
-      <img class="favicon" src="beaker-favicon:32,${a.url}" />
-
-      ${!isOwner
-        ? yo`<span class="badge read-only" title="Read-only"><i class="fa fa-eye"></i></span>`
-        : ''
-      }
-
-      <div class="info">
-        <div class="title">
-          ${a.title || yo`<em>Untitled</em>`}
-        </div>
-
-        <span class="url">
-          ${shortenHash(a.url)}
-        </span>
-
-        <button
-          class="btn plain ${isMenuOpen ? 'pressed' : ''}"
-          onclick=${e => onArchivePopupMenu(e, a, {isRecent: true, xOffset: 12})}
-        >
-          <i class="fa fa-ellipsis-v"></i>
-        </button>
-      </div>
-    </div>
-  `
-}
-
 function render () {
-  let recentArchives
-  if (!query && (currentView === 'all' || currentView === 'your archives')) {
-    recentArchives = renderRecentArchives('recent', 8, 'recent')
-  }
-
   yo.update(
     document.querySelector('.library-wrapper'), yo`
       <div class="library-wrapper library builtin-wrapper">
@@ -243,31 +246,17 @@ function render () {
           ${renderSidebar()}
 
           <div>
-            ${recentArchives ? [
-              yo`<div class="subtitle-heading">Recent</div>`,
-              yo`<div class="recent-archives">${recentArchives}</div>`
-            ] : ''}
-
-            <div class="subtitle-heading">
-              ${query
-                ? `"${query}" in ${currentView}`
-                : currentView
-              }
-
-              ${currentView === 'trash'
-                ? yo`
-                  <button class="link" onclick=${onClearDatTrash}>
-                    Empty Trash
-                  </button>`
-                : ''}
-
-              ${currentView === 'seeding'
-                ? yo`
-                  <a href="beaker://settings#dat-network-activity" class="link">
-                    Manage network activity
-                  </a>`
-                : ''}
-            </div>
+            ${archives.length
+              ? yo`
+                <div class="ll-column-headings">
+                  ${renderColumnHeading({cls: 'title', sort: 'alpha', label: 'Title'})}
+                  ${renderColumnHeading({cls: 'peers', sort: 'peers', label: 'Peers'})}
+                  ${renderColumnHeading({cls: 'date', sort: `recently-${currentDateType}`, label: `Last ${currentDateType}`})}
+                  ${renderColumnHeading({cls: 'size', sort: 'size', label: 'Size'})}
+                  <span class="buttons"></span>
+                </div>`
+              : ''
+            }
 
             ${renderRows()}
 
@@ -304,6 +293,11 @@ function renderSidebar () {
         <div onclick=${() => onUpdateView('seeding')} class="nav-item ${currentView === 'seeding' ? 'active' : ''}">
           <i class="fa fa-angle-right"></i>
           Currently seeding
+        </div>
+
+        <div onclick=${() => onUpdateView('recent')} class="nav-item ${currentView === 'recent' ? 'active' : ''}">
+          <i class="fa fa-angle-right"></i>
+          Recent
         </div>
 
         <div onclick=${() => onUpdateView('trash')} class="nav-item ${currentView === 'trash' ? 'active' : ''}">
@@ -369,27 +363,43 @@ function renderHeader () {
                   <div class="section-header">Sort by:</div>
 
                   <div
-                    class="dropdown-item ${currentSort === 'alpha' ? 'active' : ''}"
+                    class="dropdown-item ${currentSort[0] === 'alpha' ? 'active' : ''}"
                     onclick=${() => onUpdateSort('alpha')}
                   >
-                    ${currentSort === 'alpha' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    ${currentSort[0] === 'alpha' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                     <span class="description">Alphabetical</span>
                   </div>
 
                   <div
-                    class="dropdown-item ${currentSort === 'recently-accessed' ? 'active' : ''}"
+                    class="dropdown-item ${currentSort[0] === 'recently-accessed' ? 'active' : ''}"
                     onclick=${() => onUpdateSort('recently-accessed')}
                   >
-                    ${currentSort === 'recently-accessed' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    ${currentSort[0] === 'recently-accessed' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                     <span class="description">Recently accessed</span>
                   </div>
 
                   <div
-                    class="dropdown-item ${currentSort === 'recently-updated' ? 'active' : ''}"
+                    class="dropdown-item ${currentSort[0] === 'recently-updated' ? 'active' : ''}"
                     onclick=${() => onUpdateSort('recently-updated')}
                   >
-                    ${currentSort === 'recently-updated' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    ${currentSort[0] === 'recently-updated' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
                     <span class="description">Recently updated</span>
+                  </div>
+
+                  <div
+                    class="dropdown-item ${currentSort[0] === 'size' ? 'active' : ''}"
+                    onclick=${() => onUpdateSort('size')}
+                  >
+                    ${currentSort[0] === 'size' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    <span class="description">Archive size</span>
+                  </div>
+
+                  <div
+                    class="dropdown-item ${currentSort[0] === 'peers' ? 'active' : ''}"
+                    onclick=${() => onUpdateSort('peers')}
+                  >
+                    ${currentSort[0] === 'peers' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
+                    <span class="description">Peer count</span>
                   </div>
                 </div>
               </div>
@@ -547,7 +557,7 @@ async function onRestore (e, archive) {
   render()
 }
 
-async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = {}) {
+async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
   xOffset = xOffset || 0
   e.preventDefault()
   e.stopPropagation()
@@ -570,7 +580,7 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
 
   if (!isContext) {
     // set the menu open (to keep button pressed while menu is open)
-    archive.menuIsOpenIn = (isRecent) ? 'recent' : 'row'
+    archive.menuIsOpenIn = 'row'
     render()
   }
 
@@ -580,9 +590,6 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
     {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url) },
     {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive) }
   ]
-  if (isRecent) {
-    items.push({icon: 'times', label: 'Remove from recent', click: () => removeFromRecent(archive)})
-  }
   if (archive.userSettings.isSaved) {
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})
   } else {
@@ -596,16 +603,6 @@ async function onArchivePopupMenu (e, archive, {isRecent, isContext, xOffset} = 
     archive.menuIsOpenIn = false
     render()
   }
-}
-
-async function removeFromRecent (archive) {
-  await beaker.archives.touch(
-    archive.url.slice('dat://'.length),
-    'lastLibraryAccessTime',
-    0 // set to zero
-  )
-  archive.lastLibraryAccessTime = 0
-  render()
 }
 
 async function onUpdateSearchQuery (e) {
@@ -627,8 +624,21 @@ async function onClearQuery () {
   render()
 }
 
-function onUpdateSort (sort) {
-  currentSort = sort
+function onUpdateSort (sort, direction = false, {noSave} = {}) {
+  if (sort === 'recently-accessed') {
+    currentDateType = 'accessed'
+  } else if (sort === 'recently-updated') {
+    currentDateType = 'updated'
+  }
+  if (!direction) {
+    // invert the direction if none is provided and the user toggled same sort
+    direction = (currentSort[0] === sort) ? (currentSort[1] * -1) : -1
+  }
+  currentSort[0] = sort
+  currentSort[1] = direction
+  if (!noSave) {
+    saveSettings()
+  }
   sortArchives()
   render()
 }
@@ -652,8 +662,14 @@ async function onUpdateView (view) {
   selectedArchives = []
 
   currentView = view
+  loadSettings() // load settings to restore from any temporary settings
   await loadArchives()
   render()
+
+  if (view === 'recent') {
+    // sort by recently viewed, dont save (temporary for this view)
+    onUpdateSort('recently-accessed', -1, {noSave: true})
+  }
 
   // focus the search input
   document.querySelector('input.search').focus()
