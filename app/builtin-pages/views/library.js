@@ -179,10 +179,23 @@ function renderRow (row, i) {
       class="ll-row archive ${row.checked ? 'selected' : ''} ${isMenuOpen ? 'menu-open' : ''}"
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
+
       <span class="title">
         <img class="favicon" src="beaker-favicon:${row.url}" />
-        ${row.title || yo`<em>Untitled</em>`}
-        ${!isOwner ? yo`<span class="badge read-only">Read-only</span>` : ''}
+
+        ${row.title
+          ? yo`<span class="title">${row.title}</span>`
+          : yo`<span class="title empty"><em>Untitled</em></span>`
+        }
+
+        <span class="url">
+          ${shortenHash(row.url)}
+        </span>
+
+        ${!isOwner
+          ? yo`<span class="badge read-only">Read-only</span>`
+          : ''
+        }
       </span>
 
       <span class="peers">

@@ -99,6 +99,7 @@ body.drag {
   // column sizings
   .ll-row.archive,
   .ll-column-headings {
+
     .title {
       flex: 3;
       max-width: none;
@@ -141,14 +142,23 @@ body.drag {
 
     .title {
       font-size: 13.5px;
+
+      &.empty {
+        overflow: initial;
+      }
     }
 
+    .url,
     .peers,
     .date,
     .size {
       font-weight: 300;
       font-size: 12.5px;
       color: @color-text--muted;
+    }
+
+    .url {
+      margin-right: 0;
     }
 
     .buttons {
