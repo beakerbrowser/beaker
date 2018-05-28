@@ -63,7 +63,7 @@ async function onClickNewSiteButton () {
 }
 
 async function onClickHelpButton () {
-  await onboardingPopup.create()
+  await onboardingPopup.create({showHelpOnly: true})
 }
 
 function onFocusSearch () {

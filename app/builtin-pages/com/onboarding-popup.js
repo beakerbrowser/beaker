@@ -7,6 +7,7 @@ import * as yo from 'yo-yo'
 
 let currentStep = 0
 let isHintHidden = true
+let showNavigation = true
 let settings
 let defaultProtocolSettings
 let resolve
@@ -143,6 +144,8 @@ async function onCreateWebsite () {
 export async function create (opts = {}) {
   settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
+  currentStep = (opts.showHelpOnly) ? 2 : 0
+  showNavigation = !opts.showHelpOnly
 
   // render interface
   var popup = render()
@@ -226,6 +229,9 @@ function renderBody () {
 }
 
 function renderFooter () {
+  if (!showNavigation) {
+    return yo`<div class="footer"></div>`
+  }
   return yo`
     <div class="footer">
       ${currentStep !== 0
