@@ -132,8 +132,11 @@ function renderColumnHeading ({label, cls, sort}) {
     : ''
 
   return yo`
-    <div class=${cls}>
-      <a onclick=${e => onUpdateSort(sort)}>${label}</a> ${icon}
+    <div class="column-heading ${cls}">
+      <button class="nofocus" onclick=${e => onUpdateSort(sort)}>
+        ${label}
+      </button>
+      ${icon}
     </div>
   `
 }
