@@ -183,11 +183,11 @@ function renderRow (row, i) {
       </span>
 
       <span class="peers">
-        ${row.peers ? `${row.peers} ${pluralize(row.peers, 'peer')}` : ''}
+        ${row.peers ? `${row.peers} ${pluralize(row.peers, 'peer')}` : '--'}
       </span>
 
       <span class="date">
-        ${date ? niceDate(date) : ''}
+        ${date ? niceDate(date) : '--'}
       </span>
 
       <span class="size">
