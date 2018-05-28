@@ -8,6 +8,7 @@ import renderHelpTip from '../com/help-tip'
 import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
+import * as createArchivePopup from '../com/create-archive-popup'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
 
 const LATEST_VERSION = 7011 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
@@ -48,6 +49,18 @@ async function setup () {
 
 // events
 // =
+
+async function onClickNewSiteButton () {
+  // let the user choose a template or folder
+  var {template, folder} = await createArchivePopup.create()
+
+  // create a new archive
+  const archive = await DatArchive.create({template, prompt: false})
+  if (folder) {
+    await beaker.archives.setLocalSyncPath(archive.url, folder, {syncFolderToArchive: true})
+  }
+  window.location = `beaker://library/${archive.url}#setup`
+}
 
 async function onClickHelpButton () {
   await onboardingPopup.create()
@@ -224,6 +237,10 @@ function update () {
   yo.update(document.querySelector('.window-content.start'), yo`
     <div class="window-content builtin start ${''/* TODO(bgimg) theme */}">
       <div class="builtin-wrapper start-wrapper">
+        <div class="header-actions">
+          ${renderNewSiteButton()}
+          ${renderHelpButton()}
+        </div>
         ${renderHelpTip()}
         <div class="autocomplete-container search-container">
           <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
@@ -260,12 +277,18 @@ function update () {
 
         ${renderDock()}
 
-        ${renderHelpButton()}
       </div>
     </div>
   `)
 
   addSorting()
+}
+
+function renderNewSiteButton () {
+  return yo`
+    <button class="btn transparent" onclick=${onClickNewSiteButton}>
+      New <i class="fa fa-plus"></i>
+    </button>`
 }
 
 function renderHelpButton () {
