@@ -238,7 +238,6 @@ function update () {
     <div class="window-content builtin start ${''/* TODO(bgimg) theme */}">
       <div class="builtin-wrapper start-wrapper">
         <div class="header-actions">
-          ${renderNewSiteButton()}
           ${renderHelpButton()}
         </div>
         ${renderHelpTip()}
@@ -284,13 +283,6 @@ function update () {
   addSorting()
 }
 
-function renderNewSiteButton () {
-  return yo`
-    <button class="btn transparent" onclick=${onClickNewSiteButton}>
-      New <i class="fa fa-plus"></i>
-    </button>`
-}
-
 function renderHelpButton () {
   return yo`
     <button class="btn plain help" onclick=${onClickHelpButton}>
@@ -331,6 +323,12 @@ function renderDock () {
 
         <a class="dock-item subtitle-heading" href="beaker://library">
           Library
+        </a>
+
+        <span class="dock-separator subtitle-heading">|</span>
+
+        <a class="dock-item subtitle-heading" onclick=${onClickNewSiteButton}>
+          New +
         </a>
       </div>
     </div>
