@@ -105,6 +105,10 @@ export function showInpageFind (page) {
   el.select()
 }
 
+export function findNext(page, forward) {
+  onClickFindNext(forward)
+}
+
 export function hideInpageFind (page) {
   if (page.isInpageFinding) {
     page.stopFindInPageAsync('clearSelection')
@@ -217,8 +221,8 @@ function render (id, page) {
               </span>`
             : ''}
           <div class="nav-find-btns">
-            <button disabled=${!findValue} class="btn" onclick=${e => onClickFindNext(e, false)}><i class="fa fa-angle-up"></i></button>
-            <button disabled=${!findValue} class="btn last" onclick=${e => onClickFindNext(e, true)}><i class="fa fa-angle-down"></i></button>
+            <button disabled=${!findValue} class="btn" onclick=${e => onClickFindNext(false)}><i class="fa fa-angle-up"></i></button>
+            <button disabled=${!findValue} class="btn last" onclick=${e => onClickFindNext(true)}><i class="fa fa-angle-down"></i></button>
             <button class="close-btn" onclick=${e => hideInpageFind(page)}>${renderCloseIcon()}</button>
           </div>
         </div>
@@ -823,11 +827,10 @@ function onInputFind (e) {
   }
 }
 
-function onClickFindNext (e, forward) {
+function onClickFindNext (forward) {
   var page = pages.getActive()
   if (page) {
-    var wrapperEl = findParent(e.target, 'nav-find-wrapper')
-    var inputEl = wrapperEl.querySelector('input')
+    var inputEl = page.navbarEl.querySelector('.nav-find-input')
     var str = inputEl.value
     if (str) page.findInPageAsync(str, { findNext: true, forward })
   }
