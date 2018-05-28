@@ -66,8 +66,9 @@ export function syncFolderToArchive (archive, opts = {}) {
 }
 
 // attach/detach a watcher on the local folder and sync it to the dat
-export function configureFolderToArchiveWatcher (archive) {
+export async function configureFolderToArchiveWatcher (archive) {
   console.log('configureFolderToArchiveWatcher()', archive.localSyncPath, !!archive.stopWatchingLocalFolder)
+  var wasWatching = !!archive.stopWatchingLocalFolder
 
   if (archive.stopWatchingLocalFolder) {
     // stop watching
@@ -76,6 +77,15 @@ export function configureFolderToArchiveWatcher (archive) {
   }
  
   if (archive.localSyncPath) {
+    // sync up if just starting
+    if (!wasWatching) {
+      try {
+        await mergeArchiveAndFolder(archive, archive.localSyncPath)
+      } catch (e) {
+        console.error('Failed to merge local sync folder', e)
+      }
+    }
+
     // start watching
     var isSyncing = false
     var scopedFS = scopedFSes.get(archive.localSyncPath)
@@ -219,6 +229,7 @@ export async function readDatIgnore (fs) {
 
 // merge the dat.json in the folder and then merge files, with preference to folder files
 export async function mergeArchiveAndFolder (archive, localSyncPath) {
+  console.log('merging archive with', localSyncPath)
   const readManifest = async (fs) => {
     try { return await pda.readManifest(fs) }
     catch (e) { return {} }
@@ -226,9 +237,11 @@ export async function mergeArchiveAndFolder (archive, localSyncPath) {
   var localFS = scopedFSes.get(localSyncPath)
   var localManifest = await readManifest(localFS)
   var archiveManifest = await readManifest(archive)
-  await pda.writeManifest(localFS, Object.assign(archiveManifest || {}, localManifest || {}))
+  var mergedManifest = Object.assign(archiveManifest || {}, localManifest || {})
+  await pda.writeManifest(localFS, mergedManifest)
   await sync(archive, false, {localSyncPath, shallow: false, addOnly: true}) // archive -> folder (add-only)
   await sync(archive, true, {localSyncPath, shallow: false}) // folder -> archive
+  console.log('done merging archive with', localSyncPath)
 }
 
 // internal methods

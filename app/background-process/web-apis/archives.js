@@ -135,7 +135,7 @@ export default {
     }
 
     // merge the archive & the folder
-    await folderSync.mergeArchiveAndFolder(archive, localSyncPath)
+    // await folderSync.mergeArchiveAndFolder(archive, localSyncPath)
 
     // update the record
     await archivesDb.setUserSettings(0, key, {localSyncPath})

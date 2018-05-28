@@ -249,7 +249,7 @@ export async function setUserSettings (profileId, key, newValues = {}) {
       `, [flag(value.isSaved), flag(value.networked), flag(value.autoDownload), flag(value.autoUpload), value.expiresAt, value.localSyncPath, profileId, key])
     }
 
-    events.emit('update:archive-user-settings', key, value)
+    events.emit('update:archive-user-settings', key, value, newValues)
     return value
   } finally {
     release()

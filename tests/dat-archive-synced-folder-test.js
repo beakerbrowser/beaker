@@ -428,7 +428,7 @@ test('dat.json merges effectively with local sync path', async t => {
   // check info
   var res = await mainTab.executeJavascript(`
     var archive = new DatArchive("${datUrl}")
-    archive.getInfo()
+    archive.readFile('/dat.json').then(JSON.parse)
   `)
   t.deepEqual(res.title, 'Local Title')
   t.deepEqual(res.description, 'Local Description')

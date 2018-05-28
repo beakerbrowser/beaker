@@ -60,7 +60,7 @@ export function setup ({logfilePath}) {
   debugLogFile = CircularAppendFile(logfilePath, {maxSize: 1024 /* 1kb */ * 1024 /* 1mb */ * 10 /* 10mb */ })
 
   // wire up event handlers
-  archivesDb.on('update:archive-user-settings', async (key, userSettings) => {
+  archivesDb.on('update:archive-user-settings', async (key, userSettings, newUserSettings) => {
     // emit event
     var details = {
       url: 'dat://' + key,
@@ -70,7 +70,9 @@ export function setup ({logfilePath}) {
       autoUpload: userSettings.autoUpload,
       localSyncPath: userSettings.localSyncPath
     }
-    archivesEvents.emit(userSettings.isSaved ? 'added' : 'removed', {details})
+    if ('isSaved' in newUserSettings) {
+      archivesEvents.emit(newUserSettings.isSaved ? 'added' : 'removed', {details})
+    }
 
     // delete all perms for deleted archives
     if (!userSettings.isSaved) {
@@ -628,7 +630,7 @@ function configureAutoDownload (archive, userSettings) {
 
 function configureLocalSync (archive, userSettings) {
   let old = archive.localSyncPath
-  archive.localSyncPath = userSettings.localSyncPath
+  archive.localSyncPath = userSettings.isSaved ? userSettings.localSyncPath : false
 
   if (archive.localSyncPath !== old) {
     // configure the local folder watcher if a change occurred
