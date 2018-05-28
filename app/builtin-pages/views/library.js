@@ -245,13 +245,17 @@ function render () {
           ${renderSidebar()}
 
           <div>
-            <div class="ll-column-headings">
-              ${renderColumnHeading({cls: 'title', sort: 'alpha', label: 'Title'})}
-              ${renderColumnHeading({cls: 'peers', sort: 'peers', label: 'Peers'})}
-              ${renderColumnHeading({cls: 'date', sort: `recently-${currentDateType}`, label: `Last ${currentDateType}`})}
-              ${renderColumnHeading({cls: 'size', sort: 'size', label: 'Size'})}
-              <span class="buttons"></span>
-            </div>
+            ${archives.length
+              ? yo`
+                <div class="ll-column-headings">
+                  ${renderColumnHeading({cls: 'title', sort: 'alpha', label: 'Title'})}
+                  ${renderColumnHeading({cls: 'peers', sort: 'peers', label: 'Peers'})}
+                  ${renderColumnHeading({cls: 'date', sort: `recently-${currentDateType}`, label: `Last ${currentDateType}`})}
+                  ${renderColumnHeading({cls: 'size', sort: 'size', label: 'Size'})}
+                  <span class="buttons"></span>
+                </div>`
+              : ''
+            }
 
             ${renderRows()}
 
