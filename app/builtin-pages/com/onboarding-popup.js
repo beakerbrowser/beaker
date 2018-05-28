@@ -1,6 +1,7 @@
 /* globals beaker DatArchive localStorage */
 
 import * as yo from 'yo-yo'
+import * as createArchivePopup from './create-archive-popup'
 
 // globals
 // =
@@ -133,9 +134,15 @@ const STEPS = [
 // =
 
 async function onCreateWebsite () {
+  // let the user choose a template or folder
+  var {template, folder} = await createArchivePopup.create()
+
   // create a new archive
-  const archive = await DatArchive.create({template: 'website', prompt: false})
-  window.location = 'beaker://library/' + archive.url + '#setup'
+  const archive = await DatArchive.create({template, prompt: false})
+  if (folder) {
+    await beaker.archives.setLocalSyncPath(archive.url, folder, {syncFolderToArchive: true})
+  }
+  window.location = `beaker://library/${archive.url}#setup`
 }
 
 // exported api
