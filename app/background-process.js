@@ -48,10 +48,6 @@ if (getEnvVar('BEAKER_TEST_DRIVER')) {
   testDriver.setup()
 }
 
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
-})
-
 // configure the protocols
 protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
 

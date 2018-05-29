@@ -51,6 +51,13 @@ var userSetupStatusLookupPromise
 // events emitted to rpc clients
 var browserEvents = new EventEmitter()
 
+process.on('unhandledRejection', (reason, p) => {
+  debug('Unhandled Rejection at: Promise', p, 'reason:', reason)
+})
+process.on('uncaughtException', (err) => {
+  debug('Uncaught exception:', err)
+})
+
 // exported methods
 // =
 
