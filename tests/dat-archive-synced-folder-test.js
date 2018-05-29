@@ -7,10 +7,10 @@ import jetpack from 'fs-jetpack'
 import electron from '../node_modules/electron'
 
 import * as browserdriver from './lib/browser-driver'
-import {waitForSync, escapeWindowsSlashes} from './lib/test-helpers'
+import {waitForSync, toUnixPath, escapeWindowsSlashes} from './lib/test-helpers'
 
 var createdDatUrl
-var createdFilePath = tempy.directory()
+var createdFilePath = fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-')
 var mainTab
 
 const app = browserdriver.start({
@@ -301,7 +301,7 @@ test('additional sync correctness checks', async t => {
     var archive = new DatArchive("${createdDatUrl}")
     archive.readdir('/', {recursive: true})
   `)
-  t.deepEqual(res.sort(), [
+  t.deepEqual(res.map(toUnixPath).sort(), [
     '.datignore', 'dat.json',
     'local-file.txt', 'conflict-file.txt', 'archive-file.txt',
     'local-folder', 'local-folder/file1.txt', 'local-folder/file2.txt',
@@ -343,7 +343,7 @@ test('additional sync correctness checks', async t => {
     var archive = new DatArchive("${createdDatUrl}")
     archive.readdir('/', {recursive: true})
   `)
-  t.deepEqual(res.sort(), [
+  t.deepEqual(res.map(toUnixPath).sort(), [
     '.datignore', 'dat.json',
     'local-file.txt', 'conflict-file.txt', 'archive-file.txt',
     'local-folder', 'local-folder/file1.txt', 'local-folder/file2.txt',
@@ -383,7 +383,7 @@ test('additional sync correctness checks', async t => {
     var archive = new DatArchive("${createdDatUrl}")
     archive.readdir('/', {recursive: true})
   `)
-  t.deepEqual(res.sort(), [
+  t.deepEqual(res.map(toUnixPath).sort(), [
     '.datignore', 'dat.json',
     'local-file.txt', 'conflict-file.txt', 'archive-file.txt',
     'archive-folder', 'archive-folder/file1.txt', 'archive-folder/file2.txt'

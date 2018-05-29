@@ -12,6 +12,6 @@
     "tempy": "^0.1.0"
   },
   "scripts": {
-    "test": "ava ./*-test.js -s"
+    "test": "ava ./*-test.js -s -T15000"
   }
 }
