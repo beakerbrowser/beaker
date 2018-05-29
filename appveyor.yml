@@ -2,7 +2,6 @@ skip_non_tags: true
 
 image: Visual Studio 2017
 platform:
-  - x86
   - x64
 
 cache:
