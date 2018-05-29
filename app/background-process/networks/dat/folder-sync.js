@@ -77,6 +77,12 @@ export async function configureFolderToArchiveWatcher (archive) {
   }
  
   if (archive.localSyncPath) {
+    // make sure the folder exists
+    let st = await stat(fs, archive.localSyncPath)
+    if (!st) {
+      console.error('Local sync folder not found, aborting watch', archive.localSyncPath)
+    }
+
     // sync up if just starting
     if (!wasWatching) {
       try {
@@ -99,8 +105,6 @@ export async function configureFolderToArchiveWatcher (archive) {
       // -prf
 
       console.log('changed detected', path)
-      // HACK always ignore the watch build log file -prf
-      if (path === WATCH_BUILD_LOG_PATH) return console.log('change is watch log, skipping')
       // ignore if currently syncing
       if (isSyncing) return console.log('already syncing, ignored')
       // debounce the handler
@@ -112,6 +116,14 @@ export async function configureFolderToArchiveWatcher (archive) {
         isSyncing = true
         try {
           // await runBuild(archive)
+          let st = await stat(fs, archive.localSyncPath)
+          if (!st) {
+            // folder has been removed
+            archive.stopWatchingLocalFolder()
+            archive.stopWatchingLocalFolder = null
+            console.error('Local sync folder not found, aborting watch', archive.localSyncPath)
+            return
+          }
           await syncFolderToArchive(archive, {shallow: false})
         } finally {
           isSyncing = false
