@@ -33,6 +33,7 @@ function setView (view) {
 }
 
 Object.keys(navBtns).forEach(view => {
+  navBtns[view].style.userSelect = 'none'
   navBtns[view].addEventListener('click', () => setView(view))
 })
 
