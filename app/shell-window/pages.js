@@ -783,7 +783,7 @@ function onDidStopLoading (e) {
         .json-formatter-row > a > .json-formatter-preview-text {
           transition: none !important;
         }
-        nav { margin-bottom: 5px; }
+        nav { margin-bottom: 5px; user-select: none; }
         nav > span {
           cursor: pointer;
           display: inline-block;
