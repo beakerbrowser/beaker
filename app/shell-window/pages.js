@@ -132,6 +132,7 @@ export function create (opts) {
     inpageFindInfo: null, // any info available on the inpage find {activeMatchOrdinal, matches}
     liveReloadEvents: false, // live-reload event stream
     zoom: 0, // what's the current zoom level?
+    retainedScrollY: 0, // what was the scroll position of the page before navigating away?
 
     // current page's info
     contentType: null, // what is the content-type of the page?
@@ -208,8 +209,16 @@ export function create (opts) {
       }
     },
 
-    reload () {
-      // TODO do we need this wrapper?
+    async reload () {
+      // grab the current scroll-y
+      page.retainedScrollY = 0
+      try {
+        page.retainedScrollY = await page.webviewEl.getWebContents().executeJavaScript('window.scrollY')
+      } catch (e) {
+        console.debug('Error while trying to fetch the page scrollY', e)
+      }
+
+      // reload the page
       page.reloadAsync()
     },
 
@@ -345,6 +354,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
   page.webviewEl.addEventListener('plugin-crashed', onCrashed)
   page.webviewEl.addEventListener('ipc-message', onIPCMessage)
+
 
   // rebroadcasts
   page.webviewEl.addEventListener('did-start-loading', rebroadcastEvent)
@@ -629,6 +639,7 @@ function onLoadCommit (e) {
       navbar.update(page)
     })
     zoom.setZoomFromSitedata(page, parseURL(page.getIntendedURL()).origin)
+
     // stop autocompleting
     navbar.clearAutocomplete()
     // close any prompts and modals
@@ -651,6 +662,8 @@ function onDidStartLoading (e) {
     if (page.isActive) {
       statusBar.setIsLoading(true)
     }
+
+    // decorate the webview based on whether it's a builtin page
     const url = page.loadingURL || page.url
     if (url.startsWith('beaker://')) {
       page.webviewEl.classList.add('builtin')
@@ -835,6 +848,14 @@ function onDidStopLoading (e) {
         transform: translate(-50%, -50%);
       }`
     )
+
+    // if there is a retained scroll position, move the page
+    if (page.retainedScrollY) {
+      page.webviewEl.executeJavaScript(`
+        window.scroll(0, ${page.retainedScrollY})
+      `)
+      page.retainedScrollY = 0
+    }
   }
 }
 
