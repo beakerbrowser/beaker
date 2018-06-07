@@ -498,6 +498,7 @@ function examineLocationInput (v) {
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (
     /\.[A-z]/.test(v) ||
+    /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(v) ||
     isDatHashRegex.test(v) ||
     v.startsWith('localhost') ||
     v.includes('://') ||
