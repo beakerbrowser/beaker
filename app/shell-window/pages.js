@@ -335,6 +335,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('dom-ready', onDomReady)
   page.webviewEl.addEventListener('new-window', onNewWindow)
   page.webviewEl.addEventListener('will-navigate', onWillNavigate)
+  page.webviewEl.addEventListener('did-navigate', onDidNavigate)
   page.webviewEl.addEventListener('did-navigate-in-page', onDidNavigateInPage)
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
   page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
@@ -354,7 +355,6 @@ export function create (opts) {
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
   page.webviewEl.addEventListener('plugin-crashed', onCrashed)
   page.webviewEl.addEventListener('ipc-message', onIPCMessage)
-
 
   // rebroadcasts
   page.webviewEl.addEventListener('did-start-loading', rebroadcastEvent)
@@ -600,6 +600,15 @@ function onWillNavigate (e) {
   }
 }
 
+function onDidNavigate (e) {
+  var page = getByWebview(e.target)
+  if (page) {  
+    // close any prompts and modals
+    prompt.forceRemoveAll(page)
+    modal.forceRemoveAll(page)
+  }
+}
+
 // did-navigate-in-page is triggered by hash/virtual-url changes
 // we need to update the url bar but no load event occurs
 function onDidNavigateInPage (e) {
@@ -639,12 +648,8 @@ function onLoadCommit (e) {
       navbar.update(page)
     })
     zoom.setZoomFromSitedata(page, parseURL(page.getIntendedURL()).origin)
-
     // stop autocompleting
     navbar.clearAutocomplete()
-    // close any prompts and modals
-    prompt.forceRemoveAll(page)
-    modal.forceRemoveAll(page)
     // set title in tabs
     page.title = e.target.getTitle() // NOTE sync operation
     navbar.update(page)
