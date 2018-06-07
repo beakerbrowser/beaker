@@ -86,7 +86,7 @@ export function render (downloadsList) {
     } else {
       metadataEl = yo`
         <div class="metadata">
-          <span class="status">${ucfirst(d.state)}</span>
+          <span class="status">${ucfirst(d.state || '')}</span>
         </div>
       `
     }
