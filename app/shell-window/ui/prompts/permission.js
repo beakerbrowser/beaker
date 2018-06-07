@@ -3,7 +3,7 @@ import * as yo from 'yo-yo'
 import * as prompt from '../prompt'
 import * as pages from '../../pages'
 import PERMS from '../../../lib/perms'
-import { getPermId, getPermParam } from '../../../lib/strings'
+import { getPermId, getPermParam, shorten } from '../../../lib/strings'
 
 // exported api
 // =
@@ -32,7 +32,7 @@ export default function (reqId, webContentsId, permission, opts = {}) {
 
   // special case for openExternal
   if (permission == 'openExternal') {
-    permDesc += page.getIntendedURL()
+    permDesc += shorten(page.getIntendedURL(), 128)
   }
 
   // run description functions
