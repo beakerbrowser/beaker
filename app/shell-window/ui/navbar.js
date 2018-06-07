@@ -27,6 +27,7 @@ const KEYCODE_N = 78
 const KEYCODE_P = 80
 
 const isDatHashRegex = /^[a-z0-9]{64}/i
+const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 
 // globals
 // =
@@ -498,7 +499,7 @@ function examineLocationInput (v) {
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (
     /\.[A-z]/.test(v) ||
-    /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(v) ||
+    isIPAddressRegex.test(v) ||
     isDatHashRegex.test(v) ||
     v.startsWith('localhost') ||
     v.includes('://') ||
@@ -510,7 +511,7 @@ function examineLocationInput (v) {
   if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:'))) {
     if (isDatHashRegex.test(v)) {
       vWithProtocol = 'dat://' + v
-    } else if (v.startsWith('localhost')) {
+    } else if (v.startsWith('localhost') || isIPAddressRegex.test(v)) {
       vWithProtocol = 'http://' + v
     } else {
       vWithProtocol = 'https://' + v
