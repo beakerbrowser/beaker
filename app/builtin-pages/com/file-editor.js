@@ -2,6 +2,8 @@
 
 import * as yo from 'yo-yo'
 
+var orgApplyDeltaFn
+
 // exported api
 // =
 
@@ -21,6 +23,9 @@ export function setup ({readOnly} = {}) {
   var editor = ace.edit(el, {
     useWorker: false
   })
+  if (!orgApplyDeltaFn) {
+    orgApplyDeltaFn = editor.session.getDocument().applyDelta // capture for later
+  }
   editor.session.setTabSize(2)
   editor.session.setUseSoftTabs(true)
   if (readOnly) {
@@ -75,10 +80,16 @@ export function setValue (v) {
 
 function setReadOnly (editor, readOnly) {
   editor.setOptions({
-    readOnly: readOnly,
+    // readOnly, -- HACK- dont set readonly, ace doesnt let you copy text if it's on, see #1012 -prf
     highlightActiveLine: !readOnly,
     highlightGutterLine: !readOnly
   })
+  // manually disable edits
+  if (readOnly) {
+    editor.session.getDocument().applyDelta = function () {/* noop */}
+  } else {
+    editor.session.getDocument().applyDelta = orgApplyDeltaFn
+  }
   // show/hide the cursor
   editor.renderer.$cursorLayer.element.style.display = readOnly ? 'none' : ''
   // give focus
