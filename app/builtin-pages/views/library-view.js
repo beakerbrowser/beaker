@@ -12,6 +12,7 @@ import FilesBrowser from '../com/files-browser2'
 import toggleable from '../com/toggleable'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
+import * as noticeBanner from '../com/notice-banner'
 import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
 import * as copyDatPopup from '../com/library-copydat-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
@@ -122,6 +123,7 @@ async function setup () {
     document.body.addEventListener('custom-set-view', onChangeView)
     document.body.addEventListener('custom-render', render)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
+    beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
 
     let onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
     var fileActStream = archive.watch()
@@ -1504,6 +1506,20 @@ function onNetworkChanged (e) {
     } else {
       archive.info.peerHistory.push({ts: now, peers: e.details.peerCount})
     }
+    render()
+  }
+}
+
+function onFolderSyncError (e) {
+  if (e.details.url === archive.url) {
+    console.error('Sync error', e.details.name, e.details.message)
+    let cyclePath = (e.details.message || '').split(' ').pop() || 'one of the folders'
+    noticeBanner.create('error', yo`
+      <div>
+        <strong>There was an issue</strong> while writing data from the local folder.
+        Beaker detected a cyclical symlink at <code>${cyclePath}</code> and had to abort.
+      </div>`
+    )
     render()
   }
 }

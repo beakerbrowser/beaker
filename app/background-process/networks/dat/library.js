@@ -95,6 +95,15 @@ export function setup ({logfilePath}) {
       }
     })
   })
+  folderSync.events.on('error', (key, err) => {
+    archivesEvents.emit('folder-sync-error', {
+      details: {
+        url: `dat://${datEncoding.toStr(key)}`,
+        name: err.name,
+        message: err.message
+      }
+    })
+  })
 
   // setup the archive swarm
   datGC.setup()

@@ -125,6 +125,11 @@ export async function configureFolderToArchiveWatcher (archive) {
             return
           }
           await syncFolderToArchive(archive, {shallow: false})
+        } catch (e) {
+          console.error('Error syncing folder', archive.localSyncPath, e)
+          if (e.name === 'CycleError') {
+            events.emit('error', archive.key, e)
+          }
         } finally {
           isSyncing = false
           archive.syncFolderToArchiveTimeout = null
