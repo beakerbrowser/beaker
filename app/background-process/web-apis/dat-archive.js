@@ -230,7 +230,7 @@ export default {
 
       var reverse = opts.reverse === true
       var {start, end} = opts
-      var {archive} = await lookupArchive(url, opts)
+      var {archive, checkoutFS} = await lookupArchive(url, opts)
 
       checkin('reading history')
 
@@ -248,7 +248,7 @@ export default {
       }
 
       return new Promise((resolve, reject) => {
-        var stream = archive.checkoutFS.history({live: false, start, end})
+        var stream = checkoutFS.history({live: false, start, end})
         stream.pipe(concat({encoding: 'object'}, values => {
           values = values.map(massageHistoryObj)
           if (reverse) values.reverse()
@@ -263,9 +263,9 @@ export default {
     filepath = normalizeFilepath(filepath || '')
     return timer(to(opts), async (checkin, pause, resume) => {
       checkin('looking up archive')
-      const {archive} = await lookupArchive(url, opts)
+      const {checkoutFS} = await lookupArchive(url, opts)
       checkin('stating file')
-      return pda.stat(archive.checkoutFS, filepath)
+      return pda.stat(checkoutFS, filepath)
     })
   },
 
@@ -273,9 +273,9 @@ export default {
     filepath = normalizeFilepath(filepath || '')
     return timer(to(opts), async (checkin, pause, resume) => {
       checkin('looking up archive')
-      const {archive} = await lookupArchive(url, opts)
+      const {checkoutFS} = await lookupArchive(url, opts)
       checkin('reading file')
-      return pda.readFile(archive.checkoutFS, filepath, opts)
+      return pda.readFile(checkoutFS, filepath, opts)
     })
   },
 
@@ -373,15 +373,15 @@ export default {
     filepath = normalizeFilepath(filepath || '')
     return timer(to(opts), async (checkin, pause, resume) => {
       checkin('searching for archive')
-      const {archive} = await lookupArchive(url, opts)
+      const {checkoutFS} = await lookupArchive(url, opts)
 
       checkin('reading directory')
-      var names = await pda.readdir(archive.checkoutFS, filepath, opts)
+      var names = await pda.readdir(checkoutFS, filepath, opts)
       if (opts.stat) {
         for (let i = 0; i < names.length; i++) {
           names[i] = {
             name: names[i],
-            stat: await pda.stat(archive.checkoutFS, path.join(filepath, names[i]))
+            stat: await pda.stat(checkoutFS, path.join(filepath, names[i]))
           }
         }
       }
@@ -499,9 +499,9 @@ export default {
       return
     }
 
-    var {archive, filepath} = await lookupArchive(opts.src, opts)
+    var {checkoutFS, filepath} = await lookupArchive(opts.src, opts)
     return pda.exportArchiveToFilesystem({
-      srcArchive: archive.checkoutFS,
+      srcArchive: checkoutFS,
       srcPath: filepath,
       dstPath: opts.dst,
       ignore: opts.ignore,
@@ -516,7 +516,7 @@ export default {
     var dst = await lookupArchive(opts.dst, opts)
     if (dst.version) throw new ArchiveNotWritableError('Cannot modify a historic version')
     return pda.exportArchiveToArchive({
-      srcArchive: src.archive.checkoutFS,
+      srcArchive: src.checkoutFS,
       srcPath: src.filepath,
       dstArchive: dst.archive,
       dstPath: dst.filepath,
@@ -724,13 +724,11 @@ async function lookupArchive (url, opts = {}) {
   if (!archive) archive = await datLibrary.loadArchive(archiveKey)
 
   // set checkoutFS according to the version requested
-  if (version) {
-    archive.checkoutFS = archive.checkout(+version)
-  } else {
-    archive.checkoutFS = archive
-  }
+  var checkoutFS = (version)
+    ? archive.checkout(+version)
+    : archive
 
-  return {archive, filepath, version}
+  return {archive, filepath, version, checkoutFS}
 }
 
 async function lookupUrlDatKey (url) {
