@@ -173,5 +173,16 @@ export default {
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: true
+  },
+  experimentalGlobalFetch: {
+    desc: (param, pages, opts = {}) => {
+      const viewPage = () => pages.setActive(pages.create(param))
+      return yo`<span>Fetch data from <a onclick=${viewPage}>${param}</a></span>`
+    },
+    icon: 'download',
+    persist: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: true
   }
 }
