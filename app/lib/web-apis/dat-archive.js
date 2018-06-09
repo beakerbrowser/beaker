@@ -117,6 +117,12 @@ class DatArchive extends EventTarget {
     }
   }
 
+  checkout (version) {
+    const urlParsed = parseDatURL(this.url)
+    version = typeof version === 'number' ? `+${version}` : ''
+    return new DatArchive(`dat://${urlParsed.hostname}${version}`)
+  }
+
   async diff (opts = {}) {
     // noop
     console.warn('The DatArchive diff() API has been deprecated.')
