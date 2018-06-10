@@ -1,11 +1,9 @@
-import pda from 'pauls-dat-api'
 import _pick from 'lodash.pick'
-import _get from 'lodash.get'
 import through2 from 'through2'
 import * as datLibrary from '../../networks/dat/library'
 import * as archivesDb from '../../dbs/archives'
-import {requestPermission} from '../../ui/permissions'
-import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
+import {checkLabsPerm} from '../../ui/permissions'
+import {PermissionsError} from 'beaker-error-constants'
 
 // constants
 // =
@@ -34,7 +32,12 @@ function add (isRequest) {
   return async function (url, {duration} = {}) {
     var key = datLibrary.fromURLToKey(url)
     if (isRequest) await checkIsntOwner(key)
-    await checkPerm(isRequest ? `${REQUEST_ADD_PERM_ID}:${key}` : API_PERM_ID, this.sender)
+    await checkLabsPerm({
+      perm: isRequest ? `${REQUEST_ADD_PERM_ID}:${key}` : API_PERM_ID,
+      labApi: LAB_API_ID,
+      apiDocsUrl: API_DOCS_URL,
+      sender: this.sender
+    })
 
     // swarm the archive
     /* dont await */ datLibrary.getOrLoadArchive(key)
@@ -53,7 +56,12 @@ function remove (isRequest) {
   return async function (url) {
     var key = datLibrary.fromURLToKey(url)
     if (isRequest) await checkIsntOwner(key)
-    await checkPerm(isRequest ? `${REQUEST_REMOVE_PERM_ID}:${key}` : API_PERM_ID, this.sender)
+    await checkLabsPerm({
+      perm: isRequest ? `${REQUEST_ADD_PERM_ID}:${key}` : API_PERM_ID,
+      labApi: LAB_API_ID,
+      apiDocsUrl: API_DOCS_URL,
+      sender: this.sender
+    })
     var settings = await archivesDb.setUserSettings(0, key, {isSaved: false})
     return _pick(settings, USER_SETTINGS_FIELDS)
   }
@@ -68,14 +76,24 @@ export default {
   requestRemove: remove(true),
 
   async get (url) {
-    await checkPerm(API_PERM_ID, this.sender)
+    await checkLabsPerm({
+      perm: API_PERM_ID,
+      labApi: LAB_API_ID,
+      apiDocsUrl: API_DOCS_URL,
+      sender: this.sender
+    })
     var key = datLibrary.fromURLToKey(url)
     var settings = await archivesDb.getUserSettings(0, key)
     return _pick(settings, USER_SETTINGS_FIELDS)
   },
 
   async list (query = {}) {
-    await checkPerm(API_PERM_ID, this.sender)
+    await checkLabsPerm({
+      perm: API_PERM_ID,
+      labApi: LAB_API_ID,
+      apiDocsUrl: API_DOCS_URL,
+      sender: this.sender
+    })
     var query = _pick(query, QUERY_FIELDS)
     var archives = await datLibrary.queryArchives(query)
     return archives.map(a => {
@@ -86,7 +104,12 @@ export default {
   },
 
   async createEventStream () {
-    await checkPerm(API_PERM_ID, this.sender)
+    await checkLabsPerm({
+      perm: API_PERM_ID,
+      labApi: LAB_API_ID,
+      apiDocsUrl: API_DOCS_URL,
+      sender: this.sender
+    })
     return datLibrary.createEventStream().pipe(through2.obj(function (event, enc, cb) {
       // only emit events that have a fields set
       var fields = EVENT_FIELDS[event[0]]
@@ -101,32 +124,6 @@ export default {
 
 // internal methods
 // =
-
-async function checkPerm (perm, sender) {
-  var url = sender.getURL()
-  if (url.startsWith('beaker:')) return true
-  if (url.startsWith('dat:')) {
-    // check dat.json for opt-in
-    let isOptedIn = false
-    let archive = datLibrary.getArchive(url)
-    if (archive) {
-      let manifest = await pda.readManifest(archive).catch(_ => {})
-      let apis = _get(manifest, 'experimental.apis')
-      if (apis && Array.isArray(apis)) {
-        isOptedIn = apis.includes(LAB_API_ID)
-      }
-    }
-    if (!isOptedIn) {
-      throw new PermissionsError(`You must include "${LAB_API_ID}" in your dat.json experimental.apis list. See ${API_DOCS_URL} for more information.`)
-    }
-
-    // ask user
-    let allowed = await requestPermission(perm, sender)
-    if (!allowed) throw new UserDeniedError()
-    return true
-  }
-  throw new PermissionsError()
-}
 
 async function checkIsntOwner (key) {
   var meta = await archivesDb.getMeta(key)

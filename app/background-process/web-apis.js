@@ -29,12 +29,13 @@ import datArchiveAPI from './web-apis/dat-archive'
 // import userSessionAPI from './web-apis/user-session'
 // import profilesAPI from './web-apis/profiles'
 
-
 // experimental manifests
 import experimentalLibraryManifest from '../lib/api-manifests/external/experimental/library'
+import experimentalGlobalFetchManifest from '../lib/api-manifests/external/experimental/global-fetch'
 
 // experimental apis
 import experimentalLibraryAPI from './web-apis/experimental/library'
+import experimentalGlobalFetchAPI from './web-apis/experimental/global-fetch'
 
 // exported api
 // =
@@ -56,4 +57,5 @@ export function setup () {
 
   // experimental apis
   rpc.exportAPI('experimental-library', experimentalLibraryManifest, experimentalLibraryAPI, secureOnly)
+  rpc.exportAPI('experimental-global-fetch', experimentalGlobalFetchManifest, experimentalGlobalFetchAPI, secureOnly)
 }

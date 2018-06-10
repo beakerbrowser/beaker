@@ -1,7 +1,11 @@
 import { ipcMain, session, BrowserWindow } from 'electron'
+import _get from 'lodash.get'
+import pda from 'pauls-dat-api'
 import * as siteData from '../dbs/sitedata'
+import * as datLibrary from '../networks/dat/library'
 import PERMS from '../../lib/perms'
-import { getPermId } from '../../lib/strings'
+import {getPermId} from '../../lib/strings'
+import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
 
 // globals
 // =
@@ -57,6 +61,32 @@ export function denyAllRequests (win) {
     }
     return true
   })
+}
+
+export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
+  var url = sender.getURL()
+  if (url.startsWith('beaker:')) return true
+  if (url.startsWith('dat:')) {
+    // check dat.json for opt-in
+    let isOptedIn = false
+    let archive = datLibrary.getArchive(url)
+    if (archive) {
+      let manifest = await pda.readManifest(archive).catch(_ => {})
+      let apis = _get(manifest, 'experimental.apis')
+      if (apis && Array.isArray(apis)) {
+        isOptedIn = apis.includes(labApi)
+      }
+    }
+    if (!isOptedIn) {
+      throw new PermissionsError(`You must include "${labApi}" in your dat.json experimental.apis list. See ${apiDocsUrl} for more information.`)
+    }
+
+    // ask user
+    let allowed = await requestPermission(perm, sender)
+    if (!allowed) throw new UserDeniedError()
+    return true
+  }
+  throw new PermissionsError()
 }
 
 // event handlers
