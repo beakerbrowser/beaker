@@ -15,12 +15,9 @@ export default function render (archive) {
 
   // lazy-load history
   if (archive) {
-    // strip the version
-    let vi = archive.url.indexOf('+')
-    if (vi !== -1) {
-      archive = new DatArchive(archive.url.slice(0, vi))
-    }
-
+    // read from latest
+    archive = archive.checkout()
+    
     let history = []
     fetchMore()
     async function fetchMore () {

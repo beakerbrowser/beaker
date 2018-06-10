@@ -832,7 +832,7 @@ test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
   }
 })
 
-test('versioned reads and writes', async t => {
+test.only('versioned reads and writes', async t => {
   // create a fresh dat
   var res = await app.executeJavascript(`
     DatArchive.create({title: 'Another Test Dat', prompt: false})
@@ -865,6 +865,26 @@ test('versioned reads and writes', async t => {
   var statRev2 = await stat(newTestDatURL + '+3', '/one.txt')
   var statRev4 = await stat(newTestDatURL + '+5', '/one.txt')
   t.truthy(statRev2.offset < statRev4.offset)
+
+  // try again with checkout()
+  var reads = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${newTestDatURL}")
+    Promise.all([
+      archive.checkout(1).readdir('/'),
+      archive.checkout(2).readdir('/'),
+      archive.checkout(3).readdir('/'),
+      archive.checkout(3).readFile('/one.txt'),
+      archive.checkout(5).readFile('/one.txt'),
+      archive.checkout(3).stat('/one.txt'),
+      archive.checkout(5).stat('/one.txt'),
+    ])
+  `)
+  t.deepEqual(reads[0].length, 1)
+  t.deepEqual(reads[1].length, 2)
+  t.deepEqual(reads[2].length, 3)
+  t.deepEqual(reads[3], 'a')
+  t.deepEqual(reads[4], 'c')
+  t.truthy(reads[5].offset < reads[6].offset)
 
   // dont allow writes to old versions
   // writeFile
