@@ -20,8 +20,10 @@ import * as archivesDb from '../../dbs/archives'
 import * as datGC from './garbage-collector'
 import * as folderSync from './folder-sync'
 import {addArchiveSwarmLogging} from './logging-utils'
+import * as datExtensions from './extensions'
 import hypercoreProtocol from 'hypercore-protocol'
 import hyperdrive from 'hyperdrive'
+
 
 // network modules
 import swarmDefaults from 'datland-swarm-defaults'
@@ -105,6 +107,9 @@ export function setup ({logfilePath}) {
     })
   })
 
+  // setup extensions
+  datExtensions.setup()
+
   // setup the archive swarm
   datGC.setup()
   archiveSwarm = discoverySwarm(swarmDefaults({
@@ -130,6 +135,10 @@ export function createEventStream () {
   return emitStream(archivesEvents)
 }
 
+export function createDebugStream () {
+  return emitStream(debugEvents)
+}
+
 export function getDebugLog (key) {
   return new Promise((resolve, reject) => {
     let rs = debugLogFile.createReadStream()
@@ -144,10 +153,6 @@ export function getDebugLog (key) {
       .pipe(concat({encoding: 'string'}, resolve))
     rs.on('error', reject)
   })
-}
-
-export function createDebugStream () {
-  return emitStream(debugEvents)
 }
 
 // read metadata for the archive, and store it in the meta db
@@ -348,6 +353,9 @@ async function loadArchiveInner (key, secretKey, userSettings = null) {
   await updateSizeTracking(archive)
   archivesDb.touch(key).catch(err => console.error('Failed to update lastAccessTime for archive', key, err))
 
+  // attach extensions
+  datExtensions.attach(archive)
+
   // store in the discovery listing, so the swarmer can find it
   // but not yet in the regular archives listing, because it's not fully loaded
   archivesByDKey[datEncoding.toStr(archive.discoveryKey)] = archive
@@ -428,6 +436,7 @@ export async function unloadArchive (key) {
     archive.fileActStream.end()
     archive.fileActStream = null
   }
+  datExtensions.detach(archive)
   await new Promise((resolve, reject) => {
     archive.close(err => {
       if (err) reject(err)
@@ -661,7 +670,8 @@ function createReplicationStream (info) {
   var stream = hypercoreProtocol({
     id: networkId,
     live: true,
-    encrypt: true
+    encrypt: true,
+    extensions: ['ephemeral', 'session-data']
   })
   stream.peerInfo = info
 
