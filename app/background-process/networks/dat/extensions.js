@@ -110,7 +110,7 @@ function onEphemeralMsg (archive, internalPeerObj, msg) {
   archive._datPeersEvents.emit('message', {
     peerId,
     sessionData: getPeerSessionData(archive, peerId),
-    data: decodeEphemeralMsg(msg)
+    message: decodeEphemeralMsg(msg)
   })
 }
 
