@@ -77,7 +77,11 @@ function render () {
 function renderTemplateItem (id, label) {
   var isSelected = currentTemplate === id
   return yo`
-    <div class="template-item ${isSelected ? 'selected' : ''}" onclick=${e => onSelectTemplate(id)}>
+    <div
+      class="template-item ${isSelected ? 'selected' : ''}"
+      onclick=${e => onSelectTemplate(id)}
+      ondblclick=${e => onSelectTemplate(id, true)}
+    >
       <img src=${'beaker://assets/img/templates/' + id + '.png'} />
       <div class="label"><span>${label}</span></div>
     </div>`
@@ -95,25 +99,12 @@ function onKeyUp (e) {
   }
 }
 
-function onSelectTemplate (id) {
+function onSelectTemplate (id, submitNow = false) {
   currentTemplate = id
   update()
-}
-
-async function onImportFolder (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  // ask user for folder
-  const folder = await beaker.browser.showOpenDialog({
-    title: 'Select folder',
-    buttonLabel: 'Import folder',
-    properties: ['openDirectory']
-  })
-  if (!folder || !folder.length) return
-
-  resolve({folder: folder[0]})
-  destroy()
+  if (submitNow) {
+    onSubmit()
+  }
 }
 
 function onClickWrapper (e) {
@@ -122,8 +113,31 @@ function onClickWrapper (e) {
   }
 }
 
-function onSubmit (e) {
+async function onSubmit (e) {
+  if (e) e.preventDefault()
+
+  var template = currentTemplate !== 'blank' ? currentTemplate : false
+  var archive = await DatArchive.create({template, prompt: false})
+  resolve({archive})
+  destroy()
+}
+
+async function onImportFolder (e) {
   e.preventDefault()
-  resolve({template: currentTemplate !== 'blank' ? currentTemplate : false})
+  e.stopPropagation()
+ 
+  // ask user for folder
+  const folder = await beaker.browser.showOpenDialog({
+    title: 'Select folder',
+    buttonLabel: 'Import folder',
+    properties: ['openDirectory']
+  })
+  if (!folder || !folder.length) return
+ 
+  // create the dat
+  const archive = await DatArchive.create({prompt: false})
+  await beaker.archives.setLocalSyncPath(archive.url, folder, {syncFolderToArchive: true})
+
+  resolve({archive})
   destroy()
 }

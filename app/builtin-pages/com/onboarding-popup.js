@@ -134,14 +134,7 @@ const STEPS = [
 // =
 
 async function onCreateWebsite () {
-  // let the user choose a template or folder
-  var {template, folder} = await createArchivePopup.create()
-
-  // create a new archive
-  const archive = await DatArchive.create({template, prompt: false})
-  if (folder) {
-    await beaker.archives.setLocalSyncPath(archive.url, folder, {syncFolderToArchive: true})
-  }
+  var {archive} = await createArchivePopup.create()
   window.location = `beaker://library/${archive.url}#setup`
 }
 
