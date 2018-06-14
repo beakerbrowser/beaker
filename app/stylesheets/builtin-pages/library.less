@@ -214,39 +214,20 @@ body.drag {
     top: 0;
     display: block;
     width: 100%;
-    height: auto;
+    height: 100px;
     padding: 0;
     background: #fff;
+    // background: @blue;
     border-bottom: 1px solid #ddd;
     font-size: .875rem;
     height: 50px;
 
     .container {
       &:extend(.flex);
+      max-width: ~"calc(100vw - 40px)";
       height: 100%;
       align-items: center;
       position: relative;
-    }
-
-    .back-link {
-      position: absolute;
-      left: -30px;
-      top: 10px;
-      width: 27px;
-      text-align: center;
-      font-size: 1.2rem;
-      color: rgba(0,0,0,.2);
-      cursor: pointer;
-      border-radius: 4px;
-
-      * {
-        cursor: pointer;
-      }
-
-      &:hover {
-        color: @color-text;
-        background: #eee;
-      }
     }
 
     .favicon-container {
