@@ -725,7 +725,7 @@ async function lookupArchive (url, opts = {}) {
 
   // set checkoutFS according to the version requested
   var checkoutFS = (version)
-    ? archive.checkout(+version)
+    ? archive.checkout(+version, {metadataStorageCacheSize: 0, contentStorageCacheSize: 0, treeCacheSize: 0})
     : archive
 
   return {archive, filepath, version, checkoutFS}
