@@ -26,6 +26,25 @@ import createMd from '../../lib/fg/markdown'
 import {IS_GIT_URL_REGEX} from '@beaker/core/lib/const'
 
 const DEFAULT_PEERS_LIMIT = 10
+const VIEWS = {
+  'files': {
+    icon: 'fa-code',
+    text: 'Files'
+  },
+  'network': {
+    icon: 'fa-signal',
+    text: 'Network'
+  },
+  'info': {
+    icon: 'fa-info-circle',
+    text: 'Information'
+
+  },
+  'settings': {
+    icon: 'fa-gear',
+    text: 'Settings'
+  }
+}
 
 // globals
 // =
@@ -256,16 +275,24 @@ function render () {
 
 function renderHeader () {
   const isOwner = _get(archive, 'info.isOwner')
-  return yo`
-    <div class="builtin-header">
-      <div class="container">
-        <a href="beaker://library" class="back-link">
-          <i class="fa fa-angle-double-left"></i>
-        </a>
 
-        ${renderTabs()}
+  return yo`
+    <div class="builtin-header library-view">
+      <div class="container">
+        <div>
+          <div class="favicon-container">
+            <img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
+          </div>
+
+          <a href=${archive.url} class="title" target="_blank">
+            ${getSafeTitle()}
+          </a>
+        </div>
+
+        ${renderNav()}
 
         ${isOwner
+          /*
           ? yo`
             <div
               class="favicon-container editable tooltip-container ${isFaviconSet ? '' : 'unset'}"
@@ -281,6 +308,8 @@ function renderHeader () {
             <div class="favicon-container">
               <img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
             </div>`
+          */
+          ? '' : ''
         }
 
         ${isOwner
@@ -973,24 +1002,41 @@ function renderNetworkView () {
   `
 }
 
-function renderTabs () {
+function renderNav () {
   const isOwner = _get(archive, 'info.isOwner')
   const baseUrl = `beaker://library/${archive.url}`
-  return yo`
-    <div class="tabs">
-      <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="tab ${activeView === 'files' ? 'active' : ''}">
-        Files
-      </a>
+  const view = VIEWS[activeView]
 
-      <a href=${baseUrl + '#network'} onclick=${e => onChangeView(e, 'network')} class="tab ${activeView === 'network' ? 'active' : ''}">
-        Network
-      </a>
+  return toggleable(
+    yo`
+      <div class="dropdown toggleable-container hover">
+        <button class="btn transparent toggleable">
+          <span class="fa ${view.icon}"></span>
+          ${view.text}
+        </button>
 
-      <a href=${baseUrl + '#settings'} onclick=${e => onChangeView(e, 'settings')} class="tab ${activeView === 'settings' ? 'active' : ''}">
-        ${isOwner ? 'Settings' : 'Info'}
-      </a>
-    </div>
-  `
+        <div class="dropdown-items left subtle-shadow no-border roomy">
+          <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="dropdown-item nav-item files ${activeView === 'files' ? 'active' : ''}">
+            <span class="checkmark fa fa-check"></span>
+            <span class="icon fa fa-code"></span>
+            Files
+          </a>
+
+          <a href=${baseUrl + '#network'} onclick=${e => onChangeView(e, 'network')} class="dropdown-item nav-item  network ${activeView === 'network' ? 'active' : ''}">
+            <span class="checkmark fa fa-check"></span>
+            <span class="icon fa fa-signal"></span>
+            Network
+          </a>
+
+          <a href=${baseUrl + '#settings'} onclick=${e => onChangeView(e, 'settings')} class="dropdown-item nav-item settings ${activeView === 'settings' ? 'active' : ''}">
+            <span class="checkmark fa fa-check"></span>
+            <span class="icon fa fa-gear"></span>
+            ${isOwner ? 'Settings' : 'Info'}
+          </a>
+        </div>
+      </div>
+    `
+  )
 }
 
 function renderMenu () {
@@ -1422,7 +1468,7 @@ function onCloseFileEditor (e) {
   // update the UI
   filesBrowser.isEditMode = false
   render()
-  
+
   // restore the editor to non-edit mode
   var currentNode = filesBrowser.getCurrentSource()
   setAceValue(currentNode.preview)

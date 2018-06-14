@@ -897,38 +897,57 @@ body.drag {
     }
   }
 
-  .tabs {
-    height: 100%;
-    margin-bottom: -1px;
+  .nav {
 
-    .tab {
-      display: inline-flex;
-      align-items: center;
-      height: 100%;
-      padding: 0 15px;
-      cursor: pointer;
-      color: @color-text;
+  }
+
+  .nav-item {
+    font-weight: 500;
+
+    .checkmark {
+      opacity: 0;
       margin-right: 5px;
-      letter-spacing: .15px;
-      border-bottom: 2px solid transparent;
+    }
 
-      &.active {
-        border-color: @color-text;
+    &.active {
+
+      .checkmark {
+        opacity: 1;
       }
+    }
 
-      &:hover:not(.active) {
-        border-color: #ccc;
-      }
+    &.files {
 
-      .revisions-indicator {
-        display: inline-block;
+      .icon {
         background: @blue;
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        margin-left: 5px;
-        margin-top: 2px;
       }
+    }
+
+    &.network {
+
+      .icon {
+        background: @orange;
+      }
+    }
+
+    &.settings {
+
+      .icon {
+        background: @pink;
+      }
+    }
+
+    .icon {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      margin-right: 5px;
+      color: #fff;
+      font-size: 13px;
+      text-align: center;
+      vertical-align: middle;
+      line-height: 18px;
+      border-radius: 4px;
     }
   }
 
