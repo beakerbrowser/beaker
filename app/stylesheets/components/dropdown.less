@@ -91,9 +91,18 @@
     &:extend(.dropdown-shadow-subtle);
   }
 
+  &.center {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
   &.left {
     right: initial;
     left: 0;
+  }
+
+  &.over {
+    top: 0;
   }
 
   &.top {
