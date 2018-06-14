@@ -21,6 +21,7 @@ var tabsContainerEl
 
 // tab-width and max showable is adjusted based on window width and # of tabs
 var currentTabWidth = MAX_TAB_WIDTH
+var numPinnedTabs = 0
 var numTabsWeCanFit = Infinity // we start out fairly optimistic 
 
 // exported methods
@@ -84,8 +85,6 @@ function drawTab (page) {
 
   // styles
   var {pageIndex, style, smallMode} = getPageStyle(page)
-  if (pageIndex === 0) cls += ' leftmost'
-  if (pageIndex === pages.getAll().length - 1) cls += ' rightmost'
   if (smallMode) cls += ' chrome-tab-small'
 
   // pinned rendering:
@@ -126,6 +125,7 @@ function repositionTabs (e) {
 
   // compute tab width for the space we have
   // - we need to distributed the space among unpinned tabs
+  numPinnedTabs = 0
   var numUnpinnedTabs = 0
   var availableWidth = window.innerWidth
   // correct for traffic lights
@@ -136,11 +136,14 @@ function repositionTabs (e) {
   // count the unpinned-tabs, and correct for the spacing and pinned-tabs
   allPages.forEach(p => {
     availableWidth -= TAB_SPACING
-    if (p.isPinned) availableWidth -= MIN_TAB_WIDTH
+    if (p.isPinned) {
+      numPinnedTabs++
+      availableWidth -= MIN_TAB_WIDTH
+    }
     else numUnpinnedTabs++
   })
   // check if we're out of space
-  numTabsWeCanFit = Math.min(Math.floor(availableWidth / SMALL_MODE_WIDTH), allPages.length)
+  numTabsWeCanFit = Math.min(Math.floor(availableWidth / SMALL_MODE_WIDTH), numUnpinnedTabs)
   if (numTabsWeCanFit < numUnpinnedTabs) {
     // TODO we should provide a control to access the additional tabs
     numUnpinnedTabs = numTabsWeCanFit
@@ -151,14 +154,10 @@ function repositionTabs (e) {
   // update tab positions
   allPages.forEach(page => getTabEl(page, tabEl => {
     var {style, pageIndex, smallMode} = getPageStyle(page)
-    if (pageIndex === 0) tabEl.classList.add('leftmost')
-    if (pageIndex !== 0) tabEl.classList.remove('leftmost')
-    if (pageIndex === (numTabsWeCanFit - 1)) tabEl.classList.add('rightmost')
-    if (pageIndex !== (numTabsWeCanFit - 1)) tabEl.classList.remove('rightmost')
     tabEl.classList.toggle('chrome-tab-small', smallMode)
     tabEl.style = style
   }))
-  tabsContainerEl.querySelector('.chrome-tab-add-btn').style = getPageStyle(numTabsWeCanFit, true).style
+  tabsContainerEl.querySelector('.chrome-tab-add-btn').style = getAddBtnStyle()
 }
 
 // page event
@@ -410,7 +409,7 @@ function getTabWidth (page) {
   return currentTabWidth
 }
 
-function getPageStyle (page, isAddBtn = false) {
+function getPageStyle (page) {
   const allPages = pages.getAll()
 
   // `page` is sometimes an index and sometimes a page object (gross, I know)
@@ -420,14 +419,14 @@ function getPageStyle (page, isAddBtn = false) {
     pageObject = page
     pageIndex = allPages.indexOf(page)
   } else {
-    pageObject = !isAddBtn ? allPages[page] : false
+    pageObject = allPages[page]
     pageIndex = page
   }
 
   // z-index
   var zIndex = pageIndex + 1 // default to the order across
   if (!pageObject) {
-    zIndex = 0 // the add btn
+    zIndex = 0
   } else if (pageObject.isActive) {
     zIndex = 999 // top
   } else if (pageObject.isTabDragging) {
@@ -445,10 +444,17 @@ function getPageStyle (page, isAddBtn = false) {
       smallMode = true
     }
   }
-  if (!isAddBtn && pageIndex >= numTabsWeCanFit) {
+  if (pageIndex >= numPinnedTabs + numTabsWeCanFit) {
     style += ' display: none;'
   }
   return {pageIndex, smallMode, style}
+}
+
+function getAddBtnStyle () {
+  return `
+    transform: translateX(${getTabX(numPinnedTabs + numTabsWeCanFit)}px);
+    z-index: 0;
+  `
 }
 
 // returns 0 for no, -1 or 1 for yes (the offset)
