@@ -237,33 +237,6 @@ body.drag {
       border-radius: 4px;
       margin-left: auto;
 
-      &.unset {
-        border: 1px dashed @color-text--muted;
-        padding: 0;
-        text-align: center;
-      }
-
-      &.editable {
-        cursor: pointer;
-
-        * {
-          cursor: pointer;
-        }
-
-        &:hover {
-          background: #eee;
-        }
-      }
-
-      i {
-        height: 26px;
-        line-height: 26px;
-        vertical-align: middle;
-        color: rgba(0,0,0,.4);
-        position: relative;
-        font-size: 11px;
-      }
-
       img {
         width: 16px;
         height: 16px;
@@ -273,18 +246,10 @@ body.drag {
     .title {
       font-weight: 500;
       margin: 0 5px;
+    }
 
-      &.editable {
-        cursor: text;
-        border: 1px solid transparent;
-        padding: 0 3px;
-        margin: 0 2px;
-
-        &:hover {
-          border-color: #ddd;
-          text-decoration: none;
-        }
-      }
+    input.title {
+      width: 100%;
     }
 
     .url {
