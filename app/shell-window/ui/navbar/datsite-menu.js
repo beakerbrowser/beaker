@@ -3,6 +3,7 @@
 import * as yo from 'yo-yo'
 import bytes from 'bytes'
 import moment from 'moment'
+import prettyBytes from 'pretty-bytes'
 import {findParent} from '../../../lib/fg/event-handlers'
 import {pluralize} from '../../../lib/strings'
 import ArchiveProgressMonitor from '../../../lib/fg/archive-progress-monitor'
@@ -140,6 +141,11 @@ export class DatsiteMenuNavbarBtn {
             </div>
           </div>` : ''}
 
+          <div class="upload-stats">
+            Since you last started Beaker you sent ${prettyBytes(page.siteInfo.uploadTotal)}
+            of this page to other users visiting this site.
+          </div>
+            
           <div class="network-url">
             <a onclick=${e => this.onOpenPage('beaker://settings#dat-network-activity')}>
               <i class="fa fa-gear"></i>

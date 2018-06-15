@@ -404,6 +404,8 @@ function renderFooter () {
           <span>${prettyBytes(_get(archive, 'info.size', 0))}</span>
           <span class="separator">―</span>
           <span>${_get(archive, 'info.peers', 0)} ${pluralize(_get(archive, 'info.peers', 0), 'peer')}</span>
+          <span class="separator">―</span>
+          <span>${prettyBytes(_get(archive, 'info.uploadTotal', 0))} shared back this session</span>
         </div>
 
         <div class="secondary-action">

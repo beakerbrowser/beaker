@@ -10,6 +10,7 @@ import through from 'through2'
 import split from 'split2'
 import concat from 'concat-stream'
 import CircularAppendFile from 'circular-append-file'
+import networkSpeed from 'hyperdrive-network-speed'
 var debug = require('debug')('dat')
 import * as siteData from '../../dbs/sitedata'
 import * as settingsDb from '../../dbs/settings'
@@ -502,6 +503,7 @@ export async function getArchiveInfo (key) {
   meta.peers = archive.metadata.peers.length
   meta.peerInfo = getArchivePeerInfos(archive)
   meta.peerHistory = archive.peerHistory
+  meta.uploadTotal = archive.stats.uploadTotal
 
   return meta
 }
@@ -542,6 +544,7 @@ function configureNetwork (archive, settings) {
 export function joinSwarm (key, opts) {
   var archive = (typeof key === 'object' && key.key) ? key : getArchive(key)
   if (!archive || archive.isSwarming) return
+  archive.stats = networkSpeed(archive)
   archiveSwarm.join(archive.discoveryKey)
   var keyStr = datEncoding.toStr(archive.key)
   log(keyStr, {
