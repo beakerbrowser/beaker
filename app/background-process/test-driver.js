@@ -47,7 +47,15 @@ const METHODS = {
       var page = pages.get(${page})
       page.navbarEl.querySelector('.nav-location-input').value = "${url}"
       page.navbarEl.querySelector('.nav-location-input').blur()
+      var loadPromise = new Promise(resolve => {
+        function onDidStopLoading () {
+          page.webviewEl.removeEventListener('did-stop-loading', onDidStopLoading)
+          resolve()
+        }
+        page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
+      })
       page.loadURL("${url}")
+      loadPromise
     `)
   },
 
@@ -64,11 +72,16 @@ const METHODS = {
   },
 
   async executeJavascriptOnPage (page, js) {
-    var res = await execute(`
-      var page = pages.get(${page})
-      page.webviewEl.getWebContents().executeJavaScript(\`` + js + `\`)
-    `)
-    return res
+    try {
+      var res = await execute(`
+        var page = pages.get(${page})
+        page.webviewEl.getWebContents().executeJavaScript(\`` + js + `\`)
+      `)
+      return res
+    } catch (e) {
+      console.error('Failed to execute javascript on page', js, e)
+      throw e
+    }
   }
 }
 

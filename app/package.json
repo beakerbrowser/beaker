@@ -8,6 +8,8 @@
   "copyright": "© 2018, Blue Link Labs",
   "main": "background-process.build.js",
   "dependencies": {
+    "@beaker/dat-ephemeral-ext-msg": "^0.0.2",
+    "@beaker/dat-session-data-ext-msg": "^1.1.0",
     "anymatch": "^1.3.2",
     "await-lock": "^1.1.3",
     "beaker-error-constants": "^1.4.0",
