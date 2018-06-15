@@ -701,22 +701,6 @@ function renderSettingsView () {
               ? renderSettingsField({key: 'description', value: description, onUpdate: setManifestValue})
               : yo`<p>${getSafeDesc()}</p>`
             }
-
-            <h3>Favicon</h3>
-
-            ${isOwner
-              ? yo`
-                <p class="input-group">
-                  <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}"/>
-                  <button class="btn" onclick=${onClickFavicon}>
-                    Change favicon
-                  </button>
-                  <a class="learn-more-link" href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/The_head_metadata_in_HTML#Adding_custom_icons_to_your_site" target="_blank">
-                    What${"'"}s a favicon?
-                  </a>
-                </p>`
-              : yo`<img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}"/>`
-            }
           </div>
         </div>
 
