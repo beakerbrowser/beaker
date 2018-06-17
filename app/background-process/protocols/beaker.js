@@ -1,4 +1,7 @@
 import {app, protocol} from 'electron'
+import * as beakerCore from '@beaker/core'
+import errorPage from '@beaker/core/lib/error-page'
+const {archivesDebugPage, datDnsCachePage, datDnsCacheJS} = beakerCore.dat.debug
 import path from 'path'
 import url from 'url'
 import once from 'once'
@@ -6,8 +9,6 @@ import fs from 'fs'
 import jetpack from 'fs-jetpack'
 import intoStream from 'into-stream'
 import ICO from 'icojs'
-import errorPage from '../../lib/error-page'
-import {archivesDebugPage, datDnsCachePage, datDnsCacheJS} from '../networks/dat/debugging'
 import {getLogFileContent} from '../debug-logger'
 
 // constants

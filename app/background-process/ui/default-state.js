@@ -15,8 +15,8 @@ export function defaultWindowState () {
   var bounds = screen ? screen.getPrimaryDisplay().bounds : {width: 800, height: 600}
   var width = Math.max(800, Math.min(1800, bounds.width - 50))
   var height = Math.max(600, Math.min(1200, bounds.height - 50))
-  var minWidth = 400;
-  var minHeight = 300;
+  var minWidth = 400
+  var minHeight = 300
   return {
     x: (bounds.width - width) / 2,
     y: (bounds.height - height) / 2,

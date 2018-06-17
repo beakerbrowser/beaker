@@ -1,10 +1,11 @@
 import { ipcMain, session, BrowserWindow } from 'electron'
+import * as beakerCore from '@beaker/core'
+const dat = beakerCore.dat
+const sitedata = beakerCore.dbs.sitedata
 import _get from 'lodash.get'
 import pda from 'pauls-dat-api'
-import * as siteData from '../dbs/sitedata'
-import * as datLibrary from '../networks/dat/library'
 import PERMS from '../../lib/perms'
-import {getPermId} from '../../lib/strings'
+import {getPermId} from '@beaker/core/lib/strings'
 import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
 
 // globals
@@ -32,7 +33,7 @@ export function grantPermission (permission, webContents) {
   // update the DB
   const PERM = PERMS[getPermId(permission)]
   if (PERM && PERM.persist) {
-    siteData.setPermission(siteURL, permission, 1)
+    sitedata.setPermission(siteURL, permission, 1)
   }
   return Promise.resolve()
 }
@@ -43,13 +44,13 @@ export function revokePermission (permission, webContents) {
   // update the DB
   const PERM = PERMS[getPermId(permission)]
   if (PERM && PERM.persist) {
-    siteData.clearPermission(siteURL, permission)
+    sitedata.clearPermission(siteURL, permission)
   }
   return Promise.resolve()
 }
 
 export function queryPermission (permission, webContents) {
-  return siteData.getPermission(webContents.getURL(), permission)
+  return sitedata.getPermission(webContents.getURL(), permission)
 }
 
 export function denyAllRequests (win) {
@@ -69,7 +70,7 @@ export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
   if (url.startsWith('dat:')) {
     // check dat.json for opt-in
     let isOptedIn = false
-    let archive = datLibrary.getArchive(url)
+    let archive = dat.library.getArchive(url)
     if (archive) {
       let manifest = await pda.readManifest(archive).catch(_ => {})
       let apis = _get(manifest, 'experimental.apis')
@@ -107,7 +108,7 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
   if (PERM && PERM.alwaysDisallow) return cb(false)
 
   // check the sitedatadb
-  siteData.getPermission(url, permission).catch(err => undefined).then(res => {
+  sitedata.getPermission(url, permission).catch(err => undefined).then(res => {
     if (res === 1) return cb(true)
     if (res === 0) return cb(false)
 
@@ -141,10 +142,10 @@ async function onPermissionResponseHandler (e, reqId, decision) {
   if (PERM && PERM.persist) {
     if (PERM.persist === 'allow' && !decision) {
       // only persist allows
-      await siteData.clearPermission(req.url, req.permission)
+      await sitedata.clearPermission(req.url, req.permission)
     } else {
       // persist all decisions
-      await siteData.setPermission(req.url, req.permission, decision)
+      await sitedata.setPermission(req.url, req.permission, decision)
     }
   }
 

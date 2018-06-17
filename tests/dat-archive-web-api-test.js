@@ -832,7 +832,7 @@ test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
   }
 })
 
-test.only('versioned reads and writes', async t => {
+test('versioned reads and writes', async t => {
   // create a fresh dat
   var res = await app.executeJavascript(`
     DatArchive.create({title: 'Another Test Dat', prompt: false})

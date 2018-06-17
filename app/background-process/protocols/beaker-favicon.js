@@ -5,13 +5,13 @@
  **/
 
 import {protocol, screen} from 'electron'
+import * as beakerCore from '@beaker/core'
+const {dat} = beakerCore
+const {sitedata} = beakerCore.dbs
 import fs from 'fs'
 import path from 'path'
 import pda from 'pauls-dat-api'
 import ICO from 'icojs'
-import * as sitedata from '../dbs/sitedata'
-import * as datLibrary from '../networks/dat/library'
-import datDns from '../networks/dat/dns'
 
 export function setup () {
   // load default favicon
@@ -53,8 +53,8 @@ export function setup () {
       let data, fs
       // pick the filesystem
       if (url.startsWith('dat://')) {
-        url = await datDns.resolveName(url)
-        fs = datLibrary.getArchive(url) // (only try if the dat is loaded)
+        url = await dat.dns.resolveName(url)
+        fs = dat.library.getArchive(url) // (only try if the dat is loaded)
       }
       if (fs) {
         // try .ico

@@ -3,7 +3,7 @@
 const yo = require('yo-yo')
 const moment = require('moment')
 import {getHostname} from '../../lib/strings'
-import {debounce} from '../../lib/functions'
+import debounce from 'lodash.debounce'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import renderCloseIcon from '../icon/close'
 

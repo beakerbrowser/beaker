@@ -1,10 +1,10 @@
 /* globals URL */
 
 import * as yo from 'yo-yo'
+import debounce from 'lodash.debounce'
 import * as pages from '../pages'
 import * as navbar from './navbar'
 import {remote} from 'electron'
-import {debounce} from '../../lib/functions'
 
 // constants
 // =
