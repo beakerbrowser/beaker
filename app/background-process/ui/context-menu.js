@@ -161,7 +161,7 @@ export default function registerContextMenu () {
         } else {
           searchPreviewStr += '\"'
         }
-        var query = 'https://duckduckgo.com/?q=' + props.selectionText.substr(0, 500) // Limit query to prevent too long query error from DDG
+        var query = 'https://duckduckgo.com/?q=' + encodeURIComponent(props.selectionText.substr(0, 500)) // Limit query to prevent too long query error from DDG
         menuItems.push({ label: 'Search DuckDuckGo for \"' + searchPreviewStr, click: (item, win) => win.webContents.send('command', 'file:new-tab', query) })
         menuItems.push({ type: 'separator' })
       }
