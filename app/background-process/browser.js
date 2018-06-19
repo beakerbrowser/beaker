@@ -1,3 +1,4 @@
+import * as beakerCore from '@beaker/core'
 import {app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen} from 'electron'
 import {autoUpdater} from 'electron-updater'
 import os from 'os'
@@ -9,13 +10,10 @@ import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 const exec = require('util').promisify(require('child_process').exec)
 var debug = require('debug')('beaker')
-import * as settingsDb from './dbs/settings'
+const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
 import {showModal, showShellModal, closeModal} from './ui/modals'
-import {
-  INVALID_SAVE_FOLDER_CHAR_REGEX
-} from '../lib/const'
-import {getEnvVar} from '../lib/electron'
+import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
 // constants
 // =
@@ -354,7 +352,7 @@ function showContextMenu (menuDefinition) {
     }
 
     // add 'inspect element' in development
-    if (getEnvVar('NODE_ENV') === 'develop' || getEnvVar('NODE_ENV') === 'test') {
+    if (beakerCore.getEnvVar('NODE_ENV') === 'develop' || beakerCore.getEnvVar('NODE_ENV') === 'test') {
       menuDefinition.push({type: 'separator'})
       menuDefinition.push({
         label: 'Inspect Element',

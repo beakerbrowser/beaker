@@ -1,7 +1,7 @@
 import {BrowserWindow, ipcMain} from 'electron'
 import EventEmitter from 'events'
+import debounce from 'lodash.debounce'
 import {defaultPageState} from './default-state'
-import {debounce} from '../../lib/functions'
 
 const SNAPSHOT_PATH = 'shell-window-state.json'
 

@@ -1,10 +1,13 @@
+console.log('hello')
+import * as rpcAPI from 'pauls-electron-rpc'
+const beakerCoreWebview = require ('@beaker/core/webview')
 import { ipcRenderer } from 'electron'
 import { setup as setupUI } from './shell-window/ui'
-import DatArchive from './lib/web-apis/dat-archive'
-import beaker from './lib/web-apis/beaker'
 
-window.DatArchive = DatArchive
-window.beaker = beaker
+console.log('setting up webview')
+beakerCoreWebview.setup({rpcAPI})
+console.log('setting up ui')
 setupUI(() => {
+  console.log('ready')
   ipcRenderer.send('shell-window:ready')
 })

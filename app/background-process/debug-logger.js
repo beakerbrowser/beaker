@@ -1,10 +1,10 @@
+import {getEnvVar} from '@beaker/core'
 import {app} from 'electron'
 import debug from 'debug'
 import fs from 'fs'
 import concat from 'concat-stream'
 import {join as joinPath} from 'path'
 import {format} from 'util'
-import {getEnvVar} from '../lib/electron'
 
 var logFilePath
 var logFileWriteStream
