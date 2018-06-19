@@ -469,6 +469,8 @@ async function handleAutocompleteSearch (results) {
 
   // set the top results accordingly
   var gotoResult = { url: vWithProtocol, title: 'Go to ' + v, isGuessingTheScheme }
+
+  // todo: how do we get the search settings from here?
   var searchResult = {
     search: v,
     title: 'DuckDuckGo Search',
@@ -518,6 +520,8 @@ function examineLocationInput (v) {
       isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
     }
   }
+
+  // todo: how do we get the search settings from here?
   var vSearch = 'https://duckduckgo.com/?q=' + v.split(' ').map(encodeURIComponent).join('+')
   return {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme}
 }
