@@ -33,28 +33,14 @@ export function setup () {
       faviconSize *= 2
     }
 
-    try {
-      // look up in db
-      let data = await sitedata.get(url, 'favicon')
-      if (data) {
-        // `data` is a data url ('data:image/png;base64,...')
-        // so, skip the beginning and pull out the data
-        data = data.split(',')[1]
-        if (data) {
-          return cb({ mimeType: 'image/png', data: Buffer.from(data, 'base64') })
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-
     // if a dat, see if there's a favicon.ico or .png
     try {
       let data, fs
       // pick the filesystem
+      let datResolvedUrl = url
       if (url.startsWith('dat://')) {
-        url = await dat.dns.resolveName(url)
-        fs = dat.library.getArchive(url) // (only try if the dat is loaded)
+        datResolvedUrl = await dat.dns.resolveName(url)
+        fs = dat.library.getArchive(datResolvedUrl) // (only try if the dat is loaded)
       }
       if (fs) {
         // try .ico
@@ -69,17 +55,35 @@ export function setup () {
                 image = images[i]
               }
             }
-            return cb({mimeType: 'image/png', data: Buffer.from(image.buffer)})
+            let buf = Buffer.from(image.buffer)
+            sitedata.set(url, 'favicon', `data:image/png;base64,${buf.toString('base64')}`) // cache
+            return cb({mimeType: 'image/png', data: buf})
           }
         } catch (e) {
-          // .ico failed, igore
+          // .ico failed, ignore
           data = null
         }
 
         // try .png
         data = await pda.readFile(fs, '/favicon.png', 'binary')
         if (data) {
+          sitedata.set(url, 'favicon', `data:image/png;base64,${data.toString('base64')}`) // cache
           return cb({mimeType: 'image/png', data})
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    try {
+      // look up in db
+      let data = await sitedata.get(url, 'favicon')
+      if (data) {
+        // `data` is a data url ('data:image/png;base64,...')
+        // so, skip the beginning and pull out the data
+        data = data.split(',')[1]
+        if (data) {
+          return cb({ mimeType: 'image/png', data: Buffer.from(data, 'base64') })
         }
       }
     } catch (e) {
