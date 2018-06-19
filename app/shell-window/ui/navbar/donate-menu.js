@@ -39,6 +39,12 @@ export class DonateMenuNavbarBtn {
 
   renderDropdown (page) {
     var paymentUrl = page.siteInfo.links.payment[0].href
+
+    // resolve any relative links
+    if (paymentUrl.indexOf('://') === -1) {
+      paymentUrl = `${page.siteInfo.url}${paymentUrl.startsWith('/') ? '' : '/'}${paymentUrl}`
+    }
+
     // render the dropdown if open
     return yo`
       <div class="dropdown datsite-menu-dropdown donate-menu-dropdown">
