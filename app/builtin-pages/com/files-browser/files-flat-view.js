@@ -93,54 +93,84 @@ function rMetadata (filesBrowser, node) {
 }
 
 function rActions (filesBrowser, currentSource) {
+  var isTextual = typeof currentSource.preview === 'string' // preview is only set for text items
+  var isEditing = filesBrowser.isEditMode
+  var buttonGroup = []
+
+  if (!isEditing && currentSource.type === 'file') {
+    buttonGroup.push(
+      yo`
+        <button class="action btn trash nofocus tooltip-container delete" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, currentSource)}>
+          <i class="fa fa-trash-o"></i>
+        </button>`
+    )
+
+    if (isTextual && currentSource.isEditable) {
+      buttonGroup.push(
+        yo`
+          <button class="action btn nofocus tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
+            <i class="fa fa-pencil"></i>
+          </button>`
+      )
+    }
+  }
+
   return yo`
     <div class="actions">
       ${(currentSource.isEditable && currentSource.type !== 'file')
         ?
-          [
-            // element one: add files
-            window.OS_CAN_IMPORT_FOLDERS_AND_FILES
-              ? yo`
-                <button onclick=${e => onAddFiles(e, currentSource, false)} class="btn">
-                  Import
-                </button>`
-              : toggleable(yo`
-                <div class="dropdown toggleable-container import-dropdown">
-                  <button class="btn toggleable">
-                    Import
-                  </button>
+          toggleable(yo`
+            <div class="dropdown toggleable-container new-dropdown">
+              <button class="btn toggleable">
+                <span class="fa fa-plus"></span>
+              </button>
 
-                  <div class="dropdown-items right">
-                    <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
-                      <i class="fa fa-files-o"></i>
-                      Choose files
-                    </div>
-
-                    <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
-                      <i class="fa fa-folder-open-o"></i>
-                      Choose folder
-                    </div>
-                  </div>
+              <div class="dropdown-items compact right">
+                <div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
+                  Create file
                 </div>
-              `),
-            // element two: more actions dropdown
-            toggleable(yo`
-              <div class="dropdown toggleable-container new-dropdown">
-                <button class="btn toggleable">
-                  New <i class="fa fa-plus"></i>
-                </button>
 
-                <div class="dropdown-items right">
-                  <div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
-                    <i class="fa fa-file-o fa-fw"></i> File
-                  </div>
-                  <div class="dropdown-item" onclick=${e => emit('custom-create-file', {createFolder: true})}>
-                    <i class="fa fa-folder-o fa-fw"></i> Folder
-                  </div>
+                <div class="dropdown-item" onclick=${e => emit('custom-create-file', {createFolder: true})}>
+                  Create folder
                 </div>
+
+                <hr>
+
+                ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
+                  ? yo`
+                    <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, false)}>
+                      Import files
+                    </div>`
+                  :
+                    [
+                      yo`
+                        <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
+                          <i class="fa fa-files-o"></i>
+                          Import files
+                        </div>`,
+                      yo`
+                        <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
+                          <i class="fa fa-folder-open-o"></i>
+                          Import folder (TODO this used to say choose folder is this right?)
+                        </div>`
+                    ]
+                }
               </div>
-            `)
-          ]
+            </div>
+          `)
+        : ''
+      }
+
+      ${!isEditing && currentSource.type === 'file'
+        ? yo`
+          <a  class="action btn plain tooltip-container" href=${currentSource.url} target="_blank" data-tooltip="Open file">
+            <i class="fa fa-external-link"></i>
+          </a>`
+        : ''
+      }
+
+      ${buttonGroup.length
+        ? yo`<div class="btn-group">${buttonGroup}</div>`
         : ''
       }
     </div>
@@ -184,40 +214,7 @@ function rFilePreview (filesBrowser, node) {
 
   return yo`
     <div class="file-view-container">
-      <div class="file-view-header">
-        <code class="path">${node.name}</code>
-
-        <span class="separator">|</span>
-
-        ${numLines
-          ? yo`<code class="file-info">${numLines} ${pluralize(numLines, 'line')}</code>`
-          : ''
-        }
-        <code class="file-info">${prettyBytes(node.size)}</code>
-
-        <div class="actions">
-          ${isTextual
-            ? node.isEditable
-              ? [
-                  yo`
-                    <button class="action btn plain tooltip-container delete" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, node)}>
-                      <i class="fa fa-trash-o"></i>
-                    </button>
-                  `,
-                  yo`
-                    <button class="action btn plain tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
-                      <i class="fa fa-pencil"></i>
-                    </button>
-                  `
-                ]
-              : ''
-            : ''}
-          <a href=${node.url} target="_blank" class="action tooltip-container" data-tooltip="Open file">
-            <i class="fa fa-external-link"></i>
-          </a>
-        </div>
-      </div>
-
+      <div class="file-editor-controls ${filesBrowser.isEditMode ? '' : 'hidden'}"></div>
       ${renderFilePreview(node)}
     </div>
   `
@@ -226,11 +223,7 @@ function rFilePreview (filesBrowser, node) {
 function rFileEditor (node) {
   return yo`
     <div class="file-view-container">
-      <div class="file-view-header">
-        <code class="path">${node.name}</code>
-
-        <span class="separator">|</span>
-
+      <div class="file-editor-controls">
         <span class="editor-options">
           <select onchange=${onChangeIndentationMode} name="indentationMode">
             <optgroup label="Indentation">
@@ -260,18 +253,14 @@ function rFileEditor (node) {
         </span>
 
         <div class="actions">
-          <button class="action btn plain" onclick=${onClickCancelEdit}>
+          <button class="action btn small transparent" onclick=${onClickCancelEdit}>
             Cancel
           </button>
 
-          <button class="action btn success" onclick=${onClickSaveEdit}>
+          <button class="action btn small success" onclick=${onClickSaveEdit}>
             Save
             <i class="fa fa-check"></i>
           </button>
-
-          <a href=${node.url} target="_blank" class="action tooltip-container" data-tooltip="Open file">
-            <i class="fa fa-external-link"></i>
-          </a>
         </div>
       </div>
 
