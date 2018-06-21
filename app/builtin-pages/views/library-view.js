@@ -265,8 +265,6 @@ function render () {
             <div class="view-wrapper">
               ${renderView()}
             </div>
-
-            ${renderFooter()}
           </div>
         </div>
       `
