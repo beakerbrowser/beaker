@@ -45,12 +45,16 @@
   border-radius: 4px;
 
   .section {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(0,0,0,.1);
     padding: 5px 0;
   }
 
   .section-header {
     padding: 2px 10px;
+  }
+
+  &.wide {
+    width: 400px;
   }
 
   &.compact {
@@ -63,6 +67,10 @@
     .description {
       margin-left: 0;
     }
+
+    hr {
+      margin: 5px 0;
+    }
   }
 
   &.roomy {
@@ -73,17 +81,9 @@
   }
 
   &.no-border {
-    padding: 10px;
 
     .dropdown-item {
-      width: auto;
-      padding: 5px;
       border-bottom: 0;
-      border-radius: 4px;
-
-      &:not(:last-child) {
-        margin-bottom: 5px;
-      }
     }
   }
 
