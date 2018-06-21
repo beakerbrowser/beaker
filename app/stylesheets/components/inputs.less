@@ -12,9 +12,28 @@ input, textarea {
   &[type="checkbox"],
   &[type="radio"],
   &[type="range"] {
+    padding: 0;
 
     &:focus {
       box-shadow: none;
+    }
+  }
+
+  &[type="radio"] {
+    width: 14px;
+    height: 14px;
+    outline: none;
+    -webkit-appearance: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: border .1s ease;
+
+    &:hover {
+      border: 1px solid @blue;
+    }
+
+    &:checked {
+      border: 4.5px solid @blue;
     }
   }
 
@@ -115,6 +134,18 @@ label {
   font-weight: 500;
 }
 
+input[disabled],
+label[disabled] {
+
+  &[data-tooltip] {
+    cursor: help;
+
+    * {
+      cursor: help;
+    }
+  }
+}
+
 .toggle {
   &:extend(.flex);
   align-items: center;
@@ -122,6 +153,7 @@ label {
   justify-content: space-between;
   margin-bottom: 10px;
   cursor: pointer;
+  overflow: initial;
 
   * {
     cursor: pointer;
