@@ -119,7 +119,7 @@
   .ll-column-headings {
     &:extend(.flex);
     align-items: center;
-    justify-content: flex-start;  
+    justify-content: flex-start;
   }
 
   .ll-row {
@@ -579,47 +579,9 @@
         border-bottom: 1px solid #ddd;
       }
 
-      .input-group {
-        &:extend(.flex);
-        align-items: center;
-
-        h3 {
-          margin-bottom: 5px;
-        }
-
-        .btn {
-          margin-left: 5px;
-        }
-      }
-
       .empty {
         color: @color-text--muted;
         padding: 0;
-      }
-
-      input {
-        width: 370px;
-      }
-
-      form {
-        margin-top: 5px;
-      }
-
-      h2:not(.subtitle-heading),
-      h3:not(.subtitle-heading) {
-        font-size: inherit;
-        font-weight: 500;
-        margin-bottom: 0;
-        margin-top: 25px;
-
-        &.no-margin {
-          margin: 0;
-        }
-      }
-
-      .hint {
-        padding-top: 10px;
-        border-top: 1px dashed #ddd;
       }
     }
 
@@ -688,6 +650,87 @@
       &.two > div {
         flex-basis: 50%;
       }
+    }
+
+  }
+
+  .section,
+  .module {
+
+    // h2:not(.subtitle-heading),
+    h3:not(.subtitle-heading) {
+      font-size: inherit;
+      font-weight: 500;
+      margin-bottom: 2px;
+      margin-top: 25px;
+
+      &.no-margin {
+        margin: 0;
+      }
+    }
+  }
+
+  .section-heading,
+  .module-heading {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .section-content,
+  .module-content {
+
+    form {
+      margin-top: 5px;
+    }
+
+    textarea,
+    input[type="text"] {
+      width: 370px;
+    }
+
+    .input-group {
+      &:extend(.flex);
+      align-items: center;
+
+      h3 {
+        margin-bottom: 5px;
+      }
+
+      .btn {
+        margin-left: 5px;
+      }
+
+      &.radiolist {
+        margin-bottom: 7px;
+
+        input[type="radio"] {
+          margin: 0;
+        }
+
+        input[type="text"] {
+          flex: 1;
+        }
+
+        label {
+          font-weight: 400;
+          margin-bottom: 0;
+        }
+
+        label,
+        input[type="radio"] {
+          margin-right: 10px;
+        }
+
+        .btn {
+          margin-left: auto;
+        }
+      }
+    }
+
+    .hint {
+      padding-top: 10px;
+      border-top: 1px dashed #ddd;
     }
 
     &.coming-soon {
