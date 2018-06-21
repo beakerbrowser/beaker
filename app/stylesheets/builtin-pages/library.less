@@ -183,13 +183,16 @@ body.drag {
 
 // beaker://library/{datHash} view
 .builtin-wrapper.library-view {
-  background: #fff;
+
+  .view {
+    background: #f7f7f7;
+  }
 
   .view-wrapper {
     width: 100%;
-    height: ~"calc(100vh - 100px)";
-    margin-top: 50px;
-    padding: 30px 0 45px 0;
+    height: ~"calc(100vh - 55px)";
+    padding: 40px 0;
+    margin-bottom: 0;
     overflow-y: auto;
   }
 
@@ -214,49 +217,55 @@ body.drag {
     top: 0;
     display: block;
     width: 100%;
-    height: 100px;
+    height: 55px;
     padding: 0;
     background: #fff;
-    // background: @blue;
-    border-bottom: 1px solid #ddd;
-    font-size: .875rem;
-    height: 50px;
+    border: 1px solid #ddd;
+    font-size: 13.5px;
 
     .container {
-      &:extend(.flex);
-      max-width: ~"calc(100vw - 40px)";
-      height: 100%;
-      align-items: center;
       position: relative;
-    }
+      max-width: ~"calc(100% - 10px)";
+      height: 50px;
+      padding: 0 5px;
 
-    .favicon-container {
-      width: 26px;
-      height: 26px;
-      padding: 5px;
-      border-radius: 4px;
-      margin-left: auto;
+      @media (min-width: 700px) {
+        max-width: ~"calc(100% - 30px)";
+      }
 
-      img {
-        width: 16px;
-        height: 16px;
+      .center-el {
+        position: absolute;
+        left: 50%;
+        top: 12px;
+        transform: translateX(-50%);
+      }
+
+      > *:last-child {
+        position: absolute;
+        right: 0;
+        top: 12px;
       }
     }
 
+    .favicon {
+      width: 16px;
+      height: 16px;
+    }
+
     .title {
-      font-weight: 500;
       margin: 0 5px;
+      color: @color-text;
+      font-size: 16px;
+      font-weight: 500;
+      text-align: center;
     }
 
     input.title {
-      width: 100%;
-    }
+      width: ~"calc(100% - 10px)";
+      border-radius: 2px;
 
-    .url {
-      margin-right: 5px;
-
-      &:hover {
-        text-decoration: underline;
+      &:focus {
+        box-shadow: none;
       }
     }
 
@@ -360,12 +369,10 @@ body.drag {
   .file-view-header {
     &:extend(.flex);
     align-items: center;
-    height: 40px;
-    border-radius: 4px 4px 0 0;
+    height: 45px;
     border: 1px solid #ddd;
     padding: 0 10px;
-    background: #fafafa;
-    border-bottom: 1px solid #ddd;
+    background: #fff;
 
     .revision-type {
       margin-right: 7px;
@@ -480,7 +487,6 @@ body.drag {
       border: 1px solid #ddd;
       border-top: 0;
       border-radius: 0 0 2px 2px;
-      background: #fff;
 
       &.text {
         &:extend(.code-font);
