@@ -180,7 +180,7 @@ async function loadReadme () {
       readmeContent.innerHTML = markdownRenderer.render(readmeMd)
       readmeHeader = yo`
         <div class="file-view-header">
-          <code class="path">${readmeMdNode.name}</code>
+          <span class="path">${readmeMdNode.name}</span>
         </div>`
     } else {
       // try to find the readme file
@@ -191,7 +191,7 @@ async function loadReadme () {
         readmeContent = yo`<div class="readme plaintext">${readme}</div>`
         readmeHeader = yo`
           <div class="file-view-header">
-            <code class="path">${readmeNode.name}</code>
+            <span class="path">${readmeNode.name}</span>
           </div>`
       }
     }
