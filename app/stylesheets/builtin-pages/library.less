@@ -342,8 +342,27 @@ body.drag {
     padding: 0;
     font-size: .85rem;
 
+    &.settings,
+    &.network {
+      background: #fff;
+      padding: 15px 20px;
+      border: 1px solid #ddd;
+
+      h1 {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+    }
+
     .section {
-      margin-bottom: 40px;
+
+      &:not(:last-child) {
+        margin-bottom: 40px;
+      }
     }
 
     .revision-type {
@@ -393,93 +412,36 @@ body.drag {
   }
 
   .file-view-container {
-    font-size: 12.5px;
 
-    .file-view-header {
+    .file-view-header,
+    .file-editor-controls {
       &:extend(.flex);
       align-items: center;
-      height: 40px;
-      border-radius: 4px 4px 0 0;
-      padding: 0 10px;
+      padding: 0 15px;
+      border: 1px solid #ddd;
+
+      .actions {
+        margin-left: auto;
+      }
+    }
+
+    .file-editor-controls {
+      height: 35px;
+      border-top: 0;
       background: #fafafa;
-      border-bottom: 1px solid #ddd;
-
-      .separator {
-        color: rgba(0,0,0,.25);
-        padding: 0 10px;
-      }
-
-      .file-info {
-        margin-right: 10px
-      }
 
       .editor-options {
+
         select {
           border: 1px solid #ddd;
           background: #fff;
           height: 24px;
         }
       }
+    }
 
-      .actions {
-        &:extend(.flex);
-        align-items: center;
-        height: 100%;
-        margin-left: auto;
-
-        .action {
-          display: inline-block;
-          margin-left: 15px;
-          font-size: 14px;
-          cursor: pointer;
-          height: 35px;
-          line-height: 35px;
-          color: @color-text;
-
-          &:hover {
-            color: @blue;
-          }
-
-          &.delete:hover {
-            color: shade(@red, 10%);
-          }
-
-          &.btn {
-            height: auto;
-            line-height: 26px;
-            font-size: inherit;
-
-
-            &.plain {
-              height: 100%;
-              line-height: 1;
-              padding: 0;
-
-              i.fa {
-                font-size: 14px;
-              }
-            }
-
-            &.primary,
-            &.success {
-              color: #fff;
-            }
-          }
-
-          * {
-            cursor: pointer;
-          }
-
-          &.disabled,
-          &.disabled:hover {
-            color: @color-text--light;
-
-            * {
-              cursor: default;
-            }
-          }
-        }
-      }
+    .file-view-header {
+      height: 50px;
     }
 
     .file-view {
@@ -747,6 +709,61 @@ body.drag {
     .favicon {
       width: 32px;
       height: 32px;
+    }
+
+    .input-group.sync-path {
+      position: relative;
+      flex-wrap: wrap;
+
+      input[type="text"] {
+        border-radius: 4px 0 0 4px;
+        flex: ~"calc(100% - 100px)";
+        margin-top: 10px;
+        margin-left: 20px;
+
+        @media (min-width: 800px) {
+          flex: 1;
+          margin: 0;
+        }
+
+        &:focus {
+          box-shadow: none;
+        }
+      }
+
+      .btn {
+        border-left: 0;
+        border-radius: 0 4px 4px 0;
+
+        &.copy-path,
+        &.desktop {
+          display: none;
+
+          @media (min-width: 800px) {
+            display: block;
+          }
+        }
+
+        &.desktop {
+          width: 190px;
+        }
+
+        &.mobile {
+          display: block;
+          margin-top: 10px;
+
+          @media (min-width: 800px) {
+            display: none;
+          }
+        }
+
+        &.copy-path {
+          width: auto;
+          position: absolute;
+          right: 195px;
+          top: -1px
+        }
+      }
     }
 
     // TODO

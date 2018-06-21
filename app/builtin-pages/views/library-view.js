@@ -671,30 +671,24 @@ function renderSettingsView () {
 
         ${isOwner
           ? yo`
-            <div class="module">
-              <h2 class="module-heading">
-                <span>
-                  <i class="fa fa-folder-o"></i>
-                  Local directory
-                </span>
+            <div class="section">
+              <h2 class="section-heading">
+                Local directory
               </h2>
 
-              <div class="module-content bordered">
+              <div class="section-content">
                 ${syncDirectoryDescription}
               </div>
             </div>`
           : ''
         }
 
-        <div class="module">
-          <h2 class="module-heading">
-            <span>
-              <i class="fa fa-link"></i>
-              Links
-            </span>
+        <div class="section">
+          <h2 class="section-heading">
+            Links
           </h2>
 
-          <div class="module-content bordered">
+          <div class="section-content">
 
             <h3 class="no-margin">Donation page</h3>
             ${isOwner
@@ -713,15 +707,12 @@ function renderSettingsView () {
           </div>
         </div>
 
-        <div class="module coming-soon">
-          <h2 class="module-heading">
-            <span>
-              <i class="fa fa-git"></i>
-              Git integration
-            </span>
+        <div class="section">
+          <h2 class="section-heading">
+            Git integration
           </h2>
 
-          <div class="module-content bordered">
+          <div class="section-content">
             ${_get(archive, 'info.isOwner')
               ? yo`
                 <div>
@@ -814,10 +805,13 @@ function renderNetworkView () {
   return yo`
     <div class="container">
       <div class="view network">
-        <div class="module">
-          <h2 class="module-heading">Network overview</h2>
 
-          <div class="module-content">
+        <h1>Network activity</h1>
+
+        <div class="section">
+          <h2 class="section-heading">Overview</h2>
+
+          <div class="section">
             ${_get(archive, 'info.isOwner')
               ? ''
               : yo`<div>
@@ -892,7 +886,7 @@ function renderNetworkView () {
             </a>
           </div>
 
-          <div class="module-footer two">
+          <div class="section-footer">
             <div>
               ${downloadedBytes !== archive.info.size
                 ? yo`
@@ -952,43 +946,242 @@ function renderNetworkView () {
   `
 }
 
+function renderToolbar () {
+  const renderOpenHistory = () => renderArchiveHistory(filesBrowser.root._archive)
+
+  return yo`
+    <div class="toolbar">
+      <div class="container">
+        ${renderNav()}
+
+        <div class="buttons">
+          ${toggleable(yo`
+            <div class="dropdown toggleable-container archive-history-dropdown">
+              <button class="btn plain nofocus toggleable">
+                <span class="fa fa-history"></span>
+              </button>
+
+              <div class="dropdown-items right toggleable-open-container"></div>
+            </div>
+          `, renderOpenHistory)}
+
+          ${toggleable(yo`
+            <div class="dropdown toggleable-container">
+              <button class="btn plain nofocus toggleable">
+                <span class="fa fa-share-square-o"></span>
+              </button>
+
+              <div class="dropdown-items wide subtle-shadow">
+                <div class="dropdown-item vertically-aligned-icon">
+                  <span class="icon fa fa-link"></span>
+
+                  <span class="label">Share this project</span>
+
+                  <p class="description small">
+                    Anyone with this link can view this project's files
+                  </p>
+
+                  <p>
+                    <input type="text" disabled value="${archive.url}"/>
+                    <button class="btn" onclick=${() => onCopy(archive.url)}>
+                      Copy URL
+                    </button>
+                  </p>
+                </div>
+
+                <div class="dropdown-item vertically-aligned-icon">
+                  <span class="icon fa fa-external-link"></span>
+
+                  <span class="label">Open</span>
+
+                  <p class="description small">
+                    View the live version of this project
+                  </p>
+                </div>
+              </div>
+            </div>`
+          )}
+        </div>
+      </div>
+    </div>
+  `
+}
+
 function renderNav () {
   const isOwner = _get(archive, 'info.isOwner')
   const baseUrl = `beaker://library/${archive.url}`
   const view = VIEWS[activeView]
 
-  return toggleable(
-    yo`
-      <div class="dropdown toggleable-container hover">
-        <button class="btn transparent toggleable">
-          <span class="fa ${view.icon}"></span>
-          ${view.text}
-        </button>
+  return yo`
+    <div class="nav-items">
+      <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="favicon nav-item ${activeView === 'files' ? 'active' : ''}">
+        <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
+      </a>
 
-        <div class="dropdown-items left subtle-shadow no-border roomy">
-          <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="dropdown-item nav-item files ${activeView === 'files' ? 'active' : ''}">
-            <span class="checkmark fa fa-check"></span>
-            <span class="icon fa fa-code"></span>
-            Files
-          </a>
+      <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item ${activeView === 'files' ? 'active' : ''}">
+        Files
+      </a>
 
-          <a href=${baseUrl + '#network'} onclick=${e => onChangeView(e, 'network')} class="dropdown-item nav-item  network ${activeView === 'network' ? 'active' : ''}">
-            <span class="checkmark fa fa-check"></span>
-            <span class="icon fa fa-signal"></span>
-            Network
-          </a>
+      <a href=${baseUrl + '#network'} onclick=${e => onChangeView(e, 'network')} class="nav-item ${activeView === 'network' ? 'active' : ''}">
+        Network
+      </a>
 
-          <a href=${baseUrl + '#settings'} onclick=${e => onChangeView(e, 'settings')} class="dropdown-item nav-item settings ${activeView === 'settings' ? 'active' : ''}">
-            <span class="checkmark fa fa-check"></span>
-            <span class="icon fa fa-gear"></span>
-            ${isOwner ? 'Settings' : 'Info'}
-          </a>
-        </div>
-      </div>
-    `
-  )
+      <a href=${baseUrl + '#settings'} onclick=${e => onChangeView(e, 'settings')} class="nav-item ${activeView === 'settings' ? 'active' : ''}">
+        ${isOwner ? 'Settings' : 'About'}
+      </a>
+    </div>
+  `
 }
 
+function renderMenu () {
+  return ''
+  const isOwner = _get(archive, 'info.isOwner')
+  const isSaved = _get(archive, 'info.userSettings.isSaved')
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  const title = getSafeTitle()
+  const description = _get(archive, 'info.description').trim()
+
+  return toggleable(yo`
+    <div class="center-el dropdown menu toggleable-container">
+      <button class="btn transparent title nofocus toggleable">
+        <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
+        ${title}
+        <span class="fa fa-angle-down"></span>
+      </button>
+
+      <div class="dropdown-items center over no-border">
+        <div class="section">
+          ${isOwner
+            ?
+              yo`<input autofocus class="title" value=${headerEditValues.title || title} onfocus=${onFocusTitleEditor} onblur=${e => onBlurTitleEditor(e, 'title')} placeholder="Title" />`
+            :
+             yo`<h1 class="title">${title}</h1>`
+          }
+
+          ${description ? yo`<p class="description">${description}</p>` : ''}
+        </div>
+
+        ${isOwner
+          ? yo`<div class="section favicons">${renderFaviconPicker()}</div>`
+          : ''
+        }
+
+        <div class="section">
+          ${isOwner
+            ? [
+                yo`
+                  <a href="#settings" class="dropdown-item" onclick=${e => onChangeView(e, 'settings')}>
+                    <i class="fa fa-gear"></i>
+                    Settings
+                  </a>
+                `,
+                yo`
+                  <a href="#network" class="dropdown-item" onclick=${e => onChangeView(e, 'network')}>
+                    <i class="fa fa-signal"></i>
+                    Network info
+                  </a>
+                `,
+                yo`
+                  <div class="dropdown-item" onclick=${onMakeCopy}>
+                    <i class="fa fa-clone"></i>
+                    Make a copy
+                  </div>
+                `,
+              ]
+            : [
+                yo`
+                  <a href="#settings" class="dropdown-item" onclick=${e => onChangeView(e, 'settings')}>
+                    <i class="fa fa-info-circle"></i>
+                    About
+                  </a>
+                `,
+                yo`
+                  <div class="dropdown-item" onclick=${e => onChangeView(e, 'network')}>
+                    <i class="fa fa-signal"></i>
+                    Network info
+                  </div>
+                `,
+              ]
+            }
+
+          <div class="dropdown-item" onclick=${onDownloadZip}>
+            <i class="fa fa-file-archive-o"></i>
+            Download as .zip
+          </div>
+
+          ${isOwner
+            ? (isSaved
+              ? yo`
+                <div class="dropdown-item" onclick=${onMoveToTrash}>
+                  <i class="fa fa-trash-o"></i>
+                  Move to Trash
+                </div>`
+              : [
+                yo`
+                  <div class="dropdown-item" onclick=${onSave}>
+                    <i class="fa fa-undo"></i>
+                    Restore from Trash
+                  </div>`,
+                yo`
+                  <div class="dropdown-item" onclick=${onDeletePermanently}>
+                    <i class="fa fa-times-circle"></i>
+                    Delete permanently
+                  </div>`
+              ]
+            ) : ''
+          }
+        </div>
+
+        ${!isOwner
+          ? yo`
+            <div class="section">
+              <div class="sync-path-info">
+                <button class="btn full-width success" onclick=${onMakeCopy}>
+                  Make an editable copy
+                </button>
+              </div>
+            </div>`
+          : ''
+        }
+
+        ${isOwner && isSaved
+          ? yo`
+            <div class="section">
+              ${syncPath
+                ? yo`
+                    <div class="sync-path-info">
+                      <label class="toggle draft-mode" data-tooltip="TODO">
+                        <div class="text">Draft mode</div>
+                        <input disabled checked=${false} type="checkbox" name="draft-mode" value="draft-mode" />
+                        <div class="switch"></div>
+                      </label>
+
+                      <code onclick=${() => onOpenFolder(syncPath)} class="link">${syncPath}</code>
+                    </div
+                  `
+                : yo`
+                  <div class="sync-path-info">
+                    <label disabled class="toggle draft-mode" data-tooltip="Set a local directory to enter Draft mode">
+                      <div class="text">Draft mode</div>
+                      <input checked=${false} type="checkbox" name="draft-mode" value="draft-mode">
+                      <div class="switch"></div>
+                    </label>
+
+                    <button onclick=${onChangeSyncDirectory} class="btn primary full-width tooltip-container">
+                      Set local directory
+                    </button>
+                  </div>`
+              }
+            </div>
+          `
+          : ''
+        }
+      </div>
+    </div>
+  `)
+}
+
+/*
 function renderMenu () {
   const isOwner = _get(archive, 'info.isOwner')
   const isSaved = _get(archive, 'info.userSettings.isSaved')
@@ -1047,6 +1240,7 @@ function renderMenu () {
     </div>
   `)
 }
+*/
 
 function renderEditButton () {
   if (_get(archive, 'info.userSettings.localSyncPath')) {
