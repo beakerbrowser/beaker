@@ -797,133 +797,144 @@ body.drag {
     }
   }
 
-  footer {
-    position: fixed;
-    bottom: 0;
+  .library-view-header {
+    background: #fff;
+    margin: 0;
+
+    .info {
+      position: relative;
+      padding: 30px 0 20px;
+
+      .primary-action {
+        position: absolute;
+        right: 0;
+        top: 30px;
+      }
+    }
+
+    .title {
+      font-size: 1.6rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .description {
+      font-size: .9rem;
+    }
+  }
+
+  .toolbar {
+    position: sticky;
+    top: 0;
     left: 0;
     width: 100%;
-    border-top: 1px solid #ddd;
-    height: 50px;
-    font-size: .875rem;
-    background: #fff;
+    height: 55px;
+    border-bottom: 1px solid #ddd;
+    font-size: .9rem;
 
+    .nav-items,
     .container {
       &:extend(.flex);
       align-items: center;
-      justify-content: flex-end;
-      max-width: 800px;
-      width: 100%;
-      height: 100%;
-      margin: auto;
     }
 
-    .secondary-action {
-      margin-right: 10px;
-    }
+    .buttons {
+      &:extend(.flex);
+      margin-left: auto;
 
-    .dropdown-items.syncfolder-info {
-      width: 275px;
-      right: -10px;
-
-      .dropdown-item {
-        &:extend(.overflow-ellipsis);
+      .btn {
+        color: @color-text;
+        margin-right: 0;
       }
     }
-
-    .path {
-      color: rgba(0,0,0,.85);
-      cursor: pointer;
-
-      &:hover {
-        text-decoration: underline;
-      }
-
-      &.error {
-
-        .btn {
-          margin-left: 5px;
-        }
-
-        &:hover {
-          color: initial;
-          text-decoration: none;
-        }
-      }
-    }
-
-    .dropdown.open .btn.primary {
-      background: shade(@blue, 15%);
-    }
-
-    .dropdown-items {
-      width: 235px;
-      font-size: .8rem;
-    }
-
-    .metadata {
-      color: rgba(0,0,0,.85);
-      margin-right: auto;
-    }
-
-    .btn {
-
-      .fa-caret-up {
-        margin-top: -2px;
-      }
-    }
-  }
-
-  .nav {
-
   }
 
   .nav-item {
-    font-weight: 500;
+    &:extend(.flex);
+    align-items: center;
+    height: 55px;
+    // padding: 0 15px 1px 15px;
+    // margin-right: 2px;
+    margin-right: 40px;
+    // margin-bottom: -1px;
+    // border-bottom: 2px solid transparent;
+    // font-weight: 500;
 
-    .checkmark {
-      opacity: 0;
-      margin-right: 5px;
+    &.favicon {
+      margin-right: 20px;
+
+      img {
+        width: 24px;
+        height: 24px;
+      }
     }
 
     &.active {
+      // border-color: @blue;
+      text-decoration: underline;
+    }
+  }
 
-      .checkmark {
-        opacity: 1;
+  .nav-links {
+    // &:extend(.flex);
+    // align-items: center;
+    height: 100%;
+    // font-size: 13.5px;
+
+    .link {
+      margin-right: 25px;
+
+      &.active {
+        text-decoration: underline;
       }
     }
+  }
 
-    &.files {
+  .dropdown.menu {
+    color: @color-text;
 
-      .icon {
-        background: @blue;
-      }
+    .title {
+      padding-bottom: 0;
     }
 
-    &.network {
-
-      .icon {
-        background: @orange;
-      }
+    .description {
+      padding: 10px;
+      margin: 0;
     }
 
-    &.settings {
-
-      .icon {
-        background: @pink;
-      }
-    }
-
-    .icon {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      margin-right: 5px;
-      color: #fff;
+    .dropdown-items {
+      width: 275px;
+      background: #fff;
       font-size: 13px;
-      text-align: center;
-      vertical-align: middle;
-      line-height: 18px;
-      border-radius: 4px;
+    }
+
+    .dropdown-item {
+
+      .fa {
+        color: @color-text;
+      }
+    }
+
+    .sync-path-info {
+      padding: 5px 10px;
+
+      code {
+        &:extend(.code-font);
+        line-height: 1;
+        font-size: 12.5px;
+        color: @color-text--muted;
+        margin-top: 10px;
+      }
+    }
+
+    .section.favicons {
+      background: #f7f7f7;
+      max-height: 90px;
+      overflow-y: auto;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
   }
 
@@ -935,13 +946,14 @@ body.drag {
     .file-view-header,
     .readme {
       width: 100%;
+      background: #fff;
     }
 
     .readme {
       border: 1px solid #ddd;
       border-top: 0;
       border-radius: 0 0 2px 2px;
-      padding: 15px 25px;
+      padding: 20px;
       font-size: 15px;
       line-height: 1.5;
     }
