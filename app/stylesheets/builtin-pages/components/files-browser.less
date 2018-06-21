@@ -9,8 +9,9 @@
   flex-wrap: nowrap;
 
   .body {
+    background: #fff;
     border: 1px solid #ddd;
-    border-radius: 2px;
+    border-top: 0;
 
     &.file {
       border: 0;
@@ -49,19 +50,28 @@
 
     .actions {
       margin-left: auto;
-      margin-bottom: 10px;
       display: flex;
 
       & > * {
         margin-left: 5px;
       }
 
-      .import-dropdown .dropdown-items {
-        width: 160px;
-      }
 
       .new-dropdown .dropdown-items {
-        width: 110px;
+        width: 150px;
+        padding: 5px 0;
+      }
+
+      .btn-group {
+        margin-left: 10px;
+      }
+
+      .btn.plain:hover {
+        color: @blue;
+      }
+
+      .btn.trash:hover {
+        color: shade(@red, 20%);
       }
     }
   }
