@@ -7,7 +7,6 @@ import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
 import * as toast from '../toast'
 import toggleable from '../toggleable'
-import renderArchiveHistory from '../archive-history'
 import {DAT_VALID_PATH_REGEX} from '@beaker/core/lib/const'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
@@ -65,18 +64,8 @@ function rVersion (filesBrowser, currentSource) {
 }
 
 function rActions (filesBrowser, currentSource) {
-  const renderOpenHistory = () => renderArchiveHistory(filesBrowser.root._archive)
   return yo`
     <div class="actions">
-      ${toggleable(yo`
-        <div class="dropdown toggleable-container archive-history-dropdown">
-          <button class="btn plain toggleable">
-            <i class="fa fa-archive"></i>
-          </button>
-
-          <div class="dropdown-items right toggleable-open-container"></div>
-        </div>
-      `, renderOpenHistory)}
       ${(currentSource.isEditable && currentSource.type !== 'file')
         ?
           [
