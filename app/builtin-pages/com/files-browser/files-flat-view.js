@@ -41,6 +41,7 @@ function rHeader (filesBrowser, currentSource) {
   return yo`
     <div class="files-browser-header">
       ${rBreadcrumbs(filesBrowser, currentSource)}
+      ${rMetadata(filesBrowser, currentSource)}
       ${rVersion(filesBrowser, currentSource)}
       ${rActions(filesBrowser, currentSource)}
     </div>
@@ -61,6 +62,34 @@ function rVersion (filesBrowser, currentSource) {
     yo`<div class="version-badge badge green">v${version}</div>`,
     yo`<a class="jump-to-latest" href=${`beaker://library/${urlUnversioned}`}>Jump to latest</a>`
   ]
+}
+
+function rMetadata (filesBrowser, node) {
+  if (filesBrowser.isEditMode) {
+    return ''
+  }
+
+  var numLines
+  var isTextual = typeof node.preview === 'string' // preview is only set for text items
+
+  if (node.preview) {
+    numLines = node.preview.split('\n').length
+  }
+
+  return yo`
+    <div class="metadata">
+      ${numLines
+        ? [
+          yo`
+            <span class="file-info">
+              ${numLines} ${pluralize(numLines, 'line')}
+            </span>`,
+          yo`<span class="separator">|</span>`
+        ]
+        : ''
+      }
+      <span class="file-info">${prettyBytes(node.size)}</span>
+    </div>`
 }
 
 function rActions (filesBrowser, currentSource) {

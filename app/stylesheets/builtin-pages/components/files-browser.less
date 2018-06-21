@@ -23,6 +23,18 @@
   .files-browser-header {
     &:extend(.flex);
     align-items: center;
+    height: 50px;
+    padding: 0 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+
+    .path {
+      font-weight: 500;
+    }
+
+    .metadata {
+      color: rgba(0,0,0,.5);
+    }
 
     .version-badge {
       &:extend(.code-font);
