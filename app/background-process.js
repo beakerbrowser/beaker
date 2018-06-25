@@ -7,6 +7,7 @@ import setupDebugLogger from './background-process/debug-logger'
 // window from here.
 
 import {app, protocol} from 'electron'
+import {join} from 'path'
 import * as beakerCore from '@beaker/core'
 import * as rpc from 'pauls-electron-rpc'
 
@@ -69,6 +70,7 @@ app.on('ready', async function () {
     // paths
     userDataPath: app.getPath('userData'),
     homePath: app.getPath('home'),
+    templatesPath: join(__dirname, 'assets', 'templates'),
     disallowedSavePaths: DISALLOWED_SAVE_PATH_NAMES.map(path => app.getPath(path)),
 
     // APIs

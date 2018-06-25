@@ -1,6 +1,7 @@
 import {app, protocol} from 'electron'
 import * as beakerCore from '@beaker/core'
 import errorPage from '@beaker/core/lib/error-page'
+const {templates} = beakerCore.dbs
 const {archivesDebugPage, datDnsCachePage, datDnsCacheJS} = beakerCore.dat.debug
 import path from 'path'
 import url from 'url'
@@ -133,6 +134,21 @@ async function beakerProtocol (request, respond) {
   }
   if (requestUrl.startsWith('beaker://assets/favicons/')) {
     return serveICO(path.join(__dirname, 'assets/favicons', requestUrl.slice('beaker://assets/favicons/'.length)))
+  }
+
+  // template screenshots
+  if (requestUrl.startsWith('beaker://templates/screenshot/')) {
+    let templateUrl = requestUrl.slice('beaker://templates/screenshot/'.length)
+    templates.getScreenshot(0, templateUrl)
+      .then(({screenshot}) => {
+        screenshot = screenshot.split(',')[1]
+        cb(200, 'OK', 'image/png', () => Buffer.from(screenshot, 'base64'))
+      })
+      .catch(err => {
+        console.error('Failed to load template screenshot', templateUrl, err)
+        return cb(404, 'Not Found')
+      })
+    return
   }
 
   // builtin pages

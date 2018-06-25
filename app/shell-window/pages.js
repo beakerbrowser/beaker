@@ -29,7 +29,7 @@ const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by thi
 export const FIRST_TAB_URL = 'beaker://start'
 export const DEFAULT_URL = 'beaker://start'
 
-const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
+export const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
 
 // globals
 // =

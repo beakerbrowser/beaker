@@ -2,6 +2,8 @@
 
 import yo from 'yo-yo'
 import closeIcon from '../icon/close'
+import * as contextMenu from './context-menu'
+import * as toast from './toast'
 
 // globals
 // =
@@ -10,12 +12,20 @@ var resolve
 var reject
 
 var currentTemplate
+var userTemplates
 
 // exported api
 // =
 
 export function create (opts = {}) {
   currentTemplate = 'blank'
+  userTemplates = []
+
+  // load user templates
+  beaker.archives.listTemplates().then(t => {
+    userTemplates = t
+    update()
+  })
 
   // render interface
   var popup = render()
@@ -61,6 +71,7 @@ function render () {
           <div class="templates-grid">
             ${renderTemplateItem('blank', 'Blank')}
             ${renderTemplateItem('website', 'Website')}
+            ${userTemplates.map(({url, title}) => renderTemplateItem(url, title, true))}
           </div>
 
           <div class="actions">
@@ -74,16 +85,20 @@ function render () {
   `
 }
 
-function renderTemplateItem (id, label) {
-  var isSelected = currentTemplate === id
+function renderTemplateItem (url, title, isUserTemplate) {
+  var isSelected = currentTemplate === url
+  var screenshotUrl = isUserTemplate
+    ? `beaker://templates/screenshot/${url}`
+    : `beaker://assets/img/templates/${url}.png`
   return yo`
     <div
       class="template-item ${isSelected ? 'selected' : ''}"
-      onclick=${e => onSelectTemplate(id)}
-      ondblclick=${e => onSelectTemplate(id, true)}
+      onclick=${e => onSelectTemplate(url)}
+      ondblclick=${e => onSelectTemplate(url, true)}
+      oncontextmenu=${e => onContextmenuTemplate(e, {url, title})}
     >
-      <img src=${'beaker://assets/img/templates/' + id + '.png'} />
-      <div class="label"><span>${label}</span></div>
+      <img src=${screenshotUrl} />
+      <div class="label"><span>${title}</span></div>
     </div>`
 }
 
@@ -99,8 +114,8 @@ function onKeyUp (e) {
   }
 }
 
-function onSelectTemplate (id, submitNow = false) {
-  currentTemplate = id
+function onSelectTemplate (url, submitNow = false) {
+  currentTemplate = url
   update()
   if (submitNow) {
     onSubmit()
@@ -113,11 +128,49 @@ function onClickWrapper (e) {
   }
 }
 
+async function onContextmenuTemplate (e, template) {
+  e.preventDefault()
+  var {url} = template
+  
+  // select the template
+  currentTemplate = url
+  update()
+
+  if (url !== 'blank' && url !== 'website') {
+    // show the context menu
+    const items = [
+      {icon: 'trash', label: 'Delete template', click: () => onClickDeleteTemplate(template) }
+    ]
+    await contextMenu.create({x: e.clientX, y: e.clientY, items})
+  }
+}
+
+async function onClickDeleteTemplate (template) {
+  // confirm
+  if (!confirm(`Remove ${template.title}?`)) {
+    return
+  }
+  // remove
+  await beaker.archives.removeTemplate(template.url)
+  // notify and rerender
+  currentTemplate = 'blank'
+  userTemplates = await beaker.archives.listTemplates()
+  toast.create(`${template.title} has been removed from your templates.`, '', 3e3)
+  update()
+}
+
 async function onSubmit (e) {
   if (e) e.preventDefault()
 
   var template = currentTemplate !== 'blank' ? currentTemplate : false
-  var archive = await DatArchive.create({template, prompt: false})
+  // TODO -- if using a dat template, need to decide whether to fork from dat:// or an internal snapshot -prf
+  var archive
+  if (template && template.startsWith('dat://')) {
+    archive = await DatArchive.fork(template, {prompt: false})
+  } else {
+    console.log('creating', template)
+    archive = await DatArchive.create({template, prompt: false})
+  }
   resolve({archive})
   destroy()
 }
