@@ -20,13 +20,15 @@ const app = browserdriver.start({
 var testStaticDat, testStaticDatURL
 var createdDatURL // url of the dat which is created by testRunnerDat, which gives it write access
 var createdDatKey
+var draft1URL
+var draft2URL
 
 test.before(async t => {
   await app.isReady
 
   // share the test static dat
   testStaticDat = await shareDat(__dirname + '/scaffold/test-static-dat')
-  testStaticDatURL = 'dat://' + testStaticDat.archive.key.toString('hex') + '/'
+  testStaticDatURL = 'dat://' + testStaticDat.archive.key.toString('hex')
 
   // create a owned archive
   var res = await app.executeJavascript(`
@@ -136,88 +138,229 @@ test('library.list', async t => {
 
 })
 
-// TODO(profiles) disabled -prf
-// test('publishing', async t => {
-//   // publish by url
-//   var res = await app.client.executeJavascript((url, done) => {
-//     window.beaker.archives.publish(url)
-//   }, createdDatURL)
-//   var recordUrl = res
-//   t.truthy(recordUrl.startsWith('dat://'))
-//   var res = await app.client.executeJavascript((recordUrl, done) => {
-//     window.beaker.archives.getPublishRecord(recordUrl)
-//   }, recordUrl)
-//   var cmp = {
-//     _origin: res._origin,
-//     _url: res._url,
-//     createdAt: res.createdAt,
-//     description: 'Is temporary',
-//     id: res.id,
-//     receivedAt: res.receivedAt,
-//     title: 'Test Archive',
-//     type: [ 'foo', 'bar' ],
-//     url: createdDatURL,
-//     votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 }
-//   }
-//   t.deepEqual(res, cmp)
+test('hidden archives', async t => {
+  // create a hidden archive
+  var res = await app.executeJavascript(`
+    DatArchive.create({title: 'Test Archive (draft 1)', description: 'Is temporary', type: ['foo', 'bar'], hidden: true, prompt: false})
+  `)
+  draft1URL = res.url
 
-//   // list
-//   var res = await app.client.executeJavascript((done) => {
-//     window.beaker.archives.listPublished({fetchAuthor: true, countVotes: true})
-//   })
-//   t.deepEqual(res, [
-//     { _origin: res[0]._origin,
-//     _url: res[0]._url,
-//     createdAt: res[0].createdAt,
-//     description: 'Is temporary',
-//     id: res[0].id,
-//     receivedAt: res[0].receivedAt,
-//     title: 'Test Archive',
-//     type: [ 'foo', 'bar' ],
-//     url: createdDatURL,
-//     votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 } }
-//   ])
+  // fork a hidden archive
+  var res = await app.executeJavascript(`
+    DatArchive.fork("${createdDatURL}", {hidden: true, prompt: false})
+  `)
+  draft2URL = res.url
 
-//   // unpublish by url
-//   await app.client.executeJavascript((url, done) => {
-//     window.beaker.archives.unpublish(url)
-//   }, createdDatURL)
-//   var res = await app.client.executeJavascript((recordUrl, done) => {
-//     window.beaker.archives.getPublishRecord(recordUrl)
-//   }, recordUrl)
-//   t.falsy(res)
+  // list doesn't show hidden by default
+  var res = await app.executeJavascript(`
+    window.beaker.archives.list()
+  `)
+  var items = res
+  t.deepEqual(items.length, 2)
+  t.deepEqual(items.map(item => item.url).sort(), [createdDatURL, testStaticDatURL].sort())
 
-//   // publish/unpublish by archive
-//   var res = await app.client.executeJavascript((url, done) => {
-//     var archive = new DatArchive(url)
-//     window.beaker.archives.publish(archive)
-//   }, createdDatURL)
-//   var recordUrl = res
-//   t.truthy(recordUrl.startsWith('dat://'))
-//   var res = await app.client.executeJavascript((recordUrl, done) => {
-//     window.beaker.archives.getPublishRecord(recordUrl)
-//   }, recordUrl)
-//   t.deepEqual(res, {
-//     _origin: res._origin,
-//     _url: res._url,
-//     createdAt: res.createdAt,
-//     description: 'Is temporary',
-//     id: res.id,
-//     receivedAt: res.receivedAt,
-//     title: 'Test Archive',
-//     type: [ 'foo', 'bar' ],
-//     url: createdDatURL,
-//     votes: { currentUsersVote: 0, down: 0, up: 0, upVoters: [], value: 0 }
-//   })
-//   await app.client.executeJavascript((url, done) => {
-//     var archive = new DatArchive(url)
-//     window.beaker.archives.unpublish(archive)
-//   }, createdDatURL)
-//   var res = await app.client.executeJavascript((recordUrl, done) => {
-//     window.beaker.archives.getPublishRecord(recordUrl)
-//   }, recordUrl)
-//   t.falsy(res)
-// })
+  // list shows hidden when specified
+  var res = await app.executeJavascript(`
+    window.beaker.archives.list({showHidden: true})
+  `)
+  var items = res
+  t.deepEqual(items.length, 4)
+  t.deepEqual(items.map(item => item.url).sort(), [createdDatURL, testStaticDatURL, draft1URL, draft2URL].sort())
+})
+
+test('draft APIs', async t => {
+  // draft info (no drafts)
+  var res = await app.executeJavascript(`
+    beaker.archives.getDraftInfo("${createdDatURL}")
+  `)
+  t.is(res.master.url, createdDatURL)
+  t.is(res.activeDraftUrl, createdDatURL)
+  t.is(res.drafts.length, 0)
+
+  // add draft 1
+  await app.executeJavascript(`
+    beaker.archives.addDraft("${createdDatURL}", "${draft1URL}")
+  `)
+
+  // list
+  var res = await app.executeJavascript(`
+    beaker.archives.listDrafts("${createdDatURL}")
+  `)
+  t.is(res.length, 1)
+  t.is(res[0].url, draft1URL)
+  t.is(res[0].userSettings.localSyncPath, '')
+  t.is(res[0].isActiveDraft, false)
+
+  // draft info (1 draft)
+  var res = await app.executeJavascript(`
+    beaker.archives.getDraftInfo("${createdDatURL}")
+  `)
+  t.is(res.master.url, createdDatURL)
+  t.is(res.activeDraftUrl, createdDatURL)
+  t.is(res.drafts.length, 1)
+  t.is(res.drafts[0].url, draft1URL)
+  t.is(res.drafts[0].userSettings.localSyncPath, '')
+  t.is(res.drafts[0].isActiveDraft, false)
+
+  // add draft 2
+  await app.executeJavascript(`
+    beaker.archives.addDraft("${createdDatURL}", "${draft2URL}")
+  `)
+
+  // list
+  var res = await app.executeJavascript(`
+    beaker.archives.listDrafts("${createdDatURL}")
+  `)
+  t.is(res.length, 2)
+  t.is(res[0].url, draft1URL)
+  t.is(res[0].userSettings.localSyncPath, '')
+  t.is(res[0].isActiveDraft, false)
+  t.is(res[1].url, draft2URL)
+  t.is(res[1].userSettings.localSyncPath, '')
+  t.is(res[1].isActiveDraft, false)
+
+  // draft info (2 drafts)
+  var res = await app.executeJavascript(`
+    beaker.archives.getDraftInfo("${createdDatURL}")
+  `)
+  t.is(res.master.url, createdDatURL)
+  t.is(res.activeDraftUrl, createdDatURL)
+  t.is(res.drafts.length, 2)
+  t.is(res.drafts[0].url, draft1URL)
+  t.is(res.drafts[0].userSettings.localSyncPath, '')
+  t.is(res.drafts[0].isActiveDraft, false)
+  t.is(res.drafts[1].url, draft2URL)
+  t.is(res.drafts[1].userSettings.localSyncPath, '')
+  t.is(res.drafts[1].isActiveDraft, false)
+
+  // remove draft 2
+  await app.executeJavascript(`
+    beaker.archives.removeDraft("${createdDatURL}", "${draft2URL}")
+  `)
+
+  // list
+  var res = await app.executeJavascript(`
+    beaker.archives.listDrafts("${createdDatURL}")
+  `)
+  t.is(res.length, 1)
+  t.is(res[0].url, draft1URL)
+  t.is(res[0].userSettings.localSyncPath, '')
+  t.is(res[0].isActiveDraft, false)
+
+  // readd draft 2
+  await app.executeJavascript(`
+    beaker.archives.addDraft("${createdDatURL}", "${draft2URL}")
+  `)
+
+  // set draft 1 active
+  await app.executeJavascript(`
+    beaker.archives.setActiveDraft("${createdDatURL}", "${draft1URL}")
+  `)
+
+  // read active draft state
+  var res = await app.executeJavascript(`
+    beaker.archives.getDraftInfo("${createdDatURL}")
+  `)
+  t.is(res.master.url, createdDatURL)
+  t.is(res.activeDraftUrl, draft1URL)
+  t.is(res.drafts.length, 2)
+  t.is(res.drafts[0].url, draft1URL)
+  t.is(res.drafts[0].userSettings.localSyncPath, '')
+  t.is(res.drafts[0].isActiveDraft, true)
+  t.is(res.drafts[1].url, draft2URL)
+  t.is(res.drafts[1].userSettings.localSyncPath, '')
+  t.is(res.drafts[1].isActiveDraft, false)
+
+  // set draft 2 active
+  await app.executeJavascript(`
+    beaker.archives.setActiveDraft("${createdDatURL}", "${draft2URL}")
+  `)
+
+  // read active draft state
+  var res = await app.executeJavascript(`
+    beaker.archives.getDraftInfo("${createdDatURL}")
+  `)
+  t.is(res.master.url, createdDatURL)
+  t.is(res.activeDraftUrl, draft2URL)
+  t.is(res.drafts.length, 2)
+  t.is(res.drafts[0].url, draft1URL)
+  t.is(res.drafts[0].userSettings.localSyncPath, '')
+  t.is(res.drafts[0].isActiveDraft, false)
+  t.is(res.drafts[1].url, draft2URL)
+  t.is(res.drafts[1].userSettings.localSyncPath, '')
+  t.is(res.drafts[1].isActiveDraft, true)
+
+  // dont allow delete on the active draft
+  await t.throws(app.executeJavascript(`
+    beaker.archives.removeDraft("${createdDatURL}", "${draft2URL}")
+  `))
+
+  // set master active
+  await app.executeJavascript(`
+    beaker.archives.setActiveDraft("${createdDatURL}", "${createdDatURL}")
+  `)
+
+  // read active draft state
+  var res = await app.executeJavascript(`
+    beaker.archives.listDrafts("${createdDatURL}")
+  `)
+  t.is(res.length, 2)
+  t.is(res[0].url, draft1URL)
+  t.is(res[0].userSettings.localSyncPath, '')
+  t.is(res[0].isActiveDraft, false)
+  t.is(res[1].url, draft2URL)
+  t.is(res[1].userSettings.localSyncPath, '')
+  t.is(res[1].isActiveDraft, false)
+
+  // adding a draft (draft 3) to a draft (draft 1) will add the draft to its master
+  var res = await app.executeJavascript(`DatArchive.fork("${createdDatURL}", {hidden: true, prompt: false})`)
+  var draft3URL = res.url
+  await app.executeJavascript(`beaker.archives.addDraft("${draft1URL}", "${draft3URL}")`)
+
+  // list
+  var res = await app.executeJavascript(`
+    beaker.archives.listDrafts("${createdDatURL}")
+  `)
+  t.is(res.length, 3)
+  t.is(res[0].url, draft1URL)
+  t.is(res[0].userSettings.localSyncPath, '')
+  t.is(res[0].isActiveDraft, false)
+  t.is(res[1].url, draft2URL)
+  t.is(res[1].userSettings.localSyncPath, '')
+  t.is(res[1].isActiveDraft, false)
+  t.is(res[2].url, draft3URL)
+  t.is(res[2].userSettings.localSyncPath, '')
+  t.is(res[2].isActiveDraft, false)
+
+  // removing a draft (draft 3) from a draft (draft 1) will remove the draft from its master
+  await app.executeJavascript(`beaker.archives.removeDraft("${draft1URL}", "${draft3URL}")`)
+
+  // list
+  var res = await app.executeJavascript(`
+    beaker.archives.listDrafts("${createdDatURL}")
+  `)
+  t.is(res.length, 2)
+  t.is(res[0].url, draft1URL)
+  t.is(res[0].userSettings.localSyncPath, '')
+  t.is(res[0].isActiveDraft, false)
+  t.is(res[1].url, draft2URL)
+  t.is(res[1].userSettings.localSyncPath, '')
+  t.is(res[1].isActiveDraft, false)
+
+  // draft info works when pulling from a draft url
+  var res = await app.executeJavascript(`
+    beaker.archives.getDraftInfo("${draft1URL}")
+  `)
+  t.is(res.master.url, createdDatURL)
+  t.is(res.activeDraftUrl, createdDatURL)
+  t.is(res.drafts.length, 2)
+  t.is(res.drafts[0].url, draft1URL)
+  t.is(res.drafts[0].userSettings.localSyncPath, '')
+  t.is(res.drafts[0].isActiveDraft, false)
+  t.is(res.drafts[1].url, draft2URL)
+  t.is(res.drafts[1].userSettings.localSyncPath, '')
+  t.is(res.drafts[1].isActiveDraft, false)
+})
 
 test('library "updated" event', async t => {
   // register event listener
