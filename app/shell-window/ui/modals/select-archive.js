@@ -13,9 +13,10 @@ export class SelectArchiveModal extends BaseModal {
 
     this.currentFilter = ''
     this.selectedArchiveKey = ''
-    this.archives
+    this.archives = null
     this.title = ''
     this.description = ''
+    this.type = undefined
     this.buttonLabel = opts.buttonLabel || 'Select'
     this.customTitle = opts.title || ''
     this.currentView = 'archivePicker'
@@ -29,8 +30,10 @@ export class SelectArchiveModal extends BaseModal {
     // fetch archives
     this.archives = await beaker.archives.list({
       isSaved: true,
-      isOwner: (filters && filters.isOwner)
+      isOwner: (filters && filters.isOwner),
+      type: (filters && filters.type)
     })
+    this.type = filters && filters.type
     this.archives.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
     this.rerender()
   }
@@ -197,6 +200,7 @@ export class SelectArchiveModal extends BaseModal {
         var newArchive = await DatArchive.create({
           title: this.title,
           description: this.description,
+          type: this.type,
           prompt: false
         })
         this.close(null, {url: newArchive.url})

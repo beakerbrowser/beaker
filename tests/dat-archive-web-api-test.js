@@ -1301,6 +1301,89 @@ test('archive.download', async t => {
   }
 })
 
+test('archive types', async t => {
+  // create some dats with various types
+  var typedArchive1URLPromise = mainTab.executeJavascript(`
+    DatArchive.create({title: 'Typed dat 1', type: ['foo', 'bar'], prompt: false}).then(archive => archive.url)
+  `)
+  await app.waitForElement('.prompt-accept')
+  await app.click('.prompt-accept')
+  var typedArchive1URL = await typedArchive1URLPromise
+
+  var typedArchive2URLPromise = mainTab.executeJavascript(`
+    DatArchive.create({title: 'Typed dat 2', type: 'foo baz', prompt: false}).then(archive => archive.url)
+  `)
+  await app.waitForElement('.prompt-accept')
+  await app.click('.prompt-accept')
+  var typedArchive2URL = await typedArchive2URLPromise
+
+  // get info gives type
+  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive1URL}")).getInfo()`)
+  t.deepEqual(res.type, ['foo', 'bar'])
+  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).getInfo()`)
+  t.deepEqual(res.type, ['foo', 'baz'])
+
+  // selectArchive applies type filter
+  mainTab.executeJavascript(`
+    // put the result on the window, for checking later
+    window.res = null
+    DatArchive.selectArchive({filters: {type: 'baz'}}).then(
+      res => window.res = res.url,
+      err => window.res = err
+    )
+  `)
+
+  // click one of the archives
+  await app.waitForElement(`li[data-key]`)
+  await app.click(`li[data-key]`)
+
+  // accept the prompt
+  await app.click('button[type="submit"]')
+
+  // fetch & test the res
+  await mainTab.waitFor(`window.res`)
+  var res = await mainTab.executeJavascript(`window.res`)
+  t.is(res, typedArchive2URL)
+
+  // configure can change types
+  await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).configure({type: 'foo baz blah'})`)
+  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).getInfo()`)
+  t.deepEqual(res.type, ['foo', 'baz', 'blah'])
+
+  // forks preserve type if none is specified
+  var typedArchive3URLPromise = mainTab.executeJavascript(`
+    DatArchive.fork("${typedArchive1URL}", {prompt: false}).then(archive => archive.url)
+  `)
+  await app.waitForElement('.prompt-accept')
+  await app.click('.prompt-accept')
+  var typedArchive3URL = await typedArchive3URLPromise
+  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive3URL}")).getInfo()`)
+  t.deepEqual(res.type, ['foo', 'bar'])
+
+  // forks overwrite type if type is specified
+  var typedArchive4URLPromise = mainTab.executeJavascript(`
+    DatArchive.fork("${typedArchive1URL}", {type: ['other'], prompt: false}).then(archive => archive.url)
+  `)
+  await app.waitForElement('.prompt-accept')
+  await app.click('.prompt-accept')
+  var typedArchive4URL = await typedArchive4URLPromise
+  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive4URL}")).getInfo()`)
+  t.deepEqual(res.type, ['other'])
+
+  // select archive passes the type filter onto created archives
+  var typedArchive5URLPromise = mainTab.executeJavascript(`
+    DatArchive.selectArchive({filters: {type: 'select-created'}}).then(archive => archive.url)
+  `)
+  await app.waitForElement('.btn[data-content="newArchive"]')
+  await app.click('.btn[data-content="newArchive"]')
+  await app.waitForElement('input[name="title"]')
+  await app.setValue('input[name="title"]', 'The Title')
+  await app.click('button[type="submit"]')
+  var typedArchive5URL = await typedArchive5URLPromise
+  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive5URL}")).getInfo()`)
+  t.deepEqual(res.type, ['select-created'])
+})
+
 test('DatArchive.importFromFilesystem', async t => {
   // import adds all files from target
   // =
