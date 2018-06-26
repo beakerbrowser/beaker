@@ -74,7 +74,7 @@ export class PageMenuNavbarBtn {
                 <div class="dropdown-items compact with-triangle">
                   <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
                     <i class="fa fa-files-o"></i>
-                    View files
+                    View Source
                   </div>
 
                   <div class="dropdown-item" onclick=${() => this.onClickFork()}>
