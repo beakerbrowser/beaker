@@ -1269,6 +1269,26 @@ async function onMakeCopy () {
   window.location = `beaker://library/${fork.url}#setup`
 }
 
+async function onCreateDraft () {
+  let title = archive.info.title || ''
+
+  // create a copy
+  const fork = await DatArchive.fork(
+    archive.url,
+    {
+      title,
+      prompt: false,
+      hidden: true
+    }
+  ).catch(() => {})
+
+  // add the draft and set it as the active draft
+  await beaker.archives.addDraft(archive.url, fork.url)
+  await beaker.archives.setActiveDraft(archive.url, fork.url)
+
+  window.location = `beaker://library/${fork.url}`
+}
+
 async function addReadme () {
   const readme = `# ${archive.info.title || 'Untitled'}\n\n${archive.info.description || ''}`
   await archive.writeFile('/README.md', readme)
