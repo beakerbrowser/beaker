@@ -27,30 +27,12 @@ import createMd from '../../lib/fg/markdown'
 import {IS_GIT_URL_REGEX} from '@beaker/core/lib/const'
 
 const DEFAULT_PEERS_LIMIT = 10
-const VIEWS = {
-  'files': {
-    icon: 'fa-code',
-    text: 'Files'
-  },
-  'network': {
-    icon: 'fa-signal',
-    text: 'Network'
-  },
-  'info': {
-    icon: 'fa-info-circle',
-    text: 'Information'
-
-  },
-  'settings': {
-    icon: 'fa-gear',
-    text: 'Settings'
-  }
-}
 
 // globals
 // =
 
 var activeView // will default to 'files'
+var activeVersionTab = 'drafts'
 var archive
 var archiveFsRoot
 var filesBrowser
