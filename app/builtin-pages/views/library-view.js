@@ -36,6 +36,7 @@ var activeVersionTab = 'drafts'
 var archive
 var archiveFsRoot
 var filesBrowser
+var draftInfo
 
 var markdownRenderer = createMd({hrefMassager: markdownHrefMassager})
 var readmeElement
@@ -106,6 +107,10 @@ async function setup () {
         isFaviconSet = false
       }
     }
+
+    // get draft info
+    draftInfo = await beaker.archives.getDraftInfo(archive.url)
+    console.log(draftInfo)
 
     // load state and render
     await readViewStateFromUrl()
@@ -296,6 +301,95 @@ function renderView () {
     default:
       return yo`<div class="view">Loading...</div>`
   }
+}
+
+function updateVersionPicker () {
+  yo.update(document.querySelector('.version-picker'), renderVersionPicker())
+}
+
+function renderVersionPicker () {
+  const changeTab = (tab) => {
+    activeVersionTab = tab
+    updateVersionPicker()
+  }
+
+  const rTabs = () => yo`
+   <div class="section tabs">
+      <button
+        class="nofocus tab ${activeVersionTab === 'drafts' ? 'active' : ''}"
+        onclick=${() => changeTab('drafts')}
+      >
+        Drafts
+      </button>
+
+      <button
+        class="nofocus tab ${activeVersionTab === 'versions' ? 'active' : ''}"
+        onclick=${() => changeTab('versions')}
+      >
+        History
+      </button>
+    </div>
+  `
+
+  return yo`
+    <div class="version-picker container">
+      ${toggleable(yo`
+        <div class="dropdown toggleable-container">
+          <button class="btn toggleable">
+            ${getSafeTitle()}
+            <span class="fa fa-caret-down"></span>
+          </button>
+
+          ${activeVersionTab === 'drafts'
+            ? yo`
+              <div class="dropdown-items left">
+                ${rTabs()}
+
+                ${draftInfo.drafts
+                  ?
+                    [
+                      yo`
+                        <a href="beaker://library/${draftInfo.master.url}" class="dropdown-item">
+                          <div class="draft-name">
+                            ${draftInfo.master.title} (master)
+                          </div>
+
+                          <div class="draft-url">
+                            ${shortenHash(draftInfo.master.url)}
+                          </div>
+                        </a>
+                      `,
+                      draftInfo.drafts.map(d => yo`
+                        <a href="beaker://library/${d.url}" class="dropdown-item ${d.isActiveDraft ? 'active' : ''}">
+                          <div class="draft-name">${d.title}</div>
+
+                          <div class="draft-url">${shortenHash(d.url)}</div>
+
+                          ${d.isActiveDraft
+                            ? yo`<div class="badge green">Active</div>`
+                            : ''
+                          }
+                        </a>
+                      `)
+                    ]
+                  : yo`<em>No drafts</em>`
+                }
+
+                <div class="create-draft">
+                  <button class="btn full-width" onclick=${onCreateDraft}>
+                    Create a draft +
+                  </button>
+                </div>
+              </div>`
+            : yo`
+              <div class="dropdown-items left">
+                ${rTabs()}
+                ${renderArchiveHistory(filesBrowser.root._archive)}
+              </div>`
+          }
+        `
+      )}
+    </div>`
 }
 
 function renderFooter () {
