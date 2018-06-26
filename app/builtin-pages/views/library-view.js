@@ -260,6 +260,7 @@ function render () {
 }
 
 function renderHeader () {
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const isOwner = _get(archive, 'info.isOwner')
 
   return yo`
@@ -274,9 +275,18 @@ function renderHeader () {
                 : ''
               }
 
-              <button class="primary-action btn primary">
-                Set local directory
-              </button>
+              ${syncPath
+                ? yo`
+                  <button onclick=${() => onOpenFolder(syncPath)} class="primary-action btn plain">
+                    ${syncPath}
+                  </button>
+                `
+                : yo`
+                  <button class="primary-action btn primary nofocus" onclick=${onChangeSyncDirectory}>
+                    Set local directory
+                  </button>
+                `
+              }
             </div>
           </div>`
         : ''
