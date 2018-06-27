@@ -324,6 +324,8 @@ function updateVersionPicker () {
 }
 
 function renderVersionPicker () {
+  const master = draftInfo.master
+
   const changeTab = (tab) => {
     activeVersionTab = tab
     updateVersionPicker()
@@ -365,28 +367,37 @@ function renderVersionPicker () {
                   ?
                     [
                       yo`
-                        <a href="beaker://library/${draftInfo.master.url}" class="dropdown-item">
+                        <a href="beaker://library/${master.url}" class="dropdown-item ${master.url === archive.url ? 'active' : ''}">
                           <div class="draft-name">
-                            ${draftInfo.master.title} (master)
+                            ${master.title}
                           </div>
 
                           <div class="draft-url">
-                            ${shortenHash(draftInfo.master.url)}
+                            ${shortenHash(master.url)}
                           </div>
-                        </a>
-                      `,
-                      draftInfo.drafts.map(d => yo`
-                        <a href="beaker://library/${d.url}" class="dropdown-item ${d.isActiveDraft ? 'active' : ''}">
-                          <div class="draft-name">${d.title}</div>
 
-                          <div class="draft-url">${shortenHash(d.url)}</div>
-
-                          ${d.isActiveDraft
-                            ? yo`<div class="badge green">Active</div>`
+                          ${master.url === archive.url
+                            ? yo`<span class="fa fa-check"></span>`
                             : ''
                           }
                         </a>
-                      `)
+                      `,
+                      draftInfo.drafts.map(d => {
+                        const isActive = d.url === archive.url
+
+                        return yo`
+                          <a href="beaker://library/${d.url}" class="dropdown-item ${isActive ? 'active' : ''}">
+                            <div class="draft-name">${d.title}</div>
+
+                            <div class="draft-url">${shortenHash(d.url)}</div>
+
+                            ${isActive
+                              ? yo`<span class="fa fa-check"></span>`
+                              : ''
+                            }
+                          </a>
+                        `
+                      })
                     ]
                   : yo`<em>No drafts</em>`
                 }
