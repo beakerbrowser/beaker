@@ -978,10 +978,14 @@ body.drag {
       }
 
       &.active {
+        cursor: default;
+
+        * {
+          cursor: default;
+        }
 
         &:hover {
           background: #fafafa;
-          cursor: default;
         }
       }
     }
