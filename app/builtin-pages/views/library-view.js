@@ -326,6 +326,7 @@ function updateVersionPicker () {
 
 function renderVersionPicker () {
   const master = draftInfo.master
+  const isDraft = _get(draftInfo, 'master.url') !== archive.url
 
   const changeTab = (tab) => {
     activeVersionTab = tab
@@ -403,11 +404,15 @@ function renderVersionPicker () {
                   : yo`<em>No drafts</em>`
                 }
 
-                <div class="create-draft">
-                  <button class="btn full-width" onclick=${onCreateDraft}>
-                    Create a draft +
-                  </button>
-                </div>
+                ${!isDraft
+                  ? yo`
+                    <div class="create-draft">
+                      <button class="btn full-width" onclick=${onCreateDraft}>
+                        Create a draft +
+                      </button>
+                    </div>`
+                  : ''
+                }
               </div>`
             : yo`
               <div class="dropdown-items left">
