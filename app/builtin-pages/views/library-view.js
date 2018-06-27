@@ -263,6 +263,7 @@ function render () {
 function renderHeader () {
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const isOwner = _get(archive, 'info.isOwner')
+  const isDraft = _get(draftInfo, 'master.url') !== archive.url
 
   return yo`
     <div class="library-view-header">
@@ -271,6 +272,10 @@ function renderHeader () {
           <div class="container">
             <div class="info">
               <h1 class="title">${getSafeTitle()}</h1>
+
+              ${isDraft ? yo`<span class="draft-badge badge blue">DRAFT</span>` : ''}
+              ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
+
               ${archive.info.description
                 ? yo`<p class="description">${archive.info.description}</p>`
                 : ''
