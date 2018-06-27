@@ -1102,7 +1102,6 @@ function renderToolbar () {
 function renderNav () {
   const isOwner = _get(archive, 'info.isOwner')
   const baseUrl = `beaker://library/${archive.url}`
-  const view = VIEWS[activeView]
 
   return yo`
     <div class="nav-items">
