@@ -8,16 +8,17 @@ const FETCH_COUNT = 200
 // =
 
 export default function render (archive) {
-  var el = yo`<div class="archive-history loading">
-    <div class="archive-history-header">Version history</div>
-    <div class="archive-history-body">Loading...</div>
-  </div>`
+  var el = yo`
+    <div class="archive-history loading">
+      <div class="archive-history-body">Loading history...</div>
+    </div>
+  `
 
   // lazy-load history
   if (archive) {
     // read from latest
     archive = archive.checkout()
-    
+
     let history = []
     fetchMore()
     async function fetchMore () {
