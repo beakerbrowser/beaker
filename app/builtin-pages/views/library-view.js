@@ -372,6 +372,7 @@ function renderVersionPicker () {
                         <a href="beaker://library/${master.url}" class="dropdown-item ${master.url === archive.url ? 'active' : ''}">
                           <div class="draft-name">
                             ${master.title}
+                            <span class="badge">master</span>
                           </div>
 
                           <div class="draft-url">
