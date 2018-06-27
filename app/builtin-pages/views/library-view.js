@@ -388,18 +388,21 @@ function renderVersionPicker () {
                       draftInfo.drafts.map(d => {
                         const isActive = d.url === archive.url
 
-                        return yo`
-                          <a href="beaker://library/${d.url}" class="dropdown-item ${isActive ? 'active' : ''}">
-                            <div class="draft-name">${d.title}</div>
-
-                            <div class="draft-url">${shortenHash(d.url)}</div>
-
-                            ${isActive
-                              ? yo`<span class="fa fa-check"></span>`
-                              : ''
-                            }
-                          </a>
-                        `
+                        if (isActive) {
+                          return yo`
+                            <div class="dropdown-item active">
+                              <div class="draft-name">${d.title}</div>
+                              <div class="draft-url">${shortenHash(d.url)}</div>
+                              <span class="fa fa-check"></span>
+                            </div>`
+                        } else {
+                          return yo`
+                            <a href="beaker://library/${d.url}" class="dropdown-item">
+                              <div class="draft-name">${d.title}</div>
+                              <div class="draft-url">${shortenHash(d.url)}</div>
+                            </a>
+                          `
+                        }
                       })
                     ]
                   : yo`<em>No drafts</em>`
