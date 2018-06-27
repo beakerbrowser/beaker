@@ -224,6 +224,34 @@ test('getInfo() lets you know if the folder is missing', async t => {
   t.deepEqual(res.missingLocalSyncPath, createdFilePath)
 })
 
+test('only one archive can have a given local folder', async t => {
+  // create 2 dats and one folder
+  var dat1Url = await mainTab.executeJavascript(`
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false }).then(a => a.url)
+  `)
+  var dat2Url = await mainTab.executeJavascript(`
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false }).then(a => a.url)
+  `)
+  var localFilePath = tempy.directory()
+
+  // set the first
+  await mainTab.executeJavascript(`
+    beaker.archives.setLocalSyncPath("${dat1Url}", "${escapeWindowsSlashes(localFilePath)}")
+  `)
+  t.is(res, undefined)
+
+  // set the second
+  await mainTab.executeJavascript(`
+    beaker.archives.setLocalSyncPath("${dat2Url}", "${escapeWindowsSlashes(localFilePath)}")
+  `)
+
+  // only the second should have it set
+  var res = await mainTab.executeJavascript(`(new DatArchive("${dat1Url}")).getInfo()`)
+  t.deepEqual(res.userSettings.localSyncPath, '')
+  var res = await mainTab.executeJavascript(`(new DatArchive("${dat2Url}")).getInfo()`)
+  t.deepEqual(res.userSettings.localSyncPath, localFilePath)
+})
+
 test('additional sync correctness checks', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
@@ -432,198 +460,6 @@ test('dat.json merges effectively with local sync path', async t => {
   `)
   t.deepEqual(res.title, 'Local Title')
   t.deepEqual(res.description, 'Local Description')
-})
-
-test('the active draft is correctly synced', async t => {
-  // create a dat
-  var res = await mainTab.executeJavascript(`
-    DatArchive.create({title: 'Dat Title', description: 'Dat Description', links: {foo: 'dat://bar.com'}, prompt: false})
-  `)
-  var datUrl = res.url
-  t.truthy(datUrl.startsWith('dat://'))
-
-  // create a folder and sync it
-  var filePath = tempy.directory()
-  var dir = jetpack.cwd(filePath)
-  var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}")
-  `)
-  t.falsy(res)
-
-  // wait for sync
-  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
-
-  // check local file
-  t.deepEqual(JSON.parse(await dir.read('dat.json')), {
-    title: 'Dat Title',
-    description: 'Dat Description',
-    links: {foo: [{href: 'dat://bar.com'}]}
-  })
-
-  // add two drafts
-  var res = await mainTab.executeJavascript(`DatArchive.fork("${datUrl}", {hidden: true, prompt: false})`)
-  var draft1Url = res.url
-  t.truthy(draft1Url.startsWith('dat://'))
-  await mainTab.executeJavascript(`beaker.archives.addDraft("${datUrl}", "${draft1Url}")`)
-  var res = await mainTab.executeJavascript(`DatArchive.fork("${datUrl}", {hidden: true, prompt: false})`)
-  var draft2Url = res.url
-  t.truthy(draft1Url.startsWith('dat://'))
-  await mainTab.executeJavascript(`beaker.archives.addDraft("${datUrl}", "${draft2Url}")`)
-
-  // check local paths
-  var res = await mainTab.executeJavascript(`
-    (new DatArchive("${datUrl}")).getInfo()
-  `)
-  t.is(res.userSettings.localSyncPath, filePath)
-  var res = await mainTab.executeJavascript(`
-    beaker.archives.listDrafts("${datUrl}")
-  `)
-  t.is(res.length, 2)
-  t.is(res[0].url, draft1Url)
-  t.is(res[0].userSettings.localSyncPath, '')
-  t.is(res[0].isActiveDraft, false)
-  t.is(res[1].url, draft2Url)
-  t.is(res[1].userSettings.localSyncPath, '')
-  t.is(res[1].isActiveDraft, false)
-
-  // set draft 1 active
-  await mainTab.executeJavascript(`
-    beaker.archives.setActiveDraft("${datUrl}", "${draft1Url}")
-  `)
-
-  // check local paths
-  var res = await mainTab.executeJavascript(`
-    (new DatArchive("${datUrl}")).getInfo()
-  `)
-  t.is(res.userSettings.localSyncPath, '')
-  var res = await mainTab.executeJavascript(`
-    beaker.archives.listDrafts("${datUrl}")
-  `)
-  t.is(res.length, 2)
-  t.is(res[0].url, draft1Url)
-  t.is(res[0].userSettings.localSyncPath, filePath)
-  t.is(res[0].isActiveDraft, true)
-  t.is(res[1].url, draft2Url)
-  t.is(res[1].userSettings.localSyncPath, '')
-  t.is(res[1].isActiveDraft, false)
-
-  // test sync from folder to dat
-  var archiveSyncPromise = waitForSync(mainTab, draft1Url, 'archive')
-  await dir.write('local-foo.txt', 'bar')
-  await archiveSyncPromise
-  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${draft1Url}")`)
-  var res = await mainTab.executeJavascript(`
-    (new DatArchive("${draft1Url}")).readFile('local-foo.txt', 'utf8')
-  `)
-  t.is(res, 'bar')
-
-  // set draft 2 active
-  await mainTab.executeJavascript(`
-    beaker.archives.setActiveDraft("${datUrl}", "${draft2Url}")
-  `)
-
-  // check local paths
-  var res = await mainTab.executeJavascript(`
-    (new DatArchive("${datUrl}")).getInfo()
-  `)
-  t.is(res.userSettings.localSyncPath, '')
-  var res = await mainTab.executeJavascript(`
-    beaker.archives.listDrafts("${datUrl}")
-  `)
-  t.is(res.length, 2)
-  t.is(res[0].url, draft1Url)
-  t.is(res[0].userSettings.localSyncPath, '')
-  t.is(res[0].isActiveDraft, false)
-  t.is(res[1].url, draft2Url)
-  t.is(res[1].userSettings.localSyncPath, filePath)
-  t.is(res[1].isActiveDraft, true)
-
-  // check that changes are 'reverted'
-  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${draft2Url}")`)
-  t.falsy(await dir.existsAsync('local-foo.txt'))
-
-  // test sync from dat to folder
-  var folderSyncPromise = waitForSync(mainTab, draft2Url, 'folder')
-  var res = await mainTab.executeJavascript(`
-    (new DatArchive("${draft2Url}")).writeFile('dat-foo.txt', 'baz')
-  `)
-  await folderSyncPromise
-  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${draft2Url}")`)
-  t.is(await dir.readAsync('dat-foo.txt'), 'baz')
-
-  // set master active
-  await mainTab.executeJavascript(`
-    beaker.archives.setActiveDraft("${datUrl}", "${datUrl}")
-  `)
-
-  // check local paths
-  var res = await mainTab.executeJavascript(`
-    (new DatArchive("${datUrl}")).getInfo()
-  `)
-  t.is(res.userSettings.localSyncPath, filePath)
-  var res = await mainTab.executeJavascript(`
-    beaker.archives.listDrafts("${datUrl}")
-  `)
-  t.is(res.length, 2)
-  t.is(res[0].url, draft1Url)
-  t.is(res[0].userSettings.localSyncPath, '')
-  t.is(res[0].isActiveDraft, false)
-  t.is(res[1].url, draft2Url)
-  t.is(res[1].userSettings.localSyncPath, '')
-  t.is(res[1].isActiveDraft, false)
-
-  // check that changes are 'reverted'
-  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
-  t.falsy(await dir.existsAsync('dat-foo.txt'))
-
-  // write to draft 1 while it's not active
-  var res = await mainTab.executeJavascript(`
-    (new DatArchive("${draft1Url}")).writeFile('off-active-write.txt', 'hello!')
-  `)
-
-  // set draft 1 active
-  await mainTab.executeJavascript(`
-    beaker.archives.setActiveDraft("${datUrl}", "${draft1Url}")
-  `)
-
-  // check that changes are present
-  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${draft1Url}")`)
-  t.is(await dir.existsAsync('off-active-write.txt'), 'file')
-
-  // changing the local sync path on a non-active always updates the active (master)
-  var filePath2 = tempy.directory()
-  var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath2)}")
-  `)
-  t.falsy(res)
-  var res = await mainTab.executeJavascript(`(new DatArchive("${datUrl}")).getInfo()`)
-  t.is(res.userSettings.localSyncPath, '')
-  var res = await mainTab.executeJavascript(`beaker.archives.listDrafts("${datUrl}")`)
-  t.is(res.length, 2)
-  t.is(res[0].url, draft1Url)
-  t.is(res[0].userSettings.localSyncPath, filePath2)
-  t.is(res[0].isActiveDraft, true)
-  t.is(res[1].url, draft2Url)
-  t.is(res[1].userSettings.localSyncPath, '')
-  t.is(res[1].isActiveDraft, false)
-
-  // changing the local sync path on a non-active always updates the active (draft)
-  var filePath3 = tempy.directory()
-  var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${draft2Url}", "${escapeWindowsSlashes(filePath3)}")
-  `)
-  t.falsy(res)
-  var res = await mainTab.executeJavascript(`(new DatArchive("${datUrl}")).getInfo()`)
-  t.is(res.userSettings.localSyncPath, '')
-  var res = await mainTab.executeJavascript(`beaker.archives.listDrafts("${datUrl}")`)
-  t.is(res.length, 2)
-  t.is(res[0].url, draft1Url)
-  t.is(res[0].userSettings.localSyncPath, filePath3)
-  t.is(res[0].isActiveDraft, true)
-  t.is(res[1].url, draft2Url)
-  t.is(res[1].userSettings.localSyncPath, '')
-  t.is(res[1].isActiveDraft, false)
-
 })
 
 // TODO
