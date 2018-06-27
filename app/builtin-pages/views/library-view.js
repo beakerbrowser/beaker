@@ -250,6 +250,7 @@ function render () {
             ${renderHeader()}
 
             <div class="view-wrapper">
+              ${activeView === 'files' ? renderVersionPicker() : ''}
               ${renderView()}
             </div>
           </div>
