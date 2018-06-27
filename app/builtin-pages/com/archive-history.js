@@ -7,9 +7,11 @@ const FETCH_COUNT = 200
 // exported api
 // =
 
+var counter = 0
 export default function render (archive) {
+  var id = `archive-history-${++counter}`
   var el = yo`
-    <div class="archive-history loading">
+    <div id="${id}" class="archive-history loading">
       <div class="archive-history-body">Loading history...</div>
     </div>
   `
@@ -50,7 +52,7 @@ export default function render (archive) {
         ))
 
         yo.update(el, yo`
-          <div class="archive-history">
+          <div id="${id}" class="archive-history">
             <div class="archive-history-header">Version history</div>
             <div class="archive-history-body">
               ${rowEls}
@@ -66,7 +68,7 @@ export default function render (archive) {
       } catch (err) {
         console.error('Error loading history', err)
         yo.update(el, yo`
-          <div class="archive-history">
+          <div id="${id}" class="archive-history">
             <div class="archive-history-header">Change history</div>
             <div class="archive-history-body error">
               <i class="fa fa-frown-o"></i>

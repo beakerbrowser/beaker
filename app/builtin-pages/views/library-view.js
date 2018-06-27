@@ -11,6 +11,7 @@ import dragDrop from 'drag-drop'
 import {join as joinPaths} from 'path'
 import FilesBrowser from '../com/files-browser2'
 import toggleable from '../com/toggleable'
+import toggleable2 from '../com/toggleable2'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
 import * as noticeBanner from '../com/notice-banner'
@@ -351,81 +352,78 @@ function renderVersionPicker () {
     </div>
   `
 
+  const rDrafts = () => yo`
+    <div>
+      <a href="beaker://library/${master.url}" class="dropdown-item ${master.url === archive.url ? 'active' : ''}">
+        <div class="draft-name">
+          ${master.title}
+          <span class="badge">master</span>
+        </div>
+
+        <div class="draft-url">
+          ${shortenHash(master.url)}
+        </div>
+
+        ${master.url === archive.url
+          ? yo`<span class="fa fa-check"></span>`
+          : ''
+        }
+      </a>
+      ${draftInfo.drafts.map(d => {
+        const isActive = d.url === archive.url
+
+        if (isActive) {
+          return yo`
+            <div class="dropdown-item active">
+              <div class="draft-name">${d.title}</div>
+              <div class="draft-url">${shortenHash(d.url)}</div>
+              <span class="fa fa-check"></span>
+            </div>`
+        } else {
+          return yo`
+            <a href="beaker://library/${d.url}" class="dropdown-item">
+              <div class="draft-name">${d.title}</div>
+              <div class="draft-url">${shortenHash(d.url)}</div>
+            </a>
+          `
+        }
+      })}
+      ${draftInfo.drafts.length === 0 ? yo`<em>No drafts</em>` : ''}
+      ${!isDraft
+        ? yo`
+          <div class="create-draft">
+            <button class="btn full-width" onclick=${onCreateDraft}>
+              Create a draft +
+            </button>
+          </div>`
+        : ''
+      }
+    </div>`
+
   return yo`
     <div class="version-picker container">
-      ${toggleable(yo`
-        <div class="dropdown toggleable-container">
-          <button class="btn toggleable">
-            ${getSafeTitle()}
-            <span class="fa fa-caret-down"></span>
-          </button>
+      ${toggleable2({
+        id: 'version-picker',
+        closed: ({onToggle}) => yo`
+          <div class="dropdown toggleable-container">
+            <button class="btn" onclick=${onToggle}>
+              ${getSafeTitle()}
+              <span class="fa fa-caret-down"></span>
+            </button>
+          </div>`,
+        open: ({onToggle}) => yo`
+          <div class="dropdown toggleable-container">
+            <button class="btn" onclick=${onToggle}>
+              ${getSafeTitle()}
+              <span class="fa fa-caret-down"></span>
+            </button>
 
-          ${activeVersionTab === 'drafts'
-            ? yo`
-              <div class="dropdown-items left">
-                ${rTabs()}
-
-                ${draftInfo.drafts
-                  ?
-                    [
-                      yo`
-                        <a href="beaker://library/${master.url}" class="dropdown-item ${master.url === archive.url ? 'active' : ''}">
-                          <div class="draft-name">
-                            ${master.title}
-                            <span class="badge">master</span>
-                          </div>
-
-                          <div class="draft-url">
-                            ${shortenHash(master.url)}
-                          </div>
-
-                          ${master.url === archive.url
-                            ? yo`<span class="fa fa-check"></span>`
-                            : ''
-                          }
-                        </a>
-                      `,
-                      draftInfo.drafts.map(d => {
-                        const isActive = d.url === archive.url
-
-                        if (isActive) {
-                          return yo`
-                            <div class="dropdown-item active">
-                              <div class="draft-name">${d.title}</div>
-                              <div class="draft-url">${shortenHash(d.url)}</div>
-                              <span class="fa fa-check"></span>
-                            </div>`
-                        } else {
-                          return yo`
-                            <a href="beaker://library/${d.url}" class="dropdown-item">
-                              <div class="draft-name">${d.title}</div>
-                              <div class="draft-url">${shortenHash(d.url)}</div>
-                            </a>
-                          `
-                        }
-                      })
-                    ]
-                  : yo`<em>No drafts</em>`
-                }
-
-                ${!isDraft
-                  ? yo`
-                    <div class="create-draft">
-                      <button class="btn full-width" onclick=${onCreateDraft}>
-                        Create a draft +
-                      </button>
-                    </div>`
-                  : ''
-                }
-              </div>`
-            : yo`
-              <div class="dropdown-items left">
-                ${rTabs()}
-                ${renderArchiveHistory(filesBrowser.root._archive)}
-              </div>`
-          }
-        `
-      )}
+            <div class="dropdown-items left">
+              ${rTabs()}
+              ${activeVersionTab === 'drafts' ? rDrafts() : renderArchiveHistory(filesBrowser.root._archive)}
+            </div>
+          </div>`
+      })}
     </div>`
 }
 
