@@ -16,6 +16,7 @@ import * as toast from '../com/toast'
 import * as noticeBanner from '../com/notice-banner'
 import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
 import * as copyDatPopup from '../com/library-copydat-popup'
+import * as createDraftPopup from '../com/library-createdraft-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
 import * as faviconPicker from '../com/favicon-picker'
 import renderSettingsField from '../com/settings-field'
@@ -1391,7 +1392,7 @@ async function onMakeCopy () {
 }
 
 async function onCreateDraft () {
-  let title = archive.info.title || ''
+  let {title} = await createDraftPopup.create({archive})
 
   // create a copy
   const fork = await DatArchive.fork(
