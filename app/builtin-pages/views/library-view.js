@@ -267,7 +267,7 @@ function renderHeader () {
   const isDraft = _get(draftInfo, 'master.url') !== archive.url
 
   return yo`
-    <div class="library-view-header">
+    <div class="library-view-header ${activeView === 'files' ? 'expanded' : ''}">
       ${activeView === 'files'
         ? yo`
           <div class="container">
