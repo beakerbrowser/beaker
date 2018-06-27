@@ -1051,24 +1051,12 @@ function renderNetworkView () {
 }
 
 function renderToolbar () {
-  const renderOpenHistory = () => renderArchiveHistory(filesBrowser.root._archive)
-
   return yo`
     <div class="toolbar">
       <div class="container">
         ${renderNav()}
 
         <div class="buttons">
-          ${toggleable(yo`
-            <div class="dropdown toggleable-container archive-history-dropdown">
-              <button class="btn plain nofocus toggleable">
-                <span class="fa fa-history"></span>
-              </button>
-
-              <div class="dropdown-items right toggleable-open-container"></div>
-            </div>
-          `, renderOpenHistory)}
-
           ${toggleable(yo`
             <div class="dropdown toggleable-container">
               <button class="btn plain nofocus toggleable">
