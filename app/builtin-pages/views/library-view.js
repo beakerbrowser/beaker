@@ -1402,8 +1402,6 @@ async function onCreateDraft () {
 
   // add the draft and set it as the active draft
   await beaker.archives.addDraft(archive.url, fork.url)
-  await beaker.archives.setActiveDraft(archive.url, fork.url)
-
   window.location = `beaker://library/${fork.url}`
 }
 
