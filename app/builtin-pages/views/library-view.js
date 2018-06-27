@@ -1341,10 +1341,19 @@ function renderEditButton () {
       </button>
     `
   } else if (_get(archive, 'info.isOwner')) {
-    return yo`
-      <button class="btn primary nofocus" onclick=${onChangeSyncDirectory}>
-        Set local directory
-      </button>`
+    if (syncPath) {
+      return yo`
+        <button onclick=${() => onOpenFolder(syncPath)} class="btn plain">
+          ${syncPath}
+        </button>
+      `
+    } else {
+      return yo`
+        <button class="btn primary nofocus" onclick=${onChangeSyncDirectory}>
+          Set local directory
+        </button>
+      `
+    }
   } else {
     return yo`
       <button class="btn primary nofocus" onclick=${onMakeCopy}>
