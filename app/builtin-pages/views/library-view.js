@@ -389,9 +389,6 @@ function renderVersionPicker () {
             <a href="beaker://library/${d.url}" class="dropdown-item">
               <div class="draft-name">${d.title}</div>
               <div class="draft-url">${shortenHash(d.url)}</div>
-              <button class="transparent circle remove-btn" onclick=${e => onDeleteDraft(e, d.url)}>
-                <span class="fa fa-times"></span>
-              </button>
             </a>
           `)
         }
