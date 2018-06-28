@@ -352,53 +352,65 @@ function renderVersionPicker () {
     </div>
   `
 
-  const rDrafts = () => yo`
-    <div>
-      <a href="beaker://library/${master.url}" class="dropdown-item ${master.url === archive.url ? 'active' : ''}">
-        <div class="draft-name">
-          ${master.title}
-          <span class="badge">master</span>
-        </div>
+  const rDrafts = () => {
+    var els = []
+    if (draftInfo.drafts && draftInfo.drafts.length) {
+      els.push(yo`
+        <a href="beaker://library/${master.url}" class="dropdown-item ${master.url === archive.url ? 'active' : ''}">
+          <div class="draft-name">
+            ${master.title}
+            <span class="badge">master</span>
+          </div>
 
-        <div class="draft-url">
-          ${shortenHash(master.url)}
-        </div>
+          <div class="draft-url">
+            ${shortenHash(master.url)}
+          </div>
 
-        ${master.url === archive.url
-          ? yo`<span class="fa fa-check"></span>`
-          : ''
-        }
-      </a>
-      ${draftInfo.drafts.map(d => {
+          ${master.url === archive.url
+            ? yo`<span class="fa fa-check"></span>`
+            : ''
+          }
+        </a>`
+      )
+
+      draftInfo.drafts.forEach(d => {
         const isActive = d.url === archive.url
 
         if (isActive) {
-          return yo`
+          els.push(yo`
             <div class="dropdown-item active">
               <div class="draft-name">${d.title}</div>
               <div class="draft-url">${shortenHash(d.url)}</div>
               <span class="fa fa-check"></span>
-            </div>`
+            </div>
+          `)
         } else {
-          return yo`
+          els.push(yo`
             <a href="beaker://library/${d.url}" class="dropdown-item">
               <div class="draft-name">${d.title}</div>
               <div class="draft-url">${shortenHash(d.url)}</div>
+              <button class="transparent circle remove-btn" onclick=${e => onDeleteDraft(e, d.url)}>
+                <span class="fa fa-times"></span>
+              </button>
             </a>
-          `
+          `)
         }
-      })}
-      ${draftInfo.drafts.length === 0 ? yo`<em>No drafts</em>` : ''}
-      ${!isDraft
-        ? yo`
-          <div class="create-draft">
-            <button class="btn full-width" onclick=${onCreateDraft}>
-              Create a draft +
-            </button>
-          </div>`
-        : ''
-      }
-    </div>`
+      })
+    } else {
+      els.push(yo`<em>No drafts</em>`)
+    }
+
+    if (!isDraft) {
+      els.push(yo`
+        <div class="create-draft">
+          <button class="btn full-width" onclick=${onCreateDraft}>
+            Create a draft +
+          </button>
+        </div>`
+      )
+    }
+    return els
+  }
 
   return yo`
     <div class="version-picker container">
