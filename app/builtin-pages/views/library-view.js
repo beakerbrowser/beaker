@@ -400,15 +400,13 @@ function renderVersionPicker () {
       els.push(yo`<em>No drafts</em>`)
     }
 
-    if (!isDraft) {
-      els.push(yo`
-        <div class="create-draft">
-          <button class="btn full-width" onclick=${onCreateDraft}>
-            Create a draft +
-          </button>
-        </div>`
-      )
-    }
+    els.push(yo`
+      <div class="create-draft">
+        <button class="btn full-width" onclick=${onCreateDraft}>
+          Create a draft +
+        </button>
+      </div>`
+    )
     return els
   }
 
@@ -1407,11 +1405,11 @@ async function onMakeCopy () {
 }
 
 async function onCreateDraft () {
-  let {title} = await createDraftPopup.create({archive})
+  let {title, masterUrl} = await createDraftPopup.create({draftInfo, archive})
 
   // create a copy
   const fork = await DatArchive.fork(
-    archive.url,
+    masterUrl,
     {
       title,
       prompt: false,
@@ -1419,8 +1417,9 @@ async function onCreateDraft () {
     }
   ).catch(() => {})
 
+
   // add the draft and set it as the active draft
-  await beaker.archives.addDraft(archive.url, fork.url)
+  await beaker.archives.addDraft(masterUrl, fork.url)
   window.location = `beaker://library/${fork.url}`
 }
 

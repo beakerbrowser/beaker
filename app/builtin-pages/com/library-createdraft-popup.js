@@ -1,5 +1,6 @@
 import yo from 'yo-yo'
 import closeIcon from '../icon/close'
+import {shortenHash} from '@beaker/core/lib/strings'
 
 // globals
 // =
@@ -10,6 +11,8 @@ let reject
 let title
 let newTitle
 let archive
+let master
+let drafts
 
 // exported api
 // =
@@ -18,6 +21,8 @@ export function create (opts = {}) {
   archive = opts.archive
   title = archive.info.title
   newTitle = archive.info.title ? (archive.info.title + ' (draft)') : ''
+  master = opts.draftInfo ? opts.draftInfo.master : undefined
+  drafts = opts.draftInfo.drafts || []
 
   // render interface
   var popup = render()
@@ -54,12 +59,8 @@ function render () {
       <form class="popup-inner" onsubmit=${onSubmit}>
         <div class="head">
           <span class="title">
-            Create a draft ${title ? ('for ' + title) : ''}
+            Create a draft
           </span>
-
-          <p>
-            Create a draft to make and review changes before publishing them.
-          </p>
 
           <button title="Cancel" onclick=${destroy} class="close-btn square">
             ${closeIcon()}
@@ -67,6 +68,25 @@ function render () {
         </div>
 
         <div class="body">
+          <p>
+            Create a draft to make and review changes before you publish them.
+          </p>
+
+          <div>
+            <label for="master">Create a draft copy of:</label>
+            <select id="master">
+              <option value=${master.url}>
+                ${master.title} (${shortenHash(master.url)})
+              </option>
+
+              ${drafts.map(d => yo`
+                <option value=${archive.url}>
+                  ${d.title} (${shortenHash(d.url)})
+                </option>
+              `)}
+            </select>
+          </div>
+
           <div>
             <label for="title">Draft name</label>
             <input type="text" name="title" value=${newTitle} onkeyup=${onKeyupTitle} />
@@ -106,6 +126,9 @@ function onClickWrapper (e) {
 
 function onSubmit (e) {
   e.preventDefault()
-  resolve({title: e.target.title.value})
+  resolve({
+    title: e.target.title.value,
+    masterUrl: e.target.master.value
+  })
   destroy()
 }
