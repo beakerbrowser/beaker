@@ -53,7 +53,6 @@ export default function render (archive) {
 
         yo.update(el, yo`
           <div id="${id}" class="archive-history">
-            <div class="archive-history-header">Version history</div>
             <div class="archive-history-body">
               ${rowEls}
               ${(history[history.length - 1].version === 1)
