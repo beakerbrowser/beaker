@@ -30,9 +30,7 @@ export default function render (archive) {
         // render
         var rowEls = history.map(c => (
           yo`
-            <div
-              onclick=${() => window.location = `beaker://library/${archive.url}+${c.version}`}
-              class="archive-history-item"
+            <a class="archive-history-item"
               title="View version ${c.version}"
               href="beaker://library/${archive.url}+${c.version}"
             >
@@ -45,7 +43,7 @@ export default function render (archive) {
               </div>
 
               <div class="version badge green">v${c.version}</div>
-            </div>`
+            </a>`
         ))
 
         yo.update(el, yo`
