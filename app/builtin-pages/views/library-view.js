@@ -389,7 +389,7 @@ function renderVersionPicker () {
             <a href="beaker://library/${d.url}" class="dropdown-item">
               <div class="draft-name">${d.title}</div>
               <div class="draft-url">${shortenHash(d.url)}</div>
-              <button class="transparent circle remove-btn" onclick=${e => onDeleteDraft(e, d.url)}>
+              <button class="transparent circle remove-btn" onclick=${e => onDeleteDraft(e, d)}>
                 <span class="fa fa-times"></span>
               </button>
             </a>
@@ -1089,7 +1089,7 @@ function renderToolbar () {
                   <span class="label">Share this project</span>
 
                   <p class="description small">
-                    Anyone with this link can view this project's files
+                    Anyone with this link can view this project${"'"}s files
                   </p>
 
                   <p>
@@ -1424,17 +1424,35 @@ async function onCreateDraft () {
   window.location = `beaker://library/${fork.url}`
 }
 
-async function onDeleteDraft (e, url) {
+async function onDeleteDraft (e, draft) {
   e.stopPropagation()
   e.preventDefault()
 
   try {
-    // TODO need to pass into the modal whether or not there are unpublished changes
-    const {deleteSyncPath} = await deleteDraftPopup.create({archive})
-    if (deleteSyncPath) {
-      // TODO delete the local directory
+    // diff with the master
+    let diff = await DatArchive.diff(draftInfo.master.url, draft.url, {compareContent: true, shallow: true})
+
+    // run the popup
+    const {deleteSyncPath} = await deleteDraftPopup.create({
+      title: draft.title,
+      localSyncPath: draft.userSettings.localSyncPath,
+      numUnpublishedRevisions: diff.length
+    })
+
+    // delete all the related data
+    try {
+      await beaker.archives.removeDraft(draftInfo.master.url, draft.url)
+      await beaker.archives.setLocalSyncPath(draft.url, '', {deleteSyncPath})
+      await beaker.archives.delete(draft.url)
+    } catch (err) {
+      toast.create('There was an error trying to remove the archive', 'error', 3e3)
+      console.error(err)
+      return
     }
-    await beaker.archives.removeDraft(draftInfo.master.url, url)
+
+    // update the draft info
+    draftInfo = await beaker.archives.getDraftInfo(archive.url)
+    render()
   } catch (_) {}
 }
 

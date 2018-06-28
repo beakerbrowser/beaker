@@ -8,22 +8,21 @@ let resolve
 let reject
 
 let title
-let newTitle
-let archive
-let hasUnpublishedRevisions // TODO
+let localSyncPath
+let numUnpublishedRevisions
 
 // exported api
 // =
 
 export function create (opts = {}) {
-  archive = opts.archive
-  title = archive.info.title
+  title = opts.title
+  localSyncPath = opts.localSyncPath
+  numUnpublishedRevisions = opts.numUnpublishedRevisions
 
   // render interface
   var popup = render()
   document.body.appendChild(popup)
   document.addEventListener('keyup', onKeyUp)
-  archive.progress.addEventListener('changed', update)
   popup.querySelector('input').focus()
 
   // return promise
@@ -37,7 +36,6 @@ export function destroy () {
   var popup = document.getElementById('library-deletedraft-popup')
   document.body.removeChild(popup)
   document.removeEventListener('keyup', onKeyUp)
-  archive.progress.removeEventListener('changed', update)
   reject()
 }
 
@@ -63,10 +61,10 @@ function render () {
         </div>
 
         <div class="body">
-          ${hasUnpublishedRevisions
+          ${numUnpublishedRevisions > 0
             ? yo`
               <p>
-                This draft has<strong> 3 unpublished revisions</strong>. Are you
+                This draft has <strong>${numUnpublishedRevisions} unpublished revisions</strong>. Are you
                 sure you want to delete it from Beaker?
               </p>`
             : yo`
@@ -75,10 +73,13 @@ function render () {
               </p>`
           }
 
-          <label for="deleteSyncPath" class="checkbox-container">
-            <input type="checkbox" name="deleteSyncPath"/>
-            Also delete the files at TODO localSyncPath
-          </label>
+          ${localSyncPath
+            ? yo`
+              <label for="deleteSyncPath-check" class="checkbox-container">
+                <input type="checkbox" id="deleteSyncPath-check" name="deleteSyncPath"/>
+                Also delete the files at ${localSyncPath}
+              </label>`
+            : ''}
 
           <div class="actions">
             <div class="left">
@@ -86,7 +87,7 @@ function render () {
               <span class="fa fa-check"></span>
             </div>
 
-            <button type="submit" class="btn ${hasUnpublishedRevisions ? 'warning' : ''}">
+            <button type="submit" class="btn ${(numUnpublishedRevisions > 0) ? 'warning' : ''}">
               Delete ${title}
             </button>
           </div>
