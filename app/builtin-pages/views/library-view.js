@@ -252,7 +252,7 @@ function render () {
             ${renderHeader()}
 
             <div class="view-wrapper">
-              ${activeView === 'files' ? renderVersionPicker() : ''}
+              ${isReadOnly || activeView !== 'files' ? '' : renderVersionPicker()}
               ${renderView()}
             </div>
           </div>
