@@ -1424,6 +1424,20 @@ async function onCreateDraft () {
   window.location = `beaker://library/${fork.url}`
 }
 
+async function onDeleteDraft (e, url) {
+  e.stopPropagation()
+  e.preventDefault()
+
+  try {
+    // TODO need to pass into the modal whether or not there are unpublished changes
+    const {deleteSyncPath} = await deleteDraftPopup.create({archive})
+    if (deleteSyncPath) {
+      // TODO delete the local directory
+    }
+    await beaker.archives.removeDraft(draftInfo.master.url, url)
+  } catch (_) {}
+}
+
 async function addReadme () {
   const readme = `# ${archive.info.title || 'Untitled'}\n\n${archive.info.description || ''}`
   await archive.writeFile('/README.md', readme)

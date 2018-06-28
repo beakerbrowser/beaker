@@ -69,7 +69,7 @@
   }
 
   textarea,
-  label,
+  label:not(.checkbox-container),
   input {
     display: block;
     width: 100%;
@@ -288,6 +288,7 @@
 }
 
 #library-copydat-popup {
+
   strong {
     font-weight: 600;
   }
@@ -299,5 +300,13 @@
       color: @color-text--muted;
       text-align: center;
     }
+  }
+}
+
+#library-deletedraft-popup {
+
+  .fa-check {
+    color: shade(@green, 15%);
+    -webkit-text-stroke: .5px #fff;
   }
 }
