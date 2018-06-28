@@ -18,6 +18,7 @@ import * as noticeBanner from '../com/notice-banner'
 import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
 import * as copyDatPopup from '../com/library-copydat-popup'
 import * as createDraftPopup from '../com/library-createdraft-popup'
+import * as deleteDraftPopup from '../com/library-deletedraft-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
 import * as faviconPicker from '../com/favicon-picker'
 import renderSettingsField from '../com/settings-field'
@@ -112,7 +113,6 @@ async function setup () {
 
     // get draft info
     draftInfo = await beaker.archives.getDraftInfo(archive.url)
-    console.log(draftInfo)
 
     // load state and render
     await readViewStateFromUrl()
@@ -265,7 +265,7 @@ function render () {
 function renderHeader () {
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const isOwner = _get(archive, 'info.isOwner')
-  const isDraft = _get(draftInfo, 'master.url') !== archive.url
+  const isDraft = draftInfo.master && _get(draftInfo, 'master.url') !== archive.url
 
   return yo`
     <div class="library-view-header ${activeView === 'files' ? 'expanded' : ''}">
@@ -326,8 +326,8 @@ function updateVersionPicker () {
 }
 
 function renderVersionPicker () {
-  const master = draftInfo.master
-  const isDraft = _get(draftInfo, 'master.url') !== archive.url
+  const master = _get(draftInfo, 'master')
+  const isDraft = draftInfo.master && _get(draftInfo, 'master.url') !== archive.url
 
   const changeTab = (tab) => {
     activeVersionTab = tab
