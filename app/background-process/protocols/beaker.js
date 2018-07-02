@@ -10,7 +10,6 @@ import fs from 'fs'
 import jetpack from 'fs-jetpack'
 import intoStream from 'into-stream'
 import ICO from 'icojs'
-import {getLogFileContent} from '../debug-logger'
 
 // constants
 // =
@@ -322,7 +321,7 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://debug-log/')) {
     const PAGE_SIZE = 1e6
     var start = queryParams.start ? (+queryParams.start) : 0
-    let content = await getLogFileContent(start, start + PAGE_SIZE)
+    let content = await beakerCore.getLogFileContent(start, start + PAGE_SIZE)
     var pagination = ''
     if (content.length === PAGE_SIZE + 1 || start !== 0) {
       pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
@@ -336,7 +335,7 @@ async function beakerProtocol (request, respond) {
       },
       data: intoStream(`
         ${pagination}
-        <pre>${content}</pre>
+        <pre>${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
         ${pagination}
       `)
     })

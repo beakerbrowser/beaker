@@ -1,5 +1,4 @@
 Error.stackTraceLimit = Infinity
-import setupDebugLogger from './background-process/debug-logger'
 
 // This is main process of Electron, started as first thing when your
 // app starts. This script is running through entire life of your application.
@@ -43,7 +42,6 @@ const DISALLOWED_SAVE_PATH_NAMES = [
 // =
 
 // read config from env vars
-setupDebugLogger()
 if (beakerCore.getEnvVar('BEAKER_USER_DATA_PATH')) {
   console.log('User data path set by environment variables')
   console.log('userData:', beakerCore.getEnvVar('BEAKER_USER_DATA_PATH'))

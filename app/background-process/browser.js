@@ -9,7 +9,7 @@ import jetpack from 'fs-jetpack'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 const exec = require('util').promisify(require('child_process').exec)
-var debug = require('debug')('beaker')
+const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
 import {showModal, showShellModal, closeModal} from './ui/modals'
