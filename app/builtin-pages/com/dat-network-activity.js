@@ -121,7 +121,7 @@ export default class DatNetworkActivity {
 
     return yo`
       <div class="ll-row archive ${highlightedCls}" oncontextmenu=${e => this.onContextmenuArchive(e, archive)}>
-        <img class="favicon" src="beaker-favicon:${archive.url}" />
+        <img class="favicon" src="beaker-favicon:32,${archive.url}" />
 
         <a href=${archive.url} class="title" title=${archive.title}>
           ${archive.title || yo`<em>Untitled</em>`}

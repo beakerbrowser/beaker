@@ -1123,7 +1123,7 @@ function renderNav () {
   return yo`
     <div class="nav-items">
       <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="favicon nav-item ${activeView === 'files' ? 'active' : ''}">
-        <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
+        <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
       </a>
 
       <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item ${activeView === 'files' ? 'active' : ''}">

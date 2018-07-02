@@ -182,7 +182,7 @@ function renderRow (row, i) {
     >
 
       <span class="title">
-        <img class="favicon" src="beaker-favicon:${row.url}" />
+        <img class="favicon" src="beaker-favicon:32,${row.url}" />
 
         ${row.title
           ? yo`<span class="title">${row.title}</span>`
