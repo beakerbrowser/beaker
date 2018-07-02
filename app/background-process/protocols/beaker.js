@@ -322,10 +322,7 @@ async function beakerProtocol (request, respond) {
     const PAGE_SIZE = 1e6
     var start = queryParams.start ? (+queryParams.start) : 0
     let content = await beakerCore.getLogFileContent(start, start + PAGE_SIZE)
-    var pagination = ''
-    if (content.length === PAGE_SIZE + 1 || start !== 0) {
-      pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
-    }
+    var pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
     return respond({
       statusCode: 200,
       headers: {
