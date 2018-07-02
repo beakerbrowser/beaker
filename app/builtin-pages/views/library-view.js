@@ -641,7 +641,7 @@ function renderSetupChecklist () {
           </p>
 
           <div class="actions">
-            <button class="btn" onclick=${onClickChangeHeaderTitle}>
+            <button class="btn">
               ${hasTitle ? 'Change' : 'Set'} title
             </button>
           </div>
@@ -659,7 +659,7 @@ function renderSetupChecklist () {
           </p>
 
           <div class="actions">
-            <button class="btn" onclick=${onClickFavicon}>
+            <button class="btn">
               Pick a favicon
             </button>
 
