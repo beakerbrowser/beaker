@@ -265,7 +265,6 @@ function render () {
 function renderHeader () {
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const isOwner = _get(archive, 'info.isOwner')
-  const isDraft = draftInfo.master && _get(draftInfo, 'master.url') !== archive.url
 
   return yo`
     <div class="library-view-header ${activeView === 'files' ? 'expanded' : ''}">
@@ -275,7 +274,7 @@ function renderHeader () {
             <div class="info">
               <h1 class="title">${getSafeTitle()}</h1>
 
-              ${isDraft ? yo`<span class="draft-badge badge blue">DRAFT</span>` : ''}
+              ${isDraft() ? yo`<span class="draft-badge badge blue">DRAFT</span>` : ''}
               ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
 
               ${archive.info.description
@@ -312,6 +311,8 @@ function renderView () {
   switch (activeView) {
     case 'files':
       return renderFilesView()
+    case 'compare':
+      return renderCompareView()
     case 'settings':
       return renderSettingsView()
     case 'network':
@@ -327,7 +328,6 @@ function updateVersionPicker () {
 
 function renderVersionPicker () {
   const master = _get(draftInfo, 'master')
-  const isDraft = draftInfo.master && _get(draftInfo, 'master.url') !== archive.url
 
   const changeTab = (tab) => {
     activeVersionTab = tab
@@ -354,7 +354,7 @@ function renderVersionPicker () {
 
   const rDrafts = () => {
     var els = []
-    if (draftInfo.drafts && draftInfo.drafts.length) {
+    if (hasDrafts()) {
       els.push(yo`
         <a href="beaker://library/${master.url}" class="dropdown-item ${master.url === archive.url ? 'active' : ''}">
           <div class="draft-name">
@@ -416,7 +416,7 @@ function renderVersionPicker () {
         id: 'version-picker',
         closed: ({onToggle}) => yo`
           <div class="dropdown toggleable-container">
-            <button class="btn" onclick=${onToggle}>
+            <button class="btn nofocus" onclick=${onToggle}>
               ${getSafeTitle()}
               <span class="fa fa-caret-down"></span>
             </button>
@@ -577,6 +577,13 @@ function renderFilesView () {
       </div>
     </div>
   `
+}
+
+function renderCompareView () {
+  return yo`
+    <div class="container">
+      <div class="view compare">
+    </div>`
 }
 
 function renderMakeCopyHint () {
@@ -1129,6 +1136,14 @@ function renderNav () {
       <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item ${activeView === 'files' ? 'active' : ''}">
         Files
       </a>
+
+      ${isDraft || hasDrafts
+        ? yo`
+          <a href=${baseUrl + '#compare'} onclick=${e => onChangeView(e, 'compare')} class="nav-item ${activeView === 'compare' ? 'active' : ''}">
+            Revisions
+          </a>`
+        : ''
+      }
 
       <a href=${baseUrl + '#network'} onclick=${e => onChangeView(e, 'network')} class="nav-item ${activeView === 'network' ? 'active' : ''}">
         Network
@@ -1957,6 +1972,14 @@ function getSafeTitle () {
 
 function getSafeDesc () {
   return _get(archive, 'info.description', '').trim() || yo`<em>No description</em>`
+}
+
+function isDraft () {
+  return draftInfo.master && _get(draftInfo, 'master.url') !== archive.url
+}
+
+function hasDrafts () {
+  return draftInfo.drafts && draftInfo.drafts.length
 }
 
 function markdownHrefMassager (href) {
