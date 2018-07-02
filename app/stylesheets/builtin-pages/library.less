@@ -810,6 +810,8 @@ body.drag {
     }
 
     .info {
+      &:extend(.flex);
+      align-items: center;
       position: relative;
       padding: 20px 0;
 
@@ -817,6 +819,10 @@ body.drag {
         position: absolute;
         right: 0;
         top: 20px;
+      }
+
+      .badge {
+        margin-left: 10px;
       }
     }
 
