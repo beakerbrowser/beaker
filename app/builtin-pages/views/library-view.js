@@ -416,7 +416,7 @@ function renderVersionPicker () {
         id: 'version-picker',
         closed: ({onToggle}) => yo`
           <div class="dropdown toggleable-container">
-            <button class="btn" onclick=${onToggle}>
+            <button class="btn nofocus" onclick=${onToggle}>
               ${getSafeTitle()}
               <span class="fa fa-caret-down"></span>
             </button>
