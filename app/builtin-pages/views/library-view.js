@@ -1069,7 +1069,7 @@ function renderNetworkView () {
 
 function renderToolbar () {
   return yo`
-    <div class="toolbar">
+    <div class="library-toolbar">
       <div class="container">
         ${renderNav()}
 
