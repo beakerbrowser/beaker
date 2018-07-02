@@ -1137,7 +1137,7 @@ function renderNav () {
         Files
       </a>
 
-      ${isDraft || hasDrafts
+      ${isDraft() || hasDrafts()
         ? yo`
           <a href=${baseUrl + '#compare'} onclick=${e => onChangeView(e, 'compare')} class="nav-item ${activeView === 'compare' ? 'active' : ''}">
             Revisions
