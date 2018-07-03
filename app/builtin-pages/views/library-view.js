@@ -5,6 +5,7 @@ import prettyBytes from 'pretty-bytes'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import parseDatURL from 'parse-dat-url'
+import {diffLines} from '@beaker/dat-archive-file-diff'
 import _get from 'lodash.get'
 import throttle from 'lodash.throttle'
 import dragDrop from 'drag-drop'
@@ -21,6 +22,7 @@ import * as createDraftPopup from '../com/library-createdraft-popup'
 import * as deleteDraftPopup from '../com/library-deletedraft-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
 import * as faviconPicker from '../com/favicon-picker'
+import renderArchiveComparison from '../com/archive-comparison'
 import renderSettingsField from '../com/settings-field'
 import renderArchiveHistory from '../com//archive-history'
 import {setup as setupAce, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
@@ -40,6 +42,11 @@ var archive
 var archiveFsRoot
 var filesBrowser
 var draftInfo
+
+// used in the compare view
+var compareReversed
+var compareTargetArchive
+var compareDiff
 
 var markdownRenderer = createMd({hrefMassager: markdownHrefMassager})
 var readmeElement
@@ -211,6 +218,56 @@ async function loadReadme () {
   render()
 }
 
+var loadNextFileDiffTimeout
+async function loadCompareDiff () {
+  // cancel any existing file-diff loads
+  clearTimeout(loadNextFileDiffTimeout)
+  let [base, target] = compareReversed ? [compareTargetArchive, archive] : [archive, compareTargetArchive]
+
+  // load diff
+  if (compareTargetArchive) {
+    compareDiff = await DatArchive.diff(base.url, target.url, {compareContent: true, shallow: true})
+    compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
+    render()
+  } else {
+    compareDiff = null
+    render()
+    return
+  }
+
+  // automatically & iteratively load the file diffs
+  loadNextFileDiffTimeout = setTimeout(loadNextFileDiff, 0)
+  async function loadNextFileDiff () {
+    if (!compareDiff) return
+
+    // find the next empty diff
+    var d = compareDiff.find(d => !d.diff)
+    if (!d) return // done!
+
+    // run the diff
+    try {
+      d.isOpen = true
+      d.diff = await diffLines(target, d.path, base, d.path)
+      d.diffDeletions = d.diff.reduce((sum, el) => sum + (el.removed ? el.count : 0), 0)
+      d.diffAdditions = d.diff.reduce((sum, el) => sum + (el.added ? el.count : 0), 0)
+    } catch (e) {
+      if (e.invalidEncoding) {
+        d.diff = {invalidEncoding: true}
+      } else if (e.sourceTooLarge) {
+        d.diff = {sourceTooLarge: true}
+      } else {
+        console.error('Error running diff', e)
+      }
+    }
+
+    // redraw
+    render()
+    
+    // queue the next load
+    loadNextFileDiffTimeout = setTimeout(loadNextFileDiff, 0)
+  }
+}
+
 // rendering
 // =
 
@@ -318,7 +375,7 @@ function renderView () {
     case 'network':
       return renderNetworkView()
     default:
-      return yo`<div class="view">Loading...</div>`
+      return yo`<div class="container"><div class="view">Loading...</div></div>`
   }
 }
 
@@ -577,13 +634,6 @@ function renderFilesView () {
       </div>
     </div>
   `
-}
-
-function renderCompareView () {
-  return yo`
-    <div class="container">
-      <div class="view compare">
-    </div>`
 }
 
 function renderMakeCopyHint () {
@@ -1072,6 +1122,25 @@ function renderNetworkView () {
       </div>
     </div>
   `
+}
+
+function renderCompareView () {
+  return yo`
+    <div class="container">
+      <div class="view compare">
+        ${renderArchiveComparison({
+          base: compareReversed ? compareTargetArchive : archive,
+          target: compareReversed ? archive : compareTargetArchive,
+          reversed: compareReversed,
+          revisions: compareDiff,
+          onMerge: onCompareMerge,
+          onChangeCompareTarget,
+          onSwitchCompareArchives,
+          onToggleRevisionCollapsed: onToggleCompareRevisionCollapsed
+        })}
+        </div>
+      </div>
+    </div>`
 }
 
 function renderToolbar () {
@@ -1829,6 +1898,37 @@ async function onKeyupHeaderEdit (e, name) {
   } else {
     headerEditValues[name] = e.target.value
   }
+}
+
+async function onCompareMerge (base, target, opts) {
+  console.log(base, target, opts)
+  try {
+    await DatArchive.merge(base, target, opts)
+    toast.create('Files updated')
+  } catch (e) {
+    console.error(e)
+    toast.create(e.message || 'There was an issue writing the files', 'error')
+  }
+  loadCompareDiff()
+}
+
+async function onChangeCompareTarget (url) {
+  compareTargetArchive = new LibraryDatArchive(url)
+  await compareTargetArchive.setup()
+  render()
+  loadCompareDiff()
+}
+
+function onSwitchCompareArchives (e) {
+  e.preventDefault()
+  compareReversed = !compareReversed
+  render()
+  loadCompareDiff()
+}
+
+function onToggleCompareRevisionCollapsed (rev) {
+  rev.isOpen = !rev.isOpen
+  render()
 }
 
 async function onFilesChanged () {

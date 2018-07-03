@@ -13,6 +13,8 @@
 @import "./components/files-browser.less";
 @import "./components/diff";
 @import "./components/favicon-picker";
+@import "./components/archive-select-btn";
+@import "./components/archive-comparison";
 @import "./components/file-editor.less";
 @import "./components/create-archive-popup.less";
 @import "./components/opaque-binary.less";
@@ -365,27 +367,8 @@ body.drag {
         margin-bottom: 40px;
       }
     }
-
-    .revision-type {
-      width: 8px;
-      height: 8px;
-      margin-top: -.25px;
-
-      &.add {
-        background: shade(@green, 15%);
-      }
-
-      &.mod {
-        background: shade(@yellow, 3%);
-      }
-
-      &.del {
-        background: shade(@red, 20%);
-      }
-    }
   }
 
-  .revision-header,
   .file-view-header {
     &:extend(.flex);
     align-items: center;
@@ -393,10 +376,6 @@ body.drag {
     border: 1px solid #ddd;
     padding: 0 10px;
     background: #fff;
-
-    .revision-type {
-      margin-right: 7px;
-    }
 
     .path {
       &:extend(.overflow-ellipsis);
@@ -515,150 +494,6 @@ body.drag {
       border: 1px solid #ddd;
       margin-top: 20px;
       max-width: 100%;
-    }
-  }
-
-  .view.revisions {
-
-    .revisions-header {
-      &:extend(.flex);
-      flex-wrap: nowrap;
-      align-items: center;
-      margin-bottom: 15px;
-
-      .change-count {
-        font-weight: 600;
-        padding-left: 4px;
-      }
-
-      .actions {
-        margin-left: auto;
-      }
-
-      .preview-btn {
-        margin-left: 7px;
-        color: inherit;
-
-        &:hover {
-          text-decoration: none;
-        }
-      }
-    }
-
-    &.empty {
-
-      i.fa-check {
-        color: fadeout(shade(@green, 12%), 15%);
-        -webkit-text-stroke: 6px #fff;
-      }
-    }
-
-    .revisions-list {
-      margin-left: 0;
-      padding-left: 0;
-    }
-
-    .revision {
-      border-bottom: 0;
-      list-style: none;
-      margin-bottom: 15px;
-
-      .revision-header {
-        cursor: pointer;
-
-        &.collapsed {
-          border-radius: 4px;
-        }
-
-        &:hover {
-          background: #f6f6f6;
-
-          .ignore-btn {
-            visibility: visible;
-          }
-        }
-
-        .path {
-          font-size: 12.5px;
-          margin-right: 10px;
-          line-height: 1;
-        }
-
-        .actions {
-          margin-left: auto;
-
-          .btn-group {
-            display: inline-flex;
-          }
-
-          .btn-group,
-          .btn {
-            margin-left: 5px;
-          }
-        }
-
-        .ignore-btn {
-          visibility: hidden;
-        }
-
-        .changes-count {
-          font-size: .725rem;
-          font-weight: 700;
-          letter-spacing: .1px;
-          margin-right: 6px;
-
-          &.additions {
-            color: shade(@green, 20%);
-          }
-
-          &.deletions {
-            color: shade(@red, 20%);
-          }
-        }
-      }
-
-      .revision-content {
-        border: 1px solid #ddd;
-        border-top: 0;
-        border-radius: 0 0 2px 2px;
-
-        .empty,
-        .source-too-large,
-        .folder,
-        .loading {
-          text-align: center;
-          padding: 20px 0;
-
-          p {
-            color: rgba(0,0,0,.65);
-            margin-top: 0;
-            font-size: 12.5px;
-
-            &:last-child {
-              margin-bottom: 0;
-            }
-          }
-
-          .fa {
-            font-size: 48px;
-            color: rgba(0,0,0,.15);
-            margin-bottom: 10px;
-          }
-
-          .action {
-            display: block;
-            color: @blue;
-            font-size: 1rem;
-            cursor: pointer;
-          }
-        }
-
-        .spinner {
-          width: 30px;
-          height: 30px;
-          margin: auto;
-        }
-      }
     }
   }
 
@@ -986,18 +821,6 @@ body.drag {
         transform: translateY(-50%);
         font-size: 13px;
         color: @color-text;
-      }
-
-      &.active {
-        cursor: default;
-
-        * {
-          cursor: default;
-        }
-
-        &:hover {
-          background: #fafafa;
-        }
       }
     }
 

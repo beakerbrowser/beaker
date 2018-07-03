@@ -75,53 +75,6 @@
       }
     }
   }
-
-  .revisions-overview {
-    &:extend(.flex);
-    align-items: center;
-    width: 100%;
-    height: 40px;
-    padding: 0 10px;
-    background: #fafafa;
-    border-radius: 4px 4px 0 0;
-    border: 1px solid #ddd;
-    border-bottom: 0;
-
-    .label {
-      margin-left: 5px;
-
-      &:hover {
-        text-decoration: underline;
-        cursor: pointer;
-      }
-
-      &.empty {
-        color: @color-text--muted;
-
-        &:hover {
-          text-decoration: none;
-          cursor: default;
-        }
-      }
-    }
-
-    .revision-type {
-      margin-right: 2px;
-    }
-
-    .buttons {
-      margin-left: auto;
-    }
-
-    .btn.plain {
-      color: @color-text;
-      margin-left: 7px;
-
-      &:hover {
-        color: @blue;
-      }
-    }
-  }
 }
 
 @import "./files-browser/files-tree-view";
