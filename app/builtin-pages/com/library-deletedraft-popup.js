@@ -109,14 +109,6 @@ function onKeyUp (e) {
   }
 }
 
-/*
-function onChange (e) {
-  deleteSyncPath = e.target.value
-  console.log(deleteSyncPath)
-  console.log('checked', e.target.checked)
-}
-*/
-
 function onClickWrapper (e) {
   if (e.target.id === 'library-deletedraft-popup') {
     destroy()
