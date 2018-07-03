@@ -266,13 +266,20 @@ async function loadCompareDiff () {
   // this should be replaced with a semantically-aware dat.json diff tool
   // -prf
   diffLines(target, '/dat.json', base, '/dat.json').then(diff => {
-    var d = {diff, path: 'dat.json', debug_isManifest: true}
+    var d = {diff, path: 'dat.json', debug_isManifest: true, debug_isJustTitleChange: false}
     d.diffDeletions = d.diff.reduce((sum, el) => sum + (el.removed ? el.count : 0), 0)
     d.diffAdditions = d.diff.reduce((sum, el) => sum + (el.added ? el.count : 0), 0)
     if      ( d.diffAdditions && !d.diffDeletions) d.change ='add'
     else if (!d.diffAdditions &&  d.diffDeletions) d.change ='del'
     else if ( d.diffAdditions &&  d.diffDeletions) d.change ='mod'
     else return // no changes
+    if (d.diffAdditions === 1 && d.diffDeletions === 1) {
+      let numTitleChanges = d.diff.filter(d => ((d.added || d.removed) && d.value.indexOf('"title"') !== -1)).length
+      if (numTitleChanges === 2) {
+        d.debug_isJustTitleChange = true
+      }
+    }
+    console.log(d)
     compareDiff.push(d)
     render()
   })
