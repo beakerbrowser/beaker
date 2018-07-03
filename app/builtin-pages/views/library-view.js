@@ -1545,8 +1545,9 @@ async function onDeleteDraft (e, draft) {
       await beaker.archives.removeDraft(draftInfo.master.url, draft.url)
       await beaker.archives.setLocalSyncPath(draft.url, '', {deleteSyncPath})
       await beaker.archives.delete(draft.url)
+      toast.create('Deleted draft')
     } catch (err) {
-      toast.create('There was an error trying to remove the archive', 'error', 3e3)
+      toast.create('There was an error trying to remove this draft', 'error', 3e3)
       console.error(err)
       return
     }
