@@ -22,12 +22,9 @@ export default function renderArchiveComparison (opts = {}) {
 
   const onPublishAllRevisions = (e) => {
     e.preventDefault()
-    onMerge(base, target)
-  }
-
-  const onRevertAllRevisions = (e) => {
-    e.preventDefault()
-    onMerge(target, base)
+    if (confirm(`Publish "${getSafeTitle(base)}" to "${getSafeTitle(target)}"?`)) {
+      onMerge(base, target)
+    }
   }
 
   return yo`
@@ -49,11 +46,8 @@ export default function renderArchiveComparison (opts = {}) {
           : renderArchive(target)}
 
         <div class="actions">
-          <button class="btn" onclick=${onRevertAllRevisions}>
-            Revert all
-          </button>
           <button class="btn success publish" onclick=${onPublishAllRevisions}>
-            Publish all
+            Publish all changes
           </button>
         </div>
       </div>
@@ -107,10 +101,10 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
   }
 
   const onPublishRevision = (e, rev) => {
-    onMerge(base, target, {paths: [rev.path]})
-  }
-  const onRevertRevision = (e, rev) => {
-    onMerge(target, base, {paths: [rev.path]})
+    e.stopPropagation()
+    if (confirm(`Publish the changes in ${rev.path.slice(1, rev.path.length)} to "${getSafeTitle(base)}"?`)) {
+      onMerge(base, target, {paths: [rev.path]})
+    }
   }
 
   const renderRevisionContent = rev => {
@@ -177,9 +171,6 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
 
           <div class="actions">
             <div class="btn-group">
-              <button class="btn" data-tooltip="Revert" onclick=${e => onRevertRevision(e, rev)}>
-                <i class="fa fa-undo"></i>
-              </button>
               <button class="btn" data-tooltip="Publish" onclick=${e => onPublishRevision(e, rev)}>
                 <i class="fa fa-check"></i>
               </button>
