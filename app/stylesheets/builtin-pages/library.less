@@ -953,3 +953,19 @@ body.drag {
 .builtin-wrapper.library-view.readonly .file-view-container .ace-editor {
   height: ~"calc(100vh - 320px)";
 }
+
+.revision-header,
+.files-browser-header {
+  &:extend(.flex);
+  align-items: center;
+  height: 50px;
+  padding: 0 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+
+  .path {
+    &:extend(.overflow-ellipsis);
+    max-width: 250px;
+    margin-right: 10px;
+  }
+}

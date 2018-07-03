@@ -90,29 +90,28 @@
   }
 
   .revision {
-    border-bottom: 0;
     list-style: none;
-    margin-bottom: 15px;
+
+    &:not(:last-child) {
+      margin-bottom: 10px;
+    }
 
     .revision-header {
-      &:extend(.flex);
-      align-items: center;
-      height: 40px;
-      border-radius: 4px 4px 0 0;
-      border: 1px solid #ddd;
-      padding: 0 10px;
-      background: #fafafa;
-      border-bottom: 1px solid #ddd;
-      cursor: pointer;
+      padding: 0 15px;
 
-      &.collapsed {
-        border-radius: 4px;
+      .path {
+        font-weight: 500;
       }
 
       &:hover {
-        background: #f6f6f6;
+        cursor: pointer;
+
+        .path {
+          text-decoration: underline;
+        }
 
         .ignore-btn {
+          // TODO reinstate the add to .datignore button
           visibility: visible;
         }
       }
@@ -144,17 +143,6 @@
         }
       }
 
-      .path {
-        &:extend(.overflow-ellipsis);
-        max-width: 250px;
-      }
-
-      .path {
-        font-size: 12.5px;
-        margin-right: 10px;
-        line-height: 1;
-      }
-
       .actions {
         margin-left: auto;
 
@@ -173,10 +161,9 @@
       }
 
       .changes-count {
-        font-size: .725rem;
         font-weight: 700;
         letter-spacing: .1px;
-        margin-right: 6px;
+        margin-right: 5px;
 
         &.additions {
           color: shade(@green, 20%);
@@ -192,6 +179,7 @@
       border: 1px solid #ddd;
       border-top: 0;
       border-radius: 0 0 2px 2px;
+      background: #fff;
 
       .empty,
       .source-too-large,
@@ -201,9 +189,7 @@
         padding: 20px 0;
 
         p {
-          color: rgba(0,0,0,.65);
           margin-top: 0;
-          font-size: 12.5px;
 
           &:last-child {
             margin-bottom: 0;
