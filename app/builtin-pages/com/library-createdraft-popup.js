@@ -20,9 +20,9 @@ let drafts
 export function create (opts = {}) {
   archive = opts.archive
   title = archive.info.title
-  newTitle = archive.info.title ? (archive.info.title + ' (draft)') : ''
   master = opts.draftInfo ? opts.draftInfo.master : undefined
   drafts = opts.draftInfo.drafts || []
+  newTitle = `${opts.draftInfo.master.title || ''} ${getNextDraftLabel(drafts)}`
 
   // render interface
   var popup = render()
@@ -133,4 +133,23 @@ function onSubmit (e) {
     masterUrl: e.target.master.value
   })
   destroy()
+}
+
+function getNextDraftLabel (drafts) {
+  var regex = /\(draft([\s\d]*)\)/
+  var highestNum = 0
+  for (let draft of drafts) {
+    let match = regex.exec(draft.title)
+    if (match) {
+      let num = parseInt(match[1])
+      if (Number.isNaN(num)) {
+        num = 1
+      }
+      if (num > highestNum) {
+        highestNum = num
+      }
+    }
+  }
+  if (highestNum === 0) return '(draft)'
+  return `(draft ${highestNum + 1})`
 }
