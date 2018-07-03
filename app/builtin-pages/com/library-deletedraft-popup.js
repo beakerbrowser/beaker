@@ -1,4 +1,5 @@
 import yo from 'yo-yo'
+import {pluralize} from '@beaker/core/lib/strings'
 import closeIcon from '../icon/close'
 
 // globals
@@ -63,7 +64,7 @@ function render () {
           ${numUnpublishedRevisions > 0
             ? yo`
               <p>
-                This draft has <strong>${numUnpublishedRevisions} unpublished revisions</strong>. Are you
+                This draft has <strong>${numUnpublishedRevisions} ${pluralize(numUnpublishedRevisions, 'unpublished revision')}</strong>. Are you
                 sure you want to delete it from Beaker?
               </p>`
             : yo`
