@@ -45,30 +45,31 @@
   }
 
   .empty {
-    padding: 15px;
+    // TODO need to make generic module class
+    padding: 30px 15px;
+    background: #fff;
+    border: 1px solid #ddd;
     text-align: center;
-    max-width: 600px;
-    margin: auto;
 
     i {
-      font-size: 60px;
-      margin: 10px 0 20px;
+      font-size: 70px;
 
       &.fa-check {
-        color: fadeout(shade(@green, 12%), 15%);
-        -webkit-text-stroke: 6px #fff;
+        color: shade(@green, 15%);
+        -webkit-text-stroke: 8px #fff;
       }
     }
 
     .label {
-      font-size: .95rem;
+      font-size: 1.1rem;
+      font-weight: 500;
       margin-bottom: 5px;
     }
 
     p {
-      color: @color-text--muted;
-      font-weight: 300;
+      color: @color-text;
       margin-top: 0;
+      font-size: .9rem;
 
       &:last-child {
         margin-bottom: 0;
