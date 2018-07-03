@@ -469,9 +469,11 @@ function renderVersionPicker () {
           els.push(yo`
             <a href="beaker://library/${d.url}" class="dropdown-item">
               <div class="draft-name">${d.title}</div>
+
               <div class="draft-url">${shortenHash(d.url)}</div>
-              <button class="transparent circle remove-btn" onclick=${e => onDeleteDraft(e, d)}>
-                <span class="fa fa-times"></span>
+
+              <button class="btn plain remove-btn tooltip-container" data-tooltip="Delete draft" onclick=${e => onDeleteDraft(e, d)}>
+                <i class="fa fa-times"></i>
               </button>
             </a>
           `)

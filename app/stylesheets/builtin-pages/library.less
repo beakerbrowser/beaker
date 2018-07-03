@@ -810,13 +810,45 @@ body.drag {
       position: relative;
       text-align: left;
 
+      .remove-btn,
       .fa-check {
         position: absolute;
         right: 15px;
         top: 50%;
         transform: translateY(-50%);
         font-size: 13px;
-        color: @color-text;
+      }
+
+      .remove-btn {
+        padding: 0;
+        opacity: 0;
+
+        .fa {
+          color: rgba(0,0,0,.5);
+        }
+
+        &:hover .fa {
+          color: @color-text;
+        }
+      }
+
+      &.active {
+        cursor: default;
+
+        * {
+          cursor: default;
+        }
+
+        &:hover {
+          background: #fafafa;
+        }
+      }
+
+      &:hover {
+
+        .remove-btn {
+          opacity: 1;
+        }
       }
     }
 
