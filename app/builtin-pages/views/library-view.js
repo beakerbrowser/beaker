@@ -1474,6 +1474,10 @@ function renderRepositoryLink () {
 // events
 // =
 
+function onChangeHasSyncDirectory () {
+  // TODO
+}
+
 function onTogglePeersCollapsed () {
   arePeersCollapsed = !arePeersCollapsed
   render()
@@ -1898,7 +1902,6 @@ async function onKeyupHeaderEdit (e, name) {
 }
 
 async function onCompareMerge (base, target, opts) {
-  console.log(base, target, opts)
   try {
     await DatArchive.merge(base, target, opts)
     toast.create('Files updated')
