@@ -1,7 +1,17 @@
 .compare-selection {
   &:extend(.flex);
   align-items: center;
-  margin-bottom: 15px;
+
+  position: sticky;
+  top: 55px;
+  z-index: 5000;
+
+  // for the sticky state, we need a solid background
+  // and padding around the controls
+  background: #f7f7f7;
+  padding: 10px 0;
+  margin-bottom: 5px;
+  margin-top: -10px; // offset the added top padding
 
   .actions {
     margin-left: auto;
