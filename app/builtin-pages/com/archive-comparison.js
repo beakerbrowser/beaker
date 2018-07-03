@@ -22,7 +22,7 @@ export default function renderArchiveComparison (opts = {}) {
 
   const onPublishAllRevisions = (e) => {
     e.preventDefault()
-    if (confirm(`Publish "${getSafeTitle(base)}" to "${getSafeTitle(target)}"?`)) {
+    if (confirm(`Publish all revisions to "${getSafeTitle(target)}"?`)) {
       onMerge(base, target)
     }
   }
@@ -47,7 +47,7 @@ export default function renderArchiveComparison (opts = {}) {
 
         <div class="actions">
           <button class="btn success publish" onclick=${onPublishAllRevisions}>
-            Publish all changes
+            Publish all revisions
           </button>
         </div>
       </div>
