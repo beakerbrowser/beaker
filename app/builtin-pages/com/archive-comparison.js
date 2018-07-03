@@ -59,7 +59,7 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
         <div class="label">Compare archives</div>
         <p>
           <a class="link" onclick=${onTriggerSelectAnArchive}>Select an archive</a>
-          to compare with <a href=${base.url} target="_blank">${base.info.title}</a>.
+          to compare with <a href=${base.url} target="_blank">${getSafeTitle(base)}</a>.
           You can review the differences and merge them together.
         </p>
       </div>`
@@ -75,9 +75,9 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
         <i class="fa fa-check"></i>
         <div class="label">No differences found</div>
         <p>
-          The files in <a href="beaker://library/${base.url}" target="_blank">${base.info.title}</a>
+          The files in <a href="beaker://library/${base.url}" target="_blank">${getSafeTitle(base)}</a>
           are in sync with the files in
-          <a href="beaker://library/${target.url}" target="_blank">${target.info.title}</a>.
+          <a href="beaker://library/${target.url}" target="_blank">${getSafeTitle(target)}</a>.
         </p>
       </div>`
   }
@@ -144,10 +144,12 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
             ? yo`<div class="changes-count additions">+${rev.diffAdditions}</div>`
             : ''
           }
+
           ${rev.diffDeletions
             ? yo`<div class="changes-count deletions">-${rev.diffDeletions}</div>`
             : ''
           }
+
           <div class="actions">
             <div class="btn-group">
               <button class="btn" data-tooltip="Revert" onclick=${e => onRevertRevision(e, rev)}>
@@ -157,6 +159,7 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
                 <i class="fa fa-check"></i>
               </button>
             </div>
+
             <div class="btn plain">
               <i class="fa fa-chevron-${rev.isOpen ? 'down' : 'up'}"></i>
             </div>
@@ -216,4 +219,11 @@ function onTriggerSelectAnArchive (e) {
   e.stopPropagation()
   // trigger the dropdown
   document.querySelector('.compare-selection .btn').click()
+}
+
+
+// helpers
+// =
+function getSafeTitle (archive) {
+  return _get(archive, 'info.title', '').trim() || yo`<em>Untitled</em>`
 }
