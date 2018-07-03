@@ -102,7 +102,7 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
 
   const onPublishRevision = (e, rev) => {
     e.stopPropagation()
-    if (confirm(`Publish the changes in ${rev.path.slice(1, rev.path.length)} to "${getSafeTitle(base)}"?`)) {
+    if (confirm(`Publish the changes in ${rev.path.slice(1, rev.path.length)} to "${getSafeTitle(target)}"?`)) {
       onMerge(base, target, {paths: [rev.path]})
     }
   }
