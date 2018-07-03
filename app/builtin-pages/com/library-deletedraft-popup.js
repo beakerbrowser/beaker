@@ -23,7 +23,6 @@ export function create (opts = {}) {
   var popup = render()
   document.body.appendChild(popup)
   document.addEventListener('keyup', onKeyUp)
-  popup.querySelector('input').focus()
 
   // return promise
   return new Promise((_resolve, _reject) => {
