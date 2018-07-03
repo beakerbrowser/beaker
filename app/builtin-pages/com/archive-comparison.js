@@ -136,9 +136,11 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
       <div class="revision">
         <div class="revision-header ${rev.isOpen ? '' : 'collapsed'}" onclick=${() => onToggleRevisionCollapsed(rev)}>
           <div class="revision-type ${rev.change}"></div>
-          <code class="path">
+
+          <span class="path">
             ${rev.type === 'file' ? rev.path.slice(1) : rev.path}
-          </code>
+          </span>
+
           ${rev.diffAdditions
             ? yo`<div class="changes-count additions">+${rev.diffAdditions}</div>`
             : ''
