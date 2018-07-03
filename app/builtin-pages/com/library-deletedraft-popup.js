@@ -8,7 +8,7 @@ import closeIcon from '../icon/close'
 let resolve
 let reject
 
-let title
+let masterTitle
 let localSyncPath
 let numUnpublishedRevisions
 
@@ -16,7 +16,7 @@ let numUnpublishedRevisions
 // =
 
 export function create (opts = {}) {
-  title = opts.title
+  masterTitle = opts.masterTitle
   localSyncPath = opts.localSyncPath
   numUnpublishedRevisions = opts.numUnpublishedRevisions
 
@@ -69,7 +69,7 @@ function render () {
               </p>`
             : yo`
               <p>
-                This draft is up-to-date with TODO ${title}. Delete this draft from Beaker?
+                This draft is up-to-date with ${masterTitle}. Delete this draft from Beaker?
               </p>`
           }
 

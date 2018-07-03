@@ -1535,7 +1535,7 @@ async function onDeleteDraft (e, draft) {
 
     // run the popup
     const {deleteSyncPath} = await deleteDraftPopup.create({
-      title: draft.title,
+      masterTitle: draftInfo.master.title,
       localSyncPath: draft.userSettings.localSyncPath,
       numUnpublishedRevisions: diff.length
     })
