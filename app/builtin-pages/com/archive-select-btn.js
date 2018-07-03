@@ -45,7 +45,6 @@ function renderLoading (current, opts) {
 
 function renderLoaded (current, {archiveOptions, onSelect, toggleId} = {}) {
   if (!archiveOptions) archiveOptions = loadedArchivesList
-  // var currentArchive = current ? loadedArchivesList.find(a => a.url === current.url) : null
   var icon = current ? yo`<img class="favicon" src="beaker-favicon:${current.url}" />` : ''
   var label = current ? current.info.title : 'Select archive'
 

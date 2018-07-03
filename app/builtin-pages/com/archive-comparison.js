@@ -35,14 +35,18 @@ export default function renderArchiveComparison (opts = {}) {
       <div class="compare-selection">
         <span>Publish</span>
 
-        ${renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})}
+        ${onChangeCompareBase
+          ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
+          : renderArchive(base)}
 
         <span>
           to
           <i class="fa fa-arrow-right"></i>
         </span>
 
-        ${renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})}
+        ${onChangeCompareTarget
+          ? renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})
+          : renderArchive(target)}
 
         <div class="actions">
           <button class="btn" onclick=${onRevertAllRevisions}>
@@ -60,6 +64,14 @@ export default function renderArchiveComparison (opts = {}) {
 
 // internal methods
 // =
+
+function renderArchive (archive) {
+  return yo`
+    <span>
+      <img class="favicon" src="beaker-favicon:${archive.url}" /> ${archive.info.title}
+    </span>
+  `
+}
 
 function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, onMerge}) {
   if (!target) {
@@ -84,7 +96,7 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
       <div class="empty">
         <i class="fa fa-check"></i>
 
-        <div class="label">You're all set!</div>
+        <div class="label">You${"'"}re all set!</div>
 
         <p>
           The files in <a href="beaker://library/${base.url}" target="_blank">${getSafeTitle(base)}</a>

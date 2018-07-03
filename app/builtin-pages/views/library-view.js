@@ -1156,10 +1156,9 @@ function renderCompareView () {
           base: compareBaseArchive,
           target: compareTargetArchive,
           revisions: compareDiff,
-          archiveOptions: listDraftsAndMaster(),
+          archiveOptions: draftInfo.drafts,
           onMerge: onCompareMerge,
           onChangeCompareBase,
-          onChangeCompareTarget,
           onToggleRevisionCollapsed: onToggleCompareRevisionCollapsed
         })}
         </div>
@@ -1951,13 +1950,6 @@ async function onChangeCompareBase (url) {
   loadCompareDiff()  
 }
 
-async function onChangeCompareTarget (url) {
-  compareTargetArchive = new LibraryDatArchive(url)
-  await compareTargetArchive.setup()
-  render()
-  loadCompareDiff()
-}
-
 function onToggleCompareRevisionCollapsed (rev) {
   rev.isOpen = !rev.isOpen
   render()
@@ -2115,10 +2107,6 @@ function isDraft () {
 
 function hasDrafts () {
   return draftInfo.drafts && draftInfo.drafts.length
-}
-
-function listDraftsAndMaster () {
-  return [draftInfo.master].concat(draftInfo.drafts)
 }
 
 function markdownHrefMassager (href) {
