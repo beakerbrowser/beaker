@@ -69,7 +69,7 @@ function render () {
               </p>`
             : yo`
               <p>
-                This draft is up-to-date with ${title}. Delete this draft from Beaker.
+                This draft is up-to-date with TODO ${title}. Delete this draft from Beaker?
               </p>`
           }
 
@@ -83,12 +83,12 @@ function render () {
 
           <div class="actions">
             <div class="left">
-              This draft can be safely deleted
-              <span class="fa fa-check"></span>
+              <i class="fa fa-check"></i>
+              It's safe to delete this draft
             </div>
 
             <button type="submit" class="btn ${(numUnpublishedRevisions > 0) ? 'warning' : ''}">
-              Delete ${title}
+              Delete draft
             </button>
           </div>
         </div>
