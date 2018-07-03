@@ -1368,23 +1368,11 @@ function renderMenu () {
               ${syncPath
                 ? yo`
                     <div class="sync-path-info">
-                      <label class="toggle draft-mode" data-tooltip="TODO">
-                        <div class="text">Draft mode</div>
-                        <input disabled checked=${false} type="checkbox" name="draft-mode" value="draft-mode" />
-                        <div class="switch"></div>
-                      </label>
-
                       <code onclick=${() => onOpenFolder(syncPath)} class="link">${syncPath}</code>
                     </div
                   `
                 : yo`
                   <div class="sync-path-info">
-                    <label disabled class="toggle draft-mode" data-tooltip="Set a local directory to enter Draft mode">
-                      <div class="text">Draft mode</div>
-                      <input checked=${false} type="checkbox" name="draft-mode" value="draft-mode">
-                      <div class="switch"></div>
-                    </label>
-
                     <button onclick=${onChangeSyncDirectory} class="btn primary full-width tooltip-container">
                       Set local directory
                     </button>
