@@ -229,9 +229,9 @@ async function loadCompareViewDefaults () {
   }
 
   if (!compareBaseArchive) {
-    let draft1 = _get(draftInfo, 'drafts.0')
-    if (draft1) {
-      compareBaseArchive = new LibraryDatArchive(draft1.url)
+    let draft = isDraft() ? archive : _get(draftInfo, 'drafts.0')
+    if (draft) {
+      compareBaseArchive = new LibraryDatArchive(draft.url)
       await compareBaseArchive.setup()
     } else {
       // this should never happen because the '#compare' link goes away when there are no drafts
