@@ -44,7 +44,6 @@ var filesBrowser
 var draftInfo
 
 // used in the compare view
-var compareReversed
 var compareTargetArchive
 var compareDiff
 
@@ -222,7 +221,7 @@ var loadNextFileDiffTimeout
 async function loadCompareDiff () {
   // cancel any existing file-diff loads
   clearTimeout(loadNextFileDiffTimeout)
-  let [base, target] = compareReversed ? [compareTargetArchive, archive] : [archive, compareTargetArchive]
+  let [base, target] = [compareTargetArchive, archive]
 
   // load diff
   if (compareTargetArchive) {
@@ -262,7 +261,7 @@ async function loadCompareDiff () {
 
     // redraw
     render()
-    
+
     // queue the next load
     loadNextFileDiffTimeout = setTimeout(loadNextFileDiff, 0)
   }
@@ -1129,13 +1128,11 @@ function renderCompareView () {
     <div class="container">
       <div class="view compare">
         ${renderArchiveComparison({
-          base: compareReversed ? compareTargetArchive : archive,
-          target: compareReversed ? archive : compareTargetArchive,
-          reversed: compareReversed,
+          base: compareTargetArchive,
+          target: archive,
           revisions: compareDiff,
           onMerge: onCompareMerge,
           onChangeCompareTarget,
-          onSwitchCompareArchives,
           onToggleRevisionCollapsed: onToggleCompareRevisionCollapsed
         })}
         </div>
@@ -1915,13 +1912,6 @@ async function onCompareMerge (base, target, opts) {
 async function onChangeCompareTarget (url) {
   compareTargetArchive = new LibraryDatArchive(url)
   await compareTargetArchive.setup()
-  render()
-  loadCompareDiff()
-}
-
-function onSwitchCompareArchives (e) {
-  e.preventDefault()
-  compareReversed = !compareReversed
   render()
   loadCompareDiff()
 }

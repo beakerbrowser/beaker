@@ -6,16 +6,16 @@ import {pluralize, shortenHash} from '../../lib/strings'
 // exported api
 // =
 
-export default function renderArchiveComparison ({base, target, reversed, revisions, onMerge, onChangeCompareTarget, onToggleRevisionCollapsed, onSwitchCompareArchives}) {
+export default function renderArchiveComparison ({base, target, revisions, onMerge, onChangeCompareTarget, onToggleRevisionCollapsed, onSelectwitchCompareArchives}) {
   var selectOpts = {onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'}
   return yo`
     <div class="archive-comparison">
       <div class="compare-selection">
-        <strong>Comparing</strong>
-        ${reversed ? renderArchiveSelectBtn(base, selectOpts) : base.info.title}
+        Publish
+        ${renderArchiveSelectBtn(base, selectOpts)}
+
         <i class="fa fa-arrow-right"></i>
-        ${reversed ? target.info.title : renderArchiveSelectBtn(target, selectOpts)}
-        <a class="btn transparent" onclick=${onSwitchCompareArchives} title="Swap"><i class="fa fa-exchange"></i></a>
+        ${renderArchiveSelectBtn(target, selectOpts)}
       </div>
 
       ${renderRevisions({base, target, revisions, onMerge, onToggleRevisionCollapsed})}

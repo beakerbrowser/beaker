@@ -46,10 +46,12 @@ function renderLoaded (current, {onSelect, toggleId} = {}) {
   var currentArchive = current ? archivesList.find(a => a.url === current.url) : null
   var icon = currentArchive ? yo`<img class="favicon" src="beaker-favicon:${current.url}" />` : ''
   var label = currentArchive ? currentArchive.title : 'Select archive'
+
   function onClickArchive (a) {
     closeAllToggleables()
     onSelect(a.url)
   }
+
   return toggleable(yo`
     <div class="dropdown toggleable-container archive-select-btn" data-toggle-id=${toggleId || ''}>
       <button class="btn toggleable">
