@@ -261,6 +261,22 @@ async function loadCompareDiff () {
     return
   }
 
+  // TEMP
+  // diff the dat.json so that we can render it in a grayed-out interface
+  // this should be replaced with a semantically-aware dat.json diff tool
+  // -prf
+  diffLines(target, '/dat.json', base, '/dat.json').then(diff => {
+    var d = {diff, path: 'dat.json', debug_isManifest: true}
+    d.diffDeletions = d.diff.reduce((sum, el) => sum + (el.removed ? el.count : 0), 0)
+    d.diffAdditions = d.diff.reduce((sum, el) => sum + (el.added ? el.count : 0), 0)
+    if      ( d.diffAdditions && !d.diffDeletions) d.change ='add'
+    else if (!d.diffAdditions &&  d.diffDeletions) d.change ='del'
+    else if ( d.diffAdditions &&  d.diffDeletions) d.change ='mod'
+    else return // no changes
+    compareDiff.push(d)
+    render()
+  })
+
   // automatically & iteratively load the file diffs
   loadNextFileDiffTimeout = setTimeout(loadNextFileDiff, 0)
   async function loadNextFileDiff () {
