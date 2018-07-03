@@ -363,10 +363,11 @@ function render () {
 function renderHeader () {
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const isOwner = _get(archive, 'info.isOwner')
+  const isExpanded = !isNavCollapsed()
 
   return yo`
-    <div class="library-view-header ${activeView === 'files' ? 'expanded' : ''}">
-      ${activeView === 'files'
+    <div class="library-view-header ${isExpanded ? 'expanded' : ''}">
+      ${isExpanded
         ? yo`
           <div class="container">
             <div class="info">
@@ -1243,7 +1244,7 @@ function renderNav () {
 
   return yo`
     <div class="nav-items">
-      <span class="nav-archive-title nav-item ${isNavArchiveTitleVisible() ? 'visible' : ''}">
+      <span class="nav-archive-title nav-item ${isNavCollapsed() ? 'visible' : ''}">
         <img src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
         ${getSafeTitle()}
       </span>
@@ -1986,7 +1987,7 @@ async function onFilesChanged () {
 
 function onScrollMain (e) {
   var el = document.querySelector('.nav-archive-title')
-  if (isNavArchiveTitleVisible()) {
+  if (isNavCollapsed()) {
     el.classList.add('visible')
   } else {
     el.classList.remove('visible')    
@@ -2113,10 +2114,18 @@ async function setManifestValue (attr, value) {
   }
 }
 
-function isNavArchiveTitleVisible () {
-  if (activeView !== 'files') return true
+function isNavCollapsed () {
+  if (activeView !== 'files') {
+    // not in the files tab
+    return true
+  }
+  if (filesBrowser.getCurrentSource().parent) {
+    // looking at a file
+    return true
+  }
   var main = document.body.querySelector('.builtin-main')
   if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE) {
+    // certain distance scrolled
     return true
   }
   return false
