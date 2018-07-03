@@ -115,7 +115,6 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
     } else if (!(rev.diffAdditions || rev.diffDeletions)) {
       el = yo`
         <div class="empty">
-          <i class="fa fa-code"></i>
           <p>Empty file</p>
         </div>
       `
