@@ -22,6 +22,11 @@ export default function render (fileNode) {
   const mimetype = mime.lookup(fileNode.name)
   const url = fileNode.url + '?cache-buster=' + Date.now() + '&disable_web_root=1'
 
+  const isBinary =
+    mimetype.startsWith('application/zip') ||
+    mimetype.startsWith('application/gzip') ||
+    mimetype.startsWith('font/')
+
   var el
   if (mimetype.startsWith('image/')) {
     el = yo`<img id="img-preview" src=${url} />`
@@ -32,12 +37,12 @@ export default function render (fileNode) {
   } else if (mimetype.startsWith('audio/')) {
     el = yo`<audio id="audio-preview" controls src=${url}></audio>`
     el.isSameNode = (el2) => el2.id === 'audio-preview'
-  } else if (mimetype.startsWith('font/')) {
+  } else if (isBinary) {
     el = yo`<div class="opaque-binary">
 <code>1010100111001100
 1110100101110100
 1001010100010111</code>
     </div>`
   }
-  return yo`<div class="file-view media">${el || ''}</div>`
+  return yo`<div class="file-view media ${isBinary ? 'binary' : ''}">${el || ''}</div>`
 }
