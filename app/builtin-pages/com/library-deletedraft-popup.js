@@ -115,7 +115,9 @@ function onClickWrapper (e) {
 }
 
 function onSubmit (e) {
+  const deleteSyncPath = e.target.deleteSyncPath ? e.target.deleteSyncPath.checked : false
+
   e.preventDefault()
-  resolve({deleteSyncPath: e.target.deleteSyncPath.checked})
+  resolve({deleteSyncPath})
   destroy()
 }
