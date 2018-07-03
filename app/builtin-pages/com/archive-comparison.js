@@ -7,8 +7,18 @@ import {pluralize, shortenHash} from '../../lib/strings'
 // exported api
 // =
 
-export default function renderArchiveComparison ({base, target, revisions, onMerge, onChangeCompareTarget, onToggleRevisionCollapsed, onSelectwitchCompareArchives}) {
-  var selectOpts = {onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'}
+export default function renderArchiveComparison (opts = {}) {
+  var {
+    base,
+    target,
+    revisions,
+    archiveOptions,
+    onMerge,
+    onChangeCompareBase,
+    onChangeCompareTarget,
+    onToggleRevisionCollapsed,
+    onSelectwitchCompareArchives
+  } = opts
 
   const onPublishAllRevisions = (e) => {
     e.preventDefault()
@@ -25,14 +35,14 @@ export default function renderArchiveComparison ({base, target, revisions, onMer
       <div class="compare-selection">
         <span>Publish</span>
 
-        ${renderArchiveSelectBtn(base, selectOpts)}
+        ${renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})}
 
         <span>
           to
           <i class="fa fa-arrow-right"></i>
         </span>
 
-        ${renderArchiveSelectBtn(target, selectOpts)}
+        ${renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})}
 
         <div class="actions">
           <button class="btn" onclick=${onRevertAllRevisions}>

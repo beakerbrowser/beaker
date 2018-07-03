@@ -5,14 +5,14 @@ import {shortenHash} from '../../lib/strings'
 // globals
 // =
 
-var archivesList
+var loadedArchivesList
 var loadPromise
 
 // exported api
 // =
 
 export default function render (current, opts) {
-  if (archivesList) {
+  if (opts.archiveOptions || loadedArchivesList) {
     return renderLoaded(current, opts)
   }
   return renderLoading(current, opts)
@@ -35,18 +35,19 @@ function renderLoading (current, opts) {
     loadPromise = beaker.archives.list({isSaved: true, isOwner: true})
   }
   loadPromise.then(res => {
-    archivesList = res
-    archivesList.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+    loadedArchivesList = res
+    loadedArchivesList.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
     yo.update(el, renderLoaded(current, opts))
   }, console.error)
 
   return el
 }
 
-function renderLoaded (current, {onSelect, toggleId} = {}) {
-  var currentArchive = current ? archivesList.find(a => a.url === current.url) : null
-  var icon = currentArchive ? yo`<img class="favicon" src="beaker-favicon:${current.url}" />` : ''
-  var label = currentArchive ? currentArchive.title : 'Select archive'
+function renderLoaded (current, {archiveOptions, onSelect, toggleId} = {}) {
+  if (!archiveOptions) archiveOptions = loadedArchivesList
+  // var currentArchive = current ? loadedArchivesList.find(a => a.url === current.url) : null
+  var icon = current ? yo`<img class="favicon" src="beaker-favicon:${current.url}" />` : ''
+  var label = current ? current.info.title : 'Select archive'
 
   function onClickArchive (a) {
     closeAllToggleables()
@@ -60,7 +61,7 @@ function renderLoaded (current, {onSelect, toggleId} = {}) {
       </button>
 
       <div class="dropdown-items subtle-shadow left">
-        ${archivesList.map(a => yo`
+        ${archiveOptions.map(a => yo`
           <div class="dropdown-item" onclick=${e => onClickArchive(a)}>
             <img class="favicon" src="beaker-favicon:${a.url}" />
             <span class="title">${a.title || yo`<em>Untitled</em>`}</span>

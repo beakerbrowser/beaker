@@ -44,6 +44,7 @@ var filesBrowser
 var draftInfo
 
 // used in the compare view
+var compareBaseArchive
 var compareTargetArchive
 var compareDiff
 
@@ -217,14 +218,39 @@ async function loadReadme () {
   render()
 }
 
+async function loadCompareViewDefaults () {
+  if (!compareTargetArchive) {
+    let master = _get(draftInfo, 'master')
+    if (master) {
+      compareTargetArchive = new LibraryDatArchive(master.url)
+      await compareTargetArchive.setup()
+    }
+  }
+
+  if (!compareBaseArchive) {
+    let draft1 = _get(draftInfo, 'drafts.0')
+    if (draft1) {
+      compareBaseArchive = new LibraryDatArchive(draft1.url)
+      await compareBaseArchive.setup()
+    } else {
+      // this should never happen because the '#compare' link goes away when there are no drafts
+      // but if it does (bookmarked URL) we can give a non-broken interface by comparing to self
+      compareBaseArchive = compareTargetArchive
+    }
+  }
+
+  /* dont await */ loadCompareDiff()
+}
+
 var loadNextFileDiffTimeout
 async function loadCompareDiff () {
   // cancel any existing file-diff loads
   clearTimeout(loadNextFileDiffTimeout)
-  let [base, target] = [compareTargetArchive, archive]
+  var base = compareBaseArchive
+  var target = compareTargetArchive
 
   // load diff
-  if (compareTargetArchive) {
+  if (base && target) {
     compareDiff = await DatArchive.diff(base.url, target.url, {compareContent: true, shallow: true})
     compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
     render()
@@ -1127,10 +1153,12 @@ function renderCompareView () {
     <div class="container">
       <div class="view compare">
         ${renderArchiveComparison({
-          base: compareTargetArchive,
-          target: archive,
+          base: compareBaseArchive,
+          target: compareTargetArchive,
           revisions: compareDiff,
+          archiveOptions: listDraftsAndMaster(),
           onMerge: onCompareMerge,
+          onChangeCompareBase,
           onChangeCompareTarget,
           onToggleRevisionCollapsed: onToggleCompareRevisionCollapsed
         })}
@@ -1624,6 +1652,10 @@ async function onChangeView (e, view) {
     window.history.pushState('', {}, e.currentTarget.getAttribute('href'))
   }
 
+  if (activeView === 'compare') {
+    await loadCompareViewDefaults()
+  }
+
   if (activeView === 'files' && archiveFsRoot) {
     // setup files view
     await archiveFsRoot.readData({maxPreviewLength: 1e5})
@@ -1912,6 +1944,13 @@ async function onCompareMerge (base, target, opts) {
   loadCompareDiff()
 }
 
+async function onChangeCompareBase (url) {
+  compareBaseArchive = new LibraryDatArchive(url)
+  await compareBaseArchive.setup()
+  render()
+  loadCompareDiff()  
+}
+
 async function onChangeCompareTarget (url) {
   compareTargetArchive = new LibraryDatArchive(url)
   await compareTargetArchive.setup()
@@ -2007,6 +2046,9 @@ async function readViewStateFromUrl () {
     activeView = 'files'
   }
   if (oldView !== activeView) {
+    if (activeView === 'compare') {
+      await loadCompareViewDefaults()
+    }
     render()
   }
 
@@ -2073,6 +2115,10 @@ function isDraft () {
 
 function hasDrafts () {
   return draftInfo.drafts && draftInfo.drafts.length
+}
+
+function listDraftsAndMaster () {
+  return [draftInfo.master].concat(draftInfo.drafts)
 }
 
 function markdownHrefMassager (href) {
