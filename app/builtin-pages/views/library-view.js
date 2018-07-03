@@ -32,6 +32,7 @@ import createMd from '../../lib/fg/markdown'
 import {IS_GIT_URL_REGEX} from '@beaker/core/lib/const'
 
 const DEFAULT_PEERS_LIMIT = 10
+const MIN_SHOW_NAV_ARCHIVE_TITLE = 52 // px
 
 // globals
 // =
@@ -300,7 +301,7 @@ function render () {
     yo.update(
       document.querySelector('.library-wrapper'), yo`
         <div class="library-wrapper library-view builtin-wrapper">
-          <div class="builtin-main" style="margin-left: 0; width: 100%">
+          <div class="builtin-main" style="margin-left: 0; width: 100%" onscroll=${onScrollMain}>
             <div class="view-wrapper">
               ${renderView()}
             </div>
@@ -329,7 +330,7 @@ function render () {
             </p>
           </div>
 
-          <div class="builtin-main" style="margin-left: 0; width: 100%">
+          <div class="builtin-main" style="margin-left: 0; width: 100%" onscroll=${onScrollMain}>
             ${renderHeader()}
 
             <div class="view-wrapper">
@@ -353,7 +354,10 @@ function renderHeader () {
         ? yo`
           <div class="container">
             <div class="info">
-              <h1 class="title">${getSafeTitle()}</h1>
+              <h1 class="title">
+                <img src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
+                ${getSafeTitle()}
+              </h1>
 
               ${isDraft() ? yo`<span class="draft-badge badge blue">DRAFT</span>` : ''}
               ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
@@ -1223,8 +1227,8 @@ function renderNav () {
 
   return yo`
     <div class="nav-items">
-      <span class="favicon nav-item">
-        <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
+      <span class="nav-archive-title nav-item ${isNavArchiveTitleVisible() ? 'visible' : ''}">
+        <img src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
         ${getSafeTitle()}
       </span>
 
@@ -1964,6 +1968,15 @@ async function onFilesChanged () {
   loadReadme()
 }
 
+function onScrollMain (e) {
+  var el = document.querySelector('.nav-archive-title')
+  if (isNavArchiveTitleVisible()) {
+    el.classList.add('visible')
+  } else {
+    el.classList.remove('visible')    
+  }
+}
+
 function onNetworkChanged (e) {
   if (e.details.url === archive.url) {
     var now = Date.now()
@@ -2082,6 +2095,15 @@ async function setManifestValue (attr, value) {
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }
+}
+
+function isNavArchiveTitleVisible () {
+  if (activeView !== 'files') return true
+  var main = document.body.querySelector('.builtin-main')
+  if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE) {
+    return true
+  }
+  return false
 }
 
 function getSafeTitle () {

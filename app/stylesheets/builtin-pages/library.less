@@ -641,7 +641,7 @@ body.drag {
     margin: 0;
 
     &.expanded {
-      top: -150px;
+      top: -54px;
     }
 
     .info {
@@ -669,6 +669,11 @@ body.drag {
       font-size: 1.6rem;
       font-weight: 600;
       line-height: 1;
+
+      img {
+        height: 22px;
+        width: 22px;
+      }
     }
 
     .description {
@@ -705,12 +710,19 @@ body.drag {
     height: 55px;
     margin-right: 40px;
 
-    &.favicon {
+    &.nav-archive-title {
+      display: none;
       margin-right: 20px;
 
+      &.visible {
+        display: flex;
+      }
+
       img {
-        width: 24px;
-        height: 24px;
+        width: 18px;
+        height: 18px;
+        margin-right: 4px;
+        margin-top: -2px;
       }
     }
 
