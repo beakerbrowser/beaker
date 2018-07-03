@@ -245,7 +245,6 @@ async function loadCompareDiff () {
 
     // run the diff
     try {
-      d.isOpen = true
       d.diff = await diffLines(target, d.path, base, d.path)
       d.diffDeletions = d.diff.reduce((sum, el) => sum + (el.removed ? el.count : 0), 0)
       d.diffAdditions = d.diff.reduce((sum, el) => sum + (el.added ? el.count : 0), 0)
