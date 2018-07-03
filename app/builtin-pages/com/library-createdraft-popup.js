@@ -29,7 +29,9 @@ export function create (opts = {}) {
   document.body.appendChild(popup)
   document.addEventListener('keyup', onKeyUp)
   archive.progress.addEventListener('changed', update)
+
   popup.querySelector('input').focus()
+  popup.querySelector('input').setSelectionRange(newTitle.lastIndexOf('(') + 1, newTitle.lastIndexOf(')'))
 
   // return promise
   return new Promise((_resolve, _reject) => {
