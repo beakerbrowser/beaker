@@ -20,6 +20,8 @@ export default function renderArchiveComparison (opts = {}) {
     onSelectwitchCompareArchives
   } = opts
 
+  var numModifications = revisions ? revisions.filter(r => r.change === 'mod').length : 0
+
   const onPublishAllRevisions = (e) => {
     e.preventDefault()
     if (confirm(`Publish all revisions to "${getSafeTitle(target)}"?`)) {
@@ -30,7 +32,7 @@ export default function renderArchiveComparison (opts = {}) {
   return yo`
     <div class="archive-comparison">
       <div class="compare-selection">
-        <span>Publish</span>
+        <span>${numModifications > 0 ? 'Publish' : 'Comparing'}</span>
 
         ${onChangeCompareBase
           ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
@@ -45,11 +47,15 @@ export default function renderArchiveComparison (opts = {}) {
           ? renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})
           : renderArchive(target)}
 
-        <div class="actions">
-          <button class="btn success publish" onclick=${onPublishAllRevisions}>
-            Publish all revisions
-          </button>
-        </div>
+        ${numModifications > 0
+          ? yo`
+            <div class="actions">
+              <button class="btn success publish" onclick=${onPublishAllRevisions}>
+                Publish all revisions
+              </button>
+            </div>`
+          : ''
+        }
       </div>
 
       ${renderRevisions({base, target, revisions, onMerge, onToggleRevisionCollapsed})}
@@ -184,8 +190,8 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
     `
   )
 
-  var numAdditions = revisions.filter(r => r.change === 'add').length
   var numModifications = revisions.filter(r => r.change === 'mod').length
+  var numAdditions = revisions.filter(r => r.change === 'add').length
   var numDeletions = revisions.filter(r => r.change === 'del').length
 
   return yo`
