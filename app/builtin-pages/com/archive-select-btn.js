@@ -1,5 +1,6 @@
 import yo from 'yo-yo'
 import toggleable, {closeAllToggleables} from './toggleable'
+import {shortenHash} from '../../lib/strings'
 
 // globals
 // =
@@ -61,7 +62,9 @@ function renderLoaded (current, {onSelect, toggleId} = {}) {
       <div class="dropdown-items subtle-shadow left">
         ${archivesList.map(a => yo`
           <div class="dropdown-item" onclick=${e => onClickArchive(a)}>
-            <img class="favicon" src="beaker-favicon:${a.url}" /> ${a.title}
+            <img class="favicon" src="beaker-favicon:${a.url}" />
+            <span class="title">${a.title || yo`<em>Untitled</em>`}</span>
+            <span class="url">${shortenHash(a.url)}</span>
           </div>`
         )}
       </div>
