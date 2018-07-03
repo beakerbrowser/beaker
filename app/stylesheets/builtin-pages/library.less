@@ -633,7 +633,7 @@ body.drag {
     }
   }
 
-  .library-view-header {  
+  .library-view-header {
     position: sticky;
     top: 0;
     z-index: 5000;
@@ -648,7 +648,7 @@ body.drag {
       &:extend(.flex);
       align-items: center;
       position: relative;
-      padding: 20px 0;
+      padding: 20px 0 10px 0;
 
       .primary-action {
         position: absolute;
@@ -658,6 +658,10 @@ body.drag {
 
       .badge {
         margin-left: 10px;
+      }
+
+      .description {
+        flex: 100%;
       }
     }
 
