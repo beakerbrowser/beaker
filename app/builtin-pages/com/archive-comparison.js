@@ -1,3 +1,4 @@
+import _get from 'lodash.get'
 import yo from 'yo-yo'
 import renderDiff from './diff'
 import renderArchiveSelectBtn from './archive-select-btn'
@@ -8,14 +9,39 @@ import {pluralize, shortenHash} from '../../lib/strings'
 
 export default function renderArchiveComparison ({base, target, revisions, onMerge, onChangeCompareTarget, onToggleRevisionCollapsed, onSelectwitchCompareArchives}) {
   var selectOpts = {onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'}
+
+  const onPublishAllRevisions = (e) => {
+    e.preventDefault()
+    onMerge(base, target)
+  }
+
+  const onRevertAllRevisions = (e) => {
+    e.preventDefault()
+    onMerge(target, base)
+  }
+
   return yo`
     <div class="archive-comparison">
       <div class="compare-selection">
-        Publish
+        <span>Publish</span>
+
         ${renderArchiveSelectBtn(base, selectOpts)}
 
-        <i class="fa fa-arrow-right"></i>
+        <span>
+          to
+          <i class="fa fa-arrow-right"></i>
+        </span>
+
         ${renderArchiveSelectBtn(target, selectOpts)}
+
+        <div class="actions">
+          <button class="btn" onclick=${onRevertAllRevisions}>
+            Revert all
+          </button>
+          <button class="btn success publish" onclick=${onPublishAllRevisions}>
+            Publish all
+          </button>
+        </div>
       </div>
 
       ${renderRevisions({base, target, revisions, onMerge, onToggleRevisionCollapsed})}
@@ -61,14 +87,6 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
   }
   const onRevertRevision = (e, rev) => {
     onMerge(target, base, {paths: [rev.path]})
-  }
-  const onPublishAllRevisions = (e) => {
-    e.preventDefault()
-    onMerge(base, target)
-  }
-  const onRevertAllRevisions = (e) => {
-    e.preventDefault()
-    onMerge(target, base)
   }
 
   const renderRevisionContent = rev => {
@@ -180,16 +198,8 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
             </span>`
           : ''
         }
-        <a class="view" href="beaker://library/${target.url}" target="_blank">View target files</a>
-        <div class="actions">
-          <button class="btn" onclick=${onRevertAllRevisions}>
-            Revert all
-          </button>
-          <button class="btn success publish" onclick=${onPublishAllRevisions}>
-            Publish all
-          </button>
-        </div>
       </div>
+
       ${revisions.length
         ? yo`<div class="archive-comparison-list">${revisions.map(renderRevision)}</div>`
         : ''
