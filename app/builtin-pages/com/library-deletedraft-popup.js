@@ -82,10 +82,17 @@ function render () {
             : ''}
 
           <div class="actions">
-            <div class="left">
-              <i class="fa fa-check"></i>
-              It's safe to delete this draft
-            </div>
+            ${numUnpublishedRevisions > 0
+              ? yo`
+                <button class="btn" onclick=${destroy}>
+                  Cancel
+                </button>`
+              : yo`
+                <div class="left">
+                  <i class="fa fa-check"></i>
+                  It's safe to delete this draft
+                </div>`
+            }
 
             <button type="submit" class="btn ${(numUnpublishedRevisions > 0) ? 'warning' : ''}">
               Delete draft
