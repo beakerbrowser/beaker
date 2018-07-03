@@ -83,7 +83,9 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
     return yo`
       <div class="empty">
         <i class="fa fa-check"></i>
-        <div class="label">No differences found</div>
+
+        <div class="label">You're all set!</div>
+
         <p>
           The files in <a href="beaker://library/${base.url}" target="_blank">${getSafeTitle(base)}</a>
           are in sync with the files in
