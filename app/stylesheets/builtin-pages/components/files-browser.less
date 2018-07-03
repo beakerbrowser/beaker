@@ -9,8 +9,9 @@
   flex-wrap: nowrap;
 
   .body {
+    background: #fff;
     border: 1px solid #ddd;
-    border-radius: 2px;
+    border-top: 0;
 
     &.file {
       border: 0;
@@ -23,6 +24,18 @@
   .files-browser-header {
     &:extend(.flex);
     align-items: center;
+    height: 50px;
+    padding: 0 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+
+    .path {
+      font-weight: 500;
+    }
+
+    .metadata {
+      color: rgba(0,0,0,.5);
+    }
 
     .version-badge {
       &:extend(.code-font);
@@ -37,15 +50,28 @@
 
     .actions {
       margin-left: auto;
-      margin-bottom: 10px;
       display: flex;
 
       & > * {
         margin-left: 5px;
       }
 
-      .dropdown-items {
-        width: 160px;
+
+      .new-dropdown .dropdown-items {
+        width: 150px;
+        padding: 5px 0;
+      }
+
+      .btn-group {
+        margin-left: 10px;
+      }
+
+      .btn.plain:hover {
+        color: @blue;
+      }
+
+      .btn.trash:hover {
+        color: shade(@red, 20%);
       }
     }
   }

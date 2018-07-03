@@ -15,7 +15,7 @@ export class SyncfolderMenuNavbarBtn {
   render () {
     const page = pages.getActive()
     const isViewingDat = page && !!page.getIntendedURL().startsWith('dat:')
-    const localSyncPath = _get(page, 'siteInfo.userSettings.localSyncPath')
+    var localSyncPath = _get(page, 'siteInfo.userSettings.localSyncPath')
     if (!isViewingDat || !localSyncPath) {
       return ''
     }
@@ -23,6 +23,11 @@ export class SyncfolderMenuNavbarBtn {
     var dropdownEl = ''
     if (this.isDropdownOpen) {
       dropdownEl = this.renderDropdown(page)
+    }
+
+    // truncate long sync paths
+    if (localSyncPath.length > 40) {
+      localSyncPath = localSyncPath.slice(0, 17) + '...' + localSyncPath.slice(-20)
     }
 
     // render btn

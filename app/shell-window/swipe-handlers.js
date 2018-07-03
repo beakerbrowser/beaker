@@ -4,14 +4,16 @@ import * as zoom from './pages/zoom'
 
 const isDarwin = window.process.platform === 'darwin'
 
-var SWIPE_TRIGGER_DIST = 400 // how far do you need to travel to trigger the navigation
-var ARROW_OFF_DIST = 80 // how far off-screen are the arrows
+const SWIPE_TRIGGER_DIST = 400 // how far do you need to travel to trigger the navigation
+const ARROW_OFF_DIST = 80 // how far off-screen are the arrows
+const RESET_TIMEOUT = 2e3 // how long until we automatically reset the gesture
 
 export function setup () {
   var horizontal = 0 // how much x traveled?
   var vertical = 0 // how much y traveled?
   var hnorm = 0 // normalized to a [-1,1] range
   var isTouching = false // is touch event active?
+  var resetTimeout = null
   var leftSwipeArrowEl = document.getElementById('left-swipe-arrow')
   var rightSwipeArrowEl = document.getElementById('right-swipe-arrow')
   var toolbarSize = document.getElementById('toolbar').clientHeight
@@ -29,6 +31,17 @@ export function setup () {
   }
   const shouldGoForward = () => {
     return hnorm >= 1
+  }
+  const resetArrows = () => {
+    clearTimeout(resetTimeout)
+    isTouching = false
+    horizontal = vertical = hnorm = 0
+    leftSwipeArrowEl.classList.add('returning')
+    leftSwipeArrowEl.classList.remove('highlight')
+    leftSwipeArrowEl.style.left = (-1 * ARROW_OFF_DIST) + 'px'
+    rightSwipeArrowEl.classList.add('returning')
+    rightSwipeArrowEl.classList.remove('highlight')
+    rightSwipeArrowEl.style.right = (-1 * ARROW_OFF_DIST) + 'px'
   }
 
   window.addEventListener('mousewheel', e => {
@@ -99,12 +112,11 @@ export function setup () {
       `, true, (isScrollingEl) => {
         if (isScrollingEl) return // dont do anything
         isTouching = true
+        resetTimeout = setTimeout(resetArrows, RESET_TIMEOUT)
       })
     }
 
     if (type == 'scroll-touch-end' && isTouching) {
-      isTouching = false
-
       // trigger navigation
       if (shouldGoBack()) {
         let page = pages.getActive()
@@ -116,13 +128,7 @@ export function setup () {
       }
 
       // reset arrows
-      horizontal = vertical = hnorm = 0
-      leftSwipeArrowEl.classList.add('returning')
-      leftSwipeArrowEl.classList.remove('highlight')
-      leftSwipeArrowEl.style.left = (-1 * ARROW_OFF_DIST) + 'px'
-      rightSwipeArrowEl.classList.add('returning')
-      rightSwipeArrowEl.classList.remove('highlight')
-      rightSwipeArrowEl.style.right = (-1 * ARROW_OFF_DIST) + 'px'
+      resetArrows()
     }
   })
 }

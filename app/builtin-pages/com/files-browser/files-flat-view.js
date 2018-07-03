@@ -7,7 +7,7 @@ import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
 import * as toast from '../toast'
 import toggleable from '../toggleable'
-import renderArchiveHistory from '../archive-history'
+import {DAT_VALID_PATH_REGEX} from '@beaker/core/lib/const'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
 import {render as renderFileEditor} from '../file-editor'
@@ -26,7 +26,7 @@ export default function render (filesBrowser, currentSource) {
         ${currentSource.type === 'file'
           ? filesBrowser.isEditMode
             ? rFileEditor(currentSource)
-            : rFilePreview(currentSource)
+            : rFilePreview(filesBrowser, currentSource)
           : rChildren(filesBrowser, currentSource.children)
         }
       </div>
@@ -41,6 +41,7 @@ function rHeader (filesBrowser, currentSource) {
   return yo`
     <div class="files-browser-header">
       ${rBreadcrumbs(filesBrowser, currentSource)}
+      ${rMetadata(filesBrowser, currentSource)}
       ${rVersion(filesBrowser, currentSource)}
       ${rActions(filesBrowser, currentSource)}
     </div>
@@ -63,45 +64,113 @@ function rVersion (filesBrowser, currentSource) {
   ]
 }
 
+function rMetadata (filesBrowser, node) {
+  if (filesBrowser.isEditMode) {
+    return ''
+  }
+
+  var numLines
+  var isTextual = typeof node.preview === 'string' // preview is only set for text items
+
+  if (node.preview) {
+    numLines = node.preview.split('\n').length
+  }
+
+  return yo`
+    <div class="metadata">
+      ${numLines
+        ? [
+          yo`
+            <span class="file-info">
+              ${numLines} ${pluralize(numLines, 'line')}
+            </span>`,
+          yo`<span class="separator">|</span>`
+        ]
+        : ''
+      }
+      <span class="file-info">${prettyBytes(node.size)}</span>
+    </div>`
+}
+
 function rActions (filesBrowser, currentSource) {
-  const renderOpenHistory = () => renderArchiveHistory(filesBrowser.root._archive)
+  var isTextual = typeof currentSource.preview === 'string' // preview is only set for text items
+  var isEditing = filesBrowser.isEditMode
+  var buttonGroup = []
+
+  if (!isEditing && currentSource.type === 'file') {
+    buttonGroup.push(
+      yo`
+        <button class="action btn trash nofocus tooltip-container delete" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, currentSource)}>
+          <i class="fa fa-trash-o"></i>
+        </button>`
+    )
+
+    if (isTextual && currentSource.isEditable) {
+      buttonGroup.push(
+        yo`
+          <button class="action btn nofocus tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
+            <i class="fa fa-pencil"></i>
+          </button>`
+      )
+    }
+  }
+
   return yo`
     <div class="actions">
-      ${toggleable(yo`
-        <div class="dropdown toggleable-container archive-history-dropdown">
-          <button class="btn plain toggleable">
-            <i class="fa fa-archive"></i>
-          </button>
-
-          <div class="dropdown-items right toggleable-open-container"></div>
-        </div>
-      `, renderOpenHistory)}
-      <a class="btn" href="#compare">Compare</a>
       ${(currentSource.isEditable && currentSource.type !== 'file')
-        ? window.OS_CAN_IMPORT_FOLDERS_AND_FILES
-          ? yo`
-            <button onclick=${e => onAddFiles(e, currentSource, false)} class="btn">
-              Add files
-            </button>`
-          : toggleable(yo`
-            <div class="dropdown toggleable-container">
+        ?
+          toggleable(yo`
+            <div class="dropdown toggleable-container new-dropdown">
               <button class="btn toggleable">
-                Add files
+                <span class="fa fa-plus"></span>
               </button>
 
-              <div class="dropdown-items right">
-                <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
-                  <i class="fa fa-files-o"></i>
-                  Choose files
+              <div class="dropdown-items compact right">
+                <div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
+                  Create file
                 </div>
 
-                <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
-                  <i class="fa fa-folder-open-o"></i>
-                  Choose folder
+                <div class="dropdown-item" onclick=${e => emit('custom-create-file', {createFolder: true})}>
+                  Create folder
                 </div>
+
+                <hr>
+
+                ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
+                  ? yo`
+                    <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, false)}>
+                      Import files
+                    </div>`
+                  :
+                    [
+                      yo`
+                        <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
+                          <i class="fa fa-files-o"></i>
+                          Import files
+                        </div>`,
+                      yo`
+                        <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
+                          <i class="fa fa-folder-open-o"></i>
+                          Import folder (TODO this used to say choose folder is this right?)
+                        </div>`
+                    ]
+                }
               </div>
             </div>
           `)
+        : ''
+      }
+
+      ${!isEditing && currentSource.type === 'file'
+        ? yo`
+          <a  class="action btn plain tooltip-container" href=${currentSource.url} target="_blank" data-tooltip="Open file">
+            <i class="fa fa-external-link"></i>
+          </a>`
+        : ''
+      }
+
+      ${buttonGroup.length
+        ? yo`<div class="btn-group">${buttonGroup}</div>`
         : ''
       }
     </div>
@@ -116,13 +185,28 @@ function rBreadcrumbs (filesBrowser, currentSource) {
         .
       </div>
 
-      ${path.map(node => rBreadcrumb(filesBrowser, node))}
+      ${path.map((node, i) => rBreadcrumb(filesBrowser, node, (i === path.length - 1)))}
     </div>`
 }
 
-function rFilePreview (node) {
+function rBreadcrumb (filesBrowser, node, isLast = false) {
+  if (!node) return ''
+  var isEditing = filesBrowser.isEditMode && isLast
+  if (isEditing) {
+    return yo`
+      <div class="breadcrumb">
+        <input type="text" class="editor-filename" value=${node.name} />
+      </div>`
+  }
+  return yo`
+    <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, node)} title=${node.name}>
+      ${node.name}
+    </div>`
+}
+
+function rFilePreview (filesBrowser, node) {
   var numLines
-  var isTextual = !!node.preview // preview is only set for text items
+  var isTextual = typeof node.preview === 'string' // preview is only set for text items
 
   if (node.preview) {
     numLines = node.preview.split('\n').length
@@ -130,46 +214,7 @@ function rFilePreview (node) {
 
   return yo`
     <div class="file-view-container">
-      <div class="file-view-header">
-        <code class="path">${node.name}</code>
-
-        <span class="separator">|</span>
-
-        ${numLines
-          ? yo`<code class="file-info">${numLines} ${pluralize(numLines, 'line')}</code>`
-          : ''
-        }
-        <code class="file-info">${prettyBytes(node.size)}</code>
-
-        <span class="separator">|</span>
-
-        <span class="editor-options">        
-          <select onchange=${onChangeLineWrap} name="lineWrap">
-            <optgroup label="Line wrap mode">
-              <option selected="selected" value="off">No wrap</option>
-              <option value="on">Soft wrap</option>
-            </optgroup>
-          </select>
-        </span>
-
-        <div class="actions">
-          ${isTextual
-            ? node.isEditable
-              ? yo`
-                  <a class="tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
-                    <i class="fa fa-pencil"></i>
-                  </a>`
-              : yo`
-                  <a class="disabled tooltip-container" data-tooltip="Cannot edit file (read only)">
-                    <i class="fa fa-pencil"></i>
-                  </a>`
-            : ''}
-          <a href=${node.url} target="_blank" class="tooltip-container" data-tooltip="Open file">
-            <i class="fa fa-external-link"></i>
-          </a>
-        </div>
-      </div>
-
+      <div class="file-editor-controls ${filesBrowser.isEditMode ? '' : 'hidden'}"></div>
       ${renderFilePreview(node)}
     </div>
   `
@@ -178,11 +223,7 @@ function rFilePreview (node) {
 function rFileEditor (node) {
   return yo`
     <div class="file-view-container">
-      <div class="file-view-header">
-        <code class="path">${node.name}</code>
-
-        <span class="separator">|</span>
-
+      <div class="file-editor-controls">
         <span class="editor-options">
           <select onchange=${onChangeIndentationMode} name="indentationMode">
             <optgroup label="Indentation">
@@ -190,6 +231,7 @@ function rFileEditor (node) {
               <option value="tabs">Tabs</option>
             </optgroup>
           </select>
+
           <select onchange=${onChangeTabWidth} name="tabWidth">
             <optgroup label="Tab width">
               <option selected="selected" value="2">2</option>
@@ -201,7 +243,7 @@ function rFileEditor (node) {
 
         <span class="separator">|</span>
 
-        <span class="editor-options">        
+        <span class="editor-options">
           <select onchange=${onChangeLineWrap} name="lineWrap">
             <optgroup label="Line wrap mode">
               <option selected="selected" value="off">No wrap</option>
@@ -211,28 +253,18 @@ function rFileEditor (node) {
         </span>
 
         <div class="actions">
-          <a href="#" class="btn plain" onclick=${onClickCancelEdit}>
+          <button class="action btn small transparent" onclick=${onClickCancelEdit}>
             Cancel
-          </a>
-          <a href="#" class="btn" onclick=${onClickSaveEdit}>
-            <i class="fa fa-floppy-o"></i> Save
-          </a>
-          <a href=${node.url} target="_blank" class="tooltip-container" data-tooltip="Open file">
-            <i class="fa fa-external-link"></i>
-          </a>
+          </button>
+
+          <button class="action btn small success" onclick=${onClickSaveEdit}>
+            Save
+            <i class="fa fa-check"></i>
+          </button>
         </div>
       </div>
 
       ${renderFileEditor(node)}
-    </div>
-  `
-}
-
-function rBreadcrumb (filesBrowser, node) {
-  if (!node) return ''
-  return yo`
-    <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, node)} title=${node.name}>
-      ${node.name}
     </div>
   `
 }
@@ -326,10 +358,23 @@ function onClickEditFile (e) {
   emit('custom-open-file-editor')
 }
 
+function onClickDeleteFile (e, filesBrowser, node) {
+  e.preventDefault()
+  e.stopPropagation()
+  if (confirm('Delete this file?')) {
+    filesBrowser.setCurrentSource(node.parent)
+    emitDeleteFile(node._path, false)
+  }
+}
+
 function onClickSaveEdit (e) {
   e.preventDefault()
   e.stopPropagation()
-  emit('custom-save-file-editor-content')
+  var fileName = document.querySelector('.editor-filename').value
+  if (!DAT_VALID_PATH_REGEX.test(fileName) || fileName.indexOf('/') !== -1) {
+    return toast.create('Invalid characters in the file name', 'error')
+  }
+  emit('custom-save-file-editor-content', {fileName})
   emit('custom-close-file-editor')
 }
 
@@ -348,7 +393,7 @@ function onChangeIndentationMode (e) {
 }
 
 function onChangeTabWidth (e) {
-  emit('custom-config-file-editor', {tabWidth: e.target.value})  
+  emit('custom-config-file-editor', {tabWidth: e.target.value})
 }
 
 function onContextmenuNode (e, filesBrowser, node) {

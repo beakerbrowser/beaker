@@ -1,5 +1,4 @@
 Error.stackTraceLimit = Infinity
-import setupDebugLogger from './background-process/debug-logger'
 
 // This is main process of Electron, started as first thing when your
 // app starts. This script is running through entire life of your application.
@@ -7,10 +6,11 @@ import setupDebugLogger from './background-process/debug-logger'
 // window from here.
 
 import {app, protocol} from 'electron'
-import {getEnvVar} from './lib/electron'
+import {join} from 'path'
+import * as beakerCore from '@beaker/core'
+import * as rpc from 'pauls-electron-rpc'
 
 import * as beakerBrowser from './background-process/browser'
-import * as webAPIs from './background-process/web-apis'
 import * as adblocker from './background-process/adblocker'
 import * as analytics from './background-process/analytics'
 
@@ -22,35 +22,34 @@ import * as downloads from './background-process/ui/downloads'
 import * as permissions from './background-process/ui/permissions'
 import * as basicAuth from './background-process/ui/basic-auth'
 
-import * as archives from './background-process/dbs/archives'
-import * as settings from './background-process/dbs/settings'
-import * as sitedata from './background-process/dbs/sitedata'
-import * as profileDataDb from './background-process/dbs/profile-data-db'
-import * as bookmarksDb from './background-process/dbs/bookmarks'
-
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
-import * as datProtocol from './background-process/protocols/dat'
-
-// import * as profilesIngest from './background-process/ingests/profiles' TODO(profiles) disabled -prf
 
 import * as testDriver from './background-process/test-driver'
 import * as openURL from './background-process/open-url'
 
+const DISALLOWED_SAVE_PATH_NAMES = [
+  'home',
+  'desktop',
+  'documents',
+  'downloads',
+  'music',
+  'pictures',
+  'videos'
+]
+
+// setup
+// =
+
 // read config from env vars
-setupDebugLogger()
-if (getEnvVar('BEAKER_USER_DATA_PATH')) {
+if (beakerCore.getEnvVar('BEAKER_USER_DATA_PATH')) {
   console.log('User data path set by environment variables')
-  console.log('userData:', getEnvVar('BEAKER_USER_DATA_PATH'))
-  app.setPath('userData', getEnvVar('BEAKER_USER_DATA_PATH'))
+  console.log('userData:', beakerCore.getEnvVar('BEAKER_USER_DATA_PATH'))
+  app.setPath('userData', beakerCore.getEnvVar('BEAKER_USER_DATA_PATH'))
 }
-if (getEnvVar('BEAKER_TEST_DRIVER')) {
+if (beakerCore.getEnvVar('BEAKER_TEST_DRIVER')) {
   testDriver.setup()
 }
-
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
-})
 
 // configure the protocols
 protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
@@ -64,13 +63,21 @@ app.on('open-url', (e, url) => {
 })
 
 app.on('ready', async function () {
-  // databases
-  profileDataDb.setup()
-  archives.setup()
-  settings.setup()
-  sitedata.setup()
-  // TEMP can probably remove this in 2018 or so -prf
-  bookmarksDb.fixOldBookmarks()
+  // setup core
+  await beakerCore.setup({
+    // paths
+    userDataPath: app.getPath('userData'),
+    homePath: app.getPath('home'),
+    templatesPath: join(__dirname, 'assets', 'templates'),
+    disallowedSavePaths: DISALLOWED_SAVE_PATH_NAMES.map(path => app.getPath(path)),
+
+    // APIs
+    permsAPI: permissions,
+    uiAPI: {showModal: modals.showShellModal},
+    rpcAPI: rpc,
+    downloadsWebAPI: downloads.WEBAPI,
+    browserWebAPI: beakerBrowser.WEBAPI
+  })
 
   // base
   beakerBrowser.setup()
@@ -89,16 +96,15 @@ app.on('ready', async function () {
   // protocols
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
-  datProtocol.setup()
+  protocol.registerStreamProtocol('dat', beakerCore.dat.protocol.electronHandler, err => {
+    if (err) {
+      console.error(err)
+      throw new Error('Failed to create protocol: dat')
+    }
+  })
 
   // configure chromium's permissions for the protocols
   protocol.registerServiceWorkerSchemes(['dat'])
-
-  // web APIs
-  webAPIs.setup()
-
-  // ingests
-  // await profilesIngest.setup() TODO(profiles) disabled -prf
 })
 
 // only run one instance

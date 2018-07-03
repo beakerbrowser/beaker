@@ -7,22 +7,29 @@ import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import parseDatURL from 'parse-dat-url'
 import {diffLines} from '@beaker/dat-archive-file-diff'
 import _get from 'lodash.get'
+import throttle from 'lodash.throttle'
 import dragDrop from 'drag-drop'
+import {join as joinPaths} from 'path'
 import FilesBrowser from '../com/files-browser2'
 import toggleable from '../com/toggleable'
+import toggleable2 from '../com/toggleable2'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as toast from '../com/toast'
-import * as localsyncpathPopup from '../com/library-localsyncpath-popup'
-import * as copydatPopup from '../com/library-copydat-popup'
+import * as noticeBanner from '../com/notice-banner'
+import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
+import * as copyDatPopup from '../com/library-copydat-popup'
+import * as createDraftPopup from '../com/library-createdraft-popup'
+import * as deleteDraftPopup from '../com/library-deletedraft-popup'
+import * as createFilePopup from '../com/library-createfile-popup'
 import * as faviconPicker from '../com/favicon-picker'
 import renderArchiveComparison from '../com/archive-comparison'
 import renderSettingsField from '../com/settings-field'
+import renderArchiveHistory from '../com//archive-history'
 import {setup as setupAce, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
-import {pluralize, shortenHash} from '../../lib/strings'
-import {throttle} from '../../lib/functions'
+import {pluralize, shortenHash} from '@beaker/core/lib/strings'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
-import {IS_GIT_URL_REGEX} from '../../lib/const'
+import {IS_GIT_URL_REGEX} from '@beaker/core/lib/const'
 
 const DEFAULT_PEERS_LIMIT = 10
 
@@ -30,9 +37,11 @@ const DEFAULT_PEERS_LIMIT = 10
 // =
 
 var activeView // will default to 'files'
+var activeVersionTab = 'drafts'
 var archive
 var archiveFsRoot
 var filesBrowser
+var draftInfo
 
 // used in the compare view
 var compareReversed
@@ -109,6 +118,9 @@ async function setup () {
       }
     }
 
+    // get draft info
+    draftInfo = await beaker.archives.getDraftInfo(archive.url)
+
     // load state and render
     await readViewStateFromUrl()
 
@@ -116,6 +128,7 @@ async function setup () {
     window.addEventListener('popstate', onPopState)
     document.body.addEventListener('click', onClickAnywhere)
     archive.progress.addEventListener('changed', throttle(onProgressUpdate, 2e3))
+    document.body.addEventListener('custom-create-file', onCreateFile)
     document.body.addEventListener('custom-add-file', onAddFile)
     document.body.addEventListener('custom-rename-file', onRenameFile)
     document.body.addEventListener('custom-delete-file', onDeleteFile)
@@ -126,6 +139,7 @@ async function setup () {
     document.body.addEventListener('custom-set-view', onChangeView)
     document.body.addEventListener('custom-render', render)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
+    beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
 
     let onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
     var fileActStream = archive.watch()
@@ -162,7 +176,7 @@ async function loadReadme () {
       readmeContent.innerHTML = markdownRenderer.render(readmeMd)
       readmeHeader = yo`
         <div class="file-view-header">
-          <code class="path">${readmeMdNode.name}</code>
+          <span class="path">${readmeMdNode.name}</span>
         </div>`
     } else {
       // try to find the readme file
@@ -173,7 +187,7 @@ async function loadReadme () {
         readmeContent = yo`<div class="readme plaintext">${readme}</div>`
         readmeHeader = yo`
           <div class="file-view-header">
-            <code class="path">${readmeNode.name}</code>
+            <span class="path">${readmeNode.name}</span>
           </div>`
       }
     }
@@ -295,10 +309,9 @@ function render () {
             ${renderHeader()}
 
             <div class="view-wrapper">
+              ${isReadOnly || activeView !== 'files' ? '' : renderVersionPicker()}
               ${renderView()}
             </div>
-
-            ${renderFooter()}
           </div>
         </div>
       `
@@ -307,57 +320,43 @@ function render () {
 }
 
 function renderHeader () {
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const isOwner = _get(archive, 'info.isOwner')
+
   return yo`
-    <div class="builtin-header">
-      <div class="container">
-        <a href="beaker://library" class="back-link">
-          <i class="fa fa-angle-double-left"></i>
-        </a>
+    <div class="library-view-header ${activeView === 'files' ? 'expanded' : ''}">
+      ${activeView === 'files'
+        ? yo`
+          <div class="container">
+            <div class="info">
+              <h1 class="title">${getSafeTitle()}</h1>
 
-        ${renderTabs()}
+              ${isDraft() ? yo`<span class="draft-badge badge blue">DRAFT</span>` : ''}
+              ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
 
-        ${isOwner
-          ? yo`
-            <div
-              class="favicon-container editable tooltip-container ${isFaviconSet ? '' : 'unset'}"
-              data-tooltip=${isFaviconSet ? 'Change favicon' : 'Set favicon'}
-              onclick=${onClickFavicon}>
-
-              ${isFaviconSet
-                ? yo`<img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />`
-                : yo`<i class="fa fa-plus"></i>`
+              ${archive.info.description
+                ? yo`<p class="description">${archive.info.description}</p>`
+                : ''
               }
-            </div>`
-          : yo`
-            <div class="favicon-container">
-              <img src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
-            </div>`
-        }
 
-        ${isOwner
-          ? (headerEditValues.title !== false)
-            ? yo`<input class="title" value=${headerEditValues.title} onkeyup=${e => onKeyupHeaderEdit(e, 'title')} placeholder="Title" />`
-            : yo`
-              <div class="tooltip-container" data-tooltip="Change title">
-                <button class="title editable nofocus" onclick=${onClickChangeHeaderTitle}>
-                  ${getSafeTitle()}
-                </button>
-              </div>`
-          : yo`
-            <a href=${archive.url} class="title" target="_blank">
-              ${getSafeTitle()}
-            </a>`
-        }
+              ${syncPath
+                ? yo`
+                  <button onclick=${() => onOpenFolder(syncPath)} class="primary-action btn plain">
+                    ${syncPath}
+                  </button>
+                `
+                : yo`
+                  <button class="primary-action btn primary nofocus" onclick=${onChangeSyncDirectory}>
+                    Set local directory
+                  </button>
+                `
+              }
+            </div>
+          </div>`
+        : ''
+      }
 
-        <a href=${archive.url} class="url" target="_blank">
-          ${shortenHash(archive.url)}
-        </a>
-
-        <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy URL'}" onclick=${() => onCopy(archive.url, '', true)}>
-          <i class="fa fa-link"></i>
-        </button>
-      </div>
+      ${renderToolbar()}
     </div>`
 }
 
@@ -369,15 +368,130 @@ function renderView () {
   switch (activeView) {
     case 'files':
       return renderFilesView()
+    case 'compare':
+      return renderCompareView()
     case 'settings':
       return renderSettingsView()
     case 'network':
       return renderNetworkView()
-    case 'compare':
-      return renderCompareView()
     default:
       return yo`<div class="container"><div class="view">Loading...</div></div>`
   }
+}
+
+function updateVersionPicker () {
+  yo.update(document.querySelector('.version-picker'), renderVersionPicker())
+}
+
+function renderVersionPicker () {
+  const master = _get(draftInfo, 'master')
+
+  const changeTab = (tab) => {
+    activeVersionTab = tab
+    updateVersionPicker()
+  }
+
+  const rTabs = () => yo`
+   <div class="section tabs">
+      <button
+        class="nofocus tab ${activeVersionTab === 'drafts' ? 'active' : ''}"
+        onclick=${() => changeTab('drafts')}
+      >
+        Drafts
+      </button>
+
+      <button
+        class="nofocus tab ${activeVersionTab === 'versions' ? 'active' : ''}"
+        onclick=${() => changeTab('versions')}
+      >
+        History
+      </button>
+    </div>
+  `
+
+  const rDrafts = () => {
+    var els = []
+    if (hasDrafts()) {
+      els.push(yo`
+        <a href="beaker://library/${master.url}" class="dropdown-item ${master.url === archive.url ? 'active' : ''}">
+          <div class="draft-name">
+            ${master.title}
+            <span class="badge">master</span>
+          </div>
+
+          <div class="draft-url">
+            ${shortenHash(master.url)}
+          </div>
+
+          ${master.url === archive.url
+            ? yo`<span class="fa fa-check"></span>`
+            : ''
+          }
+        </a>`
+      )
+
+      draftInfo.drafts.forEach(d => {
+        const isActive = d.url === archive.url
+
+        if (isActive) {
+          els.push(yo`
+            <div class="dropdown-item active">
+              <div class="draft-name">${d.title}</div>
+              <div class="draft-url">${shortenHash(d.url)}</div>
+              <span class="fa fa-check"></span>
+            </div>
+          `)
+        } else {
+          els.push(yo`
+            <a href="beaker://library/${d.url}" class="dropdown-item">
+              <div class="draft-name">${d.title}</div>
+              <div class="draft-url">${shortenHash(d.url)}</div>
+              <button class="transparent circle remove-btn" onclick=${e => onDeleteDraft(e, d)}>
+                <span class="fa fa-times"></span>
+              </button>
+            </a>
+          `)
+        }
+      })
+    } else {
+      els.push(yo`<em>No drafts</em>`)
+    }
+
+    els.push(yo`
+      <div class="create-draft">
+        <button class="btn full-width" onclick=${onCreateDraft}>
+          Create a draft +
+        </button>
+      </div>`
+    )
+    return els
+  }
+
+  return yo`
+    <div class="version-picker container">
+      ${toggleable2({
+        id: 'version-picker',
+        closed: ({onToggle}) => yo`
+          <div class="dropdown toggleable-container">
+            <button class="btn nofocus" onclick=${onToggle}>
+              ${getSafeTitle()}
+              <span class="fa fa-caret-down"></span>
+            </button>
+          </div>`,
+        open: ({onToggle}) => yo`
+          <div class="dropdown toggleable-container">
+            <button class="btn nofocus" onclick=${onToggle}>
+              ${getSafeTitle()}
+              <span class="fa fa-caret-down"></span>
+            </button>
+
+            <div class="dropdown-items left">
+              ${rTabs()}
+              ${activeVersionTab === 'drafts' ? rDrafts() : renderArchiveHistory(filesBrowser.root._archive)}
+            </div>
+          </div>`
+      })}
+    </div>`
 }
 
 function renderFooter () {
@@ -506,8 +620,8 @@ function renderFilesView () {
           ? yo`
             <div class="message error">
               <span>
-                ${archive.info.title ? archive.info.title : 'This archive'}
-                is in your Trash.
+                "${archive.info.title ? archive.info.title : 'This archive'}"
+                is in the Trash.
               </span>
               <button class="btn" onclick=${onSave}>Restore from Trash</button>
             </div>`
@@ -584,7 +698,7 @@ function renderSetupChecklist () {
           </p>
 
           <div class="actions">
-            <button class="btn" onclick=${onClickChangeHeaderTitle}>
+            <button class="btn">
               ${hasTitle ? 'Change' : 'Set'} title
             </button>
           </div>
@@ -602,7 +716,7 @@ function renderSetupChecklist () {
           </p>
 
           <div class="actions">
-            <button class="btn" onclick=${onClickFavicon}>
+            <button class="btn">
               Pick a favicon
             </button>
 
@@ -642,32 +756,38 @@ function renderSettingsView () {
   const description = archive.info.description || ''
   const paymentLink = archive.info.links.payment ? archive.info.links.payment[0].href : ''
   const repository = archive.info.manifest.repository || ''
+  const baseUrl = `beaker://library/${archive.url}`
 
   let syncPath = _get(archive, 'info.userSettings.localSyncPath')
   let syncDirectoryDescription = ''
   if (syncPath) {
     syncDirectoryDescription = yo`
       <div>
-        <p>
-          This project${"'"}s files are synced to
-          <span class="link" onclick=${() => onOpenFolder(syncPath)}>
-            ${syncPath}
-          </span>
+        <form>
+          <div class="input-group radiolist sync-path">
+            <input type="radio" checked=${syncPath} name="has-sync-path" id="syncPath" onchange=${onChangeHasSyncDirectory}/>
+            <label for="syncPath">Sync this project's files to</label>
 
-          <button class="btn plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(syncPath, '', true)}>
-            <i class="fa fa-clipboard"></i>
-          </button>
+            <input readonly disabled=${!syncPath} type="text" value=${syncPath} placeholder="Choose directory"/>
 
-          <form class="input-group">
-            <input disabled type="text" value=${syncPath} placeholder="Change local directory"/>
-            <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
-              Change local directory
+            <button type="button" class="btn mobile" onclick=${onChangeSyncDirectory}>
+              Choose
             </button>
-            <button type="button" class="btn" onclick=${onRemoveSyncDirectory}>
-              Stop syncing
+
+            <button type="button" class="btn desktop" onclick=${onChangeSyncDirectory}>
+              Choose directory
             </button>
-          </form>
-        </p>
+
+            <button class="btn copy-path plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(syncPath, '', true)}>
+              <i class="fa fa-clipboard"></i>
+            </button>
+          </div>
+
+          <div class="input-group radiolist">
+            <input type="radio" checked=${!syncPath} id="noSync" name="has-sync-path" onchange=${onChangeHasSyncDirectory}/>
+            <label for="noSync">Don't sync to the local filesystem</label>
+          </div>
+        </form>
       </div>`
   } else if (_get(archive, 'info.localSyncPathIsMissing')) {
     syncDirectoryDescription = yo`
@@ -705,16 +825,14 @@ function renderSettingsView () {
   return yo`
     <div class="container">
       <div class="settings view">
-        <div class="module">
-          <h2 class="module-heading">
-            <span>
-              <i class="fa fa-info-circle"></i>
-              General
-            </span>
+        <h1>${isOwner ? 'Settings for ' : 'About '} "${getSafeTitle()}"</h1>
+
+        <div class="section">
+          <h2 class="section-heading">
+            General
           </h2>
 
-          <div class="module-content bordered">
-
+          <div class="section-content">
             <h3 class="no-margin">Title</h3>
             ${isOwner
               ? renderSettingsField({key: 'title', value: title, onUpdate: setManifestValue})
@@ -726,51 +844,29 @@ function renderSettingsView () {
               ? renderSettingsField({key: 'description', value: description, onUpdate: setManifestValue})
               : yo`<p>${getSafeDesc()}</p>`
             }
-
-            <h3>Favicon</h3>
-
-            ${isOwner
-              ? yo`
-                <p class="input-group">
-                  <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}"/>
-                  <button class="btn" onclick=${onClickFavicon}>
-                    Change favicon
-                  </button>
-                  <a class="learn-more-link" href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/The_head_metadata_in_HTML#Adding_custom_icons_to_your_site" target="_blank">
-                    What${"'"}s a favicon?
-                  </a>
-                </p>`
-              : yo`<img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}"/>`
-            }
           </div>
         </div>
 
         ${isOwner
           ? yo`
-            <div class="module">
-              <h2 class="module-heading">
-                <span>
-                  <i class="fa fa-folder-o"></i>
-                  Local directory
-                </span>
+            <div class="section">
+              <h2 class="section-heading">
+                Local directory
               </h2>
 
-              <div class="module-content bordered">
+              <div class="section-content">
                 ${syncDirectoryDescription}
               </div>
             </div>`
           : ''
         }
 
-        <div class="module">
-          <h2 class="module-heading">
-            <span>
-              <i class="fa fa-link"></i>
-              Links
-            </span>
+        <div class="section">
+          <h2 class="section-heading">
+            Links
           </h2>
 
-          <div class="module-content bordered">
+          <div class="section-content">
 
             <h3 class="no-margin">Donation page</h3>
             ${isOwner
@@ -789,15 +885,12 @@ function renderSettingsView () {
           </div>
         </div>
 
-        <div class="module coming-soon">
-          <h2 class="module-heading">
-            <span>
-              <i class="fa fa-git"></i>
-              Git integration
-            </span>
+        <div class="section">
+          <h2 class="section-heading">
+            Git integration
           </h2>
 
-          <div class="module-content bordered">
+          <div class="section-content">
             ${_get(archive, 'info.isOwner')
               ? yo`
                 <div>
@@ -849,6 +942,7 @@ function renderNetworkView () {
   let clearCacheBtn = ''
   let peersLimit = arePeersCollapsed ? DEFAULT_PEERS_LIMIT : Infinity
 
+  const baseUrl = `beaker://library/${archive.url}`
   const {isSaved} = archive.info.userSettings
   const {progress} = archive
   const progressPercentage = `${progress.current}%`
@@ -889,10 +983,13 @@ function renderNetworkView () {
   return yo`
     <div class="container">
       <div class="view network">
-        <div class="module">
-          <h2 class="module-heading">Network overview</h2>
 
-          <div class="module-content">
+        <h1>Network activity</h1>
+
+        <div class="section">
+          <h2 class="section-heading">Overview</h2>
+
+          <div class="section">
             ${_get(archive, 'info.isOwner')
               ? ''
               : yo`<div>
@@ -967,7 +1064,7 @@ function renderNetworkView () {
             </a>
           </div>
 
-          <div class="module-footer two">
+          <div class="section-footer">
             <div>
               ${downloadedBytes !== archive.info.size
                 ? yo`
@@ -1046,26 +1143,237 @@ function renderCompareView () {
     </div>`
 }
 
-function renderTabs () {
+function renderToolbar () {
+  return yo`
+    <div class="library-toolbar">
+      <div class="container">
+        ${renderNav()}
+
+        <div class="buttons">
+          ${toggleable(yo`
+            <div class="dropdown toggleable-container">
+              <button class="btn plain nofocus toggleable">
+                <span class="fa fa-share-square-o"></span>
+              </button>
+
+              <div class="dropdown-items wide subtle-shadow">
+                <div class="dropdown-item vertically-aligned-icon">
+                  <span class="icon fa fa-link"></span>
+
+                  <span class="label">Share this project</span>
+
+                  <p class="description small">
+                    Anyone with this link can view this project${"'"}s files
+                  </p>
+
+                  <p>
+                    <input type="text" disabled value="${archive.url}"/>
+                    <button class="btn" onclick=${() => onCopy(archive.url)}>
+                      Copy URL
+                    </button>
+                  </p>
+                </div>
+
+                <div class="dropdown-item vertically-aligned-icon">
+                  <span class="icon fa fa-external-link"></span>
+
+                  <span class="label">Open</span>
+
+                  <p class="description small">
+                    View the live version of this project
+                  </p>
+                </div>
+              </div>
+            </div>`
+          )}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+function renderNav () {
   const isOwner = _get(archive, 'info.isOwner')
   const baseUrl = `beaker://library/${archive.url}`
+
   return yo`
-    <div class="tabs">
-      <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="tab ${activeView === 'files' ? 'active' : ''}">
+    <div class="nav-items">
+      <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="favicon nav-item ${activeView === 'files' ? 'active' : ''}">
+        <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
+      </a>
+
+      <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item ${activeView === 'files' ? 'active' : ''}">
         Files
       </a>
 
-      <a href=${baseUrl + '#network'} onclick=${e => onChangeView(e, 'network')} class="tab ${activeView === 'network' ? 'active' : ''}">
+      ${isDraft() || hasDrafts()
+        ? yo`
+          <a href=${baseUrl + '#compare'} onclick=${e => onChangeView(e, 'compare')} class="nav-item ${activeView === 'compare' ? 'active' : ''}">
+            Revisions
+          </a>`
+        : ''
+      }
+
+      <a href=${baseUrl + '#network'} onclick=${e => onChangeView(e, 'network')} class="nav-item ${activeView === 'network' ? 'active' : ''}">
         Network
       </a>
 
-      <a href=${baseUrl + '#settings'} onclick=${e => onChangeView(e, 'settings')} class="tab ${activeView === 'settings' ? 'active' : ''}">
-        ${isOwner ? 'Settings' : 'Info'}
+      <a href=${baseUrl + '#settings'} onclick=${e => onChangeView(e, 'settings')} class="nav-item ${activeView === 'settings' ? 'active' : ''}">
+        ${isOwner ? 'Settings' : 'About'}
       </a>
     </div>
   `
 }
 
+function renderMenu () {
+  return ''
+  const isOwner = _get(archive, 'info.isOwner')
+  const isSaved = _get(archive, 'info.userSettings.isSaved')
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  const title = getSafeTitle()
+  const description = _get(archive, 'info.description').trim()
+
+  return toggleable(yo`
+    <div class="center-el dropdown menu toggleable-container">
+      <button class="btn transparent title nofocus toggleable">
+        <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
+        ${title}
+        <span class="fa fa-angle-down"></span>
+      </button>
+
+      <div class="dropdown-items center over no-border">
+        <div class="section">
+          ${isOwner
+            ?
+              yo`<input autofocus class="title" value=${headerEditValues.title || title} onfocus=${onFocusTitleEditor} onblur=${e => onBlurTitleEditor(e, 'title')} placeholder="Title" />`
+            :
+             yo`<h1 class="title">${title}</h1>`
+          }
+
+          ${description ? yo`<p class="description">${description}</p>` : ''}
+        </div>
+
+        ${isOwner
+          ? yo`<div class="section favicons">${renderFaviconPicker()}</div>`
+          : ''
+        }
+
+        <div class="section">
+          ${isOwner
+            ? [
+                yo`
+                  <a href="#settings" class="dropdown-item" onclick=${e => onChangeView(e, 'settings')}>
+                    <i class="fa fa-gear"></i>
+                    Settings
+                  </a>
+                `,
+                yo`
+                  <a href="#network" class="dropdown-item" onclick=${e => onChangeView(e, 'network')}>
+                    <i class="fa fa-signal"></i>
+                    Network info
+                  </a>
+                `,
+                yo`
+                  <div class="dropdown-item" onclick=${onMakeCopy}>
+                    <i class="fa fa-clone"></i>
+                    Make a copy
+                  </div>
+                `,
+              ]
+            : [
+                yo`
+                  <a href="#settings" class="dropdown-item" onclick=${e => onChangeView(e, 'settings')}>
+                    <i class="fa fa-info-circle"></i>
+                    About
+                  </a>
+                `,
+                yo`
+                  <div class="dropdown-item" onclick=${e => onChangeView(e, 'network')}>
+                    <i class="fa fa-signal"></i>
+                    Network info
+                  </div>
+                `,
+              ]
+            }
+
+          <div class="dropdown-item" onclick=${onDownloadZip}>
+            <i class="fa fa-file-archive-o"></i>
+            Download as .zip
+          </div>
+
+          ${isOwner
+            ? (isSaved
+              ? yo`
+                <div class="dropdown-item" onclick=${onMoveToTrash}>
+                  <i class="fa fa-trash-o"></i>
+                  Move to Trash
+                </div>`
+              : [
+                yo`
+                  <div class="dropdown-item" onclick=${onSave}>
+                    <i class="fa fa-undo"></i>
+                    Restore from Trash
+                  </div>`,
+                yo`
+                  <div class="dropdown-item" onclick=${onDeletePermanently}>
+                    <i class="fa fa-times-circle"></i>
+                    Delete permanently
+                  </div>`
+              ]
+            ) : ''
+          }
+        </div>
+
+        ${!isOwner
+          ? yo`
+            <div class="section">
+              <div class="sync-path-info">
+                <button class="btn full-width success" onclick=${onMakeCopy}>
+                  Make an editable copy
+                </button>
+              </div>
+            </div>`
+          : ''
+        }
+
+        ${isOwner && isSaved
+          ? yo`
+            <div class="section">
+              ${syncPath
+                ? yo`
+                    <div class="sync-path-info">
+                      <label class="toggle draft-mode" data-tooltip="TODO">
+                        <div class="text">Draft mode</div>
+                        <input disabled checked=${false} type="checkbox" name="draft-mode" value="draft-mode" />
+                        <div class="switch"></div>
+                      </label>
+
+                      <code onclick=${() => onOpenFolder(syncPath)} class="link">${syncPath}</code>
+                    </div
+                  `
+                : yo`
+                  <div class="sync-path-info">
+                    <label disabled class="toggle draft-mode" data-tooltip="Set a local directory to enter Draft mode">
+                      <div class="text">Draft mode</div>
+                      <input checked=${false} type="checkbox" name="draft-mode" value="draft-mode">
+                      <div class="switch"></div>
+                    </label>
+
+                    <button onclick=${onChangeSyncDirectory} class="btn primary full-width tooltip-container">
+                      Set local directory
+                    </button>
+                  </div>`
+              }
+            </div>
+          `
+          : ''
+        }
+      </div>
+    </div>
+  `)
+}
+
+/*
 function renderMenu () {
   const isOwner = _get(archive, 'info.isOwner')
   const isSaved = _get(archive, 'info.userSettings.isSaved')
@@ -1124,6 +1432,7 @@ function renderMenu () {
     </div>
   `)
 }
+*/
 
 function renderEditButton () {
   if (_get(archive, 'info.userSettings.localSyncPath')) {
@@ -1133,10 +1442,19 @@ function renderEditButton () {
       </button>
     `
   } else if (_get(archive, 'info.isOwner')) {
-    return yo`
-      <button class="btn primary nofocus" onclick=${onChangeSyncDirectory}>
-        Set local directory
-      </button>`
+    if (syncPath) {
+      return yo`
+        <button onclick=${() => onOpenFolder(syncPath)} class="btn plain">
+          ${syncPath}
+        </button>
+      `
+    } else {
+      return yo`
+        <button class="btn primary nofocus" onclick=${onChangeSyncDirectory}>
+          Set local directory
+        </button>
+      `
+    }
   } else {
     return yo`
       <button class="btn primary nofocus" onclick=${onMakeCopy}>
@@ -1165,9 +1483,60 @@ function onTogglePeersCollapsed () {
 }
 
 async function onMakeCopy () {
-  let {title} = await copydatPopup.create({archive})
+  let {title} = await copyDatPopup.create({archive})
   const fork = await DatArchive.fork(archive.url, {title, prompt: false}).catch(() => {})
   window.location = `beaker://library/${fork.url}#setup`
+}
+
+async function onCreateDraft () {
+  let {title, masterUrl} = await createDraftPopup.create({draftInfo, archive})
+
+  // create a copy
+  const fork = await DatArchive.fork(
+    masterUrl,
+    {
+      title,
+      prompt: false,
+      hidden: true
+    }
+  ).catch(() => {})
+
+
+  // add the draft and set it as the active draft
+  await beaker.archives.addDraft(masterUrl, fork.url)
+  window.location = `beaker://library/${fork.url}`
+}
+
+async function onDeleteDraft (e, draft) {
+  e.stopPropagation()
+  e.preventDefault()
+
+  try {
+    // diff with the master
+    let diff = await DatArchive.diff(draftInfo.master.url, draft.url, {compareContent: true, shallow: true})
+
+    // run the popup
+    const {deleteSyncPath} = await deleteDraftPopup.create({
+      title: draft.title,
+      localSyncPath: draft.userSettings.localSyncPath,
+      numUnpublishedRevisions: diff.length
+    })
+
+    // delete all the related data
+    try {
+      await beaker.archives.removeDraft(draftInfo.master.url, draft.url)
+      await beaker.archives.setLocalSyncPath(draft.url, '', {deleteSyncPath})
+      await beaker.archives.delete(draft.url)
+    } catch (err) {
+      toast.create('There was an error trying to remove the archive', 'error', 3e3)
+      console.error(err)
+      return
+    }
+
+    // update the draft info
+    draftInfo = await beaker.archives.getDraftInfo(archive.url)
+    render()
+  } catch (_) {}
 }
 
 async function addReadme () {
@@ -1265,16 +1634,6 @@ async function onChangeView (e, view) {
   render()
 }
 
-async function onClickChangeHeaderTitle (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  // start the inline edit flow
-  headerEditValues.title = archive.info.title
-  render()
-  document.querySelector('input.title').select()
-}
-
 function onDismissGettingStarted (e) {
   e.preventDefault()
   e.stopPropagation()
@@ -1289,25 +1648,17 @@ function onDismissGettingStarted (e) {
   }, 450)
 }
 
-function onClickFavicon (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
+function renderFaviconPicker () {
   if (!archive.info.isOwner) {
-    return
+    return ''
   }
 
-  let rect = e.currentTarget.getClientRects()[0]
-
-  faviconPicker.create({
-    x: rect.left,
-    y: rect.bottom,
+  return faviconPicker.create({
     async onSelect (imageData) {
       let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
       await archive2.writeFile('/favicon.ico', imageData)
       faviconCacheBuster = Date.now()
       isFaviconSet = true
-      render()
     }
   })
 }
@@ -1317,6 +1668,7 @@ async function onSetCurrentSource (node) {
   loadReadme()
 
   // initialize ace editor (if needed)
+  filesBrowser.isEditMode = false
   setupAce({readOnly: true})
 
   // update the URL & history
@@ -1384,7 +1736,7 @@ async function onChangeSyncDirectory () {
   }
 
   // open the create folder-picker popup
-  let res = await localsyncpathPopup.create({
+  let res = await localSyncPathPopup.create({
     defaultPath,
     archiveKey: archive.info.key,
     title: archive.info.title
@@ -1416,6 +1768,32 @@ async function onRemoveSyncDirectory () {
     toplevelError = createToplevelError(e)
     render()
     return
+  }
+}
+
+async function onCreateFile (e) {
+  var {createFolder} = (e.detail || {})
+  var currentNode = filesBrowser.getCurrentSource()
+  if (!currentNode.isContainer) return // must be a folder
+  var basePath = currentNode._path
+
+  // get the name of the new file
+  var filePath = await createFilePopup.create({archive, basePath, createFolder})
+  if (filePath) {
+    if (createFolder) {
+      // create new folder
+      await archive.mkdir(filePath)
+    } else {
+      // create new file (empty)
+      await archive.writeFile(filePath, '', 'utf8')
+    }
+    // go to the new path
+    window.history.pushState('', {}, `beaker://library/${archive.url + filePath}`)
+    await readViewStateFromUrl()
+    if (!createFolder) {
+      // enter edit mode
+      onOpenFileEditor()
+    }
   }
 }
 
@@ -1468,7 +1846,7 @@ function onCloseFileEditor (e) {
   // update the UI
   filesBrowser.isEditMode = false
   render()
-  
+
   // restore the editor to non-edit mode
   var currentNode = filesBrowser.getCurrentSource()
   setAceValue(currentNode.preview)
@@ -1480,7 +1858,23 @@ async function onSaveFileEditorContent (e) {
     var fileContent = getAceValue()
     var currentNode = filesBrowser.getCurrentSource()
     currentNode.preview = fileContent
-    await archive.writeFile(currentNode._path, fileContent, 'utf8')
+
+    // write to the target filename
+    var fileName = e.detail.fileName || currentNode.name
+    var filePath = joinPaths(currentNode.parent ? currentNode.parent._path : '', fileName)
+    if (!filePath.startsWith('/')) {
+      filePath = '/' + filePath
+    }
+    await archive.writeFile(filePath, fileContent, 'utf8')
+
+    if (filePath !== currentNode._path) {
+      // go to the new path
+      window.history.pushState('', {}, `beaker://library/${archive.url + filePath}`)
+      readViewStateFromUrl()
+
+      // delete the old file
+      await archive.unlink(currentNode._path)
+    }
     toast.create('Saved')
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
@@ -1543,9 +1937,7 @@ async function onFilesChanged () {
   try {
     currentNode.preview = undefined // have the preview reload
     await currentNode.readData()
-    console.log('changed', !filesBrowser.isEditMode, !!currentNode.preview)
     if (!filesBrowser.isEditMode && !!currentNode.preview) {
-      console.log('setting',currentNode.preview)
       setAceValue(currentNode.preview) // update the editor if not in edit mode
     }
     filesBrowser.rerender()
@@ -1569,6 +1961,20 @@ function onNetworkChanged (e) {
     } else {
       archive.info.peerHistory.push({ts: now, peers: e.details.peerCount})
     }
+    render()
+  }
+}
+
+function onFolderSyncError (e) {
+  if (e.details.url === archive.url) {
+    console.error('Sync error', e.details.name, e.details.message)
+    let cyclePath = (e.details.message || '').split(' ').pop() || 'one of the folders'
+    noticeBanner.create('error', yo`
+      <div>
+        <strong>There was an issue</strong> while writing data from the local folder.
+        Beaker detected a cyclical symlink at <code>${cyclePath}</code> and had to abort.
+      </div>`
+    )
     render()
   }
 }
@@ -1666,6 +2072,14 @@ function getSafeTitle () {
 
 function getSafeDesc () {
   return _get(archive, 'info.description', '').trim() || yo`<em>No description</em>`
+}
+
+function isDraft () {
+  return draftInfo.master && _get(draftInfo, 'master.url') !== archive.url
+}
+
+function hasDrafts () {
+  return draftInfo.drafts && draftInfo.drafts.length
 }
 
 function markdownHrefMassager (href) {

@@ -4,7 +4,9 @@ import { ipcRenderer, remote } from 'electron'
 import EventEmitter from 'events'
 import path from 'path'
 import fs from 'fs'
+import throttle from 'lodash.throttle'
 import parseDatURL from 'parse-dat-url'
+import errorPage from '@beaker/core/lib/error-page'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as prompt from './ui/prompt'
@@ -13,8 +15,6 @@ import * as statusBar from './ui/statusbar'
 import * as toast from './ui/toast.js'
 import { SiteInfoNavbarBtn } from './ui/navbar/site-info'
 import {urlsToData} from '../lib/fg/img'
-import {throttle} from '../lib/functions'
-import errorPage from '../lib/error-page'
 import addAsyncAlternatives from './webview-async'
 
 // constants
@@ -29,7 +29,7 @@ const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by thi
 export const FIRST_TAB_URL = 'beaker://start'
 export const DEFAULT_URL = 'beaker://start'
 
-const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
+export const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
 
 // globals
 // =
@@ -132,6 +132,7 @@ export function create (opts) {
     inpageFindInfo: null, // any info available on the inpage find {activeMatchOrdinal, matches}
     liveReloadEvents: false, // live-reload event stream
     zoom: 0, // what's the current zoom level?
+    retainedScrollY: 0, // what was the scroll position of the page before navigating away?
 
     // current page's info
     contentType: null, // what is the content-type of the page?
@@ -208,8 +209,16 @@ export function create (opts) {
       }
     },
 
-    reload () {
-      // TODO do we need this wrapper?
+    async reload () {
+      // grab the current scroll-y
+      page.retainedScrollY = 0
+      try {
+        page.retainedScrollY = await page.webviewEl.getWebContents().executeJavaScript('window.scrollY')
+      } catch (e) {
+        console.debug('Error while trying to fetch the page scrollY', e)
+      }
+
+      // reload the page
       page.reloadAsync()
     },
 
@@ -326,6 +335,7 @@ export function create (opts) {
   page.webviewEl.addEventListener('dom-ready', onDomReady)
   page.webviewEl.addEventListener('new-window', onNewWindow)
   page.webviewEl.addEventListener('will-navigate', onWillNavigate)
+  page.webviewEl.addEventListener('did-navigate', onDidNavigate)
   page.webviewEl.addEventListener('did-navigate-in-page', onDidNavigateInPage)
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
   page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
@@ -590,6 +600,15 @@ function onWillNavigate (e) {
   }
 }
 
+function onDidNavigate (e) {
+  var page = getByWebview(e.target)
+  if (page) {  
+    // close any prompts and modals
+    prompt.forceRemoveAll(page)
+    modal.forceRemoveAll(page)
+  }
+}
+
 // did-navigate-in-page is triggered by hash/virtual-url changes
 // we need to update the url bar but no load event occurs
 function onDidNavigateInPage (e) {
@@ -631,9 +650,6 @@ function onLoadCommit (e) {
     zoom.setZoomFromSitedata(page, parseURL(page.getIntendedURL()).origin)
     // stop autocompleting
     navbar.clearAutocomplete()
-    // close any prompts and modals
-    prompt.forceRemoveAll(page)
-    modal.forceRemoveAll(page)
     // set title in tabs
     page.title = e.target.getTitle() // NOTE sync operation
     navbar.update(page)
@@ -651,6 +667,8 @@ function onDidStartLoading (e) {
     if (page.isActive) {
       statusBar.setIsLoading(true)
     }
+
+    // decorate the webview based on whether it's a builtin page
     const url = page.loadingURL || page.url
     if (url.startsWith('beaker://')) {
       page.webviewEl.classList.add('builtin')
@@ -783,7 +801,7 @@ function onDidStopLoading (e) {
         .json-formatter-row > a > .json-formatter-preview-text {
           transition: none !important;
         }
-        nav { margin-bottom: 5px; }
+        nav { margin-bottom: 5px; user-select: none; }
         nav > span {
           cursor: pointer;
           display: inline-block;
@@ -835,6 +853,14 @@ function onDidStopLoading (e) {
         transform: translate(-50%, -50%);
       }`
     )
+
+    // if there is a retained scroll position, move the page
+    if (page.retainedScrollY) {
+      page.webviewEl.executeJavaScript(`
+        window.scroll(0, ${page.retainedScrollY})
+      `)
+      page.retainedScrollY = 0
+    }
   }
 }
 

@@ -7,6 +7,7 @@ import electron from '../node_modules/electron'
 
 import * as browserdriver from './lib/browser-driver'
 import {shareDat, createDat} from './lib/dat-helpers'
+import {toUnixPath} from './lib/test-helpers'
 
 const app = browserdriver.start({
   path: electron,
@@ -865,6 +866,26 @@ test('versioned reads and writes', async t => {
   var statRev4 = await stat(newTestDatURL + '+5', '/one.txt')
   t.truthy(statRev2.offset < statRev4.offset)
 
+  // try again with checkout()
+  var reads = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${newTestDatURL}")
+    Promise.all([
+      archive.checkout(1).readdir('/'),
+      archive.checkout(2).readdir('/'),
+      archive.checkout(3).readdir('/'),
+      archive.checkout(3).readFile('/one.txt'),
+      archive.checkout(5).readFile('/one.txt'),
+      archive.checkout(3).stat('/one.txt'),
+      archive.checkout(5).stat('/one.txt'),
+    ])
+  `)
+  t.deepEqual(reads[0].length, 1)
+  t.deepEqual(reads[1].length, 2)
+  t.deepEqual(reads[2].length, 3)
+  t.deepEqual(reads[3], 'a')
+  t.deepEqual(reads[4], 'c')
+  t.truthy(reads[5].offset < reads[6].offset)
+
   // dont allow writes to old versions
   // writeFile
   try {
@@ -1482,7 +1503,7 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}")
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'add', path: '/hello.txt', type: 'file' },
@@ -1499,7 +1520,7 @@ test('DatArchive.diff', async t => {
     var b = new DatArchive("${archiveURL}")
     DatArchive.diff(a, b)
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'add', path: '/hello.txt', type: 'file' },
@@ -1516,7 +1537,7 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {shallow: true})
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'add', path: '/hello.txt', type: 'file' },
@@ -1529,7 +1550,7 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {paths: ['/hello.txt', '/subdir']})
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'add', path: '/hello.txt', type: 'file' },
     { change: 'add', path: '/subdir', type: 'dir' },
     { change: 'add',
@@ -1544,7 +1565,7 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {ops: ['del']})
   `)
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageChangeObj), [
     { change: 'del', path: '/.datignore', type: 'file' }
   ])
 
@@ -1554,7 +1575,7 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}subdir", "${archiveURL}")
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/space in the name.txt', type: 'file' },
     { change: 'add', path: '/hello.txt', type: 'file' }
@@ -1595,7 +1616,7 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}")
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'del', path: '/foo.bar', type: 'file' },
@@ -1615,7 +1636,7 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {shallow: true})
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'del', path: '/foo.bar', type: 'file' },
@@ -1634,7 +1655,7 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {paths: ['/hello.txt', '/subdir']})
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'mod', path: '/hello.txt', type: 'file' },
     { change: 'add',
       path: '/subdir/space in the name.txt',
@@ -1649,7 +1670,7 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {ops: ['del']})
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'del', path: '/foo.bar', type: 'file' },
     { change: 'del', path: '/subdir/hello2.txt', type: 'file' },
@@ -1663,7 +1684,7 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}subdir", "${archiveURL}")
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/space in the name.txt', type: 'file' },
     { change: 'del', path: '/foo.bar', type: 'file' },
@@ -1681,7 +1702,7 @@ test('DatArchive.diff', async t => {
   changes = await app.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}/subdir")
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'del', path: '/hello2.txt', type: 'file' },
     { change: 'add', path: '/subdir', type: 'dir' },
@@ -1708,7 +1729,7 @@ test('DatArchive.merge', async t => {
   changes = await app.executeJavascript(`
     DatArchive.merge("${testStaticDatURL}", "${archiveURL}")
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'add', path: '/hello.txt', type: 'file' },
@@ -1761,7 +1782,7 @@ test('DatArchive.merge', async t => {
   changes = await app.executeJavascript(`
     DatArchive.merge("${testStaticDatURL}", "${archiveURL}")
   `)
-  t.deepEqual(changes.sort(sortDiff), [
+  t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
     { change: 'del', path: '/.datignore', type: 'file' },
     { change: 'add', path: '/beaker.png', type: 'file' },
     { change: 'del', path: '/foo.bar', type: 'file' },
@@ -1916,4 +1937,9 @@ function sortDiff (a, b) {
 // and it should be act("c:\\foo\\bar")
 function escapeWindowsSlashes (str) {
   return str.replace(/\\/g, '\\\\')
+}
+
+function massageChangeObj (c) {
+  c.path = toUnixPath(c.path)
+  return c
 }

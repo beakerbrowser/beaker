@@ -7,7 +7,11 @@
 // it becomes act("c:\foo\bar")
 // and it should be act("c:\\foo\\bar")
 exports.escapeWindowsSlashes = function (str) {
-  return str.replace(/\\/g, '\\\\')
+  return str.replace(/\\/g, '\\\\\\\\')
+}
+
+exports.toUnixPath = function (str) {
+  return str.replace(/\\/g, '/')
 }
 
 exports.waitForSync = async function (tab, url, direction) {

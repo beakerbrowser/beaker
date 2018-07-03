@@ -1,6 +1,6 @@
+import * as beakerCore from '@beaker/core'
 import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import { createShellWindow, getFocusedDevToolsHost } from './windows'
-import datDns from '../networks/dat/dns'
 
 // exported APIs
 // =
@@ -163,6 +163,20 @@ export function buildWindowMenu (opts = {}) {
         click: function (item, win) {
           if (win) win.webContents.send('command', 'edit:find')
         }
+      },
+      {
+        label: 'Find Next',
+        accelerator: 'CmdOrCtrl+G',
+        click: function (item, win) {
+          if (win) win.webContents.send('command', 'edit:find-next')
+        }
+      },
+      {
+        label: 'Find Previous',
+        accelerator: 'Shift+CmdOrCtrl+G',
+        click: function (item, win) {
+          if (win) win.webContents.send('command', 'edit:find-previous')
+        }
       }
     ]
   }
@@ -181,12 +195,12 @@ export function buildWindowMenu (opts = {}) {
         label: 'Hard Reload (Clear Cache)',
         accelerator: 'CmdOrCtrl+Shift+R',
         click: function (item, win) {
-        // HACK
-        // this is *super* lazy but it works
-        // clear all dat-dns cache on hard reload, to make sure the next
-        // load is fresh
-        // -prf
-          datDns.flushCache()
+          // HACK
+          // this is *super* lazy but it works
+          // clear all dat-dns cache on hard reload, to make sure the next
+          // load is fresh
+          // -prf
+          beakerCore.dat.dns.flushCache()
 
           if (win) win.webContents.send('command', 'view:hard-reload')
         },

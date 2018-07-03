@@ -20,7 +20,10 @@ function getIcon (page) {
 
 export default function render (currentPage = '') {
   return toggleable(yo`
-    <div class="dropdown toggleable-container builtin-pages-nav">
+    <div
+      class="dropdown toggleable-container builtin-pages-nav"
+      data-toggle-id="builtin-pages-nav-menu"
+    >
       <button class="btn transparent toggleable">
         <h1>
           ${getIcon(currentPage)}

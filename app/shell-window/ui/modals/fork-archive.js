@@ -80,7 +80,7 @@ export class ForkArchiveModal extends BaseModal {
           <input name="title" tabindex="2" value=${this.title} placeholder="Title" onchange=${e => this.onChangeTitle(e)} />
 
           <label for="desc">Description</label>
-          <textarea name="desc" tabindex="3" value=${this.description} placeholder="Description (optional)" onchange=${e => this.onChangeDescription(e)}></textarea>
+          <textarea name="desc" tabindex="3" placeholder="Description (optional)" onchange=${e => this.onChangeDescription(e)}>${this.description}</textarea>
 
           ${progressEl}
           <div class="form-actions">

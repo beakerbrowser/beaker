@@ -8,7 +8,7 @@
   top: 0;
   width: 100%;
   height: 100%;
-  z-index: 3000;
+  z-index: 6000;
   background: rgba(0,0,0,.45);
   font-style: normal;
   overflow-y: auto;
@@ -68,8 +68,13 @@
     }
   }
 
+  select {
+    height: 28px;
+  }
+
   textarea,
-  label,
+  label:not(.checkbox-container),
+  select,
   input {
     display: block;
     width: 100%;
@@ -111,6 +116,7 @@
     padding-top: 10px;
     border-top: 1px solid #eee;
 
+    .left,
     .link {
       margin-right: auto;
     }
@@ -287,6 +293,7 @@
 }
 
 #library-copydat-popup {
+
   strong {
     font-weight: 600;
   }
@@ -298,5 +305,13 @@
       color: @color-text--muted;
       text-align: center;
     }
+  }
+}
+
+#library-deletedraft-popup {
+
+  .fa-check {
+    color: shade(@green, 15%);
+    -webkit-text-stroke: .5px #fff;
   }
 }

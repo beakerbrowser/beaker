@@ -1,8 +1,6 @@
+import * as rpcAPI from 'pauls-electron-rpc'
+import * as beakerCoreWebview from '@beaker/core/webview'
 import { webFrame } from 'electron'
-import DatArchive from './lib/web-apis/dat-archive'
-import UserSession from './lib/web-apis/user-session'
-import beaker from './lib/web-apis/beaker'
-import experimental from './lib/web-apis/experimental'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
 import { setup as setupPrompt } from './webview-preload/prompt'
 import setupRedirectHackfix from './webview-preload/redirect-hackfix'
@@ -21,15 +19,6 @@ setupExitFullScreenHackfix()
 */
 webFrame.registerURLSchemeAsPrivileged('dat', { bypassCSP: false })
 
-// setup APIs
-if (['beaker:', 'dat:', 'https:'].includes(window.location.protocol) ||
-    (window.location.protocol === 'http:' && window.location.hostname === 'localhost')) {
-  window.DatArchive = DatArchive
-}
-if (['beaker:', 'dat:'].includes(window.location.protocol)) {
-  // window.UserSession = UserSession
-  window.beaker = beaker
-  window.experimental = experimental
-}
+beakerCoreWebview.setup({rpcAPI})
 setupLocationbar()
 setupPrompt()

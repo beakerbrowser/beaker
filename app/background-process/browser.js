@@ -1,3 +1,4 @@
+import * as beakerCore from '@beaker/core'
 import {app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen} from 'electron'
 import {autoUpdater} from 'electron-updater'
 import os from 'os'
@@ -8,14 +9,11 @@ import jetpack from 'fs-jetpack'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 const exec = require('util').promisify(require('child_process').exec)
-var debug = require('debug')('beaker')
-import * as settingsDb from './dbs/settings'
+const debug = beakerCore.debugLogger('beaker')
+const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
 import {showModal, showShellModal, closeModal} from './ui/modals'
-import {
-  INVALID_SAVE_FOLDER_CHAR_REGEX
-} from '../lib/const'
-import {getEnvVar} from '../lib/electron'
+import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
 // constants
 // =
@@ -50,6 +48,13 @@ var userSetupStatusLookupPromise
 
 // events emitted to rpc clients
 var browserEvents = new EventEmitter()
+
+process.on('unhandledRejection', (reason, p) => {
+  debug('Unhandled Rejection at: Promise', p, 'reason:', reason)
+})
+process.on('uncaughtException', (err) => {
+  debug('Uncaught exception:', err)
+})
 
 // exported methods
 // =
@@ -347,7 +352,7 @@ function showContextMenu (menuDefinition) {
     }
 
     // add 'inspect element' in development
-    if (getEnvVar('NODE_ENV') === 'develop' || getEnvVar('NODE_ENV') === 'test') {
+    if (beakerCore.getEnvVar('NODE_ENV') === 'develop' || beakerCore.getEnvVar('NODE_ENV') === 'test') {
       menuDefinition.push({type: 'separator'})
       menuDefinition.push({
         label: 'Inspect Element',

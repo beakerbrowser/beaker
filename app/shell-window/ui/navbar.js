@@ -27,6 +27,7 @@ const KEYCODE_N = 78
 const KEYCODE_P = 80
 
 const isDatHashRegex = /^[a-z0-9]{64}/i
+const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 
 // globals
 // =
@@ -103,6 +104,10 @@ export function showInpageFind (page) {
   var el = page.navbarEl.querySelector('.nav-find-input')
   el.focus()
   el.select()
+}
+
+export function findNext(page, forward) {
+  onClickFindNext(forward)
 }
 
 export function hideInpageFind (page) {
@@ -217,8 +222,8 @@ function render (id, page) {
               </span>`
             : ''}
           <div class="nav-find-btns">
-            <button disabled=${!findValue} class="btn" onclick=${e => onClickFindNext(e, false)}><i class="fa fa-angle-up"></i></button>
-            <button disabled=${!findValue} class="btn last" onclick=${e => onClickFindNext(e, true)}><i class="fa fa-angle-down"></i></button>
+            <button disabled=${!findValue} class="btn" onclick=${e => onClickFindNext(false)}><i class="fa fa-angle-up"></i></button>
+            <button disabled=${!findValue} class="btn last" onclick=${e => onClickFindNext(true)}><i class="fa fa-angle-down"></i></button>
             <button class="close-btn" onclick=${e => hideInpageFind(page)}>${renderCloseIcon()}</button>
           </div>
         </div>
@@ -494,6 +499,7 @@ function examineLocationInput (v) {
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (
     /\.[A-z]/.test(v) ||
+    isIPAddressRegex.test(v) ||
     isDatHashRegex.test(v) ||
     v.startsWith('localhost') ||
     v.includes('://') ||
@@ -505,7 +511,7 @@ function examineLocationInput (v) {
   if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:'))) {
     if (isDatHashRegex.test(v)) {
       vWithProtocol = 'dat://' + v
-    } else if (v.startsWith('localhost')) {
+    } else if (v.startsWith('localhost') || isIPAddressRegex.test(v)) {
       vWithProtocol = 'http://' + v
     } else {
       vWithProtocol = 'https://' + v
@@ -823,11 +829,10 @@ function onInputFind (e) {
   }
 }
 
-function onClickFindNext (e, forward) {
+function onClickFindNext (forward) {
   var page = pages.getActive()
   if (page) {
-    var wrapperEl = findParent(e.target, 'nav-find-wrapper')
-    var inputEl = wrapperEl.querySelector('input')
+    var inputEl = page.navbarEl.querySelector('.nav-find-input')
     var str = inputEl.value
     if (str) page.findInPageAsync(str, { findNext: true, forward })
   }

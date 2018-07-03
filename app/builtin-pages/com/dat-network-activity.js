@@ -2,10 +2,10 @@
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
+import throttle from 'lodash.throttle'
 import * as toast from './toast'
 import * as contextMenu from './context-menu'
 import {pluralize} from '../../lib/strings'
-import {throttle} from '../../lib/functions'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 
@@ -121,7 +121,7 @@ export default class DatNetworkActivity {
 
     return yo`
       <div class="ll-row archive ${highlightedCls}" oncontextmenu=${e => this.onContextmenuArchive(e, archive)}>
-        <img class="favicon" src="beaker-favicon:${archive.url}" />
+        <img class="favicon" src="beaker-favicon:32,${archive.url}" />
 
         <a href=${archive.url} class="title" title=${archive.title}>
           ${archive.title || yo`<em>Untitled</em>`}

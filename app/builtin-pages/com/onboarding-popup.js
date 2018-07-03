@@ -1,12 +1,14 @@
 /* globals beaker DatArchive localStorage */
 
 import * as yo from 'yo-yo'
+import * as createArchivePopup from './create-archive-popup'
 
 // globals
 // =
 
 let currentStep = 0
 let isHintHidden = true
+let showNavigation = true
 let settings
 let defaultProtocolSettings
 let resolve
@@ -132,9 +134,8 @@ const STEPS = [
 // =
 
 async function onCreateWebsite () {
-  // create a new archive
-  const archive = await DatArchive.create({template: 'website', prompt: false})
-  window.location = 'beaker://library/' + archive.url + '#setup'
+  var {archive} = await createArchivePopup.create()
+  window.location = `beaker://library/${archive.url}#setup`
 }
 
 // exported api
@@ -143,6 +144,8 @@ async function onCreateWebsite () {
 export async function create (opts = {}) {
   settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
+  currentStep = (opts.showHelpOnly) ? 2 : 0
+  showNavigation = !opts.showHelpOnly
 
   // render interface
   var popup = render()
@@ -226,6 +229,9 @@ function renderBody () {
 }
 
 function renderFooter () {
+  if (!showNavigation) {
+    return yo`<div class="footer"></div>`
+  }
   return yo`
     <div class="footer">
       ${currentStep !== 0

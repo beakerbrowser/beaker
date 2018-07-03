@@ -7,19 +7,19 @@ const FETCH_COUNT = 200
 // exported api
 // =
 
+var counter = 0
 export default function render (archive) {
-  var el = yo`<div class="archive-history loading">
-    <div class="archive-history-header">Version history</div>
-    <div class="archive-history-body">Loading...</div>
-  </div>`
+  var id = `archive-history-${++counter}`
+  var el = yo`
+    <div id="${id}" class="archive-history loading">
+      <div class="archive-history-body">Loading history...</div>
+    </div>
+  `
 
   // lazy-load history
   if (archive) {
-    // strip the version
-    let vi = archive.url.indexOf('+')
-    if (vi !== -1) {
-      archive = new DatArchive(archive.url.slice(0, vi))
-    }
+    // read from latest
+    archive = archive.checkout()
 
     let history = []
     fetchMore()
@@ -52,8 +52,7 @@ export default function render (archive) {
         ))
 
         yo.update(el, yo`
-          <div class="archive-history">
-            <div class="archive-history-header">Version history</div>
+          <div id="${id}" class="archive-history">
             <div class="archive-history-body">
               ${rowEls}
               ${(history[history.length - 1].version === 1)
@@ -68,7 +67,7 @@ export default function render (archive) {
       } catch (err) {
         console.error('Error loading history', err)
         yo.update(el, yo`
-          <div class="archive-history">
+          <div id="${id}" class="archive-history">
             <div class="archive-history-header">Change history</div>
             <div class="archive-history-body error">
               <i class="fa fa-frown-o"></i>

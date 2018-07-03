@@ -1,4 +1,8 @@
 import {app, protocol} from 'electron'
+import * as beakerCore from '@beaker/core'
+import errorPage from '@beaker/core/lib/error-page'
+const {templates} = beakerCore.dbs
+const {archivesDebugPage, datDnsCachePage, datDnsCacheJS} = beakerCore.dat.debug
 import path from 'path'
 import url from 'url'
 import once from 'once'
@@ -6,9 +10,6 @@ import fs from 'fs'
 import jetpack from 'fs-jetpack'
 import intoStream from 'into-stream'
 import ICO from 'icojs'
-import errorPage from '../../lib/error-page'
-import {archivesDebugPage, datDnsCachePage, datDnsCacheJS} from '../networks/dat/debugging'
-import {getLogFileContent} from '../debug-logger'
 
 // constants
 // =
@@ -134,6 +135,21 @@ async function beakerProtocol (request, respond) {
     return serveICO(path.join(__dirname, 'assets/favicons', requestUrl.slice('beaker://assets/favicons/'.length)))
   }
 
+  // template screenshots
+  if (requestUrl.startsWith('beaker://templates/screenshot/')) {
+    let templateUrl = requestUrl.slice('beaker://templates/screenshot/'.length)
+    templates.getScreenshot(0, templateUrl)
+      .then(({screenshot}) => {
+        screenshot = screenshot.split(',')[1]
+        cb(200, 'OK', 'image/png', () => Buffer.from(screenshot, 'base64'))
+      })
+      .catch(err => {
+        console.error('Failed to load template screenshot', templateUrl, err)
+        return cb(404, 'Not Found')
+      })
+    return
+  }
+
   // builtin pages
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages.css'))
@@ -141,6 +157,10 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/img/onboarding/')) {
     let imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
+  }
+  if (requestUrl.startsWith('beaker://assets/img/templates/')) {
+    let imgPath = requestUrl.slice('beaker://assets/img/templates/'.length)
+    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/templates/${imgPath}`))
   }
   if (requestUrl.startsWith('beaker://assets/ace/') && requestUrl.endsWith('.js')) {
     let filePath = requestUrl.slice('beaker://assets/ace/'.length)
@@ -301,11 +321,8 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://debug-log/')) {
     const PAGE_SIZE = 1e6
     var start = queryParams.start ? (+queryParams.start) : 0
-    let content = await getLogFileContent(start, start + PAGE_SIZE)
-    var pagination = ''
-    if (content.length === PAGE_SIZE + 1 || start !== 0) {
-      pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
-    }
+    let content = await beakerCore.getLogFileContent(start, start + PAGE_SIZE)
+    var pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
     return respond({
       statusCode: 200,
       headers: {
@@ -315,7 +332,7 @@ async function beakerProtocol (request, respond) {
       },
       data: intoStream(`
         ${pagination}
-        <pre>${content}</pre>
+        <pre>${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
         ${pagination}
       `)
     })

@@ -9,11 +9,15 @@
 
 // builtin pages components
 @import "./components/tooltip.less";
+@import "./components/notice-banner.less";
 @import "./components/files-browser.less";
 @import "./components/diff";
 @import "./components/favicon-picker";
 @import "./components/archive-select-btn";
 @import "./components/archive-comparison";
+@import "./components/file-editor.less";
+@import "./components/create-archive-popup.less";
+@import "./components/opaque-binary.less";
 
 .window-content.builtin.library {
   // position relative so that popups stay in place
@@ -89,9 +93,47 @@ body.drag {
   }
 }
 
-.builtin-wrapper.library-wrapper {
+.builtin-wrapper.library {
+
+  @media (min-width: 1050px) {
+    .builtin-main {
+      max-width: none;
+      margin: 0 100px 0 200px;
+    }
+  }
+
+  // column sizings
+  .ll-row.archive,
+  .ll-column-headings {
+
+    .title {
+      flex: 3;
+      max-width: none;
+    }
+
+    .peers,
+    .size {
+      min-width: 60px;
+      flex: 0.75;
+    }
+
+    .date {
+      min-width: 120px;
+      flex: 0.9;
+    }
+
+    .buttons {
+      width: 45px;
+    }
+  }
+
+  .ll-column-headings {
+    padding: 0 20px 10px;
+  }
 
   .ll-row.archive {
+    height: 50px;
+    padding: 0 20px;
 
     &.menu-open,
     &:hover {
@@ -104,21 +146,34 @@ body.drag {
       }
     }
 
+    .title {
+      font-size: 13.5px;
+
+      &.empty {
+        overflow: initial;
+      }
+    }
+
+    .url,
+    .peers,
+    .date,
+    .size {
+      font-weight: 300;
+      font-size: 12.5px;
+      color: @color-text--muted;
+    }
+
     .url {
       margin-right: 0;
     }
 
     .buttons {
+      opacity: 1;
 
       .trash,
       .restore {
-        margin-right: 5px;
+        margin-right: 4px;
         opacity: 0;
-      }
-
-      .btn.plain:hover i,
-      .pressed i {
-        color: #333;
       }
     }
 
@@ -127,123 +182,32 @@ body.drag {
       right: -8px;
     }
   }
-
-  .recent-archives {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-gap: 15px;
-    width: 100%;
-    margin-bottom: 25px;
-
-    @media (min-width: 670px) {
-      grid-template-columns: 1fr 1fr 1fr 1fr;
-    }
-  }
-
-  .ll-row.recent {
-    &:extend(.flex);
-    justify-content: space-between;
-    position: relative;
-    width: auto;
-    height: auto;
-    padding: 0;
-    background: #fff;
-    text-align: center;
-    transition: box-shadow .05s ease;
-    border: 1px solid rgb(230, 230, 230);
-
-    * {
-      cursor: pointer;
-    }
-
-    .badge.read-only {
-      position: absolute;
-      right: 5px;
-      top: 5px;
-      cursor: default;
-      background: #f0f0f0;
-    }
-
-    &:hover {
-      border-color: #dadada;
-      background: #f0f0f0;
-
-      .info {
-        border-color: #dadada;
-      }
-
-      .btn {
-        opacity: 1;
-      }
-    }
-
-    .favicon {
-      display: block;
-      flex-basis: 32px;
-      width: 32px;
-      height: 32px;
-      margin: 30px auto;
-    }
-
-    .info {
-      position: relative;
-      border-top: 1px solid rgb(230, 230, 230);
-      text-align: left;
-      background: #fff;
-      padding: 5px 10px;
-      width: 100%;
-    }
-
-    .btn {
-      position: absolute;
-      right: 5px;
-      top: 6px;
-      opacity: 0;
-      font-size: 15px;
-      padding: 0 5px;
-      line-height: 1;
-      height: 22px;
-    }
-
-    .title {
-      &:extend(.overflow-ellipsis);
-      display: block;
-      max-width: 132px;
-      margin: 0;
-    }
-
-    .url {
-      font-size: .75rem;
-    }
-
-    .url,
-    .title {
-      vertical-align: top;
-    }
-  }
 }
 
 // beaker://library/{datHash} view
 .builtin-wrapper.library-view {
-  background: #fff;
+
+  .view {
+    background: #f7f7f7;
+  }
 
   .view-wrapper {
     width: 100%;
-    height: ~"calc(100vh - 100px)";
-    margin-top: 50px;
-    padding: 30px 0 45px 0;
-    overflow-y: auto;
+    padding: 40px 0;
+    margin-bottom: 0;
   }
 
   .builtin-main {
     max-width: 100%;
     padding: 0;
+    height: 100vh;
+    overflow-y: auto;
   }
 
   .container {
     max-width: 800px;
     margin: auto;
-    padding: 0 10px;
+    padding: 0 20px;
 
     @media(min-width: 800px) {
       padding: 0;
@@ -256,103 +220,55 @@ body.drag {
     top: 0;
     display: block;
     width: 100%;
-    height: auto;
+    height: 55px;
     padding: 0;
     background: #fff;
-    border-bottom: 1px solid #ddd;
-    font-size: .875rem;
-    height: 50px;
+    border: 1px solid #ddd;
+    font-size: 13.5px;
 
     .container {
-      &:extend(.flex);
-      height: 100%;
-      align-items: center;
       position: relative;
+      max-width: ~"calc(100% - 10px)";
+      height: 50px;
+      padding: 0 5px;
+
+      @media (min-width: 700px) {
+        max-width: ~"calc(100% - 30px)";
+      }
+
+      .center-el {
+        position: absolute;
+        left: 50%;
+        top: 12px;
+        transform: translateX(-50%);
+      }
+
+      > *:last-child {
+        position: absolute;
+        right: 0;
+        top: 12px;
+      }
     }
 
-    .back-link {
-      position: absolute;
-      left: -30px;
-      top: 10px;
-      width: 27px;
-      text-align: center;
-      font-size: 1.2rem;
-      color: rgba(0,0,0,.2);
-      cursor: pointer;
-      border-radius: 4px;
-
-      * {
-        cursor: pointer;
-      }
-
-      &:hover {
-        color: @color-text;
-        background: #eee;
-      }
-    }
-
-    .favicon-container {
-      width: 26px;
-      height: 26px;
-      padding: 5px;
-      border-radius: 4px;
-      margin-left: auto;
-
-      &.unset {
-        border: 1px dashed @color-text--muted;
-        padding: 0;
-        text-align: center;
-      }
-
-      &.editable {
-        cursor: pointer;
-
-        * {
-          cursor: pointer;
-        }
-
-        &:hover {
-          background: #eee;
-        }
-      }
-
-      i {
-        height: 26px;
-        line-height: 26px;
-        vertical-align: middle;
-        color: rgba(0,0,0,.4);
-        position: relative;
-        font-size: 11px;
-      }
-
-      img {
-        width: 16px;
-        height: 16px;
-      }
+    .favicon {
+      width: 16px;
+      height: 16px;
     }
 
     .title {
-      font-weight: 500;
       margin: 0 5px;
-
-      &.editable {
-        cursor: text;
-        border: 1px solid transparent;
-        padding: 0 3px;
-        margin: 0 2px;
-
-        &:hover {
-          border-color: #ddd;
-          text-decoration: none;
-        }
-      }
+      color: @color-text;
+      font-size: 16px;
+      font-weight: 500;
+      text-align: center;
     }
 
-    .url {
-      margin-right: 5px;
+    input.title {
+      width: ~"calc(100% - 10px)";
+      border-radius: 2px;
 
-      &:hover {
-        text-decoration: underline;
+      &:focus {
+        box-shadow: none;
       }
     }
 
@@ -429,20 +345,37 @@ body.drag {
     padding: 0;
     font-size: .85rem;
 
+    &.settings,
+    &.network {
+      background: #fff;
+      padding: 15px 20px;
+      border: 1px solid #ddd;
+
+      h1 {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+    }
+
     .section {
-      margin-bottom: 40px;
+
+      &:not(:last-child) {
+        margin-bottom: 40px;
+      }
     }
   }
 
   .file-view-header {
     &:extend(.flex);
     align-items: center;
-    height: 40px;
-    border-radius: 4px 4px 0 0;
+    height: 45px;
     border: 1px solid #ddd;
     padding: 0 10px;
-    background: #fafafa;
-    border-bottom: 1px solid #ddd;
+    background: #fff;
 
     .path {
       &:extend(.overflow-ellipsis);
@@ -459,78 +392,36 @@ body.drag {
   }
 
   .file-view-container {
-    font-size: 12.5px;
 
-    .file-view-header {
+    .file-view-header,
+    .file-editor-controls {
       &:extend(.flex);
       align-items: center;
-      height: 40px;
-      border-radius: 4px 4px 0 0;
-      padding: 0 10px;
+      padding: 0 15px;
+      border: 1px solid #ddd;
+
+      .actions {
+        margin-left: auto;
+      }
+    }
+
+    .file-editor-controls {
+      height: 35px;
+      border-top: 0;
       background: #fafafa;
-      border-bottom: 1px solid #ddd;
-
-      .separator {
-        color: rgba(0,0,0,.25);
-        padding: 0 10px;
-      }
-
-      .file-info {
-        margin-right: 10px
-      }
 
       .editor-options {
+
         select {
           border: 1px solid #ddd;
           background: #fff;
           height: 24px;
         }
       }
+    }
 
-      .actions {
-        margin-left: auto;
-
-        a {
-          display: inline-block;
-          font-size: 14px;
-          color: @color-text;
-          cursor: pointer;
-          height: 35px;
-          line-height: 35px;
-          margin-left: 12px;
-
-          &.btn {
-            height: auto;
-            line-height: 26px;
-            font-size: 13px;
-            margin-left: 8px;
-          }
-
-          * {
-            cursor: pointer;
-          }
-
-          .fa-floppy-o,
-          .fa-pencil {
-            // adjust icon alignment
-            position: relative;
-            top: -1px;
-          }
-
-          &:hover {
-            color: @blue;
-          }
-
-          &.disabled,
-          &.disabled:hover {
-            color: @color-text--light;
-            
-            * {
-              cursor: default;
-            }
-          }
-        }
-      }
+    .file-view-header {
+      height: 50px;
     }
 
     .file-view {
@@ -538,7 +429,6 @@ body.drag {
       border: 1px solid #ddd;
       border-top: 0;
       border-radius: 0 0 2px 2px;
-      background: #fff;
 
       &.text {
         &:extend(.code-font);
@@ -598,6 +488,13 @@ body.drag {
 
   .view.files {
 
+    .hint {
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ddd;
+      margin-top: 20px;
+      max-width: 100%;
+    }
   }
 
   .view.network {
@@ -657,6 +554,61 @@ body.drag {
       height: 32px;
     }
 
+    .input-group.sync-path {
+      position: relative;
+      flex-wrap: wrap;
+
+      input[type="text"] {
+        border-radius: 4px 0 0 4px;
+        flex: ~"calc(100% - 100px)";
+        margin-top: 10px;
+        margin-left: 20px;
+
+        @media (min-width: 800px) {
+          flex: 1;
+          margin: 0;
+        }
+
+        &:focus {
+          box-shadow: none;
+        }
+      }
+
+      .btn {
+        border-left: 0;
+        border-radius: 0 4px 4px 0;
+
+        &.copy-path,
+        &.desktop {
+          display: none;
+
+          @media (min-width: 800px) {
+            display: block;
+          }
+        }
+
+        &.desktop {
+          width: 190px;
+        }
+
+        &.mobile {
+          display: block;
+          margin-top: 10px;
+
+          @media (min-width: 800px) {
+            display: none;
+          }
+        }
+
+        &.copy-path {
+          width: auto;
+          position: absolute;
+          right: 195px;
+          top: -1px
+        }
+      }
+    }
+
     // TODO
     .git-setup-commands {
 
@@ -681,104 +633,207 @@ body.drag {
     }
   }
 
-  footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    border-top: 1px solid #ddd;
-    height: 50px;
-    font-size: .875rem;
+  .library-view-header {  
+    position: sticky;
+    top: 0;
+    z-index: 5000;
     background: #fff;
+    margin: 0;
 
+    &.expanded {
+      top: -150px;
+    }
+
+    .info {
+      &:extend(.flex);
+      align-items: center;
+      position: relative;
+      padding: 20px 0;
+
+      .primary-action {
+        position: absolute;
+        right: 0;
+        top: 20px;
+      }
+
+      .badge {
+        margin-left: 10px;
+      }
+    }
+
+    .title {
+      font-size: 1.6rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .description {
+      font-size: .9rem;
+    }
+  }
+
+  .library-toolbar {
+    width: 100%;
+    height: 55px;
+    border-bottom: 1px solid #ddd;
+    font-size: .9rem;
+
+    .nav-items,
     .container {
       &:extend(.flex);
       align-items: center;
-      justify-content: flex-end;
-      max-width: 800px;
-      width: 100%;
-      height: 100%;
-      margin: auto;
     }
 
-    .secondary-action {
-      margin-right: 10px;
-    }
+    .buttons {
+      &:extend(.flex);
+      margin-left: auto;
 
-    .dropdown-items.syncfolder-info {
-      width: 275px;
-      right: -10px;
-
-      .dropdown-item {
-        &:extend(.overflow-ellipsis);
-      }
-    }
-
-    .path {
-      color: rgba(0,0,0,.85);
-      cursor: pointer;
-
-      &:hover {
-        text-decoration: underline;
-      }
-
-      &.error {
-
-        .btn {
-          margin-left: 5px;
-        }
-
-        &:hover {
-          color: initial;
-          text-decoration: none;
-        }
-      }
-    }
-
-    .dropdown.open .btn.primary {
-      background: shade(@blue, 15%);
-    }
-
-    .dropdown-items {
-      width: 235px;
-      font-size: .8rem;
-    }
-
-    .metadata {
-      color: rgba(0,0,0,.85);
-      margin-right: auto;
-    }
-
-    .btn {
-
-      .fa-caret-up {
-        margin-top: -2px;
+      .btn {
+        color: @color-text;
+        margin-right: 0;
       }
     }
   }
 
-  .tabs {
-    height: 100%;
-    margin-bottom: -1px;
+  .nav-item {
+    &:extend(.flex);
+    align-items: center;
+    height: 55px;
+    // padding: 0 15px 1px 15px;
+    // margin-right: 2px;
+    margin-right: 40px;
+    // margin-bottom: -1px;
+    // border-bottom: 2px solid transparent;
+    // font-weight: 500;
 
-    .tab {
-      display: inline-flex;
-      align-items: center;
-      height: 100%;
-      padding: 0 15px;
-      cursor: pointer;
-      color: @color-text;
-      margin-right: 5px;
-      letter-spacing: .15px;
-      border-bottom: 2px solid transparent;
+    &.favicon {
+      margin-right: 20px;
+
+      img {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    &.active {
+      // border-color: @blue;
+      text-decoration: underline;
+    }
+  }
+
+  .nav-links {
+    // &:extend(.flex);
+    // align-items: center;
+    height: 100%;
+    // font-size: 13.5px;
+
+    .link {
+      margin-right: 25px;
 
       &.active {
-        border-color: @color-text;
+        text-decoration: underline;
       }
+    }
+  }
 
-      &:hover:not(.active) {
-        border-color: #ccc;
+  .dropdown.menu {
+    color: @color-text;
+
+    .title {
+      padding-bottom: 0;
+    }
+
+    .description {
+      padding: 10px;
+      margin: 0;
+    }
+
+    .dropdown-items {
+      width: 275px;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .dropdown-item {
+
+      .fa {
+        color: @color-text;
       }
+    }
+
+    .sync-path-info {
+      padding: 5px 10px;
+
+      code {
+        &:extend(.code-font);
+        line-height: 1;
+        font-size: 12.5px;
+        color: @color-text--muted;
+        margin-top: 10px;
+      }
+    }
+
+    .section.favicons {
+      background: #f7f7f7;
+      max-height: 90px;
+      overflow-y: auto;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+  }
+
+  .version-picker {
+    margin-bottom: 15px;
+
+    em {
+      display: block;
+      padding: 10px 10px 5px 10px;
+    }
+
+    .section.tabs {
+      padding: 10px 10px 0 10px;
+      background: #f7f7f7;
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+
+    .tab {
+      display: inline-block;
+      margin-bottom: -1px;
+
+      &.active {
+        background: #fafafa;
+        border: 1px solid #ddd;
+        border-bottom: 0;
+      }
+    }
+
+    .dropdown-item {
+      position: relative;
+      text-align: left;
+
+      .fa-check {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 13px;
+        color: @color-text;
+      }
+    }
+
+    .draft-name {
+      font-weight: 500;
+    }
+
+    .draft-url {
+      color: rgba(0,0,0,.55);
+    }
+
+    div.create-draft {
+      padding: 5px;
     }
   }
 
@@ -790,13 +845,14 @@ body.drag {
     .file-view-header,
     .readme {
       width: 100%;
+      background: #fff;
     }
 
     .readme {
       border: 1px solid #ddd;
       border-top: 0;
       border-radius: 0 0 2px 2px;
-      padding: 15px 25px;
+      padding: 20px;
       font-size: 15px;
       line-height: 1.5;
     }

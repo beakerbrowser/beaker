@@ -1,3 +1,4 @@
+import * as beakerCore from '@beaker/core'
 import { app } from 'electron'
 import path from 'path'
 import crypto from 'crypto'
@@ -7,9 +8,9 @@ import ms from 'ms'
 import jetpack from 'fs-jetpack'
 import concat from 'concat-stream'
 import osName from 'os-name'
-import * as settingsDb from './dbs/settings'
-import {ANALYTICS_DATA_FILE, ANALYTICS_SERVER, ANALYTICS_CHECKIN_INTERVAL} from '../lib/const'
-const debug = require('debug')('beaker-analytics')
+const settingsDb = beakerCore.dbs.settings
+import {ANALYTICS_DATA_FILE, ANALYTICS_SERVER, ANALYTICS_CHECKIN_INTERVAL} from '@beaker/core/lib/const'
+const debug = beakerCore.debugLogger('beaker-analytics')
 
 // exported methods
 // =

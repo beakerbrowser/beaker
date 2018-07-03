@@ -14,7 +14,7 @@ export default function render (fileNode) {
   }
 
   // handle textual files
-  if (fileNode.preview) {
+  if (typeof fileNode.preview === 'string') {
     return renderFileEditor(fileNode)
   }
 
@@ -32,6 +32,12 @@ export default function render (fileNode) {
   } else if (mimetype.startsWith('audio/')) {
     el = yo`<audio id="audio-preview" controls src=${url}></audio>`
     el.isSameNode = (el2) => el2.id === 'audio-preview'
+  } else if (mimetype.startsWith('font/')) {
+    el = yo`<div class="opaque-binary">
+<code>1010100111001100
+1110100101110100
+1001010100010111</code>
+    </div>`
   }
   return yo`<div class="file-view media">${el || ''}</div>`
 }
