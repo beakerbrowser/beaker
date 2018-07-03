@@ -170,11 +170,9 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
           }
 
           <div class="actions">
-            <div class="btn-group">
-              <button class="btn" data-tooltip="Publish" onclick=${e => onPublishRevision(e, rev)}>
-                <i class="fa fa-check"></i>
-              </button>
-            </div>
+            <button class="btn" onclick=${e => onPublishRevision(e, rev)}>
+              Publish
+            </button>
 
             <div class="btn plain">
               <i class="fa fa-chevron-${rev.isOpen ? 'down' : 'up'}"></i>
