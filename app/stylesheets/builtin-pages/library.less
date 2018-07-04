@@ -646,11 +646,12 @@ body.drag {
 
     &.expanded {
       top: -54px;
+      &.has-description {
+        top: -103px;
+      }
     }
 
     .info {
-      &:extend(.flex);
-      align-items: center;
       position: relative;
       padding: 20px 0 10px 0;
 
@@ -659,29 +660,35 @@ body.drag {
         right: 0;
         top: 20px;
       }
-
-      .badge {
-        margin-left: 10px;
-      }
-
-      .description {
-        flex: 100%;
-      }
     }
 
     .title {
-      font-size: 1.6rem;
-      font-weight: 600;
-      line-height: 1;
+      &:extend(.flex);
+      align-items: center;
+      height: 25px;
+
+      h1 {
+        font-size: 1.6rem;
+        font-weight: 600;
+        line-height: 1;
+      }
 
       img {
         height: 22px;
         width: 22px;
       }
+
+      .badge {
+        margin-left: 10px;
+      }
     }
 
     .description {
-      font-size: .9rem;
+      height: 23px;
+      margin: 13px 0;
+      white-space: pre;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 

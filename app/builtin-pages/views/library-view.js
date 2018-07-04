@@ -32,7 +32,7 @@ import createMd from '../../lib/fg/markdown'
 import {IS_GIT_URL_REGEX} from '@beaker/core/lib/const'
 
 const DEFAULT_PEERS_LIMIT = 10
-const MIN_SHOW_NAV_ARCHIVE_TITLE = 52 // px
+const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 101/*with description*/] // px
 
 // globals
 // =
@@ -370,23 +370,26 @@ function render () {
 function renderHeader () {
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const isOwner = _get(archive, 'info.isOwner')
+  const hasDescription = !!archive.info.description
   const isExpanded = !isNavCollapsed()
 
   return yo`
-    <div class="library-view-header ${isExpanded ? 'expanded' : ''}">
+    <div class="library-view-header ${isExpanded ? 'expanded' : ''} ${hasDescription ? 'has-description' : ''}">
       ${isExpanded
         ? yo`
           <div class="container">
             <div class="info">
-              <h1 class="title">
-                <img src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
-                ${getSafeTitle()}
-              </h1>
+              <div class="title">
+                <h1>
+                  <img src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
+                  ${getSafeTitle()}
+                </h1>
 
-              ${isDraft() ? yo`<span class="draft-badge badge blue">DRAFT</span>` : ''}
-              ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
+                ${isDraft() ? yo`<span class="draft-badge badge blue">DRAFT</span>` : ''}
+                ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
+              </div>
 
-              ${archive.info.description
+              ${hasDescription
                 ? yo`<p class="description">${archive.info.description}</p>`
                 : ''
               }
@@ -2132,7 +2135,8 @@ function isNavCollapsed () {
     return true
   }
   var main = document.body.querySelector('.builtin-main')
-  if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE) {
+  var hasDescription = (!!archive.info.description) ? 1 : 0
+  if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE[hasDescription]) {
     // certain distance scrolled
     return true
   }
