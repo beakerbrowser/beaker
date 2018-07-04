@@ -17,6 +17,7 @@ export default function renderArchiveComparison (opts = {}) {
     onChangeCompareBase,
     onChangeCompareTarget,
     onToggleRevisionCollapsed,
+    onDeleteDraft,
     onSelectwitchCompareArchives
   } = opts
 
@@ -58,7 +59,7 @@ export default function renderArchiveComparison (opts = {}) {
         }
       </div>
 
-      ${renderRevisions({base, target, revisions, onMerge, onToggleRevisionCollapsed})}
+      ${renderRevisions({base, target, revisions, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
     </div>`
 }
 
@@ -73,7 +74,7 @@ function renderArchive (archive) {
   `
 }
 
-function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, onMerge}) {
+function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, onMerge, onDeleteDraft}) {
   if (!target) {
     return yo`
       <div class="empty">
@@ -91,18 +92,23 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
     return 'Loading...'
   }
 
-  if (!revisions.length) {
+  if (true || !revisions.length || (revisions.length < 2 && revisions[0].debug_isJustTitleChange)) {
     return yo`
       <div class="empty">
-        <i class="fa fa-check"></i>
-
-        <div class="label">You${"'"}re all set!</div>
+        <div class="empty-header">
+          <i class="fa fa-check"></i>
+          <div class="label">You${"'"}re all set!</div>
+        </div>
 
         <p>
           The files in <a href="beaker://library/${base.url}" target="_blank">${getSafeTitle(base)}</a>
           are in sync with the files in
           <a href="beaker://library/${target.url}" target="_blank">${getSafeTitle(target)}</a>.
         </p>
+
+        <button class="btn delete-draft-btn" onclick=${e => onDeleteDraft(e, base, false)}>
+          Delete draft
+        </button>
       </div>`
   }
 
@@ -240,7 +246,6 @@ function onTriggerSelectAnArchive (e) {
   // trigger the dropdown
   document.querySelector('.compare-selection .btn').click()
 }
-
 
 // helpers
 // =

@@ -56,33 +56,53 @@
 
   .empty {
     // TODO need to make generic module class
-    padding: 30px 15px;
+    position: relative;
+    padding: 15px;
     background: #fff;
     border: 1px solid #ddd;
-    text-align: center;
+
+    .empty-header {
+      &:extend(.flex);
+      margin-bottom: 5px;
+    }
 
     i {
       font-size: 70px;
 
       &.fa-check {
+        margin-right: 10px;
+        font-size: 24px;
         color: shade(@green, 15%);
-        -webkit-text-stroke: 8px #fff;
+        -webkit-text-stroke: 1px #fff;
       }
     }
 
     .label {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 500;
-      margin-bottom: 5px;
     }
 
     p {
       color: @color-text;
-      margin-top: 0;
-      font-size: .9rem;
+      margin: 0 0 0 35px;
+      font-size: .85rem;
 
       &:last-child {
         margin-bottom: 0;
+      }
+    }
+
+    .delete-draft-btn {
+      width: 100%;
+      margin-top: 15px;
+
+      @media (min-width: 700px) {
+        position: absolute;
+        width: auto;
+        right: 25px;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-top: 0;
       }
     }
 
