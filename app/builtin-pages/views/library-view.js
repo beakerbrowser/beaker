@@ -1188,7 +1188,8 @@ function renderCompareView () {
           revisions: compareDiff,
           archiveOptions: draftInfo.drafts,
           onMerge: onCompareMerge,
-          onChangeCompareBase,
+          onDeleteDraft,
+          onChangeCompareBase: draftInfo.drafts && draftInfo.drafts.length > 1 ? onChangeCompareBase : undefined,
           onToggleRevisionCollapsed: onToggleCompareRevisionCollapsed
         })}
         </div>
