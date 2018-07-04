@@ -48,7 +48,7 @@ export default function renderArchiveComparison (opts = {}) {
           ? renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})
           : renderArchive(target)}
 
-        ${numModifications > 0
+        ${numModifications > 2
           ? yo`
             <div class="actions">
               <button class="btn success publish" onclick=${onPublishAllRevisions}>
@@ -92,7 +92,7 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
     return 'Loading...'
   }
 
-  if (true || !revisions.length || (revisions.length < 2 && revisions[0].debug_isJustTitleChange)) {
+  if (!revisions.length || (revisions.length < 2 && revisions[0].debug_isJustTitleChange)) {
     return yo`
       <div class="empty">
         <div class="empty-header">
