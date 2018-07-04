@@ -199,7 +199,7 @@ function renderAnalyticsSettings () {
         </span>
       </label>
 
-      <div class="message primary">
+      <div class="message">
         <p>Help us know how we${"'"}re doing! Enabling analytics will send us the following information once a week:</p>
 
         <ul>
