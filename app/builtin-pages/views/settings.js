@@ -285,7 +285,7 @@ function renderAutoUpdater () {
         <h2 id="auto-updater" class="subtitle-heading">Auto updater</h2>
 
         <div class="message info">
-          Sorry! Beaker auto-updates are only supported on the production build for MacOS and Windows.
+          Sorry! Beaker auto-updates are only supported on the production build for macOS and Windows.
         </div>
 
         <p>
