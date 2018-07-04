@@ -4,10 +4,12 @@
   &:extend(.flex);
   justify-content: flex-start;
   align-items: center;
-  font-size: 13.5px;
+  max-width: 500px;
+  margin: 0 auto 15px auto;
   padding: 10px 15px;
-  margin-bottom: 20px;
-  border-radius: 2px;
+  background: @background-message;
+  border: 1px solid #ddd;
+  font-size: 13.5px;
 
   strong {
     font-weight: 600;
@@ -20,7 +22,12 @@
 
   .btn {
     background: transparent;
+    border-color: @color-text--muted;
     margin-left: auto; // message buttons are always pulled to the right
+
+    &:hover {
+      background: fadeout(@color-text--muted, 85%);
+    }
   }
 
   ul {
@@ -28,17 +35,23 @@
     margin-left: 20px;
   }
 
+  &.success,
+  &.primary,
+  &.info,
+  &.error {
+    border-color: transparent;
+  }
+
   &.success {
     background: @background-message--success;
     color: @color-message--success;
-    border-color: @border-message--success;
 
     i {
      color: @color-message--success;
     }
 
     .btn {
-      border-color: @border-message--success;
+      border-color: @color-message--success;
       color: @color-message--success;
 
       &:focus,
@@ -47,7 +60,7 @@
       }
 
       &:hover {
-        background: @background-message--success;
+        background: fadeout(@color-message--success, 85%);
       }
     }
   }
@@ -55,14 +68,13 @@
   &.primary {
     background: @background-message--primary;
     color: @color-message--primary;
-    border-color: @border-message--primary;
 
     i {
      color: @color-message--primary;
     }
 
     .btn {
-      border-color: @border-message--primary;
+      border-color: @color-message--primary;
       color: @color-message--primary;
 
       &:focus,
@@ -71,7 +83,7 @@
       }
 
       &:hover {
-        background: @background-message--primary;
+        background: fadeout(@color-message--primary, 85%);
       }
     }
   }
@@ -79,7 +91,6 @@
   &.info {
     background: @background-message--info;
     color: @color-message--info;
-    border-color: @border-message--info;
 
     i {
      color: @color-message--info;
@@ -95,7 +106,7 @@
       }
 
       &:hover {
-        background: @background-message--info;
+        background: fadeout(@color-message--info, 85%);
       }
     }
   }
@@ -118,7 +129,7 @@
       }
 
       &:hover {
-        background: shade(@background-message--error, 3%);
+        background: fadeout(@color-message--error, 85%);
       }
     }
   }
