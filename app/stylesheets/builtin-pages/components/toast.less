@@ -3,7 +3,7 @@
 
 .toast-wrapper {
   position: fixed;
-  top: 0;
+  bottom: 20px;
   width: 100%;
   z-index: 20000;
   transition: opacity .1s ease;
@@ -15,39 +15,63 @@
 
 .toast {
   position: absolute;
-  right: 25px;
-  top: 0;
-  width: 325px;
+  left: 50%;
+  bottom: 0;
+  min-width: 350px;
+  max-width: 450px;
+  transform: translateX(-50%);
   text-align: center;
-  color: #fff;
-  -webkit-font-smoothing: antialiased;
-  background: #111;
-  font-weight: 600;
+  background: #ddd;
   padding: 10px 15px;
-  box-shadow: 0px 2px 2px rgba(0,0,0,.25);
-  border-radius: 40px;
   border-radius: 4px;
+  box-shadow: 0 0 70px 50px #fff;
+
+  &.primary,
+  &.success,
+  &.error {
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 600;
+  }
+
+  &.error {
+    padding-left: 30px;
+  }
 
   &.success {
-    background: darken(@green, 15%);
-    padding: 10px 15px 10px 25px;
+    padding-left: 40px;
+  }
+
+  &.success,
+  &.error {
 
     &:before {
       position: absolute;
-      left: 10px;
+      left: 15px;
       top: 8px;
       display: block;
-      content: '✓';
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
       font-size: 16px;
     }
   }
 
-  &.error {
-    background: darken(@red, 27%);
+  &.primary {
+    background: @blue;
+  }
+
+  &.success {
+    background: darken(@green, 15%);
 
     &:before {
-      content: '';
+      content: '✓';
+    }
+  }
+
+  &.error {
+    background: shade(@red, 22%);
+
+    &:before {
+      content: '!';
     }
   }
 
