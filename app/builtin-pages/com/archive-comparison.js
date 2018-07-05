@@ -109,7 +109,7 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
     return 'Loading...'
   }
 
-  if (!revisions.length || (revisions.length < 2 && revisions[0].debug_isJustTitleChange)) {
+  if (!revisions.length || (revisions.length < 2 && revisions[0].debug_shouldIgnoreChange)) {
     return yo`
       <div class="empty">
         <div class="empty-header">
