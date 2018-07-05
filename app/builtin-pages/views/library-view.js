@@ -356,6 +356,36 @@ function render () {
             ${renderHeader()}
 
             <div class="view-wrapper">
+              ${_get(archive, 'info.localSyncPathIsMissing') && activeView === 'files'
+                ? yo`
+                  <div class="container">
+                    <div class="message info">
+                      <span>
+                        This project${"'"}s local directory
+                        ${archive.info.missingLocalSyncPath ? `(${archive.info.missingLocalSyncPath})` : ''}
+                        was moved or deleted.
+                      </span>
+
+                      <button class="btn" onclick=${onChangeSyncDirectory}>Choose new directory</button>
+                    </div>
+                  </div>`
+                : ''
+              }
+
+              ${archive.info.isOwner && !archive.info.userSettings.isSaved && activeView === 'files'
+                ? yo`
+                  <div class="container">
+                    <div class="message error">
+                      <span>
+                        "${archive.info.title ? archive.info.title : 'This archive'}"
+                        is in the Trash.
+                      </span>
+                      <button class="btn" onclick=${onSave}>Restore from Trash</button>
+                    </div>
+                  </div>`
+                : ''
+              }
+
               ${isReadOnly || activeView !== 'files' ? '' : renderVersionPicker()}
               ${renderView()}
             </div>
@@ -399,12 +429,14 @@ function renderHeader () {
                     ${syncPath}
                   </button>
                 `
-                : yo`
-                  <button class="primary-action btn primary nofocus" onclick=${onChangeSyncDirectory}>
-                    Set local directory
-                  </button>
-                `
-              }
+                : _get(archive, 'info.localSyncPathIsMissing')
+                  ? ''
+                  : yo`
+                    <button class="primary-action btn primary nofocus" onclick=${onChangeSyncDirectory}>
+                      Set local directory
+                    </button>
+                  `
+                }
             </div>
           </div>`
         : ''
@@ -658,31 +690,6 @@ function renderFilesView () {
   return yo`
     <div class="container">
       <div class="view files">
-        ${_get(archive, 'info.localSyncPathIsMissing')
-          ? yo`
-            <div class="message info">
-              <span>
-                This archive${"'"}s local directory
-                ${archive.info.missingLocalSyncPath ? `(${archive.info.missingLocalSyncPath})` : ''}
-                was moved or deleted.
-              </span>
-
-              <button class="btn" onclick=${onChangeSyncDirectory}>Choose new directory</button>
-            </div>`
-          : ''
-        }
-
-        ${archive.info.isOwner && !archive.info.userSettings.isSaved
-          ? yo`
-            <div class="message error">
-              <span>
-                "${archive.info.title ? archive.info.title : 'This archive'}"
-                is in the Trash.
-              </span>
-              <button class="btn" onclick=${onSave}>Restore from Trash</button>
-            </div>`
-          : ''
-        }
         ${archive.info.isOwner ? renderSetupChecklist() : ''}
         ${filesBrowser ? filesBrowser.render() : ''}
         ${readmeElement ? readmeElement : renderReadmeHint()}
@@ -2000,7 +2007,7 @@ function onScrollMain (e) {
   if (isNavCollapsed()) {
     el.classList.add('visible')
   } else {
-    el.classList.remove('visible')    
+    el.classList.remove('visible')
   }
 }
 
