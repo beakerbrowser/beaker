@@ -22,7 +22,8 @@ export function setup ({readOnly} = {}) {
   var el = document.getElementById('ace-editor')
   if (!el) return
   var editor = ace.edit(el, {
-    useWorker: false
+    useWorker: false,
+    fontSize: '12.25px'
   })
   if (!orgApplyDeltaFn) {
     orgApplyDeltaFn = editor.session.getDocument().applyDelta // capture for later
