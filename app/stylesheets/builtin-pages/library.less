@@ -713,6 +713,12 @@ body.drag {
         margin-right: 0;
       }
     }
+
+    .favicon {
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+    }
   }
 
   .nav-item {
@@ -724,16 +730,14 @@ body.drag {
     &.nav-archive-title {
       display: none;
       margin-right: 20px;
+      font-weight: 500;
+
+      &:hover {
+        text-decoration: underline;
+      }
 
       &.visible {
         display: flex;
-      }
-
-      img {
-        width: 18px;
-        height: 18px;
-        margin-right: 4px;
-        margin-top: -2px;
       }
     }
 

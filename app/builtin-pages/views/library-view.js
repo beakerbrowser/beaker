@@ -409,7 +409,6 @@ function renderHeader () {
             <div class="info">
               <div class="title">
                 <h1>
-                  <img src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
                   ${getSafeTitle()}
                 </h1>
 
@@ -1260,10 +1259,11 @@ function renderNav () {
 
   return yo`
     <div class="nav-items">
-      <span class="nav-archive-title nav-item ${isNavCollapsed() ? 'visible' : ''}">
-        <img src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
+      <img src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" class="favicon" />
+
+      <a href=${archive.url} target="_blank" class="nav-archive-title nav-item ${isNavCollapsed() ? 'visible' : ''}">
         ${getSafeTitle()}
-      </span>
+      </a>
 
       <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item ${activeView === 'files' ? 'active' : ''}">
         Files
