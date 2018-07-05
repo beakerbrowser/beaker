@@ -29,6 +29,31 @@
   .dropdown.open .toggleable:not(.primary) {
     border: 1px solid transparent;
   }
+
+  .favicon {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+  }
+}
+
+.compare-footer {
+  &:extend(.flex);
+  align-items: center;
+  justify-content: space-between;
+  height: 50px;
+  position: sticky;
+  bottom: 0;
+  background: #f7f7f7;
+
+  .revisions-count {
+    font-weight: 500;
+  }
+
+  .separator {
+    margin: 0 5px;
+    color: rgba(0,0,0,.3);
+  }
 }
 
 .archive-comparison {
