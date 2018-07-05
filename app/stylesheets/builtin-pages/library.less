@@ -647,6 +647,7 @@ body.drag {
 
     &.expanded {
       top: -54px;
+
       &.has-description {
         top: -103px;
       }
@@ -710,9 +711,44 @@ body.drag {
       &:extend(.flex);
       margin-left: auto;
 
-      .btn {
+      > .btn {
         color: @color-text;
         margin-right: 0;
+      }
+    }
+
+    .dropdown.share {
+
+      .dropdown-items {
+        width: 350px;
+      }
+
+      .dropdown-item {
+        background: #fff;
+        cursor: default;
+
+        .description {
+          margin-left: 0;
+          color: @color-text;
+        }
+      }
+
+      p.copy-url {
+        &:extend(.flex);
+        margin-top: 10px;
+        margin-bottom: 10px;
+
+        input {
+          flex: 1;
+          font-size: 12px;
+          border-color: #eee;
+          background: #eee;
+          margin-right: 5px;
+        }
+
+        .btn.full-width {
+          margin-top: 5px;
+        }
       }
     }
 

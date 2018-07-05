@@ -165,20 +165,29 @@
     }
   }
 
-  i {
+  .fa {
     display: inline-block;
     width: 20px;
     color: rgba(0,0,0,.65);
   }
 
+  .btn .fa {
+    color: inherit;
+  }
+
   .label {
+    font-weight: 500;
     margin-bottom: 3px;
   }
 
   .description {
-    color: rgba(0,0,0,.8);
+    color: @color-text--muted;
     margin: 0;
     margin-left: 17px;
+
+    &.small {
+      font-size: 12.5px;
+    }
   }
 
   &:first-of-type {

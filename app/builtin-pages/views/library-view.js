@@ -1296,36 +1296,32 @@ function renderToolbar () {
 
         <div class="buttons">
           ${toggleable(yo`
-            <div class="dropdown toggleable-container">
+            <div class="dropdown share toggleable-container">
               <button class="btn plain nofocus toggleable">
                 <span class="fa fa-share-square-o"></span>
               </button>
 
-              <div class="dropdown-items wide subtle-shadow">
-                <div class="dropdown-item vertically-aligned-icon">
-                  <span class="icon fa fa-link"></span>
-
-                  <span class="label">Share this project</span>
+              <div class="dropdown-items subtle-shadow">
+                <div class="dropdown-item no-border">
+                  <div class="label">
+                    Share
+                  </div>
 
                   <p class="description small">
                     Anyone with this link can view this project${"'"}s files
                   </p>
 
-                  <p>
+                  <p class="description copy-url">
                     <input type="text" disabled value="${archive.url}"/>
-                    <button class="btn" onclick=${() => onCopy(archive.url)}>
-                      Copy URL
+
+                    <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
+                      Copy
                     </button>
-                  </p>
-                </div>
 
-                <div class="dropdown-item vertically-aligned-icon">
-                  <span class="icon fa fa-external-link"></span>
-
-                  <span class="label">Open</span>
-
-                  <p class="description small">
-                    View the live version of this project
+                    <a href=${archive.url} target="_blank" class="btn primary full-width center">
+                      Open
+                      <span class="fa fa-external-link"></span>
+                    </a>
                   </p>
                 </div>
               </div>
