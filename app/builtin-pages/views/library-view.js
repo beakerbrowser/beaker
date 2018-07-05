@@ -42,6 +42,7 @@ var activeVersionTab = 'drafts'
 var archive
 var archiveFsRoot
 var filesBrowser
+var archiveVersion = false
 var draftInfo
 var draftDiffSummary
 
@@ -90,6 +91,10 @@ async function setup () {
     let url = await parseLibraryUrl()
     archive = new LibraryDatArchive(url)
     await archive.setup()
+
+    // version
+    let vi = archive.url.indexOf('+')
+    archiveVersion = (vi !== -1) ? archive.url.slice(vi + 1) : false
 
     // go to raw key if we have a shortname
     // (archive.info.url is always the raw url, while archive.url will reflect the given url)
@@ -603,6 +608,8 @@ function renderVersionPicker () {
     return els
   }
 
+  const rVersionSummary = () => yo`<div>Viewing <a class="link" href=${archive.url} target="_blank">version ${archiveVersion}</a></div>`
+
   const rRevisionIndicator = (num, type) => {
     if (num === 0) return ''
     return yo`<div class="revision-indicator ${type}"></div>`
@@ -653,7 +660,7 @@ function renderVersionPicker () {
             </div>
           </div>`
       })}
-      ${rDiffSummary()}
+      ${archiveVersion ? rVersionSummary() : rDiffSummary()}
     </div>`
 }
 
