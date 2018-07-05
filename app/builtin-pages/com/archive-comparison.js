@@ -131,8 +131,19 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
 
   const onPublishRevision = (e, rev) => {
     e.stopPropagation()
-    if (confirm(`Publish the changes in ${rev.path.slice(1, rev.path.length)} to "${getSafeTitle(target)}"?`)) {
+    const path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
+
+    if (confirm(`Publish the changes in ${path} to "${getSafeTitle(target)}"?`)) {
       onMerge(base, target, {paths: [rev.path]})
+    }
+  }
+
+  const onRevertRevision = (e, rev) => {
+    e.stopPropagation()
+    const path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
+
+    if (confirm(`Revert the changes to ${path}?`)) {
+      onMerge(target, base, {paths: [rev.path]})
     }
   }
 
@@ -199,6 +210,10 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
           }
 
           <div class="actions">
+            <button class="btn tooltip-container" data-tooltip="Revert" onclick=${e => onRevertRevision(e, rev)}>
+              <span class="fa fa-undo"></span>
+            </button>
+
             <button class="btn" onclick=${e => onPublishRevision(e, rev)}>
               Publish
             </button>
