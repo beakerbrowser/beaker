@@ -63,7 +63,6 @@ var headerEditValues = {
 var toplevelError
 var copySuccess = false
 var isFaviconSet = true
-var isGettingStarted = false
 var arePeersCollapsed = true
 var faviconCacheBuster
 
@@ -772,7 +771,6 @@ function renderFilesView () {
   return yo`
     <div class="container">
       <div class="view files">
-        ${archive.info.isOwner ? renderSetupChecklist() : ''}
         ${filesBrowser ? filesBrowser.render() : ''}
         ${readmeElement ? readmeElement : renderReadmeHint()}
         ${!archive.info.isOwner ? renderMakeCopyHint() : ''}
@@ -810,88 +808,6 @@ function renderReadmeHint () {
         <a class="learn-more-link" href="https://en.wikipedia.org/wiki/README" target="_blank">What${"'"}s a README?</a>
       </div>
     </div>`
-}
-
-function renderSetupChecklist () {
-  if (!isGettingStarted) return ''
-
-  const hasTitle = _get(archive, 'info.title').trim()
-  const hasSyncDirectory = _get(archive, 'info.userSettings.localSyncPath')
-  const hasFavicon = isFaviconSet
-  if (hasTitle && hasSyncDirectory && hasFavicon) return ''
-
-  return yo`
-    <div class="setup-info">
-      <h2 class="lined-heading">
-        <i class="fa fa-magic"></i>
-        Getting started
-        <button class="btn plain lined-heading-action" title="Dismiss" onclick=${onDismissGettingStarted} data-tooltip="Dismiss">
-          <i class="fa fa-times"></i>
-        </button>
-      </h2>
-
-      <div class="setup-checklist">
-        <div class="checklist-item">
-          <h3 class="label">
-            <i class="fa fa-font"></i>
-            Set a title
-            ${hasTitle ? yo`<i class="fa fa-check"></i>` : ''}
-          </h3>
-
-          <p class="description">
-            Give your project a title to help people find it.
-          </p>
-
-          <div class="actions">
-            <button class="btn">
-              ${hasTitle ? 'Change' : 'Set'} title
-            </button>
-          </div>
-        </div>
-
-        <div class="checklist-item">
-          <h3 class="label">
-            <i class="fa fa-file-image-o"></i>
-            Add a favicon
-            ${hasFavicon ? yo`<i class="fa fa-check"></i>` : ''}
-          </h3>
-
-          <p class="description">
-            Choose an image to use as this project${"'"}s favicon.
-          </p>
-
-          <div class="actions">
-            <button class="btn">
-              Pick a favicon
-            </button>
-
-            <a class="learn-more-link" href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/The_head_metadata_in_HTML#Adding_custom_icons_to_your_site" target="_blank">
-              What${"'"}s a favicon?
-            </a>
-          </div>
-        </div>
-
-        <div class="checklist-item">
-          <h3 class="label">
-            <i class="fa fa-code"></i>
-            ${hasSyncDirectory ? 'Local' : 'Set local'} directory
-            ${hasSyncDirectory ? yo`<i class="fa fa-check"></i>` : ''}
-          </h3>
-
-          <p class="description">
-            ${hasSyncDirectory
-              ? `These files are synced to ${_get(archive, 'info.userSettings.localSyncPath')}.`
-              : 'Choose where to sync this project\'s files.'
-            }
-          </p>
-
-          <button class="btn" onclick=${onChangeSyncDirectory}>
-            ${hasSyncDirectory ? 'Change' : 'Set'} directory
-          </button>
-        </div>
-      </div>
-    </div>
-  `
 }
 
 function renderSettingsView () {
@@ -1612,7 +1528,7 @@ function onTogglePeersCollapsed () {
 async function onMakeCopy () {
   let {title} = await copyDatPopup.create({archive})
   const fork = await DatArchive.fork(archive.url, {title, prompt: false}).catch(() => {})
-  window.location = `beaker://library/${fork.url}#setup`
+  window.location = `beaker://library/${fork.url}`
 }
 
 async function onCreateDraft () {
@@ -1767,20 +1683,6 @@ async function onChangeView (e, view) {
   }
 
   render()
-}
-
-function onDismissGettingStarted (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  // start hide animation
-  document.querySelector('.setup-info').classList.add('hide-animation')
-
-  setTimeout(() => {
-    isGettingStarted = false
-    window.location.hash = '' // remove #setup in case the user reloads
-    render()
-  }, 450)
 }
 
 function renderFaviconPicker () {
@@ -2050,7 +1952,7 @@ async function onChangeCompareBase (url) {
   compareBaseArchive = new LibraryDatArchive(url)
   await compareBaseArchive.setup()
   render()
-  loadCompareDiff()  
+  loadCompareDiff()
 }
 
 function onToggleCompareRevisionCollapsed (rev) {
@@ -2144,10 +2046,7 @@ async function readViewStateFromUrl () {
   let oldView = activeView
   let hash = window.location.hash
   if (hash.startsWith('#')) hash = hash.slice(1)
-  if (hash === 'setup') {
-    isGettingStarted = true
-    activeView = 'files'
-  } else if (hash) {
+  if (hash) {
     activeView = hash
   } else {
     activeView = 'files'
