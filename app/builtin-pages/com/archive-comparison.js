@@ -71,10 +71,10 @@ export default function renderArchiveComparison (opts = {}) {
           : yo`<em>No unpublished revisions</em>`
         }
 
-        <div>
-          <a href=${base.url}>Preview draft</a>
+        <div class="links">
+          <a href=${base.url} target="_blank">Preview draft</a>
           <span class="separator">|</span>
-          <a href=${target.url}>Preview published</a>
+          <a href=${target.url} target="_blank">Preview published</a>
         </div>
       </div>
     </div>`
