@@ -29,7 +29,6 @@ import {setup as setupAce, config as configureAce, getValue as getAceValue, setV
 import {pluralize, shortenHash} from '@beaker/core/lib/strings'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
-import {IS_GIT_URL_REGEX} from '@beaker/core/lib/const'
 
 const DEFAULT_PEERS_LIMIT = 10
 const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 101/*with description*/] // px
@@ -816,7 +815,6 @@ function renderSettingsView () {
   const title = archive.info.title || ''
   const description = archive.info.description || ''
   const paymentLink = archive.info.links.payment ? archive.info.links.payment[0].href : ''
-  const repository = archive.info.manifest.repository || ''
   const baseUrl = `beaker://library/${archive.url}`
 
   let syncPath = _get(archive, 'info.userSettings.localSyncPath')
@@ -945,51 +943,6 @@ function renderSettingsView () {
             }
           </div>
         </div>
-
-        <div class="section">
-          <h2 class="section-heading">
-            Git integration
-          </h2>
-
-          <div class="section-content">
-            ${_get(archive, 'info.isOwner')
-              ? yo`
-                <div>
-                  <p>
-                    Set a <a href="https://git-scm.com/" target="_blank">Git</a> repository so people can find
-                    and contribute to the source code for this project.
-
-                    ${renderSettingsField({key: 'repository', value: repository, placeholder: 'Example: https://github.com/beakerbrowser/beaker.git', onUpdate: setManifestValue})}
-                  </p>
-                </div>`
-              : yo`
-                ${archive.info.repository
-                  ? yo`
-                    <p>
-                      Find the source code for this project at <a href=${archive.info.repository} target="_blank">${archive.info.repository}</a>.
-                    </p>`
-                  : yo`<em class="empty">This project${"'"}s author has not set a Git repository.</em>`
-                }
-              `
-            }
-
-            <p class="hint">
-              <i class="fa fa-question-circle-o"></i>
-              New to Git? Check out <a href="https://try.github.io/levels/1/challenges/1" target="_blank">this tutorial</a> to
-              learn about Git and version control.
-            </p>
-          </div>
-        </div>
-
-        ${''/* TODO archive.info.repository && syncPath
-          ? yo`<div class="git-setup-commands">
-            <h3>Setup the git repo in your workspace</h3>
-<pre><code>cd ${syncPath}
-git init
-git remote add origin ${archive.info.repository}
-git fetch
-git reset origin/master</code></pre>
-          ` : '' */}
       </div>
     </div>
   `
@@ -1500,17 +1453,6 @@ function renderEditButton () {
         Make an editable copy
       </button>`
   }
-}
-
-function renderRepositoryLink () {
-  if (!archive.info.manifest.repository) return ''
-  let url = archive.info.manifest.repository
-  if (url.startsWith('git@')) {
-    // a GitHub ssh url, do a little transforming
-    url = url.replace(':', '/')
-    url = 'https://' + url.slice('git@'.length)
-  }
-  return yo`<a href=${url} target="_blank">${archive.info.manifest.repository}</a>`
 }
 
 // events
