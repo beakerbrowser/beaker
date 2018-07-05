@@ -62,13 +62,13 @@ export default function renderArchiveComparison (opts = {}) {
       ${renderRevisions({base, target, revisions, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
 
       <div class="compare-footer">
-        ${revisions && revisions.length
+        ${revisions && revisions.length > 1 && !revisions[0].debug_isJustTitleChange
           ? yo`
               <span class="revisions-count">
                 ${revisions.length} ${pluralize(revisions.length, 'unpublished revision')}
               </span>
             `
-          : yo`<em>No unpublished revisions</em>`
+          : ''
         }
 
         <div class="links">
