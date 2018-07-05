@@ -43,6 +43,7 @@ var archive
 var archiveFsRoot
 var filesBrowser
 var draftInfo
+var draftDiffSummary
 
 // used in the compare view
 var compareBaseArchive
@@ -121,6 +122,7 @@ async function setup () {
 
     // get draft info
     draftInfo = await beaker.archives.getDraftInfo(archive.url)
+    /* dont await */ loadDraftDiffSummary()
 
     // load state and render
     await readViewStateFromUrl()
@@ -219,6 +221,47 @@ async function loadReadme () {
   render()
 }
 
+async function loadDraftDiffSummary () {
+  draftDiffSummary = null
+  var master = _get(draftInfo, 'master')
+  var drafts = _get(draftInfo, 'drafts')
+  if (!master || !drafts || !drafts.length) return
+
+  draftDiffSummary = {
+    numDrafts: drafts.length,
+    hasDiffs: false,
+    numAdds: 0,
+    numMods: 0,
+    numDels: 0,
+    firstDifferingDraftUrl: null
+  }
+
+  async function tallyDraft (draftUrl) {
+    let diff = await DatArchive.diff(draftUrl, master.url, {compareContent: true, shallow: true})
+    if (diff.length === 0) return
+    if (!draftDiffSummary.firstDifferingDraftUrl) {
+      draftDiffSummary.hasDiffs = true
+      draftDiffSummary.firstDifferingDraftUrl = draftUrl
+    }
+    for (let fileDiff of diff) {
+      if (fileDiff.change === 'add') draftDiffSummary.numAdds++
+      if (fileDiff.change === 'mod') draftDiffSummary.numMods++
+      if (fileDiff.change === 'del') draftDiffSummary.numDels++
+    }
+  }
+
+  if (isDraft()) {
+    // on a draft, get diff summary for just the active draft
+    await tallyDraft(archive.url)
+  } else {
+    // on master, get diff summary for all drafts
+    for (let draft of drafts) {
+      await tallyDraft(draft.url)
+    }
+  }
+  render()
+}
+
 async function loadCompareViewDefaults () {
   if (!compareTargetArchive) {
     let master = _get(draftInfo, 'master')
@@ -229,9 +272,16 @@ async function loadCompareViewDefaults () {
   }
 
   if (!compareBaseArchive) {
-    let draft = isDraft() ? archive : _get(draftInfo, 'drafts.0')
+    let draft
+    if (isDraft()) {
+      draft = archive.url
+    } else if (draftDiffSummary && draftDiffSummary.firstDifferingDraftUrl) {
+      draft = draftDiffSummary.firstDifferingDraftUrl
+    } else {
+      draft = _get(draftInfo, 'drafts.0.url')
+    }
     if (draft) {
-      compareBaseArchive = new LibraryDatArchive(draft.url)
+      compareBaseArchive = new LibraryDatArchive(draft)
       await compareBaseArchive.setup()
     } else {
       // this should never happen because the '#compare' link goes away when there are no drafts
@@ -553,6 +603,32 @@ function renderVersionPicker () {
     return els
   }
 
+  const rRevisionIndicator = (num, type) => {
+    if (num === 0) return ''
+    return yo`<div class="revision-indicator ${type}"></div>`
+  }
+
+  const rDiffSummary = () => {
+    if (!draftDiffSummary || !draftDiffSummary.hasDiffs) {
+      return ''
+    }
+    var {numDrafts, numAdds, numMods, numDels} = draftDiffSummary
+    var numChanges = numAdds + numMods + numDels
+    return yo`
+      <div class="draft-diff-summary">
+        ${rRevisionIndicator(numAdds, 'add')}
+        ${rRevisionIndicator(numMods, 'mod')}
+        ${rRevisionIndicator(numDels, 'del')}
+        <span class="text">
+          ${isDraft() ? '' : yo`<span>${numDrafts} ${pluralize(numDrafts, 'draft')},</span>`}
+          ${numChanges} ${pluralize(numChanges, 'revision')}
+        </span>
+        <a class="btn" href="#compare" onclick=${e => onChangeView(e, 'compare')}>
+          <span class="fa fa-files-o"></span> Compare
+        </a>
+      </div>`
+  }
+
   return yo`
     <div class="version-picker container">
       ${toggleable2({
@@ -577,6 +653,7 @@ function renderVersionPicker () {
             </div>
           </div>`
       })}
+      ${rDiffSummary()}
     </div>`
 }
 
@@ -1269,14 +1346,6 @@ function renderNav () {
         Files
       </a>
 
-      ${isDraft() || hasDrafts()
-        ? yo`
-          <a href=${baseUrl + '#compare'} onclick=${e => onChangeView(e, 'compare')} class="nav-item ${activeView === 'compare' ? 'active' : ''}">
-            Revisions
-          </a>`
-        : ''
-      }
-
       <a href=${baseUrl + '#network'} onclick=${e => onChangeView(e, 'network')} class="nav-item ${activeView === 'network' ? 'active' : ''}">
         Network
       </a>
@@ -1689,6 +1758,9 @@ async function onChangeView (e, view) {
     await filesBrowser.setCurrentSource(archiveFsRoot, {suppressEvent: true})
     await loadReadme()
     setupAce({readOnly: true})
+
+    // load diff summary
+    loadDraftDiffSummary()
   }
 
   render()
@@ -1996,6 +2068,9 @@ async function onFilesChanged () {
   } catch (e) {
     console.debug('Failed to rerender files on change, likely because the present node was deleted', e)
   }
+
+  // update diff
+  loadDraftDiffSummary()
 
   // update readme
   loadReadme()

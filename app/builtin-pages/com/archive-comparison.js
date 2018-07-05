@@ -21,7 +21,7 @@ export default function renderArchiveComparison (opts = {}) {
     onSelectwitchCompareArchives
   } = opts
 
-  var numModifications = revisions ? revisions.filter(r => r.change === 'mod').length : 0
+  var numRevisions = revisions ? revisions.filter(r => !r.debug_shouldIgnoreChange).length : 0
 
   const onPublishAllRevisions = (e) => {
     e.preventDefault()
@@ -33,7 +33,7 @@ export default function renderArchiveComparison (opts = {}) {
   return yo`
     <div class="archive-comparison">
       <div class="compare-selection">
-        <span>${numModifications > 0 ? 'Publish' : 'Comparing'}</span>
+        <span>${numRevisions > 0 ? 'Publish' : 'Comparing'}</span>
 
         ${onChangeCompareBase
           ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
@@ -48,7 +48,7 @@ export default function renderArchiveComparison (opts = {}) {
           ? renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})
           : renderArchive(target)}
 
-        ${numModifications > 0
+        ${numRevisions > 0
           ? yo`
             <div class="actions">
               <button class="btn success publish" onclick=${onPublishAllRevisions}>
@@ -62,10 +62,10 @@ export default function renderArchiveComparison (opts = {}) {
       ${renderRevisions({base, target, revisions, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
 
       <div class="compare-footer">
-        ${revisions && revisions.length > 1 && !revisions[0].debug_isJustTitleChange
+        ${numRevisions > 0
           ? yo`
               <span class="revisions-count">
-                ${revisions.length} ${pluralize(revisions.length, 'unpublished revision')}
+                ${numRevisions} ${pluralize(numRevisions, 'unpublished revision')}
               </span>
             `
           : ''
@@ -182,7 +182,7 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
     yo`
       <div class="revision">
         <div class="revision-header ${rev.isOpen ? '' : 'collapsed'}" onclick=${() => onToggleRevisionCollapsed(rev)}>
-          <div class="revision-type ${rev.change}"></div>
+          <div class="revision-indicator ${rev.change}"></div>
 
           <span class="path">
             ${rev.type === 'file' ? rev.path.slice(1) : rev.path}

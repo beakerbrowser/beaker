@@ -15,6 +15,7 @@
 @import "./components/favicon-picker";
 @import "./components/archive-select-btn";
 @import "./components/archive-comparison";
+@import "./components/revision-indicator.less";
 @import "./components/file-editor.less";
 @import "./components/create-archive-popup.less";
 @import "./components/opaque-binary.less";
@@ -808,7 +809,10 @@ body.drag {
   }
 
   .version-picker {
+    &:extend(.flex);
     margin-bottom: 15px;
+    align-items: center;
+    justify-content: space-between;
 
     em {
       display: block;
@@ -889,6 +893,12 @@ body.drag {
 
     div.create-draft {
       padding: 5px;
+    }
+
+    .draft-diff-summary {
+      .text {
+        margin: 0 5px;
+      }
     }
   }
 
