@@ -6,7 +6,7 @@ import prettyBytes from 'pretty-bytes'
 import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
 import * as toast from '../toast'
-import toggleable from '../toggleable'
+import toggleable2 from '../toggleable2'
 import {DAT_VALID_PATH_REGEX} from '@beaker/core/lib/const'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
@@ -119,45 +119,53 @@ function rActions (filesBrowser, currentSource) {
     <div class="actions">
       ${(currentSource.isEditable && currentSource.type !== 'file')
         ?
-          toggleable(yo`
-            <div class="dropdown toggleable-container new-dropdown">
-              <button class="btn toggleable">
-                <span class="fa fa-plus"></span>
-              </button>
+          toggleable2({
+            id: 'add-file-dropdown',
+            closed: ({onToggle}) => yo`
+              <div class="dropdown toggleable-container new-dropdown">
+                <button class="btn toggleable" onclick=${onToggle}>
+                  <span class="fa fa-plus"></span>
+                </button>
+              </div>`,
+            open: ({onToggle}) => yo`
+              <div class="dropdown toggleable-container new-dropdown">
+                <button class="btn toggleable" onclick=${onToggle}>
+                  <span class="fa fa-plus"></span>
+                </button>
 
-              <div class="dropdown-items compact right">
-                <div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
-                  Create file
+                <div class="dropdown-items compact right">
+                  <div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
+                    Create file
+                  </div>
+
+                  <div class="dropdown-item" onclick=${e => emit('custom-create-file', {createFolder: true})}>
+                    Create folder
+                  </div>
+
+                  <hr>
+
+                  ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
+                    ? yo`
+                      <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, false)}>
+                        Import files
+                      </div>`
+                    :
+                      [
+                        yo`
+                          <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
+                            <i class="fa fa-files-o"></i>
+                            Import files
+                          </div>`,
+                        yo`
+                          <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
+                            <i class="fa fa-folder-open-o"></i>
+                            Import folder (TODO this used to say choose folder is this right?)
+                          </div>`
+                      ]
+                  }
                 </div>
-
-                <div class="dropdown-item" onclick=${e => emit('custom-create-file', {createFolder: true})}>
-                  Create folder
-                </div>
-
-                <hr>
-
-                ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
-                  ? yo`
-                    <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, false)}>
-                      Import files
-                    </div>`
-                  :
-                    [
-                      yo`
-                        <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
-                          <i class="fa fa-files-o"></i>
-                          Import files
-                        </div>`,
-                      yo`
-                        <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
-                          <i class="fa fa-folder-open-o"></i>
-                          Import folder (TODO this used to say choose folder is this right?)
-                        </div>`
-                    ]
-                }
-              </div>
-            </div>
-          `)
+              </div>`
+            })
         : ''
       }
 
