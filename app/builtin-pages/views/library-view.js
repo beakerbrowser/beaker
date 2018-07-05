@@ -279,7 +279,6 @@ async function loadCompareDiff () {
         d.debug_isJustTitleChange = true
       }
     }
-    console.log(d)
     compareDiff.push(d)
     render()
   })
