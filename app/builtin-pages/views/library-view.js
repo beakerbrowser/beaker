@@ -1157,7 +1157,7 @@ function renderMenu (opts) {
     <div class="dropdown menu toggleable-container ${opts.collapsed ? 'collapsed' : ''}">
       <button class="btn transparent nofocus toggleable">
         <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
-        <div class="nav-archive-title">${title}</div>
+        <div class="nav-archive-title ${opts.collapsed ? 'visible' : ''}">${title}</div>
         <span class="fa fa-angle-down"></span>
       </button>
 

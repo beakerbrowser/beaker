@@ -717,8 +717,10 @@ body.drag {
       margin-right: 5px;
       font-weight: 500;
 
-      @media (min-width: 650px) {
-        display: flex;
+      @media (min-width: 800px) {
+        &.visible {
+          display: block;
+        }
       }
     }
 
