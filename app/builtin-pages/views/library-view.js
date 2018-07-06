@@ -1080,6 +1080,10 @@ function renderToolbar () {
         ${renderNav()}
 
         <div class="buttons">
+          <a href=${archive.url} class="link" target="_blank">
+            ${shortenHash(archive.url)}
+          </a>
+
           ${toggleable(yo`
             <div class="dropdown share toggleable-container">
               <button class="btn plain nofocus toggleable">

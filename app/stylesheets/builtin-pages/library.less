@@ -642,11 +642,17 @@ body.drag {
 
     .buttons {
       &:extend(.flex);
+      align-items: center;
       margin-left: auto;
 
       > .btn {
         color: @color-text;
         margin-right: 0;
+      }
+
+      .link {
+        font-size: .8rem;
+        margin-right: 10px;
       }
     }
 
