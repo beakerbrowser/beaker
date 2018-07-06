@@ -1379,26 +1379,42 @@ async function onCreateDraft () {
   window.location = `beaker://library/${fork.url}`
 }
 
-async function onDeleteDraft (e, draft) {
+async function onDeleteDraft (e, draft, confirm = true) {
   e.stopPropagation()
   e.preventDefault()
+  let shouldDeleteLocalDirectory
 
   try {
     // diff with the master
     let diff = await DatArchive.diff(draftInfo.master.url, draft.url, {compareContent: true, shallow: true})
 
-    // run the popup
-    const {deleteSyncPath} = await deleteDraftPopup.create({
-      masterTitle: draftInfo.master.title,
-      localSyncPath: draft.userSettings.localSyncPath,
-      numUnpublishedRevisions: diff.length
-    })
+    if (confirm) {
+      // run the popup
+      const {deleteSyncPath} = await deleteDraftPopup.create({
+        masterTitle: draftInfo.master.title,
+        localSyncPath: _get(draft, 'userSettings.localSyncPath'),
+        numUnpublishedRevisions: diff.length
+      })
+      shouldDeleteLocalDirectory = deleteSyncPath
+    }
 
     // delete all the related data
     try {
       await beaker.archives.removeDraft(draftInfo.master.url, draft.url)
-      await beaker.archives.setLocalSyncPath(draft.url, '', {deleteSyncPath})
+      await beaker.archives.setLocalSyncPath(
+        draft.url,
+        '',
+        {
+          deleteSyncPath: confirm ? shouldDeleteLocalDirectory : true
+        }
+      )
       await beaker.archives.delete(draft.url)
+
+      // if you were on the deleted draft, redirect to the master
+      if (window.location.pathname.startsWith(`/${draft.url}`)) {
+        window.location = `beaker://library/${draftInfo.master.url}`
+      }
+
       toast.create('Deleted draft')
     } catch (err) {
       toast.create('There was an error trying to remove this draft', 'error', 3e3)
