@@ -670,98 +670,6 @@ function renderVersionPicker () {
     </div>`
 }
 
-function renderFooter () {
-  let secondaryAction = ''
-  let primaryAction = ''
-  if (archive && archive.info) {
-    primaryAction = yo`
-      <div class="btn-group">
-        ${renderEditButton()}
-        ${renderMenu()}
-      </div>`
-
-    // pick secondary action based on current state
-    let localSyncPath = _get(archive, 'info.userSettings.localSyncPath')
-    if (localSyncPath) {
-      secondaryAction = toggleable(yo`
-        <div class="dropdown toggleable-container">
-          <button class="btn transparent nofocus toggleable">
-            ${localSyncPath} <i class="fa fa-caret-up"></i>
-          </button>
-
-          <div class="dropdown-items syncfolder-info top right subtle-shadow">
-            <div class="dropdown-item" onclick=${() => onOpenFolder(localSyncPath)}>
-              <i class="fa fa-folder-o"></i>
-              <span class="label">Open ${localSyncPath}</span>
-            </div>
-
-            <div class="dropdown-item" onclick=${onChangeSyncDirectory}>
-              <i class="fa fa-pencil"></i>
-              <span class="label">Change local directory</span>
-            </div>
-
-            <div class="dropdown-item" onclick=${() => onCopy(localSyncPath, 'Path copied to clipboard')}>
-              <i class="fa fa-clipboard"></i>
-              <span class="label">Copy path</span>
-            </div>
-          </div>
-        </div>`)
-    } else if (_get(archive, 'info.localSyncPathIsMissing')) {
-      secondaryAction = yo`
-        <span class="path error">
-          <em>
-            Directory not found
-            ${archive.info.missingLocalSyncPath
-              ? `(${archive.info.missingLocalSyncPath})`
-              : ''
-            }
-          </em>
-        </span>`
-    } else if (!_get(archive, 'info.userSettings.isSaved')) {
-      if (_get(archive, 'info.isOwner')) {
-        secondaryAction = yo`
-          <button class="btn" onclick=${onSave}>
-            Restore from Trash
-          </button>`
-      } else {
-        secondaryAction = yo`
-          <button class="btn success" onclick=${onToggleSeeding}>
-            <i class="fa fa-arrow-up"></i>
-            <span>Seed these files</span>
-          </button>`
-      }
-    } else if (_get(archive, 'info.isOwner')) {
-      secondaryAction = ''
-    } else {
-      secondaryAction = yo`
-        <button class="btn" onclick=${onToggleSeeding}>
-          <i class="fa fa-pause"></i>
-          <span>Stop seeding</span>
-        </button>`
-    }
-  }
-
-  return yo`
-    <footer>
-      <div class="container">
-        <div class="metadata">
-          <span>${prettyBytes(_get(archive, 'info.size', 0))}</span>
-          <span class="separator">―</span>
-          <span>${_get(archive, 'info.peers', 0)} ${pluralize(_get(archive, 'info.peers', 0), 'peer')}</span>
-        </div>
-
-        <div class="secondary-action">
-          ${_get(archive, 'info.isOwner') ? '' : yo`<em>Read-only</em>`}
-        </div>
-        <div class="secondary-action">
-          ${secondaryAction}
-        </div>
-        ${primaryAction}
-      </div>
-    </footer>
-  `
-}
-
 function renderErrorView () {
   return yo`
     <div class="container">
@@ -1433,35 +1341,6 @@ function renderMenu () {
   `)
 }
 */
-
-function renderEditButton () {
-  if (_get(archive, 'info.userSettings.localSyncPath')) {
-    return yo`
-      <button class="btn primary nofocus" onclick=${() => onOpenFolder(_get(archive, 'info.userSettings.localSyncPath'))}>
-        Open folder
-      </button>
-    `
-  } else if (_get(archive, 'info.isOwner')) {
-    if (syncPath) {
-      return yo`
-        <button onclick=${() => onOpenFolder(syncPath)} class="btn plain">
-          ${syncPath}
-        </button>
-      `
-    } else {
-      return yo`
-        <button class="btn primary nofocus" onclick=${onChangeSyncDirectory}>
-          Set local directory
-        </button>
-      `
-    }
-  } else {
-    return yo`
-      <button class="btn primary nofocus" onclick=${onMakeCopy}>
-        Make an editable copy
-      </button>`
-  }
-}
 
 // events
 // =
