@@ -1161,7 +1161,7 @@ function renderMenu (opts) {
         <span class="fa fa-angle-down"></span>
       </button>
 
-      <div class="dropdown-items left with-triangle">
+      <div class="dropdown-items left">
         <div class="section">
           ${isOwner
             ?
