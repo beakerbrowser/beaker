@@ -1283,8 +1283,12 @@ function renderMenu (opts) {
             : ''
           }
         </div>
-      </div>
-    `
+      </div>`,
+    afterOpen: (el) => {
+      var input = el.querySelector('input')
+      input.focus()
+      input.select()
+    }
   })
 }
 

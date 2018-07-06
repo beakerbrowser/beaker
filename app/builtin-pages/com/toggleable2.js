@@ -16,6 +16,7 @@ var toggleState = {}
 // - id: optional, an ID string to persist the open state on page redraws
 // - closed: required, a function to render closed state. Takes ({onToggle}).
 // - open: required, a function to render open state. Takes ({onToggle}).
+// - afterOpen: optional, a function called after open-state is rendered. Takes (containerEl).
 /*
 import toggleable2 from 'toggleable2'
 
@@ -32,11 +33,14 @@ function render () {
         <div class="dropdown-items">
           ...
         </div>
-      </div>`
+      </div>`,
+    afterOpen: (el) => {
+      console.log('toggleable opened')
+    }
   `)
 }
 */
-export default function toggleable2 ({id, closed, open}) {
+export default function toggleable2 ({id, closed, open, afterOpen}) {
 
   function onToggle (e) {
     e.preventDefault()
@@ -52,6 +56,7 @@ export default function toggleable2 ({id, closed, open}) {
     if (newState) {
       yo.update(container, open(callArgs))
       container.classList.add('open')
+      if (afterOpen) afterOpen(container)
     } else {
       yo.update(container, closed(callArgs))
       container.classList.remove('open')      
