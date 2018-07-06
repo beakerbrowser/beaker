@@ -37,10 +37,10 @@ export function create (opts) {
 
 function render () {
   if (!builtinFaviconsList && !loadError) {
-    return yo`<div class="text">Loading icons...</div>`
+    return yo`<div class="loading-favicon-picker text"></div>`
   }
   if (loadError) {
-    return yo`<div class="text">${loadError.toString()}</div>`
+    return yo`<div class="loading-favicon-picker text">${loadError.toString()}</div>`
   }
   // var iconNames = builtinFaviconsList.filter(applyFilter)
   return yo`
@@ -60,7 +60,7 @@ function render () {
 }
 
 function rerender () {
-  const el = document.body.querySelector('.favicon-picker')
+  const el = document.body.querySelector('.loading-favicon-picker')
   if (el) yo.update(el, render())
 }
 

@@ -1084,38 +1084,46 @@ function renderToolbar () {
             ${shortenHash(archive.url)}
           </a>
 
-          ${toggleable(yo`
-            <div class="dropdown share toggleable-container">
-              <button class="btn plain nofocus toggleable">
-                <span class="fa fa-share-square-o"></span>
-              </button>
+          ${toggleable2({
+            id: 'nav-item-share-tool',
+            closed: ({onToggle}) => yo`
+              <div class="dropdown share toggleable-container">
+                <button class="btn plain nofocus toggleable" onclick=${onToggle}>
+                  <span class="fa fa-share-square-o"></span>
+                </button>
+              </div>`,
+            open: ({onToggle}) => yo`
+              <div class="dropdown share toggleable-container">
+                <button class="btn plain nofocus toggleable" onclick=${onToggle}>
+                  <span class="fa fa-share-square-o"></span>
+                </button>
 
-              <div class="dropdown-items subtle-shadow">
-                <div class="dropdown-item no-border">
-                  <div class="label">
-                    Share
+                <div class="dropdown-items subtle-shadow">
+                  <div class="dropdown-item no-border">
+                    <div class="label">
+                      Share
+                    </div>
+
+                    <p class="description small">
+                      Anyone with this link can view this project${"'"}s files
+                    </p>
+
+                    <p class="description copy-url">
+                      <input type="text" disabled value="${archive.url}"/>
+
+                      <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
+                        Copy
+                      </button>
+
+                      <a href=${archive.url} target="_blank" class="btn primary full-width center">
+                        Open
+                        <span class="fa fa-external-link"></span>
+                      </a>
+                    </p>
                   </div>
-
-                  <p class="description small">
-                    Anyone with this link can view this project${"'"}s files
-                  </p>
-
-                  <p class="description copy-url">
-                    <input type="text" disabled value="${archive.url}"/>
-
-                    <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
-                      Copy
-                    </button>
-
-                    <a href=${archive.url} target="_blank" class="btn primary full-width center">
-                      Open
-                      <span class="fa fa-external-link"></span>
-                    </a>
-                  </p>
                 </div>
-              </div>
-            </div>`
-          )}
+              </div>`
+          })}
         </div>
       </div>
     </div>
@@ -1153,120 +1161,131 @@ function renderMenu (opts) {
   const description = _get(archive, 'info.description').trim()
 
 
-  return toggleable(yo`
-    <div class="dropdown menu toggleable-container ${opts.collapsed ? 'collapsed' : ''}">
-      <button class="btn transparent nofocus toggleable">
-        <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
-        <div class="nav-archive-title ${opts.collapsed ? 'visible' : ''}">${title}</div>
-        <span class="fa fa-angle-down"></span>
-      </button>
+  return toggleable2({
+    id: 'nav-item-main-menu',
+    closed: ({onToggle}) => yo`
+      <div class="dropdown menu toggleable-container ${opts.collapsed ? 'collapsed' : ''}">
+        <button class="btn transparent nofocus toggleable" onclick=${onToggle}>
+          <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
+          <div class="nav-archive-title ${opts.collapsed ? 'visible' : ''}">${title}</div>
+          <span class="fa fa-angle-down"></span>
+        </button>
+      </div>`,
+    open: ({onToggle}) => yo`
+      <div class="dropdown menu toggleable-container ${opts.collapsed ? 'collapsed' : ''}">
+        <button class="btn transparent nofocus toggleable" onclick=${onToggle}>
+          <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
+          <div class="nav-archive-title ${opts.collapsed ? 'visible' : ''}">${title}</div>
+          <span class="fa fa-angle-down"></span>
+        </button>
 
-      <div class="dropdown-items left">
-        <div class="section">
-          ${isOwner
-            ?
-              yo`<input autofocus class="title" value=${headerEditValues.title || title} onfocus=${onFocusTitleEditor} onblur=${e => onBlurTitleEditor(e, 'title')} placeholder="Title" />`
-            :
-             yo`<h1 class="title">${title}</h1>`
-          }
-
-          ${description ? yo`<p class="description">${description}</p>` : ''}
-        </div>
-
-        ${isOwner
-          ? yo`<div class="section favicons">${renderFaviconPicker()}</div>`
-          : ''
-        }
-
-        <div class="section">
-          ${isOwner
-            ? [
-                yo`
-                  <div class="dropdown-item" onclick=${onMakeCopy}>
-                    <i class="fa fa-clone"></i>
-                    Make a copy
-                  </div>
-                `
-              ]
-            : [
-                yo`
-                  <a href="#settings" class="dropdown-item" onclick=${e => onChangeView(e, 'settings')}>
-                    <i class="fa fa-info-circle"></i>
-                    About
-                  </a>
-                `,
-                yo`
-                  <div class="dropdown-item" onclick=${e => onChangeView(e, 'network')}>
-                    <i class="fa fa-signal"></i>
-                    Network info
-                  </div>
-                `
-              ]
+        <div class="dropdown-items left">
+          <div class="section">
+            ${isOwner
+              ?
+                yo`<input autofocus class="title" value=${headerEditValues.title || title} onfocus=${onFocusTitleEditor} onblur=${e => onBlurTitleEditor(e, 'title')} placeholder="Title" />`
+              :
+               yo`<h1 class="title">${title}</h1>`
             }
 
-          <div class="dropdown-item" onclick=${onDownloadZip}>
-            <i class="fa fa-file-archive-o"></i>
-            Download as .zip
+            ${description ? yo`<p class="description">${description}</p>` : ''}
           </div>
 
           ${isOwner
-            ? (isSaved
-              ? yo`
-                <div class="dropdown-item" onclick=${onMoveToTrash}>
-                  <i class="fa fa-trash-o"></i>
-                  Move to Trash
-                </div>`
+            ? yo`<div class="section favicons">${renderFaviconPicker()}</div>`
+            : ''
+          }
+
+          <div class="section">
+            ${isOwner
+              ? [
+                  yo`
+                    <div class="dropdown-item" onclick=${onMakeCopy}>
+                      <i class="fa fa-clone"></i>
+                      Make a copy
+                    </div>
+                  `
+                ]
               : [
-                yo`
-                  <div class="dropdown-item" onclick=${onSave}>
-                    <i class="fa fa-undo"></i>
-                    Restore from Trash
-                  </div>`,
-                yo`
-                  <div class="dropdown-item" onclick=${onDeletePermanently}>
-                    <i class="fa fa-times-circle"></i>
-                    Delete permanently
+                  yo`
+                    <a href="#settings" class="dropdown-item" onclick=${e => onChangeView(e, 'settings')}>
+                      <i class="fa fa-info-circle"></i>
+                      About
+                    </a>
+                  `,
+                  yo`
+                    <div class="dropdown-item" onclick=${e => onChangeView(e, 'network')}>
+                      <i class="fa fa-signal"></i>
+                      Network info
+                    </div>
+                  `
+                ]
+              }
+
+            <div class="dropdown-item" onclick=${onDownloadZip}>
+              <i class="fa fa-file-archive-o"></i>
+              Download as .zip
+            </div>
+
+            ${isOwner
+              ? (isSaved
+                ? yo`
+                  <div class="dropdown-item" onclick=${onMoveToTrash}>
+                    <i class="fa fa-trash-o"></i>
+                    Move to Trash
                   </div>`
-              ]
-            ) : ''
+                : [
+                  yo`
+                    <div class="dropdown-item" onclick=${onSave}>
+                      <i class="fa fa-undo"></i>
+                      Restore from Trash
+                    </div>`,
+                  yo`
+                    <div class="dropdown-item" onclick=${onDeletePermanently}>
+                      <i class="fa fa-times-circle"></i>
+                      Delete permanently
+                    </div>`
+                ]
+              ) : ''
+            }
+          </div>
+
+          ${!isOwner
+            ? yo`
+              <div class="section">
+                <div class="sync-path-info">
+                  <button class="btn full-width success" onclick=${onMakeCopy}>
+                    Make an editable copy
+                  </button>
+                </div>
+              </div>`
+            : ''
+          }
+
+          ${isOwner && isSaved
+            ? yo`
+              <div class="section">
+                ${syncPath
+                  ? yo`
+                      <div class="sync-path-info">
+                        <code onclick=${() => onOpenFolder(syncPath)} class="link">${syncPath}</code>
+                      </div
+                    `
+                  : yo`
+                    <div class="sync-path-info">
+                      <button onclick=${onChangeSyncDirectory} class="btn primary full-width tooltip-container">
+                        Set local directory
+                      </button>
+                    </div>`
+                }
+              </div>
+            `
+            : ''
           }
         </div>
-
-        ${!isOwner
-          ? yo`
-            <div class="section">
-              <div class="sync-path-info">
-                <button class="btn full-width success" onclick=${onMakeCopy}>
-                  Make an editable copy
-                </button>
-              </div>
-            </div>`
-          : ''
-        }
-
-        ${isOwner && isSaved
-          ? yo`
-            <div class="section">
-              ${syncPath
-                ? yo`
-                    <div class="sync-path-info">
-                      <code onclick=${() => onOpenFolder(syncPath)} class="link">${syncPath}</code>
-                    </div
-                  `
-                : yo`
-                  <div class="sync-path-info">
-                    <button onclick=${onChangeSyncDirectory} class="btn primary full-width tooltip-container">
-                      Set local directory
-                    </button>
-                  </div>`
-              }
-            </div>
-          `
-          : ''
-        }
       </div>
-    </div>
-  `)
+    `
+  })
 }
 
 // events
@@ -1700,8 +1719,10 @@ function onFocusTitleEditor () {
 }
 
 async function onBlurTitleEditor(e, name) {
-  headerEditValues[name] = e.target.value
-  await setManifestValue(name, e.target.value)
+  if (e.target.value != archive.info.manifest[name]) {
+    headerEditValues[name] = e.target.value
+    await setManifestValue(name, e.target.value)
+  }
 }
 
 async function onCompareMerge (base, target, opts) {
