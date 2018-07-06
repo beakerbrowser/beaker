@@ -1196,7 +1196,7 @@ function renderMenu (opts) {
             : ''
           }
 
-          <div class="section">
+          <div class="section menu-items">
             ${isOwner
               ? [
                   yo`
@@ -1220,7 +1220,7 @@ function renderMenu (opts) {
                     </div>
                   `
                 ]
-              }
+            }
 
             <div class="dropdown-item" onclick=${onDownloadZip}>
               <i class="fa fa-file-archive-o"></i>
@@ -1246,7 +1246,8 @@ function renderMenu (opts) {
                       Delete permanently
                     </div>`
                 ]
-              ) : ''
+              )
+              : ''
             }
           </div>
 
@@ -1268,7 +1269,17 @@ function renderMenu (opts) {
                 ${syncPath
                   ? yo`
                       <div class="sync-path-info">
-                        <code onclick=${() => onOpenFolder(syncPath)} class="link">${syncPath}</code>
+                        <code onclick=${() => onOpenFolder(syncPath)}>${syncPath}</code>
+
+                        <div class="buttons">
+                          <button class="btn" onclick=${() => onOpenFolder(syncPath)}>
+                            Open folder
+                          </button>
+
+                          <button class="btn" onclick=${() => onCopy(syncPath, 'Path copied to clipboard')}>
+                            Copy path
+                          </button>
+                        </div>
                       </div
                     `
                   : yo`
