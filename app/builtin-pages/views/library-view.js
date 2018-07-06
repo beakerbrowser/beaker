@@ -1303,7 +1303,7 @@ function onTogglePeersCollapsed () {
 async function onMakeCopy () {
   let {title} = await copyDatPopup.create({archive})
   const fork = await DatArchive.fork(archive.url, {title, prompt: false}).catch(() => {})
-  window.location = `beaker://library/${fork.url}`
+  window.location = `beaker://library/${fork.url}#setup`
 }
 
 async function onCreateDraft () {
@@ -1831,10 +1831,15 @@ function onPopState (e) {
 // but it works entirely by reading the current url
 async function readViewStateFromUrl () {
   // active view
+  let triggerMainMenu = false
   let oldView = activeView
   let hash = window.location.hash
   if (hash.startsWith('#')) hash = hash.slice(1)
-  if (hash) {
+  if (hash === 'setup') {
+    activeView = 'files'
+    triggerMainMenu = true
+    window.location.hash = '' // remove #setup in case the user reloads
+  } else if (hash) {
     activeView = hash
   } else {
     activeView = 'files'
@@ -1873,6 +1878,10 @@ async function readViewStateFromUrl () {
   } catch (e) {
     // ignore, but log just in case something is buggy
     console.debug(e)
+  }
+
+  if (triggerMainMenu) {
+    document.querySelector('.library-toolbar .nav-items .dropdown > .btn').click()
   }
 }
 
