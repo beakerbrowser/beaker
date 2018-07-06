@@ -707,8 +707,11 @@ body.drag {
         text-decoration: underline;
       }
 
-      &.visible {
-        display: flex;
+      @media (min-width: 600px) {
+
+        &.visible {
+          display: flex;
+        }
       }
     }
 
