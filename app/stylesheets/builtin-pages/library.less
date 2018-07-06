@@ -237,39 +237,10 @@ body.drag {
         max-width: ~"calc(100% - 30px)";
       }
 
-      .center-el {
-        position: absolute;
-        left: 50%;
-        top: 12px;
-        transform: translateX(-50%);
-      }
-
       > *:last-child {
         position: absolute;
         right: 0;
         top: 12px;
-      }
-    }
-
-    .favicon {
-      width: 16px;
-      height: 16px;
-    }
-
-    .title {
-      margin: 0 5px;
-      color: @color-text;
-      font-size: 16px;
-      font-weight: 500;
-      text-align: center;
-    }
-
-    input.title {
-      width: ~"calc(100% - 10px)";
-      border-radius: 2px;
-
-      &:focus {
-        box-shadow: none;
       }
     }
   }
@@ -730,11 +701,15 @@ body.drag {
     color: @color-text;
     margin-right: 20px;
 
-    button {
+    button.toggleable {
       &:extend(.flex);
       font-size: inherit;
       align-items: center;
       padding: 0 5px;
+    }
+
+    .favicon {
+      margin-right: 5px;
     }
 
     .nav-archive-title {
@@ -760,8 +735,8 @@ body.drag {
     }
 
     .description {
-      padding: 10px;
-      margin: 0;
+      padding: 0 12px;
+      margin: 10px 0;
     }
 
     .dropdown-items {
@@ -774,6 +749,18 @@ body.drag {
 
       .fa {
         color: @color-text;
+      }
+    }
+
+    input.title {
+      width: ~"calc(100% - 20px)";
+      height: 32px;
+      font-size: .9rem;
+      margin: 5px auto;
+      border-radius: 2px;
+
+      &:focus {
+        box-shadow: none;
       }
     }
 
