@@ -1694,19 +1694,14 @@ function onConfigFileEditor (e) {
   configureAce(e.detail)
 }
 
-async function onKeyupHeaderEdit (e, name) {
-  if (e.keyCode == 13) {
-    // enter-key
-    await setManifestValue(name, headerEditValues[name])
-  }
+function onFocusTitleEditor () {
+  document.querySelector('input.title').focus()
+  document.querySelector('input.title').select()
+}
 
-  if (e.keyCode == 13 || e.keyCode == 27) {
-    // enter or escape key
-    headerEditValues[name] = false
-    render()
-  } else {
-    headerEditValues[name] = e.target.value
-  }
+async function onBlurTitleEditor(e, name) {
+  headerEditValues[name] = e.target.value
+  await setManifestValue(name, e.target.value)
 }
 
 async function onCompareMerge (base, target, opts) {
