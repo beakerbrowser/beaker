@@ -86,7 +86,7 @@ export default function renderArchiveComparison (opts = {}) {
 function renderArchive (archive) {
   return yo`
     <span>
-      <img class="favicon" src="beaker-favicon:${archive.url}" /> ${archive.info.title}
+      <img class="favicon" src="beaker-favicon:${archive.url}" /> ${getSafeTitle(archive)}
     </span>
   `
 }
