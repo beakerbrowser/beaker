@@ -1182,23 +1182,11 @@ function renderMenu (opts) {
           ${isOwner
             ? [
                 yo`
-                  <a href="#settings" class="dropdown-item" onclick=${e => onChangeView(e, 'settings')}>
-                    <i class="fa fa-gear"></i>
-                    Settings
-                  </a>
-                `,
-                yo`
-                  <a href="#network" class="dropdown-item" onclick=${e => onChangeView(e, 'network')}>
-                    <i class="fa fa-signal"></i>
-                    Network info
-                  </a>
-                `,
-                yo`
                   <div class="dropdown-item" onclick=${onMakeCopy}>
                     <i class="fa fa-clone"></i>
                     Make a copy
                   </div>
-                `,
+                `
               ]
             : [
                 yo`
@@ -1212,7 +1200,7 @@ function renderMenu (opts) {
                     <i class="fa fa-signal"></i>
                     Network info
                   </div>
-                `,
+                `
               ]
             }
 
