@@ -210,7 +210,7 @@ body.drag {
     margin: auto;
     padding: 0 20px;
 
-    @media(min-width: 800px) {
+    @media (min-width: 800px) {
       padding: 0;
     }
   }
@@ -651,8 +651,13 @@ body.drag {
       }
 
       .link {
+        display: none;
         font-size: .8rem;
-        margin-right: 10px;
+        margin-right: 5px;
+
+        @media (min-width: 600px) {
+          display: inline;
+        }
       }
     }
 
@@ -692,8 +697,8 @@ body.drag {
     }
 
     .favicon {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       margin-right: 10px;
     }
   }
@@ -703,23 +708,6 @@ body.drag {
     align-items: center;
     height: 55px;
     margin-right: 40px;
-
-    &.nav-archive-title {
-      display: none;
-      margin-right: 20px;
-      font-weight: 500;
-
-      &:hover {
-        text-decoration: underline;
-      }
-
-      @media (min-width: 600px) {
-
-        &.visible {
-          display: flex;
-        }
-      }
-    }
 
     &.active {
       text-decoration: underline;
@@ -740,9 +728,35 @@ body.drag {
 
   .dropdown.menu {
     color: @color-text;
+    margin-right: 20px;
+
+    button {
+      &:extend(.flex);
+      font-size: inherit;
+      align-items: center;
+      padding: 0 5px;
+    }
+
+    .nav-archive-title {
+      display: none;
+      margin-right: 5px;
+      font-weight: 500;
+
+      @media (min-width: 650px) {
+        display: flex;
+      }
+    }
+
+    &.collapsed {
+
+      .title {
+        display: none;
+      }
+    }
 
     .title {
       padding-bottom: 0;
+      margin-right: 10px;
     }
 
     .description {

@@ -1128,11 +1128,7 @@ function renderNav () {
 
   return yo`
     <div class="nav-items">
-      <img src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" class="favicon" />
-
-      <a href=${archive.url} target="_blank" class="nav-archive-title nav-item ${isNavCollapsed() ? 'visible' : ''}">
-        ${getSafeTitle()}
-      </a>
+      ${renderMenu({collapsed: isNavCollapsed()})}
 
       <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item ${activeView === 'files' ? 'active' : ''}">
         Files
@@ -1149,23 +1145,23 @@ function renderNav () {
   `
 }
 
-function renderMenu () {
-  return ''
+function renderMenu (opts) {
   const isOwner = _get(archive, 'info.isOwner')
   const isSaved = _get(archive, 'info.userSettings.isSaved')
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const title = getSafeTitle()
   const description = _get(archive, 'info.description').trim()
 
+
   return toggleable(yo`
-    <div class="center-el dropdown menu toggleable-container">
-      <button class="btn transparent title nofocus toggleable">
+    <div class="dropdown menu toggleable-container ${opts.collapsed ? 'collapsed' : ''}">
+      <button class="btn transparent nofocus toggleable">
         <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
-        ${title}
+        <div class="nav-archive-title">${title}</div>
         <span class="fa fa-angle-down"></span>
       </button>
 
-      <div class="dropdown-items center over no-border">
+      <div class="dropdown-items left with-triangle">
         <div class="section">
           ${isOwner
             ?
@@ -1284,67 +1280,6 @@ function renderMenu () {
     </div>
   `)
 }
-
-/*
-function renderMenu () {
-  const isOwner = _get(archive, 'info.isOwner')
-  const isSaved = _get(archive, 'info.userSettings.isSaved')
-  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
-  return toggleable(yo`
-    <div class="dropdown toggleable-container">
-      <button class="btn primary nofocus toggleable">
-        <i class="fa fa-caret-up"></i>
-      </button>
-
-      <div class="dropdown-items top right subtle-shadow">
-        ${isOwner
-          ? yo`
-            <div class="dropdown-item" onclick=${onMakeCopy}>
-              <i class="fa fa-clone"></i>
-              Make a copy
-            </div>`
-          : ''}
-
-        ${isOwner && isSaved
-          ? yo`
-            <div class="dropdown-item" onclick=${onChangeSyncDirectory}>
-              <i class="fa fa-folder-o"></i>
-              ${syncPath ? 'Change' : 'Set'} local directory
-            </div>`
-          : ''
-        }
-
-        <div class="dropdown-item" onclick=${onDownloadZip}>
-          <i class="fa fa-file-archive-o"></i>
-          Download as .zip
-        </div>
-
-        ${isOwner
-          ? (isSaved
-            ? yo`
-              <div class="dropdown-item" onclick=${onMoveToTrash}>
-                <i class="fa fa-trash-o"></i>
-                Move to Trash
-              </div>`
-            : [
-              yo`
-                <div class="dropdown-item" onclick=${onSave}>
-                  <i class="fa fa-undo"></i>
-                  Restore from Trash
-                </div>`,
-              yo`
-                <div class="dropdown-item" onclick=${onDeletePermanently}>
-                  <i class="fa fa-times-circle"></i>
-                  Delete permanently
-                </div>`
-            ]
-          ) : ''
-        }
-      </div>
-    </div>
-  `)
-}
-*/
 
 // events
 // =
