@@ -474,20 +474,28 @@ function renderHeader () {
                 : ''
               }
 
-              ${syncPath
-                ? yo`
-                  <button onclick=${() => onOpenFolder(syncPath)} class="primary-action btn plain">
-                    ${syncPath}
+              ${isOwner
+                ? syncPath
+                  ?
+                    yo`
+                      <button onclick=${() => onOpenFolder(syncPath)} class="primary-action btn plain">
+                        ${syncPath}
+                      </button>
+                    `
+                  :
+                    _get(archive, 'info.localSyncPathIsMissing')
+                      ? ''
+                      : yo`
+                        <button class="primary-action btn primary" onclick=${onChangeSyncDirectory}>
+                          Set local directory
+                        </button>
+                      `
+                : yo`
+                  <button class="primary-action btn primary" onclick=${onMakeCopy}>
+                    Make an editable copy
                   </button>
                 `
-                : isOwner && _get(archive, 'info.localSyncPathIsMissing')
-                  ? ''
-                  : yo`
-                    <button class="primary-action btn primary" onclick=${onChangeSyncDirectory}>
-                      Set local directory
-                    </button>
-                  `
-                }
+              }
             </div>
           </div>`
         : ''
