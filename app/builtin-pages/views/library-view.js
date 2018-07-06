@@ -480,10 +480,10 @@ function renderHeader () {
                     ${syncPath}
                   </button>
                 `
-                : _get(archive, 'info.localSyncPathIsMissing')
+                : isOwner && _get(archive, 'info.localSyncPathIsMissing')
                   ? ''
                   : yo`
-                    <button class="primary-action btn primary nofocus" onclick=${onChangeSyncDirectory}>
+                    <button class="primary-action btn primary" onclick=${onChangeSyncDirectory}>
                       Set local directory
                     </button>
                   `
