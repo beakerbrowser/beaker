@@ -1,6 +1,8 @@
 import path from 'path'
 import * as pages from './pages'
 
+const SCROLLBAR_WIDTH = 16
+
 // exported API
 // =
 
@@ -12,8 +14,9 @@ export async function getScreenshot (url, {width, height}, {resizeTo} = {}) {
     webview = document.createElement('webview')
     webview.setAttribute('preload', 'file://' + path.join(pages.APP_PATH, 'webview-preload.build.js'))
     webview.setAttribute('webpreferences', 'allowDisplayingInsecureContent,contentIsolation,defaultEncoding=utf-8')
+    webview.setAttribute('partition', 'session-' + Date.now() + Math.random())
     webview.setAttribute('src', url)
-    webview.style.width = `${width}px`
+    webview.style.width = `${width + SCROLLBAR_WIDTH}px`
     webview.style.height = `${height}px`
 
     // add to page
