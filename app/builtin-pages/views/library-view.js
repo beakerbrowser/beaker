@@ -520,7 +520,7 @@ function renderView () {
     case 'files':
       return renderFilesView()
     case 'compare':
-      return renderCompareView()
+      return '' // temporarily disable drafts renderCompareView()
     case 'settings':
       return renderSettingsView()
     case 'network':
@@ -535,6 +535,9 @@ function updateVersionPicker () {
 }
 
 function renderVersionPicker () {
+  // temporarily disable drafts
+  return ''
+
   const master = _get(draftInfo, 'master')
 
   const changeTab = (tab) => {
@@ -1061,6 +1064,9 @@ function renderNetworkView () {
 }
 
 function renderCompareView () {
+  // temporarily disable drafts
+  return ''
+
   return yo`
     <div class="container">
       <div class="view compare">
