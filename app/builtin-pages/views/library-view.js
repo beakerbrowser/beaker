@@ -1815,13 +1815,13 @@ function onNetworkChanged (e) {
   if (e.details.url === archive.url) {
     var now = Date.now()
     archive.info.peerInfo = e.details.peers
-    archive.info.peers = e.details.peerCount
+    archive.info.peers = e.details.connections
     var lastHistory = archive.info.peerHistory.slice(-1)[0]
     if (lastHistory && (now - lastHistory.ts) < 10e3) {
       // if the last datapoint was < 10s ago, just update it
-      lastHistory.peers = e.details.peerCount
+      lastHistory.peers = e.details.connections
     } else {
-      archive.info.peerHistory.push({ts: now, peers: e.details.peerCount})
+      archive.info.peerHistory.push({ts: now, peers: e.details.connections})
     }
     render()
   }

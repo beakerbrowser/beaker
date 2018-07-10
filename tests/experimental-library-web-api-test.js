@@ -271,7 +271,7 @@ test('library "network-changed" event', async t => {
     experimental.library.addEventListener('network-changed', event => {
       window.networkChangedEvent = {
         url: event.url,
-        peerCount: event.peerCount
+        connections: event.connections
       }
     })
   `)
@@ -282,8 +282,5 @@ test('library "network-changed" event', async t => {
   // check result
   await mainTab.waitFor(`!!window.networkChangedEvent`)
   var res = await mainTab.executeJavascript(`window.networkChangedEvent`)
-  t.deepEqual(res, {
-    url: createdDatUrl,
-    peerCount: 1
-  })
+  t.deepEqual(res.connections, 1)
 })

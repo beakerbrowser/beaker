@@ -67,7 +67,7 @@ export function setup () {
     pages.forEach(page => {
       if (page.siteInfo && page.siteInfo.url === details.url) {
         // update info
-        page.siteInfo.peers = details.peerCount
+        page.siteInfo.peers = details.connections
         navbar.update(page)
       }
       // refresh if this was a 503ed site

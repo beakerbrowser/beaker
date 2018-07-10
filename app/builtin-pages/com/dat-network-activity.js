@@ -230,7 +230,7 @@ export default class DatNetworkActivity {
     if (!this.archives) return
     var archive = this.archives.find(a => details.url === a.url)
     if (archive) {
-      archive.peers = details.peerCount
+      archive.peers = details.connections
       if (this.currentSort[0] === 'peers') {
         this.sortArchives()
       }
