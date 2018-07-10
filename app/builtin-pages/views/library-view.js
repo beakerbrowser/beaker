@@ -1735,6 +1735,10 @@ function onFocusTitleEditor () {
 }
 
 function onClickHeaderTitle (e) {
+  if (!_get(archive, 'info.isOwner')) {
+    return
+  }
+
   // enter edit mode
   e.stopPropagation()
   headerEditValues.title = archive.info.title
