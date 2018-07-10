@@ -11,11 +11,12 @@ export class SelectArchiveModal extends BaseModal {
   constructor (opts) {
     super(opts)
 
-    this.currentFilter = ''
+    this.currentTitleFilter = ''
     this.selectedArchiveKey = ''
     this.archives
     this.title = ''
     this.description = ''
+    this.type = opts.filters && opts.filters.type
     this.buttonLabel = opts.buttonLabel || 'Select'
     this.customTitle = opts.title || ''
     this.currentView = 'archivePicker'
@@ -29,7 +30,8 @@ export class SelectArchiveModal extends BaseModal {
     // fetch archives
     this.archives = await beaker.archives.list({
       isSaved: true,
-      isOwner: (filters && filters.isOwner)
+      isOwner: (filters && filters.isOwner),
+      type: this.type
     })
     this.archives.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
     this.rerender()
@@ -102,25 +104,35 @@ export class SelectArchiveModal extends BaseModal {
   }
 
   renderArchivePicker () {
-    if (!this.archives.length) {
-      return 'No archives'
-    }
-
     return yo`
       <div class="view archive-picker">
         <div class="filter-container">
           <i class="fa fa-search"></i>
-          <input autofocus onkeyup=${e => this.onChangeFilter(e)} id="filter" class="filter" type="text" placeholder="Search"/>
+          <input autofocus onkeyup=${e => this.onChangeTitleFilter(e)} id="filter" class="filter" type="text" placeholder="Search"/>
         </div>
         ${this.renderArchivesList()}
+        ${this.renderTypeFilter()}
       </div>
     `
   }
 
+  renderTypeFilter () {
+    if (!this.type) return ''
+    var types = Array.isArray(this.type) ? this.type : [this.type]
+    return yo`
+      <div class="type-container">
+        <strong>Type:</strong> ${types.join(', ')}
+      </div>`
+  }
+
   renderArchivesList () {
     var filtered = this.archives
-    if (this.currentFilter) {
-      filtered = filtered.filter(a => a.title && a.title.toLowerCase().includes(this.currentFilter))
+    if (this.currentTitleFilter) {
+      filtered = filtered.filter(a => a.title && a.title.toLowerCase().includes(this.currentTitleFilter))
+    }
+
+    if (!filtered.length) {
+      return yo`<ul class="archives-list"><li class="empty">No archives found</li></ul>`
     }
 
     return yo`<ul class="archives-list">${filtered.map(a => this.renderArchive(a))}</ul>`
@@ -168,8 +180,8 @@ export class SelectArchiveModal extends BaseModal {
     this.close(new Error('Canceled'))
   }
 
-  onChangeFilter (e) {
-    this.currentFilter = e.target.value.toLowerCase()
+  onChangeTitleFilter (e) {
+    this.currentTitleFilter = e.target.value.toLowerCase()
     this.rerender()
   }
 
@@ -197,6 +209,7 @@ export class SelectArchiveModal extends BaseModal {
         var newArchive = await DatArchive.create({
           title: this.title,
           description: this.description,
+          type: this.type,
           prompt: false
         })
         this.close(null, {url: newArchive.url})
