@@ -168,7 +168,7 @@ test('hidden archives', async t => {
   t.deepEqual(items.map(item => item.url).sort(), [createdDatURL, testStaticDatURL, draft1URL, draft2URL].sort())
 })
 
-test('draft APIs', async t => {
+test.skip('draft APIs', async t => {
   // add draft 1
   await app.executeJavascript(`
     beaker.archives.addDraft("${createdDatURL}", "${draft1URL}")

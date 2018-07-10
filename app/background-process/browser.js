@@ -50,9 +50,11 @@ var userSetupStatusLookupPromise
 var browserEvents = new EventEmitter()
 
 process.on('unhandledRejection', (reason, p) => {
+  console.error('Unhandled Rejection at: Promise', p, 'reason:', reason)
   debug('Unhandled Rejection at: Promise', p, 'reason:', reason)
 })
 process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err)
   debug('Uncaught exception:', err)
 })
 

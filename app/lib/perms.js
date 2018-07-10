@@ -184,5 +184,14 @@ export default {
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: true
+  },
+  experimentalDatPeers: {
+    desc: 'Send and receive messages with peers',
+    icon: 'exchange',
+    persist: true,
+    alwaysAllow: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: true
   }
 }
