@@ -193,5 +193,16 @@ export default {
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: true
+  },
+  experimentalCapturePage: {
+    desc: (param, pages, opts = {}) => {
+      const viewPage = () => pages.setActive(pages.create(param))
+      return yo`<span>Take a screenshot of <a onclick=${viewPage}>${param}</a></span>`
+    },
+    icon: 'camera',
+    persist: false,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: true
   }
 }

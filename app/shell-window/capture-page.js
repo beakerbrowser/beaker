@@ -2,14 +2,19 @@ import path from 'path'
 import * as pages from './pages'
 
 const SCROLLBAR_WIDTH = 16
+const DEFAULT_WIDTH = 1024
+const DEFAULT_HEIGHT = 768
 
 // exported API
 // =
 
-export async function getScreenshot (url, {width, height}, {resizeTo} = {}) {
+export async function capturePage (url, {width, height, resizeTo} = {}) {
   var webview
   var hiddenWebviews = document.querySelector('#hidden-webviews')
   try {
+    width = width || DEFAULT_WIDTH
+    height = height || DEFAULT_HEIGHT
+
     // create the webview
     webview = document.createElement('webview')
     webview.setAttribute('preload', 'file://' + path.join(pages.APP_PATH, 'webview-preload.build.js'))
@@ -26,7 +31,7 @@ export async function getScreenshot (url, {width, height}, {resizeTo} = {}) {
     await new Promise((resolve, reject) => {
       webview.addEventListener('did-stop-loading', resolve)
     })
-    await new Promise(r => setTimeout(r, 100)) // give an extra 100ms for the JS rendering
+    await new Promise(r => setTimeout(r, 200)) // give an extra 200ms for rendering
 
     // capture the page
     var wc = webview.getWebContents()
@@ -41,5 +46,5 @@ export async function getScreenshot (url, {width, height}, {resizeTo} = {}) {
   } finally {
     if (webview) webview.remove()
   }
-  return image
+  return image.toPNG()
 }

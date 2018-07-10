@@ -13,6 +13,7 @@ const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
 import {showModal, showShellModal, closeModal} from './ui/modals'
+import {getActiveWindow} from './ui/windows'
 import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
 // constants
@@ -305,6 +306,31 @@ export async function getUserSetupStatus () {
 export function setUserSetupStatus (status) {
   userSetupStatus = status // cache
   return settingsDb.set('user-setup-status', status)
+}
+
+var isCapturingPage = false // only allow one capture at a time, since we dont have multiple channels
+export async function capturePage (url, opts) {
+  if (isCapturingPage) {
+    throw new Error('Already capturing page')
+  }
+
+  isCapturingPage = true
+  var win = getActiveWindow()
+  if (!win) throw new Error('No window active')
+
+  win.webContents.send('command', 'capture-page', url, opts)
+  var res
+  try {
+    res = await new Promise((resolve, reject) => {
+      ipcMain.once('capture-page-response', (event, err, res) => {
+        if (err) reject(new Error(err))
+        else resolve(res)
+      })
+    })
+  } finally {
+    isCapturingPage = false
+  }
+  return res
 }
 
 // rpc methods

@@ -73,7 +73,10 @@ app.on('ready', async function () {
 
     // APIs
     permsAPI: permissions,
-    uiAPI: {showModal: modals.showShellModal},
+    uiAPI: {
+      showModal: modals.showShellModal,
+      capturePage: beakerBrowser.capturePage
+    },
     rpcAPI: rpc,
     downloadsWebAPI: downloads.WEBAPI,
     browserWebAPI: beakerBrowser.WEBAPI
