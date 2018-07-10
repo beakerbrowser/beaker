@@ -461,9 +461,15 @@ function renderHeader () {
           <div class="container">
             <div class="info">
               <div class="title">
-                <h1>
-                  ${getSafeTitle()}
-                </h1>
+                ${headerEditValues.title
+                  ? yo`<h1>
+                    <input
+                      class="header-title-input"
+                      value=${headerEditValues.title || ''}
+                      onblur=${e => onBlurHeaderEditor(e, 'title')}
+                      onkeyup=${e => onChangeHeaderEditor(e, 'title')} />
+                    </h1>`
+                  : yo`<h1 onclick=${onClickHeaderTitle}>${getSafeTitle()}</h1>`}
 
                 ${isDraft() ? yo`<span class="draft-badge badge blue">DRAFT</span>` : ''}
                 ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
@@ -1181,20 +1187,9 @@ function renderMenu (opts) {
 
         <div class="dropdown-items left">
           <div class="section">
-            ${isOwner
-              ?
-                yo`<input autofocus class="title" value=${headerEditValues.title || title} onfocus=${onFocusTitleEditor} onblur=${e => onBlurTitleEditor(e, 'title')} placeholder="Title" />`
-              :
-               yo`<h1 class="title">${title}</h1>`
-            }
-
+            <h1 class="title">${title}</h1>
             ${description ? yo`<p class="description">${description}</p>` : ''}
           </div>
-
-          ${isOwner
-            ? yo`<div class="section favicons">${renderFaviconPicker()}</div>`
-            : ''
-          }
 
           <div class="section menu-items">
             ${isOwner
@@ -1294,12 +1289,7 @@ function renderMenu (opts) {
             : ''
           }
         </div>
-      </div>`,
-    afterOpen: (el) => {
-      var input = el.querySelector('input')
-      input.focus()
-      input.select()
-    }
+      </div>`
   })
 }
 
@@ -1733,11 +1723,39 @@ function onFocusTitleEditor () {
   document.querySelector('input.title').select()
 }
 
-async function onBlurTitleEditor(e, name) {
-  if (e.target.value != archive.info.manifest[name]) {
-    headerEditValues[name] = e.target.value
-    await setManifestValue(name, e.target.value)
+function onClickHeaderTitle (e) {
+  // enter edit mode
+  e.stopPropagation()
+  headerEditValues.title = archive.info.title
+  render()
+
+  // select the text in the input
+  var input = document.querySelector('.header-title-input')
+  input.focus()
+  input.select()
+}
+
+function onChangeHeaderEditor (e, name) {
+  headerEditValues[name] = e.target.value
+
+  if (e.key === 'Enter') {
+    // save if it changed
+    headerEditValues[name] = false
+    if (e.target.value != archive.info.manifest[name]) {
+      setManifestValue(name, e.target.value)
+    } else {
+      render()
+    }
   }
+  if (e.key === 'Escape') {
+    headerEditValues[name] = false
+    render()
+  }
+}
+
+function onBlurHeaderEditor (e, name) {
+  // headerEditValues[name] = false
+  // render()
 }
 
 async function onCompareMerge (base, target, opts) {
@@ -1826,7 +1844,7 @@ function onFolderSyncError (e) {
 function onClickAnywhere (e) {
   // abort header title inline edit
   if (headerEditValues.title !== false) {
-    if (!findParent(e.target, 'title')) { // not a click in the input
+    if (!findParent(e.target, 'header-title-input')) { // not a click in the input
       headerEditValues.title = false
       render()
     }

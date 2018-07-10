@@ -586,6 +586,14 @@ body.drag {
         font-size: 1.6rem;
         font-weight: 600;
         line-height: 1;
+        cursor: auto;
+
+        input {
+          position: relative;
+          cursor: auto;
+          top: -1px;
+          left: -8px;
+        }
       }
 
       img {
@@ -721,13 +729,6 @@ body.drag {
         &.visible {
           display: block;
         }
-      }
-    }
-
-    &.collapsed {
-
-      .title {
-        display: none;
       }
     }
 
