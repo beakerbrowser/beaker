@@ -1816,7 +1816,6 @@ test('DatArchive.merge', async t => {
 })
 
 test('archive.watch', async t => {
-
   // create a new archive
   var res = await app.executeJavascript(`
     DatArchive.create({prompt: false})
@@ -1830,6 +1829,39 @@ test('archive.watch', async t => {
     var archive = new DatArchive("${archiveURL}")
     var events = archive.watch()
     events.addEventListener('changed', function ({path}) {
+      window.res.push(path)
+    })
+  `)
+
+  // make changes
+  await sleep(500) // give stream time to setup
+  await writeFile(archiveURL, '/a.txt', 'one', 'utf8', app)
+  await writeFile(archiveURL, '/b.txt', 'one', 'utf8', app)
+  await writeFile(archiveURL, '/a.txt', 'one', 'utf8', app)
+  await writeFile(archiveURL, '/a.txt', 'two', 'utf8', app)
+  await writeFile(archiveURL, '/b.txt', 'two', 'utf8', app)
+  await writeFile(archiveURL, '/c.txt', 'one', 'utf8', app)
+  var res = await app.executeJavascript(`window.res`)
+  t.truthy(Array.isArray(res))
+
+  await app.waitFor(`window.res.length == 6`)
+  var res = await app.executeJavascript(`window.res`)
+  t.deepEqual(res, ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt'])
+})
+
+test('archive.watch with callback', async t => {
+  // create a new archive
+  var res = await app.executeJavascript(`
+    DatArchive.create({prompt: false})
+  `)
+  var archiveURL = res.url
+  t.truthy(archiveURL)
+
+  // start the stream
+  app.executeJavascript(`
+    window.res = []
+    var archive = new DatArchive("${archiveURL}")
+    var events = archive.watch(null, function ({path}) {
       window.res.push(path)
     })
   `)
