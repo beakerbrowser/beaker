@@ -4,7 +4,6 @@ import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as modal from './ui/modal'
 import permsPrompt from './ui/prompts/permission'
-import {capturePage} from './capture-page'
 
 export function setup () {
   ipcRenderer.on('command', function (event, type, arg1, arg2, arg3, arg4) {
@@ -40,11 +39,6 @@ export function setup () {
       case 'load-pinned-tabs': return pages.loadPinnedFromDB()
       case 'perms:prompt': return permsPrompt(arg1, arg2, arg3, arg4)
       case 'show-modal': return modal.createFromBackgroundProcess(arg1, arg2, arg3, arg4)
-      case 'capture-page':
-        return capturePage(arg1, arg2).then(
-          res => ipcRenderer.send('capture-page-response', null, res),
-          err => ipcRenderer.send('capture-page-response', err.toString())
-        )
     }
   })
 }

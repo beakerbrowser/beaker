@@ -308,29 +308,43 @@ export function setUserSetupStatus (status) {
   return settingsDb.set('user-setup-status', status)
 }
 
-var isCapturingPage = false // only allow one capture at a time, since we dont have multiple channels
+const SCROLLBAR_WIDTH = 16
 export async function capturePage (url, opts) {
-  if (isCapturingPage) {
-    throw new Error('Already capturing page')
+  var width = opts.width || 1024
+  var height = opts.height || 768
+
+  var win = new BrowserWindow({
+    width: width + SCROLLBAR_WIDTH,
+    height,
+    show: false,
+    defaultEncoding: 'UTF-8',
+    partition: 'session-' + Date.now() + Math.random(),
+    preload: 'file://' + path.join(app.getAppPath(), 'webview-preload.build.js'),
+    webPreferences: {
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      nativeWindowOpen: true
+    },
+  })
+  win.loadURL(url)
+
+  // wait for load
+  await new Promise((resolve, reject) => {
+    win.webContents.on('did-finish-load', resolve)
+  })
+  await new Promise(r => setTimeout(r, 200)) // give an extra 200ms for rendering
+
+  // capture the page
+  var image = await new Promise((resolve, reject) => {
+    win.webContents.capturePage({x: 0, y: 0, width, height}, resolve)
+  })
+
+  // resize if asked
+  if (opts.resizeTo) {
+    image = image.resize(opts.resizeTo)
   }
 
-  isCapturingPage = true
-  var win = getActiveWindow()
-  if (!win) throw new Error('No window active')
-
-  win.webContents.send('command', 'capture-page', url, opts)
-  var res
-  try {
-    res = await new Promise((resolve, reject) => {
-      ipcMain.once('capture-page-response', (event, err, res) => {
-        if (err) reject(new Error(err))
-        else resolve(res)
-      })
-    })
-  } finally {
-    isCapturingPage = false
-  }
-  return res
+  return image.toPNG()
 }
 
 // rpc methods
