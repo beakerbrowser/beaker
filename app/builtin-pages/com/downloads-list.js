@@ -72,7 +72,7 @@ export function render (downloadsList) {
           yo`
             <span class="link show" onclick=${e => { e.stopPropagation(); downloadsList.showDownload(d) }}>
               Show in Finder
-            </span>
+            </span>}
       } else {
         actions = [
           yo`<span>File not found (moved or deleted)</span>`
