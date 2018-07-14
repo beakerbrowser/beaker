@@ -61,13 +61,18 @@ export function render (downloadsList) {
             <i class="fa fa-times"></i>
           </button>
         `
-
+        if (process.platform == "win32"){
         actions = [
           yo`
             <span class="link show" onclick=${e => { e.stopPropagation(); downloadsList.showDownload(d) }}>
-              Show in Finder
+              Show in Explorer
             </span>`
-        ]
+        ]}else {
+          actions = [
+          yo`
+            <span class="link show" onclick=${e => { e.stopPropagation(); downloadsList.showDownload(d) }}>
+              Show in Finder
+            </span>}
       } else {
         actions = [
           yo`<span>File not found (moved or deleted)</span>`
