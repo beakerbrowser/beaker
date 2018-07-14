@@ -248,6 +248,12 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://library/view.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/library-view.build.js'))
   }
+  if (requestUrl === 'beaker://library/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/library.html'))
+  }
+  if (requestUrl.startsWith('beaker://library/')) {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/library-view.html'))
+  }
   if (requestUrl === 'beaker://compare/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/compare.html'))
   }
