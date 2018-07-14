@@ -197,6 +197,12 @@ export default function registerContextMenu () {
             }
           })
           menuItems.push({
+            label: 'Compare and Merge',
+            click: (item, win) => {
+              win.webContents.send('command', 'file:new-tab', 'beaker://compare/?base=' + encodeURIComponent(props.pageURL))
+            }
+          })
+          menuItems.push({
             label: 'Network Debugger',
             click: (item, win) => {
               win.webContents.send('command', 'file:new-tab', 'beaker://swarm-debugger/' + props.pageURL)

@@ -77,9 +77,9 @@ export class PageMenuNavbarBtn {
                     View Source
                   </div>
 
-                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
-                    <i class="fa fa-clone"></i>
-                    Make editable copy
+                  <div class="dropdown-item" onclick=${() => this.onClickCompare()}>
+                    <i class="fa fa-code-fork"></i>
+                    Compare and Merge
                   </div>
 
                   <hr />
@@ -97,6 +97,13 @@ export class PageMenuNavbarBtn {
                   <div class="dropdown-item" onclick=${() => this.onClickDownloadZip()}>
                     <i class="fa fa-file-archive-o"></i>
                     Download as .zip
+                  </div>
+
+                  <hr />
+
+                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
+                    <i class="fa fa-clone"></i>
+                    Make editable copy
                   </div>
                 </div>`
               : ''
@@ -224,6 +231,14 @@ export class PageMenuNavbarBtn {
     if (fork) {
       page.loadURL(`beaker://library/${fork.url}#setup`)
     }
+  }
+
+  async onClickCompare () {
+    this.close()
+    const page = pages.getActive()
+    const datUrl = page && page.getViewedDatOrigin()
+    if (!page || !page.getViewedDatOrigin()) return
+    pages.setActive(pages.create(`beaker://compare?base=${encodeURIComponent('dat://' + page.siteInfo.key)}`))
   }
 
   async onToggleLiveReloading () {
