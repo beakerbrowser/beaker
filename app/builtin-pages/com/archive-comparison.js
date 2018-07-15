@@ -106,7 +106,8 @@ function renderArchive (archive) {
 }
 
 function renderRevisions ({base, target, labels, revisions, onToggleRevisionCollapsed, onMerge, onDeleteDraft}) {
-  if (!target) {
+  let either = target || base
+  if (either && (!target || !base)) {
     return yo`
       <div class="empty">
         <div class="empty-header">
@@ -115,7 +116,7 @@ function renderRevisions ({base, target, labels, revisions, onToggleRevisionColl
         </div>
         <p>
           <a class="link" onclick=${onTriggerSelectAnArchive}>Select an archive</a>
-          to compare with <a href=${target ? target.url : base.url} target="_blank">${getSafeTitle(target ? target : base)}</a>.
+          to compare with <a href=${either.url} target="_blank">${getSafeTitle(either)}</a>.
           You can review the differences and merge them together.
         </p>
       </div>`

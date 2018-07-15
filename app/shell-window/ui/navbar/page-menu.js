@@ -77,11 +77,6 @@ export class PageMenuNavbarBtn {
                     View Source
                   </div>
 
-                  <div class="dropdown-item" onclick=${() => this.onClickCompare()}>
-                    <i class="fa fa-code-fork"></i>
-                    Compare and Merge
-                  </div>
-
                   <hr />
 
                   <div class="dropdown-item" onclick=${() => this.onToggleLiveReloading()}>
@@ -231,14 +226,6 @@ export class PageMenuNavbarBtn {
     if (fork) {
       page.loadURL(`beaker://library/${fork.url}#setup`)
     }
-  }
-
-  async onClickCompare () {
-    this.close()
-    const page = pages.getActive()
-    const datUrl = page && page.getViewedDatOrigin()
-    if (!page || !page.getViewedDatOrigin()) return
-    pages.setActive(pages.create(`beaker://compare?base=${encodeURIComponent('dat://' + page.siteInfo.key)}`))
   }
 
   async onToggleLiveReloading () {

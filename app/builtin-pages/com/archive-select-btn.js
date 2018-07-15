@@ -53,6 +53,16 @@ function renderLoaded (current, {archiveOptions, onSelect, toggleId} = {}) {
     onSelect(a.url)
   }
 
+  function onSubmitUrl (e) {
+    e.preventDefault()
+    var url = e.target.url.value
+
+    if (url) {
+      closeAllToggleables()
+      onSelect(url)
+    }
+  }
+
   return toggleable(yo`
     <div class="dropdown toggleable-container archive-select-btn" data-toggle-id=${toggleId || ''}>
       <button class="btn toggleable">
@@ -60,13 +70,18 @@ function renderLoaded (current, {archiveOptions, onSelect, toggleId} = {}) {
       </button>
 
       <div class="dropdown-items subtle-shadow left">
-        ${archiveOptions.map(a => yo`
-          <div class="dropdown-item" onclick=${e => onClickArchive(a)}>
-            <img class="favicon" src="beaker-favicon:${a.url}" />
-            <span class="title">${a.title || yo`<em>Untitled</em>`}</span>
-            <span class="url">${shortenHash(a.url)}</span>
-          </div>`
-        )}
+        <form onsubmit=${onSubmitUrl}>
+          <input name="url" placeholder="Archive URL (dat://...)" />
+        </form>
+        <div class="scroll">
+          ${archiveOptions.map(a => yo`
+            <div class="dropdown-item" onclick=${e => onClickArchive(a)}>
+              <img class="favicon" src="beaker-favicon:${a.url}" />
+              <span class="title">${a.title || yo`<em>Untitled</em>`}</span>
+              <span class="url">${a.key.slice(0, 6)}</span>
+            </div>`
+          )}
+        </div>
       </div>
     </div>`
   )
