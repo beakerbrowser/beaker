@@ -27,6 +27,7 @@ export default class DatNetworkActivity {
     this.currentFilter = filter
     this.currentSort = ['title', -1]
     this.currentlyHighlightedKey = undefined
+    this.isClearingCache = false
 
     beaker.archives.addEventListener('network-changed', throttle(this.onNetworkChanged.bind(this), 1e3))
   }
@@ -75,7 +76,9 @@ export default class DatNetworkActivity {
     return yo`
       <div id=${'dat-network-activity-' + this.id} class="dat-network-activity">
         <div class="archives">
-          <button class="link clear-cache" onclick=${() => this.onClearCache()}>Clear cache</button>
+          ${this.isClearingCache
+            ? yo`<button class="link clear-cache disabled"><span class="spinner"></span> Clearing cache</span>`
+            : yo`<button class="link clear-cache" onclick=${() => this.onClearCache()}>Clear cache</button>`}
           <div class="filters">
             ${f('owned', 'Your archives')}
             ${f('seeding', 'Seeding')}
@@ -239,10 +242,18 @@ export default class DatNetworkActivity {
   }
 
   async onClearCache () {
-    const results = await beaker.archives.clearGarbage({isOwner: false})
-    await beaker.archives.clearDnsCache()
-    console.debug('Dat cache cleared', results)
-    toast.create(`Cache cleared (${prettyBytes(results.totalBytes)} freed from ${results.totalArchives} archives)`, '', 5e3)
+    this.isClearingCache = true
+    this.rerender()
+
+    try {
+      const results = await beaker.archives.clearGarbage({isOwner: false})
+      await beaker.archives.clearDnsCache()
+      console.debug('Dat cache cleared', results)
+      toast.create(`Cache cleared (${prettyBytes(results.totalBytes)} freed from ${results.totalArchives} archives)`, '', 5e3)
+    } finally {
+      this.isClearingCache = false
+    }
+    
     this.fetchArchives()
   }
 
