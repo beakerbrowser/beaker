@@ -104,15 +104,8 @@ gulp.task('less-watch', gulp.series(lessTask));
 
 gulp.task('build', gulp.series(['bundle', 'less']));
 
-gulp.task('watch', gulp.series(['build'], function () {
-  watch('app/**/*.js', batch(function (events, done) {
-    var n = events._list.filter(function (f) { return f.path.indexOf('.build.js') === -1 }).length;
-    if (n > 0)
-      gulp.start('bundle-watch', done);
-    else
-      done();
-  }));
-  watch('app/**/*.less', batch(function (events, done) {
-    gulp.start('less-watch', done);
-  }));
+gulp.task('watch', gulp.series(function () {
+  gulp.watch(['app/**/*.js', '!app/**/*.build.js'], gulp.series('bundle-watch'))
+  gulp.watch('app/**/*.less', gulp.series('less-watch'))
+  return Promise.resolve(true)
 }));
