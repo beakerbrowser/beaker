@@ -24,7 +24,7 @@ var srcDir = projectDir.cwd('./app');
 function burnthemallMaybeTask () {
   const beakerPackageJson = projectDir.read('package.json', 'json')
   const electronPackageJson = projectDir.read('node_modules/electron/package.json', 'json')
-  if (!beakerPackageJson || !electronPackageJson) return
+  if (!beakerPackageJson || !electronPackageJson) return Promise.resolve(true)
 
   // is the installed version of electron different than the required one?
   if (beakerPackageJson.devDependencies.electron != electronPackageJson.version) {
@@ -38,9 +38,10 @@ function burnthemallMaybeTask () {
     })
     return Promise.reject(new Error('Aborting build to do a full reinstall and rebuild'))
   }
+  return Promise.resolve(true)
 }
 
-gulp.task('burnthemall-maybe', burnthemallMaybeTask)
+gulp.task('burnthemall-maybe', gulp.series(burnthemallMaybeTask))
 
 var bundleApplication = function () {
   var bpViewsDir = srcDir.cwd('builtin-pages/views')
@@ -79,8 +80,8 @@ var bundleTask = function () {
   }
   return bundleApplication();
 };
-gulp.task('bundle', ['burnthemall-maybe'], bundleTask);
-gulp.task('bundle-watch', bundleTask);
+gulp.task('bundle', gulp.series(['burnthemall-maybe'], bundleTask));
+gulp.task('bundle-watch', gulp.series(bundleTask));
 
 
 var buildLess = function (src, dest) {
@@ -98,12 +99,12 @@ var lessTask = function () {
     buildLess('app/stylesheets/icons.less', srcDir.path('stylesheets'))
   ])
 };
-gulp.task('less', ['burnthemall-maybe'], lessTask);
-gulp.task('less-watch', lessTask);
+gulp.task('less', gulp.series(['burnthemall-maybe'], lessTask));
+gulp.task('less-watch', gulp.series(lessTask));
 
-gulp.task('build', ['bundle', 'less']);
+gulp.task('build', gulp.series(['bundle', 'less']));
 
-gulp.task('watch', ['build'], function () {
+gulp.task('watch', gulp.series(['build'], function () {
   watch('app/**/*.js', batch(function (events, done) {
     var n = events._list.filter(function (f) { return f.path.indexOf('.build.js') === -1 }).length;
     if (n > 0)
@@ -114,4 +115,4 @@ gulp.task('watch', ['build'], function () {
   watch('app/**/*.less', batch(function (events, done) {
     gulp.start('less-watch', done);
   }));
-});
+}));
