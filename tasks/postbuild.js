@@ -22,4 +22,6 @@ gulp.task('postbuild', gulp.series(function () {
       return cwd.move(name, newName)
     }
   })
+
+  return Promise.resolve(true)
 }))
