@@ -130,14 +130,17 @@ export function createShellWindow (windowState) {
     height,
     minWidth,
     minHeight,
+    backgroundColor: '#ddd',
     defaultEncoding: 'UTF-8',
     webPreferences: {
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
       allowRunningInsecureContent: false,
       nativeWindowOpen: true
     },
-    icon: ICON_PATH
+    icon: ICON_PATH,
+    show: false // will show when ready
   })
+  win.once('ready-to-show', () => win.show())
   downloads.registerListener(win)
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
