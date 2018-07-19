@@ -88,8 +88,9 @@ function setReadOnly (editor, readOnly) {
   })
   // manually disable edits
   if (readOnly) {
+    orgApplyDeltaFn = orgApplyDeltaFn || editor.session.getDocument().applyDelta
     editor.session.getDocument().applyDelta = function () {/* noop */}
-  } else {
+  } else if (orgApplyDeltaFn) {
     editor.session.getDocument().applyDelta = orgApplyDeltaFn
   }
   // show/hide the cursor
