@@ -107,10 +107,9 @@ function renderGeneral () {
     <div class="view">
       ${renderAutoUpdater()}
       ${renderDefaultSyncPathSettings()}
-      <div class="section-group">
-        ${renderProtocolSettings()}
-        ${renderOnStartupSettings()}
-      </div>
+      ${renderProtocolSettings()}
+      ${renderOnStartupSettings()}
+      ${renderDatSettings()}
       ${renderDefaultDatIgnoreSettings()}
       ${renderAnalyticsSettings()}
     </div>
@@ -164,6 +163,48 @@ function renderOnStartupSettings () {
       </div>
     </div>
   `
+}
+
+function renderDatSettings () {
+  function onChangeUpload (e) {
+    var v = e.currentTarget.value
+    settings.dat_bandwidth_limit_up = (v && +v) ? +v : 0
+    beaker.browser.setSetting('dat_bandwidth_limit_up', settings.dat_bandwidth_limit_up)
+    renderToPage()
+    toast.create('Upload limit updated')
+  }
+  function onChangeDownload (e) {
+    var v = e.currentTarget.value
+    settings.dat_bandwidth_limit_down = (v && +v) ? +v : 0
+    beaker.browser.setSetting('dat_bandwidth_limit_down', settings.dat_bandwidth_limit_down)
+    renderToPage()
+    toast.create('Download limit updated')
+  }
+
+  var up = settings.dat_bandwidth_limit_up || ''
+  var down = settings.dat_bandwidth_limit_down || ''
+
+  return yo`
+    <div class="section dat-bandwidth">
+      <h2 id="dat-bandwidth" class="subtitle-heading">Dat Settings</h2>
+
+      <p>
+        Set a limit on your bandwidth usage for Dat.
+      </p>
+
+      <div class="inputs">
+        <div>
+          <label for="dat-upload-limit">Upload limit (MB/s)</label>
+          <input id="dat-upload-limit" type="text" placeholder="Unlimited" value=${up} onchange=${onChangeUpload} />
+        </div>
+        <div>
+          <label for="dat-download-limit">Download limit (MB/s)</label>
+          <input id="dat-download-limit" type="text" placeholder="Unlimited" value=${down} onchange=${onChangeDownload} />
+        </div>
+      </div>
+    </div>
+  `
+
 }
 
 function renderDefaultDatIgnoreSettings () {
