@@ -112,8 +112,8 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
     if (res === 1) return cb(true)
     if (res === 0) return cb(false)
 
-    // if we're already tracking this kind of permission request, then bundle them
-    var req = activeRequests.find(req => req.win === win && req.permission === permission)
+    // if we're already tracking this kind of permission request, and the perm is idempotent, then bundle them
+    var req = PERM.idempotent ? activeRequests.find(req => req.win === win && req.permission === permission) : false
     if (req) {
       if (PERM.alwaysAsk) {
         // deny now
