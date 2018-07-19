@@ -1205,29 +1205,25 @@ function renderMenu (opts) {
 
             <div class="section menu-items">
               ${isOwner
-                ? [
-                    yo`
-                      <div class="dropdown-item" onclick=${onMakeCopy}>
-                        <i class="fa fa-clone"></i>
-                        Make a copy
-                      </div>
-                    `
-                  ]
-                : [
-                    yo`
-                      <a href="#settings" class="dropdown-item" onclick=${e => onChangeView(e, 'settings')}>
-                        <i class="fa fa-info-circle"></i>
-                        About
-                      </a>
-                    `,
-                    yo`
-                      <div class="dropdown-item" onclick=${e => onChangeView(e, 'network')}>
-                        <i class="fa fa-signal"></i>
-                        Network info
-                      </div>
-                    `
-                  ]
+                ? ''
+                : (isSaved
+                  ? yo`
+                    <div class="dropdown-item" onclick=${onMoveToTrash}>
+                      <i class="fa fa-pause"></i>
+                      Stop seeding
+                    </div>`
+                  : yo`
+                    <div class="dropdown-item" onclick=${onSave}>
+                      <i class="fa fa-arrow-up"></i>
+                      Seed these files
+                    </div>`
+                )
               }
+
+              <div class="dropdown-item" onclick=${onMakeCopy}>
+                <i class="fa fa-clone"></i>
+                Make ${isOwner ? 'a' : 'an editable'} copy
+              </div>
 
               <div class="dropdown-item" onclick=${onDownloadZip}>
                 <i class="fa fa-file-archive-o"></i>
@@ -1258,48 +1254,17 @@ function renderMenu (opts) {
               }
             </div>
 
-            ${!isOwner
-              ? yo`
-                <div class="section">
-                  <div class="sync-path-info">
-                    <button class="btn full-width success" onclick=${onMakeCopy}>
-                      Make an editable copy
-                    </button>
-                  </div>
-                </div>`
-              : ''
-            }
+            <div class="section">
+              <div class="buttons">
+                <button class="btn" onclick=${() => window.open(archive.url)}>
+                  Open
+                </button>
 
-            ${isOwner && isSaved
-              ? yo`
-                <div class="section">
-                  ${syncPath
-                    ? yo`
-                        <div class="sync-path-info">
-                          <code onclick=${() => onOpenFolder(syncPath)}>${syncPath}</code>
-
-                          <div class="buttons">
-                            <button class="btn" onclick=${() => onOpenFolder(syncPath)}>
-                              Open folder
-                            </button>
-
-                            <button class="btn" onclick=${() => onCopy(syncPath, 'Path copied to clipboard')}>
-                              Copy path
-                            </button>
-                          </div>
-                        </div
-                      `
-                    : yo`
-                      <div class="sync-path-info">
-                        <button onclick=${onChangeSyncDirectory} class="btn primary full-width tooltip-container">
-                          Set local directory
-                        </button>
-                      </div>`
-                  }
-                </div>
-              `
-              : ''
-            }
+                <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
+                  Copy URL
+                </button>
+              </div>
+            </div>
           </div>
         </div>`
     }
