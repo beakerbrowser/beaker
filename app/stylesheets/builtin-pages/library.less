@@ -756,7 +756,8 @@ body.drag {
 
     .title {
       font-size: 1rem;
-      padding: 10px 12px;
+      margin: 10px 12px 10px;
+      height: 15px;
     }
 
     .description {
@@ -782,15 +783,24 @@ body.drag {
       padding: 0;
     }
 
-    input.title {
-      width: ~"calc(100% - 20px)";
-      height: 32px;
-      font-size: .9rem;
-      margin: 5px auto;
-      border-radius: 2px;
+    .revision-indicator-icon {
+      display: inline-block;
+      width: 20px;
 
-      &:focus {
-        box-shadow: none;
+      .revision-indicator {
+        position: relative;
+        top: -1px;
+        width: 5px;
+        height: 5px;
+        margin-right: 1px;
+
+        &.add {
+          background: #999;
+        }
+
+        &.del {
+          background: #444;
+        }
       }
     }
 
@@ -805,16 +815,6 @@ body.drag {
         &:last-of-type {
           margin-left: 5px;
         }
-      }
-    }
-
-    .section.favicons {
-      background: #f7f7f7;
-      max-height: 90px;
-      overflow-y: auto;
-
-      &::-webkit-scrollbar {
-        display: none;
       }
     }
   }
@@ -1014,6 +1014,12 @@ body.drag {
     h2,
     h3 {
       font-size: inherit;
+    }
+  }
+
+  .archive-comparison {
+    .compare-selection {
+      top: 55px;
     }
   }
 }

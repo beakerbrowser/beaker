@@ -18,11 +18,9 @@ import * as toast from '../com/toast'
 import * as noticeBanner from '../com/notice-banner'
 import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
 import * as copyDatPopup from '../com/library-copydat-popup'
-import * as createDraftPopup from '../com/library-createdraft-popup'
-import * as deleteDraftPopup from '../com/library-deletedraft-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
 import * as faviconPicker from '../com/favicon-picker'
-import renderArchiveComparison from '../com/archive-comparison'
+import LibraryViewCompare from '../com/library-view-compare'
 import renderSettingsField from '../com/settings-field'
 import renderArchiveHistory from '../com//archive-history'
 import {setup as setupAce, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
@@ -37,18 +35,14 @@ const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 101/*with description*
 // =
 
 var activeView // will default to 'files'
-var activeVersionTab = 'drafts'
+var activeVersionTab = 'versions'
 var archive
 var archiveFsRoot
 var filesBrowser
 var archiveVersion = false
-var draftInfo
-var draftDiffSummary
 
 // used in the compare view
-var compareBaseArchive
-var compareTargetArchive
-var compareDiff
+var libraryViewCompare
 
 var markdownRenderer = createMd({hrefMassager: markdownHrefMassager})
 var readmeElement
@@ -122,10 +116,6 @@ async function setup () {
         isFaviconSet = false
       }
     }
-
-    // get draft info
-    draftInfo = await beaker.archives.getDraftInfo(archive.url)
-    /* dont await */ loadDraftDiffSummary()
 
     // load state and render
     await readViewStateFromUrl()
@@ -222,149 +212,6 @@ async function loadReadme () {
   }
 
   render()
-}
-
-async function loadDraftDiffSummary () {
-  draftDiffSummary = null
-  var master = _get(draftInfo, 'master')
-  var drafts = _get(draftInfo, 'drafts')
-  if (!master || !drafts || !drafts.length) return
-
-  draftDiffSummary = {
-    numDrafts: drafts.length,
-    hasDiffs: false,
-    numAdds: 0,
-    numMods: 0,
-    numDels: 0,
-    firstDifferingDraftUrl: null
-  }
-
-  async function tallyDraft (draftUrl) {
-    let diff = await DatArchive.diff(draftUrl, master.url, {compareContent: true, shallow: true})
-    if (diff.length === 0) return
-    if (!draftDiffSummary.firstDifferingDraftUrl) {
-      draftDiffSummary.hasDiffs = true
-      draftDiffSummary.firstDifferingDraftUrl = draftUrl
-    }
-    for (let fileDiff of diff) {
-      if (fileDiff.change === 'add') draftDiffSummary.numAdds++
-      if (fileDiff.change === 'mod') draftDiffSummary.numMods++
-      if (fileDiff.change === 'del') draftDiffSummary.numDels++
-    }
-  }
-
-  if (isDraft()) {
-    // on a draft, get diff summary for just the active draft
-    await tallyDraft(archive.url)
-  } else {
-    // on master, get diff summary for all drafts
-    for (let draft of drafts) {
-      await tallyDraft(draft.url)
-    }
-  }
-  render()
-}
-
-async function loadCompareViewDefaults () {
-  if (!compareTargetArchive) {
-    let master = _get(draftInfo, 'master')
-    if (master) {
-      compareTargetArchive = new LibraryDatArchive(master.url)
-      await compareTargetArchive.setup()
-    }
-  }
-
-  if (!compareBaseArchive) {
-    let draft
-    if (isDraft()) {
-      draft = archive.url
-    } else if (draftDiffSummary && draftDiffSummary.firstDifferingDraftUrl) {
-      draft = draftDiffSummary.firstDifferingDraftUrl
-    } else {
-      draft = _get(draftInfo, 'drafts.0.url')
-    }
-    if (draft) {
-      compareBaseArchive = new LibraryDatArchive(draft)
-      await compareBaseArchive.setup()
-    } else {
-      // this should never happen because the '#compare' link goes away when there are no drafts
-      // but if it does (bookmarked URL) we can give a non-broken interface by comparing to self
-      compareBaseArchive = compareTargetArchive
-    }
-  }
-
-  /* dont await */ loadCompareDiff()
-}
-
-var loadNextFileDiffTimeout
-async function loadCompareDiff () {
-  // cancel any existing file-diff loads
-  clearTimeout(loadNextFileDiffTimeout)
-  var base = compareBaseArchive
-  var target = compareTargetArchive
-
-  // load diff
-  if (base && target) {
-    compareDiff = await DatArchive.diff(base.url, target.url, {compareContent: true, shallow: true})
-    compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
-    render()
-  } else {
-    compareDiff = null
-    render()
-    return
-  }
-
-  // TEMP
-  // diff the dat.json so that we can render it in a grayed-out interface
-  // this should be replaced with a semantically-aware dat.json diff tool
-  // -prf
-  diffLines(target, '/dat.json', base, '/dat.json').then(diff => {
-    var d = {diff, path: 'dat.json', debug_isManifest: true, debug_shouldIgnoreChange: false}
-    d.diffDeletions = d.diff.reduce((sum, el) => sum + (el.removed ? el.count : 0), 0)
-    d.diffAdditions = d.diff.reduce((sum, el) => sum + (el.added ? el.count : 0), 0)
-    if      ( d.diffAdditions && !d.diffDeletions) d.change ='add'
-    else if (!d.diffAdditions &&  d.diffDeletions) d.change ='del'
-    else if ( d.diffAdditions &&  d.diffDeletions) d.change ='mod'
-    else return // no changes
-
-    var re = /"(title|url)"/
-    const hasImportantChange = v => v.split(',').filter(v => !re.test(v)).length > 0
-    var numImportantChanges = d.diff.filter(d => ((d.added || d.removed) && hasImportantChange(d.value))).length
-    d.debug_shouldIgnoreChange = numImportantChanges === 0
-    compareDiff.push(d)
-    render()
-  })
-
-  // automatically & iteratively load the file diffs
-  loadNextFileDiffTimeout = setTimeout(loadNextFileDiff, 0)
-  async function loadNextFileDiff () {
-    if (!compareDiff) return
-
-    // find the next empty diff
-    var d = compareDiff.find(d => !d.diff)
-    if (!d) return // done!
-
-    // run the diff
-    try {
-      d.diff = await diffLines(target, d.path, base, d.path)
-      d.diffDeletions = d.diff.reduce((sum, el) => sum + (el.removed ? el.count : 0), 0)
-      d.diffAdditions = d.diff.reduce((sum, el) => sum + (el.added ? el.count : 0), 0)
-    } catch (e) {
-      if (e.invalidEncoding) {
-        d.diff = {invalidEncoding: true}
-      } else if (e.sourceTooLarge) {
-        d.diff = {sourceTooLarge: true}
-      } else {
-        console.error('Error running diff', e)
-      }
-    }
-
-    // redraw
-    render()
-
-    // queue the next load
-    loadNextFileDiffTimeout = setTimeout(loadNextFileDiff, 0)
-  }
 }
 
 // rendering
@@ -473,7 +320,6 @@ function renderHeader () {
                   : yo`<h1 onclick=${onClickHeaderTitle}>${getSafeTitle()}</h1>`}
                 ${isOwner ? yo`<span class="fa fa-pencil"></span>` : ''}
 
-                ${isDraft() ? yo`<span class="draft-badge badge blue">DRAFT</span>` : ''}
                 ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
               </div>
 
@@ -522,7 +368,7 @@ function renderView () {
     case 'files':
       return renderFilesView()
     case 'compare':
-      return '' // temporarily disable drafts renderCompareView()
+      return renderCompareView()
     case 'settings':
       return renderSettingsView()
     case 'network':
@@ -537,11 +383,6 @@ function updateVersionPicker () {
 }
 
 function renderVersionPicker () {
-  // temporarily disable drafts
-  return ''
-
-  const master = _get(draftInfo, 'master')
-
   const changeTab = (tab) => {
     activeVersionTab = tab
     updateVersionPicker()
@@ -550,13 +391,6 @@ function renderVersionPicker () {
   const rTabs = () => yo`
    <div class="section tabs">
       <button
-        class="nofocus tab ${activeVersionTab === 'drafts' ? 'active' : ''}"
-        onclick=${() => changeTab('drafts')}
-      >
-        Drafts
-      </button>
-
-      <button
         class="nofocus tab ${activeVersionTab === 'versions' ? 'active' : ''}"
         onclick=${() => changeTab('versions')}
       >
@@ -564,94 +398,6 @@ function renderVersionPicker () {
       </button>
     </div>
   `
-
-  const rDrafts = () => {
-    var els = []
-    if (hasDrafts()) {
-      els.push(yo`
-        <a href="beaker://library/${master.url}" class="dropdown-item ${master.url === archive.url ? 'active' : ''}">
-          <div class="draft-name">
-            ${master.title}
-            <span class="badge">master</span>
-          </div>
-
-          <div class="draft-url">
-            ${shortenHash(master.url)}
-          </div>
-
-          ${master.url === archive.url
-            ? yo`<span class="fa fa-check"></span>`
-            : ''
-          }
-        </a>`
-      )
-
-      draftInfo.drafts.forEach(d => {
-        const isActive = d.url === archive.url
-
-        if (isActive) {
-          els.push(yo`
-            <div class="dropdown-item active">
-              <div class="draft-name">${d.title}</div>
-              <div class="draft-url">${shortenHash(d.url)}</div>
-              <span class="fa fa-check"></span>
-            </div>
-          `)
-        } else {
-          els.push(yo`
-            <a href="beaker://library/${d.url}" class="dropdown-item">
-              <div class="draft-name">${d.title}</div>
-
-              <div class="draft-url">${shortenHash(d.url)}</div>
-
-              <button class="btn plain remove-btn tooltip-container" data-tooltip="Delete draft" onclick=${e => onDeleteDraft(e, d)}>
-                <i class="fa fa-times"></i>
-              </button>
-            </a>
-          `)
-        }
-      })
-    } else {
-      els.push(yo`<em>No drafts</em>`)
-    }
-
-    els.push(yo`
-      <div class="create-draft">
-        <button class="btn full-width" onclick=${onCreateDraft}>
-          Create a draft +
-        </button>
-      </div>`
-    )
-    return els
-  }
-
-  const rVersionSummary = () => yo`<div>Viewing <a class="link" href=${archive.url} target="_blank">version ${archiveVersion}</a></div>`
-
-  const rRevisionIndicator = (num, type) => {
-    if (num === 0) return ''
-    return yo`<div class="revision-indicator ${type}"></div>`
-  }
-
-  const rDiffSummary = () => {
-    if (!draftDiffSummary || !draftDiffSummary.hasDiffs) {
-      return ''
-    }
-    var {numDrafts, numAdds, numMods, numDels} = draftDiffSummary
-    var numChanges = numAdds + numMods + numDels
-    return yo`
-      <div class="draft-diff-summary">
-        ${rRevisionIndicator(numAdds, 'add')}
-        ${rRevisionIndicator(numMods, 'mod')}
-        ${rRevisionIndicator(numDels, 'del')}
-        <span class="text">
-          ${isDraft() ? '' : yo`<span>${numDrafts} ${pluralize(numDrafts, 'draft')},</span>`}
-          ${numChanges} ${pluralize(numChanges, 'revision')}
-        </span>
-        <a class="btn" href="#compare" onclick=${e => onChangeView(e, 'compare')}>
-          <span class="fa fa-files-o"></span> Compare
-        </a>
-      </div>`
-  }
 
   return yo`
     <div class="version-picker container">
@@ -673,11 +419,10 @@ function renderVersionPicker () {
 
             <div class="dropdown-items left">
               ${rTabs()}
-              ${activeVersionTab === 'drafts' ? rDrafts() : renderArchiveHistory(filesBrowser.root._archive)}
+              ${renderArchiveHistory(filesBrowser.root._archive)}
             </div>
           </div>`
       })}
-      ${archiveVersion ? rVersionSummary() : rDiffSummary()}
     </div>`
 }
 
@@ -1066,23 +811,17 @@ function renderNetworkView () {
 }
 
 function renderCompareView () {
-  // temporarily disable drafts
-  return ''
-
+  if (!libraryViewCompare) {
+    let isOwner = _get(archive, 'info.isOwner')
+    libraryViewCompare = new LibraryViewCompare({
+      baseUrl: isOwner ? null : archive.url,
+      targetUrl: isOwner ? archive.url : null
+    })
+  }
   return yo`
     <div class="container">
       <div class="view compare">
-        ${renderArchiveComparison({
-          base: compareBaseArchive,
-          target: compareTargetArchive,
-          revisions: compareDiff,
-          archiveOptions: draftInfo.drafts,
-          onMerge: onCompareMerge,
-          onDeleteDraft,
-          onChangeCompareBase: draftInfo.drafts && draftInfo.drafts.length > 1 ? onChangeCompareBase : undefined,
-          onToggleRevisionCollapsed: onToggleCompareRevisionCollapsed
-        })}
-        </div>
+        ${libraryViewCompare.render()}
       </div>
     </div>`
 }
@@ -1225,6 +964,13 @@ function renderMenu (opts) {
                 Make ${isOwner ? 'a' : 'an editable'} copy
               </div>
 
+              <div class="dropdown-item" onclick=${e => {onChangeView(e, 'compare'); onToggle(e)}}>
+                <div class="revision-indicator-icon">
+                  <div class="revision-indicator add"></div><div class="revision-indicator del"></div>
+                </div>
+                Compare archives
+              </div>
+
               <div class="dropdown-item" onclick=${onDownloadZip}>
                 <i class="fa fa-file-archive-o"></i>
                 Download as .zip
@@ -1287,74 +1033,6 @@ async function onMakeCopy () {
   let {title} = await copyDatPopup.create({archive})
   const fork = await DatArchive.fork(archive.url, {title, prompt: false}).catch(() => {})
   window.location = `beaker://library/${fork.url}#setup`
-}
-
-async function onCreateDraft () {
-  let {title, masterUrl} = await createDraftPopup.create({draftInfo, archive})
-
-  // create a copy
-  const fork = await DatArchive.fork(
-    masterUrl,
-    {
-      title,
-      prompt: false,
-      hidden: true
-    }
-  ).catch(() => {})
-
-
-  // add the draft and set it as the active draft
-  await beaker.archives.addDraft(masterUrl, fork.url)
-  window.location = `beaker://library/${fork.url}`
-}
-
-async function onDeleteDraft (e, draft, confirm = true) {
-  e.stopPropagation()
-  e.preventDefault()
-  let shouldDeleteLocalDirectory
-
-  try {
-    // diff with the master
-    let diff = await DatArchive.diff(draftInfo.master.url, draft.url, {compareContent: true, shallow: true})
-
-    if (confirm) {
-      // run the popup
-      const {deleteSyncPath} = await deleteDraftPopup.create({
-        masterTitle: draftInfo.master.title,
-        localSyncPath: _get(draft, 'userSettings.localSyncPath'),
-        numUnpublishedRevisions: diff.length
-      })
-      shouldDeleteLocalDirectory = deleteSyncPath
-    }
-
-    // delete all the related data
-    try {
-      await beaker.archives.removeDraft(draftInfo.master.url, draft.url)
-      await beaker.archives.setLocalSyncPath(
-        draft.url,
-        '',
-        {
-          deleteSyncPath: confirm ? shouldDeleteLocalDirectory : true
-        }
-      )
-      await beaker.archives.delete(draft.url)
-
-      // if you were on the deleted draft, redirect to the master
-      if (window.location.pathname.startsWith(`/${draft.url}`)) {
-        window.location = `beaker://library/${draftInfo.master.url}`
-      }
-
-      toast.create('Deleted draft')
-    } catch (err) {
-      toast.create('There was an error trying to remove this draft', 'error', 3e3)
-      console.error(err)
-      return
-    }
-
-    // update the draft info
-    draftInfo = await beaker.archives.getDraftInfo(archive.url)
-    render()
-  } catch (_) {}
 }
 
 async function addReadme () {
@@ -1441,19 +1119,12 @@ async function onChangeView (e, view) {
     window.history.pushState('', {}, e.currentTarget.getAttribute('href'))
   }
 
-  if (activeView === 'compare') {
-    await loadCompareViewDefaults()
-  }
-
   if (activeView === 'files' && archiveFsRoot) {
     // setup files view
     await archiveFsRoot.readData({maxPreviewLength: 1e5})
     await filesBrowser.setCurrentSource(archiveFsRoot, {suppressEvent: true})
     await loadReadme()
     setupAce({readOnly: true})
-
-    // load diff summary
-    loadDraftDiffSummary()
   }
 
   render()
@@ -1740,29 +1411,6 @@ function onBlurHeaderEditor (e, name) {
   // render()
 }
 
-async function onCompareMerge (base, target, opts) {
-  try {
-    await DatArchive.merge(base, target, opts)
-    toast.create('Files updated')
-  } catch (e) {
-    console.error(e)
-    toast.create(e.message || 'There was an issue writing the files', 'error')
-  }
-  loadCompareDiff()
-}
-
-async function onChangeCompareBase (url) {
-  compareBaseArchive = new LibraryDatArchive(url)
-  await compareBaseArchive.setup()
-  render()
-  loadCompareDiff()
-}
-
-function onToggleCompareRevisionCollapsed (rev) {
-  rev.isOpen = !rev.isOpen
-  render()
-}
-
 async function onFilesChanged () {
   // update files
   const currentNode = filesBrowser.getCurrentSource()
@@ -1776,9 +1424,6 @@ async function onFilesChanged () {
   } catch (e) {
     console.debug('Failed to rerender files on change, likely because the present node was deleted', e)
   }
-
-  // update diff
-  loadDraftDiffSummary()
 
   // update readme
   loadReadme()
@@ -1860,9 +1505,6 @@ async function readViewStateFromUrl () {
     activeView = 'files'
   }
   if (oldView !== activeView) {
-    if (activeView === 'compare') {
-      await loadCompareViewDefaults()
-    }
     render()
   }
 
@@ -1943,14 +1585,6 @@ function getSafeTitle () {
 
 function getSafeDesc () {
   return _get(archive, 'info.description', '').trim() || yo`<em>No description</em>`
-}
-
-function isDraft () {
-  return draftInfo.master && _get(draftInfo, 'master.url') !== archive.url
-}
-
-function hasDrafts () {
-  return draftInfo.drafts && draftInfo.drafts.length
 }
 
 function markdownHrefMassager (href) {

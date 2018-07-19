@@ -11,6 +11,7 @@ export default function renderArchiveComparison (opts = {}) {
   var {
     base,
     target,
+    labels,
     revisions,
     archiveOptions,
     onMerge,
@@ -21,11 +22,24 @@ export default function renderArchiveComparison (opts = {}) {
     onSelectwitchCompareArchives
   } = opts
 
+  labels = Object.assign({},
+    {
+      desc: 'Publish',
+      base: 'draft',
+      target: 'publishd',
+      copyAll: 'Publish all revisions',
+      copy: 'Publish',
+      revert: 'Revert',
+      count: 'unpublished revision'
+    },
+    labels
+  )
+
   var numRevisions = revisions ? revisions.filter(r => !r.debug_shouldIgnoreChange).length : 0
 
-  const onPublishAllRevisions = (e) => {
+  const onCopyAll = (e) => {
     e.preventDefault()
-    if (confirm(`Publish all revisions to "${getSafeTitle(target)}"?`)) {
+    if (confirm(`${labels.copyAll} to "${getSafeTitle(target)}"?`)) {
       onMerge(base, target)
     }
   }
@@ -33,7 +47,7 @@ export default function renderArchiveComparison (opts = {}) {
   return yo`
     <div class="archive-comparison">
       <div class="compare-selection">
-        <span>${numRevisions > 0 ? 'Publish' : 'Comparing'}</span>
+        <span>${labels.desc}</span>
 
         ${onChangeCompareBase
           ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
@@ -51,30 +65,30 @@ export default function renderArchiveComparison (opts = {}) {
         ${numRevisions > 0
           ? yo`
             <div class="actions">
-              <button class="btn success publish" onclick=${onPublishAllRevisions}>
-                Publish all revisions
+              <button class="btn success publish" onclick=${onCopyAll}>
+                ${labels.copyAll}
               </button>
             </div>`
           : ''
         }
       </div>
 
-      ${renderRevisions({base, target, revisions, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
+      ${renderRevisions({base, target, labels, revisions, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
 
       <div class="compare-footer">
         ${numRevisions > 0
           ? yo`
               <span class="revisions-count">
-                ${numRevisions} ${pluralize(numRevisions, 'unpublished revision')}
+                ${numRevisions} ${pluralize(numRevisions, labels.count)}
               </span>
             `
           : ''
         }
 
         <div class="links">
-          <a href=${base.url} target="_blank">Preview draft</a>
-          <span class="separator">|</span>
-          <a href=${target.url} target="_blank">Preview published</a>
+          ${base ? yo`<a href=${base.url} target="_blank">View ${labels.base}</a>` : ''}
+          ${base && target ? yo`<span class="separator">|</span>` : ''}
+          ${target ? yo`<a href=${target.url} target="_blank">View ${labels.target}</a>` : ''}
         </div>
       </div>
     </div>`
@@ -91,15 +105,18 @@ function renderArchive (archive) {
   `
 }
 
-function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, onMerge, onDeleteDraft}) {
-  if (!target) {
+function renderRevisions ({base, target, labels, revisions, onToggleRevisionCollapsed, onMerge, onDeleteDraft}) {
+  let either = target || base
+  if (either && (!target || !base)) {
     return yo`
       <div class="empty">
-        <i class="fa fa-files-o"></i>
-        <div class="label">Compare archives</div>
+        <div class="empty-header">
+          <i class="fa fa-files-o"></i>
+          <div class="label">Compare archives</div>
+        </div>
         <p>
           <a class="link" onclick=${onTriggerSelectAnArchive}>Select an archive</a>
-          to compare with <a href=${base.url} target="_blank">${getSafeTitle(base)}</a>.
+          to compare with <a href=${either.url} target="_blank">${getSafeTitle(either)}</a>.
           You can review the differences and merge them together.
         </p>
       </div>`
@@ -123,17 +140,20 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
           <a href="beaker://library/${target.url}" target="_blank">${getSafeTitle(target)}</a>.
         </p>
 
-        <button class="btn delete-draft-btn" onclick=${e => onDeleteDraft(e, base, false)}>
-          Delete draft
-        </button>
+        ${onDeleteDraft
+          ? yo`
+            <button class="btn delete-draft-btn" onclick=${e => onDeleteDraft(e, base, false)}>
+              Delete draft
+            </button>`
+          : ''}
       </div>`
   }
 
-  const onPublishRevision = (e, rev) => {
+  const onCopy = (e, rev) => {
     e.stopPropagation()
     const path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
 
-    if (confirm(`Publish the changes in ${path} to "${getSafeTitle(target)}"?`)) {
+    if (confirm(`${labels.copy} the changes in ${path} to "${getSafeTitle(target)}"?`)) {
       onMerge(base, target, {paths: [rev.path]})
     }
   }
@@ -142,7 +162,7 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
     e.stopPropagation()
     const path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
 
-    if (confirm(`Revert the changes to ${path}?`)) {
+    if (confirm(`${labels.revert} the changes to ${path}?`)) {
       onMerge(target, base, {paths: [rev.path]})
     }
   }
@@ -210,12 +230,12 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
           }
 
           <div class="actions">
-            <button class="btn tooltip-container" data-tooltip="Revert" onclick=${e => onRevertRevision(e, rev)}>
+            <button class="btn tooltip-container" data-tooltip=${labels.revert} onclick=${e => onRevertRevision(e, rev)}>
               <span class="fa fa-undo"></span>
             </button>
 
-            <button class="btn" onclick=${e => onPublishRevision(e, rev)}>
-              Publish
+            <button class="btn" onclick=${e => onCopy(e, rev)}>
+              ${labels.copy}
             </button>
 
             <div class="btn plain">
@@ -227,6 +247,17 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
       </div>
     `
   )
+
+  function onTriggerSelectAnArchive (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    // trigger the dropdown
+    if (target) {
+      document.querySelector('[data-toggle-id="archive-comparison-base"] .btn').click()
+    } else {
+      document.querySelector('[data-toggle-id="archive-comparison-target"] .btn').click()
+    }
+  }
 
   var numModifications = revisions.filter(r => r.change === 'mod').length
   var numAdditions = revisions.filter(r => r.change === 'add').length
@@ -267,16 +298,6 @@ function renderRevisions ({base, target, revisions, onToggleRevisionCollapsed, o
       }
     </div>
   `
-}
-
-// event handlers
-// =
-
-function onTriggerSelectAnArchive (e) {
-  e.preventDefault()
-  e.stopPropagation()
-  // trigger the dropdown
-  document.querySelector('.compare-selection .btn').click()
 }
 
 // helpers
