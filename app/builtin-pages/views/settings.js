@@ -107,8 +107,10 @@ function renderGeneral () {
     <div class="view">
       ${renderAutoUpdater()}
       ${renderDefaultSyncPathSettings()}
-      ${renderProtocolSettings()}
-      ${renderOnStartupSettings()}
+      <div class="section-group">
+        ${renderProtocolSettings()}
+        ${renderOnStartupSettings()}
+      </div>
       ${renderDefaultDatIgnoreSettings()}
       ${renderAnalyticsSettings()}
     </div>
