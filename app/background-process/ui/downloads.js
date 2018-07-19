@@ -123,7 +123,9 @@ export function download (win, url, opts) {
   // register for onetime use of the download system
   opts = Object.assign({}, opts, {unregisterWhenDone: true})
   registerListener(win, opts)
-  win.webContents.downloadURL(url)
+  if (confirm("Would you like to download this file from: " + url)){
+  win.webContents.downloadURL(url)}else{ 
+   alert("File Download canceled")}
 }
 
 // rpc api
