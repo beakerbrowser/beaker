@@ -14,6 +14,7 @@ import FilesBrowser from '../com/files-browser2'
 import toggleable from '../com/toggleable'
 import toggleable2 from '../com/toggleable2'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
+import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
 import * as noticeBanner from '../com/notice-banner'
 import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
@@ -332,7 +333,7 @@ function renderHeader () {
                 ? syncPath
                   ?
                     yo`
-                      <button onclick=${() => onOpenFolder(syncPath)} class="primary-action btn plain">
+                      <button onclick=${() => onOpenFolder(syncPath)} oncontextmenu=${onSyncPathContextMenu} class="primary-action btn plain">
                         ${syncPath}
                       </button>
                     `
@@ -1409,6 +1410,27 @@ function onChangeHeaderEditor (e, name) {
 function onBlurHeaderEditor (e, name) {
   // headerEditValues[name] = false
   // render()
+}
+
+function onSyncPathContextMenu (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  contextMenu.create({
+    x: e.clientX,
+    y: e.clientY,
+    right: true,
+    items: [
+      {icon: 'folder-o', label: 'Open folder', click: () => onOpenFolder(syncPath)},
+      {icon: 'clipboard', label: 'Copy path', click: () => {
+        writeToClipboard(syncPath)
+        toast.create('Path copied to clipboard')
+      }},
+      {icon: 'pencil', label: 'Change local folder', click: onChangeSyncDirectory},
+      {icon: 'times-circle', label: 'Stop syncing to folder', click: onRemoveSyncDirectory}
+    ]
+  })
 }
 
 async function onFilesChanged () {
