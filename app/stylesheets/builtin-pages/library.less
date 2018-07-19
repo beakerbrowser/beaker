@@ -586,13 +586,35 @@ body.drag {
         font-size: 1.6rem;
         font-weight: 600;
         line-height: 1;
-        cursor: auto;
 
         input {
           position: relative;
           cursor: auto;
           top: -1px;
           left: -8px;
+          height: 34px;
+        }
+      }
+
+      .fa-pencil {
+        display: none;
+        margin-left: 5px;
+      }
+
+      &.editable {
+        h1 {
+          cursor: pointer;
+        }
+
+        &:hover,
+        &.editing {
+          .fa-pencil {
+            display: inline;
+          }
+        }
+
+        &.editing .fa-pencil {
+          margin-left: 0;
         }
       }
 

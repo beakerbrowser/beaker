@@ -453,6 +453,7 @@ function renderHeader () {
   const isOwner = _get(archive, 'info.isOwner')
   const hasDescription = !!archive.info.description
   const isExpanded = !isNavCollapsed()
+  const isEditingTitle = headerEditValues.title !== false
 
   return yo`
     <div class="library-view-header ${isExpanded ? 'expanded' : ''} ${hasDescription ? 'has-description' : ''}">
@@ -460,8 +461,8 @@ function renderHeader () {
         ? yo`
           <div class="container">
             <div class="info">
-              <div class="title">
-                ${headerEditValues.title
+              <div class="title ${isOwner ? 'editable' : ''} ${isEditingTitle ? 'editing' : ''}">
+                ${isEditingTitle
                   ? yo`<h1>
                     <input
                       class="header-title-input"
@@ -470,6 +471,7 @@ function renderHeader () {
                       onkeyup=${e => onChangeHeaderEditor(e, 'title')} />
                     </h1>`
                   : yo`<h1 onclick=${onClickHeaderTitle}>${getSafeTitle()}</h1>`}
+                ${isOwner ? yo`<span class="fa fa-pencil"></span>` : ''}
 
                 ${isDraft() ? yo`<span class="draft-badge badge blue">DRAFT</span>` : ''}
                 ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
@@ -1741,7 +1743,7 @@ function onClickHeaderTitle (e) {
 
   // enter edit mode
   e.stopPropagation()
-  headerEditValues.title = archive.info.title
+  headerEditValues.title = archive.info.title || 'Untitled'
   render()
 
   // select the text in the input
@@ -1879,13 +1881,13 @@ function onPopState (e) {
 // but it works entirely by reading the current url
 async function readViewStateFromUrl () {
   // active view
-  let triggerMainMenu = false
+  let triggerSetup = false
   let oldView = activeView
   let hash = window.location.hash
   if (hash.startsWith('#')) hash = hash.slice(1)
   if (hash === 'setup') {
     activeView = 'files'
-    triggerMainMenu = true
+    triggerSetup = true
     window.location.hash = '' // remove #setup in case the user reloads
   } else if (hash) {
     activeView = hash
@@ -1928,8 +1930,8 @@ async function readViewStateFromUrl () {
     console.debug(e)
   }
 
-  if (triggerMainMenu) {
-    document.querySelector('.library-toolbar .nav-items .dropdown > .btn').click()
+  if (triggerSetup) {
+    document.querySelector('.library-view-header .title h1').click()
   }
 }
 
