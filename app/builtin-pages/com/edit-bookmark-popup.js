@@ -10,7 +10,7 @@ var reject
 // exported api
 // =
 
-export function render (href, {title = '', tags = '', notes = '', isPrivate = true, pinned = false}) {
+export function render (href, {title = '', tags = '', notes = '', isPrivate = true, pinned = false, pinOrder = undefined}) {
   return yo`
     <div id="edit-bookmark-popup" class="popup-wrapper" onclick=${onClickWrapper}>
       <form class="popup-inner" onsubmit=${onSubmit}>
@@ -39,6 +39,7 @@ export function render (href, {title = '', tags = '', notes = '', isPrivate = tr
           <input type="checkbox" checked=${isPrivate} name="private"/> */}
 
           <label class="toggle">
+            <input type="hidden" name="pinOrder" value=${pinOrder} />
             <input checked=${pinned} type="checkbox" name="pinned" value="pinned">
             <div class="switch"></div>
             <span class="text">Pin to start page</span>
@@ -55,10 +56,10 @@ export function render (href, {title = '', tags = '', notes = '', isPrivate = tr
   `
 }
 
-export function create (href, {title = '', tags = '', notes = '', isPrivate = true, pinned = false}) {
+export function create (href, {title = '', tags = '', notes = '', isPrivate = true, pinned = false, pinOrder = undefined}) {
   // render interface
   var tagsStr = tags.toString().replace(',', ' ')
-  var popup = render(href, {title, tags: tagsStr, notes, isPrivate, pinned})
+  var popup = render(href, {title, tags: tagsStr, notes, isPrivate, pinned, pinOrder})
   document.body.appendChild(popup)
   document.addEventListener('keyup', onKeyUp)
 
@@ -107,7 +108,8 @@ function onSubmit (e) {
     title: e.target.title.value,
     tags: e.target.tags.value.split(' ').filter(Boolean),
     // private: e.target.private.checked, TODO(profiles) disabled -prf
-    pinned: e.target.pinned.checked
+    pinned: e.target.pinned.checked,
+    pinOrder: e.target.pinOrder.value
   })
   destroy()
 }
