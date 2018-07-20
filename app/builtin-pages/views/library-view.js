@@ -916,7 +916,7 @@ function renderMenu (opts) {
             <span class="fa fa-angle-down"></span>
           </button>
 
-          <div class="dropdown-items left">
+          <div class="dropdown-items left" onclick=${onToggle}>
             <div class="section">
               <h1 class="title">${title}</h1>
               ${description ? yo`<p class="description">${description}</p>` : ''}
