@@ -297,7 +297,7 @@ function renderHeader () {
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const isOwner = _get(archive, 'info.isOwner')
   const hasDescription = !!archive.info.description
-  const isExpanded = !isNavCollapsed()
+  const isExpanded = !isNavCollapsed({ignoreScrollPosition: true})
   const isEditingTitle = headerEditValues.title !== false
 
   return yo`
@@ -1547,7 +1547,7 @@ async function setManifestValue (attr, value) {
   }
 }
 
-function isNavCollapsed () {
+function isNavCollapsed ({ignoreScrollPosition} = {}) {
   if (activeView !== 'files') {
     // not in the files tab
     return true
@@ -1556,11 +1556,13 @@ function isNavCollapsed () {
     // looking at a file
     return true
   }
-  var main = document.body.querySelector('.builtin-main')
-  var hasDescription = (!!archive.info.description) ? 1 : 0
-  if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE[hasDescription]) {
-    // certain distance scrolled
-    return true
+  if (!ignoreScrollPosition) {
+    var main = document.body.querySelector('.builtin-main')
+    var hasDescription = (!!archive.info.description) ? 1 : 0
+    if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE[hasDescription]) {
+      // certain distance scrolled
+      return true
+    }
   }
   return false
 }
