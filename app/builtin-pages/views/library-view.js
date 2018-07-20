@@ -944,12 +944,12 @@ function renderMenu (opts) {
                 Make ${isOwner ? 'a' : 'an editable'} copy
               </div>
 
-              <div class="dropdown-item" onclick=${e => {onChangeView(e, 'compare'); onToggle(e)}}>
+              ${''/* DISABLED (needs work -prf) <div class="dropdown-item" onclick=${e => {onChangeView(e, 'compare'); onToggle(e)}}>
                 <div class="revision-indicator-icon">
                   <div class="revision-indicator add"></div><div class="revision-indicator del"></div>
                 </div>
                 Compare archives
-              </div>
+              </div>*/}
 
               <div class="dropdown-item" onclick=${onDownloadZip}>
                 <i class="fa fa-file-archive-o"></i>
