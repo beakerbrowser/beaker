@@ -7,6 +7,7 @@ import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
 import * as toast from '../toast'
 import toggleable2 from '../toggleable2'
+import renderArchiveHistory from '../archive-history'
 import {DAT_VALID_PATH_REGEX} from '@beaker/core/lib/const'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
@@ -92,12 +93,34 @@ function rMetadata (filesBrowser, node) {
     </div>`
 }
 
+function rVersionPicker (filesBrowser) {
+  return toggleable2({
+    id: 'version-picker',
+    closed: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker">
+        <button class="btn plain nofocus" onclick=${onToggle}>
+          <span class="fa fa-history"></span>
+        </button>
+      </div>`,
+    open: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker">
+        <button class="btn plain nofocus" onclick=${onToggle}>
+          <span class="fa fa-history"></span>
+        </button>
+
+        <div class="dropdown-items right">
+          ${renderArchiveHistory(filesBrowser.root._archive)}
+        </div>
+      </div>`
+  })
+}
+
 function rActions (filesBrowser, currentSource) {
   var isTextual = typeof currentSource.preview === 'string' // preview is only set for text items
   var isEditing = filesBrowser.isEditMode
   var buttonGroup = []
 
-  if (!isEditing && currentSource.type === 'file') {
+  if (currentSource.isEditable && !isEditing && currentSource.type === 'file') {
     buttonGroup.push(
       yo`
         <button class="action btn trash nofocus tooltip-container delete" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, currentSource)}>
@@ -105,7 +128,7 @@ function rActions (filesBrowser, currentSource) {
         </button>`
     )
 
-    if (isTextual && currentSource.isEditable) {
+    if (isTextual) {
       buttonGroup.push(
         yo`
           <button class="action btn nofocus tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
@@ -117,6 +140,7 @@ function rActions (filesBrowser, currentSource) {
 
   return yo`
     <div class="actions">
+      ${currentSource.type === 'archive' ? rVersionPicker(filesBrowser) : ''}
       ${(currentSource.isEditable && currentSource.type !== 'file')
         ?
           toggleable2({

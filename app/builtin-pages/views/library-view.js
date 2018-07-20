@@ -23,7 +23,6 @@ import * as createFilePopup from '../com/library-createfile-popup'
 import * as faviconPicker from '../com/favicon-picker'
 import LibraryViewCompare from '../com/library-view-compare'
 import renderSettingsField from '../com/settings-field'
-import renderArchiveHistory from '../com//archive-history'
 import {setup as setupAce, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
 import {pluralize, shortenHash} from '@beaker/core/lib/strings'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
@@ -36,7 +35,6 @@ const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 101/*with description*
 // =
 
 var activeView // will default to 'files'
-var activeVersionTab = 'versions'
 var archive
 var archiveFsRoot
 var filesBrowser
@@ -286,7 +284,6 @@ function render () {
                 : ''
               }
 
-              ${isReadOnly || activeView !== 'files' ? '' : renderVersionPicker()}
               ${renderView()}
             </div>
           </div>
@@ -377,54 +374,6 @@ function renderView () {
     default:
       return yo`<div class="container"><div class="view">Loading...</div></div>`
   }
-}
-
-function updateVersionPicker () {
-  yo.update(document.querySelector('.version-picker'), renderVersionPicker())
-}
-
-function renderVersionPicker () {
-  const changeTab = (tab) => {
-    activeVersionTab = tab
-    updateVersionPicker()
-  }
-
-  const rTabs = () => yo`
-   <div class="section tabs">
-      <button
-        class="nofocus tab ${activeVersionTab === 'versions' ? 'active' : ''}"
-        onclick=${() => changeTab('versions')}
-      >
-        History
-      </button>
-    </div>
-  `
-
-  return yo`
-    <div class="version-picker container">
-      ${toggleable2({
-        id: 'version-picker',
-        closed: ({onToggle}) => yo`
-          <div class="dropdown toggleable-container">
-            <button class="btn nofocus" onclick=${onToggle}>
-              ${getSafeTitle()}
-              <span class="fa fa-caret-down"></span>
-            </button>
-          </div>`,
-        open: ({onToggle}) => yo`
-          <div class="dropdown toggleable-container">
-            <button class="btn nofocus" onclick=${onToggle}>
-              ${getSafeTitle()}
-              <span class="fa fa-caret-down"></span>
-            </button>
-
-            <div class="dropdown-items left">
-              ${rTabs()}
-              ${renderArchiveHistory(filesBrowser.root._archive)}
-            </div>
-          </div>`
-      })}
-    </div>`
 }
 
 function renderErrorView () {
