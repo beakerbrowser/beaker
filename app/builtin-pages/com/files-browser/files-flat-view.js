@@ -432,15 +432,16 @@ function onContextmenuNode (e, filesBrowser, node) {
   e.preventDefault()
   e.stopPropagation()
 
-  contextMenu.create({
-    x: e.clientX,
-    y: e.clientY,
-    items: [
-      {icon: 'external-link', label: `Open ${node.isContainer ? 'folder' : 'file'} in new tab`, click: () => window.open(node.url)},
-      {icon: 'link', label: 'Copy URL', click: () => {
-        writeToClipboard(encodeURI(node.url))
-        toast.create('URL copied to clipboard')
-      }},
+  const items = [
+    {icon: 'external-link', label: `Open ${node.isContainer ? 'folder' : 'file'} in new tab`, click: () => window.open(node.url)},
+    {icon: 'link', label: 'Copy URL', click: () => {
+      writeToClipboard(encodeURI(node.url))
+      toast.create('URL copied to clipboard')
+    }}
+  ]
+
+  if (node.isEditable) {
+    items = items.concat([
       {icon: 'i-cursor', label: 'Rename', click: async () => {
         let newName = await contextInput.create({
           x: e.clientX,
@@ -466,7 +467,13 @@ function onContextmenuNode (e, filesBrowser, node) {
           emitDeleteFile(node._path, node.isContainer)
         }
       }}
-    ]
+    ])
+  }
+
+  contextMenu.create({
+    x: e.clientX,
+    y: e.clientY,
+    items
   })
 }
 
