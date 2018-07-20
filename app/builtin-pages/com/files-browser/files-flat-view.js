@@ -157,7 +157,7 @@ function rActions (filesBrowser, currentSource) {
                   <span class="fa fa-plus"></span>
                 </button>
 
-                <div class="dropdown-items compact right">
+                <div class="dropdown-items compact right" onclick=${onToggle}>
                   <div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
                     Create file
                   </div>
