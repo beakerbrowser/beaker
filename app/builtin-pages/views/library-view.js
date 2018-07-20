@@ -1498,7 +1498,7 @@ async function readViewStateFromUrl () {
     var node
     var datUrl = await parseLibraryUrl()
     var urlp = parseDatURL(datUrl)
-    var pathParts = urlp.pathname.split('/').filter(Boolean)
+    var pathParts = decodeURIComponent(urlp.pathname).split('/').filter(Boolean)
 
     // select the archive
     node = archiveFsRoot
