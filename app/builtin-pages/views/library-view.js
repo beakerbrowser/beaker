@@ -20,7 +20,7 @@ import * as noticeBanner from '../com/notice-banner'
 import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
 import * as copyDatPopup from '../com/library-copydat-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
-import * as faviconPicker from '../com/favicon-picker'
+import renderFaviconPicker from '../com/favicon-picker'
 import LibraryViewCompare from '../com/library-view-compare'
 import renderSettingsField from '../com/settings-field'
 import {setup as setupAce, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
@@ -524,6 +524,36 @@ function renderSettingsView () {
             ${isOwner
               ? renderSettingsField({key: 'description', value: description, onUpdate: setManifestValue})
               : yo`<p>${getSafeDesc()}</p>`
+            }
+
+            <h3>Icon</h3>
+            ${isOwner
+              ? yo`
+                <p>
+                  ${toggleable2({
+                    id: 'favicon-picker',
+                    closed: ({onToggle}) => yo`
+                      <div class="dropdown share toggleable-container">
+                        <img class="favicon-picker-btn" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
+                      </div>`,
+                    open: ({onToggle}) => yo`
+                      <div class="dropdown share toggleable-container">
+                        <img class="favicon-picker-btn pressed" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
+
+                        <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
+                          ${renderFaviconPicker({
+                            async onSelect (imageData) {
+                              let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
+                              await archive2.writeFile('/favicon.ico', imageData)
+                              faviconCacheBuster = Date.now()
+                              isFaviconSet = true
+                            }
+                          })}
+                        </div>
+                      </div>`
+                  })}
+              </p>`
+              : yo`<p><img class="favicon" src="beaker-favicon:32,${archive.url}" /></p>`
             }
           </div>
         </div>
@@ -1078,21 +1108,6 @@ async function onChangeView (e, view) {
   }
 
   render()
-}
-
-function renderFaviconPicker () {
-  if (!archive.info.isOwner) {
-    return ''
-  }
-
-  return faviconPicker.create({
-    async onSelect (imageData) {
-      let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
-      await archive2.writeFile('/favicon.ico', imageData)
-      faviconCacheBuster = Date.now()
-      isFaviconSet = true
-    }
-  })
 }
 
 async function onSetCurrentSource (node) {

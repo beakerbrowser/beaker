@@ -458,9 +458,28 @@ body.drag {
 
   .view.settings {
 
+    .toggleable-container {
+      display: inline-block;
+    }
+
     .favicon {
       width: 32px;
       height: 32px;
+    }
+
+    .favicon-picker-btn {
+      cursor: pointer;
+      border: 1px solid transparent;
+
+      &:hover,
+      &.pressed {
+        border-color: #ccc;
+        background: #eee;
+      }
+    }
+
+    .favicon-picker {
+      padding: 10px;
     }
 
     .input-group.sync-path {

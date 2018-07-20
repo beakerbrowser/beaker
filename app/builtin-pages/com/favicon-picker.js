@@ -13,7 +13,7 @@ var onSelect
 // exported
 // =
 
-export function create (opts) {
+export default function (opts) {
   onSelect = opts.onSelect
 
   // load the favicons if neded
