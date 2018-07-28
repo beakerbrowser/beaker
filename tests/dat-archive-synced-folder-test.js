@@ -205,6 +205,24 @@ test('setLocalSyncPath() doesnt allow bad values', async t => {
   }
 })
 
+test('setLocalSyncPath() allows multiple dats to use the same path', async t => {
+  // create a dat
+  var res = await mainTab.executeJavascript(`
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false })
+  `)
+  var createdDatUrl2 = res.url
+
+  // set both to the same dir
+  var res = await mainTab.executeJavascript(`
+    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(createdFilePath)}", {autoPublishLocal: true})
+  `)
+  t.falsy(res)
+  var res = await mainTab.executeJavascript(`
+    beaker.archives.setLocalSyncPath("${createdDatUrl2}", "${escapeWindowsSlashes(createdFilePath)}", {autoPublishLocal: true})
+  `)
+  t.falsy(res)
+})
+
 test('getInfo() lets you know if the folder is missing', async t => {
   const dir = jetpack.cwd(createdFilePath)
 
