@@ -22,6 +22,7 @@ import * as copyDatPopup from '../com/library-copydat-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
 import renderFaviconPicker from '../com/favicon-picker'
 import LibraryViewCompare from '../com/library-view-compare'
+import LibraryViewLocalCompare from '../com/library-view-local-compare'
 import renderSettingsField from '../com/settings-field'
 import {setup as setupAce, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
 import {pluralize, shortenHash} from '@beaker/core/lib/strings'
@@ -40,8 +41,9 @@ var archiveFsRoot
 var filesBrowser
 var archiveVersion = false
 
-// used in the compare view
+// used in the compare views
 var libraryViewCompare
+var libraryViewLocalCompare
 
 var markdownRenderer = createMd({hrefMassager: markdownHrefMassager})
 var readmeElement
@@ -367,6 +369,8 @@ function renderView () {
       return renderFilesView()
     case 'compare':
       return renderCompareView()
+    case 'local-compare':
+      return renderLocalCompareView()
     case 'settings':
       return renderSettingsView()
     case 'network':
@@ -802,6 +806,20 @@ function renderCompareView () {
     <div class="container">
       <div class="view compare">
         ${libraryViewCompare.render()}
+      </div>
+    </div>`
+}
+
+function renderLocalCompareView () {
+  if (!libraryViewLocalCompare) {
+    libraryViewLocalCompare = new LibraryViewLocalCompare({
+      url: archive.url
+    })
+  }
+  return yo`
+    <div class="container">
+      <div class="view compare">
+        ${libraryViewLocalCompare.render()}
       </div>
     </div>`
 }

@@ -11,6 +11,7 @@ export default function renderArchiveComparison (opts = {}) {
   var {
     base,
     target,
+    isLocalSyncPath,
     labels,
     revisions,
     archiveOptions,
@@ -49,18 +50,21 @@ export default function renderArchiveComparison (opts = {}) {
       <div class="compare-selection">
         <span>${labels.desc}</span>
 
-        ${onChangeCompareBase
-          ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
-          : renderArchive(base)}
-
-        <span>
-          to
-          <i class="fa fa-arrow-right"></i>
-        </span>
-
-        ${onChangeCompareTarget
-          ? renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})
-          : renderArchive(target)}
+        ${isLocalSyncPath
+          ? (target && target.info ? target.info.userSettings.localSyncPath : '')
+          : [
+            (onChangeCompareBase
+              ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
+              : renderArchive(base)),
+            yo`
+              <span>
+                to
+                <i class="fa fa-arrow-right"></i>
+              </span>`,
+            (onChangeCompareTarget
+              ? renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})
+              : renderArchive(target))
+          ]}
 
         ${numRevisions > 0
           ? yo`
@@ -73,7 +77,7 @@ export default function renderArchiveComparison (opts = {}) {
         }
       </div>
 
-      ${renderRevisions({base, target, labels, revisions, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
+      ${renderRevisions({base, target, isLocalSyncPath, labels, revisions, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
 
       <div class="compare-footer">
         ${numRevisions > 0
@@ -98,6 +102,7 @@ export default function renderArchiveComparison (opts = {}) {
 // =
 
 function renderArchive (archive) {
+  if (!archive) return ''
   return yo`
     <span>
       <img class="favicon" src="beaker-favicon:${archive.url}" /> ${getSafeTitle(archive)}
@@ -105,9 +110,9 @@ function renderArchive (archive) {
   `
 }
 
-function renderRevisions ({base, target, labels, revisions, onToggleRevisionCollapsed, onMerge, onDeleteDraft}) {
+function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, onToggleRevisionCollapsed, onMerge, onDeleteDraft}) {
   let either = target || base
-  if (either && (!target || !base)) {
+  if (!isLocalSyncPath && either && (!target || !base)) {
     return yo`
       <div class="empty">
         <div class="empty-header">
@@ -126,27 +131,43 @@ function renderRevisions ({base, target, labels, revisions, onToggleRevisionColl
     return 'Loading...'
   }
 
-  if (!revisions.length || (revisions.length < 2 && revisions[0].debug_shouldIgnoreChange)) {
-    return yo`
-      <div class="empty">
-        <div class="empty-header">
-          <i class="fa fa-check"></i>
-          <div class="label">You${"'"}re all set!</div>
-        </div>
+  if (!revisions.length) {
+    if (isLocalSyncPath) {
+      return yo`
+        <div class="empty">
+          <div class="empty-header">
+            <i class="fa fa-check"></i>
+            <div class="label">You${"'"}re all set!</div>
+          </div>
 
-        <p>
-          The files in <a href="beaker://library/${base.url}" target="_blank">${getSafeTitle(base)}</a>
-          are in sync with the files in
-          <a href="beaker://library/${target.url}" target="_blank">${getSafeTitle(target)}</a>.
-        </p>
+          <p>
+            The files in <a href="beaker://library/${target.url}" onclick=${gotoHomeView}>${getSafeTitle(target)}</a>
+            are in sync with the files in
+            <span>${target.info.userSettings.localSyncPath}</span>.
+          </p>
+        </div>`
+    } else {
+      return yo`
+        <div class="empty">
+          <div class="empty-header">
+            <i class="fa fa-check"></i>
+            <div class="label">You${"'"}re all set!</div>
+          </div>
 
-        ${onDeleteDraft
-          ? yo`
-            <button class="btn delete-draft-btn" onclick=${e => onDeleteDraft(e, base, false)}>
-              Delete draft
-            </button>`
-          : ''}
-      </div>`
+          <p>
+            The files in <a href="beaker://library/${base.url}" target="_blank">${getSafeTitle(base)}</a>
+            are in sync with the files in
+            <a href="beaker://library/${target.url}" target="_blank">${getSafeTitle(target)}</a>.
+          </p>
+
+          ${onDeleteDraft
+            ? yo`
+              <button class="btn delete-draft-btn" onclick=${e => onDeleteDraft(e, base, false)}>
+                Delete draft
+              </button>`
+            : ''}
+        </div>`
+    }
   }
 
   const onCopy = (e, rev) => {
@@ -302,6 +323,16 @@ function renderRevisions ({base, target, labels, revisions, onToggleRevisionColl
 
 // helpers
 // =
+
 function getSafeTitle (archive) {
   return _get(archive, 'info.title', '').trim() || yo`<em>Untitled</em>`
+}
+
+function gotoHomeView (e) {
+  e.preventDefault()
+  var detail = {
+    href: e.currentTarget.getAttribute('href'),
+    view: 'files'
+  }
+  document.body.dispatchEvent(new CustomEvent('custom-set-view', {detail}))
 }
