@@ -31,6 +31,7 @@ import createMd from '../../lib/fg/markdown'
 
 const DEFAULT_PEERS_LIMIT = 10
 const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 101/*with description*/] // px
+const LOCAL_DIFF_POLL_INTERVAL = 10e3 // ms
 
 // globals
 // =
@@ -120,8 +121,8 @@ async function setup () {
     }
 
     // load state and render
-    await loadDiffSummary()
     await readViewStateFromUrl()
+    await loadDiffSummary()
 
     // wire up events
     window.addEventListener('popstate', onPopState)
@@ -140,6 +141,11 @@ async function setup () {
     document.body.addEventListener('custom-local-diff-changed', loadDiffSummary)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
     beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
+
+    if (isUsingLocalManualPublishing()) {
+      setInterval(loadDiffSummary, LOCAL_DIFF_POLL_INTERVAL)
+      window.addEventListener('focus', loadDiffSummary)
+    }
 
     let onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
     var fileActStream = archive.watch()
@@ -161,10 +167,7 @@ async function setup () {
 }
 
 async function loadDiffSummary () {
-  // load the local diff
-  let isOwner = _get(archive, 'info.isOwner')
-  let userSettings = _get(archive, 'info.userSettings', {})
-  if (isOwner && userSettings.localSyncPath && !userSettings.autoPublishLocal) {
+  if (isUsingLocalManualPublishing()) {
     try {
       let localDiff = await beaker.archives.diffLocalSyncPathListing(archive.url)
       localDiffSummary = {add: 0, mod: 0, del: 0}
@@ -174,6 +177,7 @@ async function loadDiffSummary () {
     } catch (e) {
       console.warn('Failed to load local diff', e)
     }
+    render()
   }
 }
 
@@ -1628,6 +1632,12 @@ function isNavCollapsed ({ignoreScrollPosition} = {}) {
     }
   }
   return false
+}
+
+function isUsingLocalManualPublishing () {
+  let isOwner = _get(archive, 'info.isOwner')
+  let userSettings = _get(archive, 'info.userSettings', {})
+  return isOwner && userSettings.localSyncPath && !userSettings.autoPublishLocal
 }
 
 function getSafeTitle () {
