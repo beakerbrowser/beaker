@@ -44,6 +44,7 @@ var archiveVersion = false
 // used in the compare views
 var libraryViewCompare
 var libraryViewLocalCompare
+var localDiffSummary
 
 var markdownRenderer = createMd({hrefMassager: markdownHrefMassager})
 var readmeElement
@@ -119,6 +120,7 @@ async function setup () {
     }
 
     // load state and render
+    await loadDiffSummary()
     await readViewStateFromUrl()
 
     // wire up events
@@ -135,6 +137,7 @@ async function setup () {
     document.body.addEventListener('custom-config-file-editor', onConfigFileEditor)
     document.body.addEventListener('custom-set-view', onChangeView)
     document.body.addEventListener('custom-render', render)
+    document.body.addEventListener('custom-local-diff-changed', loadDiffSummary)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
     beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
 
@@ -154,6 +157,23 @@ async function setup () {
       archive.url.slice('dat://'.length),
       'lastLibraryAccessTime'
     ).catch(console.error)
+  }
+}
+
+async function loadDiffSummary () {
+  // load the local diff
+  let isOwner = _get(archive, 'info.isOwner')
+  let userSettings = _get(archive, 'info.userSettings', {})
+  if (isOwner && userSettings.localSyncPath && !userSettings.autoPublishLocal) {
+    try {
+      let localDiff = await beaker.archives.diffLocalSyncPathListing(archive.url)
+      localDiffSummary = {add: 0, mod: 0, del: 0}
+      for (let d of localDiff) {
+        localDiffSummary[d.change]++
+      }
+    } catch (e) {
+      console.warn('Failed to load local diff', e)
+    }
   }
 }
 
@@ -396,12 +416,34 @@ function renderFilesView () {
   return yo`
     <div class="container">
       <div class="view files">
+        ${renderLocalDiffSummary()}
         ${filesBrowser ? filesBrowser.render() : ''}
         ${readmeElement ? readmeElement : renderReadmeHint()}
         ${!archive.info.isOwner ? renderMakeCopyHint() : ''}
       </div>
     </div>
   `
+}
+
+function renderLocalDiffSummary () {
+  if (!localDiffSummary) return ''
+  var total = localDiffSummary.add + localDiffSummary.mod + localDiffSummary.del
+  if (!total) return ''
+
+  function rRevisionIndicator (type) {
+    if (localDiffSummary[type] === 0) return ''
+    return yo`<div class="revision-indicator ${type}"></div>`
+  }
+
+  return yo`
+    <div>
+      ${rRevisionIndicator('add')}
+      ${rRevisionIndicator('mod')}
+      ${rRevisionIndicator('del')}
+      ${total}
+      ${pluralize(total, 'revision')}
+      <a class="btn" href=${`beaker://library/${archive.url}#local-compare`} onclick=${e => onChangeView(e, 'local-compare')}>Review</a>
+    </div>`
 }
 
 function renderMakeCopyHint () {
@@ -1428,6 +1470,9 @@ async function onFilesChanged () {
   } catch (e) {
     console.debug('Failed to rerender files on change, likely because the present node was deleted', e)
   }
+
+  // update the diff summary
+  loadDiffSummary()
 
   // update readme
   loadReadme()

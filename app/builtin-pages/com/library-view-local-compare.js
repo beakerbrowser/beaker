@@ -103,6 +103,7 @@ export default class LibraryViewLocalCompare {
       } else {
         await beaker.archives.revertLocalSyncPathListing(this.target.url, opts)
       }
+      document.body.dispatchEvent(new CustomEvent('custom-local-diff-changed'))
       toast.create('Files updated')
     } catch (e) {
       console.error(e)
