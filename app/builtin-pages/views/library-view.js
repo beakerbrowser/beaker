@@ -634,7 +634,7 @@ function renderSettingsView () {
               ? yo`
                   <p>
                     Enter a link to your donation page and Beaker will show
-                    a <span class="fa fa-usd"></span> icon in your page's URL bar.
+                    a <span class="fa fa-heart"></span> icon in your page's URL bar.
 
                     ${renderSettingsField({key: 'paymentLink', value: paymentLink, placeholder: 'Example: https://opencollective.com/beaker', onUpdate: setManifestValue})}
                   </p>
