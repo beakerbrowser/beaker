@@ -7,7 +7,6 @@ import jetpack from 'fs-jetpack'
 import electron from '../node_modules/electron'
 
 import * as browserdriver from './lib/browser-driver'
-import {waitForSync, escapeWindowsSlashes} from './lib/test-helpers'
 import {swarmDat, shareDat} from './lib/dat-helpers'
 
 const app = browserdriver.start({
@@ -20,7 +19,6 @@ const app = browserdriver.start({
   }
 })
 var createdDatUrl
-var createdFilePath = tempy.directory()
 var mainTab
 
 test.before(async t => {
@@ -31,14 +29,6 @@ test.before(async t => {
     DatArchive.create({title: 'Test Archive', description: 'Foo', prompt: false})
   `)
   createdDatUrl = res.url
-
-  // set the sync folder
-  var onSync = waitForSync(app, createdDatUrl, 'folder')
-  var res = await app.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(createdFilePath)}")
-  `)
-  t.falsy(res)
-  await onSync
 
   // go to the site
   mainTab = app.getTab(0)
@@ -63,11 +53,18 @@ test('experiment must be opted into', async t => {
   }
 
   // update manifest to include experiment
-  var dir = jetpack.cwd(createdFilePath)
-  var manifest = await dir.readAsync('dat.json', 'json')
-  manifest.experimental = {apis: ['capturePage']}
-  await dir.writeAsync('dat.json', manifest)
-  await waitForSync(app, createdDatUrl, 'archive')
+  await app.executeJavascript(`
+    (async function () {
+      try {
+        var archive = new DatArchive("${createdDatUrl}")
+        var manifest = JSON.parse(await archive.readFile('dat.json', 'utf8'))
+        manifest.experimental = {apis: ['capturePage']}
+        await archive.writeFile('dat.json', JSON.stringify(manifest), 'utf8')
+      } catch (e) {
+        return e
+      }
+    })()
+  `)
 })
 
 test('capturePage()', async t => {
