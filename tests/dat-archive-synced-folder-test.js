@@ -465,7 +465,8 @@ test('dat.json merges effectively with local sync path', async t => {
   t.deepEqual(res.description, 'Local Description')
 })
 
-test('autoPublishLocal=false', async t => {
+// TEMP: AUTOPUBLISH ONLY (prf)
+test.skip('autoPublishLocal=false', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
     DatArchive.create({title: 'Dat Title', description: 'Dat Description', prompt: false})
