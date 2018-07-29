@@ -139,6 +139,7 @@ async function setup () {
     document.body.addEventListener('custom-set-view', onChangeView)
     document.body.addEventListener('custom-render', render)
     document.body.addEventListener('custom-local-diff-changed', loadDiffSummary)
+    document.body.addEventListener('custom-open-preview-dat', onOpenPreviewDat)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
     beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
 
@@ -170,6 +171,10 @@ async function loadDiffSummary () {
   if (isUsingLocalManualPublishing()) {
     try {
       let localDiff = await beaker.archives.diffLocalSyncPathListing(archive.url)
+      if (libraryViewLocalCompare) {
+        libraryViewLocalCompare.setCompareDiff(localDiff)
+      }
+
       localDiffSummary = {add: 0, mod: 0, del: 0}
       for (let d of localDiff) {
         localDiffSummary[d.change]++
@@ -447,6 +452,7 @@ function renderLocalDiffSummary () {
       ${total}
       ${pluralize(total, 'revision')}
       <a class="btn" href=${`beaker://library/${archive.url}#local-compare`} onclick=${e => onChangeView(e, 'local-compare')}>Review</a>
+      <a class="btn" onclick=${e => onOpenPreviewDat()}>Preview</a>
     </div>`
 }
 
@@ -1172,6 +1178,11 @@ async function onChangeView (e, view) {
   }
 
   render()
+}
+
+async function onOpenPreviewDat () {
+  var previewDatUrl = await beaker.archives.getPreviewDat(archive.url)
+  window.open(previewDatUrl)
 }
 
 async function onSetCurrentSource (node) {

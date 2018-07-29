@@ -9,6 +9,7 @@ export default class LibraryViewLocalCompare {
   constructor (opts) {
     this.target = null
     this.compareDiff = null
+    this.revIsOpenMap = {}
     this._setup(opts)
   }
 
@@ -23,27 +24,34 @@ export default class LibraryViewLocalCompare {
   }
 
   async loadCompareDiff () {
-    // cancel any existing file-diff loads
-    clearTimeout(this.loadNextFileDiffTimeout)
-
     // load diff
     if (this.target) {
       this.compareDiff = await beaker.archives.diffLocalSyncPathListing(this.target.url, {compareContent: true, shallow: true})
       this.compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
+      /* dont await */ this.loadFileDiffs(this.compareDiff)
       this.updatePage()
     } else {
       this.compareDiff = null
       this.updatePage()
       return
     }
+  }
 
+  async setCompareDiff (compareDiff) {
+    compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
+    await this.loadFileDiffs(compareDiff)
+    this.compareDiff = compareDiff
+    this.updatePage()
+  }
+
+  async loadFileDiffs(compareDiff) {
+    var resolve
+    var p = new Promise(r => {resolve = r})
     // automatically & iteratively load the file diffs
     const loadNextFileDiff = async () => {
-      if (!this.compareDiff) return
-
       // find the next empty diff
-      var d = this.compareDiff.find(d => !d.diff)
-      if (!d) return // done!
+      var d = compareDiff.find(d => !d.diff)
+      if (!d) return resolve() // done!
 
       // run the diff
       try {
@@ -60,12 +68,16 @@ export default class LibraryViewLocalCompare {
         }
       }
 
-      this.updatePage()
+      if (compareDiff === this.compareDiff) {
+        // render if this is the active diff
+        this.updatePage()
+      }
 
       // queue the next load
-      this.loadNextFileDiffTimeout = setTimeout(loadNextFileDiff, 0)
+      setTimeout(loadNextFileDiff, 0)
     }
-    this.loadNextFileDiffTimeout = setTimeout(loadNextFileDiff, 0)
+    setTimeout(loadNextFileDiff, 0)
+    return p
   }
 
   render () {
@@ -77,11 +89,12 @@ export default class LibraryViewLocalCompare {
           revisions: this.compareDiff,
           labels: {
             desc: 'Reviewing',
-            target: 'published dat',
+            target: 'published',
             copyAll: 'Publish all',
             copy: 'Publish',
             count: 'unpublished change'
           },
+          isRevOpen: this.isRevOpen.bind(this),
           onMerge: this.onMerge.bind(this),
           onToggleRevisionCollapsed: this.onToggleRevisionCollapsed.bind(this)
         })}
@@ -92,6 +105,10 @@ export default class LibraryViewLocalCompare {
   updatePage () {
     var el = document.querySelector('#library-view-local-compare')
     if (el) yo.update(el, this.render())
+  }
+
+  isRevOpen (rev) {
+    return !!this.revIsOpenMap[rev.path]
   }
 
   async onMerge (base, target, opts = {}) {
@@ -113,7 +130,7 @@ export default class LibraryViewLocalCompare {
   }
 
   onToggleRevisionCollapsed (rev) {
-    rev.isOpen = !rev.isOpen
+    this.revIsOpenMap[rev.path] = !this.revIsOpenMap[rev.path]
     this.updatePage()
   }
 }

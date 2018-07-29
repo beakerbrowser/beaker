@@ -15,6 +15,7 @@ export default function renderArchiveComparison (opts = {}) {
     labels,
     revisions,
     archiveOptions,
+    isRevOpen,
     onMerge,
     onChangeCompareBase,
     onChangeCompareTarget,
@@ -35,6 +36,7 @@ export default function renderArchiveComparison (opts = {}) {
     },
     labels
   )
+  isRevOpen = isRevOpen || defaultIsRevOpen
 
   var numRevisions = revisions ? revisions.filter(r => !r.debug_shouldIgnoreChange).length : 0
 
@@ -77,7 +79,7 @@ export default function renderArchiveComparison (opts = {}) {
         }
       </div>
 
-      ${renderRevisions({base, target, isLocalSyncPath, labels, revisions, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
+      ${renderRevisions({base, target, isLocalSyncPath, labels, revisions, isRevOpen, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
 
       <div class="compare-footer">
         ${numRevisions > 0
@@ -93,6 +95,8 @@ export default function renderArchiveComparison (opts = {}) {
           ${base ? yo`<a href=${base.url} target="_blank">View ${labels.base}</a>` : ''}
           ${base && target ? yo`<span class="separator">|</span>` : ''}
           ${target ? yo`<a href=${target.url} target="_blank">View ${labels.target}</a>` : ''}
+          ${isLocalSyncPath ? yo`<span class="separator">|</span>` : ''}
+          ${isLocalSyncPath ? yo`<a class="link" onmousedown=${onOpenPreview} target="_blank">View preview</a>` : ''}
         </div>
       </div>
     </div>`
@@ -110,7 +114,7 @@ function renderArchive (archive) {
   `
 }
 
-function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, onToggleRevisionCollapsed, onMerge, onDeleteDraft}) {
+function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isRevOpen, onToggleRevisionCollapsed, onMerge, onDeleteDraft}) {
   let either = target || base
   if (!isLocalSyncPath && either && (!target || !base)) {
     return yo`
@@ -191,7 +195,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, onT
   const renderRevisionContent = rev => {
     let el = ''
 
-    if (!rev.isOpen) {
+    if (!isRevOpen(rev)) {
       return ''
     } else if (rev.diff && rev.diff.invalidEncoding) {
       el = yo`
@@ -233,7 +237,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, onT
   const renderRevision = rev => (
     yo`
       <div class="revision">
-        <div class="revision-header ${rev.isOpen ? '' : 'collapsed'}" onclick=${() => onToggleRevisionCollapsed(rev)}>
+        <div class="revision-header ${isRevOpen(rev) ? '' : 'collapsed'}" onclick=${() => onToggleRevisionCollapsed(rev)}>
           <div class="revision-indicator ${rev.change}"></div>
 
           <span class="path">
@@ -260,7 +264,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, onT
             </button>
 
             <div class="btn plain">
-              <i class="fa fa-chevron-${rev.isOpen ? 'down' : 'up'}"></i>
+              <i class="fa fa-chevron-${isRevOpen(rev) ? 'down' : 'up'}"></i>
             </div>
           </div>
         </div>
@@ -326,6 +330,17 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, onT
 
 function getSafeTitle (archive) {
   return _get(archive, 'info.title', '').trim() || yo`<em>Untitled</em>`
+}
+
+function defaultIsRevOpen (rev) {
+  return rev.isOpen
+}
+
+function onOpenPreview (e) {
+  if (e.which == 1 || e.which == 2) {
+    // left or middle
+    document.body.dispatchEvent(new CustomEvent('custom-open-preview-dat'))
+  }
 }
 
 function gotoHomeView (e) {
