@@ -1599,7 +1599,6 @@ async function readViewStateFromUrl () {
     }
 
     await filesBrowser.setCurrentSource(node, {suppressEvent: true})
-    render()
     loadReadme()
     setupAce({readOnly: true}) // initialize ace editor (if needed)
   } catch (e) {
