@@ -36,7 +36,7 @@ export class SyncfolderMenuNavbarBtn {
     return yo`
       <div class="toolbar-dropdown-menu syncfolder-dropdown-menu">
         <button class="btn nofocus ${this.isDropdownOpen ? 'pressed' : ''} ${isTemporary ? 'preview' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
-          <strong>${isTemporary ? 'Preview' : 'Published'}:</strong>
+          ${isTemporary ? yo`<strong>Preview</strong>` : ''}
           <span>${localSyncPath}</span>
           <span class="fa fa-caret-down"></span>
         </button>
