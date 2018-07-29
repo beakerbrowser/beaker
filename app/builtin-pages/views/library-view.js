@@ -790,27 +790,6 @@ function renderNetworkView () {
               Open network debugger
             </a>
           </div>
-
-          <div class="section-footer">
-            <div>
-              ${downloadedBytes !== archive.info.size
-                ? yo`
-                  <div class="value">
-                    ${prettyBytes(downloadedBytes)} / ${prettyBytes(archive.info.size)}
-                  </div>`
-                : yo`
-                  <div class="value">
-                    ${prettyBytes(downloadedBytes)}
-                  </div>`
-              }
-              <div class="label">saved to your device</div>
-            </div>
-
-            <div>
-              <div class="value">${archive.info.peers}</div>
-              <div class="label">${pluralize(archive.info.peers, 'active peer')}</div>
-            </div>
-          </div>
         </div>
 
         ${!archive.info.isOwner && !isSaved
