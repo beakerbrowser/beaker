@@ -182,7 +182,7 @@ async function loadDiffSummary () {
     } catch (e) {
       console.warn('Failed to load local diff', e)
     }
-    render()
+    rerenderLocalDiffSummary()
   }
 }
 
@@ -434,10 +434,15 @@ function renderFilesView () {
   `
 }
 
+function rerenderLocalDiffSummary () {
+  var el = document.getElementById('local-diff-summary')
+  if (!el) return
+  yo.update(el, renderLocalDiffSummary())
+}
+
 function renderLocalDiffSummary () {
-  if (!localDiffSummary) return ''
-  var total = localDiffSummary.add + localDiffSummary.mod + localDiffSummary.del
-  if (!total) return ''
+  var total = localDiffSummary ? (localDiffSummary.add + localDiffSummary.mod + localDiffSummary.del) : 0
+  if (!total) return yo`<div id="local-diff-summary"></div>`
 
   function rRevisionIndicator (type) {
     if (localDiffSummary[type] === 0) return ''
@@ -445,7 +450,7 @@ function renderLocalDiffSummary () {
   }
 
   return yo`
-    <div>
+    <div id="local-diff-summary">
       ${rRevisionIndicator('add')}
       ${rRevisionIndicator('mod')}
       ${rRevisionIndicator('del')}
