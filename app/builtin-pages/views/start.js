@@ -205,7 +205,7 @@ async function onClickDeleteBookmark (bookmark) {
     update()
   }
 
-  toast.create('Bookmark deleted', '', 75000, {label: 'Undo', click: undo})
+  toast.create('Bookmark deleted', '', 10e3, {label: 'Undo', click: undo})
 }
 
 async function onContextmenuPinnedBookmark (e, bookmark) {
