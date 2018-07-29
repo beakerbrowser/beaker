@@ -7,7 +7,6 @@ import jetpack from 'fs-jetpack'
 import electron from '../node_modules/electron'
 
 import * as browserdriver from './lib/browser-driver'
-import {waitForSync, escapeWindowsSlashes} from './lib/test-helpers'
 import {swarmDat, shareDat} from './lib/dat-helpers'
 
 const app = browserdriver.start({
@@ -21,7 +20,6 @@ const app = browserdriver.start({
 })
 var createdDatUrl
 var outsideDatUrl
-var createdFilePath = tempy.directory()
 var mainTab
 
 test.before(async t => {
@@ -32,14 +30,6 @@ test.before(async t => {
     DatArchive.create({title: 'Test Archive', description: 'Foo', prompt: false})
   `)
   createdDatUrl = res.url
-
-  // set the sync folder
-  var onSync = waitForSync(app, createdDatUrl, 'folder')
-  var res = await app.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(createdFilePath)}")
-  `)
-  t.falsy(res)
-  await onSync
 
   // share an outside dat
   var outsideDat = await shareDat(__dirname + '/scaffold/test-static-dat')
@@ -68,11 +58,18 @@ test('experiment must be opted into', async t => {
   }
 
   // update manifest to include experiment
-  var dir = jetpack.cwd(createdFilePath)
-  var manifest = await dir.readAsync('dat.json', 'json')
-  manifest.experimental = {apis: ['library']}
-  await dir.writeAsync('dat.json', manifest)
-  await waitForSync(app, createdDatUrl, 'archive')
+  await app.executeJavascript(`
+    (async function () {
+      try {
+        var archive = new DatArchive("${createdDatUrl}")
+        var manifest = JSON.parse(await archive.readFile('dat.json', 'utf8'))
+        manifest.experimental = {apis: ['library']}
+        await archive.writeFile('dat.json', JSON.stringify(manifest), 'utf8')
+      } catch (e) {
+        return e
+      }
+    })()
+  `)
 })
 
 test('library.list()', async t => {
@@ -271,7 +268,7 @@ test('library "network-changed" event', async t => {
     experimental.library.addEventListener('network-changed', event => {
       window.networkChangedEvent = {
         url: event.url,
-        peerCount: event.peerCount
+        connections: event.connections
       }
     })
   `)
@@ -282,8 +279,5 @@ test('library "network-changed" event', async t => {
   // check result
   await mainTab.waitFor(`!!window.networkChangedEvent`)
   var res = await mainTab.executeJavascript(`window.networkChangedEvent`)
-  t.deepEqual(res, {
-    url: createdDatUrl,
-    peerCount: 1
-  })
+  t.deepEqual(res.connections, 1)
 })

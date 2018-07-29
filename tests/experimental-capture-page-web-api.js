@@ -45,7 +45,7 @@ test('experiment must be opted into', async t => {
   // try without experiment set
   try {
     await mainTab.executeJavascript(`
-      experimental.globalFetch('https://example.com')
+      experimental.capturePage('https://example.com')
     `)
     t.fail('Should have thrown')
   } catch (e) {
@@ -58,7 +58,7 @@ test('experiment must be opted into', async t => {
       try {
         var archive = new DatArchive("${createdDatUrl}")
         var manifest = JSON.parse(await archive.readFile('dat.json', 'utf8'))
-        manifest.experimental = {apis: ['globalFetch']}
+        manifest.experimental = {apis: ['capturePage']}
         await archive.writeFile('dat.json', JSON.stringify(manifest), 'utf8')
       } catch (e) {
         return e
@@ -67,27 +67,18 @@ test('experiment must be opted into', async t => {
   `)
 })
 
-test('globalFetch()', async t => {
-  // fetch https://example.com (first call)
-  var page = mainTab.executeJavascript(`
-    experimental.globalFetch('https://example.com').then(res => res.text())
+test('capturePage()', async t => {
+  // capture https://example.com
+  var png = mainTab.executeJavascript(`
+    experimental.capturePage('https://example.com').then(png => ({byteLength: png.byteLength, isArrayBuffer: png instanceof ArrayBuffer}))
   `)
 
   // accept the permission prompt
   await app.waitForElement('.prompt-accept')
   await app.click('.prompt-accept')
-  page = await page
+  png = await png
 
   // check results
-  t.is(typeof page, 'string')
-  t.truthy(page.trim().startsWith('<!doctype html>'))
-
-  // fetch https://example.com (second call)
-  var page = await mainTab.executeJavascript(`
-    experimental.globalFetch('https://example.com').then(res => res.text())
-  `)
-
-  // check results
-  t.is(typeof page, 'string')
-  t.truthy(page.trim().startsWith('<!doctype html>'))
+  t.truthy(png.isArrayBuffer)
+  t.truthy(png.byteLength > 0)
 })

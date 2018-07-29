@@ -1,0 +1,52 @@
+.archive-select-btn {
+  display: inline-block;
+
+  .toggleable .favicon {
+    position: relative;
+    top: 5px;
+  }
+
+  .dropdown-items {
+    background: #fff;
+    width: 400px;
+  }
+
+  form {
+    border-bottom: 1px solid #ddd;
+    padding: 5px;
+
+    input {
+      width: 100%;
+    }
+  }
+
+  .scroll {
+    height: 50vh;
+    overflow-x: auto;
+  }
+
+  .dropdown-item {
+    &:extend(.flex);
+    flex-wrap: nowrap;
+    align-items: center;
+    padding: 10px;
+
+    .favicon {
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+    }
+
+    .title {
+      flex: 1;
+      white-space: pre;
+      overflow: hidden;
+    }
+
+    .url {
+      &:extend(.code-font);
+      font-size: 12px;
+      color: rgba(0,0,0,.55);
+    }
+  }
+}

@@ -31,17 +31,8 @@
 
   .section {
     padding: 20px 0;
-    margin: 0 15px;
+    margin: 0 20px;
     border-top: 1px solid #eee;
-
-    &:first-of-type {
-      border-top: 0;
-      padding-top: 15px;
-    }
-
-    &:last-of-type {
-      padding-bottom: 15px;
-    }
 
     &.default-browser {
 
@@ -61,6 +52,34 @@
         .text {
           width: 110px;
         }
+      }
+    }
+  }
+
+  .view > .section {
+    &:first-of-type {
+      border-top: 0;
+      padding-top: 15px;
+    }
+
+    &:last-of-type {
+      padding-bottom: 15px;
+    }
+  }
+
+  .section-group {
+    display: flex;
+
+    .section {
+      flex: 1;
+
+      &:first-of-type {
+        margin-right: 0;
+        border-right: 1px solid #eee;
+      }
+      &:last-of-type {
+        margin-left: 0;
+        padding-left: 20px;
       }
     }
   }
@@ -101,13 +120,24 @@
 
       input[type="radio"] {
         margin: 0;
-        height: 25px;
       }
     }
 
     label {
       font-weight: 400;
       margin-bottom: 0;
+    }
+  }
+
+  .dat-bandwidth {
+    .inputs {
+      &:extend(.flex);
+      & > div {
+        margin-right: 5px;
+      }
+      label {
+        display: block;
+      }
     }
   }
 

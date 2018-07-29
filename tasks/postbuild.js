@@ -2,7 +2,7 @@ var gulp = require('gulp')
 var jetpack = require('fs-jetpack')
 var run = require('./util-run')
 
-gulp.task('postbuild', function () {
+gulp.task('postbuild', gulp.series(function () {
   // for some reason, electron-builder is spitting out 'Beaker Browser-{version}{ext}'
   // but the auto updater expects 'beaker-browser-{version}{ext}'
   // couldnt figure out how to reconfig the builder, so just rename the output assets
@@ -22,4 +22,6 @@ gulp.task('postbuild', function () {
       return cwd.move(name, newName)
     }
   })
-})
+
+  return Promise.resolve(true)
+}))

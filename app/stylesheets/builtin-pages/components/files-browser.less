@@ -9,8 +9,9 @@
   flex-wrap: nowrap;
 
   .body {
+    background: #fff;
     border: 1px solid #ddd;
-    border-radius: 2px;
+    border-top: 0;
 
     &.file {
       border: 0;
@@ -21,8 +22,14 @@
   }
 
   .files-browser-header {
-    &:extend(.flex);
-    align-items: center;
+
+    .path {
+      font-weight: 500;
+    }
+
+    .metadata {
+      color: rgba(0,0,0,.5);
+    }
 
     .version-badge {
       &:extend(.code-font);
@@ -37,66 +44,31 @@
 
     .actions {
       margin-left: auto;
-      margin-bottom: 10px;
       display: flex;
 
       & > * {
         margin-left: 5px;
       }
 
-      .import-dropdown .dropdown-items {
-        width: 160px;
+      .version-picker {
+        margin-right: 5px;
       }
 
       .new-dropdown .dropdown-items {
-        width: 110px;
-      }
-    }
-  }
-
-  .revisions-overview {
-    &:extend(.flex);
-    align-items: center;
-    width: 100%;
-    height: 40px;
-    padding: 0 10px;
-    background: #fafafa;
-    border-radius: 4px 4px 0 0;
-    border: 1px solid #ddd;
-    border-bottom: 0;
-
-    .label {
-      margin-left: 5px;
-
-      &:hover {
-        text-decoration: underline;
-        cursor: pointer;
+        width: 150px;
+        padding: 5px 0;
       }
 
-      &.empty {
-        color: @color-text--muted;
-
-        &:hover {
-          text-decoration: none;
-          cursor: default;
-        }
+      .btn-group {
+        margin-left: 10px;
       }
-    }
 
-    .revision-type {
-      margin-right: 2px;
-    }
-
-    .buttons {
-      margin-left: auto;
-    }
-
-    .btn.plain {
-      color: @color-text;
-      margin-left: 7px;
-
-      &:hover {
+      .btn.plain:hover {
         color: @blue;
+      }
+
+      .btn.trash:hover {
+        color: shade(@red, 20%);
       }
     }
   }

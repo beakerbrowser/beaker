@@ -16,14 +16,21 @@ exports.toUnixPath = function (str) {
 
 exports.waitForSync = async function (tab, url, direction) {
   await tab.executeJavascript(`
-    var resolve
-    function onSync ({details}) {
-      if (details.url === "${url}" && details.direction === "${direction}") {
+  {
+    let resolve
+    let p = new Promise(r => {resolve = r})
+    let onSync = function ({details}) {
+      if (stripFinalSlash(details.url) === stripFinalSlash("${url}") && details.direction === "${direction}") {
         beaker.archives.removeEventListener('folder-synced', onSync)
         resolve()
       }
     }
-    beaker.archives.addEventListener('folder-synced', onSync)
-    new Promise(r => {resolve = r})
+    let stripFinalSlash = function (str) {
+      if (str.endsWith('/')) return str.slice(0, -1)
+      return str
+    }
+    beaker.archives.addEventListener('folder-synced', onSync);
+    p
+  }
   `)
 }

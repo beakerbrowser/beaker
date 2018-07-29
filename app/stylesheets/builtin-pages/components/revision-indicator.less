@@ -1,0 +1,18 @@
+.revision-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-top: -.25px;
+
+  &.add {
+    background: shade(@green, 15%);
+  }
+
+  &.mod {
+    background: shade(@yellow, 3%);
+  }
+
+  &.del {
+    background: shade(@red, 20%);
+  }
+}

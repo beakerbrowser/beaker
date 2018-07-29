@@ -33,20 +33,23 @@
 @background-button--gray--hover: shade(#fff, 20%);
 
 // Messages
-@background-message: shade(#fff, 5%);
-@color-message: shade(#fff, 55%);
-@border-message: shade(#fff, 12%);
-@background-message--success: tint(@green, 89%);
-@color-message--success: mix(@color-text, tint(@green, 5%), 28%);
-@border-message--success: mix(@color-text, tint(@green, 50%), 15%);
-@background-message--primary: tint(@blue, 92%);
-@color-message--primary: mix(@color-text, tint(@blue, 10%), 10%);
+
+@background-message: #eee;
+
+@background-message--primary: tint(@blue, 85%);
+@color-message--primary: mix(@color-text, tint(@blue, 5%), 45%);
 @border-message--primary: fadeout(@blue, 40%);
-@background-message--info: tint(@orange, 92%);
-@color-message--info : mix(@color-text, tint(@orange, 20%), 24%);
+
+@background-message--success: tint(@green, 75%);
+@color-message--success: mix(@color-text, tint(@green, 5%), 65%);
+@border-message--success: mix(@color-text, tint(@green, 50%), 15%);
+
+@background-message--info: tint(@orange, 80%);
+@color-message--info : mix(@color-text, tint(@orange, 5%), 65%);
 @border-message--info : mix(@color-text, tint(@orange, 60%), 5%);
-@background-message--error: tint(@red, 92%);
-@color-message--error: mix(@color-text, tint(@red, 30%), 25%);
+
+@background-message--error: tint(@red, 80%);
+@color-message--error: mix(@color-text, tint(@red, 5%), 50%);
 @border-message--error: mix(@color-text, fadeout(@red, 65%), 5%);
 
 // Selections

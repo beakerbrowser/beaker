@@ -1,12 +1,13 @@
 import path from 'path'
 import fs from 'fs'
-import { app, dialog, shell } from 'electron'
+import { app, dialog, shell, webContents } from 'electron'
 import mime from 'mime'
 import unusedFilename from 'unused-filename'
 import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import parseDataURL from 'data-urls'
+import {requestPermission} from './permissions'
 
 // globals
 // =
@@ -27,7 +28,7 @@ export function setup () {
 export const WEBAPI = { createEventsStream, getDownloads, pause, resume, cancel, remove, open, showInFolder }
 
 export function registerListener (win, opts = {}) {
-  const listener = (e, item, webContents) => {
+  const listener = async (e, item, wc) => {
     // dont touch if already being handled
     // - if `opts.saveAs` is being used, there may be multiple active event handlers
     if (item.isHandled) { return }
@@ -48,6 +49,17 @@ export function registerListener (win, opts = {}) {
     item.setSavePath(filePath)
     item.isHandled = true
     item.downloadSpeed = speedometer()
+
+    if (!opts.trusted) {
+      item.pause()
+      var allowed = await requestPermission('download', wc, {url: item.getURL(), filename: item.name})
+      if (!allowed) {
+        item.cancel()
+        return
+      }
+      item.resume()
+    }
+
     downloads.push(item)
     downloadsEvents.emit('new-download', toJSON(item))
 
@@ -110,7 +122,7 @@ export function registerListener (win, opts = {}) {
 
       // optional, for one-time downloads
       if (opts.unregisterWhenDone) {
-        webContents.session.removeListener('will-download', listener)
+        wc.session.removeListener('will-download', listener)
       }
     })
   }
@@ -119,11 +131,11 @@ export function registerListener (win, opts = {}) {
   win.on('close', () => win.webContents.session.removeListener('will-download', listener))
 }
 
-export function download (win, url, opts) {
+export function download (win, wc, url, opts) {
   // register for onetime use of the download system
-  opts = Object.assign({}, opts, {unregisterWhenDone: true})
+  opts = Object.assign({}, opts, {unregisterWhenDone: true, trusted: true})
   registerListener(win, opts)
-  win.webContents.downloadURL(url)
+  wc.downloadURL(url)
 }
 
 // rpc api

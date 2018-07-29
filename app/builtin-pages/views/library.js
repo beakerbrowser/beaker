@@ -180,9 +180,8 @@ function renderRow (row, i) {
       class="ll-row archive ${row.checked ? 'selected' : ''} ${isMenuOpen ? 'menu-open' : ''}"
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
-
       <span class="title">
-        <img class="favicon" src="beaker-favicon:${row.url}" />
+        <img class="favicon" src="beaker-favicon:32,${row.url}" />
 
         ${row.title
           ? yo`<span class="title">${row.title}</span>`

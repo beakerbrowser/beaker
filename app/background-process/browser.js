@@ -9,10 +9,11 @@ import jetpack from 'fs-jetpack'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 const exec = require('util').promisify(require('child_process').exec)
-var debug = require('debug')('beaker')
+const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
 import {showModal, showShellModal, closeModal} from './ui/modals'
+import {getActiveWindow} from './ui/windows'
 import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
 // constants
@@ -50,9 +51,11 @@ var userSetupStatusLookupPromise
 var browserEvents = new EventEmitter()
 
 process.on('unhandledRejection', (reason, p) => {
+  console.error('Unhandled Rejection at: Promise', p, 'reason:', reason)
   debug('Unhandled Rejection at: Promise', p, 'reason:', reason)
 })
 process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err)
   debug('Uncaught exception:', err)
 })
 
@@ -303,6 +306,45 @@ export async function getUserSetupStatus () {
 export function setUserSetupStatus (status) {
   userSetupStatus = status // cache
   return settingsDb.set('user-setup-status', status)
+}
+
+const SCROLLBAR_WIDTH = 16
+export async function capturePage (url, opts) {
+  var width = opts.width || 1024
+  var height = opts.height || 768
+
+  var win = new BrowserWindow({
+    width: width + SCROLLBAR_WIDTH,
+    height,
+    show: false,
+    defaultEncoding: 'UTF-8',
+    partition: 'session-' + Date.now() + Math.random(),
+    preload: 'file://' + path.join(app.getAppPath(), 'webview-preload.build.js'),
+    webPreferences: {
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      nativeWindowOpen: true
+    },
+  })
+  win.loadURL(url)
+
+  // wait for load
+  await new Promise((resolve, reject) => {
+    win.webContents.on('did-finish-load', resolve)
+  })
+  await new Promise(r => setTimeout(r, 200)) // give an extra 200ms for rendering
+
+  // capture the page
+  var image = await new Promise((resolve, reject) => {
+    win.webContents.capturePage({x: 0, y: 0, width, height}, resolve)
+  })
+
+  // resize if asked
+  if (opts.resizeTo) {
+    image = image.resize(opts.resizeTo)
+  }
+
+  return image.toPNG()
 }
 
 // rpc methods

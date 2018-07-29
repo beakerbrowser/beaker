@@ -83,7 +83,6 @@ export async function setup () {
     if (sender.id === firstWindow) {
       // if this is the first window opened (since app start or since all windows closing)
       sender.send('command', 'load-pinned-tabs')
-      try { BrowserWindow.fromId(sender.id).focus() } catch (e) {}
     }
   })
 
@@ -131,14 +130,17 @@ export function createShellWindow (windowState) {
     height,
     minWidth,
     minHeight,
+    backgroundColor: '#ddd',
     defaultEncoding: 'UTF-8',
     webPreferences: {
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
       allowRunningInsecureContent: false,
       nativeWindowOpen: true
     },
-    icon: ICON_PATH
+    icon: ICON_PATH,
+    show: false // will show when ready
   })
+  win.once('ready-to-show', () => win.show())
   downloads.registerListener(win)
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
