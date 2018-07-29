@@ -775,6 +775,12 @@ test('create a preview dat on a dat which has autoPublishLocal=false', async t =
   t.deepEqual(await readPreviewDatFile('conflict-folder/file2.txt'), 'local')
   t.deepEqual(await readPreviewDatFile('conflict-folder/local-file.txt'), 'local')
 
+  // fetch again gets the same as before
+  var previewDatUrl2 = await mainTab.executeJavascript(`
+    beaker.archives.getPreviewDat("${datUrl}")
+  `)
+  t.is(previewDatUrl, previewDatUrl2)
+
   // write to both the archive and the local
   await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${previewDatUrl}")`)
   var syncPromises = [
