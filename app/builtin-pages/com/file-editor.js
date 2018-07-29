@@ -19,15 +19,8 @@ export function render (fileNode) {
 }
 
 export function setup ({readOnly} = {}) {
-  var el = document.getElementById('ace-editor')
-  if (!el) return
-  var editor = ace.edit(el, {
-    useWorker: false,
-    fontSize: '12.25px'
-  })
-  if (!orgApplyDeltaFn) {
-    orgApplyDeltaFn = editor.session.getDocument().applyDelta // capture for later
-  }
+  var editor = getEditor()
+  if (!editor) return console.warn('file-editor setup() abort: no editor')
   editor.session.setTabSize(2)
   editor.session.setUseSoftTabs(true)
   if (readOnly) {
@@ -51,7 +44,8 @@ export function setup ({readOnly} = {}) {
 }
 
 export function config (opts) {
-  var editor = ace.edit('ace-editor')
+  var editor = getEditor()
+  if (!editor) return console.warn('file-editor config() abort: no editor')
   if ('readOnly' in opts) {
     setReadOnly(editor, opts.readOnly)
   }
@@ -68,17 +62,41 @@ export function config (opts) {
 }
 
 export function getValue () {
-  return ace.edit('ace-editor').getValue()
+  var editor = getEditor()
+  if (!editor) return console.warn('file-editor getValue() abort: no editor')
+  return editor.getValue()
 }
 
 export function setValue (v) {
-  var editor = ace.edit('ace-editor')
+  var editor = getEditor()
+  if (!editor) return console.warn('file-editor setValue() abort: no editor')
+
+  // re-enable edits so we can set the value
+  if (orgApplyDeltaFn) {
+    editor.session.getDocument().applyDelta = orgApplyDeltaFn
+  }
+
+  // set the value
   editor.setValue(v)
   editor.selection.clearSelection() // ace selects everything for some reason, dont do that
+
+  // re-disable edits
+  if (orgApplyDeltaFn) {
+    editor.session.getDocument().applyDelta = function () {/* noop */}
+  }
 }
 
 // internal methods
 // =
+
+function getEditor () {
+  var el = document.getElementById('ace-editor')
+  if (!el) return
+  return ace.edit(el, {
+    useWorker: false,
+    fontSize: '12.25px'
+  })
+}
 
 function setReadOnly (editor, readOnly) {
   editor.setOptions({
