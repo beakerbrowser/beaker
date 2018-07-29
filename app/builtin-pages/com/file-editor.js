@@ -19,6 +19,7 @@ export function render (fileNode) {
 }
 
 export function setup ({readOnly} = {}) {
+  var el = document.getElementById('ace-editor')
   var editor = getEditor()
   if (!editor) return console.warn('file-editor setup() abort: no editor')
   editor.session.setTabSize(2)
