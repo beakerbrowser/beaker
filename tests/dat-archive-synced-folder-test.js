@@ -583,7 +583,8 @@ test('autoPublishLocal=false', async t => {
   t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive2archive')
 })
 
-test('diff files and listings with autoPublishLocal=false', async t => {
+// TEMP: AUTOPUBLISH ONLY (prf)
+test.skip('diff files and listings with autoPublishLocal=false', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
     DatArchive.create({title: 'Dat Title', description: 'Dat Description', prompt: false})
@@ -713,7 +714,8 @@ test('diff files and listings with autoPublishLocal=false', async t => {
   t.deepEqual(res, [])
 })
 
-test('create a preview dat on a dat which has autoPublishLocal=false', async t => {
+// TEMP: AUTOPUBLISH ONLY (prf)
+test.skip('create a preview dat on a dat which has autoPublishLocal=false', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
     DatArchive.create({title: 'Dat Title', description: 'Dat Description', prompt: false})
