@@ -301,7 +301,7 @@ function render () {
                 : ''
               }
 
-              ${archive.info.isOwner && !archive.info.userSettings.isSaved && activeView === 'files'
+              ${archive.info.isOwner && !archive.info.userSettings.isSaved
                 ? yo`
                   <div class="container">
                     <div class="message error">
