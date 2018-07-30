@@ -1423,6 +1423,7 @@ function onChangeHeaderEditor (e, name) {
     } else {
       render()
     }
+    return
   }
   if (e.key === 'Escape') {
     headerEditValues[name] = false
@@ -1598,9 +1599,9 @@ async function setManifestValue (attr, value) {
       archive.info.links.payment = [{href: value, type: 'text/html'}]
       await archive2.configure({links: archive.info.links})
     } else {
-      await archive2.configure({[attr]: value})
       Object.assign(archive.info, {[attr]: value})
       Object.assign(archive.info.manifest, {[attr]: value})
+      await archive2.configure({[attr]: value})
     }
     document.title = `Library - ${archive.info.title || 'Untitled'}`
     render()
