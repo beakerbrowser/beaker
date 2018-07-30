@@ -1547,7 +1547,7 @@ async function readViewStateFromUrl () {
   if (hash === 'setup') {
     activeView = 'files'
     triggerSetup = true
-    window.location.hash = '' // remove #setup in case the user reloads
+    history.replaceState('', document.title, window.location.pathname) // remove #setup in case the user reloads
   } else if (hash) {
     activeView = hash
   } else {
