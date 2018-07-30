@@ -215,36 +215,6 @@ body.drag {
     }
   }
 
-  .builtin-header {
-    position: fixed;
-    left: 0;
-    top: 0;
-    display: block;
-    width: 100%;
-    height: 55px;
-    padding: 0;
-    background: #fff;
-    border: 1px solid #ddd;
-    font-size: 13.5px;
-
-    .container {
-      position: relative;
-      max-width: ~"calc(100% - 10px)";
-      height: 50px;
-      padding: 0 5px;
-
-      @media (min-width: 700px) {
-        max-width: ~"calc(100% - 30px)";
-      }
-
-      > *:last-child {
-        position: absolute;
-        right: 0;
-        top: 12px;
-      }
-    }
-  }
-
   .view {
     max-width: 100%;
     padding: 0;
@@ -576,6 +546,27 @@ body.drag {
       }
     }
 
+    .back-link {
+      position: absolute;
+      left: -30px;
+      top: 12px;
+      width: 27px;
+      text-align: center;
+      font-size: 1.2rem;
+      color: rgba(0,0,0,.2);
+      cursor: pointer;
+      border-radius: 4px;
+
+      * {
+        cursor: pointer;
+      }
+
+      &:hover {
+        color: @color-text;
+        background: #eee;
+      }
+    }
+
     .info {
       position: relative;
       padding: 20px 0 10px 0;
@@ -658,6 +649,7 @@ body.drag {
     .container {
       &:extend(.flex);
       align-items: center;
+      position: relative;
     }
 
     .buttons {
