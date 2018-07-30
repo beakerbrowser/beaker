@@ -310,15 +310,26 @@ function renderHeader () {
   if (selectedArchives && selectedArchives.length) {
     actions = yo`
       <div class="actions">
+        <button class="btn transparent" onclick=${onSelectAll}>
+          Select all
+        </button>
+        |
         <button class="btn transparent" onclick=${onDeselectAll}>
           Deselect all
         </button>
 
         ${currentView === 'trash'
-          ? yo`
-            <button class="btn" onclick=${onRestoreSelected}>
-              Restore selected
-            </button>`
+          ? [
+              yo`
+                <button class="btn" onclick=${onRestoreSelected}>
+                  Restore selected
+                </button>`,
+              ' ',
+              yo`
+                <button class="btn warning" onclick=${onDeleteSelectedPermanently}>
+                  Delete permanently
+                </button>`
+            ]
           : yo`
             <button class="btn warning" onclick=${onDeleteSelected}>
               ${currentView === 'seeding' ? 'Stop seeding' : 'Move to Trash'}
@@ -463,6 +474,12 @@ function onToggleChecked (e, row) {
   render()
 }
 
+function onSelectAll () {
+  selectedArchives = archives.slice()
+  selectedArchives.forEach(a => { a.checked = true })
+  render()
+}
+
 function onDeselectAll () {
   selectedArchives.forEach(a => { a.checked = false })
   selectedArchives = []
@@ -472,28 +489,6 @@ function onDeselectAll () {
 function onCopy (str, successMessage = 'URL copied to clipboard') {
   writeToClipboard(str)
   toast.create(successMessage)
-}
-
-async function onDeleteSelected () {
-  const msg = currentView === 'seeding'
-    ? `Stop seeding ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')}?`
-    : `Move ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} to Trash?`
-  if (!confirm(msg)) {
-    return
-  }
-
-  await Promise.all(selectedArchives.map(async a => {
-    a.checked = false
-    try {
-      await beaker.archives.remove(a.url)
-    } catch (e) {
-      toast.create(`Could not move ${a.title || a.url} to Trash`, 'error')
-    }
-  }))
-  selectedArchives = []
-
-  await loadArchives()
-  render()
 }
 
 async function onCreateSiteFromFolder () {
@@ -549,6 +544,28 @@ async function onDelete (e, archive) {
   render()
 }
 
+async function onDeleteSelected () {
+  const msg = currentView === 'seeding'
+    ? `Stop seeding ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')}?`
+    : `Move ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} to Trash?`
+  if (!confirm(msg)) {
+    return
+  }
+
+  await Promise.all(selectedArchives.map(async a => {
+    a.checked = false
+    try {
+      await beaker.archives.remove(a.url)
+    } catch (e) {
+      toast.create(`Could not move ${a.title || a.url} to Trash`, 'error')
+    }
+  }))
+  selectedArchives = []
+
+  await loadArchives()
+  render()
+}
+
 async function onDeletePermanently (e, archive) {
   if (e) {
     e.stopPropagation()
@@ -566,6 +583,26 @@ async function onDeletePermanently (e, archive) {
   }
   await loadArchives()
   render()
+}
+
+async function onDeleteSelectedPermanently () {
+  if (!confirm(`Delete ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} permanently?`)) {
+    return
+  }
+
+  await Promise.all(selectedArchives.map(async a => {
+    try {
+      await beaker.archives.delete(a.url)
+    } catch (e) {
+      console.error(e)
+      toast.create(`Could not delete ${a.title || a.url}`, 'error')
+    }
+  }))
+  selectedArchives = []
+
+  await loadArchives()
+  render()
+
 }
 
 async function onRestoreSelected () {
