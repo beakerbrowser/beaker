@@ -189,7 +189,7 @@ async function onImportFolder (e) {
  
   // create the dat
   const archive = await DatArchive.create({prompt: false})
-  await beaker.archives.setLocalSyncPath(archive.url, folder, {syncFolderToArchive: true})
+  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {syncFolderToArchive: true})
 
   resolve({archive})
   destroy()
