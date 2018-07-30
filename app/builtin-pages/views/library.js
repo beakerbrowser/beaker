@@ -330,10 +330,43 @@ function renderHeader () {
   } else {
     actions = yo`
       <div class="actions">
-        <button class="btn primary" onclick=${onNewArchive}>
-          <span>New</span>
-          <i class="fa fa-plus"></i>
-        </button>
+        ${toggleable(yo`
+          <div class="dropdown toggleable-container">
+            <button class="btn primary toggleable">
+              <span>New</span>
+              <i class="fa fa-plus"></i>
+            </button>
+            <div class="dropdown-items create-new filters subtle-shadow right">
+              <div class="dropdown-item" onclick=${() => onCreateSite()}>
+                <div class="label">
+                  <i class="fa fa-clone"></i>
+                  Empty project
+                </div>
+                <p class="description">
+                  Create a new project
+                </p>
+              </div>
+              <div class="dropdown-item" onclick=${() => onCreateSite('website')}>
+                <div class="label">
+                  <i class="fa fa-code"></i>
+                  Website
+                </div>
+                <p class="description">
+                  Create a new website from a basic template
+                </p>
+              </div>
+              <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
+                <div class="label">
+                  <i class="fa fa-folder-o"></i>
+                  Import folder
+                </div>
+                <p class="description">
+                  Create a new project from a folder on your computer
+                </p>
+              </div>
+            </div>
+          </div>
+        `)}
       </div>`
 
     searchContainer = yo`
@@ -463,11 +496,24 @@ async function onDeleteSelected () {
   render()
 }
 
-async function onNewArchive (e) {
-  e.preventDefault()
-  e.stopPropagation()
+async function onCreateSiteFromFolder () {
+  // ask user for folder
+  const folder = await beaker.browser.showOpenDialog({
+    title: 'Select folder',
+    buttonLabel: 'Use folder',
+    properties: ['openDirectory']
+  })
+  if (!folder || !folder.length) return
 
-  var {archive} = await createArchivePopup.create()
+  // create a new archive
+  const archive = await DatArchive.create({prompt: false})
+  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {syncFolderToArchive: true})
+  window.location += archive.url + '#setup'
+}
+
+async function onCreateSite (template) {
+  // create a new archive
+  const archive = await DatArchive.create({template, prompt: false})
   window.location += archive.url + '#setup'
 }
 

@@ -61,7 +61,7 @@ export function create (opts) {
   var parent = opts.parent || document.body
 
   // render interface
-  const el = opts.render ? opts.render() : render()
+  const el = opts.render ? opts.render(opts) : render(opts)
   parent.appendChild(el)
   document.addEventListener('keyup', onKeyUp)
   document.addEventListener('click', onClickAnywhere)
