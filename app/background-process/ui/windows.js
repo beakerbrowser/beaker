@@ -189,6 +189,8 @@ export function createShellWindow (windowState) {
     unregisterShortcut(win, 'Esc')
     sendToWebContents('leave-full-screen')(e)
   })
+  win.on('maximize', sendToWebContents('maximize'))
+  win.on('unmaximize', sendToWebContents('unmaximize'))
   win.on('closed', onClosed(win))
 
   return win

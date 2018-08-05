@@ -22,6 +22,11 @@ body.fullscreen #toolbar {
   background: #e0e0e0;
 }
 
+// Ensure toolbar resizes correctly when maximized on win32.
+body.maximized.win32 {
+  height: 68px;
+}
+
 .download-started-animation {
   position: fixed;
   bottom: 20px;

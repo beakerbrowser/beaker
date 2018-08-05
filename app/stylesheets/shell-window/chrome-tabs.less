@@ -257,8 +257,8 @@ body.darwin .chrome-tabs {
   -webkit-app-region: drag;
 }
 
-// make room for resizing on the top
-body.win32 {
+// make room for resizing on the top when not maximized.
+body:not(.maximized).win32{
   .chrome-tabs-shell {
     padding-top: 4px;
   }
@@ -269,6 +269,17 @@ body.win32 {
     .chrome-tab {
       top: 2px;
     }
+  }
+}
+
+// Ensure tabs go right to top of screen when maximized on win32.
+body.maximized.win32 {
+  .chrome-tab {
+    top: 0px;
+  }
+
+  .chrome-tabs-shell {
+    height: 30px;
   }
 }
 
