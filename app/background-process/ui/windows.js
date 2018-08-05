@@ -245,7 +245,7 @@ function userWantsToRestoreSession () {
     type: 'question',
     message: 'Sorry! It looks like Beaker crashed',
     detail: 'Would you like to restore your previous browsing session?',
-    buttons: [ 'Restore Session', 'Cancel' ],
+    buttons: [ 'Restore Session', 'Start New Session' ],
     defaultId: 0,
     icon: ICON_PATH
   })
