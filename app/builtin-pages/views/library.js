@@ -180,9 +180,8 @@ function renderRow (row, i) {
       class="ll-row archive ${row.checked ? 'selected' : ''} ${isMenuOpen ? 'menu-open' : ''}"
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
-
       <span class="title">
-        <img class="favicon" src="beaker-favicon:${row.url}" />
+        <img class="favicon" src="beaker-favicon:32,${row.url}" />
 
         ${row.title
           ? yo`<span class="title">${row.title}</span>`
@@ -311,15 +310,26 @@ function renderHeader () {
   if (selectedArchives && selectedArchives.length) {
     actions = yo`
       <div class="actions">
+        <button class="btn transparent" onclick=${onSelectAll}>
+          Select all
+        </button>
+        |
         <button class="btn transparent" onclick=${onDeselectAll}>
           Deselect all
         </button>
 
         ${currentView === 'trash'
-          ? yo`
-            <button class="btn" onclick=${onRestoreSelected}>
-              Restore selected
-            </button>`
+          ? [
+              yo`
+                <button class="btn" onclick=${onRestoreSelected}>
+                  Restore selected
+                </button>`,
+              ' ',
+              yo`
+                <button class="btn warning" onclick=${onDeleteSelectedPermanently}>
+                  Delete permanently
+                </button>`
+            ]
           : yo`
             <button class="btn warning" onclick=${onDeleteSelected}>
               ${currentView === 'seeding' ? 'Stop seeding' : 'Move to Trash'}
@@ -331,10 +341,43 @@ function renderHeader () {
   } else {
     actions = yo`
       <div class="actions">
-        <button class="btn primary" onclick=${onNewArchive}>
-          <span>New</span>
-          <i class="fa fa-plus"></i>
-        </button>
+        ${toggleable(yo`
+          <div class="dropdown toggleable-container">
+            <button class="btn primary toggleable">
+              <span>New</span>
+              <i class="fa fa-plus"></i>
+            </button>
+            <div class="dropdown-items create-new filters subtle-shadow right">
+              <div class="dropdown-item" onclick=${() => onCreateSite()}>
+                <div class="label">
+                  <i class="fa fa-clone"></i>
+                  Empty project
+                </div>
+                <p class="description">
+                  Create a new project
+                </p>
+              </div>
+              <div class="dropdown-item" onclick=${() => onCreateSite('website')}>
+                <div class="label">
+                  <i class="fa fa-code"></i>
+                  Website
+                </div>
+                <p class="description">
+                  Create a new website from a basic template
+                </p>
+              </div>
+              <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
+                <div class="label">
+                  <i class="fa fa-folder-o"></i>
+                  Import folder
+                </div>
+                <p class="description">
+                  Create a new project from a folder on your computer
+                </p>
+              </div>
+            </div>
+          </div>
+        `)}
       </div>`
 
     searchContainer = yo`
@@ -431,6 +474,12 @@ function onToggleChecked (e, row) {
   render()
 }
 
+function onSelectAll () {
+  selectedArchives = archives.slice()
+  selectedArchives.forEach(a => { a.checked = true })
+  render()
+}
+
 function onDeselectAll () {
   selectedArchives.forEach(a => { a.checked = false })
   selectedArchives = []
@@ -442,33 +491,24 @@ function onCopy (str, successMessage = 'URL copied to clipboard') {
   toast.create(successMessage)
 }
 
-async function onDeleteSelected () {
-  const msg = currentView === 'seeding'
-    ? `Stop seeding ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')}?`
-    : `Move ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} to Trash?`
-  if (!confirm(msg)) {
-    return
-  }
+async function onCreateSiteFromFolder () {
+  // ask user for folder
+  const folder = await beaker.browser.showOpenDialog({
+    title: 'Select folder',
+    buttonLabel: 'Use folder',
+    properties: ['openDirectory']
+  })
+  if (!folder || !folder.length) return
 
-  await Promise.all(selectedArchives.map(async a => {
-    a.checked = false
-    try {
-      await beaker.archives.remove(a.url)
-    } catch (e) {
-      toast.create(`Could not move ${a.title || a.url} to Trash`, 'error')
-    }
-  }))
-  selectedArchives = []
-
-  await loadArchives()
-  render()
+  // create a new archive
+  const archive = await DatArchive.create({prompt: false})
+  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {syncFolderToArchive: true})
+  window.location += archive.url + '#setup'
 }
 
-async function onNewArchive (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  var {archive} = await createArchivePopup.create()
+async function onCreateSite (template) {
+  // create a new archive
+  const archive = await DatArchive.create({template, prompt: false})
   window.location += archive.url + '#setup'
 }
 
@@ -504,6 +544,28 @@ async function onDelete (e, archive) {
   render()
 }
 
+async function onDeleteSelected () {
+  const msg = currentView === 'seeding'
+    ? `Stop seeding ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')}?`
+    : `Move ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} to Trash?`
+  if (!confirm(msg)) {
+    return
+  }
+
+  await Promise.all(selectedArchives.map(async a => {
+    a.checked = false
+    try {
+      await beaker.archives.remove(a.url)
+    } catch (e) {
+      toast.create(`Could not move ${a.title || a.url} to Trash`, 'error')
+    }
+  }))
+  selectedArchives = []
+
+  await loadArchives()
+  render()
+}
+
 async function onDeletePermanently (e, archive) {
   if (e) {
     e.stopPropagation()
@@ -521,6 +583,26 @@ async function onDeletePermanently (e, archive) {
   }
   await loadArchives()
   render()
+}
+
+async function onDeleteSelectedPermanently () {
+  if (!confirm(`Delete ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} permanently?`)) {
+    return
+  }
+
+  await Promise.all(selectedArchives.map(async a => {
+    try {
+      await beaker.archives.delete(a.url)
+    } catch (e) {
+      console.error(e)
+      toast.create(`Could not delete ${a.title || a.url}`, 'error')
+    }
+  }))
+  selectedArchives = []
+
+  await loadArchives()
+  render()
+
 }
 
 async function onRestoreSelected () {

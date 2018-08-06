@@ -110,12 +110,20 @@ export function buildWindowMenu (opts = {}) {
           if (win) win.webContents.send('command', 'file:open-location')
         }
       },
+      { type: 'separator' },
       {
         label: 'Save Page As...',
         accelerator: 'CmdOrCtrl+S',
         click: async (item, win) => {
           const url = await win.webContents.executeJavaScript(`pages.getActive().getIntendedURL()`)
           win.webContents.downloadURL(url, true)
+        }
+      },
+      {
+        label: 'Print...',
+        accelerator: 'CmdOrCtrl+P',
+        click: (item, win) => {
+          win.webContents.executeJavaScript(`pages.getActive().webviewEl.getWebContents().print()`)
         }
       },
       { type: 'separator' },

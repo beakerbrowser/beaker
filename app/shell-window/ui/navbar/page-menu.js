@@ -74,12 +74,7 @@ export class PageMenuNavbarBtn {
                 <div class="dropdown-items compact with-triangle">
                   <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
                     <i class="fa fa-files-o"></i>
-                    View files
-                  </div>
-
-                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
-                    <i class="fa fa-clone"></i>
-                    Make editable copy
+                    View Source
                   </div>
 
                   <hr />
@@ -97,6 +92,13 @@ export class PageMenuNavbarBtn {
                   <div class="dropdown-item" onclick=${() => this.onClickDownloadZip()}>
                     <i class="fa fa-file-archive-o"></i>
                     Download as .zip
+                  </div>
+
+                  <hr />
+
+                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
+                    <i class="fa fa-clone"></i>
+                    Make editable copy
                   </div>
                 </div>`
               : ''

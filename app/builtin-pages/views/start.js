@@ -8,7 +8,6 @@ import renderHelpTip from '../com/help-tip'
 import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
-import * as createArchivePopup from '../com/create-archive-popup'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
 
 const LATEST_VERSION = 7011 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
@@ -50,9 +49,70 @@ async function setup () {
 // events
 // =
 
-async function onClickNewSiteButton () {
-  var {archive} = await createArchivePopup.create()
-  window.location = `beaker://library/${archive.url}#setup`
+function onClickNewSiteButton (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  contextMenu.create({
+    x: e.clientX,
+    y: e.clientY - 20,
+    render ({x, y}) {
+      return yo`
+        <div class="context-menu dropdown" style="left: ${x}px; top: ${y}px">
+          <div class="dropdown-items custom create-new filters subtle-shadow center top">
+            <div class="dropdown-item" onclick=${() => onCreateSite()}>
+              <div class="label">
+                <i class="fa fa-clone"></i>
+                Empty project
+              </div>
+              <p class="description">
+                Create a new project
+              </p>
+            </div>
+            <div class="dropdown-item" onclick=${() => onCreateSite('website')}>
+              <div class="label">
+                <i class="fa fa-code"></i>
+                Website
+              </div>
+              <p class="description">
+                Create a new website from a basic template
+              </p>
+            </div>
+            <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
+              <div class="label">
+                <i class="fa fa-folder-o"></i>
+                Import folder
+              </div>
+              <p class="description">
+                Create a new project from a folder on your computer
+              </p>
+            </div>
+          </div>
+        </div>
+      `
+    }
+  })
+}
+
+async function onCreateSiteFromFolder () {
+  // ask user for folder
+  const folder = await beaker.browser.showOpenDialog({
+    title: 'Select folder',
+    buttonLabel: 'Use folder',
+    properties: ['openDirectory']
+  })
+  if (!folder || !folder.length) return
+
+  // create a new archive
+  const archive = await DatArchive.create({prompt: false})
+  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {syncFolderToArchive: true})
+  window.location = 'beaker://library/' + archive.url + '#setup'
+}
+
+async function onCreateSite (template) {
+  // create a new archive
+  const archive = await DatArchive.create({template, prompt: false})
+  window.location = 'beaker://library/' + archive.url + '#setup'
 }
 
 async function onClickHelpButton () {
@@ -205,7 +265,7 @@ async function onClickDeleteBookmark (bookmark) {
     update()
   }
 
-  toast.create('Bookmark deleted', '', 75000, {label: 'Undo', click: undo})
+  toast.create('Bookmark deleted', '', 10e3, {label: 'Undo', click: undo})
 }
 
 async function onContextmenuPinnedBookmark (e, bookmark) {

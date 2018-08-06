@@ -93,10 +93,11 @@ export default function registerContextMenu () {
       }
 
       // helper to run a download prompt for media
-      const downloadPrompt = (item, win) => {
-        var defaultPath = path.join(app.getPath('downloads'), path.basename(props.srcURL))
+      const downloadPrompt = (field, ext) => (item, win) => {
+        var defaultPath = path.join(app.getPath('downloads'), path.basename(props[field]))
+        if (ext && defaultPath.split('/').pop().indexOf('.') === -1) defaultPath += ext
         dialog.showSaveDialog({ title: `Save ${props.mediaType} as...`, defaultPath }, filepath => {
-          if (filepath) { download(win, props.srcURL, { saveAs: filepath }) }
+          if (filepath) { download(win, webContents, props[field], { saveAs: filepath }) }
         })
       }
 
@@ -109,7 +110,7 @@ export default function registerContextMenu () {
 
       // images
       if (props.mediaType == 'image') {
-        menuItems.push({ label: 'Save Image As...', click: downloadPrompt })
+        menuItems.push({ label: 'Save Image As...', click: downloadPrompt('srcURL') })
         menuItems.push({ label: 'Copy Image', click: () => webContents.copyImageAt(props.x, props.y) })
         menuItems.push({ label: 'Copy Image URL', click: () => clipboard.writeText(props.srcURL) })
         menuItems.push({ label: 'Open Image in New Tab', click: (item, win) => win.webContents.send('command', 'file:new-tab', props.srcURL) })
@@ -126,7 +127,7 @@ export default function registerContextMenu () {
 
       // videos
       if (props.mediaType == 'video') {
-        menuItems.push({ label: 'Save Video As...', click: downloadPrompt })
+        menuItems.push({ label: 'Save Video As...', click: downloadPrompt('srcURL') })
         menuItems.push({ label: 'Copy Video URL', click: () => clipboard.writeText(props.srcURL) })
         menuItems.push({ label: 'Open Video in New Tab', click: (item, win) => win.webContents.send('command', 'file:new-tab', props.srcURL) })
         menuItems.push({ type: 'separator' })
@@ -134,7 +135,7 @@ export default function registerContextMenu () {
 
       // audios
       if (props.mediaType == 'audio') {
-        menuItems.push({ label: 'Save Audio As...', click: downloadPrompt })
+        menuItems.push({ label: 'Save Audio As...', click: downloadPrompt('srcURL') })
         menuItems.push({ label: 'Copy Audio URL', click: () => clipboard.writeText(props.srcURL) })
         menuItems.push({ label: 'Open Audio in New Tab', click: (item, win) => win.webContents.send('command', 'file:new-tab', props.srcURL) })
         menuItems.push({ type: 'separator' })
@@ -182,16 +183,18 @@ export default function registerContextMenu () {
           click: () => webContents.reload()
         })
         menuItems.push({ type: 'separator' })
-        if (!props.pageURL.startsWith('beaker://')) {
           menuItems.push({
-            label: 'Save Page As...',
-            click: () => webContents.downloadURL(props.pageURL, true)
-          })
-          menuItems.push({ type: 'separator' })
-        }
+          label: 'Save Page As...',
+          click: downloadPrompt('pageURL', '.html')
+        })
+        menuItems.push({
+          label: 'Print...',
+          click: () => webContents.print()
+        })
+        menuItems.push({ type: 'separator' })
         if (isDat) {
           menuItems.push({
-            label: 'View Files',
+            label: 'View Source',
             click: (item, win) => {
               win.webContents.send('command', 'file:new-tab', 'beaker://library/' + props.pageURL)
             }

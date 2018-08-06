@@ -11,6 +11,8 @@ export function getPermParam (permissionToken) {
 }
 
 export function ucfirst (str) {
+  if (!str) str = ''
+  if (typeof str !== 'string') str = '' + str
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 

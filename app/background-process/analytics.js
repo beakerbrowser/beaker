@@ -10,7 +10,7 @@ import concat from 'concat-stream'
 import osName from 'os-name'
 const settingsDb = beakerCore.dbs.settings
 import {ANALYTICS_DATA_FILE, ANALYTICS_SERVER, ANALYTICS_CHECKIN_INTERVAL} from '@beaker/core/lib/const'
-const debug = require('debug')('beaker-analytics')
+const debug = beakerCore.debugLogger('beaker-analytics')
 
 // exported methods
 // =

@@ -34,7 +34,8 @@ function getClassname (key) {
 }
 
 function rerender (opts) {
-  yo.update(document.querySelector('.' + getClassname(opts.key)), render(opts))
+  var el = document.querySelector('.' + getClassname(opts.key))
+  if (el) yo.update(el, render(opts))
 }
 
 function onKeyupSettingsEdit (e, opts) {

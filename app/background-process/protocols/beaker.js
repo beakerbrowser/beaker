@@ -10,7 +10,6 @@ import fs from 'fs'
 import jetpack from 'fs-jetpack'
 import intoStream from 'into-stream'
 import ICO from 'icojs'
-import {getLogFileContent} from '../debug-logger'
 
 // constants
 // =
@@ -231,15 +230,15 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://downloads/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/downloads.build.js'))
   }
-  if (requestUrl === 'beaker://filesystem/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/filesystem.css'))
-  }
-  if (requestUrl === 'beaker://filesystem/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/filesystem.build.js'))
-  }
-  if (requestUrl === 'beaker://filesystem/' || requestUrl.startsWith('beaker://filesystem/')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/filesystem.html'))
-  }
+  // if (requestUrl === 'beaker://filesystem/main.css') {
+  //   return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/filesystem.css'))
+  // }
+  // if (requestUrl === 'beaker://filesystem/main.js') {
+  //   return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/filesystem.build.js'))
+  // }
+  // if (requestUrl === 'beaker://filesystem/' || requestUrl.startsWith('beaker://filesystem/')) {
+  //   return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/filesystem.html'))
+  // }
   if (requestUrl === 'beaker://library/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/library.css'))
   }
@@ -255,15 +254,15 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://library/')) {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/library-view.html'))
   }
-  if (requestUrl === 'beaker://install-modal/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/install-modal.css'))
-  }
-  if (requestUrl === 'beaker://install-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/install-modal.build.js'))
-  }
-  if (requestUrl === 'beaker://install-modal/' || requestUrl.startsWith('beaker://install-modal/')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/install-modal.html'))
-  }
+  // if (requestUrl === 'beaker://install-modal/main.css') {
+  //   return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/install-modal.css'))
+  // }
+  // if (requestUrl === 'beaker://install-modal/main.js') {
+  //   return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/install-modal.build.js'))
+  // }
+  // if (requestUrl === 'beaker://install-modal/' || requestUrl.startsWith('beaker://install-modal/')) {
+  //   return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/install-modal.html'))
+  // }
   if (requestUrl === 'beaker://view-source/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/view-source.css'))
   }
@@ -322,11 +321,8 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://debug-log/')) {
     const PAGE_SIZE = 1e6
     var start = queryParams.start ? (+queryParams.start) : 0
-    let content = await getLogFileContent(start, start + PAGE_SIZE)
-    var pagination = ''
-    if (content.length === PAGE_SIZE + 1 || start !== 0) {
-      pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
-    }
+    let content = await beakerCore.getLogFileContent(start, start + PAGE_SIZE)
+    var pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
     return respond({
       statusCode: 200,
       headers: {
@@ -336,7 +332,7 @@ async function beakerProtocol (request, respond) {
       },
       data: intoStream(`
         ${pagination}
-        <pre>${content}</pre>
+        <pre>${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
         ${pagination}
       `)
     })

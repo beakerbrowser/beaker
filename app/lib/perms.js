@@ -34,6 +34,7 @@ export default {
     desc: 'Run Javascript',
     icon: 'code',
     persist: true,
+    idempotent: true,
     alwaysDisallow: false,
     requiresRefresh: true,
     experimental: false
@@ -45,6 +46,7 @@ export default {
     },
     icon: 'cloud',
     persist: true,
+    idempotent: true,
     alwaysDisallow: false,
     requiresRefresh: true,
     experimental: false
@@ -56,6 +58,7 @@ export default {
     },
     icon: 'folder',
     persist: false,
+    idempotent: false,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: false
@@ -69,6 +72,7 @@ export default {
     },
     icon: 'folder',
     persist: 'allow', // dont persist 'deny'
+    idempotent: true,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: false
@@ -82,6 +86,7 @@ export default {
     },
     icon: 'folder',
     persist: false,
+    idempotent: false,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: false
@@ -90,6 +95,7 @@ export default {
     desc: 'Use your camera and microphone',
     icon: 'video-camera',
     persist: true,
+    idempotent: true,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: false
@@ -98,6 +104,7 @@ export default {
     desc: 'Know your location',
     icon: 'map-marker',
     persist: false,
+    idempotent: true,
     alwaysDisallow: true, // NOTE geolocation is disabled, right now
     requiresRefresh: false,
     experimental: false
@@ -106,6 +113,7 @@ export default {
     desc: 'Create desktop notifications',
     icon: 'bell',
     persist: true,
+    idempotent: true,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: false
@@ -114,6 +122,7 @@ export default {
     desc: 'Access your MIDI devices',
     icon: 'headphones',
     persist: false,
+    idempotent: true,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: false
@@ -122,6 +131,7 @@ export default {
     desc: 'Lock your cursor',
     icon: 'mouse-pointer',
     persist: false,
+    idempotent: true,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: false
@@ -130,7 +140,19 @@ export default {
     desc: 'Go fullscreen',
     icon: 'arrows-alt',
     persist: true,
+    idempotent: false,
     alwaysAllow: true,
+    requiresRefresh: false,
+    experimental: false
+  },
+  download: {
+    desc: (param, pages, opts = {}) => {
+      return yo`<span>Download ${opts.filename}</span>`
+    },
+    icon: 'download',
+    persist: false,
+    idempotent: false,
+    alwaysDisallow: false,
     requiresRefresh: false,
     experimental: false
   },
@@ -138,6 +160,7 @@ export default {
     desc: 'Open this URL in another program: ',
     icon: 'external-link',
     persist: false,
+    idempotent: false,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: false
@@ -146,6 +169,7 @@ export default {
     desc: 'Read and modify your Library',
     icon: 'book',
     persist: true,
+    idempotent: true,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: true
@@ -158,6 +182,7 @@ export default {
     },
     icon: 'upload',
     persist: false,
+    idempotent: false,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: true
@@ -170,6 +195,7 @@ export default {
     },
     icon: 'times',
     persist: false,
+    idempotent: false,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: true
@@ -181,6 +207,29 @@ export default {
     },
     icon: 'download',
     persist: true,
+    idempotent: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: true
+  },
+  experimentalDatPeers: {
+    desc: 'Send and receive messages with peers',
+    icon: 'exchange',
+    persist: true,
+    idempotent: true,
+    alwaysAllow: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: true
+  },
+  experimentalCapturePage: {
+    desc: (param, pages, opts = {}) => {
+      const viewPage = () => pages.setActive(pages.create(param))
+      return yo`<span>Take a screenshot of <a onclick=${viewPage}>${param}</a></span>`
+    },
+    icon: 'camera',
+    persist: false,
+    idempotent: false,
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: true

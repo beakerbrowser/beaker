@@ -3,6 +3,7 @@
 import yo from 'yo-yo'
 import closeIcon from '../icon/close'
 import {join as joinPaths} from 'path'
+import BINARY_EXTENSIONS from 'binary-extensions'
 
 // globals
 // =
@@ -15,6 +16,8 @@ var basePath
 var createFolder
 var fileName = ''
 var hasConflict = false
+var hasBadExt = false
+var lastTriedExt = ''
 
 // exported api
 // =
@@ -74,8 +77,12 @@ function render () {
 
             <input name="filename" value=${fileName} placeholder=${createFolder ? 'Folder name' : 'Filename'} />
 
+            ${hasBadExt
+              ? yo`<div class="error">Can not create a binary file (.${lastTriedExt}).</div>`
+              : ''}
+
             ${hasConflict
-              ? yo`<div class="message error">A file or folder already exists with that name.</div>`
+              ? yo`<div class="error">A file or folder already exists with that name.</div>`
               : ''}
           </div>
 
@@ -110,12 +117,16 @@ function onClickWrapper (e) {
 async function onSubmit (e) {
   e.preventDefault()
   hasConflict = false
+  hasBadExt = false
   fileName = (e.target.filename.value || '').trim()
   if (!fileName) return
+  if (isBinaryExtension(fileName)) {
+    hasBadExt = true
+    return update()
+  }
   if (await checkForConflicts(fileName)) {
     hasConflict = true
-    update()
-    return
+    return update()
   }
   resolve(joinPaths(basePath, fileName))
   destroy()
@@ -123,6 +134,17 @@ async function onSubmit (e) {
 
 // helpers
 // =
+
+function isBinaryExtension (fileName) {
+  var nameParts = fileName.split('.')
+  if (nameParts.length > 1) {
+    lastTriedExt = nameParts.pop()
+    if (lastTriedExt && BINARY_EXTENSIONS.includes(lastTriedExt.toLowerCase()) === true) {
+      return true
+    }
+  }
+  return false
+}
 
 async function checkForConflicts (fileName) {
   var filePath = joinPaths(basePath, fileName)

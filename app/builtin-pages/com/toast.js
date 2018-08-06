@@ -19,7 +19,9 @@ export function create (message, type = '', time = 1500, button = null) {
 function destroy () {
   var toast = document.getElementById('toast-wrapper')
 
-  // fadeout before removing element
-  toast.classList.add('hidden')
-  setTimeout(() => document.body.removeChild(toast), 500)
+  if (toast) {
+    // fadeout before removing element
+    toast.classList.add('hidden')
+    setTimeout(() => document.body.removeChild(toast), 500)
+  }
 }
