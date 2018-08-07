@@ -205,8 +205,10 @@ export async function getDefaultProtocolSettings () {
     // see https://github.com/beakerbrowser/beaker/issues/915
     // -prf
     let [httpHandler, datHandler] = await Promise.all([
-      exec('xdg-mime query default "x-scheme-handler/http"'),
-      exec('xdg-mime query default "x-scheme-handler/dat"')
+      // If there is no default specified, be sure to catch any error
+      // from exec and return '' otherwise Promise.all errors out.
+      exec('xdg-mime query default "x-scheme-handler/http"').catch(err => ''),
+      exec('xdg-mime query default "x-scheme-handler/dat"').catch(err => '')
     ])
     return {
       http: (httpHandler || '').trim() === DOT_DESKTOP_FILENAME,
