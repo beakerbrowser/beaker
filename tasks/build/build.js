@@ -104,8 +104,8 @@ gulp.task('less-watch', gulp.series(lessTask));
 
 gulp.task('build', gulp.series(['bundle', 'less']));
 
-gulp.task('watch', gulp.series(function () {
+gulp.task('watch', gulp.series(['build', function () {
   gulp.watch(['app/**/*.js', '!app/**/*.build.js'], gulp.series('bundle-watch'))
   gulp.watch('app/**/*.less', gulp.series('less-watch'))
   return Promise.resolve(true)
-}));
+}]));
