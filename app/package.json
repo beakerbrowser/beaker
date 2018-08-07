@@ -8,7 +8,7 @@
   "copyright": "© 2018, Blue Link Labs",
   "main": "background-process.build.js",
   "dependencies": {
-    "@beaker/core": "^2.5.3",
+    "@beaker/core": "^2.6.0",
     "@beaker/dat-archive-file-diff": "^1.0.0",
     "anymatch": "^1.3.2",
     "await-lock": "^1.1.3",
