@@ -1169,8 +1169,8 @@ async function onChangeView (e, view) {
 }
 
 async function onOpenPreviewDat () {
-  var previewDatUrl = await beaker.archives.getPreviewDat(archive.url)
-  window.open(previewDatUrl)
+  var previewDat = archive.checkout('preview')
+  window.open(previewDat.url)
 }
 
 async function onSetCurrentSource (node) {

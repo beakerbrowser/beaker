@@ -465,8 +465,7 @@ test('dat.json merges effectively with local sync path', async t => {
   t.deepEqual(res.description, 'Local Description')
 })
 
-// TEMP: AUTOPUBLISH ONLY (prf)
-test.skip('autoPublishLocal=false', async t => {
+test('autoPublishLocal=false', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
     DatArchive.create({title: 'Dat Title', description: 'Dat Description', prompt: false})
@@ -612,8 +611,7 @@ test.skip('autoPublishLocal=false', async t => {
   t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive2archive')
 })
 
-// TEMP: AUTOPUBLISH ONLY (prf)
-test.skip('diff files and listings with autoPublishLocal=false', async t => {
+test('diff files and listings with autoPublishLocal=false', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
     DatArchive.create({title: 'Dat Title', description: 'Dat Description', prompt: false})
@@ -743,14 +741,21 @@ test.skip('diff files and listings with autoPublishLocal=false', async t => {
   t.deepEqual(res, [])
 })
 
-// TEMP: AUTOPUBLISH ONLY (prf)
-test.skip('create a preview dat on a dat which has autoPublishLocal=false', async t => {
+test('read/write the preview version when autoPublishLocal=false', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
     DatArchive.create({title: 'Dat Title', description: 'Dat Description', prompt: false})
   `)
   var datUrl = res.url
+  var previewDatUrl = datUrl + '+preview'
   t.truthy(datUrl.startsWith('dat://'))
+
+  const readDatFile = path => (
+    mainTab.executeJavascript(`(new DatArchive("${datUrl}")).readFile("${path}", 'utf8')`)
+  )
+  const readPreviewDatFile = path => (
+    mainTab.executeJavascript(`(new DatArchive("${previewDatUrl}")).readFile("${path}", 'utf8')`)
+  )
 
   // create and write local folder
   var filePath = tempy.directory()
@@ -783,20 +788,6 @@ test.skip('create a preview dat on a dat which has autoPublishLocal=false', asyn
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathFile("${datUrl}", '/conflict-file.txt')`)
   t.deepEqual(res, [ { added: true, count: 1, value: 'local' } ])
 
-  // create a tmpdat
-  var previewDatUrl = await mainTab.executeJavascript(`
-    beaker.archives.getPreviewDat("${datUrl}")
-  `)
-  t.truthy(previewDatUrl.startsWith('dat://'))
-  t.not(previewDatUrl, datUrl)
-
-  const readDatFile = path => (
-    mainTab.executeJavascript(`(new DatArchive("${datUrl}")).readFile("${path}", 'utf8')`)
-  )
-  const readPreviewDatFile = path => (
-    mainTab.executeJavascript(`(new DatArchive("${previewDatUrl}")).readFile("${path}", 'utf8')`)
-  )
-
   // check content
   t.deepEqual(await readPreviewDatFile('local-file.txt'), 'local')
   t.deepEqual(await readPreviewDatFile('conflict-file.txt'), 'local')
@@ -806,23 +797,11 @@ test.skip('create a preview dat on a dat which has autoPublishLocal=false', asyn
   t.deepEqual(await readPreviewDatFile('conflict-folder/file2.txt'), 'local')
   t.deepEqual(await readPreviewDatFile('conflict-folder/local-file.txt'), 'local')
 
-  // fetch again gets the same as before
-  var previewDatUrl2 = await mainTab.executeJavascript(`
-    beaker.archives.getPreviewDat("${datUrl}")
-  `)
-  t.is(previewDatUrl, previewDatUrl2)
-
-  // write to both the archive and the local
-  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${previewDatUrl}")`)
-  var syncPromises = [
-    waitForSync(mainTab, previewDatUrl, 'archive'),
-    waitForSync(mainTab, previewDatUrl, 'folder')
-  ]
+  // write to both the archive interface and the local fs
   await mainTab.executeJavascript(`
     (new DatArchive("${previewDatUrl}")).writeFile('conflict-file.txt', 'archive')
   `)
   await dir.write('local-file.txt', 'local2')
-  await Promise.all(syncPromises)
 
   // check content
   t.deepEqual(await readPreviewDatFile('local-file.txt'), 'local2')
@@ -887,9 +866,9 @@ test.skip('create a preview dat on a dat which has autoPublishLocal=false', asyn
   t.deepEqual(await readDatFile('conflict-folder/file2.txt'), 'local')
   t.deepEqual(await readDatFile('conflict-folder/local-file.txt'), 'local')
 
-  // check content (preview dat, unchanged because no longer syncing)
-  t.deepEqual(await readPreviewDatFile('local-file.txt'), 'local2')
-  t.deepEqual(await readPreviewDatFile('conflict-file.txt'), 'archive')
+  // check content (preview dat)
+  t.deepEqual(await readPreviewDatFile('local-file.txt'), 'local')
+  t.deepEqual(await readPreviewDatFile('conflict-file.txt'), 'archive2')
   t.deepEqual(await readPreviewDatFile('local-folder/file1.txt'), 'local')
   t.deepEqual(await readPreviewDatFile('local-folder/file2.txt'), 'local')
   t.deepEqual(await readPreviewDatFile('conflict-folder/file1.txt'), 'local')

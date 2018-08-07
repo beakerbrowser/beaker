@@ -4,6 +4,7 @@ const dat = beakerCore.dat
 const sitedata = beakerCore.dbs.sitedata
 import _get from 'lodash.get'
 import pda from 'pauls-dat-api'
+import parseDatURL from 'parse-dat-url'
 import PERMS from '../../lib/perms'
 import {getPermId} from '@beaker/core/lib/strings'
 import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
@@ -65,14 +66,15 @@ export function denyAllRequests (win) {
 }
 
 export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
-  var url = sender.getURL()
-  if (url.startsWith('beaker:')) return true
-  if (url.startsWith('dat:')) {
+  var urlp = parseDatURL(sender.getURL())
+  if (urlp.protocol === 'beaker:') return true
+  if (urlp.protocol === 'dat:') {
     // check dat.json for opt-in
     let isOptedIn = false
-    let archive = dat.library.getArchive(url)
+    let archive = dat.library.getArchive(urlp.hostname)
     if (archive) {
-      let manifest = await pda.readManifest(archive).catch(_ => {})
+      let {checkoutFS} = dat.library.getArchiveCheckout(archive, urlp.version)
+      let manifest = await pda.readManifest(checkoutFS).catch(_ => {})
       let apis = _get(manifest, 'experimental.apis')
       if (apis && Array.isArray(apis)) {
         isOptedIn = apis.includes(labApi)

@@ -259,6 +259,7 @@ export function create (opts) {
         page.liveReloadEvents = false
       } else if (page.protocolInfo && page.protocolInfo.scheme === 'dat:' && page.siteInfo) {
         var archive = new DatArchive(page.siteInfo.key)
+        if (page.protocolInfo.version === 'preview') archive = archive.checkout('preview')
         page.liveReloadEvents = archive.watch()
         let event = (page.siteInfo.isOwner) ? 'changed' : 'invalidated'
         page.liveReloadEvents.addEventListener(event, (e) => {
@@ -691,11 +692,11 @@ function onDidStopLoading (e) {
     updateHistory(page)
 
     // fetch protocol and page info
-    var { protocol, hostname, pathname } = url.startsWith('dat://') ? parseDatURL(url) : parseURL(url)
+    var { protocol, hostname, pathname, version } = url.startsWith('dat://') ? parseDatURL(url) : parseURL(url)
     page.siteInfo = null
     page.sitePerms = null
     page.siteHasDatAlternative = false
-    page.protocolInfo = {url, hostname, pathname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase()}
+    page.protocolInfo = {url, hostname, pathname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase(), version}
     if (protocol === 'https:') {
       page.checkForDatAlternative(hostname)
     }
