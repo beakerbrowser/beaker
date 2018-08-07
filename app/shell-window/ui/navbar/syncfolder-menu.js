@@ -15,10 +15,9 @@ export class SyncfolderMenuNavbarBtn {
   render () {
     const page = pages.getActive()
     const isViewingDat = page && !!page.getIntendedURL().startsWith('dat:')
-    var isTemporary = _get(page, 'siteInfo.isTemporary')
     var isSaved = _get(page, 'siteInfo.userSettings.isSaved')
     var localSyncPath = _get(page, 'siteInfo.userSettings.localSyncPath')
-    if (!isViewingDat || !localSyncPath || !(isTemporary || isSaved)) {
+    if (!isViewingDat || !localSyncPath || !isSaved) {
       return ''
     }
 
@@ -35,8 +34,7 @@ export class SyncfolderMenuNavbarBtn {
     // render btn
     return yo`
       <div class="toolbar-dropdown-menu syncfolder-dropdown-menu">
-        <button class="btn nofocus ${this.isDropdownOpen ? 'pressed' : ''} ${isTemporary ? 'preview' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
-          ${isTemporary ? yo`<strong>Preview</strong>` : ''}
+        <button class="btn nofocus ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
           <span>${localSyncPath}</span>
           <span class="fa fa-caret-down"></span>
         </button>
