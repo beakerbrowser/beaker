@@ -1,4 +1,5 @@
 Error.stackTraceLimit = Infinity
+require('tls').DEFAULT_ECDH_CURVE = 'auto' // HACK (prf) fix Node 8.9.x TLS issues, see https://github.com/nodejs/node/issues/19359
 
 // This is main process of Electron, started as first thing when your
 // app starts. This script is running through entire life of your application.
