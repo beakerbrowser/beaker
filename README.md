@@ -100,21 +100,11 @@ If you're doing development, `npm run watch` to have assets build automatically.
 
 Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=YuE9OO-ZDYo) and take a look at [the build notes](./build-notes.md).
 
+- [Documentation site](https://beakerbrowser.com/docs/)
 - **Web APIs**
   - [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
-  - [Permissions](https://beakerbrowser.com/docs/apis/permissions.html)
   - [Dat.json site manifest](https://beakerbrowser.com/docs/apis/manifest.html)
-- **Specs**
-  - Implemented
-    - [Dat files protocol](https://beakerbrowser.com/docs/inside-beaker/dat-files-protocol.html)
-    - [Dat DNS](https://github.com/beakerbrowser/beaker/wiki/Authenticated-Dat-URLs-and-HTTPS-to-Dat-Discovery)
-  - Proposed
-    - [App Scheme](https://github.com/beakerbrowser/beaker/wiki/App-Scheme)
-    - [Installable Web Applications](https://github.com/beakerbrowser/beaker/wiki/Installable-Web-Applications)
-    - [Intents](https://github.com/beakerbrowser/beaker/wiki/Intent-Scheme) a URI scheme for composing interactions between apps
-    - [Service Discovery](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol)
-    - [WebTerm](https://github.com/beakerbrowser/beaker/wiki/WebTerm) a bashlike terminal for Web
-- [**Tutorials**](https://beakerbrowser.com/docs/tutorials/)
+  - [See all](https://beakerbrowser.com/docs/apis/)
 
 ### Env Vars
 
