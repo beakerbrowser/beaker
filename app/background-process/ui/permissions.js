@@ -69,9 +69,12 @@ export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
   var urlp = parseDatURL(sender.getURL())
   if (urlp.protocol === 'beaker:') return true
   if (urlp.protocol === 'dat:') {
+    // resolve name
+    let key = await dat.dns.resolveName(urlp.hostname)
+
     // check dat.json for opt-in
     let isOptedIn = false
-    let archive = dat.library.getArchive(urlp.hostname)
+    let archive = dat.library.getArchive(key)
     if (archive) {
       let {checkoutFS} = dat.library.getArchiveCheckout(archive, urlp.version)
       let manifest = await pda.readManifest(checkoutFS).catch(_ => {})
