@@ -23,10 +23,10 @@ export default function create ({useHeadingAnchors, hrefMassager} = {}) {
   if (useHeadingAnchors) {
     // heading anchor rendering
     md.renderer.rules.heading_open = function (tokens, idx /*, options, env */) {
-      return '<h' + tokens[idx].hLevel + ' id="' + slugify(tokens[idx + 1].content) + '">'
+      return '<h' + tokens[idx].hLevel + ' id="' + slugify(tokens[idx + 1].content || '') + '">'
     }
     md.renderer.rules.heading_close = function (tokens, idx /*, options, env */) {
-      return '<a class="anchor-link" href="#' + slugify(tokens[idx - 1].content) + '">#</a></h' + tokens[idx].hLevel + '>\n'
+      return '<a class="anchor-link" href="#' + slugify(tokens[idx - 1].content || '') + '">#</a></h' + tokens[idx].hLevel + '>\n'
     }
   }
 
