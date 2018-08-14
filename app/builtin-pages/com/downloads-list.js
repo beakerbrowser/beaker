@@ -65,7 +65,7 @@ export function render (downloadsList) {
         actions = [
           yo`
             <span class="link show" onclick=${e => { e.stopPropagation(); downloadsList.showDownload(d) }}>
-              Show in ${process.platform === 'win32' ? 'Explorer' : 'Finder'}
+              Show in folder
             </span>`
         ]
       } else {
