@@ -1,8 +1,8 @@
 import Remarkable from 'remarkable'
 
-export default function create ({useHeadingAnchors, hrefMassager} = {}) {
+export default function create ({allowHTML, useHeadingAnchors, hrefMassager} = {}) {
   var md = new Remarkable('full', {
-    html: true, // Enable HTML tags in source
+    html: allowHTML, // Enable HTML tags in source
     xhtmlOut: false, // Use '/' to close single tags (<br />)
     breaks: true, // Convert '\n' in paragraphs into <br>
     langPrefix: 'language-', // CSS language prefix for fenced blocks

@@ -2,7 +2,7 @@
 
 import createMd from './lib/fg/markdown'
 
-const md = createMd({useHeadingAnchors: true})
+const md = createMd({allowHTML: true, useHeadingAnchors: true})
 
 // make sure not already handled
 // (for some reason, clicking on a # link inside the page triggers this script again)
