@@ -432,7 +432,7 @@ function onContextmenuNode (e, filesBrowser, node) {
   e.preventDefault()
   e.stopPropagation()
 
-  const items = [
+  var items = [
     {icon: 'external-link', label: `Open ${node.isContainer ? 'folder' : 'file'} in new tab`, click: () => window.open(node.url)},
     {icon: 'link', label: 'Copy URL', click: () => {
       writeToClipboard(encodeURI(node.url))

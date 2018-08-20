@@ -113,19 +113,21 @@ export default class LibraryViewLocalCompare {
 
   async onMerge (base, target, opts = {}) {
     var isPublish = !base
-    opts.paths = opts.paths || this.compareDiff.map(d => d.path)
+    opts.paths = opts.paths || toPaths(this.compareDiff)
+    opts.shallow = false
+    document.body.dispatchEvent(new CustomEvent('custom-local-diff-changing'))
     try {
       if (isPublish) {
         await beaker.archives.publishLocalSyncPathListing(this.target.url, opts)
       } else {
         await beaker.archives.revertLocalSyncPathListing(this.target.url, opts)
       }
-      document.body.dispatchEvent(new CustomEvent('custom-local-diff-changed'))
       toast.create('Files updated')
     } catch (e) {
       console.error(e)
       toast.create(e.message || 'There was an issue writing the files', 'error')
     }
+    document.body.dispatchEvent(new CustomEvent('custom-local-diff-changed'))
     this.loadCompareDiff()
   }
 
@@ -133,4 +135,11 @@ export default class LibraryViewLocalCompare {
     this.revIsOpenMap[rev.path] = !this.revIsOpenMap[rev.path]
     this.updatePage()
   }
+}
+
+function toPaths (compareDiff) {
+  return compareDiff.map(d => {
+    if (d.type === 'dir') return d.path + '/' // indicate that this is a folder
+    return d.path
+  })
 }

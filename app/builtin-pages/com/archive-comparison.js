@@ -43,7 +43,7 @@ export default function renderArchiveComparison (opts = {}) {
   const onCopyAll = (e) => {
     e.preventDefault()
     if (confirm(`${labels.copyAll} to "${getSafeTitle(target)}"?`)) {
-      onMerge(base, target)
+      onMerge(base, target, {shallow: false})
     }
   }
 
@@ -179,7 +179,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
     const path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
 
     if (confirm(`${labels.copy} the changes in ${path} to "${getSafeTitle(target)}"?`)) {
-      onMerge(base, target, {paths: [rev.path]})
+      onMerge(base, target, {paths: [rev.path], shallow: false})
     }
   }
 
@@ -188,7 +188,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
     const path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
 
     if (confirm(`${labels.revert} the changes to ${path}?`)) {
-      onMerge(target, base, {paths: [rev.path]})
+      onMerge(target, base, {paths: [rev.path], shallow: false})
     }
   }
 
