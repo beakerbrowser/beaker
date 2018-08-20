@@ -115,7 +115,7 @@ export default class LibraryViewLocalCompare {
     var isPublish = !base
     opts.paths = opts.paths || toPaths(this.compareDiff)
     opts.shallow = false
-    document.body.dispatchEvent(new CustomEvent('custom-local-diff-changing'))
+    document.body.dispatchEvent(new CustomEvent('custom-start-publish'))
     try {
       if (isPublish) {
         await beaker.archives.publishLocalSyncPathListing(this.target.url, opts)
@@ -128,6 +128,7 @@ export default class LibraryViewLocalCompare {
       toast.create(e.message || 'There was an issue writing the files', 'error')
     }
     document.body.dispatchEvent(new CustomEvent('custom-local-diff-changed'))
+    document.body.dispatchEvent(new CustomEvent('custom-finish-publish'))
     this.loadCompareDiff()
   }
 

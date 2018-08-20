@@ -46,6 +46,7 @@ var archiveVersion = false
 var libraryViewCompare
 var libraryViewLocalCompare
 var localDiffSummary
+var isPublishingLocalDiff = false
 
 var markdownRenderer = createMd({hrefMassager: markdownHrefMassager})
 var readmeElement
@@ -138,6 +139,8 @@ async function setup () {
     document.body.addEventListener('custom-config-file-editor', onConfigFileEditor)
     document.body.addEventListener('custom-set-view', onChangeView)
     document.body.addEventListener('custom-render', render)
+    document.body.addEventListener('custom-start-publish', onStartPublish)
+    document.body.addEventListener('custom-finish-publish', onFinishPublish)
     document.body.addEventListener('custom-local-diff-changed', loadDiffSummary)
     document.body.addEventListener('custom-open-preview-dat', onOpenPreviewDat)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
@@ -168,6 +171,9 @@ async function setup () {
 }
 
 async function loadDiffSummary () {
+  if (isPublishingLocalDiff) {
+    return // wait till publish finishes
+  }
   if (isUsingLocalManualPublishing()) {
     try {
       let localDiff = await beaker.archives.diffLocalSyncPathListing(archive.url)
@@ -1166,6 +1172,17 @@ async function onChangeView (e, view) {
   }
 
   render()
+}
+
+function onStartPublish () {
+  // track that we're publishing so that we dont keep loading the diff while it happens
+  isPublishingLocalDiff = true
+}
+
+function onFinishPublish () {
+  // now that publish finished, load the diff summary
+  isPublishingLocalDiff = false
+  loadDiffSummary()
 }
 
 async function onOpenPreviewDat () {
