@@ -28,7 +28,7 @@ export default function renderArchiveComparison (opts = {}) {
     {
       desc: 'Publish',
       base: 'draft',
-      target: 'publishd',
+      target: 'published',
       copyAll: 'Publish all revisions',
       copy: 'Publish',
       revert: 'Revert',
@@ -109,7 +109,7 @@ function renderArchive (archive) {
   if (!archive) return ''
   return yo`
     <span>
-      <img class="favicon" src="beaker-favicon:${archive.url}" /> ${getSafeTitle(archive)}
+      <img class="favicon" src="beaker-favicon:${archive.url}" /> ${getSafeTitleHTML(archive)}
     </span>
   `
 }
@@ -125,7 +125,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
         </div>
         <p>
           <a class="link" onclick=${onTriggerSelectAnArchive}>Select an archive</a>
-          to compare with <a href=${either.url} target="_blank">${getSafeTitle(either)}</a>.
+          to compare with <a href=${either.url} target="_blank">${getSafeTitleHTML(either)}</a>.
           You can review the differences and merge them together.
         </p>
       </div>`
@@ -145,7 +145,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
           </div>
 
           <p>
-            The files in <a href="beaker://library/${target.url}" onclick=${gotoHomeView}>${getSafeTitle(target)}</a>
+            The files in <a href="beaker://library/${target.url}" onclick=${gotoHomeView}>${getSafeTitleHTML(target)}</a>
             are in sync with the files in
             <span>${target.info.userSettings.localSyncPath}</span>.
           </p>
@@ -159,9 +159,9 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
           </div>
 
           <p>
-            The files in <a href="beaker://library/${base.url}" target="_blank">${getSafeTitle(base)}</a>
+            The files in <a href="beaker://library/${base.url}" target="_blank">${getSafeTitleHTML(base)}</a>
             are in sync with the files in
-            <a href="beaker://library/${target.url}" target="_blank">${getSafeTitle(target)}</a>.
+            <a href="beaker://library/${target.url}" target="_blank">${getSafeTitleHTML(target)}</a>.
           </p>
 
           ${onDeleteDraft
@@ -329,6 +329,10 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
 // =
 
 function getSafeTitle (archive) {
+  return _get(archive, 'info.title', '').trim() || 'Untitled'
+}
+
+function getSafeTitleHTML (archive) {
   return _get(archive, 'info.title', '').trim() || yo`<em>Untitled</em>`
 }
 
