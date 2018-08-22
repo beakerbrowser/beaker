@@ -51,31 +51,6 @@ const STEPS = [
     }
   },
   {
-    title: 'Create and host websites',
-    subtitle: 'Configure working directory',
-    description: 'Create and host websites from your computer. No server required!',
-    content: () => yo`
-      <div>
-        <img class="icon" src="beaker://assets/img/onboarding/create-and-host-websites.svg"/>
-
-        <p>
-          The default directory where your websites will be saved:
-        </p>
-
-        <p class="path-container">
-          <input disabled="true" class="path nofocus" name="path" value=${settings.workspace_default_path} onkeyup=${onKeyupDirectory} />
-
-          <button class="btn primary nofocus" onclick=${onSelectDirectory}>
-            Choose different directory
-          </button>
-        </p>
-      </div>`,
-    color: 'pink',
-    onLeave: async () => {
-      await beaker.browser.setSetting('workspace_default_path', settings.workspace_default_path)
-    }
-  },
-  {
     title: 'Get started',
     subtitle: 'Start exploring the peer-to-peer Web',
     description: '',
@@ -144,7 +119,7 @@ async function onCreateWebsite () {
 export async function create (opts = {}) {
   settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
-  currentStep = (opts.showHelpOnly) ? 2 : 0
+  currentStep = (opts.showHelpOnly) ? (STEPS.length - 1) : 0
   showNavigation = !opts.showHelpOnly
 
   // render interface
@@ -306,24 +281,4 @@ function onToggleDefaultBrowser (e) {
   e.preventDefault()
   defaultProtocolSettings.dat = !defaultProtocolSettings.dat
   update()
-}
-
-function onKeyupDirectory (e) {
-  settings.workspace_default_path = e.target.value
-}
-
-async function onSelectDirectory (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  let path = await beaker.browser.showOpenDialog({
-    title: 'Select a folder',
-    buttonLabel: 'Select folder',
-    properties: ['openDirectory', 'createDirectory'],
-    defaultPath: settings.workspace_default_path
-  })
-  if (path) {
-    settings.workspace_default_path = path[0]
-    update()
-  }
 }
