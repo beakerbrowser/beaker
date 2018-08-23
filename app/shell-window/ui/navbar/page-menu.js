@@ -1,8 +1,10 @@
 /* globals beaker DatArchive confirm */
 
+import _get from 'lodash.get'
 import * as yo from 'yo-yo'
 import {findParent} from '../../../lib/fg/event-handlers'
 import * as pages from '../../pages'
+import * as toast from '../toast'
 
 // there can be many drop menu btns rendered at once, but they are all showing the same information
 // the PageMenuNavbarBtn manages all instances, and you should only create one
@@ -20,6 +22,7 @@ export class PageMenuNavbarBtn {
     if (!page || !page.protocolInfo || ['dat:'].includes(page.protocolInfo.scheme) === false) {
       return ''
     }
+    const isSaved = _get(page, 'siteInfo.userSettings.isSaved', false)
     const isInstalledApp = page.isInstalledApp()
     const isDat = !!page.getViewedDatOrigin()
 
@@ -71,7 +74,23 @@ export class PageMenuNavbarBtn {
 
             ${isDat
               ? yo`
-                <div class="dropdown-items compact with-triangle">
+                <div class="dropdown-items compact with-triangle">                  
+                  ${isSaved
+                    ? yo`
+                      <div class="dropdown-item hover-swapper" onclick=${() => this.onToggleSaved()}>
+                        <span class="default"><i class="fa fa-check"></i> Saved</span>
+                        <span class="hover"><i class="fa fa-trash-o"></i> Move to trash</span>
+                      </div>`
+                    : yo`
+                      <div class="dropdown-item" onclick=${() => this.onToggleSaved()}>
+                        <i class="fa fa-floppy-o"></i> Save this site
+                      </div>`}
+
+                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
+                    <i class="fa fa-clone"></i>
+                    Make editable copy
+                  </div>
+
                   <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
                     <i class="fa fa-files-o"></i>
                     View Source
@@ -92,13 +111,6 @@ export class PageMenuNavbarBtn {
                   <div class="dropdown-item" onclick=${() => this.onClickDownloadZip()}>
                     <i class="fa fa-file-archive-o"></i>
                     Download as .zip
-                  </div>
-
-                  <hr />
-
-                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
-                    <i class="fa fa-clone"></i>
-                    Make editable copy
                   </div>
                 </div>`
               : ''
@@ -140,9 +152,14 @@ export class PageMenuNavbarBtn {
     }
   }
 
-  onClickBtn (e) {
+  async onClickBtn (e) {
     this.isDropdownOpen = !this.isDropdownOpen
-    if (!this.isDropdownOpen) {
+    if (this.isDropdownOpen) {
+      let page = pages.getActive()
+      if (!!page.getViewedDatOrigin()) {
+        page.siteInfo = await (new DatArchive(page.siteInfo.key)).getInfo()
+      }
+    } else {
       this.isOpenwithOpen = false
     }
     this.updateActives()
@@ -215,6 +232,33 @@ export class PageMenuNavbarBtn {
     const page = pages.getActive()
     if (!page || !page.getViewedDatOrigin()) return
     pages.setActive(pages.create(`beaker://swarm-debugger/dat://${page.siteInfo.key}`))
+  }
+
+  async onToggleSaved () {
+    this.close()
+    const page = pages.getActive()
+    const datUrl = page && page.getViewedDatOrigin()
+    if (!datUrl) return
+    const shouldSave = !page.siteInfo.userSettings.isSaved
+    if (shouldSave) {
+      try {
+        await beaker.archives.add(datUrl)
+        page.siteInfo.userSettings.isSaved = true
+        toast.create(`Saved to your Library`)
+      } catch (e) {
+        console.error(e)
+        toast.create(`Could not save to your Library`)
+      }
+    } else {
+      try {
+        await beaker.archives.remove(datUrl)
+        page.siteInfo.userSettings.isSaved = false
+        toast.create(`Moved to Trash`)
+      } catch (e) {
+        console.error(e)
+        toast.create(`Could not move to Trash`)
+      }
+    }
   }
 
   async onClickFork () {
