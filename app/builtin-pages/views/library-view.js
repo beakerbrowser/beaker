@@ -12,7 +12,7 @@ import dragDrop from 'drag-drop'
 import {join as joinPaths} from 'path'
 import FilesBrowser from '../com/files-browser2'
 import toggleable from '../com/toggleable'
-import toggleable2 from '../com/toggleable2'
+import toggleable2, {closeAllToggleables} from '../com/toggleable2'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
@@ -21,6 +21,7 @@ import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
 import * as copyDatPopup from '../com/library-copydat-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
 import renderFaviconPicker from '../com/favicon-picker'
+import {RehostSlider} from '../../lib/fg/rehost-slider'
 import LibraryViewCompare from '../com/library-view-compare'
 import LibraryViewLocalCompare from '../com/library-view-local-compare'
 import renderSettingsField from '../com/settings-field'
@@ -40,6 +41,7 @@ var activeView // will default to 'files'
 var archive
 var archiveFsRoot
 var filesBrowser
+var rehostSlider
 var archiveVersion = false
 
 // used in the compare views
@@ -101,10 +103,12 @@ async function setup () {
 
     document.title = `Library - ${archive.info.title || 'Untitled'}`
 
-    // construct files browser
+    // construct ui elements
     archiveFsRoot = new FSArchive(null, archive, archive.info)
     filesBrowser = new FilesBrowser(archiveFsRoot)
     filesBrowser.onSetCurrentSource = onSetCurrentSource
+    rehostSlider = new RehostSlider(archive.info)
+    rehostSlider.setup()
 
     // set up download progress
     if (!_get(archive, 'info.isOwner')) {
@@ -143,6 +147,7 @@ async function setup () {
     document.body.addEventListener('custom-finish-publish', onFinishPublish)
     document.body.addEventListener('custom-local-diff-changed', loadDiffSummary)
     document.body.addEventListener('custom-open-preview-dat', onOpenPreviewDat)
+    beaker.archives.addEventListener('updated', onArchiveUpdated)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
     beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
 
@@ -307,20 +312,6 @@ function render () {
                 : ''
               }
 
-              ${archive.info.isOwner && !archive.info.userSettings.isSaved
-                ? yo`
-                  <div class="container">
-                    <div class="message error">
-                      <span>
-                        "${archive.info.title ? archive.info.title : 'This archive'}"
-                        is in the Trash.
-                      </span>
-                      <button class="btn" onclick=${onSave}>Restore from Trash</button>
-                    </div>
-                  </div>`
-                : ''
-              }
-
               ${renderView()}
             </div>
           </div>
@@ -331,8 +322,8 @@ function render () {
 }
 
 function renderHeader () {
-  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const isOwner = _get(archive, 'info.isOwner')
+  const isSaved = _get(archive, 'info.userSettings.isSaved')
   const hasDescription = !!archive.info.description
   const isExpanded = !isNavCollapsed({ignoreScrollPosition: true})
   const isEditingTitle = headerEditValues.title !== false
@@ -344,6 +335,7 @@ function renderHeader () {
           <div class="container">
             <div class="info">
               <div class="title ${isOwner ? 'editable' : ''} ${isEditingTitle ? 'editing' : ''}">
+                <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
                 ${isEditingTitle
                   ? yo`<h1>
                     <input
@@ -353,8 +345,9 @@ function renderHeader () {
                       onkeyup=${e => onChangeHeaderEditor(e, 'title')} />
                     </h1>`
                   : yo`<h1 onclick=${onClickHeaderTitle}>${getSafeTitle()}</h1>`}
-                ${isOwner ? yo`<span class="fa fa-pencil"></span>` : ''}
+                ${isOwner ? yo`<span class="fa fa-pencil" onclick=${onClickHeaderTitle}></span>` : ''}
 
+                ${(!isSaved && isOwner) ? yo`<span class="badge">TRASHED</span>` : ''}
                 ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
               </div>
 
@@ -363,28 +356,15 @@ function renderHeader () {
                 : ''
               }
 
-              ${isOwner
-                ? syncPath
-                  ?
-                    yo`
-                      <button onclick=${() => onOpenFolder(syncPath)} oncontextmenu=${onSyncPathContextMenu} class="primary-action btn plain">
-                        ${syncPath}
-                      </button>
-                    `
-                  :
-                    _get(archive, 'info.localSyncPathIsMissing')
-                      ? ''
-                      : yo`
-                        <button class="primary-action btn primary" onclick=${onChangeSyncDirectory}>
-                          Set local directory
-                        </button>
-                      `
-                : yo`
-                  <button class="primary-action btn primary" onclick=${onMakeCopy}>
-                    Make an editable copy
-                  </button>
-                `
-              }
+              <div class="primary-action">
+                ${renderSeedMenu()}
+                <button class="btn" onclick=${onToggleSaved}>
+                  ${isSaved
+                    ? yo`<span><i class="fa fa-check"></i> Saved</span>`
+                    : yo`<span><i class="fa fa-floppy-o"></i> Save</span>`}
+                </button>
+                ${renderMenu()}
+              </div>
             </div>
           </div>`
         : ''
@@ -392,6 +372,127 @@ function renderHeader () {
 
       ${renderToolbar()}
     </div>`
+}
+
+function renderSeedMenu () {
+  const networked = _get(archive, 'info.userSettings.networked')
+  const button = onToggle => yo`
+    <button class="btn btn-split-group" onclick=${onToggle}>
+      <span class="btn-split-section">
+        <i class="fa fa-share-alt"></i>
+        ${_get(archive, 'info.peers', 0)}
+      </span>
+      <span class="btn-split-section">
+        ${(networked ? 'Seeding' : 'Offline')}
+      </span>
+    </button>`
+  return toggleable2({
+    id: 'nav-item-seed-menu',
+    closed ({onToggle}) {
+      return yo`
+        <div class="dropdown menu seed toggleable-container">
+          ${button(onToggle)}
+        </div>`
+    },
+    open ({onToggle}) {
+      return yo`
+        <div class="dropdown menu seed toggleable-container">
+          ${button(onToggle)}
+          <div class="dropdown-items right">
+            <div class="section">
+              ${rehostSlider.render()}
+            </div>
+            <div class="section action">
+              <a href="#network" onclick=${e => onChangeView(e, 'network')}><i class="fa fa-globe"></i> View network</a>
+            </div>
+          </div>
+        </div>
+      `
+    },
+    afterOpen () {
+      rehostSlider.refreshState()
+    }
+  })
+}
+
+function renderMenu () {
+  const isOwner = _get(archive, 'info.isOwner')
+  const isSaved = _get(archive, 'info.userSettings.isSaved')
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  const title = getSafeTitle()
+  const description = _get(archive, 'info.description').trim()
+
+  return toggleable2({
+    id: 'nav-item-main-menu',
+    closed: ({onToggle}) => {
+      return yo`
+        <div class="dropdown menu toggleable-container">
+          <button class="btn" onclick=${onToggle}>
+            <span class="fa fa-caret-down"></span>
+          </button>
+        </div>`
+    },
+    open: ({onToggle}) => {
+      return yo`
+        <div class="dropdown menu toggleable-container">
+          <button class="btn" onclick=${onToggle}>
+            <span class="fa fa-caret-down"></span>
+          </button>
+
+          <div class="dropdown-items right" onclick=${onToggle}>
+            <div class="section menu-items">
+              ${!isSaved
+                ? yo`
+                  <div class="dropdown-item" onclick=${onSave}>
+                    <i class="fa fa-floppy-o"></i>
+                    Save for offline
+                  </div>`
+                : ''}
+
+              <div class="dropdown-item" onclick=${onMakeCopy}>
+                <i class="fa fa-clone"></i>
+                Make a copy
+              </div>
+
+              <div class="dropdown-item" onclick=${e => {onChangeView(e, 'compare'); onToggle(e)}}>
+                <i class="fa fa-files-o"></i>
+                Compare files
+              </div>
+
+              <div class="dropdown-item" onclick=${onDownloadZip}>
+                <i class="fa fa-file-archive-o"></i>
+                Download as .zip
+              </div>
+
+              ${isSaved
+                ? yo`
+                  <div class="dropdown-item" onclick=${onMoveToTrash}>
+                    <i class="fa fa-trash-o"></i>
+                    Move to Trash
+                  </div>`
+                : ''}
+
+              <div class="dropdown-item" onclick=${onDeletePermanently}>
+                <i class="fa fa-times-circle"></i>
+                Delete permanently
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="buttons">
+                <button class="btn" onclick=${() => window.open(archive.url)}>
+                  Open
+                </button>
+
+                <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
+                  Copy URL
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>`
+    }
+  })
 }
 
 function renderView () {
@@ -447,23 +548,49 @@ function rerenderLocalDiffSummary () {
 }
 
 function renderLocalDiffSummary () {
-  var total = localDiffSummary ? (localDiffSummary.add + localDiffSummary.mod + localDiffSummary.del) : 0
-  if (!total) return yo`<div id="local-diff-summary"></div>`
+  const isSaved = _get(archive, 'info.userSettings.isSaved')
+  const isAtRootFile = !(filesBrowser.getCurrentSource().parent)
+  if (!archive.info.isOwner || !isSaved || !isAtRootFile) {
+    return yo`<div id="local-diff-summary empty"></div>`
+  }
+
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  const total = localDiffSummary ? (localDiffSummary.add + localDiffSummary.mod + localDiffSummary.del) : 0
 
   function rRevisionIndicator (type) {
-    if (localDiffSummary[type] === 0) return ''
+    if (!localDiffSummary || localDiffSummary[type] === 0) return ''
     return yo`<div class="revision-indicator ${type}"></div>`
+  }
+
+  if (!syncPath) {
+    if (isLocalPathPromptDismissed()) {
+      return yo`<div id="local-diff-summary empty"></div>`
+    }
+    return yo`
+      <div id="local-diff-summary" class="setup-tip">
+        <div>
+          <i class="fa fa-lightbulb-o"></i>
+          <strong>Tip:</strong>
+          Set a local folder to access this site${"'"}s files outside the browser.
+          <a class="link" target="_blank">Learn more.</a>
+        </div>
+        <button class="btn primary" onclick=${onChangeSyncDirectory}>Set a local folder</button>
+        <button class="btn transparent" onclick=${onDismissLocalPathPrompt}>Dismiss</button>
+      </div>`
   }
 
   return yo`
     <div id="local-diff-summary">
+      <div class="path">
+        <span class="label">Local folder:</span>
+        <button class="link sync-path-link" onclick=${onSyncPathContextMenu}>${syncPath} <i class="fa fa-angle-down"></i></button>
+      </div>
       ${rRevisionIndicator('add')}
       ${rRevisionIndicator('mod')}
       ${rRevisionIndicator('del')}
-      ${total}
-      ${pluralize(total, 'revision')}
-      <a class="btn" href=${`beaker://library/${archive.url}#local-compare`} onclick=${e => onChangeView(e, 'local-compare')}>Review</a>
-      <a class="btn" onclick=${e => onOpenPreviewDat()}>Preview</a>
+      <span class="summary">${total} ${pluralize(total, 'revision')}</span>
+      <a class="btn success" href=${`beaker://library/${archive.url}#local-compare`} onclick=${e => onChangeView(e, 'local-compare')}>Compare</a>
+      <a class="btn primary" href=${archive.url + '+preview'} onclick=${onOpenPreviewDat}>Preview</a>
     </div>`
 }
 
@@ -930,10 +1057,14 @@ function renderToolbar () {
 function renderNav () {
   const isOwner = _get(archive, 'info.isOwner')
   const baseUrl = `beaker://library/${archive.url}`
+  const collapsed = isNavCollapsed()
 
   return yo`
     <div class="nav-items">
-      ${renderMenu()}
+      <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item nav-archive-title ${collapsed ? 'visible' : ''}">
+        <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
+        ${getSafeTitle()}
+      </a>
 
       <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item ${activeView === 'files' ? 'active' : ''}">
         Files
@@ -948,117 +1079,6 @@ function renderNav () {
       </a>
     </div>
   `
-}
-
-function renderMenu (opts) {
-  const isOwner = _get(archive, 'info.isOwner')
-  const isSaved = _get(archive, 'info.userSettings.isSaved')
-  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
-  const title = getSafeTitle()
-  const description = _get(archive, 'info.description').trim()
-
-  return toggleable2({
-    id: 'nav-item-main-menu',
-    closed: ({onToggle}) => {
-      var collapsed = isNavCollapsed()
-      return yo`
-        <div class="dropdown menu toggleable-container ${collapsed ? 'collapsed' : ''}">
-          <button class="btn transparent nofocus toggleable" onclick=${onToggle}>
-            <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
-            <div class="nav-archive-title ${collapsed ? 'visible' : ''}">${title}</div>
-            <span class="fa fa-angle-down"></span>
-          </button>
-        </div>`
-    },
-    open: ({onToggle}) => {
-      var collapsed = isNavCollapsed()
-      return yo`
-        <div class="dropdown menu toggleable-container ${collapsed ? 'collapsed' : ''}">
-          <button class="btn transparent nofocus toggleable" onclick=${onToggle}>
-            <img class="favicon" src="beaker-favicon:${archive.url}?cache=${faviconCacheBuster}" />
-            <div class="nav-archive-title ${collapsed ? 'visible' : ''}">${title}</div>
-            <span class="fa fa-angle-down"></span>
-          </button>
-
-          <div class="dropdown-items left" onclick=${onToggle}>
-            <div class="section">
-              <h1 class="title">${title}</h1>
-              ${description ? yo`<p class="description">${description}</p>` : ''}
-            </div>
-
-            <div class="section menu-items">
-              ${isOwner
-                ? ''
-                : (isSaved
-                  ? yo`
-                    <div class="dropdown-item" onclick=${onMoveToTrash}>
-                      <i class="fa fa-pause"></i>
-                      Stop seeding
-                    </div>`
-                  : yo`
-                    <div class="dropdown-item" onclick=${onSave}>
-                      <i class="fa fa-arrow-up"></i>
-                      Seed these files
-                    </div>`
-                )
-              }
-
-              <div class="dropdown-item" onclick=${onMakeCopy}>
-                <i class="fa fa-clone"></i>
-                Make ${isOwner ? 'a' : 'an editable'} copy
-              </div>
-
-              ${''/* DISABLED (needs work -prf) <div class="dropdown-item" onclick=${e => {onChangeView(e, 'compare'); onToggle(e)}}>
-                <div class="revision-indicator-icon">
-                  <div class="revision-indicator add"></div><div class="revision-indicator del"></div>
-                </div>
-                Compare archives
-              </div>*/}
-
-              <div class="dropdown-item" onclick=${onDownloadZip}>
-                <i class="fa fa-file-archive-o"></i>
-                Download as .zip
-              </div>
-
-              ${isOwner
-                ? (isSaved
-                  ? yo`
-                    <div class="dropdown-item" onclick=${onMoveToTrash}>
-                      <i class="fa fa-trash-o"></i>
-                      Move to Trash
-                    </div>`
-                  : [
-                    yo`
-                      <div class="dropdown-item" onclick=${onSave}>
-                        <i class="fa fa-undo"></i>
-                        Restore from Trash
-                      </div>`,
-                    yo`
-                      <div class="dropdown-item" onclick=${onDeletePermanently}>
-                        <i class="fa fa-times-circle"></i>
-                        Delete permanently
-                      </div>`
-                  ]
-                )
-                : ''
-              }
-            </div>
-
-            <div class="section">
-              <div class="buttons">
-                <button class="btn" onclick=${() => window.open(archive.url)}>
-                  Open
-                </button>
-
-                <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
-                  Copy URL
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>`
-    }
-  })
 }
 
 // events
@@ -1086,16 +1106,23 @@ async function addReadme () {
   render()
 }
 
+function onToggleSaved () {
+  if (_get(archive, 'info.userSettings.isSaved')) {
+    return onMoveToTrash()
+  } else {
+    return onSave()
+  }
+}
+
 async function onMoveToTrash () {
   const nickname = getSafeTitle()
-  if (confirm(`Move ${nickname} to Trash?`)) {
-    try {
-      await beaker.archives.remove(archive.url)
-      archive.info.userSettings.isSaved = false
-    } catch (e) {
-      console.error(e)
-      toast.create(`Could not move ${nickname} to Trash`, 'error')
-    }
+  try {
+    await beaker.archives.remove(archive.url)
+    archive.info.userSettings.isSaved = false
+    toast.create(`Removed ${nickname} from your Library`, 'success')
+  } catch (e) {
+    console.error(e)
+    toast.create(`Could not move ${nickname} to Trash`, 'error')
   }
   render()
 }
@@ -1172,6 +1199,8 @@ async function onChangeView (e, view) {
   }
 
   render()
+  closeAllToggleables()
+  document.querySelector('.builtin-main').scrollTo(0, 0)
 }
 
 function onStartPublish () {
@@ -1185,7 +1214,8 @@ function onFinishPublish () {
   loadDiffSummary()
 }
 
-async function onOpenPreviewDat () {
+async function onOpenPreviewDat (e) {
+  if (e) e.preventDefault()
   var previewDat = archive.checkout('preview')
   window.open(previewDat.url)
 }
@@ -1278,6 +1308,7 @@ async function onChangeSyncDirectory () {
     return
   }
 
+  setLocalPathPromptDismissed()
   window.history.pushState('', {}, `beaker://library/${archive.url}`)
   await setup()
   onOpenFolder(localSyncPath)
@@ -1461,11 +1492,13 @@ function onSyncPathContextMenu (e) {
   e.preventDefault()
   e.stopPropagation()
 
+  const rect = e.currentTarget.getClientRects()[0]
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   contextMenu.create({
-    x: e.clientX,
-    y: e.clientY,
+    x: rect.right + 5,
+    y: rect.bottom + 10,
     right: true,
+    withTriangle: true,
     items: [
       {icon: 'folder-o', label: 'Open folder', click: () => onOpenFolder(syncPath)},
       {icon: 'clipboard', label: 'Copy path', click: () => {
@@ -1476,6 +1509,25 @@ function onSyncPathContextMenu (e) {
       {icon: 'times-circle', label: 'Stop syncing to folder', click: onRemoveSyncDirectory}
     ]
   })
+}
+
+function isLocalPathPromptDismissed () {
+  return localStorage['local-path-prompt-dismissed:' + archive.key] === '1'
+}
+
+function setLocalPathPromptDismissed () {
+  localStorage['local-path-prompt-dismissed:' + archive.key] = '1'
+}
+
+function onDismissLocalPathPrompt (e) {
+  e.preventDefault()
+  setLocalPathPromptDismissed()
+
+  // trigger a dismiss animation
+  var el = document.getElementById('local-diff-summary')
+  if (!el) return
+  el.style.opacity = 0
+  setTimeout(() => el.remove(), 200)
 }
 
 async function onFilesChanged () {
@@ -1505,6 +1557,13 @@ function onScrollMain (e) {
     el.classList.add('visible')
   } else {
     el.classList.remove('visible')
+  }
+}
+
+async function onArchiveUpdated (e) {
+  if (e.details.url === archive.url) {
+    await archive.setup()
+    render()
   }
 }
 

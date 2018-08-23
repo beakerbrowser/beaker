@@ -51,12 +51,12 @@ export default function toggleable2 ({id, closed, open, afterOpen}) {
   }
   var callArgs = {onToggle}
 
-  function set (container, newState) {
+  function set (container, newState, {isRestore} = {}) {
     closeAllToggleables()
     if (newState) {
       yo.update(container, open(callArgs))
       container.classList.add('open')
-      if (afterOpen) afterOpen(container)
+      if (afterOpen && !isRestore) afterOpen(container)
     } else {
       yo.update(container, closed(callArgs))
       container.classList.remove('open')      
@@ -72,7 +72,7 @@ export default function toggleable2 ({id, closed, open, afterOpen}) {
 
   // restore state if id given
   if (id && toggleState[id]) {
-    set(el, true)
+    set(el, true, {isRestore: true})
   }
 
   return el

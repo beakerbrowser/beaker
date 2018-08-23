@@ -6,6 +6,7 @@
 @import "../components/progress";
 @import "../components/context-input";
 @import "../components/badge";
+@import "../components/rehost-slider.less";
 
 // builtin pages components
 @import "./components/tooltip.less";
@@ -548,7 +549,7 @@ body.drag {
 
     .back-link {
       position: absolute;
-      left: -30px;
+      left: -40px;
       top: 12px;
       width: 27px;
       text-align: center;
@@ -584,6 +585,11 @@ body.drag {
         position: absolute;
         right: 0;
         top: 20px;
+        display: flex;
+
+        .btn {
+          margin-left: 5px;
+        }
       }
     }
 
@@ -612,7 +618,8 @@ body.drag {
       }
 
       &.editable {
-        h1 {
+        h1,
+        .fa-pencil {
           cursor: pointer;
         }
 
@@ -629,8 +636,10 @@ body.drag {
       }
 
       img {
-        height: 22px;
-        width: 22px;
+        height: 32px;
+        width: 32px;
+        margin-left: -2px;
+        margin-right: 6px;
       }
 
       .badge {
@@ -726,6 +735,20 @@ body.drag {
     }
   }
 
+  .nav-archive-title {
+    display: none;
+    margin-right: 35px;
+    font-weight: 500;
+
+    &.visible {
+      display: flex;
+    }
+
+    .favicon {
+      margin-right: 5px;
+    }
+  }
+
   .nav-links {
     height: 100%;
 
@@ -740,40 +763,15 @@ body.drag {
 
   .dropdown.menu {
     color: @color-text;
-    margin-right: 20px;
 
-    button.toggleable {
-      &:extend(.flex);
-      font-size: inherit;
-      align-items: center;
-      padding: 0 5px;
+    &.open .btn.primary {
+      box-shadow: inset 0px 0 5px rgba(0,0,0,0.25);
     }
 
-    .favicon {
-      margin-right: 5px;
-    }
-
-    .nav-archive-title {
-      display: none;
-      margin-right: 5px;
-      font-weight: 500;
-
-      @media (min-width: 700px) {
-        &.visible {
-          display: block;
-        }
+    .btn.primary {
+      .fa-caret-down {
+        font-weight: bold;
       }
-    }
-
-    .title {
-      font-size: 1rem;
-      margin: 10px 12px 10px;
-      height: 15px;
-    }
-
-    .description {
-      padding: 0 12px;
-      margin: 10px 0;
     }
 
     .dropdown-items {
@@ -782,8 +780,13 @@ body.drag {
       font-size: 13px;
     }
 
-    .dropdown-item {
+    &.seed {
+      .dropdown-items {
+        width: 290px;
+      }
+    }
 
+    .dropdown-item {
       .fa {
         color: @color-text;
       }
@@ -791,27 +794,23 @@ body.drag {
 
     .section.menu-items {
       border-bottom: 0;
-      padding: 0;
+      padding-bottom: 0;
     }
 
-    .revision-indicator-icon {
-      display: inline-block;
-      width: 20px;
+    .section.action {
+      background: #f5f5f5;
+      padding: 10px;
 
-      .revision-indicator {
-        position: relative;
-        top: -1px;
-        width: 5px;
-        height: 5px;
-        margin-right: 1px;
-
-        &.add {
-          background: #999;
+      a {
+        color: #555;
+        &:hover {
+          cursor: pointer;
+          text-decoration: underline;
         }
+      }
 
-        &.del {
-          background: #444;
-        }
+      .fa {
+        margin-right: 2px;
       }
     }
 
@@ -826,6 +825,49 @@ body.drag {
         &:last-of-type {
           margin-left: 5px;
         }
+      }
+    }
+  }
+
+  #local-diff-summary {
+    &:extend(.flex);
+    flex-wrap: nowrap;
+    align-items: center;
+    margin: 0 0 15px;
+    padding: 10px 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+
+    &.empty {
+      display: none;
+    }
+
+    & > * {
+      margin-left: 5px;
+    }
+
+    .summary {
+      margin: 0 8px;
+    }
+
+    .path {
+      margin-left: 0;
+      margin-right: auto;
+
+      .label {
+        font-weight: 500;
+      }
+
+      .sync-path-link {
+        color: rgba(0,0,0,.7);
+      }
+    }
+
+    &.setup-tip {
+      transition: opacity 0.2s;
+
+      & > * {
+        margin: 0 auto;
       }
     }
   }

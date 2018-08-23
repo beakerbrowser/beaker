@@ -1,3 +1,5 @@
+@import "../components/rehost-slider.less";
+
 .datsite-menu-dropdown {
   padding-top: 10px;
   margin-right: -10px;
@@ -22,7 +24,7 @@
   }
 
   .header,
-  .rehosting-controls {
+  .rehost-slider {
     margin: 0 10px;
     padding: 10px 0;
     border-bottom: 1px solid #eee;
@@ -64,40 +66,6 @@
     &:hover {
       text-decoration: underline;
       cursor: pointer;
-    }
-  }
-
-  .labels {
-    &:extend(.flex);
-    align-items: center;
-
-    .policy {
-      flex: 1;
-    }
-  }
-
-  label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 5px;
-  }
-
-  input[type=range] {
-    width: 100%;
-  }
-
-  .fa-circle {
-    margin-right: 3px;
-    font-size: 12px;
-
-    &.green {
-      color: @green;
-    }
-    &.yellow {
-      color: @yellow;
-    }
-    &.red {
-      color: @red;
     }
   }
 }

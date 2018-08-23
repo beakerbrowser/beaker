@@ -187,6 +187,10 @@
   border: 1px solid @blue;
   transition: background .1s ease;
 
+  &.pressed {  
+    box-shadow: inset 0px 0 5px rgba(0,0,0,0.25)
+  }
+
   &:hover {
     background: shade(@blue, 13%);
   }
@@ -200,6 +204,21 @@
   &:hover {
     background: shade(@lime, 12%);
     border: 1px solid shade(@lime, 12%);
+  }
+}
+
+.btn.btn-split-group {
+  height: auto;
+  padding: 0;
+
+  .btn-split-section {
+    height: 28px;
+    padding: 0 10px;
+    border-right: 1px solid #ddd;
+
+    &:last-child {
+      border-right: 0;
+    }
   }
 }
 

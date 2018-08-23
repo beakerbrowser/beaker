@@ -87,6 +87,14 @@ test('archives.add, archives.remove', async t => {
   })
 })
 
+test('archives.setUserSettings', async t => {
+  // by url
+  var res = await app.executeJavascript(`
+    window.beaker.archives.setUserSettings("${createdDatURL}", {expiresAt: 1000})
+  `)
+  t.deepEqual(res.expiresAt, 1000)
+})
+
 test('archives.list', async t => {
   // add the owned and unowned dats
   var res = await app.executeJavascript(`
