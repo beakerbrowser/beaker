@@ -95,7 +95,6 @@ export class RehostSlider extends EventEmitter {
             step="1"
             list="steplist"
             value=${sliderState}
-            onchange=${e => this.onChangeTimelen(e)}
             oninput=${e => this.onChangeTimelen(e)} />
           <datalist id="steplist">
               <option>0</option>
@@ -123,19 +122,16 @@ export class RehostSlider extends EventEmitter {
   }
 
   async onChangeTimelen (e) {
-    // update the archive settings
     this.sliderState = e.target.value
+    this.rerender()
+
+    // update the archive settings
     var networked = (this.sliderState != NOT)
     var autoUpload = (this.sliderState > WHILE_VISITING)
-    var shouldSave = autoUpload && !this.siteInfo.userSettings.isSaved
     var expiresAt = 0
     if (this.sliderState == ONEDAY) expiresAt = +(moment().add(1, 'day'))
     if (this.sliderState == ONEWEEK) expiresAt = +(moment().add(1, 'week'))
     if (this.sliderState == ONEMONTH) expiresAt = +(moment().add(1, 'month'))
-    if (shouldSave) await beaker.archives.add(this.siteInfo.key, {networked, autoUpload, expiresAt})
-    else await beaker.archives.setUserSettings(this.siteInfo.key, {networked, autoUpload, expiresAt})
-
-    this.siteInfo = await (new DatArchive(this.siteInfo.key)).getInfo()
-    this.rerender()
+    await beaker.archives.setUserSettings(this.siteInfo.key, {networked, autoUpload, expiresAt})
   }
 }

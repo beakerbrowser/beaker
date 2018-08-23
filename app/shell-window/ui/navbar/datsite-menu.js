@@ -56,7 +56,7 @@ export class DatsiteMenuNavbarBtn {
             </div>
           </div>
 
-          ${!isOwner ? this.rehostSlider.render() : ''}
+          ${this.rehostSlider.render()}
 
           <div class="network-url">
             <a onclick=${e => this.onOpenPage('beaker://settings#dat-network-activity')}>
@@ -103,7 +103,7 @@ export class DatsiteMenuNavbarBtn {
 
       // render dropdown
       this.rehostSlider = new RehostSlider(page.siteInfo)
-      this.rehostSlider.setup()
+      await this.rehostSlider.setup()
       this.isDropdownOpen = true
       this.updateActives()
     }
