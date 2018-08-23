@@ -1,0 +1,19 @@
+.hover-swapper {
+  & > .default,
+  & > .hover {
+    pointer-events: none;
+  }
+
+  & > .default {
+    display: inline-block;
+  }
+  & > .hover {
+    display: none;
+  }
+  &:hover > .default {
+    display: none;
+  }
+  &:hover > .hover {
+    display: inline-block;
+  }
+}

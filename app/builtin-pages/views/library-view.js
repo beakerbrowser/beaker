@@ -63,6 +63,7 @@ var toplevelError
 var copySuccess = false
 var isFaviconSet = true
 var arePeersCollapsed = true
+var wasJustSaved = false // used to make the save button act more nicely
 var faviconCacheBuster
 
 // HACK
@@ -358,11 +359,21 @@ function renderHeader () {
 
               <div class="primary-action">
                 ${renderSeedMenu()}
-                <button class="btn" onclick=${onToggleSaved}>
-                  ${isSaved
-                    ? yo`<span><i class="fa fa-check"></i> Saved</span>`
-                    : yo`<span><i class="fa fa-floppy-o"></i> Save</span>`}
-                </button>
+                ${isSaved
+                  ? wasJustSaved
+                    ? yo`
+                      <button class="btn save" onclick=${onToggleSaved}>
+                        <i class="fa fa-check"></i> Saved
+                      </button>`
+                    : yo`
+                      <button class="btn save hover-swapper" onclick=${onToggleSaved}>
+                        <span class="default"><i class="fa fa-check"></i> Saved</span>
+                        <span class="hover"><i class="fa fa-trash-o"></i> Trash</span>
+                      </button>`
+                  : yo`
+                    <button class="btn" onclick=${onToggleSaved}>
+                      <i class="fa fa-floppy-o"></i> Save
+                    </button>`}
                 ${renderMenu()}
               </div>
             </div>
@@ -441,14 +452,6 @@ function renderMenu () {
 
           <div class="dropdown-items right" onclick=${onToggle}>
             <div class="section menu-items">
-              ${!isSaved
-                ? yo`
-                  <div class="dropdown-item" onclick=${onSave}>
-                    <i class="fa fa-floppy-o"></i>
-                    Save for offline
-                  </div>`
-                : ''}
-
               <div class="dropdown-item" onclick=${onMakeCopy}>
                 <i class="fa fa-clone"></i>
                 Make a copy
@@ -1146,6 +1149,10 @@ async function onSave () {
     await beaker.archives.add(archive.url)
     archive.info.userSettings.isSaved = true
     toast.create(`Saved ${nickname} to your Library`, 'success')
+
+    // give the save btn time to just say "Saved"
+    wasJustSaved = true
+    setTimeout(() => { wasJustSaved = false; render() }, 1e3)
   } catch (e) {
     console.error(e)
     toast.create(`Could not save ${nickname} to your Library`, 'error')

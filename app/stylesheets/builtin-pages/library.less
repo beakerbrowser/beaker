@@ -7,6 +7,7 @@
 @import "../components/context-input";
 @import "../components/badge";
 @import "../components/rehost-slider.less";
+@import "../components/hover-swapper.less";
 
 // builtin pages components
 @import "./components/tooltip.less";
@@ -589,6 +590,13 @@ body.drag {
 
         .btn {
           margin-left: 5px;
+          &:focus {
+            box-shadow: none;
+          }
+        }
+
+        .btn.save {
+          width: 80px; // fix the width so that hover-swaps dont rearrange things
         }
       }
     }
