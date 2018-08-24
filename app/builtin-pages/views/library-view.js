@@ -359,21 +359,6 @@ function renderHeader () {
 
               <div class="primary-action">
                 ${renderSeedMenu()}
-                ${isSaved
-                  ? wasJustSaved
-                    ? yo`
-                      <button class="btn save" onclick=${onToggleSaved}>
-                        <i class="fa fa-check"></i> Saved
-                      </button>`
-                    : yo`
-                      <button class="btn save hover-swapper" onclick=${onToggleSaved}>
-                        <span class="default"><i class="fa fa-check"></i> Saved</span>
-                        <span class="hover"><i class="fa fa-trash-o"></i> Trash</span>
-                      </button>`
-                  : yo`
-                    <button class="btn" onclick=${onToggleSaved}>
-                      <i class="fa fa-floppy-o"></i> Save
-                    </button>`}
                 ${renderMenu()}
               </div>
             </div>
@@ -452,15 +437,22 @@ function renderMenu () {
 
           <div class="dropdown-items right" onclick=${onToggle}>
             <div class="section menu-items">
+              ${!isSaved
+                ? yo`
+                  <div class="dropdown-item" onclick=${onSave}>
+                    <i class="fa fa-floppy-o"></i> Save to Library
+                  </div>`
+                : ''}
+
               <div class="dropdown-item" onclick=${onMakeCopy}>
                 <i class="fa fa-clone"></i>
                 Make a copy
               </div>
 
-              <div class="dropdown-item" onclick=${e => {onChangeView(e, 'compare'); onToggle(e)}}>
+              ${''/*<div class="dropdown-item" onclick=${e => {onChangeView(e, 'compare'); onToggle(e)}}>
                 <i class="fa fa-files-o"></i>
                 Compare files
-              </div>
+              </div>*/}
 
               <div class="dropdown-item" onclick=${onDownloadZip}>
                 <i class="fa fa-file-archive-o"></i>
@@ -471,13 +463,13 @@ function renderMenu () {
                 ? yo`
                   <div class="dropdown-item" onclick=${onMoveToTrash}>
                     <i class="fa fa-trash-o"></i>
-                    Move to Trash
+                    Remove from Library
                   </div>`
                 : ''}
 
               <div class="dropdown-item" onclick=${onDeletePermanently}>
                 <i class="fa fa-times-circle"></i>
-                Delete permanently
+                Purge from my computer
               </div>
             </div>
 

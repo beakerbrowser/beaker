@@ -77,19 +77,13 @@ export class PageMenuNavbarBtn {
                 <div class="dropdown-items compact with-triangle">                  
                   ${isSaved
                     ? yo`
-                      <div class="dropdown-item hover-swapper" onclick=${() => this.onToggleSaved()}>
-                        <span class="default"><i class="fa fa-check"></i> Saved</span>
-                        <span class="hover"><i class="fa fa-trash-o"></i> Move to trash</span>
+                      <div class="dropdown-item" onclick=${() => this.onToggleSaved()}>
+                        <i class="fa fa-trash-o"></i> Remove from Library
                       </div>`
                     : yo`
                       <div class="dropdown-item" onclick=${() => this.onToggleSaved()}>
-                        <i class="fa fa-floppy-o"></i> Save this site
+                        <i class="fa fa-floppy-o"></i> Save to Library
                       </div>`}
-
-                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
-                    <i class="fa fa-clone"></i>
-                    Make editable copy
-                  </div>
 
                   <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
                     <i class="fa fa-files-o"></i>
@@ -111,6 +105,13 @@ export class PageMenuNavbarBtn {
                   <div class="dropdown-item" onclick=${() => this.onClickDownloadZip()}>
                     <i class="fa fa-file-archive-o"></i>
                     Download as .zip
+                  </div>
+
+                  <hr />
+                  
+                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
+                    <i class="fa fa-clone"></i>
+                    Make editable copy
                   </div>
                 </div>`
               : ''
