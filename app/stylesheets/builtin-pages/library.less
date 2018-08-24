@@ -550,7 +550,7 @@ body.drag {
 
     .back-link {
       position: absolute;
-      left: -40px;
+      left: 10px;
       top: 12px;
       width: 27px;
       text-align: center;
@@ -566,6 +566,10 @@ body.drag {
       &:hover {
         color: @color-text;
         background: #eee;
+      }
+
+      @media (max-width: 900px) {
+        display: none;
       }
     }
 
@@ -668,7 +672,6 @@ body.drag {
     .container {
       &:extend(.flex);
       align-items: center;
-      position: relative;
     }
 
     .buttons {
