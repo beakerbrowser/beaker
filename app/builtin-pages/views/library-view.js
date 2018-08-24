@@ -64,6 +64,7 @@ var copySuccess = false
 var isFaviconSet = true
 var arePeersCollapsed = true
 var wasJustSaved = false // used to make the save button act more nicely
+var oldLocalSyncPath = ''
 var faviconCacheBuster
 
 // HACK
@@ -152,10 +153,8 @@ async function setup () {
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
     beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
 
-    if (isUsingLocalManualPublishing()) {
-      setInterval(loadDiffSummary, LOCAL_DIFF_POLL_INTERVAL)
-      window.addEventListener('focus', loadDiffSummary)
-    }
+    setInterval(loadDiffSummary, LOCAL_DIFF_POLL_INTERVAL)
+    window.addEventListener('focus', loadDiffSummary)
 
     let onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
     var fileActStream = archive.watch()
@@ -302,12 +301,12 @@ function render () {
                   <div class="container">
                     <div class="message info">
                       <span>
-                        This project${"'"}s local directory
+                        This project${"'"}s local folder
                         ${archive.info.missingLocalSyncPath ? `(${archive.info.missingLocalSyncPath})` : ''}
                         was moved or deleted.
                       </span>
 
-                      <button class="btn" onclick=${onChangeSyncDirectory}>Choose new directory</button>
+                      <button class="btn" onclick=${onChangeSyncDirectory}>Choose new folder</button>
                     </div>
                   </div>`
                 : ''
@@ -339,7 +338,7 @@ function render () {
 function renderHeader () {
   const isOwner = _get(archive, 'info.isOwner')
   const isSaved = _get(archive, 'info.userSettings.isSaved')
-  const hasDescription = !!archive.info.description
+  const hasDescription = !!_get(archive, 'info.description')
   const isExpanded = !isNavCollapsed({ignoreScrollPosition: true})
   const isEditingTitle = headerEditValues.title !== false
 
@@ -385,7 +384,7 @@ function renderMenu () {
   const isSaved = _get(archive, 'info.userSettings.isSaved')
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const title = getSafeTitle()
-  const description = _get(archive, 'info.description').trim()
+  const description = _get(archive, 'info.description', '').trim()
   const networked = _get(archive, 'info.userSettings.networked')
 
   const button = onToggle => yo`
@@ -541,6 +540,7 @@ function renderLocalDiffSummary () {
   }
 
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  const autoPublishLocal = _get(archive, 'info.userSettings.autoPublishLocal')
   const total = localDiffSummary ? (localDiffSummary.add + localDiffSummary.mod + localDiffSummary.del) : 0
 
   function rRevisionIndicator (type) {
@@ -564,18 +564,30 @@ function renderLocalDiffSummary () {
       </div>`
   }
 
+  var ctrls
+  if (autoPublishLocal) {
+    ctrls = [
+      yo`<strong>Auto-publish mode</strong>`,
+      yo`<a class="btn primary" href=${archive.url} target="_blank">Open</a>`
+    ]
+  } else {
+    ctrls = [
+      rRevisionIndicator('add'),
+      rRevisionIndicator('mod'),
+      rRevisionIndicator('del'),
+      yo`<span class="summary">${total} ${pluralize(total, 'revision')}</span>`,
+      yo`<a class="btn primary" href=${`beaker://library/${archive.url}#local-compare`} onclick=${e => onChangeView(e, 'local-compare')}>Compare</a>`,
+      yo`<a class="btn primary" href=${archive.url + '+preview'} onclick=${onOpenPreviewDat}>Preview</a>`
+    ]
+  }
+
   return yo`
     <div id="local-diff-summary">
       <div class="path">
         <span class="label">Local folder:</span>
         <button class="link sync-path-link" onclick=${onSyncPathContextMenu}>${syncPath} <i class="fa fa-angle-down"></i></button>
       </div>
-      ${rRevisionIndicator('add')}
-      ${rRevisionIndicator('mod')}
-      ${rRevisionIndicator('del')}
-      <span class="summary">${total} ${pluralize(total, 'revision')}</span>
-      <a class="btn primary" href=${`beaker://library/${archive.url}#local-compare`} onclick=${e => onChangeView(e, 'local-compare')}>Compare</a>
-      <a class="btn primary" href=${archive.url + '+preview'} onclick=${onOpenPreviewDat}>Preview</a>
+      ${ctrls}
     </div>`
 }
 
@@ -619,16 +631,24 @@ function renderSettingsView () {
   const baseUrl = `beaker://library/${archive.url}`
 
   let syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  let autoPublishLocal = _get(archive, 'info.userSettings.autoPublishLocal')
   let syncDirectoryDescription = ''
-  if (syncPath) {
+  if (syncPath || oldLocalSyncPath) {
+    console.log({syncPath, oldLocalSyncPath})
+    let p = syncPath || oldLocalSyncPath
     syncDirectoryDescription = yo`
       <div>
         <form>
-          <div class="input-group radiolist sync-path">
-            <input type="radio" checked=${syncPath} name="has-sync-path" id="syncPath" onchange=${onChangeHasSyncDirectory}/>
-            <label for="syncPath">Sync this project's files to</label>
+          <div class="input-group radiolist">
+            <input type="radio" ${!syncPath ? 'checked' : ''} id="noSync" name="has-sync-path" onchange=${e => onChangeHasSyncDirectory('')} />
+            <label for="noSync">Don${"'"}t sync to the local filesystem</label>
+          </div>
 
-            <input readonly disabled=${!syncPath} type="text" value=${syncPath} placeholder="Choose directory"/>
+          <div class="input-group radiolist sync-path">
+            <input type="radio" ${syncPath ? 'checked' : ''} name="has-sync-path" id="syncPath" onchange=${e => onChangeHasSyncDirectory(oldLocalSyncPath)} />
+            <label for="syncPath">Sync this project${"'"}s files to</label>
+
+            <input readonly disabled=${!syncPath} type="text" value=${p} placeholder="Choose directory"/>
 
             <button type="button" class="btn mobile" onclick=${onChangeSyncDirectory}>
               Choose
@@ -638,14 +658,14 @@ function renderSettingsView () {
               Choose directory
             </button>
 
-            <button class="btn copy-path plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(syncPath, '', true)}>
+            <button class="btn copy-path plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(p, '', true)}>
               <i class="fa fa-clipboard"></i>
             </button>
           </div>
 
-          <div class="input-group radiolist">
-            <input type="radio" checked=${!syncPath} id="noSync" name="has-sync-path" onchange=${onChangeHasSyncDirectory}/>
-            <label for="noSync">Don't sync to the local filesystem</label>
+          <div class="input-group radiolist sub-item">
+            <input type="checkbox" id="autoPublish" ${autoPublishLocal ? 'checked' : ''} onclick=${onToggleAutoPublish} />
+            <label for="autoPublish"><strong>Auto-publish mode</strong> Watch the local folder and automatically publish changes</label>
           </div>
         </form>
       </div>`
@@ -654,12 +674,12 @@ function renderSettingsView () {
       <div>
         <p>
           <em>
-            <i class="fa fa-exclamation-circle"></i> This project${"'"}s local directory was deleted or moved. (${archive.info.missingLocalSyncPath})
+            <i class="fa fa-exclamation-circle"></i> This project${"'"}s local folder was deleted or moved. (${archive.info.missingLocalSyncPath})
           </em>
 
           <form>
             <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
-              Choose new directory
+              Choose new folder
             </button>
             <button type="button" class="btn" onclick=${onRemoveSyncDirectory}>
               Stop syncing
@@ -671,11 +691,11 @@ function renderSettingsView () {
     syncDirectoryDescription = yo`
       <div>
         <p>
-          Choose where to sync this project${"'"}s files.
+          Set a local folder to access this site${"'"}s files from outside of the browser.
 
           <form>
             <button type="button" class="btn" onclick=${onChangeSyncDirectory}>
-              Set local directory
+              Set local folder
             </button>
           </form>
         </p>
@@ -741,7 +761,7 @@ function renderSettingsView () {
           ? yo`
             <div class="section">
               <h2 class="section-heading">
-                Local directory
+                Local folder
               </h2>
 
               <div class="section-content">
@@ -1069,10 +1089,6 @@ function renderNav () {
 // events
 // =
 
-function onChangeHasSyncDirectory () {
-  // TODO
-}
-
 function onTogglePeersCollapsed () {
   arePeersCollapsed = !arePeersCollapsed
   render()
@@ -1290,10 +1306,23 @@ function onCopy (str, successMessage = 'Copied to clipboard', tooltip = false) {
   }
 }
 
+async function onChangeHasSyncDirectory (v) {
+  if (!archive.info.isOwner) return
+
+  try {
+    oldLocalSyncPath = _get(archive, 'info.userSettings.localSyncPath')
+    await beaker.archives.setLocalSyncPath(archive.url, v)
+    await setup()
+  } catch (e) {
+    toplevelError = createToplevelError(e)
+  }
+  render()
+}
+
 async function onChangeSyncDirectory () {
   if (!archive.info.isOwner) return
 
-  // get an available path for a directory
+  // get an available path for a folder
   let defaultPath = _get(archive, 'info.userSettings.localSyncPath')
   if (!defaultPath) {
     let basePath = await beaker.browser.getSetting('workspace_default_path')
@@ -1317,10 +1346,29 @@ async function onChangeSyncDirectory () {
   }
 
   setLocalPathPromptDismissed()
-  window.history.pushState('', {}, `beaker://library/${archive.url}`)
   await setup()
   onOpenFolder(localSyncPath)
   render()
+}
+
+async function onToggleAutoPublish (e) {
+  if (!archive.info.isOwner) return
+
+  var autoPublishLocal = _get(archive, 'info.userSettings.autoPublishLocal')
+  if (!autoPublishLocal) {
+    if (!confirm('Turn on automatic publishing?')) {
+      e.preventDefault()
+      return
+    }
+  }
+
+  try {
+    autoPublishLocal = !autoPublishLocal
+    await beaker.archives.setUserSettings(archive.url, {autoPublishLocal})
+    Object.assign(archive.info.userSettings, {autoPublishLocal})
+  } catch (e) {
+    toplevelError = createToplevelError(e)
+  }
 }
 
 async function onRemoveSyncDirectory () {
@@ -1701,7 +1749,7 @@ async function setManifestValue (attr, value) {
 function isNavCollapsed ({ignoreScrollPosition} = {}) {
   if (!ignoreScrollPosition) {
     var main = document.body.querySelector('.builtin-main')
-    var hasDescription = (!!archive.info.description) ? 1 : 0
+    var hasDescription = (!!_get(archive, 'info.description')) ? 1 : 0
     if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE[hasDescription]) {
       // certain distance scrolled
       return true

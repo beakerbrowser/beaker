@@ -702,7 +702,8 @@
       &.radiolist {
         margin-bottom: 7px;
 
-        input[type="radio"] {
+        input[type="radio"],
+        input[type="checkbox"] {
           margin: 0;
         }
 
@@ -716,13 +717,23 @@
         }
 
         label,
-        input[type="radio"] {
+        input[type="radio"],
+        input[type="checkbox"] {
           margin-right: 10px;
         }
 
         .btn {
           margin-left: auto;
         }
+      }
+
+      &.sub-item {
+        display: inline-flex;
+        margin-left: 22px;
+        padding: 4px 16px;
+        background: #eee;
+        border-radius: 2px;
+        color: #333;
       }
     }
 
