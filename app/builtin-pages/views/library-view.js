@@ -347,8 +347,6 @@ function renderHeader () {
                     </h1>`
                   : yo`<h1 onclick=${onClickHeaderTitle}>${getSafeTitle()}</h1>`}
                 ${isOwner ? yo`<span class="fa fa-pencil" onclick=${onClickHeaderTitle}></span>` : ''}
-
-                ${(!isSaved && isOwner) ? yo`<span class="badge">TRASHED</span>` : ''}
                 ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
               </div>
 
@@ -566,8 +564,7 @@ function renderLocalDiffSummary () {
         <div>
           <i class="fa fa-lightbulb-o"></i>
           <strong>Tip:</strong>
-          Set a local folder to access this site${"'"}s files outside the browser.
-          <a class="link" target="_blank">Learn more.</a>
+          Set a local folder to access this site${"'"}s files from outside of the browser.
         </div>
         <button class="btn primary" onclick=${onChangeSyncDirectory}>Set a local folder</button>
         <button class="btn transparent" onclick=${onDismissLocalPathPrompt}>Dismiss</button>
