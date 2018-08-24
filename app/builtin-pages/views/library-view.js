@@ -1690,14 +1690,6 @@ async function setManifestValue (attr, value) {
 }
 
 function isNavCollapsed ({ignoreScrollPosition} = {}) {
-  if (activeView !== 'files') {
-    // not in the files tab
-    return true
-  }
-  if (filesBrowser.getCurrentSource().parent) {
-    // looking at a file
-    return true
-  }
   if (!ignoreScrollPosition) {
     var main = document.body.querySelector('.builtin-main')
     var hasDescription = (!!archive.info.description) ? 1 : 0
