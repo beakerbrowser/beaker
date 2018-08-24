@@ -370,7 +370,6 @@ function renderHeader () {
               }
 
               <div class="primary-action">
-                ${renderSeedMenu()}
                 ${renderMenu()}
               </div>
             </div>
@@ -382,8 +381,14 @@ function renderHeader () {
     </div>`
 }
 
-function renderSeedMenu () {
+function renderMenu () {
+  const isOwner = _get(archive, 'info.isOwner')
+  const isSaved = _get(archive, 'info.userSettings.isSaved')
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  const title = getSafeTitle()
+  const description = _get(archive, 'info.description').trim()
   const networked = _get(archive, 'info.userSettings.networked')
+
   const button = onToggle => yo`
     <button class="btn btn-split-group" onclick=${onToggle}>
       <span class="btn-split-section">
@@ -392,6 +397,7 @@ function renderSeedMenu () {
       </span>
       <span class="btn-split-section">
         ${(networked ? 'Seeding' : 'Offline')}
+        <i class="fa fa-caret-down"></i>
       </span>
     </button>`
   return toggleable2({
@@ -407,54 +413,15 @@ function renderSeedMenu () {
         <div class="dropdown menu seed toggleable-container">
           ${button(onToggle)}
           <div class="dropdown-items right">
-            <div class="section">
-              ${rehostSlider.render()}
-            </div>
-            <div class="section action">
-              <a href="#network" onclick=${e => onChangeView(e, 'network')}><i class="fa fa-globe"></i> View network</a>
-            </div>
-          </div>
-        </div>
-      `
-    },
-    afterOpen () {
-      rehostSlider.refreshState()
-    }
-  })
-}
-
-function renderMenu () {
-  const isOwner = _get(archive, 'info.isOwner')
-  const isSaved = _get(archive, 'info.userSettings.isSaved')
-  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
-  const title = getSafeTitle()
-  const description = _get(archive, 'info.description').trim()
-
-  return toggleable2({
-    id: 'nav-item-main-menu',
-    closed: ({onToggle}) => {
-      return yo`
-        <div class="dropdown menu toggleable-container">
-          <button class="btn" onclick=${onToggle}>
-            <span class="fa fa-caret-down"></span>
-          </button>
-        </div>`
-    },
-    open: ({onToggle}) => {
-      return yo`
-        <div class="dropdown menu toggleable-container">
-          <button class="btn" onclick=${onToggle}>
-            <span class="fa fa-caret-down"></span>
-          </button>
-
-          <div class="dropdown-items right" onclick=${onToggle}>
-            <div class="section menu-items">
-              ${!isSaved
-                ? yo`
-                  <div class="dropdown-item" onclick=${onSave}>
-                    <i class="fa fa-floppy-o"></i> Save to Library
-                  </div>`
-                : ''}
+            ${!isOwner
+              ? yo`<div class="section">${rehostSlider.render()}</div>`
+              : ''}
+            <div class="section menu-items" onclick=${onToggle}>
+              <div class="dropdown-item" onclick=${onToggleNetworked}>
+                ${networked
+                  ? yo`<span><i class="fa fa-pause"></i> Stop seeding this site</span>`
+                  : yo`<span><i class="fa fa-share-alt"></i> Seed this site</span>`}
+              </div>
 
               <div class="dropdown-item" onclick=${onMakeCopy}>
                 <i class="fa fa-clone"></i>
@@ -471,11 +438,17 @@ function renderMenu () {
                 Download as .zip
               </div>
 
-              ${isSaved
+              ${isOwner && isSaved
                 ? yo`
                   <div class="dropdown-item" onclick=${onMoveToTrash}>
                     <i class="fa fa-trash-o"></i>
-                    Remove from Library
+                    Move to Trash
+                  </div>`
+                : ''}
+              ${isOwner && !isSaved
+                ? yo`
+                  <div class="dropdown-item" onclick=${onSave}>
+                    <i class="fa fa-undo"></i> Restore from Trash
                   </div>`
                 : ''}
 
@@ -497,7 +470,11 @@ function renderMenu () {
               </div>
             </div>
           </div>
-        </div>`
+        </div>
+      `
+    },
+    afterOpen () {
+      rehostSlider.refreshState()
     }
   })
 }
@@ -595,7 +572,7 @@ function renderLocalDiffSummary () {
       ${rRevisionIndicator('mod')}
       ${rRevisionIndicator('del')}
       <span class="summary">${total} ${pluralize(total, 'revision')}</span>
-      <a class="btn success" href=${`beaker://library/${archive.url}#local-compare`} onclick=${e => onChangeView(e, 'local-compare')}>Compare</a>
+      <a class="btn primary" href=${`beaker://library/${archive.url}#local-compare`} onclick=${e => onChangeView(e, 'local-compare')}>Compare</a>
       <a class="btn primary" href=${archive.url + '+preview'} onclick=${onOpenPreviewDat}>Preview</a>
     </div>`
 }
@@ -1161,6 +1138,25 @@ async function onSave () {
     toast.create(`Could not save ${nickname} to your Library`, 'error')
   }
   render()
+}
+
+async function onToggleNetworked () {
+  const nickname = getSafeTitle()
+  try {
+    if (archive.info.userSettings.networked) {
+      await beaker.archives.setUserSettings(archive.url, {networked: false})
+      archive.info.userSettings.networked = false
+      toast.create(`${nickname} is now offline`, 'success')
+    } else {
+      await beaker.archives.setUserSettings(archive.url, {networked: true})
+      archive.info.userSettings.networked = true
+      toast.create(`${nickname} is now online`, 'success')
+    }
+  } catch (e) {
+    console.error(e)
+    toast.create(`Could not update ${nickname}`, 'error')
+  }
+  render()  
 }
 
 async function onToggleSeeding () {

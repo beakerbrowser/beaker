@@ -74,17 +74,7 @@ export class PageMenuNavbarBtn {
 
             ${isDat
               ? yo`
-                <div class="dropdown-items compact with-triangle">                  
-                  ${isSaved
-                    ? yo`
-                      <div class="dropdown-item" onclick=${() => this.onToggleSaved()}>
-                        <i class="fa fa-trash-o"></i> Remove from Library
-                      </div>`
-                    : yo`
-                      <div class="dropdown-item" onclick=${() => this.onToggleSaved()}>
-                        <i class="fa fa-floppy-o"></i> Save to Library
-                      </div>`}
-
+                <div class="dropdown-items compact with-triangle">
                   <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
                     <i class="fa fa-files-o"></i>
                     View Source

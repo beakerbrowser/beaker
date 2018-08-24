@@ -55,13 +55,17 @@ export class RehostSlider extends EventEmitter {
   }
 
   render () {
+    if (this.siteInfo.isOwner) {
+      return ''
+    }
+
     // calculate the current state
-    const {networked, autoUpload, expiresAt} = this.siteInfo.userSettings
+    const {networked, isSaved, expiresAt} = this.siteInfo.userSettings
     const now = Date.now()
-    const timeRemaining = (networked && autoUpload && expiresAt && expiresAt > now) ? moment.duration(expiresAt - now) : null
+    const timeRemaining = (networked && isSaved && expiresAt && expiresAt > now) ? moment.duration(expiresAt - now) : null
     var currentSetting
     if (!networked) currentSetting = NOT
-    else if (!autoUpload) currentSetting = WHILE_VISITING
+    else if (!isSaved) currentSetting = WHILE_VISITING
     else if (!expiresAt) currentSetting = FOREVER
     else if (timeRemaining && timeRemaining.asMonths() > 0.5) currentSetting = ONEMONTH
     else if (timeRemaining && timeRemaining.asWeeks() > 0.5) currentSetting = ONEWEEK
@@ -126,13 +130,13 @@ export class RehostSlider extends EventEmitter {
 
     // update the archive settings
     var networked = (this.sliderState != NOT)
-    var autoUpload = (this.sliderState > WHILE_VISITING)
+    var isSaved = (this.sliderState > WHILE_VISITING)
     var expiresAt = 0
     if (this.sliderState == ONEDAY) expiresAt = +(moment().add(1, 'day'))
     if (this.sliderState == ONEWEEK) expiresAt = +(moment().add(1, 'week'))
     if (this.sliderState == ONEMONTH) expiresAt = +(moment().add(1, 'month'))
-    await beaker.archives.setUserSettings(this.siteInfo.key, {networked, autoUpload, expiresAt})
-    Object.assign(this.siteInfo.userSettings, {networked, autoUpload, expiresAt})
+    await beaker.archives.setUserSettings(this.siteInfo.key, {networked, isSaved, expiresAt})
+    Object.assign(this.siteInfo.userSettings, {networked, isSaved, expiresAt})
 
     this.rerender()
   }
