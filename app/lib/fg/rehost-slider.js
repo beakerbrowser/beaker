@@ -123,7 +123,6 @@ export class RehostSlider extends EventEmitter {
 
   async onChangeTimelen (e) {
     this.sliderState = e.target.value
-    this.rerender()
 
     // update the archive settings
     var networked = (this.sliderState != NOT)
@@ -133,5 +132,8 @@ export class RehostSlider extends EventEmitter {
     if (this.sliderState == ONEWEEK) expiresAt = +(moment().add(1, 'week'))
     if (this.sliderState == ONEMONTH) expiresAt = +(moment().add(1, 'month'))
     await beaker.archives.setUserSettings(this.siteInfo.key, {networked, autoUpload, expiresAt})
+    Object.assign(this.siteInfo.userSettings, {networked, autoUpload, expiresAt})
+
+    this.rerender()
   }
 }
