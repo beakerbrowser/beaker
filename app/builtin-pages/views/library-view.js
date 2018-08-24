@@ -352,13 +352,12 @@ function renderHeader () {
               <div class="title ${isOwner ? 'editable' : ''} ${isEditingTitle ? 'editing' : ''}">
                 <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
                 ${isEditingTitle
-                  ? yo`<h1>
+                  ? yo`
                     <input
                       class="header-title-input"
                       value=${headerEditValues.title || ''}
                       onblur=${e => onBlurHeaderEditor(e, 'title')}
-                      onkeyup=${e => onChangeHeaderEditor(e, 'title')} />
-                    </h1>`
+                      onkeyup=${e => onChangeHeaderEditor(e, 'title')} />`
                   : yo`<h1 onclick=${onClickHeaderTitle}>${getSafeTitle()}</h1>`}
                 ${isOwner ? yo`<span class="fa fa-pencil" onclick=${onClickHeaderTitle}></span>` : ''}
                 ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}

@@ -603,21 +603,31 @@ body.drag {
 
     .title {
       &:extend(.flex);
+      flex-wrap: nowrap;
       align-items: center;
       height: 25px;
 
-      h1 {
+      h1,
+      input {
         font-size: 1.6rem;
         font-weight: 600;
         line-height: 1;
+      }
 
-        input {
-          position: relative;
-          cursor: auto;
-          top: -1px;
-          left: -8px;
-          height: 34px;
-        }
+      h1 {
+        white-space: pre;
+        max-width: 500px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        height: 28px;
+      }
+
+      input {
+        position: relative;
+        cursor: auto;
+        top: -2px;
+        left: -8px;
+        height: 34px;
       }
 
       .fa-pencil {
