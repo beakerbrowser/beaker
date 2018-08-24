@@ -20,7 +20,7 @@ import renderCloseIcon from '../icon/close'
 let archives = []
 let selectedArchives = []
 let query = ''
-let currentView = 'all'
+let currentView = 'your archives'
 let currentSort = ['alpha', -1]
 let currentDateType = 'accessed'
 
