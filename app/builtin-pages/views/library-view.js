@@ -417,11 +417,14 @@ function renderMenu () {
               ? yo`<div class="section">${rehostSlider.render()}</div>`
               : ''}
             <div class="section menu-items" onclick=${onToggle}>
-              <div class="dropdown-item" onclick=${onToggleNetworked}>
-                ${networked
-                  ? yo`<span><i class="fa fa-pause"></i> Stop seeding this site</span>`
-                  : yo`<span><i class="fa fa-share-alt"></i> Seed this site</span>`}
-              </div>
+              ${isOwner ?
+                yo`
+                  <div class="dropdown-item" onclick=${onToggleNetworked}>
+                    ${networked
+                      ? yo`<span><i class="fa fa-pause"></i> Stop seeding this site</span>`
+                      : yo`<span><i class="fa fa-share-alt"></i> Seed this site</span>`}
+                  </div>`
+                : ''}
 
               <div class="dropdown-item" onclick=${onMakeCopy}>
                 <i class="fa fa-clone"></i>
