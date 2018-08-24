@@ -5,14 +5,15 @@ import {RehostSlider} from '../../../lib/fg/rehost-slider'
 import * as pages from '../../pages'
 
 export class DatsiteMenuNavbarBtn {
-  constructor () {
+  constructor (page) {
+    this.page = page
     this.isDropdownOpen = false
     this.rehostSlider = null
     window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
   }
 
   render () {
-    const page = pages.getActive()
+    const page = this.page
     const isViewingDat = page && !!page.getViewedDatOrigin()
     if (!isViewingDat || !page.siteInfo) {
       return ''
@@ -25,7 +26,7 @@ export class DatsiteMenuNavbarBtn {
 
     // render btn
     return yo`
-      <div class="rehost-navbar-menu">
+      <div id=${this.elId} class="rehost-navbar-menu">
         <button class="nav-peers-btn" onclick=${e => this.onClickDropdownBtn(e)}>
           <i class="fa fa-share-alt"></i>
           ${page.siteInfo.peers || 0}
@@ -68,11 +69,12 @@ export class DatsiteMenuNavbarBtn {
       `
   }
 
+  get elId () {
+    return 'toolbar-datsite-menu-' + this.page.id
+  }
+
   updateActives () {
-    Array.from(document.querySelectorAll('.rehost-navbar-menu')).forEach(el => {
-      var newEl = this.render()
-      if (newEl) yo.update(el, newEl)
-    })
+    yo.update(document.getElementById(this.elId), this.render())
   }
 
   close () {
@@ -96,7 +98,7 @@ export class DatsiteMenuNavbarBtn {
       this.close()
     } else {
       // create progress monitor
-      const page = pages.getActive()
+      const page = this.page
       if (!page || !page.siteInfo) {
         return
       }

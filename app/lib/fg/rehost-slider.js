@@ -25,6 +25,7 @@ const TIMELENS = [
 export class RehostSlider extends EventEmitter {
   constructor (siteInfo) {
     super()
+    this.id = `rehost-slider-${Date.now()}`
     this.siteInfo = siteInfo
     this.sliderState = undefined
     this.progressMonitor = new ArchiveProgressMonitor(new DatArchive(siteInfo.key))
@@ -50,7 +51,7 @@ export class RehostSlider extends EventEmitter {
   }
 
   rerender () {
-    var el = document.querySelector('.rehost-slider')
+    var el = document.querySelector('#' + this.id)
     if (el) yo.update(el, this.render())
   }
 
@@ -88,7 +89,7 @@ export class RehostSlider extends EventEmitter {
 
     // render the dropdown if open
     return yo`
-      <div class="rehost-slider">
+      <div id=${this.id} class="rehost-slider">
         <div>
           <label for="rehost-period">Seed these files</label>
           <input

@@ -8,7 +8,6 @@ import prettyHash from 'pretty-hash'
 import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
 // import {AppsMenuNavbarBtn} from './navbar/apps-menu' TODO(apps) restore when we bring back apps -prf
-import {DatsiteMenuNavbarBtn} from './navbar/datsite-menu'
 import {SyncfolderMenuNavbarBtn} from './navbar/syncfolder-menu'
 import {DonateMenuNavbarBtn} from './navbar/donate-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
@@ -37,7 +36,6 @@ var updatesNavbarBtn = null
 var browserMenuNavbarBtn = null
 var bookmarkMenuNavbarBtn = null
 // var appsMenuNavbarBtn = null TODO(apps) restore when we bring back apps -prf
-var datsiteMenuNavbarBtn = null
 var syncfolderMenuNavbarBtn = null
 var donateMenuNavbarBtn = null
 var pageMenuNavbarBtn = null
@@ -58,7 +56,6 @@ export function setup () {
   // appsMenuNavbarBtn = new AppsMenuNavbarBtn() TODO(apps) restore when we bring back apps -prf
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
-  datsiteMenuNavbarBtn = new DatsiteMenuNavbarBtn()
   syncfolderMenuNavbarBtn = new SyncfolderMenuNavbarBtn()
   donateMenuNavbarBtn = new DonateMenuNavbarBtn()
   pageMenuNavbarBtn = new PageMenuNavbarBtn()
@@ -162,7 +159,6 @@ export function closeMenus () {
   // appsMenuNavbarBtn.close() TODO(apps) restore when we bring back apps -prf
   pageMenuNavbarBtn.close()
   bookmarkMenuNavbarBtn.close()
-  datsiteMenuNavbarBtn.close()
   syncfolderMenuNavbarBtn.close()
   donateMenuNavbarBtn.close()
 }
@@ -401,7 +397,7 @@ function render (id, page) {
           liveReloadBtn,
           donateBtn,
           datBtns,
-          datsiteMenuNavbarBtn.render(),
+          page ? page.datsiteMenuNavbarBtn.render() : undefined,
           pageMenuNavbarBtn.render(),
           bookmarkMenuNavbarBtn.render()
         ] : ''}
