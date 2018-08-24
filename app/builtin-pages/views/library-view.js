@@ -313,6 +313,20 @@ function render () {
                 : ''
               }
 
+              ${archive.info.isOwner && !archive.info.userSettings.isSaved
+                ? yo`
+                  <div class="container">
+                    <div class="message error">
+                      <span>
+                        "${archive.info.title ? archive.info.title : 'This archive'}"
+                        is in the Trash.
+                      </span>
+                      <button class="btn" onclick=${onSave}>Restore from Trash</button>
+                    </div>
+                  </div>`
+                : ''
+              }
+
               ${renderView()}
             </div>
           </div>
