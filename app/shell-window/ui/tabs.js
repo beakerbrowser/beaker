@@ -29,10 +29,10 @@ var numTabsWeCanFit = Infinity // we start out fairly optimistic
 
 export function setup () {
   // render
-  tabsContainerEl = yo`<div class="chrome-tabs">
-    <div class="chrome-tab chrome-tab-add-btn" onclick=${onClickNew} title="Open new tab">
-      <div class="chrome-tab-bg"></div>
-      <span class="plus">+</span>
+  tabsContainerEl = yo`<div class="chrome-tabs drop-zone" ondrop=${onDrop}>
+    <div class="chrome-tab chrome-tab-add-btn drop-zone" onclick=${onClickNew} title="Open new tab">
+      <div class="chrome-tab-bg drop-zone"></div>
+      <span class="plus drop-zone">+</span>
     </div>
   </div>`
   yo.update(document.getElementById('toolbar-tabs'), yo`<div id="toolbar-tabs" class="chrome-tabs-shell">
@@ -89,7 +89,7 @@ function drawTab (page) {
 
   // pinned rendering:
   if (page.isPinned) {
-    return yo`<div class=${'chrome-tab chrome-tab-pinned' + cls}
+    return yo`<div class=${'chrome-tab chrome-tab-pinned drop-zone' + cls}
                 data-id=${page.id}
                 style=${style}
                 onclick=${onClickTab(page)}
@@ -110,6 +110,7 @@ function drawTab (page) {
       onclick=${onClickTab(page)}
       oncontextmenu=${onContextMenuTab(page)}
       onmousedown=${onMouseDown(page)}
+      ondrop=${onTabDrop(page)}
       title=${getNiceTitle(page)}>
     <div class="chrome-tab-bg"></div>
     <div class="chrome-tab-favicon">${favicon}</div>
@@ -207,6 +208,21 @@ function onClickNew () {
   navbar.focusLocation(page)
 }
 
+function onDrop (event) {
+  var link = event.dataTransfer.getData('URL')
+  var isNotOnTab = !event.target.classList.contains('chrome-tab')
+    && !event.target.classList.contains('chrome-tab-title')
+  var isOnNewTabBtn = event.target.classList.contains('')
+
+  if (link && (isNotOnTab || isOnNewTabBtn)) {
+    var page = pages.create({
+      url: link
+    })
+    pages.setActive(page)
+    navbar.updateLocation(page)
+  }
+}
+
 function onClickDuplicate (page) {
   return () => pages.create(page.getURL())
 }
@@ -221,6 +237,19 @@ function onToggleMuted (page) {
       const wc = page.webviewEl.getWebContents()
       const isMuted = wc.isAudioMuted()
       wc.setAudioMuted(!isMuted)
+    }
+  }
+}
+
+function onTabDrop (page) {
+  return (event) => {
+    var link = event.dataTransfer.getData('text/uri-list')
+
+    if (link) {
+      page.url = link
+      page.loadURL(link)
+      pages.setActive(page)
+      navbar.updateLocation(page)
     }
   }
 }

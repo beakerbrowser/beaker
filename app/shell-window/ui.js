@@ -18,11 +18,44 @@ export function setup (cb) {
 
   // wire up event handlers
   ipcRenderer.on('window-event', onWindowEvent)
-  document.addEventListener('dragover', preventDragDrop, false)
-  document.addEventListener('drop', preventDragDrop, false)
-  function preventDragDrop (event) {
-    // important - dont allow drag/drop in the shell window, only into the webview
-    if (!event.target || event.target.tagName != 'WEBVIEW') {
+  document.addEventListener('dragover', onDragOver, false)
+  document.addEventListener('dragleave', onDragLeave, false)
+  document.addEventListener('dragexit', onDragLeave, false)
+  document.addEventListener('drop', onDrop, false)
+
+  function onDragLeave (event) {
+    const targetIsDropZone = event.target.classList.contains('drop-zone')
+
+    if (targetIsDropZone) {
+      event.target.classList.remove('drag-over')
+    }
+  }
+
+  function onDragOver (event) {
+    const targetIsDropZone = event.target.classList.contains('drop-zone')
+    const targetIsWebview = event.target.tagName === 'WEBVIEW'
+
+    if (targetIsDropZone) {
+      event.target.classList.add('drag-over')
+    }
+
+    // important - dont allow drag/drop in the shell window, only into the webview or drop zones
+    if (!event.target || !targetIsWebview || !targetIsDropZone) {
+      event.preventDefault()
+      return false
+    }
+  }
+
+  function onDrop (event) {
+    const targetIsDropZone = event.target.classList.contains('drop-zone')
+    const targetIsWebview = event.target.tagName === 'WEBVIEW'
+
+    if (targetIsDropZone) {
+      event.target.classList.remove('drag-over')
+    }
+
+    // important - dont allow drag/drop in the shell window, only into the webview or drop zones
+    if (!event.target || !targetIsWebview || !targetIsDropZone) {
       event.preventDefault()
       return false
     }
