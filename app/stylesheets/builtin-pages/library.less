@@ -638,26 +638,36 @@ body.drag {
         margin-left: 5px;
       }
 
-      &.editable {
-        h1,
-        .fa-pencil {
-          cursor: pointer;
-        }
-
-        &.editing .fa-pencil {
-          margin-left: 0;
-        }
-      }
-
-      img {
+      .favicon {
         height: 32px;
         width: 32px;
         margin-left: -2px;
         margin-right: 6px;
       }
 
+      .favicon-picker-icons {
+        padding: 12px 10px;
+      }
+
       .badge {
         margin-left: 10px;
+      }
+
+      &.editable {
+        .fa-pencil {
+          cursor: pointer;
+        }
+
+        h1:hover,
+        .favicon:hover {
+          cursor: pointer;
+          background: #f5f5f5;
+          border-radius: 2px;
+        }
+
+        &.editing .fa-pencil {
+          margin-left: 0;
+        }
       }
     }
   }

@@ -349,7 +349,30 @@ function renderHeader () {
           <div class="container">
             <div class="info">
               <div class="title ${isOwner ? 'editable' : ''} ${isEditingTitle ? 'editing' : ''}">
-                <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
+                ${!isOwner
+                    ? yo`<img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />`
+                    : toggleable2({
+                      id: 'favicon-picker2',
+                      closed: ({onToggle}) => yo`
+                        <div class="dropdown share toggleable-container">
+                          <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
+                        </div>`,
+                      open: ({onToggle}) => yo`
+                        <div class="dropdown share toggleable-container">
+                          <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
+
+                          <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
+                            ${renderFaviconPicker({
+                              async onSelect (imageData) {
+                                let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
+                                await archive2.writeFile('/favicon.ico', imageData)
+                                faviconCacheBuster = Date.now()
+                                isFaviconSet = true
+                              }
+                            })}
+                          </div>
+                        </div>`
+                    })}
                 ${isEditingTitle
                   ? yo`
                     <input
