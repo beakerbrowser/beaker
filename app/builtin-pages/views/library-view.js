@@ -408,7 +408,7 @@ function renderMenu () {
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const title = getSafeTitle()
   const description = _get(archive, 'info.description', '').trim()
-  const networked = _get(archive, 'info.userSettings.networked')
+  const networked = _get(archive, 'info.userSettings.networked', true)
 
   const button = onToggle => yo`
     <button class="btn btn-split-group" onclick=${onToggle}>

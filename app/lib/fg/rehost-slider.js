@@ -1,5 +1,6 @@
 /* globals beaker DatArchive */
 
+import _get from 'lodash.get'
 import * as yo from 'yo-yo'
 import bytes from 'bytes'
 import moment from 'moment'
@@ -61,7 +62,9 @@ export class RehostSlider extends EventEmitter {
     }
 
     // calculate the current state
-    const {networked, isSaved, expiresAt} = this.siteInfo.userSettings
+    const networked = _get(this, 'siteInfo.userSettings.networked', true)
+    const isSaved = _get(this, 'siteInfo.userSettings.isSaved', false)
+    const expiresAt = _get(this, 'siteInfo.userSettings.expiresAt', undefined)
     const now = Date.now()
     const timeRemaining = (networked && isSaved && expiresAt && expiresAt > now) ? moment.duration(expiresAt - now) : null
     var currentSetting
