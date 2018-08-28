@@ -192,6 +192,7 @@ body.drag {
 
   .view {
     background: #f7f7f7;
+    margin-bottom: 10px;
   }
 
   .view-wrapper {
@@ -235,6 +236,10 @@ body.drag {
         text-align: center;
         font-size: 1rem;
         font-weight: 500;
+      }
+
+      hr {
+        margin: 20px 0;
       }
     }
 
@@ -454,6 +459,10 @@ body.drag {
       padding: 10px;
     }
 
+    .toggle .switch {
+      margin-right: 10px;
+    }
+    
     .input-group.sync-path {
       position: relative;
       flex-wrap: wrap;
@@ -544,7 +553,7 @@ body.drag {
       top: -54px;
 
       &.has-description {
-        top: -103px;
+        top: -90px;
       }
     }
 
@@ -579,7 +588,7 @@ body.drag {
 
       .description {
         height: 23px;
-        margin: 13px 0;
+        margin: 13px 0 0;
         white-space: pre;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -592,15 +601,67 @@ body.drag {
         top: 20px;
         display: flex;
 
-        .btn {
+        & > * {
           margin-left: 5px;
+        }
+
+        .btn {
           &:focus {
             box-shadow: none;
           }
         }
 
-        .btn.save {
-          width: 80px; // fix the width so that hover-swaps dont rearrange things
+        .fa {
+          &.green {
+            color: @green;
+          }
+          &.yellow {
+            color: @yellow;
+          }
+          &.red {
+            color: @red;
+          }
+        }
+
+        .dropdown.seed {
+          .dropdown-items {
+            width: 300px;
+          }
+        }
+
+        .dropdown.share {
+          .dropdown-items {
+            width: 350px;
+          }
+
+          .dropdown-item {
+            background: #fff;
+            cursor: default;
+            padding: 15px;
+
+            p {
+              margin-left: 0;
+              color: @color-text;
+            }
+          }
+
+          p.copy-url {
+            &:extend(.flex);
+            margin-top: 5px;
+            margin-bottom: 0;
+
+            input {
+              flex: 1;
+              font-size: 12px;
+              border-color: #eee;
+              background: #eee;
+              margin-right: 5px;
+            }
+
+            .btn.full-width {
+              margin-top: 10px;
+            }
+          }
         }
       }
     }
@@ -634,10 +695,6 @@ body.drag {
         height: 34px;
       }
 
-      .fa-pencil {
-        margin-left: 5px;
-      }
-
       .favicon {
         height: 32px;
         width: 32px;
@@ -654,19 +711,11 @@ body.drag {
       }
 
       &.editable {
-        .fa-pencil {
-          cursor: pointer;
-        }
-
         h1:hover,
         .favicon:hover {
           cursor: pointer;
           background: #f5f5f5;
           border-radius: 2px;
-        }
-
-        &.editing .fa-pencil {
-          margin-left: 0;
         }
       }
     }
@@ -705,45 +754,23 @@ body.drag {
       }
     }
 
-    .dropdown.share {
-
-      .dropdown-items {
-        width: 350px;
-      }
-
-      .dropdown-item {
-        background: #fff;
-        cursor: default;
-
-        .description {
-          margin-left: 0;
-          color: @color-text;
-        }
-      }
-
-      p.copy-url {
-        &:extend(.flex);
-        margin-top: 5px;
-        margin-bottom: 10px;
-
-        input {
-          flex: 1;
-          font-size: 12px;
-          border-color: #eee;
-          background: #eee;
-          margin-right: 5px;
-        }
-
-        .btn.full-width {
-          margin-top: 10px;
-        }
-      }
-    }
-
     .favicon {
       width: 16px;
       height: 16px;
       margin-right: 10px;
+    }
+
+    .middot {
+      margin: 0 6px;
+    }
+
+    .peer-count {
+      font-size: 0.8rem;
+    }
+
+    .peer-count,
+    .middot {
+      color: gray;
     }
   }
 
@@ -798,59 +825,57 @@ body.drag {
     }
 
     .dropdown-items {
-      width: 275px;
+      width: 250px;
       background: #fff;
       font-size: 13px;
-    }
-
-    &.seed {
-      .dropdown-items {
-        width: 290px;
-      }
     }
 
     .dropdown-item {
       .fa {
         color: @color-text;
       }
+
+      &.disabled {
+        cursor: default;
+        color: @color-text--light;
+
+        * {
+          color: @color-text--light;
+        }
+
+        &:hover {
+          background: none;
+        }
+      }
     }
 
     .section.menu-items {
       border-bottom: 0;
       padding-bottom: 0;
-    }
 
-    .section.action {
-      background: #f5f5f5;
-      padding: 10px;
+      &:last-of-type {
+        padding-bottom: 5px;
 
-      a {
-        color: #555;
-        &:hover {
-          cursor: pointer;
-          text-decoration: underline;
+        .dropdown-item:last-of-type {
+          border-bottom: 0;
         }
       }
-
-      .fa {
-        margin-right: 2px;
-      }
-    }
-
-    .rehost-slider {
-      margin: 0 14px;
     }
 
     .buttons {
       &:extend(.flex);
       flex-wrap: nowrap;
-      padding: 5px 10px;
+      padding: 8px 10px;
 
       .btn {
         flex: 50%;
 
         &:last-of-type {
           margin-left: 5px;
+        }
+
+        &.full-width {
+          margin: 0;
         }
       }
     }
@@ -874,7 +899,11 @@ body.drag {
     }
 
     .summary {
-      margin: 0 8px;
+      margin-right: 10px;
+    }
+
+    .revision-indicator {
+      border-radius: 50%;
     }
 
     .path {

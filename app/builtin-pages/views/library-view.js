@@ -31,7 +31,7 @@ import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
 
 const DEFAULT_PEERS_LIMIT = 10
-const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 101/*with description*/] // px
+const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 90/*with description*/] // px
 const LOCAL_DIFF_POLL_INTERVAL = 10e3 // ms
 
 // globals
@@ -354,11 +354,11 @@ function renderHeader () {
                     : toggleable2({
                       id: 'favicon-picker2',
                       closed: ({onToggle}) => yo`
-                        <div class="dropdown share toggleable-container">
+                        <div class="dropdown toggleable-container">
                           <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
                         </div>`,
                       open: ({onToggle}) => yo`
-                        <div class="dropdown share toggleable-container">
+                        <div class="dropdown toggleable-container">
                           <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
 
                           <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
@@ -381,7 +381,6 @@ function renderHeader () {
                       onblur=${e => onBlurHeaderEditor(e, 'title')}
                       onkeyup=${e => onChangeHeaderEditor(e, 'title')} />`
                   : yo`<h1 onclick=${onClickHeaderTitle}>${getSafeTitle()}</h1>`}
-                ${isOwner ? yo`<span class="fa fa-pencil" onclick=${onClickHeaderTitle}></span>` : ''}
                 ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
               </div>
 
@@ -391,35 +390,48 @@ function renderHeader () {
               }
 
               <div class="primary-action">
+                ${renderSeedMenu()}
+                ${renderShareMenu()}
                 ${renderMenu()}
               </div>
             </div>
           </div>`
         : ''
       }
-
       ${renderToolbar()}
     </div>`
 }
 
-function renderMenu () {
+function renderSeedMenu () {
+  return undefined
+
+  /*const isOwner = _get(archive, 'info.isOwner')
+  const isSaved = _get(archive, 'info.userSettings.isSaved')
+  const networked = _get(archive, 'info.userSettings.networked', true)
+  if (isOwner) return undefined
+  return yo`
+    <button class="btn" onclick=${onToggleSeeding}>
+      <i class="fa fa-${isSaved ? 'pause' : 'upload'}" style="position: relative; top: -1px"></i>
+      ${isSaved ? 'Stop seeding' : 'Seed'}
+    </button>`*/
+
   const isOwner = _get(archive, 'info.isOwner')
   const isSaved = _get(archive, 'info.userSettings.isSaved')
-  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
-  const title = getSafeTitle()
-  const description = _get(archive, 'info.description', '').trim()
   const networked = _get(archive, 'info.userSettings.networked', true)
 
+  const state = isOwner
+    ? (networked ? 'Online' : 'Offline')
+    : (networked ? (isSaved ? 'Seeding' : 'Seeding (temporarily)') : 'Offline')
+  const color = isOwner
+    ? (networked ? 'green' : 'red')
+    : (networked ? (isSaved ? 'green' : 'green') : 'red')
+  const icon = (isSaved ? 'check' : 'check')
+
   const button = onToggle => yo`
-    <button class="btn btn-split-group" onclick=${onToggle}>
-      <span class="btn-split-section">
-        <i class="fa fa-share-alt"></i>
-        ${_get(archive, 'info.peers', 0)}
-      </span>
-      <span class="btn-split-section">
-        ${(networked ? 'Seeding' : 'Offline')}
-        <i class="fa fa-caret-down"></i>
-      </span>
+    <button class="btn transparent" onclick=${onToggle}>
+      <i class="fa fa-${icon} ${color}"></i>
+      ${state}
+      <i class="fa fa-angle-down"></i>
     </button>`
   return toggleable2({
     id: 'nav-item-seed-menu',
@@ -434,64 +446,8 @@ function renderMenu () {
         <div class="dropdown menu seed toggleable-container">
           ${button(onToggle)}
           <div class="dropdown-items right">
-            ${!isOwner
-              ? yo`<div class="section">${rehostSlider.render()}</div>`
-              : ''}
-            <div class="section menu-items" onclick=${onToggle}>
-              ${isOwner ?
-                yo`
-                  <div class="dropdown-item" onclick=${onToggleNetworked}>
-                    ${networked
-                      ? yo`<span><i class="fa fa-pause"></i> Stop seeding this site</span>`
-                      : yo`<span><i class="fa fa-share-alt"></i> Seed this site</span>`}
-                  </div>`
-                : ''}
-
-              <div class="dropdown-item" onclick=${onMakeCopy}>
-                <i class="fa fa-clone"></i>
-                Make a copy
-              </div>
-
-              ${''/*<div class="dropdown-item" onclick=${e => {onChangeView(e, 'compare'); onToggle(e)}}>
-                <i class="fa fa-files-o"></i>
-                Compare files
-              </div>*/}
-
-              <div class="dropdown-item" onclick=${onDownloadZip}>
-                <i class="fa fa-file-archive-o"></i>
-                Download as .zip
-              </div>
-
-              ${isOwner && isSaved
-                ? yo`
-                  <div class="dropdown-item" onclick=${onMoveToTrash}>
-                    <i class="fa fa-trash-o"></i>
-                    Move to Trash
-                  </div>`
-                : ''}
-              ${isOwner && !isSaved
-                ? yo`
-                  <div class="dropdown-item" onclick=${onSave}>
-                    <i class="fa fa-undo"></i> Restore from Trash
-                  </div>`
-                : ''}
-
-              <div class="dropdown-item" onclick=${onDeletePermanently}>
-                <i class="fa fa-times-circle"></i>
-                Purge from my computer
-              </div>
-            </div>
-
             <div class="section">
-              <div class="buttons">
-                <button class="btn" onclick=${() => window.open(archive.url)}>
-                  Open
-                </button>
-
-                <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
-                  Copy URL
-                </button>
-              </div>
+              ${rehostSlider.render()}
             </div>
           </div>
         </div>
@@ -499,6 +455,126 @@ function renderMenu () {
     },
     afterOpen () {
       rehostSlider.refreshState()
+    }
+  })
+}
+
+function renderShareMenu () {
+  return toggleable2({
+    id: 'nav-item-share-tool',
+    closed: ({onToggle}) => yo`
+      <div class="dropdown share toggleable-container">
+        <button class="btn nofocus toggleable" onclick=${onToggle}>
+          <span class="fa fa-share-square-o"></span> Share
+        </button>
+      </div>`,
+    open: ({onToggle}) => yo`
+      <div class="dropdown share toggleable-container">
+        <button class="btn nofocus toggleable" onclick=${onToggle}>
+          <span class="fa fa-share-square-o"></span> Share
+        </button>
+
+        <div class="dropdown-items subtle-shadow">
+          <div class="dropdown-item no-border">
+            <div class="label">
+              Share
+            </div>
+
+            <p class="small">
+              Anyone with this link can view this project${"'"}s files
+            </p>
+
+            <p class="copy-url">
+              <input type="text" disabled value="${archive.url}"/>
+
+              <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
+                Copy
+              </button>
+
+              <a href=${archive.url} target="_blank" class="btn primary full-width center">
+                Open
+                <span class="fa fa-external-link"></span>
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>`
+  })
+}
+
+function renderMenu () {
+  const isOwner = _get(archive, 'info.isOwner')
+  const isSaved = _get(archive, 'info.userSettings.isSaved')
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  const title = getSafeTitle()
+  const description = _get(archive, 'info.description', '').trim()
+  const networked = _get(archive, 'info.userSettings.networked', true)
+
+  return toggleable2({
+    id: 'nav-item-main-menu',
+    closed ({onToggle}) {
+      return yo`
+        <div class="dropdown menu toggleable-container">
+          <button class="btn transparent toggleable" onclick=${onToggle}>
+            <i class="fa fa-ellipsis-v"></i>
+          </button>
+        </div>`
+    },
+    open ({onToggle}) {
+      return yo`
+        <div class="dropdown menu toggleable-container">
+          <button class="btn transparent toggleable" onclick=${onToggle}>
+            <i class="fa fa-ellipsis-v"></i>
+          </button>
+          <div class="dropdown-items right">
+            <div class="section menu-items" onclick=${onToggle}>
+              ${''/*<div class="dropdown-item" onclick=${e => {onChangeView(e, 'compare'); onToggle(e)}}>
+                <i class="fa fa-files-o"></i>
+                Compare files
+              </div>*/}
+
+              ${isOwner
+                ? !syncPath
+                  ? yo`
+                    <div class="dropdown-item ${!isSaved ? 'disabled' : ''}" onclick=${isSaved ? onChangeSyncDirectory : undefined}>
+                      <i class="fa fa-folder-open-o"></i>
+                      Set a local folder
+                    </div>`
+                  : ''
+                : ''}
+
+              <div class="dropdown-item" onclick=${onMakeCopy}>
+                <i class="fa fa-clone"></i>
+                Make ${isOwner ? 'a' : 'an editable'} copy
+              </div>
+
+              ${isOwner
+                ? yo`
+                  <div class="dropdown-item" onclick=${e => {onToggle(e); onChangeView(e, 'settings')}}>
+                    <i class="fa fa-cog"></i>
+                    Settings
+                  </div>`
+                : ''}
+            </div>
+
+            ${isOwner
+              ? yo`
+                <div class="section buttons" onclick=${onToggle}>
+                  ${isSaved
+                    ? yo`
+                      <button class="btn full-width center" onclick=${onMoveToTrash}>
+                        <i class="fa fa-trash-o"></i>
+                        Move to Trash
+                      </button>`
+                    : yo`
+                      <button class="btn full-width center" onclick=${onSave}>
+                        <i class="fa fa-undo"></i> Restore from Trash
+                      </button>`}
+                </div>`
+              : ''}
+          </div>
+        </div>
+      `
     }
   })
 }
@@ -557,8 +633,7 @@ function rerenderLocalDiffSummary () {
 
 function renderLocalDiffSummary () {
   const isSaved = _get(archive, 'info.userSettings.isSaved')
-  const isAtRootFile = !(filesBrowser.getCurrentSource().parent)
-  if (!archive.info.isOwner || !isSaved || !isAtRootFile) {
+  if (!archive.info.isOwner || !isSaved) {
     return yo`<div id="local-diff-summary empty"></div>`
   }
 
@@ -572,6 +647,9 @@ function renderLocalDiffSummary () {
   }
 
   if (!syncPath) {
+    // DEBUG
+    return yo`<div id="local-diff-summary empty"></div>`
+
     if (isLocalPathPromptDismissed()) {
       return yo`<div id="local-diff-summary empty"></div>`
     }
@@ -595,12 +673,22 @@ function renderLocalDiffSummary () {
     ]
   } else {
     ctrls = [
-      rRevisionIndicator('add'),
-      rRevisionIndicator('mod'),
-      rRevisionIndicator('del'),
-      yo`<span class="summary">${total} ${pluralize(total, 'revision')}</span>`,
-      yo`<a class="btn primary" href=${`beaker://library/${archive.url}#local-compare`} onclick=${e => onChangeView(e, 'local-compare')}>Compare</a>`,
-      yo`<a class="btn primary" href=${archive.url + '+preview'} onclick=${onOpenPreviewDat}>Preview</a>`
+      yo`<a
+        class="link summary tooltip-container"
+        href=${`beaker://library/${archive.url}#local-compare`}
+        data-tooltip="Review changes and publish"
+        onclick=${e => onChangeView(e, 'local-compare')}
+      >
+        Review ${total} ${pluralize(total, 'change')}
+      </a>`,
+      yo`<a
+        class="btn primary tooltip-container"
+        href=${archive.url + '+preview'}
+        data-tooltip="Preview the unpublished version of the site"
+        onclick=${onOpenPreviewDat}
+      >
+        Preview
+      </a>`
     ]
   }
 
@@ -653,13 +741,12 @@ function renderSettingsView () {
   const paymentLink = archive.info.links.payment ? archive.info.links.payment[0].href : ''
   const baseUrl = `beaker://library/${archive.url}`
 
-  let syncPath = _get(archive, 'info.userSettings.localSyncPath')
-  let autoPublishLocal = _get(archive, 'info.userSettings.autoPublishLocal')
-  let syncDirectoryDescription = ''
+  var syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  var autoPublishLocal = syncPath && _get(archive, 'info.userSettings.autoPublishLocal')
+  var localDirectorySettings = ''
   if (syncPath || oldLocalSyncPath) {
-    console.log({syncPath, oldLocalSyncPath})
     let p = syncPath || oldLocalSyncPath
-    syncDirectoryDescription = yo`
+    localDirectorySettings = yo`
       <div>
         <form>
           <div class="input-group radiolist">
@@ -681,19 +768,14 @@ function renderSettingsView () {
               Choose directory
             </button>
 
-            <button class="btn copy-path plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${() => onCopy(p, '', true)}>
+            <button class="btn copy-path plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${e => {e.preventDefault(); onCopy(p, '', true)}}>
               <i class="fa fa-clipboard"></i>
             </button>
-          </div>
-
-          <div class="input-group radiolist sub-item">
-            <input type="checkbox" id="autoPublish" ${autoPublishLocal ? 'checked' : ''} onclick=${onToggleAutoPublish} />
-            <label for="autoPublish"><strong>Auto-publish mode</strong> Watch the local folder and automatically publish changes</label>
           </div>
         </form>
       </div>`
   } else if (_get(archive, 'info.localSyncPathIsMissing')) {
-    syncDirectoryDescription = yo`
+    localDirectorySettings = yo`
       <div>
         <p>
           <em>
@@ -711,7 +793,7 @@ function renderSettingsView () {
         </p>
       </div>`
   } else {
-    syncDirectoryDescription = yo`
+    localDirectorySettings = yo`
       <div>
         <p>
           Set a local folder to access this site${"'"}s files from outside of the browser.
@@ -755,11 +837,11 @@ function renderSettingsView () {
                   ${toggleable2({
                     id: 'favicon-picker',
                     closed: ({onToggle}) => yo`
-                      <div class="dropdown share toggleable-container">
+                      <div class="dropdown toggleable-container">
                         <img class="favicon-picker-btn" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
                       </div>`,
                     open: ({onToggle}) => yo`
-                      <div class="dropdown share toggleable-container">
+                      <div class="dropdown toggleable-container">
                         <img class="favicon-picker-btn pressed" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
 
                         <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
@@ -779,21 +861,53 @@ function renderSettingsView () {
             }
           </div>
         </div>
+      </div>
 
-        ${isOwner
-          ? yo`
+      ${isOwner
+        ? yo`
+          <div class="settings view">
             <div class="section">
               <h2 class="section-heading">
                 Local folder
               </h2>
 
               <div class="section-content">
-                ${syncDirectoryDescription}
+                ${localDirectorySettings}
               </div>
-            </div>`
-          : ''
-        }
 
+              ${syncPath
+                ? yo`
+                  <div>
+                    <hr />
+                    
+                    <h2 class="section-heading">
+                      Preview mode
+                    </h2>
+
+                    <div class="section-content">
+                      <div class="input-group radiolist sub-item">
+                        <label class="toggle ${syncPath ? '' : 'disabled'}">
+                          <span class="text">Preview changes before publishing to the network</span>
+                          <input
+                            type="checkbox"
+                            name="autoPublish"
+                            value="autoPublish"
+                            ${autoPublishLocal ? '' : 'checked'}
+                            ${syncPath ? '' : 'disabled'}
+                            onclick=${onToggleAutoPublish}
+                          >
+                          <div class="switch"></div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>`
+                : ''}
+            </div>
+          </div>`
+        : ''
+      }
+
+      <div class="settings view">
         <div class="section">
           <h2 class="section-heading">
             Links
@@ -877,116 +991,127 @@ function renderNetworkView () {
         <div class="section">
           <h2 class="section-heading">Overview</h2>
 
-          <div class="section">
-            ${_get(archive, 'info.isOwner')
-              ? ''
-              : yo`<div>
-                <h3 class="subtitle-heading">Download status</h3>
+          ${_get(archive, 'info.isOwner')
+            ? ''
+            : yo`<div>
+              <h3 class="subtitle-heading">Download status</h3>
 
-                <progress value=${progress.current} max="100">
-                  ${progress.current}
-                </progress>
+              <progress value=${progress.current} max="100">
+                ${progress.current}
+              </progress>
 
-                <div class="download-status">
-                  <div class="progress-ui ${progressCls}">
-                    <div style="width: ${progressPercentage}" class="completed">
-                      ${progressPercentage}
-                    </div>
-                    <div class="label">${progressLabel}${clearCacheBtn}</div>
+              <div class="download-status">
+                <div class="progress-ui ${progressCls}">
+                  <div style="width: ${progressPercentage}" class="completed">
+                    ${progressPercentage}
                   </div>
-
-                  ${!archive.info.isOwner
-                    ? yo`
-                      <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
-                        <i class="fa fa-${seedingIcon}"></i>
-                      </button>`
-                    : ''
-                  }
+                  <div class="label">${progressLabel}${clearCacheBtn}</div>
                 </div>
-              </div>`
-            }
 
-            <h3 class="subtitle-heading">Peers</h3>
-            ${!_get(archive, 'info.peers')
-              ? yo`<em>No active peers</em>`
-              : yo`
-                <table>
-                  <tr>
-                    <th>
-                      IP address
-                      <i class="fa fa-question-circle-o"></i>
-                    </th>
-                  </tr>
+                ${!archive.info.isOwner
+                  ? yo`
+                    <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
+                      <i class="fa fa-${seedingIcon}"></i>
+                    </button>`
+                  : ''
+                }
+              </div>
+            </div>`
+          }
 
-                  ${_get(archive, 'info.peerInfo', []).slice(0, peersLimit).map(peer => {
-                    return yo`
-                      <tr class="ip-address">
-                        <td>
-                          ${peer.host}:${peer.port}
-                        </td>
-                      </tr>`
-                  })}
-                </table>`
-            }
+          <h3 class="subtitle-heading">Peers</h3>
+          ${!_get(archive, 'info.peers')
+            ? yo`<em>No active peers</em>`
+            : yo`
+              <table>
+                <tr>
+                  <th>
+                    IP address
+                    <i class="fa fa-question-circle-o"></i>
+                  </th>
+                </tr>
 
-            ${Number(_get(archive, 'info.peers')) > DEFAULT_PEERS_LIMIT
-              ? yo`
-                <span class="link" onclick=${onTogglePeersCollapsed}>
-                  ${arePeersCollapsed ? 'Show all' : 'Show fewer'} peers
-                  <i class="fa fa-angle-${arePeersCollapsed ? 'down' : 'up'}"></i>
-                </span>`
-              : ''
-            }
+                ${_get(archive, 'info.peerInfo', []).slice(0, peersLimit).map(peer => {
+                  return yo`
+                    <tr class="ip-address">
+                      <td>
+                        ${peer.host}:${peer.port}
+                      </td>
+                    </tr>`
+                })}
+              </table>`
+          }
 
-            <p class="hint">
-              <i class="fa fa-share-alt"></i>
-              Peers help keep this project online by seeding its files.
-            </p>
+          ${Number(_get(archive, 'info.peers')) > DEFAULT_PEERS_LIMIT
+            ? yo`
+              <span class="link" onclick=${onTogglePeersCollapsed}>
+                ${arePeersCollapsed ? 'Show all' : 'Show fewer'} peers
+                <i class="fa fa-angle-${arePeersCollapsed ? 'down' : 'up'}"></i>
+              </span>`
+            : ''
+          }
 
-            <h3 class="subtitle-heading">Network activity (last hour)</h3>
-            ${renderPeerHistoryGraph(archive.info)}
-
-            <h3 class="subtitle-heading">Advanced</h3>
-            <a href="beaker://swarm-debugger/${archive.key}">
-              Open network debugger
-            </a>
-          </div>
+          <p class="hint">
+            <i class="fa fa-share-alt"></i>
+            Peers help keep this project online by seeding its files.
+          </p>
         </div>
-
-        ${!archive.info.isOwner && !isSaved
-          ? yo`
-            <div class="hint">
-              <p>
-                <i class="fa fa-heart-o"></i>
-                <strong>Give back!</strong> Seed this project${"'"}s files to help keep them online.
-              </p>
-
-              <button class="btn" onclick=${onToggleSeeding}>
-                Seed files
-              </button>
-
-              <a href="#todo" target="_blank" class="learn-more-link">Learn more</a>
-            </div>`
-          : ''
-        }
-
-        ${archive.info.isOwner
-          ? yo`
-            <div class="hint">
-              <p>
-                <i class="fa fa-signal"></i>
-                <strong>Keep your files online.</strong> Share this project${"'"}s URL with friends, or with a public peer service like <a href="https://hashbase.io" target="_blank">Hashbase</a>.
-              </p>
-
-              <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
-                Copy URL
-              </button>
-
-              <a href="#todo" target="_blank" class="learn-more-link">Learn more</a>
-            </div>`
-          : ''
-        }
       </div>
+
+
+      <div class="view network">
+        <div class="section">
+          <h3 class="subtitle-heading">Network activity (last hour)</h3>
+          ${renderPeerHistoryGraph(archive.info)}
+
+          <h3 class="subtitle-heading">Advanced</h3>
+          <a href="beaker://swarm-debugger/${archive.key}">
+            Open network debugger
+          </a>
+        </div>
+      </div>
+
+      ${!archive.info.isOwner && !isSaved
+        ? yo`
+          <div class="view network">
+            <div class="section">
+              <div class="hint">
+                <p>
+                  <i class="fa fa-heart-o"></i>
+                  <strong>Give back!</strong> Seed this project${"'"}s files to help keep them online.
+                </p>
+
+                <button class="btn" onclick=${onToggleSeeding}>
+                  Seed files
+                </button>
+
+                <a href="https://beakerbrowser.com/docs/how-beaker-works/peer-to-peer-websites#keeping-a-peer-to-peer-website-online" target="_blank" class="learn-more-link">Learn more</a>
+              </div>
+            </div>
+          </div>`
+        : ''
+      }
+
+      ${archive.info.isOwner
+        ? yo`
+          <div class="view network">
+            <div class="section">
+              <div class="hint">
+                <p>
+                  <i class="fa fa-signal"></i>
+                  <strong>Keep your files online.</strong> Share this project${"'"}s URL with friends, or with a public peer service like <a href="https://hashbase.io" target="_blank">Hashbase</a>.
+                </p>
+
+                <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
+                  Copy URL
+                </button>
+
+                <a href="https://beakerbrowser.com/docs/how-beaker-works/peer-to-peer-websites#keeping-a-peer-to-peer-website-online" target="_blank" class="learn-more-link">Learn more</a>
+              </div>
+            </div>
+          </div>`
+        : ''
+      }
     </div>
   `
 }
@@ -1021,7 +1146,13 @@ function renderLocalCompareView () {
     </div>`
 }
 
+
 function renderToolbar () {
+  var peerCount = _get(archive, 'info.peers', 0)
+
+  var middot = yo`<span class="middot" />`
+  middot.innerHTML = '&middot;'
+
   return yo`
     <div class="library-toolbar">
       <div class="container">
@@ -1032,50 +1163,16 @@ function renderToolbar () {
         ${renderNav()}
 
         <div class="buttons">
+          <span class="peer-count">
+            ${peerCount}
+            ${pluralize(peerCount, 'peer')}
+          </span>
+
+          ${middot}
+
           <a href=${archive.url} class="link" target="_blank">
             ${shortenHash(archive.url)}
           </a>
-
-          ${toggleable2({
-            id: 'nav-item-share-tool',
-            closed: ({onToggle}) => yo`
-              <div class="dropdown share toggleable-container">
-                <button class="btn plain nofocus toggleable" onclick=${onToggle}>
-                  <span class="fa fa-share-square-o"></span>
-                </button>
-              </div>`,
-            open: ({onToggle}) => yo`
-              <div class="dropdown share toggleable-container">
-                <button class="btn plain nofocus toggleable" onclick=${onToggle}>
-                  <span class="fa fa-share-square-o"></span>
-                </button>
-
-                <div class="dropdown-items subtle-shadow">
-                  <div class="dropdown-item no-border">
-                    <div class="label">
-                      Share
-                    </div>
-
-                    <p class="description small">
-                      Anyone with this link can view this project${"'"}s files
-                    </p>
-
-                    <p class="description copy-url">
-                      <input type="text" disabled value="${archive.url}"/>
-
-                      <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
-                        Copy
-                      </button>
-
-                      <a href=${archive.url} target="_blank" class="btn primary full-width center">
-                        Open
-                        <span class="fa fa-external-link"></span>
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>`
-          })}
         </div>
       </div>
     </div>
@@ -1225,8 +1322,10 @@ function onProgressUpdate () {
 }
 
 async function onChangeView (e, view) {
-  e.preventDefault()
-  e.stopPropagation()
+  if (e) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   // update state
   if (!view) {
@@ -1234,7 +1333,7 @@ async function onChangeView (e, view) {
     window.history.pushState('', {}, e.detail.href)
   } else {
     activeView = view
-    window.history.pushState('', {}, e.currentTarget.getAttribute('href'))
+    window.history.pushState('', {}, e ? e.currentTarget.getAttribute('href') : view)
   }
 
   if (activeView === 'files' && archiveFsRoot) {
@@ -1296,10 +1395,6 @@ function onDropFiles (files) {
 
 function onOpenFolder (path) {
   beaker.browser.openFolder(path)
-}
-
-function onDownloadZip () {
-  beaker.browser.downloadURL(`${archive.url}?download_as=zip`)
 }
 
 async function onDeleteDownloadedFiles () {
@@ -1375,12 +1470,15 @@ async function onChangeSyncDirectory () {
 }
 
 async function onToggleAutoPublish (e) {
+  e.preventDefault()
   if (!archive.info.isOwner) return
 
   var autoPublishLocal = _get(archive, 'info.userSettings.autoPublishLocal')
   if (!autoPublishLocal) {
-    if (!confirm('Turn on automatic publishing?')) {
-      e.preventDefault()
+    // prompt to revert changes if needed
+    await loadDiffSummary()
+    if (localDiffSummary && (localDiffSummary.add || localDiffSummary.mod || localDiffSummary.del)) {
+      alert('You have unpublished changes. Please publish or revert them before disabling preview mode.')
       return
     }
   }
@@ -1392,6 +1490,7 @@ async function onToggleAutoPublish (e) {
   } catch (e) {
     toplevelError = createToplevelError(e)
   }
+  render()
 }
 
 async function onRemoveSyncDirectory () {
@@ -1584,8 +1683,7 @@ function onSyncPathContextMenu (e) {
         writeToClipboard(syncPath)
         toast.create('Path copied to clipboard')
       }},
-      {icon: 'pencil', label: 'Change local folder', click: onChangeSyncDirectory},
-      {icon: 'times-circle', label: 'Stop syncing to folder', click: onRemoveSyncDirectory}
+      {icon: 'wrench', label: 'Configure', click: () => onChangeView(null, 'settings') }
     ]
   })
 }

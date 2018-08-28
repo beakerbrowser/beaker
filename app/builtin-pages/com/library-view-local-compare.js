@@ -92,6 +92,7 @@ export default class LibraryViewLocalCompare {
             target: 'published',
             copyAll: 'Publish all',
             copy: 'Publish',
+            things: 'changes',
             count: 'unpublished change'
           },
           isRevOpen: this.isRevOpen.bind(this),

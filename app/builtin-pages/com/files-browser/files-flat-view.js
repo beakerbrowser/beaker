@@ -98,7 +98,7 @@ function rVersionPicker (filesBrowser) {
     id: 'version-picker',
     closed: ({onToggle}) => yo`
       <div class="dropdown toggleable-container version-picker">
-        <button class="btn plain nofocus" onclick=${onToggle}>
+        <button class="btn plain nofocus tooltip-container" onclick=${onToggle} data-tooltip="View history">
           <span class="fa fa-history"></span>
         </button>
       </div>`,
@@ -141,52 +141,61 @@ function rActions (filesBrowser, currentSource) {
   return yo`
     <div class="actions">
       ${currentSource.type === 'archive' ? rVersionPicker(filesBrowser) : ''}
-      ${(currentSource.isEditable && currentSource.type !== 'file')
+      ${(currentSource.type !== 'file')
         ?
           toggleable2({
-            id: 'add-file-dropdown',
+            id: 'folder-actions-dropdown',
             closed: ({onToggle}) => yo`
               <div class="dropdown toggleable-container new-dropdown">
-                <button class="btn toggleable" onclick=${onToggle}>
-                  <span class="fa fa-plus"></span>
+                <button class="btn plain toggleable" onclick=${onToggle}>
+                  <span class="fa fa-angle-down"></span>
                 </button>
               </div>`,
             open: ({onToggle}) => yo`
               <div class="dropdown toggleable-container new-dropdown">
-                <button class="btn toggleable" onclick=${onToggle}>
-                  <span class="fa fa-plus"></span>
+                <button class="btn plain toggleable" onclick=${onToggle}>
+                  <span class="fa fa-angle-down"></span>
                 </button>
 
                 <div class="dropdown-items compact right" onclick=${onToggle}>
-                  <div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
-                    Create file
-                  </div>
+                  ${currentSource.isEditable
+                    ? [
+                      yo`<div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
+                        Create file
+                      </div>`,
 
-                  <div class="dropdown-item" onclick=${e => emit('custom-create-file', {createFolder: true})}>
-                    Create folder
-                  </div>
+                      yo`<div class="dropdown-item" onclick=${e => emit('custom-create-file', {createFolder: true})}>
+                        Create folder
+                      </div>`,
 
-                  <hr>
+                      yo`<hr>`,
 
-                  ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
-                    ? yo`
-                      <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, false)}>
-                        Import files
-                      </div>`
-                    :
-                      [
-                        yo`
-                          <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
-                            <i class="fa fa-files-o"></i>
+                      (window.OS_CAN_IMPORT_FOLDERS_AND_FILES
+                        ? yo`
+                          <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, false)}>
                             Import files
-                          </div>`,
-                        yo`
-                          <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
-                            <i class="fa fa-folder-open-o"></i>
-                            Import folder (TODO this used to say choose folder is this right?)
                           </div>`
-                      ]
-                  }
+                        :
+                          [
+                            yo`
+                              <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
+                                <i class="fa fa-files-o"></i>
+                                Import files
+                              </div>`,
+                            yo`
+                              <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
+                                <i class="fa fa-folder-open-o"></i>
+                                Import folder
+                              </div>`
+                          ]
+                      ),
+
+                      yo`<hr>`
+                    ] : ''}
+
+                    <div class="dropdown-item" onclick=${e => onClickDownloadZip(e, filesBrowser)}>
+                      Download as .zip
+                    </div>
                 </div>
               </div>`
             })
@@ -408,6 +417,11 @@ function onClickSaveEdit (e) {
   }
   emit('custom-save-file-editor-content', {fileName})
   emit('custom-close-file-editor')
+}
+
+function onClickDownloadZip (e, filesBrowser) {
+  e.preventDefault()
+  beaker.browser.downloadURL(`${filesBrowser.root.url}?download_as=zip`)
 }
 
 function onClickCancelEdit (e) {
