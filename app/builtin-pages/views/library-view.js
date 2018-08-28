@@ -666,12 +666,7 @@ function renderLocalDiffSummary () {
   }
 
   var ctrls
-  if (autoPublishLocal) {
-    ctrls = [
-      yo`<strong>Auto-publish mode</strong>`,
-      yo`<a class="btn primary" href=${archive.url} target="_blank">Open</a>`
-    ]
-  } else {
+  if (!autoPublishLocal) {
     ctrls = [
       yo`<a
         class="link summary tooltip-container"
@@ -879,7 +874,7 @@ function renderSettingsView () {
                 ? yo`
                   <div>
                     <hr />
-                    
+
                     <h2 class="section-heading">
                       Preview mode
                     </h2>
